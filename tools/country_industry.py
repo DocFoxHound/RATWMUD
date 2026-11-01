@@ -12,16 +12,20 @@ ledger: a draw's three coin shifts come just before the `made` record that names
 residents' purchases and meals, each shop's sales by buyer (its business from the export's work labels, as
 items::businessFor reads them), the Country's posts' wages, and the run's own economy lines for the same days.
 
-report: scales each season to the long run's settled years (ECONOMY.jsonl, years `--from-year` to 12; `scale`: a season
-group's pieces by its G_drawn and its pennies by its season price, a craft's other inputs with its group's, the rest to
-the long run's drawn pennies, the toll at its rate, the residents' food at NourishADay), sorts the goods into the
-Country's industries and prints the doc's tables (markdown). Then the switch (the user, 2026-11-01): the farms take the
-food over. A farm's crew costs it their wages (they buy their food in the city's shops, which draw it from the farms);
-its basket of the city's goods takes what is over the wages; the Country keeps its other goods, its posts, its patrons
-and what is left for its own basket; every basket and purchase draws again from the farms and the Country, solved season
-by season (`solve`). It prints the lead table, the takings, the reserves, the Country before and after, the toll, the
-makers' order book, the yields, the other industries, the footprints, and the pool of unplaced NPCs (--unplaced: a JSON
-list of DEV's unplaced NPCs, read only: id, role, work_label, age, appearance). --units writes
+report: fills in the autumn short run's missing wine from the long run's vintner (its loop file, ECONOMY's name with
+_loop, or --loop: `fill_wine`), scales each season to the long run's settled years (ECONOMY.jsonl, years `--from-year`
+to 12; `scale`: a season group's pieces by its G_drawn and its pennies by its season price, a craft's other inputs with
+its group's, the rest to the long run's drawn pennies, the toll at its rate, the residents' food at NourishADay), sorts
+the goods into the Country's industries and prints the doc's tables (markdown). Then the switch (the user, 2026-11-01):
+the farms take the food over. A farm's crew costs it their wages (they buy their food in the city's shops, which draw it
+from the farms); its basket of the city's goods takes what is over the wages, its till's cash cycle charging a lean
+season to the others (`cash_cycle`); the Country keeps its other goods, its posts, its patrons and what is left for its
+own basket; every basket and purchase draws again from the farms and the Country, solved season by season (`solve`). It
+prints the lead table, the takings, the reserves, the Country before and after, the toll (and without the farms'
+basket), the makers' order book, the money the switch holds (the floats and the crews' purses), the treasury's change
+(the wage support the losing trades would draw, `support`), the yields (season means and the middle-day values whose
+blend has them, `middles`), the other industries and their crewed works, the footprints, and the pool of unplaced NPCs
+(--unplaced: a JSON list of DEV's unplaced NPCs, read only: id, role, work_label, age, appearance). --units writes
 Data/Economy/country_farms.json, the farms' settings as Atlas's Economy page would edit them. --real-check prints the
 first draft's sizing from real pre-industrial yields and labour instead (UNITS, ASSUMPTIONS; a cross-check of land and
 labour).
@@ -298,6 +302,16 @@ def measure_one(path, tills=None):
     eaten = collections.Counter()
     made = collections.Counter()                                       # the city's makers' batches' output, by good
     country_wages = collections.Counter()                              # the Country's posts: coins and payees a day
+    # Each business's money (doc 71, 2.6, the treasury after the switch): its tills' wages, its keepers' profit, the
+    # treasury's wage support to its posts, the city's share of its services, what it buys from other city makers, and
+    # its draws' carriage; its tills and posts. A post's till is the one that pays it wages (any day of the run).
+    money_by = collections.defaultdict(collections.Counter)
+    tills_of = collections.defaultdict(set)
+    posts_of = collections.defaultdict(set)
+    holder_till = {}
+    for e in ev:
+        if e['kind'] == 'economy' and e['detail'] == 'wages' and e['actor'].startswith('till:'):
+            holder_till[e['target']] = e['actor']
     carriage_out = 0
     for e in ev:
         if e['kind'] != 'economy':
@@ -323,8 +337,19 @@ def measure_one(path, tills=None):
                 drawn_by[biz(t)][e['item']]['pieces'] += e['quantity']
                 drawn_by[biz(t)][e['item']]['country'] += p['country']
                 drawn_by[biz(t)][e['item']]['toll'] += p['toll']
+                money_by[biz(t)]['carriage_in'] += p['carriage']
         elif not inside:
             continue
+        elif d == 'wages' and a.startswith('till:'):
+            money_by[biz(a)]['wages'] += e['coins']
+            tills_of[biz(a)].add(a)
+            posts_of[biz(a)].add(t)
+        elif d == 'profit' and a.startswith('till:'):
+            money_by[biz(a)]['profit'] += e['coins']
+        elif d == 'wage support' and a == 'treasury' and t in holder_till:
+            money_by[biz(holder_till[t])]['support'] += e['coins']
+        elif d == "the city's share of a service" and a.startswith('till:'):
+            money_by[biz(a)]['service_share'] += e['coins']
         elif a == 'made' and d == 'made from the store room':
             made[e['item']] += e['quantity']
         elif d == 'to the Country':
@@ -343,6 +368,8 @@ def measure_one(path, tills=None):
             sales[biz(t)]['patrons'][e['item'] or 'work'].update({'pieces': e['quantity'] or 1, 'coins': e['coins']})
         elif d == 'from a city maker' and t.startswith('till:'):
             sales[biz(t)]['city'][e['item'] or 'goods'].update({'pieces': e['quantity'], 'coins': e['coins']})
+            if a.startswith('till:'):
+                money_by[biz(a)]['city_inputs'] += e['coins']
         elif a == 'treasury' and t.startswith('till:') and e['coins'] > 0 and d not in ('wage support', 'refunded: gate toll'):
             sales[biz(t)]['treasury'][e['item'] or d].update({'pieces': e['quantity'], 'coins': e['coins']})
         elif a == 'outside:country' and d == 'wages':
@@ -356,7 +383,9 @@ def measure_one(path, tills=None):
             'sales': {b: {k: per(v) for k, v in by.items()} for b, by in sales.items()},
             'drawn_by': {b: per(v) for b, v in drawn_by.items()},
             'eaten': {k: v / n for k, v in eaten.items()}, 'made': {k: v / n for k, v in made.items()},
-            'carriage_out': carriage_out / n, 'country_wages': {k: v / n for k, v in country_wages.items()}}
+            'carriage_out': carriage_out / n, 'country_wages': {k: v / n for k, v in country_wages.items()},
+            'money_by': {b: dict({k: v / n for k, v in c.items()}, tills=len(tills_of[b]), posts=len(posts_of[b]))
+                         for b, c in money_by.items()}}
 
 
 ECON_KEYS = ['residents', 'drawn', 'toll', 'carriage', 'country_spent', 'food_bought', 'residents_spent', 'needs_bought',
@@ -378,8 +407,9 @@ def cmd_measure(a):
             keys = ECON_KEYS + [f'{g}_{x}' for g in GROUPS for x in ('drawn', 'price', 'cap')]
             out[season]['economy'] = {k: sum(d.get(k, 0) for d in used) / len(used) for k in keys}
             out[season]['economy']['days'] = len(used)
+    out['businesses'] = tills      # each till's business (for the long run's per-till sales: the vintners' wine)
     json.dump(out, open(a.out, 'w'), indent=1)
-    print(f'wrote {a.out}: ' + ', '.join(f'{s} {v["days"]} days' for s, v in out.items()))
+    print(f'wrote {a.out}: ' + ', '.join(f'{s} {v["days"]} days' for s, v in out.items() if s in SEASONS))
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -435,6 +465,61 @@ def settled(econ_path, from_year, to_year=12):
     out['range'] = {k: (lo[k], hi[k]) for k in lo}
     out['first'], out['last'] = first, last
     return out, sorted(years)
+
+
+def season_of(day):
+    y, start = day % 365, 0
+    for s in SEASONS:
+        if y < start + SEASON_DAYS[s]:
+            return s
+        start += SEASON_DAYS[s]
+    return SEASONS[-1]
+
+
+def vintners_wine(loop_path, businesses, from_day):
+    """The long run's vintners' wine sales a day, by season (its loop file's per-till sales over the settled years). A
+    vintner only resells (drawFromStore) and its shelves hold about a week, so its sales are its draws."""
+    tills = {t for t, b in businesses.items() if b == 'vintner'}
+    acc = {s: [] for s in SEASONS}
+    for d in load_lines(loop_path):
+        if d['day'] >= from_day:
+            acc[season_of(d['day'])].append(sum(v.get('wine', 0) for t, v in d['loop']['sales'].items() if t in tills))
+    return {s: sum(v) / len(v) for s, v in acc.items() if v}
+
+
+def fill_wine(measured, wine):
+    """The autumn short run's vintner drew and sold no wine (its kept days, 215-225: it held only cider), though the
+    long run's (the wine vaults, the city's one vintner) sold it all year (12.6 / 11.4 / 13.9 / 11.1 a day) and nothing in
+    the code makes a vintage. A
+    season whose vintners drew under a quarter of the other seasons' mean gets their wine records (the draws for resale,
+    the vintners' sales to the residents, the residents' market and spending) at the other seasons' mean a day, times
+    the long run's season over its other seasons' mean; the rest of the scaling (the long run's drawn pennies, the
+    residents' spending) then takes it in."""
+    import copy
+    m = copy.deepcopy(measured)
+    pcs = {s: m[s]['draws_why'].get('wine', {}).get('resale', {}).get('pieces', 0) for s in SEASONS}
+    filled = {}
+    for s in SEASONS:
+        others = [o for o in SEASONS if o != s and pcs[o] > 0]
+        if not others or pcs[s] >= .25 * sum(pcs[o] for o in others) / len(others):
+            continue
+        k = wine[s] / (sum(wine[o] for o in others) / len(others)) / len(others) if wine else 1 / len(others)
+        mean = lambda get: sum(get(o) for o in others) * k
+        rs = {kk: mean(lambda o: m[o]['draws_why']['wine']['resale'].get(kk, 0)) for kk in ('pieces', 'country', 'toll', 'carriage')}
+        sold = {kk: mean(lambda o: m[o]['sales'].get('vintner', {}).get('residents', {}).get('wine', {}).get(kk, 0))
+                for kk in ('pieces', 'coins')}
+        m[s]['draws_why'].setdefault('wine', {})['resale'] = rs
+        d = m[s]['draws'].setdefault('wine', {})
+        for kk, v in rs.items():
+            d[kk] = d.get(kk, 0) + v
+        m[s]['why'].setdefault('wine', {})['resale'] = rs['pieces']
+        m[s]['sales'].setdefault('vintner', {}).setdefault('residents', {})['wine'] = sold
+        mk = m[s]['market'].setdefault('wine', {'pieces': 0, 'coins': 0})
+        mk['pieces'] = mk.get('pieces', 0) + sold['pieces']
+        mk['coins'] = mk.get('coins', 0) + sold['coins']
+        m[s]['economy']['residents_spent'] += sold['coins']
+        filled[s] = {'pieces': rs['pieces'], 'sold': sold['pieces'], 'factor': k * len(others)}
+    return m, filled
 
 
 def scale(measured, long, group_of, crafts, items):
@@ -549,13 +634,23 @@ def cmd_report(a):
     items, group_of, crafts, producers, country = catalogue()
     measured = json.load(open(a.measured))
     long, years = settled(a.economy, a.from_year)
+    # The long run's vintners' wine by season (its loop file: ECONOMY with _loop), to fill the autumn short run's.
+    loop = Path(a.loop) if a.loop else Path(a.economy).with_name(Path(a.economy).stem + '_loop.jsonl')
+    wine = vintners_wine(loop, measured['businesses'], (a.from_year - 1) * 365) \
+        if loop.exists() and measured.get('businesses') else None
+    measured, filled = fill_wine(measured, wine)
     sc = scale(measured, long, group_of, crafts, items)
     price = lambda g: items.get(g, {}).get('price', 0)
     nourish = lambda g: (items.get(g, {}).get('food') or {}).get('nourish', 0)
     P = []
     say = P.append
     pop = year_mean({s: long[s]['residents'] for s in SEASONS})
-    say(f'Settled years {years[0]}-{years[-1]} of the 12-year run; residents {pop:.0f} on average.\n')
+    say(f'Settled years {years[0]}-{years[-1]} of the 12-year run; residents {pop:,.0f} on average.\n')
+    if wine:
+        say("The long run's vintners' wine sales a day: " + ', '.join(f'{s} {v:.1f}' for s, v in wine.items()) +
+            '. Filled in (the short run drew none): ' + (', '.join(
+                f"{s} {v['pieces']:.1f} drawn for resale, {v['sold']:.1f} sold (x{v['factor']:.2f} the other seasons' mean)"
+                for s, v in filled.items()) or 'none') + '.\n')
 
     # ---- 1. Per industry, per season: pieces a day, pennies a day (the till's whole cost), the toll, carriage.
     ind_s = collections.defaultdict(lambda: {s: collections.Counter() for s in SEASONS})
@@ -574,26 +669,26 @@ def cmd_report(a):
         r = [ind]
         for s in SEASONS:
             c = ind_s[ind][s]
-            r.append(f"{c['pieces']:.0f} / {c['country'] + c['toll']:.0f}p")
+            r.append(f"{c['pieces']:,.0f} / {c['country'] + c['toll']:,.0f}p")
             tot[s].update(c)
         ym = {k: year_mean({s: ind_s[ind][s][k] for s in SEASONS}) for k in ('pieces', 'country', 'toll', 'carriage')}
         gross = ym['country'] + ym['toll']
         sw = [ind_s[ind][s]['country'] + ind_s[ind][s]['toll'] for s in SEASONS]
-        r += [f"{ym['pieces']:.0f} / {gross:.0f}p", f"{ym['toll']:.0f}p", f"{ym['carriage']:.1f}p", f"{ym['country']:.0f}p",
-              f"{min(sw) / max(1e-9, gross) * 100:.0f}-{max(sw) / max(1e-9, gross) * 100:.0f}%"]
+        r += [f"{ym['pieces']:,.0f} / {gross:,.0f}p", f"{ym['toll']:,.0f}p", f"{ym['carriage']:.1f}p", f"{ym['country']:,.0f}p",
+              f"{min(sw) / max(1e-9, gross) * 100:,.0f}-{max(sw) / max(1e-9, gross) * 100:,.0f}%"]
         rows.append(r)
     ymt = {k: year_mean({s: tot[s][k] for s in SEASONS}) for k in ('pieces', 'country', 'toll', 'carriage')}
-    rows.append(['**all**'] + [f"**{tot[s]['pieces']:.0f} / {tot[s]['country'] + tot[s]['toll']:.0f}p**" for s in SEASONS] +
-                [f"**{ymt['pieces']:.0f} / {ymt['country'] + ymt['toll']:.0f}p**", f"**{ymt['toll']:.0f}p**",
-                 f"**{ymt['carriage']:.0f}p**", f"**{ymt['country']:.0f}p**", ''])
+    rows.append(['**all**'] + [f"**{tot[s]['pieces']:,.0f} / {tot[s]['country'] + tot[s]['toll']:,.0f}p**" for s in SEASONS] +
+                [f"**{ymt['pieces']:,.0f} / {ymt['country'] + ymt['toll']:,.0f}p**", f"**{ymt['toll']:,.0f}p**",
+                 f"**{ymt['carriage']:,.0f}p**", f"**{ymt['country']:,.0f}p**", ''])
     say(table(['Industry', 'Spring pieces / paid', 'Summer', 'Autumn', 'Winter', 'Year', 'Gate toll', 'Carriage in (the shop pays)',
                "The Country's intake", 'Season swing (of the year mean)'], rows))
     say('')
     # Check against the long run's own totals.
     say('Check, the long run\'s own a day (year mean): drawn ' +
-        f"{year_mean({s: long[s]['drawn'] for s in SEASONS}):.0f}p, toll {year_mean({s: long[s]['toll'] for s in SEASONS}):.0f}p, "
-        f"carriage {year_mean({s: long[s]['carriage'] for s in SEASONS}):.0f}p, the Country spent "
-        f"{year_mean({s: long[s]['country_spent'] for s in SEASONS}):.0f}p.\n")
+        f"{year_mean({s: long[s]['drawn'] for s in SEASONS}):,.0f}p, toll {year_mean({s: long[s]['toll'] for s in SEASONS}):,.0f}p, "
+        f"carriage {year_mean({s: long[s]['carriage'] for s in SEASONS}):,.0f}p, the Country spent "
+        f"{year_mean({s: long[s]['country_spent'] for s in SEASONS}):,.0f}p.\n")
 
     # ---- 1b. Goods, food industries in detail.
     say('### 1b. The goods, by industry (a day; pieces by season, the year\'s pennies; why drawn)\n')
@@ -609,8 +704,8 @@ def cmd_report(a):
                 for k, v in sc[s]['why'].get(g, {}).items():
                     why[k] += v * SEASON_DAYS[s] / 365
             tw = sum(why.values()) or 1
-            ws = ', '.join(f'{k} {v / tw * 100:.0f}%' for k, v in why.most_common(3))
-            rows.append([ind, g, f'{price(g)}p'] + [f'{p:.0f}' for p in pcs] + [f'{gross:.0f}p', ws])
+            ws = ', '.join(f'{k} {v / tw * 100:,.0f}%' for k, v in why.most_common(3))
+            rows.append([ind, g, f'{price(g)}p'] + [f'{p:,.0f}' for p in pcs] + [f'{gross:,.0f}p', ws])
     say(table(['Industry', 'Good', 'Catalogue', 'Spring', 'Summer', 'Autumn', 'Winter', 'Paid a day (year)', 'Drawn for'], rows))
     say('')
 
@@ -625,27 +720,27 @@ def cmd_report(a):
     co = year_mean({s: sc[s]['carriage_out'] for s in SEASONS})
     tb = sum(buy.values())
     food_back = {g: v for g, v in buy.items() if nourish(g) > 0}
-    say(f'In all {tb:.0f}p a day of goods (the long run\'s `country_spent` scaled: '
-        f"{year_mean({s: long[s]['country_spent'] for s in SEASONS}):.0f}p), and {co:.0f}p of carriage out. Of it, food and drink "
-        f"made from the Country's own produce: {sum(food_back.values()):.0f}p ("
-        + ', '.join(f'{g} {v:.0f}p ({buy_p[g]:.0f})' for g, v in sorted(food_back.items(), key=lambda x: -x[1])) + ').\n')
-    say('The top of the basket: ' + ', '.join(f'{g} {v:.0f}p' for g, v in buy.most_common(20)) + '.\n')
+    say(f'In all {tb:,.0f}p a day of goods (the long run\'s `country_spent` scaled: '
+        f"{year_mean({s: long[s]['country_spent'] for s in SEASONS}):,.0f}p), and {co:,.0f}p of carriage out. Of it, food and drink "
+        f"made from the Country's own produce: {sum(food_back.values()):,.0f}p ("
+        + ', '.join(f'{g} {v:,.0f}p ({buy_p[g]:,.0f})' for g, v in sorted(food_back.items(), key=lambda x: -x[1])) + ').\n')
+    say('The top of the basket: ' + ', '.join(f'{g} {v:,.0f}p' for g, v in buy.most_common(20)) + '.\n')
 
     # The Country's money now (the short runs' ledgers: its posts; the long run: its patrons and carriage out).
     posts = year_mean({s: sc[s]['country_wages'].get('coins', 0) for s in SEASONS})
     payees = year_mean({s: sc[s]['country_wages'].get('payees', 0) for s in SEASONS})
     patrons = year_mean({s: long[s]['patrons_country'] for s in SEASONS})
     intake = year_mean({s: sum(ind_s[i][s]['country'] for i in ind_s) for s in SEASONS})
-    say(f"The Country's money a day: in, {intake:.0f}p (the Country's part of every draw); out, its {payees:.0f} posts "
-        f"{posts:.0f}p, its patrons {patrons:.0f}p, carriage out {co:.0f}p and its basket {tb:.0f}p "
-        f"({intake - posts - patrons - co - tb:+.0f}p; its purse {year_mean({s: long[s]['country'] for s in SEASONS}):.0f}p on average, "
-        f"{long['range']['country'][0]:.0f}-{long['range']['country'][1]:.0f}p).\n")
+    say(f"The Country's money a day: in, {intake:,.0f}p (the Country's part of every draw); out, its {payees:,.0f} posts "
+        f"{posts:,.0f}p, its patrons {patrons:,.0f}p, carriage out {co:,.0f}p and its basket {tb:,.0f}p "
+        f"({intake - posts - patrons - co - tb:+,.0f}p; its purse {year_mean({s: long[s]['country'] for s in SEASONS}):,.0f}p on average, "
+        f"{long['range']['country'][0]:,.0f}-{long['range']['country'][1]:,.0f}p).\n")
 
     # ---- 2. Food: what residents buy, and the chain to primary goods.
     if a.real_check:
         food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, pop, say)
     else:
-        st = switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_of, say)
+        st = switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_of, say, measured)
         others_table(st['others'], st['kw'], st['hw'], say)
         U, land, labour = real_check_of(st['farms'], sc, goods_s)
         own_t, rng_t = footprints(st['farms'], land)
@@ -661,7 +756,7 @@ def cmd_report(a):
             f"cells; at 1:1 ten times that. The placement list draws {own_all / CELL:.1f} + {rng_all / CELL:.1f} cells.\n")
         crew = st['n']
         say(f"Real work for these yields (the cross-check's labour norms; the game's posts don't follow it): "
-            + ', '.join(f'{s} {labour[s]:.0f}' for s in SEASONS) + f" workers on the job, against the {crew} crew "
+            + ', '.join(f'{s} {labour[s]:,.0f}' for s in SEASONS) + f" workers on the job, against the {crew} crew "
             f"year-round ({sum(max(0, labour[s] - crew) * SEASON_DAYS[s] for s in SEASONS):,.0f} hand-days over the crew a year, "
             f"{sum(max(0, crew - labour[s]) * SEASON_DAYS[s] for s in SEASONS):,.0f} under it).\n")
         st.update({'labour': labour, 'own_t': own_t, 'rng_t': rng_t, 'own_all': own_all, 'rng_all': rng_all})
@@ -708,7 +803,7 @@ UPKEEP = 1.0        # pennies a worker-day: tools and upkeep (crafts.json farmUp
 
 
 def rv(x, unit=''):
-    return 'short' if x == float('inf') or x > 1e18 else f'{x:.0f}{unit}'
+    return 'short' if x == float('inf') or x > 1e18 else f'{x:,.0f}{unit}'
 
 
 def season_workdays(s):
@@ -717,7 +812,9 @@ def season_workdays(s):
 
 def other_industries(sc, crafts, producers):
     """Section 5: the other industries' workers, at the game's own rates (crafts.json: the producers' spells, the
-    city's crafts' hours for what the Country makes), FTE (a worker's 8 hours, six days in seven)."""
+    city's crafts' hours for what the Country makes), FTE (a worker's 8 hours, six days in seven), and plausible ones;
+    and their works, each kind with its count, place and the share of the work it does (`job`: workers at the plausible
+    rates), so that the workers the money pays can be spread over them, at least one a site (`crew_sites`)."""
     draw = collections.Counter()
     for s in SEASONS:
         for g, c in sc[s]['draws'].items():
@@ -726,68 +823,109 @@ def other_industries(sc, crafts, producers):
     out = {}
     fte = lambda h: h / 8 / WORKDAYS
     # The woods: logging (2 timber, 4 firewood, 1 bark a spell), woodcutting for the rest of the firewood, charcoal
-    # burning; the Country's iron wants charcoal too (an iron bar: 2 ore and a charcoal).
+    # burning; the Country's iron wants charcoal too (an iron bar: 2 ore and a charcoal). Plausible norms, where the
+    # game's are far off: a coppice worker cuts, splits and stacks about a tonne of firewood a day, a feller 1.5 t of logs;
+    # a collier and his mate keep a clamp burning about 150 kg of charcoal a day; two sawyers at a pit saw about 20 planks
+    # a day (firewood 10 kg a piece, timber 30 kg, charcoal 3 kg).
     log_spells = max(draw['timber'] / 2, draw['oak_bark'] / 1)
     wood_spells = max(0, draw['firewood'] - 4 * log_spells) / 3
     char = draw['charcoal'] + draw['iron_bar']
     planks_h = draw['planks'] / 4 * crafts['planks']['hours']
+    jobs = {'fire': draw['firewood'] * 10 / 1000 / WORKDAYS, 'logs': draw['timber'] * 30 / 1500 / WORKDAYS,
+            'char': char * 3 / 150 * 2 / WORKDAYS, 'saw': draw['planks'] / 10 / WORKDAYS}
     out['woods: timber, firewood, bark, charcoal'] = {
         'fte': fte(log_spells * hours('logging') + wood_spells * hours('woodcutting') + char * hours('charcoal_burning') + planks_h),
-        'units': [('logging camp', 4, 'two in the conifer forests of the snowy mountains\' foothills along the north, two in the '
-                                     'central hills\' oak woods'),
-                  ('coppice and woodcutters\' hut', 4, 'beside the farm villages and two near the city, for firewood (the '
-                                                       'city burns 340-460 a day)'),
-                  ('charcoal hearth', 3, 'the foothill forests beside the bloomeries (two) and the central hills\' woods (one)'),
-                  ('water sawmill', 2, 'one on a river below each pair of logging camps')],
+        'plausible': sum(jobs.values()),
+        'units': [('logging camp', 2, 'one in the conifer forests of the snowy mountains\' foothills along the north, one in the '
+                                     'central hills\' oak woods', jobs['logs']),
+                  ("coppice and woodcutters' hut", 2, 'one beside the grain farms\' villages on the plains, one in the woods '
+                                                       'nearest the city (the city burns 340-460 firewood a day)', jobs['fire']),
+                  ('charcoal hearth', 2, 'in the foothill forests, one beside each bloomery', jobs['char']),
+                  ('water sawmill', 2, 'one on a river below each logging camp', jobs['saw'])],
         'goods': ['timber', 'firewood', 'oak_bark', 'charcoal', 'planks']}
     ore = draw['iron_ore'] + 2 * draw['iron_bar']
+    mine_h = ore * hours('mine')
+    bloom_h = draw['iron_bar'] * crafts['iron_bar']['hours']
+    cu_h = max(draw['copper_ore'], draw['tin_ore']) * hours('copper_pit')
     out['mining and metals'] = {
-        'fte': fte(ore * hours('mine') + draw['iron_bar'] * crafts['iron_bar']['hours'] +
-                   max(draw['copper_ore'], draw['tin_ore']) * hours('copper_pit') + 2 * draw['bronze_bar'] * crafts['bronze_bar']['hours']),
-        'units': [('iron mine', 2, 'two valleys of the snowy mountains along the north'),
-                  ('bloomery (iron smelter)', 2, 'beside the mines, with charcoal from the foothill forests'),
-                  ('copper pit', 1, 'the snowy mountains\' foothills (the copper ore)'),
-                  ('tin streams', 1, 'a stream of the central hills (the tin ore)')],
+        'fte': fte(mine_h + bloom_h + cu_h + 2 * draw['bronze_bar'] * crafts['bronze_bar']['hours']),
+        # (The game's copper pit gives a copper ore and a tin ore a spell, the tin streams two tin: two pits and the
+        # streams are two sources of copper and three of tin.)
+        'units': [('iron mine', 2, 'two valleys of the snowy mountains along the north', fte(mine_h)),
+                  ('bloomery (iron smelter)', 2, 'beside the mines, with charcoal from the foothill forests', fte(bloom_h)),
+                  ('copper pit', 2, 'the snowy mountains\' foothills, and the central hills (copper ore, and some tin)', fte(cu_h) * .7),
+                  ('tin streams', 1, 'a stream of the central hills (the tin ore)', fte(cu_h) * .3)],
         'goods': ['iron_ore', 'iron_bar', 'copper_ore', 'tin_ore', 'copper_bar', 'bronze_bar']}
-    q_spells = max(draw['stone'], draw['limestone'])
-    clay_left = max(0, draw['clay'] - 2 * q_spells)
+    q_h = max(draw['stone'], draw['limestone']) * hours('quarry') + draw['lime'] / 3 * crafts['lime']['hours']
+    clay_h = draw['clay'] / 4 * hours('clay_pit')
     out['stone, lime, clay, sand'] = {
-        'fte': fte(q_spells * hours('quarry') + clay_left / 4 * hours('clay_pit') + draw['lime'] / 3 * crafts['lime']['hours']),
-        'units': [('quarry (stone and limestone)', 2, 'the central hills (limestone) and the nearest hills east of the city (building stone)'),
-                  ('clay pit and sand bank', 2, 'river clay on the central plains; sand on the coast south of the city')],
+        # (A quarry's spell gives clay and sand too in the game; plausibly they are dug from the pits and banks.)
+        'fte': fte(q_h + clay_h),
+        'units': [('quarry (stone and limestone)', 2, 'the central hills (limestone) and the nearest hills east of the city (building stone)', fte(q_h)),
+                  ('clay pit and sand bank', 2, 'river clay on the central plains; sand on the coast south of the city', fte(clay_h))],
         'goods': ['stone', 'limestone', 'clay', 'sand', 'lime']}
     fibre = draw['hemp'] + draw['flax'] + draw['cord'] / 3 + 2 * draw['linen_cloth']
+    f_fte = fte(fibre * 0.5 / 2 * 8 + draw['cord'] / 3 * crafts['cord']['hours'] + draw['linen_cloth'] * crafts['linen_cloth']['hours'])
     out['fibre: hemp, flax, linen'] = {
-        # Grown as the grain farms' fourth field (about 2 kg a worker-day all in: pulling, retting, scutching), spun and
-        # woven at home in winter (the city's own hours for cord and linen).
-        'fte': fte(fibre * 0.5 / 2 * 8 + draw['cord'] / 3 * crafts['cord']['hours'] + draw['linen_cloth'] * crafts['linen_cloth']['hours']),
-        'units': [('hemp and flax fields', 3, 'on the grain farms (a fourth field), and wet ground by the rivers for retting')],
+        # Grown as a field of each grain farm (about 2 kg a worker-day all in: pulling, retting, scutching), spun and
+        # woven at home in winter (the city's own hours for cord and linen): only half needs its own hands.
+        'fte': f_fte, 'plausible': f_fte / 2,
+        'units': [('hemp and flax field', 2, 'a field of each grain farm on the plains, its retting pond on the farm\'s river', f_fte / 2)],
         'goods': ['hemp', 'flax', 'cord', 'linen_cloth']}
     out['herbs'] = {'fte': fte(sum(draw[g] for g in INDUSTRY['herbs']) / 3 * hours('herb_gathering')),
-                    'units': [('herb gatherers\' cottage', 1, 'the SW marsh\'s edge (the central hills\' woods are gathered from it too)')],
-                    'goods': INDUSTRY['herbs']}
+                    # About 8p a day: it pays no one. No works of its own: gathered at the marsh's edge by the eel and
+                    # fowl marsh's crew and in the central hills' woods, the pennies still the Country's.
+                    'units': [], 'goods': INDUSTRY['herbs']}
     ws = INDUSTRY["country workshops' goods"]
-    wh = 0
+    wh = collections.Counter()
+    site_of = {'clay_pot': 'pots', 'wool_scarf': 'cottages', 'fine_soap': 'cottages', 'bandages': 'cottages',
+               'pamphlet': 'press', 'paper': 'press', 'ink': 'press', 'iron_hoops': 'smithy', 'nails': 'smithy',
+               'cookpot': 'smithy', 'leather': 'smithy'}
     for g in ws:
         k = next((k for k in crafts.values() if g in k['out']), None)
         if k:
-            wh += draw[g] / k['out'][g] * k['hours']
+            wh[site_of.get(g, 'cottages')] += draw[g] / k['out'][g] * k['hours']
     out["country workshops' goods"] = {
-        'fte': fte(wh),
-        'units': [('village pottery', 2, 'beside the clay pits of the central plains and the coast south of the city'),
-                  ('weavers\' and soap boilers\' cottages', 3, 'the farm villages (winter work)'),
-                  ('country press and paper mill', 2, 'on the rivers of the central plains, one nearer the city')],
+        'fte': fte(sum(wh.values())),
+        'units': [('village pottery', 2, 'beside the clay pits of the central plains and the coast south of the city', fte(wh['pots'])),
+                  ("weavers' and soap boilers' cottages", 3, 'the farm villages (winter work: scarves, soap, bandages)', fte(wh['cottages'])),
+                  ('country press and paper mill', 2, 'on the rivers of the central plains, one nearer the city', fte(wh['press'])),
+                  ('village smithy and tanyard', 1, 'the grain farms\' village on the plains (iron hoops, nails, cookpots; a little '
+                                                    'leather): one, for 1.5 workers\' work', fte(wh['smithy']))],
         'goods': ws}
     for k, v in out.items():
         v['draw'] = {g: draw[g] for g in v['goods'] if draw[g] >= 0.5}
-        v['plausible'] = v['fte']
-    # Plausible norms where the game's are far off: the woods (a coppice worker cuts, splits and stacks about a tonne of
-    # firewood a day, a feller 1.5 t of logs; a collier and his mate keep a clamp burning about 150 kg of charcoal a day;
-    # two sawyers at a pit saw about 20 planks a day; firewood 10 kg a piece, timber 30 kg, charcoal 3 kg).
-    w = out['woods: timber, firewood, bark, charcoal']
-    w['plausible'] = (draw['firewood'] * 10 / 1000 + draw['timber'] * 30 / 1500 + char * 3 / 150 * 2 + draw['planks'] / 10) / WORKDAYS
-    # Fibre: grown on the grain farms and spun and woven at home in the winter lull, so only half needs its own hands.
-    out['fibre: hemp, flax, linen']['plausible'] = out['fibre: hemp, flax, linen']['fte'] / 2
+        v.setdefault('plausible', v['fte'])
+    return out
+
+
+def crew_sites(units, workers):
+    """Spread an industry's workers over its works: at least one a site, the rest by each kind's share of the work
+    (largest remainder). Returns [(kind, count, where, [workers at each site])]; a kind with more sites than it can
+    crew loses sites first (the user's rule: collapse into fewer, larger works)."""
+    units = [list(u) for u in units]
+    while units and sum(u[1] for u in units) > workers:
+        u = min((u for u in units if u[1] > 1), key=lambda u: u[3] / u[1], default=None)
+        if u is None:
+            break
+        u[1] -= 1
+    tot = sum(u[3] for u in units) or 1
+    want = [workers * u[3] / tot for u in units]
+    got = [math.floor(w) for w in want]
+    for i in sorted(range(len(units)), key=lambda i: -(want[i] - got[i]))[:max(0, workers - sum(got))]:
+        got[i] += 1
+    for i, u in enumerate(units):               # (At least one a site: from the kinds with most a site.)
+        while got[i] < u[1]:
+            j = max((j for j in range(len(units)) if got[j] > units[j][1]), key=lambda j: got[j] / units[j][1], default=None)
+            if j is None:
+                break
+            got[j] -= 1
+            got[i] += 1
+    out = []
+    for u, e in zip(units, got):
+        n = u[1]
+        each = [e // n + (1 if i < e % n else 0) for i in range(n)]
+        out.append((u[0], n, u[2], each))
     return out
 
 
@@ -808,8 +946,8 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
     for g, v in bought.most_common():
         if v < 1:
             continue
-        rows.append([g, f'{nourish(g)}', f'{price(g)}p'] + [f"{sc[s]['market'].get(g, {}).get('pieces', 0):.0f}" for s in SEASONS] +
-                    [f'{v:.0f}', f'{v * nourish(g) / tn * 100:.0f}%'])
+        rows.append([g, f'{nourish(g)}', f'{price(g)}p'] + [f"{sc[s]['market'].get(g, {}).get('pieces', 0):,.0f}" for s in SEASONS] +
+                    [f'{v:,.0f}', f'{v * nourish(g) / tn * 100:,.0f}%'])
     say(table(['Food', 'Nourish', 'Price', 'Spring', 'Summer', 'Autumn', 'Winter', 'Year', 'Of the nourishment'], rows))
     say('\nNourishment bought a head a day: ' + ', '.join(f"{s} {n_s[s] / long[s]['residents']:.1f}" for s in SEASONS) +
         ' (a resident needs about 46; the rest is what households carried at the short runs\' start).\n')
@@ -842,8 +980,8 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
         if sum(y.values()) < 0.5:
             continue
         chain = ' + '.join(f'{k:g} {pg}' for pg, k in PRIMARY.get(g, {g: 1}).items())
-        rows.append([g, f'{y["residents"]:.0f}', f'{y["back"]:.0f}', f'{y["goods"]:.0f}',
-                     '/'.join(f'{use_d[g][s].total():.0f}' for s in SEASONS), chain])
+        rows.append([g, f'{y["residents"]:,.0f}', f'{y["back"]:,.0f}', f'{y["goods"]:,.0f}',
+                     '/'.join(f'{use_d[g][s].total():,.0f}' for s in SEASONS), chain])
     say(table(['Drawn good', 'Residents\' food', 'Made into what the Country buys back', 'Other goods (salves, wax)',
                'All, by season (Sp/Su/Au/Wi)', 'A piece is'], rows))
     say('')
@@ -871,12 +1009,12 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
         kg = A['kg'].get(pg, 0)
         if city < 0.5:
             continue
-        rows.append([pg, f'{kg:g} kg', f'{city:.0f}', f'{year_mean({s: need[pg][s]["residents"] for s in SEASONS}):.0f}',
-                     f'{own:.0f}', '/'.join(f'{demand[pg][s]:.0f}' for s in SEASONS),
+        rows.append([pg, f'{kg:g} kg', f'{city:,.0f}', f'{year_mean({s: need[pg][s]["residents"] for s in SEASONS}):,.0f}',
+                     f'{own:,.0f}', '/'.join(f'{demand[pg][s]:,.0f}' for s in SEASONS),
                      f'{(city + own) * 365 * kg / 1000:.1f} t', ', '.join(GROWN_BY.get(pg, {}).keys())])
     say(table(['Primary good', 'A piece', 'The city draws', 'of it for residents\' food', 'The Country\'s own people eat',
                'All, by season (Sp/Su/Au/Wi)', 'A year (real weight)', 'Grown by'], rows))
-    say(f'\nThe Country\'s people: {country_pop:.0f} (its workers, {country_pop / HOUSEHOLD:.0f} year-round '
+    say(f'\nThe Country\'s people: {country_pop:,.0f} (its workers, {country_pop / HOUSEHOLD:,.0f} year-round '
         f'equivalents in all its industries, {HOUSEHOLD:g} to a household), eating the residents\' diet.\n')
 
     # 2d. The units.
@@ -918,15 +1056,15 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
     tot = collections.Counter()
     for name, u in U.items():
         w = u['workers']
-        rows.append([name] + [f'{w[s]:.1f}' for s in SEASONS] + [f"{u['staff']}", f"{u['seasonal']}", f"{u['seasonal_days']:.0f}",
+        rows.append([name] + [f'{w[s]:.1f}' for s in SEASONS] + [f"{u['staff']}", f"{u['seasonal']}", f"{u['seasonal_days']:,.0f}",
                                                                    u['peak']])
         for s in SEASONS:
             tot[s] += w[s]
         tot['staff'] += u['staff']
         tot['seasonal'] += u['seasonal']
         tot['days'] += u['seasonal_days']
-    rows.append(['**food, all**'] + [f'**{tot[s]:.0f}**' for s in SEASONS] + [f"**{tot['staff']}**", f"**{tot['seasonal']}**",
-                                                                             f"**{tot['days']:.0f}**", ''])
+    rows.append(['**food, all**'] + [f'**{tot[s]:,.0f}**' for s in SEASONS] + [f"**{tot['staff']}**", f"**{tot['seasonal']}**",
+                                                                             f"**{tot['days']:,.0f}**", ''])
     say(table(['Unit', 'Spring', 'Summer', 'Autumn', 'Winter', 'Year-round staff (keepers and hands)', 'Seasonal hands at the peak',
                'Seasonal hand-days a year', 'Peak'], rows))
     say('')
@@ -962,24 +1100,24 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
     for name, u in U.items():
         m = unit_money(name, u, own[name], head_p)
         money[name] = m
-        rows.append([name, f"{u['count']}"] + [f"{m['income'][s]:.0f}/{m['cost'][s]:.0f}" for s in SEASONS] +
-                    [f"{m['income_y']:.0f}", f"{m['cost_y']:.0f}", f"{m['net_y']:+.0f}", f"{m['cover']:.2f}",
-                     f"{m['own_y']:.0f}", f"{m['net_board_y']:+.0f}", f"{m['cover_board']:.2f}", rv(m['reserve']),
-                     f"{m['capital']:.0f}"])
+        rows.append([name, f"{u['count']}"] + [f"{m['income'][s]:,.0f}/{m['cost'][s]:,.0f}" for s in SEASONS] +
+                    [f"{m['income_y']:,.0f}", f"{m['cost_y']:,.0f}", f"{m['net_y']:+,.0f}", f"{m['cover']:.2f}",
+                     f"{m['own_y']:,.0f}", f"{m['net_board_y']:+,.0f}", f"{m['cover_board']:.2f}", rv(m['reserve']),
+                     f"{m['capital']:,.0f}"])
     ti = sum(m['income_y'] for m in money.values())
     tc = sum(m['cost_y'] for m in money.values())
     to = sum(m['own_y'] for m in money.values())
-    rows.append(['**food, all**', ''] + [f"**{sum(m['income'][s] for m in money.values()):.0f}/{sum(m['cost'][s] for m in money.values()):.0f}**"
-                                         for s in SEASONS] + [f'**{ti:.0f}**', f'**{tc:.0f}**', f'**{ti - tc:+.0f}**', f'**{ti / tc:.2f}**',
-                                                              f'**{to:.0f}**', f'**{ti + to - tc:+.0f}**', f'**{(ti + to) / tc:.2f}**',
+    rows.append(['**food, all**', ''] + [f"**{sum(m['income'][s] for m in money.values()):,.0f}/{sum(m['cost'][s] for m in money.values()):,.0f}**"
+                                         for s in SEASONS] + [f'**{ti:,.0f}**', f'**{tc:,.0f}**', f'**{ti - tc:+,.0f}**', f'**{ti / tc:.2f}**',
+                                                              f'**{to:,.0f}**', f'**{ti + to - tc:+,.0f}**', f'**{(ti + to) / tc:.2f}**',
                                                               '**' + rv(sum(m['reserve'] for m in money.values() if m['reserve'] < 1e18)) + '** (the units that pay)',
-                                                              f"**{sum(m['capital'] for m in money.values()):.0f}**"])
+                                                              f"**{sum(m['capital'] for m in money.values()):,.0f}**"])
     say(table(['Unit', 'Units', 'Spring in/out', 'Summer', 'Autumn', 'Winter', 'From the city (year)', 'Wages and upkeep',
                'Net (cash from the city alone)', 'Cover', "The Country's own people's food", 'Net with it', 'Cover with it',
                'Working money in a steady year', 'Working money to the first harvest (first year)'], rows))
     say('')
-    say(f"The Country's people's food bought from the units ({to:.0f}p a day) against what its workers' households spend on "
-        f"it out of their wages ({sum((u['staff'] + year_mean(u['seasonal_s'])) for u in U.values()) * HOUSEHOLD * year_mean(head_p):.0f}p "
+    say(f"The Country's people's food bought from the units ({to:,.0f}p a day) against what its workers' households spend on "
+        f"it out of their wages ({sum((u['staff'] + year_mean(u['seasonal_s'])) for u in U.values()) * HOUSEHOLD * year_mean(head_p):,.0f}p "
         f"for the food units' people; the rest is the other industries' people's).\n")
     MONEY_TOTALS.update({'from_city': ti, 'cost': tc, 'own': to, 'head_p': year_mean(head_p), 'res_food': res_food})
 
@@ -990,7 +1128,7 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
         ('Drifted wages, and the Country\'s own people buy their food from the units', {}, True),
         ('The default wages (14p / 8p), with the own people\'s food', {'keeper': 14, 'hand': 8}, True),
         ('Drifted wages; harvest and lambing hands are the households\' own (fed, not waged)', {'family_harvest': True}, True),
-        (f'Drifted wages; no gate toll on the Country\'s food (it keeps the {toll * 100:.0f}%)', {'toll_free': toll}, True),
+        (f'Drifted wages; no gate toll on the Country\'s food (it keeps the {toll * 100:,.0f}%)', {'toll_free': toll}, True),
         ('Drifted wages; grain dearer (flour 3p, oats 1.5p: the grain farms\' and mills\' prices half as much again)',
          {'price_up': {'grain farm': 1.5, 'water mill': 1.5}}, True),
     ]
@@ -1001,7 +1139,7 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
         i = sum(m['income_y'] + (m['own_y'] if with_own else 0) for m in ms.values())
         c = sum(m['cost_y'] for m in ms.values())
         each = ', '.join(f"{n} {(ms[n]['income_y'] + (ms[n]['own_y'] if with_own else 0)) / ms[n]['cost_y']:.2f}" for n in short)
-        rows.append([label, f'{i:.0f}p', f'{c:.0f}p', f'{i - c:+.0f}p', f'{i / c:.2f}', each])
+        rows.append([label, f'{i:,.0f}p', f'{c:,.0f}p', f'{i - c:+,.0f}p', f'{i / c:.2f}', each])
     say(table(['Case (all food units, a day)', 'Income', 'Wages and upkeep', 'Net', 'Cover', 'Cover of the units short in case 2'], rows))
     say('')
     # Mixed farms: the grain farms keep the pigs (and the city's cows and beds with the dairies).
@@ -1012,7 +1150,7 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
     for label, parts in mixes:
         i = sum(money[p]['income_y'] + money[p]['own_y'] for p in parts)
         c = sum(money[p]['cost_y'] for p in parts)
-        rows.append([label, f'{i:.0f}p', f'{c:.0f}p', f'{i - c:+.0f}p', f'{i / c:.2f}'])
+        rows.append([label, f'{i:,.0f}p', f'{c:,.0f}p', f'{i - c:+,.0f}p', f'{i / c:.2f}'])
     say(table(['Combined (with the own people\'s food)', 'Income', 'Wages and upkeep', 'Net', 'Cover'], rows))
     say('')
 
@@ -1023,8 +1161,8 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
         m = money[name]
         n = u['count']
         rows.append([name, f"{u['keepers'] / n:.1f} + {(u['staff'] - u['keepers']) / n:.1f}", f"{u['seasonal'] / n:.1f}",
-                     f"{m['income_y'] / n:.0f}p", f"{m['own_y'] / n:.0f}p", f"{m['wages_y'] / n:.0f}p", f"{m['upkeep_y'] / n:.1f}p",
-                     f"{m['net_y'] / n:+.0f}p", f"{m['net_board_y'] / n:+.0f}p", rv(m['reserve'] / n, 'p'), f"{m['capital'] / n:.0f}p"])
+                     f"{m['income_y'] / n:,.0f}p", f"{m['own_y'] / n:,.0f}p", f"{m['wages_y'] / n:,.0f}p", f"{m['upkeep_y'] / n:.1f}p",
+                     f"{m['net_y'] / n:+,.0f}p", f"{m['net_board_y'] / n:+,.0f}p", rv(m['reserve'] / n, 'p'), f"{m['capital'] / n:,.0f}p"])
     say(table(['Unit', 'Keepers + year-round hands', 'Seasonal hands at the peak', 'From the city', "From the Country's own people",
                'Wages', 'Upkeep', 'Net, the city alone', 'Net with its own people', 'Working money, steady year',
                'Working money, first year'], rows))
@@ -1037,13 +1175,13 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
     rows = []
     for k, v in others.items():
         inc = year_mean({s: ind_s[k][s]['country'] for s in SEASONS}) if k in ind_s else 0
-        units_n = sum(n for _, n, _ in v['units'])
+        units_n = sum(n for _, n, _, _ in v['units'])
         wage = v['plausible'] * WAGE['hand_now'] + units_n * (WAGE['keeper_now'] - WAGE['hand_now'])
         v['income'] = inc
         v['wages'] = wage
-        rows.append([k, ', '.join(f'{g} {d:.0f}' for g, d in sorted(v['draw'].items(), key=lambda x: -x[1])),
-                     f"{v['fte']:.0f}", f"{v['plausible']:.0f}", f"{inc:.0f}p", f"{wage:.0f}p", f"{inc / wage:.2f}",
-                     '; '.join(f'{n} {u}' for u, n, _ in v['units'])])
+        rows.append([k, ', '.join(f'{g} {d:,.0f}' for g, d in sorted(v['draw'].items(), key=lambda x: -x[1])),
+                     f"{v['fte']:,.0f}", f"{v['plausible']:,.0f}", f"{inc:,.0f}p", f"{wage:,.0f}p", f"{inc / wage:.2f}",
+                     '; '.join(f'{n} {u}' for u, n, _, _ in v['units'])])
     say(table(['Industry', 'Drawn a day', "Workers at the game's rates (FTE)", 'Workers, plausible (FTE)', "The Country's intake",
                'Wages (a keeper a unit, 10.5p hands)', 'Cover', 'Units'], rows))
     say('')
@@ -1059,12 +1197,12 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
     upkeep_all = sum(m['upkeep_y'] for m in money.values())
     keep = intake + food_spend - wages_all - upkeep_all - posts
     to_city = wages_all - food_spend + posts + upkeep_all
-    say(f"Whole Country, a day: from the city {intake:.0f}p (the food units {ti:.0f}p, the rest {intake - ti:.0f}p); "
-        f"its people's food bought from its own units {food_spend:.0f}p (inside the Country: no toll); wages {wages_all:.0f}p "
-        f"(food units {sum(m['wages_y'] for m in money.values()):.0f}p, the other industries {other_w:.0f}p), upkeep "
-        f"{upkeep_all:.0f}p, its 91 posts in the city {posts:.0f}p; the units keep {keep:+.0f}p. Back to the city: its "
-        f"people's wages less their food, its posts and its upkeep, {to_city:.0f}p, and what the units keep, against the "
-        f"{spent:.0f}p the Country's basket spends now.\n")
+    say(f"Whole Country, a day: from the city {intake:,.0f}p (the food units {ti:,.0f}p, the rest {intake - ti:,.0f}p); "
+        f"its people's food bought from its own units {food_spend:,.0f}p (inside the Country: no toll); wages {wages_all:,.0f}p "
+        f"(food units {sum(m['wages_y'] for m in money.values()):,.0f}p, the other industries {other_w:,.0f}p), upkeep "
+        f"{upkeep_all:,.0f}p, its 91 posts in the city {posts:,.0f}p; the units keep {keep:+,.0f}p. Back to the city: its "
+        f"people's wages less their food, its posts and its upkeep, {to_city:,.0f}p, and what the units keep, against the "
+        f"{spent:,.0f}p the Country's basket spends now.\n")
     MONEY_TOTALS.update({'intake': intake, 'food_spend': food_spend, 'wages_all': wages_all, 'keep': keep, 'to_city': to_city,
                          'spent_now': spent, 'other_w': other_w, 'other_in': other_in})
     json.dump({'units': U, 'money': money, 'others': others, 'country_pop': country_pop,
@@ -1107,9 +1245,10 @@ FARM_GOODS = ['cart_wheel', 'axle', 'barrel', 'iron_hoops', 'sickle', 'farm_gear
 # The Country's own people who stay in the Country and eat from the farms without buying in the city (no money moves):
 # the other industries' workers once placed (section 5) and the Houses' armed retainers (country.json patrons: 24).
 ESTATE_PEOPLE = 24
-# The stored harvests sell from their stores at a price a year (the area's mean of the season's prices); the rest at the
-# season's, as now (their season prices steady their takings: more fish in winter, but cheaper).
-STORED = ['grain', 'fruit']
+# The granary sells from store at a price a year (the area's mean of the season's prices: grain is most plentiful when it
+# is cheapest, so an even price steadies its takings); the rest at the season's, as now: the season's price steadies
+# their takings (apples and fish are fewest when they are dearest), and an even one would swing them more.
+STORED = ['grain']
 FLOAT_DAYS = 2      # a farm's till keeps this many days of its crew's wages before its basket (doc 71, "Reserves")
 
 FARMS = [
@@ -1118,15 +1257,24 @@ FARMS = [
      'where': [('the central plains on the nearer river, east of the city; with a water mill', D_MID),
                ('the central plains on a second river further east; with a water mill', D_MID)],
      'terrain': ['plain', 'meadow'], 'near': ['road', 'river'], 'store': 'a granary and its water mill: the harvest sold from store all year'},
-    {'kind': 'orchard', 'area': 'fruit', 'count': 4, 'min_hands': 2,
-     'sells': {'apples': 1, 'berries': 1, 'cider': 1, 'apple_brandy': 1, 'dried_apples': 1, 'fruit_preserves': 1},
-     'where': [('the central hills, a south-facing slope; with a drying house', D_MID), ('the central hills, a river valley', D_MID),
-               ('the sheltered valleys of the coast south of the city (cider country); with a drying house', D_NEAR),
-               ('the sheltered valleys of the coast south of the city (cider country)', D_NEAR)],
+    # Five orchards (the user wants several sources; each pays a sensible crew in every season), two of them with a drying
+    # house: those two make the dried apples and the preserves (the Country's winter stores) from their own fruit. All
+    # five share the apples, the cider and the berries alike.
+    {'kind': 'orchard with a drying house', 'area': 'fruit', 'count': 2, 'min_hands': 2, 'ids': ['orchard_1', 'orchard_3'],
+     'sells': {'apples': .4, 'berries': .4, 'cider': .4, 'apple_brandy': .4, 'dried_apples': 1, 'fruit_preserves': 1},
+     'where': [('the central hills, a south-facing slope; with a drying house', D_MID),
+               ('the sheltered valleys of the coast south of the city (cider country); with a drying house', D_NEAR)],
+     'terrain': ['hills', 'meadow'], 'near': ['road'],
+     'store': 'a fruit store, a cider press and a drying house: picked late summer to autumn, kept into spring; dried and preserved in autumn for the winter'},
+    {'kind': 'orchard', 'area': 'fruit', 'count': 3, 'min_hands': 2, 'ids': ['orchard_2', 'orchard_4', 'orchard_5'],
+     'sells': {'apples': .6, 'berries': .6, 'cider': .6, 'apple_brandy': .6},
+     'where': [('the central hills, a river valley', D_MID),
+               ('the sheltered valleys of the coast south of the city (cider country)', D_NEAR),
+               ('a sheltered valley where the central hills meet the plains', D_MID)],
      'terrain': ['hills', 'meadow'], 'near': ['road'], 'store': 'a fruit store and cider press: picked late summer to autumn, kept into spring'},
     {'kind': 'vineyard', 'area': 'fruit', 'count': 1, 'min_hands': 3, 'sells': {'grapes': 1, 'wine': 1, 'brandy': 1, 'aqua_vitae': 1},
      'where': [('the warm south-facing hills at the SE desert\'s edge', D_FAR)],
-     'terrain': ['hills'], 'near': ['road'], 'store': 'a press house and cellar: the vintage in autumn, wine by the cask all year'},
+     'terrain': ['hills'], 'near': ['road'], 'store': 'a press house and cellar: pressed at the harvest, sold by the cask all year'},
     {'kind': 'cattle and dairy farm', 'area': 'meat', 'count': 3, 'min_hands': 3,
      'sells': {'raw_meat': .65, 'meal': .65, 'milk': 1, 'butter': 1, 'cheese': 1, 'hide': .6, 'tallow': .5, 'bones': .5},
      'where': [('the wet coastal pasture just south of the city', D_NEAR), ('the wet coastal pasture just south of the city', D_NEAR),
@@ -1232,9 +1380,18 @@ def coefficients(sc, A, long, items):
             if spent > 0:
                 add(country2, A[s]['country'].get(g, {}), w / rt / spent)
         base = add(add(add(vec(), tot['food']), tot['other']), tot['city'])
-        out[s] = {'base': base, 'basket': tot['country'], 'country2': country2, 'country2_goods': {g: w / rt for g, w in rw.items()},
-                  'diet': add(vec(), tot['food'], 1 / res),
-                  'other': add(vec(), tot['other'], 1 / other_coins), 'farm': farm, 'food_a_head': food_coins / res,
+        # After the switch nobody sells vegetables (the user: dropped): their draws (the inns' stew) go from every part.
+        for v in (base, tot['country'], country2, farm):
+            for g in DROPPED:
+                v.pop(g, None)
+        diet = add(vec(), tot['food'], 1 / res)
+        other = add(vec(), tot['other'], 1 / other_coins)
+        dropped = sum(x['country'] for g, x in diet.items() if g in DROPPED) * res
+        for v in (diet, other):
+            for g in DROPPED:
+                v.pop(g, None)
+        out[s] = {'base': base, 'dropped': dropped, 'basket': tot['country'], 'country2': country2, 'country2_goods': {g: w / rt for g, w in rw.items()},
+                  'diet': diet, 'other': other, 'farm': farm, 'food_a_head': food_coins / res, 'services': services,
                   'other_coins': other_coins, 'food_coins': food_coins, 'basket_now': bought, 'residents': res,
                   'carriage_out': sc[s]['carriage_out'] / bought}
     return out
@@ -1249,20 +1406,22 @@ def season_price(g, s, long, group_of):
     return long[s].get(f'{gr}_price', 1) or 1 if gr in GROUPS else 1.0
 
 
-def solve(C, long, group_of, farms, kw, hw, posts, patrons, even=None, rent=0.0, reweight=False):
+def solve(C, long, group_of, farms, kw, hw, posts, patrons, even=None, reweight=False, FBs=None, farm_basket=True):
     """Season by season, the city's draws after the switch and who gets what. The residents' and the city's draws stay
     (`base`); the Country's basket is what is over its posts and patrons (countryBuys: spare = cash - reserve - owed);
-    each farm's basket is what is over its crew's wages (and its rent, if any); the crews buy their food at the city's
-    shops (a resident's diet a head) and spend the rest of their wages as the residents spend theirs; every basket and
-    every purchase draws from the farms and the Country again, so it is iterated. `even`: the farms sell at a price
-    factor a year (per area), not the season's; `rent`: a share of the farms' takings paid to the Country (the
-    Houses' estates)."""
+    each farm's basket (the till's spending on it, its carriage out included) is what is over its crew's wages, or the
+    cash cycle's (`FBs`: {season: {kind: pennies a day}}, a lean season's shortfall earned back first); the crews buy
+    their food at the city's shops (a resident's diet a head) and spend the rest of their wages as the residents spend
+    theirs; every basket and every purchase draws from the farms and the Country again, so it is iterated. `even`: the
+    farms sell at a price factor a year (per area), not the season's. `farm_basket` False: the farms buy nothing (what
+    the toll and the Country would be without their basket)."""
     area_of = {g: ar['id'] for ar in AREAS for g in ar['goods']}
     n = sum(f['count'] * (1 + f['hands']) for f in farms)
     W = {f['kind']: f['count'] * (kw + f['hands'] * hw) for f in farms}
     out = {}
     for s in SEASONS:
         c = C[s]
+        co = c['carriage_out']
         b, fb = 0.0, 0.0
         for _ in range(400):
             X = max(0.0, sum(W.values()) - n * c['food_a_head'])
@@ -1281,21 +1440,81 @@ def solve(C, long, group_of, farms, kw, hw, posts, patrons, even=None, rent=0.0,
                     f = e / season_price(g, s, long, group_of) if e else 1.0
                     rev[g] = x['country'] * f
             R = {f['kind']: sum(rev.get(g, 0) * sh for g, sh in f['sells'].items()) for f in farms}
-            intake = sum(x['country'] for g, x in d.items() if not is_food(g)) + rent * sum(R.values())
-            co = c['carriage_out']
+            intake = sum(x['country'] for g, x in d.items() if not is_food(g))
             B = max(0.0, (intake - posts - patrons) / (1 + co))
-            FB = {k: max(0.0, R[k] * (1 - rent) - W[k]) for k in R}
-            fb_new = sum(FB.values()) / (1 + co)
+            if not farm_basket:
+                FB = {k: 0.0 for k in R}
+            elif FBs:
+                FB = dict(FBs[s])
+            else:
+                FB = {k: max(0.0, R[k] - W[k]) for k in R}
+            fb_new = sum(FB.values()) / (1 + co)     # the goods; the rest is the basket's carriage out
             b_new = B / c['basket_now']
-            if abs(b_new - b) < 1e-7 and abs(fb_new - fb) < 1e-4:
+            if abs(b_new - b) < 1e-8 and abs(fb_new - fb) < 1e-5:
                 break
             b, fb = .5 * b + .5 * b_new, .5 * fb + .5 * fb_new
-        out[s] = {'draws': d, 'rev': rev, 'R': R, 'W': W, 'FB': FB, 'fb': fb, 'B': B, 'b': b, 'intake': intake, 'parts': parts,
-                  'reweight': reweight,
-                  'short': min(0.0, intake - posts - patrons), 'X': X, 'n': n,
-                  'toll': sum(x['toll'] for x in d.values()), 'rent': rent * sum(R.values()),
+        out[s] = {'draws': d, 'rev': rev, 'R': R, 'W': W, 'FB': FB, 'fb': fb, 'fb_carriage': sum(FB.values()) - fb,
+                  'B': B, 'b': b, 'intake': intake, 'parts': parts, 'reweight': reweight,
+                  'margin': intake - posts - patrons, 'X': X, 'n': n,
+                  'toll': sum(x['toll'] for x in d.values()),
                   'country_by_ind': {ind: sum(x['country'] for g, x in d.items() if industry_of(g) == ind) for ind in INDUSTRY}}
     return out
+
+
+MIDDLE = [46, 92 + 46, 184 + 45.5, 275 + 45]   # Society::seasonal (RatwCityLoop.cpp): each season's value at its middle day
+
+
+def blended(m, day):
+    """Society::seasonal: the value on a day of the year from the four middle-day values, a straight line between two
+    middles, Winter's running on to Spring's across the year's turn."""
+    a = 3
+    for i in range(4):
+        if day >= MIDDLE[i]:
+            a = i
+    b = (a + 1) % 4
+    frm, to = MIDDLE[a], MIDDLE[b] + (365 if b == 0 else 0)
+    at = day + 365 if day < frm else day
+    t = min(1.0, max(0.0, (at - frm) / (to - frm)))
+    return m[a] + (m[b] - m[a]) * t
+
+
+def season_means_of(m):
+    """The season means (each day at its middle) of a blended curve."""
+    out, start = [], 0
+    for s in SEASONS:
+        out.append(sum(blended(m, d + .5) for d in range(start, start + SEASON_DAYS[s])) / SEASON_DAYS[s])
+        start += SEASON_DAYS[s]
+    return out
+
+
+def middles(means):
+    """The four middle-day values whose blend (Society::seasonal) has these season means: the blend is linear in them, so
+    a 4 x 4 system. A value that would come out under nought is held at nought and the rest solved again (the season
+    means then match as nearly as they can, reported by the caller)."""
+    cols = [season_means_of([1.0 if j == i else 0.0 for j in range(4)]) for i in range(4)]   # column i: unit at middle i
+    M = [[cols[j][i] for j in range(4)] for i in range(4)]
+    fixed = set()
+    for _ in range(4):
+        free = [j for j in range(4) if j not in fixed]
+        # Least squares on the free values (normal equations), the fixed ones at nought.
+        A = [[sum(M[r][i] * M[r][j] for r in range(4)) for j in free] for i in free]
+        y = [sum(M[r][i] * means[r] for r in range(4)) for i in free]
+        n = len(free)
+        for c in range(n):
+            p = max(range(c, n), key=lambda r: abs(A[r][c]))
+            A[c], A[p], y[c], y[p] = A[p], A[c], y[p], y[c]
+            for r in range(n):
+                if r != c and A[c][c]:
+                    f = A[r][c] / A[c][c]
+                    A[r] = [x - f * z for x, z in zip(A[r], A[c])]
+                    y[r] -= f * y[c]
+        sol = {j: y[k] / A[k][k] for k, j in enumerate(free)}
+        m = [sol.get(j, 0.0) for j in range(4)]
+        neg = [j for j in free if m[j] < 0]
+        if not neg:
+            return m
+        fixed.add(min(neg, key=lambda j: m[j]))
+    return [max(0.0, x) for x in m]
 
 
 def drawdown(net):
@@ -1309,18 +1528,41 @@ def drawdown(net):
     return worst
 
 
+def cash_cycle(net, float_):
+    """A farm's till over a steady year (doc 71, "Reserves"): its basket takes what the till holds over its reserve, the
+    reserve being its float and the deepest shortfall of its lean weeks (the drawdown of its takings less its wages); a
+    lean season draws the till down toward the float, and the next seasons' surplus refills it before the basket resumes.
+    So the basket over the year is the takings less the wages, and a lean season's shortfall is charged to the others.
+    Returns the basket a day by season, the reserve, and whether the till holds (a year's takings cover the wages)."""
+    short = drawdown(net)
+    reserve = float_ + short
+    days = [s for s in SEASONS for _ in range(SEASON_DAYS[s])]
+    till = reserve
+    for _ in range(3):
+        acc = {s: 0.0 for s in SEASONS}
+        for s in days:
+            x = net[s]
+            if till + x > reserve:
+                acc[s] += till + x - reserve
+                till = reserve
+            else:
+                till += x
+    return {s: acc[s] / SEASON_DAYS[s] for s in SEASONS}, reserve, year_mean(net) >= 0
+
+
 def configure(C, long, group_of, kw, hw, posts, patrons, farms_spec=None):
     """The recommended configuration: each farm's crew is what about half its takings pay at the city's wages (the
     other half its basket), never under its kind's smallest sensible crew; iterated, since the crews' own food and
     spending come back as takings. Then the farms sell at an even price a year (their stores), so the solve is redone
-    with each area's price factor a year: the year's takings the same as at the season's prices."""
+    with each area's price factor a year (the year's takings the same as at the season's prices), and each farm's basket
+    follows its till's cash cycle (a lean season charged to the others)."""
     farms = [dict(f, hands=f['min_hands']) for f in (farms_spec or FARMS)]
     for _ in range(30):
         res = solve(C, long, group_of, farms, kw, hw, posts, patrons)
         Rbar = {f['kind']: year_mean({s: res[s]['R'][f['kind']] for s in SEASONS}) for f in farms}
         changed = False
         for f in farms:
-            h = max(f['min_hands'], round(((1 - BASKET_SHARE) * Rbar[f['kind']] / f['count'] - kw) / hw))
+            h = max(f['min_hands'], math.floor(((1 - BASKET_SHARE) * Rbar[f['kind']] / f['count'] - kw) / hw + .5))
             changed, f['hands'] = changed or h != f['hands'], h
         if not changed:
             break
@@ -1334,9 +1576,23 @@ def configure(C, long, group_of, kw, hw, posts, patrons, farms_spec=None):
     even = {a: (at[a] / flat[a] if flat[a] else 1.0) if a in STORED else None for a in at}
     for ar in AREAS:
         even.setdefault(ar['id'], None)
-    res_even = solve(C, long, group_of, farms, kw, hw, posts, patrons, even=even)
-    return farms, res, res_even, even
-
+    # The cash cycle: each farm's basket by season from its till, iterated with the draws it makes.
+    FBs, cycle = None, {}
+    for _ in range(60):
+        res_even = solve(C, long, group_of, farms, kw, hw, posts, patrons, even=even, FBs=FBs)
+        new = {s: {} for s in SEASONS}
+        for f in farms:
+            k = f['kind']
+            W = res_even['spring']['W'][k]
+            net = {s: res_even[s]['R'][k] - W for s in SEASONS}
+            per, reserve, holds = cash_cycle(net, FLOAT_DAYS * W)
+            cycle[k] = {'net': net, 'reserve': reserve, 'holds': holds, 'basket': per}
+            for s in SEASONS:
+                new[s][k] = per[s]
+        if FBs and max(abs(new[s][k] - FBs[s][k]) for s in SEASONS for k in new[s]) < 1e-6:
+            break
+        FBs = new
+    return farms, res, res_even, even, FBs, cycle
 
 
 def order_book(sc, C, res, farms):
@@ -1385,20 +1641,64 @@ def order_book(sc, C, res, farms):
 
 FOOD_GOODS = set()      # the goods of nourishment 10 or more (a meal, not a drink): filled from items.json by the report
 STATE = {}              # what the report found, for the placement list and the pool
+# The order book's trades by the doc's names, and the small service trades in one row.
+BIZ_NAME = {'armory': 'armoury', 'jeweler': 'jeweller', 'general': 'general goods', 'papermill': 'paper mill',
+            'charcoal': 'charcoal burners', 'builders_works': "builders' works", 'printing_house': 'printing house',
+            'rag_and_bone': 'rag and bone', 'builders_yard': "builders' yard"}
+SMALL_TRADES = ['tailor', 'perfumer', 'pawnbroker', 'barber', 'moneychanger', 'stables', 'builders_yard']
+SMALL_ROW = ("the services and small trades (tailor, perfumer, pawnbroker, barber, moneychanger, stables, builders' "
+             "yard)")
 
 
 def p0(x):
     return f'{x:,.0f}p'
 
 
-def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_of, say):
-    """Doc 71's lead table, 2.6 and 3: the farms' crews, takings, baskets and yields after the switch, the Country after
-    it, the makers' order book, the toll, the reserves."""
+def pb(x):
+    """A cell's pennies, blank when nought (the order book)."""
+    return '' if abs(x) < .5 else f'{x:,.0f}p'
+
+
+def needs_a_day(members, items, crafts_households):
+    """What a household of `members` grown wolves spends a day on its needs (crafts.json `households`) at the
+    catalogue's prices: each need every `everyDays` (in winter `winterDays`), one of its `any` (the mean price), for
+    each member if `perPerson`."""
+    out = 0.0
+    for need in crafts_households['needs']:
+        price = sum(items.get(g, {}).get('price', 0) for g in need['any']) / len(need['any'])
+        every = {s: need.get('winterDays') if s == 'winter' and need.get('winterDays') else need['everyDays'] for s in SEASONS}
+        out += year_mean({s: price / every[s] for s in SEASONS}) * (members if need.get('perPerson') else 1)
+    return out
+
+
+def money_by(measured):
+    """Each business's money a day (the short runs, the year's mean): wages, profit, the treasury's wage support to its
+    posts, its draws' cost (the Country's part, the toll, carriage), its city inputs and its services' city share, its
+    sales to every buyer, its posts."""
+    out = collections.defaultdict(collections.Counter)
+    for s in SEASONS:
+        w = SEASON_DAYS[s] / 365
+        m = measured[s]
+        for b, c in m.get('money_by', {}).items():
+            for k, v in c.items():
+                out[b][k] += v * w
+        for b, by in m['drawn_by'].items():
+            out[b]['draws'] += sum(x.get('country', 0) + x.get('toll', 0) for x in by.values()) * w
+        for b, by in m['sales'].items():
+            out[b]['sales'] += sum(x['coins'] for goods in by.values() for x in goods.values()) * w
+    return out
+
+
+def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_of, say, measured=None):
+    """Doc 71's lead table, 2.2-2.6 and 3: the farms' crews, takings, baskets and yields after the switch, the Country
+    after it, the toll and the treasury, the makers' order book, the money the switch holds, the reserves."""
     FOOD_GOODS.update(g for g, i in items.items() if ((i.get('food') or {}).get('nourish', 0)) >= 10)
     nourish = lambda g: (items.get(g, {}).get('food') or {}).get('nourish', 0)
     A = streams(sc, crafts, items)
     C = coefficients(sc, A, long, items)
     ym = lambda f: year_mean({s: f(s) for s in SEASONS})
+    country = json.load(open(ROOT / 'Data/Items/country.json'))
+    hh = json.load(open(ROOT / 'Data/Items/crafts.json'))['households']
     # A farm's posts are paid whole pennies: the city tills' drifted wages over the settled years, rounded (a setting,
     # fixed: a farm's basket, not a keeper's profit, takes what is over its wages, so the wage drift would never move it).
     kw_mean, hw_mean = ym(lambda s: long[s]['wage_keeper']), ym(lambda s: long[s]['wage_hand'])
@@ -1410,7 +1710,7 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
     part = lambda key, food: ym(lambda s: sum(x['country'] for g, x in C[s][key].items() if is_food(g) == food))
     diet_farm, diet_country = part('diet', True), part('diet', False)
     other_farm, other_country = part('other', True), part('other', False)
-    farms, res_season, res, even = configure(C, long, group_of, kw, hw, posts, patrons)
+    farms, res_season, res, even, FBs, cycle = configure(C, long, group_of, kw, hw, posts, patrons)
     n = res['spring']['n']
     nf = sum(f['count'] for f in farms)
     W = sum(res['spring']['W'].values())
@@ -1418,29 +1718,32 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
     R_now = {f['kind']: ym(lambda s: sum(goods_s.get(g, {}).get(s, {}).get('country', 0) * sh for g, sh in f['sells'].items()))
              for f in farms}
     Yr = lambda key, r=res: ym(lambda s: r[s][key])
-    say(f"A wolf's cost to its farm is its wage (payWages: the holder buys its own food out of it): a keeper {kw:.0f}p, a hand "
-        f"{hw:.0f}p (the city tills' drifted wages over the settled years, {kw_mean:.1f}p and {hw_mean:.1f}p, in whole pennies). Its food at the city's shops costs it {food_head:.2f}p "
+    say(f"A wolf's cost to its farm is its wage (payWages: the holder buys its own food out of it): a keeper {kw:,.0f}p, a hand "
+        f"{hw:,.0f}p (the city tills' drifted wages over the settled years, {kw_mean:.1f}p and {hw_mean:.1f}p, in whole pennies). Its food at the city's shops costs it {food_head:.2f}p "
         f"a day (NourishADay, {NOURISH_A_DAY:.1f}, of the residents' diet) and comes back to the farms through the shops' "
         f"draws: {diet_farm:.2f}p a wolf (the Country's part of the draw, after the gate toll; the shop pays the carriage on "
         f"top), and {diet_country:.2f}p to the Country (the bakers' and smokehouses' firewood). The rest of its wage it "
         f"spends as the residents spend theirs: a penny of it draws {other_farm:.2f}p from the farms (candles' tallow, "
         f"cider's apples, scarves' wool) and {other_country:.2f}p from the Country.\n")
 
-    # ---- The other industries after the switch (the Country's), and the people the yields feed.
+    # ---- The other industries after the switch (the Country's), their works crewed, and the people the yields feed.
     others = other_industries(sc, crafts, producers)
     for k, v in others.items():
         v['income'] = ym(lambda s: res[s]['country_by_ind'].get(k, 0))
         v['income_now'] = ym(lambda s: ind_s[k][s]['country']) if k in ind_s else 0
-        units_n = sum(u[1] for u in v['units'])
-        v['can_pay'] = units_n + (v['income'] - units_n * kw) / hw
-        v['workers'] = max(0, min(round(v['plausible']), math.floor(v['can_pay'])))
+        units_n = sum(u[1] for u in v['units'])     # (A keeper a works and hands: what its takings could pay.)
+        v['can_pay'] = units_n + (v['income'] - units_n * kw) / hw if units_n else 0.0
+        v['workers'] = max(0, min(round(v['plausible']), math.floor(v['can_pay']))) if v['units'] else 0
+        v['sites'] = crew_sites(v['units'], v['workers']) if v['workers'] else []
     other_workers = sum(v['workers'] for v in others.values())
     table_people = other_workers + ESTATE_PEOPLE
 
     # ---- Yields: the farm's share of the city's draws after the switch (the crews' food among them), of what the
-    # Country's own people eat (the residents' diet a head), and the slack.
+    # Country's own people eat (the residents' diet a head), and the slack; season means, and the middle-day values whose
+    # blend (Society::seasonal) has those means.
+    BY = ('tallow', 'hide', 'bones', 'wool', 'sheepskin', 'small_pelt')
     for f in farms:
-        f['yield'] = {}
+        f['yield'], f['yield_mid'], f['yield_fit'] = {}, {}, {}
         for g, sh in f['sells'].items():
             if g in DROPPED:
                 continue
@@ -1448,82 +1751,102 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
                    * sh * (1 + SLACK) / f['count'] for s in SEASONS]
             if max(per) >= 0.05:
                 f['yield'][g] = per
-        main = [g for g in f['yield'] if g not in ('tallow', 'hide', 'bones', 'wool', 'sheepskin', 'small_pelt')]
+                f['yield_mid'][g] = middles(per)
+                f['yield_fit'][g] = season_means_of(f['yield_mid'][g])
+        main = [g for g in f['yield'] if g not in BY]
         f['yield_s'] = [sum(f['yield'][g][i] for g in main) for i in range(4)]
         f['revenue'] = Rk(f['kind'])
         f['wages'] = res['spring']['W'][f['kind']]
         f['can_pay'] = f['count'] + (f['revenue'] - f['count'] * kw) / hw
-        net = {s: res[s]['R'][f['kind']] - f['wages'] for s in SEASONS}
-        f['reserve'] = max(drawdown(net), FLOAT_DAYS * f['wages'])
-        fb = f['revenue'] - f['wages']
-        f['reserve_fixed'] = drawdown({s: res_season[s]['R'][f['kind']] - f['wages'] - fb for s in SEASONS})
-        f['reserve_fixed_stored'] = drawdown({s: net[s] - fb for s in SEASONS})
-        f['basket'] = ym(lambda s: res[s]['FB'][f['kind']])
+        cy = cycle[f['kind']]
+        net = cy['net']
+        f['reserve'] = cy['reserve']
+        f['float'] = FLOAT_DAYS * f['wages']
+        fbar = f['revenue'] - f['wages']
+        f['reserve_fixed'] = drawdown({s: res_season[s]['R'][f['kind']] - f['wages'] - fbar for s in SEASONS})
+        f['reserve_fixed_stored'] = drawdown({s: net[s] - fbar for s in SEASONS})
+        f['basket'] = ym(lambda s: res[s]['FB'][f['kind']])            # the till's spending on it, its carriage out too
+        f['basket_s'] = [res[s]['FB'][f['kind']] for s in SEASONS]
         f['lean'] = [s for s in SEASONS if net[s] < 0]
+        # The user's rule, applied to every kind alike: a farm must pay its smallest sensible crew in every season.
+        sensible = kw + f['min_hands'] * hw
+        f['leanest'] = min(res[s]['R'][f['kind']] for s in SEASONS) / f['count']
+        f['sensible'] = sensible
+        f['one_more'] = min(res[s]['R'][f['kind']] for s in SEASONS) / (f['count'] + 1) >= sensible
 
     # ---- The lead table.
     area_name = {ar['id']: ar['name'] for ar in AREAS}
     say('### The lead table: what each food area pays for, its farms, their crews and yields (a day, settled years)\n')
     rows, last = [], None
     for f in farms:
-        rows.append([area_name[f['area']] if f['area'] != last else '', f['kind'], f"{f['revenue']:.0f}p",
-                     f"{f['can_pay']:.0f}", f"{f['count']}", f"1 + {f['hands']}",
-                     ' / '.join(f'{v:.0f}' for v in f['yield_s']),
+        rows.append([area_name[f['area']] if f['area'] != last else '', f['kind'], f"{f['revenue']:,.0f}p",
+                     f"{f['can_pay']:,.0f}", f"{f['count']}", f"1 + {f['hands']}",
+                     ' / '.join(f'{v:,.0f}' for v in f['yield_s']),
                      '; '.join(dict.fromkeys(w for w, _ in f['where'])) +
                      f" ({', '.join(dict.fromkeys(d.split(' ')[0] for _, d in f['where']))})"])
         last = f['area']
     say(table(['Area', 'Farm', 'Revenue a day, all its farms', 'Wolves it can pay', 'Farms', 'Crew a farm (keeper + hands)',
                'Yield a farm a day, Sp / Su / Au / Wi (pieces)', 'Region (distance from the city)'], rows))
     tot_r = sum(f['revenue'] for f in farms)
-    say(f"\nIn all: {tot_r:.0f}p a day of takings, {sum(f['can_pay'] for f in farms):.0f} wolves it could pay on wages alone; "
-        f"{nf} farms with crews of {n} ({nf} keepers, {n - nf} hands) costing {W:.0f}p a day in wages; their basket "
-        f"{Yr('fb'):.0f}p a day of the city's goods. The yields feed the city (its draws after the switch, the crews' food "
+    fb_till = sum(f['basket'] for f in farms)
+    fb_goods, fb_carr = Yr('fb'), Yr('fb_carriage')
+    say(f"\nIn all: {tot_r:,.0f}p a day of takings, {sum(f['can_pay'] for f in farms):,.0f} wolves it could pay on wages alone; "
+        f"{nf} farms with crews of {n} ({nf} keepers, {n - nf} hands) costing {W:,.0f}p a day in wages; their basket "
+        f"{fb_till:,.0f}p a day ({fb_goods:,.0f}p of the city's goods and {fb_carr:,.0f}p of carriage out). The yields feed the city (its draws after the switch, the crews' food "
         f"among them), the Country's own {table_people} ({other_workers} of the other industries, {ESTATE_PEOPLE} of the "
-        f"Houses' estates) and {SLACK * 100:.0f}% slack.\n")
+        f"Houses' estates) and {SLACK * 100:,.0f}% slack.\n")
 
-    # ---- Takings by area: now and after the switch, season by season.
+    # ---- Takings by farm: now and after the switch, season by season.
     say("### The farms' takings: now (the Country's, at the season's own price) and after the switch (a day)\n")
     rows = []
     for f in farms:
         k = f['kind']
-        rows.append([k, f"{R_now[k]:.0f}p"] + [f"{res[s]['R'][k]:.0f}p" for s in SEASONS] +
-                    [f"**{f['revenue']:.0f}p**", f"{f['wages']:.0f}p ({f['wages'] / f['revenue'] * 100:.0f}%)",
-                     f"{f['basket']:.0f}p", ', '.join(f['lean']) or '-'])
-    rows.append(['**all**', f"**{sum(R_now.values()):.0f}p**"] + [f"**{sum(res[s]['R'].values()):.0f}p**" for s in SEASONS] +
-                [f"**{tot_r:.0f}p**", f"**{W:.0f}p**", f"**{Yr('fb'):.0f}p**", ''])
+        rows.append([k, f"{R_now[k]:,.0f}p"] + [f"{res[s]['R'][k]:,.0f}p" for s in SEASONS] +
+                    [f"**{f['revenue']:,.0f}p**", f"{f['wages']:,.0f}p ({f['wages'] / f['revenue'] * 100:,.0f}%)",
+                     f"{f['basket']:,.0f}p", ', '.join(f['lean']) or '-',
+                     f"{f['leanest']:,.0f}p / {f['sensible']:,.0f}p" + (' (one more would too)' if f['one_more'] else '')])
+    rows.append(['**all**', f"**{sum(R_now.values()):,.0f}p**"] + [f"**{sum(res[s]['R'].values()):,.0f}p**" for s in SEASONS] +
+                [f"**{tot_r:,.0f}p**", f"**{W:,.0f}p**", f"**{fb_till:,.0f}p**", '', ''])
     say(table(['Farm', 'Now (year)', 'After: Spring', 'Summer', 'Autumn', 'Winter', 'Year', "Crew's wages (of takings)",
-               "The farms' basket", 'Seasons under the wages'], rows))
+               "The farms' basket (its carriage out in it)", 'Seasons under the wages',
+               "A farm's leanest season / its smallest crew's wages"], rows))
     say(f"\n(The stored harvests, {', '.join(STORED)}, sell from store at a price a year: " +
-        ', '.join(f'{k} {v * 100:.1f}%' for k, v in even.items() if v) + " of the catalogue; the rest at the season's.)\n")
+        ', '.join(f'{k} {v * 100:.1f}%' for k, v in even.items() if v) + " of the catalogue; the rest at the season's. "
+        f"The farms' basket: {fb_till:.1f}p a day of the tills' spending = {fb_goods:.1f}p of goods + {fb_carr:.1f}p of carriage "
+        f"out; takings less wages {tot_r - W:.1f}p.)\n")
     # Where the takings come from after the switch.
     src = {p: ym(lambda s: res[s]['parts'][p]['food']) for p in ('base', 'basket', 'diet', 'other', 'farm')}
     src_now = ym(lambda s: sum(x['country'] for st in ('food', 'other', 'city', 'country') for prod in C[s] and A[s][st].values()
                                for g, x in prod.items() if is_food(g)))
+    veg_now = ym(lambda s: sum(goods_s.get(g, {}).get(s, {}).get('country', 0) for g in DROPPED))
     lost = ym(lambda s: C[s]['basket'] and sum(x['country'] for g, x in C[s]['basket'].items() if is_food(g))) - src['basket']
-    say(f"Where the food's takings come from (a day): now {src_now:.0f}p, of it {src['base']:.0f}p the residents' and the "
-        f"city's, {src['basket'] + lost:.0f}p behind the Country's buy-back. After: the residents' {src['base']:.0f}p; the "
-        f"Country's smaller basket {src['basket']:.0f}p ({lost:.0f}p lost); the crews' food {src['diet']:.0f}p and their "
-        f"other spending {src['other']:.0f}p; the farms' basket {src['farm']:.0f}p (the hides in its leather); in all "
-        f"{sum(src.values()):.0f}p. (Vegetables, dropped: {ym(lambda s: sum(goods_s.get(g, {}).get(s, {}).get('country', 0) for g in DROPPED)):.1f}p "
-        f"now.)\n")
-    STATE.update({'src': src, 'src_now': src_now, 'lost': lost})
+    say(f"Where the food's takings come from (a day): now {src_now:,.0f}p (vegetables {veg_now:.1f}p of it), of it {src['base']:,.0f}p the residents' and the "
+        f"city's, {src['basket'] + lost:,.0f}p behind the Country's buy-back. After: the residents' {src['base']:,.0f}p; the "
+        f"Country's smaller basket {src['basket']:,.0f}p ({lost:,.0f}p lost); the crews' food {src['diet']:,.0f}p and their "
+        f"other spending {src['other']:,.0f}p; the farms' basket {src['farm']:,.0f}p (the hides in its leather); in all "
+        f"{sum(src.values()):,.0f}p, the farms' takings.\n")
+    lost_by = {f['kind']: ym(lambda s: sum(x['country'] * f['sells'].get(g, 0) for g, x in C[s]['basket'].items() if is_food(g)) *
+                             (1 - res[s]['b'])) for f in farms}
+    say("The buy-back's draws lost, by farm: " + ', '.join(f'{k} {v:,.0f}p' for k, v in sorted(lost_by.items(), key=lambda x: -x[1]) if v >= .5) + '.\n')
+    STATE.update({'src': src, 'src_now': src_now, 'lost': lost, 'veg_now': veg_now, 'lost_by': lost_by})
 
     # ---- Reserves.
     say("### Reserves: what each farm's till must hold (pennies; days of its crew's wages)\n")
     rows = []
     for f in farms:
-        rows.append([f['kind'], f"{f['count']}", f"{f['reserve_fixed']:,.0f}p ({f['reserve_fixed'] / f['wages']:.0f})",
-                     f"{f['reserve_fixed_stored']:,.0f}p ({f['reserve_fixed_stored'] / f['wages']:.0f})",
-                     f"{f['reserve']:,.0f}p ({f['reserve'] / f['wages']:.0f})", f"{f['reserve'] / f['count']:,.0f}p"])
+        rows.append([f['kind'], f"{f['count']}", f"{f['reserve_fixed']:,.0f}p ({f['reserve_fixed'] / f['wages']:,.0f})",
+                     f"{f['reserve_fixed_stored']:,.0f}p ({f['reserve_fixed_stored'] / f['wages']:,.0f})",
+                     f"{f['reserve']:,.0f}p ({f['reserve'] / f['wages']:,.0f})", f"{f['reserve'] / f['count']:,.0f}p"])
     rf = sum(f['reserve_fixed'] for f in farms)
     rfs = sum(f['reserve_fixed_stored'] for f in farms)
     rr = sum(f['reserve'] for f in farms)
     rows.append(['**all**', f'**{nf}**', f'**{rf:,.0f}p**', f'**{rfs:,.0f}p**', f'**{rr:,.0f}p**', ''])
     say(table(['Farm', 'Farms', "A fixed basket, the season's prices (days)", 'A fixed basket, the stores at a price a year',
-               f"The basket takes what is over the wages and {FLOAT_DAYS} days' float (recommended)", 'A farm'], rows))
+               f"The basket takes what is over the wages: {FLOAT_DAYS} days' float, and any lean season's shortfall on top (recommended)", 'A farm'], rows))
     money = ym(lambda s: long[s]['money'])
     say(f"\nThe realm's money {money:,.0f}p; the Country's purse {ym(lambda s: long[s]['country']):,.0f}p and the treasury "
-        f"{ym(lambda s: long[s]['treasury']):,.0f}p on average.\n")
+        f"{ym(lambda s: long[s]['treasury']):,.0f}p on average; the households' purses {ym(lambda s: long[s]['purses']):,.0f}p "
+        f"({ym(lambda s: long[s]['purses'] / long[s]['residents']):.1f}p a head), the tills {ym(lambda s: long[s]['tills']):,.0f}p.\n")
     STATE.update({'reserve_fixed': rf, 'reserve_fixed_stored': rfs, 'reserve': rr, 'money': money})
 
     # ---- The Country before and after.
@@ -1536,106 +1859,233 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
     rows = [
         ["Its takings: the food areas' goods", p0(intake_now - nonfood_now), '- (the farms\')'],
         ["Its takings: its other goods (woods, mines, stone, fibre, herbs, workshops)", p0(nonfood_now), p0(Yr('intake'))],
-        [f"Its {payees:.0f} posts (the Houses' people and the wharf's)", p0(posts), p0(posts)],
+        [f"Its {payees:,.0f} posts (the Houses' people and the wharf's)", p0(posts), p0(posts)],
         ["Its patrons (the Houses' retainers' kit and halls, the wharf's hulls)", p0(patrons), p0(patrons)],
         ["Carriage out", p0(co_now), p0(B * ym(lambda s: C[s]['carriage_out']))],
-        ["Its basket of the city's goods", p0(b_now), f"{p0(B)} ({B / b_now * 100:.0f}%)"],
+        ["Its basket of the city's goods", p0(b_now), f"{p0(B)} ({B / b_now * 100:,.0f}%)"],
         ["of the basket, food and drink made from the farms' goods (cider, salt and smoked fish, wine, brandy)",
          p0(ym(lambda s: sum(c['coins'] for g, c in sc[s]['bought'].items() if nourish(g) > 0))),
          p0(ym(lambda s: sum(c['coins'] for g, c in sc[s]['bought'].items() if nourish(g) > 0) * res[s]['b']))],
     ]
     say(table(['', 'Now', 'After'], rows))
-    say('')
+    say('\nIts takings over its posts and patrons, by season: ' + ', '.join(f"{s} {res[s]['margin']:+,.0f}p" for s in SEASONS) + '.\n')
     STATE.update({'B': B, 'b_now': b_now, 'intake_now': intake_now, 'nonfood_now': nonfood_now, 'co_now': co_now})
     rows = []
     for k, v in others.items():
-        rows.append([k, f"{v['income_now']:.0f}p", f"{v['income']:.0f}p"])
+        rows.append([k, f"{v['income_now']:,.0f}p", f"{v['income']:,.0f}p"])
     say(table(["The Country's takings by industry", 'Now', 'After'], rows))
     say('')
 
-    # ---- The toll.
+    # ---- The toll, and without the farms' basket (solved again: the Country's basket then has nothing to stand on).
     tparts = {p: ym(lambda s: res[s]['parts'][p]['toll']) for p in ('base', 'basket', 'diet', 'other', 'farm')}
     toll_now = ym(lambda s: long[s]['toll'])
+    toll_after = sum(tparts.values())
     basket_toll_now = ym(lambda s: sum(x['toll'] for x in C[s]['basket'].values()))
-    say(f"The gate toll (the treasury, a day): now {toll_now:.0f}p ({tparts['base']:.0f}p on the residents' and the city's "
-        f"draws, {basket_toll_now:.0f}p behind the Country's basket). After: {sum(tparts.values()):.0f}p "
-        f"({(sum(tparts.values()) - toll_now) / toll_now * 100:+.1f}%): the residents' {tparts['base']:.0f}p, the Country's basket "
-        f"{tparts['basket']:.0f}p, the crews' food {tparts['diet']:.0f}p and other spending {tparts['other']:.0f}p, the farms' "
-        f"basket {tparts['farm']:.0f}p. Without the farms' basket it would be {sum(tparts.values()) - tparts['farm']:.0f}p "
-        f"({(sum(tparts.values()) - tparts['farm'] - toll_now) / toll_now * 100:+.0f}%).\n")
-    STATE.update({'tparts': tparts, 'toll_now': toll_now, 'basket_toll_now': basket_toll_now})
+    res_nofb = solve(C, long, group_of, farms, kw, hw, posts, patrons, even=even, farm_basket=False)
+    toll_nofb = Yr('toll', res_nofb)
+    say(f"The gate toll (the treasury, a day): now {toll_now:,.0f}p ({tparts['base']:,.0f}p on the residents' and the city's "
+        f"draws, {basket_toll_now:,.0f}p behind the Country's basket). After: {toll_after:,.0f}p "
+        f"({(toll_after - toll_now) / toll_now * 100:+.1f}%): the residents' {tparts['base']:,.0f}p, the Country's basket "
+        f"{tparts['basket']:,.0f}p, the crews' food {tparts['diet']:,.0f}p and other spending {tparts['other']:,.0f}p, the farms' "
+        f"basket {tparts['farm']:,.0f}p. Without the farms' basket (solved again): the toll {toll_nofb:,.0f}p "
+        f"({(toll_nofb - toll_now) / toll_now * 100:+,.0f}%); the Country takes in {Yr('intake', res_nofb):,.0f}p against "
+        f"{posts + patrons:,.0f}p of posts and patrons, so its basket is {Yr('B', res_nofb):,.0f}p.\n")
+    STATE.update({'tparts': tparts, 'toll_now': toll_now, 'toll_after': toll_after, 'basket_toll_now': basket_toll_now,
+                  'toll_nofb': toll_nofb, 'intake_nofb': Yr('intake', res_nofb), 'B_nofb': Yr('B', res_nofb)})
 
     # ---- The makers' order book (and with the Country's smaller basket re-weighted to the goods farms don't buy).
     now, after = order_book(sc, C, res, farms)
-    res_rw = solve(C, long, group_of, farms, kw, hw, posts, patrons, even=even, reweight=True)
+    res_rw = solve(C, long, group_of, farms, kw, hw, posts, patrons, even=even, reweight=True, FBs=FBs)
     _, after_rw = order_book(sc, C, res_rw, farms)
     say("### The makers' order book, by trade (sales a day; the residents' own buying, the same before and after, left out)\n")
     rows = []
     FB_ = "farms' basket"
     keys = ('country', FB_, 'crews: food', 'crews: other')
     tot, tot_rw = collections.Counter(), collections.Counter()
-    for b in sorted(now, key=lambda b: -now[b]['country']):
-        sales_now = sum(now[b].values())
-        d = {k: after[b][k] for k in keys}
-        change = sum(d.values()) - now[b]['country']
-        change_rw = sum(after_rw[b][k] for k in keys) - now[b]['country']
+    change_of = {}
+    grouped = collections.OrderedDict()
+    for b in now:
+        grouped.setdefault(SMALL_ROW if b in SMALL_TRADES else BIZ_NAME.get(b, b), []).append(b)
+    gsum = lambda d, bs, k: sum(d[b][k] for b in bs)
+    for name in sorted(grouped, key=lambda nm: -gsum(now, grouped[nm], 'country')):
+        bs = grouped[name]
+        sales_now = sum(sum(now[b].values()) for b in bs)
+        cn = gsum(now, bs, 'country')
+        d = {k: gsum(after, bs, k) for k in keys}
+        change = sum(d.values()) - cn
+        change_rw = sum(gsum(after_rw, bs, k) for k in keys) - cn
+        for b in bs:
+            change_of[b] = sum(after[b][k] for k in keys) - now[b]['country']
         for k in keys:
             tot[k] += d[k]
-            tot_rw[k] += after_rw[b][k]
-        tot['now'] += now[b]['country']
+            tot_rw[k] += gsum(after_rw, bs, k)
+        tot['now'] += cn
         tot['sales'] += sales_now
-        if now[b]['country'] < 5 and abs(change) < 5:
+        if cn < 5 and abs(change) < 5:
             continue
-        rows.append([b, f"{sales_now:.0f}p", f"{now[b]['country']:.0f}p", f"{d['country']:.0f}p", f"{d[FB_]:.0f}p",
-                     f"{d['crews: food']:.0f}p", f"{d['crews: other']:.0f}p", f"{change:+.0f}p ({change / sales_now * 100:+.0f}%)",
-                     f"{after_rw[b]['country']:.0f}p", f"{change_rw:+.0f}p ({change_rw / sales_now * 100:+.0f}%)"])
+        rows.append([name, f"{sales_now:,.0f}p", pb(cn), pb(d['country']), pb(d[FB_]), pb(d['crews: food']),
+                     pb(d['crews: other']), f"{change:+,.0f}p ({change / sales_now * 100:+,.0f}%)",
+                     pb(gsum(after_rw, bs, 'country')), f"{change_rw:+,.0f}p ({change_rw / sales_now * 100:+,.0f}%)"])
     ch = sum(tot[k] for k in keys) - tot['now']
     ch_rw = sum(tot_rw[k] for k in keys) - tot['now']
-    rows.append(['**all**', f"**{tot['sales']:.0f}p**", f"**{tot['now']:.0f}p**", f"**{tot['country']:.0f}p**",
-                 f"**{tot[FB_]:.0f}p**", f"**{tot['crews: food']:.0f}p**", f"**{tot['crews: other']:.0f}p**",
-                 f"**{ch:+.0f}p**", f"**{tot_rw['country']:.0f}p**", f"**{ch_rw:+.0f}p**"])
+    rows.append(['**all**', f"**{tot['sales']:,.0f}p**", f"**{tot['now']:,.0f}p**", f"**{tot['country']:,.0f}p**",
+                 f"**{tot[FB_]:,.0f}p**", f"**{tot['crews: food']:,.0f}p**", f"**{tot['crews: other']:,.0f}p**",
+                 f"**{ch:+,.0f}p**", f"**{tot_rw['country']:,.0f}p**", f"**{ch_rw:+,.0f}p**"])
     say(table(['Trade', 'Its sales now (all buyers)', "The Country's basket now", "After: the Country's basket",
                "The farms' basket", "The crews' food", "The crews' other spending", 'Change (of its sales)',
-               "Or the Country's basket re-weighted: its orders", 'Change'], rows))
+               "Or with the Country's basket re-weighted: its orders", 'Change'], rows))
     say(f"\n(Re-weighted: the Country's basket buys only the goods the farms' basket doesn't and no food or drink, in its "
-        f"shares now; it is then {Yr('B', res_rw):.0f}p a day, the toll {Yr('toll', res_rw):.0f}p.)\n")
-    STATE.update({'now': now, 'after': after, 'after_rw': after_rw, 'book_tot': tot, 'book_tot_rw': tot_rw, 'res_rw': res_rw})
+        f"shares now; it is then {Yr('B', res_rw):,.0f}p a day, the toll {Yr('toll', res_rw):,.0f}p.)\n")
+    STATE.update({'now': now, 'after': after, 'after_rw': after_rw, 'book_tot': tot, 'book_tot_rw': tot_rw, 'res_rw': res_rw,
+                  'change_of': change_of})
+
+    # ---- The crews' households and their money (the households' market: comforts and services only from what is over
+    # comforts.above a head, a comforts.share of it a day; food topped up to food.days).
+    above, share = country['comforts']['above'], country['comforts']['share']
+    food_days = country['food']['days']
+    purse = stock = need_all = 0.0
+    fill = []
+    for f in farms:
+        m = 1 + f['hands']
+        wage = kw + f['hands'] * hw
+        need = needs_a_day(m, items, hh)
+        surplus = wage - m * food_head - need
+        f['purse'] = above * m + max(0.0, surplus) / share
+        f['fill_days'] = (above * m + food_days * m * food_head) / surplus if surplus > 0 else float('inf')
+        purse += f['purse'] * f['count']
+        stock += food_days * m * food_head * f['count']
+        need_all += need * f['count']
+        fill.append(f['fill_days'])
+    X = Yr('X')
+    services_share = ym(lambda s: C[s]['services'] / C[s]['other_coins'])
+    crew_services = X * services_share
+    city_share = crew_services * country['rules']['servicesCityShare'] / 100
+    held = rr + purse
+    say(f"### The money the switch holds\n")
+    say(f"The crews as households (each farm's crew one household at its steading): their wages {W:,.0f}p, their food "
+        f"{n * food_head:,.0f}p, their needs {need_all:,.0f}p (crafts.json `households`, a farm's household's), so "
+        f"{W - n * food_head - need_all:,.0f}p a day for comforts and services, which the households' market spends only from "
+        f"what a household holds over {above}p a head ({share:.0%} of it a day). A crew's purse settles at {above}p a head "
+        f"and five days of that: {purse:,.0f}p in all ({purse / n:,.0f}p a head). Their {food_days} days of food in the larder, "
+        f"bought once: {stock:,.0f}p (spent in the food shops: goods, not money held). The farms' floats {rr:,.0f}p. Held in "
+        f"all: {held:,.0f}p, {held / money * 100:,.0f}% of the realm's money, {held / ym(lambda s: long[s]['treasury']) * 100:,.0f}% of "
+        f"the treasury. From nought a crew reaches the {above}p line in {min(fill):,.0f}-{max(fill):,.0f} days (its larder first), "
+        f"its comforts at their full rate about two weeks later. The crews' services {crew_services:,.0f}p a day, "
+        f"{country['rules']['servicesCityShare']}% of it the treasury's: {city_share:,.0f}p.\n")
+    STATE.update({'purse': purse, 'stock': stock, 'need_all': need_all, 'held': held, 'fill': (min(fill), max(fill)),
+                  'crew_services': crew_services, 'city_share': city_share, 'X': X})
+
+    # ---- The treasury after the switch: the toll, the crews' services' share, and the wage support the losing trades'
+    # tills would draw (supportWages: 100% of a till's shortfall from what the treasury holds over treasuryCap).
+    mb = money_by(measured) if measured else {}
+    floor = country['rules']['wageDriftFloor']
+    drift_days = country['rules']['wageDriftDays']
+
+    def support(changes, ramp=1):
+        """The wage support the switch adds (supportWages), by trade: at once, and once a loser's wages have drifted down
+        (judgeWages: a till short on most days lowers each post a penny every wageDriftDays, to the floor); the extra
+        support paid while they drift; the wages the drift takes from the losers' posts."""
+        rows, at_once, after, total, cut_all, base = [], 0.0, 0.0, 0.0, 0.0, 0.0
+        daily = [0.0] * 365
+        for b, ch in sorted(changes.items(), key=lambda x: x[1]):
+            c = mb.get(b)
+            if not c or c['sales'] <= 0:
+                continue
+            # What its tills keep of a penny of orders (their draws, carriage, city inputs and services' share off), what
+            # they pay out now (wages and the keepers' profit), what they owe (wages and the support that makes them up).
+            va = max(0.0, 1 - (c['draws'] + c['carriage_in'] + c['city_inputs'] + c['service_share']) / c['sales'])
+            owed = c['wages'] + c['support']
+            avail = c['wages'] + c['profit']
+            gap = max(0.0, owed - avail)         # (Short now by the trade's sums; the rest is one till's against another's.)
+            short = max(0.0, owed - avail - ch * va)
+            d_now = short - gap
+            cut = min(owed - c['posts'] * floor, short) if ch < 0 and short > 0 else 0.0
+            d_drift = short - cut - gap
+            steps = math.ceil(cut / max(1, c['posts']) - 1e-9) if cut > 0 else 0
+            # Day by day over a year, the switch's loss coming in over `ramp` days (the areas switched one at a time):
+            # the support paid over the gap of now, the wages a penny a post lower each wageDriftDays it was short.
+            paid, o = 0.0, owed
+            for t in range(365):
+                sh = max(0.0, o - avail - ch * va * min(1.0, (t + 1) / max(1, ramp)))
+                paid += sh - gap                  # (A gainer's smaller shortfall is the treasury's saving.)
+                daily[t] += sh - gap
+                if (t + 1) % drift_days == 0 and ch < 0 and sh > gap:
+                    o = max(c['posts'] * floor, o - c['posts'])
+            at_once += d_now
+            after += d_drift
+            total += paid
+            cut_all += cut
+            base += c['support']
+            if d_now >= 1:
+                rows.append([BIZ_NAME.get(b, b), f"{c['tills']:,.0f} / {c['posts']:,.0f}", f"{c['wages']:,.0f}p", f"{c['profit']:,.0f}p",
+                             f"{c['support']:,.0f}p", f"{ch:+,.0f}p", f"{va * 100:,.0f}%", f"{d_now:+,.0f}p", f"{d_drift:+,.0f}p",
+                             f"{steps * drift_days / 30:,.0f}"])
+        # The treasury's deepest fall over the year: the support less what the toll and the crews' services bring.
+        cum, deepest = 0.0, 0.0
+        for t in range(365):
+            cum += (d_toll_of(changes) + city_share) * min(1.0, (t + 1) / max(1, ramp)) - daily[t]
+            deepest = max(deepest, -cum)
+        return {'rows': rows, 'now': at_once, 'drift': after, 'paid': total, 'cut': cut_all, 'base': base, 'deepest': deepest}
+
+    change_rw = {b: sum(after_rw[b][k] for k in keys) - now[b]['country'] for b in now}
+    d_toll_of = lambda changes: (Yr('toll', res_rw) if changes is change_rw else toll_after) - toll_now
+    sup, sup_rw = support(change_of), support(change_rw)
+    sup_ph, sup_rw_ph = support(change_of, 180), support(change_rw, 180)
+    say("### The treasury after the switch: the wage support the losing trades' tills would draw (a day)\n")
+    say(table(['Trade', 'Tills / posts', 'Wages paid now', "Keepers' profit now", 'Wage support now', 'Orders, change',
+               'Of it its margin', 'Wage support, change at once', 'Once its wages have drifted down', 'Months to drift'], sup['rows']))
+    d_toll = toll_after - toll_now
+    d_toll_rw = Yr('toll', res_rw) - toll_now
+    room = ym(lambda s: long[s]['treasury']) - country['rules']['treasuryCap']
+    for name, S, dt in (("The Country's basket as it is", sup, d_toll), ("re-weighted", sup_rw, d_toll_rw)):
+        say(f"\n{name}: the treasury's flows a day: the toll {dt:+,.0f}p; the crews' services' share {city_share:+,.0f}p; the "
+            f"wage support {-S['now']:+,.0f}p at once (every trade: the gainers' smaller shortfalls netted), {-S['drift']:+,.0f}p once "
+            f"the losers' wages have drifted down; in all {dt + city_share - S['now']:+,.0f}p at once, "
+            f"{dt + city_share - S['drift']:+,.0f}p after. The extra support over the first year: {S['paid']:,.0f}p; the "
+            f"treasury's deepest fall {S['deepest']:,.0f}p (it holds {room:,.0f}p over its cap); the drift takes {S['cut']:,.0f}p "
+            f"a day from the losers' posts' wages.")
+    say(f"(Wage support now {sup['base']:,.0f}p a day.) Switched an area at a time over six months: the extra support over a "
+        f"year {sup_ph['paid']:,.0f}p, the treasury's deepest fall {sup_ph['deepest']:,.0f}p (re-weighted {sup_rw_ph['paid']:,.0f}p, "
+        f"{sup_rw_ph['deepest']:,.0f}p).\n")
+    STATE.update({'sup': sup, 'sup_rw': sup_rw, 'sup_ph': sup_ph, 'sup_rw_ph': sup_rw_ph, 'd_toll': d_toll, 'd_toll_rw': d_toll_rw, 'room': room})
 
     # ---- Yields in full.
-    say("### Yields per farm, per good (pieces a day, Sp / Su / Au / Wi, the slack included)\n")
+    say("### Yields per farm, per good (pieces a day, the slack included): season means, Sp / Su / Au / Wi; the middle-day "
+        "values (country_farms.json) and their blend's season means\n")
     rows = []
     for f in farms:
         for g, v in f['yield'].items():
-            rows.append([f['kind'], g, ' / '.join(f'{x:.1f}' for x in v)])
-    say(table(['Farm', 'Good', 'Yield, a farm a day'], rows))
+            rows.append([f['kind'], g, ' / '.join(f'{x:.1f}' for x in v), ' / '.join(f'{x:.1f}' for x in f['yield_mid'][g]),
+                         ' / '.join(f'{x:.1f}' for x in f['yield_fit'][g])])
+    say(table(['Farm', 'Good', 'Season means (what it sells)', 'Middle-day values', 'Their blend, season means'], rows))
     say('')
     # Who the yields feed.
     diet_pieces = ym(lambda s: sum(x['pieces'] for g, x in C[s]['diet'].items() if is_food(g)))
     res_pop = ym(lambda s: long[s]['residents'])
-    say(f"Who the food feeds (a day): the city's {res_pop:.0f} residents (the Country's {payees:.0f} post-holders among them), "
+    say(f"Who the food feeds (a day): the city's {res_pop:,.0f} residents (the Country's {payees:,.0f} post-holders among them), "
         f"the farms' {n} crew (they buy in the city: in its draws), the Country's own {table_people} who stay in the Country "
         f"({other_workers} workers of the other industries once placed, {ESTATE_PEOPLE} of the Houses' estates: the armed "
         f"retainers, country.json `patrons`), each eating {diet_pieces:.2f} drawn pieces of the residents' diet, and "
-        f"{SLACK * 100:.0f}% slack.\n")
+        f"{SLACK * 100:,.0f}% slack.\n")
     STATE.update({'farms': farms, 'res': res, 'res_season': res_season, 'even': even, 'kw': kw, 'hw': hw, 'C': C, 'A': A,
                   'posts': posts, 'payees': payees, 'patrons': patrons, 'food_head': food_head, 'diet_farm': diet_farm,
                   'diet_country': diet_country, 'other_farm': other_farm, 'other_country': other_country, 'n': n, 'nf': nf,
                   'W': W, 'R_now': R_now, 'others': others, 'other_workers': other_workers, 'table_people': table_people,
-                  'tot_r': tot_r, 'fb': Yr('fb')})
+                  'tot_r': tot_r, 'fb': fb_till, 'fb_goods': fb_goods, 'fb_carr': fb_carr, 'cycle': cycle})
     return STATE
-
 
 
 def others_table(others, kw, hw, say):
     say('### The other industries, the Country\'s after the switch (a day)\n')
     rows = []
     for k, v in others.items():
-        units_n = sum(u[1] for u in v['units'])
-        rows.append([k, ', '.join(f'{g} {d:.0f}' for g, d in sorted(v['draw'].items(), key=lambda x: -x[1])),
-                     f"{v['income_now']:.0f}p", f"{v['income']:.0f}p", f"{max(0, v['can_pay']):.0f}", f"{v['fte']:.0f}",
-                     f"{v['plausible']:.0f}", f"{v['workers']}", '; '.join(f'{n} {u} ({w})' for u, n, w in v['units'])])
+        sites = '; '.join(f"{n} {u} ({w}): {' + '.join(str(x) for x in each)}" for u, n, w, each in v['sites']) or \
+            'no works of its own (it pays no one): gathered by the eel and fowl marsh\'s crew and in the central hills\' woods'
+        rows.append([k, ', '.join(f'{g} {d:,.0f}' for g, d in sorted(v['draw'].items(), key=lambda x: -x[1])),
+                     f"{v['income_now']:,.0f}p", f"{v['income']:,.0f}p", f"{max(0, v['can_pay']):,.0f}", f"{v['fte']:,.0f}",
+                     f"{v['plausible']:,.0f}", f"{v['workers']}", sites])
     say(table(['Industry', 'Drawn a day', 'The Country\'s takings now', 'After the switch', 'Wolves it can pay (wages)',
-               "Workers at the game's rates", 'Workers, plausible', 'Workers counted (fed by the farms)', 'Units (where)'], rows))
+               "Workers at the game's rates", 'Workers, plausible', 'Workers counted (fed by the farms)', 'Works (where): workers at each'], rows))
     say('')
 
 
@@ -1650,11 +2100,11 @@ OTHER_FOOTPRINT = {   # tiles: the works' own, and woods or ground they work tha
     'tin streams': {'own_tiles': 40 * 15, 'shared_range_tiles': 0},
     'quarry (stone and limestone)': {'own_tiles': 80 * 60, 'shared_range_tiles': 0},
     'clay pit and sand bank': {'own_tiles': 60 * 40, 'shared_range_tiles': 0},
-    'hemp and flax fields': {'own_tiles': 80 * 60, 'shared_range_tiles': 0},
-    "herb gatherers' cottage": {'own_tiles': 15 * 10, 'shared_range_tiles': 150 * 150},
+    'hemp and flax field': {'own_tiles': 100 * 70, 'shared_range_tiles': 0},
     'village pottery': {'own_tiles': 25 * 20, 'shared_range_tiles': 0},
     "weavers' and soap boilers' cottages": {'own_tiles': 20 * 15, 'shared_range_tiles': 0},
     'country press and paper mill': {'own_tiles': 30 * 20, 'shared_range_tiles': 0},
+    'village smithy and tanyard': {'own_tiles': 25 * 20, 'shared_range_tiles': 0},
 }
 # The map's scale for the farms (the user, 2026-11-01: "size them somewhere in the middle. They shouldn't be massive but
 # a player should feel like they're big"): about 14 cells in all, 6.5 of the farms' own ground (fields, orchards,
@@ -1664,6 +2114,7 @@ CELL = 256 * 256
 OWN_CELLS, RANGE_CELLS = 6.5, 7.5
 # Which of the cross-check's units is which farm, and whether its land is the farm's own or shared range.
 REAL_UNITS = {'grain farm': [('grain farm', 'own'), ('water mill', 'own')], 'orchard': [('orchard', 'own')],
+              'orchard with a drying house': [('orchard', 'own')],
               'vineyard': [('vineyard', 'own')], 'cattle and dairy farm': [('dairy farm', 'own'), ('cattle ranch', 'range')],
               'pig farm': [('piggery', 'range')], 'sheep and goat run': [('sheep run', 'range'), ('goat fold', 'range')],
               'rabbit warren': [('rabbit warren', 'range')], 'beekeeper': [('apiary', 'own')], 'salt works': [('salt works', 'own')]}
@@ -1682,10 +2133,15 @@ def real_check_of(farms, sc, goods_s):
                     demand[pg][s] += per[i] * f['count'] * k
     U = size_units(dict(demand), sc, goods_s, goats=0)
     land = {}
-    for kind, units in REAL_UNITS.items():
-        own = sum(U[u]['tiles'] + (U[u]['range_tiles'] if how == 'own' else 0) for u, how in units if u in U)
-        rng = sum(U[u]['range_tiles'] for u, how in units if u in U and how == 'range')
-        land[kind] = {'own': own, 'range': rng}
+    for f in farms:
+        units = REAL_UNITS.get(f['kind'])
+        if not units:
+            continue
+        # Two kinds of one real unit (the orchards, with and without a drying house) share its land by their apples.
+        k = f['sells'].get('apples', 1) if f['kind'].startswith('orchard') else 1
+        own = sum(U[u]['tiles'] + (U[u]['range_tiles'] if how == 'own' else 0) for u, how in units if u in U) * k
+        rng = sum(U[u]['range_tiles'] for u, how in units if u in U and how == 'range') * k
+        land[f['kind']] = {'own': own, 'range': rng}
     labour = {s: sum(u['workers'][s] for u in U.values()) for s in SEASONS}
     return U, land, labour
 
@@ -1693,10 +2149,11 @@ def real_check_of(farms, sc, goods_s):
 def footprints(farms, land):
     own_t = sum(v['own'] for v in land.values())
     rng_t = sum(v['range'] for v in land.values())
+    landings = sum(LANDINGS.get(f['kind'], 0) * f['count'] for f in farms)
     for f in farms:
         L = land.get(f['kind'])
         if L:
-            f['own_tiles'] = round(L['own'] / own_t * (OWN_CELLS * CELL - sum(LANDINGS.values())) / f['count'], -2)
+            f['own_tiles'] = round(L['own'] / own_t * (OWN_CELLS * CELL - landings) / f['count'], -2)
             f['range_tiles'] = round(L['range'] / rng_t * (RANGE_CELLS * CELL - MARSH_RANGE) / f['count'], -2) if rng_t else 0
         else:
             f['own_tiles'] = LANDINGS.get(f['kind'], 0)
@@ -1706,7 +2163,8 @@ def footprints(farms, land):
 
 def write_farms(path, st, others):
     """The placement list and the farms' settings, the defaults Atlas's Economy page and the DM's Economy tab edit (doc
-    71, 4 and 6): per area its farms, yieldScale and price; per farm its crew, wages, basket, reserve and yields."""
+    71, 4 and 6): per area its farms, yieldScale, crewScale, wages and price; per farm its crew, wages, basket, reserve
+    and yields (middle-day values)."""
     farms, res, even = st['farms'], st['res'], st['even']
     shares = json.load(open(ROOT / 'Data/Items/country.json'))['markets'][0]['basket']
     areas = []
@@ -1717,36 +2175,43 @@ def write_farms(path, st, others):
             for i in range(f['count']):
                 where, dist = f['where'][i % len(f['where'])]
                 out.append({
-                    'id': f"{f['kind'].replace(' ', '_')}_{i + 1}", 'kind': f['kind'], 'region': where, 'distance': dist,
-                    'terrain': f['terrain'], 'near': f['near'],
+                    'id': (f.get('ids') or [f"{f['kind'].replace(' ', '_')}_{k + 1}" for k in range(f['count'])])[i],
+                    'kind': f['kind'], 'region': where, 'distance': dist, 'terrain': f['terrain'], 'near': f['near'],
                     'footprint': {'own_tiles': int(f['own_tiles']), 'shared_range_tiles': int(f['range_tiles'])},
-                    'crew': {'keepers': 1, 'hands': f['hands']},
+                    'crew': {'keepers': 1, 'hands': f['hands']}, 'minHands': f['min_hands'],
                     'wages': {'keeper': None, 'hand': None},
                     'basketADay': round(f['basket'] / f['count'], 1),
                     'reserve': round(f['reserve'] / f['count']),
-                    'yield': {g: [round(x, 1) for x in v] for g, v in f['yield'].items()},
+                    'yield': {g: [round(x, 1) for x in f['yield_mid'][g]] for g in f['yield']},
                     'sells': f['sells'], 'store': f['store']})
+        out.sort(key=lambda x: (x['id'].rsplit('_', 1)[0], int(x['id'].rsplit('_', 1)[1])))
         rev = [round(sum(res[s]['R'][f['kind']] for f in fs), 1) for s in SEASONS]
         areas.append({'id': area['id'], 'name': area['name'], 'goods': area['goods'], 'on': False, 'yieldScale': 100,
+                      'crewScale': 100, 'wages': {'keeper': None, 'hand': None},
                       'price': 'year' if even.get(area['id']) else 'season',
-                      'priceFactor': round(even[area['id']] * 100, 1) if even.get(area['id']) else None,
+                      'priceFactor': round(even[area['id']] * 100) if even.get(area['id']) else None,
                       'revenueADay': rev, 'wolvesItCanPay': round(sum(f['can_pay'] for f in fs)), 'farms': out})
     doc = {
-        'format': 'ratw-country-farms', 'version': 2,
+        'format': 'ratw-country-farms', 'version': 3,
         'about': ("The Country's food farms and other works as they would be placed (Docs/Design/71-the-country-s-industries.md). "
                   "Written by tools/country_industry.py from the 12-year run (settled years 4-12); nothing reads it yet. The "
                   "defaults Atlas's Economy page and the DM's Economy tab would edit, per area and per farm. An area: `on` "
-                  "(false: the Country still supplies its goods), `yieldScale` (percent, on all its farms' yields), `price` "
-                  "('year': the farms sell from store at `priceFactor` percent of the catalogue all year; 'season': at the "
-                  "season's price, as the store room does now). A farm: `crew` (keepers and hands), `wages` (pennies a day; "
-                  "null: the defaults' `wages`, fixed, not drifting: the basket takes what is over them), `basketADay` (pennies a day of the "
-                  "city's goods it buys, from what its till holds over its wages and `reserve`), `reserve` (pennies its till "
-                  "keeps before its basket), `yield` (pieces a day of each good for Spring, Summer, Autumn and Winter, the value "
-                  "at each season's middle day as country.json's seasons are). The yields are the city's draws after the "
-                  "switch (the crews' own food among them), what the Country's own people eat, and `slack`. `footprint`: "
-                  "own_tiles are the farm's own ground (fields, orchard, vines, meadow, steading, pans); shared_range_tiles "
-                  "is open grazing, heath or woodland its herds share with the wild. `distance` is from Ridgemere, the realm's "
-                  "north-west corner (near: within 2 cells, middle: 3-8, far: 9 or more)."),
+                  "(false: the Country still supplies its goods), `yieldScale` (percent, on all its farms' yields), `crewScale` "
+                  "(percent, on all its farms' hands, rounded half up), `wages` (pennies a day for its farms' keepers and hands; "
+                  "null: the defaults'), `price` ('year': the farms sell from store at `priceFactor` percent of the catalogue "
+                  "all year; 'season': at the season's price, as the store room does now). A farm: `crew` (keepers and hands; "
+                  "`minHands` is the smallest sensible crew), `wages` (null: the area's, then the defaults'; fixed, not "
+                  "drifting: the basket takes what is over them), `basketADay` (the design's mean: what the till spends a "
+                  "day on the city's goods, their carriage out included, from what it holds over its wages and `reserve`), "
+                  "`reserve` (pennies its till keeps before its basket: two days of its wages, and a lean season's shortfall "
+                  "if it has one), `yield` (pieces a day of each good, the value at each season's middle day for Spring, "
+                  "Summer, Autumn and Winter, blended between them by Society::seasonal as country.json's seasons are; their "
+                  "blend's season means are the doc's 2.4 table). Precedence: a farm's own setting, then its area's, then the "
+                  "defaults. The yields are the city's draws after the switch (the crews' own food among them), what the "
+                  "Country's own people eat, and `slack`. `footprint`: own_tiles are the farm's own ground (fields, orchard, "
+                  "vines, meadow, steading, pans); shared_range_tiles is open grazing, heath or woodland its herds share with "
+                  "the wild. `distance` is from Ridgemere, the realm's north-west corner (near: within 2 cells, middle: 3-8, "
+                  "far: 9 or more)."),
         'defaults': {'wages': {'keeper': int(st['kw']), 'hand': int(st['hw'])}, 'basketShare': round(BASKET_SHARE * 100),
                      'floatDays': FLOAT_DAYS, 'slack': round(SLACK * 100), 'estatePeople': ESTATE_PEOPLE,
                      'otherWorkers': st['other_workers'], 'openingStockDays': OPENING_DAYS},
@@ -1755,8 +2220,12 @@ def write_farms(path, st, others):
         'areas': areas,
         'others': [{'industry': k, 'revenueADay': round(v['income']), 'workersItCanPay': max(0, math.floor(v['can_pay'])),
                     'workersPlausible': round(v['plausible']), 'workersCounted': v['workers'],
-                    'units': [{'kind': u, 'count': n, 'region': w, 'footprint': OTHER_FOOTPRINT.get(u, {})}
-                              for u, n, w in v['units']]} for k, v in others.items()],
+                    'works': [{'kind': u, 'count': n, 'region': w, 'workers': each, 'footprint': OTHER_FOOTPRINT.get(u, {})}
+                              for u, n, w, each in v['sites']],
+                    **({} if v['sites'] else {'about': "No works of its own (about 8p a day pays no one): gathered at the "
+                                                       "marsh's edge by the eel and fowl marsh's crew and in the central "
+                                                       "hills' woods; the pennies stay the Country's."})}
+                   for k, v in others.items()],
     }
     text = json.dumps(doc, indent=1)
     text = re.sub(r'\[\s+([^\[\]{}]*?)\s+\]', lambda m: '[' + ', '.join(x.strip() for x in m.group(1).split(',')) + ']', text)
@@ -1813,17 +2282,17 @@ def size_units(demand, sc, goods_s, goats=.25):
     fallow = sown / 2
     arable = sown + fallow
     n = max(2, round(arable / g['unit_ha']))
-    unit('grain farm', n, f"{arable / n:.0f} ha arable ({wheat_ha / n:.0f} wheat, {oats_ha / n:.0f} oats, {fallow / n:.0f} fallow)",
+    unit('grain farm', n, f"{arable / n:,.0f} ha arable ({wheat_ha / n:,.0f} wheat, {oats_ha / n:,.0f} oats, {fallow / n:,.0f} fallow)",
          arable, sown * g['days_ha'] + fallow * g['days_ha_fallow'], g['season_labour'],
-         f"{t_year('wheat'):.0f} t wheat, {t_year('oats'):.0f} t oats a year", extra_tiles=n * 60 * 40)
+         f"{t_year('wheat'):,.0f} t wheat, {t_year('oats'):,.0f} t oats a year", extra_tiles=n * 60 * 40)
     # Mills: two, a miller and a hand each.
-    unit('water mill', 2, f"{t_year('wheat') / 365 * 1000 / 2:.0f} kg of wheat a day each (of about 1 t it could)", 0, 0, [.25] * 4,
+    unit('water mill', 2, f"{t_year('wheat') / 365 * 1000 / 2:,.0f} kg of wheat a day each (of about 1 t it could)", 0, 0, [.25] * 4,
          'flour', workers={s: 4.0 for s in SEASONS}, fixed_staff=4, extra_tiles=2 * UNITS['water mill']['footprint_tiles'])
     o = UNITS['orchard']
     ha = t_year('apples') / o['yield_t_ha']['apples'] + t_year('berries') / 2   # (berries from the hedges, 2 t a ha of hedge)
     n = max(2, round(ha / o['unit_ha']))
-    unit('orchard', n, f"{ha / n:.0f} ha, {ha / n * o['trees_ha']:.0f} trees, a fruit store and cider press", ha, ha * o['days_ha'],
-         o['season_labour'], f"{t_year('apples'):.0f} t apples a year", extra_tiles=n * 40 * 30)
+    unit('orchard', n, f"{ha / n:,.0f} ha, {ha / n * o['trees_ha']:,.0f} trees, a fruit store and cider press", ha, ha * o['days_ha'],
+         o['season_labour'], f"{t_year('apples'):,.0f} t apples a year", extra_tiles=n * 40 * 30)
     v = UNITS['vineyard']
     ha = t_year('grapes') / v['yield_t_ha']['grapes']
     n = max(2, round(ha / v['unit_ha']))
@@ -1839,44 +2308,44 @@ def size_units(demand, sc, goods_s, goats=.25):
     cows = t_year('milk', 1 - goats) * 1000 / d['litres_cow_year']
     head = cows * d['herd_per_milker']
     n = max(2, round(head / d['unit_head']))
-    unit('dairy farm', n, f"{cows / n:.0f} cows in milk, {head / n:.0f} head", head * d['ha_head'], head * d['days_head'],
+    unit('dairy farm', n, f"{cows / n:,.0f} cows in milk, {head / n:,.0f} head", head * d['ha_head'], head * d['days_head'],
          d['season_labour'], f"{t_year('milk', 1 - goats) * 1000:,.0f} L milk a year", extra_tiles=n * 40 * 30)
     gf = UNITS['goat fold']
     herd = t_year('milk', goats) * 1000 / gf['litres_head_year']
     if herd > 0:
         n = max(2, round(herd / gf['unit_head']))
-        unit('goat fold', n, f"{herd / n:.0f} goats", herd * gf['ha_head'], max(herd * gf['days_head'], n * 313 * .5),
+        unit('goat fold', n, f"{herd / n:,.0f} goats", herd * gf['ha_head'], max(herd * gf['days_head'], n * 313 * .5),
              gf['season_labour'], f"{t_year('milk', goats) * 1000:,.0f} L milk a year, kids", extra_tiles=n * 25 * 20)
     c = UNITS['cattle ranch']
     beef = t_year('raw_meat', c['meat_share']) * 1000
     killed = beef / c['kg_slaughtered']
     head = killed * c['head_per_slaughter']
     n = max(2, round(head / c['unit_head']))
-    unit('cattle ranch', n, f"{head / n:.0f} head, {killed / n:.0f} killed a year", head * c['ha_head'], head * c['days_head'],
-         c['season_labour'], f"{beef / 1000:.0f} t beef a year, hides, tallow", extra_tiles=n * 50 * 40)
+    unit('cattle ranch', n, f"{head / n:,.0f} head, {killed / n:,.0f} killed a year", head * c['ha_head'], head * c['days_head'],
+         c['season_labour'], f"{beef / 1000:,.0f} t beef a year, hides, tallow", extra_tiles=n * 50 * 40)
     p = UNITS['piggery']
     pork = (t_year('raw_meat', 1 - c['meat_share']) + t_year('pig')) * 1000
     killed = pork / p['kg_slaughtered']
     head = killed * p['head_per_slaughter']
     n = max(2, round(head / p['unit_head']))
-    unit('piggery', n, f"{head / n:.0f} pigs ({head / n / 10:.0f} sows), {killed / n:.0f} killed a year", head * p['ha_head'],
-         head * p['days_head'], p['season_labour'], f"{pork / 1000:.0f} t pork a year", extra_tiles=n * 30 * 25)
+    unit('piggery', n, f"{head / n:,.0f} pigs ({head / n / 10:,.0f} sows), {killed / n:,.0f} killed a year", head * p['ha_head'],
+         head * p['days_head'], p['season_labour'], f"{pork / 1000:,.0f} t pork a year", extra_tiles=n * 30 * 25)
     sh = UNITS['sheep run']
     mutton = t_year('mutton') * 1000
     killed = mutton / sh['kg_slaughtered']
     flock = killed * sh['head_per_slaughter']
     n = max(2, round(flock / sh['unit_head']))
-    unit('sheep run', n, f"{flock / n:.0f} sheep", flock * sh['ha_head'], flock * sh['days_head'], sh['season_labour'],
-         f"{mutton / 1000:.0f} t mutton, {flock * 1.5 / 1000:.1f} t wool a year", extra_tiles=n * 30 * 25)
+    unit('sheep run', n, f"{flock / n:,.0f} sheep", flock * sh['ha_head'], flock * sh['days_head'], sh['season_labour'],
+         f"{mutton / 1000:,.0f} t mutton, {flock * 1.5 / 1000:.1f} t wool a year", extra_tiles=n * 30 * 25)
     r = UNITS['rabbit warren']
     does = t_year('rabbit') * 1000 / r['kg_doe']
     n = max(2, round(does / r['unit_head']))
-    unit('rabbit warren', n, f"{does / n:.0f} does", does * r['ha_doe'], does * r['days_doe'], r['season_labour'],
-         f"{t_year('rabbit'):.0f} t rabbit a year, pelts", extra_tiles=n * 20 * 15)
+    unit('rabbit warren', n, f"{does / n:,.0f} does", does * r['ha_doe'], does * r['days_doe'], r['season_labour'],
+         f"{t_year('rabbit'):,.0f} t rabbit a year, pelts", extra_tiles=n * 20 * 15)
     ap = UNITS['apiary']
     hives = t_year('honey') * 1000 / ap['kg_hive']
     n = max(2, round(hives / ap['unit_head']))
-    unit('apiary', n, f"{hives / n:.0f} skeps", 0, hives / ap['hives_keeper'] * 313, ap['season_labour'],
+    unit('apiary', n, f"{hives / n:,.0f} skeps", 0, hives / ap['hives_keeper'] * 313, ap['season_labour'],
          f"{t_year('honey'):.1f} t honey a year, wax", extra_tiles=n * ap['footprint_tiles'])
     # Fishing: the eel marsh and the lake boats first, the sea boats the rest; boats kept for the busiest season.
     sea, lake, eel = UNITS['sea fishing boat'], UNITS['lake and river boat'], UNITS['eel and fowl marsh']
@@ -1888,15 +2357,15 @@ def size_units(demand, sc, goods_s, goats=.25):
     active = {s: sea_kg[s] / sea['kg_day'][s] for s in SEASONS}
     crews = {s: (active[s] * sea['crew'] + n_lake * lake['crew'] + n_eel * eel['crew']) * 7 / 6 for s in SEASONS}
     unit('fishing', boats + n_lake + n_eel, f"{boats} sea boats (3 each), {n_lake} lake and river boats (2), {n_eel} eel and fowl "
-         f"marshes (3); a keeper at each of five landings", 0, 0, [.25] * 4, f"{sum(need_kg[s] * SEASON_DAYS[s] for s in SEASONS) / 1000:.0f} t fish and shellfish a year",
+         f"marshes (3); a keeper at each of five landings", 0, 0, [.25] * 4, f"{sum(need_kg[s] * SEASON_DAYS[s] for s in SEASONS) / 1000:,.0f} t fish and shellfish a year",
          workers=crews, keepers=5,
          extra_tiles=boats * sea['footprint_tiles'] + n_lake * lake['footprint_tiles'] + n_eel * eel['footprint_tiles'])
     U['fishing']['boats'] = {'sea': boats, 'lake': n_lake, 'eel': n_eel, 'kg_day': need_kg}
     sa = UNITS['salt works']
     t = t_year('salt')
     n = 2
-    unit('salt works', n, f"{t / n:.1f} t a year, {t / n / sa['t_ha_year'] * 10000:.0f} m2 of pans", t / sa['t_ha_year'],
-         t * 25, sa['season_labour'], f"{t:.0f} t salt a year", extra_tiles=n * 30 * 20)
+    unit('salt works', n, f"{t / n:.1f} t a year, {t / n / sa['t_ha_year'] * 10000:,.0f} m2 of pans", t / sa['t_ha_year'],
+         t * 25, sa['season_labour'], f"{t:,.0f} t salt a year", extra_tiles=n * 30 * 20)
     return U
 
 
@@ -1961,6 +2430,7 @@ POOL = [   # (the pool's group, words in the work label), first match; a label's
 
 POOL_OF = {'grain farm': 'fields and mills', 'water mill': 'fields and mills', 'market garden': 'fields and mills',
            'orchard': 'orchards and vines', 'vineyard': 'orchards and vines', 'fruit drying house': 'orchards and vines',
+           'orchard with a drying house': 'orchards and vines',
            'cattle farm': 'herds and flocks', 'pig farm': 'herds and flocks', 'sheep run': 'herds and flocks',
            'cattle and dairy farm': 'herds and flocks', 'sheep and goat run': 'herds and flocks',
            'rabbit warren': 'herds and flocks', 'dairy farm': 'herds and flocks', 'goat fold': 'herds and flocks',
@@ -2067,6 +2537,7 @@ def main():
     r.add_argument('--units')
     r.add_argument('--unplaced')
     r.add_argument('--dump')
+    r.add_argument('--loop', help="the long run's loop file (per-till sales); default ECONOMY's name with _loop")
     a = ap.parse_args()
     {'measure': cmd_measure, 'report': cmd_report}[a.cmd](a)
 

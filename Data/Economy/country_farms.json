@@ -1,7 +1,7 @@
 {
  "format": "ratw-country-farms",
- "version": 2,
- "about": "The Country's food farms and other works as they would be placed (Docs/Design/71-the-country-s-industries.md). Written by tools/country_industry.py from the 12-year run (settled years 4-12); nothing reads it yet. The defaults Atlas's Economy page and the DM's Economy tab would edit, per area and per farm. An area: `on` (false: the Country still supplies its goods), `yieldScale` (percent, on all its farms' yields), `price` ('year': the farms sell from store at `priceFactor` percent of the catalogue all year; 'season': at the season's price, as the store room does now). A farm: `crew` (keepers and hands), `wages` (pennies a day; null: the defaults' `wages`, fixed, not drifting: the basket takes what is over them), `basketADay` (pennies a day of the city's goods it buys, from what its till holds over its wages and `reserve`), `reserve` (pennies its till keeps before its basket), `yield` (pieces a day of each good for Spring, Summer, Autumn and Winter, the value at each season's middle day as country.json's seasons are). The yields are the city's draws after the switch (the crews' own food among them), what the Country's own people eat, and `slack`. `footprint`: own_tiles are the farm's own ground (fields, orchard, vines, meadow, steading, pans); shared_range_tiles is open grazing, heath or woodland its herds share with the wild. `distance` is from Ridgemere, the realm's north-west corner (near: within 2 cells, middle: 3-8, far: 9 or more).",
+ "version": 3,
+ "about": "The Country's food farms and other works as they would be placed (Docs/Design/71-the-country-s-industries.md). Written by tools/country_industry.py from the 12-year run (settled years 4-12); nothing reads it yet. The defaults Atlas's Economy page and the DM's Economy tab would edit, per area and per farm. An area: `on` (false: the Country still supplies its goods), `yieldScale` (percent, on all its farms' yields), `crewScale` (percent, on all its farms' hands, rounded half up), `wages` (pennies a day for its farms' keepers and hands; null: the defaults'), `price` ('year': the farms sell from store at `priceFactor` percent of the catalogue all year; 'season': at the season's price, as the store room does now). A farm: `crew` (keepers and hands; `minHands` is the smallest sensible crew), `wages` (null: the area's, then the defaults'; fixed, not drifting: the basket takes what is over them), `basketADay` (the design's mean: what the till spends a day on the city's goods, their carriage out included, from what it holds over its wages and `reserve`), `reserve` (pennies its till keeps before its basket: two days of its wages, and a lean season's shortfall if it has one), `yield` (pieces a day of each good, the value at each season's middle day for Spring, Summer, Autumn and Winter, blended between them by Society::seasonal as country.json's seasons are; their blend's season means are the doc's 2.4 table). Precedence: a farm's own setting, then its area's, then the defaults. The yields are the city's draws after the switch (the crews' own food among them), what the Country's own people eat, and `slack`. `footprint`: own_tiles are the farm's own ground (fields, orchard, vines, meadow, steading, pans); shared_range_tiles is open grazing, heath or woodland its herds share with the wild. `distance` is from Ridgemere, the realm's north-west corner (near: within 2 cells, middle: 3-8, far: 9 or more).",
  "defaults": {
   "wages": {
    "keeper": 16,
@@ -11,7 +11,7 @@
   "floatDays": 2,
   "slack": 10,
   "estatePeople": 24,
-  "otherWorkers": 72,
+  "otherWorkers": 68,
   "openingStockDays": 7
  },
  "basket": {
@@ -54,10 +54,15 @@
    "goods": ["flour", "oats", "wheat", "straw"],
    "on": false,
    "yieldScale": 100,
+   "crewScale": 100,
+   "wages": {
+    "keeper": null,
+    "hand": null
+   },
    "price": "year",
-   "priceFactor": 101.0,
-   "revenueADay": [206.5, 195.6, 222.7, 199.2],
-   "wolvesItCanPay": 19,
+   "priceFactor": 101,
+   "revenueADay": [208.6, 197.5, 224.7, 201.2],
+   "wolvesItCanPay": 20,
    "farms": [
     {
      "id": "grain_farm_1",
@@ -67,23 +72,24 @@
      "terrain": ["plain", "meadow"],
      "near": ["road", "river"],
      "footprint": {
-      "own_tiles": 133600,
+      "own_tiles": 132000,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
       "hands": 4
      },
+     "minHands": 4,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 47.0,
+     "basketADay": 48.0,
      "reserve": 112,
      "yield": {
-      "flour": [52.7, 59.2, 59.3, 49.1],
-      "oats": [39.3, 50.2, 52.4, 38.9],
-      "straw": [2.1, 1.2, 1.7, 2.0]
+      "flour": [52.8, 60.2, 61.5, 46.7],
+      "oats": [37.9, 51.7, 55.5, 36.6],
+      "straw": [2.3, 1.0, 1.6, 2.1]
      },
      "sells": {
       "flour": 1,
@@ -101,23 +107,24 @@
      "terrain": ["plain", "meadow"],
      "near": ["road", "river"],
      "footprint": {
-      "own_tiles": 133600,
+      "own_tiles": 132000,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
       "hands": 4
      },
+     "minHands": 4,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 47.0,
+     "basketADay": 48.0,
      "reserve": 112,
      "yield": {
-      "flour": [52.7, 59.2, 59.3, 49.1],
-      "oats": [39.3, 50.2, 52.4, 38.9],
-      "straw": [2.1, 1.2, 1.7, 2.0]
+      "flour": [52.8, 60.2, 61.5, 46.7],
+      "oats": [37.9, 51.7, 55.5, 36.6],
+      "straw": [2.3, 1.0, 1.6, 2.1]
      },
      "sells": {
       "flour": 1,
@@ -135,48 +142,54 @@
    "goods": ["apples", "berries", "cider", "apple_brandy", "dried_apples", "fruit_preserves", "grapes", "wine", "brandy", "aqua_vitae"],
    "on": false,
    "yieldScale": 100,
-   "price": "year",
-   "priceFactor": 101.5,
-   "revenueADay": [480.6, 417.7, 348.1, 525.4],
-   "wolvesItCanPay": 41,
+   "crewScale": 100,
+   "wages": {
+    "keeper": null,
+    "hand": null
+   },
+   "price": "season",
+   "priceFactor": null,
+   "revenueADay": [523.7, 391.0, 431.7, 565.1],
+   "wolvesItCanPay": 44,
    "farms": [
     {
      "id": "orchard_1",
-     "kind": "orchard",
+     "kind": "orchard with a drying house",
      "region": "the central hills, a south-facing slope; with a drying house",
      "distance": "middle (3-8 cells)",
      "terrain": ["hills", "meadow"],
      "near": ["road"],
      "footprint": {
-      "own_tiles": 8000,
+      "own_tiles": 6300,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
-      "hands": 2
+      "hands": 3
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 45.8,
-     "reserve": 72,
+     "basketADay": 40.8,
+     "reserve": 92,
      "yield": {
-      "apples": [85.5, 105.9, 112.8, 67.9],
-      "berries": [0.3, 0.2, 0.3, 0.3],
-      "cider": [2.5, 0.7, 1.0, 2.2],
-      "dried_apples": [10.7, 0.0, 0.0, 17.4],
-      "fruit_preserves": [4.6, 0.5, 1.2, 17.1]
+      "apples": [70.2, 86.0, 92.4, 46.2],
+      "berries": [0.3, 0.1, 0.2, 0.3],
+      "cider": [2.3, 0.2, 0.5, 2.0],
+      "dried_apples": [21.2, 0.0, 0.0, 41.8],
+      "fruit_preserves": [5.1, 0.0, 0.0, 44.0]
      },
      "sells": {
-      "apples": 1,
-      "berries": 1,
-      "cider": 1,
-      "apple_brandy": 1,
+      "apples": 0.4,
+      "berries": 0.4,
+      "cider": 0.4,
+      "apple_brandy": 0.4,
       "dried_apples": 1,
       "fruit_preserves": 1
      },
-     "store": "a fruit store and cider press: picked late summer to autumn, kept into spring"
+     "store": "a fruit store, a cider press and a drying house: picked late summer to autumn, kept into spring; dried and preserved in autumn for the winter"
     },
     {
      "id": "orchard_2",
@@ -186,73 +199,71 @@
      "terrain": ["hills", "meadow"],
      "near": ["road"],
      "footprint": {
-      "own_tiles": 8000,
+      "own_tiles": 6300,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
       "hands": 2
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 45.8,
+     "basketADay": 14.9,
      "reserve": 72,
      "yield": {
-      "apples": [85.5, 105.9, 112.8, 67.9],
-      "berries": [0.3, 0.2, 0.3, 0.3],
-      "cider": [2.5, 0.7, 1.0, 2.2],
-      "dried_apples": [10.7, 0.0, 0.0, 17.4],
-      "fruit_preserves": [4.6, 0.5, 1.2, 17.1]
+      "apples": [70.2, 86.0, 92.4, 46.2],
+      "berries": [0.3, 0.1, 0.2, 0.3],
+      "cider": [2.3, 0.2, 0.5, 2.0]
      },
      "sells": {
-      "apples": 1,
-      "berries": 1,
-      "cider": 1,
-      "apple_brandy": 1,
-      "dried_apples": 1,
-      "fruit_preserves": 1
+      "apples": 0.6,
+      "berries": 0.6,
+      "cider": 0.6,
+      "apple_brandy": 0.6
      },
      "store": "a fruit store and cider press: picked late summer to autumn, kept into spring"
     },
     {
      "id": "orchard_3",
-     "kind": "orchard",
+     "kind": "orchard with a drying house",
      "region": "the sheltered valleys of the coast south of the city (cider country); with a drying house",
      "distance": "near (within 2 cells of the city)",
      "terrain": ["hills", "meadow"],
      "near": ["road"],
      "footprint": {
-      "own_tiles": 8000,
+      "own_tiles": 6300,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
-      "hands": 2
+      "hands": 3
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 45.8,
-     "reserve": 72,
+     "basketADay": 40.8,
+     "reserve": 92,
      "yield": {
-      "apples": [85.5, 105.9, 112.8, 67.9],
-      "berries": [0.3, 0.2, 0.3, 0.3],
-      "cider": [2.5, 0.7, 1.0, 2.2],
-      "dried_apples": [10.7, 0.0, 0.0, 17.4],
-      "fruit_preserves": [4.6, 0.5, 1.2, 17.1]
+      "apples": [70.2, 86.0, 92.4, 46.2],
+      "berries": [0.3, 0.1, 0.2, 0.3],
+      "cider": [2.3, 0.2, 0.5, 2.0],
+      "dried_apples": [21.2, 0.0, 0.0, 41.8],
+      "fruit_preserves": [5.1, 0.0, 0.0, 44.0]
      },
      "sells": {
-      "apples": 1,
-      "berries": 1,
-      "cider": 1,
-      "apple_brandy": 1,
+      "apples": 0.4,
+      "berries": 0.4,
+      "cider": 0.4,
+      "apple_brandy": 0.4,
       "dried_apples": 1,
       "fruit_preserves": 1
      },
-     "store": "a fruit store and cider press: picked late summer to autumn, kept into spring"
+     "store": "a fruit store, a cider press and a drying house: picked late summer to autumn, kept into spring; dried and preserved in autumn for the winter"
     },
     {
      "id": "orchard_4",
@@ -262,33 +273,65 @@
      "terrain": ["hills", "meadow"],
      "near": ["road"],
      "footprint": {
-      "own_tiles": 8000,
+      "own_tiles": 6300,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
       "hands": 2
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 45.8,
+     "basketADay": 14.9,
      "reserve": 72,
      "yield": {
-      "apples": [85.5, 105.9, 112.8, 67.9],
-      "berries": [0.3, 0.2, 0.3, 0.3],
-      "cider": [2.5, 0.7, 1.0, 2.2],
-      "dried_apples": [10.7, 0.0, 0.0, 17.4],
-      "fruit_preserves": [4.6, 0.5, 1.2, 17.1]
+      "apples": [70.2, 86.0, 92.4, 46.2],
+      "berries": [0.3, 0.1, 0.2, 0.3],
+      "cider": [2.3, 0.2, 0.5, 2.0]
      },
      "sells": {
-      "apples": 1,
-      "berries": 1,
-      "cider": 1,
-      "apple_brandy": 1,
-      "dried_apples": 1,
-      "fruit_preserves": 1
+      "apples": 0.6,
+      "berries": 0.6,
+      "cider": 0.6,
+      "apple_brandy": 0.6
+     },
+     "store": "a fruit store and cider press: picked late summer to autumn, kept into spring"
+    },
+    {
+     "id": "orchard_5",
+     "kind": "orchard",
+     "region": "a sheltered valley where the central hills meet the plains",
+     "distance": "middle (3-8 cells)",
+     "terrain": ["hills", "meadow"],
+     "near": ["road"],
+     "footprint": {
+      "own_tiles": 6300,
+      "shared_range_tiles": 0
+     },
+     "crew": {
+      "keepers": 1,
+      "hands": 2
+     },
+     "minHands": 2,
+     "wages": {
+      "keeper": null,
+      "hand": null
+     },
+     "basketADay": 14.9,
+     "reserve": 72,
+     "yield": {
+      "apples": [70.2, 86.0, 92.4, 46.2],
+      "berries": [0.3, 0.1, 0.2, 0.3],
+      "cider": [2.3, 0.2, 0.5, 2.0]
+     },
+     "sells": {
+      "apples": 0.6,
+      "berries": 0.6,
+      "cider": 0.6,
+      "apple_brandy": 0.6
      },
      "store": "a fruit store and cider press: picked late summer to autumn, kept into spring"
     },
@@ -300,22 +343,23 @@
      "terrain": ["hills"],
      "near": ["road"],
      "footprint": {
-      "own_tiles": 14200,
+      "own_tiles": 17900,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
-      "hands": 4
+      "hands": 6
      },
+     "minHands": 3,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 65.9,
-     "reserve": 2300,
+     "basketADay": 75.2,
+     "reserve": 152,
      "yield": {
-      "grapes": [19.3, 26.5, 23.3, 16.0],
-      "wine": [23.9, 18.6, 0.1, 19.3]
+      "grapes": [19.3, 27.7, 28.5, 13.6],
+      "wine": [26.8, 16.1, 27.1, 17.2]
      },
      "sells": {
       "grapes": 1,
@@ -323,7 +367,7 @@
       "brandy": 1,
       "aqua_vitae": 1
      },
-     "store": "a press house and cellar: the vintage in autumn, wine by the cask all year"
+     "store": "a press house and cellar: pressed at the harvest, sold by the cask all year"
     }
    ]
   },
@@ -333,10 +377,15 @@
    "goods": ["raw_meat", "pig", "mutton", "rabbit", "meal", "sheep", "offal", "eggs", "milk", "butter", "cheese", "tallow", "hide", "bones", "wool", "sheepskin", "small_pelt"],
    "on": false,
    "yieldScale": 100,
+   "crewScale": 100,
+   "wages": {
+    "keeper": null,
+    "hand": null
+   },
    "price": "season",
    "priceFactor": null,
-   "revenueADay": [963.8, 967.2, 944.5, 973.9],
-   "wolvesItCanPay": 90,
+   "revenueADay": [973.4, 975.6, 941.7, 983.3],
+   "wolvesItCanPay": 91,
    "farms": [
     {
      "id": "cattle_and_dairy_farm_1",
@@ -346,26 +395,27 @@
      "terrain": ["meadow", "pasture", "plain"],
      "near": ["city", "road"],
      "footprint": {
-      "own_tiles": 28700,
+      "own_tiles": 28300,
       "shared_range_tiles": 84300
      },
      "crew": {
       "keepers": 1,
       "hands": 4
      },
+     "minHands": 3,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 51.9,
+     "basketADay": 52.3,
      "reserve": 112,
      "yield": {
-      "raw_meat": [46.0, 43.8, 39.7, 40.7],
-      "meal": [4.1, 2.5, 2.5, 3.8],
-      "milk": [26.9, 36.5, 38.3, 26.1],
-      "hide": [1.2, 1.1, 1.1, 1.3],
-      "tallow": [12.8, 12.2, 13.0, 11.6],
-      "bones": [2.7, 2.6, 2.8, 2.3]
+      "raw_meat": [47.6, 44.1, 39.1, 40.0],
+      "meal": [4.5, 2.3, 2.0, 4.0],
+      "milk": [25.8, 37.7, 41.0, 23.8],
+      "hide": [1.2, 1.0, 0.9, 1.4],
+      "tallow": [13.4, 12.3, 12.0, 11.5],
+      "bones": [2.8, 2.6, 2.6, 2.2]
      },
      "sells": {
       "raw_meat": 0.65,
@@ -387,26 +437,27 @@
      "terrain": ["meadow", "pasture", "plain"],
      "near": ["city", "road"],
      "footprint": {
-      "own_tiles": 28700,
+      "own_tiles": 28300,
       "shared_range_tiles": 84300
      },
      "crew": {
       "keepers": 1,
       "hands": 4
      },
+     "minHands": 3,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 51.9,
+     "basketADay": 52.3,
      "reserve": 112,
      "yield": {
-      "raw_meat": [46.0, 43.8, 39.7, 40.7],
-      "meal": [4.1, 2.5, 2.5, 3.8],
-      "milk": [26.9, 36.5, 38.3, 26.1],
-      "hide": [1.2, 1.1, 1.1, 1.3],
-      "tallow": [12.8, 12.2, 13.0, 11.6],
-      "bones": [2.7, 2.6, 2.8, 2.3]
+      "raw_meat": [47.6, 44.1, 39.1, 40.0],
+      "meal": [4.5, 2.3, 2.0, 4.0],
+      "milk": [25.8, 37.7, 41.0, 23.8],
+      "hide": [1.2, 1.0, 0.9, 1.4],
+      "tallow": [13.4, 12.3, 12.0, 11.5],
+      "bones": [2.8, 2.6, 2.6, 2.2]
      },
      "sells": {
       "raw_meat": 0.65,
@@ -428,26 +479,27 @@
      "terrain": ["meadow", "pasture", "plain"],
      "near": ["city", "road"],
      "footprint": {
-      "own_tiles": 28700,
+      "own_tiles": 28300,
       "shared_range_tiles": 84300
      },
      "crew": {
       "keepers": 1,
       "hands": 4
      },
+     "minHands": 3,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 51.9,
+     "basketADay": 52.3,
      "reserve": 112,
      "yield": {
-      "raw_meat": [46.0, 43.8, 39.7, 40.7],
-      "meal": [4.1, 2.5, 2.5, 3.8],
-      "milk": [26.9, 36.5, 38.3, 26.1],
-      "hide": [1.2, 1.1, 1.1, 1.3],
-      "tallow": [12.8, 12.2, 13.0, 11.6],
-      "bones": [2.7, 2.6, 2.8, 2.3]
+      "raw_meat": [47.6, 44.1, 39.1, 40.0],
+      "meal": [4.5, 2.3, 2.0, 4.0],
+      "milk": [25.8, 37.7, 41.0, 23.8],
+      "hide": [1.2, 1.0, 0.9, 1.4],
+      "tallow": [13.4, 12.3, 12.0, 11.5],
+      "bones": [2.8, 2.6, 2.6, 2.2]
      },
      "sells": {
       "raw_meat": 0.65,
@@ -476,19 +528,20 @@
       "keepers": 1,
       "hands": 4
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 57.1,
+     "basketADay": 57.8,
      "reserve": 112,
      "yield": {
-      "raw_meat": [24.8, 23.6, 21.4, 21.9],
-      "meal": [2.2, 1.4, 1.3, 2.0],
-      "pig": [8.7, 10.1, 10.7, 10.4],
-      "hide": [0.8, 0.7, 0.7, 0.9],
-      "tallow": [7.7, 7.3, 7.8, 7.0],
-      "bones": [1.6, 1.5, 1.7, 1.4]
+      "raw_meat": [25.6, 23.8, 21.1, 21.5],
+      "meal": [2.4, 1.2, 1.1, 2.1],
+      "pig": [8.1, 10.4, 10.9, 10.7],
+      "hide": [0.8, 0.7, 0.6, 0.9],
+      "tallow": [8.0, 7.4, 7.2, 6.9],
+      "bones": [1.7, 1.5, 1.5, 1.3]
      },
      "sells": {
       "raw_meat": 0.35,
@@ -516,19 +569,20 @@
       "keepers": 1,
       "hands": 4
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 57.1,
+     "basketADay": 57.8,
      "reserve": 112,
      "yield": {
-      "raw_meat": [24.8, 23.6, 21.4, 21.9],
-      "meal": [2.2, 1.4, 1.3, 2.0],
-      "pig": [8.7, 10.1, 10.7, 10.4],
-      "hide": [0.8, 0.7, 0.7, 0.9],
-      "tallow": [7.7, 7.3, 7.8, 7.0],
-      "bones": [1.6, 1.5, 1.7, 1.4]
+      "raw_meat": [25.6, 23.8, 21.1, 21.5],
+      "meal": [2.4, 1.2, 1.1, 2.1],
+      "pig": [8.1, 10.4, 10.9, 10.7],
+      "hide": [0.8, 0.7, 0.6, 0.9],
+      "tallow": [8.0, 7.4, 7.2, 6.9],
+      "bones": [1.7, 1.5, 1.5, 1.3]
      },
      "sells": {
       "raw_meat": 0.35,
@@ -556,19 +610,20 @@
       "keepers": 1,
       "hands": 4
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 57.1,
+     "basketADay": 57.8,
      "reserve": 112,
      "yield": {
-      "raw_meat": [24.8, 23.6, 21.4, 21.9],
-      "meal": [2.2, 1.4, 1.3, 2.0],
-      "pig": [8.7, 10.1, 10.7, 10.4],
-      "hide": [0.8, 0.7, 0.7, 0.9],
-      "tallow": [7.7, 7.3, 7.8, 7.0],
-      "bones": [1.6, 1.5, 1.7, 1.4]
+      "raw_meat": [25.6, 23.8, 21.1, 21.5],
+      "meal": [2.4, 1.2, 1.1, 2.1],
+      "pig": [8.1, 10.4, 10.9, 10.7],
+      "hide": [0.8, 0.7, 0.6, 0.9],
+      "tallow": [8.0, 7.4, 7.2, 6.9],
+      "bones": [1.7, 1.5, 1.5, 1.3]
      },
      "sells": {
       "raw_meat": 0.35,
@@ -582,6 +637,72 @@
      "store": "fattened on the autumn mast; salt pork carries the winter"
     },
     {
+     "id": "rabbit_warren_1",
+     "kind": "rabbit warren",
+     "region": "the dunes and sandy heath of the SW marsh's coast",
+     "distance": "middle (3-8 cells)",
+     "terrain": ["heath", "dunes", "desert"],
+     "near": ["road"],
+     "footprint": {
+      "own_tiles": 1000,
+      "shared_range_tiles": 22600
+     },
+     "crew": {
+      "keepers": 1,
+      "hands": 1
+     },
+     "minHands": 1,
+     "wages": {
+      "keeper": null,
+      "hand": null
+     },
+     "basketADay": 28.9,
+     "reserve": 52,
+     "yield": {
+      "rabbit": [98.3, 91.7, 102.8, 105.0],
+      "small_pelt": [1.0, 0.8, 0.6, 1.1]
+     },
+     "sells": {
+      "rabbit": 1,
+      "small_pelt": 1,
+      "eggs": 1
+     },
+     "store": "all year"
+    },
+    {
+     "id": "rabbit_warren_2",
+     "kind": "rabbit warren",
+     "region": "the sandy edge of the SE desert",
+     "distance": "far (9 cells or more)",
+     "terrain": ["heath", "dunes", "desert"],
+     "near": ["road"],
+     "footprint": {
+      "own_tiles": 1000,
+      "shared_range_tiles": 22600
+     },
+     "crew": {
+      "keepers": 1,
+      "hands": 1
+     },
+     "minHands": 1,
+     "wages": {
+      "keeper": null,
+      "hand": null
+     },
+     "basketADay": 28.9,
+     "reserve": 52,
+     "yield": {
+      "rabbit": [98.3, 91.7, 102.8, 105.0],
+      "small_pelt": [1.0, 0.8, 0.6, 1.1]
+     },
+     "sells": {
+      "rabbit": 1,
+      "small_pelt": 1,
+      "eggs": 1
+     },
+     "store": "all year"
+    },
+    {
      "id": "sheep_and_goat_run_1",
      "kind": "sheep and goat run",
      "region": "the central hills' downs",
@@ -590,23 +711,24 @@
      "near": ["road"],
      "footprint": {
       "own_tiles": 2100,
-      "shared_range_tiles": 46700
+      "shared_range_tiles": 46800
      },
      "crew": {
       "keepers": 1,
       "hands": 3
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 49.3,
+     "basketADay": 50.0,
      "reserve": 92,
      "yield": {
-      "mutton": [23.5, 26.9, 23.9, 26.3],
-      "wool": [6.1, 6.3, 6.2, 5.4],
-      "tallow": [7.7, 7.3, 7.8, 7.0],
-      "bones": [1.6, 1.5, 1.7, 1.4]
+      "mutton": [22.0, 28.5, 22.6, 27.8],
+      "wool": [6.3, 6.6, 5.7, 5.3],
+      "tallow": [8.0, 7.4, 7.2, 6.9],
+      "bones": [1.7, 1.5, 1.5, 1.3]
      },
      "sells": {
       "mutton": 1,
@@ -627,23 +749,24 @@
      "near": ["road"],
      "footprint": {
       "own_tiles": 2100,
-      "shared_range_tiles": 46700
+      "shared_range_tiles": 46800
      },
      "crew": {
       "keepers": 1,
       "hands": 3
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 49.3,
+     "basketADay": 50.0,
      "reserve": 92,
      "yield": {
-      "mutton": [23.5, 26.9, 23.9, 26.3],
-      "wool": [6.1, 6.3, 6.2, 5.4],
-      "tallow": [7.7, 7.3, 7.8, 7.0],
-      "bones": [1.6, 1.5, 1.7, 1.4]
+      "mutton": [22.0, 28.5, 22.6, 27.8],
+      "wool": [6.3, 6.6, 5.7, 5.3],
+      "tallow": [8.0, 7.4, 7.2, 6.9],
+      "bones": [1.7, 1.5, 1.5, 1.3]
      },
      "sells": {
       "mutton": 1,
@@ -654,70 +777,6 @@
       "bones": 0.2
      },
      "store": "lambing in spring, shearing in summer, killing in autumn and winter"
-    },
-    {
-     "id": "rabbit_warren_1",
-     "kind": "rabbit warren",
-     "region": "the dunes and sandy heath of the SW marsh's coast",
-     "distance": "middle (3-8 cells)",
-     "terrain": ["heath", "dunes", "desert"],
-     "near": ["road"],
-     "footprint": {
-      "own_tiles": 1100,
-      "shared_range_tiles": 22600
-     },
-     "crew": {
-      "keepers": 1,
-      "hands": 1
-     },
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 28.4,
-     "reserve": 52,
-     "yield": {
-      "rabbit": [98.0, 93.6, 101.3, 103.5],
-      "small_pelt": [1.0, 0.9, 0.8, 1.1]
-     },
-     "sells": {
-      "rabbit": 1,
-      "small_pelt": 1,
-      "eggs": 1
-     },
-     "store": "all year"
-    },
-    {
-     "id": "rabbit_warren_2",
-     "kind": "rabbit warren",
-     "region": "the sandy edge of the SE desert",
-     "distance": "far (9 cells or more)",
-     "terrain": ["heath", "dunes", "desert"],
-     "near": ["road"],
-     "footprint": {
-      "own_tiles": 1100,
-      "shared_range_tiles": 22600
-     },
-     "crew": {
-      "keepers": 1,
-      "hands": 1
-     },
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 28.4,
-     "reserve": 52,
-     "yield": {
-      "rabbit": [98.0, 93.6, 101.3, 103.5],
-      "small_pelt": [1.0, 0.9, 0.8, 1.1]
-     },
-     "sells": {
-      "rabbit": 1,
-      "small_pelt": 1,
-      "eggs": 1
-     },
-     "store": "all year"
     }
    ]
   },
@@ -727,11 +786,106 @@
    "goods": ["fish", "shellfish"],
    "on": false,
    "yieldScale": 100,
+   "crewScale": 100,
+   "wages": {
+    "keeper": null,
+    "hand": null
+   },
    "price": "season",
    "priceFactor": null,
-   "revenueADay": [375.4, 370.9, 376.0, 423.8],
-   "wolvesItCanPay": 34,
+   "revenueADay": [379.3, 373.7, 375.5, 428.1],
+   "wolvesItCanPay": 35,
    "farms": [
+    {
+     "id": "eel_and_fowl_marsh_1",
+     "kind": "eel and fowl marsh",
+     "region": "the SW marsh (eel traps, reed cutting, wildfowl)",
+     "distance": "middle (3-8 cells)",
+     "terrain": ["marsh"],
+     "near": ["water", "road"],
+     "footprint": {
+      "own_tiles": 375,
+      "shared_range_tiles": 15000
+     },
+     "crew": {
+      "keepers": 1,
+      "hands": 1
+     },
+     "minHands": 1,
+     "wages": {
+      "keeper": null,
+      "hand": null
+     },
+     "basketADay": 22.0,
+     "reserve": 52,
+     "yield": {
+      "fish": [38.8, 39.1, 34.7, 49.2]
+     },
+     "sells": {
+      "fish": 0.2
+     },
+     "store": "best in the autumn eel run; smoked eels for the winter"
+    },
+    {
+     "id": "lake_and_river_boat_1",
+     "kind": "lake and river boat",
+     "region": "a lake under the snowy mountains along the north",
+     "distance": "middle (3-8 cells)",
+     "terrain": ["lake", "river"],
+     "near": ["lake", "river"],
+     "footprint": {
+      "own_tiles": 240,
+      "shared_range_tiles": 0
+     },
+     "crew": {
+      "keepers": 1,
+      "hands": 1
+     },
+     "minHands": 1,
+     "wages": {
+      "keeper": null,
+      "hand": null
+     },
+     "basketADay": 10.0,
+     "reserve": 52,
+     "yield": {
+      "fish": [29.1, 29.3, 26.0, 36.9]
+     },
+     "sells": {
+      "fish": 0.3
+     },
+     "store": "steady, smaller"
+    },
+    {
+     "id": "lake_and_river_boat_2",
+     "kind": "lake and river boat",
+     "region": "the largest river of the central plains",
+     "distance": "middle (3-8 cells)",
+     "terrain": ["lake", "river"],
+     "near": ["lake", "river"],
+     "footprint": {
+      "own_tiles": 240,
+      "shared_range_tiles": 0
+     },
+     "crew": {
+      "keepers": 1,
+      "hands": 1
+     },
+     "minHands": 1,
+     "wages": {
+      "keeper": null,
+      "hand": null
+     },
+     "basketADay": 10.0,
+     "reserve": 52,
+     "yield": {
+      "fish": [29.1, 29.3, 26.0, 36.9]
+     },
+     "sells": {
+      "fish": 0.3
+     },
+     "store": "steady, smaller"
+    },
     {
      "id": "sea_fishing_boat_1",
      "kind": "sea fishing boat",
@@ -747,15 +901,16 @@
       "keepers": 1,
       "hands": 2
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 30.7,
+     "basketADay": 31.2,
      "reserve": 72,
      "yield": {
-      "fish": [25.0, 24.0, 23.4, 28.7],
-      "shellfish": [44.9, 33.0, 37.0, 52.6]
+      "fish": [24.2, 24.4, 21.7, 30.8],
+      "shellfish": [45.5, 30.7, 34.9, 57.0]
      },
      "sells": {
       "fish": 0.5,
@@ -778,15 +933,16 @@
       "keepers": 1,
       "hands": 2
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 30.7,
+     "basketADay": 31.2,
      "reserve": 72,
      "yield": {
-      "fish": [25.0, 24.0, 23.4, 28.7],
-      "shellfish": [44.9, 33.0, 37.0, 52.6]
+      "fish": [24.2, 24.4, 21.7, 30.8],
+      "shellfish": [45.5, 30.7, 34.9, 57.0]
      },
      "sells": {
       "fish": 0.5,
@@ -809,15 +965,16 @@
       "keepers": 1,
       "hands": 2
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 30.7,
+     "basketADay": 31.2,
      "reserve": 72,
      "yield": {
-      "fish": [25.0, 24.0, 23.4, 28.7],
-      "shellfish": [44.9, 33.0, 37.0, 52.6]
+      "fish": [24.2, 24.4, 21.7, 30.8],
+      "shellfish": [45.5, 30.7, 34.9, 57.0]
      },
      "sells": {
       "fish": 0.5,
@@ -840,108 +997,22 @@
       "keepers": 1,
       "hands": 2
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 30.7,
+     "basketADay": 31.2,
      "reserve": 72,
      "yield": {
-      "fish": [25.0, 24.0, 23.4, 28.7],
-      "shellfish": [44.9, 33.0, 37.0, 52.6]
+      "fish": [24.2, 24.4, 21.7, 30.8],
+      "shellfish": [45.5, 30.7, 34.9, 57.0]
      },
      "sells": {
       "fish": 0.5,
       "shellfish": 1
      },
      "store": "the winter runs are the best; shellfish raked from the shore beds; salted and smoked ashore"
-    },
-    {
-     "id": "lake_and_river_boat_1",
-     "kind": "lake and river boat",
-     "region": "a lake under the snowy mountains along the north",
-     "distance": "middle (3-8 cells)",
-     "terrain": ["lake", "river"],
-     "near": ["lake", "river"],
-     "footprint": {
-      "own_tiles": 240,
-      "shared_range_tiles": 0
-     },
-     "crew": {
-      "keepers": 1,
-      "hands": 1
-     },
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 9.8,
-     "reserve": 52,
-     "yield": {
-      "fish": [30.0, 28.8, 28.1, 34.4]
-     },
-     "sells": {
-      "fish": 0.3
-     },
-     "store": "steady, smaller"
-    },
-    {
-     "id": "lake_and_river_boat_2",
-     "kind": "lake and river boat",
-     "region": "the largest river of the central plains",
-     "distance": "middle (3-8 cells)",
-     "terrain": ["lake", "river"],
-     "near": ["lake", "river"],
-     "footprint": {
-      "own_tiles": 240,
-      "shared_range_tiles": 0
-     },
-     "crew": {
-      "keepers": 1,
-      "hands": 1
-     },
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 9.8,
-     "reserve": 52,
-     "yield": {
-      "fish": [30.0, 28.8, 28.1, 34.4]
-     },
-     "sells": {
-      "fish": 0.3
-     },
-     "store": "steady, smaller"
-    },
-    {
-     "id": "eel_and_fowl_marsh_1",
-     "kind": "eel and fowl marsh",
-     "region": "the SW marsh (eel traps, reed cutting, wildfowl)",
-     "distance": "middle (3-8 cells)",
-     "terrain": ["marsh"],
-     "near": ["water", "road"],
-     "footprint": {
-      "own_tiles": 375,
-      "shared_range_tiles": 15000
-     },
-     "crew": {
-      "keepers": 1,
-      "hands": 1
-     },
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 21.8,
-     "reserve": 52,
-     "yield": {
-      "fish": [39.9, 38.4, 37.5, 45.9]
-     },
-     "sells": {
-      "fish": 0.2
-     },
-     "store": "best in the autumn eel run; smoked eels for the winter"
     }
    ]
   },
@@ -951,9 +1022,14 @@
    "goods": ["honey", "beeswax"],
    "on": false,
    "yieldScale": 100,
+   "crewScale": 100,
+   "wages": {
+    "keeper": null,
+    "hand": null
+   },
    "price": "season",
    "priceFactor": null,
-   "revenueADay": [149.0, 141.1, 139.8, 129.5],
+   "revenueADay": [150.5, 142.5, 140.8, 130.8],
    "wolvesItCanPay": 12,
    "farms": [
     {
@@ -964,21 +1040,22 @@
      "terrain": ["hills", "meadow", "scrub"],
      "near": ["orchard"],
      "footprint": {
-      "own_tiles": 3400,
+      "own_tiles": 3300,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
       "hands": 1
      },
+     "minHands": 1,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 20.6,
+     "basketADay": 21.1,
      "reserve": 52,
      "yield": {
-      "honey": [24.2, 28.7, 27.4, 21.2],
+      "honey": [24.2, 29.6, 28.4, 19.7],
       "beeswax": [0.4, 0.2, 0.2, 0.4]
      },
      "sells": {
@@ -995,21 +1072,22 @@
      "terrain": ["hills", "meadow", "scrub"],
      "near": ["orchard"],
      "footprint": {
-      "own_tiles": 3400,
+      "own_tiles": 3300,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
       "hands": 1
      },
+     "minHands": 1,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 20.6,
+     "basketADay": 21.1,
      "reserve": 52,
      "yield": {
-      "honey": [24.2, 28.7, 27.4, 21.2],
+      "honey": [24.2, 29.6, 28.4, 19.7],
       "beeswax": [0.4, 0.2, 0.2, 0.4]
      },
      "sells": {
@@ -1026,21 +1104,22 @@
      "terrain": ["hills", "meadow", "scrub"],
      "near": ["orchard"],
      "footprint": {
-      "own_tiles": 3400,
+      "own_tiles": 3300,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
       "hands": 1
      },
+     "minHands": 1,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 20.6,
+     "basketADay": 21.1,
      "reserve": 52,
      "yield": {
-      "honey": [24.2, 28.7, 27.4, 21.2],
+      "honey": [24.2, 29.6, 28.4, 19.7],
       "beeswax": [0.4, 0.2, 0.2, 0.4]
      },
      "sells": {
@@ -1057,9 +1136,14 @@
    "goods": ["salt"],
    "on": false,
    "yieldScale": 100,
+   "crewScale": 100,
+   "wages": {
+    "keeper": null,
+    "hand": null
+   },
    "price": "season",
    "priceFactor": null,
-   "revenueADay": [115.0, 105.9, 105.5, 113.2],
+   "revenueADay": [116.1, 106.8, 105.8, 114.3],
    "wolvesItCanPay": 10,
    "farms": [
     {
@@ -1070,21 +1154,22 @@
      "terrain": ["coast", "marsh"],
      "near": ["sea", "road"],
      "footprint": {
-      "own_tiles": 3000,
+      "own_tiles": 2900,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
       "hands": 4
      },
+     "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 53.9,
+     "basketADay": 54.8,
      "reserve": 112,
      "yield": {
-      "salt": [102.2, 95.8, 97.1, 103.1]
+      "salt": [103.5, 94.8, 95.9, 104.8]
      },
      "sells": {
       "salt": 1
@@ -1097,15 +1182,16 @@
  "others": [
   {
    "industry": "woods: timber, firewood, bark, charcoal",
-   "revenueADay": 361,
-   "workersItCanPay": 28,
+   "revenueADay": 354,
+   "workersItCanPay": 30,
    "workersPlausible": 11,
    "workersCounted": 11,
-   "units": [
+   "works": [
     {
      "kind": "logging camp",
-     "count": 4,
-     "region": "two in the conifer forests of the snowy mountains' foothills along the north, two in the central hills' oak woods",
+     "count": 2,
+     "region": "one in the conifer forests of the snowy mountains' foothills along the north, one in the central hills' oak woods",
+     "workers": [1, 1],
      "footprint": {
       "own_tiles": 1200,
       "shared_range_tiles": 40000
@@ -1113,8 +1199,9 @@
     },
     {
      "kind": "coppice and woodcutters' hut",
-     "count": 4,
-     "region": "beside the farm villages and two near the city, for firewood (the city burns 340-460 a day)",
+     "count": 2,
+     "region": "one beside the grain farms' villages on the plains, one in the woods nearest the city (the city burns 340-460 firewood a day)",
+     "workers": [2, 2],
      "footprint": {
       "own_tiles": 300,
       "shared_range_tiles": 10000
@@ -1122,8 +1209,9 @@
     },
     {
      "kind": "charcoal hearth",
-     "count": 3,
-     "region": "the foothill forests beside the bloomeries (two) and the central hills' woods (one)",
+     "count": 2,
+     "region": "in the foothill forests, one beside each bloomery",
+     "workers": [1, 1],
      "footprint": {
       "own_tiles": 900,
       "shared_range_tiles": 0
@@ -1132,7 +1220,8 @@
     {
      "kind": "water sawmill",
      "count": 2,
-     "region": "one on a river below each pair of logging camps",
+     "region": "one on a river below each logging camp",
+     "workers": [2, 1],
      "footprint": {
       "own_tiles": 600,
       "shared_range_tiles": 0
@@ -1142,15 +1231,16 @@
   },
   {
    "industry": "mining and metals",
-   "revenueADay": 198,
-   "workersItCanPay": 16,
+   "revenueADay": 187,
+   "workersItCanPay": 14,
    "workersPlausible": 38,
-   "workersCounted": 16,
-   "units": [
+   "workersCounted": 14,
+   "works": [
     {
      "kind": "iron mine",
      "count": 2,
      "region": "two valleys of the snowy mountains along the north",
+     "workers": [4, 4],
      "footprint": {
       "own_tiles": 1200,
       "shared_range_tiles": 0
@@ -1160,6 +1250,7 @@
      "kind": "bloomery (iron smelter)",
      "count": 2,
      "region": "beside the mines, with charcoal from the foothill forests",
+     "workers": [2, 1],
      "footprint": {
       "own_tiles": 600,
       "shared_range_tiles": 0
@@ -1167,8 +1258,9 @@
     },
     {
      "kind": "copper pit",
-     "count": 1,
-     "region": "the snowy mountains' foothills (the copper ore)",
+     "count": 2,
+     "region": "the snowy mountains' foothills, and the central hills (copper ore, and some tin)",
+     "workers": [1, 1],
      "footprint": {
       "own_tiles": 600,
       "shared_range_tiles": 0
@@ -1178,6 +1270,7 @@
      "kind": "tin streams",
      "count": 1,
      "region": "a stream of the central hills (the tin ore)",
+     "workers": [1],
      "footprint": {
       "own_tiles": 600,
       "shared_range_tiles": 0
@@ -1187,15 +1280,16 @@
   },
   {
    "industry": "stone, lime, clay, sand",
-   "revenueADay": 108,
-   "workersItCanPay": 8,
-   "workersPlausible": 13,
-   "workersCounted": 8,
-   "units": [
+   "revenueADay": 102,
+   "workersItCanPay": 7,
+   "workersPlausible": 18,
+   "workersCounted": 7,
+   "works": [
     {
      "kind": "quarry (stone and limestone)",
      "count": 2,
      "region": "the central hills (limestone) and the nearest hills east of the city (building stone)",
+     "workers": [3, 2],
      "footprint": {
       "own_tiles": 4800,
       "shared_range_tiles": 0
@@ -1205,6 +1299,7 @@
      "kind": "clay pit and sand bank",
      "count": 2,
      "region": "river clay on the central plains; sand on the coast south of the city",
+     "workers": [1, 1],
      "footprint": {
       "own_tiles": 2400,
       "shared_range_tiles": 0
@@ -1214,17 +1309,18 @@
   },
   {
    "industry": "fibre: hemp, flax, linen",
-   "revenueADay": 91,
+   "revenueADay": 87,
    "workersItCanPay": 7,
-   "workersPlausible": 19,
+   "workersPlausible": 18,
    "workersCounted": 7,
-   "units": [
+   "works": [
     {
-     "kind": "hemp and flax fields",
-     "count": 3,
-     "region": "on the grain farms (a fourth field), and wet ground by the rivers for retting",
+     "kind": "hemp and flax field",
+     "count": 2,
+     "region": "a field of each grain farm on the plains, its retting pond on the farm's river",
+     "workers": [4, 3],
      "footprint": {
-      "own_tiles": 4800,
+      "own_tiles": 7000,
       "shared_range_tiles": 0
      }
     }
@@ -1236,29 +1332,21 @@
    "workersItCanPay": 0,
    "workersPlausible": 1,
    "workersCounted": 0,
-   "units": [
-    {
-     "kind": "herb gatherers' cottage",
-     "count": 1,
-     "region": "the SW marsh's edge (the central hills' woods are gathered from it too)",
-     "footprint": {
-      "own_tiles": 150,
-      "shared_range_tiles": 22500
-     }
-    }
-   ]
+   "works": [],
+   "about": "No works of its own (about 8p a day pays no one): gathered at the marsh's edge by the eel and fowl marsh's crew and in the central hills' woods; the pennies stay the Country's."
   },
   {
    "industry": "country workshops' goods",
-   "revenueADay": 427,
-   "workersItCanPay": 38,
-   "workersPlausible": 30,
-   "workersCounted": 30,
-   "units": [
+   "revenueADay": 420,
+   "workersItCanPay": 37,
+   "workersPlausible": 29,
+   "workersCounted": 29,
+   "works": [
     {
      "kind": "village pottery",
      "count": 2,
      "region": "beside the clay pits of the central plains and the coast south of the city",
+     "workers": [2, 2],
      "footprint": {
       "own_tiles": 500,
       "shared_range_tiles": 0
@@ -1267,7 +1355,8 @@
     {
      "kind": "weavers' and soap boilers' cottages",
      "count": 3,
-     "region": "the farm villages (winter work)",
+     "region": "the farm villages (winter work: scarves, soap, bandages)",
+     "workers": [5, 5, 4],
      "footprint": {
       "own_tiles": 300,
       "shared_range_tiles": 0
@@ -1277,8 +1366,19 @@
      "kind": "country press and paper mill",
      "count": 2,
      "region": "on the rivers of the central plains, one nearer the city",
+     "workers": [5, 5],
      "footprint": {
       "own_tiles": 600,
+      "shared_range_tiles": 0
+     }
+    },
+    {
+     "kind": "village smithy and tanyard",
+     "count": 1,
+     "region": "the grain farms' village on the plains (iron hoops, nails, cookpots; a little leather): one, for 1.5 workers' work",
+     "workers": [1],
+     "footprint": {
+      "own_tiles": 500,
       "shared_range_tiles": 0
      }
     }
