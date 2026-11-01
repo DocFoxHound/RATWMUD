@@ -10,7 +10,7 @@ By district:
   abbey: buildings 8, business:brewery 1, kind:hall 6, kind:lodging 1, kind:works 1, posts 37
   admin: beds 33, buildings 14, business:scriptorium 1, homes 9, kind:hall 4, kind:home 8, kind:shop 1, kind:tavern 1, posts 20
   cinders: beds 45, buildings 26, business:armory 1, business:brewery 1, business:brickworks 2, business:butcher 1, business:cartwright 1, business:charcoal 1, business:foundry 1, business:glassworks 1, business:inn 1, business:ironworks 1, business:papermill 1, business:plasterworks 1, business:sawmill 1, business:smithy 3, homes 11, kind:home 8, kind:shop 5, kind:store 1, kind:tavern 1, kind:works 11, posts 46
-  commons: beds 255, buildings 76, business:apothecary 1, business:bakery 5, business:barber 1, business:brewery 1, business:builders_yard 1, business:butcher 3, business:carpenter 2, business:carters 1, business:cartographer 1, business:chandlery 1, business:cooperage 2, business:fishmonger 1, business:glassworks 1, business:inn 1, business:jeweler 1, business:moneychanger 1, business:perfumer 1, business:pottery 1, business:preserver 3, business:printing_house 1, business:provisioner 6, business:saddlery 1, business:smithy 2, business:stables 1, business:tailor 1, business:vintner 1, business:weaver 1, homes 82, kind:flats 12, kind:hall 4, kind:home 20, kind:inn 1, kind:shop 33, kind:tavern 2, kind:works 4, posts 140
+  commons: beds 255, buildings 76, business:apothecary 2, business:bakery 5, business:barber 1, business:brewery 1, business:builders_yard 1, business:butcher 3, business:carpenter 2, business:carters 1, business:cartographer 1, business:chandlery 1, business:cooperage 2, business:fishmonger 1, business:glassworks 1, business:inn 1, business:jeweler 1, business:moneychanger 1, business:perfumer 1, business:pottery 1, business:preserver 3, business:printing_house 1, business:provisioner 6, business:smithy 2, business:stables 1, business:tailor 1, business:vintner 1, business:weaver 1, homes 82, kind:flats 12, kind:hall 4, kind:home 20, kind:inn 1, kind:shop 33, kind:tavern 2, kind:works 4, posts 140
   estate_fell: beds 17, buildings 9, business:distillery 1, business:preserver 1, business:press 1, homes 4, kind:home 3, kind:seat 1, kind:store 1, kind:works 4, posts 17
   estate_grayrock: beds 17, buildings 6, homes 4, kind:hall 1, kind:home 3, kind:seat 1, kind:works 1, posts 6
   estate_mossgrave: beds 17, buildings 6, homes 4, kind:hall 1, kind:home 3, kind:seat 1, kind:works 1, posts 7
@@ -18,20 +18,20 @@ By district:
   keep: beds 15, buildings 2, homes 1, kind:hall 1, kind:lodging 1, posts 7
   none: posts 16
   northgate: beds 53, buildings 13, business:bakery 1, business:butcher 1, business:carpenter 1, business:inn 1, business:provisioner 1, homes 18, kind:flats 3, kind:hall 1, kind:home 4, kind:shop 5, posts 12
-  outdoors: business:bakery 3, business:butcher 3, business:fishmonger 1, business:herbalist 1, business:preserver 1, business:provisioner 1, business:rag_and_bone 1, business:stall 3, posts 82
+  outdoors: business:apothecary 1, business:bakery 3, business:butcher 3, business:fishmonger 1, business:preserver 1, business:provisioner 1, business:rag_and_bone 1, business:stall 3, posts 82
   palace: beds 9, buildings 3, homes 2, kind:hall 2, kind:seat 1, posts 22
   rise: beds 29, buildings 5, homes 10, kind:villa 5, posts 22
   sump: beds 218, buildings 49, business:bakery 1, business:fishmonger 1, business:general 1, business:inn 1, business:pawnbroker 1, business:provisioner 1, business:tinker 1, homes 74, kind:flats 31, kind:hall 5, kind:home 3, kind:shop 5, kind:tavern 3, kind:works 2, posts 32
   wharf: beds 12, buildings 17, business:chandlery 1, business:fishmonger 1, business:inn 1, business:provisioner 1, business:ropewalk 1, business:shipwright 1, business:smokehouse 1, business:tannery 1, homes 3, kind:hall 3, kind:inn 1, kind:lodging 1, kind:shop 2, kind:store 3, kind:tavern 2, kind:works 5, posts 35
 
-Businesses with a till (merchants): apothecary 1, armory 1, bakery 10, barber 1, brewery 3, brickworks 2, builders_works 1, builders_yard 1, butcher 8, carpenter 3, carters 1, cartographer 1, cartwright 1, chandlery 2, charcoal 1, cooperage 2, distillery 1, fishmonger 4, foundry 1, general 1, glassworks 2, herbalist 1, inn 5, ironworks 1, jeweler 1, mason 1, moneychanger 1, paintworks 1, papermill 1, pawnbroker 1, perfumer 1, plasterworks 1, pottery 1, preserver 5, press 1, printing_house 1, provisioner 10, rag_and_bone 1, ropewalk 1, saddlery 1, sawmill 1, scriptorium 1, shipwright 1, smithy 5, smokehouse 1, stables 1, stall 3, tailor 1, tannery 1, tinker 1, vintner 1, weaver 1
+Businesses with a till (merchants): apothecary 3, armory 1, bakery 10, barber 1, brewery 3, brickworks 2, builders_works 1, builders_yard 1, butcher 8, carpenter 3, carters 1, cartographer 1, cartwright 1, chandlery 2, charcoal 1, cooperage 2, distillery 1, fishmonger 4, foundry 1, general 1, glassworks 2, inn 5, ironworks 1, jeweler 1, mason 1, moneychanger 1, paintworks 1, papermill 1, pawnbroker 1, perfumer 1, plasterworks 1, pottery 1, preserver 5, press 1, printing_house 1, provisioner 10, rag_and_bone 1, ropewalk 1, sawmill 1, scriptorium 1, shipwright 1, smithy 5, smokehouse 1, stables 1, stall 3, tailor 1, tannery 1, tinker 1, vintner 1, weaver 1
 
 Draws (generated: item_catalog.store_goods, from crafts.json):
-  apothecary: making linen_cloth, resin, wormwood; resale -
+  apothecary: making aqua_vitae, bandages, beeswax, chamomile, charcoal, clove, comfrey, garlic, gut, honey, horn, linen_cloth, needles, planks, resin, tallow, thyme, valerian, vial, willow_bark, wormwood, yarrow; resale theriac
   armory: making charcoal, iron_bar, leather, linen_cloth, steel_bar, wool; resale -
   bakery: making firewood, flour, honey; resale -
   barber: making -; resale bandages
-  brewery: making apples, grapes; resale -
+  brewery: making apples, barrel, grapes; resale -
   brickworks: making clay, firewood, limestone; resale -
   builders_works: making charcoal, iron_bar, timber; resale -
   builders_yard: making -; resale beam, bricks, cut_stone, glass_pane, lime, mortar, nails, paint, planks, plaster, roof_tiles, whitewash
@@ -46,9 +46,8 @@ Draws (generated: item_catalog.store_goods, from crafts.json):
   distillery: making berries, cider, firewood, honey, wine; resale -
   fishmonger: making firewood, fish, salt; resale fish
   foundry: making bronze_bar, charcoal, copper_bar, copper_ore, iron_ore, timber, tin_bar, tin_ore; resale -
-  general: making bones, cord, hemp, straw; resale charm, clay, cord, fine_soap, firewood, flour, glass_beads, linen_cloth, nails, oats, pamphlet, perfume_cedar, planks, plaster, straw, tallow, whitewash, wool
+  general: making bones, cord, hemp, straw; resale chamomile, charm, clay, comfrey, cord, fine_soap, firewood, flour, garlic, glass_beads, lavender, linen_cloth, mint, nails, oats, pamphlet, perfume_cedar, planks, plaster, straw, tallow, thyme, valerian, whitewash, willow_bark, wool, wormwood, yarrow
   glassworks: making firewood, limestone, sand, tin_bar; resale -
-  herbalist: making linen_cloth; resale wormwood
   inn: making apples, milk, oats, raw_meat, vegetables; resale -
   ironworks: making charcoal, iron_bar, iron_ore, timber; resale -
   jeweler: making bones, bronze_bar, copper_bar, cord; resale -
@@ -60,13 +59,12 @@ Draws (generated: item_catalog.store_goods, from crafts.json):
   perfumer: making beeswax, herbs, resin, tallow, wormwood; resale -
   plasterworks: making firewood, lime, limestone, sand, sheepskin, small_pelt; resale -
   pottery: making clay, firewood; resale -
-  preserver: making apples, firewood, honey; resale -
-  press: making apples, grapes; resale -
+  preserver: making apples, firewood, honey; resale dried_apples, fruit_preserves
+  press: making apples, barrel, grapes; resale -
   printing_house: making charcoal, ink, leather, paper; resale -
   provisioner: making firewood, fish, rabbit, raw_meat, salt; resale apples, firewood, fish, flour, milk, oats, raw_meat, vegetables
   rag_and_bone: making -; resale blanket, clay_pot, cookpot, crate, cushion, floor_bowl_wood, oil_lamp, sack, wool_scarf
   ropewalk: making cord, hemp; resale -
-  saddlery: making iron_bar, leather; resale -
   sawmill: making timber; resale -
   scriptorium: making charcoal, leather, linen_cloth, paper; resale -
   shipwright: making -; resale -
@@ -127,16 +125,16 @@ The trades against what the placed residents buy a day (tools/city_capacity.py; 
   chandlery           2 -> 2          2 -> 2       3 -> 3       5.8 -> 5.8  
   smithy              5 -> 5          5 -> 5       5 -> 5       3.9 -> 3.9  
   weaver              1 -> 1          1 -> 1       1 -> 1       2.1 -> 2.1  
-  apothecary          1 -> 1          1 -> 1       1 -> 1       0.8 -> 0.8  
-  herbalist           1 -> 1          1 -> 1       0 -> 0       0.8 -> 0.8  
+  apothecary          1 -> 3          1 -> 3       1 -> 2       3.2 -> 4.8  
+  herbalist           1 -> 0          1 -> 0       0 -> 0       1.6 -> 0.0  
   pottery             1 -> 1          1 -> 1       1 -> 1       0.9 -> 0.9  
   tinker              1 -> 1          1 -> 1       1 -> 1       0.4 -> 0.4  
   general             1 -> 1          1 -> 1       1 -> 1       0.6 -> 0.6  
   armory              1 -> 1          1 -> 1       1 -> 1       0.6 -> 0.6  
   tailor              1 -> 1          1 -> 1       1 -> 1       0.4 -> 0.4  
   before: food 50 businesses, 92 keepers and hands for 77.9 keeper-days (118%), below half: none; household goods 15 businesses
-  after: food 50 businesses, 92 keepers and hands for 77.9 keeper-days (118%), below half: none; household goods 15 businesses
-  People's text written again: {}
+  after: food 50 businesses, 92 keepers and hands for 77.9 keeper-days (118%), below half: none; household goods 16 businesses
+  People's text written again: {'job': 3}
 
 Jobs by class (doc 67, Progress): earners whose job is of their household's class (the Watch and the clergy apart), before and after the class pass:
   before: 374/396 (94.4%); upper 25/26 (96%), middle 168/179 (94%), lower 181/191 (95%); own cases {'clergy': 18, 'watch': 30}; Minor House households without an upper job: none; larger businesses kept from the Sump, the Cinders or the wharf: 0; Rag Market keepers not of the middle class: 0
@@ -399,7 +397,7 @@ Labels (npc, role, label, business):
   rm_gwen_pitchdale              civilian  at lessons                                 None
   rm_gwen_sootmore               civilian  works at The Rag Mill                      papermill
   rm_hakon_grantham              civilian  at lessons                                 None
-  rm_halvard_ashley              merchant  saddler at The Harness Shop                saddlery
+  rm_halvard_ashley              merchant  apothecary at The Mortar and Pestle        apothecary
   rm_halvard_mossgrave           civilian  walking the gardens                        None
   rm_hanne_coalton               guard     holding the Harbour Gate                   None
   rm_hanne_sootham               civilian  unloading ships at the piers               None
@@ -499,7 +497,7 @@ Labels (npc, role, label, business):
   rm_mathis_saltton              civilian  helping at Grist & Crust                   None
   rm_mathis_slagwell             civilian  carrying from Sump Stairs                  None
   rm_millicent_rustwell          civilian  stewarding Fellhall                        None
-  rm_mogens_ashley               civilian  helping at The Harness Shop                None
+  rm_mogens_ashley               civilian  helping at The Mortar and Pestle           None
   rm_mogens_dripley              merchant  greens stall on Market Square              stall
   rm_mogens_greycot              civilian  works at The Greatly Tileworks             brickworks
   rm_moll_dripdale               civilian  carrying from Sump Stairs                  None
@@ -573,7 +571,7 @@ Labels (npc, role, label, business):
   rm_rune_wickwell               civilian  minding the shop door                      None
   rm_rupert_cindergate           civilian  lighting the lamps at dusk                 None
   rm_rupert_fogton               merchant  apothecary at Hollis Physic                apothecary
-  rm_rupert_pitchford            merchant  herbalist on Market Square                 herbalist
+  rm_rupert_pitchford            merchant  apothecary on Market Square                apothecary
   rm_rupert_ropehand             merchant  smith at Eastgate Farriers                 smithy
   rm_rupert_sootley              civilian  helping at The Lamp & Wick                 None
   rm_septimus_plankmarsh         civilian  clerking at the Wharf Office               None

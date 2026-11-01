@@ -275,6 +275,10 @@ struct EconomyDetail
             return "services";
         if (reason == "the city's share of a service")
             return "services city";
+        if (reason.rfind("from a city maker", 0) == 0)
+            return "city trade";                    // (A maker's input bought from another: the seller's takings, the buyer's cost.)
+        if (reason == "a patron's work" || reason == "a patron's new kit")
+            return "patrons";
         if (reason == "restocked from the store room" || reason.rfind("drawn for ", 0) == 0 || reason.rfind("gate toll: ", 0) == 0)
             return "draws";
         if (reason.rfind("refunded", 0) == 0)
@@ -632,6 +636,18 @@ struct EconomyWatch
             const auto found = d.serviceTrades.find(t);
             const auto day = found == d.serviceTrades.end() ? Society::LoopDay::Trade{} : found->second;
             seasons << ", \"svc_" << t << "_sold\": " << day.sold << ", \"svc_" << t << "_spent\": " << day.spent;
+        }
+        // Trades and the follow-ups (doc 68, Progress): what keepers bought from the city's makers, the patrons' work and
+        // kit (by the treasury, by the Country, by trade), buying ahead.
+        seasons << ", \"city_trade\": " << d.cityTrade << ", \"city_trade_pieces\": " << d.cityTradePieces << ", \"patron_jobs\": "
+                << d.patronJobs << ", \"patron_pieces\": " << d.patronPieces << ", \"patrons_treasury\": " << d.patronsTreasury
+                << ", \"patrons_country\": " << d.patronsCountry << ", \"bought_ahead\": " << d.boughtAhead;
+        for (const auto& trade : items::country().patrons)
+        {
+            const auto found = d.patronTrades.find(trade.business);
+            const auto day = found == d.patronTrades.end() ? Society::LoopDay::Trade{} : found->second;
+            seasons << ", \"patron_" << trade.business << "_jobs\": " << day.sold << ", \"patron_" << trade.business
+                    << "_spent\": " << day.spent;
         }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households

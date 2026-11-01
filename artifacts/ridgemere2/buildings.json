@@ -3500,7 +3500,7 @@
  },
  {
   "id": "rm_the_harness_shop",
-  "name": "The Harness Shop",
+  "name": "The Mortar and Pestle",
   "kind": "shop",
   "district": "commons",
   "style": "ridgemere",
@@ -3513,7 +3513,7 @@
   "rooms": [
    {
     "id": "rm_the_harness_shop",
-    "name": "The Harness Shop",
+    "name": "The Mortar and Pestle",
     "z": 0,
     "beds": [],
     "work": [],
@@ -3521,7 +3521,7 @@
    },
    {
     "id": "rm_the_harness_shop_flat",
-    "name": "The Harness Shop, the flat above",
+    "name": "The Mortar and Pestle, the flat above",
     "z": 1,
     "beds": [
      {

@@ -121,7 +121,8 @@ const seasonSettingsOk = e => (!own(e, 'comfortsAbove') || e.comfortsAbove === n
 // every}}, the services it has changed; {}: all as Data/Items/country.json has them).
 export const RULE_DEFAULTS = {rules: {}, services: {}};
 export const RULE_LIMITS = {comfortsMost: 100000, almsADay: 1000, treasuryCap: 100000000, wageSupport: 100, workBankHours: 1000,
-    fairFood: 1, services: 1, servicesCityShare: 100};
+    fairFood: 1, services: 1, servicesCityShare: 100, suppliers: 1, patrons: 1, armourEvery: 3650, buyAheadDays: 5, floatDrawDays: 28,
+    floatWagesDays: 60, subsidyToNeed: 1};
 const ruleSettingsOk = e => (!own(e, 'rules') || (object(e.rules) && Object.entries(e.rules).every(([k, v]) =>
         own(RULE_LIMITS, k) && integer(v, 0, RULE_LIMITS[k]))))
     && (!own(e, 'services') || (object(e.services) && Object.entries(e.services).every(([k, s]) => /^[a-z0-9_]{1,48}$/.test(k)

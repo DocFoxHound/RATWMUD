@@ -494,7 +494,7 @@
    "business:provisioner": 6,
    "business:inn": 1,
    "business:carpenter": 2,
-   "business:saddlery": 1,
+   "business:apothecary": 2,
    "business:printing_house": 1,
    "business:cartographer": 1,
    "business:chandlery": 1,
@@ -510,7 +510,6 @@
    "business:perfumer": 1,
    "business:glassworks": 1,
    "business:moneychanger": 1,
-   "business:apothecary": 1,
    "business:fishmonger": 1,
    "business:barber": 1,
    "business:vintner": 1,
@@ -592,7 +591,7 @@
   "outdoors": {
    "posts": 82,
    "business:butcher": 3,
-   "business:herbalist": 1,
+   "business:apothecary": 1,
    "business:stall": 3,
    "business:preserver": 1,
    "business:bakery": 3,
@@ -715,7 +714,7 @@
   }
  },
  "businesses": {
-  "apothecary": 1,
+  "apothecary": 3,
   "armory": 1,
   "bakery": 10,
   "barber": 1,
@@ -736,7 +735,6 @@
   "foundry": 1,
   "general": 1,
   "glassworks": 2,
-  "herbalist": 1,
   "inn": 5,
   "ironworks": 1,
   "jeweler": 1,
@@ -754,7 +752,6 @@
   "provisioner": 10,
   "rag_and_bone": 1,
   "ropewalk": 1,
-  "saddlery": 1,
   "sawmill": 1,
   "scriptorium": 1,
   "shipwright": 1,
@@ -771,11 +768,32 @@
  "draws": {
   "apothecary": {
    "making": [
+    "aqua_vitae",
+    "bandages",
+    "beeswax",
+    "chamomile",
+    "charcoal",
+    "clove",
+    "comfrey",
+    "garlic",
+    "gut",
+    "honey",
+    "horn",
     "linen_cloth",
+    "needles",
+    "planks",
     "resin",
-    "wormwood"
+    "tallow",
+    "thyme",
+    "valerian",
+    "vial",
+    "willow_bark",
+    "wormwood",
+    "yarrow"
    ],
-   "resale": []
+   "resale": [
+    "theriac"
+   ]
   },
   "armory": {
    "making": [
@@ -805,6 +823,7 @@
   "brewery": {
    "making": [
     "apples",
+    "barrel",
     "grapes"
    ],
    "resale": []
@@ -952,14 +971,19 @@
     "straw"
    ],
    "resale": [
+    "chamomile",
     "charm",
     "clay",
+    "comfrey",
     "cord",
     "fine_soap",
     "firewood",
     "flour",
+    "garlic",
     "glass_beads",
+    "lavender",
     "linen_cloth",
+    "mint",
     "nails",
     "oats",
     "pamphlet",
@@ -968,8 +992,13 @@
     "plaster",
     "straw",
     "tallow",
+    "thyme",
+    "valerian",
     "whitewash",
-    "wool"
+    "willow_bark",
+    "wool",
+    "wormwood",
+    "yarrow"
    ]
   },
   "glassworks": {
@@ -980,14 +1009,6 @@
     "tin_bar"
    ],
    "resale": []
-  },
-  "herbalist": {
-   "making": [
-    "linen_cloth"
-   ],
-   "resale": [
-    "wormwood"
-   ]
   },
   "inn": {
    "making": [
@@ -1084,11 +1105,15 @@
     "firewood",
     "honey"
    ],
-   "resale": []
+   "resale": [
+    "dried_apples",
+    "fruit_preserves"
+   ]
   },
   "press": {
    "making": [
     "apples",
+    "barrel",
     "grapes"
    ],
    "resale": []
@@ -1139,13 +1164,6 @@
    "making": [
     "cord",
     "hemp"
-   ],
-   "resale": []
-  },
-  "saddlery": {
-   "making": [
-    "iron_bar",
-    "leather"
    ],
    "resale": []
   },
@@ -2214,8 +2232,8 @@
   [
    "rm_halvard_ashley",
    "merchant",
-   "saddler at The Harness Shop",
-   "saddlery"
+   "apothecary at The Mortar and Pestle",
+   "apothecary"
   ],
   [
    "rm_halvard_mossgrave",
@@ -2814,7 +2832,7 @@
   [
    "rm_mogens_ashley",
    "civilian",
-   "helping at The Harness Shop",
+   "helping at The Mortar and Pestle",
    null
   ],
   [
@@ -3258,8 +3276,8 @@
   [
    "rm_rupert_pitchford",
    "merchant",
-   "herbalist on Market Square",
-   "herbalist"
+   "apothecary on Market Square",
+   "apothecary"
   ],
   [
    "rm_rupert_ropehand",
@@ -5160,14 +5178,14 @@
      1,
      1,
      1,
-     0.7580295312499999
+     3.187262864583333
     ],
     [
      "herbalist",
      1,
      1,
      0,
-     0.7580295312499999
+     1.6054961979166666
     ],
     [
      "pottery",
@@ -5371,17 +5389,17 @@
     ],
     [
      "apothecary",
-     1,
-     1,
-     1,
-     0.7580295312499999
+     3,
+     3,
+     2,
+     4.7927590625
     ],
     [
      "herbalist",
-     1,
-     1,
      0,
-     0.7580295312499999
+     0,
+     0,
+     0
     ],
     [
      "pottery",
@@ -5409,7 +5427,7 @@
      1,
      1,
      1,
-     0.60228125
+     0.6427156249999999
     ],
     [
      "tailor",
@@ -5421,7 +5439,7 @@
    ],
    "businesses": {
     "butcher": 8,
-    "herbalist": 1,
+    "apothecary": 3,
     "stall": 3,
     "preserver": 5,
     "bakery": 10,
@@ -5437,7 +5455,6 @@
     "carpenter": 3,
     "smithy": 5,
     "armory": 1,
-    "saddlery": 1,
     "general": 1,
     "pawnbroker": 1,
     "fishmonger": 4,
@@ -5455,7 +5472,6 @@
     "perfumer": 1,
     "glassworks": 2,
     "moneychanger": 1,
-    "apothecary": 1,
     "press": 1,
     "builders_works": 1,
     "barber": 1,
@@ -5474,10 +5490,25 @@
     "builders_yard": 1
    },
    "foodBusinesses": 50,
-   "householdBusinesses": 15
+   "householdBusinesses": 16
   },
-  "textFixes": {},
-  "textFixed": []
+  "textFixes": {
+   "job": 3
+  },
+  "textFixed": [
+   [
+    "rm_rupert_pitchford",
+    "job"
+   ],
+   [
+    "rm_halvard_ashley",
+    "job"
+   ],
+   [
+    "rm_mogens_ashley",
+    "job"
+   ]
+  ]
  },
  "classes": {
   "before": {

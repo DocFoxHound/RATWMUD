@@ -2520,3 +2520,32 @@ failures, money conserved, 0 without a route (497 at their place at 8:00, 62 on 
   inns' hours.
 - To bring the dairies back: `DAIRIES = True` in `ridgemere2_people.py`, then the write (Vane & Daughters is refitted
   again, so the map changes then).
+
+### No harness-maker, no herbalist (2026-10-31)
+
+Branch `r2-econ-trades` (doc 68, Progress, "Trades"). The user (verbatim): "Saddlery doesn't make sense, nobody rides
+animals, they're all animals." And on the herbalist: "for the herbalist, that may be something we move to the country
+instead and just let the apothecary buy from it." Kept as few wolves moved as could be: **nobody moves home or work
+place**; three posts change trade in place.
+
+| Wolf | Was | Now |
+|---|---|---|
+| Halvard Ashley (keeper, lives over the shop) | saddler at The Harness Shop | apothecary at The Mortar and Pestle |
+| Mogens Ashley (his family's helper, same flat) | helping at The Harness Shop | helping at The Mortar and Pestle |
+| Rupert Pitchford (Market Square stall) | herbalist on Market Square | apothecary on Market Square (a remedy stall, the same spot) |
+
+- **The Harness Shop** is an apothecary's: `ridgemere2.REFIT` (`rm_the_harness_shop`: refitted with the apothecary's bench
+  and goods wall, renamed The Mortar and Pestle, its flat "The Mortar and Pestle, the flat above") and its posts in
+  `ridgemere2_people.POSTS` (a keeper and a helper: the Ashleys keep them). Its helper's kept label takes the new name
+  (`RENAMED_HELP`; the food rebalance's renamed shops, The Cough Jar, Oilcloth & Wool and Commons Sundries, keep their
+  helpers' old labels, as before: left alone here to move no one else).
+- **The herbalist's stall** is an apothecary's (`OUTDOOR`, `OUTDOOR_BUSINESS`, `STALL_THINGS`: "who keeps a remedy stall on
+  Market Square"); the herbs come from the Country (the store room), and players buy them at the general store (Sump
+  Sundries: `crafts.json` `supplies.general`) and the remedies at the three apothecaries.
+- `TRADE_TEXT` gained the apothecary's lines (its greeting, a hand's work, backstory). The harness-maker's business type
+  stays in `businesses.json` for the other worlds (the old map's PROD has its Harness Shop); Ridgemere 2.0 has none.
+- The draught horses, the Stables and the Carters' Yard are unchanged.
+- **The write** (after `Saved/Backups/ratw_ridgemere2-before-trades.dump`, main repo): `write --world dev --same-map`,
+  DEV revision 57 to 58 (build 52), the same map (`map-20261031-6b080cecb7f6`); every check passes. The export against
+  build 51 differs in these three residents (label, description, greeting, a backstory line), the Harness Shop's two
+  doors' names and its room.

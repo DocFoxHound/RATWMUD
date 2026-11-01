@@ -230,6 +230,12 @@ add_executable(econ_fix_tests Tests/econ_fix_tests.cpp)
 target_link_libraries(econ_fix_tests PRIVATE ratw_core)
 target_compile_definitions(econ_fix_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME econ_fix_behaviors COMMAND econ_fix_tests)
+# Trades and the follow-ups (doc 68, Progress, "Trades"): office heads, the city's suppliers, the patrons, the medicines,
+# buying ahead, the float, the carriage subsidy to need, the winter stores.
+add_executable(trades_tests Tests/trades_tests.cpp)
+target_link_libraries(trades_tests PRIVATE ratw_core)
+target_compile_definitions(trades_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME trades_behaviors COMMAND trades_tests)
 add_executable(hunt_tests Tests/hunt_tests.cpp)
 target_link_libraries(hunt_tests PRIVATE ratw_core)
 add_test(NAME hunt_behaviors COMMAND hunt_tests)

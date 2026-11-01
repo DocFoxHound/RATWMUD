@@ -369,6 +369,10 @@ POSTS = {
     'rm_the_cough_jar': [k('preserver', 'preserver'), ('help', None, 1)],
     'rm_oilcloth_wool': [k('preserver', 'preserver'), ('help', None, 1)],
     'rm_collar_and_trace': [k('baker', 'bakery'), ('help', None, 1)],
+    # Trades (doc 68, Progress): no harness-maker (the user: "Saddlery doesn't make sense, nobody rides animals, they're all
+    # animals"); the Harness Shop is an apothecary's (worldgen.ridgemere2.REFIT), kept by the same family, for the city's
+    # medicines.
+    'rm_the_harness_shop': [k('apothecary', 'apothecary'), ('help', None, 1)],
     'rm_rainford_s_store': [k('provisioner', 'provisioner'), ('help', None, 1)],
     'rm_the_grey_goose': [k('cooking for Northgate', 'inn'), ('help', None, INN_HELP)],
     'rm_the_hook_and_cleaver': [k('butcher', 'butcher'), ('help', None, 2)],
@@ -409,7 +413,9 @@ POSTS = {
     'r2_fell_preserving_house': [k('preserver at the Fell Preserving House', 'preserver'), ('hands', None, 2)],
     'r2_fell_cellars': [('staff', 'keeping the Fell Cellars', 1)],
 }
-# Posts that work on a floor of their own: {(structure key, post label): z}. The keeper of the rolls is at the rolls, at
+# Renamed shops whose helpers' kept labels take the new name (render_labels): the Harness Shop, an apothecary's now.
+RENAMED_HELP = {'rm_the_harness_shop'}
+# Posts that work on a floor of their own:{(structure key, post label): z}. The keeper of the rolls is at the rolls, at
 # the top of the three-storey Records Office (doc 67, R18).
 POST_FLOOR = {('r2_records_office', 'keeping the rolls at the Records Office'): 2}
 # Shops with a flat: a keeper and a helper, the keeper's word from the label it has (kept) or the trade.
@@ -417,18 +423,22 @@ SHOP_DEFAULT = [('keeper', None, 1, None), ('help', None, 1)]
 # Outdoor posts (doc 67, section 4).
 OUTDOOR = {
     # The food rebalance: Market Square's and the Rag Market's stalls sell food (bread, meat, cheese, preserves, greens and
-    # fruit, fish, hot soup); the herbalist (for players) and the Rag Market's second-hand dealer stay.
+    # fruit, fish, hot soup); the herbalist (for players) and the Rag Market's second-hand dealer stay. Trades (doc 68,
+    # Progress): the herbalist's stall is the Country's now (the user: "for the herbalist, that may be something we move to
+    # the country instead and just let the apothecary buy from it"): its keeper keeps the same stall as an apothecary's,
+    # the remedies made from the Country's herbs.
     # (Each stall in its old place: the pie stall's keeper bakes, the cheese stall's makes cheese, the soup stall's
     # ladles soup, the porridge stall's bakes.) A few inns, dairies later: the cheese stall is a sausage butcher's while
     # there are no dairies (DAIRY), and the two soup stalls bake pies (Market Square) and sell provisions (the Rag Market).
     'market_square': ['baker on Market Square', dairy('market_square'), 'greens stall on Market Square',
-                      'fruit stall on Market Square', 'preserver on Market Square', 'herbalist on Market Square',
+                      'fruit stall on Market Square', 'preserver on Market Square', 'apothecary on Market Square',
                       'butcher on Market Square', 'pie baker on Market Square'],
     'rag_market': ['provisioner in the Rag Market', 'baker in the Rag Market', 'fishmonger in the Rag Market',
                    'greens stall in the Rag Market', 'rag-and-bone dealer, Rag Market', 'butcher in the Rag Market'],
 }
 OUTDOOR_BUSINESS = {'greens stall': 'stall', 'fruit stall': 'stall', 'baker': 'bakery', 'cheesemaker': 'dairy',
                     'preserver': 'preserver', 'ladling soup': 'inn', 'butcher': 'butcher', 'herbalist': 'herbalist',
+                    'apothecary': 'apothecary',
                     'pie baker': 'bakery', 'sausage butcher': 'butcher', 'provisioner': 'provisioner',
                     'fishmonger': 'fishmonger', 'rag-and-bone dealer': 'rag_and_bone'}
 HALL_KEEPERS = [('butcher in the Market Hall', 'butcher'), dairy('r2_market_hall'),
@@ -1725,6 +1735,11 @@ def render_labels(plan, people, names, current=None):
         elif post in ('help', 'hands'):
             at = e.get('at')
             kept = (current or {}).get(pid, p['workLabel']) if e.get('kept') else None
+            # (Not a kept "helping at" the Harness Shop by its old name: refitted as an apothecary's and renamed; doc 68,
+            # Progress, "Trades". The food rebalance's renamed shops keep their helpers' old labels for now.)
+            if kept and e.get('record') in RENAMED_HELP and kept.startswith(('helping at ', 'working at ')) and name and \
+                    kept.split(' at ', 1)[1] != name:
+                kept = None
             options = ([kept] if kept and (kept.startswith(('helping', 'minding', 'works at'))) else []) + \
                 [fit(f'helping at {name}' if post == 'help' else f'working at {name}')] + \
                 ([fit(f'printing at {name}')] if at == 'printing_house' else []) + \
@@ -1745,7 +1760,15 @@ OPENINGS = ('Welcome, welcome.', 'Say what you need.', 'Yes?', 'Well, look at yo
             'Looking, or buying?', 'Mm. Morning. Or whatever it is.', 'Good day to you.')
 # business: (keeper's noun, what a stall of it sells, words that show the job, greeting lines, a hand's work, backstory)
 TRADE_TEXT = {
-    'bakery': ('baker', 'bread', ('bak', 'bread', 'loaf', 'loaves', 'oven', 'bun'),
+    # Trades (doc 68, Progress): the city's medicines, from the Country's herbs.
+    'apothecary': ('apothecary', 'remedy', ('apothec', 'remed', 'physic', 'salve', 'syrup', 'herb', 'balm', 'medic'),
+                   ('Thyme syrup for a cough, willow tea for the aches.', 'Salves, balms and bandages. What ails you?',
+                    'The herbs come in from the Country every week.'),
+                   'who grinds and mixes the remedies at {name}',
+                   ('{first} learned the remedies when the city wanted them made inside its walls, and keeps the jars in '
+                    'careful order.', '{first} took to physic in a season, from the Country herbs and a borrowed book, and '
+                    'knows every jar on the shelf now.')),
+    'bakery':('baker', 'bread', ('bak', 'bread', 'loaf', 'loaves', 'oven', 'bun'),
                ('Bread from the oven, a penny the loaf.', 'Still warm. Mind your paws on the crust.',
                 'Honey cakes after noon, if there are any left.'),
                'who works the ovens at {name}',
@@ -1805,7 +1828,7 @@ TRADE_TEXT = {
                  'by the load.', '{first} took to the wagons when the Carters\' Yard wanted drivers, and knows every '
                  'rut between the East Gate and Fellhall.')),
 }
-STALL_THINGS = {'herbalist': 'herb', 'rag_and_bone': 'second-hand', 'chandlery': 'candle', 'cooperage': "cooper's",
+STALL_THINGS = {'herbalist': 'herb', 'apothecary': 'remedy','rag_and_bone': 'second-hand', 'chandlery': 'candle', 'cooperage': "cooper's",
                 'carpenter': "carpenter's"}
 WHERE = {'market_square': 'on Market Square', 'rag_market': 'in the Rag Market', 'r2_market_hall': 'in the Market Hall'}
 GENERIC_BACK = ('{first} took this work when the city gave its markets over to food, and has kept at it.',)

@@ -657,8 +657,19 @@ class Society
         bool on = true;
         std::int64_t price = 1;
         int every = 30;
+        bool patron = false;                        // A patron's, for each of its patrons' units (the armoury's mending).
     };
     const std::vector<ServiceNow>& services() const { return services_; }
+    // Trades (doc 68, Progress, "Trades: medicine, the armoury's patrons, office heads"). The city sellers of a good a
+    // business uses (country.json `suppliers`: the cooper for the wine makers' casks), and how many armed wolves a
+    // patron's group has (its posts, or its rule).
+    std::vector<std::string> citySellers(const std::string& buyerBusiness, const std::string& item) const;
+    int unitsOf(const items::PatronGroup& group) const;
+    // Buys up to `want` of an input for `till` from the city's sellers of it (till to till, at their price: the
+    // catalogue's, the season's difference after), the seller holding most first; how many came. Nothing when the rule
+    // "suppliers" is off. Only a craft's inputs: a good it sells on is still the store room's (bought at the seller's
+    // price it would leave the reseller nothing).
+    int buyFromCity(const std::string& till, const items::Business* business, const std::string& item, int want);
     // The crew's hours a till may hold in hand (workBankHours: that many hours of the crew; 0: the business's longest
     // craft and an hour more, at least two hours' worth).
     double workBankMost(const std::string& till, const items::Business* business) const;
@@ -672,6 +683,12 @@ class Society
         // the city's services: done, what households paid, and the treasury's share of it (doc 68, "First fixes").
         std::int64_t wageSupport = 0, servicesSpent = 0, servicesCity = 0;
         int servicesSold = 0;
+        // Trades (doc 68, "Trades"): what keepers bought from the city's makers for their crafts (pieces, pennies); the
+        // patrons' work done and new kit, what the treasury and the Country paid, and by business (in serviceTrades'
+        // kind).
+        int cityTradePieces = 0, patronJobs = 0, patronPieces = 0;
+        std::int64_t cityTrade = 0, patronsTreasury = 0, patronsCountry = 0;
+        int boughtAhead = 0;                        // 1 on a day households bought ahead for a Restday or festival.
         int householdsShort = 0, foodBought = 0, needsBought = 0, comfortsBought = 0, tillsShort = 0;
         // By business (the services' trades): services done and what they took in, the city's share included.
         struct Trade
@@ -679,7 +696,7 @@ class Society
             int sold = 0;
             std::int64_t spent = 0;
         };
-        std::map<std::string, Trade> serviceTrades;
+        std::map<std::string, Trade> serviceTrades, patronTrades;
         // By season group (doc 68, Progress, "Seasons"): pieces drawn from the Country, pieces sold to residents and
         // what they paid for them.
         struct Group
@@ -832,6 +849,10 @@ class Society
     void householdsShop(int hourOfDay, std::int64_t day, int season);
     void giveAlms();
     void countryBuys(int hourOfDay);
+    void patronsBuy(int hourOfDay, std::int64_t day);   // Each trade's patrons, once a day while it is open.
+    std::map<std::string, std::int64_t> patronsDay_;    // Business -> the day its patrons last bought (not saved).
+    std::unordered_map<std::string, std::vector<std::int64_t>> drawnDays_;   // Till -> its draws a day, the last 28 days.
+    std::int64_t tillFloat(const std::string& till) const;   // A till's working float (floatDrawDays' mean draws).
     void payWages();
     void supportWages();                            // The treasury over its cap pays the short tills' posts (18:00).
     void turnShelves();
@@ -839,7 +860,7 @@ class Society
     std::vector<ServiceNow> services_;              // (buildSeasons, with the rules.)
     std::map<std::string, int> rules_;              // Every rule by name as this world has it (buildSeasons).
     std::unordered_map<std::string, double> serviceOwed_;   // Till -> the city's fraction of a penny of its services.
-    std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_, shelf_;   // Till -> ware -> pieces.
+    std::unordered_map<std::string, std::unordered_map<std::string, int>> soldToday_, shelf_, soldBefore_;   // Till -> ware -> pieces.
     std::unordered_map<std::string, std::int64_t> drawnToday_, drawnYesterday_;              // Till -> pennies drawn.
     std::unordered_map<std::string, double> workBank_;                                         // Till -> crew hours in hand.
     std::unordered_map<std::string, double> carriageOwed_, tollOwed_;                          // Payer -> pennies owed.

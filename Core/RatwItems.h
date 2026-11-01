@@ -168,14 +168,50 @@ inline constexpr RuleInfo Rules[] = {
     {"fairFood", 0, 1, 1},               // Food in a household: the least fed first, and only what someone can pay for.
     {"services", 0, 1, 1},               // Households buy the city's services from their comforts budget.
     {"servicesCityShare", 0, 100, 30},   // The percent of a service's price that goes to the treasury.
+    // Trades (doc 68, Progress, "Trades: medicine, patrons, office heads, and the follow-ups"):
+    {"suppliers", 0, 1, 1},              // A keeper's craft inputs come from the city's makers first (`suppliers`).
+    {"patrons", 0, 1, 1},                // The city, the Houses and the wharf pay for their kit, boats and halls (`patrons`).
+    {"armourEvery", 1, 3650, 120},       // Days between new pieces of kit, for each armed wolf.
+    {"buyAheadDays", 0, 5, 1},           // Days of food more a household buys the day before a Restday or festival.
+    {"floatDrawDays", 1, 28, 7},         // A till's working float: its mean draws a day over this many days (1: yesterday's).
+    {"floatWagesDays", 0, 60, 7},        // Days of its posts' wages a till keeps, over its float, before its keeper's profit.
+    {"subsidyToNeed", 0, 1, 1},          // The carriage subsidy only while the carters lack their crew's wages tonight.
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // A city service (country.json `services.list`): a catalogue item a business does for a household, bought from its
-// comforts budget about once every `every` days; done at once (nothing is kept).
+// comforts budget about once every `every` days; done at once (nothing is kept). `for: "patrons"`: a patron's (the
+// armoury's mending, a hull caulked, a public building's upkeep; doc 68, "Trades"), done for each unit of its business's
+// patrons (an armed wolf, a hull, a building) about once every `every` days and paid by the patron, never a household.
 struct ServiceDef
 {
     std::string id, business;
     int every = 30;
+    bool patron = false;                            // A patron's: for each of its patrons' units, never a household's.
+};
+// A city maker that supplies another business's inputs first (country.json `suppliers`; doc 68, Progress, "Trades"):
+// what a `buyer`'s keeper draws for its crafts it buys from a `seller` of the city holding it, at the seller's price
+// (till to till), and from the store room (the Country) only what the city's sellers don't have. `goods`: the goods it
+// covers (empty: every input the seller sells).
+struct Supplier
+{
+    std::string buyer, seller;
+    std::vector<std::string> goods;
+};
+// A trade's patrons (country.json `patrons.list`; doc 68, "Trades"): who pays for its patron services (and, for the
+// armoury, new kit). Each group's units are the posts of `roles` (the watch: "guard"), else `units` (the Houses'
+// retainers, the wharf's hulls, the public buildings: not placed, a number); `payer` is "treasury" or a market's id (the
+// Houses' estates and the wharf: the Country).
+struct PatronGroup
+{
+    std::string id, name, payer;
+    std::vector<std::string> roles;
+    int units = 0;
+};
+struct Patrons
+{
+    std::string business;                           // The trade that does the work ("armory", "shipwright", ...).
+    std::vector<PatronGroup> groups;
+    std::vector<std::string> pieces;                // New kit a unit buys now and then (armourEvery), of what the shop holds.
 };
 // The seasons in the Country's supply (country.json's `seasons`; doc 68, Progress, "Seasons and the DM's rules"): a
 // group of goods (grain and its bread, fresh fruit, fresh fish, ...) with, by season (Spring, Summer, Autumn, Winter, each
@@ -189,6 +225,9 @@ struct SeasonGroup
     std::vector<std::string> goods;
     std::array<int, 4> supply{100, 100, 100, 100}, price{100, 100, 100, 100}, shelf{100, 100, 100, 100};
     int normal = 0;
+    // The Country's own stores of the group's goods (doc 68, Progress, "The follow-ups"): a maker that can't make one for
+    // the season's lack of an input draws the good itself, where it sells it on too (the preservers' winter fruit).
+    bool stores = false;
 };
 struct Country
 {
@@ -201,6 +240,9 @@ struct Country
     std::vector<std::string> comforts;              // on these (used up at once).
     std::map<std::string, int> rules;               // Every rule (Rules) by name, as country.json gives it.
     std::vector<ServiceDef> services;
+    std::vector<Supplier> suppliers;
+    std::vector<Patrons> patrons;
+    std::map<std::string, int> shelves;             // A dear good's shelf (theriac: 1), in place of GoodsKept.
 };
 const Country& country();
 // What a kind of shop makes, in file order (none if it makes nothing yet).

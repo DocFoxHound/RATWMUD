@@ -69,6 +69,8 @@ Society city(std::vector<ResidentSpec> residents, std::vector<Kin> kin, const st
     r.kin = std::move(kin);
     r.economy.treasury = 10000;
     r.economy.storeRule = true;
+    // The first fixes' loop: the later rules as they were (trades_tests has theirs; doc 68, "Trades").
+    r.economy.rules = {{"subsidyToNeed", 0}, {"floatDrawDays", 1}, {"buyAheadDays", 0}, {"patrons", 0}, {"suppliers", 0}};
     if (change)
         change(r);
     Society s(Roster::None);
@@ -138,7 +140,8 @@ void theRulesAndTheirRecords()
            "the rules as country.json has them");
     expect(s.rule("nonsense") == -1, "a name that isn't a rule");
     expect(s.comfortsAbove() == 40 && std::abs(s.comfortsShare() - .2) < 1e-9, "comforts over 40p a head, a fifth a day");
-    expect(s.services().size() == 12, "twelve services: " + std::to_string(s.services().size()));
+    expect(std::count_if(s.services().begin(), s.services().end(), [](const auto& v) { return !v.patron; }) == 12,
+           "twelve services for households (and the patrons' work, doc 68, \"Trades\"): " + std::to_string(s.services().size()));
     for (const auto& v : s.services())
     {
         const auto* item = items::good(v.id);

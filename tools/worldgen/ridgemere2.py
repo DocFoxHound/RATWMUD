@@ -621,6 +621,11 @@ REFIT = {
                             'and the gate before dawn, honey cakes by noon, and an oven that warms the street outside.'),
     'rm_commons_sundries': ('provisioner', 'Commons Provisions', 'Commons Provisions, provisioner. Flour and oats by '
                             'the sack, smoked fish and salt pork by the pound, milk in the mornings.'),
+    # Trades (doc 68, Progress): no harness-maker in Ridgemere ("nobody rides animals, they're all animals"); its shop
+    # makes the city's medicines.
+    'rm_the_harness_shop': ('apothecary', 'The Mortar and Pestle', 'The Mortar and Pestle, apothecary. Bunches of '
+                            'Country herbs hung to dry from the beams, a stone mortar worn smooth on the bench, and rows of '
+                            'jars: thyme syrup for the winter coughs, paw balm, salves and bandages.'),
 }
 
 

@@ -1282,3 +1282,256 @@ run. Set 2's wage support is the doc's 488p, its file not having the field.)
   day of profit is the treasury's subsidy), winter preserves (14), and the inns and preserver (the five inns cover .98,
   the preservers .88; city_loop.py puts them at 122% and 120% of their crews' hours). Wage support by trade (a share
   per trade rather than all at `wageSupport`) is not built.
+
+### Trades: herbs to medicine, the armoury's patrons, office heads (2026-10-31)
+
+Branch `r2-econ-trades`, from `ridgemere2` (6c72eba). The first fixes' year (above) left a few trades well short of their
+wages (cover: the herbalist .09, the armoury .19, the saddlery .53, the cooperage .70, the apothecary .87) and the heads of
+the city's offices on a clerk's 8p. The user's decisions, 2026-10-31 (verbatim where quoted):
+
+1. **The saddlery**: "Saddlery doesn't make sense, nobody rides animals, they're all animals." Remove it; its people to
+   posts of their class. The draught horses, the Stables and the Carters' Yard stay.
+2. **The herbalist and the apothecary**, first as supplier and customer; then, before anything was run: "for the herbalist,
+   that may be something we move to the country instead and just let the apothecary buy from it." Build the city-supplier
+   mechanism only if the cooper needs it; keep the wolves moved to the fewest.
+3. **Medicines**: households need the common ones, bought every so many days from the needs budget, more in winter where
+   it makes sense, and the apothecary's shelves hold what players want (bandages, salves, stitch kits, splints, smelling
+   salts, theriac as a rare dear one).
+4. **The armoury**: "Armory should have houses and city as customers. Armory is providing what, though, just armor? They
+   should be high cost items replaced occasionally, but repaired frequently which should be the main source of their
+   business."
+5. **The cooperage** (a barrel maker): keep it; the wine makers, fishmongers, salters or preservers buy their casks from
+   it first if their goods use casks, or where it is natural to add, sparingly.
+6. **Office heads** get a head's (keeper's) pay, 14p.
+
+And five follow-ups from "First fixes", "Left for the user", each a rule the DM can tune: **buying ahead** before a Restday
+or festival; **patrons for the shipwright and the builders' yard** (the wharf's hulls, the public buildings, the Houses'
+halls; no wolves moved); **the float rule** (profit only after a float of a few days' wages); **the carters' subsidy** only
+to what they lack, nothing to profit; **winter preserves**.
+
+#### What was built
+
+**1 and 2: no harness-maker, no herbalist** (doc 67, Progress, "No harness-maker, no herbalist"). Nobody moved home or
+work place; three posts changed trade where they stand:
+
+| Wolf | Was | Now |
+|---|---|---|
+| Halvard Ashley (keeper; lives over the shop) | saddler at The Harness Shop | apothecary at The Mortar and Pestle (the shop refitted and renamed) |
+| Mogens Ashley (his family's helper, the same flat) | helping at The Harness Shop | helping at The Mortar and Pestle |
+| Rupert Pitchford (a Market Square stall) | herbalist on Market Square | apothecary on Market Square (a remedy stall, the same spot) |
+
+The city has three apothecaries now (Hollis Physic, keeper and hand; the Mortar and Pestle, keeper and helper; the remedy
+stall), the same five posts and wages as the apothecary, the saddlery and the herbalist had. The herbs come from the
+Country (the store room), as the apothecary drew them already; players buy herbs at the general store (Sump Sundries:
+`crafts.json` `supplies.general` gains yarrow, willow bark, thyme, comfrey, valerian, chamomile, garlic, wormwood,
+lavender and mint) and sell them to the apothecary as before (`buys`).
+
+**3: the medicines.** `crafts.json` gains the apothecary's crafts (each a whole batch of at most two inputs, its `hours`
+from `tools/econ_model/calibrate.py`'s ladder, as `apply_ladder.py` would give them; no other craft's hours changed):
+willow-bark tea, wormwood flea powder, yarrow poultice and paw balm (the herbalist's simple remedies, the apothecary's
+now too), thyme and honey syrup, comfrey salve, burn salve, garlic-honey salve, dewormer, eyewash, valerian draught,
+charcoal draught, clove oil, leg splints (planks and bandages), stitching kits (gut and needles) and smelling salts;
+bandages and scent-masking oil as before. **Theriac** is the Country's (an import, `supplies.apothecary`), one on the
+shelf at a time (`country.json` `shelves`: a dear good keeps fewer than the usual four; `Society::startingStock`). So the
+apothecaries' shelves hold all eighteen medicines of `items.json`.
+The households' needs (`crafts.json` `households.needs`, after the eight there were, so their rolls are unchanged), from
+the needs budget, kept back for food as needs are:
+
+| Need | Every (days) | In winter |
+|---|---|---|
+| willow-bark tea (aches) | 60 | 30 |
+| thyme and honey syrup (coughs) | 90 | 30 |
+| paw balm (cracked pads) | 60 | 30 |
+| wormwood flea powder | 60 | |
+| dewormer | 120 | |
+| garlic-honey or comfrey salve | 90 | |
+| bandages (as before) | 20 | |
+
+**4: the armoury's patrons**, and the follow-ups' shipwright and builders' yard: `country.json` `patrons.list`, each trade
+with its patrons' groups (a payer and its units: the posts of `roles`, else a number `units`), and its patron services in
+`services.list` (`for: "patrons"`: catalogue items of category service, done at once, never kept, and never a household's;
+their prices and frequencies the DM's, as the household services are, in RulesPanel's table). Once a day at the first hour
+the trade's shop is open, each unit has each service about once every `every` days (a fixed roll: nothing saved), paid by
+its patron from what it can spare (the treasury over its float and tonight's posts; the Country over its reserve and its
+posts), all to the shop's till (no city share). The armoury also sells each armed wolf a new piece about once every
+`armourEvery` days (the rule, 120), one of its kit on the shelf at the catalogue's price (the quilted vest, padded collar,
+quilted hood and leg wraps, leather cap, kettle helm, iron bit-sword, steel gorget, splinted greaves). `Society::patronsBuy`.
+
+| Trade | Patron (payer) | Units | Work (price, every N days a unit) |
+|---|---|---|---|
+| armoury | the Watch (the treasury) | its guards' posts: **30** (the commander, two sergeants, two at the cells, four palace guards, ten at the gates, eleven on patrol and the wall) | a coat of armour mended (3p, 30), a dent beaten out (2p, 45), straps and buckles replaced (2p, 30), a blade ground and set (2p, 15); a new piece every 120 |
+| armoury | the Houses' armed retainers (the Country: the Houses' estates) | **24** (none of the Houses' posts is armed: the retainers are the Country's people, a number until they are placed) | the same |
+| shipwright | the wharf and sea carriage's hulls (the Country) | 12 | a hull caulked and tarred (6p, 6), a strake replaced (8p, 10), a spar or mast mended (5p, 5) |
+| builders' yard | the city's public buildings (the treasury) | 20 | a wall repointed (4p, 10), a roof's slates relaid (6p, 15), a floor or stair mended (5p, 12) |
+| builders' yard | the Houses' halls (the Country) | 9 | the same |
+
+Sized so each covers its wages: the armoury's mending about .34p a wolf a day (18.6p for 54) and its new pieces about
+.27p (14p), against its 22p; the shipwright's work 33.6p a day and the household services' 12.6p against its 46p; the
+builders' yard's 35p and 12.6p against 46p.
+
+**5: the cooper's casks.** No good in the catalogue used a cask. The user's own example, wine by the cask, sparingly:
+`crafts.json`'s wine is 16 grapes and a cask for 8 bottles (it was 4 grapes for 2; the same 7.1 hours a 2 bottles,
+28.4 a batch), so a cask costs a wine maker 1p a bottle of 12. Salt fish already has two inputs (fish and salt), the most a
+craft may have, and the preservers' goods are jars and strings. The **city's suppliers** (`country.json` `suppliers`; the
+rule `suppliers`, on): a keeper's craft input is bought first from a city maker of it that holds some, till to till at the
+seller's price (the catalogue's, a dearer season's after; no toll, no carriage inside the walls), the seller with most
+first, and from the store room only what the city lacks (`Society::buyFromCity`, in the restocking rule). Only craft
+inputs: a good bought to sell on stays the store room's (at a shop's price it would leave the reseller nothing). The
+brewery and the press buy their casks from the cooperage; later chains (the mill's flour for the bakers) are a line of
+data.
+
+**6: the office heads at 14p** (`country.json` `wages.rules`, the two keeper's-wage rules; a guard's post now takes a
+treasury rule's wage where its words name it). Fifteen posts:
+
+| Post | Payer |
+|---|---|
+| reigning at the Great Palace (the King) | treasury |
+| chancellor of the Council; Chancellor of Ridgemere | treasury |
+| royal secretary; the Crown's treasurer | treasury |
+| hearing cases (the magistrate) | treasury |
+| keeping the rolls at the Records Office | treasury |
+| collecting the Crown's customs | treasury |
+| warden of the Market Hall | treasury |
+| abbot of the cathedral | treasury |
+| keeping the Washhouse; keeping the Bathhouse | treasury |
+| commanding the Watch (a guard: the watch's post) | treasury |
+| harbourmaster of the Wharf Office; overseeing the Counting House | the Country (the Houses' estates) |
+
+With the Queen, the King's daughter, the City Office's head, the House of Vance's lending and the Grayrock wharf (the
+first fixes), twenty posts are paid as heads: 90p a day more in wages, 78p of it the treasury's. Not heads of an office:
+the Houses' heads ("ruling House Fell", "keeping Greatly House"...: their Houses, not offices), the warehouses' keepers
+(the Houses' stores: a middle post) and the sole priest, teacher and infirmarian.
+
+**The follow-ups** (each a rule in `country.json` `rules`, a world's `rule` records, RulesPanel):
+
+- **Buying ahead** (`buyAheadDays`, 1): the day before a Restday or a festival, each household's market hour tops its
+  members up to a day more of food (three days). The fair rule's steps become shortDays, foodDays, then the days ahead
+  (each member eats what it holds, so everyone reaches two days before anyone three: the first try, everyone straight to
+  three, left the last members of poor households a day short and hungry after the Restday). A Restday's or festival's
+  few sales no longer set the next day's shelves (the larger of its sales and the day before's), so the shops are
+  stocked again when everyone shops as usual.
+- **The float rule** (`floatDrawDays`, 7; `floatWagesDays`, 7): a till's working float, kept back before its wages and its
+  keeper's profit, is its mean draws a day over the last seven days, not yesterday's alone (`Society::tillFloat`); its
+  keeper's profit is what it holds over that float and seven days of its posts' wages (`floatWagesDays`, a week as it
+  was). Before, a till stripped to a small float after a Restday drew heavily the next day and could not pay its wages.
+- **The carriage subsidy only to need** (`subsidyToNeed`, on): the treasury's share of carriage is given only up to what the
+  carters' till lacks, at the day's first carriage, of its crew's wages tonight and its float; nothing goes to the
+  keeper's profit. No drivers were added.
+- **Winter preserves**: the preserved fruit's season group has the Country's own stores (`stores`): a preserver whose
+  fruit is capped by the season draws its dried apples and preserves itself from the Country (it sells them on:
+  `supplies.preserver`), at most 150 pieces a day times the season's supply (25 / 10 / 40 / 100%: most in winter), and
+  they are a tenth cheaper in winter (price 100 / 100 / 100 / 90%). Why winter had none more: the preservers make them
+  only from fresh fruit, which the season caps at 30% in winter and the cider makers share, and their autumn stock-up
+  (shelves to 2.5 times their sales) holds days, not a winter.
+
+**Migration**: none needed: the new rules and the patrons' services are keys of `live.economy.rules` and `services`
+(0058's JSON); `tools/map_editor.py` (`RULE_LIMITS`, `RULE_SWITCHES`, `service_list`'s `for`) and the Editor
+(`economy.ts`'s `RULES`, `model.mjs`'s `RULE_LIMITS`, RulesPanel's patrons' rows) know them. DEV has none of its own
+(country.json's).
+
+**Reports**: `world_check --economy` gains `city_trade`, `city_trade_pieces`, `patron_jobs`, `patron_pieces`,
+`patrons_treasury`, `patrons_country`, `bought_ahead` and per trade `patron_<business>_jobs` and `_spent`; the detail file
+counts "patrons" and "city trade"; `tools/econ_detail.py` counts them in a trade's sales (and the inputs bought in its
+draws), and shows the household services (`svc`, less the city's share) and `cover+` with them.
+
+**Tests**: `Tests/trades_tests.cpp` (new, 908 checks, the real catalogue): the fifteen heads' wages and payers, the
+Watch's commander and the rest of the watch; the cooper's casks till to till at its price (no toll, no carriage), only what
+it holds, none with the rule off, and the restocking rule making wine by the cask from the cooper's cask (or the store
+room's when the city has none); the patrons (the Watch's four kinds of mending and a piece for each guard a day at a
+frequency of 1, the Houses' by the Country as far as it can spare, nothing kept, no household buying them, none with the
+rule off or a treasury at its float); the medicines (the needs listed, every medicine on the apothecary's list, theriac
+one from the Country, a household with money buying each over 121 days, now and then); buying ahead (three days before a
+Restday, two otherwise); the float rule's profit at 7, 3 and 0 days; the subsidy only to need; the winter stores (a
+preserver's shelves from the Country with no fruit in winter, made from fruit in autumn). `country_tests` and
+`econ_fix_tests` run with the new rules as they were (they test the loop and the first fixes); `store_room_tests`'
+fixture has the general store's herbs. All 73 C++ tests pass. Python: `test_item_catalog`, `test_city_capacity`,
+`test_map_editor` (but the known Greyfen 11-vs-10), `test_world_store`, `test_studio`, `test_world_sync` pass. Editor: `tsc` clean, the lib
+tests 53 of 53, the model's 78 of 79 (the same Greyfen count).
+
+#### The runs
+
+DEV build 52 (the write above; its export, nothing written), from Spring 1, `--simulate 6 8766` (a year) and `6 26298`
+(three), `--no-check --deterministic --threads 4 --no-profile`, the year pinned to CPUs 0-5. Summaries committed in
+`artifacts/economy/r2/trades-summary.txt`; the jsonl in the main repo's `artifacts/economy/r2/trades_*`. The three years'
+first year is byte for byte the year's. Money conserved every day of every run; the detail's check finds no account
+moved by other than its flows. (Pennies a day but the treasury and Gini; days 5-364 of each year.)
+
+| Run | Hungry (mean) | Days anyone hungry | Worst hour | Fed (lowest) | Wages paid | Tills short | Profit | Alms | Wage support | Patrons (treasury, Country) | Carriage subsidy | Treasury (5 → 364; low-high) | Treasury, 4-week means a year apart | Gini, 4-week means a year apart |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| first fixes (build 51) | 0.09 | 5 | 70 | 89.7% | 99.6% | 18.5 | 1,230 | 376 | 287 | - | 35 | 4,077 → 6,999 (2,534-7,972) | 4,583 → 7,296 | .486 → .558 |
+| **trades, every default** | **0.007** | 5 | **7** | **98.3%** | **99.7%** | 14.9 | 1,162 | 379 | 194 | 32, 55 | 0 | 3,878 → 8,631 (2,454-9,000) | 5,140 → 8,276 | .489 → .556 |
+| the three years: year 2 | 0.006 | 5 | 2 | 99.1% | 99.7% | 16.1 | 1,148 | 366 | 204 | 33, 55 | 0 | 8,281 → 10,050 (4,451-10,310) | 8,808 → 9,700 | .551 → .569 |
+| the three years: year 3 | 0.016 | 10 | 6 | 97.9% | 99.7% | 16.5 | 1,143 | 358 | 211 | 32, 53 | 0 | 9,351 → 11,122 (5,444-11,403) | 9,613 → 10,776 | .569 → .582 |
+
+559 residents at the end of each year (the newcomers fill the city); born 11, 9 and 4, died 15, 19 and 13. Household
+purses 29,187 → 25,843 → 24,897 → 23,398p over the three years.
+
+**The what-ifs** (a year each, every default but one rule as it was), each follow-up's effect alone:
+
+| What-if | Hungry | Days hungry | Worst hour | Festivals (run days 231, 322) | The trades it moves |
+|---|---|---|---|---|---|
+| every default | 0.007 | 5 | 7 | 2 and 7 at worst | |
+| no buying ahead (`buyAheadDays` 0) | 0.104 | 12 | 63 | **54 and 63** | (none) |
+| the float as it was (`floatDrawDays` 1) | 0.007 | 3 | 7 | 3 and 7 | short of wages: the general store 36%, the vintner 29%, the rag-and-bone yard 37% of days (every default: 1%, 1%, 4%); profit 1,240 (1,162); wage support 220 (194) |
+| the subsidy as it was (`subsidyToNeed` 0) | 0.011 | 5 | 5 | 5 and 4 | the treasury pays 34p a day of carriage, the carters' keeper's profit 74p (every default: 0p and 73p); the treasury ends 670p lower |
+| no patrons (`patrons` 0) | 0.011 | 3 | 6 | 5 and 6 | the armoury's cover .19, the shipwright's .28 and the builders' yard's .28 (with their services), as in the first fixes; wage support 255; the Country's basket trades a little better (the mason .86, the brickworks .94, the smithies .98) |
+| no winter stores (data: `stores` false) | 0.012 | 6 | 7 | 4 and 7 | winter's preserved fruit 72 a day sold (every default: 145) |
+
+**Each weak trade's cover** (value added / wages owed, the year; the first fixes' in brackets; `cover+` with the household
+services' takings for the two yards):
+
+| Trade | Cover | Short of wages (share of till-days) |
+|---|---|---|
+| the saddlery (.53) | gone: its shop an apothecary's | |
+| the herbalist (.09) | gone: its stall an apothecary's | |
+| the apothecaries, three tills (.87, one) | .98 (Hollis Physic 1.01, the Mortar and Pestle .97, the remedy stall .96); sales to residents 63p a day (15p), to the Country 60p | 11% |
+| the armoury (.19) | **1.01**: its patrons 22p a day (5.5 mendings and 0.28 new pieces a day; the treasury 32p a day in all patrons, the Country 55p), the Country's basket 19p | 9% (97%) |
+| the cooperage, two tills (.70) | .74: the casks 8.4p a day to the brewers and the press (1 a day); Staves & Hoops .97, the Market Hall's counter .39 (the casks go to the seller holding most) | 46% (50%) |
+| the shipwright (cover+ .28) | **.95**: its patrons 31p a day (5.2 jobs) and the household services 12.6p | 13% (100%) |
+| the builders' yard (cover+ .27) | **1.00**: its patrons 33p a day (6.8 jobs) and 12.8p | 2% (100%) |
+| the general store, the vintner, the rag-and-bone yard (7.32, 3.03, 3.62) | 7.01, 2.73, 3.50 | 1%, 1%, 4% (36%, 32%, 36%) |
+| the preservers (.88) | .99 (their winter sales from the Country's stores) | 32% (38%) |
+| the Carters' Yard | its keeper's profit 73p a day (76p), now all from the fares: the treasury's subsidy 0p (35p) | 0% |
+
+**Whether it is stable**, by the brief's tests:
+
+- **Money conserved**: exactly, every day of every run.
+- **Hunger**: 0.007, 0.006 and 0.016 a year against the first fixes' 0.09; the worst hour 7 hungry (year 1, the Winter
+  festival; the first fixes' Autumn and Winter festivals had 70 and 55), 2 in year 2 and 6 in year 3 (both about the Spring
+  festival); 5, 5 and 10 days with anyone hungry, nearly all at the festivals and the year's last weeks.
+- **Wages**: 99.7% paid every year.
+- **Gini** (earning households, 4-week means a year apart): .489 → .556 the first year (the first fixes' .486 → .558), then
+  .551 → .569 and .569 → .582: still rising, by about a third as much each year (+.067, +.018, +.013).
+- **No till cover collapsing, no runaway stock or prices**: the third year's covers are the first's within a few hundredths
+  (the armoury .99, the apothecaries .95, the shipwright .92, the builders' yard 1.00); stock on the shelves level.
+- **The treasury**: a season's swing (low in autumn, high in winter and spring) on a slow rise: its 4-week means +3,100p the
+  first year, then +900p and +1,200p (about 3p a day on 1,600p a day of its flows); its day in year 3: 1,557p of toll and
+  34p of the services in, 983p of wages, 358p of alms, 211p of wage support and 32p of patrons out. Year 1's larger rise is
+  the carriage subsidy kept (35p a day: the carters no longer need it) and the shorter wage support (the trades fixed
+  here pay their own posts). The first fixes' year rose the same way (+2,700p).
+- The households' purses fall as the treasury rises (about 2,000p a year): savings move slowly from the comfortable
+  households to the treasury, which keeps all over its 2,000p cap that no short till asks for.
+
+So: **stable for hunger, wages, the trades and money**; the treasury and Gini **drift up slowly**, the first fixes' design
+(the cap spends only on short tills' wages) and not these changes' doing, so they are left for the user (below) rather
+than tuned.
+
+#### Left for the user
+
+- **The treasury's slow rise** (about 1,000p a year after the first): a lever exists for each way of spending it back:
+  the gate toll (`toll`, 30%: each point is about 52p a day, more than the drift), the alms (`almsADay`), the wage support's cap (`treasuryCap`),
+  or a new outlet (the public buildings' upkeep at the builders' yard is one already, 24p a day).
+- **The Houses' armed retainers** are 24, a number in `country.json` (`patrons.list`): none of the Houses' posts is armed;
+  placing them (the 200 country folk, doc 66) would make them posts like the Watch's.
+- **The Country's basket**: the Country (the Houses' estates, the wharf) now pays 55p a day to its patrons out of the same
+  money it spends on the city's goods, so the trades living on its basket sell a little less (the mason .86 → .84, the
+  brickworks .94 → .90, the smithies .98 → .94, the builders' works .48 → .43, all paid by the wage support).
+- **The Carters' Yard** keeps its keeper's 73p a day of profit from its fares alone (it takes about 135p of carriage for
+  62p of wages): cheaper carriage (`carriage`, 6p a load) would pass it to the shops; more drivers were not added.
+- **The Market Hall's cooper** sells few casks (the seller holding most is asked first); a rule that spreads the city's
+  buying over its sellers by stock, as the Country's does, would share them.
+- The food rebalance's three renamed shops keep their helpers' old labels ("helping at The Cough Jar" at The Honey Crock,
+  "helping at Oilcloth & Wool" at The Apple Loft, "helping at Commons Sundries" at Commons Provisions): a label fix,
+  not done here so as to change no other wolf.
+- The Houses' heads ("ruling House Fell", "keeping Greatly House", "keeping Grayrock Hall", "keeping Timberland Court")
+  and the warehouses' keepers are still at the Country's 8p: they head Houses and stores, not offices.

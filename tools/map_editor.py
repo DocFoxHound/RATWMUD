@@ -90,8 +90,11 @@ SEASON_NAMES = ('Spring', 'Summer', 'Autumn', 'Winter')
 # as country.json's `services.list` and items.json's price). Core's Society::RuleNames, with their ranges.
 RULE_DEFAULTS = {'rules': {}, 'services': {}}
 RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 100000000, 'wageSupport': 100,
-               'workBankHours': 1000, 'fairFood': 1, 'services': 1, 'servicesCityShare': 100}
-RULE_SWITCHES = ('fairFood', 'services')            # 0 or 1: off or on.
+               'workBankHours': 1000, 'fairFood': 1, 'services': 1, 'servicesCityShare': 100,
+               # Trades and the follow-ups (doc 68, Progress, "Trades"): no migration (live.economy.rules is {name: N}).
+               'suppliers': 1, 'patrons': 1, 'armourEvery': 3650, 'buyAheadDays': 5, 'floatDrawDays': 28,
+               'floatWagesDays': 60, 'subsidyToNeed': 1}
+RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed')   # 0 or 1: off or on.
 SERVICE_LIMITS = {'price': (1, 100000), 'every': (1, 3650)}
 
 
@@ -111,7 +114,8 @@ def rule_defaults() -> dict:
 
 def service_list() -> list[dict]:
     """country.json's services, each with its item's name and catalogue price (items.json): {id, name, business, price,
-    every}."""
+    every, for} (`for`: "households", or "patrons" for a patron's work, done for each of its patrons' units: doc 68,
+    "Trades")."""
     try:
         items = {i['id']: i for i in json.loads((ROOT / 'Data/Items/items.json').read_text(encoding='utf-8'))['items']}
     except (OSError, ValueError, KeyError):
@@ -121,7 +125,8 @@ def service_list() -> list[dict]:
         if isinstance(s, dict) and s.get('id'):
             item = items.get(s['id'], {})
             out.append({'id': s['id'], 'name': item.get('name', s['id']), 'business': s.get('business', ''),
-                        'price': item.get('price', 1), 'every': s.get('every', 1)})
+                        'price': item.get('price', 1), 'every': s.get('every', 1),
+                        'for': 'patrons' if s.get('for') == 'patrons' else 'households'})
     return out
 
 

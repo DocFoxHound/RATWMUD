@@ -63,13 +63,16 @@ export function RulesPanel({data, locked, setRules, setServices}: {data: RuleCon
         <p className="hint">Things the barber, the moneychanger, the pawnbroker, the stables, the shipwright and the builders'
             yard do for a household, bought only from money it has to spare (its comforts budget, before comforts), about once
             every so many days; done at once, nothing kept. The city's share of each price goes to the treasury, the rest to
-            the shop's till.</p>
+            the shop's till. The armoury's, the shipwright's and the builders' yard's work for their patrons (doc 68, "Trades")
+            is paid by the treasury, the Houses' estates or the wharf, for each armed wolf, hull or building about once every
+            so many days, all to the shop's till.</p>
         <div className="dm-table-wrap"><table className="dm-table services-table">
             <thead><tr><th>Service</th><th>On</th><th>Price (p)</th><th>Every (days)</th><th></th></tr></thead>
             <tbody>{data.serviceList.map(s => {
                 const v = serviceValue(data, s), changed = data.services[s.id] !== undefined;
                 return <tr key={s.id} className={changed ? 'changed' : ''}>
                     <td title={serviceText(data, s)}><b>{s.name}</b><br /><small className="hint">{s.business}
+                        {s.for === 'patrons' && ', for its patrons: every day count is per unit (an armed wolf, a hull, a building)'}
                         {changed && ` (country.json: ${s.price}p, every ${s.every} days)`}</small></td>
                     <td><input type="checkbox" checked={v.on} disabled={off} aria-label={`${s.name}: on`}
                         onChange={e => { const body = serviceChange(data, s, 'on', e.target.checked); if (body) setServices(body); }} /></td>

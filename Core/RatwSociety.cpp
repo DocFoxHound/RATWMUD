@@ -1483,6 +1483,10 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
 
 int Society::startingStock(const std::string& ware)
 {
+    // A dear good keeps fewer (country.json `shelves`: theriac, one; doc 68, Progress, "Trades").
+    if (const auto& shelves = items::country().shelves; !shelves.empty())
+        if (const auto found = shelves.find(items::baseOf(ware)); found != shelves.end())
+            return found->second;
     return ware == "sword" ? SmithSwords : GoodsKept;
 }
 

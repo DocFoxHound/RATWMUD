@@ -114,7 +114,12 @@ def main():
             c = trade[tr]
             c['residents'] += t['in'].get('residents', 0)
             c['country'] += t['in'].get('country', 0)
-            c['draws'] += t['out'].get('draws', 0) - t['in'].get('draws refunded', 0)
+            # Trades (doc 68, Progress): what the patrons paid, what other makers bought of its goods (its sales), what
+            # it bought of theirs (a draw's cost), and the household services' takings less the city's share.
+            c['patrons'] += t['in'].get('patrons', 0)
+            c['trade_in'] += t['in'].get('city trade', 0)
+            c['services'] += t['in'].get('services', 0) - t['out'].get('services city', 0)
+            c['draws'] += t['out'].get('draws', 0) - t['in'].get('draws refunded', 0) + t['out'].get('city trade', 0)
             c['carriage'] += t['out'].get('carriage in', 0)
             c['owes'] += t['owes']
             c['wages'] += t['out'].get('wages', 0)
@@ -127,23 +132,27 @@ def main():
     rows = []
     for tr, c in trade.items():
         k = len(tills_of[tr])
-        sales = (c['residents'] + c['country']) / n
+        sales = (c['residents'] + c['country'] + c['patrons'] + c['trade_in']) / n
         net = sales - (c['draws'] + c['carriage']) / n
         rows.append({'trade': tr, 'tills': k, 'residents': c['residents'] / n, 'country': c['country'] / n,
+                     'patrons': (c['patrons'] + c['trade_in']) / n, 'services': c['services'] / n,
+                     'cover_all': (net + c['services'] / n) / (c['owes'] / n) if c['owes'] else 0,
                      'draws': c['draws'] / n, 'carriage': c['carriage'] / n, 'owes': c['owes'] / n, 'wages': c['wages'] / n,
                      'profit': c['profit'] / n, 'cash': c['cash'] / n, 'stock': c['stock'] / n,
                      'margin': net, 'cover': net / (c['owes'] / n) if c['owes'] else 0,
                      'short': short_days[tr] / (n * k), 'carriage_takings': c['carriage_takings'] / n})
     rows.sort(key=lambda r: r['cover'])
-    print('\nper trade, pennies a day (all its tills): sales to residents, to the Country, draws+carriage, '
-          'value added, wages owed, paid, profit; cover = value added / wages owed; short = share of till-days paying '
-          'less than owed')
-    print(f'{"trade":14} {"n":>3} {"resid":>7} {"cntry":>7} {"draws":>7} {"added":>7} {"owes":>6} {"paid":>6} '
-          f'{"profit":>7} {"cover":>6} {"short":>6} {"till":>6} {"stock":>6}')
+    print('\nper trade, pennies a day (all its tills): sales to residents, to the Country, to patrons and other makers '
+          '(doc 68, "Trades"), draws+carriage (and inputs bought from the city), value added, wages owed, paid, profit; '
+          'cover = value added / wages owed; svc = household services less the city\'s share (not in value added), cover+ '
+          'with them; short = share of till-days paying less than owed')
+    print(f'{"trade":14} {"n":>3} {"resid":>7} {"cntry":>7} {"patrn":>7} {"draws":>7} {"added":>7} {"owes":>6} {"paid":>6} '
+          f'{"profit":>7} {"cover":>6} {"svc":>6} {"cover+":>6} {"short":>6} {"till":>6} {"stock":>6}')
     for r in rows:
-        print(f'{r["trade"]:14} {r["tills"]:>3} {r["residents"]:7.1f} {r["country"]:7.1f} {r["draws"] + r["carriage"]:7.1f} '
-              f'{r["margin"]:7.1f} {r["owes"]:6.0f} {r["wages"]:6.1f} {r["profit"]:7.1f} {r["cover"]:6.2f} '
-              f'{r["short"]:6.0%} {r["cash"] / r["tills"]:6.0f} {r["stock"] / r["tills"]:6.0f}')
+        print(f'{r["trade"]:14} {r["tills"]:>3} {r["residents"]:7.1f} {r["country"]:7.1f} {r["patrons"]:7.1f} '
+              f'{r["draws"] + r["carriage"]:7.1f} {r["margin"]:7.1f} {r["owes"]:6.0f} {r["wages"]:6.1f} {r["profit"]:7.1f} '
+              f'{r["cover"]:6.2f} {r["services"]:6.1f} {r["cover_all"]:6.2f} {r["short"]:6.0%} {r["cash"] / r["tills"]:6.0f} '
+              f'{r["stock"] / r["tills"]:6.0f}')
     tot = collections.Counter()
     for r in rows:
         for k in ('residents', 'country', 'draws', 'carriage', 'owes', 'wages', 'profit', 'margin'):

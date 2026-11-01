@@ -319,11 +319,44 @@ Catalog build()
                 std::clamp(int(std::lround(country.object("rules").number(info.name, info.fallback))), info.low, info.high);
         for (const auto& s : country.object("services").array("list"))
         {
-            ServiceDef def{s.string("id"), s.string("business"), std::clamp(int(s.number("every", 30)), 1, 3650)};
+            ServiceDef def{s.string("id"), s.string("business"), std::clamp(int(s.number("every", 30)), 1, 3650),
+                           s.string("for") == "patrons"};
             if (known(def.id) && !def.business.empty() &&
                 std::none_of(c.country.services.begin(), c.country.services.end(), [&](const ServiceDef& x) { return x.id == def.id; }))
                 c.country.services.push_back(std::move(def));
         }
+        // Trades (doc 68, Progress, "Trades"): the city's suppliers, the armoury's patrons, dear goods' shelves.
+        for (const auto& s : country.object("suppliers").array("list"))
+        {
+            Supplier supplier{s.string("buyer"), s.string("seller"), {}};
+            for (const auto& g : s.array("goods"))
+                if (known(g.asString({})))
+                    supplier.goods.push_back(g.asString({}));
+            if (!supplier.buyer.empty() && !supplier.seller.empty() && supplier.buyer != supplier.seller)
+                c.country.suppliers.push_back(std::move(supplier));
+        }
+        for (const auto& t : country.object("patrons").array("list"))
+        {
+            Patrons trade;
+            trade.business = t.string("business");
+            for (const auto& g : t.array("groups"))
+            {
+                PatronGroup group{g.string("id"), g.string("name"), g.string("payer"), {}, std::clamp(int(g.number("units", 0)), 0, 100000)};
+                for (const auto& r : g.array("roles"))
+                    if (!r.asString({}).empty())
+                        group.roles.push_back(r.asString({}));
+                if (!group.id.empty() && !group.payer.empty() && (!group.roles.empty() || group.units > 0))
+                    trade.groups.push_back(std::move(group));
+            }
+            for (const auto& g : t.array("pieces"))
+                if (known(g.asString({})))
+                    trade.pieces.push_back(g.asString({}));
+            if (!trade.business.empty() && !trade.groups.empty())
+                c.country.patrons.push_back(std::move(trade));
+        }
+        for (const auto& [item, n] : country.object("shelves").fields())
+            if (known(item) && n.asNumber(0) >= 1)
+                c.country.shelves[item] = std::clamp(int(n.asNumber(1)), 1, 1000);
         // The seasons (a group of goods each; a good in the first group that names it).
         std::set<std::string> grouped;
         for (const auto& g : country.object("seasons").array("groups"))
@@ -348,6 +381,7 @@ Catalog build()
             four("price", group.price, 10, 1000);
             four("shelf", group.shelf, 0, 1000);
             group.normal = std::clamp(int(g.number("normal", 0)), 0, 1000000);
+            group.stores = g.boolean("stores");
             if (!group.goods.empty())
                 c.country.seasons.push_back(std::move(group));
         }

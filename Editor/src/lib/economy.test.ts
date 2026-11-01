@@ -50,7 +50,8 @@ test('the comforts: the world\'s own, or country.json\'s', () => {
 const trim = {id: 'groom_and_trim', name: 'A groom and trim', business: 'barber', price: 1, every: 4};
 const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {almsADay: 12}, services: {},
     ruleDefaults: {comfortsMost: 200, almsADay: 10, treasuryCap: 2000, wageSupport: 100, workBankHours: 0, fairFood: 1, services: 1,
-        servicesCityShare: 30}, serviceList: [trim]};
+        servicesCityShare: 30, suppliers: 1, patrons: 1, armourEvery: 120, buyAheadDays: 1, floatDrawDays: 7, floatWagesDays: 7,
+        subsidyToNeed: 1}, serviceList: [trim]};
 
 test('a rule is the world\'s own or country.json\'s, and a change is sent only when it changes something', () => {
     assert.deepEqual(RULES.map(r => r.key).sort(), Object.keys(rules.ruleDefaults).sort(), 'every rule of country.json listed');

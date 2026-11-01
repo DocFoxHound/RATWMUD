@@ -92,7 +92,7 @@ export type GoodsBody = {set: Record<string, boolean>} | {all: boolean};
 /** A service as a world has it (stored whole once changed). */
 export interface ServiceValues { on: boolean; price: number; every: number }
 /** A country.json service: its item's name and catalogue price (items.json), its business and how often it is bought. */
-export interface ServiceListed { id: string; name: string; business: string; price: number; every: number }
+export interface ServiceListed { id: string; name: string; business: string; price: number; every: number; for?: string }
 export interface RuleControls {
     rulesSupported: boolean; rulesProblem: string; rules: Record<string, number>; services: Record<string, ServiceValues>;
     ruleDefaults: Record<string, number>; serviceList: ServiceListed[];
@@ -109,6 +109,14 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'fairFood', label: 'Fair food in a household', max: 1, unit: 'the members with least food buy first', onOff: true},
     {key: 'services', label: 'The city\'s services', max: 1, unit: 'households buy them from their comforts budget', onOff: true},
     {key: 'servicesCityShare', label: 'The city\'s share', max: 100, unit: '% of each service\'s price to the treasury'},
+    // Trades and the follow-ups (doc 68, Progress, "Trades").
+    {key: 'suppliers', label: 'City suppliers first', max: 1, unit: 'a keeper buys its craft inputs from the city\'s makers before the store room (the cooper\'s casks)', onOff: true},
+    {key: 'patrons', label: 'Patrons', max: 1, unit: 'the treasury, the Houses and the wharf pay for their kit, hulls and buildings\' work', onOff: true},
+    {key: 'armourEvery', label: 'New kit every', max: 3650, unit: 'days, for each armed wolf (the armoury\'s new pieces)'},
+    {key: 'buyAheadDays', label: 'Buy ahead', max: 5, unit: 'days of food more a household buys before a Restday or festival'},
+    {key: 'floatDrawDays', label: 'A till\'s float', max: 28, unit: 'days of draws averaged for the float it keeps back (1: yesterday\'s)'},
+    {key: 'floatWagesDays', label: 'Wages kept before profit', max: 60, unit: 'days of its posts\' wages a till keeps over its float'},
+    {key: 'subsidyToNeed', label: 'Carriage subsidy only to need', max: 1, unit: 'the treasury pays the carters only what they lack of their wages', onOff: true},
 ];
 /** A rule as it stands: the world's own, else country.json's. */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;
