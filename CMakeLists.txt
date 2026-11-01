@@ -236,6 +236,12 @@ add_executable(trades_tests Tests/trades_tests.cpp)
 target_link_libraries(trades_tests PRIVATE ratw_core)
 target_compile_definitions(trades_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME trades_behaviors COMMAND trades_tests)
+# The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): its order at 18:00, the poorest
+# raised to a level, the public works' orders, money conserved.
+add_executable(treasury_tests Tests/treasury_tests.cpp)
+target_link_libraries(treasury_tests PRIVATE ratw_core)
+target_compile_definitions(treasury_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME treasury_behaviors COMMAND treasury_tests)
 add_executable(hunt_tests Tests/hunt_tests.cpp)
 target_link_libraries(hunt_tests PRIVATE ratw_core)
 add_test(NAME hunt_behaviors COMMAND hunt_tests)

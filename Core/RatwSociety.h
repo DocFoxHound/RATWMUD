@@ -690,13 +690,18 @@ class Society
         std::int64_t cityTrade = 0, patronsTreasury = 0, patronsCountry = 0;
         int boughtAhead = 0;                        // 1 on a day households bought ahead for a Restday or festival.
         int householdsShort = 0, foodBought = 0, needsBought = 0, comfortsBought = 0, tillsShort = 0;
+        // The treasury's surplus (doc 68, "The treasury's surplus: works and alms"): what it held over its cap and
+        // surplusKeep tonight, what of it went to the public works' orders (pieces, pennies; by business in worksTrades)
+        // and to the poorest households, and the households given it.
+        std::int64_t surplus = 0, worksSpent = 0, surplusAlms = 0;
+        int worksPieces = 0, surplusHouseholds = 0;
         // By business (the services' trades): services done and what they took in, the city's share included.
         struct Trade
         {
             int sold = 0;
             std::int64_t spent = 0;
         };
-        std::map<std::string, Trade> serviceTrades, patronTrades;
+        std::map<std::string, Trade> serviceTrades, patronTrades, worksTrades;
         // By season group (doc 68, Progress, "Seasons"): pieces drawn from the Country, pieces sold to residents and
         // what they paid for them.
         struct Group
@@ -855,6 +860,10 @@ class Society
     std::int64_t tillFloat(const std::string& till) const;   // A till's working float (floatDrawDays' mean draws).
     void payWages();
     void supportWages();                            // The treasury over its cap pays the short tills' posts (18:00).
+    // Then what it holds over its cap and surplusKeep goes to the public works and the poorest households (18:00, last).
+    void spendSurplus();
+    std::int64_t topUpPoorest(std::int64_t budget);     // The poorest households topped up, per head, from `budget`.
+    std::int64_t worksOrders(std::int64_t budget);      // The public works' orders from the city's trades, from `budget`.
     void turnShelves();
     std::map<std::string, std::int64_t> tillsShort_;   // Till -> what it could not pay its posts tonight (payWages).
     std::vector<ServiceNow> services_;              // (buildSeasons, with the rules.)

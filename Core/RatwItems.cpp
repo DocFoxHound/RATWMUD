@@ -354,6 +354,17 @@ Catalog build()
             if (!trade.business.empty() && !trade.groups.empty())
                 c.country.patrons.push_back(std::move(trade));
         }
+        // The treasury's surplus (doc 68, Progress, "The treasury's surplus"): the public works' trades and their goods.
+        for (const auto& w : country.object("works").array("list"))
+        {
+            WorksOrder order{w.string("business"), {}, std::clamp(int(w.number("weight", 1)), 1, 1000)};
+            for (const auto& g : w.array("goods"))
+                if (known(g.asString({})))
+                    order.goods.push_back(g.asString({}));
+            if (!order.business.empty() && !order.goods.empty() &&
+                std::none_of(c.country.works.begin(), c.country.works.end(), [&](const WorksOrder& x) { return x.business == order.business; }))
+                c.country.works.push_back(std::move(order));
+        }
         for (const auto& [item, n] : country.object("shelves").fields())
             if (known(item) && n.asNumber(0) >= 1)
                 c.country.shelves[item] = std::clamp(int(n.asNumber(1)), 1, 1000);

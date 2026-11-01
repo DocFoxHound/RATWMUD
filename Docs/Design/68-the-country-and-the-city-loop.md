@@ -1535,3 +1535,158 @@ than tuned.
   not done here so as to change no other wolf.
 - The Houses' heads ("ruling House Fell", "keeping Greatly House", "keeping Grayrock Hall", "keeping Timberland Court")
   and the warehouses' keepers are still at the Country's 8p: they head Houses and stores, not offices.
+
+### The treasury's surplus: works and alms (2026-10-31)
+
+Branch `r2-econ-treasury`, from `ridgemere2` (345d485). The trades' three years (above) were stable for hunger, wages,
+the tills and money, but the treasury gained about 1,000p a year (its 4-week means 5,140 → 8,276, 8,808 → 9,700,
+9,613 → 10,776), household purses fell about 2,000p a year, and Gini (earning households) rose about .015 a year: the cap
+spends only on short tills' wages, and few tills are short now.
+
+The decision (the user, 2026-10-31): a rule that sends whatever the treasury holds over its cap back out each day, at
+18:00, after its own posts and the short shops' wages, as two things: **public works orders** (the city buys upkeep and
+goods for public buildings and services from city businesses, at their prices, till to till: the builders' yard and other
+trades that make sense, such as the smithy for ironwork, the chandlery for lamps and candles, the ropewalk and the cooper;
+spread across trades so that the money becomes wages and doesn't pile up as one owner's profit; the patron or service
+mechanism where it can be used) and **higher alms** (a share tops up the poorest households, per head, poorest first, up to a
+level rather than to everyone). The split and the levels DM-tunable; never creating money; the treasury's own wages, the
+wage support and the cap rule first. The goal: the treasury level with no year-over-year trend, household purses no longer
+falling, Gini roughly flat, without hunger or short wages coming back; the money to the workers and the Sump rather than
+to owners' profits.
+
+#### The rule
+
+`Society::spendSurplus`, last at 18:00 (after `payWages`, `supportWages` and `giveAlms`), five rules in `country.json`
+`rules` (Core `items::Rules`; a world's own in `live.economy.rules`; the DM's Economy tab and Atlas's Economy page,
+`RulesPanel`, applied live by `economy.sync`):
+
+| Rule | Range | Default | What it does |
+|---|---|---|---|
+| `surplus` | 0/1 | on | The treasury's surplus goes out at 18:00; off, it stays. |
+| `surplusKeep` | 0-100,000,000 | **4,000p** | Pennies over `treasuryCap` (2,000p) the treasury keeps before anything goes out: the surplus is what it holds over 6,000p. |
+| `surplusWorks` | 0-100% | **20%** | Of the surplus, a day, to public works orders. |
+| `surplusAlms` | 0-100% | **80%** | Of the surplus, a day, to the poorest households. |
+| `surplusAlmsTo` | 0-1,000 | **40p** a head | The ceiling the poorest are raised to (the comforts line: under it a household buys no comforts, so it keeps what it is given). |
+
+- **Why a reserve over the cap** (`surplusKeep`, a level the brief's list lacked): the treasury runs a deficit every summer
+  and autumn (the toll falls with the harvest's prices, below its posts and alms) and makes it up in winter and spring;
+  the trades' years swung about 4,000-5,000p from their winter high to their autumn low. Spending everything over the
+  2,000p cap would leave the treasury at the cap each spring and under it by autumn, when the wage support (paid only over
+  the cap) would stop and the short tills' posts go short again. 4,000p over the cap carries the lean half: the lowest the
+  treasury fell in years 2 and 3 was 4,274p and 4,707p.
+- **The alms** (`topUpPoorest`): every household under the ceiling (all its members' purses, per head) is raised to one
+  level, the highest whole pennies a head the share can bring them all to; what is left the next penny a head, the
+  poorest first; paid to the member with least ("alms from the surplus"). A household at or over the ceiling gets nothing.
+- **The works** (`worksOrders`, `country.json` `works`): nine trades, each with its weight (its shares of the day's orders,
+  of what is left, so that what one can't place goes on to the next) and what it supplies: the builders' yard (3; its
+  patron services, a wall repointed, a roof's slates relaid, a floor or stair mended, done at once), the builders' works
+  (2; beams, planks, fittings, nails), the smithy (2; fittings, chain, locks, nails), the masons (2; cut stone, mortar,
+  lime), and 1 each the brickworks (bricks, roof tiles), the cooperage (barrels, hoops), the ropewalk (rope, canvas), the
+  chandlery (lamp oil, tallow candles) and the paintworks (whitewash, paint). A good comes off the shop's shelves at the
+  catalogue's price (one left for its customers) and is used up in the works, so the shop's shelves follow it and it makes
+  more; the city fetches it from any shop of the trade with its post held. In a trade, the till with **most room under its
+  keeper's profit** (its float and `floatWagesDays` of its posts' wages, as `payWages` keeps them) is ordered from first,
+  up to that room, so the orders go to the tills that need them for their wages before any keeper's profit.
+- **What one can't place goes to the other**: the alms first; what they can't place (no one under the ceiling) to the
+  works; what the works can't place back to the alms; what neither places stays in the treasury. Shares over 100% in all
+  are scaled to the whole.
+- **Never makes money**: every penny moves by `shift` or `sale`, from the treasury only, never more than the surplus, so
+  the treasury never ends a night under its cap and reserve by this rule.
+
+**Reports**: `world_check --economy` gains `surplus` (what was over tonight), `surplus_alms`, `surplus_households`,
+`works_spent`, `works_pieces` and per trade `works_<business>_pieces` and `_spent`; the detail file counts "works" (a
+till's takings) and "alms from the surplus"; `tools/econ_detail.py` shows the works in a trade's sales (its own column) and
+value added.
+
+**Migration**: none: the rules are keys of `live.economy.rules` (0058's JSON) and default to country.json's. DEV has none of
+its own and was not written. `tools/map_editor.py` (`RULE_LIMITS`, `RULE_SWITCHES`), the Editor (`economy.ts`'s `RULES`,
+`model.mjs`'s `RULE_LIMITS`) and RulesPanel's note know them.
+
+**Tests**: `Tests/treasury_tests.cpp` (new, 170 checks, the real catalogue): the defaults and the works' list; nothing under
+the cap and reserve or with the rule off; the order (the ledger shows the treasury's posts, the wage support, the alms,
+then the surplus; a treasury 20p over its cap gives its posts, the short till and the alms all of it and leaves no surplus;
+200p over, the surplus is exactly what is left, and the treasury ends at its cap); the alms to a level (5p raises everyone
+at 10p a head to 11 and the poorest to 12, nobody above them gets any; plenty raises all to the 20p ceiling and no
+further, the rest stays; a ceiling at the day's alms gives none); the works (three fifths to the builders' yard's work,
+done at once and never kept, the rest to the smithy, from the till with room under its profit, the full one given
+nothing, one fitting left on the shelf, the treasury holding nothing); the split (what the alms can't place to the works;
+shares over 100% never more than the surplus); five days of the whole loop, the cap and reserve kept every evening; money
+conserved in every one. `country_tests` and `econ_fix_tests` run with `surplus` off (they test the loop as it was). All 74
+C++ tests pass (`build-core`). Python `test_studio`, `test_world_store`, `test_item_catalog`, `test_map_editor` pass but for
+the known Greyfen 11-vs-10; Editor: `tsc` clean, the lib tests 53 of 53, the model's 78 of 79 (the same Greyfen count).
+
+#### The runs
+
+DEV build 52 (its export, nothing written), from Spring 1, `--simulate 6 26298` (three years), `--no-check --deterministic
+--threads 4 --no-profile`, each pinned to six CPUs; a first year of two settings, then three years of three (the
+defaults are the third). Summaries committed in `artifacts/economy/r2/treasury-summary.txt`; the jsonl in the main repo's
+`artifacts/economy/r2/treasury_*`. Money conserved every day of every run. Days 5-364 of each year; pennies a day but the
+treasury, the purses and Gini; 4-week means: the year's first and last 28 days.
+
+| Year | Run | Hungry (mean) | Worst hour | Wages paid | Treasury, 4-week means | Household purses (4-week means; day 5 → 364) | Gini (earners), 4-week means | Profit, owners' share of profit + wages | Base alms, wage support | Surplus: to the poorest, to the works |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | trades | 0.007 | 7 | 99.7% | 5,140 → 8,276 | 29,417 → 25,462 (29,187 → 25,843) | .489 → .556 | 1,162, 21.9% | 379, 194 | - |
+| 1 | **surplus** | 0.005 | 5 | 99.8% | 5,053 → 5,961 | 29,476 → 26,802 (29,187 → 27,663) | .488 → .554 | 1,201, 22.4% | 340, 184 | 65, 16 |
+| 2 | trades | 0.006 | 2 | 99.7% | 8,808 → 9,700 | 25,328 → 24,804 (26,893 → 24,897) | .551 → .569 | 1,148, 21.7% | 366, 204 | - |
+| 2 | **surplus** | 0.003 | 2 | 99.7% | **5,966 → 5,964** | 27,273 → 26,962 (28,685 → 27,200) | .544 → .571 | 1,238, 23.0% | 292, 179 | 126, 31 |
+| 3 | trades | 0.016 | 6 | 99.7% | 9,613 → 10,776 | 24,997 → 24,103 (25,905 → 23,398) | .569 → .582 | 1,143, 21.6% | 358, 211 | - |
+| 3 | **surplus** | 0.006 | 5 | 99.8% | **5,965 → 5,972** | **27,194 → 27,232** (27,749 → 26,814) | .560 → .577 | 1,270, 23.5% | 262, 180 | 166, 41 |
+
+The other settings, years 2 and 3 (treasury, purses, Gini by 4-week means; the owners' share):
+
+| Setting | Treasury | Purses | Gini | Owners |
+|---|---|---|---|---|
+| works 50%, alms 50%, to 20p | 5,912 → 5,964; 5,928 → 5,967 | 26,996 → 26,820; 27,106 → 27,017 | .550 → .576; .567 → .579 | 23.0%, 23.6% |
+| works 30%, alms 70%, to 30p | 5,939 → 5,957; 5,941 → 5,972 | 27,118 → 26,746; 27,087 → 26,946 | .548 → .573; .566 → .586 | 22.9%, 23.5% |
+| **works 20%, alms 80%, to 40p** (the defaults) | 5,966 → 5,964; 5,965 → 5,972 | 27,273 → 26,962; 27,194 → 27,232 | .544 → .571; .560 → .577 | 23.0%, 23.5% |
+| works 1%, alms 1% (a year only) | year 1: 5,136 → 7,956, still rising: too slow | | | |
+
+559 residents at the end of each year; born 11, 9 and 4, died 15, 19 and 13, as in the trades' years.
+
+**Where the works money went** (the defaults; pennies a day, years 1, 2, 3): the builders' yard 3.0, 5.9, 7.6; the masons
+2.4, 4.6, 6.0; the builders' works 2.1, 4.3, 5.5; the smithies 2.1, 4.1, 5.3; the paintworks 1.8, 3.2, 4.5; the chandlery
+1.5, 2.9, 3.9; the ropewalk 1.2, 2.4, 3.3; the cooperage 1.0, 2.1, 2.5; the brickworks 0.9, 1.8, 2.3 (16, 31 and 41p in
+all). The surplus grows year on year (81, 157, 208p a day) because more of it comes back: the money it puts out is spent in
+the shops, whose draws pay the toll (1,596, 1,615, 1,630p a day against the trades' 1,572, 1,560, 1,557), and the poorest,
+held up to 40p a head, need less of the day's alms (340, 292, 262p against 379, 366, 358).
+
+**Till covers that moved by more than .03** (year 3, against the trades' year 3; cover+ with the household services):
+the works' trades: the builders' works .41 → .68 (short of wages on 92% → 57% of days), the builders' yard .72 → .89
+(cover+ 1.00 → 1.18), the masons .85 → 1.12, the paintworks .89 → 1.18, the ropewalk .78 → 1.03 (short 52% → 13%), the
+brickworks .83 → .94, the smithies .93 → 1.01, the cooperage .74 → .79; and from the households' spending, the charcoal
+burner .79 → .87, the apothecaries .95 → 1.02, the armoury .99 → 1.04, the shipwright .67 → .70 (cover+ .92 → .95), the
+ironworks, glassworks, papermill, distillery, cartwright, scriptorium, cartographer, smokehouse, tinker, perfumer,
+pottery, printing house, brewery, carpenter and jeweller up .03-.14, the fishmongers 1.35 → 1.47, the tannery 2.12 → 2.28,
+the vintner 2.52 → 2.98, the rag-and-bone yard 3.11 → 3.45, the general store 6.41 → 7.20. Down: the plasterworks
+1.44 → 1.32 and the Market Square stalls 1.12 → 1.07. Year 1 moved the same way by about a third as much.
+
+**Whether the drift is gone**:
+
+- **The treasury**: yes. It holds 6,000p (its cap and reserve) in winter and spring and falls to 4,300-4,700p in autumn,
+  the same each year: 4-week means a year apart 5,966 → 5,964 and 5,965 → 5,972 (the trades' +890 and +1,160). Year 1's
+  rise is the start (3,878p) reaching its level. The wage support was paid every day of years 2 and 3.
+- **Household purses**: mostly. By 4-week means they fall 311p in year 2 and rise 38p in year 3 (the trades': -524 and
+  -894); from Spring 1 to Spring 1 28,685 → 27,749 (the trades' 26,893 → 25,905). What still leaves them goes to the tills,
+  whose working floats grow with their sales (16,624 → 16,884p at the year's end, by 91-day means). The waged households
+  now hold their own: 8,574 → 8,592p a year apart (the trades': 8,604 → 8,030), the keepers 18,211 → 18,245p.
+- **Hunger and wages**: no worse: hunger 0.005, 0.003, 0.006 (the trades' 0.007, 0.006, 0.016), the worst hour 5, 2 and 5,
+  wages 99.7-99.8% paid, tills short 14 a day (the trades' 15-16), the wage support 180p a day (the trades' 194-211).
+- **Gini: not flat.** .488 → .554, .544 → .571 and .560 → .577: about .016 a year in years 2 and 3, the trades' .018 and
+  .013, and the same in every setting tried (more to the alms or less). It is a little lower at each year's start
+  (.544 and .560 against .551 and .569), but its rise is not the treasury's doing: the money the surplus puts out is spent,
+  and the shops' keepers take its margin as profit (1,201, 1,238, 1,270p a day against 1,143-1,162; the owners' share of
+  profit and wages 22.4% → 23.5%, the trades' 21.6-21.9%); the general store alone took 136p a day in year 3 (119p). The
+  rule's levers move the money, not where spending ends up.
+
+#### Left for the user
+
+- **Gini's slow rise** (about .016 a year) comes from the keepers' profit on the households' spending, not the treasury:
+  the levers for it are the profit rules (`floatWagesDays`, a share of profit kept as wages or paid to a till's hands),
+  the comforts rule (`comforts.above` and `share`, which decide when a household spends its savings), or a tax on profit
+  over a level paid back as the surplus is. None is built.
+- **The owners' share** rose from 21.6% to 23.5% with the money moving again; the works' 41p a day is small beside the
+  households' own spending.
+- **The reserve** (`surplusKeep`, 4,000p) is sized to the lean seasons of this city; a world with a larger treasury or
+  toll needs its own.
+- **The works' trades and weights** are a line of data each (`country.json` `works`): the glassworks' lamp panes, the
+  carpenters, the sawmill and the plasterworks could join.

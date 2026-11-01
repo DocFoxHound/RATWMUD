@@ -279,6 +279,8 @@ struct EconomyDetail
             return "city trade";                    // (A maker's input bought from another: the seller's takings, the buyer's cost.)
         if (reason == "a patron's work" || reason == "a patron's new kit")
             return "patrons";
+        if (reason == "a public works order")
+            return "works";                         // (The treasury's surplus: doc 68, Progress, "The treasury's surplus".)
         if (reason == "restocked from the store room" || reason.rfind("drawn for ", 0) == 0 || reason.rfind("gate toll: ", 0) == 0)
             return "draws";
         if (reason.rfind("refunded", 0) == 0)
@@ -648,6 +650,16 @@ struct EconomyWatch
             const auto day = found == d.patronTrades.end() ? Society::LoopDay::Trade{} : found->second;
             seasons << ", \"patron_" << trade.business << "_jobs\": " << day.sold << ", \"patron_" << trade.business
                     << "_spent\": " << day.spent;
+        }
+        // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): what it held over its cap
+        // and reserve tonight, the poorest households' share, the public works' orders (and by trade).
+        seasons << ", \"surplus\": " << d.surplus << ", \"surplus_alms\": " << d.surplusAlms << ", \"surplus_households\": "
+                << d.surplusHouseholds << ", \"works_spent\": " << d.worksSpent << ", \"works_pieces\": " << d.worksPieces;
+        for (const auto& w : items::country().works)
+        {
+            const auto found = d.worksTrades.find(w.business);
+            const auto day = found == d.worksTrades.end() ? Society::LoopDay::Trade{} : found->second;
+            seasons << ", \"works_" << w.business << "_pieces\": " << day.sold << ", \"works_" << w.business << "_spent\": " << day.spent;
         }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households

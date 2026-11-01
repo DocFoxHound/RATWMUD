@@ -48,7 +48,9 @@ export function RulesPanel({data, locked, setRules, setServices}: {data: RuleCon
         <h3>The loop's rules</h3>
         <p className="hint">The rules that keep money moving and families fed (doc 68, "First fixes"). Empty: country.json's
             (shown faintly). The treasury's cap pays the shops' short wages only from what it holds over the cap, after its own
-            posts.</p>
+            posts. Then what it still holds over the cap and its reserve (the surplus) goes out: a share to public works
+            orders from the city's trades, a share to the poorest households up to so much a head (doc 68, "The treasury's
+            surplus").</p>
         {!data.rulesSupported && <p className="publish-error">{data.rulesProblem}</p>}
         {RULES.map(r => r.onOff
             ? <div key={r.key}><label className="toggle-row"><input type="checkbox"

@@ -1,0 +1,217 @@
+# Ridgemere 2.0, the treasury's surplus: works and alms (doc 68, Progress, 'The treasury's surplus'); DEV build 52 from Spring 1; jsonl in the main repo's artifacts/economy/r2/treasury_*
+# Runs: --simulate 6 8766 (a year) or 26298 (three), --no-check --deterministic --threads 4 --no-profile, taskset 6 CPUs.
+# a: keep 4000, works 50, alms 50, to 20p | b: keep 4000, works 1, alms 1, to 20p (a year) | c: keep 4000, works 30, alms 70, to 30p | d (the defaults): keep 4000, works 20, alms 80, to 40p
+# owners = profit / (profit + wages paid); treasury4, gini4, purses4: the span's first and last 28 days' means
+
+## Three years, each year days 5-364 of it
+run trades_3year y1 | days 5-364 | hungry 0.007 | hungry_days 5 | worst 7 | fed_low 0.983 | wages 0.997 | tills_short 14.9 | profit 1162.4 | wages_paid 4157.3 | owners 0.219 | alms 379.1 | support 193.6 | services 122.0 | svc_city 36.6 | patrons_t 31.9 | patrons_c 54.7 | city_trade 8.4 | subsidy 0.0 | surplus 0.0 | surplus_alms 0.0 | surplus_hh 0.0 | works 0.0 | toll 1571.9 | treasury 3878 -> 8631 (2454-9000) | treasury4 5140 -> 8276 | gini 0.47 -> 0.56 | gini4 0.489 -> 0.556 | purses 29187 -> 25843 | purses4 29417 -> 25462 | tills 16752 -> 15338 | country 435 -> 560 | residents 559 | births 11 | deaths 15 | conserved True | money 50252 -> 50372 | spent 5591.4
+run trades_3year y2 | days 370-729 | hungry 0.006 | hungry_days 5 | worst 2 | fed_low 0.991 | wages 0.997 | tills_short 16.1 | profit 1148.3 | wages_paid 4148.8 | owners 0.217 | alms 365.7 | support 203.5 | services 115.6 | svc_city 34.7 | patrons_t 32.9 | patrons_c 54.6 | city_trade 8.0 | subsidy 0.0 | surplus 0.0 | surplus_alms 0.0 | surplus_hh 0.0 | works 0.0 | toll 1559.6 | treasury 8281 -> 10050 (4451-10310) | treasury4 8808 -> 9700 | gini 0.55 -> 0.57 | gini4 0.551 -> 0.569 | purses 26893 -> 24897 | purses4 25328 -> 24804 | tills 14192 -> 15224 | country 1006 -> 501 | residents 559 | births 9 | deaths 19 | conserved True | money 50372 -> 50672 | spent 5544.3
+run trades_3year y3 | days 735-1094 | hungry 0.016 | hungry_days 10 | worst 6 | fed_low 0.979 | wages 0.997 | tills_short 16.5 | profit 1142.7 | wages_paid 4135.6 | owners 0.216 | alms 358.4 | support 210.8 | services 112.0 | svc_city 33.6 | patrons_t 32.4 | patrons_c 52.9 | city_trade 8.6 | subsidy 0.0 | surplus 0.0 | surplus_alms 0.0 | surplus_hh 0.0 | works 0.0 | toll 1556.5 | treasury 9351 -> 11122 (5444-11403) | treasury4 9613 -> 10776 | gini 0.57 -> 0.58 | gini4 0.569 -> 0.582 | purses 25905 -> 23398 | purses4 24997 -> 24103 | tills 14846 -> 15921 | country 570 -> 501 | residents 559 | births 4 | deaths 13 | conserved True | money 50672 -> 50942 | spent 5534.3
+run treasury_3year_a y1 | days 5-364 | hungry 0.005 | hungry_days 2 | worst 3 | fed_low 0.991 | wages 0.998 | tills_short 14.0 | profit 1205.3 | wages_paid 4158.3 | owners 0.225 | alms 357.8 | support 181.8 | services 121.9 | svc_city 36.6 | patrons_t 31.9 | patrons_c 54.7 | city_trade 8.2 | subsidy 0.0 | surplus 65.7 | surplus_alms 32.9 | surplus_hh 12.8 | works 32.7 | toll 1597.0 | treasury 3878 -> 5955 (2305-6065) | treasury4 5052 -> 5940 | gini 0.47 -> 0.56 | gini4 0.488 -> 0.559 | purses 29187 -> 27202 | purses4 29454 -> 26694 | tills 16752 -> 16739 | country 435 -> 476 | residents 559 | births 11 | deaths 15 | conserved True | money 50252 -> 50372 | spent 5643.3
+   works by trade, p a day: brickworks 2.0, builders_works 4.5, builders_yard 6.5, chandlery 2.8, cooperage 2.1, mason 4.7, paintworks 3.0, ropewalk 2.5, smithy 4.5
+   hungry days: [(231, 0.75, 3), (322, 0.88, 2)]
+run treasury_3year_a y2 | days 370-729 | hungry 0.006 | hungry_days 6 | worst 1 | fed_low 0.996 | wages 0.998 | tills_short 14.2 | profit 1238.8 | wages_paid 4151.2 | owners 0.230 | alms 325.1 | support 174.9 | services 118.1 | svc_city 35.4 | patrons_t 32.9 | patrons_c 56.0 | city_trade 8.2 | subsidy 0.0 | surplus 125.3 | surplus_alms 62.8 | surplus_hh 20.1 | works 62.3 | toll 1611.9 | treasury 5444 -> 6021 (4409-6039) | treasury4 5912 -> 5964 | gini 0.56 -> 0.56 | gini4 0.550 -> 0.576 | purses 28664 -> 26939 | purses4 26996 -> 26820 | tills 15147 -> 17187 | country 1117 -> 525 | residents 559 | births 9 | deaths 19 | conserved True | money 50372 -> 50672 | spent 5656.1
+   works by trade, p a day: brickworks 4.0, builders_works 8.7, builders_yard 12.6, chandlery 5.0, cooperage 4.2, mason 9.0, paintworks 5.4, ropewalk 4.7, smithy 8.6
+   hungry days: [(411, 0.04, 1), (413, 0.71, 1), (414, 0.54, 1), (415, 0.25, 1), (504, 0.42, 1), (710, 0.04, 1)]
+run treasury_3year_a y3 | days 735-1094 | hungry 0.010 | hungry_days 4 | worst 4 | fed_low 0.988 | wages 0.998 | tills_short 14.1 | profit 1276.2 | wages_paid 4137.9 | owners 0.236 | alms 304.2 | support 173.9 | services 116.7 | svc_city 35.0 | patrons_t 32.4 | patrons_c 54.8 | city_trade 8.1 | subsidy 0.0 | surplus 170.1 | surplus_alms 85.2 | surplus_hh 27.1 | works 84.6 | toll 1629.5 | treasury 6016 -> 6037 (4632-6102) | treasury4 5928 -> 5967 | gini 0.57 -> 0.57 | gini4 0.567 -> 0.579 | purses 27864 -> 26490 | purses4 27106 -> 27017 | tills 16356 -> 17871 | country 436 -> 544 | residents 559 | births 4 | deaths 13 | conserved True | money 50672 -> 50942 | spent 5693.5
+   works by trade, p a day: brickworks 5.4, builders_works 11.8, builders_yard 17.1, chandlery 6.9, cooperage 5.8, mason 12.2, paintworks 7.4, ropewalk 6.4, smithy 11.6
+   hungry days: [(777, 0.92, 4), (778, 0.04, 1), (960, 0.83, 3), (1051, 1.92, 4)]
+run treasury_3year_c y1 | days 5-364 | hungry 0.008 | hungry_days 3 | worst 6 | fed_low 0.983 | wages 0.998 | tills_short 14.0 | profit 1207.2 | wages_paid 4158.3 | owners 0.225 | alms 347.4 | support 182.4 | services 122.5 | svc_city 36.7 | patrons_t 31.9 | patrons_c 56.1 | city_trade 8.2 | subsidy 0.0 | surplus 75.8 | surplus_alms 53.1 | surplus_hh 14.4 | works 22.5 | toll 1597.2 | treasury 3878 -> 6005 (2305-6075) | treasury4 5052 -> 5950 | gini 0.47 -> 0.56 | gini4 0.488 -> 0.557 | purses 29187 -> 27725 | purses4 29471 -> 26944 | tills 16752 -> 16158 | country 435 -> 484 | residents 559 | births 11 | deaths 15 | conserved True | money 50252 -> 50372 | spent 5652.9
+   works by trade, p a day: brickworks 1.3, builders_works 3.1, builders_yard 4.3, chandlery 2.0, cooperage 1.5, mason 3.3, paintworks 2.3, ropewalk 1.7, smithy 3.0
+   hungry days: [(231, 1, 3), (322, 1.62, 6), (323, 0.42, 1)]
+run treasury_3year_c y2 | days 370-729 | hungry 0.002 | hungry_days 3 | worst 2 | fed_low 0.996 | wages 0.998 | tills_short 14.0 | profit 1233.8 | wages_paid 4151.3 | owners 0.229 | alms 309.6 | support 177.1 | services 117.3 | svc_city 35.2 | patrons_t 32.9 | patrons_c 56.5 | city_trade 7.9 | subsidy 0.0 | surplus 139.3 | surplus_alms 97.5 | surplus_hh 22.3 | works 41.4 | toll 1612.3 | treasury 5540 -> 6023 (4332-6057) | treasury4 5939 -> 5957 | gini 0.56 -> 0.57 | gini4 0.548 -> 0.573 | purses 28680 -> 27147 | purses4 27118 -> 26746 | tills 15089 -> 17004 | country 1063 -> 498 | residents 559 | births 9 | deaths 19 | conserved True | money 50372 -> 50672 | spent 5670.6
+   works by trade, p a day: brickworks 2.5, builders_works 5.7, builders_yard 8.1, chandlery 3.6, cooperage 2.7, mason 6.0, paintworks 3.9, ropewalk 3.2, smithy 5.6
+   hungry days: [(413, 0.33, 2), (504, 0.5, 2), (679, 0.04, 1)]
+run treasury_3year_c y3 | days 735-1094 | hungry 0.003 | hungry_days 2 | worst 4 | fed_low 0.996 | wages 0.998 | tills_short 14.0 | profit 1273.1 | wages_paid 4138.3 | owners 0.235 | alms 282.7 | support 177.9 | services 115.6 | svc_city 34.7 | patrons_t 32.4 | patrons_c 55.1 | city_trade 8.2 | subsidy 0.0 | surplus 189.6 | surplus_alms 132.7 | surplus_hh 30.8 | works 56.4 | toll 1631.4 | treasury 6016 -> 6022 (4471-6048) | treasury4 5941 -> 5972 | gini 0.57 -> 0.57 | gini4 0.566 -> 0.586 | purses 27755 -> 26363 | purses4 27087 -> 26946 | tills 16398 -> 18036 | country 503 -> 521 | residents 559 | births 4 | deaths 13 | conserved True | money 50672 -> 50942 | spent 5717.9
+   works by trade, p a day: brickworks 3.4, builders_works 7.7, builders_yard 11.1, chandlery 4.9, cooperage 3.7, mason 8.1, paintworks 5.4, ropewalk 4.4, smithy 7.6
+   hungry days: [(777, 0.42, 4), (1051, 0.5, 3)]
+run treasury_3year_d y1 | days 5-364 | hungry 0.005 | hungry_days 2 | worst 5 | fed_low 0.983 | wages 0.998 | tills_short 14.2 | profit 1200.9 | wages_paid 4158.2 | owners 0.224 | alms 339.7 | support 183.5 | services 122.5 | svc_city 36.8 | patrons_t 31.9 | patrons_c 54.4 | city_trade 8.2 | subsidy 0.0 | surplus 81.0 | surplus_alms 64.8 | surplus_hh 15.6 | works 16.0 | toll 1595.7 | treasury 3878 -> 6022 (2487-6040) | treasury4 5053 -> 5961 | gini 0.47 -> 0.56 | gini4 0.488 -> 0.554 | purses 29187 -> 27663 | purses4 29476 -> 26802 | tills 16752 -> 16182 | country 435 -> 505 | residents 559 | births 11 | deaths 15 | conserved True | money 50252 -> 50372 | spent 5650.6
+   works by trade, p a day: brickworks 0.9, builders_works 2.1, builders_yard 3.0, chandlery 1.5, cooperage 1.0, mason 2.4, paintworks 1.8, ropewalk 1.2, smithy 2.1
+   hungry days: [(231, 1.83, 5), (322, 0.12, 2)]
+run treasury_3year_d y2 | days 370-729 | hungry 0.003 | hungry_days 1 | worst 2 | fed_low 0.991 | wages 0.997 | tills_short 14.5 | profit 1238.3 | wages_paid 4150.5 | owners 0.230 | alms 292.0 | support 179.2 | services 116.4 | svc_city 34.9 | patrons_t 32.9 | patrons_c 55.3 | city_trade 8.1 | subsidy 0.0 | surplus 157.2 | surplus_alms 125.8 | surplus_hh 24.7 | works 31.1 | toll 1615.0 | treasury 5640 -> 6018 (4274-6048) | treasury4 5966 -> 5964 | gini 0.55 -> 0.56 | gini4 0.544 -> 0.571 | purses 28685 -> 27200 | purses4 27273 -> 26962 | tills 14915 -> 16928 | country 1132 -> 526 | residents 559 | births 9 | deaths 19 | conserved True | money 50372 -> 50672 | spent 5685.7
+   works by trade, p a day: brickworks 1.8, builders_works 4.3, builders_yard 5.9, chandlery 2.9, cooperage 2.1, mason 4.6, paintworks 3.2, ropewalk 2.4, smithy 4.1
+   hungry days: [(504, 0.92, 2)]
+run treasury_3year_d y3 | days 735-1094 | hungry 0.006 | hungry_days 2 | worst 5 | fed_low 0.988 | wages 0.998 | tills_short 14.1 | profit 1269.9 | wages_paid 4138.3 | owners 0.235 | alms 261.8 | support 179.5 | services 115.7 | svc_city 34.7 | patrons_t 32.4 | patrons_c 55.0 | city_trade 8.1 | subsidy 0.0 | surplus 207.5 | surplus_alms 166.0 | surplus_hh 34.9 | works 41.0 | toll 1630.0 | treasury 6009 -> 6026 (4707-6045) | treasury4 5965 -> 5972 | gini 0.57 -> 0.56 | gini4 0.560 -> 0.577 | purses 27749 -> 26814 | purses4 27194 -> 27232 | tills 16455 -> 17571 | country 459 -> 531 | residents 559 | births 4 | deaths 13 | conserved True | money 50672 -> 50942 | spent 5726.0
+   works by trade, p a day: brickworks 2.3, builders_works 5.5, builders_yard 7.6, chandlery 3.9, cooperage 2.5, mason 6.0, paintworks 4.5, ropewalk 3.3, smithy 5.3
+   hungry days: [(960, 0.62, 2), (1051, 1.5, 5)]
+
+## A year (b: the 1% shares, too slow: the treasury still rose)
+run treasury_year_b | days 5-364 | hungry 0.008 | hungry_days 2 | worst 5 | fed_low 0.978 | wages 0.997 | tills_short 14.9 | profit 1170.4 | wages_paid 4157.5 | owners 0.220 | alms 376.4 | support 192.6 | services 120.8 | svc_city 36.2 | patrons_t 31.9 | patrons_c 54.2 | city_trade 8.1 | subsidy 0.0 | surplus 537.4 | surplus_alms 5.3 | surplus_hh 3.7 | works 5.0 | toll 1577.4 | treasury 3878 -> 8095 (2663-8692) | treasury4 5136 -> 7956 | gini 0.47 -> 0.56 | gini4 0.489 -> 0.561 | purses 29187 -> 26166 | purses4 29419 -> 25569 | tills 16752 -> 15579 | country 435 -> 532 | residents 559 | births 11 | deaths 15 | conserved True | money 50252 -> 50372 | spent 5602.5
+   works by trade, p a day: builders_works 0.5, builders_yard 0.2, chandlery 1.1, mason 0.7, paintworks 1.6, ropewalk 0.5, smithy 0.3
+   hungry days: [(231, 1.12, 3), (322, 1.71, 5)]
+
+## Households' cash by kind (earning: keepers and waged; and no wage), and the tills, 91-day means (day = block start)
+trades_3year
+day     0: keeper   17208  waged   10457  no wage     398  tills   15067
+day    91: keeper   18176  waged   10194  no wage     381  tills   15012
+day   182: keeper   19046  waged   11311  no wage     365  tills   14763
+day   273: keeper   17563  waged    8928  no wage     360  tills   15633
+day   364: keeper   16742  waged    8604  no wage     356  tills   15489
+day   455: keeper   18136  waged    9854  no wage     379  tills   15119
+day   546: keeper   18634  waged   10632  no wage     367  tills   14939
+day   637: keeper   17025  waged    8648  no wage     350  tills   15528
+day   728: keeper   16646  waged    8030  no wage     342  tills   15431
+day   819: keeper   17591  waged    9558  no wage     339  tills   14930
+day   910: keeper   18460  waged   10102  no wage     330  tills   14533
+day  1001: keeper   16929  waged    8252  no wage     330  tills   15234
+treasury_3year_d
+day     0: keeper   17583  waged   10454  no wage     446  tills   15668
+day    91: keeper   18472  waged   10188  no wage     382  tills   15361
+day   182: keeper   19156  waged   11071  no wage     365  tills   14986
+day   273: keeper   18244  waged    8885  no wage     412  tills   16297
+day   364: keeper   18211  waged    8574  no wage     446  tills   16624
+day   455: keeper   18452  waged    9761  no wage     394  tills   15585
+day   546: keeper   18824  waged   10533  no wage     368  tills   14867
+day   637: keeper   18207  waged    8817  no wage     451  tills   16590
+day   728: keeper   18245  waged    8592  no wage     443  tills   16884
+day   819: keeper   18175  waged    9788  no wage     370  tills   15956
+day   910: keeper   18885  waged    9999  no wage     348  tills   15106
+day  1001: keeper   18637  waged    8479  no wage     437  tills   16693
+
+## Till covers that moved by more than .03 (value added / wages owed; cover+ with the household services), d against the trades run
+### year 1
+treasury_3year_d_y1.json
+  builders_works cover 0.43 -> 0.53  cover+ 0.43 -> 0.53  works   2.1p  short 91% -> 78%  profit 0.0 -> 0.0
+  builders_yard  cover 0.73 -> 0.79  cover+ 1.00 -> 1.07  works   3.0p  short 2% -> 0%  profit 0.0 -> 2.5
+  ropewalk       cover 0.81 -> 0.90  cover+ 0.81 -> 0.90  works   1.2p  short 42% -> 29%  profit 0.0 -> 0.2
+  brickworks     cover 0.90 -> 0.93  cover+ 0.90 -> 0.93  works   0.9p  short 25% -> 22%  profit 0.0 -> 0.5
+  mason          cover 0.84 -> 0.94  cover+ 0.84 -> 0.94  works   2.4p  short 31% -> 21%  profit 0.0 -> 1.2
+  paintworks     cover 0.93 -> 1.01  cover+ 0.93 -> 1.01  works   1.8p  short 21% -> 19%  profit 0.0 -> 1.6
+  stall          cover 1.11 -> 1.07  cover+ 1.11 -> 1.07  works   0.0p  short 35% -> 33%  profit 16.8 -> 14.2
+  ironworks      cover 1.06 -> 1.09  cover+ 1.06 -> 1.09  works   0.0p  short 0% -> 0%  profit 2.0 -> 3.6
+  glassworks     cover 1.21 -> 1.24  cover+ 1.21 -> 1.24  works   0.0p  short 0% -> 0%  profit 10.7 -> 12.3
+  fishmonger     cover 1.36 -> 1.39  cover+ 1.36 -> 1.39  works   0.0p  short 4% -> 5%  profit 27.5 -> 30.0
+  plasterworks   cover 1.48 -> 1.44  cover+ 1.48 -> 1.44  works   0.0p  short 0% -> 0%  profit 13.5 -> 12.4
+  cartographer   cover 1.44 -> 1.48  cover+ 1.44 -> 1.48  works   0.0p  short 1% -> 1%  profit 10.2 -> 10.9
+  smokehouse     cover 1.48 -> 1.52  cover+ 1.48 -> 1.52  works   0.0p  short 0% -> 0%  profit 10.6 -> 11.4
+  tinker         cover 1.65 -> 1.71  cover+ 1.65 -> 1.71  works   0.0p  short 0% -> 0%  profit 14.3 -> 15.7
+  tannery        cover 2.15 -> 2.20  cover+ 2.15 -> 2.20  works   0.0p  short 0% -> 0%  profit 34.6 -> 36.0
+  vintner        cover 2.73 -> 2.87  cover+ 2.73 -> 2.87  works   0.0p  short 1% -> 1%  profit 38.1 -> 41.0
+  rag_and_bone   cover 3.50 -> 3.60  cover+ 3.50 -> 3.60  works   0.0p  short 4% -> 4%  profit 35.3 -> 36.5
+  general        cover 7.01 -> 7.20  cover+ 7.01 -> 7.20  works   0.0p  short 1% -> 1%  profit 131.3 -> 135.6
+### year 3
+treasury_3year_d_y3.json
+  builders_works cover 0.41 -> 0.68  cover+ 0.41 -> 0.68  works   5.5p  short 92% -> 57%  profit 0.0 -> 0.0
+  shipwright     cover 0.67 -> 0.70  cover+ 0.92 -> 0.95  works   0.0p  short 21% -> 13%  profit 0.0 -> 0.0
+  cooperage      cover 0.74 -> 0.79  cover+ 0.74 -> 0.79  works   2.5p  short 50% -> 43%  profit 0.0 -> 0.3
+  charcoal       cover 0.79 -> 0.87  cover+ 0.79 -> 0.87  works   0.0p  short 45% -> 28%  profit 0.0 -> 0.1
+  builders_yard  cover 0.72 -> 0.89  cover+ 1.00 -> 1.18  works   7.6p  short 2% -> 0%  profit 0.4 -> 8.1
+  brickworks     cover 0.83 -> 0.94  cover+ 0.83 -> 0.94  works   2.3p  short 33% -> 15%  profit 0.0 -> 1.0
+  smithy         cover 0.93 -> 1.01  cover+ 0.93 -> 1.01  works   5.3p  short 15% -> 10%  profit 1.3 -> 6.5
+  apothecary     cover 0.95 -> 1.02  cover+ 0.95 -> 1.02  works   0.0p  short 18% -> 13%  profit 2.0 -> 4.5
+  ropewalk       cover 0.78 -> 1.03  cover+ 0.78 -> 1.03  works   3.3p  short 52% -> 13%  profit 0.0 -> 2.8
+  armory         cover 0.99 -> 1.04  cover+ 0.99 -> 1.04  works   0.0p  short 15% -> 12%  profit 1.3 -> 1.7
+  stall          cover 1.12 -> 1.07  cover+ 1.12 -> 1.07  works   0.0p  short 38% -> 41%  profit 17.2 -> 16.5
+  mason          cover 0.85 -> 1.12  cover+ 0.85 -> 1.12  works   6.0p  short 25% -> 7%  profit 0.3 -> 4.6
+  papermill      cover 1.07 -> 1.12  cover+ 1.07 -> 1.12  works   0.0p  short 5% -> 6%  profit 1.7 -> 3.0
+  distillery     cover 1.05 -> 1.13  cover+ 1.05 -> 1.13  works   0.0p  short 8% -> 2%  profit 2.1 -> 3.2
+  paintworks     cover 0.89 -> 1.18  cover+ 0.89 -> 1.18  works   4.5p  short 24% -> 5%  profit 0.1 -> 4.4
+  ironworks      cover 1.11 -> 1.21  cover+ 1.11 -> 1.21  works   0.0p  short 0% -> 0%  profit 4.5 -> 8.8
+  glassworks     cover 1.21 -> 1.29  cover+ 1.21 -> 1.29  works   0.0p  short 0% -> 0%  profit 10.7 -> 14.9
+  plasterworks   cover 1.44 -> 1.32  cover+ 1.44 -> 1.32  works   0.0p  short 0% -> 0%  profit 13.1 -> 9.6
+  fishmonger     cover 1.35 -> 1.47  cover+ 1.35 -> 1.47  works   0.0p  short 4% -> 5%  profit 26.4 -> 35.4
+  cartwright     cover 1.35 -> 1.49  cover+ 1.35 -> 1.49  works   0.0p  short 0% -> 0%  profit 7.7 -> 10.7
+  cartographer   cover 1.42 -> 1.49  cover+ 1.42 -> 1.49  works   0.0p  short 1% -> 1%  profit 9.2 -> 10.7
+  scriptorium    cover 1.40 -> 1.51  cover+ 1.40 -> 1.51  works   0.0p  short 0% -> 0%  profit 8.8 -> 11.1
+  pottery        cover 1.62 -> 1.66  cover+ 1.62 -> 1.66  works   0.0p  short 0% -> 0%  profit 13.8 -> 14.5
+  printing_house cover 1.65 -> 1.68  cover+ 1.65 -> 1.68  works   0.0p  short 0% -> 0%  profit 14.2 -> 14.9
+  tinker         cover 1.63 -> 1.74  cover+ 1.63 -> 1.74  works   0.0p  short 0% -> 0%  profit 13.8 -> 16.4
+  perfumer       cover 1.79 -> 1.87  cover+ 1.79 -> 1.87  works   0.0p  short 0% -> 0%  profit 17.4 -> 19.2
+  brewery        cover 1.92 -> 1.96  cover+ 1.92 -> 1.96  works   0.0p  short 12% -> 9%  profit 57.6 -> 58.8
+  carpenter      cover 1.93 -> 1.99  cover+ 1.93 -> 1.99  works   0.0p  short 0% -> 0%  profit 53.8 -> 57.5
+  jeweler        cover 2.00 -> 2.04  cover+ 2.00 -> 2.04  works   0.0p  short 0% -> 0%  profit 21.9 -> 22.8
+  tannery        cover 2.12 -> 2.28  cover+ 2.12 -> 2.28  works   0.0p  short 0% -> 0%  profit 33.7 -> 38.5
+  vintner        cover 2.52 -> 2.98  cover+ 2.52 -> 2.98  works   0.0p  short 1% -> 1%  profit 33.5 -> 43.6
+  chandlery      cover 2.98 -> 3.04  cover+ 2.98 -> 3.04  works   3.9p  short 0% -> 0%  profit 103.2 -> 106.0
+  rag_and_bone   cover 3.11 -> 3.45  cover+ 3.11 -> 3.45  works   0.0p  short 5% -> 5%  profit 30.2 -> 35.2
+  general        cover 6.41 -> 7.20  cover+ 6.41 -> 7.20  works   0.0p  short 0% -> 0%  profit 118.9 -> 136.1
+
+## d, year 3 (days 735-1094): tools/econ_detail.py
+days 735-1094 (360)
+
+per trade, pennies a day (all its tills): sales to residents, to the Country, to patrons and other makers (doc 68, "Trades"), to the public works (the treasury's surplus), draws+carriage (and inputs bought from the city), value added, wages owed, paid, profit; cover = value added / wages owed; svc = household services less the city's share (not in value added), cover+ with them; short = share of till-days paying less than owed
+trade            n   resid   cntry   patrn  works   draws   added   owes   paid  profit  cover    svc cover+  short   till  stock
+moneychanger     1     0.0     0.0     0.0    0.0     0.0     0.0     22   13.7     0.0   0.00   13.7   0.62    80%     22     14
+stables          1     0.0     0.0     0.0    0.0     0.0     0.0     22   13.2     0.0   0.00   13.2   0.60    86%     21    220
+carters          1     0.0     0.0     0.0    0.0     0.0     0.0     62   62.0    80.1   0.00    0.0   0.00     0%    454      0
+barber           1     2.1     0.0     0.0    0.0     2.1     0.0     22   14.6     0.0   0.00   14.5   0.66    89%     21     32
+pawnbroker       1     3.5     0.0     0.0    0.0     2.6     0.9     22   15.2     0.0   0.04   14.3   0.69    75%     22    486
+builders_works   1     2.1    30.7     0.0    5.5    17.9    20.5     30   20.3     0.0   0.68    0.0   0.68    57%     40    113
+shipwright       1     0.0     0.0    32.0    0.0     0.0    32.0     46   44.0     0.0   0.70   11.9   0.95    13%     73     32
+cooperage        2     0.0    72.1     8.1    2.5    54.2    28.5     36   28.0     0.3   0.79    0.0   0.79    43%     68     93
+charcoal         1     0.0    43.4     0.0    0.0    24.3    19.2     22   18.7     0.1   0.87    0.0   0.87    28%     49     69
+butcher          8   660.2     0.0     0.0    0.0   512.8   147.3    168  141.3     6.1   0.88    0.0   0.88    20%    102  11706
+inn              5   334.7    85.5     0.0    0.0   287.3   132.8    150  109.5    22.8   0.89    0.0   0.89    43%    125    124
+builders_yard    1     1.4     0.0    33.2    7.6     1.4    40.8     46   46.0     8.1   0.89   13.4   1.18     0%    330    168
+brickworks       2     0.0   138.8     0.0    2.3    92.3    48.8     52   48.0     1.0   0.94    0.0   0.94    15%    120     88
+smithy           5    28.3   413.2     0.0    5.3   336.0   110.8    110  103.9     6.5   1.01    0.0   1.01    10%    151    767
+apothecary       3    68.8    61.7     0.0    0.0    71.2    59.2     58   54.7     4.5   1.02    0.0   1.02    13%     93   1118
+ropewalk         1     0.0    58.3     0.0    3.3    30.9    30.7     30   27.9     2.8   1.03    0.0   1.03    13%    138    133
+armory           1     0.0    20.9    22.2    0.0    20.3    22.8     22   21.0     1.7   1.04    0.0   1.04    12%    100   1639
+sawmill          1     0.0    73.5     0.0    0.0    41.8    31.7     30   30.0     1.7   1.06    0.0   1.06     0%    204     77
+preserver        5   428.6     0.0     0.0    0.0   320.4   108.2    102   76.1    31.1   1.06    0.0   1.06    34%    118    172
+stall            3   206.9     0.0     0.0    0.0   162.1    44.8     42   28.1    16.5   1.07    0.0   1.07    41%     81    154
+mason            1     0.0   134.1     0.0    6.0   106.6    33.5     30   28.8     4.6   1.12    0.0   1.12     7%    240    177
+papermill        1     0.0    48.6     0.0    0.0    27.0    21.6     19   18.6     3.0   1.12    0.0   1.12     6%    122     62
+distillery       1     0.0    94.2     0.0    0.0    65.2    29.0     26   25.5     3.2   1.13    0.0   1.13     2%    168    291
+paintworks       1     0.0    43.8     0.0    4.5    22.2    26.0     22   21.5     4.4   1.18    0.0   1.18     5%    137     64
+ironworks        1     0.0   100.7     0.0    0.0    49.8    50.8     42   42.0     8.8   1.21    0.0   1.21     0%    315    150
+glassworks       2     0.0    81.8     0.0    0.0    14.8    67.0     52   52.0    14.9   1.29    0.0   1.29     0%    194    278
+plasterworks     1     0.0    65.7     0.0    0.0    26.0    39.7     30   30.0     9.6   1.32    0.0   1.32     0%    231     91
+fishmonger       4   252.7    67.9     0.0    0.0   216.4   104.3     71   68.7    35.4   1.47    0.0   1.47     5%    132    158
+smokehouse       1    93.5     7.3     0.0    0.0    68.2    32.6     22   21.9    10.7   1.48    0.0   1.48     1%    178    151
+cartwright       1     0.0   109.9     0.0    0.0    77.1    32.7     22   22.0    10.7   1.49    0.0   1.49     0%    214    166
+cartographer     1     0.0    39.8     0.0    0.0     6.9    32.8     22   21.9    10.7   1.49    0.0   1.49     1%    146    172
+scriptorium      1     0.0    74.7     0.0    0.0    41.5    33.2     22   22.0    11.1   1.51    0.0   1.51     0%    185    181
+bakery          10   668.7     0.0     0.0    0.0   373.3   295.4    194  192.5   102.3   1.52    0.0   1.52     1%    150    115
+press            1    51.0    51.3     0.0    0.0    56.0    46.3     30   29.4    16.9   1.54    0.0   1.54     3%    220     73
+pottery          1    41.5    12.9     0.0    0.0    17.9    36.5     22   22.0    14.5   1.66    0.0   1.66     0%    171     76
+printing_house   1    33.3    31.8     0.0    0.0    28.2    37.0     22   22.0    14.9   1.68    0.0   1.68     0%    177    192
+tinker           1    37.6    32.9     0.0    0.0    32.2    38.4     22   22.0    16.4   1.74    0.0   1.74     0%    180    238
+perfumer         1    47.1     5.1     0.0    0.0    11.0    41.2     22   22.0    19.2   1.87    0.0   1.87     0%    172    324
+tailor           1    71.7     0.0     0.0    0.0    29.9    41.8     22   22.0    19.8   1.90    0.0   1.90     0%    182    257
+weaver           1    56.8    11.9     0.0    0.0    27.9    40.8     21   21.4    19.3   1.90    0.0   1.90     0%    172    109
+brewery          3   184.9   243.1     0.0    0.0   314.3   113.7     58   54.7    58.8   1.96    0.0   1.96     9%    212    162
+provisioner     10  1071.0   144.1     0.0    0.0   810.1   405.1    204  203.5   200.3   1.99    0.0   1.99     0%    191    245
+carpenter        3     0.0   196.8     0.0    0.0    81.5   115.4     58   58.0    57.5   1.99    0.0   1.99     0%    156    126
+jeweler          1    34.6    33.4     0.0    0.0    23.2    44.8     22   22.0    22.8   2.04    0.0   2.04     0%    174    126
+foundry          1     0.0   132.5     0.0    0.0    65.2    67.3     30   30.0    37.2   2.24    0.0   2.24     0%    269    148
+tannery          1     0.0   115.8     0.0    0.0    47.3    68.5     30   30.0    38.5   2.28    0.0   2.28     0%    253    337
+vintner          1   269.6     0.0     0.0    0.0   204.0    65.6     22   22.0    43.6   2.98    0.0   2.98     1%    340    697
+chandlery        2   240.2     8.1     0.0    3.9    94.2   158.0     52   52.0   106.0   3.04    0.0   3.04     0%    227    163
+rag_and_bone     1   212.9     0.0     0.0    0.0   164.7    48.2     14   13.3    35.2   3.45    0.0   3.45     5%    241    451
+general          1   622.2     8.8     0.0    0.0   472.6   158.4     22   21.9   136.1   7.20    0.0   7.20     0%    614   1142
+all            102    5726    2895    5553    3205   2341   2152    1270
+
+profit to keepers: tills paying any, the share of the profit paid by the top 10 tills
+  89 of 102 tills paid profit; 1270p a day; top 10: 41%
+    till:job:rm_josephine_dripgate           general       136.1p a day, on 317 of 360 days
+    till:job:rmx_orm_carlisle                carters        80.1p a day, on 327 of 360 days
+    till:job:rm_emmerich_sootley             chandlery      64.5p a day, on 360 of 360 days
+    till:job:rm_delphine_saltwick            vintner        43.6p a day, on 244 of 360 days
+    till:job:rm_sten_kelpwell                chandlery      41.5p a day, on 356 of 360 days
+    till:job:rm_dunstan_greywick             tannery        38.5p a day, on 309 of 360 days
+    till:job:rm_runa_coalhand                foundry        37.2p a day, on 282 of 360 days
+    till:job:rm_gerrit_sootgate              rag_and_bone   35.2p a day, on 219 of 360 days
+    till:job:rm_frida_brineford              provisioner    24.8p a day, on 134 of 360 days
+    till:job:rm_desmond_grantham             brewery        24.5p a day, on 219 of 360 days
+
+households, a day on average, by class and kind: income (wages by payer, profit, alms), food, other spending, cash at 23:00, hungry hours a member
+class    kind       hh  size in:a child's        in:alms in:alms from  in:inheritanc in:new reside     in:profit in:wages:coun in:wages:supp in:wages:till in:wages:trea out:a child's      out:food     out:goods  out:services   cash  hungryh hungry hh
+-        keeper     73  3.08          0.00          0.15          0.15          0.00          0.00         17.36          1.08          2.06         22.72          0.94          0.00         21.55         21.73          1.23    253     0.00       0.0
+-        no wage    30  1.10          0.00          5.34          2.05          0.00          0.00          0.00          0.00          0.00          0.00          0.00          0.00          6.49          0.88          0.00     13     0.00       0.0
+-        waged     125  2.40          0.00          0.71          0.74          0.00          0.00          0.00          5.96          0.23          3.92          7.32          0.00         15.28          3.42          0.21     74     0.00       0.0
+
+the hungriest households (hungry member-hours over the span), with their posts, size, income a day, cash
+  51 hungry member-hours in all (0 a day); 5 households ever hungry
+    rm_southgate_farriers_flat                   -       -,unpaid,keeper                n3    14h  income  20.2 (wages 14.0, alms  2.2) food  18.6 cash 89
+    rm_fell_cottages                             -       -,country,hand                 n3    13h  income  20.1 (wages 15.9, alms  2.0) food  18.7 cash 45
+    rm_rainford_s_store                          -       hand                           n1     9h  income   8.4 (wages  8.0, alms  0.1) food   6.8 cash 20
+    rm_the_watch_house|rm_tilde_nailby           -       watch,-                        n2     9h  income  14.7 (wages 11.6, alms  1.6) food  12.7 cash 32
+    r2_pitch_corner_top                          -       -,public,hand,public           n4     6h  income  27.5 (wages 23.9, alms  1.6) food  25.3 cash 60
+
+the treasury, the Country: in and out by kind, a day
+  treasury: in:draws 1630, in:inheritance 0, in:services city 35, out:alms 262, out:alms from the surplus 166, out:patrons 32, out:wage support 180, out:wages 983, out:works 41
+    cash 6009 -> 6026
+  outside:country: in:draws 3804, out:carriage out 31, out:country 2895, out:patrons 55, out:wages 824
+    cash 459 -> 531

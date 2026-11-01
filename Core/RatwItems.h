@@ -176,6 +176,13 @@ inline constexpr RuleInfo Rules[] = {
     {"floatDrawDays", 1, 28, 7},         // A till's working float: its mean draws a day over this many days (1: yesterday's).
     {"floatWagesDays", 0, 60, 7},        // Days of its posts' wages a till keeps, over its float, before its keeper's profit.
     {"subsidyToNeed", 0, 1, 1},          // The carriage subsidy only while the carters lack their crew's wages tonight.
+    // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): what it holds over its cap and
+    // surplusKeep at 18:00, after its posts, the short tills' wages and the alms, goes back out each day:
+    {"surplus", 0, 1, 1},                // On: the surplus to public works orders and the poorest households.
+    {"surplusKeep", 0, 100000000, 4000}, // Pennies over the cap kept for the lean seasons (the summer's and autumn's fall).
+    {"surplusWorks", 0, 100, 20},        // Percent of the surplus to public works orders (`works`), till to till;
+    {"surplusAlms", 0, 100, 80},         // percent to the poorest households, per head, poorest first,
+    {"surplusAlmsTo", 0, 1000, 40},      // up to this many pennies a head.
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // A city service (country.json `services.list`): a catalogue item a business does for a household, bought from its
@@ -213,6 +220,16 @@ struct Patrons
     std::vector<PatronGroup> groups;
     std::vector<std::string> pieces;                // New kit a unit buys now and then (armourEvery), of what the shop holds.
 };
+// The city's public works (country.json `works.list`; doc 68, Progress, "The treasury's surplus: works and alms"): a
+// trade the treasury orders from with its surplus, for the upkeep of the public buildings and services, its share of
+// the orders (`weight`) and what it orders (`goods`, at the catalogue's price): a service (items.json category service)
+// done at once, else a good from the shop's shelves, used up in the works.
+struct WorksOrder
+{
+    std::string business;
+    std::vector<std::string> goods;
+    int weight = 1;
+};
 // The seasons in the Country's supply (country.json's `seasons`; doc 68, Progress, "Seasons and the DM's rules"): a
 // group of goods (grain and its bread, fresh fruit, fresh fish, ...) with, by season (Spring, Summer, Autumn, Winter, each
 // the value at the season's middle day, days between blended in a straight line), in percent of normal: how much the
@@ -242,6 +259,7 @@ struct Country
     std::vector<ServiceDef> services;
     std::vector<Supplier> suppliers;
     std::vector<Patrons> patrons;
+    std::vector<WorksOrder> works;
     std::map<std::string, int> shelves;             // A dear good's shelf (theriac: 1), in place of GoodsKept.
 };
 const Country& country();

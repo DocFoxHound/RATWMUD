@@ -446,6 +446,7 @@ void Society::loopHourly(std::int64_t hour, int season)
         payWages();
         supportWages();                             // (What the treasury holds over its cap, to the short tills' posts.)
         giveAlms();                                 // (After the day's wages: the treasury's posts come first.)
+        spendSurplus();                             // (Last: what the treasury still holds over its cap and reserve.)
     }
 }
 
@@ -1128,6 +1129,204 @@ void Society::giveAlms()
         if (const auto coins = std::min(want, can); shift("treasury", poorest, "", 0, coins, "alms"))
             loopToday_.alms += coins;
     }
+}
+
+void Society::spendSurplus()
+{
+    // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"; the user's rule, 2026-10-31):
+    // last at 18:00, after the treasury's own posts, the short tills' wages over its cap and the alms, what it still holds
+    // over treasuryCap and surplusKeep (kept for the summer's and autumn's fall, when the toll is lower than its posts and
+    // alms) goes back out: surplusAlms percent to the poorest households, per head, poorest first, up to surplusAlmsTo
+    // pennies a head; surplusWorks percent, and what the alms could not place, to public works orders from the city's
+    // trades, till to till; what the works could not place to the alms. What neither places stays. Only what is over
+    // them: it never makes money, nor takes the treasury under its cap and reserve.
+    if (rule("surplus") <= 0 || !account("treasury"))
+        return;
+    const auto over = cash("treasury") - std::int64_t(rule("treasuryCap")) - std::int64_t(rule("surplusKeep"));
+    if (over <= 0)
+        return;
+    std::int64_t works = rule("surplusWorks"), alms = rule("surplusAlms");
+    if (works + alms > 100)                         // (Shares of more than the whole: the whole, in their proportion.)
+    {
+        works = works * 100 / (works + alms);
+        alms = 100 - works;
+    }
+    const auto almsShare = over * alms / 100, worksShare = over * works / 100;
+    if (almsShare + worksShare <= 0)
+        return;
+    loopToday_.surplus += over;
+    const auto given = topUpPoorest(almsShare);
+    const auto worksBudget = worksShare + almsShare - given;
+    topUpPoorest(worksBudget - worksOrders(worksBudget));
+}
+
+std::int64_t Society::topUpPoorest(std::int64_t budget)
+{
+    // The poorest households, per head (all their members' purses), raised to one level, poorest first: the highest whole
+    // pennies a head, up to surplusAlmsTo, that the budget can bring every household under it to; what is left of the
+    // budget the next penny a head, the poorest first. Paid to the member with the least, as the alms are.
+    const std::int64_t to = rule("surplusAlmsTo");
+    budget = std::min(budget, cash("treasury") - TreasuryFloat);
+    if (budget <= 0 || to <= 0)
+        return 0;
+    struct Home
+    {
+        const std::string* home;
+        const std::vector<std::string>* members;
+        std::int64_t held, heads;
+    };
+    const auto homes = households();
+    std::vector<Home> under;
+    for (const auto& [home, members] : homes)
+    {
+        std::int64_t held = 0;
+        for (const auto& m : members)
+            held += cash(m);
+        if (const auto heads = std::int64_t(members.size()); heads > 0 && held < to * heads)
+            under.push_back({&home, &members, held, heads});
+    }
+    if (under.empty())
+        return 0;
+    std::sort(under.begin(), under.end(), [](const Home& a, const Home& b) {
+        return a.held * b.heads != b.held * a.heads ? a.held * b.heads < b.held * a.heads : *a.home < *b.home;
+    });
+    const auto costTo = [&](std::int64_t level) {
+        std::int64_t cost = 0;
+        for (const auto& h : under)
+            cost += std::max<std::int64_t>(0, level * h.heads - h.held);
+        return cost;
+    };
+    std::int64_t low = 0, high = to;                // (The highest level the budget reaches: costTo(low) <= budget.)
+    while (low < high)
+    {
+        const auto mid = (low + high + 1) / 2;
+        if (costTo(mid) <= budget)
+            low = mid;
+        else
+            high = mid - 1;
+    }
+    std::int64_t left = budget - costTo(low), given = 0;
+    for (const auto& h : under)
+    {
+        auto coins = std::max<std::int64_t>(0, low * h.heads - h.held);
+        if (low < to && left > 0)                   // (The next penny a head, the poorest first, while the budget lasts.)
+        {
+            const auto more = std::min(left, std::max<std::int64_t>(0, (low + 1) * h.heads - h.held) - coins);
+            coins += more;
+            left -= more;
+        }
+        if (coins <= 0)
+            continue;
+        const auto poorest = *std::min_element(h.members->begin(), h.members->end(),
+                                               [&](const std::string& a, const std::string& b) { return cash(a) < cash(b); });
+        if (shift("treasury", poorest, "", 0, coins, "alms from the surplus"))
+        {
+            given += coins;
+            ++loopToday_.surplusHouseholds;
+        }
+    }
+    loopToday_.surplusAlms += given;
+    return given;
+}
+
+std::int64_t Society::worksOrders(std::int64_t budget)
+{
+    // The public works (country.json `works`): the treasury orders upkeep and goods for the public buildings and services
+    // from the city's trades, at the catalogue's price, till to till: each trade its `weight`'s share of the budget (of
+    // what is left: what one trade can't place goes on to the next), its tills those with most room under their keeper's
+    // profit (a till's float and floatWagesDays of its posts' wages, as payWages keeps them) first, so that the orders pay
+    // the posts of the tills that need them and spread over a trade's shops rather than heaping one keeper's profit. A
+    // service is done at once (nothing kept); a good comes off the shop's shelves (one left for its customers) and is used
+    // up in the works, so the shop makes more (its shelves follow its sales). The city fetches what it orders: any shop of
+    // the trade with its post held, open or not.
+    budget = std::min(budget, cash("treasury") - TreasuryFloat);
+    const auto& list = items::country().works;
+    if (budget <= 0 || list.empty())
+        return 0;
+    std::map<std::string, std::int64_t> owed;      // Till -> its posts' wages tonight.
+    std::map<std::string, std::vector<std::string>> tills;   // Business -> its tills.
+    for (const auto& p : positions_)
+    {
+        const auto held = state_.careers.positions.find(p.id);
+        if (held == state_.careers.positions.end() || held->second.holder.empty() || dead_.count(held->second.holder))
+            continue;
+        if (const auto pay = payOf(p); pay.wage > 0 && pay.payer.rfind("till:", 0) == 0 && account(held->second.holder))
+            owed[pay.payer] += pay.wage;
+        if (p.role != "merchant")
+            continue;
+        if (const auto* b = items::businessFor(p.title); b && account("till:" + p.id))
+            tills[b->id].push_back("till:" + p.id);
+    }
+    const std::int64_t wagesDays = rule("floatWagesDays");
+    const auto room = [&](const std::string& till) { return tillFloat(till) + wagesDays * owed[till] - cash(till); };
+    const auto service = [](const std::string& item) {
+        const auto* g = items::good(item);
+        return g && g->category == "service";
+    };
+    int weights = 0;
+    for (const auto& w : list)
+        if (tills.count(w.business))
+            weights += w.weight;
+    std::int64_t spent = 0;
+    for (const auto& w : list)
+    {
+        const auto found = tills.find(w.business);
+        if (found == tills.end() || weights <= 0)
+            continue;
+        std::int64_t left = (budget - spent) * w.weight / weights;
+        weights -= w.weight;
+        while (left > 0)
+        {
+            // The till with most room (then by till), and the good it can most supply that the trade's share still pays.
+            const std::string *best = nullptr, *good = nullptr;
+            std::int64_t bestRoom = 0;
+            for (const auto& till : found->second)
+            {
+                const std::string* pick = nullptr;
+                int most = 0;
+                for (const auto& g : w.goods)
+                    if (const auto price = catalogPrice(g); price >= 1 && price <= left)
+                        if (const int n = service(g) ? 99 : stock(*account(till), g) - 1; n > most)
+                        {
+                            most = n;
+                            pick = &g;
+                        }
+                if (!pick)
+                    continue;
+                if (const auto r = room(till); !best || r > bestRoom || (r == bestRoom && till < *best))
+                {
+                    best = &till;
+                    good = pick;
+                    bestRoom = r;
+                }
+            }
+            if (!best)
+                break;
+            const auto price = catalogPrice(*good);
+            const bool svc = service(*good);
+            std::int64_t n = std::min<std::int64_t>({left / price, 99, svc ? 99 : stock(*account(*best), *good) - 1});
+            // Up to its room; a till with none (every till of the trade full), a share of what is left, so they take turns.
+            n = std::max<std::int64_t>(1, std::min(n, bestRoom >= price ? bestRoom / price
+                                                                          : left / price / std::int64_t(found->second.size())));
+            if (svc && !create(*best, *good, int(n), "a service done"))
+                break;
+            if (!sale(*best, "treasury", *good, int(n), price, "a public works order"))
+            {
+                if (svc)
+                    consume(*best, *good, int(n), "a service not done");
+                break;
+            }
+            consume("treasury", *good, int(n), svc ? "a service, done at once" : "used in the city's works");
+            left -= price * n;
+            spent += price * n;
+            auto& day = loopToday_.worksTrades[w.business];
+            day.sold += int(n);
+            day.spent += price * n;
+            loopToday_.worksPieces += int(n);
+        }
+    }
+    loopToday_.worksSpent += spent;
+    return spent;
 }
 
 // The restocking rule (doc 67, 6; revised by doc 68, 7): shelves follow sales, and making takes the crew's hours.

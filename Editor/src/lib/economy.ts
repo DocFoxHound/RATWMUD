@@ -117,6 +117,12 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'floatDrawDays', label: 'A till\'s float', max: 28, unit: 'days of draws averaged for the float it keeps back (1: yesterday\'s)'},
     {key: 'floatWagesDays', label: 'Wages kept before profit', max: 60, unit: 'days of its posts\' wages a till keeps over its float'},
     {key: 'subsidyToNeed', label: 'Carriage subsidy only to need', max: 1, unit: 'the treasury pays the carters only what they lack of their wages', onOff: true},
+    // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms").
+    {key: 'surplus', label: 'The treasury\'s surplus', max: 1, unit: 'what it holds over its cap and reserve goes out at 18:00, to public works and the poorest', onOff: true},
+    {key: 'surplusKeep', label: 'Reserve over the cap', max: 100000000, unit: 'p the treasury keeps over its cap for the lean seasons before its surplus goes out'},
+    {key: 'surplusWorks', label: 'Surplus to public works', max: 100, unit: '% of the surplus a day: orders from the city\'s trades, till to till'},
+    {key: 'surplusAlms', label: 'Surplus to the poorest', max: 100, unit: '% of the surplus a day: the poorest households, per head, poorest first'},
+    {key: 'surplusAlmsTo', label: 'The poorest raised to', max: 1000, unit: 'p a head, at most, the surplus brings the poorest households up to'},
 ];
 /** A rule as it stands: the world's own, else country.json's. */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;
