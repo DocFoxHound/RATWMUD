@@ -164,9 +164,10 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'treasuryTarget', label: 'Treasury target', max: 100000000, unit: 'p, its level (a slow mean at 18:00) is judged against'},
     {key: 'treasuryBand', label: 'Target band', max: 100, unit: '% either side of the target in which nothing moves'},
     {key: 'treasuryDays', label: 'Level over', max: 3650, unit: 'days, about (the slow mean)'},
-    {key: 'tollStep', label: 'Toll step', max: 100, unit: 'tenths of a point a fortnight'},
+    {key: 'treasuryJudgeDays', label: 'Judged every', max: 365, unit: 'days (the toll and the alms move a step at most each time)'},
+    {key: 'tollStep', label: 'Toll step', max: 100, unit: 'tenths of a point each time it is judged'},
     {key: 'tollDriftMost', label: 'Toll drift, at most', max: 90, unit: 'points from the world\'s gate toll'},
-    {key: 'almsDriftMost', label: 'Alms drift, at most', max: 1000, unit: 'p a head over the alms, at most (a penny a fortnight; never under them)'},
+    {key: 'almsDriftMost', label: 'Alms drift, at most', max: 1000, unit: 'p a head over the alms, at most (a penny each time; never under them)'},
 ];
 /** A rule as it stands: the world's own, else country.json's. */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;

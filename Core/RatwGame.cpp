@@ -1482,11 +1482,6 @@ std::string Game::priceWords(std::int64_t pennies)
     return pennies == 1 ? std::string("a penny") : std::to_string(pennies) + "p";
 }
 
-std::int64_t Game::newcomerPurse(const std::string&) const
-{
-    return Society::NewcomerPurse;
-}
-
 void Game::makeResidents()
 {
     if (options_.database.empty())
@@ -1501,26 +1496,61 @@ void Game::makeResidents()
     }
     for (const auto& request : world_.takeResidentRequests())
     {
+        if (request.kind == "arrival")
+        {
+            // An unplaced NPC of the world's own list comes in from the Country (the user, 2026-11-01): its row gets the
+            // home found for it (placed without work, doc 66, 2: its label and role stay the row's), and the world places
+            // it as a world from files does (World::arriveResident). The post it holds is the checkpoint's, as any
+            // succession's.
+            if (request.home.cell.empty())
+                continue;
+            const auto x = std::to_string(int(std::floor(request.home.x))), y = std::to_string(int(std::floor(request.home.y)));
+            const auto placed = worldDb_.exec("UPDATE live.npcs SET home_area = $3, home_x = $4::integer, home_y = $5::integer "
+                                              "WHERE world_id = $1 AND id = $2 AND home_area IS NULL RETURNING id",
+                                              {liveWorldId_, request.templateId, request.home.cell, x, y});
+            if (!placed.ok || placed.rows.size() != 1)
+            {
+                note("warning", "RATW_RESIDENT " + request.name + " could not come from the Country: " +
+                                    (placed.ok ? std::string("not unplaced in the database") : placed.error));
+                continue;
+            }
+            const auto arrived = world_.arriveResident(request);
+            if (!arrived.ok)
+            {
+                worldDb_.exec("UPDATE live.npcs SET home_area = NULL, home_x = 0, home_y = 0 WHERE world_id = $1 AND id = $2",
+                              {liveWorldId_, request.templateId});
+                note("warning", "RATW_RESIDENT " + request.name + " could not come from the Country: " + arrived.message);
+                continue;
+            }
+            note("info", "RATW_RESIDENT arrival: " + request.name + " (" + request.templateId + ") " + arrived.message);
+            ++revision_;
+            saveSoon();
+            continue;
+        }
         const auto* model = world_.society().spec(request.templateId);
         const auto* modelLife = world_.society().resident(request.templateId);
-        if (!model || !modelLife)
+        if (request.kind != "birth" || !model || !modelLife)
+        {
+            world_.residentNotMade(request);
             continue;
+        }
         std::string id;
         for (int attempt = 0; id.empty() && attempt < 50; ++attempt)
         {
-            const auto candidate = std::string(request.kind == "birth" ? "born_" : "new_") + base36(std::uint64_t(now()) * 64 + std::uint64_t(attempt));
+            const auto candidate = "born_" + base36(std::uint64_t(now()) * 64 + std::uint64_t(attempt));
             const auto taken = worldDb_.exec("SELECT 1 FROM live.npcs WHERE world_id = $1 AND id = $2 UNION ALL "
                                              "SELECT 1 FROM live.npc_state WHERE world_id = $1 AND npc_id = $2", {liveWorldId_, candidate});
             if (taken.ok && taken.rows.empty() && !world_.entity(candidate))
                 id = candidate;
         }
         if (id.empty())
+        {
+            world_.residentNotMade(request);
             continue;
+        }
+        // A child (only births are ever made: the user, 2026-11-01), like its mother.
         const auto home = request.home.cell.empty() ? Spot{modelLife->homeCell, modelLife->homeX, modelLife->homeY} : request.home;
-        const bool child = request.kind == "birth";
-        const auto* jobFor = world_.society().position(request.positionId);
-        const std::string description = child ? "A young wolf, born here to " + model->name + "'s family."
-                                              : "A stranger lately come to town" + (jobFor ? " to take up " + jobFor->title : std::string()) + ".";
+        const std::string description = "A young wolf, born here to " + model->name + "'s family.";
         const auto x = std::to_string(int(std::floor(home.x))), y = std::to_string(int(std::floor(home.y)));
         const auto made = worldDb_.exec(
             "INSERT INTO live.npcs (world_id, id, position, name, role, description, greeting, personality, backstory, work_label, age, voice, "
@@ -1532,9 +1562,8 @@ void Game::makeResidents()
             "CASE WHEN $12 = '' THEN appearance ELSE jsonb_set(appearance, '{sex}', to_jsonb($12::text)) END, NULL, false, $7::integer, 0, 1, hours_start, hours_end, "
             "$8, $9::integer, $10::integer, $8, $9::integer, $10::integer, $8, $9::integer, $10::integer, 'runtime', NULL, NULL "
             "FROM live.npcs WHERE world_id = $1 AND id = $11",
-            {liveWorldId_, id, request.name, description, child ? std::string("Born in the world, not written.") : std::string(),
-             std::to_string(request.age), child ? std::string("0") : std::to_string(newcomerPurse(home.cell)), home.cell, x, y,
-             request.templateId, child ? request.sex : std::string()});
+            {liveWorldId_, id, request.name, description, std::string("Born in the world, not written."),
+             std::to_string(request.age), std::string("0"), home.cell, x, y, request.templateId, request.sex});
         World candidate;
         std::string problem;
         const bool loaded = made.ok && loadWithLivePeople(candidate, problem);
@@ -1543,6 +1572,7 @@ void Game::makeResidents()
         {
             worldDb_.exec("DELETE FROM live.npcs WHERE world_id = $1 AND id = $2", {liveWorldId_, id});
             note("warning", "RATW_RESIDENT " + request.name + " could not be made: " + adopted.message);
+            world_.residentNotMade(request);
             continue;
         }
         const auto welcomed = world_.welcomeResident(request, id);

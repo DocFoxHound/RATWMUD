@@ -156,7 +156,6 @@ struct PositionState
 {
     std::string holder, apprentice, lastHolder;
     double vacantSince = -1;
-    bool newcomerAsked = false;   // A stranger has been sent for (see ResidentRequest).
 };
 struct Mourning
 {
@@ -173,22 +172,29 @@ struct CareerState
     std::map<std::string, std::vector<std::string>> parents;   // Child -> parents.
     std::map<std::string, double> lastBirth;          // "a|b" (a < b) -> day their last child was born.
     std::map<std::string, int> births;                // "a|b" -> how many children they have had.
-    // Each town's people, as it should stay (doc 62: the user, 2026-10-13): its living residents the first day this was
-    // kept. Children are born while a town is short of it; the old die; so the world stays about the size it was made.
-    std::map<std::string, int> population;
+    // Births follow deaths (the user, 2026-11-01: "Birthrates should match death rates for this game"): each resident who
+    // dies owes the world one child, born to a couple at home a few days later (Society::tendCareers). The dead -> the
+    // day the child is due. Players never count: only residents die into it.
+    std::map<std::string, double> birthsOwed;
     std::int64_t day = -1;                            // The last day careers were tended.
 };
-// A resident the world should gain: a stranger for a post nobody here can fill, or a child. The society decides that
-// one is wanted; the host makes them (a live world adds a row to live.npcs, cloned from `templateId`), then calls
-// welcome() with their ID.
+// A resident the world should gain: a child, in place of one who died, or an unplaced NPC of the world's own list come in
+// from the Country for a post nobody in the city can fill (the user, 2026-11-01: "I never said to simulate new NPCs or
+// players, so don't do that. If you need newcomers for the economy simulate someone from our preexisting NPC list
+// coming in from the country"). No other NPC is ever made. The society decides that one is wanted; the host makes the
+// child (a live world adds a row to live.npcs, cloned from its mother's) or places the arrival (World::arriveResident;
+// a live world gives its row the home), then calls welcome() with their ID.
 struct ResidentRequest
 {
-    std::string kind;             // "newcomer" or "birth".
-    std::string templateId;       // Whose record the newcomer's is cloned from (appearance, voice, manner).
+    std::string kind;             // "birth" or "arrival".
+    std::string templateId;       // Birth: the mother, whose record the child's is cloned from. Arrival: the unplaced NPC.
     std::string name;
     int age = 0;
     Spot home;
-    std::string positionId;       // Newcomer: the post they come for.
+    std::string positionId;       // Arrival: the post they come for.
+    std::string inPlaceOf;        // Birth: the dead it is born in place of (owed again if it can't be made).
+    std::int64_t purse = 0;       // Arrival: the pennies they bring, paid by the Country (CountryFund).
+    double skill = 0;             // Arrival: what it knows of the post's work (its trade suiting it: as the trade needs).
     std::vector<std::string> parents;
     // Birth: the child's sex, "male" or "female" (characters are male or female only: the user), decided with the
     // request (birthSex) so a deterministic run repeats; its pronouns follow (Game::pronounsOf). Empty: as the template.
@@ -213,6 +219,9 @@ struct CareerWorld
     std::function<double(const std::string& who, const std::string& ofWhom)> regard;
     // Whether a home in one cell is within reach of work in another (the same town); null: anywhere is.
     std::function<bool(const std::string& workCell, const std::string& homeCell)> near;
+    // The communal lodgings within reach of work in a cell (a spot in each), for an arrival with no household of its
+    // class to lodge with; null: none.
+    std::function<std::vector<Spot>(const std::string& workCell)> lodgings;
 };
 
 // What the self-correcting rules have drifted to (doc 68, Progress, "Self-correcting rules"), saved with the society (its
@@ -466,6 +475,28 @@ class Society
     // Residents wanted since the last call (see ResidentRequest), and a made one taking their place in the society.
     std::vector<ResidentRequest> takeRequests();
     CareerNote welcome(const ResidentRequest& request, const std::string& id);
+    // A child the host could not make: owed again, due now.
+    void birthFailed(const ResidentRequest& request);
+    // An arrival from the Country (ResidentRequest "arrival"): the unplaced NPC becomes a resident at the home chosen for
+    // it, placed without work (it holds the post it came for once welcomed), with the purse the request names paid from
+    // the Country's account as far as it holds it (an unplaced NPC's purse is outside the economy: no money is made).
+    // False if it is no longer unplaced.
+    bool arrive(const ResidentRequest& request);
+    std::size_t unplacedCount() const { return authored_.unplaced.size(); }
+    // Jobs by class (Docs/Design/67-ridgemere-2-the-city.md, Progress, "Jobs by class"): a post's class, "upper" (a House's
+    // own, a larger independent business, high office), "middle" (a shop, a stall, a counter, a Great House's works run for
+    // it, lower office), "lower" (hands, waged and service work, the Country's labour), "any" (the Watch, the clergy: their
+    // own cases), or "" (no post that pays: lessons, play, leisure); and a wolf's class, resident or unplaced ("upper",
+    // "middle" or "lower"): its own work's as written, else its family's, else its household's, else middle.
+    std::string postClass(const Position& p) const;
+    std::string classOf(const std::string& id) const
+    {
+        auto cls = classOf(id, 0);
+        return cls.empty() ? std::string("middle") : cls;
+    }
+    // How the empty posts were filled since the start (not saved): "the apprentice steps up", "from the city", "from the
+    // Country", ... -> how many.
+    const std::map<std::string, int>& fills() const { return fills_; }
     // The best a resident is at any job of this family (see skillFamily).
     double familySkill(const std::string& resident, const std::string& family) const;
     // A player asks to learn a position's trade from its holder.
@@ -685,7 +716,6 @@ class Society
     // Where a till's wage step stands against its bounds: 1 at the top (no post can rise further), -1 at the foot (none
     // can fall further: the floor or the bound), 0 between.
     int wageAtBound(const std::string& till) const;
-    static constexpr int DriftStepDays = 14;          // The toll and the alms are judged a fortnight apart.
     // The world's economy settings replaced while it runs (the DM's economy.sync: doc 68, Progress): every rule the loop
     // and the store room read, at once; the treasury's and stores' starting amounts are kept (they were spent long ago).
     void adoptEconomy(const EconomySpec& economy);
@@ -822,9 +852,13 @@ class Society
     // Children's friend groups (the user, 2026-10-05): in each town its children, by age, in fours; they play together.
     // A child's group ("" for none); made again each day.
     const std::string& friendGroup(const std::string& child) const;
-    // A child's first pennies at its birth, from the better-off parent (given, never made); and a newcomer's purse, as an
-    // authored resident's is to start with (made).
-    static constexpr std::int64_t ChildPurse = 5, NewcomerPurse = 30;
+    // A child's first pennies at its birth, from the better-off parent (given, never made); and what an arrival from the
+    // Country brings: its own purse up to this, from the Country's account (moved, never made).
+    static constexpr std::int64_t ChildPurse = 5, ArrivalPurse = 30;
+    // A post nobody has taken in PostWaitDays is filled from the city (a wolf with no post that pays, grown pups first, of
+    // its class), else by an unplaced NPC of its class from the Country. A death's child is due 1 to BirthDelayMost days
+    // after it.
+    static constexpr int PostWaitDays = 8, BirthDelayMost = 7;
 
   private:
     void splitHouseholds(std::int64_t day, const CareerWorld& world, std::vector<CareerNote>& notes);
@@ -949,6 +983,14 @@ class Society
     mutable std::unordered_map<std::string, std::string> heldBy_, learning_;   // resident -> position (cache).
     mutable bool careersIndexed_ = false;
     std::vector<ResidentRequest> requests_;
+    std::map<std::string, int> fills_;
+    std::string classOf(const std::string& id, int depth) const;
+    void tendBirths(double now, const CareerWorld& world);
+    // A wolf of the city for an empty post (PostWaitDays), of its class (classStep 0) or the next (1), or "".
+    std::string cityWolfFor(const Position& p, const CareerWorld& world, int classStep) const;
+    // An arrival from the Country for an empty post, of its class (classStep 0) or the next (1), with a home found for
+    // it; false if none fits or there is nowhere for it to stay.
+    bool arrivalFor(const Position& p, const PositionState& ps, const CareerWorld& world, int classStep, ResidentRequest& out) const;
     void buildPositions();
     void indexCareers() const;
   public:

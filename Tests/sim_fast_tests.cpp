@@ -1,10 +1,10 @@
 // The fast economy run (Docs/Design/69-simulation-speed.md): on a small streamed town (an export, as world_check loads
-// one), the harness's path makes the births and newcomers the society asks for, as the game server does for a world from
+// one), the harness's path makes the births and arrivals the society asks for, as the game server does for a world from
 // files (World::makeRequestedResidents after each tick), and the old die of old age (World::tendOldAge) as everywhere;
 // the same world run twice, on one thread and on four, with the profile's clocks on and off, ends the same; the unseen
 // step and straight legs are knobs a harness turns (and turns back). Given world_check's path (the first argument, as
 // ctest passes it), it also runs the harness itself with no player: an economy file a day, the same on 1 and 4 threads,
-// births and deaths in it.
+// births and deaths in it, and no player.
 #include "RatwPool.h"
 #include "RatwWorld.h"
 
@@ -41,8 +41,10 @@ std::string slurp(const fs::path& path)
 }
 
 // A town of two cells side by side (its homes, its market), "brook" by its territory. Two of 100 die of old age the
-// first day: old Hob, retired (no post: only a child can take his place), and old Tamsin, who keeps the smithy (a post a
-// stranger comes for after eight days). Wren and Birch are married and live together, of an age for children.
+// first day: old Hob, retired, and old Tamsin, who keeps the smithy (a hand's post of the market's: nobody in the town is
+// free, so after eight days Fen Saltdale, unplaced, a fisher of the Country, comes in for it; births follow deaths, so a
+// child is owed for each). Wren and Birch are married and live together, of an age for children: the first child is
+// theirs, the other the next couple's that can (a couple has one a year or so apart).
 constexpr int Side = 16;
 std::string cellId(int i) { return "b_" + std::to_string(i) + "_0"; }
 std::string resident(const std::string& who, const std::string& name, const std::string& role, const std::string& work, int age,
@@ -92,6 +94,9 @@ fs::path writeTown(const fs::path& root)
     m << resident("birch", "Birch Ash", "civilian", "hauling", 32, "male", 1, 5.5, 7.5);
     m << resident("moss", "Moss Fern", "merchant", "keeping the stall", 40, "male", 1, 9.5, 9.5);
     m << resident("sedge", "Sedge Fern", "civilian", "farming", 35, "female", 1, 11.5, 11.5);
+    // Unplaced (doc 66, 2): no home, no work, no evening place.
+    m << "resident \"fen\" \"Fen Saltdale\" \"civilian\" \"fishes the lake\" \"A tall grey wolf who fishes the lake.\" \"Hello.\" 30 "
+         "\"timber\" \"male\" \"average\" \"saddle\" 3 1 5 1 1 8 17 \"-\" 49 0 1 \"-\" 0 0 \"-\" 0 0 \"-\" 0 0\n";
     m << "kin \"wren\" \"birch\" spouse\n";
     std::ofstream(root / "world.ratw") << m.str();
     return root;
@@ -158,8 +163,8 @@ std::string stateOf(const World& w)
 
 struct Tally
 {
-    int births = 0, newcomers = 0, deaths = 0;
-    std::vector<std::string> made;                  // In the order they came: "birth wren" / "newcomer tamsin".
+    int births = 0, arrivals = 0, deaths = 0, owed = 0;
+    std::vector<std::string> made;                  // In the order they came: "birth wren" / "arrival fen".
 };
 
 // The harness's day loop, as world_check runs it with no player (each tick, then the residents asked for made), for
@@ -186,7 +191,7 @@ Tally run(const fs::path& root, int days, unsigned threads, bool profile, std::s
         w.makeRequestedResidents(&made);
         for (const auto& r : made)
         {
-            (r.kind == "birth" ? t.births : t.newcomers) += 1;
+            (r.kind == "birth" ? t.births : t.arrivals) += 1;
             t.made.push_back(r.kind + " " + r.templateId);
         }
     }
@@ -194,21 +199,34 @@ Tally run(const fs::path& root, int days, unsigned threads, bool profile, std::s
         t.deaths += e.npc && e.dead;
     if (state)
         *state = stateOf(w);
-    // Everyone made is in the world and the society, alive, at home, of the right age and sex.
+    // Everyone born is in the world and the society, alive, at home, of the right age and sex; the only others are the
+    // world's own (the five written and Fen, come in from the Country): nobody else is ever made.
     for (const auto& [id, e] : w.entities())
     {
-        if (id.rfind("born_", 0) != 0 && id.rfind("new_", 0) != 0)
+        if (id.rfind("born_", 0) != 0)
+        {
+            expect(std::set<std::string>{"hob", "tamsin", "wren", "birch", "moss", "sedge", "fen"}.count(id), id + " is one of the world's own");
             continue;
-        const bool child = id.rfind("born_", 0) == 0;
+        }
         const auto* life = w.society().resident(id);
         const auto* spec = w.society().spec(id);
         expect(life && spec && e.npc, id + " is a resident");
-        expect(!child || e.age == 0 || e.age == 1, id + ", born here, is a child: " + std::to_string(e.age));
+        expect(e.age == 0 || e.age == 1, id + ", born here, is a child: " + std::to_string(e.age));
         expect(spec->appearance.sex == "male" || spec->appearance.sex == "female", id + " is male or female");
         expect(e.appearance->sex == spec->appearance.sex, id + "'s body is the sex its record says");
-        // (A child at its mother's home; a stranger where the last holder lived, else by the work: here, the market.)
-        expect(life->homeCell == (child ? cellId(0) : cellId(1)), id + " lives in the town: " + life->homeCell);
+        expect(life->homeCell == cellId(0), id + " lives at its mother's home: " + life->homeCell);
     }
+    if (const auto* fen = w.entity("fen"))
+    {
+        // Fen lodges with the household of his class (the homes are all in the first cell), never alone at the market; his
+        // purse is the Country's, the money conserved.
+        const auto* life = w.society().resident("fen");
+        expect(life && life->homeCell == cellId(0) && !fen->dead, "Fen lives with a household of the town: " + (life ? life->homeCell : ""));
+        expect(w.society().jobOf("fen") && w.society().jobOf("fen")->id == "job:tamsin", "and keeps the smithy");
+        expect(!w.society().unplaced("fen"), "no longer unplaced");
+    }
+    expect(w.society().conserved(), "the money conserved");
+    t.owed = int(w.society().state().careers.birthsOwed.size());
     return t;
 }
 
@@ -217,15 +235,17 @@ void harnessPath(const fs::path& root)
     std::string one, four, unprofiled;
     const auto a = run(root, 120, 1, true, &one);
     expect(a.deaths >= 2, "the two of 100 die of old age: " + std::to_string(a.deaths));
-    expect(a.newcomers >= 1, "a stranger comes to keep the smithy: " + std::to_string(a.newcomers));
-    expect(a.births >= 1, "and a child is born to take old Hob's place: " + std::to_string(a.births));
-    bool newcomerForTamsin = false, childOfWren = false;
+    expect(a.arrivals == 1, "Fen comes in from the Country to keep the smithy: " + std::to_string(a.arrivals));
+    // (Wren and Birch's first; the other to the next couple able, Sedge's: married in the town since.)
+    expect(a.births >= 1 && a.births + a.owed == a.deaths, "births follow deaths, one for one: " + std::to_string(a.births) +
+                                                              " born and " + std::to_string(a.owed) + " owed for " + std::to_string(a.deaths));
+    bool fenCame = false, childOfWren = false;
     for (const auto& m : a.made)
     {
-        newcomerForTamsin = newcomerForTamsin || m == "newcomer tamsin";
+        fenCame = fenCame || m == "arrival fen";
         childOfWren = childOfWren || m == "birth wren";
     }
-    expect(newcomerForTamsin, "the stranger is like the last smith");
+    expect(fenCame, "the arrival is Fen, of the world's own list");
     expect(childOfWren, "the child is Wren's");
     // Deterministic: the same world, on four threads, and with the profile's clocks off, ends exactly the same.
     const auto b = run(root, 120, 4, true, &four);
@@ -266,7 +286,10 @@ void theHarness(const std::string& binary, const fs::path& root)
         lines += ch == '\n';
     expect(lines == 3, "a line a day: " + std::to_string(lines));
     expect(one.find("\"deaths\": 2") != std::string::npos, "the two of 100 die the first day: " + one.substr(0, 300));
-    expect(one.find("\"births\": ") != std::string::npos && one.find("\"newcomers\": ") != std::string::npos, "births and newcomers counted");
+    expect(one.find("\"births\": ") != std::string::npos && one.find("\"arrivals\": ") != std::string::npos &&
+               one.find("\"births_owed\": ") != std::string::npos && one.find("\"unplaced\": 1") != std::string::npos,
+           "births, arrivals, the children owed and the unplaced counted");
+    expect(one.find("\"players\": 0") != std::string::npos, "and no player, of any kind");
     expect(one == four, "the economy file is the same on four threads, with the profile off");
     const auto [player, playerOut] = runIt("player", "--threads 1 --players 1");
     expect(playerOut.find("1 player") != std::string::npos, "--players 1 keeps a player for a city check");

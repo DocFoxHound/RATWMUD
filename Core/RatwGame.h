@@ -1606,8 +1606,6 @@ class Game
     void feedWatch(double dt);              // A frame for the LIVE map while a Dungeon Master watches (RatwGameWatch.cpp).
     std::string watchFrame() const;
     void makeResidents();
-    // A newcomer's purse: Society::NewcomerPurse.
-    std::int64_t newcomerPurse(const std::string& homeCell) const;
     void runSpawns(double dt);
     bool spawnTile(const std::string& area, const std::string& tilesJson, int& x, int& y);
     void applyExternalNpcStates();

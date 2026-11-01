@@ -4,9 +4,12 @@
 #include "RatwItems.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <set>
+#include <tuple>
 
 namespace ratw
 {
@@ -28,12 +31,10 @@ const std::string& skillKeyNow(const std::string& resident, const std::string& p
     key.assign(resident).append(1, '|').append(position);
     return key;
 }
-// Placeholder names for those born here and those who come from elsewhere, until naming is designed.
+// Placeholder names for those born here, until naming is designed.
 const char* const FirstNames[] = {"Alder", "Briar", "Cinder", "Dusk", "Ember", "Fennel", "Gale", "Hazel", "Ivy", "Juniper",
                                   "Kestrel", "Linden", "Moss", "Nettle", "Oriel", "Pike", "Quill", "Rowan", "Sorrel",
                                   "Thorn", "Umber", "Vesper", "Willow", "Yarrow", "Wren", "Tansy", "Bramble", "Sedge"};
-const char* const FarSurnames[] = {"Farwander", "Roadsend", "Greymantle", "Longpath", "Stillwater", "Ashford", "Marrow",
-                                   "Coldbrook", "Windrow", "Thistledown"};
 std::uint64_t mix(const std::string& a, std::int64_t b)
 {
     return std::hash<std::string>{}(a) * 1099511628211ULL + std::uint64_t(b) * 2654435761ULL;
@@ -58,6 +59,86 @@ double lotOf(const std::string& words)
 bool thisWeek(const std::string& id, std::int64_t day)
 {
     return (std::hash<std::string>{}(id) + std::uint64_t(day)) % 7 == 0;
+}
+
+// Jobs by class (Docs/Design/67-ridgemere-2-the-city.md, Progress, "Jobs by class"): the words of a post's title, after
+// the city's own rules (tools/worldgen/ridgemere2_people.py, Placement.job_class: UPPER_WORDS, MIDDLE_WORDS, LOWER_WORDS,
+// LEISURE), and the Country's work the unplaced NPCs were written with.
+const char* const UpperWords[] = {"reigning at", "the queen,", "the king's daughter", "chancellor", "royal secretary",
+                                  "the crown's treasurer", "collecting the crown's customs", "harbourmaster",
+                                  "running the city office", "keeping the rolls", "hearing cases", "overseeing",
+                                  "warden of the market hall", "pleading cases", "drafting the council's", "lending",
+                                  "visiting the sick of the heights"};
+const char* const MiddleWords[] = {"clerking", "copying", "tallying", "weighing", "couriers", "teaching", "herald", "usher",
+                                   "keeping order in court", "keeping the washhouse", "keeping the bathhouse",
+                                   "keeping the fell cellars", "keeping the watch's", "keeping the bonded warehouse",
+                                   "keeping the long store", "keeping the new store", "keeping the iron store"};
+const char* const LowerWords[] = {"serving", "in service to", "keeping the chambers", "stewarding", "cooking for the king",
+                                  "lighting the lamps", "working at", "washing at", "driving for", "keeping the greatly stables",
+                                  "unloading", "working the cranes", "carrying from", "portering", "crying wares", "gate",
+                                  "garden", "groom", "stable",
+                                  // The Country's work (the unplaced NPCs' trades: its fields, woods, waters and mines).
+                                  "works the fields", "logging", "fishes the", "milks the herd", "keeps rabbits", "keeps pigs",
+                                  "keeps sheep", "raises sheep", "digs ore", "digs clay", "cutting stone", "cuts wood",
+                                  "tends the orchard", "tends the vines", "traps", "farms the", "a servant"};
+const char* const LeisureWords[] = {"at home in the heights", "reading in the gardens", "walking the gardens"};
+// No work of their own (a pup's, an elder's, the house's): such a wolf is of its family's class.
+const char* const IdleWords[] = {"lessons", "plays ", "playing", "sits ", "keeps the house", "watches the world", "minds the shop",
+                                 "minding the shop", "between voyages"};
+// The city's independent larger businesses (by their buildings), which their keeper owns: an upper post. A Great House's
+// works are run for it: a middle one, as any other shop, stall or counter.
+const char* const LargeBusinesses[] = {"carters_yard", "rainwater_brewery", "rag_mill", "wharf_tannery", "grey_gull_inn",
+                                       "sailors_rest"};
+template <std::size_t N>
+bool anyOf(const std::string& text, const char* const (&words)[N])
+{
+    for (const char* word : words)
+        if (text.find(word) != std::string::npos)
+            return true;
+    return false;
+}
+// How far a wolf's class is from a post's: 0 the same (or the Watch's and the clergy's, any), 1 the next (upper and
+// middle, middle and lower), 2 apart.
+int classApart(const std::string& post, const std::string& wolf)
+{
+    const auto rank = [](const std::string& c) { return c == "upper" ? 2 : c == "middle" ? 1 : 0; };
+    return post == "any" ? 0 : std::abs(rank(post) - rank(wolf));
+}
+// A wolf's class from its label as written (an unplaced NPC's): "" for no work of its own.
+std::string labelClass(const ResidentSpec& r)
+{
+    const auto t = lower(r.workLabel);
+    if (t.empty() || t == "-" || anyOf(t, IdleWords))
+        return {};
+    if (anyOf(t, LeisureWords) || Society::houseHead(r.workLabel))
+        return "upper";
+    if (r.role == "guard" || Society::clergy(r.workLabel))
+        return "middle";                            // (Their own cases: the Watch's rank goes by service.)
+    if (anyOf(t, UpperWords))
+        return "upper";
+    if (anyOf(t, MiddleWords))
+        return "middle";
+    if (anyOf(t, LowerWords))
+        return "lower";
+    return "middle";                                // A shop, a stall, an inn of a town, a trade.
+}
+// The words of a title that can say a wolf's trade suits it ("fishmonger", "butcher", "brewing"): five letters or more.
+std::vector<std::string> tradeWords(const std::string& title)
+{
+    static const std::set<std::string> Common{"keeping", "working", "helping", "serving", "works", "market", "square", "house",
+                                              "street", "lane", "the", "with", "from"};
+    std::vector<std::string> words;
+    std::string word;
+    for (const char ch : lower(title) + " ")
+        if (std::isalpha(static_cast<unsigned char>(ch)))
+            word += ch;
+        else
+        {
+            if (word.size() >= 5 && !Common.count(word))
+                words.push_back(word.substr(0, word.size() - (word.back() == 's' ? 1 : 0)));
+            word.clear();
+        }
+    return words;
 }
 } // namespace
 
@@ -242,18 +323,145 @@ CareerNote Society::welcome(const ResidentRequest& request, const std::string& i
         return {"birth", id, request.parents.empty() ? std::string() : request.parents[0],
                 request.parents.size() > 1 ? "child of " + request.parents[0] + " and " + request.parents[1] : std::string()};
     }
+    // An arrival from the Country takes up the post it came for. (Its town's talk of it as a newcomer: "is new in town".)
     auto found = c.positions.find(request.positionId);
     const auto* p = position(request.positionId);
-    if (found != c.positions.end())
-        found->second.newcomerAsked = false;
     if (!p || found == c.positions.end() || !found->second.holder.empty())
-        return {"newcomer", id, {}, "came to town, but the post was taken; looking for work"};
+        return {"newcomer", id, {}, "came in from the Country, but the post was taken; looking for work"};
+    for (auto& [otherId, other] : c.positions)
+        if (other.apprentice == id)
+            other.apprentice.clear();
     found->second.holder = id;
     found->second.vacantSince = -1;
     auto& known = c.skill[skillKey(id, p->id)];
-    known = std::max({known, 35.0, p->level});        // A stranger who has done this work elsewhere, as well as it needs.
+    known = std::max({known, 5.0, request.skill});     // What it knows of the work from the Country (arrivalFor).
     forgetCareers();
-    return {"newcomer", id, found->second.lastHolder, "came from outside to take up " + p->title};
+    return {"newcomer", id, found->second.lastHolder, "came in from the Country to take up " + p->title};
+}
+
+void Society::birthFailed(const ResidentRequest& request)
+{
+    if (request.kind == "birth" && !request.inPlaceOf.empty())
+        state_.careers.birthsOwed[request.inPlaceOf] = double(std::max<std::int64_t>(0, state_.careers.day));
+}
+
+bool Society::arrive(const ResidentRequest& request)
+{
+    const auto away = std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
+                                   [&](const ResidentSpec& r) { return r.id == request.templateId; });
+    if (roster_ != Roster::Authored || request.kind != "arrival" || away == authored_.unplaced.end() || request.home.cell.empty())
+        return false;
+    // Placed without work (doc 66, 2): it lives at home, holds the post it came for (welcome), and keeps its talk, story
+    // and families; its own post as written stays its record's (a live world's row keeps its label).
+    ResidentSpec r = *away;
+    r.home = r.work = r.evening = request.home;
+    r.workLabel = "-";
+    r.role = "civilian";
+    r.paid = false;
+    r.route.clear();
+    r.wander.clear();
+    r.serve = {};
+    if (!addResident(r, 0))
+        return false;
+    authored_.unplaced.erase(std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
+                                          [&](const ResidentSpec& u) { return u.id == r.id; }));
+    // Its purse from the Country's account (an unplaced NPC's own is outside the economy's money): moved, never made.
+    if (const auto purse = std::min(request.purse, cash(CountryFund)); purse > 0)
+        shift(CountryFund, r.id, "", 0, purse, "an arrival's purse, from the Country");
+    return true;
+}
+
+std::string Society::postClass(const Position& p) const
+{
+    const auto pay = payOf(p);
+    if (pay.kind.empty())
+        return {};                                  // No post that pays: lessons, play, leisure.
+    if (p.role == "guard" || clergy(p.title))
+        return "any";
+    const auto t = lower(p.title);
+    if (houseHead(p.title))
+        return "upper";
+    if (pay.kind == "keeper")
+        return anyOf(p.work.cell, LargeBusinesses) ? "upper" : "middle";
+    if (pay.kind == "hand")
+    {
+        // Helping in the family's own shop, living over it: middle; a hand in someone else's business: lower.
+        const auto* founder = spec(p.founder);
+        return founder && !p.work.cell.empty() && founder->home.cell.rfind(p.work.cell, 0) == 0 ? "middle" : "lower";
+    }
+    // A House's own affairs and the offices' heads (the wage rules that pay a keeper's wage), and a House's family at
+    // home in the Heights (kept by its estates), are upper; then the words.
+    for (const auto& rule : items::country().wages)
+        if (rule.wage == "keeper")
+            for (const auto& word : rule.words)
+                if (t.find(word) != std::string::npos)
+                    return "upper";
+    if (anyOf(t, LeisureWords) || anyOf(t, UpperWords))
+        return "upper";
+    if (anyOf(t, MiddleWords))
+        return "middle";
+    if (anyOf(t, LowerWords))
+        return "lower";
+    return "middle";
+}
+
+std::string Society::classOf(const std::string& id, int depth) const
+{
+    // "" while unknown (the public classOf: middle).
+    const auto* r = spec(id);
+    const auto* away = r ? nullptr : unplaced(id);
+    if (!r && !away)
+        return {};
+    // Its own work as written: the post a founder was written with (the class pass matched them: doc 67), or an unplaced
+    // NPC's label.
+    if (r)
+    {
+        if (const auto* own = position("job:" + id))
+        {
+            const auto cls = postClass(*own);
+            if (cls == "any")
+                return "middle";
+            if (!cls.empty())
+                return cls;
+            if (anyOf(lower(own->title), LeisureWords))
+                return "upper";
+        }
+    }
+    else if (auto cls = labelClass(*away); !cls.empty())
+        return cls;
+    if (depth >= 3)
+        return {};
+    // Else its family's: a spouse, then a parent (as made in play, and as written).
+    std::vector<std::string> kin;
+    if (const auto s = state_.careers.spouses.find(id); s != state_.careers.spouses.end())
+        kin.push_back(s->second);
+    if (const auto ps = state_.careers.parents.find(id); ps != state_.careers.parents.end())
+        kin.insert(kin.end(), ps->second.begin(), ps->second.end());
+    for (const auto& k : authored_.kin)
+        if (k.kind == "spouse" && (k.a == id || k.b == id))
+            kin.insert(kin.begin(), k.a == id ? k.b : k.a);
+        else if (k.kind != "spouse" && k.b == id)
+            kin.push_back(k.a);
+    for (const auto& other : kin)
+        if (other != id)
+            if (auto cls = classOf(other, depth + 1); !cls.empty())
+                return cls;
+    // Else its household's: most of those it lives with.
+    if (r && depth == 0)
+    {
+        const auto* life = resident(id);
+        std::map<std::string, int> count;
+        for (const auto& [other, theirs] : state_.residents)
+            if (other != id && life && !life->homeCell.empty() && theirs.homeCell == life->homeCell)
+                if (auto cls = classOf(other, 2); !cls.empty())
+                    ++count[cls];
+        std::string most;
+        for (const auto& [cls, n] : count)
+            if (most.empty() || n > count[most])
+                most = cls;
+        return most;
+    }
+    return {};
 }
 
 void Society::buildPositions()
@@ -452,6 +660,10 @@ std::vector<CareerNote> Society::died(const std::string& resident, double day)
     }
     if (state_.accounts.count(resident) && !playerAccountId(resident))
         c.estates[resident] = day;
+    // Births follow deaths (the user, 2026-11-01): a resident's death owes the world a child, due 1 to BirthDelayMost
+    // days after (a lot of the dead's). A player's never does.
+    if (state_.residents.count(resident) && !playerAccountId(resident) && !dead_.count(resident))
+        c.birthsOwed[resident] = std::floor(day) + 1 + double(mix(resident + "|born", std::int64_t(std::floor(day))) % BirthDelayMost);
     dead_.insert(resident);
     forgetCareers();
     return notes;
@@ -462,6 +674,7 @@ std::vector<CareerNote> Society::revived(const std::string& resident)
     std::vector<CareerNote> notes;
     auto& c = state_.careers;
     c.estates.erase(resident);
+    c.birthsOwed.erase(resident);                   // (Brought back before their child was born: none is owed.)
     dead_.erase(resident);
     if (!jobOf(resident))
         for (auto& [id, ps] : c.positions)
@@ -658,15 +871,10 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
     //  - family after three, a local out of work after five: as skilled as the trade needs (its best at that kind of
     //    work);
     //  - else, after five, the best-trained wolf about who isn't in a master's place or an important post: it heads the
-    //    business and works toward mastership.
+    //    business and works toward mastership;
+    //  - a post that pays, after PostWaitDays: a wolf of the city with no post that pays, of its class (grown pups
+    //    first), else an unplaced NPC of the world's own list, of its class, from the Country (the user, 2026-11-01).
     // Whoever moves up leaves its own post empty in turn.
-    // A wolf's town: its own home's.
-    const auto townOf = [&](const std::string& id) {
-        const auto r = state_.residents.find(id);
-        const auto home = r == state_.residents.end() ? std::string() : r->second.homeCell;
-        const auto town = day_.communityOf && !home.empty() ? day_.communityOf(home) : std::string();
-        return town.empty() ? communityOfResident(id) : town;
-    };
     for (auto& p : positions_)
     {
         auto& ps = c.positions[p.id];
@@ -734,8 +942,31 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
             if (!chosen.empty())
                 how = "the best-trained takes it on, to work toward mastership";
         }
+        // A post that pays, empty PostWaitDays (the user, 2026-11-01): a wolf of the city with no post that pays (grown
+        // pups first) of the post's class; else an unplaced NPC of the world's own list, of its class, come in from the
+        // Country (one whose trade suits the post first); then the same of the next class. Nobody new is ever made.
+        if (chosen.empty() && waited >= PostWaitDays && !postClass(p).empty() &&
+            std::none_of(requests_.begin(), requests_.end(), [&](const ResidentRequest& r) { return r.kind == "arrival" && r.positionId == p.id; }))
+            for (int step = 0; step < 2 && chosen.empty(); ++step)
+            {
+                chosen = cityWolfFor(p, world, step);
+                if (!chosen.empty())
+                {
+                    how = step ? "from the city, of the next class" : "from the city";
+                    break;
+                }
+                ResidentRequest r;
+                if (arrivalFor(p, ps, world, step, r))
+                {
+                    requests_.push_back(r);
+                    ++fills_[step ? "from the Country, of the next class" : "from the Country"];
+                    notes.push_back({"arrival sent for", r.templateId, ps.lastHolder, p.title});
+                    break;
+                }
+            }
         if (chosen.empty())
             continue;
+        ++fills_[how];
         for (auto& [otherId, other] : c.positions)
         {
             if (other.holder == chosen)
@@ -810,60 +1041,37 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
 
     splitHouseholds(today, world, notes);
 
-    // Each town's number (doc 62: the world stays about the size it was made; the user, 2026-10-14: births follow deaths):
-    // how many live there against how many did on its first day, less the children and strangers already asked for.
-    std::map<std::string, int> living, wanted;
-    for (const auto& [id, life] : state_.residents)
-        if (alive(id))
-            ++living[townOf(id)];
-    for (const auto& [town, n] : living)
-        if (!c.population.count(town))
-            c.population[town] = n;                 // (The first day: the town as it is.)
-    for (const auto& [town, n] : c.population)
-        wanted[town] = n - living[town];
-    for (const auto& r : requests_)
-        if (r.kind == "birth" || r.kind == "newcomer")
-            --wanted[day_.communityOf ? day_.communityOf(r.home.cell) : std::string()];
-    // A post nobody here has taken in eight days, in a town under its number: a stranger is sent for, with the last
-    // holder's kind of manner. (A town at its number fills its posts from its own: doc 64, Phase 8.)
-    for (auto& p : positions_)
-    {
-        auto& ps = c.positions[p.id];
-        if (!ps.holder.empty() || ps.vacantSince < 0 || ps.newcomerAsked || now - ps.vacantSince < 8)
-            continue;
-        auto& under = wanted[day_.communityOf ? day_.communityOf(p.work.cell) : communityOfResident(p.founder)];
-        if (under <= 0)
-            continue;
-        --under;
-        std::string model = spec(ps.lastHolder) ? ps.lastHolder : p.founder;
-        if (!spec(model))
-            continue;
-        const auto* was = resident(model);
-        ResidentRequest r;
-        r.kind = "newcomer";
-        r.templateId = model;
-        const auto pick = mix(p.id, today);
-        r.name = std::string(FirstNames[pick % std::size(FirstNames)]) + " " + FarSurnames[(pick / 31) % std::size(FarSurnames)];
-        r.age = 22 + int(pick % 20);
-        // They lodge where the last holder lived if nobody of that house is left; otherwise near the work.
-        bool houseEmpty = true;
-        for (const auto& [id, life] : state_.residents)
-            if (id != ps.lastHolder && household(id, ps.lastHolder) && alive(id))
-                houseEmpty = false;
-        r.home = houseEmpty && was ? Spot{was->homeCell, was->homeX, was->homeY} : p.work;
-        r.positionId = p.id;
-        ps.newcomerAsked = true;
-        requests_.push_back(r);
-        notes.push_back({"newcomer sent for", {}, ps.lastHolder, p.title});
-    }
+    tendBirths(now, world);
+    return notes;
+}
 
-    // Children, to keep each town about the size it was made (the user, 2026-10-13): only while it has fewer living
-    // residents than it should (newcomers count), no more in a day than it is short; a married couple at home
-    // together, the mother of an age to bear, a year or so apart, no more than three. About one a month for each who
-    // can, while the town is short.
+void Society::tendBirths(double now, const CareerWorld& world)
+{
+    // Births follow deaths (the user, 2026-11-01: "Birthrates should match death rates for this game, otherwise we are
+    // going to end up with a shitton of NPCs real fast. Player count should be ignored for that count."): each child owed
+    // for a resident's death (died) is born when due, one to a couple: a married couple at home together, the mother of
+    // an age to bear (18 to 45), a year or so since their last, no more than three; those with fewest children first,
+    // then by a lot of the day. A child nobody can have today waits for tomorrow. There are no other births.
+    auto& c = state_.careers;
+    std::vector<std::pair<double, std::string>> due;
+    for (const auto& [dead, day] : c.birthsOwed)
+        if (day <= now)
+            due.emplace_back(day, dead);
+    if (due.empty())
+        return;
+    std::sort(due.begin(), due.end());
+    const auto today = std::int64_t(std::floor(now));
+    struct Couple
+    {
+        std::string a, b;
+        const ResidentSpec* mother;
+        int children;
+        double lot;
+    };
+    std::vector<Couple> couples;
     for (const auto& [a, b] : c.spouses)
     {
-        if (!(a < b) || !alive(a) || !alive(b) || !household(a, b))
+        if (!(a < b) || !world.alive(a) || !world.alive(b) || !household(a, b))
             continue;
         const auto* x = spec(a);
         const auto* y = spec(b);
@@ -874,25 +1082,145 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         const auto key = a + "|" + b;
         const int children = c.births.count(key) ? c.births.at(key) : 0;
         const auto last = c.lastBirth.find(key);
-        auto& short_ = wanted[townOf(mother->id)];
-        if (children >= 3 || short_ <= 0 || (last != c.lastBirth.end() && now - last->second < 300) || mix(key, today) % 30 != 0)
+        if (children >= 3 || (last != c.lastBirth.end() && now - last->second < 300))
             continue;
-        --short_;
-        const auto* home = resident(mother->id);
+        couples.push_back({a, b, mother, children, lotOf(key + "|" + std::to_string(today))});
+    }
+    std::sort(couples.begin(), couples.end(),
+              [](const Couple& x, const Couple& y) { return std::tie(x.children, x.lot, x.a) < std::tie(y.children, y.lot, y.a); });
+    for (std::size_t i = 0; i < due.size() && i < couples.size(); ++i)
+    {
+        const auto& k = couples[i];
+        const auto key = k.a + "|" + k.b;
+        const auto* home = resident(k.mother->id);
         ResidentRequest r;
         r.kind = "birth";
-        r.templateId = mother->id;
-        const auto family = surname(mother->name);
+        r.templateId = k.mother->id;
+        const auto family = surname(k.mother->name);
         r.name = std::string(FirstNames[mix(key, today + 7) % std::size(FirstNames)]) + (family.empty() ? "" : " " + family);
         r.age = 0;
-        r.home = home ? Spot{home->homeCell, home->homeX, home->homeY} : mother->home;
-        r.parents = {a, b};
+        r.home = home ? Spot{home->homeCell, home->homeX, home->homeY} : k.mother->home;
+        r.parents = {k.a, k.b};
         r.sex = birthSex(key, today);
+        r.inPlaceOf = due[i].second;
         c.lastBirth[key] = now;
         ++c.births[key];
+        c.birthsOwed.erase(due[i].second);
         requests_.push_back(r);
     }
-    return notes;
+}
+
+std::string Society::cityWolfFor(const Position& p, const CareerWorld& world, int classStep) const
+{
+    // A wolf of working age with no post that pays (none, or a pup's or an elder's: lessons, play), not apprenticed,
+    // living within reach, its class classStep from the post's: grown pups first (raised here: a parent known, under 25),
+    // then the best at that kind of work, then a lot of the post's.
+    const auto wanted = postClass(p);
+    const auto family = std::string(skillFamily(p.title));
+    std::string chosen;
+    std::tuple<int, double, double> best{-1, 0, 0};
+    for (const auto& [id, life] : state_.residents)
+    {
+        if (!world.alive(id))
+            continue;
+        const int age = world.age(id);
+        if (age < 16 || age >= retireAge(id) || apprenticedTo(id) || (world.near && !world.near(p.work.cell, life.homeCell)))
+            continue;
+        if (const auto* own = jobOf(id); own && !postClass(*own).empty())
+            continue;
+        if (classApart(wanted, classOf(id)) != classStep)
+            continue;
+        const bool pup = state_.careers.parents.count(id) && age < 25;
+        const std::tuple<int, double, double> score{pup ? 1 : 0, std::max(skill(id, p.id), familySkill(id, family)),
+                                                    lotOf(id + "|" + p.id)};
+        if (chosen.empty() || score > best)
+            best = score, chosen = id;
+    }
+    return chosen;
+}
+
+bool Society::arrivalFor(const Position& p, const PositionState& ps, const CareerWorld& world, int classStep,
+                         ResidentRequest& out) const
+{
+    // Who comes: an unplaced NPC of the world's own list (doc 66, 2) of working age, its class classStep from the post's,
+    // not already sent for: the one whose trade suits the post best (its kind of work; the post's words in its label or
+    // description), then a lot of the post's. Any sex.
+    const auto wanted = postClass(p);
+    const auto family = std::string(skillFamily(p.title));
+    const auto words = tradeWords(p.title);
+    const ResidentSpec* chosen = nullptr;
+    std::pair<int, double> best{-1, 0};
+    for (const auto& r : authored_.unplaced)
+    {
+        if (r.protectedNpc || r.age < 16 || r.age >= retireAge(r.id) || classApart(wanted, classOf(r.id)) != classStep ||
+            std::any_of(requests_.begin(), requests_.end(),
+                        [&](const ResidentRequest& q) { return q.kind == "arrival" && q.templateId == r.id; }))
+            continue;
+        const bool kind = family != "general" && family == skillFamily(r.workLabel);
+        const auto theirs = lower(r.workLabel + " " + r.description);
+        int shared = 0;
+        for (const auto& w : words)
+            shared += theirs.find(w) != std::string::npos;
+        const std::pair<int, double> score{(kind ? 2 : 0) + std::min(shared, 2), lotOf(r.id + "|" + p.id)};
+        if (!chosen || score > best)
+            best = score, chosen = &r;
+    }
+    if (!chosen)
+        return false;
+    // Where it stays (never alone at the work, and no home built): the dead's home, if the last holder died and nobody
+    // lives there now; else with a household of its class within reach of the work that has room (fewer than
+    // HouseholdMost), the smallest first; else the communal lodgings within reach. Nowhere: not today.
+    std::map<std::string, std::vector<std::string>> homes;
+    for (const auto& [id, life] : state_.residents)
+        if (world.alive(id) && !life.homeCell.empty())
+            homes[life.homeCell].push_back(id);
+    Spot home;
+    if (!ps.lastHolder.empty() && !world.alive(ps.lastHolder))
+        if (const auto* was = resident(ps.lastHolder);
+            was && !was->homeCell.empty() && !communalHome(was->homeCell) && !homes.count(was->homeCell))
+            home = {was->homeCell, was->homeX, was->homeY};
+    if (home.cell.empty())
+    {
+        const auto cls = classOf(chosen->id);
+        std::pair<int, double> roomiest{0, 0};
+        for (const auto& [cell, members] : homes)
+        {
+            if (communalHome(cell) || int(members.size()) >= HouseholdMost || (world.near && !world.near(p.work.cell, cell)))
+                continue;
+            std::map<std::string, int> count;
+            for (const auto& m : members)
+                ++count[classOf(m)];
+            std::string most;
+            for (const auto& [c, n] : count)
+                if (most.empty() || n > count[most])
+                    most = c;
+            if (most != cls)
+                continue;
+            const std::pair<int, double> score{-int(members.size()), lotOf(cell + "|" + chosen->id)};
+            if (home.cell.empty() || score > roomiest)
+            {
+                const auto* first = resident(members.front());
+                roomiest = score, home = {cell, first->homeX, first->homeY};
+            }
+        }
+    }
+    if (home.cell.empty() && world.lodgings)
+        if (const auto spots = world.lodgings(p.work.cell); !spots.empty())
+            home = spots.front();
+    if (home.cell.empty())
+        return false;
+    out = {};
+    out.kind = "arrival";
+    out.templateId = chosen->id;
+    out.name = chosen->name;
+    out.age = chosen->age;
+    out.home = home;
+    out.positionId = p.id;
+    out.purse = std::clamp<std::int64_t>(chosen->purse, 0, ArrivalPurse);
+    // Its trade of the post's kind: it knows the work as well as the trade needs (as one who did it in the Country);
+    // otherwise it is new to it.
+    out.skill = family != "general" && family == skillFamily(chosen->workLabel) ? std::max(35.0, tradeLevel(p)) : 5.0;
+    return true;
 }
 
 CareerNote Society::apprentice(const std::string& player, const std::string& positionId, const CareerWorld& world, double)

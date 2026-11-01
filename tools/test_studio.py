@@ -1032,7 +1032,7 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         drift = data['drift']
         self.assertTrue(drift['saved'])
         self.assertEqual((drift['toll'], drift['tollBase'], drift['alms'], drift['almsBase'], drift['level'], drift['target']),
-                         (28.5, 30, 11, 10, 5612, 5000))
+                         (28.5, 30, 11, 10, 5612, 5500))
         self.assertEqual((drift['prices']['moved'], drift['prices']['low'], drift['prices']['high']), (2, 0.9, 1.2))
         self.assertEqual((drift['shelves']['wares'], drift['shelves']['mean']), (2, 8.5), 'ceil(10 x 1.25) = 13 and the least, 4')
         self.assertEqual((drift['wages']['tills'], drift['wages']['up'], drift['wages']['down']), (2, 1, 0))

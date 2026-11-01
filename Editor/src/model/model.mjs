@@ -126,7 +126,8 @@ export const RULE_LIMITS = {comfortsMost: 100000, almsADay: 1000, treasuryCap: 1
     // The self-correcting rules (doc 68, Progress, "Self-correcting rules").
     stockPrices: 1, stockPriceBand: 90, stockPriceStep: 1000, shelfFollow: 1, shelfDays: 365, shelfCover: 1000, shelfGrow: 500,
     wageDrift: 1, wageDriftDays: 365, wageDriftSpare: 1000, wageDriftMost: 100, wageDriftHandMost: 100, wageDriftFloor: 1000, treasuryDrift: 1,
-    treasuryTarget: 100000000, treasuryBand: 100, treasuryDays: 3650, tollStep: 100, tollDriftMost: 90, almsDriftMost: 1000};
+    treasuryTarget: 100000000, treasuryBand: 100, treasuryDays: 3650, treasuryJudgeDays: 365, tollStep: 100, tollDriftMost: 90,
+    almsDriftMost: 1000};
 const ruleSettingsOk = e => (!own(e, 'rules') || (object(e.rules) && Object.entries(e.rules).every(([k, v]) =>
         own(RULE_LIMITS, k) && integer(v, 0, RULE_LIMITS[k]))))
     && (!own(e, 'services') || (object(e.services) && Object.entries(e.services).every(([k, s]) => /^[a-z0-9_]{1,48}$/.test(k)

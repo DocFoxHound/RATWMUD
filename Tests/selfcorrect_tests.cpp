@@ -160,9 +160,11 @@ void theDefaults()
     expect(s.rule("wageDrift") == 1 && s.rule("wageDriftDays") == 28 && s.rule("wageDriftSpare") == 50 &&
                s.rule("wageDriftMost") == 12 && s.rule("wageDriftHandMost") == 12 && s.rule("wageDriftFloor") == 7,
            "wages follow cover: on, every 28 days, half to spare, at most 12p a keeper and 12p a hand, never under 7p");
-    expect(s.rule("treasuryDrift") == 1 && s.rule("treasuryTarget") == 5000 && s.rule("treasuryBand") == 15 &&
-               s.rule("treasuryDays") == 182 && s.rule("tollStep") == 5 && s.rule("tollDriftMost") == 5 && s.rule("almsDriftMost") == 2,
-           "the toll and the alms follow the treasury: on, 5,000p within 15%, over 182 days, half a point a fortnight, 5 points, 2p");
+    expect(s.rule("treasuryDrift") == 1 && s.rule("treasuryTarget") == 5500 && s.rule("treasuryBand") == 15 &&
+               s.rule("treasuryDays") == 182 && s.rule("treasuryJudgeDays") == 28 && s.rule("tollStep") == 5 &&
+               s.rule("tollDriftMost") == 5 && s.rule("almsDriftMost") == 2,
+           "the toll and the alms follow the treasury: on, 5,500p within 15%, over 182 days, judged every 28, half a point "
+           "each time, 5 points, 2p");
     expect(near(s.gateTollNow(), 30) && s.almsNow() == 10 && s.state().loop.empty(), "nothing drifted in a new society");
 }
 
@@ -604,10 +606,13 @@ void wagesFollowCover()
 
 // A household of one with money and nothing to buy (ann), another with nothing (bob, whose purse goes to ann at 17:00
 // each day: the alms make him up at 18:00), and a fishmonger with a till to draw from.
+// (Judged a fortnight apart here, as the rule was first built, unless the test says: the steps the tests count.)
+constexpr int Fortnight = 14;
 Town treasury(std::int64_t treasury, std::map<std::string, int> rules)
 {
     rules["treasuryDrift"] = 1;
     rules["treasuryDays"] = rules.count("treasuryDays") ? rules["treasuryDays"] : 1;
+    rules["treasuryJudgeDays"] = rules.count("treasuryJudgeDays") ? rules["treasuryJudgeDays"] : Fortnight;
     rules["wageSupport"] = 0;
     return Town(city({person("ann", "civilian", "keeps the house", {"home_ann", 2.5, 2.5}, "home_ann", 35, 5000),
                       person("bob", "civilian", "keeps the house", {"home_bob", 2.5, 2.5}, "home_bob", 35, 0)},
@@ -636,21 +641,21 @@ void tollAndAlmsFollowTheTreasury()
         for (int day = 1; day <= 45; ++day)
         {
             poorBob(t, day, -100);
-            const int fortnights = (day - 1) / Society::DriftStepDays;
+            const int fortnights = (day - 1) / Fortnight;
             const double toll = 30 - std::min(5., 3. * fortnights);
             const int alms = 10 + std::min(2, fortnights);
             expect(near(t.s.gateTollNow(), toll) && t.s.almsNow() == alms,
                    "day " + std::to_string(day) + ": the toll " + str(t.s.gateTollNow()) + " (" + str(toll) + "), the alms " +
                        std::to_string(t.s.almsNow()) + " (" + std::to_string(alms) + ")");
-            const int given = 10 + std::min(2, (day - 2) / Society::DriftStepDays);
+            const int given = 10 + std::min(2, (day - 2) / Fortnight);
             expect(day == 1 || t.s.cash("bob") == given, "day " + std::to_string(day) + ": bob made up to " + std::to_string(given) +
                                                              ": " + std::to_string(t.s.cash("bob")));
         }
         expect(t.s.conserved() && t.s.moneySupply() == money, "conserved");
         // The eased toll on a draw: 25% of its cost to the treasury.
         auto u = Town(city({person("fish", "merchant", "fishmonger at the Fish Hall", {"hall", 2.5, 2.5}, "home_fish", 30, 0)}, 50000,
-                           {{"treasuryDrift", 1}, {"treasuryDays", 1}, {"treasuryTarget", 1000}, {"tollStep", 50}, {"wageSupport", 0},
-                            {"almsADay", 0}}));
+                           {{"treasuryDrift", 1}, {"treasuryDays", 1}, {"treasuryJudgeDays", Fortnight}, {"treasuryTarget", 1000},
+                            {"tollStep", 50}, {"wageSupport", 0}, {"almsADay", 0}}));
         u.until(16);
         expect(near(u.s.gateTollNow(), 25), "eased to 25%: " + str(u.s.gateTollNow()));
         u.s.shift("treasury", u.s.tillOf("fish"), "", 0, 1000, "test: a till to draw with");
@@ -680,10 +685,10 @@ void tollAndAlmsFollowTheTreasury()
         raised.loop.alms = 2;
         expect(t.s.restore(raised), "restored with the alms 2p over");
         const int judged = int(raised.loop.judged);
-        for (int day = 32; day <= judged + 3 * Society::DriftStepDays + 1; ++day)
+        for (int day = 32; day <= judged + 3 * Fortnight + 1; ++day)
         {
             poorBob(t, day);
-            const int fortnights = (day - judged) / Society::DriftStepDays;
+            const int fortnights = (day - judged) / Fortnight;
             expect(t.s.almsNow() == std::max(10, 12 - fortnights) && near(t.s.gateTollNow(), 35),
                    "day " + std::to_string(day) + ": the alms tighten a penny a fortnight, to the world's: " + std::to_string(t.s.almsNow()));
         }
@@ -701,6 +706,36 @@ void tollAndAlmsFollowTheTreasury()
         expect(near(t.s.gateTollNow(), 30) && t.s.almsNow() == 10, "off: the world's toll and alms");
         expect(near(t.s.state().loop.toll, 5), "(kept for when it is on again)");
     }
+    // The defaults since doc 68's "Births follow deaths; arrivals from the Country; the treasury's target": judged every
+    // 28 days, not 14 (so the half year's mean answers a step before the next), against 5,500p (about where the treasury
+    // settles): a treasury at 6,000p is inside the band (4,675p to 6,325p) and nothing moves, where against 5,000p (its
+    // top 5,750p) it eased; one at 7,000p eases half a point and raises the alms a penny each 28 days, and only then.
+    {
+        auto settled = treasury(6000, {{"treasuryJudgeDays", 28}, {"treasuryTarget", 5500}});
+        for (int day = 1; day <= 60; ++day)
+            poorBob(settled, day, -10);
+        expect(near(settled.s.gateTollNow(), 30) && settled.s.almsNow() == 10, "6,000p against 5,500p: inside the band, no change");
+        auto before = treasury(6000, {{"treasuryJudgeDays", 28}, {"treasuryTarget", 5000}});
+        for (int day = 1; day <= 60; ++day)
+            poorBob(before, day, -10);
+        expect(before.s.gateTollNow() < 30 - .1, "(against the old 5,000p it eased: " + str(before.s.gateTollNow()) + ")");
+        auto over = treasury(7000, {{"treasuryJudgeDays", 28}, {"treasuryTarget", 5500}});
+        const auto money = over.s.moneySupply();
+        for (int day = 1; day <= 90; ++day)
+        {
+            poorBob(over, day, -30);
+            const int steps = (day - 1) / 28;
+            expect(near(over.s.gateTollNow(), 30 - .5 * steps) && over.s.almsNow() == 10 + std::min(2, steps),
+                   "day " + std::to_string(day) + ": a step each 28 days: the toll " + str(over.s.gateTollNow()) + ", the alms " +
+                       std::to_string(over.s.almsNow()));
+        }
+        expect(over.s.conserved() && over.s.moneySupply() == money, "conserved");
+        // The DM's: a world's own judging period, at once.
+        auto economy = over.s.authored().economy;
+        economy.rules["treasuryJudgeDays"] = 7;
+        over.s.adoptEconomy(economy);
+        expect(over.s.rule("treasuryJudgeDays") == 7, "the DM may judge it more often");
+    }
 }
 
 void itSurvivesASave()
@@ -708,7 +743,7 @@ void itSurvivesASave()
     // A society with all four on and something drifted in each: saved (the society's save, as the game's checkpoint
     // writes it), read back and restored into a new one, every value the same.
     auto w = wages({{"wageDriftDays", 2}, {"stockPrices", 1}, {"shelfFollow", 1}, {"treasuryDrift", 1}, {"treasuryTarget", 1000000},
-                    {"treasuryDays", 1}, {"tollStep", 30}},
+                    {"treasuryDays", 1}, {"treasuryJudgeDays", Fortnight}, {"tollStep", 30}},
                    200);
     for (int d = 1; d <= 16; ++d)
         w.day(d);
@@ -728,7 +763,7 @@ void itSurvivesASave()
     const auto read = wire::readSociety(parsed);
     expect(read.minted >= 0, "the save reads");
     auto fresh = wages({{"wageDriftDays", 2}, {"stockPrices", 1}, {"shelfFollow", 1}, {"treasuryDrift", 1}, {"treasuryTarget", 1000000},
-                        {"treasuryDays", 1}, {"tollStep", 30}},
+                        {"treasuryDays", 1}, {"treasuryJudgeDays", Fortnight}, {"tollStep", 30}},
                        200);
     expect(fresh.t.s.restore(read), "and restores");
     expect(json::dump(wire::society(fresh.t.s.state())) == saved, "the same save again");

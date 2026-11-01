@@ -2002,3 +2002,201 @@ weeks at each year's end: 18,353, 18,672, 18,843, 19,039, 19,269, 19,923p.)
 - The wage bounds: 12p each, 16 tills at a bound in year 6. The DM can narrow the hands' alone (`wageDriftHandMost`).
 - Players' prices move with the shop's; a lot is priced, a piece never under a penny. Whether a shop should take more than a
   few of a good from a player (so players can glut a ware) is open; today they can't.
+
+### Births follow deaths; arrivals from the Country; the treasury's target (2026-11-01)
+
+Branch `r2-econ-people`, from `ridgemere2` (2f95972). The user's decisions after the long runs (2026-11-01, verbatim):
+**"Okay so, stop simulating players. Only simulate NPCs. There should be no simulated players. Birthrates should match
+death rates for this game, otherwise we are going to end up with a shitton of NPCs real fast. Player count should be
+ignored for that count. Newcomers, I don't know what these are. I never said to simulate new NPCs or players, so don't do
+that. If you need newcomers for the economy simulate someone from our preexisting NPC list coming in from the country.
+Make your treasury fix as well. Then go ahead and simulate the next run"**
+
+#### No simulated players
+
+There were none, and there are none. `world_check --economy` adds no player unless `--players N` says (`playerCount`: 1
+for a city check, 0 with `--economy`; doc 69, section 9); `World::addPlayer` (which opens a player's account,
+`Society::addPlayer`) is called only by that loop, and by a save's restore, which the harness never does. Each run's
+output says "N residents, no player", and the economy line now counts `players` (bodies that aren't NPCs, and player
+accounts without one): **0 on every day of every run below**. The newcomer accounts of doc 52 (an account new until 15
+hours played) are the game server's, for real sign-ins; nothing of them runs in the harness.
+
+#### What a "newcomer" was, and what replaced it
+
+A newcomer was a **made-up NPC**: when a post had stood empty eight days in a town with fewer living residents than it
+was made with, `Society::tendCareers` sent for a stranger: a new resident with a placeholder name ("Wren Farwander"), 22
+to 41 years old, cloned from the last holder's record, given a made 30p purse (`NewcomerPurse`, money from outside) and
+the trade's skill, lodged in the last holder's house if empty and otherwise **at the work, as a household of its own**.
+The long runs made 57 in six years, and they crowded out the births (both came from the same shortfall). That is gone,
+in the game and the harness, and so is the "child while the town is short of its number" (and the towns' numbers).
+
+- **Births follow deaths, one for one** (`Society::died`, `tendBirths`). A resident's death (never a player's: only
+  residents are counted, and a player is never one) owes the world one child, due 1 to 7 days later by a lot of the
+  dead's (`CareerState::birthsOwed`, saved with the society). Each day the children due go to married couples at home
+  together, as births always chose parents (the mother 18 to 45, a year or so since their last, three at most), one to a
+  couple, those with fewest children first, then a lot of the day. A child nobody can have today waits for tomorrow; a
+  host that can't make one gives it back (`World::residentNotMade`). So over a run **births equal deaths, but for those
+  still owed** at its end. A child's sex is its own, male or female half and half, as before.
+- **A post empty eight days** (`PostWaitDays`), after the city's own steps (the apprentice, a master, the family, a
+  local out of work, the best-trained), and only a post that pays (`payOf`: lessons, play and the like are no posts to
+  fill): first **a wolf already in the city with no post that pays** (none, or a pup's or an elder's: "at lessons"),
+  of working age, not apprenticed, **of the post's class**, grown pups first (a parent known, under 25), then the best at
+  that kind of work; else **an unplaced NPC of the world's own list** (doc 66, 2; 524 in DEV), of working age (16 to
+  its own age to retire), of the post's class, any sex: the one whose trade suits the post (its kind of work, the post's
+  words in its label or description), then a lot of the post's. Then the same two of the next class (upper and middle,
+  middle and lower; never upper and lower). Nobody new is ever made: **no NPC is created except by birth.**
+- **Class** (`Society::postClass`, `classOf`; doc 67, Progress, "Jobs by class"): a post's from the city's own rules
+  (`ridgemere2_people.py`'s `job_class`, its word lists): keeping one of the six independent larger businesses, a House's
+  own affairs (the wage rules that pay a keeper's wage), at home in the Heights, high office: **upper**; any other shop,
+  stall, counter or tavern, a Great House's works run for it, lower office, helping in the family's shop over which it
+  lives: **middle**; a hand in someone else's business, waged, service and carrying work: **lower**; the Watch and the
+  clergy any. A wolf's: its own post's as it was written (the class pass matched 94% of earners to their household's
+  class), else its family's (a spouse, a parent), else its household's; an unplaced NPC's from its label as written (the
+  Country's fields, woods, waters and mines, service: lower; a town's shop or inn: middle; the Heights: upper), else
+  its family's.
+- **Where an arrival lives**: the dead's home, if the last holder died and nobody lives there now; else **with a
+  household of its class within reach of the work that has room** (fewer than six living there, so it never makes one
+  over `HouseholdMost`), the smallest first; else the communal lodgings within reach (`CareerWorld::lodgings`: DEV has two,
+  the Anchor and the Mud Lodgings, empty); with none, nobody is sent for that day. **Never alone at the work**, and no
+  home is built (the three homes to a structure stay as they are). It is placed without work (doc 66, 2: it lives at
+  home, keeps its talk, story and families) and holds the post it came for; its skill is the trade's (35 or its level)
+  when its own trade is of that kind, else 5. Its town talks of it as a newcomer ("is new in town").
+- **Money**: an unplaced NPC's purse is **outside the economy's count** (it has no account: doc 66, 2, "no money
+  moving"; DEV's 524 hold 27,377p as written). So an arrival brings its own purse **up to 30p, paid by the Country's
+  account** (`outside:country`, as far as it holds it): moved, never made. The money supply is the start's every day of
+  every run (50,252p), where the newcomers' purses grew it 1,710p in six years.
+- **The game server records the move** (`Game::makeResidents`, a world from the database): it gives the arrival's
+  `live.npcs` row the home (`home_area`, `home_x`, `home_y`, only while it is unset: work and evening stay unset, so the
+  row keeps its authored label and role), then places it as a world from files does (`World::arriveResident`); the post
+  it holds is the checkpoint's, as any succession's. Births are as before (a row cloned from the mother's, origin
+  `runtime`). Nothing was written to DEV: the runs are the harness's, on its export, and DEV holds no made NPC (no row of
+  origin `runtime`) and needs no migration.
+
+**The treasury's target** (rule 4): `treasuryTarget` from 5,000p to **5,500p**, about where the treasury's level settles
+(5,300-5,700p under the surplus's 6,000p ceiling), and a new `treasuryJudgeDays`, **28** (it was a fortnight,
+`DriftStepDays`): the half year's mean answers a step before the next. Both in `country.json` `rules`, a world's own in
+`live.economy.rules`, on the DM's Economy tab and Atlas's Economy page (RulesPanel's "Judged every"). The band is
+unchanged (15%: 4,675-6,325p).
+
+**Reports.** The economy line: `arrivals` (for `newcomers`), `births_owed`, `unplaced`, `earning_posts`, `earning_held`,
+`empty_longest` (days), `households_alone`, `filled_city`, `filled_city_next`, `filled_country`, `filled_country_next`,
+`filled_local`, `filled_best` (how the empty posts were filled so far: `Society::fills`), `players`. `tools/people_summary.py
+ECONOMY.jsonl [LOOP.jsonl]` gives the years.
+
+**Tests**: `Tests/people_flow_tests.cpp` (new, in ctest as `people_flow_behaviors`, the real catalogue): the classes
+(posts and wolves, resident and unplaced); births follow deaths (none while nobody dies, none for a player's death, one
+due 1-7 days after a resident's, to a couple at home, in his place; a child for each death, one for one; dying twice owes
+one; revived before the birth owes none; a child not made owed again; the owed through a save); no NPC made but by
+birth (only births and arrivals asked for, an arrival one of the world's own); a post from the city first (a grown pup
+at lessons takes the docker's post at eight days, not before, nobody sent for); from the Country (the fisher before the
+servant, not the old, the pup, or one two classes away; lodging with a household of his class; his own purse up to 30p
+from the Country's account; placed without work, no post of his own made, no longer unplaced; the money conserved);
+where arrivals stay (the dead's empty home; the lodgings when every household of its class is full; with no lodgings
+nobody sent for; the next class when none of its own is left). `sim_fast_tests`: on the small town Fen, an unplaced
+fisher, comes in for the smithy; births equal deaths less those owed; nobody but the world's own and the born; no player
+in the economy file. `selfcorrect_tests` (1,182 checks): the new defaults; the mechanism's tests at a fortnight, as built;
+the new target and period (6,000p inside the band against 5,500p, where against 5,000p it eased; a step each 28 days and
+only then; the DM's own period at once). `careers_tests`: a child for the one who died. All 76 C++ tests pass after a
+clean build of `build-core`. Python: `test_studio` (the DM's view's target), `test_world_store`, `test_world_sync`,
+`test_live_edit`, `test_dungeon_master`, `test_world_build`, `test_item_catalog`, `test_city_capacity`, `test_world_db`
+pass, and `test_map_editor` but for the known Greyfen 11-vs-10. Editor: `tsc` clean; the lib tests 54 of 54, the model's
+78 of 79 (Greyfen).
+
+#### The runs
+
+DEV build 52 (its export, as doc 69, section 10; nothing written), from Spring 1, `--simulate 6 8766` (a year, the
+check), `6 52596` (six years) and `6 105192` (twelve), `--no-check --deterministic --threads 4 --no-profile --loop-state`,
+pinned to six CPUs (taskset 0-5). The six years took 48 minutes, the twelve 115 (1.3 and 1.6 s a game day; the machine was
+shared). Deterministic: the year is the six years' first year, and the six the twelve's first six, line for line.
+Summaries committed in `artifacts/economy/r2/people-summary.txt`; the jsonl in the main repo's
+`artifacts/economy/r2/people_*` (not committed).
+
+- **Money**: conserved every day of every run, and the money supply the start's (50,252p) every day: nothing is made.
+- **Players**: none, on any day (`players` 0).
+- **Births equal deaths**: 15 and 15 in the year; 89 and 89 in six years; **188 and 188 in twelve**, none owed at the end
+  (at most one owed at a year's end, for a few days).
+- **Arrivals**: 4 the first year, 28 in six, 64 in twelve (65 by the run's last hour): about five a year, all of the
+  post's own class (none of the next). The empty posts that pay went 65 times to a wolf of the city with no post that
+  pays (grown pups mostly) and 64 times to an arrival; the city's own steps (a local out of work, the best-trained, the
+  family, the apprentice) took the rest as before. **The unplaced pool: 524 → 520 (a year), 496 (six years), 460 (twelve)**:
+  64 of 524 used in twelve years, 12%.
+
+The twelve years (years of days 5-364, then whole years; 4-week means the year's first and last 28 days; the people, the
+posts, the wages and the toll at the year's end; the alms the year's mean a day):
+
+| Year | Hungry mean / worst | Wages paid | Treasury, 4 wk (low); level | Purses, 4 wk | Gini, 4 wk | Owners' share | Residents / households (alone) / earning | Births / arrivals / deaths (owed) | Pups / working / retired, mean age | Unplaced | Paying posts held (fewest), longest empty | Keeper / hand wage | Toll / alms; alms a day |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0.003 / 3 | 99.73% | 5,193 → 5,918 (1,803); 4,857 | 29,414 → 25,470 | 0.484 → 0.505 | 16.4% | 563 / 231 (76) / 193 | 15 / 4 / 15 (0) | 97 / 425 / 41, 36.3 | 520 | 430/430 (420), 9 d | 15.34 / 9.90 | 31 / 10; 347 |
+| 2 | 0.003 / 2 | 99.83% | 5,915 → 5,942 (3,834); 5,373 | 25,745 → 24,623 | 0.504 → 0.508 | 11.7% | 569 / 229 (74) / 194 | 19 / 6 / 19 (0) | 111 / 416 / 42, 35.2 | 514 | 430/430 (427), 9 d | 15.46 / 10.13 | 31 / 10; 317 |
+| 3 | 0.004 / 2 | 99.87% | 5,941 → 5,937 (3,627); 5,510 | 25,165 → 24,875 | 0.498 → 0.506 | 10.7% | 568 / 228 (75) / 194 | 13 / 0 / 14 (1) | 105 / 423 / 40, 35.1 | 514 | 429/430 (429), 9 d | 15.41 / 10.16 | 31 / 10; 303 |
+| 4 | 0.002 / 3 | 99.90% | 5,956 → 5,918 (4,214); 5,673 | 25,164 → 24,935 | 0.497 → 0.492 | 10.3% | 576 / 227 (70) / 194 | 19 / 7 / 18 (0) | 120 / 412 / 44, 34.3 | 507 | 430/430 (427), 8 d | 15.43 / 10.23 | 31 / 10; 278 |
+| 5 | 0.002 / 1 | 99.89% | 5,947 → 5,925 (4,492); 5,788 | 25,224 → 24,638 | 0.483 → 0.501 | 10.2% | 582 / 227 (67) / 195 | 8 / 6 / 8 (0) | 122 / 405 / 55, 34.7 | 501 | 430/430 (428), 8 d | 15.49 / 10.27 | 31 / 10; 255 |
+| 6 | 0.000 / 1 | 99.90% | 5,947 → 5,886 (4,942); 5,835 | 25,030 → 24,758 | 0.489 → 0.501 | 10.1% | 587 / 224 (65) / 194 | 15 / 5 / 15 (0) | 122 / 413 / 52, 34.4 | 496 | 430/430 (428), 9 d | 15.65 / 10.35 | 31 / 10; 282 |
+| 7 | 0.008 / 2 | 99.90% | 5,938 → 5,822 (4,001); 5,544 | 25,311 → 24,676 | 0.481 → 0.503 | 10.5% | 593 / 223 (67) / 193 | 19 / 6 / 19 (0) | 131 / 414 / 48, 33.8 | 490 | 430/430 (427), 8 d | 15.68 / 10.34 | 31 / 10; 354 |
+| 8 | 0.015 / 16 | 99.91% | 5,957 → 5,619 (1,942); 5,081 | 25,356 → 24,671 | 0.483 → 0.509 | 10.8% | 598 / 224 (68) / 193 | 16 / 5 / 16 (0) | 136 / 413 / 49, 33.4 | 485 | 430/430 (427), 8 d | 15.68 / 10.36 | 31 / 10; 406 |
+| 9 | 0.004 / 3 | 99.92% | 5,796 → 5,901 (2,068); 4,667 | 25,313 → 24,694 | 0.482 → 0.503 | 11.0% | 601 / 224 (71) / 195 | 20 / 3 / 20 (0) | 142 / 411 / 48, 32.7 | 482 | 430/430 (428), 9 d | 15.81 / 10.44 | 33 / 10; 475 |
+| 10 | 0.038 / 17 | 99.89% | 5,946 → 5,900 (2,839); 5,160 | 25,532 → 24,590 | 0.475 → 0.500 | 10.2% | 610 / 224 (72) / 198 | 17 / 9 / 17 (0) | 155 / 407 / 48, 32.2 | 473 | 430/430 (428), 8 d | 15.81 / 10.44 | 33 / 10; 464 |
+| 11 | 0.010 / 4 | 99.93% | 5,961 → 5,924 (3,554); 5,343 | 25,039 → 24,350 | 0.474 → 0.492 | 10.1% | 617 / 224 (73) / 198 | 14 / 7 / 14 (0) | 166 / 401 / 50, 31.8 | 466 | 430/430 (426), 8 d | 15.89 / 10.54 | 33 / 10; 480 |
+| 12 | 0.009 / 5 | 99.92% | 5,983 → 5,828 (3,021); 5,071 | 25,042 → 24,502 | 0.474 → 0.496 | 10.3% | 623 / 221 (73) / 197 | 13 / 6 / 13 (0) | 174 / 401 / 48, 31.7 | 460 | 428/430 (427), 8 d | 15.96 / 10.49 | 33 / 10; 495 |
+
+(The previous long runs, for comparison: the treasury's lows 1,763-4,690p and 2,126p and 1,930p in years 5 and 6; the
+Gini .512 → .543 from year 4; households 233 → 261 and pups 93 → 66 in six years; 57 newcomers and 1,710p made.)
+
+**What settles (the six years, and the twelve's economy).**
+
+- **Hunger, wages paid, purses, Gini**: hunger .000-.004 in years 1-6 and .004-.015 after, but for year 10's .038 (two
+  one-day spikes, on winter days 322-323 of years 8 and 10: 16 and 17 hungry for a day, 2 and 8 households short); wages
+  paid 99.73-99.93%, rising. The households' purses at each year's end 24,350-25,470p, no trend after year 1 (a slow
+  drift of about -40p a year after year 6). **The Gini of earning households, the year's end: .505, .508, .506, .492,
+  .501, .501, then .503, .509, .503, .500, .492, .496: flat**, where the newcomers' runs rose .012 a year from year 4.
+  The owners' share 16.4% → 10.1-11.0%, flat after year 3.
+- **The treasury** (the fix): its 4-week means at each year's end 5,820-5,940p; its lows 1,803p (year 1, the new world
+  filling), then 3,834, 3,627, 4,214, 4,492, **4,942p by year 6: no swing**. Rule 4 moved once in six years, the first
+  year's autumn (the level 4,280p, under 4,675p: the toll firmed a point to 31) and then watched: the level 4,857 →
+  5,835p, inside the band. **Settles.** The twelve years: see below.
+- **The posts**: every post that pays (430) held but for a few days each, the longest empty 8-9 days every year (the
+  eight days' wait and a day), the fewest held 426-429 of 430. All posts (with the pups' and elders', lessons and play)
+  508 → 443: the grown pups leave their lessons for work, and those aren't posts anyone is sent for.
+- **The wages and prices**: a keeper's mean 15.34 → 15.65p in six years, 15.96p in twelve; a hand's 9.90 → 10.35p,
+  10.49p (both still creeping up about 0.05p a year); 6-7 tills at the top, 10-13 at the foot. The price level 0.993-1.003
+  every day; the factors' spread (the year's mean sd) .078, .090, .090, .090, .090, .096, then .100-.110 (still widening
+  a little, as before). Shelves 419-428, a mean of 10.7-11.4. **Settle, nearly**, as in the last runs.
+- **The city's people**: residents 559 → 587 (six years) → 623 (twelve), **the arrivals and nothing else** (births equal
+  deaths); households 243 → 224 → 221 (arrivals lodge with households: none at the work, none alone), households of one
+  76 → 65 → 73; earning households 193-198.
+
+**What doesn't settle in twelve years: the age of the city, from births following deaths.** The deaths are of the old
+(the founding city is old-heavy: 41 retired, 15-20 deaths a year), and each is replaced by a newborn, who is a pup for 16
+years. So **pups rise 97 → 122 (year 6) → 174 (year 12)**, from 17% of the city to 28%; the working age falls 425 → 413 →
+401; the mean age 36.3 → 34.4 → 31.7. The city keeps every post filled (the arrivals, five a year, are the working-age
+wolves it lacks). It costs the treasury: the alms are per head, and the pups' households are the poor, so the alms rose
+from 255-347p a day (years 1-6) to 354, 406, 475, 464, 480, 495p (years 7-12); the treasury's level fell 5,835p →
+4,667p in years 7-9, its lows 1,942p and 2,068p in years 8 and 9, and rule 4 did what it is for: **the toll firmed four
+half points, 31 → 33, over days 3,135-3,219 (year 9), and the level came back inside the band** (4,700-5,600p) and held
+for the last three years without another step. The treasury's year-end means stay 5,620-5,980p. This is a transition,
+not a spiral: once the first pups born in the run come of age (year 16 on) the working age rises again and the deaths
+fall to what a younger city has. It is the rule as the user set it (births match deaths, in number); a population held
+level by count, not by age, gets younger before it settles.
+
+**Stable, then, by the brief's tests** for the six years (money conserved, hunger low, wages paid over 99.7%, no trend in
+the treasury, the purses or the Gini, the drifting values settled or nearly, births equal to deaths, every post filled),
+and for the economy over the twelve; **the age structure is still moving at year 12**, and with it the alms and the toll
+(once). No balance change was made for it.
+
+#### Left for the user
+
+- **The city gets younger**: pups 17% → 28% in twelve years, the alms 75% higher, the toll firmed two points by year 9.
+  If that's not wanted: the births could follow deaths by age band as well as by number (a death of the old owes a
+  child only when the pups are fewer than the town had), or the alms could count a pup at half; or leave it to settle
+  (about year 16-20).
+- **The unplaced pool**: 64 of 524 used in twelve years (about five a year). At this rate the working-age ones of each
+  class last for decades; Atlas could keep it stocked.
+- **An Atlas save** opened before an arrival and saved after it would unplace the arrival again (a whole-world save
+  writes every NPC's places, and the server's write raises no revision, as with births: `world_store`'s
+  `keep_made_by_the_server` keeps only the NPCs the server made). Not met yet: no server has run DEV since; it needs a
+  marker for "placed by the game" if DEV is served while Atlas edits it.
+- **A world from files** (a scratch server, the harness) records an arrival only in its save: its export still has the
+  NPC unplaced, so a restart from that save into the same export was not tested. Only the database's world records the
+  move in its people (the files are an export).
+- The wages and the price spread still creep a little (0.05p a year; the spread .096 → .110 in years 6-12), as in the
+  last runs.

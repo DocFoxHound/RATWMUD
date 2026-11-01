@@ -452,21 +452,37 @@ profit 289).
 
 ### Births and deaths
 
-- **Births and newcomers**: `Society::tendCareers` asks for them (a stranger for a post empty eight days in a town under
-  its number; a child to a couple at home while the town is short); the game server makes them every tick
-  (`Game::makeResidents`: for a world from files `World::makeRequestedResidents`, from the database its own rows for the
-  same). world_check now calls `World::makeRequestedResidents` after each tick, so a harness run makes the ones the
-  server would from the export. `sim_fast_tests` runs it on a small town: two of 100 die of old age the first day, a
-  stranger comes for the smithy after eight days, a child is born to the married couple, deterministically, the same on
+Since doc 68's Progress, "Births follow deaths; arrivals from the Country; the treasury's target" (2026-11-01; the user:
+"stop simulating players. Only simulate NPCs. ... Birthrates should match death rates for this game ... Player count
+should be ignored for that count. ... I never said to simulate new NPCs or players, so don't do that. If you need
+newcomers for the economy simulate someone from our preexisting NPC list coming in from the country"):
+
+- **Births follow deaths, one for one**: each resident's death (`Society::died`; a player's never) owes the world one
+  child, due 1 to 7 days later (a lot of the dead's; `CareerState::birthsOwed`, saved). `Society::tendCareers` gives
+  each child due to a married couple at home together (the mother 18 to 45, a year or so since their last, three at
+  most; fewest children first, then a lot of the day); one nobody can have waits for the next day. There are no other
+  births: the "child while the town is short of its number" path and the towns' numbers (`population`) are gone. A host
+  that can't make a child gives it back (`World::residentNotMade`), so over a run births equal deaths but for those
+  still owed.
+- **No NPC is made but by birth.** The "stranger for a post empty eight days" (a new NPC with a made-up name and a made
+  30p purse) is gone, in the game and the harness. A post that pays, empty eight days, goes to a wolf of the city with no
+  post that pays (grown pups first) of the post's class, else to an **unplaced NPC of the world's own list** (doc 66, 2)
+  of its class, who comes in from the Country (a request `arrival`; `World::arriveResident`, on the server after its
+  `live.npcs` row is given the home); then the same of the next class. It lodges in the dead's home if empty, else with
+  a household of its class with room, else in the communal lodgings; never alone at the work. Its purse (its own, up to
+  30p) is paid by the Country's account: no money is made.
+- The harness makes them as the server does (`World::makeRequestedResidents` after each tick); the economy line counts
+  `births`, `arrivals`, `deaths`, `births_owed`, `unplaced`, the posts that pay (`earning_posts`, `earning_held`,
+  `empty_longest`), how the empty ones were filled (`filled_city`, `filled_country`, ...) and `players` (0: an economy run
+  has no player of any kind). `sim_fast_tests` runs it on a small town: two of 100 die of old age the first day, Fen, an
+  unplaced fisher, comes in for the smithy after eight days, a child is born for each death as couples can, the same on
   1 and 4 threads and with the clocks off.
 - **Deaths**: old age only (`World::tendOldAge`: the yearly Gompertz chance, a day's share, by a fixed lot for each
   resident and day), the same code in both. There is no death by hunger or illness in the game; deaths in fights need
   a player. **None fell in the 30-day runs**: by the deterministic lots the first two fall on calendar days 41 and 56
   (Gunnar Harrowgate, 62; Aud Kemp, 80), 20 in the first 400 days (1.5 expected in 30 days from the ages). A 60-day run
-  is the first to show deaths, and the births and newcomers that follow them.
-- **Found, not changed**: a child is made from its mother's record (`ResidentSpec r = *model`; the database path copies
-  her appearance), so **every child born is female**, on the server as in the harness. Choosing a child's sex (male or
-  female) is a rule for the user.
+  is the first to show deaths, and the births that follow them.
+- A child's sex is its own, male or female half and half (`birthSex`), on the server as in the harness.
 
 ### 30 days, normal against `--fast`
 
@@ -525,8 +541,10 @@ The default way, from a checkout of the branch (nothing is written to any databa
 
 - `--simulate 6 HOURS`: from 06:00 for HOURS - 6 game hours (30 days: `6 726`; 60: `6 1446`; a year: `6 8766`). A game
   day takes about 1 s on 4 threads: 60 days in about a minute, a year in about 6.
-- **No player and no per-tick sampling** come with `--economy`. **Births and newcomers are made, and the old die**, as on
-  the server; the economy line counts them (`births`, `newcomers`, `deaths`).
+- **No player and no per-tick sampling** come with `--economy` (the economy line's `players` is 0). **The old die, a child
+  is born for each, and an empty post may bring an unplaced NPC in from the Country**, as on the server ("Births and
+  deaths", above); the economy line counts them (`births`, `arrivals`, `deaths`, `births_owed`, `unplaced`).
+  `tools/people_summary.py` gives a long run's years.
 - `--fast` (opt-in: results change; compare it with a normal run before trusting it): 60 days in about 25 s.
 - Each run day's wall time is printed as it ends (`run day N: ...`): a long run's cost by day.
 - **Side by side**: 8 threads buy about 1.3x over one; runs pinned to their own P-cores (`taskset`, CPUs 0-11 here) don't

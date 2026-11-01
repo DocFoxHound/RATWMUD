@@ -3060,14 +3060,27 @@ int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
     int made = 0;
     for (const auto& request : takeResidentRequests())
     {
+        if (request.kind == "arrival")
+        {
+            if (arriveResident(request).ok)
+            {
+                ++made;
+                if (madeOnes)
+                    madeOnes->push_back(request);
+            }
+            continue;
+        }
+        // A child, like its mother (only births are ever made: the user, 2026-11-01).
         const auto* model = society_.spec(request.templateId);
         const auto* body = entity(request.templateId);
-        if (!model || !body)
+        if (request.kind != "birth" || !model || !body)
+        {
+            society_.birthFailed(request);
             continue;
-        const bool child = request.kind == "birth";
+        }
         std::string id;
         for (int n = int(society_.state().residents.size()); id.empty() || society_.spec(id) || entity(id); ++n)
-            id = std::string(child ? "born_" : "new_") + std::to_string(n);
+            id = "born_" + std::to_string(n);
         ResidentSpec r = *model;
         r.id = id;
         r.name = request.name;
@@ -3081,13 +3094,15 @@ int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
         r.herbs = 0;
         r.meals = 1;
         r.joinable = r.protectedNpc = false;
-        r.description = child ? "A young wolf, born here to " + model->name + "'s family." : "A stranger lately come to town.";
-        r.backstory = child ? "Born in the world, not written." : std::string();
-        if (child && !request.sex.empty())
+        r.description = "A young wolf, born here to " + model->name + "'s family.";
+        r.backstory = "Born in the world, not written.";
+        if (!request.sex.empty())
             r.appearance.sex = request.sex;          // (Not the mother's: a son or a daughter, half and half.)
-        const auto purse = child ? std::int64_t(0) : Society::NewcomerPurse;
-        if (!society_.addResident(r, purse))
+        if (!society_.addResident(r, 0))
+        {
+            society_.birthFailed(request);
             continue;
+        }
         Entity e = *body;
         e.id = id;
         e.name = r.name;
@@ -3109,6 +3124,30 @@ int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
             madeOnes->push_back(request);
     }
     return made;
+}
+
+Result World::arriveResident(const ResidentRequest& request)
+{
+    // From the world's own list (doc 66, 2: unplaced, no body): placed at the home found for it, and given a body there
+    // as the loader gives a resident one.
+    if (request.kind != "arrival" || entity(request.templateId) || !society_.arrive(request))
+        return {false, "No such NPC waits in the Country.", request.templateId};
+    const auto* r = society_.spec(request.templateId);
+    Entity e;
+    e.id = r->id;
+    e.name = r->name;
+    e.npc = true;
+    e.age = r->age;
+    e.lastBirthdayDay = calendarDays_;
+    e.description = r->description;
+    e.activity = r->workLabel;
+    e.speakingColor = r->speakingColor;
+    e.appearance = r->appearance;
+    e.cellId = r->home.cell;
+    e.position = {r->home.x, r->home.y};
+    entities_[e.id] = e;
+    index_.dirty = true;
+    return welcomeResident(request, e.id);
 }
 
 Result World::welcomeResident(const ResidentRequest& request, const std::string& id)
@@ -3135,6 +3174,29 @@ CareerWorld World::careerWorld() const
     w.regard = [this](const std::string& who, const std::string& ofWhom) {
         const auto* b = bonds_.find(who, ofWhom);
         return b ? std::clamp(b->familiarity * .4 + b->affinity * .4 + b->trust * .2, 0.0, 100.0) : 0.0;
+    };
+    w.lodgings = [this](const std::string& workCell) {
+        // The communal lodgings (Society::communalHome's "lodging") within reach of the work, the emptiest first: a spot
+        // in the middle of each (the host finds a free one near it).
+        std::vector<std::pair<int, Spot>> found;
+        const auto* work = cell(workCell);
+        for (const auto& [id, c] : cells_)
+        {
+            if (id.find("lodging") == std::string::npos || c.width <= 0 || c.height <= 0 ||
+                (work && !work->region.empty() && work->region != "unassigned" && c.region != work->region))
+                continue;
+            int living = 0;
+            for (const auto& [who, life] : society_.state().residents)
+                if (const auto* e = entity(who); life.homeCell == id && e && !e->dead)
+                    ++living;
+            found.push_back({living, Spot{id, c.width / 2 + .5, c.height / 2 + .5}});
+        }
+        std::sort(found.begin(), found.end(),
+                  [](const auto& a, const auto& b) { return std::tie(a.first, a.second.cell) < std::tie(b.first, b.second.cell); });
+        std::vector<Spot> spots;
+        for (const auto& f : found)
+            spots.push_back(f.second);
+        return spots;
     };
     w.near = [this](const std::string& workCell, const std::string& homeCell) {
         const auto* work = cell(workCell);

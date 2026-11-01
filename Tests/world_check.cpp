@@ -18,7 +18,7 @@
 // An economy run (Docs/Design/69-simulation-speed.md): --economy FILE writes the city's loop, a JSON line a game day
 // (doc 68, 10), and has no player unless --players says. With no player the harness samples nothing tick by tick (the
 // held residents, the road tally, the crowds, each tick's time): --sample keeps them. --no-profile turns World::tick's
-// clocks off (World::setProfiling). Each game day's wall time is printed as it ends. Births and newcomers are made as the
+// clocks off (World::setProfiling). Each game day's wall time is printed as it ends. Births and arrivals are made as the
 // game server makes them for a world from files (World::makeRequestedResidents, every tick); --no-births only asks for
 // them, as before. Deaths are the world's own (old age, World::tendOldAge), the same here as on the server. --day N starts
 // the run on day N of the year (1-365: Spring 1-92, Summer 93-184, Autumn 185-275, Winter 276-365), for the seasons in
@@ -492,7 +492,7 @@ struct EconomyWatch
     int hours = 0, hungrySum = 0, hungryMost = 0, fedHouseholds = 0, households = 0, shops = 0, shopsStocked = 0,
         foodShops = 0, foodShopsStocked = 0, residents = 0;
     std::int64_t money0 = -1;
-    int born = 0, newcomers = 0;                    // Made since the last line (the harness counts them: makeRequestedResidents).
+    int born = 0, arrivals = 0;                     // Made since the last line (the harness counts them: makeRequestedResidents).
     int deadAtLine = -1, deadNow = 0;               // Residents dead at the last line, and now.
     static double gini(std::vector<double> v)
     {
@@ -684,12 +684,45 @@ struct EconomyWatch
                 const auto h = society.state().careers.positions.find(p.id);
                 held += h != society.state().careers.positions.end() && !h->second.holder.empty();
             }
-            std::size_t most = 0;
+            std::size_t most = 0, alone = 0;
             for (const auto& [home, members] : homes)
-                most = std::max(most, members.size());
+                most = std::max(most, members.size()), alone += members.size() == 1;
             seasons << ", \"pups\": " << pups << ", \"working_age\": " << working << ", \"retired\": " << retired
                     << ", \"age_mean\": " << (residents ? ages / residents : 0) << ", \"posts\": " << posts
-                    << ", \"posts_held\": " << held << ", \"household_most\": " << most;
+                    << ", \"posts_held\": " << held << ", \"household_most\": " << most << ", \"households_alone\": " << alone;
+            // Births follow deaths; arrivals from the Country (doc 68, Progress): the posts that pay and those held (the
+            // longest empty, in days), the children still owed for the dead, the unplaced NPCs left in the world's list,
+            // how the empty posts were filled so far, and the players (there are none: no player is simulated).
+            int earning = 0, earningHeld = 0;
+            double emptiest = 0;
+            for (const auto& p : society.positions())
+            {
+                if (society.postClass(p).empty())
+                    continue;
+                ++earning;
+                const auto h = society.state().careers.positions.find(p.id);
+                if (h != society.state().careers.positions.end() && !h->second.holder.empty())
+                    ++earningHeld;
+                else if (h != society.state().careers.positions.end() && h->second.vacantSince >= 0)
+                    emptiest = std::max(emptiest, server.calendarDays() - h->second.vacantSince);
+            }
+            int players = 0;
+            for (const auto& [id, e] : server.entities())
+                players += !e.npc;
+            for (const auto& [id, account] : society.state().accounts)
+                players += playerAccountId(id) && !server.entity(id);
+            const auto fill = [&](const char* how) {
+                const auto f = society.fills().find(how);
+                return f == society.fills().end() ? 0 : f->second;
+            };
+            seasons << ", \"earning_posts\": " << earning << ", \"earning_held\": " << earningHeld << ", \"empty_longest\": " << emptiest
+                    << ", \"births_owed\": " << society.state().careers.birthsOwed.size() << ", \"unplaced\": " << society.unplacedCount()
+                    << ", \"filled_city\": " << fill("from the city") + fill("from the city, of the next class")
+                    << ", \"filled_city_next\": " << fill("from the city, of the next class")
+                    << ", \"filled_country\": " << fill("from the Country") + fill("from the Country, of the next class")
+                    << ", \"filled_country_next\": " << fill("from the Country, of the next class")
+                    << ", \"filled_local\": " << fill("someone local takes it on") << ", \"filled_best\": "
+                    << fill("the best-trained takes it on, to work toward mastership") << ", \"players\": " << players;
         }
         // The self-correcting rules (doc 68, Progress, "Self-correcting rules"), where they stand tonight: the shops' price
         // factors (those not 1: how many, their mean, spread and range; and the price level, those factors weighted by their
@@ -774,7 +807,7 @@ struct EconomyWatch
             << (tillCash.empty() ? 0 : tillCash[tillCash.size() / 2]) << ", \"purses\": " << purses << ", \"money\": "
             << society.moneySupply() << ", \"money_start\": " << money0 << ", \"conserved\": " << (society.conserved() ? "true" : "false")
             << ", \"gini_earners\": " << gini(wealth) << ", \"earning_households\": " << wealth.size() << ", \"births\": " << born
-            << ", \"newcomers\": " << newcomers << ", \"deaths\": " << deadNow - deadAtLine << seasons.str() << ", \"hungry_who\": \""
+            << ", \"arrivals\": " << arrivals << ", \"deaths\": " << deadNow - deadAtLine << seasons.str() << ", \"hungry_who\": \""
             << who << "\"}" << std::endl;
         if (detail && detailOut)
             detail->day(server, int(absoluteHour / 24), *detailOut);
@@ -784,7 +817,7 @@ struct EconomyWatch
             *loopOut << "{\"day\": " << day << ", \"loop\": " << json::dump(saved["loop"]) << "}" << std::endl;
         }
         hours = hungrySum = hungryMost = 0;
-        born = newcomers = 0;
+        born = arrivals = 0;
         deadAtLine = deadNow;
     }
 };
@@ -796,7 +829,7 @@ int main(int argc, char** argv)
     int playerCount = -1;                           // (-1: 1, or 0 for an economy run.)
     bool sample = false;                            // --sample: the per-tick sampling even with no player.
     bool profile = true;                            // --no-profile: World::tick's clocks off.
-    bool births = true;                             // --no-births: births and newcomers only asked for.
+    bool births = true;                             // --no-births: births and arrivals only asked for.
     bool fast = false, straight = false, coarse = false;   // --fast, --straight, --coarse-ticks.
     int unseenStep = 0;                             // --unseen-step N (0: the game's, Society::UnseenStep).
     bool unseenStepSet = false;
@@ -1106,13 +1139,13 @@ int main(int argc, char** argv)
     auto dayBegun = runBegun;
     double stagesAtDay[7];
     std::copy(std::begin(server.tickProfile().stages), std::end(server.tickProfile().stages), stagesAtDay);
-    int day = dayOf(0), ticksToday = 0, ticksRun = 0, madeBirths = 0, madeNewcomers = 0;
+    int day = dayOf(0), ticksToday = 0, ticksRun = 0, madeBirths = 0, madeArrivals = 0;
     std::vector<ResidentRequest> made;
     const char* streamTrace = std::getenv("RATW_STREAM_TRACE");
     const char* trace = std::getenv("RATW_TRACE");
     const bool ambientLook = !std::getenv("RATW_NO_AMBIENT_LOOK");
     constexpr int CoarseSteps = 10;                 // (--coarse-ticks: half a second, in 0.05 s steps.)
-    // Births and newcomers made as the game server makes them for a world from files (Game::makeResidents), after
+    // Births and arrivals made as the game server makes them for a world from files (Game::makeResidents), after
     // each tick; --no-births leaves them asked for.
     const auto welcome = [&] {
         if (!births)
@@ -1122,8 +1155,8 @@ int main(int argc, char** argv)
         for (const auto& r : made)
         {
             const bool child = r.kind == "birth";
-            (child ? watch.born : watch.newcomers) += 1;
-            (child ? madeBirths : madeNewcomers) += 1;
+            (child ? watch.born : watch.arrivals) += 1;
+            (child ? madeBirths : madeArrivals) += 1;
         }
     };
     for (int i = 0; i < ticks;)
@@ -1488,21 +1521,23 @@ int main(int argc, char** argv)
         std::cout << "  events: " << events.size() << " written to " << eventsFile << '\n';
     }
     {
-        // The people (doc 62: the world should stay about the size it was made): who lives, who married, children asked
-        // for, strangers sent for. (Offline, nobody welcomes them in: they wait as requests.)
+        // The people (births follow deaths: doc 68, Progress): who lives, who married, children born and arrivals asked
+        // for. (With --no-births nobody makes them: they wait as requests.)
         int living = 0, oldest = 0;
         for (const auto& [id, e] : server.entities())
             if (e.npc && !e.dead && server.society().resident(id))
                 ++living, oldest = std::max(oldest, e.age);
-        int asked = 0, askedNewcomers = 0, died = 0;
+        int asked = 0, askedArrivals = 0, died = 0;
         for (const auto& r : server.takeResidentRequests())
-            (r.kind == "birth" ? asked : askedNewcomers) += 1;
+            (r.kind == "birth" ? asked : askedArrivals) += 1;
         for (const auto& [id, e] : server.entities())
             died += e.npc && e.dead && server.society().resident(id) && !deadAtStart.count(id);
         std::cout << "  people: " << living << " residents living (the oldest " << oldest << "), "
                   << server.society().state().careers.spouses.size() / 2 << " married couples; " << madeBirths << " born, "
-                  << madeNewcomers << " newcomers come and " << died << " died in the run" << (births ? "" : " (--no-births)") << "; "
-                  << asked << " children and " << askedNewcomers << " newcomers asked for and not made\n";
+                  << madeArrivals << " arrived from the Country and " << died << " died in the run" << (births ? "" : " (--no-births)") << "; "
+                  << asked << " children and " << askedArrivals << " arrivals asked for and not made; "
+                  << server.society().state().careers.birthsOwed.size() << " children still owed for the dead; " << server.society().unplacedCount()
+                  << " unplaced NPCs left in the world's list\n";
     }
     if (sampling)
         roads.report();

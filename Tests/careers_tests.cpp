@@ -264,45 +264,10 @@ void skillFamiliesAndPace()
            "A resident's skill in a family is their best job of it");
 }
 
-void strangersAndChildren()
+void children()
 {
-    Society s(Roster::None);
-    auto roster = town();
-    s.configure(roster);
-    Fates fates;
-    s.tendCareers(1.0, fates.world(s));             // (The town's number, as it was made.)
-    // Rook dies; nobody here is free, so after eight days a stranger is sent for (the town is under its number).
-    fates.dead.insert("rook");
-    s.died("rook", 1.2);
-    std::vector<ResidentRequest> wanted;
-    for (int later = 1; later <= 12 && wanted.empty(); ++later)
-    {
-        s.tendCareers(1.2 + later, fates.world(s));
-        wanted = s.takeRequests();
-        expect(wanted.empty() || later >= 8, "Nobody is sent for before eight days");
-    }
-    expect(wanted.size() == 1 && wanted[0].kind == "newcomer" && wanted[0].positionId == "job:rook" &&
-               wanted[0].templateId == "rook" && wanted[0].name.find(' ') != std::string::npos && wanted[0].age >= 22,
-           "A stranger is sent for, for his odd jobs");
-    s.tendCareers(40, fates.world(s));
-    expect(s.takeRequests().empty(), "and only once");
-    // The host makes them (here: a second roster with them in it), and they take up the post.
-    auto newcomer = roster.residents[3];
-    newcomer.id = "stranger";
-    newcomer.name = wanted[0].name;
-    newcomer.workLabel = "-";
-    roster.residents.push_back(newcomer);
-    Society made(Roster::None);
-    made.configure(roster);
-    expect(s.adoptResident(made, "stranger"), "The stranger arrives");
-    expect(!s.position("job:stranger"), "with no job of their own");
-    const auto note = s.welcome(wanted[0], "stranger");
-    expect(note.kind == "newcomer" && s.jobOf("stranger") && s.jobOf("stranger")->id == "job:rook",
-           "and takes up the post they came for");
-    expect(s.skill("stranger", "job:rook") >= 35, "knowing something of the work");
-
-    // A married couple at home together: a child to take the place of one who died (the town stays about its size:
-    // doc 62, the user 2026-10-13), never more than three.
+    // A married couple at home together: a child to take the place of one who died (births follow deaths: the user,
+    // 2026-11-01; people_flow_tests has the rest), never more than three.
     auto couple = town();
     couple.residents[4].appearance.sex = "female";                     // Wren Ash, 40.
     couple.residents.push_back(person("birch", "Birch Ash", "civilian", "hauling", 42, {"ash_house", 4.5, 3.5}, {"yard", 3.5, 2.5}));
@@ -320,8 +285,9 @@ void strangersAndChildren()
             if (r.kind == "birth")
                 births.push_back(r);
     }
-    expect(births.empty(), "A town at the size it was made has no children");
+    expect(births.empty(), "A town where nobody dies has no children");
     alive.dead.insert("rook");                                         // One of the town dies.
+    home.died("rook", 400.5);
     for (int day = 400; day < 1600; ++day)
     {
         home.tendCareers(day + .3, alive.world(home));
@@ -329,8 +295,7 @@ void strangersAndChildren()
             if (r.kind == "birth")
                 births.push_back(r);
     }
-    // (Here no child is ever welcomed in, so the town stays short: a child a year or so, up to the couple's three.)
-    expect(!births.empty() && births.size() <= 3, "Children come when it's short, but no more than three: " + std::to_string(births.size()));
+    expect(births.size() == 1, "One child for the one who died: " + std::to_string(births.size()));
     expect(births[0].age == 0 && births[0].templateId == "wren" && births[0].name.find("Ash") != std::string::npos &&
                births[0].parents.size() == 2 && births[0].home.cell == "ash_house",
            "A child of Wren and Birch, at home: " + births[0].name);
@@ -445,7 +410,7 @@ int main()
         foundingFamilies();
         griefInTheWorld();
         skillFamiliesAndPace();
-        strangersAndChildren();
+        children();
     }
     catch (const std::exception& error)
     {

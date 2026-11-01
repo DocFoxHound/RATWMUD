@@ -943,15 +943,21 @@ class World
     const std::vector<Promise>& promises() const { return promises_; }
     // Open promises between two characters, in words for a conversation (empty if none).
     std::string promisesBetween(const std::string& npc, const std::string& other, const std::string& otherName) const;
-    // Residents the society wants (a stranger for an empty post, a child), each with a free place to sleep found near
-    // the home it asked for. The host makes them and then calls welcomeResident with their new ID.
+    // Residents the society wants (a child in place of one who died, an unplaced NPC from the Country for an empty post),
+    // each with a free place to sleep found near the home it asked for. The host makes the child or places the arrival
+    // (arriveResident) and then calls welcomeResident with their ID.
     std::vector<ResidentRequest> takeResidentRequests();
     Result welcomeResident(const ResidentRequest& request, const std::string& id);
-    // A world without a database (a world from files, tests) makes the residents asked for itself, each like its
-    // template (the mother, the last holder of the post): a child with nothing, a newcomer with Society::NewcomerPurse.
-    // Returns how many it made, and adds each request it fulfilled to `made` when given. The game server calls it every
-    // tick for a world from files (Game::makeResidents), and world_check after each of its ticks (doc 69), so a harness
-    // run has the server's births and newcomers.
+    // An unplaced NPC come in from the Country (a request "arrival"): a resident at the home found for it, with a body
+    // there, its purse from the Country's account (Society::arrive), and the post it came for (welcomeResident). The
+    // same on the game server (which first gives its live.npcs row the home) and in a world from files.
+    Result arriveResident(const ResidentRequest& request);
+    // A child the host could not make: owed again (Society::birthFailed), so births still follow deaths one for one.
+    void residentNotMade(const ResidentRequest& request) { society_.birthFailed(request); }
+    // A world without a database (a world from files, tests) makes the residents asked for itself: a child like its
+    // mother, with nothing; an arrival as arriveResident places it. Returns how many it made, and adds each request it
+    // fulfilled to `made` when given. The game server calls it every tick for a world from files (Game::makeResidents),
+    // and world_check after each of its ticks (doc 69), so a harness run has the server's births and arrivals.
     int makeRequestedResidents(std::vector<ResidentRequest>* made = nullptr);
     // The roads (RatwRoads.h): towns, caravans, bandit camps, contracts and rumours. Active when the world has two
     // or more towns; a single settlement keeps its one store (the treasury) as before.

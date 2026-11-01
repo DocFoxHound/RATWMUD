@@ -35,8 +35,7 @@ namespace
 {
 bool samePosition(const PositionState& a, const PositionState& b)
 {
-    return a.holder == b.holder && a.apprentice == b.apprentice && a.lastHolder == b.lastHolder && a.vacantSince == b.vacantSince &&
-           a.newcomerAsked == b.newcomerAsked;
+    return a.holder == b.holder && a.apprentice == b.apprentice && a.lastHolder == b.lastHolder && a.vacantSince == b.vacantSince;
 }
 
 std::vector<std::int64_t> counters(const SocietyState& s)

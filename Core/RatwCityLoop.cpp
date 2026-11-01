@@ -1941,7 +1941,7 @@ void Society::followTreasury(std::int64_t day)
 {
     // The gate toll and the alms follow the treasury's level (the fourth rule), after the surplus each night: its level is
     // a slow mean of what it holds at 18:00 (over about treasuryDays days: a season's swing mostly smoothed away), judged
-    // each DriftStepDays days against treasuryTarget. Over the target and its band and not falling: the toll eases by
+    // every treasuryJudgeDays days against treasuryTarget. Over the target and its band and not falling: the toll eases by
     // tollStep tenths of a point and the alms rise a penny a head; under it and not rising: the toll firms and the alms
     // tighten; inside the band, or already moving back toward it, nothing (so a change has time to tell before the next).
     // The toll within tollDriftMost points of the world's; the alms up to almsDriftMost pennies over almsADay, never under
@@ -1964,12 +1964,12 @@ void Society::followTreasury(std::int64_t day)
         // night), and is first judged once it has had them: not a fall to correct.
         loop.level = loop.levelThen = now;
         loop.levelDays = 1;
-        loop.judged = day + std::max(0, rule("treasuryDays") - DriftStepDays);
+        loop.judged = day + std::max(0, rule("treasuryDays") - rule("treasuryJudgeDays"));
         return;
     }
     loop.levelDays = std::min(loop.levelDays + 1, 3650);
     loop.level += (now - loop.level) / std::min(loop.levelDays, rule("treasuryDays"));
-    if (day - loop.judged < DriftStepDays)
+    if (day - loop.judged < rule("treasuryJudgeDays"))
         return;
     const double target = rule("treasuryTarget"), band = target * rule("treasuryBand") / 100.;
     int toward = 0;                                 // -1: the toll eases, the alms rise; 1: the toll firms, the alms tighten.

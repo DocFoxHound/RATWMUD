@@ -248,6 +248,13 @@ add_executable(selfcorrect_tests Tests/selfcorrect_tests.cpp)
 target_link_libraries(selfcorrect_tests PRIVATE ratw_core)
 target_compile_definitions(selfcorrect_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME selfcorrect_behaviors COMMAND selfcorrect_tests)
+# Births follow deaths, arrivals from the Country (doc 68, Progress, "Births follow deaths; arrivals from the Country; the
+# treasury's target"): a child for each resident's death, a player's never; no NPC made but by birth; an empty post filled
+# from the city first, then from the world's own unplaced NPCs, by class; where arrivals stay; money conserved.
+add_executable(people_flow_tests Tests/people_flow_tests.cpp)
+target_link_libraries(people_flow_tests PRIVATE ratw_core)
+target_compile_definitions(people_flow_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME people_flow_behaviors COMMAND people_flow_tests)
 add_executable(hunt_tests Tests/hunt_tests.cpp)
 target_link_libraries(hunt_tests PRIVATE ratw_core)
 add_test(NAME hunt_behaviors COMMAND hunt_tests)

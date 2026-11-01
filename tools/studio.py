@@ -283,7 +283,7 @@ class Economy:
                        if on('treasuryDrift') else out['almsBase'])
         level = loop.get('level')
         out['level'] = round(level) if isinstance(level, (int, float)) and level >= 0 else None
-        out['target'] = int(rules.get('treasuryTarget', 5000))
+        out['target'] = int(rules.get('treasuryTarget', 5500))
         factors = [f for wares in (loop.get('prices') or {}).values() for f in wares.values()]
         out['prices'] = {'on': on('stockPrices'), 'moved': len(factors),
                          'mean': round(sum(factors) / len(factors), 3) if factors else 1,

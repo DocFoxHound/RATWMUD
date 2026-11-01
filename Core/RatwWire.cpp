@@ -896,7 +896,7 @@ Value careerPosition(const PositionState& p)
 {
     auto j = Value::object();
     j.add("holder", p.holder); j.add("apprentice", p.apprentice); j.add("lastHolder", p.lastHolder);
-    j.add("vacantSince", p.vacantSince); j.add("newcomerAsked", p.newcomerAsked);
+    j.add("vacantSince", p.vacantSince);
     return j;
 }
 
@@ -960,10 +960,12 @@ Value society(const SocietyState& s)
     for (const auto& [key, n] : s.careers.births)
         births.add(key, n);
     careers.add("spouses", spouses); careers.add("parents", parents); careers.add("lastBirth", lastBirth); careers.add("births", births);
-    auto population = Value::object();
-    for (const auto& [town, n] : s.careers.population)
-        population.add(town, n);
-    careers.add("population", population);
+    // The children owed for the dead (births follow deaths: doc 68, Progress), by the dead, due when. (Since then; a save
+    // with "population", the old towns' numbers, reads past it.)
+    auto owed = Value::object();
+    for (const auto& [dead, day] : s.careers.birthsOwed)
+        owed.add(dead, day);
+    careers.add("birthsOwed", owed);
     o.add("careers", careers);
     // What the self-correcting rules have drifted to (doc 68, Progress, "Self-correcting rules"), when there is any: a save
     // without it reads as nothing drifted yet.
@@ -1042,7 +1044,6 @@ CareerState readCareers(const Value& o)
             PositionState p;
             p.holder = a.string("holder"); p.apprentice = a.string("apprentice"); p.lastHolder = a.string("lastHolder");
             if (a["vacantSince"].isNumber()) p.vacantSince = a["vacantSince"].asNumber();
-            if (a["newcomerAsked"].isBool()) p.newcomerAsked = a["newcomerAsked"].asBool();
             c.positions[id] = p;
         }
     for (const auto& [key, v] : o.object("skill").fields())
@@ -1060,8 +1061,8 @@ CareerState readCareers(const Value& o)
         if (v.isNumber()) c.lastBirth[key] = v.asNumber();
     for (const auto& [key, v] : o.object("births").fields())
         if (v.isNumber()) c.births[key] = std::clamp(int(v.asNumber()), 0, 3);
-    for (const auto& [town, v] : o.object("population").fields())
-        if (v.isNumber()) c.population[town] = std::clamp(int(v.asNumber()), 0, 100000);
+    for (const auto& [dead, v] : o.object("birthsOwed").fields())
+        if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e9) c.birthsOwed[dead] = v.asNumber();
     return c;
 }
 

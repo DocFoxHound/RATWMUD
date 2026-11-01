@@ -199,12 +199,14 @@ inline constexpr RuleInfo Rules[] = {
     {"wageDriftHandMost", 0, 100, 12},   // a keeper's wage, nor more than this many on a hand's,
     {"wageDriftFloor", 0, 1000, 7},      // nor a post lowered under this (a day's food).
     {"treasuryDrift", 0, 1, 1},          // 4. The gate toll and the alms follow the treasury's level:
-    {"treasuryTarget", 0, 100000000, 5000},  // its slow mean against this,
+    {"treasuryTarget", 0, 100000000, 5500},  // its slow mean against this (5,500p, about where it settles: doc 68, Progress,
+                                         // "Births follow deaths; arrivals from the Country; the treasury's target"),
     {"treasuryBand", 0, 100, 15},        // outside this percent of it (inside: no change; the season's swing),
     {"treasuryDays", 1, 3650, 182},      // the mean over about this many days (half a year);
-    {"tollStep", 0, 100, 5},             // the toll moves by this many tenths of a point a fortnight,
+    {"treasuryJudgeDays", 1, 365, 28},   // judged every this many days (28, from a fortnight);
+    {"tollStep", 0, 100, 5},             // the toll moves by this many tenths of a point at each judging,
     {"tollDriftMost", 0, 90, 5},         // at most this many points from the world's gate toll;
-    {"almsDriftMost", 0, 1000, 2},       // the alms by a penny a head a fortnight, up to this many over almsADay (never under).
+    {"almsDriftMost", 0, 1000, 2},       // the alms by a penny a head at each, up to this many over almsADay (never under).
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // A city service (country.json `services.list`): a catalogue item a business does for a household, bought from its
