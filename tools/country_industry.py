@@ -1862,6 +1862,11 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
         ', '.join(f'{k} {v * 100:.1f}%' for k, v in even.items() if v) + " of the catalogue; the rest at the season's. "
         f"The farms' basket: {fb_till:.1f}p a day of the tills' spending = {fb_goods:.1f}p of goods + {fb_carr:.1f}p of carriage "
         f"out; takings less wages {tot_r - W:.1f}p.)\n")
+    # The thinnest seasons: each farm's wages against its takings in its season with the least to spare.
+    thin = sorted(((f['wages'] / res[s]['R'][f['kind']], f, s) for f in farms for s in SEASONS), key=lambda x: -x[0])
+    picks = [f"{f['kind']} in {s} {res[s]['R'][f['kind']] / f['count']:,.1f}p a farm against {f['wages'] / f['count']:,.0f}p "
+             f"({share_ * 100:,.0f}%)" for share_, f, s in thin if share_ >= .75]
+    say("The thinnest seasons (a farm's takings against its crew's wages, the wages 75% of them or more): " + '; '.join(picks) + '.\n')
     # Where the takings come from after the switch.
     src = {p: ym(lambda s: res[s]['parts'][p]['food']) for p in ('base', 'basket', 'diet', 'other', 'farm')}
     src_now = ym(lambda s: sum(x['country'] for st in ('food', 'other', 'city', 'country') for prod in C[s] and A[s][st].values()
@@ -2056,15 +2061,20 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
     # support are taken from the settled years instead: what its posts are owed at its wage step there (the loop file),
     # and what its tills can pay them, its margin on its orders now (the order book's sales, scaled to the long run, times
     # the short runs' margin on a penny: in the short runs a trade's wages and keepers' profit were its margin, to 5%).
+    # A trade at a positive step is paid in full on most days (judgeWages raises a step only after wageDriftDays with no
+    # short day and its keeper's profit at least wageDriftSpare percent of the wages, and lowers it when the till is short
+    # on most days), so it has no shortfall before the switch: what its tills can pay is at least its wages (`avail`; the
+    # least its step allows, so its support at once is the most it could be).
     margin_of = {}
     for b, c in mb.items():
         if c.get('sales', 0) > 0 and c.get('tills'):
             va = max(0.0, 1 - (c['draws'] + c['carriage_in'] + c['city_inputs'] + c['service_share']) / c['sales'])
             k, h = c['tills'], max(0, c['posts'] - c['tills'])
-            margin_of[b] = {'va': va, 'k': k, 'h': h, 'step': (trades or {}).get(b, {}).get('step', 0.0),
-                            'owed': owed_at(k, h, (trades or {}).get(b, {}).get('step', 0.0)),
+            step = (trades or {}).get(b, {}).get('step', 0.0)
+            owed, margin = owed_at(k, h, step), sum(now[b].values()) * va
+            margin_of[b] = {'va': va, 'k': k, 'h': h, 'step': step, 'owed': owed,
                             'founding': owed_at(k, h, 0), 'paid_short': c.get('wages', 0) + c.get('support', 0),
-                            'margin': sum(now[b].values()) * va,
+                            'margin': margin, 'avail': max(margin, owed) if step > 0 else margin,
                             'margin_short': c['sales'] * va, 'pay_short': c.get('wages', 0) + c.get('profit', 0)}
 
     def support(changes, ramp=1):
@@ -2074,15 +2084,17 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
         a loser short on most days lowers its wage step a penny every wageDriftDays (judgeWages; each post within its
         bound and never under the floor, so a step lowers only the keepers once the hands are at it) while it is short of
         more than it was. At once (its first day, the switch whole) and once drifted (its last day); the extra support each
-        day (`daily`, for the treasury's nights); the wages the drift takes from the losers' posts."""
+        day (`daily`, for the treasury's nights); the wages the drift takes from the losers' posts; each trade's at once
+        and once drifted (`per`)."""
         rows, at_once, after, total, cut_all, base, gain_now, gain_drift = [], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
         daily = [0.0] * 365
+        per = {}
         for b, ch in sorted(changes.items(), key=lambda x: x[1]):
             m = margin_of.get(b)
             if not m:
                 continue
-            va, k, h, owed, step0, avail = m['va'], m['k'], m['h'], m['owed'], m['step'], m['margin']
-            gap = max(0.0, owed - avail)         # (Short now by the trade's sums; the rest is one till's against another's.)
+            va, k, h, owed, step0, avail = m['va'], m['k'], m['h'], m['owed'], m['step'], m['avail']
+            gap = max(0.0, owed - avail)         # (Short now by the trade's sums: a trade at or under the world's wages.)
             d_now = max(0.0, owed - avail - ch * va) - gap
             paid, o, step, last = 0.0, owed, step0, 0
             for day in range(365):
@@ -2102,13 +2114,14 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
             total += paid
             cut_all += cut
             base += gap
+            per[b] = {'change': ch, 'now': d_now, 'drift': d_drift}
             if d_now >= 1:
                 sp = lambda x: f"{x:+,.0f}p" if abs(x) >= .5 else '0p'
                 rows.append([BIZ_NAME.get(b, b), f"{k:,.0f} / {k + h:,.0f}", f"{step0:+,.1f}p", f"{owed:,.0f}p", f"{avail:,.0f}p",
                              f"{ch:+,.0f}p", f"{va * 100:,.0f}%", sp(d_now), sp(d_drift),
                              f"{last / 30:,.0f}" if last else '-', f"{cut:,.0f}p"])
         return {'rows': rows, 'now': at_once, 'drift': after, 'paid': total, 'cut': cut_all, 'base': base, 'daily': daily,
-                'gain_now': gain_now, 'gain_drift': gain_drift}
+                'gain_now': gain_now, 'gain_drift': gain_drift, 'per': per}
 
     # The treasury's nights in the settled years, as the economy lines have them, to replay with the switch (each year from
     # its first day, Spring): what it holds; the day's toll, services' share, patrons and its own posts in one (the rest
@@ -2133,14 +2146,16 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
         pay goes unpaid); the alms from what it holds over its float; the surplus, what is left over treasuryCap and
         surplusKeep, to the poorest households and the works (spendSurplus, placed as that night placed it). Per year: the
         surplus not paid out (less: more paid out), how far the treasury runs under its own path (the mean and the most),
-        its lowest, the support unpaid and the alms unpaid."""
+        its lowest, the support unpaid (every short till's: supportWages gives each the same share of its shortfall, so
+        the unpaid falls on the city's ordinary short tills and the switch's extra in proportion; `unpaid_extra` is the
+        switch's) and the alms unpaid."""
         out = []
         for y in range(a.from_year, 13):
             first = (y - 1) * 365
             if first - 1 not in nights or first + 364 not in nights:
                 continue
             T = nights[first - 1]['treasury']
-            lost = unpaid = alms_short = under = most = 0.0
+            lost = unpaid = unpaid_extra = alms_short = under = most = 0.0
             low = float('inf')
             for i in range(365):
                 d, p = nights[first + i], nights[first + i - 1]
@@ -2151,6 +2166,8 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
                 want = max(0.0, d.get('wage_support', 0) + sup_['daily'][i])
                 give = min(want, max(0.0, pre - cap))
                 unpaid += want - give
+                if want > 0 and sup_['daily'][i] > 0:
+                    unpaid_extra += (want - give) * sup_['daily'][i] / want
                 t1 = pre - give
                 alms = min(d.get('alms', 0), max(0.0, t1 - tfloat))
                 alms_short += d.get('alms', 0) - alms
@@ -2163,8 +2180,10 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
                 under += gone / 365
                 most = max(most, gone)
                 low = min(low, T)
+            paid_out = sum(nights[first + i].get('surplus_alms', 0) + nights[first + i].get('works_spent', 0) for i in range(365))
             out.append({'year': y, 'lost': lost, 'under': under, 'most': most, 'low': low, 'unpaid': unpaid,
-                        'alms_short': alms_short, 'end': nights[first + 364]['treasury'] - T})
+                        'unpaid_extra': unpaid_extra, 'unpaid_own': unpaid - unpaid_extra, 'alms_short': alms_short,
+                        'lost_share': lost / paid_out if paid_out else 0.0, 'end': nights[first + 364]['treasury'] - T})
         return out
 
     change_rw = {b: sum(after_rw[b][k] for k in keys) - now[b]['country'] for b in now}
@@ -2174,18 +2193,24 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
     sup_ph, sup_rw_ph = support(change_of, 180), support(change_rw, 180)
     say("### The treasury after the switch: the wage support the losing trades' tills would draw (a day)\n")
     M = margin_of.values()
-    short_now = sum(max(0.0, m['owed'] - m['margin']) for m in M)
-    spare_now = sum(max(0.0, m['margin'] - m['owed']) for m in M)
+    short_now = sum(max(0.0, m['owed'] - m['avail']) for m in M)
+    spare_now = sum(max(0.0, m['avail'] - m['owed']) for m in M)
+    raised = sum(m['avail'] - m['margin'] for m in M)
+    long_support, long_profit = ym(lambda s: long[s]['wage_support']), ym(lambda s: long[s]['profit'])
+    owed_all = sum(m['owed'] for m in M)
     say(f"(Each trade at its settled years' wage step (the loop file, every 28 days; the world's wages {base_k:.0f}p and "
-        f"{base_h:.0f}p, the floor {floor}p): its posts owed {sum(m['owed'] for m in M):,.0f}p a day in all, against "
+        f"{base_h:.0f}p, the floor {floor}p): its posts owed {owed_all:,.0f}p a day in all, against "
         f"{sum(m['founding'] for m in M):,.0f}p at the founding's steps (the short runs owed {sum(m['paid_short'] for m in M):,.0f}p). "
         f"What its tills can pay them: its margin on its orders now (the order book's sales times the short runs' margin on "
         f"a penny; in the short runs the margins were {sum(m['margin_short'] for m in M):,.0f}p and their wages and profit "
-        f"{sum(m['pay_short'] for m in M):,.0f}p), {sum(m['margin'] for m in M):,.0f}p in all. By the trades' sums they are "
-        f"short {short_now:,.0f}p a day and have {spare_now:,.0f}p to spare, against the long run's wage support of "
-        f"{ym(lambda s: long[s]['wage_support']):,.0f}p and keepers' profit of {ym(lambda s: long[s]['profit']):,.0f}p (within a "
-        f"trade, one till's spare and another's shortfall net).)\n")
-    say(table(['Trade', 'Tills / posts', 'Wage step now', "Its posts' wages", 'Its margin on its orders now', 'Orders, change',
+        f"{sum(m['pay_short'] for m in M):,.0f}p), {sum(m['margin'] for m in M):,.0f}p in all, and at least its wages for a "
+        f"trade at a positive step (judgeWages holds a step up only while its tills are paid in full on most days: "
+        f"{raised:,.0f}p more), {sum(m['avail'] for m in M):,.0f}p. By the trades' sums they are short {short_now:,.0f}p a "
+        f"day and have {spare_now:,.0f}p to spare, against the long run's wage support of {long_support:,.0f}p and keepers' "
+        f"profit of {long_profit:,.0f}p: the sums net one till's spare against another's shortfall within a trade, so they "
+        f"come out under the tills' own. The settled tills' margin, their wages less the support and their profit, is "
+        f"{owed_all - long_support + long_profit:,.0f}p.)\n")
+    say(table(['Trade', 'Tills / posts', 'Wage step now', "Its posts' wages", 'Its margin on its orders now (at a positive step, at least its wages)', 'Orders, change',
                'Of it its margin', 'Wage support, change at once', 'Once its wages have drifted down', 'Months to drift',
                'Wages the drift takes'], sup['rows']))
     room = ym(lambda s: long[s]['treasury']) - rules['treasuryCap']
@@ -2198,31 +2223,73 @@ def switch_report(a, sc, long, items, crafts, producers, goods_s, ind_s, group_o
             f"the losers' wages have drifted down; in all {dt + city_share - S['now']:+,.0f}p at once, "
             f"{dt + city_share - S['drift']:+,.0f}p after. The extra support over the first year: {S['paid']:,.0f}p (it holds "
             f"{room:,.0f}p over its cap on average); the drift takes {S['cut']:,.0f}p a day from the losers' posts' wages.")
-    say(f"\n(Wage support now {sup['base']:,.0f}p a day.) Switched an area at a time over six months: the extra support over "
-        f"a year {sup_ph['paid']:,.0f}p (re-weighted {sup_rw_ph['paid']:,.0f}p).\n")
+    # The trades only the Country's basket kept (its orders nearly all their sales, none from the farms or the crews), and
+    # every loser still short once drifted.
+    keys_new = (FB_, 'crews: food', 'crews: other')
+    only = [b for b in now if sum(now[b].values()) > 0 and now[b]['country'] >= .95 * sum(now[b].values())
+            and all(after[b][k] < .5 for k in keys_new)]
+    for name, S in (("The Country's basket as it is", sup), ('re-weighted', sup_rw)):
+        on = [b for b in only if b in S['per'] and S['per'][b]['drift'] >= .5]
+        losers = [b for b, v in S['per'].items() if v['change'] < 0 and v['drift'] >= .5]
+        say(f"\n{name}: the trades only the Country's basket kept ({', '.join(BIZ_NAME.get(b, b) for b in sorted(only))}) "
+            f"draw {sum(max(0.0, S['per'][b]['drift']) for b in only if b in S['per']):,.0f}p a day of wage support for good "
+            f"(at once {sum(S['per'][b]['now'] for b in only if b in S['per']):,.0f}p); still on it: "
+            + ', '.join(f"{BIZ_NAME.get(b, b)} {S['per'][b]['drift']:+,.0f}p" for b in sorted(on, key=lambda b: -S['per'][b]['drift'])) +
+            f". Every loser still short once drifted: {sum(S['per'][b]['drift'] for b in losers):,.0f}p ("
+            + ', '.join(f"{BIZ_NAME.get(b, b)} {S['per'][b]['drift']:+,.0f}p" for b in sorted(losers, key=lambda b: -S['per'][b]['drift'])) + ').')
+    say(f"\n(Wage support now {sup['base']:,.0f}p a day by the trades' sums.) Switched an area at a time over six months: the "
+        f"extra support over a year {sup_ph['paid']:,.0f}p (re-weighted {sup_rw_ph['paid']:,.0f}p).")
+    # The phased switch's flows: the toll and services' share come in with the areas, while the losers' wages drift.
+    for name, S, dt in (('As the basket is', sup_ph, d_toll), ('Re-weighted', sup_rw_ph, d_toll_rw)):
+        flow = [(dt + city_share) * min(1.0, (i + 1) / 180) - S['daily'][i] for i in range(365)]
+        worst = min(range(365), key=lambda i: flow[i])
+        peak = max(range(365), key=lambda i: S['daily'][i])
+        say(f"{name}, an area at a time: the treasury's flows on the day the last area goes on (day 180) {flow[179]:+,.0f}p "
+            f"(the extra support {S['daily'][179]:,.1f}p), at worst {flow[worst]:+,.0f}p (day {worst + 1}; the support's "
+            f"peak {S['daily'][peak]:,.1f}p, day {peak + 1}), at the year's end {flow[364]:+,.0f}p.")
+    say('')
     say("The treasury's nights replayed, each settled year from its first day with the switch (the support from what is over "
         f"its cap, {cap:,}p; the alms from what is over its float; the surplus, what is over {cap + keep:,}p, to the poorest "
         "households and the works): per year, the surplus not paid out (negative: more paid out), how far it runs under its "
-        "own path (the year's mean / the most), its lowest, the support unpaid (and the alms unpaid, if any).\n")
+        "own path (the year's mean / the most), its lowest, the support unpaid, every short till's, the city's ordinary "
+        "ones' and the switch's extra (supportWages gives each short till the same share of its shortfall), and the alms "
+        "unpaid, if any.\n")
     rows = []
     for name, S, dt, ramp in (('all at once', sup, d_toll, 1), ('all at once, re-weighted', sup_rw, d_toll_rw, 1),
                               ('an area at a time over six months', sup_ph, d_toll, 180),
                               ('an area at a time, re-weighted', sup_rw_ph, d_toll_rw, 180)):
         rr_ = replay(S, dt + city_share, ramp)
         runs[name] = rr_
-        rows.append([name] + [f"{r['lost']:,.0f}p; {r['under']:,.0f} / {r['most']:,.0f}p; {r['low']:,.0f}p; {r['unpaid']:,.0f}p" +
-                              (f" ({r['alms_short']:,.0f}p)" if r['alms_short'] >= .5 else '')
+        rows.append([name] + [f"{r['lost']:,.0f}p; {r['under']:,.0f} / {r['most']:,.0f}p; {r['low']:,.0f}p; {r['unpaid']:,.0f}p "
+                              f"({r['unpaid_own']:,.0f}p + {r['unpaid_extra']:,.0f}p)" +
+                              (f" (alms {r['alms_short']:,.0f}p)" if r['alms_short'] >= .5 else '')
                               for r in rr_])
     say(table(['Switched'] + [f"year {r['year']}" for r in base_year], rows))
+    long_low = [min(nights[(y - 1) * 365 + i]['treasury'] for i in range(365)) for y in (r['year'] for r in base_year)]
+    # The treasury's trim (treasuryDrift) is not in the replay: whether its slow level would reach the line where the toll
+    # firms, roughly, the long run's lowest slow level each year less the replay's mean shortfall on the recommended path.
+    line = rules['treasuryTarget'] * (1 - rules['treasuryBand'] / 100)
+    trim = [min(nights[(r['year'] - 1) * 365 + i].get('treasury_level', 0) for i in range(365)) - r['under']
+            for r in runs['an area at a time, re-weighted']]
+    say(f"\n(The trim: the toll firms while the slow level is under {line:,.0f}p. The long run's lowest slow level each "
+        f"year less the recommended path's mean shortfall: " + ', '.join(f"{x:,.0f}p" for x in trim) +
+        f"; under the line in {sum(x < line for x in trim)} of {len(trim)} years.)")
     say(f"\n(The long run's own, each year: the surplus paid out " +
         ', '.join(f"{sum(nights[(y - 1) * 365 + i].get('surplus_alms', 0) + nights[(y - 1) * 365 + i].get('works_spent', 0) for i in range(365)):,.0f}p"
                   for y in (r['year'] for r in base_year)) +
-        "; its lowest " + ', '.join(f"{min(nights[(y - 1) * 365 + i]['treasury'] for i in range(365)):,.0f}p" for y in (r['year'] for r in base_year)) + '.)\n')
+        "; its lowest " + ', '.join(f"{x:,.0f}p" for x in long_low) +
+        f"; under its cap in {sum(x < cap for x in long_low)} of {len(long_low)} years.)\n")
     rng = lambda rr_, k: f"{min(r[k] for r in rr_):,.0f}-{max(r[k] for r in rr_):,.0f}p"
+    lows = lambda rr_: [r['low'] for r in rr_ if r['low'] < cap]
+    under_cap = lambda rr_: (f"{len(lows(rr_))} of {len(rr_)} under the cap: " + ', '.join(f'{x:,.0f}p' for x in lows(rr_))
+                             if lows(rr_) else f"none of {len(rr_)} under the cap")
     say('\nOver the settled years (the least to the most):\n')
-    say(table(['Switched', 'The surplus not paid out in the first year', 'Under its own path (the year\'s mean)',
-               'The most under it', 'Its lowest', 'Support unpaid'],
-              [[name, rng(rr_, 'lost'), rng(rr_, 'under'), rng(rr_, 'most'), rng(rr_, 'low'), rng(rr_, 'unpaid')]
+    say(table(['Switched', 'The surplus not paid out in the first year (of what the long run paid out)', 'Under its own path (the year\'s mean)',
+               'The most under it', 'Its lowest (years under the cap)', 'Support unpaid, all short tills', 'Of it the city\'s ordinary', 'Of it the switch\'s extra'],
+              [[name, f"{rng(rr_, 'lost')} ({min(r['lost_share'] for r in rr_) * 100:,.0f}-{max(r['lost_share'] for r in rr_) * 100:,.0f}%)",
+                rng(rr_, 'under'), rng(rr_, 'most'),
+                f"{rng(rr_, 'low')} ({under_cap(rr_)})",
+                rng(rr_, 'unpaid'), rng(rr_, 'unpaid_own'), rng(rr_, 'unpaid_extra')]
                for name, rr_ in runs.items()]))
     say('')
     STATE.update({'sup': sup, 'sup_rw': sup_rw, 'sup_ph': sup_ph, 'sup_rw_ph': sup_rw_ph, 'd_toll': d_toll, 'd_toll_rw': d_toll_rw,
