@@ -2105,7 +2105,17 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
         }
         else
             absences_.erase(actor);
+        const auto arrivedIn = player.cellId;
+        const auto arrivedAt = player.position;
         player = saved->second;
+        // Back where it left: that place may have been let go while nobody was near it (a streamed world unloads
+        // cells two game minutes after the last wolf leaves; doc 20), so it is loaded again first, or, if it can't
+        // be, the wolf wakes at the spawn.
+        if (!world_.ensureLoaded(player.cellId).ok)
+        {
+            player.cellId = arrivedIn;
+            player.position = arrivedAt;
+        }
         world_.returnFromAway(player);             // Down or resting while away (doc 38).
     }
     else

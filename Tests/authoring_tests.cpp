@@ -280,7 +280,7 @@ void cellValidation()
     reject(replace(original, "world: 0 0 0", "world: 0 0 0 extra"), "Extra metadata tokens");
     reject(replace(original, "name: west", "name: west\nname: duplicate"), "Duplicate cell header");
     reject(replace(original, "name: west", "future: unsupported"), "Unknown cell header");
-    reject(replace(original, "........", "....?..."), "Unknown glyph");
+    reject(replace(original, "........", "....`..."), "Unknown glyph");
     reject(replace(original, "........", "....\xc3\xa9.."), "Unicode is drawn, never stored");
     fixture.reset();
     write(fixture.dir / "cells/west.cell", replace(original, "........", ".kbP_mS."));

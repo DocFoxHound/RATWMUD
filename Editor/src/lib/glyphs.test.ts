@@ -25,7 +25,7 @@ test('hotkeys: 1–0 and - keep the original eleven tiles; Shift picks a second 
 
 test('tile lookup, labels and the palette filter', () => {
     assert.equal(glyphInfo('k').name, 'Bookshelf');
-    assert.equal(glyphInfo('?').code, TERRAIN[0].code);           // Unknown codes read as the first tile.
+    assert.equal(glyphInfo('`').code, TERRAIN[0].code);           // Unknown codes read as the first tile.
     assert.equal(glyphLabel(glyphInfo('^')), 'Stairs (^)');
     const names = (q: string) => GLYPHS.filter(g => matchesGlyph(g, q)).map(g => g.code);
     assert.deepEqual(names('bookshelf'), ['k']);

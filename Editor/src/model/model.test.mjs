@@ -108,7 +108,7 @@ test('brush size clips at map edges and rejects invalid input without mutation',
     paint(p, 7, 7, '~', 8);
     assert.equal(p.cells[0].terrain[7], '.......~');
     for (const [x, y, glyph, size] of [[-1, 0, '.', 1], [8, 0, '.', 1], [0, 8, '.', 1],
-        [0.5, 0, '.', 1], [0, 0, ' ', 1], [0, 0, '@', 1], [0, 0, 'WW', 1], [0, 0, '.', 0], [0, 0, '.', 9]])
+        [0.5, 0, '.', 1], [0, 0, ' ', 1], [0, 0, '`', 1], [0, 0, 'WW', 1], [0, 0, '.', 0], [0, 0, '.', 9]])
         unchanged(p, () => paint(p, x, y, glyph, size));
     for (const glyph of TERRAIN_CODES) { paint(p, 3, 3, glyph); assert.equal(glyphAt(p, 3, 3), glyph); }
 });
@@ -689,9 +689,9 @@ test('an edit replaces only the cells it touches; the world before it is left as
     assert.deepEqual(draft.cells.map((c, i) => c === before.cells[i]), [true, false, true, true]);
     assert.deepEqual(clone(p), snapshot, 'the project the edit started from is unchanged');
     // A remembered cell's ground cannot be changed in place, and replacing it by hand is still caught.
-    assert.throws(() => { draft.cells[0].terrain[0] = '@'.repeat(32); }, TypeError);
+    assert.throws(() => { draft.cells[0].terrain[0] = '`'.repeat(32); }, TypeError);
     assert.throws(() => { draft.cells[0].heights['0,0'] = 1; }, TypeError);
-    draft.cells[0] = {...draft.cells[0], terrain: ['@'.repeat(32), ...draft.cells[0].terrain.slice(1)]};
+    draft.cells[0] = {...draft.cells[0], terrain: ['`'.repeat(32), ...draft.cells[0].terrain.slice(1)]};
     assert.throws(() => normalizeProject(draft), /catalog terrain codes/);
 });
 
@@ -798,13 +798,13 @@ test('every catalog code validates; anything else is refused by paint, stamp and
     const row = TERRAIN_CODES.join('').padEnd(p.cells[0].width, '.').slice(0, p.cells[0].width);
     p.cells[0] = {...p.cells[0], terrain: [row, ...p.cells[0].terrain.slice(1)]};
     assert.deepEqual(validate(p).errors.filter(e => /terrain/i.test(e)), []);
-    for (const bad of ['?', 'é', '@', '', ' ', '..', '@', '\u00b7', '\u2248', null, undefined, 7]) {
+    for (const bad of ['`', 'é', '\\', '', ' ', '..', '`', '\u00b7', '\u2248', null, undefined, 7]) {
         assert.equal(isTerrainCode(bad), false, String(bad));
         unchanged(p, () => paint(p, 1, 1, bad), /catalog/);
     }
-    unchanged(p, () => stamp(p, 1, 1, ['.?.']), /supported glyphs/);
+    unchanged(p, () => stamp(p, 1, 1, ['.`.']), /supported glyphs/);
     unchanged(p, () => stamp(p, 1, 1, ['.\u2593.']), /supported glyphs/);      // A drawn glyph is not a stored code.
-    const q = clone(p); q.cells[0].terrain[1] = '@' + q.cells[0].terrain[1].slice(1);
+    const q = clone(p); q.cells[0].terrain[1] = '`' + q.cells[0].terrain[1].slice(1);
     assert.match(validate(q).errors.join(' '), /catalog terrain codes/);
 });
 
@@ -816,7 +816,7 @@ test('catalog rules: solid, ramps and default heights as before for the old tile
     assert.equal(isRamp(':'), true); assert.equal(isRamp('^'), true); assert.equal(isRamp('.'), false); assert.equal(isRamp(null), false);
     assert.equal(defaultHeight('^'), 0.5);
     for (const code of TERRAIN_CODES) if (code !== '^') assert.equal(defaultHeight(code), 0, code);
-    assert.equal(defaultHeight('?'), 0);
+    assert.equal(defaultHeight('`'), 0);
     // New tiles.
     assert.equal(isSolid('k'), true);                         // Bookshelf.
     assert.equal(isSolid('b'), false);                        // Bed: walkable.

@@ -97,6 +97,10 @@
     {"code": "t", "glyph": "◎", "ascii": "O", "name": "Archery target", "category": "civic", "kind": "feature", "solid": true, "stature": 1.5, "fg": "#d4a05a", "bg": "#2c2217", "effect": "Solid"},
     {"code": "N", "glyph": "†", "ascii": "t", "name": "Training dummy", "category": "civic", "kind": "feature", "solid": true, "stature": 1.4, "fg": "#b89c72", "bg": "#2a2219", "effect": "Solid"},
     {"code": "y", "glyph": "‡", "ascii": "Y", "name": "Weapon rack", "category": "civic", "kind": "feature", "solid": true, "stature": 1.2, "fg": "#a9a39a", "bg": "#25231f", "effect": "Solid"},
-    {"code": "q", "glyph": "┼", "ascii": "+", "name": "Ring rail", "category": "civic", "kind": "feature", "solid": true, "stature": 0.8, "fg": "#a88a60", "bg": "#281f16", "effect": "Solid, low"}
+    {"code": "q", "glyph": "┼", "ascii": "+", "name": "Ring rail", "category": "civic", "kind": "feature", "solid": true, "stature": 0.8, "fg": "#a88a60", "bg": "#281f16", "effect": "Solid, low"},
+    {"code": "(", "glyph": "▞", "ascii": ":", "name": "Sandstone", "category": "nature", "kind": "floor", "cost": 1.1, "fg": "#c98a5c", "bg": "#33201a", "effect": "Open ground"},
+    {"code": ")", "glyph": "⋯", "ascii": "_", "name": "Salt flat", "category": "nature", "kind": "floor", "cost": 1.0, "fg": "#e6e0cf", "bg": "#3a3730", "effect": "Open ground"},
+    {"code": "?", "glyph": "⍦", "ascii": "i", "name": "Cactus", "category": "nature", "kind": "feature", "solid": true, "stature": 1.4, "fg": "#7fae62", "bg": "#2c2617", "effect": "Solid; low"},
+    {"code": "@", "glyph": "Ϋ", "ascii": "Y", "name": "Willow", "category": "nature", "kind": "feature", "solid": true, "stature": 2.5, "fg": "#a3c46e", "bg": "#18261a", "effect": "Solid; tall"}
   ]
 }
