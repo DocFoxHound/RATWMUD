@@ -1089,7 +1089,7 @@ void World::indexRoads()
                     ++land;
                     snow += g == '*' || g == 'J' || g == '1' || g == '-';
                     marsh += g == 'w' || g == 'E' || g == 'D';
-                    sand += g == '0';
+                    sand += g == '0' || g == ')';             // (Sand, salt flat.)
                 }
                 const auto* info = terrainInfo(g);
                 if (!info || info->solid)

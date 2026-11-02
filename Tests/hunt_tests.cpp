@@ -104,6 +104,10 @@ void dataLoads()
     expect(wild::load(&error), "the wild's data loads: " + error);
     expect(wild::speciesById("rabbit") && wild::speciesById("red_deer"), "rabbits and deer");
     expect(wild::groundOf('Y') == "forest" && wild::groundOf(',') == "grass" && wild::groundOf('#').empty(), "ground kinds by tile");
+    // The realm's tiles (doc 70): willow is woods, cactus scrub, sandstone rock, a salt flat as barren as sand.
+    expect(wild::groundOf('@') == "forest" && wild::groundOf('?') == "shrub" && wild::groundOf('(') == "rock" &&
+               wild::groundOf(')') == "sand",
+           "the realm's new tiles have their ground kinds");
 }
 
 void startingAHunt()

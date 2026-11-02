@@ -3,17 +3,17 @@
   "version": 1,
   "about": "Animals for hunting (Docs/Design/41-hunting-and-foraging.md). Animals exist only inside a hunt's arena: no memory, speech or life outside it. habitats: weights for the kinds of ground (see `ground`) the hunt's arena is made of; rarity scales how often one turns up. health: how much of a blow it takes to kill (a bite is about 12, a sword 20). dex: how fast its bar fills and how far it runs. alert: tiles at which it notices a hunter (doubled for one sprinting) until doc 40's sneaking replaces that; sight, hearing and smell are for doc 40. flight (doc 53): how near a wolf it has noticed may come before it bolts directly away, faster than any wolf (half of alert when left out); dodge: points added to its dodge of a bite (doc 53). temper: flee and cornered both run from a wolf once it comes too close (doc 53), a cornered one biting once when it has nowhere further to go; fierce fights once alert, with its own health (doc 41). A landed bite or blade kills any animal that runs. yield: what a clean kill gives; a poorer kill gives less, and fire spoils pelts and meat (doc 41). All numbers are placeholders.",
   "ground": {
-    "forest": "PY$27&!",
+    "forest": "PY$27&!@",
     "grass": ",\";3",
     "heather": "5",
-    "shrub": "B",
+    "shrub": "B?",
     "crop": "4",
     "water": "~wW",
     "reeds": "E",
     "mud": "Dw",
-    "rock": "rs:o%",
+    "rock": "rs:o%(X",
     "snow": "*1J-",
-    "sand": "0"
+    "sand": "0)"
   },
   "species": [
     {"id": "rabbit", "name": "a rabbit", "glyph": "r", "color": "#b89a74", "habitats": {"grass": 3, "shrub": 2, "crop": 2, "heather": 1}, "rarity": 10,

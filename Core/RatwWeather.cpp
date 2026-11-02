@@ -10,7 +10,8 @@
 // Climates (the user, 2026-10-12): a cell's climate is what its author made it (its usual weather, and its ground), not
 // what it is called; and how warm the land is changes gradually across the map (warmthAt), the cold country chilling
 // the land near it. A system's rain falls as snow wherever the land is cold enough in the season, so the snow line
-// lies across the land where it should, and moves with the year, rather than at the edges of cells.
+// lies across the land where it should, and moves with the year, rather than at the edges of cells. And the rain the
+// wind brings from greener country dries out over arid country (drynessAt): a desert has only its own rare rains.
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -210,6 +211,7 @@ void World::refreshWeatherField(bool force)
             s.vx = 90 + unit(h) * 180;
             s.vy = (unit(h) - .5) * 140;
             s.byClimate = true;
+            s.arid = climate == Climate::Arid;
             systems_.push_back(s);
         }
     }
@@ -233,6 +235,7 @@ WeatherSample World::sampleField(double x, double y) const
     // brings what it was called up as). So a rain coming in off the Sound turns to snow as it reaches the mountains,
     // where the land grows cold, not at a cell's edge.
     int falls = -1;
+    double dry = -1;
     const double day = calendarDays_;
     for (const auto& s : systems_)
     {
@@ -241,7 +244,7 @@ WeatherSample World::sampleField(double x, double y) const
         const double dx = x - (s.x + s.vx * (day - s.born)), dy = y - (s.y + s.vy * (day - s.born));
         if (dx * dx + dy * dy > s.radius * s.radius * (1 + 1e-9) + 1e-9)
             continue;
-        const double v = strengthOf(s, x, y, day);
+        double v = strengthOf(s, x, y, day);
         if (v <= 0)
             continue;
         Weather kind = s.kind;
@@ -250,6 +253,15 @@ WeatherSample World::sampleField(double x, double y) const
             if (falls < 0)
                 falls = warmthAt(x, y) + seasonalWarmth() < 0 ? int(Weather::Snow) : int(Weather::Rain);
             kind = Weather(falls);
+        }
+        // The rain shadow: wet weather carried in from elsewhere is gone by the time it is well over arid country.
+        if (s.byClimate && !s.arid && (kind == Weather::Rain || kind == Weather::Snow || kind == Weather::Storm))
+        {
+            if (dry < 0)
+                dry = drynessAt(x, y);
+            v *= 1 - smooth(dry / .7);
+            if (v <= 0)
+                continue;
         }
         auto& slot = strongest[std::clamp(int(kind), 0, WeatherKinds - 1)];
         slot = std::max(slot, v);
@@ -418,24 +430,49 @@ void World::mapClimates()
     w.values.assign(n, 0.f);
     for (std::size_t i = 0; i < n; ++i)
         w.values[i] = weight[i] > 1e-9 ? float(sum[i] / weight[i]) : 0.f;
+    // How much of the country about each point is arid, blended the same way (drynessAt).
+    std::vector<double> arid(n, 0), land(n, 0);
+    for (std::size_t i = 0; i < n; ++i)
+        if (owner[i] >= 0)
+        {
+            arid[i] = std::get<1>(outdoors[std::size_t(owner[i])]) == Climate::Arid;
+            land[i] = 1;
+        }
+    blend(arid, land, BlendTiles);
+    w.dry.assign(n, 0.f);
+    for (std::size_t i = 0; i < n; ++i)
+        w.dry[i] = land[i] > 1e-9 ? float(arid[i] / land[i]) : 0.f;
+}
+
+namespace
+{
+// A value of the warmth grid's (its warmth, or its dryness) at a point of the world, bilinear between grid points.
+double gridAt(double x0, double y0, int cols, int rows, const std::vector<float>& values, double x, double y)
+{
+    constexpr double WarmthStep = 32;
+    if (cols <= 0 || rows <= 0 || values.size() < std::size_t(cols) * std::size_t(rows))
+        return 0;
+    const double fx = std::clamp((x - x0) / WarmthStep, 0.0, double(cols - 1));
+    const double fy = std::clamp((y - y0) / WarmthStep, 0.0, double(rows - 1));
+    const int ix = std::min(int(fx), std::max(0, cols - 2)), iy = std::min(int(fy), std::max(0, rows - 2));
+    const auto at = [&](int gx, int gy) {
+        gx = std::clamp(gx, 0, cols - 1);
+        gy = std::clamp(gy, 0, rows - 1);
+        return double(values[std::size_t(gy) * std::size_t(cols) + std::size_t(gx)]);
+    };
+    const double tx = fx - ix, ty = fy - iy;
+    return (at(ix, iy) * (1 - tx) + at(ix + 1, iy) * tx) * (1 - ty) + (at(ix, iy + 1) * (1 - tx) + at(ix + 1, iy + 1) * tx) * ty;
+}
+} // namespace
+
+double World::drynessAt(double x, double y) const
+{
+    return gridAt(warmth_.x0, warmth_.y0, warmth_.cols, warmth_.rows, warmth_.dry, x, y);
 }
 
 double World::warmthAt(double x, double y) const
 {
-    constexpr double WarmthStep = 32;
-    const auto& w = warmth_;
-    if (w.cols <= 0 || w.rows <= 0)
-        return 0;
-    const double fx = std::clamp((x - w.x0) / WarmthStep, 0.0, double(w.cols - 1));
-    const double fy = std::clamp((y - w.y0) / WarmthStep, 0.0, double(w.rows - 1));
-    const int ix = std::min(int(fx), std::max(0, w.cols - 2)), iy = std::min(int(fy), std::max(0, w.rows - 2));
-    const auto at = [&](int gx, int gy) {
-        gx = std::clamp(gx, 0, w.cols - 1);
-        gy = std::clamp(gy, 0, w.rows - 1);
-        return double(w.values[std::size_t(gy) * std::size_t(w.cols) + std::size_t(gx)]);
-    };
-    const double tx = fx - ix, ty = fy - iy;
-    return (at(ix, iy) * (1 - tx) + at(ix + 1, iy) * tx) * (1 - ty) + (at(ix, iy + 1) * (1 - tx) + at(ix + 1, iy + 1) * tx) * ty;
+    return gridAt(warmth_.x0, warmth_.y0, warmth_.cols, warmth_.rows, warmth_.values, x, y);
 }
 
 double World::seasonalWarmth() const

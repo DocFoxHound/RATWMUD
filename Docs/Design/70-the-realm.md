@@ -82,21 +82,21 @@ python3 -m worldgen.ridgemere2 write          # the city writer lays the realm r
 | Region (`territory.region`) | Cells | Where | Ground | Weather |
 |---|---|---|---|---|
 | Ridgemere (`ridgemere`) | 9 | the north-west corner | the city; round it cleared ground and fir woods | rain |
-| The Rainward Hills (`rainward_hills`) | 10 | east of the city | fir and cedar in the folds, mossy tops, the Whitefangs' first snow; Rainmere | rain |
-| The Rainwood (`rainwood`) | 15 | the coast south of the city | cedar and fir rainforest over fern and moss, fallen logs, ferny ravines, rocky shore and coves | rain |
+| The Rainward Hills (`rainward_hills`) | 11 | east of the city | fir and cedar rain forest in the folds, mossy tops, the Whitefangs' first snow; Rainmere | rain |
+| The Rainwood (`rainwood`) | 17 | the coast south of the city | cedar and fir rain forest over fern and moss, fallen logs, ferny ravines and hollows, mossy rocky shore, bluffs and coves | rain |
 | Cedar Sound (`cedar_sound`) | 7 | an arm of the sea 900 tiles into the Rainwood | steep wooded shores; Oakhaven at its head | rain |
 | The Western Sea (`western_sea`) | 6 | the coast's edge | rocks and islets | rain |
-| The Whitefangs (`whitefangs`) | 34 | the north | pine, then subalpine meadow and krummholz, scree and rock, snowfields and glaciers; tarns | snow |
-| The Greyteeth (`greyteeth`) | 9 | the north-east | as the Whitefangs, with dry grass on the eastern spurs | snow |
-| The Greenholt (`greenholt`) | 32 | the middle and west-middle | rolling meadow and woodland, copses; Glasswater | clear (temperate) |
-| The Larkdowns (`larkdowns`) | 23 | the east-middle | long dry swells of grass and shrub | clear |
-| The Sunfields (`sunfields`) | 13 | the south-middle | warm grassland and woods | clear |
-| The Ochre Hills (`ochre_hills`) | 8 | north to south between the downs and the waste | red and yellow rock; the rain stops at the crest | clear |
+| The Whitefangs (`whitefangs`) | 30 | the north | ridged peaks worn into valleys: pine below the tree line (snowy near it), subalpine meadow and krummholz, scree under the rock, bare crests, snowfields (deeper on the north faces and in the hollows) and glaciers; tarns; the pass | snow |
+| The Greyteeth (`greyteeth`) | 6 | the north-east | as the Whitefangs, with dry grass on the eastern spurs | snow |
+| The Greenholt (`greenholt`) | 32 | the middle and west-middle | gentle swells of meadow and pasture, big woods, copses, hedged fields; Glasswater | clear (temperate) |
+| The Larkdowns (`larkdowns`) | 29 | the east-middle | long dry swells of grass, gorse in the hollows | clear |
+| The Sunfields (`sunfields`) | 12 | the south-middle | warm grassland and woods, hedged fields | clear |
+| The Ochre Hills (`ochre_hills`) | 19 | north to south between the downs and the waste | broken hills of red and yellow sandstone laid in beds, ochre scree, the grass thinning to scrub and sand; no rain to speak of | sandstorm (arid) |
 | The Sallow Fens (`sallow_fens`) | 23 | the south-west | reed beds, bog pools, creeks, willow carr, mud flats and dunes on the coast; the delta | fog |
-| The Red Waste (`red_waste`) | 46 | the south-east | sand and gravel, scrub and cactus, dune seas, mesas and buttes, badlands | sandstorm |
+| The Red Waste (`red_waste`) | 34 | the south-east | sand and gravel, scrub and cactus, dune seas, mesas and buttes, banded badlands | sandstorm |
 | The Saltpan (`saltpan`) | 6 | the Red Waste's heart | a dry lake of salt round a bitter pool | sandstorm |
 
-241 cells in all; their weather: 47 `rain`, 43 `snow`, 76 `clear`, 23 `fog`, 52 `sandstorm`. A cell's region is what most of it is (`region_of`), so a region's edge cell may hold some of its
+241 cells in all; their weather: 50 `rain`, 36 `snow`, 73 `clear`, 23 `fog`, 59 `sandstorm`. A cell's region is what most of it is (`region_of`), so a region's edge cell may hold some of its
 neighbour's ground: the borders are blends, not the cells' edges. Cell names are the region's with the town, lake or
 works in the cell, or a compass point within the region ("The Red Waste, North-east"); descriptions say what the
 country is and which named rivers and lakes are there.
@@ -111,7 +111,11 @@ Deterministic from its seed (20261101): every write makes the same realm round t
 - **The shape of the land** (on a coarse grid of 8 tiles, then smoothed to tiles): rising from the sea; the fens low,
   the Red Waste a plateau falling to the Saltpan; long swells in the middle; peak chains (the Whitefangs, a front range
   with a gap for the pass, the Greyteeth, the Ochre Hills, the Rainward Hills, a low coast range) laid on bent
-  coordinates as crests with saddles and foothills, with ridged noise for spurs and gullies; the pass's high valley and
+  coordinates as crests with saddles and foothills. The mountains (not the low Rainward Hills and coast range, which are
+  rounded, with ridged noise for spurs and gullies) are then worn as water would wear them (`carve_range`): the plan's
+  mass is drained, a valley runs wherever enough ground drains through it, the floors climb into the range and the land
+  rises from each valley to the divides, so the crests are sharp lines between valleys and branch as they do; on the
+  tiles, ridged multifractal noise on bent coordinates adds the spurs and gullies. The pass's high valley and
   saddle; basins for Glasswater, the tarns and the Saltpan; the Long River's and the Rainrun's valleys guiding the
   drainage. Heights above 10 are eased under the game's 16.
 - **Rain and warmth.** A wind from the west-north-west crosses the land from the sea, dropping rain as it climbs and as
@@ -128,44 +132,64 @@ Deterministic from its seed (20261101): every write makes the same realm round t
 - **No step but a meant one.** The land is held to a walkable half step a tile (row and column sweeps) except in crags:
   the highest peaks, the mesas' rims, the badlands, the rain coast's bluffs and ravines. What is left steeper is
   marked as cliff.
-- **Biomes** by warmth and wetness, each bent by noise and speckled at its edges, so they interleave over tens of tiles:
-  snowfield, alpine rock and tundra, subalpine meadow and krummholz, montane pine, rainforest, woodland, meadow,
-  heath, steppe, scrub, sand, marsh; then overlays: badlands in bands, mesa tops, dune seas, the Saltpan, the coast's
-  rock, shingle, coves, mud flats and dunes, river banks (reeds, willow, alder, tall grass; a green strip in the dry
-  country), lake shores, the oasis, rock and scree on steep mountain ground, glaciers in the coldest hollows.
-- **The city's edge.** The city's own heights by everything kept, easing into the realm's over 44 tiles; within about
-  120 tiles of the city the woods are thinned to rough grass, bracken and moss with copses of fir and cedar, thickening
-  into the Rainwood; the city's common and the dairies' meadows beyond keep a fifth of their trees.
+- **Biomes** by warmth and wetness, their thresholds jittered so they interleave over tens of tiles: snowfield, alpine
+  rock and tundra, subalpine meadow and krummholz, montane pine, rainforest, woodland, meadow, heath, steppe, scrub,
+  sand, marsh. **The mountains:** the snow line by height and by aspect (a north face or a hollow holds the cold and the
+  snow, a crest is swept bare), bare rock on the steep faces and the crests and standing out of the snowfields along
+  them, scree at the foot of the rock, glaciers in the high hollows, the pines snowy near the tree line. **Open
+  country** (`CALM`) is painted calmly: each tile picked from a mix drifting slowly between a pasture's short grass and
+  a hay meadow's tall grass and flowers (and to the meadow in the hollows), over hundreds of tiles, not in blotches;
+  big woods and wide meadows by a slow noise; copses in every square of about a hundred tiles, lone trees, and
+  hedgerows (shrub, a tree now and then, gaps to pass) round irregular fields, each field its own shade of hay or
+  pasture. **The desert's edge** (`dry_edge`, within about 380 tiles of the Ochre Hills' line, south of the Greyteeth):
+  no snow, pine, cedar or heather; the wetness eased down so the green thins to dry grass, then scrub, then sand over
+  hundreds of tiles; the Ochre Hills themselves a broad belt of broken hills whose sandstone lies in beds (their slopes
+  climb in steps), red sandstone on the crests and steep faces, ochre scree and sand below. Then overlays: banded
+  badlands (risers red, yellow and grey by height, sandstone flats, sandy gullies), mesa tops of sandstone and dry grass
+  with bedded flanks, dune seas, the Saltpan, the coast's mossy rock, boulders, shingle and coves, mud flats and dunes
+  by the fens, ferny hollows in the rain forest, river banks (reeds, willow, alder, tall grass; a green strip in the dry
+  country), lake shores, the oasis.
+- **The city's edge.** The city's own heights by everything kept, easing into the realm's over 44 tiles. Outside the
+  walls the rain forest of fir and cedar stands close (the rain coast's wetness makes rain forest of everything within
+  about 500-1,100 tiles of the sea north of y 2,100-2,500), with fern and moss under it and ferny ravines; the ground
+  is cleared within about 6-30 tiles of everything the city holds (the walls, the gates and the roads out of them, the
+  Houses' grounds, every NPC's spot), and every realm road keeps 4 tiles of clear verge each side. The city's common is
+  wood pasture (the cattle graze under the trees); the dairies' and orchards' clearings keep a tenth of their trees.
+  The shore south of the city is mossy rock, boulders and shingle, with bluffs where the land meets the sea steeply.
 
 ## 4. Water
 
-Every river's water surface falls (or holds level) all the way to its mouth: checked along every river line.
+Every river's water surface falls (or holds level) all the way to its mouth: checked tile by tile along every river's
+course, from its source to the sea and through the lakes on its way, with no rise at all (`no river runs uphill`). A
+river's surface is held at or above a lake upstream of it and at or below one downstream, and the lakes' shore raise
+leaves the water running in and out alone (before 2026-11-01's second pass the check sampled every 16th tile and allowed
+half a step, and missed every lake's mouth, where the raise lifted the outflow half a step above the lake: 136 rises).
 
 | River | From | To | Length (tiles) | Widest |
 |---|---|---|---|---|
-| **The Long River** | the Greyteeth's west face (3500, 980) | through the Upper Mere and Glasswater, past Larkfield, through the fens to the sea (900, 3130) | 6,900 | 15 |
-| **The Alder** | the Whitefangs (3000, 520) | west under the mountains, through Alder Mere, to the head of Cedar Sound | 5,800 | 12 |
+| **The Long River** | the Greyteeth's west face (3420, 980) | through the Upper Mere and Glasswater, past Larkfield, through the fens to the sea (900, 3130) | 7,000 | 15 |
+| **The Alder** | the Whitefangs (2990, 520) | west under the mountains, through Alder Mere, to the head of Cedar Sound | 5,900 | 12 |
 | **The Lark** | the Sunfields (2570, 2650) | west across the south-middle country into the fens and the sea | 3,600 | 15 |
-| The Greybeck | the Whitefangs (1350, 480) | south into Alder Mere | 2,300 | 11 |
+| The Greybeck | the Whitefangs (1920, 470) | south-west into Alder Mere | 3,100 | 10 |
 | The Shiver | the Sunfields' south (1970, 4000) | west into the fens and the sea | 2,500 | 8 |
 | The Kestrel | the Greenholt (1060, 2100) | south into the fens | 1,700 | 12 |
 | The Rainrun | the Rainward Hills (800, 520) | south past Rainmere to the head of Cedar Sound | 1,600 | 6 |
-| The Coldbeck | the Sunfields (1930, 3600) | north-west into the fens | 1,500 | 8 |
+| The Coldbeck | the Sunfields (1920, 3570) | north-west into the fens | 1,400 | 8 |
 | The Whitewater | the coast range (720, 1950) | north to the head of Cedar Sound | 1,400 | 12 |
 
-and 31 more unnamed rivers, 45 streams and 4 dry washes (sand and gravel beds with a green strip along them) in the dry
+and 33 more unnamed rivers, 49 streams and 4 dry washes (sand and gravel beds with a green strip along them) in the dry
 country under the Greyteeth and the Ochre Hills. The fens have their own web of creeks and pools besides. Rivers 4 tiles wide or
 more are deep in the middle (`W`, impassable but by bridge) with shallows at the banks; streams are wadeable (`~`).
 
 | Lake | Where | Level | Tiles |
 |---|---|---|---|
-| **Glasswater** | the plains' great lake; Coldwater on its north shore, Larkfield below its outlet | 1.0 | 129,284 |
-| **The Upper Mere** | on the Long River above Glasswater | 2.5 | 47,202 |
-| Dustmere | at the foot of the Greyteeth, on the edge of the Red Waste | 5.0 | 22,613 |
-| Highmere | a big tarn under the Whitefangs | 5.0 | 15,565 |
-| Alder Mere | where the Greybeck meets the Alder | 1.5 | 14,723 |
-| Rainmere | in the Rainward Hills behind the city | 2.5 | 8,260 |
-| Kestrel Tarn, Greytarn, Slate Tarn | mountain tarns (ice at the edges of the highest) | 4.0-5.5 | 4,500-6,500 |
+| **Glasswater** | the plains' great lake; Coldwater on its north shore, Larkfield below its outlet | 1.0 | 133,079 |
+| **The Upper Mere** | on the Long River above Glasswater | 2.5 | 48,570 |
+| Highmere | a big tarn under the Whitefangs | 5.0 | 27,885 |
+| Dustmere | at the foot of the Greyteeth, on the edge of the Red Waste | 5.0 | 20,426 |
+| Alder Mere | where the Greybeck meets the Alder | 1.5 | 17,472 |
+| Rainmere | in the Rainward Hills behind the city | 2.5 | 8,921 |
+| Kestrel Tarn, Greytarn, Slate Tarn, and two unnamed | mountain tarns (ice at the edges of the highest) | 4.0-6.5 | 8,400-10,400 |
 
 **Cedar Sound** reaches 900 tiles into the rain coast; **the Saltpan** is a dry lake about 540 x 340 tiles of salt
 flat round a brine pool; **the oasis** at Saltwell is a spring pool among palms and grass.
@@ -179,8 +203,11 @@ on `artifacts/realm2/overview-labelled.png`.
 - **Towns** (7): a level pad of cleared ground about 120 tiles across, on the shore or a river where the town is a
   harbour, lake, river or fen town.
 - **Fields and range** (doc 71's food plan): the trees, scrub and boulders cleared off (the country's own grass left,
-  dry grass in the dry country), the ground eased, the clearing thinning over the edge. Range in woods (the pigs'
-  pannage) keeps its trees, only the undergrowth grazed off. The eel and fowl marsh is left as it is.
+  dry grass in the dry country), the ground eased, the clearing thinning over the edge. A grain farm is about 363 x 363
+  tiles (the user's choice, doc 71 question 10), its corners rounded, laid out as nine fields with hedgerows between
+  them round its middle, where the steading and the mill race will be. Range in woods (the pigs' pannage, and the city's
+  common in the rain forest) keeps its trees, only the undergrowth grazed off. The eel and fowl marsh is left as it
+  is.
 - **Works' pads**: a small level pad of the works' own ground (rubble for a mine, rock for a quarry, mud for clay, salt,
   a landing's sand, a cutting's stumps and ferns, a charcoal hearth's bare earth) on the right ground: mines and
   quarries on the mountains' flanks, landings on the shore, mills on a river bank.
@@ -196,16 +223,19 @@ on `artifacts/realm2/overview-labelled.png`.
 
 Each cell's authored weather says its climate (`Core/RatwWeather.cpp`, `climateOf`): `rain` (wet: the rain coast,
 the sound, the Rainward Hills), `snow` (cold: the Whitefangs' and the Greyteeth's high cells), `clear` (temperate: the
-middle, the downs, the Sunfields, the Ochre Hills; snow in winter where the cold country is near, from `warmthAt`),
-`fog` (marsh: the fens), `sandstorm` (arid: the Red Waste and the Saltpan). The snow line moves with the seasons as
-doc 60 built it.
+middle, the downs, the Sunfields; snow in winter where the cold country is near, from `warmthAt`), `fog` (marsh: the
+fens), `sandstorm` (arid: the Ochre Hills, the Red Waste and the Saltpan, and any cell mostly of the desert's edge).
+The snow line moves with the seasons as doc 60 built it. The rain the wind brings from greener country dries out over
+the arid cells (`drynessAt`, below), and a salt flat counts with sand in a cell's ground.
 
 **What the weather system can't do yet:**
 - **Heat.** Arid is only "dry, with sandstorms and some overcast"; there is no heat, no hot season, no heat haze or
   thirst. Its sandstorms are frequent (45% of its systems).
 - **Mist** is fog: a marsh climate's fog is the same fog as anywhere.
-- **Rain shadow** is authored (the dry cells are `clear` or `sandstorm`), not worked out by the weather: a system born
-  on the coast drifts over the Ochre Hills unchanged.
+- **Rain shadow** is authored (the dry cells are `sandstorm`) and, since 2026-11-01's second pass, kept by the weather
+  too: rain, snow and storms born outside arid country fade out over it (`World::drynessAt`, the share of arid country
+  about a point blended across the cells' edges as the warmth is), so the Ochre Hills and the Red Waste have only their
+  own rare showers. It is not worked out from the land: the dry cells are those authored dry.
 - **Weather is by cell** (256 tiles), blended only in warmth: a cell is wholly one climate.
 
 ## 7. Costs (measured)
@@ -235,7 +265,7 @@ the city has NPCs), on exports of the two builds.
 | Atlas: the whole world with its ground (validate, export) | | 10 s, 3.6 GB in Python |
 | Atlas's validation of the project | | 11 s |
 | `world_build.py dev` | | 40 s, 3.9 GB |
-| The generator (`realm2.py`), a write | | about 95 s to lay out, 35 s to save; 5.3 GB |
+| The generator (`realm2.py`), a write | | about 135 s to lay out (95 s before the second pass), 35 s to save; 5.3 GB |
 
 - **The server** streams cells (doc 20): only the cells someone is in or beside are loaded, so ticks barely change; the
   worst ticks are the first loads of a cell's ground (256 x 256 tiles and its seams, up to 22 ms). The realm's cells
@@ -258,9 +288,8 @@ the city has NPCs), on exports of the two builds.
    leaves it near the edge for Frosthollow. It could be ended at a waymark, or the map grown north one row.
 2. **The towns' names** are the old map's (so the unplaced town residents can follow); the user may want others.
 3. **The open sea** south-west of the fens is left off the map (15 cells). Add it back if boats are to sail there.
-4. **Spares.** Where doc 71's plan gave a choice (the vineyard in the central hills or at the desert's edge; the salt
-   works on the fens' coast or the Saltpan) both places are reserved, the second marked "spare"; so are a few extra
-   landings and a copper mine. Doc 71's placement can take or drop them.
+4. **Spares.** A few extra landings and a copper mine are reserved and marked "spare"; doc 71's placement can take or
+   drop them. (The vineyard's and the salt works' second places were spares too; with two of each, both are real.)
 5. **A server built before this branch** doesn't know the four new tiles and refuses a cell holding one: the city's
    nine cells use none of them (so the city still loads), but 578 of the realm's 964 chunks do. Merge before running DEV's
    server, Atlas or the tools from another branch.
@@ -564,9 +593,86 @@ page's sight over it, its walking kept to the cell). A clean build of `build-cor
 - **Atlas** (`Editor`): `tsc --noEmit` clean; its tests pass but the same Greyfen count. **DM** tests and the **client**
   (`tsc`, 129 tests) pass.
 
+### The terrain's second pass (2026-11-01, branch `r2-map-terrain`)
+
+The user approved a review's findings and a new look for the land: ridged peaks, not flat white blobs; calmer
+plains; a real blend at the desert's edge; dense Pacific Northwest rain forest round Ridgemere. Built on
+`r2-map-terrain` from `ridgemere2` (268c455). **Not written into DEV**: DEV still holds the first realm (build 56); the
+write is a separate step (`python3 -m worldgen.realm2 write`, which backs up first).
+
+**Fixed.**
+- **The new tiles in the tables keyed by tile** (`Data/Wild`): hunting's ground kinds have willow `@` as forest, cactus `?`
+  as shrub, sandstone `(` as rock and the salt flat `)` as sand (and rubble `X`, which the realm now lays as scree, as
+  rock); foraging has the willows (firewood, reeds, mushrooms, herbs), cactus with the scrub, and the salt crust
+  (salt). In the C++, a willow or a cactus screens a stalker as a tree does (`RatwBattle.cpp`, `screenGlyph`), and a
+  salt flat counts with sand in a cell's ground for its climate (`RatwAuthoring.cpp`).
+- **Water ran uphill at every lake mouth** (136 rises by the strict check): the lakes' shore raise lifted the river tiles
+  at the outflow half a step above the lake. The raise now leaves rivers, washes and creeks alone, and a river's surface
+  is held between the lakes it runs through. The check is strict: every tile of every river's course, through its
+  lakes, no rise at all (it sampled every 16th tile and allowed half a step).
+- **The city's snapshot was overwritten by every run** (`expand` called `keep_snapshot` itself), so a preview, a dry run
+  or a refused write replaced `artifacts/realm2/city-cells.json.gz`. Only a write that saved keeps it now (`realm2.write`
+  and `ridgemere2.write`, after the transaction).
+
+**The look** (section 3 has the methods): the mountains worn into valleys and sharp branching crests, the snow line by
+height and aspect, rock on the crests and steep faces and standing out of the snow, scree below, pine under the tree
+line, glaciers in the high hollows; the plains calm (meadow and pasture drifting over hundreds of tiles, big woods,
+copses, hedged fields); the Ochre Hills a belt of bedded red and yellow sandstone and ochre scree, the green thinning to
+dry grass, scrub and sand across them, with no snow, pine, cedar or heather and arid weather (their 19 cells
+`sandstorm`; the weather's own rain dries out over arid country, `drynessAt`); dense fir and cedar round Ridgemere with
+clear ground by its walls, gates, roads and the Houses' grounds, mossy rocky shore and bluffs. The city's tiles are
+untouched (0 differ).
+
+**The sites.** The two grain farms are about 363 x 363 tiles each (the user's choice), laid out as nine hedged fields;
+there are two vineyards and two salt works, both places of each now real sites (they were "the vineyard" and "the salt
+works" with a spare each); the city's common is wood pasture in the rain forest; the mills sit on a river 3 tiles wide
+or more. The farms' own fields are 446,002 tiles (**6.8 cells**), the shared range 522,564 (**8.0 cells**); spares
+0.02. Roads 14,814 tiles, tracks 60 (12,756 tiles). The sites that moved more than 40 tiles or changed (centre and tiles
+before in brackets; all 68 are in `artifacts/realm2/after/realm-report.json`):
+
+| Site | Kind | Centre (x, y) | Tiles | For |
+|---|---|---|---|---|
+| `grain_long` | farmland | 1828, 2580 (1884, 2556) | 125,664 (105,610) | grain farm 1 (large, with a water mill) |
+| `mill_long` | mill | 1628, 2612 (1670, 2581) | 260 (292) | grain farm 1's water mill |
+| `grain_lark` | farmland | 2164, 2836 (2276, 2820) | 126,319 (105,495) | grain farm 2 (large, with a water mill) |
+| `mill_lark` | mill | 2207, 3026 (2513, 2697) | 348 (396) | grain farm 2's water mill |
+| `vineyard_ochre` | vineyard | 2756, 2692 (2756, 2700) | 17,577 (31,835) | vineyard 1 (SE desert edge) |
+| `vineyard_south` | vineyard | 2396, 3148 (2404, 3148) | 17,036 (24,329) | vineyard 2 (central hills) |
+| `range_city` | woodpasture | 620, 636 (620, 636) | 63,884 (63,894) | cattle range (shared, near the city) |
+| `range_rainrun` | pasture | 1060, 940 (1052, 884) | 64,730 (61,353) | cattle range (shared, NW coast) |
+| `pigs_greenholt` | pigfarm | 1420, 1636 (1404, 1692) | 6,227 (6,306) | pig farm 1 |
+| `pigwood_greenholt` | woodpasture | 1260, 1628 (1244, 1684) | 32,371 (31,797) | pig farm 1's woods (shared range) |
+| `pigs_alder` | pigfarm | 1644, 1428 (1692, 1148) | 6,227 (6,315) | pig farm 2 |
+| `pigwood_alder` | woodpasture | 1604, 1268 (1676, 988) | 28,821 (32,196) | pig farm 2's woods (shared range) |
+| `pigs_south` | pigfarm | 1356, 2060 (1284, 2012) | 6,364 (6,218) | pig farm 3 |
+| `pigwood_south` | woodpasture | 1196, 2068 (1124, 1988) | 32,216 (31,384) | pig farm 3's woods (shared range) |
+| `fishing_glasswater` | fishing | 1948, 2283 (1923, 2273) | 265 (223) | lake and river boat 1 |
+| `fishing_uppermere` | fishing | 2412, 1596 (2364, 1627) | 281 (227) | lake and river boat 2 |
+| `bees_rainward` | apiary | 948, 356 (956, 300) | 1,625 (1,635) | beekeeper 1 |
+| `salt_saltpan` | salt | 3420, 3316 (3428, 3316) | 2,781 (808) | salt works 1 (SE desert pan) |
+| `salt_fencoast` | saltcoast | 868, 3346 (868, 3346) | 2,030 (1,041) | salt works 2 (SW marsh coast) |
+| `fishing_rainmere` | fishing | 964, 740 (1004, 684) | 253 (247) | spare: lake boat |
+| `timber_front` | timber | 1692, 948 (1724, 836) | 1,739 (1,879) | timber (foothills) |
+| `timber_upper` | timber | 2732, 972 (2636, 1020) | 1,764 (1,772) | timber (foothills) |
+| `charcoal_greenholt` | charcoal | 1348, 2140 (1396, 1868) | 1,041 (1,062) | charcoal |
+| `quarry_lime` | quarry | 1588, 788 (1516, 772) | 1,245 (1,263) | stone (limestone) |
+| `mine_frost_iron` | mine | 2516, 724 (2444, 500) | 628 (637) | ore (iron; N mountains) |
+| `mine_grey_silver` | mine | 3500, 1004 (3524, 956) | 599 (631) | ore (silver; NE mountains) |
+
+All 14 checks pass (the whole realm round DEV's city, read only), 98% of all open ground one walk from the spawn.
+
+**Tests.** `test_realm2`: the new tiles in the wild tables, the range carver and the ridged noise; with `RATW_SLOW=1`, a
+run that keeps no snapshot, the strict river check again, the farms and works doc 71 asked for, the desert's edge dry
+(no snow, pine, cedar or heather; red rock showing; the Ochre Hills' cells arid), and fir and cedar round the city. C++:
+`weather_tests` has the rain shadow (rain on green downs, a quarter or less of it in the waste beyond), `hunt_tests`
+the new tiles' ground kinds. A clean build of `build-core`, then `ctest`: 76 of 76 pass. `test_realm2` passes (17, with
+`RATW_SLOW=1`: about two and a half minutes, 8 GB), `test_item_catalog` passes, and `test_ridgemere2` fails only its known
+`test_the_food_trades_and_the_carters` (16 household businesses against 15, as before the realm).
+
 ### The previews
 
-`artifacts/realm2/`: `overview.png` (the whole realm, a pixel for 4 x 4 tiles), `overview-labelled.png` (with the
+`artifacts/realm2/after/` holds the second pass's (the same set, and its `realm-report.json`); the first realm's are
+kept beside it for comparison. `artifacts/realm2/`: `overview.png` (the whole realm, a pixel for 4 x 4 tiles), `overview-labelled.png` (with the
 regions, the towns, the roads and every reserved site by kind), `overview-large.png` (a pixel for 2 x 2 tiles), and
 close-ups a pixel a tile: `ridgemere-and-the-rainward-woods`, `cedar-sound-and-oakhaven`, `whitefangs-and-frosthollow`,
 `glasswater-and-the-greenholt`, `sallow-fens-and-the-delta`, `red-waste-saltpan-and-dunes`, `greyteeth`, and the

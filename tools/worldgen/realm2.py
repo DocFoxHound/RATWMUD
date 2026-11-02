@@ -14,7 +14,7 @@ and the water that runs off: priority-flood drainage, so every river runs downhi
 and the lakes are where the land holds water. Biomes come from warmth and wetness on bent coordinates, so their
 borders interleave rather than run along lines.
 
-  cd tools && python3 -m worldgen.realm2 preview [--seed N]     the realm alone, previews in artifacts/realm2/
+  cd tools && python3 -m worldgen.realm2 preview [--seed N] [--out DIR]   the realm, previews in artifacts/realm2/
   cd tools && python3 -m worldgen.realm2 write [--world dev]     back up, then add the realm to DEV (add-only: the same map)
 
 The seed is fixed, so every run makes the same realm; worldgen.ridgemere2's write lays it round the city too.
@@ -116,6 +116,39 @@ def ridged(w, h, cell, seed, octaves=4):
     return 1 - np.abs(2 * field.fbm(w, h, cell, seed, octaves) - 1)
 
 
+def noise_at(xs, ys, cell, seed):
+    """Value noise (as field.value_noise) at any points, so the coordinates may be bent (domain warping)."""
+    rng = np.random.default_rng(seed)
+    u, v = np.asarray(xs, dtype=np.float32) / cell, np.asarray(ys, dtype=np.float32) / cell
+    lo_u, lo_v = int(math.floor(float(u.min()))), int(math.floor(float(v.min())))
+    gw, gh = int(math.floor(float(u.max()))) - lo_u + 3, int(math.floor(float(v.max()))) - lo_v + 3
+    lattice = rng.random((gh, gw), dtype=np.float32)
+    x0, y0 = np.floor(u).astype(np.int32), np.floor(v).astype(np.int32)
+    fx, fy = u - x0, v - y0
+    fx, fy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+    x0 -= lo_u
+    y0 -= lo_v
+    a, b = lattice[y0, x0], lattice[y0, x0 + 1]
+    c, d = lattice[y0 + 1, x0], lattice[y0 + 1, x0 + 1]
+    return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy
+
+
+def ridges_at(xs, ys, cell, seed, octaves=4, gain=1.8):
+    """Ridged multifractal noise (0-1) at any points: sharp crests that branch into spurs, each octave's detail
+    strongest on the crests of the one before (so the valleys between stay smooth)."""
+    total = np.zeros(np.shape(xs), dtype=np.float32)
+    weight = np.ones(np.shape(xs), dtype=np.float32)
+    amp, norm = 1.0, 0.0
+    for o in range(octaves):
+        n = 1 - np.abs(2 * noise_at(xs, ys, cell / 2 ** o, seed + 131 * o) - 1)
+        n = n * n * weight
+        weight = np.clip(n * gain, 0, 1)
+        total += n * amp
+        norm += amp
+        amp *= .5
+    return total / norm
+
+
 def grid_xy(n, f):
     ys, xs = np.mgrid[0:n, 0:n].astype(np.float32)
     return xs * f + f / 2, ys * f + f / 2
@@ -181,6 +214,8 @@ RANGES = {
                  (1000, 330, 7.5, 110)],
     'coast': [(520, 1060, 4.5, 80), (460, 1560, 5.5, 90), (620, 1840, 5, 90), (560, 2160, 4, 80)],
 }
+# The ranges low enough to be hills, rounded rather than worn into crests (lay_elevation).
+LOW_RANGES = {'rainward', 'coast'}
 # The pass: a high valley in the Whitefangs (the mountain-pass town's) and the saddle north of it to the map's edge.
 PASS_VALLEY = (2300, 760, 180, 120)     # x, y, rx, ry
 PASS_SADDLE = [(2300, 760), (2330, 560), (2310, 360), (2290, 120), (2290, 0)]
@@ -208,21 +243,21 @@ SITES = [
     ('southmeadow', 'town', 'Southmeadow', (2150, 3350), 260, 60, 'town', 'a market town of the warm south-middle country, among orchards and vines'),
     ('saltwell', 'town', 'Saltwell', (3310, 2930), 140, 60, 'town', 'the oasis town of the Red Waste, by its spring pool, on the way to the Saltpan'),
     # Doc 71's food producers.
-    ('grain_long', 'farmland', 'the Long River grain', (1760, 2330), 260, 215, 'grain farm 1 (large, with a water mill)', 'grain land on the Long River between Glasswater and Larkfield'),
+    ('grain_long', 'farmland', 'the Long River grain', (1760, 2330), 260, 182, 'grain farm 1 (large, with a water mill)', 'grain land on the Long River between Glasswater and Larkfield, in several fields'),
     ('mill_long', 'mill', 'the Long River mill race', 'grain_long', 240, 12, 'grain farm 1\'s water mill', 'a bank of the Long River for a water mill'),
-    ('grain_lark', 'farmland', 'the Lark grain', (2150, 2800), 300, 215, 'grain farm 2 (large, with a water mill)', 'grain land along the Lark in the warm middle country'),
+    ('grain_lark', 'farmland', 'the Lark grain', (2150, 2800), 300, 182, 'grain farm 2 (large, with a water mill)', 'grain land along the Lark in the warm middle country, in several fields'),
     ('mill_lark', 'mill', 'the Lark mill race', 'grain_lark', 260, 12, 'grain farm 2\'s water mill', 'a bank of the Lark for a water mill'),
     ('orchard_greenholt', 'orchard', 'the Greenholt orchard', (1550, 1550), 260, 78, 'orchard (central hills) 1', 'apples and pears on the Greenholt\'s swells'),
     ('orchard_coldwater', 'orchard', 'the Upper Mere orchard', (2180, 1700), 260, 78, 'orchard (central hills) 2', 'apples on the slopes above the Upper Mere'),
     ('orchard_larkfield', 'orchard', 'the Larkfield orchard', (1900, 2650), 260, 78, 'orchard (central hills) 3', 'plums and apples south of the Long River'),
     ('orchard_rainward', 'orchard', 'the Rainward orchard', (640, 900), 220, 75, 'orchard (NW coast valley) 1', 'apples on a sheltered slope south-east of the city'),
     ('orchard_coastvale', 'orchard', 'the Coastvale orchard', (480, 1560), 260, 75, 'orchard (NW coast valley) 2', 'apples and cherries in a coast-range valley south of Cedar Sound'),
-    ('vineyard_ochre', 'vineyard', 'the Ochre vineyard', (2760, 2700), 260, 115, 'the vineyard (large; SE desert edge)', 'vines on the Ochre Hills\' warm west slopes, at the Red Waste\'s edge'),
-    ('vineyard_south', 'vineyard', 'the Southmeadow vines', (2400, 3150), 260, 100, 'spare: the vineyard (central hills)', 'the other place for the vineyard: the south-middle hills'),
+    ('vineyard_ochre', 'vineyard', 'the Ochre vineyard', (2760, 2700), 260, 87, 'vineyard 1 (SE desert edge)', 'vines on the Ochre Hills\' warm west slopes, at the Red Waste\'s edge'),
+    ('vineyard_south', 'vineyard', 'the Southmeadow vines', (2400, 3150), 260, 87, 'vineyard 2 (central hills)', 'vines on the south-middle hills'),
     ('dairy_southgate', 'dairy', 'the Southgate dairy', (430, 960), 220, 85, 'cattle and dairy farm 1', 'a dairy farm\'s hay meadows and steading outside the South Gate'),
     ('dairy_rainrun', 'dairy', 'the Rainrun dairy', (820, 1000), 220, 85, 'cattle and dairy farm 2', 'hay meadows on the Rainrun\'s bottom land'),
     ('dairy_rainward', 'dairy', 'the Rainward dairy', (900, 560), 220, 85, 'cattle and dairy farm 3', 'hay meadows on the Rainward Hills\' lower slopes'),
-    ('range_city', 'pasture', 'the city common', (620, 640), 160, 165, 'cattle range (shared, near the city)', 'rough grazing in the cleared woods east and south of the walls'),
+    ('range_city', 'woodpasture', 'the city common', (620, 640), 160, 165, 'cattle range (shared, near the city)', 'wood pasture east and south of the walls: the cattle graze under the fir and cedar'),
     ('range_southgate', 'pasture', 'the Southgate range', (380, 1180), 260, 165, 'cattle range (shared, NW coast)', 'cattle grazing along the coast north of Cedar Sound'),
     ('range_rainrun', 'pasture', 'the Rainrun range', (900, 850), 260, 165, 'cattle range (shared, NW coast)', 'cattle grazing in the Rainrun valley'),
     ('pigs_greenholt', 'pigfarm', 'the Greenholt piggery', (1450, 1700), 260, 45, 'pig farm 1', 'a pig farm\'s yards at the edge of the Greenholt woods'),
@@ -245,8 +280,8 @@ SITES = [
     ('bees_rainward', 'apiary', 'the Rainward bee garth', (980, 300), 240, 26, 'beekeeper 1', 'heather and clover on the Rainward Hills'),
     ('bees_greenholt', 'apiary', 'the Greenholt bee garth', (1300, 1150), 260, 26, 'beekeeper 2', 'meadow flowers in the lower Alder valley'),
     ('bees_south', 'apiary', 'the Sunfields bee garth', (2000, 3100), 260, 26, 'beekeeper 3', 'meadows and orchards of the south-middle country'),
-    ('salt_saltpan', 'salt', 'the Saltpan workings', (3400, 3330), 300, 16, 'the salt works (SE desert pan)', 'salt raked from the Saltpan\'s crust'),
-    ('salt_fencoast', 'saltcoast', 'the Fen salterns', (880, 3350), 300, 22, 'spare: the salt works (SW marsh coast)', 'flat shore for sea-salt pans'),
+    ('salt_saltpan', 'salt', 'the Saltpan workings', (3400, 3330), 300, 30, 'salt works 1 (SE desert pan)', 'salt raked from the Saltpan\'s crust'),
+    ('salt_fencoast', 'saltcoast', 'the Fen salterns', (880, 3350), 300, 34, 'salt works 2 (SW marsh coast)', 'flat shore for sea-salt pans'),
     ('fishing_southcove', 'fishing', 'Seal Rocks', (190, 1800), 200, 12, 'spare: sea fishing', 'a landing among the rain coast\'s rocks'),
     ('fishing_larkfield', 'fishing', 'the Larkfield weir', (1580, 2470), 220, 12, 'spare: river boat', 'the Long River at Larkfield'),
     ('fishing_rainmere', 'fishing', 'Rainmere landing', (1000, 760), 160, 12, 'spare: lake boat', 'Rainmere, in the Rainward Hills'),
@@ -281,7 +316,7 @@ SHORE_TOWNS = {'oakhaven', 'coldwater', 'larkfield', 'mirebridge', 'saltwell'}
 GROUND_OF = {
     'town': (',,,"', 0, ''), 'farmland': (',,,,""', .05, 'B'), 'pasture': (',,,,""3', .03, 'B'), 'orchard': (',,,"', 0, ''),
     'vineyard': (';,,', 0, ''), 'fishing': ('00,', 0, ''), 'mine': ('XXrr.', 0, ''), 'quarry': ('rrX', 0, ''),
-    'clay': ('DD.', 0, ''), 'salt': ('))0', 0, ''), 'timber': (',&&!', .3, '7'), 'mill': ('.,0', 0, ''),
+    'clay': ('DD.', 0, ''), 'salt': ('))))0', 0, ''), 'timber': (',&&!', .3, '7'), 'mill': ('.,0', 0, ''),
     'dairy': (',,,,""', .04, 'B'), 'pigfarm': (',.,D', 0, ''), 'woodpasture': (',', 0, ''), 'warren': ('"0,;', 0, ''),
     'marsh': ('', 0, ''), 'apiary': (',,,3"', 0, ''), 'charcoal': (',..', .2, '7'), 'saltcoast': ('0D.', 0, ''),
 }
@@ -303,21 +338,29 @@ ROADS = [
 ]
 # Each biome's ground (weights), trees (codes, picked evenly), their density in clumps, and extras (code, share).
 PALETTES = {
-    'rainforest': ({',': 3, '!': 4, '&': 3, '"': 1}, '$$$PPP$Y', .5, [('7', .02), ('o', .006), ('B', .03)]),
-    'woodland': ({',': 5, '"': 2, '&': 1, '3': 1, '!': 1}, 'YYYYPB', .34, [('B', .03), ('7', .006), ('o', .004)]),
+    'rainforest': ({'!': 4, '&': 4, ',': 1.2, '"': .4}, '$$$$PPPY', .58, [('7', .025), ('o', .005), ('B', .03), ('2', .003)]),
+    'woodland': ({',': 4, '"': 2, '&': 1.2, '!': 1, '3': .4}, 'YYYYYPB', .5, [('B', .03), ('7', .006), ('o', .003)]),
     'meadow': ({',': 6, '"': 4, '3': 1.2, '5': .5}, 'YYB', .05, [('B', .02), ('o', .003)]),
     'heath': ({'5': 5, ',': 3, '!': 1, '"': 1}, 'PB', .06, [('o', .01), ('B', .03)]),
     'steppe': ({';': 6, ',': 3, '"': 1, '0': .5}, 'B', .05, [('2', .002), ('o', .004)]),
     'scrub': ({';': 4, '0': 3, '(': 1.2, '.': 1, 'X': .8}, 'B', .05, [('?', .014), ('o', .006), ('2', .002)]),
     'sand': ({'0': 9, ';': 1, '(': 1.2, 'X': .8}, '', 0, [('?', .004), ('o', .002)]),
     'montane': ({',': 3, '!': 2, '-': 1, '&': .5}, 'PPPP1', .55, [('o', .01), ('7', .01)]),
-    'subalpine': ({',': 3, '-': 3, '3': 1, 'r': .8, '!': .6}, '1P', .16, [('o', .02)]),
+    'subalpine': ({',': 3, '-': 3, '3': .3, 'r': .8, '!': .6}, '1P', .16, [('o', .02)]),
     'alpine': ({'-': 3, 'r': 3, 's': 2, '*': 1}, '', 0, [('o', .03)]),
     'snow': ({'*': 10, 'r': 1, 's': .6}, '', 0, []),
     'marsh': ({'"': 3, 'E': 3, '!': 2, 'D': 2, 'w': 2, ',': 1}, '@@@2Y', .14, [('B', .02)]),
 }
-# The Rainrun's valley, down the east side of the city's hills to the head of Cedar Sound.
-RAINRUN = [(1180, 60), (1000, 420), (900, 760), (880, 1060), (930, 1290)]
+# Open country is painted calmly: its ground picked tile by tile (not in blotches) from a mix drifting slowly between
+# two, a over b (a pasture's short grass and a hay meadow's tall grass and flowers; the downs' dry grass and their greener
+# hollows), b in the hollows, over about this many tiles; then its scattered trees or shrubs (codes, density in clumps)
+# and extras (code, share).
+CALM = {
+    'meadow': ({',': 8, '"': 1.6, '3': .25}, {'"': 6, ',': 3, '3': .9}, 220, 'Y', .004, [('B', .006), ('o', .001)]),
+    'steppe': ({';': 8, ',': 1.5, '"': .3}, {',': 5, ';': 4, '"': 1}, 160, 'B', .03, [('o', .002), ('2', .0005)]),
+    'scrub': ({';': 5, '0': 3, '.': .6, 'X': .5, '(': .5}, {'0': 5, ';': 3, 'X': 1, '(': 1}, 140, 'BB?', .05, [('o', .004)]),
+    'sand': ({'0': 9, ';': 1, 'X': .6, '(': .6}, {'0': 7, 'X': 1.5, '(': 1.5, ';': .5}, 200, '?', .002, [('o', .002)]),
+}
 # The Rainrun's valley, down the east side of the city's hills to the head of Cedar Sound.
 RAINRUN = [(1180, 60), (1000, 420), (900, 760), (880, 1060), (930, 1290)]
 # The Long River's valley, from the Greyteeth through Glasswater to the fens' delta.
@@ -334,7 +377,7 @@ REGION_IDS = {'sea': 'western_sea', 'sound': 'cedar_sound', 'rainward': 'rainwar
               'saltpan': 'saltpan'}
 # Each region's usual weather (what climateOf reads: rain wet, snow cold, fog a marsh, sandstorm arid, clear temperate).
 WEATHER = {'sea': 'rain', 'sound': 'rain', 'rainward': 'rain', 'rainwood': 'rain', 'whitefangs': 'snow', 'greyteeth': 'snow',
-           'greenholt': 'clear', 'downs': 'clear', 'sunfields': 'clear', 'ochre': 'clear', 'fens': 'fog',
+           'greenholt': 'clear', 'downs': 'clear', 'sunfields': 'clear', 'ochre': 'sandstorm', 'fens': 'fog',
            'waste': 'sandstorm', 'saltpan': 'sandstorm'}
 REGION_TEXT = {
     'sea': ('The Western Sea', 'Grey water off the rain coast, rocks and islets standing out of the swell.'),
@@ -346,7 +389,7 @@ REGION_TEXT = {
     'greenholt': ('The Greenholt', 'The middle country: rolling meadow and woodland, copses on the swells and streams in the hollows.'),
     'downs': ('The Larkdowns', 'Long dry swells of grass under a wide sky, shrubs in the hollows, the Ochre Hills on the skyline.'),
     'sunfields': ('The Sunfields', 'The warm south-middle country: open grassland and woods on gentle swells, good ground for grain, orchards and vines.'),
-    'ochre': ('The Ochre Hills', 'A long ridge of red and yellow rock between the green country and the Red Waste; the rain stops at its crest.'),
+    'ochre': ('The Ochre Hills', 'Broken hills of red and yellow rock between the downs and the Red Waste: sandstone crags and ochre scree laid in beds, dry grass and scrub thinning to sand. The rain seldom gets this far.'),
     'fens': ('The Sallow Fens', 'Reed beds, bog and black pools, creeks winding through willow carr; mist lies here most mornings.'),
     'waste': ('The Red Waste', 'Dry country in the hills\' rain shadow: sand and gravel, scrub and cactus, red rock, dunes driven by the wind.'),
     'saltpan': ('The Saltpan', 'A dry lake bed of white salt crust in the heart of the Red Waste, a bitter pool at its lowest.'),
@@ -546,18 +589,23 @@ class Realm2:
         for a, b in zip(RAINRUN, RAINRUN[1:]):
             rd = np.minimum(rd, seg_dist(px * .3 + xs * .7, py * .3 + ys * .7, a, b)[0])
         e = e - 1.4 * np.exp(-(rd / 110) ** 2)
-        # The ranges, on bent coordinates.
-        rid = ridged(NG, NG, 14, s + 15, 4)
+        # The ranges, on bent coordinates: the mountains' crests worn into valleys and the sharp ridges between them as
+        # the water off them would wear them (carve_range); the low hills by the coast (the Rainward Hills, the coast
+        # range) rounded, with ridged noise for their spurs and gullies.
         mount = np.zeros_like(e)
+        hills = np.zeros_like(e)
         for name, peaks in RANGES.items():
+            plan = hills if name in LOW_RANGES else mount
             for a, b in zip(peaks, peaks[1:]):
                 if math.dist(a[:2], b[:2]) < 520:          # (a gap wider than that is a pass between two ranges)
-                    ridge(mount, a, b, px, py)
+                    ridge(plan, a, b, px, py)
             for p in peaks:
-                ridge(mount, p, (p[0] + 1, p[1], p[2], p[3]), px, py)
-        m = smooth(2.5, 10, mount)
-        mount = mount + (rid - .5) * 4.5 * m * (mount > 1.5)
-        e = np.maximum(e, e * .35 + mount)
+                ridge(plan, p, (p[0] + 1, p[1], p[2], p[3]), px, py)
+        rid = ridged(NG, NG, 14, s + 15, 4)
+        hills = hills + (rid - .5) * 4.5 * smooth(2.5, 10, hills) * (hills > 1.5)
+        e = np.maximum(e, e * .35 + hills)                 # (the low fens raised above the sea, too)
+        e = np.maximum(e, carve_range(e, mount, sea, px, py, s))
+        mount = np.maximum(mount, hills)
         # The pass: a high valley and the saddle north of it.
         vx, vy, rx, ry = PASS_VALLEY
         valley = ellipse(xs, ys, vx, vy, rx, ry, 0, 2.2)
@@ -728,7 +776,7 @@ class Realm2:
         s = self.seed
         Y, X = np.mgrid[0:SIZE, 0:SIZE].astype(np.float32)
         self.X, self.Y = X, Y
-        h = blur(up(self.e), 6)
+        h = blur(up(self.e), 4)
         m = smooth(2.5, 9, blur(up(self.mount_c), 4))
         fens = up(self.fens_c)
         waste = up(self.waste_c) * smooth(.45, .2, up(self.m_c))
@@ -736,13 +784,37 @@ class Realm2:
         # The regions' edges, bent and ragged, for what is painted by region (the fens, the badlands, the dunes).
         self.jit = (field.fbm(SIZE, SIZE, 160, s + 47, 3) - .5) * .7 + (field.fbm(SIZE, SIZE, 24, s + 48, 2) - .5) * .3
         self.fens_j = fens + self.jit
-        # Spurs and gullies on the ranges, fine roughness everywhere but the fens.
-        h += (ridged(SIZE, SIZE, 150, s + 40, 4) - .45) * 4.4 * m + (ridged(SIZE, SIZE, 48, s + 39, 3) - .5) * 1.6 * m
-        h += (field.fbm(SIZE, SIZE, 18, s + 41, 2) - .5) * (1.2 * m + .35 * (1 - fens))
-        h += (field.fbm(SIZE, SIZE, 64, s + 42, 3) - .5) * 1.3 * (1 - fens) * (1 - m)
+        # On the ranges: the crests' finer spurs and the gullies between them (ridged, on bent coordinates, sharpest on
+        # the high ground), and a fine roughness of rock and scree. Elsewhere long gentle swells, barely rough at all.
+        rows, cols = np.nonzero(m.max(axis=1) > .01)[0], np.nonzero(m.max(axis=0) > .01)[0]
+        win = np.s_[rows.min():rows.max() + 1, cols.min():cols.max() + 1]
+        wx, wy = X[win], Y[win]
+        bend = (noise_at(wx, wy, 140, s + 38) - .5) * 60
+        spurs = ridges_at(wx + bend, wy - bend, 110, s + 40, 3)
+        h[win] += (spurs - .3) * 2.6 * m[win] * smooth(3, 8, h[win])
+        del wx, wy, bend, spurs
+        # The Ochre Hills: at the desert's edge a broad belt of broken hills, the sandstone laid in beds (so their slopes
+        # climb in steps), cut by gullies. (The country either side of them is dry too: dry_edge, for the ground.)
+        xs_c, ys_c = grid_xy(NG, G)
+        od = np.full((NG, NG), 1e9, dtype=np.float32)
+        for a, b in zip(RANGES['ochre'], RANGES['ochre'][1:]):
+            od = np.minimum(od, seg_dist(self.px, self.py, a[:2], b[:2])[0])
+        south = smooth(1250, 1550, ys_c)
+        self.dry_edge = up(smooth(380, 120, od) * south) * (1 - fens)
+        belt = up(smooth(290, 70, od) * smooth(1300, 1650, ys_c) * (blur(self.lake_c.astype(np.float32), 4) < .02)) * (1 - fens)
+        rows, cols = np.nonzero(belt.max(axis=1) > .01)[0], np.nonzero(belt.max(axis=0) > .01)[0]
+        win = np.s_[rows.min():rows.max() + 1, cols.min():cols.max() + 1]
+        wx, wy = X[win], Y[win]
+        bend = (noise_at(wx, wy, 160, s + 60) - .5) * 80
+        hills = ridges_at(wx + bend, wy - bend * .6, 130, s + 61, 4)
+        beds = np.floor(hills * 7 + (noise_at(wx, wy, 40, s + 62) - .5) * .8) / 7
+        h[win] += belt[win] * (beds * 5.5 + hills * 1.5 - 1.0)
+        del wx, wy, bend, hills, beds
+        h += (field.fbm(SIZE, SIZE, 14, s + 41, 2) - .5) * (.9 * m + .12 * (1 - fens))
+        h += (field.fbm(SIZE, SIZE, 170, s + 42, 3) - .5) * 1.6 * (1 - fens) * (1 - m)
         # The highest peaks: their heights eased in under the game's 16.
-        h = np.where(h > 10, 10 + 5.6 * np.tanh((h - 10) / 5.6), h)
-        crag = (m > .62) & (h > 11)
+        h = np.where(h > 12, 12 + 3.7 * np.tanh((h - 12) / 3.7), h)
+        crag = (m > .62) & (h > 13)
         # The Red Waste: dunes, mesas and buttes, badlands.
         self.dunes = np.zeros((SIZE, SIZE), dtype=np.float32)
         for cx, cy, rx, ry in DUNES:
@@ -816,11 +888,12 @@ class Realm2:
         land = ~sea
         h[:] = np.where(land, np.maximum(.5, np.minimum(h, shore_cap)), 0)
         self.dsea = dsea
-        # Lakes level, their shores above them.
+        # Lakes level, their shores above them (but not the water running in or out: a river's surface stays its own,
+        # which lay_rivers keeps at or above the lake upstream of it and at or below it downstream).
         h[lake] = self.lake_level[lake]
         dl = dist_to(lake, 6)
         lv = grow_values(self.lake_level, lake, 6)
-        rim = (dl > 0) & (dl <= 6) & ~sea
+        rim = (dl > 0) & (dl <= 6) & ~sea & ~self.river & ~self.wash & ~self.creek & ~self.pool
         h[rim] = np.maximum(h[rim], lv[rim] + .5)
         self.t('water', t0)
 
@@ -891,6 +964,14 @@ class Realm2:
             L = len(surf)
             surf = np.minimum(surf, end + .012 * 2.0 * (L - 1 - np.arange(L)))
             surf = np.maximum(surf, end)
+            # Through a lake the water is the lake's: never above a lake upstream, never below one downstream.
+            lv = np.array([self.lake_level[min(SIZE - 1, int(y)), min(SIZE - 1, int(x))]
+                           if self.lake[min(SIZE - 1, int(y)), min(SIZE - 1, int(x))] else np.nan for x, y in fine],
+                          dtype=np.float32)
+            if np.isfinite(lv).any():
+                hi = np.minimum.accumulate(np.where(np.isfinite(lv), lv, np.inf))
+                lo = np.maximum.accumulate(np.where(np.isfinite(lv), lv, -np.inf)[::-1])[::-1]
+                surf = np.minimum.accumulate(np.minimum(np.maximum(surf, lo), hi))
             dry = float(np.mean([sample(m_c, x, y) for x, y in fine[::10]])) < .3
             valley = 26 if not dry else 12
             for k in range(0, L, 2):
@@ -909,7 +990,7 @@ class Realm2:
                 river_w[y0:y1, x0:x1][better] = w
                 river_dry[y0:y1, x0:x1][better] = dry
                 river_v[y0:y1, x0:x1][better] = valley
-            self.river_lines.append({'pts': fine[::8] + [fine[-1]], 'flow': float(fl.max()), 'width': float(width.max()),
+            self.river_lines.append({'pts': fine[::8] + [fine[-1]], 'course': fine, 'flow': float(fl.max()), 'width': float(width.max()),
                                      'dry': dry, 'major': line['major'], 'from': fine[0], 'to': fine[-1],
                                      'top': float(surf[0]), 'mouth': float(surf[-1])})
         water = (river_d < 0) & ~self.sea & ~self.lake & ~self.keep
@@ -977,31 +1058,64 @@ class Realm2:
         rng = np.random.default_rng(s + 80)
         grain = rng.random((SIZE, SIZE), dtype=np.float32)
         pick = rng.random((SIZE, SIZE), dtype=np.float32)
+        self.mixr = rng.random((SIZE, SIZE), dtype=np.float32)
         detail = field.fbm(SIZE, SIZE, 13, s + 81, 2)
         clump = field.fbm(SIZE, SIZE, 22, s + 82, 3)
         self.grain, self.pick, self.detail, self.clump = grain, pick, detail, clump
         mild = np.exp(-up(field.distance_to_mask(self.sea_c, 200).astype(np.float32)) * G / 700)
-        temp = 14 - 10.5 * (1 - Y / SIZE) - 1.15 * np.maximum(h, 0) + 4 * mild + 3 * self.waste
-        temp += (field.fbm(SIZE, SIZE, 40, s + 83, 3) - .5) * 1.6 + (grain - .5) * .9
-        wet = up(self.m_c) + (field.fbm(SIZE, SIZE, 50, s + 84, 3) - .5) * .22 + (pick - .5) * .05
-        self.temp, self.wet = temp, wet
+        # The lie of the land: how steep, which way it faces (north faces are colder), crests (above the ground about
+        # them) and hollows (below it).
+        gy, gx = np.gradient(blur(h, 2))
+        slope = np.hypot(gx, gy)
+        north = np.clip(gy / (slope + .03), -1, 1) * smooth(.02, .1, slope)
+        lap = blur(h, 2) - blur(h, 8)
+        del gy, gx
+        self.slope, self.lap = slope, lap
+        temp = 14 - 10.5 * (1 - Y / SIZE) - .95 * np.maximum(h, 0) + 4 * mild + 3 * self.waste
+        temp -= 3 * smooth(520, 0, Y) * smooth(900, 1300, X)       # (the Whitefangs go on north, colder, past the edge)
+        temp += (field.fbm(SIZE, SIZE, 40, s + 83, 3) - .5) * 1.2 + (grain - .5) * .6
+        # How cold a place is for its snow and its trees: a north face or a hollow holds the cold (and the snow), a crest
+        # is swept bare by the wind.
+        cold = temp - 2.8 * north + 2.4 * np.clip(lap, -1, 1)
+        # Wetness drifts slowly over the land (the regions blend over hundreds of tiles, picked tile by tile at the
+        # edges rather than in blotches).
+        wet = up(self.m_c) + (field.fbm(SIZE, SIZE, 300, s + 84, 3) - .5) * .12 + \
+            (field.fbm(SIZE, SIZE, 60, s + 91, 2) - .5) * .05 + (pick - .5) * .04
+        # The desert's edge: the Ochre Hills are dry country, their own rain wrung out on the downs below them, so the
+        # green thins to dry grass, scrub and sand across them whatever the wind brings.
+        dry = self.dry_edge
+        k = smooth(0, .25, dry)
+        wet = wet * (1 - k) + np.minimum(wet, .46 - .24 * dry) * k
+        xs_c, ys_c = grid_xy(NG, G)
+        self.temp, self.wet, self.cold = temp, wet, cold
         codes = np.full((SIZE, SIZE), ord(','), dtype=np.uint8)
         land = ~(self.sea | self.lake | self.river | self.pan | self.creek | self.pool)
+        # The biomes' edges are ragged, interleaving over tens of tiles: their thresholds read the wetness jittered.
+        wj = wet + (field.fbm(SIZE, SIZE, 45, s + 94, 3) - .5) * .14 + (grain - .5) * .05
         B = {}
-        snowline = temp + (clump - .5) * 3.0
-        B['snow'] = land & (snowline < -8)
-        B['alpine'] = land & (snowline >= -8) & (temp < -4.5)
-        B['subalpine'] = land & (temp >= -4.5) & (temp < -1.5)
-        B['montane'] = land & (temp >= -1.5) & (temp < 3) & (wet >= .32)
-        warm = land & (temp >= 3) | (land & (temp >= -1.5) & (wet < .32))
-        B['rainforest'] = warm & (wet >= .7)
-        B['woodland'] = warm & (wet >= .56) & (wet < .7)
-        B['meadow'] = warm & (wet >= .38) & (wet < .56)
-        B['steppe'] = warm & (wet >= .26) & (wet < .38)
-        B['scrub'] = warm & (wet >= .14) & (wet < .26)
-        B['sand'] = warm & (wet < .14)
-        # The rain coast's hills above the woods: heath and moor (as the city's moor was).
-        heath = (B['woodland'] | B['rainforest'] | B['meadow']) & (h > 4.5) & (wet > .5) & (field.fbm(SIZE, SIZE, 90, s + 85, 2) > .52)
+        hills = dry > .35                                           # (no snow, pine or heather on the dry hills)
+        snow_v = cold + (clump - .5) * 2.2
+        B['snow'] = land & (snow_v < -4.3) & ~hills
+        B['alpine'] = land & ~B['snow'] & (cold < -4.2) & ~hills
+        B['subalpine'] = land & (cold >= -4.2) & (cold < -1.5) & ~hills
+        B['montane'] = land & (cold >= -1.5) & (cold < 3) & (wj >= .32) & ~hills
+        warm = land & ~(B['snow'] | B['alpine'] | B['subalpine'] | B['montane'])
+        # The middle country's woods and open ground: big woods and wide meadows, by a slow noise leaning to woods
+        # where it is wetter; the rain coast all forest.
+        woods = field.fbm(SIZE, SIZE, 260, s + 90, 3) + (wet - .56) * 1.4 + (field.fbm(SIZE, SIZE, 30, s + 89, 2) - .5) * .1
+        # The rain coast (the city's country, the Rainwood, the sound) is rain forest down to the shore.
+        coastal = up(smooth(1100, 500, field.distance_to_mask(self.sea_c, 160).astype(np.float32) * G) *
+                     smooth(2500, 2100, ys_c) * smooth(1700, 1300, xs_c))
+        rain = .7 - .16 * coastal
+        B['rainforest'] = warm & (wj >= rain)
+        B['woodland'] = warm & (wj >= .45) & (wj < rain) & (woods > .53)
+        B['meadow'] = warm & (wj >= .38) & (wj < rain) & ~B['woodland']
+        B['steppe'] = warm & (wj >= .26) & (wj < .38)
+        B['scrub'] = warm & (wj >= .14) & (wj < .26)
+        B['sand'] = warm & (wj < .14)
+        # The rain coast's hills above the woods: heath and moor, on the Rainward Hills' tops (not round the city).
+        heath = (B['woodland'] | B['rainforest'] | B['meadow']) & (h > 4.5) & (wet > .5) & \
+            (field.fbm(SIZE, SIZE, 90, s + 85, 2) > .52) & (self.from_city > 300) & (dry < .05)
         B['heath'] = heath
         for k in ('woodland', 'rainforest', 'meadow'):
             B[k] &= ~heath
@@ -1010,29 +1124,67 @@ class Realm2:
         for k in list(B):
             if k != 'marsh':
                 B[k] &= ~fz
-        # Near the city: the woods cleared back from the walls and the roads, its old moor showing through.
-        near = smooth(120, 24, self.from_city) * .8
+        # Round the city: clear ground along its roads, by its gates and walls and the Houses' grounds (everything it
+        # holds), the forest standing close beyond.
+        near = smooth(30, 6, self.from_city)
         self.near_city = near
         self.biomes = B
         P = PALETTES
         for name, mask in B.items():
-            self.paint_palette(codes, mask, P[name], thin=near)
-        # Bare rock and scree where the mountains are steep; glaciers in the coldest hollows.
-        gy, gx = np.gradient(blur(h, 1))
-        steep = np.hypot(gx, gy) > .34
-        crags = (B['snow'] | B['alpine'] | B['subalpine']) & steep
-        codes[crags] = np.where(pick[crags] < .55, ord('r'), np.where(pick[crags] < .85, ord('s'), ord('o')))
-        ice = B['snow'] & ~steep & (temp < -12.5) & (detail > .42)
+            if name in CALM:
+                self.paint_calm(codes, mask, *CALM[name])
+            else:
+                self.paint_palette(codes, mask, P[name], thin=near)
+        # The plains' copses and hedgerows; the downs' gorse.
+        self.copses(codes, B['meadow'] & (near < .2))
+        self.hedgerows(codes, B['meadow'] & (near < .2) & (field.fbm(SIZE, SIZE, 420, s + 92, 2) > .42))
+        # The mountains: bare rock on the steep faces and the crests, rock standing out of the snow, scree at the foot
+        # of the rock, glaciers in the high hollows; the pines snowy near the tree line.
+        fine = field.fbm(SIZE, SIZE, 9, s + 93, 2)
+        hi = land & (cold < -3.2) & ~hills
+        steep = slope > (.13 + .1 * np.clip(north, 0, 1))
+        rock = hi & (steep | (lap > .22))
+        codes[rock] = np.where(pick[rock] < .62, ord('r'), np.where(pick[rock] < .9, ord('s'), ord('o')))
+        out = B['snow'] & ((lap > .13 + .14 * (fine - .5)) | (slope > .105 + .07 * (fine - .5)))
+        codes[out] = np.where(pick[out] < .7, ord('r'), ord('s'))
+        apron = hi & ~rock & ~B['snow'] & (slope > .07) & (lap < -.05)
+        codes[apron] = np.where(pick[apron] < .55, ord('s'), np.where(pick[apron] < .7, ord('o'), codes[apron]))
+        ice = B['snow'] & (lap < -.12) & (slope < .12) & (snow_v < -8.5)
         codes[ice] = ord('J')
-        del gy, gx
+        snowy = (B['montane'] | B['subalpine']) & (codes == ord('P')) & (cold < 0) & (pick < .45 - .12 * cold)
+        codes[snowy] = ord('1')
+        parched = (B['subalpine'] | B['alpine']) & (wet < .32) & np.isin(codes, [ord('P'), ord('1')])   # (no pines in dry ground)
+        codes[parched] = np.where(pick[parched] < .5, ord('B'), ord(';'))
+        self.rock = rock
+        # The Ochre Hills: red sandstone on their crests and steep faces, ochre scree and sand below, dry grass and
+        # scrub between.
+        bare = land & ~fz & (dry > .3) & ((slope > .09) | (lap > .16) | (fine * dry > .62))
+        beds = (np.floor(h * 2 + (detail - .5) * 1.2).astype(np.int32) % 5)[bare]
+        strata = np.array([ord(c) for c in '(((0('], dtype=np.uint8)
+        scree = np.array([ord(c) for c in '(0X;('], dtype=np.uint8)
+        steep_ = slope[bare] > .14
+        codes[bare] = np.where(steep_ | (lap[bare] > .2), strata[beds], scree[(beds + (pick[bare] * 2).astype(int)) % 5])
+        cact = bare & (grain < .006)
+        codes[cact] = ord('?')
+        self.ochre_rock = bare
+        del fine
         # Overlays: the Red Waste's forms, the coast, the banks, the ravines.
+        # The badlands: their terraces' risers banded red, yellow and grey by height, the flats between sandstone and
+        # sand, the gullies sand.
         bad = land & (self.bad > .5)
-        bands = np.array([ord(c) for c in '(r(X(s'], dtype=np.uint8)
-        codes[bad] = bands[self.band[bad].astype(int) % len(bands)]
-        gully = bad & (self.detail > .62)
-        codes[gully] = np.where(pick[gully] < .7, ord('0'), ord('B'))
+        riser = bad & (slope > .11)
+        bands = np.array([ord(c) for c in '((X(0(r'], dtype=np.uint8)
+        codes[riser] = bands[np.floor(h[riser] * 2).astype(np.int32) % len(bands)]
+        flat = bad & ~riser
+        codes[flat] = np.where(pick[flat] < .5, ord('('), np.where(pick[flat] < .75, ord('0'), np.where(pick[flat] < .9, ord(';'), ord('X'))))
+        gully = bad & (lap < -.2)
+        codes[gully] = np.where(pick[gully] < .75, ord('0'), np.where(pick[gully] < .9, ord('X'), ord('B')))
         mt = land & (self.mesa > .3) & ((h > 7) | self.mesa_top)
-        self.mix(codes, mt, {'(': 4, ';': 3, '0': 1, 'r': 1}, trees='?', density=.01)
+        top = mt & self.mesa_top
+        codes[top] = np.where(pick[top] < .55, ord('('), np.where(pick[top] < .85, ord(';'), np.where(pick[top] < .95, ord('0'), ord('?'))))
+        flank = mt & ~self.mesa_top
+        beds = np.floor(h[flank] * 2).astype(np.int32) % 4
+        codes[flank] = np.array([ord(c) for c in '((0('], dtype=np.uint8)[beds]
         dz = land & (self.dunes > .5) & (wet < .3)
         self.mix(codes, dz, {'0': 12, ';': 1}, trees='?', density=.003)
         codes[self.pan] = ord(')')
@@ -1041,13 +1193,18 @@ class Realm2:
         codes[brine] = ord('~')
         h[brine] = self.pan_level
         self.brine = brine
-        # The coast: rock and shingle on the rain coast, sand in the coves, mud flats and reeds by the fens.
+        # The coast: mossy rock, boulders and shingle on the rain coast, a little sand in the coves, mud flats and reeds
+        # by the fens.
         dsea = self.dsea
-        coast = land & (dsea <= 3)
-        rocky = coast & (Y < 2400) & (detail > .4)
-        codes[rocky] = np.where(pick[rocky] < .3, ord('o'), np.where(pick[rocky] < .5, ord('!'), ord('r')))
-        cove = coast & (Y < 2400) & (detail <= .4)
-        codes[cove] = np.where(pick[cove] < .05, ord('7'), ord('0'))
+        coast = land & (dsea <= 3 + 2 * (detail > .55))
+        rocky = coast & (Y < 2400) & (detail > .3)
+        codes[rocky] = np.where(pick[rocky] < .34, ord('r'), np.where(pick[rocky] < .6, ord('!'), np.where(
+            pick[rocky] < .76, ord('o'), np.where(pick[rocky] < .88, ord('s'), ord('&')))))
+        cove = coast & (Y < 2400) & (detail <= .3) & (dsea <= 3)
+        codes[cove] = np.where(pick[cove] < .05, ord('7'), np.where(pick[cove] < .3, ord('s'), ord('0')))
+        # In the rain forest the hollows are ferny: fern and moss under the trees, where the water runs after rain.
+        fern = land & B['rainforest'] & (lap < -.18) & ~SOLID[codes]
+        codes[fern] = np.where(pick[fern] < .55, ord('&'), np.where(pick[fern] < .85, ord('!'), codes[fern]))
         flats = land & (dsea <= 18) & (self.fens > .4)
         codes[flats] = np.where(pick[flats] < .55, ord('D'), np.where(pick[flats] < .8, ord('E'), ord('"')))
         # Dunes along the fens' sea shore, between the mud flats: sand and marram grass.
@@ -1100,8 +1257,8 @@ class Realm2:
             return
         self.mix(codes, mask, ground, trees=None)
         if trees:
-            chance = density * np.clip((self.clump - .32) * 2.6, 0, 2.2)
-            if thin is not None:
+            chance = density * (np.clip((self.clump - .32) * 2.6, 0, 2.2) + (.12 if trees.count('$') > 2 else 0))
+            if thin is not None:                        # (the rain forest is never open, only thinner between groves)
                 chance = chance * (1 - .85 * thin)
             grove = mask & (self.grain < chance)
             kinds = np.array([ord(t) for t in trees], dtype=np.uint8)
@@ -1109,10 +1266,98 @@ class Realm2:
         for code, share in extras:
             codes[mask & (self.pick < share) & (self.grain > .5)] = ord(code)
         if thin is not None:
-            # Near the city the woods were cleared long ago: rough grass, bracken and the odd stump of heather.
+            # Near the city the woods were cleared long ago: rough grass, bracken and moss.
             open_ = mask & (thin > .15) & (self.grain < thin * .8)
-            codes[open_] = np.where(self.pick[open_] < .5, ord(','), np.where(self.pick[open_] < .75, ord('"'),
-                                    np.where(self.pick[open_] < .92, ord('&'), ord('5'))))
+            codes[open_] = np.where(self.pick[open_] < .5, ord(','), np.where(self.pick[open_] < .72, ord('"'),
+                                    np.where(self.pick[open_] < .88, ord('&'), ord('!'))))
+
+    def paint_calm(self, codes, mask, a, b, scale, trees, density, extras):
+        """Open ground (CALM): each tile picked from a mix drifting slowly from `a` to `b` (and to `b` in the hollows),
+        so the ground changes over hundreds of tiles with no blotches; then scattered trees in clumps, and extras."""
+        if not mask.any():
+            return
+        idx = np.nonzero(mask)
+        slow = field.fbm(SIZE, SIZE, scale, self.seed + 95 + int(scale), 3)[idx]
+        t = np.clip(smooth(.38, .62, slow) + .8 * smooth(-.08, -.35, self.lap[idx]), 0, 1)
+        keys = sorted(set(a) | set(b))
+        w = np.stack([(1 - t) * a.get(k, 0) + t * b.get(k, 0) for k in keys], axis=1)
+        edges = np.cumsum(w / w.sum(axis=1, keepdims=True), axis=1)
+        choice = (self.mixr[idx][:, None] > edges).sum(axis=1)
+        codes[idx] = np.array([ord(k) for k in keys], dtype=np.uint8)[np.minimum(choice, len(keys) - 1)]
+        if trees:
+            chance = density * np.clip((self.clump - .32) * 2.6, 0, 2.2)
+            grove = mask & (self.grain < chance)
+            kinds = np.array([ord(c) for c in trees], dtype=np.uint8)
+            codes[grove] = kinds[(self.pick[grove] * len(trees)).astype(int) % len(trees)]
+        for code, share in extras:
+            codes[mask & (self.pick < share) & (self.grain > .5)] = ord(code)
+
+    def copses(self, codes, mask, spacing=96, chance=.5):
+        """Copses in open country: a few in every square of `spacing` tiles, rounded, ragged, broadleaf with a shrubby
+        edge and the odd pine; lone trees about them."""
+        rng = np.random.default_rng(self.seed + 96)
+        n = SIZE // spacing + 1
+        for gy in range(n):
+            for gx in range(n):
+                if rng.random() >= chance:
+                    continue
+                x, y = (gx + rng.random()) * spacing, (gy + rng.random()) * spacing
+                r = 4 + 17 * rng.random() ** 2
+                R_ = int(r * 1.4) + 2
+                x0, x1, y0, y1 = max(0, int(x) - R_), min(SIZE, int(x) + R_), max(0, int(y) - R_), min(SIZE, int(y) + R_)
+                if x0 >= x1 or y0 >= y1 or not mask[int(min(y, SIZE - 1)), int(min(x, SIZE - 1))]:
+                    continue
+                win = np.s_[y0:y1, x0:x1]
+                d = np.hypot(self.X[win] + .5 - x, self.Y[win] + .5 - y) / (r * (.7 + .6 * self.detail[win]))
+                here = mask[win] & (d < 1)
+                pick = self.pick[win]
+                tree = here & (pick < .78 - .3 * d)
+                cv = codes[win]
+                cv[here & (d > .75) & (pick < .5)] = ord('B')
+                cv[tree] = np.where(pick[tree] < .07, ord('P'), ord('Y'))
+        lone = mask & (self.grain < .0025) & (self.pick > .5)
+        codes[lone] = ord('Y')
+
+    def hedgerows(self, codes, mask, spacing=150):
+        """Hedgerows across open farmland: the edges between fields (the borders of a Voronoi of points jittered over a
+        grid, on bent coordinates, so the fields are irregular), 2 tiles of shrub with a tree now and then and gaps to
+        walk through."""
+        rows, cols = np.nonzero(mask.any(axis=1))[0], np.nonzero(mask.any(axis=0))[0]
+        if not len(rows):
+            return
+        y0, y1, x0, x1 = rows.min(), rows.max() + 1, cols.min(), cols.max() + 1
+        win = np.s_[y0:y1, x0:x1]
+        X, Y = self.X[win], self.Y[win]
+        bx = X + (noise_at(X, Y, 110, self.seed + 97) - .5) * 70
+        by = Y + (noise_at(X, Y, 110, self.seed + 98) - .5) * 70
+        rng = np.random.default_rng(self.seed + 99)
+        n = SIZE // spacing + 3
+        jx, jy = rng.random((n, n)), rng.random((n, n))
+        gx0, gy0 = np.floor(bx / spacing).astype(int), np.floor(by / spacing).astype(int)
+        d1 = np.full(X.shape, 1e9, dtype=np.float32)
+        d2 = np.full(X.shape, 1e9, dtype=np.float32)
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                cx, cy = np.clip(gx0 + dx, 0, n - 1), np.clip(gy0 + dy, 0, n - 1)
+                d = np.hypot(bx - (cx + jx[cy, cx]) * spacing, by - (cy + jy[cy, cx]) * spacing)
+                d2 = np.minimum(d2, np.maximum(d1, d))
+                d1 = np.minimum(d1, d)
+        # Each field its own: a hay meadow (tall grass, flowers) or a grazed pasture (short grass), and shades between.
+        hay = np.zeros(X.shape, dtype=np.float32)
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                cx, cy = np.clip(gx0 + dx, 0, n - 1), np.clip(gy0 + dy, 0, n - 1)
+                d = np.hypot(bx - (cx + jx[cy, cx]) * spacing, by - (cy + jy[cy, cx]) * spacing)
+                hay = np.where(d <= d1 + 1e-3, ((cx * 7919 + cy * 104729) % 97) / 96.0, hay)
+        del bx, by, gx0, gy0
+        pick = self.pick[win]
+        cv = codes[win]
+        field_ = mask[win] & ~SOLID[cv] & (cv != ord('B'))
+        r = self.mixr[win]
+        tall = .06 + .55 * hay ** 2
+        cv[field_] = np.where(r[field_] < tall[field_], ord('"'), np.where(r[field_] > .985 - .03 * hay[field_], ord('3'), ord(',')))
+        edge = mask[win] & (d2 - d1 < 2.0) & (self.detail[win] > .36)
+        cv[edge] = np.where(pick[edge] < .12, ord('Y'), ord('B'))
 
     def mix(self, codes, mask, ground, trees=None, density=0.0):
         keys = list(ground)
@@ -1179,6 +1424,7 @@ class Realm2:
         hc = down(h, G)
         wc = down(water.astype(np.float32), G)
         rc = down(self.river.astype(np.float32), G)
+        big = down((self.river & (self.river_w >= 3)).astype(np.float32), G)      # (a mill on a river, not a brook)
         sc = down(self.sea.astype(np.float32), G)
         gy, gx = np.gradient(hc)
         slope = np.hypot(gx, gy) / G
@@ -1199,7 +1445,7 @@ class Realm2:
             if kind in ('fishing', 'clay', 'salt'):
                 score = score + np.where(near_water > .03, 0, 50)
             if kind == 'mill':
-                score = score + np.where(blur(rc, 2) > .02, 0, 80)
+                score = score + np.where(blur(big, 2) > .02, 0, 80)
             if kind == 'saltcoast':
                 score = score + np.where(blur(sc, 3) > .05, 0, 80)
             if kind == 'farmland':
@@ -1229,7 +1475,7 @@ class Realm2:
             if kind == 'fishing':
                 x, y = self.landing(x, y, size)
             elif kind == 'mill':
-                x, y = self.landing(x, y, size, self.river)
+                x, y = self.landing(x, y, size + 60, self.river & (self.river_w >= 3))
             elif kind == 'saltcoast':
                 x, y = self.landing(x, y, size, self.sea)
             rr = r + 2
@@ -1261,7 +1507,10 @@ class Realm2:
         x0, x1, y0, y1 = max(0, x - R), min(SIZE, x + R), max(0, y - R), min(SIZE, y + R)
         X, Y = self.X[y0:y1, x0:x1], self.Y[y0:y1, x0:x1]
         n = field.fbm(x1 - x0, y1 - y0, max(6, size / 3), self.seed + 900 + x + y, 2)
-        shape = np.hypot((X - x) / size, (Y - y) / (size * (.75 if kind in FIELDS else 1))) + (n - .5) * .35
+        if kind == 'farmland':                          # (a grain farm: about 2 x size tiles square, its corners rounded)
+            shape = ((np.abs(X - x) / size) ** 6 + (np.abs(Y - y) / size) ** 6) ** (1 / 6) + (n - .5) * .12
+        else:
+            shape = np.hypot((X - x) / size, (Y - y) / (size * (.75 if kind in FIELDS else 1))) + (n - .5) * .35
         area = (shape < 1) & ~self.water[y0:y1, x0:x1] & ~self.hold[y0:y1, x0:x1]
         hv = self.h[y0:y1, x0:x1]
         cv = self.codes[y0:y1, x0:x1]
@@ -1302,8 +1551,29 @@ class Realm2:
             clear = free & np.isin(cv, CLEARABLE) & (pick < (1 - smooth(.8, 1.12, shape) * .9) * (1 - keep_trees))
             local = np.where(wet < .34, ord(';'), np.where(pick < .7, ord(','), ord('"'))).astype(np.uint8)
             cv[clear] = local[clear]
+            if kind == 'farmland':
+                self.fields(site, np.s_[y0:y1, x0:x1], free & (shape < .97))
         site['tiles'] = int(area.sum())
         self.locked[y0:y1, x0:x1] |= area & (shape < .6) & (kind == 'town')
+
+    def fields(self, site, win, inside, n=9):
+        """A grain farm's ground as several fields round its middle (where the steading will stand): the borders of a
+        Voronoi of a few points over it, drawn as hedgerows of shrub with a tree now and then and gaps to pass."""
+        rng = np.random.default_rng(self.seed + 950 + site['x'])
+        size = site['size']
+        pts = [(site['x'] + (rng.random() * 2 - 1) * size * .8, site['y'] + (rng.random() * 2 - 1) * size * .8) for _ in range(n)]
+        X, Y = self.X[win], self.Y[win]
+        d1 = np.full(X.shape, 1e9, dtype=np.float32)
+        d2 = np.full(X.shape, 1e9, dtype=np.float32)
+        bend = (self.detail[win] - .5) * 14
+        for px_, py_ in pts:
+            d = np.hypot(X + bend - px_, Y - bend - py_)
+            d2 = np.minimum(d2, np.maximum(d1, d))
+            d1 = np.minimum(d1, d)
+        pick = self.pick[win]
+        hedge = inside & (d2 - d1 < 2.2) & (self.mixr[win] > .08)
+        self.codes[win][hedge] = np.where(pick[hedge] < .1, ord('Y'), ord('B'))
+        site['fields'] = n
 
     # -- roads ----------------------------------------------------------------------------------------------------
     def route_cost(self):
@@ -1408,6 +1678,10 @@ class Realm2:
         if ch == '/':
             on &= ~self.road_mask[win]                   # (a track joining a road keeps the road's tiles)
         cv = self.codes[win]
+        if ch != '/':
+            # A road's verges are kept clear: no tree, shrub or boulder within a few tiles of it.
+            verge = (dist <= width / 2 + 4) & ~on & ~self.locked[win] & ~water & np.isin(cv, CLEARABLE)
+            cv[verge] = np.where(self.wet[win][verge] < .34, ord(';'), np.where(self.pick[win][verge] < .75, ord(','), ord('"')))
         bridge = on & water
         cv[on & ~water] = ord(ch)
         cv[bridge] = ord('8')
@@ -1496,17 +1770,17 @@ class Realm2:
         x, y = x0 + CELL / 2, y0 + CELL / 2
         desert = share['sand'] + share['scrub'] + float((self.bad[win] > .5).sum()) / n
         cold = share['snow'] + share['alpine'] + share['subalpine']
-        ochre = min(math.dist((x, y), p[:2]) for p in RANGES['ochre'])
+        ochre = float((self.ochre_rock[win] | (self.dry_edge[win] > .7)).sum()) / n
         if sea > .55:
             return 'sound' if 1150 < y < 1550 and x > 150 else 'sea'
         if self.pan[win].any():
             return 'saltpan'
         if share['marsh'] > .3:
             return 'fens'
+        if ochre > .45 and y > 1500:
+            return 'ochre'
         if desert > .45:
             return 'waste'
-        if ochre < 230 and y > 1500:
-            return 'ochre'
         if cold > .3 or (y < 600 and x > 1000):
             return 'greyteeth' if x > 3200 and y > 500 else 'whitefangs'
         if x < 1500 and y < 1100:
@@ -1584,6 +1858,9 @@ class Realm2:
         snowy = float((self.biomes['snow'][win] | self.biomes['alpine'][win]).sum()) / n
         if region in ('whitefangs', 'greyteeth') and (snowy > .2 or float(np.median(self.temp[win])) < -3):
             return 'snow'
+        # The desert's edge is dry country whatever its region: arid (no rain but its own rare showers, RatwWeather).
+        if WEATHER[region] == 'clear' and float(np.mean(self.dry_edge[win])) > .5:
+            return 'sandstorm'
         return WEATHER[region]
 
     def describe(self, cx, cy, region, sites, lakes, rivers):
@@ -1735,20 +2012,28 @@ class Realm2:
                 poor.append(f'{c["id"]} {int(reach[y0:y0 + CELL, x0:x0 + CELL].sum() * 100 / land.sum())}%')
         check('in every cell, most open ground is reached from the city', len(poor) <= 3, ', '.join(poor[:12]))
         self.reached_share = float(reach.sum()) / float((~SOLID[self.codes]).sum())
-        # Water runs downhill: along every river, the water's surface never rises downstream.
-        uphill = 0
+        # Water runs downhill: along every river, tile by tile from its source to its mouth and through the lakes on its
+        # way, the water's surface never rises (a bridge's deck is the road's, not the water's).
+        water = (self.river | self.lake | self.sea | self.creek | self.pool) & ~self.keep & (self.codes != ord('8'))
+        uphill, worst, where = 0, 0.0, []
         for l in self.river_lines:
             if l['dry']:
                 continue
-            last = 99.0
-            for x, y in l['pts']:
+            last, prev = None, None
+            for x, y in l['course']:
                 xi, yi = min(SIZE - 1, int(x)), min(SIZE - 1, int(y))
-                if self.river[yi, xi]:
-                    v = float(self.h[yi, xi])
-                    if v > last + .5:
-                        uphill += 1
-                    last = min(last, v)
-        check('no river runs uphill', uphill == 0, f'{uphill} rises')
+                if (xi, yi) == prev or not water[yi, xi]:
+                    continue
+                prev = (xi, yi)
+                v = float(self.h[yi, xi])
+                if last is not None and v > last:
+                    uphill += 1
+                    worst = max(worst, v - last)
+                    where.append(f'{xi},{yi}')
+                last = v if last is None else min(last, v)
+                if self.sea[yi, xi]:
+                    break                                   # (its mouth)
+        check('no river runs uphill', uphill == 0, f'{uphill} rises (the worst {worst:g}): {", ".join(where[:12])}')
         check('heights within the game\'s +-16', float(self.h.max()) <= 16 and float(self.h.min()) >= -16)
         check('no word "dog" in the realm\'s text', not any(re.search(r'\bdogs?\b', (c['name'] + ' ' + c['description']).lower())
                                                            for c in cells))
@@ -1768,6 +2053,54 @@ def ridge(h, a, b, px, py):
     core = crest * np.exp(-(d / w) ** 1.5)
     foot = .4 * crest * np.exp(-(d / (2.6 * w)) ** 2)
     np.maximum(h, np.maximum(core, foot), out=h)
+
+
+def octagonal_distance(mask, limit):
+    """Steps from each node to the nearest True one (4-way and 8-way steps in turn, so nearly round), capped."""
+    dist = np.where(mask, 0, limit).astype(np.float32)
+    current = mask.copy()
+    for d in range(1, limit):
+        grown = current.copy()
+        grown[1:, :] |= current[:-1, :]
+        grown[:-1, :] |= current[1:, :]
+        grown[:, 1:] |= current[:, :-1]
+        grown[:, :-1] |= current[:, 1:]
+        if d % 2 == 0:
+            grown[1:, 1:] |= current[:-1, :-1]
+            grown[1:, :-1] |= current[:-1, 1:]
+            grown[:-1, 1:] |= current[1:, :-1]
+            grown[:-1, :-1] |= current[1:, 1:]
+        fresh = grown & ~current
+        if not fresh.any():
+            break
+        dist[fresh] = d
+        current = grown
+    return dist
+
+
+def carve_range(foot, plan, sea, px, py, seed):
+    """The ranges as water would have worn them (the coarse grid): the plan's mass (`plan`, the crests' heights) is
+    drained (priority flood, steepest descent) and wherever enough ground drains through a node a valley runs; the
+    land rises from each valley floor to the divides between them, so the crests are the sharp lines halfway between
+    valleys, branching as the valleys do, and highest where the valleys are far apart and the plan is high."""
+    core = smooth(.6, 9, plan)                                   # how much of a range it is (0-1)
+    crests = ridges_at(px * 1.05 + py * .18, py * .9 - px * .12, 260, seed + 15, 4)
+    first = foot + plan * (.55 + .6 * crests)
+    seeds = sea | (core < .02)
+    seeds[0, :] = seeds[-1, :] = seeds[:, 0] = seeds[:, -1] = True
+    filled, _ = priority_flood(first, seeds)
+    down = steepest(filled, seeds).ravel()
+    area = np.ones(first.size, dtype=np.float64)
+    for i in np.argsort(-filled, axis=None):
+        if down[i] >= 0:
+            area[down[i]] += area[i]
+    area = area.reshape(first.shape)
+    valleys = (area >= 7) & (core > .02)
+    apart = blur(octagonal_distance(valleys, 24), 1)
+    # The valley floors climb into the range (lowest where the most water has gathered); the walls rise from them.
+    floor = foot + core * np.clip(plan * .4 - .55 * np.log1p(area / 7), 0, None)
+    walls = plan * (.4 + .5 * crests) * (1 - np.exp(-apart / 2.4))
+    return floor + core * walls
 
 
 STEPS8 = [(-1, 0, 1), (1, 0, 1), (0, -1, 1), (0, 1, 1), (-1, -1, 1.41), (-1, 1, 1.41), (1, -1, 1.41), (1, 1, 1.41)]
@@ -2016,6 +2349,11 @@ _BG = np.zeros((128, 3), dtype=np.float32)
 for _t in terrain_catalog.TILES:
     _FG[ord(_t['code'])] = [int(_t['fg'][i:i + 2], 16) for i in (1, 3, 5)]
     _BG[ord(_t['code'])] = [int(_t['bg'][i:i + 2], 16) for i in (1, 3, 5)]
+# Trees and shrubs drawn a shade darker than the ground under them (their shadow), so woods, copses and hedges read on
+# the map as the player's glyphs read in the game.
+_CANOPY = np.ones(128, dtype=np.float32)
+for _c, _v in (('Y', .72), ('P', .78), ('$', .8), ('1', .85), ('@', .74), ('2', .8), ('B', .84), ('?', .86), ('7', .86)):
+    _CANOPY[ord(_c)] = _v
 FONT = '/usr/share/fonts/dejavu-sans-mono-fonts/DejaVuSansMono.ttf'
 
 
@@ -2026,7 +2364,7 @@ def picture(codes, heights, box=None, scale=1.0, relief=1.0):
     if box:
         x0, y0, w, h = box
         codes, heights = codes[y0:y0 + h, x0:x0 + w], heights[y0:y0 + h, x0:x0 + w]
-    rgb = _BG[codes] * .42 + _FG[codes] * .58
+    rgb = (_BG[codes] * .42 + _FG[codes] * .58) * _CANOPY[codes][..., None]
     f = int(round(1 / scale)) if scale < 1 else 1
     H, W = codes.shape
     hh = heights.astype(np.float32)
@@ -2136,7 +2474,7 @@ def expand(project, seed=SEED, report=print, city_cells=None):
     realm = Realm2(codes, heights, seed, report, protect=outdoor_points(project, city_cells))
     realm.build()
     cells = realm.cells(city_cells)
-    keep_snapshot(city_cells)
+    realm.city_cells = city_cells                       # (kept as the snapshot only once a write has saved: keep_snapshot)
     project['cells'] = cells
     realm.result = realm.checks(project, cells, codes, heights)
     return realm
@@ -2259,6 +2597,7 @@ def write(world_key, seed=SEED, dry=False, report=print, map_mode='same'):
             ident, kept = world_sync.stamp_for_layout(conn, world_sync.layout_fingerprint(p), MAP_NAME, 'worldgen.realm2',
                                                       'generated', map_mode)
             world_sync.tell_editors(conn, p['id'], 'realm2.py', 'Ridgemere 2.0: the realm (doc 70)')
+    keep_snapshot(realm.city_cells)                     # (Saved: the city the realm was laid round is the one kept.)
     report(f'Saved in {time.time() - t0:.0f} s: revision {new} (+1 for the editors\' reload); ' +
            (f'the same map, {ident["id"]} ({ident.get("name", "")}), its new layout recorded.' if kept == 'kept' else
             f'a new map identity, {ident["id"]}.'))
@@ -2275,6 +2614,8 @@ def main(argv=None):
         s.add_argument('--seed', type=int, default=SEED)
         s.add_argument('--world', default='dev')
         s.add_argument('--dry-run', action='store_true')
+        if name == 'preview':
+            s.add_argument('--out', type=Path, default=ART, help='the folder for the previews and the report')
         if name == 'write':
             m = s.add_mutually_exclusive_group()
             m.add_argument('--new-map', action='store_const', const='new', dest='map_mode')
@@ -2286,9 +2627,9 @@ def main(argv=None):
     project, _, _ = r2.load(args.world)
     realm = expand(project, args.seed)
     rep = report_of(realm, project)
-    ART.mkdir(parents=True, exist_ok=True)
-    (ART / 'realm-report.json').write_text(json.dumps(rep, indent=1), encoding='utf-8')
-    previews(realm, ART)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / 'realm-report.json').write_text(json.dumps(rep, indent=1), encoding='utf-8')
+    previews(realm, args.out)
     failed = [c for c in realm.result if not c['ok']]
     for c in realm.result:
         print(f'  {"ok  " if c["ok"] else "FAIL"} {c["check"]} {c["detail"][:200]}')

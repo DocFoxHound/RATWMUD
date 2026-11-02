@@ -1608,7 +1608,11 @@ double fade(double d, double clear)
     return d <= clear ? 1 : std::clamp(2 - d / clear, 0.0, 1.0);
 }
 bool coverGlyph(char g) { return g == '"' || g == '&' || g == 'E' || g == 'B' || g == '5'; }   // Tall grass, ferns, reeds, a shrub, heather.
-bool screenGlyph(char g) { return g == 'P' || g == 'Y' || g == '$' || g == '2' || g == '7' || g == '!' || g == 'o'; }   // Trees, a boulder.
+// Trees (a willow too), a boulder, a cactus.
+bool screenGlyph(char g)
+{
+    return g == 'P' || g == 'Y' || g == '$' || g == '@' || g == '2' || g == '7' || g == '!' || g == 'o' || g == '?';
+}
 } // namespace
 
 battle::Senses World::noticeSenses(const Entity& oe, Vec2 op, double facing, const Entity& te, Vec2 tp, bool stalking, bool moving, int pace,
