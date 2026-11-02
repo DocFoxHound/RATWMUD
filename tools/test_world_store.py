@@ -371,12 +371,16 @@ class StoreTests(unittest.TestCase):
         lines = E.export_files(again, R.load())['world.ratw'].split('\n')
         self.assertFalse(any(l.startswith(('farms ', 'farmarea ', 'farm ')) for l in lines), 'as country_farms.json has them: no records')
         for bad in ({'farms': {'start': -2}}, {'farms': {'every': 0}}, {'farms': {'order': ['grain', 'grain']}},
-                    {'farms': {'order': ['orchards']}}, {'farms': {'keeper': 1001}}, {'farms': {'areas': {'gardens': {'on': True}}}},
-                    {'farms': {'areas': {'grain': {'on': 1}}}}, {'farms': {'areas': {'grain': {'priceFactor': 5}}}},
-                    {'farms': {'farms': {'grain_farm_9': {'yieldScale': 90}}}}, {'farms': {'farms': {'grain_farm_1': {'on': True}}}},
-                    {'farms': {'luck': 1}}, {'farms': []}):
+                    {'farms': {'keeper': 1001}}, {'farms': {'areas': {'grain': {'on': 1}}}},
+                    {'farms': {'areas': {'grain': {'priceFactor': 5}}}}, {'farms': {'farms': {'grain_farm_1': {'on': True}}}},
+                    {'farms': {'farms': {'Grain farm': {'yieldScale': 90}}}}, {'farms': {'luck': 1}}, {'farms': []}):
             with self.assertRaises(E.ValidationError, msg=str(bad)):
                 E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+        # What country_farms.json no longer has (written again with fewer farms) is kept, as Core keeps it, with a warning.
+        for kept in ({'farms': {'order': ['orchards']}}, {'farms': {'areas': {'gardens': {'on': True}}}},
+                     {'farms': {'farms': {'grain_farm_9': {'yieldScale': 90}}}}):
+            _, warnings = E.check_project({**again, 'economy': {**again['economy'], **kept}}, for_game=False, playable=False)
+            self.assertTrue(any('names nothing country_farms.json has' in w for w in warnings), (kept, warnings))
 
     def test_a_missing_economy_row_is_made_from_the_defaults(self):
         # Ridgemere 2.0 has no live.economy row: its first save makes one from DEFAULT_ECONOMY (1000p), never the

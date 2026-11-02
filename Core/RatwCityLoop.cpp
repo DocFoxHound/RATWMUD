@@ -1558,12 +1558,25 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
                 done.push_back("restocked " + w.ware);
             continue;
         }
+        // The farms' stores first (doc 71, 2.4): a good of a season group with `stores` that the farms of an area on make
+        // (the drying houses' dried apples and preserves) its maker sells on from what they hold before it makes its own,
+        // as it sold on the Country's stores when the season left it short (their yields were sized on those draws).
+        int wanted = w.lack;
+        if (const auto* g = seasonGroup(w.ware);
+            g && g->stores && farmAreaOf(w.ware) >= 0 && storeUse(keeper, w.ware) == StoreUse::Resell)
+            if (const int n = std::min({StoreDrawMost, wanted, countryLeft(w.ware)});
+                n > 0 && drawFromStore(keeper, w.ware, n, "restocked from the store room").ok)
+            {
+                done.push_back("restocked " + w.ware + " from the farms' stores");
+                if ((wanted -= n) < 1)
+                    continue;
+            }
         const auto& k = *w.craft;
         int per = 1;
         for (const auto& [item, n] : k.out)
             if (item == w.ware)
                 per = n;
-        int batches = std::min({int(std::ceil(double(w.lack) / per)), int(std::floor(bank / k.hours + 1e-9)), 100});
+        int batches = std::min({int(std::ceil(double(wanted) / per)), int(std::floor(bank / k.hours + 1e-9)), 100});
         if (batches < 1)
             continue;
         // Room for what the batches make, and their inputs drawn for what the shelves lack.
@@ -1603,7 +1616,7 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
             // that its maker can't make for the season's lack of an input it draws itself, made in the Country, where the
             // maker sells it on too (crafts.json `supplies`): the preservers' dried and preserved fruit in winter.
             if (const auto* g = seasonGroup(w.ware); capped && g && g->stores && storeUse(keeper, w.ware) == StoreUse::Resell)
-                if (const int n = std::min({StoreDrawMost, w.lack, countryLeft(w.ware)});
+                if (const int n = std::min({StoreDrawMost, wanted, countryLeft(w.ware)});
                     n > 0 && drawFromStore(keeper, w.ware, n, "restocked from the store room").ok)
                     done.push_back("restocked " + w.ware + " from the Country's stores");
             continue;

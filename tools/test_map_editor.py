@@ -462,6 +462,31 @@ class ContentTests(unittest.TestCase):
         mutate(lambda p: p['economy'].update(treasury=-1))
         mutate(lambda p: p.update(herbPatch={'cell': 'town', 'x': 0, 'y': 0}))
 
+    def test_farms_country_farms_json_no_longer_has_are_kept(self):
+        # Doc 71, 4: a world's settings for an area or a farm the file no longer has (regenerated with fewer farms: their
+        # ids are numbered by count) are kept, as Core keeps them, with a warning, and still exported; a malformed one is
+        # refused.
+        p = self.greyfen()
+        p['economy']['farms'] = {'order': ['grain', 'gardens'], 'areas': {'gardens': {'on': True}},
+                                 'farms': {'orchard_9': {'hand': 11}, 'grain_farm_1': {'hand': 12}}}
+        self.assertEqual(editor.check_economy(p['economy']), [])
+        _, warnings = editor.check_project(p)
+        for name in ('order names nothing country_farms.json has: gardens', 'areas names nothing country_farms.json has: gardens',
+                     'farms names nothing country_farms.json has: orchard_9'):
+            self.assertTrue(any(name in w and 'kept' in w for w in warnings), (name, warnings))
+        self.assertEqual(len(editor.unknown_farms(p['economy']['farms'])), 3)
+        self.assertEqual(editor.unknown_farms({'farms': {'grain_farm_1': {'hand': 12}}, 'order': ['grain']}), [])
+        manifest = editor.export_files(p)['world.ratw'].splitlines()
+        self.assertIn('farm "orchard_9" yield - crew - wages - 11', manifest)
+        for bad in ({'farms': {'orchard_9': {'hand': 1001}}}, {'farms': {'Orchard 9': {'hand': 1}}}, {'farms': {'orchard_9': 1}},
+                    {'areas': {'gardens': {'on': 'yes'}}}, {'areas': {'gardens': {'luck': 1}}}, {'order': ['grain', 'grain']},
+                    {'order': ['grain', 7]}, {'order': []}):
+            self.assertTrue(editor.check_farms(bad), bad)
+            q = self.greyfen()
+            q['economy']['farms'] = bad
+            with self.assertRaises(editor.ValidationError):
+                editor.check_project(q)
+
     def test_worlds_without_people_still_export_version_1(self):
         p = self.greyfen()
         for key in ('people', 'routes', 'economy', 'herbPatch'):

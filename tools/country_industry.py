@@ -516,7 +516,8 @@ def fill_wine(measured, wine):
     long run's (the wine vaults, the city's one vintner) sold it all year (12.6 / 11.4 / 13.9 / 11.1 a day) and nothing in
     the code makes a vintage. A
     season whose vintners drew under a quarter of the other seasons' mean gets their wine records (the draws for resale,
-    the vintners' sales to the residents, the residents' market and spending) at the other seasons' mean a day, times
+    the vintner's among them, the vintners' sales to the residents, the residents' market and spending) at the other
+    seasons' mean a day, times
     the long run's season over its other seasons' mean; the rest of the scaling (the long run's drawn pennies, the
     residents' spending) then takes it in."""
     import copy
@@ -538,6 +539,7 @@ def fill_wine(measured, wine):
             d[kk] = d.get(kk, 0) + v
         m[s]['why'].setdefault('wine', {})['resale'] = rs['pieces']
         m[s]['sales'].setdefault('vintner', {}).setdefault('residents', {})['wine'] = sold
+        m[s].setdefault('drawn_by', {}).setdefault('vintner', {})['wine'] = {kk: rs[kk] for kk in ('pieces', 'country', 'toll')}
         mk = m[s]['market'].setdefault('wine', {'pieces': 0, 'coins': 0})
         mk['pieces'] = mk.get('pieces', 0) + sold['pieces']
         mk['coins'] = mk.get('coins', 0) + sold['coins']
@@ -629,7 +631,9 @@ def scale(measured, long, group_of, crafts, items):
             'bought': {g: {k: v * cf for k, v in c.items()} for g, c in m['bought'].items()},
             'eaten': {g: v * L['residents'] / short['residents'] for g, v in m['eaten'].items()},
             'market': {g: {k: v * res_f(g) for k, v in c.items()} for g, c in m['market'].items()},
-            'sales': sales, 'made': m['made'],
+            # (Each shop's draws as measured: what `streams` takes of them is a shop's share of a good's resale draws,
+            # all of which are scaled alike.)
+            'sales': sales, 'made': m['made'], 'drawn_by': m.get('drawn_by', {}),
             'carriage_out': m['carriage_out'] * cf, 'factors': gf, 'price_factors': pf, 'rest': rest, 'pop': pop,
             'other': other, 'country_factor': cf, 'country_wages': m.get('country_wages', {}),
         }
@@ -1344,22 +1348,60 @@ FARMS = [
 
 def streams(sc, crafts, items):
     """Each season's draws by who they end with: A[s][stream][product][good] = {pieces, country, toll, carriage}. A draw
-    ends in its product (the good itself when resold, else the craft's output); the product's buyers share it, by their
-    pieces: the residents' food (`food`, nourishment 10 or more), the residents' other buying (`other`: needs, comforts,
-    drink), the Country's basket (`country`); a product neither buys (the treasury's works, the patrons, a maker's
-    stock) is the city's (`city`)."""
+    ends in its product (the good itself when resold, else the craft's output) and with the buyers of the shops that drew
+    it, by their pieces of it: the residents' food (`food`, nourishment 10 or more), the residents' other buying (`other`:
+    needs, comforts, drink), the Country's basket (`country`); a product neither buys of them (the treasury's works, the
+    patrons, a maker's stock) is the city's (`city`). The Country buys only from a good's makers (Society::basketBuys:
+    one of the shop's crafts makes it), so a good resold by a shop that doesn't make it ends with the residents: a resale
+    draw goes by each reselling shop's own buyers (`drawn_by`: the shops that drew the good and use it in none of their
+    crafts, the vintner's cider and wine), a craft's draw by its makers' (crafts.json `makers`), not by the city's every
+    seller's (without `drawn_by`, a measured file from before it, the resale draws still are)."""
     nourish = lambda g: (items.get(g, {}).get('food') or {}).get('nourish', 0)
+    makers = collections.defaultdict(set)            # product -> the businesses whose crafts make it
+    for k in crafts.values():
+        for o in k['out']:
+            makers[o].update(k.get('makers', []))
     out = {}
     for s in SEASONS:
+        sales = sc[s]['sales']
+
+        def shares(prod, sellers=None):
+            """The product's buyers' shares at these shops (None: every shop's), by their pieces."""
+            if sellers is None:
+                rr = sc[s]['market'].get(prod, {}).get('pieces', 0)
+                cc = sc[s]['bought'].get(prod, {}).get('pieces', 0)
+            else:
+                rr = sum(sales.get(b, {}).get('residents', {}).get(prod, {}).get('pieces', 0) for b in sellers)
+                cc = sum(sales.get(b, {}).get('country', {}).get(prod, {}).get('pieces', 0) for b in sellers)
+            return {'city': 1.0} if rr + cc <= 0 else {('food' if nourish(prod) >= 10 else 'other'): rr / (rr + cc),
+                                                       'country': cc / (rr + cc)}
+        # Each business's craft inputs: crafts.json's, and the measured draws' own crafts (the inns' stew of vegetables,
+        # before they were dropped); a good a shop draws that none of its crafts takes is drawn for resale.
+        inputs = collections.defaultdict(set)
+        for g, reasons in sc[s]['draws_why'].items():
+            for r in reasons:
+                for b in crafts.get(r, {}).get('makers', []):
+                    inputs[b].add(g)
+        for k in crafts.values():
+            for b in k.get('makers', []):
+                inputs[b].update(k['in'])
         a = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(collections.Counter)))
         for g, reasons in sc[s]['draws_why'].items():
             for r, c in reasons.items():
-                prod = g if r == 'resale' else (next(iter(crafts[r]['out'])) if r in crafts else r)
-                rr = sc[s]['market'].get(prod, {}).get('pieces', 0)
-                cc = sc[s]['bought'].get(prod, {}).get('pieces', 0)
-                shares = {'city': 1.0} if rr + cc <= 0 else {('food' if nourish(prod) >= 10 else 'other'): rr / (rr + cc),
-                                                             'country': cc / (rr + cc)}
-                for st, sh in shares.items():
+                if r == 'resale':
+                    prod = g
+                    by = {b: d[g]['pieces'] for b, d in sc[s].get('drawn_by', {}).items()
+                          if g not in inputs[b] and d.get(g, {}).get('pieces', 0) > 0}
+                    w = sum(by.values())
+                    split = collections.Counter()
+                    for b, n in by.items():
+                        split.update({st: sh * n / w for st, sh in shares(g, [b]).items()})
+                    split = split or shares(g)
+                else:
+                    prod = next(iter(crafts[r]['out'])) if r in crafts else r
+                    sellers = crafts.get(r, {}).get('makers') or makers.get(prod)
+                    split = shares(prod, sellers) if sellers else shares(prod)
+                for st, sh in split.items():
                     if sh > 0:
                         a[st][prod][g].update({k: v * sh for k, v in c.items()})
         out[s] = a

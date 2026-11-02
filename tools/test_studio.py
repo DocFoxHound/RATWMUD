@@ -1085,6 +1085,33 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(data['farmsSaved']['farms'], {'grain_farm_1': {'till': 140, 'stock': 500, 'goods': {'flour': 300, 'oats': 200},
                                                                         'crewPurse': 296}})
 
+    def test_a_farm_country_farms_json_no_longer_has(self):
+        # Doc 71, 4: a world's setting for a farm the file no longer has (regenerated with fewer farms: their ids are
+        # numbered by count) is kept, as Core keeps it, and blocks nothing: the other economy routes and the farms' own
+        # still change, on the dev world (the edit log) and the live one (the row); a change may not name it, but may
+        # clear it.
+        stale = {'farms': {'orchard_9': {'hand': 11}}}
+        for key in (self.dev, self.live):
+            self.sql(key, 'UPDATE live.economy SET farms = %s', (json.dumps(stale),))
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': 12}}, token='dm-token', headers=editor)
+        self.assertEqual((status, data.get('rules')), (200, {'almsADay': 12}), data)
+        status, data = self.call('POST', '/api/atlas/economy/farms', {'set': {'areas': {'grain': {'yieldScale': 120}}}},
+                                 token='dm-token', headers=editor)
+        self.assertEqual((status, data.get('farms')), (200, {**stale, 'areas': {'grain': {'yieldScale': 120}}}), data)
+        status, data = self.call('POST', '/api/dm/economy/rules', {'world': self.live, 'set': {'almsADay': 13}}, token='dm-token')
+        self.assertEqual(status, 200, data)
+        status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.live, 'set': {'keeper': 17}}, token='dm-token')
+        self.assertEqual((status, data.get('farms')), (200, {**stale, 'keeper': 17}), data)
+        self.assertIn('farm "orchard_9" yield - crew - wages - 11', self.one(self.live, "SELECT live.people_manifest('greyfen')").split('\n'))
+        for bad in ({'farms': {'orchard_9': {'hand': 12}}}, {'areas': {'gardens': {'on': True}}}, {'order': ['grain', 'gardens']}):
+            status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.live, 'set': bad}, token='dm-token')
+            self.assertEqual(status, 400, (bad, data))
+            self.assertIn('names nothing country_farms.json has', data['error'])
+        status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.live, 'set': {'farms': {'orchard_9': None}}},
+                                 token='dm-token')
+        self.assertEqual((status, data.get('farms')), (200, {'keeper': 17}), data)
+
     def test_a_world_without_migration_0060(self):
         unmigrate_farms(self.dev)
         status, data = self.call('GET', '/api/atlas/economy', token='dm-token')

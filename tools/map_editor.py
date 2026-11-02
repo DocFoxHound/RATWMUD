@@ -186,31 +186,55 @@ def farms_file() -> dict:
         return {}
 
 
+def farm_ids() -> tuple[list[str], set[str]]:
+    """country_farms.json's food areas (in its order) and its farms' ids."""
+    areas = [a for a in farms_file().get('areas') or [] if isinstance(a, dict) and a.get('id')]
+    return [a['id'] for a in areas], {x['id'] for a in areas for x in a.get('farms') or [] if isinstance(x, dict) and x.get('id')}
+
+
+def unknown_farms(farms) -> list[str]:
+    """What farms' settings name that country_farms.json doesn't have: a message for the order's, the areas' and the
+    farms'. A world keeps them and Core does nothing with them, so a file regenerated with fewer farms (their ids are
+    numbered by count) leaves the world's settings sound; only a change may not name one (studio's set_farms)."""
+    if not isinstance(farms, dict):
+        return []
+    areas, known = farm_ids()
+    out = []
+    order = farms.get('order')
+    if isinstance(order, list) and [a for a in order if a not in areas]:
+        out.append('economy.farms.order names nothing country_farms.json has: ' +
+                   ', '.join(str(a) for a in order if a not in areas) + ' (its areas: ' + ', '.join(areas) + ').')
+    for kind, ids in (('areas', set(areas)), ('farms', known)):
+        given = farms.get(kind)
+        if isinstance(given, dict) and set(given) - ids:
+            out.append(f'economy.farms.{kind} names nothing country_farms.json has: {", ".join(sorted(set(given) - ids))}.')
+    return out
+
+
 def check_farms(farms) -> list[str]:
-    """The farms' settings' problems (an area or a farm country_farms.json doesn't have is refused)."""
+    """The farms' settings' problems. An area or a farm country_farms.json no longer has is kept, as Core keeps it (it
+    does nothing), so long as it is well formed (unknown_farms names them)."""
     if not isinstance(farms, dict) or set(farms) - {*FARM_TOP, 'order', 'areas', 'farms'}:
         return ['economy.farms must be {start?, every?, order?, keeper?, hand?, areas?, farms?}.']
     errors = []
-    f = farms_file()
-    areas = {a['id']: a for a in f.get('areas') or [] if isinstance(a, dict) and a.get('id')}
-    farm_ids = {x['id'] for a in areas.values() for x in a.get('farms') or [] if isinstance(x, dict) and x.get('id')}
     for key, (low, high) in FARM_TOP.items():
         if key in farms and not number(farms[key], low, high, integer=True):
             errors.append(f'economy.farms.{key} must be a whole number from {low} to {high}.')
     if 'order' in farms:
         order = farms['order']
-        if (not isinstance(order, list) or not order or len(set(order)) != len(order) or
-                any(not isinstance(a, str) or a not in areas for a in order)):
-            errors.append('economy.farms.order must be a list of distinct food areas: ' + ', '.join(areas) + '.')
-    for kind, known, limits in (('areas', areas, FARM_AREA), ('farms', farm_ids, FARM_FARM)):
+        if (not isinstance(order, list) or not order or len(set(map(str, order))) != len(order) or
+                any(not isinstance(a, str) or not re.fullmatch(r'[a-z0-9_]{1,48}', a) for a in order)):
+            errors.append('economy.farms.order must be a list of distinct area ids (country_farms.json\'s: ' +
+                          ', '.join(farm_ids()[0]) + ').')
+    for kind, limits in (('areas', FARM_AREA), ('farms', FARM_FARM)):
         given = farms.get(kind, {})
         if not isinstance(given, dict):
             errors.append(f'economy.farms.{kind} must be an object.')
             continue
         for fid, setting in given.items():
             extra = {'on'} if kind == 'areas' else set()
-            if fid not in known:
-                errors.append(f'economy.farms.{kind} names nothing country_farms.json has: {fid}.')
+            if not isinstance(fid, str) or not re.fullmatch(r'[a-z0-9_]{1,48}', fid):
+                errors.append(f'economy.farms.{kind} names no {kind[:-1]}: {fid}.')
             elif not isinstance(setting, dict) or set(setting) - set(limits) - extra:
                 errors.append(f'economy.farms.{kind}.{fid} may set ' + ', '.join([*sorted(extra), *limits]) + '.')
             else:
@@ -696,6 +720,8 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
     people_list = p.get('people', [])
     errors += check_economy(economy, {person.get('id') for person in people_list if isinstance(person, dict)}
                             if isinstance(people_list, list) else set())
+    if isinstance(economy, dict):
+        warnings += [f'{w[:-1]}: kept, it does nothing while the file lacks it.' for w in unknown_farms(economy.get('farms'))]
     herbs = p.get('herbPatch')
     if herbs is not None:
         place(herbs, 'Herb patch')

@@ -585,7 +585,12 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         {
             const auto hour = std::int64_t(std::floor(absoluteDay * 24));
             if (loopHour_ < 0 || hour < loopHour_)
+            {
                 loopHour_ = hour;
+                // (Which areas are on today, before that hour's draws: the farms' switch as of the date it now knows, an
+                // area switched on while it was down founded; doc 71, 4. The farms are tended from the next hour.)
+                refreshAreas(-1);
+            }
             for (auto h = std::max(loopHour_ + 1, hour - 23); h <= hour; ++h)
                 loopHourly(h, season);
             loopHour_ = hour;

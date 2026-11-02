@@ -6,8 +6,9 @@
 // spread by stock, past the season's cap and no further than the stock, the granary's price a year, the Country no longer
 // sending an area's goods and sending them again when it is off; the farms' crews shopping as households, counted apart;
 // the wages and the treasury's support for a short farm; the farms' basket; spoiling; the Country's basket moving to its
-// re-weighted one; the records and their refusals, applied live; a save; vegetables gone from Ridgemere 2.0's economy and
-// the inns' stew of meat and bones.
+// re-weighted one; the records and their refusals, applied live; a save, and a restart's areas on from its first second;
+// the preserver selling on the drying houses' stores before making its own; vegetables gone from Ridgemere 2.0's economy
+// and the inns' stew of meat and bones.
 //
 // The catalogue is the real Data (RATW_SOURCE_DIR), country_farms.json with it.
 #include "RatwCalendar.h"
@@ -28,6 +29,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 using namespace ratw;
 namespace fs = std::filesystem;
@@ -69,8 +71,9 @@ ResidentSpec person(const std::string& id, const std::string& role, const std::s
 }
 
 // A small city: a stall, an inn, a baker, a butcher, a smith (the farms' basket buys its make) and a clerk the treasury
-// pays; a rich treasury; the later rules that would move prices and wages off, so the farms' flows show plainly.
-Society city(const std::function<void(EconomySpec&)>& change = {})
+// pays, and any `extra`; a rich treasury; the later rules that would move prices and wages off, so the farms' flows show
+// plainly.
+Society city(const std::function<void(EconomySpec&)>& change = {}, const std::vector<ResidentSpec>& extra = {})
 {
     AuthoredRoster r;
     r.residents = {person("stall", "merchant", "keeping the stall in the square", {"square", 2.5, 2.5}, "home_stall", 40, 400),
@@ -79,6 +82,7 @@ Society city(const std::function<void(EconomySpec&)>& change = {})
                    person("butcher", "merchant", "butcher at the Shambles", {"shambles", 2.5, 2.5}, "home_butcher", 40, 400),
                    person("smith", "merchant", "the smith at the forge", {"forge", 2.5, 2.5}, "home_smith", 40, 400),
                    person("clerk", "civilian", "clerking at the City Office", {"office", 2.5, 2.5}, "home_clerk")};
+    r.residents.insert(r.residents.end(), extra.begin(), extra.end());
     r.economy.treasury = 20000;
     r.economy.storeRule = true;
     r.economy.rules = {{"stockPrices", 0}, {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}, {"surplus", 0}, {"patrons", 0}};
@@ -546,6 +550,80 @@ void aSave()
     expect(again.state().minted == minted && again.conserved(), "not founded again: nothing more made");
 }
 
+void aRestart()
+{
+    // After a restart (a restore) an area the schedule has switched on is on from the first second the world decides,
+    // before its first loop hour runs: the shops' draws of its goods come from the farms' stores, never the Country's.
+    const auto scheduled = [](EconomySpec& e) { e.farms.start = 0; };
+    auto s = city(scheduled);
+    turn(s, 46);
+    expect(s.farmAreaOn(areaIndex("grain")) && s.farmsHold("flour") > 0, "grain on by the schedule, flour in the farms' stores");
+    const auto text = json::dump(wire::society(s.state()));
+    const auto saved = [&]() {
+        json::Value back;
+        std::string error;
+        expect(json::parse(text, back, error), "the save parses: " + error);
+        return wire::readSociety(back);
+    };
+    auto again = city(scheduled);
+    expect(again.restore(saved()), "it restores");
+    const double now = 46 + 10.5 / 24;
+    again.tick(1, now, seasonOf(now), atWork(again));
+    const int flour = again.farmsHold("flour");
+    expect(again.farmAreaOn(areaIndex("grain")) && again.farmAreaOn(areaIndex("fruit")) && !again.farmAreaOn(areaIndex("meat")),
+           "the areas on at its first second, as the schedule has them on day 46");
+    expect(flour > 0 && again.countryLeft("flour") == flour, "what the shops may draw is the farms' stock: " + std::to_string(flour));
+    const auto country = again.cash(Society::CountryFund);
+    const auto r = again.drawFromStore("stall", "flour", 5, "restocked from the store room");
+    expect(r.ok && r.message.find("from the farms") != std::string::npos && again.farmsHold("flour") == flour - 5,
+           "drawn from the farms' stores: " + r.message);
+    expect(again.cash(Society::CountryFund) == country, "nothing to the Country");
+    // An area switched on by its own switch while the world was down: founded at that first second.
+    auto honey = city([](EconomySpec& e) {
+        e.farms.start = 0;
+        e.farms.areas["honey"].on = 1;
+    });
+    expect(honey.restore(saved()), "the same save restores with honey switched on");
+    const auto minted = honey.state().minted;
+    expect(!honey.account(Society::farmTill("beekeeper_1")), "the save has no beekeepers");
+    honey.tick(1, now, seasonOf(now), atWork(honey));
+    expect(honey.account(Society::farmTill("beekeeper_1")) && honey.farmsHold("honey") > 0, "founded at its first second");
+    expect(honey.state().minted > minted && honey.conserved(), "counted as minted: conserved");
+}
+
+void thePreserversStores()
+{
+    // Fruit and honey on in winter: the preserver sells on the drying houses' dried apples and preserves from their
+    // stores before it makes its own, though the orchards hold apples enough (they keep) and honey with them.
+    auto s = city(
+        [](EconomySpec& e) {
+            e.farms.areas["fruit"].on = 1;
+            e.farms.areas["honey"].on = 1;
+        },
+        {person("preserver", "merchant", "keeping the preserving house", {"jars", 2.5, 2.5}, "home_jars", 40, 2000)});
+    turn(s, 320);
+    const auto till = s.tillOf("preserver");
+    const int dried = s.farmsHold("dried_apples"), preserves = s.farmsHold("fruit_preserves");
+    expect(dried > 100 && preserves > 100 && s.farmsHold("apples") > 1000 && s.farmsHold("honey") > 0,
+           "the drying houses hold dried apples and preserves, the orchards apples: " + std::to_string(dried) + ", " +
+               std::to_string(preserves) + ", " + std::to_string(s.farmsHold("apples")));
+    s.takeJournal();
+    run(s, 320 + .5 / 24, 320 + 20. / 24);               // (A winter day's shop hours.)
+    int resold = 0, made = 0, apples = 0;
+    for (const auto& e : s.takeJournal())
+    {
+        const bool preserved = e.item == "dried_apples" || e.item == "fruit_preserves";
+        resold += preserved && e.to == till && e.from.rfind("farm:", 0) == 0 ? e.quantity : 0;
+        made += preserved && e.to == till && e.kind == "made from the store room" ? e.quantity : 0;
+        apples += e.item == "apples" && e.to == till && e.from.rfind("farm:", 0) == 0 ? e.quantity : 0;
+    }
+    expect(resold > 0, "the preserver sold on the drying houses' goods: " + std::to_string(resold));
+    expect(s.farmsHold("dried_apples") > 0 && s.farmsHold("fruit_preserves") > 0, "which held out the day");
+    expect(made == 0 && apples == 0, "so it made none of its own, nor drew the orchards' apples for them: " + std::to_string(made) +
+                                         " made, " + std::to_string(apples) + " apples");
+    expect(s.conserved(), "conserved");
+}
+
 std::map<std::string, std::string> files(const std::string& extra)
 {
     std::ostringstream cell;
@@ -645,6 +723,8 @@ int main()
         vegetablesGone();
         theStew();
         aSave();
+        aRestart();
+        thePreserversStores();
         theRecords();
         appliedLive();
     }

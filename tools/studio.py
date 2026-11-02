@@ -630,6 +630,13 @@ class Economy:
             if kind in wanted and (not isinstance(wanted[kind], dict) or not wanted[kind]
                                    or any(v is not None and not isinstance(v, dict) for v in wanted[kind].values())):
                 raise D.DMError(f'{kind}: send {{id: {{setting: value or null}} or null}}.', 400)
+        # What the change sets must be country_farms.json's; what the world kept of an older file stays, and may be cleared.
+        named = {k: wanted[k] for k in ('order',) if isinstance(wanted.get(k), list)}
+        named.update({k: {i: v for i, v in wanted[k].items() if v and any(x is not None for x in v.values())}
+                      for k in ('areas', 'farms') if k in wanted})
+        unknown = map_editor.unknown_farms(named)
+        if unknown:
+            raise D.DMError(' '.join(unknown), 400)
 
         def change(e):
             farms = copy.deepcopy(e.get('farms') or {})
