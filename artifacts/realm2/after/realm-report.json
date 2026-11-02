@@ -1,0 +1,1828 @@
+{
+ "size": {
+  "tiles": 4096,
+  "cells": 241,
+  "cellSize": 256,
+  "grid": 16
+ },
+ "regions": {
+  "ridgemere": 9,
+  "rainward": 11,
+  "whitefangs": 30,
+  "greenholt": 32,
+  "greyteeth": 6,
+  "downs": 29,
+  "sound": 7,
+  "rainwood": 17,
+  "waste": 34,
+  "sea": 6,
+  "ochre": 19,
+  "fens": 23,
+  "sunfields": 12,
+  "saltpan": 6
+ },
+ "weather": {
+  "rain": 50,
+  "snow": 36,
+  "clear": 73,
+  "sandstorm": 59,
+  "fog": 23
+ },
+ "sites": {
+  "town": 7,
+  "farmland": 2,
+  "mill": 2,
+  "orchard": 5,
+  "vineyard": 2,
+  "dairy": 3,
+  "woodpasture": 4,
+  "pasture": 4,
+  "pigfarm": 3,
+  "warren": 2,
+  "fishing": 9,
+  "marsh": 1,
+  "apiary": 3,
+  "salt": 1,
+  "saltcoast": 1,
+  "timber": 5,
+  "charcoal": 2,
+  "quarry": 4,
+  "clay": 2,
+  "mine": 6
+ },
+ "siteList": [
+  {
+   "id": "oakhaven",
+   "kind": "town",
+   "name": "Oakhaven",
+   "x": 1012,
+   "y": 1220,
+   "size": 60,
+   "for": "town",
+   "about": "a harbour town at the head of Cedar Sound, where the Rainrun and the Alder come down to the sea; timber and fish",
+   "level": 1.0,
+   "tiles": 11167
+  },
+  {
+   "id": "frosthollow",
+   "kind": "town",
+   "name": "Frosthollow",
+   "x": 2308,
+   "y": 796,
+   "size": 60,
+   "for": "town",
+   "about": "the mountain town in the high valley under the Whitefangs' pass; its mines above it",
+   "level": 5.5,
+   "tiles": 11180
+  },
+  {
+   "id": "coldwater",
+   "kind": "town",
+   "name": "Coldwater",
+   "x": 1956,
+   "y": 1796,
+   "size": 60,
+   "for": "town",
+   "about": "a lake town on Glasswater's north shore, where the East Road and the River Road meet",
+   "level": 2.5,
+   "tiles": 10928
+  },
+  {
+   "id": "larkfield",
+   "kind": "town",
+   "name": "Larkfield",
+   "x": 1676,
+   "y": 2380,
+   "size": 60,
+   "for": "town",
+   "about": "the river-crossing town where the River Road crosses the Long River, among the middle country's grain",
+   "level": 2.0,
+   "tiles": 10978
+  },
+  {
+   "id": "mirebridge",
+   "kind": "town",
+   "name": "Mirebridge",
+   "x": 1468,
+   "y": 2868,
+   "size": 60,
+   "for": "town",
+   "about": "the fen-edge town on the last dry ground where the rivers enter the Sallow Fens",
+   "level": 0.5,
+   "tiles": 9923
+  },
+  {
+   "id": "southmeadow",
+   "kind": "town",
+   "name": "Southmeadow",
+   "x": 2148,
+   "y": 3348,
+   "size": 60,
+   "for": "town",
+   "about": "a market town of the warm south-middle country, among orchards and vines",
+   "level": 2.5,
+   "tiles": 10522
+  },
+  {
+   "id": "saltwell",
+   "kind": "town",
+   "name": "Saltwell",
+   "x": 3292,
+   "y": 2932,
+   "size": 60,
+   "for": "town",
+   "about": "the oasis town of the Red Waste, by its spring pool, on the way to the Saltpan",
+   "level": 4.5,
+   "tiles": 10826
+  },
+  {
+   "id": "grain_long",
+   "kind": "farmland",
+   "name": "the Long River grain",
+   "x": 1828,
+   "y": 2580,
+   "size": 182,
+   "for": "grain farm 1 (large, with a water mill)",
+   "about": "grain land on the Long River between Glasswater and Larkfield, in several fields",
+   "fields": 9,
+   "tiles": 125664,
+   "track": 57
+  },
+  {
+   "id": "mill_long",
+   "kind": "mill",
+   "name": "the Long River mill race",
+   "x": 1628,
+   "y": 2612,
+   "size": 12,
+   "for": "grain farm 1's water mill",
+   "about": "a bank of the Long River for a water mill",
+   "level": 0.5,
+   "tiles": 260,
+   "track": 121
+  },
+  {
+   "id": "grain_lark",
+   "kind": "farmland",
+   "name": "the Lark grain",
+   "x": 2164,
+   "y": 2836,
+   "size": 182,
+   "for": "grain farm 2 (large, with a water mill)",
+   "about": "grain land along the Lark in the warm middle country, in several fields",
+   "fields": 9,
+   "tiles": 126319,
+   "track": 153
+  },
+  {
+   "id": "mill_lark",
+   "kind": "mill",
+   "name": "the Lark mill race",
+   "x": 2207,
+   "y": 3026,
+   "size": 12,
+   "for": "grain farm 2's water mill",
+   "about": "a bank of the Lark for a water mill",
+   "level": 2.5,
+   "tiles": 348,
+   "track": 121
+  },
+  {
+   "id": "orchard_greenholt",
+   "kind": "orchard",
+   "name": "the Greenholt orchard",
+   "x": 1556,
+   "y": 1556,
+   "size": 78,
+   "for": "orchard (central hills) 1",
+   "about": "apples and pears on the Greenholt's swells",
+   "tiles": 14049,
+   "track": 201
+  },
+  {
+   "id": "orchard_coldwater",
+   "kind": "orchard",
+   "name": "the Upper Mere orchard",
+   "x": 2156,
+   "y": 1692,
+   "size": 78,
+   "for": "orchard (central hills) 2",
+   "about": "apples on the slopes above the Upper Mere",
+   "tiles": 15003,
+   "track": 89
+  },
+  {
+   "id": "orchard_larkfield",
+   "kind": "orchard",
+   "name": "the Larkfield orchard",
+   "x": 1876,
+   "y": 2844,
+   "size": 78,
+   "for": "orchard (central hills) 3",
+   "about": "plums and apples south of the Long River",
+   "tiles": 14194,
+   "track": 57
+  },
+  {
+   "id": "orchard_rainward",
+   "kind": "orchard",
+   "name": "the Rainward orchard",
+   "x": 636,
+   "y": 900,
+   "size": 75,
+   "for": "orchard (NW coast valley) 1",
+   "about": "apples on a sheltered slope south-east of the city",
+   "tiles": 13360,
+   "track": 41
+  },
+  {
+   "id": "orchard_coastvale",
+   "kind": "orchard",
+   "name": "the Coastvale orchard",
+   "x": 476,
+   "y": 1564,
+   "size": 75,
+   "for": "orchard (NW coast valley) 2",
+   "about": "apples and cherries in a coast-range valley south of Cedar Sound",
+   "tiles": 12976,
+   "track": 713
+  },
+  {
+   "id": "vineyard_ochre",
+   "kind": "vineyard",
+   "name": "the Ochre vineyard",
+   "x": 2756,
+   "y": 2692,
+   "size": 87,
+   "for": "vineyard 1 (SE desert edge)",
+   "about": "vines on the Ochre Hills' warm west slopes, at the Red Waste's edge",
+   "tiles": 17577,
+   "track": 121
+  },
+  {
+   "id": "vineyard_south",
+   "kind": "vineyard",
+   "name": "the Southmeadow vines",
+   "x": 2396,
+   "y": 3148,
+   "size": 87,
+   "for": "vineyard 2 (central hills)",
+   "about": "vines on the south-middle hills",
+   "tiles": 17036,
+   "track": 201
+  },
+  {
+   "id": "dairy_southgate",
+   "kind": "dairy",
+   "name": "the Southgate dairy",
+   "x": 428,
+   "y": 964,
+   "size": 85,
+   "for": "cattle and dairy farm 1",
+   "about": "a dairy farm's hay meadows and steading outside the South Gate",
+   "tiles": 15978,
+   "track": 137
+  },
+  {
+   "id": "dairy_rainrun",
+   "kind": "dairy",
+   "name": "the Rainrun dairy",
+   "x": 820,
+   "y": 996,
+   "size": 85,
+   "for": "cattle and dairy farm 2",
+   "about": "hay meadows on the Rainrun's bottom land",
+   "tiles": 17344,
+   "track": 33
+  },
+  {
+   "id": "dairy_rainward",
+   "kind": "dairy",
+   "name": "the Rainward dairy",
+   "x": 892,
+   "y": 556,
+   "size": 85,
+   "for": "cattle and dairy farm 3",
+   "about": "hay meadows on the Rainward Hills' lower slopes",
+   "tiles": 16692,
+   "track": 193
+  },
+  {
+   "id": "range_city",
+   "kind": "woodpasture",
+   "name": "the city common",
+   "x": 620,
+   "y": 636,
+   "size": 165,
+   "for": "cattle range (shared, near the city)",
+   "about": "wood pasture east and south of the walls: the cattle graze under the fir and cedar",
+   "tiles": 63884,
+   "track": 185
+  },
+  {
+   "id": "range_southgate",
+   "kind": "pasture",
+   "name": "the Southgate range",
+   "x": 484,
+   "y": 1204,
+   "size": 165,
+   "for": "cattle range (shared, NW coast)",
+   "about": "cattle grazing along the coast north of Cedar Sound",
+   "tiles": 56700,
+   "track": 249
+  },
+  {
+   "id": "range_rainrun",
+   "kind": "pasture",
+   "name": "the Rainrun range",
+   "x": 1060,
+   "y": 940,
+   "size": 165,
+   "for": "cattle range (shared, NW coast)",
+   "about": "cattle grazing in the Rainrun valley",
+   "tiles": 64730,
+   "track": 161
+  },
+  {
+   "id": "pigs_greenholt",
+   "kind": "pigfarm",
+   "name": "the Greenholt piggery",
+   "x": 1420,
+   "y": 1636,
+   "size": 45,
+   "for": "pig farm 1",
+   "about": "a pig farm's yards at the edge of the Greenholt woods",
+   "level": 2.5,
+   "tiles": 6227,
+   "track": 129
+  },
+  {
+   "id": "pigwood_greenholt",
+   "kind": "woodpasture",
+   "name": "the Greenholt pannage",
+   "x": 1260,
+   "y": 1628,
+   "size": 115,
+   "for": "pig farm 1's woods (shared range)",
+   "about": "oak and beech woods for the pigs' pannage",
+   "tiles": 32371,
+   "track": 33
+  },
+  {
+   "id": "pigs_alder",
+   "kind": "pigfarm",
+   "name": "the Alder piggery",
+   "x": 1644,
+   "y": 1428,
+   "size": 45,
+   "for": "pig farm 2",
+   "about": "a pig farm's yards in the Alder valley's woods",
+   "level": 2.0,
+   "tiles": 6227,
+   "track": 73
+  },
+  {
+   "id": "pigwood_alder",
+   "kind": "woodpasture",
+   "name": "the Alder pannage",
+   "x": 1604,
+   "y": 1268,
+   "size": 115,
+   "for": "pig farm 2's woods (shared range)",
+   "about": "woods for the pigs",
+   "tiles": 28821,
+   "track": 17
+  },
+  {
+   "id": "pigs_south",
+   "kind": "pigfarm",
+   "name": "the Southwood piggery",
+   "x": 1356,
+   "y": 2060,
+   "size": 45,
+   "for": "pig farm 3",
+   "about": "a pig farm's yards in the woods west of Glasswater",
+   "level": 3.0,
+   "tiles": 6364,
+   "track": 17
+  },
+  {
+   "id": "pigwood_south",
+   "kind": "woodpasture",
+   "name": "the Southwood pannage",
+   "x": 1196,
+   "y": 2068,
+   "size": 115,
+   "for": "pig farm 3's woods (shared range)",
+   "about": "woods for the pigs",
+   "tiles": 32216,
+   "track": 161
+  },
+  {
+   "id": "sheep_downs",
+   "kind": "pasture",
+   "name": "the Larkdowns sheepwalk",
+   "x": 2532,
+   "y": 2132,
+   "size": 230,
+   "for": "sheep and goat run (central downs)",
+   "about": "sheep and goats on the dry downs",
+   "tiles": 125721,
+   "track": 33
+  },
+  {
+   "id": "sheep_foothills",
+   "kind": "pasture",
+   "name": "the Greyteeth sheepwalk",
+   "x": 2844,
+   "y": 1532,
+   "size": 220,
+   "for": "sheep and goat run (N/NE foothills)",
+   "about": "sheep and goats on the Greyteeth's foothills",
+   "tiles": 118121,
+   "track": 465
+  },
+  {
+   "id": "warren_dunes",
+   "kind": "warren",
+   "name": "the Fenshore warren",
+   "x": 924,
+   "y": 3604,
+   "size": 60,
+   "for": "rabbit warren (SW marsh dunes)",
+   "about": "rabbits in the dunes along the fens' sea shore",
+   "tiles": 7214,
+   "track": 849
+  },
+  {
+   "id": "warren_waste",
+   "kind": "warren",
+   "name": "the Ochre warren",
+   "x": 2956,
+   "y": 2604,
+   "size": 60,
+   "for": "rabbit warren (SE desert edge)",
+   "about": "rabbits on the scrubby edge of the Red Waste",
+   "tiles": 8357,
+   "track": 73
+  },
+  {
+   "id": "fishing_sound",
+   "kind": "fishing",
+   "name": "the Sound landing",
+   "x": 684,
+   "y": 1389,
+   "size": 12,
+   "for": "sea fishing boat 1 (Ridgemere's sound)",
+   "about": "a landing on Cedar Sound",
+   "level": 1.0,
+   "tiles": 301,
+   "track": 217
+  },
+  {
+   "id": "fishing_northcove",
+   "kind": "fishing",
+   "name": "North Cove",
+   "x": 139,
+   "y": 1051,
+   "size": 12,
+   "for": "sea fishing boat 2 (a north cove)",
+   "about": "a cove on the rain coast south of the city",
+   "level": 1.0,
+   "tiles": 263,
+   "track": 297
+  },
+  {
+   "id": "fishing_delta",
+   "kind": "fishing",
+   "name": "the Long River mouth",
+   "x": 933,
+   "y": 3054,
+   "size": 12,
+   "for": "sea fishing boat 3 (SW marsh coast)",
+   "about": "the Long River's mouth",
+   "level": 0.5,
+   "tiles": 339,
+   "track": 337
+  },
+  {
+   "id": "fishing_fencoast",
+   "kind": "fishing",
+   "name": "the Fen shore",
+   "x": 694,
+   "y": 3800,
+   "size": 12,
+   "for": "sea fishing boat 4 (SW marsh coast)",
+   "about": "the fens' sea shore",
+   "level": 0.5,
+   "tiles": 338,
+   "track": 281
+  },
+  {
+   "id": "fishing_glasswater",
+   "kind": "fishing",
+   "name": "Glasswater landing",
+   "x": 1948,
+   "y": 2283,
+   "size": 12,
+   "for": "lake and river boat 1",
+   "about": "Glasswater's south shore",
+   "level": 1.5,
+   "tiles": 265,
+   "track": 305
+  },
+  {
+   "id": "fishing_uppermere",
+   "kind": "fishing",
+   "name": "the Upper Mere landing",
+   "x": 2412,
+   "y": 1596,
+   "size": 12,
+   "for": "lake and river boat 2",
+   "about": "the Upper Mere, above Glasswater",
+   "level": 2.5,
+   "tiles": 281,
+   "track": 265
+  },
+  {
+   "id": "marsh_eels",
+   "kind": "marsh",
+   "name": "the eel creeks",
+   "x": 1084,
+   "y": 3436,
+   "size": 95,
+   "for": "the eel and fowl marsh",
+   "about": "creeks, pools and reed beds for eels and wildfowl",
+   "tiles": 17395,
+   "track": 17
+  },
+  {
+   "id": "bees_rainward",
+   "kind": "apiary",
+   "name": "the Rainward bee garth",
+   "x": 948,
+   "y": 356,
+   "size": 26,
+   "for": "beekeeper 1",
+   "about": "heather and clover on the Rainward Hills",
+   "tiles": 1625,
+   "track": 25
+  },
+  {
+   "id": "bees_greenholt",
+   "kind": "apiary",
+   "name": "the Greenholt bee garth",
+   "x": 1300,
+   "y": 1148,
+   "size": 26,
+   "for": "beekeeper 2",
+   "about": "meadow flowers in the lower Alder valley",
+   "tiles": 1591,
+   "track": 225
+  },
+  {
+   "id": "bees_south",
+   "kind": "apiary",
+   "name": "the Sunfields bee garth",
+   "x": 2004,
+   "y": 3100,
+   "size": 26,
+   "for": "beekeeper 3",
+   "about": "meadows and orchards of the south-middle country",
+   "tiles": 1597,
+   "track": 57
+  },
+  {
+   "id": "salt_saltpan",
+   "kind": "salt",
+   "name": "the Saltpan workings",
+   "x": 3420,
+   "y": 3316,
+   "size": 30,
+   "for": "salt works 1 (SE desert pan)",
+   "about": "salt raked from the Saltpan's crust",
+   "level": 0.5,
+   "tiles": 2781
+  },
+  {
+   "id": "salt_fencoast",
+   "kind": "saltcoast",
+   "name": "the Fen salterns",
+   "x": 868,
+   "y": 3346,
+   "size": 34,
+   "for": "salt works 2 (SW marsh coast)",
+   "about": "flat shore for sea-salt pans",
+   "level": 0.5,
+   "tiles": 2030,
+   "track": 249
+  },
+  {
+   "id": "fishing_southcove",
+   "kind": "fishing",
+   "name": "Seal Rocks",
+   "x": 188,
+   "y": 1799,
+   "size": 12,
+   "for": "spare: sea fishing",
+   "about": "a landing among the rain coast's rocks",
+   "level": 0.5,
+   "tiles": 366,
+   "track": 305
+  },
+  {
+   "id": "fishing_larkfield",
+   "kind": "fishing",
+   "name": "the Larkfield weir",
+   "x": 1550,
+   "y": 2442,
+   "size": 12,
+   "for": "spare: river boat",
+   "about": "the Long River at Larkfield",
+   "level": 1.5,
+   "tiles": 416,
+   "track": 97
+  },
+  {
+   "id": "fishing_rainmere",
+   "kind": "fishing",
+   "name": "Rainmere landing",
+   "x": 964,
+   "y": 740,
+   "size": 12,
+   "for": "spare: lake boat",
+   "about": "Rainmere, in the Rainward Hills",
+   "level": 3.0,
+   "tiles": 253,
+   "track": 193
+  },
+  {
+   "id": "timber_rainwood",
+   "kind": "timber",
+   "name": "the Rainwood cut",
+   "x": 684,
+   "y": 1164,
+   "size": 24,
+   "for": "timber (coastal rainforest)",
+   "about": "cedar and fir in the Rainwood, near the city",
+   "level": 1.5,
+   "tiles": 1867,
+   "track": 121
+  },
+  {
+   "id": "timber_coast",
+   "kind": "timber",
+   "name": "the coast range cut",
+   "x": 356,
+   "y": 1932,
+   "size": 24,
+   "for": "timber (coastal rainforest)",
+   "about": "big cedar in the coast range",
+   "level": 0.5,
+   "tiles": 1811,
+   "track": 161
+  },
+  {
+   "id": "timber_sound",
+   "kind": "timber",
+   "name": "the Soundside cut",
+   "x": 700,
+   "y": 1500,
+   "size": 24,
+   "for": "timber (coastal rainforest)",
+   "about": "cedar on Cedar Sound's south shore",
+   "level": 1.0,
+   "tiles": 1709,
+   "track": 89
+  },
+  {
+   "id": "timber_front",
+   "kind": "timber",
+   "name": "the Kestrel pines",
+   "x": 1692,
+   "y": 948,
+   "size": 24,
+   "for": "timber (foothills)",
+   "about": "pine under the Whitefangs",
+   "level": 5.0,
+   "tiles": 1739,
+   "track": 105
+  },
+  {
+   "id": "timber_upper",
+   "kind": "timber",
+   "name": "the Greyteeth pines",
+   "x": 2732,
+   "y": 972,
+   "size": 24,
+   "for": "timber (foothills)",
+   "about": "pine on the upper Long River",
+   "level": 6.0,
+   "tiles": 1764,
+   "track": 433
+  },
+  {
+   "id": "charcoal_greenholt",
+   "kind": "charcoal",
+   "name": "the Greenholt charcoal hearths",
+   "x": 1348,
+   "y": 2140,
+   "size": 18,
+   "for": "charcoal",
+   "about": "charcoal burners' hearths in the Greenholt woods",
+   "level": 3.0,
+   "tiles": 1041,
+   "track": 17
+  },
+  {
+   "id": "charcoal_rainwood",
+   "kind": "charcoal",
+   "name": "the Rainwood charcoal hearths",
+   "x": 684,
+   "y": 1228,
+   "size": 18,
+   "for": "charcoal",
+   "about": "charcoal burners' hearths in the Rainwood",
+   "level": 1.5,
+   "tiles": 1007,
+   "track": 33
+  },
+  {
+   "id": "quarry_granite",
+   "kind": "quarry",
+   "name": "the Rainward granite quarry",
+   "x": 1012,
+   "y": 356,
+   "size": 20,
+   "for": "stone (granite)",
+   "about": "granite for the city's walls and buildings (House Greatly's trade)",
+   "level": 6.0,
+   "tiles": 1255,
+   "track": 73
+  },
+  {
+   "id": "quarry_slate",
+   "kind": "quarry",
+   "name": "the Rainward slate quarry",
+   "x": 1324,
+   "y": 652,
+   "size": 18,
+   "for": "stone (slate)",
+   "about": "slate for the city's roofs",
+   "level": 4.5,
+   "tiles": 1056,
+   "track": 57
+  },
+  {
+   "id": "quarry_lime",
+   "kind": "quarry",
+   "name": "the lime quarry",
+   "x": 1588,
+   "y": 788,
+   "size": 20,
+   "for": "stone (limestone)",
+   "about": "limestone for the lime kilns and the plasterworks",
+   "level": 5.5,
+   "tiles": 1245,
+   "track": 49
+  },
+  {
+   "id": "quarry_sandstone",
+   "kind": "quarry",
+   "name": "the Ochre sandstone quarry",
+   "x": 2844,
+   "y": 2916,
+   "size": 20,
+   "for": "stone (sandstone)",
+   "about": "red sandstone in the Ochre Hills",
+   "level": 10.0,
+   "tiles": 1243,
+   "track": 209
+  },
+  {
+   "id": "clay_mirebridge",
+   "kind": "clay",
+   "name": "the Mirebridge clay pits",
+   "x": 1180,
+   "y": 3276,
+   "size": 14,
+   "for": "clay",
+   "about": "clay for bricks and tiles",
+   "level": 0.5,
+   "tiles": 592,
+   "track": 25
+  },
+  {
+   "id": "clay_fens",
+   "kind": "clay",
+   "name": "the Sallow clay pits",
+   "x": 1636,
+   "y": 3332,
+   "size": 14,
+   "for": "clay",
+   "about": "clay in the fens",
+   "level": 1.0,
+   "tiles": 629,
+   "track": 393
+  },
+  {
+   "id": "mine_frost_iron",
+   "kind": "mine",
+   "name": "the Frosthollow iron mine",
+   "x": 2516,
+   "y": 724,
+   "size": 14,
+   "for": "ore (iron; N mountains)",
+   "about": "iron ore above Frosthollow",
+   "level": 8.0,
+   "tiles": 628,
+   "track": 217
+  },
+  {
+   "id": "mine_frost_lead",
+   "kind": "mine",
+   "name": "the Kestrel lead and silver mine",
+   "x": 2052,
+   "y": 636,
+   "size": 14,
+   "for": "ore (lead, silver; N mountains)",
+   "about": "lead and silver ore above the pass",
+   "level": 7.0,
+   "tiles": 606,
+   "track": 185
+  },
+  {
+   "id": "mine_grey_iron",
+   "kind": "mine",
+   "name": "the Greyteeth iron mine",
+   "x": 3372,
+   "y": 1220,
+   "size": 14,
+   "for": "ore (iron; NE mountains)",
+   "about": "iron ore in the Greyteeth",
+   "level": 7.0,
+   "tiles": 618,
+   "track": 537
+  },
+  {
+   "id": "mine_grey_silver",
+   "kind": "mine",
+   "name": "the Greyteeth silver mine",
+   "x": 3500,
+   "y": 1004,
+   "size": 14,
+   "for": "ore (silver; NE mountains)",
+   "about": "silver in the high Greyteeth",
+   "level": 7.0,
+   "tiles": 599,
+   "track": 281
+  },
+  {
+   "id": "mine_grey_tin",
+   "kind": "mine",
+   "name": "the Greyteeth tin mine",
+   "x": 3748,
+   "y": 1348,
+   "size": 14,
+   "for": "ore (tin; NE mountains)",
+   "about": "tin ore under the eastern spurs",
+   "level": 11.5,
+   "tiles": 625,
+   "track": 385
+  },
+  {
+   "id": "mine_ochre_copper",
+   "kind": "mine",
+   "name": "the Ochre copper mine",
+   "x": 2988,
+   "y": 2364,
+   "size": 14,
+   "for": "spare: ore (copper)",
+   "about": "copper in the Ochre Hills",
+   "level": 7.5,
+   "tiles": 594,
+   "track": 209
+  }
+ ],
+ "reserved": {
+  "ownFields": 446002,
+  "range": 522564,
+  "spare": 1629,
+  "cellTiles": 65536
+ },
+ "roads": {
+  "The Pass Road": {
+   "length": 2321,
+   "bridges": 27
+  },
+  "The Pass": {
+   "length": 834,
+   "bridges": 9
+  },
+  "The East Road": {
+   "length": 2069,
+   "bridges": 17
+  },
+  "The Sound Road": {
+   "length": 793,
+   "bridges": 10
+  },
+  "The Coast Road": {
+   "length": 1840,
+   "bridges": 51
+  },
+  "The River Road": {
+   "length": 692,
+   "bridges": 0
+  },
+  "The Fen Road": {
+   "length": 583,
+   "bridges": 33
+  },
+  "The High Road": {
+   "length": 1136,
+   "bridges": 0
+  },
+  "The South Road": {
+   "length": 1166,
+   "bridges": 38
+  },
+  "The Waste Road": {
+   "length": 1471,
+   "bridges": 0
+  },
+  "The Downs Road": {
+   "length": 1909,
+   "bridges": 18
+  }
+ },
+ "tracks": {
+  "count": 60,
+  "length": 12756
+ },
+ "rivers": [
+  {
+   "name": "the Long River",
+   "length": 7024,
+   "width": 14.8,
+   "from": [
+    3420,
+    980
+   ],
+   "to": [
+    900,
+    3132
+   ],
+   "top": 5.775186538696289,
+   "mouth": 0.0
+  },
+  {
+   "name": "the Lark",
+   "length": 3600,
+   "width": 14.6,
+   "from": [
+    2572,
+    2652
+   ],
+   "to": [
+    1068,
+    3036
+   ],
+   "top": 3.7710161209106445,
+   "mouth": 0.0
+  },
+  {
+   "name": "the Alder",
+   "length": 5856,
+   "width": 12.1,
+   "from": [
+    2988,
+    516
+   ],
+   "to": [
+    924,
+    1292
+   ],
+   "top": 6.034582614898682,
+   "mouth": 0.0
+  },
+  {
+   "name": "the Whitewater",
+   "length": 1440,
+   "width": 12.1,
+   "from": [
+    716,
+    1956
+   ],
+   "to": [
+    964,
+    1316
+   ],
+   "top": 1.5588939189910889,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 464,
+   "width": 12.1,
+   "from": [
+    876,
+    2772
+   ],
+   "to": [
+    1076,
+    2972
+   ],
+   "top": 0.0,
+   "mouth": 0.0
+  },
+  {
+   "name": "the Kestrel",
+   "length": 1680,
+   "width": 11.8,
+   "from": [
+    1060,
+    2100
+   ],
+   "to": [
+    1116,
+    2900
+   ],
+   "top": 2.071115255355835,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 752,
+   "width": 10.9,
+   "from": [
+    1204,
+    2524
+   ],
+   "to": [
+    1164,
+    2884
+   ],
+   "top": 0.2806311845779419,
+   "mouth": 0.0
+  },
+  {
+   "name": "the Greybeck",
+   "length": 3104,
+   "width": 10.4,
+   "from": [
+    1916,
+    468
+   ],
+   "to": [
+    1268,
+    1404
+   ],
+   "top": 5.0,
+   "mouth": 1.2114381790161133
+  },
+  {
+   "name": "",
+   "length": 208,
+   "width": 10.2,
+   "from": [
+    1372,
+    2732
+   ],
+   "to": [
+    1340,
+    2820
+   ],
+   "top": 0.0,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 160,
+   "width": 10.0,
+   "from": [
+    1468,
+    2764
+   ],
+   "to": [
+    1404,
+    2764
+   ],
+   "top": 0.0,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 240,
+   "width": 9.9,
+   "from": [
+    1436,
+    2620
+   ],
+   "to": [
+    1420,
+    2724
+   ],
+   "top": 0.0,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 816,
+   "width": 9.7,
+   "from": [
+    1532,
+    2340
+   ],
+   "to": [
+    1428,
+    2716
+   ],
+   "top": 1.7613965272903442,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 640,
+   "width": 9.6,
+   "from": [
+    1764,
+    2796
+   ],
+   "to": [
+    1476,
+    2716
+   ],
+   "top": 1.3555865287780762,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 432,
+   "width": 9.0,
+   "from": [
+    1716,
+    2204
+   ],
+   "to": [
+    1820,
+    2404
+   ],
+   "top": 1.202538013458252,
+   "mouth": 1.0
+  },
+  {
+   "name": "",
+   "length": 880,
+   "width": 8.8,
+   "from": [
+    1628,
+    3036
+   ],
+   "to": [
+    1204,
+    3004
+   ],
+   "top": 0.689669668674469,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 528,
+   "width": 8.6,
+   "from": [
+    2116,
+    2516
+   ],
+   "to": [
+    1908,
+    2316
+   ],
+   "top": 3.0609188079833984,
+   "mouth": 1.191759705543518
+  },
+  {
+   "name": "",
+   "length": 656,
+   "width": 8.3,
+   "from": [
+    1956,
+    1996
+   ],
+   "to": [
+    1916,
+    2308
+   ],
+   "top": 1.0,
+   "mouth": 1.0
+  },
+  {
+   "name": "the Coldbeck",
+   "length": 1440,
+   "width": 8.0,
+   "from": [
+    1916,
+    3572
+   ],
+   "to": [
+    1372,
+    3132
+   ],
+   "top": 1.9658703804016113,
+   "mouth": 0.0
+  },
+  {
+   "name": "the Shiver",
+   "length": 2496,
+   "width": 8.0,
+   "from": [
+    1972,
+    3996
+   ],
+   "to": [
+    852,
+    3380
+   ],
+   "top": 2.419524669647217,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 1216,
+   "width": 8.0,
+   "from": [
+    1412,
+    3516
+   ],
+   "to": [
+    860,
+    3388
+   ],
+   "top": 0.48647400736808777,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 80,
+   "width": 7.9,
+   "from": [
+    1340,
+    1276
+   ],
+   "to": [
+    1316,
+    1284
+   ],
+   "top": 1.5,
+   "mouth": 1.5
+  },
+  {
+   "name": "",
+   "length": 192,
+   "width": 7.7,
+   "from": [
+    1468,
+    1060
+   ],
+   "to": [
+    1412,
+    1132
+   ],
+   "top": 1.9216907024383545,
+   "mouth": 1.5
+  },
+  {
+   "name": "",
+   "length": 912,
+   "width": 7.6,
+   "from": [
+    2596,
+    2164
+   ],
+   "to": [
+    2196,
+    1972
+   ],
+   "top": 3.072545051574707,
+   "mouth": 1.2734228372573853
+  },
+  {
+   "name": "",
+   "length": 592,
+   "width": 7.4,
+   "from": [
+    1596,
+    1620
+   ],
+   "to": [
+    1428,
+    1372
+   ],
+   "top": 2.3172202110290527,
+   "mouth": 1.3016386032104492
+  },
+  {
+   "name": "",
+   "length": 432,
+   "width": 7.2,
+   "from": [
+    2364,
+    1636
+   ],
+   "to": [
+    2348,
+    1828
+   ],
+   "top": 2.5,
+   "mouth": 2.5
+  },
+  {
+   "name": "",
+   "length": 192,
+   "width": 7.2,
+   "from": [
+    1332,
+    836
+   ],
+   "to": [
+    1364,
+    916
+   ],
+   "top": 2.6065409183502197,
+   "mouth": 2.5903353691101074
+  },
+  {
+   "name": "",
+   "length": 912,
+   "width": 6.8,
+   "from": [
+    1300,
+    452
+   ],
+   "to": [
+    1276,
+    860
+   ],
+   "top": 4.605884075164795,
+   "mouth": 2.606196880340576
+  },
+  {
+   "name": "",
+   "length": 896,
+   "width": 6.7,
+   "from": [
+    1220,
+    1636
+   ],
+   "to": [
+    956,
+    1396
+   ],
+   "top": 1.035286784172058,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 272,
+   "width": 6.6,
+   "from": [
+    1972,
+    1388
+   ],
+   "to": [
+    1852,
+    1396
+   ],
+   "top": 2.733079195022583,
+   "mouth": 2.6836814880371094
+  },
+  {
+   "name": "",
+   "length": 128,
+   "width": 6.6,
+   "from": [
+    1500,
+    3180
+   ],
+   "to": [
+    1452,
+    3148
+   ],
+   "top": 0.21098163723945618,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 224,
+   "width": 6.3,
+   "from": [
+    988,
+    3436
+   ],
+   "to": [
+    892,
+    3348
+   ],
+   "top": 0.0,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 640,
+   "width": 6.3,
+   "from": [
+    1780,
+    852
+   ],
+   "to": [
+    1828,
+    1156
+   ],
+   "top": 5.156583309173584,
+   "mouth": 4.093188762664795
+  },
+  {
+   "name": "",
+   "length": 1392,
+   "width": 6.1,
+   "from": [
+    1284,
+    3876
+   ],
+   "to": [
+    724,
+    3548
+   ],
+   "top": 0.6246721744537354,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 128,
+   "width": 6.1,
+   "from": [
+    772,
+    3524
+   ],
+   "to": [
+    724,
+    3548
+   ],
+   "top": 0.0,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 1424,
+   "width": 6.0,
+   "from": [
+    2460,
+    3364
+   ],
+   "to": [
+    1876,
+    3132
+   ],
+   "top": 2.999600648880005,
+   "mouth": 1.3975557088851929
+  },
+  {
+   "name": "the Rainrun",
+   "length": 1616,
+   "width": 5.9,
+   "from": [
+    804,
+    516
+   ],
+   "to": [
+    908,
+    1284
+   ],
+   "top": 2.013119697570801,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 128,
+   "width": 5.8,
+   "from": [
+    1028,
+    3308
+   ],
+   "to": [
+    980,
+    3284
+   ],
+   "top": 0.0,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 320,
+   "width": 5.8,
+   "from": [
+    2028,
+    924
+   ],
+   "to": [
+    1940,
+    1012
+   ],
+   "top": 4.332818984985352,
+   "mouth": 4.300961971282959
+  },
+  {
+   "name": "",
+   "length": 176,
+   "width": 5.7,
+   "from": [
+    916,
+    1116
+   ],
+   "to": [
+    884,
+    1188
+   ],
+   "top": 0.4088197648525238,
+   "mouth": 0.2765164077281952
+  },
+  {
+   "name": "",
+   "length": 304,
+   "width": 5.6,
+   "from": [
+    860,
+    3660
+   ],
+   "to": [
+    724,
+    3556
+   ],
+   "top": 0.0,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 576,
+   "width": 5.6,
+   "from": [
+    804,
+    2532
+   ],
+   "to": [
+    1020,
+    2780
+   ],
+   "top": 0.6458740234375,
+   "mouth": 0.0
+  },
+  {
+   "name": "",
+   "length": 128,
+   "width": 5.5,
+   "from": [
+    2572,
+    1244
+   ],
+   "to": [
+    2564,
+    1292
+   ],
+   "top": 3.547416925430298,
+   "mouth": 3.4976847171783447
+  }
+ ],
+ "streams": 49,
+ "washes": 4,
+ "lakes": [
+  {
+   "name": "Glasswater",
+   "x": 1952.7443247995552,
+   "y": 2104.109987300776,
+   "level": 1.0,
+   "tiles": 133079
+  },
+  {
+   "name": "the Upper Mere",
+   "x": 2449.09903232448,
+   "y": 1661.4664196005765,
+   "level": 2.5,
+   "tiles": 48570
+  },
+  {
+   "name": "Highmere",
+   "x": 1705.8416711493635,
+   "y": 520.966361843285,
+   "level": 5.0,
+   "tiles": 27885
+  },
+  {
+   "name": "Dustmere",
+   "x": 3240.3464701850585,
+   "y": 1983.0234994614707,
+   "level": 5.0,
+   "tiles": 20426
+  },
+  {
+   "name": "Alder Mere",
+   "x": 1364.3577724358975,
+   "y": 1296.1974015567766,
+   "level": 1.5,
+   "tiles": 17472
+  },
+  {
+   "name": "Greytarn",
+   "x": 3258.7433221637148,
+   "y": 763.7602680708472,
+   "level": 5.5,
+   "tiles": 10445
+  },
+  {
+   "name": "a mere",
+   "x": 1415.0980220740903,
+   "y": 173.9388045022402,
+   "level": 5.5,
+   "tiles": 9151
+  },
+  {
+   "name": "Slate Tarn",
+   "x": 1224.3210561349013,
+   "y": 528.1974706012869,
+   "level": 4.0,
+   "tiles": 9014
+  },
+  {
+   "name": "Rainmere",
+   "x": 1022.6702163434593,
+   "y": 734.1182602847215,
+   "level": 2.5,
+   "tiles": 8921
+  },
+  {
+   "name": "a tarn",
+   "x": 3725.9901700011565,
+   "y": 1164.4982074707991,
+   "level": 6.5,
+   "tiles": 8647
+  },
+  {
+   "name": "Kestrel Tarn",
+   "x": 2600.451529106152,
+   "y": 625.3692289526508,
+   "level": 6.0,
+   "tiles": 8469
+  }
+ ],
+ "tiles": {
+  "!": 1296839,
+  "\"": 869169,
+  "#": 16318,
+  "$": 308271,
+  "%": 15977,
+  "&": 1050241,
+  "(": 682457,
+  ")": 100559,
+  "*": 596887,
+  "+": 264,
+  ",": 2421414,
+  "-": 512389,
+  ".": 54406,
+  "/": 25940,
+  "0": 1977390,
+  "1": 158560,
+  "2": 16446,
+  "3": 65491,
+  "5": 3814,
+  "7": 18756,
+  "8": 2998,
+  ":": 264,
+  ";": 1596217,
+  "<": 90,
+  ">": 820,
+  "?": 21182,
+  "@": 49898,
+  "B": 146386,
+  "D": 199664,
+  "E": 412364,
+  "F": 50,
+  "G": 295,
+  "H": 4057,
+  "I": 71,
+  "J": 9329,
+  "L": 1491,
+  "O": 111,
+  "P": 464650,
+  "Q": 1500,
+  "S": 390,
+  "U": 13,
+  "W": 1945370,
+  "X": 304047,
+  "Y": 230705,
+  "Z": 15917,
+  "[": 1720,
+  "]": 301,
+  "^": 735,
+  "_": 15748,
+  "d": 38296,
+  "f": 14911,
+  "i": 63,
+  "o": 45348,
+  "p": 3,
+  "r": 396490,
+  "s": 163363,
+  "u": 20,
+  "w": 171970,
+  "x": 99,
+  "|": 1470,
+  "~": 327212
+ },
+ "cliffs": 15679,
+ "reachedShare": 0.9801,
+ "checks": [
+  {
+   "check": "the spawn stands on open ground",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "every kept tile of the city as it was (code and height)",
+   "ok": true,
+   "detail": "0 codes, 0 heights differ"
+  },
+  {
+   "check": "every door the city's own ground reached is still reached from the spawn",
+   "ok": true,
+   "detail": " (3 reached only through buildings, as before)"
+  },
+  {
+   "check": "every NPC's outdoor spot and patrol post still reached",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "the E gate road goes on into the realm",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "the S gate road goes on into the realm",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "the N gate road goes on into the realm",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "every reserved site is reached from the city",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "5-7 town sites",
+   "ok": true,
+   "detail": "7"
+  },
+  {
+   "check": "in every cell, most open ground is reached from the city",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "no river runs uphill",
+   "ok": true,
+   "detail": "0 rises (the worst 0): "
+  },
+  {
+   "check": "heights within the game's +-16",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "no word \"dog\" in the realm's text",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "the cells tile the map without overlap",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "timings": {
+  "city": 0.0,
+  "sea": 11.5,
+  "elevation": 0.9,
+  "climate": 0.1,
+  "drainage": 0.7,
+  "heights": 25.0,
+  "water": 16.9,
+  "settle": 9.0,
+  "ground": 48.7,
+  "sites": 3.0,
+  "roads": 5.4,
+  "cells": 2.9,
+  "checks": 5.5
+ }
+}

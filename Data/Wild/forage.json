@@ -9,9 +9,12 @@
       {"item": "mushrooms", "weight": 2, "count": 1, "seasons": [1, 2]}, {"item": "oak_galls", "weight": 1, "count": 1, "seasons": [2]}]},
     {"id": "pine", "tiles": "P$1", "name": "the pines", "goods": [
       {"item": "firewood", "weight": 3, "count": 1}, {"item": "resin", "weight": 2, "count": 1}]},
+    {"id": "willow", "tiles": "@", "name": "the willows", "goods": [
+      {"item": "firewood", "weight": 3, "count": 1}, {"item": "reeds", "weight": 2, "count": 1},
+      {"item": "mushrooms", "weight": 1, "count": 1, "seasons": [1, 2]}, {"item": "herbs", "weight": 1, "count": 1, "seasons": [0, 1, 2]}]},
     {"id": "deadwood", "tiles": "27", "name": "the deadwood", "goods": [
       {"item": "firewood", "weight": 4, "count": 1}, {"item": "mushrooms", "weight": 2, "count": 1, "seasons": [0, 1, 2]}]},
-    {"id": "shrub", "tiles": "B", "name": "the scrub", "goods": [
+    {"id": "shrub", "tiles": "B?", "name": "the scrub", "goods": [
       {"item": "berries", "weight": 3, "count": 2, "seasons": [1, 2]}, {"item": "firewood", "weight": 1, "count": 1}]},
     {"id": "grass", "tiles": ",\";", "name": "the grass", "goods": [
       {"item": "herbs", "weight": 3, "count": 1, "seasons": [0, 1, 2]}, {"item": "yarrow", "weight": 1, "count": 1, "seasons": [0, 1, 2]},
@@ -26,6 +29,7 @@
     {"id": "reeds", "tiles": "E", "name": "the reeds", "goods": [{"item": "reeds", "weight": 1, "count": 2}]},
     {"id": "mud", "tiles": "D", "name": "the mud", "goods": [{"item": "clay", "weight": 1, "count": 1}]},
     {"id": "sand", "tiles": "0", "name": "the sand", "goods": [{"item": "sand", "weight": 1, "count": 1}]},
+    {"id": "salt", "tiles": ")", "name": "the salt crust", "goods": [{"item": "salt", "weight": 1, "count": 1}]},
     {"id": "shallows", "tiles": "~", "name": "the shallows", "goods": [
       {"item": "shellfish", "weight": 1, "count": 1, "seasons": [0, 1, 2]}, {"item": "reeds", "weight": 1, "count": 1}]}
   ]

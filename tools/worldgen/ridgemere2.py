@@ -4137,6 +4137,7 @@ def write(world_key, seed=SEED, dry=False, report=print, map_mode='auto'):
                 changed += conn.execute('UPDATE live.npc_voice SET quarter = %s WHERE world_id = %s AND npc_id = %s '
                                         'AND quarter IS DISTINCT FROM %s', (quarter, wid, npc, quarter)).rowcount
             world_sync.tell_editors(conn, wid, 'ridgemere2.py', 'Ridgemere 2.0: the city (doc 67)')
+    realm2.keep_snapshot(realm.city_cells)              # (The city as written, for the realm's own writes: doc 70.)
     report(f'Saved: revision {new} (+1 for the editors\' reload); {changed} voices given their new quarter; ' +
            (f'the same map, {ident["id"]} (its layout unchanged).' if kept == 'kept' else
             f'a new map identity, {ident["id"]} (the layout changed; pull and import with a world on the old map are refused).'))

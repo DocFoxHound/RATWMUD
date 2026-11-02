@@ -3,11 +3,12 @@
 round the city as DEV holds it, with every check of the write.
 
   python3 tools/test_realm2.py                 the pieces (seconds)
-  RATW_SLOW=1 python3 tools/test_realm2.py     and the realm round DEV's city (about two minutes, 6 GB; read only;
+  RATW_SLOW=1 python3 tools/test_realm2.py     and the realm round DEV's city (about two and a half minutes, 8 GB; read only;
                                                skipped without the database)
 """
 from __future__ import annotations
 
+import json
 import os
 import random
 import sys
@@ -107,6 +108,39 @@ class Pieces(unittest.TestCase):
         self.assertTrue(terrain_catalog.BY_CODE['?']['solid'] and terrain_catalog.BY_CODE['@']['solid'])
         self.assertFalse(terrain_catalog.BY_CODE['('].get('solid') or terrain_catalog.BY_CODE[')'].get('solid'))
 
+    def test_the_new_tiles_are_in_the_wild_tables(self):
+        # Hunting's ground kinds and foraging's grounds are keyed by tile (Data/Wild): the realm's new tiles are in them,
+        # willow as woods, cactus as scrub, sandstone as rock, a salt flat as barren as sand.
+        wild = Path(__file__).resolve().parents[1] / 'Data' / 'Wild'
+        ground = json.loads((wild / 'animals.json').read_text(encoding='utf-8'))['ground']
+        kind = {c: k for k, tiles in ground.items() for c in tiles}
+        self.assertEqual((kind.get('@'), kind.get('?'), kind.get('('), kind.get(')')), ('forest', 'shrub', 'rock', 'sand'))
+        forage = {c: g['id'] for g in json.loads((wild / 'forage.json').read_text(encoding='utf-8'))['ground'] for c in g['tiles']}
+        self.assertEqual((forage.get('@'), forage.get('?'), forage.get(')')), ('willow', 'shrub', 'salt'))
+        # Every tile the realm paints that is natural ground (not water, a road or the city's) has its hunting kind.
+        painted = set(''.join(''.join(p[0]) + p[1] for p in R.PALETTES.values()))
+        for a, b, _, trees, _, extras in R.CALM.values():
+            painted |= set(a) | set(b) | set(trees) | {c for c, _ in extras}
+        missing = sorted(c for c in painted if c not in kind and c not in '.')
+        self.assertEqual(missing, [])
+
+    def test_ridged_noise_and_the_range_carver(self):
+        ys, xs = np.mgrid[0:64, 0:64].astype(np.float32)
+        a = R.ridges_at(xs * 8, ys * 8, 120, 5, 4)
+        self.assertTrue(np.array_equal(a, R.ridges_at(xs * 8, ys * 8, 120, 5, 4)))       # (deterministic)
+        self.assertTrue(0 <= float(a.min()) and float(a.max()) <= 1)
+        # A cone of a range on flat ground: carved, it keeps its foot, rises highest inside, and is cut into valleys
+        # (more relief than the smooth cone's) without any node falling below the land it stands on.
+        plan = np.clip(10 - np.hypot(xs - 32, ys - 32) / 2.5, 0, None).astype(np.float32)
+        foot = np.full(plan.shape, 2.0, dtype=np.float32)
+        sea = np.zeros(plan.shape, dtype=bool)
+        carved = R.carve_range(foot, plan, sea, xs * 8, ys * 8, 7)
+        self.assertTrue((carved >= foot - 1e-5).all())
+        self.assertTrue(np.allclose(carved[plan == 0], 2.0))
+        self.assertGreater(float(carved[24:40, 24:40].mean()), float(carved[plan < .5].mean()) + 3)
+        rough = lambda h: float(np.abs(np.diff(h[16:48, 16:48], axis=1)).mean())
+        self.assertGreater(rough(carved), rough(foot + plan))
+
     def test_the_plan(self):
         ids = [s[0] for s in R.SITES]
         self.assertEqual(len(ids), len(set(ids)))
@@ -132,11 +166,75 @@ class WholeRealm(unittest.TestCase):
             cls.project, _, _ = r2.load('dev')
         except Exception as error:                  # (no database here)
             raise unittest.SkipTest(f'DEV not readable: {error}')
-        cls.realm = R.expand(cls.project, report=lambda *a: None)
+        # Laying the realm (as a preview or a dry run does) never touches the city's snapshot: only a write that saved.
+        cls.snapshots = []
+        keep, R.keep_snapshot = R.keep_snapshot, lambda cells: cls.snapshots.append(cells)
+        try:
+            cls.realm = R.expand(cls.project, report=lambda *a: None)
+        finally:
+            R.keep_snapshot = keep
 
     def test_every_check_passes(self):
         failed = [c for c in self.realm.result if not c['ok']]
         self.assertEqual(failed, [])
+        checks = {c['check']: c for c in self.realm.result}
+        self.assertTrue(checks['no river runs uphill']['detail'].startswith('0 rises'))
+        self.assertTrue(checks['every kept tile of the city as it was (code and height)']['detail'].startswith('0 codes, 0 heights'))
+
+    def test_laying_the_realm_keeps_no_snapshot(self):
+        self.assertEqual(self.snapshots, [])
+
+    def test_every_river_runs_down_through_its_lakes(self):
+        # The strict check, again here: tile by tile from source to mouth, water and lakes, never a rise.
+        r = self.realm
+        water = (r.river | r.lake | r.sea | r.creek | r.pool) & ~r.keep & (r.codes != ord('8'))
+        for line in r.river_lines:
+            if line['dry']:
+                continue
+            last = None
+            for x, y in line['course']:
+                xi, yi = min(R.SIZE - 1, int(x)), min(R.SIZE - 1, int(y))
+                if not water[yi, xi]:
+                    continue
+                v = float(r.h[yi, xi])
+                self.assertFalse(last is not None and v > last, (xi, yi, v, last))
+                last = v if last is None else min(last, v)
+                if r.sea[yi, xi]:
+                    break
+
+    def test_the_farms_and_works_doc_71_asked_for(self):
+        sites = R.report_of(self.realm, self.project)['siteList']
+        grain = [s for s in sites if s['kind'] == 'farmland']
+        self.assertEqual(len(grain), 2)
+        for s in grain:                              # (about 363 x 363 tiles, the user's choice; less any water in it)
+            self.assertTrue(110_000 <= s['tiles'] <= 135_000, s)
+            self.assertGreaterEqual(s.get('fields', 0), 6)
+        for kind in ('vineyard', 'salt|saltcoast'):
+            real = [s for s in sites if s['kind'] in kind.split('|') and not s['for'].startswith('spare')]
+            self.assertEqual(len(real), 2, kind)
+
+    def test_the_desert_edge_is_dry_country(self):
+        r = self.realm
+        dry = r.dry_edge > .4
+        for c in '15P$*J-':                          # (no heather, pine, cedar or snow at the desert's edge)
+            self.assertEqual(int((r.codes[dry] == ord(c)).sum()), 0, c)
+        self.assertGreater(int((r.codes[dry] == ord('(')).sum()), int(dry.sum()) // 10)   # (red rock showing)
+        cells = {c['id']: c for c in self.project['cells']}
+        ochre = [c for c in cells.values() if c['territory']['region'] == 'ochre_hills']
+        self.assertGreater(len(ochre), 3)
+        self.assertTrue(all(c['weather'] == 'sandstorm' for c in ochre))
+        for c in ochre:
+            self.assertNotRegex(c['description'].lower(), r'heather|pine|rain(?! seldom)')
+
+    def test_round_the_city_the_rain_forest(self):
+        r = self.realm
+        # Outside the walls, beyond the cleared ground by the city, the woods are fir and cedar.
+        box = np.s_[:R.CITY, :R.CITY]
+        wild = r.city_wild & (r.from_city[box] > 40)
+        trees = r.codes[box][wild]
+        conifer = int(np.isin(trees, [ord('$'), ord('P')]).sum())
+        self.assertGreater(conifer, int(wild.sum()) // 5)
+        self.assertGreater(conifer, 3 * int(np.isin(trees, [ord('Y'), ord('B')]).sum()))
 
     def test_the_regions_the_user_asked_for(self):
         rep = R.report_of(self.realm, self.project)

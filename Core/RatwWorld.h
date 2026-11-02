@@ -143,6 +143,9 @@ struct WeatherSystem
     // The world's own (not a front called up): its rain falls as snow where the land is cold enough (warmthAt), and
     // as rain where it isn't, whichever it set out as.
     bool byClimate = false;
+    // Born over arid country: its (rare) rain falls there. Rain the wind brings in from greener country dries out over
+    // it (drynessAt: the rain shadow, doc 70).
+    bool arid = false;
 };
 // The weather at a point: the strongest kind there and how strong (0..1), and the next strongest (where two meet).
 struct WeatherSample
@@ -1362,6 +1365,9 @@ class World
     // edges (0 a temperate country's, below it colder). With the season's (seasonalWarmth, below 0 in winter), the
     // world's own rain falls as snow where the sum is below 0.
     double warmthAt(double x, double y) const;
+    // How much of the country about a point is arid (0 to 1), blended across the cells' edges as the warmth is: rain,
+    // snow and storms the wind brings from elsewhere fade out over it (doc 70: the rain stops at the desert's edge).
+    double drynessAt(double x, double y) const;
     double seasonalWarmth() const;
     // The sky at a place, for what's done under it (its own weather there, as weatherAt): -1 indoors, 0 fair, 1 wet
     // (rain), 2 harsh (snow, storm, sandstorm).
@@ -2281,6 +2287,7 @@ class World
         double x0 = 0, y0 = 0;
         int cols = 0, rows = 0;
         std::vector<float> values;
+        std::vector<float> dry;                     // The share of arid country about each point (drynessAt).
     } warmth_;
     std::size_t climatesFor_ = std::size_t(-1);     // How many cells the climates were worked out for.
     void mapClimates();

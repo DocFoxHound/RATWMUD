@@ -395,21 +395,18 @@ void regionalField()
     expect(cols * rows == int(grid.size()) && cols >= 5 && rows >= 3, "a grid of the field for the client");
 }
 
-// Climates (the user, 2026-10-12: weather fit for each region, changing gradually between them). A row of four cells
-// from a wet coast to snowy mountains: what a cell is called says nothing (the coast is named "Frost North"), its
-// authored weather and its ground do. The land grows colder smoothly across the middle, with no step at the cells'
-// edge; through autumn, the world's own rain is rain on the coast and snow in the mountains, never the other way.
-void climatesAndTheSnowLine()
+// A strip of four cells, west to east, with these ids, names, usual weathers and ground; Side tiles square each.
+struct Strip
 {
-    constexpr int Side = 128;
-    struct Strip
-    {
-        std::string manifest;
-        std::map<std::string, std::string> cells, seams;
-    } f;
-    const char* ids[] = {"coast", "shore", "foothills", "peaks"};
-    const char* names[] = {"Frost North", "The Shore", "The Foothills", "The Peaks"};
-    const char* usual[] = {"rain", "rain", "snow", "snow"};
+    std::string manifest;
+    std::map<std::string, std::string> cells, seams;
+};
+
+constexpr int Side = 128;
+
+Strip strip(const char* const ids[4], const char* const names[4], const char* const usual[4], const char ground[4])
+{
+    Strip f;
     std::ostringstream m;
     m << "RATW_WORLD 3\n";
     for (int i = 0; i < 4; ++i)
@@ -418,7 +415,7 @@ void climatesAndTheSnowLine()
         cell << "id: " << ids[i] << "\nname: " << names[i] << "\ndescription: Open ground.\nworld: " << i * Side
              << " 0 0\noutdoors: true\nweather: " << usual[i] << "\nsize: " << Side << ' ' << Side << "\ngrid:\n";
         for (int y = 0; y < Side; ++y)
-            cell << std::string(Side, i < 2 ? ',' : '*') << '\n';
+            cell << std::string(Side, ground[i]) << '\n';
         f.cells[ids[i]] = cell.str();
         m << "area \"" << ids[i] << "\"\n";
     }
@@ -434,10 +431,15 @@ void climatesAndTheSnowLine()
             f.seams[ids[i]] += one.str();
             f.seams[ids[i + 1]] += two.str();
         }
-    m << "exits \"coast\" 1 \"shore\"\nexits \"shore\" 2 \"coast\" \"foothills\"\nexits \"foothills\" 2 \"shore\" \"peaks\"\n"
-      << "exits \"peaks\" 1 \"foothills\"\nspawn \"coast\" 8.5 8.5\n";
+    m << "exits \"" << ids[0] << "\" 1 \"" << ids[1] << "\"\nexits \"" << ids[1] << "\" 2 \"" << ids[0] << "\" \"" << ids[2]
+      << "\"\nexits \"" << ids[2] << "\" 2 \"" << ids[1] << "\" \"" << ids[3] << "\"\nexits \"" << ids[3] << "\" 1 \"" << ids[2]
+      << "\"\nspawn \"" << ids[0] << "\" 8.5 8.5\n";
     f.manifest = m.str();
-    World world;
+    return f;
+}
+
+void loadStrip(World& world, Strip& f)
+{
     world.setCellSource({[&](const std::string& cell, std::string& header) {
                              const auto found = f.cells.find(cell);
                              if (found == f.cells.end())
@@ -455,6 +457,20 @@ void climatesAndTheSnowLine()
                          }});
     expect(world.loadWorldFiles({{"world.ratw", f.manifest}}, "strip").ok, "the strip loads");
     expect(world.advanceCalendar(1).ok, "and its weather is worked out");
+}
+
+// Climates (the user, 2026-10-12: weather fit for each region, changing gradually between them). A row of four cells
+// from a wet coast to snowy mountains: what a cell is called says nothing (the coast is named "Frost North"), its
+// authored weather and its ground do. The land grows colder smoothly across the middle, with no step at the cells'
+// edge; through autumn, the world's own rain is rain on the coast and snow in the mountains, never the other way.
+void climatesAndTheSnowLine()
+{
+    const char* const ids[] = {"coast", "shore", "foothills", "peaks"};
+    const char* const names[] = {"Frost North", "The Shore", "The Foothills", "The Peaks"};
+    const char* const usual[] = {"rain", "rain", "snow", "snow"};
+    auto f = strip(ids, names, usual, ",,**");
+    World world;
+    loadStrip(world, f);
     const double coast = world.warmthAt(Side * .5, 64), peaks = world.warmthAt(Side * 3.5, 64);
     expect(coast > .3, "the wet coast is mild, whatever it is called: " + std::to_string(coast));
     expect(peaks < -1, "the snowy peaks are cold: " + std::to_string(peaks));
@@ -487,6 +503,33 @@ void climatesAndTheSnowLine()
                                               std::to_string(peakRain) + " rain)");
 }
 
+// The rain shadow (doc 70): the rain the wind brings east off the green downs dries out over the arid country beyond, so
+// the desert sees only its own rare rains, while the downs have theirs as ever.
+void theRainShadow()
+{
+    const char* const ids[] = {"downs", "edge", "hills", "waste"};
+    const char* const names[] = {"The Downs", "The Edge", "The Ochre Hills", "The Waste"};
+    const char* const usual[] = {"clear", "clear", "sandstorm", "sandstorm"};
+    auto f = strip(ids, names, usual, ",,00");
+    World world;
+    loadStrip(world, f);
+    expect(world.drynessAt(Side * .5, 64) < .05 && world.drynessAt(Side * 3.5, 64) > .9,
+           "the downs aren't dry country, the waste is: " + std::to_string(world.drynessAt(Side * .5, 64)) + ", " +
+               std::to_string(world.drynessAt(Side * 3.5, 64)));
+    // Sixty days from spring into summer, four looks a day.
+    int downsRain = 0, wasteRain = 0;
+    for (int look = 0; look < 240; ++look)
+    {
+        expect(world.advanceCalendar(.25).ok, "six hours on");
+        const auto onDowns = world.weatherAt("downs", {64, 64}), onWaste = world.weatherAt("waste", {64, 64});
+        downsRain += (onDowns.kind == Weather::Rain || onDowns.kind == Weather::Storm) && onDowns.intensity >= .05;
+        wasteRain += (onWaste.kind == Weather::Rain || onWaste.kind == Weather::Storm) && onWaste.intensity >= .05;
+    }
+    expect(downsRain > 0, "it rains on the downs (" + std::to_string(downsRain) + " looks)");
+    expect(wasteRain * 4 <= downsRain, "but far less in the waste beyond (" + std::to_string(wasteRain) + " looks against " +
+                                           std::to_string(downsRain) + ")");
+}
+
 int main()
 {
     try
@@ -498,6 +541,7 @@ int main()
         persistenceAndAtomicValidation();
         regionalField();
         climatesAndTheSnowLine();
+        theRainShadow();
         std::cout << "PASS " << checks << " weather/day-night checks\n";
         return 0;
     }
