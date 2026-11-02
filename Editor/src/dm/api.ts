@@ -4,8 +4,8 @@ import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
 import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
-import type {ComfortsBody, EconomyChange, EconomyControls, GoodsBody, LoopSettings, RulesBody, SeasonsBody, ServicesBody,
-    StoreSwitches} from '../lib/economy';
+import type {ComfortsBody, EconomyChange, EconomyControls, FarmsBody, GoodsBody, LoopSettings, RulesBody, SeasonsBody,
+    ServicesBody, StoreSwitches} from '../lib/economy';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
 export type Target = string;
@@ -372,7 +372,7 @@ export const dmApi = {
         call<{release: number; summary: Release['summary']}>('api/dm/rollback', {world, number, password, note}),
     /** The economy's rules on the DM's world (Docs/Design/68, 9 and Progress, "Seasons and the DM's rules"): the store
      *  room's switches, the loop, the Country's goods, the seasons, the comforts, the rules and the services (doc 68,
-     *  "First fixes"); each change audited and sent to the
+     *  "First fixes"), the Country's food farms (doc 71, 4); each change audited and sent to the
      *  world's running server (economy.sync). */
     economy: {
         read: (world: Target) => call<EconomyControls>(`api/dm/economy?world=${encodeURIComponent(world)}`),
@@ -383,6 +383,7 @@ export const dmApi = {
         setComforts: (world: Target, body: ComfortsBody) => call<EconomyChange>('api/dm/economy/comforts', {world, ...body}),
         setRules: (world: Target, body: RulesBody) => call<EconomyChange>('api/dm/economy/rules', {world, ...body}),
         setServices: (world: Target, body: ServicesBody) => call<EconomyChange>('api/dm/economy/services', {world, ...body}),
+        setFarms: (world: Target, body: FarmsBody) => call<EconomyChange>('api/dm/economy/farms', {world, ...body}),
     },
 };
 

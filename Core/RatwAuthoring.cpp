@@ -306,7 +306,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     candidate.herbCell_.clear();
     AuthoredRoster roster;
     std::set<std::string> residentIds;             // roster.residents by ID, to refuse a duplicate at once.
-    bool economy = false, herbs = false, store = false, loop = false, comforts = false;
+    bool economy = false, herbs = false, store = false, loop = false, comforts = false, farms = false;
     std::set<std::string> noStore;                 // Businesses kept out of the store room (nostore records), by founder.
     std::set<std::string> subsidised;              // Services given a subsidy record (doc 68, 5).
     std::vector<std::pair<std::string, Spot>> places;
@@ -641,6 +641,75 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 return reject("Invalid season record.");
             if (!roster.economy.seasons.emplace(group, season).second)
                 return reject("Duplicate season record: " + group);
+        }
+        else if (command == "farms" || command == "farmarea" || command == "farm")
+        {
+            // The Country's food farms as this world has them (Docs/Design/71-the-country-s-industries.md, 4; migration
+            // 0060), each word "-" for country_farms.json's:
+            //   farms start DAY every DAYS order AREA,AREA,... wages KEEPER HAND (once; start -1: no schedule)
+            //   farmarea "<area>" on on|off yield PERCENT crew PERCENT wages KEEPER HAND factor PERCENT (once an area)
+            //   farm "<farm>" yield PERCENT crew PERCENT wages KEEPER HAND (once a farm)
+            // An area or a farm country_farms.json no longer has is kept and does nothing.
+            const auto number = [](const std::string& word, int low, int high, int& into) {
+                if (word == "-")
+                    return true;
+                const bool negative = !word.empty() && word[0] == '-';
+                const auto digits = word.substr(negative ? 1 : 0);
+                if (digits.empty() || digits.size() > 9 || !std::all_of(digits.begin(), digits.end(), [](unsigned char c) { return std::isdigit(c); }))
+                    return false;
+                into = (negative ? -1 : 1) * std::stoi(digits);
+                return into >= low && into <= high;
+            };
+            auto& f = roster.economy.farms;
+            std::string w[6], v[6];
+            if (command == "farms")
+            {
+                fields >> w[0] >> v[0] >> w[1] >> v[1] >> w[2] >> v[2] >> w[3] >> v[3] >> v[4];
+                bool ok = !farms && fields && end(fields) && w[0] == "start" && w[1] == "every" && w[2] == "order" &&
+                          w[3] == "wages" && number(v[0], -1, 365000000, f.start) && number(v[1], 1, 3650, f.every) &&
+                          number(v[3], 0, 1000, f.keeper) && number(v[4], 0, 1000, f.hand);
+                if (ok && v[2] != "-")
+                {
+                    std::istringstream list(v[2]);
+                    for (std::string area; ok && std::getline(list, area, ',');)
+                        ok = identifier(area, 48) && std::find(f.order.begin(), f.order.end(), area) == f.order.end() &&
+                             (f.order.push_back(area), true);
+                    ok = ok && !f.order.empty();
+                }
+                if (!ok)
+                    return reject("Invalid or duplicate farms record.");
+                farms = true;
+            }
+            else if (command == "farmarea")
+            {
+                std::string id;
+                EconomySpec::Farms::Area a;
+                if (!quoted(fields, id) || !identifier(id, 48))
+                    return reject("Malformed farmarea record.");
+                fields >> w[0] >> v[0] >> w[1] >> v[1] >> w[2] >> v[2] >> w[3] >> v[3] >> v[4] >> w[4] >> v[5];
+                if (!fields || !end(fields) || w[0] != "on" || (v[0] != "on" && v[0] != "off" && v[0] != "-") || w[1] != "yield" ||
+                    w[2] != "crew" || w[3] != "wages" || w[4] != "factor" || !number(v[1], 0, 1000, a.yieldScale) ||
+                    !number(v[2], 0, 1000, a.crewScale) || !number(v[3], 0, 1000, a.keeper) || !number(v[4], 0, 1000, a.hand) ||
+                    !number(v[5], 10, 1000, a.priceFactor))
+                    return reject("Invalid farmarea record: " + id);
+                a.on = v[0] == "on" ? 1 : v[0] == "off" ? 0 : -1;
+                if (!f.areas.emplace(id, a).second)
+                    return reject("Duplicate farmarea record: " + id);
+            }
+            else
+            {
+                std::string id;
+                EconomySpec::Farms::Farm a;
+                if (!quoted(fields, id) || !identifier(id, 48))
+                    return reject("Malformed farm record.");
+                fields >> w[0] >> v[0] >> w[1] >> v[1] >> w[2] >> v[2] >> v[3];
+                if (!fields || !end(fields) || w[0] != "yield" || w[1] != "crew" || w[2] != "wages" ||
+                    !number(v[0], 0, 1000, a.yieldScale) || !number(v[1], 0, 1000, a.crewScale) ||
+                    !number(v[2], 0, 1000, a.keeper) || !number(v[3], 0, 1000, a.hand))
+                    return reject("Invalid farm record: " + id);
+                if (!f.farms.emplace(id, a).second)
+                    return reject("Duplicate farm record: " + id);
+            }
         }
         else if (command == "countryoff")
         {

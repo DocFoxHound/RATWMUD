@@ -5,6 +5,7 @@
 // step and straight legs are knobs a harness turns (and turns back). Given world_check's path (the first argument, as
 // ctest passes it), it also runs the harness itself with no player: an economy file a day, the same on 1 and 4 threads,
 // births and deaths in it, and no player.
+#include "RatwJsonDoc.h"
 #include "RatwPool.h"
 #include "RatwWorld.h"
 
@@ -293,6 +294,24 @@ void theHarness(const std::string& binary, const fs::path& root)
     expect(one == four, "the economy file is the same on four threads, with the profile off");
     const auto [player, playerOut] = runIt("player", "--threads 1 --players 1");
     expect(playerOut.find("1 player") != std::string::npos, "--players 1 keeps a player for a city check");
+    // The Country's food farms (doc 71, 4): switched on an area a day from day 0; each line is JSON, the farms' fields in
+    // it, the founding counted as minted and the money conserved.
+    const auto [farms, farmsOut] = runIt("farms", "--threads 1 --farms 0 --farms-every 1");
+    expect(farmsOut.find("the farms' switch: the first area on day 0") != std::string::npos, "--farms: " + farmsOut.substr(0, 400));
+    std::istringstream days(farms);
+    int day = 0;
+    for (std::string line; std::getline(days, line); ++day)
+    {
+        json::Value v;
+        std::string error;
+        expect(json::parse(line, v, error), "the farms' line is JSON: " + error);
+        expect(v.number("farms_on", -1) == day + 1, "an area more each day: " + std::to_string(v.number("farms_on", -1)));
+        expect(v["conserved"].asBool() && v.number("farms_minted") > 0 && v.number("minted") > 0, "the founding minted, conserved");
+        expect(v.has("farm_grain_stock") && v.has("treasury_low") && v.has("support_unpaid_switch") && v["farms"].isObject() &&
+                   v["farms"].has("grain_farm_1"),
+               "the farms' and the treasury's fields");
+    }
+    expect(day == 3, "a line a day");
     const auto [fast, fastOut] = runIt("fast", "--threads 1 --fast");
     expect(fastOut.find("unseen step 30 s") != std::string::npos && fastOut.find("straight") != std::string::npos &&
                fastOut.find("0.5 s ticks") != std::string::npos,

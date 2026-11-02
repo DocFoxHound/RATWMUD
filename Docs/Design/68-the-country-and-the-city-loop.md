@@ -2200,3 +2200,39 @@ and for the economy over the twelve; **the age structure is still moving at year
   move in its people (the files are an export).
 - The wages and the price spread still creep a little (0.05p a year; the spread .096 → .110 in years 6-12), as in the
   last runs.
+
+### The Country's food farms: Phases A and B of doc 71 (2026-11-01)
+
+Branch `r2-farms`, from `ridgemere2` (268c455). The user, 2026-11-01, on doc 71's recommendations (verbatim): **"Yes to
+all your suggestions"**. Doc 71, Progress, has the whole of it; for this loop:
+
+- **The farms are producers of the loop** (`Core/RatwFarms.cpp`), each a till (`farm:<id>`) with a virtual crew, its
+  household `crew:<id>`: an area switched on (its own switch, else the schedule: one area every `every` days from
+  `start`; none by default) takes its goods from the Country. The shops' store draws of them come from the farms'
+  stock (`drawFromStore`: refused past it, never capped by the season's supply; `countryLeft` is their stock), paid to
+  the farms' tills less the gate toll, carriage in as before; the season's price, or the granary's price a year.
+  This is section 2's per-good switch with its producers: an area's goods are refused to the Country while it is on.
+  "Country when short" stays unbuilt.
+- **New flows of the loop's day**: at the first loop hour of a day, the farms grow their yields (by season), the
+  Country's own people eat at their tables and what is past keeping spoils, and the crews eat; each shop hour, after
+  the Country's basket, the farms' baskets (the same routine, `basketBuys`); at 18:00, after the city's wages, the
+  farms' (`payFarms`), whose short tills join the treasury's wage support (`supportWages`, the crew its post). The
+  crews shop as households of their size, counted apart from the residents (no hunger measure counts them).
+- **Money**: a farm's float and its crew's settled purse are made when its area first goes on, recorded as the
+  world's founding money is (minted: `conserved()` stays exact). Nothing else is made.
+- **The Country's basket** moves to its re-weighted shares (`country_farms.json` `countryBasket`: the goods the farms
+  don't buy, no food or drink) as the areas go on, by their share of the food's takings; with none on, as it was.
+- **The inns' stew** is raw meat and bones, and vegetables are gone from the city's crafts, supplies and season groups
+  (the item stays for the old map).
+- **Settings**: `live.economy.farms` (migration 0060, not applied to any world), the `farms`, `farmarea` and `farm`
+  records, `POST /api/atlas/economy/farms` and `/api/dm/economy/farms` (audited, economy.sync), the Farms panel on Atlas's
+  Economy page and the DM's Economy tab.
+- **Reports**: `world_check --farms DAY [--farms-every N]`; the economy line gains the farms by area and by farm, their
+  crews' spending, and the treasury's day (its least, its nights under the cap, the support wanted and unpaid, the
+  switch's apart from the ordinary, the surplus paid, the toll's and alms' trim, the money minted);
+  `tools/farms_summary.py` the years.
+- **Tests**: `farms_tests` (536 checks), `sim_fast_tests` (the economy line with the farms), `store_room_tests`' fixture;
+  all 77 C++ tests after a clean build; the Python suites (the known Greyfen 11-vs-10 apart), Editor `tsc` and tests.
+- **No run was made**: the 3-year runs need the user's go-ahead (doc 71, Progress, "The 3-year runs"). With no area on,
+  the loop is as before but for the stew's bones (about five a day: the inns' stew drew vegetables) and the vegetables'
+  season group gone.

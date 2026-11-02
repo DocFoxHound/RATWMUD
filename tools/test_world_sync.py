@@ -1357,6 +1357,11 @@ class ServerMaintenanceTests(ScratchWorlds, unittest.TestCase):
             self.assertTrue(result['changed'], result)
             result = economy.set_services(self.dev, {'set': {'groom_and_trim': {'on': False, 'every': 9}}}, 'Ada')
             self.assertTrue(result['changed'], result)
+            # (Doc 71, 4, migration 0060: the farms' records too.)
+            result = economy.set_farms(self.dev, {'set': {'start': 400, 'order': ['salt', 'grain'],
+                                                          'areas': {'grain': {'yieldScale': 120, 'on': False}},
+                                                          'farms': {'grain_farm_1': {'hand': 11}}}}, 'Ada')
+            self.assertTrue(result['changed'], result)
             action = economy.queue_sync(self.dev, 'Ada')
             for _ in range(60):
                 with W.connect(self.dev, 'dm') as dm:

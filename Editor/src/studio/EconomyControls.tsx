@@ -4,15 +4,16 @@
 // on, off, or every business shown at once. Per world: Update from live and Import from dev don't carry the world's
 // switches (each world's own lever), only the businesses'. A change reaches a game server running the world at once
 // (economy.sync), and any server started on it later; a business's own switch when a server next starts. The seasons and
-// the comforts (doc 68, Progress) too, and the loop's rules and the city's services (doc 68, "First fixes"): the DM's
-// Economy tab has the same settings.
+// the comforts (doc 68, Progress) too, the loop's rules and the city's services (doc 68, "First fixes"), and the Country's
+// food farms (doc 71, 4): the DM's Economy tab has the same settings.
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {api} from '../lib/api';
 import type {Me} from '../dm/api';
 import {ANY, bulk, choices, filtered, goodsText, markupOf, percent, switchText, wouldChange, type ComfortsBody,
-    type EconomyControls as Controls, type Filter, type GoodsBody, type LoopSettings, type RulesBody, type SeasonsBody,
+    type EconomyControls as Controls, type FarmsBody, type Filter, type GoodsBody, type LoopSettings, type RulesBody, type SeasonsBody,
     type ServicesBody, type StoreSwitches} from '../lib/economy';
 import {CountryPanel} from './CountryPanel';
+import {FarmsPanel} from './FarmsPanel';
 import {RulesPanel} from './RulesPanel';
 import {SeasonsPanel} from './SeasonsPanel';
 
@@ -57,6 +58,7 @@ export function EconomyControls({me}: {me: Me}) {
     const setComforts = (body: ComfortsBody) => void change(() => api.economy.setComforts(body));
     const setRules = (body: RulesBody) => void change(() => api.economy.setRules(body));
     const setServices = (body: ServicesBody) => void change(() => api.economy.setServices(body));
+    const setFarms = (body: FarmsBody) => void change(() => api.economy.setFarms(body));
     const setOne = (npc: string, on: boolean) => change(() => api.economy.setBusinesses({set: {[npc]: on}}));
     const setShown = (on: boolean) => {
         const n = wouldChange(shown, on);
@@ -114,6 +116,7 @@ export function EconomyControls({me}: {me: Me}) {
             <CountryPanel data={data} locked={!canChange || busy} setLoop={setLoop} setGoods={setGoods} />
             <SeasonsPanel data={data} locked={!canChange || busy} setSeasons={setSeasons} setComforts={setComforts} />
             <RulesPanel data={data} locked={!canChange || busy} setRules={setRules} setServices={setServices} />
+            <FarmsPanel data={data} locked={!canChange || busy} setFarms={setFarms} />
             <h3>The store room, business by business</h3>
             <div className="economy-filters">
                 <label>Business <select value={filter.business} onChange={e => setFilter(f => ({...f, business: e.target.value}))}>

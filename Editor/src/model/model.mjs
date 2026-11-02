@@ -132,8 +132,27 @@ const ruleSettingsOk = e => (!own(e, 'rules') || (object(e.rules) && Object.entr
         own(RULE_LIMITS, k) && integer(v, 0, RULE_LIMITS[k]))))
     && (!own(e, 'services') || (object(e.services) && Object.entries(e.services).every(([k, s]) => /^[a-z0-9_]{1,48}$/.test(k)
         && object(s) && Object.keys(s).length === 3 && typeof s.on === 'boolean' && integer(s.price, 1, 100000) && integer(s.every, 1, 3650))));
+// The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): an optional economy key, as
+// tools/map_editor.py's FARM_DEFAULTS (what this world has changed of Data/Economy/country_farms.json's, every key
+// optional: start, every, order, keeper, hand; areas {area: {on, yieldScale, crewScale, keeper, hand, priceFactor}}; farms
+// {farm: {yieldScale, crewScale, keeper, hand}}; {}: all as the file has them).
+export const FARM_DEFAULTS = {farms: {}};
+const FARM_TOP = {start: [-1, 365000000], every: [1, 3650], keeper: [0, 1000], hand: [0, 1000]};
+const FARM_AREA = {yieldScale: [0, 1000], crewScale: [0, 1000], keeper: [0, 1000], hand: [0, 1000], priceFactor: [10, 1000]};
+const FARM_FARM = {yieldScale: [0, 1000], crewScale: [0, 1000], keeper: [0, 1000], hand: [0, 1000]};
+const within = (o, limits, extra = []) => object(o) && Object.entries(o).every(([k, v]) =>
+    extra.includes(k) ? typeof v === 'boolean' : own(limits, k) && integer(v, limits[k][0], limits[k][1]));
+const farmSettingsOk = e => !own(e, 'farms') || (object(e.farms)
+    && Object.keys(e.farms).every(k => own(FARM_TOP, k) || ['order', 'areas', 'farms'].includes(k))
+    && Object.entries(FARM_TOP).every(([k, [low, high]]) => !own(e.farms, k) || integer(e.farms[k], low, high))
+    && (!own(e.farms, 'order') || (Array.isArray(e.farms.order) && e.farms.order.length > 0
+        && new Set(e.farms.order).size === e.farms.order.length && e.farms.order.every(a => typeof a === 'string' && /^[a-z0-9_]{1,48}$/.test(a))))
+    && (!own(e.farms, 'areas') || (object(e.farms.areas) && Object.entries(e.farms.areas).every(([k, a]) =>
+        /^[a-z0-9_]{1,48}$/.test(k) && within(a, FARM_AREA, ['on']))))
+    && (!own(e.farms, 'farms') || (object(e.farms.farms) && Object.entries(e.farms.farms).every(([k, f]) =>
+        /^[a-z0-9_]{1,48}$/.test(k) && within(f, FARM_FARM)))));
 const STORE_KEYS = [...Object.keys(STORE_DEFAULTS), 'businesses', ...Object.keys(LOOP_DEFAULTS), ...Object.keys(SEASON_DEFAULTS),
-    ...Object.keys(RULE_DEFAULTS)];
+    ...Object.keys(RULE_DEFAULTS), ...Object.keys(FARM_DEFAULTS)];
 const storeSettingsOk = e => ['internalStore', 'storeResale', 'storeRule'].every(k => !own(e, k) || typeof e[k] === 'boolean')
     && ['storeMarkup', 'resaleMarkup'].every(k => !own(e, k) || integer(e[k], 0, 1000))
     && (!own(e, 'businesses') || (object(e.businesses) && Object.values(e.businesses).every(b =>
@@ -343,6 +362,9 @@ function checkShape(value) {
         check(!object(e) || ruleSettingsOk(e), 'The rules and services: each rule a whole number within its limit ('
             + Object.entries(RULE_LIMITS).map(([k, max]) => `${k} 0-${max}`).join(', ')
             + '), each service {on: true or false, price: 1-100000 pennies, every: 1-3650 days}.');
+        check(!object(e) || farmSettingsOk(e), 'The farms: start -1 to 365000000, every 1-3650 days, order distinct area ids, '
+            + 'wages 0-1000; an area {on: true or false, yieldScale, crewScale 0-1000, keeper, hand 0-1000, priceFactor 10-1000}; '
+            + 'a farm {yieldScale, crewScale 0-1000, keeper, hand 0-1000}.');
     }
     if (own(value, 'routes')) {
         check(Array.isArray(value.routes) && value.routes.length <= 128, 'routes must be an array of at most 128 patrol routes.');

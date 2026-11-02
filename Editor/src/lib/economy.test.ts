@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {basketRows, bulk, choices, comfortOf, comfortsText, driftLines, filtered, goodsBulk, goodsShown, goodsText, markupOf, percent,
-    percentsOf, percentsText, ruleChange, ruleOf, RULES, ruleValue, seasonal, seasonChange, serviceChange, serviceText,
-    serviceValue, switchText, wholeOf, wouldChange, type BasketGood, type CountryGood, type RuleControls, type SeasonGroup,
-    type StoreBusiness} from './economy.ts';
+import {areaOnFrom, areaSwitch, basketRows, bulk, choices, comfortOf, comfortsText, driftLines, farmChange, farmNow, filtered,
+    goodsBulk, goodsShown, goodsText, markupOf, percent, percentsOf, percentsText, ruleChange, ruleOf, RULES, ruleValue, scheduleText,
+    seasonal, seasonChange, serviceChange, serviceText, serviceValue, switchText, wholeOf, wouldChange, yieldText, type BasketGood,
+    type CountryGood, type FarmAreaDefault, type FarmControls, type RuleControls, type SeasonGroup, type StoreBusiness} from './economy.ts';
 
 // The seasons (doc 68, Progress, "Seasons and the DM's rules"): what the DM's and Atlas's panels read and send.
 const grain: SeasonGroup = {id: 'grain', name: 'grain and flour', about: '', goods: ['flour', 'bread'], changed: false,
@@ -151,4 +151,51 @@ test('the Country: its basket by share, its goods searched and switched, the loo
     assert.equal(wholeOf('14p', 1000), 14);
     assert.equal(wholeOf('91', 90), null);
     assert.equal(wholeOf('2.5', 90), null);
+});
+
+// The Country's food farms (doc 71, 4; migration 0060): applied as Core's Society::buildFarms applies them.
+const grainArea: FarmAreaDefault = {id: 'grain', name: 'grain and flour', goods: ['flour', 'oats'], on: null, yieldScale: 100, crewScale: 100,
+    keeper: null, hand: null, price: 'year', priceFactor: 101, revenueADay: [209, 198, 225, 202],
+    farms: [{id: 'grain_farm_1', kind: 'grain farm', region: '', keepers: 1, hands: 4, keeper: null, hand: null, reserve: 112, purse: 295,
+        basketADay: 48.3, yield: {flour: [52.9, 60.4, 61.7, 46.8]}},
+        {id: 'grain_farm_2', kind: 'grain farm', region: '', keepers: 1, hands: 4, keeper: null, hand: null, reserve: 112, purse: 295,
+        basketADay: 48.3, yield: {flour: [52.9, 60.4, 61.7, 46.8]}}]};
+const farmsOf = (farms: FarmControls['farms']): FarmControls => ({farmsSupported: true, farmsProblem: '', farms,
+    farmDefaults: {start: -1, every: 28, order: ['grain', 'fruit', 'meat'], keeper: 16, hand: 10, floatDays: 2, areas: [grainArea]}});
+
+test('a farm\'s crew, wages and yields fall through the farm, its area and the defaults, as the game reckons them', () => {
+    const c = farmsOf({keeper: 15, areas: {grain: {keeper: 18, crewScale: 150, yieldScale: 120}},
+        farms: {grain_farm_1: {hand: 12, yieldScale: 90}, grain_farm_2: {crewScale: 50}}});
+    const one = farmNow(c, grainArea, grainArea.farms[0]), two = farmNow(c, grainArea, grainArea.farms[1]);
+    assert.deepEqual([one.keeper, one.hand, one.hands, one.wages], [18, 12, 6, 18 + 6 * 12], 'the farm\'s hand, the area\'s keeper, 4 hands at 150%');
+    assert.deepEqual([two.keeper, two.hand, two.hands], [18, 10, 3], '150% of 50%: 3 hands (rounded half up), the defaults\' hand');
+    assert.ok(Math.abs(one.yieldPercent - 108) < 1e-9, '120% of 90%');
+    assert.equal(one.reserve, 2 * one.wages, 'its float: two days of its wages');
+    assert.equal(one.purse, Math.round(295 * 7 / 5), 'its crew\'s purse by its size');
+    assert.equal(yieldText(grainArea.farms[0], 50), 'flour 26.4/30.2/30.9/23.4');
+    const plain = farmNow(farmsOf({}), grainArea, grainArea.farms[0]);
+    assert.deepEqual([plain.keeper, plain.hand, plain.hands, plain.wages, plain.reserve], [16, 10, 4, 56, 112], 'country_farms.json\'s');
+});
+
+test('the switch: the schedule\'s day for an area, an area\'s own switch over it', () => {
+    assert.equal(areaOnFrom(farmsOf({}), 'grain'), null, 'no schedule by default');
+    assert.match(scheduleText(farmsOf({})), /No schedule/);
+    const c = farmsOf({start: 10, every: 30});
+    assert.equal(areaOnFrom(c, 'grain'), 10);
+    assert.equal(areaOnFrom(c, 'meat'), 70, 'the third area, two steps of 30 days on');
+    assert.equal(areaOnFrom(c, 'salt'), null, 'not in the order: never by the schedule');
+    assert.match(scheduleText(c), /day 10 .* every 30 days: grain, fruit, meat/);
+    assert.equal(areaSwitch(c, grainArea), 'schedule');
+    assert.equal(areaSwitch(farmsOf({areas: {grain: {on: false}}}), grainArea), 'off');
+});
+
+test('a farms change is sent only when it changes something', () => {
+    const c = farmsOf({start: 0, areas: {grain: {yieldScale: 120}}});
+    assert.equal(farmChange(c, 'all', '', 'start', 0), null);
+    assert.deepEqual(farmChange(c, 'all', '', 'start', 30), {set: {start: 30}});
+    assert.deepEqual(farmChange(c, 'all', '', 'every', null), null, 'already the file\'s');
+    assert.equal(farmChange(c, 'areas', 'grain', 'yieldScale', 120), null);
+    assert.deepEqual(farmChange(c, 'areas', 'grain', 'yieldScale', null), {set: {areas: {grain: {yieldScale: null}}}});
+    assert.deepEqual(farmChange(c, 'farms', 'grain_farm_1', 'hand', 11), {set: {farms: {grain_farm_1: {hand: 11}}}});
+    assert.deepEqual(farmChange(c, 'all', '', 'order', ['salt', 'grain']), {set: {order: ['salt', 'grain']}});
 });

@@ -6,7 +6,7 @@
     {"id": "bread", "makers": ["bakery"], "seconds": 120, "hours": 1.716, "in": {"flour": 1, "firewood": 1}, "out": {"bread": 6}},
     {"id": "honey_cake", "makers": ["bakery"], "seconds": 120, "hours": 1.191, "in": {"flour": 1, "honey": 1}, "out": {"honey_cake": 3}},
     {"id": "porridge", "makers": ["inn"], "seconds": 60, "hours": 1.336, "in": {"oats": 1, "milk": 1}, "out": {"porridge": 4}},
-    {"id": "stew", "makers": ["inn"], "seconds": 60, "hours": 0.846, "in": {"raw_meat": 1, "vegetables": 1}, "out": {"meal": 1}},
+    {"id": "stew", "makers": ["inn"], "seconds": 60, "hours": 0.846, "in": {"raw_meat": 1, "bones": 1}, "out": {"meal": 1}},
     {"id": "smoked_fish", "makers": ["fishmonger", "provisioner"], "seconds": 180, "hours": 0.835, "in": {"fish": 2, "firewood": 1}, "out": {"smoked_fish": 2}},
     {"id": "cider", "makers": ["brewery", "inn", "press"], "seconds": 180, "hours": 0.349, "in": {"apples": 2}, "out": {"cider": 1}},
     {"id": "wool_scarf", "makers": ["weaver"], "seconds": 300, "hours": 1.555, "in": {"wool": 1}, "out": {"wool_scarf": 1}},
@@ -242,7 +242,7 @@
     "general": ["firewood", "mushrooms", "berries", "resin", "reeds", "feathers", "oak_galls", "stone", "clay", "sand", "small_pelt"],
     "provisioner": ["mushrooms", "berries", "raw_meat", "shellfish", "fish", "feathers"],
     "stall": ["mushrooms", "berries", "shellfish", "raw_meat"],
-    "inn": ["raw_meat", "mushrooms", "berries", "vegetables"],
+    "inn": ["raw_meat", "mushrooms", "berries"],
     "butcher": ["raw_meat", "mutton", "rabbit", "hide", "fat_scraps", "bones", "sinew", "antler", "horn", "bristles"],
     "tannery": ["hide", "oak_bark", "small_pelt", "fox_pelt", "badger_pelt", "bear_pelt"],
     "tailor": ["small_pelt", "fox_pelt", "badger_pelt"],
@@ -251,8 +251,8 @@
     "pawnbroker": ["ear_ring", "charm", "brass_bracelet", "mirror", "cookpot", "lock", "draw_saw", "blanket", "wool_shawl"]
   },
   "supplies": {
-    "stall": ["flour", "oats", "milk", "vegetables", "apples"],
-    "provisioner": ["flour", "oats", "milk", "vegetables", "raw_meat", "fish", "apples", "firewood"],
+    "stall": ["flour", "oats", "milk", "apples"],
+    "provisioner": ["flour", "oats", "milk", "raw_meat", "fish", "apples", "firewood"],
     "general": ["flour", "oats", "firewood", "straw", "wool", "linen_cloth", "cord", "tallow", "clay", "nails", "planks", "plaster", "whitewash", "glass_beads", "charm", "fine_soap", "perfume_cedar", "pamphlet", "yarrow", "willow_bark", "thyme", "comfrey", "valerian", "chamomile", "garlic", "wormwood", "lavender", "mint"],
     "builders_yard": ["cut_stone", "bricks", "roof_tiles", "lime", "mortar", "plaster", "whitewash", "paint", "planks", "beam", "nails", "glass_pane"],
     "butcher": ["raw_meat", "bones", "tallow", "leather"],

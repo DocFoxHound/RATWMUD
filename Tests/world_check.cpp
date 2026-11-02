@@ -3,7 +3,8 @@
 //
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE]
 //                                                       [--threads N] [--economy FILE [--economy-detail FILE]] [--day N] [--sample] [--no-profile] [--no-births]
-//                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks]]
+//                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks]
+//                                                       [--farms DAY [--farms-every N]]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
@@ -32,6 +33,9 @@
 // --fast (opt-in: it changes results) is --unseen-step 30 --straight --coarse-ticks: the unseen decide every N seconds,
 // each decision N seconds' worth (Society::setUnseenStep; the game's is 5); offstage legs are timed by their straight
 // line (World::setStraightOffstage); and while nobody is onstage the harness ticks half a second at a time, not 0.05 s.
+// --farms DAY switches the Country's food farms on an area at a time from that day of the world's calendar, one every
+// --farms-every N days (Docs/Design/71-the-country-s-industries.md, 4; the world's settings otherwise); the economy line
+// has each area's and farm's day, their crews' spending and the treasury's (doc 71, Phase B's gate).
 #include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwJsonDoc.h"
@@ -793,6 +797,101 @@ struct EconomyWatch
                     << ", \"toll_now\": " << society.gateTollNow() << ", \"alms_now\": " << society.almsNow()
                     << ", \"treasury_level\": " << loop.level;
         }
+        // The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4, Phase B: what the 3-year runs watch): by
+        // area, whether it is on, its farms' stock (pieces, at 23:00), what they sold to the shops and took in for it, owed
+        // and paid their crews (the treasury's wage support apart), spent on their baskets (their carriage out apart), hold
+        // (their floats) and grew, spoiled and fed the Country's table; the draws refused for want of their stock; and their
+        // crews' households: their purses and their spending in the city's shops, by kind, counted apart from the residents'
+        // (no hunger metric counts them). Each farm the same, in `farms`. Then the treasury's day: its least at an hour's end,
+        // after the night's flows and whether that is under its cap; the wage support wanted and unpaid (the switch's apart
+        // from the city's ordinary short tills'); the surplus paid out; the toll's and the alms' trim; the money made (the
+        // farms' founding: today's, since the start, and the world's in all) and how far the Country's basket has moved.
+        {
+            struct Sum
+            {
+                int on = 0, farms = 0, stock = 0, sold = 0, grown = 0, spoiled = 0, eaten = 0, tableShort = 0, out = 0;
+                int crewFood = 0, crewNeeds = 0, crewComforts = 0, crewServices = 0, crewShort = 0;
+                std::int64_t takings = 0, owed = 0, paid = 0, support = 0, basket = 0, carriage = 0, held = 0, purses = 0, spent = 0;
+                double hungry = 0;
+            };
+            const auto& defs = items::farms();
+            std::map<std::string, Sum> areas;
+            Sum all;
+            std::ostringstream each;
+            for (const auto& f : society.farms())
+            {
+                const auto& area = defs.areas[f.area];
+                auto& a = areas[area.id];
+                const auto found = d.farms.find(f.def->id);
+                const auto day = found == d.farms.end() ? Society::LoopDay::Farm{} : found->second;
+                int stock = 0;
+                if (const auto* till = society.account(f.till))
+                    for (const auto& [item, n] : till->stock)
+                        stock += n;
+                Sum x;
+                x.farms = 1;
+                x.stock = stock;
+                x.sold = day.sold, x.grown = day.grown, x.spoiled = day.spoiled, x.eaten = day.eaten, x.tableShort = day.tableShort;
+                x.crewFood = day.crewFood, x.crewNeeds = day.crewNeeds, x.crewComforts = day.crewComforts;
+                x.crewServices = day.crewServices, x.crewShort = day.crewShort, x.hungry = day.crewHungry;
+                x.takings = day.takings, x.owed = day.wagesOwed, x.paid = day.wagesPaid, x.support = day.support;
+                x.basket = day.basket, x.carriage = day.basketCarriage, x.held = society.cash(f.till);
+                x.purses = society.cash(f.crew), x.spent = day.crewSpent;
+                for (auto* into : {&a, &all})
+                {
+                    into->farms += x.farms, into->stock += x.stock, into->sold += x.sold, into->grown += x.grown;
+                    into->spoiled += x.spoiled, into->eaten += x.eaten, into->tableShort += x.tableShort;
+                    into->crewFood += x.crewFood, into->crewNeeds += x.crewNeeds, into->crewComforts += x.crewComforts;
+                    into->crewServices += x.crewServices, into->crewShort += x.crewShort, into->hungry += x.hungry;
+                    into->takings += x.takings, into->owed += x.owed, into->paid += x.paid, into->support += x.support;
+                    into->basket += x.basket, into->carriage += x.carriage, into->held += x.held, into->purses += x.purses;
+                    into->spent += x.spent;
+                }
+                if (society.farmAreaOn(f.area))
+                    each << (each.tellp() > 0 ? ", " : "") << "\"" << f.def->id << "\": {\"stock\": " << x.stock << ", \"sold\": "
+                         << x.sold << ", \"takings\": " << x.takings << ", \"wages_owed\": " << x.owed << ", \"wages_paid\": " << x.paid
+                         << ", \"support\": " << x.support << ", \"basket\": " << x.basket << ", \"float\": " << x.held
+                         << ", \"crew\": " << f.heads() << ", \"crew_purse\": " << x.purses << ", \"crew_spent\": " << x.spent
+                         << ", \"grown\": " << x.grown << ", \"spoiled\": " << x.spoiled << ", \"eaten\": " << x.eaten
+                         << ", \"crew_hungry\": " << x.hungry << "}";
+            }
+            const auto fields = [&](const std::string& prefix, const Sum& x) {
+                seasons << ", \"" << prefix << "stock\": " << x.stock << ", \"" << prefix << "sold\": " << x.sold << ", \"" << prefix
+                        << "takings\": " << x.takings << ", \"" << prefix << "wages_owed\": " << x.owed << ", \"" << prefix
+                        << "wages_paid\": " << x.paid << ", \"" << prefix << "support\": " << x.support << ", \"" << prefix
+                        << "basket\": " << x.basket << ", \"" << prefix << "basket_carriage\": " << x.carriage << ", \"" << prefix
+                        << "float\": " << x.held << ", \"" << prefix << "grown\": " << x.grown << ", \"" << prefix << "spoiled\": "
+                        << x.spoiled << ", \"" << prefix << "eaten\": " << x.eaten << ", \"" << prefix << "table_short\": "
+                        << x.tableShort << ", \"" << prefix << "out\": " << x.out << ", \"" << prefix << "crew_purse\": " << x.purses
+                        << ", \"" << prefix << "crew_spent\": " << x.spent << ", \"" << prefix << "crew_food\": " << x.crewFood
+                        << ", \"" << prefix << "crew_needs\": " << x.crewNeeds << ", \"" << prefix << "crew_comforts\": "
+                        << x.crewComforts << ", \"" << prefix << "crew_services\": " << x.crewServices << ", \"" << prefix
+                        << "crew_short\": " << x.crewShort << ", \"" << prefix << "crew_hungry\": " << x.hungry;
+            };
+            for (std::size_t i = 0; i < defs.areas.size(); ++i)
+            {
+                auto& a = areas[defs.areas[i].id];
+                a.on = society.farmAreaOn(i);
+                all.on += a.on;
+                const auto out = d.areasOut.find(defs.areas[i].id);
+                a.out = out == d.areasOut.end() ? 0 : out->second;
+                all.out += a.out;
+                seasons << ", \"farm_" << defs.areas[i].id << "_on\": " << a.on;
+                fields("farm_" + defs.areas[i].id + "_", a);
+            }
+            seasons << ", \"farms_on\": " << all.on;
+            fields("farms_", all);
+            const auto cap = society.rule("treasuryCap");
+            seasons << ", \"farms\": {" << each.str() << "}, \"treasury_low\": " << d.treasuryLow << ", \"treasury_night\": "
+                    << d.treasuryNight << ", \"under_cap\": " << (d.treasuryNight >= 0 && d.treasuryNight < cap ? 1 : 0)
+                    << ", \"support_wanted\": " << d.supportWanted << ", \"support_unpaid\": "
+                    << d.supportUnpaidSwitch + d.supportUnpaidOrdinary << ", \"support_unpaid_switch\": " << d.supportUnpaidSwitch
+                    << ", \"support_unpaid_ordinary\": " << d.supportUnpaidOrdinary << ", \"surplus_paid\": "
+                    << d.surplusAlms + d.worksSpent << ", \"toll_trim\": " << society.state().loop.toll << ", \"alms_trim\": "
+                    << society.state().loop.alms << ", \"minted_today\": " << d.minted << ", \"farms_minted\": "
+                    << society.farmsMinted() << ", \"minted\": " << society.state().minted << ", \"country_basket_shift\": "
+                    << society.countryBasketShift();
+        }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households
             << ", \"households_fed\": " << fedHouseholds << ", \"shops\": " << shops << ", \"shops_stocked\": " << shopsStocked
@@ -842,6 +941,7 @@ int main(int argc, char** argv)
     std::string loopFile;                           // --loop-state FILE: the self-correcting rules' drift (doc 68, Progress).
     std::string detailFile;                         // --economy-detail FILE: per business and household a day (with --economy).
     int startDay = 0;                               // --day N: start on day N of the year (1-365; 0: the world's own).
+    int farmsFrom = -2, farmsEvery = 0;             // --farms DAY [--farms-every N]: the farms' switch (doc 71), from that day.
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -881,6 +981,16 @@ int main(int argc, char** argv)
             detailFile = argv[++i];
         else if (flag == "--loop-state" && i + 1 < argc)
             loopFile = argv[++i];
+        else if (flag == "--farms" && i + 1 < argc)
+        {
+            farmsFrom = std::atoi(argv[++i]);
+            usage = usage || farmsFrom < -1;
+        }
+        else if (flag == "--farms-every" && i + 1 < argc)
+        {
+            farmsEvery = std::atoi(argv[++i]);
+            usage = usage || farmsEvery < 1 || farmsEvery > 3650;
+        }
         else if (flag == "--day" && i + 1 < argc)
         {
             startDay = std::atoi(argv[++i]);
@@ -893,7 +1003,7 @@ int main(int argc, char** argv)
     {
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic]"
                      " [--events FILE] [--threads N] [--economy FILE [--economy-detail FILE]] [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
-                     " [--unseen-step N] [--straight] [--coarse-ticks]]\n";
+                     " [--unseen-step N] [--straight] [--coarse-ticks] [--farms DAY [--farms-every N]]]\n";
         return 2;
     }
     if (playerCount < 0)
@@ -1026,6 +1136,19 @@ int main(int argc, char** argv)
         const auto date = calendar::calendarAt(server.calendarDays());
         std::cout << "  starting on day " << date.dayOfYear << " of the year (" << calendar::seasonName(date.season) << ", day "
                   << date.dayOfSeason << ")\n";
+    }
+    // --farms DAY: the Country's food farms switched on an area at a time from that day of the world's calendar (doc 71, 4:
+    // the run's first day is printed above; -1: none), every N days (--farms-every; else the world's or country_farms.json's).
+    if (farmsFrom >= -1)
+    {
+        auto e = server.society().authored().economy;
+        e.farms.start = farmsFrom;
+        if (farmsEvery > 0)
+            e.farms.every = farmsEvery;
+        server.society().adoptEconomy(e);
+        std::cout << "  the farms' switch: the first area on day " << farmsFrom << " (the world is on day "
+                  << std::floor(server.calendarDays()) << "), one every "
+                  << (e.farms.every > 0 ? e.farms.every : items::farms().every) << " days\n";
     }
     // Players walking about, each of whose views is built five times a second as the server does for each client:
     // the first at the spawn, the others beside residents taken evenly through the population.
