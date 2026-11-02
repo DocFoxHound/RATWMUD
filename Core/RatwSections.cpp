@@ -30,11 +30,18 @@ bool isMoving(const Section& s, const std::string& field)
 }
 // Sent as row edits against a version the client holds, when that is much smaller: what the wolf can see, and the
 // cell's ground and heights (unseen tiles are left blank, so every step that shows new ground changes them: whole,
-// they were 67 KB a snapshot for a walking wolf in a city: doc 31, Phase 4).
-bool deltaSection(const std::string& name) { return name == "visibility" || name == "cell.rows" || name == "cell.heights"; }
+// they were 67 KB a snapshot for a walking wolf in a city: doc 31, Phase 4); the same of the ground round the cell
+// (its fringe: doc 70).
+bool deltaSection(const std::string& name)
+{
+    return name == "visibility" || name == "cell.rows" || name == "cell.heights" || name == "fringeVisibility" ||
+           name == "cell.fringeRows" || name == "cell.fringeHeights";
+}
 constexpr std::size_t BasesKept = 48;
 const Section Sections[] = {{"", "visibility", "visibility", false}, {"cell", "rows", "cell.rows", false},
-                            {"cell", "heights", "cell.heights", false}, {"", "worldMap", "worldMap", true},
+                            {"cell", "heights", "cell.heights", false}, {"", "fringeVisibility", "fringeVisibility", false},
+                            {"cell", "fringeRows", "cell.fringeRows", false}, {"cell", "fringeHeights", "cell.fringeHeights", false},
+                            {"", "worldMap", "worldMap", true},
                             {"", "travelMap", "travelMap", true}, {"", "doors", "doors", false},
                             {"", "inventory", "inventory", false}, {"", "entities", "entities", true, EntityMotion}};
 constexpr std::size_t KeptPerSection = 6, EntriesKept = 4096;

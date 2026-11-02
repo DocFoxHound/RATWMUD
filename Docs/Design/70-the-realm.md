@@ -240,8 +240,9 @@ the city has NPCs), on exports of the two builds.
 - **The server** streams cells (doc 20): only the cells someone is in or beside are loaded, so ticks barely change; the
   worst ticks are the first loads of a cell's ground (256 x 256 tiles and its seams, up to 22 ms). The realm's cells
   hold nobody yet; residents in them will cost what residents in the city cost.
-- **The client** draws the cell the wolf is in, and its minimap and World Map show only cells it has seen within 512
-  tiles (`World::observe`), so neither grows with the map. A cell's ground is sent once as the wolf enters it.
+- **The client** draws the cell the wolf is in, and near an edge the ground round it from the cells beside it (a band
+  48 tiles wide: "The map across seams" below); its minimap and World Map show only cells it has seen within 512 tiles
+  (`World::observe`), so neither grows with the map. A cell's ground is sent once as the wolf enters it.
 - **The heights are most of the data.** Every outdoor tile of the realm has a height off its glyph's default (the land
   is nowhere flat at 0), and they are stored as one sparse `"x,y": height` object per chunk. A dense form (a row of
   height codes per chunk, as `encode_heights` already sends to Atlas) would cut the 56 MB to a few MB; not done here.
@@ -297,9 +298,11 @@ game minutes after the last wolf leaves it, so a wolf that left anywhere but a c
 back later, was given a cell with no ground, and the server segfaulted building its view (`visibleTileMask`). This was
 in the city-only world too (reproduced in `w_ridgemere_1_0`, the cell north of the spawn: walk in, leave, wait, come
 back); the realm, with 232 cells nobody lives in, would have made it common. Now the place is loaded first (or, if it
-can't be, the wolf wakes at the spawn), and a view of a cell without its ground is empty rather than a crash.
-Verified on a scratch server: the same wolf leaves in `w_ridgemere_1_0` and in `w_ridgemere_6_2`, comes back after the
-cells unloaded, and is there.
+can't be, the wolf wakes at the spawn). Verified on a scratch server: the same wolf leaves in `w_ridgemere_1_0` and in
+`w_ridgemere_6_2`, comes back after the cells unloaded, and is there. (The guard first put into `visibleTileMask` for a
+cell without its ground did not end the crash, only moved it, as review found: `observe` then wiped the wolf's memory
+of the place and `snapshot` read tiles that weren't there; and the spawn the wolf fell back to might itself not be
+loaded. Fixed properly below, "Sight across seams, and the map's look", item 1.)
 
 **Written into DEV** (`ratw_ridgemere2`): revision 59 to 67 over four writes (the last the one described here; each
 write raises it by two, the save and the editors' reload), builds 53-56 (56 is the realm as described). The map identity is kept, `map-20261031-6b080cecb7f6` ("Ridgemere 2.0: the city (doc 67)"), its recorded layout
@@ -433,6 +436,123 @@ nearest road.
 | `mine_grey_silver` | mine | the Greyteeth silver mine | 3524, 956 | 631 | ore (silver; NE mountains) |
 | `mine_grey_tin` | mine | the Greyteeth tin mine | 3748, 1348 | 625 | ore (tin; NE mountains) |
 | `mine_ochre_copper` | mine | the Ochre copper mine | 2988, 2388 | 629 | spare: ore (copper) |
+
+### Sight across seams, and the map's look (2026-11-01)
+
+Branch `r2-map-display`, from `ridgemere2` (268c455). In-game screenshots of the realm showed six things wrong with
+the map; the user approved fixing them all, in the server and the browser client. Nothing was written to DEV.
+
+1. **The crash, fixed properly.** A wolf is never in a cell without its ground, on every way in: `World::addPlayer`
+   puts it at the spawn when its place can't be loaded (it ignored that before); a streamed world never lets the
+   spawn go (`World::stream`), so that fallback always stands on ground; `Game::enterCharacter` falls back to it;
+   `World::restore` puts a player whose place can't be read at the spawn; a tournament bout loads its ring first
+   (`World::tourneyBout`); the rest (crossings, `teleport`, the DM's moves, arrest) already loaded the place or
+   refused. Should one ever stand in a cell without its ground, `observe` leaves what it remembers alone and
+   `snapshot` shows that memory and nothing in sight. The review's reproducer is now `stream_tests`'
+   `aWolfAlwaysStandsOnGround`.
+2. **Sight and the local map run on across seams.** The view no longer stops at a cell's edge (lakes, rivers and the
+   Saltpan were cut off mid-view).
+   - *Server:* `World::sightBeyond` traces lines from the wolf to the tiles of the loaded cells beside its own, at
+     the same level outdoors, within its sight, over a window of both cells' ground (and their closable fixtures).
+     The cells beside each outdoor cell are found by where they lie, not by their doors (`indexBeside`, made with the
+     fixture index). What it sees there is remembered in those cells, which it has then glimpsed, not visited (a
+     glimpse outdoors may now keep what was seen of it; the minimap draws it). The cell across a corner, which no
+     seam joins to the wolf's, is loaded while a player is within sight of it (`stream`).
+   - *Wire:* near an edge (within 96 tiles), the snapshot carries the ground round the cell, a band 48 tiles wide
+     (`Fringe`, past any wolf's sight): its rows, heights and (for a client that doesn't work out its own sight)
+     visibility, as `cell.fringe`, `cell.fringeRows`, `cell.fringeHeights` and `fringeVisibility`, sent as row
+     edits like the cell's own (`RatwSections.cpp`, `Client/src/net/sections.ts`). The world makes the band again
+     only when the wolf's view changes, and shares it until then.
+   - *Client:* `GameState` reads the band (`Client/src/game/fringe.ts`), answers for any tile in or round the cell
+     (`glyphAt`, `seenAt`, `heightAt`), and the page's own sight runs over it (the walker's grid is the cell with
+     the band round it, the band solid to walking: the server takes a wolf over a seam). The ground is drawn and the
+     camera follows the wolf out to the band's edge, so the map runs on seamlessly; a click past the edge heads for
+     the seam there.
+   - *Cost:* see below.
+3. **Ridgemere's wall now draws.** Its tiles stand at height 2 in a ditch below the road (3.5), so the line to a wall
+   tile's foot passed under the bank before it and the wall was never seen, nor sent. An opaque tile now stands 2.5
+   above its own ground as a thing to be seen (`RatwSight.h`, `WallTop`): a blocking tile one looks at is itself
+   seen. From outside the South Gate the wolf now sees the wall's face along its length.
+4. **Ground cover thins sight rather than walling it off** (doc 22, "Cover that thins sight"). Ferns (stature 0.7)
+   on a half step above the wolf rose above its eye and hid everything past them, and every tree hid all behind it,
+   so the Rainwood and the ground round the gate were murk. Each tile now has a `hides` in the catalog: trees' trunks
+   hide part (0.2-0.35), low cover a little (ferns 0.06, reeds 0.1, shrubs 0.15), solid masses all, as before; enough
+   of them together hide all. Outside the South Gate (on tall grass among ferns) the wolf sees 2,006 of the 2,820
+   tiles within its sight, not 556; in the Rainwood (`w_ridgemere_1_7`, 182, 66) 902, not 20: the trunks and ferns
+   round it and down the clearings. A body is made out only along a clear line, as before (`bodySeen`): a trunk or a
+   fern between still hides a wolf, so noticing, sneaking and hunting are as they were (doc 40; `hunt_sim` below).
+5. **Rock.** Bare rock drew as a tiny dot, and scree (`░`, a shade block) as a flat grey square with no glyph: the
+   mountains looked like placeholders. Bare rock is now `▴` (crags, a lighter cool grey), scree `჻` (loose stones,
+   warm grey); boulders keep `●`. Of the four new tiles, sandstone's `▞` drew as a wall of orange bricks and is now
+   `▰` (bedded slabs, a little darker); salt flat `⋯`, cactus `⍦` and willow `Ϋ` draw well as they were.
+6. **Height on the local map.** The server now sends the heights of remembered ground too (its shape is remembered
+   with it), so the map shades what it has seen, not only what is in sight. Each tile is shaded by its slope, read
+   over one, two and three tiles each way (`Client/src/game/terrainLayer.ts`, `Relief`): a wash of light on slopes
+   turned to the north-west, of shade on those turned away, in the floor and a little in the glyph. A dune's steep
+   lee reads as a dark band, its long back faintly lit, a valley's sides apart. Remembered ground gets faint contours
+   too. Kept subtle: on level ground nothing changes.
+
+**Cost** (`world_check` with this machine's export of build 56, one game hour from 6:00 with 20 players, before and
+after, twice each; the new `--at-seams` puts the players after the first by the seams between outdoor cells, walking
+over them and back):
+
+| (two runs each) | Before | After |
+|---|---|---|
+| 20 players beside residents: a tick, mean | 2.73, 2.54 ms | 2.66, 2.95 ms |
+| the same, p99 after the first minute | 5.47, 5.33 ms | 5.30, 5.95 ms |
+| a player's view (5 a second), mean | 0.24, 0.22 ms | 0.24, 0.27 ms |
+| 19 of them by seams: a tick, mean | 3.36, 3.39 ms | 4.26, 4.64 ms |
+| the same, p99 after the first minute | 6.58, 5.59 ms | 7.04, 7.65 ms |
+| a player's view, mean | 0.44, 0.44 ms | 0.57, 0.61 ms |
+| their sight worked out in the tick (`views`), a tick | 0.20 ms | 0.28 ms |
+| resident memory, by seams | 1.03 GB | 1.13 GB (the cells across corners) |
+
+In the city the change is lost in the noise; with every player walking over a seam a tick costs about a millisecond
+more (a fifth of it the sight past the seam, most of the rest the views: the wider sight, and each glimpsed cell's
+remembered ground copied into the World Map as a visited one's always was), well inside the 50 ms tick.
+
+A wolf walking by a seam (a snapshot on each new tile, its sight worked out again): 0.94 ms before, 1.34 ms after,
+in the Greenholt by Glasswater; in the Rainwood 1.06 and 1.92 ms (it now sees much more there); standing still 0.11
+and 0.16 ms. The band's rows, made again only as the view changes, take the game 0.13 ms.
+
+**Hunting** (`hunt_sim`, 20 runs of 30 game minutes per suite, kills per wolf per hunter-hour; its ground is grass
+with broadleaf trees and shrubs):
+
+| Suite (stay / roam) | Before | Bodies seen through cover, dimmed (a first try) | As built |
+|---|---|---|---|
+| lone | 10.6 / 16.9 | 9.0 / 14.0 | 10.6 / 16.9 |
+| pair | 14.5 / 18.3 | 15.8 / 14.9 | 14.5 / 18.3 |
+| three | 18.0 / 20.3 | 12.9 / 18.7 | 18.0 / 20.3 |
+| four | 22.0 / 22.3 | 15.2 / 16.9 | 22.0 / 22.3 |
+| companion | 12.1 / 15.4 | 10.4 / 10.8 | 12.1 / 15.4 |
+
+Letting the game see a stalker through thin cover (a fern, a shrub, one trunk dimming rather than hiding it) cost the
+hunters a fifth of their kills, a third in a party of four; with a body needing a clear line, as before, the sim's
+output is the same to the last figure.
+
+**Screenshots**, before and after on scratch servers of DEV (build 56), with the screenshot tool the realm's
+screenshots were taken with (a dev identity put at each place by a scratch copy's dev-tools `goto`, not committed):
+outside the South Gate (the wall, the ferns), the Rainwood, the Saltpan's corner of four cells (the pan runs on over
+both seams), Glasswater's south shore by a seam, the Greyteeth (rock), the Red Waste's dunes (shading) and sandstone
+by the Saltpan.
+
+**Tests.** `stream_tests`: `aWolfAlwaysStandsOnGround` (the crash's reproducer: a wolf back in a cell let go, one
+whose place can't be read, a restore, and a wolf put in a cell without its ground keeping its memory, its view empty)
+and `sightRunsOnAcrossSeams` (seeing past a seam, a wall there hiding what is behind it, the glimpse remembered and
+restored, the cell across a corner loaded and seen into); `playersCrossAndReturn` now walks on to `c_4_0`, as the
+spawn no longer unloads. `world_tests`: a wall's top over its bank, one pine and ferns thinning sight, a stand of
+pines hiding it, a boulder hiding all, and the 40,000-ray check of the per-tile rule against every sample now with
+ferns and boulders in the ground. Client: `fringe.test.ts` (the band's layout, read, drawn, clicked into, let go; the
+page's sight over it, its walking kept to the cell). A clean build of `build-core` and `ctest`: 76 of 76; the client's
+132 tests; Atlas's `tsc` clean (its tests fail only the Greyfen count, as before); `test_terrain_catalog`,
+`test_realm2`, `test_live_edit`, `test_live_map` pass (`test_map_editor` only the Greyfen count, as before).
+
+**Still open.**
+- Wolves across a seam are not seen: sight runs on over the ground, but who stands in the cell beside is shown only
+  once one is in it (`snapshot`'s wolves are its own cell's), so a wolf can look into the next cell and see it
+  empty. Worth doing with the hearing and scent across seams.
+- A click far past the edge walks to the seam opposite it and stops there, rather than on to the spot.
+- The band is sent within 96 tiles of an edge: most of a 256-tile cell. It is made only when the view changes.
 
 ### Tests (2026-11-01)
 

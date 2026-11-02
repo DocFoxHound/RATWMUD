@@ -50,9 +50,10 @@ export function lookAt(s: GameState, point: [number, number]): Look | null {
         return {key: 'herb_patch', what: 'Cooking herbs', why: left > 0 ? `${left} bundles to gather` : 'Picked clean for now'};
     }
     const x = Math.floor((point[0] - ox) / tile), y = Math.floor((point[1] - oy) / tile);
-    if (x < 0 || y < 0 || x >= s.cellWidth || y >= s.cellHeight) return null;
-    const code = s.tileRows[y]?.[x] ?? ' ';
-    const seen = s.visibilityRows[y]?.[x] ?? '2';
+    const ground = s.groundExtent();               // (The cell, and the ground round it past a seam: doc 70.)
+    if (x < ground.x0 || y < ground.y0 || x > ground.x1 || y > ground.y1) return null;
+    const code = s.glyphAt(x, y);
+    const seen = s.seenAt(x, y);
     if (seen === '0' || code === ' ') return {key: `tile:${x},${y}`, what: 'Unexplored', why: 'You have not seen this ground'};
     const info = terrainInfo(code);
     const name = info?.name ?? 'Something unfamiliar';

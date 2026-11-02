@@ -14,15 +14,16 @@ using namespace ratw::step;
 
 namespace
 {
-// One tile as the page writes it: 16 bytes, little-endian.
+// One tile as the page writes it: 20 bytes, little-endian.
 struct Tile
 {
     float height;
     float cost;
-    float stature;                                // How far what stands on it rises, for sight.
+    float stature;                                // How far what stands on it rises, for sight,
+    float hides;                                  // and how much of what is behind it that hides (RatwSight.h).
     std::uint8_t solid, ramp, closedDoor, opaque;
 };
-static_assert(sizeof(Tile) == 16, "the page writes 16-byte tiles");
+static_assert(sizeof(Tile) == 20, "the page writes 20-byte tiles");
 
 int width = 0, height = 0;
 std::vector<Tile> tiles;
@@ -66,7 +67,7 @@ __attribute__((export_name("walk_grid"))) Tile* walkGrid(int w, int h)
 {
     width = w > 0 && h > 0 && w <= 4096 && h <= 4096 ? w : 0;
     height = width ? h : 0;
-    tiles.assign(std::size_t(width) * std::size_t(height), Tile{0, 1, 0, 0, 0, 0, 0});
+    tiles.assign(std::size_t(width) * std::size_t(height), Tile{0, 1, 0, 1, 0, 0, 0, 0});
     seen.assign(tiles.size(), 0);
     return tiles.data();
 }

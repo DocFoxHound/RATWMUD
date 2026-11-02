@@ -141,6 +141,8 @@ Result World::tourneyBout(const std::string& a, const std::string& b, const Spot
         return {false, "Not fit to fight.", {}};
     if (inBattle(a) || inBattle(b))
         return {false, "Already in a fight.", {}};
+    if (!ensureLoaded(at.cell).ok)                   // (Never onto ground that isn't there.)
+        return {false, "The lists can't be reached.", {}};
     for (auto* e : {ea, eb})
     {
         e->cellId = at.cell;

@@ -14,7 +14,8 @@ residents and animals.
 - **Being seen** (`World::visionClarity`, `Core/RatwWorld.cpp`): sight range is 27 tiles × vision × age × eye health ×
   the light and weather (`environment.sight`). A crouching wolf can't be seen beyond `(7 − 4·sneakSkill/100) ×
   range/27`. Line of sight is shared with the browser (`Core/RatwSight.h`). **No field of view:** facing doesn't
-  matter, and there's no cover.
+  matter, and there's no cover. (Since 2026-11-01 trees and low cover thin a line of sight rather than always cutting
+  it, so the map shows the forest; a body behind them is hidden as before: doc 22, "Cover that thins sight".)
 - **Being heard** (`World::movementAudibility`): a moving wolf's pawsteps carry 6 tiles, a crouching one's
   `2.5 − 1.7·sneakSkill/100`. A still wolf is silent. **Pace makes no difference.**
 - **Being smelt** (`World::scentClarity`, `windAt`): scent carries downwind, gets around corners but not through walls,

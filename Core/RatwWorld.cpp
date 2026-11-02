@@ -125,6 +125,7 @@ Tile fromGlyph(char g)
         t.opaque = info->opaque;
         t.height = info->height;
         t.stature = info->stature;
+        t.hides = info->hides;
         t.movementCost = info->cost;
     }
     return t;
@@ -313,8 +314,8 @@ Tile tileFromGlyph(char glyph)
 const std::vector<TerrainInfo>& terrainCatalog()
 {
     static const std::vector<TerrainInfo> catalog = {
-#define RATW_TERRAIN(code, kind, solid, opaque, height, stature, cost, ramp, way, glyph, ascii, fg, bg, name)            \
-    {char(code), Terrain::kind, solid, opaque, height, stature, cost, ramp, way, char16_t(glyph), char(ascii), fg, bg, name},
+#define RATW_TERRAIN(code, kind, solid, opaque, height, stature, hides, cost, ramp, way, glyph, ascii, fg, bg, name)    \
+    {char(code), Terrain::kind, solid, opaque, height, stature, hides, cost, ramp, way, char16_t(glyph), char(ascii), fg, bg, name},
 #include "RatwTerrainCatalog.inc"
 #undef RATW_TERRAIN
     };
@@ -617,6 +618,58 @@ void World::rebuildFixtureIndex()
             blockingDoors_[d.cellId][at].push_back(&d);
         }
     }
+    indexBeside();
+}
+
+namespace
+{
+// Whether `b`'s ground lies within `band` tiles of `a`'s edges, outdoors at the same level, without overlapping it.
+bool besideOf(const Cell& a, const Cell& b, int band)
+{
+    if (&a == &b || !a.outdoors || !b.outdoors || a.width <= 0 || b.width <= 0 || std::abs(a.worldZ - b.worldZ) > .01)
+        return false;
+    const double ax = a.worldX, ay = a.worldY, bx = b.worldX, by = b.worldY;
+    const bool overlaps = bx < ax + a.width && bx + b.width > ax && by < ay + a.height && by + b.height > ay;
+    return !overlaps && bx < ax + a.width + band && bx + b.width > ax - band && by < ay + a.height + band && by + b.height > ay - band;
+}
+} // namespace
+
+void World::indexBeside()
+{
+    // By where the cells lie, not by their doors: the ground beside an edge is the next cell's, seam or none.
+    besideIndex_.clear();
+    std::vector<const Cell*> outdoors;
+    for (const auto& [id, c] : cells_)
+        if (c.outdoors)
+            outdoors.push_back(&c);
+    for (const Cell* a : outdoors)
+        for (const Cell* b : outdoors)
+            if (besideOf(*a, *b, Fringe::Band))
+                besideIndex_[a->id].push_back({b->id, int(std::lround(b->worldX - a->worldX)), int(std::lround(b->worldY - a->worldY))});
+}
+
+void World::indexBeside(const std::string& cellId)
+{
+    // One cell put in by hand: its own list, and its place in its neighbours'.
+    for (auto& [id, list] : besideIndex_)
+        list.erase(std::remove_if(list.begin(), list.end(), [&](const Beside& b) { return b.id == cellId; }), list.end());
+    besideIndex_.erase(cellId);
+    const auto* a = cell(cellId);
+    if (!a || !a->outdoors)
+        return;
+    for (const auto& [id, b] : cells_)
+        if (besideOf(*a, b, Fringe::Band))
+        {
+            besideIndex_[a->id].push_back({b.id, int(std::lround(b.worldX - a->worldX)), int(std::lround(b.worldY - a->worldY))});
+            besideIndex_[b.id].push_back({a->id, int(std::lround(a->worldX - b.worldX)), int(std::lround(a->worldY - b.worldY))});
+        }
+}
+
+const std::vector<World::Beside>& World::besideCells(const std::string& cellId) const
+{
+    static const std::vector<Beside> none;
+    const auto found = besideIndex_.find(cellId);
+    return found == besideIndex_.end() ? none : found->second;
 }
 
 void World::indexSeams(const std::string& cellId, const std::vector<std::string>& seamIds)
@@ -666,8 +719,11 @@ Entity& World::addPlayer(const std::string& id, const std::string& name, const s
     auto existing = entities_.find(id);
     if (existing != entities_.end())
         return existing->second;
-    const bool there = cells_.count(cell) > 0;
-    ensureLoaded(there ? cell : spawnCell_);
+    // Never in a place without its ground (a streamed cell that can't be read): the spawn instead, which a streamed
+    // world keeps loaded (stream()), so a wolf always stands on tiles.
+    const bool there = cells_.count(cell) > 0 && ensureLoaded(cell).ok;
+    if (!there)
+        ensureLoaded(spawnCell_);
     Entity e;
     e.id = id;
     e.name = name;
@@ -1150,13 +1206,17 @@ int World::mainRegion(const Cell& c) const
 
 bool World::lineOfSight(const std::string& cellId, Vec2 from, Vec2 to) const
 {
+    return sightClearance(cellId, from, to) > 0;
+}
+double World::sightClearance(const std::string& cellId, Vec2 from, Vec2 to) const
+{
     const auto* c = cell(cellId);
     if (!c)
-        return false;
+        return 0;
     const auto fixtures = blockingFixtures_.find(cellId);
-    return lineOfSight(*c, fixtures == blockingFixtures_.end() ? nullptr : &fixtures->second, nullptr, from, to);
+    return clearance(*c, fixtures == blockingFixtures_.end() ? nullptr : &fixtures->second, nullptr, from, to);
 }
-bool World::lineOfSight(const Cell& cell, const FixtureTiles* fixtures, const std::vector<char>* fixtureMask, Vec2 from,
+double World::clearance(const Cell& cell, const FixtureTiles* fixtures, const std::vector<char>* fixtureMask, Vec2 from,
                         Vec2 to) const
 {
     // The shared rule (RatwSight.h, which the page runs too), over this cell and its closable fixtures.
@@ -1173,7 +1233,7 @@ bool World::lineOfSight(const Cell& cell, const FixtureTiles* fixtures, const st
             return fixture && world.blockedByDoor(cell.id, {px, py});
         }
     };
-    return sight::lineOfSight(Grid{*this, cell, fixtures, fixtureMask}, cell.width, cell.height, from.x, from.y, to.x, to.y);
+    return sight::clearance(Grid{*this, cell, fixtures, fixtureMask}, cell.width, cell.height, from.x, from.y, to.x, to.y);
 }
 
 double World::sightRange(const Entity& o) const
@@ -1189,11 +1249,15 @@ bool World::visiblePoint(const Entity& o, Vec2 p, double range) const
 {
     return distance(o.position, p) <= range && lineOfSight(o.cellId, o.position, p);
 }
-std::vector<char> World::visibleTileMask(const Entity& o, const Cell& c, double range) const
+std::vector<char> World::visibleTileMask(const Entity& o, const Cell& c, double range, Beyond* beyond) const
 {
     std::vector<char> out(c.tiles.size(), 0);
+    if (beyond)
+        *beyond = {};
     if (!(range > 0) || c.tiles.size() != std::size_t(c.width) * std::size_t(c.height))
         return out;                                // (A cell whose tiles are not loaded shows nothing.)
+    if (beyond && o.cellId == c.id)
+        sightBeyond(o, c, range, *beyond);
     const int x0 = std::max(0, int(std::floor(o.position.x - range))), x1 = std::min(c.width - 1, int(std::ceil(o.position.x + range)));
     const int y0 = std::max(0, int(std::floor(o.position.y - range))), y1 = std::min(c.height - 1, int(std::ceil(o.position.y + range)));
     const Cell* sightCell = o.cellId == c.id ? &c : cell(o.cellId);
@@ -1213,11 +1277,108 @@ std::vector<char> World::visibleTileMask(const Entity& o, const Cell& c, double 
         for (int x = x0; x <= x1; ++x)
         {
             const Vec2 p{x + .5, y + .5};
-            if (distance(o.position, p) <= range && lineOfSight(*sightCell, nullptr, mask, o.position, p))
+            if (distance(o.position, p) <= range && clearance(*sightCell, nullptr, mask, o.position, p) > 0)
                 out[std::size_t(y * c.width + x)] = 1;
         }
     return out;
 }
+void World::sightBeyond(const Entity& o, const Cell& c, double range, Beyond& out) const
+{
+    // Past the cell's edges (doc 70, "Sight across seams"): the window round the wolf as far as it can see, over the
+    // ground of this cell and of the loaded cells beside it, and lines traced to each tile of theirs in it.
+    out = {};
+    if (!c.outdoors)
+        return;
+    const int band = Fringe::Band;
+    const int x0 = std::max(-band, int(std::floor(o.position.x - range)));
+    const int x1 = std::min(c.width + band - 1, int(std::ceil(o.position.x + range)));
+    const int y0 = std::max(-band, int(std::floor(o.position.y - range)));
+    const int y1 = std::min(c.height + band - 1, int(std::ceil(o.position.y + range)));
+    if (x0 >= 0 && y0 >= 0 && x1 < c.width && y1 < c.height)
+        return;                                    // All it could see is in its own cell.
+    struct Part
+    {
+        const Cell* cell;
+        int dx, dy;
+    };
+    std::vector<Part> parts{{&c, 0, 0}};
+    for (const auto& b : besideCells(c.id))
+        if (const auto* n = cell(b.id); n && n->loaded && n->tiles.size() == std::size_t(n->width) * std::size_t(n->height))
+            parts.push_back({n, b.dx, b.dy});
+    if (parts.size() == 1)
+        return;
+    const int w = x1 - x0 + 1, h = y1 - y0 + 1;
+    std::vector<const Tile*> ground(std::size_t(w * h), nullptr);
+    std::vector<std::uint8_t> owner(std::size_t(w * h), 0);
+    std::vector<char> fixtures;                    // Closable fixtures (a gate in a fence) in any of them.
+    for (std::size_t k = 0; k < parts.size(); ++k)
+    {
+        const auto& [p, dx, dy] = parts[k];
+        const int ax = std::max(x0, dx), bx = std::min(x1, dx + p->width - 1);
+        const int ay = std::max(y0, dy), by = std::min(y1, dy + p->height - 1);
+        for (int y = ay; y <= by; ++y)
+            for (int x = ax; x <= bx; ++x)
+            {
+                const auto i = std::size_t((y - y0) * w + (x - x0));
+                if (!ground[i])
+                {
+                    ground[i] = &p->tiles[std::size_t((y - dy) * p->width + (x - dx))];
+                    owner[i] = std::uint8_t(std::min<std::size_t>(k, 255));
+                }
+            }
+        if (const auto found = blockingFixtures_.find(p->id); found != blockingFixtures_.end())
+            for (const auto& [at, ids] : found->second)
+            {
+                const int x = at.first + dx, y = at.second + dy;
+                if (x < x0 || y < y0 || x > x1 || y > y1)
+                    continue;
+                fixtures.resize(ground.size(), 0);
+                fixtures[std::size_t((y - y0) * w + (x - x0))] = 1;
+            }
+    }
+    struct Grid
+    {
+        const World& world;
+        const std::vector<const Tile*>& ground;
+        const std::vector<std::uint8_t>& owner;
+        const std::vector<char>& fixtures;
+        const std::vector<Part>& parts;
+        int x0, y0, w, h;
+        const Tile* tile(int x, int y) const
+        {
+            return x < 0 || y < 0 || x >= w || y >= h ? nullptr : ground[std::size_t(y * w + x)];
+        }
+        bool closedAt(int x, int y, double px, double py) const
+        {
+            const auto i = std::size_t(y * w + x);
+            if (fixtures.empty() || !fixtures[i])
+                return false;
+            const auto& part = parts[owner[i]];
+            return world.blockedByDoor(part.cell->id, {px + x0 - part.dx, py + y0 - part.dy});
+        }
+    } grid{*this, ground, owner, fixtures, parts, x0, y0, w, h};
+    out.x0 = x0;
+    out.y0 = y0;
+    out.width = w;
+    out.height = h;
+    out.visible.assign(ground.size(), 0);
+    const double fx = o.position.x - x0, fy = o.position.y - y0;
+    for (int y = y0; y <= y1; ++y)
+        for (int x = x0; x <= x1; ++x)
+        {
+            if (x >= 0 && y >= 0 && x < c.width && y < c.height)
+            {
+                x = c.width - 1;                   // (The cell's own tiles are seen as ever; on to its far edge.)
+                continue;
+            }
+            const auto i = std::size_t((y - y0) * w + (x - x0));
+            const Vec2 p{x + .5, y + .5};
+            if (ground[i] && distance(o.position, p) <= range &&
+                sight::lineOfSight(grid, w, h, fx, fy, p.x - x0, p.y - y0))
+                out.visible[i] = 1;
+        }
+}
+
 World::View World::viewKey(const Entity& o, const Cell& c, double range) const
 {
     std::uint64_t doors = 1469598103934665603ULL;
@@ -1227,8 +1388,14 @@ World::View World::viewKey(const Entity& o, const Cell& c, double range) const
     // By the tile the observer stands on (doc 31, Phase 4.4: sight is worked out again on reaching a new tile, or when
     // a door, the light or the weather changes it), cast from where it stands as it arrives. Keyed by its position to
     // a fiftieth of a tile, a walking wolf's thousands of sight rays were cast again for nearly every snapshot.
+    // Which cells beside it have their ground in memory (doc 70): one coming or going changes what is seen past a seam.
+    std::uint64_t beside = 1469598103934665603ULL;
+    if (c.outdoors)
+        for (const auto& b : besideCells(c.id))
+            if (const auto* n = cell(b.id))
+                beside = (beside ^ std::hash<std::string>{}(b.id) ^ (n->loaded ? n->tiles.size() : 0)) * 1099511628211ULL;
     return {c.id, std::llround(std::floor(o.position.x)), std::llround(std::floor(o.position.y)), std::llround(range * 100), doors,
-            std::uint64_t(c.tiles.size()), {}};
+            std::uint64_t(c.tiles.size()), beside, {}, {}, false, nullptr, false};
 }
 const std::vector<char>& World::viewOf(const Entity& o, const Cell& c, bool* fresh) const
 {
@@ -1236,11 +1403,12 @@ const std::vector<char>& World::viewOf(const Entity& o, const Cell& c, bool* fre
     const View key = viewKey(o, c, range);
     auto& v = views_[o.id];
     const bool same = v.cellId == key.cellId && v.x == key.x && v.y == key.y && v.range == key.range &&
-                      v.doors == key.doors && v.tiles == key.tiles && v.visible.size() == c.tiles.size();
+                      v.doors == key.doors && v.tiles == key.tiles && v.beside == key.beside &&
+                      v.visible.size() == c.tiles.size();
     if (!same)
     {
         v = key;
-        v.visible = visibleTileMask(o, c, range);
+        v.visible = visibleTileMask(o, c, range, &v.beyond);
     }
     if (fresh)
         *fresh = !same;
@@ -1267,7 +1435,8 @@ void World::prepareViews(const std::vector<std::string>& observerIds) const
         const auto cached = views_.find(id);
         if (cached != views_.end() && cached->second.cellId == key.cellId && cached->second.x == key.x &&
             cached->second.y == key.y && cached->second.range == key.range && cached->second.doors == key.doors &&
-            cached->second.tiles == key.tiles && cached->second.visible.size() == c->tiles.size())
+            cached->second.tiles == key.tiles && cached->second.beside == key.beside &&
+            cached->second.visible.size() == c->tiles.size())
             continue;
         jobs.push_back({o, c, range, std::move(key)});
     }
@@ -1276,22 +1445,24 @@ void World::prepareViews(const std::vector<std::string>& observerIds) const
     // Only reads happen on the helpers (tiles, doors, fixtures); each writes its own result.
     const std::size_t threads = std::min<std::size_t>(jobs.size(), std::max(1u, std::min(8u, std::thread::hardware_concurrency())));
     if (parallel_)
-        parallel_(jobs.size(), [&](std::size_t j) { jobs[j].key.visible = visibleTileMask(*jobs[j].observer, *jobs[j].cell, jobs[j].range); });
+        parallel_(jobs.size(), [&](std::size_t j) {
+            jobs[j].key.visible = visibleTileMask(*jobs[j].observer, *jobs[j].cell, jobs[j].range, &jobs[j].key.beyond);
+        });
     else if (threads > 1)
     {
         std::vector<std::thread> helpers;
         for (std::size_t t = 1; t < threads; ++t)
             helpers.emplace_back([&, t] {
                 for (std::size_t j = t; j < jobs.size(); j += threads)
-                    jobs[j].key.visible = visibleTileMask(*jobs[j].observer, *jobs[j].cell, jobs[j].range);
+                    jobs[j].key.visible = visibleTileMask(*jobs[j].observer, *jobs[j].cell, jobs[j].range, &jobs[j].key.beyond);
             });
         for (std::size_t j = 0; j < jobs.size(); j += threads)
-            jobs[j].key.visible = visibleTileMask(*jobs[j].observer, *jobs[j].cell, jobs[j].range);
+            jobs[j].key.visible = visibleTileMask(*jobs[j].observer, *jobs[j].cell, jobs[j].range, &jobs[j].key.beyond);
         for (auto& helper : helpers)
             helper.join();
     }
     else
-        jobs[0].key.visible = visibleTileMask(*jobs[0].observer, *jobs[0].cell, jobs[0].range);
+        jobs[0].key.visible = visibleTileMask(*jobs[0].observer, *jobs[0].cell, jobs[0].range, &jobs[0].key.beyond);
     for (auto& job : jobs)
         views_[job.observer->id] = std::move(job.key);
 }
@@ -5338,7 +5509,12 @@ double World::visionClarity(const Entity& o, const Entity& s, double range) cons
         return 1;
     if (s.transient && !animals_.empty() && animals_.count(s.id))
         return 0;                                   // Game lives only in its hunt, seen there (doc 41), never in the world.
-    if (o.cellId != s.cellId || !visiblePoint(o, s.position, range))
+    if (o.cellId != s.cellId || distance(o.position, s.position) > range)
+        return 0;
+    // A wolf behind a tree's trunk or in ferns is hidden, as it always was (RatwSight.h, bodySeen), though the ground
+    // there shows on the map.
+    const double seen = sight::bodySeen(sightClearance(o.cellId, o.position, s.position));
+    if (seen <= 0)
         return 0;
     if (s.posture == "crouching")
     {
@@ -5346,7 +5522,7 @@ double World::visionClarity(const Entity& o, const Entity& s, double range) cons
         if (distance(o.position, s.position) >= detectionRange)
             return 0;
     }
-    return clarity(distance(o.position, s.position), range * .5);
+    return clarity(distance(o.position, s.position), range * .5) * seen;
 }
 double World::hearingSensitivity(const Entity& o) const
 {
@@ -5373,8 +5549,8 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
     range *= environmentAt(oc->id, o->position).hearing;
     if (o->cellId == s->cellId)
     {
-        if (!lineOfSight(o->cellId, o->position, s->position))
-            range *= .38;
+        if (sight::bodySeen(sightClearance(o->cellId, o->position, s->position)) <= 0)
+            range *= .38;                           // (Out of sight: behind a wall, a rise, a tree.)
         const auto* ot = oc->tile(int(o->position.x), int(o->position.y));
         const auto* st = sc->tile(int(s->position.x), int(s->position.y));
         return clarity(distance(o->position, s->position) + (ot && st ? std::abs(ot->height - st->height) : 0.0),
@@ -5720,7 +5896,9 @@ void World::observe(const std::string& observerId)
     if (!o || o->npc)
         return;
     const auto* c = cell(o->cellId);
-    if (!c)
+    // A cell without its ground in memory has nothing to show, and what the wolf remembers of it stays as it was.
+    // (No wolf is ever left in one: addPlayer, enterCharacter, restore and every move load the place first.)
+    if (!c || !c->loaded || c->tiles.size() != std::size_t(c->width) * std::size_t(c->height))
         return;
     auto& book = memories_[observerId];
     auto& memory = book[c->id];
@@ -5747,6 +5925,41 @@ void World::observe(const std::string& observerId)
             memory.glyphs[index] = c->tiles[index].glyph;
             memory.observed[index] = true;
         }
+    // What it sees past the edges (doc 70): remembered in the cells beside, which it has glimpsed, not visited.
+    if (const auto& beyond = view.beyond; !beyond.visible.empty())
+        for (const auto& b : besideCells(c->id))
+        {
+            const auto* n = cell(b.id);
+            if (!n || !n->loaded || n->tiles.size() != std::size_t(n->width) * std::size_t(n->height))
+                continue;
+            CellMemory* there = nullptr;
+            const int x0 = std::max(beyond.x0, b.dx), x1 = std::min(beyond.x0 + beyond.width, b.dx + n->width);
+            const int y0 = std::max(beyond.y0, b.dy), y1 = std::min(beyond.y0 + beyond.height, b.dy + n->height);
+            for (int y = y0; y < y1; ++y)
+                for (int x = x0; x < x1; ++x)
+                {
+                    if (!beyond.at(x, y))
+                        continue;
+                    if (!there)
+                    {
+                        there = &book[n->id];
+                        if (there->knowledge == Knowledge::Unknown)
+                            there->knowledge = Knowledge::Glimpsed;
+                        there->cellId = n->id;
+                        there->name = n->name;
+                        there->width = n->width;
+                        there->height = n->height;
+                        there->worldX = n->worldX;
+                        there->worldY = n->worldY;
+                        there->worldZ = n->worldZ;
+                        there->glyphs.resize(n->tiles.size(), ' ');
+                        there->observed.resize(n->tiles.size(), false);
+                    }
+                    const auto index = std::size_t((y - b.dy) * n->width + (x - b.dx));
+                    there->glyphs[index] = n->tiles[index].glyph;
+                    there->observed[index] = true;
+                }
+        }
     for (const Door* door : doorsIn(o->cellId))
     {
         const auto& d = *door;
@@ -5769,6 +5982,69 @@ void World::observe(const std::string& observerId)
         glimpse.worldZ = adjacent->worldZ;
     }
 }
+std::shared_ptr<const Fringe> World::fringeOf(const Entity& o, const Cell& c, const Beyond& beyond) const
+{
+    // The band round the cell (doc 70): what the wolf sees there now, else remembers, from the cells beside it. Only
+    // near an edge, where the local map can show it.
+    const int band = Fringe::Band, reach = Fringe::Near;
+    const auto& beside = besideCells(c.id);        // (None indoors.)
+    if (beside.empty() ||
+        (o.position.x > reach && o.position.y > reach && o.position.x < c.width - reach && o.position.y < c.height - reach))
+        return nullptr;
+    auto made = std::make_shared<Fringe>();
+    auto& out = *made;
+    const auto size = std::size_t(2 * band * (c.width + 2 * band) + 2 * band * c.height);
+    out.width = band;
+    out.glyphs.assign(size, ' ');
+    out.seen.assign(size, '0');
+    out.heights.assign(size, 0.0f);
+    const auto& book = memories(o.id);
+    for (const auto& b : beside)
+    {
+        const auto* n = cell(b.id);
+        if (!n)
+            continue;
+        // (A cell beside a far edge isn't on the map yet: left blank.)
+        const double ox = std::max({0.0, b.dx - o.position.x, o.position.x - (b.dx + n->width)});
+        const double oy = std::max({0.0, b.dy - o.position.y, o.position.y - (b.dy + n->height)});
+        if (std::hypot(ox, oy) > reach)
+            continue;
+        const auto known = book.find(b.id);
+        const CellMemory* memory = known == book.end() ? nullptr : &known->second;
+        const bool ground = n->loaded && n->tiles.size() == std::size_t(n->width) * std::size_t(n->height);
+        if (!ground && (!memory || memory->observed.empty()))
+            continue;
+        const int x0 = std::max(-band, b.dx), x1 = std::min(c.width + band, b.dx + n->width);
+        const int y0 = std::max(-band, b.dy), y1 = std::min(c.height + band, b.dy + n->height);
+        for (int y = y0; y < y1; ++y)
+            for (int x = x0; x < x1; ++x)
+            {
+                if (y >= 0 && y < c.height && x >= 0 && x < c.width)
+                {
+                    x = c.width - 1;                // (Past the cell itself.)
+                    continue;
+                }
+                const long at = bandIndex(band, c.width, c.height, x, y);
+                const auto i = std::size_t((y - b.dy) * n->width + (x - b.dx));
+                if (at < 0)
+                    continue;
+                if (ground && beyond.at(x, y))
+                {
+                    out.glyphs[std::size_t(at)] = n->tiles[i].glyph;
+                    out.seen[std::size_t(at)] = '2';
+                    out.heights[std::size_t(at)] = float(n->tiles[i].height);
+                }
+                else if (memory && i < memory->observed.size() && memory->observed[i])
+                {
+                    out.glyphs[std::size_t(at)] = memory->glyphs[i];
+                    out.seen[std::size_t(at)] = '1';
+                    out.heights[std::size_t(at)] = ground ? float(n->tiles[i].height) : 0.0f;
+                }
+            }
+    }
+    return made;
+}
+
 const std::map<std::string, CellMemory>& World::memories(const std::string& id) const
 {
     static const std::map<std::string, CellMemory> empty;
@@ -5806,20 +6082,37 @@ Snapshot World::snapshot(const std::string& observerId, bool withTiles, bool obs
     out.cell.wind = windAt(c->id);
     out.environment = environmentAt(c->id, o->position);
     out.scentCues = scentCues(observerId);
-    out.visibleTiles.resize(c->tiles.size());
-    out.rememberedTiles.resize(c->tiles.size());
+    // A cell whose ground isn't in memory (none should hold a wolf: see observe()) shows only what is remembered.
+    const auto size = std::size_t(c->width) * std::size_t(c->height);
+    const bool ground = c->loaded && c->tiles.size() == size;
+    if (withTiles && !ground)
+        out.cell.tiles.assign(size, Tile{});
+    out.visibleTiles.resize(size);
+    out.rememberedTiles.resize(size);
     const auto& book = memories(observerId);
     const auto remembered = book.find(c->id);
     const CellMemory emptyMemory;
     const auto& memory = remembered == book.end() ? emptyMemory : remembered->second;
     if (!withTiles && remembered != book.end())
         out.memory = &remembered->second;
-    const auto& seen = viewOf(*o, *c);
+    static const std::vector<char> nothing;
+    const auto& seen = ground ? viewOf(*o, *c) : nothing;
+    if (ground)
+    {
+        // The ground round the cell: made again only when the view is (what the wolf sees and remembers there).
+        auto& v = views_.at(observerId);
+        if (!v.fringeReady)
+        {
+            v.fringe = fringeOf(*o, *c, v.beyond);
+            v.fringeReady = true;
+        }
+        out.fringe = v.fringe;
+    }
     for (int y = 0; y < c->height; ++y)
         for (int x = 0; x < c->width; ++x)
         {
             const auto i = static_cast<std::size_t>(y * c->width + x);
-            const bool visible = seen[i];
+            const bool visible = i < seen.size() && seen[i];
             out.visibleTiles[i] = visible;
             out.rememberedTiles[i] = !visible && i < memory.observed.size() && memory.observed[i];
             if (!visible && withTiles)
@@ -5899,8 +6192,9 @@ Snapshot World::snapshot(const std::string& observerId, bool withTiles, bool obs
         mc.knowledge = m.knowledge;
         mc.current = id == c->id;
         mc.visible = currentlyVisible.count(id) != 0;
-        // The current cell's glyphs are its rows, which the client already has: never sent twice.
-        if (m.knowledge == Knowledge::Visited && id != c->id)
+        // The current cell's glyphs are its rows, which the client already has: never sent twice. A place only
+        // glimpsed has what was seen of it past a seam (doc 70).
+        if (!m.glyphs.empty() && id != c->id)
         {
             mc.rememberedGlyphs = m.glyphs;
             for (std::size_t index = 0; index < mc.rememberedGlyphs.size(); ++index)
@@ -6003,9 +6297,15 @@ Result World::restore(const PersistedWorld& saved)
         std::fmod(state.clockOffsetHours + std::fmod(state.time, 7200.) * 24. / 7200., 24.) / 24.;
     if (streamed())
     {
-        for (const auto* list : {&state.players, &state.npcs})
-            for (const auto& e : *list)
-                ensureLoaded(e.cellId);
+        // A player whose place can't be read wakes at the spawn too: a wolf is never in a cell without its ground.
+        for (auto& e : state.players)
+            if (!ensureLoaded(e.cellId).ok)
+            {
+                e.cellId = spawnCell_;
+                e.position = spawnPosition_;
+            }
+        for (const auto& e : state.npcs)
+            ensureLoaded(e.cellId);
         if (state.hasSociety)
             for (const auto& resident : state.society.residents)
             {
@@ -6174,8 +6474,10 @@ Result World::restore(const PersistedWorld& saved)
             if (owner.first.empty() || !c || m.cellId != entry.first || tier < 0 || tier > 2 || m.width <= 0 ||
                 m.height <= 0 || m.width > 4096 || m.height > 4096 || !std::isfinite(m.worldX) ||
                 !std::isfinite(m.worldY) || !std::isfinite(m.worldZ) || m.glyphs.size() != m.observed.size() ||
-                (m.knowledge == Knowledge::Visited ? m.glyphs.size() != static_cast<std::size_t>(m.width * m.height)
-                                                   : !m.glyphs.empty()))
+                // A place outdoors glimpsed past a seam (doc 70) keeps what was seen of it, as a visited one does.
+                (m.knowledge == Knowledge::Visited
+                     ? m.glyphs.size() != static_cast<std::size_t>(m.width * m.height)
+                     : !m.glyphs.empty() && (!c->outdoors || m.glyphs.size() != static_cast<std::size_t>(m.width * m.height))))
                 return {false, "Invalid saved map memory.", entry.first};
             for (std::size_t index = 0; index < m.glyphs.size(); ++index)
                 if (!m.observed[index] && m.glyphs[index] != ' ')
@@ -6361,7 +6663,9 @@ Result World::loadCell(std::istream& file, const std::string& path)
     // A cell put in by hand: what was kept of its file is let go (read afresh, should it ever stream in again).
     auto& kept = parsed_.kept;
     kept.erase(std::remove_if(kept.begin(), kept.end(), [&](const auto& k) { return k.id == candidate.id; }), kept.end());
-    cells_[candidate.id] = std::move(candidate);
+    const auto id = candidate.id;
+    cells_[id] = std::move(candidate);
+    indexBeside(id);
     return {true, "Cell loaded.", path};
 }
 
@@ -6606,10 +6910,32 @@ void World::stream(double idle)
             occupied.insert(entry.second.cellId);
             last = &entry.second.cellId;
         }
+    // And the cells a player stands near enough to see into (doc 70, "Sight across seams"): by a corner, the one
+    // across it, which no seam joins to its own. (A step further than it sees, so the ground is there as it shows.)
+    std::set<std::string> overlooked;
+    for (const auto& entry : players())
+        if (const auto* c = entry.second.npc ? nullptr : cell(entry.second.cellId);
+            c && c->outdoors && !besideCells(c->id).empty())
+        {
+            const Vec2 at = entry.second.position;
+            const double sees = std::min(sightRange(entry.second) + 2, double(Fringe::Band));
+            for (const auto& b : besideCells(c->id))
+                if (const auto* n = cell(b.id))
+                {
+                    const double ox = std::max({0.0, b.dx - at.x, at.x - (b.dx + n->width)});
+                    const double oy = std::max({0.0, b.dy - at.y, at.y - (b.dy + n->height)});
+                    if (std::hypot(ox, oy) <= sees)
+                        overlooked.insert(b.id);
+                }
+        }
     const bool due = time_ >= streamCheck_;
-    if (!due && occupied == streamOccupied_)
+    if (!due && occupied == streamOccupied_ && overlooked == streamOverlooked_)
         return;
     std::set<std::string> wanted = occupied;
+    wanted.insert(overlooked.begin(), overlooked.end());
+    // The spawn is never let go: it is where a wolf is put whose own place can't be loaded (addPlayer).
+    if (cells_.count(spawnCell_))
+        wanted.insert(spawnCell_);
     if (tiered())
         wanted.insert(tierWanted_.begin(), tierWanted_.end());   // Worked out each schedule update.
     else
@@ -6624,6 +6950,7 @@ void World::stream(double idle)
         ensureLoaded(id);
     }
     streamOccupied_ = std::move(occupied);
+    streamOverlooked_ = std::move(overlooked);
     if (!due)
         return;
     streamCheck_ = time_ + 10.0;

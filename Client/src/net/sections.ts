@@ -19,6 +19,10 @@ export const Sections: readonly Section[] = [
     {parent: '', field: 'visibility', name: 'visibility'},
     {parent: 'cell', field: 'rows', name: 'cell.rows'},
     {parent: 'cell', field: 'heights', name: 'cell.heights'},
+    // The ground round the cell, from the cells beside it (doc 70): sent near an edge.
+    {parent: '', field: 'fringeVisibility', name: 'fringeVisibility'},
+    {parent: 'cell', field: 'fringeRows', name: 'cell.fringeRows'},
+    {parent: 'cell', field: 'fringeHeights', name: 'cell.fringeHeights'},
     {parent: '', field: 'worldMap', name: 'worldMap', entries: true},
     {parent: '', field: 'travelMap', name: 'travelMap', entries: true},
     {parent: '', field: 'doors', name: 'doors'},

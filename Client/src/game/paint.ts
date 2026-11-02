@@ -134,8 +134,9 @@ export class GamePainter {
     // ------------------------------------------------------------------ Atmosphere and weather
 
     private cellBounds(): Rect {
-        const s = this.s;
-        return rect(s.mapOrigin[0], s.mapOrigin[1], s.mapOrigin[0] + s.cellWidth * s.tileSize, s.mapOrigin[1] + s.cellHeight * s.tileSize);
+        // The cell and the ground shown round it (doc 70): the weather falls on both alike.
+        const s = this.s, g = s.groundExtent(), t = s.tileSize;
+        return rect(s.mapOrigin[0] + g.x0 * t, s.mapOrigin[1] + g.y0 * t, s.mapOrigin[0] + (g.x1 + 1) * t, s.mapOrigin[1] + (g.y1 + 1) * t);
     }
 
     private visibleCellBounds(): Rect {
@@ -1073,19 +1074,22 @@ export class GamePainter {
         s.tileSize = Math.max(ZoomTiles[s.zoom] ?? 22, Math.min(28, fit));
         const fight = this.fightFrame(mapW, mapH);
         if (fight) s.tileSize = fight.tile;
-        // A cell that fits is centred; a larger one follows the wolf, stopping at its edges so no empty canvas
-        // shows. Shift/Ctrl + wheel look around (mapPan) until the wolf next moves.
+        // A cell that fits is centred; a larger one follows the wolf, stopping at the edges of what can be shown (the
+        // cell, and the ground round it past a seam: doc 70) so no empty canvas shows. Shift/Ctrl + wheel look around
+        // (mapPan) until the wolf next moves.
         const viewX = (map.left + map.right) / 2, viewY = (map.top + map.bottom) / 2;
         const me = s.entities.get(s.selfId);
-        const axis = (center: number, low: number, high: number, tiles: number, self: number) => {
-            const span = tiles * s.tileSize;
-            if (span <= high - low || !me) return center - span * 0.5;
-            return clamp(center - self * s.tileSize, high - span, low);
+        const ground = fight ? {x0: 0, y0: 0, x1: s.cellWidth - 1, y1: s.cellHeight - 1} : s.groundExtent();
+        // Where tile 0 goes on screen, along one axis, for tiles `first` to `last` shown.
+        const axis = (center: number, low: number, high: number, first: number, last: number, self: number) => {
+            const span = (last - first + 1) * s.tileSize;
+            if (span <= high - low || !me) return center - ((first + last + 1) / 2) * s.tileSize;
+            return clamp(center - self * s.tileSize, high - (last + 1) * s.tileSize, low - first * s.tileSize);
         };
         const [shakeX, shakeY] = fight ? s.fx.shake(s.clock, s.reducedMotion) : [0, 0];
         s.mapOrigin = fight ? [viewX - fight.cx * s.tileSize + s.mapPan[0] + shakeX, viewY - fight.cy * s.tileSize + s.mapPan[1] + shakeY]
-            : [axis(viewX, map.left, map.right, s.cellWidth, me?.x ?? 0) + s.mapPan[0],
-                axis(viewY, map.top, map.bottom, s.cellHeight, me?.y ?? 0) + s.mapPan[1]];
+            : [axis(viewX, map.left, map.right, ground.x0, ground.x1, me?.x ?? 0) + s.mapPan[0],
+                axis(viewY, map.top, map.bottom, ground.y0, ground.y1, me?.y ?? 0) + s.mapPan[1]];
         // A crossing keeps the wolf where it was on screen for a moment, then the view slides to where it belongs.
         const cellKey = `${s.cellId}|${s.cellGeneration}`;
         if (me) {
@@ -1100,9 +1104,9 @@ export class GamePainter {
         const cell = obj(s.snapshot, 'cell');
         this.drawEnvironment(false);
         // Only the tiles on screen (and a margin, kept offscreen) are drawn: a large cell has tens of thousands more.
-        this.terrain.draw(p, s, {x0: Math.max(0, Math.floor((map.left - ox) / tile) - 1), y0: Math.max(0, Math.floor((map.top - oy) / tile) - 1),
-            x1: Math.min(s.cellWidth - 1, Math.ceil((map.right - ox) / tile) + 1),
-            y1: Math.min(s.tileRows.length - 1, Math.ceil((map.bottom - oy) / tile) + 1)}, ox, oy, tile);
+        this.terrain.draw(p, s, {x0: Math.max(ground.x0, Math.floor((map.left - ox) / tile) - 1),
+            y0: Math.max(ground.y0, Math.floor((map.top - oy) / tile) - 1), x1: Math.min(ground.x1, Math.ceil((map.right - ox) / tile) + 1),
+            y1: Math.min(ground.y1, Math.ceil((map.bottom - oy) / tile) + 1)}, ox, oy, tile);
         // Actions come only from doors and wolves the server shows.
         for (const door of objects(s.snapshot, 'doors')) {
             const x = ox + num(door, 'x') * tile, y = oy + num(door, 'y') * tile;
