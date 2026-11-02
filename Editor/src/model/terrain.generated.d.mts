@@ -8,6 +8,8 @@ export interface TerrainTile {
     readonly code: string; readonly glyph: string; readonly ascii: string; readonly name: string;
     readonly category: TerrainCategoryId; readonly kind: TerrainKind;
     readonly solid: boolean; readonly opaque: boolean; readonly height: number; readonly stature: number;
+    /** How much of what lies beyond its stature hides, a tile's depth of it: 1 all (Core/RatwSight.h). */
+    readonly hides: number;
     readonly cost: number; readonly ramp: boolean;
     /** A road, street, path or bridge: what NPCs walking overland keep to. */
     readonly way: boolean;

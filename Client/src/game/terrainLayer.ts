@@ -64,6 +64,63 @@ interface TileStyle {
 const blocks: Record<string, number> = {'█': 1, '▓': 0.75, '▒': 0.5, '░': 0.28};
 const smallShapes = new Set(['.', '·', '∙', ',']);
 
+// How far each way the ground's slope is read for its shading: wide enough that a dune's long back and steep face, or
+// a valley's sides, read as slopes and not as a stair of half steps.
+const Reach = 3;
+
+/** The ground's heights over a window and Reach round it, and which of them are known (unknown ground has none). */
+class Relief {
+    readonly x0: number;
+    readonly y0: number;
+    readonly width: number;
+    readonly heights: Float32Array;
+    readonly known: Uint8Array;
+
+    constructor(s: GameState, w: TileWindow) {
+        this.x0 = w.x0 - Reach;
+        this.y0 = w.y0 - Reach;
+        this.width = w.x1 - w.x0 + 1 + 2 * Reach;
+        const height = w.y1 - w.y0 + 1 + 2 * Reach;
+        this.heights = new Float32Array(this.width * height);
+        this.known = new Uint8Array(this.width * height);
+        for (let j = 0; j < height; ++j)
+            for (let i = 0; i < this.width; ++i) {
+                const x = this.x0 + i, y = this.y0 + j, at = j * this.width + i;
+                if (s.seenAt(x, y) === '0' || s.glyphAt(x, y) === ' ') continue;
+                this.heights[at] = s.heightAt(x, y);
+                this.known[at] = 1;
+            }
+    }
+
+    /**
+     * How the ground at (x, y) faces the light from the north-west: its slope in height per tile, read over one, two
+     * and three tiles each way and averaged, lit (above 0) where it rises to the south-east, in shade (below 0) where
+     * it falls; to a twentieth, so the tile styles keep. Unknown ground counts as level with (x, y), so the edge of
+     * what is known never shades as a false slope.
+     */
+    facing(x: number, y: number): number {
+        const here = this.heights[(y - this.y0) * this.width + (x - this.x0)];
+        const h = (tx: number, ty: number) => {
+            const at = (ty - this.y0) * this.width + (tx - this.x0);
+            return this.known[at] ? this.heights[at] : here;
+        };
+        let gx = 0, gy = 0;
+        for (let d = 1; d <= Reach; ++d) {
+            gx += (h(x + d, y) - h(x - d, y)) / (2 * d);
+            gy += (h(x, y + d) - h(x, y - d)) / (2 * d);
+        }
+        return Math.round(clamp((gx + gy) / Reach * 2, -0.6, 0.45) * 20) / 20;
+    }
+}
+
+/** `top` laid over `bottom` (both partly see-through), as one colour. */
+function over(top: Color, bottom: Color): Color {
+    const a = top.a + bottom.a * (1 - top.a);
+    if (a <= 0) return withAlpha(bottom, 0);
+    const mix = (t: number, b: number) => (t * top.a + b * bottom.a * (1 - top.a)) / a;
+    return {r: mix(top.r, bottom.r), g: mix(top.g, bottom.g), b: mix(top.b, bottom.b), a};
+}
+
 /** Draws the ground: tiles then height edges, for the tiles in `w`, with tile (0, 0) at (ox, oy). */
 export class GroundPainter {
     private styles = new Map<string, TileStyle>();
@@ -77,18 +134,16 @@ export class GroundPainter {
         if (this.styles.size > 20000) this.styles.clear();
         let currentFont = '', currentFill = '';
         c.textBaseline = 'top';
+        // The cell's tiles, and past its edges the ground round it (doc 70), alike.
+        const relief = new Relief(s, w);
         for (let y = w.y0; y <= w.y1; ++y) {
-            const row = s.tileRows[y], seenRow = s.visibilityRows[y];
-            if (!row) continue;
-            const last = Math.min(w.x1, row.length - 1);
-            for (let x = w.x0; x <= last; ++x) {
-                const code = row[x];
-                const seen = seenRow?.[x] ?? '2';
+            for (let x = w.x0; x <= w.x1; ++x) {
+                const code = s.glyphAt(x, y);
+                const seen = s.seenAt(x, y);
                 if (seen === '0' || code === ' ') continue;
                 const known = seen === '1';
                 const rise = s.heightAt(x, y) - ground;
-                const facing = known ? 0
-                    : clamp((s.heightAt(x + 1, y) + s.heightAt(x, y + 1) - s.heightAt(x - 1, y) - s.heightAt(x, y - 1)) * 0.5, -2, 2);
+                const facing = relief.facing(x, y);
                 const key = `${code}|${seen}|${rise}|${facing}|${darkStep}|${s.plainGlyphs ? 1 : 0}`;
                 let style = this.styles.get(key);
                 if (!style) this.styles.set(key, style = this.style(code, known, rise, facing, dark, s.plainGlyphs));
@@ -121,6 +176,10 @@ export class GroundPainter {
             color = lerp(color, withAlpha(rgb(0x8195ad), color.a), dark * 0.28);
             color = withAlpha(scale(color, 1 - dark * 0.27), color.a);
         }
+        // The lie of the land (the slope's facing): a dune's steep face, a valley's far side, in shade, the slopes
+        // turned to the light a little brighter, in the glyphs as in the floor, so the shape reads in remembered
+        // ground too.
+        color = withAlpha(scale(color, 1 + facing * 0.45), color.a);
         // Remembered ground stays readable, only softer: a gentle step down from what is in sight, so the edge of sight
         // in broken country (a forest) doesn't cut the map into hard patches.
         if (known) color = withAlpha(scale(color, 0.8), 0.5);
@@ -129,6 +188,9 @@ export class GroundPainter {
         const base = info ? info.bg : rgb(0x283126);
         let f = rise >= 0 ? lerp(base, rgb(0x6b6a4a), Math.min(rise * 0.12, 0.4)) : lerp(base, rgb(0x0b1216), Math.min(-rise * 0.14, 0.5));
         f = withAlpha(scale(f, 1 + facing * 0.2), 0.27 + Math.min(Math.abs(rise) * 0.03, 0.12));
+        // And over the floor a wash of light on a slope turned to it, of shade on one turned away: a dune's steep lee,
+        // a valley's far side, read as bands, faint where the ground is gentle.
+        f = over(facing >= 0 ? rgb(0xe8dcb4, facing * 0.18) : rgb(0x030507, -facing * 0.45), f);
         if (known) f = withAlpha(scale(f, 0.75), f.a * 0.7);
         const floor = css(f);
         const shape = !info ? code : plain ? info.ascii : info.glyph;
@@ -142,9 +204,8 @@ export class GroundPainter {
     // that can't be walked.
     private edges(c: CanvasRenderingContext2D, s: GameState, w: TileWindow, ox: number, oy: number, tile: number) {
         const seenOpen = (x: number, y: number) => {
-            const code = s.tileRows[y]?.[x];
-            const info = code ? terrainInfo(code) : undefined;
-            return !!info && info.kind !== 'wall' && (s.visibilityRows[y]?.[x] ?? '0') !== '0';
+            const info = terrainInfo(s.glyphAt(x, y));
+            return !!info && info.kind !== 'wall' && s.seenAt(x, y) !== '0';
         };
         const line = (from: Point, to: Point, color: string, width: number) => {
             c.beginPath();
@@ -155,28 +216,28 @@ export class GroundPainter {
             c.lineCap = 'round';
             c.stroke();
         };
-        const contour = css(rgb(0xc9bf9a, 0.16));
+        const contour = css(rgb(0xc9bf9a, 0.2));
+        const contourRemembered = css(rgb(0xc9bf9a, 0.1));
         const ramp = css(rgb(0xd8b877, 0.34));
         const shadow = css(rgb(0x04070a, 0.4));
         const rim = css(rgb(0xe9d2a0, 0.55));
         for (let y = w.y0; y <= w.y1; ++y) {
-            const row = s.tileRows[y];
-            if (!row) continue;
-            for (let x = w.x0; x <= Math.min(w.x1, row.length - 1); ++x)
+            for (let x = w.x0; x <= w.x1; ++x)
                 for (let d = 0; d < 2; ++d) {
                     const dx = d === 0 ? 1 : 0, dy = 1 - dx;
                     const nx = x + dx, ny = y + dy;
                     if (!seenOpen(x, y) || !seenOpen(nx, ny)) continue;
-                    const infoA = terrainInfo(row[x])!, infoB = terrainInfo(s.tileRows[ny][nx])!;
+                    const infoA = terrainInfo(s.glyphAt(x, y))!, infoB = terrainInfo(s.glyphAt(nx, ny))!;
                     const ha = s.heightAt(x, y), hb = s.heightAt(nx, ny), drop = Math.abs(ha - hb);
                     const cliff = infoA.kind === 'cliff' || infoB.kind === 'cliff';
                     if (drop < 0.01 && !cliff) continue;
-                    // Remembered ground comes without its heights (the server sends them for tiles in sight only), so an
-                    // edge touching it would be a false step tracing the edge of sight: none is drawn.
-                    if (s.visibilityRows[y][x] === '1' || s.visibilityRows[ny][nx] === '1') continue;
+                    // Remembered ground comes with its heights (its shape is remembered with it), but its edges only as
+                    // faint contours: a ledge's rim and shadow are for what is in sight.
+                    const remembered = s.seenAt(x, y) === '1' || s.seenAt(nx, ny) === '1';
                     const cx = ox + nx * tile, cy = oy + ny * tile;
                     const end: Point = dx ? [cx, cy + tile] : [cx + tile, cy];
-                    if (drop <= 0.5 && !cliff) line([cx, cy], end, contour, 1);
+                    if (remembered) line([cx, cy], end, contourRemembered, 1);
+                    else if (drop <= 0.5 && !cliff) line([cx, cy], end, contour, 1);
                     else if (drop <= 1.01 && (infoA.ramp || infoB.ramp) && !cliff) line([cx, cy], end, ramp, 1.3);
                     else {
                         // The shadow falls on the lower side; a level cliff edge shades its open side.
@@ -205,6 +266,7 @@ export class TerrainLayer {
     private rows: unknown = null;
     private visibility: unknown = null;
     private heights: unknown = null;
+    private fringe: unknown[] = [];
     private ground = new GroundPainter();
     private factory: SurfaceFactory;
 
@@ -223,9 +285,11 @@ export class TerrainLayer {
         const c = target.ctx;
         const k = deviceScale(c);
         const key = [s.cellId, s.cellGeneration, tile, k, s.plainGlyphs, s.selfHeight(), Math.round(s.environment.illumination * 50),
-            s.cellWidth, s.cellHeight].join('|');
+            s.cellWidth, s.cellHeight, s.fringe].join('|');
         const inside = view.x0 >= this.region.x0 && view.y0 >= this.region.y0 && view.x1 <= this.region.x1 && view.y1 <= this.region.y1;
-        if (key !== this.key || !inside || this.rows !== s.tileRows || this.visibility !== s.visibilityRows || this.heights !== s.tileHeights) {
+        const fringe = [s.fringeRows, s.fringeVisibility, s.fringeHeights];
+        if (key !== this.key || !inside || this.rows !== s.tileRows || this.visibility !== s.visibilityRows || this.heights !== s.tileHeights ||
+            fringe.some((part, i) => part !== this.fringe[i])) {
             if (!this.rebuild(s, view, tile, k)) {
                 this.key = '';
                 this.ground.paint(c, s, view, ox, oy, tile);
@@ -235,6 +299,7 @@ export class TerrainLayer {
             this.rows = s.tileRows;
             this.visibility = s.visibilityRows;
             this.heights = s.tileHeights;
+            this.fringe = fringe;
         }
         const surface = this.surface!;
         // Whole device pixels only, so glyphs stay crisp however the camera moves.
@@ -248,8 +313,9 @@ export class TerrainLayer {
     }
 
     private rebuild(s: GameState, view: TileWindow, tile: number, k: number): boolean {
-        const region: TileWindow = {x0: Math.max(0, view.x0 - Margin), y0: Math.max(0, view.y0 - Margin),
-            x1: Math.min(s.cellWidth - 1, view.x1 + Margin), y1: Math.min(s.cellHeight - 1, view.y1 + Margin)};
+        const g = s.groundExtent();
+        const region: TileWindow = {x0: Math.max(g.x0, view.x0 - Margin), y0: Math.max(g.y0, view.y0 - Margin),
+            x1: Math.min(g.x1, view.x1 + Margin), y1: Math.min(g.y1, view.y1 + Margin)};
         const width = Math.ceil((region.x1 - region.x0 + 1) * tile * k) + Pad * 2;
         const height = Math.ceil((region.y1 - region.y0 + 1) * tile * k) + Pad * 2;
         if (width <= 0 || height <= 0 || width > MaxSide || height > MaxSide) return false;

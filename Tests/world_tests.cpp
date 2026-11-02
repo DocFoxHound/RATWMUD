@@ -814,9 +814,29 @@ void terrainElevation()
     // Catalog tiles: what stands on the ground hides by its stature, not by raising the ground.
     for (int x = 10; x <= 24; ++x)
         *tavern->tile(x, 12) = tileFromGlyph('.');
+    *tavern->tile(15, 12) = tileFromGlyph('o');
+    expect(!w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A boulder hides what stands behind it");
     *tavern->tile(15, 12) = tileFromGlyph('P');
-    expect(!w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A pine hides what stands behind it");
     expect(tavern->tile(15, 12)->height == 0 && tavern->tile(15, 12)->solid, "A pine is solid but keeps its ground");
+    // Trees' trunks and low cover hide only part of what is behind them (Docs/Design/22, "Sight"): one pine, or a
+    // bed of ferns, is seen past; a stand of pines is not.
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "One pine's trunk hides only part of what is behind it");
+    for (int x = 13; x <= 19; ++x)
+        *tavern->tile(x, 12) = tileFromGlyph('P');
+    expect(!w.lineOfSight("tavern", {12.5, 12.5}, {20.5, 12.5}), "A stand of pines hides it all");
+    for (int x = 13; x <= 19; ++x)
+        *tavern->tile(x, 12) = tileFromGlyph('&');
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "Ferns only thin sight");
+    for (int x = 10; x <= 24; ++x)
+        *tavern->tile(x, 12) = tileFromGlyph('.');
+    // A wall is seen where its top shows, though its foot is below the ground before it (Ridgemere's, in its ditch).
+    *tavern->tile(18, 12) = tileFromGlyph('#');
+    tavern->tile(18, 12)->height = -1;
+    tavern->tile(17, 12)->height = .5;
+    expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A wall's top shows over the bank before it");
+    tavern->tile(17, 12)->height = 0;
+    *tavern->tile(18, 12) = tileFromGlyph('.');
+    *tavern->tile(15, 12) = tileFromGlyph('P');
     *tavern->tile(15, 12) = tileFromGlyph('T');
     expect(w.lineOfSight("tavern", {12.5, 12.5}, {18.5, 12.5}), "A table is too low to hide anything");
     *tavern->tile(15, 12) = tileFromGlyph('.');
@@ -1577,12 +1597,16 @@ void herbPatchReach()
 // check at every sample, and the two must agree on every ray over rough ground with walls, trees and closed doors.
 bool sampledSight(const World& w, const Cell& c, Vec2 from, Vec2 to)
 {
-    constexpr double EyeHeight = 0.8, SightTarget = 0.5;   // As in RatwWorld.cpp.
+    constexpr double EyeHeight = 0.8, SightTarget = 0.5, WallTop = 2.5;   // As in RatwSight.h.
     const auto* fromTile = c.tile(int(std::floor(from.x)), int(std::floor(from.y)));
     const auto* toTile = c.tile(int(std::floor(to.x)), int(std::floor(to.y)));
     const double eye = (fromTile ? fromTile->height : 0.0) + EyeHeight;
-    const double target = toTile ? toTile->height + std::max(SightTarget, toTile->stature) : SightTarget;
-    const int count = std::max(1, int(std::ceil(std::hypot(to.x - from.x, to.y - from.y) / 0.12)));
+    const double target =
+        toTile ? toTile->height + std::max(toTile->opaque ? WallTop : SightTarget, toTile->stature) : SightTarget;
+    const double length = std::sqrt((to.x - from.x) * (to.x - from.x) + (to.y - from.y) * (to.y - from.y));
+    const int count = std::max(1, int(std::ceil(length / 0.12)));
+    const double step = length / count;
+    double hidden = 0;                                     // What trunks and low cover have hidden of the line so far.
     for (int i = 1; i < count; ++i)
     {
         const double f = double(i) / count;
@@ -1593,7 +1617,10 @@ bool sampledSight(const World& w, const Cell& c, Vec2 from, Vec2 to)
         const auto* t = c.tile(x, y);
         if (!t || t->opaque)
             return false;
-        if (t != fromTile && t->height + t->stature > eye + (target - eye) * f + 1e-6)
+        if (t != fromTile && t->height > eye + (target - eye) * f + 1e-6)
+            return false;
+        if (t != fromTile && t->height + t->stature > eye + (target - eye) * f + 1e-6 &&
+            (!(t->hides < 1) || (hidden += t->hides * step) >= 1))
             return false;
         for (const auto& [id, d] : w.doors())
             if (d.cellId == c.id && !d.passage && id.rfind("stairs_", 0) != 0 && !d.open &&
@@ -1619,6 +1646,8 @@ void sightRaysMatchSampling()
                 *t = tileFromGlyph('P');
             else if (roll < .07)
                 *t = tileFromGlyph('#');
+            else if (roll < .12)
+                *t = tileFromGlyph(roll < .1 ? '&' : 'o');      // Low cover (hides part), a boulder (all).
             else
                 t->height = std::floor(unit(random) * 7) * .5;
         }

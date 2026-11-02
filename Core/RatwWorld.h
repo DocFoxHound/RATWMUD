@@ -93,6 +93,7 @@ struct Tile
     bool opaque = false;
     double height = 0.0;
     double stature = 0.0; // How far the tile stands above its ground, for sight: a tree, a shelf, a boulder.
+    double hides = 1.0;   // How much of what lies beyond that stature hides, a tile's depth of it (RatwSight.h).
     double movementCost = 1.0;
 };
 
@@ -103,7 +104,7 @@ struct TerrainInfo
     char code;
     Terrain kind;
     bool solid, opaque;
-    double height, stature, cost;
+    double height, stature, hides, cost;
     bool ramp;
     bool way;            // A road, street, path or bridge: what NPCs walking overland keep to (roadTerrain).
     char16_t glyph;
@@ -532,6 +533,36 @@ struct ScentCue
     bool windborne = false;
 };
 
+// The ground beyond a cell's edges, from the cells beside it outdoors at the same level (Docs/Design/70-the-realm.md,
+// "Sight across seams"): a band `width` tiles wide all round, so the map runs on over a seam. In rows from the top,
+// as `bandIndex` numbers them: the `width` rows above the cell and the `width` below it whole (the band, the cell's
+// width, the band), and each row beside the cell only its `width` tiles at each end. Empty (width 0) indoors, with
+// nothing beside the cell, or while the wolf is far from every edge.
+struct Fringe
+{
+    static constexpr int Band = 48;      // How far beyond the cell's edges it reaches: past any wolf's sight.
+    static constexpr int Near = 96;      // How near an edge a wolf must be for it to be sent: half the widest local map.
+    int width = 0;
+    std::vector<char> glyphs;            // What is known there: ' ' nothing,
+    std::vector<char> seen;              // '2' in sight now, '1' remembered, '0' unknown;
+    std::vector<float> heights;          // its height where known (0 elsewhere).
+};
+// Where tile (x, y), in a `width` x `height` cell's own coordinates, lies in its band `band` wide; -1 inside the cell
+// or beyond the band.
+inline long bandIndex(int band, int width, int height, int x, int y)
+{
+    const long whole = long(width) + 2L * band;
+    if (band <= 0 || x < -band || y < -band || x >= width + band || y >= height + band)
+        return -1;
+    if (y < 0)
+        return long(y + band) * whole + (x + band);
+    if (y >= height)
+        return long(band) * whole + long(height) * 2 * band + long(y - height) * whole + (x + band);
+    if (x >= 0 && x < width)
+        return -1;
+    return long(band) * whole + long(y) * 2 * band + (x < 0 ? x + band : band + x - width);
+}
+
 struct Snapshot
 {
     double time = 0;
@@ -539,6 +570,9 @@ struct Snapshot
     Entity self;
     Cell cell; // Hidden tiles have blank glyphs and no terrain properties.
     std::vector<bool> visibleTiles, rememberedTiles;
+    // The ground round the cell, from the cells beside it (null for none): the same one, shared, until what the wolf
+    // sees or remembers there changes.
+    std::shared_ptr<const Fringe> fringe;
     std::vector<Entity> entities;  // Includes self; never hidden actors.
     std::vector<Door> doors;       // Currently visible fixtures only.
     std::vector<MapCell> worldMap; // Current plus first-degree known neighbors.
@@ -1339,6 +1373,8 @@ class World
     SensoryResult perceive(const std::string& observerId, const std::string& sourceId,
                            Voice voice = Voice::Speak) const;
     bool lineOfSight(const std::string& cellId, Vec2 from, Vec2 to) const;
+    // How clear that line is (RatwSight.h, clearance: 0 hidden, 1 open; trunks and low cover between thin it).
+    double sightClearance(const std::string& cellId, Vec2 from, Vec2 to) const;
     double hearingClarity(const std::string& observerId, const std::string& sourceId, Voice voice = Voice::Speak) const;
     // How keen a wolf's hearing is (1 a healthy adult's): its hearing, age, ears, skill and injuries (the factor
     // hearingClarity scales its range by; doc 51's howl uses it too).
@@ -1519,7 +1555,8 @@ class World
     }
     std::map<std::string, double> needed_;          // Game time each loaded cell was last in use.
     double streamCheck_ = 0.0;
-    std::set<std::string> streamOccupied_;          // The cells characters stood in when stream() last looked.
+    std::set<std::string> streamOccupied_;          // The cells characters stood in when stream() last looked,
+    std::set<std::string> streamOverlooked_;        // and the cells players stood near enough to see into.
     // Each cell's neighbours (through portals and seams), built on first use and dropped when doors change: a
     // city cell has well over a thousand seam and door records, far too many to walk every tick.
     mutable std::map<std::string, std::vector<std::string>> neighborCache_;
@@ -2159,7 +2196,7 @@ class World
     const std::vector<Door*>* doorsAt(const std::string& cellId, Vec2 p) const;
     // lineOfSight() with the cell and its fixtures already found: a view casts thousands of rays in one cell.
     // fixtureMask, when given, marks the cell's fixture tiles in place of looking each one up in fixtures.
-    bool lineOfSight(const Cell& cell, const FixtureTiles* fixtures, const std::vector<char>* fixtureMask, Vec2 from,
+    double clearance(const Cell& cell, const FixtureTiles* fixtures, const std::vector<char>* fixtureMask, Vec2 from,
                      Vec2 to) const;
     // doors_ by the cell they stand in (pointers into doors_; map nodes never move).
     std::map<std::string, std::vector<Door*>> doorsIn_;
@@ -2302,18 +2339,49 @@ class World
     bool visiblePoint(const Entity& observer, Vec2 point) const;
     bool visiblePoint(const Entity& observer, Vec2 point, double range) const;
     bool visiblePortal(const Entity& observer, const Door& door) const;
+    // What a wolf sees of the cells beside its own (doc 70, "Sight across seams"): a window round it in its own cell's
+    // coordinates (so it may start below 0), 1 for each tile of a cell beside it that it sees. Empty while all it
+    // could see lies in its own cell.
+    struct Beyond
+    {
+        int x0 = 0, y0 = 0, width = 0, height = 0;
+        std::vector<char> visible;
+        bool at(int x, int y) const
+        {
+            return x >= x0 && y >= y0 && x < x0 + width && y < y0 + height && visible[std::size_t((y - y0) * width + (x - x0))];
+        }
+    };
     // visiblePoint() for every tile of the observer's cell at once (1 = visible): the sight range is worked out once
-    // and only tiles within it are traced, where testing each tile alone recomputes the light for every one.
-    std::vector<char> visibleTileMask(const Entity& observer, const Cell& cell, double range) const;
+    // and only tiles within it are traced, where testing each tile alone recomputes the light for every one. With
+    // `beyond`, also what it sees past the cell's edges, over the ground of the loaded cells beside it.
+    std::vector<char> visibleTileMask(const Entity& observer, const Cell& cell, double range, Beyond* beyond = nullptr) const;
+    void sightBeyond(const Entity& observer, const Cell& cell, double range, Beyond& out) const;
+    // The outdoor cells at the same level whose ground lies within Fringe::Band of each outdoor cell's edges, and where
+    // their (0, 0) is in its tiles; made with the fixture index (rebuildFixtureIndex) and as a cell is put in by hand,
+    // so the threads building views only read it.
+    struct Beside
+    {
+        std::string id;
+        int dx = 0, dy = 0;
+    };
+    std::map<std::string, std::vector<Beside>> besideIndex_;
+    void indexBeside();
+    void indexBeside(const std::string& cellId);
+    const std::vector<Beside>& besideCells(const std::string& cellId) const;
+    std::shared_ptr<const Fringe> fringeOf(const Entity& observer, const Cell& cell, const Beyond& beyond) const;
     // Each player's view, kept until something that shapes it changes: the cell, where they stand, how far they can
-    // see, or a door opening or closing there. `fresh` says whether it was just recomputed.
+    // see, a door opening or closing there, or a cell beside it loading or going. `fresh` says whether it was just
+    // recomputed.
     struct View
     {
         std::string cellId;
         long long x = 0, y = 0, range = 0;
-        std::uint64_t doors = 0, tiles = 0;
+        std::uint64_t doors = 0, tiles = 0, beside = 0;
         std::vector<char> visible;
+        Beyond beyond;
         bool remembered = false;            // Whether observe() has put this view into the map memory yet.
+        std::shared_ptr<const Fringe> fringe;   // The ground round the cell as last sent (snapshot), until this changes.
+        bool fringeReady = false;
     };
     mutable std::map<std::string, View> views_;
     const std::vector<char>& viewOf(const Entity& observer, const Cell& cell, bool* fresh = nullptr) const;

@@ -2,6 +2,7 @@
 // only while someone is in it or next to it. A generated 10x10 grid of outdoor cells; a resident commutes across it.
 #include "RatwWorld.h"
 
+#include <algorithm>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
@@ -31,6 +32,7 @@ struct Fixture
     std::string manifest;
     std::map<std::string, std::string> cells, seams;
     std::map<std::string, int> loads;           // How often each cell's tiles were fetched.
+    std::set<std::string> unreadable;           // Cells whose headers read but whose ground can't be.
     World::CellSource source()
     {
         return {
@@ -42,7 +44,7 @@ struct Fixture
             },
             [this](const std::string& cell, std::string& text, std::string& sides) {
                 const auto found = cells.find(cell);
-                if (found == cells.end()) return std::string("no such cell");
+                if (found == cells.end() || unreadable.count(cell)) return std::string("no such cell");
                 ++loads[cell];
                 text = found->second;
                 sides = seams[cell];
@@ -170,18 +172,21 @@ void playersCrossAndReturn()
     expect(ada->cellId == "c_1_0", "Ada crosses into the next cell");
     world.tick(.1);
     expect(world.cell("c_2_0")->loaded, "and the one beyond it loads");
-    // On to c_2_0, then wait until c_0_0 unloads: travel back home still follows the remembered way.
-    world.moveTo("player-ada", Side + .15, 8.5);
-    for (int i = 0; i < 200 && ada->cellId == "c_1_0"; ++i) world.tick(.1);
-    expect(ada->cellId == "c_2_0", "Ada walks on to c_2_0");
+    // On to c_4_0 (out of sight of c_1_0), then wait until c_1_0 unloads (the spawn, c_0_0, never does: it is where a
+    // wolf goes whose own place can't be loaded): travel back still follows the remembered way.
+    for (const auto* next : {"c_2_0", "c_3_0", "c_4_0"})
+    {
+        const std::string before = ada->cellId;
+        world.moveTo("player-ada", Side + .15, 8.5);
+        for (int i = 0; i < 200 && ada->cellId == before; ++i) world.tick(.1);
+        expect(ada->cellId == next, std::string("Ada walks on to ") + next);
+    }
     for (int i = 0; i < 200; ++i) world.tick(1);
-    expect(!world.cell("c_0_0")->loaded, "Home, two cells back, has unloaded");
-    const auto travel = world.travelTo("player-ada", "c_0_0");
+    expect(!world.cell("c_1_0")->loaded && world.cell("c_0_0")->loaded, "A cell two back has unloaded; the spawn stays");
+    const auto travel = world.travelTo("player-ada", "c_1_0");
     expect(travel.ok, "A remembered route through an unloaded cell is still known: " + travel.message);
-    for (int i = 0; i < 600 && ada->cellId != "c_0_0"; ++i) world.tick(.1);
-    expect(ada->cellId == "c_0_0", "and followed home");
-    world.moveTo("player-ada", Side + .15, 8.5);
-    for (int i = 0; i < 200 && ada->cellId == "c_0_0"; ++i) world.tick(.1);
+    for (int i = 0; i < 600 && ada->cellId != "c_1_0"; ++i) world.tick(.1);
+    expect(ada->cellId == "c_1_0", "and followed back");
     // A save made now restores into a freshly loaded streamed world.
     const auto saved = world.save();
     for (const auto& [door, open] : saved.doorStates) expect(door.rfind("seam_", 0) != 0, "Seams are not saved: " + door);
@@ -1044,6 +1049,116 @@ void badSourcesAreRefused()
     expect(wrong.loadWorldFiles({{"world.ratw", g.manifest}}, "grid").ok, "Headers alone load");
     expect(!wrong.ensureLoaded("c_3_3").ok, "A cell whose tiles disagree with its header is refused");
 }
+
+// A wolf is never in a cell without its ground (the review's crash, doc 70): a wolf coming back to a place let go has
+// it loaded first; one whose place can't be read wakes at the spawn, which is never let go; and should one ever stand
+// in a cell without its ground, a look keeps what it remembers and its view is empty, not a crash.
+void aWolfAlwaysStandsOnGround()
+{
+    auto f = grid("");
+    auto world = load(f);
+    // A wolf walks in c_5_5 and looks about: its memory of the place fills.
+    world.addPlayer("player-ada", "Ada", "c_5_5", {8.5, 8.5});
+    expect(world.cell("c_5_5")->loaded, "A wolf put in a far cell has its ground loaded");
+    const auto remembered = [&] {
+        const auto& book = world.memories("player-ada");
+        const auto found = book.find("c_5_5");
+        return found == book.end() ? std::size_t(0) : std::size_t(std::count(found->second.observed.begin(), found->second.observed.end(), true));
+    };
+    const auto seen = remembered();
+    expect(seen > 100, "and remembers what it saw there");
+    // It leaves the world; nobody is near; the place is let go.
+    world.removePlayer("player-ada");
+    for (int i = 0; i < 300; ++i) world.tick(1);
+    expect(!world.cell("c_5_5")->loaded && world.cell("c_0_0")->loaded, "The far cell unloads; the spawn never does");
+    // Back where it left (as enterCharacter brings a character back): the place is loaded again first.
+    auto& back = world.addPlayer("player-ada", "Ada", "c_5_5", {8.5, 8.5});
+    expect(back.cellId == "c_5_5" && world.cell("c_5_5")->loaded, "Coming back loads the place first");
+    world.removePlayer("player-ada");
+    for (int i = 0; i < 300; ++i) world.tick(1);
+    // A place whose ground can't be read (never read before, so not kept either): the spawn instead.
+    f.unreadable.insert("c_9_9");
+    auto& woke = world.addPlayer("player-ada", "Ada", "c_9_9", {8.5, 8.5});
+    expect(woke.cellId == "c_0_0" && world.cell("c_0_0")->loaded, "A place that can't be loaded: the wolf wakes at the spawn");
+    // A save that has the wolf there restores it at the spawn when the place can't be read.
+    woke.cellId = "c_9_9";
+    const auto saved = world.save();
+    auto fresh = load(f);
+    expect(fresh.restore(saved).ok && fresh.entity("player-ada")->cellId == "c_0_0" && fresh.cell("c_0_0")->loaded,
+           "A restore puts a wolf whose place can't be read at the spawn");
+    // Were a wolf ever to stand in a cell without its ground (the crash: observe wiped the remembered map, then the
+    // view read tiles that weren't there), a look leaves its memory alone and the view is empty.
+    expect(!world.cell("c_5_5")->loaded, "(The far cell is still unloaded.)");
+    woke.cellId = "c_5_5";
+    woke.position = {8.5, 8.5};
+    world.observe("player-ada");
+    expect(remembered() == seen, "A look in a cell without its ground keeps what the wolf remembers of it");
+    for (const bool withTiles : {true, false})
+    {
+        const auto view = world.snapshot("player-ada", withTiles, true);
+        const auto tiles = std::size_t(Side * Side);
+        expect(view.visibleTiles.size() == tiles && std::count(view.visibleTiles.begin(), view.visibleTiles.end(), true) == 0,
+               "Its view sees nothing there");
+        expect(std::size_t(std::count(view.rememberedTiles.begin(), view.rememberedTiles.end(), true)) == seen,
+               "but shows what it remembers");
+        expect(!withTiles || view.cell.tiles.size() == tiles, "and every tile of the view is there to read");
+    }
+}
+
+// Sight and the map run on across seams (doc 70): a wolf near an edge sees into the cell beside its own, over that
+// cell's ground (a wall there hides what is behind it), remembers what it saw there, and its view carries that ground
+// round its own cell; by a corner, the cell across the corner is loaded and seen into too.
+void sightRunsOnAcrossSeams()
+{
+    auto f = grid("");
+    // In c_1_0, east of the spawn's cell: a wall four tiles in (but for its top and bottom rows, which hold seams),
+    // and grass behind it.
+    auto& next = f.cells["c_1_0"];
+    const auto rows = next.find("grid:\n") + 6;
+    for (int y = 1; y < Side - 1; ++y)
+    {
+        next[rows + std::size_t(y * (Side + 1) + 4)] = '#';
+        for (int x = 5; x < Side; ++x)
+            next[rows + std::size_t(y * (Side + 1) + x)] = ',';
+    }
+    auto world = load(f);
+    world.addPlayer("player-ada", "Ada", "c_0_0", {Side - 2.5, 8.5});
+    world.tick(.1);
+    const auto view = world.snapshot("player-ada", false, true);
+    expect(view.fringe && view.fringe->width == Fringe::Band, "Near an edge, the view carries the ground round the cell");
+    const auto& fringe = *view.fringe;
+    const auto at = [&](int x, int y) { return bandIndex(fringe.width, Side, Side, x, y); };
+    expect(fringe.seen[std::size_t(at(Side + 1, 8))] == '2' && fringe.glyphs[std::size_t(at(Side + 1, 8))] == '.',
+           "It sees the open ground past the seam");
+    expect(fringe.seen[std::size_t(at(Side + 4, 8))] == '2' && fringe.glyphs[std::size_t(at(Side + 4, 8))] == '#',
+           "and the wall there");
+    expect(fringe.seen[std::size_t(at(Side + 6, 8))] != '2', "but not what is behind the wall");
+    expect(fringe.seen[std::size_t(at(-3, 8))] == '0' && fringe.glyphs[std::size_t(at(-3, 8))] == ' ',
+           "Nothing is known past the world's edge");
+    const auto& book = world.memories("player-ada");
+    const auto glimpsed = book.find("c_1_0");
+    expect(glimpsed != book.end() && glimpsed->second.knowledge == Knowledge::Glimpsed &&
+               glimpsed->second.observed[std::size_t(8 * Side + 4)] && glimpsed->second.glyphs[std::size_t(8 * Side + 4)] == '#',
+           "What it saw there is remembered, the place glimpsed, not visited");
+    // Back from the edge, and dim-sighted, out of sight of the wall: remembered there now.
+    world.entity("player-ada")->position = {Side - 6.5, 8.5};
+    world.entity("player-ada")->vision = .2;
+    const auto later = world.snapshot("player-ada", false, true);
+    expect(later.fringe && later.fringe->seen[std::size_t(at(Side + 4, 8))] == '1' &&
+               later.fringe->glyphs[std::size_t(at(Side + 4, 8))] == '#',
+           "The wall past the seam is remembered where it is no longer seen");
+    // A save keeps a glimpse's detail.
+    auto fresh = load(f);
+    expect(fresh.restore(world.save()).ok, "A save with ground glimpsed past a seam restores");
+    // By a corner: the cell across it, which no seam joins to the wolf's own, is loaded and seen into.
+    world.addPlayer("player-bo", "Bo", "c_1_1", {Side - 1.5, Side - 1.5});
+    world.tick(.1);
+    expect(world.cell("c_2_2")->loaded, "By a corner, the cell across it is loaded");
+    const auto corner = world.snapshot("player-bo", false, true);
+    expect(corner.fringe &&
+               corner.fringe->seen[std::size_t(bandIndex(corner.fringe->width, Side, Side, Side + 1, Side + 1))] == '2',
+           "and seen into");
+}
 } // namespace
 
 // Keeping to the roads (the user, 2026-10-12: NPCs use the roads, not overland the whole way). Two cells side by side,
@@ -1158,6 +1273,8 @@ int main()
         theBestWayOn();
         aSpotNoWayReaches();
         badSourcesAreRefused();
+        aWolfAlwaysStandsOnGround();
+        sightRunsOnAcrossSeams();
         aWalkKeepsToTheRoad();
     }
     catch (const std::exception& error)

@@ -6,6 +6,7 @@
 #include "RatwNames.h"
 #include "RatwWild.h"
 #include "RatwWorld.h"
+#include "RatwSight.h"
 
 #include <algorithm>
 #include <array>
@@ -1631,7 +1632,9 @@ battle::Senses World::noticeSenses(const Entity& oe, Vec2 op, double facing, con
     const double d = std::hypot(tp.x - op.x, tp.y - op.y);
     const double sneak = std::clamp(te.sneakSkill / 100, 0.0, 1.0);
     const auto env = environmentAt(cellId, op);
-    const bool seenLine = lineOfSight(cellId, op, tp);
+    // A body behind a trunk or in ferns is hidden, as ever, though the ground shows past them (RatwSight.h, bodySeen).
+    const double seenThrough = sight::bodySeen(sightClearance(cellId, op, tp));
+    const bool seenLine = seenThrough > 0;
     // Sight.
     const double off = d < 1e-9 ? 0 : std::abs(std::remainder(std::atan2(tp.y - op.y, tp.x - op.x) - facing, 2 * std::acos(-1.0)));
     const double field = off <= 1.05 ? 1 : off <= 2.1 ? .5 : 0;
@@ -1648,7 +1651,7 @@ battle::Senses World::noticeSenses(const Entity& oe, Vec2 op, double facing, con
                 if (const auto* n = c->tile(tx + dx, ty + dy); n && (dx || dy) && screenGlyph(n->glyph) && dx * (op.x - tp.x) + dy * (op.y - tp.y) > 0)
                     covered = true;                 // A tree or boulder between them.
         const double cover = covered ? (stalking ? battle::CoverStalking : battle::CoverStanding) : 1;
-        out.sight = fade(d, range) * field * cover * (1 - .3 * sneak);
+        out.sight = fade(d, range) * field * cover * (1 - .3 * sneak) * seenThrough;
     }
     // Noise: still is silent; a stalk is a crouch's pawsteps, a walk quiet, a trot carries, a sprint carries far.
     if (moving)

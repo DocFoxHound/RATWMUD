@@ -2110,11 +2110,12 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
         player = saved->second;
         // Back where it left: that place may have been let go while nobody was near it (a streamed world unloads
         // cells two game minutes after the last wolf leaves; doc 20), so it is loaded again first, or, if it can't
-        // be, the wolf wakes at the spawn.
+        // be, the wolf wakes where addPlayer put it: the spawn, which a streamed world never lets go (World::stream).
         if (!world_.ensureLoaded(player.cellId).ok)
         {
             player.cellId = arrivedIn;
             player.position = arrivedAt;
+            world_.ensureLoaded(arrivedIn);
         }
         world_.returnFromAway(player);             // Down or resting while away (doc 38).
     }
@@ -3386,7 +3387,8 @@ void Game::sendSnapshot(Connection* c)
     root.add("senses", wire::senses(view));
     // The cell as rows of text, one character a tile: its glyph (a space where the wolf knows nothing, its memory of
     // it where it remembers), whether it is visible now ('2'), remembered ('1') or unknown ('0'), and its height (level
-    // ground where not seen now). Built again only when what the wolf sees or remembers, or the cell, has changed.
+    // ground where unknown; the ground's shape is remembered with it, so the map shades hills and dunes it has seen).
+    // Built again only when what the wolf sees or remembers, or the cell, has changed.
     auto& kept = batching_ ? cellRows_.find(c)->second : cellRows_[c];   // (Made beforehand when built in parallel.)
     const auto* source = view.source;
     if (!source || kept.cell != view.cell.id || kept.tiles != source->tiles.data() || kept.visible != view.visibleTiles ||
@@ -3410,7 +3412,7 @@ void Game::sendSnapshot(Connection* c)
                 const char memoryGlyph = view.memory && i < view.memory->glyphs.size() ? view.memory->glyphs[i] : ' ';
                 row += visible ? tiles[i].glyph : remembered ? (source ? memoryGlyph : tiles[i].glyph) : ' ';
                 seen += visible ? '2' : remembered ? '1' : '0';
-                height += visible ? wire::heightChar(tiles[i].height) : wire::heightChar(0);
+                height += visible || remembered ? wire::heightChar(tiles[i].height) : wire::heightChar(0);
             }
             rows.push(row);
             visibility.push(seen);
@@ -3428,6 +3430,44 @@ void Game::sendSnapshot(Connection* c)
     cell.add("heights", kept.heights);
     if (!c->clientSight)                           // (It works out what it sees itself: Phase 4.6.)
         root.add("visibility", kept.visibility);
+    // The ground round the cell, from the cells beside it (doc 70, "Sight across seams"), near an edge: in rows the
+    // same way, from the top (Fringe: the band's rows above and below whole, those beside the cell its two ends).
+    if (view.fringe && view.fringe->width > 0)
+    {
+        const auto& f = *view.fringe;
+        if (kept.fringe != view.fringe)            // (The world makes it again only when it changes.)
+        {
+            auto rows = Value::array(), visibility = Value::array(), heights = Value::array();
+            const int band = f.width, whole = view.cell.width + 2 * band;
+            std::size_t at = 0;
+            for (int y = -band; y < view.cell.height + band; ++y)
+            {
+                const auto length = std::size_t(y < 0 || y >= view.cell.height ? whole : 2 * band);
+                std::string height;
+                height.reserve(length);
+                for (std::size_t k = 0; k < length; ++k)
+                    height += wire::heightChar(f.heights[at + k]);
+                rows.push(std::string(f.glyphs.begin() + long(at), f.glyphs.begin() + long(at + length)));
+                visibility.push(std::string(f.seen.begin() + long(at), f.seen.begin() + long(at + length)));
+                heights.push(height);
+                at += length;
+            }
+            kept.fringe = view.fringe;
+            kept.fringeRows = rows;
+            kept.fringeVisibility = visibility;
+            kept.fringeHeights = heights;
+        }
+        cell.add("fringe", f.width);
+        cell.add("fringeRows", kept.fringeRows);
+        cell.add("fringeHeights", kept.fringeHeights);
+        if (!c->clientSight)
+            root.add("fringeVisibility", kept.fringeVisibility);
+    }
+    else if (kept.fringe)
+    {
+        kept.fringe.reset();                       // (Far from the edges again: none kept.)
+        kept.fringeRows = kept.fringeVisibility = kept.fringeHeights = Value();
+    }
     root.add("cell", cell);
     const auto near = [&](const Entity& e) {
         return std::hypot(e.position.x - view.self.position.x, e.position.y - view.self.position.y) <= 3;

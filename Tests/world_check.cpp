@@ -1,14 +1,16 @@
 // Loads a streamed world export (python3 tools/world_build.py export DIR writes DEV's newest build) the way the game
 // server does, then brings every cell into memory so the server's own checks run on all of it.
 //
-//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE]
+//   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic] [--events FILE]
 //                                                       [--threads N] [--economy FILE [--economy-detail FILE]] [--day N] [--sample] [--no-profile] [--no-births]
 //                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
 // --players N (default 1; 0 with --economy) adds walking players: the first at the spawn, the rest beside residents
-// spread over the world, each observed every tick and sent a view five times a second as the server does. --no-check
+// spread over the world, each observed every tick and sent a view five times a second as the server does (--at-seams:
+// the rest by the seams between outdoor cells instead, walking over them and back, for sight and the local map across
+// seams: Docs/Design/70-the-realm.md). --no-check
 // skips loading every place first (the check), which is slow and not needed to measure ticks. --deterministic does the
 // work by counts, never the clock (World::setDeterministic), so a run repeats exactly. --full turns the simulation tiers
 // off, simulating every NPC in full wherever it is (as before tiers), for comparison. --threads N (default 8; 1: the main
@@ -842,12 +844,15 @@ int main(int argc, char** argv)
     std::string loopFile;                           // --loop-state FILE: the self-correcting rules' drift (doc 68, Progress).
     std::string detailFile;                         // --economy-detail FILE: per business and household a day (with --economy).
     int startDay = 0;                               // --day N: start on day N of the year (1-365; 0: the world's own).
+    bool atSeams = false;                           // --at-seams: the players after the first by seams (doc 70).
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
         const std::string flag = argv[i];
         if (flag == "--players" && i + 1 < argc)
             playerCount = std::max(0, std::atoi(argv[++i]));
+        else if (flag == "--at-seams")
+            atSeams = true;
         else if (flag == "--sample")
             sample = true;
         else if (flag == "--no-profile")
@@ -891,7 +896,7 @@ int main(int argc, char** argv)
     }
     if (usage)
     {
-        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic]"
+        std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic]"
                      " [--events FILE] [--threads N] [--economy FILE [--economy-detail FILE]] [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
                      " [--unseen-step N] [--straight] [--coarse-ticks]]\n";
         return 2;
@@ -1046,6 +1051,32 @@ int main(int argc, char** argv)
                 me->cellId = beside->cellId;
                 me->position = beside->position;
             }
+    }
+    if (atSeams)
+    {
+        // Each player after the first a little way in from the east edge of an outdoor cell with another beyond it,
+        // taken evenly through them (the players walk east and west, over the seam and back).
+        std::vector<std::string> edges;
+        for (const auto& [id, c] : server.cells())
+            for (const auto& [other, d] : server.cells())
+                if (c.outdoors && d.outdoors && std::abs(d.worldX - (c.worldX + c.width)) < .5 && std::abs(d.worldY - c.worldY) < .5 &&
+                    std::abs(d.worldZ - c.worldZ) < .01)
+                    edges.push_back(id);
+        int placed = 0;
+        for (int p = 1; p < playerCount && !edges.empty(); ++p)
+        {
+            const auto& at = edges[std::size_t(p - 1) * edges.size() / std::size_t(playerCount - 1)];
+            if (!server.ensureLoaded(at).ok)
+                continue;
+            const auto* c = server.cell(at);
+            bool stood = false;
+            for (int r = 0; r < 40 && !stood; ++r)
+                for (int dy = -r; dy <= r && !stood; ++dy)
+                    stood = server.teleport(players[std::size_t(p)], at, c->width - 12.5, c->height / 2 + dy + .5).ok ||
+                            server.teleport(players[std::size_t(p)], at, c->width - 12.5 - r, c->height / 2 + dy + .5).ok;
+            placed += stood;
+        }
+        std::cout << "  " << placed << " players by seams (of " << edges.size() << " cells with one east of them)\n";
     }
     std::vector<double> views, motions;
     const auto npcs = [&] {

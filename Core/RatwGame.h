@@ -429,6 +429,8 @@ class Game
         const void* tiles = nullptr;
         std::vector<bool> visible, remembered;
         json::Value rows, visibility, heights;
+        std::shared_ptr<const Fringe> fringe;       // And the ground round the cell (doc 70), as rows the same way.
+        json::Value fringeRows, fringeVisibility, fringeHeights;
     };
     std::map<const Connection*, CellRows> cellRows_;
     // The worker pool, and whether the views due this tick are being built on it (they then only read the world).

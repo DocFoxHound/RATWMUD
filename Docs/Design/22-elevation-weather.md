@@ -34,6 +34,26 @@ Glyph defaults: `^` Stairs is +½. `:` Slope and `%` Cliff have no height of the
 
 Opaque tiles and closed doors still block sight as before. Heights are otherwise unchanged in hearing, where they already added to acoustic distance.
 
+**Cover that thins sight (2026-11-01, Docs/Design/70-the-realm.md, "Sight across seams").** What stands on a tile and
+rises above the line no longer always hides all behind it. Each tile has a `hides` in the catalog
+(`Data/Terrain/terrain.json`): how much of what lies beyond a tile's depth of it hides. A solid mass (a boulder, a log,
+a shelf, a crate: the default, 1) hides all as before; a tree's trunk hides part (pines 0.2, cedars and broadleaves
+0.25, willows 0.35, a dead tree 0.15, a cactus 0.2), and low cover a little (ferns 0.06, reeds 0.1, shrubs 0.15, a
+timber fence 0.4). The line adds up what it passes through, by how far it runs through each below its top, and is
+hidden once that reaches 1: a stand of five or six trees in a row, or some seventeen tiles of ferns. So a wolf in old
+forest sees the trunks and ferns round it and a fair way along a clearing; on a fern bank it sees across the bank.
+
+- **A wall is seen where its top shows.** An opaque tile stands 2.5 above its own ground as a thing to be seen
+  (`WallTop`), so a wall is seen though its foot is below the ground in front of it (Ridgemere's wall stands in a ditch
+  a step and a half below the road, and was never drawn).
+- **A body needs a clear line, as before.** The map shows the ground through thin cover, but a wolf (or game) at the
+  end of a line is made out only if nothing at all thinned it (`bodySeen`, used by `World::visionClarity`,
+  `World::noticeSenses` and the muffling in `World::hearingClarity`): a trunk or a fern between hides it, exactly as
+  the old rule did, so noticing, sneaking and hunting are unchanged (doc 40; `hunt_sim` gives the same hauls). A
+  first try that let ferns only dim a body cost the hunters a fifth of their kills.
+- `RatwSight.h`'s `clearance` gives how clear a line is (0 hidden, else 1 less what it passed through); `lineOfSight`
+  is `clearance > 0`. The browser runs the same code (`Client/wasm/walk.cpp`, a 20-byte tile with `hides`).
+
 ## Game client
 
 - **Relief:** each visible tile's floor is tinted by its height relative to the player's own tile. Higher ground is warmer and lighter; lower ground is darker. A hillshade lit from the north-west is taken from the neighbouring tiles. Glyphs above the wolf lift up to 2 px, and glyphs below it sink by the same.

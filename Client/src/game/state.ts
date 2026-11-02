@@ -7,7 +7,8 @@ import {heightFromChar, type EnvironmentView, type ScentCue} from './labels.ts';
 import {MotionBuffer} from './motionBuffer.ts';
 import {contains, rect, type Rect} from '../ui/painter.ts';
 import {FarAway, type MotionFrame} from '../net/motion.ts';
-import type {DoorState, Walker} from './walker.ts';
+import type {DoorState, FringeGround, Walker} from './walker.ts';
+import {bandFits, bandSpot} from './fringe.ts';
 import {placeAt, apart, arenaRows, arenaSight, fighterAt, myTurn, octant, readBattle, stepToward, readChallenge, readFights, readGround, type BattleLine, type BattleView,
     type ChallengeView, type FightSquare, type GroundView, type GearView, type GiftOption, type Tile} from './battle.ts';
 import {FightEffects} from './fightFx.ts';
@@ -236,7 +237,15 @@ export class GameState {
     tileRows: string[] = [];
     visibilityRows: string[] = [];
     tileHeights: Float32Array = new Float32Array(0);
-    private sources: {rows: unknown; visibility: unknown; heights: unknown} = {rows: null, visibility: null, heights: null};
+    // The ground round the cell, from the cells beside it (Docs/Design/70, "Sight across seams"; fringe.ts): how wide
+    // a band (0: none, indoors or far from every edge), its rows of glyphs, what the wolf sees of them ('2' in sight,
+    // '1' remembered, '0' unknown, as visibilityRows) and their heights, a row at a time.
+    fringe = 0;
+    fringeRows: string[] = [];
+    fringeVisibility: string[] = [];
+    fringeHeights: Float32Array[] = [];
+    private sources: {rows: unknown; visibility: unknown; heights: unknown; fringe: unknown; fringeSeen: unknown; fringeHeights: unknown} =
+        {rows: null, visibility: null, heights: null, fringe: null, fringeSeen: null, fringeHeights: null};
     environment = defaultEnvironment();
     chat = false;
     worldMap = false;
@@ -475,10 +484,45 @@ export class GameState {
                 for (let x = 0; x < Math.min(row.length, this.cellWidth); ++x) this.tileHeights[y * this.cellWidth + x] = heightFromChar(row[x]);
             }
         }
+        // The ground round the cell (doc 70), near an edge: kept as the same arrays while unchanged, like the rows.
+        const band = Math.trunc(num(cell, 'fringe', 0));
+        const fringeSource = arr(cell, 'fringeRows'), fringeHeights = arr(cell, 'fringeHeights');
+        const fringeRows = strings(fringeSource);
+        if (band <= 0 || !bandFits(band, this.cellWidth, this.cellHeight, fringeRows)) {
+            if (this.fringe) {
+                ++this.cellVersion;
+                this.fringe = 0;
+                this.fringeRows = [];
+                this.fringeVisibility = [];
+                this.fringeHeights = [];
+                this.sources.fringe = this.sources.fringeSeen = this.sources.fringeHeights = null;
+            }
+        } else {
+            if (fringeSource !== this.sources.fringe || band !== this.fringe) {
+                this.sources.fringe = fringeSource;
+                this.fringe = band;
+                this.fringeRows = fringeRows;
+                ++this.cellVersion;
+            }
+            if (fringeHeights !== this.sources.fringeHeights || this.fringeHeights.length !== fringeRows.length) {
+                this.sources.fringeHeights = fringeHeights;
+                this.fringeHeights = fringeRows.map((row, r) => {
+                    const text = typeof fringeHeights[r] === 'string' ? fringeHeights[r] as string : '';
+                    return Float32Array.from({length: row.length}, (_, c) => heightFromChar(text[c] ?? ''));
+                });
+                ++this.cellVersion;
+            }
+            const fringeSeen = arr(s, 'fringeVisibility');
+            if (!this.clientSight && fringeSeen !== this.sources.fringeSeen) {
+                this.sources.fringeSeen = fringeSeen;
+                this.fringeVisibility = strings(fringeSeen);
+            } else if (this.clientSight && this.fringeVisibility.length !== fringeRows.length)
+                this.fringeVisibility = fringeRows.map(row => row.replace(/[^ ]/g, '1').replace(/ /g, '0'));
+        }
         if (!this.tileRows.length && objects(cell, 'tiles').length) {
             // Tiles sent one by one, as objects.
             this.tileHeights = new Float32Array(this.cellWidth * this.cellHeight);
-            this.sources = {rows: null, visibility: null, heights: null};
+            this.sources = {rows: null, visibility: null, heights: null, fringe: null, fringeSeen: null, fringeHeights: null};
             const rows = Array.from({length: this.cellHeight}, () => Array(this.cellWidth).fill(' '));
             const seen = Array.from({length: this.cellHeight}, () => Array(this.cellWidth).fill('0'));
             for (const t of objects(cell, 'tiles')) {
@@ -1292,17 +1336,28 @@ export class GameState {
         this.sightKey = key;
         this.ensureWalkerCell();
         const seen = this.walker.sight(x, y, range);
+        // The walker's grid is the cell with its fringe round it (doc 70): the cell's (0, 0) at (band, band).
+        const band = this.walker.band, gridWidth = this.cellWidth + 2 * band;
+        const shade = (glyph: string, gx: number, gy: number) => glyph === ' ' ? '0' : seen[gy * gridWidth + gx] ? '2' : '1';
         const rows: string[] = [];
         for (let ty = 0; ty < this.cellHeight; ++ty) {
             const glyphs = this.tileRows[ty] ?? '';
             let row = '';
-            for (let tx = 0; tx < this.cellWidth; ++tx) {
-                const known = (glyphs[tx] ?? ' ') !== ' ';
-                row += !known ? '0' : seen[ty * this.cellWidth + tx] ? '2' : '1';
-            }
+            for (let tx = 0; tx < this.cellWidth; ++tx) row += shade(glyphs[tx] ?? ' ', tx + band, ty + band);
             rows.push(row);
         }
         this.visibilityRows = rows;
+        if (band && band === this.fringe)
+            this.fringeVisibility = this.fringeRows.map((glyphs, r) => {
+                // A band row: whole above and below the cell, else its two ends.
+                const y = r - band, whole = r < band || r >= band + this.cellHeight;
+                let row = '';
+                for (let c = 0; c < glyphs.length; ++c) {
+                    const x = whole ? c - band : c < band ? c - band : this.cellWidth + c - band;
+                    row += shade(glyphs[c], x + band, y + band);
+                }
+                return row;
+            });
     }
 
     // ------------------------------------------------------------------ Walking freely
@@ -1421,7 +1476,8 @@ export class GameState {
         const blocked = objects(this.snapshot, 'structures').filter(st => bool(st, 'blocks')).map(st => `${num(st, 'x')},${num(st, 'y')}`);
         const key = blocked.join(';');
         if (this.walkerVersion === this.cellVersion && this.walkerBlocked === key) return;
-        this.walker.setCell(this.cellWidth, this.cellHeight, this.tileRows, this.tileHeights, this.doorStates, new Set(blocked));
+        const fringe: FringeGround | null = this.fringe ? {band: this.fringe, rows: this.fringeRows, heights: this.fringeHeights} : null;
+        this.walker.setCell(this.cellWidth, this.cellHeight, this.tileRows, this.tileHeights, this.doorStates, new Set(blocked), fringe);
         this.walkerVersion = this.cellVersion;
         this.walkerBlocked = key;
     }
@@ -2077,7 +2133,9 @@ export class GameState {
             this.contextTarget = '';
             if (this.chat) this.setChat(false);
             const wx = (point[0] - this.mapOrigin[0]) / this.tileSize, wy = (point[1] - this.mapOrigin[1]) / this.tileSize;
-            if (wx < 0 || wy < 0 || wx >= this.cellWidth || wy >= this.cellHeight) return 'map';
+            // Past the edge, on the ground round the cell (doc 70): the server heads for the seam there.
+            const extent = this.battle ? {x0: 0, y0: 0, x1: this.cellWidth - 1, y1: this.cellHeight - 1} : this.groundExtent();
+            if (wx < extent.x0 || wy < extent.y0 || wx >= extent.x1 + 1 || wy >= extent.y1 + 1) return 'map';
             if (this.battle) {
                 this.arenaClick(Math.floor(wx), Math.floor(wy));
                 return 'map';
@@ -2419,8 +2477,36 @@ export class GameState {
         this.contextTarget = '';
     }
 
+    /** The tiles the local map can show: the cell, and the ground round it when there is some (doc 70). */
+    groundExtent(): {x0: number; y0: number; x1: number; y1: number} {
+        const band = this.fringe;
+        return {x0: -band, y0: -band, x1: this.cellWidth + band - 1, y1: this.cellHeight + band - 1};
+    }
+
+    private inCell(x: number, y: number): boolean {
+        return x >= 0 && y >= 0 && x < this.cellWidth && y < this.cellHeight;
+    }
+
+    /** The tile's code at (x, y), in the cell or the ground round it: ' ' where nothing is known. */
+    glyphAt(x: number, y: number): string {
+        if (this.inCell(x, y)) return this.tileRows[y]?.[x] ?? ' ';
+        const at = bandSpot(this.fringe, this.cellWidth, this.cellHeight, x, y);
+        return at ? this.fringeRows[at[0]]?.[at[1]] ?? ' ' : ' ';
+    }
+
+    /** Whether the wolf sees the tile now ('2'), remembers it ('1') or knows nothing of it ('0'). */
+    seenAt(x: number, y: number): string {
+        if (this.inCell(x, y)) return this.visibilityRows[y]?.[x] ?? '2';
+        const at = bandSpot(this.fringe, this.cellWidth, this.cellHeight, x, y);
+        return at ? this.fringeVisibility[at[0]]?.[at[1]] ?? '0' : '0';
+    }
+
     heightAt(x: number, y: number): number {
-        // Edges repeat their neighbour, so the rim of the cell never shades as a false slope.
+        // Edges repeat their neighbour, so the rim of what is known never shades as a false slope.
+        if (!this.inCell(x, y)) {
+            const at = bandSpot(this.fringe, this.cellWidth, this.cellHeight, x, y);
+            if (at && (this.fringeRows[at[0]]?.[at[1]] ?? ' ') !== ' ') return this.fringeHeights[at[0]]?.[at[1]] ?? 0;
+        }
         x = clamp(x, 0, this.cellWidth - 1);
         y = clamp(y, 0, this.cellHeight - 1);
         return this.tileHeights[y * this.cellWidth + x] ?? 0;
