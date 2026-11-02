@@ -244,9 +244,9 @@ SITES = [
     ('saltwell', 'town', 'Saltwell', (3310, 2930), 140, 60, 'town', 'the oasis town of the Red Waste, by its spring pool, on the way to the Saltpan'),
     # Doc 71's food producers.
     ('grain_long', 'farmland', 'the Long River grain', (1760, 2330), 260, 182, 'grain farm 1 (large, with a water mill)', 'grain land on the Long River between Glasswater and Larkfield, in several fields'),
-    ('mill_long', 'mill', 'the Long River mill race', 'grain_long', 240, 12, 'grain farm 1\'s water mill', 'a bank of the Long River for a water mill'),
+    ('mill_long', 'mill', 'the Long River mill race', 'grain_long', 330, 12, 'grain farm 1\'s water mill', 'a bank of the Long River for a water mill'),
     ('grain_lark', 'farmland', 'the Lark grain', (2150, 2800), 300, 182, 'grain farm 2 (large, with a water mill)', 'grain land along the Lark in the warm middle country, in several fields'),
-    ('mill_lark', 'mill', 'the Lark mill race', 'grain_lark', 260, 12, 'grain farm 2\'s water mill', 'a bank of the Lark for a water mill'),
+    ('mill_lark', 'mill', 'the Lark mill race', 'grain_lark', 340, 12, 'grain farm 2\'s water mill', 'a bank of the Lark for a water mill'),
     ('orchard_greenholt', 'orchard', 'the Greenholt orchard', (1550, 1550), 260, 78, 'orchard (central hills) 1', 'apples and pears on the Greenholt\'s swells'),
     ('orchard_coldwater', 'orchard', 'the Upper Mere orchard', (2180, 1700), 260, 78, 'orchard (central hills) 2', 'apples on the slopes above the Upper Mere'),
     ('orchard_larkfield', 'orchard', 'the Larkfield orchard', (1900, 2650), 260, 78, 'orchard (central hills) 3', 'plums and apples south of the Long River'),
@@ -322,6 +322,10 @@ GROUND_OF = {
 }
 CLEARABLE = [ord(c) for c in '$PY1Bo7?@2']
 LEVELLED = {'town', 'mine', 'quarry', 'clay', 'salt', 'timber', 'fishing', 'mill', 'pigfarm', 'charcoal', 'saltcoast'}
+# What is grown on soil (a farm's grain, an orchard's trees, vines, a dairy's hay) and the bare ground it can't be:
+# the site is placed off it where it can be, and what is left of it inside is given back as the country's grass.
+GROWN = {'farmland', 'orchard', 'vineyard', 'dairy'}
+BARE = '(0X)rs'                         # (sandstone, sand, rubble, salt flat, bare rock, scree)
 # The roads (name, from, to, width): from the city's gates to the towns, and between them.
 ROADS = [
     ('The Pass Road', 'N', 'frosthollow', 3),
@@ -446,6 +450,7 @@ class Realm2:
         self.keep = z(bool)          # tiles left exactly as they are (code and height): the city's built things
         self.hold = z(bool)          # tiles whose height is held (the keep and a margin round it)
         self.locked = z(bool)        # tiles nothing later may repaint (the keep, roads, sites)
+        self.ground_of = z(np.int16) # each site's own ground: its place in self.sites, from 1 (0 none's)
         self.sites = []
         self.roads = {}
         self.features = []
@@ -1429,7 +1434,8 @@ class Realm2:
         gy, gx = np.gradient(hc)
         slope = np.hypot(gx, gy) / G
         heldc = down(self.hold.astype(np.float32), G, 'max') > 0
-        self.taken = np.zeros((NG, NG), dtype=bool)
+        bare_c = down(np.isin(self.codes, [ord(c) for c in BARE]).astype(np.float32), G)
+        self.taken = np.zeros((NG, NG), dtype=bool)       # (the nodes the sites' preparing reached)
         biome_c = {k: down(v.astype(np.float32), G) for k, v in self.biomes.items()}
         forest = biome_c['rainforest'] + biome_c['montane'] + biome_c['woodland']
         mount_c = down(self.mountain, G)
@@ -1459,10 +1465,14 @@ class Realm2:
             if kind == 'town':
                 shore = blur(wc, (size + 24) // G) > (.03 if key in SHORE_TOWNS else .012)
                 score = score + np.where(shore, 0, 30 if key in SHORE_TOWNS else 4)
+            if kind in GROWN:                           # (grown on soil, not the desert edge's sand and red rock)
+                score = score + blur(bare_c, max(1, r // 2)) * 30
             d = np.hypot(xs - tx, ys - ty)
             score = score + d / max(search, 1) * 6
             wet = wc > (.5 if kind in ('fishing', 'clay', 'salt', 'mill', 'saltcoast', 'marsh') else .02)
-            crowd = blur(self.taken.astype(np.float32), max(1, r // 2)) > .01 if kind != 'mill' else self.taken
+            # All the ground its preparing may reach clear of what the sites before it reached, not only its middle (a
+            # grain farm laid over Larkfield drew its hedges across the town's level core): no tile prepared twice.
+            crowd = spread(self.taken, site_kernel(kind, size))
             score[(d > search) | heldc | crowd | wet] = np.inf
             if kind == 'salt':
                 score[down(self.pan.astype(np.float32), G) < .2] = np.inf
@@ -1473,13 +1483,11 @@ class Realm2:
             cy, cx = divmod(j, NG)
             x, y = cx * G + G // 2, cy * G + G // 2
             if kind == 'fishing':
-                x, y = self.landing(x, y, size)
+                x, y = self.landing(x, y, size, clear=~crowd)
             elif kind == 'mill':
-                x, y = self.landing(x, y, size + 60, self.river & (self.river_w >= 3))
+                x, y = self.landing(x, y, size + 60, self.river & (self.river_w >= 3), clear=~crowd)
             elif kind == 'saltcoast':
-                x, y = self.landing(x, y, size, self.sea)
-            rr = r + 2
-            self.taken[max(0, cy - rr):cy + rr + 1, max(0, cx - rr):cx + rr + 1] = True
+                x, y = self.landing(x, y, size, self.sea, clear=~crowd)
             site = {'id': key, 'kind': kind, 'name': name, 'x': int(x), 'y': int(y), 'size': size, 'for': plan,
                     'about': about}
             self.prepare(site)
@@ -1487,12 +1495,16 @@ class Realm2:
             placed[key] = site
         self.t('sites', t0)
 
-    def landing(self, x, y, size, water=None):
-        """A fishing site (or a mill, or salterns) sits on the shore: the dry tile nearest the water near (x, y)."""
+    def landing(self, x, y, size, water=None, clear=None):
+        """A fishing site (or a mill, or salterns) sits on the shore: the dry tile nearest the water near (x, y), on a
+        node `clear` allows (where the site's ground would reach no other site's)."""
         R = size + 40
         x0, y0 = max(0, x - R), max(0, y - R)
         sub = (self.water if water is None else water)[y0:y + R, x0:x + R]
         dry = ~sub & ~self.hold[y0:y + R, x0:x + R]
+        if clear is not None:
+            yy, xx = np.mgrid[y0:y0 + sub.shape[0], x0:x0 + sub.shape[1]]
+            dry &= clear[yy // G, xx // G]
         shore = dry & (dist_to(sub, 3) <= 2)
         ys, xs = np.nonzero(shore)
         if not len(xs):
@@ -1512,13 +1524,22 @@ class Realm2:
         else:
             shape = np.hypot((X - x) / size, (Y - y) / (size * (.75 if kind in FIELDS else 1))) + (n - .5) * .35
         area = (shape < 1) & ~self.water[y0:y1, x0:x1] & ~self.hold[y0:y1, x0:x1]
+        # Its own ground (lay_sites keeps what each site's preparing may reach off the others', so none is another's
+        # already), and the nodes all it may change touches, for the sites after it.
+        held = self.ground_of[y0:y1, x0:x1]
+        site['shared'] = int((area & (held > 0)).sum())
+        held[area & (held == 0)] = len(self.sites) + 1
+        gx0, gy0, gx1, gy1 = x0 // G, y0 // G, -(-x1 // G), -(-y1 // G)
+        reached = np.zeros(((gy1 - gy0) * G, (gx1 - gx0) * G), dtype=bool)
+        reached[y0 - gy0 * G:y1 - gy0 * G, x0 - gx0 * G:x1 - gx0 * G] = shape < site_edge(kind, size)[0]
+        self.taken[gy0:gy1, gx0:gx1] |= down(reached, G, 'max')
         hv = self.h[y0:y1, x0:x1]
         cv = self.codes[y0:y1, x0:x1]
         if kind in UNCLEARED:
             if kind == 'woodpasture':                   # (pannage: the trees stay, the undergrowth is grazed off)
                 under = (shape < 1) & np.isin(self.codes[y0:y1, x0:x1], [ord('&'), ord('B'), ord('7')]) & ~self.keep[y0:y1, x0:x1]
                 self.codes[y0:y1, x0:x1][under] = ord(',')
-            site['tiles'] = int(((shape < 1) & ~self.water[y0:y1, x0:x1] & ~self.hold[y0:y1, x0:x1]).sum())
+            site['tiles'] = int((held == len(self.sites) + 1).sum())
             return
         if kind in LEVELLED:
             level = float(half(np.median(hv[area]))) if area.any() else float(hv[y - y0, x - x0])
@@ -1546,14 +1567,16 @@ class Realm2:
         else:
             # A town's ground, a field's, a range's: the trees, scrub and boulders cleared off, the country's own grass
             # left (dry grass in the dry country), thinning out over the edge rather than stopping at a line.
+            # What is grown on soil gets soil back where the dry country left bare sand or rock.
             wet = self.wet[y0:y1, x0:x1]
             keep_trees = .22 if kind == 'pasture' else .1 if kind in ('dairy', 'orchard') else 0
-            clear = free & np.isin(cv, CLEARABLE) & (pick < (1 - smooth(.8, 1.12, shape) * .9) * (1 - keep_trees))
+            clearable = CLEARABLE + [ord(c) for c in BARE] if kind in GROWN else CLEARABLE
+            clear = free & np.isin(cv, clearable) & (pick < (1 - smooth(.8, 1.12, shape) * .9) * (1 - keep_trees))
             local = np.where(wet < .34, ord(';'), np.where(pick < .7, ord(','), ord('"'))).astype(np.uint8)
             cv[clear] = local[clear]
             if kind == 'farmland':
                 self.fields(site, np.s_[y0:y1, x0:x1], free & (shape < .97))
-        site['tiles'] = int(area.sum())
+        site['tiles'] = int((held == len(self.sites) + 1).sum())
         self.locked[y0:y1, x0:x1] |= area & (shape < .6) & (kind == 'town')
 
     def fields(self, site, win, inside, n=9):
@@ -2003,6 +2026,18 @@ class Realm2:
         check('every reserved site is reached from the city', not missing, ', '.join(missing))
         towns = [s for s in self.sites if s['kind'] == 'town']
         check('5-7 town sites', 5 <= len(towns) <= 7, str(len(towns)))
+        shared = [f'{s["id"]} {s["shared"]}' for s in self.sites if s.get('shared')]
+        check('no site laid over another\'s ground', not shared, ', '.join(shared[:10]))
+        bare = [ord(c) for c in BARE]
+        poor = []
+        for i, s in enumerate(self.sites, 1):
+            if s['kind'] in GROWN:
+                k = int(s['size'] * 1.6) + 40          # (prepare's window)
+                box = np.s_[max(0, s['y'] - k):s['y'] + k, max(0, s['x'] - k):s['x'] + k]
+                share = float(np.isin(self.codes[box][self.ground_of[box] == i], bare).mean())
+                if share > .05:
+                    poor.append(f'{s["id"]} {share:.0%}')
+        check('the farms, orchards, vineyards and dairies on soil, not bare sand or rock', not poor, ', '.join(poor))
         # Every region walked into: each new cell with open land has most of it reached.
         poor = []
         for c in cells:
@@ -2339,6 +2374,36 @@ def drop_small(mask, n):
     ids, counts = np.unique(lab[mask], return_counts=True)
     big = ids[counts >= n]
     return np.isin(lab, big) & mask
+
+
+def site_edge(kind, size):
+    """How far out (in prepare's shape, 1 its edge) a site's preparing changes the ground: its fields or yards to 1,
+    and its heights eased into the land round it (a works' or a town's level over half its size more, a field's a
+    tenth); and how far its shape's noise can push that out."""
+    edge = 1 if kind in UNCLEARED else 1 + max(8, size * .5) / size if kind in LEVELLED else 1.1
+    return edge, .06 if kind == 'farmland' else .175
+
+
+def site_kernel(kind, size):
+    """The nodes round a site's middle its preparing may reach (site_edge, at the most its noise pushes it), a node and
+    a half more for where in its node it stands: centred, (2n + 1) square."""
+    edge, noise = site_edge(kind, size)
+    a = size * (edge + noise) / G + 1.5
+    b = size * (.75 if kind in FIELDS and kind != 'farmland' else 1) * (edge + noise) / G + 1.5
+    n = int(np.ceil(max(a, b)))
+    v, u = np.mgrid[-n:n + 1, -n:n + 1].astype(np.float32)
+    if kind == 'farmland':
+        return (np.abs(u) ** 6 + np.abs(v) ** 6) ** (1 / 6) <= a
+    return (u / a) ** 2 + (v / b) ** 2 <= 1
+
+
+def spread(mask, kernel):
+    """Whether any set node of `mask` lies under `kernel` (odd-sized, symmetric) centred on each node: a dilation."""
+    kh, kw = kernel.shape
+    h, w = mask.shape
+    shape = (h + kh - 1, w + kw - 1)
+    f = np.fft.irfft2(np.fft.rfft2(mask.astype(np.float32), shape) * np.fft.rfft2(kernel.astype(np.float32), shape), shape)
+    return f[kh // 2:kh // 2 + h, kw // 2:kw // 2 + w] > .5
 
 
 # ---------------------------------------------------------------------------------------------------------------

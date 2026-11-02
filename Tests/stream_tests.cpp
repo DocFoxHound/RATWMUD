@@ -1159,6 +1159,52 @@ void sightRunsOnAcrossSeams()
                corner.fringe->seen[std::size_t(bandIndex(corner.fringe->width, Side, Side, Side + 1, Side + 1))] == '2',
            "and seen into");
 }
+
+// The World Map's picture of a place beside the wolf's (its whole ground, which goes whole whenever it changes: 64 KB
+// and more for a realm cell, and the browser keeps every version) stays as it was while the wolf walks by the seam,
+// the band carrying what it sees there, as row edits; in another place, the map has all it saw (the review, doc 70).
+void theMapKeepsAPlaceBesideAsItWas()
+{
+    auto f = grid("");
+    auto world = load(f);
+    world.setTimeOfDay(12);
+    auto& ada = world.addPlayer("player-ada", "Ada", "c_0_0", {Side - 1.5, 1.5});
+    ada.vision = .2;                                // (Short sight: each step shows more of the place beside.)
+    world.tick(.1);                                 // (The cells beside it load.)
+    const auto pictureOf = [](const Snapshot& view, const std::string& id) {
+        for (const auto& m : view.worldMap)
+            if (m.id == id)
+                return m.rememberedGlyphs;
+        return std::vector<char>{};
+    };
+    const auto remembered = [&] {
+        const auto& m = world.memories("player-ada").at("c_1_0");
+        return std::size_t(std::count(m.observed.begin(), m.observed.end(), true));
+    };
+    const auto shown = pictureOf(world.snapshot("player-ada", false, true), "c_1_0");
+    const auto atFirst = remembered();
+    std::set<std::vector<char>> pictures;
+    Snapshot last;
+    for (int y = 2; y < Side - 1; ++y)
+    {
+        ada.position = {Side - 1.5, y + .5};
+        last = world.snapshot("player-ada", false, true);
+        pictures.insert(pictureOf(last, "c_1_0"));
+    }
+    expect(atFirst > 0 && remembered() > atFirst, "Walking by the seam, the wolf remembers more and more of the place beside");
+    expect(pictures.size() == 1 && *pictures.begin() == shown, "but the World Map's picture of it stays as it was");
+    expect(last.fringe && last.fringe->seen[std::size_t(bandIndex(last.fringe->width, Side, Side, Side + 1, Side - 2))] == '2',
+           "while the band round its own place carries what it sees there");
+    // Across the south seam into c_0_1: the map's picture of c_1_0 has all the wolf saw of it.
+    const auto seen = remembered();
+    world.moveTo("player-ada", Side - 1.5, Side + .15);
+    for (int i = 0; i < 100 && ada.cellId == "c_0_0"; ++i)
+        world.tick(.1);
+    expect(ada.cellId == "c_0_1", "Ada walks into c_0_1");
+    const auto after = pictureOf(world.snapshot("player-ada", false, true), "c_1_0");
+    expect(std::size_t(std::count_if(after.begin(), after.end(), [](char g) { return g != ' '; })) >= seen,
+           "In another place, the World Map has all it saw of the one it walked by");
+}
 } // namespace
 
 // Keeping to the roads (the user, 2026-10-12: NPCs use the roads, not overland the whole way). Two cells side by side,
@@ -1275,6 +1321,7 @@ int main()
         badSourcesAreRefused();
         aWolfAlwaysStandsOnGround();
         sightRunsOnAcrossSeams();
+        theMapKeepsAPlaceBesideAsItWas();
         aWalkKeepsToTheRoad();
     }
     catch (const std::exception& error)

@@ -65,7 +65,8 @@ export function placesOf(snapshot: Json | null): Place[] {
 
 export class MapRenderer {
     private pictures = new Map<string, {key: string; surface: Surface}>();
-    private current: {rows: unknown; visibility: unknown; surface: Surface | null; at: number} = {rows: null, visibility: null, surface: null, at: -1};
+    private current: {rows: unknown; visibility: unknown; fringe: unknown; surface: Surface | null; at: number} =
+        {rows: null, visibility: null, fringe: null, surface: null, at: -1};
     private surfaces: SurfaceFactory;
 
     constructor(surfaces: SurfaceFactory) {
@@ -95,31 +96,41 @@ export class MapRenderer {
         return surface;
     }
 
-    /** The wolf's own place, from its rows: what it sees bright, what it remembers dim. Remade at most twice a second. */
+    /**
+     * The wolf's own place, from its rows, with the ground round it past a seam when it has some (the band: doc 70),
+     * `band` tiles each way: what it sees bright, what it remembers dim. Remade at most twice a second.
+     */
     private currentPicture(s: GameState, clock: number): Surface | null {
         const k = this.current;
-        if (k.surface && k.rows === s.tileRows && (k.visibility === s.visibilityRows || clock - k.at < 0.5)) return k.surface;
-        const w = s.cellWidth, h = s.cellHeight;
+        if (k.surface && k.rows === s.tileRows && k.fringe === s.fringeRows && (k.visibility === s.visibilityRows || clock - k.at < 0.5))
+            return k.surface;
+        const band = s.fringe, w = s.cellWidth + 2 * band, h = s.cellHeight + 2 * band;
         if (!k.surface || k.surface.canvas.width !== w || k.surface.canvas.height !== h) k.surface = this.surfaces(w, h);
         if (!k.surface) return null;
         const image = k.surface.ctx.createImageData(w, h);
-        for (let y = 0; y < h; ++y) {
+        const put = (glyph: string, v: string, px: number, py: number) => {
+            if (v === '0') return;
+            const c = colourOf(glyph);
+            if (!c) return;
+            const f = v === '2' ? 1 : 0.55, i = (py * w + px) * 4;
+            image.data[i] = Math.round(c[0] * f);
+            image.data[i + 1] = Math.round(c[1] * f);
+            image.data[i + 2] = Math.round(c[2] * f);
+            image.data[i + 3] = 255;
+        };
+        for (let y = 0; y < s.cellHeight; ++y) {
             const row = s.tileRows[y] ?? '', seen = s.visibilityRows[y] ?? '';
-            for (let x = 0; x < w; ++x) {
-                const v = seen[x] ?? '2';
-                if (v === '0') continue;
-                const c = colourOf(row[x] ?? ' ');
-                if (!c) continue;
-                const f = v === '2' ? 1 : 0.55, i = (y * w + x) * 4;
-                image.data[i] = Math.round(c[0] * f);
-                image.data[i + 1] = Math.round(c[1] * f);
-                image.data[i + 2] = Math.round(c[2] * f);
-                image.data[i + 3] = 255;
-            }
+            for (let x = 0; x < s.cellWidth; ++x) put(row[x] ?? ' ', seen[x] ?? '2', x + band, y + band);
         }
+        // The band's rows (fringe.ts): whole above and below the cell, else its two ends.
+        s.fringeRows.forEach((glyphs, r) => {
+            const seen = s.fringeVisibility[r] ?? '', whole = r < band || r >= band + s.cellHeight;
+            for (let c = 0; c < glyphs.length; ++c) put(glyphs[c], seen[c] ?? '0', whole || c < band ? c : s.cellWidth + c, r);
+        });
         k.surface.ctx.putImageData(image, 0, 0);
         k.rows = s.tileRows;
         k.visibility = s.visibilityRows;
+        k.fringe = s.fringeRows;
         k.at = clock;
         return k.surface;
     }
@@ -148,12 +159,14 @@ export class MapRenderer {
         c.fillStyle = '#0b1213';
         c.fillRect(box.x, box.y, box.w, box.h);
         c.imageSmoothingEnabled = scale < 1;
-        // Remembered places first, then the wolf's own on top.
-        for (const p of places) {
+        // Remembered places first, then the wolf's own on top: with the ground round it past a seam (the band), which
+        // carries what it sees in the places beside while it is near them (their own pictures are kept as they were).
+        for (const p of [...places.filter(p => !p.current), ...places.filter(p => p.current)]) {
             const x = toX(p.x), y = toY(p.y), w = p.width * scale, h = p.height * scale;
             if (x > box.x + box.w || y > box.y + box.h || x + w < box.x || y + h < box.y) continue;
             const picture = p.current ? this.currentPicture(s, s.clock) : this.picture(p);
-            if (picture) c.drawImage(picture.canvas, x, y, w, h);
+            const band = p.current && picture ? s.fringe * scale : 0;
+            if (picture) c.drawImage(picture.canvas, x - band, y - band, w + 2 * band, h + 2 * band);
             else {
                 c.fillStyle = p.current ? 'rgba(168,194,166,0.18)' : 'rgba(139,155,145,0.12)';
                 c.fillRect(x, y, w, h);

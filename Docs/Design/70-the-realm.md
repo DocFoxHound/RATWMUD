@@ -701,6 +701,82 @@ barcode of `¦`; massed sandstone (`▰`) in the Ochre Hills reads as diagonal h
 evenly with wildflowers; the Whitefangs above Frosthollow are mostly tundra rings (`∘`) with a band of snow, little
 rock; light rain still falls at the Ochre Hills' northern edge, where the dryness blends with the green country.
 
+### The review's fixes (2026-11-01, branch `r2-map-fix`)
+
+A review of the branch as written found six faults (two of them one fault seen from each end of the wire); the user
+approved fixing them all. **Not yet written into DEV**: DEV still holds revision 69's sites (the farms over Larkfield,
+the vineyard on desert). A write (`python3 -m worldgen.realm2 write --world dev`, which backs up first) puts this
+layout in.
+
+1. **Pawsteps behind thin cover were heard as in the open.** `World::movementAudibility` (the "you hear pawsteps"
+   notice, `movementHeard`) and a yell through a doorway or over a seam (`World::hearingClarity`) still asked
+   `lineOfSight`, which since the cover change is any line not wholly hidden: a wolf walking five tiles off behind one
+   pine was heard plainly, where before it was not heard at all, and a novice sneaker in ferns three tiles off at 0.8.
+   Both now muffle by `bodySeen`, as sight, noticing and the voice in a cell do (doc 22, "Cover that thins sight").
+2. **The World Map's places beside the wolf's went whole at every step.** What the wolf glimpses past a seam changes
+   the place beside's memory on nearly every tile walked by the seam, and its World Map entry is its whole picture
+   (65,536 glyphs for a realm cell; the entries are keyed by their whole content and never sent as row edits): about
+   64 KB a step, three at a corner, every version kept by the browser (up to 4,096 of them). Now each player's map keeps
+   a place beside as it was while the band round its own carries it (`World::mapHeld_`, within 96 tiles of it:
+   `inBand`); the band already brings what it sees there, as row edits, and the minimap and the World Map draw the band
+   round the wolf's own place, over the places beside. Once the wolf moves away from that place, or into another, the
+   map has it afresh. The review's probe (a wolf walking 200 tiles by a 256-tile cell's seam, 10 tiles in): 3 whole
+   entries in all, at the first look, and none after.
+3. **The weather stopped in a straight line at the cell's edge.** Rain, snow, fog and dust are drawn over the band too,
+   but the soft mask of the weather field (the server samples only the cell) cut them off half a sample past its
+   edge, so the band was dry. The mask's edge samples now run on over the band (`paint.ts`, `maskFor`).
+4. **Sites laid over sites.** `lay_sites` kept a new site's middle off the boxes round the earlier ones, never its whole
+   ground: the bigger, squared-off grain farms reached over Larkfield (2,154 tiles, 341 of its level core, with hedges
+   drawn on them) and over each other (976 tiles), the mills' pads over their farms, a dairy and a range, the piggeries
+   and their woods; both sites counted the tiles they shared. Now no site's preparing reaches a tile an earlier site's
+   reached (its shape at the most its noise pushes it, and the margin where its heights are eased into the land round
+   it: `site_edge`, `site_kernel`, `spread`), landings and mills included, and each site's tiles are its own ground
+   (`ground_of`). The mills look a little further for their river bank (330 and 340 tiles from their farm's middle):
+   their farms are bigger. A new check: "no site laid over another's ground".
+5. **The Ochre vineyard was on desert.** Laid where the desert's edge paints sand, sandstone and rubble (68% of its
+   ground: its dryness about 1), and a field's preparing cleared only trees and scrub. Farms, orchards, vineyards and
+   dairies (`GROWN`) are now placed off bare ground where they can be (`BARE`: sandstone, sand, rubble, salt, rock and
+   scree), and what is left of it inside them is given back as the country's grass. The vineyard is now on the hills'
+   dry western edge, 250 tiles west (dryness 0.28 across it: 59% dry grass, 31% grass, under 1% sand and sandstone). A
+   new check: none of them more than 5% bare.
+
+The sites that moved more than 40 tiles or changed by more than 5% (centre and tiles as DEV holds them in brackets);
+all 68 are placed, the farms' own fields 443,300 tiles (**6.8 cells**), the shared range 508,509 (**7.8 cells**); roads
+14,813 tiles, tracks 60 (12,848 tiles); all 16 checks pass, the city as it was (0 codes, 0 heights differ):
+
+| Site | Kind | Centre (x, y) | Tiles | For |
+|---|---|---|---|---|
+| `grain_long` | farmland | 1988, 2452 (1828, 2580) | 121,609 (125,664) | grain farm 1 (large, with a water mill) |
+| `mill_long` | mill | 1743, 2548 (1628, 2612) | 317 (260) | grain farm 1's water mill |
+| `grain_lark` | farmland | 2156, 2884 (2164, 2836) | 126,128 (126,319) | grain farm 2 (large, with a water mill) |
+| `mill_lark` | mill | 2414, 2854 (2207, 3026) | 426 (348) | grain farm 2's water mill |
+| `orchard_larkfield` | orchard | 1852, 2740 (1876, 2844) | 14,423 (14,194) | orchard (central hills) 3 |
+| `vineyard_ochre` | vineyard | 2508, 2652 (2756, 2692) | 17,554 (17,577) | vineyard 1 (SE desert edge) |
+| `vineyard_south` | vineyard | 2396, 3156 (2396, 3148) | 18,193 (17,036) | vineyard 2 (central hills) |
+| `range_rainrun` | pasture | 996, 796 (1060, 940) | 50,722 (64,730) | cattle range (shared, NW coast) |
+| `pigwood_greenholt` | woodpasture | 1188, 1676 (1260, 1628) | 30,736 (32,371) | pig farm 1's woods (shared range) |
+| `pigs_alder` | pigfarm | 1612, 1260 (1644, 1428) | 5,996 (6,227) | pig farm 2 |
+| `pigwood_alder` | woodpasture | 1596, 1076 (1604, 1268) | 31,518 (28,821) | pig farm 2's woods (shared range) |
+| `pigwood_south` | woodpasture | 1140, 2028 (1196, 2068) | 30,263 (32,216) | pig farm 3's woods (shared range) |
+| `fishing_sound` | fishing | 603, 1359 (684, 1389) | 269 (301) | sea fishing boat 1 (Ridgemere's sound) |
+| `fishing_glasswater` | fishing | 1828, 2012 (1948, 2283) | 271 (265) | lake and river boat 1 |
+| `fishing_rainmere` | fishing | 1037, 613 (964, 740) | 359 (253) | spare: lake boat |
+| `timber_rainwood` | timber | 652, 1092 (684, 1164) | 1,859 (1,867) | timber (coastal rainforest) |
+| `charcoal_greenholt` | charcoal | 1260, 2124 (1348, 2140) | 1,032 (1,041) | charcoal |
+| `charcoal_rainwood` | charcoal | 668, 1324 (684, 1228) | 1,002 (1,007) | charcoal |
+
+**Tests.** `world_tests`: a pine between hides a walking wolf and muffles its pawsteps (heard five tiles off in the
+open, not behind it); a novice sneaker in ferns three tiles off is neither seen nor heard; a pine between a yeller and
+a doorway muffles the yell through it. `stream_tests`' `theMapKeepsAPlaceBesideAsItWas` (walking by a seam the wolf
+remembers more of the place beside while its World Map picture stays as it was and the band carries the new ground; in
+another place the map has all it saw). The client's `fringe.test.ts`: the map draws the band round the wolf's place on
+top, and the weather's mask covers the band at the edge's strength. `test_realm2`'s new `RealmSites` (with
+`RATW_SLOW=1`; the realm round the kept city snapshot as far as its sites, no database): every site placed, no tile
+changed by two sites' preparing (DEV's layout: nine pairs), and the farms, orchards, vineyards and dairies on soil
+through their middles. `WholeRealm` can now lay the realm round an Atlas export instead of DEV (`RATW_REALM_PROJECT`,
+such as a write's backup), which is how it ran here: 8 of 8. Each new test fails without its fix. A clean build of
+`build-core`, then `ctest`: 76 of 76. The client: `tsc` clean, 134 tests pass.
+
 ### The previews
 
 `artifacts/realm2/after/` holds the second pass's (the same set, and its `realm-report.json`); the first realm's are

@@ -5,7 +5,11 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {bandFits, bandSpot} from './fringe.ts';
 import {Walker} from './walker.ts';
-import {testGame, draw} from './testing.ts';
+import {testGame, draw, fakeContext, paintPart} from './testing.ts';
+import {MapRenderer} from './minimap.ts';
+import {GamePainter} from './paint.ts';
+import {Painter} from '../ui/painter.ts';
+import type {Sheets} from './weatherArt.ts';
 import type {Json} from './json.ts';
 
 const wasm = readFileSync(new URL('../wasm/walk.wasm', import.meta.url));
@@ -94,4 +98,79 @@ test("the page's sight runs on over the band, and its walking stays in the cell"
     s.tick(1, 0.016);
     assert.equal(s.seenAt(6, 1), '2', 'the grass past the seam is in sight');
     assert.equal(s.seenAt(-1, -1), '0', 'the unknown corner stays unknown');
+});
+
+test('the map of the country draws the band round the wolf\'s place, over the pictures of the places beside', () => {
+    // The places beside are kept as they were while the wolf is near them (the server's mapHeld_: their whole pictures
+    // go only when they change), so what it sees there now is drawn from the band.
+    const {state: s} = testGame();
+    const rows = bandRows();
+    s.applySnapshot({cell: {id: 'field', x: 0, y: 0, width: Width, height: Height, outdoors: true, rows: cellRows, fringe: Band,
+        fringeRows: rows, fringeHeights: heightRows(rows)}, fringeVisibility: rows.map(r => r.replace(/[^ ]/g, '2').replace(/ /g, '0')),
+    self: {id: 'self', x: 5.5, y: 1.5}, entities: [], doors: [], time: 0, cellGeneration: 1,
+    worldMap: [{id: 'field', name: 'Here', x: 0, y: 0, width: Width, height: Height, knowledge: 'visited', current: true},
+        {id: 'east', name: 'East', x: Width, y: 0, width: Width, height: Height, knowledge: 'glimpsed', glyphs: ' '.repeat(Width * Height)}]} as Json);
+    const pictures: Array<{width: number; height: number; data?: Uint8ClampedArray}> = [];
+    const surfaces = (width: number, height: number) => {
+        const canvas: {width: number; height: number; data?: Uint8ClampedArray} = {width, height};
+        pictures.push(canvas);
+        const ctx = {createImageData: (w: number, h: number) => ({data: new Uint8ClampedArray(w * h * 4)}),
+            putImageData: (image: {data: Uint8ClampedArray}) => { canvas.data = image.data; }};
+        return {canvas: canvas as unknown as HTMLCanvasElement, ctx: ctx as unknown as CanvasRenderingContext2D};
+    };
+    const drawn: Array<{canvas: unknown; at: number[]}> = [];
+    const record = new Proxy({} as Record<string, unknown>, {
+        get: (_, key) => (key === 'drawImage' ? (canvas: unknown, ...at: number[]) => drawn.push({canvas, at}) : () => {}),
+        set: () => true,
+    }) as unknown as CanvasRenderingContext2D;
+    new MapRenderer(surfaces).draw(record, s, {x: 0, y: 0, w: 200, h: 100}, 2);
+    const here = pictures.find(p => p.width === Width + 2 * Band && p.height === Height + 2 * Band);
+    assert.ok(here?.data, "the wolf's own picture runs on over the band");
+    const alpha = (x: number, y: number) => here!.data![((y + Band) * (Width + 2 * Band) + x + Band) * 4 + 3];
+    assert.equal(alpha(Width + 1, 1), 255, 'the wall seen past the seam is drawn');
+    assert.equal(alpha(2, 1), 255, 'and the cell itself');
+    assert.equal(alpha(-1, -1), 0, 'the unknown corner is not');
+    const last = drawn[drawn.length - 1];
+    assert.equal(last.canvas, here, 'drawn last, over the place beside');
+    // Two pixels a tile, the wolf (5.5, 1.5) in the middle of the box: the picture reaches the band's width past the cell.
+    assert.deepEqual(last.at, [100 - 5.5 * 2 - Band * 2, 50 - 1.5 * 2 - Band * 2, (Width + 2 * Band) * 2, (Height + 2 * Band) * 2]);
+});
+
+test('the weather falls on the band as on the cell beside it', () => {
+    // Rain over a 32-tile cell (a field of 3 x 3 samples, 16 tiles apart) with a band 48 wide: the soft mask that
+    // cuts the rain down to where it falls reaches over the whole band, its edge samples repeated, not the cell alone.
+    const band = 48, step = 16, side = 32, tile = 2;
+    const {state: s} = testGame();
+    const fringeRows: string[] = [];
+    for (let y = -band; y < side + band; ++y) fringeRows.push(','.repeat(y < 0 || y >= side ? side + 2 * band : 2 * band));
+    s.applySnapshot({cell: {id: 'field', width: side, height: side, outdoors: true, weather: 'rain', rows: Array(side).fill(','.repeat(side)),
+        fringe: band, fringeRows, weatherField: {step, cols: 3, rows: 3, kinds: 'rrrrrrrrr', amounts: '999999999'}},
+    self: {id: 'self', x: side - 2.5, y: 16.5}, entities: [], doors: [], time: 0, cellGeneration: 1} as Json);
+    assert.equal(s.fringe, band);
+    const masks: Array<{width: number; height: number; alpha: number[]}> = [];
+    const cuts: number[][] = [];
+    const surfaces = (width: number, height: number) => {
+        const ctx = fakeContext() as unknown as Record<string, unknown>;
+        ctx.createImageData = (w: number, h: number) => ({data: new Uint8ClampedArray(w * h * 4)});
+        ctx.putImageData = (image: {data: Uint8ClampedArray}) =>
+            masks.push({width, height, alpha: [...image.data].filter((_, i) => i % 4 === 3)});
+        ctx.drawImage = (_: unknown, ...at: number[]) => { if (ctx.globalCompositeOperation === 'destination-in') cuts.push(at); };
+        return {canvas: {width, height} as unknown as HTMLCanvasElement, ctx: ctx as unknown as CanvasRenderingContext2D};
+    };
+    const main = fakeContext() as unknown as Record<string, unknown>;
+    main.getTransform = () => ({});
+    main.canvas = {width: 800, height: 600};
+    const painter = new GamePainter(s, new Painter(main as unknown as CanvasRenderingContext2D), {get: () => ({})} as unknown as Sheets,
+        surfaces);
+    s.mapOrigin = [200, 200];
+    s.tileSize = tile;
+    const b = paintPart<{left: number; top: number; right: number; bottom: number}>(painter, 'cellBounds');
+    assert.deepEqual([b.left, b.top, b.right, b.bottom], [200 - band * tile, 200 - band * tile, 200 + (side + band) * tile, 200 + (side + band) * tile],
+        'the weather is drawn over the band');
+    assert.ok((painter as unknown as {drawFieldWeather: (r: typeof b) => boolean}).drawFieldWeather(b));
+    assert.equal(cuts.length, 1, 'one mask, for the rain');
+    const [x, y, w, h] = cuts[0];
+    assert.ok(x <= b.left && y <= b.top && x + w >= b.right && y + h >= b.bottom, `the mask covers the band: ${cuts[0]}`);
+    const mask = masks.find(m => m.width === w / (step * tile) && m.height === h / (step * tile));
+    assert.ok(mask && mask.alpha.every(a => a === 255), 'and the rain is as strong over it as at the cell\'s edge');
 });

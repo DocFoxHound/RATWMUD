@@ -48,8 +48,10 @@ forest sees the trunks and ferns round it and a fair way along a clearing; on a 
   a step and a half below the road, and was never drawn).
 - **A body needs a clear line, as before.** The map shows the ground through thin cover, but a wolf (or game) at the
   end of a line is made out only if nothing at all thinned it (`bodySeen`, used by `World::visionClarity`,
-  `World::noticeSenses` and the muffling in `World::hearingClarity`): a trunk or a fern between hides it, exactly as
-  the old rule did, so noticing, sneaking and hunting are unchanged (doc 40; `hunt_sim` gives the same hauls). A
+  `World::noticeSenses`, the muffling in `World::hearingClarity`, a yell through a doorway or over a seam included,
+  and the muffling of pawsteps in `World::movementAudibility`, which a review found still on the map's line: a wolf
+  behind one pine was heard as in the open): a trunk or a fern between hides it, exactly as the old rule did, so
+  noticing, sneaking and hunting are unchanged (doc 40; `hunt_sim` gives the same hauls). A
   first try that let ferns only dim a body cost the hunters a fifth of their kills.
 - `RatwSight.h`'s `clearance` gives how clear a line is (0 hidden, else 1 less what it passed through); `lineOfSight`
   is `clearance > 0`. The browser runs the same code (`Client/wasm/walk.cpp`, a 20-byte tile with `hides`).

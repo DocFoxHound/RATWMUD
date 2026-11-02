@@ -2376,6 +2376,20 @@ class World
     void indexBeside(const std::string& cellId);
     const std::vector<Beside>& besideCells(const std::string& cellId) const;
     std::shared_ptr<const Fringe> fringeOf(const Entity& observer, const Cell& cell, const Beyond& beyond) const;
+    // Whether the band round the observer's cell (fringeOf) carries the cell beside it at (dx, dy), `width` x `height`:
+    // the observer is near an edge of its own and within the band's reach of that cell.
+    static bool inBand(const Entity& observer, const Cell& cell, int dx, int dy, int width, int height);
+    // The places beside each player's own as its World Map last had them (snapshot's worldMap), by place: while it is
+    // near one, what it sees there goes out in the band, as row edits, and the place's own entry (its whole picture,
+    // 64 KB and more, sent whole whenever it changes) is kept as it was; it is given afresh once the wolf moves away
+    // or into another place (doc 70).
+    struct MapHeld
+    {
+        using Glyphs = std::map<std::string, std::vector<char>>;
+        std::string cellId;                  // The player's own place when these were kept.
+        Glyphs glyphs;                       // What its World Map shows of each, unseen tiles blank.
+    };
+    std::map<std::string, MapHeld> mapHeld_;
     // Each player's view, kept until something that shapes it changes: the cell, where they stand, how far they can
     // see, a door opening or closing there, or a cell beside it loading or going. `fresh` says whether it was just
     // recomputed.

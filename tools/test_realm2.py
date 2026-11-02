@@ -3,8 +3,10 @@
 round the city as DEV holds it, with every check of the write.
 
   python3 tools/test_realm2.py                 the pieces (seconds)
-  RATW_SLOW=1 python3 tools/test_realm2.py     and the realm round DEV's city (about two and a half minutes, 8 GB; read only;
-                                               skipped without the database)
+  RATW_SLOW=1 python3 tools/test_realm2.py     and the realm's sites round the kept city snapshot (two minutes, no
+                                               database), and the realm round DEV's city (about two and a half minutes,
+                                               8 GB; read only; skipped without the database)
+  RATW_REALM_PROJECT=FILE                      the world from an Atlas export (a write's backup) instead of DEV
 """
 from __future__ import annotations
 
@@ -157,13 +159,83 @@ class Pieces(unittest.TestCase):
         self.assertNotRegex(text.lower(), r'\bdogs?\b')
 
 
+@unittest.skipUnless(os.environ.get('RATW_SLOW'), 'the realm\'s sites: RATW_SLOW=1')
+class RealmSites(unittest.TestCase):
+    """The realm laid round the kept city snapshot as far as its sites (no database: about two minutes), each site's
+    preparing watched: what it changed of the ground and heights."""
+    @classmethod
+    def setUpClass(cls):
+        import gzip
+        if not R.SNAPSHOT.exists():
+            raise unittest.SkipTest(f'no city snapshot at {R.SNAPSHOT}')
+        cells = json.loads(gzip.decompress(R.SNAPSHOT.read_bytes()).decode('utf-8'))
+        codes, heights = R.city_canvas(cells)
+        realm = R.Realm2(codes, heights, R.SEED, report=lambda *a: None)
+        cls.changed = {}
+        prepare = R.Realm2.prepare
+
+        def watched(self, site):
+            codes, h = self.codes.copy(), self.h.copy()
+            prepare(self, site)
+            cls.changed[site['id']] = np.flatnonzero((codes != self.codes) | (h != self.h))
+        R.Realm2.prepare = watched
+        try:
+            for step in ('lay_city', 'lay_sea', 'lay_elevation', 'lay_climate', 'lay_drainage', 'lay_heights',
+                         'lay_water', 'settle', 'lay_ground', 'lay_sites'):
+                getattr(realm, step)()
+        finally:
+            R.Realm2.prepare = prepare
+        cls.realm = realm
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.realm, cls.changed                  # (before the whole realm is laid)
+
+    def test_every_site_finds_its_ground(self):
+        placed = {s['id'] for s in self.realm.sites}
+        self.assertEqual([s[0] for s in R.SITES if s[0] not in placed], [])
+
+    def test_no_site_is_laid_over_another(self):
+        # Each site's ground is its own (the review, doc 70): a grain farm laid over Larkfield drew hedges across the
+        # town's levelled core, and both counted the tiles they shared.
+        by = np.zeros(R.SIZE * R.SIZE, dtype=np.int16)
+        shared = []
+        for i, site in enumerate(self.realm.sites, 1):
+            tiles = self.changed[site['id']]
+            for j in np.unique(by[tiles]):
+                if j:
+                    shared.append((self.realm.sites[j - 1]['id'], site['id'], int((by[tiles] == j).sum())))
+            by[tiles] = i
+        self.assertEqual(shared, [])
+        self.assertEqual([s['id'] for s in self.realm.sites if s.get('shared')], [])
+        for i, site in enumerate(self.realm.sites, 1):
+            self.assertEqual(site['tiles'], int((self.realm.ground_of == i).sum()), site['id'])
+
+    def test_the_growing_sites_are_on_growing_ground(self):
+        # A farm, orchard, vineyard or dairy grows on soil: the Ochre vineyard was laid on two-thirds sand, sandstone
+        # and rubble at the desert's edge. Through the middle of each (its own ground for sure), barely any.
+        bare = np.isin(self.realm.codes, [ord(c) for c in '(0X)rs'])     # (sandstone, sand, rubble, salt, rock, scree)
+        for s in self.realm.sites:
+            if s['kind'] not in ('farmland', 'orchard', 'vineyard', 'dairy'):
+                continue
+            x, y, size = s['x'], s['y'], s['size']
+            box = np.s_[max(0, y - size):y + size, max(0, x - size):x + size]
+            core = np.hypot((self.realm.X[box] - x) / size, (self.realm.Y[box] - y) / (size * .75)) < .8
+            core &= ~self.realm.water[box]
+            share = float(bare[box][core].mean())
+            self.assertLess(share, .02, (s['id'], round(share, 3)))
+
+
 @unittest.skipUnless(os.environ.get('RATW_SLOW'), 'the whole realm: RATW_SLOW=1')
 class WholeRealm(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         try:
-            from worldgen import ridgemere2 as r2
-            cls.project, _, _ = r2.load('dev')
+            if os.environ.get('RATW_REALM_PROJECT'):
+                cls.project = json.loads(Path(os.environ['RATW_REALM_PROJECT']).read_text(encoding='utf-8'))
+            else:
+                from worldgen import ridgemere2 as r2
+                cls.project, _, _ = r2.load('dev')
         except Exception as error:                  # (no database here)
             raise unittest.SkipTest(f'DEV not readable: {error}')
         # Laying the realm (as a preview or a dry run does) never touches the city's snapshot: only a write that saved.

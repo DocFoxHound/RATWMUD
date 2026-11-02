@@ -89,6 +89,15 @@ bool validLighting(const Lighting& light)
            std::isfinite(light.daylightAccess) && light.daylightAccess >= 0 && light.daylightAccess <= 1 &&
            (light.tone == "warm" || light.tone == "neutral" || light.tone == "cool");
 }
+// A place's remembered ground as the World Map shows it: what was never seen there blank.
+std::vector<char> shownGlyphs(const CellMemory& m)
+{
+    auto out = m.glyphs;
+    for (std::size_t index = 0; index < out.size(); ++index)
+        if (index >= m.observed.size() || !m.observed[index])
+            out[index] = ' ';
+    return out;
+}
 double clarity(double d, double clear)
 {
     if (clear <= Epsilon || d >= clear * 2.0)
@@ -767,6 +776,7 @@ void World::observeAll(const std::vector<std::string>& observerIds)
         {
             memories_[id][o->cellId];
             views_[id];
+            mapHeld_[id];
         }
     if (parallel_)
         parallel_(observerIds.size(), [&](std::size_t i) { observe(observerIds[i]); });
@@ -785,6 +795,7 @@ bool World::removePlayer(const std::string& id)
     pendingPortals_.erase(id);
     travels_.erase(id);
     lastObserved_.erase(id);
+    mapHeld_.erase(id);
     travelLegCells_.erase(id);
     travelRetryAt_.erase(id);
     travelProgress_.erase(id);
@@ -5566,9 +5577,9 @@ double World::hearingClarity(const std::string& observerId, const std::string& s
             continue;
         double route = distance(s->position, d.position) + distance(o->position, d.arrival) + 2.0;
         double transmission = d.open ? .80 : .24;
-        if (!lineOfSight(s->cellId, s->position, d.position))
+        if (sight::bodySeen(sightClearance(s->cellId, s->position, d.position)) <= 0)
             transmission *= .45;
-        if (!lineOfSight(o->cellId, d.arrival, o->position))
+        if (sight::bodySeen(sightClearance(o->cellId, d.arrival, o->position)) <= 0)
             transmission *= .45;
         best = std::max(best, clarity(route, range * transmission * environmentAt(sc->id, s->position).hearing));
     }
@@ -5591,8 +5602,8 @@ double World::movementAudibility(const std::string& observerId, const std::strin
     const double sourceRange = s->posture == "crouching" ? 2.5 - 1.7 * clamp01(s->sneakSkill / 100.0) : 6.0;
     double range = sourceRange * sensitivity;
     range *= environmentAt(c->id, o->position).hearing;
-    if (!lineOfSight(o->cellId, o->position, s->position))
-        range *= .38;
+    if (sight::bodySeen(sightClearance(o->cellId, o->position, s->position)) <= 0)
+        range *= .38;                               // (Out of sight: a trunk or ferns between, as much as a wall.)
     const auto* ot = c->tile(int(o->position.x), int(o->position.y));
     const auto* st = c->tile(int(s->position.x), int(s->position.y));
     const double separation = distance(o->position, s->position) + (ot && st ? std::abs(ot->height - st->height) : 0);
@@ -5915,6 +5926,18 @@ void World::observe(const std::string& observerId)
     bool fresh = false;
     const auto& visible = viewOf(*o, *c, &fresh);
     auto& view = views_[observerId];
+    // The places beside it that its World Map keeps as they were (mapHeld_), let go of once the band no longer carries
+    // them, or the wolf is in another place.
+    auto& held = mapHeld_[observerId];
+    if (held.cellId != c->id)
+    {
+        held.cellId = c->id;
+        held.glyphs.clear();
+    }
+    for (const auto& b : besideCells(c->id))
+        if (const auto kept = held.glyphs.find(b.id); kept != held.glyphs.end())
+            if (const auto* n = cell(b.id); !n || !inBand(*o, *c, b.dx, b.dy, n->width, n->height))
+                held.glyphs.erase(kept);
     if (!fresh && view.remembered && memory.observed.size() == c->tiles.size())
         return;                                     // Nothing it sees has changed since the last look.
     view.remembered = true;                         // (A view made ahead by prepareViews() hasn't been taken in.)
@@ -5943,6 +5966,9 @@ void World::observe(const std::string& observerId)
                     if (!there)
                     {
                         there = &book[n->id];
+                        // What the World Map shows of it stays as it was while the band carries what is new.
+                        if (!held.glyphs.count(n->id) && inBand(*o, *c, b.dx, b.dy, n->width, n->height))
+                            held.glyphs.emplace(n->id, shownGlyphs(*there));
                         if (there->knowledge == Knowledge::Unknown)
                             there->knowledge = Knowledge::Glimpsed;
                         there->cellId = n->id;
@@ -5982,6 +6008,15 @@ void World::observe(const std::string& observerId)
         glimpse.worldZ = adjacent->worldZ;
     }
 }
+bool World::inBand(const Entity& o, const Cell& c, int dx, int dy, int width, int height)
+{
+    const double reach = Fringe::Near;
+    if (o.position.x > reach && o.position.y > reach && o.position.x < c.width - reach && o.position.y < c.height - reach)
+        return false;
+    const double ox = std::max({0.0, dx - o.position.x, o.position.x - (dx + width)});
+    const double oy = std::max({0.0, dy - o.position.y, o.position.y - (dy + height)});
+    return std::hypot(ox, oy) <= reach;
+}
 std::shared_ptr<const Fringe> World::fringeOf(const Entity& o, const Cell& c, const Beyond& beyond) const
 {
     // The band round the cell (doc 70): what the wolf sees there now, else remembers, from the cells beside it. Only
@@ -6004,11 +6039,8 @@ std::shared_ptr<const Fringe> World::fringeOf(const Entity& o, const Cell& c, co
         const auto* n = cell(b.id);
         if (!n)
             continue;
-        // (A cell beside a far edge isn't on the map yet: left blank.)
-        const double ox = std::max({0.0, b.dx - o.position.x, o.position.x - (b.dx + n->width)});
-        const double oy = std::max({0.0, b.dy - o.position.y, o.position.y - (b.dy + n->height)});
-        if (std::hypot(ox, oy) > reach)
-            continue;
+        if (!inBand(o, c, b.dx, b.dy, n->width, n->height))
+            continue;                               // (A cell beside a far edge isn't on the map yet: left blank.)
         const auto known = book.find(b.id);
         const CellMemory* memory = known == book.end() ? nullptr : &known->second;
         const bool ground = n->loaded && n->tiles.size() == std::size_t(n->width) * std::size_t(n->height);
@@ -6175,6 +6207,8 @@ Snapshot World::snapshot(const std::string& observerId, bool withTiles, bool obs
                 adjacent.insert(id);
         }
     }
+    const auto keeping = mapHeld_.find(observerId);
+    const MapHeld* held = keeping != mapHeld_.end() && keeping->second.cellId == c->id ? &keeping->second : nullptr;
     for (const auto& id : adjacent)
     {
         const auto known = book.find(id);
@@ -6193,13 +6227,15 @@ Snapshot World::snapshot(const std::string& observerId, bool withTiles, bool obs
         mc.current = id == c->id;
         mc.visible = currentlyVisible.count(id) != 0;
         // The current cell's glyphs are its rows, which the client already has: never sent twice. A place only
-        // glimpsed has what was seen of it past a seam (doc 70).
-        if (!m.glyphs.empty() && id != c->id)
+        // glimpsed has what was seen of it past a seam (doc 70); one beside it, near, as the map last had it, while
+        // what is new there goes in the band (mapHeld_).
+        if (id != c->id)
         {
-            mc.rememberedGlyphs = m.glyphs;
-            for (std::size_t index = 0; index < mc.rememberedGlyphs.size(); ++index)
-                if (index >= m.observed.size() || !m.observed[index])
-                    mc.rememberedGlyphs[index] = ' ';
+            const auto kept = held ? held->glyphs.find(id) : MapHeld::Glyphs::const_iterator{};
+            if (held && kept != held->glyphs.end())
+                mc.rememberedGlyphs = kept->second;
+            else if (!m.glyphs.empty())
+                mc.rememberedGlyphs = shownGlyphs(m);
         }
         out.worldMap.push_back(std::move(mc));
     }
@@ -6560,6 +6596,7 @@ Result World::restore(const PersistedWorld& saved)
     refreshWeatherField(true);
     memories_ = state.memories;
     lastObserved_.clear();
+    mapHeld_.clear();
     bonds_ = std::move(restoredBonds);
     // The roads as saved; a caravan whose load is gone (an older save) is dropped. Towns are worked out again.
     roads_ = state.roads;

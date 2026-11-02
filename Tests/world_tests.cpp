@@ -602,6 +602,13 @@ void sensesAndWeather()
     a.cellId = "tavern";
     a.position = {16.5, 20.5};
     expect(w.hearingClarity("a", "b", Voice::Yell) >= muffled, "Open portal improves transmission");
+    // A trunk between the yeller and the doorway muffles the yell as a wall does, as ever (RatwSight.h, bodySeen).
+    b.position = {16.5, 24.5};
+    const double clearYell = w.hearingClarity("a", "b", Voice::Yell);
+    *w.cell("exterior")->tile(16, 12) = tileFromGlyph('P');
+    expect(clearYell > 0 && w.lineOfSight("exterior", b.position, w.door("door_yard")->position) &&
+               w.hearingClarity("a", "b", Voice::Yell) < clearYell,
+           "A pine between a yeller and the doorway muffles the yell through it");
 }
 void stealthPerception()
 {
@@ -668,6 +675,32 @@ void stealthPerception()
     observer.earHealth = .1;
     expect(w.movementAudibility("observer", "source") < noviceHearing,
            "Ear injury can outweigh trained movement hearing");
+    // Thin cover (a pine's trunk, ferns) shows the ground past it on the map but hides a body as ever, and pawsteps
+    // from behind it carry as little as from behind a wall (doc 40; Docs/Design/22, "Cover that thins sight").
+    observer.earHealth = 1;
+    observer.hearingSkill = 0;
+    observer.position = {12.5, 12.5};
+    source.position = {17.5, 12.5};
+    source.posture = "standing";
+    expect(w.movementAudibility("observer", "source") > 0, "Pawsteps carry five tiles in the open");
+    auto* tavern = w.cell("tavern");
+    *tavern->tile(15, 12) = tileFromGlyph('P');
+    expect(w.lineOfSight("tavern", observer.position, source.position) && w.visionClarity("observer", "source") == 0,
+           "A pine between: the ground past it is seen, the wolf there is not");
+    expect(w.movementAudibility("observer", "source") == 0, "and its pawsteps are muffled as behind a wall");
+    *tavern->tile(15, 12) = tileFromGlyph('.');
+    observer.position = {13.5, 12.5};
+    source.position = {16.5, 12.5};
+    source.posture = "crouching";
+    expect(w.movementAudibility("observer", "source") > 0, "A novice sneaker's pawsteps carry three tiles in the open");
+    *tavern->tile(14, 12) = tileFromGlyph('&');
+    *tavern->tile(15, 12) = tileFromGlyph('&');
+    expect(w.lineOfSight("tavern", observer.position, source.position) && w.visionClarity("observer", "source") == 0 &&
+               w.movementAudibility("observer", "source") == 0,
+           "but past ferns it is neither seen nor heard");
+    *tavern->tile(14, 12) = tileFromGlyph('.');
+    *tavern->tile(15, 12) = tileFromGlyph('.');
+    observer.position = {16.5, 12.5};
     observer.earHealth = 0;
     source.position = {16.7, 12.5};
     expect(w.movementAudibility("observer", "source") == 0, "Total deafness prevents hearing even nearby sneaking");

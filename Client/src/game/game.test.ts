@@ -1002,10 +1002,11 @@ test('the map of the country: places where they truly are and as large as they a
         set: () => true,
     }) as unknown as CanvasRenderingContext2D;
     new MapRenderer(() => null).draw(record, s, {x: 0, y: 0, w: 400, h: 300}, 0.5);
-    // Without offscreen canvases, each place is a box: Here centred on the wolf, East beside it, the unknown not at all.
+    // Without offscreen canvases, each place is a box: Here centred on the wolf (drawn last, on top), East beside it, the
+    // unknown not at all.
     const boxes = rects.filter(r => r[2] !== 400 && r[2] !== 3);
-    assert.deepEqual(boxes[0], [200 - 64, 150 - 64, 128, 128], 'here: 256 tiles at half a pixel a tile, the wolf in the middle');
-    assert.deepEqual(boxes[1], [200 + 64, 150 - 64, 128, 64], 'east: beside it, as wide and as tall as it is');
+    assert.deepEqual(boxes[1], [200 - 64, 150 - 64, 128, 128], 'here: 256 tiles at half a pixel a tile, the wolf in the middle');
+    assert.deepEqual(boxes[0], [200 + 64, 150 - 64, 128, 64], 'east: beside it, as wide and as tall as it is');
     assert.equal(boxes.length, 2, 'a place never seen is not drawn');
 });
 

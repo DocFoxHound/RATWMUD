@@ -254,6 +254,9 @@ export class GamePainter {
         const surface = this.weatherSurface;
         if (!surface) return false;
         const oc = surface.ctx, size = f.step * s.tileSize, [ox, oy] = s.mapOrigin;
+        // The field covers the cell; past a seam its edge samples run on over the band (doc 70), so the weather falls
+        // there as on the ground beside it rather than stopping in a straight line.
+        const pad = s.fringe > 0 ? Math.ceil(s.fringe / f.step) : 0;
         for (const letter of letters) {
             const layers = this.weatherLayers(KindOfLetter[letter] ?? 'clear');
             if (!layers.length) continue;
@@ -267,11 +270,12 @@ export class GamePainter {
             oc.clip();
             for (const layer of layers) this.drawWeatherLayer(b, layer, oc);
             oc.restore();
-            const mask = this.maskFor(f, letter);
+            const mask = this.maskFor(f, letter, pad);
             if (!mask) continue;
             oc.globalCompositeOperation = 'destination-in';
             oc.imageSmoothingEnabled = true;
-            oc.drawImage(mask.canvas, ox - size / 2, oy - size / 2, f.cols * size, f.rows * size);
+            oc.drawImage(mask.canvas, ox - size / 2 - pad * size, oy - size / 2 - pad * size, (f.cols + 2 * pad) * size,
+                (f.rows + 2 * pad) * size);
             oc.globalCompositeOperation = 'source-over';
             c.save();
             c.setTransform(1, 0, 0, 1, 0, 0);
@@ -281,18 +285,24 @@ export class GamePainter {
         return true;
     }
 
-    /** One kind's strength over the cell as a tiny image: one pixel a grid sample, its alpha the strength. */
-    private maskFor(f: NonNullable<GameState['weatherField']>, letter: string): Surface | null {
-        const key = `${f.cols}x${f.rows}|${f.kinds}|${f.amounts}|${letter}`;
+    /**
+     * One kind's strength over the cell as a tiny image: one pixel a grid sample, its alpha the strength, with `pad`
+     * pixels more each way that repeat the edge's samples.
+     */
+    private maskFor(f: NonNullable<GameState['weatherField']>, letter: string, pad = 0): Surface | null {
+        const key = `${f.cols}x${f.rows}+${pad}|${f.kinds}|${f.amounts}|${letter}`;
         const kept = this.masks.get(key);
         if (kept) return kept;
-        const surface = this.surfaces(f.cols, f.rows);
+        const w = f.cols + 2 * pad, h = f.rows + 2 * pad;
+        const surface = this.surfaces(w, h);
         if (!surface) return null;
-        const image = surface.ctx.createImageData(f.cols, f.rows);
-        for (let i = 0; i < f.cols * f.rows; ++i) {
-            image.data[i * 4] = image.data[i * 4 + 1] = image.data[i * 4 + 2] = 255;
-            image.data[i * 4 + 3] = f.kinds[i] === letter ? Math.round(Number(f.amounts[i]) / 9 * 255) : 0;
-        }
+        const image = surface.ctx.createImageData(w, h);
+        for (let y = 0; y < h; ++y)
+            for (let x = 0; x < w; ++x) {
+                const i = clamp(y - pad, 0, f.rows - 1) * f.cols + clamp(x - pad, 0, f.cols - 1), o = (y * w + x) * 4;
+                image.data[o] = image.data[o + 1] = image.data[o + 2] = 255;
+                image.data[o + 3] = f.kinds[i] === letter ? Math.round(Number(f.amounts[i]) / 9 * 255) : 0;
+            }
         surface.ctx.putImageData(image, 0, 0);
         if (this.masks.size > 16) this.masks.clear();
         this.masks.set(key, surface);

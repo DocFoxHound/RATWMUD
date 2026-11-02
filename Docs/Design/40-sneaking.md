@@ -17,7 +17,8 @@ residents and animals.
   matter, and there's no cover. (Since 2026-11-01 trees and low cover thin a line of sight rather than always cutting
   it, so the map shows the forest; a body behind them is hidden as before: doc 22, "Cover that thins sight".)
 - **Being heard** (`World::movementAudibility`): a moving wolf's pawsteps carry 6 tiles, a crouching one's
-  `2.5 − 1.7·sneakSkill/100`. A still wolf is silent. **Pace makes no difference.**
+  `2.5 − 1.7·sneakSkill/100`, a little over a third of that out of sight (a trunk or ferns between as much as a wall:
+  `bodySeen`, doc 22). A still wolf is silent. **Pace makes no difference.**
 - **Being smelt** (`World::scentClarity`, `windAt`): scent carries downwind, gets around corners but not through walls,
   and is weaker in rain and storms. Sneaking does nothing to it (doc 02 says so on purpose).
 - **Skills:** `sneakSkill`, `hearingSkill` and `scentSkill` exist (0–100) but nothing trains them.
