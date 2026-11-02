@@ -597,8 +597,9 @@ page's sight over it, its walking kept to the cell). A clean build of `build-cor
 
 The user approved a review's findings and a new look for the land: ridged peaks, not flat white blobs; calmer
 plains; a real blend at the desert's edge; dense Pacific Northwest rain forest round Ridgemere. Built on
-`r2-map-terrain` from `ridgemere2` (268c455). **Not written into DEV**: DEV still holds the first realm (build 56); the
-write is a separate step (`python3 -m worldgen.realm2 write`, which backs up first).
+`r2-map-terrain` from `ridgemere2` (268c455). **Not written into DEV** on its branch: DEV still held the first realm
+(build 56); the write was a separate step (`python3 -m worldgen.realm2 write`, which backs up first), made after the
+merge below.
 
 **Fixed.**
 - **The new tiles in the tables keyed by tile** (`Data/Wild`): hunting's ground kinds have willow `@` as forest, cactus `?`
@@ -668,6 +669,37 @@ run that keeps no snapshot, the strict river check again, the farms and works do
 the new tiles' ground kinds. A clean build of `build-core`, then `ctest`: 76 of 76 pass. `test_realm2` passes (17, with
 `RATW_SLOW=1`: about two and a half minutes, 8 GB), `test_item_catalog` passes, and `test_ridgemere2` fails only its known
 `test_the_food_trades_and_the_carters` (16 household businesses against 15, as before the realm).
+
+### Both merged and written into DEV (2026-11-01, branch `r2-map-fix`)
+
+`r2-map-display` and `r2-map-terrain` merged on `r2-map-fix` from `ridgemere2` (268c455), with no conflicts. The two
+meet in `World::noticeSenses`: a willow or a cactus screens a stalker (`screenGlyph`), and a body is made out only along
+a clear line (`bodySeen`); the willow's and the cactus's `hides` were already in the catalog.
+
+**Tests.** A clean build of `build-core`, then `ctest`: 76 of 76. `test_world_sync`, `test_studio`, `test_world_store`,
+`test_live_edit`, `test_dungeon_master` and `test_realm2` (with `RATW_SLOW=1` too) pass; `test_map_editor` fails only
+the Greyfen count (11, not 10). Atlas: `tsc` clean, its tests fail only the same Greyfen count (its `src/lib` tests,
+which `npm test` skips after that failure, pass: 65 of 65). The client: `tsc` clean, 132 tests pass.
+
+**Written.** Backup first: `Saved/Backups/ratw_ridgemere2-before-map-fix.dump` (main repo; DEV at revision 67, build
+56), and the write's own in `artifacts/backups/`. `python3 -m worldgen.realm2 write --world dev`: all 14 checks pass
+(every kept tile of the city as it was: 0 codes, 0 heights differ); the same map, `map-20261031-6b080cecb7f6`, its new
+layout recorded; revision 69 (68, +1 for the editors' reload); no truth lines (nothing the game server changed was kept
+or in conflict); cells, interiors, links, residents and routes as before (241, 819, 513, 1,083, 12). The nine city
+cells read back before and after: their 242,950 kept tiles (the built ground, the walls' box, the Houses' grounds)
+identical, the wild ground round them remade (243,260 of the other 346,874 tiles). Then `world_build.py dev`: build 57.
+`artifacts/realm2/after/` now holds the realm as written: the same realm as the branch's (its report differs only in
+timings), drawn with the merged catalog's rock, scree and sandstone colours.
+
+**Screenshots** (the fourteen places of the realm's in-game set, from a scratch server of build 57 with this branch's
+server and client, at noon; each place's weather is the world's own and was the same before): the wall outside the
+South Gate now draws and the ground past ferns shows; the Rainwood and Cedar Sound are dense fir, cedar and fern rather
+than murk; the Greyteeth are rock (`▴`) with snow in the hollows; the Long River at Larkfield runs as one wide channel
+(its bridge is now about 60 tiles south-west, out of the frame). Still ugly: the reed beds of the Sallow Fens read as a
+barcode of `¦`; massed sandstone (`▰`) in the Ochre Hills reads as diagonal hatching, and sand (`∶`) as columns of dots
+(the Red Waste's dunes show by their shading, but the waste is olive, not red); the Larkdowns' meadow is sprinkled
+evenly with wildflowers; the Whitefangs above Frosthollow are mostly tundra rings (`∘`) with a band of snow, little
+rock; light rain still falls at the Ochre Hills' northern edge, where the dryness blends with the green country.
 
 ### The previews
 

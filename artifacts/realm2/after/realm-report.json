@@ -1812,17 +1812,17 @@
  ],
  "timings": {
   "city": 0.0,
-  "sea": 11.5,
+  "sea": 11.4,
   "elevation": 0.9,
-  "climate": 0.1,
+  "climate": 0.0,
   "drainage": 0.7,
   "heights": 25.0,
-  "water": 16.9,
+  "water": 16.8,
   "settle": 9.0,
-  "ground": 48.7,
-  "sites": 3.0,
-  "roads": 5.4,
+  "ground": 48.6,
+  "sites": 2.9,
+  "roads": 5.5,
   "cells": 2.9,
-  "checks": 5.5
+  "checks": 5.7
  }
 }
