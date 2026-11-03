@@ -624,6 +624,44 @@ void thePreserversStores()
     expect(s.conserved(), "conserved");
 }
 
+void theShortagesWatched()
+{
+    // world_check's full level records a draw the supply cut short (Society::setShortageWatcher): the farms' stock, or a
+    // season's cap, for a good a shop sells on and for a craft's input alike; never a draw the till itself refused.
+    auto s = city([](EconomySpec& e) { e.farms.areas["grain"].on = 1; });
+    turn(s, 46);
+    std::vector<Society::Shortage> seen;
+    s.setShortageWatcher([&seen](const Society::Shortage& x) { seen.push_back(x); });
+    const auto stall = s.tillOf("stall"), baker = s.tillOf("baker");
+    const auto shortOf = [&](const std::string& till, const std::string& item) {
+        int n = 0;
+        for (const auto& x : seen)
+            n += x.buyer == till && x.item == item ? x.pieces : 0;
+        return n;
+    };
+    // A till that can't pay: its draw is refused, and no shortage of the farms' flour (they hold plenty) is seen.
+    s.consume(stall, "flour", held(s, stall, "flour"), "eaten");
+    const auto cash = s.cash(stall);
+    expect(s.shift(stall, "treasury", "", 0, cash, "emptied"), "the stall's till emptied");
+    s.restockFromStore("stall", 46 + 10. / 24);
+    expect(held(s, stall, "flour") == 0, "a till without money draws nothing");
+    expect(shortOf(stall, "flour") == 0, "and its refused draw is not the supply's shortage: " + std::to_string(shortOf(stall, "flour")));
+    expect(s.shift("treasury", stall, "", 0, cash, "returned"), "the stall's money back");
+    // The farms' flour gone: the stall's resale draw and the baker's input for its bread are both recorded short.
+    for (const auto& f : s.farms())
+        s.consume(f.till, "flour", held(s, f.till, "flour"), "eaten");
+    s.consume(baker, "flour", held(s, baker, "flour"), "eaten");
+    s.consume(baker, "bread", held(s, baker, "bread"), "eaten");
+    for (int hour = 11; hour < 14; ++hour)
+    {
+        s.restockFromStore("stall", 46 + hour / 24.);
+        s.restockFromStore("baker", 46 + hour / 24.);
+    }
+    expect(shortOf(stall, "flour") > 0, "the stall's flour short of the farms' stock");
+    expect(shortOf(baker, "flour") > 0, "the baker's flour, an input, short too");
+    expect(s.conserved(), "conserved");
+}
+
 std::map<std::string, std::string> files(const std::string& extra)
 {
     std::ostringstream cell;
@@ -725,6 +763,7 @@ int main()
         aSave();
         aRestart();
         thePreserversStores();
+        theShortagesWatched();
         theRecords();
         appliedLive();
     }

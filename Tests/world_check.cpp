@@ -735,6 +735,17 @@ struct EconomyRecord
             o << "}}";
             first = false;
         }
+        // Each area's goods (the Country no longer sends them while it is on): a good no farm of it grows shows.
+        o << "}, \"farm_areas\": {";
+        first = true;
+        for (const auto& area : items::farms().areas)
+        {
+            o << (first ? "" : ", ") << EconomyDetail::quoted(area.id) << ": [";
+            for (std::size_t g = 0; g < area.goods.size(); ++g)
+                o << (g ? ", " : "") << EconomyDetail::quoted(area.goods[g]);
+            o << "]";
+            first = false;
+        }
         o << "}}}\n";
         std::fputs(o.str().c_str(), out);
     }

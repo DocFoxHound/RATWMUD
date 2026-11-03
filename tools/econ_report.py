@@ -76,7 +76,20 @@ class Run:
         self.farm_good = collections.defaultdict(collections.Counter)      # (farm, good, season) -> sums
         self.farm_stock = {}                                               # (farm, good) -> [first, last]
         self.farm = collections.defaultdict(collections.Counter)           # farm -> sums
-        self.unmet_draws = collections.Counter()    # (good, season) -> pieces the shops' draws lacked
+        self.draw_short = collections.defaultdict(list)   # (good, season, till) -> the pieces its draws lacked, a day
+        self.sold_rate = collections.defaultdict(lambda: [0, 0])   # (till, good) -> pieces sold, days it had some or sold
+
+    def unmet_draws(self):
+        """By (good, season), the pieces the shops would have drawn, had the supply sent them. A draw's lack is its shelf's
+        deficit (its largest in an hour, each day), a stock and not a day's sales: a shop that sells the good loses at most
+        its day's sales a day (its mean on the days it held or sold some), however far under its shelf stands; a craft's
+        input, never sold, counts its deficit as it stands (an hour's batches, under its day's use)."""
+        total = collections.Counter()
+        for (g, s, till), days in self.draw_short.items():
+            sold, held = self.sold_rate.get((till, g), (0, 0))
+            rate = sold / held if sold and held else None
+            total[(g, s)] += sum(days) if rate is None else sum(min(k, rate) for k in days)
+        return total
 
     def add(self, meta, names, d):
         self.meta = meta
@@ -98,13 +111,16 @@ class Run:
             if n(instead):
                 row[3][n(instead)] += pieces
             if n(buyer).startswith('shop:'):
-                self.unmet_draws[(n(g), season)] += pieces
+                self.draw_short[(n(g), season, n(shop))].append(pieces)
         band = (meta or {}).get('price_band', 25) * 10
         stock = collections.Counter()
         for till, g, st, shelf, price, factor, sold in d['ware']:
             good = n(g)
             stock[good] += st
             if sold or st:
+                r = self.sold_rate[(n(till), good)]
+                r[0] += sold
+                r[1] += 1
                 self.factor_low, self.factor_high = min(self.factor_low, factor), max(self.factor_high, factor)
                 p = self.pinned[good]
                 p[2] += 1
@@ -172,6 +188,13 @@ def farm_patch(run):
         for good, y in f['yield'].items():
             by_good[good] += sum(y) / 4 * f['yield_scale']
     patch, changes = {}, []
+    unmet = run.unmet_draws()
+    # An area's good no farm of it grows: the Country no longer sends it and no yield can be raised, so it is named apart.
+    ungrown = []
+    for area, goods in sorted(((run.meta or {}).get('farm_areas') or {}).items()):
+        for good in goods:
+            if not by_good.get(good):
+                ungrown.append((good, area, sum(unmet[(good, s)] for s in SEASONS)))
     for farm, f in sorted(farms.items()):
         for good, current in sorted(f['yield'].items()):
             share = (sum(current) / 4 * f['yield_scale'] / by_good[good]) if by_good[good] else 0
@@ -180,12 +203,12 @@ def farm_patch(run):
                 fg = run.farm_good.get((farm, good, season))
                 if not fg or not fg['days'] or f['yield_scale'] <= 0:
                     continue
-                demand = (fg['sold'] + fg['eaten'] + fg['short'] + share * run.unmet_draws[(good, season)]) / fg['days']
+                demand = (fg['sold'] + fg['eaten'] + fg['short'] + share * unmet[(good, season)]) / fg['days']
                 new[i] = round(demand * (1 + run.slack / 100) / f['yield_scale'], 2)
             if new != list(current):
                 patch.setdefault(farm, {})[good] = new
                 changes.append((max(abs(a - b) / max(b, 1) for a, b in zip(new, current)), farm, good, current, new))
-    return patch, sorted(changes, reverse=True)
+    return patch, sorted(changes, reverse=True), ungrown
 
 
 def report(econ, run, top, patch_path):
@@ -234,7 +257,9 @@ def report(econ, run, top, patch_path):
             say('')
             out += table(['good', 'growth/yr', 'mean stock', 'sold/day', 'days of sales/yr'],
                          [[g, round(s), round(m), round(d, 1), round(r)] for r, g, s, m, d in grow[:top]] or [['-'] * 5])
-    elif econ:
+        say('')
+    if econ:
+        # (The economy lines' count of every farm draw cut short, a craft's input among them, at either level.)
         out_goods = collections.Counter()
         for r in econ:
             for g, k in (r.get('farms_out_goods') or {}).items():
@@ -381,7 +406,7 @@ def report(econ, run, top, patch_path):
         if unpaid:
             say('')
             say('Farms short of their crews\' wages: ' + ', '.join(unpaid[:top]) + ('...' if len(unpaid) > top else '') + '.')
-        patch, changes = farm_patch(run)
+        patch, changes, ungrown = farm_patch(run)
         say('')
         if patch_path:
             Path(patch_path).write_text(dumps({'about': f'yields to meet demand +{run.slack}% (tools/econ_report.py)',
@@ -392,6 +417,12 @@ def report(econ, run, top, patch_path):
         out += table(['farm', 'good', 'now', 'balanced'],
                      [[farm, g, ' / '.join(f'{v:g}' for v in cur), ' / '.join(f'{v:g}' for v in new)]
                       for _, farm, g, cur, new in changes[:top]] or [['-'] * 4])
+        short_ungrown = [u for u in ungrown if u[2]]
+        if short_ungrown:
+            say('')
+            say('Goods of a farm area no farm grows (no yield to raise: give a farm one in country_farms.json), with the '
+                'draws they lacked: ' + ', '.join(f'{g} ({a}) {round(k)}' for g, a, k in sorted(short_ungrown, key=lambda u: -u[2])[:top])
+                + ('...' if len(short_ungrown) > top else '') + '.')
         stuck = [(k, v) for k, v in run.farm_stock.items() if v[1] > v[0] * 1.5 and v[1] > 50]
         if stuck:
             say('')

@@ -1576,8 +1576,10 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
             const bool drew = n > 0 && drawFromStore(keeper, w.ware, n, "restocked from the store room").ok;
             if (drew)
                 done.push_back("restocked " + w.ware);
-            if (const int lack = std::min(StoreDrawMost, w.lack) - (drew ? n : 0); lack > 0 && shortageWatcher_)
-                shortageWatcher_({till, till, w.ware, "", lack});   // (The cap, or the farms' stock: the draw cut short.)
+            // (What the supply couldn't send: the season's cap, or the farms' stock. A draw refused for the till's own
+            // sake, its cash or its room, is the shop's lack, not the supply's.)
+            if (const int lack = std::min(StoreDrawMost, w.lack) - std::max(0, n); lack > 0 && shortageWatcher_)
+                shortageWatcher_({till, till, w.ware, "", lack});
             continue;
         }
         // The farms' stores first (doc 71, 2.4): a good of a season group with `stores` that the farms of an area on make
@@ -1626,6 +1628,10 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
                 lack -= buyFromCity(till, business, item, lack);
             capped = capped || (lack > 0 && countryLeft(item) < lack);
             farmsShort(item, lack);
+            // (An input the supply can't send in full is short as a shop's ware is: the wine makers' grapes.)
+            if (const int cut = std::min(StoreDrawMost, lack) - std::max(0, std::min(lack, countryLeft(item)));
+                cut > 0 && shortageWatcher_)
+                shortageWatcher_({till, till, item, "", cut});
             if ((lack = std::min(lack, countryLeft(item))) > 0)
                 drawFromStore(keeper, item, std::min(StoreDrawMost, lack), "drawn for " + k.id);
         }

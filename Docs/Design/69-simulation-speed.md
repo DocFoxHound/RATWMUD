@@ -586,7 +586,9 @@ unmet wants through `Society::setShortageWatcher`, and a look at the shops, farm
     carters, estates, `minted`).
   - `short`: per shop (`-`: no open shop held it), good, buyer group and what was taken instead: the buyers and pieces. A
     household's food short at the shops' last hour (`food`, in meals), a need no open shop held (each of its goods), a
-    store draw the season's cap or the farms' stock cut short (the most pieces in an hour that day).
+    store draw the season's cap or the farms' stock cut short, a ware sold on or a craft's input (the most pieces in an
+    hour that day; a draw the till refused for its own sake, its cash or its room, is not the supply's and not recorded).
+  - The meta line also names each farm area's goods (`farm_areas`).
   - `class`: per class, the living residents, households, hungry hours and hungry now, their purses, the median
     household's, the comforts bought and all spent at the shops.
 
@@ -603,11 +605,15 @@ why (input costs: they take 70% of takings; too many hands: wages 60% of takings
 the largest money flows by season and the treasury's path and drains, each class's welfare by season, the largest buyer
 and seller of each good, and the farms (by area; those short of their crews' wages by name) with the yields that would
 have met their demand. That demand is, per farm, good and season, its sales to the shops, its share (by its yield) of
-the draws the farms' stock could not fill, and the Country's table, with `--slack` percent more (default 5), divided by
+the draws the farms' stock could not fill (a draw's lack is its shelf's deficit, a stock: a shop that sells the good
+counts at most its day's sales a day, its mean on the days it held or sold some; a craft's input its deficit as it
+stands), and the Country's table, with `--slack` percent more (default 5), divided by
 the farm's yield scale; it is written as a patch (`REPORT.md.patch.json`: per farm and good, the four seasons' yields as
 `Data/Economy/country_farms.json` has them; a season the run did not see keeps its yield), and `python3
 tools/econ_report.py --apply PATCH.json Data/Economy/country_farms.json` writes it in (nothing else changes). With the
-economy file alone (the normal level) it reports what those lines hold. The yields are a season's mean demand set as
+economy file alone (the normal level) it reports what those lines hold; the economy lines' farm draws cut short by good
+(`farms_out_goods`, a craft's input among them) are reported at either level. An area's good no farm of it grows is
+named apart (no yield to raise: wheat in the grain area). The yields are a season's mean demand set as
 the season's middle, which the blend between seasons smooths: a run after the patch shows what is left.
 
 Tests: `sim_fast_tests` runs world_check at `off` (the same economy file, no detail) and at `full` with the farms (the
