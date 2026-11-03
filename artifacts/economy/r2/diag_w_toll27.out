@@ -1,0 +1,156 @@
+  money at the start (50885p in all; 42 residents short of a day's food money): holder, total, how many, median
+    adults without work: 1616p, 46, 32p
+    capital's treasury: 1000p, 1, 1000p
+    children: 0p, 4, 0p
+    guards: 262p, 14, 15p
+    home stores: 0p, 896, 0p
+    merchants: 14049p, 110, 134p
+    outside: 0p, 1, 0p
+    paid civilians: 10814p, 295, 37p
+    till: 14049p, 110, 134p
+    unpaid civilians: 9095p, 90, 75p
+  run day 1: 1.54813 s wall, 288000 ticks; 1.54813 s so far
+  run day 2: 1.17516 s wall, 288000 ticks; 2.72329 s so far
+  run day 3: 1.04966 s wall, 288000 ticks; 3.77294 s so far
+  run day 4: 1.02928 s wall, 288000 ticks; 4.80222 s so far
+  run day 5: 1.00368 s wall, 288000 ticks; 5.80591 s so far
+  run day 6: 1.30169 s wall, 288000 ticks; 7.1076 s so far
+  run day 7: 0.89694 s wall, 288000 ticks; 8.00454 s so far
+  run day 8: 0.985161 s wall, 288000 ticks; 8.9897 s so far
+  run day 9: 0.985456 s wall, 288000 ticks; 9.97515 s so far
+  run day 10: 1.0399 s wall, 288000 ticks; 11.0151 s so far
+  run day 11: 1.05679 s wall, 288000 ticks; 12.0718 s so far
+  run day 12: 1.07457 s wall, 288000 ticks; 13.1464 s so far
+  run day 13: 1.2023 s wall, 288000 ticks; 14.3487 s so far
+  run day 14: 0.948241 s wall, 288000 ticks; 15.297 s so far
+  run day 15: 1.08294 s wall, 288000 ticks; 16.3799 s so far
+  run day 16: 1.04957 s wall, 288000 ticks; 17.4295 s so far
+  run day 17: 1.12806 s wall, 288000 ticks; 18.5575 s so far
+  run day 18: 1.07845 s wall, 288000 ticks; 19.636 s so far
+  run day 19: 1.09377 s wall, 288000 ticks; 20.7297 s so far
+  run day 20: 1.12793 s wall, 288000 ticks; 21.8577 s so far
+  run day 21: 0.945544 s wall, 288000 ticks; 22.8032 s so far
+  run day 22: 1.0568 s wall, 288000 ticks; 23.86 s so far
+  run day 23: 1.11658 s wall, 288000 ticks; 24.9766 s so far
+  run day 24: 1.14357 s wall, 288000 ticks; 26.1202 s so far
+  run day 25: 1.10598 s wall, 288000 ticks; 27.2261 s so far
+  run day 26: 1.1348 s wall, 288000 ticks; 28.3609 s so far
+  run day 27: 1.18048 s wall, 288000 ticks; 29.5414 s so far
+  run day 28: 0.97272 s wall, 288000 ticks; 30.5141 s so far
+  run day 29: 1.12359 s wall, 288000 ticks; 31.6377 s so far
+  run day 30: 1.14207 s wall, 288000 ticks; 32.7798 s so far
+  run day 31: 1.21237 s wall, 288000 ticks; 33.9922 s so far
+  run day 32: 1.22134 s wall, 288000 ticks; 35.2135 s so far
+  run day 33: 1.19397 s wall, 288000 ticks; 36.4075 s so far
+  run day 34: 1.38691 s wall, 288000 ticks; 37.7944 s so far
+  run day 35: 1.01535 s wall, 288000 ticks; 38.8097 s so far
+  run day 36: 1.22147 s wall, 288000 ticks; 40.0312 s so far
+  run day 37: 1.26557 s wall, 288000 ticks; 41.2968 s so far
+  run day 38: 1.2246 s wall, 288000 ticks; 42.5214 s so far
+  run day 39: 1.22901 s wall, 288000 ticks; 43.7504 s so far
+  run day 40: 1.23724 s wall, 288000 ticks; 44.9876 s so far
+  run day 41: 1.44321 s wall, 288000 ticks; 46.4309 s so far
+  run day 42: 1.1425 s wall, 288000 ticks; 47.5734 s so far
+  run day 43: 1.29118 s wall, 288000 ticks; 48.8645 s so far
+  run day 44: 1.3428 s wall, 288000 ticks; 50.2073 s so far
+  run day 45: 1.32634 s wall, 288000 ticks; 51.5337 s so far
+  run day 46: 1.31695 s wall, 288000 ticks; 52.8506 s so far
+  run day 47: 1.34495 s wall, 288000 ticks; 54.1956 s so far
+  run day 48: 1.85887 s wall, 288000 ticks; 56.0544 s so far
+  run day 49: 1.10977 s wall, 288000 ticks; 57.1642 s so far
+  run day 50: 1.31393 s wall, 288000 ticks; 58.4781 s so far
+  run day 51: 1.35524 s wall, 288000 ticks; 59.8334 s so far
+  run day 52: 1.34347 s wall, 288000 ticks; 61.1768 s so far
+  run day 53: 1.38019 s wall, 288000 ticks; 62.557 s so far
+  run day 54: 1.34512 s wall, 288000 ticks; 63.9022 s so far
+  run day 55: 1.64384 s wall, 288000 ticks; 65.546 s so far
+  run day 56: 1.29493 s wall, 288000 ticks; 66.8409 s so far
+  run day 57: 1.29149 s wall, 288000 ticks; 68.1324 s so far
+  run day 58: 1.30995 s wall, 288000 ticks; 69.4424 s so far
+  run day 59: 1.34707 s wall, 288000 ticks; 70.7894 s so far
+  run day 60: 1.36784 s wall, 288000 ticks; 72.1573 s so far
+  inside World::tick, total ms (worst tick): streaming 0 (0) schedules 0 (0) movement 0 (0) separation 0 (0) views 0 (0); 0 route searches expanding 0 nodes (at most 0 in one)
+  path cache: 0 found, 0 searched
+  slowest route search: 0 ms in , 0 nodes, 0 waypoints
+  slowest World::tick after the first minute (tick 0): 0 ms = streaming 0, schedules 0 (0 route searches), movement 0, separation 0, views 0
+561 residents, no player, 17280000 ticks (17280000 of 0.05 s) from 6:00 to 1446:00: 72.1575 s wall, 1.20262 s a game day, mean 0.00417578 ms a tick; 508 residents moved; at most 495 places in memory; 4 threads
+  by run day (wall s; ticks; with the profile on, the schedules' stages in s: society bonds roads crime errands streaming routes):
+    day 1: 1.54813; 288000; 0 0 0 0 0 0 0
+    day 2: 1.17516; 288000; 0 0 0 0 0 0 0
+    day 3: 1.04966; 288000; 0 0 0 0 0 0 0
+    day 4: 1.02928; 288000; 0 0 0 0 0 0 0
+    day 5: 1.00368; 288000; 0 0 0 0 0 0 0
+    day 6: 1.30169; 288000; 0 0 0 0 0 0 0
+    day 7: 0.89694; 288000; 0 0 0 0 0 0 0
+    day 8: 0.985161; 288000; 0 0 0 0 0 0 0
+    day 9: 0.985456; 288000; 0 0 0 0 0 0 0
+    day 10: 1.0399; 288000; 0 0 0 0 0 0 0
+    day 11: 1.05679; 288000; 0 0 0 0 0 0 0
+    day 12: 1.07457; 288000; 0 0 0 0 0 0 0
+    day 13: 1.2023; 288000; 0 0 0 0 0 0 0
+    day 14: 0.948241; 288000; 0 0 0 0 0 0 0
+    day 15: 1.08294; 288000; 0 0 0 0 0 0 0
+    day 16: 1.04957; 288000; 0 0 0 0 0 0 0
+    day 17: 1.12806; 288000; 0 0 0 0 0 0 0
+    day 18: 1.07845; 288000; 0 0 0 0 0 0 0
+    day 19: 1.09377; 288000; 0 0 0 0 0 0 0
+    day 20: 1.12793; 288000; 0 0 0 0 0 0 0
+    day 21: 0.945544; 288000; 0 0 0 0 0 0 0
+    day 22: 1.0568; 288000; 0 0 0 0 0 0 0
+    day 23: 1.11658; 288000; 0 0 0 0 0 0 0
+    day 24: 1.14357; 288000; 0 0 0 0 0 0 0
+    day 25: 1.10598; 288000; 0 0 0 0 0 0 0
+    day 26: 1.1348; 288000; 0 0 0 0 0 0 0
+    day 27: 1.18048; 288000; 0 0 0 0 0 0 0
+    day 28: 0.97272; 288000; 0 0 0 0 0 0 0
+    day 29: 1.12359; 288000; 0 0 0 0 0 0 0
+    day 30: 1.14207; 288000; 0 0 0 0 0 0 0
+    day 31: 1.21237; 288000; 0 0 0 0 0 0 0
+    day 32: 1.22134; 288000; 0 0 0 0 0 0 0
+    day 33: 1.19397; 288000; 0 0 0 0 0 0 0
+    day 34: 1.38691; 288000; 0 0 0 0 0 0 0
+    day 35: 1.01535; 288000; 0 0 0 0 0 0 0
+    day 36: 1.22147; 288000; 0 0 0 0 0 0 0
+    day 37: 1.26557; 288000; 0 0 0 0 0 0 0
+    day 38: 1.2246; 288000; 0 0 0 0 0 0 0
+    day 39: 1.22901; 288000; 0 0 0 0 0 0 0
+    day 40: 1.23724; 288000; 0 0 0 0 0 0 0
+    day 41: 1.44321; 288000; 0 0 0 0 0 0 0
+    day 42: 1.1425; 288000; 0 0 0 0 0 0 0
+    day 43: 1.29118; 288000; 0 0 0 0 0 0 0
+    day 44: 1.3428; 288000; 0 0 0 0 0 0 0
+    day 45: 1.32634; 288000; 0 0 0 0 0 0 0
+    day 46: 1.31695; 288000; 0 0 0 0 0 0 0
+    day 47: 1.34495; 288000; 0 0 0 0 0 0 0
+    day 48: 1.85887; 288000; 0 0 0 0 0 0 0
+    day 49: 1.10977; 288000; 0 0 0 0 0 0 0
+    day 50: 1.31393; 288000; 0 0 0 0 0 0 0
+    day 51: 1.35524; 288000; 0 0 0 0 0 0 0
+    day 52: 1.34347; 288000; 0 0 0 0 0 0 0
+    day 53: 1.38019; 288000; 0 0 0 0 0 0 0
+    day 54: 1.34512; 288000; 0 0 0 0 0 0 0
+    day 55: 1.64384; 288000; 0 0 0 0 0 0 0
+    day 56: 1.29493; 288000; 0 0 0 0 0 0 0
+    day 57: 1.29149; 288000; 0 0 0 0 0 0 0
+    day 58: 1.30995; 288000; 0 0 0 0 0 0 0
+    day 59: 1.34707; 288000; 0 0 0 0 0 0 0
+    day 60: 1.36784; 288000; 0 0 0 0 0 0 0
+  561 residents offstage at the end; money conserved; 0 places in memory at the end; 46322 bonds between them
+  money at the end (50885p in all; 97 residents short of a day's food money): holder, total, how many, median
+    adults without work: 495p, 39, 7p
+    apprentices: 38p, 7, 7p
+    capital's treasury: 2655p, 1, 2655p
+    children: 38p, 6, 5p
+    guards: 234p, 14, 14p
+    home stores: 0p, 896, 0p
+    merchants: 16464p, 110, 101p
+    outside: 448p, 1, 448p
+    paid civilians: 14616p, 295, 20p
+    till: 13691p, 110, 121p
+    unpaid civilians: 2206p, 90, 9p
+  roads: 0 towns (); 0 caravans on the road, 0 robbed; 0 bandit camps; 0 open contracts; 3802 rumours held
+  crime: 198 incidents (141 attempted theft, 57 theft); 3 wanted, 0 held
+  people: 559 residents living (the oldest 82), 104 married couples; 2 born, 0 newcomers come and 2 died in the run; 0 children and 0 newcomers asked for and not made
+  at their scheduled place: 308, on their way: 253, without a route: 0
+  the Country (outside:country): 448p; treasury 2655p; carriage to till:job:rmx_orm_carlisle 454p; restocking rule on; needs on
+  digest: people c6aa9ebc987d7a3f, society 5cf1bee702cb0ad, map memory 14650fb0739d0383 (0 tiles remembered)

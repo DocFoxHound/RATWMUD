@@ -1,0 +1,42 @@
+  money at the start (50885p in all; 42 residents short of a day's food money): holder, total, how many, median
+    adults without work: 1616p, 46, 32p
+    capital's treasury: 1000p, 1, 1000p
+    children: 0p, 4, 0p
+    guards: 262p, 14, 15p
+    home stores: 0p, 896, 0p
+    merchants: 14049p, 110, 134p
+    outside: 0p, 1, 0p
+    paid civilians: 10814p, 295, 37p
+    till: 14049p, 110, 134p
+    unpaid civilians: 9095p, 90, 75p
+  run day 1: 1.55271 s wall, 288000 ticks; 1.55271 s so far
+  run day 2: 1.20906 s wall, 288000 ticks; 2.76178 s so far
+  run day 3: 1.07214 s wall, 288000 ticks; 3.83391 s so far
+  inside World::tick, total ms (worst tick): streaming 0 (0) schedules 0 (0) movement 0 (0) separation 0 (0) views 0 (0); 0 route searches expanding 0 nodes (at most 0 in one)
+  path cache: 0 found, 0 searched
+  slowest route search: 0 ms in , 0 nodes, 0 waypoints
+  slowest World::tick after the first minute (tick 0): 0 ms = streaming 0, schedules 0 (0 route searches), movement 0, separation 0, views 0
+559 residents, no player, 864000 ticks (864000 of 0.05 s) from 6:00 to 78:00: 3.83414 s wall, 1.27805 s a game day, mean 0.00443766 ms a tick; 508 residents moved; at most 495 places in memory; 4 threads
+  by run day (wall s; ticks; with the profile on, the schedules' stages in s: society bonds roads crime errands streaming routes):
+    day 1: 1.55271; 288000; 0 0 0 0 0 0 0
+    day 2: 1.20906; 288000; 0 0 0 0 0 0 0
+    day 3: 1.07214; 288000; 0 0 0 0 0 0 0
+  559 residents offstage at the end; money conserved; 0 places in memory at the end; 10263 bonds between them
+  money at the end (50885p in all; 39 residents short of a day's food money): holder, total, how many, median
+    adults without work: 1141p, 49, 21p
+    apprentices: 139p, 7, 21p
+    capital's treasury: 2536p, 1, 2536p
+    children: 0p, 4, 0p
+    guards: 244p, 14, 14p
+    home stores: 0p, 896, 0p
+    merchants: 15476p, 110, 149p
+    outside: 485p, 1, 485p
+    paid civilians: 10961p, 285, 39p
+    till: 12537p, 110, 114p
+    unpaid civilians: 7366p, 90, 71p
+  roads: 0 towns (); 0 caravans on the road, 0 robbed; 0 bandit camps; 0 open contracts; 0 rumours held
+  crime: 0 incidents (); 0 wanted, 0 held
+  people: 559 residents living (the oldest 82), 30 married couples; 0 born, 0 newcomers come and 0 died in the run; 0 children and 0 newcomers asked for and not made
+  at their scheduled place: 559, on their way: 0, without a route: 0
+  the Country (outside:country): 485p; treasury 2536p; carriage to till:job:rmx_orm_carlisle 239p; restocking rule on; needs on
+  digest: people a72b6e4ee4de9736, society 4db79144deb0d347, map memory 14650fb0739d0383 (0 tiles remembered)

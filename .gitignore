@@ -42,3 +42,9 @@ __pycache__/
 /artifacts/economy/*/*.jsonl
 /artifacts/economy/*/*.log
 /artifacts/economy/export/
+# Kept local: the economy's old watch binaries, the sims' big event dumps, the realm's 50 MB editor project.
+/artifacts/economy/bin/
+/artifacts/economy/r2/**/*_events.json
+/artifacts/realm/project.json
+/artifacts/economy/r2/export50/
+/artifacts/economy/r2/farms_export/

@@ -125,16 +125,16 @@ The trades against what the placed residents buy a day (tools/city_capacity.py; 
   chandlery           2 -> 2          2 -> 2       3 -> 3       5.8 -> 5.8  
   smithy              5 -> 5          5 -> 5       5 -> 5       3.9 -> 3.9  
   weaver              1 -> 1          1 -> 1       1 -> 1       2.1 -> 2.1  
-  apothecary          1 -> 3          1 -> 3       1 -> 2       3.2 -> 4.8  
-  herbalist           1 -> 0          1 -> 0       0 -> 0       1.6 -> 0.0  
+  apothecary          3 -> 3          3 -> 3       2 -> 2       4.8 -> 4.8  
+  herbalist           0 -> 0          0 -> 0       0 -> 0       0.0 -> 0.0  
   pottery             1 -> 1          1 -> 1       1 -> 1       0.9 -> 0.9  
   tinker              1 -> 1          1 -> 1       1 -> 1       0.4 -> 0.4  
   general             1 -> 1          1 -> 1       1 -> 1       0.6 -> 0.6  
   armory              1 -> 1          1 -> 1       1 -> 1       0.6 -> 0.6  
   tailor              1 -> 1          1 -> 1       1 -> 1       0.4 -> 0.4  
-  before: food 50 businesses, 92 keepers and hands for 77.9 keeper-days (118%), below half: none; household goods 15 businesses
+  before: food 50 businesses, 92 keepers and hands for 77.9 keeper-days (118%), below half: none; household goods 16 businesses
   after: food 50 businesses, 92 keepers and hands for 77.9 keeper-days (118%), below half: none; household goods 16 businesses
-  People's text written again: {'job': 3}
+  People's text written again: {}
 
 Jobs by class (doc 67, Progress): earners whose job is of their household's class (the Watch and the clergy apart), before and after the class pass:
   before: 374/396 (94.4%); upper 25/26 (96%), middle 168/179 (94%), lower 181/191 (95%); own cases {'clergy': 18, 'watch': 30}; Minor House households without an upper job: none; larger businesses kept from the Sump, the Cinders or the wharf: 0; Rag Market keepers not of the middle class: 0

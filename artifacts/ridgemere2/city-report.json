@@ -5175,17 +5175,17 @@
     ],
     [
      "apothecary",
-     1,
-     1,
-     1,
-     3.187262864583333
+     3,
+     3,
+     2,
+     4.7927590625
     ],
     [
      "herbalist",
-     1,
-     1,
      0,
-     1.6054961979166666
+     0,
+     0,
+     0
     ],
     [
      "pottery",
@@ -5213,7 +5213,7 @@
      1,
      1,
      1,
-     0.60228125
+     0.6427156249999999
     ],
     [
      "tailor",
@@ -5225,7 +5225,7 @@
    ],
    "businesses": {
     "butcher": 8,
-    "herbalist": 1,
+    "apothecary": 3,
     "stall": 3,
     "preserver": 5,
     "bakery": 10,
@@ -5241,7 +5241,6 @@
     "carpenter": 3,
     "smithy": 5,
     "armory": 1,
-    "saddlery": 1,
     "general": 1,
     "pawnbroker": 1,
     "fishmonger": 4,
@@ -5259,7 +5258,6 @@
     "perfumer": 1,
     "glassworks": 2,
     "moneychanger": 1,
-    "apothecary": 1,
     "press": 1,
     "builders_works": 1,
     "barber": 1,
@@ -5278,7 +5276,7 @@
     "builders_yard": 1
    },
    "foodBusinesses": 50,
-   "householdBusinesses": 15
+   "householdBusinesses": 16
   },
   "after": {
    "ok": true,
@@ -5492,23 +5490,8 @@
    "foodBusinesses": 50,
    "householdBusinesses": 16
   },
-  "textFixes": {
-   "job": 3
-  },
-  "textFixed": [
-   [
-    "rm_rupert_pitchford",
-    "job"
-   ],
-   [
-    "rm_halvard_ashley",
-    "job"
-   ],
-   [
-    "rm_mogens_ashley",
-    "job"
-   ]
-  ]
+  "textFixes": {},
+  "textFixed": []
  },
  "classes": {
   "before": {

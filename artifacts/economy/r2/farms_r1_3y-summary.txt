@@ -1,0 +1,110 @@
+## people_summary
+# /home/martinb/Documents/GitHub/MUDProject/artifacts/economy/r2/farms_r1_3y.jsonl: 1095 days (day 0 to 1094); money conserved every day (and the money supply the start's, 50252p, and the farms' founding, 8921p): yes; players: 0 at most
+# the whole run: 47 born, 48 died, 1 children owed at the end (births + owed = deaths: yes); 10 arrived from the Country, 524 -> 514 unplaced
+y1 days 5-364: hungry 0.001 worst 2 days 2 wages 99.63% tillsShort 18.8 treasury4 5027->5899 (low 1955) purses4 29395->25532 tills4 16973 country4 432 gini4 0.487->0.516 owners 0.168 profit 870 paid 4308 alms 345 support 242 surplus 53 toll 1618 spent 5454
+    people: residents 563 households 232 (alone 77) earning 194 | births 15 arrivals 4 deaths 15 owed 0 unplaced 520 | pups 97 working-age 425 retired 41 age 36.3 | paying posts held 420-430/430 (empty longest 9.0 d) all posts 508/509 largest household 7 | filled so far: city 1 (next class 0) Country 4 (next class 0) local 12 best-trained 1
+    drift: toll 31.5 alms 10 level 4850 | keeper 14.85 hand 9.49 step mean 0.85 sd 4.69 up 45 down 42 top 4 foot 9 | prices moved 323 sd 0.084 range 0.75-1.25 level 1.000 (min 0.996 max 1.000) mean sd 0.081 | shelves 397 mean 12.8
+y2 days 365-729: hungry 0.001 worst 1 days 1 wages 99.83% tillsShort 19.5 treasury4 5859->5925 (low 3878) purses4 25889->24755 tills4 17676 country4 437 gini4 0.509->0.518 owners 0.130 profit 662 paid 4432 alms 339 support 243 surplus 80 toll 1635 spent 5381
+    people: residents 569 households 229 (alone 74) earning 195 | births 19 arrivals 6 deaths 19 owed 0 unplaced 514 | pups 111 working-age 416 retired 42 age 35.2 | paying posts held 427-430/430 (empty longest 9.0 d) all posts 504/509 largest household 7 | filled so far: city 5 (next class 0) Country 10 (next class 0) local 12 best-trained 2
+    drift: toll 31.5 alms 10 level 5502 | keeper 14.81 hand 9.80 step mean 0.81 sd 5.63 up 47 down 46 top 5 foot 15 | prices moved 323 sd 0.082 range 0.75-1.25 level 1.000 (min 0.998 max 1.004) mean sd 0.087 | shelves 397 mean 12.5
+y3 days 730-1094: hungry 0.001 worst 2 days 2 wages 99.87% tillsShort 17.5 treasury4 5924->5914 (low 4503) purses4 25068->24966 tills4 17557 country4 430 gini4 0.509->0.517 owners 0.119 profit 603 paid 4461 alms 314 support 230 surplus 104 toll 1623 spent 5347
+    people: residents 568 households 228 (alone 75) earning 195 | births 13 arrivals 0 deaths 14 owed 1 unplaced 514 | pups 105 working-age 423 retired 40 age 35.1 | paying posts held 429-429/430 (empty longest 9.0 d) all posts 500/509 largest household 7 | filled so far: city 11 (next class 0) Country 10 (next class 0) local 14 best-trained 3
+    drift: toll 31.5 alms 10 level 5676 | keeper 14.80 hand 9.84 step mean 0.80 sd 5.81 up 48 down 46 top 5 foot 16 | prices moved 323 sd 0.085 range 0.75-1.25 level 1.000 (min 0.995 max 1.000) mean sd 0.087 | shelves 401 mean 12.3
+## The toll and the alms every 28 days (moved from the world's) and the treasury's level
+  27:+0.0/+0/4440  55:+0.0/+0/5168  83:+0.0/+0/5367  111:+0.0/+0/5374  139:+0.0/+0/5242  167:+0.0/+0/4985  195:+0.0/+0/4746  223:+0.5/+0/4489
+  251:+1.0/+0/4266  279:+1.5/+0/4267  307:+1.5/+0/4491  335:+1.5/+0/4675  363:+1.5/+0/4845  391:+1.5/+0/4985  419:+1.5/+0/5092  447:+1.5/+0/5200
+
+## farms_summary (against farms_base3)
+1095 days; money conserved every day: True; the farms' founding made 8,921p.
+
+### The treasury
+
+| Year | Lowest (Sp / Su / Au / Wi) | Nights under its cap | Support wanted | Unpaid: the switch's + the city's ordinary | Surplus paid out | Toll (trim), alms (trim) at the end | Price level |
+|---|---|---|---|---|---|---|---|
+| 1 | 1,021 / 2,881 / 1,955 / 4,594 | 1 / 0 / 1 / 0 | 93,607 | 2,996 + 2,648 | 18,992 (-4,411 on the base's 23,403) | 31.5% (+1.5), 10p (+0) | 0.996-1.000 |
+| 2 | 5,098 / 3,878 / 4,317 / 5,236 | 0 / 0 / 0 / 0 | 91,135 | 1,740 + 802 | 29,149 (-12,374 on the base's 41,523) | 31.5% (+1.5), 10p (+0) | 0.998-1.004 |
+| 3 | 4,681 / 4,885 / 4,503 / 4,980 | 0 / 0 / 0 / 0 | 85,572 | 1,052 + 684 | 37,796 (-11,768 on the base's 49,564) | 31.5% (+1.5), 10p (+0) | 0.995-1.000 |
+
+### Year 1: the farms by area
+
+| Area | Days on | Paid its crews in full | Days short of stock (Sp / Su / Au / Wi) | Spoiled (of grown) | Takings, wages, basket a day | Stock at the end | Crews' spending a day, short days |
+|---|---|---|---|---|---|---|---|
+| fish | 281 | 100.0% | 0 / 0 / 0 / 2 | 16.0% | 355p, 222p, 130p | 550 | 221p, 0 |
+| fruit | 337 | 100.0% | 59 / 91 / 78 / 89 | 1.4% | 483p, 292p, 187p | 15,867 | 291p, 0 |
+| grain | 365 | 100.0% | 0 / 0 / 0 / 0 | 0.0% | 242p, 112p, 128p | 11,022 | 112p, 0 |
+| honey | 253 | 100.0% | 0 / 0 / 0 / 0 | 0.0% | 131p, 78p, 51p | 3,821 | 78p, 0 |
+| meat | 309 | 100.0% | 0 / 5 / 6 / 0 | 11.7% | 1,040p, 480p, 549p | 8,047 | 478p, 0 |
+| salt | 225 | 100.0% | 0 / 0 / 0 / 0 | 0.0% | 101p, 72p, 28p | 4,421 | 72p, 0 |
+
+Days a good ran short (Sp / Su / Au / Wi), year 1: grapes 58 / 91 / 78 / 89 (sold 15.7 a day); berries 17 / 0 / 0 / 0 (sold 0.4 a day); milk 0 / 5 / 6 / 0 (sold 66.0 a day); shellfish 0 / 0 / 0 / 2 (sold 102.7 a day)
+
+### Year 2: the farms by area
+
+| Area | Days on | Paid its crews in full | Days short of stock (Sp / Su / Au / Wi) | Spoiled (of grown) | Takings, wages, basket a day | Stock at the end | Crews' spending a day, short days |
+|---|---|---|---|---|---|---|---|
+| fish | 365 | 100.0% | 0 / 0 / 1 / 0 | 15.2% | 352p, 222p, 127p | 621 | 222p, 0 |
+| fruit | 365 | 100.0% | 86 / 36 / 0 / 23 | 1.8% | 462p, 292p, 167p | 34,064 | 292p, 0 |
+| grain | 365 | 100.0% | 0 / 0 / 0 / 0 | 0.0% | 245p, 112p, 131p | 19,006 | 112p, 0 |
+| honey | 365 | 100.0% | 0 / 0 / 0 / 0 | 0.0% | 139p, 78p, 59p | 7,510 | 78p, 0 |
+| meat | 365 | 100.0% | 1 / 3 / 7 / 1 | 10.5% | 1,043p, 480p, 553p | 15,434 | 480p, 0 |
+| salt | 365 | 100.0% | 0 / 0 / 0 / 0 | 0.0% | 99p, 72p, 26p | 10,693 | 72p, 0 |
+
+Days a good ran short (Sp / Su / Au / Wi), year 2: grapes 86 / 36 / 0 / 23 (sold 16.3 a day); milk 1 / 3 / 7 / 0 (sold 78.1 a day); shellfish 0 / 0 / 1 / 0 (sold 135.0 a day); meal 0 / 0 / 0 / 1 (sold 50.1 a day)
+
+### Year 3: the farms by area
+
+| Area | Days on | Paid its crews in full | Days short of stock (Sp / Su / Au / Wi) | Spoiled (of grown) | Takings, wages, basket a day | Stock at the end | Crews' spending a day, short days |
+|---|---|---|---|---|---|---|---|
+| fish | 365 | 100.0% | 1 / 0 / 1 / 2 | 13.7% | 359p, 222p, 134p | 594 | 222p, 0 |
+| fruit | 365 | 100.0% | 83 / 42 / 0 / 27 | 1.9% | 452p, 292p, 157p | 54,045 | 292p, 0 |
+| grain | 365 | 100.0% | 0 / 0 / 0 / 0 | 1.4% | 246p, 112p, 131p | 25,843 | 112p, 0 |
+| honey | 365 | 100.0% | 0 / 0 / 0 / 0 | 0.0% | 140p, 78p, 61p | 10,936 | 78p, 0 |
+| meat | 365 | 100.0% | 1 / 2 / 13 / 0 | 10.3% | 1,044p, 480p, 553p | 23,089 | 480p, 0 |
+| salt | 365 | 100.0% | 0 / 0 / 0 / 0 | 0.0% | 101p, 72p, 29p | 16,487 | 72p, 0 |
+
+Days a good ran short (Sp / Su / Au / Wi), year 3: grapes 83 / 42 / 0 / 27 (sold 16.3 a day); milk 1 / 1 / 13 / 0 (sold 78.0 a day); shellfish 1 / 0 / 1 / 2 (sold 136.3 a day); meal 0 / 2 / 0 / 0 (sold 50.6 a day)
+
+
+## against the base (scratch analysis: analyse.py / report.py)
+| Year | Run | Hunger (mean, worst) | Wages paid | Treasury, 4-week means (first -> last) | Its lowest | Nights under its cap | Support unpaid (the switch's + the ordinary) | Surplus paid out | Gini, 4-week means | Owners' share |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | farms | 0.001, 2 | 99.63% | 5,027 -> 5,899 | 1,955 | 1 | 2,963 + 2,596 | 18,992 | 0.487 -> 0.516 | 0.168 |
+| 1 | base | 0.002, 2 | 99.73% | 5,160 -> 5,930 | 1,776 | 1 | 1,388 + 2,829 | 23,403 | 0.482 -> 0.504 | 0.164 |
+| 1 | 12-year run | 0.003, 3 | 99.73% | 5,193 -> 5,918 | 1,803 | 1 (by the day's line) | - | 18,798 | 0.484 -> 0.505 | 0.164 |
+| 2 | farms | 0.001, 1 | 99.83% | 5,859 -> 5,925 | 3,878 | 0 | 1,740 + 802 | 29,149 | 0.509 -> 0.518 | 0.130 |
+| 2 | base | 0.002, 2 | 99.83% | 5,916 -> 5,932 | 3,596 | 0 | 1,449 + 1,435 | 41,523 | 0.500 -> 0.505 | 0.116 |
+| 2 | 12-year run | 0.003, 2 | 99.83% | 5,915 -> 5,942 | 3,834 | 0 (by the day's line) | - | 42,662 | 0.504 -> 0.508 | 0.117 |
+| 3 | farms | 0.001, 2 | 99.87% | 5,924 -> 5,914 | 4,503 | 0 | 1,052 + 684 | 37,796 | 0.509 -> 0.517 | 0.119 |
+| 3 | base | 0.004, 5 | 99.86% | 5,939 -> 5,946 | 3,826 | 0 | 1,273 + 1,039 | 49,564 | 0.491 -> 0.505 | 0.104 |
+| 3 | 12-year run | 0.004, 2 | 99.87% | 5,941 -> 5,937 | 3,627 | 0 (by the day's line) | - | 45,259 | 0.498 -> 0.506 | 0.107 |
+
+| Year | Under the base's path (mean, most) | Surplus not paid out (of the base's) | The switch's cost a day | Wage support more | Toll more | Alms more | Unpaid support more |
+|---|---|---|---|---|---|---|---|
+| 1 | 65p, 579p | 4,411p (19%) | 13p | +65p | +51p | +9p | +1,342p |
+| 2 | -139p, 431p | 12,374p (30%) | 33p | +106p | +83p | +23p | -342p |
+| 3 | -196p, 541p | 11,768p (24%) | 32p | +102p | +82p | +25p | -576p |
+
+| Area | Year | Days short (Sp / Su / Au / Wi) and of what | Farm wages paid | Stock at the year's end | Spoiled (of grown) | Takings, wages, basket a day |
+|---|---|---|---|---|---|---|
+| grain | 1 | 0 / 0 / 0 / 0 | 100.0% | 11,022 | 0.0% | 242p, 112p, 128p |
+| grain | 2 | 0 / 0 / 0 / 0 | 100.0% | 19,006 | 0.0% | 245p, 112p, 131p |
+| grain | 3 | 0 / 0 / 0 / 0 | 100.0% | 25,843 | 1.4% | 246p, 112p, 131p |
+| fruit | 1 | 59 / 91 / 78 / 89: grapes 58 / 91 / 78 / 89; berries 17 / 0 / 0 / 0 | 100.0% | 15,867 | 1.4% | 483p, 292p, 187p |
+| fruit | 2 | 86 / 36 / 0 / 23: grapes 86 / 36 / 0 / 23 | 100.0% | 34,064 | 1.8% | 462p, 292p, 167p |
+| fruit | 3 | 83 / 42 / 0 / 27: grapes 83 / 42 / 0 / 27 | 100.0% | 54,045 | 1.9% | 452p, 292p, 157p |
+| meat | 1 | 0 / 5 / 6 / 0: milk 0 / 5 / 6 / 0 | 100.0% | 8,047 | 11.7% | 1,040p, 480p, 549p |
+| meat | 2 | 1 / 3 / 7 / 1: milk 1 / 3 / 7 / 0; meal 0 / 0 / 0 / 1 | 100.0% | 15,434 | 10.5% | 1,043p, 480p, 553p |
+| meat | 3 | 1 / 2 / 13 / 0: milk 1 / 1 / 13 / 0; meal 0 / 2 / 0 / 0 | 100.0% | 23,089 | 10.3% | 1,044p, 480p, 553p |
+| fish | 1 | 0 / 0 / 0 / 2: shellfish 0 / 0 / 0 / 2 | 100.0% | 550 | 16.0% | 355p, 222p, 130p |
+| fish | 2 | 0 / 0 / 1 / 0: shellfish 0 / 0 / 1 / 0 | 100.0% | 621 | 15.2% | 352p, 222p, 127p |
+| fish | 3 | 1 / 0 / 1 / 2: shellfish 1 / 0 / 1 / 2 | 100.0% | 594 | 13.7% | 359p, 222p, 134p |
+| honey | 1 | 0 / 0 / 0 / 0 | 100.0% | 3,821 | 0.0% | 131p, 78p, 51p |
+| honey | 2 | 0 / 0 / 0 / 0 | 100.0% | 7,510 | 0.0% | 139p, 78p, 59p |
+| honey | 3 | 0 / 0 / 0 / 0 | 100.0% | 10,936 | 0.0% | 140p, 78p, 61p |
+| salt | 1 | 0 / 0 / 0 / 0 | 100.0% | 4,421 | 0.0% | 101p, 72p, 28p |
+| salt | 2 | 0 / 0 / 0 / 0 | 100.0% | 10,693 | 0.0% | 99p, 72p, 26p |
+| salt | 3 | 0 / 0 / 0 / 0 | 100.0% | 16,487 | 0.0% | 101p, 72p, 29p |
+
+31 of 31 farms paid their crews in full from their own tills every day; least float 31p
+thinnest seasons (takings / wages): orchard_5 y3 winter 1.16, orchard_4 y3 winter 1.17, orchard_5 y2 winter 1.17, orchard_4 y2 winter 1.17, orchard_2 y3 winter 1.18, orchard_5 y1 winter 1.20
+money conserved every day counting the minted: yes; minted by the farms 8,921p; money 50,252p -> 59,173p

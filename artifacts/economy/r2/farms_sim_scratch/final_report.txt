@@ -1,0 +1,45 @@
+| Year | Run | Hunger (mean, worst) | Wages paid | Treasury, 4-week means (first -> last) | Its lowest | Nights under its cap | Support unpaid (the switch's + the ordinary) | Surplus paid out | Gini, 4-week means | Owners' share |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | farms | 0.001, 2 | 99.65% | 5,027 -> 5,924 | 1,932 | 1 | 2,705 + 2,616 | 20,178 | 0.487 -> 0.518 | 0.168 |
+| 1 | base | 0.002, 2 | 99.73% | 5,160 -> 5,930 | 1,776 | 1 | 1,388 + 2,829 | 23,403 | 0.482 -> 0.504 | 0.164 |
+| 1 | 12-year run | 0.003, 3 | 99.73% | 5,193 -> 5,918 | 1,803 | 1 (by the day's line) | - | 18,798 | 0.484 -> 0.505 | 0.164 |
+| 2 | farms | 0.004, 1 | 99.84% | 5,897 -> 5,917 | 4,147 | 0 | 1,683 + 704 | 35,789 | 0.507 -> 0.527 | 0.132 |
+| 2 | base | 0.002, 2 | 99.83% | 5,916 -> 5,932 | 3,596 | 0 | 1,449 + 1,435 | 41,523 | 0.500 -> 0.505 | 0.116 |
+| 2 | 12-year run | 0.003, 2 | 99.83% | 5,915 -> 5,942 | 3,834 | 0 (by the day's line) | - | 42,662 | 0.504 -> 0.508 | 0.117 |
+| 3 | farms | 0.000, 1 | 99.86% | 5,904 -> 5,900 | 4,507 | 0 | 1,011 + 804 | 34,987 | 0.518 -> 0.527 | 0.125 |
+| 3 | base | 0.004, 5 | 99.86% | 5,939 -> 5,946 | 3,826 | 0 | 1,273 + 1,039 | 49,564 | 0.491 -> 0.505 | 0.104 |
+| 3 | 12-year run | 0.004, 2 | 99.87% | 5,941 -> 5,937 | 3,627 | 0 (by the day's line) | - | 45,259 | 0.498 -> 0.506 | 0.107 |
+
+| Year | Under the base's path (mean, most) | Surplus not paid out (of the base's) | The switch's cost a day | Wage support more | Toll more | Alms more | Unpaid support more |
+|---|---|---|---|---|---|---|---|
+| 1 | 68p, 664p | 3,225p (14%) | 9p | +63p | +51p | +8p | +1,104p |
+| 2 | -273p, 420p | 5,734p (14%) | 15p | +98p | +79p | +8p | -497p |
+| 3 | -179p, 445p | 14,577p (29%) | 40p | +107p | +86p | +31p | -497p |
+
+| Area | Year | Days short (Sp / Su / Au / Wi) and of what | Farm wages paid | Stock at the year's end | Spoiled (of grown) | Takings, wages, basket a day |
+|---|---|---|---|---|---|---|
+| grain | 1 | 0 / 0 / 0 / 0 | 100.0% | 10,941 | 0.0% | 242p, 112p, 128p |
+| grain | 2 | 0 / 0 / 0 / 0 | 100.0% | 19,274 | 0.0% | 244p, 112p, 129p |
+| grain | 3 | 0 / 0 / 0 / 0 | 100.0% | 25,801 | 1.6% | 246p, 112p, 132p |
+| fruit | 1 | 58 / 92 / 74 / 89: grapes 58 / 92 / 74 / 89 | 100.0% | 16,349 | 1.4% | 485p, 292p, 189p |
+| fruit | 2 | 91 / 40 / 0 / 26: grapes 91 / 40 / 0 / 26 | 100.0% | 35,936 | 1.8% | 461p, 292p, 166p |
+| fruit | 3 | 84 / 34 / 0 / 32: grapes 84 / 34 / 0 / 32 | 100.0% | 55,941 | 1.9% | 457p, 292p, 162p |
+| meat | 1 | 0 / 0 / 1 / 0: milk 0 / 0 / 1 / 0 | 100.0% | 7,805 | 11.5% | 1,041p, 480p, 550p |
+| meat | 2 | 0 / 0 / 2 / 0: milk 0 / 0 / 2 / 0 | 100.0% | 15,362 | 9.2% | 1,048p, 480p, 557p |
+| meat | 3 | 0 / 1 / 1 / 0: meal 0 / 1 / 0 / 0; milk 0 / 0 / 1 / 0 | 100.0% | 23,002 | 9.7% | 1,047p, 480p, 556p |
+| fish | 1 | 0 / 0 / 0 / 0 | 100.0% | 562 | 14.2% | 358p, 222p, 133p |
+| fish | 2 | 0 / 0 / 0 / 0 | 100.0% | 600 | 14.4% | 350p, 222p, 125p |
+| fish | 3 | 0 / 0 / 0 / 0 | 100.0% | 589 | 13.0% | 356p, 222p, 131p |
+| honey | 1 | 0 / 0 / 0 / 0 | 100.0% | 3,888 | 0.0% | 131p, 78p, 52p |
+| honey | 2 | 0 / 0 / 0 / 0 | 100.0% | 7,871 | 0.0% | 137p, 78p, 58p |
+| honey | 3 | 0 / 0 / 0 / 0 | 100.0% | 11,460 | 0.0% | 140p, 78p, 60p |
+| salt | 1 | 0 / 0 / 0 / 0 | 100.0% | 4,532 | 0.0% | 99p, 72p, 27p |
+| salt | 2 | 0 / 0 / 0 / 0 | 100.0% | 10,698 | 0.0% | 99p, 72p, 27p |
+| salt | 3 | 0 / 0 / 0 / 0 | 100.0% | 16,585 | 0.0% | 101p, 72p, 28p |
+
+31 of 31 farms paid their crews in full from their own tills every day; least float 33p
+thinnest seasons (takings / wages): orchard_5 y3 winter 1.17, orchard_4 y3 winter 1.18, orchard_5 y2 winter 1.18, orchard_4 y2 winter 1.19, orchard_2 y3 winter 1.20, orchard_3 y2 summer 1.21
+money conserved every day counting the minted: yes; minted by the farms 8,921p; money 50,252p -> 59,173p
+support by trade y1: inn 33.8, butcher 24.9, distillery 20.6, shipwright 15.3, preserver 14.8, builders_works 14.3, smithy 13.3, ironworks 9.0, press 8.1, brewery 7.6, brickworks 7.5, fishmonger 7.0, cooperage 6.3, apothecary 6.3, bakery 6.1, armory 5.6
+support by trade y2: inn 31.6, press 21.7, distillery 21.0, shipwright 17.1, ironworks 15.4, preserver 14.9, smithy 13.0, builders_works 11.8, butcher 9.6, brewery 7.5, charcoal 6.9, cartographer 6.6, apothecary 5.9, provisioner 5.2, armory 5.1, glassworks 4.6
+support by trade y3: inn 32.2, distillery 21.0, press 21.0, shipwright 18.5, ironworks 17.2, preserver 14.0, brewery 13.0, fishmonger 11.5, butcher 11.4, builders_works 10.9, smithy 9.7, charcoal 7.3, bakery 6.5, armory 4.8, cooperage 4.6, stall 4.6
