@@ -1,0 +1,5341 @@
+{
+ "format": "ratw-communities",
+ "version": 1,
+ "about": "The Country's farm steadings and communities as built on the realm (Docs/Design/70, Progress, \"The steadings and the communities\"; doc 71, Phase C), written by tools/worldgen/realm2_places.py with each realm write. Homes and workplaces are interiors (world.interiors / world.areas id; the project's rooms): a resident's home is live.npcs home_area = the home's `area`, home_x/home_y a bed; a post's work_area = the workplace `area`, work_x/work_y a `work` spot. At most 6 to a home (HouseholdMost). An interior's region is its community (`ridgemere` for the farms near the city), so a farm's hands and its keeper are \"near\" it.",
+ "householdMost": 6,
+ "workLabels": {
+  "about": "The game knows a shop or works by its keeper's work label (Data/Items/businesses.json `match`, at most 40 characters). A market post's label should hold its business's word; a farm post's should hold none of them (or it becomes that city business), so not \"dairy\", \"cheesemaker\", \"water mill\", \"salt house\", \"salt pans\", \"smokehouse\", \" press\", \"vintner\", \"brewer\", \"butcher\", \"baker\", \"tavern\", \"taproom\", \"keeps the \".",
+  "general": "shopkeeper at <store>",
+  "inn": "keeps the taproom at <inn or alehouse>",
+  "bakery": "baker at <bakehouse>",
+  "farm": "e.g. \"keeps Longmead Farm\", \"farmhand at Longmead\", \"boatman at Rivermouth\", \"eel-catcher\""
+ },
+ "ridgemere": {
+  "farms": [
+   "orchard_3",
+   "orchard_4",
+   "cattle_and_dairy_farm_1",
+   "cattle_and_dairy_farm_2",
+   "cattle_and_dairy_farm_3",
+   "sea_fishing_boat_1",
+   "sea_fishing_boat_2",
+   "beekeeper_1",
+   "beekeeper_2"
+  ],
+  "hands": 23,
+  "note": "These farms' hands live in Ridgemere's own homes and lodgings and walk out; their keepers' families live at the steadings."
+ },
+ "communities": [
+  {
+   "id": "coldwater",
+   "name": "Coldwater",
+   "site": "coldwater",
+   "centre": {
+    "x": 1956,
+    "y": 1796
+   },
+   "about": "A lakeside village of the Greenholt where the East, River, High and Downs Roads meet north of Glasswater: timber cottages under cedar shingle round a green and its well, a store, an inn and a bakehouse, kitchen gardens, hens and goats. The hands of the orchards, piggeries, sheepwalks and lake boats round about live here.",
+   "style": "country",
+   "region": "coldwater",
+   "hands": 21,
+   "farms": [
+    "orchard_1",
+    "orchard_2",
+    "pig_farm_1",
+    "pig_farm_2",
+    "sheep_and_goat_run_1",
+    "sheep_and_goat_run_2",
+    "lake_and_river_boat_1",
+    "lake_and_river_boat_2"
+   ],
+   "beds": 62,
+   "homes": [
+    {
+     "area": "cn_coldwater_cottage_1",
+     "name": "Coldwater Cottage 1",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_6",
+      "x": 166,
+      "y": 243,
+      "worldX": 1958,
+      "worldY": 1779
+     }
+    },
+    {
+     "area": "cn_coldwater_cottage_2",
+     "name": "Coldwater Cottage 2",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 14,
+       "y": 1
+      },
+      {
+       "x": 14,
+       "y": 3
+      },
+      {
+       "x": 1,
+       "y": 5
+      },
+      {
+       "x": 14,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_6",
+      "x": 164,
+      "y": 224,
+      "worldX": 1956,
+      "worldY": 1760
+     }
+    },
+    {
+     "area": "cn_coldwater_cottage_3",
+     "name": "Coldwater Cottage 3",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 195,
+      "y": 5,
+      "worldX": 1987,
+      "worldY": 1797
+     }
+    },
+    {
+     "area": "cn_coldwater_cottage_4",
+     "name": "Coldwater Cottage 4",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 14,
+       "y": 1
+      },
+      {
+       "x": 14,
+       "y": 3
+      },
+      {
+       "x": 1,
+       "y": 5
+      },
+      {
+       "x": 14,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 195,
+      "y": 1,
+      "worldX": 1987,
+      "worldY": 1793
+     }
+    },
+    {
+     "area": "cn_coldwater_cottage_5",
+     "name": "Coldwater Cottage 5",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 159,
+      "y": 24,
+      "worldX": 1951,
+      "worldY": 1816
+     }
+    },
+    {
+     "area": "cn_coldwater_cottage_6",
+     "name": "Coldwater Cottage 6",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 3,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_6",
+      "x": 139,
+      "y": 255,
+      "worldX": 1931,
+      "worldY": 1791
+     }
+    },
+    {
+     "area": "cn_coldwater_cottage_7",
+     "name": "Coldwater Cottage 7",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 3,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 119,
+      "y": 11,
+      "worldX": 1911,
+      "worldY": 1803
+     }
+    },
+    {
+     "area": "cn_coldwater_cottage_8",
+     "name": "Coldwater Cottage 8",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 162,
+      "y": 40,
+      "worldX": 1954,
+      "worldY": 1832
+     }
+    },
+    {
+     "area": "cn_coldwater_cottage_9",
+     "name": "Coldwater Cottage 9",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 14
+      },
+      {
+       "x": 7,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 209,
+      "y": 11,
+      "worldX": 2001,
+      "worldY": 1803
+     }
+    }
+   ],
+   "flats": [
+    {
+     "area": "cn_coldwater_store_flat",
+     "name": "Coldwater Stores, the flat above",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 16,
+       "y": 10
+      },
+      {
+       "x": 16,
+       "y": 8
+      },
+      {
+       "x": 1,
+       "y": 10
+      },
+      {
+       "x": 16,
+       "y": 6
+      }
+     ],
+     "for": "Coldwater Stores"
+    },
+    {
+     "area": "cn_coldwater_bakehouse_flat",
+     "name": "Coldwater Bakehouse, the flat above",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 16
+      },
+      {
+       "x": 3,
+       "y": 16
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 16
+      }
+     ],
+     "for": "Coldwater Bakehouse"
+    }
+   ],
+   "market": [
+    {
+     "area": "cn_coldwater_store",
+     "name": "Coldwater Stores",
+     "business": "general",
+     "posts": [
+      {
+       "post": "shopkeeper",
+       "count": 1
+      },
+      {
+       "post": "shop hand",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 8,
+       "y": 8
+      },
+      {
+       "x": 9,
+       "y": 9
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 164,
+      "y": 12,
+      "worldX": 1956,
+      "worldY": 1804
+     },
+     "otherRooms": [
+      "cn_coldwater_store_flat"
+     ]
+    },
+    {
+     "area": "cn_coldwater_inn",
+     "name": "The Glasswater Inn",
+     "business": "inn",
+     "posts": [
+      {
+       "post": "innkeeper",
+       "count": 1
+      },
+      {
+       "post": "pot hand",
+       "count": 1
+      },
+      {
+       "post": "cook",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 5,
+       "y": 2
+      },
+      {
+       "x": 3,
+       "y": 2
+      },
+      {
+       "x": 7,
+       "y": 2
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_7_6",
+      "x": 163,
+      "y": 240,
+      "worldX": 1955,
+      "worldY": 1776
+     },
+     "otherRooms": [
+      "cn_coldwater_inn_up"
+     ],
+     "guestBeds": 10
+    },
+    {
+     "area": "cn_coldwater_bakehouse",
+     "name": "Coldwater Bakehouse",
+     "business": "bakery",
+     "posts": [
+      {
+       "post": "baker",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 3,
+       "y": 8
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 16,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 14,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 13,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 11,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 10,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 8,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 7,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 5,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 4,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 2,
+       "station": "oven"
+      },
+      {
+       "x": 1,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 9,
+       "y": 15,
+       "station": "workbench"
+      },
+      {
+       "x": 9,
+       "y": 14,
+       "station": "workbench"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 154,
+      "y": 3,
+      "worldX": 1946,
+      "worldY": 1795
+     },
+     "otherRooms": [
+      "cn_coldwater_bakehouse_flat"
+     ]
+    }
+   ],
+   "gardens": [
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_7_6",
+     "x": 141,
+     "y": 215,
+     "width": 12,
+     "height": 8,
+     "worldX": 1933,
+     "worldY": 1751,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_7_7",
+     "x": 172,
+     "y": 43,
+     "width": 12,
+     "height": 8,
+     "worldX": 1964,
+     "worldY": 1835,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_7_6",
+     "x": 174,
+     "y": 214,
+     "width": 12,
+     "height": 8,
+     "worldX": 1966,
+     "worldY": 1750,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_7_7",
+     "x": 140,
+     "y": 42,
+     "width": 12,
+     "height": 8,
+     "worldX": 1932,
+     "worldY": 1834,
+     "tiles": 60
+    },
+    {
+     "kind": "hen run",
+     "cell": "w_ridgemere_7_7",
+     "x": 186,
+     "y": 39,
+     "width": 9,
+     "height": 7,
+     "worldX": 1978,
+     "worldY": 1831,
+     "tiles": 35
+    },
+    {
+     "kind": "goat paddock",
+     "cell": "w_ridgemere_7_6",
+     "x": 155,
+     "y": 205,
+     "width": 13,
+     "height": 9,
+     "worldX": 1947,
+     "worldY": 1741,
+     "tiles": 77
+    }
+   ],
+   "roomToGrow": {
+    "cottageLots": 6,
+    "openTiles": 4602
+   }
+  },
+  {
+   "id": "larkfield",
+   "name": "Larkfield",
+   "site": "larkfield",
+   "centre": {
+    "x": 1676,
+    "y": 2380
+   },
+   "about": "A village at the Long River's crossing among the middle country's grain: timber cottages round a green and its well, a store, an alehouse and a bakehouse baking the Longmead mill's flour, kitchen gardens, hens and goats. The hands of Longmead, the Plumtree orchard and the Southwood piggery live here.",
+   "style": "country",
+   "region": "larkfield",
+   "hands": 10,
+   "farms": [
+    "grain_farm_1",
+    "orchard_5",
+    "pig_farm_3"
+   ],
+   "beds": 31,
+   "homes": [
+    {
+     "area": "cn_larkfield_cottage_1",
+     "name": "Larkfield Cottage 1",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 14,
+       "y": 1
+      },
+      {
+       "x": 14,
+       "y": 3
+      },
+      {
+       "x": 1,
+       "y": 5
+      },
+      {
+       "x": 14,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 133,
+      "y": 43,
+      "worldX": 1669,
+      "worldY": 2347
+     }
+    },
+    {
+     "area": "cn_larkfield_cottage_2",
+     "name": "Larkfield Cottage 2",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 3,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 115,
+      "y": 71,
+      "worldX": 1651,
+      "worldY": 2375
+     }
+    },
+    {
+     "area": "cn_larkfield_cottage_3",
+     "name": "Larkfield Cottage 3",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 3,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 98,
+      "y": 73,
+      "worldX": 1634,
+      "worldY": 2377
+     }
+    },
+    {
+     "area": "cn_larkfield_cottage_4",
+     "name": "Larkfield Cottage 4",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 133,
+      "y": 96,
+      "worldX": 1669,
+      "worldY": 2400
+     }
+    }
+   ],
+   "flats": [
+    {
+     "area": "cn_larkfield_store_flat",
+     "name": "Larkfield Stores, the flat above",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      }
+     ],
+     "for": "Larkfield Stores"
+    },
+    {
+     "area": "cn_larkfield_alehouse_flat",
+     "name": "The Sheaf, the rooms above",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 12,
+       "y": 1
+      },
+      {
+       "x": 10,
+       "y": 1
+      },
+      {
+       "x": 12,
+       "y": 18
+      }
+     ],
+     "for": "The Sheaf"
+    }
+   ],
+   "market": [
+    {
+     "area": "cn_larkfield_store",
+     "name": "Larkfield Stores",
+     "business": "general",
+     "posts": [
+      {
+       "post": "shopkeeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 3,
+       "y": 7
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 130,
+      "y": 76,
+      "worldX": 1666,
+      "worldY": 2380
+     },
+     "otherRooms": [
+      "cn_larkfield_store_flat"
+     ]
+    },
+    {
+     "area": "cn_larkfield_alehouse",
+     "name": "The Sheaf",
+     "business": "inn",
+     "posts": [
+      {
+       "post": "alehouse keeper",
+       "count": 1
+      },
+      {
+       "post": "pot hand",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 11,
+       "y": 5
+      },
+      {
+       "x": 11,
+       "y": 3
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 150,
+      "y": 76,
+      "worldX": 1686,
+      "worldY": 2380
+     },
+     "otherRooms": [
+      "cn_larkfield_alehouse_flat"
+     ]
+    },
+    {
+     "area": "cn_larkfield_bakehouse",
+     "name": "Larkfield Bakehouse",
+     "business": "bakery",
+     "posts": [
+      {
+       "post": "baker",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 7,
+       "y": 3
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 3,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 4,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 6,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 7,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 9,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 10,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 12,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 13,
+       "y": 1,
+       "station": "oven"
+      },
+      {
+       "x": 2,
+       "y": 8,
+       "station": "workbench"
+      },
+      {
+       "x": 3,
+       "y": 8,
+       "station": "workbench"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 133,
+      "y": 56,
+      "worldX": 1669,
+      "worldY": 2360
+     },
+     "otherRooms": []
+    }
+   ],
+   "gardens": [
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_6_9",
+     "x": 127,
+     "y": 113,
+     "width": 12,
+     "height": 8,
+     "worldX": 1663,
+     "worldY": 2417,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_6_9",
+     "x": 150,
+     "y": 33,
+     "width": 12,
+     "height": 8,
+     "worldX": 1686,
+     "worldY": 2337,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_6_9",
+     "x": 106,
+     "y": 38,
+     "width": 12,
+     "height": 8,
+     "worldX": 1642,
+     "worldY": 2342,
+     "tiles": 60
+    },
+    {
+     "kind": "hen run",
+     "cell": "w_ridgemere_6_9",
+     "x": 113,
+     "y": 109,
+     "width": 9,
+     "height": 7,
+     "worldX": 1649,
+     "worldY": 2413,
+     "tiles": 35
+    },
+    {
+     "kind": "goat paddock",
+     "cell": "w_ridgemere_6_9",
+     "x": 157,
+     "y": 110,
+     "width": 13,
+     "height": 9,
+     "worldX": 1693,
+     "worldY": 2414,
+     "tiles": 77
+    }
+   ],
+   "roomToGrow": {
+    "cottageLots": 8,
+    "openTiles": 5702
+   }
+  },
+  {
+   "id": "southmeadow",
+   "name": "Southmeadow",
+   "site": "southmeadow",
+   "centre": {
+    "x": 2148,
+    "y": 3348
+   },
+   "about": "A hamlet of the warm Sunfields: limewashed cottages under red tile round a green and its well, a store and an alehouse, kitchen gardens, hens and goats, the vines and the Lark's grain fields round it. The hands of Larkholm, the Southmeadow vines and the Sunfields bee garth live here.",
+   "style": "southern",
+   "region": "southmeadow",
+   "hands": 8,
+   "farms": [
+    "grain_farm_2",
+    "vineyard_2",
+    "beekeeper_3"
+   ],
+   "beds": 25,
+   "homes": [
+    {
+     "area": "cn_southmeadow_cottage_1",
+     "name": "Southmeadow Cottage 1",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 102,
+      "y": 40,
+      "worldX": 2150,
+      "worldY": 3368
+     }
+    },
+    {
+     "area": "cn_southmeadow_cottage_2",
+     "name": "Southmeadow Cottage 2",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 14
+      },
+      {
+       "x": 7,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 110,
+      "y": 26,
+      "worldX": 2158,
+      "worldY": 3354
+     }
+    },
+    {
+     "area": "cn_southmeadow_cottage_3",
+     "name": "Southmeadow Cottage 3",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 3,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 90,
+      "y": 20,
+      "worldX": 2138,
+      "worldY": 3348
+     }
+    }
+   ],
+   "flats": [
+    {
+     "area": "cn_southmeadow_store_flat",
+     "name": "Southmeadow Stores, the flat above",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 14,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "for": "Southmeadow Stores"
+    },
+    {
+     "area": "cn_southmeadow_alehouse_flat",
+     "name": "The Vine and Sickle, the rooms above",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 18,
+       "y": 12
+      },
+      {
+       "x": 18,
+       "y": 10
+      },
+      {
+       "x": 1,
+       "y": 12
+      }
+     ],
+     "for": "The Vine and Sickle"
+    }
+   ],
+   "market": [
+    {
+     "area": "cn_southmeadow_store",
+     "name": "Southmeadow Stores",
+     "business": "general",
+     "posts": [
+      {
+       "post": "shopkeeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 8,
+       "y": 3
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 102,
+      "y": 12,
+      "worldX": 2150,
+      "worldY": 3340
+     },
+     "otherRooms": [
+      "cn_southmeadow_store_flat"
+     ]
+    },
+    {
+     "area": "cn_southmeadow_alehouse",
+     "name": "The Vine and Sickle",
+     "business": "inn",
+     "posts": [
+      {
+       "post": "alehouse keeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 14,
+       "y": 11
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 97,
+      "y": 28,
+      "worldX": 2145,
+      "worldY": 3356
+     },
+     "otherRooms": [
+      "cn_southmeadow_alehouse_flat"
+     ]
+    }
+   ],
+   "gardens": [
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_8_12",
+     "x": 87,
+     "y": 232,
+     "width": 12,
+     "height": 8,
+     "worldX": 2135,
+     "worldY": 3304,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_8_12",
+     "x": 101,
+     "y": 231,
+     "width": 12,
+     "height": 8,
+     "worldX": 2149,
+     "worldY": 3303,
+     "tiles": 60
+    },
+    {
+     "kind": "hen run",
+     "cell": "w_ridgemere_8_13",
+     "x": 104,
+     "y": 57,
+     "width": 9,
+     "height": 7,
+     "worldX": 2152,
+     "worldY": 3385,
+     "tiles": 35
+    },
+    {
+     "kind": "goat paddock",
+     "cell": "w_ridgemere_8_12",
+     "x": 132,
+     "y": 243,
+     "width": 13,
+     "height": 9,
+     "worldX": 2180,
+     "worldY": 3315,
+     "tiles": 77
+    }
+   ],
+   "roomToGrow": {
+    "cottageLots": 6,
+    "openTiles": 5738
+   }
+  },
+  {
+   "id": "fenshore",
+   "name": "Fenshore",
+   "site": "fenshore",
+   "centre": {
+    "x": 860,
+    "y": 3476
+   },
+   "about": "A hamlet of the Sallow Fens on a low island of dry ground: timber houses thatched with reed stand on stilts over the wet, joined by boardwalks; a store, an alehouse, kitchen gardens on the dry ground, hens and goats. The eel-catchers, salt boilers, warreners and the fen coast's boatmen live here.",
+   "style": "fen",
+   "region": "fenshore",
+   "hands": 8,
+   "farms": [
+    "rabbit_warren_1",
+    "eel_and_fowl_marsh_1",
+    "sea_fishing_boat_3",
+    "sea_fishing_boat_4",
+    "salt_works_2"
+   ],
+   "beds": 25,
+   "homes": [
+    {
+     "area": "cn_fenshore_cottage_1",
+     "name": "Fenshore Stilt House 1",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 14
+      },
+      {
+       "x": 7,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 102,
+      "y": 145,
+      "worldX": 870,
+      "worldY": 3473
+     }
+    },
+    {
+     "area": "cn_fenshore_cottage_2",
+     "name": "Fenshore Stilt House 2",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 3,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 67,
+      "y": 143,
+      "worldX": 835,
+      "worldY": 3471
+     }
+    },
+    {
+     "area": "cn_fenshore_cottage_3",
+     "name": "Fenshore Stilt House 3",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 99,
+      "y": 168,
+      "worldX": 867,
+      "worldY": 3496
+     }
+    }
+   ],
+   "flats": [
+    {
+     "area": "cn_fenshore_store_flat",
+     "name": "Fenshore Stores, the flat above",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 5
+      }
+     ],
+     "for": "Fenshore Stores"
+    },
+    {
+     "area": "cn_fenshore_alehouse_flat",
+     "name": "The Heron, the rooms above",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 18
+      },
+      {
+       "x": 3,
+       "y": 18
+      },
+      {
+       "x": 1,
+       "y": 1
+      }
+     ],
+     "for": "The Heron"
+    }
+   ],
+   "market": [
+    {
+     "area": "cn_fenshore_store",
+     "name": "Fenshore Stores",
+     "business": "general",
+     "posts": [
+      {
+       "post": "shopkeeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 7,
+       "y": 7
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 92,
+      "y": 156,
+      "worldX": 860,
+      "worldY": 3484
+     },
+     "otherRooms": [
+      "cn_fenshore_store_flat"
+     ]
+    },
+    {
+     "area": "cn_fenshore_alehouse",
+     "name": "The Heron",
+     "business": "inn",
+     "posts": [
+      {
+       "post": "alehouse keeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 2,
+       "y": 14
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 82,
+      "y": 148,
+      "worldX": 850,
+      "worldY": 3476
+     },
+     "otherRooms": [
+      "cn_fenshore_alehouse_flat"
+     ]
+    }
+   ],
+   "gardens": [
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_3_13",
+     "x": 83,
+     "y": 105,
+     "width": 12,
+     "height": 8,
+     "worldX": 851,
+     "worldY": 3433,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_3_13",
+     "x": 86,
+     "y": 184,
+     "width": 12,
+     "height": 8,
+     "worldX": 854,
+     "worldY": 3512,
+     "tiles": 60
+    },
+    {
+     "kind": "hen run",
+     "cell": "w_ridgemere_3_13",
+     "x": 70,
+     "y": 107,
+     "width": 9,
+     "height": 7,
+     "worldX": 838,
+     "worldY": 3435,
+     "tiles": 35
+    },
+    {
+     "kind": "goat paddock",
+     "cell": "w_ridgemere_3_13",
+     "x": 71,
+     "y": 184,
+     "width": 13,
+     "height": 9,
+     "worldX": 839,
+     "worldY": 3512,
+     "tiles": 77
+    }
+   ],
+   "roomToGrow": {
+    "cottageLots": 9,
+    "openTiles": 3850
+   }
+  },
+  {
+   "id": "saltwell",
+   "name": "Saltwell",
+   "site": "saltwell",
+   "centre": {
+    "x": 3292,
+    "y": 2932
+   },
+   "about": "The oasis hamlet of the Red Waste by its spring pool, on the way to the Saltpan: limewashed adobe houses with flat roofs round a well, a store and a caravan inn, gardens watered from the pool, hens and goats. The salt rakers, the Ochre vines' hands and the warreners live here.",
+   "style": "adobe",
+   "region": "saltwell",
+   "hands": 6,
+   "farms": [
+    "vineyard_1",
+    "rabbit_warren_2",
+    "salt_works_1"
+   ],
+   "beds": 22,
+   "homes": [
+    {
+     "area": "cn_saltwell_cottage_1",
+     "name": "Saltwell Cottage 1",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_12_11",
+      "x": 227,
+      "y": 136,
+      "worldX": 3299,
+      "worldY": 2952
+     }
+    },
+    {
+     "area": "cn_saltwell_cottage_2",
+     "name": "Saltwell Cottage 2",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_12_11",
+      "x": 213,
+      "y": 136,
+      "worldX": 3285,
+      "worldY": 2952
+     }
+    },
+    {
+     "area": "cn_saltwell_cottage_3",
+     "name": "Saltwell Cottage 3",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 3,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_12_11",
+      "x": 210,
+      "y": 115,
+      "worldX": 3282,
+      "worldY": 2931
+     }
+    }
+   ],
+   "flats": [
+    {
+     "area": "cn_saltwell_store_flat",
+     "name": "Saltwell Stores, the flat above",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 13,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "for": "Saltwell Stores"
+    }
+   ],
+   "market": [
+    {
+     "area": "cn_saltwell_store",
+     "name": "Saltwell Stores",
+     "business": "general",
+     "posts": [
+      {
+       "post": "shopkeeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 7,
+       "y": 3
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_12_11",
+      "x": 220,
+      "y": 108,
+      "worldX": 3292,
+      "worldY": 2924
+     },
+     "otherRooms": [
+      "cn_saltwell_store_flat"
+     ]
+    },
+    {
+     "area": "cn_saltwell_inn",
+     "name": "The Oasis Inn",
+     "business": "inn",
+     "posts": [
+      {
+       "post": "innkeeper",
+       "count": 1
+      },
+      {
+       "post": "pot hand",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 13,
+       "y": 5
+      },
+      {
+       "x": 13,
+       "y": 3
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_12_11",
+      "x": 230,
+      "y": 115,
+      "worldX": 3302,
+      "worldY": 2931
+     },
+     "otherRooms": [
+      "cn_saltwell_inn_up"
+     ],
+     "guestBeds": 10
+    }
+   ],
+   "gardens": [
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_12_11",
+     "x": 162,
+     "y": 81,
+     "width": 12,
+     "height": 8,
+     "worldX": 3234,
+     "worldY": 2897,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_12_11",
+     "x": 140,
+     "y": 131,
+     "width": 12,
+     "height": 8,
+     "worldX": 3212,
+     "worldY": 2947,
+     "tiles": 60
+    },
+    {
+     "kind": "hen run",
+     "cell": "w_ridgemere_12_11",
+     "x": 142,
+     "y": 90,
+     "width": 9,
+     "height": 7,
+     "worldX": 3214,
+     "worldY": 2906,
+     "tiles": 35
+    },
+    {
+     "kind": "goat paddock",
+     "cell": "w_ridgemere_12_11",
+     "x": 160,
+     "y": 141,
+     "width": 13,
+     "height": 9,
+     "worldX": 3232,
+     "worldY": 2957,
+     "tiles": 77
+    }
+   ],
+   "roomToGrow": {
+    "cottageLots": 6,
+    "openTiles": 6285
+   }
+  }
+ ],
+ "farms": [
+  {
+   "farm": "grain_farm_1",
+   "kind": "grain farm",
+   "area": "grain",
+   "site": "grain_long",
+   "steading": "Longmead Farm",
+   "community": "larkfield",
+   "keepers": 1,
+   "hands": 4,
+   "workplace": "fs_grain_long_granary",
+   "workplaces": [
+    {
+     "area": "fs_grain_long_granary",
+     "name": "Longmead Granary",
+     "work": [
+      {
+       "x": 9,
+       "y": 7
+      },
+      {
+       "x": 15,
+       "y": 7
+      },
+      {
+       "x": 4,
+       "y": 7
+      },
+      {
+       "x": 12,
+       "y": 4
+      },
+      {
+       "x": 9,
+       "y": 9
+      }
+     ],
+     "stations": []
+    },
+    {
+     "area": "fs_grain_long_mill",
+     "name": "Longmead Mill",
+     "work": [
+      {
+       "x": 2,
+       "y": 13
+      },
+      {
+       "x": 2,
+       "y": 10
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 13,
+       "station": "millstones"
+      },
+      {
+       "x": 1,
+       "y": 10,
+       "station": "millstones"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_grain_long_home",
+    "name": "Longmead Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_7_9",
+    "x": 189,
+    "y": 126,
+    "worldX": 1981,
+    "worldY": 2430
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_7_9",
+    "x": 169,
+    "y": 120,
+    "width": 6,
+    "height": 5,
+    "worldX": 1961,
+    "worldY": 2424,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 527,
+   "mapWins": ""
+  },
+  {
+   "farm": "grain_farm_2",
+   "kind": "grain farm",
+   "area": "grain",
+   "site": "grain_lark",
+   "steading": "Larkholm Farm",
+   "community": "southmeadow",
+   "keepers": 1,
+   "hands": 4,
+   "workplace": "fs_grain_lark_granary",
+   "workplaces": [
+    {
+     "area": "fs_grain_lark_granary",
+     "name": "Larkholm Granary",
+     "work": [
+      {
+       "x": 9,
+       "y": 7
+      },
+      {
+       "x": 15,
+       "y": 7
+      },
+      {
+       "x": 4,
+       "y": 7
+      },
+      {
+       "x": 12,
+       "y": 4
+      },
+      {
+       "x": 9,
+       "y": 9
+      }
+     ],
+     "stations": []
+    },
+    {
+     "area": "fs_grain_lark_mill",
+     "name": "Larkholm Mill",
+     "work": [
+      {
+       "x": 9,
+       "y": 2
+      },
+      {
+       "x": 9,
+       "y": 5
+      }
+     ],
+     "stations": [
+      {
+       "x": 10,
+       "y": 2,
+       "station": "millstones"
+      },
+      {
+       "x": 10,
+       "y": 5,
+       "station": "millstones"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_grain_lark_home",
+    "name": "Larkholm Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_8_11",
+    "x": 114,
+    "y": 38,
+    "worldX": 2162,
+    "worldY": 2854
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_8_11",
+    "x": 94,
+    "y": 32,
+    "width": 6,
+    "height": 5,
+    "worldX": 2142,
+    "worldY": 2848,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 569,
+   "mapWins": ""
+  },
+  {
+   "farm": "orchard_1",
+   "kind": "orchard with a drying house",
+   "area": "fruit",
+   "site": "orchard_greenholt",
+   "steading": "Greenholt Orchard",
+   "community": "coldwater",
+   "keepers": 1,
+   "hands": 3,
+   "workplace": "fs_orchard_greenholt_drying",
+   "workplaces": [
+    {
+     "area": "fs_orchard_greenholt_drying",
+     "name": "Greenholt Drying House",
+     "work": [
+      {
+       "x": 7,
+       "y": 6
+      },
+      {
+       "x": 11,
+       "y": 6
+      },
+      {
+       "x": 3,
+       "y": 6
+      },
+      {
+       "x": 8,
+       "y": 7
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 11,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 9,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 7,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 5,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 3,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 14,
+       "y": 4,
+       "station": "hearth"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_orchard_greenholt_home",
+    "name": "Greenholt Orchard House",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_6_6",
+    "x": 25,
+    "y": 0,
+    "worldX": 1561,
+    "worldY": 1536
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_6_5",
+    "x": 7,
+    "y": 250,
+    "width": 6,
+    "height": 5,
+    "worldX": 1543,
+    "worldY": 1530,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 515,
+   "mapWins": ""
+  },
+  {
+   "farm": "orchard_2",
+   "kind": "orchard",
+   "area": "fruit",
+   "site": "orchard_coldwater",
+   "steading": "Meresend Orchard",
+   "community": "coldwater",
+   "keepers": 1,
+   "hands": 2,
+   "workplace": "fs_orchard_coldwater_store",
+   "workplaces": [
+    {
+     "area": "fs_orchard_coldwater_store",
+     "name": "Meresend Apple Store",
+     "work": [
+      {
+       "x": 7,
+       "y": 6
+      },
+      {
+       "x": 12,
+       "y": 3
+      },
+      {
+       "x": 7,
+       "y": 8
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 5,
+       "station": "press"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_orchard_coldwater_home",
+    "name": "Meresend Orchard House",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_8_6",
+    "x": 111,
+    "y": 170,
+    "worldX": 2159,
+    "worldY": 1706
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_8_6",
+    "x": 93,
+    "y": 164,
+    "width": 6,
+    "height": 5,
+    "worldX": 2141,
+    "worldY": 1700,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 249,
+   "mapWins": ""
+  },
+  {
+   "farm": "orchard_3",
+   "kind": "orchard with a drying house",
+   "area": "fruit",
+   "site": "orchard_rainward",
+   "steading": "Rainward Orchard",
+   "community": "ridgemere",
+   "keepers": 1,
+   "hands": 3,
+   "workplace": "fs_orchard_rainward_drying",
+   "workplaces": [
+    {
+     "area": "fs_orchard_rainward_drying",
+     "name": "Rainward Drying House",
+     "work": [
+      {
+       "x": 7,
+       "y": 6
+      },
+      {
+       "x": 11,
+       "y": 6
+      },
+      {
+       "x": 3,
+       "y": 6
+      },
+      {
+       "x": 8,
+       "y": 7
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 11,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 9,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 7,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 5,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 3,
+       "y": 8,
+       "station": "drying_rack"
+      },
+      {
+       "x": 14,
+       "y": 4,
+       "station": "hearth"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_orchard_rainward_home",
+    "name": "Rainward Orchard House",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_2_3",
+    "x": 130,
+    "y": 112,
+    "worldX": 642,
+    "worldY": 880
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_2_3",
+    "x": 112,
+    "y": 106,
+    "width": 6,
+    "height": 5,
+    "worldX": 624,
+    "worldY": 874,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": null,
+   "mapWins": "the file: the coast south of the city; the map: the Rainward orchard, south-east of the city (the same near country, cider and a drying house)"
+  },
+  {
+   "farm": "orchard_4",
+   "kind": "orchard",
+   "area": "fruit",
+   "site": "orchard_coastvale",
+   "steading": "Coastvale Orchard",
+   "community": "ridgemere",
+   "keepers": 1,
+   "hands": 2,
+   "workplace": "fs_orchard_coastvale_store",
+   "workplaces": [
+    {
+     "area": "fs_orchard_coastvale_store",
+     "name": "Coastvale Apple Store",
+     "work": [
+      {
+       "x": 7,
+       "y": 6
+      },
+      {
+       "x": 12,
+       "y": 3
+      },
+      {
+       "x": 7,
+       "y": 8
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 5,
+       "station": "press"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_orchard_coastvale_home",
+    "name": "Coastvale Orchard House",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_1_6",
+    "x": 226,
+    "y": 8,
+    "worldX": 482,
+    "worldY": 1544
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_1_6",
+    "x": 208,
+    "y": 2,
+    "width": 6,
+    "height": 5,
+    "worldX": 464,
+    "worldY": 1538,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": null,
+   "mapWins": ""
+  },
+  {
+   "farm": "orchard_5",
+   "kind": "orchard",
+   "area": "fruit",
+   "site": "orchard_larkfield",
+   "steading": "Plumtree Orchard",
+   "community": "larkfield",
+   "keepers": 1,
+   "hands": 2,
+   "workplace": "fs_orchard_larkfield_store",
+   "workplaces": [
+    {
+     "area": "fs_orchard_larkfield_store",
+     "name": "Plumtree Apple Store",
+     "work": [
+      {
+       "x": 6,
+       "y": 8
+      },
+      {
+       "x": 3,
+       "y": 3
+      },
+      {
+       "x": 8,
+       "y": 8
+      }
+     ],
+     "stations": [
+      {
+       "x": 5,
+       "y": 2,
+       "station": "press"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_orchard_larkfield_home",
+    "name": "Plumtree Orchard House",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_7_10",
+    "x": 74,
+    "y": 175,
+    "worldX": 1866,
+    "worldY": 2735
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_7_10",
+    "x": 68,
+    "y": 188,
+    "width": 5,
+    "height": 6,
+    "worldX": 1860,
+    "worldY": 2748,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 472,
+   "mapWins": ""
+  },
+  {
+   "farm": "vineyard_1",
+   "kind": "vineyard",
+   "area": "fruit",
+   "site": "vineyard_ochre",
+   "steading": "Ochre Vineyard",
+   "community": "saltwell",
+   "keepers": 1,
+   "hands": 3,
+   "workplace": "fs_vineyard_ochre_press",
+   "workplaces": [
+    {
+     "area": "fs_vineyard_ochre_press",
+     "name": "Ochre Press House",
+     "work": [
+      {
+       "x": 8,
+       "y": 2
+      },
+      {
+       "x": 8,
+       "y": 5
+      },
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 3
+      }
+     ],
+     "stations": [
+      {
+       "x": 9,
+       "y": 2,
+       "station": "press"
+      },
+      {
+       "x": 9,
+       "y": 5,
+       "station": "press"
+      }
+     ]
+    },
+    {
+     "area": "fs_vineyard_ochre_press_cellar",
+     "name": "Ochre Press House, the cellar",
+     "work": [
+      {
+       "x": 9,
+       "y": 8
+      }
+     ],
+     "stations": []
+    }
+   ],
+   "home": {
+    "area": "fs_vineyard_ochre_home",
+    "name": "Ochre Vineyard House",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_9_10",
+    "x": 218,
+    "y": 85,
+    "worldX": 2522,
+    "worldY": 2645
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_9_10",
+    "x": 212,
+    "y": 98,
+    "width": 5,
+    "height": 6,
+    "worldX": 2516,
+    "worldY": 2658,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 952,
+   "mapWins": ""
+  },
+  {
+   "farm": "vineyard_2",
+   "kind": "vineyard",
+   "area": "fruit",
+   "site": "vineyard_south",
+   "steading": "Southmeadow Vineyard",
+   "community": "southmeadow",
+   "keepers": 1,
+   "hands": 3,
+   "workplace": "fs_vineyard_south_press",
+   "workplaces": [
+    {
+     "area": "fs_vineyard_south_press",
+     "name": "Southmeadow Press House",
+     "work": [
+      {
+       "x": 13,
+       "y": 8
+      },
+      {
+       "x": 10,
+       "y": 8
+      },
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 12,
+       "y": 9
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 9,
+       "station": "press"
+      },
+      {
+       "x": 10,
+       "y": 9,
+       "station": "press"
+      }
+     ]
+    },
+    {
+     "area": "fs_vineyard_south_press_cellar",
+     "name": "Southmeadow Press House, the cellar",
+     "work": [
+      {
+       "x": 7,
+       "y": 9
+      }
+     ],
+     "stations": []
+    }
+   ],
+   "home": {
+    "area": "fs_vineyard_south_home",
+    "name": "Southmeadow Vineyard House",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_9_12",
+    "x": 103,
+    "y": 98,
+    "worldX": 2407,
+    "worldY": 3170
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_9_12",
+    "x": 85,
+    "y": 92,
+    "width": 6,
+    "height": 5,
+    "worldX": 2389,
+    "worldY": 3164,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 427,
+   "mapWins": ""
+  },
+  {
+   "farm": "cattle_and_dairy_farm_1",
+   "kind": "cattle and dairy farm",
+   "area": "meat",
+   "site": "dairy_southgate",
+   "steading": "Southgate Dairy Farm",
+   "community": "ridgemere",
+   "keepers": 1,
+   "hands": 4,
+   "workplace": "fs_dairy_southgate_byre",
+   "workplaces": [
+    {
+     "area": "fs_dairy_southgate_byre",
+     "name": "Southgate Byre",
+     "work": [
+      {
+       "x": 7,
+       "y": 5
+      },
+      {
+       "x": 7,
+       "y": 12
+      }
+     ],
+     "stations": []
+    },
+    {
+     "area": "fs_dairy_southgate_dairy",
+     "name": "Southgate Dairy",
+     "work": [
+      {
+       "x": 2,
+       "y": 13
+      },
+      {
+       "x": 2,
+       "y": 10
+      },
+      {
+       "x": 2,
+       "y": 7
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 13,
+       "station": "press"
+      },
+      {
+       "x": 1,
+       "y": 10,
+       "station": "press"
+      },
+      {
+       "x": 1,
+       "y": 7,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_dairy_southgate_home",
+    "name": "Southgate Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_1_3",
+    "x": 138,
+    "y": 183,
+    "worldX": 394,
+    "worldY": 951
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_1_3",
+    "x": 132,
+    "y": 197,
+    "width": 5,
+    "height": 6,
+    "worldX": 388,
+    "worldY": 965,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": null,
+   "mapWins": ""
+  },
+  {
+   "farm": "cattle_and_dairy_farm_2",
+   "kind": "cattle and dairy farm",
+   "area": "meat",
+   "site": "dairy_rainrun",
+   "steading": "Rainrun Dairy Farm",
+   "community": "ridgemere",
+   "keepers": 1,
+   "hands": 4,
+   "workplace": "fs_dairy_rainrun_byre",
+   "workplaces": [
+    {
+     "area": "fs_dairy_rainrun_byre",
+     "name": "Rainrun Byre",
+     "work": [
+      {
+       "x": 12,
+       "y": 7
+      },
+      {
+       "x": 5,
+       "y": 7
+      }
+     ],
+     "stations": []
+    },
+    {
+     "area": "fs_dairy_rainrun_dairy",
+     "name": "Rainrun Dairy",
+     "work": [
+      {
+       "x": 2,
+       "y": 2
+      },
+      {
+       "x": 5,
+       "y": 2
+      },
+      {
+       "x": 8,
+       "y": 2
+      }
+     ],
+     "stations": [
+      {
+       "x": 2,
+       "y": 1,
+       "station": "press"
+      },
+      {
+       "x": 5,
+       "y": 1,
+       "station": "press"
+      },
+      {
+       "x": 8,
+       "y": 1,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_dairy_rainrun_home",
+    "name": "Rainrun Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_3_3",
+    "x": 78,
+    "y": 228,
+    "worldX": 846,
+    "worldY": 996
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_3_3",
+    "x": 59,
+    "y": 222,
+    "width": 6,
+    "height": 5,
+    "worldX": 827,
+    "worldY": 990,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": null,
+   "mapWins": ""
+  },
+  {
+   "farm": "cattle_and_dairy_farm_3",
+   "kind": "cattle and dairy farm",
+   "area": "meat",
+   "site": "dairy_rainward",
+   "steading": "Hillside Dairy Farm",
+   "community": "ridgemere",
+   "keepers": 1,
+   "hands": 4,
+   "workplace": "fs_dairy_rainward_byre",
+   "workplaces": [
+    {
+     "area": "fs_dairy_rainward_byre",
+     "name": "Hillside Byre",
+     "work": [
+      {
+       "x": 12,
+       "y": 7
+      },
+      {
+       "x": 5,
+       "y": 7
+      }
+     ],
+     "stations": []
+    },
+    {
+     "area": "fs_dairy_rainward_dairy",
+     "name": "Hillside Dairy",
+     "work": [
+      {
+       "x": 2,
+       "y": 2
+      },
+      {
+       "x": 5,
+       "y": 2
+      },
+      {
+       "x": 8,
+       "y": 2
+      }
+     ],
+     "stations": [
+      {
+       "x": 2,
+       "y": 1,
+       "station": "press"
+      },
+      {
+       "x": 5,
+       "y": 1,
+       "station": "press"
+      },
+      {
+       "x": 8,
+       "y": 1,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_dairy_rainward_home",
+    "name": "Hillside Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_3_2",
+    "x": 150,
+    "y": 42,
+    "worldX": 918,
+    "worldY": 554
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_3_2",
+    "x": 131,
+    "y": 36,
+    "width": 6,
+    "height": 5,
+    "worldX": 899,
+    "worldY": 548,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": null,
+   "mapWins": ""
+  },
+  {
+   "farm": "pig_farm_1",
+   "kind": "pig farm",
+   "area": "meat",
+   "site": "pigs_greenholt",
+   "steading": "Oakhurst Piggery",
+   "community": "coldwater",
+   "keepers": 1,
+   "hands": 4,
+   "workplace": "fs_pigs_greenholt_sties",
+   "workplaces": [
+    {
+     "area": "fs_pigs_greenholt_sties",
+     "name": "Oakhurst Pig Yard",
+     "work": [
+      {
+       "x": 5,
+       "y": 9
+      },
+      {
+       "x": 5,
+       "y": 3
+      },
+      {
+       "x": 5,
+       "y": 14
+      },
+      {
+       "x": 6,
+       "y": 8
+      },
+      {
+       "x": 6,
+       "y": 10
+      }
+     ],
+     "stations": [
+      {
+       "x": 2,
+       "y": 15,
+       "station": "butcher_block"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_pigs_greenholt_home",
+    "name": "Oakhurst Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_5_6",
+    "x": 138,
+    "y": 93,
+    "worldX": 1418,
+    "worldY": 1629
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_5_6",
+    "x": 132,
+    "y": 107,
+    "width": 5,
+    "height": 6,
+    "worldX": 1412,
+    "worldY": 1643,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 657,
+   "mapWins": ""
+  },
+  {
+   "farm": "pig_farm_2",
+   "kind": "pig farm",
+   "area": "meat",
+   "site": "pigs_alder",
+   "steading": "Alder Piggery",
+   "community": "coldwater",
+   "keepers": 1,
+   "hands": 4,
+   "workplace": "fs_pigs_alder_sties",
+   "workplaces": [
+    {
+     "area": "fs_pigs_alder_sties",
+     "name": "Alder Pig Yard",
+     "work": [
+      {
+       "x": 8,
+       "y": 5
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 3,
+       "y": 5
+      },
+      {
+       "x": 9,
+       "y": 6
+      },
+      {
+       "x": 7,
+       "y": 6
+      }
+     ],
+     "stations": [
+      {
+       "x": 2,
+       "y": 2,
+       "station": "butcher_block"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_pigs_alder_home",
+    "name": "Alder Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_6_4",
+    "x": 64,
+    "y": 251,
+    "worldX": 1600,
+    "worldY": 1275
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_6_4",
+    "x": 45,
+    "y": 245,
+    "width": 6,
+    "height": 5,
+    "worldX": 1581,
+    "worldY": 1269,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 688,
+   "mapWins": ""
+  },
+  {
+   "farm": "pig_farm_3",
+   "kind": "pig farm",
+   "area": "meat",
+   "site": "pigs_south",
+   "steading": "Southwood Piggery",
+   "community": "larkfield",
+   "keepers": 1,
+   "hands": 4,
+   "workplace": "fs_pigs_south_sties",
+   "workplaces": [
+    {
+     "area": "fs_pigs_south_sties",
+     "name": "Southwood Pig Yard",
+     "work": [
+      {
+       "x": 5,
+       "y": 9
+      },
+      {
+       "x": 5,
+       "y": 3
+      },
+      {
+       "x": 5,
+       "y": 14
+      },
+      {
+       "x": 6,
+       "y": 8
+      },
+      {
+       "x": 6,
+       "y": 10
+      }
+     ],
+     "stations": [
+      {
+       "x": 2,
+       "y": 15,
+       "station": "butcher_block"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_pigs_south_home",
+    "name": "Southwood Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_5_8",
+    "x": 90,
+    "y": 5,
+    "worldX": 1370,
+    "worldY": 2053
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_5_8",
+    "x": 84,
+    "y": 19,
+    "width": 5,
+    "height": 6,
+    "worldX": 1364,
+    "worldY": 2067,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 557,
+   "mapWins": ""
+  },
+  {
+   "farm": "rabbit_warren_1",
+   "kind": "rabbit warren",
+   "area": "meat",
+   "site": "warren_dunes",
+   "steading": "Dune Warren",
+   "community": "fenshore",
+   "keepers": 1,
+   "hands": 1,
+   "workplace": "fs_warren_dunes_rabbitry",
+   "workplaces": [
+    {
+     "area": "fs_warren_dunes_rabbitry",
+     "name": "Dune Rabbitry",
+     "work": [
+      {
+       "x": 10,
+       "y": 5
+      },
+      {
+       "x": 10,
+       "y": 18
+      }
+     ],
+     "stations": []
+    }
+   ],
+   "home": {
+    "area": "fs_warren_dunes_home",
+    "name": "Dune Warren House",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_3_14",
+    "x": 162,
+    "y": 40,
+    "worldX": 930,
+    "worldY": 3624
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_3_14",
+    "x": 156,
+    "y": 58,
+    "width": 5,
+    "height": 6,
+    "worldX": 924,
+    "worldY": 3642,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 198,
+   "mapWins": ""
+  },
+  {
+   "farm": "rabbit_warren_2",
+   "kind": "rabbit warren",
+   "area": "meat",
+   "site": "warren_waste",
+   "steading": "Redsand Warren",
+   "community": "saltwell",
+   "keepers": 1,
+   "hands": 1,
+   "workplace": "fs_warren_waste_rabbitry",
+   "workplaces": [
+    {
+     "area": "fs_warren_waste_rabbitry",
+     "name": "Redsand Rabbitry",
+     "work": [
+      {
+       "x": 10,
+       "y": 5
+      },
+      {
+       "x": 10,
+       "y": 18
+      }
+     ],
+     "stations": []
+    }
+   ],
+   "home": {
+    "area": "fs_warren_waste_home",
+    "name": "Redsand Warren House",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_11_10",
+    "x": 154,
+    "y": 36,
+    "worldX": 2970,
+    "worldY": 2596
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_11_10",
+    "x": 148,
+    "y": 54,
+    "width": 5,
+    "height": 6,
+    "worldX": 2964,
+    "worldY": 2614,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 597,
+   "mapWins": ""
+  },
+  {
+   "farm": "sheep_and_goat_run_1",
+   "kind": "sheep and goat run",
+   "area": "meat",
+   "site": "sheep_downs",
+   "steading": "Larkdowns Fold",
+   "community": "coldwater",
+   "keepers": 1,
+   "hands": 3,
+   "workplace": "fs_sheep_downs_barn",
+   "workplaces": [
+    {
+     "area": "fs_sheep_downs_barn",
+     "name": "Larkdowns Shearing Barn",
+     "work": [
+      {
+       "x": 12,
+       "y": 7
+      },
+      {
+       "x": 5,
+       "y": 7
+      },
+      {
+       "x": 12,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      }
+     ],
+     "stations": []
+    }
+   ],
+   "home": {
+    "area": "fs_sheep_downs_home",
+    "name": "Larkdowns Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_9_8",
+    "x": 229,
+    "y": 98,
+    "worldX": 2533,
+    "worldY": 2146
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_9_8",
+    "x": 210,
+    "y": 92,
+    "width": 6,
+    "height": 5,
+    "worldX": 2514,
+    "worldY": 2140,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 762,
+   "mapWins": ""
+  },
+  {
+   "farm": "sheep_and_goat_run_2",
+   "kind": "sheep and goat run",
+   "area": "meat",
+   "site": "sheep_foothills",
+   "steading": "Greyteeth Fold",
+   "community": "coldwater",
+   "keepers": 1,
+   "hands": 3,
+   "workplace": "fs_sheep_foothills_barn",
+   "workplaces": [
+    {
+     "area": "fs_sheep_foothills_barn",
+     "name": "Greyteeth Shearing Barn",
+     "work": [
+      {
+       "x": 7,
+       "y": 5
+      },
+      {
+       "x": 7,
+       "y": 12
+      },
+      {
+       "x": 9,
+       "y": 5
+      },
+      {
+       "x": 7,
+       "y": 3
+      }
+     ],
+     "stations": []
+    }
+   ],
+   "home": {
+    "area": "fs_sheep_foothills_home",
+    "name": "Greyteeth Farmhouse",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_11_5",
+    "x": 7,
+    "y": 243,
+    "worldX": 2823,
+    "worldY": 1523
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_11_6",
+    "x": 1,
+    "y": 1,
+    "width": 5,
+    "height": 6,
+    "worldX": 2817,
+    "worldY": 1537,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 1047,
+   "mapWins": ""
+  },
+  {
+   "farm": "eel_and_fowl_marsh_1",
+   "kind": "eel and fowl marsh",
+   "area": "fish",
+   "site": "marsh_eels",
+   "steading": "Withy Creek Marsh",
+   "community": "fenshore",
+   "keepers": 1,
+   "hands": 1,
+   "workplace": "fs_marsh_eels_eelhouse",
+   "workplaces": [
+    {
+     "area": "fs_marsh_eels_eelhouse",
+     "name": "Withy Creek Eel House",
+     "work": [
+      {
+       "x": 2,
+       "y": 2
+      },
+      {
+       "x": 2,
+       "y": 15
+      }
+     ],
+     "stations": [
+      {
+       "x": 9,
+       "y": 2,
+       "station": "smokehouse"
+      },
+      {
+       "x": 6,
+       "y": 2,
+       "station": "smokehouse"
+      },
+      {
+       "x": 3,
+       "y": 2,
+       "station": "smokehouse"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_marsh_eels_home",
+    "name": "Withy Creek Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_4_13",
+    "x": 28,
+    "y": 101,
+    "worldX": 1052,
+    "worldY": 3429
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_4_13",
+    "x": 22,
+    "y": 115,
+    "width": 5,
+    "height": 6,
+    "worldX": 1046,
+    "worldY": 3443,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 357,
+   "mapWins": ""
+  },
+  {
+   "farm": "lake_and_river_boat_1",
+   "kind": "lake and river boat",
+   "area": "fish",
+   "site": "fishing_glasswater",
+   "steading": "Glasswater Landing",
+   "community": "coldwater",
+   "keepers": 1,
+   "hands": 1,
+   "workplace": "fs_fishing_glasswater_shed",
+   "workplaces": [
+    {
+     "area": "fs_fishing_glasswater_shed",
+     "name": "Glasswater Boat Shed",
+     "work": [
+      {
+       "x": 7,
+       "y": 4
+      },
+      {
+       "x": 11,
+       "y": 4
+      },
+      {
+       "x": 4,
+       "y": 4
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 3,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_fishing_glasswater_home",
+    "name": "Glasswater Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_7_7",
+    "x": 51,
+    "y": 191,
+    "worldX": 1843,
+    "worldY": 1983
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_7_7",
+    "x": 33,
+    "y": 185,
+    "width": 6,
+    "height": 5,
+    "worldX": 1825,
+    "worldY": 1977,
+    "tiles": 12
+   },
+   "jetty": {
+    "x": 1828,
+    "y": 2012,
+    "tiles": 22
+   },
+   "walk": 254,
+   "mapWins": "the file: a lake under the northern mountains; the map: Glasswater's south shore"
+  },
+  {
+   "farm": "lake_and_river_boat_2",
+   "kind": "lake and river boat",
+   "area": "fish",
+   "site": "fishing_uppermere",
+   "steading": "Upper Mere Landing",
+   "community": "coldwater",
+   "keepers": 1,
+   "hands": 1,
+   "workplace": "fs_fishing_uppermere_shed",
+   "workplaces": [
+    {
+     "area": "fs_fishing_uppermere_shed",
+     "name": "Upper Mere Boat Shed",
+     "work": [
+      {
+       "x": 7,
+       "y": 4
+      },
+      {
+       "x": 11,
+       "y": 4
+      },
+      {
+       "x": 4,
+       "y": 4
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 3,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_fishing_uppermere_home",
+    "name": "Upper Mere Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_9_6",
+    "x": 104,
+    "y": 32,
+    "worldX": 2408,
+    "worldY": 1568
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_9_6",
+    "x": 86,
+    "y": 26,
+    "width": 6,
+    "height": 5,
+    "worldX": 2390,
+    "worldY": 1562,
+    "tiles": 12
+   },
+   "jetty": {
+    "x": 2412,
+    "y": 1596,
+    "tiles": 24
+   },
+   "walk": 551,
+   "mapWins": "the file: the plains' largest river; the map: the Upper Mere, on the Long River above Glasswater"
+  },
+  {
+   "farm": "sea_fishing_boat_1",
+   "kind": "sea fishing boat",
+   "area": "fish",
+   "site": "fishing_sound",
+   "steading": "Soundside Landing",
+   "community": "ridgemere",
+   "keepers": 1,
+   "hands": 2,
+   "workplace": "fs_fishing_sound_shed",
+   "workplaces": [
+    {
+     "area": "fs_fishing_sound_shed",
+     "name": "Soundside Boat Shed",
+     "work": [
+      {
+       "x": 4,
+       "y": 8
+      },
+      {
+       "x": 4,
+       "y": 4
+      },
+      {
+       "x": 4,
+       "y": 11
+      }
+     ],
+     "stations": [
+      {
+       "x": 3,
+       "y": 2,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_fishing_sound_home",
+    "name": "Soundside Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_2_5",
+    "x": 108,
+    "y": 63,
+    "worldX": 620,
+    "worldY": 1343
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_2_5",
+    "x": 102,
+    "y": 76,
+    "width": 5,
+    "height": 6,
+    "worldX": 614,
+    "worldY": 1356,
+    "tiles": 12
+   },
+   "jetty": {
+    "x": 603,
+    "y": 1359,
+    "tiles": 20
+   },
+   "walk": null,
+   "mapWins": ""
+  },
+  {
+   "farm": "sea_fishing_boat_2",
+   "kind": "sea fishing boat",
+   "area": "fish",
+   "site": "fishing_northcove",
+   "steading": "North Cove Landing",
+   "community": "ridgemere",
+   "keepers": 1,
+   "hands": 2,
+   "workplace": "fs_fishing_northcove_shed",
+   "workplaces": [
+    {
+     "area": "fs_fishing_northcove_shed",
+     "name": "North Cove Boat Shed",
+     "work": [
+      {
+       "x": 7,
+       "y": 4
+      },
+      {
+       "x": 11,
+       "y": 4
+      },
+      {
+       "x": 4,
+       "y": 4
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 3,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_fishing_northcove_home",
+    "name": "North Cove Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_0_4",
+    "x": 162,
+    "y": 42,
+    "worldX": 162,
+    "worldY": 1066
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_0_4",
+    "x": 144,
+    "y": 36,
+    "width": 6,
+    "height": 5,
+    "worldX": 144,
+    "worldY": 1060,
+    "tiles": 12
+   },
+   "jetty": {
+    "x": 139,
+    "y": 1051,
+    "tiles": 20
+   },
+   "walk": null,
+   "mapWins": "the file: off the city's wharf; the map: North Cove, on the rain coast south of the city"
+  },
+  {
+   "farm": "sea_fishing_boat_3",
+   "kind": "sea fishing boat",
+   "area": "fish",
+   "site": "fishing_delta",
+   "steading": "Rivermouth Landing",
+   "community": "fenshore",
+   "keepers": 1,
+   "hands": 2,
+   "workplace": "fs_fishing_delta_shed",
+   "workplaces": [
+    {
+     "area": "fs_fishing_delta_shed",
+     "name": "Rivermouth Boat Shed",
+     "work": [
+      {
+       "x": 7,
+       "y": 4
+      },
+      {
+       "x": 11,
+       "y": 4
+      },
+      {
+       "x": 4,
+       "y": 4
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 3,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_fishing_delta_home",
+    "name": "Rivermouth Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_3_11",
+    "x": 137,
+    "y": 202,
+    "worldX": 905,
+    "worldY": 3018
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_3_11",
+    "x": 119,
+    "y": 196,
+    "width": 6,
+    "height": 5,
+    "worldX": 887,
+    "worldY": 3012,
+    "tiles": 12
+   },
+   "jetty": {
+    "x": 933,
+    "y": 3054,
+    "tiles": 21
+   },
+   "walk": 1040,
+   "mapWins": "the file: a cove on the coast south of the city; the map: the Long River's mouth, on the fens' coast"
+  },
+  {
+   "farm": "sea_fishing_boat_4",
+   "kind": "sea fishing boat",
+   "area": "fish",
+   "site": "fishing_fencoast",
+   "steading": "Fen Shore Landing",
+   "community": "fenshore",
+   "keepers": 1,
+   "hands": 2,
+   "workplace": "fs_fishing_fencoast_shed",
+   "workplaces": [
+    {
+     "area": "fs_fishing_fencoast_shed",
+     "name": "Fen Shore Boat Shed",
+     "work": [
+      {
+       "x": 7,
+       "y": 4
+      },
+      {
+       "x": 11,
+       "y": 4
+      },
+      {
+       "x": 4,
+       "y": 4
+      }
+     ],
+     "stations": [
+      {
+       "x": 13,
+       "y": 3,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_fishing_fencoast_home",
+    "name": "Fen Shore Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_2_14",
+    "x": 173,
+    "y": 183,
+    "worldX": 685,
+    "worldY": 3767
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_2_14",
+    "x": 155,
+    "y": 177,
+    "width": 6,
+    "height": 5,
+    "worldX": 667,
+    "worldY": 3761,
+    "tiles": 12
+   },
+   "jetty": {
+    "x": 694,
+    "y": 3800,
+    "tiles": 38
+   },
+   "walk": 524,
+   "mapWins": ""
+  },
+  {
+   "farm": "beekeeper_1",
+   "kind": "beekeeper",
+   "area": "honey",
+   "site": "bees_rainward",
+   "steading": "Heatherside Bee Garth",
+   "community": "ridgemere",
+   "keepers": 1,
+   "hands": 1,
+   "workplace": "fs_bees_rainward_hives",
+   "workplaces": [
+    {
+     "area": "fs_bees_rainward_hives",
+     "name": "Heatherside Hive Shed",
+     "work": [
+      {
+       "x": 7,
+       "y": 5
+      },
+      {
+       "x": 8,
+       "y": 6
+      }
+     ],
+     "stations": [
+      {
+       "x": 7,
+       "y": 6,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_bees_rainward_home",
+    "name": "Heatherside Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_3_1",
+    "x": 183,
+    "y": 81,
+    "worldX": 951,
+    "worldY": 337
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_3_1",
+    "x": 166,
+    "y": 75,
+    "width": 6,
+    "height": 5,
+    "worldX": 934,
+    "worldY": 331,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": null,
+   "mapWins": "the file: among the orchards of the central hills; the map: the Rainward bee garth, on the hills east of the city"
+  },
+  {
+   "farm": "beekeeper_2",
+   "kind": "beekeeper",
+   "area": "honey",
+   "site": "bees_greenholt",
+   "steading": "Alderbank Bee Garth",
+   "community": "ridgemere",
+   "keepers": 1,
+   "hands": 1,
+   "workplace": "fs_bees_greenholt_hives",
+   "workplaces": [
+    {
+     "area": "fs_bees_greenholt_hives",
+     "name": "Alderbank Hive Shed",
+     "work": [
+      {
+       "x": 7,
+       "y": 5
+      },
+      {
+       "x": 8,
+       "y": 6
+      }
+     ],
+     "stations": [
+      {
+       "x": 7,
+       "y": 6,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_bees_greenholt_home",
+    "name": "Alderbank Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_5_4",
+    "x": 21,
+    "y": 105,
+    "worldX": 1301,
+    "worldY": 1129
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_5_4",
+    "x": 4,
+    "y": 99,
+    "width": 6,
+    "height": 5,
+    "worldX": 1284,
+    "worldY": 1123,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": null,
+   "mapWins": "the file: among the orchards of the coast south of the city; the map: the Greenholt bee garth, in the lower Alder valley"
+  },
+  {
+   "farm": "beekeeper_3",
+   "kind": "beekeeper",
+   "area": "honey",
+   "site": "bees_south",
+   "steading": "Sunfields Bee Garth",
+   "community": "southmeadow",
+   "keepers": 1,
+   "hands": 1,
+   "workplace": "fs_bees_south_hives",
+   "workplaces": [
+    {
+     "area": "fs_bees_south_hives",
+     "name": "Sunfields Hive Shed",
+     "work": [
+      {
+       "x": 7,
+       "y": 5
+      },
+      {
+       "x": 8,
+       "y": 6
+      }
+     ],
+     "stations": [
+      {
+       "x": 7,
+       "y": 6,
+       "station": "workbench"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_bees_south_home",
+    "name": "Sunfields Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 9,
+      "y": 1
+     },
+     {
+      "x": 7,
+      "y": 1
+     },
+     {
+      "x": 9,
+      "y": 14
+     },
+     {
+      "x": 7,
+      "y": 14
+     },
+     {
+      "x": 5,
+      "y": 1
+     },
+     {
+      "x": 5,
+      "y": 14
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_7_12",
+    "x": 192,
+    "y": 24,
+    "worldX": 1984,
+    "worldY": 3096
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_7_12",
+    "x": 175,
+    "y": 18,
+    "width": 6,
+    "height": 5,
+    "worldX": 1967,
+    "worldY": 3090,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 396,
+   "mapWins": "the file: the desert edge's scrub; the map: the Sunfields bee garth, by Southmeadow"
+  },
+  {
+   "farm": "salt_works_1",
+   "kind": "salt works",
+   "area": "salt",
+   "site": "salt_saltpan",
+   "steading": "Saltpan Workings",
+   "community": "saltwell",
+   "keepers": 1,
+   "hands": 2,
+   "workplace": "fs_salt_saltpan_store",
+   "workplaces": [
+    {
+     "area": "fs_salt_saltpan_store",
+     "name": "Saltpan Salt Store",
+     "work": [
+      {
+       "x": 5,
+       "y": 8
+      },
+      {
+       "x": 5,
+       "y": 4
+      },
+      {
+       "x": 5,
+       "y": 11
+      }
+     ],
+     "stations": []
+    }
+   ],
+   "home": {
+    "area": "fs_salt_saltpan_home",
+    "name": "Saltpan Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_13_12",
+    "x": 89,
+    "y": 237,
+    "worldX": 3417,
+    "worldY": 3309
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_13_12",
+    "x": 83,
+    "y": 250,
+    "width": 5,
+    "height": 6,
+    "worldX": 3411,
+    "worldY": 3322,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 487,
+   "mapWins": "the file: the fens' coast; the map: the Saltpan workings, in the Red Waste"
+  },
+  {
+   "farm": "salt_works_2",
+   "kind": "salt works",
+   "area": "salt",
+   "site": "salt_fencoast",
+   "steading": "Fenside Salterns",
+   "community": "fenshore",
+   "keepers": 1,
+   "hands": 2,
+   "workplace": "fs_salt_fencoast_boiling",
+   "workplaces": [
+    {
+     "area": "fs_salt_fencoast_boiling",
+     "name": "Fenside Boiling House",
+     "work": [
+      {
+       "x": 8,
+       "y": 2
+      },
+      {
+       "x": 8,
+       "y": 5
+      },
+      {
+       "x": 8,
+       "y": 8
+      }
+     ],
+     "stations": [
+      {
+       "x": 9,
+       "y": 2,
+       "station": "salt_pan"
+      },
+      {
+       "x": 9,
+       "y": 5,
+       "station": "salt_pan"
+      },
+      {
+       "x": 9,
+       "y": 8,
+       "station": "salt_pan"
+      },
+      {
+       "x": 9,
+       "y": 11,
+       "station": "salt_pan"
+      },
+      {
+       "x": 9,
+       "y": 14,
+       "station": "salt_pan"
+      },
+      {
+       "x": 6,
+       "y": 1,
+       "station": "salt_pan"
+      }
+     ]
+    }
+   ],
+   "home": {
+    "area": "fs_salt_fencoast_home",
+    "name": "Fenside Cottage",
+    "capacity": 6,
+    "beds": [
+     {
+      "x": 1,
+      "y": 1
+     },
+     {
+      "x": 1,
+      "y": 3
+     },
+     {
+      "x": 14,
+      "y": 1
+     },
+     {
+      "x": 14,
+      "y": 3
+     },
+     {
+      "x": 1,
+      "y": 5
+     },
+     {
+      "x": 14,
+      "y": 5
+     }
+    ]
+   },
+   "door": {
+    "cell": "w_ridgemere_3_12",
+    "x": 124,
+    "y": 218,
+    "worldX": 892,
+    "worldY": 3290
+   },
+   "garden": {
+    "kind": "kitchen garden",
+    "cell": "w_ridgemere_3_12",
+    "x": 118,
+    "y": 232,
+    "width": 5,
+    "height": 6,
+    "worldX": 886,
+    "worldY": 3304,
+    "tiles": 12
+   },
+   "jetty": null,
+   "walk": 196,
+   "mapWins": "the file: the flats of the coast south of the city; the map: the Fen salterns, on the fens' coast"
+  }
+ ],
+ "paths": [
+  {
+   "name": "larkfield:grain_long",
+   "length": 527,
+   "from": [
+    1676,
+    2380
+   ],
+   "to": [
+    1968,
+    2430
+   ]
+  },
+  {
+   "name": "larkfield:mill_long",
+   "length": 256,
+   "from": [
+    1676,
+    2380
+   ],
+   "to": [
+    1754,
+    2540
+   ]
+  },
+  {
+   "name": "southmeadow:grain_lark",
+   "length": 569,
+   "from": [
+    2148,
+    3348
+   ],
+   "to": [
+    2149,
+    2854
+   ]
+  },
+  {
+   "name": "southmeadow:mill_lark",
+   "length": 702,
+   "from": [
+    2148,
+    3348
+   ],
+   "to": [
+    2408,
+    2866
+   ]
+  },
+  {
+   "name": "coldwater:orchard_greenholt",
+   "length": 515,
+   "from": [
+    1956,
+    1796
+   ],
+   "to": [
+    1550,
+    1536
+   ]
+  },
+  {
+   "name": "coldwater:orchard_coldwater",
+   "length": 249,
+   "from": [
+    1956,
+    1796
+   ],
+   "to": [
+    2148,
+    1706
+   ]
+  },
+  {
+   "name": "larkfield:orchard_larkfield",
+   "length": 472,
+   "from": [
+    1676,
+    2380
+   ],
+   "to": [
+    1866,
+    2746
+   ]
+  },
+  {
+   "name": "saltwell:vineyard_ochre",
+   "length": 952,
+   "from": [
+    3292,
+    2932
+   ],
+   "to": [
+    2522,
+    2656
+   ]
+  },
+  {
+   "name": "southmeadow:vineyard_south",
+   "length": 427,
+   "from": [
+    2148,
+    3348
+   ],
+   "to": [
+    2396,
+    3170
+   ]
+  },
+  {
+   "name": "coldwater:pigs_greenholt",
+   "length": 657,
+   "from": [
+    1956,
+    1796
+   ],
+   "to": [
+    1418,
+    1641
+   ]
+  },
+  {
+   "name": "coldwater:pigs_alder",
+   "length": 688,
+   "from": [
+    1956,
+    1796
+   ],
+   "to": [
+    1588,
+    1275
+   ]
+  },
+  {
+   "name": "larkfield:pigs_south",
+   "length": 557,
+   "from": [
+    1676,
+    2380
+   ],
+   "to": [
+    1370,
+    2065
+   ]
+  },
+  {
+   "name": "coldwater:sheep_downs",
+   "length": 762,
+   "from": [
+    1956,
+    1796
+   ],
+   "to": [
+    2521,
+    2146
+   ]
+  },
+  {
+   "name": "coldwater:sheep_foothills",
+   "length": 1047,
+   "from": [
+    1956,
+    1796
+   ],
+   "to": [
+    2823,
+    1535
+   ]
+  },
+  {
+   "name": "fenshore:warren_dunes",
+   "length": 198,
+   "from": [
+    860,
+    3476
+   ],
+   "to": [
+    930,
+    3640
+   ]
+  },
+  {
+   "name": "saltwell:warren_waste",
+   "length": 597,
+   "from": [
+    3292,
+    2932
+   ],
+   "to": [
+    2970,
+    2612
+   ]
+  },
+  {
+   "name": "fenshore:fishing_delta",
+   "length": 1040,
+   "from": [
+    860,
+    3476
+   ],
+   "to": [
+    894,
+    3018
+   ]
+  },
+  {
+   "name": "fenshore:fishing_fencoast",
+   "length": 524,
+   "from": [
+    860,
+    3476
+   ],
+   "to": [
+    674,
+    3767
+   ]
+  },
+  {
+   "name": "coldwater:fishing_glasswater",
+   "length": 254,
+   "from": [
+    1956,
+    1796
+   ],
+   "to": [
+    1832,
+    1983
+   ]
+  },
+  {
+   "name": "coldwater:fishing_uppermere",
+   "length": 551,
+   "from": [
+    1956,
+    1796
+   ],
+   "to": [
+    2397,
+    1568
+   ]
+  },
+  {
+   "name": "fenshore:marsh_eels",
+   "length": 357,
+   "from": [
+    860,
+    3476
+   ],
+   "to": [
+    1052,
+    3441
+   ]
+  },
+  {
+   "name": "southmeadow:bees_south",
+   "length": 396,
+   "from": [
+    2148,
+    3348
+   ],
+   "to": [
+    1974,
+    3096
+   ]
+  },
+  {
+   "name": "saltwell:salt_saltpan",
+   "length": 487,
+   "from": [
+    3292,
+    2932
+   ],
+   "to": [
+    3417,
+    3320
+   ]
+  },
+  {
+   "name": "fenshore:salt_fencoast",
+   "length": 196,
+   "from": [
+    860,
+    3476
+   ],
+   "to": [
+    892,
+    3302
+   ]
+  }
+ ]
+}

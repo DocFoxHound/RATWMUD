@@ -1049,6 +1049,14 @@ defaults.**
 - The yield stays the setting. A farm with fewer crew than its setting may yield in proportion (a farm short of hands
   yields less); later the producers' work spells (`crafts.json` `producers`) make the goods the NPCs are seen working
   for. There is no seasonal hiring: the crew is the year's.
+- **The places are built** (2026-11-03, doc 70, Progress, "The steadings and the communities"): each of the 31 farms
+  has a steading on its realm2 site (a farmhouse of six beds for the keeper's family, the barn or store its kind needs,
+  the grain farms' water mills), and the hired hands' homes are in five communities (Coldwater 21 hands, Larkfield 10,
+  Southmeadow 8, Fenshore 8, Saltwell 6) or, for the nine farms near the city, in Ridgemere (23). With a user's change
+  to the plan above: **only the keeper and family live at the steading**; the hands live in the communities and walk.
+  The contract for placing them is `Data/Economy/communities.json` (each farm's site, workplace, farmhouse and community;
+  each community's homes, beds, market posts and gardens); the farm ids map to the map's sites in
+  `tools/worldgen/realm2_places.py` (`FARMS`), the map's numbering winning where this file's region text differs.
 
 ## 5. The other industries
 

@@ -17,7 +17,9 @@ borders interleave rather than run along lines.
   cd tools && python3 -m worldgen.realm2 preview [--seed N] [--out DIR]   the realm, previews in artifacts/realm2/
   cd tools && python3 -m worldgen.realm2 write [--world dev]     back up, then add the realm to DEV (add-only: the same map)
 
-The seed is fixed, so every run makes the same realm; worldgen.ridgemere2's write lays it round the city too.
+The seed is fixed, so every run makes the same realm; worldgen.ridgemere2's write lays it round the city too. On the
+realm laid, worldgen.realm2_places builds the food farms' steadings and the five communities (Docs/Design/70, Progress,
+"The steadings and the communities"), and a write saves their contract, Data/Economy/communities.json.
 """
 from __future__ import annotations
 
@@ -1904,7 +1906,7 @@ class Realm2:
         full = f'{name}, {quals[0]}' if quals[0] else name
         bits = [text]
         if towns:
-            bits.append(TOWN_GROUND)
+            bits.append(towns[0].get('built') or TOWN_GROUND)
         for l in sorted(set(lakes))[:2]:
             if l and not l.startswith('a '):
                 bits.append(f'{l} lies here.')
@@ -2022,10 +2024,11 @@ class Realm2:
         # The gates' roads lead out into the realm; every town and site is reached.
         for key, (start, last) in GATE_ROADS.items():
             check(f'the {key} gate road goes on into the realm', reach[start[1], start[0]] and reach[last[1], last[0]])
-        missing = [s['id'] for s in self.sites if not reach[s['y'], s['x']]]
+        # (Near its middle: a steading or a mill may stand on the middle itself.)
+        missing = [s['id'] for s in self.sites if not reach[max(0, s['y'] - 12):s['y'] + 13, max(0, s['x'] - 12):s['x'] + 13].any()]
         check('every reserved site is reached from the city', not missing, ', '.join(missing))
         towns = [s for s in self.sites if s['kind'] == 'town']
-        check('5-7 town sites', 5 <= len(towns) <= 7, str(len(towns)))
+        check('5-8 town sites (Fenshore the eighth)', 5 <= len(towns) <= 8, str(len(towns)))
         shared = [f'{s["id"]} {s["shared"]}' for s in self.sites if s.get('shared')]
         check('no site laid over another\'s ground', not shared, ', '.join(shared[:10]))
         bare = [ord(c) for c in BARE]
@@ -2073,6 +2076,10 @@ class Realm2:
         check('no word "dog" in the realm\'s text', not any(re.search(r'\bdogs?\b', (c['name'] + ' ' + c['description']).lower())
                                                            for c in cells))
         check('the cells tile the map without overlap', len({(c['x'], c['y']) for c in cells}) == len(cells))
+        # The farms' steadings and the communities (realm2_places): their doors, walks, homes and words.
+        if getattr(self, 'places', None):
+            for name, ok, detail in self.places.checks(lab, main):
+                check(name, ok, detail)
         self.t('checks', t0)
         return out
 
@@ -2538,6 +2545,10 @@ def expand(project, seed=SEED, report=print, city_cells=None):
                              'again (python3 -m worldgen.ridgemere2 write), which lays the realm round it.')
     realm = Realm2(codes, heights, seed, report, protect=outdoor_points(project, city_cells))
     realm.build()
+    # The farms' steadings and the communities (doc 70, Progress; doc 71, Phase C): their interiors and links into the
+    # project, their ground into the realm, before the cells are cut.
+    from . import realm2_places
+    realm.contract = realm2_places.lay(realm, project, report)
     cells = realm.cells(city_cells)
     realm.city_cells = city_cells                       # (kept as the snapshot only once a write has saved: keep_snapshot)
     project['cells'] = cells
@@ -2571,7 +2582,20 @@ def report_of(realm, project):
         'tiles': {chr(k): int(v) for k, v in zip(*np.unique(realm.codes, return_counts=True))},
         'cliffs': realm.cliffs, 'reachedShare': round(realm.reached_share, 4),
         'checks': realm.result, 'timings': realm.timings,
+        'places': places_summary(realm),
     }
+
+
+def places_summary(realm):
+    """The steadings and communities in brief (the contract itself is Data/Economy/communities.json)."""
+    c = getattr(realm, 'contract', None)
+    if not c:
+        return {}
+    return {'communities': [{k: x[k] for k in ('id', 'name', 'centre', 'hands', 'beds', 'roomToGrow')} | {
+                'homes': len(x['homes']), 'market': [m['name'] for m in x['market']], 'gardens': len(x['gardens'])}
+                for x in c['communities']],
+            'steadings': len(c['farms']), 'ridgemereHands': c['ridgemere']['hands'],
+            'paths': len(c['paths']), 'pathTiles': sum(p['length'] for p in c['paths'])}
 
 
 SITE_COLOURS = {'town': (255, 70, 60), 'farmland': (255, 225, 0), 'mill': (255, 160, 0), 'orchard': (255, 150, 200),
@@ -2614,6 +2638,9 @@ def previews(realm, folder):
     img.save(folder / 'overview-labelled.png')
     for name, box in CLOSE_UPS.items():
         picture(realm.codes, realm.h, box=box, scale=1, relief=1.2).save(folder / f'{name}.png')
+    if getattr(realm, 'contract', None):
+        from . import realm2_places
+        realm2_places.previews(realm, folder / 'communities')
 
 
 def write(world_key, seed=SEED, dry=False, report=print, map_mode='same'):
@@ -2663,6 +2690,8 @@ def write(world_key, seed=SEED, dry=False, report=print, map_mode='same'):
                                                       'generated', map_mode)
             world_sync.tell_editors(conn, p['id'], 'realm2.py', 'Ridgemere 2.0: the realm (doc 70)')
     keep_snapshot(realm.city_cells)                     # (Saved: the city the realm was laid round is the one kept.)
+    from . import realm2_places
+    realm2_places.write_contract(realm.contract)        # (The NPC placement's contract, as written: doc 70, Progress.)
     report(f'Saved in {time.time() - t0:.0f} s: revision {new} (+1 for the editors\' reload); ' +
            (f'the same map, {ident["id"]} ({ident.get("name", "")}), its new layout recorded.' if kept == 'kept' else
             f'a new map identity, {ident["id"]}.'))
@@ -2694,6 +2723,7 @@ def main(argv=None):
     rep = report_of(realm, project)
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / 'realm-report.json').write_text(json.dumps(rep, indent=1), encoding='utf-8')
+    (args.out / 'communities.json').write_text(json.dumps(realm.contract, indent=1), encoding='utf-8')
     previews(realm, args.out)
     failed = [c for c in realm.result if not c['ok']]
     for c in realm.result:

@@ -22,6 +22,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from worldgen import realm2 as R  # noqa: E402
+from worldgen import realm2_places as P  # noqa: E402
 from worldgen.canvas import walkable_steps, reachable  # noqa: E402
 
 import terrain_catalog  # noqa: E402
@@ -156,6 +157,81 @@ class Pieces(unittest.TestCase):
             for end in (a, b):
                 self.assertTrue(isinstance(end, tuple) or end in R.GATE_ROADS or end in ids, (name, end))
         text = ' '.join(' '.join(v) for v in R.REGION_TEXT.values()) + ' '.join(s[7] + s[2] for s in R.SITES)
+        self.assertNotRegex(text.lower(), r'\bdogs?\b')
+
+
+class Places(unittest.TestCase):
+    """The farms' steadings and the communities (realm2_places): the plan, the interiors, the compounds' layout."""
+
+    def test_every_farm_of_doc_71_has_a_site_and_a_steading(self):
+        cf = json.loads((Path(__file__).resolve().parent.parent / 'Data/Economy/country_farms.json').read_text())
+        farms = [f['id'] for a in cf['areas'] for f in a['farms']]
+        self.assertEqual(sorted(farms), sorted(P.FARMS))
+        sites = {s[0] for s in R.SITES}
+        self.assertTrue(set(P.FARMS.values()) <= sites)
+        self.assertEqual(len(set(P.FARMS.values())), len(P.FARMS))
+        self.assertEqual(set(P.STEADINGS), set(P.FARMS.values()))
+        self.assertTrue(set(P.MILLS.values()) <= sites)
+        for stem, kind, style, community in P.STEADINGS.values():
+            self.assertIn(kind, P.STEADING_KINDS)
+            self.assertIn(style, ('country', 'southern', 'adobe', 'fen'))
+            self.assertIn(community, {c['id'] for c in P.COMMUNITIES} | {'ridgemere'})
+
+    def test_the_hands_live_where_the_user_put_them(self):
+        cf = json.loads((Path(__file__).resolve().parent.parent / 'Data/Economy/country_farms.json').read_text())
+        hands = {}
+        for a in cf['areas']:
+            for f in a['farms']:
+                com = P.STEADINGS[P.FARMS[f['id']]][3]
+                hands[com] = hands.get(com, 0) + f['crew']['hands']
+        self.assertEqual(hands, {'coldwater': 21, 'larkfield': 10, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 6,
+                                 'ridgemere': 23})
+
+    def test_the_interiors(self):
+        rng = random.Random(5)
+        for style in ('country', 'southern', 'adobe', 'fen'):
+            home = P.farmhouse(rng, style, 'A Farmhouse')
+            self.assertEqual(len(home.rooms[0].beds), P.HOUSEHOLD_MOST)
+            self.assertEqual(len(P.cottage(rng, style, 'A Cottage').rooms[0].beds), P.HOUSEHOLD_MOST)
+            for kind, items in P.STEADING_KINDS.items():
+                for key, fn, role, word in items:
+                    b = fn(rng, style, f'A {word}')
+                    self.assertTrue(b.rooms[0].work, (kind, key))
+                    P.more_work(b.rooms[0], 6)
+                    work = b.rooms[0].work
+                    self.assertGreaterEqual(len(work), 5, (kind, key))
+                    rows = b.rooms[0].rows
+                    self.assertTrue(all(rows[y][x] in '.f' for x, y in work), (kind, key))
+                    self.assertEqual(len(set(map(tuple, work))), len(work))
+        press = P.press_house(rng, 'adobe', 'A Press House')
+        self.assertEqual([r.z for r in press.rooms], [0, -1])
+        self.assertEqual(len(press.stairs), 1)
+
+    def test_each_compound_opens_every_door_on_its_yard_however_it_is_turned(self):
+        from worldgen.site import door_tile
+        rng = random.Random(1)
+        for kind, items in P.STEADING_KINDS.items():
+            builds = [P.farmhouse(rng, 'country', 'X House')] + [fn(rng, 'country', f'X {w}') for _, fn, _, w in items]
+            layout = P.steading_layout(builds)
+            for k in range(4):
+                (W, H), parts = P.turned_layout(layout, k)
+                _, yx, yy, yw, yh, _ = next(p for p in parts if p[0] == 'yard')
+                rects = []
+                for name, x, y, w, h, f in parts:
+                    self.assertTrue(0 <= x and x + w <= W and 0 <= y and y + h <= H, (kind, k, name))
+                    if isinstance(name, int):
+                        _, (ox, oy) = door_tile(x, y, w, h, f)
+                        self.assertTrue(yx <= ox < yx + yw and yy <= oy < yy + yh, (kind, k, name))
+                    if name != 'gate':
+                        rects.append((x, y, w, h))
+                for i, a in enumerate(rects):
+                    for b in rects[i + 1:]:
+                        self.assertFalse(a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and
+                                         b[1] < a[1] + a[3], (kind, k, a, b))
+            self.assertEqual(P.turned_layout(layout, 4), P.turned_layout(layout, 0))
+
+    def test_the_words(self):
+        text = json.dumps([P.COMMUNITIES, P.FENSHORE, P.COTTAGE_PROSE, P.FARMHOUSE_PROSE, P.MAP_WINS])
         self.assertNotRegex(text.lower(), r'\bdogs?\b')
 
 
@@ -318,6 +394,43 @@ class WholeRealm(unittest.TestCase):
         res = rep['reserved']
         self.assertTrue(5.5 <= res['ownFields'] / res['cellTiles'] <= 8)
         self.assertTrue(6.5 <= res['range'] / res['cellTiles'] <= 9)
+
+    def test_the_steadings_and_communities(self):
+        c = self.realm.contract
+        rooms = {r['id']: r for r in self.project['rooms']}
+        links = {l['id'] for l in self.project['links']}
+        self.assertEqual(len(c['farms']), 31)
+        for f in c['farms']:
+            self.assertIn(f['workplace'], rooms, f['farm'])
+            self.assertIn(f['home']['area'], rooms, f['farm'])
+            self.assertIn(f'{f["home"]["area"]}_door', links)
+            self.assertEqual(rooms[f['workplace']]['territory']['region'], f['community'])
+            self.assertGreaterEqual(sum(len(w['work']) for w in f['workplaces']), f['keepers'] + f['hands'], f['farm'])
+            for bed in f['home']['beds']:
+                self.assertEqual(rooms[f['home']['area']]['terrain'][bed['y']][bed['x']], 'b')
+        beds = {com['id']: com['beds'] for com in c['communities']}
+        self.assertTrue(55 <= beds['coldwater'] <= 65, beds)
+        self.assertTrue(28 <= beds['larkfield'] <= 34, beds)
+        for k in ('southmeadow', 'fenshore', 'saltwell'):
+            self.assertTrue(20 <= beds[k] <= 25, beds)
+        for com in c['communities']:
+            self.assertGreaterEqual(com['roomToGrow']['cottageLots'], 3, com['id'])
+            self.assertTrue(any(g['kind'] == 'kitchen garden' for g in com['gardens']))
+            self.assertEqual({g['kind'] for g in com['gardens']}, {'kitchen garden', 'hen run', 'goat paddock'})
+            self.assertIn('general', [m['business'] for m in com['market']])
+            self.assertIn('inn', [m['business'] for m in com['market']])
+            for m in com['market']:
+                self.assertGreaterEqual(len(m['work']), sum(p['count'] for p in m['posts']), m['area'])
+        # Oakhaven, Frosthollow and Mirebridge stay reserved, unbuilt.
+        built = {r['id'].split('_')[1] for r in self.project['rooms'] if r['id'].startswith('cn_')}
+        self.assertEqual(built, {'coldwater', 'larkfield', 'southmeadow', 'fenshore', 'saltwell'})
+
+    def test_the_contract_written_is_the_one_made(self):
+        # Data/Economy/communities.json is what the last write made; the generator makes the same again.
+        path = P.CONTRACT
+        if not path.exists():
+            self.skipTest('no contract written yet')
+        self.assertEqual(json.loads(path.read_text(encoding='utf-8')), json.loads(json.dumps(self.realm.contract)))
 
     def test_ridgemere_is_the_north_west_corner(self):
         xs = [c['x'] for c in self.project['cells']]

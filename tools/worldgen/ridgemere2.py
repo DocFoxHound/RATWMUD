@@ -4138,6 +4138,8 @@ def write(world_key, seed=SEED, dry=False, report=print, map_mode='auto'):
                                         'AND quarter IS DISTINCT FROM %s', (quarter, wid, npc, quarter)).rowcount
             world_sync.tell_editors(conn, wid, 'ridgemere2.py', 'Ridgemere 2.0: the city (doc 67)')
     realm2.keep_snapshot(realm.city_cells)              # (The city as written, for the realm's own writes: doc 70.)
+    from . import realm2_places
+    realm2_places.write_contract(realm.contract)        # (The farms' and communities' contract: doc 70, Progress.)
     report(f'Saved: revision {new} (+1 for the editors\' reload); {changed} voices given their new quarter; ' +
            (f'the same map, {ident["id"]} (its layout unchanged).' if kept == 'kept' else
             f'a new map identity, {ident["id"]} (the layout changed; pull and import with a world on the old map are refused).'))

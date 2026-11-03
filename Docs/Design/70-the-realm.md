@@ -787,3 +787,115 @@ close-ups a pixel a tile: `ridgemere-and-the-rainward-woods`, `cedar-sound-and-o
 blends `blend-rainwood-to-whitefangs`, `blend-greenholt-downs-ochre-waste`, `blend-greenholt-to-fens`.
 `realm-report.json` holds every figure above, the sites, roads, rivers and lakes; `city-cells.json.gz` the city's cells
 as its writer made them (section "Built and written").
+
+### The steadings and the communities (2026-11-03, branch `r2-communities`)
+
+The user (doc 71's next step): every Country food farm gets **a farmhouse and a barn** (or the store its kind needs);
+**only the keeper and the keeper's family live on the premises** (a farmhouse for up to six, `HouseholdMost`); the
+hired hands live in **communities** and walk to work, except near Ridgemere (within about 800 tiles), whose farms' hands
+live in the city; **five communities**, each a small town with housing, a small market (a store plus an alehouse or
+inn) and a little food of its own, sized for the hands **and their families later** (Coldwater 55-65 people, Larkfield
+about 30, the others 20-25), with room to add houses; Oakhaven, Frosthollow and Mirebridge stay reserved; the
+communities joined to their farms and the roads; each in its region's look; no NPCs placed (the next step), none made.
+
+**Built** (`tools/worldgen/realm2_places.py`, laid by `realm2.expand` after the realm itself and before the cells are
+cut, so every realm write, and the city writer's, makes the same buildings with the same ids):
+
+- **Fenshore**, a new town site (the eighth; the check is now 5-8 town sites): placed where the fens' dry ground is
+  widest near the five fen farms (its middle at least 14 tiles from any creek or pool), prepared as a town's pad and given
+  a footpath to the nearest road. It stands at **860, 3476** (`w_ridgemere_3_13`), where the user suggested.
+- **31 steadings**, one on each farm's site: the farmhouse (six beds) and the farm's buildings round a yard, a kitchen
+  garden beside it and a footpath from its gate to the nearest road or track. Each compound is placed on its own site's
+  ground (or no site's), off water, roads and the city, as level as can be found near the site's middle; its box is
+  levelled and the land eased into it, and it is turned whichever way fits best:
+
+  | Kind | Buildings besides the farmhouse |
+  |---|---|
+  | grain farm | granary; and a **water mill** at its mill site (`mill_long`, `mill_lark`), its back on the river, the wheel (`}`) in the water, a race of shallow water where the bank is wide |
+  | orchard with a drying house (`orchard_greenholt`, `orchard_rainward`); orchard | drying house (racks over a slow fire); apple store with a cider press |
+  | vineyard | press house over a **cellar** (an interior at z -1, by stairs) |
+  | cattle and dairy farm | byre and dairy |
+  | pig farm; sheep and goat run; warren | pig yard (sties); shearing barn; rabbitry |
+  | sea or lake boat | a cottage, the boat shed, and a **jetty** of planks (`8`) about 20 tiles out over the water from the landing |
+  | eel and fowl marsh; beekeeper | a cottage and the eel house (smoking racks); a cottage and the hive shed |
+  | salt works | the Saltpan: a cottage, the salt store; the fens' salterns: a cottage, the boiling house |
+
+- **Five communities** on their town sites: a green with its well in the middle, streets from it to every road and
+  footpath that reaches it, two lanes round the houses; cottages (six beds each) and the market facing the streets;
+  kitchen gardens, a hen run and a goat paddock round the edge (Saltwell's by the oasis pool, watered from it):
+
+  | Community | Where | Look | Homes | Market | Beds | Hands | Its farms (walk from the green, tiles) |
+  |---|---|---|---|---|---|---|---|
+  | Coldwater | 1956, 1796 | timber under cedar shingle (`#`, `L`) | 9 cottages | Coldwater Stores (flat over), The Glasswater Inn (10 guest beds), Coldwater Bakehouse (flat over) | 62 | 21 | Greenholt orchard 515, Meresend orchard 249, Oakhurst piggery 657, Alder piggery 688, Larkdowns fold 762, Greyteeth fold 1,047, Glasswater landing 254, Upper Mere landing 551 |
+  | Larkfield | 1676, 2380 | timber under shingle | 4 cottages | Larkfield Stores (flat), The Sheaf alehouse (flat), Larkfield Bakehouse | 31 | 10 | Longmead farm 527 (its mill 256), Plumtree orchard 472, Southwood piggery 557 |
+  | Southmeadow | 2148, 3348 | limewash under red tile (`]`, `[`) | 3 cottages | Southmeadow Stores (flat), The Vine and Sickle (flat) | 25 | 8 | Larkholm farm 569 (its mill), Southmeadow vineyard 427, Sunfields bee garth 396 |
+  | Fenshore | 860, 3476 | stilted timber under reed thatch (`#`, `L`); boardwalks (`8`) half a step over the bog pools | 3 stilt houses | Fenshore Stores (flat), The Heron (flat) | 25 | 8 | Withy Creek marsh 357, Fenside salterns 196, Rivermouth landing 1,040, Fen Shore landing 524, Dune warren 198 |
+  | Saltwell | 3292, 2932 | limewashed adobe under flat pale roofs (`]`, `V`); flagged streets (`f`) | 3 cottages | Saltwell Stores (flat), The Oasis Inn (10 guest beds) | 22 | 6 | Saltpan workings 487, Ochre vineyard 952, Redsand warren 597 |
+
+  Beds are the homes' and the keepers' flats' (the inns' guest rooms aside). Room to grow, counted for the contract
+  (`roomToGrow`): 6 more cottage lots by the streets at Coldwater, 8 at Larkfield, 6 at Southmeadow, 9 at Fenshore, 6
+  at Saltwell. The cells' descriptions say what each community is.
+- **Ridgemere's farms** (no community): the Rainward and Coastvale orchards, the three dairies (Southgate, Rainrun,
+  Hillside), the Soundside and North Cove landings, the Heatherside and Alderbank bee garths: 23 hands, in the city.
+- **Footpaths:** 24 from the communities to their farms and the two mills (12,980 tiles of walk, most of it along the
+  roads: a path is painted only where no road or track already goes), and one from each steading's and mill's gate to
+  the nearest road or track; routed over the land as the realm's tracks are (A* on its 8-tile grid, bridged over
+  rivers), never through another compound or community; the Saltpan's crust is walked on.
+- **Ids.** `fs_<site>_<building>` for a steading's interiors (`fs_grain_long_home`, `fs_grain_long_granary`,
+  `fs_grain_long_mill`, `fs_vineyard_ochre_press_cellar` ...), `cn_<community>_<building>` for a community's
+  (`cn_coldwater_cottage_1`, `cn_coldwater_store`, `cn_coldwater_store_flat`, `cn_coldwater_inn_up` ...); each door
+  `<interior>_door`, stairs `<interior>_stairs_1`. An interior's region is its community (`ridgemere` for the city's
+  farms), so the game counts a farm's keeper and hands as near their work (`World::near`), and each community becomes a
+  town of its own once people live there and its store trades (`World`'s towns: residents by home, markets by work). No
+  id holds "lodging", "bunkhouse" or "quarters": none is a communal home.
+- **The contract** for placing NPCs: `Data/Economy/communities.json`, written by each realm write (and the city
+  writer's): for each of doc 71's 31 farms its realm2 site, its workplace and every work room with its work spots and
+  stations, its farmhouse with its six beds, its community (or `ridgemere`) and the walk from it; for each community its
+  homes and flats with their beds, its market's workplaces with the posts they want and their work spots, its gardens and
+  its room to grow; the work labels the game knows each business by, and the words a farm post's label must avoid. Doc
+  71's farm ids differ from the sites': the mapping (`realm2_places.FARMS`) follows the map's own numbering where the
+  file's region text says otherwise (the map wins), recorded per farm as `mapWins` (orchard 3, the lake boats, sea boats
+  2 and 3, the beekeepers, the salt works).
+
+**Checks** (with the realm's, in `realm2.checks`; all 22 pass): every steading's and community's door reached from the
+city; every farm's workplaces in one walk with its community's homes (or the city); homes for at most six, farmhouses
+for six; the hands where the user put them (21, 10, 8, 8, 6; 23 in Ridgemere); the ids world ids; no "dog". Everything
+before the step is made exactly as it was: laid round DEV's city first, the realm reproduced DEV's 241 cells tile for
+tile (0 differ); after the write every changed tile is one the step changed (38,118 tiles' codes: the communities, the
+steadings, the paths, the jetties), and the city's cells, the 819 rooms, 513 links, 1,083 people, the routes, factions,
+spawn and economy are as they were; five cells' descriptions name their community.
+
+**Written into DEV.** Backed up first: `artifacts/backups/ratw_dev_20261103-071638.pgdump` (main repo; DEV at revision
+71); then migration **0060** (`python3 tools/world_db.py migrate --db dev`: "applied 0060_farms"; 60 migrations). Then
+`python3 -m worldgen.realm2 write --world dev` (twice, the second with the steadings' final names; each backs up into
+`artifacts/backups/` first: `ratw_dev_20261103-075412.pgdump`, `ratw_dev_20261103-080134.pgdump`): the same map,
+`map-20261031-6b080cecb7f6`, its new layout recorded; **revision 74** (75 after the editors' reload). Then
+`world_build.py dev`: **build 59**, 1,174 places; `world_check` of its export loads all of them (1,060 and the 114 new
+interiors) with no failures (no simulation was run).
+
+**Tests.** `test_realm2`: `Places` (every farm of doc 71 with its site and steading, the hands where the user put them,
+the interiors' beds and work spots, every compound's doors on its yard however it is turned and nothing overlapping, the
+words); with `RATW_SLOW=1`, `WholeRealm`'s `test_the_steadings_and_communities` (every farm's workplace and home in the
+world, their regions, work spots for the crew, beds in each community's range, the gardens, the market, room to grow,
+the three reserved towns unbuilt) and `test_the_contract_written_is_the_one_made`: 27 of 27 with `RATW_SLOW=1`. The
+city writer lays them too: `python3 -m worldgen.ridgemere2 write --world dev --dry-run` passes every check (the city's
+and the realm's with the places). A build of `build-core` and `ctest`: 77 of 77. `test_country_industry`,
+`test_farms_summary`, `test_world_store`, `test_world_build`, `test_terrain_catalog` pass; `test_ridgemere2` fails only
+its known `test_the_food_trades_and_the_carters` (16 household businesses against 15, as before the realm).
+
+**Previews** (`artifacts/realm2/communities/`): each community close up (`coldwater.png` ..., four pixels a tile),
+six steadings and Longmead's mill (`steading-*.png`), and `communities-and-farms.png` (the realm, each community with a
+line to each of its farms, Ridgemere's farms in white). No in-game screenshots: a scratch server of build 59 starts and serves the world, but taking a
+wolf to the communities needs doc 70's walking scripts, which are not committed.
+
+**For the NPC placement (next):** a resident's home is `live.npcs` `home_area` = a home's `area` (an interior id: in
+`world.areas` and `world.interiors`, the project's `rooms`), `home_x`/`home_y` one of its `beds`; a post's `work_area` =
+the workplace's `area`, `work_x`/`work_y` one of its `work` spots. Beware: a write of the city (`worldgen.ridgemere2
+write`) places the city's people from its own plan and sets every other placed NPC's home to none (`compose`), so it
+would undo placements in these interiors until its plan knows them.
+
+**Still open.**
+- The keepers' and hands' labels, wages, and the virtual crews they replace (doc 71, Phase C).
+- Talk's regions (`Data/Talk/facts.json`, `here.region`) know Coldwater, Larkfield and Southmeadow but not Fenshore or
+  Saltwell.
+- The communities' food (the gardens, hens and goats) is ground only: nothing grows or lays yet.
