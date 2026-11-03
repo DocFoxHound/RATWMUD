@@ -1279,12 +1279,16 @@ void Society::supportWages()
         for (const auto& [holder, wage] : posts[till])
             owed += wage;
         const auto farm = farmOf_.find(till);
+        const auto* p = farm == farmOf_.end() && till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
+        const auto* business = p ? items::businessFor(p->title) : nullptr;
+        const std::string trade = farm != farmOf_.end() ? "farm" : business ? business->id : "other";
         for (const auto& [holder, wage] : posts[till])
             if (const auto coins = share * wage / std::max(1, owed);
                 coins > 0 && shift("treasury", *holder, "", 0, coins, "wage support"))
             {
                 given[till] += coins;
                 loopToday_.wageSupport += coins;
+                loopToday_.supportByTrade[trade] += coins;
                 if (farm != farmOf_.end())
                     loopToday_.farms[farms_[farm->second].def->id].support += coins;
                 else
@@ -1564,7 +1568,10 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
     // A farm's good the shop lacks more of than the farms hold (doc 71, 4: the gate counts the days an area runs out).
     const auto farmsShort = [&](const std::string& item, int lack) {
         if (const int area = farmAreaOf(item); area >= 0 && lack > 0 && farmsHold(item) < lack)
+        {
             ++loopToday_.areasOut[items::farms().areas[std::size_t(area)].id];
+            ++loopToday_.goodsOut[items::baseOf(item)];
+        }
     };
     for (const auto& w : wants)
     {

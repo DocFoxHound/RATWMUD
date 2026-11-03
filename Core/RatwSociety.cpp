@@ -1455,6 +1455,7 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         if (const int held = farmsHold(item); quantity > held)
         {
             ++loopToday_.areasOut[items::farms().areas[std::size_t(area)].id];
+            ++loopToday_.goodsOut[items::baseOf(item)];
             return {false, "The farms have " + (held ? "only " + std::to_string(held) : std::string("no")) + " " + item +
                                " in store now."};
         }
@@ -1489,13 +1490,14 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
     };
     // The farms' goods, spread over the farms holding them by their stock (the largest remainders the odd pieces), and the
     // draw's cost less the toll to their tills by their pieces.
-    std::vector<std::pair<const FarmNow*, int>> lots;
+    std::vector<std::pair<FarmNow*, int>> lots;
     std::vector<std::int64_t> takings;
+    std::vector<double> carries;
     if (area >= 0)
     {
-        std::vector<std::pair<const FarmNow*, int>> holders;
+        std::vector<std::pair<FarmNow*, int>> holders;
         int held = 0;
-        for (const auto& f : farms_)
+        for (auto& f : farms_)
             if (const auto* a = f.area == std::size_t(area) ? account(f.till) : nullptr)
                 if (const int n = stock(*a, item); n > 0)
                 {
@@ -1519,15 +1521,35 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
                 ++lot.second;
                 ++given;
             }
+        // The pennies by their pieces: each farm's exact share with the fraction of a penny its earlier draws left it, in
+        // whole pennies, the odd ones to the largest fractions, and what is over carried to its next draw. (Cut in the
+        // list's order, the first farm lost the odd penny of nearly every small draw: about a third of its takings.)
+        const auto due = cost - toll;
+        std::vector<double> exact;
         std::int64_t sum = 0;
-        int pieces = 0;
         for (const auto& [farm, n] : lots)
         {
-            pieces += n;
-            const auto upTo = (cost - toll) * pieces / quantity;
-            takings.push_back(upTo - sum);
-            sum = upTo;
-            if (!fits(farm->till, takings.back()))
+            exact.push_back(n > 0 ? double(due) * n / quantity + farm->takingsCarry : 0);
+            takings.push_back(n > 0 ? std::max<std::int64_t>(0, std::int64_t(std::floor(exact.back() + 1e-9))) : 0);
+            sum += takings.back();
+        }
+        while (sum != due)
+        {
+            std::size_t pick = lots.size();
+            for (std::size_t i = 0; i < lots.size(); ++i)
+                if (lots[i].second > 0 && (sum < due || takings[i] > 0) &&
+                    (pick == lots.size() || (sum < due ? exact[i] - takings[i] > exact[pick] - takings[pick]
+                                                       : exact[i] - takings[i] < exact[pick] - takings[pick])))
+                    pick = i;
+            if (pick == lots.size())
+                break;                              // (Not reached: some farm sold a piece of every draw.)
+            takings[pick] += sum < due ? 1 : -1;
+            sum += sum < due ? 1 : -1;
+        }
+        for (std::size_t i = 0; i < lots.size(); ++i)
+        {
+            carries.push_back(lots[i].second > 0 ? exact[i] - double(takings[i]) : lots[i].first->takingsCarry);
+            if (!fits(lots[i].first->till, takings[i]))
                 return {false, "A farm's till can hold no more money.", unit, cost};
         }
     }
@@ -1592,7 +1614,9 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         auto& day = loopToday_.farms[lots[i].first->def->id];
         day.sold += lots[i].second;
         day.goods[item].sold += lots[i].second;
+        loopToday_.goodsSold[items::baseOf(item)] += lots[i].second;
         day.takings += takings[i];
+        lots[i].first->takingsCarry = carries[i];
     }
     loopToday_.drawn += cost;
     loopToday_.toll += toll;

@@ -764,6 +764,7 @@ class Society
         std::int64_t reserve = 0, purse = 0;        // Its float (what its till keeps before its basket), its crew's settled purse.
         std::map<std::string, double> grown, eaten;   // The fractions of a piece carried to tomorrow (not saved).
         double hunger = 0;                          // Its crew's nourishment owed (a day's at most; not saved).
+        double takingsCarry = 0;                    // The fraction of a penny its store draws owe it, or it them (not saved).
         int heads() const { return keepers + hands; }
         std::int64_t wages() const { return std::int64_t(keepers) * keeper + std::int64_t(hands) * hand; }
     };
@@ -872,12 +873,15 @@ class Society
         };
         std::map<std::string, Farm> farms;
         std::map<std::string, int> areasOut;         // By area: draws the farms' stock could not fill in full today.
+        std::map<std::string, int> goodsOut;         // The same by good (a good no farm grows among them).
+        std::map<std::string, int> goodsSold, goodsSpoiled;   // By good: the pieces the farms sold to the shops, and spoiled.
         // The treasury's day (doc 71, 4, Phase B's gate): the least it held at an hour's end, what it held after the night's
         // wages, support, alms and surplus; the wage support the short tills wanted and what of it went unpaid, the
         // switch's (the farms' tills and switchTrades') apart from the city's ordinary short tills'; the money made today
         // (a farm's founding: its float and its crew's purse).
         std::int64_t treasuryLow = -1, treasuryNight = -1;
         std::int64_t supportWanted = 0, supportUnpaidSwitch = 0, supportUnpaidOrdinary = 0, minted = 0;
+        std::map<std::string, std::int64_t> supportByTrade;   // The wage support paid tonight by trade (a farm's: "farm").
     };
     const LoopDay& loopToday() const { return loopToday_; }
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a

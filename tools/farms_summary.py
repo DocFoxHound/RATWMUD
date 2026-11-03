@@ -10,8 +10,9 @@ orders from, `switchTrades`; and the city's ordinary short tills'), the surplus 
 without the farms, where given), the toll's and the alms' trim, the price level's range; per area (while on): the days
 its farms paid their crews in full from their own tills (the gate: 99%), the days its stock ran short of a shop's want
 by season (the gate: no more than a day a season), its spoilage (of what it grew), its takings, wages and basket a day,
-its stock at the year's end; the crews' spending a day and their short days; the money made by the farms' founding and
-whether the money stayed conserved every day."""
+its stock at the year's end; the crews' spending a day and their short days; by good, the days it ran short by season
+and the farms' sales of it a day; the money made by the farms' founding and whether the money stayed conserved every
+day."""
 from __future__ import annotations
 
 import argparse
@@ -89,6 +90,20 @@ def summary(rows, base=None) -> str:
                          f'{on[-1].get(f"farm_{a}_stock", 0):,}', f'{mean("crew_spent"):,.0f}p, {sum(r.get(f"farm_{a}_crew_short", 0) for r in on)}'])
         say.append(table(['Area', 'Days on', 'Paid its crews in full', 'Days short of stock (Sp / Su / Au / Wi)', 'Spoiled (of grown)',
                           'Takings, wages, basket a day', 'Stock at the end', 'Crews\' spending a day, short days'], body))
+        # By good (`farms_out_goods`): which of an area's goods the shops wanted that the farms couldn't fill, and the farms'
+        # sales of it a day (a good no farm grows sells nothing).
+        out = collections.defaultdict(collections.Counter)
+        sold = collections.Counter()
+        for r in yr:
+            for g, n in r.get('farms_out_goods', {}).items():
+                if n > 0:
+                    out[g][r.get('season')] += 1
+            for g, n in r.get('farms_sold_goods', {}).items():
+                sold[g] += n
+        if out:
+            say.append(f'\nDays a good ran short (Sp / Su / Au / Wi), year {y + 1}: ' + '; '.join(
+                f'{g} {" / ".join(str(out[g][s]) for s in SEASONS)} (sold {sold[g] / len(yr):,.1f} a day)'
+                for g in sorted(out, key=lambda g: -sum(out[g].values()))))
     return '\n'.join(say) + '\n'
 
 

@@ -181,6 +181,8 @@ void Society::tendFarms(std::int64_t day)
             auto& byGood = today.goods[good];
             byGood.grown += made;
             byGood.spoiled += n - made;
+            if (n > made)
+                loopToday_.goodsSpoiled[good] += n - made;
         }
         for (const auto& [good, middle] : f.def->table)
         {
@@ -209,6 +211,7 @@ void Society::tendFarms(std::int64_t day)
                 const int gone = consume(f.till, good, have - keep, "spoiled");
                 today.spoiled += gone;
                 today.goods[good].spoiled += gone;
+                loopToday_.goodsSpoiled[good] += gone;
             }
         }
         // The crew eats (a household of its size: NourishADay a head), the soonest-spoiling food first; what it can't eat

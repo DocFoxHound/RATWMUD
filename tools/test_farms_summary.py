@@ -20,7 +20,8 @@ def day(n, season, **more):
 class SummaryTests(unittest.TestCase):
     def test_a_year(self):
         rows = [day(n, 'spring' if n < 92 else 'summer' if n < 184 else 'autumn' if n < 275 else 'winter') for n in range(365)]
-        rows[10].update({'farm_grain_wages_paid': 50, 'farm_grain_out': 2, 'under_cap': 1, 'treasury_low': 100})
+        rows[10].update({'farm_grain_wages_paid': 50, 'farm_grain_out': 2, 'under_cap': 1, 'treasury_low': 100,
+                         'farms_out_goods': {'flour': 2, 'oats': 0}, 'farms_sold_goods': {'flour': 365}})
         text = F.summary(rows, base=[day(n, 'spring', surplus_alms=8, works_spent=2) for n in range(365)])
         self.assertIn('money conserved every day: True', text)
         self.assertIn('made 900p', text)
@@ -30,6 +31,8 @@ class SummaryTests(unittest.TestCase):
         self.assertIn('1,825 (-1,825 on the base\'s 3,650)', text, 'the surplus against the base year')
         self.assertIn('| grain | 365 | 99.7% | 1 / 0 / 0 / 0 | 5.0% |', text)
         self.assertIn('| salt | off |', text)
+        self.assertIn('Days a good ran short (Sp / Su / Au / Wi), year 1: flour 1 / 0 / 0 / 0 (sold 1.0 a day)', text,
+                      'by good, a good with no want unfilled left out')
 
 
 if __name__ == '__main__':

@@ -1254,6 +1254,19 @@ def food_and_units(a, sc, long, items, crafts, producers, goods_s, ind_s, buy, p
 FOOD_AREAS_IND = FOOD_INDUSTRIES + ['livestock: wool, hides, tallow, bone']
 D_NEAR, D_MID, D_FAR = 'near (within 2 cells of the city)', 'middle (3-8 cells)', 'far (9 cells or more)'
 SLACK = 0.10        # yields over what is eaten and drawn, so the shelves don't run dry on a good day
+# The first farm runs' corrections to the yields (doc 71, Progress, "The first farm runs"), by good, Spring to Winter: the
+# short runs are a founding world's first fortnight, whose shops still held their opening stock, so a good they kept much
+# of drew too little (the ready meals a third to a fifth of what the city draws once settled), and a perishable one (milk:
+# a day's keeping) wants more than the season's mean on its busiest days. Measured by a year's run with the yields
+# doubled (the meals and berries more), every area on from the first days: what the farms sold, the Country's table and
+# the slack, over these yields. Written into country_farms.json's yields only (`tuned`): the tables, the land, the
+# takings, crews and baskets stay the short runs'.
+RUN_TUNING = {
+    'meal': (3.3, 4.6, 4.9, 3.6), 'bones': (1.25, 1.2, 1.25, 1.35), 'milk': (1.25, 1.2, 1.45, 1.25),
+    'raw_meat': (0.95, 0.95, 1.0, 1.05), 'rabbit': (0.95, 0.95, 0.92, 0.95), 'mutton': (1.05, 1.0, 1.0, 1.0),
+    'hide': (1.2, 1.2, 1.2, 1.0), 'straw': (1.0, 1.5, 1.2, 1.0), 'beeswax': (1.3, 1.6, 1.6, 1.3),
+    'shellfish': (1.0, 1.15, 1.15, 1.2), 'fish': (0.88, 0.86, 0.9, 0.8), 'berries': (4, 4, 4, 4),
+}
 AREAS = [   # The food areas: country.json's season groups, the goods resold with them, salt, and the herds' by-products.
     {'id': 'grain', 'name': 'grain and flour', 'goods': ['flour', 'oats', 'wheat', 'straw']},
     {'id': 'fruit', 'name': 'orchards and vines', 'goods': ['apples', 'berries', 'cider', 'apple_brandy', 'dried_apples',
@@ -2483,6 +2496,14 @@ def footprints(farms, land):
     return own_t, rng_t
 
 
+def tuned(f, g):
+    """A farm's middle-day yields of a good as the file has them: the design's, with the first farm runs' corrections
+    (RUN_TUNING) on its season means. The doc's tables, the land and the takings stay the design's."""
+    if g not in RUN_TUNING:
+        return f['yield_mid'][g]
+    return middles([m * k for m, k in zip(f['yield'][g], RUN_TUNING[g])])
+
+
 def write_farms(path, st, others):
     """The placement list and the farms' settings, the defaults Atlas's Economy page and the DM's Economy tab edit (doc
     71, 4 and 6), read by Core (items::farms(): EconomySpec::farms is a world's own changes): per area its farms, `on`,
@@ -2507,7 +2528,7 @@ def write_farms(path, st, others):
                     'basketADay': round(f['basket'] / f['count'], 1),
                     'reserve': round(f['reserve'] / f['count']),
                     'purse': round(f['purse']),
-                    'yield': {g: [round(x, 1) for x in f['yield_mid'][g]] for g in f['yield']},
+                    'yield': {g: [round(x, 1) for x in tuned(f, g)] for g in f['yield']},
                     'table': {g: [round(x, 2) for x in m] for g, m in f['table_mid'].items()},
                     'sells': f['sells'], 'store': f['store']})
         out.sort(key=lambda x: (x['id'].rsplit('_', 1)[0], int(x['id'].rsplit('_', 1)[1])))

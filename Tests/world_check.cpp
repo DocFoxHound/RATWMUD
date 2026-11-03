@@ -1337,6 +1337,20 @@ struct EconomyWatch
             }
             seasons << ", \"farms_on\": " << all.on;
             fields("farms_", all);
+            // By good: the shops' wants the farms couldn't fill (a good of an area on that no farm grows among them), what
+            // the farms sold and what spoiled.
+            for (const auto& [name, goods] : {std::pair<const char*, const std::map<std::string, int>*>{"out", &d.goodsOut},
+                                              {"sold", &d.goodsSold}, {"spoiled", &d.goodsSpoiled}})
+            {
+                seasons << ", \"farms_" << name << "_goods\": {";
+                for (auto it = goods->begin(); it != goods->end(); ++it)
+                    seasons << (it == goods->begin() ? "" : ", ") << "\"" << it->first << "\": " << it->second;
+                seasons << "}";
+            }
+            seasons << ", \"support_by_trade\": {";       // (The wage support paid tonight, by the short tills' trades.)
+            for (auto it = d.supportByTrade.begin(); it != d.supportByTrade.end(); ++it)
+                seasons << (it == d.supportByTrade.begin() ? "" : ", ") << "\"" << it->first << "\": " << it->second;
+            seasons << "}";
             const auto cap = society.rule("treasuryCap");
             seasons << ", \"farms\": {" << each.str() << "}, \"treasury_low\": " << d.treasuryLow << ", \"treasury_night\": "
                     << d.treasuryNight << ", \"under_cap\": " << (d.treasuryNight >= 0 && d.treasuryNight < cap ? 1 : 0)

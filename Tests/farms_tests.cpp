@@ -3,12 +3,12 @@
 // schedule, the baskets); the yields blended by season and scaled by area and farm; crews scaled and wages falling
 // through farm, area and defaults; the phased switch (an area at a time from its start, a month apart) and the founding
 // (floats and settled purses made and counted as minted: the money conserved exactly); store draws from the farms' stock,
-// spread by stock, past the season's cap and no further than the stock, the granary's price a year, the Country no longer
-// sending an area's goods and sending them again when it is off; the farms' crews shopping as households, counted apart;
-// the wages and the treasury's support for a short farm; the farms' basket; spoiling; the Country's basket moving to its
-// re-weighted one; the records and their refusals, applied live; a save, and a restart's areas on from its first second;
-// the preserver selling on the drying houses' stores before making its own; vegetables gone from Ridgemere 2.0's economy
-// and the inns' stew of meat and bones.
+// spread by stock (their pennies evenly), past the season's cap and no further than the stock, the granary's price a
+// year, the Country no longer sending an area's goods and sending them again when it is off; the farms' crews shopping as
+// households, counted apart; the wages and the treasury's support for a short farm; the farms' basket; spoiling; the
+// Country's basket moving to its re-weighted one; the records and their refusals, applied live; a save, and a restart's
+// areas on from its first second; the preserver selling on the drying houses' stores before making its own; vegetables
+// gone from Ridgemere 2.0's economy and the inns' stew of meat and bones.
 //
 // The catalogue is the real Data (RATW_SOURCE_DIR), country_farms.json with it.
 #include "RatwCalendar.h"
@@ -387,6 +387,28 @@ void drawsFromTheFarms()
     expect(s.countryLeft("flour") <= 1, "and its season's cap is back");
 }
 
+void anEvenSplit()
+{
+    // Two like farms with like stores share many small draws: each takes half the pennies, within a penny (cut in the
+    // list's order, the first lost the odd penny of every draw), and every penny of the cost less the toll is theirs.
+    auto s = city([](EconomySpec& e) { e.farms.areas["grain"].on = 1; });
+    turn(s, 46);
+    const auto t1 = Society::farmTill("grain_farm_1"), t2 = Society::farmTill("grain_farm_2");
+    expect(held(s, t1, "flour") == held(s, t2, "flour"), "like stores");
+    const auto cash1 = s.cash(t1), cash2 = s.cash(t2), treasury = s.cash("treasury");
+    std::int64_t paid = 0;
+    for (int i = 0; i < 40; ++i)
+    {
+        const auto r = s.drawFromStore("stall", "flour", 2, "restocked from the store room");
+        expect(r.ok, "two flour drawn: " + r.message);
+        paid += r.total;
+    }
+    const auto got1 = s.cash(t1) - cash1, got2 = s.cash(t2) - cash2;
+    expect(got1 + got2 == paid - (s.cash("treasury") - treasury), "the cost less the toll to the farms");
+    expect(std::abs(got1 - got2) <= 1, "an even split: " + std::to_string(got1) + "p and " + std::to_string(got2) + "p");
+    expect(held(s, t1, "flour") == held(s, t2, "flour"), "and like pieces from each");
+}
+
 void theCountryNoLongerSends()
 {
     // Meat on: the butcher's raw meat comes from the cattle and pig farms; a good of the area no farm grows is had from nobody.
@@ -752,6 +774,7 @@ int main()
         thePhasedSwitch();
         conservationWithMinting();
         drawsFromTheFarms();
+        anEvenSplit();
         theCountryNoLongerSends();
         spoiling();
         theFarmsBasket();
