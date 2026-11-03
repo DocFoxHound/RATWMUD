@@ -70,11 +70,19 @@ void Society::buildFarms()
             const auto lean = std::max<std::int64_t>(0, def.reserve - defaults.floatDays * designWages);
             f.reserve = defaults.floatDays * f.wages() + lean;
             const int designHeads = def.keepers + def.hands;
-            f.purse = designHeads > 0 ? std::int64_t(std::llround(double(def.purse) * f.heads() / designHeads)) : 0;
+            f.purse = designHeads > 0 ? std::int64_t(std::llround(double(def.purse) * f.crewSize() / designHeads)) : 0;
             farmOf_[f.till] = farms_.size();
             farms_.push_back(std::move(f));
         }
     }
+    // Each farm's work rooms (communities.json, doc 71 Phase C): a post there is the farm's.
+    farmWorkplace_.clear();
+    for (const auto& place : items::farmPeople().farms)
+        if (const auto at = std::find_if(farms_.begin(), farms_.end(), [&](const FarmNow& f) { return f.def->id == place.farm; });
+            at != farms_.end())
+            for (const auto& room : place.workplaces)
+                farmWorkplace_.emplace(room.area, std::size_t(at - farms_.begin()));
+    countFarmPosts();
     refreshAreas(-1, false);                         // (Which are on as of the day it knows; none founded here.)
 }
 
@@ -155,16 +163,19 @@ void Society::tendFarms(std::int64_t day)
     refreshAreas(day);
     if (roster_ != Roster::Authored)
         return;
+    countFarmPosts();
     for (auto& f : farms_)
     {
         if (!farmAreaOn(f.area) || !account(f.till))
             continue;
         auto& today = loopToday_.farms[f.def->id];
         const auto& name = f.def->id;
+        // Its crew at work (doc 71, Phase C): a farm short of hands (a real post empty) yields in proportion.
+        const double working = f.working();
         for (const auto& [good, middle] : f.def->yield)
         {
             double& carry = f.grown[good];
-            carry += seasonalValue(middle, yearDay_) * f.yieldScale;
+            carry += seasonalValue(middle, yearDay_) * f.yieldScale * working;
             const int n = int(std::floor(carry + 1e-9));
             if (n < 1)
                 continue;
@@ -235,6 +246,33 @@ void Society::tendFarms(std::int64_t day)
             if (f.hunger > 0)
                 today.crewHungry += f.hunger;
         }
+        // Every virtual post real now (doc 71, Phase C): what its crew's household still holds (its founding purse's
+        // rest, its larder) is its keeper's household's, or a hand's where the keeper's post stands empty. Moved, not made.
+        if (const auto* larder = account(f.crew); larder && f.heads() == 0 && (larder->cash > 0 || !larder->stock.empty()))
+        {
+            std::string heir;
+            bool keeper = false;
+            for (const auto& p : positions_)
+                if (const auto held = state_.careers.positions.find(p.id);
+                    held != state_.careers.positions.end() && !held->second.holder.empty() && !dead_.count(held->second.holder) &&
+                    account(held->second.holder) && farmOfPost(p, &keeper) >= 0 && farms_[std::size_t(farmOfPost(p))].def == f.def &&
+                    (heir.empty() || keeper))
+                {
+                    heir = held->second.holder;
+                    if (keeper)
+                        break;
+                }
+            if (!heir.empty())
+            {
+                if (larder->cash > 0)
+                    shift(f.crew, heir, "", 0, larder->cash, "a farm crew's purse, to its people");
+                const std::vector<std::pair<std::string, int>> goods(larder->stock.begin(), larder->stock.end());
+                for (const auto& [item, n] : goods)
+                    for (int left = n; left > 0; left -= 99)
+                        if (!shift(f.crew, heir, item, std::min(left, 99), 0, "a farm crew's larder, to its people"))
+                            break;
+            }
+        }
     }
 }
 
@@ -243,17 +281,47 @@ void Society::payFarms()
     // The farms' wages at 18:00 (doc 71, 4; the user: fixed, a keeper 16p and a hand 10p, editable per farm and area), to
     // their crews' households, from all the till holds (its float is for them): what it can't pay goes to the treasury's
     // wage support with the city's short tills' (supportWages).
-    for (const auto& f : farms_)
+    // Its real posts (doc 71, Phase C) are paid as its virtual crew was, from the same till at the same wages: each held
+    // post its holder, the rest its crew's household; short of the whole, each the same share of its wage.
+    countFarmPosts();
+    std::vector<std::vector<std::pair<std::string, int>>> real(farms_.size());
+    for (const auto& p : positions_)
     {
+        bool keeper = false;
+        const int farm = farmOfPost(p, &keeper);
+        if (farm < 0)
+            continue;
+        const auto held = state_.careers.positions.find(p.id);
+        if (held == state_.careers.positions.end() || held->second.holder.empty() || dead_.count(held->second.holder) ||
+            !account(held->second.holder))
+            continue;
+        const auto& f = farms_[std::size_t(farm)];
+        real[std::size_t(farm)].push_back({held->second.holder, keeper ? f.keeper : f.hand});
+    }
+    for (std::size_t i = 0; i < farms_.size(); ++i)
+    {
+        const auto& f = farms_[i];
         if (!farmAreaOn(f.area) || !account(f.till) || !account(f.crew))
             continue;
-        const auto owed = f.wages();
+        auto dues = real[i];
+        if (const auto crew = f.virtualWages(); crew > 0)
+            dues.push_back({f.crew, int(crew)});
+        std::int64_t owed = 0;
+        for (const auto& [to, wage] : dues)
+            owed += wage;
         if (owed <= 0)
             continue;
         auto& today = loopToday_.farms[f.def->id];
-        auto paid = std::min(owed, cash(f.till));
-        if (paid > 0 && !shift(f.till, f.crew, "", 0, paid, "wages"))
-            paid = 0;
+        const auto can = cash(f.till);
+        std::int64_t paid = 0;
+        for (const auto& [to, wage] : dues)
+            if (const std::int64_t coins = can >= owed ? wage : std::int64_t(wage) * can / owed;
+                coins > 0 && shift(f.till, to, "", 0, coins, "wages"))
+            {
+                paid += coins;
+                if (to != f.crew)
+                    today.peoplePaid += coins;
+            }
         today.wagesOwed += owed;
         today.wagesPaid += paid;
         if (paid < owed)

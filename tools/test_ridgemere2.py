@@ -231,6 +231,30 @@ class PeoplesText(unittest.TestCase):
             self.assertNotRegex(line, r'\b(he|she|him|her|his|hers)\b')        # (Pronouns would need the sex.)
 
 
+class RealmHomes(unittest.TestCase):
+    """The game's people in the realm (doc 71, Phase C): a write of the city leaves anyone homed in a steading or a
+    community alone, and counts them in none of the city's checks."""
+
+    def test_who_lives_in_the_realm(self):
+        from worldgen import ridgemere2 as R
+        self.assertTrue(R.realm_homed({'home': {'cell': 'fs_grain_long_home', 'x': 9.5, 'y': 1.5}}))
+        self.assertTrue(R.realm_homed({'home': {'cell': 'cn_coldwater_cottage_1', 'x': 1.5, 'y': 1.5}}))
+        self.assertFalse(R.realm_homed({'home': {'cell': 'rm_saltwick_house', 'x': 3.5, 'y': 1.5}}))
+        self.assertFalse(R.realm_homed({'home': None}))
+
+    def test_compose_leaves_them_alone(self):
+        import inspect
+        from worldgen import ridgemere2 as R
+        source = inspect.getsource(R.compose)
+        # (The people's loop skips them before the plan can unplace them.)
+        loop = source[source.index("for person in p['people']:"):]
+        self.assertLess(loop.index('realm_homed(person)'), loop.index("person['home'] = person['work'] = person['evening'] = None"))
+        for name in ('checks', 'write_outputs', 'report_data'):
+            fn = getattr(R, name, None)
+            if fn is not None and "x['home']" in inspect.getsource(fn):
+                self.assertIn('realm_homed', inspect.getsource(fn), name)
+
+
 class Refit(unittest.TestCase):
     def test_a_shop_refitted_for_another_trade_keeps_its_walls_door_and_stairs(self):
         from worldgen import ridgemere2 as R

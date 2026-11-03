@@ -323,6 +323,10 @@ CareerNote Society::welcome(const ResidentRequest& request, const std::string& i
         return {"birth", id, request.parents.empty() ? std::string() : request.parents[0],
                 request.parents.size() > 1 ? "child of " + request.parents[0] + " and " + request.parents[1] : std::string()};
     }
+    // Placed by the farms' rule (doc 71, Phase C): its post is its own (founded with it: addResident), or none (family).
+    if (request.kind == "farm")
+        return {"newcomer", id, {}, request.workLabel == "-" ? "came in from the Country with their family"
+                                                               : "came in from the Country to be " + request.workLabel};
     // An arrival from the Country takes up the post it came for. (Its town's talk of it as a newcomer: "is new in town".)
     auto found = c.positions.find(request.positionId);
     const auto* p = position(request.positionId);
@@ -349,8 +353,50 @@ bool Society::arrive(const ResidentRequest& request)
 {
     const auto away = std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
                                    [&](const ResidentSpec& r) { return r.id == request.templateId; });
-    if (roster_ != Roster::Authored || request.kind != "arrival" || away == authored_.unplaced.end() || request.home.cell.empty())
+    if (roster_ != Roster::Authored || (request.kind != "arrival" && request.kind != "farm") || away == authored_.unplaced.end() ||
+        request.home.cell.empty())
         return false;
+    if (request.kind == "farm")
+    {
+        // Placed by the farms' rule (doc 71, Phase C): at its home, with a post of its own at its work (founded with it,
+        // as an authored resident's is), or none (a keeper's family). Its purse moves from its farm crew's founding purse
+        // (or, a market's, the Country's), as far as that holds it: nothing is made.
+        ResidentSpec r = *away;
+        r.home = r.evening = request.home;
+        const bool post = request.workLabel != "-" && !request.work.cell.empty();
+        r.work = post ? request.work : request.home;
+        r.workLabel = post ? request.workLabel : "-";
+        r.role = post && request.role == "merchant" ? "merchant" : "civilian";
+        r.paid = post;
+        if (post)
+        {
+            r.startHour = request.startHour;
+            r.endHour = request.endHour;
+        }
+        r.route.clear();
+        r.wander.clear();
+        r.serve = r.role == "merchant" ? request.serve : Spot{};
+        if (!addResident(r, 0))                     // (Its authored purse stays its record's: a shop's float, below.)
+            return false;
+        authored_.unplaced.erase(std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
+                                              [&](const ResidentSpec& u) { return u.id == r.id; }));
+        if (!request.purseFrom.empty())
+            if (const auto purse = std::min(request.purse, cash(request.purseFrom)); purse > 0)
+                shift(request.purseFrom, r.id, "", 0, purse,
+                      request.purseFrom == CountryFund ? "an arrival's purse, from the Country" : "a farm crew's purse, to its people");
+        if (r.role == "merchant")
+        {
+            // A community's shop (doc 71, Phase C): its till opened, and its working float made as a city shop's was at
+            // the founding (its keeper's authored purse's worth: foundShops), counted with the farms' founding money.
+            const auto before = state_.minted;
+            foundShops();
+            indexTills();
+            loopToday_.minted += state_.minted - before;
+            farmsMinted_ += state_.minted - before;
+        }
+        countFarmPosts();
+        return true;
+    }
     // Placed without work (doc 66, 2): it lives at home, holds the post it came for (welcome), and keeps its talk, story
     // and families; its own post as written stays its record's (a live world's row keeps its label).
     ResidentSpec r = *away;
@@ -378,6 +424,12 @@ std::string Society::postClass(const Position& p) const
         return {};                                  // No post that pays: lessons, play, leisure.
     if (p.role == "guard" || clergy(p.title))
         return "any";
+    if (pay.kind == "farm")
+    {
+        bool keeper = false;
+        farmOfPost(p, &keeper);
+        return keeper ? "middle" : "lower";         // (A farm's keeper and its hands: doc 71, Phase C.)
+    }
     const auto t = lower(p.title);
     if (houseHead(p.title))
         return "upper";
@@ -1038,6 +1090,8 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         notes.push_back({"apprenticeship", chosen, ps.holder, p.title});
         forgetCareers();
     }
+
+    staffFarms(world, notes);                      // (The farms' people, once their area is on: doc 71, Phase C.)
 
     splitHouseholds(today, world, notes);
 

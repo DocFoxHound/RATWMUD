@@ -36,6 +36,7 @@ struct Catalog
     Households households;
     Country country;
     Farms farms;
+    FarmPeople farmPeople;
 };
 
 bool readJson(const std::filesystem::path& path, json::Value& out, std::string& error)
@@ -176,6 +177,138 @@ void readFarms(Catalog& c, const json::Value& file)
         }
         f.areas.push_back(std::move(area));
     }
+}
+
+// The farms' people (communities.json, the places; farm_people.json, the rules; doc 71, Phase C).
+void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& rules)
+{
+    auto& p = c.farmPeople;
+    const auto spots = [](const json::Value& list) {
+        std::vector<std::pair<double, double>> out;
+        for (const auto& s : list.items())
+            if (s.isObject())
+                out.push_back({std::floor(s.number("x", 0)) + .5, std::floor(s.number("y", 0)) + .5});   // (Tile centres.)
+        return out;
+    };
+    const auto room = [&](const json::Value& r, const char* spotsKey) {
+        PlaceRoom out;
+        out.area = r.string("area");
+        out.name = r.string("name", out.area);
+        out.forName = r.string("for");
+        out.spots = spots(r[spotsKey]);
+        out.capacity = std::clamp(int(r.number("capacity", double(out.spots.size()))), 0, 64);
+        return out;
+    };
+    const auto words = [](const json::Value& list) {
+        std::vector<std::string> out;
+        for (const auto& w : list.items())
+            if (const auto s = w.asString({}); !s.empty())
+            {
+                std::string l = s;
+                std::transform(l.begin(), l.end(), l.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
+                out.push_back(l);
+            }
+        return out;
+    };
+    p.householdMost = std::clamp(int(places.number("householdMost", 6)), 1, 64);
+    for (const auto& f : places.array("farms"))
+    {
+        FarmPlace farm;
+        farm.farm = f.string("farm");
+        farm.kind = f.string("kind");
+        farm.steading = f.string("steading", farm.farm);
+        farm.community = f.string("community");
+        for (const auto& w : f.array("workplaces"))
+            if (auto r = room(w, "work"); !r.area.empty())
+                farm.workplaces.push_back(std::move(r));
+        farm.home = room(f.object("home"), "beds");
+        if (!farm.farm.empty() && !farm.workplaces.empty() && !farm.home.area.empty() && !farm.community.empty())
+            p.farms.push_back(std::move(farm));
+    }
+    for (const auto& x : places.array("communities"))
+    {
+        CommunityPlace community;
+        community.id = x.string("id");
+        community.name = x.string("name", community.id);
+        community.region = x.string("region", community.id);
+        for (const auto& h : x.array("homes"))
+            if (auto r = room(h, "beds"); !r.area.empty() && !r.spots.empty())
+                community.homes.push_back(std::move(r));
+        for (const auto& h : x.array("flats"))
+            if (auto r = room(h, "beds"); !r.area.empty() && !r.spots.empty())
+                community.flats.push_back(std::move(r));
+        for (const auto& m : x.array("market"))
+        {
+            MarketPlace market;
+            market.area = m.string("area");
+            market.name = m.string("name", market.area);
+            market.business = m.string("business");
+            market.work = spots(m["work"]);
+            for (const auto& post : m.array("posts"))
+                if (const auto name = post.string("post"); !name.empty())
+                    market.posts.push_back({name, std::clamp(int(post.number("count", 1)), 0, 16)});
+            if (!market.area.empty() && !market.work.empty())
+                community.market.push_back(std::move(market));
+        }
+        if (!community.id.empty())
+            p.communities.push_back(std::move(community));
+    }
+    for (const auto& t : rules.array("trades"))
+        if (const auto id = t.string("id"); !id.empty())
+            p.trades.push_back({id, words(t["words"])});
+    p.fallback = words(rules["fallback"]);
+    // (Trade ids are matched as written: the fallback list names them, lowered; keep the ids' own case for reports.)
+    for (auto& f : p.fallback)
+        for (const auto& [id, unused] : p.trades)
+        {
+            std::string l = id;
+            std::transform(l.begin(), l.end(), l.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
+            if (l == f)
+                f = id;
+        }
+    for (const auto& [farm, name] : rules.object("places").fields())
+        if (const auto text = name.asString({}); !text.empty())
+            p.places[farm] = text;
+    for (const auto& s : rules.array("suffixes"))
+        if (const auto text = s.asString({}); !text.empty())
+            p.suffixes.push_back(text);
+    const auto hours = [](const json::Value& v, double& from, double& to) {
+        if (v.isArray() && v.size() == 2 && v.items()[0].isNumber() && v.items()[1].isNumber())
+        {
+            from = std::clamp(v.items()[0].asNumber(), 0., 23.5);
+            to = std::clamp(v.items()[1].asNumber(), 0., 23.5);
+        }
+    };
+    hours(rules.object("hours")["farm"], p.farmStart, p.farmEnd);
+    hours(rules.object("hours")["market"], p.marketStart, p.marketEnd);
+    const auto ids = [](const json::Value& list) {
+        std::vector<std::string> out;
+        for (const auto& w : list.items())
+            if (const auto s = w.asString({}); !s.empty())
+                out.push_back(s);
+        return out;
+    };
+    for (const auto& [kind, k] : rules.object("kinds").fields())
+    {
+        FarmKindPeople people;
+        people.trades = ids(k["trades"]);
+        people.words = words(k["words"]);
+        people.keeper = k.string("keeper");
+        people.hand = k.string("hand");
+        const auto& second = k.object("second");
+        people.second = second.string("label");
+        people.secondCount = people.second.empty() ? 0 : std::clamp(int(second.number("count", 1)), 0, 16);
+        people.secondWords = words(second["words"]);
+        if (!people.keeper.empty() && !people.hand.empty())
+            p.kinds[kind] = std::move(people);
+    }
+    for (const auto& [post, m] : rules.object("market").fields())
+    {
+        MarketPostPeople people{m.string("label"), m.string("role", "civilian"), words(m["words"]), ids(m["trades"])};
+        if (!people.label.empty() && (people.role == "merchant" || people.role == "civilian"))
+            c.farmPeople.market[post] = std::move(people);
+    }
+    p.loaded = !p.farms.empty() && !p.kinds.empty();
 }
 
 Catalog build()
@@ -499,6 +632,15 @@ Catalog build()
         if (readJson(file, farms, problem))
             readFarms(c, farms);
     }
+    // The farms' people (communities.json and farm_people.json; doc 71, Phase C): optional; without both, nobody is placed.
+    if (const auto places = dir.parent_path() / "Economy" / "communities.json", rules = dir.parent_path() / "Economy" / "farm_people.json";
+        std::filesystem::exists(places) && std::filesystem::exists(rules))
+    {
+        json::Value a, b;
+        std::string problem;
+        if (readJson(places, a, problem) && readJson(rules, b, problem))
+            readFarmPeople(c, a, b);
+    }
     c.loaded = !c.wearables.empty();
     if (!c.loaded && c.error.empty())
         c.error = "no wearables in " + (dir / "items.json").string();
@@ -772,6 +914,49 @@ const Country& country()
 const Farms& farms()
 {
     return catalog().farms;
+}
+
+const FarmPeople& farmPeople()
+{
+    return catalog().farmPeople;
+}
+
+const FarmPlace* FarmPeople::farm(const std::string& id) const
+{
+    for (const auto& f : farms)
+        if (f.farm == id)
+            return &f;
+    return nullptr;
+}
+
+const CommunityPlace* FarmPeople::community(const std::string& id) const
+{
+    for (const auto& c : communities)
+        if (c.id == id)
+            return &c;
+    return nullptr;
+}
+
+std::string FarmPeople::tradeOf(const std::string& workLabel) const
+{
+    std::string l = workLabel;
+    std::transform(l.begin(), l.end(), l.begin(), [](unsigned char ch) { return char(std::tolower(ch)); });
+    for (const auto& [id, words] : trades)
+        for (const auto& w : words)
+            if (l.find(w) != std::string::npos)
+                return id;
+    return {};
+}
+
+std::string FarmPeople::placeName(const FarmPlace& farm) const
+{
+    if (const auto own = places.find(farm.farm); own != places.end())
+        return own->second;
+    const auto& steading = farm.steading;
+    for (const auto& s : suffixes)
+        if (steading.size() > s.size() && steading.compare(steading.size() - s.size(), s.size(), s) == 0)
+            return steading.substr(0, steading.size() - s.size());
+    return steading;
 }
 
 const RuleInfo* ruleInfo(const std::string& name)

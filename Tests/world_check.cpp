@@ -1269,7 +1269,9 @@ struct EconomyWatch
             {
                 int on = 0, farms = 0, stock = 0, sold = 0, grown = 0, spoiled = 0, eaten = 0, tableShort = 0, out = 0;
                 int crewFood = 0, crewNeeds = 0, crewComforts = 0, crewServices = 0, crewShort = 0;
+                int posts = 0, postsHeld = 0, virtualCrew = 0;   // (Doc 71, Phase C: its real posts, those held, its virtual crew.)
                 std::int64_t takings = 0, owed = 0, paid = 0, support = 0, basket = 0, carriage = 0, held = 0, purses = 0, spent = 0;
+                std::int64_t peoplePaid = 0;
                 double hungry = 0;
             };
             const auto& defs = items::farms();
@@ -1295,8 +1297,12 @@ struct EconomyWatch
                 x.takings = day.takings, x.owed = day.wagesOwed, x.paid = day.wagesPaid, x.support = day.support;
                 x.basket = day.basket, x.carriage = day.basketCarriage, x.held = society.cash(f.till);
                 x.purses = society.cash(f.crew), x.spent = day.crewSpent;
+                x.posts = f.postKeepers + f.postHands, x.postsHeld = f.heldKeepers + f.heldHands, x.virtualCrew = f.heads();
+                x.peoplePaid = day.peoplePaid;
                 for (auto* into : {&a, &all})
                 {
+                    into->posts += x.posts, into->postsHeld += x.postsHeld, into->virtualCrew += x.virtualCrew;
+                    into->peoplePaid += x.peoplePaid;
                     into->farms += x.farms, into->stock += x.stock, into->sold += x.sold, into->grown += x.grown;
                     into->spoiled += x.spoiled, into->eaten += x.eaten, into->tableShort += x.tableShort;
                     into->crewFood += x.crewFood, into->crewNeeds += x.crewNeeds, into->crewComforts += x.crewComforts;
@@ -1311,7 +1317,8 @@ struct EconomyWatch
                          << ", \"support\": " << x.support << ", \"basket\": " << x.basket << ", \"float\": " << x.held
                          << ", \"crew\": " << f.heads() << ", \"crew_purse\": " << x.purses << ", \"crew_spent\": " << x.spent
                          << ", \"grown\": " << x.grown << ", \"spoiled\": " << x.spoiled << ", \"eaten\": " << x.eaten
-                         << ", \"crew_hungry\": " << x.hungry << "}";
+                         << ", \"crew_hungry\": " << x.hungry << ", \"posts\": " << x.posts << ", \"posts_held\": " << x.postsHeld
+                         << ", \"people_paid\": " << x.peoplePaid << "}";
             }
             const auto fields = [&](const std::string& prefix, const Sum& x) {
                 seasons << ", \"" << prefix << "stock\": " << x.stock << ", \"" << prefix << "sold\": " << x.sold << ", \"" << prefix
@@ -1324,7 +1331,9 @@ struct EconomyWatch
                         << ", \"" << prefix << "crew_spent\": " << x.spent << ", \"" << prefix << "crew_food\": " << x.crewFood
                         << ", \"" << prefix << "crew_needs\": " << x.crewNeeds << ", \"" << prefix << "crew_comforts\": "
                         << x.crewComforts << ", \"" << prefix << "crew_services\": " << x.crewServices << ", \"" << prefix
-                        << "crew_short\": " << x.crewShort << ", \"" << prefix << "crew_hungry\": " << x.hungry;
+                        << "crew_short\": " << x.crewShort << ", \"" << prefix << "crew_hungry\": " << x.hungry << ", \"" << prefix
+                        << "posts\": " << x.posts << ", \"" << prefix << "posts_held\": " << x.postsHeld << ", \"" << prefix
+                        << "virtual_crew\": " << x.virtualCrew << ", \"" << prefix << "people_paid\": " << x.peoplePaid;
             };
             for (std::size_t i = 0; i < defs.areas.size(); ++i)
             {
@@ -2209,6 +2218,53 @@ int main(int argc, char** argv)
                   << asked << " children and " << askedArrivals << " arrivals asked for and not made; "
                   << server.society().state().careers.birthsOwed.size() << " children still owed for the dead; " << server.society().unplacedCount()
                   << " unplaced NPCs left in the world's list\n";
+    }
+    if (const auto& placed = server.society().farmPlaced(); !placed.empty())
+    {
+        // The farms' people (doc 71, Phase C): who was placed, the farms' posts, and the households in the realm's homes.
+        const auto& society = server.society();
+        std::cout << "  the farms' people placed:";
+        for (const auto& [what, n] : placed)
+            std::cout << ' ' << what << ' ' << n << ';';
+        int posts = 0, held = 0, virtualCrew = 0;
+        for (const auto& f : society.farms())
+            posts += f.postKeepers + f.postHands, held += f.heldKeepers + f.heldHands, virtualCrew += f.heads();
+        std::map<std::string, int> homes;
+        int hungry = 0, living = 0;
+        double hungriest = 0;
+        for (const auto& [id, life] : society.state().residents)
+            if (const auto* e = server.entity(id); e && !e->dead && (life.homeCell.rfind("fs_", 0) == 0 || life.homeCell.rfind("cn_", 0) == 0))
+            {
+                ++homes[life.homeCell], ++living;
+                hungry += life.hunger >= 60;
+                hungriest = std::max(hungriest, life.hunger);
+            }
+        std::map<int, int> sizes;
+        for (const auto& [home, n] : homes)
+            ++sizes[n];
+        std::cout << " posts " << posts << " (" << held << " held), virtual crew left " << virtualCrew << "; " << living
+                  << " living in the realm's homes, " << homes.size() << " households (by size:";
+        for (const auto& [n, count] : sizes)
+            std::cout << ' ' << n << 'x' << count;
+        std::cout << "), " << hungry << " hungry (60+) at the end, the hungriest " << hungriest << '\n';
+        // (RATW_FARM_PEOPLE=1: each of them, its home, its work and its post.)
+        if (const char* each = std::getenv("RATW_FARM_PEOPLE"); each && *each == '1')
+            for (const auto& [id, life] : society.state().residents)
+                if (const auto* r = society.spec(id); r && (life.homeCell.rfind("fs_", 0) == 0 || life.homeCell.rfind("cn_", 0) == 0 ||
+                                                            r->work.cell.rfind("fs_", 0) == 0 || r->work.cell.rfind("cn_", 0) == 0))
+                    std::cout << "    farm person " << id << " | " << r->age << " | " << life.homeCell << " | " << r->work.cell << " | "
+                              << r->workLabel << " | " << society.cash(id) << "p | hunger " << life.hunger << " | now " << (server.entity(id) ? server.entity(id)->cellId : std::string("-")) << " " << life.task << '\n';
+        for (const auto& p : society.positions())
+            if (p.role == "merchant" && p.work.cell.rfind("cn_", 0) == 0)
+            {
+                const auto till = "till:" + p.id;
+                int stock = 0;
+                if (const auto* a = society.account(till))
+                    for (const auto& [item, n] : a->stock)
+                        stock += n;
+                const auto& ps = society.state().careers.positions.at(p.id);
+                std::cout << "    " << p.title << " (" << ps.holder << "): till " << society.cash(till) << "p, " << stock << " pieces\n";
+            }
     }
     if (sampling)
         roads.report();

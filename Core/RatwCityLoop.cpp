@@ -89,6 +89,13 @@ Society::Pay Society::payOf(const Position& p) const
     // and the Country's posts keep their fixed wages.
     if (p.role == "merchant")
         return {"keeper", "till:" + p.id, driftedWage("till:" + p.id, e.wageKeeper)};
+    // A farm's post (doc 71, Phase C): its till's, at the farm's fixed wages (a keeper's or a hand's), paid with its crew.
+    bool farmKeeper = false;
+    if (const int farm = farmOfPost(p, &farmKeeper); farm >= 0)
+    {
+        const auto& f = farms_[std::size_t(farm)];
+        return {"farm", f.till, farmKeeper ? f.keeper : f.hand};
+    }
     const auto title = lower(p.title);
     // A rule may pay another of the world's wages than its payer's (a head's post: a keeper's; doc 68, "First fixes").
     const auto wageOf = [&](const std::string& kind, int otherwise) {
@@ -1159,8 +1166,8 @@ void Society::payWages()
             !account(held->second.holder))
             continue;
         const auto pay = payOf(p);
-        if (pay.kind.empty() || pay.wage <= 0 || !account(pay.payer))
-            continue;
+        if (pay.kind.empty() || pay.kind == "farm" || pay.wage <= 0 || !account(pay.payer))
+            continue;                               // (A farm's posts: its till pays them with its crew's, payFarms.)
         byPayer[pay.payer].push_back({&held->second.holder, pay.wage});
     }
     const auto floorOf = [&](const std::string& payer) -> std::int64_t {
@@ -1270,7 +1277,8 @@ void Society::supportWages()
     }
     for (const auto& f : farms_)
         if (shorts.count(f.till) && account(f.crew))
-            posts[f.till].push_back({&f.crew, int(f.wages())});
+            if (f.virtualWages() > 0)
+                posts[f.till].push_back({&f.crew, int(f.virtualWages())});   // (Its real posts are among the positions'.)
     const auto give = std::min(room, want);
     for (const auto& [till, short_] : shorts)
     {

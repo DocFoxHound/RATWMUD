@@ -1,0 +1,52 @@
+{
+  "format": "ratw-farm-people",
+  "version": 1,
+  "about": "How the game places the Country's farms' people and the communities' markets (Docs/Design/71-the-country-s-industries.md, Phase C; the user, 2026-11-03), with Data/Economy/communities.json (the places). When a farm's area is switched on, each of its posts is filled from the unplaced NPCs (doc 66, 2) by old trade, deterministically: its keeper the oldest suitable adult of its trades with family among the unplaced where there is one (the family: spouse, children and parents, up to the farmhouse's beds, living at the farmhouse; one of working age and of the farm's trades works as one of its hands), then its hands (16 to retirement; the farm's own trades first, the fallback trades for what they can't fill), housed in the farm's community (at most `householdMost` a home) or, for a farm near the city, as doc 68's arrivals are. A community's market is staffed when its first farm is: its keepers of the towns' trades and shops, its hands of service and labour. No NPC is made. Each label must hold no business word (communities.json `workLabels`) but a market keeper's, and be at most 40 characters: `{place}` is the steading's name less its `suffixes` (or the farm's own in `places`: Alderbank holds \"bank\", the moneychanger's word), `{name}` the business's.",
+  "trades": [
+    {"id": "fields and mills", "words": ["works the fields", "farms the", "water mill"]},
+    {"id": "orchards and vines", "words": ["orchard", "picks apples", "tends the vines", "fell wine"]},
+    {"id": "herds and flocks", "words": ["raises sheep", "keeps sheep", "milks the herd", "keeps pigs", "keeps rabbits", "dairy", "stables"]},
+    {"id": "bees", "words": ["keeps bees"]},
+    {"id": "fishing and the marsh", "words": ["fishes", "traps eels", "smokehouse", "fishmonger", "cuts reeds"]},
+    {"id": "woods", "words": ["logging", "cuts wood", "sawmill", "traps in the", "gathers herbs"]},
+    {"id": "mines, stone and clay", "words": ["digs ore", "cutting stone", "digs clay", "lime kilns", "brickworks", "smelter", "timberland iron"]},
+    {"id": "keeps the house", "words": ["keeps the house"]},
+    {"id": "the towns' trades and shops", "words": ["smith", "baker", "brewer", "provisioner", "shopkeeper", "butcher", "carpenter", "herbalist", "keeps the ", "runs the ", "minds the shop", "selling", "press"]},
+    {"id": "the watch", "words": ["stands watch"]},
+    {"id": "service and labour", "words": ["in service", "serves", "helps", "works", "ships' accounts", "between voyages"]},
+    {"id": "children", "words": ["plays about", "at lessons"]},
+    {"id": "the old", "words": ["sits by the well", "at leisure", "visiting"]},
+    {"id": "the Heights", "words": ["at home in the heights"]}
+  ],
+  "fallback": ["keeps the house", "service and labour"],
+  "hours": {"farm": [6, 17], "market": [7, 19]},
+  "places": {"beekeeper_2": "the Alder Garth"},
+  "suffixes": [" Dairy Farm", " Bee Garth", " Farm", " Orchard", " Vineyard", " Piggery", " Warren", " Fold", " Marsh", " Landing", " Workings", " Salterns"],
+  "kinds": {
+    "grain farm": {"trades": ["fields and mills"], "words": ["works the fields", "farms the"], "keeper": "farms {place}", "hand": "farmhand at {place}",
+                   "second": {"label": "grinds the corn at {place}", "count": 1, "words": ["water mill"]}},
+    "orchard with a drying house": {"trades": ["orchards and vines"], "words": ["orchard", "picks apples"], "keeper": "tends the orchard at {place}", "hand": "picks apples at {place}"},
+    "orchard": {"trades": ["orchards and vines"], "words": ["orchard", "picks apples"], "keeper": "tends the orchard at {place}", "hand": "picks apples at {place}"},
+    "vineyard": {"trades": ["orchards and vines"], "words": ["tends the vines"], "keeper": "tends the vines at {place}", "hand": "vine hand at {place}",
+                 "second": {"label": "cellar hand at {place}", "count": 1, "words": ["tends the vines"]}},
+    "cattle and dairy farm": {"trades": ["herds and flocks"], "words": ["milks the herd", "dairy"], "keeper": "herds the cattle at {place}", "hand": "cowherd at {place}",
+                              "second": {"label": "churns the butter at {place}", "count": 2, "words": ["milks the herd", "dairy"]}},
+    "pig farm": {"trades": ["herds and flocks"], "words": ["keeps pigs"], "keeper": "keeps pigs at {place}", "hand": "swineherd at {place}"},
+    "rabbit warren": {"trades": ["herds and flocks"], "words": ["keeps rabbits"], "keeper": "keeps rabbits at {place}", "hand": "warrener at {place}"},
+    "sheep and goat run": {"trades": ["herds and flocks"], "words": ["raises sheep", "keeps sheep"], "keeper": "raises sheep at {place}", "hand": "shepherd at {place}"},
+    "eel and fowl marsh": {"trades": ["fishing and the marsh"], "words": ["traps eels", "cuts reeds"], "keeper": "traps eels at {place}", "hand": "fowler at {place}"},
+    "lake and river boat": {"trades": ["fishing and the marsh"], "words": ["fishes the lake", "fishes the waters off glasswater"], "keeper": "skipper at {place}", "hand": "boatman at {place}"},
+    "sea fishing boat": {"trades": ["fishing and the marsh"], "words": ["fishes the waters"], "keeper": "skipper at {place}", "hand": "deckhand at {place}"},
+    "beekeeper": {"trades": ["bees"], "words": ["keeps bees"], "keeper": "keeps bees at {place}", "hand": "hive hand at {place}"},
+    "salt works": {"trades": ["fishing and the marsh"], "words": ["cuts reeds", "traps eels", "fishes"], "keeper": "works the salt at {place}", "hand": "salt raker at {place}"}
+  },
+  "market": {
+    "shopkeeper": {"label": "shopkeeper at {name}", "role": "merchant", "words": ["shopkeeper", "provisioner"], "trades": ["the towns' trades and shops", "service and labour", "keeps the house"]},
+    "shop hand": {"label": "shop hand at {name}", "role": "civilian", "words": ["helps at", "minds the shop"], "trades": ["service and labour", "the towns' trades and shops", "keeps the house"]},
+    "innkeeper": {"label": "keeps the taproom at {name}", "role": "merchant", "words": ["keeps the ", "runs the "], "trades": ["the towns' trades and shops", "service and labour", "keeps the house"]},
+    "alehouse keeper": {"label": "keeps the taproom at {name}", "role": "merchant", "words": ["keeps the ", "brewer", "runs the "], "trades": ["the towns' trades and shops", "service and labour", "keeps the house"]},
+    "pot hand": {"label": "pot hand at {name}", "role": "civilian", "words": ["serves at"], "trades": ["service and labour", "the towns' trades and shops", "keeps the house"]},
+    "cook": {"label": "cook at {name}", "role": "civilian", "words": ["serves at", "helps at the", "baker"], "trades": ["service and labour", "keeps the house", "the towns' trades and shops"]},
+    "baker": {"label": "baker at {name}", "role": "merchant", "words": ["baker"], "trades": ["the towns' trades and shops", "service and labour", "keeps the house"]}
+  }
+}

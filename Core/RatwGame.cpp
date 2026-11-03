@@ -1497,6 +1497,47 @@ void Game::makeResidents()
     }
     for (const auto& request : world_.takeResidentRequests())
     {
+        if (request.kind == "farm")
+        {
+            // Placed by the farms' rule (doc 71, Phase C): its row gets its home, and its post (work, label, role, hours)
+            // or none (a keeper's family: no work, so the loader places it without work), so a restart has it where the
+            // running world put it; then the world places it as a world from files does.
+            if (request.home.cell.empty())
+                continue;
+            const bool post = request.workLabel != "-" && !request.work.cell.empty();
+            const auto at = [](double v) { return std::to_string(int(std::floor(v))); };
+            const auto placed = worldDb_.exec(
+                "UPDATE live.npcs SET home_area = $3, home_x = $4::integer, home_y = $5::integer, evening_area = $3, "
+                "evening_x = $4::integer, evening_y = $5::integer, work_area = CASE WHEN $6 = '' THEN NULL ELSE $6 END, "
+                "work_x = $7::integer, work_y = $8::integer, work_label = CASE WHEN $6 = '' THEN work_label ELSE $9 END, "
+                "role = CASE WHEN $6 = '' THEN 'civilian' ELSE $10 END, paid = ($6 <> ''), "
+                "hours_start = CASE WHEN $6 = '' THEN hours_start ELSE $11::real END, "
+                "hours_end = CASE WHEN $6 = '' THEN hours_end ELSE $12::real END, route_id = NULL "
+                "WHERE world_id = $1 AND id = $2 AND home_area IS NULL RETURNING id",
+                {liveWorldId_, request.templateId, request.home.cell, at(request.home.x), at(request.home.y),
+                 post ? request.work.cell : std::string(), post ? at(request.work.x) : std::string("0"),
+                 post ? at(request.work.y) : std::string("0"), request.workLabel, request.role == "merchant" ? "merchant" : "civilian",
+                 std::to_string(request.startHour), std::to_string(request.endHour)});
+            if (!placed.ok || placed.rows.size() != 1)
+            {
+                note("warning", "RATW_RESIDENT " + request.name + " could not be placed at a farm: " +
+                                    (placed.ok ? std::string("not unplaced in the database") : placed.error));
+                continue;
+            }
+            const auto arrived = world_.arriveResident(request);
+            if (!arrived.ok)
+            {
+                worldDb_.exec("UPDATE live.npcs SET home_area = NULL, home_x = 0, home_y = 0, evening_area = NULL, evening_x = 0, "
+                              "evening_y = 0, work_area = NULL, work_x = 0, work_y = 0 WHERE world_id = $1 AND id = $2",
+                              {liveWorldId_, request.templateId});
+                note("warning", "RATW_RESIDENT " + request.name + " could not be placed at a farm: " + arrived.message);
+                continue;
+            }
+            note("info", "RATW_RESIDENT farm: " + request.name + " (" + request.templateId + ") " + arrived.message);
+            ++revision_;
+            saveSoon();
+            continue;
+        }
         if (request.kind == "arrival")
         {
             // An unplaced NPC of the world's own list comes in from the Country (the user, 2026-11-01): its row gets the

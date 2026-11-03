@@ -892,10 +892,13 @@ wolf to the communities needs doc 70's walking scripts, which are not committed.
 `world.areas` and `world.interiors`, the project's `rooms`), `home_x`/`home_y` one of its `beds`; a post's `work_area` =
 the workplace's `area`, `work_x`/`work_y` one of its `work` spots. Beware: a write of the city (`worldgen.ridgemere2
 write`) places the city's people from its own plan and sets every other placed NPC's home to none (`compose`), so it
-would undo placements in these interiors until its plan knows them.
+would undo placements in these interiors until its plan knows them. (Fixed with doc 71's Phase C, branch
+`r2-farm-people`: `compose` leaves anyone homed in an `fs_` or `cn_` interior alone, `realm_homed`, and the city's checks
+and reports count only the city's own.)
 
 **Still open.**
-- The keepers' and hands' labels, wages, and the virtual crews they replace (doc 71, Phase C).
+- ~~The keepers' and hands' labels, wages, and the virtual crews they replace (doc 71, Phase C).~~ Built: doc 71,
+  Progress, "Phase C".
 - Talk's regions (`Data/Talk/facts.json`, `here.region`) know Coldwater, Larkfield and Southmeadow but not Fenshore or
   Saltwell.
 - The communities' food (the gardens, hens and goats) is ground only: nothing grows or lays yet.

@@ -55,6 +55,16 @@ W, H = 768, 768
 CELL = 256
 SEED = 20261030
 REGION = 'ridgemere'
+# The realm's own interiors (doc 70, "The steadings and the communities"): a farm's steading (`fs_`) and a community's
+# houses and market (`cn_`). The game places the farms' people there (doc 71, Phase C) and owns them: a write of the city
+# leaves anyone homed in one alone (never unplaced by the city's plan) and counts them in none of the city's checks.
+REALM_HOMES = ('fs_', 'cn_')
+
+
+def realm_homed(person):
+    """Whether an NPC lives in one of the realm's interiors (a steading or a community), outside the city's plan."""
+    home = person.get('home')
+    return bool(home) and str(home.get('cell', '')).startswith(REALM_HOMES)
 
 # --- The plan's geometry (doc 67, section 2; "Dense city" in its Progress notes). Canvas tiles; ranges half-open. ----
 # The city was made denser on 2026-10-31: the inside of the walls shrank from 488 x 462 to 336 x 330 tiles (about half),
@@ -3048,6 +3058,8 @@ def compose(project, world, city, plan, labels, baseline, place_names=None):
     city.text_fixes, city.text_fixed = Counter(), []
     held = post_hours(p['people'], city)
     for person in p['people']:
+        if realm_homed(person):
+            continue                    # (The game's: a farm's or a community's people, doc 71 Phase C. Left as they are.)
         e = plan.get(person['id'])
         if not e or not e.get('placed'):
             person['home'] = person['work'] = person['evening'] = None
@@ -3249,7 +3261,7 @@ def checks(p, world, city, plan, labels, walk, capacity=None, classes=None):
     c = world.c
     codes, heights = c.codes, c.heights
     people = {x['id']: x for x in p['people']}
-    placed = [x for x in p['people'] if x['home']]
+    placed = [x for x in p['people'] if x['home'] and not realm_homed(x)]
     rooms = {r['id']: r for r in p['rooms']}
     new_rooms = {r['id'] for r in city.site.rooms}
     # -- the map --
@@ -3788,7 +3800,7 @@ def write_outputs(m, folder=ART, images=True):
     folder.mkdir(parents=True, exist_ok=True)
     city, world, p, plan = m['city'], m['world'], m['project'], m['plan']
     people = {x['id']: x for x in p['people']}
-    placed = [x for x in p['people'] if x['home']]
+    placed = [x for x in p['people'] if x['home'] and not realm_homed(x)]
     # The manifest for talk_seed (artifacts/<world key>/buildings.json): every placed structure, with its district.
     manifest = []
     for rec in city.records:
@@ -3819,7 +3831,7 @@ def write_outputs(m, folder=ART, images=True):
 def report_data(m):
     from . import ridgemere2_people as pp
     city, p, plan, labels = m['city'], m['project'], m['plan'], m['labels']
-    placed = [x for x in p['people'] if x['home']]
+    placed = [x for x in p['people'] if x['home'] and not realm_homed(x)]
     room_struct = {room['id']: r for r in city.records for room in r['rooms']}
     by_dist = defaultdict(lambda: Counter())
     for r in city.records:

@@ -3242,7 +3242,7 @@ int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
     int made = 0;
     for (const auto& request : takeResidentRequests())
     {
-        if (request.kind == "arrival")
+        if (request.kind == "arrival" || request.kind == "farm")
         {
             if (arriveResident(request).ok)
             {
@@ -3312,8 +3312,36 @@ Result World::arriveResident(const ResidentRequest& request)
 {
     // From the world's own list (doc 66, 2: unplaced, no body): placed at the home found for it, and given a body there
     // as the loader gives a resident one.
-    if (request.kind != "arrival" || entity(request.templateId) || !society_.arrive(request))
+    if ((request.kind != "arrival" && request.kind != "farm") || entity(request.templateId))
         return {false, "No such NPC waits in the Country.", request.templateId};
+    auto placed = request;
+    if (request.kind == "farm" && request.workLabel != "-")
+    {
+        // Placed by the farms' rule (doc 71, Phase C) at a post of its own: its work an open tile in a place the world has
+        // (else beside it), and a market keeper's customers on the first open tile beside the counter, as the loader puts
+        // an authored merchant's.
+        if (!cell(placed.work.cell) || !ensureLoaded(placed.work.cell).ok)
+            return {false, "Their work isn't in this world.", request.templateId};
+        const auto* c = cell(placed.work.cell);
+        if (const auto* t = c->tile(int(placed.work.x), int(placed.work.y)); !t || t->solid)
+            if (!freeSpotNear(placed.work.cell, placed.work.x, placed.work.y))
+                return {false, "There is nowhere to stand at their work.", request.templateId};
+        if (placed.role == "merchant")
+        {
+            for (const auto& [dx, dy] : {std::pair{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}})
+                if (const auto* t = c->tile(int(placed.work.x) + dx, int(placed.work.y) + dy); t && !t->solid)
+                {
+                    placed.serve = {placed.work.cell, placed.work.x + dx, placed.work.y + dy};
+                    break;
+                }
+            if (placed.serve.cell.empty())
+                return {false, "Their counter has no room for customers.", request.templateId};
+        }
+    }
+    if (!society_.arrive(placed))
+        return {false, "No such NPC waits in the Country.", request.templateId};
+    if (request.kind == "farm")
+        homesReady_ = false;                         // (A new home's stores and beds: furnishHomes again.)
     const auto* r = society_.spec(request.templateId);
     Entity e;
     e.id = r->id;
@@ -3380,6 +3408,7 @@ CareerWorld World::careerWorld() const
             spots.push_back(f.second);
         return spots;
     };
+    w.place = [this](const std::string& cellId) { return cell(cellId) != nullptr; };
     w.near = [this](const std::string& workCell, const std::string& homeCell) {
         const auto* work = cell(workCell);
         const auto* home = cell(homeCell);

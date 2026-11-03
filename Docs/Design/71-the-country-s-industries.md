@@ -942,7 +942,7 @@ want about 102 workers on the job in spring, 113 in summer, 124 in autumn and 81
 year: about 2,450 hand-days a year over the crew at the summer and autumn peaks and as many under it in winter and
 spring. The game's posts don't follow it, and the yields are set as data.
 
-## 4. What the code needs (Phases A and B built: Progress, at the end)
+## 4. What the code needs (Phases A, B and C built: Progress, at the end)
 
 The user: "We aren't going to place any NPC's or farms or other things from Country yet", and "make sure that yield is
 adjustable in Atlas' economy controls".
@@ -1041,7 +1041,7 @@ defaults.**
     drift (`judgeWages` counts what a till paid before the support). Both move the cost onto the posts or the float, so
     they come after the trim and the keep.
 
-**Phase C: real NPCs replace the virtual crews.** When the map has the farms' places:
+**Phase C: real NPCs replace the virtual crews** (built 2026-11-03: Progress, "Phase C"). When the map has the farms' places:
 
 - A farm's posts become real posts at its work area (`live.npcs` placed from the unplaced pool by their old trade, as
   the arrivals are, doc 68, "Arrivals from the Country"), with homes at the steading. Each post filled removes one
@@ -1387,3 +1387,172 @@ seasons, berries down) is written into `Data/Economy/country_farms.json` with r5
 run. Outside the farms: peat is wanted and never sold (firewood taken instead), tallow candles are short and pinned at the
 price band's top, the salves at its foot, and the inns, butchers, preservers and smithies are short of their wages
 from their input costs.
+
+### Phase C: real NPCs replace the virtual crews (2026-11-03, branch `r2-farm-people`)
+
+Branch `r2-farm-people`, from `ridgemere2` (07b0249). The user's decisions (the task, 2026-11-03): the keeper and the
+keeper's family live at the farmhouse and nobody else; the hired hands live in their farm's community (the nine farms
+near the city: in Ridgemere, as doc 68's arrivals are housed) and walk to work; the hands' families come later;
+households at most six; everyone shops at their community's market (the city's farms' people in the city), and each
+market is a working business; nobody is ever made; people chosen by old trade (section 3's table); the farms' wages
+stay theirs, each real post replacing one virtual post. **DEV was not written; no 3-year run was made.**
+
+**How placement works: in the game, by rule, at a farm area's switch-on** (`Core/RatwFarmPeople.cpp`, new;
+`Society::staffFarms`, once a day in `tendCareers`). Once a farm's area is on and its till founded (the same switch:
+`--farms`, the DM's Economy tab), and the world has its places (`CareerWorld::place`: a world without the realm's
+interiors, the old map or a test town, places nobody and keeps the virtual crews), its posts are filled from the unplaced
+NPCs (doc 66, 2), deterministically (fixed lots, no clock):
+
+- **Two passes.** Every wanted farm's keeper first, then the hands, so the most experienced of a trade keep its farms.
+- **The keeper**: of the farm kind's old trades (`Data/Economy/farm_people.json` `kinds`: section 3's grouping, the same
+  words as `tools/country_industry.py`'s `POOL`), aged 18 to its retirement, those whose label holds the kind's words
+  first ("milks the herd" for a dairy, "tends the vines" for a vineyard), then those with family among the unplaced,
+  then the oldest; else the fallback trades (keeps the house; service and labour). **The family** with them at the
+  farmhouse: spouse, children (the eldest first, the spouse's too), parents, up to the farmhouse's beds (six); one of
+  working age and of the farm's trades takes one of its hands' posts (a "family hand"); the others hold no post. Never
+  invented: only kin (doc 62's) already among the unplaced.
+- **The hands**: the second work room's first (a grain farm's mill, a dairy's dairy, a vineyard's cellar), those whose
+  labels hold its words first, then those without family among the unplaced (their families come later); the farm's
+  trades, then the fallback; 16 to retirement. Housed in the farm's community (communities.json's cottages, the first
+  with room, at most six and the home's beds), or for the city's nine farms by doc 68's arrival rule (a household of
+  their class within reach of the work with room, the smallest first, never a farmhouse; else the city's lodgings).
+- **The markets**: a community's store, inn or alehouse and bakehouse are staffed when its first farm is (its posts in
+  communities.json `market`; the labels the game knows them by: "shopkeeper at Coldwater Stores", "keeps the taproom at
+  The Glasswater Inn", "baker at Coldwater Bakehouse"; "shop hand at", "pot hand at", "cook at" for their hands, paid by
+  the till as a city shop's hands are). The keepers of the towns' trades and shops (the post's words first, then one
+  who kept a shop of the old map's town of the same name: Larkfield General's shopkeeper keeps Larkfield Stores), the
+  hands of service and labour; the keeper in the flat over the business where it has one, the rest in the cottages.
+- **Never**: the protected, the Heights' own (an upper NPC, one at home in the Heights, or the spouse, parent or child
+  of one: the Ravensworths' and Everards' wine sellers are in section 3's orchards-and-vines count but stay in the
+  Heights), anyone already sent for.
+- **Each post is a position of its own** at the farm's work room (its holder its founder, as an authored resident's is:
+  `addResident`), its label the kind's (`farm_people.json`; at most 40 characters, no business's word, so a farm post is
+  never taken for a city business: Alderbank's beekeeper is "keeps bees at the Alder Garth", `places`, since "bank" is
+  the moneychanger's word). A post is the farm's by its work room (`Society::farmOfPost`, from communities.json), its
+  keeper's by its label, so a restart, a save and a live world's rows all agree.
+- **The host carries them out** (a "farm" `ResidentRequest`, as an arrival): `World::arriveResident` (its work an open
+  tile, a market keeper's customers' spot beside the counter, as the loader finds an authored merchant's; the new homes'
+  stores and beds furnished), and on a live world `Game::makeResidents` writes the row's home, work, label, role and hours
+  (a keeper's family: home only), so the game owns them (doc 66) and a restart loads them where the running world put
+  them. Old saves: nothing changes until a switch.
+- **The farms, after.** `FarmNow` counts its real posts and those held (`countFarmPosts`): its virtual crew is its
+  setting less its real posts (each real post filled removes one virtual post; a real post standing empty is a hand
+  short, not a virtual post back); the till pays the real holders at its fixed wages and the virtual crew the rest
+  (`payFarms`; short, the treasury's wage support as before, each post its share); a farm yields in proportion to its
+  crew at work (`FarmNow::working()`: the virtual and the held real posts of its setting). `payWages` leaves a farm's
+  posts to `payFarms`; a farm keeper's post is middle class, a hand's lower (for doc 68's arrivals and successions: an
+  empty farm post is filled from the city, then the Country, as any post is).
+- **The communities as places of their own**: their region ids are the community ids (doc 70), so shopping (a
+  household's community's open shops first), "within reach" (succession, arrivals) and births at home already follow
+  them. **Not** done: making them towns in `World::setupTowns` mid-run (open question 2).
+
+**Money, reconciled.** Phase B's founding is unchanged (a farm's float and its crew's settled purse made at its switch,
+counted as minted). As the crew's posts are taken, each newcomer is given a head's share of what the crew's household
+holds (`cash / heads` at the placement; moved, never made; their own authored purse is not added on top, so the
+unplaced NPCs' purses count as theirs and nothing is made twice); when the last virtual post goes, what the crew still
+holds (its rest and its larder) moves to the keeper's household. A keeper's family brings nothing (the household is the
+keeper's). A market's hands and keepers bring their own purse up to 30p from the Country's account, as doc 68's
+arrivals do (moved); a market shop's till gets its working float as a city shop's was founded (its keeper's authored
+purse: `foundShops`), counted as minted with the farms' founding. In the smoke run below: **10,721p made in all by the
+switch**: the 31 farms' floats 2,512p and crews' purses 6,409p (as Phase B), and the 12 market shops' floats 1,800p; the
+crews' purses all with their people by day 6 (`farms_crew_purse` 0); money conserved every day.
+
+**The people placed** (DEV build 59's 524 unplaced; the smoke run's placements, the same each run):
+
+| Who | Placed | By old trade |
+|---|---|---|
+| keepers | 31 (all) | herds and flocks 10, fishing and the marsh 9 (the two salt works' keepers the marsh's reed-cutters), orchards and vines 7, bees 3, fields and mills 2 |
+| family hands (at the farmhouse) | 2 | fields and mills 1 (Larkholm's son), fishing 1 (Glasswater's son, its boatman) |
+| hands, Coldwater | 20 | |
+| hands, Larkfield | 10 | |
+| hands, Southmeadow | 7 | (8 hands' posts: Larkholm's son lives at the farmhouse) |
+| hands, Fenshore | 8 | |
+| hands, Saltwell | 6 | |
+| hands, Ridgemere (lodged with city households of their class) | 23 | |
+| all hands (76) | 76 | herds and flocks 32, orchards and vines 15, fishing and the marsh 14, fields and mills 7 (+2 family), bees 3, keeps the house 3 (the fallback: orchards' and vineyards' posts) |
+| family, no post | 18 | children 11, the old 3, keeps the house 2, fields and mills 2 |
+| market keepers and hands | 17: Coldwater 6, Larkfield 4, Saltwell 3, Southmeadow 2, Fenshore 2 | the towns' trades and shops 12, service and labour 5 |
+| **in all** | **142** | 382 unplaced left |
+
+Owners with family (9 of 31): Longmead (Rook Wheatfield, 58, his wife and son), Larkholm (Iris Meadowfield, 54, her
+grown son a farmhand, two children), Larkdowns (Rusk Downfield, 57, his four children, one grown), Glasswater
+(Bramble Reedmere, 56, her son the boatman, two children), Upper Mere (Kell Greyton, 30, his wife and son), Meresend
+(Pell Harvestley, 35, her husband and son), Greenholt (Ingram Cornwell, 43, his wife and son), Withy Creek (Skye Eelbank,
+50, her parent), the Saltpan (Kite Bogditch, 37, his parent). The other 22 keepers live alone at their farmhouses. The
+farmhouses hold 51 (31 keepers, 18 family, 2 family hands); the community homes 67 at the end (51 farm hands, 16 market
+people: Coldwater's baker died); the realm's households: 31 of one (22 keepers, the market keepers in their flats), 4 of
+two, 4 of three, 2 of four, 1 of five, 9 of six, none over six. Section 3 counted orchards and vines 2 short; with the Heights' two wine sellers kept
+out it is 3, taken from those who keep the house.
+
+**Checks.** `Tests/farm_people_tests.cpp` (new, `farm_people_behaviors`, 1,720 checks, the real Data and a society with
+an unplaced pool of every trade): the data (31 farms, 5 communities; every farm's labels at most 40 characters, no
+business's, none of the forbidden words; every market label its business's or none); the placement (only from the pool, each once, never
+the protected or the Heights' own, nobody made: residents up one for each who leaves the pool; every farm's posts real
+and held, no virtual post left; each paid by its farm's till at its fixed wage; a farmhouse its keeper's and family's
+only; hands in their community or the city, never more than six to a home; the oldest of the fields keeping a grain
+farm with spouse, child and grown son, the son a hand; two orchards' and vineyards' posts from the fallback, every other
+of the farm's trades; the five markets' 17 posts, Larkfield's and Coldwater's stores kept by their old towns'
+shopkeepers, tills opened; only the market shops' floats made, the crews' purses exactly their people's; a day's wages
+16p and 10p to each holder, the crews empty, **each community's store selling to its own households**, conserved; nobody
+asked for the next day; a hand dead: the post empty, no virtual post back, the farm yielding 4/5); nothing without the
+places or the world's answer; only the grain farms' people and their two communities' markets with only grain on.
+`world_check` prints the farms' people at a run's end (placed by kind, posts held, the realm's households, the market
+tills; `RATW_FARM_PEOPLE=1`: each of them), and the economy line has `farm(s)_posts`, `posts_held`, `virtual_crew` and
+`people_paid`. All 78 C++ tests pass (`build-core`); Python: `test_realm2`, `test_farms_summary`, `test_econ_report`,
+`test_country_industry`, `test_world_build` pass; `test_ridgemere2` (new `RealmHomes`: `realm_homed`, `compose` skipping
+them) fails only its known `test_the_food_trades_and_the_carters` (16 against 15).
+
+**The city writer's caveat fixed** (doc 70): `worldgen.ridgemere2`'s `compose` leaves anyone homed in an `fs_` or `cn_`
+interior as they are, and the city's checks and reports (`checks`, `write_outputs`, `report_data`) count only the city's
+own placed people.
+
+**The smoke run** (30 days from Spring 1 of DEV build 59, re-exported with the communities; every area on a day apart:
+`--farms 0 --farms-every 1 --economy-level full`; 51 s on 3 cores), read by `tools/econ_report.py`:
+
+- **Placed**: day 0 grain (and Larkfield's and Southmeadow's markets), one area a day after; 107 posts of 107 held by
+  day 6, no virtual crew left. At noon on a working day every placed worker is at their work room; at night all at home
+  ("at their scheduled place" 702 of 702, none without a route): the walks (up to about 1,000 tiles from Coldwater) are
+  made.
+- **Hunger**: none (every class 0.00 hungry hours a head a day; the realm's people at most 59.8 at the end, nobody 60).
+- **Wages**: the farms paid 34,418p of 35,090p owed, the real holders 33,162p; short only the two vineyards (563p of
+  the treasury's support), as in the 3-year run.
+- **The community stores trade**: 11 to 52 pieces a day each, 29p to 101p of takings; the bakeries bake from the farms'
+  flour and pay their wages (Coldwater's bakehouse a 24p profit a day); the general stores and the inns, like the city's
+  own (the report: general 6 tills short, inns 10), take too little over their draws for their wages (a store 28-58p
+  a day against 28-50p of draws and 13-21p of wages): the treasury's wage support pays about 85p a day for the
+  twelve markets.
+- **Money**: conserved every day; 10,721p made by the switch (above); the treasury 1,362p to 4,643p.
+- Coldwater's baker died in the run (its one death); her post stood empty at the end, waiting its eight days.
+
+**The 3-year full-recording run** (needs the user's go-ahead), from a checkout of this branch:
+
+    python3 tools/world_build.py export EXPORT --world dev          # DEV build 59 (the communities), read only
+    cmake --build build-core -j6 --target world_check
+    export RATW_DATA_DIR=$PWD/Data
+    taskset -c 0-3 build-core/world_check EXPORT --simulate 6 26298 --no-check --deterministic --threads 4 --no-profile \
+        --economy people3.jsonl --loop-state people3_loop.jsonl --farms 0 --economy-level full > people3.out
+    python3 tools/econ_report.py people3.jsonl --out people3-report.md
+    python3 tools/farms_summary.py people3.jsonl
+
+(`--farms 0`: grain on day 0, an area every 28 days; its people the day after each.)
+
+**Open questions.**
+1. **The market businesses lose money**, as the city's general stores and inns do: should the community markets get a
+   lower draw markup, a share of the farms' custom (the farms' baskets, the keepers' families), or stay on the
+   treasury's wage support (about 85p a day)?
+2. **Towns.** On a restart `World::setupTowns` counts a region with five residents and a market as a town: the
+   communities would become towns of their own (their stores' accounts, the roads between towns and their bandit camps,
+   caravans, festivals' purses), which a running world doesn't do (they stay regions there; the economy is the same
+   either way). Make them towns at once (and on the old map's terms), or keep them regions on a restart too?
+3. **The keepers' families bring no money** and the grown ones hold no post (they may take an empty post near them, as
+   any wolf with none). Give a grown family member their own purse from the Country, as an arrival's?
+4. **A farm's crew set lower after its people came** (the DM's `crewScale`): the extra real posts are still paid by the
+   farm. Should a post over the setting fall empty when its holder leaves, or be let go at once?
+5. **Rent**: the city's businesses pay none in the loop (doc 66's Phase 5 erased it; doc 68 brought none back), so the
+   markets pay none either.
+6. The labels: a farm's place name that holds a business's word needs its own `{place}` (`farm_people.json` `places`):
+   only Alderbank's now.
+7. **Later keepers.** A farm post that falls empty (a death, a retirement) is filled as any post is (doc 68: from the
+   city, then an arrival from the Country housed with a household of its class within reach). A new keeper (middle
+   class) may so come to live with the old keeper's family at the farmhouse, or elsewhere in the community; should a
+   farm's keeper always move into its farmhouse, and the old keeper's family stay or go?

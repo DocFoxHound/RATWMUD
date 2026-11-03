@@ -325,6 +325,68 @@ struct Farms
     std::vector<FarmArea> areas;
 };
 const Farms& farms();
+// The farms' people (Docs/Design/71-the-country-s-industries.md, Phase C): where they live and work, from the map's
+// contract (Data/Economy/communities.json: each farm's workplaces, farmhouse and community; each community's homes,
+// flats and market), and how they are chosen (Data/Economy/farm_people.json: the old trades, each kind of farm's trades,
+// labels and second workplace, the market's posts). Spots are tile centres in their interior. Without either file, none.
+struct PlaceRoom
+{
+    std::string area, name, forName;                // forName: a flat's business (its keeper lives there).
+    int capacity = 0;
+    std::vector<std::pair<double, double>> spots;   // Beds (a home) or work spots (a workplace).
+};
+struct FarmPlace
+{
+    std::string farm, kind, steading, community;    // community: a community's id, or "ridgemere" (the city's farms).
+    std::vector<PlaceRoom> workplaces;              // The first is its main work; the second (a mill, a dairy) its `second`.
+    PlaceRoom home;                                 // The farmhouse (the keeper's family's).
+};
+struct MarketPlace
+{
+    std::string area, name, business;               // business: "general", "inn" or "bakery".
+    std::vector<std::pair<std::string, int>> posts; // Post (farm_people.json `market`) and how many, in order.
+    std::vector<std::pair<double, double>> work;
+};
+struct CommunityPlace
+{
+    std::string id, name, region;
+    std::vector<PlaceRoom> homes, flats;
+    std::vector<MarketPlace> market;
+};
+struct FarmKindPeople
+{
+    std::vector<std::string> trades, words;         // Its old trades, and the words its best hands' labels hold.
+    std::string keeper, hand;                       // Labels ({place}).
+    std::string second;                             // The second workplace's posts' label ("" none), how many, and words.
+    int secondCount = 0;
+    std::vector<std::string> secondWords;
+};
+struct MarketPostPeople
+{
+    std::string label, role;                        // ({name}.)
+    std::vector<std::string> words, trades;
+};
+struct FarmPeople
+{
+    bool loaded = false;                            // Both files read.
+    int householdMost = 6;
+    std::vector<FarmPlace> farms;
+    std::vector<CommunityPlace> communities;
+    std::vector<std::pair<std::string, std::vector<std::string>>> trades;   // Old trade -> label words, first match.
+    std::vector<std::string> fallback;              // Trades any farm takes from once its own are spent.
+    std::vector<std::string> suffixes;              // Taken off a steading's name for its {place},
+    std::map<std::string, std::string> places;      // or a farm's own {place} (one whose name holds a business's word).
+    double farmStart = 6, farmEnd = 17, marketStart = 7, marketEnd = 19;
+    std::map<std::string, FarmKindPeople> kinds;
+    std::map<std::string, MarketPostPeople> market;
+    const FarmPlace* farm(const std::string& id) const;
+    const CommunityPlace* community(const std::string& id) const;
+    // An unplaced NPC's old trade by its work label ("" none of them).
+    std::string tradeOf(const std::string& workLabel) const;
+    // A farm's {place}: its own in `places`, else its steading's name less the first suffix it ends with.
+    std::string placeName(const FarmPlace& farm) const;
+};
+const FarmPeople& farmPeople();
 // What a kind of shop makes, in file order (none if it makes nothing yet).
 std::vector<const Craft*> craftsFor(const std::string& business);
 // The ingredients a kind of shop sells to the makers (a stall's flour and milk, a butcher's bones), or none.

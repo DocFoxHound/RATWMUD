@@ -199,6 +199,14 @@ struct ResidentRequest
     // Birth: the child's sex, "male" or "female" (characters are male or female only: the user), decided with the
     // request (birthSex) so a deterministic run repeats; its pronouns follow (Game::pronounsOf). Empty: as the template.
     std::string sex;
+    // "farm" (Docs/Design/71-the-country-s-industries.md, Phase C): an unplaced NPC placed by the farms' rule when a farm's
+    // area is switched on (Society::staffFarms): a farm's keeper or hand, a community market's keeper or hand (a post of
+    // its own: `work`, `workLabel`, `role`, the hours), or a keeper's family (no work: workLabel "-"). Its purse, `purse`,
+    // moves from `purseFrom` (a farm crew's founding purse, or the Country's) as far as it holds it: nothing is made.
+    // `farm`: its farm, or "market:<community>".
+    Spot work, serve;                             // (serve: a market keeper's customers' spot, found by the world.)
+    std::string workLabel, role, purseFrom, farm;
+    double startHour = 8, endHour = 17;
 };
 // A child's sex, half and half, from the couple's key and the day (the world's own deterministic mix, no clock or
 // global random state): "male" or "female".
@@ -222,6 +230,9 @@ struct CareerWorld
     // The communal lodgings within reach of work in a cell (a spot in each), for an arrival with no household of its
     // class to lodge with; null: none.
     std::function<std::vector<Spot>(const std::string& workCell)> lodgings;
+    // Whether the world has a place (a cell or an interior): the farms' people are placed only where their places are
+    // built (doc 71, Phase C). Null: nowhere is, so nobody is placed.
+    std::function<bool(const std::string& cell)> place;
 };
 
 // What the self-correcting rules have drifted to (doc 68, Progress, "Self-correcting rules"), saved with the society (its
@@ -765,8 +776,23 @@ class Society
         std::map<std::string, double> grown, eaten;   // The fractions of a piece carried to tomorrow (not saved).
         double hunger = 0;                          // Its crew's nourishment owed (a day's at most; not saved).
         double takingsCarry = 0;                    // The fraction of a penny its store draws owe it, or it them (not saved).
-        int heads() const { return keepers + hands; }
+        // Its real posts (doc 71, Phase C): the positions at its workplaces (its keeper's by its label), and how many of
+        // them are held now by the living (countFarmPosts, each day and as people come). Each real post replaces one
+        // virtual post; a real post standing empty is a hand short, and the farm yields in proportion.
+        int postKeepers = 0, postHands = 0, heldKeepers = 0, heldHands = 0;
+        int crewSize() const { return keepers + hands; }                  // Its crew as set (real and virtual).
+        int virtualKeepers() const { return std::max(0, keepers - postKeepers); }
+        int virtualHands() const { return std::max(0, hands - postHands); }
+        int heads() const { return virtualKeepers() + virtualHands(); }   // Its virtual crew (the household crew:<id>).
+        // Its wages a day: all its posts', real and virtual (its float is floatDays of them), and its virtual crew's.
         std::int64_t wages() const { return std::int64_t(keepers) * keeper + std::int64_t(hands) * hand; }
+        std::int64_t virtualWages() const { return std::int64_t(virtualKeepers()) * keeper + std::int64_t(virtualHands()) * hand; }
+        // Its yield's share: the crew at work (the virtual and the real posts held) of its crew as set, at most 1.
+        double working() const
+        {
+            const int all = crewSize();
+            return all > 0 ? std::min(1., double(heads() + std::min(heldKeepers, keepers) + std::min(heldHands, hands)) / all) : 1.;
+        }
     };
     static std::string farmTill(const std::string& farm) { return "farm:" + farm; }
     static std::string farmCrew(const std::string& farm) { return "crew:" + farm; }
@@ -782,6 +808,13 @@ class Society
     // The day the farms were last tended (-1: not yet), and the money the farms' founding has made since the start.
     std::int64_t farmsDay() const { return farmsDay_; }
     std::int64_t farmsMinted() const { return farmsMinted_; }
+    // The farms' people (doc 71, Phase C; RatwFarmPeople.cpp): the farm a post is at (its work room one of the farm's
+    // workplaces, items::farmPeople()), -1 for none, and whether it is the farm's keeper's (its title the keeper's label);
+    // the labels a farm's posts have; and how many have been placed since the start (not saved), by "keeper", "family",
+    // "hand <community>", "market <community>" (a market's keepers and hands).
+    int farmOfPost(const Position& p, bool* keeper = nullptr) const;
+    std::string farmLabel(const FarmNow& farm, int post) const;   // 0: its keeper's; 1: a hand's; 2: its second's.
+    const std::map<std::string, int>& farmPlaced() const { return farmPlaced_; }
     // The world's economy settings replaced while it runs (the DM's economy.sync: doc 68, Progress): every rule the loop
     // and the store room read, at once; the treasury's and stores' starting amounts are kept (they were spent long ago).
     void adoptEconomy(const EconomySpec& economy);
@@ -862,6 +895,7 @@ class Society
             int grown = 0, sold = 0, eaten = 0, spoiled = 0;
             std::int64_t takings = 0, wagesOwed = 0, wagesPaid = 0, support = 0, basket = 0, basketCarriage = 0;
             std::int64_t crewSpent = 0;
+            std::int64_t peoplePaid = 0;            // Of wagesPaid, what its real posts' holders were paid (doc 71, Phase C).
             int crewFood = 0, crewNeeds = 0, crewComforts = 0, crewServices = 0, crewShort = 0, tableShort = 0;
             double crewHungry = 0;
             // By good (world_check's full recording, doc 69, 10): the same pieces, and the table's short of it.
@@ -1098,6 +1132,13 @@ class Society
     void buildFarms();
     void refreshAreas(std::int64_t day, bool found = true);
     void foundFarm(FarmNow& farm);
+    // The farms' people (RatwFarmPeople.cpp): each farm's real posts counted (FarmNow::postKeepers...), from the
+    // positions; and the posts of the farms of an area on filled from the unplaced NPCs (once a day, tendCareers), with
+    // their community's market when its first farm is: "farm" requests the host carries out (arrive).
+    std::unordered_map<std::string, std::size_t> farmWorkplace_;   // A farm's work room -> its farm.
+    std::map<std::string, int> farmPlaced_;
+    void countFarmPosts();
+    void staffFarms(const CareerWorld& world, std::vector<CareerNote>& notes);
     void tendFarms(std::int64_t day);
     void payFarms();
     void farmsBuy(int hourOfDay);
