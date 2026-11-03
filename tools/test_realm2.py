@@ -184,7 +184,7 @@ class Places(unittest.TestCase):
             for f in a['farms']:
                 com = P.STEADINGS[P.FARMS[f['id']]][3]
                 hands[com] = hands.get(com, 0) + f['crew']['hands']
-        self.assertEqual(hands, {'coldwater': 21, 'larkfield': 10, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 6,
+        self.assertEqual(hands, {'coldwater': 21, 'larkfield': 11, 'southmeadow': 9, 'fenshore': 8, 'saltwell': 6,
                                  'ridgemere': 23})
 
     def test_the_interiors(self):

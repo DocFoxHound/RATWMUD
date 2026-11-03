@@ -706,7 +706,7 @@
    "style": "country",
    "region": "larkfield",
    "town": false,
-   "hands": 10,
+   "hands": 11,
    "farms": [
     "grain_farm_1",
     "orchard_5",
@@ -1135,7 +1135,7 @@
    "style": "southern",
    "region": "southmeadow",
    "town": false,
-   "hands": 8,
+   "hands": 9,
    "farms": [
     "grain_farm_2",
     "vineyard_2",
@@ -1994,7 +1994,7 @@
    "steading": "Longmead Farm",
    "community": "larkfield",
    "keepers": 1,
-   "hands": 4,
+   "hands": 5,
    "workplace": "fs_grain_long_granary",
    "workplaces": [
     {
@@ -2112,7 +2112,7 @@
    "steading": "Larkholm Farm",
    "community": "southmeadow",
    "keepers": 1,
-   "hands": 4,
+   "hands": 5,
    "workplace": "fs_grain_lark_granary",
    "workplaces": [
     {

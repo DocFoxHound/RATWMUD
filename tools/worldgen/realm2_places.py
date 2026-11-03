@@ -1281,9 +1281,9 @@ class Places:
         big = [h['area'] for com in c['communities'] for h in com['homes'] + com['flats'] if h['capacity'] > HOUSEHOLD_MOST]
         big += [f['home']['area'] for f in c['farms'] if f['home']['capacity'] != HOUSEHOLD_MOST]
         out.append(('homes for at most six, farmhouses for six', not big, ', '.join(big)))
-        want = {'coldwater': 21, 'larkfield': 10, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 6}
+        want = {'coldwater': 21, 'larkfield': 11, 'southmeadow': 9, 'fenshore': 8, 'saltwell': 6}   # (a fibre hand at each grain farm: doc 72)
         got = {com['id']: com['hands'] for com in c['communities']}
-        out.append(('the hired hands where the user put them (21, 10, 8, 8, 6; 23 in Ridgemere)',
+        out.append(('the hired hands where the user put them (21, 11, 9, 8, 6; 23 in Ridgemere)',
                     got == want and c['ridgemere']['hands'] == 23, f'{got}, Ridgemere {c["ridgemere"]["hands"]}'))
         ids = [x['id'] for x in self.rooms + self.links]
         long_ = [i for i in ids if not re.fullmatch(r'[a-z][a-z0-9_-]{0,47}', i)]
