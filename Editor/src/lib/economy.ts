@@ -19,7 +19,7 @@ export interface LoopSettings {
 export interface BasketGood { item: string; name: string; share: number; percent: number; price: number; makers: string[] }
 /** A good some business here draws, and whether the Country supplies it (off: its real producers'). */
 export interface CountryGood { item: string; name: string; businesses: number; supplied: boolean }
-export interface EconomyControls extends StoreSwitches, SeasonControls, RuleControls {
+export interface EconomyControls extends StoreSwitches, SeasonControls, RuleControls, FarmControls {
     world: string; supported: boolean; problem: string; note: string; takesEffect: string; businesses: StoreBusiness[];
     worldInfo?: {key: string; name: string; kind: string; upstream?: string};
     loop: LoopSettings; countryOff: string[]; loopSupported: boolean; loopProblem: string; ruleWarning: string;
@@ -192,6 +192,91 @@ export function serviceText(c: RuleControls, s: ServiceListed): string {
     const v = serviceValue(c, s);
     return `${s.business}, ${v.price}p, about once every ${v.every} day${v.every === 1 ? '' : 's'} a household with money to spare`
         + (v.on ? '' : ' (off)') + (c.services[s.id] ? '' : ' (country.json\'s)');
+}
+
+// The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): this world's changes ({} for
+// none) beside Data/Economy/country_farms.json's, applied the way Core's Society::buildFarms applies them: a farm's own
+// setting, then its area's, then the defaults; the yields times the area's percent and the farm's, the hands likewise
+// (rounded half up); the float two days of the wages, the crew's purse by its size.
+/** A farm as country_farms.json has it: its crew, wages (null: its area's, then the defaults'), float, crew's purse, the
+ *  design's basket a day, and its yields (pieces a day at each season's middle day). */
+export interface FarmDefault {
+    id: string; kind: string; region: string; keepers: number; hands: number; keeper: number | null; hand: number | null;
+    reserve: number; purse: number; basketADay: number; yield: Record<string, number[]>;
+}
+export interface FarmAreaDefault {
+    id: string; name: string; goods: string[]; on: boolean | null; yieldScale: number; crewScale: number;
+    keeper: number | null; hand: number | null; price: string; priceFactor: number | null; revenueADay: number[]; farms: FarmDefault[];
+}
+/** What a world may change of an area, of a farm, and of the whole (absent: country_farms.json's). */
+export interface FarmAreaOwn { on?: boolean; yieldScale?: number; crewScale?: number; keeper?: number; hand?: number; priceFactor?: number }
+export interface FarmOwn { yieldScale?: number; crewScale?: number; keeper?: number; hand?: number }
+export interface FarmSettings {
+    start?: number; every?: number; order?: string[]; keeper?: number; hand?: number;
+    areas?: Record<string, FarmAreaOwn>; farms?: Record<string, FarmOwn>;
+}
+/** The farms on the world's game, as its last save has them (read only): each farm's till, its store and its crew's purse. */
+export interface FarmsSaved {
+    saved: string | null; problem: string;
+    farms: Record<string, {till: number; stock: number; goods: Record<string, number>; crewPurse: number}>;
+}
+export interface FarmControls {
+    farmsSupported: boolean; farmsProblem: string; farms: FarmSettings;
+    farmDefaults: {start: number; every: number; order: string[]; keeper: number; hand: number; floatDays: number; areas: FarmAreaDefault[]};
+    farmsSaved?: FarmsSaved;
+}
+type Unset<T> = {[K in keyof T]?: T[K] | null};
+export type FarmsBody = {set: Unset<Omit<FarmSettings, 'areas' | 'farms'>> & {
+    areas?: Record<string, Unset<FarmAreaOwn> | null>; farms?: Record<string, Unset<FarmOwn> | null>}};
+/** The switch as it stands: the first area on day `start` (-1: none), one every `every` days, in `order`. */
+export function farmSchedule(c: FarmControls): {start: number; every: number; order: string[]} {
+    const f = c.farms ?? {}, d = c.farmDefaults;
+    return {start: f.start ?? d.start, every: f.every ?? d.every, order: f.order ?? d.order};
+}
+/** The day an area goes on by the schedule (null: never), and whether its own switch overrides it. */
+export function areaOnFrom(c: FarmControls, area: string): number | null {
+    const {start, every, order} = farmSchedule(c);
+    const at = order.indexOf(area);
+    return start < 0 || at < 0 ? null : start + at * every;
+}
+export function areaSwitch(c: FarmControls, a: FarmAreaDefault): 'on' | 'off' | 'schedule' {
+    const on = c.farms?.areas?.[a.id]?.on ?? a.on;
+    return on === true ? 'on' : on === false ? 'off' : 'schedule';
+}
+/** A farm as the game runs it: its crew, wages a day, its yields' percent, its float and its crew's purse. */
+export function farmNow(c: FarmControls, a: FarmAreaDefault, f: FarmDefault) {
+    const own = c.farms ?? {}, area = own.areas?.[a.id] ?? {}, farm = own.farms?.[f.id] ?? {}, d = c.farmDefaults;
+    const yieldPercent = (area.yieldScale ?? a.yieldScale) * (farm.yieldScale ?? 100) / 100;
+    const hands = Math.floor(f.hands * ((area.crewScale ?? a.crewScale) / 100) * ((farm.crewScale ?? 100) / 100) + .5);
+    const keeper = farm.keeper ?? f.keeper ?? area.keeper ?? a.keeper ?? own.keeper ?? d.keeper;
+    const hand = farm.hand ?? f.hand ?? area.hand ?? a.hand ?? own.hand ?? d.hand;
+    const wages = f.keepers * keeper + hands * hand;
+    const design = f.keepers * (f.keeper ?? a.keeper ?? d.keeper) + f.hands * (f.hand ?? a.hand ?? d.hand);
+    const lean = Math.max(0, f.reserve - d.floatDays * design);
+    const heads = f.keepers + hands, designHeads = f.keepers + f.hands;
+    return {keepers: f.keepers, hands, keeper, hand, wages, yieldPercent, reserve: d.floatDays * wages + lean,
+        purse: designHeads > 0 ? Math.round(f.purse * heads / designHeads) : 0};
+}
+/** A farm's yields as the page shows them: each good's four middle-day values times its percent, a decimal each. */
+export function yieldText(f: FarmDefault, percent: number): string {
+    return Object.entries(f.yield).map(([g, v]) => `${g} ${v.map(x => (x * percent / 100).toFixed(1)).join('/')}`).join('; ');
+}
+/** The body that sets one of the whole's, an area's or a farm's settings (null: back to country_farms.json's); null when it
+ *  changes nothing. */
+export function farmChange(c: FarmControls, where: 'all' | 'areas' | 'farms', id: string, key: string, value: number | boolean | string[] | null): FarmsBody | null {
+    const own: Record<string, unknown> = where === 'all' ? (c.farms ?? {}) as Record<string, unknown>
+        : ((c.farms?.[where] as Record<string, Record<string, unknown>> | undefined)?.[id] ?? {});
+    const now = own[key];
+    const same = Array.isArray(value) ? Array.isArray(now) && now.length === value.length && now.every((v, i) => v === value[i])
+        : value === null ? now === undefined : now === value;
+    if (same) return null;
+    return where === 'all' ? {set: {[key]: value}} : {set: {[where]: {[id]: {[key]: value}}}};
+}
+/** The schedule as a sentence. */
+export function scheduleText(c: FarmControls): string {
+    const {start, every, order} = farmSchedule(c);
+    if (start < 0) return 'No schedule: an area goes on only by its own switch.';
+    return `The first area (${order[0] ?? '-'}) on day ${start} of the world's calendar, then one every ${every} days: ${order.join(', ')}.`;
 }
 
 /** The loop's numbers, with their limits and what the page calls them. */

@@ -364,6 +364,28 @@ struct EconomySpec
         int normal = 0;
     };
     std::map<std::string, Season> seasons;
+    // The Country's food farms as this world has changed them (Docs/Design/71-the-country-s-industries.md, 4; migration
+    // 0060, live.economy.farms; the "farms", "farmarea" and "farm" records). -1 (an empty order) is country_farms.json's.
+    // The switch: its first area on day `start` (the calendar's day; -1: none; -2: country_farms.json's), the next each
+    // `every` days after it, in `order`; the farms' wages. An area's: on (-1: as the schedule says; 0 off; 1 on), the
+    // percents on its farms' yields and hands, its wages, its price a year in percent. A farm's: the percents on its yields
+    // and hands, its wages.
+    struct Farms
+    {
+        int start = -2, every = -1, keeper = -1, hand = -1;
+        std::vector<std::string> order;
+        struct Area
+        {
+            int on = -1, yieldScale = -1, crewScale = -1, keeper = -1, hand = -1, priceFactor = -1;
+        };
+        struct Farm
+        {
+            int yieldScale = -1, crewScale = -1, keeper = -1, hand = -1;
+        };
+        std::map<std::string, Area> areas;
+        std::map<std::string, Farm> farms;
+    };
+    Farms farms;
 };
 // A family as authored (doc 62, decision 8): `a` is `b`'s spouse, or `a` is `b`'s parent.
 struct Kin
@@ -646,6 +668,8 @@ class Society
     // buy food, needs and comforts (8:00-18:00), the Country buys its basket (8:00-18:00), wages are paid (18:00), shelves
     // are reckoned from the day's sales (0:00). Runs from decide() while !needsPaused().
     static constexpr int ShopOpen = 8, ShopShut = 18, PayHour = 18;
+    // A resident needs about this much nourishment a day (hunger grows .0035 a second; food counts 1.1 times when eaten).
+    static constexpr double NourishADay = .0035 * 14400 / 1.1;
     static constexpr std::int64_t TillFloat = 20, TreasuryFloat = 200;
     // (The city's alms, doc 68, 4: the rule "almsADay" now, a day's food money a head and some over; it was 7.)
     static constexpr int CarriageLoad = 1000;         // A wagon load, in items.json's weight.
@@ -690,6 +714,8 @@ class Society
     double yearDay() const { return yearDay_; }
     void setYearDay(double absoluteDay);           // (decide() does it; for tests and harnesses.)
     static double seasonal(const std::array<int, 4>& percentBySeason, double yearDay);
+    // The same blend of any four values (the farms' yields, pieces a day; before the date is known, their mean).
+    static double seasonalValue(const std::array<double, 4>& bySeason, double yearDay);
     double priceFactor(const std::string& item) const;
     double shelfFactor(const std::string& item) const;
     double supplyFactor(const items::SeasonGroup& group) const;
@@ -716,6 +742,46 @@ class Society
     // Where a till's wage step stands against its bounds: 1 at the top (no post can rise further), -1 at the foot (none
     // can fall further: the floor or the bound), 0 between.
     int wageAtBound(const std::string& till) const;
+    // The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4, Phases A and B; RatwFarms.cpp): modelled
+    // producers with virtual crews (no NPC holds their posts yet). Each farm is a till (FarmTill: "farm:<id>") and its
+    // crew a household (FarmCrew: "crew:<id>") that shops in the city as a household of its size does. An area switched on
+    // (its own switch, else the schedule: one area every `every` days from `start`) takes its goods from the Country: the
+    // shops' store draws of them come from its farms' stock (spread by stock; paid to the farms' tills, the toll and
+    // carriage as before), limited by that stock, not the season's cap; the Country no longer sends them. Its farms are
+    // founded the first time it goes on: their floats and their crews' settled purses made, as the world's founding money
+    // was (recorded as minted, so the money stays conserved), and a week of their yields grown. Each day an on farm grows
+    // its yields (blended by season, times its yield scale), the Country's own people eat at its table, and what is past
+    // keeping spoils; at 18:00 it pays its crew their fixed wages (short: the treasury's wage support, as a till's); each
+    // shop hour it spends what it holds over its float and tonight's wages on its basket of the city's goods, as the
+    // Country does. Off again, its farms stand still (they keep their money and stock) and the Country supplies the goods.
+    struct FarmNow
+    {
+        const items::FarmDef* def = nullptr;
+        std::size_t area = 0;                       // Its area in items::farms().areas.
+        std::string till, crew;
+        int keepers = 0, hands = 0, keeper = 0, hand = 0;
+        double yieldScale = 1;                      // Its area's percent times its own.
+        std::int64_t reserve = 0, purse = 0;        // Its float (what its till keeps before its basket), its crew's settled purse.
+        std::map<std::string, double> grown, eaten;   // The fractions of a piece carried to tomorrow (not saved).
+        double hunger = 0;                          // Its crew's nourishment owed (a day's at most; not saved).
+        double takingsCarry = 0;                    // The fraction of a penny its store draws owe it, or it them (not saved).
+        int heads() const { return keepers + hands; }
+        std::int64_t wages() const { return std::int64_t(keepers) * keeper + std::int64_t(hands) * hand; }
+    };
+    static std::string farmTill(const std::string& farm) { return "farm:" + farm; }
+    static std::string farmCrew(const std::string& farm) { return "crew:" + farm; }
+    const std::vector<FarmNow>& farms() const { return farms_; }
+    // Whether an area (of items::farms().areas) is on today, and the area on that supplies a good (-1: the Country does).
+    bool farmAreaOn(std::size_t area) const { return area < areaOn_.size() && areaOn_[area]; }
+    int farmAreaOf(const std::string& item) const;
+    // The pieces of a good the on farms hold, all together; their price for it a year (0: the season's, as the store room).
+    int farmsHold(const std::string& item) const;
+    double farmPriceFactor(const std::string& item) const;
+    // How far the Country's basket has moved to its re-weighted one (0 to 1): the share of the food areas' takings on.
+    double countryBasketShift() const;
+    // The day the farms were last tended (-1: not yet), and the money the farms' founding has made since the start.
+    std::int64_t farmsDay() const { return farmsDay_; }
+    std::int64_t farmsMinted() const { return farmsMinted_; }
     // The world's economy settings replaced while it runs (the DM's economy.sync: doc 68, Progress): every rule the loop
     // and the store room read, at once; the treasury's and stores' starting amounts are kept (they were spent long ago).
     void adoptEconomy(const EconomySpec& economy);
@@ -786,8 +852,49 @@ class Society
             std::int64_t spent = 0;
         };
         std::map<std::string, Group> groups;
+        // The Country's food farms (doc 71, 4), by farm: pieces grown, sold to the shops (store draws), eaten at the
+        // Country's table and spoiled; the pennies its till took in (the draws' cost less the toll), owed its crew and paid
+        // them (the treasury's wage support apart), and spent on its basket (its carriage out apart); and its crew's
+        // household: its spending in the city's shops (food, needs, comforts and services) and the pieces it bought, a day
+        // it could not buy a day's food, and its nourishment not eaten for want of food.
+        struct Farm
+        {
+            int grown = 0, sold = 0, eaten = 0, spoiled = 0;
+            std::int64_t takings = 0, wagesOwed = 0, wagesPaid = 0, support = 0, basket = 0, basketCarriage = 0;
+            std::int64_t crewSpent = 0;
+            int crewFood = 0, crewNeeds = 0, crewComforts = 0, crewServices = 0, crewShort = 0, tableShort = 0;
+            double crewHungry = 0;
+            // By good (world_check's full recording, doc 69, 10): the same pieces, and the table's short of it.
+            struct Good
+            {
+                int grown = 0, sold = 0, eaten = 0, spoiled = 0, tableShort = 0;
+            };
+            std::map<std::string, Good> goods;
+        };
+        std::map<std::string, Farm> farms;
+        std::map<std::string, int> areasOut;         // By area: draws the farms' stock could not fill in full today.
+        std::map<std::string, int> goodsOut;         // The same by good (a good no farm grows among them).
+        std::map<std::string, int> goodsSold, goodsSpoiled;   // By good: the pieces the farms sold to the shops, and spoiled.
+        // The treasury's day (doc 71, 4, Phase B's gate): the least it held at an hour's end, what it held after the night's
+        // wages, support, alms and surplus; the wage support the short tills wanted and what of it went unpaid, the
+        // switch's (the farms' tills and switchTrades') apart from the city's ordinary short tills'; the money made today
+        // (a farm's founding: its float and its crew's purse).
+        std::int64_t treasuryLow = -1, treasuryNight = -1;
+        std::int64_t supportWanted = 0, supportUnpaidSwitch = 0, supportUnpaidOrdinary = 0, minted = 0;
+        std::map<std::string, std::int64_t> supportByTrade;   // The wage support paid tonight by trade (a farm's: "farm").
     };
     const LoopDay& loopToday() const { return loopToday_; }
+    // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a
+    // resident, a crew or a till) went without `pieces` of `item` at `shop` (a till; "" where no open shop had it), and
+    // took `instead` in its place ("" for nothing). A household's food short at the shops' last hour is item "food" (its
+    // pieces the meals' worth it lacks); a need no open shop holds, each of its goods; a store draw the Country's cap or
+    // the farms' stock cut short, the ware. Only read: nothing in the loop depends on it.
+    struct Shortage
+    {
+        std::string buyer, shop, item, instead;
+        int pieces = 0;
+    };
+    void setShortageWatcher(std::function<void(const Shortage&)> watcher) { shortageWatcher_ = std::move(watcher); }
     const LoopDay& loopYesterday() const { return loopYesterday_; }
     // A ware's starting stock on a new shop's shelves (resetAuthored): GoodsKept, or SmithSwords of swords.
     static int startingStock(const std::string& ware);
@@ -967,6 +1074,7 @@ class Society
     mutable std::unordered_map<std::string, int> crews_;                                       // Till -> crew (with the records).
     mutable std::uint64_t crewsRevision_ = 0;
     LoopDay loopToday_, loopYesterday_;
+    std::function<void(const Shortage&)> shortageWatcher_;   // (setShortageWatcher; empty: nobody records.)
     // The seasons (seasonTable): the groups as this world has them, a good's group by its index, where in the year it is
     // (yearDay_) and on which day (seasonDay_), and the pieces drawn of each group that day (not saved: after a restart
     // the day's supply starts again).
@@ -977,6 +1085,27 @@ class Society
     std::unordered_map<std::string, int> seasonDrawn_;
     std::unordered_map<std::string, double> priceCarry_;   // A payer's fraction of a penny of the season's prices.
     void buildSeasons();
+    // The farms (doc 71; RatwFarms.cpp): built from items::farms() and the world's own settings (buildFarms, with the
+    // seasons), which areas are on today (refreshAreas: founding the farms of one that goes on), the day's growing, table
+    // and spoiling (tendFarms, the first loop hour of each day), the wages (payFarms, 18:00, after payWages), the baskets
+    // (farmsBuy, each shop hour), and what is spent on a basket of the city's goods from its makers (basketBuys: the
+    // Country's and the farms').
+    std::vector<FarmNow> farms_;
+    std::vector<char> areaOn_;
+    std::unordered_map<std::string, std::size_t> farmOf_;   // Farm till -> its farm.
+    std::unordered_map<std::string, std::size_t> areaOfGood_;   // A good -> the area whose farms grow it.
+    std::int64_t farmsDay_ = -1, farmsMinted_ = 0;
+    void buildFarms();
+    void refreshAreas(std::int64_t day, bool found = true);
+    void foundFarm(FarmNow& farm);
+    void tendFarms(std::int64_t day);
+    void payFarms();
+    void farmsBuy(int hourOfDay);
+    bool farmSwitchTill(const std::string& till) const;
+    std::int64_t basketBuys(const std::string& fund, const std::vector<std::pair<const std::string*, double>>& basket, double budget,
+                            std::int64_t keep, int hourOfDay, const std::vector<std::pair<std::string, const items::Business*>>& open,
+                            const char* saleKind, const char* usedKind, std::int64_t* carriageOut);
+    std::vector<std::pair<std::string, const items::Business*>> openShops() const;
     std::set<std::string> dead_;                    // Residents who have died (died, revived): nobody feeds or pays them.
     std::vector<Position> positions_;               // From authored_; rebuilt with it (buildPositions).
     std::unordered_map<std::string, std::size_t> positionIndex_;

@@ -222,7 +222,7 @@ class StoreTests(unittest.TestCase):
                         'storeRule': True, 'businesses': {'brann': {'internalStore': False}}}
         self.create(p)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**p['economy'], **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS, **S.RULE_DEFAULTS})
+        self.assertEqual(loaded['economy'], {**p['economy'], **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS, **S.RULE_DEFAULTS, **S.FARM_DEFAULTS})
         self.assertEqual(self.conn.execute('SELECT npc_id, internal_store FROM live.business_settings').fetchall(), [('brann', False)])
         lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
         self.assertIn('store off 120 resale on 60 rule on', lines)
@@ -338,6 +338,50 @@ class StoreTests(unittest.TestCase):
             with self.assertRaises(E.ValidationError, msg=str(bad)):
                 E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
 
+    def test_farms_round_trip(self):
+        # Doc 71, 4 (migration 0060): the farms' settings in live.economy and in the export's records ("farms", "farmarea",
+        # "farm" after the rules' and services'); back at country_farms.json's, no records.
+        p = greyfen()
+        farms = {'start': 0, 'every': 30, 'order': ['salt', 'grain'], 'keeper': 17,
+                 'areas': {'grain': {'on': True, 'yieldScale': 120, 'crewScale': 150, 'hand': 11, 'priceFactor': 105},
+                           'salt': {'on': False}},
+                 'farms': {'grain_farm_1': {'yieldScale': 90, 'keeper': 18}}}
+        p['economy'] = {**p['economy'], 'rules': {'almsADay': 12}, 'farms': farms}
+        self.create(p)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
+        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
+        wanted = ['farms start 0 every 30 order salt,grain wages 17 -',
+                  'farmarea "grain" on on yield 120 crew 150 wages - 11 factor 105',
+                  'farmarea "salt" on off yield - crew - wages - - factor -',
+                  'farm "grain_farm_1" yield 90 crew - wages 18 -']
+        at = lines.index(wanted[0])
+        self.assertEqual(lines[at - 1], 'rule "almsADay" 12', 'after the rules')
+        self.assertEqual(lines[at:at + 4], wanted)
+        manifest = self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+        self.assertEqual(manifest[manifest.index(wanted[0]) - 1:manifest.index(wanted[0]) + 4], ['rule "almsADay" 12', *wanted],
+                         'the database writes the same')
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        loaded['economy'] = {**loaded['economy'], **copy.deepcopy(S.FARM_DEFAULTS)}
+        S.save_world(self.conn, loaded, revision)
+        again, _ = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(again['economy']['farms'], {})
+        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
+        self.assertFalse(any(l.startswith(('farms ', 'farmarea ', 'farm ')) for l in lines), 'as country_farms.json has them: no records')
+        for bad in ({'farms': {'start': -2}}, {'farms': {'every': 0}}, {'farms': {'order': ['grain', 'grain']}},
+                    {'farms': {'keeper': 1001}}, {'farms': {'areas': {'grain': {'on': 1}}}},
+                    {'farms': {'areas': {'grain': {'priceFactor': 5}}}}, {'farms': {'farms': {'grain_farm_1': {'on': True}}}},
+                    {'farms': {'farms': {'Grain farm': {'yieldScale': 90}}}}, {'farms': {'luck': 1}}, {'farms': []}):
+            with self.assertRaises(E.ValidationError, msg=str(bad)):
+                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+        # What country_farms.json no longer has (written again with fewer farms) is kept, as Core keeps it, with a warning.
+        for kept in ({'farms': {'order': ['orchards']}}, {'farms': {'areas': {'gardens': {'on': True}}}},
+                     {'farms': {'farms': {'grain_farm_9': {'yieldScale': 90}}}}):
+            _, warnings = E.check_project({**again, 'economy': {**again['economy'], **kept}}, for_game=False, playable=False)
+            self.assertTrue(any('names nothing country_farms.json has' in w for w in warnings), (kept, warnings))
+
     def test_a_missing_economy_row_is_made_from_the_defaults(self):
         # Ridgemere 2.0 has no live.economy row: its first save makes one from DEFAULT_ECONOMY (1000p), never the
         # table's column defaults (a treasury of 0).
@@ -390,7 +434,7 @@ class WithoutMigration55Tests(unittest.TestCase):
         source = greyfen()
         S.save_world(self.conn, source, None, create=True)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}, **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS, **S.RULE_DEFAULTS}, 'the defaults, read')
+        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}, **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS, **S.RULE_DEFAULTS, **S.FARM_DEFAULTS}, 'the defaults, read')
         roster = R.load()
         before, after = E.export_files(source, roster), E.export_files(loaded, roster)
         del before['atlas.json'], after['atlas.json']
@@ -527,6 +571,46 @@ class WithoutMigration58Tests(unittest.TestCase):
         for change in ({'rules': {'almsADay': 12}}, {'services': {'groom_and_trim': {'on': False, 'price': 1, 'every': 4}}}):
             with self.assertRaisesRegex(S.StoreError, '0058'):
                 S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class WithoutMigration60Tests(unittest.TestCase):
+    """A world with 0059 but not 0060 loads and saves as before, its rules' and services' settings too, reading
+    country_farms.json's farms; a farms setting is refused, naming 0060."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        with superuser() as su:
+            su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
+            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
+        with W.connect('dev', 'owner', dbname=cls.name) as owner:
+            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0060'])
+        cls.conn = W.connect('dev', 'editor', dbname=cls.name)
+        S.save_roster(cls.conn, R.load())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.conn.close()
+        with superuser() as su:
+            su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
+
+    def test_loads_and_saves_and_refuses_the_farms(self):
+        self.assertTrue(S.rules_supported(self.conn))
+        self.assertFalse(S.farms_supported(self.conn))
+        self.assertIs(S.tables_for(self.conn), S.RULE_TABLES)
+        source = greyfen()
+        S.save_world(self.conn, source, None, create=True)
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        self.assertEqual(loaded['economy'], {**S.default_economy(), **source['economy']})
+        p, _ = E.check_project(loaded)
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.RULE_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'rules': {'almsADay': 12}}},
+                                      revision), revision + 1)
+        with self.assertRaisesRegex(S.StoreError, '0060'):
+            S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'farms': {'start': 0}}}, revision + 1)
 
 
 if __name__ == '__main__':

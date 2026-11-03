@@ -108,6 +108,15 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 10000000
 RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed', 'surplus', 'stockPrices', 'shelfFollow',
                  'wageDrift', 'treasuryDrift')   # 0 or 1: off or on.
 SERVICE_LIMITS = {'price': (1, 100000), 'every': (1, 3650)}
+# The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): an optional economy key,
+# farms: what this world has changed of Data/Economy/country_farms.json's ({}: all as the file has them), each key
+# optional: start (the calendar day the switch's first area goes on; -1: none), every (days between areas), order (the
+# areas, in the order they go on), keeper and hand (the farms' wages); areas {area: {on, yieldScale, crewScale, keeper,
+# hand, priceFactor}}; farms {farm: {yieldScale, crewScale, keeper, hand}}. Core's EconomySpec::Farms.
+FARM_DEFAULTS = {'farms': {}}
+FARM_TOP = {'start': (-1, 365000000), 'every': (1, 3650), 'keeper': (0, 1000), 'hand': (0, 1000)}
+FARM_AREA = {'yieldScale': (0, 1000), 'crewScale': (0, 1000), 'keeper': (0, 1000), 'hand': (0, 1000), 'priceFactor': (10, 1000)}
+FARM_FARM = {'yieldScale': (0, 1000), 'crewScale': (0, 1000), 'keeper': (0, 1000), 'hand': (0, 1000)}
 
 
 def country_file() -> dict:
@@ -169,6 +178,74 @@ def check_rules(rules, services) -> list[str]:
     return errors
 
 
+def farms_file() -> dict:
+    """Data/Economy/country_farms.json as the file has it ({} if it can't be read)."""
+    try:
+        return json.loads((ROOT / 'Data/Economy/country_farms.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+
+
+def farm_ids() -> tuple[list[str], set[str]]:
+    """country_farms.json's food areas (in its order) and its farms' ids."""
+    areas = [a for a in farms_file().get('areas') or [] if isinstance(a, dict) and a.get('id')]
+    return [a['id'] for a in areas], {x['id'] for a in areas for x in a.get('farms') or [] if isinstance(x, dict) and x.get('id')}
+
+
+def unknown_farms(farms) -> list[str]:
+    """What farms' settings name that country_farms.json doesn't have: a message for the order's, the areas' and the
+    farms'. A world keeps them and Core does nothing with them, so a file regenerated with fewer farms (their ids are
+    numbered by count) leaves the world's settings sound; only a change may not name one (studio's set_farms)."""
+    if not isinstance(farms, dict):
+        return []
+    areas, known = farm_ids()
+    out = []
+    order = farms.get('order')
+    if isinstance(order, list) and [a for a in order if a not in areas]:
+        out.append('economy.farms.order names nothing country_farms.json has: ' +
+                   ', '.join(str(a) for a in order if a not in areas) + ' (its areas: ' + ', '.join(areas) + ').')
+    for kind, ids in (('areas', set(areas)), ('farms', known)):
+        given = farms.get(kind)
+        if isinstance(given, dict) and set(given) - ids:
+            out.append(f'economy.farms.{kind} names nothing country_farms.json has: {", ".join(sorted(set(given) - ids))}.')
+    return out
+
+
+def check_farms(farms) -> list[str]:
+    """The farms' settings' problems. An area or a farm country_farms.json no longer has is kept, as Core keeps it (it
+    does nothing), so long as it is well formed (unknown_farms names them)."""
+    if not isinstance(farms, dict) or set(farms) - {*FARM_TOP, 'order', 'areas', 'farms'}:
+        return ['economy.farms must be {start?, every?, order?, keeper?, hand?, areas?, farms?}.']
+    errors = []
+    for key, (low, high) in FARM_TOP.items():
+        if key in farms and not number(farms[key], low, high, integer=True):
+            errors.append(f'economy.farms.{key} must be a whole number from {low} to {high}.')
+    if 'order' in farms:
+        order = farms['order']
+        if (not isinstance(order, list) or not order or len(set(map(str, order))) != len(order) or
+                any(not isinstance(a, str) or not re.fullmatch(r'[a-z0-9_]{1,48}', a) for a in order)):
+            errors.append('economy.farms.order must be a list of distinct area ids (country_farms.json\'s: ' +
+                          ', '.join(farm_ids()[0]) + ').')
+    for kind, limits in (('areas', FARM_AREA), ('farms', FARM_FARM)):
+        given = farms.get(kind, {})
+        if not isinstance(given, dict):
+            errors.append(f'economy.farms.{kind} must be an object.')
+            continue
+        for fid, setting in given.items():
+            extra = {'on'} if kind == 'areas' else set()
+            if not isinstance(fid, str) or not re.fullmatch(r'[a-z0-9_]{1,48}', fid):
+                errors.append(f'economy.farms.{kind} names no {kind[:-1]}: {fid}.')
+            elif not isinstance(setting, dict) or set(setting) - set(limits) - extra:
+                errors.append(f'economy.farms.{kind}.{fid} may set ' + ', '.join([*sorted(extra), *limits]) + '.')
+            else:
+                if 'on' in setting and type(setting['on']) is not bool:
+                    errors.append(f'economy.farms.areas.{fid}.on must be true or false (absent: as the schedule says).')
+                for key, (low, high) in limits.items():
+                    if key in setting and not number(setting[key], low, high, integer=True):
+                        errors.append(f'economy.farms.{kind}.{fid}.{key} must be a whole number from {low} to {high}.')
+    return errors
+
+
 def season_groups() -> list[dict]:
     """country.json's season groups (Core's items::Country::seasons), as the file has them."""
     try:
@@ -205,12 +282,13 @@ def check_economy(economy, person_ids=None) -> list[str]:
     errors = []
     keys = set(economy)
     if not set(ECONOMY_KEYS) <= keys <= (set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'} | set(LOOP_DEFAULTS)
-                                         | set(SEASON_DEFAULTS) | set(RULE_DEFAULTS)):
+                                         | set(SEASON_DEFAULTS) | set(RULE_DEFAULTS) | set(FARM_DEFAULTS)):
         errors.append('economy requires treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals '
                       '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule, businesses, '
-                      'the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ', ' + ', '.join(SEASON_DEFAULTS) + ' and '
-                      + ', '.join(RULE_DEFAULTS) + ').')
+                      'the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ', ' + ', '.join(SEASON_DEFAULTS) + ', '
+                      + ', '.join(RULE_DEFAULTS) + ' and ' + ', '.join(FARM_DEFAULTS) + ').')
     errors += check_rules(economy.get('rules', {}), economy.get('services', {}))
+    errors += check_farms(economy.get('farms', {}))
     for key, high in (('comfortsAbove', 1000000), ('comfortsShare', 100)):
         value = economy.get(key)
         if value is not None and not number(value, 0, high, integer=True):
@@ -307,6 +385,26 @@ def rule_lines(economy) -> list[str]:
     word = lambda on: 'on' if on else 'off'
     out += [f'service {quote(sid)} {word(s["on"])} price {s["price"]} every {s["every"]}'
             for sid, s in sorted((e['services'] or {}).items())]
+    return out
+
+
+def farm_lines(economy) -> list[str]:
+    """The NPC records' farms lines (live.people_manifest's since 0060), each word "-" for country_farms.json's: a "farms"
+    line when any of its five is set, a "farmarea" line an area this world has changed, a "farm" line a farm."""
+    f = (economy or {}).get('farms') or {}
+    word = lambda v: '-' if v is None else str(v)
+    out = []
+    if any(k in f for k in ('start', 'every', 'order', 'keeper', 'hand')):
+        order = ','.join(f['order']) if f.get('order') else '-'
+        out.append(f'farms start {word(f.get("start"))} every {word(f.get("every"))} order {order} '
+                   f'wages {word(f.get("keeper"))} {word(f.get("hand"))}')
+    for aid, a in sorted((f.get('areas') or {}).items()):
+        on = '-' if 'on' not in a else 'on' if a['on'] else 'off'
+        out.append(f'farmarea {quote(aid)} on {on} yield {word(a.get("yieldScale"))} crew {word(a.get("crewScale"))} '
+                   f'wages {word(a.get("keeper"))} {word(a.get("hand"))} factor {word(a.get("priceFactor"))}')
+    for fid, x in sorted((f.get('farms') or {}).items()):
+        out.append(f'farm {quote(fid)} yield {word(x.get("yieldScale"))} crew {word(x.get("crewScale"))} '
+                   f'wages {word(x.get("keeper"))} {word(x.get("hand"))}')
     return out
 
 
@@ -622,6 +720,8 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
     people_list = p.get('people', [])
     errors += check_economy(economy, {person.get('id') for person in people_list if isinstance(person, dict)}
                             if isinstance(people_list, list) else set())
+    if isinstance(economy, dict):
+        warnings += [f'{w[:-1]}: kept, it does nothing while the file lacks it.' for w in unknown_farms(economy.get('farms'))]
     herbs = p.get('herbPatch')
     if herbs is not None:
         place(herbs, 'Herb patch')
@@ -1017,6 +1117,7 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
         manifest += loop_lines(e)                   # The city's loop's, likewise (doc 68, 9).
         manifest += season_lines(e)                 # The comforts' and the seasons' (doc 68, Progress).
         manifest += rule_lines(e)                   # The rules' and the services' (doc 68, Progress, "First fixes").
+        manifest += farm_lines(e)                   # The Country's food farms' (doc 71, 4).
     off = {npc for npc, s in (p.get('economy') or {}).get('businesses', {}).items() if s.get('internalStore') is False}
     at = lambda spot: f'{quote(spot["cell"])} {spot["x"] + .5:g} {spot["y"] + .5:g}'
     npc_at = lambda spot: at(spot) if spot else '"-" 0 0'     # An NPC's unset place (doc 66, 2), as live.place writes it.

@@ -35,6 +35,7 @@ struct Catalog
     Ladder ladder;
     Households households;
     Country country;
+    Farms farms;
 };
 
 bool readJson(const std::filesystem::path& path, json::Value& out, std::string& error)
@@ -84,6 +85,97 @@ int tierOf(const std::string& name)
 int wearNumber(const json::Value& item, const char* key)
 {
     return int(item.object("wear").number(key, 0));
+}
+
+// The farms' defaults (country_farms.json): its areas and their farms, each good one the catalogue knows.
+void readFarms(Catalog& c, const json::Value& file)
+{
+    const auto known = [&](const std::string& id) {
+        return std::any_of(c.goods.begin(), c.goods.end(), [&](const Item& g) { return g.id == id; });
+    };
+    const auto id = [](const std::string& s) {
+        return !s.empty() && s.size() <= 48 &&
+               std::all_of(s.begin(), s.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
+    };
+    // A wage or another whole number, or -1 where it is null (the next level's).
+    const auto orUnset = [](const json::Value& v, int high) {
+        return v.isNumber() ? std::clamp(int(std::lround(v.asNumber())), 0, high) : -1;
+    };
+    const auto four = [](const json::Value& v, std::array<double, 4>& into) {
+        if (!v.isArray() || v.size() != 4)
+            return false;
+        for (std::size_t i = 0; i < 4; ++i)
+            into[i] = std::clamp(v.items()[i].asNumber(0), 0., 100000.);
+        return true;
+    };
+    auto& f = c.farms;
+    const auto& d = file.object("defaults");
+    f.keeper = std::max(0, orUnset(d.object("wages")["keeper"], 1000));
+    f.hand = std::max(0, orUnset(d.object("wages")["hand"], 1000));
+    f.floatDays = std::clamp(int(d.number("floatDays", 2)), 0, 365);
+    f.openingStockDays = std::clamp(int(d.number("openingStockDays", 7)), 0, 365);
+    const auto& schedule = d.object("schedule");
+    f.start = std::clamp(int(schedule.number("start", -1)), -1, 365000000);
+    f.every = std::clamp(int(schedule.number("every", 28)), 1, 3650);
+    for (const auto& a : schedule.array("order"))
+        if (id(a.asString({})))
+            f.order.push_back(a.asString({}));
+    for (const auto& [item, share] : file.object("basket").fields())
+        if (known(item) && share.asNumber(0) >= 1)
+            f.basket.push_back({item, int(std::min(1000000., share.asNumber(0)))});
+    for (const auto& [item, share] : file.object("countryBasket").fields())
+        if (known(item) && share.asNumber(0) >= 1)
+            f.countryBasket.push_back({item, int(std::min(1000000., share.asNumber(0)))});
+    for (const auto& t : file.array("switchTrades"))
+        if (id(t.asString({})))
+            f.switchTrades.push_back(t.asString({}));
+    std::set<std::string> farmIds, areaGoods;
+    for (const auto& a : file.array("areas"))
+    {
+        FarmArea area;
+        area.id = a.string("id");
+        area.name = a.string("name", area.id);
+        if (!id(area.id) || std::any_of(f.areas.begin(), f.areas.end(), [&](const FarmArea& x) { return x.id == area.id; }))
+            continue;
+        for (const auto& g : a.array("goods"))
+            if (known(g.asString({})) && areaGoods.insert(g.asString({})).second)
+                area.goods.push_back(g.asString({}));   // (A good in one area at most: the first that names it.)
+        area.on = a["on"].isBool() ? int(a["on"].asBool()) : -1;
+        area.yieldScale = std::clamp(int(a.number("yieldScale", 100)), 0, 1000);
+        area.crewScale = std::clamp(int(a.number("crewScale", 100)), 0, 1000);
+        area.keeper = orUnset(a.object("wages")["keeper"], 1000);
+        area.hand = orUnset(a.object("wages")["hand"], 1000);
+        if (a.string("price") == "year")
+            area.priceFactor = std::clamp(int(a.number("priceFactor", 100)), 10, 1000);
+        double takings = 0;
+        for (const auto& v : a.array("revenueADay"))
+            takings += std::max(0., v.asNumber(0)) / 4;
+        area.takings = takings;
+        for (const auto& x : a.array("farms"))
+        {
+            FarmDef farm;
+            farm.id = x.string("id");
+            farm.kind = x.string("kind");
+            farm.area = area.id;
+            if (!id(farm.id) || !farmIds.insert(farm.id).second)
+                continue;
+            farm.keepers = std::clamp(int(x.object("crew").number("keepers", 1)), 0, 100);
+            farm.hands = std::clamp(int(x.object("crew").number("hands", 0)), 0, 100);
+            farm.keeper = orUnset(x.object("wages")["keeper"], 1000);
+            farm.hand = orUnset(x.object("wages")["hand"], 1000);
+            farm.reserve = std::clamp<std::int64_t>(std::llround(x.number("reserve", 0)), 0, 1000000);
+            farm.purse = std::clamp<std::int64_t>(std::llround(x.number("purse", 0)), 0, 1000000);
+            farm.basketADay = std::clamp(x.number("basketADay", 0), 0., 1000000.);
+            for (const auto& [item, values] : x.object("yield").fields())
+                if (std::array<double, 4> v{}; known(item) && four(values, v))
+                    farm.yield[item] = v;
+            for (const auto& [item, values] : x.object("table").fields())
+                if (std::array<double, 4> v{}; farm.yield.count(item) && four(values, v))
+                    farm.table[item] = v;
+            area.farms.push_back(std::move(farm));
+        }
+        f.areas.push_back(std::move(area));
+    }
 }
 
 Catalog build()
@@ -399,6 +491,14 @@ Catalog build()
     }
     if (c.country.markets.empty())
         c.country.markets.push_back({"country", "the Country", {}});
+    // The Country's food farms (Data/Economy/country_farms.json; doc 71, 4): optional; without it, none.
+    if (const auto file = dir.parent_path() / "Economy" / "country_farms.json"; std::filesystem::exists(file))
+    {
+        json::Value farms;
+        std::string problem;
+        if (readJson(file, farms, problem))
+            readFarms(c, farms);
+    }
     c.loaded = !c.wearables.empty();
     if (!c.loaded && c.error.empty())
         c.error = "no wearables in " + (dir / "items.json").string();
@@ -667,6 +767,11 @@ const Households& households()
 const Country& country()
 {
     return catalog().country;
+}
+
+const Farms& farms()
+{
+    return catalog().farms;
 }
 
 const RuleInfo* ruleInfo(const std::string& name)

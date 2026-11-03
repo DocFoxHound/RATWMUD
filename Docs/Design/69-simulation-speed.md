@@ -555,3 +555,68 @@ The default way, from a checkout of the branch (nothing is written to any databa
   kept in `tools/` now.
 - With the game's own systems too (letters, chapters, estates...): `ratw_server --world-export EXPORT --save F --scratch
   --speed max` with nobody connected, about 1.3 s a game day; it writes no economy file.
+
+### The economy's levels, and the report (2026-11-03, branch `r2-farms`)
+
+`--economy-level off|normal|full` (default `normal`) sets how much an economy run records. **The economy file is the same
+byte for byte at every level** (the levels only read the world: the ledger through `World::setEventWatcher`, the loop's
+unmet wants through `Society::setShortageWatcher`, and a look at the shops, farms and households at each economy line):
+
+- `off`: the economy file alone; `--economy-detail` and `--loop-state` are not written even when named.
+- `normal`: as before (the economy file, and the detail and loop-state files when named).
+- `full`: also the day's market as compact tables, gzipped JSON lines in `--economy-full FILE` (default: the economy
+  file's name with `.full.jsonl.gz`). The first line (`meta`) names every table's columns, the price band and each
+  farm's area, yield scale and yields; then a line a day, aggregated in memory from one economy line to the next. Rows
+  are integers: a string is numbered as it first appears, each line's `names` adding the new ones in order. Deterministic
+  (written in a map's order; `gzip -n` keeps no name or time). The tables:
+  - `trade`: per good, buyer group and seller (a shop's till, a farm, or `country` for the store room's draws): pieces,
+    pennies and their worth at the catalogue's price (`base`: pennies / base is the mean price factor). Buyer groups:
+    households by class (`hh:lower`, the Sump's and the Rents'; `hh:middle`; `hh:upper`, the Houses'), `crew` (the farms'
+    crews), `shop:<trade>` (a shop buying inputs, or drawing from the store room and the farms), `treasury` (works and
+    patrons), `country`, `farm` (a farm's basket), `estate`.
+  - `till`: per shop, its float, sales and takings, store draws and their cost (the toll included), the toll, carriage,
+    inputs bought from the city's makers, wages owed and paid, the treasury's wage support to its posts, the profit to
+    its keeper, and its crew.
+  - `ware`: per shop and ware, its stock and shelf, its price (the season's times the shop's, in thousandths), its stock
+    factor (thousandths) and the pieces sold.
+  - `farm` and `farm_good`: per farm its float, takings, wages owed and paid, support, basket, its crew's purse,
+    spending, short days and hunger; per farm and good, grown, sold, stock, spoiled, eaten at the Country's table and short
+    there.
+  - `flow`: pennies between account groups (households by class, shops, farms, crews, the Country, the treasury, the
+    carters, estates, `minted`).
+  - `short`: per shop (`-`: no open shop held it), good, buyer group and what was taken instead: the buyers and pieces. A
+    household's food short at the shops' last hour (`food`, in meals), a need no open shop held (each of its goods), a
+    store draw the season's cap or the farms' stock cut short, a ware sold on or a craft's input (the most pieces in an
+    hour that day; a draw the till refused for its own sake, its cash or its room, is not the supply's and not recorded).
+  - The meta line also names each farm area's goods (`farm_areas`).
+  - `class`: per class, the living residents, households, hungry hours and hungry now, their purses, the median
+    household's, the comforts bought and all spent at the shops.
+
+What it costs, measured on the farms' export (30 days from Spring 1, `--farms 0 --farms-every 1`, 4 threads each on its
+own cores, three levels side by side): the run's days took 47.3 s at `normal`, 47.2 s at `off` and 48.8 s at `full`
+(**3% more**); the tables were 362 KB gzipped (12 KB a day: about 4.4 MB a year), beside the economy file's 490 KB. The
+three economy files were identical.
+
+**The report**: `python3 tools/econ_report.py ECONOMY.jsonl [--out REPORT.md] [--slack 5]` reads the economy file and,
+where it is there, its full tables, and writes about two pages of markdown (a year's run reads in a few seconds): every
+imbalance (the goods short, by shop and season, with what was taken instead; the goods piling up, their stock's growth a
+year after the first week), the price factors pinned at the band's edges, the tills short of their wages by trade and
+why (input costs: they take 70% of takings; too many hands: wages 60% of takings with three or more; else low sales),
+the largest money flows by season and the treasury's path and drains, each class's welfare by season, the largest buyer
+and seller of each good, and the farms (by area; those short of their crews' wages by name) with the yields that would
+have met their demand. That demand is, per farm, good and season, its sales to the shops, its share (by its yield) of
+the draws the farms' stock could not fill (a draw's lack is its shelf's deficit, a stock: a shop that sells the good
+counts at most its day's sales a day, its mean on the days it held or sold some; a craft's input its deficit as it
+stands), and the Country's table, with `--slack` percent more (default 5), divided by
+the farm's yield scale; it is written as a patch (`REPORT.md.patch.json`: per farm and good, the four seasons' yields as
+`Data/Economy/country_farms.json` has them; a season the run did not see keeps its yield), and `python3
+tools/econ_report.py --apply PATCH.json Data/Economy/country_farms.json` writes it in (nothing else changes). With the
+economy file alone (the normal level) it reports what those lines hold; the economy lines' farm draws cut short by good
+(`farms_out_goods`, a craft's input among them) are reported at either level. An area's good no farm of it grows is
+named apart (no yield to raise: wheat in the grain area). The yields are a season's mean demand set as
+the season's middle, which the blend between seasons smooths: a run after the patch shows what is left.
+
+Tests: `sim_fast_tests` runs world_check at `off` (the same economy file, no detail) and at `full` with the farms (the
+same economy file; the tables' households' purchases equal the economy line's `residents_spent` plus `services_spent`,
+the Country's `country_spent` plus `patrons_country`, the crews' `farms_crew_spent`, the tills' draws `drawn`, the farms'
+goods grown `farms_grown`, day by day); `tools/test_econ_report.py` the report and the patch on a small fixture.

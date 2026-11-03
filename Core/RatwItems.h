@@ -4,6 +4,7 @@
 // herbs, meals and the sword keep their old hard-coded ways.
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <utility>
@@ -287,6 +288,43 @@ struct Country
     std::map<std::string, int> shelves;             // A dear good's shelf (theriac: 1), in place of GoodsKept.
 };
 const Country& country();
+// The Country's food farms (Data/Economy/country_farms.json; Docs/Design/71-the-country-s-industries.md, 4): modelled
+// producers with virtual crews that take an area of the Country's food over when the area is switched on. These are the
+// defaults a world's own settings change (EconomySpec::farms): a farm's own setting first, then its area's, then these.
+struct FarmDef
+{
+    std::string id, kind, area;
+    int keepers = 1, hands = 0;                     // Its crew (virtual posts: nobody holds them yet).
+    int keeper = -1, hand = -1;                     // Its wages a day (-1: its area's, then the defaults').
+    std::int64_t reserve = 0, purse = 0;            // Its till's float and its crew's settled purse, made when it is founded.
+    double basketADay = 0;                          // The design's basket a day (for reports; the basket is what is over).
+    // Pieces a day of each good at each season's middle day (Spring, Summer, Autumn, Winter), blended as the seasons are
+    // (Society::seasonal): what it grows, and what the Country's own people eat of it there (the Country's table).
+    std::map<std::string, std::array<double, 4>> yield, table;
+};
+struct FarmArea
+{
+    std::string id, name;
+    std::vector<std::string> goods;                 // On, these are its farms' only (the Country no longer sends them).
+    int on = -1;                                    // -1: as the schedule says; 0: off; 1: on.
+    int yieldScale = 100, crewScale = 100;          // Percent on its farms' yields, and on their hands (rounded half up).
+    int keeper = -1, hand = -1;                     // Its farms' wages (-1: the defaults').
+    int priceFactor = 0;                            // The farms' price a year, percent of the catalogue's; 0: the season's.
+    double takings = 0;                             // The design's takings a day (the year's mean): the Country's basket's blend.
+    std::vector<FarmDef> farms;
+};
+struct Farms
+{
+    int keeper = 16, hand = 10;                     // The farms' wages a day (fixed: the basket takes what is over them).
+    int floatDays = 2, openingStockDays = 7;
+    int start = -1, every = 28;                     // The switch: the first area on day `start` (-1: none), one every `every`
+    std::vector<std::string> order;                 // days after it, in this order.
+    std::vector<std::pair<std::string, int>> basket;          // The farms' basket of the city's goods, and shares.
+    std::vector<std::pair<std::string, int>> countryBasket;   // The Country's basket once the farms have the food.
+    std::vector<std::string> switchTrades;          // The trades whose orders the switch takes (for reports).
+    std::vector<FarmArea> areas;
+};
+const Farms& farms();
 // What a kind of shop makes, in file order (none if it makes nothing yet).
 std::vector<const Craft*> craftsFor(const std::string& business);
 // The ingredients a kind of shop sells to the makers (a stall's flour and milk, a butcher's bones), or none.

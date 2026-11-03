@@ -3,7 +3,7 @@
 python3 tools/people_summary.py ECONOMY.jsonl [LOOP.jsonl]
 
 From world_check --economy's line a day: money conserved every day (the ledger's, and the money supply the start's: no
-money is made since newcomers went); per year (days 5-364, then whole years) hunger, wages paid, the treasury, the
+money is made since newcomers went, but the Country's farms' founding, counted as minted: doc 71); per year (days 5-364, then whole years) hunger, wages paid, the treasury, the
 households' purses and the earners' Gini as 4-week means (the year's first and last 28 days), the owners' share, the
 drift (toll, alms, the treasury's level, wages, prices, shelves); and the people: residents, households (and those of
 one), pups, working age, retired, births, arrivals and deaths, the children still owed, the unplaced NPCs left, the posts
@@ -22,9 +22,12 @@ def mean(xs):
 def main():
     rows = [json.loads(line) for line in open(sys.argv[1])]
     loop = [json.loads(line) for line in open(sys.argv[2])] if len(sys.argv) > 2 else []
-    bad = [r['day'] for r in rows if not r['conserved'] or r['money'] != r['money_start']]
+    # (The money supply the start's and the farms' founding, doc 71: a farm's float and its crew's purse are made as the
+    # world's founding money was.)
+    bad = [r['day'] for r in rows if not r['conserved'] or r['money'] != r['money_start'] + r.get('farms_minted', 0)]
     print(f'# {sys.argv[1]}: {len(rows)} days (day {rows[0]["day"]} to {rows[-1]["day"]}); money conserved every day (and the '
-          f'money supply the start\'s, {rows[0]["money_start"]}p): {"yes" if not bad else "NO, days " + str(bad[:10])}; players: '
+          f'money supply the start\'s, {rows[0]["money_start"]}p, and the farms\' founding, {rows[-1].get("farms_minted", 0)}p): '
+          f'{"yes" if not bad else "NO, days " + str(bad[:10])}; players: '
           f'{max(r.get("players", 0) for r in rows)} at most')
     births = sum(r['births'] for r in rows)
     deaths = sum(r['deaths'] for r in rows)

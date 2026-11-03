@@ -8,8 +8,8 @@ import {forHost, groundPending, want, type SentGround} from './lazyGround';
 import {stable} from './live';
 import {authHeaders, studioCall} from '../dm/api';
 import type {Choice, PullPlan, PullResult} from './sync';
-import type {BusinessesBody, ComfortsBody, EconomyChange, EconomyControls, GoodsBody, LoopSettings, RulesBody, SeasonsBody,
-    ServicesBody, StoreSwitches} from './economy';
+import type {BusinessesBody, ComfortsBody, EconomyChange, EconomyControls, FarmsBody, GoodsBody, LoopSettings, RulesBody,
+    SeasonsBody, ServicesBody, StoreSwitches} from './economy';
 
 /** The world Atlas is editing (Database/worlds.json, doc 66), as the host says; null for a host without a database. */
 export interface AtlasWorld { key: string; name: string; kind: 'dev' | 'live'; upstream?: string }
@@ -149,6 +149,9 @@ export const api = {
             studioCall<EconomyChange>(ATLAS + 'economy/rules', body, {'X-RATW-Editor': await session()}),
         setServices: async (body: ServicesBody) =>
             studioCall<EconomyChange>(ATLAS + 'economy/services', body, {'X-RATW-Editor': await session()}),
+        /** The Country's food farms (doc 71, 4; migration 0060): the switch, the wages, an area's or a farm's scales. */
+        setFarms: async (body: FarmsBody) =>
+            studioCall<EconomyChange>(ATLAS + 'economy/farms', body, {'X-RATW-Editor': await session()}),
     },
     ai: async () => json<{available: boolean; model: string; error: string}>(await get('ai')),
     generate: async (count: number, favor: string[], theme: string) => {

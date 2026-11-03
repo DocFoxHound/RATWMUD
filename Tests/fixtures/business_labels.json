@@ -211,7 +211,6 @@
         "flour",
         "oats",
         "milk",
-        "vegetables",
         "apples",
         "mushrooms",
         "berries",
@@ -335,10 +334,10 @@
       "label": "keeps the Bilge",
       "making": [
         "apples",
+        "bones",
         "milk",
         "oats",
-        "raw_meat",
-        "vegetables"
+        "raw_meat"
       ],
       "resale": [
         "mushrooms",

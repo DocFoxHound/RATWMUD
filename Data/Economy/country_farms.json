@@ -1,7 +1,7 @@
 {
  "format": "ratw-country-farms",
- "version": 3,
- "about": "The Country's food farms and other works as they would be placed (Docs/Design/71-the-country-s-industries.md). Written by tools/country_industry.py from the 12-year run (settled years 4-12); nothing reads it yet. The defaults Atlas's Economy page and the DM's Economy tab would edit, per area and per farm. An area: `on` (false: the Country still supplies its goods), `yieldScale` (percent, on all its farms' yields), `crewScale` (percent, on all its farms' hands, rounded half up), `wages` (pennies a day for its farms' keepers and hands; null: the defaults'), `price` ('year': the farms sell from store at `priceFactor` percent of the catalogue all year; 'season': at the season's price, as the store room does now). A farm: `crew` (keepers and hands; `minHands` is the smallest sensible crew), `wages` (null: the area's, then the defaults'; fixed, not drifting: the basket takes what is over them), `basketADay` (the design's mean: what the till spends a day on the city's goods, their carriage out included, from what it holds over its wages and `reserve`), `reserve` (pennies its till keeps before its basket: two days of its wages, and a lean season's shortfall if it has one), `yield` (pieces a day of each good, the value at each season's middle day for Spring, Summer, Autumn and Winter, blended between them by Society::seasonal as country.json's seasons are; their blend's season means are the doc's 2.4 table). Precedence: a farm's own setting, then its area's, then the defaults. The yields are the city's draws after the switch (the crews' own food among them), what the Country's own people eat, and `slack`. `footprint`: own_tiles are the farm's own ground (fields, orchard, vines, meadow, steading, pans); shared_range_tiles is open grazing, heath or woodland its herds share with the wild. `distance` is from Ridgemere, the realm's north-west corner (near: within 2 cells, middle: 3-8, far: 9 or more).",
+ "version": 4,
+ "about": "The Country's food farms and other works as they would be placed (Docs/Design/71-the-country-s-industries.md). Written by tools/country_industry.py from the 12-year run (settled years 4-12); Core reads it (items::farms) as the defaults a world's own settings change (live.economy.farms: Atlas's Economy page and the DM's Economy tab, per area and per farm). An area: `on` (null: as `defaults.schedule` says; true or false: so, whatever the schedule; on, its goods go into country_off and only its farms sell them), `yieldScale` (percent, on all its farms' yields), `crewScale` (percent, on all its farms' hands, rounded half up), `wages` (pennies a day for its farms' keepers and hands; null: the defaults'), `price` ('year': the farms sell from store at `priceFactor` percent of the catalogue all year; 'season': at the season's price, as the store room does). A farm: `crew` (keepers and hands; `minHands` is the smallest sensible crew), `wages` (null: the area's, then the defaults'; fixed, not drifting: the basket takes what is over them), `basketADay` (the design's mean: what the till spends a day on the city's goods, their carriage out included, from what it holds over its wages and `reserve`), `reserve` (pennies its till keeps before its basket: two days of its wages, and a lean season's shortfall if it has one; its float, created when its area first goes on), `purse` (its crew's household's settled purse, created with it), `yield` (pieces a day of each good, the value at each season's middle day for Spring, Summer, Autumn and Winter, blended between them by Society::seasonal as country.json's seasons are; their blend's season means are the doc's 2.4 table), `table` (what the Country's own people, `defaults.estatePeople` and `otherWorkers`, eat of it a day, the same way: no dependants until families are placed). Precedence: a farm's own setting, then its area's, then the defaults. The yields are the city's draws after the switch (the crews' own food among them), what the Country's own people eat, and `slack`. `schedule`: the areas go on one at a time in `order`, `every` days apart, the first on day `start` (the world's calendar day; -1: none). `basket`: the farms' basket's goods and shares; `countryBasket`: the Country's basket once the farms take the food (the goods the farms don't buy and no food or drink, in its shares now), blended in as the areas go on. `switchTrades`: the trades whose orders the switch takes (the economy file's unpaid support, the switch's). `footprint`: own_tiles are the farm's own ground (fields, orchard, vines, meadow, steading, pans); shared_range_tiles is open grazing, heath or woodland its herds share with the wild. `distance` is from Ridgemere, the realm's north-west corner (near: within 2 cells, middle: 3-8, far: 9 or more).",
  "defaults": {
   "wages": {
    "keeper": 16,
@@ -12,7 +12,12 @@
   "slack": 10,
   "estatePeople": 24,
   "otherWorkers": 68,
-  "openingStockDays": 7
+  "openingStockDays": 7,
+  "schedule": {
+   "start": -1,
+   "every": 28,
+   "order": ["grain", "fruit", "meat", "fish", "honey", "salt"]
+  }
  },
  "basket": {
   "cart_wheel": 194,
@@ -43,6 +48,31 @@
   "plaster": 20,
   "glass_pane": 37
  },
+ "countryBasket": {
+  "paper": 76,
+  "steel_bar": 70,
+  "iron_bar": 70,
+  "charcoal": 61,
+  "bandages": 39,
+  "handbell": 36,
+  "map": 32,
+  "rivets": 30,
+  "ink": 29,
+  "glass_beads": 29,
+  "leather_bindings": 28,
+  "fang_charm": 22,
+  "ledger": 20,
+  "copper_bar": 20,
+  "mining_pick": 20,
+  "masking_oil": 18,
+  "charm": 17,
+  "tin_bar": 17,
+  "bronze_bar": 15,
+  "linseed_oil": 14,
+  "paint": 12,
+  "ear_ring": 11
+ },
+ "switchTrades": ["apothecary", "armory", "brewery", "brickworks", "carpenter", "cartographer", "cartwright", "charcoal", "cooperage", "distillery", "foundry", "glassworks", "ironworks", "mason", "paintworks", "papermill", "plasterworks", "press", "printing_house", "ropewalk", "sawmill", "scriptorium", "smithy", "tannery"],
  "dropped": {
   "goods": ["vegetables", "mushrooms"],
   "listedIn": ["Data/Items/crafts.json crafts: stew (inn: raw_meat + vegetables -> meal)", "Data/Items/crafts.json buys: inn (vegetables)", "Data/Items/crafts.json supplies: stall, provisioner (vegetables)", "Data/Items/country.json seasons: the vegetables group (vegetables, mushrooms)", "Data/Items/recipes.json: meal_stew, mushroom_stew (players' recipes)", "Data/Items/regions.json: the old map's places (brings_in)", "Data/Economy/ladder.json: vegetables (staple)"]
@@ -52,7 +82,7 @@
    "id": "grain",
    "name": "grain and flour",
    "goods": ["flour", "oats", "wheat", "straw"],
-   "on": false,
+   "on": null,
    "yieldScale": 100,
    "crewScale": 100,
    "wages": {
@@ -61,7 +91,7 @@
    },
    "price": "year",
    "priceFactor": 101,
-   "revenueADay": [208.6, 197.5, 224.7, 201.2],
+   "revenueADay": [209.2, 198.1, 225.4, 201.8],
    "wolvesItCanPay": 24,
    "farms": [
     {
@@ -84,12 +114,17 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 48.0,
+     "basketADay": 48.3,
      "reserve": 112,
+     "purse": 295,
      "yield": {
-      "flour": [52.8, 60.2, 61.5, 46.7],
-      "oats": [37.9, 51.7, 55.5, 36.6],
-      "straw": [2.3, 1.0, 1.6, 2.1]
+      "flour": [52.9, 60.4, 61.7, 46.8],
+      "oats": [38.0, 51.8, 55.6, 36.7],
+      "straw": [2.2, 1.7, 1.9, 2.0]
+     },
+     "table": {
+      "flour": [5.6, 6.36, 6.49, 4.9],
+      "oats": [4.02, 5.46, 5.86, 3.84]
      },
      "sells": {
       "flour": 1,
@@ -119,12 +154,17 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 48.0,
+     "basketADay": 48.3,
      "reserve": 112,
+     "purse": 295,
      "yield": {
-      "flour": [52.8, 60.2, 61.5, 46.7],
-      "oats": [37.9, 51.7, 55.5, 36.6],
-      "straw": [2.3, 1.0, 1.6, 2.1]
+      "flour": [52.9, 60.4, 61.7, 46.8],
+      "oats": [38.0, 51.8, 55.6, 36.7],
+      "straw": [2.2, 1.7, 1.9, 2.0]
+     },
+     "table": {
+      "flour": [5.6, 6.36, 6.49, 4.9],
+      "oats": [4.02, 5.46, 5.86, 3.84]
      },
      "sells": {
       "flour": 1,
@@ -140,7 +180,7 @@
    "id": "fruit",
    "name": "orchards and vines",
    "goods": ["apples", "berries", "cider", "apple_brandy", "dried_apples", "fruit_preserves", "grapes", "wine", "brandy", "aqua_vitae"],
-   "on": false,
+   "on": null,
    "yieldScale": 100,
    "crewScale": 100,
    "wages": {
@@ -149,8 +189,8 @@
    },
    "price": "season",
    "priceFactor": null,
-   "revenueADay": [523.7, 391.0, 431.7, 565.1],
-   "wolvesItCanPay": 52,
+   "revenueADay": [534.2, 405.9, 440.7, 570.2],
+   "wolvesItCanPay": 53,
    "farms": [
     {
      "id": "orchard_1",
@@ -172,14 +212,20 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 40.8,
+     "basketADay": 41.0,
      "reserve": 92,
+     "purse": 238,
      "yield": {
-      "apples": [70.2, 86.0, 92.4, 46.2],
-      "berries": [0.3, 0.1, 0.2, 0.3],
-      "cider": [2.3, 0.2, 0.5, 2.0],
-      "dried_apples": [21.2, 0.0, 0.0, 41.8],
-      "fruit_preserves": [5.1, 0.0, 0.0, 44.0]
+      "apples": [64.9, 85.6, 91.9, 41.6],
+      "berries": [1.1, 0.5, 0.6, 1.0],
+      "cider": [5.2, 0.5, 0.9, 4.0],
+      "dried_apples": [21.2, 0.0, 0.0, 41.9],
+      "fruit_preserves": [5.1, 0.0, 0.0, 44.1]
+     },
+     "table": {
+      "apples": [2.07, 4.3, 4.39, 0.21],
+      "dried_apples": [2.25, 0.0, 0.0, 4.4],
+      "fruit_preserves": [0.54, 0.0, 0.0, 4.63]
      },
      "sells": {
       "apples": 0.4,
@@ -211,12 +257,16 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 14.9,
+     "basketADay": 15.1,
      "reserve": 72,
+     "purse": 181,
      "yield": {
-      "apples": [70.2, 86.0, 92.4, 46.2],
-      "berries": [0.3, 0.1, 0.2, 0.3],
-      "cider": [2.3, 0.2, 0.5, 2.0]
+      "apples": [64.9, 85.6, 91.9, 41.6],
+      "berries": [1.1, 0.5, 0.6, 1.0],
+      "cider": [5.2, 0.5, 0.9, 4.0]
+     },
+     "table": {
+      "apples": [2.07, 4.3, 4.39, 0.21]
      },
      "sells": {
       "apples": 0.6,
@@ -246,14 +296,20 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 40.8,
+     "basketADay": 41.0,
      "reserve": 92,
+     "purse": 238,
      "yield": {
-      "apples": [70.2, 86.0, 92.4, 46.2],
-      "berries": [0.3, 0.1, 0.2, 0.3],
-      "cider": [2.3, 0.2, 0.5, 2.0],
-      "dried_apples": [21.2, 0.0, 0.0, 41.8],
-      "fruit_preserves": [5.1, 0.0, 0.0, 44.0]
+      "apples": [64.9, 85.6, 91.9, 41.6],
+      "berries": [1.1, 0.5, 0.6, 1.0],
+      "cider": [5.2, 0.5, 0.9, 4.0],
+      "dried_apples": [21.2, 0.0, 0.0, 41.9],
+      "fruit_preserves": [5.1, 0.0, 0.0, 44.1]
+     },
+     "table": {
+      "apples": [2.07, 4.3, 4.39, 0.21],
+      "dried_apples": [2.25, 0.0, 0.0, 4.4],
+      "fruit_preserves": [0.54, 0.0, 0.0, 4.63]
      },
      "sells": {
       "apples": 0.4,
@@ -285,12 +341,16 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 14.9,
+     "basketADay": 15.1,
      "reserve": 72,
+     "purse": 181,
      "yield": {
-      "apples": [70.2, 86.0, 92.4, 46.2],
-      "berries": [0.3, 0.1, 0.2, 0.3],
-      "cider": [2.3, 0.2, 0.5, 2.0]
+      "apples": [64.9, 85.6, 91.9, 41.6],
+      "berries": [1.1, 0.5, 0.6, 1.0],
+      "cider": [5.2, 0.5, 0.9, 4.0]
+     },
+     "table": {
+      "apples": [2.07, 4.3, 4.39, 0.21]
      },
      "sells": {
       "apples": 0.6,
@@ -320,12 +380,16 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 14.9,
+     "basketADay": 15.1,
      "reserve": 72,
+     "purse": 181,
      "yield": {
-      "apples": [70.2, 86.0, 92.4, 46.2],
-      "berries": [0.3, 0.1, 0.2, 0.3],
-      "cider": [2.3, 0.2, 0.5, 2.0]
+      "apples": [64.9, 85.6, 91.9, 41.6],
+      "berries": [1.1, 0.5, 0.6, 1.0],
+      "cider": [5.2, 0.5, 0.9, 4.0]
+     },
+     "table": {
+      "apples": [2.07, 4.3, 4.39, 0.21]
      },
      "sells": {
       "apples": 0.6,
@@ -343,24 +407,62 @@
      "terrain": ["hills"],
      "near": ["road"],
      "footprint": {
-      "own_tiles": 17900,
+      "own_tiles": 9000,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
-      "hands": 6
+      "hands": 3
      },
      "minHands": 3,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 75.2,
-     "reserve": 152,
+     "basketADay": 34.1,
+     "reserve": 92,
+     "purse": 238,
      "yield": {
-      "grapes": [19.3, 27.7, 28.5, 13.6],
-      "wine": [26.8, 16.1, 27.1, 17.2]
+      "grapes": [6.3, 9.3, 13.2, 3.8],
+      "wine": [15.1, 10.3, 14.2, 10.1]
      },
+     "table": {},
+     "sells": {
+      "grapes": 1,
+      "wine": 1,
+      "brandy": 1,
+      "aqua_vitae": 1
+     },
+     "store": "a press house and cellar: pressed at the harvest, sold by the cask all year"
+    },
+    {
+     "id": "vineyard_2",
+     "kind": "vineyard",
+     "region": "the sunny south-facing terraces of the central hills above the plains",
+     "distance": "middle (3-8 cells)",
+     "terrain": ["hills"],
+     "near": ["road"],
+     "footprint": {
+      "own_tiles": 9000,
+      "shared_range_tiles": 0
+     },
+     "crew": {
+      "keepers": 1,
+      "hands": 3
+     },
+     "minHands": 3,
+     "wages": {
+      "keeper": null,
+      "hand": null
+     },
+     "basketADay": 34.1,
+     "reserve": 92,
+     "purse": 238,
+     "yield": {
+      "grapes": [6.3, 9.3, 13.2, 3.8],
+      "wine": [15.1, 10.3, 14.2, 10.1]
+     },
+     "table": {},
      "sells": {
       "grapes": 1,
       "wine": 1,
@@ -375,7 +477,7 @@
    "id": "meat",
    "name": "meat, milk and the herds",
    "goods": ["raw_meat", "pig", "mutton", "rabbit", "meal", "sheep", "offal", "eggs", "milk", "butter", "cheese", "tallow", "hide", "bones", "wool", "sheepskin", "small_pelt"],
-   "on": false,
+   "on": null,
    "yieldScale": 100,
    "crewScale": 100,
    "wages": {
@@ -384,7 +486,7 @@
    },
    "price": "season",
    "priceFactor": null,
-   "revenueADay": [973.4, 975.6, 941.7, 983.3],
+   "revenueADay": [980.3, 983.3, 948.2, 992.8],
    "wolvesItCanPay": 110,
    "farms": [
     {
@@ -407,15 +509,22 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 52.3,
+     "basketADay": 53.5,
      "reserve": 112,
+     "purse": 295,
      "yield": {
-      "raw_meat": [47.6, 44.1, 39.1, 40.0],
-      "meal": [4.5, 2.3, 2.0, 4.0],
-      "milk": [25.8, 37.7, 41.0, 23.8],
-      "hide": [1.2, 1.0, 0.9, 1.4],
-      "tallow": [13.4, 12.3, 12.0, 11.5],
-      "bones": [2.8, 2.6, 2.6, 2.2]
+      "raw_meat": [44.5, 41.9, 39.1, 43.4],
+      "meal": [14.1, 11.4, 10.7, 14.1],
+      "milk": [33.4, 42.8, 62.7, 27.8],
+      "hide": [1.5, 1.2, 1.1, 1.3],
+      "tallow": [13.5, 12.4, 12.1, 11.6],
+      "bones": [4.7, 4.5, 4.7, 4.2]
+     },
+     "table": {
+      "raw_meat": [5.05, 4.66, 4.13, 4.2],
+      "meal": [0.48, 0.24, 0.21, 0.42],
+      "milk": [2.73, 3.99, 4.32, 2.5],
+      "bones": [0.1, 0.13, 0.12, 0.08]
      },
      "sells": {
       "raw_meat": 0.65,
@@ -449,15 +558,22 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 52.3,
+     "basketADay": 53.5,
      "reserve": 112,
+     "purse": 295,
      "yield": {
-      "raw_meat": [47.6, 44.1, 39.1, 40.0],
-      "meal": [4.5, 2.3, 2.0, 4.0],
-      "milk": [25.8, 37.7, 41.0, 23.8],
-      "hide": [1.2, 1.0, 0.9, 1.4],
-      "tallow": [13.4, 12.3, 12.0, 11.5],
-      "bones": [2.8, 2.6, 2.6, 2.2]
+      "raw_meat": [44.5, 41.9, 39.1, 43.4],
+      "meal": [14.1, 11.4, 10.7, 14.1],
+      "milk": [33.4, 42.8, 62.7, 27.8],
+      "hide": [1.5, 1.2, 1.1, 1.3],
+      "tallow": [13.5, 12.4, 12.1, 11.6],
+      "bones": [4.7, 4.5, 4.7, 4.2]
+     },
+     "table": {
+      "raw_meat": [5.05, 4.66, 4.13, 4.2],
+      "meal": [0.48, 0.24, 0.21, 0.42],
+      "milk": [2.73, 3.99, 4.32, 2.5],
+      "bones": [0.1, 0.13, 0.12, 0.08]
      },
      "sells": {
       "raw_meat": 0.65,
@@ -491,15 +607,22 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 52.3,
+     "basketADay": 53.5,
      "reserve": 112,
+     "purse": 295,
      "yield": {
-      "raw_meat": [47.6, 44.1, 39.1, 40.0],
-      "meal": [4.5, 2.3, 2.0, 4.0],
-      "milk": [25.8, 37.7, 41.0, 23.8],
-      "hide": [1.2, 1.0, 0.9, 1.4],
-      "tallow": [13.4, 12.3, 12.0, 11.5],
-      "bones": [2.8, 2.6, 2.6, 2.2]
+      "raw_meat": [44.5, 41.9, 39.1, 43.4],
+      "meal": [14.1, 11.4, 10.7, 14.1],
+      "milk": [33.4, 42.8, 62.7, 27.8],
+      "hide": [1.5, 1.2, 1.1, 1.3],
+      "tallow": [13.5, 12.4, 12.1, 11.6],
+      "bones": [4.7, 4.5, 4.7, 4.2]
+     },
+     "table": {
+      "raw_meat": [5.05, 4.66, 4.13, 4.2],
+      "meal": [0.48, 0.24, 0.21, 0.42],
+      "milk": [2.73, 3.99, 4.32, 2.5],
+      "bones": [0.1, 0.13, 0.12, 0.08]
      },
      "sells": {
       "raw_meat": 0.65,
@@ -533,15 +656,22 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 57.8,
+     "basketADay": 58.6,
      "reserve": 112,
+     "purse": 295,
      "yield": {
-      "raw_meat": [25.6, 23.8, 21.1, 21.5],
-      "meal": [2.4, 1.2, 1.1, 2.1],
-      "pig": [8.1, 10.4, 10.9, 10.7],
-      "hide": [0.8, 0.7, 0.6, 0.9],
-      "tallow": [8.0, 7.4, 7.2, 6.9],
-      "bones": [1.7, 1.5, 1.5, 1.3]
+      "raw_meat": [23.9, 22.5, 21.0, 23.4],
+      "meal": [7.6, 6.2, 5.7, 7.6],
+      "pig": [8.2, 10.4, 10.9, 10.8],
+      "hide": [1.0, 0.8, 0.7, 0.9],
+      "tallow": [8.1, 7.4, 7.3, 6.9],
+      "bones": [2.8, 2.7, 2.8, 2.5]
+     },
+     "table": {
+      "raw_meat": [2.72, 2.51, 2.22, 2.26],
+      "meal": [0.26, 0.13, 0.11, 0.22],
+      "pig": [0.86, 1.1, 1.15, 1.13],
+      "bones": [0.06, 0.08, 0.07, 0.05]
      },
      "sells": {
       "raw_meat": 0.35,
@@ -574,15 +704,22 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 57.8,
+     "basketADay": 58.6,
      "reserve": 112,
+     "purse": 295,
      "yield": {
-      "raw_meat": [25.6, 23.8, 21.1, 21.5],
-      "meal": [2.4, 1.2, 1.1, 2.1],
-      "pig": [8.1, 10.4, 10.9, 10.7],
-      "hide": [0.8, 0.7, 0.6, 0.9],
-      "tallow": [8.0, 7.4, 7.2, 6.9],
-      "bones": [1.7, 1.5, 1.5, 1.3]
+      "raw_meat": [23.9, 22.5, 21.0, 23.4],
+      "meal": [7.6, 6.2, 5.7, 7.6],
+      "pig": [8.2, 10.4, 10.9, 10.8],
+      "hide": [1.0, 0.8, 0.7, 0.9],
+      "tallow": [8.1, 7.4, 7.3, 6.9],
+      "bones": [2.8, 2.7, 2.8, 2.5]
+     },
+     "table": {
+      "raw_meat": [2.72, 2.51, 2.22, 2.26],
+      "meal": [0.26, 0.13, 0.11, 0.22],
+      "pig": [0.86, 1.1, 1.15, 1.13],
+      "bones": [0.06, 0.08, 0.07, 0.05]
      },
      "sells": {
       "raw_meat": 0.35,
@@ -615,15 +752,22 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 57.8,
+     "basketADay": 58.6,
      "reserve": 112,
+     "purse": 295,
      "yield": {
-      "raw_meat": [25.6, 23.8, 21.1, 21.5],
-      "meal": [2.4, 1.2, 1.1, 2.1],
-      "pig": [8.1, 10.4, 10.9, 10.7],
-      "hide": [0.8, 0.7, 0.6, 0.9],
-      "tallow": [8.0, 7.4, 7.2, 6.9],
-      "bones": [1.7, 1.5, 1.5, 1.3]
+      "raw_meat": [23.9, 22.5, 21.0, 23.4],
+      "meal": [7.6, 6.2, 5.7, 7.6],
+      "pig": [8.2, 10.4, 10.9, 10.8],
+      "hide": [1.0, 0.8, 0.7, 0.9],
+      "tallow": [8.1, 7.4, 7.3, 6.9],
+      "bones": [2.8, 2.7, 2.8, 2.5]
+     },
+     "table": {
+      "raw_meat": [2.72, 2.51, 2.22, 2.26],
+      "meal": [0.26, 0.13, 0.11, 0.22],
+      "pig": [0.86, 1.1, 1.15, 1.13],
+      "bones": [0.06, 0.08, 0.07, 0.05]
      },
      "sells": {
       "raw_meat": 0.35,
@@ -656,11 +800,15 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 28.9,
+     "basketADay": 29.1,
      "reserve": 52,
+     "purse": 124,
      "yield": {
-      "rabbit": [98.3, 91.7, 102.8, 105.0],
+      "rabbit": [93.4, 88.1, 93.5, 100.8],
       "small_pelt": [1.0, 0.8, 0.6, 1.1]
+     },
+     "table": {
+      "rabbit": [10.43, 9.69, 10.85, 11.04]
      },
      "sells": {
       "rabbit": 1,
@@ -689,11 +837,15 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 28.9,
+     "basketADay": 29.1,
      "reserve": 52,
+     "purse": 124,
      "yield": {
-      "rabbit": [98.3, 91.7, 102.8, 105.0],
+      "rabbit": [93.4, 88.1, 93.5, 100.8],
       "small_pelt": [1.0, 0.8, 0.6, 1.1]
+     },
+     "table": {
+      "rabbit": [10.43, 9.69, 10.85, 11.04]
      },
      "sells": {
       "rabbit": 1,
@@ -722,13 +874,18 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 50.0,
+     "basketADay": 50.9,
      "reserve": 92,
+     "purse": 238,
      "yield": {
-      "mutton": [22.0, 28.5, 22.6, 27.8],
+      "mutton": [23.7, 28.3, 22.7, 27.6],
       "wool": [6.3, 6.6, 5.7, 5.3],
-      "tallow": [8.0, 7.4, 7.2, 6.9],
-      "bones": [1.7, 1.5, 1.5, 1.3]
+      "tallow": [8.1, 7.4, 7.3, 6.9],
+      "bones": [2.8, 2.7, 2.8, 2.5]
+     },
+     "table": {
+      "mutton": [2.33, 3.02, 2.38, 2.92],
+      "bones": [0.06, 0.08, 0.07, 0.05]
      },
      "sells": {
       "mutton": 1,
@@ -760,13 +917,18 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 50.0,
+     "basketADay": 50.9,
      "reserve": 92,
+     "purse": 238,
      "yield": {
-      "mutton": [22.0, 28.5, 22.6, 27.8],
+      "mutton": [23.7, 28.3, 22.7, 27.6],
       "wool": [6.3, 6.6, 5.7, 5.3],
-      "tallow": [8.0, 7.4, 7.2, 6.9],
-      "bones": [1.7, 1.5, 1.5, 1.3]
+      "tallow": [8.1, 7.4, 7.3, 6.9],
+      "bones": [2.8, 2.7, 2.8, 2.5]
+     },
+     "table": {
+      "mutton": [2.33, 3.02, 2.38, 2.92],
+      "bones": [0.06, 0.08, 0.07, 0.05]
      },
      "sells": {
       "mutton": 1,
@@ -784,7 +946,7 @@
    "id": "fish",
    "name": "fish and shellfish",
    "goods": ["fish", "shellfish"],
-   "on": false,
+   "on": null,
    "yieldScale": 100,
    "crewScale": 100,
    "wages": {
@@ -793,7 +955,7 @@
    },
    "price": "season",
    "priceFactor": null,
-   "revenueADay": [379.3, 373.7, 375.5, 428.1],
+   "revenueADay": [380.4, 374.9, 376.6, 429.3],
    "wolvesItCanPay": 42,
    "farms": [
     {
@@ -816,10 +978,14 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 22.0,
+     "basketADay": 22.1,
      "reserve": 52,
+     "purse": 124,
      "yield": {
-      "fish": [38.8, 39.1, 34.7, 49.2]
+      "fish": [35.4, 32.9, 32.7, 37.9]
+     },
+     "table": {
+      "fish": [3.96, 4.04, 3.55, 4.96]
      },
      "sells": {
       "fish": 0.2
@@ -846,10 +1012,14 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 10.0,
+     "basketADay": 10.1,
      "reserve": 52,
+     "purse": 124,
      "yield": {
-      "fish": [29.1, 29.3, 26.0, 36.9]
+      "fish": [26.5, 24.7, 24.6, 28.5]
+     },
+     "table": {
+      "fish": [2.97, 3.03, 2.66, 3.72]
      },
      "sells": {
       "fish": 0.3
@@ -876,10 +1046,14 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 10.0,
+     "basketADay": 10.1,
      "reserve": 52,
+     "purse": 124,
      "yield": {
-      "fish": [29.1, 29.3, 26.0, 36.9]
+      "fish": [26.5, 24.7, 24.6, 28.5]
+     },
+     "table": {
+      "fish": [2.97, 3.03, 2.66, 3.72]
      },
      "sells": {
       "fish": 0.3
@@ -906,11 +1080,16 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 31.2,
+     "basketADay": 31.4,
      "reserve": 72,
+     "purse": 181,
      "yield": {
-      "fish": [24.2, 24.4, 21.7, 30.8],
-      "shellfish": [45.5, 30.7, 34.9, 57.0]
+      "fish": [22.1, 20.6, 20.5, 23.7],
+      "shellfish": [42.2, 37.3, 39.1, 71.1]
+     },
+     "table": {
+      "fish": [2.47, 2.53, 2.22, 3.1],
+      "shellfish": [4.83, 3.24, 3.69, 5.99]
      },
      "sells": {
       "fish": 0.5,
@@ -938,11 +1117,16 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 31.2,
+     "basketADay": 31.4,
      "reserve": 72,
+     "purse": 181,
      "yield": {
-      "fish": [24.2, 24.4, 21.7, 30.8],
-      "shellfish": [45.5, 30.7, 34.9, 57.0]
+      "fish": [22.1, 20.6, 20.5, 23.7],
+      "shellfish": [42.2, 37.3, 39.1, 71.1]
+     },
+     "table": {
+      "fish": [2.47, 2.53, 2.22, 3.1],
+      "shellfish": [4.83, 3.24, 3.69, 5.99]
      },
      "sells": {
       "fish": 0.5,
@@ -970,11 +1154,16 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 31.2,
+     "basketADay": 31.4,
      "reserve": 72,
+     "purse": 181,
      "yield": {
-      "fish": [24.2, 24.4, 21.7, 30.8],
-      "shellfish": [45.5, 30.7, 34.9, 57.0]
+      "fish": [22.1, 20.6, 20.5, 23.7],
+      "shellfish": [42.2, 37.3, 39.1, 71.1]
+     },
+     "table": {
+      "fish": [2.47, 2.53, 2.22, 3.1],
+      "shellfish": [4.83, 3.24, 3.69, 5.99]
      },
      "sells": {
       "fish": 0.5,
@@ -1002,11 +1191,16 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 31.2,
+     "basketADay": 31.4,
      "reserve": 72,
+     "purse": 181,
      "yield": {
-      "fish": [24.2, 24.4, 21.7, 30.8],
-      "shellfish": [45.5, 30.7, 34.9, 57.0]
+      "fish": [22.1, 20.6, 20.5, 23.7],
+      "shellfish": [42.2, 37.3, 39.1, 71.1]
+     },
+     "table": {
+      "fish": [2.47, 2.53, 2.22, 3.1],
+      "shellfish": [4.83, 3.24, 3.69, 5.99]
      },
      "sells": {
       "fish": 0.5,
@@ -1020,7 +1214,7 @@
    "id": "honey",
    "name": "honey",
    "goods": ["honey", "beeswax"],
-   "on": false,
+   "on": null,
    "yieldScale": 100,
    "crewScale": 100,
    "wages": {
@@ -1029,7 +1223,7 @@
    },
    "price": "season",
    "priceFactor": null,
-   "revenueADay": [150.5, 142.5, 140.8, 130.8],
+   "revenueADay": [151.0, 142.9, 141.2, 131.2],
    "wolvesItCanPay": 15,
    "farms": [
     {
@@ -1052,11 +1246,15 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 21.1,
+     "basketADay": 21.2,
      "reserve": 52,
+     "purse": 124,
      "yield": {
-      "honey": [24.2, 29.6, 28.4, 19.7],
-      "beeswax": [0.4, 0.2, 0.2, 0.4]
+      "honey": [24.3, 29.7, 28.5, 19.7],
+      "beeswax": [0.5, 0.3, 0.4, 0.5]
+     },
+     "table": {
+      "honey": [2.53, 3.08, 2.96, 1.97]
      },
      "sells": {
       "honey": 1,
@@ -1084,11 +1282,15 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 21.1,
+     "basketADay": 21.2,
      "reserve": 52,
+     "purse": 124,
      "yield": {
-      "honey": [24.2, 29.6, 28.4, 19.7],
-      "beeswax": [0.4, 0.2, 0.2, 0.4]
+      "honey": [24.3, 29.7, 28.5, 19.7],
+      "beeswax": [0.5, 0.3, 0.4, 0.5]
+     },
+     "table": {
+      "honey": [2.53, 3.08, 2.96, 1.97]
      },
      "sells": {
       "honey": 1,
@@ -1116,11 +1318,15 @@
       "keeper": null,
       "hand": null
      },
-     "basketADay": 21.1,
+     "basketADay": 21.2,
      "reserve": 52,
+     "purse": 124,
      "yield": {
-      "honey": [24.2, 29.6, 28.4, 19.7],
-      "beeswax": [0.4, 0.2, 0.2, 0.4]
+      "honey": [24.3, 29.7, 28.5, 19.7],
+      "beeswax": [0.5, 0.3, 0.4, 0.5]
+     },
+     "table": {
+      "honey": [2.53, 3.08, 2.96, 1.97]
      },
      "sells": {
       "honey": 1,
@@ -1134,7 +1340,7 @@
    "id": "salt",
    "name": "salt",
    "goods": ["salt"],
-   "on": false,
+   "on": null,
    "yieldScale": 100,
    "crewScale": 100,
    "wages": {
@@ -1143,8 +1349,8 @@
    },
    "price": "season",
    "priceFactor": null,
-   "revenueADay": [116.1, 106.8, 105.8, 114.3],
-   "wolvesItCanPay": 13,
+   "revenueADay": [116.5, 107.1, 106.1, 114.6],
+   "wolvesItCanPay": 12,
    "farms": [
     {
      "id": "salt_works_1",
@@ -1154,22 +1360,60 @@
      "terrain": ["coast", "marsh"],
      "near": ["sea", "road"],
      "footprint": {
-      "own_tiles": 2900,
+      "own_tiles": 1500,
       "shared_range_tiles": 0
      },
      "crew": {
       "keepers": 1,
-      "hands": 4
+      "hands": 2
      },
      "minHands": 2,
      "wages": {
       "keeper": null,
       "hand": null
      },
-     "basketADay": 54.8,
-     "reserve": 112,
+     "basketADay": 19.5,
+     "reserve": 72,
+     "purse": 181,
      "yield": {
-      "salt": [103.5, 94.8, 95.9, 104.8]
+      "salt": [51.9, 47.5, 48.1, 52.5]
+     },
+     "table": {
+      "salt": [5.42, 4.97, 5.01, 5.4]
+     },
+     "sells": {
+      "salt": 1
+     },
+     "store": "made all year, most in summer; kept dry in sheds"
+    },
+    {
+     "id": "salt_works_2",
+     "kind": "salt works",
+     "region": "the flats of the coast south of the city, beyond the fishing cove (sea pans, boiled over driftwood and peat)",
+     "distance": "near (within 2 cells of the city)",
+     "terrain": ["coast", "marsh"],
+     "near": ["sea", "road"],
+     "footprint": {
+      "own_tiles": 1500,
+      "shared_range_tiles": 0
+     },
+     "crew": {
+      "keepers": 1,
+      "hands": 2
+     },
+     "minHands": 2,
+     "wages": {
+      "keeper": null,
+      "hand": null
+     },
+     "basketADay": 19.5,
+     "reserve": 72,
+     "purse": 181,
+     "yield": {
+      "salt": [51.9, 47.5, 48.1, 52.5]
+     },
+     "table": {
+      "salt": [5.42, 4.97, 5.01, 5.4]
      },
      "sells": {
       "salt": 1
@@ -1231,7 +1475,7 @@
   },
   {
    "industry": "mining and metals",
-   "revenueADay": 187,
+   "revenueADay": 185,
    "workersItCanPay": 14,
    "workersPlausible": 38,
    "workersCounted": 14,
@@ -1280,7 +1524,7 @@
   },
   {
    "industry": "stone, lime, clay, sand",
-   "revenueADay": 102,
+   "revenueADay": 101,
    "workersItCanPay": 7,
    "workersPlausible": 18,
    "workersCounted": 7,
@@ -1337,7 +1581,7 @@
   },
   {
    "industry": "country workshops' goods",
-   "revenueADay": 420,
+   "revenueADay": 425,
    "workersItCanPay": 37,
    "workersPlausible": 29,
    "workersCounted": 29,

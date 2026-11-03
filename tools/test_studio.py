@@ -662,8 +662,20 @@ class SyncFlowTests(ScratchWorlds, unittest.TestCase):
                 su.execute(f'DROP DATABASE IF EXISTS ratw_{other} WITH (FORCE)')
 
 
+def unmigrate_farms(key):
+    """Takes migration 0060 back off a throwaway world (0058 and 0059 kept): as a world is until it is migrated."""
+    sql = (W.MIGRATIONS / '0058_rules.sql').read_text(encoding='utf-8')
+    manifest = sql[sql.index('CREATE OR REPLACE FUNCTION live.people_manifest'):]
+    with W.connect(key, 'owner') as conn:
+        with conn.transaction():
+            conn.execute('ALTER TABLE live.economy DROP COLUMN farms')
+            conn.execute(manifest)
+            conn.execute("DELETE FROM public.schema_migrations WHERE version = '0060'")
+
+
 def unmigrate_rules(key):
-    """Takes migration 0058 back off a throwaway world (0057 kept): as a world is until it is migrated."""
+    """Takes migrations 0060 and 0058 back off a throwaway world (0057 kept): as a world is until it is migrated."""
+    unmigrate_farms(key)
     sql = (W.MIGRATIONS / '0057_seasons.sql').read_text(encoding='utf-8')
     manifest = sql[sql.index('CREATE OR REPLACE FUNCTION live.people_manifest'):]
     with W.connect(key, 'owner') as conn:
@@ -727,6 +739,10 @@ class StandInEconomy:
         self.calls.append(('set_services', key, data, editor))
         return {'changed': True, 'detail': 'The services: groom_and_trim on false.'}
 
+    def set_farms(self, key, data, editor):
+        self.calls.append(('set_farms', key, data, editor))
+        return {'changed': True, 'detail': 'The farms: grain yieldScale 120.'}
+
     def queue_sync(self, key, who):
         self.calls.append(('queue_sync', key, who))
         return 7
@@ -789,28 +805,30 @@ class EconomyRouteTests(unittest.TestCase):
         live = W.live_world()
         bodies = {'store': {'resaleMarkup': 60}, 'loop': {'gateToll': 25}, 'goods': {'set': {'fish': False}},
                   'seasons': {'set': {'grain': {'supply': [50, 100, 150, 40]}}}, 'comforts': {'comfortsAbove': 40},
-                  'rules': {'set': {'almsADay': 12}}, 'services': {'set': {'groom_and_trim': {'on': False}, 'stabling': None}}}
+                  'rules': {'set': {'almsADay': 12}}, 'services': {'set': {'groom_and_trim': {'on': False}, 'stabling': None}},
+                  'farms': {'set': {'areas': {'grain': {'yieldScale': 120}}}}}
         for route, body in bodies.items():
             self.assertEqual(self.call('POST', f'/api/dm/economy/{route}', body, token='viewer-token')[0], 403, route)
             status, data = self.call('POST', f'/api/dm/economy/{route}', dict(body), token='dm-token')
             self.assertEqual(status, 200, (route, data))
             self.assertEqual(data['sync'], 7, 'queued for the running server')
         named = {'store': 'set_store', 'loop': 'set_loop', 'goods': 'set_goods', 'seasons': 'set_seasons', 'comforts': 'set_comforts',
-                 'rules': 'set_rules', 'services': 'set_services'}
+                 'rules': 'set_rules', 'services': 'set_services', 'farms': 'set_farms'}
         for route, body in bodies.items():
             self.assertIn((named[route], live, body, 'dm-user'), self.economy.calls, route)
-        self.assertEqual([c for c in self.economy.calls if c[0] == 'queue_sync'], [('queue_sync', live, 'dm-user')] * 7)
+        self.assertEqual([c for c in self.economy.calls if c[0] == 'queue_sync'], [('queue_sync', live, 'dm-user')] * 8)
         logged = [(world, action, target) for name, (who, world, action, target, _) in self.dm.calls if name == 'log']
         self.assertEqual(logged, [(live, 'economy.store', 'store room'), (live, 'economy.loop', 'city loop'),
                                   (live, 'economy.goods', 'the Country\'s goods'), (live, 'economy.seasons', 'grain'),
                                   (live, 'economy.comforts', 'comforts'), (live, 'economy.rules', 'almsADay'),
-                                  (live, 'economy.services', 'services')])
+                                  (live, 'economy.services', 'services'), (live, 'economy.farms', 'grain')])
         self.assertEqual(self.call('POST', '/api/dm/economy/businesses', {'set': {'x': False}}, token='dm-token')[0], 404,
                          'a business\'s own switch stays Atlas\'s')
         editor = {'X-RATW-Editor': self.host.atlas_token()}
         status, data = self.call('POST', '/api/atlas/economy/seasons', {'set': {'grain': None}}, token='dm-token', headers=editor)
         self.assertEqual((status, data.get('sync')), (200, 7), data)
-        for route, body in (('rules', {'set': {'treasuryCap': None}}), ('services', {'set': {'cart_hire': {'every': 30}}})):
+        for route, body in (('rules', {'set': {'treasuryCap': None}}), ('services', {'set': {'cart_hire': {'every': 30}}}),
+                            ('farms', {'set': {'start': 0}})):
             status, data = self.call('POST', f'/api/atlas/economy/{route}', body, token='dm-token', headers=editor)
             self.assertEqual((status, data.get('sync')), (200, 7), (route, data))
             self.assertIn((f'set_{route}', 'dev-old', body, 'dm-user'), self.economy.calls)
@@ -1011,6 +1029,106 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
                            ('services', {'set': {'groom_and_trim': {'price': 0}}}), ('services', {'set': {'groom_and_trim': {'colour': 1}}}),
                            ('services', {'set': {'groom_and_trim': {'on': 'no'}}})):
             self.assertEqual(self.call('POST', f'/api/atlas/economy/{route}', bad, token='dm-token', headers=editor)[0], 400, (route, bad))
+
+    def test_the_farms(self):
+        # Doc 71, 4 (migration 0060): country_farms.json's farms beside the world's changes; what reaches the NPC records;
+        # economy.sync queued; the DM's too; back to country_farms.json's; refusals; the farms from the world's save.
+        status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
+        self.assertEqual(status, 200, data)
+        self.assertTrue(data['farmsSupported'])
+        self.assertEqual(data['farms'], {})
+        d = data['farmDefaults']
+        self.assertEqual((d['start'], d['every'], d['keeper'], d['hand'], len(d['areas'])), (-1, 28, 16, 10, 6))
+        grain = next(a for a in d['areas'] if a['id'] == 'grain')
+        self.assertEqual(([f['id'] for f in grain['farms']], grain['price'], grain['priceFactor']),
+                         (['grain_farm_1', 'grain_farm_2'], 'year', 101))
+        self.assertEqual(len(grain['farms'][0]['yield']['flour']), 4, 'a good\'s four middle-day values')
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        body = {'set': {'start': 0, 'every': 30, 'areas': {'grain': {'on': True, 'yieldScale': 120}},
+                        'farms': {'grain_farm_1': {'hand': 11}}}}
+        status, data = self.call('POST', '/api/atlas/economy/farms', body, token='dm-token', headers=editor)
+        self.assertEqual(status, 200, data)
+        self.assertEqual(data['farms'], {'start': 0, 'every': 30, 'areas': {'grain': {'on': True, 'yieldScale': 120}},
+                                         'farms': {'grain_farm_1': {'hand': 11}}})
+        status, data = self.call('POST', '/api/atlas/economy/farms', {'set': {'areas': {'grain': {'crewScale': 150}}}},
+                                 token='dm-token', headers=editor)
+        self.assertEqual(data['farms']['areas']['grain'], {'on': True, 'yieldScale': 120, 'crewScale': 150}, 'the rest as it was')
+        lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
+        self.assertIn('farms start 0 every 30 order - wages - -', lines)
+        self.assertIn('farmarea "grain" on on yield 120 crew 150 wages - - factor -', lines)
+        self.assertIn('farm "grain_farm_1" yield - crew - wages - 11', lines)
+        queued = self.sql(self.dev, "SELECT kind FROM dm.actions WHERE kind = 'economy.sync'")
+        self.assertEqual(len(queued), 2, 'each change sent to the running server')
+        status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.dev, 'set': {'keeper': 17}}, token='dm-token')
+        self.assertEqual((status, data['farms'].get('keeper')), (200, 17), data)
+        self.assertIn('economy.farms', [r[0] for r in self.sql(self.dev, 'SELECT action FROM dm.audit')])
+        # Back to country_farms.json's: no record, nothing kept.
+        status, data = self.call('POST', '/api/atlas/economy/farms', {'set': {'start': None, 'every': None, 'keeper': None,
+                                 'areas': {'grain': None}, 'farms': {'grain_farm_1': {'hand': None}}}}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['farms']), (200, {}), data)
+        self.assertEqual(self.one(self.dev, 'SELECT farms FROM live.economy'), {})
+        lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
+        self.assertFalse([l for l in lines if l.startswith(('farms ', 'farmarea ', 'farm '))], lines)
+        for bad in ({'set': {'start': -2}}, {'set': {'every': 0}}, {'set': {'order': ['grain', 'grain']}},
+                    {'set': {'areas': {'gardens': {'on': True}}}}, {'set': {'areas': {'grain': {'yieldScale': 1001}}}},
+                    {'set': {'areas': {'grain': {'on': 'yes'}}}}, {'set': {'farms': {'grain_farm_9': {'hand': 1}}}},
+                    {'set': {'luck': 1}}, {'set': {'areas': []}}, {'start': 0}):
+            self.assertEqual(self.call('POST', '/api/atlas/economy/farms', bad, token='dm-token', headers=editor)[0], 400, bad)
+        # The farms on the world's game, as its save has them.
+        self.sql(self.dev, 'DELETE FROM game.checkpoints')
+        status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
+        self.assertIn('no save', data['farmsSaved']['problem'])
+        accounts = {'farm:grain_farm_1': {'cash': 140, 'stock': {'flour': 300, 'oats': 200}}, 'crew:grain_farm_1': {'cash': 296, 'stock': {}}}
+        self.sql(self.dev, "INSERT INTO game.checkpoints (world_id, schema_version, revision, payload) VALUES ('greyfen', 1, 1, %s)",
+                 (json.dumps({'society': {'accounts': accounts}}),))
+        status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
+        self.assertEqual(data['farmsSaved']['farms'], {'grain_farm_1': {'till': 140, 'stock': 500, 'goods': {'flour': 300, 'oats': 200},
+                                                                        'crewPurse': 296}})
+
+    def test_a_farm_country_farms_json_no_longer_has(self):
+        # Doc 71, 4: a world's setting for a farm the file no longer has (regenerated with fewer farms: their ids are
+        # numbered by count) is kept, as Core keeps it, and blocks nothing: the other economy routes and the farms' own
+        # still change, on the dev world (the edit log) and the live one (the row); a change may not name it, but may
+        # clear it.
+        stale = {'farms': {'orchard_9': {'hand': 11}}}
+        for key in (self.dev, self.live):
+            self.sql(key, 'UPDATE live.economy SET farms = %s', (json.dumps(stale),))
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': 12}}, token='dm-token', headers=editor)
+        self.assertEqual((status, data.get('rules')), (200, {'almsADay': 12}), data)
+        status, data = self.call('POST', '/api/atlas/economy/farms', {'set': {'areas': {'grain': {'yieldScale': 120}}}},
+                                 token='dm-token', headers=editor)
+        self.assertEqual((status, data.get('farms')), (200, {**stale, 'areas': {'grain': {'yieldScale': 120}}}), data)
+        status, data = self.call('POST', '/api/dm/economy/rules', {'world': self.live, 'set': {'almsADay': 13}}, token='dm-token')
+        self.assertEqual(status, 200, data)
+        status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.live, 'set': {'keeper': 17}}, token='dm-token')
+        self.assertEqual((status, data.get('farms')), (200, {**stale, 'keeper': 17}), data)
+        self.assertIn('farm "orchard_9" yield - crew - wages - 11', self.one(self.live, "SELECT live.people_manifest('greyfen')").split('\n'))
+        for bad in ({'farms': {'orchard_9': {'hand': 12}}}, {'areas': {'gardens': {'on': True}}}, {'order': ['grain', 'gardens']}):
+            status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.live, 'set': bad}, token='dm-token')
+            self.assertEqual(status, 400, (bad, data))
+            self.assertIn('names nothing country_farms.json has', data['error'])
+        status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.live, 'set': {'farms': {'orchard_9': None}}},
+                                 token='dm-token')
+        self.assertEqual((status, data.get('farms')), (200, {'keeper': 17}), data)
+
+    def test_a_world_without_migration_0060(self):
+        unmigrate_farms(self.dev)
+        status, data = self.call('GET', '/api/atlas/economy', token='dm-token')
+        self.assertEqual(status, 200, data)
+        self.assertTrue(data['rulesSupported'])
+        self.assertFalse(data['farmsSupported'])
+        self.assertIn('lacks migration 0060', data['farmsProblem'])
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        body = {'set': {'start': 0}}
+        status, data = self.call('POST', '/api/atlas/economy/farms', body, token='dm-token', headers=editor)
+        self.assertEqual(status, 409, data)
+        self.assertIn('0060', data['error'])
+        status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.dev, **body}, token='dm-token')
+        self.assertEqual(status, 409, data)
+        self.assertIn('0060', data['error'])
+        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': 12}}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['rules']), (200, {'almsADay': 12}), 'the rules still change on a world with 0058')
 
     def test_where_the_self_correcting_rules_stand(self):
         # Doc 68, Progress, "Self-correcting rules": what they have drifted to, read only, from the world's save.

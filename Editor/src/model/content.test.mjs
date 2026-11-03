@@ -133,6 +133,21 @@ test('the rules\' and services\' economy keys are optional, checked and kept (do
     assert.equal(p.economy.rules.almsADay, 12, 'unchanged after a rejected edit');
 });
 
+test('the farms\' economy key is optional, checked and kept (doc 71, 4; migration 0060)', () => {
+    const p = world();
+    const farms = {start: 0, every: 30, order: ['salt', 'grain'], keeper: 17,
+        areas: {grain: {on: true, yieldScale: 120, crewScale: 150, hand: 11, priceFactor: 105}}, farms: {grain_farm_1: {yieldScale: 90}}};
+    setEconomy(p, {farms});
+    assert.deepEqual(validate(p).errors, []);
+    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
+    for (const bad of [{farms: []}, {farms: {luck: 1}}, {farms: {start: -2}}, {farms: {every: 0}}, {farms: {order: ['grain', 'grain']}},
+                       {farms: {order: []}}, {farms: {keeper: 1001}}, {farms: {areas: {grain: {on: 1}}}},
+                       {farms: {areas: {grain: {yieldScale: 1001}}}}, {farms: {areas: {grain: {priceFactor: 5}}}},
+                       {farms: {areas: {grain: {colour: 1}}}}, {farms: {farms: {grain_farm_1: {on: true}}}}, {farms: {farms: {'Farm!': {}}}}])
+        assert.throws(() => setEconomy(p, bad), /farms|Economy requires/, JSON.stringify(bad));
+    assert.equal(p.economy.farms.keeper, 17, 'unchanged after a rejected edit');
+});
+
 test('economy, herb patch and movePlace validate atomically', () => {
     const p = world(), spot = {cell: p.cells[0].id, x: 3, y: 3};
     setEconomy(p, {treasury: 500});

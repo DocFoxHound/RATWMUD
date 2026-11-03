@@ -41,14 +41,20 @@ SEASON_COLUMNS = {'comfortsAbove': 'comforts_above', 'comfortsShare': 'comforts_
 # {service: {on, price, every}}, only what this world has changed ({}: all as Data/Items/country.json has them).
 RULE_DEFAULTS = map_editor.RULE_DEFAULTS
 RULE_COLUMNS = {'rules': 'rules', 'services': 'services'}
+# The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): what this world has changed of
+# Data/Economy/country_farms.json's ({}: all as the file has them).
+FARM_DEFAULTS = map_editor.FARM_DEFAULTS
+FARM_COLUMNS = {'farms': 'farms'}
 DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'dailyHerbs': 10, 'dailyMeals': 12,
-                   **STORE_DEFAULTS, 'businesses': {}, **LOOP_DEFAULTS, **SEASON_DEFAULTS, **RULE_DEFAULTS}
+                   **STORE_DEFAULTS, 'businesses': {}, **LOOP_DEFAULTS, **SEASON_DEFAULTS, **RULE_DEFAULTS, **FARM_DEFAULTS}
 NO_STORE = 'this world lacks migration 0055 (python3 tools/world_db.py migrate --db KEY): its store room stays at its defaults'
 NO_LOOP = 'this world lacks migration 0056 (python3 tools/world_db.py migrate --db KEY): its city loop stays at its defaults'
 NO_SEASONS = ('this world lacks migration 0057 (python3 tools/world_db.py migrate --db KEY): its seasons and comforts stay '
               'as Data/Items/country.json has them')
 NO_RULES = ('this world lacks migration 0058 (python3 tools/world_db.py migrate --db KEY): its rules and services stay '
             'as Data/Items/country.json has them')
+NO_FARMS = ('this world lacks migration 0060 (python3 tools/world_db.py migrate --db KEY): its farms stay as '
+            'Data/Economy/country_farms.json has them')
 HERB_PATCH = 'herb_patch'
 
 
@@ -111,10 +117,13 @@ TABLES = {
                                                    'evening_area', 'evening_x', 'evening_y')),
     'live.economy': (('world_id',), ('world_id', 'treasury', 'store_herbs', 'store_meals', 'daily_herbs', 'daily_meals',
                                      *STORE_COLUMNS.values(), *LOOP_COLUMNS.values(), *SEASON_COLUMNS.values(),
-                                     *RULE_COLUMNS.values())),
+                                     *RULE_COLUMNS.values(), *FARM_COLUMNS.values())),
     # A business kept out of the store room (doc 67, 6): a row only while it is off.
     'live.business_settings': (('world_id', 'npc_id'), ('world_id', 'npc_id', 'internal_store')),
 }
+# A world with migration 0058 but not 0060: the rules' columns, not the farms'.
+RULE_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][
+    :6 + len(STORE_COLUMNS) + len(LOOP_COLUMNS) + len(SEASON_COLUMNS) + len(RULE_COLUMNS)])}
 # A world with migration 0057 but not 0058: the seasons' columns, not the rules'.
 SEASON_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][
     :6 + len(STORE_COLUMNS) + len(LOOP_COLUMNS) + len(SEASON_COLUMNS)])}
@@ -161,16 +170,25 @@ def rules_supported(conn) -> bool:
                AND column_name = ANY(%s)""", (len(RULE_COLUMNS), list(RULE_COLUMNS.values()))).fetchone()[0])
 
 
+def farms_supported(conn) -> bool:
+    """Whether this world has migration 0060 (the farms' column)."""
+    return bool(conn.execute("""
+        SELECT count(*) = %s FROM information_schema.columns WHERE table_schema = 'live' AND table_name = 'economy'
+               AND column_name = ANY(%s)""", (len(FARM_COLUMNS), list(FARM_COLUMNS.values()))).fetchone()[0])
+
+
 def tables_for(conn) -> dict:
-    """The tables (and columns) this world's database has: TABLES, SEASON_TABLES without migration 0058, LOOP_TABLES
-    without 0057, STORE_TABLES without 0056, or LEGACY_TABLES without 0055."""
+    """The tables (and columns) this world's database has: TABLES, RULE_TABLES without migration 0060, SEASON_TABLES
+    without 0058, LOOP_TABLES without 0057, STORE_TABLES without 0056, or LEGACY_TABLES without 0055."""
     if not store_supported(conn):
         return LEGACY_TABLES
     if not loop_supported(conn):
         return STORE_TABLES
     if not seasons_supported(conn):
         return LOOP_TABLES
-    return TABLES if rules_supported(conn) else SEASON_TABLES
+    if not rules_supported(conn):
+        return SEASON_TABLES
+    return TABLES if farms_supported(conn) else RULE_TABLES
 
 
 def loop_differs(economy) -> bool:
@@ -191,16 +209,24 @@ def rules_differ(economy) -> bool:
     return any(comparable(e.get(k, v)) != comparable(v) for k, v in RULE_DEFAULTS.items())
 
 
+def farms_differ(economy) -> bool:
+    """Whether an economy entity sets the farms (which need migration 0060)."""
+    e = economy or {}
+    return any(comparable(e.get(k, v)) != comparable(v) for k, v in FARM_DEFAULTS.items())
+
+
 def loop_refused(tables, economy) -> str | None:
     """Why these settings can't be stored in a world with these tables, or None."""
     if tables is LEGACY_TABLES and store_differs(economy):
         return NO_STORE
     if tables in (LEGACY_TABLES, STORE_TABLES) and loop_differs(economy):
         return NO_LOOP
-    if tables is not TABLES and tables is not SEASON_TABLES and seasons_differ(economy):
+    if tables not in (TABLES, RULE_TABLES, SEASON_TABLES) and seasons_differ(economy):
         return NO_SEASONS
-    if tables is not TABLES and rules_differ(economy):
+    if tables not in (TABLES, RULE_TABLES) and rules_differ(economy):
         return NO_RULES
+    if tables is not TABLES and farms_differ(economy):
+        return NO_FARMS
     return None
 
 
@@ -209,7 +235,7 @@ def store_differs(economy) -> bool:
     e = economy or {}
     return (any(e.get(k, v) != v for k, v in STORE_DEFAULTS.items())
             or any(isinstance(s, dict) and s.get('internalStore') is False for s in (e.get('businesses') or {}).values()))
-JSON_COLUMNS = {'heights', 'appearance', 'letting', 'subsidies', 'seasons', 'rules', 'services'}
+JSON_COLUMNS = {'heights', 'appearance', 'letting', 'subsidies', 'seasons', 'rules', 'services', 'farms'}
 
 
 def comparable(value):
@@ -317,10 +343,11 @@ def slot_row(w, s, position):
             *npc_place(s['home']), *npc_place(s['work']), *npc_place(s['evening']))
 
 
-def economy_row(w, economy, store=True, loop=None, seasons=None, rules=None):
+def economy_row(w, economy, store=True, loop=None, seasons=None, rules=None, farms=None):
     """A live.economy row; with `store` (a world with migration 0055), the store room's switches and markups too; with
     `loop` (0056; as `store` unless said), the city loop's settings; with `seasons` (0057; as `loop` unless said), the
-    seasons' and the comforts'; with `rules` (0058; as `seasons` unless said), the rules' and the services'."""
+    seasons' and the comforts'; with `rules` (0058; as `seasons` unless said), the rules' and the services'; with `farms`
+    (0060; as `rules` unless said), the farms'."""
     e = {**DEFAULT_ECONOMY, **(economy or {})}
     row = (w, e['treasury'], e['storeHerbs'], e['storeMeals'], e['dailyHerbs'], e['dailyMeals'])
     if not store:
@@ -332,15 +359,19 @@ def economy_row(w, economy, store=True, loop=None, seasons=None, rules=None):
     seasons = loop if seasons is None else loop and seasons
     if seasons:
         row += tuple(copy.deepcopy(dict(e[k] or {})) if k == 'seasons' else e[k] for k in SEASON_COLUMNS)
-    if seasons and (rules is None or rules):
+    rules = seasons and (rules is None or rules)
+    if rules:
         row += tuple(copy.deepcopy(dict(e[k] or {})) for k in RULE_COLUMNS)
+    if rules and (farms is None or farms):
+        row += tuple(copy.deepcopy(dict(e[k] or {})) for k in FARM_COLUMNS)
     return row
 
 
 def economy_row_for(w, economy, tables):
     """economy_row for a world with these tables."""
-    return economy_row(w, economy, store=tables is not LEGACY_TABLES, loop=tables in (TABLES, SEASON_TABLES, LOOP_TABLES),
-                       seasons=tables in (TABLES, SEASON_TABLES), rules=tables is TABLES)
+    return economy_row(w, economy, store=tables is not LEGACY_TABLES, loop=tables in (TABLES, RULE_TABLES, SEASON_TABLES, LOOP_TABLES),
+                       seasons=tables in (TABLES, RULE_TABLES, SEASON_TABLES), rules=tables in (TABLES, RULE_TABLES),
+                       farms=tables is TABLES)
 
 
 def business_rows(w, economy):
@@ -414,7 +445,8 @@ def economy_entity(r, businesses=None):
                else copy.deepcopy(LOOP_DEFAULTS[k]) for k, c in LOOP_COLUMNS.items()},
             **{k: ((dict(r[c] or {}) if k == 'seasons' else r[c]) if c in r else copy.deepcopy(SEASON_DEFAULTS[k]))
                for k, c in SEASON_COLUMNS.items()},
-            **{k: copy.deepcopy(dict(r[c] or {})) if c in r else copy.deepcopy(RULE_DEFAULTS[k]) for k, c in RULE_COLUMNS.items()}}
+            **{k: copy.deepcopy(dict(r[c] or {})) if c in r else copy.deepcopy(RULE_DEFAULTS[k]) for k, c in RULE_COLUMNS.items()},
+            **{k: copy.deepcopy(dict(r[c] or {})) if c in r else copy.deepcopy(FARM_DEFAULTS[k]) for k, c in FARM_COLUMNS.items()}}
 
 
 def economy_value(conn, world_id):
@@ -508,7 +540,8 @@ def write_rows(conn, desired: dict[str, list[tuple]], current: dict[str, list[tu
         tables = (LEGACY_TABLES if 'live.business_settings' not in desired
                   else STORE_TABLES if economy and len(economy) == len(STORE_TABLES['live.economy'][1])
                   else LOOP_TABLES if economy and len(economy) == len(LOOP_TABLES['live.economy'][1])
-                  else SEASON_TABLES if economy and len(economy) == len(SEASON_TABLES['live.economy'][1]) else TABLES)
+                  else SEASON_TABLES if economy and len(economy) == len(SEASON_TABLES['live.economy'][1])
+                  else RULE_TABLES if economy and len(economy) == len(RULE_TABLES['live.economy'][1]) else TABLES)
     order = [t for t in WRITE_ORDER if t in tables]
     changed = 0
     plans = {}

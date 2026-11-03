@@ -5,6 +5,7 @@
 // step and straight legs are knobs a harness turns (and turns back). Given world_check's path (the first argument, as
 // ctest passes it), it also runs the harness itself with no player: an economy file a day, the same on 1 and 4 threads,
 // births and deaths in it, and no player.
+#include "RatwJsonDoc.h"
 #include "RatwPool.h"
 #include "RatwWorld.h"
 
@@ -293,6 +294,81 @@ void theHarness(const std::string& binary, const fs::path& root)
     expect(one == four, "the economy file is the same on four threads, with the profile off");
     const auto [player, playerOut] = runIt("player", "--threads 1 --players 1");
     expect(playerOut.find("1 player") != std::string::npos, "--players 1 keeps a player for a city check");
+    // The Country's food farms (doc 71, 4): switched on an area a day from day 0; each line is JSON, the farms' fields in
+    // it, the founding counted as minted and the money conserved.
+    const auto [farms, farmsOut] = runIt("farms", "--threads 1 --farms 0 --farms-every 1");
+    expect(farmsOut.find("the farms' switch: the first area on day 0") != std::string::npos, "--farms: " + farmsOut.substr(0, 400));
+    std::istringstream days(farms);
+    int day = 0;
+    for (std::string line; std::getline(days, line); ++day)
+    {
+        json::Value v;
+        std::string error;
+        expect(json::parse(line, v, error), "the farms' line is JSON: " + error);
+        expect(v.number("farms_on", -1) == day + 1, "an area more each day: " + std::to_string(v.number("farms_on", -1)));
+        expect(v["conserved"].asBool() && v.number("farms_minted") > 0 && v.number("minted") > 0, "the founding minted, conserved");
+        expect(v.has("farm_grain_stock") && v.has("treasury_low") && v.has("support_unpaid_switch") && v["farms"].isObject() &&
+                   v["farms"].has("grain_farm_1"),
+               "the farms' and the treasury's fields");
+    }
+    expect(day == 3, "a line a day");
+    // The economy's levels (doc 69, 10): off and full leave the economy file as it was; off writes no detail; full's
+    // tables (gzipped JSON lines, names numbered) add up to the economy line's totals, day by day.
+    const auto [off, offOut] = runIt("off", "--threads 1 --economy-level off --economy-detail \"" + (out / "off_detail.jsonl").string() + "\"");
+    expect(off == one && !fs::exists(out / "off_detail.jsonl"), "off: the same economy file, no detail");
+    const auto [full, fullOut] = runIt("full", "--threads 1 --farms 0 --farms-every 1 --economy-level full");
+    expect(full == farms, "full: the same economy file as without it");
+    expect(fullOut.find("economy level full: ") != std::string::npos, "full: says where its tables go");
+    const auto unzipped = out / "full_tables.jsonl";
+    const auto unzip = "gzip -dc \"" + (out / "full.jsonl.full.jsonl.gz").string() + "\" > \"" + unzipped.string() + "\"";
+    expect(std::system(unzip.c_str()) == 0, "full: its tables are gzipped");
+    std::istringstream tables(slurp(unzipped)), economy(full);
+    std::vector<std::string> names;
+    int tableDays = 0;
+    bool metaSeen = false;
+    for (std::string line; std::getline(tables, line);)
+    {
+        json::Value v;
+        std::string error;
+        expect(json::parse(line, v, error), "a table line is JSON: " + error);
+        if (v.has("meta"))
+        {
+            metaSeen = v["meta"]["columns"].has("trade") && v["meta"]["farms"].has("grain_farm_1");
+            continue;
+        }
+        for (const auto& n : v.array("names"))
+            names.push_back(n.asString());
+        std::string econLine;
+        expect(bool(std::getline(economy, econLine)), "a table line for each economy line");
+        json::Value e;
+        expect(json::parse(econLine, e, error) && e.number("day", -1) == v.number("day", -2), "the same day");
+        double households = 0, country = 0, crews = 0, draws = 0, flowsIn = 0, grown = 0;
+        for (const auto& r : v.array("trade"))
+        {
+            const auto& buyer = names.at(std::size_t(r.items()[1].asNumber()));
+            const double pennies = r.items()[4].asNumber();
+            households += buyer.rfind("hh:", 0) == 0 ? pennies : 0;
+            country += buyer == "country" ? pennies : 0;
+            crews += buyer == "crew" ? pennies : 0;
+        }
+        for (const auto& r : v.array("till"))
+            draws += r.items()[6].asNumber();
+        for (const auto& r : v.array("flow"))
+            flowsIn += names.at(std::size_t(r.items()[1].asNumber())) == "treasury" ? r.items()[2].asNumber() : 0;
+        for (const auto& r : v.array("farm_good"))
+            grown += r.items()[2].asNumber();
+        expect(households == e.number("residents_spent") + e.number("services_spent"),
+               "households' purchases are the residents' spending and services: " + std::to_string(households) + " " +
+                   std::to_string(e.number("residents_spent")));
+        expect(country == e.number("country_spent") + e.number("patrons_country"), "the Country's purchases and patrons");
+        expect(crews == e.number("farms_crew_spent"), "the crews' spending");
+        expect(draws == e.number("drawn"), "the store draws: " + std::to_string(draws) + " " + std::to_string(e.number("drawn")));
+        expect(grown == e.number("farms_grown"), "the farms' goods grown, by good, add up");
+        expect(flowsIn >= e.number("toll"), "the treasury's inflows hold the toll");
+        expect(v.array("class").size() >= 1 && v.array("farm").size() >= 1, "the classes and the farms, a row each");
+        ++tableDays;
+    }
+    expect(metaSeen && tableDays == 3, "the meta line, then a table line a day: " + std::to_string(tableDays));
     const auto [fast, fastOut] = runIt("fast", "--threads 1 --fast");
     expect(fastOut.find("unseen step 30 s") != std::string::npos && fastOut.find("straight") != std::string::npos &&
                fastOut.find("0.5 s ticks") != std::string::npos,
