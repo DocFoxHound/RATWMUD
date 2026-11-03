@@ -13,10 +13,14 @@ The user, 2026-11-03 (verbatim, by speech to text):
 This doc is the second part: what is still "the Country", and in what order to make it real. The farms' yield
 increase (the first part) is built separately, on doc 71's lane. Doc 71's Phase C open questions are partly answered
 above: the communities **stay regions until they become towns** (question 2), and the community inns' and stores'
-losses can **stay on the treasury's wage support for now** (question 1).
+losses can **stay on the treasury's wage support for now** (question 1). Keeping them regions is not free: on a restart
+`World::setupTowns` (Core/RatwRoads.cpp:112) makes any region with five residents and a market a town, and every
+community already has more than five, so Phase 0 adds a rule that it skips the communities.
 
 Builds on doc 71 (the Country's industries: the food farms, Phases A to C), doc 70 (the realm and its reserved sites),
-doc 68 (the Country and the city loop), doc 61 (the Houses' trades) and doc 66 (the unplaced pool). Iron stays the
+doc 68 (the Country and the city loop), doc 67 (the Houses' trades in Ridgemere 2.0, R21-R29) and doc 66 (the
+unplaced pool). Doc 61's trades are the old map's: in Ridgemere 2.0 **Greatly** is construction (R25), **Fell** fine
+wines, liquors and fruit goods (R27), **Grayrock** owns the wharf (R28) and **Timberland** the city's forges (R29). Iron stays the
 Country's (the user, doc 71: "right now iron will remain in the Country").
 
 **How it was measured.** All money is the mean of a day over **years 2 and 3 of `people3`** (the first 3-year run with
@@ -25,25 +29,29 @@ marked. The Country's intake is what it keeps **after the gate toll** (30%, to t
 therefore 3/7 of the Country's intake from it. The reserved sites and distances are from `artifacts/realm2/realm-report.json`
 (as built) and `Data/Economy/communities.json`. The unplaced people were read once from DEV's `live.npcs` (read only,
 rolled back). **No simulation was run and nothing was written to DEV** for this doc. The aggregation scripts are in the
-session's scratchpad (`country_next/agg.py`, `flows2.py`, `daymeans.py`, `dist.py`, `group.py`).
+session's scratchpad (`country_next/agg.py`, `flows2.py`, `daymeans.py`, `dist.py`, `group.py`; `season23b.py` for
+section 3's seasons).
 
 ## Headline
 
 - **The food has left the Country.** It sells no food and its basket buys no food or drink. What is left is **1,393p a
   day** of non-food goods (3,429p before the farms), against **824p a day of posts** it pays to about 100 people.
 - **The largest piece left is the woods: 436p**, nearly all firewood (283p, 450 pieces a day, 586 in winter). Firewood
-  is the city's only fuel: households also want about **301 peat a day that nobody sells**.
+  is the city's only fuel: households' fuel need takes firewood **or peat**, but nobody cuts peat, so firewood fills it
+  all.
 - **The Country's posts are the blocker, not the crews.** Every industry moved out takes takings from the payer of those
   100 posts. With nothing else changed, the woods alone cut the Country's buy-back of city goods from 569p to about
-  160p; the woods with stone and fibre leave it unable to pay its posts.
+  160p; the woods with stone and fibre leave it unable to pay its posts in summer.
 - **Recommended: the estates' rent.** Each new works pays its crew at the farms' fixed wages and pays **what is over to
   the House that holds its land**. At first that is the Country's own purse, relabelled "the Houses' estates", so the
   posts keep their payer and only the crews' wages leave it. Those wages are spent in the city's shops.
 - **Recommended order**: (1) herbs and fibre onto the food farms that already exist; (2) **fuel**: two logging camps,
-  two coppices with a charcoal hearth, and a peat cutting; (3) stone, lime, clay and sand; (4) the city's makers first
-  for craft inputs; (5) the country workshops, when the communities become towns; later, iron.
-- **What stays the Country**: iron and metals (for now), the sea trade (the wharf's carriers, the ships' goods and the
-  city's exports), the arrivals and their purses, and the unplaced pool.
+  two coppices with a charcoal hearth, and a peat cutting (a second fuel, in place of part of the firewood); (3) stone,
+  clay and sand (the lime quarry is too far from any home, 4.4); (4) the city's makers first for craft inputs (new
+  `suppliers` entries only); (5) the country workshops, when the communities become towns; later, iron.
+- **What stays the Country**: iron and metals (for now), limestone and lime (for now), the ships' goods from beyond
+  the realm and the city's exports, the arrivals and their purses, and the unplaced pool. The wharf's posts are
+  Grayrock's (doc 67 R28): the Country pays them only until the estates are split (Phase 6).
 
 ## 1. What the Country still is
 
@@ -100,8 +108,9 @@ Houses' rule by their labels; the rest of the Houses' people are matched in the 
 - **Its money a day**: in 1,393p; out 824p posts, 569p basket, 1p carriage.
 - **Its purse** averages 391p (1p to 572p). That is always under its reserve plus tonight's wages (~1,023p), so
   **`patronsBuy` never has spare cash**: the Country's patrons (the Houses' retainers at the armoury, their halls at the
-  builders' yard, the wharf's hulls at the shipwright) fell from 50p a day to **0** from year 2. The shipwright is a
-  till short of its wages (17,696p over 3 years).
+  builders' yard, the wharf's hulls at the shipwright) fell from ~50p a day to **0 within the first ~80 days of year 1**
+  (the last on day 83; 7.6p a day over year 1) and stayed at 0. The shipwright is a till short of its wages (17,696p
+  over 3 years).
 - **Its basket is what gives.** Wages come first, so every penny of intake lost comes off the basket (1b).
 - **Arrivals** (about 4 a year) and the community markets' people get their purses (up to 30p) from the Country's purse.
   The ~369 unplaced NPCs are the Country's people too.
@@ -114,9 +123,10 @@ it can't take over posts of any size without a new source (open question 1).
 
 ### 1e. Wanted and short outside the farms
 
-- **Peat**: households want about **301 a day** (middle 182, lower 103, upper 16) and none is sold, on all 1,096 days.
-  `crafts.json` has the producer ("cuts peat", 4 peat a spell, line 145) and the need ("any firewood or peat", line
-  208), but no post makes it. Firewood is bought instead.
+- **Peat**: the run reports households wanting about **301 a day** (middle 182, lower 103, upper 16) and none sold, on
+  all 1,096 days. That is not a shortage: the need is "any firewood or peat" (`crafts.json` line 208), and firewood
+  meets it (the ~450 firewood a day, 586 in winter). `crafts.json` also has the producer ("cuts peat", 4 peat a spell,
+  line 145), but no post makes it. Peat would be **a second fuel in place of part of the firewood**, not a want filled.
 - **Tallow candles**: short by about 28 a day and pinned at the top of the price band 78% of the time, while **the farms
   pile tallow**. The chandlery makes them from tallow and cord; the cord comes from the Country's hemp.
 - **Linen neckerchiefs**: short by about 11 a day.
@@ -158,20 +168,26 @@ hands with city households of their class (doc 68's arrivals' rule).
 | now | 1,393 | 824 | 569 |
 | + herbs and fibre to the farms (Phase 1) | 1,339 | 824 | 515 |
 | + fuel out, **no rent** | 933 | 824 | 109 |
-| + stone out, no rent | 810 | 824 | **-14: posts unpaid** |
+| + stone, clay and sand out, no rent | 836 | 824 | **12: posts unpaid in summer** |
 | + fuel out, **with the estates' rent** (Phase 2) | 1,159 | 824 | 335 |
-| + stone, with rent (Phase 3) | 1,077 | 824 | 253 |
-| + the city makers first for craft inputs (Phase 4) | 890 | 824 | **66: too thin** (summer's intake runs ~150p under the year's mean) |
+| + stone, clay and sand, with rent (Phase 3) | 1,103 | 824 | 279 |
+| + the city makers first for craft inputs (Phase 4) | 916 | 824 | **92: too thin** (summer's intake runs ~65p under the year's mean: 852p, so ~28p over its posts) |
+
+Today summer's intake is 1,306p against the year's 1,393p (87p under). The Phase 4 row's seasons: spring 871, summer
+852, autumn 923, winter 1,021 (the kept goods, plus the fuel's and the pits' takings less their crews' fixed wages;
+`season23b.py`). Limestone and lime (26p) stay the Country's in every row (4.4).
 
 **Options for the payer**, from the least change:
 
 1. **The estates' rent (recommended).** A works' till pays its crew's fixed wages, keeps a reserve (two days' wages),
    and pays the rest each night to the House that holds its land. At first all Houses share one purse: the Country's,
    relabelled in reports "the Houses' estates and the sea trade" (`outside:country` unchanged in code). The Country then
-   loses only the new crews' wages, which come back to the city's shops as the crews' spending. Doc 61 already gives the
-   Houses their trades: **Fell** timber and woodwork (the woods, the fuel), **Greatly** building materials (the quarries,
-   the clay; `quarry_granite` is already marked Greatly's), **Grayrock** stone and iron (iron, later). Phase 6 can split
-   the one purse into each House's estate, each paying its own people.
+   loses only the new crews' wages, which come back to the city's shops as the crews' spending. The Houses' trades are
+   doc 67's (R25-R29): **Greatly** construction (the quarries and the clay pits; `quarry_granite` is already marked
+   Greatly's), **Timberland** the city's forges (the iron, later, and the Timberland Sawmill), **Grayrock** the wharf
+   (its ~56 posts), **Fell** wine and fruit (no works here). **Who holds the woods is not decided** (open question 11;
+   recommended Timberland, whose sawmill and forges take the timber and charcoal). Phase 6 can split the one purse
+   into each House's estate, each paying its own people, the wharf's posts from Grayrock's.
 2. **The treasury pays the wharf** (the Wharf Office is a public office). ~448p a day against a surplus of 124p: the
    treasury would go under its float without a higher toll. Not recommended.
 3. **Fewer posts**: cut the wharf's and the Houses' posts as industries leave (the ships unload less once goods come by
@@ -184,8 +200,10 @@ basket), done through the Country's existing basket instead of a new one.
 
 **The treasury.** The new works sell through the store room at the gate like the farms, so **the toll is unchanged** in
 Phases 1-3. Phase 4 loses the toll on the goods routed till to till (~80p a day). The real risk is the wage support:
-makers that only the Country buys from (paper, steel, rivets, glass beads, maps, handbells: ~340p of the 569p) go short
-as its basket shrinks, and the treasury pays their wages down to the drift's floor.
+makers that only the Country buys from go short as its basket shrinks, and the treasury pays their wages down to the
+drift's floor: paper, steel, rivets, glass beads, maps and handbells are ~238p of the 569p; every good where the Country
+is 84-100% of the buyers (those six, ink, leather bindings, ledger, mining pick, charm, tin and bronze bars, masking oil,
+linseed oil, paint, ear rings) comes to ~400p.
 
 ## 4. The industries, one by one
 
@@ -212,28 +230,34 @@ labour (doc 71): each works' yield is set from people3's draws plus 5%, then tun
 | What stays the Country's | linen cloth (82p) and cord (20p) are made goods: the city's weaver makes linen from flax and the chandlery cord from hemp. They move in Phase 4. |
 | Shops | ropewalk, chandlery, weaver and paintworks draw from the farms. Cheaper cord helps the chandlery's tallow candles (1e). |
 
-### 4.3 Fuel: the woods and peat (House Fell)
+### 4.3 Fuel: the woods and peat (the holder: open question 11)
 
 The map has five timber cuts and two charcoal hearths reserved, but **no coppice, sawmill or peat site**. The city
-already has its own sawmill (Fell's) and charcoal works, so **no country sawmills** are needed: planks come from the
-city's sawmill (Phase 4).
+already has its own sawmill (the Timberland Sawmill since doc 67's renames; its id is still `rm_the_fell_sawmill`) and
+charcoal works, so **no country sawmills** are needed: planks come from the city's sawmill (Phase 4).
 
 | Works | Site (as built) | Goods | Crew | Lives in | Walk |
 |---|---|---|---|---|---|
 | Rainwood logging camp | `timber_rainwood` (652,1092) | timber, firewood, oak bark, resin | 1 + 3 | **Ridgemere** | ~470 from the South Gate |
 | Front logging camp | `timber_front` (1692,948) | timber, firewood, oak bark | 1 + 2 | **Coldwater** | ~1,040 (as the Greyteeth fold's) |
-| City coppice | **new**: the wood pasture by the walls (`range_city`, about 620,636) | firewood | 1 + 2 | **Ridgemere** | under 200 |
+| Rainwood coppice | inside or beside `timber_rainwood` (outside Ridgemere's nine cells) | firewood | 1 + 2 | **Ridgemere** | ~470 |
 | Greenholt coppice and charcoal hearth | `charcoal_greenholt` (1260,2124) | firewood, charcoal | 1 + 2 | **Larkfield** | ~570 |
 | Fens peat cutting | **new**: the Sallow Fens near Fenshore | peat | 1 + 1 | **Fenshore** | under 400 (fen walking) |
 | **in all** | 5 works | | **5 keepers, 10 hands (180p a day)** | Ridgemere 7, Coldwater 3, Larkfield 3, Fenshore 2 | |
 
 - **Takings**: firewood 283p, timber 84p, charcoal 32p, oak bark 7p = **406p**. Peat takes part of firewood's place (it
   is the same 1p and households take either), so the fuel's pennies stay about the same; firewood draws fall by
-  whatever peat fills. Over wages: **~226p to Fell's estate** (the Country's purse at first).
-- **Yields**: timber ~65 a day, firewood ~320 (winter ~430), peat ~200-300 (winter more), bark ~12, charcoal ~12. The
-  winter peak (586 firewood) is the gate: the fuel must never run out.
+  whatever peat fills. Over wages: **~226p to the woods' holder's estate** (the Country's purse at first).
+- **Yields**: firewood and peat together are sized to today's fuel, **~450 a day (586 in winter)**, not on top of it:
+  firewood ~270 (winter ~350) and peat ~180 (winter ~240), each +5%. The bakeries' and other makers' firewood (about a
+  quarter of the draws) stays firewood unless their crafts take peat. Timber ~65 a day, bark ~12, charcoal ~12. The
+  winter peak is the gate: the fuel must never run out.
 - **Crew**: 13 from the **woods** pool (25 loggers, 5 woodcutters; 36 in all), 2 for the peat from **keeps the house**
-  (nobody in the pool cuts peat). 21 of the woods' people stay unplaced.
+  (nobody in the pool cuts peat). 23 of the woods' people stay unplaced.
+- **The coppice is not on `range_city`.** `range_city` ("the city common", 612,644, size ~165) already exists: the
+  wood pasture the dairies near the city share as their cattle range, inside Ridgemere's nine cells. A coppice there
+  would re-purpose the dairies' common and write ground in the city's cells. Recommended instead: the coppice in or
+  beside the Rainwood cut, on realm ground (open question 5).
 - **Shops**: the general store, provisioner and bakeries (city and community) draw fuel from the works; the sawmill,
   ironworks and foundry timber; the tannery bark. The city's charcoal works keeps its kilns (its only buyer is now the
   Country: 8 a day).
@@ -241,7 +265,7 @@ city's sawmill (Phase 4).
   sites. But the Rainwood camp is close enough for Ridgemere, and the user wants towns later. Oakhaven is the woods'
   town when the communities grow (open question 4).
 
-### 4.4 Stone, lime, clay and sand (House Greatly)
+### 4.4 Stone, clay and sand (House Greatly; lime later)
 
 The map has four quarries (granite, slate, lime, sandstone) and two clay pits, both in the southern fens; **no sand
 site**. The game's clay pit yields clay and sand together (4 + 1 a spell), so the pits can be the sand's source.
@@ -249,28 +273,36 @@ site**. The game's clay pit yields clay and sand together (4 + 1 a spell), so th
 | Works | Site (as built) | Goods | Crew | Lives in | Walk |
 |---|---|---|---|---|---|
 | Granite quarry | `quarry_granite` (1028,356), House Greatly's | stone | 1 + 2 | **Ridgemere** | ~320 from the East Gate |
-| Lime quarry | `quarry_lime` (1588,788) | limestone, lime | 1 + 1 | **Ridgemere** (or Coldwater) | ~960-1,140 |
 | Mirebridge clay pit | `clay_mirebridge` (1180,3276) | clay, sand | 1 hand | **Fenshore** | ~440 |
 | Fens clay pit | `clay_fens` (1636,3332) | clay, sand | 1 hand | **Southmeadow** | ~600 |
-| **in all** | 4 works | | **2 keepers, 5 hands (82p a day)** | Ridgemere 5, Fenshore 1, Southmeadow 1 | |
+| **in all** | 3 works | | **1 keeper, 4 hands (56p a day)** | Ridgemere 3, Fenshore 1, Southmeadow 1 | |
 
-- **Takings 123p**, flat across the year; over wages **~41p to Greatly's estate**.
-- **Crew**: 7 of the 10 in the pool's stone and clay trades (Greyscar's stone cutters, the lime kilns' man, Clayholt's
-  diggers). The slate and sandstone quarries stay reserved (nothing draws slate; the sand comes from the pits).
+- **Takings 97p** (stone 38p, clay 41p, sand 18p), flat across the year; over wages **~41p to Greatly's estate**.
+- **Not the lime quarry.** `quarry_lime` (1588,788) is a walk of ~960-1,140 tiles from the city and ~1,250 from
+  Coldwater (1956,1796). The user's rule (doc 70, the steadings and the communities) puts hands in the city only for work
+  within about 800 tiles of Ridgemere, and every other crew in a community; ~1,250 is past the longest farm walk
+  accepted (1,047). **Limestone and lime (26p) stay the Country's** until a home is near: Frosthollow (2308,796) is
+  ~720 away, so the lime quarry goes with the iron's town (4.7), or the user makes an exception (open question 13).
+- **Crew**: 5 of the 10 in the pool's stone and clay trades (Greyscar's stone cutters, Clayholt's diggers); the lime
+  kilns' man waits for the lime quarry. The slate and sandstone quarries stay reserved (nothing draws slate; the sand
+  comes from the pits).
 - **Shops**: brickworks, pottery, mason, plasterworks and glassworks draw from the works. The clay comes 2,500 tiles to
   the city; carriage is a flat 6p a load, so the shops' costs don't move.
 
 ### 4.5 The city's makers first (no new sites)
 
-Extend `suppliers` and call `buyFromCity` for a shop's resale draws too, so a shop buys from a city maker before the
-store room. **Only craft inputs at first** (the store charges them at 100%, the city maker's catalogue price is the
-same, and till to till there is no toll and no carriage, so the shops' costs don't rise):
+Craft inputs already go through `buyFromCity` (Core/RatwCityLoop.cpp ~1643, the craft path's inputs); only the resale
+branch (`!w.craft`, ~1586) skips it. So **Phase 4 is new `suppliers` list entries in `Data/Items/country.json` only**
+(weaver -> linen, chandlery -> cord, sawmill -> planks, smithy and cooperage -> hoops and nails, ...), **no code
+change**. Calling `buyFromCity` from the resale path is the resale goods' routing and moves to Phase 5. Craft inputs
+first, because the store charges them at 100%, the city maker's catalogue price is the same, and till to till there is
+no toll and no carriage, so the shops' costs don't rise:
 
 | Good | Country intake now | City maker |
 |---|---|---|
 | linen cloth | 82p | weaver (flax from the grain farms, 4.2) |
 | iron hoops, nails, cookpot | 37p | smithy, cooperage (iron bars still the Country's) |
-| planks | 30p | Fell's sawmill (timber from 4.3) |
+| planks | 30p | the Timberland Sawmill (timber from 4.3) |
 | cord | 20p | chandlery (hemp from 4.2) |
 | paper, leather, bandages, ink | 18p | papermill, tannery (the farms' hides), barber, ink makers |
 | **in all** | **~187p** | the makers gain ~267p of sales; the treasury loses ~80p of toll |
@@ -279,8 +311,9 @@ same, and till to till there is no toll and no carriage, so the shops' costs don
 maker they would cost the general store and the rag-and-bone man a third more than the store room's 75%, and both are
 already short of their wages.
 
-**The money**: with Phases 1-3 done this leaves the Country only ~66p a day over its posts (3), and less than nothing in a lean summer. So
-Phase 4 needs a second payer first: a small land rent from the food farms (open question 2) or fewer wharf posts.
+**The money**: with Phases 1-3 done this leaves the Country only ~92p a day over its posts (3), and about 28p in
+summer (852p against 824p): no room for a bad season. So Phase 4 needs a second payer first: a small land rent from the
+food farms (open question 2) or fewer wharf posts.
 
 ### 4.6 The country workshops' goods (when the communities become towns)
 
@@ -305,12 +338,12 @@ smithy. Each has a raw source that is now, or will be, in the realm:
 
 | Need | What it takes |
 |---|---|
-| A town | **Frosthollow** (2308,796), reserved: 220 from `mine_frost_iron`, 459 from `timber_upper`. The pool's iron people are Frosthollow's (12 ore diggers, 3 smelters, 3 traders, its shop people). It would be a sixth community. |
+| A town | **Frosthollow** (2308,796), reserved: 220 from `mine_frost_iron`, 459 from `timber_upper`, ~720 from `quarry_lime` (the lime quarry's home, 4.4). The pool's iron people are Frosthollow's (12 ore diggers, 3 smelters, 3 traders, its shop people). It would be a sixth community. |
 | Mines | `mine_frost_iron` (near Frosthollow). The second, `mine_grey_iron`, is 1,145+ from any home: either a Greyteeth miners' camp, or the `mine_frost_lead` site re-used as a second iron working (lead and silver have no demand). |
-| Smelting | **No bloomery site is reserved.** Doc 71's earlier answer stands: the realm mines ore and the city's Grayrock Ironworks and foundry smelt it (38 workers at the game's rates against 14 payable). |
+| Smelting | **No bloomery site is reserved.** Doc 71's earlier answer stands: the realm mines ore and the city's Timberland Ironworks (id still `rm_the_grayrock_ironworks`) and foundry smelt it (38 workers at the game's rates against 14 payable). |
 | Charcoal | the reserved hearths are in the Rainwood and the Greenholt, far from the mines. A hearth by `timber_upper` would serve Frosthollow. |
 | Copper and tin | `mine_ochre_copper` (Saltwell, ~750): 3 workers on ~24p a day; not worth doing alone. No tin streams site; the Greyteeth tin mine is 1,300+ out. |
-| Money | **271p a day** (iron bars 237p). Pulling it leaves the Country with only the workshops and the rents, so it needs the per-House split (Phase 6) first. House Grayrock's estate. |
+| Money | **271p a day** (iron bars 237p). Pulling it leaves the Country with only the workshops and the rents, so it needs the per-House split (Phase 6) first. House Timberland's estate (R29: the city's forges). |
 
 ### 4.8 Summary
 
@@ -318,14 +351,21 @@ smithy. Each has a raw source that is now, or will be, in the realm:
 |---|---|---|---|---|---|---|---|
 | herbs | 1 | 11p | 0 | (to the marsh's till) | 0 | 0 | |
 | raw fibre | 1 | 43p | 2 (20p) | (to the grain farms' till) | 0 | 2 fields and mills | Larkfield, Southmeadow |
-| fuel: woods and peat | 2 | 406p | 15 (180p) | ~226p, Fell | coppice by the city, peat at the fens | 13 woods, 2 keeps the house | Ridgemere 7, Coldwater 3, Larkfield 3, Fenshore 2 |
-| stone, lime, clay, sand | 3 | 123p | 7 (82p) | ~41p, Greatly | 0 | 7 mines, stone and clay | Ridgemere 5, Fenshore 1, Southmeadow 1 |
+| fuel: woods and peat | 2 | 406p | 15 (180p) | ~226p, the woods' holder (question 11) | the peat cutting (the coppice in the Rainwood cut) | 13 woods, 2 keeps the house | Ridgemere 7, Coldwater 3, Larkfield 3, Fenshore 2 |
+| stone, clay, sand | 3 | 97p | 5 (56p) | ~41p, Greatly | 0 | 5 mines, stone and clay | Ridgemere 3, Fenshore 1, Southmeadow 1 |
 | city makers for craft inputs | 4 | 187p | 0 | (to city makers) | 0 | 0 | |
 | country workshops | 5 | ~408p | ~29 | to be sized | the workshops in the communities | ~10 by trade, ~19 fallback | the five communities |
-| iron and metals | later | 271p | ~14 | Grayrock | Frosthollow, a bloomery | 18 metals | Frosthollow |
+| iron and metals, limestone and lime | later | 297p | ~16 | Timberland (iron), Greatly (lime) | Frosthollow, a bloomery | 18 metals, the lime kilns' man | Frosthollow |
 
-Phases 1-3 place **24 people** (beds: Ridgemere 12, Coldwater 3, Larkfield 4, Fenshore 3, Southmeadow 2) and leave the
-Country with ~253p a day over its posts (from 569p).
+Phases 1-3 place **22 workers** (beds: Ridgemere 10, Coldwater 3, Larkfield 4, Fenshore 3, Southmeadow 2) and leave
+the Country with ~279p a day over its posts (from 569p).
+
+**The works keepers' homes and families.** The works have no premises (no farmhouse), so a works keeper lives with the
+hands: in the city within 800 tiles, else in the crew's community. Under Phase C's rule a keeper with family among the
+unplaced brings them (9 of the 31 farm keepers did). Recommended: **pick the 6 works keepers from those with no family
+among the unplaced first**, and count any family that does come against the community's room to grow (cottage lots,
+6 beds each) or, in Ridgemere, a city household of their class. Or a keeper's cottage at each works, like the farms'
+steadings (6 new buildings on the map). Open question 12.
 
 ## 5. The recommended order
 
@@ -334,22 +374,23 @@ Food-adjacent and largest money first; each phase as doc 71 did it: **modelled p
 
 | Phase | What it builds | Checks | Runs (each asked first) |
 |---|---|---|---|
-| **0. Works as areas, and the rent** | Generalise `Core/RatwFarms.cpp`'s areas to non-food works (verify nothing assumes food: the Country's table, `seasonal` groups, the stew); a works' `rent` rule (wages, reserve, the rest to the estates' purse); the Country's report lines split (estates' rents, the sea trade, posts by rule); count the 100 posts by rule and by House exactly; Atlas's and the DM's Economy panels show works beside farms. No world change. | C++ tests: a works yields, sells through the store, pays its crew, pays its rent, money conserved; switched off, the Country supplies again. | none |
+| **0. Works as areas, and the rent** | Generalise `Core/RatwFarms.cpp`'s areas to non-food works (verify nothing assumes food: the Country's table, `seasonal` groups, the stew); a works' `rent` rule (wages, reserve, the rest to the estates' purse); the Country's report lines split (estates' rents, the sea trade, posts by rule); count the 100 posts by rule and by House exactly; Atlas's and the DM's Economy panels show works beside farms; **`World::setupTowns` skips the five communities** (regions marked as communities in `Data/Economy/communities.json`) until the user makes them towns. No world change. | C++ tests: a works yields, sells through the store, pays its crew, pays its rent, money conserved; switched off, the Country supplies again; **a restart keeps the communities regions** (no towns, no town roads, bandit camps, caravans or festivals' purses for them). | none |
 | **1. Herbs and fibre on the farms** | Herbs as yields of the eel marsh; hemp and flax fields on the two grain farms (yields, +1 hand each, placed by Phase C's rule from fields and mills). | farm_people tests for the extra hands; the grain and fish areas' tills still pay their crews. | 30-day smoke; folded into the next 3-year run |
-| **2. Fuel** | The five works of 4.3 as modelled producers (Phase B), the two new sites placed on the map (doc 70's tool, a DEV build), then their people (Phase C). Peat sold through the general store and provisioner. | The fuel never short (firewood or peat filled 99% of days, winter included); peat sold; every works pays its crew 99% of days; the Country pays its posts every day; the treasury over its float every night; no hunger; money conserved. | 30-day smoke; **3-year full run** (`--economy-level full`), with the report's patch for the yields |
-| **3. Stone, lime, clay, sand** | The four works of 4.4, modelled then real. | As Phase 2, plus the builders' trades' draws filled. | 30-day smoke; 3-year run (can share Phase 2's second run) |
-| **4. The city's makers first** | `suppliers` widened and `buyFromCity` for resale draws, craft inputs only (4.5); with the second payer the user picks (question 2). | Makers' tills, the general stores' tills; the Country's margin in summer; the treasury's toll and support. | 3-year run |
-| **5. The country workshops** | When the communities become towns: the soap boiler and chandler first, then pottery, weavers, press, smithy. | As Phase 2, plus the candles no longer short. | per workshop group |
-| **6. The estates split; iron** | Each House its own estate purse paying its own people; the sea trade alone the Country. Iron and Frosthollow when the user says. | | |
+| **2. Fuel** | The five works of 4.3 as modelled producers (Phase B), the new site(s) placed on the map (the peat cutting, and the coppice if beside the Rainwood cut rather than in it; doc 70's tool, a DEV build, outside Ridgemere's cells), then their people (Phase C). Peat sold through the general store and provisioner; firewood's yield cut by what peat fills. | The fuel never short (firewood or peat filled 99% of days, winter included); peat sold and fuel not piling; every works pays its crew 99% of days; the Country pays its posts every day; the treasury over its float every night; no hunger; money conserved. | 30-day smoke; **3-year full run** (`--economy-level full`), with the report's patch for the yields |
+| **3. Stone, clay, sand** | The three works of 4.4 (granite quarry, two clay pits), modelled then real. Limestone and lime stay the Country's. | As Phase 2, plus the builders' trades' draws filled. | 30-day smoke; 3-year run (can share Phase 2's second run) |
+| **4. The city's makers first** | New `suppliers` list entries in `country.json` for craft inputs only (4.5), no code change; with the second payer the user picks (question 2). | Makers' tills, the general stores' tills; the Country's margin in summer; the treasury's toll and support. | 3-year run |
+| **5. The country workshops** | When the communities become towns (lifting Phase 0's `setupTowns` rule): the soap boiler and chandler first, then pottery, weavers, press, smithy; `buyFromCity` called from the resale path (`!w.craft`) for the resale goods. | As Phase 2, plus the candles no longer short. | per workshop group |
+| **6. The estates split; iron** | Each House its own estate purse paying its own people: Grayrock's the wharf's posts, Greatly's the quarries' and pits' rents, the woods' holder's the fuel's, Timberland's the iron later; the ships' goods from beyond and the exports alone the Country. Iron, the lime quarry and Frosthollow when the user says. | | |
 
 ## 6. What stays the Country, and why
 
 | Stays | Why |
 |---|---|
 | **Iron and metals** (271p) | The user's decision. Its sites are reserved; 4.7 says what pulling it needs. |
-| **The sea trade**: the wharf's carriers and the stores (~56 posts) | Ships come from beyond the realm. The wharf is where the outside meets the city; its work is the outside's. |
+| **Limestone and lime** (26p) | The lime quarry is past the 800-tile rule from the city and ~1,250 from Coldwater (4.4); it goes with Frosthollow. |
+| **The ships' goods from beyond the realm** | Ships come from beyond the realm. The wharf itself is Grayrock's (doc 67 R28): its ~56 posts are paid from the Country's purse only until Phase 6 gives them to Grayrock's estate. |
 | **The city's exports** (the basket's maps, handbells, glass beads, charms, steel) | What the city sells beyond the realm. These makers have no buyer in the realm; the Country's basket is their market. |
-| **The Houses' estates** (until Phase 6) | The land the works stand on is the Houses'; the estates collect the works' rents and pay the Houses' people. Not a producer any more, a landlord. |
+| **The Houses' estates** (until Phase 6) | The land the works stand on is the Houses'; the estates collect the works' rents and pay the Houses' people (the wharf's posts among them). Not a producer any more, a landlord. |
 | **Arrivals and the unplaced pool** | People come from beyond the realm (about 4 a year, with up to 30p each). The pool is the city's and the works' labour reserve. |
 | **Goods no one in the realm makes** | The ten farm goods no farm grows (brandy, apple brandy, aqua vitae, wheat, butter, cheese, offal, eggs, sheep, sheepskin) could come by sea as imports instead of going without (open question 8). |
 
@@ -362,15 +403,23 @@ Food-adjacent and largest money first; each phase as doc 71 did it: **modelled p
 2. **A land rent from the food farms too.** Recommended: **not before Phase 4**, and then only if the runs show the
    Country short (a few percent of the farms' takings, ~120p a day at 5%, from their basket, not their wages). Or never:
    then Phase 4 waits for Phase 6.
-3. **Peat.** Recommended: **a peat cutting at the Sallow Fens**, crew at Fenshore from those who keep the house. It
-   fills a want short every day and makes a second fuel. Or leave peat unsold (firewood stays the only fuel).
-4. **The second logging camp and Oakhaven.** Recommended: **`timber_front`, crew at Coldwater**, and Oakhaven waits for
-   the towns. Or `timber_sound` with its crew in Ridgemere (~920 walk), or build Oakhaven now as a sixth community for
-   the woods (the pool's loggers are its people).
-5. **Two new sites for the map**: a coppice by the city's walls (the `range_city` wood pasture) and the peat cutting at
-   the fens. Recommended: **yes**, placed by doc 70's tool. Or coppice inside an existing timber cut (one fewer site).
-6. **Stone.** Recommended: **two quarries (granite, lime) and the two clay pits as the sand's source**; slate and
-   sandstone stay reserved. Or all four quarries (needs 3 more crew on 123p).
+3. **Peat.** Recommended: **a peat cutting at the Sallow Fens**, crew at Fenshore from those who keep the house, as **a
+   second fuel that replaces part of the firewood** (firewood and peat together sized to today's ~450 a day, 586 in
+   winter; no shortage is filled, since households take either and firewood meets the need now). It spreads the fuel
+   over two works, so a bad week at the camps doesn't leave the city cold. Or leave peat unsold (firewood stays the
+   only fuel and the camps' yields are ~450 a day).
+4. **The second logging camp and Oakhaven.** Recommended: **`timber_front`, crew at Coldwater** (~1,040 walk, within
+   the 1,047 already accepted), and Oakhaven waits for the towns. Or build Oakhaven now as a sixth community for the
+   woods (the pool's loggers are its people). (`timber_sound` with its crew in Ridgemere is dropped: a ~920 walk breaks
+   the 800-tile rule.)
+5. **The coppice and the new sites.** `range_city` ("the city common") is not free ground: it is the dairies' shared
+   cattle range, inside Ridgemere's nine cells. Recommended: **the coppice in or beside the Rainwood cut**
+   (`timber_rainwood`, on realm ground), so the only new site is **the peat cutting at the fens**, placed by doc 70's
+   tool. Or re-purpose the city common as a coppice (the dairies lose their shared range, and ground in the city's
+   cells is rewritten).
+6. **Stone.** Recommended: **the granite quarry and the two clay pits as the sand's source**; the lime quarry waits for
+   Frosthollow (question 13); slate and sandstone stay reserved. Or all four quarries (needs more crew on 123p, and
+   homes for the far ones).
 7. **The city's makers first.** Recommended: **craft inputs only** in Phase 4; the resale goods (pamphlets, soap, scarves,
    pots) with the workshops in Phase 5. Or route everything at once (the general stores and the rag-and-bone man pay a
    third more, ~150p a day more toll lost, and the Country loses another ~353p).
@@ -380,5 +429,15 @@ Food-adjacent and largest money first; each phase as doc 71 did it: **modelled p
    area in Atlas and the DM's Economy tab, as the farms'.
 10. **The workshops' first step.** Recommended: **the soap boiler and chandler first** when the communities grow (the
     farms' tallow piles up and the candles are short). Or the potteries first (by the clay pits of Phase 3).
+11. **Who holds the woods, and the old names.** Doc 67 gives Greatly construction (so the quarries and pits, as
+    `quarry_granite` already says), Grayrock the wharf, Timberland the forges, Fell wine and fruit; no House is given
+    the woods. Recommended: **Timberland** (its sawmill and forges take the timber and charcoal). Or Fell, or the Crown
+    (the treasury). The city's ids still carry doc 61's names (`rm_the_fell_sawmill`, `rm_the_grayrock_ironworks`;
+    the text says Timberland since doc 67's renames): keep the ids, as doc 67 did for Mossgrave?
+12. **The works keepers' homes.** Recommended: **with their crews** (the city within 800 tiles, else the community),
+    keepers picked first from those with no family among the unplaced. Or a keeper's cottage at each works, like the
+    farms' steadings.
+13. **The lime quarry.** Recommended: **wait for Frosthollow** (~720 away); limestone and lime stay the Country's until
+    then. Or an exception to the 800-tile rule: the crew in Ridgemere, walking ~960-1,140.
 
 ## Progress
