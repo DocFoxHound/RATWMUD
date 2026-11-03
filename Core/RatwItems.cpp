@@ -231,6 +231,7 @@ void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& ru
         community.id = x.string("id");
         community.name = x.string("name", community.id);
         community.region = x.string("region", community.id);
+        community.town = x.boolean("town", false);
         for (const auto& h : x.array("homes"))
             if (auto r = room(h, "beds"); !r.area.empty() && !r.spots.empty())
                 community.homes.push_back(std::move(r));
@@ -935,6 +936,22 @@ const CommunityPlace* FarmPeople::community(const std::string& id) const
         if (c.id == id)
             return &c;
     return nullptr;
+}
+
+std::set<std::string> FarmPeople::plainRegions(const std::function<bool(const std::string&)>& has) const
+{
+    std::set<std::string> out;
+    for (const auto& c : communities)
+    {
+        if (c.town || c.region.empty())
+            continue;
+        const auto any = [&](const auto& rooms) {
+            return std::any_of(rooms.begin(), rooms.end(), [&](const auto& r) { return has(r.area); });
+        };
+        if (any(c.homes) || any(c.flats) || any(c.market))
+            out.insert(c.region);
+    }
+    return out;
 }
 
 std::string FarmPeople::tradeOf(const std::string& workLabel) const

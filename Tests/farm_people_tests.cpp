@@ -232,6 +232,20 @@ void theData()
                 else
                     expect(!business, label + " is no business's");
             }
+    // No community is a town yet (`town` false: the user, 2026-11-03): each its own region, kept plain in a world with
+    // its places (World::setupTowns), none in a world without them (the old map's towns of the same names); one made a
+    // town (a later step) is no longer kept plain.
+    for (const auto& c : people.communities)
+        expect(!c.town && c.region == c.id, c.id + " is no town yet, its own region");
+    const auto all = people.plainRegions([](const std::string&) { return true; });
+    expect(all == std::set<std::string>({"coldwater", "larkfield", "southmeadow", "fenshore", "saltwell"}), "the five kept plain");
+    expect(people.plainRegions([](const std::string&) { return false; }).empty(), "none without their places");
+    expect(people.plainRegions([](const std::string& area) { return area == "cn_saltwell_inn"; }) == std::set<std::string>({"saltwell"}),
+           "a community by any of its places");
+    auto later = people;
+    later.communities.front().town = true;
+    expect(!later.plainRegions([](const std::string&) { return true; }).count(later.communities.front().region),
+           "a community made a town is no longer kept plain");
 }
 
 void thePlacement()

@@ -165,9 +165,13 @@ void World::setupTowns()
                     const auto& [at, outdoors] = place->second;
                     merchantsAt[region].push_back({p.work.cell, outdoors ? Vec2{at.x + p.work.x, at.y + p.work.y} : at});
                 }
+    // The Country's communities stay plain places until they are made towns (communities.json `town`; the user,
+    // 2026-11-03: doc 71, Phase C Progress): a restart, after their people came, finds them as a running world left
+    // them, no stores, roads, camps or caravans of their own; their markets, posts and homes are kept as they are.
+    const auto plain = items::farmPeople().plainRegions([&](const std::string& area) { return cells_.count(area) > 0; });
     for (const auto& [region, count] : living)
     {
-        if (count < 5 || !markets.count(region))
+        if (count < 5 || !markets.count(region) || plain.count(region))
             continue;
         Town t;
         t.id = region;

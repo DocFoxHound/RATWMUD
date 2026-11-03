@@ -28,7 +28,12 @@ void expect(bool condition, const std::string& message)
 }
 
 constexpr int Side = 16;
-std::string id(int i) { return "c_" + std::to_string(i) + "_0"; }
+std::map<int, std::string> named;   // Cells given a map's own ids (communitiesStayPlain: a community's interiors).
+std::string id(int i)
+{
+    const auto found = named.find(i);
+    return found != named.end() ? found->second : "c_" + std::to_string(i) + "_0";
+}
 
 struct Fixture
 {
@@ -63,7 +68,7 @@ std::string resident(const std::string& who, const std::string& name, const std:
 }
 
 // A strip of cells in a row, one letter each: 'E' the capital "east", 'M' a town "mid", 'W' the town "west", 'F'
-// Frosthollow, '.' wild country. Each town's first cell is where its people live, its second its market.
+// Frosthollow, 'C' the community Coldwater (Data/Economy/communities.json), '.' wild country. Each town's first cell is where its people live, its second its market.
 Fixture strip(const std::string& layout = "EE.....WW", const std::string& extra = "")
 {
     Fixture f;
@@ -94,7 +99,7 @@ Fixture strip(const std::string& layout = "EE.....WW", const std::string& extra 
             }
     }
     const auto region = [](char c) {
-        return c == 'E' ? "east" : c == 'M' ? "mid" : c == 'W' ? "west" : c == 'F' ? "frosthollow" : "wilds";   // (F: a town with a trade.)
+        return c == 'E' ? "east" : c == 'M' ? "mid" : c == 'W' ? "west" : c == 'F' ? "frosthollow" : c == 'C' ? "coldwater" : "wilds";   // (F: a town with a trade.)
     };
     for (int i = 0; i < cells; ++i)
     {
@@ -109,16 +114,17 @@ Fixture strip(const std::string& layout = "EE.....WW", const std::string& extra 
     // East's first cell is 0; mid's and west's are wherever their letters start.
     const auto first = [&](char c) { return int(layout.find(c)); };
     const std::map<char, std::pair<std::string, std::string>> merchants = {
-        {'E', {"em", "Ember Oak"}}, {'M', {"mm", "Moss Hale"}}, {'W', {"wm", "Wren Reed"}}};
+        {'E', {"em", "Ember Oak"}}, {'M', {"mm", "Moss Hale"}}, {'W', {"wm", "Wren Reed"}}, {'C', {"cm", "Cole Mere"}}};
     for (const auto& [c, who] : merchants)
     {
         const int home = first(c);
         if (home < 0)
             continue;
-        const std::string tag = c == 'E' ? "e" : c == 'M' ? "m" : "w";
+        const std::string tag = c == 'E' ? "e" : c == 'M' ? "m" : c == 'C' ? "c" : "w";
         m << resident(who.first, who.second, "merchant", "keeping the stall", home, 2.5, home + 1, 8.5);
         for (int n = 1; n <= 5; ++n)
-            m << resident(tag + std::to_string(n), std::string(c == 'E' ? "East" : c == 'M' ? "Mid" : "West") + " " + std::to_string(n), "civilian", "working",
+            m << resident(tag + std::to_string(n),
+                          std::string(c == 'E' ? "East" : c == 'M' ? "Mid" : c == 'C' ? "Coldwater" : "West") + " " + std::to_string(n), "civilian", "working",
                           home, 3.5 + n, home, 3.5 + n);
     }
     m << extra;
@@ -836,6 +842,59 @@ void travelKeepsToTheRoads()
 
 } // namespace
 
+// The Country's communities are no towns yet (communities.json `town` false; the user, 2026-11-03: doc 71, Phase C
+// Progress): a world with Coldwater's places, its people at home there and its store kept, has one town, the city, when
+// it starts and again after a restart; no stores, roads, camps or caravans of Coldwater's own, its people, posts and
+// homes as they were. The old map's towns of the same names (without the communities' interiors) are towns as ever.
+void communitiesStayPlain()
+{
+    named = {{7, "cn_coldwater_cottage_1"}, {8, "cn_coldwater_store"}};
+    auto f = strip("EE.....CC");
+    const auto plain = [&](World& w, const std::string& when) {
+        expect(w.towns().empty() && w.society().capital() == "east", "One town, the city, " + when);
+        expect(!w.townOf(id(8)) && w.lawTown(id(8)) == "coldwater" && w.communityOf(id(7)) == "coldwater" &&
+                   w.lawTown(id(0)) == "east",
+               "Coldwater a plain place of its own " + when + " (" + w.lawTown(id(8)) + ")");
+        expect(!w.society().account("stores:coldwater") && w.society().treasuryOf("coldwater") == "treasury",
+               "no stores of its own " + when);
+        expect(w.roads().camps.empty() && w.roads().caravans.empty(), "no roads' camps or caravans " + when);
+    };
+    std::map<std::string, std::string> homes, works;
+    const auto people = [](const World& w, std::map<std::string, std::string>& home, std::map<std::string, std::string>& work) {
+        home.clear(), work.clear();
+        for (const auto& [who, life] : w.society().state().residents)
+            home[who] = life.homeCell;
+        for (const auto& p : w.society().positions())
+            work[p.id] = p.work.cell + " " + p.title;
+    };
+    auto w = load(f);
+    w.tick(.6);
+    plain(w, "at the start");
+    people(w, homes, works);
+    expect(homes.at("c1") == id(7) && homes.at("cm") == id(7), "its people at home there");
+    for (int day = 0; day < 2; ++day)
+        nextMorning(w);
+    plain(w, "days on");
+    World again = load(f);
+    expect(again.restore(w.save()).ok, "A restart");
+    again.tick(.6);
+    plain(again, "after a restart");
+    std::map<std::string, std::string> homesAfter, worksAfter;
+    people(again, homesAfter, worksAfter);
+    expect(homesAfter == homes && worksAfter == works, "the same people, homes and posts after it");
+    bool store = false;
+    for (const auto& [post, where] : worksAfter)
+        store = store || where.rfind(id(8) + " ", 0) == 0;
+    expect(store, "Coldwater's store kept");
+    // The old map: a Coldwater without the communities' interiors is a town of its own, with its store.
+    named.clear();
+    auto old = strip("EE.....CC");
+    auto o = load(old);
+    o.tick(.6);
+    expect(o.towns().size() == 2 && o.towns()[1].id == "coldwater" && o.towns()[1].store == "stores:coldwater",
+           "the old map's town of the same name is a town as ever");
+}
+
 int main()
 {
     try
@@ -854,6 +913,7 @@ int main()
         residentsTakeWork();
         shopsSellTheirGoods();
         travelKeepsToTheRoads();
+        communitiesStayPlain();
     }
     catch (const std::exception& error)
     {

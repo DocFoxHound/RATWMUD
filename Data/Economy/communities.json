@@ -1,7 +1,7 @@
 {
  "format": "ratw-communities",
  "version": 1,
- "about": "The Country's farm steadings and communities as built on the realm (Docs/Design/70, Progress, \"The steadings and the communities\"; doc 71, Phase C), written by tools/worldgen/realm2_places.py with each realm write. Homes and workplaces are interiors (world.interiors / world.areas id; the project's rooms): a resident's home is live.npcs home_area = the home's `area`, home_x/home_y a bed; a post's work_area = the workplace `area`, work_x/work_y a `work` spot. At most 6 to a home (HouseholdMost). An interior's region is its community (`ridgemere` for the farms near the city), so a farm's hands and its keeper are \"near\" it.",
+ "about": "The Country's farm steadings and communities as built on the realm (Docs/Design/70, Progress, \"The steadings and the communities\"; doc 71, Phase C), written by tools/worldgen/realm2_places.py with each realm write. Homes and workplaces are interiors (world.interiors / world.areas id; the project's rooms): a resident's home is live.npcs home_area = the home's `area`, home_x/home_y a bed; a post's work_area = the workplace `area`, work_x/work_y a `work` spot. At most 6 to a home (HouseholdMost). An interior's region is its community (`ridgemere` for the farms near the city), so a farm's hands and its keeper are \"near\" it. A community's `town` (false) keeps it a plain place on a restart, never a town of its own (World::setupTowns), until a later step makes it one.",
  "householdMost": 6,
  "workLabels": {
   "about": "The game knows a shop or works by its keeper's work label (Data/Items/businesses.json `match`, at most 40 characters). A market post's label should hold its business's word; a farm post's should hold none of them (or it becomes that city business), so not \"dairy\", \"cheesemaker\", \"water mill\", \"salt house\", \"salt pans\", \"smokehouse\", \" press\", \"vintner\", \"brewer\", \"butcher\", \"baker\", \"tavern\", \"taproom\", \"keeps the \".",
@@ -37,6 +37,7 @@
    "about": "A lakeside village of the Greenholt where the East, River, High and Downs Roads meet north of Glasswater: timber cottages under cedar shingle round a green and its well, a store, an inn and a bakehouse, kitchen gardens, hens and goats. The hands of the orchards, piggeries, sheepwalks and lake boats round about live here.",
    "style": "country",
    "region": "coldwater",
+   "town": false,
    "hands": 21,
    "farms": [
     "orchard_1",
@@ -704,6 +705,7 @@
    "about": "A village at the Long River's crossing among the middle country's grain: timber cottages round a green and its well, a store, an alehouse and a bakehouse baking the Longmead mill's flour, kitchen gardens, hens and goats. The hands of Longmead, the Plumtree orchard and the Southwood piggery live here.",
    "style": "country",
    "region": "larkfield",
+   "town": false,
    "hands": 10,
    "farms": [
     "grain_farm_1",
@@ -1132,6 +1134,7 @@
    "about": "A hamlet of the warm Sunfields: limewashed cottages under red tile round a green and its well, a store and an alehouse, kitchen gardens, hens and goats, the vines and the Lark's grain fields round it. The hands of Larkholm, the Southmeadow vines and the Sunfields bee garth live here.",
    "style": "southern",
    "region": "southmeadow",
+   "town": false,
    "hands": 8,
    "farms": [
     "grain_farm_2",
@@ -1421,6 +1424,7 @@
    "about": "A hamlet of the Sallow Fens on a low island of dry ground: timber houses thatched with reed stand on stilts over the wet, joined by boardwalks; a store, an alehouse, kitchen gardens on the dry ground, hens and goats. The eel-catchers, salt boilers, warreners and the fen coast's boatmen live here.",
    "style": "fen",
    "region": "fenshore",
+   "town": false,
    "hands": 8,
    "farms": [
     "rabbit_warren_1",
@@ -1712,6 +1716,7 @@
    "about": "The oasis hamlet of the Red Waste by its spring pool, on the way to the Saltpan: limewashed adobe houses with flat roofs round a well, a store and a caravan inn, gardens watered from the pool, hens and goats. The salt rakers, the Ochre vines' hands and the warreners live here.",
    "style": "adobe",
    "region": "saltwell",
+   "town": false,
    "hands": 6,
    "farms": [
     "vineyard_1",

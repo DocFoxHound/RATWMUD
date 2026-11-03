@@ -5,7 +5,9 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -350,6 +352,7 @@ struct MarketPlace
 struct CommunityPlace
 {
     std::string id, name, region;
+    bool town = false;                              // `town`: made a town of its own (World::setupTowns); false, a plain place.
     std::vector<PlaceRoom> homes, flats;
     std::vector<MarketPlace> market;
 };
@@ -381,6 +384,10 @@ struct FarmPeople
     std::map<std::string, MarketPostPeople> market;
     const FarmPlace* farm(const std::string& id) const;
     const CommunityPlace* community(const std::string& id) const;
+    // The regions kept plain places, never towns (the user, 2026-11-03: doc 71, Phase C Progress): each community's not
+    // yet a town (`town` false) in a world that has its places (`has`: any of its homes, flats or market interiors), so
+    // the old map's towns of the same names stay towns.
+    std::set<std::string> plainRegions(const std::function<bool(const std::string&)>& has) const;
     // An unplaced NPC's old trade by its work label ("" none of them).
     std::string tradeOf(const std::string& workLabel) const;
     // A farm's {place}: its own in `places`, else its steading's name less the first suffix it ends with.

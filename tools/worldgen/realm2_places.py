@@ -1342,6 +1342,9 @@ class Places:
             served = [f['farm'] for f in farms if f['community'] == spec['id']]
             coms.append({'id': spec['id'], 'name': spec['name'], 'site': spec['site'], 'centre': c['centre'],
                          'about': spec['about'], 'style': spec['style'], 'region': spec['id'],
+                         # Not a town yet (the user, 2026-11-03: doc 71, Phase C Progress): a plain place after a restart
+                         # too; a later step flips it, and World::setupTowns then makes it a town of its own.
+                         'town': False,
                          'hands': hands.get(spec['id'], 0), 'farms': served,
                          'beds': sum(h['capacity'] for h in homes) + sum(f['capacity'] for f in flats),
                          'homes': homes, 'flats': flats, 'market': market, 'gardens': c['gardens'],
@@ -1354,7 +1357,9 @@ class Places:
                      'project\'s rooms): a resident\'s home is live.npcs home_area = the home\'s `area`, home_x/home_y '
                      'a bed; a post\'s work_area = the workplace `area`, work_x/work_y a `work` spot. At most '
                      f'{HOUSEHOLD_MOST} to a home (HouseholdMost). An interior\'s region is its community '
-                     '(`ridgemere` for the farms near the city), so a farm\'s hands and its keeper are "near" it.',
+                     '(`ridgemere` for the farms near the city), so a farm\'s hands and its keeper are "near" it. A '
+                     'community\'s `town` (false) keeps it a plain place on a restart, never a town of its own '
+                     '(World::setupTowns), until a later step makes it one.',
             'householdMost': HOUSEHOLD_MOST,
             'workLabels': {
                 'about': 'The game knows a shop or works by its keeper\'s work label (Data/Items/businesses.json `match`, '

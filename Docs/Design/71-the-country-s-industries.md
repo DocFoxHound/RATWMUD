@@ -1444,7 +1444,8 @@ NPCs (doc 66, 2), deterministically (fixed lots, no clock):
   empty farm post is filled from the city, then the Country, as any post is).
 - **The communities as places of their own**: their region ids are the community ids (doc 70), so shopping (a
   household's community's open shops first), "within reach" (succession, arrivals) and births at home already follow
-  them. **Not** done: making them towns in `World::setupTowns` mid-run (open question 2).
+  them. **Not** towns: `World::setupTowns` keeps them plain places on a restart too, until a later step makes them
+  towns (open question 2, answered: "Plain places until they are towns", below).
 
 **Money, reconciled.** Phase B's founding is unchanged (a farm's float and its crew's settled purse made at its switch,
 counted as minted). As the crew's posts are taken, each newcomer is given a head's share of what the crew's household
@@ -1544,6 +1545,9 @@ own placed people.
    communities would become towns of their own (their stores' accounts, the roads between towns and their bandit camps,
    caravans, festivals' purses), which a running world doesn't do (they stay regions there; the economy is the same
    either way). Make them towns at once (and on the old map's terms), or keep them regions on a restart too?
+   **Answered (the user, 2026-11-03): regions for now.** "The communities will become towns... I don't want to implement
+   full towns yet because we haven't implemented everything from the Country into actual NPCs": built below, "Plain
+   places until they are towns".
 3. **The keepers' families bring no money** and the grown ones hold no post (they may take an empty post near them, as
    any wolf with none). Give a grown family member their own purse from the Country, as an arrival's?
 4. **A farm's crew set lower after its people came** (the DM's `crewScale`): the extra real posts are still paid by the
@@ -1556,3 +1560,38 @@ own placed people.
    city, then an arrival from the Country housed with a household of its class within reach). A new keeper (middle
    class) may so come to live with the old keeper's family at the farmhouse, or elsewhere in the community; should a
    farm's keeper always move into its farmhouse, and the old keeper's family stay or go?
+
+**Plain places until they are towns** (2026-11-03, branch `r2-communities-plain`; open question 2). The user: "the
+communities will become towns... I don't want to implement full towns yet because we haven't implemented everything
+from the Country into actual NPCs." In a running world the five communities are plain places (`World::setupTowns` ran
+before their people came, so the world kept its one town, the city); a restart, after they came, would have counted
+each (five residents and a merchant) a town of its own: its stores (`stores:<id>`, its treasury), the roads between the
+towns with their bandit camps, caravans, and the capital's lists of towns (newcomers' arrivals, letters, projects). Now
+it doesn't:
+
+- **The switch is data**: each community in `Data/Economy/communities.json` has `"town": false` (written so by
+  `tools/worldgen/realm2_places.py`'s `manifest`; read into `CommunityPlace::town`, absent = false). A later step sets it
+  true, and the next restart makes that community a town as the old map's were.
+- **`FarmPeople::plainRegions`** (`Core/RatwItems.cpp`): the regions of the communities not yet towns, in a world that
+  has their places (any of their homes, flats or market interiors), so the old map's Larkfield, Coldwater, Southmeadow
+  and Saltwell (no `cn_` interiors) stay towns as ever. `World::setupTowns` (`Core/RatwRoads.cpp`) leaves those regions
+  out of its towns. Every other path follows the town list: `townOf`, `lawTown`/`communityOf` (with no Town records a
+  cell's region is its community, as in the running world), `towns()` (newcomers, letters, projects), the stores'
+  accounts, the roads, camps and caravans (`tendRoads` needs two towns). So a restarted world has the same single town,
+  the same capital and the same communities as the running one, and the farms, the markets (shopping by community),
+  Phase C's placement and the day plans see exactly what they saw before the restart; nothing else changes (no
+  community was made a town in any saved world: a running world never made one).
+- **Not changed**: the realm's map sites (`worldgen.realm2` SITES call the communities' sites `town`: terrain only, the
+  game never reads them); the DM's economy view lists every region with five people at home under `towns` with its
+  `stores:` purse (none for a community): a summary, not a town.
+
+**Checks.** `roads_behaviors` (`communitiesStayPlain`, 176 checks in all): a world with the city and Coldwater (its
+cottage and store interiors by their real ids, six people at home there, its store's keeper at work) has no Town records
+and the city its capital at the start, two days on and after a restart (a fresh world restored from the save): Coldwater
+its own community by `lawTown`/`communityOf`, no `stores:coldwater`, its treasury the capital's, no camps or caravans;
+the same residents, homes and posts after the restart, the store kept; and a Coldwater without the interiors (the old
+map) is a town with its own stores. `farm_people_behaviors` (1,729 checks): all five communities `town` false, each its
+own region; `plainRegions` all five with their places, none without, one by any one of its places, and none for a
+community flipped to a town. All 78 C++ tests pass; `test_realm2` (the slow `WholeRealm` skipped: DEV not readable from
+the worktree), `test_farms_summary`, `test_econ_report`, `test_country_industry`, `test_world_build`,
+`test_dungeon_master` pass. No simulation was run.
