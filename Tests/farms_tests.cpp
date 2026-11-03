@@ -185,12 +185,12 @@ void theDefaults()
                "the Country's re-weighted basket buys nothing the farms' does: " + item);
         expect(Society::nourishment(item) == 0 && item != "aqua_vitae", "and no food or drink: " + item);
     }
-    // The yields: the season means of the blend are doc 71's (a grain farm's flour in summer, 2.4).
+    // The yields: the season means of the blend (a grain farm's flour in summer: the 3-year full run's balanced yields, doc 71, Progress).
     const auto& flour = f.areas[areaIndex("grain")].farms.front().yield.at("flour");
     double summer = 0;
     for (int d = 92; d < 184; ++d)
         summer += Society::seasonalValue(flour, d + .5);
-    expect(std::abs(summer / 92 - 59.6) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
+    expect(std::abs(summer / 92 - 54.64) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
 }
 
 void yieldsBySeason()

@@ -1365,3 +1365,17 @@ own report, then run again.
 - **An area's goods no farm grows** (brandy, apple brandy, aqua vitae, wheat, butter, cheese, offal, eggs, sheep,
   sheepskin): with their area on, the Country no longer sends them and no farm has them. The settled years' short runs
   drew none of them; a shop that wants one goes without.
+
+### The first fully recorded 3-year run, and the balanced yields (2026-11-03)
+
+`world_check --farms 0 --economy-level full` on the r5 settings (3 years, 24.5 minutes, 13 MB of tables), read by
+`tools/econ_report.py` in 3 seconds: `artifacts/economy/r2/farms_full_3y-report.md`. Money conserved every day; births
+47, deaths 48; nobody hungry in any class; the treasury 1,362p at its least (the first spring) and 6,023p at the end.
+The farms' shortfalls were **oats** (spring 5,016 draws short, winter 2,714, summer 1,247) and **grapes** (spring and
+summer; the two vineyards the only farms short of their crews' wages); the piles were tallow, bones, hides, pigs and wine,
+and the beekeepers' honey and wax. The report's patch (yields meeting demand + 5%, 96 changes: oats up in spring and
+winter, grapes level across the year, the orchards' preserves and dried apples spread from winter into the other
+seasons, berries down) is written into `Data/Economy/country_farms.json` with r5's yield scales. Not yet confirmed by a
+run. Outside the farms: peat is wanted and never sold (firewood taken instead), tallow candles are short and pinned at the
+price band's top, the salves at its foot, and the inns, butchers, preservers and smithies are short of their wages
+from their input costs.
