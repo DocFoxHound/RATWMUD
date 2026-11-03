@@ -570,3 +570,51 @@ community has a farm. A build of `build-core` and `ctest`: 78 of 78. `test_count
 `frosthollow-erased`, `mirebridge-erased`, `oakhaven-and-its-cut`, `rainwood-coppice-and-cut`, `fenshore-and-the-peat`.
 The write's own previews in `artifacts/realm2/` (the close-up `whitefangs-and-frosthollow` is now
 `whitefangs-and-the-pass`) and `communities/oakhaven.png`; `communities-and-farms.png` draws the works as diamonds.
+
+### Phase 1, the economy's side: herbs and fibre on the farms, and the patch damped (2026-11-03, branch `r2-country-p1`)
+
+Branch `r2-country-p1`, from `ridgemere2` (2537b2d). The user's decisions (2026-11-03): phases 1-5 in this doc's order;
+open questions not answered take the recommendations. **Data and the report tool only: no code in Core, no world change,
+DEV not written, no simulation run.** The yields are sized from the people4 run (doc 71's confirming 3-year run,
+`artifacts/economy/r2/people4*`; the fixed tool's report and patch `people4-fixed-report.md`, `people4-fixed.patch.json`), years 2-3 for the new goods.
+
+- **Herbs (4.1).** The eel and fowl marsh (`eel_and_fowl_marsh_1`, Withy Creek Marsh, Fenshore's crew) yields herbs,
+  wormwood, willow bark, thyme, garlic and comfrey, and they are the fish area's goods: with fish on, the apothecary and
+  perfumer draw them from the marsh's store and the Country sends none (`farmAreaOf`, as every farm good). Sized on the
+  Country's sales to the shops in years 2-3 + 5%, by season (pieces a day): herbs 3.2 / 3.0 / 3.3 / 3.3, wormwood
+  3.6 / 3.2 / 3.2 / 3.5, willow bark 2.3 / 2.1 / 2.3 / 4.4, thyme 1.0 / 1.0 / 1.1 / 2.9, garlic 1.3 / 1.2 / 1.3 / 1.2,
+  comfrey 1.0 / 1.2 / 1.1 / 1.1: about 11p a day to the marsh's till. No new post. Resin stays the Country's (the woods).
+  None of them spoils (no `keeps`), so the marsh keeps what isn't drawn.
+- **Fibre (4.2).** Each grain farm yields hemp 30.9 / 27.4 / 27.4 / 30.5 and flax 4.2 / 3.1 / 3.9 / 5.3 before the area's
+  scale (92%; the two farms together the Country's years 2-3 sales + 5%: hemp ~54 a day, flax ~7), the grain area's goods:
+  the ropewalk, chandlery, weaver and paintworks draw from the farms, about 40p a day. **A hand more each (1 + 5)**:
+  `crew.hands` 5, so Phase C's placement (`staffFarms`) fills the sixth post by its rule, of the fields and mills first;
+  its float two days of the new wages (132p) and its crew's purse by its size (352p, the other farms' 57p a head). The
+  extra hands live in Larkfield (Longmead) and Southmeadow (Larkholm): `communities.json`'s hands 11 and 9 (the farms 5),
+  and realm2_places' check with them. Linen cloth and cord stay the Country's until Phase 4. The areas' `revenueADay`
+  carry the new goods' pennies (the Country's basket's shift weighs the areas by them).
+- **The patch damped.** people4's patch swung back from people3's (the pig farms' meal 12.6 to 1.5, salt and oats far up)
+  for two reasons, both in `tools/econ_report.py`'s demand basis: (1) the shops' draws cut short were counted as a day's
+  want, but a draw's lack is a shelf's deficit, a stock counted again every day it stands (a craft's input, never sold,
+  at its whole deficit each day: the provisioners' salt alone ~30 a day on 49 sold); and (2) each farm was sized by its
+  own sales, but a draw takes from the farms by their stock, so whichever held more sold more (the dairies' meal sold, the
+  piggeries' sat). Now: **what was taken** (sold, the Country's table, its lack) **of all the good's farms together,
+  shared by their yields**, plus **the shelves left under refilled over a week** (`REFILL_DAYS` 7), and that only for a
+  good the farms never spoiled that season. And `--apply` goes **half way** (`--damping`, default 0.5) from each yield
+  now to the patch's, `--goods` limiting it to some. Applied from people4 (the tool's tests updated, a third added):
+  - every good but salt and grain at 0.5: meal 138-147 a day (after the scales) to 109-115 (the patch 76-82, sold ~73,
+    spoiled ~65), raw meat 264-286 to 211-229, bones 59-66 to 49-52, hides 7-9 to 6-7.5, shellfish 182-267 to 161-224,
+    milk 112-129 to 103-117, honey and wax down (piling), tallow unchanged (~74: sold 70);
+  - **the grain split at the whole step** (flour piled 6,500 a year, the shops' oats short): flour 107 / 117 / 121 / 115 to
+    97 / 106 / 107 / 96, oats 84 / 99 / 101 / 87 to 93 / 107 / 108 / 97 (the grain farms' flour stock covers the cut);
+  - **salt at yield scale 88** (from 80), its yields kept: the fixed patch's whole step is about +10% (salt 75 / 63 / 60 / 69
+    to 83 / 69 / 66 / 76), the same as the scale.
+  `Tests/farms_tests.cpp`'s pinned flour mean is 56.94 (from 63.10).
+- **Checks.** `farms_behaviors` (668 checks): 78 hands; the marsh's herbs the fish area's and nobody else's, resin no area's;
+  hemp and flax the grain farms', 1 + 5, the float two days' wages; salt's scale 88; with fish and grain on, comfrey drawn
+  from the marsh's store (paid to its till, nothing to the Country) and hemp from the grain farms', conserved, and fish off
+  again the Country's comfrey; the crew scales on five hands. `farm_people_behaviors` (1,751 checks): 78 hands placed; each
+  grain farm's six posts all of the fields and mills, its five hands held. `test_econ_report` (4 tests): the stock need,
+  the pooled farms, the meal that spoiled, the damping and `--goods`.
+
+Next: Phase 1's 30-day smoke folds into Phase 2's first 3-year run (section 5), the user's go-ahead first.

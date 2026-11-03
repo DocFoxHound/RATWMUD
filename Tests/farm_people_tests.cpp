@@ -298,7 +298,7 @@ void thePlacement()
         expect(f.heads() == 0 && f.virtualWages() == 0 && std::abs(f.working() - 1) < 1e-9, f.def->id + ": no virtual post left");
         keepers += f.keepers, hands += f.hands;
     }
-    expect(keepers == 31 && hands == 76, "31 keepers and 76 hands placed");
+    expect(keepers == 31 && hands == 78, "31 keepers and 78 hands placed");
     // Where they live: a farmhouse its keeper's family's alone; hands in their farm's community (or the city's homes), at
     // most six to a home.
     const auto& people = items::farmPeople();
@@ -363,6 +363,22 @@ void thePlacement()
             fallback += trade != "orchards and vines";
         }
     expect(fallback == 2, "two of the orchards' and vines' posts from the fallback trades: " + std::to_string(fallback));
+    // The grain farms' hemp and flax (doc 72, Phase 1): a hand more each, 1 + 5, all of the fields and mills (17 of them
+    // in the pool, the 12 posts theirs), the extra hands housed in Larkfield and Southmeadow.
+    for (const auto* id : {"grain_farm_1", "grain_farm_2"})
+    {
+        int posts = 0, ofFields = 0;
+        for (const auto& r : requests)
+            if (r.farm == id && r.workLabel != "-")
+            {
+                ++posts;
+                ofFields += people.tradeOf(oldLabel.at(r.templateId)) == "fields and mills";
+            }
+        expect(posts == 6 && ofFields == 6, std::string(id) + ": six posts, all of the fields and mills: " + std::to_string(posts) + ", " +
+                                                std::to_string(ofFields));
+        const auto& g = farm(s, id);
+        expect(g.hands == 5 && g.heldHands == 5, std::string(id) + "'s five hands held");
+    }
     // Each farm's people of its own trades but for the fallback's (a keeper's family apart).
     for (const auto& r : requests)
         if (const auto* site = people.farm(r.farm); site && r.workLabel != "-")

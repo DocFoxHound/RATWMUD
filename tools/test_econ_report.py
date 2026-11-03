@@ -41,10 +41,12 @@ class Fixture:
         f.write(json.dumps(dict({'day': n, 'season': season, 'year_day': n + 1, 'names': fresh}, **row)) + '\n')
 
 
-def write_run(root, more=None, yields=None, areas=None, econ_more=None):
+def write_run(root, more=None, yields=None, areas=None, econ_more=None, second=None):
     meta = {'meta': {'format': 'ratw-econ-full', 'version': 1, 'price_band': 25, 'columns': {},
                      'farms': {'grain_farm_1': {'area': 'grain', 'yield_scale': 1.0,
                                                 'yield': yields or {'flour': [10, 10, 10, 10]}}}}}
+    if second:
+        meta['meta']['farms']['grain_farm_2'] = {'area': 'grain', 'yield_scale': 1.0, 'yield': second}
     if areas:
         meta['meta']['farm_areas'] = areas
     fx = Fixture()
@@ -78,12 +80,16 @@ class ReportTests(unittest.TestCase):
             self.assertIn('| spring | lower (the Sump, the Rents) | 10 | 0.60 | 20 | 40 | 0.50 | 7.5 |', text)
             self.assertIn('| bread | 8.0 | 40 | 1.25 | hh:lower 75% | baker 100% |', text, 'the largest buyer and seller')
             patch = json.loads((root / 'report.md.patch.json').read_text())
-            # Sold 10 and eaten 1 a day, and the baker's 4 pieces short a day: 15, and 5% over.
-            self.assertEqual(patch['farms']['grain_farm_1']['flour'], [15.75, 10, 10, 10])
+            # Sold 10 and eaten 1 a day, and the baker's shelf 4 under (a stock, refilled over a week): 11.57, 5% over.
+            self.assertEqual(patch['farms']['grain_farm_1']['flour'], [12.15, 10, 10, 10])
             farms = root / 'country_farms.json'
             farms.write_text(R.dumps({'areas': [{'id': 'grain', 'farms': [{'id': 'grain_farm_1', 'yield': {'flour': [10, 10, 10, 10]}}]}]}))
+            # Half way by default, so the next run's patch can't swing back past where it started.
             self.assertEqual(R.apply_patch(root / 'report.md.patch.json', farms), 1)
-            self.assertIn('"flour": [15.75, 10, 10, 10]', farms.read_text())
+            self.assertIn('"flour": [11.07, 10, 10, 10]', farms.read_text())
+            self.assertEqual(R.main(['--apply', str(root / 'report.md.patch.json'), str(farms), '--damping', '1']), 0)
+            self.assertIn('"flour": [12.15, 10, 10, 10]', farms.read_text())
+            self.assertEqual(R.apply_patch(root / 'report.md.patch.json', farms, 1, {'oats'}), 0, 'only the goods named')
 
     def test_draws_short_as_lost_sales(self):
         # The stables sold 3 oats on the day it held some, then stood 20 under its shelf both days: at most its day's sales
@@ -103,11 +109,31 @@ class ReportTests(unittest.TestCase):
             self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
             text = out.read_text()
             patch = json.loads((root / 'report.md.patch.json').read_text())
-            # Sold 3 a day and at most 3 a day lost (6 over the two days): 6, and 5% over.
-            self.assertEqual(patch['farms']['grain_farm_1']['oats'], [6.3, 3, 3, 3])
+            # Sold 3 a day, and the stables' shelf 20 under, a stock refilled over a week (not 20 lost a day): 5.86, 5% over.
+            self.assertEqual(patch['farms']['grain_farm_1']['oats'], [6.15, 3, 3, 3])
             self.assertIn('no farm grows', text)
             self.assertIn('wheat (grain) 14', text)
             self.assertIn('| grapes | spring | 6 |', text, "the economy lines' draws cut short, at the full level too")
+
+    def test_the_farms_of_a_good_together(self):
+        # Two farms grow flour alike, but the draws took it all from the first (its stock the larger): each is sized by
+        # its share of the yield, not by its own sales. Meal spoiled at the second: no stock need for it, only what sold.
+        def more(n):
+            return {'farm_good': [['grain_farm_2', 'flour', 10, 0, 5, 0, 0, 0], ['grain_farm_1', 'meal', 5, 2, 0, 0, 0, 0],
+                                  ['grain_farm_2', 'meal', 5, 2, 0, 3, 0, 0]],
+                    'short': [['till:job:cook', 'meal', 'shop:inn', 1, 14, '']]}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, more, yields={'flour': [10, 10, 10, 10], 'meal': [5, 5, 5, 5]},
+                             second={'flour': [10, 10, 10, 10], 'meal': [5, 5, 5, 5]})
+            self.assertEqual(R.main([str(econ), '--out', str(root / 'report.md')]), 0)
+            patch = json.loads((root / 'report.md.patch.json').read_text())['farms']
+            # Flour: 11 a day taken (all from the first) and the baker's 4 under refilled over a week, half each.
+            self.assertEqual(patch['grain_farm_1']['flour'][0], patch['grain_farm_2']['flour'][0])
+            self.assertEqual(patch['grain_farm_1']['flour'][0], 6.08)
+            # Meal: 4 a day sold, spoiled at a farm: the cook's shelf counts for nothing; 2.1 each.
+            self.assertEqual(patch['grain_farm_1']['meal'][0], 2.1)
+            self.assertEqual(patch['grain_farm_2']['meal'][0], 2.1)
 
     def test_the_normal_level_alone(self):
         with tempfile.TemporaryDirectory() as d:

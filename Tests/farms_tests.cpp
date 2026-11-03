@@ -171,7 +171,7 @@ void theDefaults()
             ++kinds[x.kind];
             expect(x.reserve > 0 && x.purse > 0 && !x.yield.empty(), x.id + " has a float, a crew's purse and yields");
         }
-    expect(farms == 31 && keepers == 31 && hands == 76, "31 farms, 31 keepers and 76 hands: " + std::to_string(farms) + ", " +
+    expect(farms == 31 && keepers == 31 && hands == 78, "31 farms, 31 keepers and 78 hands (a fibre hand at each grain farm, doc 72): " + std::to_string(farms) + ", " +
                                                             std::to_string(keepers) + ", " + std::to_string(hands));
     expect(kinds["vineyard"] == 2 && kinds["salt works"] == 2 && kinds["grain farm"] == 2,
            "two vineyards and two salt works (the user's decision), two grain farms");
@@ -185,12 +185,34 @@ void theDefaults()
                "the Country's re-weighted basket buys nothing the farms' does: " + item);
         expect(Society::nourishment(item) == 0 && item != "aqua_vitae", "and no food or drink: " + item);
     }
-    // The yields: the season means of the blend (a grain farm's flour in summer: the farms' people's run's balanced yields, doc 71, Progress).
+    // The yields: the season means of the blend (a grain farm's flour in summer: the farms' people's confirming run's
+    // yields, the flour cut to what was taken and the oats raised, doc 72, Phase 1).
     const auto& flour = f.areas[areaIndex("grain")].farms.front().yield.at("flour");
     double summer = 0;
     for (int d = 92; d < 184; ++d)
         summer += Society::seasonalValue(flour, d + .5);
-    expect(std::abs(summer / 92 - 63.10) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
+    expect(std::abs(summer / 92 - 56.94) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
+    // The Country's herbs and raw fibre on the farms that already exist (doc 72, Phase 1): the eel marsh's herbs (the fish
+    // area's goods; resin stays the Country's, with the woods), the grain farms' hemp and flax with a hand more each.
+    const auto& fish = f.areas[areaIndex("fish")];
+    const auto& grain = f.areas[areaIndex("grain")];
+    for (const auto* good : {"herbs", "wormwood", "willow_bark", "thyme", "garlic", "comfrey"})
+    {
+        expect(std::find(fish.goods.begin(), fish.goods.end(), good) != fish.goods.end(), std::string("the fish area's: ") + good);
+        for (const auto& x : fish.farms)
+            expect(x.yield.count(good) == (x.id == "eel_and_fowl_marsh_1"), x.id + (x.id == "eel_and_fowl_marsh_1" ? " grows " : " doesn't grow ") + good);
+    }
+    expect(std::none_of(f.areas.begin(), f.areas.end(), [](const auto& a) { return std::find(a.goods.begin(), a.goods.end(), "resin") != a.goods.end(); }),
+           "resin no area's: the woods'");
+    for (const auto* good : {"hemp", "flax"})
+        expect(std::find(grain.goods.begin(), grain.goods.end(), good) != grain.goods.end(), std::string("the grain area's: ") + good);
+    for (const auto& x : grain.farms)
+    {
+        expect(x.yield.count("hemp") && x.yield.count("flax") && x.keepers == 1 && x.hands == 5,
+               x.id + " grows hemp and flax, with a hand more (1 + 5)");
+        expect(x.reserve == 2 * (16 + 5 * 10), x.id + "'s float two days of its wages: " + std::to_string(x.reserve));
+    }
+    expect(f.areas[areaIndex("salt")].yieldScale == 88, "salt's yield scale 88 (doc 72, Phase 1)");
 }
 
 void yieldsBySeason()
@@ -259,11 +281,11 @@ void crewsAndWages()
     expect(one.keeper == 18 && one.hand == 12, "a farm's own hand's wage, its area's keeper's: " + std::to_string(one.keeper) + "/" + std::to_string(one.hand));
     expect(two.keeper == 18 && two.hand == 10, "the area's keeper's, the defaults' hand's");
     expect(salt.keeper == 15 && salt.hand == 10, "another area: the world's keeper's wage, the file's hand's");
-    expect(one.hands == 6 && two.hands == 3, "4 hands at 150%: 6; at 150% of 50%: 3 (rounded half up): " + std::to_string(one.hands) + ", " +
+    expect(one.hands == 8 && two.hands == 4, "5 hands at 150%: 8; at 150% of 50%: 4 (rounded half up): " + std::to_string(one.hands) + ", " +
                                                  std::to_string(two.hands));
-    expect(one.wages() == 18 + 6 * 12, "its wages a day: " + std::to_string(one.wages()));
+    expect(one.wages() == 18 + 8 * 12, "its wages a day: " + std::to_string(one.wages()));
     expect(one.reserve == 2 * one.wages(), "its float: two days of its wages");
-    expect(one.purse == std::llround(double(one.def->purse) * 7 / 5), "its crew's purse by its size");
+    expect(one.purse == std::llround(double(one.def->purse) * 9 / 6), "its crew's purse by its size");
 }
 
 void thePhasedSwitch()
@@ -417,6 +439,40 @@ void theCountryNoLongerSends()
     const auto r = s.drawFromStore("butcher", "raw_meat", 10, "restocked from the store room");
     expect(r.ok && r.message.find("from the farms") != std::string::npos, "raw meat from the farms: " + r.message);
     expect(s.farmAreaOf("raw_meat") == int(areaIndex("meat")) && s.farmAreaOf("flour") < 0, "the meat area's, not grain's");
+}
+
+void herbsAndFibre()
+{
+    // Doc 72, Phase 1: with the fish area on, the apothecary's comfrey comes from the eel marsh's store and the Country
+    // sends none; with grain on, the ropewalk's hemp from the grain farms'. Off, the Country supplies them again.
+    const std::vector<ResidentSpec> makers = {
+        person("apothecary", "merchant", "apothecary at the Mortar", {"mortar", 2.5, 2.5}, "home_apothecary", 40, 400),
+        person("ropewalk", "merchant", "works the ropewalk by the wharf", {"ropewalk", 2.5, 2.5}, "home_ropewalk", 40, 400)};
+    auto s = city([](EconomySpec& e) { e.farms.areas["fish"].on = 1, e.farms.areas["grain"].on = 1; }, makers);
+    turn(s, 46);
+    const auto marsh = Society::farmTill("eel_and_fowl_marsh_1");
+    expect(held(s, marsh, "comfrey") > 0 && held(s, marsh, "willow_bark") > 0, "the marsh's store holds its herbs");
+    expect(s.farmAreaOf("comfrey") == int(areaIndex("fish")) && s.farmAreaOf("hemp") == int(areaIndex("grain")) &&
+               s.farmAreaOf("resin") < 0,
+           "the herbs the fish area's, hemp the grain area's, resin nobody's");
+    const auto country = s.cash(Society::CountryFund), till = s.cash(marsh);
+    const int comfrey = held(s, marsh, "comfrey");
+    const auto r = s.drawFromStore("apothecary", "comfrey", 2, "restocked from the store room");
+    expect(r.ok && r.message.find("from the farms") != std::string::npos, "comfrey from the marsh: " + r.message);
+    expect(held(s, marsh, "comfrey") == comfrey - 2 && s.cash(marsh) > till && s.cash(Society::CountryFund) == country,
+           "out of its store, paid to its till, nothing to the Country");
+    const auto t1 = Society::farmTill("grain_farm_1"), t2 = Society::farmTill("grain_farm_2");
+    const int hemp = held(s, t1, "hemp") + held(s, t2, "hemp");
+    expect(hemp > 100, "the grain farms' stores hold hemp: " + std::to_string(hemp));
+    const auto rope = s.drawFromStore("ropewalk", "hemp", 10, "restocked from the store room");
+    expect(rope.ok && rope.message.find("from the farms") != std::string::npos && held(s, t1, "hemp") + held(s, t2, "hemp") == hemp - 10,
+           "hemp from the grain farms: " + rope.message);
+    expect(s.conserved(), "conserved");
+    auto e = s.authored().economy;
+    e.farms.areas["fish"].on = 0;
+    s.adoptEconomy(e);
+    const auto back = s.drawFromStore("apothecary", "comfrey", 2, "restocked from the store room");
+    expect(back.ok && back.message.find("from the farms") == std::string::npos, "fish off: the Country's comfrey again: " + back.message);
 }
 
 void spoiling()
@@ -722,8 +778,8 @@ void theRecords()
         const auto& one = f.farms.at("grain_farm_1");
         expect(one.yieldScale == 90 && one.crewScale == -1 && one.keeper == -1 && one.hand == 12, "a farm's");
         const auto& now = farm(w.society(), "grain_farm_1");
-        expect(std::abs(now.yieldScale - 1.08) < 1e-9 && now.hands == 6 && now.keeper == 18 && now.hand == 12,
-               "applied: 120% of 90%, 4 hands at 150%, the area's keeper, the farm's hand");
+        expect(std::abs(now.yieldScale - 1.08) < 1e-9 && now.hands == 8 && now.keeper == 18 && now.hand == 12,
+               "applied: 120% of 90%, 5 hands at 150%, the area's keeper, the farm's hand");
         expect(std::abs(w.society().farmPriceFactor("flour") - 1.05) < 1e-9 && w.society().farmPriceFactor("salt") == 0,
                "the area's price a year (switched on, it is on at once); salt at the season's");
     }
@@ -776,6 +832,7 @@ int main()
         drawsFromTheFarms();
         anEvenSplit();
         theCountryNoLongerSends();
+        herbsAndFibre();
         spoiling();
         theFarmsBasket();
         aShortFarm();

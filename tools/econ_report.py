@@ -6,14 +6,21 @@ economy file (`--economy F`) and, at `--economy-level full`, its tables (F.full.
 
     python3 tools/econ_report.py ECONOMY.jsonl [--full F.full.jsonl.gz] [--out REPORT.md] [--patch PATCH.json]
                                  [--slack 5] [--top 8]
-    python3 tools/econ_report.py --apply PATCH.json Data/Economy/country_farms.json
+    python3 tools/econ_report.py --apply PATCH.json Data/Economy/country_farms.json [--damping 0.5] [--goods a,b]
 
 It does all the reading: a person or an agent reads only the report. With the economy file alone (the normal level) it
 reports what those lines hold (the treasury, the hungry, the tills short, the farms' wants not met). The farms' patch
 (PATCH, default the report's name with ".patch.json") holds, per farm and good, the yield by season (pieces a day at the
-season's middle, before the farm's yield scale, as country_farms.json has them) that would have met the shops' draws of
-it, the draws its stock could not fill, and the Country's table, with SLACK percent more; a season the run did not see
-keeps its yield. `--apply` writes those yields into country_farms.json (nothing else changes).
+season's middle, before the farm's yield scale, as country_farms.json has them) that would have met what was taken of it
+and its stock's needs, with SLACK percent more; a season the run did not see keeps its yield. What was taken is what the
+farms of the good sold, what the Country's table ate and what it lacked, all the good's farms together, shared out by
+their yields (a draw takes from the farms by their stock, so one farm's own sales say little). Its stock's needs are the
+shelves the shops' draws left under, a stock and not a day's want: refilled over RefillDays, and only for a good the farms
+never spoiled that season (a perishable's shelves kept full would only spoil). (The draws' deficits counted as a day's
+want, as before 2026-11-03, sized the yields on a stock counted again each day: the next run's patch swung back.)
+`--apply` writes those yields into country_farms.json (nothing else changes), DAMPING of the way from each yield now to
+the patch's (0.5 by default: half way, so a run's patch can't overshoot and swing back; 1 the whole way), of every
+good or of GOODS alone.
 """
 from __future__ import annotations
 
@@ -27,6 +34,8 @@ import sys
 from pathlib import Path
 
 SEASONS = ['spring', 'summer', 'autumn', 'winter']
+REFILL_DAYS = 7            # The days over which a farm good's shops' shelves left under are filled again (the patch).
+DAMPING = 0.5              # The share of the way from a yield now to the patch's that `--apply` goes.
 CLASS_NAMES = {'lower': 'lower (the Sump, the Rents)', 'middle': 'middle', 'upper': 'upper (the Houses)'}
 
 
@@ -90,6 +99,14 @@ class Run:
             rate = sold / held if sold and held else None
             total[(g, s)] += sum(days) if rate is None else sum(min(k, rate) for k in days)
         return total
+
+    def stock_needs(self):
+        """By (good, season), the shops' shelves the draws left under, a day of the season: their deficits summed over the
+        days and the tills, over the season's days (each till's mean deficit, all the tills together)."""
+        total = collections.Counter()
+        for (g, s, till), days in self.draw_short.items():
+            total[(g, s)] += sum(days)
+        return {k: v / max(1, self.season_days[k[1]]) for k, v in total.items()}
 
     def add(self, meta, names, d):
         self.meta = meta
@@ -181,7 +198,8 @@ def slope_per_year(series):
 
 
 def farm_patch(run):
-    """Per farm and good, the yields by season that meet its share of the demand, SLACK percent over."""
+    """Per farm and good, the yields by season that meet its share of what was taken and its stock's needs, SLACK percent
+    over (the module's doc)."""
     farms = (run.meta or {}).get('farms', {})
     by_good = collections.defaultdict(float)
     for farm, f in farms.items():
@@ -189,22 +207,40 @@ def farm_patch(run):
             by_good[good] += sum(y) / 4 * f['yield_scale']
     patch, changes = {}, []
     unmet = run.unmet_draws()
+    needs = run.stock_needs()
     # An area's good no farm of it grows: the Country no longer sends it and no yield can be raised, so it is named apart.
     ungrown = []
     for area, goods in sorted(((run.meta or {}).get('farm_areas') or {}).items()):
         for good in goods:
             if not by_good.get(good):
                 ungrown.append((good, area, sum(unmet[(good, s)] for s in SEASONS)))
+    # Each good's season, all its farms together: what was taken a day (on the days its farms were on), whether any
+    # spoiled, and its yield now (each farm's share of the patch's).
+    taken, spoiled, grown, days = collections.Counter(), set(), collections.Counter(), collections.Counter()
+    for (farm, good, season), fg in run.farm_good.items():
+        if farm not in farms or not fg['days']:
+            continue
+        taken[(good, season)] += fg['sold'] + fg['eaten'] + fg['short']
+        days[(good, season)] = max(days[(good, season)], fg['days'])
+        if fg['spoiled']:
+            spoiled.add((good, season))
+    for farm, f in farms.items():
+        for good, y in f['yield'].items():
+            for i, season in enumerate(SEASONS):
+                grown[(good, season)] += y[i] * f['yield_scale']
     for farm, f in sorted(farms.items()):
         for good, current in sorted(f['yield'].items()):
-            share = (sum(current) / 4 * f['yield_scale'] / by_good[good]) if by_good[good] else 0
             new = list(current)
             for i, season in enumerate(SEASONS):
+                key = (good, season)
                 fg = run.farm_good.get((farm, good, season))
                 if not fg or not fg['days'] or f['yield_scale'] <= 0:
                     continue
-                demand = (fg['sold'] + fg['eaten'] + fg['short'] + share * unmet[(good, season)]) / fg['days']
-                new[i] = round(demand * (1 + run.slack / 100) / f['yield_scale'], 2)
+                demand = taken[key] / days[key] + (0 if key in spoiled else needs.get(key, 0) / REFILL_DAYS)
+                # (Its share of the season's yield now; none grown this season, its share of the year's.)
+                share = (current[i] * f['yield_scale'] / grown[key] if grown[key] else
+                         sum(current) / 4 * f['yield_scale'] / by_good[good] if by_good[good] else 0)
+                new[i] = round(demand * share * (1 + run.slack / 100) / f['yield_scale'], 2)
             if new != list(current):
                 patch.setdefault(farm, {})[good] = new
                 changes.append((max(abs(a - b) / max(b, 1) for a, b in zip(new, current)), farm, good, current, new))
@@ -437,15 +473,19 @@ def dumps(doc):
     return re.sub(r'\[\s+([^\[\]{}]*?)\s+\]', lambda m: '[' + ', '.join(x.strip() for x in m.group(1).split(',')) + ']', text) + '\n'
 
 
-def apply_patch(patch_path, farms_path):
+def apply_patch(patch_path, farms_path, damping=DAMPING, goods=None):
+    """The patch's yields written into country_farms.json, DAMPING of the way from each yield now (of GOODS alone, if
+    given)."""
     patch = json.loads(Path(patch_path).read_text())['farms']
     doc = json.loads(Path(farms_path).read_text())
     done = 0
     for area in doc.get('areas', []):
         for farm in area.get('farms', []):
             for good, new in patch.get(farm['id'], {}).items():
-                if good in farm.get('yield', {}):
-                    farm['yield'][good] = new
+                if good in farm.get('yield', {}) and (goods is None or good in goods):
+                    now = farm['yield'][good]
+                    moved = [round(a + damping * (b - a), 2) for a, b in zip(now, new)]
+                    farm['yield'][good] = [int(v) if v == int(v) else v for v in moved]   # (10, not 10.0, as written)
                     done += 1
     Path(farms_path).write_text(dumps(doc))
     return done
@@ -461,10 +501,16 @@ def main(argv=None):
     ap.add_argument('--slack', type=float, default=5)
     ap.add_argument('--top', type=int, default=8)
     ap.add_argument('--apply')
+    ap.add_argument('--damping', type=float, default=DAMPING)
+    ap.add_argument('--goods', help='with --apply: only these goods (comma separated)')
     a = ap.parse_args(argv)
     if a.apply:
         target = a.farms_json or a.economy
-        print(f'{apply_patch(a.apply, target)} yields written to {target}')
+        if not 0 < a.damping <= 1:
+            print('--damping is from 0 (not included) to 1', file=sys.stderr)
+            return 1
+        goods = set(a.goods.split(',')) if a.goods else None
+        print(f'{apply_patch(a.apply, target, a.damping, goods)} yields written to {target} ({a.damping:g} of the way)')
         return 0
     econ = economy_lines(a.economy)
     full = a.full or (a.economy + '.full.jsonl.gz' if a.economy else None)
