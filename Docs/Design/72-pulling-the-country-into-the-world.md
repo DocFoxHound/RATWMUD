@@ -440,4 +440,82 @@ Food-adjacent and largest money first; each phase as doc 71 did it: **modelled p
 13. **The lime quarry.** Recommended: **wait for Frosthollow** (~720 away); limestone and lime stay the Country's until
     then. Or an exception to the 800-tile rule: the crew in Ridgemere, walking ~960-1,140.
 
+## Siting (2026-11-03)
+
+The user, 2026-11-03, on this doc: build Phases 1-5 in order; each works pays its crew and sends what is over to the
+House whose land it is on (question 1); **Timberland holds the woods** (question 11); **peat yes**, as a second fuel
+(question 3); the other questions take the recommendations. And: "erase all of the previous empty 'towns' that we
+placed on the map unless they're needed as a community hub for any of these things ... find natural places for all of
+these things and then place communities near them that make sense, and then build those communities out into towns."
+
+**How it was judged.** The realm was laid again from its seed (`realm2.Realm2(...).build()`, DEV read only, nothing
+written) and its tiles read round each candidate (a 60-tile box: trees, cedar, pine, broadleaf, bog = mud, bog water
+and reeds, rock = bare rock, scree, rubble, boulders, sandstone; the biomes' shares). **Walks are measured**, not
+estimated: realm2_places' own footpath route (`route` over `route_cost`, roads at 0.3, unwalkable dry ground 3), from
+the community's centre or the city's gate (East 776,250; South 412,776) to the works' centre. They replace section 4's
+estimates (most were close; the clay pits' and the Front camp's were not). Scripts: the session's scratchpad
+`siting/` (`dump2.py`, `comp.py`, `walks.py`).
+
+### The works
+
+| Phase | Works | Site | Ground (60-tile box) | Crew | Lives in | Walk |
+|---|---|---|---|---|---|---|
+| 2 | Rainwood logging camp | `timber_rainwood` (652,1092), as built | rainforest: 35% standing trees, cedar 18%, fir and pine 13% | 1 + 2 | **Ridgemere** | 458 (South Gate) |
+| 2 | **Oakhaven cut** (logging camp) | **new** `timber_oakhaven`, about (1056,1056), size 24 | the densest stand near the Sound's head: 46% trees, cedar 23%, fir and pine 17%; clear of `range_rainrun` (101 past its edge) | 1 + 3 | **Oakhaven** | 179 |
+| 2 | Rainwood coppice | **new** `coppice_rainwood`, about (620,1040), size ~24, beside the Rainwood cut (37 past its edge), on realm ground | rainforest with alder and other broadleaf (7%, the most within 800 of a gate): alder and hazel stools on the cut-over | 1 + 2 | **Ridgemere** | 368 (South Gate) |
+| 2 | Greenholt coppice and charcoal hearth | `charcoal_greenholt` (1260,2124), as built | the Greenholt's oak and beech woodland: broadleaf 17% (charcoal wants hardwood) | 1 + 2 | **Larkfield** | 537 |
+| 2 | Fens peat cutting | **new** `peat_fens`, about (800,3616), size ~30, behind the dunes south of Fenshore (64 past the warren's edge) | open bog: 64% mud, bog water and reeds, marsh 82%, at sea level | 1 + 1 | **Fenshore** | 173 |
+| 3 | Granite quarry (Greatly) | `quarry_granite` (1028,356), as built | the Rainward Hills' granite under pine: rock 11%, montane, height ~6 | 1 + 2 | **Ridgemere** | 335 (East Gate) |
+| 3 | Mirebridge clay pit | `clay_mirebridge` (1180,3276), as built | river clay in the fens: bog 51%, water 8% | 1 hand | **Fenshore** | 611 |
+| 3 | Fens clay pit | `clay_fens` (1636,3332), as built | the fens' east edge: bog 38%, water 8% | 1 hand | **Southmeadow** | 575 |
+| 5 | soap boiler and chandler | in **Coldwater** | the herds' village: the sheep runs', piggeries' crews live there; the farms' tallow | ~4 | Coldwater | 0 |
+| 5 | weavers' cottages | **Coldwater** (wool: the two sheep runs' village) and **Larkfield** (linen: the grain farms' flax) | | ~5 + 5 | Coldwater, Larkfield | 0 |
+| 5 | village potteries | **Fenshore** (clay from `clay_mirebridge`, peat for the kiln) and **Southmeadow** (clay from `clay_fens`) | | ~2 + 2 | Fenshore, Southmeadow | 0 |
+| 5 | country presses and paper mills | **Larkfield** (on the Long River) and **Oakhaven** (where the Rainrun and the Alder reach the Sound: the one nearer the city, doc 71's "on the plains' rivers, one nearer the city") | | ~5 + 5 | Larkfield, Oakhaven | 0 |
+| 5 | village smithy | **Larkfield** (the grain farms' village) | | 1 | Larkfield | 0 |
+
+**What changed from section 4**, and why:
+
+- **The second logging camp is the new Oakhaven cut, not `timber_front`.** Measured, Coldwater to the Kestrel pines is
+  **1,081**, over the 1,047 accepted; Frosthollow 745 and Oakhaven 996. `timber_sound` is no better: the Sound lies
+  between it and everything (Oakhaven 869, the city 1,652). The stand above Oakhaven is the densest standing timber
+  within 550 of the Sound's head and 179 from Oakhaven. It takes the bigger crew (1 + 3; the Rainwood camp 1 + 2), so
+  the fuel's crew is the same 15. `timber_front`, `timber_upper`, `timber_sound` and `timber_coast` stay reserved.
+- **The Rainwood coppice is a new site beside the cut**, as question 5 recommended (`range_city` untouched). The
+  Rainwood is cedar and fir, which don't coppice; the site is where its alder is thickest near a gate, and the
+  coppice is alder and hazel on the cut-over ground. The hardwood charcoal stays in the Greenholt's broadleaf.
+- **The peat is at Fenshore's door**: the most open bog near a home (the bogs north of the delta, ~(1056,3168), are
+  ~860 from both Fenshore and Mirebridge).
+- **The clay pits keep their homes** (Fenshore, Southmeadow), at the measured 611 and 575 (the doc said ~440 and ~600).
+  Mirebridge would be no nearer either (648 and 1,464).
+- **Phase 5's homes**: the potteries are two (doc 71), one at each pit's community; the presses and paper mills are two,
+  Larkfield's and Oakhaven's. Coldwater +9, Larkfield +11, Oakhaven +5, Fenshore +2, Southmeadow +2: 29.
+
+**The beds.** Phases 2-3 put 9 in Ridgemere (city households of their class, doc 68's arrivals' rule), 4 in Oakhaven,
+3 in Larkfield, 3 in Fenshore (peat 2, clay 1), 1 in Southmeadow. Coldwater takes none until Phase 5.
+
+### The town sites: erased and kept
+
+The realm has eight `town` sites: the five communities (Coldwater, Larkfield, Southmeadow, Saltwell on reserved town
+sites; Fenshore, its own), and three empty: Oakhaven, Frosthollow, Mirebridge. No other leftover town ground.
+
+| Site | Decision | Why |
+|---|---|---|
+| **Oakhaven** (1012,1220) | **kept: a sixth community**, the woods' | Home of the Oakhaven cut's crew (179) and, at Phase 5, a press and paper mill. Without it the second camp has no home within 1,047 but the city at 794, at the edge of the 800 rule. It is the nearest of all the realm's homes to the Rainwood's other reserved sites (`charcoal_rainwood` 510, `timber_sound` 869, the city 731 and 1,652), so the woods can grow there; and the pool's 25 loggers and 3 sawmill people are Oakhaven's by their old trade, so they can follow their town's name. |
+| **Mirebridge** (1468,2868) | **erased** | Serves nothing nearer than an existing community: the clay pits are 648 and 1,464 from it (Fenshore 611, Southmeadow 575), the fens' bogs ~870. |
+| **Frosthollow** (2308,796) | **erased** | Serves only iron and lime, which stay the Country's. It is the nearest home to `timber_front` (745) and `quarry_lime` (794), but neither is built now. It can be placed again (the same high valley) with the iron (4.7). |
+
+**Erasing a site** (Phase 2's realm change): the site leaves `SITES`, its cleared level ground goes back to the country
+round it (the region's own ground and trees, as `lay_ground` paints it), and its cells lose "A level stretch of cleared
+ground here waits for a town". **The roads stay**: the Pass Road, the Pass, the High Road, the Coast Road and the Fen
+Road keep their routes, ending at the same points (each road's end given as the old site's (x,y) instead of its id), so
+the junctions are crossroads in the open where the towns were.
+
+**Oakhaven, the community** (as `realm2_places.COMMUNITIES`, sized like Southmeadow and Fenshore): **3 cottages** (18
+beds), **a store** with the keeper's flat, **an alehouse** with its keeper's flat (about 25 beds in all), kitchen
+gardens, hens and goats; `country` style (timber under cedar shingle); a footpath to the Oakhaven cut; **room to grow
+of about 8 cottage lots** for the press and paper mill (Phase 5) and the woods' families. Its market posts (shopkeeper,
+alehouse keeper) are placed from the pool as the others' were. It stays a region under Phase 0's `setupTowns` rule,
+like the five.
+
 ## Progress
