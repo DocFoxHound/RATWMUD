@@ -2,7 +2,8 @@
 // server does, then brings every cell into memory so the server's own checks run on all of it.
 //
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic] [--events FILE]
-//                                                       [--threads N] [--economy FILE [--economy-detail FILE]] [--day N] [--sample] [--no-profile] [--no-births]
+//                                                       [--threads N] [--economy FILE [--economy-detail FILE]
+//                                                       [--economy-level off|normal|full [--economy-full FILE]]] [--day N] [--sample] [--no-profile] [--no-births]
 //                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks]
 //                                                       [--farms DAY [--farms-every N]]]
 //
@@ -30,6 +31,11 @@
 // the treasury's and the Country's flows, all from the ledger (World::setEventWatcher): only read, so the --economy file
 // is the same with or without it. RATW_DETAIL_TRACE=HOME,... adds those households hour by hour. tools/econ_detail.py
 // reads it (doc 68, "The first simulations").
+// --economy-level (Docs/Design/69-simulation-speed.md, 10; the economy file the same at every level): off writes the
+// economy file alone (no detail or loop-state file, though named); normal (the default) as before; full also the day's
+// market as compact tables (EconomyRecord: gzipped JSON lines in --economy-full FILE, else the economy file's name with
+// ".full.jsonl.gz"): per good who bought from whom and at what price, each till's and farm's day, the money between
+// groups, the wants not met and each class's welfare. tools/econ_report.py reads a run into a short report.
 // --fast (opt-in: it changes results) is --unseen-step 30 --straight --coarse-ticks: the unseen decide every N seconds,
 // each decision N seconds' worth (Society::setUnseenStep; the game's is 5); offstage legs are timed by their straight
 // line (World::setStraightOffstage); and while nobody is onstage the harness ticks half a second at a time, not 0.05 s.
@@ -50,6 +56,7 @@
 #include <cstring>
 #include <cmath>
 #include <cstdlib>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -489,6 +496,441 @@ struct EconomyDetail
         hungryHours.clear();
     }
 };
+// --economy-level full (Docs/Design/69-simulation-speed.md, 10): the market's day as compact tables, gzipped JSON lines
+// (--economy-full FILE, else the economy file's name with ".full.jsonl.gz"), from the ledger (World::setEventWatcher), the
+// loop's wants not met (Society::setShortageWatcher) and a look at the shops, farms and households at the economy line.
+// Only read, as the detail is: the economy file is the same at every level. Strings are numbered as they first appear
+// (each line's "names" adds the new ones, in order), so a row is a few integers; the first line ("meta") gives every
+// table's columns. Aggregated in memory over the day (from the last economy line to this one), deterministic: a map's
+// order, never a pointer's. tools/econ_report.py reads it.
+struct EconomyRecord
+{
+    std::FILE* out = nullptr;                       // (gzip's pipe: closed, so the file is whole, when the run ends.)
+    ~EconomyRecord()
+    {
+        if (out)
+            ::pclose(out);
+    }
+    std::vector<std::string> fresh;                 // Names first seen since the last line.
+    std::unordered_map<std::string, int> ids;
+    int id(const std::string& s)
+    {
+        const auto [at, added] = ids.try_emplace(s, int(ids.size()));
+        if (added)
+            fresh.push_back(s);
+        return at->second;
+    }
+    // An account's group: a household by its class ("hh:lower" the Sump's and the like, "hh:middle", "hh:upper" the
+    // Houses'), a farm's crew, a shop by its trade ("shop:<business>"), the carters, a farm, the Country, the treasury
+    // (and a town's store), a House's estate; "minted" for money made; "other" for the rest.
+    const Society* society = nullptr;
+    std::string carter;
+    std::unordered_map<std::string, std::string> groups, tradeOf;
+    const std::string& group(const std::string& account)
+    {
+        const auto found = groups.find(account);
+        if (found != groups.end())
+            return found->second;
+        std::string g;
+        if (account == "made" || account == "outside")
+            g = "minted";                           // (Made, or the world's founding money: "outside" to "settlement".)
+        else if (account == carter || account.rfind("fund:carriage", 0) == 0)
+            g = "carters";
+        else if (account.rfind("till:", 0) == 0)
+            g = "shop:" + tradeOf[account];
+        else if (account.rfind("crew:", 0) == 0)
+            g = "crew";
+        else if (account.rfind("farm:", 0) == 0)
+            g = "farm";
+        else if (account.rfind("outside:", 0) == 0)
+            g = "country";
+        else if (account == "treasury" || account.rfind("stores:", 0) == 0)
+            g = "treasury";
+        else if (account.rfind("house:", 0) == 0)
+            g = "estate";
+        else if (society->resident(account))
+            g = "hh:" + society->classOf(account);
+        else
+            g = "other";
+        return groups.emplace(account, g).first->second;
+    }
+    // The money groups (the flows' matrix): a shop of any trade is "shops".
+    static std::string money(const std::string& g) { return g.rfind("shop:", 0) == 0 ? "shops" : g; }
+    struct Trade
+    {
+        std::int64_t pieces = 0, pennies = 0, base = 0;   // (base: at the catalogue's price; pennies / base the factor.)
+    };
+    std::map<std::tuple<std::string, std::string, std::string>, Trade> trades;   // (Good, buyer group, seller.)
+    std::unordered_map<std::string, Trade*> lastSale;   // Buyer|seller -> its latest sale (a season's difference follows it).
+    struct Till
+    {
+        std::int64_t salesPieces = 0, takings = 0, drawPieces = 0, drawCost = 0, toll = 0, carriage = 0, inputs = 0,
+                     wagesPaid = 0, support = 0, profit = 0;
+        std::map<std::string, std::int64_t> sold;   // Ware -> pieces sold.
+    };
+    std::map<std::string, Till> tills;
+    std::unordered_map<std::string, std::map<std::string, std::int64_t>> pending;   // Till -> payee -> a draw's pennies.
+    std::map<std::string, std::int64_t> supportTo;  // Holder -> the treasury's wage support.
+    std::map<std::pair<std::string, std::string>, std::int64_t> flows;   // (From group, to group) -> pennies.
+    struct Short
+    {
+        std::set<std::string> buyers;
+        std::int64_t pieces = 0;
+    };
+    std::map<std::tuple<std::string, std::string, std::string, std::string>, Short> shorts;   // (Shop, good, group, instead.)
+    std::map<std::string, std::int64_t> hungryHours, comforts, spent;   // Class -> today's.
+    std::set<std::string> comfortGoods;
+    static bool drawKind(const std::string& k)
+    {
+        return k == "restocked from the store room" || k.rfind("drawn for ", 0) == 0 || k.rfind("dev console", 0) == 0;
+    }
+    void event(const WorldEvent& e)
+    {
+        if (e.kind != "economy" || e.actor == e.target)
+            return;
+        const auto& k = e.detail;
+        if (e.coins > 0 && e.actor != "consumed")
+            flows[{money(group(e.actor)), money(group(e.target))}] += e.coins;
+        const bool tillFrom = e.actor.rfind("till:", 0) == 0, tillTo = e.target.rfind("till:", 0) == 0;
+        // A store draw: its pennies to the farms or the Country, then its goods from them.
+        if (drawKind(k) && tillTo && !e.item.empty() && e.quantity > 0 && e.coins == 0)
+        {
+            const std::string payee = e.actor == "made" ? std::string(Society::CountryFund) : e.actor;
+            auto& owed = pending[e.target];
+            std::int64_t coins = 0;
+            if (const auto found = owed.find(payee); found != owed.end())
+            {
+                coins = found->second;
+                owed.erase(found);
+            }
+            auto& t = trades[{e.item, group(e.target), e.actor == "made" ? std::string("country") : e.actor}];
+            t.pieces += e.quantity;
+            t.pennies += coins;
+            t.base += Society::catalogPrice(e.item) * e.quantity;
+            auto& till = tills[e.target];
+            till.drawPieces += e.quantity;
+            till.drawCost += coins;
+            return;
+        }
+        if (e.coins <= 0)
+            return;
+        if (tillFrom && drawKind(k))
+        {
+            pending[e.actor][e.target] += e.coins;
+            return;
+        }
+        if (tillFrom && k.rfind("gate toll: ", 0) == 0)
+        {
+            tills[e.actor].toll += e.coins;
+            tills[e.actor].drawCost += e.coins;
+            return;
+        }
+        if (tillFrom && k == "carriage in")
+        {
+            tills[e.actor].carriage += e.coins;
+            return;
+        }
+        if (k == "wages" && tillFrom)
+        {
+            tills[e.actor].wagesPaid += e.coins;
+            return;
+        }
+        if (k == "wage support")
+        {
+            supportTo[e.target] += e.coins;
+            return;
+        }
+        if (k == "profit" && tillFrom)
+        {
+            tills[e.actor].profit += e.coins;
+            return;
+        }
+        // A season's difference after a sale: more from the buyer, or back to it.
+        if (e.item.empty() && k.size() > 20 && k.compare(k.size() - 20, 20, ": the season's price") == 0)
+        {
+            const bool back = tillFrom && !lastSale.count(e.actor + "|" + e.target);
+            const auto found = lastSale.find(back ? e.target + "|" + e.actor : e.actor + "|" + e.target);
+            if (found == lastSale.end())
+                return;
+            const std::int64_t coins = back ? -e.coins : e.coins;
+            found->second->pennies += coins;
+            const auto& seller = back ? e.actor : e.target;
+            const auto& buyer = back ? e.target : e.actor;
+            if (const auto t = tills.find(seller); t != tills.end())
+                t->second.takings += coins;
+            if (const auto t = tills.find(buyer); t != tills.end())
+                t->second.inputs += coins;
+            if (const auto& g = group(buyer); g.rfind("hh:", 0) == 0)
+                spent[g.substr(3)] += coins;
+            return;
+        }
+        if (e.item.empty() || e.quantity <= 0)
+            return;
+        // A sale: the buyer paid the seller for the goods.
+        const auto& buyerGroup = group(e.actor);
+        auto& t = trades[{e.item, buyerGroup, e.target}];
+        t.pieces += e.quantity;
+        t.pennies += e.coins;
+        t.base += Society::catalogPrice(e.item) * e.quantity;
+        lastSale[e.actor + "|" + e.target] = &t;
+        if (tillTo)
+        {
+            auto& till = tills[e.target];
+            till.salesPieces += e.quantity;
+            till.takings += e.coins;
+            till.sold[e.item] += e.quantity;
+        }
+        if (tillFrom)
+            tills[e.actor].inputs += e.coins;
+        if (buyerGroup.rfind("hh:", 0) == 0)
+        {
+            spent[buyerGroup.substr(3)] += e.coins;
+            if (comfortGoods.count(e.item))
+                comforts[buyerGroup.substr(3)] += e.quantity;
+        }
+    }
+    void shortage(const Society::Shortage& s)
+    {
+        auto& row = shorts[{s.shop.empty() ? std::string("-") : s.shop, s.item, group(s.buyer), s.instead}];
+        row.buyers.insert(s.buyer);
+        // (A shop's draw is tried every hour it is short: its most, not the sum.)
+        row.pieces = s.buyer.rfind("till:", 0) == 0 ? std::max<std::int64_t>(row.pieces, s.pieces) : row.pieces + s.pieces;
+    }
+    void hour(const World& server)
+    {
+        for (const auto& [id, life] : server.society().state().residents)
+            if (life.hunger >= 80)
+                if (const auto* e = server.entity(id); e && !e->dead)
+                    ++hungryHours[society->classOf(id)];
+    }
+    // The tables' columns (the meta line), in the order each row has them.
+    void meta(const World& server, int band)
+    {
+        const auto& s = server.society();
+        std::ostringstream o;
+        o << "{\"meta\": {\"format\": \"ratw-econ-full\", \"version\": 1, \"price_band\": " << band
+          << ", \"columns\": {\"trade\": [\"good\", \"buyer\", \"seller\", \"pieces\", \"pennies\", \"base\"], "
+             "\"till\": [\"till\", \"trade\", \"float\", \"sales\", \"takings\", \"draws\", \"draw_cost\", \"toll\", \"carriage\", "
+             "\"inputs\", \"wages_owed\", \"wages_paid\", \"support\", \"profit\", \"crew\"], "
+             "\"ware\": [\"till\", \"good\", \"stock\", \"shelf\", \"price_milli\", \"stock_factor_milli\", \"sold\"], "
+             "\"farm\": [\"farm\", \"area\", \"float\", \"takings\", \"wages_owed\", \"wages_paid\", \"support\", \"basket\", "
+             "\"crew_purse\", \"crew_spent\", \"crew_short\", \"crew_hungry\"], "
+             "\"farm_good\": [\"farm\", \"good\", \"grown\", \"sold\", \"stock\", \"spoiled\", \"eaten\", \"short\"], "
+             "\"flow\": [\"from\", \"to\", \"pennies\"], "
+             "\"short\": [\"shop\", \"good\", \"buyer\", \"buyers\", \"pieces\", \"instead\"], "
+             "\"class\": [\"class\", \"residents\", \"households\", \"hungry_hours\", \"hungry_now\", \"purse\", "
+             "\"household_purse_median\", \"comforts\", \"spent\"]}, \"farms\": {";
+        bool first = true;
+        for (const auto& f : s.farms())
+        {
+            o << (first ? "" : ", ") << EconomyDetail::quoted(f.def->id) << ": {\"area\": "
+              << EconomyDetail::quoted(items::farms().areas[f.area].id) << ", \"yield_scale\": " << f.yieldScale << ", \"yield\": {";
+            bool firstGood = true;
+            for (const auto& [good, by] : f.def->yield)
+            {
+                o << (firstGood ? "" : ", ") << EconomyDetail::quoted(good) << ": [" << by[0] << ", " << by[1] << ", " << by[2]
+                  << ", " << by[3] << "]";
+                firstGood = false;
+            }
+            o << "}}";
+            first = false;
+        }
+        o << "}}}\n";
+        std::fputs(o.str().c_str(), out);
+    }
+    void day(const World& server, int dayNumber)
+    {
+        const auto& s = server.society();
+        std::ostringstream rows;
+        const auto table = [&](const char* name) -> std::ostringstream& {
+            rows << ", \"" << name << "\": [";
+            return rows;
+        };
+        bool first = true;
+        const auto row = [&](std::initializer_list<std::int64_t> cells) {
+            rows << (first ? "[" : ", [");
+            bool head = true;
+            for (const auto c : cells)
+            {
+                rows << (head ? "" : ",") << c;
+                head = false;
+            }
+            rows << ']';
+            first = false;
+        };
+        const auto close = [&] {
+            rows << ']';
+            first = true;
+        };
+        table("trade");
+        for (const auto& [key, t] : trades)
+            row({id(std::get<0>(key)), id(std::get<1>(key)), id(std::get<2>(key)), t.pieces, t.pennies, t.base});
+        close();
+        // Each till: its posts' wages owed tonight, and the treasury's support to them.
+        std::map<std::string, std::int64_t> owes, support;
+        std::map<std::string, std::string> keepers;
+        for (const auto& p : s.positions())
+        {
+            const auto held = s.state().careers.positions.find(p.id);
+            if (held == s.state().careers.positions.end() || held->second.holder.empty())
+                continue;
+            if (p.role == "merchant")
+                keepers["till:" + p.id] = held->second.holder;
+            const auto pay = s.payOf(p);
+            if (pay.payer.rfind("till:", 0) != 0)
+                continue;
+            owes[pay.payer] += pay.wage;
+            if (const auto given = supportTo.find(held->second.holder); given != supportTo.end())
+            {
+                support[pay.payer] += given->second;
+                supportTo.erase(given);             // (A holder of two posts: its first till's.)
+            }
+        }
+        table("till");
+        for (const auto& [till, keeper] : keepers)
+            if (const auto* a = s.account(till))
+            {
+                const auto t = tills.find(till);
+                const Till none;
+                const auto& d = t == tills.end() ? none : t->second;
+                row({id(till), id(tradeOf[till]), a->cash, d.salesPieces, d.takings, d.drawPieces, d.drawCost, d.toll, d.carriage,
+                     d.inputs, owes[till], d.wagesPaid, support[till], d.profit, s.crewOf(till)});
+            }
+        close();
+        table("ware");
+        for (const auto& [till, keeper] : keepers)
+            if (const auto* a = s.account(till))
+            {
+                std::set<std::string> goods;
+                for (const auto& w : s.wares(keeper))
+                    goods.insert(w);
+                for (const auto& [item, n] : a->stock)
+                    if (n > 0)
+                        goods.insert(item);
+                const auto t = tills.find(till);
+                if (t != tills.end())
+                    for (const auto& [item, n] : t->second.sold)
+                        goods.insert(item);
+                for (const auto& g : goods)
+                {
+                    std::int64_t n = 0;
+                    if (t != tills.end())
+                        if (const auto f = t->second.sold.find(g); f != t->second.sold.end())
+                            n = f->second;
+                    row({id(till), id(g), Society::stock(*a, g), s.shelfOf(till, g), std::llround(s.shopFactor(till, g) * 1000),
+                         std::llround(s.stockFactor(till, items::baseOf(g)) * 1000), n});
+                }
+            }
+        close();
+        const auto& loop = s.loopToday();
+        table("farm");
+        for (const auto& f : s.farms())
+            if (const auto d = loop.farms.find(f.def->id); d != loop.farms.end() && s.account(f.till))
+            {
+                const auto& x = d->second;
+                row({id(f.def->id), id(items::farms().areas[f.area].id), s.cash(f.till), x.takings, x.wagesOwed, x.wagesPaid, x.support,
+                     x.basket, s.cash(f.crew), x.crewSpent, x.crewShort, std::llround(x.crewHungry)});
+            }
+        close();
+        table("farm_good");
+        for (const auto& f : s.farms())
+            if (const auto d = loop.farms.find(f.def->id); d != loop.farms.end())
+                if (const auto* a = s.account(f.till))
+                {
+                    std::set<std::string> goods;
+                    for (const auto& [g, by] : f.def->yield)
+                        goods.insert(g);
+                    for (const auto& [g, n] : d->second.goods)
+                        goods.insert(g);
+                    for (const auto& g : goods)
+                    {
+                        const auto x = d->second.goods.find(g);
+                        const Society::LoopDay::Farm::Good none;
+                        const auto& v = x == d->second.goods.end() ? none : x->second;
+                        row({id(f.def->id), id(g), v.grown, v.sold, Society::stock(*a, g), v.spoiled, v.eaten, v.tableShort});
+                    }
+                }
+        close();
+        table("flow");
+        for (const auto& [key, coins] : flows)
+            row({id(key.first), id(key.second), coins});
+        close();
+        table("short");
+        for (const auto& [key, v] : shorts)
+            row({id(std::get<0>(key)), id(std::get<1>(key)), id(std::get<2>(key)), std::int64_t(v.buyers.size()), v.pieces,
+                 id(std::get<3>(key))});
+        close();
+        // By class: the living residents, their households (by the first member's class), hungry now and hours today,
+        // their purses, the median household's, and the comforts bought and all they spent at the shops.
+        std::map<std::string, std::int64_t> residents, households, hungryNow, purse;
+        std::map<std::string, std::vector<std::int64_t>> homePurses;
+        for (const auto& [home, members] : s.households())
+        {
+            std::int64_t held = 0;
+            int living = 0;
+            for (const auto& m : members)
+            {
+                const auto* e = server.entity(m);
+                if (!e || e->dead)
+                    continue;
+                const auto cls = s.classOf(m);
+                ++residents[cls];
+                purse[cls] += s.cash(m);
+                held += s.cash(m);
+                ++living;
+                if (const auto* life = s.resident(m); life && life->hunger >= 80)
+                    ++hungryNow[cls];
+            }
+            if (living == 0)
+                continue;
+            const auto cls = s.classOf(members.front());
+            ++households[cls];
+            homePurses[cls].push_back(held);
+        }
+        table("class");
+        for (const auto& [cls, n] : residents)
+        {
+            auto& v = homePurses[cls];
+            std::sort(v.begin(), v.end());
+            row({id(cls), n, households[cls], hungryHours[cls], hungryNow[cls], purse[cls], v.empty() ? 0 : v[v.size() / 2],
+                 comforts[cls], spent[cls]});
+        }
+        close();
+        const auto date = calendar::calendarAt(server.calendarDays());
+        std::ostringstream line;
+        line << "{\"day\": " << dayNumber << ", \"season\": \"" << calendar::seasonName(date.season) << "\", \"year_day\": "
+             << date.dayOfYear << ", \"names\": [";
+        for (std::size_t i = 0; i < fresh.size(); ++i)
+            line << (i ? ", " : "") << EconomyDetail::quoted(fresh[i]);
+        line << ']' << rows.str() << "}\n";
+        std::fputs(line.str().c_str(), out);
+        fresh.clear();
+        trades.clear();
+        lastSale.clear();
+        tills.clear();
+        pending.clear();
+        supportTo.clear();
+        flows.clear();
+        shorts.clear();
+        hungryHours.clear();
+        comforts.clear();
+        spent.clear();
+        refresh();
+    }
+    // What a day may change: each till's trade, the carters' account, the classes (a wolf's work, its household's).
+    void refresh()
+    {
+        groups.clear();
+        tradeOf.clear();
+        carter = society->carters();
+        for (const auto& p : society->positions())
+            if (p.role == "merchant")
+            {
+                const auto* business = items::businessFor(p.title);
+                tradeOf["till:" + p.id] = business ? business->id : std::string("other");
+            }
+    }
+};
 // The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 10): every game hour, the residents hungry (80 or
 // more); at noon, the households with nobody hungry and the shops holding goods; at 23:00 a JSON line for the day.
 struct EconomyWatch
@@ -513,6 +955,7 @@ struct EconomyWatch
     }
     EconomyDetail* detail = nullptr;                // --economy-detail: per business and household (EconomyDetail).
     std::ostream* detailOut = nullptr;
+    EconomyRecord* record = nullptr;                // --economy-level full: the day's tables (EconomyRecord).
     // --loop-state FILE: what the self-correcting rules have drifted to (the society's saved "loop": each shop's price
     // factors and smoothed sales, each till's wage step, the treasury's level), a JSON line every 28 days and the last.
     std::ostream* loopOut = nullptr;
@@ -522,6 +965,8 @@ struct EconomyWatch
         const auto& society = server.society();
         if (detail)
             detail->hour(server, absoluteHour, detailOut);
+        if (record)
+            record->hour(server);
         if (money0 < 0)
             money0 = society.moneySupply();
         const int hod = ((absoluteHour % 24) + 24) % 24;
@@ -910,6 +1355,8 @@ struct EconomyWatch
             << who << "\"}" << std::endl;
         if (detail && detailOut)
             detail->day(server, int(absoluteHour / 24), *detailOut);
+        if (record)
+            record->day(server, int(absoluteHour / 24));
         if (const int day = int(absoluteHour / 24); loopOut && (day % 28 == 27 || day == lastDay))
         {
             const auto saved = wire::society(society.state());
@@ -940,6 +1387,8 @@ int main(int argc, char** argv)
     std::string economyFile;                        // --economy FILE: the city's loop, a JSON line a game day (doc 68, 10).
     std::string loopFile;                           // --loop-state FILE: the self-correcting rules' drift (doc 68, Progress).
     std::string detailFile;                         // --economy-detail FILE: per business and household a day (with --economy).
+    std::string level = "normal";                   // --economy-level off|normal|full (doc 69, 10).
+    std::string fullFile;                           // --economy-full FILE: the full level's tables (gzipped JSON lines).
     int startDay = 0;                               // --day N: start on day N of the year (1-365; 0: the world's own).
     int farmsFrom = -2, farmsEvery = 0;             // --farms DAY [--farms-every N]: the farms' switch (doc 71), from that day.
     bool usage = argc != 2 && !simulate;
@@ -981,6 +1430,13 @@ int main(int argc, char** argv)
             detailFile = argv[++i];
         else if (flag == "--loop-state" && i + 1 < argc)
             loopFile = argv[++i];
+        else if (flag == "--economy-level" && i + 1 < argc)
+        {
+            level = argv[++i];
+            usage = usage || (level != "off" && level != "normal" && level != "full");
+        }
+        else if (flag == "--economy-full" && i + 1 < argc)
+            fullFile = argv[++i];
         else if (flag == "--farms" && i + 1 < argc)
         {
             farmsFrom = std::atoi(argv[++i]);
@@ -1002,7 +1458,8 @@ int main(int argc, char** argv)
     if (usage)
     {
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N] [--no-check] [--full] [--deterministic]"
-                     " [--events FILE] [--threads N] [--economy FILE [--economy-detail FILE]] [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
+                     " [--events FILE] [--threads N] [--economy FILE [--economy-detail FILE] [--economy-level off|normal|full [--economy-full FILE]]]"
+                     " [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
                      " [--unseen-step N] [--straight] [--coarse-ticks] [--farms DAY [--farms-every N]]]\n";
         return 2;
     }
@@ -1227,6 +1684,13 @@ int main(int argc, char** argv)
         economyOut.open(economyFile);
     EconomyWatch watch;
     EconomyDetail detail;
+    if (level == "off" && (!detailFile.empty() || !loopFile.empty()))
+        std::cout << "economy level off: no detail or loop-state file\n";
+    if (level == "off")
+    {
+        detailFile.clear();
+        loopFile.clear();
+    }
     std::ofstream loopOut;
     if (!loopFile.empty() && economyOut)
     {
@@ -1240,7 +1704,6 @@ int main(int argc, char** argv)
         detailOut.open(detailFile);
         watch.detail = &detail;
         watch.detailOut = &detailOut;
-        server.setEventWatcher([&detail](const WorldEvent& e) { detail.event(e); });
         if (const char* traced = std::getenv("RATW_DETAIL_TRACE"))
         {
             std::istringstream list(traced);
@@ -1248,6 +1711,35 @@ int main(int argc, char** argv)
                 detail.traced.insert(home);
         }
     }
+    // The full level (doc 69, 10): the day's tables, gzipped as they are written (gzip -n: no name or time in it, so
+    // the same run makes the same file).
+    EconomyRecord record;
+    if (level == "full" && economyOut)
+    {
+        if (fullFile.empty())
+            fullFile = economyFile + ".full.jsonl.gz";
+        record.out = ::popen(("gzip -n -c > '" + fullFile + "'").c_str(), "w");
+        if (!record.out)
+        {
+            std::cerr << "cannot write " << fullFile << '\n';
+            return 1;
+        }
+        record.society = &server.society();
+        record.refresh();
+        for (const auto& c : items::country().comforts)
+            record.comfortGoods.insert(c);
+        record.meta(server, server.society().rule("stockPriceBand"));
+        watch.record = &record;
+        server.society().setShortageWatcher([&record](const Society::Shortage& s) { record.shortage(s); });
+        std::cout << "economy level full: " << fullFile << '\n';
+    }
+    if (watch.detail || watch.record)
+        server.setEventWatcher([&](const WorldEvent& e) {
+            if (watch.detail)
+                detail.event(e);
+            if (watch.record)
+                record.event(e);
+        });
     // Each game day's wall time (and, with the profile on, its stages), printed as it ends: the cost of a long run by
     // day, so any growth shows.
     constexpr int DayTicks = 24 * 12000;            // (A run's days are 24 game hours from its start.)

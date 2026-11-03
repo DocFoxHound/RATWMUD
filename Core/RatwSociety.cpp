@@ -1591,6 +1591,7 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
     {
         auto& day = loopToday_.farms[lots[i].first->def->id];
         day.sold += lots[i].second;
+        day.goods[item].sold += lots[i].second;
         day.takings += takings[i];
     }
     loopToday_.drawn += cost;

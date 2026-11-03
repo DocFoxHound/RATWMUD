@@ -868,6 +868,15 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
         }
         if (shortHere)
             ++(crewDay ? crewDay->crewShort : loopToday_.householdsShort);
+        if (shortHere && shortageWatcher_ && hod == ShopShut - 1)
+        {
+            // (Recorded at the shops' last hour: the meals' worth its members still lack of shortDays.)
+            double lack = 0;
+            for (const auto& m : members)
+                if (const auto* wallet = account(m))
+                    lack += std::max(0., cfg.shortDays * NourishADay * per - onHand(*wallet));
+            shortageWatcher_({members.front(), "", "food", "", std::max(1, int(std::ceil(lack / std::max(1, nourishment("meal")) - 1e-9)))});
+        }
         if (!first)
             return;
         const std::int64_t keep = std::int64_t(households.reserve) * std::int64_t(heads);
@@ -892,8 +901,18 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                 if (!tills.empty())
                     options.push_back(g);
             }
-            if (options.empty())
-                continue;
+            if (options.empty() || (shortageWatcher_ && options.size() < need.any.size()))
+            {
+                // (Recorded: each of the need's goods no open shop holds, and what was taken in its place.)
+                const std::string instead =
+                    options.empty() ? std::string() : options[fnv(home + "|" + std::to_string(day) + "|" + std::to_string(i)) % options.size()];
+                if (shortageWatcher_)
+                    for (const auto& g : need.any)
+                        if (std::find(options.begin(), options.end(), g) == options.end())
+                            shortageWatcher_({members.front(), "", g, instead, count});
+                if (options.empty())
+                    continue;
+            }
             const auto& item = options[fnv(home + "|" + std::to_string(day) + "|" + std::to_string(i)) % options.size()];
             const auto payer = payerFor(members, seasonalCost(item, count), keep);
             if (payer.empty())
@@ -1553,9 +1572,12 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
         {
             farmsShort(w.ware, std::min(StoreDrawMost, w.lack));
             // (Within what the Country can still supply of it today: a season's cap.)
-            if (const int n = std::min({StoreDrawMost, w.lack, countryLeft(w.ware)});
-                n > 0 && drawFromStore(keeper, w.ware, n, "restocked from the store room").ok)
+            const int n = std::min({StoreDrawMost, w.lack, countryLeft(w.ware)});
+            const bool drew = n > 0 && drawFromStore(keeper, w.ware, n, "restocked from the store room").ok;
+            if (drew)
                 done.push_back("restocked " + w.ware);
+            if (const int lack = std::min(StoreDrawMost, w.lack) - (drew ? n : 0); lack > 0 && shortageWatcher_)
+                shortageWatcher_({till, till, w.ware, "", lack});   // (The cap, or the farms' stock: the draw cut short.)
             continue;
         }
         // The farms' stores first (doc 71, 2.4): a good of a season group with `stores` that the farms of an area on make

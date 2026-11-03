@@ -178,6 +178,9 @@ void Society::tendFarms(std::int64_t day)
                     break;
             today.grown += made;
             today.spoiled += n - made;              // (Its store full: what it couldn't keep.)
+            auto& byGood = today.goods[good];
+            byGood.grown += made;
+            byGood.spoiled += n - made;
         }
         for (const auto& [good, middle] : f.def->table)
         {
@@ -190,6 +193,9 @@ void Society::tendFarms(std::int64_t day)
             const int got = consume(f.till, good, n, "eaten in the Country");
             today.eaten += got;
             today.tableShort += n - got;
+            auto& byGood = today.goods[good];
+            byGood.eaten += got;
+            byGood.tableShort += n - got;
         }
         for (const auto& [good, middle] : f.def->yield)
         {
@@ -199,7 +205,11 @@ void Society::tendFarms(std::int64_t day)
             const double mean = (middle[0] + middle[1] + middle[2] + middle[3]) / 4 * f.yieldScale;
             const int keep = std::max(1, int(std::ceil(item->keeps * mean - 1e-9)));
             if (const int have = stock(*account(f.till), good); have > keep)
-                today.spoiled += consume(f.till, good, have - keep, "spoiled");
+            {
+                const int gone = consume(f.till, good, have - keep, "spoiled");
+                today.spoiled += gone;
+                today.goods[good].spoiled += gone;
+            }
         }
         // The crew eats (a household of its size: NourishADay a head), the soonest-spoiling food first; what it can't eat
         // for want of food is owed to tomorrow, a day's at most (it eats a piece over, rather than leave a want).

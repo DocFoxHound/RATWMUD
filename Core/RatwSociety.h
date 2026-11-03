@@ -863,6 +863,12 @@ class Society
             std::int64_t crewSpent = 0;
             int crewFood = 0, crewNeeds = 0, crewComforts = 0, crewServices = 0, crewShort = 0, tableShort = 0;
             double crewHungry = 0;
+            // By good (world_check's full recording, doc 69, 10): the same pieces, and the table's short of it.
+            struct Good
+            {
+                int grown = 0, sold = 0, eaten = 0, spoiled = 0, tableShort = 0;
+            };
+            std::map<std::string, Good> goods;
         };
         std::map<std::string, Farm> farms;
         std::map<std::string, int> areasOut;         // By area: draws the farms' stock could not fill in full today.
@@ -874,6 +880,17 @@ class Society
         std::int64_t supportWanted = 0, supportUnpaidSwitch = 0, supportUnpaidOrdinary = 0, minted = 0;
     };
     const LoopDay& loopToday() const { return loopToday_; }
+    // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a
+    // resident, a crew or a till) went without `pieces` of `item` at `shop` (a till; "" where no open shop had it), and
+    // took `instead` in its place ("" for nothing). A household's food short at the shops' last hour is item "food" (its
+    // pieces the meals' worth it lacks); a need no open shop holds, each of its goods; a store draw the Country's cap or
+    // the farms' stock cut short, the ware. Only read: nothing in the loop depends on it.
+    struct Shortage
+    {
+        std::string buyer, shop, item, instead;
+        int pieces = 0;
+    };
+    void setShortageWatcher(std::function<void(const Shortage&)> watcher) { shortageWatcher_ = std::move(watcher); }
     const LoopDay& loopYesterday() const { return loopYesterday_; }
     // A ware's starting stock on a new shop's shelves (resetAuthored): GoodsKept, or SmithSwords of swords.
     static int startingStock(const std::string& ware);
@@ -1053,6 +1070,7 @@ class Society
     mutable std::unordered_map<std::string, int> crews_;                                       // Till -> crew (with the records).
     mutable std::uint64_t crewsRevision_ = 0;
     LoopDay loopToday_, loopYesterday_;
+    std::function<void(const Shortage&)> shortageWatcher_;   // (setShortageWatcher; empty: nobody records.)
     // The seasons (seasonTable): the groups as this world has them, a good's group by its index, where in the year it is
     // (yearDay_) and on which day (seasonDay_), and the pieces drawn of each group that day (not saved: after a restart
     // the day's supply starts again).

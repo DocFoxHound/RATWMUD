@@ -1345,6 +1345,16 @@ in all (`farms_...`): `on`, `stock` (pieces at 23:00), `sold`, `takings`, `wages
 `support_unpaid_ordinary`, `surplus_paid`, `toll_trim`, `alms_trim`, `minted_today`, `farms_minted`, `minted`,
 `country_basket_shift`. The losers' wage steps are the loop file's (`--loop-state`).
 
+**The full picture of a run** (2026-11-03; Docs/Design/69-simulation-speed.md, 10): add `--economy-level full` to a
+run and it also writes the day's market as compact tables (`ECONOMY.jsonl.full.jsonl.gz`, about 4.4 MB a year; 3% slower;
+the economy file unchanged): who bought each good from which shop or farm and at what price factor, each till's and
+farm's day, each farm's goods (grown, sold, stock, spoiled, eaten, short), the money between groups, the wants not met
+and what was taken instead, and each class's welfare. `python3 tools/econ_report.py ECONOMY.jsonl --out REPORT.md` reads
+it into about two pages, and writes `REPORT.md.patch.json`: per farm and good, the yields by season that would have met
+the shops' draws, the draws short and the Country's table, 5% over (`--slack`); `python3 tools/econ_report.py --apply
+REPORT.md.patch.json Data/Economy/country_farms.json` writes them in. So a 3-year run's farms can be balanced from its
+own report, then run again.
+
 ### Left for the user
 
 - **Migration 0060 on DEV** (`python3 tools/world_db.py migrate --db dev`, after a backup) and the schedule's start
