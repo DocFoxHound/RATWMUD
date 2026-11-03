@@ -519,3 +519,54 @@ alehouse keeper) are placed from the pool as the others' were. It stays a region
 like the five.
 
 ## Progress
+
+### The map (2026-11-03, branch `r2-country-map`)
+
+Places only, as the siting says: no posts, goods or people for the works yet (Phases 2-3 add them).
+
+- **Erased** (`realm2.SITES`): Frosthollow and Mirebridge. Their cleared, levelled pads are the country's ground again
+  (the region's grass, trees and heights as `lay_ground` laid them), and their cells no longer say a town waits there
+  (`w_ridgemere_9_3` is now "The Greenholt, North-east", `w_ridgemere_5_11` "The Sallow Fens, North-east"). The roads
+  keep their ends at the old towns' points (`realm2.FROSTHOLLOW` 2308,796 and `MIREBRIDGE` 1468,2868), so the Pass
+  Road, the Pass and the High Road meet at a crossroads in the open, and the Coast and Fen Roads at a junction. The
+  Coast and Fen Roads are laid exactly as before; near Frosthollow the Pass Road, the Pass and the iron mine's track
+  move a few tiles, and a 250-tile stretch of the High Road, 300-560 tiles south of the old town, now runs 16 tiles
+  to one side (the route search breaks a tie the other way). No other site moves: the realm was laid twice from DEV,
+  the old generator's laying matching DEV tile for tile (0 differ) and the new one's every site, steading, farm,
+  community and footpath of the five as they were (`communities.json`'s farms and five communities unchanged).
+- **New sites** (at the end of `SITES`, so nothing before them moves; each within 50 tiles of where its ground was
+  measured, with a track to the nearest road):
+
+  | Site | Kind | Where | Tiles | The ground |
+  |---|---|---|---|---|
+  | `timber_oakhaven`, the Oakhaven cut | timber | 1052, 1060 | 1,808 | a cutting's pad (stumps, ferns, logs), as the five cuts |
+  | `coppice_rainwood`, the Rainwood coppice | coppice (new kind) | 620, 1020 | 1,792 | not levelled: the conifers gone, alder and hazel stools (shrub, 40%), an oak or a willow left standing, ferns and grass |
+  | `peat_fens`, the Fenshore peat cutting | peat (new kind) | 788, 3596 | 2,629 | levelled at the bog's 0.5: cut banks of mud and earth, reeds at the edge, its pools left as they were |
+
+- **Oakhaven, the sixth community** (`realm2_places.COMMUNITIES`), on its town site at 1012,1220 in Southmeadow's and
+  Fenshore's size: 3 cottages, Oakhaven Stores with the keeper's flat (4 beds), The Felled Cedar alehouse with its
+  keeper's rooms (3): **25 beds**; 2 kitchen gardens, a hen run, a goat paddock; `country` look; **room to grow: 9
+  cottage lots**. Interiors `cn_oakhaven_*` (7 rooms, 7 doors). Its region is `oakhaven`, kept plain like the five
+  (`town` false); having no farm, its market is not staffed yet (a market is staffed with its community's first farm).
+- **The works in the contract** (`communities.json` `works`, new): each of the siting's eight sites, its crew's home and,
+  for a community's, the footpath's walk, laid after the communities so a path into a village adds no street and
+  moves no house: Oakhaven to its cut 175, Larkfield to the Greenholt hearths 537, Fenshore to the peat 360 (the bog's
+  creeks send it round; the siting's straight-line route was 173) and to the Mirebridge pits 606, Southmeadow to the
+  Sallow pits 576. Ridgemere's three (the Rainwood cut and coppice, the granite quarry) have none.
+
+**Written into DEV.** `python3 -m worldgen.realm2 write --world dev` (all 22 checks pass; the check of the town sites is
+now "six town sites, each a community"), which backed up first: `artifacts/backups/ratw_dev_20261103-153309.pgdump` and
+`upper_accord_dev_r75_20261103-153309.atlas.json` (DEV at revision 75; copies in the main checkout's
+`artifacts/backups/`). The same map, its new layout recorded: **revision 76** (77 after the editors' reload); 16,527
+tiles' codes and 8,061 heights changed, none in the city's nine cells. Then `world_build.py dev`: **build 60**, 1,181
+places; `world_check` of its export loads all 1,181 with no failures; a scratch server of build 60 starts and serves.
+
+**Tests.** `test_realm2` with `RATW_SLOW=1`, 28 of 28: new `test_doc_72s_works_and_the_erased_towns`; the communities' test
+counts six. `farm_people_tests`: six communities read, the six kept plain, a store's own sales checked where the
+community has a farm. A build of `build-core` and `ctest`: 78 of 78. `test_country_industry`, `test_farms_summary`,
+`test_world_build`, `test_terrain_catalog` pass.
+
+**Previews:** `artifacts/realm2/siting/before/` and `after/`: the overview and, a pixel or more a tile,
+`frosthollow-erased`, `mirebridge-erased`, `oakhaven-and-its-cut`, `rainwood-coppice-and-cut`, `fenshore-and-the-peat`.
+The write's own previews in `artifacts/realm2/` (the close-up `whitefangs-and-frosthollow` is now
+`whitefangs-and-the-pass`) and `communities/oakhaven.png`; `communities-and-farms.png` draws the works as diamonds.

@@ -29,7 +29,7 @@
   "fog": 23
  },
  "sites": {
-  "town": 8,
+  "town": 6,
   "farmland": 2,
   "mill": 2,
   "orchard": 5,
@@ -44,11 +44,13 @@
   "apiary": 3,
   "salt": 1,
   "saltcoast": 1,
-  "timber": 5,
+  "timber": 6,
   "charcoal": 2,
   "quarry": 4,
   "clay": 2,
-  "mine": 6
+  "mine": 6,
+  "coppice": 1,
+  "peat": 1
  },
  "siteList": [
   {
@@ -62,20 +64,8 @@
    "about": "a harbour town at the head of Cedar Sound, where the Rainrun and the Alder come down to the sea; timber and fish",
    "shared": 0,
    "level": 1.0,
-   "tiles": 11167
-  },
-  {
-   "id": "frosthollow",
-   "kind": "town",
-   "name": "Frosthollow",
-   "x": 2308,
-   "y": 796,
-   "size": 60,
-   "for": "town",
-   "about": "the mountain town in the high valley under the Whitefangs' pass; its mines above it",
-   "shared": 0,
-   "level": 5.5,
-   "tiles": 11180
+   "tiles": 11167,
+   "built": "A village at the head of Cedar Sound where the Rainrun and the Alder come down to the sea: timber cottages under cedar shingle round a green and its well, a store and an alehouse, kitchen gardens, hens and goats, the Rainwood standing dark above it. The fellers of the Oakhaven cut live here."
   },
   {
    "id": "coldwater",
@@ -104,19 +94,6 @@
    "level": 2.0,
    "tiles": 10978,
    "built": "A village at the Long River's crossing among the middle country's grain: timber cottages round a green and its well, a store, an alehouse and a bakehouse baking the Longmead mill's flour, kitchen gardens, hens and goats. The hands of Longmead, the Plumtree orchard and the Southwood piggery live here."
-  },
-  {
-   "id": "mirebridge",
-   "kind": "town",
-   "name": "Mirebridge",
-   "x": 1468,
-   "y": 2868,
-   "size": 60,
-   "for": "town",
-   "about": "the fen-edge town on the last dry ground where the rivers enter the Sallow Fens",
-   "shared": 0,
-   "level": 0.5,
-   "tiles": 9923
   },
   {
    "id": "southmeadow",
@@ -903,7 +880,7 @@
    "shared": 0,
    "level": 8.0,
    "tiles": 628,
-   "track": 217
+   "track": 209
   },
   {
    "id": "mine_frost_lead",
@@ -976,6 +953,47 @@
    "track": 209
   },
   {
+   "id": "timber_oakhaven",
+   "kind": "timber",
+   "name": "the Oakhaven cut",
+   "x": 1052,
+   "y": 1060,
+   "size": 24,
+   "for": "timber (coastal rainforest; doc 72: the Oakhaven logging camp)",
+   "about": "cedar and fir above Oakhaven, the densest stand near the Sound's head",
+   "shared": 0,
+   "level": 2.0,
+   "tiles": 1808,
+   "track": 113
+  },
+  {
+   "id": "coppice_rainwood",
+   "kind": "coppice",
+   "name": "the Rainwood coppice",
+   "x": 620,
+   "y": 1020,
+   "size": 24,
+   "for": "coppice (doc 72: firewood)",
+   "about": "alder and hazel stools on cut-over ground beside the Rainwood cut",
+   "shared": 0,
+   "tiles": 1792,
+   "track": 41
+  },
+  {
+   "id": "peat_fens",
+   "kind": "peat",
+   "name": "the Fenshore peat cutting",
+   "x": 788,
+   "y": 3596,
+   "size": 30,
+   "for": "peat (doc 72: the second fuel)",
+   "about": "peat banks cut in the open bog behind the dunes, south of Fenshore",
+   "shared": 0,
+   "level": 0.5,
+   "tiles": 2629,
+   "track": 97
+  },
+  {
    "id": "fenshore",
    "kind": "town",
    "name": "Fenshore",
@@ -999,11 +1017,11 @@
  },
  "roads": {
   "The Pass Road": {
-   "length": 2321,
+   "length": 2333,
    "bridges": 27
   },
   "The Pass": {
-   "length": 834,
+   "length": 833,
    "bridges": 9
   },
   "The East Road": {
@@ -1027,7 +1045,7 @@
    "bridges": 33
   },
   "The High Road": {
-   "length": 1136,
+   "length": 1135,
    "bridges": 0
   },
   "The South Road": {
@@ -1044,8 +1062,8 @@
   }
  },
  "tracks": {
-  "count": 202,
-  "length": 20417
+  "count": 216,
+  "length": 21890
  },
  "rivers": [
   {
@@ -1761,70 +1779,70 @@
   }
  ],
  "tiles": {
-  "!": 1294497,
-  "\"": 864707,
-  "#": 19014,
-  "$": 309139,
+  "!": 1292559,
+  "\"": 863253,
+  "#": 19201,
+  "$": 308536,
   "%": 15933,
-  "&": 1044341,
-  "(": 681729,
+  "&": 1043247,
+  "(": 681730,
   ")": 99720,
   "*": 596887,
-  "+": 365,
-  ",": 2410690,
-  "-": 512379,
-  ".": 59251,
-  "/": 37875,
-  "0": 1973556,
-  "1": 158529,
-  "2": 16321,
-  "3": 64843,
-  "4": 954,
+  "+": 370,
+  ",": 2409246,
+  "-": 512370,
+  ".": 59944,
+  "/": 40416,
+  "0": 1973555,
+  "1": 158803,
+  "2": 16320,
+  "3": 64809,
+  "4": 1056,
   "5": 3814,
-  "7": 18750,
-  "8": 4255,
+  "7": 18927,
+  "8": 4273,
   ":": 264,
-  ";": 1596082,
+  ";": 1595171,
   "<": 90,
   ">": 820,
   "?": 21234,
-  "@": 49277,
-  "B": 144336,
-  "D": 198236,
-  "E": 411111,
+  "@": 49297,
+  "B": 145208,
+  "D": 199680,
+  "E": 409699,
   "F": 50,
   "G": 295,
   "H": 4057,
   "I": 71,
   "J": 9329,
-  "L": 5539,
+  "L": 5814,
   "O": 111,
-  "P": 466235,
+  "P": 466411,
   "Q": 1500,
   "S": 390,
-  "U": 18,
+  "U": 19,
   "V": 660,
   "W": 1945305,
   "X": 303267,
-  "Y": 230889,
+  "Y": 231357,
   "Z": 15917,
   "[": 2351,
   "]": 1088,
   "^": 735,
   "_": 15748,
-  "d": 42005,
+  "d": 43564,
   "f": 16039,
   "i": 63,
-  "o": 45305,
+  "o": 45315,
   "p": 3,
   "r": 396517,
   "s": 163373,
   "u": 20,
-  "w": 171456,
+  "w": 171413,
   "x": 99,
-  "|": 2782,
+  "|": 2916,
   "}": 2,
-  "~": 326998
+  "~": 326985
  },
  "cliffs": 15641,
  "reachedShare": 0.9801,
@@ -1870,9 +1888,9 @@
    "detail": ""
   },
   {
-   "check": "5-8 town sites (Fenshore the eighth)",
+   "check": "six town sites, each a community (Fenshore the sixth; Frosthollow and Mirebridge erased)",
    "ok": true,
-   "detail": "8"
+   "detail": "6"
   },
   {
    "check": "no site laid over another's ground",
@@ -1925,9 +1943,9 @@
    "detail": ""
   },
   {
-   "check": "the hired hands where the user put them (21, 10, 8, 8, 6; 23 in Ridgemere)",
+   "check": "the hired hands where the user put them (21, 10, 8, 8, 6, Oakhaven none; 23 in Ridgemere)",
    "ok": true,
-   "detail": "{'coldwater': 21, 'larkfield': 10, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 6}, Ridgemere 23"
+   "detail": "{'coldwater': 21, 'larkfield': 10, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 6, 'oakhaven': 0}, Ridgemere 23"
   },
   {
    "check": "the places' ids are world ids (48 characters at most)",
@@ -1942,7 +1960,7 @@
  ],
  "timings": {
   "city": 0.0,
-  "sea": 11.5,
+  "sea": 11.4,
   "elevation": 0.9,
   "climate": 0.0,
   "drainage": 0.7,
@@ -1950,11 +1968,11 @@
   "water": 16.9,
   "settle": 9.2,
   "ground": 48.7,
-  "sites": 3.4,
+  "sites": 3.5,
   "roads": 5.6,
-  "places": 4.3,
+  "places": 4.5,
   "cells": 2.9,
-  "checks": 5.5
+  "checks": 5.6
  },
  "places": {
   "communities": [
@@ -2059,11 +2077,31 @@
      "The Oasis Inn"
     ],
     "gardens": 4
+   },
+   {
+    "id": "oakhaven",
+    "name": "Oakhaven",
+    "centre": {
+     "x": 1012,
+     "y": 1220
+    },
+    "hands": 0,
+    "beds": 25,
+    "roomToGrow": {
+     "cottageLots": 9,
+     "openTiles": 6330
+    },
+    "homes": 3,
+    "market": [
+     "Oakhaven Stores",
+     "The Felled Cedar"
+    ],
+    "gardens": 4
    }
   ],
   "steadings": 31,
   "ridgemereHands": 23,
-  "paths": 24,
-  "pathTiles": 12980
+  "paths": 29,
+  "pathTiles": 15234
  }
 }

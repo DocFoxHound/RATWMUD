@@ -411,7 +411,7 @@ class WholeRealm(unittest.TestCase):
         beds = {com['id']: com['beds'] for com in c['communities']}
         self.assertTrue(55 <= beds['coldwater'] <= 65, beds)
         self.assertTrue(28 <= beds['larkfield'] <= 34, beds)
-        for k in ('southmeadow', 'fenshore', 'saltwell'):
+        for k in ('southmeadow', 'fenshore', 'saltwell', 'oakhaven'):
             self.assertTrue(20 <= beds[k] <= 25, beds)
         for com in c['communities']:
             self.assertGreaterEqual(com['roomToGrow']['cottageLots'], 3, com['id'])
@@ -421,9 +421,33 @@ class WholeRealm(unittest.TestCase):
             self.assertIn('inn', [m['business'] for m in com['market']])
             for m in com['market']:
                 self.assertGreaterEqual(len(m['work']), sum(p['count'] for p in m['posts']), m['area'])
-        # Oakhaven, Frosthollow and Mirebridge stay reserved, unbuilt.
+        # Oakhaven is the sixth (doc 72, Siting); Frosthollow and Mirebridge are erased.
         built = {r['id'].split('_')[1] for r in self.project['rooms'] if r['id'].startswith('cn_')}
-        self.assertEqual(built, {'coldwater', 'larkfield', 'southmeadow', 'fenshore', 'saltwell'})
+        self.assertEqual(built, {'coldwater', 'larkfield', 'southmeadow', 'fenshore', 'saltwell', 'oakhaven'})
+        oak = next(k for k in c['communities'] if k['id'] == 'oakhaven')
+        self.assertGreaterEqual(oak['roomToGrow']['cottageLots'], 6)
+
+    def test_doc_72s_works_and_the_erased_towns(self):
+        # The works doc 72 sited (its Siting): each placed near where its ground was measured, its crew's home named,
+        # a community's joined to it by a footpath; Frosthollow and Mirebridge gone, their roads meeting where they were.
+        sites = {s['id']: s for s in self.realm.sites}
+        self.assertNotIn('frosthollow', sites)
+        self.assertNotIn('mirebridge', sites)
+        for key, near, most in (('timber_oakhaven', (1056, 1056), 48), ('coppice_rainwood', (620, 1040), 48),
+                                ('peat_fens', (800, 3616), 64)):
+            self.assertIn(key, sites)
+            self.assertLessEqual(np.hypot(sites[key]['x'] - near[0], sites[key]['y'] - near[1]), most, key)
+        works = {w['site']: w for w in self.realm.contract['works']}
+        self.assertEqual(set(works), set(P.WORKS))
+        for key, w in works.items():
+            self.assertEqual(w['community'], P.WORKS[key])
+            if w['community'] != 'ridgemere':
+                self.assertTrue(w['walk'] and w['walk'] < 1047, (key, w['walk']))
+        ends = {name: (r['points'][0], r['points'][-1]) for name, r in self.realm.roads.items() if r['kind'] == 'road'}
+        for name in ('The Pass Road', 'The High Road', 'The Coast Road', 'The Fen Road'):
+            self.assertIn(name, ends)
+        # (No cell still waits for a town.)
+        self.assertFalse(any(R.TOWN_GROUND in c['description'] for c in self.project['cells']))
 
     def test_the_contract_written_is_the_one_made(self):
         # Data/Economy/communities.json is what the last write made; the generator makes the same again.

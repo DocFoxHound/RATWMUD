@@ -1,5 +1,5 @@
-"""Ridgemere 2.0's Country, built: the food farms' steadings and the five communities their hands live in
-(Docs/Design/70-the-realm.md, Progress, "The steadings and the communities"; doc 71, Phase C).
+"""Ridgemere 2.0's Country, built: the food farms' steadings and the six communities their hands live in
+(Docs/Design/70-the-realm.md, Progress, "The steadings and the communities"; doc 71, Phase C; doc 72, Siting).
 
 Laid by worldgen.realm2's `expand` after the realm itself (`lay`), so every write of the realm (and the city writer's,
 which lays the realm round the city) makes the same buildings with the same ids. Everything before this step is made
@@ -10,14 +10,15 @@ exactly as it was: this only adds, on the farms' sites, the community sites and 
   grain, a drying house or an apple store for an orchard, a press house over a cellar for vines, a byre and a dairy, a
   pig yard, a shearing barn, a rabbitry, a boat shed with a jetty, an eel house, a hive shed, a salt store or boiling
   house), round a yard with a kitchen garden, a footpath to the nearest road or track.
-- **Communities.** Coldwater, Larkfield, Southmeadow and Saltwell on their reserved town sites, and Fenshore, a new
-  hamlet on the fens' dry ground: cottages for the hired hands and their families (six beds each), a general store
+- **Communities.** Coldwater, Larkfield, Southmeadow, Saltwell and Oakhaven (the woods', doc 72) on their reserved
+  town sites, and Fenshore, a new hamlet on the fens' dry ground: cottages for the hired hands and their families (six beds each), a general store
   with the keeper's flat over it, an alehouse or inn, a bakehouse at the two biggest, kitchen gardens, a hen run and a
   goat paddock; streets onto the roads; a footpath to each of their farms, where the roads don't already go. The farms
   near Ridgemere have no community: their hands live in the city.
 - **The contract** for placing NPCs (`manifest`, written to Data/Economy/communities.json by a write): for every farm its
   site, workplace, farmhouse and community; for every community its homes and beds, its market's workplaces and the
-  posts they want, its gardens; and the walking distances.
+  posts they want, its gardens; doc 72's works (each site, its crew's home, the walk: a footpath from a community);
+  and the walking distances.
 
 Interior ids: `fs_<site>_<building>` for a steading, `cn_<community>_<building>` for a community (each with `_flat`,
 `_up` or `_cellar` for its other floors); every door `<interior>_door`, stairs `<interior>_stairs_N`.
@@ -177,7 +178,25 @@ COMMUNITIES = [
                   'oasis and whatever the last caravan left.', [('shopkeeper', 1)]),
                  ('inn', 'inn', 'The Oasis Inn', 'A cool adobe inn with thick walls against the heat, a courtyard '
                   'cistern and rooms upstairs for the carters on the Saltpan road.', [('innkeeper', 1), ('pot hand', 1)])]),
+    # The sixth (doc 72, Siting): the woods' village on its reserved town site, home of the Oakhaven cut's crew and, at
+    # Phase 5, a press and paper mill; sized like Southmeadow and Fenshore, with room for the woods' families.
+    dict(id='oakhaven', name='Oakhaven', site='oakhaven', style='country', street='d', cottages=3, gardens=2,
+         about='A village at the head of Cedar Sound where the Rainrun and the Alder come down to the sea: timber '
+               'cottages under cedar shingle round a green and its well, a store and an alehouse, kitchen gardens, hens '
+               'and goats, the Rainwood standing dark above it. The fellers of the Oakhaven cut live here.',
+         market=[('store', 'store', 'Oakhaven Stores', 'Axe helves, saw files, rope, salt and lamp oil, and a stack of '
+                  'cedar shakes by the door waiting for the next cart down the Sound Road.', [('shopkeeper', 1)]),
+                 ('alehouse', 'alehouse', 'The Felled Cedar', 'A low alehouse of split cedar by the green, sawdust on '
+                  'the floor and the fellers\' wet coats steaming by the fire.', [('alehouse keeper', 1)])]),
 ]
+# The Country's works doc 72 builds (its Siting, 2026-11-03): each site and where its crew will live. A community's are
+# joined to it by a footpath, as its farms are; Ridgemere's (the Rainwood camp and coppice, the granite quarry) are
+# within a walk of the gates. Places only: the works' posts and goods are the industries' steps (doc 72, Phases 2-3).
+WORKS = {
+    'timber_rainwood': 'ridgemere', 'timber_oakhaven': 'oakhaven', 'coppice_rainwood': 'ridgemere',
+    'charcoal_greenholt': 'larkfield', 'peat_fens': 'fenshore', 'quarry_granite': 'ridgemere',
+    'clay_mirebridge': 'fenshore', 'clay_fens': 'southmeadow',
+}
 FENSHORE = dict(id='fenshore', kind='town', name='Fenshore', near=(900, 3450), search=240, size=40,
                 plan='community (the fen farms\' hands)',
                 about='a hamlet on the fens\' last dry ground, among the eel creeks, the salterns, the dunes\' warren and '
@@ -1231,6 +1250,16 @@ class Places:
         for spec in COMMUNITIES:
             coms[spec['id']] = self.stamp_community(spec)
             self.sites[spec['site']]['built'] = spec['about']
+        # The works' footpaths (doc 72), last: after the communities are laid out, so a path reaching a village makes
+        # no new street there and its houses stand where they did (their beds are the placed people's).
+        for site_id, com in WORKS.items():
+            if com == 'ridgemere':
+                continue
+            site, cinfo = self.sites[site_id], self.communities[com]
+            csite = cinfo['site']
+            walks[site_id] = self.lay_path(f'{com}:{site_id}', (csite['x'] + .5, csite['y'] + .5),
+                                           (site['x'] + .5, site['y'] + .5), (csite.get('level'), site.get('level')),
+                                           only(cheap, cinfo['zone']), held)
         self.farms_out, self.coms = farms_out, coms
         # The world's rooms and links: ours made again, the rest as they were.
         project['rooms'] = [x for x in project['rooms'] if not is_ours(x['id'])] + self.rooms
@@ -1281,9 +1310,9 @@ class Places:
         big = [h['area'] for com in c['communities'] for h in com['homes'] + com['flats'] if h['capacity'] > HOUSEHOLD_MOST]
         big += [f['home']['area'] for f in c['farms'] if f['home']['capacity'] != HOUSEHOLD_MOST]
         out.append(('homes for at most six, farmhouses for six', not big, ', '.join(big)))
-        want = {'coldwater': 21, 'larkfield': 10, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 6}
+        want = {'coldwater': 21, 'larkfield': 10, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 6, 'oakhaven': 0}
         got = {com['id']: com['hands'] for com in c['communities']}
-        out.append(('the hired hands where the user put them (21, 10, 8, 8, 6; 23 in Ridgemere)',
+        out.append(('the hired hands where the user put them (21, 10, 8, 8, 6, Oakhaven none; 23 in Ridgemere)',
                     got == want and c['ridgemere']['hands'] == 23, f'{got}, Ridgemere {c["ridgemere"]["hands"]}'))
         ids = [x['id'] for x in self.rooms + self.links]
         long_ = [i for i in ids if not re.fullmatch(r'[a-z][a-z0-9_-]{0,47}', i)]
@@ -1376,6 +1405,10 @@ class Places:
                                   'keepers\' families live at the steadings.'},
             'communities': coms,
             'farms': farms,
+            # Doc 72's works (places only: no work rooms, posts or goods yet): the site, its crew's home, the walk.
+            'works': [{'site': k, 'name': self.sites[k]['name'], 'kind': self.sites[k]['kind'], 'community': com,
+                       'centre': {'x': self.sites[k]['x'], 'y': self.sites[k]['y']}, 'size': self.sites[k]['size'],
+                       'walk': self.walks.get(k)} for k, com in WORKS.items()],
             'paths': self.paths,
         }
 
@@ -1425,7 +1458,15 @@ def previews(realm, folder):
     dr = ImageDraw.Draw(img)
     font = ImageFont.truetype(R.FONT, 11)
     colours = {'coldwater': (80, 200, 255), 'larkfield': (255, 220, 60), 'southmeadow': (255, 140, 60),
-               'fenshore': (120, 255, 160), 'saltwell': (255, 120, 220), 'ridgemere': (230, 230, 230)}
+               'fenshore': (120, 255, 160), 'saltwell': (255, 120, 220), 'oakhaven': (170, 120, 255),
+               'ridgemere': (230, 230, 230)}
+    # Doc 72's works: a diamond each, a dotted line to its community.
+    for w in c.get('works', []):
+        x, y = w['centre']['x'] / 4, w['centre']['y'] / 4
+        if w['community'] != 'ridgemere':
+            com = next(k for k in c['communities'] if k['id'] == w['community'])
+            dr.line([(com['centre']['x'] / 4, com['centre']['y'] / 4), (x, y)], fill=colours[w['community']], width=1)
+        dr.polygon([(x, y - 5), (x + 5, y), (x, y + 5), (x - 5, y)], outline=(0, 0, 0), fill=colours[w['community']])
     for f in c['farms']:
         d = f['door']
         x, y = d['worldX'] / 4, d['worldY'] / 4
@@ -1438,8 +1479,8 @@ def previews(realm, folder):
         dr.ellipse([x - 6, y - 6, x + 6, y + 6], outline=(0, 0, 0), fill=colours[com['id']])
         dr.text((x + 8, y - 8), f'{com["name"]} ({com["beds"]} beds, {com["hands"]} hands)', fill=(255, 255, 255),
                 font=font, stroke_width=2, stroke_fill=(0, 0, 0))
-    dr.text((20, 20), 'Ridgemere (its farms\' hands live in the city)', fill=(255, 255, 255), font=font, stroke_width=2,
-            stroke_fill=(0, 0, 0))
+    dr.text((20, 20), 'Ridgemere (its farms\' hands live in the city); squares farms, diamonds works',
+            fill=(255, 255, 255), font=font, stroke_width=2, stroke_fill=(0, 0, 0))
     img.save(folder / 'communities-and-farms.png')
 
 

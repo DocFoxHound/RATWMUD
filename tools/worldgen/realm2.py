@@ -18,8 +18,8 @@ borders interleave rather than run along lines.
   cd tools && python3 -m worldgen.realm2 write [--world dev]     back up, then add the realm to DEV (add-only: the same map)
 
 The seed is fixed, so every run makes the same realm; worldgen.ridgemere2's write lays it round the city too. On the
-realm laid, worldgen.realm2_places builds the food farms' steadings and the five communities (Docs/Design/70, Progress,
-"The steadings and the communities"), and a write saves their contract, Data/Economy/communities.json.
+realm laid, worldgen.realm2_places builds the food farms' steadings and the six communities (Docs/Design/70, Progress,
+"The steadings and the communities"; doc 72, Siting), and a write saves their contract, Data/Economy/communities.json.
 """
 from __future__ import annotations
 
@@ -238,10 +238,8 @@ GATE_ROADS = {'E': ((772, 250), (767, 250)), 'S': ((412, 772), (412, 767)), 'N':
 # own fields and 7.5 of shared range (the user: "somewhere in the middle ... a player should feel like they're big").
 SITES = [
     ('oakhaven', 'town', 'Oakhaven', (1010, 1220), 180, 60, 'town', 'a harbour town at the head of Cedar Sound, where the Rainrun and the Alder come down to the sea; timber and fish'),
-    ('frosthollow', 'town', 'Frosthollow', (2300, 800), 240, 60, 'town', 'the mountain town in the high valley under the Whitefangs\' pass; its mines above it'),
     ('coldwater', 'town', 'Coldwater', (1980, 1900), 260, 60, 'town', 'a lake town on Glasswater\'s north shore, where the East Road and the River Road meet'),
     ('larkfield', 'town', 'Larkfield', (1640, 2400), 200, 60, 'town', 'the river-crossing town where the River Road crosses the Long River, among the middle country\'s grain'),
-    ('mirebridge', 'town', 'Mirebridge', (1420, 3020), 160, 60, 'town', 'the fen-edge town on the last dry ground where the rivers enter the Sallow Fens'),
     ('southmeadow', 'town', 'Southmeadow', (2150, 3350), 260, 60, 'town', 'a market town of the warm south-middle country, among orchards and vines'),
     ('saltwell', 'town', 'Saltwell', (3310, 2930), 140, 60, 'town', 'the oasis town of the Red Waste, by its spring pool, on the way to the Saltpan'),
     # Doc 71's food producers.
@@ -307,13 +305,21 @@ SITES = [
     ('mine_grey_silver', 'mine', 'the Greyteeth silver mine', (3500, 1000), 300, 14, 'ore (silver; NE mountains)', 'silver in the high Greyteeth'),
     ('mine_grey_tin', 'mine', 'the Greyteeth tin mine', (3750, 1350), 300, 14, 'ore (tin; NE mountains)', 'tin ore under the eastern spurs'),
     ('mine_ochre_copper', 'mine', 'the Ochre copper mine', (3000, 2400), 300, 14, 'spare: ore (copper)', 'copper in the Ochre Hills'),
+    # Doc 72's works where the map had no site (its Siting, 2026-11-03): placed last, so every site before them lies
+    # where it did, each near the spot its ground was measured at.
+    ('timber_oakhaven', 'timber', 'the Oakhaven cut', (1056, 1056), 48, 24, 'timber (coastal rainforest; doc 72: the Oakhaven logging camp)', 'cedar and fir above Oakhaven, the densest stand near the Sound\'s head'),
+    ('coppice_rainwood', 'coppice', 'the Rainwood coppice', (620, 1040), 48, 24, 'coppice (doc 72: firewood)', 'alder and hazel stools on cut-over ground beside the Rainwood cut'),
+    ('peat_fens', 'peat', 'the Fenshore peat cutting', (800, 3616), 64, 30, 'peat (doc 72: the second fuel)', 'peat banks cut in the open bog behind the dunes, south of Fenshore'),
 ]
+# Erased (the user, 2026-11-03: doc 72, Siting): Frosthollow (2308, 796) and Mirebridge (1468, 2868), empty town sites
+# nothing about to be built needed for a home. Their ground is the country's again; the roads to them keep their routes,
+# ending where the towns were.
 # Kinds whose ground is a zone eased rather than levelled; kinds left as the land is (only thinned); fields and range.
 FIELDS = {'farmland', 'pasture', 'orchard', 'vineyard', 'dairy', 'woodpasture', 'warren', 'marsh', 'apiary'}
-UNCLEARED = {'woodpasture', 'marsh'}
+UNCLEARED = {'woodpasture', 'marsh', 'coppice'}
 OWN_FIELDS = {'farmland', 'orchard', 'vineyard', 'dairy', 'pigfarm', 'warren', 'apiary', 'mill'}
 RANGE = {'pasture', 'woodpasture'}
-SHORE_TOWNS = {'oakhaven', 'coldwater', 'larkfield', 'mirebridge', 'saltwell'}
+SHORE_TOWNS = {'oakhaven', 'coldwater', 'larkfield', 'saltwell'}
 # What a site's ground is cleared to (codes picked evenly), and a share of its edge given another (code).
 GROUND_OF = {
     'town': (',,,"', 0, ''), 'farmland': (',,,,""', .05, 'B'), 'pasture': (',,,,""3', .03, 'B'), 'orchard': (',,,"', 0, ''),
@@ -321,23 +327,27 @@ GROUND_OF = {
     'clay': ('DD.', 0, ''), 'salt': ('))))0', 0, ''), 'timber': (',&&!', .3, '7'), 'mill': ('.,0', 0, ''),
     'dairy': (',,,,""', .04, 'B'), 'pigfarm': (',.,D', 0, ''), 'woodpasture': (',', 0, ''), 'warren': ('"0,;', 0, ''),
     'marsh': ('', 0, ''), 'apiary': (',,,3"', 0, ''), 'charcoal': (',..', .2, '7'), 'saltcoast': ('0D.', 0, ''),
+    'coppice': ('', 0, ''), 'peat': ('DDD.', .25, 'E'),
 }
 CLEARABLE = [ord(c) for c in '$PY1Bo7?@2']
-LEVELLED = {'town', 'mine', 'quarry', 'clay', 'salt', 'timber', 'fishing', 'mill', 'pigfarm', 'charcoal', 'saltcoast'}
+LEVELLED = {'town', 'mine', 'quarry', 'clay', 'salt', 'timber', 'fishing', 'mill', 'pigfarm', 'charcoal', 'saltcoast',
+            'peat'}
 # What is grown on soil (a farm's grain, an orchard's trees, vines, a dairy's hay) and the bare ground it can't be:
 # the site is placed off it where it can be, and what is left of it inside is given back as the country's grass.
 GROWN = {'farmland', 'orchard', 'vineyard', 'dairy'}
 BARE = '(0X)rs'                         # (sandstone, sand, rubble, salt flat, bare rock, scree)
-# The roads (name, from, to, width): from the city's gates to the towns, and between them.
+# The roads (name, from, to, width): from the city's gates to the towns, and between them. Where an erased town stood
+# (Frosthollow, Mirebridge) its roads still meet, at a crossroads in the open.
+FROSTHOLLOW, MIREBRIDGE = (2308, 796), (1468, 2868)
 ROADS = [
-    ('The Pass Road', 'N', 'frosthollow', 3),
-    ('The Pass', 'frosthollow', (2290, 6), 3),
+    ('The Pass Road', 'N', FROSTHOLLOW, 3),
+    ('The Pass', FROSTHOLLOW, (2290, 6), 3),
     ('The East Road', 'E', 'coldwater', 3),
     ('The Sound Road', 'S', 'oakhaven', 3),
-    ('The Coast Road', 'oakhaven', 'mirebridge', 3),
+    ('The Coast Road', 'oakhaven', MIREBRIDGE, 3),
     ('The River Road', 'coldwater', 'larkfield', 3),
-    ('The Fen Road', 'larkfield', 'mirebridge', 3),
-    ('The High Road', 'frosthollow', 'coldwater', 3),
+    ('The Fen Road', 'larkfield', MIREBRIDGE, 3),
+    ('The High Road', FROSTHOLLOW, 'coldwater', 3),
     ('The South Road', 'larkfield', 'southmeadow', 3),
     ('The Waste Road', 'southmeadow', 'saltwell', 3),
     ('The Downs Road', 'coldwater', 'saltwell', 3),
@@ -428,7 +438,7 @@ OVERVIEW_LABELS = [((60, 1180), 'CEDAR SOUND'), ((1300, 120), 'THE WHITEFANGS'),
 CLOSE_UPS = {
     'ridgemere-and-the-rainward-woods': (0, 0, 1100, 1000),
     'cedar-sound-and-oakhaven': (300, 1000, 1000, 700),
-    'whitefangs-and-frosthollow': (1850, 250, 1000, 800),
+    'whitefangs-and-the-pass': (1850, 250, 1000, 800),
     'glasswater-and-the-greenholt': (1550, 1650, 1000, 800),
     'sallow-fens-and-the-delta': (600, 2650, 1000, 900),
     'red-waste-saltpan-and-dunes': (2950, 2550, 1100, 1100),
@@ -1460,9 +1470,9 @@ class Realm2:
                 score = score + np.where(blur(rc, r // 2 + 4) > .004, 0, 40)
             if kind in ('mine', 'quarry'):
                 score = score + np.where(mount_c > .3, 0, 8) + rough * -20
-            if kind in ('timber', 'woodpasture', 'pigfarm', 'charcoal'):
+            if kind in ('timber', 'woodpasture', 'pigfarm', 'charcoal', 'coppice'):
                 score = score + (1 - blur(forest, max(2, r // 2))) * 20
-            if kind == 'marsh':
+            if kind in ('marsh', 'peat'):
                 score = score + (1 - blur(biome_c['marsh'], r // 2 + 1)) * 40
             if kind == 'town':
                 shore = blur(wc, (size + 24) // G) > (.03 if key in SHORE_TOWNS else .012)
@@ -1471,7 +1481,7 @@ class Realm2:
                 score = score + blur(bare_c, max(1, r // 2)) * 30
             d = np.hypot(xs - tx, ys - ty)
             score = score + d / max(search, 1) * 6
-            wet = wc > (.5 if kind in ('fishing', 'clay', 'salt', 'mill', 'saltcoast', 'marsh') else .02)
+            wet = wc > (.5 if kind in ('fishing', 'clay', 'salt', 'mill', 'saltcoast', 'marsh', 'peat') else .02)
             # All the ground its preparing may reach clear of what the sites before it reached, not only its middle (a
             # grain farm laid over Larkfield drew its hedges across the town's level core): no tile prepared twice.
             crowd = spread(self.taken, site_kernel(kind, size))
@@ -1541,6 +1551,14 @@ class Realm2:
             if kind == 'woodpasture':                   # (pannage: the trees stay, the undergrowth is grazed off)
                 under = (shape < 1) & np.isin(self.codes[y0:y1, x0:x1], [ord('&'), ord('B'), ord('7')]) & ~self.keep[y0:y1, x0:x1]
                 self.codes[y0:y1, x0:x1][under] = ord(',')
+            elif kind == 'coppice':
+                # Coppice (doc 72): the conifers felled, the ground grown again as alder and hazel stools cut in turn
+                # (shrub), an oak or alder left standing here and there, ferns and grass between.
+                pick = self.pick[y0:y1, x0:x1]
+                wood = (shape < 1) & ~self.keep[y0:y1, x0:x1] & ~self.water[y0:y1, x0:x1] & ~self.hold[y0:y1, x0:x1] & \
+                    np.isin(cv, CLEARABLE + [ord(c) for c in ',"&!3'])
+                cv[wood] = np.where(pick[wood] < .4, ord('B'), np.where(pick[wood] < .5, ord('Y'),
+                                    np.where(pick[wood] < .55, ord('@'), np.where(pick[wood] < .75, ord('&'), ord(',')))))
             site['tiles'] = int((held == len(self.sites) + 1).sum())
             return
         if kind in LEVELLED:
@@ -2028,7 +2046,9 @@ class Realm2:
         missing = [s['id'] for s in self.sites if not reach[max(0, s['y'] - 12):s['y'] + 13, max(0, s['x'] - 12):s['x'] + 13].any()]
         check('every reserved site is reached from the city', not missing, ', '.join(missing))
         towns = [s for s in self.sites if s['kind'] == 'town']
-        check('5-8 town sites (Fenshore the eighth)', 5 <= len(towns) <= 8, str(len(towns)))
+        check('six town sites, each a community (Fenshore the sixth; Frosthollow and Mirebridge erased)',
+              len(towns) == 6 and {t['id'] for t in towns} == {'oakhaven', 'coldwater', 'larkfield', 'southmeadow',
+                                                             'saltwell', 'fenshore'}, str(len(towns)))
         shared = [f'{s["id"]} {s["shared"]}' for s in self.sites if s.get('shared')]
         check('no site laid over another\'s ground', not shared, ', '.join(shared[:10]))
         bare = [ord(c) for c in BARE]
@@ -2603,7 +2623,8 @@ SITE_COLOURS = {'town': (255, 70, 60), 'farmland': (255, 225, 0), 'mill': (255, 
                 'pigfarm': (230, 120, 120), 'woodpasture': (120, 170, 60), 'warren': (210, 180, 140),
                 'apiary': (255, 200, 60), 'fishing': (0, 220, 255), 'marsh': (60, 160, 160), 'salt': (255, 255, 255),
                 'saltcoast': (220, 240, 255), 'timber': (20, 110, 30), 'charcoal': (90, 60, 40),
-                'quarry': (215, 215, 215), 'clay': (160, 95, 45), 'mine': (40, 40, 40)}
+                'quarry': (215, 215, 215), 'clay': (160, 95, 45), 'mine': (40, 40, 40), 'coppice': (110, 200, 90),
+                'peat': (70, 45, 30)}
 
 
 def previews(realm, folder):

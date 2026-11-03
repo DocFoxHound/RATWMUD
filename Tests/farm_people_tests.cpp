@@ -205,7 +205,7 @@ const Society::FarmNow& farm(const Society& s, const std::string& id)
 void theData()
 {
     const auto& people = items::farmPeople();
-    expect(people.loaded && people.farms.size() == 31 && people.communities.size() == 5, "communities.json and farm_people.json read");
+    expect(people.loaded && people.farms.size() == 31 && people.communities.size() == 6, "communities.json and farm_people.json read");
     // Every farm's labels: at most 40 characters, no business's word, no "dog".
     Fixture x;
     build(x);
@@ -238,7 +238,7 @@ void theData()
     for (const auto& c : people.communities)
         expect(!c.town && c.region == c.id, c.id + " is no town yet, its own region");
     const auto all = people.plainRegions([](const std::string&) { return true; });
-    expect(all == std::set<std::string>({"coldwater", "larkfield", "southmeadow", "fenshore", "saltwell"}), "the five kept plain");
+    expect(all == std::set<std::string>({"coldwater", "larkfield", "southmeadow", "fenshore", "saltwell", "oakhaven"}), "the six kept plain");
     expect(people.plainRegions([](const std::string&) { return false; }).empty(), "none without their places");
     expect(people.plainRegions([](const std::string& area) { return area == "cn_saltwell_inn"; }) == std::set<std::string>({"saltwell"}),
            "a community by any of its places");
@@ -435,8 +435,10 @@ void thePlacement()
             }
     for (const auto& f : s.farms())
         expect(s.cash(f.crew) == 0, f.def->id + "'s crew holds nothing now (its people's)");
+    // (A community's market is staffed with its first farm: Oakhaven, the woods' (doc 72), has none yet.)
     for (const auto& c : people.communities)
-        expect(sold["cn_" + c.id + "_store"] > 0, c.name + "'s store sold to its own households: " + std::to_string(sold["cn_" + c.id + "_store"]));
+        if (std::any_of(people.farms.begin(), people.farms.end(), [&](const auto& f) { return f.community == c.id; }))
+            expect(sold["cn_" + c.id + "_store"] > 0, c.name + "'s store sold to its own households: " + std::to_string(sold["cn_" + c.id + "_store"]));
     expect(s.conserved(), "a day on: conserved");
     // Placed once: the next day asks for nobody.
     s.tendCareers(3, x.world);

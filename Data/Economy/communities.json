@@ -1983,6 +1983,292 @@
     "cottageLots": 6,
     "openTiles": 6285
    }
+  },
+  {
+   "id": "oakhaven",
+   "name": "Oakhaven",
+   "site": "oakhaven",
+   "centre": {
+    "x": 1012,
+    "y": 1220
+   },
+   "about": "A village at the head of Cedar Sound where the Rainrun and the Alder come down to the sea: timber cottages under cedar shingle round a green and its well, a store and an alehouse, kitchen gardens, hens and goats, the Rainwood standing dark above it. The fellers of the Oakhaven cut live here.",
+   "style": "country",
+   "region": "oakhaven",
+   "town": false,
+   "hands": 0,
+   "farms": [],
+   "beds": 25,
+   "homes": [
+    {
+     "area": "cn_oakhaven_cottage_1",
+     "name": "Oakhaven Cottage 1",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 14
+      },
+      {
+       "x": 7,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_4_4",
+      "x": 13,
+      "y": 201,
+      "worldX": 1037,
+      "worldY": 1225
+     }
+    },
+    {
+     "area": "cn_oakhaven_cottage_2",
+     "name": "Oakhaven Cottage 2",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 14
+      },
+      {
+       "x": 7,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_4",
+      "x": 254,
+      "y": 203,
+      "worldX": 1022,
+      "worldY": 1227
+     }
+    },
+    {
+     "area": "cn_oakhaven_cottage_3",
+     "name": "Oakhaven Cottage 3",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 14,
+       "y": 1
+      },
+      {
+       "x": 14,
+       "y": 3
+      },
+      {
+       "x": 1,
+       "y": 5
+      },
+      {
+       "x": 14,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_4",
+      "x": 251,
+      "y": 176,
+      "worldX": 1019,
+      "worldY": 1200
+     }
+    }
+   ],
+   "flats": [
+    {
+     "area": "cn_oakhaven_store_flat",
+     "name": "Oakhaven Stores, the flat above",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 13,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "for": "Oakhaven Stores"
+    },
+    {
+     "area": "cn_oakhaven_alehouse_flat",
+     "name": "The Felled Cedar, the rooms above",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 1,
+       "y": 18
+      },
+      {
+       "x": 3,
+       "y": 18
+      },
+      {
+       "x": 1,
+       "y": 1
+      }
+     ],
+     "for": "The Felled Cedar"
+    }
+   ],
+   "market": [
+    {
+     "area": "cn_oakhaven_store",
+     "name": "Oakhaven Stores",
+     "business": "general",
+     "posts": [
+      {
+       "post": "shopkeeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 7,
+       "y": 3
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_3_4",
+      "x": 244,
+      "y": 188,
+      "worldX": 1012,
+      "worldY": 1212
+     },
+     "otherRooms": [
+      "cn_oakhaven_store_flat"
+     ]
+    },
+    {
+     "area": "cn_oakhaven_alehouse",
+     "name": "The Felled Cedar",
+     "business": "inn",
+     "posts": [
+      {
+       "post": "alehouse keeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 2,
+       "y": 14
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_3_4",
+      "x": 234,
+      "y": 196,
+      "worldX": 1002,
+      "worldY": 1220
+     },
+     "otherRooms": [
+      "cn_oakhaven_alehouse_flat"
+     ]
+    }
+   ],
+   "gardens": [
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_3_4",
+     "x": 246,
+     "y": 152,
+     "width": 12,
+     "height": 8,
+     "worldX": 1014,
+     "worldY": 1176,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_3_4",
+     "x": 232,
+     "y": 151,
+     "width": 12,
+     "height": 8,
+     "worldX": 1000,
+     "worldY": 1175,
+     "tiles": 60
+    },
+    {
+     "kind": "hen run",
+     "cell": "w_ridgemere_3_4",
+     "x": 234,
+     "y": 233,
+     "width": 9,
+     "height": 7,
+     "worldX": 1002,
+     "worldY": 1257,
+     "tiles": 35
+    },
+    {
+     "kind": "goat paddock",
+     "cell": "w_ridgemere_3_4",
+     "x": 216,
+     "y": 154,
+     "width": 13,
+     "height": 9,
+     "worldX": 984,
+     "worldY": 1178,
+     "tiles": 77
+    }
+   ],
+   "roomToGrow": {
+    "cottageLots": 9,
+    "openTiles": 6330
+   }
   }
  ],
  "farms": [
@@ -5053,6 +5339,104 @@
    "mapWins": "the file: the flats of the coast south of the city; the map: the Fen salterns, on the fens' coast"
   }
  ],
+ "works": [
+  {
+   "site": "timber_rainwood",
+   "name": "the Rainwood cut",
+   "kind": "timber",
+   "community": "ridgemere",
+   "centre": {
+    "x": 652,
+    "y": 1092
+   },
+   "size": 24,
+   "walk": null
+  },
+  {
+   "site": "timber_oakhaven",
+   "name": "the Oakhaven cut",
+   "kind": "timber",
+   "community": "oakhaven",
+   "centre": {
+    "x": 1052,
+    "y": 1060
+   },
+   "size": 24,
+   "walk": 175
+  },
+  {
+   "site": "coppice_rainwood",
+   "name": "the Rainwood coppice",
+   "kind": "coppice",
+   "community": "ridgemere",
+   "centre": {
+    "x": 620,
+    "y": 1020
+   },
+   "size": 24,
+   "walk": null
+  },
+  {
+   "site": "charcoal_greenholt",
+   "name": "the Greenholt charcoal hearths",
+   "kind": "charcoal",
+   "community": "larkfield",
+   "centre": {
+    "x": 1260,
+    "y": 2124
+   },
+   "size": 18,
+   "walk": 537
+  },
+  {
+   "site": "peat_fens",
+   "name": "the Fenshore peat cutting",
+   "kind": "peat",
+   "community": "fenshore",
+   "centre": {
+    "x": 788,
+    "y": 3596
+   },
+   "size": 30,
+   "walk": 360
+  },
+  {
+   "site": "quarry_granite",
+   "name": "the Rainward granite quarry",
+   "kind": "quarry",
+   "community": "ridgemere",
+   "centre": {
+    "x": 1028,
+    "y": 356
+   },
+   "size": 20,
+   "walk": null
+  },
+  {
+   "site": "clay_mirebridge",
+   "name": "the Mirebridge clay pits",
+   "kind": "clay",
+   "community": "fenshore",
+   "centre": {
+    "x": 1180,
+    "y": 3276
+   },
+   "size": 14,
+   "walk": 606
+  },
+  {
+   "site": "clay_fens",
+   "name": "the Sallow clay pits",
+   "kind": "clay",
+   "community": "southmeadow",
+   "centre": {
+    "x": 1636,
+    "y": 3332
+   },
+   "size": 14,
+   "walk": 576
+  }
+ ],
  "paths": [
   {
    "name": "larkfield:grain_long",
@@ -5340,6 +5724,66 @@
    "to": [
     892,
     3302
+   ]
+  },
+  {
+   "name": "oakhaven:timber_oakhaven",
+   "length": 175,
+   "from": [
+    1012,
+    1220
+   ],
+   "to": [
+    1052,
+    1060
+   ]
+  },
+  {
+   "name": "larkfield:charcoal_greenholt",
+   "length": 537,
+   "from": [
+    1676,
+    2380
+   ],
+   "to": [
+    1260,
+    2124
+   ]
+  },
+  {
+   "name": "fenshore:peat_fens",
+   "length": 360,
+   "from": [
+    860,
+    3476
+   ],
+   "to": [
+    788,
+    3596
+   ]
+  },
+  {
+   "name": "fenshore:clay_mirebridge",
+   "length": 606,
+   "from": [
+    860,
+    3476
+   ],
+   "to": [
+    1180,
+    3276
+   ]
+  },
+  {
+   "name": "southmeadow:clay_fens",
+   "length": 576,
+   "from": [
+    2148,
+    3348
+   ],
+   "to": [
+    1636,
+    3332
    ]
   }
  ]
