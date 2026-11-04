@@ -1038,7 +1038,7 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertTrue(data['farmsSupported'])
         self.assertEqual(data['farms'], {})
         d = data['farmDefaults']
-        self.assertEqual((d['start'], d['every'], d['keeper'], d['hand'], len(d['areas'])), (-1, 28, 16, 10, 6))
+        self.assertEqual((d['start'], d['every'], d['keeper'], d['hand'], len(d['areas'])), (-1, 28, 16, 10, 7))
         grain = next(a for a in d['areas'] if a['id'] == 'grain')
         self.assertEqual(([f['id'] for f in grain['farms']], grain['price'], grain['priceFactor']),
                          (['grain_farm_1', 'grain_farm_2'], 'year', 101))
