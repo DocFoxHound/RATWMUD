@@ -1477,3 +1477,51 @@ day unless said; country3c's beside it.
 **Verdict: stable enough for Phase 5**, with the summer margin (24%) the smoke projected and the quarry paid. To watch
 in Phase 5: the clay and sand piling (the pits' yields down, the patch), the candles (the chandlery's crew: cord to the
 others or a hand more), the scriptorium, the thinnest boats, orchards and salt (4.8-6.0p a day over their wages and rent).
+
+### Phase 5, the map: the country workshops (2026-11-04, branch `r2-country-p5-map`)
+
+Places only, as the siting says (the economy's branch gives them their posts, goods and people). `realm2_places.WORKSHOPS`:
+doc 71 section 5's eight workshops by their fixed ids, each a workshop with its **keeper's flat over it** (4 beds: the
+keeper now, the family later; stairs from the workshop floor), work spots on its floor for its whole crew, laid out from
+its stations (`workshop`, on the building kit's layout). They are laid **last**, after the communities and the works'
+footpaths, on the lots still free (a door onto a street, a lane or a footpath, within 30 of the core's edge), so no
+house, garden, street, footpath or id laid before them moves: the farms, the works, the paths and every community's
+homes, market, flats and gardens in `communities.json` are as they were; each community gains `workshops` (and the
+workshops' flats in `flats`, `for` the workshop, as a store's).
+
+| Id | Community | Building | Crew (doc 71) | Floor: stations | Work spots | Keeper's flat |
+|---|---|---|---|---|---|---|
+| `cn_coldwater_soapworks` | Coldwater | The Coldwater Boiling House: soap coppers, candle kettles, candle racks | 1 + 3 | rendering pot 2, chandler's kettle 2, drying rack 2, workbench | 4 | `_flat`, 4 |
+| `cn_coldwater_weavers` | Coldwater | Coldwater Loom Shed (wool) | 1 + 4 | loom 6, spinning wheel 3 | 5 | `_flat`, 4 |
+| `cn_larkfield_weavers` | Larkfield | Larkfield Linen Shed | 1 + 4 | loom 6, spinning wheel 3 | 5 | `_flat`, 4 |
+| `cn_larkfield_press` | Larkfield | Larkfield Press and Paper Mill | 1 + 4 | paper vat 3, press, printing press 2, scribe's desk | 5 | `_flat`, 4 |
+| `cn_larkfield_smithy` | Larkfield | Larkfield Smithy | 1 | forge, grindstone, workbench | 1 | `_flat`, 4 |
+| `cn_fenshore_pottery` | Fenshore | Fenshore Pottery, its kiln yard beside it (two kilns, stacked pots) | 1 + 1 | kiln 2, potter's wheel 2, drying rack 2, workbench | 2 | `_flat`, 4 |
+| `cn_southmeadow_pottery` | Southmeadow | Southmeadow Pottery, its kiln yard beside it | 1 + 1 | kiln 2, potter's wheel 2, drying rack 2, workbench | 2 | `_flat`, 4 |
+| `cn_oakhaven_press` | Oakhaven | Oakhaven Press and Paper Mill | 1 + 4 | paper vat 3, press, printing press 2, scribe's desk | 5 | `_flat`, 4 |
+
+- **Where in the village**: the potteries on the side towards their clay pits (Fenshore's west, towards the Mirebridge
+  pits; Southmeadow's towards the Sallow pits), each with a fenced kiln yard (12 x 8) on dry ground beside it; the
+  presses on the side towards the nearest water. **Neither Larkfield nor Oakhaven has a stream in its grounds**: the
+  Long River is ~100 tiles from Larkfield's green and the Rainrun's mouth ~110 from Oakhaven's, so the presses stand on
+  the village's edge towards them (90 and 82 tiles from the water), no wheel; the stamping mill is a treadle. A mill on
+  the bank would be its own compound with a footpath, a later step if wanted. The rest near the green.
+- **The hands' beds** (the keepers in their flats; 21 hands): a community's cottages hold its farms' hands, its works'
+  crews and its market hands without a flat, first come first housed. Larkfield's four (24 beds) would be full to the
+  last bed with its 8 workshop hands (11 farm, 3 charcoal, the pot hand and the baker before them), so it gets **two
+  cottages more**, `cn_larkfield_cottage_5` and `_6` (36 beds; ~24 used). The others keep at least a cottage free:
+  Coldwater 54 for ~32 (+7), Southmeadow 18 for ~10 (+1), Fenshore 18 for ~12 (+1), Oakhaven 18 for ~8 (+4).
+- **Beds** (homes and flats): Coldwater 62 to 70, Larkfield 31 to 55, Southmeadow, Fenshore and Oakhaven 25 to 29,
+  Saltwell 22. **Room to grow** (cottage lots): Coldwater 6 to 4, Larkfield 8 to 4, Southmeadow 6 to 5, Fenshore 9 to 8,
+  Oakhaven 9 to 12 (the cut's footpath, laid after the count was first made, gives lots doors), Saltwell 6.
+- **Checks**: the realm's own, 23 of 23 (new: "the country workshops: the eight, a keeper's flat and work for their 29
+  each"; the doors-reached check counts the workshops' doors). `test_realm2`: the workshops' interiors (every kind,
+  every look, crews 1-5) and, with `RATW_SLOW=1`, the eight by their ids, crews and flats on the realm. A dry run of the
+  write (`write --world dev --dry-run`): every check and the Atlas validation pass. Previews:
+  `artifacts/realm2/workshops/` (each workshop close up, the five villages; `before/` the villages as they were).
+- **Not yet written into DEV** (the session's write was refused by its permissions): `communities.json` is the
+  generator's (laid from DEV read only, `realm2_places.write_contract`), and `test_realm2` with `RATW_SLOW=1` passes 30
+  of 30 against it; `farm_people_behaviors` and `farms_behaviors` pass (until the write, the game skips the workshops'
+  and the two cottages' rooms, which DEV doesn't have). To finish: from `tools/`, `python3 -m worldgen.realm2 write
+  --world dev` (it backs DEV up first), then `python3 tools/world_build.py dev`, and export the build for the sim to
+  `artifacts/economy/r2/export<build>`.

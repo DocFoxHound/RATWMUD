@@ -226,6 +226,18 @@ class Places(unittest.TestCase):
                     rows = b.rooms[0].rows
                     self.assertTrue(all(rows[y][x] in '.f' for x, y in work), (kind, key))
                     self.assertEqual(len(set(map(tuple, work))), len(work))
+        # Doc 72, Phase 5's workshops: a work spot for each of the crew, their stations, the keeper's flat upstairs.
+        for style in ('country', 'southern', 'fen'):
+            for kind in P.WORKSHOP_KINDS:
+                for crew in (1, 2, 5):
+                    b = P.workshop(rng, style, kind, f'A {kind}', crew)
+                    floor, flat = b.rooms
+                    self.assertGreaterEqual(len(floor.work), crew, (style, kind))
+                    self.assertTrue(all(floor.rows[y][x] in '.f' for x, y in floor.work), (style, kind))
+                    self.assertTrue(floor.stations, kind)
+                    self.assertEqual((flat.key, flat.z, len(flat.beds)), ('flat', 1, P.WORKSHOP_FLAT))
+                    (_, sx, sy), (_, ux, uy) = b.stairs[0]
+                    self.assertEqual((floor.rows[sy][sx], flat.rows[uy][ux]), ('^', '^'))
         press = P.press_house(rng, 'adobe', 'A Press House')
         self.assertEqual([r.z for r in press.rooms], [0, -1])
         self.assertEqual(len(press.stairs), 1)
@@ -254,7 +266,8 @@ class Places(unittest.TestCase):
             self.assertEqual(P.turned_layout(layout, 4), P.turned_layout(layout, 0))
 
     def test_the_words(self):
-        text = json.dumps([P.COMMUNITIES, P.FENSHORE, P.COTTAGE_PROSE, P.FARMHOUSE_PROSE, P.MAP_WINS])
+        text = json.dumps([P.COMMUNITIES, P.FENSHORE, P.COTTAGE_PROSE, P.FARMHOUSE_PROSE, P.MAP_WINS, P.WORKSHOPS,
+                           P.WORKSHOP_KINDS, P.WORKSHOP_FLAT_PROSE])
         self.assertNotRegex(text.lower(), r'\bdogs?\b')
 
 
@@ -432,10 +445,11 @@ class WholeRealm(unittest.TestCase):
             for bed in f['home']['beds']:
                 self.assertEqual(rooms[f['home']['area']]['terrain'][bed['y']][bed['x']], 'b')
         beds = {com['id']: com['beds'] for com in c['communities']}
-        self.assertTrue(55 <= beds['coldwater'] <= 65, beds)
-        self.assertTrue(28 <= beds['larkfield'] <= 34, beds)
+        # (Doc 72, Phase 5: the workshops' keepers' flats, 4 beds each, and Larkfield's two cottages more.)
+        self.assertTrue(65 <= beds['coldwater'] <= 75, beds)
+        self.assertTrue(50 <= beds['larkfield'] <= 58, beds)
         for k in ('southmeadow', 'fenshore', 'saltwell', 'oakhaven'):
-            self.assertTrue(20 <= beds[k] <= 25, beds)
+            self.assertTrue(20 <= beds[k] <= 30, beds)
         for com in c['communities']:
             self.assertGreaterEqual(com['roomToGrow']['cottageLots'], 3, com['id'])
             self.assertTrue(any(g['kind'] == 'kitchen garden' for g in com['gardens']))
@@ -449,6 +463,40 @@ class WholeRealm(unittest.TestCase):
         self.assertEqual(built, {'coldwater', 'larkfield', 'southmeadow', 'fenshore', 'saltwell', 'oakhaven'})
         oak = next(k for k in c['communities'] if k['id'] == 'oakhaven')
         self.assertGreaterEqual(oak['roomToGrow']['cottageLots'], 6)
+
+    def test_doc_72s_country_workshops(self):
+        # Phase 5 (doc 72, Siting; doc 71 section 5's 29 workers): the eight workshops by their fixed ids, each with its
+        # keeper's flat over it and a work spot on its floor for each of its crew; Larkfield's two cottages more.
+        c = self.realm.contract
+        rooms = {r['id']: r for r in self.project['rooms']}
+        links = {l['id'] for l in self.project['links']}
+        crews = {'cn_coldwater_soapworks': 4, 'cn_coldwater_weavers': 5, 'cn_larkfield_weavers': 5,
+                 'cn_larkfield_press': 5, 'cn_larkfield_smithy': 1, 'cn_fenshore_pottery': 2,
+                 'cn_southmeadow_pottery': 2, 'cn_oakhaven_press': 5}
+        got = {}
+        for com in c['communities']:
+            flats = {f['area']: f for f in com['flats']}
+            for w in com['workshops']:
+                got[w['id']] = w['crew']['keepers'] + w['crew']['hands']
+                self.assertEqual(w['area'], w['id'])
+                self.assertIn(w['area'], rooms)
+                self.assertIn(f'{w["id"]}_door', links)
+                self.assertEqual(rooms[w['area']]['territory']['region'], com['id'])
+                self.assertEqual(w['flat'], f'{w["id"]}_flat')
+                self.assertEqual(flats[w['flat']]['for'], w['name'])
+                self.assertEqual(flats[w['flat']]['capacity'], P.WORKSHOP_FLAT)
+                for bed in flats[w['flat']]['beds']:
+                    self.assertEqual(rooms[w['flat']]['terrain'][bed['y']][bed['x']], 'b')
+                self.assertGreaterEqual(len(w['work']), got[w['id']], w['id'])
+                for spot in w['work']:
+                    self.assertIn(rooms[w['area']]['terrain'][spot['y']][spot['x']], '.f', w['id'])
+                self.assertTrue(w['stations'], w['id'])
+                if w['kind'] == 'pottery':
+                    self.assertTrue(w.get('kilnYard'), w['id'])
+        self.assertEqual(got, crews)
+        self.assertEqual(sum(got.values()), 29)
+        lark = next(k for k in c['communities'] if k['id'] == 'larkfield')
+        self.assertEqual([h['area'] for h in lark['homes']][-2:], ['cn_larkfield_cottage_5', 'cn_larkfield_cottage_6'])
 
     def test_doc_72s_works_and_the_erased_towns(self):
         # The works doc 72 sited (its Siting): each placed near where its ground was measured, its crew's home named,
