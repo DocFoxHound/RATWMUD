@@ -320,10 +320,50 @@ void aCommunityWorkshop()
                    w->second.paid == w->second.owed && day.rents.count("the Crown") &&
                    day.rents.at("the Crown") == toHouse,
                "what is over to the Crown's estate, booked by House, none to its keeper: " + std::to_string(toHouse));
-        expect(s.cash(till) >= 7 * (e.wageKeeper + e.wageHand) && s.cash(till) <= 7 * (e.wageKeeper + e.wageHand) + 100,
-               "the till keeps its float and a week's wages: " + std::to_string(s.cash(till)));
+        // (Two days of them, workshopWagesDays, as the works keep: doc 72, after country5, a week's held its House's
+        // share back for nothing.)
+        const auto kept = s.rule("workshopWagesDays") * (e.wageKeeper + e.wageHand);
+        expect(s.rule("workshopWagesDays") == 2 && s.rule("floatWagesDays") == 7 && s.cash(till) >= kept &&
+                   s.cash(till) <= kept + 100,
+               "the till keeps its float and two days' wages (a city till a week's): " + std::to_string(s.cash(till)));
         (void)country0;
         expect(s.conserved() && s.moneySupply() == money, "wages and the House's share: conserved");
+    }
+    // The butchers' tallow (doc 72, after country5: their cuts' by-product piled in their tills, 39,300, while the
+    // soapworks went short ~4,700 a season): the soapworks, the chandlery and the perfumer buy it of them first, till to
+    // till at the butcher's price, the store room only what they lack.
+    {
+        for (const char* buyer : {"country_soapworks", "chandlery", "perfumer"})
+            expect(Society(Roster::None).citySellers(buyer, "tallow") == std::vector<std::string>{"butcher"},
+                   std::string(buyer) + " buys the butchers' tallow");
+        auto people = soapworks();
+        people.push_back(person("butcher", "merchant", "butcher at the Shambles", {"shambles", 2.5, 2.5}, "home_butcher", 40, 400));
+        auto s = city(people);
+        const auto works = s.tillOf("boiler"), shambles = s.tillOf("butcher");
+        for (const char* g : {"fine_soap", "candle_tallow", "tallow"})
+            empty(s, works, g);
+        empty(s, shambles, "tallow");
+        s.create(shambles, "tallow", 40, "test: the butcher's tallow");
+        s.create(works, "herbs", 10, "test: herbs");
+        s.create(works, "cord", 10, "test: cord");
+        const auto money = s.moneySupply();
+        const auto butcher0 = s.cash(shambles);
+        s.takeJournal();
+        s.restockFromStore("boiler", 1 + 9 / 24.);
+        int fromButcher = 0, fromStore = 0;
+        std::int64_t paid = 0;
+        for (const auto& e : s.takeJournal())
+            if (e.item == "tallow" && e.from == works && e.to == shambles)
+                fromButcher += e.quantity, paid += e.coins;
+            else if (e.item.empty() && e.from == works && e.to == shambles)
+                paid += e.coins;
+            else if (e.item == "tallow" && e.kind.rfind("drawn for", 0) == 0)
+                fromStore += e.quantity;
+        expect(fromButcher > 0 && fromStore == 0 && paid == s.seasonalCost("tallow", fromButcher) &&
+                   s.cash(shambles) - butcher0 == paid,
+               "the soapworks' tallow the butcher's, at its price, none drawn: " + std::to_string(fromButcher) + " for " +
+                   std::to_string(paid) + "p");
+        expect(s.conserved() && s.moneySupply() == money, "the butcher's tallow: conserved");
     }
     // A world without the building: the general store's soap the store room's, as before Phase 5.
     {
@@ -374,10 +414,14 @@ const char* const Stall = "keeping the stall in the square";
 
 // Cheese, the luxury: the poor household buys its food, never cheese, and keeps its money; the rich one buys a piece
 // at the stall's high price, within its luxuries' share; the stall's price for it climbs past the city's band while it
-// sells out, and stays out of the city's price level.
+// sells out, and stays out of the city's price level. By class, not cash (doc 72, after country5): a household of the
+// Houses buys from what is over the comforts' keep (40p a head), any other only over luxuryAbove (200p a head), so the
+// stallholder's middling household (200p) buys none, the Houses' lady (120p) one at the season's price.
 void theCheese()
 {
     const auto& cfg = items::country();
+    expect(Society(Roster::None).rule("luxuryAbove") == 200 && Society(Roster::None).rule("luxuryPriceBand") == 700,
+           "the luxuries' keep 200p a head, their band eight times");
     expect(cfg.luxuries == std::vector<std::string>{"cheese"} && Society::luxury("cheese") && !Society::luxury("bread"),
            "cheese the luxury");
     expect(std::find(cfg.comforts.begin(), cfg.comforts.end(), "cheese") == cfg.comforts.end(),
@@ -385,7 +429,8 @@ void theCheese()
     const auto day = [](double factor, int cheese) {
         auto t = Town(city({person("stall", "merchant", Stall, {"square", 2.5, 2.5}, "home_stall", 40, 200),
                             person("pam", "civilian", "keeps the house", {"home_pam", 2.5, 2.5}, "home_pam", 30, 30),
-                            person("rex", "civilian", "keeps the house", {"home_rex", 2.5, 2.5}, "home_rex", 50, 2000)},
+                            person("rex", "civilian", "keeps the house", {"home_rex", 2.5, 2.5}, "home_rex", 50, 2000),
+                            person("lady", "civilian", "at home in the Heights", {"home_lady", 2.5, 2.5}, "home_lady", 45, 120)},
                            [](AuthoredRoster& r) {
                                r.economy.country = false;
                                r.economy.storeRule = false; // (Its shelves only what the test puts there.)
@@ -409,6 +454,8 @@ void theCheese()
         s.takeJournal();
         const auto money = s.moneySupply();
         const auto rex0 = s.cash("rex"), pam0 = s.cash("pam");
+        expect(s.classOf("lady") == "upper" && s.classOf("rex") != "upper" && s.classOf("stall") != "upper",
+               "the lady the Houses', the others not: " + s.classOf("lady") + ", " + s.classOf("rex") + ", " + s.classOf("stall"));
         t.until(1 + 17.5 / 24);
         std::map<std::string, std::map<std::string, int>> bought;
         for (const auto& e : s.takeJournal())
@@ -436,7 +483,7 @@ void theCheese()
         expect(bought.at("rex").count("cheese") && bought.at("rex").at("cheese") == 1,
                "the rich household buys its piece at three times the price");
         const auto price = std::int64_t(std::ceil(Society::catalogPrice("cheese") * 3.0 - 1e-9));
-        expect(rexSpent >= price && price <= (2000 - items::country().comfortsAbove) * 10 / 100,
+        expect(rexSpent >= price && price <= (2000 - 200) * 10 / 100,
                "within its luxuries' share: " + std::to_string(price));
         expect(left == 0 && cheeseF > 3.0 && cheeseF <= 4.0,
                "sold out: its price climbs on, in its own band: " + std::to_string(cheeseF) + ", left " +
@@ -445,20 +492,99 @@ void theCheese()
         (void)pamSpent;
     }
     {
-        // At the season's price (5p) the stallholder's household (200p: a share of 16p) buys one too; the poor none.
+        // At the season's price (5p) the Houses' lady (120p: a share of ~7p over her 40p keep) buys one too; the
+        // stallholder's household (200p, under its 200p keep after its food), and the poor, none.
         const auto [bought, rexSpent, pamSpent, left, cheeseF, breadF] = day(1.0, 5);
-        expect(bought.at("rex").at("cheese") == 1 && left == 3 && bought.at("pam").at("cheese") == 0,
-               "at the season's price the rich and the middling buy one each, the poor none: left " +
+        expect(bought.at("rex").at("cheese") == 1 && bought.at("lady").at("cheese") == 1 && left == 3 &&
+                   bought.at("pam").at("cheese") == 0 && (!bought.count("stall") || !bought.at("stall").count("cheese") ||
+                                                          bought.at("stall").at("cheese") == 0),
+               "at the season's price the rich and the Houses' buy one each, the middling and the poor none: left " +
                    std::to_string(left));
         (void)rexSpent, (void)pamSpent, (void)cheeseF, (void)breadF;
     }
     {
-        // At four times (20p) only the rich: the stallholder's share is under the price.
+        // At four times (20p) only the rich: the lady's share is under the price.
         const auto [bought, rexSpent, pamSpent, left, cheeseF, breadF] = day(4.0, 5);
         expect(bought.at("rex").at("cheese") == 1 && left == 4,
                "at four times its price only the rich buys: left " + std::to_string(left));
-        expect(cheeseF <= 4.0 + 1e-9, "never over its band: " + std::to_string(cheeseF));
+        expect(cheeseF <= 8.0 + 1e-9, "never over its band: " + std::to_string(cheeseF));
         (void)rexSpent, (void)pamSpent, (void)breadF;
+    }
+    {
+        // At its band's top (eight times, 40p) the rich still buy within their share, and it climbs no further.
+        const auto [bought, rexSpent, pamSpent, left, cheeseF, breadF] = day(8.0, 1);
+        expect(bought.at("rex").at("cheese") == 1 && left == 0 && rexSpent >= 40 && rexSpent <= (2000 - 200) * 10 / 100,
+               "at eight times the rich buys its piece: " + std::to_string(rexSpent));
+        expect(std::abs(cheeseF - 8.0) < 1e-9, "sold out at the top: no further: " + std::to_string(cheeseF));
+        (void)pamSpent, (void)breadF;
+    }
+}
+
+// The Houses' own tables (doc 72, after country5, the user's intent: "only the rich and noble being able to afford
+// it"): once a day the Country's purse buys luxuries with luxuryHouses percent of what it holds over its reserve and its
+// posts' nights, at the shop's own (dear) price, at most luxuryHousesMost pieces, never into its reserve; conserved.
+void theHousesCheese()
+{
+    const auto run = [](int share, int cheese, double factor) {
+        auto t = Town(city({person("stall", "merchant", Stall, {"square", 2.5, 2.5}, "home_stall", 40, 200),
+                            person("rex", "civilian", "keeps the house", {"home_rex", 2.5, 2.5}, "home_rex", 50, 3000)},
+                           [&](AuthoredRoster& r) {
+                               r.economy.storeRule = false;
+                               r.economy.rules["stockPrices"] = 1;
+                               r.economy.rules["shelfFollow"] = 0;
+                               r.economy.rules["wageSupport"] = 0;
+                               r.economy.rules["luxuryShare"] = 0;   // (The households none: the Houses' alone.)
+                               r.economy.rules["luxuryHouses"] = share;
+                           }));
+        auto& s = t.s;
+        const auto till = s.tillOf("stall");
+        empty(s, till, "cheese");
+        s.create(till, "cheese", cheese, "test: cheese");
+        // The Houses' estates in funds (from a rich wolf: nothing made).
+        expect(s.shift("rex", Society::CountryFund, "", 0, 1500, "test: the estates' rents"), "the Country's purse");
+        t.until(1 + 1. / 24);
+        auto saved = s.state();
+        saved.loop.prices[till]["cheese"] = factor;
+        expect(s.restore(saved), "restored");
+        s.takeJournal();
+        const auto money = s.moneySupply();
+        const auto each = s.shopCost(till, "cheese", 1);   // (The stall's own price: the season's, times its factor.)
+        t.until(1 + 17.5 / 24);
+        int pieces = 0;
+        std::int64_t paid = 0;
+        for (const auto& e : s.takeJournal())
+            if (e.from == Society::CountryFund && e.to == till && e.kind.rfind("a luxury for the Houses' tables", 0) == 0)
+                pieces += e.quantity, paid += e.coins;
+        expect(s.conserved() && s.moneySupply() == money, "the Houses' cheese: conserved");
+        expect(s.loopToday().luxuriesHouses == pieces && s.loopToday().luxuriesHousesSpent == paid &&
+                   s.loopToday().luxuriesBought == 0,
+               "counted as the Houses', none as a household's: " + std::to_string(pieces));
+        return std::tuple{pieces, paid, each, s.cash(Society::CountryFund)};
+    };
+    {
+        // 40% of ~1,300p over the reserve: ~520p, at three times (~16p a piece) all ten, each at the stall's own price.
+        const auto [pieces, paid, each, country1] = run(40, 10, 3.0);
+        expect(pieces == 10 && each >= 15 && paid == 10 * each,
+               "the Houses buy the stall's ten at three times: " + std::to_string(pieces) + " for " + std::to_string(paid) + "p");
+        expect(country1 >= 200, "never into the Country's reserve: " + std::to_string(country1));
+    }
+    {
+        // At most luxuryHousesMost (24) a day, however much is spare.
+        const auto [pieces, paid, country0, country1] = run(100, 40, 1.0);
+        expect(pieces == 24, "at most 24 a day: " + std::to_string(pieces));
+        (void)paid, (void)country0, (void)country1;
+    }
+    {
+        // Within the share: 1% of ~1,300p is 13p, under one piece at three times.
+        const auto [pieces, paid, country0, country1] = run(1, 10, 3.0);
+        expect(pieces == 0 && paid == 0, "a share under a piece's price buys none: " + std::to_string(pieces));
+        (void)country0, (void)country1;
+    }
+    {
+        // Off: none.
+        const auto [pieces, paid, country0, country1] = run(0, 10, 1.0);
+        expect(pieces == 0, "luxuryHouses 0: none");
+        (void)paid, (void)country0, (void)country1;
     }
 }
 } // namespace
@@ -472,6 +598,7 @@ int main()
         aCommunityWorkshop();
         theResalePrices();
         theCheese();
+        theHousesCheese();
     }
     catch (const std::exception& error)
     {

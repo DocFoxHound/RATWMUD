@@ -628,8 +628,22 @@ def phase5_lines(econ):
             for w, s in sorted(shops.items())) + '.')
     else:
         out.append('No workshop in this world (its buildings not built): their goods the store room\'s.')
-    out += [f'The luxuries (a day): {mean("luxuries_bought"):.1f} pieces for {mean("luxuries_spent"):.1f}p, '
-            f'{mean("luxury_households"):.1f} households.', '']
+    line = (f'The luxuries (a day): {mean("luxuries_bought"):.1f} pieces for {mean("luxuries_spent"):.1f}p, '
+            f'{mean("luxury_households"):.1f} households')
+    # (After country5, doc 72: by the households' class, and the Houses' own tables, the Country's purse; a piece's mean
+    # price.)
+    classes = collections.defaultdict(collections.Counter)
+    for r in econ:
+        for c, x in (r.get('luxury_classes') or {}).items():
+            classes[c].update(x)
+    if classes:
+        line += ' (' + ', '.join(f'{c} {x["pieces"] / n:.1f} at {x["spent"] / max(1, x["pieces"]):.1f}p'
+                                 for c, x in sorted(classes.items(), key=lambda kv: -kv[1]['pieces'])) + ')'
+    if any('luxuries_houses' in r for r in econ):
+        houses, spent = mean('luxuries_houses'), mean('luxuries_houses_spent')
+        line += (f'; the Houses\' tables {houses:.1f} pieces for {spent:.1f}p'
+                 + (f' ({spent / houses:.1f}p a piece)' if houses > 0 else ''))
+    out += [line + '.', '']
     return '\n'.join(out)
 
 

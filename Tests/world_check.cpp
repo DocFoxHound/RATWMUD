@@ -1138,7 +1138,13 @@ struct EconomyWatch
         for (auto it = d.cityResaleGoods.begin(); it != d.cityResaleGoods.end(); ++it)
             seasons << (it == d.cityResaleGoods.begin() ? "" : ", ") << "\"" << it->first << "\": " << it->second;
         seasons << "}, \"luxuries_bought\": " << d.luxuriesBought << ", \"luxuries_spent\": " << d.luxuriesSpent
-                << ", \"luxury_households\": " << d.luxuryHouseholds << ", \"workshops\": {";
+                << ", \"luxury_households\": " << d.luxuryHouseholds << ", \"luxury_classes\": {";
+        // (After country5: the households' luxuries by class, and the Houses' own tables, the Country's purse.)
+        for (auto it = d.luxuryClasses.begin(); it != d.luxuryClasses.end(); ++it)
+            seasons << (it == d.luxuryClasses.begin() ? "" : ", ") << "\"" << it->first << "\": {\"pieces\": "
+                    << it->second.pieces << ", \"spent\": " << it->second.spent << "}";
+        seasons << "}, \"luxuries_houses\": " << d.luxuriesHouses << ", \"luxuries_houses_spent\": " << d.luxuriesHousesSpent
+                << ", \"workshops\": {";
         for (auto it = d.workshops.begin(); it != d.workshops.end(); ++it)
             seasons << (it == d.workshops.begin() ? "" : ", ") << "\"" << it->first << "\": {\"owed\": " << it->second.owed
                     << ", \"paid\": " << it->second.paid << ", \"to_house\": " << it->second.toHouse << "}";

@@ -138,6 +138,7 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'buyAheadDays', label: 'Buy ahead', max: 5, unit: 'days of food more a household buys before a Restday or festival'},
     {key: 'floatDrawDays', label: 'A till\'s float', max: 28, unit: 'days of draws averaged for the float it keeps back (1: yesterday\'s)'},
     {key: 'floatWagesDays', label: 'Wages kept before profit', max: 60, unit: 'days of its posts\' wages a till keeps over its float'},
+    {key: 'workshopWagesDays', label: 'A workshop\'s wages kept', max: 60, unit: 'days of its posts\' wages a country workshop keeps over its float before its House\'s share (doc 72)'},
     {key: 'subsidyToNeed', label: 'Carriage subsidy only to need', max: 1, unit: 'the treasury pays the carters only what they lack of their wages', onOff: true},
     {key: 'countryPostsDays', label: 'The Country\'s posts first', max: 30, unit: 'nights of its posts\' wages the Country keeps before it buys (doc 72)'},
     // The food farms' land rent (doc 72, open question 2): to the House whose land each is on, from its basket's share.
@@ -149,9 +150,12 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'landRentDairy', label: 'Land rent: dairies', max: 100, unit: '% of the cattle and dairy farms\' takings (the Crown; over the meat area\'s)'},
     {key: 'landRentThin', label: 'Land rent: the thinnest farms', max: 100, unit: '% of the lake boats\', salt works\' and three orchards\' takings (doc 72, Phase 5; over their areas\')'},
     // The luxuries (doc 72, Phase 5, the user's decision: cheese): never food; bought from what is over a household's keep.
-    {key: 'luxuryShare', label: 'Luxuries\' share', max: 100, unit: '% a day, at most, of what a household holds over its comforts\' keep, after its food and needs, spent on luxuries (cheese)'},
+    {key: 'luxuryShare', label: 'Luxuries\' share', max: 100, unit: '% a day, at most, of what a household holds over its keep, after its food and needs, spent on luxuries (cheese)'},
     {key: 'luxuryMost', label: 'Luxuries a head', max: 100, unit: 'pieces a head a day, at most'},
-    {key: 'luxuryPriceBand', label: 'Luxuries\' price band', max: 1000, unit: '% over the season\'s price a shop\'s price for a luxury may climb while it sells out (300: four times)'},
+    {key: 'luxuryAbove', label: 'Luxuries\' keep', max: 10000, unit: 'pennies a head a household not of the Houses keeps before it buys a luxury (the Houses\' keep their comforts\' keep)'},
+    {key: 'luxuryHouses', label: 'Luxuries: the Houses\' tables', max: 100, unit: '% a day of what the Country\'s purse holds over its reserve and its posts, spent on luxuries for the Houses'},
+    {key: 'luxuryHousesMost', label: 'Luxuries: the Houses\' most', max: 1000, unit: 'pieces a day, at most, for the Houses\' tables'},
+    {key: 'luxuryPriceBand', label: 'Luxuries\' price band', max: 1000, unit: '% over the season\'s price a shop\'s price for a luxury may climb while it sells out (700: eight times)'},
     {key: 'luxuryPriceStep', label: 'Luxuries\' price step', max: 1000, unit: 'thousandths of the price a day it climbs when the shop sells out'},
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms").
     {key: 'surplus', label: 'The treasury\'s surplus', max: 1, unit: 'what it holds over its cap and reserve goes out at 18:00, to public works and the poorest', onOff: true},

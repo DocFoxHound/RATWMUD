@@ -644,6 +644,39 @@ void theFarmsBasket()
     expect(bought > 0 && s.loopToday().farms.at("salt_works_1").basket > 0, "it bought the smith's goods: " + std::to_string(bought));
     expect(carriage, "and paid their carriage out");
     expect(s.cash(till) >= farm(s, "salt_works_1").reserve, "never into its float");
+    // The country workshops first (doc 72, after country5: Larkfield's smithy, short of its one wage, sold the farms 13p a
+    // day of the ~85p of iron goods they bought): its nails and cookpots, none of the city smith's while it holds them;
+    // what it doesn't make (fittings, locks, chain) still the city smith's.
+    auto both = city([](EconomySpec& e) { e.farms.areas["salt"].on = 1; },
+                     {person("lark", "merchant", "village smith at Larkfield Smithy", {"cn_larkfield_smithy", 2.5, 2.5},
+                             "cn_larkfield_smithy_flat", 40, 100)});
+    turn(both, 46);
+    expect(both.operatorTransfer("treasury", till, "", 0, 3000).ok, "the salt works given 3,000p again");
+    const auto lark = both.tillOf("lark");
+    expect(lark.rfind("till:", 0) == 0, "Larkfield's smithy its own till");
+    for (const char* good : {"nails", "fittings", "lock", "chain", "cookpot"})
+        expect(both.create("till:job:smith", good, 99, "test stock"), std::string("the smith holds ") + good);
+    for (const char* good : {"nails", "cookpot"})
+        expect(both.create(lark, good, 99, "test stock"), std::string("Larkfield's smithy holds ") + good);
+    const auto money2 = both.moneySupply();
+    both.takeJournal();
+    run(both, 46 + 8.5 / 24, 46 + 17.9 / 24);
+    expect(both.conserved() && both.moneySupply() == money2, "with the workshop: conserved");
+    std::map<std::string, std::map<std::string, int>> from;
+    for (const auto& e : both.takeJournal())
+        if (e.kind == "to a farm" && e.from == till)
+            from[e.to][e.item] += e.quantity;
+    // (Its cookpots all the farm's, while it still holds some; its nails until it sold out, the 99 and what it made, then
+    // the city smith's.)
+    expect(from[lark]["cookpot"] > 0 && Society::stock(*both.account(lark), "cookpot") > 0 &&
+               from["till:job:smith"]["cookpot"] == 0 && from[lark]["nails"] >= 99,
+           "the farm's nails and cookpots Larkfield's: " + std::to_string(from[lark]["nails"]) + " and " +
+               std::to_string(from[lark]["cookpot"]) + ", the city smith's " + std::to_string(from["till:job:smith"]["nails"]) +
+               " and " + std::to_string(from["till:job:smith"]["cookpot"]) + "; Larkfield holds " +
+               std::to_string(Society::stock(*both.account(lark), "nails")) + " and " +
+               std::to_string(Society::stock(*both.account(lark), "cookpot")));
+    expect(from["till:job:smith"]["fittings"] + from["till:job:smith"]["lock"] + from["till:job:smith"]["chain"] > 0,
+           "what the workshop doesn't make, the city smith's");
 }
 
 void aShortFarm()
@@ -1010,17 +1043,18 @@ void theStoneWorks()
     // patch's seasons: the Country's basket buys the builders' goods the rent took from the farms' (doc 72, after
     // country3b); then (Phase 4, doc 72) country3c's patch half way, times 1.1 for the mason's cut stone, its shares
     // raised (80 of the farms' basket, 42 of the Country's), so its summer pays its 1 + 1; the pits' clay its whole step in
-    // spring (supply-bound there).
+    // spring (supply-bound there). After country5 (doc 72): its patch half way (the stone its whole step in spring), the
+    // pits' clay to what was used (the patch's less its 5%: the potteries' 8.5 a day more had piled 9,041).
     const auto& quarry = stone.farms.front();
-    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 26.8) < .01,
-           "the quarry's stone, 26.8 a day at summer's middle (country4's patch, Phase 5: supply-bound in spring and summer, its whole step)");
+    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 26.7) < .01,
+           "the quarry's stone, 26.7 a day at summer's middle (country5's patch half way)");
     double stoneMean = 0;
     for (const double v : quarry.yield.at("stone"))
         stoneMean += v / 4;
-    expect(std::abs(stoneMean - 29.83) < .05, "29.83 a day over the year: " + std::to_string(stoneMean));
+    expect(std::abs(stoneMean - 29.76) < .05, "29.76 a day over the year: " + std::to_string(stoneMean));
     for (std::size_t i = 1; i < 3; ++i)
-        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 33.84) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 9.79) < .01,
-               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; Phase 5: country4's patch half way, the clay 8.5 a day more for the potteries)");
+        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 29.24) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 9.48) < .01,
+               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; after country5: the clay what was used, the sand half way)");
     // On: founded; the mason's stone and sand from the works' stores, nothing to the Country; limestone still the Country's.
     auto s = city([](EconomySpec& e) { e.farms.areas["stone"].on = 1; },
                   {person("mason", "merchant", "stonemason in Chisel Row", {"masonry", 2.5, 2.5}, "home_mason", 40, 400)});
@@ -1099,7 +1133,7 @@ void theLandRent()
     auto s = city([](EconomySpec& e) { e.farms.areas["grain"].on = 1; }, aStore());
     const std::map<std::string, int> percent{{"grain", 28}, {"fruit", 4}, {"meat", 16}, {"fish", 9}, {"honey", 16}, {"salt", 8},
                                              {"fuel", 0}, {"stone", 0}};
-    // (Doc 72, Phase 4's payer: the three cattle and dairy farms their own rule, landRentDairy 24, over the meat area's 16;
+    // (Doc 72, Phase 4's payer: the three cattle and dairy farms their own rule, landRentDairy 32 (24 until country5), over the meat area's 16;
     // Phase 5, country4's carry-over: the thinnest farms theirs, landRentThin 0: the lake boats, the salt works, three
     // orchards.)
     int dairies = 0, thin = 0;
@@ -1108,7 +1142,7 @@ void theLandRent()
         const bool dairy = now.def->landRent == "dairy";
         dairies += dairy;
         thin += now.def->landRent == "thin";
-        expect(s.landRentPercent(now) == (dairy ? 24 : now.def->landRent == "thin" ? 0 : percent.at(now.def->area)) &&
+        expect(s.landRentPercent(now) == (dairy ? 32 : now.def->landRent == "thin" ? 0 : percent.at(now.def->area)) &&
                    now.house == (now.works ? now.house : houses.at(now.def->area)),
                now.def->id + "'s land rent " + std::to_string(s.landRentPercent(now)) + "%, to " + now.house);
         expect(!dairy || (now.def->area == "meat" && now.def->kind == "cattle and dairy farm"), "a dairy's own rule: " + now.def->id);

@@ -122,8 +122,8 @@ const seasonSettingsOk = e => (!own(e, 'comfortsAbove') || e.comfortsAbove === n
 export const RULE_DEFAULTS = {rules: {}, services: {}};
 export const RULE_LIMITS = {comfortsMost: 100000, almsADay: 1000, treasuryCap: 100000000, wageSupport: 100, workBankHours: 1000,
     fairFood: 1, services: 1, servicesCityShare: 100, suppliers: 1, patrons: 1, armourEvery: 3650, buyAheadDays: 5, floatDrawDays: 28,
-    floatWagesDays: 60, subsidyToNeed: 1, countryPostsDays: 30,
-    landRent: 100, landRentFish: 100, landRentFruit: 100, landRentGrain: 100, landRentSalt: 100, landRentDairy: 100, landRentThin: 100, luxuryShare: 100, luxuryMost: 100, luxuryPriceBand: 1000, luxuryPriceStep: 1000, surplus: 1, surplusKeep: 100000000, surplusWorks: 100, surplusAlms: 100, surplusAlmsTo: 1000,
+    floatWagesDays: 60, workshopWagesDays: 60, subsidyToNeed: 1, countryPostsDays: 30,
+    landRent: 100, landRentFish: 100, landRentFruit: 100, landRentGrain: 100, landRentSalt: 100, landRentDairy: 100, landRentThin: 100, luxuryShare: 100, luxuryMost: 100, luxuryAbove: 10000, luxuryHouses: 100, luxuryHousesMost: 1000, luxuryPriceBand: 1000, luxuryPriceStep: 1000, surplus: 1, surplusKeep: 100000000, surplusWorks: 100, surplusAlms: 100, surplusAlmsTo: 1000,
     // The self-correcting rules (doc 68, Progress, "Self-correcting rules").
     stockPrices: 1, stockPriceBand: 90, stockPriceStep: 1000, shelfFollow: 1, shelfDays: 365, shelfCover: 1000, shelfGrow: 500,
     wageDrift: 1, wageDriftDays: 365, wageDriftSpare: 1000, wageDriftMost: 100, wageDriftHandMost: 100, wageDriftFloor: 1000, treasuryDrift: 1,
