@@ -1952,3 +1952,55 @@ not to be applied; beside it the same run on `ridgemere2`'s code and data, days 
 
 Next (the user's go-ahead first): a 3-year run, to see the cheese's price settle (aimed at 3-6 times), the tallow and the
 wine against their piles, the Country's summer with the workshops' sales gone, and the smithy's year.
+
+### country6a's 3-year run (2026-11-04)
+
+`ridgemere2` at `188b3cd` (`r2-country-6a` merged), the same run as country5b (build 61's export, `--simulate 6 26298
+--farms 0 --deterministic --threads 4 --economy-level full`). Report `artifacts/economy/r2/country6a-report.md`, patch
+`country6a.patch.json`, log `country6a.out`. Nothing written to DEV or PROD. Year 3 a day unless said; country5b's beside
+it.
+
+- **Money conserved** every day; **nobody hungry to speak of** (2 days of year 3 with anyone hungry, the hungriest 4
+  hours; 3 days, 4 hours); households short of a day's food money 0.27 a day (0.15). Residents 559 to 771 (754), births
+  55, deaths 56, the unplaced 311 (328), 679 of 689 posts held.
+- **The Country no longer sells the workshops' goods** (the trade rows with the Country the seller): fine soap **0**
+  (26.3 a day, 83p), scarves **0** (28.0, 72p), pots **0.02** (17.7), cord **0** (26.4), pamphlets **0.5, 2p** (2.3, 9p),
+  planks **0** (2.0). None of them short; **the neckerchiefs no longer short** (10.1 a day), though their price sits at
+  the band's top on 60% of till-days. The shops bought them of the makers instead (the resale 424p a day: pots 29.3,
+  scarves 26.0, pamphlets 24.7, soap 23.3).
+- **The Country: its margin gone with them.** Its sales ~398p to **~173p** a day (iron bars 156p, limestone 13p);
+  intake **840p** (1,070p) against its 824p of posts: **summer 0.0% over** (28.7%), spring -1.2%, autumn 0.6%, winter
+  8.6%. **Its posts went short on 4 nights of year 3** (days 777, 896, 931, 960: 308p, then 100p short each; none in
+  country5b), its purse least 364p (1,026p), its years' ends 1,682, 1,679, 1,618p (1,986, 1,975, 1,900p), its basket ~13p
+  a day (~207p): it has no spare left to spend. The workshops' Houses took 74p a day (57p) and their crews' wages rose
+  ~170p a day (17 more hands): the pennies the Country made reselling now pay the villages' hands.
+- **The workshops** (year 3, wages paid of owed): Coldwater's looms **100%** (96.3%), both potteries' kilns sold, the
+  Larkfield press 100%, Fenshore's pottery 100%, the soapworks 99.3%; **Larkfield's smithy 98.0%** (84.4%: 21.6p of
+  22.0p, 8.4p to its House); but **Southmeadow's pottery 89.6%** (100%), **Larkfield's looms 96.0%** (100%; 0.7p to its
+  House), **Oakhaven's press 96.3%** (100%): the added hands more than their trade carries. Every farm and works 99.9%
+  together; orchards 2, 4 and 5 97.6-99.1%, the vineyards in full.
+- **The treasury over its 200p float every night** (least 1,568p; 2,983p; year 2's least 1,051p), 4,228p to 4,483p
+  (four-week means; 5,727 to 5,952p). **The wage support 324p and rising** (283p, falling): 323p to 363p over year 3.
+  The toll 1,672p (1,653p).
+- **Cheese scarce, not yet dear.** The dairies make 5.4 a day (11.6), all sold, **none held** (~350); the shops short of
+  it ~48 a day (their draws empty every season, 65% of its till-days at the band's top, stock factors to 5.3). The
+  households paid **2.0-2.2 times** the season's price (1.0): the upper class 5.0 pieces a day for 54p (8.2 for 41p), the
+  middle 0.0; by payer the Houses' kin 3.6 at 2.2x, the upper 1.3 at 2.0x; **the Houses' tables starved, 0.24 a day**
+  (3.4). Its price still rising through the year (1.23 to 1.34 of base across all its trades, the shops' draws at 0.52):
+  short of the 3-6x aim, the climb slow. Nobody hungry or behind for it.
+- **Butter** 34.2 a day made (13.9), all sold, still short ~75 a day (63); the milk 0.1 a day spoiled.
+- **Piles.** **The farms' tallow 7,366 at the run's end** (27,901), ~8 a day still growing (the dairies' 920 each).
+  **The wine overcut: the cellars empty** (1,547), the vintner short 5.2 a day and wine supply-bound in every season, its
+  price at the band's top 43% of till-days; the vineyards still paid in full. **The raised inputs overshoot and pile**:
+  flax 19,960 (129; +7,000 a year), hemp 10,210 (2,821), clay 8,367 (791), wool 6,780 (0), herbs 453 (0). **Meal newly
+  short** ~42 a day (the towns' bakeries and stores; the dairies' and pig farms' stock 17 each to 0: the patch's half
+  step trimmed it), the pigs 4.4 (1.9).
+
+**Verdict: not stable.** Money, food and the treasury hold; the workshops meet their goods and the Country's sales of
+them are gone. But the Country's margin went with them: summer at its posts exactly, four nights short in year 3, the
+purse sliding; the wage support rises again; three workshops under 99%; the inputs raised for the workshops (flax, hemp,
+clay, wool) pile hard; wine and meal newly short. Next: the Country's intake (its posts or its rents: the workshops'
+Houses' share, or a land rent on the workshops, the user's call), the inputs back toward what the workshops use (the
+patch's flax, and hemp, clay, wool by the same), the wine's cut halved (x0.875, or summer and autumn only), the meal
+from the patch, the three workshops' last hands back to the pool, and the cheese: a slower dairy still, or a faster climb
+of its price where it sells out, to reach the 3-6x.
