@@ -156,7 +156,9 @@ void theWorkshopsData()
             const auto rule = people.market.find(post);
             expect(rule != people.market.end(), area + ": a rule for " + post);
             auto label = rule->second.label;
-            label.replace(label.find("{name}"), 6, w->name);
+            // (The striker's label names no workshop: "Larkfield Smithy" would make it the city smithy's.)
+            if (const auto at = label.find("{name}"); at != std::string::npos)
+                label.replace(at, 6, w->name);
             const auto* business = items::businessFor(label);
             expect(label.size() <= 40, "at most 40 characters: " + label);
             if (rule->second.role == "merchant")
@@ -165,7 +167,7 @@ void theWorkshopsData()
                 expect(!business, label + ": no business's");
         }
     }
-    expect(posts == 18, "18 posts: " + std::to_string(posts));
+    expect(posts == 35, "35 posts (18 before country5b's carry-overs): " + std::to_string(posts));
     // Where the map has laid a workshop (communities.json, a community's `workshops`), its work spots are the map's (by
     // its stations), never workshops.json's own.
     std::ifstream in(fs::path(RATW_SOURCE_DIR) / "Data" / "Economy" / "communities.json", std::ios::binary);
@@ -320,12 +322,12 @@ void aCommunityWorkshop()
                    w->second.paid == w->second.owed && day.rents.count("the Crown") &&
                    day.rents.at("the Crown") == toHouse,
                "what is over to the Crown's estate, booked by House, none to its keeper: " + std::to_string(toHouse));
-        // (Two days of them, workshopWagesDays, as the works keep: doc 72, after country5, a week's held its House's
-        // share back for nothing.)
+        // (Three days of them, workshopWagesDays: doc 72, after country5, a week's held its House's share back for
+        // nothing; after country5b, two left Larkfield's smithy, its float a day's iron bars, short on its Restdays.)
         const auto kept = s.rule("workshopWagesDays") * (e.wageKeeper + e.wageHand);
-        expect(s.rule("workshopWagesDays") == 2 && s.rule("floatWagesDays") == 7 && s.cash(till) >= kept &&
+        expect(s.rule("workshopWagesDays") == 3 && s.rule("floatWagesDays") == 7 && s.cash(till) >= kept &&
                    s.cash(till) <= kept + 100,
-               "the till keeps its float and two days' wages (a city till a week's): " + std::to_string(s.cash(till)));
+               "the till keeps its float and three days' wages (a city till a week's): " + std::to_string(s.cash(till)));
         (void)country0;
         expect(s.conserved() && s.moneySupply() == money, "wages and the House's share: conserved");
     }
@@ -408,6 +410,65 @@ void theResalePrices()
                t.cash(smith) - s0 == t.seasonalCost("nails", 4),
            "four nails at the catalogue's (the season's) price");
     expect(t.conserved() && t.moneySupply() == money, "conserved");
+}
+
+// country5b's carry-overs (doc 72): Larkfield's smith alone made no nails in year 3 (3.4 hours a batch against the
+// hoops' and cookpots' 2.1: each hour's bank went on a hoop as soon as it held 2.1); now a sold-out ware's longer craft
+// has the crew's hours saved for it, and the hoops and cookpots are still made. A sword's day at the forge (over six
+// hours a post) is not saved for. The neckerchiefs at Larkfield's looms, the cord at the ropewalk, the planks of the
+// builders' works and the carpenters, as data.
+void aSmithAlone()
+{
+    const auto made = [](const std::string& label, const std::string& cell, int hours, const std::vector<std::string>& sold,
+                         const std::map<std::string, int>& start = {}) {
+        auto s = city({person("smith", "merchant", label, {cell, 3.5, 3.5}, "home_smith", 40, 300)});
+        const auto till = s.tillOf("smith");
+        for (const auto& ware : s.wares("smith"))
+            empty(s, till, ware);
+        for (const auto& ware : s.wares("smith"))
+            if (std::find(sold.begin(), sold.end(), ware) == sold.end())
+                s.create(till, ware, 40, "test: the shelf full");
+        for (const auto& [ware, n] : start)
+            s.create(till, ware, n, "test: a little on the shelf");
+        s.create(till, "iron_bar", 40, "test: iron bars");
+        s.create(till, "charcoal", 40, "test: charcoal");
+        s.create(till, "bronze_bar", 40, "test: bronze bars");
+        const auto money = s.moneySupply();
+        for (int h = 0; h < hours; ++h)
+            s.restockFromStore("smith", 1 + (7 + h) / 24.);
+        expect(s.conserved() && s.moneySupply() == money, label + ": making, conserved");
+        std::map<std::string, int> out;
+        for (const auto& ware : sold)
+            out[ware] = Society::stock(*s.account(till), ware);
+        return out;
+    };
+    const auto village = made("village smith at Larkfield Smithy", "cn_larkfield_smithy", 12, {"nails", "iron_hoops", "cookpot"});
+    expect(village.at("nails") >= 6, "the village smith alone makes nails: " + std::to_string(village.at("nails")));
+    expect(village.at("iron_hoops") >= 3 && village.at("cookpot") >= 1,
+           "and its hoops and cookpots still: " + std::to_string(village.at("iron_hoops")) + ", " +
+               std::to_string(village.at("cookpot")));
+    // A city smith alone, its iron swords sold out (19.4 hours a sword) and its nails low: the sword not saved for, the
+    // nails made.
+    const auto city0 = made("the smith at the forge", "forge", 12, {"iron_sword", "nails"}, {{"nails", 1}});
+    expect(city0.at("iron_sword") == 0 && city0.at("nails") >= 6,
+           "an iron sword's 19 hours not saved for: the nails made (" + std::to_string(city0.at("nails")) + ")");
+
+    const auto makes = [](const std::string& business, const std::string& craft) {
+        const auto crafts = items::craftsFor(business);
+        return std::any_of(crafts.begin(), crafts.end(), [&](const items::Craft* k) { return k->id == craft; });
+    };
+    const auto has = [](const std::vector<std::string>& v, const std::string& x) {
+        return std::find(v.begin(), v.end(), x) != v.end();
+    };
+    expect(makes("country_linen_weavers", "linen_neckerchief"), "Larkfield's looms make neckerchiefs");
+    expect(makes("ropewalk", "cord") && makes("chandlery", "cord"), "the ropewalk makes cord beside the chandlery");
+    Society s(Roster::None);
+    for (const char* buyer : {"country_soapworks", "chandlery", "general"})
+        expect(has(s.citySellers(buyer, "cord"), "ropewalk"), std::string(buyer) + ": cord from the ropewalk");
+    for (const char* buyer : {"cooperage", "cartwright", "carpenter"})
+        expect(has(s.citySellers(buyer, "planks"), "sawmill") && has(s.citySellers(buyer, "planks"), "builders_works") &&
+                   (std::string(buyer) == "carpenter" || has(s.citySellers(buyer, "planks"), "carpenter")),
+               std::string(buyer) + ": planks from the sawmill, the builders' works and (but its own) the carpenters");
 }
 
 const char* const Stall = "keeping the stall in the square";
@@ -597,6 +658,7 @@ int main()
         theWorkshopsData();
         aCommunityWorkshop();
         theResalePrices();
+        aSmithAlone();
         theCheese();
         theHousesCheese();
     }

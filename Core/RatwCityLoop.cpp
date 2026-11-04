@@ -1778,6 +1778,9 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
             ++loopToday_.goodsOut[items::baseOf(item)];
         }
     };
+    // The crew's hours saved this hour for a sold-out ware's longer craft (below), at most this many hours a post.
+    constexpr double SaveForHours = 6;
+    bool saving = false;
     for (const auto& w : wants)
     {
         if (!w.craft)
@@ -1827,6 +1830,8 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
                 if ((wanted -= n) < 1)
                     continue;
             }
+        if (saving)
+            continue;
         const auto& k = *w.craft;
         int per = 1;
         for (const auto& [item, n] : k.out)
@@ -1834,7 +1839,18 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
                 per = n;
         int batches = std::min({int(std::ceil(double(wanted) / per)), int(std::floor(bank / k.hours + 1e-9)), 100});
         if (batches < 1)
+        {
+            // A ware sold out whose craft is longer than the hours banked (doc 72, after country5b: Larkfield's smith
+            // alone, its nails 3.4 hours a batch, its hoops and cookpots 2.1: each hour's bank went on a hoop the moment
+            // it reached 2.1, so no nails were made in year 3 though the farms bought ~11 a day of the city's smiths):
+            // the crew's hours this hour are saved for it, the crafts after it waiting, where it takes no more than
+            // SaveForHours of each of the crew's hours (a sword's day at the forge is not saved for) and the bank can
+            // hold them. Nothing is lost: the bank keeps a craft's hours and a crew's more, and once it holds the hours,
+            // a batch the inputs can't make leaves them to the crafts after it.
+            saving = stock(*account(till), w.ware) == 0 && k.hours <= SaveForHours * crew &&
+                     k.hours <= workBankMost(till, business);
             continue;
+        }
         // Room for what the batches make, and their inputs drawn for what the shelves lack.
         const auto& shelves = *account(till);
         std::size_t kinds = shelves.stock.size();

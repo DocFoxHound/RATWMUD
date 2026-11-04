@@ -236,11 +236,15 @@ void thePhase4Suppliers()
     expect(sellers("carpenter", "iron_hoops") == V{"smithy", "cooperage", "country_smithy"} &&
                sellers("cartwright", "iron_hoops") == V{"smithy", "cooperage", "country_smithy"},
            "iron hoops from the smithies and the cooperage");
-    expect(sellers("cooperage", "planks") == V{"sawmill"} && sellers("cartwright", "planks") == V{"sawmill"} &&
-               sellers("carpenter", "planks") == V{"sawmill"},
-           "planks from the Timberland Sawmill");
-    expect(sellers("ropewalk", "cord") == V{"chandlery"} && sellers("jeweler", "cord") == V{"chandlery"} && sellers("chandlery", "cord").empty(),
-           "cord from the chandlery (its own candles' cord stays its own draw)");
+    // (After country5b, doc 72: the builders' works and the carpenters beside the sawmill; the ropewalk's cord beside the
+    // chandlery's, the chandlery's own candles' cord from the ropewalk before the store room.)
+    expect(sellers("cooperage", "planks") == V{"sawmill", "builders_works", "carpenter"} &&
+               sellers("cartwright", "planks") == V{"sawmill", "builders_works", "carpenter"} &&
+               sellers("carpenter", "planks") == V{"sawmill", "builders_works"},
+           "planks from the Timberland Sawmill, the builders' works and the carpenters");
+    expect(sellers("ropewalk", "cord") == V{"chandlery"} && sellers("jeweler", "cord") == V{"chandlery", "ropewalk"} &&
+               sellers("chandlery", "cord") == V{"ropewalk"},
+           "cord from the chandlery and the ropewalk (the chandlery's own candles' cord the ropewalk's)");
     expect(sellers("printing_house", "paper") == V{"papermill", "scriptorium", "country_press"} && sellers("scriptorium", "leather") == V{"tannery"} &&
                sellers("cartographer", "ink") == V{"scriptorium", "printing_house"},
            "paper, leather and ink from their makers");

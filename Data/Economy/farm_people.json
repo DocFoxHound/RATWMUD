@@ -63,6 +63,7 @@
     "paper vat hand": {"label": "paper vat hand at {name}", "role": "civilian", "words": ["press", "paper", "helps at"], "trades": ["keeps the house", "service and labour", "the towns' trades and shops"]},
     "village potter": {"label": "village potter at {name}", "role": "merchant", "words": ["potter", "clay", "brick"], "trades": ["the towns' trades and shops", "keeps the house", "service and labour"]},
     "kiln hand": {"label": "kiln hand at {name}", "role": "civilian", "words": ["potter", "clay", "brick"], "trades": ["keeps the house", "service and labour", "the towns' trades and shops"]},
-    "village smith": {"label": "village smith at {name}", "role": "merchant", "words": ["smith", "forge"], "trades": ["the towns' trades and shops", "keeps the house", "service and labour"]}
+    "village smith": {"label": "village smith at {name}", "role": "merchant", "words": ["smith", "forge"], "trades": ["the towns' trades and shops", "keeps the house", "service and labour"]},
+    "striker": {"label": "striker at Larkfield's anvil", "role": "civilian", "words": ["smith", "forge", "helps at"], "trades": ["keeps the house", "service and labour", "the towns' trades and shops"]}
   }
 }
