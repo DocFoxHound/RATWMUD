@@ -125,7 +125,7 @@ void build(Fixture& x)
     add("fishes the waters off Greywater", 18, 20);
     add("traps eels in the fen", 3, 30);
     add("cuts reeds in the marsh", 3, 30);
-    add("keeps the house", 20, 20);
+    add("keeps the house", 36, 20);                // (The workshops' 35 posts since country5b's carry-overs: 20 were 18's.)
     add("serves at The Lantern", 12, 20);
     add("helps at The Stores", 10, 20);
     add("logging at Cedarfall", 5, 20);
@@ -252,7 +252,8 @@ void theData()
                 const auto rule = people.market.find(post);
                 expect(rule != people.market.end(), "a rule for the market's post " + post);
                 std::string label = rule->second.label;
-                label.replace(label.find("{name}"), 6, m.name);
+                if (const auto at = label.find("{name}"); at != std::string::npos)   // (The striker's has none.)
+                    label.replace(at, 6, m.name);
                 expect(label.size() <= 40, "a market label: " + label);
                 const auto* business = items::businessFor(label);
                 if (rule->second.role == "merchant")
@@ -441,7 +442,7 @@ void thePlacement()
         expect(atWorkshop[w.area] == want, w.area + ": its " + std::to_string(want) + " posts: " + std::to_string(atWorkshop[w.area]));
         workshopPosts += atWorkshop[w.area];
     }
-    expect(people.workshops.size() == 8 && workshopPosts == 18, "the eight workshops' 18 posts: " + std::to_string(workshopPosts));
+    expect(people.workshops.size() == 8 && workshopPosts == 35, "the eight workshops' 35 posts: " + std::to_string(workshopPosts));
     expect(!keeperOf["cn_oakhaven_store"].empty(), "Oakhaven's store kept, with its works");
     expect(keeperOf["cn_larkfield_store"] == "shop_larkfield" && keeperOf["cn_coldwater_store"] == "shop_coldwater",
            "Larkfield Stores kept by Larkfield General's shopkeeper, Coldwater Stores by Coldwater Sundries'");

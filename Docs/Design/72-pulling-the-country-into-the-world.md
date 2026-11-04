@@ -1868,3 +1868,87 @@ tune, none of it a risk to the balance: Larkfield's smithy (84%) and Coldwater's
 patch's cut, ~a third); the cheese (made ~3 a day over what the rich take, so its price never climbs: fewer from the
 dairies, or the Houses' share up, the user's call); the flax (the neckerchiefs short) and a little of the clay; the
 Country's basket, which spends its spare and lets its year-ends drift down ~75p a year.
+
+### country5b's carry-overs: the workshops meet their goods, cheese scarce, the tallow and the wine (2026-11-04, branch `r2-country-6a`)
+
+Branch `r2-country-6a`, from `ridgemere2` (549eb4b). **Nothing written to DEV, no NPC made, no map change** (every new
+hand found a bed in its community's cottages); the treasury's levers (toll, support, float) untouched. Scripts in the
+session's scratchpad (`c6/`).
+
+**What limited each good** (country5b's year 3, from the full log: the Country's sales, the makers' tills and shelves,
+the farms' stock):
+
+| Good | The Country sold a day | The limit | The fix |
+|---|---|---|---|
+| Fine soap | 26.3 (83p) | **The herbs**: a herb a batch of three, the marsh's 2.8 a day all drawn (the soapworks 1.0 a day short), its soap 5 a day, its shelf always empty; then **the hours** (6.1 a batch: ~54 crew-hours more) | the marsh's herbs 2.8 to 13.1 a day; the soapworks 1 + 4 to **1 + 7** |
+| Wool scarves | 28.0 (72p) | **The wool**: the sheep runs' 13 a day all drawn (the looms 1.7 short, the weaver 1.5); then the hours (1.6 a scarf) | the runs' wool 6.5 to ~26.5 a day each; Coldwater's looms 1 + 1 to **1 + 6** |
+| Clay pots | 17.7 (18p) | **The hours**: a potter alone, sold out at the band's top (13.4 and 11.1 a day); clay plenty (791 at the pits) | a **kiln hand** at each pottery; the pits' clay +7 a day each |
+| Cord | 26.4 (18p) | **No maker but the chandleries**, their hours on candles (their cord shelves ~5): the soapworks drew 15.4 a day of the Country's, the chandleries 8.5; the ropewalk (crew 3, 12.8p of 20.8p paid) made none | **the ropewalk makes cord** (`crafts.json`), `suppliers` lines to it from the chandleries, the general stores, the jeweller, the tinker and the fletcher (the soapworks' was there); the grain farms' **hemp +7.5 a day each** (the ropewalk's draw emptied it by day 23 of the first smoke) |
+| Pamphlets | 2.3 (9p) | **The presses' hours** (7.7 a batch; both near sold out); then the linen their paper takes | a third vat hand at **each** press (1 + 3) |
+| Planks | 2.0 (3p) | The sawmill alone in `suppliers` for the cooperage, the cartwright and the carpenters (its shelf dipping), while the builders' works (3 crew, 6.8p of 21p paid) and the carpenters sold a few | `suppliers` lines from **the builders' works and the carpenters** beside the sawmill (a business never its own: the loader drops a line to itself) |
+| Linen neckerchiefs | (none: **10.1 a day short**) | **The tailor's hours** (2 crew, sold out; flax was not the limit in year 3: ~47 held at each grain farm) | **Larkfield's looms make neckerchiefs** beside the tailor and the weaver (`crafts.json`; the city's households buy them there when no city shop holds one); the looms 1 + 1 to **1 + 5** for them and the linen they then left short (9 a day of the Country's in the first smoke); the grain farms' **flax +14 a day each** (the patch's whole step and the looms') |
+
+- **Larkfield's smithy (84%)**: alone, its nails (3.4 hours a batch) were **never made in year 3** (0.1 a day): each
+  hour's bank went on a hoop (2.1) as soon as it held 2.1, so it never reached 3.4, while the farms bought ~11 nails a
+  day of the city's smiths. A code limit: `Society::restockFromStore` now **saves the crew's hours for a sold-out
+  ware's longer craft** (the crafts after it wait that hour) where the craft takes at most six of each post's hours
+  and the bank can hold it (a sword's 19 hours at a city forge is never saved for; nothing is lost: a batch the inputs
+  can't make leaves the hours to the crafts after it). And **a striker** (`farm_people.json`, "striker at Larkfield's
+  anvil": a hand's label names no business, and any with "Larkfield Smithy" in it would be the city smithy's), so it
+  makes nails, hoops and cookpots for the farms. Its float is a day's iron bars, so with two days of wages kept it was
+  short on most Restdays: **`workshopWagesDays` 2 to 3** (a one-off ~1 day of wages more held at each workshop).
+- **Coldwater's looms (96%)**: wool-bound, the hands' wages thin on 7 scarves a day; with the wool and the hands, paid in
+  full.
+- **Workshops' posts 18 to 35** (8 keepers, 27 hands): **17 more of the unplaced pool** (those who keep the house first,
+  then service and labour), **no NPC made**; Coldwater +8, Larkfield +6 (the striker among them), Oakhaven +1, Fenshore
+  +1, Southmeadow +1, all in their communities' cottages (no cottage added, no DEV write).
+
+**Cheese scarce and dear** (the user's): the dairies' own milk for cheese 20 to **7 a day** each (~1.75 cheese; 5.3 a day
+from the three, from ~15), **none of the spare milk** (`share` 0) and their store 120 to 40. The milk that no longer
+becomes cheese goes to **butter**, short ~60 a day: its own milk 8 to **21 a day** each (10.5 butter) and the whole of
+the spare, its store 20 to 40 (four days of its making; at 20 the spare after a Restday spoiled), so nothing spoils that
+didn't (milk spoiled 1.1 a day, 1.0 before). The guard as it was (food and needs first, at most 10% of what is over the
+keep; nobody hungry).
+
+**The tallow** (27,901 piled in country5b): every farm's ×0.91 (74 a day to 67), the soapworks' soap now drawing ~17 a
+day more. **The wine** (1,547 in the cellars): the vineyards' ×0.75 (their 2.1 a day sold kept; they pressed 3.5).
+**country5b's patch half way** (`--apply`, damping 0.5, `wholeSeasons` whole: 103 yields) but tallow, wine, grapes,
+wool, herbs, flax and clay (above).
+
+**Tests.** `workshops_behaviors` (212): the smith alone makes nails within twelve hours and its hoops and cookpots
+still (none without the saving), a city smith's iron sword never saved for (its nails made); Larkfield's looms make
+neckerchiefs, the ropewalk cord; the cord and plank buyers' sellers; 35 posts; three days of wages kept.
+`trades_behaviors` (923): the planks' and the cord's sellers. `farms_behaviors` (1,948): the dairies' makes (7 and 21 a
+day, none of the spare to cheese, the stores 40 and 40), the patch's values, a farm's rent counted afresh after 18:00
+(a shop open till 19:00 may draw a few pennies more). `farm_people_behaviors` (3,830): the workshops' 35 posts staffed
+(the test's pool of those who keep the house 20 to 36). `ctest` in `build-core` **79 of 79**; `test_econ_report`,
+`test_farms_summary`, `test_country_industry`, `test_item_catalog`, `test_city_capacity`, `test_world_store`,
+`test_studio`, `test_ridgemere2` pass.
+
+**The 30-day smoke** (build 61's export, `--simulate 0 720 --farms 0 --farms-every 1 --deterministic --threads 4
+--economy-level full`; `artifacts/economy/r2/country6a-smoke-report.md`, `country6a-smoke.patch.json`, a first spring's,
+not to be applied; beside it the same run on `ridgemere2`'s code and data, days 7-29 a day unless said):
+
+- **Money conserved** every day; **nobody hungry** (no hungry hour); every workshop's 35 posts held.
+- **The Country's sales of the workshops' goods**: fine soap 34.9 to **0.0**, scarves 35.4 to **0.4**, pots 27.3 to
+  **0.0**, cord 44.1 to **0.0**, pamphlets 8.2 to **1.0**, planks 5.5 to **0.2**, linen 2.4 to **0.5**; **neckerchiefs
+  short 11.5 a day to 0**. The farms' herbs, wool and flax drawn and not short (wool 439 and flax 735 held at the month's
+  end; the herbs, 50, and the clay, 311, drawn a little faster than grown while the new shelves fill).
+- **The workshops paid in full**: the soapworks 70.0p of 70.3p, Coldwater's looms 62 of 62 (100%; 22 of 22 before),
+  Larkfield's looms 54.3 of 54.5, the presses and the potteries 99.5-100%, **Larkfield's smithy 22 of 22 (100%; 77.6%
+  beside it)**, sending its House 7.4p (3.7p). The ropewalk 30 of 30 (42% beside it, 14.3p of support a day), the
+  builders' works 76% (29%).
+- **The Country**: over the month its goods to the shops 986p to 704p a day, the estates' rents (the workshops' Houses'
+  share) 313p to 434p, the land rents 430p to 454p: **intake ~1,729p to ~1,592p (-137p)**, its basket 699p to 570p, its
+  purse 2,053p to 2,248p at the month's end, its posts paid every night. (country5b's summer was 28.7% over its posts;
+  ~-90p a day of it would leave ~18%.) The treasury 2,514p to 1,886p at the month's end (the toll on what no longer
+  passes the gate), over its float.
+- **Cheese**: the dairies 5.3 a day (16.6), all sold, none held; the shops' price for it climbing ~5% a day where it
+  sells out (the dearest 2.09 times the season's at the month's end, 1.67 beside it), the households 2.3 a day (8.4) and
+  the Houses' tables 3.0 (3.8 beside it, 8.5 over the whole run), 7.7p a piece (6.6p). **Butter** 37.3 a day made and
+  sold (17.7), none held.
+- **The tallow** 66.8 grown and 68.2 sold a day (73.1 and 52.5; held 480 at the month's end, 1,081), **the wine** all
+  pressed sold (4.4 a day; the vintner short as beside it, 9.4 and 9.9), the vineyards over their wages.
+
+Next (the user's go-ahead first): a 3-year run, to see the cheese's price settle (aimed at 3-6 times), the tallow and the
+wine against their piles, the Country's summer with the workshops' sales gone, and the smithy's year.
