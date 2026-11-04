@@ -1731,3 +1731,94 @@ workshops run. Before Phase 6: the Country's summer margin (8.4%, under 10%) and
 (80-92%), Larkfield's smithy (68%), the butchers' tallow for the soapworks (a `suppliers` line), the clay (the pits' extra
 back off), and the cheese going to the middle class rather than the rich (the keep a head, or the share, the user's
 call).
+
+### country5's carry-overs: the Country's summer, the vineyards, the smithy, the tallow, the clay, the cheese for the rich (2026-11-04, branch `r2-country-p5b`)
+
+Branch `r2-country-p5b`, from `ridgemere2` (cbf9ca0). **Nothing written to DEV, no NPC made, no map change**; the
+treasury's levers (toll, support, float) untouched. Scripts in the session's scratchpad (`p5b/`).
+
+- **The Country's summer** (893p, 8.4% over its 824p of posts). Where it went: its sales 545p to 346p as the workshops
+  took the goods, their Houses' share back only 57p. Two causes, two fixes:
+  - **A workshop's till kept a week of wages** (`floatWagesDays` 7, a city keeper's) before its House's share. That is
+    a stock, not a flow (year 3's soapworks: takings 186.6p, its draws 42.1p, inputs 32.0p, wages 86.0p, to the Crown
+    26.7p: all of it accounted), so the fix is only ~5 days of its wages (~1,100p across the eight) released to the
+    Houses once, and its share sooner after a lean night. **`workshopWagesDays` 2**, the works' `floatDays`.
+  - **The land rent where the margin is**: the cattle and dairy farms kept 68-72% of their takings after wages in
+    country5's year 3 (summer 68%; the pig farms 45%, the grain 63%, every other farm thinner). **`landRentDairy` 24 to
+    32**: ~+14p a farm a summer day, **~+42p**; they keep ~36-40% of their takings after wages and rent (more than the
+    pig farms' ~30%). No thin farm touched.
+- **The vineyards (92.3% and 80.4%): confirmed the cheese.** Year 3 against country4's: the middle class's cheese
+  58p to 170p a day and its wine 193p to 154p (16.1 to 13.0 bottles), the lower class's wine flat (69p to 68p) and its
+  cheese +18p. Wine (12p) is the dearest comfort: a household buys it only when its comforts' budget, what is left after
+  the luxuries out of the same money, covers 12p, so the cheese came off wine first. The fix is the cheese's buyers
+  (below). **And the wine's patch kept out** (vineyards' wine and grapes where they were): country5's measured demand was
+  the depressed one, and in the smoke the half-way cut left the vintner short (317 refused) and the vines' takings under
+  the baseline's.
+- **Larkfield's smithy (68%)**: demand-bound, not hours- or price-bound: it sold 4.7 pieces a day (nails 3.5, hoops
+  0.9, cookpots 0.3; ~18p), ~3-7p a bar over its ~9p bar (the toll a third of it), and the farms, the biggest buyers of
+  nails, hoops and cookpots (~85p a day in their baskets), bought ~13p of it from it, the city's smiths the rest
+  (picked by stock: the city's shelves the deeper). **A farm's basket buys from the country workshops first**
+  (`basketBuys`, the farms' only: the village smith is the farms' own), the city's makers for what no workshop holds.
+- **The butchers' tallow** (39,300 piled in their tills): `suppliers` lines, the soapworks, the chandlery and the
+  perfumer buy it of the butchers first (`country.json`), till to till at the butcher's price (1p), the farms' and the
+  store room's for the rest. The farms' tallow kept where it was (out of the patch: the butchers' ~36 a day is the new
+  supply).
+- **The clay** (9,041) and **the grain farms' flax** (3,069): to what country5 used (its patch's balanced yields less
+  their 5%), the whole step: the pits 37.05 / 33.84 / 34.33 / 37.59 to 31.70 / 29.24 / 30.17 / 32.50 each (the potteries'
+  +8.5 back to what they drew), the flax 23.15 / 22.25 / 22.23 / 22.77 to 22.59 / 20.98 / 21.04 / 21.21. **The rest of
+  country5's patch half way** (`--apply`, damping 0.5, `wholeSeasons` whole: 110 yields) but tallow, clay, flax, wine and
+  grapes.
+- **Cheese for the rich and the noble** (the user's intent: "a high-class commodity... only the rich and noble being able
+  to afford it... high desire... but careful that wolves don't break the bank for it"). country5: the middle class
+  11.5 a day, the lower 3.8, the upper 0.1, the Houses' wolves holding 49-55p a head (the middle class as much), so a
+  keep a head in cash could never tell them apart. Now:
+  - **By class, not cash**: a household of the Houses (any member's class `upper`, `classOf`, kept a day) buys from what
+    is over the comforts' keep (40p a head); any other only from what is over **`luxuryAbove` 200p a head** (a rich
+    merchant's purse). The guard stays: after its food and needs, at most `luxuryShare` 10% of that a day, a piece a
+    head.
+  - **The Houses' own tables**: once a day, at the first hour an open shop holds a luxury, the Country's purse (the
+    Houses' estates) buys with **`luxuryHouses` 40%** of what it holds over its reserve and its posts' nights (its
+    basket's money, before the basket; never its posts'), at most **`luxuryHousesMost` 24** pieces, from the shop asking
+    least, at that shop's own price (`housesLuxuries`).
+  - **Its price may climb to eight times** (`luxuryPriceBand` 300 to 700), so that once it is scarce the middle class
+    mostly can't.
+  New rules in Core's `Rules`, `country.json`, the Editor's and Atlas's Economy rules (no migration); world_check's
+  `luxury_classes` and `luxuries_houses`, the report's luxuries line by class and the Houses'.
+
+**Tests.** `workshops_behaviors` (190): a workshop keeps two days of wages (a city till a week); the soapworks', the
+chandlery's and the perfumer's tallow the butchers'; the soapworks buys a butcher's tallow at its price, none drawn,
+conserved; cheese by class: the Houses' lady (120p) buys one at the season's price, the stallholder's household (200p)
+none, the rich (2,000p) one at three, four and eight times within its share, the band's top no further, the poor fed and
+none; the Houses' tables: ten at the stall's own price within 40% of the spare, never into the reserve, 24 at most, none
+under a piece's price or with the rule off, counted apart, conserved. `farms_behaviors` (2,003): a farm's nails and
+cookpots from Larkfield's smithy while it holds them, the city smith's only once it sold out and for what it doesn't
+make; the dairies' 32%; the quarry's and the pits' new yields. `ctest` in `build-core` **79 of 79**;
+`test_econ_report`, `test_farms_summary`, `test_country_industry`, `test_item_catalog`, `test_city_capacity`,
+`test_world_store`, the Editor's typecheck and `economy.test.ts` pass (`test_map_editor`'s and the Editor's Greyfen counts
+fail as before, not this branch's).
+
+**The 30-day smoke** (build 61's export, `--simulate 0 720 --farms 0 --farms-every 1 --deterministic --threads 4
+--economy-level full`; `artifacts/economy/r2/country5b-smoke-report.md`, `country5b-smoke.patch.json`, a first spring's,
+not to be applied; beside it the same run on `ridgemere2`'s code and data, days 7-29 a day):
+
+- Money conserved every day; nobody hungry; the Country's posts paid every night.
+- **The Country's intake 1,443p a day against the baseline's 1,381p (+62p)**: the land rents 459p (408p; the dairies'
+  +60p), the estates' rents 375p (367p), its sales 609p (606p); its purse 1,437 to 2,053p (1,940p).
+- **The workshops' Houses**: the eight's share 110p a day (97p); **Larkfield's smithy paid 10.9p of its 14.0p (78%; the
+  baseline 5.5p, 39%) and sent its House 4.5p (0)**.
+- **The tallow**: the butchers' tills hold ~35 (the baseline's 98 to 1,158 in the month); the soapworks and the chandlery
+  buy ~37 a day of it; candles short 203 a month (14 days). But the farms' tallow now piles (0 to 1,081, ~20 a day) while
+  the city's tallow buyers' shelves still grow (country5's year 3: the soapworks 51 a day short): the 3-year run's to
+  judge; if it keeps piling, trim the meat farms' tallow.
+- **Clay** 417 to 216 at the pits (the baseline's 526 to 440), **flax** drawn to 0 by day 22 (the baseline's by day 29).
+- **Cheese** (a month: its price only beginning to climb, ~1.3 times): **the Houses' tables 8.4 a day for 57p**, the
+  households 8.5 for 53p (by household: the Houses' 7.5, the rest 1.0; by the payer's own class, as the trade tables
+  count: the middle 4.7, the upper 3.7, the lower 0.04, the Houses' middle-class kin paying), against the baseline's
+  15.7 households' for 127p (the middle class 12.2 a day, the lower 3.2, the upper 0.4). The households' wine 24.8
+  bottles a day (25.4p); the vineyards' takings 54.2p and 53.2p (53.6p and 52.4p), each over its 36p of wages.
+
+**Projected** (on country5's year 3's summer, 893p): the dairies' rent ~+42p, the smithy's and the workshops' shares
+~+5p, the rest about even: **~940p, ~14% over its 824p of posts** (8.4%; the target 10%). The workshops' reserve adds
+~1,100p to the Houses once, in the first weeks. As the cheese's price climbs toward its eight times, the households'
+part should fall to the Houses' wolves and the few rich, the Houses' tables taking fewer, dearer pieces: the dairies'
+cheese then follows what the resellers draw. All of it the 3-year run's to confirm.

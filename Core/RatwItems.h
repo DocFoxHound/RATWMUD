@@ -179,6 +179,8 @@ inline constexpr RuleInfo Rules[] = {
     {"buyAheadDays", 0, 5, 1},           // Days of food more a household buys the day before a Restday or festival.
     {"floatDrawDays", 1, 28, 7},         // A till's working float: its mean draws a day over this many days (1: yesterday's).
     {"floatWagesDays", 0, 60, 7},        // Days of its posts' wages a till keeps, over its float, before its keeper's profit.
+    {"workshopWagesDays", 0, 60, 2},     // A country workshop's, before its House's share (doc 72, after country5: the
+                                         // works' floatDays, 2; a House's till needs no week of wages in hand).
     {"subsidyToNeed", 0, 1, 1},          // The carriage subsidy only while the carters lack their crew's wages tonight.
     {"countryPostsDays", 1, 30, 2},      // Nights of its posts' wages the Country keeps before its basket and patrons (doc 72).
     // The food farms' land rent (doc 72, open question 2): percent of a farm's takings to its House's estate each night,
@@ -190,7 +192,8 @@ inline constexpr RuleInfo Rules[] = {
     {"landRentGrain", 0, 100, 28},       // The grain's (~57%).
     {"landRentSalt", 0, 100, 8},         // The salt's (its autumn margin ~17%).
     // A farm's own over its area's (country_farms.json, a farm's `landRent`: landRent<Its>; doc 72, Phase 4's payer).
-    {"landRentDairy", 0, 100, 24},       // The cattle and dairy farms' (their margin 67-70% in country3c; the pigs' 41%).
+    {"landRentDairy", 0, 100, 32},       // The cattle and dairy farms' (their margin 68-72% after wages in country5's year
+                                         // 3, the pigs' 45%; it was 24, on country3c's 67-70%).
     {"landRentThin", 0, 100, 0},         // The thinnest farms' (doc 72, Phase 5: the lake boats, the salt works, three
                                          // orchards, 5-8p a day over their wages and rent in country4's year 3).
     // The luxuries (country.json `luxuries`; doc 72, Phase 5, the user's decision: cheese, a comic luxury for wolves):
@@ -198,7 +201,12 @@ inline constexpr RuleInfo Rules[] = {
     // after its food and its needs (the fuel among them), at most this percent of that a day,
     {"luxuryShare", 0, 100, 10},
     {"luxuryMost", 0, 100, 1},           // and at most this many pieces a head a day;
-    {"luxuryPriceBand", 0, 1000, 300},   // a shop's price for one may climb this percent over the season's (its own band,
+    {"luxuryAbove", 0, 10000, 200},      // a household not of the Houses (by its class) only over this many pennies a head
+                                         // (the Houses' households over the comforts' keep: after country5, the rich and
+                                         // the noble its buyers, not the middle class);
+    {"luxuryHouses", 0, 100, 40},        // the Houses' own tables: this percent a day of what the Country's purse holds
+    {"luxuryHousesMost", 0, 1000, 24},   // over its reserve and its posts' nights, and at most this many pieces a day;
+    {"luxuryPriceBand", 0, 1000, 700},   // a shop's price for one may climb this percent over the season's (its own band,
     {"luxuryPriceStep", 0, 1000, 50},    // this many thousandths a day when it sells out; outside the city's price level).
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): what it holds over its cap and
     // surplusKeep at 18:00, after its posts, the short tills' wages and the alms, goes back out each day:

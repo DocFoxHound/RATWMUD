@@ -505,7 +505,7 @@ void Society::farmsBuy(int hod)
             continue;
         auto& today = loopToday_.farms[f.def->id];
         today.basket += basketBuys(f.till, basket, double(spare) / double(ShopShut - hod), keep, hod, open, "to a farm",
-                                   "used at the farm", &today.basketCarriage);
+                                   "used at the farm", &today.basketCarriage, true);   // (The workshops first.)
     }
 }
 

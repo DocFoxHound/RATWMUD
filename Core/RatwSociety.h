@@ -910,6 +910,17 @@ class Society
         // The luxuries (doc 72, Phase 5: cheese): pieces households bought, what they paid, and the households that did.
         int luxuriesBought = 0, luxuryHouseholds = 0;
         std::int64_t luxuriesSpent = 0;
+        // By the households' class (doc 72, after country5: "upper", "middle", "lower", "crew" a farm's), and the Houses'
+        // own tables (the Country's purse: housesLuxuries), pieces and pennies.
+        struct Luxuries
+        {
+            int pieces = 0;
+            std::int64_t spent = 0;
+        };
+        std::map<std::string, Luxuries> luxuryClasses;
+        int luxuriesHouses = 0;
+        std::int64_t luxuriesHousesSpent = 0;
+        bool housesLuxuriesDone = false;
         // The country workshops (doc 72, Phase 5), by building: tonight's wages owed and paid, and what went to its House.
         struct Workshop
         {
@@ -1209,7 +1220,18 @@ class Society
     bool farmSwitchTill(const std::string& till) const;
     std::int64_t basketBuys(const std::string& fund, const std::vector<std::pair<const std::string*, double>>& basket, double budget,
                             std::int64_t keep, int hourOfDay, const std::vector<std::pair<std::string, const items::Business*>>& open,
-                            const char* saleKind, const char* usedKind, std::int64_t* carriageOut);
+                            const char* saleKind, const char* usedKind, std::int64_t* carriageOut, bool workshopsFirst = false);
+    // The Houses' luxuries (doc 72, after country5): what the Country's purse spends today on luxuries for the Houses'
+    // tables, out of `spare` (luxuryHouses percent of it), from the open shops holding them at their own price.
+    std::int64_t housesLuxuries(const std::string& fund, std::int64_t spare,
+                                const std::vector<std::pair<std::string, const items::Business*>>& open);
+    // A household's class (classOf, doc 67): "upper" if any member is the Houses', else the most members', "middle"
+    // while unknown; kept for the day (homeClass_).
+    const std::string& homeClass(const std::string& home, const std::vector<std::string>& members);
+    std::unordered_map<std::string, std::string> homeClass_;
+    std::int64_t homeClassDay_ = -1;
+    // A country workshop's till (doc 72, Phase 5: its post's work at a workshops.json building).
+    bool workshopTill(const std::string& till) const;
     std::vector<std::pair<std::string, const items::Business*>> openShops() const;
     std::set<std::string> dead_;                    // Residents who have died (died, revived): nobody feeds or pays them.
     std::vector<Position> positions_;               // From authored_; rebuilt with it (buildPositions).

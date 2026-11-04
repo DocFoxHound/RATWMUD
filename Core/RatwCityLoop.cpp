@@ -933,8 +933,9 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             }
         }
         // The luxuries (doc 72, Phase 5, the user's decision: cheese, a comic luxury for wolves): every household wants
-        // them, but buys them only from what it holds over its comforts' keep (`above` pennies a head) after its food and
-        // its needs (the fuel among them; the city's households pay no rent), at most luxuryShare percent of that a day
+        // them, but buys them only from what it holds over its keep (the Houses' households the comforts' `above` pennies a
+        // head, the rest luxuryAbove) after its food and its needs (the fuel among them; the city's households pay no
+        // rent), at most luxuryShare percent of that a day
         // and luxuryMost pieces a head, each at its shop's own price, which climbs while the shops sell out (followStock,
         // its own band): the poor never go short of food or fuel for them, and mostly the rich buy them, dear.
         if (const auto& luxuries = cfg.luxuries; !luxuries.empty() && rule("luxuryShare") > 0)
@@ -945,8 +946,13 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                     sum += cash(m);
                 return sum;
             };
+            // By its class, not its cash (doc 72, after country5: the Houses' wolves held 49-55p a head, the middle class
+            // as much, and the middle class bought 11.5 a day, the upper 0.1): a household of the Houses buys from what is
+            // over the comforts' keep, any other only from what is over luxuryAbove a head (a rich merchant's purse).
             const auto before = purse();
-            const auto over = before - std::int64_t(comfortsAbove()) * std::int64_t(heads);
+            const auto& cls = crew ? std::string("crew") : homeClass(home, members);
+            const auto above = cls == "upper" ? std::int64_t(comfortsAbove()) : std::int64_t(rule("luxuryAbove"));
+            const auto over = before - above * std::int64_t(heads);
             auto room = over > 0 ? over * rule("luxuryShare") / 100 : 0;
             int pieces = 0;
             for (int k = 0, most = rule("luxuryMost") * heads; k < most && room > 0; ++k)
@@ -979,6 +985,9 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                 loopToday_.luxuriesBought += pieces;
                 loopToday_.luxuriesSpent += before - purse();
                 ++loopToday_.luxuryHouseholds;
+                auto& by = loopToday_.luxuryClasses[cls];
+                by.pieces += pieces;
+                by.spent += before - purse();
             }
         }
         // The day's comforts budget: a share of what is over `above` pennies a head (after food and needs).
@@ -1075,7 +1084,11 @@ void Society::countryBuys(int hod)
                 if (const auto pay = payOf(p); pay.payer == fund)
                     owed += pay.wage;
         owed *= std::max(1, rule("countryPostsDays"));
-        const auto spare = cash(fund) - authored_.economy.countryReserve - owed;
+        auto spare = cash(fund) - authored_.economy.countryReserve - owed;
+        if (spare <= 0)
+            continue;
+        if (&market == &cfg.markets.front() && !loopToday_.housesLuxuriesDone)
+            spare -= housesLuxuries(fund, spare, open);
         if (spare <= 0)
             continue;
         const double budget = double(spare) / double(ShopShut - hod);
@@ -1114,10 +1127,92 @@ void Society::countryBuys(int hod)
     }
 }
 
+bool Society::workshopTill(const std::string& till) const
+{
+    if (till.rfind("till:", 0) != 0)
+        return false;
+    const auto* p = position(till.substr(5));
+    return p && items::farmPeople().workshop(p->work.cell);
+}
+
+const std::string& Society::homeClass(const std::string& home, const std::vector<std::string>& members)
+{
+    if (homeClassDay_ != loopToday_.day)
+    {
+        homeClass_.clear();
+        homeClassDay_ = loopToday_.day;
+    }
+    if (const auto found = homeClass_.find(home); found != homeClass_.end())
+        return found->second;
+    std::map<std::string, int> count;
+    for (const auto& m : members)
+        ++count[classOf(m)];
+    std::string cls = count.count("upper") ? "upper" : "middle";
+    if (!count.count("upper"))
+        for (const auto& [c, n] : count)
+            if (n > count[cls])
+                cls = c;
+    return homeClass_.emplace(home, cls).first->second;
+}
+
+std::int64_t Society::housesLuxuries(const std::string& fund, std::int64_t spare,
+                                     const std::vector<std::pair<std::string, const items::Business*>>& open)
+{
+    // The Houses' own tables (doc 72, after country5, the user's intent for cheese: "only the rich and noble being able to
+    // afford it"): once a day, at the first hour an open shop holds a luxury, the Country's purse ("the Houses' estates")
+    // buys luxuries with luxuryHouses percent of what it holds over its reserve and its posts' nights (its basket's money,
+    // never its posts'), at most luxuryHousesMost pieces, a piece at a time from the open shop asking least, at that
+    // shop's own price (a luxury's climbs in its own band: the Houses pay it, as a household does), eaten at once.
+    const auto& luxuries = items::country().luxuries;
+    const int most = rule("luxuryHousesMost");
+    auto room = spare * rule("luxuryHouses") / 100;
+    if (luxuries.empty() || most < 1 || room < 1)
+    {
+        loopToday_.housesLuxuriesDone = true;
+        return 0;
+    }
+    const auto cheapest = [&](std::string& till, std::string& item) {
+        std::int64_t least = std::numeric_limits<std::int64_t>::max();
+        for (const auto& g : luxuries)
+            for (const auto& [t, business] : open)
+                if (const auto* a = account(t); a && stock(*a, g) > 0)
+                    if (const auto c = shopCost(t, g, 1); c < least || (c == least && t < till))
+                    {
+                        least = c;
+                        till = t;
+                        item = g;
+                    }
+        return least;
+    };
+    std::string till, item;
+    if (cheapest(till, item) == std::numeric_limits<std::int64_t>::max())
+        return 0;                                   // (None on an open shelf this hour: the next.)
+    loopToday_.housesLuxuriesDone = true;
+    std::int64_t spent = 0;
+    for (int k = 0; k < most; ++k)
+    {
+        till.clear();
+        const auto cost = cheapest(till, item);
+        if (till.empty() || cost > room || cash(fund) < cost)
+            break;
+        const auto base = catalogPrice(item);
+        if (!sale(till, fund, item, 1, base, "a luxury for the Houses' tables"))
+            break;
+        if (cost > base)
+            shift(fund, till, "", 0, cost - base, "a luxury for the Houses' tables: its price");
+        consume(fund, item, 1, "a luxury, eaten at once");
+        room -= cost;
+        spent += cost;
+        ++loopToday_.luxuriesHouses;
+    }
+    loopToday_.luxuriesHousesSpent += spent;
+    return spent;
+}
+
 std::int64_t Society::basketBuys(const std::string& fund, const std::vector<std::pair<const std::string*, double>>& basket,
                                  double budget, std::int64_t keep, int hod,
                                  const std::vector<std::pair<std::string, const items::Business*>>& open, const char* saleKind,
-                                 const char* usedKind, std::int64_t* carriageOut)
+                                 const char* usedKind, std::int64_t* carriageOut, bool workshopsFirst)
 {
     // A basket of the city's goods (doc 68, 2: the Country's; doc 71, 2.6: a farm's): `budget` pennies this hour shared
     // over its goods by their shares, among those its makers' open shops hold now, a piece at a time to a seller picked
@@ -1147,6 +1242,18 @@ std::int64_t Society::basketBuys(const std::string& fund, const std::vector<std:
         for (const auto& [till, business] : open)
             if (stock(*account(till), *item) > 0 && makes(business, *item))
                 w.tills.push_back(&till);
+        // A farm's basket from the country workshops first (doc 72, after country5: the village smith is the farms' own,
+        // Larkfield's smithy sold them 13p a day of the ~85p of nails, hoops and cookpots they bought, the city's smiths
+        // the rest, and was short of its one wage); the city's makers only for a good no workshop holds.
+        if (workshopsFirst)
+        {
+            std::vector<const std::string*> own;
+            for (const auto* t : w.tills)
+                if (workshopTill(*t))
+                    own.push_back(t);
+            if (!own.empty())
+                w.tills = std::move(own);
+        }
         if (!w.tills.empty())
         {
             shares += share;
@@ -1275,11 +1382,13 @@ void Society::payWages()
         if (payer.rfind("till:", 0) == 0)
         {
             const auto held = state_.careers.positions.find(payer.substr(5));
-            const auto cap = float_ + wagesDays * owed;
             // A country workshop's (doc 72, Phase 5) is its House's (doc 42, Phase 5b: a House takes all the profit): what
             // is over goes to its estate, the Country's purse ("the Houses' estates and the sea trade"), booked by House.
+            // It keeps workshopWagesDays of its wages over its float, as the works keep their floatDays (doc 72, after
+            // country5: a week's, a keeper's, held back ~5 days of its wages from its House for nothing).
             const auto* p = position(payer.substr(5));
             const auto* workshop = p ? items::farmPeople().workshop(p->work.cell) : nullptr;
+            const auto cap = float_ + (workshop ? std::int64_t(rule("workshopWagesDays")) : wagesDays) * owed;
             std::int64_t profit = 0;
             if (workshop)
             {

@@ -273,6 +273,14 @@ class ReportTests(unittest.TestCase):
         self.assertIn('cn_coldwater_soapworks wages 46.0p of 46.0p, to its House 30.0p', text)
         self.assertIn('5.0 pieces for 50.0p, 4.0 households', text)
         self.assertIn('No workshop in this world', R.phase5_lines([{'city_resale': 0}]))
+        # After country5: the luxuries by the households' class, and the Houses' own tables.
+        econ[0].update({'luxury_classes': {'upper': {'pieces': 4, 'spent': 48}, 'middle': {'pieces': 2, 'spent': 12}},
+                        'luxuries_houses': 6, 'luxuries_houses_spent': 90})
+        econ[1].update({'luxury_classes': {'upper': {'pieces': 4, 'spent': 40}}, 'luxuries_houses': 2,
+                        'luxuries_houses_spent': 30})
+        text = R.phase5_lines(econ)
+        self.assertIn('(upper 4.0 at 11.0p, middle 1.0 at 6.0p); the Houses\' tables 4.0 pieces for 60.0p (15.0p a piece).',
+                      text)
 
 
 if __name__ == '__main__':
