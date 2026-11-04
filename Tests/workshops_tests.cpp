@@ -29,6 +29,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 
 using namespace ratw;
 namespace fs = std::filesystem;
@@ -122,7 +123,7 @@ void empty(Society& s, const std::string& till, const std::string& item)
         s.consume(till, item, n, "test: none of it");
 }
 
-// The eight workshops as data: each at its fixed building, merged into its community's market as its business, its
+// The nine workshops as data: each at its fixed building, merged into its community's market as its business, its
 // keeper's label its business's, its hands' no business's, at most 40 characters, owned by its land's House.
 void theWorkshopsData()
 {
@@ -135,8 +136,9 @@ void theWorkshopsData()
         {"cn_larkfield_smithy", {"country_smithy", "the Crown"}},
         {"cn_fenshore_pottery", {"country_pottery", "Greatly"}},
         {"cn_southmeadow_pottery", {"country_pottery", "Greatly"}},
-        {"cn_oakhaven_press", {"country_press", "Timberland"}}};
-    expect(people.workshops.size() == want.size(), "eight workshops: " + std::to_string(people.workshops.size()));
+        {"cn_oakhaven_press", {"country_press", "Timberland"}},
+        {"cn_coldwater_still", {"country_still", "Fell"}}};    // (Since iron6, doc 72: "The producers and the fixes".)
+    expect(people.workshops.size() == want.size(), "nine workshops: " + std::to_string(people.workshops.size()));
     int posts = 0;
     for (const auto& [area, what] : want)
     {
@@ -167,7 +169,7 @@ void theWorkshopsData()
                 expect(!business, label + ": no business's");
         }
     }
-    expect(posts == 35, "35 posts (18 before country5b's carry-overs): " + std::to_string(posts));
+    expect(posts == 37, "37 posts (18 before country5b's carry-overs, 35 before the still): " + std::to_string(posts));
     // Where the map has laid a workshop (communities.json, a community's `workshops`), its work spots are the map's (by
     // its stations), never workshops.json's own.
     std::ifstream in(fs::path(RATW_SOURCE_DIR) / "Data" / "Economy" / "communities.json", std::ios::binary);
@@ -685,6 +687,184 @@ void theHousesCheese()
 }
 } // namespace
 
+// The Houses' city businesses (doc 72, Progress, "The producers and the fixes"; country.json `houseBusinesses`): the
+// Timberland Ironworks pays its crew from its till at 18:00 and sends what is over its float and workshopWagesDays of
+// its wages to House Timberland's estate, booked by House, nothing to its keeper as profit; its wages drift at most
+// workshopWageMost; conserved. An ironworks at a building not on the list keeps the old way (its keeper's profit).
+void theHousesCityBusinesses()
+{
+    const auto& owned = items::country().houseTills;
+    expect(owned.size() == 2 && owned.at("rm_the_grayrock_ironworks") == "Timberland" &&
+               owned.at("rm_the_grayrock_foundry") == "Timberland",
+           "the Timberland Ironworks and the foundry are House Timberland's");
+    const auto works = [](const std::string& cell, std::int64_t purse) {
+        return std::vector<ResidentSpec>{
+            person("ironmaster", "merchant", "runs The Timberland Ironworks", {cell, 3.5, 3.5}, "home_iron", 50, purse),
+            person("puddler", "civilian", "works at The Timberland Ironworks", {cell, 5.5, 3.5}, "home_iron", 30, 20)};
+    };
+    const auto night = [&](const std::string& cell) {
+        auto t = Town(city(works(cell, 1500)));
+        auto& s = t.s;
+        const auto till = s.tillOf("ironmaster");
+        t.until(1 + 17.9 / 24);
+        s.takeJournal();
+        const auto money = s.moneySupply();
+        t.until(1 + 18.5 / 24);
+        std::map<std::string, std::int64_t> wages;
+        std::int64_t toHouse = 0, profit = 0;
+        for (const auto& e : s.takeJournal())
+        {
+            if (e.kind == "wages" && e.from == till)
+                wages[e.to] += e.coins;
+            else if (e.kind == "a House's business's takings to its House: Timberland" && e.from == till &&
+                     e.to == "estate:timberland")
+                toHouse += e.coins;
+            else if (e.kind == "profit" && e.from == till)
+                profit += e.coins;
+        }
+        const auto& e = s.authored().economy;
+        const auto* b = items::businessFor("runs The Timberland Ironworks");
+        expect(b && b->id == "ironworks", "an ironworks");
+        expect(wages["ironmaster"] == e.wageKeeper && wages["puddler"] == e.wageHand,
+               cell + ": the keeper's and the hand's wages from the till: " + std::to_string(wages["ironmaster"]) + ", " +
+                   std::to_string(wages["puddler"]));
+        expect(s.conserved() && s.moneySupply() == money, cell + ": conserved");
+        return std::tuple{toHouse, profit, s.loopToday(), s.cash(till), s.rule("workshopWagesDays") * (e.wageKeeper + e.wageHand)};
+    };
+    {
+        const auto [toHouse, profit, day, held, kept] = night("rm_the_grayrock_ironworks");
+        const auto w = day.workshops.find("rm_the_grayrock_ironworks");
+        expect(toHouse > 0 && profit == 0 && w != day.workshops.end() && w->second.toHouse == toHouse &&
+                   w->second.paid == w->second.owed && day.rents.count("Timberland") && day.rents.at("Timberland") == toHouse &&
+                   day.estates.count("timberland") && day.estates.at("timberland").rents >= toHouse,
+               "the Timberland Ironworks' takings over its float to Timberland's estate, booked, none to its keeper: " +
+                   std::to_string(toHouse));
+        expect(held >= kept && held <= kept + 200, "it keeps its float and four days' wages: " + std::to_string(held));
+    }
+    {
+        const auto [toHouse, profit, day, held, kept] = night("rm_a_private_ironworks");
+        (void)held, (void)kept;
+        expect(toHouse == 0 && profit > 0 && !day.workshops.count("rm_a_private_ironworks") && !day.rents.count("Timberland"),
+               "an ironworks not on the list: its keeper's profit, as before: " + std::to_string(profit));
+    }
+    // Its wage step capped at workshopWageMost, as a country workshop's.
+    {
+        auto t = Town(city(works("rm_the_grayrock_ironworks", 1500)));
+        auto& s = t.s;
+        const auto till = s.tillOf("ironmaster");
+        t.until(1 + 1. / 24);
+        auto saved = s.state();
+        saved.loop.wages[till].step = 6;
+        expect(s.restore(saved), "restored with a step of 6");
+        auto economy = s.authored().economy;
+        economy.rules["wageDrift"] = 1;
+        s.adoptEconomy(economy);
+        t.until(1 + 17.9 / 24);
+        s.takeJournal();
+        t.until(1 + 18.5 / 24);
+        std::map<std::string, std::int64_t> wages;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "wages" && e.from == till)
+                wages[e.to] += e.coins;
+        const auto& e = s.authored().economy;
+        expect(wages["ironmaster"] == e.wageKeeper + 2 && wages["puddler"] == e.wageHand + 2,
+               "a step of 6 pays the ironworks' keeper and hand 2p over the world's: " + std::to_string(wages["ironmaster"]));
+    }
+}
+
+// The Coldwater Still (doc 72, Progress, "The producers and the fixes"): House Fell's country workshop presses the
+// orchards' apples into cider and stills it into apple brandy, the vineyards' wine into brandy; the vintner buys both
+// of it till to till at the store room's price, none from the store room; its crew paid and what is over to Fell's
+// estate; apple brandy and brandy among the households' comforts; conserved.
+const char* const Still = "cn_coldwater_still";
+std::vector<ResidentSpec> still(std::int64_t purse = 300)
+{
+    return {person("stillmaster", "merchant", "stillmaster at Coldwater Still", {Still, 3.5, 3.5}, "cn_coldwater_cottage_1", 45, purse),
+            person("stillhand", "civilian", "still hand at Coldwater Still", {Still, 5.5, 3.5}, "cn_coldwater_cottage_1", 25, 20),
+            person("vintner", "merchant", "vintner at the Fell Wine Vaults", {"vaults", 2.5, 2.5}, "home_vintner", 40, 800)};
+}
+
+void theStill()
+{
+    const auto& comforts = items::country().comforts;
+    for (const char* g : {"apple_brandy", "brandy"})
+        expect(std::find(comforts.begin(), comforts.end(), g) != comforts.end(), std::string(g) + ": a comfort");
+    for (const char* g : {"apple_brandy", "brandy"})
+    {
+        const auto sellers = Society(Roster::None).citySellers("vintner", g);
+        expect(sellers == std::vector<std::string>({"country_still", "distillery"}), std::string(g) + ": the vintner's from the still and the distillery");
+    }
+    expect(Society(Roster::None).citySellers("weaver", "linen_cloth") == std::vector<std::string>({"country_linen_weavers"}),
+           "the city weaver's linen from Larkfield's looms (it drew the Country's)");
+    // It makes cider of apples, apple brandy of the cider, brandy of wine.
+    {
+        auto s = city(still());
+        const auto* b = items::businessFor("stillmaster at Coldwater Still");
+        expect(b && b->id == "country_still", "the still a country_still");
+        expect(!items::businessFor("still hand at Coldwater Still"), "its hand's label no business's");
+        const auto wares = s.wares("stillmaster");
+        for (const char* g : {"cider", "apple_brandy", "brandy"})
+            expect(std::find(wares.begin(), wares.end(), g) != wares.end(), std::string("the still sells ") + g);
+        const auto till = s.tillOf("stillmaster");
+        for (const auto& g : wares)
+            empty(s, till, g);
+        s.create(till, "apples", 40, "test: the orchards' apples");
+        s.create(till, "wine", 6, "test: the vineyards' wine");
+        s.create(till, "firewood", 12, "test: firewood");
+        const auto money = s.moneySupply();
+        for (int h = 0; h < 36; ++h)
+            s.restockFromStore("stillmaster", 1 + (8 + h) / 24.);
+        const auto& a = *s.account(till);
+        expect(Society::stock(a, "apple_brandy") >= 2 && Society::stock(a, "brandy") >= 1 && Society::stock(a, "apples") < 40,
+               "made apple brandy and brandy of the apples and the wine: " + std::to_string(Society::stock(a, "apple_brandy")) +
+                   ", " + std::to_string(Society::stock(a, "brandy")));
+        expect(s.conserved() && s.moneySupply() == money, "the still's making: conserved");
+    }
+    // The vintner's apple brandy from the still, at the store room's price, none from the store room.
+    {
+        auto s = city(still());
+        const auto works = s.tillOf("stillmaster"), vaults = s.tillOf("vintner");
+        empty(s, works, "apple_brandy");
+        empty(s, vaults, "apple_brandy");
+        s.create(works, "apple_brandy", 8, "test: apple brandy at the still");
+        for (const auto& ware : s.wares("vintner"))
+            if (ware != "apple_brandy")
+                s.create(vaults, ware, 40, "test: the shelves full");
+        const auto money = s.moneySupply();
+        const auto works0 = s.cash(works);
+        s.takeJournal();
+        s.restockFromStore("vintner", 1 + 9 / 24.);
+        int fromStill = 0, fromStore = 0;
+        for (const auto& e : s.takeJournal())
+            if (e.item == "apple_brandy" && e.kind == "from a maker, to sell on" && e.from == vaults && e.to == works)
+                fromStill += e.quantity;
+            else if (e.item == "apple_brandy" && e.kind == "restocked from the store room")
+                fromStore += e.quantity;
+        expect(fromStill > 0 && fromStore == 0 && s.cash(works) > works0,
+               "the vintner's apple brandy the still's: " + std::to_string(fromStill));
+        expect(s.conserved() && s.moneySupply() == money, "the vintner's purchase: conserved");
+    }
+    // At 18:00 its crew paid, what is over to House Fell's estate.
+    {
+        auto t = Town(city(still(1000)));
+        auto& s = t.s;
+        const auto till = s.tillOf("stillmaster");
+        t.until(1 + 17.9 / 24);
+        s.takeJournal();
+        const auto money = s.moneySupply();
+        t.until(1 + 18.5 / 24);
+        std::int64_t toHouse = 0, profit = 0;
+        for (const auto& e : s.takeJournal())
+            if (e.kind == "a workshop's takings to its House: Fell" && e.from == till && e.to == "estate:fell")
+                toHouse += e.coins;
+            else if (e.kind == "profit" && e.from == till)
+                profit += e.coins;
+        expect(toHouse > 0 && profit == 0 && s.loopToday().rents.count("Fell") && s.loopToday().rents.at("Fell") >= toHouse,
+               "the still's takings over its float to Fell's estate: " + std::to_string(toHouse));
+        expect(s.conserved() && s.moneySupply() == money, "the still's wages and Fell's share: conserved");
+    }
+}
+
 int main()
 {
     try
@@ -692,6 +872,8 @@ int main()
         catalogue();
         theWorkshopsData();
         aCommunityWorkshop();
+        theHousesCityBusinesses();
+        theStill();
         theResalePrices();
         aSmithAlone();
         theCheese();

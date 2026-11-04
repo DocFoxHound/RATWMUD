@@ -1808,16 +1808,16 @@
  ],
  "tiles": {
   "!": 1291018,
-  "\"": 862919,
-  "#": 19873,
+  "\"": 862917,
+  "#": 19906,
   "$": 308536,
   "%": 15933,
   "&": 1043148,
   "(": 681730,
   ")": 99720,
   "*": 596887,
-  "+": 389,
-  ",": 2408137,
+  "+": 390,
+  ",": 2408055,
   "-": 512317,
   ".": 60822,
   "/": 40903,
@@ -1843,7 +1843,7 @@
   "H": 4057,
   "I": 71,
   "J": 9329,
-  "L": 6935,
+  "L": 6985,
   "O": 114,
   "P": 465502,
   "Q": 1500,
@@ -1977,9 +1977,9 @@
    "detail": "{'coldwater': 21, 'larkfield': 11, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 5, 'oakhaven': 0, 'frosthollow': 0}, Ridgemere 23"
   },
   {
-   "check": "the country workshops (doc 72, Phase 5): the eight, a keeper's flat and work for their 29 each",
+   "check": "the country workshops (doc 72, Phase 5; the still): the nine, a keeper's flat and work for their 31 each",
    "ok": true,
-   "detail": "8 built, crew 29; short: "
+   "detail": "9 built, crew 31; short: "
   },
   {
    "check": "Frosthollow (doc 72, 4.7): a keeper's house, work spots and a walk for each of its three works, the lime kiln",
@@ -1999,19 +1999,19 @@
  ],
  "timings": {
   "city": 0.0,
-  "sea": 13.6,
-  "elevation": 1.2,
+  "sea": 11.4,
+  "elevation": 0.9,
   "climate": 0.1,
-  "drainage": 0.9,
-  "heights": 29.1,
-  "water": 19.3,
-  "settle": 9.6,
-  "ground": 56.3,
-  "sites": 4.2,
-  "roads": 6.4,
-  "places": 7.9,
-  "cells": 3.8,
-  "checks": 6.5
+  "drainage": 0.7,
+  "heights": 25.0,
+  "water": 16.9,
+  "settle": 9.1,
+  "ground": 48.5,
+  "sites": 3.4,
+  "roads": 5.7,
+  "places": 6.7,
+  "cells": 2.9,
+  "checks": 5.5
  },
  "places": {
   "communities": [
@@ -2023,10 +2023,10 @@
      "y": 1796
     },
     "hands": 21,
-    "beds": 70,
+    "beds": 74,
     "roomToGrow": {
-     "cottageLots": 4,
-     "openTiles": 11486
+     "cottageLots": 3,
+     "openTiles": 11526
     },
     "homes": 9,
     "market": [

@@ -471,14 +471,15 @@ class WholeRealm(unittest.TestCase):
         self.assertGreaterEqual(oak['roomToGrow']['cottageLots'], 6)
 
     def test_doc_72s_country_workshops(self):
-        # Phase 5 (doc 72, Siting; doc 71 section 5's 29 workers): the eight workshops by their fixed ids, each with its
-        # keeper's flat over it and a work spot on its floor for each of its crew; Larkfield's two cottages more.
+        # Phase 5 (doc 72, Siting; doc 71 section 5's 29 workers; the still since the producers, doc 72's Progress): the
+        # nine workshops by their fixed ids, each with its keeper's flat over it and a work spot on its floor for each of
+        # its crew; Larkfield's two cottages more.
         c = self.realm.contract
         rooms = {r['id']: r for r in self.project['rooms']}
         links = {l['id'] for l in self.project['links']}
         crews = {'cn_coldwater_soapworks': 4, 'cn_coldwater_weavers': 5, 'cn_larkfield_weavers': 5,
                  'cn_larkfield_press': 5, 'cn_larkfield_smithy': 1, 'cn_fenshore_pottery': 2,
-                 'cn_southmeadow_pottery': 2, 'cn_oakhaven_press': 5}
+                 'cn_southmeadow_pottery': 2, 'cn_oakhaven_press': 5, 'cn_coldwater_still': 2}
         got = {}
         for com in c['communities']:
             flats = {f['area']: f for f in com['flats']}
@@ -500,7 +501,7 @@ class WholeRealm(unittest.TestCase):
                 if w['kind'] == 'pottery':
                     self.assertTrue(w.get('kilnYard'), w['id'])
         self.assertEqual(got, crews)
-        self.assertEqual(sum(got.values()), 29)
+        self.assertEqual(sum(got.values()), 31)      # (29 before the still: doc 72, Progress, "The producers and the fixes".)
         lark = next(k for k in c['communities'] if k['id'] == 'larkfield')
         self.assertEqual([h['area'] for h in lark['homes']][-2:], ['cn_larkfield_cottage_5', 'cn_larkfield_cottage_6'])
 

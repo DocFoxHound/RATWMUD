@@ -386,13 +386,13 @@ Food-adjacent and largest money first; each phase as doc 71 did it: **modelled p
 
 | Stays | Why |
 |---|---|
-| **Iron and metals** (271p) | The user's decision. Its sites are reserved; 4.7 says what pulling it needs. Since 2026-11-04 (Progress, "Iron and lime out of the Country") the iron is the works' (Frosthollow's mine and hearths, the city's ironworks and foundry); copper and tin stay the Country's. |
+| **Iron and metals** (271p) | The user's decision. Its sites are reserved; 4.7 says what pulling it needs. Since 2026-11-04 (Progress, "Iron and lime out of the Country") the iron is the works' (Frosthollow's mine and hearths, the city's ironworks and foundry); copper and tin stay the Country's. Since the producers (Progress, "The producers and the fixes") copper and tin ore are the Frosthollow mine's too, a little a day. |
 | **Limestone and lime** (26p) | The lime quarry is past the 800-tile rule from the city and ~1,250 from Coldwater (4.4); it goes with Frosthollow. Since 2026-11-04 the lime quarry's, House Greatly's (Progress, "Iron and lime out of the Country"). |
 | **The ships' goods from beyond the realm** | Ships come from beyond the realm. The wharf itself is Grayrock's (doc 67 R28): its ~56 posts are paid from the Country's purse only until Phase 6 gives them to Grayrock's estate. |
 | **The city's exports** (the basket's maps, handbells, glass beads, charms, steel) | What the city sells beyond the realm. These makers have no buyer in the realm; the Country's basket is their market. |
 | **The Houses' estates** (until Phase 6) | The land the works stand on is the Houses'; the estates collect the works' rents and pay the Houses' people (the wharf's posts among them). Not a producer any more, a landlord. Split since Phase 6 (Progress, "Phase 6, the estates split"): each House its own purse, Grayrock's the Country's own (the wharf and the sea trade). |
 | **Arrivals and the unplaced pool** | People come from beyond the realm (about 4 a year, with up to 30p each). The pool is the city's and the works' labour reserve. |
-| **Goods no one in the realm makes** | The ten farm goods no farm grows (brandy, apple brandy, aqua vitae, wheat, butter, cheese, offal, eggs, sheep, sheepskin) could come by sea as imports instead of going without (open question 8). Butter and cheese no longer: since country3b the dairies make them of their spare milk (the user's decision; Progress, "The dairies' butter and cheese"). |
+| **Goods no one in the realm makes** | The ten farm goods no farm grows (brandy, apple brandy, aqua vitae, wheat, butter, cheese, offal, eggs, sheep, sheepskin) could come by sea as imports instead of going without (open question 8). Butter and cheese no longer: since country3b the dairies make them of their spare milk (the user's decision; Progress, "The dairies' butter and cheese"). Since the producers (Progress, "The producers and the fixes"; the user, 2026-11-04) brandy and apple brandy are the Coldwater Still's, eggs the dairies', sheep and sheepskins the sheep runs'; aqua vitae and offal are to come by the Wharf (the second stage); wheat is not asked for. |
 
 ## Open questions for the user
 
@@ -2489,3 +2489,110 @@ build 62's export, against estates6b (build 61, the Country still selling iron a
 55 nights (~30p a day in year 3, worst in autumn), the Crown's purse falls, the Country stops buying, and timber is now
 short (the ironworks' draw). No rule, yield or code changed (the user's call). Report
 `artifacts/economy/r2/iron6-report.md` and its patch.
+
+### The producers and the fixes (2026-11-04, branch `r2-producers`)
+
+The user, 2026-11-04, on iron6: send the ironworks' and the foundry's profit to their owning estate rather than use a
+lever; fix the timber shortage and the linen; new producers for brandy and apple brandy; eggs, sheep and sheepskins at
+existing farms; copper and tin at the existing mine; leave cheese as it is. (Aqua vitae and offal come by the Wharf, the
+second stage; wheat is not asked for.) Branch `r2-producers`, from `ridgemere2` (d2103cc). **DEV written** (the still's
+building, below); no NPC made; the treasury's levers (toll, support, float) untouched; cheese untouched. Scripts in the
+session's scratchpad (`prod/`).
+
+- **The ironworks' and the foundry's profit to House Timberland's estate** (`country.json` `houseBusinesses`, a list of
+  building -> House; Core's `Country::houseTills`): a till whose keeper's post works at a listed building is run as a
+  country workshop's: its posts paid their wages, their drift capped at `workshopWageMost`, and what it holds each night
+  over its float and `workshopWagesDays` of its wages goes to its House's estate, journalled "a House's business's takings
+  to its House: Timberland", booked by House with the works' rents (the economy line's `workshops`, by building;
+  `econ_report` lists them with the workshops). Listed: `rm_the_grayrock_ironworks` and `rm_the_grayrock_foundry`. **Not
+  listed** (the other House-owned city businesses, by the map's territories, that could follow): House Timberland's
+  Anchor Forge and Nailers' Forge (smithies), the Rivet and Rain (the armoury), the Charcoal Store and the Sawmill; House
+  Greatly's Plasterworks, Colour Works, Masons' Yard, Yard and Bank; House Grayrock's ropewalk.
+- **Timber**: the ironworks and the foundry no longer burn charcoal of their own timber (`crafts.json`: the charcoal
+  craft's makers the charcoal kilns alone): the ironworks bought ~7.8 timber a day for it in iron6's year 3 and was
+  itself 3.3 short; now they draw the hearths' charcoal (the Upper hearths' and the Greenholt's, which piled). The
+  logging camps' timber takes iron6's patch whole (it was supply-bound): 19.9, 18.9, 19.6, 21.2 a day each.
+- **Linen**: the city's weaver drew the Country's linen for its neckerchiefs (it had no supplier line); now it buys
+  Larkfield's first (`suppliers`, weaver <- country_linen_weavers). Flax half way to what the looms and the weaver used
+  (iron6's year 3: 31.6 grown, 21.4 sold a farm; x0.857): a first trial at the whole step (x0.713) left Larkfield's looms
+  3.8 flax a day short in the first spring.
+- **The Coldwater Still** (`cn_coldwater_still`, House Fell's; business `country_still`, keeper "stillmaster at Coldwater
+  Still", hand "still hand at Coldwater Still", neither holding the distillery's words): presses the orchards' apples into
+  cider (2 a jug) and stills it into apple brandy (3 jugs and a firewood a bottle), the vineyards' wine into brandy (2 to
+  1). **Nobody bought brandy or apple brandy before** (iron6's year 3: no trade; the distillery's and the vintner's
+  shelves of them sat full; as food, 2 nourishment a bottle at 14p and 45p): both are now among the households'
+  **comforts** (a comfort is picked only from what a shop in reach holds, so their share is no more than the stills
+  make), and the vintner buys them of the still and the distillery first (`suppliers`). Sized ~5 apple brandy and ~1
+  brandy a day, ~24 crew-hours: **1 + 1** (22p a day in the smoke). In Coldwater, the village of the Greenholt's two orchards (doc 67: Fell's
+  wine and fruit). **The map**: `realm2_places` `WORKSHOPS['coldwater']`, its third and last (so the two before it don't
+  move): a `country_still` building (16 x 11: two stills, a press, a workbench) with the keeper's flat over it (4 beds);
+  its hand in Coldwater's cottages. The realm laid from DEV differed from DEV's `communities.json` only in Coldwater (its
+  workshops 3, flats 5, beds 74, room to grow 3 cottage lots); the realm's checks all pass (the workshops': the nine, 31
+  crew).
+- **Eggs at the three cattle and dairy farms' yards** (the farms by the city, so the eggs come in fresh; the Crown's
+  land): 18, 20, 16, 12 a day each by season; the stalls and the provisioners sell them (`crafts.json` `supplies`). No
+  shop sold eggs before, so no demand showed; a first trial at 9, 10, 8, 6 sold every egg and left the stalls ~90 a day
+  short.
+- **Sheep (live) and sheepskins at the two sheep runs**: the butcher's raw meat and the plasterworks' plaster have two
+  crafts each, and the first always won, so the sheep and the sheepskin crafts were never used. **One code change**
+  (`restockFromStore`): a ware's craft is the first that makes it whose inputs are to be had (on the shelves, from a city
+  maker, in the Country's or the farms' stores), else the first as before: the butcher's sheep when the pig farms have
+  no pigs (iron6's year 3: pigs ~3 a day short), the plasterworks' sheepskin when the warrens have no pelts, the
+  tannery's when it has no hides. Sheep 0.5, 0.4, 0.4, 0.5 a run (1.2 in the first trial: none sold, 77 held each),
+  sheepskin 0.4, 0.3, 0.6, 0.6 (it keeps 6 days). The pigs take iron6's patch half way (not whole), so the sheep fill the
+  rest of the pigs' gap.
+- **Copper and tin ore at the Frosthollow mine** (the iron area's goods now; 0.8 and 0.4 a day each season, yields per
+  good to raise when players want more); the jeweller's copper bars from the foundry (`suppliers`; it drew ~0.3 a day of
+  the Country's). Copper and tin bars stay no area's (the foundry makes them).
+- **iron6's patch half way** (`--apply`, damping 0.5, `wholeSeasons` whole: 119 yields; timber, wine, milk and meal's
+  summer whole) but flax and pigs (above), and **charcoal, limestone and lime kept at iron6's**: the half way trim was
+  tried, and in the first trial the hearths ran out (the ironworks and the foundry ~8 charcoal a day short, now drawing
+  what they used to burn of their own) and the lime quarry left ~3.8 limestone a day short; their piles were year 3's.
+  The ore half way (still piling ~6 a day in the first spring).
+
+**DEV**: backed up first to `artifacts/backups/ratw_dev_20261104-133411_before_producers.pgdump` (DEV at revision 81,
+build 62; the write's own backup `ratw_dev_20261104-133718.pgdump` in the branch's worktree); `python3 -m worldgen.realm2
+write --world dev`: **revision 82** (83 after the editors' reload), the same map, its new layout recorded;
+`world_build.py dev`: **build 63** (1,212 cells), exported to `artifacts/economy/r2/export63` (not committed). No NPC
+made: the still's two posts from the pool.
+
+**Tests.** `workshops_behaviors` (256): the ironworks' takings over its float to Timberland's estate, booked, none to its
+keeper, four days' wages kept; an ironworks not on the list keeps its keeper's profit; a step of 6 pays its keeper 2p
+over; the still a `country_still`, its hand's label no business's; it makes apple brandy and brandy of apples and wine;
+the vintner's apple brandy the still's; its takings to Fell's estate; conserved. `farms_behaviors` (2,114): eggs, sheep
+and sheepskin the meat area's in the farms' stores, the stall's eggs the dairies'; the butcher's raw meat of pigs while
+the pig farms hold them, of sheep when they hold none; the plasterworks' sheepskin; the foundry's copper and tin ore the
+mine's; the ironworks and the foundry burn no charcoal of their own; the patched yields. `farm_people_behaviors`
+(4,650): nine workshops, 37 posts, the still kept by the pool's brewer. `ctest` **79 of 79**; `test_econ_report`,
+`test_farms_summary`, `test_country_industry`, `test_item_catalog`, `test_city_capacity`, `test_world_store` pass;
+`RATW_SLOW=1 test_realm2` 31 of 31 against DEV after the write.
+
+**The 60-day smoke** (build 63's export, `--simulate 6 1446 --farms 0 --farms-every 1 --deterministic --threads 4
+--economy-level full`; days 10-59 a day; report `artifacts/economy/r2/producers-smoke-report.md`, patch
+`producers-smoke.patch.json`, a first spring's, not to be applied; the first trial beside it as `producers-smoke-a`):
+
+- **Money conserved** every day; nobody hungry; the treasury 1,200 to 1,626p (least 1,128p).
+- **The estates' posts paid every night** (0 short, every estate; iron6's were short in years 2-3, which 60 days can't
+  show). **To the estates a day**: the ironworks **30.9p** and the foundry **11.2p** (Timberland's), the still **7.2p**
+  (Fell's): ~49p against iron6's year-3 gap of ~31p. Timberland's rents 302p (its levy to the Crown 38p); the Crown's
+  grants 426p, its purse 205 to 1,385p; the wharf's 724 to 23p (least 1p: its posts granted nightly).
+- **The ironworks' posts** 46.2p of 46.3p, **the foundry's** 27.6p of 30.0p (on the support some nights, as before).
+- **Timber**: 42.2 a day sold (20.06 grown a camp, their stores drawn from 129 to 99), **none short** (iron6's year 3:
+  15.1 a day short); the ironworks and the foundry bought none.
+- **Linen**: the Country's linen **2.8 a day** (iron6's same days 14.8); Larkfield's sold the tailor, the apothecary
+  and the presses. Flax 26.7 and 27.6 grown a farm, 25.5 and 26.0 sold (stores 160 and 185 at the end).
+- **The still**: wages 22p of 22p; apple brandy ~2.6 a day to the households and ~1.8 to the vintner, brandy ~0.5; the
+  vintner still short ~4 a day of each and the still short of cider (its hours): the demand is there. Apples to it ~30 a
+  day.
+- **The new goods**: eggs 51.5 a day grown and all sold, the stalls still ~110 short; sheepskin 0.96 a day, all to the
+  plasterworks; copper ore 0.8 and tin ore 0.4, all to the foundry (filling its shelves of bars); sheep **none sold** (no
+  pigs short in a first spring; 31 a run held at the end).
+- **The rest**: the hearths' charcoal out in the first spring (the ironworks 2.7 a day short), limestone 3.3 a day short
+  (both piled by year 3 in iron6); the Country's own sales ~25p a day (iron hoops, a little linen, the general stores'
+  gathered goods).
+
+**Open.** (1) A 3-year run (asked first): the estates' nights short and the Crown's purse with the ironworks', foundry's
+and still's shares; the sheep once the pigs run short; the eggs (sized at half the stalls' want: more would take food
+money from the other farms); the charcoal, ore and limestone in years 2-3. (2) The other House-owned businesses listed
+above, the user's call. (3) The distillery wants cider for its apple brandy (~12 a day short): a supplier line from the
+still or the brewery would feed it.

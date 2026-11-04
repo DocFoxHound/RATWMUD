@@ -49,7 +49,7 @@
     "lake_and_river_boat_1",
     "lake_and_river_boat_2"
    ],
-   "beds": 70,
+   "beds": 74,
    "homes": [
     {
      "area": "cn_coldwater_cottage_1",
@@ -490,6 +490,30 @@
       }
      ],
      "for": "Coldwater Loom Shed"
+    },
+    {
+     "area": "cn_coldwater_still_flat",
+     "name": "Coldwater Still, the keeper's rooms",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      }
+     ],
+     "for": "Coldwater Still"
     }
    ],
    "market": [
@@ -835,6 +859,59 @@
      "otherRooms": [
       "cn_coldwater_weavers_flat"
      ]
+    },
+    {
+     "id": "cn_coldwater_still",
+     "area": "cn_coldwater_still",
+     "name": "Coldwater Still",
+     "kind": "still",
+     "crew": {
+      "keepers": 1,
+      "hands": 1
+     },
+     "work": [
+      {
+       "x": 2,
+       "y": 13
+      },
+      {
+       "x": 2,
+       "y": 10
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 13,
+       "station": "still"
+      },
+      {
+       "x": 1,
+       "y": 10,
+       "station": "still"
+      },
+      {
+       "x": 1,
+       "y": 7,
+       "station": "press"
+      },
+      {
+       "x": 1,
+       "y": 4,
+       "station": "workbench"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_6",
+      "x": 119,
+      "y": 253,
+      "worldX": 1911,
+      "worldY": 1789
+     },
+     "flat": "cn_coldwater_still_flat",
+     "otherRooms": [
+      "cn_coldwater_still_flat"
+     ]
     }
    ],
    "gardens": [
@@ -906,8 +983,8 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 4,
-    "openTiles": 11486
+    "cottageLots": 3,
+    "openTiles": 11526
    }
   },
   {

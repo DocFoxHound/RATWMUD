@@ -654,7 +654,9 @@ def phase5_lines(econ):
            f'Bought to sell on from the makers (a day): {mean("city_resale_pieces"):.1f} pieces, {mean("city_resale"):.1f}p'
            + (' (' + ', '.join(f'{g} {v / n:.1f}' for g, v in goods.most_common()) + ')' if goods else '') + '.']
     if shops:
-        out.append('The workshops (a day open): ' + '; '.join(
+        # (With them since the producers, doc 72's Progress: the Houses' city businesses, the ironworks and the foundry, by
+        # their buildings, rm_*.)
+        out.append('The workshops and the Houses\' city businesses (a day open): ' + '; '.join(
             f'{w} wages {s["paid"] / s["days"]:.1f}p of {s["owed"] / s["days"]:.1f}p, to its House {s["to_house"] / s["days"]:.1f}p'
             for w, s in sorted(shops.items())) + '.')
     else:

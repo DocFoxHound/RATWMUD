@@ -74,14 +74,35 @@ bool wageFalls(const Society& s, int step)
     const auto falls = [&](int wage, const char* most) { return step > -s.rule(most) && wage + step - 1 >= floor; };
     return falls(e.wageKeeper, "wageDriftMost") || falls(e.wageHand, "wageDriftHandMost");
 }
-// The most a till's wage step may rise (doc 72, after country6a): a country workshop's within workshopWageMost (its House
-// takes the profit, and a step judged on that share drew it into the crew's wages), any other's its keeper's bound or a
-// hand's, the wider.
+// The House a till's post works for (doc 72): a country workshop's (workshops.json), or a House's city business's
+// (country.json `houseBusinesses`, after iron6: the Timberland Ironworks and the foundry); "" a keeper's own. Its building
+// in `building`.
+std::string houseOfPost(const Position* p, std::string* building = nullptr)
+{
+    if (!p)
+        return {};
+    if (const auto* w = items::farmPeople().workshop(p->work.cell))
+    {
+        if (building)
+            *building = w->area;
+        return w->house;
+    }
+    const auto& owned = items::country().houseTills;
+    const auto found = owned.find(p->work.cell);
+    if (found == owned.end())
+        return {};
+    if (building)
+        *building = found->first;
+    return found->second;
+}
+// The most a till's wage step may rise (doc 72, after country6a): a House's till's (a country workshop's, a House's city
+// business's) within workshopWageMost (its House takes the profit, and a step judged on that share drew it into the
+// crew's wages), any other's its keeper's bound or a hand's, the wider.
 int wageRiseMost(const Society& s, const std::string& till)
 {
     const int most = std::max(s.rule("wageDriftMost"), s.rule("wageDriftHandMost"));
     const auto* p = till.rfind("till:", 0) == 0 ? s.position(till.substr(5)) : nullptr;
-    return p && items::farmPeople().workshop(p->work.cell) ? std::min(most, s.rule("workshopWageMost")) : most;
+    return !houseOfPost(p).empty() ? std::min(most, s.rule("workshopWageMost")) : most;
 }
 } // namespace
 
@@ -1645,23 +1666,28 @@ void Society::payWages()
             // booked by House.
             // It keeps workshopWagesDays of its wages over its float, as the works keep their floatDays (doc 72, after
             // country5: a week's, a keeper's, held back ~5 days of its wages from its House for nothing).
+            // A House's city business (country.json `houseBusinesses`, doc 72, after iron6: the Timberland Ironworks and
+            // the foundry) the same: its keeper a post paid its wage, the profit its House's.
             const auto* p = position(payer.substr(5));
-            const auto* workshop = p ? items::farmPeople().workshop(p->work.cell) : nullptr;
-            const auto cap = float_ + (workshop ? std::int64_t(rule("workshopWagesDays")) : wagesDays) * owed;
+            std::string building;
+            const auto house = houseOfPost(p, &building);
+            const bool workshop = p && items::farmPeople().workshop(p->work.cell);
+            const auto cap = float_ + (!house.empty() ? std::int64_t(rule("workshopWagesDays")) : wagesDays) * owed;
             std::int64_t profit = 0;
-            if (workshop)
+            if (!house.empty())
             {
-                auto& w = loopToday_.workshops[workshop->area];
+                auto& w = loopToday_.workshops[building];
                 w.owed += owed;
                 w.paid += paid;
                 const auto excess = cash(payer) - cap;
-                const auto to = houseFund(workshop->house);
+                const auto to = houseFund(house);
                 if (excess > 0 && account(to) && cash(to) <= MoneyCap - excess &&
-                    shift(payer, to, "", 0, excess, "a workshop's takings to its House: " + workshop->house))
+                    shift(payer, to, "", 0, excess,
+                          (workshop ? "a workshop's takings to its House: " : "a House's business's takings to its House: ") + house))
                 {
                     profit = excess;
                     w.toHouse += excess;
-                    loopToday_.rents[workshop->house] += excess;
+                    loopToday_.rents[house] += excess;
                     if (const auto* e = estatesOn() ? estateOfFund(to) : nullptr)
                         loopToday_.estates[e->id].rents += excess;
                 }
@@ -2021,11 +2047,36 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
         const int have = stock(*account(till), ware);
         if (have >= shelf)
             continue;
+        // Its craft: the first that makes it, or, where that one's inputs are not to be had, the first after it whose are
+        // (doc 72, after iron6: the butcher's sheep when the pig farms have no pigs, the plasterworks' sheepskin when the
+        // warrens have no pelts). An input is to be had on the till's shelves, from a city maker (`suppliers`), or in
+        // what the Country or the farms hold.
         const items::Craft* craft = nullptr;
         if (business)
+        {
+            const auto toHand = [&](const items::Craft& k) {
+                return std::all_of(k.in.begin(), k.in.end(), [&](const auto& in) {
+                    const int lack = in.second - stock(*account(till), in.first);
+                    return lack <= 0 || countryLeft(in.first) >= lack || !citySellers(business->id, in.first).empty();
+                });
+            };
+            // (Its inputs judged only where another craft makes it too: most wares have one, and this runs every hour.)
+            std::vector<const items::Craft*> makers;
             for (const auto* k : items::craftsFor(business->id))
-                if (!craft && std::any_of(k->out.begin(), k->out.end(), [&](const auto& o) { return o.first == ware; }))
-                    craft = k;
+                if (std::any_of(k->out.begin(), k->out.end(), [&](const auto& o) { return o.first == ware; }))
+                    makers.push_back(k);
+            if (!makers.empty())
+            {
+                craft = makers.front();
+                if (makers.size() > 1)
+                    for (const auto* k : makers)
+                        if (toHand(*k))
+                        {
+                            craft = k;
+                            break;
+                        }
+            }
+        }
         if (!craft && storeUse(keeper, ware) != StoreUse::Resell)
             continue;
         wants.push_back({ware, shelf - have, double(have) / shelf, craft});
