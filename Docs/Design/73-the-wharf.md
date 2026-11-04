@@ -575,3 +575,43 @@ cheaper goods after it. A good can't be both imported and taken (dropped from bo
 ore are on the imports list (off), so to take their piles they must move to `takes`. Not re-run: the smoke's numbers
 are before these fixes (the basket a little smaller on the days the Wharf lands one of its goods, the treasury a little
 fuller).
+
+### wharf7's 3-year run (2026-11-04): stopped on day 44, the realm's money drained
+
+The Wharf merged into ridgemere2 (01862eb; the Editor's economy tests brought up to `city_loop.json` and the wharf
+rules, e18a6a9: three of them failed after the rename, unseen behind `content.test.mjs`'s known Greyfen failure). The
+3-year run on build 63's export (`export63`, `--farms 0`: the first area on day 0, one every 28 days, as producers7)
+was stopped by hand on day 44: the days had slowed from 2-9 s to 40-50 s of wall time (the run would have taken some
+ten hours), and the verdict was already plain. Report, patch and log: `artifacts/economy/r2/wharf7-report.md` (44 days;
+its full log's last, cut line dropped).
+
+Days 0-43, against producers7's same days:
+
+| | wharf7 | producers7 |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| The realm's money, day 0 -> 43 | 48,914 -> 8,366p | 51,220 -> 55,463p |
+| The beyond paid in / was paid, a day | 272p / 1,342p (net -1,070p) | - |
+| The treasury's least | 200p (from day 10) | 1,021p |
+| Hunger | 425 hours at most, ~650 households short a day (1,277 on day 43) | none (0.4 short) |
+| Estates' posts | short every night (day 43: 27p of 824p paid) | never short |
+| Wage support, a day | 9p | 228p |
+| Areas on, day 43 | 2 | 2 |
+
+**Why.** Every landing pays 90% of its takings beyond the realm (`bookWharfLanding`), not only the listed imports.
+With the farms switching on one area every 28 days, the Wharf is still the realm's farmer for most goods (as the
+Country was), and now each of those sales leaves the realm: apples 114 a day landed (114p), raw meat 112p, pig 104p,
+firewood 88p, fish 85p, shellfish 74p, eggs 74p (listed off, landed anyway as an area good not yet on), honey 68p,
+milk 64p, meal 62p, butter 61p... about 1,340p a day out. What comes back is capped at `wharfExportMost` (300p a
+day) and the credit sat at its cap (10,000p) from day 5, so what the realm paid over it was simply lost ("the realm
+overpaid"). The Country kept those takings in Grayrock's purse, so the estates' posts were paid; now Grayrock keeps
+10% and its posts go unpaid, the treasury runs to its floor, wages and food money run out, and the hungry slow the
+ticks. The 60-day smoke didn't show it because its farms came on one area a day.
+
+Not measured (the run stopped): the takes, aqua vitae and offal, far communities' orders, the steady state with every
+area on, prices.
+
+What it needs (not done here, for the user): a landing should sink only where the realm truly imports, i.e. the
+listed imports that are on (and perhaps the goods no area grows), with an area good not yet switched on landed as the
+Country did, its takings kept in the realm; or the sink bounded by what the beyond pays in (the credit, so the valve
+nets to about 0 a day), not left to run while the credit sits at its cap.

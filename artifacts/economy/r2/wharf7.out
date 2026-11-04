@@ -1,0 +1,58 @@
+  money at the start (50252p in all; 42 residents short of a day's food money): holder, total, how many, median
+    adults without work: 1616p, 46, 32p
+    capital's treasury: 1000p, 1, 1000p
+    children: 0p, 4, 0p
+    guards: 262p, 14, 15p
+    home stores: 0p, 896, 0p
+    merchants: 13416p, 102, 136p
+    outside: 0p, 1, 0p
+    paid civilians: 11055p, 300, 38p
+    till: 13416p, 102, 136p
+    unpaid civilians: 9487p, 93, 84p
+  the farms' switch: the first area on day 0 (the world is on day 0), one every 28 days
+economy level full: artifacts/economy/r2/wharf7.full.jsonl.gz
+  run day 1: 2.00237 s wall, 288000 ticks; 2.00237 s so far
+  run day 2: 1.50113 s wall, 288000 ticks; 3.5035 s so far
+  run day 3: 1.37577 s wall, 288000 ticks; 4.87927 s so far
+  run day 4: 1.35358 s wall, 288000 ticks; 6.23284 s so far
+  run day 5: 1.46612 s wall, 288000 ticks; 7.69896 s so far
+  run day 6: 1.84428 s wall, 288000 ticks; 9.54324 s so far
+  run day 7: 1.29185 s wall, 288000 ticks; 10.8351 s so far
+  run day 8: 1.42439 s wall, 288000 ticks; 12.2595 s so far
+  run day 9: 1.4182 s wall, 288000 ticks; 13.6777 s so far
+  run day 10: 1.60468 s wall, 288000 ticks; 15.2824 s so far
+  run day 11: 1.76463 s wall, 288000 ticks; 17.047 s so far
+  run day 12: 2.02483 s wall, 288000 ticks; 19.0718 s so far
+  run day 13: 3.15208 s wall, 288000 ticks; 22.2239 s so far
+  run day 14: 2.2545 s wall, 288000 ticks; 24.4784 s so far
+  run day 15: 2.6683 s wall, 288000 ticks; 27.1467 s so far
+  run day 16: 2.89526 s wall, 288000 ticks; 30.042 s so far
+  run day 17: 3.02844 s wall, 288000 ticks; 33.0704 s so far
+  run day 18: 3.11779 s wall, 288000 ticks; 36.1882 s so far
+  run day 19: 3.28151 s wall, 288000 ticks; 39.4697 s so far
+  run day 20: 5.67639 s wall, 288000 ticks; 45.1461 s so far
+  run day 21: 3.55807 s wall, 288000 ticks; 48.7041 s so far
+  run day 22: 3.70164 s wall, 288000 ticks; 52.4058 s so far
+  run day 23: 3.9338 s wall, 288000 ticks; 56.3396 s so far
+  run day 24: 4.19307 s wall, 288000 ticks; 60.5327 s so far
+  run day 25: 4.4203 s wall, 288000 ticks; 64.953 s so far
+  run day 26: 5.06809 s wall, 288000 ticks; 70.021 s so far
+  run day 27: 7.93336 s wall, 288000 ticks; 77.9544 s so far
+  run day 28: 8.15039 s wall, 288000 ticks; 86.1048 s so far
+  run day 29: 5.85206 s wall, 288000 ticks; 91.9569 s so far
+  run day 30: 6.84822 s wall, 288000 ticks; 98.8051 s so far
+  run day 31: 6.99531 s wall, 288000 ticks; 105.8 s so far
+  run day 32: 6.20396 s wall, 288000 ticks; 112.004 s so far
+  run day 33: 6.23776 s wall, 288000 ticks; 118.242 s so far
+  run day 34: 9.78762 s wall, 288000 ticks; 128.03 s so far
+  run day 35: 9.00841 s wall, 288000 ticks; 137.038 s so far
+  run day 36: 6.94537 s wall, 288000 ticks; 143.984 s so far
+  run day 37: 17.3139 s wall, 288000 ticks; 161.297 s so far
+  run day 38: 48.7621 s wall, 288000 ticks; 210.059 s so far
+  run day 39: 39.6014 s wall, 288000 ticks; 249.661 s so far
+  run day 40: 18.2359 s wall, 288000 ticks; 267.897 s so far
+  run day 41: 52.5514 s wall, 288000 ticks; 320.448 s so far
+  run day 42: 43.0147 s wall, 288000 ticks; 363.463 s so far
+  run day 43: 9.14139 s wall, 288000 ticks; 372.604 s so far
+  run day 44: 22.4306 s wall, 288000 ticks; 395.035 s so far
+killed by hand on day 43 (the realm's money draining through the Wharf, days taking 40-50 s)
