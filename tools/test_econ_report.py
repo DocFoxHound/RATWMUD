@@ -167,6 +167,28 @@ class ReportTests(unittest.TestCase):
             self.assertIn("the estates' rents 44p (House Timberland 44p)", text)
             self.assertIn('its goods to the shops 600p', text)
             self.assertIn("its posts 790p of 800p owed (the sea trade 440p, 55 posts, the Houses' people 350p, 44 posts)", text)
+            self.assertNotIn("The Houses' estates (a day", text, 'no estates split: no table')
+
+    def test_the_estates(self):
+        # Doc 72, Phase 6: each House's estate a row, a day: its rents, the Crown's grants, its posts paid of owed and the
+        # nights short, what it bought, its purse.
+        estates = {'grayrock': {'house': 'Grayrock', 'rents': 20, 'grants_in': 280, 'grants_out': 0, 'posts_owed': 476,
+                                'posts_paid': 470, 'posts': 58, 'spent': 0, 'moved': 0, 'purse': 500},
+                   'crown': {'house': 'the Crown', 'rents': 490, 'grants_in': 0, 'grants_out': 280, 'posts_owed': 94,
+                             'posts_paid': 94, 'posts': 11, 'spent': 30, 'moved': 0, 'purse': 900}}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, None, econ_more={'country': 500, 'country_sales': 176, 'country_rents': 0,
+                                                             'country_rents_by_house': {}, 'country_posts_owed': 570,
+                                                             'country_posts_paid': 564, 'country_posts_by_rule': {},
+                                                             'country_posts_held': {}, 'country_spent': 30, 'estates': estates})
+            out = root / 'report.md'
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            text = out.read_text()
+            self.assertIn("The Houses' estates (a day over the 2 days they were split", text)
+            self.assertIn('| House Grayrock | 58 | 20 | 280 | 0 | 470/476 | 2 | 0 | 500 -> 500 (least 500) |', text)
+            self.assertIn('| the Crown | 11 | 490 | 0 | 280 | 94/94 | 0 | 30 | 900 -> 900 (least 900) |', text)
+            self.assertIn("Its own purse (the wharf's, House Grayrock's; the other estates' below): 500 -> 500p", text)
 
     def test_the_land_rent(self):
         # Doc 72, open question 2: a food farm's land rent in the farms' table, by farm with its House and what is left over

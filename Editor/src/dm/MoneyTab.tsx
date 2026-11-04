@@ -9,15 +9,19 @@ const p = (n: number | null | undefined) => n === null || n === undefined ? '—
 const title = (id: string) => id.replace(/^(house|stores|town):/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
 /** (`me` is taken for the tabs' sake; the money view is the same for every role.) */
-// The funds' names (docs 67, 68): the Country's purse, carriage where a world has no carters' yard, the old store fund.
+// The funds' names (docs 67, 68): the Country's purse, carriage where a world has no carters' yard, the old store fund;
+// the Houses' estates (doc 72, Phase 6: estate:<id>; Grayrock's is the Country's purse, the wharf's).
+const ESTATES: Record<string, string> = {greatly: 'House Greatly', timberland: 'House Timberland', fell: 'House Fell', crown: 'The Crown'};
 function fundName(id: string) {
-    if (id === 'outside:country') return 'The Country\'s purse';
+    if (id === 'outside:country') return 'The Country\'s purse (House Grayrock\'s estate: the wharf)';
+    if (id.startsWith('estate:')) return `${ESTATES[id.slice(7)] ?? title(id.slice(7))}'s estate`;
     if (id.startsWith('outside:')) return `Outside market: ${id.slice(8)}`;
     if (id === 'fund:carriage') return 'Carriage (no carters\' yard)';
     if (id === 'fund:store') return 'The store room\'s old fund';
     return id;
 }
 function fundTitle(id: string) {
+    if (id.startsWith('estate:')) return 'Its lands\' rents in, its own people\'s wages out; the Crown\'s grants any estate short of its posts (doc 72, Phase 6)';
     if (id.startsWith('outside:')) return 'What the store room\'s draws paid it, less the gate toll; it spends it back on the city\'s goods (doc 68)';
     if (id === 'fund:carriage') return 'Carriage paid where the world has no carters\' yard to take it (doc 68, 6)';
     return id;

@@ -367,6 +367,190 @@ void itsPostsFirst()
     expect(s.conserved(), "conserved");
 }
 
+// A purse set to exactly `coins`, to or from the treasury (nothing made).
+void setPurse(Society& s, const std::string& fund, std::int64_t coins)
+{
+    const auto now = s.cash(fund);
+    const bool ok = now == coins || (now > coins ? s.operatorTransfer(fund, "treasury", "", 0, now - coins).ok
+                                                 : s.operatorTransfer("treasury", fund, "", 0, coins - now).ok);
+    expect(ok && s.cash(fund) == coins, fund + " set to " + std::to_string(coins));
+}
+
+// The city with a post of each House's people beside the docker (the wharf's): Greatly's steward, a servant in Fellhall's
+// hall, a Minor House's valet (no land: the Crown's), and a tally in the Iron Store (Timberland's, its cell named for
+// Grayrock as it was). Each a Country post at its wage (8p).
+void withHouses(AuthoredRoster& r)
+{
+    r.economy.countryReserve = 0;
+    for (auto p : {person("steward", "civilian", "serving at Greatly House", {"rm_greatly_house", 2.5, 2.5}, "home_steward"),
+                   person("maid", "civilian", "serving in the hall", {"rm_fellhall", 2.5, 2.5}, "home_maid"),
+                   person("valet", "civilian", "in service to the Carlisles", {"rm_carlisle_house", 2.5, 2.5}, "home_valet"),
+                   person("tally", "civilian", "tallying in the Iron Store", {"rm_the_grayrock_iron_store", 2.5, 2.5}, "home_tally")})
+        r.residents.push_back(p);
+}
+
+std::vector<EconomyEntry> wagesTonight(Society& s, std::int64_t day)
+{
+    run(s, double(day) + 17.99 / 24, double(day) + 18.5 / 24);
+    return s.takeJournal();
+}
+
+bool paidBy(const std::vector<EconomyEntry>& journal, const std::string& from, const std::string& to, std::int64_t coins)
+{
+    for (const auto& e : journal)
+        if (e.kind == "wages" && e.from == from && e.to == to && e.coins == coins)
+            return true;
+    return false;
+}
+
+void theHousesEstates()
+{
+    // Doc 72, Phase 6: each House its own estate purse, paying its own people; the Country's (Grayrock's: the wharf)
+    // keeps the sea trade's.
+    auto s = city(withHouses);
+    const auto estateOf = [&](const std::string& id) {
+        const auto* e = s.estateOfPost(post(s, id));
+        return e ? e->id : std::string("-");
+    };
+    expect(estateOf("docker") == "grayrock" && estateOf("steward") == "greatly" && estateOf("maid") == "fell" &&
+               estateOf("valet") == "crown" && estateOf("tally") == "timberland",
+           "each post its House's estate: by its label, then its workplace; the Minor Houses' the Crown's");
+    expect(Society::estateOfHouse("the Crown")->id == "crown" && Society::estateOfHouse("none")->grants &&
+               Society::estateFund(*Society::estateOfHouse("Grayrock")) == Society::CountryFund &&
+               Society::estateFund(*Society::estateOfHouse("Greatly")) == "estate:greatly",
+           "the Houses' land: Grayrock's estate is the Country's purse (the wharf), land no estate names the Crown's");
+    expect(s.estatesOn() && s.payOf(post(s, "steward")).payer == Society::CountryFund && s.houseFund("Greatly") == Society::CountryFund &&
+               !s.account("estate:greatly"),
+           "on by default; until the first night every post and rent the Country's purse");
+    // The first night: the purses opened, the Country's money shared by the posts' wages (five posts at 8p: a fifth each).
+    run(s, 1 + 7.9 / 24, 1 + 17.99 / 24);
+    s.takeJournal();
+    setPurse(s, Society::CountryFund, 1000);
+    const auto money = s.moneySupply();
+    auto journal = wagesTonight(s, 1);
+    for (const auto* id : {"estate:greatly", "estate:fell", "estate:timberland", "estate:crown"})
+        expect(s.account(id) && s.cash(id) == 200 - 8, std::string(id) + ": a fifth of the Country's money, less its post: " + std::to_string(s.cash(id)));
+    expect(s.cash(Society::CountryFund) >= 200 - 8, "the Country (the wharf) keeps its fifth (and its sales since): " + std::to_string(s.cash(Society::CountryFund)));
+    expect(paidBy(journal, Society::CountryFund, "docker", 8) && paidBy(journal, "estate:greatly", "steward", 8) &&
+               paidBy(journal, "estate:fell", "maid", 8) && paidBy(journal, "estate:crown", "valet", 8) &&
+               paidBy(journal, "estate:timberland", "tally", 8),
+           "each estate paid its own people");
+    const auto& night = s.loopToday();
+    expect(night.estates.at("greatly").postsPaid == 8 && night.estates.at("greatly").moved == 200 && night.estates.at("grayrock").moved == -800 &&
+               night.countryPostsOwed == 40 && night.countryPostsPaid == 40,
+           "booked by estate, and the Country's posts in all");
+    expect(s.payOf(post(s, "steward")).payer == "estate:greatly" && s.houseFund("Greatly") == "estate:greatly" &&
+               s.houseFund("Grayrock") == Society::CountryFund && s.houseFund("none") == "estate:crown",
+           "now the House's own purse");
+    expect(s.conserved() && s.moneySupply() == money, "conserved");
+
+    // The Crown's grants: Greatly 3p (5p short), the wharf none (8p short), Fell its 8p, the Crown 100p: it gives each what
+    // it lacks of tonight's posts, recorded; every post paid.
+    run(s, 2 + 7.9 / 24, 2 + 17.99 / 24);
+    s.takeJournal();
+    for (const auto& [fund, coins] : std::map<std::string, std::int64_t>{
+             {"estate:greatly", 3}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 100}, {"estate:crown", 100}})
+        setPurse(s, fund, coins);
+    journal = wagesTonight(s, 2);
+    const auto& two = s.loopToday();
+    expect(two.estates.at("greatly").grantsIn == 5 && two.estates.at("grayrock").grantsIn == 8 && two.estates.at("crown").grantsOut == 13 &&
+               two.estates.at("fell").grantsIn == 0,
+           "the Crown granted Greatly 5p and the wharf 8p, Fell nothing");
+    expect(two.countryPostsPaid == 40 && paidBy(journal, "estate:greatly", "steward", 8) && paidBy(journal, Society::CountryFund, "docker", 8),
+           "every post paid in full");
+    expect(s.cash("estate:crown") == 100 - 13 - 8 && s.cash("estate:timberland") == 92, "the Crown's own post first; Timberland's own");
+    bool recorded = false;
+    for (const auto& e : journal)
+        recorded = recorded || (e.from == "estate:crown" && e.to == "estate:greatly" && e.coins == 5 &&
+                                e.kind.rfind("a grant from the Crown's levy", 0) == 0);
+    expect(recorded && s.conserved(), "the grant in the journal; conserved");
+
+    // The Crown short too: 10p, its own 8p first, the 2p over shared by what each lacks (8p each: 1p each).
+    run(s, 3 + 7.9 / 24, 3 + 17.99 / 24);
+    s.takeJournal();
+    for (const auto& [fund, coins] : std::map<std::string, std::int64_t>{
+             {"estate:greatly", 0}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 8}, {"estate:crown", 10}})
+        setPurse(s, fund, coins);
+    journal = wagesTonight(s, 3);
+    expect(paidBy(journal, "estate:crown", "valet", 8) && s.loopToday().estates.at("greatly").grantsIn == 1 &&
+               s.loopToday().estates.at("grayrock").grantsIn == 1 && s.loopToday().countryPostsPaid == 8 * 3 + 1 + 1,
+           "the Crown's own post paid; the rest shared; Greatly and the wharf paid a penny each");
+    expect(s.conserved(), "conserved");
+
+    // Its posts first: an estate buys (the basket, its tables) only with what is over countryPostsDays nights of its posts.
+    const auto bought = [&](std::int64_t purse) {
+        run(s, 4 + 7.9 / 24, 4 + 7.99 / 24);
+        setPurse(s, "estate:greatly", purse);
+        run(s, 4 + 7.99 / 24, 4 + 17.99 / 24);
+        const auto found = s.loopToday().estates.find("greatly");
+        return std::pair{found == s.loopToday().estates.end() ? std::int64_t(0) : found->second.spent, s.cash("estate:greatly")};
+    };
+    const auto [none, kept] = bought(16);
+    expect(none == 0 && kept == 16, "two nights of its post: it buys nothing");
+    auto t = city(withHouses);
+    run(t, 1 + 7.9 / 24, 1 + 18.5 / 24);            // (The purses opened.)
+    run(t, 1 + 18.5 / 24, 2 + 7.99 / 24);
+    setPurse(t, "estate:greatly", 400);
+    run(t, 2 + 7.99 / 24, 2 + 17.99 / 24);
+    expect(t.loopToday().estates.count("greatly") && t.loopToday().estates.at("greatly").spent > 0 && t.cash("estate:greatly") >= 16,
+           "with more, it buys, keeping its two nights: " + std::to_string(t.cash("estate:greatly")));
+    expect(t.conserved(), "conserved");
+}
+
+void theEstatesOff()
+{
+    // The rule off: today's single purse (no estate opened, every post the Country's); switched off after a split, every
+    // estate's money back in the Country's purse that night.
+    auto s = city([](AuthoredRoster& r) {
+        withHouses(r);
+        r.economy.rules["estates"] = 0;
+    });
+    run(s, 1 + 7.9 / 24, 1 + 17.99 / 24);
+    s.takeJournal();
+    setPurse(s, Society::CountryFund, 1000);
+    auto journal = wagesTonight(s, 1);
+    expect(!s.estatesOn() && !s.account("estate:greatly") && !s.account("estate:crown") && s.loopToday().estates.empty(), "no estate opened");
+    for (const auto* who : {"docker", "steward", "maid", "valet", "tally"})
+        expect(paidBy(journal, Society::CountryFund, who, 8), std::string("the Country paid ") + who);
+    expect(s.cash(Society::CountryFund) >= 1000 - 40 && s.loopToday().countryPostsPaid == 40 && s.conserved(), "from its one purse; conserved");
+
+    auto t = city(withHouses);
+    run(t, 1 + 7.9 / 24, 1 + 17.99 / 24);
+    setPurse(t, Society::CountryFund, 1000);
+    run(t, 1 + 17.99 / 24, 1 + 18.5 / 24);          // (Split: a fifth each.)
+    const auto money = t.moneySupply();
+    auto economy = t.authored().economy;
+    economy.rules["estates"] = 0;
+    t.adoptEconomy(economy);
+    expect(!t.estatesOn() && t.payOf(post(t, "steward")).payer == Society::CountryFund && t.houseFund("Greatly") == Society::CountryFund,
+           "off: the Country's purse again");
+    expect(t.cash("estate:greatly") > 0, "the estates still hold theirs until the night");
+    run(t, 1 + 18.5 / 24, 2 + 17.99 / 24);
+    t.takeJournal();
+    journal = wagesTonight(t, 2);
+    for (const auto* id : {"estate:greatly", "estate:fell", "estate:timberland", "estate:crown"})
+        expect(t.cash(id) == 0, std::string(id) + " emptied into the Country's purse");
+    expect(t.loopToday().estates.at("greatly").moved < 0, "booked");
+    expect(paidBy(journal, Society::CountryFund, "steward", 8) && paidBy(journal, Society::CountryFund, "valet", 8), "which pays every post");
+    expect(t.conserved() && t.moneySupply() == money, "conserved");
+    expect(!t.account("estate:greatly") && !t.account("estate:crown"), "the emptied purses closed");
+
+    // Switched on again: the purses open anew and share the Country's money, so every estate pays its own people that
+    // night (left open and empty they started with nothing, the Crown with nothing to grant).
+    economy.rules["estates"] = 1;
+    t.adoptEconomy(economy);
+    run(t, 2 + 18.5 / 24, 3 + 17.99 / 24);
+    t.takeJournal();
+    journal = wagesTonight(t, 3);
+    for (const auto* id : {"estate:greatly", "estate:fell", "estate:timberland", "estate:crown"})
+        expect(t.account(id) && t.cash(id) > 0 && t.loopToday().estates.at(std::string(id).substr(7)).moved > 0, std::string(id) + ": its share again");
+    expect(paidBy(journal, "estate:greatly", "steward", 8) && paidBy(journal, "estate:crown", "valet", 8) &&
+               paidBy(journal, "estate:fell", "maid", 8) && paidBy(journal, "estate:timberland", "tally", 8) &&
+               t.loopToday().countryPostsPaid == 40,
+           "on again: each estate pays its own people");
+    expect(t.conserved() && t.moneySupply() == money, "conserved");
+}
+
 void pausedNeedsBuyNothing()
 {
     auto s = city([](AuthoredRoster& r) { r.economy.needsPaused = true; });
@@ -461,6 +645,8 @@ int main()
         theSubsidyGivesWayFirst();
         aDayOfTheLoop();
         itsPostsFirst();
+        theHousesEstates();
+        theEstatesOff();
         pausedNeedsBuyNothing();
         theCountryOffSpends();
         anOlderSavesFund();

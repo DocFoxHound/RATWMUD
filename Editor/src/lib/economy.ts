@@ -142,6 +142,7 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'workshopWageMost', label: 'A workshop\'s wage rise', max: 100, unit: 'pennies at most a country workshop\'s wages drift over the world\'s, its House taking the profit (doc 72)'},
     {key: 'subsidyToNeed', label: 'Carriage subsidy only to need', max: 1, unit: 'the treasury pays the carters only what they lack of their wages', onOff: true},
     {key: 'countryPostsDays', label: 'The Country\'s posts first', max: 30, unit: 'nights of its posts\' wages the Country keeps before it buys (doc 72)'},
+    {key: 'estates', label: 'The Houses\' estates', max: 1, unit: 'each House its own estate purse, paying its own people, the Crown granting the short (doc 72, Phase 6); off: the Country\'s one purse', onOff: true},
     // The food farms' land rent (doc 72, open question 2): to the House whose land each is on, from its basket's share.
     {key: 'landRent', label: 'The farms\' land rent', max: 100, unit: '% of a food farm\'s takings to its House\'s estate each night, after its wages (the areas below have their own)'},
     {key: 'landRentFish', label: 'Land rent: fish', max: 100, unit: '% of the fishing\'s takings (House Grayrock)'},

@@ -698,6 +698,28 @@ class Society
         int rule = -1;                              // The country.json wage rule that pays it (-1: none of them).
     };
     Pay payOf(const Position& post) const;
+    // The Houses' estates (doc 72, Phase 6; items::Country::estates, the rule "estates"): each House's own purse, its
+    // lands' rents in, its people's wages out, the Crown's covering the others' short nights. With the rule off (or no
+    // estates in country.json) every one is the Country's purse, as before. An estate's purse ("estate:<id>", or the
+    // Country's for Grayrock's, which runs the wharf and the sea trade), and the estate of a House ("the Crown",
+    // "Greatly"...), of a Country post (its label's words, then its workplace's), and of a purse (nullptr: none).
+    bool estatesOn() const;
+    static std::string estateFund(const items::Estate& estate);
+    static const items::Estate* estateOfHouse(const std::string& house);
+    const items::Estate* estateOfPost(const Position& post) const;
+    static const items::Estate* estateOfFund(const std::string& fund);
+    // Where a House's money goes tonight: its estate's purse while the estates are split and it is open, else the Country's.
+    std::string houseFund(const std::string& house) const;
+    // The Country's posts held tonight (the posts payWages pays), their wages by paying purse: the Country's, or an estate's.
+    std::map<std::string, std::int64_t> countryPostsOwed() const;
+    // What a Country or estate purse keeps before it buys (its basket, the Houses' tables, the patrons): its reserve (the
+    // Country's countryReserve; split, each estate its share by its posts' wages) and countryPostsDays nights of its
+    // posts; the Crown's also what the others lack of their own nights (its grants to come). `owed`: countryPostsOwed().
+    std::int64_t countryKeep(const std::string& fund, const std::map<std::string, std::int64_t>& owed) const;
+    // The estates' night, before the wages (doc 72, Phase 6): open their purses (the first time, the Country's money split
+    // between them by their posts' wages), and the Crown's grants to those that can't pay tonight's posts; with the rule
+    // off, any estate's money back in the Country's purse.
+    void settleEstates();
     // The households that buy together (doc 68, 3): by home, joined by kin (a child under 16, a spouse), by a key each.
     // (Public for world_check's --economy-detail, which reads it.)
     std::map<std::string, std::vector<std::string>> households() const;
@@ -920,7 +942,7 @@ class Society
         std::map<std::string, Luxuries> luxuryClasses;
         int luxuriesHouses = 0;
         std::int64_t luxuriesHousesSpent = 0;
-        bool housesLuxuriesDone = false;
+        std::set<std::string> housesLuxuriesDone;   // (The purses whose tables have bought today: the Country's, the estates'.)
         // The country workshops (doc 72, Phase 5), by building: tonight's wages owed and paid, and what went to its House.
         struct Workshop
         {
@@ -990,6 +1012,15 @@ class Society
         std::int64_t countrySales = 0, countryPostsOwed = 0, countryPostsPaid = 0;
         std::map<std::string, std::int64_t> countryPostsByRule;
         std::map<std::string, int> countryPostsHeld;           // The posts held tonight, by the same rule.
+        // The Houses' estates (doc 72, Phase 6), by estate id: what came in (its House's rents, works' and farms'; the
+        // Country's own sales are the wharf's), the Crown's grants in and out, tonight's posts owed and paid and how many,
+        // what it bought (its basket, its tables, its patrons), and the money moved when the purse was split or folded.
+        struct Estate
+        {
+            std::int64_t rents = 0, grantsIn = 0, grantsOut = 0, postsOwed = 0, postsPaid = 0, spent = 0, moved = 0;
+            int posts = 0;
+        };
+        std::map<std::string, Estate> estates;
     };
     const LoopDay& loopToday() const { return loopToday_; }
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a

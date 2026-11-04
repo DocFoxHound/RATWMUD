@@ -290,7 +290,7 @@ void aCommunityWorkshop()
     sold(false, true);
     sold(true, false);
     // Its crew paid from its till at 18:00, at the city's wages; what is over its float and a week of wages to its
-    // House's estate (the Country's purse), booked by House; nothing to its keeper as profit; conserved.
+    // House's estate (its own purse: doc 72, Phase 6), booked by House; nothing to its keeper as profit; conserved.
     {
         auto t = Town(city(soapworks(1000)));
         auto& s = t.s;
@@ -307,7 +307,7 @@ void aCommunityWorkshop()
             if (e.kind == "wages" && e.from == till)
                 wages[e.to] += e.coins;
             else if (e.kind == "a workshop's takings to its House: the Crown" && e.from == till &&
-                     e.to == Society::CountryFund)
+                     e.to == "estate:crown")
                 toHouse += e.coins;
             else if (e.kind == "profit" && e.from == till)
                 profit += e.coins;

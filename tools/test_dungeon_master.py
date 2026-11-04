@@ -1083,7 +1083,7 @@ class MoneyTests(Fixture):
     def test_where_the_money_is(self):
         someone = greyfen()['people'][0]['id']
         society = {'accounts': {'treasury': {'cash': 500, 'stock': {}}, 'house:fell': {'cash': 40, 'stock': {}},
-                                'till:job:x': {'cash': 12, 'stock': {}}, 'caravan:cv1': {'cash': 7, 'stock': {}},
+                                'estate:crown': {'cash': 30, 'stock': {}}, 'till:job:x': {'cash': 12, 'stock': {}}, 'caravan:cv1': {'cash': 7, 'stock': {}},
                                 someone: {'cash': 3, 'stock': {}}},
                    'books': {'month': 1}}
         with W.connect('dev', 'game', dbname=self.names['dev']) as game:
@@ -1092,7 +1092,8 @@ class MoneyTests(Fixture):
             game.execute('INSERT INTO game.events (world_id, game_time, kind, actor, target, cell, game_day, detail) '
                          "VALUES ('greyfen', 1, 'reckoning', 'treasury', 'town:x:church', '', 28, %s)", ("X's reckoning",))
         money = self.dm.money('dev')
-        self.assertEqual((562, 500), (money['total'], money['capital']))
+        self.assertEqual((592, 500), (money['total'], money['capital']))
+        self.assertEqual([{'id': 'estate:crown', 'cash': 30}], money['funds'], "a House's estate among the funds (doc 72, Phase 6)")
         self.assertEqual([{'id': 'house:fell', 'cash': 40}], money['houses'])
         self.assertEqual({'count': 1, 'total': 12}, money['tills'])
         self.assertEqual(7, money['road']['caravans'])

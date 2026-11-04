@@ -418,7 +418,8 @@ void Society::payRents()
     // The estates' rent (Docs/Design/72-pulling-the-country-into-the-world.md, 3, option 1; the user, 2026-11-03: "each
     // works pays its own crew and sends its surplus to the noble House whose land it is on"): after tonight's wages, what
     // a works' till holds over its float (two days of its wages) goes to its House's estate. At first every House's
-    // estate is the Country's one purse ("the Houses' estates and the sea trade"), booked by House in the reports. A till
+    // estate was the Country's one purse ("the Houses' estates and the sea trade"), booked by House in the reports; since
+    // Phase 6 each House has its own (houseFund: its estate's purse, the Country's while the estates are one). A till
     // short of its wages keeps all it has (its rent is what is over).
     // The food farms' land rent (doc 72, open question 2, taken once country3 showed the Country short of its posts): a
     // farm that paid its crew in full tonight pays its rule's percent of its takings since the last night (landRentDue) to
@@ -426,6 +427,7 @@ void Society::payRents()
     // spent (farmsBuy keeps it back), never its wages or its float. Short of its wages, it pays none, and those takings'
     // rent is let go.
     const bool purse = account(CountryFund) != nullptr;
+    const bool split = estatesOn();
     for (auto& f : farms_)
     {
         const auto due = f.rents() ? 0 : landRentDue(f);
@@ -434,26 +436,32 @@ void Society::payRents()
             continue;
         const auto house = f.house.empty() ? std::string("none") : f.house;   // (An area with no House named.)
         const auto named = house == "the Crown" ? house : "House " + house;
+        const auto to = houseFund(house);
+        const auto* estate = split ? estateOfFund(to) : nullptr;
         auto& today = loopToday_.farms[f.def->id];
         const auto over = cash(f.till) - f.reserve;
         if (f.rents())
         {
-            if (over <= 0 || cash(CountryFund) > MoneyCap - over)
+            if (over <= 0 || cash(to) > MoneyCap - over)
                 continue;
-            if (shift(f.till, CountryFund, "", 0, over, "an estate's rent: " + named))
+            if (shift(f.till, to, "", 0, over, "an estate's rent: " + named))
             {
                 today.rent += over;
                 loopToday_.rents[house] += over;
+                if (estate)
+                    loopToday_.estates[estate->id].rents += over;
             }
             continue;
         }
         const auto rent = std::min(due, over);
-        if (rent <= 0 || today.wagesPaid < today.wagesOwed || cash(CountryFund) > MoneyCap - rent)
+        if (rent <= 0 || today.wagesPaid < today.wagesOwed || cash(to) > MoneyCap - rent)
             continue;
-        if (shift(f.till, CountryFund, "", 0, rent, "a land rent: " + named))
+        if (shift(f.till, to, "", 0, rent, "a land rent: " + named))
         {
             today.rent += rent;
             loopToday_.landRents[house] += rent;
+            if (estate)
+                loopToday_.estates[estate->id].rents += rent;
         }
     }
 }

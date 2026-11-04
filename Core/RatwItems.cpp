@@ -607,6 +607,23 @@ Catalog build()
             if (!rule.payer.empty() && !rule.words.empty())
                 c.country.wages.push_back(std::move(rule));
         }
+        // The Houses' estates (doc 72, Phase 6): an id and a House each, none twice; at most one grants.
+        for (const auto& e : country.object("estates").array("list"))
+        {
+            Estate estate{e.string("id"), e.string("house"), e.string("name"), e.string("fund"), e.boolean("grants"), {}};
+            if (estate.name.empty())
+                estate.name = estate.house;
+            for (const auto& w : e.array("words"))
+                if (!w.asString({}).empty())
+                    estate.words.push_back(w.asString({}));
+            const auto& all = c.country.estates;
+            const bool idOk = !estate.id.empty() && estate.id.size() <= 40 &&
+                              std::all_of(estate.id.begin(), estate.id.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
+            if (idOk && !estate.house.empty() &&
+                std::none_of(all.begin(), all.end(), [&](const Estate& x) { return x.id == estate.id || x.house == estate.house; }) &&
+                (!estate.grants || std::none_of(all.begin(), all.end(), [](const Estate& x) { return x.grants; })))
+                c.country.estates.push_back(std::move(estate));
+        }
         const auto& food = country.object("food");
         c.country.foodDays = std::clamp(food.number("days", 2), .5, 10.);
         c.country.shortDays = std::clamp(food.number("shortDays", 1), .1, c.country.foodDays);

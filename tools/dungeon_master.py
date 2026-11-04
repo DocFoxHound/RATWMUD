@@ -977,8 +977,9 @@ class DungeonMaster:
         houses = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('house:')]
         tills = {k: v for k, v in accounts.items() if k.startswith('till:')}
         # Facility funds (fund:...) and the markets outside the city (outside:..., the Country's purse: doc 68, 2): what the
-        # store room's draws paid; and the carters' takings (doc 68, 6), their yards' tills.
-        funds = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith(('fund:', 'outside:'))]
+        # store room's draws paid; the Houses' estates (estate:..., doc 72, Phase 6); and the carters' takings (doc 68, 6), their
+        # yards' tills.
+        funds = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith(('fund:', 'outside:', 'estate:'))]
         import item_catalog
         carters = [{'id': f'till:job:{n["id"]}', 'name': n['name'], 'label': n['workLabel'], 'cash': accounts[f'till:job:{n["id"]}']}
                    for n in project.get('people', []) if n.get('role') == 'merchant' and f'till:job:{n["id"]}' in accounts
