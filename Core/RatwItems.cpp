@@ -163,6 +163,7 @@ void readFarms(Catalog& c, const json::Value& file)
             farm.kind = x.string("kind");
             farm.area = area.id;
             farm.house = x.string("house");
+            farm.landRent = x.string("landRent");
             if (!id(farm.id) || !farmIds.insert(farm.id).second)
                 continue;
             farm.keepers = std::clamp(int(x.object("crew").number("keepers", 1)), 0, 100);
@@ -186,6 +187,8 @@ void readFarms(Catalog& c, const json::Value& file)
                 make.in = std::clamp(int(m.number("in", 1)), 1, 1000);
                 make.share = std::clamp(int(m.number("share", 100)), 0, 100);
                 make.store = std::clamp(int(m.number("store", 0)), 0, 100000);
+                if (std::array<double, 4> v{}; four(m["aDay"], v))
+                    make.aDay = v;
                 if (known(make.good) && farm.yield.count(make.from) && make.good != make.from && make.store > 0)
                     farm.makes.push_back(std::move(make));
             }

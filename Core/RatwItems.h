@@ -189,6 +189,8 @@ inline constexpr RuleInfo Rules[] = {
     {"landRentFruit", 0, 100, 4},        // The orchards' and vines' (the vineyards' winter margin ~9%).
     {"landRentGrain", 0, 100, 28},       // The grain's (~57%).
     {"landRentSalt", 0, 100, 8},         // The salt's (its autumn margin ~17%).
+    // A farm's own over its area's (country_farms.json, a farm's `landRent`: landRent<Its>; doc 72, Phase 4's payer).
+    {"landRentDairy", 0, 100, 24},       // The cattle and dairy farms' (their margin 67-70% in country3c; the pigs' 41%).
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): what it holds over its cap and
     // surplusKeep at 18:00, after its posts, the short tills' wages and the alms, goes back out each day:
     {"surplus", 0, 1, 1},                // On: the surplus to public works orders and the poorest households.
@@ -307,6 +309,7 @@ struct FarmDef
 {
     std::string id, kind, area;
     std::string house;                              // The noble House whose land it is on ("": its area's), for its rent.
+    std::string landRent;                           // Its own land rent rule's name, landRent<This> ("": its area's).
     int keepers = 1, hands = 0;                     // Its crew (virtual posts: nobody holds them yet).
     int keeper = -1, hand = -1;                     // Its wages a day (-1: its area's, then the defaults').
     std::int64_t reserve = 0, purse = 0;            // Its till's float and its crew's settled purse, made when it is founded.
@@ -317,11 +320,17 @@ struct FarmDef
     // What it makes of a yield it can't sell before it spoils (doc 72, the user's decision after country3b: the dairies'
     // spare milk into butter and cheese): each morning, what of `from` is past keeping goes to these in order, `share`
     // percent of it to each (the last all that is left), `in` pieces of it a piece of `good`, while its store holds under
-    // `store` pieces of `good`; what none takes spoils as before.
+    // `store` pieces of `good`; what none takes spoils as before. `aDay` (doc 72, Phase 4's follow-up: the shops wanted
+    // far more butter and cheese than the spare made): pieces of `from` a day at each season's middle, blended, milked for
+    // this making alone and never offered to the shops (the cows kept for the cheese room), made each morning while its
+    // store has room (what it can't take that morning isn't milked for it), journalled "made at <farm> of its own
+    // <from>"; all zero: none, only the spare.
     struct Make
     {
         std::string good, from;
         int in = 1, share = 100, store = 0;
+        std::array<double, 4> aDay{};
+        bool dedicated() const { return aDay[0] > 0 || aDay[1] > 0 || aDay[2] > 0 || aDay[3] > 0; }
     };
     std::vector<Make> makes;
 };

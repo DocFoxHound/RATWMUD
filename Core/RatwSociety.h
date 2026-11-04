@@ -775,6 +775,7 @@ class Society
         double yieldScale = 1;                      // Its area's percent times its own.
         std::int64_t reserve = 0, purse = 0;        // Its float (what its till keeps before its basket), its crew's settled purse.
         std::map<std::string, double> grown, eaten;   // The fractions of a piece carried to tomorrow (not saved).
+        std::map<std::string, double> making;       // Its makes' own milk (`aDay`) carried, by the good made (not saved).
         double hunger = 0;                          // Its crew's nourishment owed (a day's at most; not saved).
         double takingsCarry = 0;                    // The fraction of a penny its store draws owe it, or it them (not saved).
         // A works (doc 72, Phase 0: its area's `works`): it sends its rent each night to the House whose land it is on
@@ -826,6 +827,9 @@ class Society
     // A farm's `makes` (country_farms.json, doc 72: the dairies' spare milk into cheese and butter) of `spare` pieces of
     // `from` past keeping this morning: what of it it used.
     int makeOfSpare(FarmNow& farm, const std::string& from, int spare);
+    // Its makes' own yields (`aDay`, doc 72, Phase 4's follow-up: the cows milked for the cheese room) this morning, at
+    // `working` of its crew: made at once, while each store has room; never in the till as milk. What it made.
+    int makeOfOwn(FarmNow& farm, double working);
     std::int64_t landRentDue(const FarmNow& farm) const;
     // The share of the Country's own people (country_farms.json `estatePeople` and `otherWorkers`) still eating at the
     // farms' table: less the crews of the works whose areas are on, who buy their food in the shops (doc 72, Phase 3).

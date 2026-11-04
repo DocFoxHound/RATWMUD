@@ -1,7 +1,7 @@
 {
  "format": "ratw-country-farms",
  "version": 4,
- "about": "The Country's food farms and other works as they would be placed (Docs/Design/71-the-country-s-industries.md). Written by tools/country_industry.py from the 12-year run (settled years 4-12); Core reads it (items::farms) as the defaults a world's own settings change (live.economy.farms: Atlas's Economy page and the DM's Economy tab, per area and per farm). An area: `on` (null: as `defaults.schedule` says; true or false: so, whatever the schedule; on, its goods go into country_off and only its farms sell them), `yieldScale` (percent, on all its farms' yields), `crewScale` (percent, on all its farms' hands, rounded half up), `wages` (pennies a day for its farms' keepers and hands; null: the defaults'), `price` ('year': the farms sell from store at `priceFactor` percent of the catalogue all year; 'season': at the season's price, as the store room does). A farm: `crew` (keepers and hands; `minHands` is the smallest sensible crew), `wages` (null: the area's, then the defaults'; fixed, not drifting: the basket takes what is over them), `basketADay` (the design's mean: what the till spends a day on the city's goods, their carriage out included, from what it holds over its wages and `reserve`), `reserve` (pennies its till keeps before its basket: two days of its wages, and a lean season's shortfall if it has one; its float, created when its area first goes on), `purse` (its crew's household's settled purse, created with it), `yield` (pieces a day of each good, the value at each season's middle day for Spring, Summer, Autumn and Winter, blended between them by Society::seasonal as country.json's seasons are; their blend's season means are the doc's 2.4 table), `makes` (doc 72, the user's decision after country3b: what it makes of a yield past keeping, before it spoils, each morning: the dairies' spare milk, most the morning after a Restday, half to cheese at 4 milk a piece, crafts.json's dairy craft, the rest to butter at 2, recipes.json's; while its store holds under `store` pieces of each, about its keeping days of a mean day's making; nothing sold, no money; the rest spoils), `table` (what the Country's own people, `defaults.estatePeople` and `otherWorkers`, eat of it a day, the same way: no dependants until families are placed). Precedence: a farm's own setting, then its area's, then the defaults. The yields are the city's draws after the switch (the crews' own food among them), what the Country's own people eat, and `slack`. `schedule`: the areas go on one at a time in `order`, `every` days apart, the first on day `start` (the world's calendar day; -1: none). `basket`: the farms' basket's goods and shares; `countryBasket`: the Country's basket once the farms take the food (the goods the farms don't buy and no food or drink, in its shares now; since country3b the farms' building goods too, at 0.53 of the farms' shares: the land rent moved ~340p a day from the farms' baskets to the Country's, and the Houses keep up their farms' buildings with it, doc 72), blended in as the areas go on. `switchTrades`: the trades whose orders the switch takes (the economy file's unpaid support, the switch's). `footprint`: own_tiles are the farm's own ground (fields, orchard, vines, meadow, steading, pans); shared_range_tiles is open grazing, heath or woodland its herds share with the wild. `distance` is from Ridgemere, the realm's north-west corner (near: within 2 cells, middle: 3-8, far: 9 or more). An area with `works` true (Docs/Design/72-pulling-the-country-into-the-world.md, Phases 0 and 2: the fuel area, the woods and the peat) holds works, not food farms: the same settings and the same till, crew and founding, but no basket: after its wages each night what its till holds over its `reserve` is its rent, sent to the House whose land it is on (`house`, the area's or a works' own; at first all into the Country's purse, \"the Houses' estates and the sea trade\", booked by House). Its yields are sized on the Country's sales to the shops of their goods (the country1 run, years 2-3) + 5%; firewood and peat together the fuel the Country sold, the households taking either. Phase 3's stone area (stone, clay and sand, House Greatly's): the granite quarry (1 + 1 since country3, whose year 3 took it 30-36p a day against a 1 + 2 crew's 36p; its stone since country3b to the mason's 24.9 a day before the land rent + 5%, the Country's basket buying the builders' goods back) and the two clay pits (one hand each, no keeper; the game's pit gives clay and sand), flat across the year at country2's sales (years 2-3) + 5%; limestone and lime stay the Country's. A food area's `house` (doc 72, open question 2): the House whose land its farms are on, for their land rent (country.json's rule landRent, an area's own landRent<Area> over it: a percent of a farm's takings each night, after its wages and from what is over its `reserve`, the share its basket would spend; into the same purse, booked by House): Fell the orchards, vines and hives (fine wines, liquors and fruit goods: doc 67, R27), Grayrock the fishing (the wharf, R28), the Crown the grain, the herds and the salt (no House's trade).",
+ "about": "The Country's food farms and other works as they would be placed (Docs/Design/71-the-country-s-industries.md). Written by tools/country_industry.py from the 12-year run (settled years 4-12); Core reads it (items::farms) as the defaults a world's own settings change (live.economy.farms: Atlas's Economy page and the DM's Economy tab, per area and per farm). An area: `on` (null: as `defaults.schedule` says; true or false: so, whatever the schedule; on, its goods go into country_off and only its farms sell them), `yieldScale` (percent, on all its farms' yields), `crewScale` (percent, on all its farms' hands, rounded half up), `wages` (pennies a day for its farms' keepers and hands; null: the defaults'), `price` ('year': the farms sell from store at `priceFactor` percent of the catalogue all year; 'season': at the season's price, as the store room does). A farm: `crew` (keepers and hands; `minHands` is the smallest sensible crew), `wages` (null: the area's, then the defaults'; fixed, not drifting: the basket takes what is over them), `basketADay` (the design's mean: what the till spends a day on the city's goods, their carriage out included, from what it holds over its wages and `reserve`), `reserve` (pennies its till keeps before its basket: two days of its wages, and a lean season's shortfall if it has one; its float, created when its area first goes on), `purse` (its crew's household's settled purse, created with it), `yield` (pieces a day of each good, the value at each season's middle day for Spring, Summer, Autumn and Winter, blended between them by Society::seasonal as country.json's seasons are; their blend's season means are the doc's 2.4 table), `makes` (doc 72, the user's decision after country3b: what it makes of a yield past keeping, before it spoils, each morning: the dairies' spare milk, most the morning after a Restday, half to cheese at 4 milk a piece, crafts.json's dairy craft, the rest to butter at 2, recipes.json's; while its store holds under `store` pieces of each, about its keeping days of a mean day's making; nothing sold, no money; the rest spoils; and since doc 72's Phase 4 each make's own `aDay`, pieces of the yield's good a day at each season's middle milked for that making alone, never offered to the shops (the shops wanted some 60 butter and 80 cheese a day, the spare made 2 and 0.5), made each morning while its store has room), `table` (what the Country's own people, `defaults.estatePeople` and `otherWorkers`, eat of it a day, the same way: no dependants until families are placed). Precedence: a farm's own setting, then its area's, then the defaults. The yields are the city's draws after the switch (the crews' own food among them), what the Country's own people eat, and `slack`. `schedule`: the areas go on one at a time in `order`, `every` days apart, the first on day `start` (the world's calendar day; -1: none). `basket`: the farms' basket's goods and shares; `countryBasket`: the Country's basket once the farms take the food (the goods the farms don't buy and no food or drink, in its shares now; since country3b the farms' building goods too, at 0.53 of the farms' shares: the land rent moved ~340p a day from the farms' baskets to the Country's, and the Houses keep up their farms' buildings with it, doc 72), blended in as the areas go on. `switchTrades`: the trades whose orders the switch takes (the economy file's unpaid support, the switch's). `footprint`: own_tiles are the farm's own ground (fields, orchard, vines, meadow, steading, pans); shared_range_tiles is open grazing, heath or woodland its herds share with the wild. `distance` is from Ridgemere, the realm's north-west corner (near: within 2 cells, middle: 3-8, far: 9 or more). An area with `works` true (Docs/Design/72-pulling-the-country-into-the-world.md, Phases 0 and 2: the fuel area, the woods and the peat) holds works, not food farms: the same settings and the same till, crew and founding, but no basket: after its wages each night what its till holds over its `reserve` is its rent, sent to the House whose land it is on (`house`, the area's or a works' own; at first all into the Country's purse, \"the Houses' estates and the sea trade\", booked by House). Its yields are sized on the Country's sales to the shops of their goods (the country1 run, years 2-3) + 5%; firewood and peat together the fuel the Country sold, the households taking either. Phase 3's stone area (stone, clay and sand, House Greatly's): the granite quarry (1 + 1 since country3, whose year 3 took it 30-36p a day against a 1 + 2 crew's 36p; its stone since country3b to the mason's 24.9 a day before the land rent + 5%, the Country's basket buying the builders' goods back) and the two clay pits (one hand each, no keeper; the game's pit gives clay and sand), flat across the year at country2's sales (years 2-3) + 5%; limestone and lime stay the Country's. A food area's `house` (doc 72, open question 2): the House whose land its farms are on, for their land rent (country.json's rule landRent, an area's own landRent<Area> over it, a farm's own `landRent` over both, landRent<Its>: the dairies' landRentDairy, doc 72, Phase 4: a percent of a farm's takings each night, after its wages and from what is over its `reserve`, the share its basket would spend; into the same purse, booked by House): Fell the orchards, vines and hives (fine wines, liquors and fruit goods: doc 67, R27), Grayrock the fishing (the wharf, R28), the Crown the grain, the herds and the salt (no House's trade).",
  "defaults": {
   "wages": {
    "keeper": 16,
@@ -39,7 +39,7 @@
   "fishing_net": 14,
   "planks": 55,
   "beam": 42,
-  "cut_stone": 62,
+  "cut_stone": 80,
   "bricks": 52,
   "roof_tiles": 39,
   "mortar": 55,
@@ -55,7 +55,7 @@
   "charcoal": 61,
   "bandages": 39,
   "handbell": 36,
-  "cut_stone": 33,
+  "cut_stone": 42,
   "map": 32,
   "rivets": 30,
   "ink": 29,
@@ -127,11 +127,11 @@
      "reserve": 132,
      "purse": 352,
      "yield": {
-      "flour": [52.03, 55.9, 56.29, 50.91],
-      "oats": [57.05, 66.22, 68, 60.58],
-      "straw": [2.18, 2.42, 2.33, 2.22],
-      "hemp": [27.41, 24.94, 24.88, 27.48],
-      "flax": [2.68, 2.08, 1.9, 2.45]
+      "flour": [51.33, 55.66, 56.1, 50.8],
+      "oats": [56.85, 66.38, 68.3, 60.59],
+      "straw": [2.19, 2.4, 2.32, 2.19],
+      "hemp": [27.33, 24.55, 24.09, 27.01],
+      "flax": [14.91, 14.2, 14.14, 14.92]
      },
      "table": {
       "flour": [5.6, 6.36, 6.49, 4.9],
@@ -171,11 +171,11 @@
      "reserve": 132,
      "purse": 352,
      "yield": {
-      "flour": [52.03, 55.9, 56.29, 50.91],
-      "oats": [57.05, 66.22, 67.99, 60.58],
-      "straw": [2.18, 2.42, 2.33, 2.22],
-      "hemp": [27.41, 24.94, 24.88, 27.48],
-      "flax": [2.68, 2.08, 1.9, 2.45]
+      "flour": [51.33, 55.66, 56.1, 50.8],
+      "oats": [56.85, 66.38, 68.29, 60.59],
+      "straw": [2.19, 2.4, 2.32, 2.19],
+      "hemp": [27.33, 24.55, 24.09, 27.01],
+      "flax": [14.91, 14.2, 14.14, 14.92]
      },
      "table": {
       "flour": [5.6, 6.36, 6.49, 4.9],
@@ -234,11 +234,11 @@
      "reserve": 92,
      "purse": 238,
      "yield": {
-      "apples": [62.64, 68.77, 65.15, 53.47],
-      "berries": [0.24, 0.02, 0.01, 0.01],
-      "cider": [1.22, 0.86, 1.05, 1.1],
-      "dried_apples": [24.09, 12.87, 15.43, 27.55],
-      "fruit_preserves": [15.24, 8.03, 13.51, 23.69]
+      "apples": [61.75, 67.7, 64.03, 53.8],
+      "berries": [0.24, 0.05, 0.03, 0.01],
+      "cider": [1.27, 0.85, 1.02, 1.05],
+      "dried_apples": [24.45, 14.11, 16.43, 27.21],
+      "fruit_preserves": [15.82, 9.06, 14.14, 23.07]
      },
      "table": {
       "apples": [2.07, 4.3, 4.39, 0.21],
@@ -279,9 +279,9 @@
      "reserve": 72,
      "purse": 181,
      "yield": {
-      "apples": [62.62, 68.77, 65.15, 53.44],
-      "berries": [0.24, 0.02, 0.01, 0.01],
-      "cider": [1.02, 0.78, 0.94, 0.93]
+      "apples": [61.72, 67.7, 64.03, 53.77],
+      "berries": [0.24, 0.05, 0.03, 0.01],
+      "cider": [1.06, 0.77, 0.91, 0.89]
      },
      "table": {
       "apples": [2.07, 4.3, 4.39, 0.21]
@@ -318,11 +318,11 @@
      "reserve": 92,
      "purse": 238,
      "yield": {
-      "apples": [62.6, 68.77, 65.17, 53.46],
-      "berries": [0.24, 0.02, 0.01, 0.01],
-      "cider": [0.84, 0.68, 0.8, 0.72],
-      "dried_apples": [24.09, 12.87, 15.43, 27.55],
-      "fruit_preserves": [15.24, 8.03, 13.51, 23.69]
+      "apples": [61.7, 67.7, 64.05, 53.8],
+      "berries": [0.24, 0.05, 0.03, 0.01],
+      "cider": [0.87, 0.67, 0.77, 0.69],
+      "dried_apples": [24.45, 14.11, 16.43, 27.21],
+      "fruit_preserves": [15.82, 9.06, 14.14, 23.07]
      },
      "table": {
       "apples": [2.07, 4.3, 4.39, 0.21],
@@ -363,9 +363,9 @@
      "reserve": 72,
      "purse": 181,
      "yield": {
-      "apples": [62.6, 68.77, 65.15, 52.83],
-      "berries": [0.26, 0.04, 0.01, 0.01],
-      "cider": [0.67, 0.56, 0.69, 0.44]
+      "apples": [61.7, 67.7, 64.03, 53.16],
+      "berries": [0.26, 0.1, 0.03, 0.01],
+      "cider": [0.7, 0.56, 0.67, 0.42]
      },
      "table": {
       "apples": [2.07, 4.3, 4.39, 0.21]
@@ -402,9 +402,9 @@
      "reserve": 72,
      "purse": 181,
      "yield": {
-      "apples": [62.6, 68.77, 65.15, 53.46],
-      "berries": [0.24, 0.02, 0.01, 0.01],
-      "cider": [0.39, 0.44, 0.49, 0.3]
+      "apples": [61.7, 67.7, 64.03, 53.8],
+      "berries": [0.24, 0.05, 0.03, 0.01],
+      "cider": [0.41, 0.43, 0.47, 0.29]
      },
      "table": {
       "apples": [2.07, 4.3, 4.39, 0.21]
@@ -441,8 +441,8 @@
      "reserve": 72,
      "purse": 178,
      "yield": {
-      "grapes": [18.6, 18.69, 18.73, 18.89],
-      "wine": [3.5, 4.15, 4.38, 2.29]
+      "grapes": [18.7, 18.72, 18.69, 19.09],
+      "wine": [3.42, 4.14, 4.36, 2.21]
      },
      "table": {},
      "sells": {
@@ -477,8 +477,8 @@
      "reserve": 72,
      "purse": 178,
      "yield": {
-      "grapes": [18.6, 18.69, 18.73, 18.89],
-      "wine": [3.26, 3.98, 4.21, 2.16]
+      "grapes": [18.7, 18.72, 18.69, 19.09],
+      "wine": [3.18, 3.98, 4.19, 2.08]
      },
      "table": {},
      "sells": {
@@ -532,12 +532,12 @@
      "reserve": 112,
      "purse": 295,
      "yield": {
-      "raw_meat": [42.77, 40.51, 38.53, 41.56],
-      "meal": [19.61, 18.11, 18.56, 20.18],
-      "milk": [38, 42.41, 43.95, 37.77],
-      "hide": [1.37, 1.22, 1.16, 1.31],
-      "tallow": [12.93, 12.73, 12.66, 12.59],
-      "bones": [6.67, 6.8, 6.83, 6.49]
+      "raw_meat": [41.99, 40.09, 38.22, 41.05],
+      "meal": [19.39, 17.82, 18.33, 19.84],
+      "milk": [38.2, 42.27, 43.85, 37.9],
+      "hide": [1.27, 1.11, 1.04, 1.21],
+      "tallow": [12.96, 12.72, 12.68, 12.64],
+      "bones": [6.56, 6.76, 6.79, 6.45]
      },
      "table": {
       "raw_meat": [5.05, 4.66, 4.13, 4.2],
@@ -551,13 +551,15 @@
        "from": "milk",
        "in": 4,
        "share": 50,
-       "store": 60
+       "store": 120,
+       "aDay": [20, 20, 20, 20]
       },
       {
        "good": "butter",
        "from": "milk",
        "in": 2,
-       "store": 10
+       "store": 20,
+       "aDay": [8, 8, 8, 8]
       }
      ],
      "sells": {
@@ -570,7 +572,8 @@
       "tallow": 0.5,
       "bones": 0.5
      },
-     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year"
+     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year",
+     "landRent": "dairy"
     },
     {
      "id": "cattle_and_dairy_farm_2",
@@ -596,12 +599,12 @@
      "reserve": 112,
      "purse": 295,
      "yield": {
-      "raw_meat": [42.77, 40.38, 38.55, 41.56],
-      "meal": [19.61, 18.08, 18.59, 20.18],
-      "milk": [37.57, 41.77, 43.38, 37.39],
-      "hide": [1.36, 1.22, 1.16, 1.32],
-      "tallow": [12.93, 12.68, 12.66, 12.59],
-      "bones": [6.68, 6.79, 6.83, 6.49]
+      "raw_meat": [41.99, 39.97, 38.23, 41.05],
+      "meal": [19.39, 17.8, 18.36, 19.84],
+      "milk": [37.77, 41.63, 43.28, 37.52],
+      "hide": [1.25, 1.11, 1.04, 1.22],
+      "tallow": [12.96, 12.67, 12.68, 12.64],
+      "bones": [6.57, 6.75, 6.79, 6.45]
      },
      "table": {
       "raw_meat": [5.05, 4.66, 4.13, 4.2],
@@ -615,13 +618,15 @@
        "from": "milk",
        "in": 4,
        "share": 50,
-       "store": 60
+       "store": 120,
+       "aDay": [20, 20, 20, 20]
       },
       {
        "good": "butter",
        "from": "milk",
        "in": 2,
-       "store": 10
+       "store": 20,
+       "aDay": [8, 8, 8, 8]
       }
      ],
      "sells": {
@@ -634,7 +639,8 @@
       "tallow": 0.5,
       "bones": 0.5
      },
-     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year"
+     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year",
+     "landRent": "dairy"
     },
     {
      "id": "cattle_and_dairy_farm_3",
@@ -660,12 +666,12 @@
      "reserve": 112,
      "purse": 295,
      "yield": {
-      "raw_meat": [42.77, 40.51, 38.55, 41.55],
-      "meal": [19.61, 18.11, 18.56, 20.18],
-      "milk": [37.13, 41.46, 42.95, 37.01],
-      "hide": [1.36, 1.22, 1.16, 1.31],
-      "tallow": [12.93, 12.73, 12.66, 12.59],
-      "bones": [6.68, 6.8, 6.83, 6.49]
+      "raw_meat": [41.99, 40.09, 38.23, 41.05],
+      "meal": [19.39, 17.82, 18.33, 19.84],
+      "milk": [37.33, 41.32, 42.85, 37.13],
+      "hide": [1.25, 1.11, 1.04, 1.21],
+      "tallow": [12.96, 12.72, 12.68, 12.64],
+      "bones": [6.57, 6.76, 6.79, 6.45]
      },
      "table": {
       "raw_meat": [5.05, 4.66, 4.13, 4.2],
@@ -679,13 +685,15 @@
        "from": "milk",
        "in": 4,
        "share": 50,
-       "store": 60
+       "store": 120,
+       "aDay": [20, 20, 20, 20]
       },
       {
        "good": "butter",
        "from": "milk",
        "in": 2,
-       "store": 10
+       "store": 20,
+       "aDay": [8, 8, 8, 8]
       }
      ],
      "sells": {
@@ -698,7 +706,8 @@
       "tallow": 0.5,
       "bones": 0.5
      },
-     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year"
+     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year",
+     "landRent": "dairy"
     },
     {
      "id": "pig_farm_1",
@@ -724,12 +733,12 @@
      "reserve": 112,
      "purse": 295,
      "yield": {
-      "raw_meat": [19.57, 18.23, 17.02, 19.3],
-      "meal": [7.33, 7.29, 7.55, 7.45],
-      "pig": [6.92, 7.14, 7.29, 7.37],
-      "hide": [0.52, 0.51, 0.52, 0.59],
-      "tallow": [6.79, 7.13, 7.29, 7.23],
-      "bones": [3.58, 3.7, 3.72, 3.53]
+      "raw_meat": [19.21, 18.05, 16.88, 19.06],
+      "meal": [7.25, 7.17, 7.46, 7.33],
+      "pig": [7.01, 7.19, 7.3, 7.41],
+      "hide": [0.48, 0.46, 0.47, 0.54],
+      "tallow": [6.8, 7.12, 7.29, 7.27],
+      "bones": [3.52, 3.68, 3.7, 3.5]
      },
      "table": {
       "raw_meat": [2.72, 2.51, 2.22, 2.26],
@@ -772,12 +781,12 @@
      "reserve": 112,
      "purse": 295,
      "yield": {
-      "raw_meat": [19.56, 18.11, 16.93, 19.18],
-      "meal": [7.18, 7.14, 7.4, 7.27],
-      "pig": [6.95, 7.12, 7.29, 7.37],
-      "hide": [0.37, 0.37, 0.4, 0.46],
-      "tallow": [6.84, 7.12, 7.3, 7.23],
-      "bones": [3.6, 3.71, 3.72, 3.53]
+      "raw_meat": [19.2, 17.92, 16.79, 18.95],
+      "meal": [7.1, 7.03, 7.31, 7.14],
+      "pig": [7.04, 7.17, 7.3, 7.41],
+      "hide": [0.34, 0.33, 0.36, 0.43],
+      "tallow": [6.86, 7.12, 7.3, 7.27],
+      "bones": [3.54, 3.69, 3.7, 3.5]
      },
      "table": {
       "raw_meat": [2.72, 2.51, 2.22, 2.26],
@@ -820,12 +829,12 @@
      "reserve": 112,
      "purse": 295,
      "yield": {
-      "raw_meat": [19.48, 18.04, 16.82, 19.09],
-      "meal": [7.04, 7, 7.27, 7.1],
-      "pig": [6.96, 7.14, 7.29, 7.35],
-      "hide": [0.24, 0.28, 0.3, 0.31],
-      "tallow": [6.84, 7.13, 7.3, 7.23],
-      "bones": [3.59, 3.7, 3.72, 3.53]
+      "raw_meat": [19.12, 17.86, 16.68, 18.86],
+      "meal": [6.96, 6.89, 7.18, 6.98],
+      "pig": [7.05, 7.19, 7.3, 7.39],
+      "hide": [0.22, 0.26, 0.27, 0.29],
+      "tallow": [6.86, 7.12, 7.3, 7.27],
+      "bones": [3.53, 3.68, 3.7, 3.5]
      },
      "table": {
       "raw_meat": [2.72, 2.51, 2.22, 2.26],
@@ -868,8 +877,8 @@
      "reserve": 52,
      "purse": 124,
      "yield": {
-      "rabbit": [85.91, 82.42, 82.22, 86.94],
-      "small_pelt": [0.84, 0.72, 0.68, 0.79]
+      "rabbit": [84.35, 81.33, 81.37, 85.79],
+      "small_pelt": [0.91, 0.77, 0.71, 0.86]
      },
      "table": {
       "rabbit": [10.43, 9.69, 10.85, 11.04]
@@ -905,8 +914,8 @@
      "reserve": 52,
      "purse": 124,
      "yield": {
-      "rabbit": [85.91, 82.42, 82.22, 86.94],
-      "small_pelt": [0.84, 0.73, 0.68, 0.78]
+      "rabbit": [84.35, 81.33, 81.37, 85.79],
+      "small_pelt": [0.91, 0.78, 0.71, 0.84]
      },
      "table": {
       "rabbit": [10.43, 9.69, 10.85, 11.04]
@@ -942,10 +951,10 @@
      "reserve": 92,
      "purse": 238,
      "yield": {
-      "mutton": [21.68, 21.41, 20.54, 22.12],
-      "wool": [5.91, 5.93, 6.05, 5.94],
-      "tallow": [6.8, 7.13, 7.3, 7.23],
-      "bones": [3.58, 3.71, 3.71, 3.53]
+      "mutton": [21.58, 21.25, 20.23, 21.95],
+      "wool": [5.87, 6, 6.07, 5.9],
+      "tallow": [6.81, 7.12, 7.3, 7.27],
+      "bones": [3.52, 3.69, 3.69, 3.5]
      },
      "table": {
       "mutton": [2.33, 3.02, 2.38, 2.92],
@@ -985,10 +994,10 @@
      "reserve": 92,
      "purse": 238,
      "yield": {
-      "mutton": [21.63, 21.41, 20.54, 22.12],
-      "wool": [5.88, 5.91, 6.05, 5.95],
-      "tallow": [6.78, 7.12, 7.29, 7.23],
-      "bones": [3.58, 3.71, 3.71, 3.53]
+      "mutton": [21.53, 21.25, 20.23, 21.95],
+      "wool": [5.83, 5.98, 6.07, 5.91],
+      "tallow": [6.79, 7.12, 7.29, 7.27],
+      "bones": [3.52, 3.69, 3.69, 3.5]
      },
      "table": {
       "mutton": [2.33, 3.02, 2.38, 2.92],
@@ -1047,13 +1056,13 @@
      "reserve": 52,
      "purse": 124,
      "yield": {
-      "fish": [33.89, 33.67, 34.5, 36.28],
-      "herbs": [3.24, 3.24, 3.41, 3.13],
-      "wormwood": [3.07, 3.37, 3.23, 3.04],
-      "willow_bark": [2.17, 2.12, 2.25, 4.12],
-      "thyme": [1, 1.03, 1.04, 2.86],
-      "garlic": [1.28, 1.24, 1.34, 1.19],
-      "comfrey": [0.87, 1.23, 0.95, 1.01]
+      "fish": [33.49, 33.03, 33.25, 35.55],
+      "herbs": [3.24, 3.24, 3.4, 3.17],
+      "wormwood": [3.11, 3.38, 3.33, 3.23],
+      "willow_bark": [2.16, 2.13, 2.25, 4.12],
+      "thyme": [1, 1.02, 1.04, 2.9],
+      "garlic": [1.29, 1.25, 1.38, 1.21],
+      "comfrey": [0.89, 1.27, 1.02, 1]
      },
      "table": {
       "fish": [3.96, 4.04, 3.55, 4.96]
@@ -1093,7 +1102,7 @@
      "reserve": 52,
      "purse": 124,
      "yield": {
-      "fish": [26.09, 25.23, 25.75, 27.09]
+      "fish": [25.78, 24.75, 24.82, 26.55]
      },
      "table": {
       "fish": [2.97, 3.03, 2.66, 3.72]
@@ -1127,7 +1136,7 @@
      "reserve": 52,
      "purse": 124,
      "yield": {
-      "fish": [26.09, 25.2, 25.75, 27.09]
+      "fish": [25.78, 24.72, 24.82, 26.55]
      },
      "table": {
       "fish": [2.97, 3.03, 2.66, 3.72]
@@ -1161,8 +1170,8 @@
      "reserve": 72,
      "purse": 181,
      "yield": {
-      "fish": [19.84, 18.3, 18.58, 19.83],
-      "shellfish": [38.18, 32.99, 35.59, 42.36]
+      "fish": [19.61, 17.95, 17.91, 19.43],
+      "shellfish": [37.58, 32.6, 34.95, 41.71]
      },
      "table": {
       "fish": [2.47, 2.53, 2.22, 3.1],
@@ -1198,8 +1207,8 @@
      "reserve": 72,
      "purse": 181,
      "yield": {
-      "fish": [19.46, 18.29, 18.49, 19.57],
-      "shellfish": [37.49, 32.97, 35.3, 41.83]
+      "fish": [19.23, 17.94, 17.82, 19.18],
+      "shellfish": [36.89, 32.58, 34.67, 41.19]
      },
      "table": {
       "fish": [2.47, 2.53, 2.22, 3.1],
@@ -1235,8 +1244,8 @@
      "reserve": 72,
      "purse": 181,
      "yield": {
-      "fish": [19.7, 18.19, 18.39, 19.66],
-      "shellfish": [37.75, 32.83, 35.14, 41.97]
+      "fish": [19.46, 17.84, 17.73, 19.27],
+      "shellfish": [37.15, 32.44, 34.52, 41.33]
      },
      "table": {
       "fish": [2.47, 2.53, 2.22, 3.1],
@@ -1272,8 +1281,8 @@
      "reserve": 72,
      "purse": 181,
      "yield": {
-      "fish": [19.59, 18.12, 18.3, 19.59],
-      "shellfish": [37.59, 32.68, 35.02, 41.8]
+      "fish": [19.36, 17.77, 17.64, 19.2],
+      "shellfish": [37, 32.3, 34.4, 41.16]
      },
      "table": {
       "fish": [2.47, 2.53, 2.22, 3.1],
@@ -1328,8 +1337,8 @@
      "reserve": 52,
      "purse": 124,
      "yield": {
-      "honey": [24.51, 27.26, 24.5, 22.5],
-      "beeswax": [0.3, 0.33, 0.3, 0.49]
+      "honey": [24.18, 26.64, 24.11, 22.66],
+      "beeswax": [0.29, 0.33, 0.29, 0.48]
      },
      "table": {
       "honey": [2.53, 3.08, 2.96, 1.97]
@@ -1364,8 +1373,8 @@
      "reserve": 52,
      "purse": 124,
      "yield": {
-      "honey": [24.51, 27.26, 24.5, 22.5],
-      "beeswax": [0.3, 0.33, 0.3, 0.49]
+      "honey": [24.18, 26.64, 24.11, 22.66],
+      "beeswax": [0.29, 0.33, 0.29, 0.48]
      },
      "table": {
       "honey": [2.53, 3.08, 2.96, 1.97]
@@ -1400,8 +1409,8 @@
      "reserve": 52,
      "purse": 124,
      "yield": {
-      "honey": [24.51, 27.26, 24.5, 22.5],
-      "beeswax": [0.29, 0.32, 0.3, 0.48]
+      "honey": [24.18, 26.64, 24.11, 22.66],
+      "beeswax": [0.28, 0.32, 0.29, 0.47]
      },
      "table": {
       "honey": [2.53, 3.08, 2.96, 1.97]
@@ -1455,7 +1464,7 @@
      "reserve": 72,
      "purse": 181,
      "yield": {
-      "salt": [46.73, 44.56, 43.97, 46.97]
+      "salt": [46.72, 44.37, 43.77, 46.84]
      },
      "table": {
       "salt": [5.42, 4.97, 5.01, 5.4]
@@ -1489,7 +1498,7 @@
      "reserve": 72,
      "purse": 181,
      "yield": {
-      "salt": [46.73, 44.53, 43.99, 46.97]
+      "salt": [46.72, 44.34, 43.79, 46.84]
      },
      "table": {
       "salt": [5.42, 4.97, 5.01, 5.4]
@@ -1537,10 +1546,10 @@
      "reserve": 72,
      "purse": 171,
      "yield": {
-      "timber": [22.09, 19.77, 20.96, 24.87],
-      "firewood": [56.69, 58.91, 57.7, 78.86],
-      "oak_bark": [5.46, 4.83, 4.9, 5.63],
-      "resin": [0.35, 0.41, 0.56, 0.39]
+      "timber": [20.95, 18.42, 19.46, 23.27],
+      "firewood": [54.4, 56.82, 54.64, 79.8],
+      "oak_bark": [4.92, 4.29, 4.33, 5.04],
+      "resin": [0.22, 0.28, 0.34, 0.27]
      },
      "table": {},
      "sells": {
@@ -1569,9 +1578,9 @@
      "reserve": 92,
      "purse": 228,
      "yield": {
-      "timber": [22.09, 19.77, 20.96, 24.87],
-      "firewood": [56.69, 58.91, 57.7, 78.86],
-      "oak_bark": [5.46, 4.83, 4.9, 5.63]
+      "timber": [20.95, 18.42, 19.46, 23.27],
+      "firewood": [54.4, 56.82, 54.64, 79.8],
+      "oak_bark": [4.92, 4.29, 4.33, 5.04]
      },
      "table": {},
      "sells": {
@@ -1599,7 +1608,7 @@
      "reserve": 72,
      "purse": 171,
      "yield": {
-      "firewood": [96.38, 100.15, 98.1, 134.04]
+      "firewood": [92.49, 96.6, 92.89, 135.64]
      },
      "table": {},
      "sells": {
@@ -1625,8 +1634,8 @@
      "reserve": 72,
      "purse": 171,
      "yield": {
-      "firewood": [73.72, 76.59, 75, 102.5],
-      "charcoal": [9.04, 8.61, 10.11, 10.86]
+      "firewood": [70.75, 73.88, 71.02, 103.72],
+      "charcoal": [8.34, 7.63, 8.63, 9.77]
      },
      "table": {},
      "sells": {
@@ -1653,7 +1662,7 @@
      "reserve": 52,
      "purse": 114,
      "yield": {
-      "peat": [92.18, 102.56, 96.38, 209.19]
+      "peat": [87.34, 100.15, 90.03, 219.2]
      },
      "table": {},
      "sells": {
@@ -1699,7 +1708,7 @@
      "reserve": 52,
      "purse": 114,
      "yield": {
-      "stone": [27.76, 23.93, 24.63, 28.09]
+      "stone": [29.87, 25.32, 26.93, 31.36]
      },
      "table": {},
      "sells": {
@@ -1725,8 +1734,8 @@
      "reserve": 20,
      "purse": 57,
      "yield": {
-      "clay": [27.82, 25.95, 25.85, 27.91],
-      "sand": [11.71, 10.46, 10.62, 12.14]
+      "clay": [28.72, 25.8, 26.1, 29.13],
+      "sand": [11.98, 10.17, 10.49, 12.74]
      },
      "table": {},
      "sells": {
@@ -1753,8 +1762,8 @@
      "reserve": 20,
      "purse": 57,
      "yield": {
-      "clay": [27.82, 25.95, 25.85, 27.91],
-      "sand": [11.71, 10.46, 10.62, 12.14]
+      "clay": [28.72, 25.8, 26.1, 29.13],
+      "sand": [11.98, 10.17, 10.49, 12.74]
      },
      "table": {},
      "sells": {

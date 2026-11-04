@@ -98,6 +98,7 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 10000000
                'floatWagesDays': 60, 'subsidyToNeed': 1, 'countryPostsDays': 30,
                # The food farms' land rent (Docs/Design/72-pulling-the-country-into-the-world.md, open question 2): no migration.
                'landRent': 100, 'landRentFish': 100, 'landRentFruit': 100, 'landRentGrain': 100, 'landRentSalt': 100,
+               'landRentDairy': 100,
                # The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): no migration.
                'surplus': 1, 'surplusKeep': 100000000, 'surplusWorks': 100, 'surplusAlms': 100, 'surplusAlmsTo': 1000,
                # The self-correcting rules (doc 68, Progress, "Self-correcting rules"): no migration (what they drift to is

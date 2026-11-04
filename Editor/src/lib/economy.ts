@@ -146,6 +146,7 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'landRentFruit', label: 'Land rent: orchards and vines', max: 100, unit: '% of their takings (House Fell)'},
     {key: 'landRentGrain', label: 'Land rent: grain', max: 100, unit: '% of the grain farms\' takings (the Crown)'},
     {key: 'landRentSalt', label: 'Land rent: salt', max: 100, unit: '% of the salt works\' takings (the Crown)'},
+    {key: 'landRentDairy', label: 'Land rent: dairies', max: 100, unit: '% of the cattle and dairy farms\' takings (the Crown; over the meat area\'s)'},
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms").
     {key: 'surplus', label: 'The treasury\'s surplus', max: 1, unit: 'what it holds over its cap and reserve goes out at 18:00, to public works and the poorest', onOff: true},
     {key: 'surplusKeep', label: 'Reserve over the cap', max: 100000000, unit: 'p the treasury keeps over its cap for the lean seasons before its surplus goes out'},
