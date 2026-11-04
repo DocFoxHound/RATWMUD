@@ -1822,3 +1822,49 @@ not to be applied; beside it the same run on `ridgemere2`'s code and data, days 
 ~1,100p to the Houses once, in the first weeks. As the cheese's price climbs toward its eight times, the households'
 part should fall to the Houses' wolves and the few rich, the Houses' tables taking fewer, dearer pieces: the dairies'
 cheese then follows what the resellers draw. All of it the 3-year run's to confirm.
+
+### country5b's 3-year run (2026-11-04)
+
+`ridgemere2` at `7e8085e` (the carry-overs merged), the same run as country5 (build 61's export, `--simulate 6 26298
+--farms 0 --deterministic --threads 4 --economy-level full`). Report `artifacts/economy/r2/country5b-report.md`, patch
+`country5b.patch.json`, log `country5b.out`. Nothing written to DEV or PROD. Year 3 a day unless said; country5's beside
+it.
+
+- **Money conserved** every day; **nobody hungry to speak of** (3 days of year 3 with anyone hungry, the hungriest 4
+  hours; 4 days, 6 hours); households short of a day's food money 0.15 a day (0.16). Residents 559 to 754, births 55,
+  deaths 56, the unplaced 328, 662 of 672 posts held: all as country5.
+- **The Country: its posts paid every day of all three years, and its margin back.** Intake **1,070p** (937p): sales
+  396p (346p), the estates' rents 251p (227p), the land rents 423p (363p: the dairies' 32% ~+21p a farm). **Summer
+  1,061p, 28.7% over its 824p** (893p, 8.4%; the target 10%, the projection ~14%); spring 29.9%, autumn 26.8%, winter
+  34.2%. Its basket, the spare's spending, took it: 193-216p a day (68-159p). Its purse: year 3's first and last four
+  weeks 1,763p to 1,844p (1,668 to 1,749p), least 1,026p (947p); **its years' ends 1,986, 1,975, 1,900p** (2,024, 1,950,
+  1,783p): the fall a third of country5's and its basket ~200p a day over what its posts need, so a spending rule, not a
+  shortfall.
+- **Every farm and works paid its crew** (99.6% and over): **vineyard_1 99.9%, vineyard_2 99.6%** (92.3%, 80.4%; their
+  takings 37-42p over their 36p of wages, the households' wine 22.6 bottles a day, 19.6), orchard_5 99.6%, the quarry
+  and orchards 2 and 4 in full now. **The workshops**: the soapworks, both presses, both potteries and Larkfield's looms
+  100% (Oakhaven's press 96.4%, Southmeadow's 99.1%); **Coldwater's looms 96.3%** (95.8%, 52 nights short), **Larkfield's
+  smithy 84.4%** (68.1%: 11.8p of 14.0p, 103 nights short of 178, 3.5p to its House, 0).
+- **The treasury over its float every night of year 3** (least 2,983p; 2,976p; year 2's least 1,957p, 1,544p), 5,727p
+  to 5,952p (four-week means). **The wage support 283p** (326p), year 3's first and last four weeks 271p to 256p
+  (277p to 320p): falling, not rising. The toll 1,653p (1,702p); the butchers' support 8p (20p) now their tallow sells.
+- **Candles: no shortage in year 3** (11.7 a day refused; 0 now); the soapworks holds stock at the season's price. **The
+  butchers' tallow cleared** (their tills 39,300 to 32 at the run's end), but **the farms' tallow piles: 7,936, 17,730,
+  27,901 at the years' ends** (~27 a day; the meat farms grow ~74, ~45 sold): the patch's largest lines cut it about a
+  third (the sheep runs and the pig farms ~7 to ~5, the dairies ~12.7 to ~8.6).
+- **Clay 9,041 to 791** at the pits (rising ~1 a day in year 3, slight), **flax 3,069 to 129** (now supply-bound; the
+  linen neckerchiefs 10.1 a day short, 8.1, the one cloth short). Wine: the vineyards' cellars 31, 560, 1,547 at the
+  years' ends (each pressing ~4 a day and selling ~2 at the run's end; the patch trims wine ~15%, the unsold part).
+- **Cheese for the rich, but not scarce.** The households' luxuries 8.2 pieces a day for 41p, every one an upper-class
+  household's (the middle 0.0, from 0.6 in year 1); the Houses' tables 3.4 a day for 18.5p (7.4 in year 1); by the
+  payer's own class (the trade tables) the upper 4.8, the Houses' purse 3.4, the middle 2.7 (the Houses' kin), the lower
+  0.8, against country5's middle 11.5, lower 3.8, upper 0.1. Nobody hungry for it. **Its price about the season's (1.0
+  to 1.1 times; 2.8-2.9 in country5)**: the dairies make 15 a day, the rich take ~12, ~350 held at the dairies from year
+  2 on. The dairies' takings still rose (~199p a summer day, 177p), the cheese a small part of them.
+
+**Verdict: stable, at Phase 5's mark.** Money, food, posts and the treasury hold for three years; the Country's summer is
+28.7% over its posts, the support falls, the vineyards and every farm pay in full, candles are no longer short. Left to
+tune, none of it a risk to the balance: Larkfield's smithy (84%) and Coldwater's looms (96%); the farms' tallow (the
+patch's cut, ~a third); the cheese (made ~3 a day over what the rich take, so its price never climbs: fewer from the
+dairies, or the Houses' share up, the user's call); the flax (the neckerchiefs short) and a little of the clay; the
+Country's basket, which spends its spare and lets its year-ends drift down ~75p a year.
