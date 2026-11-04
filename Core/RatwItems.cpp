@@ -311,6 +311,13 @@ void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& ru
         auto m = std::find_if(at->market.begin(), at->market.end(), [&](const MarketPlace& x) { return x.area == shop.area; });
         if (m == at->market.end())
         {
+            // (The map's own entry for it: its community's `workshops`, the work spots by its stations.)
+            for (const auto& x : places.array("communities"))
+                if (x.string("id") == shop.community)
+                    for (const auto& laid : x.array("workshops"))
+                        if (laid.string("area", laid.string("id")) == shop.area)
+                            if (auto laidWork = spots(laid["work"]); !laidWork.empty())
+                                shop.work = std::move(laidWork);
             if (shop.work.empty())
                 continue;
             at->market.push_back({});

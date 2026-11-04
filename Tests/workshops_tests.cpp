@@ -14,16 +14,19 @@
 // The catalogue is the real Data (RATW_SOURCE_DIR).
 #include "RatwCalendar.h"
 #include "RatwItems.h"
+#include "RatwJsonDoc.h"
 #include "RatwSociety.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <map>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -163,6 +166,30 @@ void theWorkshopsData()
         }
     }
     expect(posts == 18, "18 posts: " + std::to_string(posts));
+    // Where the map has laid a workshop (communities.json, a community's `workshops`), its work spots are the map's (by
+    // its stations), never workshops.json's own.
+    std::ifstream in(fs::path(RATW_SOURCE_DIR) / "Data" / "Economy" / "communities.json", std::ios::binary);
+    std::stringstream text;
+    text << in.rdbuf();
+    json::Value places;
+    std::string error;
+    expect(json::parse(text.str(), places, error), "communities.json parses: " + error);
+    for (const auto& x : places.array("communities"))
+        for (const auto& laid : x.array("workshops"))
+        {
+            const auto area = laid.string("area", laid.string("id"));
+            const auto* c = people.community(x.string("id"));
+            const auto m = std::find_if(c->market.begin(), c->market.end(),
+                                        [&](const items::MarketPlace& y) { return y.area == area; });
+            if (!people.workshop(area) || m == c->market.end())
+                continue;
+            const auto& spots = laid.array("work");
+            expect(m->work.size() == spots.size(), area + ": the map's work spots");
+            for (std::size_t i = 0; i < spots.size(); ++i)
+                expect(m->work[i].first == std::floor(spots[i].number("x", 0)) + .5 &&
+                           m->work[i].second == std::floor(spots[i].number("y", 0)) + .5,
+                       area + ": the map's work spot " + std::to_string(i));
+        }
     // Their wares: what their crafts make.
     expect(items::business("country_soapworks") && Society(Roster::None).citySellers("general", "fine_soap") ==
                                                        std::vector<std::string>{"country_soapworks"},

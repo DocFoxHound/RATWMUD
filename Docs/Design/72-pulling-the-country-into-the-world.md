@@ -1536,6 +1536,9 @@ name, the hands in the community's cottages, a workshop's hands only once its ke
 - **A world without the buildings** (build 60's export, and DEV until the map branch lands): the workshop's market entry
   is the file's own, but `world.place` has no such interior, so nobody is placed and no till opens; `buyFromCity` finds
   no seller and the store room supplies the goods as before Phase 5 (`workshops_behaviors`, its last case).
+- **The work spots are the map's** (the review): where `communities.json` lays a workshop (a community's
+  `workshops`, the map branch), its work spots by its stations are the market's; `workshops.json`'s own `work` only
+  where the map has none (`workshops_behaviors` checks it against whatever the contract holds).
 
 **The resale path** (4.5 and 5): `Society::restockFromStore`'s `!w.craft` branch calls `buyFromCity` (its new `resale`
 flag) before the store room, at **the store room's price for the good** (resaleMarkup of the season's, 75%: at the
