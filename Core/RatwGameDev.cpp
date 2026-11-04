@@ -48,7 +48,7 @@ Result storeCommand(Society& society, const std::string& rest)
     if (keeper.empty() || (words >> extra))
         return {false, "Usage: /store <keeper> [item count].", {}};
     const auto fund = [&] {
-        return "The Country's purse (" + std::string(Society::CountryFund) + ") holds " + std::to_string(society.cash(Society::CountryFund)) +
+        return "The Wharf's purse (" + std::string(Society::WharfFund) + ") holds " + std::to_string(society.cash(Society::WharfFund)) +
                "p; the treasury " + std::to_string(society.cash("treasury")) + "p; carriage goes to " + society.carters() + " (" +
                std::to_string(society.cash(society.carters())) + "p).";
     };

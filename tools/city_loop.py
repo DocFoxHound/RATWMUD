@@ -6,7 +6,7 @@
   python3 tools/city_loop.py DIR --suggest           # also a basket for the Country spread over the trades' spare hours
   python3 tools/city_loop.py DIR --json              # the same as JSON
 
-From the placed residents of the export, Data/Items (items, crafts, businesses, country.json) and the settings below
+From the placed residents of the export, Data/Items (items, crafts, businesses, city_loop.json) and the settings below
 (the game's defaults, or --set KEY=VALUE), it works out a day of the loop at catalogue prices, as the game's rules do:
 
 - Posts: who pays each post (a shop's till for its keeper and hands, the treasury, the Country, or nobody), as
@@ -43,11 +43,11 @@ import item_catalog as ic  # noqa: E402
 ITEMS = ic.ITEMS
 CRAFTS = ic.CRAFTS
 SUPPLIES = ic.SUPPLIES
-COUNTRY = json.loads((ROOT / 'Data/Items/country.json').read_text(encoding='utf-8'))
+COUNTRY = json.loads((ROOT / 'Data/Items/city_loop.json').read_text(encoding='utf-8'))
 HOUSEHOLDS = ic._CRAFTS_FILE['households']
 # The game's defaults (EconomySpec; Atlas's Economy page changes them per world).
 DEFAULTS = {'storeMarkup': 100, 'resaleMarkup': 75, 'toll': 30, 'wageKeeper': 14, 'wageHand': 8, 'wagePublic': 8,
-            'wageCountry': 8, 'carriage': 6, 'reserve': 200, 'subsidy': 25}
+            'wageWharf': 8, 'carriage': 6, 'reserve': 200, 'subsidy': 25}
 HUNGER_A_DAY = .0035 * 14400                 # Hunger a game day (Society: .0035 a second).
 NOURISH_A_DAY = HUNGER_A_DAY / 1.1           # A food's nourishment counts 1.1 times when eaten.
 HOURS = 8                                    # A crew's working day, for the trades' hours.
@@ -123,7 +123,7 @@ def reckon(export: Path, s: dict, basket_override=None):
     wages = Counter()
     posts = Counter()
     wage_of = {'keeper': s['wageKeeper'], 'hand': s['wageHand'], 'watch': s['wagePublic'], 'public': s['wagePublic'],
-               'country': s['wageCountry']}
+               'country': s['wageWharf']}
     for r in folk:
         p, kind = pay[r['id']]
         if kind:

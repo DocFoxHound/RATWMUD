@@ -193,7 +193,7 @@ struct ResidentRequest
     Spot home;
     std::string positionId;       // Arrival: the post they come for.
     std::string inPlaceOf;        // Birth: the dead it is born in place of (owed again if it can't be made).
-    std::int64_t purse = 0;       // Arrival: the pennies they bring, paid by the Country (CountryFund).
+    std::int64_t purse = 0;       // Arrival: the pennies they bring, paid by the Country (WharfFund).
     double skill = 0;             // Arrival: what it knows of the post's work (its trade suiting it: as the trade needs).
     std::vector<std::string> parents;
     // Birth: the child's sex, "male" or "female" (characters are male or female only: the user), decided with the
@@ -256,10 +256,21 @@ struct LoopState
     std::int64_t judged = -1;                       // and that day.
     double toll = 0;                                // Points on the world's gate toll.
     int alms = 0;                                   // Pennies a head on almsADay.
+    // The Wharf's book with the world beyond the realm (Docs/Design/73-the-wharf.md, 4.6; the save's "loop" "wharf"):
+    // the pennies the beyond has paid in (minted: its takes, its export basket, carriage and the fee), those the realm has
+    // paid out to it (sunk: its imports, less the fee), the fees the Wharf kept, the moves of the credit by the DM and the
+    // standing rules, all since the world began; and the trade credit now (what the realm has paid beyond and not had back,
+    // moved by the DM; the beyond buys only within it). Money too is counted in SocietyState::minted and sunk.
+    struct Wharf
+    {
+        std::int64_t in = 0, out = 0, fee = 0, moved = 0, credit = 0;
+        bool empty() const { return in == 0 && out == 0 && fee == 0 && moved == 0 && credit == 0; }
+    };
+    Wharf wharf;
     bool empty() const
     {
         return prices.empty() && sales.empty() && wages.empty() && level < 0 && levelDays == 0 && judged < 0 && toll == 0 &&
-               alms == 0;
+               alms == 0 && wharf.empty();
     }
 };
 struct SocietyState
@@ -336,29 +347,30 @@ struct EconomySpec
     int resaleMarkup = 75;
     bool storeRule = false;
     // The city's loop (Docs/Design/68-the-country-and-the-city-loop.md; the world's "loop" and "countryoff" records,
-    // live.economy): residents' needs (needsPaused: doc 66 Phase 5's pause, off by default), the Country spending back
-    // what the store room takes in (country, keeping countryReserve), the gate toll (gateToll percent of each draw's cost
+    // live.economy, which keep the Country's words: doc 73 renamed the fields, not the records or columns): residents'
+    // needs (needsPaused: doc 66 Phase 5's pause, off by default), the estates spending back what they take in (wharf,
+    // keeping wharfReserve), the gate toll (gateToll percent of each draw's cost
     // to the treasury), carriage (pennies a wagon load of CarriageLoad weight, in and out), the day's wages by kind of post,
-    // and the goods the Country no longer supplies (countryOff: their real producers' now).
+    // and the goods the Country no longer supplies (wharfOff: their real producers' now).
     bool needsPaused = false;
-    bool country = true;
-    std::int64_t countryReserve = 200;
+    bool wharf = true;
+    std::int64_t wharfReserve = 200;
     int gateToll = 30;
     int carriage = 6;
-    int wageKeeper = 14, wageHand = 8, wagePublic = 8, wageCountry = 8;
-    std::set<std::string> countryOff;
+    int wageKeeper = 14, wageHand = 8, wagePublic = 8, wageWharf = 8;
+    std::set<std::string> wharfOff;
     // Services the treasury pays a share of (doc 68, 5: the city's taxes helping its businesses), by service, in percent:
     // "carriage" (a share of every delivery's carriage, in and out, paid to the carters). Only from what the treasury
     // holds over its float and tonight's public wages, and at most a twentieth of its money a day (SubsidyDay).
     std::map<std::string, int> subsidies{{"carriage", 25}};
     // The residents' comforts (doc 68, 3; the world's "comforts" record): pennies a head a household holds before it buys
-    // them, and the percent of what is over that it spends a day. -1: country.json's (40, a fifth).
+    // them, and the percent of what is over that it spends a day. -1: city_loop.json's (40, a fifth).
     int comfortsAbove = -1, comfortsShare = -1;
     // The loop's rules as this world has changed them (doc 68, Progress, "First fixes"; "rule" records, migration 0058),
-    // by name (items::Rules); a rule not listed is as country.json says.
+    // by name (items::Rules); a rule not listed is as city_loop.json says.
     std::map<std::string, int> rules;
     // The city's services as this world has changed them ("service" records): on or off, the price, about once every
-    // `every` days a household. A service not listed is as country.json and items.json say; one they no longer have is
+    // `every` days a household. A service not listed is as city_loop.json and items.json say; one they no longer have is
     // kept and does nothing.
     struct Service
     {
@@ -366,9 +378,9 @@ struct EconomySpec
         int price = 1, every = 30;
     };
     std::map<std::string, Service> services;
-    // The seasons in the Country's supply (country.json's `seasons`; doc 68, Progress, "Seasons and the DM's rules"), a
+    // The seasons in the Country's supply (city_loop.json's `seasons`; doc 68, Progress, "Seasons and the DM's rules"), a
     // group at a time as this world has changed them ("season" records): supply, price and shelf by season in percent,
-    // and the group's normal pieces a day. A group not listed is as country.json says.
+    // and the group's normal pieces a day. A group not listed is as city_loop.json says.
     struct Season
     {
         std::array<int, 4> supply{100, 100, 100, 100}, price{100, 100, 100, 100}, shelf{100, 100, 100, 100};
@@ -647,10 +659,12 @@ class Society
     // draw: the keeper of a merchant position with a till, whose business has goods to draw, while the world's switch
     // for that kind of good is on and the business's own (its founder's ResidentSpec::internalStore; a founder whose
     // spec is gone counts as on).
-    // Since doc 68 the coins go to the Country (CountryFund), less the gate toll (to the treasury); carriage on the goods
-    // goes to the carters. StoreFund is the old account, read only to move an older save's coins to the Country.
+    // Since doc 68 the coins go to the Country, the Wharf since doc 73 (WharfFund), less the gate toll (to the treasury);
+    // carriage on the goods goes to the carters. StoreFund is the old account, read only to move an older save's coins.
     static constexpr const char* StoreFund = "fund:store";
-    static constexpr const char* CountryFund = "outside:country";
+    // The Wharf's purse (doc 73: the Country's, "outside:country", renamed; a save's old purse moved into it at load).
+    static constexpr const char* WharfFund = "outside:wharf";
+    static constexpr const char* OldCountryFund = "outside:country";
     static constexpr int StoreDrawMost = 1000;        // The most of one good a draw takes.
     enum class StoreUse
     {
@@ -674,6 +688,34 @@ class Society
     std::vector<std::string> restockFromStore(const std::string& keeper, double absoluteDay);
     // For tests: the next draw's goods fail to arrive after it is paid for (its money must come back).
     void failNextStoreCreate() { failStoreCreate_ = true; }
+    // The Wharf (Docs/Design/73-the-wharf.md): the realm's valve to the world beyond it. With the rule wharfValve on it
+    // lands what the realm's farms can't fill of a good on its imports list (the last lot of a store draw, within the
+    // good's most a day) and every good no area grows (the Country's, as before, within the season's cap), paying the
+    // beyond for them (the realm's money out, less its fee); it takes what piles on the farms and works over
+    // wharfKeepDays of their yield of a good on its takes list (at 16:00); and it buys the city's exports with what credit
+    // is left. Every price is the stable price: the store room's at markup 100 and the season's (or the area's year)
+    // factor, never a shop's drifted one.
+    bool wharfValveOn() const { return rule("wharfValve") > 0; }
+    std::int64_t stablePrice(const std::string& item, int quantity) const;
+    // Whether the Wharf lands a good now (its imports list, on, not refused, not off for this world, the valve on), and
+    // how many more pieces of it it may land today (its most × wharfImportScale, less what it landed today); a good no
+    // area grows, the season's cap as before (supplyLeft).
+    bool wharfImports(const std::string& item) const;
+    int wharfRoom(const std::string& item) const;
+    // Whether it takes a good (its takes list, on, not refused, the valve on), and what a farm keeps of it: the larger
+    // of wharfKeepLeast and wharfKeepDays of its yield a day today.
+    bool wharfTakes(const std::string& item) const;
+    int wharfKeep(std::size_t farm, const std::string& item) const;   // (`farm`: its index in farms().)
+    // What the beyond may still pay in today: the credit, never past wharfExportMost a day, never under 0.
+    std::int64_t wharfExportRoom() const;
+    // An order from the Wharf (doc 73, 5): `n` pieces of a good the Wharf lands, at the stable price, into `buyer`'s
+    // account, carriage by weight to the carters (the treasury's share as any draw's), the gate toll to the treasury;
+    // whole or nothing. The towns to come, the farms' baskets' fallback; a store draw's Wharf lot is booked the same way.
+    EconomyResult orderFromWharf(const std::string& buyer, const std::string& item, int n, const std::string& why);
+    // The DM's lever (doc 73, 4.6, the action wharf.credit): move the trade credit by `amount` (−: the beyond buys less,
+    // money drains as the realm imports; +: it buys more, money comes in as goods bought), at most wharfActionMost
+    // either way (0: refused). Recorded; no coin moves now.
+    EconomyResult moveWharfCredit(std::int64_t amount, const std::string& who, const std::string& note);
 
     // The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, RatwCityLoop.cpp). Each game hour: households
     // buy food, needs and comforts (8:00-18:00), the Country buys its basket (8:00-18:00), wages are paid (18:00), shelves
@@ -685,22 +727,22 @@ class Society
     // (The city's alms, doc 68, 4: the rule "almsADay" now, a day's food money a head and some over; it was 7.)
     static constexpr int CarriageLoad = 1000;         // A wagon load, in items.json's weight.
     static constexpr const char* CarriageFund = "fund:carriage";   // Carriage where a world has no carters' yard.
-    // A market's purse ("outside:<id>"), and which market supplies a good (the first in country.json: one for now).
+    // A market's purse ("outside:<id>"), and which market supplies a good (the first in city_loop.json: one for now).
     static std::string marketFund(const std::string& market) { return "outside:" + market; }
     std::string marketFor(const std::string& item) const;
-    // Who pays a post: its kind ("keeper", "hand", "watch", "public", "country"; "" for none), the paying account and the
+    // Who pays a post: its kind ("keeper", "hand", "watch", "public", "estate"; "" for none), the paying account and the
     // wage. A shop's keeper and its hands (a post whose work room holds exactly one shop): its till; the watch: the
-    // treasury; otherwise the first country.json wage rule with a word in its title; otherwise nobody.
+    // treasury; otherwise the first city_loop.json wage rule with a word in its title; otherwise nobody.
     struct Pay
     {
         std::string kind, payer;
         int wage = 0;
-        int rule = -1;                              // The country.json wage rule that pays it (-1: none of them).
+        int rule = -1;                              // The city_loop.json wage rule that pays it (-1: none of them).
     };
     Pay payOf(const Position& post) const;
     // The Houses' estates (doc 72, Phase 6; items::Country::estates, the rule "estates"): each House's own purse, its
     // lands' rents in, its people's wages out, the Crown's covering the others' short nights. With the rule off (or no
-    // estates in country.json) every one is the Country's purse, as before. An estate's purse ("estate:<id>", or the
+    // estates in city_loop.json) every one is the Country's purse, as before. An estate's purse ("estate:<id>", or the
     // Country's for Grayrock's, which runs the wharf and the sea trade), and the estate of a House ("the Crown",
     // "Greatly"...), of a Country post (its label's words, then its workplace's), and of a purse (nullptr: none).
     bool estatesOn() const;
@@ -711,16 +753,16 @@ class Society
     // Where a House's money goes tonight: its estate's purse while the estates are split and it is open, else the Country's.
     std::string houseFund(const std::string& house) const;
     // The Country's posts held tonight (the posts payWages pays), their wages by paying purse: the Country's, or an estate's.
-    std::map<std::string, std::int64_t> countryPostsOwed() const;
+    std::map<std::string, std::int64_t> estatePostsOwed() const;
     // What a Country or estate purse keeps before it buys (its basket, the Houses' tables, the patrons): its reserve (the
-    // Country's countryReserve; split, each estate its share by its posts' wages) and countryPostsDays nights of its
-    // posts; the Crown's also what the others lack of their own nights (its grants to come). `owed`: countryPostsOwed().
-    std::int64_t countryKeep(const std::string& fund, const std::map<std::string, std::int64_t>& owed) const;
+    // Country's wharfReserve; split, each estate its share by its posts' wages) and estatePostsDays nights of its
+    // posts; the Crown's also what the others lack of their own nights (its grants to come). `owed`: estatePostsOwed().
+    std::int64_t estateKeep(const std::string& fund, const std::map<std::string, std::int64_t>& owed) const;
     // What a Country or estate purse may spend now (its basket, the Houses' tables, the patrons): what it holds over its
     // keep; split (doc 72, after estates6), never more than all the estates together hold over the one purse's keep (the
-    // Country's reserve and countryPostsDays nights of all their posts), so that together they buy no more than the one
+    // Country's reserve and estatePostsDays nights of all their posts), so that together they buy no more than the one
     // purse would have, one estate's spare never spent while a sister estate lacks its posts.
-    std::int64_t countrySpare(const std::string& fund, const std::map<std::string, std::int64_t>& owed) const;
+    std::int64_t estateSpare(const std::string& fund, const std::map<std::string, std::int64_t>& owed) const;
     // The estates' night, before the wages (doc 72, Phase 6): open their purses (the first time, the Country's money split
     // between them by their posts' wages); the Crown's levy on the others' spare (over their keep, up to what the Crown
     // lacks of its own; and, the Crown short of tonight's posts and grants, on what they hold over tonight's posts: after
@@ -746,7 +788,7 @@ class Society
     std::pair<std::int64_t, std::int64_t> carriageSplit(const std::string& payer, const std::string& item, int quantity, bool commit);
     // A ware's shelf (doc 68, 7): its starting stock, or a quarter more than sold of it yesterday, at most StoreDrawMost.
     int shelfOf(const std::string& till, const std::string& ware) const;
-    // The seasons in the Country's supply (doc 68, Progress, "Seasons and the DM's rules"): country.json's groups as this
+    // The seasons in the Country's supply (doc 68, Progress, "Seasons and the DM's rules"): city_loop.json's groups as this
     // world has them (EconomySpec::seasons), and where in the year the society is (0 at Spring's first day, up to 365;
     // -1 until it first decides, when no season applies: every factor 1, no cap). A factor is the group's percent for
     // the season whose middle day is nearest on either side, blended in a straight line, as a fraction (1: normal).
@@ -762,7 +804,7 @@ class Society
     double supplyFactor(const items::SeasonGroup& group) const;
     // What the Country can still supply of a good's group today (its normal × the supply factor, less what was drawn of
     // the group today); a large number for a good outside every capped group.
-    int countryLeft(const std::string& item) const;
+    int supplyLeft(const std::string& item) const;
     int groupCap(const items::SeasonGroup& group) const;
     int groupDrawn(const std::string& group) const;
     // The most `quantity` of a good costs a resident in a shop now (for whether it can pay): the catalogue's price, or the
@@ -851,7 +893,7 @@ class Society
     bool farmSells(const FarmNow& farm, std::size_t area, const std::string& item) const;
     double farmPriceFactor(const std::string& item) const;
     // How far the Country's basket has moved to its re-weighted one (0 to 1): the share of the food areas' takings on.
-    double countryBasketShift() const;
+    double wharfBasketShift() const;
     // A food farm's land rent (doc 72, open question 2): the percent of its takings it pays its House's estate each night
     // (the rule landRent<Area>, e.g. landRentFruit, where there is one, else landRent; a works none),
     // and what it owes tonight of its takings so far (its basket keeps it back through the day).
@@ -884,14 +926,14 @@ class Society
     // The world's economy settings replaced while it runs (the DM's economy.sync: doc 68, Progress): every rule the loop
     // and the store room read, at once; the treasury's and stores' starting amounts are kept (they were spent long ago).
     void adoptEconomy(const EconomySpec& economy);
-    // The residents' comforts as this world has them (EconomySpec, else country.json).
+    // The residents' comforts as this world has them (EconomySpec, else city_loop.json).
     int comfortsAbove() const;
     double comfortsShare() const;
-    // The loop's rules as this world has them (doc 68, Progress, "First fixes"): EconomySpec::rules, else country.json's,
+    // The loop's rules as this world has them (doc 68, Progress, "First fixes"): EconomySpec::rules, else city_loop.json's,
     // else items::Rules' own; -1 for a name that isn't a rule.
     int rule(const std::string& name) const;
-    // The city's services as this world has them (country.json's list, with this world's changes; the price items.json's
-    // unless changed), in country.json's order.
+    // The city's services as this world has them (city_loop.json's list, with this world's changes; the price items.json's
+    // unless changed), in city_loop.json's order.
     struct ServiceNow
     {
         std::string id, business;
@@ -902,7 +944,7 @@ class Society
     };
     const std::vector<ServiceNow>& services() const { return services_; }
     // Trades (doc 68, Progress, "Trades: medicine, the armoury's patrons, office heads"). The city sellers of a good a
-    // business uses (country.json `suppliers`: the cooper for the wine makers' casks), and how many armed wolves a
+    // business uses (city_loop.json `suppliers`: the cooper for the wine makers' casks), and how many armed wolves a
     // patron's group has (its posts, or its rule).
     std::vector<std::string> citySellers(const std::string& buyerBusiness, const std::string& item) const;
     int unitsOf(const items::PatronGroup& group) const;
@@ -912,10 +954,10 @@ class Society
     // the store room's price for it (resaleMarkup of the season's; at the seller's price it would leave the reseller
     // nothing), or the supplier's own `price`. The sellers are the city's makers and the country workshops alike.
     int buyFromCity(const std::string& till, const items::Business* business, const std::string& item, int want, bool resale = false);
-    // The percent of the catalogue's (the season's) price a seller of a business is paid for a good (country.json
+    // The percent of the catalogue's (the season's) price a seller of a business is paid for a good (city_loop.json
     // `suppliers`, its `price`; else 100 for a craft input, resaleMarkup for a good sold on).
     int supplierPrice(const std::string& buyerBusiness, const std::string& sellerBusiness, const std::string& item, bool resale) const;
-    // A luxury (country.json `luxuries`, doc 72, Phase 5: cheese): never bought as food, only from the luxuries' budget.
+    // A luxury (city_loop.json `luxuries`, doc 72, Phase 5: cheese): never bought as food, only from the luxuries' budget.
     static bool luxury(const std::string& item);
     // The crew's hours a till may hold in hand (workBankHours: that many hours of the crew; 0: the business's longest
     // craft and an hour more, at least two hours' worth).
@@ -924,7 +966,7 @@ class Society
     struct LoopDay
     {
         std::int64_t day = -1;
-        std::int64_t residentsSpent = 0, countrySpent = 0, countryUnspent = 0, drawn = 0, toll = 0, carriage = 0;
+        std::int64_t residentsSpent = 0, basketSpent = 0, basketUnspent = 0, drawn = 0, toll = 0, carriage = 0;
         std::int64_t wagesOwed = 0, wagesPaid = 0, profit = 0, subsidy = 0, alms = 0;
         // The treasury's wage support (paid to the posts of tills short of their wages; counted in wagesPaid too), and
         // the city's services: done, what households paid, and the treasury's share of it (doc 68, "First fixes").
@@ -934,7 +976,7 @@ class Society
         // patrons' work done and new kit, what the treasury and the Country paid, and by business (in serviceTrades'
         // kind).
         int cityTradePieces = 0, patronJobs = 0, patronPieces = 0;
-        std::int64_t cityTrade = 0, patronsTreasury = 0, patronsCountry = 0;
+        std::int64_t cityTrade = 0, patronsTreasury = 0, patronsEstates = 0;
         // Of the city trade, the goods bought to sell on (doc 72, Phase 5: the resale path), pieces and pennies, by good.
         int cityResalePieces = 0;
         std::int64_t cityResale = 0;
@@ -1016,12 +1058,12 @@ class Society
         std::map<std::string, std::int64_t> supportByTrade;   // The wage support paid tonight by trade (a farm's: "farm").
         // The Country's day by its parts (doc 72, Phase 0: "the Houses' estates and the sea trade", one purse): the works'
         // rents by House; its sales to the shops' store draws, its takings after the toll (the sea trade and the goods it
-        // still sends); its posts' wages owed and paid tonight, all and by country.json wage rule (its name).
+        // still sends); its posts' wages owed and paid tonight, all and by city_loop.json wage rule (its name).
         std::map<std::string, std::int64_t> rents;
         std::map<std::string, std::int64_t> landRents;         // The food farms' land rents by House ("the Crown" too).
-        std::int64_t countrySales = 0, countryPostsOwed = 0, countryPostsPaid = 0;
-        std::map<std::string, std::int64_t> countryPostsByRule;
-        std::map<std::string, int> countryPostsHeld;           // The posts held tonight, by the same rule.
+        std::int64_t wharfSales = 0, estatePostsOwed = 0, estatePostsPaid = 0;
+        std::map<std::string, std::int64_t> estatePostsByRule;
+        std::map<std::string, int> estatePostsHeld;           // The posts held tonight, by the same rule.
         // The Houses' estates (doc 72, Phase 6), by estate id: what came in (its House's rents, works' and farms'; the
         // Country's own sales are the wharf's), the Crown's grants in and out, tonight's posts owed and paid and how many,
         // what it bought (its basket, its tables, its patrons), and the money moved when the purse was split or folded.
@@ -1032,6 +1074,17 @@ class Society
             int posts = 0;
         };
         std::map<std::string, Estate> estates;
+        // The Wharf's day (doc 73, 7): by good, the pieces it landed and what the realm paid for them (its lot's share of
+        // the draws, the toll apart), and the pieces it took from the farms and what the beyond paid them (the toll apart);
+        // what its export basket spent; the beyond's pennies in and out; its fees; the credit's moves; and (-1 until the first
+        // shop hour) what the day's takes want of the beyond, kept back for them from the export basket before their hour.
+        struct WharfGood
+        {
+            int pieces = 0;
+            std::int64_t pennies = 0;
+        };
+        std::map<std::string, WharfGood> wharfImported, wharfTaken;
+        std::int64_t wharfIn = 0, wharfOut = 0, wharfFee = 0, wharfMoved = 0, wharfBasket = 0, wharfTakeWant = -1;
     };
     const LoopDay& loopToday() const { return loopToday_; }
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a
@@ -1190,7 +1243,7 @@ class Society
     void loopHourly(std::int64_t hour, int season);
     void householdsShop(int hourOfDay, std::int64_t day, int season);
     void giveAlms();
-    void countryBuys(int hourOfDay);
+    void estatesBuy(int hourOfDay);
     void patronsBuy(int hourOfDay, std::int64_t day);   // Each trade's patrons, once a day while it is open.
     std::map<std::string, std::int64_t> patronsDay_;    // Business -> the day its patrons last bought (not saved).
     std::unordered_map<std::string, std::vector<std::int64_t>> drawnDays_;   // Till -> its draws a day, the last 28 days.
@@ -1260,9 +1313,27 @@ class Society
     void payRents();                                // (A works' rent, a food farm's land rent, after the wages: doc 72.)
     void farmsBuy(int hourOfDay);
     bool farmSwitchTill(const std::string& till) const;
+    // `wharfFallback` (doc 73, 5: a farm's basket): a good on the Wharf's imports that no open maker holds is ordered from
+    // the Wharf (orderFromWharf) for its share.
     std::int64_t basketBuys(const std::string& fund, const std::vector<std::pair<const std::string*, double>>& basket, double budget,
                             std::int64_t keep, int hourOfDay, const std::vector<std::pair<std::string, const items::Business*>>& open,
-                            const char* saleKind, const char* usedKind, std::int64_t* carriageOut, bool workshopsFirst = false);
+                            const char* saleKind, const char* usedKind, std::int64_t* carriageOut, bool workshopsFirst = false,
+                            bool wharfFallback = false);
+    // The Wharf (RatwWharf.cpp, Docs/Design/73-the-wharf.md). The basket of the city's exports as the farms have moved it
+    // (the first market's, blended toward country_farms.json's wharfBasket: the estates' and the Wharf's own).
+    std::vector<std::pair<const std::string*, double>> wharfBasketNow() const;
+    // What the Wharf's lot of a draw or an order paid it (`coins`, the toll apart) for `n` landed pieces: the beyond's
+    // share sunk (with the valve on; its fee kept), the credit raised, the day's books.
+    void bookWharfLanding(const std::string& item, int n, std::int64_t coins);
+    // Money from beyond the realm into the Wharf's purse (minted), and from it back beyond (sunk); recorded with "beyond".
+    void wharfMint(std::int64_t coins, const std::string& why);
+    void wharfSink(std::int64_t coins, const std::string& why);
+    // The takes at WharfTakeHour (doc 73, 4.4): with `commit` false, only what they would want of the beyond today
+    // (pennies: prices, carriage and fees), within the lists' caps but not the export room.
+    std::int64_t wharfTakesRun(bool commit);
+    void wharfExports(int hourOfDay);               // The export basket (4.5), each shop hour after the estates'.
+    void settleWharf();                             // The standing levers, at 18:00 before the estates (4.6).
+    static constexpr int WharfTakeHour = 16;
     // The Houses' luxuries (doc 72, after country5): what the Country's purse spends today on luxuries for the Houses'
     // tables, out of `spare` (luxuryHouses percent of it), from the open shops holding them at their own price.
     std::int64_t housesLuxuries(const std::string& fund, std::int64_t spare,

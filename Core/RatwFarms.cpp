@@ -426,7 +426,7 @@ void Society::payRents()
     // the House whose land it is on, into the same purse, out of what is over its float: the share its basket would have
     // spent (farmsBuy keeps it back), never its wages or its float. Short of its wages, it pays none, and those takings'
     // rent is let go.
-    const bool purse = account(CountryFund) != nullptr;
+    const bool purse = account(WharfFund) != nullptr;
     const bool split = estatesOn();
     for (auto& f : farms_)
     {
@@ -513,7 +513,7 @@ void Society::farmsBuy(int hod)
             continue;
         auto& today = loopToday_.farms[f.def->id];
         today.basket += basketBuys(f.till, basket, double(spare) / double(ShopShut - hod), keep, hod, open, "to a farm",
-                                   "used at the farm", &today.basketCarriage, true);   // (The workshops first.)
+                                   "used at the farm", &today.basketCarriage, true, true);   // (The workshops first; the Wharf last.)
     }
 }
 
@@ -556,7 +556,7 @@ double Society::farmPriceFactor(const std::string& item) const
     return factor > 0 ? factor / 100. : 0;
 }
 
-double Society::countryBasketShift() const
+double Society::wharfBasketShift() const
 {
     // The share of the food areas' takings (the design's, country_farms.json) whose areas are on. (The works' areas are
     // not food: their goods were never in the Country's basket, and their rent keeps its purse; doc 72.)

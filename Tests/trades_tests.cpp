@@ -67,6 +67,7 @@ Society city(std::vector<ResidentSpec> residents, const std::function<void(Autho
     r.residents = std::move(residents);
     r.economy.treasury = 10000;
     r.economy.storeRule = true;
+    r.economy.rules["wharfValve"] = 0;              // (The Wharf's valve shut, doc 73: the Country's flows as these tests have them; wharf_tests and farms_tests open it.)
     if (change)
         change(r);
     Society s(Roster::None);
@@ -137,13 +138,13 @@ void theOfficeHeads()
     for (const auto& [id, label] : heads)
     {
         const bool country = id == "harbour" || id == "counting";
-        expect(pay(id).wage == 14 && pay(id).payer == (country ? std::string(Society::CountryFund) : std::string("treasury")),
+        expect(pay(id).wage == 14 && pay(id).payer == (country ? std::string(Society::WharfFund) : std::string("treasury")),
                label + ": a head's wage, 14p, from " + (country ? "the Country" : "the treasury") + "; it has " +
                    std::to_string(pay(id).wage) + "p from " + pay(id).payer);
     }
     expect(pay("commander").kind == "watch" && pay("commander").wage == 14, "the Watch's commander: the watch's post, a head's wage");
     expect(pay("sergeant").kind == "watch" && pay("sergeant").wage == 8, "the rest of the watch as before");
-    expect(pay("clerk").wage == 8 && pay("washer").wage == 8 && pay("docker").wage == 8 && pay("docker").payer == Society::CountryFund,
+    expect(pay("clerk").wage == 8 && pay("washer").wage == 8 && pay("docker").wage == 8 && pay("docker").payer == Society::WharfFund,
            "the offices' clerks and hands as before");
 }
 
@@ -159,7 +160,7 @@ void theCitySuppliers()
     expect(Society(Roster::None).citySellers("press", "barrel") == std::vector<std::string>{"cooperage"} &&
                Society(Roster::None).citySellers("brewery", "barrel") == std::vector<std::string>{"cooperage"} &&
                Society(Roster::None).citySellers("brewery", "grapes").empty(),
-           "the wine makers' casks come from the cooper (country.json's suppliers)");
+           "the wine makers' casks come from the cooper (city_loop.json's suppliers)");
     const auto* brewery = items::business("brewery");
     // Bought till to till, at the cooper's price.
     {
@@ -169,7 +170,7 @@ void theCitySuppliers()
             s.consume(cooper, "barrel", start, "test: its starting casks gone");
         s.create(cooper, "barrel", 3, "test: casks on the shelf");
         const auto money = s.moneySupply();
-        const auto c0 = s.cash(cooper), b0 = s.cash(brewer), country0 = s.cash(Society::CountryFund);
+        const auto c0 = s.cash(cooper), b0 = s.cash(brewer), country0 = s.cash(Society::WharfFund);
         const int had = Society::stock(*s.account(brewer), "barrel");
         const int got = s.buyFromCity(brewer, brewery, "barrel", 2);
         const auto price = Society::catalogPrice("barrel");
@@ -177,7 +178,7 @@ void theCitySuppliers()
                    Society::stock(*s.account(brewer), "barrel") == had + 2 && Society::stock(*s.account(cooper), "barrel") == 1,
                "two casks from the cooper's till at its price: " + std::to_string(got) + ", cooper " + std::to_string(s.cash(cooper) - c0) +
                    "p, brewer " + std::to_string(b0 - s.cash(brewer)) + "p");
-        expect(s.cash(Society::CountryFund) == country0 && s.conserved() && s.moneySupply() == money,
+        expect(s.cash(Society::WharfFund) == country0 && s.conserved() && s.moneySupply() == money,
                "the Country takes nothing (inside the walls: no toll, no carriage); conserved");
         expect(s.loopToday().cityTrade == 2 * price && s.loopToday().cityTradePieces == 2, "counted");
         expect(s.buyFromCity(brewer, brewery, "barrel", 5) == 1, "only what the cooper holds");
@@ -268,7 +269,7 @@ void thePhase4Suppliers()
         if (linenInTown)
             s.create(weaver, "linen_cloth", 3, "test: linen on the weaver's shelf");
         const auto money = s.moneySupply();
-        const auto country0 = s.cash(Society::CountryFund), treasury0 = s.cash("treasury"), carriage0 = s.cash(Society::CarriageFund);
+        const auto country0 = s.cash(Society::WharfFund), treasury0 = s.cash("treasury"), carriage0 = s.cash(Society::CarriageFund);
         const auto weaver0 = s.cash(weaver), tailor0 = s.cash(tailor);
         for (int h = 0; h < 40; ++h)
             s.restockFromStore("tailor", 1 + h / 24.);
@@ -287,11 +288,11 @@ void thePhase4Suppliers()
                        tailor0 - s.cash(tailor) == paid,
                    "the linen from the weaver's till at its price, none from the store room: " + std::to_string(from["weaver"]) +
                        " pieces, " + std::to_string(paid) + "p");
-            expect(s.cash(Society::CountryFund) == country0 && s.cash("treasury") == treasury0 && s.cash(Society::CarriageFund) == carriage0,
+            expect(s.cash(Society::WharfFund) == country0 && s.cash("treasury") == treasury0 && s.cash(Society::CarriageFund) == carriage0,
                    "till to till inside the walls: the Country takes nothing, no toll, no carriage");
         }
         else
-            expect(from["weaver"] == 0 && from["store"] > 0 && s.cash(Society::CountryFund) > country0,
+            expect(from["weaver"] == 0 && from["store"] > 0 && s.cash(Society::WharfFund) > country0,
                    "the weaver out of linen: the store room's, the Country paid for it");
         return from;
     };
@@ -317,7 +318,7 @@ void thePatrons()
                               change(r);
                       });
         s.create(s.tillOf("armourer"), "kettle_helm", 200, "test: plenty of helms");
-        s.shift("treasury", Society::CountryFund, "", 0, 3000, "test: the estates' money");
+        s.shift("treasury", Society::WharfFund, "", 0, 3000, "test: the estates' money");
         const auto money = s.moneySupply();
         std::vector<EconomyEntry> journal;
         run(s, 1 + 7.9 / 24, 1 + 17.5 / 24, [&](const std::vector<EconomyEntry>& j) { journal.insert(journal.end(), j.begin(), j.end()); });
@@ -337,7 +338,7 @@ void thePatrons()
         }
         if (e.kind == "a patron's new kit")
         {
-            const auto& pieces = items::country().patrons.front().pieces;
+            const auto& pieces = items::cityLoop().patrons.front().pieces;
             expect(e.to == till && std::find(pieces.begin(), pieces.end(), e.item) != pieces.end() && e.coins == Society::catalogPrice(e.item),
                    "new kit, one of the pieces, at its price: " + e.item);
             if (e.from == "treasury")
@@ -345,11 +346,11 @@ void thePatrons()
             kit[e.from] += 1;
         }
     }
-    const int houses = items::country().patrons.front().groups.back().units;
+    const int houses = items::cityLoop().patrons.front().groups.back().units;
     expect(work["treasury"] == 3 * 4 && kit["treasury"] == 3, "the Watch: four kinds of mending and a piece for each of its three: " +
                                                                    std::to_string(work["treasury"]) + ", " + std::to_string(kit["treasury"]));
-    expect(work[Society::CountryFund] > 0 && kit[Society::CountryFund] > 0 && work[Society::CountryFund] <= 4 * houses,
-           "the Houses' retainers, paid by their estates (the Country), as far as it can spare: " + std::to_string(work[Society::CountryFund]));
+    expect(work[Society::WharfFund] > 0 && kit[Society::WharfFund] > 0 && work[Society::WharfFund] <= 4 * houses,
+           "the Houses' retainers, paid by their estates (the Country), as far as it can spare: " + std::to_string(work[Society::WharfFund]));
     for (const auto& [id, a] : s.state().accounts)
         for (const char* v : {"armour_mended", "dent_beaten_out", "straps_replaced", "blade_ground"})
             expect(Society::stock(a, v) == 0, std::string("the work is never kept: ") + v + " in " + id);

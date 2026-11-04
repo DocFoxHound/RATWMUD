@@ -71,9 +71,10 @@ Society city(std::vector<ResidentSpec> residents, std::int64_t treasury, std::ma
     r.residents = std::move(residents);
     r.economy.treasury = treasury;
     r.economy.storeRule = true;
-    r.economy.country = false;
+    r.economy.wharf = false;
     std::map<std::string, int> base = {{"services", 0}, {"patrons", 0}, {"surplus", 0}, {"stockPrices", 0},
-                                       {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}};
+                                       {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0},
+                                       {"wharfValve", 0}};   // (The Wharf's valve shut, doc 73: the Country's flows as these tests have them; wharf_tests and farms_tests open it.)
     for (const auto& [k, v] : rules)
         base[k] = v;
     r.economy.rules = base;

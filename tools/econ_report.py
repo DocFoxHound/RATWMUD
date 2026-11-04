@@ -45,13 +45,35 @@ DAMPING = 0.5              # The share of the way from a yield now to the patch'
 CLASS_NAMES = {'lower': 'lower (the Sump, the Rents)', 'middle': 'middle', 'upper': 'upper (the Houses)'}
 
 
+# The economy lines' keys before doc 73 (Docs/Design/73-the-wharf.md, 2.1): an older run's read under the Wharf's names.
+OLD_KEYS = {'country': 'wharf', 'country_spent': 'basket_spent', 'country_unspent': 'basket_unspent',
+            'country_sales': 'wharf_sales', 'country_rents': 'estate_rents', 'country_rents_by_house': 'estate_rents_by_house',
+            'country_land_rents': 'estate_land_rents', 'country_land_rents_by_house': 'estate_land_rents_by_house',
+            'country_posts_owed': 'estate_posts_owed', 'country_posts_paid': 'estate_posts_paid',
+            'country_posts_by_rule': 'estate_posts_by_rule', 'country_posts_held': 'estate_posts_held',
+            'patrons_country': 'patrons_estates', 'country_basket_shift': 'wharf_basket_shift'}
+
+
+def renamed(row):
+    """An economy line with an older run's Country keys under the Wharf's (the new name wins where both are)."""
+    if not any(k in row for k in OLD_KEYS):
+        return row
+    out = {}
+    for k, v in row.items():
+        out.setdefault(OLD_KEYS.get(k, k), v)
+    for k, v in row.items():
+        if k not in OLD_KEYS:
+            out[k] = v
+    return out
+
+
 def economy_lines(path):
     rows = []
     if path and Path(path).exists():
         with open(path) as f:
             for line in f:
                 if line.strip():
-                    rows.append(json.loads(line))
+                    rows.append(renamed(json.loads(line)))
     return rows
 
 
@@ -444,9 +466,11 @@ def report(econ, run, top, patch_path):
                          f'{buyer} {bp / x[1]:.0%}' if x[1] else buyer, f'{short_name(seller)} {sp / x[1]:.0%}' if x[1] else seller])
         out += table(['good', 'pieces/day', 'pennies/day', 'price factor', 'largest buyer', 'largest seller'], rows)
         say('')
-    # The Country by its parts (doc 72, Phase 0: one purse, "the Houses' estates and the sea trade").
-    if econ and any('country_sales' in r for r in econ):
+    # The Wharf and the Houses' estates (doc 72, Phase 0: one purse, "the Houses' estates and the sea trade"; doc 73).
+    if econ and any('wharf_sales' in r for r in econ):
         say(country_lines(econ))
+    if econ and any(r.get('wharf_day') for r in econ):
+        say(wharf_lines(econ))
     # The makers' goods sold on, the country workshops and the luxuries (doc 72, Phase 5).
     if econ and any('city_resale' in r for r in econ):
         say(phase5_lines(econ))
@@ -550,11 +574,54 @@ def report(econ, run, top, patch_path):
     return '\n'.join(out) + '\n'
 
 
+def wharf_lines(econ):
+    """The Wharf beyond the realm (Docs/Design/73-the-wharf.md, 7), a day (the economy lines' means): by good, what it
+    landed (pieces, and what the realm paid for them after the toll) and what it took from the farms (pieces, and what the
+    beyond paid them); its export basket; the beyond's pennies in and out, net, by season too; its fees; the credit at the
+    start, the end and its least, and its moves; the money's check (in - out against the realm's money's change)."""
+    days = [(r, r['wharf_day']) for r in econ if r.get('wharf_day')]
+    n = max(1, len(days))
+    landed, landedP, taken, takenP = (collections.Counter() for _ in range(4))
+    for _, w in days:
+        for g, (pieces, pennies) in (w.get('imported') or {}).items():
+            landed[g] += pieces
+            landedP[g] += pennies
+        for g, (pieces, pennies) in (w.get('taken') or {}).items():
+            taken[g] += pieces
+            takenP[g] += pennies
+    mean = lambda key: sum(w.get(key, 0) for _, w in days) / n
+    credits = [w.get('credit', 0) for _, w in days]
+    out = ['## The Wharf: beyond the realm', '',
+           f'The valve {"on" if any(w.get("valve") for _, w in days) else "off"} ({n} days). A day: the beyond paid in '
+           f'{mean("in"):.0f}p and was paid {mean("out"):.0f}p (net {mean("in") - mean("out"):+.0f}p into the realm); '
+           f'the Wharf\'s fees {mean("fee"):.0f}p; its export basket {mean("basket"):.0f}p; the credit moved {mean("moved"):+.0f}p.',
+           f'The credit: {credits[0]} -> {credits[-1]}p (least {min(credits)}, most {max(credits)}).', '']
+    by_season = collections.defaultdict(lambda: [0, 0, 0])
+    for r, w in days:
+        s = by_season[r.get('season', '?')]
+        s[0] += w.get('in', 0)
+        s[1] += w.get('out', 0)
+        s[2] += 1
+    if len(by_season) > 1:
+        out += table(['season', 'in a day', 'out a day', 'net a day'],
+                     [[k, f'{v[0] / v[2]:.0f}', f'{v[1] / v[2]:.0f}', f'{(v[0] - v[1]) / v[2]:+.0f}'] for k, v in by_season.items()]) + ['']
+    goods = sorted(set(landed) | set(taken), key=lambda g: -(landedP[g] + takenP[g]))
+    if goods:
+        out += table(['good', 'landed a day', 'paid for it a day', 'taken a day', 'the beyond paid a day'],
+                     [[g, f'{landed[g] / n:.1f}', f'{landedP[g] / n:.1f}', f'{taken[g] / n:.1f}', f'{takenP[g] / n:.1f}']
+                      for g in goods]) + ['']
+    first, last = days[0][0], days[-1][0]
+    if 'money' in first and 'money' in last:
+        net = days[-1][1].get('book_in', 0) - days[-1][1].get('book_out', 0) - (days[0][1].get('book_in', 0) - days[0][1].get('book_out', 0))
+        out += [f'The realm\'s money {first["money"]} -> {last["money"]}p; the Wharf\'s net over the same days {net:+d}p.', '']
+    return '\n'.join(out)
+
+
 def country_lines(econ):
-    """The Country's purse by its parts, a day (the economy lines' means): in, its own goods' sales to the shops after the
-    toll (the sea trade and what it still sends), the works' rents by House (the estates') and the food farms' land rents
-    by House (doc 72, open question 2); out, its posts by wage
-    rule (paid of owed, and the posts held) and its basket; and its purse."""
+    """The Wharf's purse and the Houses' estates by their parts, a day (the economy lines' means; doc 73: the Country's
+    before): in, the Wharf's own goods' sales to the shops after the toll (the sea trade and what it still lands), the
+    works' rents by House (the estates') and the food farms' land rents by House (doc 72, open question 2); out, the
+    estates' posts by wage rule (paid of owed, and the posts held) and their basket; and the Wharf's purse."""
     n = max(1, len(econ))
     mean = lambda key: sum(r.get(key, 0) for r in econ) / n
     def by(key):
@@ -562,22 +629,22 @@ def country_lines(econ):
         for r in econ:
             total.update(r.get(key) or {})
         return total
-    rents, rules, held = by('country_rents_by_house'), by('country_posts_by_rule'), by('country_posts_held')
-    land = by('country_land_rents_by_house')
+    rents, rules, held = by('estate_rents_by_house'), by('estate_posts_by_rule'), by('estate_posts_held')
+    land = by('estate_land_rents_by_house')
     named = lambda h: h if h.startswith('the ') else f'House {h}'   # ("the Crown")
-    out = ['## The Country: "the Houses\' estates and the sea trade"', '',
-           f'In (a day): its goods to the shops {mean("country_sales"):.0f}p (after the toll); the estates\' rents '
-           f'{mean("country_rents"):.0f}p' + (' (' + ', '.join(f'{named(h)} {v / n:.0f}p' for h, v in rents.most_common()) + ')' if rents else '')
-           + (f'; the farms\' land rents {mean("country_land_rents"):.0f}p ('
+    out = ['## The Wharf and the Houses\' estates', '',
+           f'In (a day): the Wharf\'s goods to the shops {mean("wharf_sales"):.0f}p (after the toll); the estates\' rents '
+           f'{mean("estate_rents"):.0f}p' + (' (' + ', '.join(f'{named(h)} {v / n:.0f}p' for h, v in rents.most_common()) + ')' if rents else '')
+           + (f'; the farms\' land rents {mean("estate_land_rents"):.0f}p ('
               + ', '.join(f'{named(h)} {v / n:.0f}p' for h, v in land.most_common()) + ')' if land else '')
            + '.',
-           f'Out (a day): its posts {mean("country_posts_paid"):.0f}p of {mean("country_posts_owed"):.0f}p owed'
+           f'Out (a day): the estates\' posts {mean("estate_posts_paid"):.0f}p of {mean("estate_posts_owed"):.0f}p owed'
            + (' (' + ', '.join(f'{k} {v / n:.0f}p, {held[k] / n:.0f} posts' for k, v in rules.most_common()) + ')' if rules else '')
-           + f'; its basket {mean("country_spent"):.0f}p.',
-           # (Split into the Houses' estates, doc 72, Phase 6: the Country's own purse is the wharf's, House Grayrock's;
-           # the others' are in the estates' table below.)
-           ('Its own purse (the wharf\'s, House Grayrock\'s; the other estates\' below)' if any(r.get('estates') for r in econ) else 'Its purse')
-           + f': {econ[0].get("country")} -> {econ[-1].get("country")}p (least {min(r.get("country", 0) for r in econ)}).', '']
+           + f'; their basket {mean("basket_spent"):.0f}p.',
+           # (Split into the Houses' estates, doc 72, Phase 6: the Wharf's purse is House Grayrock's; the others' are in
+           # the estates' table below.)
+           ('The Wharf\'s purse (House Grayrock\'s; the other estates\' below)' if any(r.get('estates') for r in econ) else 'The Wharf\'s purse')
+           + f': {econ[0].get("wharf")} -> {econ[-1].get("wharf")}p (least {min(r.get("wharf", 0) for r in econ)}).', '']
     out += estates_lines(econ)
     return '\n'.join(out)
 
@@ -603,8 +670,8 @@ def estates_lines(econ):
                      f'{mean("posts_paid"):.0f}/{mean("posts_owed"):.0f}',
                      sum(1 for x in open_ if x.get('posts_paid', 0) < x.get('posts_owed', 0)), f'{mean("spent"):.0f}',
                      f'{purses[0]} -> {purses[-1]} (least {min(purses)})'])
-    return ([f'The Houses\' estates (a day over the {n} days they were split; the Country\'s own sales are House Grayrock\'s, '
-             'which runs the wharf):', ''] +
+    return ([f'The Houses\' estates (a day over the {n} days they were split; the Wharf\'s own sales are House Grayrock\'s, '
+             'which runs it):', ''] +
             table(['estate', 'posts', 'rents in', 'grants in', 'grants out', 'levy in/out', 'posts paid/owed', 'nights short', 'bought', 'purse'], rows)
             + [''])
 

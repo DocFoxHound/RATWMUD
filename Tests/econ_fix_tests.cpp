@@ -1,5 +1,5 @@
 // The first economy fixes of Ridgemere 2.0 (Docs/Design/68-the-country-and-the-city-loop.md, Progress, "First fixes"):
-// the loop's rules as settings (country.json's `rules`, a world's `rule` records), and what each does. Comforts that
+// the loop's rules as settings (city_loop.json's `rules`, a world's `rule` records), and what each does. Comforts that
 // spend savings (no 20-a-day limit); fair food within a household (the least fed first, everyone to a day before anyone
 // to two, only food someone can pay for); the alms as a setting; the treasury over its cap paying the short tills'
 // posts; the work bank holding a business's longest craft; the wage rules' heads' posts; and the city's services,
@@ -72,7 +72,7 @@ Society city(std::vector<ResidentSpec> residents, std::vector<Kin> kin, const st
     // The first fixes' loop: the later rules as they were (trades_tests, treasury_tests and selfcorrect_tests have theirs;
     // doc 68, "Trades", "The treasury's surplus", "Self-correcting rules").
     r.economy.rules = {{"subsidyToNeed", 0}, {"floatDrawDays", 1}, {"buyAheadDays", 0}, {"patrons", 0}, {"suppliers", 0}, {"surplus", 0},
-                       {"stockPrices", 0}, {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}};
+                       {"stockPrices", 0}, {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}, {"wharfValve", 0}};
     if (change)
         change(r);
     Society s(Roster::None);
@@ -139,7 +139,7 @@ void theRulesAndTheirRecords()
     auto s = city({person("fish", "merchant", "fishmonger at the Fish Hall", {"hall", 2.5, 2.5}, "home_fish")}, {});
     expect(s.rule("comfortsMost") == 200 && s.rule("almsADay") == 10 && s.rule("treasuryCap") == 2000 && s.rule("wageSupport") == 100 &&
                s.rule("workBankHours") == 0 && s.rule("fairFood") == 1 && s.rule("services") == 1 && s.rule("servicesCityShare") == 30,
-           "the rules as country.json has them");
+           "the rules as city_loop.json has them");
     expect(s.rule("nonsense") == -1, "a name that isn't a rule");
     expect(s.comfortsAbove() == 40 && std::abs(s.comfortsShare() - .2) < 1e-9, "comforts over 40p a head, a fifth a day");
     expect(std::count_if(s.services().begin(), s.services().end(), [](const auto& v) { return !v.patron; }) == 12,
@@ -169,11 +169,11 @@ void theRulesAndTheirRecords()
         expect(r.ok, "the rule and service records load: " + r.message);
         const auto& so = w.society();
         expect(so.rule("almsADay") == 12 && so.rule("treasuryCap") == 500 && so.rule("fairFood") == 0 && so.rule("comfortsMost") == 200,
-               "the world's rules, the rest country.json's");
+               "the world's rules, the rest city_loop.json's");
         const auto& groom = so.services().front();
         expect(groom.id == "groom_and_trim" && !groom.on && groom.price == 2 && groom.every == 9, "the world's groom and trim");
-        expect(so.services()[1].on && so.services()[1].price == items::good("tooth_drawn")->price, "the others as country.json has them");
-        expect(so.authored().economy.services.count("gone_away"), "a service country.json no longer lists is kept, and does nothing");
+        expect(so.services()[1].on && so.services()[1].price == items::good("tooth_drawn")->price, "the others as city_loop.json has them");
+        expect(so.authored().economy.services.count("gone_away"), "a service city_loop.json no longer lists is kept, and does nothing");
     }
     for (const auto* bad : {"rule \"almsADay\" 1001\n", "rule \"nonsense\" 1\n", "rule \"fairFood\" 2\n", "rule almsADay 10\n",
                             "rule \"almsADay\" 10\nrule \"almsADay\" 11\n", "rule \"almsADay\" x\n", "rule \"almsADay\" 10 11\n",
@@ -337,8 +337,8 @@ void theHeadsPostsArePaid()
     expect(pay("queen").payer == "treasury" && pay("queen").wage == 14, "the Queen: the treasury, a head's wage");
     expect(pay("office").payer == "treasury" && pay("office").wage == 14, "the City Office's head: the treasury, a head's wage");
     expect(pay("clerk").payer == "treasury" && pay("clerk").wage == 8, "its clerks as before");
-    expect(pay("lender").payer == Society::CountryFund && pay("lender").wage == 14, "a House's lending: its estates (the Country)");
-    expect(pay("aldric").payer == Society::CountryFund && pay("aldric").wage == 14, "the Grayrock wharf: the Country");
+    expect(pay("lender").payer == Society::WharfFund && pay("lender").wage == 14, "a House's lending: its estates (the Country)");
+    expect(pay("aldric").payer == Society::WharfFund && pay("aldric").wage == 14, "the Grayrock wharf: the Country");
 }
 
 // The barbers, a household with savings and one without.

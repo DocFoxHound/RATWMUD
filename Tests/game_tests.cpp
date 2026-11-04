@@ -1772,15 +1772,16 @@ void theStoreRoomConsole()
             continue;
         }
         expect(reply && reply->boolean("ok") && reply->string("text").find("iron_bar (making)") != std::string::npos &&
-                   reply->string("text").find("outside:country") != std::string::npos,
-               "/store brann lists the smith's goods and the Country's purse: " + (reply ? reply->string("text") : ""));
+                   reply->string("text").find("outside:wharf") != std::string::npos,
+               "/store brann lists the smith's goods and the Wharf's purse: " + (reply ? reply->string("text") : ""));
         const auto till = g.world().society().tillOf("brann");
         const auto cash = g.world().society().cash(till);
         g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann iron_bar 2"}}));
         reply = ada.last("devResult");
-        // (The cost to the Country, less the gate toll (30%), the treasury's: doc 68.)
+        // (The cost to the Wharf, less the gate toll (30%), the treasury's: doc 68; the Wharf keeps a tenth of it, the rest
+        // paid beyond the realm: doc 73.)
         const auto drawnCost = 2 * Society::catalogPrice("iron_bar");
-        expect(reply && reply->boolean("ok") && g.world().society().cash(Society::CountryFund) == drawnCost - drawnCost * 30 / 100 &&
+        expect(reply && reply->boolean("ok") && g.world().society().cash(Society::WharfFund) == (drawnCost - drawnCost * 30 / 100) / 10 &&
                    g.world().society().cash(till) == cash - 2 * Society::catalogPrice("iron_bar"),
                "/store brann iron_bar 2 draws them: " + (reply ? reply->string("text") : ""));
         g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann flour 1"}}));

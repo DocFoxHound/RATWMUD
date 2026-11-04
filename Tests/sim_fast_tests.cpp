@@ -360,7 +360,7 @@ void theHarness(const std::string& binary, const fs::path& root)
         expect(households == e.number("residents_spent") + e.number("services_spent"),
                "households' purchases are the residents' spending and services: " + std::to_string(households) + " " +
                    std::to_string(e.number("residents_spent")));
-        expect(country == e.number("country_spent") + e.number("patrons_country"), "the Country's purchases and patrons");
+        expect(country == e.number("basket_spent") + e.number("patrons_estates"), "the Country's purchases and patrons");
         expect(crews == e.number("farms_crew_spent"), "the crews' spending");
         expect(draws == e.number("drawn"), "the store draws: " + std::to_string(draws) + " " + std::to_string(e.number("drawn")));
         expect(grown == e.number("farms_grown"), "the farms' goods grown, by good, add up");

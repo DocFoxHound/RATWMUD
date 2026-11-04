@@ -249,7 +249,7 @@ class StoreTests(unittest.TestCase):
         # Doc 68, 9: the loop's settings in live.economy and in the export's records ("loop", "countryoff", "subsidy"
         # after the "store" line); back at the defaults, no records.
         p = greyfen()
-        p['economy'] = {**p['economy'], 'gateToll': 30, 'carriage': 9, 'wageHand': 7, 'countryOff': ['fish', 'flour'],
+        p['economy'] = {**p['economy'], 'gateToll': 30, 'carriage': 9, 'wageHand': 7, 'wharfOff': ['fish', 'flour'],
                         'subsidies': {'carriage': 40}}
         self.create(p)
         loaded, revision = S.load_world(self.conn, 'greyfen')
@@ -269,14 +269,14 @@ class StoreTests(unittest.TestCase):
         again, _ = S.load_world(self.conn, 'greyfen')
         lines = E.export_files(again, R.load())['world.ratw'].split('\n')
         self.assertFalse(any(l.startswith(('loop ', 'countryoff ', 'subsidy ')) for l in lines), 'at the defaults: no loop records')
-        for bad in ({'gateToll': 91}, {'carriage': -1}, {'needsPaused': 'no'}, {'countryOff': ['fish', 'fish']},
+        for bad in ({'gateToll': 91}, {'carriage': -1}, {'needsPaused': 'no'}, {'wharfOff': ['fish', 'fish']},
                     {'subsidies': {'roads': 10}}, {'subsidies': {'carriage': 101}}, {'wageKeeper': 1001}):
             with self.assertRaises(E.ValidationError, msg=str(bad)):
                 E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
 
     def test_seasons_and_comforts_round_trip(self):
         # Doc 68, Progress, "Seasons and the DM's rules" (migration 0057): the seasons and the comforts in live.economy
-        # and in the export's records ("comforts", "season" after the loop's); back at country.json's, no records.
+        # and in the export's records ("comforts", "season" after the loop's); back at city_loop.json's, no records.
         p = greyfen()
         grain = {'supply': [50, 100, 150, 40], 'price': [120, 100, 80, 130], 'shelf': [100, 100, 100, 100], 'normal': 90}
         p['economy'] = {**p['economy'], 'comfortsAbove': 40, 'comfortsShare': None, 'seasons': {'grain': grain}}
@@ -296,7 +296,7 @@ class StoreTests(unittest.TestCase):
         S.save_world(self.conn, loaded, revision)
         again, _ = S.load_world(self.conn, 'greyfen')
         lines = E.export_files(again, R.load())['world.ratw'].split('\n')
-        self.assertFalse(any(l.startswith(('comforts ', 'season ')) for l in lines), 'as country.json has them: no records')
+        self.assertFalse(any(l.startswith(('comforts ', 'season ')) for l in lines), 'as city_loop.json has them: no records')
         for bad in ({'comfortsAbove': -1}, {'comfortsShare': 101}, {'seasons': {'grain': {**grain, 'supply': [1, 2, 3]}}},
                     {'seasons': {'grain': {**grain, 'price': [9, 100, 100, 100]}}}, {'seasons': {'Grain!': grain}},
                     {'seasons': {'grain': {**grain, 'colour': 1}}}, {'seasons': []}):
@@ -305,7 +305,7 @@ class StoreTests(unittest.TestCase):
 
     def test_rules_and_services_round_trip(self):
         # Doc 68, Progress, "First fixes" (migration 0058): the rules and the services in live.economy and in the
-        # export's records ("rule", "service" after the comforts' and seasons'); back at country.json's, no records.
+        # export's records ("rule", "service" after the comforts' and seasons'); back at city_loop.json's, no records.
         p = greyfen()
         p['economy'] = {**p['economy'], 'comfortsAbove': 50, 'rules': {'almsADay': 12, 'treasuryCap': 3000, 'fairFood': 0},
                         'services': {'groom_and_trim': {'on': False, 'price': 2, 'every': 5}}}
@@ -329,7 +329,7 @@ class StoreTests(unittest.TestCase):
         again, _ = S.load_world(self.conn, 'greyfen')
         self.assertEqual((again['economy']['rules'], again['economy']['services']), ({}, {}))
         lines = E.export_files(again, R.load())['world.ratw'].split('\n')
-        self.assertFalse(any(l.startswith(('rule ', 'service ')) for l in lines), 'as country.json has them: no records')
+        self.assertFalse(any(l.startswith(('rule ', 'service ')) for l in lines), 'as city_loop.json has them: no records')
         trim = {'on': True, 'price': 1, 'every': 4}
         for bad in ({'rules': {'almsADay': 1001}}, {'rules': {'fairFood': 2}}, {'rules': {'luck': 1}}, {'rules': {'treasuryCap': -1}},
                     {'rules': {'servicesCityShare': 101}}, {'rules': []}, {'services': {'haircut': trim}},
@@ -486,14 +486,14 @@ class WithoutMigration56Tests(unittest.TestCase):
             self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.STORE_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
             raise psycopg.Rollback
         self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'storeRule': True}}, revision), revision + 1)
-        for change in ({'gateToll': 10}, {'countryOff': ['fish']}, {'subsidies': {'carriage': 0}}):
+        for change in ({'gateToll': 10}, {'wharfOff': ['fish']}, {'subsidies': {'carriage': 0}}):
             with self.assertRaisesRegex(S.StoreError, '0056'):
                 S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
 
 
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
 class WithoutMigration57Tests(unittest.TestCase):
-    """A world with 0056 but not 0057 loads and saves as before, its loop's settings too, reading country.json's seasons
+    """A world with 0056 but not 0057 loads and saves as before, its loop's settings too, reading city_loop.json's seasons
     and comforts; a season or comforts setting is refused, naming 0057."""
 
     @classmethod
@@ -535,7 +535,7 @@ class WithoutMigration57Tests(unittest.TestCase):
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
 class WithoutMigration58Tests(unittest.TestCase):
     """A world with 0057 but not 0058 loads and saves as before, its seasons' and comforts' settings too, reading
-    country.json's rules and services; a rule or service setting is refused, naming 0058."""
+    city_loop.json's rules and services; a rule or service setting is refused, naming 0058."""
 
     @classmethod
     def setUpClass(cls):

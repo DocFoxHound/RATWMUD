@@ -1,20 +1,22 @@
 // Money: where the world's money is, as last saved. Each town's treasury, church and buyers; the great houses and the
 // shops' tills; residents' purses by kind of work, the poorest and richest tenth and how many are short of a day's food
-// money; money on the road. (Nothing moves it of itself since the economy's rules were erased, and the levers on them
-// went with them: Docs/Design/66-worlds-atlas-and-dm.md, Phase 5.)
+// money; money on the road; and beyond the realm (Docs/Design/73-the-wharf.md, 6): the Wharf's book with the world
+// beyond, and the form that moves its trade credit (the action wharf.credit, audited; money comes in only as goods the
+// beyond buys, and leaves only as goods landed).
 import {useCallback, useEffect, useState} from 'react';
 import {dmApi, type Me, type Money, type Target} from './api';
+import {WharfCredit} from './WharfCredit';
 
 const p = (n: number | null | undefined) => n === null || n === undefined ? '—' : `${Math.round(n).toLocaleString()}p`;
 const title = (id: string) => id.replace(/^(house|stores|town):/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
 /** (`me` is taken for the tabs' sake; the money view is the same for every role.) */
-// The funds' names (docs 67, 68): the Country's purse, carriage where a world has no carters' yard, the old store fund;
-// the Houses' estates (doc 72, Phase 6: estate:<id>; Grayrock's is the Country's purse, the wharf's, while they are split:
-// with the rule off there is no estate:<id> purse and it is the Country's one purse again).
+// The funds' names (docs 67, 68, 73): the Wharf's purse (the Country's before doc 73), carriage where a world has no
+// carters' yard, the old store fund; the Houses' estates (doc 72, Phase 6: estate:<id>; Grayrock's is the Wharf's purse
+// while they are split: with the rule off there is no estate:<id> purse and it is the one purse again).
 const ESTATES: Record<string, string> = {greatly: 'House Greatly', timberland: 'House Timberland', fell: 'House Fell', crown: 'The Crown'};
 function fundName(id: string, split = false) {
-    if (id === 'outside:country') return split ? 'The Country\'s purse (House Grayrock\'s estate: the wharf)' : 'The Country\'s purse';
+    if (id === 'outside:wharf' || id === 'outside:country') return split ? 'The Wharf\'s purse (House Grayrock\'s estate)' : 'The Wharf\'s purse';
     if (id.startsWith('estate:')) return `${ESTATES[id.slice(7)] ?? title(id.slice(7))}'s estate`;
     if (id.startsWith('outside:')) return `Outside market: ${id.slice(8)}`;
     if (id === 'fund:carriage') return 'Carriage (no carters\' yard)';
@@ -23,7 +25,7 @@ function fundName(id: string, split = false) {
 }
 function fundTitle(id: string) {
     if (id.startsWith('estate:')) return 'Its lands\' rents in, its own people\'s wages out; the Crown\'s grants any estate short of its posts (doc 72, Phase 6)';
-    if (id.startsWith('outside:')) return 'What the store room\'s draws paid it, less the gate toll; it spends it back on the city\'s goods (doc 68)';
+    if (id.startsWith('outside:')) return 'What the store room\'s draws paid it for the goods it lands, less the gate toll and what it paid beyond the realm; it pays the wharf\'s posts (docs 68, 73)';
     if (id === 'fund:carriage') return 'Carriage paid where the world has no carters\' yard to take it (doc 68, 6)';
     return id;
 }
@@ -80,6 +82,18 @@ export function MoneyTab({target}: {target: Target; me?: Me}) {
                     {(data.carters ?? []).map(c => <tr key={c.id}><td title={`${c.label}: what carriage paid the yard (doc 68)`}>Carters: {c.name}</td>
                         <td className="num">{p(c.cash)}</td></tr>)}
                 </tbody></table>
+                {data.beyond && <>
+                    <h3>Beyond the realm</h3>
+                    <table className="dm-table"><tbody>
+                        <tr title="Paid in by the world beyond for the realm's goods (the Wharf's takes, its export basket, carriage, wharfage)"><td>In from beyond</td><td className="num">{p(data.beyond.in)}</td></tr>
+                        <tr title="Paid out to the world beyond for the goods the Wharf landed (less its wharfage)"><td>Out to beyond</td><td className="num">{p(data.beyond.out)}</td></tr>
+                        <tr><td>Net into the realm</td><td className="num">{p(data.beyond.net)}</td></tr>
+                        <tr><td>The Wharf's fees kept</td><td className="num">{p(data.beyond.fee)}</td></tr>
+                        <tr title="What the realm has paid beyond and not had back: the beyond buys only within it"><td>Trade credit now</td><td className="num">{p(data.beyond.credit)}</td></tr>
+                        <tr title="By the DM's actions and the rules wharfInjectADay and wharfTakeADay"><td>Credit moved, all</td><td className="num">{p(data.beyond.moved)}</td></tr>
+                    </tbody></table>
+                    <WharfCredit target={target} onDone={() => void load()} />
+                </>}
             </div>
         </div>}
     </div>;

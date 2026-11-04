@@ -540,14 +540,14 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 !wage(countryWage))
                 return reject("Invalid or duplicate loop record.");
             e.needsPaused = needs == "off";
-            e.country = country == "on";
-            e.countryReserve = reserve;
+            e.wharf = country == "on";
+            e.wharfReserve = reserve;
             e.gateToll = toll;
             e.carriage = carriage;
             e.wageKeeper = keeper;
             e.wageHand = hand;
             e.wagePublic = publicWage;
-            e.wageCountry = countryWage;
+            e.wageWharf = countryWage;
             loop = true;
         }
         else if (command == "subsidy")
@@ -567,7 +567,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         else if (command == "comforts")
         {
             // The residents' comforts (doc 68, 3; migration 0057), once: comforts ABOVE SHARE, either "-" for
-            // country.json's: pennies a head held before a household buys them, and the percent of the excess a day.
+            // city_loop.json's: pennies a head held before a household buys them, and the percent of the excess a day.
             std::string above, share;
             fields >> above >> share;
             const auto read = [](const std::string& word, int high, int& into) {
@@ -592,6 +592,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
             if (!quoted(fields, name))
                 return reject("Malformed rule record.");
             fields >> value;
+            name = items::ruleName(name);           // (An old name, doc 73: as the new.)
             const auto* info = items::ruleInfo(name);
             if (!fields || !end(fields) || !info || value < info->low || value > info->high)
                 return reject("Invalid rule record: " + name);
@@ -601,7 +602,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         else if (command == "service")
         {
             // A city service as this world has it (doc 68, Progress, "First fixes"; migration 0058), once a service:
-            // service "<id>" on|off price N every DAYS. One country.json no longer lists is kept and does nothing.
+            // service "<id>" on|off price N every DAYS. One city_loop.json no longer lists is kept and does nothing.
             std::string id, onOff, w[2];
             long long price = -1, every = -1;
             if (!quoted(fields, id) || !identifier(id, 48))
@@ -617,7 +618,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         {
             // A season group as this world has it (doc 68, Progress, "Seasons"; migration 0057), once a group:
             // season "<group>" supply SP SU AU WI price SP SU AU WI shelf SP SU AU WI normal N (percent by season; N
-            // pieces a day). A group country.json no longer has is kept and does nothing.
+            // pieces a day). A group city_loop.json no longer has is kept and does nothing.
             std::string group, w[4];
             EconomySpec::Season season;
             if (!quoted(fields, group) || !identifier(group, 40))
@@ -717,7 +718,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
             std::string id;
             if (!quoted(fields, id) || !end(fields) || !identifier(id, 48) || !itemValid(id))
                 return reject("Malformed countryoff record.");
-            if (!roster.economy.countryOff.insert(id).second)
+            if (!roster.economy.wharfOff.insert(id).second)
                 return reject("Duplicate countryoff record: " + id);
         }
         else if (command == "nostore")

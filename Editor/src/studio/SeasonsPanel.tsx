@@ -1,5 +1,5 @@
 // The seasons in the Country's supply and the residents' comforts (Docs/Design/68-the-country-and-the-city-loop.md,
-// Progress, "Seasons and the DM's rules"): each season group of Data/Items/country.json (grain, fresh fruit, fresh fish,
+// Progress, "Seasons and the DM's rules"): each season group of Data/Items/city_loop.json (grain, fresh fruit, fresh fish,
 // ...) with this world's own numbers: by season, how much the Country can send a day, what its goods cost, how full the
 // shops keep their shelves of them, and its normal pieces a day; and the comforts' threshold and share. On Atlas's
 // Economy page and the DM's Economy tab alike.
@@ -45,7 +45,7 @@ export function SeasonsPanel({data, locked, setSeasons, setComforts}: {data: Sea
     const commitComfort = (key: 'above' | 'share') => {
         const max = key === 'above' ? 1000000 : 100;
         const value = comfortOf(comfort[key], max);
-        if (value === undefined) { window.alert(`A whole number from 0 to ${max}, or empty for country.json's.`); return; }
+        if (value === undefined) { window.alert(`A whole number from 0 to ${max}, or empty for city_loop.json's.`); return; }
         const field = key === 'above' ? 'comfortsAbove' : 'comfortsShare';
         if (value !== data.comforts[field]) setComforts({[field]: value});
     };
@@ -57,14 +57,14 @@ export function SeasonsPanel({data, locked, setSeasons, setComforts}: {data: Sea
             a day ({'normal × supply'}; a normal of 0 is no cap); price sets both what the shops pay the store room and what
             residents pay the shops, and residents weigh nourishment for the price, so they buy what is in season; shelf is
             how full the shops keep their shelves of the group's goods (the preserver stocks up in autumn for the winter).
-            The groups and their goods are Data/Items/country.json's.</p>
+            The groups and their goods are Data/Items/city_loop.json's.</p>
         {!data.seasonsSupported && <p className="publish-error">{data.seasonsProblem}</p>}
         <div className="dm-table-wrap"><table className="dm-table seasons-table">
             <thead><tr><th>Group</th><th></th><th>{names.join(' / ')} (%)</th><th>Normal a day</th><th></th></tr></thead>
             <tbody>{data.seasons.map(g => SEASON_ROWS.map((r, i) => <tr key={`${g.id}.${r.key}`} className={g.changed ? 'changed' : ''}>
                 {i === 0 && <td rowSpan={SEASON_ROWS.length} title={g.about}>
                     <b>{g.name}</b><br /><small className="hint">{g.goods.join(', ')}</small>
-                    {g.changed && <><br /><small className="hint">changed here (country.json: supply {percentsText(g.file.supply)},
+                    {g.changed && <><br /><small className="hint">changed here (city_loop.json: supply {percentsText(g.file.supply)},
                         price {percentsText(g.file.price)}, shelf {percentsText(g.file.shelf)}, normal {g.file.normal})</small></>}</td>}
                 <td title={r.hint}>{r.label}</td>
                 <td><input value={typed[cellKey(g.id, r.key)] ?? ''} disabled={off} size={18} aria-label={`${g.name}: ${r.label}`}
@@ -77,12 +77,12 @@ export function SeasonsPanel({data, locked, setSeasons, setComforts}: {data: Sea
                     onBlur={() => commitNormal(g)} onKeyDown={e => e.key === 'Enter' && commitNormal(g)} />
                     <br /><small className="hint">{g.normal ? 'pieces' : 'no cap'}</small></td>}
                 {i === 0 && <td rowSpan={SEASON_ROWS.length}>{g.changed &&
-                    <button disabled={off} onClick={() => setSeasons({set: {[g.id]: null}})}>As country.json</button>}</td>}
+                    <button disabled={off} onClick={() => setSeasons({set: {[g.id]: null}})}>As city_loop.json</button>}</td>}
             </tr>))}</tbody>
         </table></div>
         <h3>Comforts</h3>
         <p className="hint">{data.comforts && comfortsText(data.comforts)} The loop's one rule against hoarding: savings come back
-            to the shops. Empty: country.json's.</p>
+            to the shops. Empty: city_loop.json's.</p>
         <label className="economy-markup">Above
             <input value={comfort.above} disabled={off} inputMode="numeric" size={6} placeholder={String(data.comforts?.fileAbove ?? '')}
                 onChange={e => setComfort(c => ({...c, above: e.target.value}))} onBlur={() => commitComfort('above')}

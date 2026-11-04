@@ -249,8 +249,11 @@ export interface MoneyGroup { count: number; total: number; median: number }
 export interface Money {
     target: Target; day: number | null; total: number; capital: number | null;
     towns: Record<string, MoneyTown>; houses: {id: string; cash: number}[]; tills: {count: number; total: number};
-    /** Facility funds (fund:...) and the markets outside the city (outside:..., the Country's purse: doc 68, 2). */
+    /** Facility funds (fund:...) and the markets outside the city (outside:..., the Wharf's purse: doc 68, 2; doc 73). */
     funds?: {id: string; cash: number}[];
+    /** Beyond the realm (doc 73, 6): the Wharf's book since the world began (pennies in from beyond, out to it, net, its
+     *  fees, the DM's and the rules' moves of the credit) and the trade credit now. */
+    beyond?: {in: number; out: number; net: number; fee: number; moved: number; credit: number};
     /** The carters' yards' tills: what carriage paid them (doc 68, 6). */
     carters?: {id: string; name: string; label: string; cash: number}[];
     residents: {count: number; total: number; median: number | null; poorestTenth: number | null; richestTenth: number | null;

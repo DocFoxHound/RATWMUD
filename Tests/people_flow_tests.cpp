@@ -256,9 +256,9 @@ void postsFromTheCountry()
     s.configure(docks(false));
     Fates f;
     s.tendCareers(1.3, f.world(s));
-    s.shift("treasury", Society::CountryFund, "", 0, 500, "test: the Country's purse");
+    s.shift("treasury", Society::WharfFund, "", 0, 500, "test: the Country's purse");
     const auto money = s.moneySupply();
-    const auto country = s.cash(Society::CountryFund);
+    const auto country = s.cash(Society::WharfFund);
     f.dead.insert("ivar");
     s.died("ivar", 1.5);
     std::vector<ResidentRequest> arrivals;
@@ -287,7 +287,7 @@ void postsFromTheCountry()
     const auto* spec = s.spec("cty_fisher");
     expect(spec->home.cell == "sump_rents" && spec->workLabel == "-" && !s.position("job:cty_fisher"),
            "placed without work: no post of his own made");
-    expect(s.cash("cty_fisher") == 30 && s.cash(Society::CountryFund) == country - 30, "his 30p from the Country's account");
+    expect(s.cash("cty_fisher") == 30 && s.cash(Society::WharfFund) == country - 30, "his 30p from the Country's account");
     expect(s.moneySupply() == money && s.conserved(), "the money conserved: nothing made");
     expect(s.fills().at("from the Country") == 1, "from the Country");
 }

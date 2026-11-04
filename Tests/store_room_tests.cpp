@@ -66,6 +66,7 @@ Society city(const std::function<void(AuthoredRoster&)>& change = {})
     roster.economy.gateToll = 0;
     roster.economy.carriage = 0;
     roster.economy.needsPaused = true;
+    roster.economy.rules["wharfValve"] = 0;         // (The Wharf's valve shut, doc 73: the Country's flows as these tests have them; wharf_tests and farms_tests open it.)
     if (change)
         change(roster);
     Society s(Roster::None);
@@ -81,7 +82,7 @@ std::int64_t cost(std::int64_t price, int quantity, int markup)
 void drawingFromTheStore()
 {
     auto s = city();
-    expect(s.account(Society::CountryFund) && s.cash(Society::CountryFund) == 0, "the store room's fund is opened, empty");
+    expect(s.account(Society::WharfFund) && s.cash(Society::WharfFund) == 0, "the store room's fund is opened, empty");
     expect(s.storeOpen("smith"), "the smith may draw: " + s.storeClosed("smith"));
     const auto& goods = s.storeGoods("smith");
     expect(goods == std::vector<std::string>({"bronze_bar", "charcoal", "iron_bar", "leather", "timber"}), "the smith's goods are its crafts' inputs");
@@ -93,7 +94,7 @@ void drawingFromTheStore()
     const auto before = s.cash(till);
     const auto drawn = s.drawFromStore("smith", "iron_bar", 3);
     expect(drawn.ok && drawn.total == want, "the smith draws three iron bars: " + drawn.message);
-    expect(s.cash(till) == before - want && s.cash(Society::CountryFund) == want, "the till pays it, and the fund holds it");
+    expect(s.cash(till) == before - want && s.cash(Society::WharfFund) == want, "the till pays it, and the fund holds it");
     expect(Society::stock(*s.account(till), "iron_bar") == 3, "the bars are on the shelves");
     expect(s.conserved(), "money is conserved");
     // A vendor's resale goods at the resale markup.
@@ -117,7 +118,7 @@ void freeAtMarkupZero()
     const auto till = s.tillOf("smith");
     const auto before = s.cash(till);
     const auto drawn = s.drawFromStore("smith", "iron_bar", 5);
-    expect(drawn.ok && drawn.total == 0 && s.cash(till) == before && s.cash(Society::CountryFund) == 0, "at markup 0 the goods are free: " + drawn.message);
+    expect(drawn.ok && drawn.total == 0 && s.cash(till) == before && s.cash(Society::WharfFund) == 0, "at markup 0 the goods are free: " + drawn.message);
     expect(Society::stock(*s.account(till), "iron_bar") == 5, "and arrive");
     expect(s.conserved(), "money is conserved");
 }
@@ -130,11 +131,11 @@ void refusals()
         const auto* account = s.account(till);
         const auto cash = account ? account->cash : 0;
         const auto stock = account ? account->stock : std::map<std::string, int>{};
-        const auto fund = s.cash(Society::CountryFund);
+        const auto fund = s.cash(Society::WharfFund);
         const auto journal = s.pendingJournal().size();
         const auto r = s.drawFromStore(keeper, item, n);
         expect(!r.ok, why + ": refused");
-        expect(s.cash(till) == cash && (!s.account(till) || s.account(till)->stock == stock) && s.cash(Society::CountryFund) == fund &&
+        expect(s.cash(till) == cash && (!s.account(till) || s.account(till)->stock == stock) && s.cash(Society::WharfFund) == fund &&
                    s.pendingJournal().size() == journal,
                why + ": nothing changed (" + r.message + ")");
         expect(s.conserved(), why + ": money conserved");
@@ -203,7 +204,7 @@ void refusals()
     {
         auto t = city([](AuthoredRoster& r) { r.economy.treasury = 1000000; });
         auto& state = const_cast<SocietyState&>(t.state());   // (A fund as full as money may be: made, as minted.)
-        state.accounts.at(Society::CountryFund).cash = 1000000000 - 1;
+        state.accounts.at(Society::WharfFund).cash = 1000000000 - 1;
         state.minted += 1000000000 - 1;
         expect(t.conserved(), "the fund nearly full, conserved");
         unchanged(t, "smith", "iron_bar", 1, "the fund at its cap");
@@ -215,7 +216,7 @@ void refusals()
         const auto cash = t.cash(till);
         t.failNextStoreCreate();
         const auto r = t.drawFromStore("smith", "iron_bar", 2);
-        expect(!r.ok && t.cash(till) == cash && t.cash(Society::CountryFund) == 0 && Society::stock(*t.account(till), "iron_bar") == 0,
+        expect(!r.ok && t.cash(till) == cash && t.cash(Society::WharfFund) == 0 && Society::stock(*t.account(till), "iron_bar") == 0,
                "a failed create after the shift is paid back: " + r.message);
         expect(t.conserved(), "money conserved");
     }
@@ -356,16 +357,16 @@ void theRestockingRule()
         const int sacks = Society::stock(*s.account(stall), "flour");
         if (!on)
         {
-            expect(loaves == bread - 3 && sacks == flour - 2 && s.cash(Society::CountryFund) == 0, "rule off: nothing restocked, nothing drawn");
+            expect(loaves == bread - 3 && sacks == flour - 2 && s.cash(Society::WharfFund) == 0, "rule off: nothing restocked, nothing drawn");
             continue;
         }
         expect(loaves == bread - 3 + 6, "rule on: the baker made one batch (" + std::to_string(loaves) + " loaves)");
         expect(sacks == flour, "and the stall drew back up to its starting stock (" + std::to_string(sacks) + ")");
-        expect(s.cash(Society::CountryFund) > 0 && s.conserved(), "paid into the fund, money conserved");
-        const auto fund = s.cash(Society::CountryFund);
+        expect(s.cash(Society::WharfFund) > 0 && s.conserved(), "paid into the fund, money conserved");
+        const auto fund = s.cash(Society::WharfFund);
         for (int i = 0; i < 120; ++i)
             s.tick(1, now += 1. / calendar::SecondsPerDay, 0, bodies);
-        expect(s.cash(Society::CountryFund) == fund, "at most once a game hour");
+        expect(s.cash(Society::WharfFund) == fund, "at most once a game hour");
         const auto spot = s.authored().residents[2].work;
         (void)spot;
     }
@@ -398,10 +399,10 @@ void theFundInASave()
 {
     auto s = city();
     expect(s.drawFromStore("smith", "iron_bar", 4).ok, "a draw");
-    const auto fund = s.cash(Society::CountryFund);
+    const auto fund = s.cash(Society::WharfFund);
     const auto saved = wire::readSociety(wire::society(s.state()));
     auto again = city();
-    expect(again.restore(saved) && again.cash(Society::CountryFund) == fund && again.conserved(), "a save keeps the fund");
+    expect(again.restore(saved) && again.cash(Society::WharfFund) == fund && again.conserved(), "a save keeps the fund");
     auto older = wire::society(city().state());
     auto old = json::Value::object();
     for (const auto& [key, v] : older.fields())
@@ -411,14 +412,14 @@ void theFundInASave()
         {
             auto accounts = json::Value::object();
             for (const auto& [id, a] : v.fields())
-                if (id != Society::CountryFund)
+                if (id != Society::WharfFund)
                     accounts.add(id, a);
             old.add(key, accounts);
         }
     const auto read = wire::readSociety(old);
-    expect(!read.accounts.count(Society::CountryFund), "an older save has no fund");
+    expect(!read.accounts.count(Society::WharfFund), "an older save has no fund");
     auto fresh = city();
-    expect(fresh.restore(read) && fresh.account(Society::CountryFund) && fresh.cash(Society::CountryFund) == 0, "and gets an empty one");
+    expect(fresh.restore(read) && fresh.account(Society::WharfFund) && fresh.cash(Society::WharfFund) == 0, "and gets an empty one");
 }
 
 std::string readFile(const std::string& path)

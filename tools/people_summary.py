@@ -49,7 +49,7 @@ def main():
               f'days {sum(1 for r in rs if r["hungry_most"] > 0)} wages {100 * paid / owed:.2f}% tillsShort {mean(r["tills_short"] for r in rs):.1f} '
               f'treasury4 {mean(r["treasury"] for r in first):.0f}->{mean(r["treasury"] for r in last):.0f} '
               f'(low {min(r["treasury"] for r in rs)}) purses4 {mean(r["purses"] for r in first):.0f}->{mean(r["purses"] for r in last):.0f} '
-              f'tills4 {mean(r["tills"] for r in last):.0f} country4 {mean(r["country"] for r in last):.0f} '
+              f'tills4 {mean(r["tills"] for r in last):.0f} wharf4 {mean(r.get("wharf", r.get("country", 0)) for r in last):.0f} '
               f'gini4 {mean(r["gini_earners"] for r in first):.3f}->{mean(r["gini_earners"] for r in last):.3f} '
               f'owners {profit / (profit + paid):.3f} profit {profit / len(rs):.0f} paid {paid / len(rs):.0f} '
               f'alms {mean(r["alms"] for r in rs):.0f} support {mean(r["wage_support"] for r in rs):.0f} surplus {mean(r["surplus"] for r in rs):.0f} '

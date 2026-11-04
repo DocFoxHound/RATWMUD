@@ -31,14 +31,14 @@ STORE_COLUMNS = {'internalStore': 'internal_store', 'storeMarkup': 'store_markup
                  'resaleMarkup': 'resale_markup', 'storeRule': 'store_rule'}
 # The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9; migration 0056): live.economy's columns.
 LOOP_DEFAULTS = map_editor.LOOP_DEFAULTS
-LOOP_COLUMNS = {'needsPaused': 'needs_paused', 'country': 'country', 'countryReserve': 'country_reserve', 'gateToll': 'gate_toll',
+LOOP_COLUMNS = {'needsPaused': 'needs_paused', 'wharf': 'country', 'wharfReserve': 'country_reserve', 'gateToll': 'gate_toll',
                 'carriage': 'carriage', 'wageKeeper': 'wage_keeper', 'wageHand': 'wage_hand', 'wagePublic': 'wage_public',
-                'wageCountry': 'wage_country', 'countryOff': 'country_off', 'subsidies': 'subsidies'}
+                'wageWharf': 'wage_country', 'wharfOff': 'country_off', 'subsidies': 'subsidies'}
 # The seasons and the comforts (doc 68, Progress, "Seasons and the DM's rules"; migration 0057).
 SEASON_DEFAULTS = map_editor.SEASON_DEFAULTS
 SEASON_COLUMNS = {'comfortsAbove': 'comforts_above', 'comfortsShare': 'comforts_share', 'seasons': 'seasons'}
 # The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): {name: N} and
-# {service: {on, price, every}}, only what this world has changed ({}: all as Data/Items/country.json has them).
+# {service: {on, price, every}}, only what this world has changed ({}: all as Data/Items/city_loop.json has them).
 RULE_DEFAULTS = map_editor.RULE_DEFAULTS
 RULE_COLUMNS = {'rules': 'rules', 'services': 'services'}
 # The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): what this world has changed of
@@ -50,9 +50,9 @@ DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'daily
 NO_STORE = 'this world lacks migration 0055 (python3 tools/world_db.py migrate --db KEY): its store room stays at its defaults'
 NO_LOOP = 'this world lacks migration 0056 (python3 tools/world_db.py migrate --db KEY): its city loop stays at its defaults'
 NO_SEASONS = ('this world lacks migration 0057 (python3 tools/world_db.py migrate --db KEY): its seasons and comforts stay '
-              'as Data/Items/country.json has them')
+              'as Data/Items/city_loop.json has them')
 NO_RULES = ('this world lacks migration 0058 (python3 tools/world_db.py migrate --db KEY): its rules and services stay '
-            'as Data/Items/country.json has them')
+            'as Data/Items/city_loop.json has them')
 NO_FARMS = ('this world lacks migration 0060 (python3 tools/world_db.py migrate --db KEY): its farms stay as '
             'Data/Economy/country_farms.json has them')
 HERB_PATCH = 'herb_patch'
@@ -348,14 +348,14 @@ def economy_row(w, economy, store=True, loop=None, seasons=None, rules=None, far
     `loop` (0056; as `store` unless said), the city loop's settings; with `seasons` (0057; as `loop` unless said), the
     seasons' and the comforts'; with `rules` (0058; as `seasons` unless said), the rules' and the services'; with `farms`
     (0060; as `rules` unless said), the farms'."""
-    e = {**DEFAULT_ECONOMY, **(economy or {})}
+    e = {**DEFAULT_ECONOMY, **(map_editor.legacy_economy(economy) or {})}   # (Doc 73: an older entity's Country keys.)
     row = (w, e['treasury'], e['storeHerbs'], e['storeMeals'], e['dailyHerbs'], e['dailyMeals'])
     if not store:
         return row
     row += tuple(e[k] for k in STORE_COLUMNS)
     loop = True if loop is None else loop
     if loop:
-        row += tuple(sorted(e[k]) if k == 'countryOff' else dict(e[k]) if k == 'subsidies' else e[k] for k in LOOP_COLUMNS)
+        row += tuple(sorted(e[k]) if k == 'wharfOff' else dict(e[k]) if k == 'subsidies' else e[k] for k in LOOP_COLUMNS)
     seasons = loop if seasons is None else loop and seasons
     if seasons:
         row += tuple(copy.deepcopy(dict(e[k] or {})) if k == 'seasons' else e[k] for k in SEASON_COLUMNS)
@@ -437,16 +437,16 @@ def slot_entity(r):
 def economy_entity(r, businesses=None):
     """A live.economy row as the editor's economy: a world without migration 0055 reads the store room's defaults.
     `businesses`: live.business_settings rows ({npc_id, internal_store}) for the businesses switched off."""
-    return {'treasury': r['treasury'], 'storeHerbs': r['store_herbs'], 'storeMeals': r['store_meals'],
+    return map_editor.legacy_economy({'treasury': r['treasury'], 'storeHerbs': r['store_herbs'], 'storeMeals': r['store_meals'],
             'dailyHerbs': r['daily_herbs'], 'dailyMeals': r['daily_meals'],
             **{k: r.get(c, STORE_DEFAULTS[k]) for k, c in STORE_COLUMNS.items()},
             'businesses': {b['npc_id']: {'internalStore': False} for b in businesses or [] if b['internal_store'] is False},
-            **{k: (sorted(r[c]) if k == 'countryOff' else dict(r[c]) if k == 'subsidies' else r[c]) if c in r
+            **{k: (sorted(r[c]) if k == 'wharfOff' else dict(r[c]) if k == 'subsidies' else r[c]) if c in r
                else copy.deepcopy(LOOP_DEFAULTS[k]) for k, c in LOOP_COLUMNS.items()},
             **{k: ((dict(r[c] or {}) if k == 'seasons' else r[c]) if c in r else copy.deepcopy(SEASON_DEFAULTS[k]))
                for k, c in SEASON_COLUMNS.items()},
             **{k: copy.deepcopy(dict(r[c] or {})) if c in r else copy.deepcopy(RULE_DEFAULTS[k]) for k, c in RULE_COLUMNS.items()},
-            **{k: copy.deepcopy(dict(r[c] or {})) if c in r else copy.deepcopy(FARM_DEFAULTS[k]) for k, c in FARM_COLUMNS.items()}}
+            **{k: copy.deepcopy(dict(r[c] or {})) if c in r else copy.deepcopy(FARM_DEFAULTS[k]) for k, c in FARM_COLUMNS.items()}})   # (Doc 73: a rule's old name as its new.)
 
 
 def economy_value(conn, world_id):

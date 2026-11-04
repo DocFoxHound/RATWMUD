@@ -413,3 +413,142 @@ the estates' posts as iron6 or better; the treasury over its float every night; 
 10. **The new producers' goods** (eggs, sheep, sheepskins, brandy, apple brandy, copper and tin). Recommended: **listed,
     off** (eggs...) or the Wharf's as now (copper, tin) until their lanes land; then the DM decides each. Or on now as a
     fallback after the farms.
+
+## Progress
+
+### The build (branch `r2-wharf`, 2026-11-04)
+
+Built from ridgemere2 at 7e45f4d (the producers merged), this doc merged in first; the open choices as recommended
+(`city_loop.json`, `estatePostsDays`, the toll on the takes, no distance in carriage, no wagons seen, no buffer stock, no
+takes from shops, butter imported, a 10% fee the Wharf's, the new producers' goods listed off). No DEV or PROD write, no
+map change, no NPC made, no post added; the treasury's levers untouched; cheese as it is (on `never`).
+
+**The rename (Phase 0).**
+
+- Core: `Society::WharfFund` = `outside:wharf` (and `OldCountryFund`, read only); `items::CityLoop`/`items::cityLoop()`;
+  `EconomySpec::wharf`, `wharfReserve`, `wageWharf`, `wharfOff`; `supplyLeft`, `estatePostsOwed`, `estateKeep`,
+  `estateSpare`, `wharfBasketShift`; `LoopDay::basketSpent`, `basketUnspent`, `wharfSales`, `patronsEstates`,
+  `estatePosts*`; a post's `Pay::kind` "estate". One departure from 2.1: `countryBuys` is **`estatesBuy`** (it is the
+  estates' basket; the Wharf's own export basket is `wharfExports`). The market `wharf` ("the Wharf"); the data file
+  `Data/Items/city_loop.json` (format `ratw-city-loop`), its wage rules' and patron groups' payer **`estates`**, Grayrock's
+  estate `fund: "wharf"`, the rule `estatePostsDays`; country_farms.json's `wharfBasket`. Journal reasons "to the Wharf",
+  "shipped from the Wharf", "... from the Wharf's stores", "an arrival's purse, from the Wharf", "the Wharf's purse split",
+  and the store room's refusals in the Wharf's words. world_check's economy keys `wharf`, `wharf_sales`, `basket_spent`,
+  `basket_unspent`, `estate_rents*`, `estate_land_rents*`, `estate_posts_*`, `patrons_estates`, `wharf_basket_shift`; its
+  trade group and payer kind `wharf`, and `beyond` for the world beyond. `country_tests` is `wharf_tests`
+  (`wharf_behaviors`). Atlas's `CountryPanel` is `WharfPanel`; the Editor's, Atlas's and the DM's economy keys `wharf`,
+  `wharfReserve`, `wageWharf`, `wharfOff` (map_editor, world_store, studio, model.mjs, economy.ts).
+- Kept "country": the countryside (country_farms.json, the country workshops' ids, `cn_` ids, the unplaced country folk,
+  arrivals "came in from the Country", "eaten in the Country"), tools/country_industry.py, the world file's records (`loop
+  ... country on ...`, `countryoff`), live.economy's columns (`country`, `country_reserve`, `wage_country`, `country_off`,
+  mapped in world_store's LOOP_COLUMNS), migrations and old doc entries. Many code comments still tell the history in the
+  Country's words where they describe doc 68-72's steps.
+- Aliases: `Society::restore` moves an old `outside:country` (coins and goods) into `outside:wharf` and closes it, beside
+  doc 68's `fund:store` move, before the estates' night; `items::ruleName` reads a `rule "countryPostsDays"` record (and the
+  data file's key) as `estatePostsDays`; the data file's payer `"country"`, `fund: "country"` and `countryBasket` read as
+  before; an older data folder's `country.json` is read when `city_loop.json` is missing; map_editor's `legacy_economy`
+  (and model.mjs's `legacyEconomy`) reads an older project's or POST's `country`, `countryReserve`, `wageCountry`,
+  `countryOff` and rule `countryPostsDays`, the new names written only; econ_report (`renamed`), econ_weeks, econ_detail,
+  people_summary, country_industry and world_check's reason reader map the old keys and "to the Country"; the DM's Money
+  tab shows an old `outside:country` as the Wharf's purse.
+- **The check**: `tools/wharf_rename_compare.py` on 14 days (`--simulate 6 342 --farms 0 --farms-every 1 --deterministic`,
+  build 63's export) of ridgemere2 (7e45f4d) against r2-wharf with `rule "wharfValve" 0` added to the export's records:
+  **0 differences** in every number of every economy line once the keys are mapped (the accounts, the money, the estates,
+  the farms, the trades). (The roll that rounds a basket's odd piece keys the Wharf's purse by the Country's old name, so
+  the rename moves no roll.)
+
+**The valve (Phases 1-3).**
+
+- `Core/RatwWharf.cpp`: `stablePrice` (the store room's at markup 100, the area's year price or the season's, never a
+  shop's), `wharfImports`/`wharfRoom` (on the list, on, not `never`, not the world's `wharfOff`, `most × wharfImportScale`
+  less today's landing), `wharfTakes`/`wharfKeep` (the larger of `wharfKeepLeast` and `wharfKeepDays` of the farm's yield
+  a day today, its makes' own yield too), `wharfExportRoom` (the credit, at most `wharfExportMost` a day, never under 0),
+  `orderFromWharf` (any buyer's order: the stable price, the gate toll, carriage by weight to the carters with the
+  treasury's share, whole or nothing), `bookWharfLanding` (the one booking of a landing, a draw's lot or an order),
+  `moveWharfCredit` (the DM's lever), `settleWharf` (the standing levers at 18:00, before the estates), `wharfTakesRun`
+  (16:00) and `wharfExports` (each shop hour, after the estates' basket).
+- Store draws: an area's good the farms hold too little of is filled by **the Wharf's lot last** when the good is on its
+  imports, within its room; the cost less the toll shared by pieces (the farms' lots as before over their pieces); the
+  draw still counted in `goodsOut`/`areasOut` (a filled shortage stays seen). `supplyLeft` is the farms' hold plus the
+  Wharf's room. A good no area grows is the Wharf's lot whole, as the Country's was.
+- Money: of what a landing paid the Wharf (after the toll), **its fee kept** (`wharfFee`, 10%) and the rest **sunk**
+  ("paid beyond the realm: <good>", `outside:wharf -> beyond`), the credit raised by it (to `wharfCreditMost`). Takes and
+  the export basket **mint** ("from beyond the realm: <good>", `beyond -> outside:wharf`) the price, the carriage and the
+  fee, the credit lowered by it; the export basket's unspent budget un-minted at once; `conserved()` unchanged. The book
+  (`LoopState::Wharf`: in, out, fee, moved, credit) saved in the save's `loop.wharf` (the checkpoint; not the journal,
+  whose `minted`/`sunk` are). With `wharfValve` 0 none of it runs (the Country's behaviour, the Phase 0 check).
+- Takes at 16:00 from the farms and works over their keep, the largest excess first, within the good's most and the
+  export room; the farm paid the stable price less the gate toll (its takings, and its rent's base tonight), the toll to
+  the treasury ("gate toll: to the wharf"), carriage to the carters ("carriage to the wharf"), the goods shipped.
+- The export basket (`wharfBasketNow`, the estates' basket's blend, shared) from the credit left after the day's takes
+  (their want kept back before 16:00), at most `wharfExportMost` a day; its carriage out as any basket's (the treasury's
+  share too: a departure from 4.4's "the beyond pays it", which holds for the takes).
+- The farms' baskets fall back on `orderFromWharf` for a good on the imports that no open maker holds.
+- The lists (city_loop.json `wharf`): imports aqua vitae 10, offal 20, butter 90 (on); wheat 40, eggs 30, sheep 4,
+  sheepskin 10, brandy 2, apple brandy 4, copper ore 4, tin ore 2 (off: the mines and farms offer them now); takes hide 30,
+  bones 35, tallow 6, honey 6, small pelt 2, straw 2, berries 2, resin 1 (on); flax 20, iron ore 10, charcoal 15, limestone
+  5 (off); never cheese. A good on both lists or on `never` is dropped at load (`WharfLists::refused`).
+- Rules (Core's `Rules`, the data file, map_editor's RULE_LIMITS, model.mjs, economy.ts's rules panel; no migration):
+  `wharfValve` 1, `wharfFee` 10, `wharfKeepDays` 28, `wharfKeepLeast` 20, `wharfImportScale` 100, `wharfTakeScale` 100,
+  `wharfExportMost` 300, `wharfCreditMost` 10,000, `wharfInjectADay` 0, `wharfTakeADay` 0, `wharfActionMost` 2,000.
+- The DM: the live action **`wharf.credit`** (`tools/dungeon_master.py` LIVE_KINDS and its permission; payload amount and
+  note, checked against the world's `wharfActionMost`, refused at 0, audited "wharf.credit: ±Np: note"), applied in
+  `Game::applyDmActions` by `moveWharfCredit`; the Money tab's "Beyond the realm" (in, out, net, fees, credit, moved, from
+  the checkpoint's `society.loop.wharf`) and its form (`Editor/src/dm/WharfCredit.tsx`). Atlas: `WharfPanel` with the
+  Wharf's lists read from the file (`wharfLists`), the per-good "lands" switches (`wharfOff`), the rules on the Rules
+  panel.
+- Reports: world_check's economy line `wharf_day` {valve, imported {good: [pieces, pennies]}, taken, basket, in, out,
+  fee, moved, credit, book_in, book_out, book_fee, book_moved, sunk}; its end line "the Wharf beyond the realm: in, out,
+  net; its fees; credit; money conserved (money = minted - sunk)". econ_report's "The Wharf and the Houses' estates" (the
+  old Country section, reading old runs) and **"The Wharf: beyond the realm"** (a day: in, out, net, fees, the export
+  basket, moves; the credit's course; by season; by good landed and taken).
+- Tests: `wharf_tests` (an old save's `outside:country` and the book through the wire; the Wharf's landing sunk, its fee,
+  the credit, conserved, the valve off as the Country; the stable price; cheese never, the lists disjoint; an order from
+  the Wharf by wagon to a far community's store with carriage; the credit moved within `wharfActionMost`, refused past it
+  or at 0, below 0 stops exports, the standing inject at 18:00 under its cap; an old rule name); `farms_tests`'
+  `theWharf` (aqua vitae landed after the farms, the fee and the sink, the cap across draws, the world's off switch and
+  the valve off; butter from the dairies then the Wharf, the cost shared; hides over the keep taken at 16:00, 30 of them,
+  at the stable price, the farm paid less the toll, the minting booked; a farm under its keep gives none; no credit, no
+  takes); the doc 68-72 suites run with `wharfValve` 0 (their flows as they were), game_tests' `/store` with the fee.
+  test_econ_report (the Wharf's section; old keys), test_map_editor (the aliases), test_dungeon_master (`wharf.credit`),
+  content.test.mjs (an older project's keys). ctest 79 of 79; the Python suites as before but the known failures
+  (test_map_editor's Greyfen 11/10, test_studio's 10 farm areas, test_ridgemere2's two live-DEV checks); the Editor's
+  typecheck clean, its tests 80 of 81 (the same Greyfen 11/10, failing at ridgemere2 too).
+
+**The 60-day smoke** (build 63's export, `--simulate 6 1446 --farms 0 --farms-every 1 --deterministic --threads 4
+--economy-level full`; `artifacts/economy/r2/wharf-smoke-report.md`, `wharf-smoke.out`; ridgemere2's same run beside it,
+`wharf-smoke-base.jsonl`, not committed):
+
+- **Money conserved** every day; the realm's money at the end **64,557p against ridgemere2's 64,595p**: the difference,
+  −38p, is the Wharf's net over the run (in 15,197p, out 15,235p, its fees 1,403p). Nobody hungry.
+- **The credit's course**: the first ten days, before the farms' areas are on, the Wharf lands nearly everything (as the
+  Country did: 2,600p a day out on day 0), so the credit climbs to **8,360p** by day 5; the export basket spends it back at
+  up to 300p a day (232p a day over the run), to **38p** on day 59. Days 10-59 a day: in 248p, out 94p, net +154p, fees
+  20p, the export basket 227p, no moves.
+- **Landed a day** (days 10-59): butter **36.0** (61p; ridgemere2's butter draws refused 114 a day, now 27 counted short,
+  the Wharf's filled ones among them; its most, 90, never reached), linen 2.6, iron hoops 3.1, copper bars 0.8, tin bars
+  0.2, clay pots 1.9, the gathered herbs and the rest under a piece each. **Aqua vitae and offal: none drawn** (no maker
+  drew either, in ridgemere2's run too).
+- **Taken: none.** In 60 days from their founding no farm holds more than 28 days of a good's yield (the hides', bones'
+  piles of iron6 grew over years); the path is the tests'.
+- **The estates**: 0 nights short over days 10-59 (as ridgemere2), but **7-8 nights short in days 0-9** for every estate
+  (2 the Crown's; ridgemere2 none): the Wharf's purse keeps only its fee of those first days' landings, the Country's
+  whole takings before, and the estates' first-night split and Grayrock's grants are poorer for it. Grayrock's purse ends
+  at 23p (least 2p) as in ridgemere2; the Crown's 1,358p (ridgemere2 1,385p). The estates' basket 163p a day (228p).
+- The treasury 850 to 2,093p (least 850p; ridgemere2's least 1,128p), the toll 1,549p a day (1,546p).
+
+**Open.**
+
+1. **The estates' first nights** with the valve on (above): in a world whose farms are on (DEV now) the Wharf's lot is
+   ~25p a day and Grayrock keeps ~2.5p of it, ~22p a day less than the Country kept: covered by the Crown's grants in the
+   smoke; the 3-year run (asked first) should watch the estates' nights and the Crown's purse beside producers7. The fee
+   (`wharfFee`) is the lever if it bites.
+2. **The takes** wait for piles: the 3-year run shows whether hides, bones, tallow and honey level off over 28 days'
+   yield, and whether the credit then binds them.
+3. **The credit at a fresh start** runs up to ~8,000p while the farms switch on; a live world starts at 0 (no saved
+   book) and accrues ~85p a day from its landings.
+4. **The book isn't journalled** (the checkpoint carries it, every 30 s); `minted` and `sunk` are, so money stays
+   conserved after a crash; only the book's last half-minute may be lost.
+5. **The DM's action on a scratch server**: `Game::applyDmActions` doesn't run on a scratch server (`options_.scratch`), so
+   Phase 3's check there can't be done; the action is tested in Core (`moveWharfCredit`) and in the DM's queue.
+6. Not built (Phase 4): per-world per-good lists (migration 0061), distance in carriage, wagons seen, a buffer stock.

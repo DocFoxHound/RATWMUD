@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {areaOnFrom, areaSwitch, basketRows, bulk, choices, comfortOf, comfortsText, driftLines, farmChange, farmNow, filtered,
     goodsBulk, goodsShown, goodsText, markupOf, percent, percentsOf, percentsText, ruleChange, ruleOf, RULES, ruleValue, scheduleText,
     seasonal, seasonChange, serviceChange, serviceText, serviceValue, switchText, wholeOf, wouldChange, yieldText, type BasketGood,
-    type CountryGood, type FarmAreaDefault, type FarmControls, type RuleControls, type SeasonGroup, type StoreBusiness} from './economy.ts';
+    type WharfGood, type FarmAreaDefault, type FarmControls, type RuleControls, type SeasonGroup, type StoreBusiness} from './economy.ts';
 
 // The seasons (doc 68, Progress, "Seasons and the DM's rules"): what the DM's and Atlas's panels read and send.
 const grain: SeasonGroup = {id: 'grain', name: 'grain and flour', about: '', goods: ['flour', 'bread'], changed: false,
@@ -37,11 +37,11 @@ test('a change is sent only when it changes something', () => {
     assert.deepEqual(seasonChange(grain, 'normal', 0), {set: {grain: {normal: 0}}});
 });
 
-test('the comforts: the world\'s own, or country.json\'s', () => {
+test('the comforts: the world\'s own, or city_loop.json\'s', () => {
     const file = {comfortsAbove: null, comfortsShare: null, fileAbove: 60, fileShare: 10};
     assert.match(comfortsText(file), /more than 60p a head spends 10% .* \(country\.json's\)/);
     assert.match(comfortsText({...file, comfortsAbove: 40}), /more than 40p a head spends 10%/);
-    assert.equal(comfortOf('', 100), null, 'empty: back to country.json\'s');
+    assert.equal(comfortOf('', 100), null, 'empty: back to city_loop.json\'s');
     assert.equal(comfortOf('25', 100), 25);
     assert.equal(comfortOf('101', 100), undefined);
 });
@@ -51,7 +51,7 @@ const trim = {id: 'groom_and_trim', name: 'A groom and trim', business: 'barber'
 const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {almsADay: 12}, services: {},
     ruleDefaults: {comfortsMost: 200, almsADay: 10, treasuryCap: 2000, wageSupport: 100, workBankHours: 0, fairFood: 1, services: 1,
         servicesCityShare: 30, suppliers: 1, patrons: 1, armourEvery: 120, buyAheadDays: 1, floatDrawDays: 7, floatWagesDays: 7, workshopWagesDays: 2, workshopWageMost: 2,
-        subsidyToNeed: 1, countryPostsDays: 2, estates: 1, landRent: 16, landRentFish: 9, landRentFruit: 4, landRentGrain: 28, landRentSalt: 8, landRentDairy: 32,
+        subsidyToNeed: 1, estatePostsDays: 2, estates: 1, landRent: 16, landRentFish: 9, landRentFruit: 4, landRentGrain: 28, landRentSalt: 8, landRentDairy: 32,
         landRentThin: 0, luxuryShare: 10, luxuryMost: 1, luxuryAbove: 200, luxuryHouses: 40, luxuryHousesMost: 24, luxuryPriceBand: 700, luxuryPriceStep: 50,
         surplus: 1, surplusKeep: 4000, surplusWorks: 20, surplusAlms: 80, surplusAlmsTo: 40,
         stockPrices: 1, stockPriceBand: 25, stockPriceStep: 10, shelfFollow: 1, shelfDays: 7, shelfCover: 125, shelfGrow: 25,
@@ -59,15 +59,15 @@ const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {alm
         treasuryTarget: 5500, treasuryBand: 15, treasuryDays: 182, treasuryJudgeDays: 28, tollStep: 5, tollDriftMost: 5, almsDriftMost: 2},
     serviceList: [trim]};
 
-test('a rule is the world\'s own or country.json\'s, and a change is sent only when it changes something', () => {
-    assert.deepEqual(RULES.map(r => r.key).sort(), Object.keys(rules.ruleDefaults).sort(), 'every rule of country.json listed');
+test('a rule is the world\'s own or city_loop.json\'s, and a change is sent only when it changes something', () => {
+    assert.deepEqual(RULES.map(r => r.key).sort(), Object.keys(rules.ruleDefaults).sort(), 'every rule of city_loop.json listed');
     assert.equal(ruleValue(rules, 'almsADay'), 12);
     assert.equal(ruleValue(rules, 'treasuryCap'), 2000);
     assert.equal(ruleChange(rules, 'almsADay', 12), null);
     assert.deepEqual(ruleChange(rules, 'almsADay', 7), {set: {almsADay: 7}});
-    assert.deepEqual(ruleChange(rules, 'almsADay', null), {set: {almsADay: null}}, 'back to country.json\'s');
-    assert.equal(ruleChange(rules, 'treasuryCap', null), null, 'already country.json\'s');
-    assert.equal(ruleChange(rules, 'treasuryCap', 2000), null, 'country.json\'s value typed in: nothing to change');
+    assert.deepEqual(ruleChange(rules, 'almsADay', null), {set: {almsADay: null}}, 'back to city_loop.json\'s');
+    assert.equal(ruleChange(rules, 'treasuryCap', null), null, 'already city_loop.json\'s');
+    assert.equal(ruleChange(rules, 'treasuryCap', 2000), null, 'city_loop.json\'s value typed in: nothing to change');
     assert.deepEqual(ruleChange(rules, 'fairFood', 0), {set: {fairFood: 0}});
     assert.equal(ruleOf('', 1000), null);
     assert.equal(ruleOf('15', 1000), 15);
@@ -86,7 +86,7 @@ test('where the self-correcting rules stand: a line each, nothing before the wor
     assert.match(lines[3], /30 tills up, 5 down of 110, mean 0\.9p a post \(the rule is off\)\.$/);
 });
 
-test('a service: country.json\'s until changed, one of its three at a time', () => {
+test('a service: city_loop.json\'s until changed, one of its three at a time', () => {
     assert.deepEqual(serviceValue(rules, trim), {on: true, price: 1, every: 4});
     assert.equal(serviceChange(rules, trim, 'price', 1), null);
     assert.deepEqual(serviceChange(rules, trim, 'on', false), {set: {groom_and_trim: {on: false}}});
@@ -143,7 +143,7 @@ test('the Country: its basket by share, its goods searched and switched, the loo
         {item: 'cider', name: 'Cider', share: 30, percent: 75, price: 3, makers: []}];
     assert.deepEqual(basketRows(basket).rows.map(b => b.item), ['cider', 'nails']);
     assert.equal(basketRows(basket).unmade, 1);
-    const goods: CountryGood[] = [{item: 'iron_bar', name: 'Iron bar', businesses: 3, supplied: true},
+    const goods: WharfGood[] = [{item: 'iron_bar', name: 'Iron bar', businesses: 3, supplied: true},
         {item: 'fish', name: 'Fish', businesses: 4, supplied: false}];
     assert.deepEqual(goodsShown(goods, 'IRON').map(g => g.item), ['iron_bar']);
     assert.deepEqual(goodsShown(goods, ''), goods);

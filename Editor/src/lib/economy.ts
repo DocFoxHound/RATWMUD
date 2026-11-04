@@ -12,27 +12,29 @@ export interface StoreBusiness {
 export interface StoreSwitches { internalStore: boolean; storeMarkup: number; storeResale: boolean; resaleMarkup: number; storeRule: boolean }
 /** The city's loop (doc 68, 9): the residents' needs, the Country, the gate toll, carriage, wages, the subsidies. */
 export interface LoopSettings {
-    needsPaused: boolean; country: boolean; countryReserve: number; gateToll: number; carriage: number;
-    wageKeeper: number; wageHand: number; wagePublic: number; wageCountry: number; subsidies: Record<string, number>;
+    needsPaused: boolean; wharf: boolean; wharfReserve: number; gateToll: number; carriage: number;
+    wageKeeper: number; wageHand: number; wagePublic: number; wageWharf: number; subsidies: Record<string, number>;
 }
-/** A good of the Country's basket (Data/Items/country.json): its share of the Country's spending and its makers here. */
+/** A good of the Country's basket (Data/Items/city_loop.json): its share of the Country's spending and its makers here. */
 export interface BasketGood { item: string; name: string; share: number; percent: number; price: number; makers: string[] }
 /** A good some business here draws, and whether the Country supplies it (off: its real producers'). */
-export interface CountryGood { item: string; name: string; businesses: number; supplied: boolean }
+export interface WharfGood { item: string; name: string; businesses: number; supplied: boolean }
 export interface EconomyControls extends StoreSwitches, SeasonControls, RuleControls, FarmControls {
     world: string; supported: boolean; problem: string; note: string; takesEffect: string; businesses: StoreBusiness[];
     worldInfo?: {key: string; name: string; kind: string; upstream?: string};
-    loop: LoopSettings; countryOff: string[]; loopSupported: boolean; loopProblem: string; ruleWarning: string;
-    market: {id: string; name: string; people: string}; basket: BasketGood[]; goods: CountryGood[];
+    loop: LoopSettings; wharfOff: string[]; loopSupported: boolean; loopProblem: string; ruleWarning: string;
+    market: {id: string; name: string; people: string}; basket: BasketGood[]; goods: WharfGood[];
+    /** The Wharf's lists (Data/Items/city_loop.json `wharf`; doc 73, 4.2): imports and takes by good, and its never list. */
+    wharfLists?: {imports: Record<string, {most?: number; on?: boolean}>; takes: Record<string, {most?: number; on?: boolean}>; never: string[]};
 }
 
 // The seasons in the Country's supply and the residents' comforts (Docs/Design/68-the-country-and-the-city-loop.md,
-// Progress, "Seasons and the DM's rules"; migration 0057): country.json's season groups with this world's changes.
+// Progress, "Seasons and the DM's rules"; migration 0057): city_loop.json's season groups with this world's changes.
 /** A group's numbers: percent of normal by season (Spring, Summer, Autumn, Winter), and its normal pieces a day. */
 export interface SeasonValues { supply: number[]; price: number[]; shelf: number[]; normal: number }
-/** A season group as the world has it (`changed`: away from country.json's, which `file` holds). */
+/** A season group as the world has it (`changed`: away from city_loop.json's, which `file` holds). */
 export interface SeasonGroup extends SeasonValues { id: string; name: string; about: string; goods: string[]; changed: boolean; file: SeasonValues }
-/** The comforts (null: country.json's, `fileAbove` pennies a head and `fileShare` percent). */
+/** The comforts (null: city_loop.json's, `fileAbove` pennies a head and `fileShare` percent). */
 export interface Comforts { comfortsAbove: number | null; comfortsShare: number | null; fileAbove: number; fileShare: number }
 export interface SeasonControls {
     seasonsSupported: boolean; seasonsProblem: string; seasonNames: string[]; seasons: SeasonGroup[]; comforts: Comforts;
@@ -73,13 +75,13 @@ export function seasonChange(group: SeasonGroup, key: SeasonRow | 'normal', valu
     const same = Array.isArray(value) ? Array.isArray(now) && now.every((v, i) => v === value[i]) : now === value;
     return same ? null : {set: {[group.id]: {[key]: value}}};
 }
-/** How the comforts read: the world's own, or country.json's. */
+/** How the comforts read: the world's own, or city_loop.json's. */
 export function comfortsText(c: Comforts): string {
     const above = c.comfortsAbove ?? c.fileAbove, share = c.comfortsShare ?? c.fileShare;
-    const whose = c.comfortsAbove === null && c.comfortsShare === null ? ' (country.json\'s)' : '';
+    const whose = c.comfortsAbove === null && c.comfortsShare === null ? ' (city_loop.json\'s)' : '';
     return `A household holding more than ${above}p a head spends ${share}% of what is over it a day on comforts${whose}.`;
 }
-/** A comforts value typed in: "" (back to country.json's) is null, else a whole number within 0..max; undefined if neither. */
+/** A comforts value typed in: "" (back to city_loop.json's) is null, else a whole number within 0..max; undefined if neither. */
 export function comfortOf(text: string, max: number): number | null | undefined {
     if (text.trim() === '') return null;
     const n = wholeOf(text, max);
@@ -88,10 +90,10 @@ export function comfortOf(text: string, max: number): number | null | undefined 
 export type GoodsBody = {set: Record<string, boolean>} | {all: boolean};
 
 // The loop's rules and the city's services (Docs/Design/68-the-country-and-the-city-loop.md, Progress, "First fixes";
-// migration 0058): this world's changes ({} for none) beside Data/Items/country.json's.
+// migration 0058): this world's changes ({} for none) beside Data/Items/city_loop.json's.
 /** A service as a world has it (stored whole once changed). */
 export interface ServiceValues { on: boolean; price: number; every: number }
-/** A country.json service: its item's name and catalogue price (items.json), its business and how often it is bought. */
+/** A city_loop.json service: its item's name and catalogue price (items.json), its business and how often it is bought. */
 export interface ServiceListed { id: string; name: string; business: string; price: number; every: number; for?: string }
 export interface RuleControls {
     rulesSupported: boolean; rulesProblem: string; rules: Record<string, number>; services: Record<string, ServiceValues>;
@@ -141,8 +143,20 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'workshopWagesDays', label: 'A workshop\'s wages kept', max: 60, unit: 'days of its posts\' wages a country workshop keeps over its float before its House\'s share (doc 72)'},
     {key: 'workshopWageMost', label: 'A workshop\'s wage rise', max: 100, unit: 'pennies at most a country workshop\'s wages drift over the world\'s, its House taking the profit (doc 72)'},
     {key: 'subsidyToNeed', label: 'Carriage subsidy only to need', max: 1, unit: 'the treasury pays the carters only what they lack of their wages', onOff: true},
-    {key: 'countryPostsDays', label: 'The Country\'s posts first', max: 30, unit: 'nights of its posts\' wages the Country keeps before it buys (doc 72)'},
-    {key: 'estates', label: 'The Houses\' estates', max: 1, unit: 'each House its own estate purse, paying its own people, the Crown granting the short (doc 72, Phase 6); off: the Country\'s one purse', onOff: true},
+    {key: 'estatePostsDays', label: 'The estates\' posts first', max: 30, unit: 'nights of its posts\' wages an estate keeps before it buys (doc 72)'},
+    {key: 'estates', label: 'The Houses\' estates', max: 1, unit: 'each House its own estate purse, paying its own people, the Crown granting the short (doc 72, Phase 6); off: the Wharf\'s one purse', onOff: true},
+    // The Wharf (Docs/Design/73-the-wharf.md, 6): the realm's valve to the world beyond it.
+    {key: 'wharfValve', label: 'The Wharf\'s valve', max: 1, unit: 'it imports the realm\'s shortages, takes its piles and buys its exports at the stable price, money in and out of the realm (off: the Country renamed)', onOff: true},
+    {key: 'wharfFee', label: 'Wharfage', max: 50, unit: '% the Wharf keeps of its imports\' takings, and over its exports\' (paid by the beyond)'},
+    {key: 'wharfKeepDays', label: 'A farm keeps', max: 365, unit: 'days of its yield of a good before the Wharf takes the rest'},
+    {key: 'wharfKeepLeast', label: 'A farm keeps at least', max: 10000, unit: 'pieces of a good'},
+    {key: 'wharfImportScale', label: 'Imports scale', max: 1000, unit: '% on each import\'s most a day (0: none)'},
+    {key: 'wharfTakeScale', label: 'Takes scale', max: 1000, unit: '% on each take\'s most a day (0: none)'},
+    {key: 'wharfExportMost', label: 'The beyond pays in, at most', max: 100000, unit: 'p a day (takes, the export basket, carriage, wharfage)'},
+    {key: 'wharfCreditMost', label: 'Trade credit, at most', max: 1000000, unit: 'p the realm may have paid beyond and not had back'},
+    {key: 'wharfInjectADay', label: 'Inject through the Wharf', max: 1000, unit: 'p a day added to the credit: money in, as goods bought'},
+    {key: 'wharfTakeADay', label: 'Take through the Wharf', max: 1000, unit: 'p a day taken from the credit: money out, as the beyond buys less'},
+    {key: 'wharfActionMost', label: 'A DM\'s credit move, at most', max: 1000000, unit: 'p one wharf.credit action may move either way (0: refused)'},
     // The food farms' land rent (doc 72, open question 2): to the House whose land each is on, from its basket's share.
     {key: 'landRent', label: 'The farms\' land rent', max: 100, unit: '% of a food farm\'s takings to its House\'s estate each night, after its wages (the areas below have their own)'},
     {key: 'landRentFish', label: 'Land rent: fish', max: 100, unit: '% of the fishing\'s takings (House Grayrock)'},
@@ -189,17 +203,17 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'tollDriftMost', label: 'Toll drift, at most', max: 90, unit: 'points from the world\'s gate toll'},
     {key: 'almsDriftMost', label: 'Alms drift, at most', max: 1000, unit: 'p a head over the alms, at most (a penny each time; never under them)'},
 ];
-/** A rule as it stands: the world's own, else country.json's. */
+/** A rule as it stands: the world's own, else city_loop.json's. */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;
-/** The body that sets a rule (null: back to country.json's); null when it changes nothing. */
+/** The body that sets a rule (null: back to city_loop.json's); null when it changes nothing. */
 export function ruleChange(c: RuleControls, key: string, value: number | null): RulesBody | null {
     const own = c.rules[key];
     if (value === null) return own === undefined ? null : {set: {[key]: null}};
     return (own ?? c.ruleDefaults[key]) === value ? null : {set: {[key]: value}};
 }
-/** A rule typed in: "" (back to country.json's) is null, else a whole number within 0..max; undefined if neither. */
+/** A rule typed in: "" (back to city_loop.json's) is null, else a whole number within 0..max; undefined if neither. */
 export const ruleOf = (text: string, max: number): number | null | undefined => comfortOf(text, max);
-/** A service as it stands: the world's own, else country.json's (on, at its catalogue price and frequency). */
+/** A service as it stands: the world's own, else city_loop.json's (on, at its catalogue price and frequency). */
 export function serviceValue(c: RuleControls, s: ServiceListed): ServiceValues {
     return c.services[s.id] ?? {on: true, price: s.price, every: s.every};
 }
@@ -211,7 +225,7 @@ export function serviceChange(c: RuleControls, s: ServiceListed, key: keyof Serv
 export function serviceText(c: RuleControls, s: ServiceListed): string {
     const v = serviceValue(c, s);
     return `${s.business}, ${v.price}p, about once every ${v.every} day${v.every === 1 ? '' : 's'} a household with money to spare`
-        + (v.on ? '' : ' (off)') + (c.services[s.id] ? '' : ' (country.json\'s)');
+        + (v.on ? '' : ' (off)') + (c.services[s.id] ? '' : ' (city_loop.json\'s)');
 }
 
 // The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): this world's changes ({} for
@@ -309,10 +323,10 @@ export const LOOP_NUMBERS: {key: keyof LoopSettings; label: string; max: number;
     {key: 'wageKeeper', label: 'A keeper\'s wage', max: 1000, unit: 'p a day'},
     {key: 'wageHand', label: 'A hand\'s wage', max: 1000, unit: 'p a day'},
     {key: 'wagePublic', label: 'Public posts and the watch', max: 1000, unit: 'p a day (the treasury)'},
-    {key: 'wageCountry', label: 'The Country\'s posts', max: 1000, unit: 'p a day (dockers, stores, the Houses\' people)'},
+    {key: 'wageWharf', label: 'The Country\'s posts', max: 1000, unit: 'p a day (dockers, stores, the Houses\' people)'},
     {key: 'gateToll', label: 'Gate toll', max: 90, unit: '% of each draw to the treasury (the city\'s tax)'},
     {key: 'carriage', label: 'Carriage', max: 1000, unit: 'p a wagon load (1,000 weight), in and out, to the carters'},
-    {key: 'countryReserve', label: 'The Country\'s reserve', max: 100000, unit: 'p kept back'},
+    {key: 'wharfReserve', label: 'The Country\'s reserve', max: 100000, unit: 'p kept back'},
 ];
 /** A whole number typed in, within 0..max, or null. */
 export function wholeOf(text: string, max: number): number | null {
@@ -326,11 +340,11 @@ export function basketRows(basket: BasketGood[]): {rows: BasketGood[]; unmade: n
     return {rows, unmade: rows.filter(b => !b.makers.length).length};
 }
 /** The goods the page lists under a search ("" for all), and the body that turns every one shown on or off. */
-export function goodsShown(goods: CountryGood[], search: string): CountryGood[] {
+export function goodsShown(goods: WharfGood[], search: string): WharfGood[] {
     const q = search.trim().toLowerCase();
     return q ? goods.filter(g => g.item.includes(q) || g.name.toLowerCase().includes(q)) : goods;
 }
-export function goodsBulk(on: boolean, shown: CountryGood[], all: CountryGood[]): GoodsBody {
+export function goodsBulk(on: boolean, shown: WharfGood[], all: WharfGood[]): GoodsBody {
     return shown.length === all.length ? {all: on} : {set: Object.fromEntries(shown.map(g => [g.item, on]))};
 }
 export interface EconomyChange extends EconomyControls { changed: boolean; count?: number; detail?: string; warnings?: string[] }

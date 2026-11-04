@@ -419,6 +419,26 @@ class DungeonMasterTests(Fixture):
                                                         ('storyline.give', 'player-ada')])
         self.assertEqual(queued[-4][2], {'kind': 'watchpost', 'title': 'The north watch'})
 
+        # Doc 73, 4.6: the Wharf's credit moved (queued, checked against wharfActionMost, audited with the amount).
+        self.dm.live_action(master, 'prod', 'wharf.credit', 'wharf', {'amount': -300, 'note': 'a lean winter'})
+        for bad in ({'amount': 2001}, {'amount': 0}, {'amount': 2.5}, {'amount': True}, {'amount': 5, 'note': 'x' * 161}):
+            with self.assertRaises(D.DMError, msg=repr(bad)):
+                self.dm.live_action(master, 'prod', 'wharf.credit', 'wharf', bad)
+        with self.assertRaises(D.DMError):
+            self.dm.live_action(viewer, 'prod', 'wharf.credit', 'wharf', {'amount': 10})
+        with W.connect('prod', 'owner', dbname=self.names['prod']) as owner:
+            q = owner.execute("SELECT payload FROM dm.actions WHERE kind = 'wharf.credit' ORDER BY id DESC").fetchone()
+            audit = owner.execute("SELECT detail FROM dm.audit WHERE action = 'wharf.credit'").fetchone()[0]
+        self.assertEqual(q[0], {'amount': -300, 'note': 'a lean winter'})
+        self.assertIn('-300p: a lean winter', audit)
+        original = self.dm.wharf_action_most
+        try:
+            self.dm.wharf_action_most = lambda target: 0     # (A world whose rule is 0: refused.)
+            with self.assertRaises(D.DMError):
+                self.dm.live_action(master, 'prod', 'wharf.credit', 'wharf', {'amount': 10})
+        finally:
+            self.dm.wharf_action_most = original
+
         # Doc 58: storytellers, their tales and kept words; a decision; a visitor saved; a milestone credited from the ledger.
         with W.connect('prod', 'game', dbname=self.names['prod']) as game:
             game.execute('INSERT INTO game.storytellers (world_id, key, position, data) VALUES (%s, %s, %s, %s)',

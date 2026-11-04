@@ -21,15 +21,15 @@ One host on one port (default 8765, on this computer and the local network: --ho
                                  it may), POST economy/store {internalStore?, storeMarkup?, storeResale?, resaleMarkup?,
                                  storeRule?}, POST economy/businesses {set: {npc: bool}} or {all: bool, business?,
                                  district?}; and the city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9):
-                                 POST economy/loop {needsPaused?, country?, countryReserve?, gateToll?, carriage?,
-                                 wageKeeper?, wageHand?, wagePublic?, wageCountry?, subsidies?}, POST economy/goods
+                                 POST economy/loop {needsPaused?, wharf?, wharfReserve?, gateToll?, carriage?,
+                                 wageKeeper?, wageHand?, wagePublic?, wageWharf?, subsidies?}, POST economy/goods
                                  {set: {item: bool}} or {all: bool}; the seasons and the comforts (doc 68, Progress,
                                  "Seasons and the DM's rules"; migration 0057): POST economy/seasons {set: {group:
-                                 {supply?, price?, shelf?, normal?} or null (back to country.json's)}}, POST
-                                 economy/comforts {comfortsAbove?, comfortsShare?} (null: country.json's); the loop's
+                                 {supply?, price?, shelf?, normal?} or null (back to city_loop.json's)}}, POST
+                                 economy/comforts {comfortsAbove?, comfortsShare?} (null: city_loop.json's); the loop's
                                  rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): POST
                                  economy/rules {set: {rule: N or null}}, POST economy/services {set: {service: {on?,
-                                 price?, every?} or null}} (null: country.json's); the Country's food farms
+                                 price?, every?} or null}} (null: city_loop.json's); the Country's food farms
                                  (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): POST economy/farms
                                  {set: {start?, every?, order?, keeper?, hand?, areas?: {area: {on?, yieldScale?,
                                  crewScale?, keeper?, hand?, priceFactor?} or null}, farms?: {farm: {yieldScale?,
@@ -125,16 +125,16 @@ ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/stor
 DM_ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/loop'), ('POST', '/api/economy/store'),
                                ('POST', '/api/economy/goods'), ('POST', '/api/economy/seasons'), ('POST', '/api/economy/comforts'),
                                ('POST', '/api/economy/rules'), ('POST', '/api/economy/services'), ('POST', '/api/economy/farms')})
-LOOP_KEYS = tuple(k for k in map_editor.LOOP_DEFAULTS if k != 'countryOff')
+LOOP_KEYS = tuple(k for k in map_editor.LOOP_DEFAULTS if k != 'wharfOff')
 COMFORT_KEYS = ('comfortsAbove', 'comfortsShare')
 NO_RULE = 'The loop needs the restocking rule on, or shops sell out and stay empty.'
 ECONOMY_NOTE = 'Per world; not carried by Update from live or Import from dev (each world\'s own lever).'
 TAKES_EFFECT = ('Applied to the world\'s running game server within a few seconds (economy.sync), and read by any server '
-                'started on it later. A business\'s own switch, and Data/Items/country.json itself, take effect when a '
+                'started on it later. A business\'s own switch, and Data/Items/city_loop.json itself, take effect when a '
                 'server next starts.')
-NO_SEASONS_HERE = ('This world lacks migration 0057: its seasons and comforts are as Data/Items/country.json has them and '
+NO_SEASONS_HERE = ('This world lacks migration 0057: its seasons and comforts are as Data/Items/city_loop.json has them and '
                    'can\'t be changed here.')
-NO_RULES_HERE = ('This world lacks migration 0058: its rules and services are as Data/Items/country.json has them and '
+NO_RULES_HERE = ('This world lacks migration 0058: its rules and services are as Data/Items/city_loop.json has them and '
                  'can\'t be changed here.')
 NO_FARMS_HERE = ('This world lacks migration 0060: its farms are as Data/Economy/country_farms.json has them and can\'t be '
                  'changed here.')
@@ -233,10 +233,10 @@ class Economy:
             businesses.append({'npc': r['id'], 'name': r['name'], 'label': r['work_label'], 'business': business,
                                'district': districts.get(r['work_area']) or r['region'] or '', 'interior': r['interior'] or '',
                                'making': making, 'resale': resale, 'internalStore': own, 'effective': effective, 'why': why})
-        # The city's loop (doc 68): its settings, the Country's basket (Data/Items/country.json) with its makers here, and
+        # The city's loop (doc 68): its settings, the Country's basket (Data/Items/city_loop.json) with its makers here, and
         # every good the listed businesses draw, with whether the Country supplies it.
         import pathlib
-        country = json.loads((pathlib.Path(__file__).resolve().parent.parent / 'Data/Items/country.json').read_text(encoding='utf-8'))
+        country = json.loads((pathlib.Path(__file__).resolve().parent.parent / 'Data/Items/city_loop.json').read_text(encoding='utf-8'))
         present = {b['business'] for b in businesses if b['business']}
         market = (country.get('markets') or [{}])[0]
         basket = []
@@ -251,16 +251,18 @@ class Economy:
         for b in businesses:
             for g in b['making'] + b['resale']:
                 drawn[g['item']] = drawn.get(g['item'], 0) + 1
-        off = set(economy.get('countryOff') or [])
+        off = set(economy.get('wharfOff') or [])
         goods = [{'item': g, 'name': C.ITEMS.get(g, {}).get('name', g), 'businesses': n, 'supplied': g not in off}
                  for g, n in sorted(drawn.items())]
         return {'world': w, 'supported': supported, **{k: economy[k] for k in S.STORE_DEFAULTS}, 'businesses': businesses,
                 'note': ECONOMY_NOTE, 'takesEffect': TAKES_EFFECT,
                 'problem': '' if supported else 'This world lacks migration 0055: the store is on at its defaults and can\'t be changed here.',
-                'loop': {k: economy[k] for k in LOOP_KEYS}, 'countryOff': sorted(off), 'loopSupported': loop_ok,
+                'loop': {k: economy[k] for k in LOOP_KEYS}, 'wharfOff': sorted(off), 'loopSupported': loop_ok,
                 'loopProblem': '' if loop_ok else 'This world lacks migration 0056: the city\'s loop runs at its defaults and can\'t be changed here.',
-                'market': {'id': market.get('id', 'country'), 'name': market.get('name', 'the Country'), 'people': market.get('people', '')},
+                'market': {'id': market.get('id', 'wharf'), 'name': market.get('name', 'the Wharf'), 'people': market.get('people', '')},
                 'basket': basket, 'goods': goods, 'ruleWarning': '' if economy['storeRule'] else NO_RULE,
+                # The Wharf's lists (doc 73, 4.2), as the file has them: Atlas shows them; the rules are on the Rules panel.
+                'wharfLists': {k: (country.get('wharf') or {}).get(k) or ([] if k == 'never' else {}) for k in ('imports', 'takes', 'never')},
                 **self.seasons_view(country, economy, seasons_ok), **self.rules_view(economy, rules_ok),
                 **self.farms_view(economy, farms_ok), 'farmsSaved': self.farms_saved(key, w),
                 'drift': self.drift(key, w, economy, {r['id']: r['name'] for r in rows})}
@@ -371,15 +373,15 @@ class Economy:
     @staticmethod
     def rules_view(economy, supported) -> dict:
         """The loop's rules and the city's services (doc 68, Progress, "First fixes"): this world's changes ({} for none),
-        country.json's rules beside them, and each country.json service with its name, catalogue price and business."""
+        city_loop.json's rules beside them, and each city_loop.json service with its name, catalogue price and business."""
         return {'rulesSupported': supported, 'rulesProblem': '' if supported else NO_RULES_HERE,
                 'rules': dict(economy.get('rules') or {}), 'services': copy.deepcopy(dict(economy.get('services') or {})),
                 'ruleDefaults': map_editor.rule_defaults(), 'serviceList': map_editor.service_list()}
 
     @staticmethod
     def seasons_view(country, economy, supported) -> dict:
-        """The seasons and the comforts (doc 68, Progress): country.json's groups with this world's changes, each
-        with country.json's own numbers beside it, and the comforts (null: country.json's)."""
+        """The seasons and the comforts (doc 68, Progress): city_loop.json's groups with this world's changes, each
+        with city_loop.json's own numbers beside it, and the comforts (null: city_loop.json's)."""
         own = economy.get('seasons') or {}
         groups = []
         for g in (country.get('seasons') or {}).get('groups') or []:
@@ -450,8 +452,11 @@ class Economy:
         return {**result, 'detail': f'The store room: {said}.'}
 
     def set_loop(self, key, data, editor) -> dict:
-        """The city's loop (doc 68, 9): {needsPaused?, country?, countryReserve?, gateToll?, carriage?, wageKeeper?,
-        wageHand?, wagePublic?, wageCountry?, subsidies?: {service: percent}}."""
+        """The city's loop (doc 68, 9): {needsPaused?, wharf?, wharfReserve?, gateToll?, carriage?, wageKeeper?,
+        wageHand?, wagePublic?, wageWharf?, subsidies?: {service: percent}} (doc 73: country?, countryReserve? and
+        wageCountry? read as the Wharf's, for one release)."""
+        if isinstance(data, dict):
+            data = map_editor.legacy_economy(data)
         if not isinstance(data, dict) or not data or set(data) - set(LOOP_KEYS):
             raise D.DMError('Send any of: ' + ', '.join(LOOP_KEYS) + '.', 400)
         if 'subsidies' in data and isinstance(data['subsidies'], dict):
@@ -488,18 +493,18 @@ class Economy:
             raise D.DMError('Send {"set": {item: true|false}} or {"all": true|false}.', 400)
 
         def change(e):
-            off = set(e.get('countryOff') or [])
+            off = set(e.get('wharfOff') or [])
             for item, on in wanted.items():
                 (off.discard if on else off.add)(item)
-            return {**e, 'countryOff': sorted(off)}
+            return {**e, 'wharfOff': sorted(off)}
         on = sum(1 for v in wanted.values() if v)
-        detail = f'The Country supplies {on} of {len(wanted)} good{"s" if len(wanted) != 1 else ""} set.'
+        detail = f'The Wharf lands {on} of {len(wanted)} good{"s" if len(wanted) != 1 else ""} set.'
         result = self._edit(key, editor, detail, change, loop=True) if wanted else {'changed': False}
         return {**result, 'count': len(wanted), 'detail': detail}
 
     def set_seasons(self, key, data, editor) -> dict:
         """Season groups as this world has them (doc 68, Progress): {set: {group: {supply?, price?, shelf?, normal?}}}, any
-        of a group's four numbers at a time (the rest as it is now), or a group null: back to country.json's."""
+        of a group's four numbers at a time (the rest as it is now), or a group null: back to city_loop.json's."""
         wanted = data.get('set') if isinstance(data, dict) else None
         if not isinstance(wanted, dict) or not wanted:
             raise D.DMError('Send {"set": {group: {supply?, price?, shelf?: [Spring, Summer, Autumn, Winter] percents, '
@@ -507,7 +512,7 @@ class Economy:
         groups = {g['id']: g for g in map_editor.season_groups()}
         unknown = sorted(set(wanted) - set(groups))
         if unknown:
-            raise D.DMError(f'No such season group in Data/Items/country.json: {", ".join(unknown[:8])} (there are '
+            raise D.DMError(f'No such season group in Data/Items/city_loop.json: {", ".join(unknown[:8])} (there are '
                             f'{", ".join(groups) or "none"}).', 400)
         for group, change in wanted.items():
             if change is not None and (not isinstance(change, dict) or not change or set(change) - {'supply', 'price', 'shelf', 'normal'}):
@@ -526,7 +531,7 @@ class Economy:
                 merged = {**(seasons.get(group) or base(group)), **values}
                 seasons[group] = merged if merged != base(group) else None
                 if seasons[group] is None:
-                    del seasons[group]            # (Back at country.json's: no row kept for it.)
+                    del seasons[group]            # (Back at city_loop.json's: no row kept for it.)
             problems = map_editor.check_economy({**S.default_economy(), 'seasons': seasons})
             if problems:
                 raise D.DMError(' '.join(problems), 400)
@@ -534,7 +539,7 @@ class Economy:
 
         def told(group, values):
             if values is None:
-                return f'{group} as country.json has it'
+                return f'{group} as city_loop.json has it'
             return f'{group} ' + ', '.join(f'{k} {"/".join(map(str, v)) if isinstance(v, list) else v}' for k, v in values.items())
         said = '; '.join(told(g, v) for g, v in wanted.items())
         result = self._edit(key, editor, f'The seasons: {said}', change, seasons=True)
@@ -542,18 +547,18 @@ class Economy:
 
     def set_comforts(self, key, data, editor) -> dict:
         """The residents' comforts (doc 68, 3): {comfortsAbove?: pennies a head, comfortsShare?: percent}, null for
-        country.json's."""
+        city_loop.json's."""
         if not isinstance(data, dict) or not data or set(data) - set(COMFORT_KEYS):
-            raise D.DMError('Send any of: ' + ', '.join(COMFORT_KEYS) + ' (null: country.json\'s).', 400)
+            raise D.DMError('Send any of: ' + ', '.join(COMFORT_KEYS) + ' (null: city_loop.json\'s).', 400)
         problems = map_editor.check_economy({**S.default_economy(), **data})
         if problems:
             raise D.DMError(' '.join(problems), 400)
-        said = ', '.join(f'{k} {"as country.json has it" if v is None else v}' for k, v in data.items())
+        said = ', '.join(f'{k} {"as city_loop.json has it" if v is None else v}' for k, v in data.items())
         result = self._edit(key, editor, f'The comforts: {said}', lambda e: {**e, **data}, seasons=True)
         return {**result, 'detail': f'The comforts: {said}.'}
 
     def set_rules(self, key, data, editor) -> dict:
-        """The loop's rules (doc 68, Progress, "First fixes"): {set: {rule: whole number, or null for country.json's}}."""
+        """The loop's rules (doc 68, Progress, "First fixes"): {set: {rule: whole number, or null for city_loop.json's}}."""
         wanted = data.get('set') if isinstance(data, dict) else None
         names = map_editor.RULE_LIMITS
         if not isinstance(wanted, dict) or not wanted:
@@ -573,20 +578,20 @@ class Economy:
                 else:
                     rules[name] = value
             return {**e, 'rules': rules}
-        said = ', '.join(f'{k} {"as country.json has it" if v is None else v}' for k, v in wanted.items())
+        said = ', '.join(f'{k} {"as city_loop.json has it" if v is None else v}' for k, v in wanted.items())
         result = self._edit(key, editor, f'The rules: {said}', change, rules=True)
         return {**result, 'detail': f'The rules: {said}.'}
 
     def set_services(self, key, data, editor) -> dict:
         """The city's services (doc 68, Progress, "First fixes"): {set: {service: {on?, price?, every?} or null}}, any of a
-        service's three at a time (the rest as it is now), or null: back to country.json's (and items.json's price)."""
+        service's three at a time (the rest as it is now), or null: back to city_loop.json's (and items.json's price)."""
         wanted = data.get('set') if isinstance(data, dict) else None
         if not isinstance(wanted, dict) or not wanted:
             raise D.DMError('Send {"set": {service: {on?: true|false, price?: pennies, every?: days} or null}}.', 400)
         listed = {s['id']: s for s in map_editor.service_list()}
         unknown = sorted(set(wanted) - set(listed))
         if unknown:
-            raise D.DMError(f'No such service in Data/Items/country.json: {", ".join(unknown[:8])} (there are '
+            raise D.DMError(f'No such service in Data/Items/city_loop.json: {", ".join(unknown[:8])} (there are '
                             f'{", ".join(listed) or "none"}).', 400)
         for sid, values in wanted.items():
             if values is not None and (not isinstance(values, dict) or not values or set(values) - {'on', 'price', 'every'}):
@@ -604,7 +609,7 @@ class Economy:
                     continue
                 merged = {**(services.get(sid) or base(sid)), **values}
                 if merged == base(sid):
-                    services.pop(sid, None)       # (Back at country.json's: no entry kept for it.)
+                    services.pop(sid, None)       # (Back at city_loop.json's: no entry kept for it.)
                 else:
                     services[sid] = merged
             problems = map_editor.check_rules({}, services)
@@ -614,7 +619,7 @@ class Economy:
 
         def told(sid, values):
             if values is None:
-                return f'{sid} as country.json has it'
+                return f'{sid} as city_loop.json has it'
             return f'{sid} ' + ', '.join(f'{k} {("on" if v else "off") if isinstance(v, bool) else v}' for k, v in values.items())
         said = '; '.join(told(s, v) for s, v in wanted.items())
         result = self._edit(key, editor, f'The services: {said}', change, rules=True)

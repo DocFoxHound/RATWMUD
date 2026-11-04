@@ -1,0 +1,191 @@
+loading a place: mean 1.14246 ms, worst 8.13226 ms (w_ridgemere_10_13)
+1212 places loaded (15976149 tiles), 186588 doors and seams, 0 failures
+  money at the start (50252p in all; 42 residents short of a day's food money): holder, total, how many, median
+    adults without work: 1616p, 46, 32p
+    capital's treasury: 1000p, 1, 1000p
+    children: 0p, 4, 0p
+    guards: 262p, 14, 15p
+    home stores: 0p, 896, 0p
+    merchants: 13416p, 102, 136p
+    outside: 0p, 1, 0p
+    paid civilians: 11055p, 300, 38p
+    till: 13416p, 102, 136p
+    unpaid civilians: 9487p, 93, 84p
+  the farms' switch: the first area on day 0 (the world is on day 0), one every 1 days
+economy level full: /tmp/claude-1000/-home-martinb-Documents-GitHub-MUDProject/da6a1181-05f7-491a-a334-c3e7343d5540/scratchpad/wharf-smoke.full.jsonl
+  run day 1: 1.98259 s wall, 288000 ticks; 1.98259 s so far
+  run day 2: 1.6634 s wall, 288000 ticks; 3.646 s so far
+  run day 3: 1.85717 s wall, 288000 ticks; 5.50316 s so far
+  run day 4: 1.99881 s wall, 288000 ticks; 7.50197 s so far
+  run day 5: 1.92598 s wall, 288000 ticks; 9.42795 s so far
+  run day 6: 2.34192 s wall, 288000 ticks; 11.7699 s so far
+  run day 7: 1.67308 s wall, 288000 ticks; 13.443 s so far
+  run day 8: 2.06488 s wall, 288000 ticks; 15.5078 s so far
+  run day 9: 1.98824 s wall, 288000 ticks; 17.4961 s so far
+  run day 10: 2.01825 s wall, 288000 ticks; 19.5143 s so far
+  run day 11: 1.98633 s wall, 288000 ticks; 21.5006 s so far
+  run day 12: 1.9984 s wall, 288000 ticks; 23.4991 s so far
+  run day 13: 2.17462 s wall, 288000 ticks; 25.6737 s so far
+  run day 14: 1.66847 s wall, 288000 ticks; 27.3421 s so far
+  run day 15: 2.00897 s wall, 288000 ticks; 29.3511 s so far
+  run day 16: 2.01216 s wall, 288000 ticks; 31.3633 s so far
+  run day 17: 2.03785 s wall, 288000 ticks; 33.4011 s so far
+  run day 18: 1.99322 s wall, 288000 ticks; 35.3943 s so far
+  run day 19: 2.02868 s wall, 288000 ticks; 37.423 s so far
+  run day 20: 2.12623 s wall, 288000 ticks; 39.5493 s so far
+  run day 21: 1.67689 s wall, 288000 ticks; 41.2262 s so far
+  run day 22: 2.00483 s wall, 288000 ticks; 43.231 s so far
+  run day 23: 2.01679 s wall, 288000 ticks; 45.2478 s so far
+  run day 24: 2.03499 s wall, 288000 ticks; 47.2828 s so far
+  run day 25: 2.00972 s wall, 288000 ticks; 49.2925 s so far
+  run day 26: 2.02496 s wall, 288000 ticks; 51.3174 s so far
+  run day 27: 2.13399 s wall, 288000 ticks; 53.4514 s so far
+  run day 28: 1.65416 s wall, 288000 ticks; 55.1056 s so far
+  run day 29: 2.01167 s wall, 288000 ticks; 57.1173 s so far
+  run day 30: 1.98021 s wall, 288000 ticks; 59.0975 s so far
+  run day 31: 1.99994 s wall, 288000 ticks; 61.0974 s so far
+  run day 32: 2.00578 s wall, 288000 ticks; 63.1032 s so far
+  run day 33: 1.98286 s wall, 288000 ticks; 65.0861 s so far
+  run day 34: 2.12694 s wall, 288000 ticks; 67.213 s so far
+  run day 35: 1.62715 s wall, 288000 ticks; 68.8401 s so far
+  run day 36: 2.01714 s wall, 288000 ticks; 70.8573 s so far
+  run day 37: 1.97772 s wall, 288000 ticks; 72.835 s so far
+  run day 38: 2.00434 s wall, 288000 ticks; 74.8394 s so far
+  run day 39: 2.01041 s wall, 288000 ticks; 76.8498 s so far
+  run day 40: 1.99202 s wall, 288000 ticks; 78.8418 s so far
+  run day 41: 2.13455 s wall, 288000 ticks; 80.9763 s so far
+  run day 42: 1.66483 s wall, 288000 ticks; 82.6412 s so far
+  run day 43: 2.06814 s wall, 288000 ticks; 84.7093 s so far
+  run day 44: 1.99807 s wall, 288000 ticks; 86.7074 s so far
+  run day 45: 2.09873 s wall, 288000 ticks; 88.8061 s so far
+  run day 46: 2.08089 s wall, 288000 ticks; 90.887 s so far
+  run day 47: 2.04459 s wall, 288000 ticks; 92.9316 s so far
+  run day 48: 2.15456 s wall, 288000 ticks; 95.0861 s so far
+  run day 49: 1.66153 s wall, 288000 ticks; 96.7477 s so far
+  run day 50: 2.03328 s wall, 288000 ticks; 98.7809 s so far
+  run day 51: 1.98553 s wall, 288000 ticks; 100.766 s so far
+  run day 52: 1.99767 s wall, 288000 ticks; 102.764 s so far
+  run day 53: 2.0224 s wall, 288000 ticks; 104.787 s so far
+  run day 54: 2.04542 s wall, 288000 ticks; 106.832 s so far
+  run day 55: 2.15927 s wall, 288000 ticks; 108.991 s so far
+  run day 56: 1.67313 s wall, 288000 ticks; 110.664 s so far
+  run day 57: 2.04651 s wall, 288000 ticks; 112.711 s so far
+  run day 58: 2.0163 s wall, 288000 ticks; 114.727 s so far
+  run day 59: 2.03201 s wall, 288000 ticks; 116.759 s so far
+  run day 60: 2.02791 s wall, 288000 ticks; 118.787 s so far
+  inside World::tick, total ms (worst tick): streaming 1902 (5.3881) schedules 107815 (175.081) movement 544 (0.070124) separation 425 (0.304239) views 356 (0.613465); 0 route searches expanding 0 nodes (at most 0 in one)
+  path cache: 0 found, 0 searched
+  slowest route search: 0 ms in , 0 nodes, 0 waypoints
+  slowest World::tick after the first minute (tick 0): 0 ms = streaming 0, schedules 0 (0 route searches), movement 0, separation 0, views 0
+771 residents, no player, 17280000 ticks (17280000 of 0.05 s) from 6:00 to 1446:00: 118.787 s wall, 1.97979 s a game day, mean 0.00687426 ms a tick; 508 residents moved; at most 691 places in memory; 4 threads
+  by run day (wall s; ticks; with the profile on, the schedules' stages in s: society bonds roads crime errands streaming routes):
+    day 1: 1.98259; 288000; 0.84532 0.0329647 0.00902719 0.0231226 0.889847 0.00064987 0
+    day 2: 1.6634; 288000; 1.0484 0.0404747 0.000509442 0.0258875 0.36291 0.000685296 0
+    day 3: 1.85717; 288000; 1.2231 0.0594736 0.000513305 0.0293931 0.357056 0.000730663 0
+    day 4: 1.99881; 288000; 1.32772 0.0414476 0.000523674 0.0328711 0.416876 0.000802058 0
+    day 5: 1.92598; 288000; 1.35789 0.0344201 0.00052724 0.034015 0.326624 0.000837734 0
+    day 6: 2.34192; 288000; 1.46771 0.0297753 0.00053369 0.0345931 0.632846 0.000880819 0
+    day 7: 1.67308; 288000; 1.06332 0.0559181 0.000518435 0.0353935 0.305377 0.000853487 0
+    day 8: 2.06488; 288000; 1.42804 0.0371034 0.00051923 0.0365848 0.367602 0.000932312 0
+    day 9: 1.98824; 288000; 1.41514 0.029254 0.000523345 0.0370476 0.313584 0.000955591 0
+    day 10: 2.01825; 288000; 1.43013 0.0324565 0.000517531 0.0378504 0.326293 0.00102656 0
+    day 11: 1.98633; 288000; 1.42903 0.0320727 0.000508749 0.0375446 0.305817 0.00104668 0
+    day 12: 1.9984; 288000; 1.44667 0.031355 0.000520901 0.0375447 0.299203 0.00105139 0
+    day 13: 2.17462; 288000; 1.58089 0.0301753 0.000532378 0.0379614 0.338404 0.00105322 0
+    day 14: 1.66847; 288000; 1.1264 0.0411879 0.000515116 0.0379785 0.282806 0.00104421 0
+    day 15: 2.00897; 288000; 1.45494 0.0327663 0.00050697 0.0375458 0.298659 0.00104619 0
+    day 16: 2.01216; 288000; 1.45908 0.030343 0.000515713 0.0378864 0.299036 0.00105807 0
+    day 17: 2.03785; 288000; 1.47669 0.0326456 0.000521679 0.0380978 0.304394 0.00107397 0
+    day 18: 1.99322; 288000; 1.44164 0.0323313 0.000515332 0.0378069 0.298262 0.00103793 0
+    day 19: 2.02868; 288000; 1.47477 0.0315516 0.000533592 0.0380057 0.299875 0.00105811 0
+    day 20: 2.12623; 288000; 1.54212 0.0295311 0.000530765 0.0379113 0.331559 0.00106545 0
+    day 21: 1.67689; 288000; 1.11887 0.0472027 0.000507991 0.0376545 0.292517 0.00103344 0
+    day 22: 2.00483; 288000; 1.44487 0.0324379 0.000522847 0.0378364 0.306425 0.00104629 0
+    day 23: 2.01679; 288000; 1.45842 0.0303747 0.00052257 0.0381429 0.30372 0.00105811 0
+    day 24: 2.03499; 288000; 1.47346 0.0335069 0.000562379 0.0382005 0.304069 0.00112711 0
+    day 25: 2.00972; 288000; 1.45447 0.0328528 0.000515478 0.0375039 0.300055 0.00105725 0
+    day 26: 2.02496; 288000; 1.46999 0.0316293 0.000518365 0.0378574 0.299714 0.00108823 0
+    day 27: 2.13399; 288000; 1.54924 0.0309577 0.000527622 0.0379265 0.331436 0.00106825 0
+    day 28: 1.65416; 288000; 1.09922 0.0524428 0.00051124 0.0378007 0.284471 0.00102788 0
+    day 29: 2.01167; 288000; 1.44716 0.0337601 0.000522518 0.0390885 0.306844 0.00106907 0
+    day 30: 1.98021; 288000; 1.42651 0.0302409 0.000512609 0.0382121 0.300402 0.00106872 0
+    day 31: 1.99994; 288000; 1.44297 0.0332789 0.00053167 0.0382747 0.300663 0.00106787 0
+    day 32: 2.00578; 288000; 1.446 0.0329803 0.000520858 0.0387979 0.302282 0.00105718 0
+    day 33: 1.98286; 288000; 1.42657 0.0327105 0.000522442 0.0384439 0.301183 0.00107068 0
+    day 34: 2.12694; 288000; 1.53148 0.0309248 0.000532814 0.0388242 0.338726 0.00108808 0
+    day 35: 1.62715; 288000; 1.08012 0.0506385 0.000514926 0.0382053 0.277477 0.00105625 0
+    day 36: 2.01714; 288000; 1.46207 0.0334745 0.00051725 0.038866 0.298558 0.00105721 0
+    day 37: 1.97772; 288000; 1.41636 0.0326764 0.000508609 0.0387941 0.302145 0.00109164 0
+    day 38: 2.00434; 288000; 1.43958 0.0344689 0.000519506 0.0382613 0.301095 0.00108897 0
+    day 39: 2.01041; 288000; 1.44652 0.0337898 0.000518329 0.0382255 0.301247 0.00106739 0
+    day 40: 1.99202; 288000; 1.4305 0.0322145 0.000519566 0.0380031 0.301937 0.00106466 0
+    day 41: 2.13455; 288000; 1.53528 0.0307984 0.000537064 0.0386612 0.337313 0.00109726 0
+    day 42: 1.66483; 288000; 1.11096 0.050161 0.000509774 0.0381778 0.277472 0.00102202 0
+    day 43: 2.06814; 288000; 1.49337 0.0331693 0.000516732 0.0391009 0.310975 0.00105787 0
+    day 44: 1.99807; 288000; 1.43272 0.0322994 0.000522891 0.0387628 0.302728 0.00106295 0
+    day 45: 2.09873; 288000; 1.53042 0.0340996 0.00052464 0.0385189 0.305469 0.00114356 0
+    day 46: 2.08089; 288000; 1.16003 0.0433814 0.000519149 0.0380656 0.649489 0.00139697 0
+    day 47: 2.04459; 288000; 1.47082 0.033471 0.000527714 0.0389706 0.308656 0.00161691 0
+    day 48: 2.15456; 288000; 1.54816 0.0303755 0.000540027 0.0385049 0.343871 0.00163698 0
+    day 49: 1.66153; 288000; 1.10204 0.0546298 0.000511241 0.0384727 0.276827 0.00158809 0
+    day 50: 2.03328; 288000; 1.46007 0.0336043 0.000528175 0.0386985 0.308768 0.00160325 0
+    day 51: 1.98553; 288000; 1.4148 0.0321619 0.000522171 0.0384442 0.308391 0.00160599 0
+    day 52: 1.99767; 288000; 1.4246 0.0354115 0.000517116 0.0388423 0.30696 0.0016082 0
+    day 53: 2.0224; 288000; 1.43384 0.0341146 0.000525059 0.0387343 0.322183 0.00178439 0
+    day 54: 2.04542; 288000; 1.46138 0.0332435 0.00052403 0.0386558 0.318854 0.00171032 0
+    day 55: 2.15927; 288000; 1.54635 0.0305402 0.000533019 0.0387555 0.349262 0.0017539 0
+    day 56: 1.67313; 288000; 1.11329 0.0509598 0.000527432 0.0391958 0.279832 0.00164472 0
+    day 57: 2.04651; 288000; 1.46278 0.0345823 0.000523544 0.0390941 0.315902 0.00174801 0
+    day 58: 2.0163; 288000; 1.43228 0.0321603 0.000527271 0.0394293 0.317528 0.00173329 0
+    day 59: 2.03201; 288000; 1.44094 0.0354216 0.000534327 0.0388679 0.320732 0.00176729 0
+    day 60: 2.02791; 288000; 1.43926 0.0346159 0.00052187 0.0392569 0.319422 0.00176789 0
+  771 residents offstage at the end; money conserved; 1 places in memory at the end; 56928 bonds between them
+  money at the end (64557p in all; 69 residents short of a day's food money): holder, total, how many, median
+    adults without work: 517p, 47, 9p
+    apprentices: 67p, 13, 6p
+    capital's treasury: 1660p, 1, 1660p
+    children: 49p, 12, 5p
+    crew: 0p, 42, 0p
+    estate: 2093p, 4, 589p
+    farm: 3450p, 42, 75p
+    guards: 354p, 14, 16p
+    home stores: 0p, 1200, 0p
+    merchants: 11730p, 127, 78p
+    outside: 23p, 1, 23p
+    paid civilians: 23624p, 465, 54p
+    till: 18808p, 127, 149p
+    unpaid civilians: 2182p, 93, 11p
+  roads: 0 towns (); 0 caravans on the road, 0 robbed; 0 bandit camps; 0 open contracts; 1577 rumours held
+  crime: 0 incidents (); 0 wanted, 0 held
+  people: 768 residents living (the oldest 82), 179 married couples; 3 born, 209 arrived from the Country and 3 died in the run; 0 children and 0 arrivals asked for and not made; 0 children still owed for the dead; 315 unplaced NPCs left in the world's list
+  the unplaced of working age by old trade: children 4; fields and mills 46; fishing and the marsh 3; herds and flocks 18; keeps the house 19; mines, stone and clay 21; orchards and vines 3; service and labour 34; the Heights 17; the old 7; the towns' trades and shops 12; the watch 12; woods 20;
+  the farms' people placed: family 18; family hand 2; hand coldwater 20; hand fenshore 10; hand frosthollow 4; hand larkfield 13; hand oakhaven 3; hand ridgemere 28; hand saltwell 5; hand southmeadow 8; keeper 39; market coldwater 6; market fenshore 2; market frosthollow 2; market larkfield 4; market oakhaven 2; market saltwell 3; market southmeadow 2; workshop cn_coldwater_soapworks 8; workshop cn_coldwater_still 2; workshop cn_coldwater_weavers 7; workshop cn_fenshore_pottery 2; workshop cn_larkfield_press 4; workshop cn_larkfield_smithy 2; workshop cn_larkfield_weavers 6; workshop cn_oakhaven_press 4; workshop cn_southmeadow_pottery 2; posts 132 (132 held), virtual crew left 0; 173 living in the realm's homes, 67 households (by size: 1x38 2x5 3x5 4x2 5x2 6x13 7x2), 0 hungry (60+) at the end, the hungriest 59.9
+    shopkeeper at Larkfield Stores (tn_lf_pike_chalkley): till 74p, 173 pieces
+    keeps the taproom at The Sheaf (tn_sm_linden_harvestton): till 54p, 84 pieces
+    baker at Larkfield Bakehouse (tn_lf_lichen_hedgemead): till 172p, 17 pieces
+    linen loom master at Larkfield Looms (cty_gorse_hedgewell): till 307p, 61 pieces
+    country printer at Larkfield Print House (cty_nell_plummeadow): till 215p, 23 pieces
+    village smith at Larkfield Smithy (tn_mb_tansy_eelbridge): till 34p, 3 pieces
+    shopkeeper at Southmeadow Stores (tn_sm_rusk_plummeadow): till 86p, 171 pieces
+    keeps the taproom at The Vine and Sickle (tn_sm_moss_blossomwell): till 125p, 35 pieces
+    village potter at Southmeadow Kilns (tn_sm_dun_harvestley): till 95p, 0 pieces
+    shopkeeper at Coldwater Stores (tn_cw_myrtle_stillford): till 102p, 180 pieces
+    keeps the taproom at The Glasswater Inn (tn_fh_loam_pinefell): till 185p, 135 pieces
+    baker at Coldwater Bakehouse (tn_sm_eskar_cornley): till 195p, 27 pieces
+    soap boiler at Coldwater Soapworks (tn_lf_sage_wheatridge): till 400p, 116 pieces
+    wool loom master at Coldwater Looms (tn_cw_fallow_lakewick): till 331p, 57 pieces
+    stillmaster at Coldwater Still (tn_mb_aspen_marshholm): till 141p, 10 pieces
+    shopkeeper at Saltwell Stores (tn_mb_roan_pikewater): till 25p, 164 pieces
+    keeps the taproom at The Oasis Inn (tn_oh_thorn_ashwood): till 29p, 49 pieces
+    shopkeeper at Fenshore Stores (tn_fh_thistle_stonepick): till 197p, 193 pieces
+    keeps the taproom at The Heron (tn_cw_bramble_reedford): till 131p, 28 pieces
+    village potter at Fenshore Kilns (tn_oh_eskar_acornholt): till 71p, 0 pieces
+    shopkeeper at Oakhaven Stores (tn_oh_cairn_oakhaven): till 22p, 162 pieces
+    keeps the taproom at The Felled Cedar (tn_fh_tamsin_icefell): till 19p, 43 pieces
+    country printer at Oakhaven Print House (tn_oh_ludo_beechshaw): till 180p, 24 pieces
+    shopkeeper at Frosthollow Stores (tn_fh_aster_coldfell): till 20p, 164 pieces
+    keeps the taproom at The Lamp and Pick (tn_mb_oriel_marshditch): till 20p, 42 pieces
+  at their scheduled place: 375, on their way: 396, without a route: 0
+  the Wharf beyond the realm: in 15197p, out 15235p, net -38p; its fees 1403p; credit 38p (moved 0p); money conserved: true (money 64557p = minted 79792 - sunk 15235)
+  the Wharf (outside:wharf): 23p; treasury 1660p; carriage to till:job:rmx_orm_carlisle 503p; restocking rule on; needs on
+  digest: people f879754e778e827, society c335cf0988580eda, map memory 14650fb0739d0383 (0 tiles remembered)

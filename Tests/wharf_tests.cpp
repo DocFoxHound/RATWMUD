@@ -1,8 +1,11 @@
-// The Country and the city's loop (Docs/Design/68-the-country-and-the-city-loop.md): every flow conserved (store draws
-// split between the Country and the treasury's gate toll, carriage to the carters with the treasury's subsidy, the
-// Country's purchases and their carriage, households' food, needs and comforts, wages from tills, the treasury and the
-// Country, a till's profit); who pays which post; the Country spreading its buying over the makers; the subsidy's cap and
-// its giving way before public wages; residents fed; the per-good switch; the loop's records; an older save's fund:store.
+// The Wharf and the city's loop (Docs/Design/73-the-wharf.md; the Country before it, Docs/Design/68-the-country-and-the-
+// city-loop.md): every flow conserved (store draws split between the Wharf and the treasury's gate toll, carriage to the
+// carters with the treasury's subsidy, the estates' purchases and their carriage, households' food, needs and comforts,
+// wages from tills, the treasury and the estates, a till's profit); who pays which post; the estates spreading their
+// buying over the makers; the subsidy's cap and its giving way before public wages; residents fed; the per-good switch;
+// the loop's records; an older save's fund:store and outside:country; the Wharf's goods landed beyond the realm, an order
+// from it by wagon, its credit moved by the DM. (The farms' side of the Wharf, its imports after the farms and its takes
+// of their piles, is farms_tests' theWharf.)
 //
 // The catalogue is Data/Items with a carters' business added (the other session adds the real one: "carters"), copied
 // to a scratch directory read through RATW_DATA_DIR, so a carters' yard can take carriage.
@@ -113,8 +116,9 @@ AuthoredRoster roster(bool carters = true)
     r.economy.storeRule = true;
     // The loop as doc 68 first built it: the later rules as they were (trades_tests, treasury_tests and selfcorrect_tests
     // have theirs; doc 68, "Trades", "The treasury's surplus", "Self-correcting rules").
+    // (And the Wharf's valve shut, doc 73: the Country's flows as they were; the Wharf's own tests open it.)
     r.economy.rules = {{"subsidyToNeed", 0}, {"floatDrawDays", 1}, {"buyAheadDays", 0}, {"patrons", 0}, {"suppliers", 0}, {"surplus", 0},
-                       {"stockPrices", 0}, {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}};
+                       {"stockPrices", 0}, {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}, {"wharfValve", 0}};
     return r;
 }
 
@@ -165,8 +169,8 @@ void whoPays()
     expect(pay("hand").kind == "hand" && pay("hand").payer == "till:job:smith" && pay("hand").wage == 8, "a hand in its shop's room: the till");
     expect(pay("driver").kind == "hand" && pay("driver").payer == "till:job:carter", "a driver: the carters' till");
     expect(pay("guard").kind == "watch" && pay("guard").payer == "treasury", "the watch: the treasury");
-    expect(pay("clerk").kind == "public" && pay("clerk").payer == "treasury", "a clerk: the treasury (country.json's rules)");
-    expect(pay("docker").kind == "country" && pay("docker").payer == Society::CountryFund, "a docker: the Country");
+    expect(pay("clerk").kind == "public" && pay("clerk").payer == "treasury", "a clerk: the treasury (city_loop.json's rules)");
+    expect(pay("docker").kind == "estate" && pay("docker").payer == Society::WharfFund, "a docker: the estates' (the Wharf's purse)");
     expect(pay("child").kind.empty(), "a child at lessons: nobody");
     expect(pay("elder").kind.empty(), "the old who sit and watch: nobody (the alms keep them if their household runs short)");
     expect(s.crewOf("till:job:smith") == 2 && s.crewOf("till:job:baker") == 1, "a crew: its keeper and hands");
@@ -179,24 +183,24 @@ void aDrawSplit()
     auto s = city();
     const auto till = s.tillOf("smith");
     s.shift("treasury", till, "", 0, 5000, "test: working money");
-    const auto t0 = s.cash(till), c0 = s.cash(Society::CountryFund), r0 = s.cash("treasury"), k0 = s.cash("till:job:carter");
+    const auto t0 = s.cash(till), c0 = s.cash(Society::WharfFund), r0 = s.cash("treasury"), k0 = s.cash("till:job:carter");
     // 400 iron bars: 400 × 9p at 100%; carriage on 2,000 weight at 6p a load, 12p, of which the treasury pays a quarter.
     const auto cost = s.storeCost("smith", "iron_bar", 400);
     const auto drawn = s.drawFromStore("smith", "iron_bar", 400);
     expect(drawn.ok, "the draw: " + drawn.message);
     const auto toll = cost * 30 / 100;
-    expect(s.cash(Society::CountryFund) - c0 == cost - toll, "the Country takes the cost less the toll");
+    expect(s.cash(Society::WharfFund) - c0 == cost - toll, "the Country takes the cost less the toll");
     expect(s.cash("treasury") - r0 == toll - 3, "the treasury the toll, less its 3p of the carriage");
     expect(s.cash("till:job:carter") - k0 == 12, "the carters the carriage, 12p");
     expect(t0 - s.cash(till) == cost + 9, "the till the cost and 9p of the carriage");
     expect(s.conserved(), "conserved");
-    // A good the Country no longer supplies is refused, and nothing moves.
-    auto off = city([](AuthoredRoster& r) { r.economy.countryOff = {"iron_bar"}; });
+    // A good the Wharf no longer lands is refused, and nothing moves.
+    auto off = city([](AuthoredRoster& r) { r.economy.wharfOff = {"iron_bar"}; });
     const auto offTill = off.tillOf("smith");
     const auto cash = off.cash(offTill);
     const auto refused = off.drawFromStore("smith", "iron_bar", 1);
-    expect(!refused.ok && refused.message.find("no longer supplies") != std::string::npos && off.cash(offTill) == cash,
-           "a good the Country no longer supplies is refused: " + refused.message);
+    expect(!refused.ok && refused.message.find("no longer lands") != std::string::npos && off.cash(offTill) == cash,
+           "a good the Wharf no longer lands is refused: " + refused.message);
     expect(off.drawFromStore("smith", "charcoal", 1).ok, "others still come");
     // Without a carters' yard, carriage goes to fund:carriage: still conserved.
     auto none = city({}, false);
@@ -270,7 +274,7 @@ void run(Society& s, double from, double to)
 
 void aDayOfTheLoop()
 {
-    auto s = city([](AuthoredRoster& r) { r.economy.countryReserve = 0; });   // (A small city's Country takes in little.)
+    auto s = city([](AuthoredRoster& r) { r.economy.wharfReserve = 0; });   // (A small city's Country takes in little.)
     const auto money = s.moneySupply();
     std::map<std::string, std::int64_t> before;
     for (const auto& r : s.authored().residents)
@@ -307,7 +311,7 @@ void aDayOfTheLoop()
         return false;
     };
     expect(paid("treasury", "clerk") && paid("treasury", "guard"), "the treasury paid the clerk and the watch");
-    expect(paid(Society::CountryFund, "docker"), "the Country paid the docker");
+    expect(paid(Society::WharfFund, "docker"), "the Country paid the docker");
     bool alms = false;
     for (const auto& e : journal)
         alms = alms || (e.kind == "alms" && e.from == "treasury" && e.to == "orphan" && e.coins > 0);
@@ -318,38 +322,38 @@ void aDayOfTheLoop()
     // The Country spent on the city's goods, spread over both smithies (never the first in a list).
     std::map<std::string, int> sold;
     for (const auto& e : journal)
-        if (e.kind == "to the Country")
+        if (e.kind == "to the Wharf")
             sold[e.to] += e.quantity;
-    expect(s.loopYesterday().countrySpent > 0, "the Country bought the city's goods");
+    expect(s.loopYesterday().basketSpent > 0, "the Country bought the city's goods");
     expect(sold["till:job:smith"] > 0 && sold["till:job:smith2"] > 0,
            "both smithies sold to it: " + std::to_string(sold["till:job:smith"]) + " and " + std::to_string(sold["till:job:smith2"]));
     for (const auto& e : journal)
-        expect(e.kind != "to the Country" || e.to != "till:job:fish" || e.item == "salt_fish" || e.item == "smoked_fish",
+        expect(e.kind != "to the Wharf" || e.to != "till:job:fish" || e.item == "salt_fish" || e.item == "smoked_fish",
                "it buys the fishmonger's own make (salt and smoked fish), never its resale: " + e.item);
     // The Country's purse stays bounded: it keeps its reserve and spends the rest.
-    expect(s.cash(Society::CountryFund) <= 8 + 2 * (s.loopYesterday().drawn + 100), "the Country's purse is bounded");
+    expect(s.cash(Society::WharfFund) <= 8 + 2 * (s.loopYesterday().drawn + 100), "the Country's purse is bounded");
 }
 
 void itsPostsFirst()
 {
     // Doc 72, Phase 3 (country2: the Country missed its posts on 6 days, its purse down to 16p after two lean days): it
-    // keeps countryPostsDays (2) nights of its posts' wages in its purse, over its reserve, and its basket buys only with
+    // keeps estatePostsDays (2) nights of its posts' wages in its purse, over its reserve, and its basket buys only with
     // what is over; so its posts are paid every night, a lean day or two included.
     const auto spentWith = [](int nights, std::int64_t& left, std::int64_t& owed) {
         auto s = city([&](AuthoredRoster& r) {
-            r.economy.countryReserve = 0;
-            r.economy.rules["countryPostsDays"] = nights;
+            r.economy.wharfReserve = 0;
+            r.economy.rules["estatePostsDays"] = nights;
         });
         owed = s.payOf(post(s, "docker")).wage;
         // Its purse set to three nights of its posts and 60p more.
-        expect((s.cash(Society::CountryFund) == 0 || s.operatorTransfer(Society::CountryFund, "treasury", "", 0, s.cash(Society::CountryFund)).ok) &&
-                   s.operatorTransfer("treasury", Society::CountryFund, "", 0, 3 * owed + 60).ok,
+        expect((s.cash(Society::WharfFund) == 0 || s.operatorTransfer(Society::WharfFund, "treasury", "", 0, s.cash(Society::WharfFund)).ok) &&
+                   s.operatorTransfer("treasury", Society::WharfFund, "", 0, 3 * owed + 60).ok,
                "the Country's purse set");
         run(s, 1 + 7.9 / 24, 1 + 17.95 / 24);       // (The shop hours to just before the wages.)
-        left = s.cash(Society::CountryFund);
-        return s.loopToday().countrySpent;
+        left = s.cash(Society::WharfFund);
+        return s.loopToday().basketSpent;
     };
-    expect(city().rule("countryPostsDays") == 2, "two nights by default (country.json)");
+    expect(city().rule("estatePostsDays") == 2, "two nights by default (city_loop.json)");
     std::int64_t left1 = 0, left2 = 0, owed = 0;
     const auto spent1 = spentWith(1, left1, owed), spent2 = spentWith(2, left2, owed);
     expect(owed > 0 && left2 >= 2 * owed, "two nights kept before the wages: " + std::to_string(left2) + " of " + std::to_string(2 * owed));
@@ -357,13 +361,13 @@ void itsPostsFirst()
                                                   std::to_string(spent2));
     // Tonight's wages paid in full, and tomorrow's still in its purse after them: a day that takes in nothing can't leave
     // its posts unpaid.
-    auto s = city([&](AuthoredRoster& r) { r.economy.countryReserve = 0; });
-    expect((s.cash(Society::CountryFund) == 0 || s.operatorTransfer(Society::CountryFund, "treasury", "", 0, s.cash(Society::CountryFund)).ok) &&
-               s.operatorTransfer("treasury", Society::CountryFund, "", 0, 3 * owed + 60).ok,
+    auto s = city([&](AuthoredRoster& r) { r.economy.wharfReserve = 0; });
+    expect((s.cash(Society::WharfFund) == 0 || s.operatorTransfer(Society::WharfFund, "treasury", "", 0, s.cash(Society::WharfFund)).ok) &&
+               s.operatorTransfer("treasury", Society::WharfFund, "", 0, 3 * owed + 60).ok,
            "the Country's purse set");
     run(s, 1 + 7.9 / 24, 1 + 18.5 / 24);
-    expect(s.loopToday().countryPostsOwed == owed && s.loopToday().countryPostsPaid == owed, "tonight's posts paid in full");
-    expect(s.cash(Society::CountryFund) >= owed, "and the next night's kept: " + std::to_string(s.cash(Society::CountryFund)));
+    expect(s.loopToday().estatePostsOwed == owed && s.loopToday().estatePostsPaid == owed, "tonight's posts paid in full");
+    expect(s.cash(Society::WharfFund) >= owed, "and the next night's kept: " + std::to_string(s.cash(Society::WharfFund)));
     expect(s.conserved(), "conserved");
 }
 
@@ -381,7 +385,7 @@ void setPurse(Society& s, const std::string& fund, std::int64_t coins)
 // Grayrock as it was). Each a Country post at its wage (8p).
 void withHouses(AuthoredRoster& r)
 {
-    r.economy.countryReserve = 0;
+    r.economy.wharfReserve = 0;
     for (auto p : {person("steward", "civilian", "serving at Greatly House", {"rm_greatly_house", 2.5, 2.5}, "home_steward"),
                    person("maid", "civilian", "serving in the hall", {"rm_fellhall", 2.5, 2.5}, "home_maid"),
                    person("valet", "civilian", "in service to the Carlisles", {"rm_carlisle_house", 2.5, 2.5}, "home_valet"),
@@ -416,31 +420,31 @@ void theHousesEstates()
                estateOf("valet") == "crown" && estateOf("tally") == "timberland",
            "each post its House's estate: by its label, then its workplace; the Minor Houses' the Crown's");
     expect(Society::estateOfHouse("the Crown")->id == "crown" && Society::estateOfHouse("none")->grants &&
-               Society::estateFund(*Society::estateOfHouse("Grayrock")) == Society::CountryFund &&
+               Society::estateFund(*Society::estateOfHouse("Grayrock")) == Society::WharfFund &&
                Society::estateFund(*Society::estateOfHouse("Greatly")) == "estate:greatly",
            "the Houses' land: Grayrock's estate is the Country's purse (the wharf), land no estate names the Crown's");
-    expect(s.estatesOn() && s.payOf(post(s, "steward")).payer == Society::CountryFund && s.houseFund("Greatly") == Society::CountryFund &&
+    expect(s.estatesOn() && s.payOf(post(s, "steward")).payer == Society::WharfFund && s.houseFund("Greatly") == Society::WharfFund &&
                !s.account("estate:greatly"),
            "on by default; until the first night every post and rent the Country's purse");
     // The first night: the purses opened, the Country's money shared by the posts' wages (five posts at 8p: a fifth each).
     run(s, 1 + 7.9 / 24, 1 + 17.99 / 24);
     s.takeJournal();
-    setPurse(s, Society::CountryFund, 1000);
+    setPurse(s, Society::WharfFund, 1000);
     const auto money = s.moneySupply();
     auto journal = wagesTonight(s, 1);
     for (const auto* id : {"estate:greatly", "estate:fell", "estate:timberland", "estate:crown"})
         expect(s.account(id) && s.cash(id) == 200 - 8, std::string(id) + ": a fifth of the Country's money, less its post: " + std::to_string(s.cash(id)));
-    expect(s.cash(Society::CountryFund) >= 200 - 8, "the Country (the wharf) keeps its fifth (and its sales since): " + std::to_string(s.cash(Society::CountryFund)));
-    expect(paidBy(journal, Society::CountryFund, "docker", 8) && paidBy(journal, "estate:greatly", "steward", 8) &&
+    expect(s.cash(Society::WharfFund) >= 200 - 8, "the Country (the wharf) keeps its fifth (and its sales since): " + std::to_string(s.cash(Society::WharfFund)));
+    expect(paidBy(journal, Society::WharfFund, "docker", 8) && paidBy(journal, "estate:greatly", "steward", 8) &&
                paidBy(journal, "estate:fell", "maid", 8) && paidBy(journal, "estate:crown", "valet", 8) &&
                paidBy(journal, "estate:timberland", "tally", 8),
            "each estate paid its own people");
     const auto& night = s.loopToday();
     expect(night.estates.at("greatly").postsPaid == 8 && night.estates.at("greatly").moved == 200 && night.estates.at("grayrock").moved == -800 &&
-               night.countryPostsOwed == 40 && night.countryPostsPaid == 40,
+               night.estatePostsOwed == 40 && night.estatePostsPaid == 40,
            "booked by estate, and the Country's posts in all");
     expect(s.payOf(post(s, "steward")).payer == "estate:greatly" && s.houseFund("Greatly") == "estate:greatly" &&
-               s.houseFund("Grayrock") == Society::CountryFund && s.houseFund("none") == "estate:crown",
+               s.houseFund("Grayrock") == Society::WharfFund && s.houseFund("none") == "estate:crown",
            "now the House's own purse");
     expect(s.conserved() && s.moneySupply() == money, "conserved");
 
@@ -449,14 +453,14 @@ void theHousesEstates()
     run(s, 2 + 7.9 / 24, 2 + 17.99 / 24);
     s.takeJournal();
     for (const auto& [fund, coins] : std::map<std::string, std::int64_t>{
-             {"estate:greatly", 3}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 100}, {"estate:crown", 100}})
+             {"estate:greatly", 3}, {Society::WharfFund, 0}, {"estate:fell", 8}, {"estate:timberland", 100}, {"estate:crown", 100}})
         setPurse(s, fund, coins);
     journal = wagesTonight(s, 2);
     const auto& two = s.loopToday();
     expect(two.estates.at("greatly").grantsIn == 5 && two.estates.at("grayrock").grantsIn == 8 && two.estates.at("crown").grantsOut == 13 &&
                two.estates.at("fell").grantsIn == 0,
            "the Crown granted Greatly 5p and the wharf 8p, Fell nothing");
-    expect(two.countryPostsPaid == 40 && paidBy(journal, "estate:greatly", "steward", 8) && paidBy(journal, Society::CountryFund, "docker", 8),
+    expect(two.estatePostsPaid == 40 && paidBy(journal, "estate:greatly", "steward", 8) && paidBy(journal, Society::WharfFund, "docker", 8),
            "every post paid in full");
     expect(s.cash("estate:crown") == 100 - 13 - 8 && s.cash("estate:timberland") == 92, "the Crown's own post first; Timberland's own");
     bool recorded = false;
@@ -469,15 +473,15 @@ void theHousesEstates()
     run(s, 3 + 7.9 / 24, 3 + 17.99 / 24);
     s.takeJournal();
     for (const auto& [fund, coins] : std::map<std::string, std::int64_t>{
-             {"estate:greatly", 0}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 8}, {"estate:crown", 10}})
+             {"estate:greatly", 0}, {Society::WharfFund, 0}, {"estate:fell", 8}, {"estate:timberland", 8}, {"estate:crown", 10}})
         setPurse(s, fund, coins);
     journal = wagesTonight(s, 3);
     expect(paidBy(journal, "estate:crown", "valet", 8) && s.loopToday().estates.at("greatly").grantsIn == 1 &&
-               s.loopToday().estates.at("grayrock").grantsIn == 1 && s.loopToday().countryPostsPaid == 8 * 3 + 1 + 1,
+               s.loopToday().estates.at("grayrock").grantsIn == 1 && s.loopToday().estatePostsPaid == 8 * 3 + 1 + 1,
            "the Crown's own post paid; the rest shared; Greatly and the wharf paid a penny each");
     expect(s.conserved(), "conserved");
 
-    // Its posts first: an estate buys (the basket, its tables) only with what is over countryPostsDays nights of its posts.
+    // Its posts first: an estate buys (the basket, its tables) only with what is over estatePostsDays nights of its posts.
     const auto bought = [&](std::int64_t purse) {
         run(s, 4 + 7.9 / 24, 4 + 7.99 / 24);
         setPurse(s, "estate:greatly", purse);
@@ -507,22 +511,22 @@ void theEstatesOff()
     });
     run(s, 1 + 7.9 / 24, 1 + 17.99 / 24);
     s.takeJournal();
-    setPurse(s, Society::CountryFund, 1000);
+    setPurse(s, Society::WharfFund, 1000);
     auto journal = wagesTonight(s, 1);
     expect(!s.estatesOn() && !s.account("estate:greatly") && !s.account("estate:crown") && s.loopToday().estates.empty(), "no estate opened");
     for (const auto* who : {"docker", "steward", "maid", "valet", "tally"})
-        expect(paidBy(journal, Society::CountryFund, who, 8), std::string("the Country paid ") + who);
-    expect(s.cash(Society::CountryFund) >= 1000 - 40 && s.loopToday().countryPostsPaid == 40 && s.conserved(), "from its one purse; conserved");
+        expect(paidBy(journal, Society::WharfFund, who, 8), std::string("the Country paid ") + who);
+    expect(s.cash(Society::WharfFund) >= 1000 - 40 && s.loopToday().estatePostsPaid == 40 && s.conserved(), "from its one purse; conserved");
 
     auto t = city(withHouses);
     run(t, 1 + 7.9 / 24, 1 + 17.99 / 24);
-    setPurse(t, Society::CountryFund, 1000);
+    setPurse(t, Society::WharfFund, 1000);
     run(t, 1 + 17.99 / 24, 1 + 18.5 / 24);          // (Split: a fifth each.)
     const auto money = t.moneySupply();
     auto economy = t.authored().economy;
     economy.rules["estates"] = 0;
     t.adoptEconomy(economy);
-    expect(!t.estatesOn() && t.payOf(post(t, "steward")).payer == Society::CountryFund && t.houseFund("Greatly") == Society::CountryFund,
+    expect(!t.estatesOn() && t.payOf(post(t, "steward")).payer == Society::WharfFund && t.houseFund("Greatly") == Society::WharfFund,
            "off: the Country's purse again");
     expect(t.cash("estate:greatly") > 0, "the estates still hold theirs until the night");
     run(t, 1 + 18.5 / 24, 2 + 17.99 / 24);
@@ -531,7 +535,7 @@ void theEstatesOff()
     for (const auto* id : {"estate:greatly", "estate:fell", "estate:timberland", "estate:crown"})
         expect(t.cash(id) == 0, std::string(id) + " emptied into the Country's purse");
     expect(t.loopToday().estates.at("greatly").moved < 0, "booked");
-    expect(paidBy(journal, Society::CountryFund, "steward", 8) && paidBy(journal, Society::CountryFund, "valet", 8), "which pays every post");
+    expect(paidBy(journal, Society::WharfFund, "steward", 8) && paidBy(journal, Society::WharfFund, "valet", 8), "which pays every post");
     expect(t.conserved() && t.moneySupply() == money, "conserved");
     expect(!t.account("estate:greatly") && !t.account("estate:crown"), "the emptied purses closed");
 
@@ -546,7 +550,7 @@ void theEstatesOff()
         expect(t.account(id) && t.cash(id) > 0 && t.loopToday().estates.at(std::string(id).substr(7)).moved > 0, std::string(id) + ": its share again");
     expect(paidBy(journal, "estate:greatly", "steward", 8) && paidBy(journal, "estate:crown", "valet", 8) &&
                paidBy(journal, "estate:fell", "maid", 8) && paidBy(journal, "estate:timberland", "tally", 8) &&
-               t.loopToday().countryPostsPaid == 40,
+               t.loopToday().estatePostsPaid == 40,
            "on again: each estate pays its own people");
     expect(t.conserved() && t.moneySupply() == money, "conserved");
 }
@@ -570,11 +574,11 @@ void theCrownsLevy()
     // Timberland 100p (its keep two nights of its post, 16p): the Crown, with nothing, lacks 56p of its keep (16p of its
     // own, 16p each for Greatly and the wharf, 8p for Fell), levied from Timberland's 84p over its keep; then its grants.
     auto money = s.moneySupply();
-    auto journal = night(2, {{"estate:greatly", 0}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 100}, {"estate:crown", 0}});
+    auto journal = night(2, {{"estate:greatly", 0}, {Society::WharfFund, 0}, {"estate:fell", 8}, {"estate:timberland", 100}, {"estate:crown", 0}});
     auto two = s.loopToday();
     expect(two.estates.at("timberland").levyOut == 56 && two.estates.at("crown").levyIn == 56,
            "the Crown levied 56p of Timberland's spare: " + std::to_string(two.estates["timberland"].levyOut));
-    expect(two.estates.at("greatly").grantsIn == 8 && two.estates.at("grayrock").grantsIn == 8 && two.countryPostsPaid == 40,
+    expect(two.estates.at("greatly").grantsIn == 8 && two.estates.at("grayrock").grantsIn == 8 && two.estatePostsPaid == 40,
            "and granted Greatly and the wharf their posts: every post paid");
     expect(s.cash("estate:timberland") == 100 - 56 - 8 && s.cash("estate:crown") == 56 - 16 - 8, "Timberland keeps its keep and pays its own");
     bool recorded = false;
@@ -586,29 +590,29 @@ void theCrownsLevy()
     // Timberland 34p: 18p over its keep, levied; the Crown still 6p short of tonight's 24p (its post, Greatly's and the
     // wharf's), so 6p more of the 26p Timberland holds over tonight's post. Every post paid.
     money = s.moneySupply();
-    journal = night(3, {{"estate:greatly", 0}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 34}, {"estate:crown", 0}});
+    journal = night(3, {{"estate:greatly", 0}, {Society::WharfFund, 0}, {"estate:fell", 8}, {"estate:timberland", 34}, {"estate:crown", 0}});
     const auto& three = s.loopToday();
-    expect(three.estates.at("timberland").levyOut == 18 + 6 && three.estates.at("crown").levyIn == 24 && three.countryPostsPaid == 40,
+    expect(three.estates.at("timberland").levyOut == 18 + 6 && three.estates.at("crown").levyIn == 24 && three.estatePostsPaid == 40,
            "levied over its keep, then over tonight's posts: every post paid");
     expect(s.cash("estate:timberland") == 34 - 24 - 8 && s.cash("estate:crown") == 0 && s.conserved() && s.moneySupply() == money,
            "Timberland's own post paid; conserved");
 
     // Together short (Timberland 12p, Fell 8p: 20p of the 40p): the levy takes no estate under tonight's post.
-    journal = night(4, {{"estate:greatly", 0}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 12}, {"estate:crown", 0}});
+    journal = night(4, {{"estate:greatly", 0}, {Society::WharfFund, 0}, {"estate:fell", 8}, {"estate:timberland", 12}, {"estate:crown", 0}});
     expect(s.loopToday().estates.at("timberland").levyOut == 4 && (!s.loopToday().estates.count("fell") || s.loopToday().estates.at("fell").levyOut == 0) &&
                paidBy(journal, "estate:timberland", "tally", 8) && paidBy(journal, "estate:fell", "maid", 8) &&
-               s.loopToday().countryPostsPaid == 8 + 8 + 4,
+               s.loopToday().estatePostsPaid == 8 + 8 + 4,
            "the 4p Timberland holds over its post levied, its own and Fell's paid");
 
     // Its spare: Greatly 100p over its own keep (16p) 84p, but the estates together hold 100p, 20p over the one purse's
     // keep (no reserve here, two nights of the five posts, 80p): 20p.
     run(s, 5 + 7.9 / 24, 5 + 7.95 / 24);
     for (const auto& [fund, coins] : std::map<std::string, std::int64_t>{
-             {"estate:greatly", 100}, {Society::CountryFund, 0}, {"estate:fell", 0}, {"estate:timberland", 0}, {"estate:crown", 0}})
+             {"estate:greatly", 100}, {Society::WharfFund, 0}, {"estate:fell", 0}, {"estate:timberland", 0}, {"estate:crown", 0}})
         setPurse(s, fund, coins);
-    const auto owed = s.countryPostsOwed();
-    expect(s.countrySpare("estate:greatly", owed) == 20 && s.countrySpare("estate:fell", owed) < 0,
-           "an estate's spare never past the estates' together: " + std::to_string(s.countrySpare("estate:greatly", owed)));
+    const auto owed = s.estatePostsOwed();
+    expect(s.estateSpare("estate:greatly", owed) == 20 && s.estateSpare("estate:fell", owed) < 0,
+           "an estate's spare never past the estates' together: " + std::to_string(s.estateSpare("estate:greatly", owed)));
 
     // The rule off: the Country's own spare over its keep, as before.
     auto t = city([](AuthoredRoster& r) {
@@ -616,8 +620,8 @@ void theCrownsLevy()
         r.economy.rules["estates"] = 0;
     });
     run(t, 1 + 7.9 / 24, 1 + 7.95 / 24);
-    setPurse(t, Society::CountryFund, 100);
-    expect(t.countrySpare(Society::CountryFund, t.countryPostsOwed()) == 100 - 80, "off: the one purse over its keep");
+    setPurse(t, Society::WharfFund, 100);
+    expect(t.estateSpare(Society::WharfFund, t.estatePostsOwed()) == 100 - 80, "off: the one purse over its keep");
 }
 
 void pausedNeedsBuyNothing()
@@ -633,10 +637,10 @@ void pausedNeedsBuyNothing()
 void theCountryOffSpends()
 {
     // The Country switched off only takes in, as fund:store did.
-    auto s = city([](AuthoredRoster& r) { r.economy.country = false; });
+    auto s = city([](AuthoredRoster& r) { r.economy.wharf = false; });
     run(s, 1 + 7.9 / 24, 1 + 17. / 24);
-    expect(s.loopToday().countrySpent == 0, "the Country off: it spends nothing");
-    expect(s.cash(Society::CountryFund) > 0 && s.conserved(), "but still takes in, conserved");
+    expect(s.loopToday().basketSpent == 0, "the Country off: it spends nothing");
+    expect(s.cash(Society::WharfFund) > 0 && s.conserved(), "but still takes in, conserved");
 }
 
 void anOlderSavesFund()
@@ -647,11 +651,124 @@ void anOlderSavesFund()
     state.accounts[Society::StoreFund] = {};
     state.accounts.at(Society::StoreFund).cash = 70;
     state.accounts.at("treasury").cash -= 70;
-    state.accounts.erase(Society::CountryFund);
+    state.accounts.erase(Society::WharfFund);
     auto again = city();
     expect(again.restore(state), "an older save loads");
-    expect(!again.account(Society::StoreFund) && again.cash(Society::CountryFund) == 70 && again.conserved(),
+    expect(!again.account(Society::StoreFund) && again.cash(Society::WharfFund) == 70 && again.conserved(),
            "its fund:store is the Country's now");
+}
+
+void anOlderSavesCountry()
+{
+    // A save from before doc 73 holds outside:country (coins and goods): it loads with them the Wharf's, the old purse
+    // gone, nothing made; and a save of the Wharf's book comes back as it was.
+    auto s = city();
+    auto state = s.state();
+    state.accounts[Society::OldCountryFund] = state.accounts.at(Society::WharfFund);
+    state.accounts.at(Society::OldCountryFund).cash = 90;
+    state.accounts.at(Society::OldCountryFund).stock["iron_bar"] = 3;
+    state.accounts.at("treasury").cash -= 90;
+    state.accounts.erase(Society::WharfFund);
+    state.loop.wharf = {120, 80, 9, 50, 330};
+    auto again = city();
+    expect(again.restore(state), "an older save loads");
+    expect(!again.account(Society::OldCountryFund) && again.cash(Society::WharfFund) == 90 &&
+               Society::stock(*again.account(Society::WharfFund), "iron_bar") == 3 && again.conserved(),
+           "its outside:country is the Wharf's now, coins and goods");
+    // Through the wire as a checkpoint saves it.
+    const auto back = wire::readSociety(wire::society(again.state()));
+    expect(back.loop.wharf.in == 120 && back.loop.wharf.out == 80 && back.loop.wharf.fee == 9 && back.loop.wharf.moved == 50 &&
+               back.loop.wharf.credit == 330 && back.minted >= 0,
+           "the Wharf's book saved and read back");
+}
+
+void theWharfLands()
+{
+    // A good no area grows (this catalogue has no farms) is the Wharf's lot whole: with the valve on, the realm pays the
+    // beyond for it (sunk), the Wharf keeps its fee, the credit rises by what left; the toll and carriage as before.
+    expect(items::cityLoop().rules.at("wharfValve") == 1, "the valve on in the data file");
+    const auto open = [](AuthoredRoster& r) { r.economy.rules["wharfValve"] = 1; };
+    auto s = city(open);
+    expect(s.wharfValveOn() && s.rule("wharfFee") == 10, "the valve on, a tenth's fee");
+    const auto money = s.moneySupply(), sunk = s.state().sunk, wharf = s.cash(Society::WharfFund), treasury = s.cash("treasury");
+    const auto credit = s.state().loop.wharf.credit;
+    const auto r = s.drawFromStore("smith", "iron_bar", 5, "drawn for its crafts");
+    expect(r.ok, "the smith's iron drawn: " + r.message);
+    const auto toll = s.cash("treasury") - treasury;
+    const auto due = r.total - toll, fee = due / 10;
+    expect(s.cash(Society::WharfFund) - wharf == fee, "the Wharf keeps its fee: " + std::to_string(s.cash(Society::WharfFund) - wharf));
+    expect(s.state().sunk - sunk == due - fee && s.state().loop.wharf.credit - credit == due - fee, "the rest paid beyond, credited");
+    expect(s.conserved() && s.moneySupply() == money - (due - fee), "conserved: the money's fall is what left the realm");
+    expect(s.loopToday().wharfImported.at("iron_bar").pieces == 5 && s.loopToday().wharfImported.at("iron_bar").pennies == due,
+           "booked as landed");
+    // The valve off: the Wharf keeps it all, as the Country did.
+    auto off = city([](AuthoredRoster& r) { r.economy.rules["wharfValve"] = 0; });
+    const auto offWharf = off.cash(Society::WharfFund), offSunk = off.state().sunk, offTreasury = off.cash("treasury");
+    const auto o = off.drawFromStore("smith", "iron_bar", 5, "drawn for its crafts");
+    expect(o.ok && off.cash(Society::WharfFund) - offWharf == o.total - (off.cash("treasury") - offTreasury) && off.state().sunk == offSunk,
+           "the valve off: all to the Wharf's purse, nothing sunk");
+    // The stable price: the store room's at markup 100, the season's factor; never a shop's.
+    expect(s.stablePrice("iron_bar", 4) == Society::catalogPrice("iron_bar") * 4, "the stable price, out of season groups");
+    // Never: cheese, refused on both lists; no good on both.
+    const auto& lists = items::cityLoop().wharf;
+    expect(lists.never.count("cheese") && !lists.imports.count("cheese") && !lists.takes.count("cheese") && !s.wharfImports("cheese") &&
+               !s.wharfTakes("cheese"),
+           "cheese is never the Wharf's");
+    for (const auto& [good, g] : lists.imports)
+        expect(!lists.takes.count(good), good + ": not imported and taken both");
+    expect(lists.imports.count("aqua_vitae") && lists.imports.at("aqua_vitae").on && lists.imports.count("offal") &&
+               lists.imports.at("offal").on && lists.imports.count("butter") && !lists.imports.at("eggs").on,
+           "aqua vitae, offal and butter imported; the new producers' goods listed off");
+}
+
+void anOrderByWagon()
+{
+    // A far community's store orders from the Wharf (doc 73, 5): the stable price, the toll, carriage by weight to the
+    // carters (the treasury's share as any draw's), the beyond's share sunk; whole or nothing.
+    auto s = city([](AuthoredRoster& r) { r.economy.rules["wharfValve"] = 1; });
+    const std::string store = "stores:frosthollow";
+    expect(s.openAccount(store) && s.shift("treasury", store, "", 0, 500, "test purse"), "the community's store, a purse");
+    const auto carter = s.carters();
+    const auto money = s.moneySupply(), carters = s.cash(carter), treasury = s.cash("treasury"), sunk = s.state().sunk;
+    const auto r = s.orderFromWharf(store, "timber", 50, "an order from the Wharf");
+    expect(r.ok && Society::stock(*s.account(store), "timber") == 50, "landed and carted to the store: " + r.message);
+    expect(r.total == s.stablePrice("timber", 50), "at the stable price");
+    const auto carriage = s.cash(carter) - carters;
+    expect(carriage > 0 && r.message.find("carriage") != std::string::npos, "carriage to the carters: " + std::to_string(carriage));
+    expect(s.cash("treasury") < treasury + r.total, "the toll to the treasury (its carriage share out)");
+    expect(s.state().sunk > sunk && s.conserved() && s.moneySupply() == money - (s.state().sunk - sunk), "the beyond's share sunk, conserved");
+    expect(!s.orderFromWharf(store, "iron_bar", 0, "x").ok && !s.orderFromWharf(store, "iron_bar", 1001, "x").ok, "whole quantities only");
+    const auto poor = s.orderFromWharf(store, "steel_bar", 999, "too dear");
+    expect(!poor.ok && Society::stock(*s.account(store), "steel_bar") == 0, "unpaid, nothing landed: " + poor.message);
+}
+
+void theCreditMoved()
+{
+    // The DM's lever (doc 73, 4.6): the credit moved within wharfActionMost, refused past it or with the rule 0; the
+    // standing rules move it each night at 18:00; no coin moves.
+    auto s = city([](AuthoredRoster& r) { r.economy.rules["wharfValve"] = 1; });
+    const auto money = s.moneySupply();
+    expect(s.moveWharfCredit(500, "dm", "a test").ok && s.state().loop.wharf.credit == 500 && s.state().loop.wharf.moved == 500,
+           "moved by 500");
+    expect(!s.moveWharfCredit(2001, "dm", "").ok && !s.moveWharfCredit(-2001, "dm", "").ok && !s.moveWharfCredit(0, "dm", "").ok,
+           "past wharfActionMost (2,000) or nothing: refused");
+    expect(s.moveWharfCredit(-800, "dm", "").ok && s.state().loop.wharf.credit == -300, "a take may go below 0");
+    expect(s.wharfExportRoom() == 0, "below 0, the beyond buys nothing");
+    expect(s.moneySupply() == money && s.conserved(), "no coin moved");
+    auto none = city([](AuthoredRoster& r) { r.economy.rules["wharfActionMost"] = 0; });
+    expect(!none.moveWharfCredit(10, "dm", "").ok, "with the rule 0, refused");
+    // The standing lever: 100p a day in at 18:00, capped at wharfCreditMost.
+    auto rule = city([](AuthoredRoster& r) {
+        r.economy.rules["wharfValve"] = 1;
+        r.economy.rules["wharfInjectADay"] = 100;
+        r.economy.rules["wharfCreditMost"] = 150;
+    });
+    run(rule, 10 + 17.5 / 24, 10 + 18.5 / 24);
+    expect(rule.state().loop.wharf.credit >= 100 && rule.state().loop.wharf.credit <= 150, "a night's inject: " +
+           std::to_string(rule.state().loop.wharf.credit));
+    run(rule, 11 + 17.5 / 24, 11 + 18.5 / 24);
+    expect(rule.state().loop.wharf.credit <= 150, "never over its cap");
+    expect(rule.conserved(), "conserved");
 }
 
 std::map<std::string, std::string> files(const std::string& extra)
@@ -672,8 +789,8 @@ void theRecords()
         World w;
         expect(w.loadWorldFiles(files(""), "test").ok, "a world without loop records loads");
         const auto& e = w.society().authored().economy;
-        expect(!e.needsPaused && e.country && e.countryReserve == 200 && e.gateToll == 30 && e.carriage == 6 && e.wageKeeper == 14 &&
-                   e.wageHand == 8 && e.wagePublic == 8 && e.wageCountry == 8 && e.countryOff.empty() && e.subsidies.at("carriage") == 25,
+        expect(!e.needsPaused && e.wharf && e.wharfReserve == 200 && e.gateToll == 30 && e.carriage == 6 && e.wageKeeper == 14 &&
+                   e.wageHand == 8 && e.wagePublic == 8 && e.wageWharf == 8 && e.wharfOff.empty() && e.subsidies.at("carriage") == 25,
                "with the defaults");
     }
     {
@@ -682,9 +799,9 @@ void theRecords()
                                               "countryoff \"fish\"\ncountryoff \"flour\"\nsubsidy \"carriage\" 40\n"), "test");
         expect(r.ok, "the loop's records load: " + r.message);
         const auto& e = w.society().authored().economy;
-        expect(e.needsPaused && !e.country && e.countryReserve == 50 && e.gateToll == 30 && e.carriage == 9 && e.wageKeeper == 20 &&
-                   e.wageHand == 9 && e.wagePublic == 7 && e.wageCountry == 6, "the loop record is read");
-        expect(e.countryOff == std::set<std::string>{"fish", "flour"} && e.subsidies.at("carriage") == 40, "and the goods and the subsidy");
+        expect(e.needsPaused && !e.wharf && e.wharfReserve == 50 && e.gateToll == 30 && e.carriage == 9 && e.wageKeeper == 20 &&
+                   e.wageHand == 9 && e.wagePublic == 7 && e.wageWharf == 6, "the loop record is read");
+        expect(e.wharfOff == std::set<std::string>{"fish", "flour"} && e.subsidies.at("carriage") == 40, "and the goods and the subsidy");
     }
     for (const auto* bad : {"loop needs on country on reserve 200 toll 91 carriage 6 wages 14 8 8 8\n",
                             "loop needs maybe country on reserve 200 toll 25 carriage 6 wages 14 8 8 8\n",
@@ -701,6 +818,15 @@ void theRecords()
     const auto stripped = game::Game::withoutPeople(build);
     expect(stripped.find("loop ") == std::string::npos && stripped.find("countryoff") == std::string::npos &&
                stripped.find("subsidy") == std::string::npos, "a streamed build's loop records are stripped");
+    // A rule under its old name (doc 73: countryPostsDays) reads as the new.
+    {
+        World w;
+        expect(w.loadWorldFiles(files("rule \"countryPostsDays\" 3\n"), "test").ok, "an old rule's name loads");
+        const auto& rules = w.society().authored().economy.rules;
+        expect(rules.count("estatePostsDays") && rules.at("estatePostsDays") == 3 && !rules.count("countryPostsDays") &&
+                   w.society().rule("estatePostsDays") == 3,
+               "as estatePostsDays");
+    }
 }
 } // namespace
 
@@ -720,6 +846,10 @@ int main()
         pausedNeedsBuyNothing();
         theCountryOffSpends();
         anOlderSavesFund();
+        anOlderSavesCountry();
+        theWharfLands();
+        anOrderByWagon();
+        theCreditMoved();
         theRecords();
     }
     catch (const std::exception& error)
@@ -727,6 +857,6 @@ int main()
         std::cerr << "FAILED after " << checks << " checks: " << error.what() << '\n';
         return 1;
     }
-    std::cout << "Country tests passed: " << checks << " checks.\n";
+    std::cout << "Wharf tests passed: " << checks << " checks.\n";
     return 0;
 }
