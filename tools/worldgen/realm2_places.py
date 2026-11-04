@@ -197,10 +197,12 @@ WORKS = {
     'charcoal_greenholt': 'larkfield', 'peat_fens': 'fenshore', 'quarry_granite': 'ridgemere',
     'clay_mirebridge': 'fenshore', 'clay_fens': 'southmeadow',
 }
-# Each built works' id in country_farms.json (doc 72, Phase 2: the fuel area's works; the quarry and the pits are Phase 3's).
+# Each built works' id in country_farms.json (doc 72: Phase 2's fuel area's works; Phase 3's stone area, the granite
+# quarry and the two clay pits, House Greatly's).
 WORKS_IDS = {
     'timber_rainwood': 'logging_rainwood', 'timber_oakhaven': 'logging_oakhaven', 'coppice_rainwood': 'coppice_rainwood',
     'charcoal_greenholt': 'coppice_greenholt', 'peat_fens': 'peat_fens',
+    'quarry_granite': 'quarry_granite', 'clay_mirebridge': 'clay_mirebridge', 'clay_fens': 'clay_fens',
 }
 WORK_SPOTS = 6           # A works' work spots: open ground nearest its centre, in its centre's cell.
 FENSHORE = dict(id='fenshore', kind='town', name='Fenshore', near=(900, 3450), search=240, size=40,

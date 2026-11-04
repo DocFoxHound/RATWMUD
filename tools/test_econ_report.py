@@ -120,7 +120,7 @@ class ReportTests(unittest.TestCase):
         # its share of the yield, not by its own sales. Meal spoiled at the second: no stock need for it, only what sold.
         def more(n):
             return {'farm_good': [['grain_farm_2', 'flour', 10, 0, 5, 0, 0, 0], ['grain_farm_1', 'meal', 5, 2, 0, 0, 0, 0],
-                                  ['grain_farm_2', 'meal', 5, 2, 0, 3, 0, 0]],
+                                  ['grain_farm_2', 'meal', 5, 2, 6, 3, 0, 0]],   # (Held and spoiled: a glut.)
                     'short': [['till:job:cook', 'meal', 'shop:inn', 1, 14, '']]}
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
@@ -165,6 +165,40 @@ class ReportTests(unittest.TestCase):
             self.assertIn("the estates' rents 44p (House Timberland 44p)", text)
             self.assertIn('its goods to the shops 600p', text)
             self.assertIn("its posts 790p of 800p owed (the sea trade 440p, 55 posts, the Houses' people 350p, 44 posts)", text)
+
+    def test_supply_bound(self):
+        # Doc 72, Phase 3: the milk all sold or spoiled, the farm out at every day's end and the inn's draws 14 short: what
+        # sold was the supply. Its shelf counts though some spoiled (the Restday's), it is listed as supply-bound, and
+        # --apply takes its whole step at any damping (the flour, not bound, half way).
+        def more(n):
+            return {'farm_good': [['grain_farm_1', 'milk', 6, 4, 0, 2, 0, 0]],
+                    'short': [['till:job:cook', 'milk', 'shop:inn', 1, 14, '']]}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, more, yields={'flour': [10, 10, 10, 10], 'milk': [6, 6, 6, 6]})
+            out = root / 'report.md'
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            patch = json.loads((root / 'report.md.patch.json').read_text())
+            # 4 a day sold and the cook's 14 under refilled over a week: 6 a day, 5% over.
+            self.assertEqual(patch['farms']['grain_farm_1']['milk'][0], 6.3)
+            self.assertEqual(patch['whole'], ['milk'])
+            self.assertEqual(patch['wholeSeasons'], {'milk': ['spring']}, 'bound in the season seen alone')
+            self.assertIn('Supply-bound', out.read_text())
+            farms = root / 'country_farms.json'
+            farms.write_text(json.dumps({'areas': [{'id': 'grain', 'farms': [{'id': 'grain_farm_1', 'yield': {
+                'flour': [10, 10, 10, 10], 'milk': [6, 6, 6, 6]}}]}]}))
+            self.assertEqual(R.main(['--apply', str(root / 'report.md.patch.json'), str(farms), '--damping', '0.5']), 0)
+            y = json.loads(farms.read_text())['areas'][0]['farms'][0]['yield']
+            self.assertEqual(y['milk'][0], 6.3, 'the whole step')
+            # A season it was not bound in moves half way, as any good's (a patch's other seasons, here written by hand).
+            p = json.loads((root / 'report.md.patch.json').read_text())
+            p['farms']['grain_farm_1']['milk'] = [6.3, 8, 8, 8]
+            (root / 'two.patch.json').write_text(json.dumps(p))
+            farms.write_text(json.dumps({'areas': [{'id': 'grain', 'farms': [{'id': 'grain_farm_1', 'yield': {'milk': [6, 6, 6, 6]}}]}]}))
+            self.assertEqual(R.main(['--apply', str(root / 'two.patch.json'), str(farms), '--damping', '0.5']), 0)
+            self.assertEqual(json.loads(farms.read_text())['areas'][0]['farms'][0]['yield']['milk'], [6.3, 7, 7, 7],
+                             'whole in spring, half way in the seasons not bound')
+            self.assertEqual(y['flour'][0], round(10 + .5 * (patch['farms']['grain_farm_1']['flour'][0] - 10), 2), 'half way')
 
     def test_the_normal_level_alone(self):
         with tempfile.TemporaryDirectory() as d:

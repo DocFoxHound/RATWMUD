@@ -895,6 +895,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
             world.age(ps.holder) < retireAge(ps.holder))
             continue;
         const auto kind = skillFamily(p.title);
+        const auto reach = reachOf(p);              // (A works' post: its crew's home ground, doc 72.)
         std::string successor = alive(ps.apprentice) && !claimed.count(ps.apprentice) ? ps.apprentice : std::string();
         for (auto other = state_.residents.begin(); successor.empty() && other != state_.residents.end(); ++other)
         {
@@ -904,7 +905,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
                 std::max(skill(id, p.id), familySkill(id, kind)) < p.level)
                 continue;
             if ((this->family(ps.holder, id) && rank(jobOf(id)) < rank(&p)) ||
-                (!jobOf(id) && (!world.near || world.near(p.work.cell, other->second.homeCell))))
+                (!jobOf(id) && (!world.near || world.near(reach, other->second.homeCell))))
                 successor = id;
         }
         if (successor.empty())
@@ -933,6 +934,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         if (!ps.holder.empty() || ps.vacantSince < 0)
             continue;
         const double waited = now - ps.vacantSince, level = tradeLevel(p);
+        const auto reach = reachOf(p);              // (Where its holders live: a works' crew's home ground, doc 72.)
         const auto family = skillFamily(p.title);
         const auto trained = [&](const std::string& id) { return std::max(skill(id, p.id), familySkill(id, family)); };
         std::string chosen, how;
@@ -945,7 +947,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
             {
                 const auto* own = jobOf(id);
                 if (!alive(id) || world.age(id) < 16 || apprenticedTo(id) || trained(id) < level || (own && tradeLevel(*own) >= level) ||
-                    (own && own->role == "merchant") || (world.near && !world.near(p.work.cell, life.homeCell)))
+                    (own && own->role == "merchant") || (world.near && !world.near(reach, life.homeCell)))
                     continue;
                 if (const double t = trained(id); t > best)
                     best = t, chosen = id;
@@ -973,7 +975,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
             double best = -1;
             for (const auto& [id, life] : state_.residents)
                 if (!jobOf(id) && !apprenticedTo(id) && alive(id) && world.age(id) >= 16 && world.age(id) < retireAge(id) && trained(id) >= level &&
-                    (!world.near || world.near(p.work.cell, life.homeCell)))
+                    (!world.near || world.near(reach, life.homeCell)))
                 {
                     const double score = skill(id, p.id) * 2 + (ps.lastHolder.empty() ? 0 : world.regard(ps.lastHolder, id));
                     if (score > best)
@@ -988,7 +990,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
             double best = -1;
             for (const auto& [id, life] : state_.residents)
                 if (alive(id) && world.age(id) >= 16 && world.age(id) < retireAge(id) && !apprenticedTo(id) && !important(id) &&
-                    rank(jobOf(id)) < rank(&p) && (!world.near || world.near(p.work.cell, life.homeCell)))
+                    rank(jobOf(id)) < rank(&p) && (!world.near || world.near(reach, life.homeCell)))
                     if (const double t = trained(id); t > best)
                         best = t, chosen = id;
             if (!chosen.empty())
@@ -1047,6 +1049,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
     {
         auto& ps = c.positions[p.id];
         const double level = tradeLevel(p), target = std::max(level, TradeSkilled);
+        const auto reach = reachOf(p);
         if (!ps.apprentice.empty() && (!alive(ps.apprentice) || ps.apprentice == ps.holder))
             ps.apprentice.clear();
         if (!ps.apprentice.empty() && skill(ps.apprentice, p.id) >= target)
@@ -1071,7 +1074,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
                 continue;                             // Busy with work elsewhere.
             const int tier = this->family(ps.holder, id) ? 3 : household(ps.holder, id) ? 2
                              : alongside && world.regard(ps.holder, id) >= 30 ? 1
-                             : !own && (!world.near || world.near(p.work.cell, life.homeCell)) ? 0 : -1;
+                             : !own && (!world.near || world.near(reach, life.homeCell)) ? 0 : -1;
             if (tier > bestTier || (tier == bestTier && tier >= 0 && age < bestAge))
                 bestTier = tier, bestAge = age, chosen = id;
         }
@@ -1170,6 +1173,7 @@ std::string Society::cityWolfFor(const Position& p, const CareerWorld& world, in
     // living within reach, its class classStep from the post's: grown pups first (raised here: a parent known, under 25),
     // then the best at that kind of work, then a lot of the post's.
     const auto wanted = postClass(p);
+    const auto reach = reachOf(p);                  // (A works' post: its crew's home ground, doc 72.)
     const auto family = std::string(skillFamily(p.title));
     std::string chosen;
     std::tuple<int, double, double> best{-1, 0, 0};
@@ -1178,7 +1182,7 @@ std::string Society::cityWolfFor(const Position& p, const CareerWorld& world, in
         if (!world.alive(id))
             continue;
         const int age = world.age(id);
-        if (age < 16 || age >= retireAge(id) || apprenticedTo(id) || (world.near && !world.near(p.work.cell, life.homeCell)))
+        if (age < 16 || age >= retireAge(id) || apprenticedTo(id) || (world.near && !world.near(reach, life.homeCell)))
             continue;
         if (const auto* own = jobOf(id); own && !postClass(*own).empty())
             continue;
@@ -1200,6 +1204,7 @@ bool Society::arrivalFor(const Position& p, const PositionState& ps, const Caree
     // not already sent for: the one whose trade suits the post best (its kind of work; the post's words in its label or
     // description), then a lot of the post's. Any sex.
     const auto wanted = postClass(p);
+    const auto reach = reachOf(p);                  // (A works' post: its crew's home ground, doc 72.)
     const auto family = std::string(skillFamily(p.title));
     const auto words = tradeWords(p.title);
     const ResidentSpec* chosen = nullptr;
@@ -1239,8 +1244,9 @@ bool Society::arrivalFor(const Position& p, const PositionState& ps, const Caree
         std::pair<int, double> roomiest{0, 0};
         for (const auto& [cell, members] : homes)
         {
-            if (communalHome(cell) || int(members.size()) >= HouseholdMost || (world.near && !world.near(p.work.cell, cell)))
-                continue;
+            if (communalHome(cell) || int(members.size()) >= HouseholdMost || (world.near && !world.near(reach, cell)) ||
+                cell.rfind("fs_", 0) == 0)
+                continue;                           // (A farmhouse is its keeper's family's alone, as staffFarms keeps it.)
             std::map<std::string, int> count;
             for (const auto& m : members)
                 ++count[classOf(m)];
@@ -1259,7 +1265,7 @@ bool Society::arrivalFor(const Position& p, const PositionState& ps, const Caree
         }
     }
     if (home.cell.empty() && world.lodgings)
-        if (const auto spots = world.lodgings(p.work.cell); !spots.empty())
+        if (const auto spots = world.lodgings(reach); !spots.empty())
             home = spots.front();
     if (home.cell.empty())
         return false;

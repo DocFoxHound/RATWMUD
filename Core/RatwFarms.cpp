@@ -170,6 +170,7 @@ void Society::tendFarms(std::int64_t day)
     if (roster_ != Roster::Authored)
         return;
     countFarmPosts();
+    const double table = tableShare();
     for (auto& f : farms_)
     {
         if (!farmAreaOn(f.area) || !account(f.till))
@@ -204,7 +205,7 @@ void Society::tendFarms(std::int64_t day)
         for (const auto& [good, middle] : f.def->table)
         {
             double& carry = f.eaten[good];
-            carry += seasonalValue(middle, yearDay_);
+            carry += seasonalValue(middle, yearDay_) * table;
             const int n = int(std::floor(carry + 1e-9));
             if (n < 1)
                 continue;
@@ -435,6 +436,23 @@ double Society::countryBasketShift() const
             on += areas[a].takings;
     }
     return all > 0 ? std::clamp(on / all, 0., 1.) : 0.;
+}
+
+double Society::tableShare() const
+{
+    // The farms' `table` feeds the Country's own people (doc 71: the Houses' estates' 24 and the 68 workers of its other
+    // industries). The works' crews are those workers, placed (doc 72): with their area on they live in the realm and buy
+    // their food in the shops like any household, so they eat at the table no more, or they would eat twice (in country2
+    // the table took 8-12 oats, 8-13 milk and 10 salt a day, the fuel's 15 among its 92).
+    const auto& d = items::farms();
+    const int people = d.estatePeople + d.otherWorkers;
+    if (people <= 0)
+        return 0;
+    int placed = 0;
+    for (const auto& f : farms_)
+        if (f.works && farmAreaOn(f.area))
+            placed += f.crewSize();
+    return std::clamp(double(people - placed) / people, 0., 1.);
 }
 
 bool Society::farmSwitchTill(const std::string& till) const

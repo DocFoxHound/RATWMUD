@@ -192,11 +192,12 @@ class Places(unittest.TestCase):
 
     def test_doc_72s_works_ids(self):
         # Each built works of country_farms.json's works areas is one of the map's works sites, and the contract gives it
-        # its works id and work spots out of doors (doc 72, Phase 2).
+        # its works id and work spots out of doors (doc 72, Phase 2; Phase 3's quarry and clay pits: all eight sites built).
         root = Path(__file__).resolve().parent.parent
         cf = json.loads((root / 'Data/Economy/country_farms.json').read_text())
         built = {f['id'] for a in cf['areas'] if a.get('works') for f in a['farms']}
         self.assertEqual(built, set(P.WORKS_IDS.values()))
+        self.assertEqual(set(P.WORKS_IDS), set(P.WORKS), 'every works site sited is built')
         self.assertTrue(set(P.WORKS_IDS) <= set(P.WORKS))
         contract = json.loads((root / 'Data/Economy/communities.json').read_text())
         for w in contract['works']:

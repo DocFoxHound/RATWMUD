@@ -330,6 +330,43 @@ void aDayOfTheLoop()
     expect(s.cash(Society::CountryFund) <= 8 + 2 * (s.loopYesterday().drawn + 100), "the Country's purse is bounded");
 }
 
+void itsPostsFirst()
+{
+    // Doc 72, Phase 3 (country2: the Country missed its posts on 6 days, its purse down to 16p after two lean days): it
+    // keeps countryPostsDays (2) nights of its posts' wages in its purse, over its reserve, and its basket buys only with
+    // what is over; so its posts are paid every night, a lean day or two included.
+    const auto spentWith = [](int nights, std::int64_t& left, std::int64_t& owed) {
+        auto s = city([&](AuthoredRoster& r) {
+            r.economy.countryReserve = 0;
+            r.economy.rules["countryPostsDays"] = nights;
+        });
+        owed = s.payOf(post(s, "docker")).wage;
+        // Its purse set to three nights of its posts and 60p more.
+        expect((s.cash(Society::CountryFund) == 0 || s.operatorTransfer(Society::CountryFund, "treasury", "", 0, s.cash(Society::CountryFund)).ok) &&
+                   s.operatorTransfer("treasury", Society::CountryFund, "", 0, 3 * owed + 60).ok,
+               "the Country's purse set");
+        run(s, 1 + 7.9 / 24, 1 + 17.95 / 24);       // (The shop hours to just before the wages.)
+        left = s.cash(Society::CountryFund);
+        return s.loopToday().countrySpent;
+    };
+    expect(city().rule("countryPostsDays") == 2, "two nights by default (country.json)");
+    std::int64_t left1 = 0, left2 = 0, owed = 0;
+    const auto spent1 = spentWith(1, left1, owed), spent2 = spentWith(2, left2, owed);
+    expect(owed > 0 && left2 >= 2 * owed, "two nights kept before the wages: " + std::to_string(left2) + " of " + std::to_string(2 * owed));
+    expect(left1 >= owed && spent1 > spent2, "one night kept (as it was): it spends more: " + std::to_string(spent1) + " and " +
+                                                  std::to_string(spent2));
+    // Tonight's wages paid in full, and tomorrow's still in its purse after them: a day that takes in nothing can't leave
+    // its posts unpaid.
+    auto s = city([&](AuthoredRoster& r) { r.economy.countryReserve = 0; });
+    expect((s.cash(Society::CountryFund) == 0 || s.operatorTransfer(Society::CountryFund, "treasury", "", 0, s.cash(Society::CountryFund)).ok) &&
+               s.operatorTransfer("treasury", Society::CountryFund, "", 0, 3 * owed + 60).ok,
+           "the Country's purse set");
+    run(s, 1 + 7.9 / 24, 1 + 18.5 / 24);
+    expect(s.loopToday().countryPostsOwed == owed && s.loopToday().countryPostsPaid == owed, "tonight's posts paid in full");
+    expect(s.cash(Society::CountryFund) >= owed, "and the next night's kept: " + std::to_string(s.cash(Society::CountryFund)));
+    expect(s.conserved(), "conserved");
+}
+
 void pausedNeedsBuyNothing()
 {
     auto s = city([](AuthoredRoster& r) { r.economy.needsPaused = true; });
@@ -423,6 +460,7 @@ int main()
         aDrawSplit();
         theSubsidyGivesWayFirst();
         aDayOfTheLoop();
+        itsPostsFirst();
         pausedNeedsBuyNothing();
         theCountryOffSpends();
         anOlderSavesFund();

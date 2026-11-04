@@ -115,6 +115,8 @@ void readFarms(Catalog& c, const json::Value& file)
     f.hand = std::max(0, orUnset(d.object("wages")["hand"], 1000));
     f.floatDays = std::clamp(int(d.number("floatDays", 2)), 0, 365);
     f.openingStockDays = std::clamp(int(d.number("openingStockDays", 7)), 0, 365);
+    f.estatePeople = std::clamp(int(d.number("estatePeople", 24)), 0, 100000);
+    f.otherWorkers = std::clamp(int(d.number("otherWorkers", 68)), 0, 100000);
     const auto& schedule = d.object("schedule");
     f.start = std::clamp(int(schedule.number("start", -1)), -1, 365000000);
     f.every = std::clamp(int(schedule.number("every", 28)), 1, 3650);
