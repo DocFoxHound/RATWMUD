@@ -2268,8 +2268,8 @@ works, interior and link in `communities.json` and the world as it was (no room 
   Pick** alehouse with its keeper's rooms (3), and **a keeper's house for each works** (4 beds each, the keeper now and
   the family later): The Mine Captain's House, The Limeburner's House, The Collier's House. **43 beds**; 2 kitchen
   gardens, a hen run, a goat paddock; **room to grow: 11 cottage lots**. Interiors `cn_frosthollow_*` (11 rooms, 11
-  doors); its region `frosthollow` (already the game's), kept plain (`town` false) like the six; having no farm, its
-  market is not staffed yet. Its cell is "The Greenholt, Frosthollow" again.
+  doors); its region `frosthollow` (already the game's), kept plain (`town` false) like the six; its market is staffed
+  with its first works, as Oakhaven's is with the Oakhaven cut (the review: not "no farm, not yet"). Its cell is "The Greenholt, Frosthollow" again.
 - **Its works** (`communities.json` `works`; the works ids the economy should use in `country_farms.json`):
 
   | Site / works id | Where | Walk from the green | Work spots (`workplace`, out of doors) | Keeper's house |
