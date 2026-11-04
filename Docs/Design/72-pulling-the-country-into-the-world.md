@@ -1067,3 +1067,52 @@ ropewalk (19p) joined them**: the farms' basket buys their bricks and rope, and 
 city makers' levers (carry-over 4, the user's: the Country's basket's shares), not changed here.
 
 Next: the 3-year run (the user's go-ahead first) to judge the rent through the seasons and years 2-3 before Phase 4.
+
+### The land rent's 3-year run (country3b, 2026-11-03)
+
+Merged `r2-country-p3b` into `ridgemere2` first (reviewed for money and for rent out of wages: the rent moves by
+`shift`, after `payFarms`, from what is over the float, and only from a farm that paid its crew in full; the treasury's
+support comes after it and goes only to the short; nothing found). `ctest` in `build-core` 78 of 78. Then the user's
+go-ahead: on `artifacts/economy/r2/export60`, `--simulate 6 26298 --farms 0 --deterministic --threads 4
+--economy-level full`, as country3. Report `artifacts/economy/r2/country3b-report.md`, patch `country3b.patch.json`,
+log `country3b.out`. Year 3 a day unless said; country3's beside it.
+
+- **Money conserved** every day; **nobody hungry** (the hungriest 5 hours, in year 1; 1 in years 2-3; residents 559
+  to 735, births 54, deaths 55).
+- **The Country pays its posts every day of all three years** (country3: 47 days of year 3 unpaid). Its intake
+  **1,176p** a day against 824p (sales 666p, the works' rents 183p, **the land rents 327p**: the Crown 270p, House Fell
+  31p, House Grayrock 26p); its leanest season summer, 1,127p (+303p). Its purse **flat to up**: years' ends 1,820,
+  1,836, 1,783p, least 1,008p (day 959), year 3's first four weeks' mean 1,673p to its last's 1,794p. What is over its
+  two nights of posts goes on its basket: 339p a day (country3 15p).
+- **The land rent** as sized: 311p a day over the run, 327p in years 2-3 (the size's 336-347p, on country3's takings),
+  each farm at or under its percent (the thin ones under: a lean night's rent is what is over the float). **Every food
+  farm paid its crew every day** (100% in all three years), every farm's takings less wages less rent positive: the
+  least vineyard_2 4.8p (year 3), salt 8.2-8.6p, the lake boats 7.6p, the orchards 7.5-9.0p.
+- **The works**: the five fuel works and both clay pits every day. **The quarry fails again: 88.5% of year 2's days,
+  86.3% of year 3's** (22,558p of 23,374p, support 727p). Its stone's price held (1.37p a piece; country3 1.33p), but
+  **the mason bought less**: 19.4 stones a day in years 2-3 (country3 24.9), so takings 26.6p against the 1 + 1 crew's
+  26p. The cause is the rent: the farms' basket is smaller by it, and buys fewer building goods (mortar from the
+  builders' works 20.1 to 14.0 a day, lime 25 to 19), so the mason sells and draws less. Its yield is untouched
+  (27.7 grown a day to 19.4 sold: stone to 7,392 and rising).
+- **The treasury over its float every night** (least 1,269p, day 0; years 2-3 least 3,414p and 3,785p); 1,291 to
+  6,037p, year 3 flat (5,925p to 5,948p, four-week means). **The wage support fell: 247p a day in year 3** (country3
+  323p); the tills short 23.2 a day (26.3). The ironworks' shortfall halved (13,222p, 30,928p: the Country's larger
+  basket buys its iron), the shipwright and the foundry left the list; the builders' works joined it (14,131p: the
+  farms' smaller basket, its mortar), as the smoke's brickworks and ropewalk did.
+- **The fuel and the stone: fails.** **Charcoal short**: the farms' stock 0 at every year's end, ~100,000 draws short
+  over the run, supply-bound in all four seasons (country3 piled it, 1,691: the patch's half step down met the
+  ironworks' larger demand). **Peat piles again** (2,208 then 4,248 at the years' ends; country3 fell to 438): the
+  half step up overshot. **Stone, clay and sand pile hard** (7,392, 13,286, 7,294; country3 2,347, 5,744, 2,978: the
+  mason's and builders' smaller draws), **firewood** too (28,166; 23,512). Timber now about level (814), oak bark still
+  piles (3,584). Salt piles slower (4,382; 5,873).
+
+**Verdict: the Country is stable enough for Phase 4; the stone and the fuel aren't yet.** Phase 4 (4.5, ~187p a day of
+craft-input sales) played on year 3: intake 1,176p to ~989p, still **~165p a day (20%) over its posts**; its leanest
+season summer ~940p, **~116p (14%) over**; posts-first's two nights besides. What Phase 4 takes comes out of its basket
+first (339p to ~150p a day), so the city makers it buys from (iron, charcoal, paper) lose about that much, the
+ironworks most. Before Phase 4: (1) **the quarry** to the mason's 19-20 stones a day: a crew of 1 (the keeper's 16p
+against ~26p of takings) and its yield to what sells (the patch: 22.1 / 18.0 / 19.6 / 22.7), or the farms' basket's
+building goods share back up (the user's lever); (2) **charcoal** up its whole step (supply-bound: the patch's 9.0 /
+8.6 / 10.1 / 10.9 on coppice_greenholt) and **peat** half way down again; stone, clay, sand, firewood, oak bark down
+(`country3b.patch.json`); (3) the builders' works, brickworks and ropewalk: the city makers' levers (the Country's and
+the farms' basket shares), the user's.
