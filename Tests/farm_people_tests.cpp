@@ -130,7 +130,7 @@ void build(Fixture& x)
     add("helps at The Stores", 10, 20);
     add("logging at Cedarfall", 5, 20);
     add("logging at Oakfell", 3, 22);
-    add("cutting stone at Greyscar", 4, 24);         // (Doc 72, Phase 3: the granite quarry's 1 + 2,)
+    add("cutting stone at Greyscar", 4, 24);         // (Doc 72, Phase 3: the granite quarry's 1 + 1 since country3,)
     add("digs clay at Clayholt", 3, 22);             // (and the clay pits' one hand each.)
     add("plays about the town", 6, 6);
     add("sits by the well", 3, 70);
@@ -326,7 +326,7 @@ void thePlacement()
         expect(f.heads() == 0 && f.virtualWages() == 0 && std::abs(f.working() - 1) < 1e-9, f.def->id + ": no virtual post left");
         keepers += f.keepers, hands += f.hands;
     }
-    expect(keepers == 37 && hands == 90, "37 keepers and 90 hands placed (doc 72's works' 6 and 14 among them): " +
+    expect(keepers == 37 && hands == 89, "37 keepers and 89 hands placed (doc 72's works' 6 and 13 among them): " +
                                               std::to_string(keepers) + ", " + std::to_string(hands));
     // Where they live: a farmhouse its keeper's family's alone; hands in their farm's community (or the city's homes), at
     // most six to a home.
@@ -513,7 +513,7 @@ void theWorksCrews()
     // the pool, 13 posts: the rest of the fallback), the peat cutting of those who keep the house; each keeper of those
     // with no family among the unplaced first, placed alone (no farmhouse), living with the hands: in the works'
     // community, or for the Rainwood's in the city; every post at the works' cell out of doors, paid by its till. Phase 3:
-    // the stone area's granite quarry (1 + 2, in the city) of the stone cutters, and the two clay pits (one hand each and
+    // the stone area's granite quarry (1 + 1 since country3, in the city) of the stone cutters, and the two clay pits (one hand each and
     // no keeper, in Fenshore and Southmeadow) of the clay diggers, of the mines, stone and clay.
     Fixture x;
     build(x);

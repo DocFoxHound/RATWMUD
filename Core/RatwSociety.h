@@ -779,11 +779,14 @@ class Society
         double takingsCarry = 0;                    // The fraction of a penny its store draws owe it, or it them (not saved).
         // A works (doc 72, Phase 0: its area's `works`): it sends its rent each night to the House whose land it is on
         // (what its till holds over its float after the wages: the estates' rent, into the Country's purse, "the Houses'
-        // estates and the sea trade", booked by House: `house`, its own or its area's). A food farm (never `works`, a
-        // House or none) spends what is over on its basket.
+        // estates and the sea trade", booked by House: `house`, its own or its area's). A food farm spends what is over
+        // on its basket, less its land rent (doc 72, open question 2, Phase 3's follow-up): its rule's percent of its
+        // takings since the last night (`rentTakings`, not saved), to its House's estate (`house`; "the Crown" where no
+        // House holds the land) after its wages, from what its basket would have spent, never its wages or its float.
         std::string house;
         bool works = false;
         bool rents() const { return works; }
+        std::int64_t rentTakings = 0;
         // Its work out of doors (a works, doc 72: its centre's cell, which it may share with others' posts): a post there
         // is its own only by its labels.
         bool outdoors = false;
@@ -816,6 +819,11 @@ class Society
     double farmPriceFactor(const std::string& item) const;
     // How far the Country's basket has moved to its re-weighted one (0 to 1): the share of the food areas' takings on.
     double countryBasketShift() const;
+    // A food farm's land rent (doc 72, open question 2): the percent of its takings it pays its House's estate each night
+    // (the rule landRent<Area>, e.g. landRentFruit, where there is one, else landRent; a works none),
+    // and what it owes tonight of its takings so far (its basket keeps it back through the day).
+    int landRentPercent(const FarmNow& farm) const;
+    std::int64_t landRentDue(const FarmNow& farm) const;
     // The share of the Country's own people (country_farms.json `estatePeople` and `otherWorkers`) still eating at the
     // farms' table: less the crews of the works whose areas are on, who buy their food in the shops (doc 72, Phase 3).
     double tableShare() const;
@@ -915,7 +923,7 @@ class Society
             std::int64_t takings = 0, wagesOwed = 0, wagesPaid = 0, support = 0, basket = 0, basketCarriage = 0;
             std::int64_t crewSpent = 0;
             std::int64_t peoplePaid = 0;            // Of wagesPaid, what its real posts' holders were paid (doc 71, Phase C).
-            std::int64_t rent = 0;                  // A works' rent tonight, to its House's estate (doc 72, Phase 0).
+            std::int64_t rent = 0;                  // A works' rent tonight, or a food farm's land rent, to its House's estate (doc 72).
             int crewFood = 0, crewNeeds = 0, crewComforts = 0, crewServices = 0, crewShort = 0, tableShort = 0;
             double crewHungry = 0;
             // By good (world_check's full recording, doc 69, 10): the same pieces, and the table's short of it.
@@ -940,6 +948,7 @@ class Society
         // rents by House; its sales to the shops' store draws, its takings after the toll (the sea trade and the goods it
         // still sends); its posts' wages owed and paid tonight, all and by country.json wage rule (its name).
         std::map<std::string, std::int64_t> rents;
+        std::map<std::string, std::int64_t> landRents;         // The food farms' land rents by House ("the Crown" too).
         std::int64_t countrySales = 0, countryPostsOwed = 0, countryPostsPaid = 0;
         std::map<std::string, std::int64_t> countryPostsByRule;
         std::map<std::string, int> countryPostsHeld;           // The posts held tonight, by the same rule.
@@ -1168,7 +1177,7 @@ class Society
     void staffFarms(const CareerWorld& world, std::vector<CareerNote>& notes);
     void tendFarms(std::int64_t day);
     void payFarms();
-    void payRents();                                // (A works' rent to its House's estate, after its wages: doc 72.)
+    void payRents();                                // (A works' rent, a food farm's land rent, after the wages: doc 72.)
     void farmsBuy(int hourOfDay);
     bool farmSwitchTill(const std::string& till) const;
     std::int64_t basketBuys(const std::string& fund, const std::vector<std::pair<const std::string*, double>>& basket, double budget,

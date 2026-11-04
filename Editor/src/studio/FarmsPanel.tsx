@@ -10,6 +10,8 @@ import {areaOnFrom, areaSwitch, farmChange, farmNow, farmSchedule, scheduleText,
     type FarmControls, type FarmsBody} from '../lib/economy';
 
 type Typed = Record<string, string>;
+// A House as the panel names it: "House Fell", but "the Crown" (a food area's land no House holds: doc 72).
+const houseName = (h: string) => h.startsWith('the ') ? h : `House ${h}`;
 
 export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked: boolean; setFarms: (body: FarmsBody) => void}) {
     const [typed, setTyped] = useState<Typed>({});
@@ -75,7 +77,8 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
             people eat at its table and what is past keeping spoils; at 18:00 it pays its crew, who shop in the city as a
             household; what it holds over its float and its wages it spends on the city's goods, as the Country does. A works
             (doc 72: the woods, the peat) is the same but for that: what it holds over its float after the wages is its rent,
-            sent each night to the House whose land it is on (the Country's purse, booked by House). Empty:
+            sent each night to the House whose land it is on (the Country's purse, booked by House). A food farm pays that House
+            a land rent too, a percent of its takings after its wages, from its basket's share (the rules' land rent: doc 72). Empty:
             country_farms.json's (shown faintly).</p>
         {!data.farmsSupported && <p className="publish-error">{data.farmsProblem}</p>}
         <p><b>{scheduleText(data)}</b></p>
@@ -99,7 +102,7 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
             return <details key={a.id} className={own ? 'changed' : ''}>
                 <summary><b>{a.name}</b> · {sw === 'schedule' ? (from === null ? 'off (no schedule)' : `on from day ${from}`) : sw}
                     {' '}· {a.farms.length} {a.works ? 'works' : `farm${a.farms.length === 1 ? '' : 's'}`}
-                    {a.works && a.house ? ` · rent to House ${a.house}` : ''}</summary>
+                    {a.house ? ` · ${a.works ? 'rent' : 'land rent'} to ${houseName(a.house)}` : ''}</summary>
                 <p className="hint">Its goods: {a.goods.join(', ')}. Design takings {a.revenueADay.map(v => Math.round(v)).join(' / ')}p a day
                     (Spring / Summer / Autumn / Winter).</p>
                 <label className="economy-markup">Switch <select value={sw} disabled={off} aria-label={`${a.name}: switch`}
@@ -125,7 +128,7 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
                     <tbody>{a.farms.map(x => {
                         const now = farmNow(data, a, x), mine = data.farms?.farms?.[x.id], s = saved?.farms?.[x.id];
                         return <tr key={x.id} className={mine ? 'changed' : ''}>
-                            <td title={x.region}><b>{x.id}</b><br /><small className="hint">{x.kind}{x.house ? `, House ${x.house}'s land` : ''}</small></td>
+                            <td title={x.region}><b>{x.id}</b><br /><small className="hint">{x.kind}{x.house ? `, ${houseName(x.house)}'s land` : ''}</small></td>
                             <td>{now.keepers} + {now.hands}, {now.wages}p a day</td>
                             <td>{field(`farms.${x.id}.yieldScale`, 4, `${x.id}: yields`, () => commit('farms', x.id, 'yieldScale', 0, 1000), '100')}</td>
                             <td>{field(`farms.${x.id}.crewScale`, 4, `${x.id}: hands`, () => commit('farms', x.id, 'crewScale', 0, 1000), '100')}</td>

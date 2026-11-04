@@ -1371,7 +1371,7 @@ struct EconomyWatch
                 seasons << "}";
             }
             // The Country by its parts (doc 72, Phase 0: one purse, "the Houses' estates and the sea trade"): the works'
-            // rents by House, its own goods' sales to the shops (after the toll), its posts owed and paid, by wage rule
+            // rents by House, the food farms' land rents by House, its own goods' sales to the shops (after the toll), its posts owed and paid, by wage rule
             // (pennies, and the posts held).
             const auto object = [&](const char* name, const auto& m) {
                 seasons << ", \"" << name << "\": {";
@@ -1384,6 +1384,11 @@ struct EconomyWatch
                 rents += n;
             seasons << ", \"country_rents\": " << rents;
             object("country_rents_by_house", d.rents);
+            std::int64_t landRents = 0;               // (The food farms' land rents, by House: doc 72, open question 2.)
+            for (const auto& [house, n] : d.landRents)
+                landRents += n;
+            seasons << ", \"country_land_rents\": " << landRents;
+            object("country_land_rents_by_house", d.landRents);
             seasons << ", \"country_sales\": " << d.countrySales << ", \"country_posts_owed\": " << d.countryPostsOwed
                     << ", \"country_posts_paid\": " << d.countryPostsPaid;
             object("country_posts_by_rule", d.countryPostsByRule);

@@ -140,6 +140,12 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'floatWagesDays', label: 'Wages kept before profit', max: 60, unit: 'days of its posts\' wages a till keeps over its float'},
     {key: 'subsidyToNeed', label: 'Carriage subsidy only to need', max: 1, unit: 'the treasury pays the carters only what they lack of their wages', onOff: true},
     {key: 'countryPostsDays', label: 'The Country\'s posts first', max: 30, unit: 'nights of its posts\' wages the Country keeps before it buys (doc 72)'},
+    // The food farms' land rent (doc 72, open question 2): to the House whose land each is on, from its basket's share.
+    {key: 'landRent', label: 'The farms\' land rent', max: 100, unit: '% of a food farm\'s takings to its House\'s estate each night, after its wages (the areas below have their own)'},
+    {key: 'landRentFish', label: 'Land rent: fish', max: 100, unit: '% of the fishing\'s takings (House Grayrock)'},
+    {key: 'landRentFruit', label: 'Land rent: orchards and vines', max: 100, unit: '% of their takings (House Fell)'},
+    {key: 'landRentGrain', label: 'Land rent: grain', max: 100, unit: '% of the grain farms\' takings (the Crown)'},
+    {key: 'landRentSalt', label: 'Land rent: salt', max: 100, unit: '% of the salt works\' takings (the Crown)'},
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms").
     {key: 'surplus', label: 'The treasury\'s surplus', max: 1, unit: 'what it holds over its cap and reserve goes out at 18:00, to public works and the poorest', onOff: true},
     {key: 'surplusKeep', label: 'Reserve over the cap', max: 100000000, unit: 'p the treasury keeps over its cap for the lean seasons before its surplus goes out'},

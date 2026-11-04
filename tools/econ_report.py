@@ -2,7 +2,8 @@
 """A run's market in about two pages (Docs/Design/69-simulation-speed.md, 10): every imbalance, the prices pinned at the
 band's edges, the tills short of their wages and why, the money's flows and the treasury's path, each class's welfare,
 the largest buyers and sellers of each good, the farms and works (doc 72's: the woods', the peat's, paying rent to their
-House), the Country by its parts (the estates' rents by House, the sea trade, its posts by rule), and the farms' yields
+House; the food farms' land rent, doc 72's open question 2), the Country by its parts (the estates' and the farms' land
+rents by House, the sea trade, its posts by rule), and the farms' yields
 that would meet their demand, from world_check's
 economy file (`--economy F`) and, at `--economy-level full`, its tables (F.full.jsonl.gz):
 
@@ -474,6 +475,21 @@ def report(econ, run, top, patch_path):
                            f'{run.farm[w]["paid"]}/{run.farm[w]["owed"]}', run.farm[w]['support'],
                            round(run.farm[w]['rent'] / max(1, run.farm[w]['days']), 1), run.farm[w]['float_last']]
                           for w in works])
+        # The food farms' land rent (doc 72, open question 2): what each paid its House, and what was left over its wages
+        # and its rent (its basket's share; thin where a farm's takings barely pass its crew's wages).
+        landed = sorted((farm for farm in run.farm if farms_meta.get(farm, {}).get('area') not in works_areas
+                         and run.farm[farm]['rent'] > 0), key=lambda w: (farms_meta[w].get('area', ''), w))
+        if landed:
+            say('')
+            say('The food farms\' land rent (a day; to the House whose land each is on, the Country\'s purse at first; left: '
+                'takings less wages less rent):')
+            say('')
+            per = lambda w, k: run.farm[w][k] / max(1, run.farm[w]['days'])
+            out += table(['farm', 'House', 'days on', 'takings', 'wages owed', 'rent', 'rent %', 'basket', 'left'],
+                         [[w, farms_meta[w].get('house') or '-', run.farm[w]['days'], round(per(w, 'takings'), 1),
+                           round(per(w, 'owed'), 1), round(per(w, 'rent'), 1),
+                           round(100 * run.farm[w]['rent'] / max(1, run.farm[w]['takings']), 1), round(per(w, 'basket'), 1),
+                           round(per(w, 'takings') - per(w, 'owed') - per(w, 'rent'), 1)] for w in landed])
         unpaid = [farm for farm, f in sorted(run.farm.items()) if f['paid'] < f['owed']]
         if unpaid:
             say('')
@@ -512,7 +528,8 @@ def report(econ, run, top, patch_path):
 
 def country_lines(econ):
     """The Country's purse by its parts, a day (the economy lines' means): in, its own goods' sales to the shops after the
-    toll (the sea trade and what it still sends) and the works' rents by House (the estates'); out, its posts by wage
+    toll (the sea trade and what it still sends), the works' rents by House (the estates') and the food farms' land rents
+    by House (doc 72, open question 2); out, its posts by wage
     rule (paid of owed, and the posts held) and its basket; and its purse."""
     n = max(1, len(econ))
     mean = lambda key: sum(r.get(key, 0) for r in econ) / n
@@ -522,9 +539,13 @@ def country_lines(econ):
             total.update(r.get(key) or {})
         return total
     rents, rules, held = by('country_rents_by_house'), by('country_posts_by_rule'), by('country_posts_held')
+    land = by('country_land_rents_by_house')
+    named = lambda h: h if h.startswith('the ') else f'House {h}'   # ("the Crown")
     out = ['## The Country: "the Houses\' estates and the sea trade"', '',
            f'In (a day): its goods to the shops {mean("country_sales"):.0f}p (after the toll); the estates\' rents '
-           f'{mean("country_rents"):.0f}p' + (' (' + ', '.join(f'House {h} {v / n:.0f}p' for h, v in rents.most_common()) + ')' if rents else '')
+           f'{mean("country_rents"):.0f}p' + (' (' + ', '.join(f'{named(h)} {v / n:.0f}p' for h, v in rents.most_common()) + ')' if rents else '')
+           + (f'; the farms\' land rents {mean("country_land_rents"):.0f}p ('
+              + ', '.join(f'{named(h)} {v / n:.0f}p' for h, v in land.most_common()) + ')' if land else '')
            + '.',
            f'Out (a day): its posts {mean("country_posts_paid"):.0f}p of {mean("country_posts_owed"):.0f}p owed'
            + (' (' + ', '.join(f'{k} {v / n:.0f}p, {held[k] / n:.0f} posts' for k, v in rules.most_common()) + ')' if rules else '')

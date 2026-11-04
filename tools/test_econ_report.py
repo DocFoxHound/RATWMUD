@@ -166,6 +166,33 @@ class ReportTests(unittest.TestCase):
             self.assertIn('its goods to the shops 600p', text)
             self.assertIn("its posts 790p of 800p owed (the sea trade 440p, 55 posts, the Houses' people 350p, 44 posts)", text)
 
+    def test_the_land_rent(self):
+        # Doc 72, open question 2: a food farm's land rent in the farms' table, by farm with its House and what is left over
+        # its wages and rent; the Country's line with the land rents by House, "the Crown" as it is named.
+        def more(n):
+            return {'farm': [['grain_farm_1', 'grain', 132, 160, 66, 66, 0, 50, 0, 0, 0, 0, 44]]}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, more, econ_more={'country': 900, 'country_sales': 600, 'country_rents': 0,
+                                                    'country_rents_by_house': {}, 'country_land_rents': 44,
+                                                    'country_land_rents_by_house': {'the Crown': 30, 'Fell': 14},
+                                                    'country_posts_owed': 800, 'country_posts_paid': 800,
+                                                    'country_posts_by_rule': {'the sea trade': 800},
+                                                    'country_posts_held': {'the sea trade': 100}, 'country_spent': 300})
+            full = Path(str(econ) + '.full.jsonl.gz')
+            lines = gzip.open(full, 'rt').read().splitlines()
+            meta = json.loads(lines[0])
+            meta['meta']['farms'].setdefault('grain_farm_1', {'area': 'grain', 'yield_scale': 1.0, 'yield': {}})['house'] = 'the Crown'
+            meta['meta']['works_areas'] = ['fuel']
+            with gzip.open(full, 'wt') as f:
+                f.write('\n'.join([json.dumps(meta)] + lines[1:]) + '\n')
+            out = root / 'report.md'
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            text = out.read_text()
+            self.assertIn("the farms' land rents 44p (the Crown 30p, House Fell 14p)", text)
+            # (The base run's two days of it, rent 0, beside these two: 4 days, its takings, wages, rent, rent %, basket, left.)
+            self.assertIn('| grain_farm_1 | the Crown | 4 | 86.0 | 43.0 | 22.0 | 25.6 | 27.5 | 21.0 |', text, 'the farm by name with its House')
+
     def test_supply_bound(self):
         # Doc 72, Phase 3: the milk all sold or spoiled, the farm out at every day's end and the inn's draws 14 short: what
         # sold was the supply. Its shelf counts though some spoiled (the Restday's), it is listed as supply-bound, and

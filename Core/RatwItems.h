@@ -181,6 +181,14 @@ inline constexpr RuleInfo Rules[] = {
     {"floatWagesDays", 0, 60, 7},        // Days of its posts' wages a till keeps, over its float, before its keeper's profit.
     {"subsidyToNeed", 0, 1, 1},          // The carriage subsidy only while the carters lack their crew's wages tonight.
     {"countryPostsDays", 1, 30, 2},      // Nights of its posts' wages the Country keeps before its basket and patrons (doc 72).
+    // The food farms' land rent (doc 72, open question 2): percent of a farm's takings to its House's estate each night,
+    // from its basket's share (after its wages, never its float); an area's own landRent<Area> over it (sized on country3,
+    // year 3: about half its thinnest farm's margin in its leanest season, so each keeps half its basket at worst).
+    {"landRent", 0, 100, 16},            // Every food area's without its own: the honey's, the meat's (margins ~32%).
+    {"landRentFish", 0, 100, 9},         // The fish's (its sea boats' autumn margin ~18% of their takings).
+    {"landRentFruit", 0, 100, 4},        // The orchards' and vines' (the vineyards' winter margin ~9%).
+    {"landRentGrain", 0, 100, 28},       // The grain's (~57%).
+    {"landRentSalt", 0, 100, 8},         // The salt's (its autumn margin ~17%).
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): what it holds over its cap and
     // surplusKeep at 18:00, after its posts, the short tills' wages and the alms, goes back out each day:
     {"surplus", 0, 1, 1},                // On: the surplus to public works orders and the poorest households.

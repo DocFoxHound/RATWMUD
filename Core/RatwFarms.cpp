@@ -9,6 +9,7 @@
 #include "RatwSociety.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 
 namespace ratw
@@ -56,7 +57,7 @@ void Society::buildFarms()
             f.def = &def;
             f.area = a;
             f.works = area.works;                    // (A works pays rent, a food farm buys its basket: doc 72, Phase 0.)
-            f.house = !f.works ? std::string() : def.house.empty() ? area.house : def.house;   // (Its rent's House.)
+            f.house = def.house.empty() ? area.house : def.house;   // (Its rent's House: a works', or a food farm's land rent.)
             f.till = farmTill(def.id);
             f.crew = farmCrew(def.id);
             f.yieldScale = areaYield / 100. * orElse(ownFarm.yieldScale, 100) / 100.;
@@ -344,22 +345,60 @@ void Society::payRents()
     // a works' till holds over its float (two days of its wages) goes to its House's estate. At first every House's
     // estate is the Country's one purse ("the Houses' estates and the sea trade"), booked by House in the reports. A till
     // short of its wages keeps all it has (its rent is what is over).
-    if (!account(CountryFund))
-        return;
-    for (const auto& f : farms_)
+    // The food farms' land rent (doc 72, open question 2, taken once country3 showed the Country short of its posts): a
+    // farm that paid its crew in full tonight pays its rule's percent of its takings since the last night (landRentDue) to
+    // the House whose land it is on, into the same purse, out of what is over its float: the share its basket would have
+    // spent (farmsBuy keeps it back), never its wages or its float. Short of its wages, it pays none, and those takings'
+    // rent is let go.
+    const bool purse = account(CountryFund) != nullptr;
+    for (auto& f : farms_)
     {
-        if (!f.rents() || !farmAreaOn(f.area) || !account(f.till))
+        const auto due = f.rents() ? 0 : landRentDue(f);
+        f.rentTakings = 0;
+        if (!purse || !farmAreaOn(f.area) || !account(f.till))
             continue;
+        const auto house = f.house.empty() ? std::string("none") : f.house;   // (An area with no House named.)
+        const auto named = house == "the Crown" ? house : "House " + house;
+        auto& today = loopToday_.farms[f.def->id];
         const auto over = cash(f.till) - f.reserve;
-        if (over <= 0 || cash(CountryFund) > MoneyCap - over)
-            continue;
-        const auto house = f.house.empty() ? std::string("none") : f.house;   // (A works area with no House named.)
-        if (shift(f.till, CountryFund, "", 0, over, "an estate's rent: House " + house))
+        if (f.rents())
         {
-            loopToday_.farms[f.def->id].rent += over;
-            loopToday_.rents[house] += over;
+            if (over <= 0 || cash(CountryFund) > MoneyCap - over)
+                continue;
+            if (shift(f.till, CountryFund, "", 0, over, "an estate's rent: " + named))
+            {
+                today.rent += over;
+                loopToday_.rents[house] += over;
+            }
+            continue;
+        }
+        const auto rent = std::min(due, over);
+        if (rent <= 0 || today.wagesPaid < today.wagesOwed || cash(CountryFund) > MoneyCap - rent)
+            continue;
+        if (shift(f.till, CountryFund, "", 0, rent, "a land rent: " + named))
+        {
+            today.rent += rent;
+            loopToday_.landRents[house] += rent;
         }
     }
+}
+
+int Society::landRentPercent(const FarmNow& f) const
+{
+    if (f.works || !f.def || f.area >= items::farms().areas.size())
+        return 0;
+    auto name = "landRent" + items::farms().areas[f.area].id;
+    name[8] = char(std::toupper(static_cast<unsigned char>(name[8])));
+    if (items::ruleInfo(name))
+        if (const int own = rule(name); own >= 0)
+            return std::clamp(own, 0, 100);
+    return std::clamp(rule("landRent"), 0, 100);
+}
+
+std::int64_t Society::landRentDue(const FarmNow& f) const
+{
+    const int percent = landRentPercent(f);
+    return percent > 0 && f.rentTakings > 0 ? f.rentTakings * percent / 100 : 0;
 }
 
 void Society::farmsBuy(int hod)
@@ -379,7 +418,7 @@ void Society::farmsBuy(int hod)
     {
         if (!farmAreaOn(f.area) || !account(f.till) || f.rents())
             continue;                               // (A works pays its rent instead: payRents.)
-        const auto keep = f.reserve + (hod < PayHour ? f.wages() : 0);
+        const auto keep = f.reserve + (hod < PayHour ? f.wages() + landRentDue(f) : 0);   // (Its land rent kept back too.)
         const auto spare = cash(f.till) - keep;
         if (spare <= 0)
             continue;
