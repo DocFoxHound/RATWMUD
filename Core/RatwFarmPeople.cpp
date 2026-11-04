@@ -254,10 +254,13 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         return Spot{room.area, s.first, s.second};
     };
     // A home in a community for one more: the first of its homes with room (at most `most`, and its capacity).
-    const auto communityHome = [&](const items::CommunityPlace& c, const std::string& flatFor) -> Spot {
+    // (A business's flat: the one `for` its name, or, a country workshop's (doc 72, Phase 5), its building's `<area>_flat`.)
+    const auto communityHome = [&](const items::CommunityPlace& c, const std::string& flatFor,
+                                   const std::string& flatArea = {}) -> Spot {
         if (!flatFor.empty())
             for (const auto& flat : c.flats)
-                if (flat.forName == flatFor && world.place(flat.area) && living[flat.area] < std::min(most, flat.capacity))
+                if ((flat.forName == flatFor || (!flatArea.empty() && flat.area == flatArea)) && world.place(flat.area) &&
+                    living[flat.area] < std::min(most, flat.capacity))
                     return bedOf(flat);
         for (const auto& home : c.homes)
             if (world.place(home.area) && living[home.area] < std::min(most, home.capacity))
@@ -472,14 +475,21 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
             if (!world.place(m.area))
                 continue;
             int spot = 0;
+            bool kept = false;                      // (A keeper there, or sent for: a country workshop's hands wait for one.)
             for (const auto& p : positions_)
+            {
                 spot += p.work.cell == m.area;
+                kept = kept || (p.work.cell == m.area && p.role == "merchant");
+            }
+            const auto* workshop = people.workshop(m.area);
             for (const auto& [post, count] : m.posts)
             {
                 const auto rules = people.market.find(post);
                 if (rules == people.market.end())
                     continue;
                 const auto& rule = rules->second;
+                if (workshop && rule.role != "merchant" && !kept)
+                    continue;
                 const auto label = filled(rule.label, "{name}", m.name);
                 int have = 0;
                 for (const auto& p : positions_)
@@ -499,12 +509,14 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                     if (!who)
                         break;
                     const auto spec = *who;
-                    const auto home = communityHome(*c, keeper ? m.name : std::string());
+                    const auto home = communityHome(*c, keeper ? m.name : std::string(), keeper ? m.area + "_flat" : std::string());
                     if (home.cell.empty())
                         break;
                     const auto& s = m.work[std::size_t(spot++) % m.work.size()];
                     place(spec, home, {m.area, s.first, s.second}, label, rule.role, people.marketStart, people.marketEnd,
-                          std::min<std::int64_t>(spec.purse, ArrivalPurse), CountryFund, "market:" + c->id, "market " + c->id);
+                          std::min<std::int64_t>(spec.purse, ArrivalPurse), CountryFund, "market:" + c->id,
+                          workshop ? "workshop " + m.area : "market " + c->id);
+                    kept = kept || keeper;
                 }
             }
         }

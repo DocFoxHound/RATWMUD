@@ -876,9 +876,15 @@ class Society
     int unitsOf(const items::PatronGroup& group) const;
     // Buys up to `want` of an input for `till` from the city's sellers of it (till to till, at their price: the
     // catalogue's, the season's difference after), the seller holding most first; how many came. Nothing when the rule
-    // "suppliers" is off. Only a craft's inputs: a good it sells on is still the store room's (bought at the seller's
-    // price it would leave the reseller nothing).
-    int buyFromCity(const std::string& till, const items::Business* business, const std::string& item, int want);
+    // "suppliers" is off. `resale` (doc 72, Phase 5: the resale goods, `!w.craft`): a good the till sells on, bought at
+    // the store room's price for it (resaleMarkup of the season's; at the seller's price it would leave the reseller
+    // nothing), or the supplier's own `price`. The sellers are the city's makers and the country workshops alike.
+    int buyFromCity(const std::string& till, const items::Business* business, const std::string& item, int want, bool resale = false);
+    // The percent of the catalogue's (the season's) price a seller of a business is paid for a good (country.json
+    // `suppliers`, its `price`; else 100 for a craft input, resaleMarkup for a good sold on).
+    int supplierPrice(const std::string& buyerBusiness, const std::string& sellerBusiness, const std::string& item, bool resale) const;
+    // A luxury (country.json `luxuries`, doc 72, Phase 5: cheese): never bought as food, only from the luxuries' budget.
+    static bool luxury(const std::string& item);
     // The crew's hours a till may hold in hand (workBankHours: that many hours of the crew; 0: the business's longest
     // craft and an hour more, at least two hours' worth).
     double workBankMost(const std::string& till, const items::Business* business) const;
@@ -897,6 +903,19 @@ class Society
         // kind).
         int cityTradePieces = 0, patronJobs = 0, patronPieces = 0;
         std::int64_t cityTrade = 0, patronsTreasury = 0, patronsCountry = 0;
+        // Of the city trade, the goods bought to sell on (doc 72, Phase 5: the resale path), pieces and pennies, by good.
+        int cityResalePieces = 0;
+        std::int64_t cityResale = 0;
+        std::map<std::string, int> cityResaleGoods;
+        // The luxuries (doc 72, Phase 5: cheese): pieces households bought, what they paid, and the households that did.
+        int luxuriesBought = 0, luxuryHouseholds = 0;
+        std::int64_t luxuriesSpent = 0;
+        // The country workshops (doc 72, Phase 5), by building: tonight's wages owed and paid, and what went to its House.
+        struct Workshop
+        {
+            std::int64_t owed = 0, paid = 0, toHouse = 0;
+        };
+        std::map<std::string, Workshop> workshops;
         int boughtAhead = 0;                        // 1 on a day households bought ahead for a Restday or festival.
         int householdsShort = 0, foodBought = 0, needsBought = 0, comfortsBought = 0, tillsShort = 0;
         // The treasury's surplus (doc 68, "The treasury's surplus: works and alms"): what it held over its cap and

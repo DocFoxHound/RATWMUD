@@ -260,6 +260,20 @@ class ReportTests(unittest.TestCase):
             self.assertIn('The normal level only', text)
             self.assertIn('Tills short a night: mean 1.0', text)
 
+    def test_phase5(self):
+        # Doc 72, Phase 5: the goods bought from the makers to sell on, the workshops' wages and their Houses' share, the
+        # luxuries; and a world without the workshops' buildings said so.
+        econ = [{'city_resale': 12, 'city_resale_pieces': 4, 'city_resale_goods': {'fine_soap': 3, 'nails': 1},
+                 'luxuries_bought': 6, 'luxuries_spent': 60, 'luxury_households': 5,
+                 'workshops': {'cn_coldwater_soapworks': {'owed': 46, 'paid': 46, 'to_house': 30}}},
+                {'city_resale': 8, 'city_resale_pieces': 2, 'city_resale_goods': {'fine_soap': 2},
+                 'luxuries_bought': 4, 'luxuries_spent': 40, 'luxury_households': 3, 'workshops': {}}]
+        text = R.phase5_lines(econ)
+        self.assertIn('3.0 pieces, 10.0p (fine_soap 2.5, nails 0.5)', text)
+        self.assertIn('cn_coldwater_soapworks wages 46.0p of 46.0p, to its House 30.0p', text)
+        self.assertIn('5.0 pieces for 50.0p, 4.0 households', text)
+        self.assertIn('No workshop in this world', R.phase5_lines([{'city_resale': 0}]))
+
 
 if __name__ == '__main__':
     unittest.main()

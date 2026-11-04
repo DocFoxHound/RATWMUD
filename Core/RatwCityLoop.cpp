@@ -800,8 +800,9 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                             if (factors)
                                 if (const auto own = factors->find(item); own != factors->end())
                                     f = own->second;
-                            if (n <= 0 || !edible(item) || (fair && (f == 1 ? seasonalCost(item, 1) : shopCost(s->till, item, 1)) > most))
-                                continue;
+                            if (n <= 0 || !edible(item) || luxury(item) ||
+                                (fair && (f == 1 ? seasonalCost(item, 1) : shopCost(s->till, item, 1)) > most))
+                                continue;           // (A luxury is never food: doc 72, Phase 5.)
                             auto at = std::find(foods.begin(), foods.end(), item);
                             if (at == foods.end())
                             {
@@ -929,6 +930,55 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             {
                 consume(payer, item, got, "used at home");
                 (crewDay ? crewDay->crewNeeds : loopToday_.needsBought) += got;
+            }
+        }
+        // The luxuries (doc 72, Phase 5, the user's decision: cheese, a comic luxury for wolves): every household wants
+        // them, but buys them only from what it holds over its comforts' keep (`above` pennies a head) after its food and
+        // its needs (the fuel among them; the city's households pay no rent), at most luxuryShare percent of that a day
+        // and luxuryMost pieces a head, each at its shop's own price, which climbs while the shops sell out (followStock,
+        // its own band): the poor never go short of food or fuel for them, and mostly the rich buy them, dear.
+        if (const auto& luxuries = cfg.luxuries; !luxuries.empty() && rule("luxuryShare") > 0)
+        {
+            const auto purse = [&]() {
+                std::int64_t sum = 0;
+                for (const auto& m : members)
+                    sum += cash(m);
+                return sum;
+            };
+            const auto before = purse();
+            const auto over = before - std::int64_t(comfortsAbove()) * std::int64_t(heads);
+            auto room = over > 0 ? over * rule("luxuryShare") / 100 : 0;
+            int pieces = 0;
+            for (int k = 0, most = rule("luxuryMost") * heads; k < most && room > 0; ++k)
+            {
+                std::vector<std::string> options;
+                for (const auto& g : luxuries)
+                {
+                    sellersOf(shops, g, tills, weights);
+                    std::int64_t least = std::numeric_limits<std::int64_t>::max();
+                    for (const auto* t : tills)
+                        least = std::min(least, shopCost(t->till, g, 1));
+                    if (!tills.empty() && least <= room)
+                        options.push_back(g);
+                }
+                if (options.empty())
+                    break;
+                const auto key = home + "|luxury|" + std::to_string(day) + "|" + std::to_string(k);
+                const auto& item = options[fnv(key) % options.size()];
+                const auto now = purse();
+                const auto keep = now - room;       // (What is kept back: so a piece costs at most what is left of `room`.)
+                const auto payer = payerFor(members, seasonalCost(item, 1), keep);
+                if (payer.empty() || buy(shops, members, payer, item, 1, keep, key) < 1)
+                    break;
+                consume(payer, item, 1, "a luxury, eaten at once");
+                room -= now - purse();
+                ++pieces;
+            }
+            if (pieces > 0)
+            {
+                loopToday_.luxuriesBought += pieces;
+                loopToday_.luxuriesSpent += before - purse();
+                ++loopToday_.luxuryHouseholds;
             }
         }
         // The day's comforts budget: a share of what is over `above` pennies a head (after food and needs).
@@ -1226,9 +1276,27 @@ void Society::payWages()
         {
             const auto held = state_.careers.positions.find(payer.substr(5));
             const auto cap = float_ + wagesDays * owed;
+            // A country workshop's (doc 72, Phase 5) is its House's (doc 42, Phase 5b: a House takes all the profit): what
+            // is over goes to its estate, the Country's purse ("the Houses' estates and the sea trade"), booked by House.
+            const auto* p = position(payer.substr(5));
+            const auto* workshop = p ? items::farmPeople().workshop(p->work.cell) : nullptr;
             std::int64_t profit = 0;
-            if (const auto excess = cash(payer) - cap; held != state_.careers.positions.end() && !held->second.holder.empty() &&
-                                                       excess > 0 && shift(payer, held->second.holder, "", 0, excess, "profit"))
+            if (workshop)
+            {
+                auto& w = loopToday_.workshops[workshop->area];
+                w.owed += owed;
+                w.paid += paid;
+                const auto excess = cash(payer) - cap;
+                if (excess > 0 && account(CountryFund) && cash(CountryFund) <= MoneyCap - excess &&
+                    shift(payer, CountryFund, "", 0, excess, "a workshop's takings to its House: " + workshop->house))
+                {
+                    profit = excess;
+                    w.toHouse += excess;
+                    loopToday_.rents[workshop->house] += excess;
+                }
+            }
+            else if (const auto excess = cash(payer) - cap; held != state_.careers.positions.end() && !held->second.holder.empty() &&
+                                                            excess > 0 && shift(payer, held->second.holder, "", 0, excess, "profit"))
                 loopToday_.profit += (profit = excess);
             judgeWages(payer, owed, paid, profit);  // (Its wage step, from its days: doc 68, "Self-correcting rules".)
         }
@@ -1605,9 +1673,18 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
     {
         if (!w.craft)
         {
-            farmsShort(w.ware, std::min(StoreDrawMost, w.lack));
+            // The city's makers and the country workshops first (doc 72, Phase 5: the resale goods, `suppliers`), at the
+            // store room's price for it; the store room only what they lack.
+            int lack = std::min(StoreDrawMost, w.lack);
+            if (const int bought = buyFromCity(till, business, w.ware, lack, true); bought > 0)
+            {
+                done.push_back("bought " + w.ware + " to sell on");
+                if ((lack -= bought) < 1)
+                    continue;
+            }
+            farmsShort(w.ware, lack);
             // (Within what the Country can still supply of it today: a season's cap.)
-            const int n = std::min({StoreDrawMost, w.lack, countryLeft(w.ware)});
+            const int n = std::min({StoreDrawMost, lack, countryLeft(w.ware)});
             auto r = n > 0 ? drawFromStore(keeper, w.ware, n, "restocked from the store room") : EconomyResult{};
             // A till that can't pay for the whole draw takes what it can pay for (doc 72, after country3b: all or nothing,
             // the vintner's shelf of wine cost more than its till held, so it drew none again, sold none, and its
@@ -1624,8 +1701,8 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
                 done.push_back("restocked " + w.ware);
             // (What the supply couldn't send: the season's cap, or the farms' stock. A draw refused for the till's own
             // sake, its cash or its room, is the shop's lack, not the supply's.)
-            if (const int lack = std::min(StoreDrawMost, w.lack) - std::max(0, n); lack > 0 && shortageWatcher_)
-                shortageWatcher_({till, till, w.ware, "", lack});
+            if (const int cut = lack - std::max(0, n); cut > 0 && shortageWatcher_)
+                shortageWatcher_({till, till, w.ware, "", cut});
             continue;
         }
         // The farms' stores first (doc 71, 2.4): a good of a season group with `stores` that the farms of an area on make
@@ -1731,7 +1808,23 @@ std::vector<std::string> Society::citySellers(const std::string& buyerBusiness, 
     return out;
 }
 
-int Society::buyFromCity(const std::string& till, const items::Business* business, const std::string& item, int want)
+int Society::supplierPrice(const std::string& buyerBusiness, const std::string& sellerBusiness, const std::string& item,
+                           bool resale) const
+{
+    for (const auto& s : items::country().suppliers)
+        if (s.buyer == buyerBusiness && s.seller == sellerBusiness && s.price > 0 &&
+            (s.goods.empty() ? sells(s.seller, item) : std::find(s.goods.begin(), s.goods.end(), item) != s.goods.end()))
+            return s.price;
+    return resale ? std::clamp(authored_.economy.resaleMarkup, 1, 1000) : 100;
+}
+
+bool Society::luxury(const std::string& item)
+{
+    const auto& l = items::country().luxuries;
+    return !l.empty() && std::find(l.begin(), l.end(), items::baseOf(item)) != l.end();
+}
+
+int Society::buyFromCity(const std::string& till, const items::Business* business, const std::string& item, int want, bool resale)
 {
     if (want < 1 || !business || rule("suppliers") <= 0 || !account(till))
         return 0;
@@ -1739,8 +1832,15 @@ int Society::buyFromCity(const std::string& till, const items::Business* busines
     if (sellers.empty())
         return 0;
     // The sellers' tills holding the good (a post held, whether or not its keeper is at the counter this hour: the buyer
-    // fetches it), the one holding most first, then by till, so the order never follows the map's.
-    std::vector<std::pair<int, std::string>> held;
+    // fetches it), the one holding most first, then by till, so the order never follows the map's. (A country workshop is
+    // one of them, doc 72, Phase 5; a world without its building has no such till, and the store room supplies it all.)
+    struct Held
+    {
+        int n;
+        std::string seller;
+        int percent;
+    };
+    std::vector<Held> held;
     for (const auto& p : positions_)
     {
         if (p.role != "merchant")
@@ -1753,28 +1853,42 @@ int Society::buyFromCity(const std::string& till, const items::Business* busines
         const auto seller = "till:" + p.id;
         if (const auto* a = account(seller); a && seller != till)
             if (const int n = stock(*a, item); n > 0)
-                held.push_back({n, seller});
+                held.push_back({n, seller, supplierPrice(business->id, b->id, item, resale)});
     }
-    std::sort(held.begin(), held.end(), [](const auto& a, const auto& b) { return a.first != b.first ? a.first > b.first : a.second < b.second; });
+    std::sort(held.begin(), held.end(), [](const Held& a, const Held& b) { return a.n != b.n ? a.n > b.n : a.seller < b.seller; });
     int got = 0;
-    for (const auto& [unused, seller] : held)
+    for (const auto& [unused, seller, percent] : held)
     {
         // As many as the till can pay for, at the seller's price: the catalogue's, and a dearer season's difference after
-        // (a cheaper season's is not passed between shops).
+        // (a cheaper season's is not passed between shops); a good sold on at its percent of that (the store room's), in
+        // whole pennies for the lot, at least a penny a piece.
+        const auto costOf = [&](int q) {
+            const auto c = seasonalCost(item, q);
+            return percent == 100 ? c : std::max<std::int64_t>(q, std::int64_t(std::ceil(double(c) * percent / 100. - 1e-9)));
+        };
         int n = std::min({want - got, stock(*account(seller), item), 99});
-        n = int(std::min<std::int64_t>(n, cash(till) / std::max<std::int64_t>(1, seasonalCost(item, 1))));
-        while (n > 0 && cash(till) < seasonalCost(item, n))
+        n = int(std::min<std::int64_t>(n, cash(till) / std::max<std::int64_t>(1, costOf(1))));
+        while (n > 0 && cash(till) < costOf(n))
             --n;
         if (n < 1)
             break;
-        const auto base = catalogPrice(item) * n, cost = seasonalCost(item, n);
-        if (!sale(seller, till, item, n, catalogPrice(item), "from a city maker"))
+        const auto cost = costOf(n);
+        const auto unit = percent == 100 ? catalogPrice(item) : std::min(catalogPrice(item), std::max<std::int64_t>(1, cost / n));
+        const auto base = unit * n;
+        if (!sale(seller, till, item, n, unit, resale ? "from a maker, to sell on" : "from a city maker"))
             continue;
         if (cost > base)
-            shift(till, seller, "", 0, cost - base, "from a city maker: the season's price");
+            shift(till, seller, "", 0, cost - base,
+                  resale ? "from a maker, to sell on: the rest of its price" : "from a city maker: the season's price");
         drawnToday_[till] += cost;                  // (Its goods' cost, as a draw's: the till's float tomorrow.)
         loopToday_.cityTrade += cost;
         loopToday_.cityTradePieces += n;
+        if (resale)
+        {
+            loopToday_.cityResale += cost;
+            loopToday_.cityResalePieces += n;
+            loopToday_.cityResaleGoods[items::baseOf(item)] += n;
+        }
         if ((got += n) >= want)
             break;
     }
@@ -2073,12 +2187,28 @@ void Society::followStock(bool restDay)
             const double charged = use == StoreUse::Resell ? resale + .05 : use == StoreUse::Make ? making + .05 : 0.;
             const double low = std::min(1., std::max(1 - band, charged));
             const int have = stock(*onShelves, ware);
+            // A luxury (doc 72, Phase 5: cheese) climbs in its own band and steps, to meet its demand, and is left out of
+            // the city's price level (its climb would cheapen everything else).
+            const bool dear = luxury(ware);
+            const double by = dear ? rule("luxuryPriceStep") / 1000. : step;
             if (ranOut)
-                f += step;
+                f += by;
             else if (have > least && have > GlutDays * n * shelfFactor(ware))
-                f -= step;
+                f -= by;
             else
-                f = f > 1 ? std::max(1., f - step / 4) : std::min(1., f + step / 4);
+                f = f > 1 ? std::max(1., f - by / 4) : std::min(1., f + by / 4);
+            if (dear)
+            {
+                f = std::clamp(f, low, 1 + rule("luxuryPriceBand") / 100.);
+                auto& factors = state_.loop.prices[till];
+                if (std::abs(f - 1) < 1e-9)
+                    factors.erase(ware);
+                else
+                    factors[ware] = f;
+                if (factors.empty())
+                    state_.loop.prices.erase(till);
+                continue;
+            }
             moved.push_back({till, ware, f, low, 1 + band, weight});
         }
     }
