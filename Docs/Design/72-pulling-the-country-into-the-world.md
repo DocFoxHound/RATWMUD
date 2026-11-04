@@ -1671,3 +1671,63 @@ the user's lever. All of this waits for the buildings and a run.
 Next (the user's go-ahead first): merge with the map branch's buildings and cottages, then a 3-year run to see the
 workshops' tills, their Houses' share, the Country's summer, the candles, the cheese's price where it settles and who
 buys it, and the clay, flax, tallow and wool against their workshops' draws.
+
+### Phase 5's 3-year run (country5, 2026-11-04)
+
+Merged `r2-country-p5-map` and then `r2-country-p5` into `ridgemere2` (the one conflict, both branches' Progress entries
+here, kept both). `ctest` in `build-core` **79 of 79**; `RATW_SLOW=1 test_realm2` 30 of 30 (read only),
+`test_econ_report` and the Editor's typecheck pass; `test_map_editor`'s Greyfen count and the Editor's `content.test.mjs`
+(11 residents, not 10) fail as on `4511cfa` (not these branches'). Then the map's write: `python3 -m worldgen.realm2
+write --world dev` (DEV backed up first, `artifacts/backups/ratw_dev_20261104-010818.pgdump` and
+`upper_accord_dev_r77_20261104-010818.atlas.json`): **DEV revision 78**, every realm check passed; `world_build.py dev`:
+**build 61**, 1,199 cells; exported to `artifacts/economy/r2/export61` (the eight workshops and Larkfield's two cottages
+in it; `communities.json` the generator's, unchanged by the write); a scratch server loaded build 61 (559 residents) and
+was stopped. Then the user's go-ahead: on `export61`, `--simulate 6 26298 --farms 0 --deterministic --threads 4
+--economy-level full`, as country4. Report `artifacts/economy/r2/country5-report.md`, patch `country5.patch.json`, log
+`country5.out`. Year 3 a day unless said; country4's beside it.
+
+- **Money conserved** every day; **nobody hungry to speak of** (4 days of year 3 with anyone hungry, the hungriest 6
+  hours; country4 1 day, 2 hours; households short of a day's food money 0.16 a day, 0.04). Residents 559 to 754
+  (735), births 55, deaths 56; the unplaced 328 (347): the workshops' 18 posts all held (672 posts, 662 held; 654 and
+  644).
+- **The workshops: every one staffed, crafting and selling** (year 3 a day: takings, wages paid of owed, to its House):
+  the soapworks 186.6p, 86.0p of 86.0p (its keeper's wage drifted up), 26.7p; Larkfield's print house 76.1p, 39 of 39,
+  12.8p; Oakhaven's 57.6p, **34.7 of 36.0 (96.4%)**, 4.6p; Larkfield's looms 68.4p, 22 of 22, 8.7p; **Coldwater's looms
+  32.4p, 19.2 of 20.0 (95.8%)**, 0; the Fenshore kilns 20.6p, 14 of 14, 4.0p; Southmeadow's 15.7p, 13.9 of 14.0 (99.1%),
+  0; **Larkfield's smithy 17.9p, 4.8p of 7.0p (68%)**, 0: its iron bars 13.1p a day of its 17.9p, its wage drifted to
+  the floor and still short on 178 nights (the support 2.2p). **The resale path 186p a day** (24.5p in the smoke):
+  pamphlets 18.2, clay pots 18.1, scarves 4.6, nails 3.1, soap 1.8 a day.
+- **The Country pays its posts every day of all three years, but its margin is thin.** Its intake **937p** a day
+  against 824p (country4 1,087p: sales **346p** (545p), the estates' rents 227p (173p: the workshops' 57p to their
+  Houses), the land rents 363p (368p: the thin farms' 0)); its leanest season summer **893p** (1,018p), **+69p, 8.4%
+  over** (24%; the target 10%; the smoke's projection ~13%: the Houses' share came to 57p, not ~120p). Spring 921p,
+  autumn 924p, winter 1,009p. Its basket fell to 68-159p a day (187-335p), which is what keeps its purse: year 3's
+  first four weeks' mean 1,668p to its last's 1,749p, least 947p (day 776), but **its years' ends 2,024, 1,950, 1,783p**
+  (1,924, 1,840, 1,832p): falling.
+- **Every farm and works paid its crew in full but the vineyards**: **vineyard_1 92.3%, vineyard_2 80.4% of year 3**
+  (their takings 38.9p and 36.4p, 45.6p and 44.5p in country4: wine sold 22.3 a day, 28.0, 248p to 306p, likely the
+  households' luxury money out of the same purses); orchards 2, 4 and 5 99.3-99.6% (rent 0 and still a few nights
+  short), the quarry 99.8%.
+- **The treasury over its float every night of year 3** (least 2,976p; 4,477p) but 5 nights of year 2 under its cap
+  (country4 none); 1,432 to 6,025p, year 3 flat (5,961p to 5,937p, four-week means). The toll 1,702p a day (1,727p).
+  **The wage support 326p** (295p), year 3's first and last four weeks 277p to 320p (rising; the city's press 33p of it
+  at the run's end, the pamphlets' rival), the tills short 27.4 a day.
+- **Candles still short, a third as often**: 4,280 pieces refused in year 3 (12,340); the soapworks sells 53% of the
+  city's candles. **Its own tallow is short** (4,700 a season): the farms' tallow all drawn now (their stock 7,919 to 0
+  at the run's end), but **the butchers' tallow (their cuts' by-product, ~36 a day) piles in their tills, 39,300 at the
+  run's end** (39,900), because no `suppliers` line lets the soapworks (or the chandlery and the perfumer) buy it from
+  them.
+- **Wool no longer piling** (the farms' 9,326 to 0; the looms draw all 12 a day). **Clay piling harder** (3,468 to
+  9,041: the pits' +8.5 a day each against the kilns' ~25 pots a day), sand as before (2,150), the flax the linen looms
+  leave at the grain farms 3,069.
+- **Cheese, the luxury**: 15.4 pieces a day for 226p (24.8 and 246p in year 1), 12.4 households a day; its price
+  **about three times the season's** through year 3 (2.9 to 2.8 times, first and last months; the band's top four),
+  all the dairies made sold (14.7 a day), none held. **Who buys it: the middle class 11.5 a day (170p), the lower 3.8
+  (54p), the upper 0.1** (the Houses' wolves hold 49-55p a head, barely over their 40p keep); the provisioners and the
+  stalls 15.4 to sell on. Nobody hungry for it (food and needs first by rule; no household pays rent in the loop).
+
+**Verdict: stable, but not yet at Phase 5's mark.** Money, food, posts and the treasury hold for three years; the
+workshops run. Before Phase 6: the Country's summer margin (8.4%, under 10%) and its falling year-ends, the vineyards
+(80-92%), Larkfield's smithy (68%), the butchers' tallow for the soapworks (a `suppliers` line), the clay (the pits' extra
+back off), and the cheese going to the middle class rather than the rich (the keep a head, or the share, the user's
+call).
