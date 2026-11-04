@@ -391,7 +391,8 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
             {
                 const auto ownerSpec = *owner;
                 const auto cls = classOf(ownerSpec.id).empty() ? std::string("lower") : classOf(ownerSpec.id);
-                const auto home = community ? communityHome(*community, {}) : cityHome(cls, nearCity(*site), ownerSpec.id);
+                // (In its community, the keeper's house `for` the works where the map built one: Frosthollow's.)
+                const auto home = community ? communityHome(*community, site->steading) : cityHome(cls, nearCity(*site), ownerSpec.id);
                 if (!home.cell.empty())
                 {
                     place(ownerSpec, home, workSpot(0), farmLabel(f, 0), "civilian", people.farmStart, people.farmEnd, share, f.crew,
@@ -498,11 +499,20 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                 {
                     const bool keeper = rule.role == "merchant";
                     // (One who kept a shop of the town of the same name on the old map first: Larkfield General's
-                    // shopkeeper for Larkfield Stores.)
+                    // shopkeeper for Larkfield Stores; one of another community's name last, kept for theirs: staffed
+                    // first, Fenshore took Frosthollow Stores' shopkeeper, and Frosthollow then Larkfield's.)
                     const auto town = lowered(c->name);
+                    const auto namesake = [&](const ResidentSpec& r) {
+                        const auto l = lowered(r.workLabel);
+                        if (l.find(town) != std::string::npos)
+                            return 2;
+                        for (const auto& other : people.communities)
+                            if (other.id != c->id && l.find(lowered(other.name)) != std::string::npos)
+                                return 0;
+                        return 1;
+                    };
                     const auto score = [&](const ResidentSpec& r) {
-                        return std::make_tuple(wordsIn(r.workLabel, rule.words) > 0 ? 1 : 0,
-                                               lowered(r.workLabel).find(town) != std::string::npos ? 1 : 0, keeper ? r.age : 0);
+                        return std::make_tuple(wordsIn(r.workLabel, rule.words) > 0 ? 1 : 0, namesake(r), keeper ? r.age : 0);
                     };
                     const auto* who = choose(rule.trades, m.area + "|" + post + "|" + std::to_string(n), score,
                                              [](const ResidentSpec& r) { return r.age >= 18; });

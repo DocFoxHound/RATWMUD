@@ -237,8 +237,26 @@ void theData()
     // Every farm's labels: at most 40 characters, no business's word, no "dog".
     Fixture x;
     build(x);
+    // (The iron's and the lime's works, doc 72, Progress, "Iron and lime out of the Country", have no place in
+    // communities.json until the map's Frosthollow is written: no label, no post, their crews virtual. Their labels as
+    // they will be, of their `places` names.)
+    const std::set<std::string> awaitingTheMap{"mine_frost_iron", "charcoal_upper", "quarry_lime"};
+    for (const auto& id : awaitingTheMap)
+    {
+        const auto& f = farm(x.s, id);
+        const auto kind = people.kinds.find(f.def->kind);
+        const auto name = people.places.find(id);
+        expect(kind != people.kinds.end() && name != people.places.end(), id + ": its kind's labels and its place's name");
+        for (auto label : {kind->second.keeper, kind->second.hand})
+        {
+            label.replace(label.find("{place}"), 7, name->second);
+            expect(label.size() <= 40 && !items::businessFor(label) && label.find("dog") == std::string::npos,
+                   id + "'s label, at most 40 characters and no business's: " + label);
+        }
+        expect(!people.farm(id) && x.s.farmLabel(f, 0).empty(), id + ": no place yet (the map's), so no post");
+    }
     for (const auto& f : x.s.farms())
-        for (int post = 0; post < 3; ++post)
+        for (int post = 0; post < 3 && !awaitingTheMap.count(f.def->id); ++post)
         {
             const auto label = x.s.farmLabel(f, post);
             expect(!label.empty() && label.size() <= 40, f.def->id + "'s label: " + label);
@@ -322,6 +340,14 @@ void thePlacement()
     int keepers = 0, hands = 0, market = 0, family = 0;
     for (const auto& f : s.farms())
     {
+        if (!items::farmPeople().farm(f.def->id))
+        {
+            // (A works with no place in communities.json yet, the iron's and the lime's: nobody placed, its crew virtual,
+            // at work in full.)
+            expect(f.postKeepers == 0 && f.postHands == 0 && f.heads() == f.crewSize() && std::abs(f.working() - 1) < 1e-9,
+                   f.def->id + ": no place yet, its crew all virtual");
+            continue;
+        }
         expect(f.postKeepers == f.keepers && f.postHands == f.hands && f.heldKeepers == f.keepers && f.heldHands == f.hands,
                f.def->id + "'s posts all real and held: " + std::to_string(f.postKeepers) + "+" + std::to_string(f.postHands));
         expect(f.heads() == 0 && f.virtualWages() == 0 && std::abs(f.working() - 1) < 1e-9, f.def->id + ": no virtual post left");
@@ -495,7 +521,7 @@ void thePlacement()
                 expect(wages[holder] == (isKeeper ? f.keeper : f.hand), p.title + " paid " + std::to_string(wages[holder]));
             }
     for (const auto& f : s.farms())
-        expect(s.cash(f.crew) == 0, f.def->id + "'s crew holds nothing now (its people's)");
+        expect(s.cash(f.crew) == 0 || !people.farm(f.def->id), f.def->id + "'s crew holds nothing now (its people's; a works with no place yet keeps its virtual crew's purse)");
     // (A community's market is staffed with its first farm or works: Oakhaven's with the Oakhaven cut, doc 72.)
     for (const auto& c : people.communities)
         if (std::any_of(people.farms.begin(), people.farms.end(), [&](const auto& f) { return f.community == c.id; }))

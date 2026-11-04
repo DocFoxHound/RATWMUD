@@ -386,8 +386,8 @@ Food-adjacent and largest money first; each phase as doc 71 did it: **modelled p
 
 | Stays | Why |
 |---|---|
-| **Iron and metals** (271p) | The user's decision. Its sites are reserved; 4.7 says what pulling it needs. |
-| **Limestone and lime** (26p) | The lime quarry is past the 800-tile rule from the city and ~1,250 from Coldwater (4.4); it goes with Frosthollow. |
+| **Iron and metals** (271p) | The user's decision. Its sites are reserved; 4.7 says what pulling it needs. Since 2026-11-04 (Progress, "Iron and lime out of the Country") the iron is the works' (Frosthollow's mine and hearths, the city's ironworks and foundry); copper and tin stay the Country's. |
+| **Limestone and lime** (26p) | The lime quarry is past the 800-tile rule from the city and ~1,250 from Coldwater (4.4); it goes with Frosthollow. Since 2026-11-04 the lime quarry's, House Greatly's (Progress, "Iron and lime out of the Country"). |
 | **The ships' goods from beyond the realm** | Ships come from beyond the realm. The wharf itself is Grayrock's (doc 67 R28): its ~56 posts are paid from the Country's purse only until Phase 6 gives them to Grayrock's estate. |
 | **The city's exports** (the basket's maps, handbells, glass beads, charms, steel) | What the city sells beyond the realm. These makers have no buyer in the realm; the Country's basket is their market. |
 | **The Houses' estates** (until Phase 6) | The land the works stand on is the Houses'; the estates collect the works' rents and pay the Houses' people (the wharf's posts among them). Not a producer any more, a landlord. Split since Phase 6 (Progress, "Phase 6, the estates split"): each House its own purse, Grayrock's the Country's own (the wharf and the sea trade). |
@@ -2327,3 +2327,125 @@ works, interior and link in `communities.json` and the world as it was (no room 
   `test_realm2` with `RATW_SLOW=1`: 31 of 31.
 - **Previews**: `artifacts/realm2/frosthollow/` (the village, each works close up, the kiln, the valley from the quarry
   to the hearths; `before/` the crossroads and the valley as they were); `communities/frosthollow.png`.
+
+### Iron and lime out of the Country, the economy's side (2026-11-04, branch `r2-iron`)
+
+The user's go-ahead (2026-11-04): move iron and lime out of the Country, as 4.7 planned. Branch `r2-iron`, from
+`ridgemere2` (8a99e6f). **Nothing written to DEV, no NPC made, no map change** (Frosthollow's re-placing, its cottages and
+the works' sites in `communities.json` are the map's side); the treasury's levers (toll, support, float) untouched.
+Scripts in the session's scratchpad (`iron/`: `trades.py`, `seasons.py`, `compare.py`, `tills.py`).
+
+**What the Country sold** (country6b's year 3, a day, after the toll): iron bars 27.1 for 159.1p (the smithies 12.8, Larkfield's
+smithy 8.8, the cooperage 2.5, the cartwright 1.5, the tinker 1.1, the builders' works 0.3, the armoury 0.2), iron ore 1.0
+for 0.6p (the ironworks' and the foundry's, for the 0.4 bars a day they sold the estates' basket), limestone 20.4 for
+13.4p (the brickworks 8.5, the plasterworks 7.0, the mason 4.8, the glassworks 0.2), lime 1.3 for 1.7p (the paintworks;
+the mason, the brickworks and the plasterworks burn their own, ~19 a day): **174.8p**. Year 2 drew more (bars 32.6, 27.5,
+26.7, 28.7 by season; limestone 26.0, 21.3, 20.0, 23.7), year 1 more still (bars 42.9 in its spring). The woods' charcoal
+had ~1.6 a day spare (the Greenholt hearths' 10.6 grown, 9.1 sold): smelting ~28 bars wants ~28 sacks, so **the
+charcoal hearth is needed**.
+
+**The works** (`country_farms.json`, two new works areas after the stone's in the schedule's order; fixed wages 16p and
+10p, a float of two days' wages, the rest to the House's estate each night):
+
+| Works | Area, House | Crew | Yield (a day at each season's middle) | From the pool | Lives in |
+|---|---|---|---|---|---|
+| `mine_frost_iron`, the Frosthollow mine | `iron`, Timberland | 1 + 1 (26p) | iron ore 71.6, 59.8, 57.8, 62.2 | mines, stone and clay (the ore diggers first: "digs ore") | Frosthollow |
+| `charcoal_upper`, the Upper hearths by `timber_upper` | `iron`, Timberland | 1 + 2 (36p) | charcoal 35.8, 29.9, 28.9, 31.1 | the woods | Frosthollow |
+| `quarry_lime`, the lime quarry and its kiln | `lime`, Greatly | 0 + 1 (10p) | limestone 27.3, 22.3, 21.0, 24.9; lime 2.2, 1.5, 1.5, 1.4 | mines, stone and clay (the lime kilns' man first) | Frosthollow |
+
+Sized on country6b's **year 2** by season + 5% (two ore and a sack of charcoal a bar; the ore for the basket's bars
+with them): a first smoke at year 3's sizes left the first spring's smiths ~13 bars a day short and the mine's store drawn
+out. By country6b's year 3 draws they would pile ~7 ore, ~4 charcoal and ~3.5 limestone a day: the next 3-year run's
+patch trims them. **The crews are what sells**: the ore fetches ~0.70p a piece after the toll (~44p a day), so the mine
+pays a keeper and a hand and leaves ~12p (1 + 2 would leave nothing in summer); the charcoal ~2.8p (~88p a day), the
+hearths 1 + 2 and ~40-50p over; the limestone ~0.71p and the lime ~1.4p (~17p), one hand and ~6p over. **6 posts (2
+keepers, 4 hands, 72p a day)**: of the pool's 18 metal people 2 are placed (the mine's), the lime kilns' man the quarry's,
+3 of the woods' 21 the hearths'; the other 10 ore diggers, the 3 Frosthollow smelters and the 3 iron traders stay
+unplaced (the city's ironworks smelts, 4.7). Frosthollow's market (its store and alehouse, the map's `market` entries) is
+staffed as the other communities' are when its first works is, Frosthollow's own shop people first (the town name's
+score). **No NPC is made**: the pool has people of every trade wanted.
+
+**The homes, and build 61's export.** `farm_people.json` gains the kinds (`iron mine`: "mine captain at" and "digs ore at";
+`charcoal hearth`: "burns charcoal at" and "collier at"; `lime quarry`: "quarrymaster at" and "burns lime at") and
+`places` names ("the Frosthollow mine", "the Upper hearths", "the high lime quarry": each label at most 40 characters, no
+business's word). A works is staffed only when `communities.json` (the map's, written with Frosthollow) has its entry
+and its work cell exists; until then (build 61's export) **nobody is placed and its crew stays virtual**, at work in full,
+paid by its till (the code already tolerated it: `staffFarms` skips a farm with no place). The map side's
+`communities.json` must use the ids `frosthollow`, `mine_frost_iron`, `charcoal_upper` and `quarry_lime`; when it lands,
+`farm_people_tests`' counts (39 farms, 8 works) take the new three.
+
+**The chain.** The city's Timberland Ironworks (`rm_the_grayrock_ironworks`) and foundry draw the ore and the charcoal
+from the store room, as every works' goods go (the mine's till paid, the gate's toll and carriage as any draw); they
+smelt (`iron_bar`: 2 ore and a sack of charcoal, 1.55 crew-hours); the city's iron makers buy the bars from their tills
+first (`country.json` `suppliers`, 18 lines: the smithies, Larkfield's smithy, the cooperage, the cartwright, the tinker,
+the builders' works, the armoury, the saddlery and the fletcher, each from the ironworks and the foundry; till to till, no
+toll, no carriage). **The store room sends no wrought iron, ore, limestone or lime while the areas are on**: the bars are
+the iron area's good and no works holds any; off, the Country sends them all again. One code change (`Society::farmSells`):
+a farm of an area on sells a good another area names when its yields grow it, so the hearths' charcoal is sold beside the
+woods' (charcoal stays the fuel area's good; no farm grew another area's good before, so nothing else moves).
+**The ironworks' crews can smelt it**: 5 at the ironworks and 3 at the foundry bank ~96 crew-hours a day, ~43 for 28 bars
+(doc 71's 38 workers was the whole industry at the game's rates, mining and smelting in the realm); no recipe, crew or
+yield changed. **Copper and tin stay the Country's**: ~1.3p a day in year 3 (copper ore 0.3, tin ore 0.3, copper bars 0.1).
+
+**Tests.** `farms_behaviors` (2,084) `theIronAndLime`: the areas, their Houses and goods; the crews and floats; copper and
+tin no area's; every iron maker's bars from the ironworks and the foundry; on, founded; ore, wrought iron, limestone and
+lime the works' areas', charcoal the woods' with the hearths' stock in the store room beside the Greenholt's; the store
+room refuses wrought iron; the ironworks' ore and charcoal and the mason's limestone from the works, nothing to the
+Country; the ironworks smelts bars of the works' ore and charcoal; the smith's bars from the ironworks' till, none from
+the store room, no toll, its nails made; at 18:00 the mine, the hearths and the quarry pay their crews and send what is
+over to Timberland's and Greatly's estates, booked; off, the Country's again; conserved throughout. `farm_people_behaviors`
+(3,854): the new works' labels, and with no place yet nobody placed and their crews virtual. `ctest` in the worktree's
+`build-core` **79 of 79**; `test_econ_report`, `test_farms_summary`, `test_country_industry`, `test_item_catalog`,
+`test_city_capacity`, `test_world_store` pass.
+
+**The 60-day smoke** (build 61's export, `--simulate 6 1446 --farms 0 --farms-every 1 --deterministic --threads 4
+--economy-level full`; every area on by day 9; days 10-59 a day, the same build without the change beside it). Report
+`artifacts/economy/r2/iron-smoke-report.md`, patch `iron-smoke.patch.json` (a first spring's, not to be applied). The works
+on their virtual crews (no Frosthollow in build 61), so the money paths all ran:
+
+- **Money conserved** every day, nobody hungry (households short of a day's food money 0.8 a day, 0.8); every estate's
+  posts paid every night (0 short).
+- **The chain**: the mine grew 70.0 ore, sold 79.2 (the ironworks 44.9, the foundry 23.6 and the first spring's stock) for
+  55.6p, wages 26p, rent 29.6p; the hearths 35.0 grown, 33.2 sold for 93.2p, wages 36p, rent 57.1p; the ironworks smelted
+  and sold **27.5 bars a day** for 247.5p, the foundry 11.7 for 105.3p (39.2 in all; the Country sold 39.4 in the run
+  without), the smiths short 0.6 bars a day and the furnaces 1.9 ore (the first spring's draws over the mine's); the
+  ironworks' till takings 248p (28p), wages 50p of 50p (15p of 43p), **no wage support** (15.3p), profit 36p; the
+  foundry's 128p (68p), profit 21p (8p). The quarry 29.0 limestone and lime grown, 32.3 sold for 24.5p, rent 14.5p.
+- **The Country's own sales 38p a day** (337p): the wharf's grants from the Crown 419p (122p), the Crown's grants 466p
+  (185p) and its levy on Timberland 22p (0.7p); Timberland's rents 275p (200p), Greatly's 104p (86p); the estates'
+  buying (the basket, the tables, the patrons) 210p a day (412p): in a first spring the estates' spare paid for it.
+  The purses at the end: the wharf 26p (59p), Timberland 484p (293p), Greatly 80p (67p), Fell 37p (39p), the Crown 1,414p
+  (1,638p): 2,041p in all (2,096p).
+- **The treasury**: the toll 1,522p (1,571p: the bars no longer pass the gate, the ore and charcoal do), at the end 1,553p
+  (1,715p; least 1,009p, 1,276p); the wage support 118p (207p: what the treasury held over its cap, the ironworks no
+  longer wanting any), the support unpaid 288p (192p).
+
+**The books per estate, year 3** (country6b's, a day; after: its draws at the smoke's prices, ore 0.70p, charcoal 2.8p,
+limestone 0.71p, lime 1.38p after the toll):
+
+| Estate | In before | Over its posts before | What changes | In after | Over its posts after |
+|---|---|---|---|---|---|
+| House Grayrock (the wharf) | 197.9 | -278.1 | loses the bars 159.1, limestone 13.4, lime 1.7, ore 0.6 | 23.1 | **-452.9** |
+| House Timberland | 130.1 | +58.1 | the mine's rent +12.6 (55 ore 38.6p less 26p), the hearths' +41.5 (27.6 sacks 77.5p less 36p) | 184.2 | **+112.2** |
+| House Greatly | 48.8 | -77.2 | the lime quarry's rent +6.3 (16.3p less 10p) | 55.1 | **-70.9** |
+| House Fell | 25.2 | -30.8 | | 25.2 | -30.8 |
+| the Crown | 491.9 | +397.9 | | 491.9 | +397.9 |
+| all | 894.0 | **+70** | -174.8 + 60.4 | 779.6 | **-44.4** |
+
+**The Crown no longer covers the wharf.** The three short estates lack 554.6p a day against the Crown's 397.9p and
+Timberland's 112.2p over their posts (the levy pools them): **~45p a day short in year 3** (about 60p in spring, summer and
+autumn, about even in winter, by the Phase 6 books' seasons), against +70p before (the basket, the patrons and the tables
+it paid). The estates' purses (929-1,643p at country6b's and estates6's ends) would carry a few weeks; then the posts go
+short. Of the 174.8p the wharf lost, ~72p is the works' crews' wages, ~60p the estates' rents, ~80p the smelters' margin
+(the ironworks' and the foundry's wages, drifting up, and their keepers' profit), less the treasury's net: the toll ~25p
+a day lower (bars 27.6 at 9p no longer through the gate, the ore and charcoal through it), the wage support for the
+ironworks and the foundry (49p a day in country6b's year 3) no longer wanted. **The ways to close it (the user's call;
+none built):** (1) the Timberland Ironworks and the foundry Timberland's works, as the country workshops are (their wages
+at workshopWageMost, what is over their float to Timberland's estate): ~40-80p a day back to the estates; (2) the Crown's
+land rents up (landRentGrain, landRentDairy): ~45p; (3) fewer wharf posts (the ships no longer land the iron); (4) a
+treasury grant (the user's lever).
+
+**Open.** (1) The money above, before a 3-year run. (2) The map side's Frosthollow and the three works' entries in
+`communities.json` (the ids above; then a smoke with the crews placed). (3) A 3-year run (asked first) and its patch for
+the new yields (sized on year 2: they pile by year 3). (4) `econ_report` lists the bars as "goods of a farm area no farm
+grows": by design (the ironworks makes them; the draws it lacked are the smiths' bars short).

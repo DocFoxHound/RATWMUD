@@ -846,6 +846,9 @@ class Society
     int farmAreaOf(const std::string& item) const;
     // The pieces of a good the on farms hold, all together; their price for it a year (0: the season's, as the store room).
     int farmsHold(const std::string& item) const;
+    // Whether a farm sells a good of `area` from its store: a farm of that area, or of another area on whose yields grow it
+    // (doc 72, the iron: the Frosthollow hearth's charcoal, the iron area's, beside the woods' own).
+    bool farmSells(const FarmNow& farm, std::size_t area, const std::string& item) const;
     double farmPriceFactor(const std::string& item) const;
     // How far the Country's basket has moved to its re-weighted one (0 to 1): the share of the food areas' takings on.
     double countryBasketShift() const;
