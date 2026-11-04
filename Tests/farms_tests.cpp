@@ -1844,6 +1844,21 @@ void theWharf()
                "the cost less the toll shared between the farms and the Wharf");
         expect(s.farmsHold("butter") == 0 && s.conserved(), "the farms' all drawn; conserved");
     }
+    // An area's good before its farms are on (wharf7: apples, meat, firewood, fish... paid beyond while the areas came on
+    // one by one): landed as the Country did, the Wharf's purse keeping all of it, nothing sunk, the credit unmoved.
+    {
+        std::string early, drawer;
+        for (const char* g : {"fish", "salt", "flour", "timber", "firewood", "clay"})
+            if (drawer.empty())
+                if (const auto d = drawerOf(s, g); !d.empty())
+                    early = g, drawer = d;
+        expect(!drawer.empty() && s.farmAreaOf(early) < 0 && !s.wharfPaysBeyond(early), "a good of an area not on: " + early);
+        const auto w0 = s.cash(Society::WharfFund), sunk0 = s.state().sunk, credit0 = s.state().loop.wharf.credit, t0 = s.cash("treasury");
+        const auto e = s.drawFromStore(drawer, early, 2, "restocked from the store room");
+        expect(e.ok && s.cash(Society::WharfFund) - w0 == e.total - (s.cash("treasury") - t0) && s.state().sunk == sunk0 &&
+                   s.state().loop.wharf.credit == credit0 && s.conserved(),
+               "kept whole in the realm: " + e.message);
+    }
     // The world's switch (wharfOff) and the valve off refuse the import, as before the Wharf.
     {
         auto off = city([&](EconomySpec& e) {

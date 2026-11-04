@@ -97,21 +97,34 @@ void Society::wharfSink(std::int64_t coins, const std::string& why)
     record(why, WharfFund, "beyond", "", 0, coins);
 }
 
+bool Society::wharfPaysBeyond(const std::string& item) const
+{
+    if (farmAreaOf(item) >= 0)
+        return wharfImports(item);
+    return !areaOfGood_.count(items::baseOf(item));
+}
+
 void Society::bookWharfLanding(const std::string& item, int n, std::int64_t coins)
 {
     const auto base = items::baseOf(item);
     auto& today = loopToday_.wharfImported[base];
     today.pieces += n;
     today.pennies += coins;
-    if (!wharfValveOn() || coins <= 0 || !account(WharfFund))
-        return;                                     // (The valve off: the Wharf keeps it all, as the Country did.)
+    if (!wharfValveOn() || coins <= 0 || !account(WharfFund) || !wharfPaysBeyond(item))
+        return;                                     // (The valve off, or an area's good before its farms: kept, as the Country did.)
+    // The beyond's share, never past what the credit has room for (wharfCreditMost: the most the realm may have paid
+    // beyond and not had back), so the valve nets to about nothing over time; what is over is kept in the Wharf's purse
+    // (wharf7, doc 73: every landing paid beyond while the farms came on, the credit at its cap from day 5 and ~1,070p a
+    // day lost to the realm).
+    auto& credit = state_.loop.wharf.credit;
     const auto fee = coins * std::clamp(rule("wharfFee"), 0, 100) / 100;
-    const auto beyond = std::min(coins - fee, cash(WharfFund));
+    const auto room = std::max<std::int64_t>(0, rule("wharfCreditMost") - credit);
+    const auto beyond = std::min({coins - fee, cash(WharfFund), room});
     wharfSink(beyond, "paid beyond the realm: " + base);
     state_.loop.wharf.fee += fee;
     loopToday_.wharfFee += fee;
-    auto& credit = state_.loop.wharf.credit;
-    credit = std::min<std::int64_t>(rule("wharfCreditMost"), credit + beyond);   // (Over its cap: the realm overpaid.)
+    if (beyond > 0)
+        credit += beyond;
 }
 
 EconomyResult Society::orderFromWharf(const std::string& buyer, const std::string& item, int n, const std::string& why)

@@ -615,3 +615,29 @@ What it needs (not done here, for the user): a landing should sink only where th
 listed imports that are on (and perhaps the goods no area grows), with an area good not yet switched on landed as the
 Country did, its takings kept in the realm; or the sink bounded by what the beyond pays in (the credit, so the valve
 nets to about 0 a day), not left to run while the credit sits at its cap.
+
+### After wharf7: the valve bounded (branch `r2-wharf-b`, 2026-11-04)
+
+Both of wharf7's fixes, together (code first, data second; no treasury lever, no cheese):
+
+- **Only true imports are paid beyond the realm** (`Society::wharfPaysBeyond`): a good on the imports list (on) the
+  farms couldn't fill, or a good no area names (planks, linen...). An area's good whose farms aren't on yet (apples,
+  meat, firewood, fish, eggs... while the areas come on one by one) is landed as the Country did: its takings kept whole
+  in the Wharf's purse (Grayrock's), nothing sunk, the credit unmoved.
+- **The sink never runs past the credit's room**: a landing pays the beyond at most `wharfCreditMost - credit` (the
+  most the realm may have paid beyond and not had back), the rest kept in the Wharf's purse. Before, what went over the
+  cap was simply lost to the realm. `wharfCreditMost` is now **2,000p** (was 10,000p: ~4% of the realm's money at most
+  ahead of the beyond's pay-back, about a week of the export basket).
+- **Yields** (data, `tools/econ_report.py --apply` of producers7's patch, `--goods timber,flax,eggs,cider`): the two
+  logging camps' timber and the grain farms' flax half the way down to what sold (timber 19.9 to ~18.0 a day, flax 29.4
+  to ~28.0); the dairies' eggs (18/20/16/12 to 24/25/21.7/18.5) and the orchards' cider (about +70%) the whole way up,
+  both supply-bound every season.
+- Tests: `wharf_tests` `theWharfLands` (3p of room left: 3p paid beyond, the rest kept), `farms_tests` `theWharf` (a
+  good of an area not on: kept whole), `game_tests`' `/store` draw (iron bars, the iron area's, its works off in that
+  world: the Wharf keeps all of it). ctest 79 of 79; the Editor's lib tests 68 of 68.
+
+**The 60-day smoke** (build 63's export, wharf7's flags: `--farms 0`, an area every 28 days; `wharf7b-smoke.out`, not
+committed): money conserved every day; the realm's money 51,194p to 59,355p (the steps on days 28 and 56 are the farms
+switching on, as producers7's); the beyond paid in 10,120p and was paid 10,155p over the 60 days (~170p a day each way,
+the credit 4-83p); the estates' posts paid every night (824p of 824p); nobody hungry (1 hour at most); the treasury's
+least 1,209p; wage support ~248p a day; the days 1.3-2.0 s of wall time (wharf7: 40-50 s by day 40).

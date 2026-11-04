@@ -213,7 +213,7 @@ inline constexpr RuleInfo Rules[] = {
     {"wharfImportScale", 0, 1000, 100},  // Percent on the imports' `most` a day (0: no imports of the lists' goods),
     {"wharfTakeScale", 0, 1000, 100},    // and on the takes' (0: no takes).
     {"wharfExportMost", 0, 100000, 300}, // Pennies a day the beyond pays in at most (takes, the export basket, carriage, fee).
-    {"wharfCreditMost", 0, 1000000, 10000},   // The most trade credit held (what the realm has paid beyond and not had back).
+    {"wharfCreditMost", 0, 1000000, 2000},    // The most trade credit held (what the realm has paid beyond and not had back).
     {"wharfInjectADay", 0, 1000, 0},     // The standing levers: pennies a day added to the credit at 18:00 (money in, as
     {"wharfTakeADay", 0, 1000, 0},       // goods bought), and taken from it (money out, as the beyond buys less).
     {"wharfActionMost", 0, 1000000, 2000},    // The most one DM action (wharf.credit) moves the credit (0: refused).

@@ -701,6 +701,17 @@ void theWharfLands()
     expect(s.conserved() && s.moneySupply() == money - (due - fee), "conserved: the money's fall is what left the realm");
     expect(s.loopToday().wharfImported.at("iron_bar").pieces == 5 && s.loopToday().wharfImported.at("iron_bar").pennies == due,
            "booked as landed");
+    // Never past the credit's room (wharfCreditMost, 2,000 in the data file): the realm pays the beyond no more than it
+    // may have paid and not had back; the rest kept in the Wharf's purse.
+    expect(s.rule("wharfCreditMost") == 2000, "the credit's cap, 2,000p");
+    expect(s.moveWharfCredit(2000 - s.state().loop.wharf.credit - 3, "test", "near its cap").ok, "the credit 3p under its cap");
+    expect(s.shift("treasury", s.tillOf("smith"), "", 0, 200, "test purse"), "the smith's till topped up");
+    const auto nearSunk = s.state().sunk, nearWharf = s.cash(Society::WharfFund), nearTreasury = s.cash("treasury");
+    const auto near = s.drawFromStore("smith", "iron_bar", 5, "drawn for its crafts");
+    const auto nearDue = near.total - (s.cash("treasury") - nearTreasury);
+    expect(near.ok && s.state().sunk - nearSunk == 3 && s.state().loop.wharf.credit == 2000 &&
+               s.cash(Society::WharfFund) - nearWharf == nearDue - 3 && s.conserved(),
+           "3p paid beyond, the rest kept: " + std::to_string(s.state().sunk - nearSunk) + ": " + near.message);
     // The valve off: the Wharf keeps it all, as the Country did.
     auto off = city([](AuthoredRoster& r) { r.economy.rules["wharfValve"] = 0; });
     const auto offWharf = off.cash(Society::WharfFund), offSunk = off.state().sunk, offTreasury = off.cash("treasury");

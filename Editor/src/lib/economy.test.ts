@@ -58,7 +58,7 @@ const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {alm
         wageDrift: 1, wageDriftDays: 28, wageDriftSpare: 50, wageDriftMost: 12, wageDriftHandMost: 12, wageDriftFloor: 7, treasuryDrift: 1,
         treasuryTarget: 5500, treasuryBand: 15, treasuryDays: 182, treasuryJudgeDays: 28, tollStep: 5, tollDriftMost: 5, almsDriftMost: 2,
         wharfValve: 1, wharfFee: 10, wharfKeepDays: 28, wharfKeepLeast: 20, wharfImportScale: 100, wharfTakeScale: 100, wharfExportMost: 300,
-        wharfCreditMost: 10000, wharfInjectADay: 0, wharfTakeADay: 0, wharfActionMost: 2000},
+        wharfCreditMost: 2000, wharfInjectADay: 0, wharfTakeADay: 0, wharfActionMost: 2000},
     serviceList: [trim]};
 
 test('a rule is the world\'s own or city_loop.json\'s, and a change is sent only when it changes something', () => {

@@ -1778,10 +1778,11 @@ void theStoreRoomConsole()
         const auto cash = g.world().society().cash(till);
         g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann iron_bar 2"}}));
         reply = ada.last("devResult");
-        // (The cost to the Wharf, less the gate toll (30%), the treasury's: doc 68; the Wharf keeps a tenth of it, the rest
-        // paid beyond the realm: doc 73.)
+        // (The cost to the Wharf, less the gate toll (30%), the treasury's: doc 68; iron bars are the iron area's, its
+        // works not on in this world, so the Wharf keeps the whole of it as the Country did, nothing paid beyond the realm:
+        // doc 73, after wharf7.)
         const auto drawnCost = 2 * Society::catalogPrice("iron_bar");
-        expect(reply && reply->boolean("ok") && g.world().society().cash(Society::WharfFund) == (drawnCost - drawnCost * 30 / 100) / 10 &&
+        expect(reply && reply->boolean("ok") && g.world().society().cash(Society::WharfFund) == drawnCost - drawnCost * 30 / 100 &&
                    g.world().society().cash(till) == cash - 2 * Society::catalogPrice("iron_bar"),
                "/store brann iron_bar 2 draws them: " + (reply ? reply->string("text") : ""));
         g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann flour 1"}}));
