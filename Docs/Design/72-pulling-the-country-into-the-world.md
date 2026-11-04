@@ -2210,3 +2210,45 @@ were half what the books expect; a 3-year run (asked first) would show the Crown
 **Open.** (1) A 3-year run with the rule on beside country6b, to see the Crown's margin over its grants (the books: ~12p a
 day). (2) If thin: a levy on the other estates' spare, or the Crown's land rents up (`landRentGrain`, `landRentDairy`).
 (3) Iron, the lime quarry and Frosthollow stay the Country's (the wharf's purse) until the user says.
+
+### estates6's 3-year run, the estates split (2026-11-04)
+
+`ridgemere2` at `b9e2ee2` (`r2-estates` merged), country6b's run with the rule `estates` on (build 61's export,
+`--simulate 6 26298 --farms 0 --deterministic --threads 4 --economy-level full`, `build-core`). Report
+`artifacts/economy/r2/estates6-report.md`, patch `estates6.patch.json`, log `estates6.out`. Nothing written to DEV or PROD;
+the treasury's levers untouched. Year 3 a day unless said; country6b's beside it.
+
+- **Money conserved** every day; the same money at the end (63,695p). Residents 559 to 771, births 55, deaths 56, the
+  unplaced 311, 679 of 689 posts held: as country6b. **Hunger as small**: 6 days of year 3 with anyone hungry (5), the
+  hungriest 6 hours (7); households short of a day's food money 0.28 a day (0.38).
+- **The estates' posts not paid every night: 55 nights short.** Days 3-56 (the first spring before the farms' land rents
+  come in full) Timberland, Greatly and Fell were paid about half (36 of 72p, 64 of 126p, 28 of 56p) and the Crown short
+  9 of those nights; the Country's posts 666-737p of 824p (country6b: every night paid). In year 3 two nights short (days
+  1085 and 1093: the wharf 418 of 476p, Greatly 104 of 118p, Fell 49 of 56p). **Why**: the Crown grants only what it holds
+  over its posts at 18:00, and its income is the farms' land rents, which come in after the grants (`payFarms` after
+  `settleEstates`), so it grants out of yesterday's rents; in the first spring those were ~100-200p a day against ~230p
+  lacking. Meanwhile **the wharf held ~880-950p** (its keep: two nights of its 476p and 58% of the reserve) and spent its
+  spare on the basket (the Country's buying 3,300p a day on day 3 against country6b's 3,006p): an estate with spare never
+  helps a sister estate, only the Crown grants. The one purse covered those weeks from the sea trade's first sales.
+- **The Crown's grants** (a day; years 1, 2, 3): the wharf 98, 265, **281p**; Greatly 78, 73, **79p**; Fell 29, 30, **31p**;
+  Timberland 26, 0, **0.2p**; in all 231, 368, **391p** (the books: ~386p). Its rents 499, 522, **499p**; its posts 94p;
+  it bought 171, 60, **14p**. **Its margin ~-1p a day in year 3**: its purse at the years' ends **1,144, 945, 514p** (least
+  471p in year 3), so its float would last about another year at this rate.
+- **The estates** (year 3): the wharf rents 22p and the Country's sales 172p (176p), grants 281p, its purse 23p at the end
+  (least 0); Timberland 124p in, 72p of posts, bought 52p, 304p at the end; Greatly 47p in, 79p granted, 57p; Fell 25p in,
+  31p granted, 31p. **All the estates together at the years' ends 1,653, 1,348, 929p** (the one purse 2,039, 1,702,
+  1,643p): falling ~420p in year 3 against ~60p. The basket 25p a day (48p), the patrons' work 32p (15p: each unit paid by
+  the estate with most to spare, Timberland's and the Crown's), the Houses' tables 8.4p (7.1p).
+- **The treasury over its 200p float every night** (least 1,818p in year 3, 854p in all; 1,637p and 617p), four-week means
+  4,092p to 4,398p (4,197p to 4,766p), 4,611p at the end (4,855p). **The wage support 322p** (318p), year 3's first and
+  last four weeks 352p and 352p (334p to 349p). The toll 1,667p (1,664p). The smithies', butchers' and foundry's tills a
+  little shorter over the run (their support 22,890p, 21,849p, 13,381p; 20,826p, 18,402p, 11,183p).
+- **The crews** as country6b: wages 4,832p of 4,849p a day (4,811p of 4,830p); the farms 1,479p of 1,481p (the same),
+  orchards 2, 4, 5 97.2-98.1%; the workshops 100% but Larkfield's smithy 99.8% (99.8%), **Oakhaven's press 91.4%** (94.3%),
+  Southmeadow's pottery 88.9% (86.8%), Larkfield's press 100% (99.5%).
+
+**Verdict: not stable.** Money, food, the crews and the treasury behave as country6b's, but the estates' posts went short
+55 nights (53 in the first spring, 2 in year 3), the Crown's purse falls ~430p a year at year 3's grants, and the estates
+together hold ~700p less at the end than the one purse. Next (the user's call): the grants after the land rents (or the
+Crown granting from its float, not tonight's spare alone), and a levy on a sister estate's spare over its keep (the wharf's
+first-spring ~900p, Timberland's ~300p) before any estate buys; then a 3-year run again.
