@@ -47,7 +47,7 @@
     "clay pit": {"trades": ["mines, stone and clay"], "words": ["digs clay"], "keeper": "pit master at {place}", "hand": "digs clay at {place}"},
     "iron mine": {"trades": ["mines, stone and clay"], "words": ["digs ore"], "keeper": "mine captain at {place}", "hand": "digs ore at {place}"},
     "charcoal hearth": {"trades": ["woods"], "words": ["cuts wood", "logging"], "keeper": "burns charcoal at {place}", "hand": "collier at {place}"},
-    "lime quarry": {"trades": ["mines, stone and clay"], "words": ["lime kilns", "cutting stone"], "keeper": "quarrymaster at {place}", "hand": "burns lime at {place}"}
+    "lime quarry": {"trades": ["mines, stone and clay"], "words": ["lime kilns"], "keeper": "quarrymaster at {place}", "hand": "burns lime at {place}"}
   },
   "market": {
     "shopkeeper": {"label": "shopkeeper at {name}", "role": "merchant", "words": ["shopkeeper", "provisioner"], "trades": ["the towns' trades and shops", "service and labour", "keeps the house"]},
