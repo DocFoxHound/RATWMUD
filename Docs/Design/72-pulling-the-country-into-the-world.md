@@ -1422,3 +1422,58 @@ the Country's posts paid every night (24,720p), its purse 1,431 to 1,889p (least
 Next: a 3-year run (the user's go-ahead first) to see Phase 4 through the seasons: the Country's summer against the
 projection, the quarry's summer on the mason's cut stone, the weaver's linen (its crew), the dairies' cheese stores, the
 fuel's piling, and the smithies, the general stores and the support.
+
+### Phase 4's 3-year run (country4, 2026-11-03)
+
+Merged `r2-country-p4` into `ridgemere2` first (reviewed for the suppliers' fall-back, double buys, money and goods, and
+the rent: the new `suppliers` lines go through the same `buyFromCity` as the casks, the most-holding seller first, what
+the city lacks from the store room, each piece bought once, till to till at the catalogue's price; every buyer and
+seller is a business in the catalogue, and no good is bought back by its own seller; the dairies' own milk is counted
+grown and used and made into whole pieces only while the store has room, what it can't take not milked, no money; a
+farm's own `landRent` rule is only a name, read before its area's, the rent still from what is over its wages and float;
+nothing found). `ctest` in `build-core` 78 of 78; `test_econ_report`, `test_farms_summary`, `test_country_industry`,
+`test_item_catalog`, `test_city_capacity`, `test_world_store`, `test_studio` pass, the Editor's typecheck and
+`economy.test.ts` pass; `test_ridgemere2`'s R35 (the food trades staffed 130% of their keeper-days) and
+`test_map_editor`'s Greyfen count fail at `bac0d87` too (not this branch's). Then the user's go-ahead: on
+`artifacts/economy/r2/export60`, `--simulate 6 26298 --farms 0 --deterministic --threads 4 --economy-level full`, as
+country3c. Report `artifacts/economy/r2/country4-report.md`, patch `country4.patch.json`, log `country4.out`. Year 3 a
+day unless said; country3c's beside it.
+
+- **Money conserved** every day; **nobody hungry** (the hungriest 2 hours, year 3; country3c 3 and 0; residents 559 to
+  735, births 54, deaths 55).
+- **The Country pays its posts every day of all three years.** Its intake **1,086p** a day against 824p (country3c
+  1,099p: sales 545p (611p), the works' rents 173p (172p), the land rents 368p (317p: the dairies' 46p each, 29p)); its
+  leanest season summer, **1,018p** (1,030p), **+194p, 24% over** (the smoke's projection 1,028p); spring 1,106p,
+  autumn 1,035p, winter 1,190p. Its purse **up**: years' ends 1,924, 1,840, 1,832p, least 923p (day 959), year 3's
+  first four weeks' mean 1,688p to its last's 1,800p (1,637p to 1,771p). Its basket 248p a day (263p).
+- **Every farm and works paid its crew in full every day, but orchard_5 99.5% of year 3** (two nights). **The quarry
+  100% of all three years** (country3c 93.7% of year 3): the mason's stone 27.2 a day (22.2), **summer 23.1** (18.8),
+  its takings 36.0p against its 26p; stone supply-bound in spring and summer now.
+- **Phase 4: 147p a day till to till** (19p, the casks): linen 52p (the tailor 22p, the apothecary 20p, the papermill
+  7p, the scriptorium 3p), hoops 26p (the carpenters' and the cartwright's), planks 25p, paper 9p, cord 14p, leather
+  3p, ink 1p. The Country's sales of them 120p to 36p a day: linen 49p to 17p (the weaver 10.3 pieces a day, the store
+  room still 5.1), cord 23p to 16p (the chandlery 14 of 39), hoops, planks, paper, leather and ink all but gone; its
+  wool scarves, iron bars and soap up 20p (the households' money that was the makers').
+- **The city's makers** (a day, short of their wages): the weaver **0** (its keeper's profit 9.6p, 11.6p; its wages
+  drifted 34p to 28p), the chandlery 0 (but its candles sold 126 to 119 a day: its crew's hours on cord), the sawmill
+  **0** (1.1p; profit 11.5p), the papermill **3.0p** (8.5p), the tannery 3.1p (2.8p), the cooperage 4.8p (5.0p), the
+  smithies 16.1p (15.9p), the scriptorium 7.2p (5.0p: its paper and ink now bought by the printing house and the
+  cartographer from the papermill first), the ironworks 25.3p (24.5p), the charcoal burner 11.3p (11.2p), the
+  shipwright 8.9p (10.5p). **The wage support 295p a day** (281p), first and last four weeks 254p to 247p (flat); the
+  tills short 26.6 a day (25.5).
+- **The toll**: 1,727p a day in year 3 (1,710p): what moved till to till lost its toll (~20p), the goods the households
+  bought instead paid more. **The treasury over its float every night** (least 1,352p, day 0; year 3 least 4,477p),
+  1,370 to 6,040p, year 3 flat (5,952p to 5,950p, four-week means).
+- **No good newly short** but candles (all shops: 28,800 draws refused to 37,700, the chandlery's cord) and the
+  dairies' resellers out of cheese and butter on most days; **the linen neckerchiefs no longer short** (11,800).
+- **Fuel and stone piling slower**: at the run's end charcoal 1,454 (2,418), timber 3,513 (7,142), firewood 12,129
+  (16,105), peat 2,356 (3,456), oak bark 1,372 (2,484), stone 439 (1,895); **clay 3,468 and sand 2,138 pile harder**
+  (1,350, 674: the cut stone's larger share of the baskets came partly out of the bricks'), salt 5,476 (4,636).
+- **The dairies**: butter **13.9** and cheese **14.9** a day made (2.2, 0.6), all sold, **none held at the end** (the
+  stores of 120 and 20 never full); milk 87.4 used, 0.4 spoiled. Still supply-bound in every season (the resellers'
+  draws refused about as often: an hourly retry each). Their takings 194p each (182p), their rent 46p (29p), still the
+  richest farms (92p left a day); the sheep runs' takings 87p to 78p, the boats and salt 4.8-6.0p left (the least).
+
+**Verdict: stable enough for Phase 5**, with the summer margin (24%) the smoke projected and the quarry paid. To watch
+in Phase 5: the clay and sand piling (the pits' yields down, the patch), the candles (the chandlery's crew: cord to the
+others or a hand more), the scriptorium, the thinnest boats, orchards and salt (4.8-6.0p a day over their wages and rent).
