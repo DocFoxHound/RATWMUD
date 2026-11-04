@@ -618,3 +618,133 @@ DEV not written, no simulation run.** The yields are sized from the people4 run 
   the pooled farms, the meal that spoiled, the damping and `--goods`.
 
 Next: Phase 1's 30-day smoke folds into Phase 2's first 3-year run (section 5), the user's go-ahead first.
+
+### Phase 0's rest and Phase 2, the fuel: the works, the estates' rent, peat; and Phase 1's tuning (2026-11-03, branch `r2-country-p2`)
+
+Branch `r2-country-p2`, from `ridgemere2` (98ecd01). The user's decisions (2026-11-03): each works pays its own crew at
+the farms' fixed wages (16p a keeper, 10p a hand) and sends what is over to the noble House whose land it is on; at first
+one purse, the Country's (`outside:country`), named "the Houses' estates and the sea trade" in the reports, every rent
+booked by House; **House Timberland holds the woods**; **peat yes**, as a second fuel in place of part of the firewood,
+"so long as we find a good way to integrate it". **DEV was not written** (no map change: the works' sites are build 60's);
+**no NPC was made**; one 30-day smoke run (below).
+
+**Works as areas (Phase 0).** A `country_farms.json` area with `works: true` holds works, not food farms
+(`Core/RatwFarms.cpp`, `RatwItems`): the same settings (yield, crew and wage scales, per area and per works), the same
+till, virtual crew, founding (float two days of wages, the crew's purse, a week's opening stock) and switch (the schedule's
+`order`, now ending in `fuel`, or the area's own switch), the same store draws (its goods leave `country_off` and the
+Country sends them again when it is off). What nothing assumed about food: the Country's `table` (a works has none), the
+season groups (the woods' goods are in none: the season's price factor 1, no cap), the stew, and spoiling (none of these
+goods `keeps`: a works' store fills to the till's 10,000 cap, then "spoils" as store-full). Two differences:
+
+- **The estates' rent** (`Society::payRents`, after the farms' wages at 18:00): what a works' till holds over its float is
+  shifted to the Country's purse, "an estate's rent: House Timberland", and counted by works and by House
+  (`LoopDay::Farm::rent`, `LoopDay::rents`). A works short of its wages pays none (the treasury's wage support as for a
+  farm). A works buys **no basket** (`farmsBuy` skips it), and the works' areas are left out of the Country's basket's
+  shift (`countryBasketShift`: their goods were never in its basket, and the rent keeps its purse).
+- **The House**: an area's `house` (the fuel's: Timberland), a works' own `house` over it.
+
+**The Country's lines.** Its wage rules are named (`country.json` `wages.rules[].name`: "the sea trade", "the Houses'
+people", "the Houses' heads"; the treasury's two too), and the economy line carries the Country by its parts:
+`country_rents` and `country_rents_by_house`, `country_sales` (its own goods' store draws after the toll: the sea trade
+and what it still sends), `country_posts_owed`/`_paid`, and `country_posts_by_rule` with `country_posts_held`. Each farm
+and area gains `rent`; the full level's `farm` table a `rent` column, its meta each farm's `house` and the `works_areas`.
+`tools/econ_report.py` reports the Country's section ("In: its goods to the shops ..., the estates' rents ... (House
+Timberland ...). Out: its posts ... by rule ...; its basket"), marks the works' area in the farms' table with a rent
+column, and lists the works by name with their House. Atlas's and the DM's Economy panel (`FarmsPanel`, "The Country's
+farms and works") lists the fuel area beside the farms, with its works, its House and the rent, editable as the farms'
+(`studio.py` `farms_view` gives `works` and `house`). **Not done:** the posts counted by House (they are counted by rule).
+
+**The fuel's works (4.3 as re-sited).** `country_farms.json`'s area `fuel` ("the woods and peat"; goods timber, firewood,
+oak bark, resin, charcoal, peat), its five works on House Timberland's land, 5 keepers and 10 hands, 180p a day:
+
+| Works | Kind | Crew, lives in | Yields (Spring / Summer / Autumn / Winter middles, a day) |
+|---|---|---|---|
+| `logging_rainwood` (the Rainwood cut) | logging camp | 1 + 2, Ridgemere | timber 27.1 / 23.3 / 24.0 / 30.3; firewood 54.4 / 62.8 / 56.1 / 90.0; oak bark 6.0 / 5.3 / 5.3 / 6.2; resin 0.4 / 0.25 / 0.25 / 0.4 |
+| `logging_oakhaven` (the Oakhaven cut) | logging camp | 1 + 3, Oakhaven | timber, firewood and bark as the Rainwood camp's |
+| `coppice_rainwood` (the Rainwood coppice) | coppice | 1 + 2, Ridgemere | firewood 92.4 / 106.8 / 95.3 / 153.0 |
+| `coppice_greenholt` (the Greenholt hearths) | coppice and charcoal hearth | 1 + 2, Larkfield | firewood 70.7 / 81.7 / 72.9 / 117.0; charcoal 10.1 / 8.6 / 9.0 / 11.6 |
+| `peat_fens` (the Fenshore peat cutting) | peat cutting | 1 + 1, Fenshore | peat 79.6 / 113.2 / 80.1 / 252.0 |
+
+- **Sized** on country1 (years 2-3, `artifacts/economy/r2/country1.full.jsonl.gz`): the Country's firewood to the shops
+  386 / 390 / 392 / 589 a day (season means), of which the households bought 201 / 200 / 201 / 400; timber 52 / 44 / 46 /
+  58, bark 11, charcoal 10, resin 0.2. **Peat is the households' half of their fuel**: the need is "any firewood or peat"
+  (`crafts.json`), and a household takes, each day, one of the goods its shops hold, by a fixed lot (`householdsShop`):
+  half and half when both are held, the other when one is out. So peat is sized on half the households' fuel and
+  firewood on the rest (the bakeries', smokehouses', brickworks' and the other makers' firewood is firewood). Each +5%,
+  and the middles solved so that each season's **blended** mean meets its demand (the yields blend between season
+  middles, while winter's doubled need is a step): played day by day through country1's two years, twice, from a
+  founding on spring's first day, the stock **never runs short** (its least 2,519 firewood and 1,154 peat, the winter
+  peak covered by what the late-autumn blend lays by). With no slack it would run short in a late autumn: the 5% is the
+  margin. The firewood split: the Rainwood coppice 34%, the Greenholt 26%, each logging camp 20%; the camps' timber and
+  bark half each; the resin the Rainwood's (conifers), the charcoal the Greenholt's (hardwood).
+- **Peat in the shops**: the general store and the provisioner supply peat (`crafts.json` `supplies`), so it is drawn
+  from the peat cutting with the fuel area on, and from the Country (as firewood is) with it off. Nothing else changed:
+  the households' choice already took either. (`Tests/fixtures/business_labels.json`: the Sump general store's resale
+  list with peat.)
+- **Their people** (`Core/RatwFarmPeople.cpp`, `farm_people.json`'s kinds `logging camp`, `coppice`, `coppice and
+  charcoal hearth`, `peat cutting`): the farms' rule, the woods' old trade first (the peat's: those who keep the house),
+  then the fallback. A works has no farmhouse: its keeper is chosen of those **with no family among the unplaced first**
+  (4.8, question 12) and comes alone, living with the hands: in the works' community, or for the Rainwood's two in the
+  city with a household of their class (judged near from the city's farms' work rooms, the works' own cell being the
+  realm's region). Their posts are **out of doors**: `communities.json`'s works give each built works its id
+  (`works`) and its `workplace`, the six tiles of open ground (not solid, not a way) nearest its centre in its centre's
+  cell, at least 3 apart (`realm2_places.work_spots`, which writes them; checked against build 60's tiles); a post in
+  that cell is the works' only by its labels ("fells timber at the Oakhaven cut", "logger at ...", "woodward of the
+  Rainwood coppice", "cuts wood at ...", "burns charcoal at the Greenholt hearths", "cuts peat at the Fenshore cutting",
+  "peat cutter at ..."; none a business's word, at most 40 characters). **Oakhaven's market is staffed with its works**
+  (a community's market with its first farm or works). The pool had enough of every trade: **no NPC was made**.
+
+**Phase 1's tuning** (`artifacts/economy/r2/country1-report.md`, `country1.patch.json`):
+
+- The patch applied **half way** (`econ_report.py --apply --damping 0.5`, 103 yields) to every good but milk.
+- **Milk** half way back up from Phase 1's cut: each dairy's four values the mean of now and before Phase 1 (the three
+  dairies ~107-123 a day, from 103-117; before Phase 1 112-129).
+- **Flax: short and piling were two times, not two places.** The grain farms' flax ran out in **year 1's first ~250
+  days** (the opening week's stock; the paintworks drew ~10 a day while the Country's basket still bought much paint and
+  linseed oil) and **piled from then on** (400 to 820; sold 6.2 / 4.5 / 5.4 / 7.9 a day in years 2-3 against 7.7 / 6.2 /
+  7.3 / 9.2 grown). The patch took the run whole, so year 1's draws short held the yield up. Now each farm's flax is
+  **years 2-3's sales + 5%**: 3.54 / 2.57 / 3.08 / 4.51 before the grain area's 92% (the stock already there carries
+  the first weeks).
+- **The vineyards (84-97% of their wages paid, the treasury's support the rest): the cause is the wine's sales path.**
+  Four of the city's five wine sellers (the press and three breweries) press their own wine from grapes (16 grapes and a
+  barrel for 8 bottles); only the vintner sells the vineyards' casks on, about 5 bottles a day of the ~23 the
+  households drink. So a vineyard's takings are its grapes, all sold (~17.5 a day at ~1.5p to its till), and ~2.5
+  bottles (6.3p): **~42p a day against a 1 + 3 crew's 46p**, its wine piling (764 to 1,577 in a year; more grown than the
+  vintner draws). Raising yields sells nothing more. **Fixed: each vineyard's crew 1 + 2** (36p: a vine hand fewer; its
+  cellar hand stays), its float 72p, its crew's purse 178p (`communities.json`: Southmeadow's and Saltwell's hands 8 and
+  5), and its wine half way to the patch's (sold, not piled). The other way, for the user: wine a season group with
+  `stores`, and the press and breweries `supplies` it, so they sell on the vineyards' casks before pressing their own
+  (as the preserver sells the drying houses' stores, doc 71, 2.4); it takes margin from the breweries and grape sales
+  from the vineyards, and wants a long run to judge.
+
+**Tests.** `farms_behaviors` (1,384 checks): seven areas (the fuel's works last in the order), 31 farms with 76 hands;
+new `theWorks` (the area's data; founded; firewood and peat drawn from the works, nothing to the Country; at 18:00
+the crews paid and the rest, over the float, to Timberland's estate, booked by House and in the journal; conserved; no
+basket; a works short of its wages pays no rent and has the support; off, the Country's peat and firewood again) and
+`firewoodOrPeat` (the households burn peat when no firewood is to be had, firewood when no peat, both when the store
+holds both). `farm_people_behaviors` (2,719 checks): 36 places (5 works, no farmhouse, out of doors, six spots), 36
+keepers and 86 hands placed, the six markets' 19 posts (Oakhaven's two); new `theWorksCrews` (every works' crew placed;
+the woods' 13 posts with all 9 of the woods' trade; the peat's of those who keep the house; each post at its works'
+cell, paid by its till; the crews in their community or the city; no family with a keeper; the oldest logger, with a
+spouse in the pool, a hand and not a keeper, the spouse left unplaced). `ctest` in `build-core`: **78 of 78**.
+`test_econ_report` (5: new the works and the Country), `test_realm2` (new `test_doc_72s_works_ids`; the realm's sites
+with `RATW_SLOW=1`; the whole realm's needs DEV's read access, not run here), `test_item_catalog`, `test_farms_summary`,
+`test_country_industry`, `test_world_store`, `test_studio` pass; the Editor's typecheck and `economy.test.ts` pass.
+(`test_map_editor`'s Greyfen export counts 11 residents against 10: not this branch's.)
+
+**The 30-day smoke** (`world_check` on build 60's export, `--farms 0 --farms-every 1`: every area on a day apart, the
+fuel's works from day 6; `--deterministic --threads 4 --economy-level full`; report and patch in
+`artifacts/economy/r2/country2-smoke-report.md` and `country2-smoke.patch.json`): money conserved every day; nobody
+hungry; all 122 posts of the farms, works and markets held (36 keepers, the works' 15), no virtual crew left. **The works
+paid every wage** (4,320p of 4,320p over their 24 days) and sent **~184p a day of rent** to Timberland's estate (each
+27-46p a day; 147p a day over the run). **The fuel never ran short**: no draw of firewood, peat, timber, bark or charcoal
+refused; the households bought 111.5 firewood and 112.3 peat a day; the works' firewood and peat stores grew in early
+spring (the blend from winter's middle: 327 firewood grown a day to 275 sold, 134 peat to 110), as sized. Only resin
+fell short of the general store's new shelves (412 draws refused over the run, at 0.4 a day; the patch asks 1.0 in
+spring). **The Country** took 1,448p a day for its goods and paid all its 100 posts every night (824p: the sea trade
+432p, 54 posts; the Houses' people 336p, 42; the Houses' heads 56p, 4), its purse 583 to 666p (least 163p), its basket
+726p a day; the treasury 1,407 to 4,499p (least at night 1,379p). The vineyards still took ~31p a day in these first
+weeks (their casks not yet drawn: the vintner's shelf held its founding stock), 87% of their wages paid.
+
+Next: the 3-year full run of Phases 1 and 2 together (section 5's gates; its report's patch for the yields), the user's
+go-ahead first.

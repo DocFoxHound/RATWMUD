@@ -151,6 +151,7 @@ struct Market
 };
 struct WageRule
 {
+    std::string name;                               // For the reports ("the sea trade", the Country's posts by rule).
     std::string payer;
     std::string wage;                               // Which of the world's wages it pays ("keeper"...); "" for its payer's.
     std::vector<std::string> words;
@@ -296,6 +297,7 @@ const Country& country();
 struct FarmDef
 {
     std::string id, kind, area;
+    std::string house;                              // The noble House whose land it is on ("": its area's), for its rent.
     int keepers = 1, hands = 0;                     // Its crew (virtual posts: nobody holds them yet).
     int keeper = -1, hand = -1;                     // Its wages a day (-1: its area's, then the defaults').
     std::int64_t reserve = 0, purse = 0;            // Its till's float and its crew's settled purse, made when it is founded.
@@ -313,6 +315,11 @@ struct FarmArea
     int keeper = -1, hand = -1;                     // Its farms' wages (-1: the defaults').
     int priceFactor = 0;                            // The farms' price a year, percent of the catalogue's; 0: the season's.
     double takings = 0;                             // The design's takings a day (the year's mean): the Country's basket's blend.
+    // A works' area (Docs/Design/72-pulling-the-country-into-the-world.md, Phase 0: the woods, the peat, later the
+    // quarries), not a food farm's: its works pay their crews and send what is over their floats to the House whose
+    // land they are on each night (the estates' rent), and buy no basket; `house` its works' House ("" none: a farm's).
+    bool works = false;
+    std::string house;
     std::vector<FarmDef> farms;
 };
 struct Farms
@@ -342,6 +349,9 @@ struct FarmPlace
     std::string farm, kind, steading, community;    // community: a community's id, or "ridgemere" (the city's farms).
     std::vector<PlaceRoom> workplaces;              // The first is its main work; the second (a mill, a dairy) its `second`.
     PlaceRoom home;                                 // The farmhouse (the keeper's family's).
+    // A works of doc 72 (communities.json `works`): no farmhouse (its keeper lives with its hands, in its community or
+    // the city), and its workplace out of doors, the cell its centre is in (a post there is the works' by its label).
+    bool works = false;
 };
 struct MarketPlace
 {

@@ -1566,6 +1566,8 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
             paid = pay(lots[i].first->till, takings[i], why);
     else
         paid = pay(country, cost - toll, why);
+    if (paid && area < 0)
+        loopToday_.countrySales += cost - toll;     // (The Country's own goods: the sea trade's, doc 72's report.)
     if (!paid || !pay("treasury", toll, "gate toll: " + why) || !pay(carter, carriage, "carriage in"))
         return {false, "The store room could not be paid.", unit, cost};   // (Not reached: every check was made above.)
     // The goods: made in the till from the Country's store room, or moved from the farms' stores (in lots of 99, as the

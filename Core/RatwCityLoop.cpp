@@ -121,11 +121,12 @@ Society::Pay Society::payOf(const Position& p) const
             ++shops, shop = &q;
     if (shops == 1)
         return {"hand", "till:" + shop->id, driftedWage("till:" + shop->id, e.wageHand, true)};
-    for (const auto& rule : items::country().wages)
-        for (const auto& word : rule.words)
+    const auto& rules = items::country().wages;
+    for (std::size_t r = 0; r < rules.size(); ++r)
+        for (const auto& word : rules[r].words)
             if (title.find(word) != std::string::npos)
-                return rule.payer == "treasury" ? Pay{"public", "treasury", wageOf(rule.wage, e.wagePublic)}
-                                                : Pay{"country", marketFund(rule.payer), wageOf(rule.wage, e.wageCountry)};
+                return rules[r].payer == "treasury" ? Pay{"public", "treasury", wageOf(rules[r].wage, e.wagePublic), int(r)}
+                                                    : Pay{"country", marketFund(rules[r].payer), wageOf(rules[r].wage, e.wageCountry), int(r)};
     return {};
 }
 
@@ -1157,6 +1158,7 @@ void Society::payWages()
     {
         const std::string* holder;
         int wage;
+        int rule;                                   // (Its country.json wage rule, for the Country's report: doc 72.)
     };
     std::map<std::string, std::vector<Due>> byPayer;
     for (const auto& p : positions_)
@@ -1168,7 +1170,7 @@ void Society::payWages()
         const auto pay = payOf(p);
         if (pay.kind.empty() || pay.kind == "farm" || pay.wage <= 0 || !account(pay.payer))
             continue;                               // (A farm's posts: its till pays them with its crew's, payFarms.)
-        byPayer[pay.payer].push_back({&held->second.holder, pay.wage});
+        byPayer[pay.payer].push_back({&held->second.holder, pay.wage, pay.rule});
     }
     const auto floorOf = [&](const std::string& payer) -> std::int64_t {
         if (payer == "treasury")
@@ -1190,8 +1192,23 @@ void Society::payWages()
         {
             // Short of the whole, each post the same share of its wage.
             const std::int64_t coins = can >= owed ? d.wage : std::int64_t(d.wage) * can / owed;
-            if (coins > 0 && shift(payer, *d.holder, "", 0, coins, "wages"))
+            const bool done = coins > 0 && shift(payer, *d.holder, "", 0, coins, "wages");
+            if (done)
                 paid += coins;
+            // The Country's posts by rule (doc 72, Phase 0: its report's lines).
+            if (payer == CountryFund)
+            {
+                const auto& rules = items::country().wages;
+                const auto name = d.rule >= 0 && std::size_t(d.rule) < rules.size() ? rules[std::size_t(d.rule)].name : std::string("other");
+                ++loopToday_.countryPostsHeld[name];
+                if (done)
+                    loopToday_.countryPostsByRule[name] += coins;
+            }
+        }
+        if (payer == CountryFund)
+        {
+            loopToday_.countryPostsOwed += owed;
+            loopToday_.countryPostsPaid += paid;
         }
         loopToday_.wagesOwed += owed;
         loopToday_.wagesPaid += paid;

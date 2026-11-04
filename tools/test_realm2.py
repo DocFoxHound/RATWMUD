@@ -165,7 +165,7 @@ class Places(unittest.TestCase):
 
     def test_every_farm_of_doc_71_has_a_site_and_a_steading(self):
         cf = json.loads((Path(__file__).resolve().parent.parent / 'Data/Economy/country_farms.json').read_text())
-        farms = [f['id'] for a in cf['areas'] for f in a['farms']]
+        farms = [f['id'] for a in cf['areas'] if not a.get('works') for f in a['farms']]
         self.assertEqual(sorted(farms), sorted(P.FARMS))
         sites = {s[0] for s in R.SITES}
         self.assertTrue(set(P.FARMS.values()) <= sites)
@@ -181,11 +181,33 @@ class Places(unittest.TestCase):
         cf = json.loads((Path(__file__).resolve().parent.parent / 'Data/Economy/country_farms.json').read_text())
         hands = {}
         for a in cf['areas']:
+            if a.get('works'):
+                continue                            # (Doc 72's works: their crews, in test_doc_72s_works_ids.)
             for f in a['farms']:
                 com = P.STEADINGS[P.FARMS[f['id']]][3]
                 hands[com] = hands.get(com, 0) + f['crew']['hands']
-        self.assertEqual(hands, {'coldwater': 21, 'larkfield': 11, 'southmeadow': 9, 'fenshore': 8, 'saltwell': 6,
+        # (Doc 72, Phase 2: a vineyard's crew 1 + 2, one vine hand fewer at Southmeadow and Saltwell.)
+        self.assertEqual(hands, {'coldwater': 21, 'larkfield': 11, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 5,
                                  'ridgemere': 23})
+
+    def test_doc_72s_works_ids(self):
+        # Each built works of country_farms.json's works areas is one of the map's works sites, and the contract gives it
+        # its works id and work spots out of doors (doc 72, Phase 2).
+        root = Path(__file__).resolve().parent.parent
+        cf = json.loads((root / 'Data/Economy/country_farms.json').read_text())
+        built = {f['id'] for a in cf['areas'] if a.get('works') for f in a['farms']}
+        self.assertEqual(built, set(P.WORKS_IDS.values()))
+        self.assertTrue(set(P.WORKS_IDS) <= set(P.WORKS))
+        contract = json.loads((root / 'Data/Economy/communities.json').read_text())
+        for w in contract['works']:
+            if w['site'] in P.WORKS_IDS:
+                self.assertEqual(w['works'], P.WORKS_IDS[w['site']])
+                self.assertEqual(len(w['workplace']['work']), P.WORK_SPOTS, w['site'])
+                self.assertEqual(w['workplace']['area'], R.cell_id(w['centre']['x'] // R.CELL, w['centre']['y'] // R.CELL))
+            else:
+                self.assertIsNone(w.get('works'))
+        cells = [w['workplace']['area'] for w in contract['works'] if w.get('workplace')]
+        self.assertEqual(len(cells), len(set(cells)), 'one works to a cell (a post there is that works\'s)')
 
     def test_the_interiors(self):
         rng = random.Random(5)

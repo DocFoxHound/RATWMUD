@@ -203,10 +203,15 @@ export function serviceText(c: RuleControls, s: ServiceListed): string {
 export interface FarmDefault {
     id: string; kind: string; region: string; keepers: number; hands: number; keeper: number | null; hand: number | null;
     reserve: number; purse: number; basketADay: number; yield: Record<string, number[]>;
+    /** A works' House (doc 72), whose estate its rent goes to; '' or absent for a food farm. */
+    house?: string;
 }
+/** An area of farms, or (doc 72) of works: `works` pay their crews and send what is over their floats to their `house`
+ *  (its estate) each night instead of buying a basket. */
 export interface FarmAreaDefault {
     id: string; name: string; goods: string[]; on: boolean | null; yieldScale: number; crewScale: number;
     keeper: number | null; hand: number | null; price: string; priceFactor: number | null; revenueADay: number[]; farms: FarmDefault[];
+    works?: boolean; house?: string;
 }
 /** What a world may change of an area, of a farm, and of the whole (absent: country_farms.json's). */
 export interface FarmAreaOwn { on?: boolean; yieldScale?: number; crewScale?: number; keeper?: number; hand?: number; priceFactor?: number }

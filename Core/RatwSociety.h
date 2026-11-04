@@ -695,6 +695,7 @@ class Society
     {
         std::string kind, payer;
         int wage = 0;
+        int rule = -1;                              // The country.json wage rule that pays it (-1: none of them).
     };
     Pay payOf(const Position& post) const;
     // The households that buy together (doc 68, 3): by home, joined by kin (a child under 16, a spouse), by a key each.
@@ -776,6 +777,14 @@ class Society
         std::map<std::string, double> grown, eaten;   // The fractions of a piece carried to tomorrow (not saved).
         double hunger = 0;                          // Its crew's nourishment owed (a day's at most; not saved).
         double takingsCarry = 0;                    // The fraction of a penny its store draws owe it, or it them (not saved).
+        // A works (doc 72, Phase 0: its area's `works`): the House whose land it is on, which its rent goes to each night
+        // (what its till holds over its float after the wages: the estates' rent, into the Country's purse, "the Houses'
+        // estates and the sea trade", booked by House); "" for a food farm, which spends what is over on its basket.
+        std::string house;
+        bool rents() const { return !house.empty(); }
+        // Its work out of doors (a works, doc 72: its centre's cell, which it may share with others' posts): a post there
+        // is its own only by its labels.
+        bool outdoors = false;
         // Its real posts (doc 71, Phase C): the positions at its workplaces (its keeper's by its label), and how many of
         // them are held now by the living (countFarmPosts, each day and as people come). Each real post replaces one
         // virtual post; a real post standing empty is a hand short, and the farm yields in proportion.
@@ -896,6 +905,7 @@ class Society
             std::int64_t takings = 0, wagesOwed = 0, wagesPaid = 0, support = 0, basket = 0, basketCarriage = 0;
             std::int64_t crewSpent = 0;
             std::int64_t peoplePaid = 0;            // Of wagesPaid, what its real posts' holders were paid (doc 71, Phase C).
+            std::int64_t rent = 0;                  // A works' rent tonight, to its House's estate (doc 72, Phase 0).
             int crewFood = 0, crewNeeds = 0, crewComforts = 0, crewServices = 0, crewShort = 0, tableShort = 0;
             double crewHungry = 0;
             // By good (world_check's full recording, doc 69, 10): the same pieces, and the table's short of it.
@@ -916,6 +926,13 @@ class Society
         std::int64_t treasuryLow = -1, treasuryNight = -1;
         std::int64_t supportWanted = 0, supportUnpaidSwitch = 0, supportUnpaidOrdinary = 0, minted = 0;
         std::map<std::string, std::int64_t> supportByTrade;   // The wage support paid tonight by trade (a farm's: "farm").
+        // The Country's day by its parts (doc 72, Phase 0: "the Houses' estates and the sea trade", one purse): the works'
+        // rents by House; its sales to the shops' store draws, its takings after the toll (the sea trade and the goods it
+        // still sends); its posts' wages owed and paid tonight, all and by country.json wage rule (its name).
+        std::map<std::string, std::int64_t> rents;
+        std::int64_t countrySales = 0, countryPostsOwed = 0, countryPostsPaid = 0;
+        std::map<std::string, std::int64_t> countryPostsByRule;
+        std::map<std::string, int> countryPostsHeld;           // The posts held tonight, by the same rule.
     };
     const LoopDay& loopToday() const { return loopToday_; }
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a
@@ -1141,6 +1158,7 @@ class Society
     void staffFarms(const CareerWorld& world, std::vector<CareerNote>& notes);
     void tendFarms(std::int64_t day);
     void payFarms();
+    void payRents();                                // (A works' rent to its House's estate, after its wages: doc 72.)
     void farmsBuy(int hourOfDay);
     bool farmSwitchTill(const std::string& till) const;
     std::int64_t basketBuys(const std::string& fund, const std::vector<std::pair<const std::string*, double>>& basket, double budget,

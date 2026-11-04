@@ -152,12 +152,15 @@ void readFarms(Catalog& c, const json::Value& file)
         for (const auto& v : a.array("revenueADay"))
             takings += std::max(0., v.asNumber(0)) / 4;
         area.takings = takings;
+        area.works = a.boolean("works", false);
+        area.house = a.string("house");
         for (const auto& x : a.array("farms"))
         {
             FarmDef farm;
             farm.id = x.string("id");
             farm.kind = x.string("kind");
             farm.area = area.id;
+            farm.house = x.string("house");
             if (!id(farm.id) || !farmIds.insert(farm.id).second)
                 continue;
             farm.keepers = std::clamp(int(x.object("crew").number("keepers", 1)), 0, 100);
@@ -224,6 +227,22 @@ void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& ru
         farm.home = room(f.object("home"), "beds");
         if (!farm.farm.empty() && !farm.workplaces.empty() && !farm.home.area.empty() && !farm.community.empty())
             p.farms.push_back(std::move(farm));
+    }
+    // Doc 72's works: those built (`works`, its id in country_farms.json), each its work spots out of doors.
+    for (const auto& w : places.array("works"))
+    {
+        FarmPlace works;
+        works.farm = w.string("works");
+        works.kind = w.string("kind");
+        works.steading = w.string("name", works.farm);
+        works.community = w.string("community");
+        works.works = true;
+        if (const auto& at = w["workplace"]; at.isObject())
+            if (auto r = room(at, "work"); !r.area.empty() && !r.spots.empty())
+                works.workplaces.push_back(std::move(r));
+        if (!works.farm.empty() && !works.workplaces.empty() && !works.community.empty() &&
+            std::none_of(p.farms.begin(), p.farms.end(), [&](const FarmPlace& f) { return f.farm == works.farm; }))
+            p.farms.push_back(std::move(works));
     }
     for (const auto& x : places.array("communities"))
     {
@@ -523,6 +542,7 @@ Catalog build()
         {
             WageRule rule;
             rule.payer = r.string("payer");
+            rule.name = r.string("name", rule.payer);
             rule.wage = r.string("wage");
             for (const auto& w : r.array("words"))
                 if (!w.asString({}).empty())

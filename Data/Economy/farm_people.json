@@ -1,7 +1,7 @@
 {
   "format": "ratw-farm-people",
   "version": 1,
-  "about": "How the game places the Country's farms' people and the communities' markets (Docs/Design/71-the-country-s-industries.md, Phase C; the user, 2026-11-03), with Data/Economy/communities.json (the places). When a farm's area is switched on, each of its posts is filled from the unplaced NPCs (doc 66, 2) by old trade, deterministically: its keeper the oldest suitable adult of its trades with family among the unplaced where there is one (the family: spouse, children and parents, up to the farmhouse's beds, living at the farmhouse; one of working age and of the farm's trades works as one of its hands), then its hands (16 to retirement; the farm's own trades first, the fallback trades for what they can't fill), housed in the farm's community (at most `householdMost` a home) or, for a farm near the city, as doc 68's arrivals are. A community's market is staffed when its first farm is: its keepers of the towns' trades and shops, its hands of service and labour. No NPC is made. Each label must hold no business word (communities.json `workLabels`) but a market keeper's, and be at most 40 characters: `{place}` is the steading's name less its `suffixes` (or the farm's own in `places`: Alderbank holds \"bank\", the moneychanger's word), `{name}` the business's.",
+  "about": "How the game places the Country's farms' people and the communities' markets (Docs/Design/71-the-country-s-industries.md, Phase C; the user, 2026-11-03), with Data/Economy/communities.json (the places). When a farm's area is switched on, each of its posts is filled from the unplaced NPCs (doc 66, 2) by old trade, deterministically: its keeper the oldest suitable adult of its trades with family among the unplaced where there is one (the family: spouse, children and parents, up to the farmhouse's beds, living at the farmhouse; one of working age and of the farm's trades works as one of its hands), then its hands (16 to retirement; the farm's own trades first, the fallback trades for what they can't fill), housed in the farm's community (at most `householdMost` a home) or, for a farm near the city, as doc 68's arrivals are. A community's market is staffed when its first farm is: its keepers of the towns' trades and shops, its hands of service and labour. No NPC is made. Each label must hold no business word (communities.json `workLabels`) but a market keeper's, and be at most 40 characters: `{place}` is the steading's name less its `suffixes` (or the farm's own in `places`: Alderbank holds \"bank\", the moneychanger's word), `{name}` the business's. Doc 72's works (communities.json `works` with a `works` id: the woods' and the peat's) are placed the same way, with no farmhouse: their keepers, of those with no family among the unplaced first, come alone and live with the hands (in the works' community, or in the city as arrivals do), and their posts are out of doors at the works.",
   "trades": [
     {"id": "fields and mills", "words": ["works the fields", "farms the", "water mill"]},
     {"id": "orchards and vines", "words": ["orchard", "picks apples", "tends the vines", "fell wine"]},
@@ -20,7 +20,7 @@
   ],
   "fallback": ["keeps the house", "service and labour"],
   "hours": {"farm": [6, 17], "market": [7, 19]},
-  "places": {"beekeeper_2": "the Alder Garth"},
+  "places": {"beekeeper_2": "the Alder Garth", "coppice_greenholt": "the Greenholt hearths", "peat_fens": "the Fenshore cutting"},
   "suffixes": [" Dairy Farm", " Bee Garth", " Farm", " Orchard", " Vineyard", " Piggery", " Warren", " Fold", " Marsh", " Landing", " Workings", " Salterns"],
   "kinds": {
     "grain farm": {"trades": ["fields and mills"], "words": ["works the fields", "farms the"], "keeper": "farms {place}", "hand": "farmhand at {place}",
@@ -38,7 +38,11 @@
     "lake and river boat": {"trades": ["fishing and the marsh"], "words": ["fishes the lake", "fishes the waters off glasswater"], "keeper": "skipper at {place}", "hand": "boatman at {place}"},
     "sea fishing boat": {"trades": ["fishing and the marsh"], "words": ["fishes the waters"], "keeper": "skipper at {place}", "hand": "deckhand at {place}"},
     "beekeeper": {"trades": ["bees"], "words": ["keeps bees"], "keeper": "keeps bees at {place}", "hand": "hive hand at {place}"},
-    "salt works": {"trades": ["fishing and the marsh"], "words": ["cuts reeds", "traps eels", "fishes"], "keeper": "works the salt at {place}", "hand": "salt raker at {place}"}
+    "salt works": {"trades": ["fishing and the marsh"], "words": ["cuts reeds", "traps eels", "fishes"], "keeper": "works the salt at {place}", "hand": "salt raker at {place}"},
+    "logging camp": {"trades": ["woods"], "words": ["logging", "cuts wood"], "keeper": "fells timber at {place}", "hand": "logger at {place}"},
+    "coppice": {"trades": ["woods"], "words": ["cuts wood", "logging"], "keeper": "woodward of {place}", "hand": "cuts wood at {place}"},
+    "coppice and charcoal hearth": {"trades": ["woods"], "words": ["cuts wood", "logging"], "keeper": "burns charcoal at {place}", "hand": "cuts wood at {place}"},
+    "peat cutting": {"trades": ["keeps the house"], "words": ["keeps the house"], "keeper": "cuts peat at {place}", "hand": "peat cutter at {place}"}
   },
   "market": {
     "shopkeeper": {"label": "shopkeeper at {name}", "role": "merchant", "words": ["shopkeeper", "provisioner"], "trades": ["the towns' trades and shops", "service and labour", "keeps the house"]},

@@ -2,7 +2,9 @@
 // time from its first day, so many days apart, in its order), the farms' wages, and each food area's switch, yields' and
 // hands' percents, wages and price a year, with its farms' own (their crews, wages, floats, crews' purses and yields as
 // the game runs them, and, from the world's last save, their tills, stores and crews' purses). Each the world's own or
-// Data/Economy/country_farms.json's. On Atlas's Economy page and the DM's Economy tab alike.
+// Data/Economy/country_farms.json's. On Atlas's Economy page and the DM's Economy tab alike. The works of doc 72 (the
+// woods', the peat's) are areas too, beside the farms, edited the same way: they pay their crews and their rent to their
+// House's estate.
 import {useEffect, useState} from 'react';
 import {areaOnFrom, areaSwitch, farmChange, farmNow, farmSchedule, scheduleText, wholeOf, yieldText, type FarmAreaDefault,
     type FarmControls, type FarmsBody} from '../lib/economy';
@@ -65,13 +67,15 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
     };
 
     return <section className="economy-switches farms-panel">
-        <h3>The Country's food farms</h3>
+        <h3>The Country's farms and works</h3>
         <p className="hint">Modelled farms with virtual crews (no NPC is placed yet: doc 71). An area switched on takes its goods
             from the Country: the shops draw them from its farms' stores (the toll and carriage as before), as much as the stores
             hold, and the Country no longer sends them. Its farms are founded the first time it goes on (their floats and their
             crews' purses made, as the world's founding money was). Each day a farm grows its yields by season, the Country's own
             people eat at its table and what is past keeping spoils; at 18:00 it pays its crew, who shop in the city as a
-            household; what it holds over its float and its wages it spends on the city's goods, as the Country does. Empty:
+            household; what it holds over its float and its wages it spends on the city's goods, as the Country does. A works
+            (doc 72: the woods, the peat) is the same but for that: what it holds over its float after the wages is its rent,
+            sent each night to the House whose land it is on (the Country's purse, booked by House). Empty:
             country_farms.json's (shown faintly).</p>
         {!data.farmsSupported && <p className="publish-error">{data.farmsProblem}</p>}
         <p><b>{scheduleText(data)}</b></p>
@@ -94,7 +98,8 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
             const own = data.farms?.areas?.[a.id];
             return <details key={a.id} className={own ? 'changed' : ''}>
                 <summary><b>{a.name}</b> · {sw === 'schedule' ? (from === null ? 'off (no schedule)' : `on from day ${from}`) : sw}
-                    {' '}· {a.farms.length} farm{a.farms.length === 1 ? '' : 's'}</summary>
+                    {' '}· {a.farms.length} {a.works ? 'works' : `farm${a.farms.length === 1 ? '' : 's'}`}
+                    {a.works && a.house ? ` · rent to House ${a.house}` : ''}</summary>
                 <p className="hint">Its goods: {a.goods.join(', ')}. Design takings {a.revenueADay.map(v => Math.round(v)).join(' / ')}p a day
                     (Spring / Summer / Autumn / Winter).</p>
                 <label className="economy-markup">Switch <select value={sw} disabled={off} aria-label={`${a.name}: switch`}
@@ -115,12 +120,12 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
                     {field(`areas.${a.id}.priceFactor`, 5, `${a.name}: price a year`, () => commit('areas', a.id, 'priceFactor', 10, 1000), String(a.priceFactor ?? 100))}
                     <small>% of the catalogue's, all year (its store)</small></label>}
                 <div className="dm-table-wrap"><table className="dm-table farms-table">
-                    <thead><tr><th>Farm</th><th>Crew, wages</th><th>Yields %</th><th>Hands %</th><th>Keeper p</th><th>Hand p</th>
+                    <thead><tr><th>{a.works ? 'Works' : 'Farm'}</th><th>Crew, wages</th><th>Yields %</th><th>Hands %</th><th>Keeper p</th><th>Hand p</th>
                         <th>Float, purse</th><th>Yields a day (Sp/Su/Au/Wi)</th><th>Saved</th></tr></thead>
                     <tbody>{a.farms.map(x => {
                         const now = farmNow(data, a, x), mine = data.farms?.farms?.[x.id], s = saved?.farms?.[x.id];
                         return <tr key={x.id} className={mine ? 'changed' : ''}>
-                            <td title={x.region}><b>{x.id}</b><br /><small className="hint">{x.kind}</small></td>
+                            <td title={x.region}><b>{x.id}</b><br /><small className="hint">{x.kind}{x.house ? `, House ${x.house}'s land` : ''}</small></td>
                             <td>{now.keepers} + {now.hands}, {now.wages}p a day</td>
                             <td>{field(`farms.${x.id}.yieldScale`, 4, `${x.id}: yields`, () => commit('farms', x.id, 'yieldScale', 0, 1000), '100')}</td>
                             <td>{field(`farms.${x.id}.crewScale`, 4, `${x.id}: hands`, () => commit('farms', x.id, 'crewScale', 0, 1000), '100')}</td>

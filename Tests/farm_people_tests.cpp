@@ -6,7 +6,10 @@
 // doc 68's arrivals are; each community's market from the towns' trades and shops. Each real post replaces one virtual
 // post and is paid as it was; the crew's founding purse goes to those who take its posts (no money made but a market
 // shop's float, counted as the farms' founding); a post left empty is a hand short and the farm yields in proportion;
-// the community's store sells to its households.
+// the community's store sells to its households. Doc 72's works (the woods' and the peat's): their crews by the same rule,
+// the woods' old trade first, keepers of those with no family among the unplaced first and alone (no farmhouse), living
+// with the hands in their community or the city, their posts out of doors at the works; Oakhaven's market staffed with
+// its works.
 //
 // The catalogue is the real Data (RATW_SOURCE_DIR): country_farms.json, communities.json and farm_people.json with it.
 #include "RatwCalendar.h"
@@ -56,13 +59,16 @@ ResidentSpec person(const std::string& id, const std::string& label, int age, co
     return r;
 }
 
-// A place's community: a community's interiors (cn_<id>_...), a farm's steading (its community), else the city.
+// A place's community: a community's interiors (cn_<id>_...), a farm's steading (its community), a works' cell out of
+// doors the realm's own region (as the world's cells are, doc 72), else the city.
 std::string communityOf(const std::string& cell)
 {
     const auto& people = items::farmPeople();
     for (const auto& c : people.communities)
         if (cell.rfind("cn_" + c.id + "_", 0) == 0)
             return c.id;
+    if (cell.rfind("w_ridgemere_", 0) == 0)
+        return "the realm";
     for (const auto& f : people.farms)
     {
         bool here = cell == f.home.area;
@@ -108,7 +114,7 @@ void build(Fixture& x)
     };
     add("works the fields at Wheatley", 12, 20);
     add("works at The Larkmill Water Mill", 3, 30);
-    add("tends the orchard at Russet", 20, 20);
+    add("tends the orchard at Russet", 18, 20);
     add("tends the vines at Sunvine", 3, 24);
     add("milks the herd at Wetmeadow", 14, 20);
     add("keeps pigs at Mastwood", 15, 20);
@@ -122,6 +128,7 @@ void build(Fixture& x)
     add("serves at The Lantern", 12, 20);
     add("helps at The Stores", 10, 20);
     add("logging at Cedarfall", 5, 20);
+    add("logging at Oakfell", 3, 22);
     add("plays about the town", 6, 6);
     add("sits by the well", 3, 70);
     const auto one = [&](const std::string& id, const std::string& label, int age, const std::string& sex = "female") {
@@ -145,6 +152,10 @@ void build(Fixture& x)
     one("tor", "plays about the town", 11, "male");
     one("hob", "works the fields at Wheatley", 25, "male");
     r.kin = {{"iris", "rook", "spouse"}, {"rook", "tor", "parent"}, {"iris", "tor", "parent"}, {"rook", "hob", "parent"}};
+    // The oldest of the woods, with a spouse among the unplaced: a works' keeper is one with no family first (doc 72).
+    one("ash", "logging at Snowpine", 55, "male");
+    one("wren", "keeps the house", 53);
+    r.kin.push_back({"ash", "wren", "spouse"});
     // A House's: oldest of the orchards and vines, but the Heights' own (a spouse at home in the Heights).
     one("bo", "selling Fell wine", 56, "male");
     one("nessa", "at home in the Heights", 50);
@@ -205,7 +216,18 @@ const Society::FarmNow& farm(const Society& s, const std::string& id)
 void theData()
 {
     const auto& people = items::farmPeople();
-    expect(people.loaded && people.farms.size() == 31 && people.communities.size() == 6, "communities.json and farm_people.json read");
+    expect(people.loaded && people.farms.size() == 36 && people.communities.size() == 6,
+           "communities.json and farm_people.json read: 31 farms and doc 72's 5 works: " + std::to_string(people.farms.size()));
+    int works = 0;
+    for (const auto& f : people.farms)
+        if (f.works)
+        {
+            ++works;
+            expect(f.home.area.empty() && f.workplaces.size() == 1 && f.workplaces[0].area.rfind("w_ridgemere_", 0) == 0 &&
+                       f.workplaces[0].spots.size() == 6,
+                   f.farm + ": a works, no farmhouse, its work out of doors in its cell");
+        }
+    expect(works == 5, "five works");
     // Every farm's labels: at most 40 characters, no business's word, no "dog".
     Fixture x;
     build(x);
@@ -298,7 +320,8 @@ void thePlacement()
         expect(f.heads() == 0 && f.virtualWages() == 0 && std::abs(f.working() - 1) < 1e-9, f.def->id + ": no virtual post left");
         keepers += f.keepers, hands += f.hands;
     }
-    expect(keepers == 31 && hands == 78, "31 keepers and 78 hands placed");
+    expect(keepers == 36 && hands == 86, "36 keepers and 86 hands placed (doc 72's works' 5 and 10 among them): " +
+                                              std::to_string(keepers) + ", " + std::to_string(hands));
     // Where they live: a farmhouse its keeper's family's alone; hands in their farm's community (or the city's homes), at
     // most six to a home.
     const auto& people = items::farmPeople();
@@ -309,6 +332,8 @@ void thePlacement()
         expect(members.size() <= 6 || Society::communalHome(home), "at most six to a home: " + home + " " + std::to_string(members.size()));
     for (const auto& site : people.farms)
     {
+        if (site.works)
+            continue;                               // (Doc 72's works: theirKeepersAndCrews.)
         const auto& f = farm(s, site.farm);
         std::string keeper;
         for (const auto& p : s.positions())
@@ -383,7 +408,7 @@ void thePlacement()
     for (const auto& r : requests)
         if (const auto* site = people.farm(r.farm); site && r.workLabel != "-")
         {
-            const auto& trades = people.kinds.at(site->kind).trades;
+            const auto& trades = people.kinds.at(farm(s, site->farm).def->kind).trades;   // (A works' site kind is the map's.)
             const auto trade = people.tradeOf(oldLabel.at(r.templateId));
             expect(std::find(trades.begin(), trades.end(), trade) != trades.end() ||
                        std::find(people.fallback.begin(), people.fallback.end(), trade) != people.fallback.end(),
@@ -398,7 +423,8 @@ void thePlacement()
             if (p.role == "merchant")
                 keeperOf[p.work.cell] = s.state().careers.positions.at(p.id).holder;
         }
-    expect(market == 17, "the five markets' 17 posts: " + std::to_string(market));
+    expect(market == 19, "the six markets' 19 posts (Oakhaven's two with its works, doc 72): " + std::to_string(market));
+    expect(!keeperOf["cn_oakhaven_store"].empty(), "Oakhaven's store kept, with its works");
     expect(keeperOf["cn_larkfield_store"] == "shop_larkfield" && keeperOf["cn_coldwater_store"] == "shop_coldwater",
            "Larkfield Stores kept by Larkfield General's shopkeeper, Coldwater Stores by Coldwater Sundries'");
     for (const auto& [cell, keeper] : keeperOf)
@@ -451,7 +477,7 @@ void thePlacement()
             }
     for (const auto& f : s.farms())
         expect(s.cash(f.crew) == 0, f.def->id + "'s crew holds nothing now (its people's)");
-    // (A community's market is staffed with its first farm: Oakhaven, the woods' (doc 72), has none yet.)
+    // (A community's market is staffed with its first farm or works: Oakhaven's with the Oakhaven cut, doc 72.)
     for (const auto& c : people.communities)
         if (std::any_of(people.farms.begin(), people.farms.end(), [&](const auto& f) { return f.community == c.id; }))
             expect(sold["cn_" + c.id + "_store"] > 0, c.name + "'s store sold to its own households: " + std::to_string(sold["cn_" + c.id + "_store"]));
@@ -475,12 +501,81 @@ void thePlacement()
            "a hand short: it yields in proportion, " + std::to_string(after.working()));
 }
 
+void theWorksCrews()
+{
+    // Doc 72, Phase 2: the fuel area's works crewed by the farms' rule. The woods' four of the woods' old trade first (9 in
+    // the pool, 13 posts: the rest of the fallback), the peat cutting of those who keep the house; each keeper of those
+    // with no family among the unplaced first, placed alone (no farmhouse), living with the hands: in the works'
+    // community, or for the Rainwood's in the city; every post at the works' cell out of doors, paid by its till.
+    Fixture x;
+    build(x);
+    auto& s = x.s;
+    run(s, 1 - .5 / 24, 1 + .5 / 24);
+    s.tendCareers(2, x.world);
+    const auto requests = s.takeRequests();
+    std::map<std::string, std::string> oldLabel;
+    for (const auto& r : requests)
+        oldLabel[r.templateId] = s.unplaced(r.templateId)->workLabel;
+    for (const auto& r : requests)
+        if (s.arrive(r))
+            s.welcome(r, r.templateId);
+    const auto& people = items::farmPeople();
+    int woodsPosts = 0, ofTheWoods = 0;
+    for (const auto& site : people.farms)
+    {
+        if (!site.works)
+            continue;
+        const auto& f = farm(s, site.farm);
+        expect(f.outdoors && f.heldKeepers == 1 && f.heldHands == f.hands, site.farm + "'s crew all placed: 1 + " + std::to_string(f.heldHands));
+        int keepers = 0;
+        for (const auto& p : s.positions())
+        {
+            bool isKeeper = false;
+            if (s.farmOfPost(p, &isKeeper) < 0 || s.farms()[std::size_t(s.farmOfPost(p))].def != f.def)
+                continue;
+            keepers += isKeeper;
+            expect(p.work.cell == site.workplaces[0].area, p.title + ": at its works' cell");
+            const auto pay = s.payOf(p);
+            expect(pay.kind == "farm" && pay.payer == f.till && pay.wage == (isKeeper ? 16 : 10), p.title + ": paid by the works' till");
+            const auto& holder = s.state().careers.positions.at(p.id).holder;
+            const auto& home = s.resident(holder)->homeCell;
+            if (site.community == "ridgemere")
+                expect(communityOf(home) == "ridgemere" && home.rfind("fs_", 0) != 0, site.farm + "'s crew lives in the city: " + home);
+            else
+                expect(home.rfind("cn_" + site.community + "_", 0) == 0, site.farm + "'s crew lives in " + site.community + ": " + home);
+            const auto trade = people.tradeOf(oldLabel.at(holder));
+            if (site.farm == "peat_fens")
+                expect(trade == "keeps the house" || trade == "service and labour", "the peat's crew of those who keep the house: " + oldLabel.at(holder));
+            else
+            {
+                ++woodsPosts;
+                ofTheWoods += trade == "woods";
+                if (isKeeper)
+                    expect(trade == "woods", site.farm + "'s keeper of the woods: " + oldLabel.at(holder));
+            }
+        }
+        expect(keepers == 1, site.farm + ": one keeper's post");
+        // No family with a works' keeper.
+        for (const auto& r : requests)
+            expect(!(r.farm == site.farm && r.workLabel == "-"), site.farm + ": no family placed with its keeper");
+    }
+    expect(woodsPosts == 13 && ofTheWoods == 9, "the woods' 13 posts, all 9 of the woods' trade among them: " + std::to_string(ofTheWoods));
+    // The oldest logger has a spouse among the unplaced: no works' keeper, but a hand; the spouse stays unplaced.
+    const auto* ash = s.jobOf("ash");
+    bool ashKeeps = true;
+    expect(ash && s.farmOfPost(*ash, &ashKeeps) >= 0 && !ashKeeps, "the logger with family is a hand, not a keeper");
+    expect(s.unplaced("wren") != nullptr, "and the spouse stays in the pool");
+    expect(s.conserved(), "conserved");
+}
+
 void nothingWithoutThePlaces()
 {
     // A world without the realm's places (the old map, a test town) places nobody: the farms keep their virtual crews.
     Fixture x;
     build(x);
-    x.world.place = [](const std::string& cell) { return cell.rfind("fs_", 0) != 0 && cell.rfind("cn_", 0) != 0; };
+    x.world.place = [](const std::string& cell) {
+        return cell.rfind("fs_", 0) != 0 && cell.rfind("cn_", 0) != 0 && cell.rfind("w_ridgemere_", 0) != 0;
+    };
     run(x.s, 1 - .5 / 24, 1 + .5 / 24);
     x.s.tendCareers(2, x.world);
     expect(x.s.takeRequests().empty(), "no places, nobody placed");
@@ -525,6 +620,7 @@ int main()
         expect(items::load(&error), "the catalogue loads: " + error);
         theData();
         thePlacement();
+        theWorksCrews();
         nothingWithoutThePlaces();
         nothingUntilSwitched();
     }
