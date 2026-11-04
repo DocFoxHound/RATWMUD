@@ -777,11 +777,13 @@ class Society
         std::map<std::string, double> grown, eaten;   // The fractions of a piece carried to tomorrow (not saved).
         double hunger = 0;                          // Its crew's nourishment owed (a day's at most; not saved).
         double takingsCarry = 0;                    // The fraction of a penny its store draws owe it, or it them (not saved).
-        // A works (doc 72, Phase 0: its area's `works`): the House whose land it is on, which its rent goes to each night
+        // A works (doc 72, Phase 0: its area's `works`): it sends its rent each night to the House whose land it is on
         // (what its till holds over its float after the wages: the estates' rent, into the Country's purse, "the Houses'
-        // estates and the sea trade", booked by House); "" for a food farm, which spends what is over on its basket.
+        // estates and the sea trade", booked by House: `house`, its own or its area's). A food farm (never `works`, a
+        // House or none) spends what is over on its basket.
         std::string house;
-        bool rents() const { return !house.empty(); }
+        bool works = false;
+        bool rents() const { return works; }
         // Its work out of doors (a works, doc 72: its centre's cell, which it may share with others' posts): a post there
         // is its own only by its labels.
         bool outdoors = false;

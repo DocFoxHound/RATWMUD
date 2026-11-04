@@ -55,7 +55,8 @@ void Society::buildFarms()
             FarmNow f = found == was.end() ? FarmNow{} : std::move(found->second);
             f.def = &def;
             f.area = a;
-            f.house = def.house.empty() ? area.house : def.house;   // (Its rent's House: doc 72, Phase 0.)
+            f.works = area.works;                    // (A works pays rent, a food farm buys its basket: doc 72, Phase 0.)
+            f.house = !f.works ? std::string() : def.house.empty() ? area.house : def.house;   // (Its rent's House.)
             f.till = farmTill(def.id);
             f.crew = farmCrew(def.id);
             f.yieldScale = areaYield / 100. * orElse(ownFarm.yieldScale, 100) / 100.;
@@ -351,10 +352,11 @@ void Society::payRents()
         const auto over = cash(f.till) - f.reserve;
         if (over <= 0 || cash(CountryFund) > MoneyCap - over)
             continue;
-        if (shift(f.till, CountryFund, "", 0, over, "an estate's rent: House " + f.house))
+        const auto house = f.house.empty() ? std::string("none") : f.house;   // (A works area with no House named.)
+        if (shift(f.till, CountryFund, "", 0, over, "an estate's rent: House " + house))
         {
             loopToday_.farms[f.def->id].rent += over;
-            loopToday_.rents[f.house] += over;
+            loopToday_.rents[house] += over;
         }
     }
 }

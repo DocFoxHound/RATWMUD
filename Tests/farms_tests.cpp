@@ -847,6 +847,13 @@ void theWorks()
     expect(back.ok && back.message.find("from the farms") == std::string::npos && s.cash(Society::CountryFund) > c2,
            "fuel off: the Country's peat again: " + back.message);
     expect(s.farmAreaOf("firewood") < 0, "and its firewood");
+    // The Country's own sales (its report's line) count what was delivered: a draw paid back counts nothing.
+    const auto sales = s.loopToday().countrySales;
+    s.failNextStoreCreate();
+    expect(!s.drawFromStore("general", "peat", 5, "restocked from the store room").ok && s.loopToday().countrySales == sales,
+           "a draw paid back: none of the Country's sales");
+    expect(s.drawFromStore("general", "peat", 5, "restocked from the store room").ok && s.loopToday().countrySales > sales,
+           "a draw delivered: its sales");
     expect(s.conserved(), "conserved");
 }
 
