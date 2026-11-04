@@ -748,3 +748,36 @@ weeks (their casks not yet drawn: the vintner's shelf held its founding stock), 
 
 Next: the 3-year full run of Phases 1 and 2 together (section 5's gates; its report's patch for the yields), the user's
 go-ahead first.
+
+### Phases 1 and 2's 3-year run (country2, 2026-11-03)
+
+Merged into `ridgemere2` (with two test fixes the whole realm's tests on DEV found: the vineyards' work spots three for
+their 1 + 2 crew in `communities.json`, and the hired-hands check's 21, 11, 8, 8, 5; Atlas's farms test counts seven
+areas). No map change since build 60, so the run is on `artifacts/economy/r2/export60` (`--farms 0`: an area every 28
+days, the fuel's from day 168; `--deterministic --threads 4 --economy-level full`). Report
+`artifacts/economy/r2/country2-report.md`, patch `country2.patch.json`, log `country2.out`.
+
+Section 5's checks:
+
+- **Money conserved** every day; **nobody hungry** (the hungriest 4 hours; residents 559 to 730, births 54, deaths 55).
+- **The fuel never short for a household** (every day, winter included: no household went without firewood or peat).
+  Peat alone was refused to the shops' shelves on 25 days of year 1's autumn (days 226-250, the cutting's opening stock
+  gone while the new shelves filled, 2,117 pieces; the households took firewood). Years 2-3: households about 97 firewood
+  and 97 peat a day, twice that in winter; with the makers', firewood ~285 a day (380 in winter), peat ~97 (195).
+- **Peat sold, but piling**: grown 5-10% over sold every season (the 5% slack plus the blend), its stock 404 to 9,493
+  and still rising ~3,400 a year. Firewood level (7,300-9,600 from year 1's end). Timber level (~2,600-3,000). Charcoal
+  piling (to 2,380; ~9-11 grown to 6-9 sold). Resin piling at 0.1 a day sold. **Oak bark short**: the works' stock
+  empty from day 651, 2,552 tannery draws refused (~10 grown, all sold).
+- **Every works paid its crew every day** (156,380p of 156,380p, no support); **rents** 192p a day on the days the area
+  was on (163p over the whole run), all booked to House Timberland (each works 33-51p a day).
+- **The Country paid its posts on all but 6 days** (1,128p unpaid in all, its purse to 16p at the least, days 230, 321,
+  503, 776, 959, 1050); its purse 583 to 608p; its goods 1,041p a day after the toll; its basket 376p a day (country1's
+  533p).
+- **The treasury over its 200p float every night** (least at night 1,379p, on day 0); 1,407 to 6,020p.
+- **Food**: the vineyards paid in full (country1: short); oats still short (~35,000 draws, as country1), milk ~20,000
+  (as country1), salt better (43,000 from 54,000); flax now piling (1,016 a year, sold 3.8 a day).
+- **The cost of the Country's smaller basket**: the ironworks' iron and the charcoal burner's and foundry's charcoal
+  sold to the Country's basket about halved, so the city's short tills rose (the ironworks' shortfall 15,721 to
+  24,688p, the charcoal burner's 11,144p), and the treasury's wage support 232 to 263p a day.
+- **One works post left empty**: `logging_rainwood` held 2 of its 3 posts for 655 days (a hand gone and never
+  replaced); every farm's empty post was filled within 13 days.
