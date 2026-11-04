@@ -2060,17 +2060,22 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
                     return lack <= 0 || countryLeft(in.first) >= lack || !citySellers(business->id, in.first).empty();
                 });
             };
+            // (Its inputs judged only where another craft makes it too: most wares have one, and this runs every hour.)
+            std::vector<const items::Craft*> makers;
             for (const auto* k : items::craftsFor(business->id))
                 if (std::any_of(k->out.begin(), k->out.end(), [&](const auto& o) { return o.first == ware; }))
-                {
-                    if (!craft)
-                        craft = k;
-                    if (toHand(*k))
-                    {
-                        craft = k;
-                        break;
-                    }
-                }
+                    makers.push_back(k);
+            if (!makers.empty())
+            {
+                craft = makers.front();
+                if (makers.size() > 1)
+                    for (const auto* k : makers)
+                        if (toHand(*k))
+                        {
+                            craft = k;
+                            break;
+                        }
+            }
         }
         if (!craft && storeUse(keeper, ware) != StoreUse::Resell)
             continue;
