@@ -702,6 +702,9 @@ class Society
     // area grows, the season's cap as before (supplyLeft).
     bool wharfImports(const std::string& item) const;
     int wharfRoom(const std::string& item) const;
+    // Whether a landing of the good is a true import, paid beyond the realm: on the imports list (on) after its farms, or
+    // a good no area names. An area's good whose farms aren't on yet is landed as the Country did, its takings kept.
+    bool wharfPaysBeyond(const std::string& item) const;
     // Whether it takes a good (its takes list, on, not refused, the valve on), and what a farm keeps of it: the larger
     // of wharfKeepLeast and wharfKeepDays of its yield a day today.
     bool wharfTakes(const std::string& item) const;

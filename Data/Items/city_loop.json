@@ -116,7 +116,7 @@
     "wharfImportScale": 100,
     "wharfTakeScale": 100,
     "wharfExportMost": 300,
-    "wharfCreditMost": 10000,
+    "wharfCreditMost": 2000,
     "wharfInjectADay": 0,
     "wharfTakeADay": 0,
     "wharfActionMost": 2000,
