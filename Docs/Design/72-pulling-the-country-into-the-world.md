@@ -2596,3 +2596,58 @@ and still's shares; the sheep once the pigs run short; the eggs (sized at half t
 money from the other farms); the charcoal, ore and limestone in years 2-3. (2) The other House-owned businesses listed
 above, the user's call. (3) The distillery wants cider for its apple brandy (~12 a day short): a supplier line from the
 still or the brewery would feed it.
+
+### producers7's 3-year run (2026-11-04)
+
+`ridgemere2` with the producers merged (7e45f4d), build 63's export, against iron6 (build 62); year 3, a day:
+
+- **The estates' posts short 41 nights** (iron6 55): 1 in year 2's summer, 40 in year 3 (the wharf and Greatly 40,
+  Fell 38, Timberland 2; the Crown's own never). Year 3's gap, summed over the estates: **spring 23.3p a day** (11
+  nights), **summer 45.1p** (21), **autumn 15.1p** (8), winter none; **~21p a day** (iron6 ~30p), ~190p a short night.
+  Closer, not closed.
+- **To the estates**: the ironworks **22.1p** (year 2 22.8p) to Timberland, its posts 56p of 56p; **the foundry 0p**
+  (year 1 15.6p), its posts paid 0p of 21p from its till (below); the still **8.6p** to Fell (year 2 16.3p), its posts
+  26p of 26p. Timberland's rents 194p (181p), its levy to the Crown 119p (109p): ~10p of the ironworks' share reaches
+  the Crown. The Crown: rents 503p (496p), grants 529p (512p: the wharf 440p, Greatly 68p, Fell 21p), its purse **946,
+  1,005, 714p** at the years' ends (898, 1,091, 810p), least 179p in year 3 (235p): still falling, ~290p in year 3. The
+  estates together 1,563, 1,451, 1,144p (1,497, 1,573, 1,249p).
+- **The foundry stops** in year 2's first weeks (day ~380): its shelves full (bronze, copper and tin bars, handbells,
+  iron bars, 4-5 of 4), no sale after; its till at ~20p, its posts on the wage support (20.5p, iron6 14.5p). Its buyers in
+  year 1 were the Country (copper bars 0.9, tin bars 0.5, handbells 0.5, iron bars 0.8 a day) and the estates; the
+  ironworks took the city's iron bars (27.6 a day). So **copper and tin ore pile** at the mine (0.8 and 0.4 grown, 0.02
+  and 0 sold; 551 and 270 at the end); no copper, tin or bronze traded in year 3 but a trace to the jeweller.
+- **The Country's buying not back**: its purse 21, 21, 18p, least 0; the basket 1p (iron6 0p), patrons 1.3p (0.1p), the
+  Houses' tables 1.0p (0p); its own sales **0p** (8p).
+- **Timber not short** (iron6 15.1 a day): 14.5 sold of 19.9 grown a camp (the sawmill, the builders' works, the
+  carpenter, the cartwright, a little the smithy), the ironworks none; **now piling**, 4,348 a camp at the end (growth
+  3,545 a year): the patch's whole step was the ironworks' burning, which stopped.
+- **Linen**: none of the Country's (iron6 a trace); Larkfield's sold the tailor 5.5, the apothecary 4.3, the presses 3.3;
+  the neckerchiefs 51 a day to the households. **Flax still piling**: 27.0 grown, 20.6 sold a farm (18.8 to the looms,
+  1.9 to the weaver), 4,538 a farm at the end.
+- **The still**: staffed and paid (26p of 26p, 100%), sells apple brandy 1.7 and brandy 1.8 a day (to the vintner 1.3
+  each, to the households the rest; the vintner's to the households 1.3 each); the vintner still **4.0 a day short of
+  each**, the still 1.5 cider short, the distillery 8.0 cider short; apple brandy's price factor at the band's top 85% of
+  till-days, brandy's 68%.
+- **The new goods**: eggs 16.5 grown and sold a dairy (49.5), the stalls and provisioners **~94 a day short** (the
+  report's largest short); sheep 0.45 a run, all to the butcher (0.6 short); **sheepskin not sold** in year 3 (0.47 a run
+  grown, spoiling: the warrens' pelts and the hides suffice).
+- **Still piling**: iron ore 4,471 (62.0 grown, 55.4 sold), charcoal 2,573 and 1,242 (the ironworks now buys 27.7 a day
+  of the hearths'), limestone 2,273, lime 277, hides and bones (as iron6). Butter short as before (all sold).
+- **The rest**: money conserved (64,595p); residents 559 to 782, 689 of 699 posts held, 300 unplaced; hunger 3 days, 8
+  hours at most, households short 0.28 (0.22); **the treasury** over its float every night (least 1,903p in year 3, 721p
+  in all; 1,194p, 473p), four-week means 4,108p to 4,633p (2,435p to 3,583p), 4,940p at the end (3,604p); **the wage
+  support 295p** (267p), year 3's first and last four weeks 294p and 313p (the inn 39p, the smithy 26p, the distillery
+  21p, the foundry 21p); the toll 1,668p (1,618p); wages 4,828p of 4,863p; the farms 1,550p of 1,553p; Oakhaven's press
+  87.9% (100%), Southmeadow's pottery 85.7% (92.0%), orchards 2, 4, 5 96.9-97.7%.
+
+**Verdict: not stable.** Money, food, timber and the treasury behave, and the estates' gap is down a third (~30p to
+~21p a day), but the estates' posts still go short 40 nights in year 3, the Crown's purse still falls, the Country's
+buying stays at nothing, and the foundry stops selling in year 2, so the copper and tin ore pile. No rule, yield or code
+changed. Report `artifacts/economy/r2/producers7-report.md` and its patch.
+
+**Open.** (1) The foundry's market: its copper, tin and bronze bars and handbells went to the Country, whose purse is
+empty; the Wharf (the second stage) is where they would sell, or a city buyer line (the jeweller, the tinker, the bell
+founder's trades). (2) The estates' remaining ~21p a day and the Crown's falling purse: the other House-owned businesses
+(the producers' entry's list) are the user's call. (3) Flax and timber now over (trim to what sold), eggs short (~94 a
+day: more eggs would take food money from the other farms), sheepskin unsold, the vintner and the distillery short of
+brandy and cider.
