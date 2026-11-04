@@ -44,15 +44,21 @@ class Estimate(unittest.TestCase):
         self.assertAlmostEqual(rag['net'], rag['sales'] * (1 - cc.RESALE))
 
     def test_without_dairies_their_food_goes_to_the_foods_sold(self):
-        # A few inns, dairies later (doc 67, Progress): with no dairy, cheese isn't on offer; the wolves eat as much, of
-        # the rest, so the other food trades get more work and none goes to the dairy.
-        foods = Counter(bakery=2, butcher=2, provisioner=2, inn=1)
+        # A few inns, dairies later (doc 67, Progress): with no dairy and no vendor of the farms' cheese and butter, they
+        # aren't on offer; the wolves eat as much, of the rest, so the other food trades get more work and none goes to the
+        # dairy.
+        foods = Counter(bakery=2, butcher=2, inn=1)
         both, none = cc.estimate(town(), foods + Counter(dairy=1)), cc.estimate(town(), foods)
         self.assertGreater(both['trades']['dairy']['keeperDays'], 0)
         self.assertNotIn('dairy', none['trades'])
-        for b in ('bakery', 'butcher', 'provisioner', 'inn'):
+        for b in ('bakery', 'butcher', 'inn'):
             self.assertGreater(none['trades'][b]['sales'], both['trades'][b]['sales'])
         self.assertAlmostEqual(none['spend']['food'] / both['spend']['food'], 1, delta=.25)
+        # Since the dairy farms make cheese and butter of their spare milk (doc 72), the provisioners resell them: on
+        # offer with no dairy in the city.
+        vendors = cc.estimate(town(), foods + Counter(provisioner=2))
+        self.assertIn('cheese', none['unsold'])
+        self.assertNotIn('cheese', vendors['unsold'])
 
     def test_what_nobody_sells(self):
         est = cc.estimate(town(), Counter(bakery=1))

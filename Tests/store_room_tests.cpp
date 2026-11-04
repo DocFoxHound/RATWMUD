@@ -369,6 +369,29 @@ void theRestockingRule()
         const auto spot = s.authored().residents[2].work;
         (void)spot;
     }
+    // A till that can't pay for all its shelf lacks draws what it can pay for (doc 72, after country3b: all or nothing
+    // left a poor vintner without wine for good, and its vineyards without a buyer).
+    {
+        auto s = city([](AuthoredRoster& r) { r.economy.storeRule = true; });
+        LifeDay day;
+        day.communityOf = [](const std::string&) { return std::string("town"); };
+        s.setDay(day);
+        s.addPlayer("player-ada");
+        s.shift("treasury", "player-ada", "", 0, 300, "test: a purse");
+        const auto stall = s.tillOf("stall");
+        const int flour = Society::stock(*s.account(stall), "flour");
+        expect(s.trade("player-ada", "stall", "flour", 4, true).ok, "Ada buys four flour");
+        const auto taken = s.cash(stall) - 5;
+        expect(s.shift(stall, "treasury", "", 0, taken, "test: emptied"), "the stall's till down to 5p");
+        const auto money = s.moneySupply();
+        double now = 10. / 24;
+        const auto bodies = atWork(s);
+        for (int i = 0; i < 120; ++i)
+            s.tick(1, now += 1. / calendar::SecondsPerDay, 0, bodies);
+        const int drawn = Society::stock(*s.account(stall), "flour") - (flour - 4);
+        expect(drawn >= 1 && drawn < 4, "the stall drew what its 5p paid for: " + std::to_string(drawn) + " of the 4 it lacked");
+        expect(s.cash(stall) >= 0 && s.cash(stall) < 5 && s.conserved() && s.moneySupply() == money, "its till spent, money conserved");
+    }
 }
 
 void theFundInASave()

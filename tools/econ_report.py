@@ -152,11 +152,13 @@ class Run:
                 p[0] += factor >= 1000 + band - 1
                 p[1] += factor <= 1000 - band + 1
         held = collections.Counter()                # (Each good's farms' stock together at the day's end.)
-        for farm, g, grown, sold, st, spoiled, eaten, short in d['farm_good']:
+        for row in d['farm_good']:
+            farm, g, grown, sold, st, spoiled, eaten, short = row[:8]
+            used = row[8] if len(row) > 8 else 0    # (Made into another good at the farm: the dairies' spare milk, doc 72.)
             key = (n(farm), n(g))
             stock[n(g)] += st
             fg = self.farm_good[(n(farm), n(g), season)]
-            fg.update(grown=grown, sold=sold, spoiled=spoiled, eaten=eaten, short=short, days=1)
+            fg.update(grown=grown, sold=sold, spoiled=spoiled, eaten=eaten, short=short, used=used, days=1)
             first = self.farm_stock.setdefault(key, [st, st])
             first[1] = st
             held[n(g)] += st
@@ -222,10 +224,12 @@ def farm_patch(run):
     unmet = run.unmet_draws()
     needs = run.stock_needs()
     # An area's good no farm of it grows: the Country no longer sends it and no yield can be raised, so it is named apart.
+    # (A good a farm makes of a spare yield, the dairies' cheese and butter, is no yield either, but is had: not named.)
+    made = {good for f in farms.values() for good in (f.get('makes') or {})}
     ungrown = []
     for area, goods in sorted(((run.meta or {}).get('farm_areas') or {}).items()):
         for good in goods:
-            if not by_good.get(good):
+            if not by_good.get(good) and good not in made:
                 ungrown.append((good, area, sum(unmet[(good, s)] for s in SEASONS)))
     # Each good's season, all its farms together: what was taken a day (on the days its farms were on), whether any
     # spoiled, and its yield now (each farm's share of the patch's).
@@ -518,6 +522,22 @@ def report(econ, run, top, patch_path):
             say('Goods of a farm area no farm grows (no yield to raise: give a farm one in country_farms.json), with the '
                 'draws they lacked: ' + ', '.join(f'{g} ({a}) {round(k)}' for g, a, k in sorted(short_ungrown, key=lambda u: -u[2])[:top])
                 + ('...' if len(short_ungrown) > top else '') + '.')
+        makes = {}
+        for f in (run.meta or {}).get('farms', {}).values():
+            makes.update(f.get('makes') or {})
+        if makes:
+            sums = collections.defaultdict(collections.Counter)
+            for (farm, good, season), fg in run.farm_good.items():
+                sums[good].update(made=fg['grown'], sold=fg['sold'], used=fg.get('used', 0), spoiled=fg['spoiled'])
+            last = collections.Counter()
+            for (farm, good), (a, b) in run.farm_stock.items():
+                last[good] += b
+            days = max(1, run.days)
+            say('')
+            say('Made at the farms of what would have spoiled (a day over the run; doc 72, the dairies): ' + '; '.join(
+                f'{g} {sums[g]["made"] / days:.1f} made of {src} (sold {sums[g]["sold"] / days:.1f}, {last[g]} held at the end)'
+                for g, src in sorted(makes.items())) + '; ' + ', '.join(
+                f'{src} {sums[src]["used"] / days:.1f} used, {sums[src]["spoiled"] / days:.1f} spoiled' for src in sorted(set(makes.values()))) + '.')
         stuck = [(k, v) for k, v in run.farm_stock.items() if v[1] > v[0] * 1.5 and v[1] > 50]
         if stuck:
             say('')

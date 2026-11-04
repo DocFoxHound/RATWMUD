@@ -823,6 +823,9 @@ class Society
     // (the rule landRent<Area>, e.g. landRentFruit, where there is one, else landRent; a works none),
     // and what it owes tonight of its takings so far (its basket keeps it back through the day).
     int landRentPercent(const FarmNow& farm) const;
+    // A farm's `makes` (country_farms.json, doc 72: the dairies' spare milk into cheese and butter) of `spare` pieces of
+    // `from` past keeping this morning: what of it it used.
+    int makeOfSpare(FarmNow& farm, const std::string& from, int spare);
     std::int64_t landRentDue(const FarmNow& farm) const;
     // The share of the Country's own people (country_farms.json `estatePeople` and `otherWorkers`) still eating at the
     // farms' table: less the crews of the works whose areas are on, who buy their food in the shops (doc 72, Phase 3).
@@ -913,13 +916,14 @@ class Society
         };
         std::map<std::string, Group> groups;
         // The Country's food farms (doc 71, 4), by farm: pieces grown, sold to the shops (store draws), eaten at the
-        // Country's table and spoiled; the pennies its till took in (the draws' cost less the toll), owed its crew and paid
+        // Country's table and spoiled (and made into another good at the farm: its `makes`, the dairies' spare milk into
+        // butter and cheese, doc 72; what is made counts as grown); the pennies its till took in (the draws' cost less the toll), owed its crew and paid
         // them (the treasury's wage support apart), and spent on its basket (its carriage out apart); and its crew's
         // household: its spending in the city's shops (food, needs, comforts and services) and the pieces it bought, a day
         // it could not buy a day's food, and its nourishment not eaten for want of food.
         struct Farm
         {
-            int grown = 0, sold = 0, eaten = 0, spoiled = 0;
+            int grown = 0, sold = 0, eaten = 0, spoiled = 0, used = 0;
             std::int64_t takings = 0, wagesOwed = 0, wagesPaid = 0, support = 0, basket = 0, basketCarriage = 0;
             std::int64_t crewSpent = 0;
             std::int64_t peoplePaid = 0;            // Of wagesPaid, what its real posts' holders were paid (doc 71, Phase C).
@@ -929,7 +933,7 @@ class Society
             // By good (world_check's full recording, doc 69, 10): the same pieces, and the table's short of it.
             struct Good
             {
-                int grown = 0, sold = 0, eaten = 0, spoiled = 0, tableShort = 0;
+                int grown = 0, sold = 0, eaten = 0, spoiled = 0, tableShort = 0, used = 0;
             };
             std::map<std::string, Good> goods;
         };

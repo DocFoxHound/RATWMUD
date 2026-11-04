@@ -1608,7 +1608,18 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
             farmsShort(w.ware, std::min(StoreDrawMost, w.lack));
             // (Within what the Country can still supply of it today: a season's cap.)
             const int n = std::min({StoreDrawMost, w.lack, countryLeft(w.ware)});
-            const bool drew = n > 0 && drawFromStore(keeper, w.ware, n, "restocked from the store room").ok;
+            auto r = n > 0 ? drawFromStore(keeper, w.ware, n, "restocked from the store room") : EconomyResult{};
+            // A till that can't pay for the whole draw takes what it can pay for (doc 72, after country3b: all or nothing,
+            // the vintner's shelf of wine cost more than its till held, so it drew none again, sold none, and its
+            // vineyards could not pay their crews). Its cash over the draw's cost, the carriage then shaving a piece off.
+            for (int q = n; !r.ok && q > 1 && r.total > 0 && r.message.rfind("The till can't pay", 0) == 0;)
+            {
+                q = std::min(q - 1, int(double(q) * double(cash(till)) / double(r.total)));
+                if (q < 1)
+                    break;
+                r = drawFromStore(keeper, w.ware, q, "restocked from the store room");
+            }
+            const bool drew = r.ok;
             if (drew)
                 done.push_back("restocked " + w.ware);
             // (What the supply couldn't send: the season's cap, or the farms' stock. A draw refused for the till's own

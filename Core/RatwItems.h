@@ -314,6 +314,16 @@ struct FarmDef
     // Pieces a day of each good at each season's middle day (Spring, Summer, Autumn, Winter), blended as the seasons are
     // (Society::seasonal): what it grows, and what the Country's own people eat of it there (the Country's table).
     std::map<std::string, std::array<double, 4>> yield, table;
+    // What it makes of a yield it can't sell before it spoils (doc 72, the user's decision after country3b: the dairies'
+    // spare milk into butter and cheese): each morning, what of `from` is past keeping goes to these in order, `share`
+    // percent of it to each (the last all that is left), `in` pieces of it a piece of `good`, while its store holds under
+    // `store` pieces of `good`; what none takes spoils as before.
+    struct Make
+    {
+        std::string good, from;
+        int in = 1, share = 100, store = 0;
+    };
+    std::vector<Make> makes;
 };
 struct FarmArea
 {

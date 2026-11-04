@@ -717,7 +717,7 @@ struct EconomyRecord
              "\"ware\": [\"till\", \"good\", \"stock\", \"shelf\", \"price_milli\", \"stock_factor_milli\", \"sold\"], "
              "\"farm\": [\"farm\", \"area\", \"float\", \"takings\", \"wages_owed\", \"wages_paid\", \"support\", \"basket\", "
              "\"crew_purse\", \"crew_spent\", \"crew_short\", \"crew_hungry\", \"rent\"], "
-             "\"farm_good\": [\"farm\", \"good\", \"grown\", \"sold\", \"stock\", \"spoiled\", \"eaten\", \"short\"], "
+             "\"farm_good\": [\"farm\", \"good\", \"grown\", \"sold\", \"stock\", \"spoiled\", \"eaten\", \"short\", \"used\"], "
              "\"flow\": [\"from\", \"to\", \"pennies\"], "
              "\"short\": [\"shop\", \"good\", \"buyer\", \"buyers\", \"pieces\", \"instead\"], "
              "\"class\": [\"class\", \"residents\", \"households\", \"hungry_hours\", \"hungry_now\", \"purse\", "
@@ -733,6 +733,14 @@ struct EconomyRecord
             {
                 o << (firstGood ? "" : ", ") << EconomyDetail::quoted(good) << ": [" << by[0] << ", " << by[1] << ", " << by[2]
                   << ", " << by[3] << "]";
+                firstGood = false;
+            }
+            // What it makes of a yield past keeping (doc 72: the dairies' spare milk into cheese and butter), good: from.
+            o << "}, \"makes\": {";
+            firstGood = true;
+            for (const auto& m : f.def->makes)
+            {
+                o << (firstGood ? "" : ", ") << EconomyDetail::quoted(m.good) << ": " << EconomyDetail::quoted(m.from);
                 firstGood = false;
             }
             o << "}}";
@@ -863,6 +871,8 @@ struct EconomyRecord
                     std::set<std::string> goods;
                     for (const auto& [g, by] : f.def->yield)
                         goods.insert(g);
+                    for (const auto& m : f.def->makes)   // (What it makes of a spare yield: the dairies' cheese, doc 72.)
+                        goods.insert(m.good);
                     for (const auto& [g, n] : d->second.goods)
                         goods.insert(g);
                     for (const auto& g : goods)
@@ -870,7 +880,7 @@ struct EconomyRecord
                         const auto x = d->second.goods.find(g);
                         const Society::LoopDay::Farm::Good none;
                         const auto& v = x == d->second.goods.end() ? none : x->second;
-                        row({id(f.def->id), id(g), v.grown, v.sold, Society::stock(*a, g), v.spoiled, v.eaten, v.tableShort});
+                        row({id(f.def->id), id(g), v.grown, v.sold, Society::stock(*a, g), v.spoiled, v.eaten, v.tableShort, v.used});
                     }
                 }
         close();

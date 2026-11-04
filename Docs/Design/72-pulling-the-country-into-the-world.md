@@ -392,7 +392,7 @@ Food-adjacent and largest money first; each phase as doc 71 did it: **modelled p
 | **The city's exports** (the basket's maps, handbells, glass beads, charms, steel) | What the city sells beyond the realm. These makers have no buyer in the realm; the Country's basket is their market. |
 | **The Houses' estates** (until Phase 6) | The land the works stand on is the Houses'; the estates collect the works' rents and pay the Houses' people (the wharf's posts among them). Not a producer any more, a landlord. |
 | **Arrivals and the unplaced pool** | People come from beyond the realm (about 4 a year, with up to 30p each). The pool is the city's and the works' labour reserve. |
-| **Goods no one in the realm makes** | The ten farm goods no farm grows (brandy, apple brandy, aqua vitae, wheat, butter, cheese, offal, eggs, sheep, sheepskin) could come by sea as imports instead of going without (open question 8). |
+| **Goods no one in the realm makes** | The ten farm goods no farm grows (brandy, apple brandy, aqua vitae, wheat, butter, cheese, offal, eggs, sheep, sheepskin) could come by sea as imports instead of going without (open question 8). Butter and cheese no longer: since country3b the dairies make them of their spare milk (the user's decision; Progress, "The dairies' butter and cheese"). |
 
 ## Open questions for the user
 
@@ -1116,3 +1116,123 @@ building goods share back up (the user's lever); (2) **charcoal** up its whole s
 8.6 / 10.1 / 10.9 on coppice_greenholt) and **peat** half way down again; stone, clay, sand, firewood, oak bark down
 (`country3b.patch.json`); (3) the builders' works, brickworks and ropewalk: the city makers' levers (the Country's and
 the farms' basket shares), the user's.
+
+### The quarry's buyers, the dairies' butter and cheese; country3b's patch (2026-11-03, branch `r2-country-p3c`)
+
+Branch `r2-country-p3c`, from `ridgemere2` (019c93b). **No map change, nothing written to DEV, no NPC made**; the
+treasury's levers (toll, support, float) untouched. Year 3 a day below unless said (`country3`: before the land rent;
+`country3b`: with it); the aggregation scripts in the session's scratchpad (`p3c/agg.py`, `basket.py`, `tills.py`).
+
+**country3b's patch** applied (`tools/econ_report.py --apply artifacts/economy/r2/country3b.patch.json
+Data/Economy/country_farms.json --damping 0.5`, its `wholeSeasons` the whole step: charcoal, flax, milk and resin, all
+four seasons): 122 yields. **Charcoal its whole step** (coppice_greenholt 9.04 / 8.61 / 10.11 / 10.86, supply-bound
+with ~100,000 draws short); **peat half way down** (92.18 / 102.56 / 96.38 / 209.19); firewood, oak bark, clay, sand and
+salt half way down; the quarry's stone then set as below.
+
+**The quarry: its buyers back, not a smaller crew.** The rent did not make stone dearer (1.37p a piece; country3 1.33p):
+it took the mason's buyers. What the baskets bought, a day:
+
+| | farms' basket | its building goods (cut stone, mortar, bricks, lime, roof tiles, rope, whitewash, plaster) | the Country's basket | the mason's stone |
+|---|---|---|---|---|
+| country3 (no rent) | 1,117p | 323p (28.9%) | 15p | 24.9 |
+| country3b (the rent) | 851p (x0.76) | 252p (29.6%): **-71p** | 352p: **+337p** (paper, steel, iron, charcoal...) | 19.4 |
+
+Every good of the farms' basket fell by the same quarter (mortar 28.2 to 22.3 a day, lime 24.9 to 19.5, bricks 13.2 to
+10.3, cut stone 12.5 to 9.7, rope 6.9 to 5.4): the shares didn't change, the money did, and it went to the Country's
+basket, which bought none of them. Three ways to the quarry's wages:
+
+1. **A keeper alone** (16p against 19.4 x 1.37 = 26.6p): pays, but leaves the mason's buyers, the brickworks (4.9p a
+   day short) and the ropewalk (7.3p) where they are, and one man to cut 20-25 stones a day.
+2. **The farms' basket re-weighted** (the building goods x1.455, back to 323p of its 851p): the 71p comes from its other
+   makers, who lost the same quarter to the rent: the smithies (already 11.3p a day short), the cooperage (5.0p), the
+   wheelwright, the carpenters and the tannery.
+3. **The Country's basket buys the farms' repairs** (taken): the land rent goes to the Houses whose land the farms are
+   on, and the landlord keeps up their buildings. The farms' building goods join `countryBasket` at **0.53 of the farms'
+   shares** (cut stone 33, mortar 29, bricks 28, lime 26, roof tiles 21, rope 13, whitewash 11, plaster 11: 172 of its
+   858 shares, 20%), so of country3b's 352p basket ~71p, what the rent took from the builders. It comes from the makers
+   the rent gave 337p; the farms' other makers keep what they have. The rule "the Country's re-weighted basket buys
+   nothing the farms' does" keeps, but for these eight (`farms_behaviors`).
+
+**The quarry stays 1 + 1** (26p a day): at the mason's 24.9 stones a day before the rent, 34p of takings (its leanest
+season in country3 29.7p), ~8p over its crew for Greatly's rent. **Its stone 27.76 / 23.93 / 24.63 / 28.09** (a mean of
+26.1: the 24.9 + 5%, in country3's patch's seasons), not the patch's 19.4-based half step. The clay pits' patched clay
+and sand (2 x 26.9 and 2 x 11.2 a day) already fit the builders' demand before the rent (country3: clay 54.4, sand 23.7).
+
+**Phase 4's caveat.** Phase 4 (4.5) takes the Country's basket from ~339p to ~150p a day; the repairs then fall to ~30p,
+and the farms' basket shares (or the repairs' 0.53) want another look.
+
+**The dairies' butter and cheese** (the user's decision, 2026-11-03): **the dairies turn their spare milk into butter
+and cheese** (cheese keeps a very long time). Butter and cheese are among the farm goods "no farm grows" (section 6), so
+shops that want them can now get them.
+
+- **What spare is.** Milk keeps a day: each morning what a dairy holds over a day's mean yield spoiled. In country3b's
+  year 3 that was 7.2 a day across the three dairies, 41.5 of it the morning after a Restday (the inns draw half then),
+  while the inns' draws went short the rest of the week (the milk is supply-bound; the patch took its whole step).
+- **The making** (`country_farms.json` a farm's `makes`; Core `Society::makeOfSpare`, from `tendFarms`' spoiling): what is
+  past keeping goes **half to cheese at 4 milk a piece** (crafts.json's dairy craft) and **the rest to butter at 2**
+  (recipes.json's), whole pieces, while the dairy's store room holds under **60 cheese and 10 butter** (about their
+  keeping days of a mean day's making at country3b's spare: 180 x 0.3, 14 x 0.6); what neither takes spoils as before.
+  One good made into another at the farm: nothing sold, no money, journalled "made into cheese" and "made at <farm>"; the
+  made counts as grown, the milk as `used`. The three cattle and dairy farms make them, no other farm.
+- **Cheese keeps half a year**: `items.json` keeps 40 to **180** days (a hard cheese; "a very long time", the user).
+  Butter keeps its 14 days.
+- **Who draws them.** Nobody did: no shop's `supplies` held them (country3b traded none; doc 67's "no dairies for
+  now"), so the residents' food and comforts skipped them and the Watch's 0.2 cheese a guard went unbought. Now **the
+  stall and the provisioners resell butter and cheese** (`crafts.json` `supplies`; the Round and Rind and Vane &
+  Daughters, the old dairy shops, are provisioners), drawn from the dairies' stores like their milk; households eat them
+  (cheese 30 nourishment for 5p) and buy cheese as a comfort.
+- **The Country stops selling them**: butter and cheese were already the meat area's goods, so with it on only the farms
+  have them; it sent none before (nobody drew them), so nothing it sold is lost.
+
+**A poor till draws what it can pay** (the restocking, Core/RatwCityLoop.cpp): a store draw was all or nothing, and a
+till that couldn't pay for all its shelf lacked drew nothing, again each hour. The first smoke showed the trap: the
+vintner's till, a little poorer on its first day, couldn't pay for its shelf of wine, drew none for the whole month,
+sold only cider, lived on the wage support, and **both vineyards went unpaid** (their wine piling, 22 to 108);
+ridgemere2's own data did the same with only the patch applied, or only the new `supplies`. Now a draw refused for the
+till's cash is tried again at what the till can pay for (its cash over the draw's cost, a piece less for the carriage).
+The city then sells 33.4 wine a day, the vintner 26% of it, and the vineyards pay their crews; on ridgemere2's data the change
+alone moves little else (the treasury's support of the shops 33p a day either way).
+
+**Reports.** `world_check`'s full level: `farm_good` gains a ninth column, `used` (made into another good at the farm),
+and the meta's farms their `makes`. `econ_report.py` reads either width; a line "Made at the farms of what would have
+spoiled" (each made good a day, of what, sold, held at the end; the milk used and spoiled); a made good isn't named
+among the goods "no farm grows", and gets no yield patch.
+
+**Tests.** `farms_behaviors` (1,898 checks): new `theDairy` (cheese keeps 180 days, butter 14; butter and cheese the meat
+area's; the three dairies' `makes`, half to cheese at 4, the rest to butter at 2, stores 60 and 10; a night with no
+sales: the spare made into both, about half to each, 4 milk a cheese and 2 a butter, a day's milk kept and a piece
+spoiled at most, counted as grown and used; no money made or lost and every piece of milk accounted for; the stall's
+cheese and butter drawn from the dairies, nothing to the Country, conserved; 70 nights on, the stores full at 60 and 10
+and no fuller, the spare spoiling again; meat off, cheese the Country's again); `spoiling` (spoiled or made);
+`theDefaults` (the Country's repairs: only the eight building goods shared with the farms' basket, each 0.53 of the
+farms' share, 172 in all; the flour's summer mean 55.47 after the patch); `theStoneWorks` (the quarry's stone 23.93 at
+summer's middle, 26.1 a year; the pits' patched clay and sand). `store_room_behaviors` (246): a stall whose till holds
+5p draws 1-3 of the 4 flour it lacks, its till spent, conserved; the shared fixture's stall goods with butter and
+cheese. `ctest` in `build-core`: **78 of 78**. `test_econ_report` (8: new `test_what_a_farm_makes_of_its_spare`),
+`test_city_capacity` (without a dairy and without a vendor no cheese on offer; with the provisioners, cheese is),
+`test_farms_summary`, `test_country_industry`, `test_item_catalog`, `test_studio`, `test_world_store`, `test_ridgemere2`
+pass.
+
+**The 30-day smoke** (`world_check` on build 60's export, `--simulate 0 720 --farms 0 --farms-every 1 --deterministic
+--threads 4 --economy-level full`; `artifacts/economy/r2/country3c-smoke-report.md`, `country3c-smoke.patch.json`, a
+first spring's, not to be applied; ridgemere2's data on this build beside it, days 7-29): money conserved every day;
+nobody hungry; **every farm and works paid its crew in full**; the Country's posts paid every night (24,720p), its purse
+1,459 to 1,859p (least 1,235p); the land rent 317p a day.
+
+- **The builders**: the Country's basket bought 123p a day of the building goods (its basket 831p in a first month, its
+  founding purse's; ~350p in year 3, so ~70p there), the farms' 263p as before; **the mason's stone 22.2 to 32.4 a
+  day**, his sand 10.0 to 13.5, the brickworks' clay 31.2 to 47.1. Short of their wages (a day over the month, ridgemere2's
+  data first): **the brickworks 24.1p to 10.5p** (46 short days to 25; their takings 87p to 133p), **the mason 13.6p
+  to 6.7p**, the ropewalk 18.8p to 16.2p; the builders' works worse, 13.2p to 17.4p (it sells the farms planks,
+  beams, nails and fittings, none of the repairs' goods: 25.6p to 17.6p a day of them, the farms' basket spread over
+  their makers otherwise in a first month); the clay pits' clay and sand no longer piling. The quarry took 46p a day (598p of
+  598p in wages, 20p a day of rent to Greatly); this month's 32 stones a day are over its 26.1 (the month's larger
+  basket), year 3's ~25 under it.
+- **The dairies**: milk spoiled **18.3 a day to 1.4**; 15.7 a day used: **butter 5.6 a day, cheese 1.1, all sold** (the
+  stall drew most, the households bought them there), none held at the month's end: supply-bound, the shops' draws
+  ~3,600 each short. Butter takes most of the milk: an ordinary morning's spare (2-5 a dairy) is under the 8 a cheese's
+  half needs, so it goes to butter; the Restday's 14 a dairy makes both.
+- **Still short or piling** in a first month: berries, flax, resin, wine (the vintner's shelf refilled, the vineyards
+  out), small pelts; firewood (the two logging camps 519 to 837), apples and salt pile.
+
+Next: the 3-year run (the user's go-ahead first) to see the repairs, the quarry and the dairies through the seasons.

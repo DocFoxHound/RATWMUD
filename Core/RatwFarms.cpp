@@ -225,9 +225,14 @@ void Society::tendFarms(std::int64_t day)
                 continue;
             const double mean = (middle[0] + middle[1] + middle[2] + middle[3]) / 4 * f.yieldScale;
             const int keep = std::max(1, int(std::ceil(item->keeps * mean - 1e-9)));
+            // What it makes of what is past keeping first (its `makes`: the dairies' spare milk, mostly the morning after a
+            // Restday, into cheese and butter, doc 72): one good made into another at the farm, nothing sold or made from
+            // nothing; the rest spoils.
             if (const int have = stock(*account(f.till), good); have > keep)
+                makeOfSpare(f, good, have - keep);
+            if (const int over = stock(*account(f.till), good) - keep; over > 0)
             {
-                const int gone = consume(f.till, good, have - keep, "spoiled");
+                const int gone = consume(f.till, good, over, "spoiled");
                 today.spoiled += gone;
                 today.goods[good].spoiled += gone;
                 loopToday_.goodsSpoiled[good] += gone;
@@ -282,6 +287,40 @@ void Society::tendFarms(std::int64_t day)
             }
         }
     }
+}
+
+int Society::makeOfSpare(FarmNow& f, const std::string& from, int spare)
+{
+    // A farm's `makes` of `spare` pieces of `from` (doc 72: the dairies' spare milk into cheese, then butter): each its
+    // share of the spare (the last all that is left), whole pieces at `in` of `from` a piece, while its store holds under
+    // its `store`. What it used of `from`; journalled "made into <good>" and "made at <farm>": the goods move from one
+    // into the other, nothing sold, no money.
+    const auto* till = f.def ? account(f.till) : nullptr;
+    if (!till || spare <= 0)
+        return 0;
+    std::vector<const items::FarmDef::Make*> mine;
+    for (const auto& m : f.def->makes)
+        if (m.from == from)
+            mine.push_back(&m);
+    auto& today = loopToday_.farms[f.def->id];
+    int left = std::min(spare, stock(*till, from)), used = 0;
+    for (std::size_t i = 0; i < mine.size() && left > 0; ++i)
+    {
+        const auto& m = *mine[i];
+        const int portion = i + 1 == mine.size() ? left : std::min(left, int(std::floor(double(spare) * m.share / 100. + 1e-9)));
+        const int n = std::min(portion / m.in, std::max(0, std::min(m.store, StockCap) - stock(*till, m.good)));
+        if (n < 1 || (!till->stock.count(m.good) && till->stock.size() >= MaxGoodsKinds))
+            continue;
+        if (consume(f.till, from, n * m.in, "made into " + m.good) != n * m.in || !create(f.till, m.good, n, "made at " + f.def->id))
+            break;                                  // (Never: it holds them, and room for the made.)
+        left -= n * m.in;
+        used += n * m.in;
+        today.grown += n;
+        today.used += n * m.in;
+        today.goods[m.good].grown += n;
+        today.goods[from].used += n * m.in;
+    }
+    return used;
 }
 
 void Society::payFarms()
