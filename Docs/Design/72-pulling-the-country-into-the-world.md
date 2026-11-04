@@ -402,7 +402,8 @@ Food-adjacent and largest money first; each phase as doc 71 did it: **modelled p
    shrink as industries leave (30-50 city people lose their posts).
 2. **A land rent from the food farms too.** Recommended: **not before Phase 4**, and then only if the runs show the
    Country short (a few percent of the farms' takings, ~120p a day at 5%, from their basket, not their wages). Or never:
-   then Phase 4 waits for Phase 6.
+   then Phase 4 waits for Phase 6. **Taken (2026-11-03)**, the runs having shown the Country short (country3's year 3):
+   built on branch `r2-country-p3b`, sized for Phase 4 too (Progress, "The farms' land rent and the quarry").
 3. **Peat.** Recommended: **a peat cutting at the Sallow Fens**, crew at Fenshore from those who keep the house, as **a
    second fuel that replaces part of the firewood** (firewood and peat together sized to today's ~450 a day, 586 in
    winter; no shortage is filled, since households take either and firewood meets the need now). It spreads the fuel
@@ -968,3 +969,101 @@ not with it; (2) the quarry: a crew of 1 + 1, or its stone's yield to what sells
 mason's price; (3) the patch for the piling non-perishables (stone, clay, sand, salt, timber, firewood, oak bark,
 charcoal, flax) and peat back up: `country3.patch.json` (`wholeSeasons`: milk spring-autumn, wine autumn); (4) milk
 (cheese and butter, the user's); (5) the city makers' levers (carry-over 4, unchanged; their support up again).
+
+### The farms' land rent and the quarry; country3's patch (2026-11-03, branch `r2-country-p3b`)
+
+Branch `r2-country-p3b`, from `ridgemere2` (1fe8d43). The decision: open question 2's recommendation, now that the runs
+show the Country short (country3's year 3: its sales 639p and rents 175p a day, 814p, against its 824p of posts; 47 days
+unpaid). **No map change, nothing written to DEV, no NPC made**; the treasury's levers (toll, support, float) untouched.
+
+**The land rent** (`Society::payRents`, after the farms' wages at 18:00). Each food farm that paid its crew in full
+tonight pays a percent of its takings since the last night to the House whose land it is on, into the Country's purse
+("the Houses' estates and the sea trade"), booked by House; only out of what its till holds over its float, so never
+from its wages or its float. Through the day its basket keeps the rent owed so far back with its float and tonight's
+wages (`farmsBuy`), so the rent is the share the basket would have spent. A farm short of its wages pays none, and those
+takings' rent is let go (`FarmNow::rentTakings`, the base, starts again each night; not saved: a restart loses the day's).
+The works pay their estates' rent as before and no land rent. The Houses (each area's `house` in `country_farms.json`,
+a farm's own over it):
+
+| Area | House | Why |
+|---|---|---|
+| fruit (orchards, vines) | **Fell** | fine wines, liquors and fruit goods (doc 67, R27; doc 67's "Fell for fruit and wine land") |
+| honey | **Fell** | the hives stand with the orchards, and mead is Fell's kind of liquor |
+| fish | **Grayrock** | the wharf and its boats (R28) |
+| grain, meat, salt | **the Crown** | no House's trade fits (Greatly builds, Timberland the forges); booked "the Crown", named so in the reports |
+
+**The rule** (DM-tweakable, like `countryPostsDays`: `country.json` `rules`, Core's `Rules`, Atlas's and the DM's
+Economy rules, `map_editor.py`, the Editor's model; no migration, `live.economy.rules` is by name): **`landRent` 16**,
+percent of a food farm's takings, for every food area without its own (honey, meat); **`landRentFish` 9,
+`landRentFruit` 4, `landRentGrain` 28, `landRentSalt` 8**, 0 for none. `Society::landRentPercent` reads `landRent` plus
+the area's id (`landRentFruit`), else `landRent`.
+
+**Why those percents.** Each area's is about **half its thinnest farm's margin over its wages in its leanest season**
+(country3's year 3, takings less wages over takings): fish 18% (the sea boats' autumn), fruit 9% (the vineyards'
+winter), grain 57%, honey 32%, meat 32% (the pig farms' autumn), salt 17% (autumn). So every farm keeps at least half its
+basket in its worst season; a flat percent can't, since the thin farms (vineyards, three orchards, salt, the sea boats)
+have 9-18% over their wages while the grain and the dairies have 57-70%. Played on country3's year 3 by farm and season
+(`size.py` in the session's scratchpad), the rent is **336-347p a day (about 14% of the food farms' ~2,390p of takings)**,
+and every farm's takings less wages less rent stay positive in every season: the thinnest vineyard_2's winter 2.3p
+(its basket 3.7p to 2.1p), orchard_5's autumn 2.6p, the salt works' autumn 4.2p, the sea boats' autumn 4.6-7.9p.
+
+**The Country with it** (country3's year 3, its intake by season and the rent beside it; Phase 4, 4.5, takes ~187p a day
+of craft-input sales):
+
+| Season | Intake now (sales + works' rents) | + land rent | Over its 824p of posts | After Phase 4 (-187p) | Over its posts |
+|---|---|---|---|---|---|
+| spring | 805 | 1,152 | +328 | 965 | **+141** |
+| summer | 772 | 1,108 | +284 | 921 | **+97** |
+| autumn | 787 | 1,123 | +299 | 936 | **+112** |
+| winter | 894 | 1,241 | +417 | 1,054 | **+230** |
+
+Its worst season (summer) keeps ~97p a day (12% of its posts) over its posts after Phase 4, besides posts-first's two
+nights. The quarry's fix adds ~6-8p of Greatly's rent. What moves: ~340p a day from the farms' baskets (carts, barrels,
+hoops, tools, rope, nets, building goods) to the Country's purse, which pays its posts and buys back through its own
+basket (iron bars, steel, charcoal, paper and the rest the Country's makers sell): the city's makers' sales shift
+between the two baskets rather than vanish.
+
+**The quarry: 1 + 1.** Its stone sold at a steady ~1.33p a piece (after the toll) in every season of country3; its takings
+followed the mason's demand, 22-29 stone a day: 29.7-36.0p a day in year 3 against a 1 + 2 crew's 36p. The price was
+not wrong (the mason's unchanged), the crew was too large: a stone cutter fewer (`country_farms.json`: hands 1, `minHands`
+1, its float 52p, its crew's purse 114p), 26p a day, under its leanest season's 29.7p. Its yield is unchanged by the crew
+(the patch's half step, below). Its keeper and hand are still of the pool's Greyscar stone cutters.
+
+**country3's patch** applied (`tools/econ_report.py --apply artifacts/economy/r2/country3.patch.json
+Data/Economy/country_farms.json --damping 0.5`, its `wholeSeasons` the whole step: milk spring to autumn, wine autumn):
+122 yields; peat back up (86.4 / 103.3 / 89.6 / 217.7), the piling stone, clay, sand, salt, timber, firewood, oak bark,
+charcoal and flax half way down.
+
+**Reports.** The economy line gains `country_land_rents` and `country_land_rents_by_house`; `econ_report.py`'s Country
+line "the farms' land rents 317p (the Crown 262p, House Fell 37p, House Grayrock 18p)" and a table of the food farms'
+land rent by farm (House, takings, wages owed, rent, its percent, basket, and what was left over wages and rent); the
+farms' table's `rent/farm-day` is a works' rent or a farm's land rent. Atlas's farms panel names each area's House ("land
+rent to the Crown").
+
+**Tests.** `farms_behaviors` (1,806 checks): new `theLandRent` (the areas' Houses; the percents, the world's own over
+country.json's; 28% of a grain farm's takings owed; its basket bought but kept its float, tonight's wages and the rent;
+at 18:00 the crews paid in full, then the rent to the Crown, booked as land rents, not works' rents, journalled
+"a land rent: the Crown"; its float whole; conserved; a till 3p over its float and wages pays those 3p and no more; a
+farm short of its wages pays none and owes none the next night; a works owes no land rent) and
+`theCountryPaysItsPosts` (six dockers, the Country's purse emptied, the food areas on, only the nights run: with no rent
+its posts go unpaid, with the rent each night's pays the next night's posts in full); `theStoneWorks` the quarry 1 + 1
+and the patched yields; `theTableShare` 73 of 92. `farm_people_behaviors`: 37 keepers and 89 hands. `ctest` in
+`build-core`: **78 of 78**. `test_econ_report` (7: new `test_the_land_rent`), `test_farms_summary`,
+`test_country_industry`, `test_item_catalog`, `test_studio`, `test_world_store` pass; the Editor's typecheck and
+`economy.test.ts` (the five new rules) pass. (`test_map_editor`'s and `content.test.mjs`'s Greyfen export counts 11
+residents against 10: not this branch's.)
+
+**The 30-day smoke** (`world_check` on build 60's export, `--simulate 0 720 --farms 0 --farms-every 1 --deterministic
+--threads 4 --economy-level full`; `artifacts/economy/r2/country3b-smoke-report.md`, `country3b-smoke.patch.json`, a
+first spring's, not to be applied): money conserved every day; nobody hungry; **every farm and works paid its crew in
+full** (the quarry 598p of 598p, takings 31.8p a day, its rent 5.8p); **the land rent 317p a day** over the run (the
+last three weeks ~340p; a Restday ~100p, the day before one ~530p, the buying ahead), each farm at or under its percent
+(the thin ones under: a lean day's rent is what is over its float); every farm's takings less wages less rent positive
+(the least: salt 5.0-5.2p, the sea and lake boats 5.8-8.9p, the orchards and vines 17-99p in spring). **The Country
+paid all its posts every night** (24,720p of 24,720p), its purse 1,441 to 1,795p (least 1,278p; country3's smoke 906p),
+its basket 824p a day (country3's smoke 585p); the treasury 1,264 to 3,362p (least at night 1,248p). The shipwright
+and the ironworks left the short tills (the Country's larger basket); the **brickworks (24p a day short) and the
+ropewalk (19p) joined them**: the farms' basket buys their bricks and rope, and it is smaller by the rent. Those are the
+city makers' levers (carry-over 4, the user's: the Country's basket's shares), not changed here.
+
+Next: the 3-year run (the user's go-ahead first) to judge the rent through the seasons and years 2-3 before Phase 4.

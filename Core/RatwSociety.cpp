@@ -1618,6 +1618,7 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         day.goods[item].sold += lots[i].second;
         loopToday_.goodsSold[items::baseOf(item)] += lots[i].second;
         day.takings += takings[i];
+        lots[i].first->rentTakings += takings[i];   // (Its land rent's base tonight: doc 72.)
         lots[i].first->takingsCarry = carries[i];
     }
     loopToday_.drawn += cost;
