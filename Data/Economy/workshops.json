@@ -34,6 +34,10 @@
     {"building": "cn_oakhaven_press", "community": "oakhaven", "name": "Oakhaven Print House", "business": "country_press", "house": "Timberland",
      "about": "Pamphlets and paper, the press nearer the city (a third hand, as Larkfield's).",
      "posts": [{"post": "country printer", "count": 1}, {"post": "paper vat hand", "count": 3}],
-     "work": [{"x": 3, "y": 3}, {"x": 5, "y": 3}, {"x": 7, "y": 3}]}
+     "work": [{"x": 3, "y": 3}, {"x": 5, "y": 3}, {"x": 7, "y": 3}]},
+    {"building": "cn_coldwater_still", "community": "coldwater", "name": "Coldwater Still", "business": "country_still", "house": "Fell",
+     "about": "Apple brandy and brandy (doc 72, Progress, \"The producers and the fixes\"; the user, 2026-11-04: new producers for them): House Fell's, whose land the orchards and vines are (doc 67: Fell wine and fruit), in the village of the Greenholt's two orchards, where the apples piled ~9 a day an orchard in iron6's year 3. Cider pressed of the orchards' apples (2 a jug) and stilled into apple brandy (3 jugs a bottle), the vineyards' wine into brandy (2 bottles to 1). No household bought either before (the distillery's sat unsold); now a comfort, so sized small: ~5 apple brandy and ~1 brandy a day, ~24 crew-hours (the stillmaster and a hand).",
+     "posts": [{"post": "stillmaster", "count": 1}, {"post": "still hand", "count": 1}],
+     "work": [{"x": 3, "y": 3}, {"x": 5, "y": 3}]}
   ]
 }

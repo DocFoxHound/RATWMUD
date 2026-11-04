@@ -125,7 +125,7 @@ void build(Fixture& x)
     add("fishes the waters off Greywater", 18, 20);
     add("traps eels in the fen", 3, 30);
     add("cuts reeds in the marsh", 3, 30);
-    add("keeps the house", 36, 20);                // (The workshops' 35 posts since country5b's carry-overs: 20 were 18's.)
+    add("keeps the house", 37, 20);                // (The workshops' 37 posts since the still: 20 were 18's, 36 35's.)
     add("serves at The Lantern", 12, 20);
     add("helps at The Stores", 10, 20);
     add("logging at Cedarfall", 5, 20);
@@ -152,6 +152,7 @@ void build(Fixture& x)
     one("inn_eel", "keeps The Eel and Lantern", 30);
     one("baker_lake", "baker at The Lake Oven", 50);
     one("baker_wheat", "baker at The Wheatsheaf Bakery", 48);
+    one("still_cw", "brewer at The Copper Worm", 44, "male");   // (The still's keeper: doc 72, after iron6.)
     // A family: the oldest of the fields (57), the spouse who keeps the house, a child, a grown son of the fields (a hand).
     one("rook", "farms the downs", 57, "male");
     one("iris", "keeps the house", 55);
@@ -445,10 +446,12 @@ void thePlacement()
         expect(atWorkshop[w.area] == want, w.area + ": its " + std::to_string(want) + " posts: " + std::to_string(atWorkshop[w.area]));
         workshopPosts += atWorkshop[w.area];
     }
-    expect(people.workshops.size() == 8 && workshopPosts == 35, "the eight workshops' 35 posts: " + std::to_string(workshopPosts));
+    expect(people.workshops.size() == 9 && workshopPosts == 37, "the nine workshops' 37 posts (the still since iron6, doc 72): " + std::to_string(workshopPosts));
     expect(!keeperOf["cn_oakhaven_store"].empty(), "Oakhaven's store kept, with its works");
-    expect(keeperOf["cn_larkfield_store"] == "shop_larkfield" && keeperOf["cn_coldwater_store"] == "shop_coldwater",
-           "Larkfield Stores kept by Larkfield General's shopkeeper, Coldwater Stores by Coldwater Sundries'");
+    // (The still's keeper the brewer, of its words: doc 72, after iron6.)
+    expect(keeperOf["cn_larkfield_store"] == "shop_larkfield" && keeperOf["cn_coldwater_store"] == "shop_coldwater" &&
+               keeperOf["cn_coldwater_still"] == "still_cw",
+           "Larkfield Stores kept by Larkfield General's shopkeeper, Coldwater Stores by Coldwater Sundries', the still by the brewer: " + keeperOf["cn_larkfield_store"] + ", " + keeperOf["cn_coldwater_store"] + ", the still " + keeperOf["cn_coldwater_still"]);
     // (Frosthollow Stores by the old map's Frosthollow Stores' shopkeeper: Fenshore, staffed before it, leaves another
     // community's namesake to it.)
     expect(keeperOf["cn_frosthollow_store"] == "shop_frost" && keeperOf["cn_fenshore_store"] != "shop_frost",

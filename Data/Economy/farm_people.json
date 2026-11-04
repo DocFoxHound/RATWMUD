@@ -67,6 +67,8 @@
     "village potter": {"label": "village potter at {name}", "role": "merchant", "words": ["potter", "clay", "brick"], "trades": ["the towns' trades and shops", "keeps the house", "service and labour"]},
     "kiln hand": {"label": "kiln hand at {name}", "role": "civilian", "words": ["potter", "clay", "brick"], "trades": ["keeps the house", "service and labour", "the towns' trades and shops"]},
     "village smith": {"label": "village smith at {name}", "role": "merchant", "words": ["smith", "forge"], "trades": ["the towns' trades and shops", "keeps the house", "service and labour"]},
-    "striker": {"label": "striker at Larkfield's anvil", "role": "civilian", "words": ["smith", "forge", "helps at"], "trades": ["keeps the house", "service and labour", "the towns' trades and shops"]}
+    "striker": {"label": "striker at Larkfield's anvil", "role": "civilian", "words": ["smith", "forge", "helps at"], "trades": ["keeps the house", "service and labour", "the towns' trades and shops"]},
+    "stillmaster": {"label": "stillmaster at {name}", "role": "merchant", "words": ["distiller", "still", "vintner", "brewer", "cider", "orchard", "fell wine"], "trades": ["the towns' trades and shops", "orchards and vines", "keeps the house", "service and labour"]},
+    "still hand": {"label": "still hand at {name}", "role": "civilian", "words": ["distiller", "still", "cider", "orchard", "picks apples", "tends the vines", "helps at"], "trades": ["orchards and vines", "keeps the house", "service and labour", "the towns' trades and shops"]}
   }
 }

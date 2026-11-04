@@ -340,6 +340,11 @@ struct Country
     std::map<std::string, int> rules;               // Every rule (Rules) by name, as country.json gives it.
     std::vector<ServiceDef> services;
     std::vector<Supplier> suppliers;
+    // The Houses' city businesses (country.json `houseBusinesses`; doc 72, after iron6): a till whose post works at one of
+    // these buildings is its House's, as a country workshop is: what it holds each night over its float and
+    // workshopWagesDays of its wages goes to that House's estate, not its keeper, and its wages drift at most
+    // workshopWageMost. Building (an area id) -> House.
+    std::map<std::string, std::string> houseTills;
     std::vector<Patrons> patrons;
     std::vector<WorksOrder> works;
     std::map<std::string, int> shelves;             // A dear good's shelf (theriac: 1), in place of GoodsKept.

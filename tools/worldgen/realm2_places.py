@@ -259,7 +259,10 @@ LIME_KILN = (12, 8)
 # communities and the works' footpaths, on the communities' free lots, so nothing laid before moves.
 WORKSHOPS = {
     'coldwater': [('soapworks', 'soapworks', 'The Coldwater Boiling House', 4),
-                  ('weavers', 'weavers_wool', 'Coldwater Loom Shed', 5)],
+                  ('weavers', 'weavers_wool', 'Coldwater Loom Shed', 5),
+                  # (Doc 72, Progress, "The producers and the fixes": House Fell's still, among the Greenholt's two
+                  # orchards; last of the village's workshops, so the two before it don't move.)
+                  ('still', 'still', 'Coldwater Still', 2)],
     'larkfield': [('weavers', 'weavers_linen', 'Larkfield Linen Shed', 5),
                   ('press', 'press', 'Larkfield Press and Paper Mill', 5),
                   ('smithy', 'smithy', 'Larkfield Smithy', 1)],
@@ -535,7 +538,9 @@ for _kind, _size, _what, _stations, _trade in (
         ('country_press', (24, 12), 'rag vats and a stamping mill at one end, the printing presses at the other',
          [('paper_vat', 3), ('press', 1), ('printing_press', 2), ('scribe_desk', 1)], 'printer'),
         ('village_smithy', (14, 10), 'a forge and its anvil, a grindstone and a bench of tongs and hammers',
-         [('forge', 1), ('grindstone', 1), ('workbench', 1)], 'smith')):
+         [('forge', 1), ('grindstone', 1), ('workbench', 1)], 'smith'),
+        ('country_still', (16, 11), 'copper stills over their fires, a cider press and casks racked along the walls',
+         [('still', 2), ('press', 1), ('workbench', 1)], 'distiller')):
     KIT_WORKS.setdefault(_kind, (_size, _what))
     WORKS_STATIONS.setdefault(_kind, _stations)
     WORKS_TRADE.setdefault(_kind, _trade)
@@ -555,6 +560,9 @@ WORKSHOP_KINDS = {
                'of tongs and hammers; iron hoops, nails and cookpots hung by the door for the farms.'),
     'pottery': ('country_pottery', '{name}: kilns along the back wall, potters\' wheels by the windows, the clay from the '
                 'pits in tubs and rows of new pots drying on the shelves; the kiln yard outside.'),
+    'still': ('country_still', '{name}: two copper stills over their fires, the worms coiled down into tubs of cold water, '
+              'a cider press by the door with the orchards\' apples in baskets, and casks of apple brandy and brandy '
+              'racked along the walls.'),
 }
 WORKSHOP_FLAT_PROSE = 'The keeper\'s rooms over the workshop: a hearth, a table and beds under the eaves, and the smell ' \
                       'of the trade coming up the stairs.'
@@ -1770,16 +1778,17 @@ class Places:
         out.append(('the hired hands where the user put them (21, 11, 8, 8, 5, Oakhaven and Frosthollow none; 23 in '
                     'Ridgemere)',
                     got == want and c['ridgemere']['hands'] == 23, f'{got}, Ridgemere {c["ridgemere"]["hands"]}'))
-        # Doc 72, Phase 5: the eight workshops by their fixed ids, each with its keeper's flat and a work spot for each of
-        # its crew (29 in all), in one walk with its community's homes.
+        # Doc 72, Phase 5: the workshops by their fixed ids, each with its keeper's flat and a work spot for each of its
+        # crew, in one walk with its community's homes: the eight (29) and, since the producers (doc 72, Progress), the
+        # still (31).
         shops = {w['id']: (com, w) for com in c['communities'] for w in com['workshops']}
         fixed = {f'cn_{k}_{key}' for k, lst in WORKSHOPS.items() for key, *_ in lst}
         short = [i for i, (com, w) in shops.items() if len(w['work']) < w['crew']['keepers'] + w['crew']['hands'] or
                  not any(f['area'] == w['flat'] and f['capacity'] >= 1 for f in com['flats']) or
                  label_at(w['door']) not in {label_at(h['door']) for h in com['homes']}]
         crew = sum(w['crew']['keepers'] + w['crew']['hands'] for _, w in shops.values())
-        out.append(('the country workshops (doc 72, Phase 5): the eight, a keeper\'s flat and work for their 29 each',
-                    set(shops) == fixed and not short and crew == 29,
+        out.append(('the country workshops (doc 72, Phase 5; the still): the nine, a keeper\'s flat and work for their 31 each',
+                    set(shops) == fixed and not short and crew == 31,
                     f'{len(shops)} built, crew {crew}; short: {", ".join(short)}'))
         # Doc 72, 4.7: Frosthollow's works (the iron mine, the lime quarry and its kiln, the Greyteeth hearths), each with
         # its keeper's house in the village, its work spots and a footpath from the village under the longest walk.

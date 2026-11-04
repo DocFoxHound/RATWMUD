@@ -659,6 +659,10 @@ Catalog build()
             if (!supplier.buyer.empty() && !supplier.seller.empty() && supplier.buyer != supplier.seller)
                 c.country.suppliers.push_back(std::move(supplier));
         }
+        // The Houses' city businesses (doc 72, after iron6): a building and its House each, the first entry for a building.
+        for (const auto& b : country.object("houseBusinesses").array("list"))
+            if (const auto building = b.string("building"), house = b.string("house"); !building.empty() && !house.empty())
+                c.country.houseTills.emplace(building, house);
         for (const auto& t : country.object("patrons").array("list"))
         {
             Patrons trade;
