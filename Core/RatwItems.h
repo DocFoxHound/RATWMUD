@@ -179,8 +179,10 @@ inline constexpr RuleInfo Rules[] = {
     {"buyAheadDays", 0, 5, 1},           // Days of food more a household buys the day before a Restday or festival.
     {"floatDrawDays", 1, 28, 7},         // A till's working float: its mean draws a day over this many days (1: yesterday's).
     {"floatWagesDays", 0, 60, 7},        // Days of its posts' wages a till keeps, over its float, before its keeper's profit.
-    {"workshopWagesDays", 0, 60, 2},     // A country workshop's, before its House's share (doc 72, after country5: the
-                                         // works' floatDays, 2; a House's till needs no week of wages in hand).
+    {"workshopWagesDays", 0, 60, 3},     // A country workshop's, before its House's share (doc 72, after country5: the
+                                         // works' floatDays, 2; a House's till needs no week of wages in hand; 3 after
+                                         // country5b: with 2, Larkfield's smithy, its float a day's iron bars, was
+                                         // short on its Restdays).
     {"subsidyToNeed", 0, 1, 1},          // The carriage subsidy only while the carters lack their crew's wages tonight.
     {"countryPostsDays", 1, 30, 2},      // Nights of its posts' wages the Country keeps before its basket and patrons (doc 72).
     // The food farms' land rent (doc 72, open question 2): percent of a farm's takings to its House's estate each night,
