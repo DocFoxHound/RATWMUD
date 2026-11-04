@@ -532,10 +532,17 @@ int Society::farmsHold(const std::string& item) const
         return 0;
     int held = 0;
     for (const auto& f : farms_)
-        if (f.area == std::size_t(area))
+        if (farmSells(f, std::size_t(area), item))
             if (const auto* till = account(f.till))
                 held += stock(*till, item);
     return held;
+}
+
+bool Society::farmSells(const FarmNow& f, std::size_t area, const std::string& item) const
+{
+    // A good is one area's (the first that names it, country_farms.json); a farm of another area on may grow it too (doc
+    // 72, the iron: the Frosthollow hearth's charcoal for the ironworks, the iron area's, sold beside the woods' own).
+    return f.area == area || (f.def && farmAreaOn(f.area) && f.def->yield.count(items::baseOf(item)));
 }
 
 double Society::farmPriceFactor(const std::string& item) const

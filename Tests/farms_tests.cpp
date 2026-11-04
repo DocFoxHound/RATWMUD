@@ -14,7 +14,9 @@
 // and the households' fuel, firewood or peat, whichever their shops hold. Phase 3: the stone's works (the granite quarry
 // and the two clay pits, House Greatly's; a pit with one hand and no keeper), and the Country's table less the works'
 // crews. Phase 3's follow-up (open question 2): the food farms' land rent to their House, from their basket's share, and
-// the Country's posts paid with it.
+// the Country's posts paid with it. The iron and the lime (doc 72, Progress, "Iron and lime out of the Country"): the
+// Frosthollow mine and the Upper hearths (House Timberland's), the city's ironworks smelting their ore and charcoal into
+// the bars the smith buys from it first, and the lime quarry (House Greatly's), the store room sending none of them.
 //
 // The catalogue is the real Data (RATW_SOURCE_DIR), country_farms.json with it.
 #include "RatwCalendar.h"
@@ -166,7 +168,7 @@ int held(const Society& s, const std::string& account, const std::string& item)
 void theDefaults()
 {
     const auto& f = items::farms();
-    expect(f.areas.size() == 8, "six food areas, the fuel's works and the stone's (doc 72): " + std::to_string(f.areas.size()));
+    expect(f.areas.size() == 10, "six food areas, the fuel's works, the stone's, the iron's and the lime's (doc 72): " + std::to_string(f.areas.size()));
     int farms = 0, keepers = 0, hands = 0;
     std::map<std::string, int> kinds;
     for (const auto& a : f.areas)
@@ -184,9 +186,9 @@ void theDefaults()
     expect(kinds["vineyard"] == 2 && kinds["salt works"] == 2 && kinds["grain farm"] == 2,
            "two vineyards and two salt works (the user's decision), two grain farms");
     expect(f.keeper == 16 && f.hand == 10 && f.floatDays == 2 && f.openingStockDays == 7, "a keeper 16p and a hand 10p, two days' float");
-    expect(f.start == -1 && f.every == 28 && f.order.size() == 8 && f.order.front() == "grain" && f.order[6] == "fuel" &&
-               f.order.back() == "stone",
-           "no switch until a world sets one; an area every 28 days, grain first, the fuel's works, then the stone's last");
+    expect(f.start == -1 && f.every == 28 && f.order.size() == 10 && f.order.front() == "grain" && f.order[6] == "fuel" &&
+               f.order[7] == "stone" && f.order[8] == "iron" && f.order.back() == "lime",
+           "no switch until a world sets one; an area every 28 days, grain first, the fuel's works, the stone's, then the iron's and the lime's last");
     expect(f.estatePeople == 24 && f.otherWorkers == 68, "the Country's own people at its table: 24 of the estates, 68 workers");
     expect(!f.basket.empty() && !f.countryBasket.empty() && !f.switchTrades.empty(), "the farms' basket, the Country's after, the losers");
     // Its re-weighted basket buys nothing the farms' does but the building goods (doc 72, after country3b: the land rent
@@ -338,9 +340,9 @@ void thePhasedSwitch()
     turn(s, 38);
     expect(s.farmAreaOn(areaIndex("fruit")) && s.farmAreaOn(areaIndex("grain")) && !s.farmAreaOn(areaIndex("meat")),
            "fruit on day 38, grain still on, meat not yet");
-    turn(s, 10 + 7 * 28);
+    turn(s, 10 + 9 * 28);
     for (std::size_t a = 0; a < items::farms().areas.size(); ++a)
-        expect(s.farmAreaOn(a), "every area on by the eighth month (the stone's works last)");
+        expect(s.farmAreaOn(a), "every area on by the tenth month (the iron's and the lime's works last)");
     expect(std::abs(s.countryBasketShift() - 1) < 1e-9, "and the Country's basket wholly re-weighted");
     expect(s.conserved(), "conserved throughout");
     // An area's own switch over the schedule: off whatever the day.
@@ -936,7 +938,8 @@ void theWorks()
                keepers == 5 && hands == 10 && wages == 180,
            "five works, 5 keepers and 10 hands, 180p a day");
     for (const auto& a : f.areas)
-        expect(a.id == "fuel" || a.id == "stone" || (!a.works && !a.house.empty()), a.id + ": a food area, its land rent's House");
+        expect(a.id == "fuel" || a.id == "stone" || a.id == "iron" || a.id == "lime" || (!a.works && !a.house.empty()),
+               a.id + ": a food area, its land rent's House");
     // On: founded as farms are; the shops' fuel from the works' stores, nothing to the Country.
     auto s = city([](EconomySpec& e) { e.farms.areas["fuel"].on = 1; }, aStore());
     turn(s, 46);
@@ -1070,7 +1073,7 @@ void theStoneWorks()
     }
     for (const char* good : {"stone", "clay", "sand"})
         expect(s.farmAreaOf(good) == int(areaIndex("stone")), std::string(good) + ": the stone area's");
-    expect(s.farmAreaOf("limestone") < 0 && s.farmAreaOf("lime") < 0, "limestone and lime still the Country's (the lime quarry waits)");
+    expect(s.farmAreaOf("limestone") < 0 && s.farmAreaOf("lime") < 0, "limestone and lime still the Country's (the lime area off)");
     const auto quarryTill = Society::farmTill("quarry_granite");
     const int blocks = held(s, quarryTill, "stone");
     expect(blocks > 150 && s.farmsHold("stone") == blocks, "the quarry's store holds a week of stone: " + std::to_string(blocks));
@@ -1122,6 +1125,192 @@ void theStoneWorks()
     expect(s.conserved(), "conserved");
 }
 
+void theIronAndLime()
+{
+    // Doc 72, Progress, "Iron and lime out of the Country" (the user's go-ahead, 2026-11-04; 4.7): the Frosthollow iron
+    // mine and the Upper hearths, House Timberland's (the forges' House), whose ore and charcoal the city's Timberland
+    // Ironworks and foundry smelt into the wrought iron the city's makers buy from them first (country.json `suppliers`);
+    // the lime quarry and its kiln, House Greatly's. Each pays its crew at the works' fixed wages and sends what is over its
+    // two days' float to its House's estate; while they are on the store room sells no iron ore, iron bars, limestone or
+    // lime; off, it does again. Copper and tin stay the Country's.
+    const auto& f = items::farms();
+    const auto& iron = f.areas[areaIndex("iron")];
+    const auto& lime = f.areas[areaIndex("lime")];
+    expect(iron.works && iron.house == "Timberland" && iron.goods == std::vector<std::string>({"iron_ore", "iron_bar"}),
+           "the iron area: works on House Timberland's land, the ore and the wrought iron its goods");
+    expect(lime.works && lime.house == "Greatly" && lime.goods == std::vector<std::string>({"limestone", "lime"}),
+           "the lime area: works on House Greatly's land, limestone and lime");
+    std::map<std::string, std::pair<int, int>> crews;
+    for (const auto* area : {&iron, &lime})
+        for (const auto& x : area->farms)
+        {
+            crews[x.id] = {x.keepers, x.hands};
+            expect(x.table.empty() && x.basketADay == 0 && x.reserve == 2 * (16 * x.keepers + 10 * x.hands),
+                   x.id + ": no Country's table, no basket, a float of two days' wages");
+            for (const auto& [good, y] : x.yield)
+                expect(y[0] > 0 && y[1] > 0 && y[2] > 0 && y[3] > 0, x.id + "'s " + good + ": made in every season");
+        }
+    expect(crews == std::map<std::string, std::pair<int, int>>(
+                        {{"mine_frost_iron", {1, 1}}, {"charcoal_upper", {1, 2}}, {"quarry_lime", {0, 1}}}),
+           "the mine 1 + 1, the hearths 1 + 2, the lime quarry one hand: 2 keepers and 4 hands, 72p a day");
+    expect(iron.farms.front().yield.at("iron_ore")[0] > 2 * 27 && iron.farms.back().yield.at("charcoal")[0] > 27,
+           "two ore and a sack of charcoal a bar for the ~27 bars a day the Country sold");
+    for (const char* good : {"copper_ore", "tin_ore", "copper_bar", "tin_bar"})
+        for (const auto& a : f.areas)
+            expect(std::find(a.goods.begin(), a.goods.end(), good) == a.goods.end(), std::string(good) + " stays the Country's");
+    const auto sellers = Society(Roster::None).citySellers("smithy", "iron_bar");
+    expect(sellers == std::vector<std::string>({"ironworks", "foundry"}), "the smiths' wrought iron from the ironworks and the foundry");
+    for (const char* buyer : {"country_smithy", "cooperage", "cartwright", "tinker", "builders_works", "armory", "saddlery", "fletcher"})
+        expect(Society(Roster::None).citySellers(buyer, "iron_bar") == sellers, std::string(buyer) + "'s too");
+
+    // On, with the woods (the ironworks' charcoal from the store room: the woods' and the Upper hearths'): founded, the
+    // shops' goods from the works' stores and none from the Country.
+    const auto ironmaster = person("ironmaster", "merchant", "ironmaster at the Timberland Ironworks", {"ironworks", 2.5, 2.5}, "home_iron", 40, 600);
+    const auto mason = person("mason", "merchant", "stonemason in Chisel Row", {"masonry", 2.5, 2.5}, "home_mason", 40, 400);
+    auto s = city(
+        [](EconomySpec& e) {
+            e.farms.areas["fuel"].on = 1;
+            e.farms.areas["iron"].on = 1;
+            e.farms.areas["lime"].on = 1;
+        },
+        {ironmaster, mason});
+    turn(s, 46);
+    for (const auto* area : {&iron, &lime})
+        for (const auto& w : area->farms)
+        {
+            const auto& now = farm(s, w.id);
+            expect(s.account(now.till) && s.account(now.crew) && now.house == area->house && now.rents(),
+                   w.id + " founded, its rent " + area->house + "'s");
+        }
+    for (const char* good : {"iron_ore", "iron_bar"})
+        expect(s.farmAreaOf(good) == int(areaIndex("iron")), std::string(good) + ": the iron area's");
+    for (const char* good : {"limestone", "lime"})
+        expect(s.farmAreaOf(good) == int(areaIndex("lime")), std::string(good) + ": the lime area's");
+    expect(s.farmAreaOf("charcoal") == int(areaIndex("fuel")) && s.farmAreaOf("copper_ore") < 0, "charcoal the woods'; copper ore the Country's");
+    const auto mine = Society::farmTill("mine_frost_iron"), hearths = Society::farmTill("charcoal_upper"), quarry = Society::farmTill("quarry_lime");
+    const int ore = held(s, mine, "iron_ore"), sacks = held(s, hearths, "charcoal");
+    expect(ore > 350 && s.farmsHold("iron_ore") == ore, "the mine's store holds a week of ore: " + std::to_string(ore));
+    expect(sacks > 150 && s.farmsHold("charcoal") == sacks + held(s, Society::farmTill("coppice_greenholt"), "charcoal"),
+           "the hearths' charcoal in the store room beside the Greenholt's: " + std::to_string(sacks));
+    expect(s.farmsHold("iron_bar") == 0, "no works holds wrought iron: the ironworks makes it");
+    const auto country = s.cash(Society::CountryFund), money = s.moneySupply();
+    const auto bars = s.drawFromStore("smith", "iron_bar", 2, "drawn for nails");
+    expect(!bars.ok && s.cash(Society::CountryFund) == country, "the store room sends no wrought iron: " + bars.message);
+    const auto o = s.drawFromStore("ironmaster", "iron_ore", 10, "drawn for iron_bar");
+    const auto c = s.drawFromStore("ironmaster", "charcoal", 20, "drawn for iron_bar");
+    expect(o.ok && c.ok && o.message.find("from the farms") != std::string::npos, "the ironworks' ore and charcoal from the works: " + o.message);
+    expect(held(s, mine, "iron_ore") == ore - 10 && held(s, hearths, "charcoal") < sacks && s.cash(Society::CountryFund) == country,
+           "the ore out of the mine, the charcoal partly the hearths', nothing to the Country");
+    const auto ls = s.drawFromStore("mason", "limestone", 8, "restocked from the store room");
+    expect(ls.ok && ls.message.find("from the farms") != std::string::npos && held(s, quarry, "limestone") > 0 &&
+               s.cash(Society::CountryFund) == country,
+           "the mason's limestone from the lime quarry: " + ls.message);
+    expect(s.conserved() && s.moneySupply() == money, "conserved");
+
+    // The ironworks smelts: two ore and a sack of charcoal a bar, the ore and charcoal drawn from the works' stores.
+    const auto works = s.tillOf("ironmaster"), smith = s.tillOf("smith");
+    for (const auto& ware : s.wares("ironmaster"))
+        if (const int n = held(s, works, ware); n > 0 && ware != "charcoal")
+            s.consume(works, ware, n, "test: its shelves empty");
+    for (const char* input : {"iron_ore", "charcoal"})
+        if (const int n = held(s, works, input); n > 0)
+            s.consume(works, input, n, "test: none of its own");
+    s.takeJournal();
+    const auto m0 = s.moneySupply();
+    for (int h = 0; h < 30; ++h)
+        s.restockFromStore("ironmaster", 50 + 8. / 24 + h / 24.);
+    std::map<std::string, int> drawn;
+    int smelted = 0;
+    for (const auto& e : s.takeJournal())
+    {
+        if (e.kind == "drawn for iron_bar" && e.to == works && e.from.rfind("farm:", 0) == 0)
+            drawn[e.item] += e.quantity;
+        if (e.kind == "made from the store room" && e.item == "iron_bar" && e.to == works)
+            smelted += e.quantity;
+    }
+    expect(smelted > 0 && drawn["iron_ore"] > 0 && drawn["charcoal"] > 0,
+           "the ironworks smelted " + std::to_string(smelted) + " bars of the works' ore (" + std::to_string(drawn["iron_ore"]) +
+               ") and charcoal (" + std::to_string(drawn["charcoal"]) + ")");
+    expect(s.conserved() && s.moneySupply() == m0, "conserved");
+
+    // The smith's wrought iron from the ironworks' till first, at its price: none from the store room.
+    if (held(s, works, "iron_bar") < 4)
+        s.create(works, "iron_bar", 4, "test: bars on the ironworks' shelf");
+    for (const auto& ware : s.wares("smith"))
+        if (ware != "nails")
+            s.create(smith, ware, 40, "test: the shelves full");
+    for (const char* none : {"nails", "iron_bar"})
+        if (const int n = held(s, smith, none); n > 0)
+            s.consume(smith, none, n, "test: none of its own");
+    if (held(s, smith, "charcoal") < 4)
+        s.create(smith, "charcoal", 4, "test: the smith's charcoal");
+    const auto w0 = s.cash(works), sm0 = s.cash(smith), t0 = s.cash("treasury"), m1 = s.moneySupply();
+    s.takeJournal();
+    for (int h = 0; h < 12; ++h)
+        s.restockFromStore("smith", 51 + 8. / 24 + h / 24.);
+    int fromWorks = 0, fromStore = 0;
+    for (const auto& e : s.takeJournal())
+        if (e.item == "iron_bar" && e.kind == "from a city maker" && e.from == smith && e.to == works)
+            fromWorks += e.quantity;
+        else if (e.item == "iron_bar" && e.to == smith && e.kind.rfind("drawn for", 0) == 0)
+            fromStore += e.quantity;
+    expect(fromWorks > 0 && fromStore == 0 && s.cash(works) - w0 >= fromWorks * Society::catalogPrice("iron_bar") &&
+               held(s, smith, "nails") > 0 && s.cash("treasury") == t0,
+           "the smith's bars from the ironworks (" + std::to_string(fromWorks) + "), none from the store room, no toll; nails made");
+    expect(sm0 > s.cash(smith) && s.conserved() && s.moneySupply() == m1, "conserved");
+
+    // At 18:00 each works pays its crew; what is over its float goes to its House's estate, booked by House.
+    turn(s, 52);
+    expect(s.operatorTransfer("treasury", mine, "", 0, 300).ok && s.operatorTransfer("treasury", quarry, "", 0, 100).ok,
+           "the mine given 300p, the lime quarry 100p (moved, not made)");
+    const auto before = s.moneySupply();
+    s.takeJournal();
+    run(s, 52 + 17.9 / 24, 52 + 18.5 / 24);
+    const auto& d = s.loopToday();
+    std::int64_t timberland = 0, greatly = 0;
+    for (const auto* area : {&iron, &lime})
+        for (const auto& w : area->farms)
+        {
+            const auto& day = d.farms.at(w.id);
+            const auto& now = farm(s, w.id);
+            expect(day.wagesOwed == now.wages() && day.wagesPaid == day.wagesOwed, w.id + " paid its crew: " + std::to_string(day.wagesPaid));
+            expect(s.cash(now.till) <= now.reserve, w.id + ": at its float or under after its rent");
+        }
+    expect(d.farms.at("mine_frost_iron").rent >= 300 - 2 * 26 && d.farms.at("quarry_lime").rent >= 100 - 2 * 10,
+           "the mine's and the quarry's rents: what was over their floats and wages: " + std::to_string(d.farms.at("mine_frost_iron").rent) +
+               "p, " + std::to_string(d.farms.at("quarry_lime").rent) + "p");
+    for (const auto& e : s.takeJournal())
+        if (e.kind == "an estate's rent: House Timberland" && (e.from == mine || e.from == hearths))
+        {
+            expect(e.to == "estate:timberland", "the iron's rent to Timberland's estate");
+            timberland += e.coins;
+        }
+        else if (e.kind == "an estate's rent: House Greatly" && e.from == quarry)
+        {
+            expect(e.to == "estate:greatly", "the lime's rent to Greatly's estate");
+            greatly += e.coins;
+        }
+    expect(timberland == d.farms.at("mine_frost_iron").rent + d.farms.at("charcoal_upper").rent && greatly == d.farms.at("quarry_lime").rent &&
+               timberland >= 248 && greatly >= 80,
+           "booked to their Houses: Timberland " + std::to_string(timberland) + "p, Greatly " + std::to_string(greatly) + "p");
+    expect(s.conserved() && s.moneySupply() == before, "conserved");
+
+    // Off: the Country sends wrought iron, ore, limestone and lime again.
+    auto e = s.authored().economy;
+    e.farms.areas["iron"].on = 0;
+    e.farms.areas["lime"].on = 0;
+    s.adoptEconomy(e);
+    const auto c2 = s.cash(Society::CountryFund);
+    if (held(s, smith, "iron_bar") > 0)
+        s.consume(smith, "iron_bar", held(s, smith, "iron_bar"), "test: none of its own");
+    const auto back = s.drawFromStore("smith", "iron_bar", 2, "drawn for nails");
+    const auto stone = s.drawFromStore("mason", "limestone", 2, "restocked from the store room");
+    expect(back.ok && stone.ok && back.message.find("from the farms") == std::string::npos && s.cash(Society::CountryFund) > c2 &&
+               s.farmAreaOf("iron_ore") < 0 && s.farmAreaOf("lime") < 0,
+           "iron and lime off: the Country's wrought iron and limestone again: " + back.message);
+    expect(s.conserved(), "conserved");
+}
+
 void theLandRent()
 {
     // Doc 72, open question 2 (taken once country3 showed the Country's intake, 814p a day in year 3, under its 824p of
@@ -1136,7 +1325,7 @@ void theLandRent()
     // The percents: the rule's 16 but where an area has its own (country.json: fish 9, fruit 4, grain 28, salt 8).
     auto s = city([](EconomySpec& e) { e.farms.areas["grain"].on = 1; }, aStore());
     const std::map<std::string, int> percent{{"grain", 28}, {"fruit", 4}, {"meat", 16}, {"fish", 9}, {"honey", 16}, {"salt", 8},
-                                             {"fuel", 0}, {"stone", 0}};
+                                             {"fuel", 0}, {"stone", 0}, {"iron", 0}, {"lime", 0}};
     // (Doc 72, Phase 4's payer: the three cattle and dairy farms their own rule, landRentDairy 32 (24 until country5), over the meat area's 16;
     // Phase 5, country4's carry-over: the thinnest farms theirs, landRentThin 0: the lake boats, the salt works, three
     // orchards.)
@@ -1491,6 +1680,7 @@ int main()
         appliedLive();
         theWorks();
         theStoneWorks();
+        theIronAndLime();
         theLandRent();
         theCountryPaysItsPosts();
         theTableShare();

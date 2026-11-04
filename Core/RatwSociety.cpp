@@ -1498,7 +1498,7 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         std::vector<std::pair<FarmNow*, int>> holders;
         int held = 0;
         for (auto& f : farms_)
-            if (const auto* a = f.area == std::size_t(area) ? account(f.till) : nullptr)
+            if (const auto* a = farmSells(f, std::size_t(area), item) ? account(f.till) : nullptr)
                 if (const int n = stock(*a, item); n > 0)
                 {
                     holders.push_back({&f, n});
