@@ -483,7 +483,12 @@ struct EconomyDetail
         }
         o << "}, \"accounts\": {";
         first = true;
-        for (const std::string id : {std::string("treasury"), std::string(Society::CountryFund), std::string(Society::CarriageFund)})
+        // (The Houses' estates' purses too, while split: doc 72, after estates6, whose full log had none.)
+        std::vector<std::string> accountIds{"treasury", Society::CountryFund, Society::CarriageFund};
+        for (const auto& e : items::country().estates)
+            if (const auto f = Society::estateFund(e); f != Society::CountryFund)
+                accountIds.push_back(f);
+        for (const auto& id : accountIds)
             if (society.account(id))
             {
                 o << (first ? "" : ", ") << quoted(id) << ": {\"cash\": " << society.cash(id);
@@ -1435,7 +1440,8 @@ struct EconomyWatch
                     const auto x = found == d.estates.end() ? Society::LoopDay::Estate{} : found->second;
                     seasons << (first ? ", \"estates\": {" : ", ") << EconomyDetail::quoted(e.id) << ": {\"house\": "
                             << EconomyDetail::quoted(e.house) << ", \"rents\": " << x.rents << ", \"grants_in\": " << x.grantsIn
-                            << ", \"grants_out\": " << x.grantsOut << ", \"posts_owed\": " << x.postsOwed << ", \"posts_paid\": "
+                            << ", \"grants_out\": " << x.grantsOut << ", \"levy_in\": " << x.levyIn << ", \"levy_out\": " << x.levyOut
+                            << ", \"posts_owed\": " << x.postsOwed << ", \"posts_paid\": "
                             << x.postsPaid << ", \"posts\": " << x.posts << ", \"spent\": " << x.spent << ", \"moved\": " << x.moved
                             << ", \"purse\": " << society.cash(fund) << "}";
                     first = false;

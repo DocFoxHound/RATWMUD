@@ -10,10 +10,11 @@ const title = (id: string) => id.replace(/^(house|stores|town):/, '').replace(/_
 
 /** (`me` is taken for the tabs' sake; the money view is the same for every role.) */
 // The funds' names (docs 67, 68): the Country's purse, carriage where a world has no carters' yard, the old store fund;
-// the Houses' estates (doc 72, Phase 6: estate:<id>; Grayrock's is the Country's purse, the wharf's).
+// the Houses' estates (doc 72, Phase 6: estate:<id>; Grayrock's is the Country's purse, the wharf's, while they are split:
+// with the rule off there is no estate:<id> purse and it is the Country's one purse again).
 const ESTATES: Record<string, string> = {greatly: 'House Greatly', timberland: 'House Timberland', fell: 'House Fell', crown: 'The Crown'};
-function fundName(id: string) {
-    if (id === 'outside:country') return 'The Country\'s purse (House Grayrock\'s estate: the wharf)';
+function fundName(id: string, split = false) {
+    if (id === 'outside:country') return split ? 'The Country\'s purse (House Grayrock\'s estate: the wharf)' : 'The Country\'s purse';
     if (id.startsWith('estate:')) return `${ESTATES[id.slice(7)] ?? title(id.slice(7))}'s estate`;
     if (id.startsWith('outside:')) return `Outside market: ${id.slice(8)}`;
     if (id === 'fund:carriage') return 'Carriage (no carters\' yard)';
@@ -75,7 +76,7 @@ export function MoneyTab({target}: {target: Target; me?: Me}) {
                     <tr><td>Contracts' rewards held</td><td className="num">{p(data.road.contracts)}</td></tr>
                     <tr><td>Bandits' hoards</td><td className="num">{p(data.road.bandits)}</td></tr>
                     <tr><td>Players</td><td className="num">{p(data.players)}</td></tr>
-                    {(data.funds ?? []).map(f => <tr key={f.id}><td title={fundTitle(f.id)}>{fundName(f.id)}</td><td className="num">{p(f.cash)}</td></tr>)}
+                    {(data.funds ?? []).map(f => <tr key={f.id}><td title={fundTitle(f.id)}>{fundName(f.id, (data.funds ?? []).some(g => g.id.startsWith('estate:')))}</td><td className="num">{p(f.cash)}</td></tr>)}
                     {(data.carters ?? []).map(c => <tr key={c.id}><td title={`${c.label}: what carriage paid the yard (doc 68)`}>Carters: {c.name}</td>
                         <td className="num">{p(c.cash)}</td></tr>)}
                 </tbody></table>

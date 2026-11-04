@@ -551,6 +551,75 @@ void theEstatesOff()
     expect(t.conserved() && t.moneySupply() == money, "conserved");
 }
 
+void theCrownsLevy()
+{
+    // After estates6 (55 nights short: the Crown granted only what it held over its own posts while the wharf and
+    // Timberland held more than theirs): the Crown levies the others' spare over their keep up to what it lacks of its own
+    // (its posts' nights and the others' lacks), then, still short of tonight's posts and grants, what they hold over
+    // tonight's posts; every post paid whenever the estates together hold tonight's; and together they spend no more
+    // than the one purse would.
+    auto s = city(withHouses);
+    run(s, 1 + 7.9 / 24, 1 + 18.5 / 24);            // (The purses opened.)
+    const auto night = [&](std::int64_t day, const std::map<std::string, std::int64_t>& purses) {
+        run(s, double(day) + 7.9 / 24, double(day) + 17.99 / 24);
+        s.takeJournal();
+        for (const auto& [fund, coins] : purses)
+            setPurse(s, fund, coins);
+        return wagesTonight(s, day);
+    };
+    // Timberland 100p (its keep two nights of its post, 16p): the Crown, with nothing, lacks 56p of its keep (16p of its
+    // own, 16p each for Greatly and the wharf, 8p for Fell), levied from Timberland's 84p over its keep; then its grants.
+    auto money = s.moneySupply();
+    auto journal = night(2, {{"estate:greatly", 0}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 100}, {"estate:crown", 0}});
+    auto two = s.loopToday();
+    expect(two.estates.at("timberland").levyOut == 56 && two.estates.at("crown").levyIn == 56,
+           "the Crown levied 56p of Timberland's spare: " + std::to_string(two.estates["timberland"].levyOut));
+    expect(two.estates.at("greatly").grantsIn == 8 && two.estates.at("grayrock").grantsIn == 8 && two.countryPostsPaid == 40,
+           "and granted Greatly and the wharf their posts: every post paid");
+    expect(s.cash("estate:timberland") == 100 - 56 - 8 && s.cash("estate:crown") == 56 - 16 - 8, "Timberland keeps its keep and pays its own");
+    bool recorded = false;
+    for (const auto& e : journal)
+        recorded = recorded || (e.from == "estate:timberland" && e.to == "estate:crown" && e.coins == 56 &&
+                                e.kind.rfind("the Crown's levy on an estate's spare", 0) == 0);
+    expect(recorded && s.conserved() && s.moneySupply() == money, "the levy in the journal; conserved");
+
+    // Timberland 34p: 18p over its keep, levied; the Crown still 6p short of tonight's 24p (its post, Greatly's and the
+    // wharf's), so 6p more of the 26p Timberland holds over tonight's post. Every post paid.
+    money = s.moneySupply();
+    journal = night(3, {{"estate:greatly", 0}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 34}, {"estate:crown", 0}});
+    const auto& three = s.loopToday();
+    expect(three.estates.at("timberland").levyOut == 18 + 6 && three.estates.at("crown").levyIn == 24 && three.countryPostsPaid == 40,
+           "levied over its keep, then over tonight's posts: every post paid");
+    expect(s.cash("estate:timberland") == 34 - 24 - 8 && s.cash("estate:crown") == 0 && s.conserved() && s.moneySupply() == money,
+           "Timberland's own post paid; conserved");
+
+    // Together short (Timberland 12p, Fell 8p: 20p of the 40p): the levy takes no estate under tonight's post.
+    journal = night(4, {{"estate:greatly", 0}, {Society::CountryFund, 0}, {"estate:fell", 8}, {"estate:timberland", 12}, {"estate:crown", 0}});
+    expect(s.loopToday().estates.at("timberland").levyOut == 4 && (!s.loopToday().estates.count("fell") || s.loopToday().estates.at("fell").levyOut == 0) &&
+               paidBy(journal, "estate:timberland", "tally", 8) && paidBy(journal, "estate:fell", "maid", 8) &&
+               s.loopToday().countryPostsPaid == 8 + 8 + 4,
+           "the 4p Timberland holds over its post levied, its own and Fell's paid");
+
+    // Its spare: Greatly 100p over its own keep (16p) 84p, but the estates together hold 100p, 20p over the one purse's
+    // keep (no reserve here, two nights of the five posts, 80p): 20p.
+    run(s, 5 + 7.9 / 24, 5 + 7.95 / 24);
+    for (const auto& [fund, coins] : std::map<std::string, std::int64_t>{
+             {"estate:greatly", 100}, {Society::CountryFund, 0}, {"estate:fell", 0}, {"estate:timberland", 0}, {"estate:crown", 0}})
+        setPurse(s, fund, coins);
+    const auto owed = s.countryPostsOwed();
+    expect(s.countrySpare("estate:greatly", owed) == 20 && s.countrySpare("estate:fell", owed) < 0,
+           "an estate's spare never past the estates' together: " + std::to_string(s.countrySpare("estate:greatly", owed)));
+
+    // The rule off: the Country's own spare over its keep, as before.
+    auto t = city([](AuthoredRoster& r) {
+        withHouses(r);
+        r.economy.rules["estates"] = 0;
+    });
+    run(t, 1 + 7.9 / 24, 1 + 7.95 / 24);
+    setPurse(t, Society::CountryFund, 100);
+    expect(t.countrySpare(Society::CountryFund, t.countryPostsOwed()) == 100 - 80, "off: the one purse over its keep");
+}
+
 void pausedNeedsBuyNothing()
 {
     auto s = city([](AuthoredRoster& r) { r.economy.needsPaused = true; });
@@ -647,6 +716,7 @@ int main()
         itsPostsFirst();
         theHousesEstates();
         theEstatesOff();
+        theCrownsLevy();
         pausedNeedsBuyNothing();
         theCountryOffSpends();
         anOlderSavesFund();
