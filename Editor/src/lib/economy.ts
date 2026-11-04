@@ -139,6 +139,7 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'floatDrawDays', label: 'A till\'s float', max: 28, unit: 'days of draws averaged for the float it keeps back (1: yesterday\'s)'},
     {key: 'floatWagesDays', label: 'Wages kept before profit', max: 60, unit: 'days of its posts\' wages a till keeps over its float'},
     {key: 'workshopWagesDays', label: 'A workshop\'s wages kept', max: 60, unit: 'days of its posts\' wages a country workshop keeps over its float before its House\'s share (doc 72)'},
+    {key: 'workshopWageMost', label: 'A workshop\'s wage rise', max: 100, unit: 'pennies at most a country workshop\'s wages drift over the world\'s, its House taking the profit (doc 72)'},
     {key: 'subsidyToNeed', label: 'Carriage subsidy only to need', max: 1, unit: 'the treasury pays the carters only what they lack of their wages', onOff: true},
     {key: 'countryPostsDays', label: 'The Country\'s posts first', max: 30, unit: 'nights of its posts\' wages the Country keeps before it buys (doc 72)'},
     // The food farms' land rent (doc 72, open question 2): to the House whose land each is on, from its basket's share.

@@ -323,13 +323,48 @@ void aCommunityWorkshop()
                    day.rents.at("the Crown") == toHouse,
                "what is over to the Crown's estate, booked by House, none to its keeper: " + std::to_string(toHouse));
         // (Three days of them, workshopWagesDays: doc 72, after country5, a week's held its House's share back for
-        // nothing; after country5b, two left Larkfield's smithy, its float a day's iron bars, short on its Restdays.)
+        // nothing; after country5b, two left Larkfield's smithy, its float a day's iron bars, short on its Restdays;
+        // after country6a, four: three still left it short on some, 98.0%.)
         const auto kept = s.rule("workshopWagesDays") * (e.wageKeeper + e.wageHand);
-        expect(s.rule("workshopWagesDays") == 3 && s.rule("floatWagesDays") == 7 && s.cash(till) >= kept &&
+        expect(s.rule("workshopWagesDays") == 4 && s.rule("floatWagesDays") == 7 && s.cash(till) >= kept &&
                    s.cash(till) <= kept + 100,
-               "the till keeps its float and three days' wages (a city till a week's): " + std::to_string(s.cash(till)));
+               "the till keeps its float and four days' wages (a city till a week's): " + std::to_string(s.cash(till)));
         (void)country0;
         expect(s.conserved() && s.moneySupply() == money, "wages and the House's share: conserved");
+    }
+    // Its wages drift at most workshopWageMost over the world's (doc 72, after country6a: the drift, judged on its House's
+    // share, raised the crews' wages ~130p a day over their base), a keeper 16p and a hand 10p, the works' fixed wages;
+    // down as any till's; with the rule at the drift's own bound, as a city till.
+    {
+        const auto paidAt = [](int step, int most) {
+            auto t = Town(city(soapworks(1000)));
+            auto& s = t.s;
+            const auto till = s.tillOf("boiler");
+            t.until(1 + 1. / 24);                   // (A society restores once it has begun its days.)
+            auto saved = s.state();
+            saved.loop.wages[till].step = step;
+            expect(s.restore(saved), "restored with a step of " + std::to_string(step));
+            auto economy = s.authored().economy;
+            economy.rules["wageDrift"] = 1;     // (Off in the tests' city.)
+            economy.rules["workshopWageMost"] = most;
+            s.adoptEconomy(economy);
+            t.until(1 + 17.9 / 24);
+            s.takeJournal();
+            t.until(1 + 18.5 / 24);
+            std::map<std::string, std::int64_t> wages;
+            for (const auto& e : s.takeJournal())
+                if (e.kind == "wages" && e.from == till)
+                    wages[e.to] += e.coins;
+            return std::pair{wages["boiler"], wages["hand"]};
+        };
+        const auto& e = Society(Roster::None).authored().economy;
+        expect(Society(Roster::None).rule("workshopWageMost") == 2, "workshopWageMost 2");
+        const auto capped = paidAt(6, 2), city = paidAt(6, 12), down = paidAt(-1, 2);
+        expect(capped.first == e.wageKeeper + 2 && capped.second == e.wageHand + 2,
+               "a step of 6 pays the keeper and the hand 2p over the world's: " + std::to_string(capped.first) + ", " +
+                   std::to_string(capped.second));
+        expect(city.first == e.wageKeeper + 6 && city.second == e.wageHand + 6, "the rule at 12: the step's 6p");
+        expect(down.first == e.wageKeeper - 1 && down.second == e.wageHand - 1, "down as any till's: a penny under");
     }
     // The butchers' tallow (doc 72, after country5: their cuts' by-product piled in their tills, 39,300, while the
     // soapworks went short ~4,700 a season): the soapworks, the chandlery and the perfumer buy it of them first, till to

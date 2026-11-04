@@ -74,6 +74,15 @@ bool wageFalls(const Society& s, int step)
     const auto falls = [&](int wage, const char* most) { return step > -s.rule(most) && wage + step - 1 >= floor; };
     return falls(e.wageKeeper, "wageDriftMost") || falls(e.wageHand, "wageDriftHandMost");
 }
+// The most a till's wage step may rise (doc 72, after country6a): a country workshop's within workshopWageMost (its House
+// takes the profit, and a step judged on that share drew it into the crew's wages), any other's its keeper's bound or a
+// hand's, the wider.
+int wageRiseMost(const Society& s, const std::string& till)
+{
+    const int most = std::max(s.rule("wageDriftMost"), s.rule("wageDriftHandMost"));
+    const auto* p = till.rfind("till:", 0) == 0 ? s.position(till.substr(5)) : nullptr;
+    return p && items::farmPeople().workshop(p->work.cell) ? std::min(most, s.rule("workshopWageMost")) : most;
+}
 } // namespace
 
 std::string Society::marketFor(const std::string& item) const
@@ -2205,7 +2214,7 @@ int Society::driftedWage(const std::string& till, int wage, bool hand) const
     // The till's step, within the keeper's bound or a hand's (the user, 2026-11-01: "Yeah let the wage limit spread
     // more"; doc 68, Progress, "Players in the shifting market; wider wages; the long runs").
     const int most = rule(hand ? "wageDriftHandMost" : "wageDriftMost");
-    const int step = std::clamp(found->second.step, -most, most);
+    const int step = std::clamp(found->second.step, -most, std::min(most, wageRiseMost(*this, till)));
     // Lowered no further than the floor (a day's food), and the floor never raises a wage the world set under it.
     return step > 0 ? wage + step : std::max(std::min(wage, rule("wageDriftFloor")), wage + step);
 }
@@ -2216,7 +2225,7 @@ int Society::wageAtBound(const std::string& till) const
         return 0;
     const auto found = state_.loop.wages.find(till);
     const int step = found == state_.loop.wages.end() ? 0 : found->second.step;
-    if (step > 0 && step >= rule("wageDriftMost") && step >= rule("wageDriftHandMost"))
+    if (step > 0 && step >= wageRiseMost(*this, till))
         return 1;
     return wageFalls(*this, step) ? 0 : -1;         // (At the foot: no post can fall, by its bound or the floor.)
 }
@@ -2395,9 +2404,9 @@ void Society::judgeWages(const std::string& till, std::int64_t owed, std::int64_
         if (wageFalls(*this, w.step))
             --w.step;                               // (Only while that lowers some post.)
     }
-    else if (w.shortDays == 0 && w.profit * 100 >= w.owed * rule("wageDriftSpare") && w.step < most)
+    else if (w.shortDays == 0 && w.profit * 100 >= w.owed * rule("wageDriftSpare") && w.step < wageRiseMost(*this, till))
         ++w.step;
-    w.step = std::clamp(w.step, -most, most);
+    w.step = std::clamp(w.step, -most, wageRiseMost(*this, till));
     w.days = w.shortDays = 0;
     w.owed = w.profit = 0;
 }
