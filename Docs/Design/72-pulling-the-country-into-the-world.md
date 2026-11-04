@@ -1236,3 +1236,54 @@ nobody hungry; **every farm and works paid its crew in full**; the Country's pos
   out), small pelts; firewood (the two logging camps 519 to 837), apples and salt pile.
 
 Next: the 3-year run (the user's go-ahead first) to see the repairs, the quarry and the dairies through the seasons.
+
+### The repairs' and the dairies' 3-year run (country3c, 2026-11-03)
+
+Merged `r2-country-p3c` into `ridgemere2` first (reviewed for money and goods: the dairies' making moves milk into
+cheese and butter by `consume` then `create` in the farm's own till, no money, its pieces bounded by the store's room
+and the till's kinds before either, what neither takes spoiling as before; `farm_good`'s `used` balances grown, sold,
+eaten, spoiled and the stock by good; the Country's basket 686 + 172 = 858 shares, each repair good 0.53 of the farms';
+the poorer till's draw retried only on the cash refusal and at fewer pieces each time; nothing found). `ctest` in
+`build-core` 78 of 78; `test_econ_report`, `test_city_capacity` pass. Then the user's go-ahead: on
+`artifacts/economy/r2/export60`, `--simulate 6 26298 --farms 0 --deterministic --threads 4 --economy-level full`, as
+country3b. Report `artifacts/economy/r2/country3c-report.md`, patch `country3c.patch.json`, log `country3c.out`. Year 3
+a day unless said; country3b's beside it.
+
+- **Money conserved** every day; **nobody hungry** (the hungriest 3 hours, years 1-2; 0 in year 3; residents 559 to
+  735, births 54, deaths 55).
+- **The Country pays its posts every day of all three years.** Its intake **1,099p** a day against 824p (country3b
+  1,177p: sales 611p (666p), the works' rents 172p (183p), the land rents 317p (327p)); its leanest season summer,
+  **1,030p** (1,127p), +206p. Its purse **flat to up**: years' ends 1,845, 1,811, 1,755p, least 900p (year 3), year 3's
+  first four weeks' mean 1,637p to its last's 1,771p. Its basket 263p a day (339p): the repairs it now buys come out of
+  what it spent on the makers (its sales smaller too: 55p a day).
+- **The farms and works.** Every food farm, the fuel works and both clay pits every day, but **vineyard_2 99.7%** of
+  year 3 (one night, 8p of support). **The quarry: 100% of year 2, 93.7% of year 3** (country3b 88.5%, 86.3%; 9,330p
+  of 9,490p, support 139p): spring and winter every day, summer 82.6%, autumn 92.3%. **The mason's stone 24.8 a day in
+  year 2, 22.2 in year 3** (19.4), the quarry's takings 33.7p and 29.5p (26.6p) against its 26p.
+- **The treasury over its float every night** (least 1,304p, day 0; years 2-3 least 3,084p and 4,665p); 1,394 to
+  6,023p, year 3 flat (5,929p to 5,947p, four-week means). **The wage support rose: 281p a day in year 3** (country3b
+  247p); the tills short 25.5 a day (23.2).
+- **The tills short** (year 3, a day): the brickworks **7.2p** (4.9p), the ropewalk 6.6p (7.3p), the mason 1.7p
+  (2.5p), the builders' works 10.7p (11.4p); worse, the makers the Country's basket bought less of: **the ironworks
+  24.5p** (15.0p, every day but 16), the smithies 16.7p (11.3p), **the charcoal burner 11.2p every day** (8.6p), the
+  shipwright 10.5p (7.5p).
+- **Charcoal no longer short** (no draw refused in three years; country3b ~100,000) **but piling**: 383, 1,275, 2,418
+  at the years' ends, 9.7 grown a day to 6.5 sold (the Country's basket bought 4.8, 7.8 in country3b; the whole step
+  up met a smaller demand). **Stone, clay and sand no longer pile hard**: 1,895, 1,350, 674 (7,392, 13,286, 7,294);
+  **peat** 3,456 (4,248), **firewood** 16,105 (28,166), oak bark 2,484 (3,584), salt 4,636 (4,382) still pile, slower;
+  **timber piles now**, 7,142 (814: the foundry's, the ironworks' and the charcoal burner's smaller draws).
+- **The dairies.** **Milk spoiled 0.3 a day** (country3b 7.2); 6.1 made into **butter 2.0 a day and cheese 0.5**, all
+  sold, **none held at any year's end** (no cheese piling; its store of 60 never near). The shops want far more: some
+  46,600 draws of each refused a year (an hourly retry each, the supply-bound seasons all four), milk's refused draws
+  6,731 (5,909). In year 1, before the meat area is on, the Country's store sold the shops ~25 butter and ~26 cheese a
+  day (the new `supplies`).
+
+**Verdict: not yet for Phase 4; close.** Phase 4 (~187p a day) played on year 3: intake 1,099p to ~912p, ~88p (11%)
+over its posts, but summer's 1,030p to ~843p, **~19p (2%) over**: thinner than country3b's 14% by the repairs' cost to
+the Country's sales. Before Phase 4: (1) **the quarry** short in summer and autumn: its yield to what sells
+(`country3c.patch.json`) and a crew of 1 + 1 still over the mason's summer draw, or the stone's carriage, the user's;
+(2) **charcoal** and **timber** half way down, **peat** and **firewood** down again (the patch); (3) the Country's
+basket: the repairs moved ~75p a day from the ironworks, the smithies and the charcoal burner, who are now the short
+ones, and the support rose 34p; its repair share (0.53) back down a little, or Phase 4 sized against the Country's
+smaller sales; (4) the dairies' butter and cheese are tiny next to the wants: more milk to the making (a larger share
+past keeping, or the dairies' yields up) is the user's call.
