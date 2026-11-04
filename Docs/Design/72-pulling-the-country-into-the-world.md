@@ -2449,3 +2449,43 @@ treasury grant (the user's lever).
 `communities.json` (the ids above; then a smoke with the crews placed). (3) A 3-year run (asked first) and its patch for
 the new yields (sized on year 2: they pile by year 3). (4) `econ_report` lists the bars as "goods of a farm area no farm
 grows": by design (the ironworks makes them; the draws it lacked are the smiths' bars short).
+
+### iron6's 3-year run (2026-11-04)
+
+`ridgemere2` with Frosthollow on the map (`r2-frosthollow-map`) and iron and lime out of the Country (`r2-iron`) merged,
+build 62's export, against estates6b (build 61, the Country still selling iron and lime); year 3, a day:
+
+- **Iron and lime out of the Country**: no trade row in year 3 with the seller `country` for iron bars, ore, limestone or
+  lime (estates6b: bars 27.4 for 161p, ore 1.2, limestone 20.6, lime 1.2). The ironworks sold 27.0 bars (119p to the
+  smithies, 73p to Larkfield's, 25p the cooperage, 12p the cartwright, 11p the tinker), the foundry 1.2; the smithy,
+  cooperage, cartwright, mason, brickworks and plasterworks not short to speak of (iron bars 0.06 a day short in all).
+  The quarry sold limestone 21.1 (brickworks 8.9, plasterworks 7.1, mason 5.0) and lime 1.3.
+- **The works' crews** placed: 4 hands in Frosthollow's cottages, its keepers in their houses, its market's two, virtual
+  crew 0; the mine's 2 posts, the hearths' 3, the quarry's 1 held and paid in full (26p, 36p, 10p, no support), their
+  rents to their estates 11.3p, 21.9p (Timberland) and 5.6p (Greatly) from days 224 and 252.
+- **The smelting**: the ironworks' till takings 243p, wages 66p of 66p, **no wage support** (estates6b 31.8p), profit 24p,
+  its float **613p** (21p); the foundry still on the support (14.5p; 15.8p); the city's charcoal burner sells nothing (13p
+  support). **Stocks piling**: iron ore 3,172 at the mine (62.9 grown, 56.4 sold), charcoal 5,588 at the hearths (31.4,
+  22.0) and 2,560 at the Greenholt, limestone 1,313, lime 186. **Timber now short 15.1 a day** (estates6b none): the
+  ironworks buys 7.8 a day (0.7) and is itself 3.3 short; meal 16.0 short (6.4), wine 6.1 (1.4).
+- **The estates' posts short 55 nights** (3 in year 2's summer, 52 in year 3: the wharf, Greatly and Fell each 52,
+  Timberland 2; the Crown's own never). The gap, summed over the estates: year 2 summer 6.6p a day (3 nights, ~200p
+  each); year 3 **spring 17.3p a day** (10 nights), **summer 42.1p** (20), **autumn 52.9p** (20), **winter 6.2p** (2),
+  ~160-280p a short night; year 3's mean **~30p a day** unpaid, the estates' purses together down a further ~1p a day:
+  **the econ build's ~45p a day short is confirmed in kind, ~31p in size**.
+- **The Crown**: rents 496p, its posts 94p, grants 512p (estates6b 385p: the wharf 423p, Greatly 61p, Fell 27p), the levy
+  in 109p (Timberland's spare; 9.7p); its purse **898, 1,091, 810p** at the years' ends (1,227, 1,216, 1,212p), least
+  235p in year 3: falling ~280p in year 3. The estates together 1,497, 1,573, 1,249p (1,716, 1,683, 1,589p). The
+  Country's buying stops from year 2: the basket 0p (54p), patrons 0.1p (13.6p), the Houses' tables 0p (9.3p); its own
+  sales 8p (177p).
+- **The rest**: money conserved (64,414p); residents 559 to 780, 687 of 697 posts held, 302 unplaced; hunger 4 days, 10
+  hours at most, households short 0.22 (0.20); the treasury over its float every night (least 1,194p in year 3, 473p in
+  all; 1,838p, 765p), four-week means 2,435p to 3,583p (4,177p to 4,963p), 3,604p at the end (5,261p); **the wage support
+  267p** (315p), year 3's first and last four weeks 253p and 340p; the toll 1,618p (1,667p); wages 4,853p of 4,914p
+  (4,833p of 4,850p); the farms 1,551p of 1,553p; Oakhaven's press 100% (94.8%), Southmeadow's pottery 92.0%, Larkfield's
+  press 97.5%, orchards 2, 4, 5 96.7-98.5%.
+
+**Verdict: not stable.** Money, food, the treasury and the iron and lime goods behave, but the estates' posts went short
+55 nights (~30p a day in year 3, worst in autumn), the Crown's purse falls, the Country stops buying, and timber is now
+short (the ironworks' draw). No rule, yield or code changed (the user's call). Report
+`artifacts/economy/r2/iron6-report.md` and its patch.
