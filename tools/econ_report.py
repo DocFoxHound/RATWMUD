@@ -574,7 +574,10 @@ def country_lines(econ):
            f'Out (a day): its posts {mean("country_posts_paid"):.0f}p of {mean("country_posts_owed"):.0f}p owed'
            + (' (' + ', '.join(f'{k} {v / n:.0f}p, {held[k] / n:.0f} posts' for k, v in rules.most_common()) + ')' if rules else '')
            + f'; its basket {mean("country_spent"):.0f}p.',
-           f'Its purse: {econ[0].get("country")} -> {econ[-1].get("country")}p (least {min(r.get("country", 0) for r in econ)}).', '']
+           # (Split into the Houses' estates, doc 72, Phase 6: the Country's own purse is the wharf's, House Grayrock's;
+           # the others' are in the estates' table below.)
+           ('Its own purse (the wharf\'s, House Grayrock\'s; the other estates\' below)' if any(r.get('estates') for r in econ) else 'Its purse')
+           + f': {econ[0].get("country")} -> {econ[-1].get("country")}p (least {min(r.get("country", 0) for r in econ)}).', '']
     out += estates_lines(econ)
     return '\n'.join(out)
 

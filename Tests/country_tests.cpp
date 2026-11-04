@@ -533,6 +533,22 @@ void theEstatesOff()
     expect(t.loopToday().estates.at("greatly").moved < 0, "booked");
     expect(paidBy(journal, Society::CountryFund, "steward", 8) && paidBy(journal, Society::CountryFund, "valet", 8), "which pays every post");
     expect(t.conserved() && t.moneySupply() == money, "conserved");
+    expect(!t.account("estate:greatly") && !t.account("estate:crown"), "the emptied purses closed");
+
+    // Switched on again: the purses open anew and share the Country's money, so every estate pays its own people that
+    // night (left open and empty they started with nothing, the Crown with nothing to grant).
+    economy.rules["estates"] = 1;
+    t.adoptEconomy(economy);
+    run(t, 2 + 18.5 / 24, 3 + 17.99 / 24);
+    t.takeJournal();
+    journal = wagesTonight(t, 3);
+    for (const auto* id : {"estate:greatly", "estate:fell", "estate:timberland", "estate:crown"})
+        expect(t.account(id) && t.cash(id) > 0 && t.loopToday().estates.at(std::string(id).substr(7)).moved > 0, std::string(id) + ": its share again");
+    expect(paidBy(journal, "estate:greatly", "steward", 8) && paidBy(journal, "estate:crown", "valet", 8) &&
+               paidBy(journal, "estate:fell", "maid", 8) && paidBy(journal, "estate:timberland", "tally", 8) &&
+               t.loopToday().countryPostsPaid == 40,
+           "on again: each estate pays its own people");
+    expect(t.conserved() && t.moneySupply() == money, "conserved");
 }
 
 void pausedNeedsBuyNothing()

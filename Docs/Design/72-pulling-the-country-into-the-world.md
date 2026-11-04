@@ -2170,7 +2170,10 @@ nearly six-sevenths of the posts and has a tenth of the land.
   15%, Timberland 9%, Fell 7%; the wharf's share is the largest because its posts are.
 - **Switchable**: the rule `estates` (1, on; Core's `Rules`, `country.json`, the Editor's and Atlas's Economy rules, no
   migration). Off, every post, rent and purchase is the Country's one purse as before, no estate purse is opened, and an
-  estate's money goes back into the Country's purse that night.
+  estate's money goes back into the Country's purse that night and the emptied purse is closed, so that switched on again
+  the purses open anew and share the Country's money as on the first night (the review: left open and empty, the estates
+  started with nothing and the Crown with nothing to grant, their posts unpaid that night); a purse opened later shares in
+  the Country's money alone, never taking an open estate's.
 - **The reports**: `world_check`'s economy lines carry `estates` (each estate's rents, grants in and out, posts owed,
   paid and held, what it bought, the money moved by a split, its purse); `econ_report` puts a table of them under the
   Country's lines. The DM's Money tab lists the estates' purses with the Country's, read only (Atlas's Economy page shows
@@ -2186,7 +2189,7 @@ Crown's); until the first night all the Country's; the first night the purses op
 five 8p posts; each estate paid its own people; the Crown's grants exactly what Greatly (5p) and the wharf (8p) lacked,
 recorded, every post paid, the Crown's own post first; the Crown short (10p): its own 8p paid, the 2p shared; an estate with
 only its two nights buys nothing, with more it buys and keeps them; the rule off: no estate opened, every post the
-Country's, and switched off after a split every estate's purse emptied into the Country's; conserved throughout.
+Country's, and switched off after a split every estate's purse emptied into the Country's and closed, switched on again each estate its share anew and its own people paid; conserved throughout.
 `workshops_behaviors` and `farms_behaviors`: a workshop's share, a works' rent and a land rent now to their House's purse.
 `ctest` in `build-core` **79 of 79**; `test_econ_report` (the estates' table), `test_item_catalog`, `test_farms_summary`,
 `test_country_industry`, the Editor's typecheck and `economy.test.ts` pass (`test_map_editor`'s and the Editor's model

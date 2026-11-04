@@ -188,6 +188,7 @@ class ReportTests(unittest.TestCase):
             self.assertIn("The Houses' estates (a day over the 2 days they were split", text)
             self.assertIn('| House Grayrock | 58 | 20 | 280 | 0 | 470/476 | 2 | 0 | 500 -> 500 (least 500) |', text)
             self.assertIn('| the Crown | 11 | 490 | 0 | 280 | 94/94 | 0 | 30 | 900 -> 900 (least 900) |', text)
+            self.assertIn("Its own purse (the wharf's, House Grayrock's; the other estates' below): 500 -> 500p", text)
 
     def test_the_land_rent(self):
         # Doc 72, open question 2: a food farm's land rent in the farms' table, by farm with its House and what is left over

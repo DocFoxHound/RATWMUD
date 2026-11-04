@@ -247,30 +247,34 @@ void Society::settleEstates()
         return;
     if (!estatesOn())
     {
-        // The rule off: one purse again, the Country's (doc 72, Phase 6: switchable, to compare).
+        // The rule off: one purse again, the Country's (doc 72, Phase 6: switchable, to compare). The emptied purses are
+        // closed, so that switched on again they open and share the Country's money anew (left open and empty, the estates
+        // would start with nothing and the Crown with nothing to grant: their posts unpaid that night).
         for (const auto& e : estates)
-            if (const auto f = estateFund(e); f != CountryFund && cash(f) > 0)
+            if (const auto f = estateFund(e); f != CountryFund && account(f))
             {
-                const auto coins = cash(f);
-                if (shift(f, CountryFund, "", 0, coins, "an estate's purse back in the Country's: " + e.name))
+                if (const auto coins = cash(f); coins > 0 && shift(f, CountryFund, "", 0, coins, "an estate's purse back in the Country's: " + e.name))
                     loopToday_.estates[e.id].moved -= coins;
+                if (cash(f) == 0)
+                    closeAccount(f);
             }
         return;
     }
-    bool opened = false;
+    std::set<std::string> opened;
     for (const auto& e : estates)
         if (const auto f = estateFund(e); !account(f) && openAccount(f))
-            opened = true;
+            opened.insert(f);
     auto owed = countryPostsOwed();
-    // The first night: the Country's money shared between the estates as their posts' wages are (it held them all).
-    if (opened)
+    // The first night (or switched on again): the Country's money shared between the estates as their posts' wages are (it
+    // held them all); only the purses opened tonight take their share, never one already open.
+    if (!opened.empty())
     {
         std::int64_t all = 0;
         for (const auto& [f, n] : owed)
             all += n;
         const auto money = cash(CountryFund);
         for (const auto& e : estates)
-            if (const auto f = estateFund(e); all > 0 && f != CountryFund)
+            if (const auto f = estateFund(e); all > 0 && f != CountryFund && opened.count(f))
                 if (const auto share = money * owed[f] / all; share > 0 &&
                     shift(CountryFund, f, "", 0, share, "the Country's purse split: " + e.name))
                 {
