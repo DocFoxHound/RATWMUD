@@ -641,3 +641,37 @@ committed): money conserved every day; the realm's money 51,194p to 59,355p (the
 switching on, as producers7's); the beyond paid in 10,120p and was paid 10,155p over the 60 days (~170p a day each way,
 the credit 4-83p); the estates' posts paid every night (824p of 824p); nobody hungry (1 hour at most); the treasury's
 least 1,209p; wage support ~248p a day; the days 1.3-2.0 s of wall time (wharf7: 40-50 s by day 40).
+
+### wharf7b's 3-year run (2026-11-04): money level, the estates still short
+
+After the valve's bounds (above), build 63's export, wharf7's flags (`--farms 0`, an area every 28 days), 1,095 days,
+36 minutes, the days 1.3-2.2 s of wall time throughout. Report, patch and log: `artifacts/economy/r2/wharf7b-report.md`,
+`wharf7b-report.md.patch.json`, `wharf7b.out`. Year 3 a day unless marked, against producers7 (the Country, no valve):
+
+| | wharf7b | producers7 |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| The realm's money at the end | 64,588p | 64,595p |
+| The beyond paid in / was paid (years 1, 2, 3) | 112.7 / 112.8, 56.3 / 56.3, 52.7 / 52.6p | - |
+| The Wharf's fees; the export basket | 3.2p; 25.4p (93p in year 1) | -; - |
+| Its imports | butter ~56 a day (the dairies' 37.9 first); aqua vitae and offal no draws | butter short |
+| Its takes | bones, honey, tallow, straw, small pelts within the credit; **no hides** (8,655 a year piling) | - |
+| The treasury's least, its 4-week means | 1,970p; 4,778 -> 5,777p | 1,903p; 4,108 -> 4,633p |
+| Wage support | 296p | 295p |
+| Hunger | 6 days, 9 hours at most, 0.31 households short | 3 days, 8 hours, 0.28 |
+| **Estates' posts** | **788p of 824p, 107 nights short** (Grayrock's and Greatly's) | 803p of 824p, 40 nights |
+| The Crown's purse (year ends) | 1,002, 976, 625p (least 178p) | 946, 1,005, 714p |
+| The Crown's business rents | **60.9p** | 103.1p |
+| The foundry's wages paid | 3.4% (it still stops selling in year 2) | 0.2% |
+| Oakhaven's press, Southmeadow's pottery | 69.1%, 76.6% of wages | 87.9%, 85.7% |
+| Eggs sold / farm draws short | 66.9 / 97.7 | 49.5 / 114.1 |
+| Cider sold / short | 6.4 / 18.2 | 3.5 / 9.7 |
+| Timber, flax sold (not short) | 29.6, 39.6 | 29.0, 41.3 |
+
+**Verdict: not stable.** The drain is gone: the realm's money ends where producers7's did, the valve nets to nothing
+each year (the credit 7-83p), the treasury rises, nobody goes hungry, and the run keeps its pace. But the estates' posts
+went short 107 nights in year 3 (~36p a day), worse than producers7's 40, because the Crown's purse, which grants
+Grayrock and Greatly their gap, falls by year 3: its business rents are ~42p a day lower than producers7's (not traced
+here; its two country workshops account for ~3p of it). The Wharf earns Grayrock almost nothing (3p of fees a day):
+with only butter imported, the credit is small, so the export basket buys ~25p a day and does not revive the foundry,
+and the takes never reach hides. Eggs and cider sell more but are still short.
