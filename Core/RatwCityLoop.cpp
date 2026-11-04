@@ -1015,13 +1015,16 @@ void Society::countryBuys(int hod)
         const auto fund = marketFund(market.id);
         if (!account(fund) || market.basket.empty())
             continue;
-        // What it owes its posts tonight stays in the purse with its reserve.
+        // Its posts first (doc 72, Phase 3: in country2 the Country missed its posts on 6 days, its purse down to 16p, after
+        // two lean days running): countryPostsDays nights of what it owes them (tonight's and the next's) stay in the purse
+        // with its reserve; its basket buys only with what is over.
         std::int64_t owed = 0;
         for (const auto& p : positions_)
             if (const auto held = state_.careers.positions.find(p.id);
                 held != state_.careers.positions.end() && !held->second.holder.empty())
                 if (const auto pay = payOf(p); pay.payer == fund)
                     owed += pay.wage;
+        owed *= std::max(1, rule("countryPostsDays"));
         const auto spare = cash(fund) - authored_.economy.countryReserve - owed;
         if (spare <= 0)
             continue;
@@ -1835,7 +1838,7 @@ void Society::patronsBuy(int hod, std::int64_t day)
                     subsidyRoom();                  // (Works out tonight's public wages, if not yet.)
                     return cash(payer) - TreasuryFloat - std::max<std::int64_t>(0, treasuryOwed_);
                 }
-                return cash(payer) - authored_.economy.countryReserve - owed;
+                return cash(payer) - authored_.economy.countryReserve - std::max(1, rule("countryPostsDays")) * owed;
             };
             auto& spent = city ? loopToday_.patronsTreasury : loopToday_.patronsCountry;
             const auto pay = [&](std::int64_t coins) {

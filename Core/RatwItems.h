@@ -180,6 +180,7 @@ inline constexpr RuleInfo Rules[] = {
     {"floatDrawDays", 1, 28, 7},         // A till's working float: its mean draws a day over this many days (1: yesterday's).
     {"floatWagesDays", 0, 60, 7},        // Days of its posts' wages a till keeps, over its float, before its keeper's profit.
     {"subsidyToNeed", 0, 1, 1},          // The carriage subsidy only while the carters lack their crew's wages tonight.
+    {"countryPostsDays", 1, 30, 2},      // Nights of its posts' wages the Country keeps before its basket and patrons (doc 72).
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): what it holds over its cap and
     // surplusKeep at 18:00, after its posts, the short tills' wages and the alms, goes back out each day:
     {"surplus", 0, 1, 1},                // On: the surplus to public works orders and the poorest households.
@@ -326,7 +327,11 @@ struct Farms
 {
     int keeper = 16, hand = 10;                     // The farms' wages a day (fixed: the basket takes what is over them).
     int floatDays = 2, openingStockDays = 7;
-    int start = -1, every = 28;                     // The switch: the first area on day `start` (-1: none), one every `every`
+    // The Country's own people whose food the farms' `table` is (doc 71: the Houses' estates' and the other industries'
+    // workers, still in the Country): a works' crew, once its area is on, lives in the realm and buys its food in the
+    // shops, so it no longer eats at the table (doc 72, Phase 3; Society::tableShare).
+    int estatePeople = 24, otherWorkers = 68;
+    int start = -1, every = 28;                    // The switch: the first area on day `start` (-1: none), one every `every`
     std::vector<std::string> order;                 // days after it, in this order.
     std::vector<std::pair<std::string, int>> basket;          // The farms' basket of the city's goods, and shares.
     std::vector<std::pair<std::string, int>> countryBasket;   // The Country's basket once the farms have the food.

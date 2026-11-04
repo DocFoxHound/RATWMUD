@@ -816,6 +816,9 @@ class Society
     double farmPriceFactor(const std::string& item) const;
     // How far the Country's basket has moved to its re-weighted one (0 to 1): the share of the food areas' takings on.
     double countryBasketShift() const;
+    // The share of the Country's own people (country_farms.json `estatePeople` and `otherWorkers`) still eating at the
+    // farms' table: less the crews of the works whose areas are on, who buy their food in the shops (doc 72, Phase 3).
+    double tableShare() const;
     // The day the farms were last tended (-1: not yet), and the money the farms' founding has made since the start.
     std::int64_t farmsDay() const { return farmsDay_; }
     std::int64_t farmsMinted() const { return farmsMinted_; }
@@ -825,6 +828,11 @@ class Society
     // "hand <community>", "market <community>" (a market's keepers and hands).
     int farmOfPost(const Position& p, bool* keeper = nullptr) const;
     std::string farmLabel(const FarmNow& farm, int post) const;   // 0: its keeper's; 1: a hand's; 2: its second's.
+    // The cell a post's holders are judged near from (CareerWorld::near, the lodgings): its work's, but for a works' post
+    // out of doors (doc 72) its crew's home ground: its community's (a home there), or the city's for a works whose crew
+    // lives in Ridgemere (a city farm's work room), as staffFarms places them. (A works' cell is the realm's own region,
+    // near no home: its posts, once empty, were never filled again.)
+    std::string reachOf(const Position& p) const;
     const std::map<std::string, int>& farmPlaced() const { return farmPlaced_; }
     // The world's economy settings replaced while it runs (the DM's economy.sync: doc 68, Progress): every rule the loop
     // and the store room read, at once; the treasury's and stores' starting amounts are kept (they were spent long ago).

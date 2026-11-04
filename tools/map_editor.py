@@ -95,7 +95,7 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 10000000
                'workBankHours': 1000, 'fairFood': 1, 'services': 1, 'servicesCityShare': 100,
                # Trades and the follow-ups (doc 68, Progress, "Trades"): no migration (live.economy.rules is {name: N}).
                'suppliers': 1, 'patrons': 1, 'armourEvery': 3650, 'buyAheadDays': 5, 'floatDrawDays': 28,
-               'floatWagesDays': 60, 'subsidyToNeed': 1,
+               'floatWagesDays': 60, 'subsidyToNeed': 1, 'countryPostsDays': 30,
                # The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): no migration.
                'surplus': 1, 'surplusKeep': 100000000, 'surplusWorks': 100, 'surplusAlms': 100, 'surplusAlmsTo': 1000,
                # The self-correcting rules (doc 68, Progress, "Self-correcting rules"): no migration (what they drift to is

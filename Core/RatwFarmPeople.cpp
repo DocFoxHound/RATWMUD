@@ -71,6 +71,23 @@ int Society::farmOfPost(const Position& p, bool* keeper) const
     return int(at->second);
 }
 
+std::string Society::reachOf(const Position& p) const
+{
+    const int farm = farmOfPost(p);
+    if (farm < 0 || !farms_[std::size_t(farm)].outdoors)
+        return p.work.cell;
+    const auto& people = items::farmPeople();
+    const auto* site = people.farm(farms_[std::size_t(farm)].def->id);
+    if (!site)
+        return p.work.cell;
+    if (const auto* community = site->community == "ridgemere" ? nullptr : people.community(site->community))
+        return community->homes.empty() ? p.work.cell : community->homes.front().area;
+    for (const auto& place : people.farms)
+        if (!place.works && place.community == "ridgemere" && !place.workplaces.empty())
+            return place.workplaces[0].area;      // (The city's farms' work room, as staffFarms judges the city's homes.)
+    return p.work.cell;
+}
+
 std::string Society::farmLabel(const FarmNow& f, int post) const
 {
     const auto& people = items::farmPeople();

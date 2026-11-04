@@ -781,3 +781,136 @@ Section 5's checks:
   24,688p, the charcoal burner's 11,144p), and the treasury's wage support 232 to 263p a day.
 - **One works post left empty**: `logging_rainwood` held 2 of its 3 posts for 655 days (a hand gone and never
   replaced); every farm's empty post was filled within 13 days.
+
+### Phase 3, the stone; and country2's carry-overs (2026-11-03, branch `r2-country-p3`)
+
+Branch `r2-country-p3`, from `ridgemere2` (fae8fbf). The user's decisions (2026-11-03): each works pays its own crew (16p
+a keeper, 10p a hand) and sends what is over to the House whose land it is on; **stone and clay are House Greatly's**;
+the lime quarry waits (limestone and lime stay the Country's). **No map change and nothing written to DEV**: the
+quarry's and the pits' sites are build 60's, and their work spots were laid by `realm2_places` from DEV's realm (read
+only, `realm2 preview` to a scratch folder) and checked against build 60's exported tiles (all 18 open ground, not
+solid, not a way). **No NPC was made**: the pool had the stone cutters and clay diggers. One 30-day smoke.
+
+**The stone's works (4.4 as sited).** `country_farms.json`'s area `stone` ("stone, clay and sand"; `works`, House
+Greatly; last in the schedule's `order`), its goods stone, clay and sand, which the Country no longer sends while it is
+on (`farmAreaOf`, as every area's):
+
+| Works | Kind | Crew, lives in | Yields (pieces a day, flat across the year) |
+|---|---|---|---|
+| `quarry_granite` (the Rainward granite quarry) | quarry | 1 + 2, Ridgemere | stone 28.27 |
+| `clay_mirebridge` (the Mirebridge clay pits) | clay pit | 0 + 1, Fenshore | clay 30.69, sand 13.5 |
+| `clay_fens` (the Sallow clay pits) | clay pit | 0 + 1, Southmeadow | clay 30.69, sand 13.5 |
+
+- **Sized** on country2's years 2-3, the Country's sales to the shops + 5%: stone 26.92 a day (the mason's), clay 58.45
+  (brickworks 42.9, pottery 15.3, paintworks 0.3), sand 25.71 (mason 16.2, plasterworks 5.8, glassworks 3.7); flat (the
+  seasons were within 10% of the mean). The two pits alike, each half the clay and half the sand (the game's pit gives
+  both). 1 keeper and 4 hands, 56p a day; floats 72p and 20p each; the crews' purses 57p a head.
+- **A works of one hand and no keeper** works in the code as it was: no keeper's post wanted, its hand placed by
+  `staffFarms`' hands pass, paid by its till (a virtual hand's wage to its crew's household until then), its yield in
+  full (`working()` 1), its rent what is over its 20p float (`farms_behaviors`' `theStoneWorks`).
+- **Their people**: `farm_people.json`'s kinds `quarry` (keeper "quarrymaster at the Rainward quarry", hands "cuts stone
+  at ...") and `clay pit` ("digs clay at the Mirebridge pits", "... the Sallow pits"), both of the **mines, stone and
+  clay** (Greyscar's stone cutters for the quarry, Clayholt's diggers for the pits, by their words), by the farms'
+  rule; the quarry's keeper of those with no family among the unplaced first. `communities.json`'s works give each its
+  id and six work spots (`realm2_places.WORKS_IDS`); nothing else in the contract changed.
+
+**Carry-over 1: the Country pays its posts first.** In country2 it missed them on 6 days (1,128p unpaid): each time two
+lean days running (sales ~430p and ~350p, every 91 days) after a day its basket had spent down to its reserve plus one
+night's posts. Now it keeps **`countryPostsDays` nights** of its posts' wages over its reserve before its basket and
+its patrons buy (a new DM rule, default **2**, 1 to 30: `country.json`, Core's `Rules`, Atlas's and the DM's Economy
+rules, `map_editor.py`; no migration, `live.economy.rules` is by name). After tonight's wages it holds the next night's,
+whatever comes in. `country_behaviors`' `itsPostsFirst`: two nights kept before the wages (one, as it was, spends
+more), tonight's paid in full and the next night's in the purse after them.
+
+**Carry-over 2: a works' post is filled again.** The cause: every way an empty post is filled (a local out of work, the
+best-trained, the city's wolves, an arrival from the Country and its lodgings) asks `CareerWorld::near(work, home)`,
+which is "the same region"; a works' post is out of doors in its cell, whose region is the realm's own (`cedar_sound`,
+`sallow_fens`, ...), near no home. So a works' post, once empty, stayed empty (a farm's work room is in its community's
+or the city's region, which is why the farms' refilled). Now `Society::reachOf` judges a works' post from its crew's
+home ground, as `staffFarms` places them: a home of its community, or, for the Rainwood's two and the quarry, a city
+farm's work room. `farm_people_behaviors`' `aWorksPostFilledAgain`: a Rainwood logger and the Sallow pits' digger die;
+both posts are filled again, the new hands living with their crews; without the change neither is in 28 days. (The
+test's lodgings are now the city's only, as the world's are, by region.)
+
+**Carry-over 3: the yields.** From country2's patch (`country2.patch.json`), as the user asked:
+
+- **peat** 8% under now in every season (not the patch's spring raise): 73.25 / 104.16 / 73.66 / 231.8;
+- **charcoal 25% under** (7.56 / 6.46 / 6.77 / 8.66), rather than letting the city's charcoal burner resell the
+  hearths' charcoal. Its buyers (the smithy, printing house, scriptorium) draw it from the store room; the burner's
+  only buyer is the Country's basket. A resale would put a middleman between the hearths and the same shops (the
+  `suppliers` rule: the shops pay the burner's price for the hearths' sack) and still leave the hearths' surplus
+  unsold; the hearths grew 9-11 a day to 6-9 sold, piling to 2,380. The burner wants a buyer, not stock (carry-over 4).
+- **resin** the patch's 0.07 / 0.08 / 0.09 / 0.12 (0.1 a day sold); **oak bark** 20% over now at both camps (7.19 / 6.3
+  / 6.36 / 7.44); **flax** the patch's cut (2.79 / 1.92 / 1.79 / 2.75 at each grain farm);
+- every other good of the patch **half way** (`econ_report --apply --damping 0.5`: 103 yields).
+
+**Oats, milk and salt, short three runs running: the causes.** Measured on country2 (years 2-3):
+
+- **No household went without.** The draws short are the makers' shelves, not wants: the inns' porridge (an oat and a
+  milk make 4; the inns draw 99.9% of both) and the provisioners', butchers', fishmongers' and smokehouses' salt pork
+  and salt fish (all the salt). No household wanted porridge, salt pork or salt fish and found none; porridge sold out
+  at about 2 of the 11 inns a day, chiefly the day before a Restday (the buying ahead).
+- **Supply-bound, so measured on the supply.** The farms of oats held none at the day's end on 64-85% of the days of
+  each season, salt's on 58-100% of summer, autumn and winter, milk's on 42-56%. What sold was then what grew less the
+  Country's table, so the patch (what was taken + 5%) asked a few percent more, and `--apply`'s half step half of that:
+  the shortfall shrank a little each run and never closed. **Fixed in the tool**: `econ_report.py` marks a good-season
+  **supply-bound** (its farms out on `BOUND_SHARE`, 40%, of its days while the draws fell short), lists it in the
+  patch's `whole`, and `--apply` takes such a good's whole step; its shelves' needs count even where some spoiled
+  (`test_econ_report`'s `test_supply_bound`). On country2 (`country2-fixed-report.md`, `country2-fixed.patch.json`):
+  milk, oak bark, oats and salt. Applied: **oats** 55.95 / 64.58 / 65.5 / 60.38 at each grain farm (6.5-9.6% up),
+  **salt** 47.89 / 45.59 / 44.65 / 46.98 at each salt works (summer and autumn up 9-12%: the yields' season shape was
+  the last runs' supply-capped sales, so the seasons the salters lay by for winter stayed lowest).
+- **Milk spoils and runs short in the same week**: it keeps a day, and the inns draw about half on a Restday, so the
+  next morning the farms' stores spoil the Restday's milk (~19 a day, a year's mean) while the other six days the inns
+  are short. The patch, counting what sold, asked for *less*. Milk's only use is the porridge, a milk to an oat:
+  **milk is raised with the oats it is cooked with** (each season by the oats' rise: 6.5 / 7.0 / 8.0 / 9.6%; the
+  dairies 38-45 a day). (Turning the Restday's spare milk into cheese and butter, which no farm makes now, would end the
+  waste: for the user.)
+- **The Country's table ate for the works' crews.** It feeds the Country's own people (24 of the estates, 68 workers of
+  its other industries: 8-12 oats, 8-13 milk and 10 salt a day in country2); the fuel's 15 and now the stone's 5 are
+  those workers, living in the realm and buying in the shops, so they ate twice. `Society::tableShare`: the table times
+  the share still in the Country (72 of 92 with both works areas on; `estatePeople` and `otherWorkers` now read by
+  Core). `farms_behaviors`' `theTableShare`.
+- **What the yields can't settle alone**: households choose food by nourishment for the price among what the shops
+  hold, and porridge is the best value, so its sales follow the oats and milk to be had. The next run says whether the
+  inns' shelves fill.
+
+**Carry-over 4: the city's makers the Country's basket bought from** (country1 against country2, years 2-3, a day; read
+only, nothing changed). The ironworks, the foundry and the charcoal burner sell **only to the Country's basket**:
+
+| Maker | Its sales to the Country, country1 / country2 | Wages owed / paid, country1 / country2 | The treasury's support |
+|---|---|---|---|
+| ironworks | 37.1 / 18.4p (iron bars 9.6, charcoal 5.8, steel 3.1) | 34.9 / 18.6, 34.9 / 9.3 | 16.3 to 25.6p |
+| foundry | 75.9 / 38.4p (handbells 10.2, iron bars 10.1, copper, charcoal, tin, bronze) | 41.4 / 38.4, 26.5 / 18.4 (drifted down) | 2.9 to 7.8p |
+| charcoal burner | 15.1 / 6.2p (charcoal) | 14.0 / 6.7, 14.0 / 2.7 | 7.3 to 11.3p |
+
+All three halved with the basket (533p to 376p a day: the woods' takings went to the works and their crews, 163p came
+back as rent); their support rose ~18p a day together (26.5 to 44.7p). Phase 3 takes another ~97p of takings from the
+Country for ~40p of rent, and posts-first holds back a night more, so the basket thins again. **The levers are the
+user's** (none changed): the Country's basket's shares (`countryBasket`: iron bars, steel, charcoal), the treasury's
+wage support, or buyers in the realm: the smithy, cooperage and cartwright draw ~38 iron bars a day from the Country's
+store room (84% of the city's), which the ironworks makes; a `suppliers` entry (those three from the ironworks first)
+is Phase 4's kind of change and would take ~237p a day of the Country's intake.
+
+**Tests.** `farms_behaviors` (1,432 checks): eight areas, the stone's last in the order; new `theStoneWorks` (the area's
+data; founded, House Greatly's; the mason's stone and sand from the works, nothing to the Country, its limestone the
+Country's; a pit with no keeper pays its hand and sends the rest over its float to Greatly's estate, booked by House;
+off, the Country's stone again) and `theTableShare`. `farm_people_behaviors` (3,307 checks): 39 places, 37 keepers and
+90 hands; `theWorksCrews` with the stone's crews of their own words; new `aWorksPostFilledAgain`. `country_behaviors`
+(648): new `itsPostsFirst`. `ctest` in `build-core`: **78 of 78**. `test_realm2` with `RATW_SLOW=1` against DEV (read
+only): 29 of 29 (`test_doc_72s_works_ids`: every sited works built). `test_econ_report` (6), `test_farms_summary`,
+`test_country_industry`, `test_item_catalog` and `test_studio` (the farms' eight areas) pass; the Editor's typecheck
+and `economy.test.ts` (the new rule) pass. (`test_map_editor`'s and `content.test.mjs`'s Greyfen export counts 11
+residents against 10: not this branch's.)
+
+**The 30-day smoke** (`world_check` on build 60's export, `--simulate 0 720 --farms 0 --farms-every 1`: an area a day,
+the stone's from day 7; `--deterministic --threads 4 --economy-level full`; `artifacts/economy/r2/country3-smoke-
+report.md`, `country3-smoke.patch.json`): money conserved every day; nobody hungry; every works paid its crew every day
+(the stone's 1,288p of 1,288p over its 23 days); **the Country paid all its posts every night** (824p of 824p), its
+purse 1,375 to 1,478p (**least 906p**; country2's smoke 163p), its basket 585p a day, its rents 177p a day (Timberland
+142p, **Greatly 35p**: the quarry 5.7p, its 41.7p of takings against its 36p of wages; each pit ~20p). **No draw of
+stone, clay, sand, oats, salt or oak bark refused**, milk's 37 in the month (country2's spring ~190). The smoke's own
+patch is a first spring's (shelves still filling: berries, garlic, cider and resin marked supply-bound) and is **not to
+be applied**; the next 3-year run's is.
+
+Next: the 3-year full run of Phases 1-3 (section 5's gates, the user's go-ahead first); Phase 4 with the second payer.

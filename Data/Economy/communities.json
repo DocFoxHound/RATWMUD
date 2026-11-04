@@ -5566,8 +5566,37 @@
    },
    "size": 20,
    "walk": null,
-   "works": null,
-   "workplace": null
+   "works": "quarry_granite",
+   "workplace": {
+    "area": "w_ridgemere_4_1",
+    "name": "the Rainward granite quarry",
+    "work": [
+     {
+      "x": 4,
+      "y": 101
+     },
+     {
+      "x": 5,
+      "y": 99
+     },
+     {
+      "x": 2,
+      "y": 99
+     },
+     {
+      "x": 6,
+      "y": 102
+     },
+     {
+      "x": 4,
+      "y": 97
+     },
+     {
+      "x": 7,
+      "y": 100
+     }
+    ]
+   }
   },
   {
    "site": "clay_mirebridge",
@@ -5580,8 +5609,37 @@
    },
    "size": 14,
    "walk": 606,
-   "works": null,
-   "workplace": null
+   "works": "clay_mirebridge",
+   "workplace": {
+    "area": "w_ridgemere_4_12",
+    "name": "the Mirebridge clay pits",
+    "work": [
+     {
+      "x": 156,
+      "y": 205
+     },
+     {
+      "x": 154,
+      "y": 204
+     },
+     {
+      "x": 158,
+      "y": 204
+     },
+     {
+      "x": 155,
+      "y": 202
+     },
+     {
+      "x": 155,
+      "y": 207
+     },
+     {
+      "x": 153,
+      "y": 206
+     }
+    ]
+   }
   },
   {
    "site": "clay_fens",
@@ -5594,8 +5652,37 @@
    },
    "size": 14,
    "walk": 576,
-   "works": null,
-   "workplace": null
+   "works": "clay_fens",
+   "workplace": {
+    "area": "w_ridgemere_6_13",
+    "name": "the Sallow clay pits",
+    "work": [
+     {
+      "x": 100,
+      "y": 5
+     },
+     {
+      "x": 98,
+      "y": 4
+     },
+     {
+      "x": 102,
+      "y": 4
+     },
+     {
+      "x": 99,
+      "y": 2
+     },
+     {
+      "x": 99,
+      "y": 7
+     },
+     {
+      "x": 97,
+      "y": 6
+     }
+    ]
+   }
   }
  ],
  "paths": [
