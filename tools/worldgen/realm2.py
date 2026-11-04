@@ -313,7 +313,8 @@ SITES = [
 ]
 # Erased (the user, 2026-11-03: doc 72, Siting): Frosthollow (2308, 796) and Mirebridge (1468, 2868), empty town sites
 # nothing about to be built needed for a home. Their ground is the country's again; the roads to them keep their routes,
-# ending where the towns were.
+# ending where the towns were. Frosthollow is placed again (doc 72, 4.7, 2026-11-04: the iron and the lime) on the same
+# point by realm2_places, after everything else, as a community: the roads meet in its green.
 # Kinds whose ground is a zone eased rather than levelled; kinds left as the land is (only thinned); fields and range.
 FIELDS = {'farmland', 'pasture', 'orchard', 'vineyard', 'dairy', 'woodpasture', 'warren', 'marsh', 'apiary'}
 UNCLEARED = {'woodpasture', 'marsh', 'coppice'}
@@ -2046,9 +2047,10 @@ class Realm2:
         missing = [s['id'] for s in self.sites if not reach[max(0, s['y'] - 12):s['y'] + 13, max(0, s['x'] - 12):s['x'] + 13].any()]
         check('every reserved site is reached from the city', not missing, ', '.join(missing))
         towns = [s for s in self.sites if s['kind'] == 'town']
-        check('six town sites, each a community (Fenshore the sixth; Frosthollow and Mirebridge erased)',
-              len(towns) == 6 and {t['id'] for t in towns} == {'oakhaven', 'coldwater', 'larkfield', 'southmeadow',
-                                                             'saltwell', 'fenshore'}, str(len(towns)))
+        check('seven town sites, each a community (Fenshore the sixth; Frosthollow placed again the seventh, doc 72, '
+              '4.7; Mirebridge erased)',
+              len(towns) == 7 and {t['id'] for t in towns} == {'oakhaven', 'coldwater', 'larkfield', 'southmeadow',
+                                                             'saltwell', 'fenshore', 'frosthollow'}, str(len(towns)))
         shared = [f'{s["id"]} {s["shared"]}' for s in self.sites if s.get('shared')]
         check('no site laid over another\'s ground', not shared, ', '.join(shared[:10]))
         bare = [ord(c) for c in BARE]

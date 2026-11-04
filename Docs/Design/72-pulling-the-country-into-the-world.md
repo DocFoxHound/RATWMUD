@@ -2252,3 +2252,57 @@ the treasury's levers untouched. Year 3 a day unless said; country6b's beside it
 together hold ~700p less at the end than the one purse. Next (the user's call): the grants after the land rents (or the
 Crown granting from its float, not tonight's spare alone), and a levy on a sister estate's spare over its keep (the wharf's
 first-spring ~900p, Timberland's ~300p) before any estate buys; then a 3-year run again.
+
+### Frosthollow, the map: iron and lime out of the Country (2026-11-04, branch `r2-frosthollow-map`)
+
+The user, 2026-11-04 (4.7): move iron and lime out of the Country, Frosthollow placed again as their community. Places
+only, as Phase 5's map was (the economy's branch gives the works their posts, goods, crews and the ironworks' recipes).
+Everything is laid **after** every other place (`realm2_places.Places.frosthollow_step`, after the workshops), so nothing
+laid before moves: the realm laid from DEV matches DEV everywhere but seven cells round the valley (`w_ridgemere_6_3`,
+`7_3`, `8_2`, `8_3`, `9_2`, `9_3`, `10_3`: the village, the paths, the hearths, the kiln), every other community, farm,
+works, interior and link in `communities.json` and the world as it was (no room or link changed or removed).
+
+- **Frosthollow, the seventh community**, on its old town site (`realm2.FROSTHOLLOW` 2308,796, size 60, level 5.5; the
+  same high valley), where the Pass Road, the Pass and the High Road still meet: they are its streets now. `country`
+  look, in Oakhaven's style: **4 cottages** (24 beds), **Frosthollow Stores** with the keeper's flat (4), **The Lamp and
+  Pick** alehouse with its keeper's rooms (3), and **a keeper's house for each works** (4 beds each, the keeper now and
+  the family later): The Mine Captain's House, The Limeburner's House, The Collier's House. **43 beds**; 2 kitchen
+  gardens, a hen run, a goat paddock; **room to grow: 11 cottage lots**. Interiors `cn_frosthollow_*` (11 rooms, 11
+  doors); its region `frosthollow` (already the game's), kept plain (`town` false) like the six; having no farm, its
+  market is not staffed yet. Its cell is "The Greenholt, Frosthollow" again.
+- **Its works** (`communities.json` `works`; the works ids the economy should use in `country_farms.json`):
+
+  | Site / works id | Where | Walk from the green | Work spots (`workplace`, out of doors) | Keeper's house |
+  |---|---|---|---|---|
+  | `mine_frost_iron`, the Frosthollow iron mine (as built) | 2516,724, cell `w_ridgemere_9_2` | 251 | 16 | `cn_frosthollow_mine_house` |
+  | `quarry_lime`, the lime quarry (as built) | 1588,788, cell `w_ridgemere_6_3` | 794 | 8, and its `kiln`'s 2 | `cn_frosthollow_lime_house` |
+  | `charcoal_upper`, **the Greyteeth charcoal hearths (new)** | 2644,940, cell `w_ridgemere_10_3` | 558 | 6 | `cn_frosthollow_collier_house` |
+
+  - **The lime kiln** (the quarry's `kiln`): a yard of packed earth (12 x 8) on the quarry's floor 14 tiles from its
+    middle, two kilns (furnaces) at its back, sacks of lime and a water butt; a work spot before each kiln. The lime
+    kilns' man of the pool works there.
+  - **The hearths are built because the smelting needs them**: by the game's recipes ~28 iron bars a day take 14
+    blooms, i.e. 42 ore and **42 charcoal** a day (2 a bloom, 1 a bar's forging), and the woods' only hearths, the
+    Greenholt's, make ~10 a day (the city's charcoal burner ~15 from the woods' timber). A site realm2_places places
+    itself (as Fenshore): wooded level ground clear of every other site's, 93 tiles from the Greyteeth pines'
+    (`timber_upper`) middle on the side towards Frosthollow, a charcoal works' pad (size 18, 1,062 tiles) and its track to
+    the pines' track. If the economy's side finds it doesn't need them, the site stays reserved (no crew), as the
+    other reserved hearths.
+  - Copper and tin stay the Country's (no site built: the Ochre copper mine is ~750 from Saltwell for 3 workers on ~24p a
+    day, and no tin streams site).
+- **Beds for the economy's crews**: the hands in the four cottages (24: `cn_frosthollow_cottage_1` to `_4`, 6 each),
+  the works' keepers in their houses (`flats`, `for` the works' name; also the works' `keeperHome`), the shopkeeper and
+  the alehouse keeper in their flats. Up to 24 hands and 3 keepers, besides the market's two: room for 4.7's crews
+  (12 ore diggers, 3 smelters, 3 traders: about 20 workers) and a cottage to spare.
+- **Checks**: the realm's own, 24 of 24 (the town sites' check counts seven; new: "Frosthollow (doc 72, 4.7): a keeper's
+  house, work spots and a walk for each of its three works, the lime kiln"). `test_realm2`: a works on the map before the
+  economy builds it is allowed (only Frosthollow's), a works' spots `WORK_SPOTS_AT`; with `RATW_SLOW=1`, the new
+  `test_doc_72s_frosthollow`.
+- **Written into DEV**: `python3 -m worldgen.realm2 write --world dev`, backed up first to
+  `artifacts/backups/ratw_dev_20261104-091953.pgdump` and `upper_accord_dev_r79_20261104-091953.atlas.json` (DEV at
+  revision 79); **revision 80** (81 after the editors' reload), the same map, its new layout recorded. Then
+  `world_build.py dev`: **build 62** (1,210 places), exported to `artifacts/economy/r2/export62` (not committed);
+  `world_check` of the export loads all 1,210 with no failures; a scratch server of build 62 starts and serves.
+  `test_realm2` with `RATW_SLOW=1`: 31 of 31.
+- **Previews**: `artifacts/realm2/frosthollow/` (the village, each works close up, the kiln, the valley from the quarry
+  to the hearths; `before/` the crossroads and the valley as they were); `communities/frosthollow.png`.
