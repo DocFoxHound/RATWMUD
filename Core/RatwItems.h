@@ -156,6 +156,18 @@ struct WageRule
     std::string wage;                               // Which of the world's wages it pays ("keeper"...); "" for its payer's.
     std::vector<std::string> words;
 };
+// The Houses' estates (country.json `estates`; Docs/Design/72-pulling-the-country-into-the-world.md, Phase 6): each
+// House's own purse, which collects its lands' rents (the works', the workshops' and the food farms', by their `house`)
+// and pays its own people, the Country's posts it holds (matched by `words`: first against a post's label, then against
+// its workplace's cell). `fund` "country": the Country's own purse (Grayrock's: it runs the wharf, so the sea trade's
+// takings, its basket and the arrivals stay in it); else "estate:<id>". `grants`: the Crown's, which keeps the posts no
+// other estate's words match and covers the others' posts when they are short (a grant, the Crown's levy on the land).
+struct Estate
+{
+    std::string id, house, name, fund;
+    bool grants = false;
+    std::vector<std::string> words;
+};
 // The loop's rules a world may tune (country.json `rules`, a world's `rule` records; doc 68, Progress, "First fixes"):
 // each by name, its range and the value used where country.json has none.
 struct RuleInfo
@@ -190,6 +202,7 @@ inline constexpr RuleInfo Rules[] = {
                                          // any till's (wageDriftMost, wageDriftHandMost).
     {"subsidyToNeed", 0, 1, 1},          // The carriage subsidy only while the carters lack their crew's wages tonight.
     {"countryPostsDays", 1, 30, 2},      // Nights of its posts' wages the Country keeps before its basket and patrons (doc 72).
+    {"estates", 0, 1, 1},                // Each House its own estate purse (`estates`, doc 72, Phase 6); 0: the Country's one.
     // The food farms' land rent (doc 72, open question 2): percent of a farm's takings to its House's estate each night,
     // from its basket's share (after its wages, never its float); an area's own landRent<Area> over it (sized on country3,
     // year 3: about half its thinnest farm's margin in its leanest season, so each keeps half its basket at worst).
@@ -318,6 +331,7 @@ struct Country
     std::vector<Market> markets;
     std::vector<SeasonGroup> seasons;
     std::vector<WageRule> wages;
+    std::vector<Estate> estates;                    // The Houses' estates (doc 72, Phase 6); the granting one the Crown's.
     double foodDays = 2, shortDays = 1;             // A household tops each member up to foodDays; under shortDays it tries again.
     int comfortsAbove = 60;                         // Pennies a head held before a household buys comforts,
     double comfortsShare = .1;                      // and the share of what is over it spent a day,

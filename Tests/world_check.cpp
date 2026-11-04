@@ -304,7 +304,8 @@ struct EconomyDetail
     }
     static std::string payerKind(const std::string& id)
     {
-        return id == "treasury" ? "treasury" : id.rfind("outside:", 0) == 0 ? "country" : id.rfind("till:", 0) == 0 ? "till" : "other";
+        return id == "treasury" ? "treasury" : id.rfind("outside:", 0) == 0 || id.rfind("estate:", 0) == 0 ? "country"
+               : id.rfind("till:", 0) == 0 ? "till" : "other";
     }
     void event(const WorldEvent& e)
     {
@@ -546,6 +547,8 @@ struct EconomyRecord
             g = "farm";
         else if (account.rfind("outside:", 0) == 0)
             g = "country";
+        else if (account.rfind("estate:", 0) == 0)
+            g = account;                            // (A House's estate, doc 72, Phase 6: "estate:crown".)
         else if (account == "treasury" || account.rfind("stores:", 0) == 0)
             g = "treasury";
         else if (account.rfind("house:", 0) == 0)
@@ -1420,6 +1423,26 @@ struct EconomyWatch
                     << ", \"country_posts_paid\": " << d.countryPostsPaid;
             object("country_posts_by_rule", d.countryPostsByRule);
             object("country_posts_held", d.countryPostsHeld);
+            // The Houses' estates (doc 72, Phase 6), each its day and its purse tonight, while any is open.
+            {
+                bool first = true;
+                for (const auto& e : items::country().estates)
+                {
+                    const auto fund = Society::estateFund(e);
+                    if (!society.account(fund) || (fund == Society::CountryFund && !society.estatesOn()))
+                        continue;
+                    const auto found = d.estates.find(e.id);
+                    const auto x = found == d.estates.end() ? Society::LoopDay::Estate{} : found->second;
+                    seasons << (first ? ", \"estates\": {" : ", ") << EconomyDetail::quoted(e.id) << ": {\"house\": "
+                            << EconomyDetail::quoted(e.house) << ", \"rents\": " << x.rents << ", \"grants_in\": " << x.grantsIn
+                            << ", \"grants_out\": " << x.grantsOut << ", \"posts_owed\": " << x.postsOwed << ", \"posts_paid\": "
+                            << x.postsPaid << ", \"posts\": " << x.posts << ", \"spent\": " << x.spent << ", \"moved\": " << x.moved
+                            << ", \"purse\": " << society.cash(fund) << "}";
+                    first = false;
+                }
+                if (!first)
+                    seasons << "}";
+            }
             seasons << ", \"support_by_trade\": {";       // (The wage support paid tonight, by the short tills' trades.)
             for (auto it = d.supportByTrade.begin(); it != d.supportByTrade.end(); ++it)
                 seasons << (it == d.supportByTrade.begin() ? "" : ", ") << "\"" << it->first << "\": " << it->second;

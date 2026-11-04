@@ -95,7 +95,7 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 10000000
                'workBankHours': 1000, 'fairFood': 1, 'services': 1, 'servicesCityShare': 100,
                # Trades and the follow-ups (doc 68, Progress, "Trades"): no migration (live.economy.rules is {name: N}).
                'suppliers': 1, 'patrons': 1, 'armourEvery': 3650, 'buyAheadDays': 5, 'floatDrawDays': 28,
-               'floatWagesDays': 60, 'workshopWagesDays': 60, 'workshopWageMost': 100, 'subsidyToNeed': 1, 'countryPostsDays': 30,
+               'floatWagesDays': 60, 'workshopWagesDays': 60, 'workshopWageMost': 100, 'subsidyToNeed': 1, 'countryPostsDays': 30, 'estates': 1,
                # The food farms' land rent (Docs/Design/72-pulling-the-country-into-the-world.md, open question 2): no migration.
                'landRent': 100, 'landRentFish': 100, 'landRentFruit': 100, 'landRentGrain': 100, 'landRentSalt': 100,
                'landRentDairy': 100, 'landRentThin': 100,

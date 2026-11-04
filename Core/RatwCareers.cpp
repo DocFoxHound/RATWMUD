@@ -150,7 +150,7 @@ std::string birthSex(const std::string& couple, std::int64_t day)
 
 bool facilityAccount(const std::string& id)
 {
-    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:", "project:", "outside:", "farm:", "crew:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots; project: doc 57's town projects; outside: doc 68's markets outside the city, the Country; farm: and crew: doc 71's farms' tills and their crews' households)
+    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:", "project:", "outside:", "farm:", "crew:", "estate:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots; project: doc 57's town projects; outside: doc 68's markets outside the city, the Country; farm: and crew: doc 71's farms' tills and their crews' households; estate: doc 72's Houses' estates, Phase 6)
         if (id.rfind(prefix, 0) == 0)
             return id.size() <= 80 && id.size() > std::string(prefix).size();
     return false;

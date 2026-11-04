@@ -390,7 +390,7 @@ Food-adjacent and largest money first; each phase as doc 71 did it: **modelled p
 | **Limestone and lime** (26p) | The lime quarry is past the 800-tile rule from the city and ~1,250 from Coldwater (4.4); it goes with Frosthollow. |
 | **The ships' goods from beyond the realm** | Ships come from beyond the realm. The wharf itself is Grayrock's (doc 67 R28): its ~56 posts are paid from the Country's purse only until Phase 6 gives them to Grayrock's estate. |
 | **The city's exports** (the basket's maps, handbells, glass beads, charms, steel) | What the city sells beyond the realm. These makers have no buyer in the realm; the Country's basket is their market. |
-| **The Houses' estates** (until Phase 6) | The land the works stand on is the Houses'; the estates collect the works' rents and pay the Houses' people (the wharf's posts among them). Not a producer any more, a landlord. |
+| **The Houses' estates** (until Phase 6) | The land the works stand on is the Houses'; the estates collect the works' rents and pay the Houses' people (the wharf's posts among them). Not a producer any more, a landlord. Split since Phase 6 (Progress, "Phase 6, the estates split"): each House its own purse, Grayrock's the Country's own (the wharf and the sea trade). |
 | **Arrivals and the unplaced pool** | People come from beyond the realm (about 4 a year, with up to 30p each). The pool is the city's and the works' labour reserve. |
 | **Goods no one in the realm makes** | The ten farm goods no farm grows (brandy, apple brandy, aqua vitae, wheat, butter, cheese, offal, eggs, sheep, sheepskin) could come by sea as imports instead of going without (open question 8). Butter and cheese no longer: since country3b the dairies make them of their spare milk (the user's decision; Progress, "The dairies' butter and cheese"). |
 
@@ -2114,3 +2114,96 @@ the marks: the Country's summer 5.7% over its posts (the target 10%) and its pur
 still rising slowly; Oakhaven's press (94%) and Southmeadow's pottery (87%) thin trades for their crews; cheese ~1.8
 times, not 3-6 (more money chasing it, not less cheese, would raise it: the Houses' tables' share, the user's call); the
 flax still piling (cut it to ~0.70 of now), wool, clay, hemp and tallow slowly; butter short; hunger a touch up.
+
+### Phase 6, the estates split (2026-11-04, branch `r2-estates`)
+
+Branch `r2-estates`, from `ridgemere2` (4e018b6). **Nothing written to DEV, no NPC made, no map change, no post added or
+dropped**; the treasury's levers (toll, support, float) untouched. Scripts in the session's scratchpad (`est/`:
+`posts.py`, `books.py`, `smoke.py`, `support.py`).
+
+**The books per House first** (country6b's year 3, days 730-1094, a day; `country6b.jsonl`'s rents by House and posts by
+rule, the full log's trade rows for the Country's own sales; every one of the 100 Country posts matched to its House from
+build 61's export by its label and its workplace's cell, `posts.py`; each post 8p, a head 14p):
+
+| Estate | Its lands and trade (in) | In | Its posts | Out | Over (+) or short (-) |
+|---|---|---|---|---|---|
+| **House Grayrock** (the wharf) | the fish land rents 21.6p; the Country's own sales through the store room 176.3p (iron bars 159.1, limestone 13.4, lime 1.7, ores and copper 1.9, linen 0.1: no ships' goods beside them) | 197.9 | 58: the sea trade's 52 (the piers 31, the cranes 4, carrying up from Sump Stairs 10, the Wharf Office's clerks 2, the stores' keepers and tallies 5), Grayrock Hall's 4, the harbourmaster and the wharf's overseer | 476 | **-278** |
+| **House Timberland** | the woods' rents and Oakhaven's press 130.1p | 130.1 | 9: the Iron Store's 2 (its keeper and its tally; their rule is the sea trade's, their store Timberland's since doc 67's renames), Timberland Court's 7 (the iron trade's runner among them) | 72 | **+58** |
+| **House Greatly** | the quarry's, the pits' and the two potteries' rents 48.8p | 48.8 | 15: Greatly House's 10, the stables' 2, the Counting House's 2 clerks and its overseer | 126 | **-77** |
+| **House Fell** | the orchards', vines' and hives' land rents 25.2p | 25.2 | 7: Fellhall's 6 and the Fell Cellars' keeper | 56 | **-31** |
+| **the Crown** | the grain's, herds' and salt's land rents 386.9p; the workshops on Crown land 105.0p (the soapworks, both looms, Larkfield's press and smithy) | 491.9 | 11: the Minor Houses' 9 (Carlisle 1, Grantham 3, Stanmore 1, Thornbury 2, Vance 2 with its lender), the Harrowgates' 2 (the King's household) | 94 | **+398** |
+| all | | 894.0 | 100 | 824 | +70 (its basket 48, its patrons 15, the Houses' tables 7) |
+
+By season the three short estates want 368, 401, 402 and 374p a day (spring to winter) against the Crown's 385, 413, 420
+and 373p over its own posts: **the Crown can carry them, by 12p a day over the year (-1p a day in winter)**; Timberland's
+58p (116p in winter) is the only other spare. No estate but the Crown and Timberland can pay its own people: the wharf is
+nearly six-sevenths of the posts and has a tenth of the land.
+
+**The design, and why.**
+
+- **Grayrock's estate is the Country's own purse** (`outside:country`, unchanged in code, saves and reports): Grayrock
+  runs the wharf (doc 67, R28), and the sea trade's money is the wharf's: the goods landed and sold through the store room
+  (the iron and the lime as well, while they stay the Country's), the basket of the city's exports it ships out, the
+  arrivals off the ships. Splitting the wharf from the sea trade would need a new fee (a landing due) whose size is a
+  lever nobody has set; one purse does it with none. "Beyond the realm" stays the Country's trade, kept by the wharf.
+- **The other four each a purse of their own**, `estate:greatly`, `estate:timberland`, `estate:fell`, `estate:crown`
+  (`country.json` `estates`): a works' rent, a workshop's share and a food farm's land rent go to the purse of the House
+  whose land it is (`Society::houseFund`, by the same `house` as the reports); a Country post (a `wages` rule paid by the
+  Country) is paid by the first estate whose `words` are in its label, else in its workplace's cell, else the Crown's
+  (`estateOfPost`): the Minor Houses' people (no land in the realm) and the Harrowgates (the King's household). The wage
+  rules and their report lines (the sea trade, the Houses' people, the Houses' heads) are as they were.
+- **Posts first, then a float, then buying.** Each estate keeps countryPostsDays (2) nights of its own posts and its share
+  of the Country's reserve (by its posts' wages: the wharf 115p of the 200p) before it buys anything (`countryKeep`). With
+  what is over, every estate buys **the same basket** (the realm's trade beyond it, through the wharf), **its own House's
+  tables** (the luxuries, luxuryHouses of its own spare), and the patrons' work (the Houses' retainers, halls and the
+  wharf's hulls: each unit by the estate with most to spare; in a first smoke with the hulls the wharf's own, the
+  Country's patrons fell to 20p a day from 38p, the wharf never having spare). So no House's money piles up idle, and the
+  city's exporters keep their market.
+- **The Crown's grants** (`settleEstates`, at 18:00 before the wages): any estate that holds less than tonight's posts
+  gets what it lacks from the Crown's estate, out of what the Crown holds over its own posts tonight (its own paid
+  first; short of the whole, each the same share of what it lacks), journalled "a grant from the Crown's levy on the
+  realm's land: <estate>" and booked (grants in and out). Never the treasury. The Crown's keep counts what the others
+  lack of their own two nights, so it buys only once its grants to come are in hand: its purse is the realm's buffer
+  (~1,500p in the smoke), the wharf's stays at its posts.
+- **Money conserved**: every move is a shift; nothing made. **The old purse's money split by the posts' wages** the first
+  night the rule is on (a fifth of the posts is a fifth of the money): Grayrock keeps 58%, the Crown and Greatly 11% and
+  15%, Timberland 9%, Fell 7%; the wharf's share is the largest because its posts are.
+- **Switchable**: the rule `estates` (1, on; Core's `Rules`, `country.json`, the Editor's and Atlas's Economy rules, no
+  migration). Off, every post, rent and purchase is the Country's one purse as before, no estate purse is opened, and an
+  estate's money goes back into the Country's purse that night.
+- **The reports**: `world_check`'s economy lines carry `estates` (each estate's rents, grants in and out, posts owed,
+  paid and held, what it bought, the money moved by a split, its purse); `econ_report` puts a table of them under the
+  Country's lines. The DM's Money tab lists the estates' purses with the Country's, read only (Atlas's Economy page shows
+  no purse, so nothing there).
+
+**Grants expected** (from the books): about **386p a day** at country6b's year 3: the wharf ~278p, Greatly ~77p, Fell ~31p;
+the Crown left ~12p a day over them (its winter ~1p short, carried by its buffer). Thin: 79% of the Crown's income is
+the grain's, the herds' and the salt's land rents. If they fall, the next step is a levy on the other estates' spare (Timberland's
+~58p), not the treasury; not built.
+
+**Tests.** `country_behaviors` (700): each post its House's estate (by its label, then its cell; the Minor Houses' the
+Crown's); until the first night all the Country's; the first night the purses opened and the money split a fifth each by
+five 8p posts; each estate paid its own people; the Crown's grants exactly what Greatly (5p) and the wharf (8p) lacked,
+recorded, every post paid, the Crown's own post first; the Crown short (10p): its own 8p paid, the 2p shared; an estate with
+only its two nights buys nothing, with more it buys and keeps them; the rule off: no estate opened, every post the
+Country's, and switched off after a split every estate's purse emptied into the Country's; conserved throughout.
+`workshops_behaviors` and `farms_behaviors`: a workshop's share, a works' rent and a land rent now to their House's purse.
+`ctest` in `build-core` **79 of 79**; `test_econ_report` (the estates' table), `test_item_catalog`, `test_farms_summary`,
+`test_country_industry`, the Editor's typecheck and `economy.test.ts` pass (`test_map_editor`'s and the Editor's model
+test's Greyfen count, 11 for 10, fail as before; `test_dungeon_master`'s Money test needs the test database, skipped here).
+
+**The 30-day smoke** (build 61's export, `--simulate 0 720 --farms 0 --farms-every 1 --deterministic --threads 4
+--economy-level full`; days 7-29 a day unless said). **The rule off is today's single purse**: its Country's purse 2,262p
+at the month's end, as country6b's smoke. **The rule on**: money conserved, nobody hungry, **every estate's posts paid every
+night** (0 short); the first night 904p moved from the Country to the four new purses; a day the Crown took 653p of rents
+(the first spring's) and granted 213p (the wharf 146p, Greatly 38p, Fell 26p, Timberland 3p); Timberland bought 127p of
+the basket and the tables, the Crown 304p, the wharf, Greatly and Fell nothing; the purses at the end the wharf 38p (least
+2p), Timberland 330p, Greatly 113p, Fell 33p, the Crown 1,530p: 2,044p in all (the one purse 2,262p). Beside the rule off:
+the basket 367p (367p), the patrons 46p (38p), the Houses' tables 19p (19p), the treasury at the end 1,933p (1,944p), the
+wage support 258p (239p: the first week's 324p against 285p, the last week's 84p against 92p; the Crown buys in larger
+lots once over its keep). A first spring's month: the Country's sales were 300p a day, not year 3's 176p, so its grants
+were half what the books expect; a 3-year run (asked first) would show the Crown's margin.
+
+**Open.** (1) A 3-year run with the rule on beside country6b, to see the Crown's margin over its grants (the books: ~12p a
+day). (2) If thin: a levy on the other estates' spare, or the Crown's land rents up (`landRentGrain`, `landRentDairy`).
+(3) Iron, the lime quarry and Frosthollow stay the Country's (the wharf's purse) until the user says.

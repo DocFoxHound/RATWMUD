@@ -957,8 +957,8 @@ void theWorks()
     expect(wood.ok && turf.ok && wood.message.find("from the farms") != std::string::npos, "firewood and peat from the works: " + wood.message);
     expect(held(s, peat, "peat") == peatHeld - 20 && s.cash(Society::CountryFund) == country, "the peat out of its store, nothing to the Country");
     expect(s.conserved() && s.moneySupply() == money, "conserved");
-    // At 18:00 each works pays its crew, then what its till holds over its float goes to Timberland's estate: the
-    // Country's purse, booked by House.
+    // At 18:00 each works pays its crew, then what its till holds over its float goes to Timberland's estate (its own
+    // purse: doc 72, Phase 6), booked by House.
     const auto coppice = Society::farmTill("coppice_rainwood");
     expect(s.operatorTransfer("treasury", coppice, "", 0, 500).ok, "the coppice given 500p (moved, not made)");
     const auto before = s.moneySupply();
@@ -979,7 +979,7 @@ void theWorks()
     for (const auto& e : s.takeJournal())
         if (e.kind == "an estate's rent: House Timberland")
         {
-            expect(e.to == Society::CountryFund && e.from.rfind("farm:", 0) == 0, "a works' rent to the estates' purse: " + e.from);
+            expect(e.to == "estate:timberland" && e.from.rfind("farm:", 0) == 0, "a works' rent to the estates' purse: " + e.from);
             booked += e.coins;
         }
     expect(d.rents.count("Timberland") && d.rents.at("Timberland") == rents && booked == rents, "booked by House: " + std::to_string(rents));
@@ -1105,7 +1105,7 @@ void theStoneWorks()
     for (const auto& e : s.takeJournal())
         if (e.kind == "an estate's rent: House Greatly")
         {
-            expect(e.to == Society::CountryFund, "a works' rent to the estates' purse");
+            expect(e.to == "estate:greatly", "a works' rent to the estates' purse");
             booked += e.coins;
         }
     expect(d.rents.count("Greatly") && d.rents.at("Greatly") == rents && booked == rents, "booked to House Greatly: " + std::to_string(rents));
@@ -1186,8 +1186,8 @@ void theLandRent()
     expect(s.loopToday().farms.at("grain_farm_1").basket > 0 && s.cash(t1) >= g1.reserve + g1.wages() + due1,
            "its basket spent, but never its float, tonight's wages or its rent: " + std::to_string(s.cash(t1)) + " against " +
                std::to_string(g1.reserve + g1.wages() + due1));
-    // At 18:00: wages paid in full, then the rent, to the Crown's estate in the Country's purse, booked by House.
-    const auto money = s.moneySupply(), country = s.cash(Society::CountryFund);
+    // At 18:00: wages paid in full, then the rent, to the Crown's estate (its own purse: doc 72, Phase 6), booked by House.
+    const auto money = s.moneySupply(), country = s.cash("estate:crown");
     const auto takenToday = g1.rentTakings;
     s.takeJournal();
     run(s, 46 + 17.9 / 24, 46 + 18.5 / 24);
@@ -1196,7 +1196,7 @@ void theLandRent()
     for (const auto& e : s.takeJournal())
         if (e.kind == "a land rent: the Crown")
         {
-            expect(e.to == Society::CountryFund && (e.from == t1 || e.from == t2), "a land rent to the estates' purse: " + e.from);
+            expect(e.to == "estate:crown" && (e.from == t1 || e.from == t2), "a land rent to the estates' purse: " + e.from);
             booked += e.coins;
         }
         else
@@ -1207,9 +1207,9 @@ void theLandRent()
            "each paid its rent: " + std::to_string(due1) + "p and " + std::to_string(due2) + "p");
     expect(d.landRents.count("the Crown") && d.landRents.at("the Crown") == due1 + due2 && booked == due1 + due2 && d.rents.empty(),
            "booked to the Crown, as land rents, not the works' rents");
-    expect(s.cash(Society::CountryFund) >= country + due1 + due2 - d.countryPostsPaid && s.cash(t1) >= g1.reserve,
-           "the Country's purse up by the rents (less tonight's posts), the farm's float left whole: " + std::to_string(country) + " -> " +
-               std::to_string(s.cash(Society::CountryFund)) + ", posts " + std::to_string(d.countryPostsPaid));
+    expect(s.cash("estate:crown") >= country + due1 + due2 - d.countryPostsPaid && s.cash(t1) >= g1.reserve,
+           "the Crown's estate up by the rents (less tonight's posts), the farm's float left whole: " + std::to_string(country) + " -> " +
+               std::to_string(s.cash("estate:crown")) + ", posts " + std::to_string(d.countryPostsPaid));
     // (Counted afresh after the rent: a shop open till 19:00 may draw a little more in the half hour after it.)
     expect(farm(s, "grain_farm_1").rentTakings < takenToday && farm(s, "grain_farm_1").rentTakings <= 10,
            "tomorrow's rent from tomorrow's takings: " + std::to_string(farm(s, "grain_farm_1").rentTakings));
