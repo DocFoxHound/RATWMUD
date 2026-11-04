@@ -132,6 +132,9 @@ void build(Fixture& x)
     add("logging at Oakfell", 3, 22);
     add("cutting stone at Greyscar", 4, 24);         // (Doc 72, Phase 3: the granite quarry's 1 + 1 since country3,)
     add("digs clay at Clayholt", 3, 22);             // (and the clay pits' one hand each.)
+    add("digs ore at Deepvein", 3, 30);              // (The Frosthollow mine's 1 + 1, and one over,)
+    add("works the lime kilns at Greyscar", 1, 40);  // (the lime quarry's one hand,)
+    add("logging at Highpine", 3, 26);               // (and the Upper hearths' 1 + 2: doc 72, iron and lime.)
     add("plays about the town", 6, 6);
     add("sits by the well", 3, 70);
     const auto one = [&](const std::string& id, const std::string& label, int age, const std::string& sex = "female") {
@@ -222,41 +225,23 @@ const Society::FarmNow& farm(const Society& s, const std::string& id)
 void theData()
 {
     const auto& people = items::farmPeople();
-    expect(people.loaded && people.farms.size() == 39 && people.communities.size() == 6,
-           "communities.json and farm_people.json read: 31 farms and doc 72's 8 works: " + std::to_string(people.farms.size()));
+    expect(people.loaded && people.farms.size() == 42 && people.communities.size() == 7,
+           "communities.json and farm_people.json read: 31 farms and doc 72's 11 works, 7 communities: " + std::to_string(people.farms.size()));
     int works = 0;
     for (const auto& f : people.farms)
         if (f.works)
         {
             ++works;
             expect(f.home.area.empty() && f.workplaces.size() == 1 && f.workplaces[0].area.rfind("w_ridgemere_", 0) == 0 &&
-                       f.workplaces[0].spots.size() == 6,
+                       f.workplaces[0].spots.size() >= 6,
                    f.farm + ": a works, no farmhouse, its work out of doors in its cell");
         }
-    expect(works == 8, "eight works: the fuel's five, the stone's three (doc 72, Phase 3)");
+    expect(works == 11, "eleven works: the fuel's five, the stone's three (doc 72, Phase 3), Frosthollow's three (iron and lime)");
     // Every farm's labels: at most 40 characters, no business's word, no "dog".
     Fixture x;
     build(x);
-    // (The iron's and the lime's works, doc 72, Progress, "Iron and lime out of the Country", have no place in
-    // communities.json until the map's Frosthollow is written: no label, no post, their crews virtual. Their labels as
-    // they will be, of their `places` names.)
-    const std::set<std::string> awaitingTheMap{"mine_frost_iron", "charcoal_upper", "quarry_lime"};
-    for (const auto& id : awaitingTheMap)
-    {
-        const auto& f = farm(x.s, id);
-        const auto kind = people.kinds.find(f.def->kind);
-        const auto name = people.places.find(id);
-        expect(kind != people.kinds.end() && name != people.places.end(), id + ": its kind's labels and its place's name");
-        for (auto label : {kind->second.keeper, kind->second.hand})
-        {
-            label.replace(label.find("{place}"), 7, name->second);
-            expect(label.size() <= 40 && !items::businessFor(label) && label.find("dog") == std::string::npos,
-                   id + "'s label, at most 40 characters and no business's: " + label);
-        }
-        expect(!people.farm(id) && x.s.farmLabel(f, 0).empty(), id + ": no place yet (the map's), so no post");
-    }
     for (const auto& f : x.s.farms())
-        for (int post = 0; post < 3 && !awaitingTheMap.count(f.def->id); ++post)
+        for (int post = 0; post < 3; ++post)
         {
             const auto label = x.s.farmLabel(f, post);
             expect(!label.empty() && label.size() <= 40, f.def->id + "'s label: " + label);
@@ -285,7 +270,7 @@ void theData()
     for (const auto& c : people.communities)
         expect(!c.town && c.region == c.id, c.id + " is no town yet, its own region");
     const auto all = people.plainRegions([](const std::string&) { return true; });
-    expect(all == std::set<std::string>({"coldwater", "larkfield", "southmeadow", "fenshore", "saltwell", "oakhaven"}), "the six kept plain");
+    expect(all == std::set<std::string>({"coldwater", "larkfield", "southmeadow", "fenshore", "saltwell", "oakhaven", "frosthollow"}), "the seven kept plain");
     expect(people.plainRegions([](const std::string&) { return false; }).empty(), "none without their places");
     expect(people.plainRegions([](const std::string& area) { return area == "cn_saltwell_inn"; }) == std::set<std::string>({"saltwell"}),
            "a community by any of its places");
@@ -340,20 +325,12 @@ void thePlacement()
     int keepers = 0, hands = 0, market = 0, family = 0;
     for (const auto& f : s.farms())
     {
-        if (!items::farmPeople().farm(f.def->id))
-        {
-            // (A works with no place in communities.json yet, the iron's and the lime's: nobody placed, its crew virtual,
-            // at work in full.)
-            expect(f.postKeepers == 0 && f.postHands == 0 && f.heads() == f.crewSize() && std::abs(f.working() - 1) < 1e-9,
-                   f.def->id + ": no place yet, its crew all virtual");
-            continue;
-        }
         expect(f.postKeepers == f.keepers && f.postHands == f.hands && f.heldKeepers == f.keepers && f.heldHands == f.hands,
                f.def->id + "'s posts all real and held: " + std::to_string(f.postKeepers) + "+" + std::to_string(f.postHands));
         expect(f.heads() == 0 && f.virtualWages() == 0 && std::abs(f.working() - 1) < 1e-9, f.def->id + ": no virtual post left");
         keepers += f.keepers, hands += f.hands;
     }
-    expect(keepers == 37 && hands == 89, "37 keepers and 89 hands placed (doc 72's works' 6 and 13 among them): " +
+    expect(keepers == 39 && hands == 93, "39 keepers and 93 hands placed (doc 72's works' 8 and 17 among them): " +
                                               std::to_string(keepers) + ", " + std::to_string(hands));
     // Where they live: a farmhouse its keeper's family's alone; hands in their farm's community (or the city's homes), at
     // most six to a home.
@@ -458,7 +435,7 @@ void thePlacement()
             if (p.role == "merchant")
                 keeperOf[p.work.cell] = s.state().careers.positions.at(p.id).holder;
         }
-    expect(market == 19, "the six markets' 19 posts (Oakhaven's two with its works, doc 72): " + std::to_string(market));
+    expect(market == 21, "the seven markets' 21 posts (Oakhaven's two and Frosthollow's two with their works, doc 72): " + std::to_string(market));
     int workshopPosts = 0;
     for (const auto& w : people.workshops)
     {
@@ -472,6 +449,10 @@ void thePlacement()
     expect(!keeperOf["cn_oakhaven_store"].empty(), "Oakhaven's store kept, with its works");
     expect(keeperOf["cn_larkfield_store"] == "shop_larkfield" && keeperOf["cn_coldwater_store"] == "shop_coldwater",
            "Larkfield Stores kept by Larkfield General's shopkeeper, Coldwater Stores by Coldwater Sundries'");
+    // (Frosthollow Stores by the old map's Frosthollow Stores' shopkeeper: Fenshore, staffed before it, leaves another
+    // community's namesake to it.)
+    expect(keeperOf["cn_frosthollow_store"] == "shop_frost" && keeperOf["cn_fenshore_store"] != "shop_frost",
+           "Frosthollow Stores kept by its old shopkeeper, never Fenshore's: " + keeperOf["cn_frosthollow_store"]);
     for (const auto& [cell, keeper] : keeperOf)
     {
         expect(s.account("till:job:" + keeper), cell + "'s till opened");
@@ -521,7 +502,7 @@ void thePlacement()
                 expect(wages[holder] == (isKeeper ? f.keeper : f.hand), p.title + " paid " + std::to_string(wages[holder]));
             }
     for (const auto& f : s.farms())
-        expect(s.cash(f.crew) == 0 || !people.farm(f.def->id), f.def->id + "'s crew holds nothing now (its people's; a works with no place yet keeps its virtual crew's purse)");
+        expect(s.cash(f.crew) == 0, f.def->id + "'s crew holds nothing now (its people's)");
     // (A community's market is staffed with its first farm or works: Oakhaven's with the Oakhaven cut, doc 72.)
     for (const auto& c : people.communities)
         if (std::any_of(people.farms.begin(), people.farms.end(), [&](const auto& f) { return f.community == c.id; }))
@@ -592,13 +573,17 @@ void theWorksCrews()
             else
                 expect(home.rfind("cn_" + site.community + "_", 0) == 0, site.farm + "'s crew lives in " + site.community + ": " + home);
             const auto trade = people.tradeOf(oldLabel.at(holder));
+            if (isKeeper && site.community == "frosthollow")
+                expect(home == (site.farm == "mine_frost_iron" ? "cn_frosthollow_mine_house" : "cn_frosthollow_collier_house"),
+                       site.farm + "'s keeper in the keeper's house the map built for it: " + home);
             if (site.farm == "peat_fens")
                 expect(trade == "keeps the house" || trade == "service and labour", "the peat's crew of those who keep the house: " + oldLabel.at(holder));
-            else if (f.house == "Greatly")
+            else if (f.house == "Greatly" || site.farm == "mine_frost_iron")
             {
                 const auto& old = oldLabel.at(holder);
-                expect(trade == "mines, stone and clay" &&
-                           old.find(site.farm == "quarry_granite" ? "cutting stone" : "digs clay") != std::string::npos,
+                const char* word = site.farm == "quarry_granite" ? "cutting stone" : site.farm == "mine_frost_iron" ? "digs ore"
+                                 : site.farm == "quarry_lime" ? "lime kilns" : "digs clay";
+                expect(trade == "mines, stone and clay" && old.find(word) != std::string::npos,
                        site.farm + "'s crew of its own work, of the mines, stone and clay: " + old);
             }
             else
@@ -614,7 +599,7 @@ void theWorksCrews()
         for (const auto& r : requests)
             expect(!(r.farm == site.farm && r.workLabel == "-"), site.farm + ": no family placed with its keeper");
     }
-    expect(woodsPosts == 13 && ofTheWoods == 9, "the woods' 13 posts, all 9 of the woods' trade among them: " + std::to_string(ofTheWoods));
+    expect(woodsPosts == 16 && ofTheWoods == 12, "the woods' 13 posts and the Upper hearths' 3, all 12 of the woods' trade among them: " + std::to_string(ofTheWoods));
     // The oldest logger has a spouse among the unplaced: no works' keeper, but a hand; the spouse stays unplaced.
     const auto* ash = s.jobOf("ash");
     bool ashKeeps = true;
