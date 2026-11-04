@@ -1287,3 +1287,138 @@ basket: the repairs moved ~75p a day from the ironworks, the smithies and the ch
 ones, and the support rose 34p; its repair share (0.53) back down a little, or Phase 4 sized against the Country's
 smaller sales; (4) the dairies' butter and cheese are tiny next to the wants: more milk to the making (a larger share
 past keeping, or the dairies' yields up) is the user's call.
+
+### Phase 4: the city's makers first; the dairies' rent and their own milk; country3c's patch (2026-11-03, branch `r2-country-p4`)
+
+Branch `r2-country-p4`, from `ridgemere2` (bac0d87). **No map change, nothing written to DEV, no NPC made**; the
+treasury's levers (toll, support, float) untouched. Year 3 below is country3c's, a day; the 30-day smokes are on build
+60's export as before (`base`: ridgemere2's data on this build). The scripts are in the session's scratchpad (`p4/`:
+`p4goods.py`, `project.py`, `moved.py`, `stone.py`, `fuel.py`).
+
+**Phase 4 (4.5): `suppliers` entries only** (`Data/Items/country.json`; `buyFromCity` was already on the craft path, no
+code change). A craft input is bought from a city maker's till holding it, at its price, till to till, and from the
+store room only what the makers lack:
+
+| Good | Buyers (their crafts) | City makers |
+|---|---|---|
+| linen cloth | tailor, apothecary, herbalist, armoury, papermill, scriptorium | weaver |
+| iron hoops | carpenter, cartwright (cart wheels) | smithy, cooperage |
+| planks | cooperage, cartwright, carpenter, apothecary (splints), fletcher | the Timberland Sawmill |
+| cord | ropewalk, fletcher, general store, jeweller, tinker (nets, snares, fang charms) | chandlery |
+| paper | printing house, cartographer | papermill, scriptorium |
+| leather | armoury, printing house, saddlery, scriptorium, smithy | tannery |
+| ink | cartographer | scriptorium, printing house |
+
+**What stays the store room's**: the resale goods (Phase 5: the general store's and the builders' yard's nails, the
+rag-and-bone man's and the pawnbroker's cookpots, the barber's bandages: in year 3 ~12p a day; 4.5's table counted
+them, and they go through the resale path, `!w.craft`), and a maker's input for its own crafts (the chandlery's cord for
+its candles, 10.8p: a business is never its own supplier). So of 4.5's ~187p, **what Phase 4 can move in year 3 is
+~99-119p a day by season** (the Country's sales of those goods to those buyers), and the smoke moved: hoops, paper,
+leather and ink all, planks 75%, cord 75%, **linen 48%** (the weaver's crew of two makes ~10 linen a day of the ~15
+wanted; with the grain farms' flax as it was, 18%).
+
+**The weaver's flax**: the grain farms' flax **+12 a day each** (country3c's patch, then +12: 14.9 / 14.2 / 14.1 / 14.9
+at the seasons' middles; it was 2-3): the weaver drew 20.4 a day in the smoke (9.5 at +6, 0.1 in year 3), the paintworks
+7.7 (it was supply-bound). Flax keeps; the next run's patch sizes it.
+
+**The test** (`trades_tests`, new `thePhase4Suppliers`, 921 checks): each pair above in `citySellers` (the chandlery's own
+cord and the resale goods none); a tailor whose shelves lack neckerchiefs and a weaver holding linen: the linen bought
+from the weaver's till at the catalogue's price, nothing drawn from the store room, the Country's purse, the treasury and
+the carriage untouched (no toll, no carriage), conserved; the weaver out of linen: the store room's, the Country paid.
+
+**The Country's margin: the dairies' land rent** (open question 2's lever, where the margin is). In country3c's year 3
+the three cattle and dairy farms kept **67-70%** of their takings over their wages in every season, the meat area's pig
+farms beside them 41% (its thinnest), so the area's 16% left the dairies far more than any other farm. A farm can now
+have **its own rule**: `country_farms.json` a farm's `landRent` names it (`"dairy"`: the rule **`landRentDairy` 24**), over
+its area's (`Society::landRentPercent`: the farm's own, then `landRent<Area>`, then `landRent`; Core's `Rules`, the
+Editor's and Atlas's Economy rules, `map_editor.py`; no migration). 24% keeps each dairy ~45% of its takings over its
+wages and rent; with their cheese and butter (below) their baskets hardly move (110p to 108p a day in the smoke). The
+other rents (grain 28, honey and meat 16, fish 9, fruit 4, salt 8) are each about half their thinnest farm's margin
+already and are unchanged; no farm is thinner for it.
+
+**The repair share stays 0.53.** Lowering it moves the Country's basket from the builders to the ironworks and the
+smithies, but it is the mason's buyers the quarry needs in summer (below), and Phase 4 with the dairies' rent leaves the
+Country's basket about where it was (the smoke: 608p to 588p a day). The ironworks, smithies and charcoal burner stay the
+city makers' levers (carry-over 4).
+
+**Projected on country3c's year 3** (intake = sales after the toll + the works' rents + the land rents; Phase 4 = the
+Country's year-3 sales of each covered good to its covered buyers times the share the smoke moved; the smithies' iron bars
+back from the store for the hoops, a bar making three; the dairies at 24% on their takings plus the smoke's 18p a day each
+from their own milk's cheese and butter, against 16% before; the stress column puts 4.5's whole 187p on Phase 4 instead):
+
+| Season | Intake now | Phase 4 | Iron bars back | Dairies' rent | Intake after | Over its 824p of posts | Stress: 187p |
+|---|---|---|---|---|---|---|---|
+| spring | 1,119 | -80 | +15 | +56 | 1,110 | +286 (35%) | 1,003 (+22%) |
+| summer | 1,030 | -68 | +12 | +54 | **1,028** | **+204 (25%)** | **909 (+10%)** |
+| autumn | 1,038 | -68 | +13 | +55 | 1,038 | +214 (26%) | 919 (+12%) |
+| winter | 1,211 | -82 | +15 | +58 | 1,202 | +378 (46%) | 1,097 (+33%) |
+
+With all of each covered good moved (the weaver keeping up), summer is 997p (+21%). So the worst season keeps at least
+10% over its posts in every case (the target), ~25% as the smoke ran. **The treasury loses the toll on what moves**: 3/7
+of the Country's intake from it, ~29p a day in year 3's summer (the smoke: 17p a day less toll); its surplus is what
+pays for it (year 3: 5,929p to 5,947p, the cap's surplus going out), the user's lever.
+
+**The quarry's summer: the mason's cut stone.** Its stone sold at ~1.34p in every season of country3c; summer's 18.8 a
+day was 25.1p against the 1 + 1's 26p: **demand-bound**, so no yield can raise its takings. Its buyers are the mason's cut
+stone (two stone a piece) in the two baskets: **cut stone 62 to 80 of the farms' basket's shares, 42 of the Country's**
+(0.53 of 80; the repairs 172 to 181 shares). Played on year 3 (the baskets after the dairies' rent and Phase 4, the shares'
+weight): cut stone ~11.7 a day in summer, **~23 stone, ~30p against its 26p (+15-19%)**; the smoke's quarry took 55.4p a
+day (46.0p before), the mason's stone 39.6 a day (33.0). **Its yield** country3c's patch half way, then ×1.1 for the new
+demand: **29.87 / 25.32 / 26.93 / 31.36** (27.76 / 23.93 / 24.63 / 28.09).
+
+**country3c's patch** applied (`tools/econ_report.py --apply artifacts/economy/r2/country3c.patch.json
+Data/Economy/country_farms.json --damping 0.5`, `wholeSeasons` the whole step: milk all year, flax all year, clay in
+spring): 122 yields; **charcoal half way down** (coppice_greenholt 8.34 / 7.63 / 8.63 / 9.77; 9.04 / 8.61 / 10.11 / 10.86),
+**timber half way down** (20.95 / 18.42 / 19.46 / 23.27 at each logging camp; 22.09 / 19.77 / 20.96 / 24.87), oak bark and
+the rest. **Peat and firewood** the patch left about level (its demand + 5% over what sold, which piled them: 3,456 and
+16,105 at year 3's end), so instead **half way to what sold** in each season, no slack (`fuel.py`): peat 87.34 / 100.15 /
+90.03 / 219.20 (92.18 / 102.56 / 96.38 / 209.19: sold over grown in winter, under the rest of the year), firewood 4-6% down
+in spring to autumn and ~1% up in winter at all four works.
+
+**The dairies' butter and cheese: milk of their own** (the shops wanted some 64 butter and 79 cheese a day while the
+Country's store sold them, year 1's first eight weeks; the spare made 2.0 and 0.5). A farm's `makes` entry gains
+**`aDay`**: pieces of its `from` a day at each season's middle, blended as a yield (times the yield scale and the crew at
+work), **milked for that making alone and never in the till as milk**, so the shops' milk is the yield's as before;
+made each morning into whole pieces while the store has room, and what the store can't take that morning isn't milked
+(`Society::makeOfOwn`, after the yields; journalled "made at <farm> of its own milk"; counted grown and used, the made
+good grown: `farm_good` balances as before; no money). **Each dairy 20 milk a day for 5 cheese and 8 for 4 butter**, all
+year: 15 cheese and 12 butter a day of the three, about a fifth of the wants, besides the spare; **stores 120 cheese** (24
+days of it; cheese keeps 180) **and 20 butter** (5 days; it keeps 14). The spare's halves are unchanged.
+
+**Tests.** `farms_behaviors` (1,943 checks): `theDairy` (the stores 120 and 20, the own milk 20 and 8; a night with no
+sales: 5 cheese and 4 butter of its own milk, journalled apart, the spare still about half to each, the milk grown the
+yield's and 28 more, accounted for, conserved; 70 nights on, full at 120 and 20, the spare spoiling and nothing made);
+`theLandRent` (the three dairies' own 24, every other farm its area's; a world's landRentDairy 5 over the meat area's
+landRent 10, the pig farm beside it 10); `theDefaults` (the repairs 181 shares, cut stone 42 of 80; the flour's summer
+mean 55.17 after country3c's patch); `theStoneWorks` (the quarry 25.32 at summer's middle, 28.37 a year; the pits' clay
+25.8 and sand 10.17); `theCountryPaysItsPosts` with landRentDairy off too. `trades_behaviors` (921): `thePhase4Suppliers`.
+`ctest` in `build-core`: **78 of 78**. `test_econ_report` (8; the made line now "of what would have spoiled and of their
+own milk for it"), `test_farms_summary`, `test_country_industry`, `test_item_catalog`, `test_city_capacity`,
+`test_world_store`, `test_studio`, `test_ridgemere2` pass; the Editor's typecheck and `economy.test.ts` pass.
+(`test_map_editor`'s and `content.test.mjs`'s Greyfen counts, 11 residents against 10: not this branch's, as before.)
+
+**The 30-day smoke** (`--simulate 0 720 --farms 0 --farms-every 1 --deterministic --threads 4 --economy-level full`;
+`artifacts/economy/r2/country4-smoke-report.md`, `country4-smoke.patch.json`, a first spring's, not to be applied; `base`
+beside it, days 7-29 a day): money conserved every day; nobody hungry; **every farm and works paid its crew in full**;
+the Country's posts paid every night (24,720p), its purse 1,431 to 1,889p (least 1,266p; base 1,235p).
+
+- **Phase 4: 174.5p a day till to till** (base 18.4p, the casks): hoops 36p (the carpenters' and the cartwright's, from
+  the smithies and the cooperage), planks 29p (the sawmill: it was 4.8p a day short, now paid with 5.3p over), linen
+  54p (the weaver), cord 18p, paper 11p, leather 6p, ink 2p. The Country's sales 909p to 830p, its land rents 338p to 401p, the works'
+  rents 247p to 250p: its intake 1,494p to 1,481p (in this first month, its basket's founding purse besides).
+- **The makers**: the sawmill and the papermill no longer short, the cooperage's takings 71p to 101p (still 6.3p short),
+  the printing house's profit 6.8p to 13.7p, the tannery's 14.2p to 15.7p; **the smithies 21.8p to 25.1p a day short** (their
+  hoops are a bar of 9p made into 12p, and the meat farms' baskets bought a little less of their goods), the general
+  stores 60.9p to 64.7p. The wage support 391p to 401p a day; the toll 17p a day less (the treasury 3,612p to 2,973p at
+  the month's end, least 1,369p on day 0 either way).
+- **The dairies**: **butter 16.6 a day, cheese 15.3**, all sold, none held (base 5.3 and 1.2); their takings 201p to 219p
+  each, their rent 31.7p to 52.3p, their baskets 110p to 108p. The stall's takings 204p to 294p (its profit 5.7p to
+  34.6p), the provisioners' 1,206p to 1,222p. Still supply-bound (~3,600 draws of each short in the month: the wants are
+  far larger). The households' food shifts a little from the other farms: the sheep runs' takings 96p to 88p, the pig
+  farms' 1-3p less, the boats and salt 0-1p; every farm's takings less wages less rent still positive (the least: the
+  sea boats and salt 4.9-5.1p, base 5.0-6.3p).
+- **The quarry 55.4p a day** (46.0p), its rent to Greatly 29.4p.
+
+Next: a 3-year run (the user's go-ahead first) to see Phase 4 through the seasons: the Country's summer against the
+projection, the quarry's summer on the mason's cut stone, the weaver's linen (its crew), the dairies' cheese stores, the
+fuel's piling, and the smithies, the general stores and the support.

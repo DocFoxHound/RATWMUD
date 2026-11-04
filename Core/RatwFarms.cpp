@@ -203,6 +203,7 @@ void Society::tendFarms(std::int64_t day)
             if (n > made)
                 loopToday_.goodsSpoiled[good] += n - made;
         }
+        makeOfOwn(f, working);
         for (const auto& [good, middle] : f.def->table)
         {
             double& carry = f.eaten[good];
@@ -323,6 +324,41 @@ int Society::makeOfSpare(FarmNow& f, const std::string& from, int spare)
     return used;
 }
 
+int Society::makeOfOwn(FarmNow& f, double working)
+{
+    // A make's own yield (`aDay`; doc 72, Phase 4's follow-up: the shops wanted some 60 butter and 80 cheese a day, the
+    // spare made 2 and 0.5): its pieces of `from` a day, its season's blended as a yield is (times the yield scale and the
+    // crew at work, fractions carried), made at once into whole pieces of `good` while its store has room. The milk is
+    // counted grown and used, the made good grown: nothing sold, no money, never in the till as milk (the shops' milk is
+    // the yield's alone). What the store can't take this morning isn't milked for it (nothing spoils, nothing carried).
+    const auto* till = f.def ? account(f.till) : nullptr;
+    if (!till)
+        return 0;
+    auto& today = loopToday_.farms[f.def->id];
+    int made = 0;
+    for (const auto& m : f.def->makes)
+    {
+        if (!m.dedicated())
+            continue;
+        double& carry = f.making[m.good];
+        carry += seasonalValue(m.aDay, yearDay_) * f.yieldScale * working;
+        const int milk = int(std::floor(carry + 1e-9)), whole = milk / m.in;
+        const int room = std::max(0, std::min(m.store, StockCap) - stock(*till, m.good));
+        const int n = std::min(whole, room);
+        carry -= n < whole ? milk : n * m.in;      // (Its store full: the rest isn't milked for it.)
+        if (n < 1 || (!till->stock.count(m.good) && till->stock.size() >= MaxGoodsKinds) ||
+            !create(f.till, m.good, n, "made at " + f.def->id + " of its own " + m.from))
+            continue;
+        made += n;
+        today.grown += n + n * m.in;
+        today.used += n * m.in;
+        today.goods[m.good].grown += n;
+        today.goods[m.from].grown += n * m.in;
+        today.goods[m.from].used += n * m.in;
+    }
+    return made;
+}
+
 void Society::payFarms()
 {
     // The farms' wages at 18:00 (doc 71, 4; the user: fixed, a keeper 16p and a hand 10p, editable per farm and area), to
@@ -426,11 +462,17 @@ int Society::landRentPercent(const FarmNow& f) const
 {
     if (f.works || !f.def || f.area >= items::farms().areas.size())
         return 0;
-    auto name = "landRent" + items::farms().areas[f.area].id;
-    name[8] = char(std::toupper(static_cast<unsigned char>(name[8])));
-    if (items::ruleInfo(name))
-        if (const int own = rule(name); own >= 0)
-            return std::clamp(own, 0, 100);
+    // Its own rule first (a farm's `landRent`: the dairies' landRentDairy, doc 72, Phase 4), then its area's, then landRent.
+    for (const auto* which : {&f.def->landRent, &items::farms().areas[f.area].id})
+    {
+        if (which->empty())
+            continue;
+        auto name = "landRent" + *which;
+        name[8] = char(std::toupper(static_cast<unsigned char>(name[8])));
+        if (items::ruleInfo(name))
+            if (const int own = rule(name); own >= 0)
+                return std::clamp(own, 0, 100);
+    }
     return std::clamp(rule("landRent"), 0, 100);
 }
 

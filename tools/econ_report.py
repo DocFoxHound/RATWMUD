@@ -534,7 +534,7 @@ def report(econ, run, top, patch_path):
                 last[good] += b
             days = max(1, run.days)
             say('')
-            say('Made at the farms of what would have spoiled (a day over the run; doc 72, the dairies): ' + '; '.join(
+            say('Made at the farms of what would have spoiled and of their own milk for it (a day over the run; doc 72, the dairies): ' + '; '.join(
                 f'{g} {sums[g]["made"] / days:.1f} made of {src} (sold {sums[g]["sold"] / days:.1f}, {last[g]} held at the end)'
                 for g, src in sorted(makes.items())) + '; ' + ', '.join(
                 f'{src} {sums[src]["used"] / days:.1f} used, {sums[src]["spoiled"] / days:.1f} spoiled' for src in sorted(set(makes.values()))) + '.')

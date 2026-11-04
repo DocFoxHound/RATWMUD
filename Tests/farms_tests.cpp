@@ -205,15 +205,16 @@ void theDefaults()
         }
         expect(Society::nourishment(item) == 0 && item != "aqua_vitae", "and no food or drink: " + item);
     }
-    expect(repairs == 172, "the building goods 172 of the Country's shares: " + std::to_string(repairs));
+    // (Phase 4: cut stone 80 of the farms' shares and 42 of the Country's, for the quarry's summer: doc 72.)
+    expect(repairs == 181, "the building goods 181 of the Country's shares: " + std::to_string(repairs));
     // The yields: the season means of the blend (a grain farm's flour in summer: the farms' people's confirming run's
     // yields, the flour cut to what was taken and the oats raised, doc 72, Phase 1; country1's patch half way, Phase 2;
-    // country3's half way, Phase 3's follow-up; country3b's half way).
+    // country3's half way, Phase 3's follow-up; country3b's and country3c's half way).
     const auto& flour = f.areas[areaIndex("grain")].farms.front().yield.at("flour");
     double summer = 0;
     for (int d = 92; d < 184; ++d)
         summer += Society::seasonalValue(flour, d + .5);
-    expect(std::abs(summer / 92 - 55.47) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
+    expect(std::abs(summer / 92 - 55.17) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
     // The Country's herbs and raw fibre on the farms that already exist (doc 72, Phase 1): the eel marsh's herbs (the fish
     // area's goods; resin stays the Country's, with the woods), the grain farms' hemp and flax with a hand more each.
     const auto& fish = f.areas[areaIndex("fish")];
@@ -531,9 +532,12 @@ void theDairy()
             continue;
         ++dairies;
         expect(x.kind == "cattle and dairy farm" && x.makes.size() == 2 && x.makes[0].good == "cheese" && x.makes[0].from == "milk" &&
-                   x.makes[0].in == 4 && x.makes[0].share == 50 && x.makes[0].store == 60 && x.makes[1].good == "butter" &&
-                   x.makes[1].in == 2 && x.makes[1].store == 10,
-               x.id + ": its spare milk half to cheese (4 a piece, 60 in store at most), the rest to butter (2 a piece, 10)");
+                   x.makes[0].in == 4 && x.makes[0].share == 50 && x.makes[0].store == 120 && x.makes[1].good == "butter" &&
+                   x.makes[1].in == 2 && x.makes[1].store == 20,
+               x.id + ": its spare milk half to cheese (4 a piece, 120 in store at most), the rest to butter (2 a piece, 20)");
+        // Doc 72, Phase 4's follow-up: milk of its own for each, 20 a day for 5 cheese and 8 for 4 butter, all year.
+        expect(x.makes[0].aDay == std::array<double, 4>{20, 20, 20, 20} && x.makes[1].aDay == std::array<double, 4>{8, 8, 8, 8},
+               x.id + ": the cheese room's own milk, 20 a day, and the butter's 8");
     }
     expect(dairies == 3, "the three dairies make them, no other farm: " + std::to_string(dairies));
 
@@ -550,19 +554,32 @@ void theDairy()
     const int milkBefore = held(s, cattle.till, "milk"), cheeseBefore = held(s, cattle.till, "cheese"),
               butterBefore = held(s, cattle.till, "butter");
     const auto money = s.moneySupply();
+    s.takeJournal();
     turn(s, 47);
     const auto& day = s.loopToday().farms.at(cattle.def->id);
     const auto good = [&](const char* g) {
         const auto x = day.goods.find(g);
         return x == day.goods.end() ? Society::LoopDay::Farm::Good{} : x->second;
     };
+    // What it made of its own milk (journalled apart), and of the spare.
+    std::map<std::string, int> own;
+    for (const auto& e : s.takeJournal())
+        if (e.to == cattle.till && e.kind == "made at " + cattle.def->id + " of its own milk")
+            own[e.item] += e.quantity;
     const int cheeseMade = held(s, cattle.till, "cheese") - cheeseBefore, butterMade = held(s, cattle.till, "butter") - butterBefore;
-    expect(cheeseMade > 0 && butterMade > 0, "cheese and butter made of the spare milk: " + std::to_string(cheeseMade) + " and " +
-                                                 std::to_string(butterMade));
+    expect(own["cheese"] == 5 && own["butter"] == 4, "of its own milk 5 cheese and 4 butter: " + std::to_string(own["cheese"]) + " and " +
+                                                         std::to_string(own["butter"]));
+    const int cheeseSpare = cheeseMade - own["cheese"], butterSpare = butterMade - own["butter"];
+    expect(cheeseSpare > 0 && butterSpare > 0, "cheese and butter made of the spare milk: " + std::to_string(cheeseSpare) + " and " +
+                                                   std::to_string(butterSpare));
     expect(good("cheese").grown == cheeseMade && good("butter").grown == butterMade, "counted as the farm's made (its grown)");
     expect(good("milk").used == 4 * cheeseMade + 2 * butterMade, "4 milk a cheese and 2 a butter: " + std::to_string(good("milk").used));
-    expect(std::abs(4 * cheeseMade - 2 * butterMade) <= 4, "the spare about half to each: " + std::to_string(4 * cheeseMade) + " and " +
-                                                                std::to_string(2 * butterMade));
+    expect(std::abs(4 * cheeseSpare - 2 * butterSpare) <= 4, "the spare about half to each: " + std::to_string(4 * cheeseSpare) + " and " +
+                                                                 std::to_string(2 * butterSpare));
+    // Its own milk counted grown and used, never in the till: the shops' milk is the yield's alone.
+    double yieldToday = Society::seasonalValue(milkYield, 47 + .5) * cattle.yieldScale * cattle.working();
+    expect(good("milk").grown - 28 >= int(std::floor(yieldToday)) - 1 && good("milk").grown - 28 <= int(std::ceil(yieldToday)) + 1,
+           "the milk grown: the yield's and the 28 of its own: " + std::to_string(good("milk").grown));
     expect(held(s, cattle.till, "milk") == keep && good("milk").spoiled <= 1, "a day's milk kept, a piece spoiled at most: " +
                                                                                   std::to_string(good("milk").spoiled));
     // Conserved: no coin made or lost, and every piece of milk is accounted for (kept, made into the two, spoiled or eaten at the
@@ -586,14 +603,16 @@ void theDairy()
     const auto b = s.drawFromStore("stall", "butter", 3, "restocked from the store room");
     expect(b.ok && b.message.find("from the farms") != std::string::npos, "and its butter: " + b.message);
     expect(s.cash(Society::CountryFund) == country && s.conserved() && s.moneySupply() == before, "nothing to the Country; conserved");
-    // Many days with no sales: the store rooms fill to their most (cheese 60, butter 10) and no further; then the spare
-    // spoils as before. The cheese keeps (made goods don't spoil at the farm: only a yield past its keeping does).
+    // Many days with no sales: the store rooms fill to their most (cheese 120, butter 20) and no further; then the spare
+    // spoils as before, and its own milk isn't milked. The cheese keeps (made goods don't spoil at the farm: only a yield
+    // past its keeping does).
     for (int d = 48; d < 48 + 70; ++d)
         turn(s, d);
-    expect(held(s, cattle.till, "cheese") == 60 && held(s, cattle.till, "butter") == 10, "the store rooms full and no fuller: " +
-                                                                                            std::to_string(held(s, cattle.till, "cheese")) + ", " +
-                                                                                            std::to_string(held(s, cattle.till, "butter")));
-    expect(s.loopToday().farms.at(cattle.def->id).goods.at("milk").spoiled > 0, "full, the spare milk spoils again");
+    expect(held(s, cattle.till, "cheese") == 120 && held(s, cattle.till, "butter") == 20, "the store rooms full and no fuller: " +
+                                                                                              std::to_string(held(s, cattle.till, "cheese")) + ", " +
+                                                                                              std::to_string(held(s, cattle.till, "butter")));
+    const auto& full = s.loopToday().farms.at(cattle.def->id).goods.at("milk");
+    expect(full.spoiled > 0 && full.used == 0, "full, the spare milk spoils again and none is made");
     // Meat off: the Country sends them again.
     auto e = s.authored().economy;
     e.farms.areas["meat"].on = 0;
@@ -989,16 +1008,18 @@ void theStoneWorks()
     // 25.71); then country3's patch half way (the three piling: grown 5-12% over sold), and country3b's half way for the
     // pits. The quarry's stone to the mason's 24.9 a day before the land rent (country3's year 3) + 5%, in country3's
     // patch's seasons: the Country's basket buys the builders' goods the rent took from the farms' (doc 72, after
-    // country3b).
+    // country3b); then (Phase 4, doc 72) country3c's patch half way, times 1.1 for the mason's cut stone, its shares
+    // raised (80 of the farms' basket, 42 of the Country's), so its summer pays its 1 + 1; the pits' clay its whole step in
+    // spring (supply-bound there).
     const auto& quarry = stone.farms.front();
-    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 23.93) < .01,
-           "the quarry's stone, 23.93 a day at summer's middle");
+    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 25.32) < .01,
+           "the quarry's stone, 25.32 a day at summer's middle");
     double stoneMean = 0;
     for (const double v : quarry.yield.at("stone"))
         stoneMean += v / 4;
-    expect(std::abs(stoneMean - 26.1) < .05, "26.1 a day over the year: " + std::to_string(stoneMean));
+    expect(std::abs(stoneMean - 28.37) < .05, "28.37 a day over the year: " + std::to_string(stoneMean));
     for (std::size_t i = 1; i < 3; ++i)
-        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 25.95) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 10.46) < .01,
+        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 25.8) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 10.17) < .01,
                stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both)");
     // On: founded; the mason's stone and sand from the works' stores, nothing to the Country; limestone still the Country's.
     auto s = city([](EconomySpec& e) { e.farms.areas["stone"].on = 1; },
@@ -1078,17 +1099,29 @@ void theLandRent()
     auto s = city([](EconomySpec& e) { e.farms.areas["grain"].on = 1; }, aStore());
     const std::map<std::string, int> percent{{"grain", 28}, {"fruit", 4}, {"meat", 16}, {"fish", 9}, {"honey", 16}, {"salt", 8},
                                              {"fuel", 0}, {"stone", 0}};
+    // (Doc 72, Phase 4's payer: the three cattle and dairy farms their own rule, landRentDairy 24, over the meat area's 16.)
+    int dairies = 0;
     for (const auto& now : s.farms())
-        expect(s.landRentPercent(now) == percent.at(now.def->area) && now.house == (now.works ? now.house : houses.at(now.def->area)),
+    {
+        const bool dairy = now.def->landRent == "dairy";
+        dairies += dairy;
+        expect(s.landRentPercent(now) == (dairy ? 24 : percent.at(now.def->area)) &&
+                   now.house == (now.works ? now.house : houses.at(now.def->area)),
                now.def->id + "'s land rent " + std::to_string(s.landRentPercent(now)) + "%, to " + now.house);
+        expect(!dairy || (now.def->area == "meat" && now.def->kind == "cattle and dairy farm"), "a dairy's own rule: " + now.def->id);
+    }
+    expect(dairies == 3, "the three dairies their own rule: " + std::to_string(dairies));
     {
         auto tuned = city([](EconomySpec& e) {
             e.rules["landRent"] = 10;
             e.rules["landRentGrain"] = 0;
+            e.rules["landRentDairy"] = 5;
         });
         expect(tuned.landRentPercent(farm(tuned, "grain_farm_1")) == 0 && tuned.landRentPercent(farm(tuned, "beekeeper_1")) == 10 &&
-                   tuned.landRentPercent(farm(tuned, "salt_works_1")) == 8,
-               "the world's own: grain's none, the rule's 10 where an area has no own, salt's still country.json's 8");
+                   tuned.landRentPercent(farm(tuned, "salt_works_1")) == 8 &&
+                   tuned.landRentPercent(farm(tuned, "cattle_and_dairy_farm_2")) == 5 && tuned.landRentPercent(farm(tuned, "pig_farm_1")) == 10,
+               "the world's own: grain's none, the rule's 10 where an area has no own, salt's still country.json's 8, a dairy's "
+               "its own 5 (the pig farm beside it the meat area's 10)");
     }
     turn(s, 46);
     const auto t1 = Society::farmTill("grain_farm_1"), t2 = Society::farmTill("grain_farm_2");
@@ -1182,7 +1215,7 @@ void theCountryPaysItsPosts()
                 e.countryReserve = 0;
                 for (const auto& a : items::farms().areas)
                     e.farms.areas[a.id].on = a.works ? 0 : 1;
-                for (const char* r : {"landRent", "landRentFish", "landRentFruit", "landRentGrain", "landRentSalt"})
+                for (const char* r : {"landRent", "landRentFish", "landRentFruit", "landRentGrain", "landRentSalt", "landRentDairy"})
                     if (!rent)
                         e.rules[r] = 0;
             },

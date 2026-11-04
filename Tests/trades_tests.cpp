@@ -222,6 +222,74 @@ void theCitySuppliers()
     expect(none["cooper"] == 0 && none["store"] == 1, "with no cask in the city, the store room's");
 }
 
+// Doc 72, Phase 4 (4.5): the craft inputs the Country's store sold come from the city's makers first. A tailor whose shelves
+// lack only neckerchiefs (a linen cloth makes four) and a weaver.
+void thePhase4Suppliers()
+{
+    const auto sellers = [](const char* buyer, const char* good) { return Society(Roster::None).citySellers(buyer, good); };
+    using V = std::vector<std::string>;
+    expect(sellers("tailor", "linen_cloth") == V{"weaver"} && sellers("apothecary", "linen_cloth") == V{"weaver"} &&
+               sellers("papermill", "linen_cloth") == V{"weaver"} && sellers("scriptorium", "linen_cloth") == V{"weaver"},
+           "linen cloth from the weaver");
+    expect(sellers("carpenter", "iron_hoops") == V{"smithy", "cooperage"} && sellers("cartwright", "iron_hoops") == V{"smithy", "cooperage"},
+           "iron hoops from the smithies and the cooperage");
+    expect(sellers("cooperage", "planks") == V{"sawmill"} && sellers("cartwright", "planks") == V{"sawmill"} &&
+               sellers("carpenter", "planks") == V{"sawmill"},
+           "planks from the Timberland Sawmill");
+    expect(sellers("ropewalk", "cord") == V{"chandlery"} && sellers("jeweler", "cord") == V{"chandlery"} && sellers("chandlery", "cord").empty(),
+           "cord from the chandlery (its own candles' cord stays its own draw)");
+    expect(sellers("printing_house", "paper") == V{"papermill", "scriptorium"} && sellers("scriptorium", "leather") == V{"tannery"} &&
+               sellers("cartographer", "ink") == V{"scriptorium", "printing_house"},
+           "paper, leather and ink from their makers");
+    expect(sellers("general", "nails").empty() && sellers("rag_and_bone", "cookpot").empty() && sellers("barber", "bandages").empty() &&
+               sellers("cooperage", "barrel").empty() && sellers("brewery", "barrel") == V{"cooperage"},
+           "the resale goods stay the store room's (Phase 5), the casks as they were");
+    const auto made = [&](bool linenInTown) {
+        auto s = city({person("tailor", "merchant", "tailor at The Needle", {"tailor", 2.5, 2.5}, "home_t", 40, 500),
+                       person("weaver", "merchant", "weaver at The Loom", {"weaver", 2.5, 2.5}, "home_w", 40, 100)});
+        const auto tailor = s.tillOf("tailor"), weaver = s.tillOf("weaver");
+        for (const auto& ware : s.wares("tailor"))
+            if (ware != "linen_neckerchief")
+                s.create(tailor, ware, 40, "test: the shelves full");
+        for (const char* none : {"linen_cloth", "linen_neckerchief"})
+            if (const int n = Society::stock(*s.account(tailor), none); n > 0)
+                s.consume(tailor, none, n, "test: none of its own");
+        if (const int n = Society::stock(*s.account(weaver), "linen_cloth"); n > 0)
+            s.consume(weaver, "linen_cloth", n, "test: the weaver's linen gone");
+        if (linenInTown)
+            s.create(weaver, "linen_cloth", 3, "test: linen on the weaver's shelf");
+        const auto money = s.moneySupply();
+        const auto country0 = s.cash(Society::CountryFund), treasury0 = s.cash("treasury"), carriage0 = s.cash(Society::CarriageFund);
+        const auto weaver0 = s.cash(weaver), tailor0 = s.cash(tailor);
+        for (int h = 0; h < 40; ++h)
+            s.restockFromStore("tailor", 1 + h / 24.);
+        expect(s.conserved() && s.moneySupply() == money, "conserved");
+        std::map<std::string, int> from;
+        for (const auto& e : s.takeJournal())
+            if (e.item == "linen_cloth" && e.kind == "from a city maker" && e.from == tailor && e.to == weaver)
+                from["weaver"] += e.quantity;
+            else if (e.item == "linen_cloth" && e.kind == "drawn for linen_neckerchief" && e.from == "made" && e.to == tailor)
+                from["store"] += e.quantity;
+        expect(Society::stock(*s.account(tailor), "linen_neckerchief") > 0, "neckerchiefs made");
+        if (linenInTown)
+        {
+            const auto paid = s.cash(weaver) - weaver0;
+            expect(from["weaver"] > 0 && from["store"] == 0 && paid == from["weaver"] * Society::catalogPrice("linen_cloth") &&
+                       tailor0 - s.cash(tailor) == paid,
+                   "the linen from the weaver's till at its price, none from the store room: " + std::to_string(from["weaver"]) +
+                       " pieces, " + std::to_string(paid) + "p");
+            expect(s.cash(Society::CountryFund) == country0 && s.cash("treasury") == treasury0 && s.cash(Society::CarriageFund) == carriage0,
+                   "till to till inside the walls: the Country takes nothing, no toll, no carriage");
+        }
+        else
+            expect(from["weaver"] == 0 && from["store"] > 0 && s.cash(Society::CountryFund) > country0,
+                   "the weaver out of linen: the store room's, the Country paid for it");
+        return from;
+    };
+    made(true);
+    made(false);
+}
+
 // An armourer and its hand, three of the Watch, and the Houses' retainers (a number): mending every day at 3p each, a new
 // piece every day, so a day shows them.
 void thePatrons()
@@ -428,6 +496,7 @@ int main()
         catalogue();
         theOfficeHeads();
         theCitySuppliers();
+        thePhase4Suppliers();
         thePatrons();
         theMedicines();
         buyingAhead();
