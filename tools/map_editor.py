@@ -72,30 +72,34 @@ STORE_MARKUPS = ('storeMarkup', 'resaleMarkup')
 # The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9; migration 0056): optional economy keys, at these
 # defaults: residents' needs paused, the Country spending back, its reserve, the gate toll, carriage a wagon load, the
 # day's wages, the goods the Country no longer supplies, and the services the treasury pays a share of.
-LOOP_DEFAULTS = {'needsPaused': False, 'country': True, 'countryReserve': 200, 'gateToll': 30, 'carriage': 6,
-                 'wageKeeper': 14, 'wageHand': 8, 'wagePublic': 8, 'wageCountry': 8, 'countryOff': [],
+LOOP_DEFAULTS = {'needsPaused': False, 'wharf': True, 'wharfReserve': 200, 'gateToll': 30, 'carriage': 6,
+                 'wageKeeper': 14, 'wageHand': 8, 'wagePublic': 8, 'wageWharf': 8, 'wharfOff': [],
                  'subsidies': {'carriage': 25}}
-LOOP_SWITCHES = ('needsPaused', 'country')
-LOOP_NUMBERS = {'countryReserve': 100000, 'gateToll': 90, 'carriage': 1000, 'wageKeeper': 1000, 'wageHand': 1000,
-                'wagePublic': 1000, 'wageCountry': 1000}
+LOOP_SWITCHES = ('needsPaused', 'wharf')
+LOOP_NUMBERS = {'wharfReserve': 100000, 'gateToll': 90, 'carriage': 1000, 'wageKeeper': 1000, 'wageHand': 1000,
+                'wagePublic': 1000, 'wageWharf': 1000}
 SUBSIDISED = ('carriage',)                           # Society::Subsidised
 # The seasons in the Country's supply and the residents' comforts (doc 68, Progress, "Seasons and the DM's rules";
-# migration 0057): optional economy keys. comfortsAbove/comfortsShare: None for country.json's (40p a head, 20% since
+# migration 0057): optional economy keys. comfortsAbove/comfortsShare: None for city_loop.json's (40p a head, 20% since
 # doc 68's first fixes); seasons: {group: {supply: [4], price: [4], shelf: [4], normal: N}}, the groups this world has changed (a group not
-# listed is as country.json says), percent by season (Spring, Summer, Autumn, Winter), normal pieces a day.
+# listed is as city_loop.json says), percent by season (Spring, Summer, Autumn, Winter), normal pieces a day.
 SEASON_DEFAULTS = {'comfortsAbove': None, 'comfortsShare': None, 'seasons': {}}
 SEASON_LIMITS = {'supply': (0, 1000), 'price': (10, 1000), 'shelf': (0, 1000)}
 SEASON_NAMES = ('Spring', 'Summer', 'Autumn', 'Winter')
 # The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys.
-# rules: {name: whole number}, the rules this world has changed (a rule not listed is as country.json's `rules`);
+# rules: {name: whole number}, the rules this world has changed (a rule not listed is as city_loop.json's `rules`);
 # services: {service id: {on, price, every}}, the services this world has changed (stored whole; a service not listed is
-# as country.json's `services.list` and items.json's price). Core's Society::RuleNames, with their ranges.
+# as city_loop.json's `services.list` and items.json's price). Core's Society::RuleNames, with their ranges.
 RULE_DEFAULTS = {'rules': {}, 'services': {}}
 RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 100000000, 'wageSupport': 100,
                'workBankHours': 1000, 'fairFood': 1, 'services': 1, 'servicesCityShare': 100,
                # Trades and the follow-ups (doc 68, Progress, "Trades"): no migration (live.economy.rules is {name: N}).
                'suppliers': 1, 'patrons': 1, 'armourEvery': 3650, 'buyAheadDays': 5, 'floatDrawDays': 28,
-               'floatWagesDays': 60, 'workshopWagesDays': 60, 'workshopWageMost': 100, 'subsidyToNeed': 1, 'countryPostsDays': 30, 'estates': 1,
+               'floatWagesDays': 60, 'workshopWagesDays': 60, 'workshopWageMost': 100, 'subsidyToNeed': 1, 'estatePostsDays': 30, 'estates': 1,
+               # The Wharf (Docs/Design/73-the-wharf.md, 6): no migration.
+               'wharfValve': 1, 'wharfFee': 50, 'wharfKeepDays': 365, 'wharfKeepLeast': 10000, 'wharfImportScale': 1000,
+               'wharfTakeScale': 1000, 'wharfExportMost': 100000, 'wharfCreditMost': 1000000, 'wharfInjectADay': 1000,
+               'wharfTakeADay': 1000, 'wharfActionMost': 1000000,
                # The food farms' land rent (Docs/Design/72-pulling-the-country-into-the-world.md, open question 2): no migration.
                'landRent': 100, 'landRentFish': 100, 'landRentFruit': 100, 'landRentGrain': 100, 'landRentSalt': 100,
                'landRentDairy': 100, 'landRentThin': 100,
@@ -111,7 +115,32 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 10000000
                'treasuryBand': 100, 'treasuryDays': 3650, 'treasuryJudgeDays': 365, 'tollStep': 100, 'tollDriftMost': 90,
                'almsDriftMost': 1000}
 RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed', 'surplus', 'stockPrices', 'shelfFollow',
-                 'wageDrift', 'treasuryDrift')   # 0 or 1: off or on.
+                 'wageDrift', 'treasuryDrift', 'wharfValve')   # 0 or 1: off or on.
+# The Country's economy keys and rule before doc 73 (Docs/Design/73-the-wharf.md, 2.3), read as the Wharf's (the new name
+# wins where a project has both); written only under the new names.
+ECONOMY_ALIASES = {'country': 'wharf', 'countryReserve': 'wharfReserve', 'wageCountry': 'wageWharf', 'countryOff': 'wharfOff'}
+RULE_ALIASES = {'countryPostsDays': 'estatePostsDays'}
+
+
+def legacy_economy(economy):
+    """The economy entity with an older project's Country keys and rule under the Wharf's names (a copy; as given when it
+    has none or isn't an object)."""
+    if not isinstance(economy, dict) or not (set(economy) & set(ECONOMY_ALIASES) or
+                                             (isinstance(economy.get('rules'), dict) and set(economy['rules']) & set(RULE_ALIASES))):
+        return economy
+    e = dict(economy)
+    for old, new in ECONOMY_ALIASES.items():
+        if old in e:
+            value = e.pop(old)
+            e.setdefault(new, value)
+    if isinstance(e.get('rules'), dict):
+        rules = dict(e['rules'])
+        for old, new in RULE_ALIASES.items():
+            if old in rules:
+                value = rules.pop(old)
+                rules.setdefault(new, value)
+        e['rules'] = rules
+    return e
 SERVICE_LIMITS = {'price': (1, 100000), 'every': (1, 3650)}
 # The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): an optional economy key,
 # farms: what this world has changed of Data/Economy/country_farms.json's ({}: all as the file has them), each key
@@ -124,22 +153,22 @@ FARM_AREA = {'yieldScale': (0, 1000), 'crewScale': (0, 1000), 'keeper': (0, 1000
 FARM_FARM = {'yieldScale': (0, 1000), 'crewScale': (0, 1000), 'keeper': (0, 1000), 'hand': (0, 1000)}
 
 
-def country_file() -> dict:
-    """Data/Items/country.json as the file has it ({} if it can't be read)."""
+def city_loop_file() -> dict:
+    """Data/Items/city_loop.json as the file has it ({} if it can't be read)."""
     try:
-        return json.loads((ROOT / 'Data/Items/country.json').read_text(encoding='utf-8'))
+        return json.loads((ROOT / 'Data/Items/city_loop.json').read_text(encoding='utf-8'))
     except (OSError, ValueError):
         return {}
 
 
 def rule_defaults() -> dict:
-    """country.json's rules ({name: N}, without its `about`)."""
-    rules = country_file().get('rules') or {}
+    """city_loop.json's rules ({name: N}, without its `about`)."""
+    rules = city_loop_file().get('rules') or {}
     return {k: v for k, v in rules.items() if k in RULE_LIMITS}
 
 
 def service_list() -> list[dict]:
-    """country.json's services, each with its item's name and catalogue price (items.json): {id, name, business, price,
+    """city_loop.json's services, each with its item's name and catalogue price (items.json): {id, name, business, price,
     every, for} (`for`: "households", or "patrons" for a patron's work, done for each of its patrons' units: doc 68,
     "Trades")."""
     try:
@@ -147,7 +176,7 @@ def service_list() -> list[dict]:
     except (OSError, ValueError, KeyError):
         items = {}
     out = []
-    for s in (country_file().get('services') or {}).get('list') or []:
+    for s in (city_loop_file().get('services') or {}).get('list') or []:
         if isinstance(s, dict) and s.get('id'):
             item = items.get(s['id'], {})
             out.append({'id': s['id'], 'name': item.get('name', s['id']), 'business': s.get('business', ''),
@@ -173,7 +202,7 @@ def check_rules(rules, services) -> list[str]:
     known = {s['id'] for s in service_list()}
     for sid, s in services.items():
         if sid not in known:
-            errors.append(f'economy.services names no service of country.json: {sid}.')
+            errors.append(f'economy.services names no service of city_loop.json: {sid}.')
         elif not isinstance(s, dict) or set(s) != {'on', 'price', 'every'} or type(s['on']) is not bool:
             errors.append(f'economy.services.{sid} must be {{on: true or false, price: pennies, every: days}}.')
         else:
@@ -252,9 +281,9 @@ def check_farms(farms) -> list[str]:
 
 
 def season_groups() -> list[dict]:
-    """country.json's season groups (Core's items::Country::seasons), as the file has them."""
+    """city_loop.json's season groups (Core's items::Country::seasons), as the file has them."""
     try:
-        country = json.loads((ROOT / 'Data/Items/country.json').read_text(encoding='utf-8'))
+        country = json.loads((ROOT / 'Data/Items/city_loop.json').read_text(encoding='utf-8'))
     except (OSError, ValueError):
         return []
     return [g for g in (country.get('seasons') or {}).get('groups') or [] if isinstance(g, dict) and g.get('id')]
@@ -284,6 +313,7 @@ def check_economy(economy, person_ids=None) -> list[str]:
     """The economy entity's problems (none: it is sound). `person_ids`: the NPCs a `businesses` key may name."""
     if not isinstance(economy, dict):
         return ['economy must be an object.']
+    economy = legacy_economy(economy)
     errors = []
     keys = set(economy)
     if not set(ECONOMY_KEYS) <= keys <= (set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'} | set(LOOP_DEFAULTS)
@@ -297,7 +327,7 @@ def check_economy(economy, person_ids=None) -> list[str]:
     for key, high in (('comfortsAbove', 1000000), ('comfortsShare', 100)):
         value = economy.get(key)
         if value is not None and not number(value, 0, high, integer=True):
-            errors.append(f'economy.{key} must be a whole number from 0 to {high}, or null for country.json\'s.')
+            errors.append(f'economy.{key} must be a whole number from 0 to {high}, or null for city_loop.json\'s.')
     seasons = economy.get('seasons', {})
     if not isinstance(seasons, dict):
         errors.append('economy.seasons must be {group: {supply, price, shelf, normal}}.')
@@ -313,10 +343,10 @@ def check_economy(economy, person_ids=None) -> list[str]:
     for key, limit in LOOP_NUMBERS.items():
         if not number(economy.get(key, LOOP_DEFAULTS[key]), 0, limit, integer=True):
             errors.append(f'economy.{key} must be a whole number from 0 to {limit}.')
-    off = economy.get('countryOff', [])
+    off = economy.get('wharfOff', [])
     if (not isinstance(off, list) or len(set(off)) != len(off) or
             any(not isinstance(g, str) or not re.fullmatch(r'[a-z0-9_]{1,48}', g) for g in off)):
-        errors.append('economy.countryOff must be a list of distinct item ids.')
+        errors.append('economy.wharfOff must be a list of distinct item ids.')
     subsidies = economy.get('subsidies', LOOP_DEFAULTS['subsidies'])
     if (not isinstance(subsidies, dict) or set(subsidies) - set(SUBSIDISED) or
             any(not number(v, 0, 100, integer=True) for v in subsidies.values())):
@@ -355,14 +385,14 @@ def store_line(economy) -> str | None:
 def loop_lines(economy) -> list[str]:
     """The NPC records' loop lines (live.people_manifest's, doc 68, 9): a "loop" line when a setting differs from its
     default, a "countryoff" line a good, a "subsidy" line a service away from its default."""
-    e = {**LOOP_DEFAULTS, **(economy or {})}
+    e = {**LOOP_DEFAULTS, **(legacy_economy(economy) or {})}
     word = lambda on: 'on' if on else 'off'
     out = []
     if any(e[k] != LOOP_DEFAULTS[k] for k in (*LOOP_SWITCHES, *LOOP_NUMBERS)):
-        out.append(f'loop needs {word(not e["needsPaused"])} country {word(e["country"])} reserve {e["countryReserve"]} '
+        out.append(f'loop needs {word(not e["needsPaused"])} country {word(e["wharf"])} reserve {e["wharfReserve"]} '
                    f'toll {e["gateToll"]} carriage {e["carriage"]} wages {e["wageKeeper"]} {e["wageHand"]} {e["wagePublic"]} '
-                   f'{e["wageCountry"]}')
-    out += [f'countryoff {quote(g)}' for g in sorted(e['countryOff'])]
+                   f'{e["wageWharf"]}')
+    out += [f'countryoff {quote(g)}' for g in sorted(e['wharfOff'])]
     defaults = LOOP_DEFAULTS['subsidies']
     out += [f'subsidy {quote(k)} {v}' for k, v in sorted(e['subsidies'].items()) if defaults.get(k) != v]
     return out
@@ -370,7 +400,7 @@ def loop_lines(economy) -> list[str]:
 
 def season_lines(economy) -> list[str]:
     """The NPC records' comforts and season lines (live.people_manifest's since 0057): a "comforts" line when either is
-    set ("-" for country.json's), a "season" line a group this world has changed."""
+    set ("-" for city_loop.json's), a "season" line a group this world has changed."""
     e = {**SEASON_DEFAULTS, **(economy or {})}
     out = []
     if e['comfortsAbove'] is not None or e['comfortsShare'] is not None:

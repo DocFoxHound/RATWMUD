@@ -76,7 +76,8 @@ Society city(std::vector<ResidentSpec> residents, const std::function<void(Autho
     r.residents = std::move(residents);
     r.economy.treasury = 10000;
     r.economy.storeRule = true;
-    r.economy.rules = {{"services", 0}, {"patrons", 0}, {"surplus", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}};
+    // (And the Wharf's valve shut, doc 73: the Country's flows as these tests have them.)
+    r.economy.rules = {{"services", 0}, {"patrons", 0}, {"surplus", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}, {"wharfValve", 0}};
     if (change)
         change(r);
     Society s(Roster::None);
@@ -246,7 +247,7 @@ void aCommunityWorkshop()
         if (soapInStock)
             s.create(works, "fine_soap", 12, "test: soap on the soapworks' shelf");
         const auto money = s.moneySupply();
-        const auto works0 = s.cash(works), store0 = s.cash(store), country0 = s.cash(Society::CountryFund),
+        const auto works0 = s.cash(works), store0 = s.cash(store), country0 = s.cash(Society::WharfFund),
                    treasury0 = s.cash("treasury");
         s.takeJournal();
         // (Only the soap wanted: every other ware of the store's on its shelf.)
@@ -276,14 +277,14 @@ void aCommunityWorkshop()
                    "the store's soap from the soapworks, none from the store room: " + std::to_string(fromWorks));
             expect(paid == price && s.cash(works) - works0 == paid && store0 - s.cash(store) == paid,
                    "at the store room's price (75%): " + std::to_string(paid) + "p for " + std::to_string(fromWorks));
-            expect(s.cash(Society::CountryFund) == country0 && s.cash("treasury") == treasury0,
+            expect(s.cash(Society::WharfFund) == country0 && s.cash("treasury") == treasury0,
                    "the Country sells none of it, and no toll (till to till)");
             expect(s.loopToday().cityResalePieces == fromWorks && s.loopToday().cityResale == paid &&
                        s.loopToday().cityResaleGoods.at("fine_soap") == fromWorks,
                    "counted as the resale trade");
         }
         else
-            expect(fromWorks == 0 && fromStore > 0 && s.cash(Society::CountryFund) > country0,
+            expect(fromWorks == 0 && fromStore > 0 && s.cash(Society::WharfFund) > country0,
                    std::string(suppliersOn ? "the soapworks out of soap" : "suppliers off") +
                        ": the store room's, the Country paid");
         return fromWorks;
@@ -300,7 +301,7 @@ void aCommunityWorkshop()
         t.until(1 + 17.9 / 24);
         s.takeJournal();
         const auto money = s.moneySupply();
-        const auto country0 = s.cash(Society::CountryFund);
+        const auto country0 = s.cash(Society::WharfFund);
         t.until(1 + 18.5 / 24);
         std::map<std::string, std::int64_t> wages;
         std::int64_t toHouse = 0, profit = 0;
@@ -517,7 +518,7 @@ const char* const Stall = "keeping the stall in the square";
 // stallholder's middling household (200p) buys none, the Houses' lady (120p) one at the season's price.
 void theCheese()
 {
-    const auto& cfg = items::country();
+    const auto& cfg = items::cityLoop();
     expect(Society(Roster::None).rule("luxuryAbove") == 200 && Society(Roster::None).rule("luxuryPriceBand") == 700,
            "the luxuries' keep 200p a head, their band eight times");
     expect(cfg.luxuries == std::vector<std::string>{"cheese"} && Society::luxury("cheese") && !Society::luxury("bread"),
@@ -530,7 +531,7 @@ void theCheese()
                             person("rex", "civilian", "keeps the house", {"home_rex", 2.5, 2.5}, "home_rex", 50, 2000),
                             person("lady", "civilian", "at home in the Heights", {"home_lady", 2.5, 2.5}, "home_lady", 45, 120)},
                            [](AuthoredRoster& r) {
-                               r.economy.country = false;
+                               r.economy.wharf = false;
                                r.economy.storeRule = false; // (Its shelves only what the test puts there.)
                                r.economy.rules["stockPrices"] = 1;
                                r.economy.rules["shelfFollow"] = 0;
@@ -567,7 +568,7 @@ void theCheese()
         double held = 0;
         for (const auto& [item, n] : s.account("pam")->stock)
             held += double(n) * Society::nourishment(item);
-        expect(held >= items::country().shortDays * Society::NourishADay && s.cash("pam") > 0,
+        expect(held >= items::cityLoop().shortDays * Society::NourishADay && s.cash("pam") > 0,
                "fed (no hunger), and money kept: " + std::to_string(s.cash("pam")));
         expect(bought["rex"]["cheese"] <= 1, "at most a piece a head a day");
         const int left = Society::stock(*s.account(till), "cheese");
@@ -639,7 +640,7 @@ void theHousesCheese()
         empty(s, till, "cheese");
         s.create(till, "cheese", cheese, "test: cheese");
         // The Houses' estates in funds (from a rich wolf: nothing made).
-        expect(s.shift("rex", Society::CountryFund, "", 0, 1500, "test: the estates' rents"), "the Country's purse");
+        expect(s.shift("rex", Society::WharfFund, "", 0, 1500, "test: the estates' rents"), "the Country's purse");
         t.until(1 + 1. / 24);
         auto saved = s.state();
         saved.loop.prices[till]["cheese"] = factor;
@@ -651,13 +652,13 @@ void theHousesCheese()
         int pieces = 0;
         std::int64_t paid = 0;
         for (const auto& e : s.takeJournal())
-            if (e.from == Society::CountryFund && e.to == till && e.kind.rfind("a luxury for the Houses' tables", 0) == 0)
+            if (e.from == Society::WharfFund && e.to == till && e.kind.rfind("a luxury for the Houses' tables", 0) == 0)
                 pieces += e.quantity, paid += e.coins;
         expect(s.conserved() && s.moneySupply() == money, "the Houses' cheese: conserved");
         expect(s.loopToday().luxuriesHouses == pieces && s.loopToday().luxuriesHousesSpent == paid &&
                    s.loopToday().luxuriesBought == 0,
                "counted as the Houses', none as a household's: " + std::to_string(pieces));
-        return std::tuple{pieces, paid, each, s.cash(Society::CountryFund)};
+        return std::tuple{pieces, paid, each, s.cash(Society::WharfFund)};
     };
     {
         // 40% of ~1,300p over the reserve: ~520p, at three times (~16p a piece) all ten, each at the stall's own price.
@@ -687,13 +688,13 @@ void theHousesCheese()
 }
 } // namespace
 
-// The Houses' city businesses (doc 72, Progress, "The producers and the fixes"; country.json `houseBusinesses`): the
+// The Houses' city businesses (doc 72, Progress, "The producers and the fixes"; city_loop.json `houseBusinesses`): the
 // Timberland Ironworks pays its crew from its till at 18:00 and sends what is over its float and workshopWagesDays of
 // its wages to House Timberland's estate, booked by House, nothing to its keeper as profit; its wages drift at most
 // workshopWageMost; conserved. An ironworks at a building not on the list keeps the old way (its keeper's profit).
 void theHousesCityBusinesses()
 {
-    const auto& owned = items::country().houseTills;
+    const auto& owned = items::cityLoop().houseTills;
     expect(owned.size() == 2 && owned.at("rm_the_grayrock_ironworks") == "Timberland" &&
                owned.at("rm_the_grayrock_foundry") == "Timberland",
            "the Timberland Ironworks and the foundry are House Timberland's");
@@ -786,7 +787,7 @@ std::vector<ResidentSpec> still(std::int64_t purse = 300)
 
 void theStill()
 {
-    const auto& comforts = items::country().comforts;
+    const auto& comforts = items::cityLoop().comforts;
     for (const char* g : {"apple_brandy", "brandy"})
         expect(std::find(comforts.begin(), comforts.end(), g) != comforts.end(), std::string(g) + ": a comfort");
     for (const char* g : {"apple_brandy", "brandy"})

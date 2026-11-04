@@ -383,7 +383,7 @@ bool Society::arrive(const ResidentRequest& request)
         if (!request.purseFrom.empty())
             if (const auto purse = std::min(request.purse, cash(request.purseFrom)); purse > 0)
                 shift(request.purseFrom, r.id, "", 0, purse,
-                      request.purseFrom == CountryFund ? "an arrival's purse, from the Country" : "a farm crew's purse, to its people");
+                      request.purseFrom == WharfFund ? "an arrival's purse, from the Wharf" : "a farm crew's purse, to its people");
         if (r.role == "merchant")
         {
             // A community's shop (doc 71, Phase C): its till opened, and its working float made as a city shop's was at
@@ -412,8 +412,8 @@ bool Society::arrive(const ResidentRequest& request)
     authored_.unplaced.erase(std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
                                           [&](const ResidentSpec& u) { return u.id == r.id; }));
     // Its purse from the Country's account (an unplaced NPC's own is outside the economy's money): moved, never made.
-    if (const auto purse = std::min(request.purse, cash(CountryFund)); purse > 0)
-        shift(CountryFund, r.id, "", 0, purse, "an arrival's purse, from the Country");
+    if (const auto purse = std::min(request.purse, cash(WharfFund)); purse > 0)
+        shift(WharfFund, r.id, "", 0, purse, "an arrival's purse, from the Wharf");
     return true;
 }
 
@@ -443,7 +443,7 @@ std::string Society::postClass(const Position& p) const
     }
     // A House's own affairs and the offices' heads (the wage rules that pay a keeper's wage), and a House's family at
     // home in the Heights (kept by its estates), are upper; then the words.
-    for (const auto& rule : items::country().wages)
+    for (const auto& rule : items::cityLoop().wages)
         if (rule.wage == "keeper")
             for (const auto& word : rule.words)
                 if (t.find(word) != std::string::npos)

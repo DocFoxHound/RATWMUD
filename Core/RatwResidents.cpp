@@ -84,7 +84,7 @@ void Society::resetAuthored()
     record("initial funding", "outside", "settlement", "", 0, state_.minted);
     defaultCareers();
     foundShops();                                   // Every shop's goods and money its own till's.
-    for (const auto& market : items::country().markets)
+    for (const auto& market : items::cityLoop().markets)
         openAccount(marketFund(market.id));         // What the store room is paid: the Country's purse (doc 68), empty.
 }
 

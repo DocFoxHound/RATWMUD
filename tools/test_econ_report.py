@@ -165,9 +165,29 @@ class ReportTests(unittest.TestCase):
             self.assertIn('| fuel (works) | 1 | 2 | 70 | 52/52 | 0 | 0 | 44 |', text, 'the works\' area and its rent a day')
             self.assertIn('| peat_fens | Timberland | 2 | 70.0 | 52/52 | 0 | 44.0 | 52 |', text, 'the works by name')
             self.assertIn("the estates' rents 44p (House Timberland 44p)", text)
-            self.assertIn('its goods to the shops 600p', text)
-            self.assertIn("its posts 790p of 800p owed (the sea trade 440p, 55 posts, the Houses' people 350p, 44 posts)", text)
+            self.assertIn("the Wharf's goods to the shops 600p", text, "an older run's country keys read as the Wharf's")
+            self.assertIn("the estates' posts 790p of 800p owed (the sea trade 440p, 55 posts, the Houses' people 350p, 44 posts)", text)
             self.assertNotIn("The Houses' estates (a day", text, 'no estates split: no table')
+
+    def test_the_wharf(self):
+        # Doc 73, 7: the Wharf beyond the realm, a day: the beyond's pennies in and out and net, the fees, the basket, the
+        # credit's course; by good what it landed and took; a new run's keys (wharf, wharf_sales...) read as they are.
+        day = {'valve': 1, 'imported': {'butter': [70, 150], 'offal': [5, 10]}, 'taken': {'hide': [30, 90]}, 'basket': 40,
+               'in': 140, 'out': 144, 'fee': 18, 'moved': 0, 'credit': 300, 'book_in': 140, 'book_out': 144}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, None, econ_more={'wharf': 700, 'wharf_sales': 160, 'estate_rents': 0, 'estate_posts_owed': 476,
+                                                    'estate_posts_paid': 476, 'basket_spent': 10, 'money': 64000, 'wharf_day': day})
+            out = root / 'report.md'
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            text = out.read_text()
+            self.assertIn('## The Wharf: beyond the realm', text)
+            self.assertIn('the beyond paid in 140p and was paid 144p (net -4p into the realm)', text)
+            self.assertIn("the Wharf's fees 18p; its export basket 40p", text)
+            self.assertIn('| butter | 70.0 | 150.0 | 0.0 | 0.0 |', text)
+            self.assertIn('| hide | 0.0 | 0.0 | 30.0 | 90.0 |', text)
+            self.assertIn("The Wharf's purse: 700 -> 700p", text)
+            self.assertIn("the Wharf's goods to the shops 160p", text)
 
     def test_the_estates(self):
         # Doc 72, Phase 6: each House's estate a row, a day: its rents, the Crown's grants, its posts paid of owed and the
@@ -188,7 +208,7 @@ class ReportTests(unittest.TestCase):
             self.assertIn("The Houses' estates (a day over the 2 days they were split", text)
             self.assertIn('| House Grayrock | 58 | 20 | 280 | 0 | 0/12 | 470/476 | 2 | 0 | 500 -> 500 (least 500) |', text)
             self.assertIn('| the Crown | 11 | 490 | 0 | 280 | 12/0 | 94/94 | 0 | 30 | 900 -> 900 (least 900) |', text)
-            self.assertIn("Its own purse (the wharf's, House Grayrock's; the other estates' below): 500 -> 500p", text)
+            self.assertIn("The Wharf's purse (House Grayrock's; the other estates' below): 500 -> 500p", text)
 
     def test_the_land_rent(self):
         # Doc 72, open question 2: a food farm's land rent in the farms' table, by farm with its House and what is left over

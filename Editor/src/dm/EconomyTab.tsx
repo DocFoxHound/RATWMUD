@@ -9,7 +9,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {dmApi, type Me, type Target} from './api';
 import {markupOf, percent, switchText, type ComfortsBody, type EconomyChange, type EconomyControls, type FarmsBody, type GoodsBody,
     type LoopSettings, type RulesBody, type SeasonsBody, type ServicesBody, type StoreSwitches} from '../lib/economy';
-import {CountryPanel} from '../studio/CountryPanel';
+import {WharfPanel} from '../studio/WharfPanel';
 import {FarmsPanel} from '../studio/FarmsPanel';
 import {RulesPanel} from '../studio/RulesPanel';
 import {SeasonsPanel} from '../studio/SeasonsPanel';
@@ -93,7 +93,7 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
                     }} /> {switchText('rule', data.storeRule)}</label>
                 <p className="hint">A business's own switch is Atlas's (its Economy page), with the world's businesses.</p>
             </section>
-            <CountryPanel data={data} locked={locked} setLoop={setLoop} setGoods={setGoods} />
+            <WharfPanel data={data} locked={locked} setLoop={setLoop} setGoods={setGoods} />
             <SeasonsPanel data={data} locked={locked} setSeasons={setSeasons} setComforts={setComforts} />
             <RulesPanel data={data} locked={locked} setRules={setRules} setServices={setServices} />
             <FarmsPanel data={data} locked={locked} setFarms={setFarms} />

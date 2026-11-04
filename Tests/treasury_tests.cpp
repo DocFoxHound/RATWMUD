@@ -68,6 +68,7 @@ Society city(std::vector<ResidentSpec> residents, std::int64_t treasury, const s
     r.economy.storeRule = true;
     r.economy.rules = rules;
     r.economy.rules["services"] = 0;
+    r.economy.rules.emplace("wharfValve", 0);       // (The Wharf's valve shut, doc 73: the Country's flows as these tests have them; wharf_tests and farms_tests open it.)
     Society s(Roster::None);
     s.configure(r);
     LifeDay day;
@@ -106,9 +107,9 @@ void theDefaults()
     expect(s.rule("surplus") == 1 && s.rule("surplusKeep") == 4000 && s.rule("surplusWorks") == 20 && s.rule("surplusAlms") == 80 &&
                s.rule("surplusAlmsTo") == 40,
            "the defaults: on, 4,000p kept over the cap, a fifth to the works, four fifths to the poorest, up to 40p a head");
-    const auto& works = items::country().works;
+    const auto& works = items::cityLoop().works;
     expect(works.size() >= 8 && works.front().business == "builders_yard" && works.front().weight == 3,
-           "country.json's works: the builders' yard first, and the other trades");
+           "city_loop.json's works: the builders' yard first, and the other trades");
     for (const char* trade : {"smithy", "chandlery", "ropewalk", "cooperage"})
         expect(std::any_of(works.begin(), works.end(), [&](const items::WorksOrder& w) { return w.business == trade && !w.goods.empty(); }),
                std::string("the works order from the ") + trade);

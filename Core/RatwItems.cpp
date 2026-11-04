@@ -34,7 +34,7 @@ struct Catalog
     std::map<std::string, std::vector<std::string>> supplies, buys;
     Ladder ladder;
     Households households;
-    Country country;
+    CityLoop cityLoop;
     Farms farms;
     FarmPeople farmPeople;
 };
@@ -126,9 +126,10 @@ void readFarms(Catalog& c, const json::Value& file)
     for (const auto& [item, share] : file.object("basket").fields())
         if (known(item) && share.asNumber(0) >= 1)
             f.basket.push_back({item, int(std::min(1000000., share.asNumber(0)))});
-    for (const auto& [item, share] : file.object("countryBasket").fields())
+    // (Doc 73: the Country's basket is the Wharf's; an older file's countryBasket read as it.)
+    for (const auto& [item, share] : file.object(file.has("wharfBasket") ? "wharfBasket" : "countryBasket").fields())
         if (known(item) && share.asNumber(0) >= 1)
-            f.countryBasket.push_back({item, int(std::min(1000000., share.asNumber(0)))});
+            f.wharfBasket.push_back({item, int(std::min(1000000., share.asNumber(0)))});
     for (const auto& t : file.array("switchTrades"))
         if (id(t.asString({})))
             f.switchTrades.push_back(t.asString({}));
@@ -575,9 +576,11 @@ Catalog build()
         }
     }
     // The Country and the city's loop (doc 68): optional; without it, one market with an empty basket.
+    // (Doc 73: the file was country.json; an older data folder's is still read.)
     json::Value country;
     std::string countryError;
-    if (readJson(dir / "country.json", country, countryError))
+    if (readJson(dir / "city_loop.json", country, countryError) ||
+        (!std::filesystem::exists(dir / "city_loop.json") && readJson(dir / "country.json", country, countryError)))
     {
         const auto known = [&](const std::string& id) {
             return std::any_of(c.goods.begin(), c.goods.end(), [&](const Item& g) { return g.id == id; });
@@ -592,62 +595,72 @@ Catalog build()
                     market.basket.push_back({item, int(share.asNumber(0))});
             const bool idOk = !market.id.empty() && market.id.size() <= 40 &&
                               std::all_of(market.id.begin(), market.id.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
-            if (idOk && std::none_of(c.country.markets.begin(), c.country.markets.end(), [&](const Market& x) { return x.id == market.id; }))
-                c.country.markets.push_back(std::move(market));
+            if (idOk && std::none_of(c.cityLoop.markets.begin(), c.cityLoop.markets.end(), [&](const Market& x) { return x.id == market.id; }))
+                c.cityLoop.markets.push_back(std::move(market));
         }
         for (const auto& r : country.object("wages").array("rules"))
         {
             WageRule rule;
             rule.payer = r.string("payer");
+            if (rule.payer == "country")
+                rule.payer = "estates";             // (Doc 73: the Country's posts are the estates', the Wharf's among them.)
             rule.name = r.string("name", rule.payer);
             rule.wage = r.string("wage");
             for (const auto& w : r.array("words"))
                 if (!w.asString({}).empty())
                     rule.words.push_back(w.asString({}));
             if (!rule.payer.empty() && !rule.words.empty())
-                c.country.wages.push_back(std::move(rule));
+                c.cityLoop.wages.push_back(std::move(rule));
         }
         // The Houses' estates (doc 72, Phase 6): an id and a House each, none twice; at most one grants.
         for (const auto& e : country.object("estates").array("list"))
         {
             Estate estate{e.string("id"), e.string("house"), e.string("name"), e.string("fund"), e.boolean("grants"), {}};
+            if (estate.fund == "country")
+                estate.fund = "wharf";              // (Doc 73: the Country's purse is the Wharf's.)
             if (estate.name.empty())
                 estate.name = estate.house;
             for (const auto& w : e.array("words"))
                 if (!w.asString({}).empty())
                     estate.words.push_back(w.asString({}));
-            const auto& all = c.country.estates;
+            const auto& all = c.cityLoop.estates;
             const bool idOk = !estate.id.empty() && estate.id.size() <= 40 &&
                               std::all_of(estate.id.begin(), estate.id.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
             if (idOk && !estate.house.empty() &&
                 std::none_of(all.begin(), all.end(), [&](const Estate& x) { return x.id == estate.id || x.house == estate.house; }) &&
                 (!estate.grants || std::none_of(all.begin(), all.end(), [](const Estate& x) { return x.grants; })))
-                c.country.estates.push_back(std::move(estate));
+                c.cityLoop.estates.push_back(std::move(estate));
         }
         const auto& food = country.object("food");
-        c.country.foodDays = std::clamp(food.number("days", 2), .5, 10.);
-        c.country.shortDays = std::clamp(food.number("shortDays", 1), .1, c.country.foodDays);
+        c.cityLoop.foodDays = std::clamp(food.number("days", 2), .5, 10.);
+        c.cityLoop.shortDays = std::clamp(food.number("shortDays", 1), .1, c.cityLoop.foodDays);
         const auto& comforts = country.object("comforts");
-        c.country.comfortsAbove = std::clamp(int(comforts.number("above", 60)), 0, 1000000);
-        c.country.comfortsShare = std::clamp(comforts.number("share", .1), 0., 1.);
+        c.cityLoop.comfortsAbove = std::clamp(int(comforts.number("above", 60)), 0, 1000000);
+        c.cityLoop.comfortsShare = std::clamp(comforts.number("share", .1), 0., 1.);
         for (const auto& g : comforts.array("goods"))
             if (known(g.asString({})))
-                c.country.comforts.push_back(g.asString({}));
+                c.cityLoop.comforts.push_back(g.asString({}));
         for (const auto& g : country.object("luxuries").array("goods"))   // (Doc 72, Phase 5: cheese.)
             if (const auto id = g.asString({}); known(id) &&
-                std::find(c.country.luxuries.begin(), c.country.luxuries.end(), id) == c.country.luxuries.end())
-                c.country.luxuries.push_back(id);
+                std::find(c.cityLoop.luxuries.begin(), c.cityLoop.luxuries.end(), id) == c.cityLoop.luxuries.end())
+                c.cityLoop.luxuries.push_back(id);
         // The loop's rules and the city's services (doc 68, Progress, "First fixes").
         for (const auto& info : Rules)
-            c.country.rules[info.name] =
-                std::clamp(int(std::lround(country.object("rules").number(info.name, info.fallback))), info.low, info.high);
+        {
+            // (A rule under its old name, doc 73, where the file has no new one.)
+            const auto& rules = country.object("rules");
+            const char* key = info.name;
+            if (!rules.has(key) && std::string(key) == "estatePostsDays" && rules.has("countryPostsDays"))
+                key = "countryPostsDays";
+            c.cityLoop.rules[info.name] = std::clamp(int(std::lround(rules.number(key, info.fallback))), info.low, info.high);
+        }
         for (const auto& s : country.object("services").array("list"))
         {
             ServiceDef def{s.string("id"), s.string("business"), std::clamp(int(s.number("every", 30)), 1, 3650),
                            s.string("for") == "patrons"};
             if (known(def.id) && !def.business.empty() &&
-                std::none_of(c.country.services.begin(), c.country.services.end(), [&](const ServiceDef& x) { return x.id == def.id; }))
-                c.country.services.push_back(std::move(def));
+                std::none_of(c.cityLoop.services.begin(), c.cityLoop.services.end(), [&](const ServiceDef& x) { return x.id == def.id; }))
+                c.cityLoop.services.push_back(std::move(def));
         }
         // Trades (doc 68, Progress, "Trades"): the city's suppliers, the armoury's patrons, dear goods' shelves.
         for (const auto& s : country.object("suppliers").array("list"))
@@ -657,12 +670,12 @@ Catalog build()
                 if (known(g.asString({})))
                     supplier.goods.push_back(g.asString({}));
             if (!supplier.buyer.empty() && !supplier.seller.empty() && supplier.buyer != supplier.seller)
-                c.country.suppliers.push_back(std::move(supplier));
+                c.cityLoop.suppliers.push_back(std::move(supplier));
         }
         // The Houses' city businesses (doc 72, after iron6): a building and its House each, the first entry for a building.
         for (const auto& b : country.object("houseBusinesses").array("list"))
             if (const auto building = b.string("building"), house = b.string("house"); !building.empty() && !house.empty())
-                c.country.houseTills.emplace(building, house);
+                c.cityLoop.houseTills.emplace(building, house);
         for (const auto& t : country.object("patrons").array("list"))
         {
             Patrons trade;
@@ -670,6 +683,8 @@ Catalog build()
             for (const auto& g : t.array("groups"))
             {
                 PatronGroup group{g.string("id"), g.string("name"), g.string("payer"), {}, std::clamp(int(g.number("units", 0)), 0, 100000)};
+                if (group.payer == "country")
+                    group.payer = "estates";        // (Doc 73: as a wage rule's payer.)
                 for (const auto& r : g.array("roles"))
                     if (!r.asString({}).empty())
                         group.roles.push_back(r.asString({}));
@@ -680,7 +695,7 @@ Catalog build()
                 if (known(g.asString({})))
                     trade.pieces.push_back(g.asString({}));
             if (!trade.business.empty() && !trade.groups.empty())
-                c.country.patrons.push_back(std::move(trade));
+                c.cityLoop.patrons.push_back(std::move(trade));
         }
         // The treasury's surplus (doc 68, Progress, "The treasury's surplus"): the public works' trades and their goods.
         for (const auto& w : country.object("works").array("list"))
@@ -690,12 +705,46 @@ Catalog build()
                 if (known(g.asString({})))
                     order.goods.push_back(g.asString({}));
             if (!order.business.empty() && !order.goods.empty() &&
-                std::none_of(c.country.works.begin(), c.country.works.end(), [&](const WorksOrder& x) { return x.business == order.business; }))
-                c.country.works.push_back(std::move(order));
+                std::none_of(c.cityLoop.works.begin(), c.cityLoop.works.end(), [&](const WorksOrder& x) { return x.business == order.business; }))
+                c.cityLoop.works.push_back(std::move(order));
+        }
+        // The Wharf's lists (doc 73, 4.2): known goods only, `never` first, then a good on both lists dropped from both.
+        {
+            const auto& w = country.object("wharf");
+            auto& lists = c.cityLoop.wharf;
+            for (const auto& g : w.array("never"))
+                if (const auto id = g.asString({}); !id.empty())
+                    lists.never.insert(id);
+            const auto read = [&](const char* key, std::map<std::string, WharfGood>& into) {
+                for (const auto& [item, v] : w.object(key).fields())
+                {
+                    if (!known(item))
+                    {
+                        lists.refused.push_back(std::string(key) + ": no such good " + item);
+                        continue;
+                    }
+                    if (lists.never.count(item))
+                    {
+                        lists.refused.push_back(std::string(key) + ": " + item + " is never the Wharf's");
+                        continue;
+                    }
+                    into[item] = {std::clamp(int(v.number("most", 0)), 0, 100000), !v.has("on") || v.boolean("on")};
+                }
+            };
+            read("imports", lists.imports);
+            read("takes", lists.takes);
+            for (auto it = lists.imports.begin(); it != lists.imports.end();)
+                if (lists.takes.erase(it->first))
+                {
+                    lists.refused.push_back("imports and takes: " + it->first + " on both");
+                    it = lists.imports.erase(it);
+                }
+                else
+                    ++it;
         }
         for (const auto& [item, n] : country.object("shelves").fields())
             if (known(item) && n.asNumber(0) >= 1)
-                c.country.shelves[item] = std::clamp(int(n.asNumber(1)), 1, 1000);
+                c.cityLoop.shelves[item] = std::clamp(int(n.asNumber(1)), 1, 1000);
         // The seasons (a group of goods each; a good in the first group that names it).
         std::set<std::string> grouped;
         for (const auto& g : country.object("seasons").array("groups"))
@@ -705,7 +754,7 @@ Catalog build()
             group.name = g.string("name", group.id);
             const bool idOk = !group.id.empty() && group.id.size() <= 40 &&
                               std::all_of(group.id.begin(), group.id.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
-            if (!idOk || std::any_of(c.country.seasons.begin(), c.country.seasons.end(), [&](const SeasonGroup& x) { return x.id == group.id; }))
+            if (!idOk || std::any_of(c.cityLoop.seasons.begin(), c.cityLoop.seasons.end(), [&](const SeasonGroup& x) { return x.id == group.id; }))
                 continue;
             for (const auto& item : g.array("goods"))
                 if (known(item.asString({})) && grouped.insert(item.asString({})).second)
@@ -722,11 +771,11 @@ Catalog build()
             group.normal = std::clamp(int(g.number("normal", 0)), 0, 1000000);
             group.stores = g.boolean("stores");
             if (!group.goods.empty())
-                c.country.seasons.push_back(std::move(group));
+                c.cityLoop.seasons.push_back(std::move(group));
         }
     }
-    if (c.country.markets.empty())
-        c.country.markets.push_back({"country", "the Country", {}});
+    if (c.cityLoop.markets.empty())
+        c.cityLoop.markets.push_back({"wharf", "the Wharf", {}});
     // The Country's food farms (Data/Economy/country_farms.json; doc 71, 4): optional; without it, none.
     if (const auto file = dir.parent_path() / "Economy" / "country_farms.json"; std::filesystem::exists(file))
     {
@@ -1012,9 +1061,9 @@ const Households& households()
     return catalog().households;
 }
 
-const Country& country()
+const CityLoop& cityLoop()
 {
-    return catalog().country;
+    return catalog().cityLoop;
 }
 
 const Farms& farms()
@@ -1087,6 +1136,11 @@ std::string FarmPeople::placeName(const FarmPlace& farm) const
         if (steading.size() > s.size() && steading.compare(steading.size() - s.size(), s.size(), s) == 0)
             return steading.substr(0, steading.size() - s.size());
     return steading;
+}
+
+std::string ruleName(const std::string& name)
+{
+    return name == "countryPostsDays" ? "estatePostsDays" : name;
 }
 
 const RuleInfo* ruleInfo(const std::string& name)

@@ -992,6 +992,14 @@ Value society(const SocietyState& s)
         loop.add("level", l.level); loop.add("levelDays", l.levelDays); loop.add("levelThen", l.levelThen);
         loop.add("judged", l.judged);
         loop.add("toll", l.toll); loop.add("alms", l.alms);
+        if (!l.wharf.empty())
+        {
+            // The Wharf's book with the beyond (doc 73, 4.6): its pennies in and out, fees, moves, and the credit now.
+            auto w = Value::object();
+            w.add("in", l.wharf.in); w.add("out", l.wharf.out); w.add("fee", l.wharf.fee); w.add("moved", l.wharf.moved);
+            w.add("credit", l.wharf.credit);
+            loop.add("wharf", w);
+        }
         o.add("loop", loop);
     }
     return o;
@@ -1028,6 +1036,10 @@ LoopState readLoop(const Value& o)
         l.toll = o["toll"].asNumber();
     if (inRange(o["alms"], -1000, 1000))
         l.alms = int(o["alms"].asNumber());
+    if (const auto& w = o["wharf"]; w.isObject() && inRange(w["in"], 0, 1e12) && inRange(w["out"], 0, 1e12) &&
+                                    inRange(w["fee"], 0, 1e12) && inRange(w["moved"], -1e12, 1e12) && inRange(w["credit"], -1e12, 1e12))
+        l.wharf = {std::int64_t(w["in"].asNumber()), std::int64_t(w["out"].asNumber()), std::int64_t(w["fee"].asNumber()),
+                   std::int64_t(w["moved"].asNumber()), std::int64_t(w["credit"].asNumber())};
     return l;
 }
 

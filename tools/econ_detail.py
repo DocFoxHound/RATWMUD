@@ -64,7 +64,7 @@ def kind_of(posts):
     p = posts.split(',')
     if 'keeper' in p:
         return 'keeper'
-    if any(x in ('hand', 'public', 'watch', 'country') for x in p):
+    if any(x in ('hand', 'public', 'watch', 'country', 'wharf') for x in p):
         return 'waged'
     return 'no wage'
 
@@ -113,7 +113,7 @@ def main():
             tills_of[tr].add(till)
             c = trade[tr]
             c['residents'] += t['in'].get('residents', 0)
-            c['country'] += t['in'].get('country', 0)
+            c['country'] += t['in'].get('wharf', 0) + t['in'].get('country', 0)   # (Doc 73: the estates' buying, "wharf"; older runs "country".)
             # Trades (doc 68, Progress): what the patrons paid, what other makers bought of its goods (its sales), what
             # it bought of theirs (a draw's cost), and the household services' takings less the city's share.
             c['patrons'] += t['in'].get('patrons', 0)

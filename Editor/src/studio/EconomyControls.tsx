@@ -12,7 +12,7 @@ import type {Me} from '../dm/api';
 import {ANY, bulk, choices, filtered, goodsText, markupOf, percent, switchText, wouldChange, type ComfortsBody,
     type EconomyControls as Controls, type FarmsBody, type Filter, type GoodsBody, type LoopSettings, type RulesBody, type SeasonsBody,
     type ServicesBody, type StoreSwitches} from '../lib/economy';
-import {CountryPanel} from './CountryPanel';
+import {WharfPanel} from './WharfPanel';
 import {FarmsPanel} from './FarmsPanel';
 import {RulesPanel} from './RulesPanel';
 import {SeasonsPanel} from './SeasonsPanel';
@@ -113,7 +113,7 @@ export function EconomyControls({me}: {me: Me}) {
                 <p className="hint">{data.storeRule ? 'Keepers restock from the store room as they work.'
                     : 'With the rule off, no NPC uses the store room: only the Dev Console\'s /store does.'} {data.takesEffect}</p>
             </section>
-            <CountryPanel data={data} locked={!canChange || busy} setLoop={setLoop} setGoods={setGoods} />
+            <WharfPanel data={data} locked={!canChange || busy} setLoop={setLoop} setGoods={setGoods} />
             <SeasonsPanel data={data} locked={!canChange || busy} setSeasons={setSeasons} setComforts={setComforts} />
             <RulesPanel data={data} locked={!canChange || busy} setRules={setRules} setServices={setServices} />
             <FarmsPanel data={data} locked={!canChange || busy} setFarms={setFarms} />

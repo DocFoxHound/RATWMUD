@@ -284,8 +284,8 @@ struct EconomyDetail
             return Society::edible(item) ? "food" : "goods";
         if (reason == "market: the season's price")
             return "food";                          // (The seasons' groups are all food.)
-        if (reason == "to the Country")
-            return "country";
+        if (reason == "to the Wharf" || reason == "to the Country")   // (Doc 73; an old journal's too.)
+            return "wharf";
         if (reason == "a service")
             return "services";
         if (reason == "the city's share of a service")
@@ -304,7 +304,7 @@ struct EconomyDetail
     }
     static std::string payerKind(const std::string& id)
     {
-        return id == "treasury" ? "treasury" : id.rfind("outside:", 0) == 0 || id.rfind("estate:", 0) == 0 ? "country"
+        return id == "treasury" ? "treasury" : id.rfind("outside:", 0) == 0 || id.rfind("estate:", 0) == 0 ? "wharf"
                : id.rfind("till:", 0) == 0 ? "till" : "other";
     }
     void event(const WorldEvent& e)
@@ -332,11 +332,11 @@ struct EconomyDetail
             return;
         }
         out[e.actor][k] += e.coins;
-        // A till's takings from residents (food and goods both) are "residents"; the Country's purchases "country".
+        // A till's takings from residents (food and goods both) are "residents"; the estates' purchases through the Wharf "wharf".
         const bool till = e.target.rfind("till:", 0) == 0;
         const std::string inKind = till && (k == "food" || k == "goods") ? "residents" : k;
         in[e.target][inKind] += e.coins;
-        if (till && e.quantity > 0 && (k == "food" || k == "goods" || k == "country"))
+        if (till && e.quantity > 0 && (k == "food" || k == "goods" || k == "wharf"))
             pieces[e.target][inKind] += e.quantity;
         if (e.quantity > 0 && (k == "food" || k == "goods"))
             pieces[e.actor][k] += e.quantity;
@@ -484,9 +484,9 @@ struct EconomyDetail
         o << "}, \"accounts\": {";
         first = true;
         // (The Houses' estates' purses too, while split: doc 72, after estates6, whose full log had none.)
-        std::vector<std::string> accountIds{"treasury", Society::CountryFund, Society::CarriageFund};
-        for (const auto& e : items::country().estates)
-            if (const auto f = Society::estateFund(e); f != Society::CountryFund)
+        std::vector<std::string> accountIds{"treasury", Society::WharfFund, Society::CarriageFund};
+        for (const auto& e : items::cityLoop().estates)
+            if (const auto f = Society::estateFund(e); f != Society::WharfFund)
                 accountIds.push_back(f);
         for (const auto& id : accountIds)
             if (society.account(id))
@@ -551,7 +551,9 @@ struct EconomyRecord
         else if (account.rfind("farm:", 0) == 0)
             g = "farm";
         else if (account.rfind("outside:", 0) == 0)
-            g = "country";
+            g = "wharf";
+        else if (account == "beyond")
+            g = "beyond";                           // (The world beyond the realm, doc 73: what the Wharf mints and sinks.)
         else if (account.rfind("estate:", 0) == 0)
             g = account;                            // (A House's estate, doc 72, Phase 6: "estate:crown".)
         else if (account == "treasury" || account.rfind("stores:", 0) == 0)
@@ -605,7 +607,7 @@ struct EconomyRecord
         // A store draw: its pennies to the farms or the Country, then its goods from them.
         if (drawKind(k) && tillTo && !e.item.empty() && e.quantity > 0 && e.coins == 0)
         {
-            const std::string payee = e.actor == "made" ? std::string(Society::CountryFund) : e.actor;
+            const std::string payee = e.actor == "made" ? std::string(Society::WharfFund) : e.actor;
             auto& owed = pending[e.target];
             std::int64_t coins = 0;
             if (const auto found = owed.find(payee); found != owed.end())
@@ -613,7 +615,7 @@ struct EconomyRecord
                 coins = found->second;
                 owed.erase(found);
             }
-            auto& t = trades[{e.item, group(e.target), e.actor == "made" ? std::string("country") : e.actor}];
+            auto& t = trades[{e.item, group(e.target), e.actor == "made" ? std::string("wharf") : e.actor}];
             t.pieces += e.quantity;
             t.pennies += coins;
             t.base += Society::catalogPrice(e.item) * e.quantity;
@@ -1139,7 +1141,7 @@ struct EconomyWatch
         // kit (by the treasury, by the Country, by trade), buying ahead.
         seasons << ", \"city_trade\": " << d.cityTrade << ", \"city_trade_pieces\": " << d.cityTradePieces << ", \"patron_jobs\": "
                 << d.patronJobs << ", \"patron_pieces\": " << d.patronPieces << ", \"patrons_treasury\": " << d.patronsTreasury
-                << ", \"patrons_country\": " << d.patronsCountry << ", \"bought_ahead\": " << d.boughtAhead;
+                << ", \"patrons_estates\": " << d.patronsEstates << ", \"bought_ahead\": " << d.boughtAhead;
         // Doc 72, Phase 5: the resale path's purchases from the makers (pieces, pennies, by good), the luxuries (pieces,
         // pennies, households), and the country workshops by building (wages owed and paid, what went to the House).
         seasons << ", \"city_resale\": " << d.cityResale << ", \"city_resale_pieces\": " << d.cityResalePieces << ", \"city_resale_goods\": {";
@@ -1157,7 +1159,7 @@ struct EconomyWatch
             seasons << (it == d.workshops.begin() ? "" : ", ") << "\"" << it->first << "\": {\"owed\": " << it->second.owed
                     << ", \"paid\": " << it->second.paid << ", \"to_house\": " << it->second.toHouse << "}";
         seasons << "}";
-        for (const auto& trade : items::country().patrons)
+        for (const auto& trade : items::cityLoop().patrons)
         {
             const auto found = d.patronTrades.find(trade.business);
             const auto day = found == d.patronTrades.end() ? Society::LoopDay::Trade{} : found->second;
@@ -1168,7 +1170,7 @@ struct EconomyWatch
         // and reserve tonight, the poorest households' share, the public works' orders (and by trade).
         seasons << ", \"surplus\": " << d.surplus << ", \"surplus_alms\": " << d.surplusAlms << ", \"surplus_households\": "
                 << d.surplusHouseholds << ", \"works_spent\": " << d.worksSpent << ", \"works_pieces\": " << d.worksPieces;
-        for (const auto& w : items::country().works)
+        for (const auto& w : items::cityLoop().works)
         {
             const auto found = d.worksTrades.find(w.business);
             const auto day = found == d.worksTrades.end() ? Society::LoopDay::Trade{} : found->second;
@@ -1417,24 +1419,24 @@ struct EconomyWatch
             std::int64_t rents = 0;
             for (const auto& [house, n] : d.rents)
                 rents += n;
-            seasons << ", \"country_rents\": " << rents;
-            object("country_rents_by_house", d.rents);
+            seasons << ", \"estate_rents\": " << rents;
+            object("estate_rents_by_house", d.rents);
             std::int64_t landRents = 0;               // (The food farms' land rents, by House: doc 72, open question 2.)
             for (const auto& [house, n] : d.landRents)
                 landRents += n;
-            seasons << ", \"country_land_rents\": " << landRents;
-            object("country_land_rents_by_house", d.landRents);
-            seasons << ", \"country_sales\": " << d.countrySales << ", \"country_posts_owed\": " << d.countryPostsOwed
-                    << ", \"country_posts_paid\": " << d.countryPostsPaid;
-            object("country_posts_by_rule", d.countryPostsByRule);
-            object("country_posts_held", d.countryPostsHeld);
+            seasons << ", \"estate_land_rents\": " << landRents;
+            object("estate_land_rents_by_house", d.landRents);
+            seasons << ", \"wharf_sales\": " << d.wharfSales << ", \"estate_posts_owed\": " << d.estatePostsOwed
+                    << ", \"estate_posts_paid\": " << d.estatePostsPaid;
+            object("estate_posts_by_rule", d.estatePostsByRule);
+            object("estate_posts_held", d.estatePostsHeld);
             // The Houses' estates (doc 72, Phase 6), each its day and its purse tonight, while any is open.
             {
                 bool first = true;
-                for (const auto& e : items::country().estates)
+                for (const auto& e : items::cityLoop().estates)
                 {
                     const auto fund = Society::estateFund(e);
-                    if (!society.account(fund) || (fund == Society::CountryFund && !society.estatesOn()))
+                    if (!society.account(fund) || (fund == Society::WharfFund && !society.estatesOn()))
                         continue;
                     const auto found = d.estates.find(e.id);
                     const auto x = found == d.estates.end() ? Society::LoopDay::Estate{} : found->second;
@@ -1461,8 +1463,27 @@ struct EconomyWatch
                     << ", \"support_unpaid_ordinary\": " << d.supportUnpaidOrdinary << ", \"surplus_paid\": "
                     << d.surplusAlms + d.worksSpent << ", \"toll_trim\": " << society.state().loop.toll << ", \"alms_trim\": "
                     << society.state().loop.alms << ", \"minted_today\": " << d.minted << ", \"farms_minted\": "
-                    << society.farmsMinted() << ", \"minted\": " << society.state().minted << ", \"country_basket_shift\": "
-                    << society.countryBasketShift();
+                    << society.farmsMinted() << ", \"minted\": " << society.state().minted << ", \"wharf_basket_shift\": "
+                    << society.wharfBasketShift();
+            // The Wharf (doc 73, 7): by good, the pieces landed and taken and their pennies; its export basket; the
+            // beyond's pennies in and out today, its fees and the credit's moves; and its book since the world began.
+            {
+                const auto goods = [&](const char* name, const auto& m) {
+                    seasons << ", \"" << name << "\": {";
+                    for (auto it = m.begin(); it != m.end(); ++it)
+                        seasons << (it == m.begin() ? "" : ", ") << EconomyDetail::quoted(it->first) << ": [" << it->second.pieces
+                                << ", " << it->second.pennies << "]";
+                    seasons << "}";
+                };
+                const auto& book = society.state().loop.wharf;
+                seasons << ", \"wharf_day\": {\"valve\": " << (society.wharfValveOn() ? 1 : 0);
+                goods("imported", d.wharfImported);
+                goods("taken", d.wharfTaken);
+                seasons << ", \"basket\": " << d.wharfBasket << ", \"in\": " << d.wharfIn << ", \"out\": " << d.wharfOut
+                        << ", \"fee\": " << d.wharfFee << ", \"moved\": " << d.wharfMoved << ", \"credit\": " << book.credit
+                        << ", \"book_in\": " << book.in << ", \"book_out\": " << book.out << ", \"book_fee\": " << book.fee
+                        << ", \"book_moved\": " << book.moved << ", \"sunk\": " << society.state().sunk << "}";
+            }
         }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households
@@ -1470,10 +1491,10 @@ struct EconomyWatch
             << ", \"food_shops\": " << foodShops << ", \"food_shops_stocked\": " << foodShopsStocked
             << ", \"residents_spent\": " << d.residentsSpent << ", \"food_bought\": " << d.foodBought << ", \"needs_bought\": "
             << d.needsBought << ", \"comforts_bought\": " << d.comfortsBought << ", \"households_short\": " << d.householdsShort
-            << ", \"country_spent\": " << d.countrySpent << ", \"country_unspent\": " << d.countryUnspent << ", \"drawn\": " << d.drawn
+            << ", \"basket_spent\": " << d.basketSpent << ", \"basket_unspent\": " << d.basketUnspent << ", \"drawn\": " << d.drawn
             << ", \"toll\": " << d.toll << ", \"carriage\": " << d.carriage << ", \"wages_owed\": " << d.wagesOwed
             << ", \"wages_paid\": " << d.wagesPaid << ", \"tills_short\": " << d.tillsShort << ", \"profit\": " << d.profit << ", \"subsidy\": " << d.subsidy << ", \"alms\": " << d.alms
-            << ", \"country\": " << society.cash(Society::CountryFund) << ", \"treasury\": " << society.cash("treasury")
+            << ", \"wharf\": " << society.cash(Society::WharfFund) << ", \"treasury\": " << society.cash("treasury")
             << ", \"carters\": " << society.cash(society.carters()) << ", \"tills\": " << tills << ", \"till_median\": "
             << (tillCash.empty() ? 0 : tillCash[tillCash.size() / 2]) << ", \"purses\": " << purses << ", \"money\": "
             << society.moneySupply() << ", \"money_start\": " << money0 << ", \"conserved\": " << (society.conserved() ? "true" : "false")
@@ -1882,7 +1903,7 @@ int main(int argc, char** argv)
         }
         record.society = &server.society();
         record.refresh();
-        for (const auto& c : items::country().comforts)
+        for (const auto& c : items::cityLoop().comforts)
             record.comfortGoods.insert(c);
         record.meta(server, server.society().rule("stockPriceBand"));
         watch.record = &record;
@@ -2384,12 +2405,18 @@ int main(int argc, char** argv)
         if (heldOnce.size() > 40)
             std::cout << "    ... and " << heldOnce.size() - 40 << " more\n";
     }
-    // The store room and the city's loop (docs 67, 68): the Country's purse, the treasury, the carters.
+    // The store room and the city's loop (docs 67, 68, 73): the Wharf's purse, the treasury, the carters; and the Wharf's
+    // book with the beyond (in, out, net, its fees and credit) and the money's check beside it.
     {
         const auto& society = server.society();
         const auto carters = society.carters();
-        std::cout << "  the Country (" << ratw::Society::CountryFund << "): " << society.cash(ratw::Society::CountryFund) << "p"
-                  << (society.account(ratw::Society::CountryFund) ? "" : " (no purse: not an authored world)") << "; treasury "
+        const auto& book = society.state().loop.wharf;
+        std::cout << "  the Wharf beyond the realm: in " << book.in << "p, out " << book.out << "p, net " << book.in - book.out
+                  << "p; its fees " << book.fee << "p; credit " << book.credit << "p (moved " << book.moved << "p); money conserved: "
+                  << (society.conserved() ? "true" : "false") << " (money " << society.moneySupply() << "p = minted "
+                  << society.state().minted << " - sunk " << society.state().sunk << ")\n";
+        std::cout << "  the Wharf (" << ratw::Society::WharfFund << "): " << society.cash(ratw::Society::WharfFund) << "p"
+                  << (society.account(ratw::Society::WharfFund) ? "" : " (no purse: not an authored world)") << "; treasury "
                   << society.cash("treasury") << "p; carriage to " << carters << " " << society.cash(carters) << "p"
                   << (carters == ratw::Society::CarriageFund ? " (no carters' yard in this world)" : "") << "; restocking rule "
                   << (society.authored().economy.storeRule ? "on" : "off") << "; needs " << (society.needsPaused() ? "paused" : "on") << '\n';

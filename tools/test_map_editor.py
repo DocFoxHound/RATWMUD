@@ -478,6 +478,22 @@ class ContentTests(unittest.TestCase):
         self.assertEqual(editor.unknown_farms({'farms': {'grain_farm_1': {'hand': 12}}, 'order': ['grain']}), [])
         manifest = editor.export_files(p)['world.ratw'].splitlines()
         self.assertIn('farm "orchard_9" yield - crew - wages - 11', manifest)
+
+    def test_the_countrys_keys_read_as_the_wharfs(self):
+        # Doc 73, 2.3: an older project's Country keys and rule read as the Wharf's (the new name wins), written under
+        # the records' old words (the world file's loop record keeps "country"), and the Wharf's rules checked.
+        old = {**self.greyfen()['economy'], 'country': False, 'countryReserve': 50, 'wageCountry': 6, 'countryOff': ['fish'],
+               'rules': {'countryPostsDays': 3, 'wharfFee': 20}}
+        self.assertEqual(editor.check_economy(old), [])
+        new = editor.legacy_economy(old)
+        self.assertEqual((new['wharf'], new['wharfReserve'], new['wageWharf'], new['wharfOff'], new['rules']),
+                         (False, 50, 6, ['fish'], {'estatePostsDays': 3, 'wharfFee': 20}))
+        self.assertFalse(set(new) & set(editor.ECONOMY_ALIASES))
+        self.assertEqual(editor.legacy_economy({'wharfOff': ['salt'], 'countryOff': ['fish']})['wharfOff'], ['salt'])
+        lines = editor.loop_lines(old)
+        self.assertIn('loop needs on country off reserve 50 toll 30 carriage 6 wages 14 8 8 6', lines)
+        self.assertIn('countryoff "fish"', lines)
+        self.assertTrue(editor.check_economy({**self.greyfen()['economy'], 'rules': {'wharfFee': 51}}), 'the fee at most 50')
         for bad in ({'farms': {'orchard_9': {'hand': 1001}}}, {'farms': {'Orchard 9': {'hand': 1}}}, {'farms': {'orchard_9': 1}},
                     {'areas': {'gardens': {'on': 'yes'}}}, {'areas': {'gardens': {'luck': 1}}}, {'order': ['grain', 'grain']},
                     {'order': ['grain', 7]}, {'order': []}):

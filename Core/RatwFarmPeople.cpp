@@ -524,7 +524,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                         break;
                     const auto& s = m.work[std::size_t(spot++) % m.work.size()];
                     place(spec, home, {m.area, s.first, s.second}, label, rule.role, people.marketStart, people.marketEnd,
-                          std::min<std::int64_t>(spec.purse, ArrivalPurse), CountryFund, "market:" + c->id,
+                          std::min<std::int64_t>(spec.purse, ArrivalPurse), WharfFund, "market:" + c->id,
                           workshop ? "workshop " + m.area : "market " + c->id);
                     kept = kept || keeper;
                 }

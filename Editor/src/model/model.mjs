@@ -97,17 +97,17 @@ export const defaultEconomy = () => ({treasury: 1000, storeHerbs: 100, storeMeal
 export const STORE_DEFAULTS = {internalStore: true, storeMarkup: 100, storeResale: true, resaleMarkup: 75, storeRule: false};
 // The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9): optional economy keys at these defaults, as
 // tools/map_editor.py's LOOP_DEFAULTS.
-export const LOOP_DEFAULTS = {needsPaused: false, country: true, countryReserve: 200, gateToll: 30, carriage: 6,
-    wageKeeper: 14, wageHand: 8, wagePublic: 8, wageCountry: 8, countryOff: [], subsidies: {carriage: 25}};
-const LOOP_LIMITS = {countryReserve: 100000, gateToll: 90, carriage: 1000, wageKeeper: 1000, wageHand: 1000, wagePublic: 1000, wageCountry: 1000};
+export const LOOP_DEFAULTS = {needsPaused: false, wharf: true, wharfReserve: 200, gateToll: 30, carriage: 6,
+    wageKeeper: 14, wageHand: 8, wagePublic: 8, wageWharf: 8, wharfOff: [], subsidies: {carriage: 25}};
+const LOOP_LIMITS = {wharfReserve: 100000, gateToll: 90, carriage: 1000, wageKeeper: 1000, wageHand: 1000, wagePublic: 1000, wageWharf: 1000};
 export const SUBSIDISED = ['carriage'];
-const loopSettingsOk = e => ['needsPaused', 'country'].every(k => !own(e, k) || typeof e[k] === 'boolean')
+const loopSettingsOk = e => ['needsPaused', 'wharf'].every(k => !own(e, k) || typeof e[k] === 'boolean')
     && Object.entries(LOOP_LIMITS).every(([k, max]) => !own(e, k) || integer(e[k], 0, max))
-    && (!own(e, 'countryOff') || (Array.isArray(e.countryOff) && new Set(e.countryOff).size === e.countryOff.length
-        && e.countryOff.every(g => typeof g === 'string' && /^[a-z0-9_]{1,48}$/.test(g))))
+    && (!own(e, 'wharfOff') || (Array.isArray(e.wharfOff) && new Set(e.wharfOff).size === e.wharfOff.length
+        && e.wharfOff.every(g => typeof g === 'string' && /^[a-z0-9_]{1,48}$/.test(g))))
     && (!own(e, 'subsidies') || (object(e.subsidies) && Object.entries(e.subsidies).every(([k, v]) => SUBSIDISED.includes(k) && integer(v, 0, 100))));
 // The seasons in the Country's supply and the comforts (doc 68, Progress, "Seasons and the DM's rules"; migration 0057):
-// optional economy keys, as tools/map_editor.py's SEASON_DEFAULTS (null comforts: country.json's; seasons: the groups
+// optional economy keys, as tools/map_editor.py's SEASON_DEFAULTS (null comforts: city_loop.json's; seasons: the groups
 // this world has changed, {group: {supply, price, shelf: four percents, normal: pieces a day}}).
 export const SEASON_DEFAULTS = {comfortsAbove: null, comfortsShare: null, seasons: {}};
 const four = (v, low, high) => Array.isArray(v) && v.length === 4 && v.every(x => integer(x, low, high));
@@ -118,11 +118,14 @@ const seasonSettingsOk = e => (!own(e, 'comfortsAbove') || e.comfortsAbove === n
         && integer(s.normal, 0, 1000000))));
 // The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys, as
 // tools/map_editor.py's RULE_DEFAULTS (rules: {name: N}, the rules this world has changed; services: {id: {on, price,
-// every}}, the services it has changed; {}: all as Data/Items/country.json has them).
+// every}}, the services it has changed; {}: all as Data/Items/city_loop.json has them).
 export const RULE_DEFAULTS = {rules: {}, services: {}};
 export const RULE_LIMITS = {comfortsMost: 100000, almsADay: 1000, treasuryCap: 100000000, wageSupport: 100, workBankHours: 1000,
     fairFood: 1, services: 1, servicesCityShare: 100, suppliers: 1, patrons: 1, armourEvery: 3650, buyAheadDays: 5, floatDrawDays: 28,
-    floatWagesDays: 60, workshopWagesDays: 60, workshopWageMost: 100, subsidyToNeed: 1, countryPostsDays: 30, estates: 1,
+    floatWagesDays: 60, workshopWagesDays: 60, workshopWageMost: 100, subsidyToNeed: 1, estatePostsDays: 30, estates: 1,
+    // The Wharf (Docs/Design/73-the-wharf.md, 6): no migration.
+    wharfValve: 1, wharfFee: 50, wharfKeepDays: 365, wharfKeepLeast: 10000, wharfImportScale: 1000, wharfTakeScale: 1000,
+    wharfExportMost: 100000, wharfCreditMost: 1000000, wharfInjectADay: 1000, wharfTakeADay: 1000, wharfActionMost: 1000000,
     landRent: 100, landRentFish: 100, landRentFruit: 100, landRentGrain: 100, landRentSalt: 100, landRentDairy: 100, landRentThin: 100, luxuryShare: 100, luxuryMost: 100, luxuryAbove: 10000, luxuryHouses: 100, luxuryHousesMost: 1000, luxuryPriceBand: 1000, luxuryPriceStep: 1000, surplus: 1, surplusKeep: 100000000, surplusWorks: 100, surplusAlms: 100, surplusAlmsTo: 1000,
     // The self-correcting rules (doc 68, Progress, "Self-correcting rules").
     stockPrices: 1, stockPriceBand: 90, stockPriceStep: 1000, shelfFollow: 1, shelfDays: 365, shelfCover: 1000, shelfGrow: 500,
@@ -357,9 +360,9 @@ function checkShape(value) {
         check(!object(e) || storeSettingsOk(e), "The store room's switches are true or false, its markups whole numbers from 0 to 1000, "
             + 'and each business {internalStore: true or false}.');
         check(!object(e) || loopSettingsOk(e), "The city's loop: its switches true or false, its numbers whole and within their limits "
-            + '(the toll 0-90%, carriage and wages 0-1000, the reserve 0-100000), countryOff distinct item ids, subsidies {carriage: 0-100}.');
+            + '(the toll 0-90%, carriage and wages 0-1000, the reserve 0-100000), wharfOff distinct item ids, subsidies {carriage: 0-100}.');
         check(!object(e) || seasonSettingsOk(e), 'The seasons and comforts: comfortsAbove 0-1000000 and comfortsShare 0-100 (or null '
-            + "for country.json's), each season group {supply, shelf: four percents 0-1000, price: four 10-1000, normal: pieces a day}.");
+            + "for city_loop.json's), each season group {supply, shelf: four percents 0-1000, price: four 10-1000, normal: pieces a day}.");
         check(!object(e) || ruleSettingsOk(e), 'The rules and services: each rule a whole number within its limit ('
             + Object.entries(RULE_LIMITS).map(([k, max]) => `${k} 0-${max}`).join(', ')
             + '), each service {on: true or false, price: 1-100000 pennies, every: 1-3650 days}.');
@@ -629,8 +632,29 @@ function relationships(project, requireExport = false) {
  * Checks and canonicalizes a project. `tolerate` is a set of problems that already existed (or true for
  * any): several people edit the world at once, so one edit is refused only for problems it introduces.
  */
+// The Country's economy keys before doc 73 (Docs/Design/73-the-wharf.md, 2.3), read as the Wharf's: an older project's
+// country, countryReserve, wageCountry and countryOff, and its rule countryPostsDays (the new name wins where both are).
+export const ECONOMY_ALIASES = {country: 'wharf', countryReserve: 'wharfReserve', wageCountry: 'wageWharf', countryOff: 'wharfOff'};
+export function legacyEconomy(value) {
+    const e = value?.economy;
+    if (!e || typeof e !== 'object' || Array.isArray(e)) return value;
+    const old = Object.keys(ECONOMY_ALIASES).filter(k => own(e, k));
+    const rules = e.rules && typeof e.rules === 'object' && !Array.isArray(e.rules) && own(e.rules, 'countryPostsDays') ? e.rules : null;
+    if (!old.length && !rules) return value;
+    const next = {...e};
+    for (const k of old) {
+        if (!own(next, ECONOMY_ALIASES[k])) next[ECONOMY_ALIASES[k]] = next[k];
+        delete next[k];
+    }
+    if (rules) {
+        const {countryPostsDays, ...rest} = rules;
+        next.rules = own(rest, 'estatePostsDays') ? rest : {...rest, estatePostsDays: countryPostsDays};
+    }
+    return {...value, economy: next};
+}
+
 export function normalizeProject(value, tolerate = null) {
-    value = roundLegacyHeights(value);
+    value = legacyEconomy(roundLegacyHeights(value));
     const errors = checkShape(value);
     if (errors.length) fail(errors.join('\n'));
     const safe = canonical(value), checks = relationships(safe);
@@ -641,6 +665,7 @@ export function normalizeProject(value, tolerate = null) {
 
 export function validate(value) {
     try {
+        value = legacyEconomy(value);
         const errors = checkShape(value);
         if (errors.length) return {errors, warnings: []};
         return relationships(canonical(value), true);

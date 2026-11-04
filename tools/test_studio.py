@@ -913,7 +913,7 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
         self.assertEqual(status, 200, data)
         self.assertTrue(data['loopSupported'])
-        self.assertEqual(data['loop'], {k: v for k, v in ST.map_editor.LOOP_DEFAULTS.items() if k != 'countryOff'})
+        self.assertEqual(data['loop'], {k: v for k, v in ST.map_editor.LOOP_DEFAULTS.items() if k != 'wharfOff'})
         self.assertTrue(data['basket'] and all({'item', 'share', 'percent', 'makers'} <= set(b) for b in data['basket']))
         self.assertIn('restocking rule', data['ruleWarning'], 'the rule is off in this world')
         goods = {g['item']: g for g in data['goods']}
@@ -925,7 +925,7 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual((data['loop']['gateToll'], data['loop']['wageHand'], data['loop']['subsidies']), (20, 9, {'carriage': 50}))
         status, data = self.call('POST', '/api/atlas/economy/goods', {'set': {'iron_bar': False}}, token='dm-token', headers=editor)
         self.assertEqual(status, 200, data)
-        self.assertEqual(data['countryOff'], ['iron_bar'])
+        self.assertEqual(data['wharfOff'], ['iron_bar'])
         lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
         self.assertIn('loop needs on country on reserve 200 toll 20 carriage 6 wages 14 9 8 8', lines)
         self.assertIn('countryoff "iron_bar"', lines)
@@ -935,7 +935,7 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(self.call('POST', '/api/atlas/economy/goods', {'set': {'nothing_at_all': False}}, token='dm-token',
                                    headers=editor)[0], 400)
         status, data = self.call('POST', '/api/atlas/economy/goods', {'all': True}, token='dm-token', headers=editor)
-        self.assertEqual(data['countryOff'], [])
+        self.assertEqual(data['wharfOff'], [])
         # The DM, on the live world: the treasury's levers.
         status, data = self.call('POST', '/api/dm/economy/loop', {'world': self.live, 'subsidies': {'carriage': 10}}, token='dm-token')
         self.assertEqual(status, 200, data)
@@ -943,8 +943,8 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertIn('economy.loop', [r[0] for r in self.sql(self.live, 'SELECT action FROM dm.audit')])
 
     def test_the_seasons_and_the_comforts(self):
-        # Doc 68, Progress: country.json's groups with the world's changes; what reaches the NPC records; economy.sync
-        # queued for a running server; back to country.json's; refusals.
+        # Doc 68, Progress: city_loop.json's groups with the world's changes; what reaches the NPC records; economy.sync
+        # queued for a running server; back to city_loop.json's; refusals.
         status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
         self.assertEqual(status, 200, data)
         self.assertTrue(data['seasonsSupported'])
@@ -973,7 +973,7 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
                                  token='dm-token')
         self.assertEqual(status, 200, data)
         self.assertIn('economy.seasons', [r[0] for r in self.sql(self.dev, 'SELECT action FROM dm.audit')])
-        # Back to country.json's: no record, no row of it kept.
+        # Back to city_loop.json's: no record, no row of it kept.
         status, data = self.call('POST', '/api/atlas/economy/seasons', {'set': {'grain': None, 'fish': None}}, token='dm-token', headers=editor)
         self.assertEqual(status, 200, data)
         self.assertEqual(self.one(self.dev, 'SELECT seasons FROM live.economy'), {})
@@ -986,8 +986,8 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(self.call('POST', '/api/atlas/economy/comforts', {'comfortsShare': 101}, token='dm-token', headers=editor)[0], 400)
 
     def test_the_rules_and_the_services(self):
-        # Doc 68, Progress, "First fixes" (migration 0058): country.json's rules and services beside the world's changes;
-        # what reaches the NPC records; economy.sync queued; back to country.json's; refusals.
+        # Doc 68, Progress, "First fixes" (migration 0058): city_loop.json's rules and services beside the world's changes;
+        # what reaches the NPC records; economy.sync queued; back to city_loop.json's; refusals.
         status, data = self.call('GET', '/api/atlas/economy', token='viewer-token')
         self.assertEqual(status, 200, data)
         self.assertTrue(data['rulesSupported'])
@@ -1003,7 +1003,7 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
                                  token='dm-token', headers=editor)
         self.assertEqual(status, 200, data)
         self.assertEqual(data['services'], {'groom_and_trim': {'on': False, 'price': trim['price'], 'every': trim['every']}},
-                         'stored whole: the rest as country.json has it')
+                         'stored whole: the rest as city_loop.json has it')
         lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
         self.assertIn('rule "almsADay" 12', lines)
         self.assertIn('rule "fairFood" 0', lines)
@@ -1015,12 +1015,12 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual((status, data['rules'].get('treasuryCap')), (200, 3000), data)
         actions = [r[0] for r in self.sql(self.dev, 'SELECT action FROM dm.audit')]
         self.assertTrue({'economy.rules', 'economy.services'} <= set(actions), actions)
-        # Back to country.json's: no record, nothing kept.
+        # Back to city_loop.json's: no record, nothing kept.
         self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': None, 'fairFood': None, 'treasuryCap': None}},
                   token='dm-token', headers=editor)
         status, data = self.call('POST', '/api/atlas/economy/services', {'set': {'groom_and_trim': {'on': True}}},
                                  token='dm-token', headers=editor)
-        self.assertEqual((status, data['services']), (200, {}), 'back at country.json\'s: no entry kept')
+        self.assertEqual((status, data['services']), (200, {}), 'back at city_loop.json\'s: no entry kept')
         self.assertEqual((self.one(self.dev, 'SELECT rules FROM live.economy'), self.one(self.dev, 'SELECT services FROM live.economy')), ({}, {}))
         lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
         self.assertFalse([l for l in lines if l.startswith(('rule ', 'service '))], lines)

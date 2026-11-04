@@ -10,12 +10,13 @@ fed, wages paid, tills short, the treasury's and the Country's change, Gini) and
 import argparse
 import json
 
-DEFAULT = ('hungry_mean,hungry_most,households_fed,households_short,residents_spent,food_bought,country_spent,'
-           'country_unspent,drawn,wages_owed,wages_paid,tills_short,profit,alms,treasury,country,tills,purses,gini_earners')
+DEFAULT = ('hungry_mean,hungry_most,households_fed,households_short,residents_spent,food_bought,basket_spent,'
+           'basket_unspent,drawn,wages_owed,wages_paid,tills_short,profit,alms,treasury,wharf,tills,purses,gini_earners')
 
 
 def load(path):
-    return [json.loads(l) for l in open(path) if l.strip()]
+    import econ_report                              # (Doc 73: an older run's Country keys read as the Wharf's.)
+    return [econ_report.renamed(json.loads(l)) for l in open(path) if l.strip()]
 
 
 def summary(name, days, start):
@@ -28,7 +29,7 @@ def summary(name, days, start):
     print(f'{name[:28]:28} d{span[0]["day"]}-{span[-1]["day"]} hungry {m("hungry_mean"):5.2f} ({100 * m("hungry_mean") / res:4.1f}%) '
           f'worst {max(d["hungry_most"] for d in span):3d} fed>={fed:5.1%} wages {paid:5.1%} tillsShort {m("tills_short"):4.1f} '
           f'profit {m("profit"):5.0f} alms {m("alms"):4.0f} treasury {span[0]["treasury"]:5d}->{span[-1]["treasury"]:5d} '
-          f'country {m("country"):5.0f} unspent {m("country_unspent"):4.0f} purses {span[0]["purses"]}->{span[-1]["purses"]} '
+          f'wharf {m("wharf"):5.0f} unspent {m("basket_unspent"):4.0f} purses {span[0]["purses"]}->{span[-1]["purses"]} '
           f'gini {span[0]["gini_earners"]:.2f}->{span[-1]["gini_earners"]:.2f} conserved {all(d["conserved"] for d in days)}')
 
 
@@ -53,7 +54,7 @@ def main():
             row = []
             for f in fields:
                 vals = [d.get(f, 0) for d in chunk]
-                v = vals[-1] if f in ('treasury', 'country', 'tills', 'purses', 'gini_earners') else sum(vals) / len(vals)
+                v = vals[-1] if f in ('treasury', 'wharf', 'tills', 'purses', 'gini_earners') else sum(vals) / len(vals)
                 row.append(f'{v:11.2f}' if isinstance(v, float) and abs(v) < 10 else f'{v:11.0f}')
             print(f'{chunk[0]["day"]:3}-{chunk[-1]["day"]:3}  ' + ' '.join(row))
 

@@ -95,15 +95,27 @@ test('the store room\'s economy keys are optional, checked and kept (doc 67, 6)'
 
 test('the city loop\'s economy keys are optional, checked and kept (doc 68, 9)', () => {
     const p = world();
-    const loop = {needsPaused: true, country: false, countryReserve: 50, gateToll: 30, carriage: 9, wageKeeper: 20, wageHand: 9,
-        wagePublic: 7, wageCountry: 6, countryOff: ['fish'], subsidies: {carriage: 40}};
+    const loop = {needsPaused: true, wharf: false, wharfReserve: 50, gateToll: 30, carriage: 9, wageKeeper: 20, wageHand: 9,
+        wagePublic: 7, wageWharf: 6, wharfOff: ['fish'], subsidies: {carriage: 40}};
     setEconomy(p, loop);
     assert.deepEqual(validate(p).errors, []);
     assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
-    for (const bad of [{gateToll: 91}, {carriage: -1}, {needsPaused: 'no'}, {countryOff: ['fish', 'fish']}, {countryOff: 'fish'},
+    for (const bad of [{gateToll: 91}, {carriage: -1}, {needsPaused: 'no'}, {wharfOff: ['fish', 'fish']}, {wharfOff: 'fish'},
                        {subsidies: {roads: 5}}, {subsidies: {carriage: 101}}, {wageKeeper: 2.5}])
         assert.throws(() => setEconomy(p, bad), /Economy requires|loop/, JSON.stringify(bad));
     assert.equal(p.economy.gateToll, 30, 'unchanged after a rejected edit');
+});
+
+test('an older project\'s Country keys read as the Wharf\'s (doc 73, 2.3)', () => {
+    const p = world();
+    const old = JSON.parse(JSON.stringify(p));
+    old.economy = {...old.economy, country: false, countryReserve: 50, wageCountry: 6, countryOff: ['fish'],
+        rules: {countryPostsDays: 3, wharfFee: 20}};
+    assert.deepEqual(validate(old).errors, []);
+    const e = normalizeProject(old).economy;
+    assert.deepEqual([e.wharf, e.wharfReserve, e.wageWharf, e.wharfOff, e.rules], [false, 50, 6, ['fish'], {estatePostsDays: 3, wharfFee: 20}]);
+    assert.ok(!('country' in e) && !('countryOff' in e), 'only the new names kept');
+    assert.throws(() => setEconomy(p, {rules: {wharfFee: 51}}), /Economy requires|rules/, 'the fee at most 50');
 });
 
 test('the seasons\' and comforts\' economy keys are optional, checked and kept (doc 68, Progress; migration 0057)', () => {

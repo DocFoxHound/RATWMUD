@@ -165,6 +165,9 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            # Fame (Docs/Design/56-fame-and-memory.md): a deed awarded to a player character (target the doer; payload kind,
            # weight, cell, beneficiary, detail), or revoked (target the deed's id).
            'deed.award': 'dm', 'deed.revoke': 'dm', 'nickname.drop': 'dm', 'nickname.restore': 'dm',
+           # The Wharf's trade credit moved (Docs/Design/73-the-wharf.md, 4.6; target "wharf"; payload amount, note): money in
+           # or out of the realm as the beyond buys more or less of its goods, within the world's rule wharfActionMost.
+           'wharf.credit': 'dm',
            # Town projects (Docs/Design/57-changing-the-world.md, 7): one posted (target the town; payload kind, cell, x, y,
            # title), cancelled with its gifts returned, completed by hand, or taken down (target the project's id).
            'project.post': 'dm', 'project.cancel': 'dm', 'project.complete': 'dm', 'project.remove': 'dm',
@@ -550,6 +553,16 @@ class DungeonMaster:
                 clean.update({'cell': str(p['cell'])[:80], 'x': x, 'y': y})
         elif kind == 'deed.award':
             clean = {k: str(p.get(k, ''))[:160] for k in ('kind', 'weight', 'cell', 'beneficiary', 'detail') if p.get(k)}
+        elif kind == 'wharf.credit':
+            amount, note = p.get('amount'), str(p.get('note', '')).strip()
+            most = self.wharf_action_most(target)
+            if most <= 0:
+                raise DMError("This world's Wharf credit can't be moved (the rule wharfActionMost is 0).")
+            if not isinstance(amount, int) or isinstance(amount, bool) or amount == 0 or abs(amount) > most:
+                raise DMError(f'Move the credit by a whole number of pennies, 1 to {most} either way.')
+            if len(note) > 160 or any(ord(c) < 32 for c in note):
+                raise DMError('A note is at most 160 plain characters.')
+            clean = {'amount': amount, 'note': note}
         elif kind == 'storyline.give':
             ids = [t['id'] for t in storyline_templates()]
             cast = p.get('cast') if isinstance(p.get('cast'), dict) else {}
@@ -579,6 +592,8 @@ class DungeonMaster:
                                             RETURNING id''', (kind, target_id, who['username'], json.dumps(clean))).fetchone()[0]
                 conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action_id}),))
                 what = f" — {clean.get('kind', '')} {clean.get('title', '')}".rstrip() if clean else ''
+                if kind == 'wharf.credit':
+                    what = f" — {clean['amount']:+d}p" + (f": {clean['note']}" if clean['note'] else '')
                 self.audit(conn, who['username'], kind, target_id,
                            f'{target.upper()}: {kind} {target_id}{what}' + (f' — {reason[:500]}' if reason else ''))
         return {'id': action_id, 'status': 'queued'}
@@ -946,6 +961,27 @@ class DungeonMaster:
         return {'target': target, 'today': today, 'communities': communities, 'actions': actions,
                 'weekdays': list(C.WEEKDAYS)}
 
+    def wharf_action_most(self, target) -> int:
+        """The most one wharf.credit action may move (doc 73, 6): the world's own rule (live.economy.rules), else the data
+        file's (Data/Items/city_loop.json), else 2,000."""
+        most = None
+        try:
+            with self.connect(target) as conn:
+                world = C.world_of(conn)
+                if world and conn.execute("SELECT to_regclass('live.economy') IS NOT NULL").fetchone()[0]:
+                    row = conn.execute('SELECT rules FROM live.economy WHERE world_id = %s', (world,)).fetchone()
+                    rules = row[0] if row and isinstance(row[0], dict) else {}
+                    if isinstance(rules.get('wharfActionMost'), int):
+                        most = rules['wharfActionMost']
+        except Exception:                           # (No database to ask: the file's.)
+            most = None
+        if most is None:
+            try:
+                most = int(json.loads((ROOT / 'Data/Items/city_loop.json').read_text(encoding='utf-8'))['rules'].get('wharfActionMost', 2000))
+            except (OSError, ValueError, KeyError):
+                most = 2000
+        return most
+
     # -- where the money is -------------------------------------------------------------
     def money(self, target):
         """The money as last saved: each town's treasury, church and buyers; the great houses, the shops' tills and the funds;
@@ -979,7 +1015,14 @@ class DungeonMaster:
         # Facility funds (fund:...) and the markets outside the city (outside:..., the Country's purse: doc 68, 2): what the
         # store room's draws paid; the Houses' estates (estate:..., doc 72, Phase 6); and the carters' takings (doc 68, 6), their
         # yards' tills.
+        # (Doc 73: the Country's purse, outside:country, is the Wharf's, outside:wharf; an older save's shown as it.)
+        if 'outside:country' in accounts:
+            accounts['outside:wharf'] = accounts.get('outside:wharf', 0) + accounts.pop('outside:country')
         funds = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith(('fund:', 'outside:', 'estate:'))]
+        # Beyond the realm (doc 73, 6): the Wharf's book, from the checkpoint's society.loop.wharf.
+        book = (society.get('loop') or {}).get('wharf') or {}
+        beyond = {k: int(book.get(k, 0)) for k in ('in', 'out', 'fee', 'moved', 'credit')}
+        beyond['net'] = beyond['in'] - beyond['out']
         import item_catalog
         carters = [{'id': f'till:job:{n["id"]}', 'name': n['name'], 'label': n['workLabel'], 'cash': accounts[f'till:job:{n["id"]}']}
                    for n in project.get('people', []) if n.get('role') == 'merchant' and f'till:job:{n["id"]}' in accounts
@@ -1003,7 +1046,7 @@ class DungeonMaster:
         return {'target': target, 'day': row[1] if row else None, 'total': sum(accounts.values()),
                 'capital': accounts.get('treasury'), 'towns': towns, 'houses': houses,
                 'tills': {'count': len(tills), 'total': sum(tills.values())}, 'funds': funds, 'carters': carters,
-                'residents': residents, 'road': road,
+                'residents': residents, 'road': road, 'beyond': beyond,
                 'players': sum(v for k, v in accounts.items() if k.startswith(('wolf-', 'player-')))}
 
     def call_festival(self, who, target, community, name='', in_days=0):
@@ -1942,7 +1985,8 @@ class DungeonMaster:
 LIVE_KINDS = ('project.post', 'project.cancel', 'project.complete', 'project.remove', 'npc.protect', 'npc.unprotect',
               'storyline.give', 'storyline.tick', 'storyteller.decide', 'storyteller.revoke', 'tale.pause', 'tale.resume',
               'tale.stop', 'visitors.sync',
-              'deed.award', 'deed.revoke', 'nickname.drop', 'nickname.restore', 'board.remove', 'estate.clear', 'estate.release')
+              'deed.award', 'deed.revoke', 'nickname.drop', 'nickname.restore', 'board.remove', 'estate.clear', 'estate.release',
+              'wharf.credit')
 
 
 def storyline_templates() -> list:

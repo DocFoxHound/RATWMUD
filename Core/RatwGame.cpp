@@ -949,6 +949,26 @@ void Game::applyDmActions(double dt)
             else
                 outcome = {false, "The economy's rules could not be read: " + problem, target};
         }
+        else if (kind == "wharf.credit")
+        {
+            // The Wharf's credit moved by the DM (Docs/Design/73-the-wharf.md, 4.6; payload {amount, note}): money in as
+            // the beyond buys more of the realm's goods, out as it buys less; never a grant. Within wharfActionMost.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            const double amount = payload.number("amount", 0);
+            const auto by = row[3] ? *row[3] : std::string("dm");
+            if (!std::isfinite(amount) || amount != std::floor(amount) || std::fabs(amount) > 1e9)
+                outcome = {false, "Move the credit by a whole number of pennies.", target};
+            else
+            {
+                const auto r = world_.society().moveWharfCredit(std::int64_t(amount), by, payload.string("note").substr(0, 160));
+                outcome = {r.ok, r.message, target};
+                if (r.ok)
+                    saveSoon();
+            }
+        }
         else if (kind == "voice.sync")
         {
             // Talk (doc 62, phase 6): residents' voices, the dialects and the figures read again, after an edit; and

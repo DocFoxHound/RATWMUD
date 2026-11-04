@@ -1088,16 +1088,32 @@ bool Society::restore(const SocietyState& saved)
         else
             reconcileCareers();
         foundShops();                               // (A save from before tills: its shops' own, once.)
-        for (const auto& market : items::country().markets)
+        for (const auto& market : items::cityLoop().markets)
             if (!state_.accounts.count(marketFund(market.id)))
                 openAccount(marketFund(market.id)); // (A save from before the Country: its purse, empty.)
         // (A save from before doc 68: what the store room's fund took in is the Country's now.)
         if (const auto* old = account(StoreFund))
         {
             if (old->cash > 0)
-                shift(StoreFund, marketFund(items::country().markets.front().id), "", 0, old->cash, "fund:store is the Country's now");
+                shift(StoreFund, marketFund(items::cityLoop().markets.front().id), "", 0, old->cash, "fund:store is the Country's now");
             if (account(StoreFund)->cash == 0 && account(StoreFund)->stock.empty())
                 closeAccount(StoreFund);
+        }
+        // (A save from before doc 73: the Country's purse is the Wharf's now, its coins and its goods moved, nothing made;
+        // before the estates' first night, which keys on the purses open, so their split is not repeated.)
+        if (const auto* old = account(OldCountryFund); old && WharfFund != std::string(OldCountryFund))
+        {
+            if (!account(WharfFund))
+                openAccount(WharfFund);
+            if (old->cash > 0)
+                shift(OldCountryFund, WharfFund, "", 0, old->cash, "outside:country is the Wharf's now");
+            const std::vector<std::pair<std::string, int>> goods(account(OldCountryFund)->stock.begin(), account(OldCountryFund)->stock.end());
+            for (const auto& [item, n] : goods)
+                for (int left = n; left > 0; left -= 99)
+                    if (!shift(OldCountryFund, WharfFund, item, std::min(left, 99), 0, "outside:country is the Wharf's now"))
+                        break;
+            if (account(OldCountryFund)->cash == 0 && account(OldCountryFund)->stock.empty())
+                closeAccount(OldCountryFund);
         }
         loopHour_ = -1;
         farmsDay_ = -1;                             // (The farms are tended again from the next hour; their accounts are the save's.)
@@ -1446,23 +1462,28 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         return {false, "The store room holds no " + item + " for this business."};
     if (quantity < 1 || quantity > StoreDrawMost)
         return {false, "Draw a whole quantity from 1 to " + std::to_string(StoreDrawMost) + "."};
-    // A good of an area the farms have taken over (doc 71, 4): theirs, never the Country's, as much as their stores hold.
+    // A good of an area the farms have taken over (doc 71, 4): theirs, as much as their stores hold; what they lack the
+    // Wharf lands as the draw's last lot when the good is on its imports list, within its most today (doc 73, 4.3).
+    // Counted short of the farms even when the Wharf filled it, so a real shortage stays seen.
     const int area = farmAreaOf(item);
-    if (area < 0 && authored_.economy.countryOff.count(items::baseOf(item)))
-        return {false, "The Country no longer supplies " + item + ": the city's own producers do."};
+    if (area < 0 && authored_.economy.wharfOff.count(items::baseOf(item)))
+        return {false, "The Wharf no longer lands " + item + ": the city's own producers make it."};
+    int fromWharf = 0;
     if (area >= 0)
     {
         if (const int held = farmsHold(item); quantity > held)
         {
             ++loopToday_.areasOut[items::farms().areas[std::size_t(area)].id];
             ++loopToday_.goodsOut[items::baseOf(item)];
-            return {false, "The farms have " + (held ? "only " + std::to_string(held) : std::string("no")) + " " + item +
-                               " in store now."};
+            if (quantity - held > wharfRoom(item))
+                return {false, "The farms have " + (held ? "only " + std::to_string(held) : std::string("no")) + " " + item +
+                                   " in store now" + (wharfImports(item) ? ", and the Wharf no more to land today." : ".")};
+            fromWharf = quantity - held;
         }
     }
     // The season's supply (doc 68, Progress, "Seasons"): so much of a group a day, shared by every shop.
-    else if (const int left = countryLeft(item); quantity > left)
-        return {false, "The Country has " + (left ? "only " + std::to_string(left) : std::string("no more")) + " " +
+    else if (const int left = supplyLeft(item); quantity > left)
+        return {false, "The Wharf has " + (left ? "only " + std::to_string(left) : std::string("no more")) + " " +
                            seasonGroup(item)->name + " to send today (the season)."};
     // Exactly what shift and create will check, before either: a draw is whole or nothing. Its cost is split between the
     // Country (the market that supplies the good) and the treasury (the gate toll, doc 68, 5); carriage on its weight goes
@@ -1493,7 +1514,14 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
     std::vector<std::pair<FarmNow*, int>> lots;
     std::vector<std::int64_t> takings;
     std::vector<double> carries;
-    if (area >= 0)
+    // The Wharf's lot (doc 73, 4.3): its pieces' share of the cost less the toll, the farms' lots the rest by theirs.
+    const int fromFarms = quantity - fromWharf;
+    const auto wharfDue = fromWharf <= 0 ? std::int64_t(0)
+                          : fromFarms <= 0 ? cost - toll
+                                           : std::int64_t(std::llround(double(cost - toll) * fromWharf / quantity));
+    if (fromWharf > 0 && ((wharfDue > 0 && !account(WharfFund)) || !fits(WharfFund, wharfDue)))
+        return {false, "The Wharf's purse is missing or can hold no more money.", unit, cost};
+    if (area >= 0 && fromFarms > 0)
     {
         std::vector<std::pair<FarmNow*, int>> holders;
         int held = 0;
@@ -1508,14 +1536,14 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         int given = 0;
         for (std::size_t i = 0; i < holders.size(); ++i)
         {
-            const double exact = double(quantity) * holders[i].second / held;
+            const double exact = double(fromFarms) * holders[i].second / held;
             const int n = std::min(holders[i].second, int(std::floor(exact)));
             lots.push_back({holders[i].first, n});
             given += n;
             rest.push_back({exact - n, i});
         }
         std::stable_sort(rest.begin(), rest.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
-        for (std::size_t k = 0; given < quantity && !rest.empty(); k = (k + 1) % rest.size())
+        for (std::size_t k = 0; given < fromFarms && !rest.empty(); k = (k + 1) % rest.size())
             if (auto& lot = lots[rest[k].second]; lot.second < holders[rest[k].second].second)
             {
                 ++lot.second;
@@ -1524,12 +1552,12 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         // The pennies by their pieces: each farm's exact share with the fraction of a penny its earlier draws left it, in
         // whole pennies, the odd ones to the largest fractions, and what is over carried to its next draw. (Cut in the
         // list's order, the first farm lost the odd penny of nearly every small draw: about a third of its takings.)
-        const auto due = cost - toll;
+        const auto due = cost - toll - wharfDue;
         std::vector<double> exact;
         std::int64_t sum = 0;
         for (const auto& [farm, n] : lots)
         {
-            exact.push_back(n > 0 ? double(due) * n / quantity + farm->takingsCarry : 0);
+            exact.push_back(n > 0 ? double(due) * n / fromFarms + farm->takingsCarry : 0);
             takings.push_back(n > 0 ? std::max<std::int64_t>(0, std::int64_t(std::floor(exact.back() + 1e-9))) : 0);
             sum += takings.back();
         }
@@ -1554,16 +1582,19 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
         }
     }
     else if (cost - toll > 0 && !account(country))
-        return {false, "The Country's purse is missing.", unit, cost};
+        return {false, "The Wharf's purse is missing.", unit, cost};
     if (carriage + subsidy > 0 && carter == CarriageFund && !account(CarriageFund))
         openAccount(CarriageFund);
     if ((area < 0 && !fits(country, cost - toll)) || !fits("treasury", toll) || !fits(carter, carriage + subsidy))
-        return {false, "The Country, the treasury or the carters can hold no more money.", unit, cost};
+        return {false, "The Wharf, the treasury or the carters can hold no more money.", unit, cost};
     const auto pay = [&](const std::string& to, std::int64_t coins, const std::string& kind) { return coins == 0 || shift(till, to, "", 0, coins, kind); };
     bool paid = true;
     if (area >= 0)
+    {
         for (std::size_t i = 0; i < lots.size() && paid; ++i)
             paid = pay(lots[i].first->till, takings[i], why);
+        paid = paid && pay(WharfFund, wharfDue, why);
+    }
     else
         paid = pay(country, cost - toll, why);
     if (!paid || !pay("treasury", toll, "gate toll: " + why) || !pay(carter, carriage, "carriage in"))
@@ -1577,18 +1608,27 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
             for (int left = n; left > 0; left -= 99)
                 if (!shift(farm->till, till, item, std::min(left, 99), 0, why))
                     return false;
-        return true;
+        if (fromWharf <= 0 || create(till, item, fromWharf, why))   // (Landed at the wharf.)
+            return true;
+        for (const auto& [farm, n] : lots)          // (Not landed: the farms' goods back to them, as the money.)
+            for (int left = n; left > 0; left -= 99)
+                shift(till, farm->till, item, std::min(left, 99), 0, "refunded: " + why);
+        return false;
     };
     if (failStoreCreate_ || !deliver())
     {
         failStoreCreate_ = false;
         // (Paid back: nothing changed.)
         if (area >= 0)
+        {
             for (std::size_t i = 0; i < lots.size(); ++i)
             {
                 if (takings[i] > 0)
                     shift(lots[i].first->till, till, "", 0, takings[i], "refunded: " + why);
             }
+            if (wharfDue > 0)
+                shift(WharfFund, till, "", 0, wharfDue, "refunded: " + why);
+        }
         else if (cost - toll > 0)
             shift(country, till, "", 0, cost - toll, "refunded: " + why);
         if (toll > 0)
@@ -1603,8 +1643,18 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
     if (subsidy > 0 && shift("treasury", carter, "", 0, subsidy, "carriage subsidy"))
         loopToday_.subsidy += subsidy;
     drawnToday_[till] += cost + carriage;
+    // The Wharf's own goods, delivered (the sea trade's, doc 72's report): a good no area grows, all of it; an area's, its
+    // lot. Booked as any order from the Wharf: the beyond's share sunk, the credit raised (doc 73, 4.3).
     if (area < 0)
-        loopToday_.countrySales += cost - toll;     // (The Country's own goods, delivered: the sea trade's, doc 72's report.)
+    {
+        loopToday_.wharfSales += cost - toll;
+        bookWharfLanding(item, quantity, cost - toll);
+    }
+    else if (fromWharf > 0)
+    {
+        loopToday_.wharfSales += wharfDue;
+        bookWharfLanding(item, fromWharf, wharfDue);
+    }
     if (const auto* group = seasonGroup(item))
     {
         if (area < 0)
@@ -1624,15 +1674,17 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
     loopToday_.drawn += cost;
     loopToday_.toll += toll;
     loopToday_.carriage += carriage + subsidy;
-    return {true, "Drew " + std::to_string(quantity) + " " + itemName(item) + (area >= 0 ? " from the farms" : " from the store room") + " for " + std::to_string(cost) +
+    return {true, "Drew " + std::to_string(quantity) + " " + itemName(item) +
+                      (area < 0 ? " from the store room" : fromWharf <= 0 ? " from the farms" : fromFarms > 0 ? " from the farms and the Wharf" : " from the Wharf") +
+                      " for " + std::to_string(cost) +
                       "p (" + (use == StoreUse::Make ? "making" : "resale") + (carriage ? ", " + std::to_string(carriage) + "p carriage" : "") + ").",
             unit, cost};
 }
 
 int Society::startingStock(const std::string& ware)
 {
-    // A dear good keeps fewer (country.json `shelves`: theriac, one; doc 68, Progress, "Trades").
-    if (const auto& shelves = items::country().shelves; !shelves.empty())
+    // A dear good keeps fewer (city_loop.json `shelves`: theriac, one; doc 68, Progress, "Trades").
+    if (const auto& shelves = items::cityLoop().shelves; !shelves.empty())
         if (const auto found = shelves.find(items::baseOf(ware)); found != shelves.end())
             return found->second;
     return ware == "sword" ? SmithSwords : GoodsKept;

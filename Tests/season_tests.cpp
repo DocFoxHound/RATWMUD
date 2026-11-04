@@ -4,7 +4,7 @@
 // season's price and buying more of what is in season; a preserver stocking up in autumn for the winter; the world's
 // own seasons and comforts (the "season" and "comforts" records) and the DM's economy.sync (Society::adoptEconomy).
 //
-// The catalogue is Data/Items with country.json's seasons replaced by a small table of the test's own, copied to a
+// The catalogue is Data/Items with city_loop.json's seasons replaced by a small table of the test's own, copied to a
 // scratch directory read through RATW_DATA_DIR.
 #include "RatwCalendar.h"
 #include "RatwGame.h"
@@ -65,18 +65,18 @@ void catalogue()
         if (e.is_regular_file())
             fs::copy_file(e.path(), dir / "Items" / e.path().filename());
     fs::copy_file(source / "Economy" / "ladder.json", dir / "Economy" / "ladder.json");
-    std::ifstream in(dir / "Items" / "country.json");
+    std::ifstream in(dir / "Items" / "city_loop.json");
     std::stringstream text;
     text << in.rdbuf();
     auto body = text.str();
     const auto at = body.find(",\n  \"seasons\"");
-    expect(at != std::string::npos, "country.json has its seasons last");
+    expect(at != std::string::npos, "city_loop.json has its seasons last");
     body = body.substr(0, at) + Seasons;
-    std::ofstream(dir / "Items" / "country.json") << body;
+    std::ofstream(dir / "Items" / "city_loop.json") << body;
     setenv("RATW_DATA_DIR", dir.string().c_str(), 1);
     std::string error;
     expect(items::load(&error), "the catalogue loads: " + error);
-    const auto& groups = items::country().seasons;
+    const auto& groups = items::cityLoop().seasons;
     expect(groups.size() == 3 && groups[0].id == "grain" && groups[0].normal == 10, "the test's seasons are read");
     expect(groups[0].goods == std::vector<std::string>{"flour", "bread"}, "an unknown good is left out");
     expect(groups[2].goods == std::vector<std::string>{"apples"}, "a good is in the first group that names it");
@@ -117,7 +117,8 @@ Society city(const std::function<void(AuthoredRoster&)>& change = {})
     r.kin = {{"clerk", "child", "parent"}};
     r.economy.treasury = 10000;
     r.economy.storeRule = true;
-    r.economy.countryReserve = 0;
+    r.economy.wharfReserve = 0;
+    r.economy.rules["wharfValve"] = 0;              // (The Wharf's valve shut, doc 73: the Country's flows as these tests have them; wharf_tests and farms_tests open it.)
     if (change)
         change(r);
     Society s(Roster::None);
@@ -171,31 +172,31 @@ void drawsFollowTheSeason()
     expect(s.seasonGroup("flour") && s.seasonGroup("flour")->id == "grain" && s.seasonGroup("bread")->id == "grain" &&
                !s.seasonGroup("iron_bar"), "a good's group");
     // Before the society knows the date, no season applies.
-    expect(s.yearDay() < 0 && s.priceFactor("flour") == 1 && s.countryLeft("flour") == std::numeric_limits<int>::max(),
+    expect(s.yearDay() < 0 && s.priceFactor("flour") == 1 && s.supplyLeft("flour") == std::numeric_limits<int>::max(),
            "no date yet: catalogue prices and no cap");
     const auto plain = s.storeCost("baker", "flour", 10);
     // Mid-winter: twice the price, half the normal supply (5 of 10 a day).
     s.setYearDay(Winter);
     expect(near(s.priceFactor("flour"), 2) && near(s.priceFactor("bread"), 2) && s.priceFactor("firewood") == 1, "winter's prices");
     expect(s.storeCost("baker", "flour", 10) == 2 * plain, "a winter draw costs twice the catalogue's: " + std::to_string(s.storeCost("baker", "flour", 10)));
-    expect(s.countryLeft("flour") == 5 && s.countryLeft("bread") == 5 && s.countryLeft("firewood") == std::numeric_limits<int>::max(),
+    expect(s.supplyLeft("flour") == 5 && s.supplyLeft("bread") == 5 && s.supplyLeft("firewood") == std::numeric_limits<int>::max(),
            "five a day of the grain group in winter, shared by its goods");
     const auto money = s.moneySupply();
     const auto refused = s.drawFromStore("baker", "flour", 6);
     expect(!refused.ok && refused.message.find("only 5 grain") != std::string::npos, "more than the season sends is refused: " + refused.message);
-    const auto t0 = s.cash(till), c0 = s.cash(Society::CountryFund), r0 = s.cash("treasury");
+    const auto t0 = s.cash(till), c0 = s.cash(Society::WharfFund), r0 = s.cash("treasury");
     expect(s.drawFromStore("baker", "flour", 5).ok, "the season's five come");
-    expect(t0 - s.cash(till) >= s.storeCost("baker", "flour", 5) && (s.cash(Society::CountryFund) - c0) + (s.cash("treasury") - r0) > 0,
+    expect(t0 - s.cash(till) >= s.storeCost("baker", "flour", 5) && (s.cash(Society::WharfFund) - c0) + (s.cash("treasury") - r0) > 0,
            "the till paid the winter price, to the Country and the toll");
-    expect(s.countryLeft("flour") == 0 && !s.drawFromStore("baker", "flour", 1).ok, "and then no more today");
+    expect(s.supplyLeft("flour") == 0 && !s.drawFromStore("baker", "flour", 1).ok, "and then no more today");
     expect(s.loopToday().groups.at("grain").drawn == 5, "the day's draws of the group are counted");
     expect(s.conserved() && s.moneySupply() == money, "money conserved");
     // The next day's supply starts again.
     s.setYearDay(Winter + 1);
-    expect(s.countryLeft("flour") >= 4, "a new day, a new supply: " + std::to_string(s.countryLeft("flour")));
+    expect(s.supplyLeft("flour") >= 4, "a new day, a new supply: " + std::to_string(s.supplyLeft("flour")));
     // Mid-autumn: half the price, twice the supply.
     s.setYearDay(Autumn);
-    expect(s.storeCost("baker", "flour", 10) == (plain + 1) / 2 && s.countryLeft("flour") == 20, "autumn: cheap and plentiful");
+    expect(s.storeCost("baker", "flour", 10) == (plain + 1) / 2 && s.supplyLeft("flour") == 20, "autumn: cheap and plentiful");
     expect(s.drawFromStore("baker", "flour", 20).ok && !s.drawFromStore("baker", "flour", 1).ok, "twenty a day");
     expect(s.conserved(), "conserved");
 }
@@ -276,9 +277,9 @@ void theWorldsOwnSeasons()
         World w;
         expect(w.loadWorldFiles(files(""), "test").ok, "a world without season records loads");
         const auto& e = w.society().authored().economy;
-        expect(e.seasons.empty() && e.comfortsAbove == -1 && e.comfortsShare == -1, "country.json's seasons and comforts");
-        expect(w.society().comfortsAbove() == items::country().comfortsAbove && near(w.society().comfortsShare(), items::country().comfortsShare),
-               "the comforts as country.json has them");
+        expect(e.seasons.empty() && e.comfortsAbove == -1 && e.comfortsShare == -1, "city_loop.json's seasons and comforts");
+        expect(w.society().comfortsAbove() == items::cityLoop().comfortsAbove && near(w.society().comfortsShare(), items::cityLoop().comfortsShare),
+               "the comforts as city_loop.json has them");
         expect(w.society().seasonTable().size() == 3 && w.society().seasonTable()[0].normal == 10, "and its seasons");
     }
     {
@@ -287,12 +288,12 @@ void theWorldsOwnSeasons()
                                               "season \"gone\" supply 1 1 1 1 price 100 100 100 100 shelf 100 100 100 100 normal 0\n"), "test");
         expect(r.ok, "the season records load: " + r.message);
         const auto& s = w.society();
-        expect(s.comfortsAbove() == 40 && near(s.comfortsShare(), items::country().comfortsShare), "comforts 40, the share country.json's");
+        expect(s.comfortsAbove() == 40 && near(s.comfortsShare(), items::cityLoop().comfortsShare), "comforts 40, the share city_loop.json's");
         const auto& grain = s.seasonTable()[0];
         expect(grain.supply == std::array<int, 4>{50, 100, 150, 40} && grain.price == std::array<int, 4>{120, 100, 80, 130} && grain.normal == 90,
                "the world's grain");
-        expect(s.seasonTable()[1].shelf == std::array<int, 4>{100, 100, 300, 100}, "the other groups as country.json has them");
-        expect(s.authored().economy.seasons.count("gone"), "a group country.json no longer has is kept, and does nothing");
+        expect(s.seasonTable()[1].shelf == std::array<int, 4>{100, 100, 300, 100}, "the other groups as city_loop.json has them");
+        expect(s.authored().economy.seasons.count("gone"), "a group city_loop.json no longer has is kept, and does nothing");
     }
     for (const auto* bad : {"comforts 40\n", "comforts x 10\n", "comforts 10 101\n", "comforts 1 1\ncomforts 2 2\n",
                             "season \"grain\" supply 50 100 150 price 120 100 80 130 shelf 100 100 100 100 normal 90\n",
@@ -317,7 +318,7 @@ void theDmChangesTheRulesLive()
     // starting amount stays what the world began with.
     auto s = city();
     s.setYearDay(Winter);
-    expect(s.countryLeft("flour") == 5, "five a day before");
+    expect(s.supplyLeft("flour") == 5, "five a day before");
     auto next = s.authored().economy;
     next.treasury = 1;
     next.gateToll = 10;
@@ -326,7 +327,7 @@ void theDmChangesTheRulesLive()
     s.adoptEconomy(next);
     expect(s.authored().economy.gateToll == 10 && s.comfortsAbove() == 25 && s.authored().economy.treasury == 10000,
            "the new rules, the starting treasury kept");
-    expect(s.countryLeft("flour") == 40 && s.priceFactor("flour") == 1, "the world's grain now: 40 a day, no season");
+    expect(s.supplyLeft("flour") == 40 && s.priceFactor("flour") == 1, "the world's grain now: 40 a day, no season");
     const auto money = s.moneySupply();
     s.shift("treasury", s.tillOf("baker"), "", 0, 500, "test: working money");
     expect(s.drawFromStore("baker", "flour", 40).ok && s.conserved() && s.moneySupply() == money, "and drawn by them, conserved");
