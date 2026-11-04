@@ -421,15 +421,27 @@ void thePlacement()
                    r.farm + " takes " + oldLabel.at(r.templateId));
         }
     // The markets: each community's businesses staffed, a shop's keeper of the old town of its name first.
+    // (Doc 72, Phase 5: the country workshops' posts apart, every building of theirs standing in this world.)
     std::map<std::string, std::string> keeperOf;
+    std::map<std::string, int> atWorkshop;
     for (const auto& p : s.positions())
         if (p.work.cell.rfind("cn_", 0) == 0)
         {
-            ++market;
+            ++(people.workshop(p.work.cell) ? atWorkshop[p.work.cell] : market);
             if (p.role == "merchant")
                 keeperOf[p.work.cell] = s.state().careers.positions.at(p.id).holder;
         }
     expect(market == 19, "the six markets' 19 posts (Oakhaven's two with its works, doc 72): " + std::to_string(market));
+    int workshopPosts = 0;
+    for (const auto& w : people.workshops)
+    {
+        int want = 0;
+        for (const auto& [post, n] : w.posts)
+            want += n;
+        expect(atWorkshop[w.area] == want, w.area + ": its " + std::to_string(want) + " posts: " + std::to_string(atWorkshop[w.area]));
+        workshopPosts += atWorkshop[w.area];
+    }
+    expect(people.workshops.size() == 8 && workshopPosts == 18, "the eight workshops' 18 posts: " + std::to_string(workshopPosts));
     expect(!keeperOf["cn_oakhaven_store"].empty(), "Oakhaven's store kept, with its works");
     expect(keeperOf["cn_larkfield_store"] == "shop_larkfield" && keeperOf["cn_coldwater_store"] == "shop_coldwater",
            "Larkfield Stores kept by Larkfield General's shopkeeper, Coldwater Stores by Coldwater Sundries'");
@@ -580,7 +592,10 @@ void theWorksCrews()
     const auto* ash = s.jobOf("ash");
     bool ashKeeps = true;
     expect(ash && s.farmOfPost(*ash, &ashKeeps) >= 0 && !ashKeeps, "the logger with family is a hand, not a keeper");
-    expect(s.unplaced("wren") != nullptr, "and the spouse stays in the pool");
+    // (Or, since doc 72's Phase 5, a country workshop's hand of those who keep the house: never as the logger's family.)
+    const auto* wrenJob = s.jobOf("wren");
+    expect(s.unplaced("wren") != nullptr || (wrenJob && people.workshop(wrenJob->work.cell)),
+           "and the spouse stays in the pool, or took a workshop's post");
     // The stone's works (Phase 3): a clay pit with no keeper works with its one hand.
     for (const auto* id : {"clay_mirebridge", "clay_fens"})
     {

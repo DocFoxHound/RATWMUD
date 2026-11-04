@@ -191,6 +191,15 @@ inline constexpr RuleInfo Rules[] = {
     {"landRentSalt", 0, 100, 8},         // The salt's (its autumn margin ~17%).
     // A farm's own over its area's (country_farms.json, a farm's `landRent`: landRent<Its>; doc 72, Phase 4's payer).
     {"landRentDairy", 0, 100, 24},       // The cattle and dairy farms' (their margin 67-70% in country3c; the pigs' 41%).
+    {"landRentThin", 0, 100, 0},         // The thinnest farms' (doc 72, Phase 5: the lake boats, the salt works, three
+                                         // orchards, 5-8p a day over their wages and rent in country4's year 3).
+    // The luxuries (country.json `luxuries`; doc 72, Phase 5, the user's decision: cheese, a comic luxury for wolves):
+    // never bought as food; every household wants them, but buys them only from what it holds over its comforts' keep
+    // after its food and its needs (the fuel among them), at most this percent of that a day,
+    {"luxuryShare", 0, 100, 10},
+    {"luxuryMost", 0, 100, 1},           // and at most this many pieces a head a day;
+    {"luxuryPriceBand", 0, 1000, 300},   // a shop's price for one may climb this percent over the season's (its own band,
+    {"luxuryPriceStep", 0, 1000, 50},    // this many thousandths a day when it sells out; outside the city's price level).
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): what it holds over its cap and
     // surplusKeep at 18:00, after its posts, the short tills' wages and the alms, goes back out each day:
     {"surplus", 0, 1, 1},                // On: the surplus to public works orders and the poorest households.
@@ -238,10 +247,14 @@ struct ServiceDef
 // what a `buyer`'s keeper draws for its crafts it buys from a `seller` of the city holding it, at the seller's price
 // (till to till), and from the store room (the Country) only what the city's sellers don't have. `goods`: the goods it
 // covers (empty: every input the seller sells).
+// `price` (doc 72, Phase 5: the resale goods): the percent of the catalogue's (the season's) price the seller is paid; 0,
+// its path's own: a craft input at the seller's price (100), a good the buyer sells on at the store room's (resaleMarkup),
+// so that a reseller's costs never rise for buying from the city's or the country's makers rather than the store room.
 struct Supplier
 {
     std::string buyer, seller;
     std::vector<std::string> goods;
+    int price = 0;
 };
 // A trade's patrons (country.json `patrons.list`; doc 68, "Trades"): who pays for its patron services (and, for the
 // armoury, new kit). Each group's units are the posts of `roles` (the watch: "guard"), else `units` (the Houses'
@@ -294,6 +307,7 @@ struct Country
     int comfortsAbove = 60;                         // Pennies a head held before a household buys comforts,
     double comfortsShare = .1;                      // and the share of what is over it spent a day,
     std::vector<std::string> comforts;              // on these (used up at once).
+    std::vector<std::string> luxuries;              // Never food: bought from the luxuries' budget (the rules luxury*).
     std::map<std::string, int> rules;               // Every rule (Rules) by name, as country.json gives it.
     std::vector<ServiceDef> services;
     std::vector<Supplier> suppliers;
@@ -391,6 +405,18 @@ struct MarketPlace
     std::vector<std::pair<std::string, int>> posts; // Post (farm_people.json `market`) and how many, in order.
     std::vector<std::pair<double, double>> work;
 };
+// A country workshop (Data/Economy/workshops.json; doc 72, Phase 5): a business of a community's (`area` the map's fixed
+// building id; its keeper's flat `<area>_flat`, or the flat `for` its name), its posts staffed as the community's market's
+// are (farm_people.json `market`), owned by `house`, whose estate takes what its till holds over its float and its wages
+// each night (doc 42, Phase 5b: a workshop is a House's; into the Country's purse, the Houses' estates). Merged into its
+// community's `market` (the map's entry for its building, where there is one, gives the work spots and stations); a
+// world without the building has none of it.
+struct Workshop
+{
+    std::string area, community, name, business, house;
+    std::vector<std::pair<std::string, int>> posts;
+    std::vector<std::pair<double, double>> work;
+};
 struct CommunityPlace
 {
     std::string id, name, region;
@@ -417,6 +443,8 @@ struct FarmPeople
     int householdMost = 6;
     std::vector<FarmPlace> farms;
     std::vector<CommunityPlace> communities;
+    std::vector<Workshop> workshops;
+    const Workshop* workshop(const std::string& area) const;   // The workshop at a building (null: none).
     std::vector<std::pair<std::string, std::vector<std::string>>> trades;   // Old trade -> label words, first match.
     std::vector<std::string> fallback;              // Trades any farm takes from once its own are spent.
     std::vector<std::string> suffixes;              // Taken off a steading's name for its {place},

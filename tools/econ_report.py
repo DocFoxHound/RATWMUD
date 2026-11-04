@@ -447,6 +447,9 @@ def report(econ, run, top, patch_path):
     # The Country by its parts (doc 72, Phase 0: one purse, "the Houses' estates and the sea trade").
     if econ and any('country_sales' in r for r in econ):
         say(country_lines(econ))
+    # The makers' goods sold on, the country workshops and the luxuries (doc 72, Phase 5).
+    if econ and any('city_resale' in r for r in econ):
+        say(phase5_lines(econ))
     # 7. Farms.
     if run and run.farm:
         say('## 7. Farms')
@@ -480,10 +483,11 @@ def report(econ, run, top, patch_path):
                            round(run.farm[w]['rent'] / max(1, run.farm[w]['days']), 1), run.farm[w]['float_last']]
                           for w in works])
         # The food farms' land rent (doc 72, open question 2): what each paid its House, and what was left over its wages
-        # and its rent (its basket's share; thin where a farm's takings barely pass its crew's wages).
-        landed = sorted((farm for farm in run.farm if farms_meta.get(farm, {}).get('area') not in works_areas
-                         and run.farm[farm]['rent'] > 0), key=lambda w: (farms_meta[w].get('area', ''), w))
-        if landed:
+        # and its rent (its basket's share; thin where a farm's takings barely pass its crew's wages). A farm whose rule is
+        # none (doc 72, Phase 5: the thinnest farms' landRentThin 0) is listed too, once any farm paid one.
+        landed = sorted((farm for farm in run.farm if farms_meta.get(farm, {}).get('area') not in works_areas and farm in farms_meta
+                         and (run.farm[farm]['rent'] > 0 or farms_meta[farm].get('house'))), key=lambda w: (farms_meta[w].get('area', ''), w))
+        if landed and any(run.farm[w]['rent'] > 0 for w in landed):
             say('')
             say('The food farms\' land rent (a day; to the House whose land each is on, the Country\'s purse at first; left: '
                 'takings less wages less rent):')
@@ -600,6 +604,33 @@ def apply_patch(patch_path, farms_path, damping=DAMPING, goods=None):
                     done += 1
     Path(farms_path).write_text(dumps(doc))
     return done
+
+
+def phase5_lines(econ):
+    """Doc 72, Phase 5, a day (the economy lines' means): what the shops bought from the city's makers and the country
+    workshops to sell on (the resale path, by good); each workshop's wages paid of owed and what went to its House; the
+    luxuries (cheese) the households bought, what they paid and how many households bought."""
+    n = max(1, len(econ))
+    mean = lambda key: sum(r.get(key, 0) for r in econ) / n
+    goods, shops = collections.Counter(), {}
+    for r in econ:
+        goods.update(r.get('city_resale_goods') or {})
+        for w, x in (r.get('workshops') or {}).items():
+            s = shops.setdefault(w, collections.Counter())
+            s.update(x)
+            s['days'] += 1
+    out = ['## Phase 5: the makers\' goods sold on, the workshops, the luxuries', '',
+           f'Bought to sell on from the makers (a day): {mean("city_resale_pieces"):.1f} pieces, {mean("city_resale"):.1f}p'
+           + (' (' + ', '.join(f'{g} {v / n:.1f}' for g, v in goods.most_common()) + ')' if goods else '') + '.']
+    if shops:
+        out.append('The workshops (a day open): ' + '; '.join(
+            f'{w} wages {s["paid"] / s["days"]:.1f}p of {s["owed"] / s["days"]:.1f}p, to its House {s["to_house"] / s["days"]:.1f}p'
+            for w, s in sorted(shops.items())) + '.')
+    else:
+        out.append('No workshop in this world (its buildings not built): their goods the store room\'s.')
+    out += [f'The luxuries (a day): {mean("luxuries_bought"):.1f} pieces for {mean("luxuries_spent"):.1f}p, '
+            f'{mean("luxury_households"):.1f} households.', '']
+    return '\n'.join(out)
 
 
 def main(argv=None):

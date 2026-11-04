@@ -199,7 +199,7 @@ void readFarms(Catalog& c, const json::Value& file)
 }
 
 // The farms' people (communities.json, the places; farm_people.json, the rules; doc 71, Phase C).
-void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& rules)
+void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& rules, const json::Value& workshops)
 {
     auto& p = c.farmPeople;
     const auto spots = [](const json::Value& list) {
@@ -288,6 +288,40 @@ void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& ru
         }
         if (!community.id.empty())
             p.communities.push_back(std::move(community));
+    }
+    // The country workshops (doc 72, Phase 5; workshops.json): each into its community's market, the map's entry for its
+    // building (its work spots) where there is one, else with the file's own spots; their business, posts and name ours.
+    for (const auto& w : workshops.array("workshops"))
+    {
+        Workshop shop;
+        shop.area = w.string("building");
+        shop.community = w.string("community");
+        shop.name = w.string("name", shop.area);
+        shop.business = w.string("business");
+        shop.house = w.string("house");
+        shop.work = spots(w["work"]);
+        for (const auto& post : w.array("posts"))
+            if (const auto name = post.string("post"); !name.empty())
+                shop.posts.push_back({name, std::clamp(int(post.number("count", 1)), 0, 16)});
+        auto at = std::find_if(p.communities.begin(), p.communities.end(),
+                               [&](const CommunityPlace& x) { return x.id == shop.community; });
+        if (shop.area.empty() || shop.business.empty() || shop.posts.empty() || at == p.communities.end() ||
+            std::any_of(p.workshops.begin(), p.workshops.end(), [&](const Workshop& x) { return x.area == shop.area; }))
+            continue;
+        auto m = std::find_if(at->market.begin(), at->market.end(), [&](const MarketPlace& x) { return x.area == shop.area; });
+        if (m == at->market.end())
+        {
+            if (shop.work.empty())
+                continue;
+            at->market.push_back({});
+            m = at->market.end() - 1;
+            m->area = shop.area;
+            m->work = shop.work;
+        }
+        m->name = shop.name;
+        m->business = shop.business;
+        m->posts = shop.posts;
+        p.workshops.push_back(std::move(shop));
     }
     for (const auto& t : rules.array("trades"))
         if (const auto id = t.string("id"); !id.empty())
@@ -575,6 +609,10 @@ Catalog build()
         for (const auto& g : comforts.array("goods"))
             if (known(g.asString({})))
                 c.country.comforts.push_back(g.asString({}));
+        for (const auto& g : country.object("luxuries").array("goods"))   // (Doc 72, Phase 5: cheese.)
+            if (const auto id = g.asString({}); known(id) &&
+                std::find(c.country.luxuries.begin(), c.country.luxuries.end(), id) == c.country.luxuries.end())
+                c.country.luxuries.push_back(id);
         // The loop's rules and the city's services (doc 68, Progress, "First fixes").
         for (const auto& info : Rules)
             c.country.rules[info.name] =
@@ -590,7 +628,7 @@ Catalog build()
         // Trades (doc 68, Progress, "Trades"): the city's suppliers, the armoury's patrons, dear goods' shelves.
         for (const auto& s : country.object("suppliers").array("list"))
         {
-            Supplier supplier{s.string("buyer"), s.string("seller"), {}};
+            Supplier supplier{s.string("buyer"), s.string("seller"), {}, std::clamp(int(s.number("price", 0)), 0, 1000)};
             for (const auto& g : s.array("goods"))
                 if (known(g.asString({})))
                     supplier.goods.push_back(g.asString({}));
@@ -673,10 +711,13 @@ Catalog build()
     if (const auto places = dir.parent_path() / "Economy" / "communities.json", rules = dir.parent_path() / "Economy" / "farm_people.json";
         std::filesystem::exists(places) && std::filesystem::exists(rules))
     {
-        json::Value a, b;
+        json::Value a, b, w;
         std::string problem;
+        // (The country workshops, doc 72, Phase 5: optional; without the file, none.)
+        if (const auto shops = dir.parent_path() / "Economy" / "workshops.json"; std::filesystem::exists(shops))
+            readJson(shops, w, problem);
         if (readJson(places, a, problem) && readJson(rules, b, problem))
-            readFarmPeople(c, a, b);
+            readFarmPeople(c, a, b, w);
     }
     c.loaded = !c.wearables.empty();
     if (!c.loaded && c.error.empty())
@@ -971,6 +1012,14 @@ const CommunityPlace* FarmPeople::community(const std::string& id) const
     for (const auto& c : communities)
         if (c.id == id)
             return &c;
+    return nullptr;
+}
+
+const Workshop* FarmPeople::workshop(const std::string& area) const
+{
+    for (const auto& w : workshops)
+        if (w.area == area)
+            return &w;
     return nullptr;
 }
 

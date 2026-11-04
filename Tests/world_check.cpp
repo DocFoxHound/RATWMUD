@@ -1132,6 +1132,17 @@ struct EconomyWatch
         seasons << ", \"city_trade\": " << d.cityTrade << ", \"city_trade_pieces\": " << d.cityTradePieces << ", \"patron_jobs\": "
                 << d.patronJobs << ", \"patron_pieces\": " << d.patronPieces << ", \"patrons_treasury\": " << d.patronsTreasury
                 << ", \"patrons_country\": " << d.patronsCountry << ", \"bought_ahead\": " << d.boughtAhead;
+        // Doc 72, Phase 5: the resale path's purchases from the makers (pieces, pennies, by good), the luxuries (pieces,
+        // pennies, households), and the country workshops by building (wages owed and paid, what went to the House).
+        seasons << ", \"city_resale\": " << d.cityResale << ", \"city_resale_pieces\": " << d.cityResalePieces << ", \"city_resale_goods\": {";
+        for (auto it = d.cityResaleGoods.begin(); it != d.cityResaleGoods.end(); ++it)
+            seasons << (it == d.cityResaleGoods.begin() ? "" : ", ") << "\"" << it->first << "\": " << it->second;
+        seasons << "}, \"luxuries_bought\": " << d.luxuriesBought << ", \"luxuries_spent\": " << d.luxuriesSpent
+                << ", \"luxury_households\": " << d.luxuryHouseholds << ", \"workshops\": {";
+        for (auto it = d.workshops.begin(); it != d.workshops.end(); ++it)
+            seasons << (it == d.workshops.begin() ? "" : ", ") << "\"" << it->first << "\": {\"owed\": " << it->second.owed
+                    << ", \"paid\": " << it->second.paid << ", \"to_house\": " << it->second.toHouse << "}";
+        seasons << "}";
         for (const auto& trade : items::country().patrons)
         {
             const auto found = d.patronTrades.find(trade.business);
@@ -2263,6 +2274,15 @@ int main(int argc, char** argv)
                   << asked << " children and " << askedArrivals << " arrivals asked for and not made; "
                   << server.society().state().careers.birthsOwed.size() << " children still owed for the dead; " << server.society().unplacedCount()
                   << " unplaced NPCs left in the world's list\n";
+        // (By their old trade, of working age: doc 72, Phase 5's pool.)
+        std::map<std::string, int> pool;
+        for (const auto& u : server.society().authored().unplaced)
+            if (u.age >= 16 && u.age < 65)
+                ++pool[items::farmPeople().tradeOf(u.workLabel).empty() ? std::string("other") : items::farmPeople().tradeOf(u.workLabel)];
+        std::cout << "  the unplaced of working age by old trade:";
+        for (const auto& [trade, n] : pool)
+            std::cout << ' ' << trade << ' ' << n << ';';
+        std::cout << '\n';
     }
     if (const auto& placed = server.society().farmPlaced(); !placed.empty())
     {

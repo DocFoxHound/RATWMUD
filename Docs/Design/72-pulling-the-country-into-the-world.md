@@ -1477,3 +1477,146 @@ day unless said; country3c's beside it.
 **Verdict: stable enough for Phase 5**, with the summer margin (24%) the smoke projected and the quarry paid. To watch
 in Phase 5: the clay and sand piling (the pits' yields down, the patch), the candles (the chandlery's crew: cord to the
 others or a hand more), the scriptorium, the thinnest boats, orchards and salt (4.8-6.0p a day over their wages and rent).
+
+### Phase 5, the economy's side: the country workshops, the resale path, cheese the luxury; country4's carry-overs (2026-11-04, branch `r2-country-p5`)
+
+Branch `r2-country-p5`, from `ridgemere2` (4511cfa). **Nothing written to DEV, no NPC made, no map change** (the map's
+side, the workshops' buildings and the cottages, is its own branch, at the fixed building ids below); the treasury's
+levers (toll, support, float) untouched. Scripts in the session's scratchpad (`p5/`: `farms_p5.py`, `cheese.py`,
+`smoke.sh`).
+
+**The eight workshops** (`Data/Economy/workshops.json`, new): each a business of `businesses.json` (six new kinds, first in
+the file so their keepers' labels are never another's: `country_soapworks`, `country_wool_weavers`,
+`country_linen_weavers`, `country_press`, `country_pottery`, `country_smithy`), its crafts the city makers' own
+(`crafts.json`: the new kinds added to the makers of fine soap, tallow candles, wool scarves, linen, pamphlets, paper,
+clay pots, hoops, nails and cookpots), at the map's fixed building, merged into its community's `market` (the map's
+entry for the building gives its work spots where there is one), staffed as the communities' markets are
+(`farm_people.json`'s new posts; `Society::staffFarms`, the keeper in the flat `<building>_flat` or the flat `for` its
+name, the hands in the community's cottages, a workshop's hands only once its keeper is there or sent for):
+
+| Building | Workshop | Business | Crew | House | What it makes, of what |
+|---|---|---|---|---|---|
+| `cn_coldwater_soapworks` | Coldwater Soapworks | soap boiler and chandler | 1 + 4 | the Crown | fine soap and tallow candles: the herds' tallow, the marsh's herbs, cord from the chandlery and the ropewalk |
+| `cn_coldwater_weavers` | Coldwater Looms | wool weavers | 1 + 1 | the Crown | wool scarves: the sheep runs' wool |
+| `cn_larkfield_weavers` | Larkfield Looms | linen weavers | 1 + 1 | the Crown | linen: the grain farms' flax |
+| `cn_larkfield_press` | Larkfield Print House | press and paper mill | 1 + 2 | the Crown | pamphlets and paper: linen, ink from the scriptorium and the printing house |
+| `cn_larkfield_smithy` | Larkfield Smithy | village smithy | 1 | the Crown | hoops, nails, cookpots: the Country's iron bars |
+| `cn_fenshore_pottery` | Fenshore Kilns | village pottery | 1 | Greatly | clay pots: the Mirebridge pit's clay |
+| `cn_southmeadow_pottery` | Southmeadow Kilns | village pottery | 1 | Greatly | clay pots: the Fens pit's clay |
+| `cn_oakhaven_press` | Oakhaven Print House | press and paper mill | 1 + 2 | Timberland | pamphlets and paper |
+
+- **Crews: 18 posts (8 keepers, 10 hands)**, against the siting's ~29 (doc 71's plausible count, before the inputs were
+  known), sized to their inputs and to what the Country sold of their goods in country4's year 3, at the crafts' hours
+  and ten shop hours a post: the soapworks ~43 crew-hours a day of soap (the Country's ~21) and ~23 of candles (the ~80 a
+  day the shops went short); the wool looms the sheep runs' ~12 wool (~10 of it piling); the linen looms the ~5 linen the
+  store room still sold and the presses' paper; the presses ~60 crew-hours for the Country's ~19 pamphlets and ~4 paper;
+  a potter alone at each kiln (the ~34 pots a day are ~27 crew-hours for both, and a pot sold on at the store room's
+  price leaves ~1.2p an hour over its clay: a hand would stand idle; the `kiln hand` post is there for later); a smith
+  alone. Coldwater +7, Larkfield +6, Oakhaven +3, Fenshore +1, Southmeadow +1.
+- **The pool** (build 60's export after the smoke: of working age, the towns' trades and shops 23, keeps the house 47,
+  service and labour 34): the keepers come from the towns' trades and shops (the post's words first: chandler, weaver,
+  press, potter, smith), the hands from those who keep the house, so **8 of the 23 and 10 of the 47; no NPC made**.
+- **Who owns them, and their wages.** Each is **its House's** (doc 42, Phase 5b: a workshop or yard is a House's, which
+  takes all the profit), the land's: Coldwater's and Larkfield's the Crown's (its herds' and grain farms'), the potteries
+  Greatly's (its clay pits: construction, doc 67 R25), Oakhaven's Timberland's (the woods'). Their posts are paid as **a
+  city maker's** (the till's keeper's and hands' wages, 14p and 8p, following its takings by `wageDrift`), not the works'
+  fixed 16/10: a workshop sells at prices to shops and households, its takings swing with its sales as a maker's do, and
+  a wage that follows them is doc 42's "the manager's wage will later follow how well the shop does"; the works' fixed
+  wage is for a crew whose yield the land sets. What its till holds each night over its float and `floatWagesDays` of its
+  wages goes to **its House's estate** (the Country's purse, "the Houses' estates and the sea trade", booked by House with
+  the works' rents; `LoopDay::workshops`, world_check's `workshops`), never its keeper's profit; a short night is the
+  treasury's wage support, as any till's.
+- **Selling to the city.** Till to till, which the code already did soundly (`buyFromCity`): the city's shops buy the
+  workshops' goods first (`country.json` `suppliers`: the general stores their fine soap, pamphlets and linen, the
+  rag-and-bone men their scarves and pots, the carpenters and the cartwright their hoops beside the smithies and the
+  cooperage, the printing house and the cartographer their paper, the linen's buyers their linen beside the weaver), the
+  store room only what they lack, so the Country no longer sells what they hold; and any household whose own community's
+  shops lack a good buys it of them (the shops' rule: Coldwater's households buy their candles and soap at the
+  soapworks; the city's candles, short every day, too).
+- **A world without the buildings** (build 60's export, and DEV until the map branch lands): the workshop's market entry
+  is the file's own, but `world.place` has no such interior, so nobody is placed and no till opens; `buyFromCity` finds
+  no seller and the store room supplies the goods as before Phase 5 (`workshops_behaviors`, its last case).
+
+**The resale path** (4.5 and 5): `Society::restockFromStore`'s `!w.craft` branch calls `buyFromCity` (its new `resale`
+flag) before the store room, at **the store room's price for the good** (resaleMarkup of the season's, 75%: at the
+seller's price it would leave the reseller nothing), or a supplier's own **`price`** (percent of the catalogue's): the
+doc's leftovers from the city's makers, the general store's and the builders' yard's nails, the rag-and-bone man's and
+the pawnbroker's cookpots and the barber's bandages, are at the catalogue's (at 75% a smith sells them at its iron's
+cost, the bandages under their linen's), so the resellers' margin on those, ~6p of the ~25p a day, is gone. Counted apart
+(`cityResale`, by good).
+
+**Cheese, the luxury** (the user's decision): `country.json` `luxuries` (cheese; out of the comforts). **Never food**: a
+household's food is chosen among the rest. **Every household wants it**, one a head a day (`luxuryMost`), bought **only
+from what it holds over its comforts' keep (40p a head) after its food and its needs** (the fuel among them; the city's
+households pay no rent, so nothing else is owed before it), at most **`luxuryShare` 10%** of that a day, before the
+comforts (out of the same money). **Its price climbs with unmet demand**: the shops' existing price rule (`stockPrices`,
+up a step on a day it sells out) in **its own band, up to `luxuryPriceBand` 300% over the season's price (four times),
+by `luxuryPriceStep` 5% a day**, and out of the city's price level (whose scaling would cheapen everything else as
+cheese climbed). The farms still sell it to the stall and the provisioners at the season's price; the dearer price is
+the resellers'. New rules in Core's `Rules`, `country.json`, the Editor's and Atlas's Economy rules and `map_editor.py`
+(no migration).
+
+**country4's carry-overs.**
+
+- **country4's patch half way** (`--apply`, damping 0.5, `wholeSeasons` the whole step) **but tallow, wool, clay and sand**
+  (108 yields; stone its whole step in spring and summer: the quarry 31.79 / 26.80 / 27.99 / 32.75). **Tallow and wool
+  kept** where they were: the soapworks and the wool looms are what draws their piles (16,900 and 3,600 a year). **The
+  clay pits** half way to the patch, then **8.5 clay a day more each** for the potteries (37.05 / 33.84 / 34.33 / 37.59;
+  sand half way, 11.84 / 9.79 / 10.12 / 12.45). **The grain farms' flax 8 a day more each** for Larkfield's linen (23.15
+  / 22.25 / 22.23 / 22.77).
+- **The candles**: the soapworks' 1 + 4 make them, of the farms' tallow and the chandlery's and the ropewalk's cord.
+- **The thinnest farms**: their own land rent rule, **`landRentThin` 0** (`country_farms.json` `landRent` "thin": the two
+  lake boats, the two salt works, orchards 2, 4 and 5; 1-3p a day each, ~13p a day to the Country in all).
+
+**Tests.** `workshops_behaviors` (new, 114 checks): the eight as data (each at its building, in its community's market as
+its business, its keeper's label its business's, its hands' no business's, at most 40 characters, its House); the
+soapworks crafts fine soap and candles of its tallow, herbs and cord (conserved); the general store's soap bought from its
+till at 75% of the season's price, none from the store room, the Country's purse and the treasury untouched (no toll, no
+carriage), counted as resale; the soapworks out of soap, or `suppliers` off: the store room's, the Country paid; its crew
+paid from its till at 18:00 (14p and 8p), what is over its float and a week's wages to the Crown's estate, booked by
+House, nothing to its keeper; no building: the store room's soap; the resale prices (75%; the catalogue's for the nails,
+cookpots and bandages; a craft input at the seller's); **cheese**: a household under its keep buys its food and no
+cheese, and is fed, keeping its money; the rich buys one piece at three times the price, within its share; sold out, its
+price climbs past the city's band (3.0 to 3.05) and never over four times; at the season's price a middling household
+(200p) buys one too, at four times only the rich. `trades_behaviors` (921): the workshops beside the city's sellers, the
+resale goods now from their makers. `farm_people_behaviors` (3,591): with every building standing, the eight workshops'
+18 posts staffed beside the markets' 19. `farms_behaviors` (1,977): the patch's values, the thin farms' rule. `ctest` in
+`build-core`: **79 of 79**. `test_econ_report` (a Phase 5 section: the resale, the workshops, the luxuries; the land
+rent's table lists a farm whose rule is none), `test_item_catalog`, `test_city_capacity`, `test_country_industry`,
+`test_farms_summary`, `test_world_store`, `test_studio`, `test_ridgemere2` pass; the Editor's typecheck and
+`economy.test.ts` pass. (`test_map_editor`'s Greyfen count, 11 against 10: not this branch's, as before.)
+
+**The 30-day smoke** (as before: build 60's export, `--simulate 0 720 --farms 0 --farms-every 1 --deterministic
+--threads 4 --economy-level full`; `artifacts/economy/r2/country5-smoke-report.md`, `country5-smoke.patch.json`, a first
+spring's, not to be applied; country4's smoke beside it, days 7-29 a day). **The workshops' buildings are not in that
+export, so none was staffed or sold: what it shows is the rest.**
+
+- Money conserved every day; nobody hungry; every farm and works paid its crew in full; the Country's posts paid every
+  night (824p of 824p), its purse 1,438 to 1,839p (least 1,269p; country4's smoke 1,431 to 1,889p, least 1,266p): its
+  goods to the shops 1,170p a day (1,180p), the estates' rents 194p (192p), the land rents 363p (375p: the thin farms'
+  ~12p), its basket 788p (803p). The treasury 2,880p at the month's end (2,973p); the tills short much as before.
+- **The resale path: 24.5p a day** from the city's makers at the catalogue's price (nails 4.0 a day, bandages 1.1,
+  cookpots 0.8).
+- **Cheese: 25.6 pieces a day bought as a luxury, 169p** (6.6p a piece: ~1.3 times the season's price at a month, the
+  dearest shop 2.1 times), by 12.9 households a day: the middle class 18.5 a day, the lower 4.8 (its larger households),
+  the upper 2.3; all the dairies made sold, none held; still supply-bound (the stall's and the provisioners' draws short
+  ~3,650 a month), so its price was still climbing at the month's end. Comforts a home a day 2.0 / 2.5 / 3.9 to 1.9 /
+  2.35 / 3.6 (the luxuries' share out of the same money).
+- **The thin farms**: the lake boats 4.9-5.1p a day over their wages and rent to 6.5-6.6p, the salt works 4.8-4.9p to
+  7.8-7.9p, orchards 2, 4 and 5 18-19p to 18-20p (spring).
+- The flax the linen looms would take piles at the grain farms (161 to 350 each), the clay too (the potteries' 8.5 a day
+  each): neither has its workshop in this world.
+
+**Projected for the workshops** (on country4's year 3's summer, once the map branch has built them; rough: the crafts'
+hours at ten shop hours a post, the shelves following what sells): the Country loses its sales of what they make (after
+the toll: pamphlets and paper ~124p, fine soap ~38p, clay pots ~38p, scarves ~31p, linen ~17p, the smithy's goods ~10p:
+**~258p a day**) and gains the workshops' takings over their wages and inputs through their Houses (the soapworks ~80p,
+most of it the city's candles, new money; the presses ~35p, the linen looms ~8p, the others about nothing: ~120p), the
+iron bars the smith buys (~25p), and the farms' and the pits' rents on the tallow, wool, flax and clay they sell the
+workshops (~25p): **~90p a day less**, its summer ~1,018p to ~930p, **~13% over its 824p of posts** (24% now; the target
+10%). The treasury loses the toll on what moves, ~110p a day (3/7 of 258p): its surplus over its cap is what pays for it,
+the user's lever. All of this waits for the buildings and a run.
+
+Next (the user's go-ahead first): merge with the map branch's buildings and cottages, then a 3-year run to see the
+workshops' tills, their Houses' share, the Country's summer, the candles, the cheese's price where it settles and who
+buys it, and the clay, flax, tallow and wool against their workshops' draws.

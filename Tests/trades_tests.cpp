@@ -228,22 +228,27 @@ void thePhase4Suppliers()
 {
     const auto sellers = [](const char* buyer, const char* good) { return Society(Roster::None).citySellers(buyer, good); };
     using V = std::vector<std::string>;
-    expect(sellers("tailor", "linen_cloth") == V{"weaver"} && sellers("apothecary", "linen_cloth") == V{"weaver"} &&
-               sellers("papermill", "linen_cloth") == V{"weaver"} && sellers("scriptorium", "linen_cloth") == V{"weaver"},
+    // (Phase 5: the country workshops beside them, Larkfield's linen weavers, its village smithy, the presses.)
+    const V linen{"weaver", "country_linen_weavers"};
+    expect(sellers("tailor", "linen_cloth") == linen && sellers("apothecary", "linen_cloth") == linen &&
+               sellers("papermill", "linen_cloth") == linen && sellers("scriptorium", "linen_cloth") == linen,
            "linen cloth from the weaver");
-    expect(sellers("carpenter", "iron_hoops") == V{"smithy", "cooperage"} && sellers("cartwright", "iron_hoops") == V{"smithy", "cooperage"},
+    expect(sellers("carpenter", "iron_hoops") == V{"smithy", "cooperage", "country_smithy"} &&
+               sellers("cartwright", "iron_hoops") == V{"smithy", "cooperage", "country_smithy"},
            "iron hoops from the smithies and the cooperage");
     expect(sellers("cooperage", "planks") == V{"sawmill"} && sellers("cartwright", "planks") == V{"sawmill"} &&
                sellers("carpenter", "planks") == V{"sawmill"},
            "planks from the Timberland Sawmill");
     expect(sellers("ropewalk", "cord") == V{"chandlery"} && sellers("jeweler", "cord") == V{"chandlery"} && sellers("chandlery", "cord").empty(),
            "cord from the chandlery (its own candles' cord stays its own draw)");
-    expect(sellers("printing_house", "paper") == V{"papermill", "scriptorium"} && sellers("scriptorium", "leather") == V{"tannery"} &&
+    expect(sellers("printing_house", "paper") == V{"papermill", "scriptorium", "country_press"} && sellers("scriptorium", "leather") == V{"tannery"} &&
                sellers("cartographer", "ink") == V{"scriptorium", "printing_house"},
            "paper, leather and ink from their makers");
-    expect(sellers("general", "nails").empty() && sellers("rag_and_bone", "cookpot").empty() && sellers("barber", "bandages").empty() &&
-               sellers("cooperage", "barrel").empty() && sellers("brewery", "barrel") == V{"cooperage"},
-           "the resale goods stay the store room's (Phase 5), the casks as they were");
+    expect(sellers("general", "nails") == V{"country_smithy", "smithy", "tinker"} &&
+               sellers("rag_and_bone", "cookpot") == V{"country_smithy", "smithy", "tinker"} &&
+               sellers("barber", "bandages") == V{"apothecary", "herbalist"} && sellers("cooperage", "barrel").empty() &&
+               sellers("brewery", "barrel") == V{"cooperage"},
+           "the resale goods from their makers since Phase 5, the casks as they were");
     const auto made = [&](bool linenInTown) {
         auto s = city({person("tailor", "merchant", "tailor at The Needle", {"tailor", 2.5, 2.5}, "home_t", 40, 500),
                        person("weaver", "merchant", "weaver at The Loom", {"weaver", 2.5, 2.5}, "home_w", 40, 100)});

@@ -147,6 +147,12 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'landRentGrain', label: 'Land rent: grain', max: 100, unit: '% of the grain farms\' takings (the Crown)'},
     {key: 'landRentSalt', label: 'Land rent: salt', max: 100, unit: '% of the salt works\' takings (the Crown)'},
     {key: 'landRentDairy', label: 'Land rent: dairies', max: 100, unit: '% of the cattle and dairy farms\' takings (the Crown; over the meat area\'s)'},
+    {key: 'landRentThin', label: 'Land rent: the thinnest farms', max: 100, unit: '% of the lake boats\', salt works\' and three orchards\' takings (doc 72, Phase 5; over their areas\')'},
+    // The luxuries (doc 72, Phase 5, the user's decision: cheese): never food; bought from what is over a household's keep.
+    {key: 'luxuryShare', label: 'Luxuries\' share', max: 100, unit: '% a day, at most, of what a household holds over its comforts\' keep, after its food and needs, spent on luxuries (cheese)'},
+    {key: 'luxuryMost', label: 'Luxuries a head', max: 100, unit: 'pieces a head a day, at most'},
+    {key: 'luxuryPriceBand', label: 'Luxuries\' price band', max: 1000, unit: '% over the season\'s price a shop\'s price for a luxury may climb while it sells out (300: four times)'},
+    {key: 'luxuryPriceStep', label: 'Luxuries\' price step', max: 1000, unit: 'thousandths of the price a day it climbs when the shop sells out'},
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms").
     {key: 'surplus', label: 'The treasury\'s surplus', max: 1, unit: 'what it holds over its cap and reserve goes out at 18:00, to public works and the poorest', onOff: true},
     {key: 'surplusKeep', label: 'Reserve over the cap', max: 100000000, unit: 'p the treasury keeps over its cap for the lean seasons before its surplus goes out'},

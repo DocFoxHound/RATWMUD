@@ -209,12 +209,12 @@ void theDefaults()
     expect(repairs == 181, "the building goods 181 of the Country's shares: " + std::to_string(repairs));
     // The yields: the season means of the blend (a grain farm's flour in summer: the farms' people's confirming run's
     // yields, the flour cut to what was taken and the oats raised, doc 72, Phase 1; country1's patch half way, Phase 2;
-    // country3's half way, Phase 3's follow-up; country3b's and country3c's half way).
+    // country3's half way, Phase 3's follow-up; country3b's and country3c's half way; country4's, Phase 5).
     const auto& flour = f.areas[areaIndex("grain")].farms.front().yield.at("flour");
     double summer = 0;
     for (int d = 92; d < 184; ++d)
         summer += Society::seasonalValue(flour, d + .5);
-    expect(std::abs(summer / 92 - 55.17) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
+    expect(std::abs(summer / 92 - 54.85) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
     // The Country's herbs and raw fibre on the farms that already exist (doc 72, Phase 1): the eel marsh's herbs (the fish
     // area's goods; resin stays the Country's, with the woods), the grain farms' hemp and flax with a hand more each.
     const auto& fish = f.areas[areaIndex("fish")];
@@ -1012,15 +1012,15 @@ void theStoneWorks()
     // raised (80 of the farms' basket, 42 of the Country's), so its summer pays its 1 + 1; the pits' clay its whole step in
     // spring (supply-bound there).
     const auto& quarry = stone.farms.front();
-    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 25.32) < .01,
-           "the quarry's stone, 25.32 a day at summer's middle");
+    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 26.8) < .01,
+           "the quarry's stone, 26.8 a day at summer's middle (country4's patch, Phase 5: supply-bound in spring and summer, its whole step)");
     double stoneMean = 0;
     for (const double v : quarry.yield.at("stone"))
         stoneMean += v / 4;
-    expect(std::abs(stoneMean - 28.37) < .05, "28.37 a day over the year: " + std::to_string(stoneMean));
+    expect(std::abs(stoneMean - 29.83) < .05, "29.83 a day over the year: " + std::to_string(stoneMean));
     for (std::size_t i = 1; i < 3; ++i)
-        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 25.8) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 10.17) < .01,
-               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both)");
+        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 33.84) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 9.79) < .01,
+               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; Phase 5: country4's patch half way, the clay 8.5 a day more for the potteries)");
     // On: founded; the mason's stone and sand from the works' stores, nothing to the Country; limestone still the Country's.
     auto s = city([](EconomySpec& e) { e.farms.areas["stone"].on = 1; },
                   {person("mason", "merchant", "stonemason in Chisel Row", {"masonry", 2.5, 2.5}, "home_mason", 40, 400)});
@@ -1099,18 +1099,22 @@ void theLandRent()
     auto s = city([](EconomySpec& e) { e.farms.areas["grain"].on = 1; }, aStore());
     const std::map<std::string, int> percent{{"grain", 28}, {"fruit", 4}, {"meat", 16}, {"fish", 9}, {"honey", 16}, {"salt", 8},
                                              {"fuel", 0}, {"stone", 0}};
-    // (Doc 72, Phase 4's payer: the three cattle and dairy farms their own rule, landRentDairy 24, over the meat area's 16.)
-    int dairies = 0;
+    // (Doc 72, Phase 4's payer: the three cattle and dairy farms their own rule, landRentDairy 24, over the meat area's 16;
+    // Phase 5, country4's carry-over: the thinnest farms theirs, landRentThin 0: the lake boats, the salt works, three
+    // orchards.)
+    int dairies = 0, thin = 0;
     for (const auto& now : s.farms())
     {
         const bool dairy = now.def->landRent == "dairy";
         dairies += dairy;
-        expect(s.landRentPercent(now) == (dairy ? 24 : percent.at(now.def->area)) &&
+        thin += now.def->landRent == "thin";
+        expect(s.landRentPercent(now) == (dairy ? 24 : now.def->landRent == "thin" ? 0 : percent.at(now.def->area)) &&
                    now.house == (now.works ? now.house : houses.at(now.def->area)),
                now.def->id + "'s land rent " + std::to_string(s.landRentPercent(now)) + "%, to " + now.house);
         expect(!dairy || (now.def->area == "meat" && now.def->kind == "cattle and dairy farm"), "a dairy's own rule: " + now.def->id);
     }
     expect(dairies == 3, "the three dairies their own rule: " + std::to_string(dairies));
+    expect(thin == 7, "the seven thinnest farms theirs: " + std::to_string(thin));
     {
         auto tuned = city([](EconomySpec& e) {
             e.rules["landRent"] = 10;
@@ -1118,9 +1122,9 @@ void theLandRent()
             e.rules["landRentDairy"] = 5;
         });
         expect(tuned.landRentPercent(farm(tuned, "grain_farm_1")) == 0 && tuned.landRentPercent(farm(tuned, "beekeeper_1")) == 10 &&
-                   tuned.landRentPercent(farm(tuned, "salt_works_1")) == 8 &&
+                   tuned.landRentPercent(farm(tuned, "salt_works_1")) == 0 && tuned.landRentPercent(farm(tuned, "salt_works_1")) == tuned.rule("landRentThin") &&
                    tuned.landRentPercent(farm(tuned, "cattle_and_dairy_farm_2")) == 5 && tuned.landRentPercent(farm(tuned, "pig_farm_1")) == 10,
-               "the world's own: grain's none, the rule's 10 where an area has no own, salt's still country.json's 8, a dairy's "
+               "the world's own: grain's none, the rule's 10 where an area has no own, the thin salt works' still country.json's 0, a dairy's "
                "its own 5 (the pig farm beside it the meat area's 10)");
     }
     turn(s, 46);
