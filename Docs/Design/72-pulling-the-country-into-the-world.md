@@ -830,7 +830,10 @@ or the city's region, which is why the farms' refilled). Now `Society::reachOf` 
 home ground, as `staffFarms` places them: a home of its community, or, for the Rainwood's two and the quarry, a city
 farm's work room. `farm_people_behaviors`' `aWorksPostFilledAgain`: a Rainwood logger and the Sallow pits' digger die;
 both posts are filled again, the new hands living with their crews; without the change neither is in 28 days. (The
-test's lodgings are now the city's only, as the world's are, by region.)
+test's lodgings are now the city's only, as the world's are, by region.) The review: an arrival's home, the smallest
+household of its class within reach, could be a farmhouse (a keeper and a family hand are a "lower" household, and
+smaller than the cottages), against `staffFarms`' rule that a farmhouse is its keeper's family's alone; `arrivalFor`
+now passes over farmhouses (`fs_`), as `staffFarms` does.
 
 **Carry-over 3: the yields.** From country2's patch (`country2.patch.json`), as the user asked:
 
@@ -855,11 +858,13 @@ test's lodgings are now the city's only, as the world's are, by region.)
   Country's table, so the patch (what was taken + 5%) asked a few percent more, and `--apply`'s half step half of that:
   the shortfall shrank a little each run and never closed. **Fixed in the tool**: `econ_report.py` marks a good-season
   **supply-bound** (its farms out on `BOUND_SHARE`, 40%, of its days while the draws fell short), lists it in the
-  patch's `whole`, and `--apply` takes such a good's whole step; its shelves' needs count even where some spoiled
+  patch's `whole` (its seasons in `wholeSeasons`), and `--apply` takes its whole step in the seasons it was bound; its shelves' needs count even where some spoiled
   (`test_econ_report`'s `test_supply_bound`). On country2 (`country2-fixed-report.md`, `country2-fixed.patch.json`):
-  milk, oak bark, oats and salt. Applied: **oats** 55.95 / 64.58 / 65.5 / 60.38 at each grain farm (6.5-9.6% up),
-  **salt** 47.89 / 45.59 / 44.65 / 46.98 at each salt works (summer and autumn up 9-12%: the yields' season shape was
-  the last runs' supply-capped sales, so the seasons the salters lay by for winter stayed lowest).
+  milk, oak bark, oats and salt. Applied: **oats** 55.95 / 64.58 / 65.5 / 60.38 at each grain farm (6.5-9.6% up,
+  bound in every season), **salt** 47.35 / 45.59 / 44.65 / 46.98 at each salt works (bound in summer, autumn and
+  winter, those the whole step: summer and autumn up 9-12%, the yields' season shape was the last runs' supply-capped
+  sales, so the seasons the salters lay by for winter stayed lowest; spring, not bound, half way). (The review: the
+  first `whole` was by good, so salt's spring took the whole step too, 47.89; now by season.)
 - **Milk spoils and runs short in the same week**: it keeps a day, and the inns draw about half on a Restday, so the
   next morning the farms' stores spoil the Restday's milk (~19 a day, a year's mean) while the other six days the inns
   are short. The patch, counting what sold, asked for *less*. Milk's only use is the porridge, a milk to an oat:

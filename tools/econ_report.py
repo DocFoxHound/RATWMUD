@@ -21,10 +21,10 @@ shelves the shops' draws left under, a stock and not a day's want: refilled over
 never spoiled that season (a perishable's shelves kept full would only spoil). (The draws' deficits counted as a day's
 want, as before 2026-11-03, sized the yields on a stock counted again each day: the next run's patch swung back.) A good
 supply-bound in a season (its farms all out at the day's end on BOUND_SHARE of its days while the draws fell short: what
-sold was the supply) counts its shelves' needs even where some spoiled, and is listed in the patch's `whole`.
+sold was the supply) counts its shelves' needs even where some spoiled, and is listed in the patch's `whole` (its seasons in `wholeSeasons`).
 `--apply` writes those yields into country_farms.json (nothing else changes), DAMPING of the way from each yield now to
 the patch's (0.5 by default: half way, so a run's patch can't overshoot and swing back; 1 the whole way), of every
-good or of GOODS alone; a supply-bound good (`whole`) the whole way.
+good or of GOODS alone; a supply-bound good the whole way in the seasons it was bound (`wholeSeasons`).
 """
 from __future__ import annotations
 
@@ -263,7 +263,8 @@ def farm_patch(run):
             if new != list(current):
                 patch.setdefault(farm, {})[good] = new
                 changes.append((max(abs(a - b) / max(b, 1) for a, b in zip(new, current)), farm, good, current, new))
-    return patch, sorted(changes, reverse=True), ungrown, sorted({g for g, _ in bound})
+    seasons = {g: [s for s in SEASONS if (g, s) in bound] for g in sorted({g for g, _ in bound})}
+    return patch, sorted(changes, reverse=True), ungrown, seasons
 
 
 def report(econ, run, top, patch_path):
@@ -481,11 +482,13 @@ def report(econ, run, top, patch_path):
         say('')
         if patch_path:
             Path(patch_path).write_text(dumps({'about': f'yields to meet demand +{run.slack}% (tools/econ_report.py); `whole`: the '
-                                                        'supply-bound goods, whose step --apply takes whole',
-                                               'farms': patch, 'whole': whole}))
+                                                        'supply-bound goods; `wholeSeasons`: the seasons each was bound in, '
+                                                        'whose step --apply takes whole',
+                                               'farms': patch, 'whole': list(whole), 'wholeSeasons': whole}))
         if whole:
             say('Supply-bound (its farms out at the day\'s end on most days of a season while the shops\' draws fell short: what '
-                'sold was the supply, not the demand; `--apply` takes their whole step): ' + ', '.join(whole) + '.')
+                'sold was the supply, not the demand; `--apply` takes their whole step in those seasons): ' +
+                ', '.join(f'{g} ({", ".join(ss)})' for g, ss in whole.items()) + '.')
             say('')
         say(f'Yields that would meet demand + {run.slack}% (pieces a day by season, before the yield scale): '
             f'{len(changes)} changes, the patch in `{patch_path}` (`--apply` it to country_farms.json). The largest:')
@@ -538,9 +541,11 @@ def dumps(doc):
 
 def apply_patch(patch_path, farms_path, damping=DAMPING, goods=None):
     """The patch's yields written into country_farms.json, DAMPING of the way from each yield now (of GOODS alone, if
-    given); a supply-bound good (the patch's `whole`) the whole way."""
+    given); a supply-bound good the whole way in the seasons it was bound (the patch's `wholeSeasons`; an older patch's
+    `whole` alone: every season)."""
     loaded = json.loads(Path(patch_path).read_text())
-    patch, whole = loaded['farms'], set(loaded.get('whole', []))
+    patch = loaded['farms']
+    whole = loaded.get('wholeSeasons') or {g: SEASONS for g in loaded.get('whole', [])}
     doc = json.loads(Path(farms_path).read_text())
     done = 0
     for area in doc.get('areas', []):
@@ -548,8 +553,8 @@ def apply_patch(patch_path, farms_path, damping=DAMPING, goods=None):
             for good, new in patch.get(farm['id'], {}).items():
                 if good in farm.get('yield', {}) and (goods is None or good in goods):
                     now = farm['yield'][good]
-                    step = 1 if good in whole else damping
-                    moved = [round(a + step * (b - a), 2) for a, b in zip(now, new)]
+                    steps = [1 if season in whole.get(good, ()) else damping for season in SEASONS]
+                    moved = [round(a + step * (b - a), 2) for a, b, step in zip(now, new, steps)]
                     farm['yield'][good] = [int(v) if v == int(v) else v for v in moved]   # (10, not 10.0, as written)
                     done += 1
     Path(farms_path).write_text(dumps(doc))

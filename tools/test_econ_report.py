@@ -182,6 +182,7 @@ class ReportTests(unittest.TestCase):
             # 4 a day sold and the cook's 14 under refilled over a week: 6 a day, 5% over.
             self.assertEqual(patch['farms']['grain_farm_1']['milk'][0], 6.3)
             self.assertEqual(patch['whole'], ['milk'])
+            self.assertEqual(patch['wholeSeasons'], {'milk': ['spring']}, 'bound in the season seen alone')
             self.assertIn('Supply-bound', out.read_text())
             farms = root / 'country_farms.json'
             farms.write_text(json.dumps({'areas': [{'id': 'grain', 'farms': [{'id': 'grain_farm_1', 'yield': {
@@ -189,6 +190,14 @@ class ReportTests(unittest.TestCase):
             self.assertEqual(R.main(['--apply', str(root / 'report.md.patch.json'), str(farms), '--damping', '0.5']), 0)
             y = json.loads(farms.read_text())['areas'][0]['farms'][0]['yield']
             self.assertEqual(y['milk'][0], 6.3, 'the whole step')
+            # A season it was not bound in moves half way, as any good's (a patch's other seasons, here written by hand).
+            p = json.loads((root / 'report.md.patch.json').read_text())
+            p['farms']['grain_farm_1']['milk'] = [6.3, 8, 8, 8]
+            (root / 'two.patch.json').write_text(json.dumps(p))
+            farms.write_text(json.dumps({'areas': [{'id': 'grain', 'farms': [{'id': 'grain_farm_1', 'yield': {'milk': [6, 6, 6, 6]}}]}]}))
+            self.assertEqual(R.main(['--apply', str(root / 'two.patch.json'), str(farms), '--damping', '0.5']), 0)
+            self.assertEqual(json.loads(farms.read_text())['areas'][0]['farms'][0]['yield']['milk'], [6.3, 7, 7, 7],
+                             'whole in spring, half way in the seasons not bound')
             self.assertEqual(y['flour'][0], round(10 + .5 * (patch['farms']['grain_farm_1']['flour'][0] - 10), 2), 'half way')
 
     def test_the_normal_level_alone(self):

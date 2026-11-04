@@ -1,5 +1,5 @@
 {
- "about": "yields to meet demand +5% (tools/econ_report.py); `whole`: the supply-bound goods, whose step --apply takes whole",
+ "about": "yields to meet demand +5% (tools/econ_report.py); `whole`: the supply-bound goods; `wholeSeasons`: the seasons each was bound in, whose step --apply takes whole",
  "farms": {
   "beekeeper_1": {
    "beeswax": [0.28, 0.32, 0.29, 0.47],
@@ -191,5 +191,11 @@
    "wine": [3.38, 3.86, 3.76, 2.48]
   }
  },
- "whole": ["milk", "oak_bark", "oats", "salt"]
+ "whole": ["milk", "oak_bark", "oats", "salt"],
+ "wholeSeasons": {
+  "milk": ["summer", "autumn", "winter"],
+  "oak_bark": ["spring", "summer", "winter"],
+  "oats": ["spring", "summer", "autumn", "winter"],
+  "salt": ["summer", "autumn", "winter"]
+ }
 }

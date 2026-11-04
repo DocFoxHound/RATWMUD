@@ -642,6 +642,7 @@ void aWorksPostFilledAgain()
         expect(!holder.empty() && s.resident(holder), works + "'s post held again: " + holder);
         const auto& home = s.resident(holder)->homeCell;
         expect(communityOf(home) == (works == "clay_fens" ? "southmeadow" : "ridgemere"), works + "'s new hand lives with its crew: " + home);
+        expect(home.rfind("fs_", 0) != 0, works + "'s new hand not in a farmhouse (its keeper's family's alone): " + home);
     }
     expect(s.conserved(), "conserved");
 }

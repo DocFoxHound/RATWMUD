@@ -1244,8 +1244,9 @@ bool Society::arrivalFor(const Position& p, const PositionState& ps, const Caree
         std::pair<int, double> roomiest{0, 0};
         for (const auto& [cell, members] : homes)
         {
-            if (communalHome(cell) || int(members.size()) >= HouseholdMost || (world.near && !world.near(reach, cell)))
-                continue;
+            if (communalHome(cell) || int(members.size()) >= HouseholdMost || (world.near && !world.near(reach, cell)) ||
+                cell.rfind("fs_", 0) == 0)
+                continue;                           // (A farmhouse is its keeper's family's alone, as staffFarms keeps it.)
             std::map<std::string, int> count;
             for (const auto& m : members)
                 ++count[classOf(m)];

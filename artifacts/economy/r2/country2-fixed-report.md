@@ -145,7 +145,7 @@ The works (a day; their rent to their House's estate, the Country's purse at fir
 | logging_rainwood | Timberland | 927 | 58.5 | 22892/22892 | 0 | 33.8 | 73 |
 | peat_fens | Timberland | 927 | 77.3 | 24102/24102 | 0 | 51.3 | 52 |
 
-Supply-bound (its farms out at the day's end on most days of a season while the shops' draws fell short: what sold was the supply, not the demand; `--apply` takes their whole step): milk, oak_bark, oats, salt.
+Supply-bound (its farms out at the day's end on most days of a season while the shops' draws fell short: what sold was the supply, not the demand; `--apply` takes their whole step in those seasons): milk (summer, autumn, winter), oak_bark (spring, summer, winter), oats (spring, summer, autumn, winter), salt (summer, autumn, winter).
 
 Yields that would meet demand + 5% (pieces a day by season, before the yield scale): 117 changes, the patch in `artifacts/economy/r2/country2-fixed.patch.json` (`--apply` it to country_farms.json). The largest:
 
