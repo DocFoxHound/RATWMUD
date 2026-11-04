@@ -1,7 +1,7 @@
 {
  "format": "ratw-communities",
  "version": 1,
- "about": "The Country's farm steadings and communities as built on the realm (Docs/Design/70, Progress, \"The steadings and the communities\"; doc 71, Phase C), written by tools/worldgen/realm2_places.py with each realm write. Homes and workplaces are interiors (world.interiors / world.areas id; the project's rooms): a resident's home is live.npcs home_area = the home's `area`, home_x/home_y a bed; a post's work_area = the workplace `area`, work_x/work_y a `work` spot. At most 6 to a home (HouseholdMost). An interior's region is its community (`ridgemere` for the farms near the city), so a farm's hands and its keeper are \"near\" it. A community's `town` (false) keeps it a plain place on a restart, never a town of its own (World::setupTowns), until a later step makes it one.",
+ "about": "The Country's farm steadings and communities as built on the realm (Docs/Design/70, Progress, \"The steadings and the communities\"; doc 71, Phase C), written by tools/worldgen/realm2_places.py with each realm write. Homes and workplaces are interiors (world.interiors / world.areas id; the project's rooms): a resident's home is live.npcs home_area = the home's `area`, home_x/home_y a bed; a post's work_area = the workplace `area`, work_x/work_y a `work` spot. At most 6 to a home (HouseholdMost). An interior's region is its community (`ridgemere` for the farms near the city), so a farm's hands and its keeper are \"near\" it. A community's `town` (false) keeps it a plain place on a restart, never a town of its own (World::setupTowns), until a later step makes it one. A community's `workshops` (doc 72, Phase 5) are its country workshops: the work room (`area`, `work` spots, `stations`), the `crew` doc 71 gives it, and its keeper's `flat` (also in `flats`, `for` the workshop); their hands live in the community's `homes`.",
  "householdMost": 6,
  "workLabels": {
   "about": "The game knows a shop or works by its keeper's work label (Data/Items/businesses.json `match`, at most 40 characters). A market post's label should hold its business's word; a farm post's should hold none of them (or it becomes that city business), so not \"dairy\", \"cheesemaker\", \"water mill\", \"salt house\", \"salt pans\", \"smokehouse\", \" press\", \"vintner\", \"brewer\", \"butcher\", \"baker\", \"tavern\", \"taproom\", \"keeps the \".",
@@ -49,7 +49,7 @@
     "lake_and_river_boat_1",
     "lake_and_river_boat_2"
    ],
-   "beds": 62,
+   "beds": 70,
    "homes": [
     {
      "area": "cn_coldwater_cottage_1",
@@ -442,6 +442,54 @@
       }
      ],
      "for": "Coldwater Bakehouse"
+    },
+    {
+     "area": "cn_coldwater_soapworks_flat",
+     "name": "The Coldwater Boiling House, the keeper's rooms",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 18,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "for": "The Coldwater Boiling House"
+    },
+    {
+     "area": "cn_coldwater_weavers_flat",
+     "name": "Coldwater Loom Shed, the keeper's rooms",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 10,
+       "y": 1
+      },
+      {
+       "x": 8,
+       "y": 1
+      },
+      {
+       "x": 10,
+       "y": 20
+      },
+      {
+       "x": 6,
+       "y": 1
+      }
+     ],
+     "for": "Coldwater Loom Shed"
     }
    ],
    "market": [
@@ -621,6 +669,174 @@
      ]
     }
    ],
+   "workshops": [
+    {
+     "id": "cn_coldwater_soapworks",
+     "area": "cn_coldwater_soapworks",
+     "name": "The Coldwater Boiling House",
+     "kind": "soapworks",
+     "crew": {
+      "keepers": 1,
+      "hands": 3
+     },
+     "work": [
+      {
+       "x": 2,
+       "y": 2
+      },
+      {
+       "x": 5,
+       "y": 2
+      },
+      {
+       "x": 8,
+       "y": 2
+      },
+      {
+       "x": 11,
+       "y": 2
+      }
+     ],
+     "stations": [
+      {
+       "x": 2,
+       "y": 1,
+       "station": "rendering_pot"
+      },
+      {
+       "x": 5,
+       "y": 1,
+       "station": "rendering_pot"
+      },
+      {
+       "x": 8,
+       "y": 1,
+       "station": "chandler_kettle"
+      },
+      {
+       "x": 11,
+       "y": 1,
+       "station": "chandler_kettle"
+      },
+      {
+       "x": 14,
+       "y": 1,
+       "station": "drying_rack"
+      },
+      {
+       "x": 17,
+       "y": 1,
+       "station": "drying_rack"
+      },
+      {
+       "x": 1,
+       "y": 4,
+       "station": "workbench"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_7",
+      "x": 216,
+      "y": 2,
+      "worldX": 2008,
+      "worldY": 1794
+     },
+     "flat": "cn_coldwater_soapworks_flat",
+     "otherRooms": [
+      "cn_coldwater_soapworks_flat"
+     ]
+    },
+    {
+     "id": "cn_coldwater_weavers",
+     "area": "cn_coldwater_weavers",
+     "name": "Coldwater Loom Shed",
+     "kind": "weavers_wool",
+     "crew": {
+      "keepers": 1,
+      "hands": 4
+     },
+     "work": [
+      {
+       "x": 9,
+       "y": 2
+      },
+      {
+       "x": 9,
+       "y": 5
+      },
+      {
+       "x": 9,
+       "y": 8
+      },
+      {
+       "x": 9,
+       "y": 11
+      },
+      {
+       "x": 9,
+       "y": 14
+      }
+     ],
+     "stations": [
+      {
+       "x": 10,
+       "y": 2,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 5,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 8,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 11,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 14,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 17,
+       "station": "loom"
+      },
+      {
+       "x": 7,
+       "y": 1,
+       "station": "spinning_wheel"
+      },
+      {
+       "x": 4,
+       "y": 1,
+       "station": "spinning_wheel"
+      },
+      {
+       "x": 7,
+       "y": 20,
+       "station": "spinning_wheel"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_7_6",
+      "x": 205,
+      "y": 226,
+      "worldX": 1997,
+      "worldY": 1762
+     },
+     "flat": "cn_coldwater_weavers_flat",
+     "otherRooms": [
+      "cn_coldwater_weavers_flat"
+     ]
+    }
+   ],
    "gardens": [
     {
      "kind": "kitchen garden",
@@ -690,8 +906,8 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 6,
-    "openTiles": 4602
+    "cottageLots": 4,
+    "openTiles": 11486
    }
   },
   {
@@ -712,7 +928,7 @@
     "orchard_5",
     "pig_farm_3"
    ],
-   "beds": 31,
+   "beds": 55,
    "homes": [
     {
      "area": "cn_larkfield_cottage_1",
@@ -865,6 +1081,82 @@
       "worldX": 1669,
       "worldY": 2400
      }
+    },
+    {
+     "area": "cn_larkfield_cottage_5",
+     "name": "Larkfield Cottage 5",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 14
+      },
+      {
+       "x": 7,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 182,
+      "y": 79,
+      "worldX": 1718,
+      "worldY": 2383
+     }
+    },
+    {
+     "area": "cn_larkfield_cottage_6",
+     "name": "Larkfield Cottage 6",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 14
+      },
+      {
+       "x": 7,
+       "y": 14
+      },
+      {
+       "x": 5,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 14
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 157,
+      "y": 127,
+      "worldX": 1693,
+      "worldY": 2431
+     }
     }
    ],
    "flats": [
@@ -911,6 +1203,78 @@
       }
      ],
      "for": "The Sheaf"
+    },
+    {
+     "area": "cn_larkfield_weavers_flat",
+     "name": "Larkfield Linen Shed, the keeper's rooms",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 10,
+       "y": 1
+      },
+      {
+       "x": 8,
+       "y": 1
+      },
+      {
+       "x": 10,
+       "y": 20
+      },
+      {
+       "x": 6,
+       "y": 1
+      }
+     ],
+     "for": "Larkfield Linen Shed"
+    },
+    {
+     "area": "cn_larkfield_press_flat",
+     "name": "Larkfield Press and Paper Mill, the keeper's rooms",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 22
+      },
+      {
+       "x": 3,
+       "y": 22
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 22
+      }
+     ],
+     "for": "Larkfield Press and Paper Mill"
+    },
+    {
+     "area": "cn_larkfield_smithy_flat",
+     "name": "Larkfield Smithy, the keeper's rooms",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 12
+      },
+      {
+       "x": 3,
+       "y": 12
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 12
+      }
+     ],
+     "for": "Larkfield Smithy"
     }
    ],
    "market": [
@@ -1061,6 +1425,224 @@
      "otherRooms": []
     }
    ],
+   "workshops": [
+    {
+     "id": "cn_larkfield_weavers",
+     "area": "cn_larkfield_weavers",
+     "name": "Larkfield Linen Shed",
+     "kind": "weavers_linen",
+     "crew": {
+      "keepers": 1,
+      "hands": 4
+     },
+     "work": [
+      {
+       "x": 9,
+       "y": 2
+      },
+      {
+       "x": 9,
+       "y": 5
+      },
+      {
+       "x": 9,
+       "y": 8
+      },
+      {
+       "x": 9,
+       "y": 11
+      },
+      {
+       "x": 9,
+       "y": 14
+      }
+     ],
+     "stations": [
+      {
+       "x": 10,
+       "y": 2,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 5,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 8,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 11,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 14,
+       "station": "loom"
+      },
+      {
+       "x": 10,
+       "y": 17,
+       "station": "loom"
+      },
+      {
+       "x": 7,
+       "y": 1,
+       "station": "spinning_wheel"
+      },
+      {
+       "x": 4,
+       "y": 1,
+       "station": "spinning_wheel"
+      },
+      {
+       "x": 7,
+       "y": 20,
+       "station": "spinning_wheel"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 165,
+      "y": 76,
+      "worldX": 1701,
+      "worldY": 2380
+     },
+     "flat": "cn_larkfield_weavers_flat",
+     "otherRooms": [
+      "cn_larkfield_weavers_flat"
+     ]
+    },
+    {
+     "id": "cn_larkfield_press",
+     "area": "cn_larkfield_press",
+     "name": "Larkfield Press and Paper Mill",
+     "kind": "press",
+     "crew": {
+      "keepers": 1,
+      "hands": 4
+     },
+     "work": [
+      {
+       "x": 2,
+       "y": 21
+      },
+      {
+       "x": 2,
+       "y": 18
+      },
+      {
+       "x": 2,
+       "y": 15
+      },
+      {
+       "x": 2,
+       "y": 12
+      },
+      {
+       "x": 2,
+       "y": 9
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 21,
+       "station": "paper_vat"
+      },
+      {
+       "x": 1,
+       "y": 18,
+       "station": "paper_vat"
+      },
+      {
+       "x": 1,
+       "y": 15,
+       "station": "paper_vat"
+      },
+      {
+       "x": 1,
+       "y": 12,
+       "station": "press"
+      },
+      {
+       "x": 1,
+       "y": 9,
+       "station": "printing_press"
+      },
+      {
+       "x": 1,
+       "y": 6,
+       "station": "printing_press"
+      },
+      {
+       "x": 1,
+       "y": 3,
+       "station": "scribe_desk"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 138,
+      "y": 26,
+      "worldX": 1674,
+      "worldY": 2330
+     },
+     "flat": "cn_larkfield_press_flat",
+     "otherRooms": [
+      "cn_larkfield_press_flat"
+     ],
+     "wheel": false,
+     "water": 90
+    },
+    {
+     "id": "cn_larkfield_smithy",
+     "area": "cn_larkfield_smithy",
+     "name": "Larkfield Smithy",
+     "kind": "smithy",
+     "crew": {
+      "keepers": 1,
+      "hands": 0
+     },
+     "work": [
+      {
+       "x": 2,
+       "y": 11
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 11,
+       "station": "forge"
+      },
+      {
+       "x": 1,
+       "y": 8,
+       "station": "grindstone"
+      },
+      {
+       "x": 1,
+       "y": 5,
+       "station": "workbench"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_6_9",
+      "x": 138,
+      "y": 64,
+      "worldX": 1674,
+      "worldY": 2368
+     },
+     "flat": "cn_larkfield_smithy_flat",
+     "otherRooms": [
+      "cn_larkfield_smithy_flat"
+     ]
+    }
+   ],
    "gardens": [
     {
      "kind": "kitchen garden",
@@ -1119,8 +1701,8 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 8,
-    "openTiles": 5702
+    "cottageLots": 4,
+    "openTiles": 12308
    }
   },
   {
@@ -1141,7 +1723,7 @@
     "vineyard_2",
     "beekeeper_3"
    ],
-   "beds": 25,
+   "beds": 29,
    "homes": [
     {
      "area": "cn_southmeadow_cottage_1",
@@ -1302,6 +1884,30 @@
       }
      ],
      "for": "The Vine and Sickle"
+    },
+    {
+     "area": "cn_southmeadow_pottery_flat",
+     "name": "Southmeadow Pottery, the keeper's rooms",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 16
+      },
+      {
+       "x": 3,
+       "y": 16
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 16
+      }
+     ],
+     "for": "Southmeadow Pottery"
     }
    ],
    "market": [
@@ -1362,6 +1968,87 @@
      ]
     }
    ],
+   "workshops": [
+    {
+     "id": "cn_southmeadow_pottery",
+     "area": "cn_southmeadow_pottery",
+     "name": "Southmeadow Pottery",
+     "kind": "pottery",
+     "crew": {
+      "keepers": 1,
+      "hands": 1
+     },
+     "work": [
+      {
+       "x": 2,
+       "y": 15
+      },
+      {
+       "x": 2,
+       "y": 12
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 15,
+       "station": "kiln"
+      },
+      {
+       "x": 1,
+       "y": 12,
+       "station": "kiln"
+      },
+      {
+       "x": 1,
+       "y": 9,
+       "station": "potter_wheel"
+      },
+      {
+       "x": 1,
+       "y": 6,
+       "station": "potter_wheel"
+      },
+      {
+       "x": 1,
+       "y": 3,
+       "station": "drying_rack"
+      },
+      {
+       "x": 4,
+       "y": 16,
+       "station": "drying_rack"
+      },
+      {
+       "x": 7,
+       "y": 16,
+       "station": "workbench"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_8_13",
+      "x": 58,
+      "y": 17,
+      "worldX": 2106,
+      "worldY": 3345
+     },
+     "flat": "cn_southmeadow_pottery_flat",
+     "otherRooms": [
+      "cn_southmeadow_pottery_flat"
+     ],
+     "kilnYard": {
+      "kind": "kiln yard",
+      "cell": "w_ridgemere_8_13",
+      "x": 38,
+      "y": 11,
+      "width": 12,
+      "height": 8,
+      "worldX": 2086,
+      "worldY": 3339,
+      "tiles": 60
+     }
+    }
+   ],
    "gardens": [
     {
      "kind": "kitchen garden",
@@ -1409,8 +2096,8 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 6,
-    "openTiles": 5738
+    "cottageLots": 5,
+    "openTiles": 12127
    }
   },
   {
@@ -1433,7 +2120,7 @@
     "sea_fishing_boat_4",
     "salt_works_2"
    ],
-   "beds": 25,
+   "beds": 29,
    "homes": [
     {
      "area": "cn_fenshore_cottage_1",
@@ -1594,6 +2281,30 @@
       }
      ],
      "for": "The Heron"
+    },
+    {
+     "area": "cn_fenshore_pottery_flat",
+     "name": "Fenshore Pottery, the keeper's rooms",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 16
+      },
+      {
+       "x": 3,
+       "y": 16
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 16
+      }
+     ],
+     "for": "Fenshore Pottery"
     }
    ],
    "market": [
@@ -1654,6 +2365,87 @@
      ]
     }
    ],
+   "workshops": [
+    {
+     "id": "cn_fenshore_pottery",
+     "area": "cn_fenshore_pottery",
+     "name": "Fenshore Pottery",
+     "kind": "pottery",
+     "crew": {
+      "keepers": 1,
+      "hands": 1
+     },
+     "work": [
+      {
+       "x": 2,
+       "y": 15
+      },
+      {
+       "x": 2,
+       "y": 12
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 15,
+       "station": "kiln"
+      },
+      {
+       "x": 1,
+       "y": 12,
+       "station": "kiln"
+      },
+      {
+       "x": 1,
+       "y": 9,
+       "station": "potter_wheel"
+      },
+      {
+       "x": 1,
+       "y": 6,
+       "station": "potter_wheel"
+      },
+      {
+       "x": 1,
+       "y": 3,
+       "station": "drying_rack"
+      },
+      {
+       "x": 4,
+       "y": 16,
+       "station": "drying_rack"
+      },
+      {
+       "x": 7,
+       "y": 16,
+       "station": "workbench"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_13",
+      "x": 50,
+      "y": 145,
+      "worldX": 818,
+      "worldY": 3473
+     },
+     "flat": "cn_fenshore_pottery_flat",
+     "otherRooms": [
+      "cn_fenshore_pottery_flat"
+     ],
+     "kilnYard": {
+      "kind": "kiln yard",
+      "cell": "w_ridgemere_3_13",
+      "x": 30,
+      "y": 139,
+      "width": 12,
+      "height": 8,
+      "worldX": 798,
+      "worldY": 3467,
+      "tiles": 60
+     }
+    }
+   ],
    "gardens": [
     {
      "kind": "kitchen garden",
@@ -1701,8 +2493,8 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 9,
-    "openTiles": 3850
+    "cottageLots": 8,
+    "openTiles": 9006
    }
   },
   {
@@ -1933,6 +2725,7 @@
      "guestBeds": 10
     }
    ],
+   "workshops": [],
    "gardens": [
     {
      "kind": "kitchen garden",
@@ -1998,7 +2791,7 @@
    "town": false,
    "hands": 0,
    "farms": [],
-   "beds": 25,
+   "beds": 29,
    "homes": [
     {
      "area": "cn_oakhaven_cottage_1",
@@ -2159,6 +2952,30 @@
       }
      ],
      "for": "The Felled Cedar"
+    },
+    {
+     "area": "cn_oakhaven_press_flat",
+     "name": "Oakhaven Press and Paper Mill, the keeper's rooms",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 22
+      },
+      {
+       "x": 3,
+       "y": 22
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 22
+      }
+     ],
+     "for": "Oakhaven Press and Paper Mill"
     }
    ],
    "market": [
@@ -2219,6 +3036,90 @@
      ]
     }
    ],
+   "workshops": [
+    {
+     "id": "cn_oakhaven_press",
+     "area": "cn_oakhaven_press",
+     "name": "Oakhaven Press and Paper Mill",
+     "kind": "press",
+     "crew": {
+      "keepers": 1,
+      "hands": 4
+     },
+     "work": [
+      {
+       "x": 2,
+       "y": 21
+      },
+      {
+       "x": 2,
+       "y": 18
+      },
+      {
+       "x": 2,
+       "y": 15
+      },
+      {
+       "x": 2,
+       "y": 12
+      },
+      {
+       "x": 2,
+       "y": 9
+      }
+     ],
+     "stations": [
+      {
+       "x": 1,
+       "y": 21,
+       "station": "paper_vat"
+      },
+      {
+       "x": 1,
+       "y": 18,
+       "station": "paper_vat"
+      },
+      {
+       "x": 1,
+       "y": 15,
+       "station": "paper_vat"
+      },
+      {
+       "x": 1,
+       "y": 12,
+       "station": "press"
+      },
+      {
+       "x": 1,
+       "y": 9,
+       "station": "printing_press"
+      },
+      {
+       "x": 1,
+       "y": 6,
+       "station": "printing_press"
+      },
+      {
+       "x": 1,
+       "y": 3,
+       "station": "scribe_desk"
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_3_4",
+      "x": 219,
+      "y": 201,
+      "worldX": 987,
+      "worldY": 1225
+     },
+     "flat": "cn_oakhaven_press_flat",
+     "otherRooms": [
+      "cn_oakhaven_press_flat"
+     ],
+     "wheel": false,
+     "water": 82
+    }
+   ],
    "gardens": [
     {
      "kind": "kitchen garden",
@@ -2266,8 +3167,8 @@
     }
    ],
    "roomToGrow": {
-    "cottageLots": 9,
-    "openTiles": 6330
+    "cottageLots": 12,
+    "openTiles": 12152
    }
   }
  ],

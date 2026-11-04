@@ -15,6 +15,10 @@ exactly as it was: this only adds, on the farms' sites, the community sites and 
   with the keeper's flat over it, an alehouse or inn, a bakehouse at the two biggest, kitchen gardens, a hen run and a
   goat paddock; streets onto the roads; a footpath to each of their farms, where the roads don't already go. The farms
   near Ridgemere have no community: their hands live in the city.
+- **Workshops** (doc 72, Phase 5): doc 71's country workshops in the communities the siting chose, each with its
+  keeper's flat over it (the soap boiler and chandler and a loom shed at Coldwater; a linen shed, a press and paper mill
+  and the village smithy at Larkfield; a pottery with its kiln yard at Fenshore and at Southmeadow; a press and paper
+  mill at Oakhaven), and two cottages more at Larkfield for their hands; laid last, on the lots left free.
 - **The contract** for placing NPCs (`manifest`, written to Data/Economy/communities.json by a write): for every farm its
   site, workplace, farmhouse and community; for every community its homes and beds, its market's workplaces and the
   posts they want, its gardens; doc 72's works (each site, its crew's home, the walk: a footpath from a community);
@@ -33,8 +37,8 @@ from pathlib import Path
 import numpy as np
 
 from . import field
-from .buildings import (STYLES, Building, Plan, flat_over, house, shop, shop_with_flat, stairs_between, tavern,
-                        works, works_kit)
+from .buildings import (STYLES, WORKS as KIT_WORKS, WORKS_STATIONS, WORKS_TRADE, Building, Plan, flat_over, house, laid_out, shop,
+                        shop_with_flat, stairs_between, tavern, works, works_kit)
 from .canvas import Canvas, half
 from .cities import fp
 from .site import Site, Lots, door_tile, footprint_size, STEP
@@ -205,6 +209,29 @@ WORKS_IDS = {
     'quarry_granite': 'quarry_granite', 'clay_mirebridge': 'clay_mirebridge', 'clay_fens': 'clay_fens',
 }
 WORK_SPOTS = 6           # A works' work spots: open ground nearest its centre, in its centre's cell.
+# Doc 72, Phase 5 (its Siting): the country workshops of doc 71 section 5, 29 workers, in the communities. Each is a
+# workshop with its keeper's flat over it (the keeper lives there; the hands in the community's cottages): (key, kind,
+# name, crew). The ids are fixed (`cn_<community>_<key>`; the economy's branch uses the same). Laid after the
+# communities and the works' footpaths, on the communities' free lots, so nothing laid before moves.
+WORKSHOPS = {
+    'coldwater': [('soapworks', 'soapworks', 'The Coldwater Boiling House', 4),
+                  ('weavers', 'weavers_wool', 'Coldwater Loom Shed', 5)],
+    'larkfield': [('weavers', 'weavers_linen', 'Larkfield Linen Shed', 5),
+                  ('press', 'press', 'Larkfield Press and Paper Mill', 5),
+                  ('smithy', 'smithy', 'Larkfield Smithy', 1)],
+    'fenshore': [('pottery', 'pottery', 'Fenshore Pottery', 2)],
+    'southmeadow': [('pottery', 'pottery', 'Southmeadow Pottery', 2)],
+    'oakhaven': [('press', 'press', 'Oakhaven Press and Paper Mill', 5)],
+}
+WORKSHOP_FLAT = 4        # The keeper's flat: the keeper now, the family later (as the stores' flats).
+# The cottages Phase 5 adds for its hands (six beds each). The community's cottages also hold its farms' hands, its works'
+# crews and its market hands without a flat (first come, first housed); Larkfield's four would be full to the last bed
+# with its 8 workshop hands, so it gets two more. The others keep at least a cottage's beds free: Coldwater 54 beds for
+# about 32, Southmeadow 18 for 10, Fenshore 18 for 12, Oakhaven 18 for 8.
+WORKSHOP_COTTAGES = {'larkfield': 2}
+# Where in the community each kind wants to stand: by the stream or the river (a paper mill's stamping wheel), on the
+# side towards its clay pit (a pottery), or near the green.
+CLAY_PITS = {'fenshore': 'clay_mirebridge', 'southmeadow': 'clay_fens'}
 FENSHORE = dict(id='fenshore', kind='town', name='Fenshore', near=(900, 3450), search=240, size=40,
                 plan='community (the fen farms\' hands)',
                 about='a hamlet on the fens\' last dry ground, among the eel creeks, the salterns, the dunes\' warren and '
@@ -452,6 +479,59 @@ def water_mill(rng, style, name):
     p = works_kit(rng, style, 'mill', 2)
     return one('works', name, style, p, f'{name}: a pair of millstones turned by the wheel on the river outside, flour '
                'in the air like fog and the farm\'s sacks waiting to be ground.')
+
+
+# -- Doc 72, Phase 5: the country workshops -------------------------------------------------------------------------
+# Their kinds in the building kit's tables (new names: nothing else builds them), laid out from their stations.
+for _kind, _size, _what, _stations, _trade in (
+        ('country_soapworks', (20, 12), 'soap coppers and candle kettles over slow fires, racks of dipped candles',
+         [('rendering_pot', 2), ('chandler_kettle', 2), ('drying_rack', 2), ('workbench', 1)], 'soap boiler'),
+        ('country_pottery', (18, 12), 'kilns along the back wall, potters\' wheels and shelves of drying pots',
+         [('kiln', 2), ('potter_wheel', 2), ('drying_rack', 2), ('workbench', 1)], 'potter'),
+        ('country_press', (24, 12), 'rag vats and a stamping mill at one end, the printing presses at the other',
+         [('paper_vat', 3), ('press', 1), ('printing_press', 2), ('scribe_desk', 1)], 'printer'),
+        ('village_smithy', (14, 10), 'a forge and its anvil, a grindstone and a bench of tongs and hammers',
+         [('forge', 1), ('grindstone', 1), ('workbench', 1)], 'smith')):
+    KIT_WORKS.setdefault(_kind, (_size, _what))
+    WORKS_STATIONS.setdefault(_kind, _stations)
+    WORKS_TRADE.setdefault(_kind, _trade)
+
+# kind: (the kit's layout, the workshop's own words for its floor)
+WORKSHOP_KINDS = {
+    'soapworks': ('country_soapworks', '{name}: a boiling house of soap coppers and candle kettles over slow fires, the '
+                  'farms\' tallow in barrels by the door, bars of soap curing on the racks and dipped candles hung by '
+                  'their wicks from the beams; lye and herbs on the shelf.'),
+    'weavers_wool': ('weaving_shed', '{name}: looms in two rows under the windows, spinning wheels by the hearth, and '
+                     'fleeces from the sheepwalks in bales along the wall; scarves folded on the bench for the carts.'),
+    'weavers_linen': ('weaving_shed', '{name}: looms in two rows under the windows, spinning wheels by the door and '
+                      'hanks of flax from the Longmead fields hung to the rafters; bolts of linen stacked on the bench.'),
+    'press': ('country_press', '{name}: rag vats and a treadle stamping mill at one end, sheets pressed between felts '
+              'and hung to dry; at the other end the printing presses, the type cases and stacks of new pamphlets.'),
+    'smithy': ('village_smithy', '{name}: a forge glowing under its hood, the anvil before it, a grindstone and a bench '
+               'of tongs and hammers; iron hoops, nails and cookpots hung by the door for the farms.'),
+    'pottery': ('country_pottery', '{name}: kilns along the back wall, potters\' wheels by the windows, the clay from the '
+                'pits in tubs and rows of new pots drying on the shelves; the kiln yard outside.'),
+}
+WORKSHOP_FLAT_PROSE = 'The keeper\'s rooms over the workshop: a hearth, a table and beds under the eaves, and the smell ' \
+                      'of the trade coming up the stairs.'
+
+
+def workshop(rng, style, kind, name, crew):
+    """A country workshop (doc 72, Phase 5): its stations laid out, a work spot for each of its crew, and its keeper's
+    flat over it (stairs at the side away from the door)."""
+    layout, prose = WORKSHOP_KINDS[kind]
+    s = STYLES[style]
+    (w, h), _ = KIT_WORKS[layout]
+    p = Plan(w, h, s['wall'], s['floor'], rng)
+    own = random.Random(f'{name}:flat')
+    up, (sx, sy) = flat_over(own, style, p, WORKSHOP_FLAT)
+    p.keep |= {(sx - 1, sy), (sx, sy - 1), (sx, sy + 1)}         # (the stairs kept clear of the stations)
+    for x, y in laid_out(p, layout)[:max(1, crew)]:
+        p.worker(x, y)
+    rooms = [p.room('', name, prose.format(name=name)),
+             up.room('flat', f'{name}, the keeper\'s rooms', WORKSHOP_FLAT_PROSE, z=1)]
+    more_work(rooms[0], crew)
+    return Building('works', name, style, fp(w, h), rooms, [(('', sx, sy), ('flat', sx, sy))])
 
 
 # A steading's buildings by kind: (key, builder, role, the building's word). The first is the keeper's home.
@@ -1019,6 +1099,7 @@ class Places:
         level = float(site.get('level', half(np.median(c.heights[dist < 20]))))
         fen = spec['id'] == 'fenshore'
         lift = .5 if fen else 0.0
+        info['level'], info['lift'] = level, lift
         if fen:
             # Fenshore stands on stilts: its boardwalks and houses may cross the bog pools (never a creek, river or the
             # sea), a half step over the hamlet's dry ground.
@@ -1146,6 +1227,146 @@ class Places:
         self.links += win.links
         return out
 
+    def stamp_workshops(self, spec, out):
+        """Doc 72, Phase 5: the community's workshops (WORKSHOPS) and the cottages for their hands (WORKSHOP_COTTAGES),
+        on its free lots (doors onto a street, a lane or a footpath), each where its trade wants it; a pottery's kiln yard
+        beside it. Adds them to the community's record (`out`) and counts its room to grow again."""
+        from .cities import grow
+        r = self.realm
+        info = self.communities[spec['id']]
+        site, core = info['site'], info['core']
+        cx, cy = site['x'], site['y']
+        R0 = 110
+        win = Window(r, cx - R0, cy - R0, 2 * R0 + 1, 2 * R0 + 1, f'cn_{spec["id"]}_', self.ids)
+        c = win.canvas
+        lx, ly = cx - win.x0, cy - win.y0
+        rng = random.Random(f'{SEED}:{spec["id"]}:phase5')
+        H, W = c.codes.shape
+        yy, xx = np.mgrid[0:H, 0:W]
+        dist = np.hypot(xx - lx, yy - ly)
+        box = np.s_[win.y0:win.y0 + H, win.x0:win.x0 + W]
+        water, hold = r.water[box], r.hold[box]
+        dry = ~water
+        if info['lift']:                                 # (Fenshore's stilts stand over the bog pools, as its houses)
+            water = water & ~(r.pool[box] & ~r.river[box] & ~r.creek[box] & ~r.sea[box])
+        style = spec['style']
+
+        def free_lots():
+            trees = np.isin(c.codes, [ord(ch) for ch in '$PY1Bo7?@2'])
+            building = self.R.SOLID[c.codes] & ~trees
+            fenced = np.isin(c.codes, [ord(ch) for ch in '|4'])
+            ways = np.isin(c.codes, [ord(ch) for ch in 'd/8_f'])
+            green = (np.abs(xx - lx) <= 9) & (np.abs(yy - ly) <= 7)
+            free = (dist < core + 30) & ~water & ~hold & ~grow(building | fenced, 2) & ~ways & ~green
+            return Lots(free, ways, gap=2)
+        lots = free_lots()
+        wanted = [(key, workshop(rng, style, kind, name, crew), kind, crew) for key, kind, name, crew in
+                  WORKSHOPS.get(spec['id'], [])]
+        first = len(out['homes'])
+        for i in range(WORKSHOP_COTTAGES.get(spec['id'], 0)):
+            n = first + i + 1
+            name = f'{spec["name"]} Cottage {n}' if style != 'fen' else f'{spec["name"]} Stilt House {n}'
+            wanted.append((f'cottage_{n}', cottage(rng, style, name), 'home', None))
+        out.setdefault('workshops', [])
+        # The nearest stream, river or shore (a paper mill wants its water: on its bank where the village reaches it,
+        # else on the village's side towards it; Larkfield's Long River and Oakhaven's Rainrun are 100-120 tiles out).
+        RW = 200
+        wbox = np.s_[max(0, cy - RW):cy + RW + 1, max(0, cx - RW):cx + RW + 1]
+        ys, xs = np.nonzero(r.water[wbox])
+        xs, ys = xs + max(0, cx - RW), ys + max(0, cy - RW)
+        for key, b, kind, crew in wanted:
+            fw, fh = b.footprint
+            near = (lx + rng.randint(-20, 20), ly + rng.randint(-16, 16)) if kind == 'home' else (lx, ly)
+            if kind in ('press', 'pottery'):
+                if kind == 'press' and len(xs):
+                    k = int(np.argmin(np.hypot(xs - cx, ys - cy)))
+                    tx, ty = int(xs[k]), int(ys[k])
+                else:
+                    pit = self.sites[CLAY_PITS[spec['id']]]
+                    tx, ty = pit['x'], pit['y']
+                ang = math.atan2(ty - cy, tx - cx)
+                near = (int(lx + math.cos(ang) * (core - 10)), int(ly + math.sin(ang) * (core - 10)))
+            spots = [(x0, y0, facing, w, h) for _, x0, y0, facing, w, h in lots.candidates(fw, fh, near, limit=6000)
+                     if lots.clear(x0, y0, w, h)]
+            if kind == 'press':                           # (its back wall on the water for the wheel, where a lot is)
+                spots = [s for s in spots[:400] if self.wheel_water(win, *s)] + spots
+            if kind == 'pottery':                         # (room beside it for its kiln yard)
+                spots = [s for s in spots[:400] if self.yard_beside(lots, dry, *s)] + spots
+            if not spots:
+                self.failed = (c, win)
+                raise SystemExit(f'{spec["name"]}: no room for {b.name}')
+            x0, y0, facing, w, h = spots[0]
+            ground = info['level'] + info['lift'] if info['lift'] else float(np.median(c.heights[y0:y0 + h, x0:x0 + w]))
+            ground = float(half(ground))
+            yard = self.yard_beside(lots, dry, x0, y0, facing, w, h) if kind == 'pottery' else None
+            rec = win.put(key, b, x0, y0, facing, spec['id'], ground, open_door=kind != 'home')
+            lots.take(x0, y0, w, h)
+            br = self.building_record(win, rec, 'home' if kind == 'home' else 'workshop', b)
+            if kind == 'home':
+                out['homes'].append(br)
+                continue
+            br.update(key=key, kind=kind, crew={'keepers': 1, 'hands': crew - 1})
+            if kind == 'press':
+                br['wheel'] = self.wheel_water(win, x0, y0, facing, w, h)
+                if br['wheel']:
+                    self.wheel(win, x0, y0, w, h, facing)
+                bx, by = win.world(x0 + w // 2, y0 + h // 2)
+                br['water'] = int(np.min(np.hypot(xs - bx, ys - by))) if len(xs) else None   # (tiles to the nearest)
+            if kind == 'pottery':
+                if yard:
+                    gx, gy, gw, gh = yard
+                    self.kiln_yard(c, gx, gy, gw, gh, ground)
+                    lots.take(gx, gy, gw, gh)
+                    br['kilnYard'] = self.garden_record(win, gx, gy, gw, gh, 'kiln yard')
+            out['workshops'].append(br)
+        # Room to grow, counted again as stamp_community counts it.
+        spare = free_lots()
+        n = 0
+        while n < 40:
+            spot = next(((x0, y0, w, h) for _, x0, y0, facing, w, h in spare.candidates(12, 9, (lx, ly), limit=3000)
+                         if spare.clear(x0, y0, w, h)), None)
+            if spot is None:
+                break
+            spare.take(*spot)
+            n += 1
+        out['roomToGrow'] = {'cottageLots': n, 'openTiles': int(spare.open.sum())}
+        win.back()
+        self.rooms += win.rooms
+        self.links += win.links
+
+    def wheel_water(self, win, x0, y0, facing, w, h):
+        """Water within three tiles behind a block's back wall (where `wheel` puts a mill's wheel)."""
+        bx, by, dx, dy = {'S': (x0 + w // 2, y0 - 1, 0, -1), 'N': (x0 + w // 2, y0 + h, 0, 1),
+                          'E': (x0 - 1, y0 + h // 2, -1, 0), 'W': (x0 + w, y0 + h // 2, 1, 0)}[facing]
+        S = self.realm.codes.shape[0]
+        for step in range(3):
+            wx, wy = win.world(bx + dx * step, by + dy * step)
+            if 0 <= wx < S and 0 <= wy < S and self.realm.water[wy, wx]:
+                return True
+        return False
+
+    @staticmethod
+    def yard_beside(lots, dry, x0, y0, facing, w, h, yw=12, yh=8):
+        """A kiln yard's rectangle on free dry ground against one side of a block (not its door's), or None."""
+        for gx, gy in ((x0 + w + 1, y0), (x0 - yw - 1, y0), (x0, y0 - yh - 1), (x0, y0 + h + 1)):
+            door_side = {'S': gy > y0 + h - 1, 'N': gy < y0, 'E': gx > x0 + w - 1, 'W': gx < x0}[facing]
+            if not door_side and lots.clear(gx, gy, yw, yh) and dry[gy:gy + yh, gx:gx + yw].all():
+                return gx, gy, yw, yh
+        return None
+
+    @staticmethod
+    def kiln_yard(c, x, y, w, h, level):
+        """A pottery's yard: packed earth inside a fence, two kilns, stacks of pots and a barrel of slip; a gap in the
+        fence on its south side."""
+        c.rect(x, y, w, h, '.', level)
+        c.outline(x, y, w, h, '|', level)
+        c.codes[y + h - 1, x + w // 2] = ord('.')
+        for kx in (x + 2, x + 5):
+            c.codes[y + 2, kx] = ord('{')
+        for sx in range(x + 2, x + w - 2, 3):
+            c.codes[y + h - 3, sx] = ord('x')
+        c.codes[y + 2, x + w - 3] = ord('O')
+
     def market_building(self, rng, style, kind, name, text, flat=True):
         if kind == 'store':
             rooms, stairs, (w, h) = shop_with_flat(rng, style, 'general', name, text, people=4)
@@ -1269,6 +1490,11 @@ class Places:
             walks[site_id] = self.lay_path(f'{com}:{site_id}', (csite['x'] + .5, csite['y'] + .5),
                                            (site['x'] + .5, site['y'] + .5), (csite.get('level'), site.get('level')),
                                            only(cheap, cinfo['zone']), held)
+        # Doc 72, Phase 5: the country workshops and their hands' cottages, on the lots still free once everything above
+        # is laid (so no house, garden, street or footpath before them moves).
+        for spec in COMMUNITIES:
+            if spec['id'] in WORKSHOPS or spec['id'] in WORKSHOP_COTTAGES:
+                self.stamp_workshops(spec, coms[spec['id']])
         self.farms_out, self.coms = farms_out, coms
         # The world's rooms and links: ours made again, the rest as they were.
         project['rooms'] = [x for x in project['rooms'] if not is_ours(x['id'])] + self.rooms
@@ -1323,7 +1549,7 @@ class Places:
         for com in c['communities']:
             for h in com['homes']:
                 doors.append((h['area'], h['door'], com['id']))
-            for m in com['market']:
+            for m in com['market'] + com['workshops']:
                 doors.append((m['area'], m['door'], com['id']))
         lost = [i for i, d, _ in doors if label_at(d) != main]
         out = [('the steadings\' and communities\' doors all reached from the city', not lost, ', '.join(lost[:10]))]
@@ -1346,6 +1572,17 @@ class Places:
         got = {com['id']: com['hands'] for com in c['communities']}
         out.append(('the hired hands where the user put them (21, 11, 8, 8, 5, Oakhaven none; 23 in Ridgemere)',
                     got == want and c['ridgemere']['hands'] == 23, f'{got}, Ridgemere {c["ridgemere"]["hands"]}'))
+        # Doc 72, Phase 5: the eight workshops by their fixed ids, each with its keeper's flat and a work spot for each of
+        # its crew (29 in all), in one walk with its community's homes.
+        shops = {w['id']: (com, w) for com in c['communities'] for w in com['workshops']}
+        fixed = {f'cn_{k}_{key}' for k, lst in WORKSHOPS.items() for key, *_ in lst}
+        short = [i for i, (com, w) in shops.items() if len(w['work']) < w['crew']['keepers'] + w['crew']['hands'] or
+                 not any(f['area'] == w['flat'] and f['capacity'] >= 1 for f in com['flats']) or
+                 label_at(w['door']) not in {label_at(h['door']) for h in com['homes']}]
+        crew = sum(w['crew']['keepers'] + w['crew']['hands'] for _, w in shops.values())
+        out.append(('the country workshops (doc 72, Phase 5): the eight, a keeper\'s flat and work for their 29 each',
+                    set(shops) == fixed and not short and crew == 29,
+                    f'{len(shops)} built, crew {crew}; short: {", ".join(short)}'))
         ids = [x['id'] for x in self.rooms + self.links]
         long_ = [i for i in ids if not re.fullmatch(r'[a-z][a-z0-9_-]{0,47}', i)]
         out.append(('the places\' ids are world ids (48 characters at most)', not long_ and len(ids) == len(set(ids)),
@@ -1402,6 +1639,19 @@ class Places:
                                       'beds': room['beds'], 'for': b['name']})
                     elif room['beds']:
                         market[-1]['guestBeds'] = len(room['beds'])
+            # Doc 72, Phase 5: the workshops, each with its keeper's flat (a flat `for` the workshop, as a store's).
+            workshops = []
+            for b in c.get('workshops', []):
+                rooms = b['rooms']
+                w = {'id': b['id'], 'area': rooms[0]['area'], 'name': b['name'], 'kind': b['kind'], 'crew': b['crew'],
+                     'work': rooms[0]['work'], 'stations': rooms[0]['stations'], 'door': b['door'],
+                     'flat': rooms[1]['area'], 'otherRooms': [x['area'] for x in rooms[1:]]}
+                for extra in ('wheel', 'water', 'kilnYard'):
+                    if extra in b:
+                        w[extra] = b[extra]
+                workshops.append(w)
+                flats.append({'area': rooms[1]['area'], 'name': rooms[1]['name'], 'capacity': len(rooms[1]['beds']),
+                              'beds': rooms[1]['beds'], 'for': b['name']})
             served = [f['farm'] for f in farms if f['community'] == spec['id']]
             coms.append({'id': spec['id'], 'name': spec['name'], 'site': spec['site'], 'centre': c['centre'],
                          'about': spec['about'], 'style': spec['style'], 'region': spec['id'],
@@ -1410,7 +1660,8 @@ class Places:
                          'town': False,
                          'hands': hands.get(spec['id'], 0), 'farms': served,
                          'beds': sum(h['capacity'] for h in homes) + sum(f['capacity'] for f in flats),
-                         'homes': homes, 'flats': flats, 'market': market, 'gardens': c['gardens'],
+                         'homes': homes, 'flats': flats, 'market': market, 'workshops': workshops,
+                         'gardens': c['gardens'],
                          'roomToGrow': c['roomToGrow']})
         return {
             'format': 'ratw-communities', 'version': 1,
@@ -1422,7 +1673,10 @@ class Places:
                      f'{HOUSEHOLD_MOST} to a home (HouseholdMost). An interior\'s region is its community '
                      '(`ridgemere` for the farms near the city), so a farm\'s hands and its keeper are "near" it. A '
                      'community\'s `town` (false) keeps it a plain place on a restart, never a town of its own '
-                     '(World::setupTowns), until a later step makes it one.',
+                     '(World::setupTowns), until a later step makes it one. A community\'s `workshops` (doc 72, Phase '
+                     '5) are its country workshops: the work room (`area`, `work` spots, `stations`), the `crew` doc 71 '
+                     'gives it, and its keeper\'s `flat` (also in `flats`, `for` the workshop); their hands live in the '
+                     'community\'s `homes`.',
             'householdMost': HOUSEHOLD_MOST,
             'workLabels': {
                 'about': 'The game knows a shop or works by its keeper\'s work label (Data/Items/businesses.json `match`, '
@@ -1439,7 +1693,6 @@ class Places:
                                   'keepers\' families live at the steadings.'},
             'communities': coms,
             'farms': farms,
-            # Doc 72's works (places only: no work rooms, posts or goods yet): the site, its crew's home, the walk.
             # Doc 72's works: the site, its crew's home, the walk; a built works' id in country_farms.json and its work
             # spots out of doors (no work room: its posts' work_area is the cell, work_x/work_y a spot).
             'works': [{'site': k, 'name': self.sites[k]['name'], 'kind': self.sites[k]['kind'], 'community': com,
@@ -1488,6 +1741,18 @@ def previews(realm, folder):
     for com in c['communities']:
         x, y = com['centre']['x'], com['centre']['y']
         R.picture(realm.codes, realm.h, box=(x - 90, y - 90, 180, 180), scale=4, relief=1.0).save(folder / f'{com["id"]}.png')
+    # Doc 72, Phase 5: each workshop close up (six pixels a tile), in ../workshops/.
+    shops = folder.parent / 'workshops'
+    shops.mkdir(parents=True, exist_ok=True)
+    for com in c['communities']:
+        for w in com.get('workshops', []):
+            d = w['door']
+            R.picture(realm.codes, realm.h, box=(d['worldX'] - 35, d['worldY'] - 35, 70, 70), scale=6,
+                      relief=1.0).save(shops / f'{w["id"]}.png')
+        if com.get('workshops'):
+            x, y = com['centre']['x'], com['centre']['y']
+            R.picture(realm.codes, realm.h, box=(x - 90, y - 90, 180, 180), scale=4,
+                      relief=1.0).save(shops / f'{com["id"]}.png')
     farms = {f['site']: f for f in c['farms']}
     for site in PREVIEW_STEADINGS:
         d = farms[site]['door']

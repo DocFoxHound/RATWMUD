@@ -1779,44 +1779,44 @@
   }
  ],
  "tiles": {
-  "!": 1292559,
-  "\"": 863253,
-  "#": 19201,
+  "!": 1292520,
+  "\"": 862897,
+  "#": 19546,
   "$": 308536,
   "%": 15933,
-  "&": 1043247,
+  "&": 1043149,
   "(": 681730,
   ")": 99720,
   "*": 596887,
-  "+": 370,
-  ",": 2409246,
+  "+": 380,
+  ",": 2408680,
   "-": 512370,
-  ".": 59944,
+  ".": 60054,
   "/": 40416,
-  "0": 1973555,
+  "0": 1973518,
   "1": 158803,
-  "2": 16320,
-  "3": 64809,
+  "2": 16319,
+  "3": 64771,
   "4": 1056,
   "5": 3814,
   "7": 18927,
   "8": 4273,
   ":": 264,
-  ";": 1595171,
+  ";": 1595160,
   "<": 90,
   ">": 820,
   "?": 21234,
   "@": 49297,
-  "B": 145208,
-  "D": 199680,
-  "E": 409699,
+  "B": 145175,
+  "D": 199610,
+  "E": 409693,
   "F": 50,
   "G": 295,
   "H": 4057,
   "I": 71,
   "J": 9329,
-  "L": 5814,
-  "O": 111,
+  "L": 6432,
+  "O": 113,
   "P": 466411,
   "Q": 1500,
   "S": 390,
@@ -1824,10 +1824,10 @@
   "V": 660,
   "W": 1945305,
   "X": 303267,
-  "Y": 231357,
+  "Y": 231356,
   "Z": 15917,
-  "[": 2351,
-  "]": 1088,
+  "[": 2417,
+  "]": 1125,
   "^": 735,
   "_": 15748,
   "d": 43564,
@@ -1838,11 +1838,12 @@
   "r": 396517,
   "s": 163373,
   "u": 20,
-  "w": 171413,
-  "x": 99,
-  "|": 2916,
+  "w": 171405,
+  "x": 105,
+  "{": 4,
+  "|": 2986,
   "}": 2,
-  "~": 326985
+  "~": 326981
  },
  "cliffs": 15641,
  "reachedShare": 0.9801,
@@ -1943,9 +1944,14 @@
    "detail": ""
   },
   {
-   "check": "the hired hands where the user put them (21, 10, 8, 8, 6, Oakhaven none; 23 in Ridgemere)",
+   "check": "the hired hands where the user put them (21, 11, 8, 8, 5, Oakhaven none; 23 in Ridgemere)",
    "ok": true,
-   "detail": "{'coldwater': 21, 'larkfield': 10, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 6, 'oakhaven': 0}, Ridgemere 23"
+   "detail": "{'coldwater': 21, 'larkfield': 11, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 5, 'oakhaven': 0}, Ridgemere 23"
+  },
+  {
+   "check": "the country workshops (doc 72, Phase 5): the eight, a keeper's flat and work for their 29 each",
+   "ok": true,
+   "detail": "8 built, crew 29; short: "
   },
   {
    "check": "the places' ids are world ids (48 characters at most)",
@@ -1960,19 +1966,19 @@
  ],
  "timings": {
   "city": 0.0,
-  "sea": 11.4,
-  "elevation": 0.9,
-  "climate": 0.0,
-  "drainage": 0.7,
-  "heights": 25.0,
-  "water": 16.9,
+  "sea": 12.4,
+  "elevation": 1.0,
+  "climate": 0.1,
+  "drainage": 0.8,
+  "heights": 49.5,
+  "water": 18.2,
   "settle": 9.2,
-  "ground": 48.7,
-  "sites": 3.5,
+  "ground": 49.5,
+  "sites": 3.4,
   "roads": 5.6,
-  "places": 4.5,
+  "places": 5.4,
   "cells": 2.9,
-  "checks": 5.6
+  "checks": 5.7
  },
  "places": {
   "communities": [
@@ -1984,10 +1990,10 @@
      "y": 1796
     },
     "hands": 21,
-    "beds": 62,
+    "beds": 70,
     "roomToGrow": {
-     "cottageLots": 6,
-     "openTiles": 4602
+     "cottageLots": 4,
+     "openTiles": 11486
     },
     "homes": 9,
     "market": [
@@ -2004,13 +2010,13 @@
      "x": 1676,
      "y": 2380
     },
-    "hands": 10,
-    "beds": 31,
+    "hands": 11,
+    "beds": 55,
     "roomToGrow": {
-     "cottageLots": 8,
-     "openTiles": 5702
+     "cottageLots": 4,
+     "openTiles": 12308
     },
-    "homes": 4,
+    "homes": 6,
     "market": [
      "Larkfield Stores",
      "The Sheaf",
@@ -2026,10 +2032,10 @@
      "y": 3348
     },
     "hands": 8,
-    "beds": 25,
+    "beds": 29,
     "roomToGrow": {
-     "cottageLots": 6,
-     "openTiles": 5738
+     "cottageLots": 5,
+     "openTiles": 12127
     },
     "homes": 3,
     "market": [
@@ -2046,10 +2052,10 @@
      "y": 3476
     },
     "hands": 8,
-    "beds": 25,
+    "beds": 29,
     "roomToGrow": {
-     "cottageLots": 9,
-     "openTiles": 3850
+     "cottageLots": 8,
+     "openTiles": 9006
     },
     "homes": 3,
     "market": [
@@ -2065,7 +2071,7 @@
      "x": 3292,
      "y": 2932
     },
-    "hands": 6,
+    "hands": 5,
     "beds": 22,
     "roomToGrow": {
      "cottageLots": 6,
@@ -2086,10 +2092,10 @@
      "y": 1220
     },
     "hands": 0,
-    "beds": 25,
+    "beds": 29,
     "roomToGrow": {
-     "cottageLots": 9,
-     "openTiles": 6330
+     "cottageLots": 12,
+     "openTiles": 12152
     },
     "homes": 3,
     "market": [
