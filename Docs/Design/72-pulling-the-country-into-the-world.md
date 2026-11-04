@@ -2252,3 +2252,24 @@ the treasury's levers untouched. Year 3 a day unless said; country6b's beside it
 together hold ~700p less at the end than the one purse. Next (the user's call): the grants after the land rents (or the
 Crown granting from its float, not tonight's spare alone), and a levy on a sister estate's spare over its keep (the wharf's
 first-spring ~900p, Timberland's ~300p) before any estate buys; then a 3-year run again.
+
+### estates6b's 3-year run (2026-11-04)
+
+The estates split with the Crown's levy (8a99e6f), build 61's export, against country6b (the one purse) and estates6
+(the split without the levy); year 3, a day:
+
+- **Every estate's posts paid every night of the run** (estates6: 55 nights short, 53 in the first spring); the
+  Country's 824p of 824p.
+- **The Crown**: rents 499p, its posts 94p, grants 385p (the wharf 277p, Greatly 78p, Fell 31p), the levy in 9.7p
+  (Timberland's spare), bought 30p; its purse 1,227, 1,216, 1,212p at the years' ends (estates6: 1,144, 945, 514p),
+  least 751p in year 3. Level.
+- **The estates together** at the years' ends 1,716, 1,683, 1,589p (the one purse: 2,039, 1,702, 1,643p); the wharf's
+  own purse runs near 0 (its keep is granted nightly), Timberland's 273p, Greatly's 52p, Fell's 25p.
+- **The rest as country6b**: money conserved (63,695p), residents 559 to 771, 679 of 689 posts held, 311 unplaced;
+  hunger 4 days, 7 hours at most (5, 7), households short 0.20 (0.38); the treasury over its float every night (least
+  1,838p in year 3; 1,637p), the wage support 315p (318p), the toll 1,667p; crews 4,833 of 4,850p; Oakhaven's press
+  94.8%, Southmeadow's pottery 88.7%, orchards 2, 4, 5 97.2-98.0% as before. The basket 54p (48p), patrons 13.6p
+  (14.6p), the Houses' tables 9.3p (7.1p).
+
+**Verdict: stable.** Report `artifacts/economy/r2/estates6b-report.md`. The run was restarted by hand at day 33 after
+its agent ended (the same command, from the start).
