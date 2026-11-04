@@ -918,4 +918,53 @@ stone, clay, sand, oats, salt or oak bark refused**, milk's 37 in the month (cou
 patch is a first spring's (shelves still filling: berries, garlic, cider and resin marked supply-bound) and is **not to
 be applied**; the next 3-year run's is.
 
-Next: the 3-year full run of Phases 1-3 (section 5's gates, the user's go-ahead first); Phase 4 with the second payer.
+Merged into `ridgemere2` (`ctest` in `build-core` 78 of 78; `test_realm2` with `RATW_SLOW=1` against DEV, read only,
+29 of 29; `test_econ_report`, `test_farms_summary`, `test_country_industry`, `test_item_catalog` pass).
+
+### Phases 1-3's 3-year run (country3, 2026-11-03)
+
+The user's go-ahead. On `artifacts/economy/r2/export60` (no map change since build 60), `--simulate 6 26298 --farms 0
+--deterministic --threads 4 --economy-level full` (an area every 28 days: the fuel's from day 168, the stone's from day
+196). Report `artifacts/economy/r2/country3-report.md`, patch `country3.patch.json`, log `country3.out`. Years 2-3 a
+day unless said; country2's beside it.
+
+Section 5's checks:
+
+- **Money conserved** every day; **nobody hungry** (the hungriest 3 hours; residents 559 to 736, births 54, deaths 55).
+- **The builders' draws filled**: no draw of stone, clay or sand refused in the whole run (nor limestone or lime, still
+  the Country's). But all three **pile**: grown 5-12% over sold (stone 28.3 to ~25.4, clay 61.4 to ~55, sand 27.0 to
+  23.7), their stock at the end 2,347, 5,744 and 2,978 and rising (the 5% slack on goods that never spoil).
+- **The works pay their crews**: the five fuel works and both clay pits every day (no support); **the quarry on 729 of
+  899 days (81%)**: 30,467p of 32,364p, the treasury's support 1,636p, its rent 1.0p a day. Its takings 34.8p against
+  36p of wages (the smoke's 41.7p): the stone piling, its price fell. **Fails the 99% gate.**
+- **Rents booked**: House Greatly 33.4p a day (each pit 16.7p, the quarry 1p; the smoke's 35p was the quarry's first
+  month), House Timberland 146p (country2 189p: the Rainwood cut's third hand back costs 10p a day more, and the timber's
+  and firewood's prices fell as they piled).
+- **The Country pays its posts: fails.** Every day of years 1-2, then **47 days of year 3 unpaid** (8,964p in all,
+  from day 776; its purse to 12p). Posts-first held it through years 1-2 (purse least 480p; country2 missed
+  6 days from day 230), but the intake is now under the posts: year 2 its sales 684p + rents 184p = 868p, year 3 639p + 175p =
+  **814p against 824p**; its basket fell to 43p and then 15p a day (country2 189p, 177p). Of its lost sales (818p to
+  661p): stone 37p, clay 40p and sand 18p (95p, for 33p of Greatly's rent), iron bars 26p (the smithy's draws, its till
+  short more often), linen cloth 14p (the flax cut).
+- **The treasury over its 200p float every night** (least 1,277p, on day 0); 1,299 to 6,031p. The wage support **322p a
+  day** (country2 248p): the inns 58,792p short over the run (46,512p), the ironworks 30,928p (24,688p), the foundry
+  16,384p (now in the list), the quarry's 1,636p.
+- **The fuel never short for a household**: peat refused to them on 23 days of year 1's autumn (days 214-242, 1,293
+  pieces, the cutting's opening stock gone as in country2; they all took firewood instead), none after. **Peat now
+  sold over grown** (120.5 grown to ~122 sold a day; its stock 1,294, 1,011, 438 at the years' ends, least 60): the 8%
+  cut overshot, and the patch asks spring and autumn back up (99.5 / 102.4 / 105.5 / 203.5). **Firewood, timber and oak
+  bark now pile** (firewood to 23,512, timber to 12,769, oak bark to 3,399): the Rainwood cut's third hand is back
+  (country2's patch was sized on two of its three), with oak bark's 20% on top. Charcoal still piles, slower (7.4 grown
+  to ~5.2 sold, to 1,691; country2 9.8 to 7.1, to 2,380).
+- **Oats, milk, salt**: **oats** never refused (country2 17,102 pieces; the farms' stock level at 2,300-3,000);
+  **salt** never refused (8,724) but now piling (81 grown to ~68 sold, to 5,873); **milk** still short, 7,528 pieces on
+  616 days (10,983 on 649), ~10 a day spoiled (Restday's), supply-bound in spring, summer and autumn.
+- **Works vacancies refilled**: no post of any farm or works empty more than 10 days (the Rainwood cut 9; country2 655).
+
+**Verdict: not stable enough for Phase 4.** The Country's own intake no longer covers its posts in year 3, before Phase
+4 takes another ~237p a day of it; the quarry can't pay its crew. Carried over: (1) **the second payer** (the user's
+question 2, section 3: the Phase 3 row's 1,103p was ~260p over what the run measured) is now needed before Phase 4,
+not with it; (2) the quarry: a crew of 1 + 1, or its stone's yield to what sells (the patch's), or its takings by the
+mason's price; (3) the patch for the piling non-perishables (stone, clay, sand, salt, timber, firewood, oak bark,
+charcoal, flax) and peat back up: `country3.patch.json` (`wholeSeasons`: milk spring-autumn, wine autumn); (4) milk
+(cheese and butter, the user's); (5) the city makers' levers (carry-over 4, unchanged; their support up again).
