@@ -716,9 +716,16 @@ class Society
     // Country's countryReserve; split, each estate its share by its posts' wages) and countryPostsDays nights of its
     // posts; the Crown's also what the others lack of their own nights (its grants to come). `owed`: countryPostsOwed().
     std::int64_t countryKeep(const std::string& fund, const std::map<std::string, std::int64_t>& owed) const;
+    // What a Country or estate purse may spend now (its basket, the Houses' tables, the patrons): what it holds over its
+    // keep; split (doc 72, after estates6), never more than all the estates together hold over the one purse's keep (the
+    // Country's reserve and countryPostsDays nights of all their posts), so that together they buy no more than the one
+    // purse would have, one estate's spare never spent while a sister estate lacks its posts.
+    std::int64_t countrySpare(const std::string& fund, const std::map<std::string, std::int64_t>& owed) const;
     // The estates' night, before the wages (doc 72, Phase 6): open their purses (the first time, the Country's money split
-    // between them by their posts' wages), and the Crown's grants to those that can't pay tonight's posts; with the rule
-    // off, any estate's money back in the Country's purse.
+    // between them by their posts' wages); the Crown's levy on the others' spare (over their keep, up to what the Crown
+    // lacks of its own; and, the Crown short of tonight's posts and grants, on what they hold over tonight's posts: after
+    // estates6); and the Crown's grants to those that can't pay tonight's posts; with the rule off, any estate's money
+    // back in the Country's purse.
     void settleEstates();
     // The households that buy together (doc 68, 3): by home, joined by kin (a child under 16, a spouse), by a key each.
     // (Public for world_check's --economy-detail, which reads it.)
@@ -1018,6 +1025,7 @@ class Society
         struct Estate
         {
             std::int64_t rents = 0, grantsIn = 0, grantsOut = 0, postsOwed = 0, postsPaid = 0, spent = 0, moved = 0;
+            std::int64_t levyIn = 0, levyOut = 0;   // (The Crown's levy on the others' spare: in, the Crown's; out, each's.)
             int posts = 0;
         };
         std::map<std::string, Estate> estates;

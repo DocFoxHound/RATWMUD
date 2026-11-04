@@ -585,7 +585,7 @@ def country_lines(econ):
 def estates_lines(econ):
     """The Houses' estates (doc 72, Phase 6), a day over the days they were open: what came in from each House's lands
     (the works', the workshops' and the farms' rents; the Country's own sales are the wharf's, Grayrock's), the Crown's
-    grants in and out, its posts paid of owed (and how many), what it bought, its purse first, last and least, and the
+    grants in and out, the Crown's levy on the others' spare (in, the Crown's; out, each's: after estates6), its posts paid of owed (and how many), what it bought, its purse first, last and least, and the
     nights a post went short."""
     days = [r['estates'] for r in econ if r.get('estates')]
     if not days:
@@ -599,12 +599,13 @@ def estates_lines(econ):
         named = (open_[0].get('house') or e)
         purses = [x.get('purse', 0) for x in open_]
         rows.append([named if named.startswith('the ') else f'House {named}', f'{mean("posts"):.0f}', f'{mean("rents"):.0f}',
-                     f'{mean("grants_in"):.0f}', f'{mean("grants_out"):.0f}', f'{mean("posts_paid"):.0f}/{mean("posts_owed"):.0f}',
+                     f'{mean("grants_in"):.0f}', f'{mean("grants_out"):.0f}', f'{mean("levy_in"):.0f}/{mean("levy_out"):.0f}',
+                     f'{mean("posts_paid"):.0f}/{mean("posts_owed"):.0f}',
                      sum(1 for x in open_ if x.get('posts_paid', 0) < x.get('posts_owed', 0)), f'{mean("spent"):.0f}',
                      f'{purses[0]} -> {purses[-1]} (least {min(purses)})'])
     return ([f'The Houses\' estates (a day over the {n} days they were split; the Country\'s own sales are House Grayrock\'s, '
              'which runs the wharf):', ''] +
-            table(['estate', 'posts', 'rents in', 'grants in', 'grants out', 'posts paid/owed', 'nights short', 'bought', 'purse'], rows)
+            table(['estate', 'posts', 'rents in', 'grants in', 'grants out', 'levy in/out', 'posts paid/owed', 'nights short', 'bought', 'purse'], rows)
             + [''])
 
 

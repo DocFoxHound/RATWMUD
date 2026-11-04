@@ -206,11 +206,13 @@ std::string Society::houseFund(const std::string& house) const
 
 std::map<std::string, std::int64_t> Society::countryPostsOwed() const
 {
+    // (As payWages: never a post whose holder has died or holds no purse, after estates6, which counted them.)
     std::map<std::string, std::int64_t> owed;
     for (const auto& p : positions_)
         if (const auto held = state_.careers.positions.find(p.id);
-            held != state_.careers.positions.end() && !held->second.holder.empty())
-            if (const auto pay = payOf(p); pay.kind == "country" && pay.wage > 0)
+            held != state_.careers.positions.end() && !held->second.holder.empty() && !dead_.count(held->second.holder) &&
+            account(held->second.holder))
+            if (const auto pay = payOf(p); pay.kind == "country" && pay.wage > 0 && account(pay.payer))
                 owed[pay.payer] += pay.wage;
     return owed;
 }
@@ -238,6 +240,26 @@ std::int64_t Society::countryKeep(const std::string& fund, const std::map<std::s
             if (const auto f = estateFund(other); &other != estate && account(f))
                 keep += std::max<std::int64_t>(0, days * of(f) - cash(f));   // (What it will grant them.)
     return keep;
+}
+
+std::int64_t Society::countrySpare(const std::string& fund, const std::map<std::string, std::int64_t>& owed) const
+{
+    auto spare = cash(fund) - countryKeep(fund, owed);
+    if (spare <= 0 || !estatesOn() || !estateOfFund(fund))
+        return spare;
+    // Split, all the estates together over the one purse's keep (estates6: each estate spending what it held over its own
+    // keep while a sister estate was short, the patrons 32p a day against the one purse's 15p, the estates together 929p
+    // at the end against its 1,643p).
+    std::int64_t all = 0, posts = 0;
+    for (const auto& e : items::country().estates)
+        if (const auto f = estateFund(e); account(f))
+        {
+            all += cash(f);
+            if (const auto found = owed.find(f); found != owed.end())
+                posts += found->second;
+        }
+    const std::int64_t days = std::max(1, rule("countryPostsDays"));
+    return std::min(spare, all - authored_.economy.countryReserve - days * posts);
 }
 
 void Society::settleEstates()
@@ -283,13 +305,10 @@ void Society::settleEstates()
                         loopToday_.estates[wharf->id].moved -= share;
                 }
     }
-    // The Crown's grants (its levy on the realm's land): to each estate that can't pay tonight's posts, what it lacks, out
-    // of what the Crown holds over its own posts tonight; short of the whole, each the same share of what it lacks.
     const auto crown = std::find_if(estates.begin(), estates.end(), [](const items::Estate& e) { return e.grants; });
     if (crown == estates.end())
         return;
     const auto from = estateFund(*crown);
-    const auto can = cash(from) - owed[from];
     std::vector<std::pair<const items::Estate*, std::int64_t>> shorts;
     std::int64_t wanted = 0;
     for (const auto& e : estates)
@@ -299,6 +318,40 @@ void Society::settleEstates()
                 shorts.push_back({&e, lack});
                 wanted += lack;
             }
+    // The Crown's levy on the other estates (after estates6, whose Crown granted only what it held over its own posts from
+    // yesterday's land rents, the night's coming in after the wages: in the first spring Timberland, Greatly and Fell were
+    // paid about half on 53 nights while the wharf held ~900p over its posts and spent it on the basket). First what they
+    // hold over their own keep, up to what the Crown lacks of its own (its reserve's share, its posts' nights and the
+    // others' lacks: its grants to come); then, the Crown still short of tonight's posts and grants, what they hold over
+    // tonight's posts. Each estate the same share of what it can give; recorded. So every post is paid whenever the
+    // estates together hold tonight's posts, as the one purse paid them.
+    const auto levy = [&](std::int64_t wantedNow, const std::function<std::int64_t(const std::string&)>& over, const char* why) {
+        if (wantedNow <= 0)
+            return;
+        std::vector<std::pair<const items::Estate*, std::int64_t>> givers;
+        std::int64_t can = 0;
+        for (const auto& e : estates)
+            if (const auto f = estateFund(e); &e != &*crown && account(f))
+                if (const auto o = over(f); o > 0)
+                {
+                    givers.push_back({&e, o});
+                    can += o;
+                }
+        for (const auto& [e, o] : givers)
+            if (const auto coins = can <= wantedNow ? o : o * wantedNow / can;
+                coins > 0 && shift(estateFund(*e), from, "", 0, coins, std::string(why) + e->name))
+            {
+                loopToday_.estates[e->id].levyOut += coins;
+                loopToday_.estates[crown->id].levyIn += coins;
+            }
+    };
+    levy(countryKeep(from, owed) - cash(from), [&](const std::string& f) { return cash(f) - countryKeep(f, owed); },
+         "the Crown's levy on an estate's spare: ");
+    levy(owed[from] + wanted - cash(from), [&](const std::string& f) { return cash(f) - owed[f]; },
+         "the Crown's levy for tonight's posts: ");
+    // The Crown's grants (its levy on the realm's land): to each estate that can't pay tonight's posts, what it lacks, out
+    // of what the Crown holds over its own posts tonight; short of the whole, each the same share of what it lacks.
+    const auto can = cash(from) - owed[from];
     if (can <= 0 || wanted <= 0)
         return;
     for (const auto& [e, lack] : shorts)
@@ -1298,7 +1351,7 @@ void Society::countryBuys(int hod)
         {
             const auto keep = countryKeep(buyer, owedAll);
             auto* estate = buyers.size() > 1 ? &loopToday_.estates[estateOfFund(buyer) ? estateOfFund(buyer)->id : buyer] : nullptr;
-            auto spare = cash(buyer) - keep;
+            auto spare = countrySpare(buyer, owedAll);   // (Split, the estates together over the one purse's keep.)
             if (spare <= 0)
                 continue;
             if (&market == &cfg.markets.front() && !loopToday_.housesLuxuriesDone.count(buyer))
@@ -1316,7 +1369,7 @@ void Society::countryBuys(int hod)
             if (estate)
                 estate->spent += spent;
             if (hod == ShopShut - 1)
-                loopToday_.countryUnspent += std::max<std::int64_t>(0, cash(buyer) - keep);
+                loopToday_.countryUnspent += std::max<std::int64_t>(0, countrySpare(buyer, owedAll));
         }
     }
 }
@@ -1383,7 +1436,8 @@ std::int64_t Society::housesLuxuries(const std::string& fund, std::int64_t spare
         return 0;                                   // (None on an open shelf this hour: the next.)
     loopToday_.housesLuxuriesDone.insert(fund);
     std::int64_t spent = 0;
-    for (int k = 0; k < most; ++k)
+    // (luxuryHousesMost the Houses' tables' together, the estates split or not: estates6's each its own.)
+    for (int k = loopToday_.luxuriesHouses; k < most; ++k)
     {
         till.clear();
         const auto cost = cheapest(till, item);
@@ -2300,7 +2354,7 @@ void Society::patronsBuy(int hod, std::int64_t day)
                     subsidyRoom();                  // (Works out tonight's public wages, if not yet.)
                     return cash(who) - TreasuryFloat - std::max<std::int64_t>(0, treasuryOwed_);
                 }
-                return cash(who) - countryKeep(who, owed);
+                return countrySpare(who, owed);     // (Split, never past the estates' keep together: after estates6.)
             };
             const auto spare = [&]() { return spareOf(payer); };
             auto& spent = city ? loopToday_.patronsTreasury : loopToday_.patronsCountry;
