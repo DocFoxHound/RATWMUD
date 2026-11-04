@@ -39,7 +39,7 @@ test('a change is sent only when it changes something', () => {
 
 test('the comforts: the world\'s own, or city_loop.json\'s', () => {
     const file = {comfortsAbove: null, comfortsShare: null, fileAbove: 60, fileShare: 10};
-    assert.match(comfortsText(file), /more than 60p a head spends 10% .* \(country\.json's\)/);
+    assert.match(comfortsText(file), /more than 60p a head spends 10% .* \(city_loop\.json's\)/);
     assert.match(comfortsText({...file, comfortsAbove: 40}), /more than 40p a head spends 10%/);
     assert.equal(comfortOf('', 100), null, 'empty: back to city_loop.json\'s');
     assert.equal(comfortOf('25', 100), 25);
@@ -56,7 +56,9 @@ const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {alm
         surplus: 1, surplusKeep: 4000, surplusWorks: 20, surplusAlms: 80, surplusAlmsTo: 40,
         stockPrices: 1, stockPriceBand: 25, stockPriceStep: 10, shelfFollow: 1, shelfDays: 7, shelfCover: 125, shelfGrow: 25,
         wageDrift: 1, wageDriftDays: 28, wageDriftSpare: 50, wageDriftMost: 12, wageDriftHandMost: 12, wageDriftFloor: 7, treasuryDrift: 1,
-        treasuryTarget: 5500, treasuryBand: 15, treasuryDays: 182, treasuryJudgeDays: 28, tollStep: 5, tollDriftMost: 5, almsDriftMost: 2},
+        treasuryTarget: 5500, treasuryBand: 15, treasuryDays: 182, treasuryJudgeDays: 28, tollStep: 5, tollDriftMost: 5, almsDriftMost: 2,
+        wharfValve: 1, wharfFee: 10, wharfKeepDays: 28, wharfKeepLeast: 20, wharfImportScale: 100, wharfTakeScale: 100, wharfExportMost: 300,
+        wharfCreditMost: 10000, wharfInjectADay: 0, wharfTakeADay: 0, wharfActionMost: 2000},
     serviceList: [trim]};
 
 test('a rule is the world\'s own or city_loop.json\'s, and a change is sent only when it changes something', () => {
@@ -90,7 +92,7 @@ test('a service: city_loop.json\'s until changed, one of its three at a time', (
     assert.deepEqual(serviceValue(rules, trim), {on: true, price: 1, every: 4});
     assert.equal(serviceChange(rules, trim, 'price', 1), null);
     assert.deepEqual(serviceChange(rules, trim, 'on', false), {set: {groom_and_trim: {on: false}}});
-    assert.match(serviceText(rules, trim), /barber, 1p, about once every 4 days .*\(country\.json's\)/);
+    assert.match(serviceText(rules, trim), /barber, 1p, about once every 4 days .*\(city_loop\.json's\)/);
     const changed = {...rules, services: {groom_and_trim: {on: false, price: 2, every: 1}}};
     assert.deepEqual(serviceValue(changed, trim), {on: false, price: 2, every: 1});
     assert.match(serviceText(changed, trim), /2p, about once every 1 day a .* \(off\)$/);
