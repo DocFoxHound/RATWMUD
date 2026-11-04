@@ -1464,7 +1464,8 @@ std::int64_t Society::housesLuxuries(const std::string& fund, std::int64_t spare
 std::int64_t Society::basketBuys(const std::string& fund, const std::vector<std::pair<const std::string*, double>>& basket,
                                  double budget, std::int64_t keep, int hod,
                                  const std::vector<std::pair<std::string, const items::Business*>>& open, const char* saleKind,
-                                 const char* usedKind, std::int64_t* carriageOut, bool workshopsFirst, bool wharfFallback)
+                                 const char* usedKind, std::int64_t* carriageOut, bool workshopsFirst, bool wharfFallback,
+                                 bool subsidised)
 {
     // A basket of the city's goods (doc 68, 2: the Country's; doc 71, 2.6: a farm's): `budget` pennies this hour shared
     // over its goods by their shares, among those its makers' open shops hold now, a piece at a time to a seller picked
@@ -1554,14 +1555,21 @@ std::int64_t Society::basketBuys(const std::string& fund, const std::vector<std:
         for (const auto& [till, count] : lots)
         {
             int q = std::min(count, 99);
-            const auto carriage = carriageSplit(fund, *w.item, q, false).first;
-            if (cash(fund) - price * q - carriage < keep)
+            // (The Wharf's export basket, unsubsidised: the beyond pays all its carriage, doc 73, 4.5.)
+            const auto split = [&](int pieces, bool commit) {
+                return subsidised ? carriageSplit(fund, *w.item, pieces, commit)
+                                  : std::pair<std::int64_t, std::int64_t>{carriageOn(fund, *w.item, pieces, commit), 0};
+            };
+            if (cash(fund) - price * q - split(q, false).first < keep)
                 q = int(std::max<std::int64_t>(0, (cash(fund) - keep) / std::max<std::int64_t>(1, price + 1)));
+            // (Its carriage within `keep` too: the goods and their carriage together never take `fund` under it.)
+            while (q > 0 && cash(fund) - price * q - split(q, false).first < keep)
+                --q;
             if (q < 1 || !sale(*till, fund, *w.item, q, price, saleKind))
                 continue;
             consume(fund, *w.item, q, usedKind);
             // Carriage out: the buyer pays it, less the treasury's share (doc 68, 5 and 6).
-            if (const auto [own, city] = carriageSplit(fund, *w.item, q, true); own + city > 0)
+            if (const auto [own, city] = split(q, true); own + city > 0)
             {
                 const auto carter = carters();
                 if (carter == CarriageFund && !account(CarriageFund))

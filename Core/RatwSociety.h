@@ -1314,11 +1314,12 @@ class Society
     void farmsBuy(int hourOfDay);
     bool farmSwitchTill(const std::string& till) const;
     // `wharfFallback` (doc 73, 5: a farm's basket): a good on the Wharf's imports that no open maker holds is ordered from
-    // the Wharf (orderFromWharf) for its share.
+    // the Wharf (orderFromWharf) for its share. `subsidised` false (the Wharf's export basket, doc 73, 4.5: the beyond pays
+    // its carriage out): no treasury share of the carriage.
     std::int64_t basketBuys(const std::string& fund, const std::vector<std::pair<const std::string*, double>>& basket, double budget,
                             std::int64_t keep, int hourOfDay, const std::vector<std::pair<std::string, const items::Business*>>& open,
                             const char* saleKind, const char* usedKind, std::int64_t* carriageOut, bool workshopsFirst = false,
-                            bool wharfFallback = false);
+                            bool wharfFallback = false, bool subsidised = true);
     // The Wharf (RatwWharf.cpp, Docs/Design/73-the-wharf.md). The basket of the city's exports as the farms have moved it
     // (the first market's, blended toward country_farms.json's wharfBasket: the estates' and the Wharf's own).
     std::vector<std::pair<const std::string*, double>> wharfBasketNow() const;

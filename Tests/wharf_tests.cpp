@@ -830,6 +830,50 @@ void theRecords()
 }
 } // namespace
 
+
+void theExportBasket()
+{
+    // The export basket (doc 73, 4.5): the credit buys the city's exports from the makers' open shops, minted as spent,
+    // the credit down by exactly what the beyond paid in; its carriage the beyond's alone (no treasury share); never a
+    // good the Wharf landed today (the beyond never buys back what it sold the realm).
+    const auto open = [](AuthoredRoster& r) {
+        r.economy.rules["wharfValve"] = 1;
+        r.economy.wharfReserve = 0;
+    };
+    const auto exported = [](const std::vector<EconomyEntry>& journal) {
+        std::map<std::string, int> goods;
+        for (const auto& e : journal)
+            if (e.kind == "for beyond the realm" && e.quantity > 0)
+                goods[e.item] += e.quantity;
+        return goods;
+    };
+    auto s = city(open);
+    expect(s.moveWharfCredit(2000, "test", "the export basket's credit").ok, "credit to spend");
+    s.takeJournal();
+    const auto& book = s.state().loop.wharf;
+    const auto credit = book.credit, in = book.in, out = book.out, moved = book.moved;
+    run(s, 1 + 9.9 / 24, 1 + 11.1 / 24);
+    const auto journal = s.takeJournal();
+    const auto goods = exported(journal);
+    expect(!goods.empty() && s.loopToday().wharfBasket > 0, "the beyond bought the city's goods: " + std::to_string(s.loopToday().wharfBasket) + "p");
+    expect(book.credit - credit == (book.out - out) - (book.in - in) + (book.moved - moved),
+           "the credit down by what the beyond paid in, up by what it was paid");
+    expect(s.conserved(), "conserved");
+    // A good landed today is not bought back: the same city, the same hours, one of those goods first landed by the Wharf.
+    const auto good = goods.begin()->first;
+    auto again = city(open);
+    expect(again.moveWharfCredit(2000, "test", "").ok && again.openAccount("stores:test") &&
+               again.shift("treasury", "stores:test", "", 0, 2000, "test purse"),
+           "the same credit, and a store to order for");
+    const auto landed = again.orderFromWharf("stores:test", good, 1, "an order from the Wharf");
+    expect(landed.ok && again.loopToday().wharfImported.count(good), good + " landed today: " + landed.message);
+    again.takeJournal();
+    run(again, 1 + 9.9 / 24, 1 + 11.1 / 24);
+    const auto after = exported(again.takeJournal());
+    expect(!after.count(good), good + " not bought for beyond the realm the day it was landed");
+    expect(again.conserved(), "conserved");
+}
+
 int main()
 {
     try
@@ -850,6 +894,7 @@ int main()
         theWharfLands();
         anOrderByWagon();
         theCreditMoved();
+        theExportBasket();
         theRecords();
     }
     catch (const std::exception& error)

@@ -552,3 +552,26 @@ map change, no NPC made, no post added; the treasury's levers untouched; cheese 
 5. **The DM's action on a scratch server**: `Game::applyDmActions` doesn't run on a scratch server (`options_.scratch`), so
    Phase 3's check there can't be done; the action is tested in Core (`moveWharfCredit`) and in the DM's queue.
 6. Not built (Phase 4): per-world per-good lists (migration 0061), distance in carriage, wagons seen, a buffer stock.
+
+### The review (2026-11-04)
+
+Two defects fixed, both in the export basket (4.5); everything else checked held (the money's legs booked once each,
+the refunds, the caps, the stable price, the orders, the rename and its aliases, the DM action, the records):
+
+- **A good both ways in a day.** The export basket bought from the makers' shelves goods the Wharf had landed that day
+  (the smoke landed copper and tin bars and iron hoops, all in the basket; aqua vitae is on the imports list and in the
+  basket too), so the beyond bought back what it had sold the realm. Now the basket skips a good on the imports list
+  (on) and any good the Wharf landed today. `wharf_tests` `theExportBasket` (buckles, without the fix, bought back).
+- **The treasury paid the beyond's carriage.** `basketBuys` charged the export basket's carriage out through
+  `carriageSplit`, so the treasury paid its 25% subsidy on the beyond's own purchases (4.5: "carriage out by the
+  beyond"). `basketBuys` takes `subsidised` (false for the export basket only). And its carriage now stays inside
+  `keep` for every basket (a cut-down lot was checked against its price only, so the carriage could take a purse under
+  its keep: for the export basket, into Grayrock's own coins, the credit then lowered by more than was minted).
+
+Left as they are (noted): the farms' baskets' Wharf fallback never fires with the shipped data (no good of the farms'
+basket is on the imports list, and a good no area grows isn't offered by the fallback); for an area good it would land
+without looking at the farms' stores. The takes stop the day's run at the first good the credit can't fit, not trying
+cheaper goods after it. A good can't be both imported and taken (dropped from both at load): sheepskin, copper and tin
+ore are on the imports list (off), so to take their piles they must move to `takes`. Not re-run: the smoke's numbers
+are before these fixes (the basket a little smaller on the days the Wharf lands one of its goods, the treasury a little
+fuller).

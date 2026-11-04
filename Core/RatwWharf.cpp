@@ -339,14 +339,23 @@ void Society::wharfExports(int hod)
     const auto budget = room * 100 / (100 + fee) / std::max(1, ShopShut - hod);
     if (budget < 1)
         return;
-    const auto basket = wharfBasketNow();
+    // Never a good both ways (doc 73, 10, "double-routing"): not one on its imports list (on), nor one it has landed
+    // today (copper and tin bars, iron hoops: the realm short of it), so the beyond never buys back what it sold the realm.
+    auto basket = wharfBasketNow();
+    basket.erase(std::remove_if(basket.begin(), basket.end(),
+                                [&](const auto& b) {
+                                    const auto base = items::baseOf(*b.first);
+                                    const auto landed = loopToday_.wharfImported.find(base);
+                                    return wharfImports(base) || (landed != loopToday_.wharfImported.end() && landed->second.pieces > 0);
+                                }),
+                 basket.end());
     if (basket.empty())
         return;
     const auto keep = cash(WharfFund);
     wharfMint(budget, "from beyond the realm: the export basket");
     std::int64_t carriage = 0;
     const auto spent = basketBuys(WharfFund, basket, double(budget), keep, hod, openShops(), "for beyond the realm",
-                                  "shipped beyond the realm", &carriage);
+                                  "shipped beyond the realm", &carriage, false, false, false);
     if (const auto left = cash(WharfFund) - keep; left > 0)
     {
         // (Unspent, back beyond the realm: nothing minted lingers. Counted off the beyond's pennies in, not out.)
