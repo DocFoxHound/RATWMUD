@@ -251,8 +251,8 @@
     "pawnbroker": ["ear_ring", "charm", "brass_bracelet", "mirror", "cookpot", "lock", "draw_saw", "blanket", "wool_shawl"]
   },
   "supplies": {
-    "stall": ["flour", "oats", "milk", "apples"],
-    "provisioner": ["flour", "oats", "milk", "raw_meat", "fish", "apples", "firewood", "peat"],
+    "stall": ["flour", "oats", "milk", "butter", "cheese", "apples"],
+    "provisioner": ["flour", "oats", "milk", "butter", "cheese", "raw_meat", "fish", "apples", "firewood", "peat"],
     "general": ["flour", "oats", "firewood", "peat", "straw", "wool", "linen_cloth", "cord", "tallow", "clay", "nails", "planks", "plaster", "whitewash", "glass_beads", "charm", "fine_soap", "perfume_cedar", "pamphlet", "yarrow", "willow_bark", "thyme", "comfrey", "valerian", "chamomile", "garlic", "wormwood", "lavender", "mint"],
     "builders_yard": ["cut_stone", "bricks", "roof_tiles", "lime", "mortar", "plaster", "whitewash", "paint", "planks", "beam", "nails", "glass_pane"],
     "butcher": ["raw_meat", "bones", "tallow", "leather"],

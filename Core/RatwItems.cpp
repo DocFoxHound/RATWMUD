@@ -178,6 +178,17 @@ void readFarms(Catalog& c, const json::Value& file)
             for (const auto& [item, values] : x.object("table").fields())
                 if (std::array<double, 4> v{}; farm.yield.count(item) && four(values, v))
                     farm.table[item] = v;
+            for (const auto& m : x.array("makes"))
+            {
+                FarmDef::Make make;
+                make.good = m.string("good");
+                make.from = m.string("from");
+                make.in = std::clamp(int(m.number("in", 1)), 1, 1000);
+                make.share = std::clamp(int(m.number("share", 100)), 0, 100);
+                make.store = std::clamp(int(m.number("store", 0)), 0, 100000);
+                if (known(make.good) && farm.yield.count(make.from) && make.good != make.from && make.store > 0)
+                    farm.makes.push_back(std::move(make));
+            }
             area.farms.push_back(std::move(farm));
         }
         f.areas.push_back(std::move(area));

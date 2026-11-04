@@ -41,10 +41,12 @@ class Fixture:
         f.write(json.dumps(dict({'day': n, 'season': season, 'year_day': n + 1, 'names': fresh}, **row)) + '\n')
 
 
-def write_run(root, more=None, yields=None, areas=None, econ_more=None, second=None):
+def write_run(root, more=None, yields=None, areas=None, econ_more=None, second=None, makes=None):
     meta = {'meta': {'format': 'ratw-econ-full', 'version': 1, 'price_band': 25, 'columns': {},
                      'farms': {'grain_farm_1': {'area': 'grain', 'yield_scale': 1.0,
                                                 'yield': yields or {'flour': [10, 10, 10, 10]}}}}}
+    if makes:
+        meta['meta']['farms']['grain_farm_1']['makes'] = makes
     if second:
         meta['meta']['farms']['grain_farm_2'] = {'area': 'grain', 'yield_scale': 1.0, 'yield': second}
     if areas:
@@ -226,6 +228,27 @@ class ReportTests(unittest.TestCase):
             self.assertEqual(json.loads(farms.read_text())['areas'][0]['farms'][0]['yield']['milk'], [6.3, 7, 7, 7],
                              'whole in spring, half way in the seasons not bound')
             self.assertEqual(y['flour'][0], round(10 + .5 * (patch['farms']['grain_farm_1']['flour'][0] - 10), 2), 'half way')
+
+    def test_what_a_farm_makes_of_its_spare(self):
+        # Doc 72, after country3b (the user's decision): a dairy's milk past keeping made into cheese (the farm_good row's
+        # `used`, its ninth column; an older file's eight still read). The cheese, a good of its area no farm grows as a
+        # yield, is had, so not named among the ungrown; the report says what was made, of what, and what spoiled.
+        def more(n):
+            return {'farm_good': [['grain_farm_1', 'milk', 10, 6, 0, 0, 0, 0, 4], ['grain_farm_1', 'cheese', 1, 0, 5 + n, 0, 0, 0, 0]],
+                    'short': [['till:job:cook', 'cheese', 'shop:provisioner', 1, 3, '']]}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, more, yields={'flour': [10, 10, 10, 10], 'milk': [10, 10, 10, 10]},
+                             areas={'grain': ['flour', 'milk', 'cheese', 'butter']}, makes={'cheese': 'milk'})
+            out = root / 'report.md'
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            text = out.read_text()
+            self.assertIn('Made at the farms of what would have spoiled', text)
+            self.assertIn('cheese 1.0 made of milk (sold 0.0, 6 held at the end)', text)
+            self.assertIn('milk 4.0 used, 0.0 spoiled', text)
+            self.assertNotIn('cheese (grain)', text, 'made, so not among the goods no farm grows')
+            patch = json.loads((root / 'report.md.patch.json').read_text())
+            self.assertNotIn('cheese', patch['farms'].get('grain_farm_1', {}), 'no yield of it to patch')
 
     def test_the_normal_level_alone(self):
         with tempfile.TemporaryDirectory() as d:
