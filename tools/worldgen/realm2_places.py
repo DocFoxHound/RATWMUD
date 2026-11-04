@@ -197,6 +197,12 @@ WORKS = {
     'charcoal_greenholt': 'larkfield', 'peat_fens': 'fenshore', 'quarry_granite': 'ridgemere',
     'clay_mirebridge': 'fenshore', 'clay_fens': 'southmeadow',
 }
+# Each built works' id in country_farms.json (doc 72, Phase 2: the fuel area's works; the quarry and the pits are Phase 3's).
+WORKS_IDS = {
+    'timber_rainwood': 'logging_rainwood', 'timber_oakhaven': 'logging_oakhaven', 'coppice_rainwood': 'coppice_rainwood',
+    'charcoal_greenholt': 'coppice_greenholt', 'peat_fens': 'peat_fens',
+}
+WORK_SPOTS = 6           # A works' work spots: open ground nearest its centre, in its centre's cell.
 FENSHORE = dict(id='fenshore', kind='town', name='Fenshore', near=(900, 3450), search=240, size=40,
                 plan='community (the fen farms\' hands)',
                 about='a hamlet on the fens\' last dry ground, among the eel creeks, the salterns, the dunes\' warren and '
@@ -597,7 +603,8 @@ class Places:
         self.sites = {s['id']: s for s in realm.sites}
         # Each farm site's crew (country_farms.json), so its workplace has a place for each of them to work.
         cf = json.loads((ROOT / 'Data' / 'Economy' / 'country_farms.json').read_text(encoding='utf-8'))
-        self.crew = {FARMS[f['id']]: f['crew']['keepers'] + f['crew']['hands'] for a in cf['areas'] for f in a['farms']}
+        self.crew = {FARMS[f['id']]: f['crew']['keepers'] + f['crew']['hands'] for a in cf['areas'] if not a.get('works')
+                     for f in a['farms']}
 
     # -- Fenshore's ground ------------------------------------------------------------------------------------------
     def place_fenshore(self):
@@ -1269,6 +1276,29 @@ class Places:
         self.contract = self.manifest()
         return self.contract
 
+    def work_spots(self, site_id):
+        """A works' place of work out of doors (doc 72): its centre's cell, and the WORK_SPOTS tiles of open ground nearest
+        its centre in that cell (at least 3 apart), each local to the cell."""
+        s = self.sites[site_id]
+        cx, cy = s['x'], s['y']
+        CELL = self.R.CELL
+        X, Y = cx // CELL, cy // CELL
+        codes = self.realm.codes
+        cand = []
+        for dy in range(-10, 11):
+            for dx in range(-10, 11):
+                x, y = cx + dx, cy + dy
+                if x // CELL == X and y // CELL == Y and open_ground(codes[y, x]):
+                    cand.append((dx * dx + dy * dy, x - X * CELL, y - Y * CELL))
+        cand.sort()
+        picked = []
+        for _, x, y in cand:
+            if all(abs(x - a) + abs(y - b) >= 3 for a, b in picked):
+                picked.append((x, y))
+            if len(picked) == WORK_SPOTS:
+                break
+        return {'area': self.R.cell_id(X, Y), 'name': s['name'], 'work': [{'x': x, 'y': y} for x, y in picked]}
+
     # -- the checks (realm2's, with the realm's walk) -------------------------------------------------------------
     def checks(self, lab, main):
         """(name, ok, detail) for each: the doors reached, each farm's in one walk with its community, the homes' sizes,
@@ -1328,6 +1358,8 @@ class Places:
         farms = []
         hands = {}
         for area in cf['areas']:
+            if area.get('works'):
+                continue                             # (Doc 72's works: `works`, below.)
             for f in area['farms']:
                 site_id = FARMS[f['id']]
                 st = self.farms_out[site_id]
@@ -1406,11 +1438,21 @@ class Places:
             'communities': coms,
             'farms': farms,
             # Doc 72's works (places only: no work rooms, posts or goods yet): the site, its crew's home, the walk.
+            # Doc 72's works: the site, its crew's home, the walk; a built works' id in country_farms.json and its work
+            # spots out of doors (no work room: its posts' work_area is the cell, work_x/work_y a spot).
             'works': [{'site': k, 'name': self.sites[k]['name'], 'kind': self.sites[k]['kind'], 'community': com,
                        'centre': {'x': self.sites[k]['x'], 'y': self.sites[k]['y']}, 'size': self.sites[k]['size'],
-                       'walk': self.walks.get(k)} for k, com in WORKS.items()],
+                       'walk': self.walks.get(k), 'works': WORKS_IDS.get(k),
+                       'workplace': self.work_spots(k) if k in WORKS_IDS else None} for k, com in WORKS.items()],
             'paths': self.paths,
         }
+
+
+def open_ground(code):
+    """A tile one may stand and work on: open ground, grass or a low feature, not solid and not a way."""
+    import terrain_catalog
+    t = terrain_catalog.BY_CODE.get(chr(int(code)))
+    return bool(t) and t['kind'] in ('floor', 'grass', 'feature') and not t['solid'] and not t['way']
 
 
 def is_ours(ident):

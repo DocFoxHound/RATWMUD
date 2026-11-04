@@ -62,8 +62,12 @@ int Society::farmOfPost(const Position& p, bool* keeper) const
     const auto at = farmWorkplace_.find(p.work.cell);
     if (at == farmWorkplace_.end() || at->second >= farms_.size())
         return -1;
+    const auto& f = farms_[at->second];
+    const bool keeps = p.title == farmLabel(f, 0);
+    if (f.outdoors && !keeps && p.title != farmLabel(f, 1))
+        return -1;                                  // (Another's post in a works' cell out of doors: doc 72.)
     if (keeper)
-        *keeper = p.title == farmLabel(farms_[at->second], 0);
+        *keeper = keeps;
     return int(at->second);
 }
 
@@ -272,6 +276,18 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                 best = spots.front();
         return best;
     };
+    // Where a works' crew that lives in the city is near (doc 72): its work is out of doors in the realm's own region, so
+    // the city's homes are judged from the city's farms' work rooms (their region the city's), as those farms' hands are.
+    std::string cityWork;
+    for (const auto& place : people.farms)
+        if (!place.works && place.community == "ridgemere" && !place.workplaces.empty() && world.place(place.workplaces[0].area))
+        {
+            cityWork = place.workplaces[0].area;
+            break;
+        }
+    const auto nearCity = [&](const items::FarmPlace& site) {
+        return site.works && !cityWork.empty() ? cityWork : site.workplaces[0].area;
+    };
     std::set<std::string> markets;                  // Communities whose farms are staffed (now or before).
     // Two passes over the farms whose posts are wanted: every keeper (and family) first, so the most experienced of a
     // trade keep its farms; then the hands. What each still wants is kept between them.
@@ -289,7 +305,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         const auto* site = people.farm(f.def->id);
         const auto kind = people.kinds.find(f.def->kind);
         if (!site || kind == people.kinds.end() || !farmAreaOn(f.area) || !account(f.till) || !account(f.crew) ||
-            !world.place(site->home.area) ||
+            (!site->works && !world.place(site->home.area)) ||
             std::any_of(site->workplaces.begin(), site->workplaces.end(), [&](const items::PlaceRoom& w) { return !world.place(w.area); }))
             continue;
         const auto& k = kind->second;
@@ -339,9 +355,34 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         };
         // Its keeper: of its trades, the most experienced (the oldest) of working age, with family among the unplaced
         // where one has; then the fallback trades. With them, their family at the farmhouse (nobody else lives there):
-        // one of working age and of the farm's trades works as one of its hands.
-        const bool farmhouseEmpty = living[site->home.area] == 0;
-        if (pass == 0 && needKeepers > 0)
+        // one of working age and of the farm's trades works as one of its hands. A works (doc 72) has no farmhouse: its
+        // keeper, of those with no family among the unplaced first (doc 72, 4.8), comes alone and lives with the hands.
+        const bool farmhouseEmpty = !site->works && living[site->home.area] == 0;
+        if (pass == 0 && needKeepers > 0 && site->works)
+        {
+            const auto score = [&](const ResidentSpec& r) {
+                return std::make_tuple(wordsIn(r.workLabel, k.words) > 0 ? 1 : 0, familyOf(r.id).empty() ? 1 : 0, r.age);
+            };
+            const auto adult = [](const ResidentSpec& r) { return r.age >= 18; };
+            const auto* owner = choose(k.trades, f.def->id + "|keeper", score, adult);
+            if (!owner)
+                owner = choose(people.fallback, f.def->id + "|keeper", score, adult);
+            if (owner)
+            {
+                const auto ownerSpec = *owner;
+                const auto cls = classOf(ownerSpec.id).empty() ? std::string("lower") : classOf(ownerSpec.id);
+                const auto home = community ? communityHome(*community, {}) : cityHome(cls, nearCity(*site), ownerSpec.id);
+                if (!home.cell.empty())
+                {
+                    place(ownerSpec, home, workSpot(0), farmLabel(f, 0), "civilian", people.farmStart, people.farmEnd, share, f.crew,
+                          f.def->id, "keeper");
+                    --needKeepers;
+                    if (!community)
+                        members[home.cell].push_back(ownerSpec.id);
+                }
+            }
+        }
+        if (pass == 0 && needKeepers > 0 && !site->works)
         {
             const auto score = [&](const ResidentSpec& r) {
                 return std::make_tuple(wordsIn(r.workLabel, k.words) > 0 ? 1 : 0, farmhouseEmpty && !familyOf(r.id).empty() ? 1 : 0, r.age);
@@ -392,7 +433,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                 break;
             const auto spec = *hand;
             const auto work = site->workplaces[second ? 1 : 0].area;
-            const auto home = community ? communityHome(*community, {}) : cityHome("lower", work, spec.id);
+            const auto home = community ? communityHome(*community, {}) : cityHome("lower", second ? work : nearCity(*site), spec.id);
             if (home.cell.empty())
                 break;                              // (No room for them: not today.)
             hire(spec, second, home, std::string("hand ") + (community ? community->id : "ridgemere"));

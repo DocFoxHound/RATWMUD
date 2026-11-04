@@ -1603,6 +1603,8 @@ EconomyResult Society::drawFromStore(const std::string& keeper, const std::strin
     if (subsidy > 0 && shift("treasury", carter, "", 0, subsidy, "carriage subsidy"))
         loopToday_.subsidy += subsidy;
     drawnToday_[till] += cost + carriage;
+    if (area < 0)
+        loopToday_.countrySales += cost - toll;     // (The Country's own goods, delivered: the sea trade's, doc 72's report.)
     if (const auto* group = seasonGroup(item))
     {
         if (area < 0)

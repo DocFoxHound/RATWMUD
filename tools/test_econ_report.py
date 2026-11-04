@@ -135,6 +135,37 @@ class ReportTests(unittest.TestCase):
             self.assertEqual(patch['grain_farm_1']['meal'][0], 2.1)
             self.assertEqual(patch['grain_farm_2']['meal'][0], 2.1)
 
+    def test_the_works_and_the_country(self):
+        # Doc 72: a works' area (the fuel's) marked in the farms' table with its rent, each works by name with its House;
+        # the Country by its parts from the economy lines: its goods' sales, the estates' rents by House, its posts by rule.
+        def more(n):
+            return {'farm': [['peat_fens', 'fuel', 52, 70, 26, 26, 0, 0, 0, 0, 0, 0, 44]],
+                    'farm_good': [['peat_fens', 'peat', 120, 110, 300, 0, 0, 0]]}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, more, econ_more={'country': 900, 'country_sales': 600, 'country_rents': 44,
+                                                    'country_rents_by_house': {'Timberland': 44}, 'country_posts_owed': 800,
+                                                    'country_posts_paid': 790,
+                                                    'country_posts_by_rule': {'the sea trade': 440, "the Houses' people": 350},
+                                                    'country_posts_held': {'the sea trade': 55, "the Houses' people": 44},
+                                                    'country_spent': 300})
+            full = Path(str(econ) + '.full.jsonl.gz')
+            lines = gzip.open(full, 'rt').read().splitlines()
+            meta = json.loads(lines[0])
+            meta['meta']['farms']['peat_fens'] = {'area': 'fuel', 'yield_scale': 1.0, 'house': 'Timberland',
+                                                  'yield': {'peat': [110, 110, 110, 110]}}
+            meta['meta']['works_areas'] = ['fuel']
+            with gzip.open(full, 'wt') as f:
+                f.write('\n'.join([json.dumps(meta)] + lines[1:]) + '\n')
+            out = root / 'report.md'
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            text = out.read_text()
+            self.assertIn('| fuel (works) | 1 | 2 | 70 | 52/52 | 0 | 0 | 44 |', text, 'the works\' area and its rent a day')
+            self.assertIn('| peat_fens | Timberland | 2 | 70.0 | 52/52 | 0 | 44.0 | 52 |', text, 'the works by name')
+            self.assertIn("the estates' rents 44p (House Timberland 44p)", text)
+            self.assertIn('its goods to the shops 600p', text)
+            self.assertIn("its posts 790p of 800p owed (the sea trade 440p, 55 posts, the Houses' people 350p, 44 posts)", text)
+
     def test_the_normal_level_alone(self):
         with tempfile.TemporaryDirectory() as d:
             econ = write_run(Path(d))

@@ -267,9 +267,10 @@ class Economy:
 
     @staticmethod
     def farms_view(economy, supported) -> dict:
-        """The Country's food farms (doc 71, 4): this world's changes ({} for none) and country_farms.json's defaults
-        beside them: the schedule and the wages, and each area with its farms (their crews, wages, floats, crews' purses,
-        baskets and yields, pieces a day at each season's middle day)."""
+        """The Country's food farms (doc 71, 4) and works (doc 72: an area's `works`, its House, which their rent goes
+        to): this world's changes ({} for none) and country_farms.json's defaults beside them: the schedule and the wages,
+        and each area with its farms or works (their crews, wages, floats, crews' purses, baskets and yields, pieces a day
+        at each season's middle day)."""
         f = map_editor.farms_file()
         d = f.get('defaults') or {}
         areas = []
@@ -281,7 +282,9 @@ class Economy:
                           'keeper': (a.get('wages') or {}).get('keeper'), 'hand': (a.get('wages') or {}).get('hand'),
                           'price': a.get('price', 'season'), 'priceFactor': a.get('priceFactor'),
                           'revenueADay': list(a.get('revenueADay') or []),
+                          'works': bool(a.get('works')), 'house': a.get('house') or '',
                           'farms': [{'id': x['id'], 'kind': x.get('kind', ''), 'region': x.get('region', ''),
+                                     'house': x.get('house') or a.get('house') or '',
                                      'keepers': (x.get('crew') or {}).get('keepers', 1), 'hands': (x.get('crew') or {}).get('hands', 0),
                                      'keeper': (x.get('wages') or {}).get('keeper'), 'hand': (x.get('wages') or {}).get('hand'),
                                      'reserve': x.get('reserve', 0), 'purse': x.get('purse', 0), 'basketADay': x.get('basketADay', 0),

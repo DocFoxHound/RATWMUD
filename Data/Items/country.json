@@ -13,28 +13,33 @@
   "wages": {
     "rules": [
       {
+        "name": "the Crown's and the offices' heads",
         "payer": "treasury",
         "wage": "keeper",
         "about": "The heads of the Crown's household and of the city's offices (doc 68, Progress, \"First fixes\"): the Queen, the King's daughter, the City Office's head; and (\"Trades\": the user, 2026-10-31, office heads get a head's pay) the King, the two chancellors, the royal secretary, the Crown's treasurer, the magistrate, the keeper of the rolls (the Records Office), the collector of customs, the warden of the Market Hall, the abbot, the keepers of the Washhouse and the Bathhouse, and the Watch's commander (a guard: the watch's post, at this wage). Paid by the treasury at a keeper's wage (a head's), not a clerk's.",
         "words": ["the queen", "the king's daughter", "running the city office", "reigning", "chancellor", "royal secretary", "the crown's treasurer", "hearing cases", "keeping the rolls", "collecting the crown's customs", "warden of the market", "abbot", "keeping the washhouse", "keeping the bathhouse", "commanding the watch"]
       },
       {
+        "name": "the Houses' heads",
         "payer": "country",
         "wage": "keeper",
         "about": "The Minor Houses' family members who run a House's own affairs (doc 68, Progress, \"First fixes\"): a House's lending, the Grayrock wharf; and the heads of the Houses' offices (\"Trades\"): the harbourmaster of the Wharf Office, the Counting House's overseer. Kept by their House's estates in the Country (as the Houses' other people), at a keeper's wage.",
         "words": ["lending", "overseeing the grayrock wharf", "harbourmaster", "overseeing the counting house"]
       },
       {
+        "name": "the sea trade",
         "payer": "country",
         "about": "Carriage by sea and the Country's warehouses: the ships' unloading, the cranes, the carrying up from the wharf, the stores' tallies.",
         "words": ["unloading ships", "working the cranes", "carrying from", "tallying in the", "keeping the iron store", "keeping the long store", "keeping the new store", "keeping the wharf's books", "wharf office"]
       },
       {
+        "name": "the Houses' people",
         "payer": "country",
         "about": "The Great and Minor Houses' people, kept by their estates in the Country: heads, stewards, servants, the Houses' own trades.",
         "words": ["ruling house", "keeping greatly house", "keeping grayrock hall", "keeping timberland court", "stewarding", "serving at greatly house", "serving in the hall", "in service to the", "keeping the fell", "running the house's", "on house business", "keeping the greatly stables", "counting house", "at home in the heights", "reading in the gardens", "walking the gardens", "visiting the sick"]
       },
       {
+        "name": "public posts",
         "payer": "treasury",
         "about": "Public posts: the Crown and the Council, the courts, the offices, the Records Office, the customs, the lamps, the markets' hands, the washhouse and baths, the teachers, the abbey, the cathedral and the chapels.",
         "words": ["reigning", "the crown's", "royal secretary", "herald", "usher", "the king's household", "keeping the chambers", "chancellor", "the council", "hearing cases", "pleading cases", "keeping order in court", "magistrate", "clerking", "copying", "keeping the rolls", "records office", "customs", "couriers", "lamps", "warden of the market", "the watch", "minding the shop door", "portering", "crying wares", "washhouse", "bathhouse", "teaching", "abbey", "abbot", "cathedral", "chapel", "priest", "deacon", "sexton", "choir"]

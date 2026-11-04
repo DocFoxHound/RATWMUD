@@ -8,7 +8,10 @@
 // households, counted apart; the wages and the treasury's support for a short farm; the farms' basket; spoiling; the
 // Country's basket moving to its re-weighted one; the records and their refusals, applied live; a save, and a restart's
 // areas on from its first second; the preserver selling on the drying houses' stores before making its own; vegetables
-// gone from Ridgemere 2.0's economy and the inns' stew of meat and bones.
+// gone from Ridgemere 2.0's economy and the inns' stew of meat and bones. The works (Docs/Design/72-pulling-the-country-
+// into-the-world.md, Phases 0 and 2): the woods' and the peat's, paying their crews and their rent to their House's estate
+// (the Country's purse, booked by House), buying no basket, the Country supplying their goods again when they are off;
+// and the households' fuel, firewood or peat, whichever their shops hold.
 //
 // The catalogue is the real Data (RATW_SOURCE_DIR), country_farms.json with it.
 #include "RatwCalendar.h"
@@ -26,6 +29,7 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -159,11 +163,11 @@ int held(const Society& s, const std::string& account, const std::string& item)
 void theDefaults()
 {
     const auto& f = items::farms();
-    expect(f.areas.size() == 6, "six food areas: " + std::to_string(f.areas.size()));
+    expect(f.areas.size() == 7, "six food areas and the fuel's works (doc 72): " + std::to_string(f.areas.size()));
     int farms = 0, keepers = 0, hands = 0;
     std::map<std::string, int> kinds;
     for (const auto& a : f.areas)
-        for (const auto& x : a.farms)
+        for (const auto& x : a.works ? std::vector<items::FarmDef>{} : a.farms)
         {
             ++farms;
             keepers += x.keepers;
@@ -171,13 +175,14 @@ void theDefaults()
             ++kinds[x.kind];
             expect(x.reserve > 0 && x.purse > 0 && !x.yield.empty(), x.id + " has a float, a crew's purse and yields");
         }
-    expect(farms == 31 && keepers == 31 && hands == 78, "31 farms, 31 keepers and 78 hands (a fibre hand at each grain farm, doc 72): " + std::to_string(farms) + ", " +
-                                                            std::to_string(keepers) + ", " + std::to_string(hands));
+    expect(farms == 31 && keepers == 31 && hands == 76,
+           "31 farms, 31 keepers and 76 hands (a fibre hand at each grain farm, a vine hand fewer at each vineyard, doc 72): " +
+               std::to_string(farms) + ", " + std::to_string(keepers) + ", " + std::to_string(hands));
     expect(kinds["vineyard"] == 2 && kinds["salt works"] == 2 && kinds["grain farm"] == 2,
            "two vineyards and two salt works (the user's decision), two grain farms");
     expect(f.keeper == 16 && f.hand == 10 && f.floatDays == 2 && f.openingStockDays == 7, "a keeper 16p and a hand 10p, two days' float");
-    expect(f.start == -1 && f.every == 28 && f.order.size() == 6 && f.order.front() == "grain",
-           "no switch until a world sets one; an area every 28 days, grain first");
+    expect(f.start == -1 && f.every == 28 && f.order.size() == 7 && f.order.front() == "grain" && f.order.back() == "fuel",
+           "no switch until a world sets one; an area every 28 days, grain first, the fuel's works last");
     expect(!f.basket.empty() && !f.countryBasket.empty() && !f.switchTrades.empty(), "the farms' basket, the Country's after, the losers");
     for (const auto& [item, share] : f.countryBasket)
     {
@@ -186,12 +191,12 @@ void theDefaults()
         expect(Society::nourishment(item) == 0 && item != "aqua_vitae", "and no food or drink: " + item);
     }
     // The yields: the season means of the blend (a grain farm's flour in summer: the farms' people's confirming run's
-    // yields, the flour cut to what was taken and the oats raised, doc 72, Phase 1).
+    // yields, the flour cut to what was taken and the oats raised, doc 72, Phase 1; country1's patch half way, Phase 2).
     const auto& flour = f.areas[areaIndex("grain")].farms.front().yield.at("flour");
     double summer = 0;
     for (int d = 92; d < 184; ++d)
         summer += Society::seasonalValue(flour, d + .5);
-    expect(std::abs(summer / 92 - 56.94) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
+    expect(std::abs(summer / 92 - 56.37) < .2, "a grain farm's flour in summer, the blend's mean: " + std::to_string(summer / 92));
     // The Country's herbs and raw fibre on the farms that already exist (doc 72, Phase 1): the eel marsh's herbs (the fish
     // area's goods; resin stays the Country's, with the woods), the grain farms' hemp and flax with a hand more each.
     const auto& fish = f.areas[areaIndex("fish")];
@@ -202,8 +207,9 @@ void theDefaults()
         for (const auto& x : fish.farms)
             expect(x.yield.count(good) == (x.id == "eel_and_fowl_marsh_1"), x.id + (x.id == "eel_and_fowl_marsh_1" ? " grows " : " doesn't grow ") + good);
     }
-    expect(std::none_of(f.areas.begin(), f.areas.end(), [](const auto& a) { return std::find(a.goods.begin(), a.goods.end(), "resin") != a.goods.end(); }),
-           "resin no area's: the woods'");
+    expect(std::find(f.areas[areaIndex("fuel")].goods.begin(), f.areas[areaIndex("fuel")].goods.end(), "resin") !=
+               f.areas[areaIndex("fuel")].goods.end(),
+           "resin the woods' (the fuel area's, doc 72, Phase 2)");
     for (const auto* good : {"hemp", "flax"})
         expect(std::find(grain.goods.begin(), grain.goods.end(), good) != grain.goods.end(), std::string("the grain area's: ") + good);
     for (const auto& x : grain.farms)
@@ -314,9 +320,9 @@ void thePhasedSwitch()
     turn(s, 38);
     expect(s.farmAreaOn(areaIndex("fruit")) && s.farmAreaOn(areaIndex("grain")) && !s.farmAreaOn(areaIndex("meat")),
            "fruit on day 38, grain still on, meat not yet");
-    turn(s, 10 + 5 * 28);
+    turn(s, 10 + 6 * 28);
     for (std::size_t a = 0; a < items::farms().areas.size(); ++a)
-        expect(s.farmAreaOn(a), "every area on by the sixth month");
+        expect(s.farmAreaOn(a), "every area on by the seventh month (the fuel's works last)");
     expect(std::abs(s.countryBasketShift() - 1) < 1e-9, "and the Country's basket wholly re-weighted");
     expect(s.conserved(), "conserved throughout");
     // An area's own switch over the schedule: off whatever the day.
@@ -547,7 +553,7 @@ void theCountrysBasket()
     const auto& areas = items::farms().areas;
     double all = 0;
     for (const auto& a : areas)
-        all += a.takings;
+        all += a.works ? 0 : a.takings;             // (The works' areas not: doc 72.)
     expect(std::abs(s.countryBasketShift() - areas[areaIndex("grain")].takings / all) < 1e-9,
            "the Country's basket moved by grain's share of the food areas' takings: " + std::to_string(s.countryBasketShift()));
     const auto none = city();
@@ -740,6 +746,168 @@ void theShortagesWatched()
     expect(s.conserved(), "conserved");
 }
 
+// A general store for the works' goods (it resells firewood and peat), with the city.
+std::vector<ResidentSpec> aStore()
+{
+    return {person("general", "merchant", "shopkeeper at the Corner Store", {"store", 2.5, 2.5}, "home_general", 40, 400)};
+}
+
+void theWorks()
+{
+    // Doc 72, Phases 0 and 2 (the user, 2026-11-03: "each works pays its own crew and sends its surplus to the noble House
+    // whose land it is on"; House Timberland holds the woods): the fuel area's five works, a till each like a farm's.
+    const auto& f = items::farms();
+    const auto& fuel = f.areas[areaIndex("fuel")];
+    expect(fuel.works && fuel.house == "Timberland", "the fuel area: works, on House Timberland's land");
+    expect(fuel.goods == std::vector<std::string>({"timber", "firewood", "oak_bark", "resin", "charcoal", "peat"}),
+           "its goods: the woods' and peat");
+    int keepers = 0, hands = 0;
+    std::int64_t wages = 0;
+    std::set<std::string> ids;
+    for (const auto& x : fuel.farms)
+    {
+        ids.insert(x.id);
+        keepers += x.keepers, hands += x.hands;
+        wages += 16 * x.keepers + 10 * x.hands;
+        expect(x.table.empty() && x.basketADay == 0 && x.reserve == 2 * (16 * x.keepers + 10 * x.hands),
+               x.id + ": no Country's table, no basket, a float of two days' wages");
+    }
+    expect(ids == std::set<std::string>({"logging_rainwood", "logging_oakhaven", "coppice_rainwood", "coppice_greenholt", "peat_fens"}) &&
+               keepers == 5 && hands == 10 && wages == 180,
+           "five works, 5 keepers and 10 hands, 180p a day");
+    for (const auto& a : f.areas)
+        expect(a.id == "fuel" || (!a.works && a.house.empty()), a.id + ": a food area, no rent");
+    // On: founded as farms are; the shops' fuel from the works' stores, nothing to the Country.
+    auto s = city([](EconomySpec& e) { e.farms.areas["fuel"].on = 1; }, aStore());
+    turn(s, 46);
+    for (const auto& w : fuel.farms)
+    {
+        const auto& now = farm(s, w.id);
+        expect(s.account(now.till) && s.account(now.crew) && now.house == "Timberland" && now.rents(), w.id + " founded, its rent Timberland's");
+    }
+    expect(s.farmAreaOf("firewood") == int(areaIndex("fuel")) && s.farmAreaOf("peat") == int(areaIndex("fuel")) &&
+               s.farmAreaOf("charcoal") == int(areaIndex("fuel")),
+           "firewood, peat and charcoal the fuel area's");
+    const auto peat = Society::farmTill("peat_fens");
+    const int peatHeld = held(s, peat, "peat");
+    expect(peatHeld > 300 && s.farmsHold("peat") == peatHeld, "the peat cutting's store holds a week of peat: " + std::to_string(peatHeld));
+    const auto country = s.cash(Society::CountryFund), money = s.moneySupply();
+    const auto wood = s.drawFromStore("general", "firewood", 30, "restocked from the store room");
+    const auto turf = s.drawFromStore("general", "peat", 20, "restocked from the store room");
+    expect(wood.ok && turf.ok && wood.message.find("from the farms") != std::string::npos, "firewood and peat from the works: " + wood.message);
+    expect(held(s, peat, "peat") == peatHeld - 20 && s.cash(Society::CountryFund) == country, "the peat out of its store, nothing to the Country");
+    expect(s.conserved() && s.moneySupply() == money, "conserved");
+    // At 18:00 each works pays its crew, then what its till holds over its float goes to Timberland's estate: the
+    // Country's purse, booked by House.
+    const auto coppice = Society::farmTill("coppice_rainwood");
+    expect(s.operatorTransfer("treasury", coppice, "", 0, 500).ok, "the coppice given 500p (moved, not made)");
+    const auto before = s.moneySupply();
+    s.takeJournal();
+    run(s, 46 + 17.9 / 24, 46 + 18.5 / 24);
+    const auto& d = s.loopToday();
+    std::int64_t rents = 0, booked = 0;
+    for (const auto& w : fuel.farms)
+    {
+        const auto& day = d.farms.at(w.id);
+        const auto& now = farm(s, w.id);
+        expect(day.wagesOwed == now.wages() && day.wagesPaid == day.wagesOwed, w.id + " paid its crew: " + std::to_string(day.wagesPaid));
+        expect(s.cash(now.till) <= now.reserve, w.id + ": its till at its float or under after its rent: " + std::to_string(s.cash(now.till)));
+        rents += day.rent;
+    }
+    expect(d.farms.at("coppice_rainwood").rent >= 500 - 36 && s.cash(coppice) == farm(s, "coppice_rainwood").reserve,
+           "the coppice's rent: what was over its float and wages: " + std::to_string(d.farms.at("coppice_rainwood").rent));
+    for (const auto& e : s.takeJournal())
+        if (e.kind == "an estate's rent: House Timberland")
+        {
+            expect(e.to == Society::CountryFund && e.from.rfind("farm:", 0) == 0, "a works' rent to the estates' purse: " + e.from);
+            booked += e.coins;
+        }
+    expect(d.rents.count("Timberland") && d.rents.at("Timberland") == rents && booked == rents, "booked by House: " + std::to_string(rents));
+    expect(s.conserved() && s.moneySupply() == before, "conserved");
+    // No basket: a works with money over spends none of it on the city's goods.
+    for (const char* good : {"nails", "fittings", "lock"})
+        expect(s.create("till:job:smith", good, 99, "test stock"), std::string("the smith holds ") + good);
+    expect(s.operatorTransfer("treasury", coppice, "", 0, 800).ok, "the coppice given 800p again");
+    s.takeJournal();
+    run(s, 47 + 8.5 / 24, 47 + 17.9 / 24);
+    for (const auto& e : s.takeJournal())
+        expect(!(e.kind == "to a farm" && e.from == coppice), "a works buys no basket");
+    expect(s.loopToday().farms.at("coppice_rainwood").basket == 0, "none counted");
+    // Short of its wages, a works pays no rent (it keeps what it has; the treasury's support as a farm's).
+    expect(s.operatorTransfer(peat, "treasury", "", 0, s.cash(peat)).ok, "the peat cutting's till emptied");
+    run(s, 47 + 17.9 / 24, 47 + 18.5 / 24);
+    expect(s.loopToday().farms.at("peat_fens").rent == 0 && s.loopToday().farms.at("peat_fens").support > 0,
+           "short of its wages: no rent, the treasury's support");
+    // Off: the Country supplies its goods again.
+    auto e = s.authored().economy;
+    e.farms.areas["fuel"].on = 0;
+    s.adoptEconomy(e);
+    const auto c2 = s.cash(Society::CountryFund);
+    const auto back = s.drawFromStore("general", "peat", 5, "restocked from the store room");
+    expect(back.ok && back.message.find("from the farms") == std::string::npos && s.cash(Society::CountryFund) > c2,
+           "fuel off: the Country's peat again: " + back.message);
+    expect(s.farmAreaOf("firewood") < 0, "and its firewood");
+    // The Country's own sales (its report's line) count what was delivered: a draw paid back counts nothing.
+    const auto sales = s.loopToday().countrySales;
+    s.failNextStoreCreate();
+    expect(!s.drawFromStore("general", "peat", 5, "restocked from the store room").ok && s.loopToday().countrySales == sales,
+           "a draw paid back: none of the Country's sales");
+    expect(s.drawFromStore("general", "peat", 5, "restocked from the store room").ok && s.loopToday().countrySales > sales,
+           "a draw delivered: its sales");
+    expect(s.conserved(), "conserved");
+}
+
+void firewoodOrPeat()
+{
+    // A household's fuel is "any firewood or peat" (crafts.json): it takes whichever its shops hold, half and half when
+    // they hold both (doc 72: peat a second fuel in place of part of the firewood); the general store supplies both.
+    auto s = city({}, aStore());
+    expect(s.storeUse("general", "peat") == Society::StoreUse::Resell && s.storeUse("general", "firewood") == Society::StoreUse::Resell,
+           "the general store resells peat and firewood");
+    const auto burned = [](Society& w, std::set<std::string> off) {
+        auto e = w.authored().economy;
+        e.countryOff = off;
+        w.adoptEconomy(e);
+        const auto till = w.tillOf("general");
+        for (const char* fuel : {"firewood", "peat"})
+            if (off.count(fuel))
+                w.consume(till, fuel, held(w, till, fuel), "test: none");
+        w.takeJournal();
+        run(w, 46 + 7.5 / 24, 46 + 18. / 24);
+        std::map<std::string, int> used;
+        for (const auto& j : w.takeJournal())
+            if (j.kind == "used at home")
+                used[j.item] += j.quantity;
+        return used;
+    };
+    {
+        auto w = city({}, aStore());
+        const auto used = burned(w, {"firewood"});
+        expect(used.count("peat") && used.at("peat") > 0 && !used.count("firewood"), "no firewood to be had: the households burn peat");
+    }
+    {
+        auto w = city({}, aStore());
+        const auto used = burned(w, {"peat"});
+        expect(used.count("firewood") && used.at("firewood") > 0 && !used.count("peat"), "no peat: firewood, as before");
+    }
+    {
+        auto w = city({}, aStore());
+        for (const char* fuel : {"firewood", "peat"})
+            expect(w.create(w.tillOf("general"), fuel, 60, "test stock"), std::string("the store holds ") + fuel);
+        int peat = 0, wood = 0;
+        for (int day = 0; day < 6; ++day)
+        {
+            w.takeJournal();
+            run(w, 46 + day + 7.5 / 24, 46 + day + 18. / 24);
+            for (const auto& j : w.takeJournal())
+                if (j.kind == "used at home" && (j.item == "peat" || j.item == "firewood"))
+                    (j.item == "peat" ? peat : wood) += j.quantity;
+        }
+        expect(peat > 0 && wood > 0, "both held: some households burn one, some the other: " + std::to_string(peat) + " peat, " +
+                                         std::to_string(wood) + " firewood");
+    }
+}
+
 std::map<std::string, std::string> files(const std::string& extra)
 {
     std::ostringstream cell;
@@ -846,6 +1014,8 @@ int main()
         theShortagesWatched();
         theRecords();
         appliedLive();
+        theWorks();
+        firewoodOrPeat();
     }
     catch (const std::exception& error)
     {

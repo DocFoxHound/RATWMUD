@@ -1135,7 +1135,7 @@
    "style": "southern",
    "region": "southmeadow",
    "town": false,
-   "hands": 9,
+   "hands": 8,
    "farms": [
     "grain_farm_2",
     "vineyard_2",
@@ -1717,7 +1717,7 @@
    "style": "adobe",
    "region": "saltwell",
    "town": false,
-   "hands": 6,
+   "hands": 5,
    "farms": [
     "vineyard_1",
     "rabbit_warren_2",
@@ -3042,7 +3042,7 @@
    "steading": "Ochre Vineyard",
    "community": "saltwell",
    "keepers": 1,
-   "hands": 3,
+   "hands": 2,
    "workplace": "fs_vineyard_ochre_press",
    "workplaces": [
     {
@@ -3152,7 +3152,7 @@
    "steading": "Southmeadow Vineyard",
    "community": "southmeadow",
    "keepers": 1,
-   "hands": 3,
+   "hands": 2,
    "workplace": "fs_vineyard_south_press",
    "workplaces": [
     {
@@ -5358,7 +5358,38 @@
     "y": 1092
    },
    "size": 24,
-   "walk": null
+   "walk": null,
+   "works": "logging_rainwood",
+   "workplace": {
+    "area": "w_ridgemere_2_4",
+    "name": "the Rainwood cut",
+    "work": [
+     {
+      "x": 140,
+      "y": 69
+     },
+     {
+      "x": 141,
+      "y": 67
+     },
+     {
+      "x": 138,
+      "y": 68
+     },
+     {
+      "x": 142,
+      "y": 70
+     },
+     {
+      "x": 143,
+      "y": 68
+     },
+     {
+      "x": 139,
+      "y": 71
+     }
+    ]
+   }
   },
   {
    "site": "timber_oakhaven",
@@ -5370,7 +5401,38 @@
     "y": 1060
    },
    "size": 24,
-   "walk": 175
+   "walk": 175,
+   "works": "logging_oakhaven",
+   "workplace": {
+    "area": "w_ridgemere_4_4",
+    "name": "the Oakhaven cut",
+    "work": [
+     {
+      "x": 28,
+      "y": 37
+     },
+     {
+      "x": 29,
+      "y": 35
+     },
+     {
+      "x": 26,
+      "y": 35
+     },
+     {
+      "x": 30,
+      "y": 38
+     },
+     {
+      "x": 28,
+      "y": 33
+     },
+     {
+      "x": 31,
+      "y": 36
+     }
+    ]
+   }
   },
   {
    "site": "coppice_rainwood",
@@ -5382,7 +5444,38 @@
     "y": 1020
    },
    "size": 24,
-   "walk": null
+   "walk": null,
+   "works": "coppice_rainwood",
+   "workplace": {
+    "area": "w_ridgemere_2_3",
+    "name": "the Rainwood coppice",
+    "work": [
+     {
+      "x": 107,
+      "y": 253
+     },
+     {
+      "x": 108,
+      "y": 250
+     },
+     {
+      "x": 106,
+      "y": 251
+     },
+     {
+      "x": 109,
+      "y": 254
+     },
+     {
+      "x": 111,
+      "y": 253
+     },
+     {
+      "x": 105,
+      "y": 254
+     }
+    ]
+   }
   },
   {
    "site": "charcoal_greenholt",
@@ -5394,7 +5487,38 @@
     "y": 2124
    },
    "size": 18,
-   "walk": 537
+   "walk": 537,
+   "works": "coppice_greenholt",
+   "workplace": {
+    "area": "w_ridgemere_4_8",
+    "name": "the Greenholt charcoal hearths",
+    "work": [
+     {
+      "x": 236,
+      "y": 77
+     },
+     {
+      "x": 234,
+      "y": 76
+     },
+     {
+      "x": 236,
+      "y": 74
+     },
+     {
+      "x": 238,
+      "y": 78
+     },
+     {
+      "x": 235,
+      "y": 79
+     },
+     {
+      "x": 233,
+      "y": 74
+     }
+    ]
+   }
   },
   {
    "site": "peat_fens",
@@ -5406,7 +5530,38 @@
     "y": 3596
    },
    "size": 30,
-   "walk": 360
+   "walk": 360,
+   "works": "peat_fens",
+   "workplace": {
+    "area": "w_ridgemere_3_14",
+    "name": "the Fenshore peat cutting",
+    "work": [
+     {
+      "x": 19,
+      "y": 13
+     },
+     {
+      "x": 21,
+      "y": 11
+     },
+     {
+      "x": 18,
+      "y": 11
+     },
+     {
+      "x": 20,
+      "y": 9
+     },
+     {
+      "x": 20,
+      "y": 15
+     },
+     {
+      "x": 23,
+      "y": 12
+     }
+    ]
+   }
   },
   {
    "site": "quarry_granite",
@@ -5418,7 +5573,9 @@
     "y": 356
    },
    "size": 20,
-   "walk": null
+   "walk": null,
+   "works": null,
+   "workplace": null
   },
   {
    "site": "clay_mirebridge",
@@ -5430,7 +5587,9 @@
     "y": 3276
    },
    "size": 14,
-   "walk": 606
+   "walk": 606,
+   "works": null,
+   "workplace": null
   },
   {
    "site": "clay_fens",
@@ -5442,7 +5601,9 @@
     "y": 3332
    },
    "size": 14,
-   "walk": 576
+   "walk": 576,
+   "works": null,
+   "workplace": null
   }
  ],
  "paths": [

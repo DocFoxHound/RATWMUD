@@ -55,6 +55,8 @@ void Society::buildFarms()
             FarmNow f = found == was.end() ? FarmNow{} : std::move(found->second);
             f.def = &def;
             f.area = a;
+            f.works = area.works;                    // (A works pays rent, a food farm buys its basket: doc 72, Phase 0.)
+            f.house = !f.works ? std::string() : def.house.empty() ? area.house : def.house;   // (Its rent's House.)
             f.till = farmTill(def.id);
             f.crew = farmCrew(def.id);
             f.yieldScale = areaYield / 100. * orElse(ownFarm.yieldScale, 100) / 100.;
@@ -75,13 +77,17 @@ void Society::buildFarms()
             farms_.push_back(std::move(f));
         }
     }
-    // Each farm's work rooms (communities.json, doc 71 Phase C): a post there is the farm's.
+    // Each farm's work rooms (communities.json, doc 71 Phase C): a post there is the farm's. A works' (doc 72) is the cell
+    // out of doors its centre is in: a post there is the works' by its labels (farmOfPost).
     farmWorkplace_.clear();
     for (const auto& place : items::farmPeople().farms)
         if (const auto at = std::find_if(farms_.begin(), farms_.end(), [&](const FarmNow& f) { return f.def->id == place.farm; });
             at != farms_.end())
+        {
+            at->outdoors = place.works;
             for (const auto& room : place.workplaces)
                 farmWorkplace_.emplace(room.area, std::size_t(at - farms_.begin()));
+        }
     countFarmPosts();
     refreshAreas(-1, false);                         // (Which are on as of the day it knows; none founded here.)
 }
@@ -327,6 +333,32 @@ void Society::payFarms()
         if (paid < owed)
             tillsShort_[f.till] = owed - paid;      // (For the treasury's wage support, with the city's short tills.)
     }
+    payRents();
+}
+
+void Society::payRents()
+{
+    // The estates' rent (Docs/Design/72-pulling-the-country-into-the-world.md, 3, option 1; the user, 2026-11-03: "each
+    // works pays its own crew and sends its surplus to the noble House whose land it is on"): after tonight's wages, what
+    // a works' till holds over its float (two days of its wages) goes to its House's estate. At first every House's
+    // estate is the Country's one purse ("the Houses' estates and the sea trade"), booked by House in the reports. A till
+    // short of its wages keeps all it has (its rent is what is over).
+    if (!account(CountryFund))
+        return;
+    for (const auto& f : farms_)
+    {
+        if (!f.rents() || !farmAreaOn(f.area) || !account(f.till))
+            continue;
+        const auto over = cash(f.till) - f.reserve;
+        if (over <= 0 || cash(CountryFund) > MoneyCap - over)
+            continue;
+        const auto house = f.house.empty() ? std::string("none") : f.house;   // (A works area with no House named.)
+        if (shift(f.till, CountryFund, "", 0, over, "an estate's rent: House " + house))
+        {
+            loopToday_.farms[f.def->id].rent += over;
+            loopToday_.rents[house] += over;
+        }
+    }
 }
 
 void Society::farmsBuy(int hod)
@@ -336,7 +368,7 @@ void Society::farmsBuy(int hod)
     // (country_farms.json `basket`: carts, barrels and hoops, tools, rope and nets, building goods), from their makers'
     // open shops, as the Country buys; it pays the carriage out.
     const auto& goods = items::farms().basket;
-    if (goods.empty() || std::none_of(farms_.begin(), farms_.end(), [&](const FarmNow& f) { return farmAreaOn(f.area) && account(f.till); }))
+    if (goods.empty() || std::none_of(farms_.begin(), farms_.end(), [&](const FarmNow& f) { return farmAreaOn(f.area) && account(f.till) && !f.rents(); }))
         return;
     std::vector<std::pair<const std::string*, double>> basket;
     for (const auto& [item, share] : goods)
@@ -344,8 +376,8 @@ void Society::farmsBuy(int hod)
     const auto open = openShops();
     for (const auto& f : farms_)
     {
-        if (!farmAreaOn(f.area) || !account(f.till))
-            continue;
+        if (!farmAreaOn(f.area) || !account(f.till) || f.rents())
+            continue;                               // (A works pays its rent instead: payRents.)
         const auto keep = f.reserve + (hod < PayHour ? f.wages() : 0);
         const auto spare = cash(f.till) - keep;
         if (spare <= 0)
@@ -390,11 +422,14 @@ double Society::farmPriceFactor(const std::string& item) const
 
 double Society::countryBasketShift() const
 {
-    // The share of the food areas' takings (the design's, country_farms.json) whose areas are on.
+    // The share of the food areas' takings (the design's, country_farms.json) whose areas are on. (The works' areas are
+    // not food: their goods were never in the Country's basket, and their rent keeps its purse; doc 72.)
     const auto& areas = items::farms().areas;
     double on = 0, all = 0;
     for (std::size_t a = 0; a < areas.size(); ++a)
     {
+        if (areas[a].works)
+            continue;
         all += areas[a].takings;
         if (farmAreaOn(a))
             on += areas[a].takings;

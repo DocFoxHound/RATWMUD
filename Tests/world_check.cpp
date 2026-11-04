@@ -716,7 +716,7 @@ struct EconomyRecord
              "\"inputs\", \"wages_owed\", \"wages_paid\", \"support\", \"profit\", \"crew\"], "
              "\"ware\": [\"till\", \"good\", \"stock\", \"shelf\", \"price_milli\", \"stock_factor_milli\", \"sold\"], "
              "\"farm\": [\"farm\", \"area\", \"float\", \"takings\", \"wages_owed\", \"wages_paid\", \"support\", \"basket\", "
-             "\"crew_purse\", \"crew_spent\", \"crew_short\", \"crew_hungry\"], "
+             "\"crew_purse\", \"crew_spent\", \"crew_short\", \"crew_hungry\", \"rent\"], "
              "\"farm_good\": [\"farm\", \"good\", \"grown\", \"sold\", \"stock\", \"spoiled\", \"eaten\", \"short\"], "
              "\"flow\": [\"from\", \"to\", \"pennies\"], "
              "\"short\": [\"shop\", \"good\", \"buyer\", \"buyers\", \"pieces\", \"instead\"], "
@@ -726,7 +726,8 @@ struct EconomyRecord
         for (const auto& f : s.farms())
         {
             o << (first ? "" : ", ") << EconomyDetail::quoted(f.def->id) << ": {\"area\": "
-              << EconomyDetail::quoted(items::farms().areas[f.area].id) << ", \"yield_scale\": " << f.yieldScale << ", \"yield\": {";
+              << EconomyDetail::quoted(items::farms().areas[f.area].id) << ", \"yield_scale\": " << f.yieldScale
+              << ", \"house\": " << EconomyDetail::quoted(f.house) << ", \"yield\": {";
             bool firstGood = true;
             for (const auto& [good, by] : f.def->yield)
             {
@@ -737,8 +738,17 @@ struct EconomyRecord
             o << "}}";
             first = false;
         }
-        // Each area's goods (the Country no longer sends them while it is on): a good no farm of it grows shows.
-        o << "}, \"farm_areas\": {";
+        // Each area's goods (the Country no longer sends them while it is on): a good no farm of it grows shows. The works'
+        // areas (doc 72: they pay rent to their Houses, no basket) by name.
+        o << "}, \"works_areas\": [";
+        first = true;
+        for (const auto& area : items::farms().areas)
+            if (area.works)
+            {
+                o << (first ? "" : ", ") << EconomyDetail::quoted(area.id);
+                first = false;
+            }
+        o << "], \"farm_areas\": {";
         first = true;
         for (const auto& area : items::farms().areas)
         {
@@ -842,7 +852,7 @@ struct EconomyRecord
             {
                 const auto& x = d->second;
                 row({id(f.def->id), id(items::farms().areas[f.area].id), s.cash(f.till), x.takings, x.wagesOwed, x.wagesPaid, x.support,
-                     x.basket, s.cash(f.crew), x.crewSpent, x.crewShort, std::llround(x.crewHungry)});
+                     x.basket, s.cash(f.crew), x.crewSpent, x.crewShort, std::llround(x.crewHungry), x.rent});
             }
         close();
         table("farm_good");
@@ -1271,7 +1281,7 @@ struct EconomyWatch
                 int crewFood = 0, crewNeeds = 0, crewComforts = 0, crewServices = 0, crewShort = 0;
                 int posts = 0, postsHeld = 0, virtualCrew = 0;   // (Doc 71, Phase C: its real posts, those held, its virtual crew.)
                 std::int64_t takings = 0, owed = 0, paid = 0, support = 0, basket = 0, carriage = 0, held = 0, purses = 0, spent = 0;
-                std::int64_t peoplePaid = 0;
+                std::int64_t peoplePaid = 0, rent = 0;
                 double hungry = 0;
             };
             const auto& defs = items::farms();
@@ -1299,10 +1309,11 @@ struct EconomyWatch
                 x.purses = society.cash(f.crew), x.spent = day.crewSpent;
                 x.posts = f.postKeepers + f.postHands, x.postsHeld = f.heldKeepers + f.heldHands, x.virtualCrew = f.heads();
                 x.peoplePaid = day.peoplePaid;
+                x.rent = day.rent;
                 for (auto* into : {&a, &all})
                 {
                     into->posts += x.posts, into->postsHeld += x.postsHeld, into->virtualCrew += x.virtualCrew;
-                    into->peoplePaid += x.peoplePaid;
+                    into->peoplePaid += x.peoplePaid, into->rent += x.rent;
                     into->farms += x.farms, into->stock += x.stock, into->sold += x.sold, into->grown += x.grown;
                     into->spoiled += x.spoiled, into->eaten += x.eaten, into->tableShort += x.tableShort;
                     into->crewFood += x.crewFood, into->crewNeeds += x.crewNeeds, into->crewComforts += x.crewComforts;
@@ -1318,7 +1329,7 @@ struct EconomyWatch
                          << ", \"crew\": " << f.heads() << ", \"crew_purse\": " << x.purses << ", \"crew_spent\": " << x.spent
                          << ", \"grown\": " << x.grown << ", \"spoiled\": " << x.spoiled << ", \"eaten\": " << x.eaten
                          << ", \"crew_hungry\": " << x.hungry << ", \"posts\": " << x.posts << ", \"posts_held\": " << x.postsHeld
-                         << ", \"people_paid\": " << x.peoplePaid << "}";
+                         << ", \"people_paid\": " << x.peoplePaid << ", \"rent\": " << x.rent << "}";
             }
             const auto fields = [&](const std::string& prefix, const Sum& x) {
                 seasons << ", \"" << prefix << "stock\": " << x.stock << ", \"" << prefix << "sold\": " << x.sold << ", \"" << prefix
@@ -1333,7 +1344,8 @@ struct EconomyWatch
                         << x.crewComforts << ", \"" << prefix << "crew_services\": " << x.crewServices << ", \"" << prefix
                         << "crew_short\": " << x.crewShort << ", \"" << prefix << "crew_hungry\": " << x.hungry << ", \"" << prefix
                         << "posts\": " << x.posts << ", \"" << prefix << "posts_held\": " << x.postsHeld << ", \"" << prefix
-                        << "virtual_crew\": " << x.virtualCrew << ", \"" << prefix << "people_paid\": " << x.peoplePaid;
+                        << "virtual_crew\": " << x.virtualCrew << ", \"" << prefix << "people_paid\": " << x.peoplePaid
+                        << ", \"" << prefix << "rent\": " << x.rent;
             };
             for (std::size_t i = 0; i < defs.areas.size(); ++i)
             {
@@ -1358,6 +1370,24 @@ struct EconomyWatch
                     seasons << (it == goods->begin() ? "" : ", ") << "\"" << it->first << "\": " << it->second;
                 seasons << "}";
             }
+            // The Country by its parts (doc 72, Phase 0: one purse, "the Houses' estates and the sea trade"): the works'
+            // rents by House, its own goods' sales to the shops (after the toll), its posts owed and paid, by wage rule
+            // (pennies, and the posts held).
+            const auto object = [&](const char* name, const auto& m) {
+                seasons << ", \"" << name << "\": {";
+                for (auto it = m.begin(); it != m.end(); ++it)
+                    seasons << (it == m.begin() ? "" : ", ") << EconomyDetail::quoted(it->first) << ": " << it->second;
+                seasons << "}";
+            };
+            std::int64_t rents = 0;
+            for (const auto& [house, n] : d.rents)
+                rents += n;
+            seasons << ", \"country_rents\": " << rents;
+            object("country_rents_by_house", d.rents);
+            seasons << ", \"country_sales\": " << d.countrySales << ", \"country_posts_owed\": " << d.countryPostsOwed
+                    << ", \"country_posts_paid\": " << d.countryPostsPaid;
+            object("country_posts_by_rule", d.countryPostsByRule);
+            object("country_posts_held", d.countryPostsHeld);
             seasons << ", \"support_by_trade\": {";       // (The wage support paid tonight, by the short tills' trades.)
             for (auto it = d.supportByTrade.begin(); it != d.supportByTrade.end(); ++it)
                 seasons << (it == d.supportByTrade.begin() ? "" : ", ") << "\"" << it->first << "\": " << it->second;

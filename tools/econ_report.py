@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """A run's market in about two pages (Docs/Design/69-simulation-speed.md, 10): every imbalance, the prices pinned at the
 band's edges, the tills short of their wages and why, the money's flows and the treasury's path, each class's welfare,
-the largest buyers and sellers of each good, and the farms' yields that would meet their demand, from world_check's
+the largest buyers and sellers of each good, the farms and works (doc 72's: the woods', the peat's, paying rent to their
+House), the Country by its parts (the estates' rents by House, the sea trade, its posts by rule), and the farms' yields
+that would meet their demand, from world_check's
 economy file (`--economy F`) and, at `--economy-level full`, its tables (F.full.jsonl.gz):
 
     python3 tools/econ_report.py ECONOMY.jsonl [--full F.full.jsonl.gz] [--out REPORT.md] [--patch PATCH.json]
@@ -171,7 +173,7 @@ class Run:
         for row in d['farm']:
             f = self.farm[n(row[0])]
             f.update(days=1, takings=row[3], owed=row[4], paid=row[5], support=row[6], basket=row[7], crew_spent=row[9],
-                     crew_short=row[10])
+                     crew_short=row[10], rent=row[12] if len(row) > 12 else 0)
             f['crew_purse_last'] = row[8]
             f['float_last'] = row[2]
 
@@ -419,12 +421,16 @@ def report(econ, run, top, patch_path):
                          f'{buyer} {bp / x[1]:.0%}' if x[1] else buyer, f'{short_name(seller)} {sp / x[1]:.0%}' if x[1] else seller])
         out += table(['good', 'pieces/day', 'pennies/day', 'price factor', 'largest buyer', 'largest seller'], rows)
         say('')
+    # The Country by its parts (doc 72, Phase 0: one purse, "the Houses' estates and the sea trade").
+    if econ and any('country_sales' in r for r in econ):
+        say(country_lines(econ))
     # 7. Farms.
     if run and run.farm:
         say('## 7. Farms')
         say('')
         # By area (the farms of one alike), and the farms that could not pay their crews by name.
         farms_meta = (run.meta or {}).get('farms', {})
+        works_areas = set((run.meta or {}).get('works_areas') or [])
         areas = collections.defaultdict(collections.Counter)
         for farm, f in run.farm.items():
             a = areas[farms_meta.get(farm, {}).get('area', farm)]
@@ -433,11 +439,23 @@ def report(econ, run, top, patch_path):
         rows = []
         for area, f in sorted(areas.items()):
             d = max(1, f['days'])
-            rows.append([area, f['farms'], round(f['days'] / f['farms']), round(f['takings'] / d), f'{f["paid"]}/{f["owed"]}',
-                         f['support'], round(f['basket'] / d), round(f['crew_spent'] / d), f['crew_short'], f['float_last'],
-                         f['crew_purse_last']])
+            rows.append([area + (' (works)' if area in works_areas else ''), f['farms'], round(f['days'] / f['farms']),
+                         round(f['takings'] / d), f'{f["paid"]}/{f["owed"]}', f['support'], round(f['basket'] / d),
+                         round(f['rent'] / d), round(f['crew_spent'] / d), f['crew_short'], f['float_last'], f['crew_purse_last']])
         out += table(['area', 'farms', 'days on', 'takings/farm-day', 'wages paid/owed', 'support', 'basket/farm-day',
-                      'crew spent/farm-day', 'crew short', 'floats', 'crew purses'], rows)
+                      'rent/farm-day', 'crew spent/farm-day', 'crew short', 'floats', 'crew purses'], rows)
+        # The works one by one (doc 72: each pays its crew, the rest to its House's estate).
+        works = sorted(farm for farm in run.farm if farms_meta.get(farm, {}).get('area') in works_areas)
+        if works:
+            say('')
+            say('The works (a day; their rent to their House\'s estate, the Country\'s purse at first):')
+            say('')
+            out += table(['works', 'House', 'days on', 'takings', 'wages paid/owed', 'support', 'rent', 'float'],
+                         [[w, farms_meta[w].get('house') or '-', run.farm[w]['days'],
+                           round(run.farm[w]['takings'] / max(1, run.farm[w]['days']), 1),
+                           f'{run.farm[w]["paid"]}/{run.farm[w]["owed"]}', run.farm[w]['support'],
+                           round(run.farm[w]['rent'] / max(1, run.farm[w]['days']), 1), run.farm[w]['float_last']]
+                          for w in works])
         unpaid = [farm for farm, f in sorted(run.farm.items()) if f['paid'] < f['owed']]
         if unpaid:
             say('')
@@ -465,6 +483,29 @@ def report(econ, run, top, patch_path):
             say('Farm stock growing over the run: ' + ', '.join(f'{f} {g} {a}->{b}' for (f, g), (a, b) in sorted(stuck)[:top]) + '.')
         say('')
     return '\n'.join(out) + '\n'
+
+
+def country_lines(econ):
+    """The Country's purse by its parts, a day (the economy lines' means): in, its own goods' sales to the shops after the
+    toll (the sea trade and what it still sends) and the works' rents by House (the estates'); out, its posts by wage
+    rule (paid of owed, and the posts held) and its basket; and its purse."""
+    n = max(1, len(econ))
+    mean = lambda key: sum(r.get(key, 0) for r in econ) / n
+    def by(key):
+        total = collections.Counter()
+        for r in econ:
+            total.update(r.get(key) or {})
+        return total
+    rents, rules, held = by('country_rents_by_house'), by('country_posts_by_rule'), by('country_posts_held')
+    out = ['## The Country: "the Houses\' estates and the sea trade"', '',
+           f'In (a day): its goods to the shops {mean("country_sales"):.0f}p (after the toll); the estates\' rents '
+           f'{mean("country_rents"):.0f}p' + (' (' + ', '.join(f'House {h} {v / n:.0f}p' for h, v in rents.most_common()) + ')' if rents else '')
+           + '.',
+           f'Out (a day): its posts {mean("country_posts_paid"):.0f}p of {mean("country_posts_owed"):.0f}p owed'
+           + (' (' + ', '.join(f'{k} {v / n:.0f}p, {held[k] / n:.0f} posts' for k, v in rules.most_common()) + ')' if rules else '')
+           + f'; its basket {mean("country_spent"):.0f}p.',
+           f'Its purse: {econ[0].get("country")} -> {econ[-1].get("country")}p (least {min(r.get("country", 0) for r in econ)}).', '']
+    return '\n'.join(out)
 
 
 def dumps(doc):
