@@ -536,9 +536,10 @@ void theDairy()
                    x.makes[1].in == 2 && x.makes[1].store == 40,
                x.id + ": none of its spare milk to cheese (4 a piece, 40 in store at most), all of it to butter (2 a piece, 40)");
         // Doc 72, Phase 4's follow-up: milk of its own for each, all year; since country5b's carry-overs (cheese scarce,
-        // the user's) 7 a day for ~1.75 cheese, and the 13 the cheese no longer takes to the butter's 8: 21 for 10.5.
-        expect(x.makes[0].aDay == std::array<double, 4>{7, 7, 7, 7} && x.makes[1].aDay == std::array<double, 4>{21, 21, 21, 21},
-               x.id + ": the cheese room's own milk, 7 a day, and the butter's 21");
+        // the user's) 7 a day for ~1.75 cheese, and the 13 the cheese no longer takes to the butter's 8: 21 for 10.5; after
+        // country6a (its price only 2-2.2 times the season's) 5 for 1.25, the 2 to the butter: 23 for 11.5.
+        expect(x.makes[0].aDay == std::array<double, 4>{5, 5, 5, 5} && x.makes[1].aDay == std::array<double, 4>{23, 23, 23, 23},
+               x.id + ": the cheese room's own milk, 5 a day, and the butter's 23");
     }
     expect(dairies == 3, "the three dairies make them, no other farm: " + std::to_string(dairies));
 
@@ -568,8 +569,8 @@ void theDairy()
         if (e.to == cattle.till && e.kind == "made at " + cattle.def->id + " of its own milk")
             own[e.item] += e.quantity;
     const int cheeseMade = held(s, cattle.till, "cheese") - cheeseBefore, butterMade = held(s, cattle.till, "butter") - butterBefore;
-    expect(own["cheese"] >= 1 && own["cheese"] <= 2 && own["butter"] >= 10 && own["butter"] <= 11,
-           "of its own milk 1-2 cheese and 10-11 butter: " + std::to_string(own["cheese"]) + " and " + std::to_string(own["butter"]));
+    expect(own["cheese"] >= 1 && own["cheese"] <= 2 && own["butter"] >= 11 && own["butter"] <= 12,
+           "of its own milk 1-2 cheese and 11-12 butter: " + std::to_string(own["cheese"]) + " and " + std::to_string(own["butter"]));
     const int cheeseSpare = cheeseMade - own["cheese"], butterSpare = butterMade - own["butter"];
     expect(cheeseSpare == 0 && butterSpare > 0, "none of the spare milk to cheese, butter of it: " + std::to_string(cheeseSpare) + " and " +
                                                     std::to_string(butterSpare));
@@ -594,12 +595,12 @@ void theDairy()
     const int held3 = held(s, Society::farmTill("cattle_and_dairy_farm_1"), "cheese") + held(s, Society::farmTill("cattle_and_dairy_farm_2"), "cheese") +
                       held(s, Society::farmTill("cattle_and_dairy_farm_3"), "cheese");
     const int shelf = held(s, s.tillOf("stall"), "cheese");
-    const auto r = s.drawFromStore("stall", "cheese", 6, "restocked from the store room");
+    const auto r = s.drawFromStore("stall", "cheese", 3, "restocked from the store room");   // (3: the dairies' ~1.25 a day each)
     expect(r.ok && r.message.find("from the farms") != std::string::npos, "the stall's cheese from the farms: " + r.message);
-    expect(held(s, s.tillOf("stall"), "cheese") == shelf + 6, "on its shelves");
+    expect(held(s, s.tillOf("stall"), "cheese") == shelf + 3, "on its shelves");
     const int held3After = held(s, Society::farmTill("cattle_and_dairy_farm_1"), "cheese") + held(s, Society::farmTill("cattle_and_dairy_farm_2"), "cheese") +
                            held(s, Society::farmTill("cattle_and_dairy_farm_3"), "cheese");
-    expect(held3 - held3After == 6, "out of the dairies' stores");
+    expect(held3 - held3After == 3, "out of the dairies' stores");
     const auto b = s.drawFromStore("stall", "butter", 3, "restocked from the store room");
     expect(b.ok && b.message.find("from the farms") != std::string::npos, "and its butter: " + b.message);
     expect(s.cash(Society::CountryFund) == country && s.conserved() && s.moneySupply() == before, "nothing to the Country; conserved");
@@ -1046,17 +1047,18 @@ void theStoneWorks()
     // spring (supply-bound there). After country5 (doc 72): its patch half way (the stone its whole step in spring), the
     // pits' clay to what was used (the patch's less its 5%: the potteries' 8.5 a day more had piled 9,041). After country5b
     // (doc 72): its patch half way (the stone its whole step in spring and summer), the pits' clay 7 a day more each for
-    // the kiln hands.
+    // the kiln hands. After country6a (doc 72): its patch half way, the pits' clay to what the potteries and the
+    // brickworks drew (+5%: 8,367 had piled), half way (the early years drew more).
     const auto& quarry = stone.farms.front();
-    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 28.14) < .01,
-           "the quarry's stone, 28.14 a day at summer's middle (country5b's patch its whole step)");
+    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 26.09) < .01,
+           "the quarry's stone, 26.09 a day at summer's middle (country6a's patch half way)");
     double stoneMean = 0;
     for (const double v : quarry.yield.at("stone"))
         stoneMean += v / 4;
-    expect(std::abs(stoneMean - 30.76) < .05, "30.76 a day over the year: " + std::to_string(stoneMean));
+    expect(std::abs(stoneMean - 29.24) < .05, "29.24 a day over the year: " + std::to_string(stoneMean));
     for (std::size_t i = 1; i < 3; ++i)
-        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 36.24) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 9.63) < .01,
-               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; after country5b: the clay for the kiln hands, the sand half way)");
+        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 34.19) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 9.02) < .01,
+               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; after country6a: the clay half way to what was drawn, the sand half way)");
     // On: founded; the mason's stone and sand from the works' stores, nothing to the Country; limestone still the Country's.
     auto s = city([](EconomySpec& e) { e.farms.areas["stone"].on = 1; },
                   {person("mason", "merchant", "stonemason in Chisel Row", {"masonry", 2.5, 2.5}, "home_mason", 40, 400)});

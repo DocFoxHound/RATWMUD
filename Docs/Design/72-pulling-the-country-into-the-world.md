@@ -2004,3 +2004,65 @@ Houses' share, or a land rent on the workshops, the user's call), the inputs bac
 patch's flax, and hemp, clay, wool by the same), the wine's cut halved (x0.875, or summer and autumn only), the meal
 from the patch, the three workshops' last hands back to the pool, and the cheese: a slower dairy still, or a faster climb
 of its price where it sells out, to reach the 3-6x.
+
+### country6a's carry-overs: the workshops' wages, the inputs, the wine, the cheese (2026-11-04, branch `r2-country-6b`)
+
+Branch `r2-country-6b`, from `ridgemere2` (d036a8d). **Nothing written to DEV, no NPC made, no map change, no post
+added or dropped**; the treasury's levers (toll, support, float) untouched. Scripts in the session's scratchpad (`c6b/`).
+
+- **The Country's margin: where it went.** country6a's year 3 against country5b's: the Country's goods to the shops
+  686p to 440p a day (the workshops' goods, ~225p), the estates' rents 239p to 262p; the eight workshops' wages **212p to
+  434p**, their Houses' share only 62p to 111p. Half the rise was the 17 new hands; the rest **the wage drift**: a
+  workshop's House takes the profit, and the drift (`judgeWages`, wageDriftSpare) raised its posts a penny each time
+  that share reached half its wages, up to the city's 12p over the world's, so through years 1-2 the crews' wages climbed
+  **~130p a day over their base** (the soapworks 118p for its 8 posts against 70p, Larkfield's looms 90p against 54p,
+  the presses 54p and 50p against 38p) while the Houses' share fell (the soapworks' 51p to 15p a day). Never lowered
+  again (only a till short on most days falls), so the House's share stayed what the wages left.
+  **`workshopWageMost` 2** (a new rule, Core's `Rules`, `country.json`, the Editor's and Atlas's Economy rules, no
+  migration): a country workshop's wages drift at most 2p over the world's, a keeper 16p and a hand 10p, **the works'
+  and the farms' fixed wages**; down as any till's. Its House keeps the rest, the Country's purse (~+75p a day on
+  country6a's year 3 at the same takings). The land rent on the workshops (the other option) would have come out of
+  the same share: the drift was what took it. The Country's posts and the treasury untouched.
+- **The three workshops under 99%.** Larkfield's looms (96.0%) and Oakhaven's press (96.3%): short on the drifted wages,
+  not the hands (Larkfield's looms' ~48 crew-hours a day of linen and neckerchiefs need its 6 posts; the press's 13.3
+  pamphlets a day ~37 of its 4), so kept; at the capped wages each over its posts. **Southmeadow's pottery (89.6%)**: its
+  ~15 pots a day leave ~13p over their clay (a pot ~1.4p, its clay ~0.5p with the toll) against two posts' 18p, below its
+  base already (the drift down 2p). **Kept 1 + 1**: a 150-day trial with the potter alone had the Country selling the
+  rag-and-bone men ~7 pots a day again (days 100-150; 0.3 with the hand), and alone it was 96% in country5b, so neither
+  reaches 99% at this trade (the pots' price or the clay's toll would; left). **Larkfield's smithy (98.0%)**, its float a
+  day's iron bars, still short on some Restdays: **`workshopWagesDays` 3 to 4**.
+- **The inputs back toward what the workshops draw** (country6a's year 3, a farm a day, grown against sold, and +5%),
+  **half way**: the early years drew more (a 150-day trial at the whole step left the flax and hemp short ~20 a day
+  in days 100-150, the Country selling cord and linen again): flax ×0.863 (31.2 grown, 21.6 sold), hemp ×0.932 (33.3,
+  27.4), the pits' clay ×0.943 (37.9, 32.0), the sheep runs' wool ×0.955 (26.4, 22.9), the marsh's herbs ×0.978 (13.2,
+  12.3).
+- **The farms' tallow** to what sold (+2%): the dairies ×0.932 (11.6 grown, 10.6 sold), the pig farms ×0.870 (6.45,
+  5.5), the sheep runs ×0.847 (6.5, 5.4).
+- **The wine's cut halved**: the vineyards ×0.875 of country5b's (×1.167 of country6a's), the cellars empty and the
+  vintner short 5.2 a day at ×0.75.
+- **Cheese dearer** (the user's: a comic luxury of the rich and the noble, its price climbing to meet demand): country6a's
+  5.4 a day sold out at 2.0-2.2 times, the rich taking it all, the Houses' tables starved (0.24 a day: the Country's
+  purse had no spare). The dairies' own milk for cheese **7 to 5 a day** each (1.25 cheese; ~3.75 a day from the three),
+  the 2 to the butter (**21 to 23**, still short ~75 a day), so no milk spoils for it; the guard as it was (food and needs
+  first, at most 10% of what is over the keep). With the Houses' share back, their tables bid for it again.
+- **country6a's patch half way** (`--apply`, damping 0.5, `wholeSeasons` whole: 101 yields; the meal, pig and milk among
+  them, supply-bound) but tallow, wine, grapes, wool, herbs, flax, hemp and clay (above).
+
+**Tests.** `workshops_behaviors` (216): a workshop's step of 6 pays its keeper and hand 2p over the world's, 6p with the
+rule at 12, a penny under with a step of -1; four days of wages kept. `farms_behaviors` (1,948): the dairies' 5 and 23
+a day, a stall's 3 cheese of the dairies' stores, the quarry's and the pits' new yields. `ctest` in `build-core` **79 of 79**; `test_econ_report`,
+`test_farms_summary`, `test_country_industry`, `test_item_catalog`, `test_city_capacity`, `test_world_store`, the
+Editor's typecheck and `economy.test.ts` pass (`test_map_editor`'s Greyfen count, `test_ridgemere2`'s two DEV checks and
+`test_studio`'s copies, another session holding its database, fail as before, not this branch's).
+
+**The 30-day smoke** (build 61's export, `--simulate 0 720 --farms 0 --farms-every 1 --deterministic --threads 4
+--economy-level full`; `artifacts/economy/r2/country6b-smoke-report.md`, `country6b-smoke.patch.json`, a first spring's,
+not to be applied; country6a's smoke beside it): money conserved, nobody hungry, the Country's posts paid every night;
+its intake 1,556p (1,592p) and purse 2,262p at the month's end (2,248p); the Country's sales of the workshops' goods
+days 7-29: soap, scarves and cord 0.0-0.1 a day, pots 0.2, pamphlets 0.9, planks 0.2, linen 1.4; the workshops paid in
+full but the smithy (19.3p of 22.0p, its first month, as country6a's 19.1p); cheese 3.5 a day made (4.9), all sold, the
+Houses' tables 3.0 a day (3.6), butter 40.2 (35.7). The month is too short for the drift (judged every 28 days):
+**a 150-day trial** (`--simulate 6 3606`, as the 3-year run) beside country6a's first 150 days: conserved, nobody
+hungry, the posts paid every night; days 100-150 the workshops' wages the same (the drift not yet past 2p:
+the soapworks 84p, 85p), their Houses' share about the same (~160p a day); the Country's pots 7.5 a day with the potter alone (0.3), so
+the hand kept; the flax ~12 a day short (1.7: the first year drew ~34-40 a farm, the third ~22), the half way kept.
