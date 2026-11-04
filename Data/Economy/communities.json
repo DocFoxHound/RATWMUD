@@ -3170,6 +3170,441 @@
     "cottageLots": 12,
     "openTiles": 12152
    }
+  },
+  {
+   "id": "frosthollow",
+   "name": "Frosthollow",
+   "site": "frosthollow",
+   "centre": {
+    "x": 2308,
+    "y": 796
+   },
+   "about": "The mining village in the high valley under the Whitefangs' pass, where the Pass Road, the Pass and the High Road meet: timber cottages on stone footings under cedar shingle round a green and its well, a store and an alehouse, kitchen gardens, hens and goats, the snow on the peaks above it. The iron mine's diggers, the lime burners and the Greyteeth colliers live here.",
+   "style": "country",
+   "region": "frosthollow",
+   "town": false,
+   "hands": 0,
+   "farms": [],
+   "beds": 43,
+   "homes": [
+    {
+     "area": "cn_frosthollow_cottage_1",
+     "name": "Frosthollow Cottage 1",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 14,
+       "y": 1
+      },
+      {
+       "x": 14,
+       "y": 3
+      },
+      {
+       "x": 1,
+       "y": 5
+      },
+      {
+       "x": 14,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_9_3",
+      "x": 11,
+      "y": 8,
+      "worldX": 2315,
+      "worldY": 776
+     }
+    },
+    {
+     "area": "cn_frosthollow_cottage_2",
+     "name": "Frosthollow Cottage 2",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 14,
+       "y": 1
+      },
+      {
+       "x": 14,
+       "y": 3
+      },
+      {
+       "x": 1,
+       "y": 5
+      },
+      {
+       "x": 14,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_9_2",
+      "x": 11,
+      "y": 251,
+      "worldX": 2315,
+      "worldY": 763
+     }
+    },
+    {
+     "area": "cn_frosthollow_cottage_3",
+     "name": "Frosthollow Cottage 3",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 14,
+       "y": 9
+      },
+      {
+       "x": 14,
+       "y": 7
+      },
+      {
+       "x": 1,
+       "y": 9
+      },
+      {
+       "x": 1,
+       "y": 7
+      },
+      {
+       "x": 14,
+       "y": 5
+      },
+      {
+       "x": 1,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_9_3",
+      "x": 11,
+      "y": 48,
+      "worldX": 2315,
+      "worldY": 816
+     }
+    },
+    {
+     "area": "cn_frosthollow_cottage_4",
+     "name": "Frosthollow Cottage 4",
+     "capacity": 6,
+     "beds": [
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 1,
+       "y": 3
+      },
+      {
+       "x": 14,
+       "y": 1
+      },
+      {
+       "x": 14,
+       "y": 3
+      },
+      {
+       "x": 1,
+       "y": 5
+      },
+      {
+       "x": 14,
+       "y": 5
+      }
+     ],
+     "door": {
+      "cell": "w_ridgemere_8_2",
+      "x": 252,
+      "y": 251,
+      "worldX": 2300,
+      "worldY": 763
+     }
+    }
+   ],
+   "flats": [
+    {
+     "area": "cn_frosthollow_store_flat",
+     "name": "Frosthollow Stores, the flat above",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 16
+      },
+      {
+       "x": 3,
+       "y": 16
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 5,
+       "y": 16
+      }
+     ],
+     "for": "Frosthollow Stores"
+    },
+    {
+     "area": "cn_frosthollow_alehouse_flat",
+     "name": "The Lamp and Pick, the rooms above",
+     "capacity": 3,
+     "beds": [
+      {
+       "x": 12,
+       "y": 1
+      },
+      {
+       "x": 10,
+       "y": 1
+      },
+      {
+       "x": 12,
+       "y": 18
+      }
+     ],
+     "for": "The Lamp and Pick"
+    },
+    {
+     "area": "cn_frosthollow_mine_house",
+     "name": "The Mine Captain's House",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 14
+      },
+      {
+       "x": 7,
+       "y": 14
+      }
+     ],
+     "for": "the Frosthollow iron mine"
+    },
+    {
+     "area": "cn_frosthollow_lime_house",
+     "name": "The Limeburner's House",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 1,
+       "y": 14
+      },
+      {
+       "x": 3,
+       "y": 14
+      },
+      {
+       "x": 1,
+       "y": 1
+      },
+      {
+       "x": 3,
+       "y": 1
+      }
+     ],
+     "for": "the lime quarry"
+    },
+    {
+     "area": "cn_frosthollow_collier_house",
+     "name": "The Collier's House",
+     "capacity": 4,
+     "beds": [
+      {
+       "x": 9,
+       "y": 1
+      },
+      {
+       "x": 7,
+       "y": 1
+      },
+      {
+       "x": 9,
+       "y": 14
+      },
+      {
+       "x": 7,
+       "y": 14
+      }
+     ],
+     "for": "the Greyteeth charcoal hearths"
+    }
+   ],
+   "market": [
+    {
+     "area": "cn_frosthollow_store",
+     "name": "Frosthollow Stores",
+     "business": "general",
+     "posts": [
+      {
+       "post": "shopkeeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 3,
+       "y": 8
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_8_3",
+      "x": 250,
+      "y": 24,
+      "worldX": 2298,
+      "worldY": 792
+     },
+     "otherRooms": [
+      "cn_frosthollow_store_flat"
+     ]
+    },
+    {
+     "area": "cn_frosthollow_alehouse",
+     "name": "The Lamp and Pick",
+     "business": "inn",
+     "posts": [
+      {
+       "post": "alehouse keeper",
+       "count": 1
+      }
+     ],
+     "work": [
+      {
+       "x": 11,
+       "y": 5
+      }
+     ],
+     "stations": [],
+     "door": {
+      "cell": "w_ridgemere_9_3",
+      "x": 14,
+      "y": 28,
+      "worldX": 2318,
+      "worldY": 796
+     },
+     "otherRooms": [
+      "cn_frosthollow_alehouse_flat"
+     ]
+    }
+   ],
+   "workshops": [],
+   "keepers": [
+    {
+     "area": "cn_frosthollow_mine_house",
+     "name": "The Mine Captain's House",
+     "works": "mine_frost_iron",
+     "door": {
+      "cell": "w_ridgemere_9_3",
+      "x": 29,
+      "y": 23,
+      "worldX": 2333,
+      "worldY": 791
+     }
+    },
+    {
+     "area": "cn_frosthollow_lime_house",
+     "name": "The Limeburner's House",
+     "works": "quarry_lime",
+     "door": {
+      "cell": "w_ridgemere_8_3",
+      "x": 235,
+      "y": 27,
+      "worldX": 2283,
+      "worldY": 795
+     }
+    },
+    {
+     "area": "cn_frosthollow_collier_house",
+     "name": "The Collier's House",
+     "works": "charcoal_upper",
+     "door": {
+      "cell": "w_ridgemere_9_3",
+      "x": 46,
+      "y": 31,
+      "worldX": 2350,
+      "worldY": 799
+     }
+    }
+   ],
+   "gardens": [
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_8_3",
+     "x": 243,
+     "y": 65,
+     "width": 12,
+     "height": 8,
+     "worldX": 2291,
+     "worldY": 833,
+     "tiles": 60
+    },
+    {
+     "kind": "kitchen garden",
+     "cell": "w_ridgemere_9_3",
+     "x": 9,
+     "y": 65,
+     "width": 12,
+     "height": 8,
+     "worldX": 2313,
+     "worldY": 833,
+     "tiles": 60
+    },
+    {
+     "kind": "hen run",
+     "cell": "w_ridgemere_8_2",
+     "x": 231,
+     "y": 246,
+     "width": 9,
+     "height": 7,
+     "worldX": 2279,
+     "worldY": 758,
+     "tiles": 35
+    },
+    {
+     "kind": "goat paddock",
+     "cell": "w_ridgemere_9_2",
+     "x": 21,
+     "y": 242,
+     "width": 13,
+     "height": 9,
+     "worldX": 2325,
+     "worldY": 754,
+     "tiles": 77
+    }
+   ],
+   "roomToGrow": {
+    "cottageLots": 11,
+    "openTiles": 5569
+   }
   }
  ],
  "farms": [
@@ -6584,6 +7019,216 @@
      }
     ]
    }
+  },
+  {
+   "site": "mine_frost_iron",
+   "name": "the Frosthollow iron mine",
+   "kind": "mine",
+   "community": "frosthollow",
+   "centre": {
+    "x": 2516,
+    "y": 724
+   },
+   "size": 14,
+   "walk": 251,
+   "works": "mine_frost_iron",
+   "workplace": {
+    "area": "w_ridgemere_9_2",
+    "name": "the Frosthollow iron mine",
+    "work": [
+     {
+      "x": 212,
+      "y": 213
+     },
+     {
+      "x": 213,
+      "y": 211
+     },
+     {
+      "x": 211,
+      "y": 210
+     },
+     {
+      "x": 210,
+      "y": 214
+     },
+     {
+      "x": 214,
+      "y": 214
+     },
+     {
+      "x": 215,
+      "y": 212
+     },
+     {
+      "x": 214,
+      "y": 209
+     },
+     {
+      "x": 212,
+      "y": 208
+     },
+     {
+      "x": 212,
+      "y": 216
+     },
+     {
+      "x": 208,
+      "y": 213
+     },
+     {
+      "x": 209,
+      "y": 209
+     },
+     {
+      "x": 216,
+      "y": 210
+     },
+     {
+      "x": 209,
+      "y": 216
+     },
+     {
+      "x": 215,
+      "y": 216
+     },
+     {
+      "x": 217,
+      "y": 213
+     },
+     {
+      "x": 207,
+      "y": 210
+     }
+    ]
+   },
+   "keeperHome": "cn_frosthollow_mine_house"
+  },
+  {
+   "site": "quarry_lime",
+   "name": "the lime quarry",
+   "kind": "quarry",
+   "community": "frosthollow",
+   "centre": {
+    "x": 1588,
+    "y": 788
+   },
+   "size": 20,
+   "walk": 794,
+   "works": "quarry_lime",
+   "workplace": {
+    "area": "w_ridgemere_6_3",
+    "name": "the lime quarry",
+    "work": [
+     {
+      "x": 53,
+      "y": 20
+     },
+     {
+      "x": 50,
+      "y": 20
+     },
+     {
+      "x": 52,
+      "y": 18
+     },
+     {
+      "x": 54,
+      "y": 22
+     },
+     {
+      "x": 55,
+      "y": 19
+     },
+     {
+      "x": 49,
+      "y": 18
+     },
+     {
+      "x": 49,
+      "y": 22
+     },
+     {
+      "x": 54,
+      "y": 17
+     }
+    ]
+   },
+   "keeperHome": "cn_frosthollow_lime_house",
+   "kiln": {
+    "area": "w_ridgemere_6_3",
+    "name": "the lime quarry's lime kiln",
+    "x": 46,
+    "y": 6,
+    "width": 12,
+    "height": 8,
+    "worldX": 1582,
+    "worldY": 774,
+    "kilns": [
+     {
+      "x": 49,
+      "y": 7
+     },
+     {
+      "x": 54,
+      "y": 7
+     }
+    ],
+    "work": [
+     {
+      "x": 49,
+      "y": 9
+     },
+     {
+      "x": 54,
+      "y": 9
+     }
+    ]
+   }
+  },
+  {
+   "site": "charcoal_upper",
+   "name": "the Greyteeth charcoal hearths",
+   "kind": "charcoal",
+   "community": "frosthollow",
+   "centre": {
+    "x": 2644,
+    "y": 940
+   },
+   "size": 18,
+   "walk": 558,
+   "works": "charcoal_upper",
+   "workplace": {
+    "area": "w_ridgemere_10_3",
+    "name": "the Greyteeth charcoal hearths",
+    "work": [
+     {
+      "x": 83,
+      "y": 173
+     },
+     {
+      "x": 85,
+      "y": 171
+     },
+     {
+      "x": 82,
+      "y": 171
+     },
+     {
+      "x": 84,
+      "y": 169
+     },
+     {
+      "x": 84,
+      "y": 175
+     },
+     {
+      "x": 87,
+      "y": 172
+     }
+    ]
+   },
+   "keeperHome": "cn_frosthollow_collier_house"
   }
  ],
  "paths": [
@@ -6933,6 +7578,42 @@
    "to": [
     1636,
     3332
+   ]
+  },
+  {
+   "name": "frosthollow:mine_frost_iron",
+   "length": 251,
+   "from": [
+    2308,
+    796
+   ],
+   "to": [
+    2516,
+    724
+   ]
+  },
+  {
+   "name": "frosthollow:quarry_lime",
+   "length": 794,
+   "from": [
+    2308,
+    796
+   ],
+   "to": [
+    1588,
+    788
+   ]
+  },
+  {
+   "name": "frosthollow:charcoal_upper",
+   "length": 558,
+   "from": [
+    2308,
+    796
+   ],
+   "to": [
+    2644,
+    940
    ]
   }
  ]

@@ -196,14 +196,17 @@ class Places(unittest.TestCase):
         root = Path(__file__).resolve().parent.parent
         cf = json.loads((root / 'Data/Economy/country_farms.json').read_text())
         built = {f['id'] for a in cf['areas'] if a.get('works') for f in a['farms']}
-        self.assertEqual(built, set(P.WORKS_IDS.values()))
+        # (Doc 72, 4.7: Frosthollow's works are on the map before the economy builds them; the Greyteeth hearths only if
+        # the smelting wants their charcoal.)
+        frost = {P.WORKS_IDS[k] for k, com in P.WORKS.items() if com in P.LAST}
+        self.assertTrue(built <= set(P.WORKS_IDS.values()), built - set(P.WORKS_IDS.values()))
+        self.assertTrue(set(P.WORKS_IDS.values()) - built <= frost)
         self.assertEqual(set(P.WORKS_IDS), set(P.WORKS), 'every works site sited is built')
-        self.assertTrue(set(P.WORKS_IDS) <= set(P.WORKS))
         contract = json.loads((root / 'Data/Economy/communities.json').read_text())
         for w in contract['works']:
             if w['site'] in P.WORKS_IDS:
                 self.assertEqual(w['works'], P.WORKS_IDS[w['site']])
-                self.assertEqual(len(w['workplace']['work']), P.WORK_SPOTS, w['site'])
+                self.assertEqual(len(w['workplace']['work']), P.WORK_SPOTS_AT.get(w['site'], P.WORK_SPOTS), w['site'])
                 self.assertEqual(w['workplace']['area'], R.cell_id(w['centre']['x'] // R.CELL, w['centre']['y'] // R.CELL))
             else:
                 self.assertIsNone(w.get('works'))
@@ -450,6 +453,8 @@ class WholeRealm(unittest.TestCase):
         self.assertTrue(50 <= beds['larkfield'] <= 58, beds)
         for k in ('southmeadow', 'fenshore', 'saltwell', 'oakhaven'):
             self.assertTrue(20 <= beds[k] <= 30, beds)
+        # (Doc 72, 4.7: Frosthollow, four cottages, the store's and the alehouse's flats, three keepers' houses.)
+        self.assertTrue(38 <= beds['frosthollow'] <= 46, beds)
         for com in c['communities']:
             self.assertGreaterEqual(com['roomToGrow']['cottageLots'], 3, com['id'])
             self.assertTrue(any(g['kind'] == 'kitchen garden' for g in com['gardens']))
@@ -458,9 +463,10 @@ class WholeRealm(unittest.TestCase):
             self.assertIn('inn', [m['business'] for m in com['market']])
             for m in com['market']:
                 self.assertGreaterEqual(len(m['work']), sum(p['count'] for p in m['posts']), m['area'])
-        # Oakhaven is the sixth (doc 72, Siting); Frosthollow and Mirebridge are erased.
+        # Oakhaven is the sixth (doc 72, Siting); Mirebridge is erased; Frosthollow placed again, the seventh (doc 72, 4.7).
         built = {r['id'].split('_')[1] for r in self.project['rooms'] if r['id'].startswith('cn_')}
-        self.assertEqual(built, {'coldwater', 'larkfield', 'southmeadow', 'fenshore', 'saltwell', 'oakhaven'})
+        self.assertEqual(built, {'coldwater', 'larkfield', 'southmeadow', 'fenshore', 'saltwell', 'oakhaven',
+                                 'frosthollow'})
         oak = next(k for k in c['communities'] if k['id'] == 'oakhaven')
         self.assertGreaterEqual(oak['roomToGrow']['cottageLots'], 6)
 
@@ -502,8 +508,9 @@ class WholeRealm(unittest.TestCase):
         # The works doc 72 sited (its Siting): each placed near where its ground was measured, its crew's home named,
         # a community's joined to it by a footpath; Frosthollow and Mirebridge gone, their roads meeting where they were.
         sites = {s['id']: s for s in self.realm.sites}
-        self.assertNotIn('frosthollow', sites)
         self.assertNotIn('mirebridge', sites)
+        # (Frosthollow is placed again on the point its roads meet at: test_doc_72s_frosthollow.)
+        self.assertEqual((sites['frosthollow']['x'], sites['frosthollow']['y']), R.FROSTHOLLOW)
         for key, near, most in (('timber_oakhaven', (1056, 1056), 48), ('coppice_rainwood', (620, 1040), 48),
                                 ('peat_fens', (800, 3616), 64)):
             self.assertIn(key, sites)
@@ -519,6 +526,45 @@ class WholeRealm(unittest.TestCase):
             self.assertIn(name, ends)
         # (No cell still waits for a town.)
         self.assertFalse(any(R.TOWN_GROUND in c['description'] for c in self.project['cells']))
+
+    def test_doc_72s_frosthollow(self):
+        # Doc 72, 4.7 (the user, 2026-11-04: iron and lime out of the Country): Frosthollow a community again in its
+        # high valley, the roads meeting in it; the iron mine, the lime quarry with its kiln and the Greyteeth hearths
+        # its works, each with its keeper's house in the village, its work spots and a footpath from the village.
+        c = self.realm.contract
+        rooms = {r['id']: r for r in self.project['rooms']}
+        sites = {s['id']: s for s in self.realm.sites}
+        frost = next(k for k in c['communities'] if k['id'] == 'frosthollow')
+        self.assertEqual(frost['region'], 'frosthollow')
+        self.assertEqual(len(frost['homes']), 4)
+        self.assertEqual({m['business'] for m in frost['market']}, {'general', 'inn'})
+        keepers = {k['works']: k for k in frost['keepers']}
+        self.assertEqual(set(keepers), {'mine_frost_iron', 'quarry_lime', 'charcoal_upper'})
+        flats = {f['area']: f for f in frost['flats']}
+        works = {w['site']: w for w in c['works']}
+        for site, k in keepers.items():
+            self.assertEqual(works[site]['keeperHome'], k['area'])
+            self.assertEqual(flats[k['area']]['for'], works[site]['name'])
+            self.assertEqual(rooms[k['area']]['territory']['region'], 'frosthollow')
+            for bed in flats[k['area']]['beds']:
+                self.assertEqual(rooms[k['area']]['terrain'][bed['y']][bed['x']], 'b')
+            self.assertEqual(works[site]['community'], 'frosthollow')
+            self.assertLess(works[site]['walk'], 1047, site)
+            self.assertEqual(len(works[site]['workplace']['work']), P.WORK_SPOTS_AT.get(site, P.WORK_SPOTS), site)
+        # The hearths by the Greyteeth pines, on the side towards Frosthollow.
+        pines, hearth = sites['timber_upper'], sites['charcoal_upper']
+        self.assertLess(np.hypot(hearth['x'] - pines['x'], hearth['y'] - pines['y']), 200)
+        self.assertLess(np.hypot(hearth['x'] - 2308, hearth['y'] - 796), np.hypot(pines['x'] - 2308, pines['y'] - 796))
+        # The lime kiln at the quarry: two kilns (furnaces) in the quarry's cell, a work spot open before each.
+        kiln = works['quarry_lime']['kiln']
+        self.assertEqual(kiln['area'], works['quarry_lime']['workplace']['area'])
+        cells = {x['id']: x for x in self.project['cells']}
+        rows = cells[kiln['area']]['terrain']
+        for k, spot in zip(kiln['kilns'], kiln['work']):
+            self.assertEqual(rows[k['y']][k['x']], '{')
+            self.assertEqual(rows[spot['y']][spot['x']], '.')
+        # Its cell is named for it again.
+        self.assertIn('Frosthollow', cells[R.cell_id(2308 // R.CELL, 796 // R.CELL)]['name'])
 
     def test_the_contract_written_is_the_one_made(self):
         # Data/Economy/communities.json is what the last write made; the generator makes the same again.

@@ -29,7 +29,7 @@
   "fog": 23
  },
  "sites": {
-  "town": 6,
+  "town": 7,
   "farmland": 2,
   "mill": 2,
   "orchard": 5,
@@ -45,7 +45,7 @@
   "salt": 1,
   "saltcoast": 1,
   "timber": 6,
-  "charcoal": 2,
+  "charcoal": 3,
   "quarry": 4,
   "clay": 2,
   "mine": 6,
@@ -1007,6 +1007,34 @@
    "tiles": 3641,
    "track": 136,
    "built": "A hamlet of the Sallow Fens on a low island of dry ground: timber houses thatched with reed stand on stilts over the wet, joined by boardwalks; a store, an alehouse, kitchen gardens on the dry ground, hens and goats. The eel-catchers, salt boilers, warreners and the fen coast's boatmen live here."
+  },
+  {
+   "id": "charcoal_upper",
+   "kind": "charcoal",
+   "name": "the Greyteeth charcoal hearths",
+   "x": 2644,
+   "y": 940,
+   "size": 18,
+   "for": "charcoal (doc 72, 4.7: the iron's smelting; the crew Frosthollow's)",
+   "about": "charcoal burners' hearths at the edge of the Greyteeth pines, above the upper Long River",
+   "shared": 0,
+   "level": 6.0,
+   "tiles": 1062,
+   "track": 48
+  },
+  {
+   "id": "frosthollow",
+   "kind": "town",
+   "name": "Frosthollow",
+   "x": 2308,
+   "y": 796,
+   "size": 60,
+   "for": "community (doc 72, 4.7: the iron and the lime)",
+   "about": "the mining village in the high valley under the Whitefangs' pass; its mine above it",
+   "shared": 0,
+   "level": 5.5,
+   "tiles": 11180,
+   "built": "The mining village in the high valley under the Whitefangs' pass, where the Pass Road, the Pass and the High Road meet: timber cottages on stone footings under cedar shingle round a green and its well, a store and an alehouse, kitchen gardens, hens and goats, the snow on the peaks above it. The iron mine's diggers, the lime burners and the Greyteeth colliers live here."
   }
  ],
  "reserved": {
@@ -1062,8 +1090,8 @@
   }
  },
  "tracks": {
-  "count": 216,
-  "length": 21890
+  "count": 227,
+  "length": 22264
  },
  "rivers": [
   {
@@ -1779,35 +1807,35 @@
   }
  ],
  "tiles": {
-  "!": 1292520,
-  "\"": 862897,
-  "#": 19546,
+  "!": 1291018,
+  "\"": 862919,
+  "#": 19873,
   "$": 308536,
   "%": 15933,
-  "&": 1043149,
+  "&": 1043148,
   "(": 681730,
   ")": 99720,
   "*": 596887,
-  "+": 380,
-  ",": 2408680,
-  "-": 512370,
-  ".": 60054,
-  "/": 40416,
+  "+": 389,
+  ",": 2408137,
+  "-": 512317,
+  ".": 60822,
+  "/": 40903,
   "0": 1973518,
-  "1": 158803,
+  "1": 158380,
   "2": 16319,
   "3": 64771,
-  "4": 1056,
+  "4": 1158,
   "5": 3814,
-  "7": 18927,
+  "7": 18959,
   "8": 4273,
   ":": 264,
-  ";": 1595160,
+  ";": 1595428,
   "<": 90,
   ">": 820,
   "?": 21234,
   "@": 49297,
-  "B": 145175,
+  "B": 145056,
   "D": 199610,
   "E": 409693,
   "F": 50,
@@ -1815,38 +1843,38 @@
   "H": 4057,
   "I": 71,
   "J": 9329,
-  "L": 6432,
-  "O": 113,
-  "P": 466411,
+  "L": 6935,
+  "O": 114,
+  "P": 465502,
   "Q": 1500,
   "S": 390,
-  "U": 19,
+  "U": 20,
   "V": 660,
   "W": 1945305,
-  "X": 303267,
+  "X": 303225,
   "Y": 231356,
   "Z": 15917,
   "[": 2417,
   "]": 1125,
   "^": 735,
   "_": 15748,
-  "d": 43564,
+  "d": 44558,
   "f": 16039,
   "i": 63,
-  "o": 45315,
+  "o": 45308,
   "p": 3,
-  "r": 396517,
+  "r": 396463,
   "s": 163373,
   "u": 20,
   "w": 171405,
-  "x": 105,
-  "{": 4,
-  "|": 2986,
+  "x": 109,
+  "{": 6,
+  "|": 3119,
   "}": 2,
   "~": 326981
  },
  "cliffs": 15641,
- "reachedShare": 0.9801,
+ "reachedShare": 0.9802,
  "checks": [
   {
    "check": "the spawn stands on open ground",
@@ -1889,9 +1917,9 @@
    "detail": ""
   },
   {
-   "check": "six town sites, each a community (Fenshore the sixth; Frosthollow and Mirebridge erased)",
+   "check": "seven town sites, each a community (Fenshore the sixth; Frosthollow placed again the seventh, doc 72, 4.7; Mirebridge erased)",
    "ok": true,
-   "detail": "6"
+   "detail": "7"
   },
   {
    "check": "no site laid over another's ground",
@@ -1944,14 +1972,19 @@
    "detail": ""
   },
   {
-   "check": "the hired hands where the user put them (21, 11, 8, 8, 5, Oakhaven none; 23 in Ridgemere)",
+   "check": "the hired hands where the user put them (21, 11, 8, 8, 5, Oakhaven and Frosthollow none; 23 in Ridgemere)",
    "ok": true,
-   "detail": "{'coldwater': 21, 'larkfield': 11, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 5, 'oakhaven': 0}, Ridgemere 23"
+   "detail": "{'coldwater': 21, 'larkfield': 11, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 5, 'oakhaven': 0, 'frosthollow': 0}, Ridgemere 23"
   },
   {
    "check": "the country workshops (doc 72, Phase 5): the eight, a keeper's flat and work for their 29 each",
    "ok": true,
    "detail": "8 built, crew 29; short: "
+  },
+  {
+   "check": "Frosthollow (doc 72, 4.7): a keeper's house, work spots and a walk for each of its three works, the lime kiln",
+   "ok": true,
+   "detail": ""
   },
   {
    "check": "the places' ids are world ids (48 characters at most)",
@@ -1966,19 +1999,19 @@
  ],
  "timings": {
   "city": 0.0,
-  "sea": 12.4,
-  "elevation": 1.0,
+  "sea": 13.6,
+  "elevation": 1.2,
   "climate": 0.1,
-  "drainage": 0.8,
-  "heights": 49.5,
-  "water": 18.2,
-  "settle": 9.2,
-  "ground": 49.5,
-  "sites": 3.4,
-  "roads": 5.6,
-  "places": 5.4,
-  "cells": 2.9,
-  "checks": 5.7
+  "drainage": 0.9,
+  "heights": 29.1,
+  "water": 19.3,
+  "settle": 9.6,
+  "ground": 56.3,
+  "sites": 4.2,
+  "roads": 6.4,
+  "places": 7.9,
+  "cells": 3.8,
+  "checks": 6.5
  },
  "places": {
   "communities": [
@@ -2103,11 +2136,31 @@
      "The Felled Cedar"
     ],
     "gardens": 4
+   },
+   {
+    "id": "frosthollow",
+    "name": "Frosthollow",
+    "centre": {
+     "x": 2308,
+     "y": 796
+    },
+    "hands": 0,
+    "beds": 43,
+    "roomToGrow": {
+     "cottageLots": 11,
+     "openTiles": 5569
+    },
+    "homes": 4,
+    "market": [
+     "Frosthollow Stores",
+     "The Lamp and Pick"
+    ],
+    "gardens": 4
    }
   ],
   "steadings": 31,
   "ridgemereHands": 23,
-  "paths": 29,
-  "pathTiles": 15234
+  "paths": 32,
+  "pathTiles": 16837
  }
 }

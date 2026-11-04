@@ -19,6 +19,10 @@ exactly as it was: this only adds, on the farms' sites, the community sites and 
   keeper's flat over it (the soap boiler and chandler and a loom shed at Coldwater; a linen shed, a press and paper mill
   and the village smithy at Larkfield; a pottery with its kiln yard at Fenshore and at Southmeadow; a press and paper
   mill at Oakhaven), and two cottages more at Larkfield for their hands; laid last, on the lots left free.
+- **Frosthollow** (doc 72, 4.7: iron and lime out of the Country): placed again after all the above on its old town
+  site in the high valley, where its roads still meet, a community like Oakhaven with a house for each of its works'
+  keepers; its works the iron mine, the lime quarry with a lime kiln, and the Greyteeth charcoal hearths (a new site by
+  the Greyteeth pines), each joined to the village by a footpath.
 - **The contract** for placing NPCs (`manifest`, written to Data/Economy/communities.json by a write): for every farm its
   site, workplace, farmhouse and community; for every community its homes and beds, its market's workplaces and the
   posts they want, its gardens; doc 72's works (each site, its crew's home, the walk: a footpath from a community);
@@ -192,6 +196,30 @@ COMMUNITIES = [
                   'cedar shakes by the door waiting for the next cart down the Sound Road.', [('shopkeeper', 1)]),
                  ('alehouse', 'alehouse', 'The Felled Cedar', 'A low alehouse of split cedar by the green, sawdust on '
                   'the floor and the fellers\' wet coats steaming by the fire.', [('alehouse keeper', 1)])]),
+    # The seventh (doc 72, 4.7; the user, 2026-11-04: iron and lime out of the Country): Frosthollow placed again on its
+    # old town site in the high valley under the Whitefangs' pass, where the Pass Road, the Pass and the High Road still
+    # meet; home of the iron mine's, the lime quarry's and the Greyteeth hearths' crews, each works' keeper in a house of
+    # his own (`keepers`: key, the works site, name, text). Laid `last`, after the workshops (FROSTHOLLOW_STEP), so
+    # nothing laid before it moves.
+    dict(id='frosthollow', name='Frosthollow', site='frosthollow', style='country', street='d', cottages=4, gardens=2,
+         last=True,
+         about='The mining village in the high valley under the Whitefangs\' pass, where the Pass Road, the Pass and the '
+               'High Road meet: timber cottages on stone footings under cedar shingle round a green and its well, a '
+               'store and an alehouse, kitchen gardens, hens and goats, the snow on the peaks above it. The iron mine\'s '
+               'diggers, the lime burners and the Greyteeth colliers live here.',
+         market=[('store', 'store', 'Frosthollow Stores', 'Pick helves, lamp oil and wicks, rope, salt and wedges, and '
+                  'oilskin capes on a peg for the walk up to the mine; the carts for the ore wait outside.',
+                  [('shopkeeper', 1)]),
+                 ('alehouse', 'alehouse', 'The Lamp and Pick', 'A low stone-footed alehouse by the green, its fire banked '
+                  'high against the valley\'s cold; the diggers\' lamps hang in a row by the door, the ore dust still on '
+                  'their boots.', [('alehouse keeper', 1)])],
+         keepers=[('mine_house', 'mine_frost_iron', 'The Mine Captain\'s House', 'The mine captain\'s house: a hearth, a '
+                   'table spread with the mine\'s tallies and a lump of ore for a paperweight, and beds for a family; '
+                   'the shift bell hangs by the door.'),
+                  ('lime_house', 'quarry_lime', 'The Limeburner\'s House', 'The limeburner\'s house: a hearth, a table, '
+                   'beds for a family and a pale dust of lime in every corner; the kiln\'s firing book on a shelf.'),
+                  ('collier_house', 'charcoal_upper', 'The Collier\'s House', 'The collier\'s house: a hearth, a table '
+                   'and beds for a family, the smell of the hearths\' smoke in the blankets and a rake by the door.')]),
 ]
 # The Country's works doc 72 builds (its Siting, 2026-11-03): each site and where its crew will live. A community's are
 # joined to it by a footpath, as its farms are; Ridgemere's (the Rainwood camp and coppice, the granite quarry) are
@@ -200,15 +228,31 @@ WORKS = {
     'timber_rainwood': 'ridgemere', 'timber_oakhaven': 'oakhaven', 'coppice_rainwood': 'ridgemere',
     'charcoal_greenholt': 'larkfield', 'peat_fens': 'fenshore', 'quarry_granite': 'ridgemere',
     'clay_mirebridge': 'fenshore', 'clay_fens': 'southmeadow',
+    # Doc 72, 4.7: the iron and the lime, Frosthollow's (their footpaths laid with it, last).
+    'mine_frost_iron': 'frosthollow', 'quarry_lime': 'frosthollow', 'charcoal_upper': 'frosthollow',
 }
+LAST = {c['id'] for c in COMMUNITIES if c.get('last')}     # (laid after everything else: Frosthollow)
 # Each built works' id in country_farms.json (doc 72: Phase 2's fuel area's works; Phase 3's stone area, the granite
 # quarry and the two clay pits, House Greatly's).
 WORKS_IDS = {
     'timber_rainwood': 'logging_rainwood', 'timber_oakhaven': 'logging_oakhaven', 'coppice_rainwood': 'coppice_rainwood',
     'charcoal_greenholt': 'coppice_greenholt', 'peat_fens': 'peat_fens',
     'quarry_granite': 'quarry_granite', 'clay_mirebridge': 'clay_mirebridge', 'clay_fens': 'clay_fens',
+    # Doc 72, 4.7: the iron mine and the lime quarry (House Timberland's and House Greatly's), and the Greyteeth hearths
+    # for the smelting's charcoal (~28 bars a day want ~42 charcoal; the Greenholt hearths make ~10).
+    'mine_frost_iron': 'mine_frost_iron', 'quarry_lime': 'quarry_lime', 'charcoal_upper': 'charcoal_upper',
 }
 WORK_SPOTS = 6           # A works' work spots: open ground nearest its centre, in its centre's cell.
+# More for the bigger crews (doc 72, 4.7): the iron mine's diggers, the lime quarry's hands (its kiln has its own).
+WORK_SPOTS_AT = {'mine_frost_iron': 16, 'quarry_lime': 8}
+# Doc 72, 4.7: the Greyteeth hearths, a new site (realm2_places' own, as Fenshore): beside the Greyteeth pines
+# (`timber_upper`) on the side towards Frosthollow, coppice and charcoal hearths for the smelting.
+HEARTH = dict(id='charcoal_upper', kind='charcoal', name='the Greyteeth charcoal hearths', near='timber_upper', toward=70,
+              search=110, size=18, plan='charcoal (doc 72, 4.7: the iron\'s smelting; the crew Frosthollow\'s)',
+              about='charcoal burners\' hearths at the edge of the Greyteeth pines, above the upper Long River')
+# The lime kiln at the quarry (doc 72, 4.7: the limestone burnt where it is cut): a yard of packed earth by the quarry's
+# middle, two kilns at its back, sacks of lime and a water butt for the slaking; work for its burners in front of them.
+LIME_KILN = (12, 8)
 # Doc 72, Phase 5 (its Siting): the country workshops of doc 71 section 5, 29 workers, in the communities. Each is a
 # workshop with its keeper's flat over it (the keeper lives there; the hands in the community's cottages): (key, kind,
 # name, crew). The ids are fixed (`cn_<community>_<key>`; the economy's branch uses the same). Laid after the
@@ -1153,13 +1197,22 @@ class Places:
             b = self.market_building(rng, style, kind, name, text, flat)
             more_work(b.rooms[0], sum(n for _, n in posts))
             wanted.append((key, b, 'market', posts))
+        for key, works_site, name, text in spec.get('keepers', []):
+            # (A works' keeper's house, doc 72, 4.7: on the village's side towards the works.)
+            p = house(rng, style, WORKSHOP_FLAT)
+            wanted.append((key, one('house', name, style, p, text), 'keeper', works_site))
         for i in range(spec['cottages']):
             name = f'{spec["name"]} Cottage {i + 1}' if style != 'fen' else f'{spec["name"]} Stilt House {i + 1}'
             wanted.append((f'cottage_{i + 1}', cottage(rng, style, name), 'home', None))
         missing = []
         for key, b, role, posts in wanted:
             fw, fh = b.footprint
-            near = (lx, ly) if role == 'market' else (lx + rng.randint(-24, 24), ly + rng.randint(-20, 20))
+            if role == 'keeper':
+                ws = self.sites[posts]
+                ang = math.atan2(ws['y'] - cy, ws['x'] - cx)
+                near = (int(lx + math.cos(ang) * (core - 14)), int(ly + math.sin(ang) * (core - 14)))
+            else:
+                near = (lx, ly) if role == 'market' else (lx + rng.randint(-24, 24), ly + rng.randint(-20, 20))
             spot = next(((x0, y0, facing, w, h) for _, x0, y0, facing, w, h in lots.candidates(fw, fh, near, limit=6000)
                          if lots.clear(x0, y0, w, h)), None)
             if spot is None:
@@ -1167,11 +1220,14 @@ class Places:
                 continue
             x0, y0, facing, w, h = spot
             ground = level + lift if fen else float(np.median(c.heights[y0:y0 + h, x0:x0 + w]))
-            rec = win.put(key, b, x0, y0, facing, spec['id'], float(half(ground)), open_door=role != 'home')
+            rec = win.put(key, b, x0, y0, facing, spec['id'], float(half(ground)), open_door=role not in ('home', 'keeper'))
             lots.take(x0, y0, w, h)
             br = self.building_record(win, rec, role, b)
             if role == 'home':
                 out['homes'].append(br)
+            elif role == 'keeper':
+                br['for'] = posts
+                out.setdefault('keepers', []).append(br)
             else:
                 br['posts'] = [{'post': p, 'count': n} for p, n in posts]
                 br['business'] = {'store': 'general', 'inn': 'inn', 'alehouse': 'inn', 'bakehouse': 'bakery'}[
@@ -1419,7 +1475,8 @@ class Places:
         self.ids |= {x['id'] for x in project['links'] if not is_ours(x['id'])}
         self.place_fenshore()
         for spec in COMMUNITIES:
-            self.plan_community(spec)
+            if not spec.get('last'):
+                self.plan_community(spec)
         for site_id in STEADINGS:
             self.plan_steading(site_id)
         # Footpaths: each steading (and mill) to the nearest road or track; each community to each of its farms.
@@ -1478,12 +1535,14 @@ class Places:
                 farms_out[site_id]['jetty'] = self.jetty(st)
         coms = {}
         for spec in COMMUNITIES:
+            if spec.get('last'):
+                continue
             coms[spec['id']] = self.stamp_community(spec)
             self.sites[spec['site']]['built'] = spec['about']
         # The works' footpaths (doc 72), last: after the communities are laid out, so a path reaching a village makes
         # no new street there and its houses stand where they did (their beds are the placed people's).
         for site_id, com in WORKS.items():
-            if com == 'ridgemere':
+            if com == 'ridgemere' or com in LAST:
                 continue
             site, cinfo = self.sites[site_id], self.communities[com]
             csite = cinfo['site']
@@ -1495,6 +1554,10 @@ class Places:
         for spec in COMMUNITIES:
             if spec['id'] in WORKSHOPS or spec['id'] in WORKSHOP_COTTAGES:
                 self.stamp_workshops(spec, coms[spec['id']])
+        # Doc 72, 4.7: Frosthollow and its works, last of all (nothing laid before them moves).
+        for spec in COMMUNITIES:
+            if spec.get('last'):
+                coms[spec['id']] = self.frosthollow_step(spec, held)
         self.farms_out, self.coms = farms_out, coms
         # The world's rooms and links: ours made again, the rest as they were.
         project['rooms'] = [x for x in project['rooms'] if not is_ours(x['id'])] + self.rooms
@@ -1504,18 +1567,151 @@ class Places:
         self.contract = self.manifest()
         return self.contract
 
+    # -- doc 72, 4.7: Frosthollow and the iron and lime works ---------------------------------------------------------
+    def frosthollow_step(self, spec, held):
+        """Frosthollow placed again on its old town site (realm2.FROSTHOLLOW, where its roads still meet), the Greyteeth
+        hearths beside the pines, the community laid as the others, its footpaths to its three works and the lime kiln
+        at the quarry. Laid after everything else, so nothing before it moves. Returns the community's record."""
+        R, r = self.R, self.realm
+        self.place_hearth()
+        x, y = R.FROSTHOLLOW
+        site = {'id': spec['site'], 'kind': 'town', 'name': spec['name'], 'x': int(x), 'y': int(y), 'size': 60,
+                'for': 'community (doc 72, 4.7: the iron and the lime)',
+                'about': 'the mining village in the high valley under the Whitefangs\' pass; its mine above it'}
+        r.prepare(site)
+        r.sites.append(site)
+        self.site_index[site['id']] = len(r.sites)
+        self.sites[site['id']] = site
+        self.report(f'  {spec["name"]} at {x}, {y} (level {site.get("level")}, {site["tiles"]} tiles)')
+        self.plan_community(spec)
+        out = self.stamp_community(spec)
+        site['built'] = spec['about']
+        # Its footpaths, from the green to each of its works (along the roads and tracks where they go).
+        G, NG = R.G, R.NG
+        cost = r.route_cost()
+        dry = (R.down(r.water.astype(np.float32), G) <= .15) & ~(R.down(r.hold.astype(np.float32), G, 'max') > 0)
+        cost[np.isinf(cost) & dry] = 3.0
+        zc = self.zone.reshape(NG, G, NG, G).max(axis=(1, 3))
+        roadc = R.down(r.road_mask.astype(np.float32), G, 'max') > 0
+        cheap = np.where(roadc, cost * .3, cost)
+        cinfo = self.communities[spec['id']]
+        cheap[(zc > 0) & (zc != cinfo['zone'])] = np.inf
+        for site_id, com in WORKS.items():
+            if com != spec['id']:
+                continue
+            w = self.sites[site_id]
+            self.walks[site_id] = self.lay_path(f'{com}:{site_id}', (x + .5, y + .5), (w['x'] + .5, w['y'] + .5),
+                                                (site.get('level'), w.get('level')), cheap, held)
+        self.kiln = self.lime_kiln('quarry_lime')
+        return out
+
+    def place_hearth(self):
+        """The Greyteeth hearths (HEARTH): a charcoal works on level wooded ground at the pines' edge towards Frosthollow,
+        clear of every other site's ground, with its track to the nearest road or track."""
+        R, r = self.R, self.realm
+        spec = HEARTH
+        G = R.G
+        pines = self.sites[spec['near']]
+        fx, fy = R.FROSTHOLLOW
+        ang = math.atan2(fy - pines['y'], fx - pines['x'])
+        tx = pines['x'] + math.cos(ang) * (pines['size'] + spec['toward'])
+        ty = pines['y'] + math.sin(ang) * (pines['size'] + spec['toward'])
+        hc = R.down(r.h, G)
+        gy, gx = np.gradient(hc)
+        slope = np.hypot(gx, gy) / G
+        wc = R.down(r.water.astype(np.float32), G)
+        heldc = R.down(r.hold.astype(np.float32), G, 'max') > 0
+        forest = sum(R.down(r.biomes[k].astype(np.float32), G) for k in ('rainforest', 'montane', 'woodland'))
+        roadc = R.down(r.road_mask.astype(np.float32), G, 'max') > 0
+        xs, ys = R.grid_xy(R.NG, G)
+        rr = max(1, spec['size'] // G)
+        d = np.hypot(xs - tx, ys - ty)
+        score = R.blur(slope, max(2, rr // 2)) * 40 + R.blur(wc, rr + 1) * 60 + \
+            (1 - R.blur(forest, max(2, rr // 2))) * 20 + d / spec['search'] * 6
+        crowd = R.spread(r.taken, R.site_kernel(spec['kind'], spec['size']))
+        score[(d > spec['search']) | heldc | crowd | (wc > .02) | R.spread(roadc, R.site_kernel(spec['kind'], 4))] = np.inf
+        j = int(np.argmin(score))
+        if not np.isfinite(score.ravel()[j]):
+            raise SystemExit(f'{spec["id"]}: no ground for it near {int(tx)}, {int(ty)}')
+        cy, cx = divmod(j, R.NG)
+        site = {'id': spec['id'], 'kind': spec['kind'], 'name': spec['name'], 'x': int(cx * G + G // 2),
+                'y': int(cy * G + G // 2), 'size': spec['size'], 'for': spec['plan'], 'about': spec['about']}
+        r.prepare(site)
+        r.sites.append(site)
+        self.site_index[site['id']] = len(r.sites)
+        self.sites[site['id']] = site
+        cost = r.route_cost()
+        roadc = R.down(r.road_mask.astype(np.float32), G, 'max') > 0
+        pts = R.route_to(cost, (site['x'], site['y']), roadc)
+        if pts and len(pts) > 1:
+            r.road(f'track:{site["id"]}', pts, 2, ends=(site.get('level'), None), ch='/')
+            site['track'] = len(pts)
+        self.report(f'  {spec["name"]} at {site["x"]}, {site["y"]} (level {site.get("level")}, {site["tiles"]} tiles, '
+                    f'{int(math.dist((site["x"], site["y"]), (pines["x"], pines["y"])))} from the pines)')
+
+    def lime_kiln(self, site_id):
+        """The lime kiln at the quarry (LIME_KILN): a yard on the quarry's open ground nearest its middle, in its middle's
+        cell and off its track; two kilns at the back, sacks of lime and a water butt; a work spot before each kiln."""
+        R, r = self.R, self.realm
+        s = self.sites[site_id]
+        cx, cy = s['x'], s['y']
+        CELL = R.CELL
+        X, Y = cx // CELL, cy // CELL
+        w, h = LIME_KILN
+        best = None
+        for dy in range(-30, 31):
+            for dx in range(-30, 31):
+                x0, y0 = cx + dx - w // 2, cy + dy - h // 2
+                if x0 // CELL != X or (x0 + w - 1) // CELL != X or y0 // CELL != Y or (y0 + h - 1) // CELL != Y:
+                    continue
+                d = dx * dx + dy * dy
+                if d < 100 or (best and d >= best[0]):           # (the quarry's own spots keep its middle)
+                    continue
+                box = np.s_[y0 - 1:y0 + h + 1, x0 - 1:x0 + w + 1]
+                if r.water[box].any() or r.hold[box].any() or r.road_mask[box].any() or self.built[box].any():
+                    continue
+                if not all(open_ground(c) for c in r.codes[box].ravel()):
+                    continue
+                if float(np.ptp(r.h[y0:y0 + h, x0:x0 + w])) > 1.0:
+                    continue
+                best = (d, x0, y0)
+        if best is None:
+            raise SystemExit(f'{site_id}: no ground for its lime kiln')
+        _, x0, y0 = best
+        level = float(half(np.median(r.h[y0:y0 + h, x0:x0 + w])))
+        r.codes[y0:y0 + h, x0:x0 + w] = ord('.')
+        r.h[y0:y0 + h, x0:x0 + w] = level
+        kilns = [(x0 + 3, y0 + 1), (x0 + w - 4, y0 + 1)]
+        for kx, ky in kilns:
+            r.codes[ky, kx] = ord('{')
+        for sx in range(x0 + 1, x0 + w - 1, 3):
+            r.codes[y0 + h - 2, sx] = ord('x')                 # (sacks of lime)
+        r.codes[y0 + 1, x0 + w - 2] = ord('O')                 # (the water butt for the slaking)
+        self.built[y0:y0 + h, x0:x0 + w] = True
+        self.kiln_box = (x0, y0, w, h)
+        return {'area': R.cell_id(X, Y), 'name': f'{s["name"]}\'s lime kiln', 'x': x0 - X * CELL, 'y': y0 - Y * CELL,
+                'width': w, 'height': h, 'worldX': x0, 'worldY': y0,
+                'kilns': [{'x': kx - X * CELL, 'y': ky - Y * CELL} for kx, ky in kilns],
+                'work': [{'x': kx - X * CELL, 'y': ky + 2 - Y * CELL} for kx, ky in kilns]}
+
     def work_spots(self, site_id):
-        """A works' place of work out of doors (doc 72): its centre's cell, and the WORK_SPOTS tiles of open ground nearest
-        its centre in that cell (at least 3 apart), each local to the cell."""
+        """A works' place of work out of doors (doc 72): its centre's cell, and the WORK_SPOTS tiles (WORK_SPOTS_AT for
+        the bigger crews) of open ground nearest its centre in that cell (at least 3 apart, off a lime kiln's yard), each
+        local to the cell."""
         s = self.sites[site_id]
         cx, cy = s['x'], s['y']
         CELL = self.R.CELL
         X, Y = cx // CELL, cy // CELL
         codes = self.realm.codes
+        n = WORK_SPOTS_AT.get(site_id, WORK_SPOTS)
+        reach = 10 if n <= WORK_SPOTS else 16
+        kx, ky, kw, kh = getattr(self, 'kiln_box', (0, 0, 0, 0))
         cand = []
-        for dy in range(-10, 11):
-            for dx in range(-10, 11):
+        for dy in range(-reach, reach + 1):
+            for dx in range(-reach, reach + 1):
                 x, y = cx + dx, cy + dy
+                if kw and kx - 1 <= x <= kx + kw and ky - 1 <= y <= ky + kh:
+                    continue
                 if x // CELL == X and y // CELL == Y and open_ground(codes[y, x]):
                     cand.append((dx * dx + dy * dy, x - X * CELL, y - Y * CELL))
         cand.sort()
@@ -1523,7 +1719,7 @@ class Places:
         for _, x, y in cand:
             if all(abs(x - a) + abs(y - b) >= 3 for a, b in picked):
                 picked.append((x, y))
-            if len(picked) == WORK_SPOTS:
+            if len(picked) == n:
                 break
         return {'area': self.R.cell_id(X, Y), 'name': s['name'], 'work': [{'x': x, 'y': y} for x, y in picked]}
 
@@ -1547,7 +1743,7 @@ class Places:
             for b in self.farms_out[f['site']]['buildings']:
                 doors.append((b['id'], b['door'], f['community']))
         for com in c['communities']:
-            for h in com['homes']:
+            for h in com['homes'] + com.get('keepers', []):
                 doors.append((h['area'], h['door'], com['id']))
             for m in com['market'] + com['workshops']:
                 doors.append((m['area'], m['door'], com['id']))
@@ -1568,9 +1764,11 @@ class Places:
         big = [h['area'] for com in c['communities'] for h in com['homes'] + com['flats'] if h['capacity'] > HOUSEHOLD_MOST]
         big += [f['home']['area'] for f in c['farms'] if f['home']['capacity'] != HOUSEHOLD_MOST]
         out.append(('homes for at most six, farmhouses for six', not big, ', '.join(big)))
-        want = {'coldwater': 21, 'larkfield': 11, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 5, 'oakhaven': 0}   # (a fibre hand at each grain farm, a vine hand fewer at each vineyard: doc 72)
+        want = {'coldwater': 21, 'larkfield': 11, 'southmeadow': 8, 'fenshore': 8, 'saltwell': 5, 'oakhaven': 0,
+                'frosthollow': 0}   # (a fibre hand at each grain farm, a vine hand fewer at each vineyard: doc 72)
         got = {com['id']: com['hands'] for com in c['communities']}
-        out.append(('the hired hands where the user put them (21, 11, 8, 8, 5, Oakhaven none; 23 in Ridgemere)',
+        out.append(('the hired hands where the user put them (21, 11, 8, 8, 5, Oakhaven and Frosthollow none; 23 in '
+                    'Ridgemere)',
                     got == want and c['ridgemere']['hands'] == 23, f'{got}, Ridgemere {c["ridgemere"]["hands"]}'))
         # Doc 72, Phase 5: the eight workshops by their fixed ids, each with its keeper's flat and a work spot for each of
         # its crew (29 in all), in one walk with its community's homes.
@@ -1583,6 +1781,19 @@ class Places:
         out.append(('the country workshops (doc 72, Phase 5): the eight, a keeper\'s flat and work for their 29 each',
                     set(shops) == fixed and not short and crew == 29,
                     f'{len(shops)} built, crew {crew}; short: {", ".join(short)}'))
+        # Doc 72, 4.7: Frosthollow's works (the iron mine, the lime quarry and its kiln, the Greyteeth hearths), each with
+        # its keeper's house in the village, its work spots and a footpath from the village under the longest walk.
+        works = {w['site']: w for w in c['works'] if w['community'] in LAST}
+        frost = next((k for k in c['communities'] if k['id'] in LAST), None)
+        bad = [k for k, w in works.items() if not w.get('keeperHome') or not w.get('walk') or w['walk'] >= 1047 or
+               len(w['workplace']['work']) < WORK_SPOTS_AT.get(k, WORK_SPOTS)]
+        kiln = works.get('quarry_lime', {}).get('kiln')
+        if not kiln or len(kiln['work']) < 2:
+            bad.append('the lime kiln')
+        if frost is None or {label_at(h['door']) for h in frost['homes']} != {main}:
+            bad.append('the village\'s homes')
+        out.append(('Frosthollow (doc 72, 4.7): a keeper\'s house, work spots and a walk for each of its three works, the '
+                    'lime kiln', set(works) == {k for k, v in WORKS.items() if v in LAST} and not bad, ', '.join(bad)))
         ids = [x['id'] for x in self.rooms + self.links]
         long_ = [i for i in ids if not re.fullmatch(r'[a-z][a-z0-9_-]{0,47}', i)]
         out.append(('the places\' ids are world ids (48 characters at most)', not long_ and len(ids) == len(set(ids)),
@@ -1592,6 +1803,18 @@ class Places:
         return out
 
     # -- the contract --------------------------------------------------------------------------------------------
+    def works_record(self, k, com, coms):
+        s = self.sites[k]
+        out = {'site': k, 'name': s['name'], 'kind': s['kind'], 'community': com, 'centre': {'x': s['x'], 'y': s['y']},
+               'size': s['size'], 'walk': self.walks.get(k), 'works': WORKS_IDS.get(k),
+               'workplace': self.work_spots(k) if k in WORKS_IDS else None}
+        home = next((b['area'] for c in coms for b in c.get('keepers', []) if b['works'] == k), None)
+        if home:
+            out['keeperHome'] = home
+        if k == 'quarry_lime' and getattr(self, 'kiln', None):
+            out['kiln'] = self.kiln
+        return out
+
     def manifest(self):
         cf = json.loads((ROOT / 'Data' / 'Economy' / 'country_farms.json').read_text(encoding='utf-8'))
         farms = []
@@ -1652,6 +1875,14 @@ class Places:
                 workshops.append(w)
                 flats.append({'area': rooms[1]['area'], 'name': rooms[1]['name'], 'capacity': len(rooms[1]['beds']),
                               'beds': rooms[1]['beds'], 'for': b['name']})
+            # Doc 72, 4.7: a works' keeper's house (a flat `for` the works, as a workshop's; the works names it too).
+            keepers = []
+            for b in c.get('keepers', []):
+                room = b['rooms'][0]
+                works_name = self.sites[b['for']]['name']
+                keepers.append({'area': room['area'], 'name': b['name'], 'works': b['for'], 'door': b['door']})
+                flats.append({'area': room['area'], 'name': b['name'], 'capacity': len(room['beds']),
+                              'beds': room['beds'], 'for': works_name})
             served = [f['farm'] for f in farms if f['community'] == spec['id']]
             coms.append({'id': spec['id'], 'name': spec['name'], 'site': spec['site'], 'centre': c['centre'],
                          'about': spec['about'], 'style': spec['style'], 'region': spec['id'],
@@ -1661,6 +1892,7 @@ class Places:
                          'hands': hands.get(spec['id'], 0), 'farms': served,
                          'beds': sum(h['capacity'] for h in homes) + sum(f['capacity'] for f in flats),
                          'homes': homes, 'flats': flats, 'market': market, 'workshops': workshops,
+                         **({'keepers': keepers} if keepers else {}),
                          'gardens': c['gardens'],
                          'roomToGrow': c['roomToGrow']})
         return {
@@ -1694,11 +1926,9 @@ class Places:
             'communities': coms,
             'farms': farms,
             # Doc 72's works: the site, its crew's home, the walk; a built works' id in country_farms.json and its work
-            # spots out of doors (no work room: its posts' work_area is the cell, work_x/work_y a spot).
-            'works': [{'site': k, 'name': self.sites[k]['name'], 'kind': self.sites[k]['kind'], 'community': com,
-                       'centre': {'x': self.sites[k]['x'], 'y': self.sites[k]['y']}, 'size': self.sites[k]['size'],
-                       'walk': self.walks.get(k), 'works': WORKS_IDS.get(k),
-                       'workplace': self.work_spots(k) if k in WORKS_IDS else None} for k, com in WORKS.items()],
+            # spots out of doors (no work room: its posts' work_area is the cell, work_x/work_y a spot); Frosthollow's
+            # (doc 72, 4.7) also its keeper's house (`keeperHome`), and the lime quarry its `kiln` (work spots of its own).
+            'works': [self.works_record(k, com, coms) for k, com in WORKS.items()],
             'paths': self.paths,
         }
 
@@ -1753,6 +1983,38 @@ def previews(realm, folder):
             x, y = com['centre']['x'], com['centre']['y']
             R.picture(realm.codes, realm.h, box=(x - 90, y - 90, 180, 180), scale=4,
                       relief=1.0).save(shops / f'{com["id"]}.png')
+    # Doc 72, 4.7: Frosthollow and its works close up, and the valley from the lime quarry to the Greyteeth hearths, in
+    # ../frosthollow/.
+    frost = next((k for k in c['communities'] if k['id'] in LAST), None)
+    if frost:
+        out = folder.parent / 'frosthollow'
+        out.mkdir(parents=True, exist_ok=True)
+        x, y = frost['centre']['x'], frost['centre']['y']
+        R.picture(realm.codes, realm.h, box=(x - 90, y - 90, 180, 180), scale=4, relief=1.0).save(out / 'frosthollow.png')
+        for w in c['works']:
+            if w['community'] not in LAST:
+                continue
+            wx, wy = w['centre']['x'], w['centre']['y']
+            R.picture(realm.codes, realm.h, box=(wx - 50, wy - 50, 100, 100), scale=5, relief=1.0).save(out / f'{w["site"]}.png')
+            if w.get('kiln'):
+                k = w['kiln']
+                R.picture(realm.codes, realm.h, box=(k['worldX'] - 14, k['worldY'] - 16, 40, 40), scale=10,
+                          relief=1.0).save(out / 'quarry_lime-kiln.png')
+        xs = [x] + [w['centre']['x'] for w in c['works'] if w['community'] in LAST]
+        ys = [y] + [w['centre']['y'] for w in c['works'] if w['community'] in LAST]
+        box = (min(xs) - 80, min(ys) - 80, max(xs) - min(xs) + 160, max(ys) - min(ys) + 160)
+        img = R.picture(realm.codes, realm.h, box=box, scale=.5, relief=1.2)
+        dr = ImageDraw.Draw(img)
+        font = ImageFont.truetype(R.FONT, 12)
+        for w in c['works']:
+            if w['community'] in LAST:
+                px, py = (w['centre']['x'] - box[0]) * .5, (w['centre']['y'] - box[1]) * .5
+                label = f'{w["name"]} (walk {w["walk"]})'
+                lx = px + 8 if px + 8 + 7.5 * len(label) < img.width else px - 8 - 7.5 * len(label)
+                dr.text((lx, py - 8), label, fill=(255, 255, 255), font=font, stroke_width=2, stroke_fill=(0, 0, 0))
+        dr.text(((x - box[0]) * .5 + 8, (y - box[1]) * .5 - 8), f'{frost["name"]} ({frost["beds"]} beds)',
+                fill=(255, 255, 255), font=font, stroke_width=2, stroke_fill=(0, 0, 0))
+        img.save(out / 'the-valley.png')
     farms = {f['site']: f for f in c['farms']}
     for site in PREVIEW_STEADINGS:
         d = farms[site]['door']
@@ -1768,6 +2030,7 @@ def previews(realm, folder):
     font = ImageFont.truetype(R.FONT, 11)
     colours = {'coldwater': (80, 200, 255), 'larkfield': (255, 220, 60), 'southmeadow': (255, 140, 60),
                'fenshore': (120, 255, 160), 'saltwell': (255, 120, 220), 'oakhaven': (170, 120, 255),
+               'frosthollow': (160, 230, 255),
                'ridgemere': (230, 230, 230)}
     # Doc 72's works: a diamond each, a dotted line to its community.
     for w in c.get('works', []):
