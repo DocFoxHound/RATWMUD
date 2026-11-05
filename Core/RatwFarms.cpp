@@ -449,21 +449,52 @@ void Society::payRents()
                 today.rent += over;
                 loopToday_.rents[house] += over;
                 if (estate)
+                {
                     loopToday_.estates[estate->id].rents += over;
+                    loopToday_.estates[estate->id].works += over;
+                }
             }
             continue;
         }
         const auto rent = std::min(due, over);
-        if (rent <= 0 || today.wagesPaid < today.wagesOwed || cash(to) > MoneyCap - rent)
+        if (today.wagesPaid < today.wagesOwed)
             continue;
-        if (shift(f.till, to, "", 0, rent, "a land rent: " + named))
+        if (rent > 0 && cash(to) <= MoneyCap - rent && shift(f.till, to, "", 0, rent, "a land rent: " + named))
         {
             today.rent += rent;
             loopToday_.landRents[house] += rent;
             if (estate)
+            {
                 loopToday_.estates[estate->id].rents += rent;
+                loopToday_.estates[estate->id].land += rent;
+            }
         }
+        // Its surplus (the rule farmSurplus, after wharf7b): what it holds over its float and its design's basket a day
+        // (which tomorrow's basket may spend) is its House's, as a works' surplus is; it paid its crew in full tonight.
+        if (const auto most = farmBasketMost(f); most >= 0)
+            if (const auto surplus = cash(f.till) - f.reserve - most;
+                surplus > 0 && cash(to) <= MoneyCap - surplus && shift(f.till, to, "", 0, surplus, "a farm's surplus: " + named))
+            {
+                today.rent += surplus;
+                today.surplus += surplus;
+                loopToday_.landRents[house] += surplus;
+                if (estate)
+                {
+                    loopToday_.estates[estate->id].rents += surplus;
+                    loopToday_.estates[estate->id].land += surplus;
+                    loopToday_.estates[estate->id].surplus += surplus;
+                }
+            }
     }
+}
+
+std::int64_t Society::farmBasketMost(const FarmNow& f) const
+{
+    // A food farm's basket a day at most (the rule farmSurplus): its design's (basketADay), whole pennies; -1: no bound
+    // (the rule off, a works, a farm with no design basket).
+    if (rule("farmSurplus") <= 0 || f.rents() || !f.def || f.def->basketADay <= 0)
+        return -1;
+    return std::int64_t(std::ceil(f.def->basketADay - 1e-9));
 }
 
 int Society::landRentPercent(const FarmNow& f) const
@@ -507,11 +538,14 @@ void Society::farmsBuy(int hod)
     {
         if (!farmAreaOn(f.area) || !account(f.till) || f.rents())
             continue;                               // (A works pays its rent instead: payRents.)
-        const auto keep = f.reserve + (hod < PayHour ? f.wages() + landRentDue(f) : 0);   // (Its land rent kept back too.)
+        auto keep = f.reserve + (hod < PayHour ? f.wages() + landRentDue(f) : 0);   // (Its land rent kept back too.)
+        auto& today = loopToday_.farms[f.def->id];
+        // (Its design's basket a day at most, its carriage within it: the rest is its House's tonight, payRents.)
+        if (const auto most = farmBasketMost(f); most >= 0)
+            keep = std::max(keep, cash(f.till) - (most - today.basket - today.basketCarriage));
         const auto spare = cash(f.till) - keep;
         if (spare <= 0)
             continue;
-        auto& today = loopToday_.farms[f.def->id];
         today.basket += basketBuys(f.till, basket, double(spare) / double(ShopShut - hod), keep, hod, open, "to a farm",
                                    "used at the farm", &today.basketCarriage, true, true);   // (The workshops first; the Wharf last.)
     }

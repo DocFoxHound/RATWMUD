@@ -728,7 +728,13 @@ Catalog build()
                         lists.refused.push_back(std::string(key) + ": " + item + " is never the Wharf's");
                         continue;
                     }
-                    into[item] = {std::clamp(int(v.number("most", 0)), 0, 100000), !v.has("on") || v.boolean("on")};
+                    WharfGood good{std::clamp(int(v.number("most", 0)), 0, 100000), !v.has("on") || v.boolean("on")};
+                    good.rank = int(into.size());
+                    good.keep = v.has("keep") ? std::clamp(int(v.number("keep", 0)), 0, 100000) : -1;
+                    for (const auto& b : v.array("shops"))
+                        if (const auto id = b.asString({}); !id.empty())
+                            good.shops.insert(id);
+                    into[item] = std::move(good);
                 }
             };
             read("imports", lists.imports);

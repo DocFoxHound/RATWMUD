@@ -1445,7 +1445,8 @@ struct EconomyWatch
                             << ", \"grants_out\": " << x.grantsOut << ", \"levy_in\": " << x.levyIn << ", \"levy_out\": " << x.levyOut
                             << ", \"posts_owed\": " << x.postsOwed << ", \"posts_paid\": "
                             << x.postsPaid << ", \"posts\": " << x.posts << ", \"spent\": " << x.spent << ", \"moved\": " << x.moved
-                            << ", \"purse\": " << society.cash(fund) << "}";
+                            << ", \"land\": " << x.land << ", \"works\": " << x.works << ", \"shops\": " << x.shops
+                            << ", \"fees\": " << x.fees << ", \"surplus\": " << x.surplus << ", \"purse\": " << society.cash(fund) << "}";
                     first = false;
                 }
                 if (!first)
@@ -1479,6 +1480,11 @@ struct EconomyWatch
                 seasons << ", \"wharf_day\": {\"valve\": " << (society.wharfValveOn() ? 1 : 0);
                 goods("imported", d.wharfImported);
                 goods("taken", d.wharfTaken);
+                goods("taken_shops", d.wharfTakenShops);
+                seasons << ", \"landed_beyond\": {";
+                for (auto it = d.wharfLandedBeyond.begin(); it != d.wharfLandedBeyond.end(); ++it)
+                    seasons << (it == d.wharfLandedBeyond.begin() ? "" : ", ") << EconomyDetail::quoted(it->first) << ": " << it->second;
+                seasons << "}, \"unfit\": " << d.wharfTakeUnfit;
                 seasons << ", \"basket\": " << d.wharfBasket << ", \"in\": " << d.wharfIn << ", \"out\": " << d.wharfOut
                         << ", \"fee\": " << d.wharfFee << ", \"moved\": " << d.wharfMoved << ", \"credit\": " << book.credit
                         << ", \"book_in\": " << book.in << ", \"book_out\": " << book.out << ", \"book_fee\": " << book.fee

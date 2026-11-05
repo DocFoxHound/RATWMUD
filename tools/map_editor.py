@@ -102,7 +102,7 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 10000000
                'wharfTakeADay': 1000, 'wharfActionMost': 1000000,
                # The food farms' land rent (Docs/Design/72-pulling-the-country-into-the-world.md, open question 2): no migration.
                'landRent': 100, 'landRentFish': 100, 'landRentFruit': 100, 'landRentGrain': 100, 'landRentSalt': 100,
-               'landRentDairy': 100, 'landRentThin': 100,
+               'landRentDairy': 100, 'landRentThin': 100, 'farmSurplus': 1,
                # The luxuries (doc 72, Phase 5: cheese): no migration.
                'luxuryShare': 100, 'luxuryMost': 100, 'luxuryAbove': 10000, 'luxuryHouses': 100, 'luxuryHousesMost': 1000, 'luxuryPriceBand': 1000, 'luxuryPriceStep': 1000,
                # The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): no migration.

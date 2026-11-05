@@ -126,7 +126,7 @@ export const RULE_LIMITS = {comfortsMost: 100000, almsADay: 1000, treasuryCap: 1
     // The Wharf (Docs/Design/73-the-wharf.md, 6): no migration.
     wharfValve: 1, wharfFee: 50, wharfKeepDays: 365, wharfKeepLeast: 10000, wharfImportScale: 1000, wharfTakeScale: 1000,
     wharfExportMost: 100000, wharfCreditMost: 1000000, wharfInjectADay: 1000, wharfTakeADay: 1000, wharfActionMost: 1000000,
-    landRent: 100, landRentFish: 100, landRentFruit: 100, landRentGrain: 100, landRentSalt: 100, landRentDairy: 100, landRentThin: 100, luxuryShare: 100, luxuryMost: 100, luxuryAbove: 10000, luxuryHouses: 100, luxuryHousesMost: 1000, luxuryPriceBand: 1000, luxuryPriceStep: 1000, surplus: 1, surplusKeep: 100000000, surplusWorks: 100, surplusAlms: 100, surplusAlmsTo: 1000,
+    landRent: 100, landRentFish: 100, landRentFruit: 100, landRentGrain: 100, landRentSalt: 100, landRentDairy: 100, landRentThin: 100, farmSurplus: 1, luxuryShare: 100, luxuryMost: 100, luxuryAbove: 10000, luxuryHouses: 100, luxuryHousesMost: 1000, luxuryPriceBand: 1000, luxuryPriceStep: 1000, surplus: 1, surplusKeep: 100000000, surplusWorks: 100, surplusAlms: 100, surplusAlmsTo: 1000,
     // The self-correcting rules (doc 68, Progress, "Self-correcting rules").
     stockPrices: 1, stockPriceBand: 90, stockPriceStep: 1000, shelfFollow: 1, shelfDays: 365, shelfCover: 1000, shelfGrow: 500,
     wageDrift: 1, wageDriftDays: 365, wageDriftSpare: 1000, wageDriftMost: 100, wageDriftHandMost: 100, wageDriftFloor: 1000, treasuryDrift: 1,
