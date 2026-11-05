@@ -1796,3 +1796,33 @@ stable9b's climbed to 2,940p) and the households' purses no longer falling (37,3
 4. **Hides** still rot at ~19 a day (no craft takes them).
 5. **The toll's rate** still drifts to 34 (treasuryDrift; the treasury at 2,000-2,200p against its 5,500p target): the
    user's lever.
+
+### stable9c's 3-year run (ridgemere2 c439648, 2026-11-05)
+
+Round 6 on the merged build (`build-core`, gcc Release, rebuilt after the merge), **export66** (round 6's DEV write; no
+new DEV write this time), wharf7b's flags (`--farms 0`, an area every 28 days); 1,095 days, 2,250 s, exit 0;
+`stable9c-report.md`, its patch, `stable9c.out`.
+
+**It is `s11e` to the byte.** The economy file, the loop state and the full log are identical to s11e's (`cmp`), the end
+digests match (people 4205df89f84f1a76, society f6553ba02b72b17c), the patch is identical, and the report differs only in
+the order of two rows tied at the same value (mushrooms) and its patch's path. So the merge and the review's label fix
+changed nothing the economy sees, and every number in s11e's table above is this run's. Year 3, against wharf7b and
+producers7:
+
+| | stable9c (= s11e) | wharf7b | producers7 |
+|---|---|---|---|
+| Money conserved every day | yes; 64,594p at the end | yes | yes |
+| Estates' posts; nights short (year 3) | 672p of 672p; none in three years | 788 of 824p; Grayrock and Greatly short | 803 of 824p |
+| The Crown: rents in; grants out; purse at year ends | 730p; 372p; 1,457, 1,493, 1,327p | 464p; 502p; 625p at the end | 503p; 529p; 714p |
+| Grayrock, Timberland, Greatly, Fell (year ends) | 30/31/20, 566/490/398, 50/40/73, 289/216/279p | 18, 361, 61, 29p (end) | 18, 318, 66, 28p |
+| Treasury: year ends; wage support wanted / paid | 1,954, 2,139, 2,210p; 200 / 153p (paid 82, 106, 153p) | mean 3,999p; 303 / 296p | mean 3,271p; 311 / 295p |
+| Hunger: days; households short (economy line) | 4; 0.22 | 6; 0.31 | 3; 0.30 |
+| The foundry: wages paid; to its House | 25.8 of 25.8p; 27.9p | - | - |
+| The valve (the run): in / out; credit at the end | 83 / 83p; 1p | - | - |
+
+**Verdict: the closest yet, not quite stable** (s11e's, since it is the same run). Money conserved, the posts paid
+every night, the treasury flat and over its float, hunger under wharf7b's and producers7's, the valve netting. Still
+open: the wage support paid climbs toward a falling want (82 -> 153p against 280 -> 200p); the Crown's year-end purse
+falls (1,493 -> 1,327p) on Grayrock's grants (318p a day in year 3; its 40 sea-trade posts, 356p a night on 33p of its
+own rents) and Timberland's (490 -> 398p); iron ore, clay and limestone 2.5-4.4 pieces a day short; hides rot at ~16-19
+a day. These are s11e's open points 1-5.
