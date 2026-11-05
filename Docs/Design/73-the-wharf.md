@@ -1631,7 +1631,7 @@ the same code, and every number in s10c's table above is this run's. A day, year
 | | stable9b (= s10c) | wharf7b | producers7 |
 |---|---|---|---|
 | Money conserved every day; at the end | yes; 64,581p (net to the beyond -14p in three years) | yes | yes |
-| Estates' posts; nights short (year 3) | 736p of 736p; none in three years | 792 of 824p; Grayrock and Greatly short | 806 of 824p |
+| Estates' posts; nights short (year 3) | 736p of 736p; none in three years | 788 of 824p; Grayrock and Greatly short | 803 of 824p |
 | Crown: rents in; grants out; purse at year ends | 723p; 441p; 1,590, 1,602, 1,333p | 464p; 502p; 625p at the end | 503p; 529p; 714p |
 | Grayrock, Timberland, Greatly, Fell (year ends) | 45/19/15, 513/476/335, 52/33/52, 300/270/373p | 18, 361, 61, 29p (end) | 18, 318, 66, 28p |
 | Treasury mean; wage support paid / wanted | 2,035p; 184 / 234p | 3,999p; 296 / 303p | 3,271p; 295 / 311p |
