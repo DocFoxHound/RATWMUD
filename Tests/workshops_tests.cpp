@@ -170,7 +170,7 @@ void theWorkshopsData()
                 expect(!business, label + ": no business's");
         }
     }
-    expect(posts == 32, "32 posts (18 before country5b's carry-overs, 35 before the still, 37 before its two hands of doc 73's round 3, 39 "
+    expect(posts == 30, "30 posts (32 before doc 73's round 6, 18 before country5b's carry-overs, 35 before the still, 37 before its two hands of doc 73's round 3, 39 "
                         "before round 4's: Oakhaven's press, the soapworks and Coldwater's looms two hands fewer each, "
                         "Larkfield's looms one): " +
                            std::to_string(posts));

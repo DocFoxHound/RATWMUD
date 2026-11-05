@@ -977,6 +977,10 @@ class Society
         // almsNoEarner, doc 73, round 4: of what the treasury held over its cap), and how many households were given it.
         std::int64_t almsNoEarner = 0;
         int almsNoEarnerHomes = 0;
+        // And to households whose earners' wages together are under the day's alms a head (doc 73, round 6: a lone hand
+        // on a floor wage, a family of four on two hands' wages), made up the same way, of the same money.
+        std::int64_t almsLowWage = 0;
+        int almsLowWageHomes = 0;
         // The treasury's wage support (paid to the posts of tills short of their wages; counted in wagesPaid too), and
         // the city's services: done, what households paid, and the treasury's share of it (doc 68, "First fixes").
         std::int64_t wageSupport = 0, servicesSpent = 0, servicesCity = 0;

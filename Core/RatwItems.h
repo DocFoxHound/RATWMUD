@@ -182,7 +182,9 @@ inline constexpr RuleInfo Rules[] = {
                                          // the out of work living alone) is made up to this percent of the alms a head,
                                          // the part over the day's of what the treasury holds over its cap (doc 73, round
                                          // 4: stable8c's short households, 68% with no earner and 63% alone, held 10p a
-                                         // head, a day's food and none over); 100 or less: as any household. (Its low 0,
+                                         // head, a day's food and none over); round 6: so is one whose earners' wages
+                                         // together are under the day's alms a head, after the no-earner's and keeping
+                                         // tonight's wage support wanted back too; 100 or less: as any household. (Its low 0,
                                          // as map_editor's RULE_LIMITS and Atlas take every rule from 0: a world holding
                                          // less than a rule's low fails to load, Roster's "Invalid rule record".)
     {"treasuryCap", 0, 100000000, 2000}, // What the treasury holds over this pays the short tills' wages,

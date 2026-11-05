@@ -275,19 +275,37 @@ void almsForHouseholdsWithNoEarner()
            "its 15p over the day's booked apart: " + std::to_string(d.almsNoEarner) + "p, " + std::to_string(d.almsNoEarnerHomes) +
                " household");
     expect(none.conserved(), "conserved");
-    // The barber's hand earns (a hand's post at a shop), his wife keeps the house: the one day's alms, none booked apart.
-    auto residents = barbers(0);
-    residents.push_back(person("helper_wife", "civilian", "keeps the house", {"home_helper", 2.5, 2.5}, "home_helper", 30, 0));
-    residents[1].purse = 0;
-    auto with = city(residents, {{"helper", "helper_wife", "spouse"}}, [](AuthoredRoster& r) {
-        r.economy.rules["almsNoEarner"] = 150;
-        r.economy.rules["services"] = 0;
-    });
-    run(with, 1 + 7.9 / 24, 1 + 18.5 / 24);
-    const auto home = with.cash("helper") + with.cash("helper_wife");
-    expect(with.loopToday().almsNoEarner == 0 && with.loopToday().almsNoEarnerHomes == 0 && home < 30,
-           "an earner's household: the day's (" + std::to_string(home) + "p for two, the wage with it)");
-    expect(with.conserved(), "conserved");
+    // Round 6: the barber's hand earns (a hand's post at a shop, 8p), his wife keeps the house: two heads on 8p, under the
+    // day's alms a head, so made up as the no-earner's are, booked apart as low wages.
+    const auto barberHome = [](int handWage, bool wife) {
+        auto residents = barbers(0);
+        residents[1].purse = 0;
+        std::vector<Kin> kin;
+        if (wife)
+        {
+            residents.push_back(person("helper_wife", "civilian", "keeps the house", {"home_helper", 2.5, 2.5}, "home_helper", 30, 0));
+            kin.push_back({"helper", "helper_wife", "spouse"});
+        }
+        auto s = city(residents, kin, [&](AuthoredRoster& r) {
+            r.economy.rules["almsNoEarner"] = 150;
+            r.economy.rules["services"] = 0;
+            r.economy.wageHand = handWage;
+        });
+        run(s, 1 + 7.9 / 24, 1 + 18.5 / 24);
+        return s;
+    };
+    auto low = barberHome(8, true);
+    const auto lowHome = low.cash("helper") + low.cash("helper_wife");
+    expect(low.loopToday().almsLowWage > 0 && low.loopToday().almsLowWageHomes == 1 && low.loopToday().almsNoEarner == 0 &&
+               lowHome >= 30,
+           "a household on low wages (8p for two): made up to 15p a head, booked as low wages (" + std::to_string(lowHome) + "p, " +
+               std::to_string(low.loopToday().almsLowWage) + "p of it)");
+    expect(low.conserved(), "conserved");
+    // A hand alone on 12p: his wage covers the day's alms, so the day's alone, none booked apart.
+    auto fair = barberHome(12, false);
+    expect(fair.loopToday().almsLowWage == 0 && fair.loopToday().almsNoEarner == 0 && fair.cash("helper") < 15,
+           "an earner whose wage covers a day's alms: the day's (" + std::to_string(fair.cash("helper")) + "p, the wage with it)");
+    expect(fair.conserved(), "conserved");
 }
 
 void theTreasuryCapPaysShortTills()

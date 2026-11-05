@@ -1650,3 +1650,149 @@ yes or nearly. Not yet: **the Crown's year-end purse falls** (1,602 -> 1,333p) a
 423, 441p); **Timberland's falls** (476 -> 335p) with its works' rents (193 -> 164p); **wage support paid climbs** (83,
 96, 184p) as the treasury lets it, though the wanted is flat (218 -> 234p); the carry-over goods (charcoal, stone, timber,
 iron ore, hemp) still pile at 1,100-2,200 a year. The open points are s10c's 1-5.
+
+### Round 6 of stabilizing (branch `r2-stable9c`, 2026-11-05): more of the sea trade's posts moved, alms for low wages, the apples
+
+The user's go-ahead as for rounds 4 and 5 (posts moved in DEV, alms for the households with no earner and those living
+alone, a few rounds, real fixes). No treasury lever (toll, wage support, float, the treasury's target), no move of the
+Wharf's credit or its injection, cheese left as it is. **DEV written** (ten posts, below; backed up first); no NPC made.
+
+**The trace** (stable9b's logs; a day, year 3 unless marked):
+
+- **The estates spend what they hold over their keep, so a purse's year end says little.** The Crown took in 737p a day
+  in year 3 and paid out 736.5p (grants 441p, its posts 94p, the basket 202p); Timberland 188.6p in, 188.3p out. Each
+  purse sits at its keep plus what the day's basket left unspent, so the year-end figures (the Crown's 1,602 -> 1,333p,
+  Timberland's 476 -> 335p) move with the day the year ends on. What does fall is the flow: the Crown's rents 762 ->
+  723p, and its margin over its keep by quarter (~340p in year 2, ~250p in year 3) as its grants to Grayrock rise.
+- **The money moves from the households to the treasury.** At the year ends (years 1-3): the households' purses 38,277,
+  37,161, 36,665p; the treasury 1,715, 2,248, 2,940p; the tills 18,320, 19,145, 19,307p; the estates 2,500, 2,400,
+  2,108p. The treasury keeps what the toll brings over its posts, the day's alms and the wage support it pays, and the
+  toll's rate drifts up (30 -> 34.5, treasuryDrift: the treasury under its 5,500p target; a lever, not changed).
+- **Grayrock's grants are its posts.** 48 sea-trade posts (376p of its 420p a night) on 33p of its own (land 33p, fees
+  6p); the Crown's grants to it 381p a day. Of the city's tills, those whose keepers' profit pays a hand (7-22p a day
+  over their wages in year 3) and most of whose crews' hours were used: Southway Provisions (one post, 87% of its hours,
+  16.6p), The Rain Pot (84%, 15.0p), The Lamp & Wick (63%, 26.4p), Bridge Stores (52%, 11.4p), the Fell Distillery (98%,
+  7.2p), The Council Press (65%, 11.4p), Needle & Drip (71%, 9.7p), Greywool (96%, 21.8p). The Market Hall's
+  provisioner (86%, 29.9p) shares its hall with five other shops, so a hand there has no one keeper (as round 5 found).
+- **The idlest makers**: the sawmill (3 posts, 24% of their hours, 9.8p of wage support a day), Gilbey's tileworks (3,
+  28%, 6.7p), Oakhaven's press (2 posts that paid 4.0p of their 14p a day) and Southmeadow's kilns (6.4p of 14p). The two
+  butchers bound by their crews (Cinder Butchers 97% of their hours, The Hook and Cleaver 93%).
+- **The short households have earners.** Of the 33 households short at the shops' last hour in year 3, 29 had an earner
+  (18 two, 9 one), 4 had none and 4 lived alone; most held just the day's alms a head (10p) and nothing over: a family of
+  four on two hands' wages (~16-18p) or a lone hand on a floor wage (7-8p) gets less than the day's alms a head from its
+  wages, and the no-earner's extra (round 4) passed them by.
+- **Apples pile** (+7,224 in year 3; the orchards grow 287 a day and sell 258), and eggs are 5 a day short at the shops,
+  flax short at the linen weavers in years 1-2.
+
+**The fixes:**
+
+- **Ten posts moved in DEV** (round 4's script, `move_posts.py`, new moves; each keeps home, evening and the rest, the
+  work spot to a free floor tile beside the till's hands, the label, greeting and the description's workplace clause to
+  match). Eight of the sea trade's pier hands, one to each of the tills above: rm_isolde_brineton to Southway Provisions,
+  rm_lavinia_bilgedale to The Rain Pot, rm_erland_fogley to The Lamp & Wick, rm_agna_dripridge to Bridge Stores,
+  rm_dagny_pitchton to the Fell Distillery, rm_runa_ashridge to The Council Press, rm_gerrit_tarmore to Needle & Drip,
+  rm_signe_sootwell to Greywool (Grayrock's posts 420 -> 356p a night). And a hand from each of the two idlest makers to
+  the two butchers bound by their crews: rm_beatha_millgate from the sawmill to Cinder Butchers, rm_rune_cinderwick from
+  Gilbey's tileworks to The Hook and Cleaver. **DEV**: backed up first to
+  `artifacts/backups/ratw_dev_20261105-115030.pgdump` (and its Atlas json, revision 87); saved as **revision 88**, the
+  same map (its identity kept); `world_build.py dev`: **build 66**, exported to `artifacts/economy/r2/export66` (not
+  committed). Against export65 only these ten residents differ.
+- **Two idle country posts back to the pool** (workshops.json): Oakhaven's press to its printer alone (its vat hand), and
+  Southmeadow's kilns to the potter alone (its kiln hand). Nobody is dropped: the pool's people are unplaced, not a
+  household, and the villages' posts take from it as before.
+- **Alms for low wages** (Core, `giveAlms`; no new rule, the existing `almsNoEarner`'s): a household whose earners' wages
+  together are under the day's alms a head is made up to almsNoEarner percent of it a head, as one with no earner is
+  (15p a head at 10p). It is paid after the no-earner's (the alms are now three passes: the day's for every household,
+  then the no-earner's part, then the low wage's), of what the treasury holds over its cap and tonight's wage support
+  wanted besides, so tomorrow's short tills still find their support. Logged apart: `alms_low_wage` and
+  `alms_low_wage_homes` on the economy line, the journal's "alms: a household on low wages".
+- **Yields** (country_farms.json): flax and eggs to stable9b's patch, the whole way (flax +4-12%, the linen weavers short
+  in years 1-2; eggs +4-10%). After the first 3-year run (`s11c`, below), every season by the same factor: apples x0.95
+  (grown 287 a day, sold 255 and eaten 10), grapes x0.88 (sold 26 of 32), hemp x0.93 (47 of 53), wool x0.95 (36 of 39).
+- **Tests**: `econ_fix_tests` (a household of two on a hand's 8p made up to 15p a head and booked as low wages; a lone
+  hand on 12p the day's alone); `workshops_tests` 30 posts (32), `farm_people_tests` the nine workshops' 30 posts. ctest
+  **79 of 79**; `test_realm2`, `test_econ_report`, `test_farms_summary`, `test_country_industry` pass.
+
+**What was tried and taken back** (3-year runs on export66, wharf7b's flags: `--farms 0`, an area every 28 days):
+
+- `s11a` (the low wage's part of the cap alone, in the one pass with the no-earner's), stopped at day ~100: over the first
+  60 days it cost 105p a day for 14 households, the treasury ~290p lower than stable9b's and its wage support ~16p a day
+  more unpaid. So it keeps back tonight's wage support wanted.
+- `s11b` (that, still one pass), stopped at day 379: the low wage's households, met first in their homes' order, took
+  what the no-earner's would have had (46.5 -> 29.4p a day in year 1) and more of the lone were short (the hh_short
+  table 62 rows against 45, 41 with no earner). So three passes, the no-earner's before the low wage's.
+- `s11d` (this round without the low wage's part, for comparison; kept in the scratchpad): year 3's households short
+  0.30, but the treasury at the year ends 1,937, 2,432, **4,526p** and the households' purses 38,396, 37,271, 36,517p: the
+  money still gathering in the treasury, as in stable9b.
+- `s11c` (the posts, the alms in three passes, flax and eggs; before the apples, grapes, hemp and wool): the moved
+  distillery hand made more apple brandy of the orchards' cider, and the Coldwater still, which presses apples, sold
+  less (it bought 30 apples a day against 47 in year 2): apples +15,000 in year 2 and +8,301 in year 3 (25,626 at the
+  orchards at the end), grapes +2,224. Otherwise year 3 as below (households short 0.30, the treasury's year ends 1,903,
+  2,190, 2,190p). So the four yields were cut.
+- `s11f` (s11e below and its patch half way for the builders' and the iron goods, iron ore, clay, limestone, stone, and
+  eggs, short 2.5-4.4 a day in year 3): year 3 worse on nearly every count (households short 0.32 against 0.22, the
+  basket 276 against 316p, the Crown's rents 718 against 730p, Timberland's 195 against 216p, the households' purses
+  falling again, 37,464 -> 37,181p). Taken back; s11e's yields are the branch's.
+
+**The 3-year run, `s11e`** (the branch as committed, `build-s9c` gcc Release, **export66**, wharf7b's flags: `--farms
+0`, an area every 28 days; 1,095 days, 2,242 s, exit 0; `s11e-report.md`, its patch, `s11e.out`; its first 60 days are
+the 60-day smoke, deterministic). A day, year 3 unless marked; years 1-3 where given:
+
+| | s11e | stable9b (= s10c) | wharf7b |
+|---|---|---|---|
+| Money conserved every day; at the end | yes; 64,594p | yes; 64,589p | yes |
+| Estates' posts; nights short | 672p of 672p; none in three years | 736p of 736p; none | 788 of 824p |
+| The estates' basket (years 1-3) | 907, 373, **316p** | 877, 333, 230p | - |
+| The Crown: rents in; grants out (years 1-3) | 641, 756, 730p; 218, 363, **372p** | 660, 762, 723p; 252, 423, 441p | 464p; 502p |
+| The Crown's purse: year ends; over its keep by quarter, years 2 and 3 | 1,457, 1,493, 1,327p; 447/404/398/401, 401/364/300/357p | 1,590, 1,602, 1,333p; 388/327/332/321, 321/242/202/234p | 625p at the end |
+| Timberland: year ends; over its keep by quarter, years 2 and 3; its rents (years 1-3) | 566, 490, 398p; 164/142/128/303, 173/120/94/307p; 164, 226, 216p | 513, 476, 335p; 163/137/126/294, 150/111/80/227p; 166, 224, 189p | 361p at the end |
+| Fell, Greatly, Grayrock (year ends) | 289/216/279, 50/40/73, 30/31/20p | 300/270/373, 52/33/52, 45/19/15p | - |
+| The treasury: year ends; mean; least | **1,954, 2,139, 2,210p**; 1,987p; 1,166p | 1,715, 2,248, 2,940p; 2,035p; 1,086p | mean 3,999p |
+| The households' purses (year ends) | 38,500, 37,348, **37,548p** | 38,277, 37,161, 36,665p | - |
+| Wage support wanted / paid / unpaid (years 1-3) | 280/82/199, 225/106/119, **200/153/47p** | 287/83/204, 218/96/122, 234/184/50p | 303/296/7p |
+| The keepers' profit (years 1-3); the toll; its rate at the end | 639, 461, 419p; 1,586p; 34 | 686, 491, 433p; 1,589p; 34.5 | - |
+| Alms; the no-earner's (households a night); the low wage's | 467p; 78.5p (15.0); 72.8p (7.9) | 435p; 81.3p (15.8); - | 399p; 0 |
+| Hunger: days, the most hours; households short (economy line; years 1-3) | 4, 5; 0.86, 0.61, **0.22** | 6, 8; 0.52, 0.53, 0.36 | 6, 9; 0.31 |
+| The hh_short table, year 3: households; no earner; alone | 25; 5; 7 | 33; 4; 4 | - |
+| Piles in year 3 (the farms and works' growth) | apples +1,596, charcoal +1,224, wine +884, salt +717, tallow +662, timber +597, flax +560 | apples +7,224, firewood +2,414, hemp +2,196, charcoal +2,195, iron ore +1,605, peat +1,446 | - |
+| The farms' and works' stock at the end | 44,289 | 56,588 | - |
+| Shortages in year 3 (pieces a day, cheese aside) | iron ore 4.4, pig 3.9, clay 3.9, eggs 2.9, resin 2.9, flax 2.7, limestone 2.5 | eggs 5.1, flax 4.5, resin 2.5, clay 2.4, pig 2.4 | - |
+| The valve: the beyond in / out (years 1-3) | 107.6/107.6, 78.8/78.8, 61.2/61.1p; credit 1p at the end | 109.4/109.5, 79.5/79.5, 67.7/67.6p | - |
+| The takes the Wharf's room could not fit; hides rotted | 325p; 19.2 a day | 322p; 19 | - |
+| The foundry: wages paid; to its House | 25.8 of 26p; 25.1p | 25.9 of 26p; 22.2p | - |
+
+The moved hands' tills paid them (year 3, against stable9b's): Greywool's takings 128 -> 150p a day, Cinder Butchers'
+145 -> 190p, The Rain Pot's 94 -> 98p, each paying its hand in full; Southway Provisions' keeper kept 7p over its two
+posts' wages (16.6p over one), the Lamp & Wick 18.9p (26.4p), Bridge Stores 10.9p (11.4p); the Fell Distillery and The
+Hook and Cleaver paid 95-97% of theirs. The sawmill's wage support fell 9.8 -> 4.3p a day and the tileworks' 6.7 -> 1.8p;
+Oakhaven's press and Southmeadow's kilns 7p of posts each, 4.8p and 5.0p of it paid by themselves.
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| Estates' posts paid every night | 672p of 672p, no night short in three years | yes |
+| No estate purse trending down | over its keep by quarter, the Crown 401-447p in year 2 and 300-401p in year 3 (stable9b 321-388, 202-321p); Timberland level (94-307p against 128-303p); its rents 226 -> 216p. The year-end purses still fall for the Crown (1,493 -> 1,327p) and Timberland (490 -> 398p): they spend what is over their keep, so the year end is the day's basket | **nearly**: the Crown's margin over its keep falls ~10% from year 2 (stable9b's ~25%) |
+| The treasury over its float, wage support not climbing | least 1,166p; year ends 1,954, 2,139, 2,210p (flat); wanted 280, 225, 200p (falling), paid 82, 106, 153p as the unpaid shrinks 199 -> 119 -> 47p | treasury yes; wage support paid **still rising**, toward a falling wanted |
+| Hunger as low as wharf7b or lower | 4 days, 5 hours at most; households short 0.22 against 0.31 | **yes** |
+| No runaway pile, no standing shortage a producer should cover | the largest pile apples +1,596 a year (~4 a day of 273 grown); iron ore 4.4 a day short at the ironworks, clay 3.9, limestone 2.5 | **nearly** |
+| The valve nets | 61.2p in, 61.1p out; the credit 1p at the end | yes |
+
+**Verdict: the closest yet, not quite stable.** Money conserved, the posts paid every night, the valve netting, hunger
+under wharf7b's for the first time (0.22 against 0.31), the treasury level across the years (1,954 -> 2,210p, where
+stable9b's climbed to 2,940p) and the households' purses no longer falling (37,348 -> 37,548p). What is open:
+
+1. **The wage support paid still rises** (82, 106, 153p) while what is wanted falls (280, 225, 200p): the treasury pays
+   more of a smaller want as the unpaid shrinks (199 -> 47p). It should level once nothing is unpaid; a fourth year would
+   show it.
+2. **The Crown's margin over its keep falls ~10% in year 3** (its land rents 756 -> 730p, its grants 363 -> 372p).
+   Grayrock's 40 sea-trade posts (356p a night on 33p of its own) are still the grants: no more city tills had a keeper's
+   profit to pay a hand without going onto the wage support. Next: work that sells for the rest (the takes the room could
+   not fit, ~325p a day, are where the sea trade could earn if the Wharf's export room grew; that is the credit, a lever).
+3. **The builders' and iron goods are a few pieces a day short** (iron ore 4.4, clay 3.9, limestone 2.5) now that the
+   basket buys a third more; raising their yields half way (`s11f`) made year 3 worse, so a smaller step, or the iron ore
+   alone, is next.
+4. **Hides** still rot at ~19 a day (no craft takes them).
+5. **The toll's rate** still drifts to 34 (treasuryDrift; the treasury at 2,000-2,200p against its 5,500p target): the
+   user's lever.
