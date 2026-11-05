@@ -448,7 +448,7 @@ void thePlacement()
         expect(atWorkshop[w.area] == want, w.area + ": its " + std::to_string(want) + " posts: " + std::to_string(atWorkshop[w.area]));
         workshopPosts += atWorkshop[w.area];
     }
-    expect(people.workshops.size() == 9 && workshopPosts == 32, "the nine workshops' 32 posts (the still since iron6, doc 72; its two more hands, doc 73; round 4: Oakhaven's press, the soapworks and the looms seven fewer): " + std::to_string(workshopPosts));
+    expect(people.workshops.size() == 9 && workshopPosts == 30, "the nine workshops' 30 posts (round 6: Oakhaven's press and Southmeadow's kilns two fewer; the still since iron6, doc 72; its two more hands, doc 73; round 4: Oakhaven's press, the soapworks and the looms seven fewer): " + std::to_string(workshopPosts));
     expect(!keeperOf["cn_oakhaven_store"].empty(), "Oakhaven's store kept, with its works");
     // (The still's keeper the brewer, of its words: doc 72, after iron6.)
     expect(keeperOf["cn_larkfield_store"] == "shop_larkfield" && keeperOf["cn_coldwater_store"] == "shop_coldwater" &&
