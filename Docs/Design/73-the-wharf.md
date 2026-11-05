@@ -1389,3 +1389,111 @@ stable.** What it costs and what is open:
    (64p) are as they were but for Greatly's two servants. Grayrock's posts (the sea trade's 54 and its people) are 476p a night on ~40p of rents and fees.
 5. **Hides** rot at ~11 a day; not changed this round (a pig's hide is a by-product; the realm's leather uses ~5).
 6. Not run: a 3-year run on this branch.
+
+### stable9's 3-year run (ridgemere2 47d9213, 2026-11-05)
+
+Round 4's fixes merged (the moved posts, the no-earner's alms, the foundry's buyers, the yields), build-core rebuilt after
+the merge, **build 64's export (`export64`)**, wharf7b's flags (`--farms 0`, an area every 28 days); 1,095 days,
+2,236 s, 1.1-2.2 s a day. Report, patch and log: `artifacts/economy/r2/stable9-report.md`, `stable9-report.md.patch.json`,
+`stable9.out` (the logs kept, not committed). Its first 365 days are `stable9c-y1` again, number for number
+(deterministic). **world_check ended with exit 134** ("free(): invalid next size (fast)") after the last day, while
+writing the end summary: every day's line and the full log are whole (1,095 days, money conserved on each), but the
+`.out` stops in the Wharf's book line. stable8c's and stable9c-y1's runs exited 0. A heap fault somewhere in the run,
+found only at a free; not traced (an ASan run of three years is hours; `build-core-clang-sanitize`, a 60-day and a
+1-year run first).
+
+A day unless marked; year 3, years 1-3 where given:
+
+| | stable9 | stable8c | wharf7b | producers7 |
+|---|---|---|---|---|
+| Money conserved every day; at the end | yes; 64,590p | yes; 64,577p | yes; 64,588p | yes; 64,595p |
+| Estates' posts; nights short | 808p of 808p; none in three years | 824p of 824p; none | 788p; 107 | 803p; 0 |
+| The Crown's purse (year ends; year 3's least) | 1,533, 1,637, 1,306p (851p) | 1,450, 1,443, 1,281p (901p) | 1,002, 976, 625p | 946, 1,005, 714p |
+| The Crown's purse by quarter, year 3; its keep | 1,511, 1,440, 1,416, 1,440p; 1,322p | 1,405, 1,328, 1,371, 1,358p; 1,342p | 566, 550, 572, 751p | 670, 595, 786, 952p |
+| Grayrock, Timberland, Greatly, Fell (year ends) | 27/20/13, 451/495/353, 53/35/34, 318/349/379p | 46/21/24, 429/431/297, 61/37/45, 393/378/392p | - | - |
+| The Crown's rents in (years 1-3); its grants out | 673, 771, 724p (year 3: land 656p, of it surplus 247p; shops 68p); 298, 499, 519p | 647, 704, 658p; 293, 507, 521p | 464p | 503p |
+| House Fell's rents in (years 1-3) | 157, 156, 131p | 178, 177, 154p | 47p | 34p |
+| The foundry's takings (years 1-3); to its House | **95.7, 68.4, 53.9p**; 29.4, 22.1, 14.2p (2 hands; wages 99% paid, 0.2p support) | 91.6, 25.8, 14.7p; 34.3, 9.7, 3.6p | 3.4%; 0p | 0.2%; 0p |
+| The ironworks' takings (years 1-3) | 222.7, 170.8, 147.0p | year 3: 188.3p | - | - |
+| The takes (pieces a day); unfit | tallow 9.5, bells 1.2, hides 1.7, bones 1.0; 334p | tallow 9.4, honey 2.4, bells 1.8, hides 1.3, bones 0.7; 349p | - | - |
+| Eggs to households; short | 108.6; **5.7** | 107.8; 15.2 | 66.9; 95.0 | 49.5; 114.1 |
+| Milk, meal short | **3.3, 0** | 16.5, 10.0 | - | - |
+| Apple brandy to households; short | 15.8; 0 | 16.7; 0.1 | 5.5; 4.6 | - |
+| **Apples short (the inns, preservers, breweries, the still)** | **47.6** (years 1-3: 69.6, 15.4, 47.6) | none (the orchards held ~2,200 each) | - | - |
+| Hides rotted (years 1-3) | 11.2, 19.2, 19.6 a day | 9.7, 19.1, 19.8 | none (piled) | - |
+| The treasury's least; 4-week means; year ends | 1,028p; 1,637 -> 3,177p (mean 2,050p); 1,739, 1,864, 3,278p | 1,364p; 2,828 -> 3,981p (2,528p) | 1,970p; 4,811 -> 5,810p | 1,903p; 4,142 -> 4,669p |
+| Wage support wanted / paid / unpaid (years 1-3) | 291/77/213, 233/94/139, **252/195/57p** (last 4 weeks paid 265p) | 323/120/203, 278/191/87, 305/268/37p (339p) | 303/296/7p (year 3) | 311/295/16p |
+| Alms; of it the no-earner's (households a night), years 1-3 | 465p; 38 (7.4), 475; 45 (8.8), 448; 78 (15.2) | 451, 439, 416p; none | - | - |
+| The keepers' profit (years 1-3); the toll | 697, 483, 434p; 1,499, 1,534, 1,612p | 801, 521, 446p; 1,540, 1,602, 1,654p | - | - |
+| Hunger: days, the most hours, households short | 3, 8, **0.35** (38 days with any) | 6, 7, 0.34 (35) | 6, 9, 0.31 (27) | 3, 8, 0.28 (34) |
+| The hh_short table (the run): a day; households; no earner, alone; mean purse | 0.11; 54; 30%, 35%; 23.7p | 0.14; 46; 68%, 63%; 17.3p | - | - |
+| The beyond paid in / was paid (years 1-3) | 106/106, 64.7/64.7, 58.8/58.8p | 147/147, 92.5/92.5, 83.0/83.0p | 112.7, 56.3, 52.7p | - |
+| The Wharf's fees; export basket; the credit (year 3) | 4.7p; 6.1p; 0-38p, 5p at the end | 7.0p; 7.2p; 0-38p, 18p | 3.2p; 25.4p | - |
+
+The beyond's year 3 by good (paid it a day): butter 46.0p, eggs 8.6p (from 23.1p), tin ore 2.2p, copper ore 2.0p. It
+paid for the bells 29p a day, tallow 9.5p, hides 8.3p.
+
+**Wage support by trade** (wanted, year 3): smithies 34.6p, inns 19.4p (from 42.7p), bakeries 15.1p, brickworks 14.7p,
+the sawmill 12.7p, preservers 12.3p. The worst tills: the sawmill (3 posts, 24% of its hours used, 9.8p), Pennock's and
+Gilbey's brickworks (8.3p, 3.4p), the charcoal store (8.0p), the cartographer and the paintworks (7.2p each), the four
+smithies (6.2-7.0p each, 21-27% used), Southmeadow's pottery (6.7p), Saltstack's bakery (5.9p), the mason (5.4p),
+Oakhaven's press (5.3p), Greyby's glassworks (4.7p). The two small inns are down to ~3.5p each.
+
+**Piles in year 3** (day 730 to 1,094, at the farms and works): salt, flour, peat and honey no longer pile (honey -119,
+each hive ~223 at the end, from ~2,250); clay +1,467 (from +5,958), firewood +3,433 (from +7,095). Still piling:
+charcoal +4,312, iron ore +3,714, firewood +3,433, hemp +3,331, stone +2,694, timber +2,638, flax +1,871, limestone
++1,867, sand +1,804, grapes +1,740, clay +1,467, wool +1,366, herbs +1,246, wine +911. Oats fall (-1,089).
+
+**Apples.** The orchards grow the same (283 a day in years 2-3) and sell all of it (273 a day, 10 eaten; 0-3 held each
+at the year ends, against stable8c's ~2,200). What the city bought is nearly the same (273 against 271 a day: the inns
+105, preservers 65, breweries 48, the Coldwater still 45, the presses 10); with no stock at the orchards the shelves run
+dry and 47.6 a day of wants go unmet across 22 tills. The orchards were drained in year 1 (the still and the preservers
+took 17 a day more than in stable8c, as stable9c-y1 found), and the realm's demand is now just over what they grow, so
+they never refill. Bilgemarsh's preserver (idle in stable8c) now makes dried apples and preserves (~12 a day in year 3).
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes (the run's exit 134 is after the last day) | yes |
+| Estates' posts paid every night | 808p of 808p, no night short in three years | yes |
+| No estate purse trending down | the Crown's 1,533 -> 1,637 -> 1,306p at year ends, by quarter ~1,511 -> ~1,440p, 16p under its keep at the end; its rents 771 -> 724p, its grants out 499 -> 519p. Timberland's 495 -> 353p (its works' rents 182 -> 147p). Grayrock's 27 -> 20 -> 13p (grant-fed). Fell level (318, 349, 379p), Greatly level at ~35p | **no**: the Crown at its keep and falling in year 3, Timberland falling |
+| The treasury over its float | least 1,028p, rising 1,637 -> 3,177p | yes |
+| Wage support not climbing | wanted 291, 233, 252p (year 3's quarters 204, 250, 289, 266p); paid 77, 94, 195p, the last four weeks 265p | **no** for what is paid; wanted lower than stable8c's (252 against 305p) |
+| Hunger as low as wharf7b | 3 days, 8 hours at most (wharf7b 6, 9); households short 0.35 against 0.31 | **no, narrowly** |
+| No runaway pile, no standing shortage a producer should cover | apples 47.6 a day short; the fuels, iron ore, hemp, stone, timber pile; hides rot 20 a day | **no** |
+| The valve nets | 58.8p in, 58.8p out a day; the credit 5p at the end | yes |
+
+**Verdict: not stable.** Round 4 did what it aimed at: the wage support wanted is lower every year (252 against 305p in
+year 3), the foundry keeps selling (54 against 15p a day in year 3), eggs, milk and meal are nearly met (5.7, 3.3, 0 short
+from 15.2, 16.5, 10.0), salt, flour, peat and honey stopped piling, and the short households are fewer and not mostly the
+lone and earnerless any more (30% with no earner, from 68%). What fails:
+
+1. **The Crown's purse** falls in year 3 (1,637 -> 1,306p, under its keep of 1,322p at the end; its year-3 least 851p).
+   Its grants out (519p a day) are Grayrock's 440p (476p of posts on 32p of rents and 5p of fees) and Greatly's 79p
+   (110p on 31p); its rents fell 47p from year 2 (land 693 -> 656p as the dairies' and orchards' surplus fell, shops 78 ->
+   68p). Fix: size the sea trade's 54 posts to what the boats and the Wharf earn (move the hands to tills that sell: the
+   preservers' apples, the bakeries short of hours), or give Grayrock the fees of the takes it ships.
+2. **Apples are short 47.6 a day** with the orchards selling every apple they grow: the realm's demand passed the
+   orchards' yield once year 1 drained their stores. Fix: the orchards' apple yield up ~15-20% (the patch's whole step for
+   autumn and winter, which it marks supply-bound), or a sixth orchard on Fell's land (Fell's purse has room: +105p a
+   night over its keep).
+3. **Wage support paid climbs** (77, 94, 195p; 265p in the last four weeks) as the treasury rises over its cap; wanted
+   rose again in year 3's second half (289p in autumn). The idle posts left are small makers with no buyers (the sawmill,
+   the brickworks, the charcoal store, the cartographer, the paintworks, the smithies at ~25% of their hours). Fix: move a
+   hand from each of the sawmill, the brickworks, the charcoal store, the paintworks and the cartographer (the user's
+   go-ahead covers DEV moves) to the tills bound by their crews (the country press, the weaver, Cornley's bakehouse, the
+   butchers) and to the preservers short of apples once item 2 is fixed.
+4. **Timberland's purse falls a year** (495 -> 353p) as its works' rents fall with the fuel piles (charcoal +4,312,
+   firewood +3,433, timber +2,638): the works grow more than is bought. Fix: the patch at no slack for charcoal, firewood
+   and timber taken by the year's takings rather than each season's (round 4's stable9b-y1 showed the seasonal cut runs
+   the winter short), or a coppice hand fewer.
+5. **The keepers' profit falls** (697, 483, 434p) while the toll rises (1,499 -> 1,612p): the city's tills keep less
+   each year. Not traced this round; next: the till table by trade by year (takings less inputs, draws and toll).
+6. **Hides rot** at ~20 a day (the takes' room is short: 334p a day unfit; the beyond's imports fell to 59p a day). Fix: a
+   craft that uses hides (glue at the tannery or parchment for the papermill), or fewer hides a carcass at the dairies.
+7. **Households short 0.35** against wharf7b's 0.31; hunger itself is low (3 days, 8 hours at most). The no-earner's alms
+   reached 15 households a night in year 3 (78p a day) once the treasury was over its cap.
+8. **world_check's exit 134** at the end of the run (a heap fault seen at a free, after day 1,095): the run's numbers are
+   whole, but the fault may be anywhere. Fix: run the ASan build (`build-core-clang-sanitize`) for 60 days and a year on
+   export64 to find it before the next 3-year run.
