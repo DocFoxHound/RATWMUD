@@ -293,15 +293,21 @@ std::int64_t Society::wharfTakesRun(bool commit)
         std::stable_sort(holders.begin(), holders.end(), [](const Holder& a, const Holder& b) {
             return a.over != b.over ? a.over > b.over : a.till < b.till;
         });
+        const auto total = [&](int q) {
+            const auto p = stablePrice(good, q);
+            return p + carriageOn(WharfFund, good, q, false) + p * fee / 100;
+        };
+        // (What the takes wanted of it within its cap, for the unfit: once a good, not once a holder, as a holder's
+        // shortfall passes on to the next as cap left.)
+        int wantN = 0;
+        for (const auto& h : holders)
+            wantN = int(std::min<std::int64_t>(std::int64_t(wantN) + h.over, capLeft));
+        const int capStart = capLeft;
         for (const auto& h : holders)
         {
             if (capLeft <= 0)
                 break;
             int n = std::min(h.over, capLeft);
-            const auto total = [&](int q) {
-                const auto p = stablePrice(good, q);
-                return p + carriageOn(WharfFund, good, q, false) + p * fee / 100;
-            };
             if (!commit)
             {
                 wanted += total(n);
@@ -309,12 +315,9 @@ std::int64_t Society::wharfTakesRun(bool commit)
                 continue;
             }
             const auto room = wharfExportRoom();
-            const int asked = n;
             // (Down in proportion, but never past 1 at a step: from 60 bones and room for one, the proportion floored to 0.)
             while (n > 0 && total(n) > room)
                 n = std::min(n - 1, std::max(1, int(std::floor(double(n) * double(room) / double(std::max<std::int64_t>(1, total(n)))))));
-            if (n < asked)
-                loopToday_.wharfTakeUnfit += total(asked) - (n > 0 ? total(n) : 0);
             if (n < 1)
                 break;                              // (No room for this good today: the next, cheaper, may fit.)
             const bool farm = h.farm >= 0;
@@ -364,6 +367,8 @@ std::int64_t Society::wharfTakesRun(bool commit)
             capLeft -= n;
             wanted += price + carriage + wharfage;
         }
+        if (const int missed = wantN - (capStart - capLeft); commit && missed > 0)
+            loopToday_.wharfTakeUnfit += total(missed);
     }
     return wanted;
 }

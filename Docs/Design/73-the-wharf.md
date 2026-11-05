@@ -795,3 +795,8 @@ left:
 - **Cider and apple brandy short** (the households' top shortages now; eggs 16 a day short, from 95).
 - In year 1 the Wharf lands the country workshops' own goods (linen cloth, scarves, soap, pamphlets: ~70p a day paid
   beyond in the first 60 days) while their makers can't keep up; gone by year 2.
+
+**Review of round 1** (before the merge into ridgemere2): `unfit` counted a holder's shortfall again at the next holder
+of the same good (the cap a shrunk take left passed on to it, which the room then refused whole), so stable8's ~424p a
+day of unfit overstates what the takes wanted past the room. It is now booked once a good: what its holders held over
+their keep within its cap, less what was taken. Logging only; the takes themselves are as they were.
