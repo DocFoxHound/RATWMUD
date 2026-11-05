@@ -1616,3 +1616,37 @@ are 78p a day less, the wage support wanted is lower every year, apples are met,
    (another compiler; the end money 64,584p against 64,590p), so it did not walk stable9's exact path. `s10c` (gcc
    Release, this branch) also exited 0. The fault may be in glibc's allocator under one run's exact path, or in the
    teardown; not traced further. A rerun of stable9 itself with `MALLOC_CHECK_=3` would show whether it repeats.
+
+### stable9b's 3-year run (ridgemere2 5724b04, 2026-11-05)
+
+Round 5 on the merged build (`build-core`, gcc Release, rebuilt: no Core code changed in the merge), **build 65's
+export (`export65`)**, wharf7b's flags (`--farms 0`, an area every 28 days); 1,095 days, 2,341 s, exit 0;
+`stable9b-report.md`, its patch, `stable9b.out`. No DEV write this time: export65 is the round's.
+
+**It is `s10c` to the byte.** The economy file, the loop state and the full log are identical to s10c's (`cmp`), the end
+digests match (people 4023685e8be0a69d, society 3b0cc12e7c44c553), and the report differs only in the order of two
+rows tied at the same value. So the merge changed nothing the economy sees, the run is deterministic across builds of
+the same code, and every number in s10c's table above is this run's. A day, year 3:
+
+| | stable9b (= s10c) | wharf7b | producers7 |
+|---|---|---|---|
+| Money conserved every day; at the end | yes; 64,581p (net to the beyond -14p in three years) | yes | yes |
+| Estates' posts; nights short (year 3) | 736p of 736p; none in three years | 792 of 824p; Grayrock and Greatly short | 806 of 824p |
+| Crown: rents in; grants out; purse at year ends | 723p; 441p; 1,590, 1,602, 1,333p | 464p; 502p; 625p at the end | 503p; 529p; 714p |
+| Grayrock, Timberland, Greatly, Fell (year ends) | 45/19/15, 513/476/335, 52/33/52, 300/270/373p | 18, 361, 61, 29p (end) | 18, 318, 66, 28p |
+| Treasury mean; wage support paid / wanted | 2,035p; 184 / 234p | 3,999p; 296 / 303p | 3,271p; 295 / 311p |
+| Hunger: days; households short (economy line) | 6; 0.36 | 6; 0.31 | 3; 0.30 |
+| Alms; of it the no-earner's | 435p; 81p | 399p; 0 | 403p; 0 |
+| The valve: in / out; fees; basket (the run) | 86 / 86p; 7p; 15p | - | - |
+
+Also in year 3: the foundry's wages paid in full (25.8p a day over the run) and 26.4p a day to its House; eggs 100 a day
+grown and all sold, 5.1 pieces a day short at the shops; cider 124 a day sold, none short; the takes the Wharf's room
+could not fit 270p a day (the run).
+
+**Verdict: better, not stable** (the same as s10c's, since it is the same run). Against the definition: money conserved,
+posts paid every night, the treasury over its float, the valve nets, no standing shortage a producer should cover (eggs
+5 a day is the largest), hunger about wharf7b's (0.36 against 0.31 on the economy line, the shops'-last-hour table 0.09):
+yes or nearly. Not yet: **the Crown's year-end purse falls** (1,602 -> 1,333p) as its grants to Grayrock climb (252,
+423, 441p); **Timberland's falls** (476 -> 335p) with its works' rents (193 -> 164p); **wage support paid climbs** (83,
+96, 184p) as the treasury lets it, though the wanted is flat (218 -> 234p); the carry-over goods (charcoal, stone, timber,
+iron ore, hemp) still pile at 1,100-2,200 a year. The open points are s10c's 1-5.
