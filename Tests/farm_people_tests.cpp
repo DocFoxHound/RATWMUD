@@ -436,8 +436,9 @@ void thePlacement()
             if (p.role == "merchant")
                 keeperOf[p.work.cell] = s.state().careers.positions.at(p.id).holder;
         }
-    expect(market == 25, "the seven markets' 25 posts (Oakhaven's two and Frosthollow's two with their works, doc 72; a hand more at "
-                         "Coldwater's and Larkfield's bakehouses and Southmeadow's and Fenshore's alehouses, doc 73, round 4): " + std::to_string(market));
+    expect(market == 26, "the seven markets' 26 posts (Oakhaven's two and Frosthollow's two with their works, doc 72; a hand more at "
+                         "Coldwater's and Larkfield's bakehouses and Southmeadow's and Fenshore's alehouses, doc 73, round 4; "
+                         "a second at Coldwater's bakehouse, round 5): " + std::to_string(market));
     int workshopPosts = 0;
     for (const auto& w : people.workshops)
     {

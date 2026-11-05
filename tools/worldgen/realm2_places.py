@@ -139,7 +139,9 @@ MILLS = {'grain_long': 'mill_long', 'grain_lark': 'mill_lark'}
 # Market entries: (key, kind, name, text, posts) where kind is 'store' (a general store, the keeper's flat over it),
 # 'alehouse' or 'inn' (an inn has guest rooms upstairs), 'bakehouse' (a baker's, with a flat when `flat`).
 # (Doc 73, round 4: a shop hand at Coldwater's and Larkfield's bakehouses and a pot hand at Southmeadow's and Fenshore's
-# alehouses, each bound by its one post's hours in stable8c's year 3 with its bread or porridge at the price band's top.)
+# alehouses, each bound by its one post's hours in stable8c's year 3 with its bread or porridge at the price band's top.
+# Round 5: a second shop hand at Coldwater's, still bound by its two posts' hours in stable9's year 3, 99% used, its
+# bread and honey cakes at the band's top on 23% of days and its keeper's profit 33p a day.)
 COMMUNITIES = [
     dict(id='coldwater', name='Coldwater', site='coldwater', style='country', street='d', cottages=9, gardens=4,
          about='A lakeside village of the Greenholt where the East, River, High and Downs Roads meet north of '
@@ -153,7 +155,7 @@ COMMUNITIES = [
                   'drovers, boatmen and orchard hands crowd its benches of an evening.',
                   [('innkeeper', 1), ('pot hand', 1), ('cook', 1)]),
                  ('bakehouse', 'bakehouse', 'Coldwater Bakehouse', 'A warm brick oven and the village\'s bread on the '
-                  'racks by dawn; the farms\' wives bring their own dough to be baked for a penny.', [('baker', 1), ('shop hand', 1)])]),
+                  'racks by dawn; the farms\' wives bring their own dough to be baked for a penny.', [('baker', 1), ('shop hand', 2)])]),
     dict(id='larkfield', name='Larkfield', site='larkfield', style='country', street='d', cottages=4, gardens=3,
          about='A village at the Long River\'s crossing among the middle country\'s grain: timber cottages round a '
                'green and its well, a store, an alehouse and a bakehouse baking the Longmead mill\'s flour, kitchen '
