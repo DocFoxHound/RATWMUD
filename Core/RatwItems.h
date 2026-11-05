@@ -178,6 +178,11 @@ struct RuleInfo
 inline constexpr RuleInfo Rules[] = {
     {"comfortsMost", 0, 100000, 200},    // The most comforts a household buys a day.
     {"almsADay", 0, 1000, 10},           // Pennies a head the alms make a household up to.
+    {"almsNoEarner", 100, 300, 100},     // A household with no earner (no member holding a paid post: the old, orphans,
+                                         // the out of work living alone) is made up to this percent of the alms a head,
+                                         // the part over the day's of what the treasury holds over its cap (doc 73, round
+                                         // 4: stable8c's short households, 68% with no earner and 63% alone, held 10p a
+                                         // head, a day's food and none over); 100: as any household.
     {"treasuryCap", 0, 100000000, 2000}, // What the treasury holds over this pays the short tills' wages,
     {"wageSupport", 0, 100, 100},        // this percent of each till's shortfall.
     {"workBankHours", 0, 1000, 0},       // A crew's banked hours, in hours of the crew; 0: its longest craft and an hour.

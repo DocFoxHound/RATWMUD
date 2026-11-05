@@ -1247,3 +1247,145 @@ treasury rises and the valve nets. What fails:
   in the butchers' by-products, since the realm's leather wants ~5 a day.
 - The patch at 0% slack, the whole step, for the goods that never rot (honey, clay, salt, charcoal, peat, stone, flour,
   flax), and meal's (and eggs', milk's) whole step up at the dairies and pig farms.
+
+### Round 4 of stabilizing (branch `r2-stable9`, 2026-11-05): posts moved, alms for those with no earner, the slack piles
+
+The user, on stable8c: alms for the households with no earner and those living alone, and the posts moved ("you can go
+ahead and move those posts"); a few rounds, real fixes, not levers. No treasury lever (toll, wage support, float), no
+move of the Wharf's credit or its injection, cheese left as it is. **DEV written** (the posts, below; backed up first); no
+NPC made (the villages' new posts and the still's are filled from the pool, as every workshop's are).
+
+**The trace** (stable8c's logs; a day, year 3 unless marked):
+
+- **The wage support is idle posts, as round 3 found, but there is little work to move them to.** Of the ~267p of
+  support paid in year 3, the largest are the two small inns (Gullmore's and Ashgate's, 3 posts each, 18% and 21% of
+  their hours used, ~14.5p each), Oakhaven's press (4 posts, 21%, 11.9p), Halford's glassworks (3, 12%, 11.6p), the Rag
+  Mill (2, 5%, 10.7p), the sawmill, the charcoal store, the cartographer, the tileworks and the five smithies (2 posts,
+  20-28%, 7-8p each). A post there is ~7p a day (the wage floor). The makers bound by their crews (95% of their hours or
+  more) are few, and most of them have no unmet demand: the chandleries' candles (stock never out, price 1.00), the
+  pottery's pots and Kelpstack's cider likewise. The goods at the price band's top in year 3, the sign of demand unmet:
+  the tailor's and the weaver's linen neckerchiefs (1.25), the weaver's scarves and straw hats (1.24), the still's
+  brandy and cider (1.23-1.24), and the villages' food: Coldwater's and Larkfield's bakehouses' bread and honey cakes
+  (1.24-1.27) and Southmeadow's and Fenshore's alehouses' porridge (1.26-1.27), each a one-post shop using 90-100% of
+  its hours, its keeper's profit 25-36p a day at the bakehouses.
+- **The comforts are one pot.** A first smoke with the city's hands moved to the makers (below) raised the country
+  workshops' support wanted (the Crown's linen and wool looms, its soapworks: 4 -> 10-12p each in the first spring) as
+  the city's neckerchiefs, scarves and soap took their sales: more of one comfort is less of another.
+- **The Crown's own workshops have idle posts too.** Coldwater's soapworks used 57% of its 8 posts' hours (45 of 79 a
+  day), Coldwater's wool looms 61% of 7 (46 of 76), Larkfield's linen looms 68% of 6 (44 of 65). Their wages are the
+  Crown's margin: what they hold over their float and four days' wages goes to its estate.
+- **The foundry has no buyer.** The smaller iron trades buy of whichever seller holds most of a good (`buyFromCity`),
+  so the ironworks' shelves took every order (27 bars a day) and the foundry sold ~0.2 a day once the Wharf stopped
+  taking its bars; its takings 92, 26, 15p a day over the three years, its inputs (21p) over them.
+- **The short households hold a day's alms and nothing over.** 154 rows over the run, 63% with a purse of exactly 10p
+  a head (the alms' line), no earner, most alone (68%, 63%); nobody went hungry for long (6 days in three years, 7 hours
+  at most), but they end each day's market under a day's food.
+- **Slack piles** (stable8c's patch at no slack, the goods that never spoil): flour ~10% over what is taken, hemp ~10%,
+  salt ~14%, clay ~18%, charcoal ~21% (the Upper hearths) and ~20% (the Greenholt's), honey ~11%, stone ~16%, peat ~7%,
+  firewood ~5%, iron ore ~10%, flax ~4%.
+- **Eggs, milk and meal**: the dairies sell every egg they lay (zero stock on 78% of days), 15 a day short at the shops;
+  milk 16 a day short at the inns while the dairies' cheese rooms take 30 a day of their own; meal 10 a day short at
+  the villages' food shops while the dairies and pig farms hold none on 27-30% of days. Their patch's step is small
+  (the shops' wants never reach the farms' draws), so they are raised by what the shops lacked.
+
+**The fixes:**
+
+- **Twelve posts moved in DEV** (the user's go-ahead; a person keeps home, evening and everything else; the work spot
+  moves to a free floor tile of the new workplace, the label to its hand's, the greeting and the description's
+  workplace clause with it). From the idle tills to the makers short of hours or the shops whose keepers' profit can
+  pay a hand: Gullmore's inn's two hands to the tailor (Needle & Drip) and the weaver (Greywool); Ashgate's two to the
+  chandleries (The Lamp & Wick, Wickham's); Halford's glassworks' two to the pottery (The Rain Pot) and the printing
+  house (The Council Press); the Rag Mill's hand to the perfumer (The Cedar Phial); a foundry hand to Rainford's
+  Store; Eastgate Ironmongers' hand to Sump Sundries; a tannery hand to Bridge Stores. And House Greatly's two
+  servants at Greatly House to Harbour Provisions and the Eastgate Bakehouse (Greatly's posts 126 -> 110p a day, the
+  Crown's grants to it with them). The sea trade's 54 posts are not moved: there is no work for 54 more hands that sells.
+  **DEV**: backed up first to `artifacts/backups/ratw_dev_20261105-061236.pgdump` (and its Atlas json, revision 83);
+  saved as **revision 84**, the same map (its identity kept); `world_build.py dev`: **build 64**, exported to
+  `artifacts/economy/r2/export64` (not committed). Against export63 only these twelve residents differ.
+- **Data posts** (the Country's, filled from the unplaced pool as every workshop's are, nobody made): a shop hand at
+  Coldwater's and Larkfield's bakehouses and a pot hand at Southmeadow's and Fenshore's alehouses (communities.json, and
+  realm2_places' `COMMUNITIES` so the generator agrees); Oakhaven's press 4 -> 2 posts; the Crown's soapworks 8 -> 6,
+  Coldwater's wool looms 7 -> 5, Larkfield's linen looms 6 -> 5 (workshops.json; their idle hours above). A fourth still
+  hand was tried and taken back (below).
+- **The smaller iron trades buy of the foundry** (city_loop.json `suppliers`): the cooperage, the cartwright, the tinker,
+  the builders' works, the armoury, the saddlery and the fletcher (~4 bars a day) of the foundry alone; the smithies and
+  Larkfield's smithy of either, as before. Both are House Timberland's.
+- **Alms for households with no earner** (`almsNoEarner`, a rule in percent, 150 in city_loop.json; Core 100, as any
+  household): a household with no member in a paid post is made up to half as much again as the day's alms a head (15p
+  at 10p). That part over the day's is paid only of what the treasury holds over its cap, after the short tills' wages,
+  so it never takes the wage support's money that night. Logged (`alms_no_earner`, `alms_no_earner_homes` on the economy
+  line; the journal "alms: a household with no earner"). The DM's and Atlas's rule limits know it (map_editor's
+  RULE_LIMITS).
+- **Yields** (country_farms.json): stable8c's patch at no slack, the whole step, for **salt, clay and honey** (never
+  spoil, piled 5-18% over what sold). Eggs +5 a day a dairy, milk +5.5, meal +2 a dairy and +1 a pig farm (the shops'
+  shortfalls, as the patch's step was ~0).
+- **Tests**: `econ_fix_tests` (the no-earner's alms 15p a head and booked apart, an earner's household the day's alone);
+  `treasury_tests` and `selfcorrect_tests` keep the alms as any household's (100); `workshops_tests` 32 posts (39),
+  `farm_people_tests` the markets' 25 posts (21) and the workshops' 32; `farms_tests` the clay, and the smaller iron
+  trades of the foundry alone. ctest **79 of 79**; `test_econ_report`, `test_farms_summary`, `test_country_industry`,
+  `test_realm2` pass; `test_map_editor` fails one Greyfen resident count, the same on ridgemere2.
+
+**What was tried and taken back** (each a one-year run on export64, wharf7b's flags, `--farms 0`: an area every 28 days):
+
+- `stable9-y1` (every change above, and the no-slack patch for all eleven slack goods, a fourth still hand, and the
+  no-earner's alms at 150 of the treasury's float): the still pressed ~10 apples a day more and the inns, breweries and
+  preservers ran out of apples on days 165-185 (18-48 households short a day, 22 days with someone hungry); the
+  no-earner's alms cost 163p a day, the treasury fell under its cap and the wage support paid 52p a day in the second half
+  against stable8c's 118p.
+- `stable9b-y1` (the still back to three hands, hemp back, the no-earner's alms of what is over the cap): the winter's
+  fuel, stone and iron ran short (peat 4,020 pieces at the Market Hall, firewood, the masons' stone ~22 a day, the
+  smithies' iron bars 12,303 draws short as the hearths' charcoal ran out): the patch sizes each season on its own takings,
+  but the woods, the peat cut, the hearths and the quarry carry their summer's surplus into the winter, and a run that
+  starts with empty stores has none. So firewood, peat, charcoal, stone, flour, iron ore and flax went back to stable8c's.
+
+**The year's run, `stable9c-y1`** (the branch as committed, export64, 365 days, 687 s; `stable9c-y1-report.md`, its
+patch, `.out`; its first 60 days are the 60-day smoke, deterministic). Against stable8c's year 1 (a day):
+
+| | stable9c, year 1 | stable8c, year 1 |
+|---|---|---|
+| Money conserved every day; the realm's money at the end | yes; 64,572p | yes; 64,561p |
+| Estates' posts | 808p of 808p, no night short | 824p of 824p, none short |
+| Wage support wanted / paid / unpaid | **291** / 77 / 213p | 323 / 120 / 203p |
+| ... inns, smithies, preservers wanted | 44.5, 32.4, 20.0p | 64.7, 35.3, 24.1p |
+| The treasury: mean, at the end; least in summer, autumn | 1,322p, 1,739p; 200, 200p (its float) | 1,621p, 1,733p; 474, 243p |
+| Alms; of it the no-earner's (households a night) | 465p; 38p (7.4) | 451p; none |
+| Households short of food (economy line; the shops' last hour) | **0.46**; **0.13** (29 households, 39% with no earner) | 0.90; 0.22 (32, 75%) |
+| Hunger: days with any, the most hours | 8, 8 | 6, 10 |
+| The second half (days 182-364): the Crown's purse; its rents; grants out | 1,627 -> 1,533p (mean 1,606p); 791p; 453p | 1,698 -> 1,450p (1,578p); 756p; 444p |
+| ... Timberland, Greatly, Fell, Grayrock purses | 361 -> 451, 4 -> 53, 194 -> 318, 26 -> 27p | 315 -> 429, 29 -> 61, 237 -> 393, 53 -> 46p |
+| ... the foundry: takings, crew-hours used; to its House | 71.6p, 92%; 30.7p | 40.4p, 57%; 25.2p |
+| ... the ironworks' takings | 177.4p | 223.6p |
+| ... piles at the farms: salt, clay, honey | +475, 0, +264 | +2,112, +1,602, +1,032 |
+| ... eggs, milk short (the shops) | 5.2, 2.7 | 19.0, 12.8 |
+| ... **apples short** (the shops) | **67.7** | none (the orchards held ~810 each) |
+| The keepers' profit; the toll | 697p; 1,511p (second half) | 801p; 1,562p |
+| Hides rotted | 11.2 | 9.7 |
+
+The moved posts did what they were for at the tills: the two small inns' support fell from ~7.7p a day each to ~1.5p,
+Halford's glassworks' from 3.4p to 0.2p, the Rag Mill's 3.5p to 1.0p, Eastgate's smithy's 3.2p to 0.2p, Oakhaven's
+press 5.8p to 0.6p; the tills that took the hands paid them (none on the support) and sold more (the tailor 82 -> 104p
+a day, the weaver 79 -> 103p, Wickham's chandlery 118 -> 140p, the pottery 56 -> 76p, the printing house 54 -> 72p,
+the perfumer 56 -> 74p).
+
+**Verdict: better on the wage support, the foundry, the slack piles, the dairies and the short households; not
+stable.** What it costs and what is open:
+
+1. **The comforts are one pot, and so is the toll.** Each hand moved onto a selling till lowered the wanted ~3p a day,
+   not the ~7p of a post: the makers that took them sold the comforts other makers had sold (the Lamp & Wick's takings
+   171 -> 146p as Wickham's rose; the country workshops' share). Wanted fell 323 -> 291p, but the toll fell with the
+   households' spending (~50p a day in the second half; in part the Crown's workshops' trimmed wages, its estate's now
+   rather than the households'), so the treasury paid less of it (77p against 120p) and touched its float in summer and autumn.
+   Year 1 is the lean year in every run; the three-year run is the measure.
+2. **Apples** are short ~68 a day in the second half (the inns, the breweries, the preservers), where stable8c's
+   orchards held ~810 each: the orchards sell 53.6 a day each against 48, the Coldwater still taking 41 a day against
+   20 for the same apple brandy (with the same three hands). Not traced: its keeper, drawn from the pool, may be
+   another wolf than stable8c's. Next: the orchards' apples back up to what was drawn, or the still's cider from the
+   orchards first.
+3. **The slack fuels, stone, flour, iron ore and flax still pile** (as in stable8c): the patch cannot cut them while it
+   sizes each season on its own takings. A patch for goods that carry over (the year's takings, or the least stock of
+   the year at zero) would.
+4. **The Crown** still sits near its keep and its purse fell over the second half (1,627 -> 1,533p), less than
+   stable8c's (1,698 -> 1,450p); its rents rose 35p a day (its workshops), and its grants to Grayrock (390p) and Greatly
+   (64p) are as they were but for Greatly's two servants. Grayrock's posts (the sea trade's 54 and its people) are 476p a night on ~40p of rents and fees.
+5. **Hides** rot at ~11 a day; not changed this round (a pig's hide is a by-product; the realm's leather uses ~5).
+6. Not run: a 3-year run on this branch.

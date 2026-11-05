@@ -436,7 +436,8 @@ void thePlacement()
             if (p.role == "merchant")
                 keeperOf[p.work.cell] = s.state().careers.positions.at(p.id).holder;
         }
-    expect(market == 21, "the seven markets' 21 posts (Oakhaven's two and Frosthollow's two with their works, doc 72): " + std::to_string(market));
+    expect(market == 25, "the seven markets' 25 posts (Oakhaven's two and Frosthollow's two with their works, doc 72; a hand more at "
+                         "Coldwater's and Larkfield's bakehouses and Southmeadow's and Fenshore's alehouses, doc 73, round 4): " + std::to_string(market));
     int workshopPosts = 0;
     for (const auto& w : people.workshops)
     {
@@ -446,7 +447,7 @@ void thePlacement()
         expect(atWorkshop[w.area] == want, w.area + ": its " + std::to_string(want) + " posts: " + std::to_string(atWorkshop[w.area]));
         workshopPosts += atWorkshop[w.area];
     }
-    expect(people.workshops.size() == 9 && workshopPosts == 39, "the nine workshops' 39 posts (the still since iron6, doc 72; its two more hands, doc 73): " + std::to_string(workshopPosts));
+    expect(people.workshops.size() == 9 && workshopPosts == 32, "the nine workshops' 32 posts (the still since iron6, doc 72; its two more hands, doc 73; round 4: Oakhaven's press, the soapworks and the looms seven fewer): " + std::to_string(workshopPosts));
     expect(!keeperOf["cn_oakhaven_store"].empty(), "Oakhaven's store kept, with its works");
     // (The still's keeper the brewer, of its words: doc 72, after iron6.)
     expect(keeperOf["cn_larkfield_store"] == "shop_larkfield" && keeperOf["cn_coldwater_store"] == "shop_coldwater" &&

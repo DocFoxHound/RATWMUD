@@ -1545,6 +1545,7 @@ struct EconomyWatch
             << ", \"basket_spent\": " << d.basketSpent << ", \"basket_unspent\": " << d.basketUnspent << ", \"drawn\": " << d.drawn
             << ", \"toll\": " << d.toll << ", \"carriage\": " << d.carriage << ", \"wages_owed\": " << d.wagesOwed
             << ", \"wages_paid\": " << d.wagesPaid << ", \"tills_short\": " << d.tillsShort << ", \"profit\": " << d.profit << ", \"subsidy\": " << d.subsidy << ", \"alms\": " << d.alms
+            << ", \"alms_no_earner\": " << d.almsNoEarner << ", \"alms_no_earner_homes\": " << d.almsNoEarnerHomes
             << ", \"wharf\": " << society.cash(Society::WharfFund) << ", \"treasury\": " << society.cash("treasury")
             << ", \"carters\": " << society.cash(society.carters()) << ", \"tills\": " << tills << ", \"till_median\": "
             << (tillCash.empty() ? 0 : tillCash[tillCash.size() / 2]) << ", \"purses\": " << purses << ", \"money\": "

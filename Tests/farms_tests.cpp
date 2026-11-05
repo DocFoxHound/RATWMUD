@@ -1061,7 +1061,9 @@ void theStoneWorks()
     // (doc 72): its patch half way (the stone its whole step in spring and summer), the pits' clay 7 a day more each for
     // the kiln hands. After country6a (doc 72): its patch half way, the pits' clay to what the potteries and the
     // brickworks drew (+5%: 8,367 had piled), half way (the early years drew more). After iron6 (doc 72): its patch half
-    // way. After stable8 (doc 73, round 2): its patch half way (2,438 a year piling).
+    // way. After stable8 (doc 73, round 2): its patch half way (2,438 a year piling). After stable8c (doc 73, round 4): its
+    // patch at no slack, the whole way, for the pits' clay (piling 5,958 in its year 3; it never spoils). (The stone's
+    // whole cut, tried with it, left the masons ~22 short a day in the first winter, the quarry's store empty: kept.)
     const auto& quarry = stone.farms.front();
     expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 22.45) < .01,
            "the quarry's stone, 22.45 a day at summer's middle (stable8's patch half way)");
@@ -1070,8 +1072,8 @@ void theStoneWorks()
         stoneMean += v / 4;
     expect(std::abs(stoneMean - 25.67) < .05, "25.67 a day over the year: " + std::to_string(stoneMean));
     for (std::size_t i = 1; i < 3; ++i)
-        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 34.57) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 7.96) < .01,
-               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; after country6a: the clay half way to what was drawn, the sand half way; after iron6 both half way; after stable8 the sand half way)");
+        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 27.98) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 7.96) < .01,
+               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; after country6a: the clay half way to what was drawn, the sand half way; after iron6 both half way; after stable8 the sand half way; after stable8c the clay to what sold)");
     // On: founded; the mason's stone and sand from the works' stores, nothing to the Country; limestone still the Country's.
     auto s = city([](EconomySpec& e) { e.farms.areas["stone"].on = 1; },
                   {person("mason", "merchant", "stonemason in Chisel Row", {"masonry", 2.5, 2.5}, "home_mason", 40, 400)});
@@ -1182,8 +1184,12 @@ void theIronAndLime()
         expect(std::none_of(k->out.begin(), k->out.end(), [](const auto& o) { return o.first == "charcoal"; }), "nor the foundry");
     const auto sellers = Society(Roster::None).citySellers("smithy", "iron_bar");
     expect(sellers == std::vector<std::string>({"ironworks", "foundry"}), "the smiths' wrought iron from the ironworks and the foundry");
-    for (const char* buyer : {"country_smithy", "cooperage", "cartwright", "tinker", "builders_works", "armory", "saddlery", "fletcher"})
-        expect(Society(Roster::None).citySellers(buyer, "iron_bar") == sellers, std::string(buyer) + "'s too");
+    expect(Society(Roster::None).citySellers("country_smithy", "iron_bar") == sellers, "Larkfield's smithy's too");
+    // (Doc 73, round 4: the smaller iron trades of the foundry alone. A seller is picked by the stock it holds, so the
+    // ironworks' shelves took every order and the foundry sold ~0.2 bars a day once the Wharf stopped taking its bars.)
+    for (const char* buyer : {"cooperage", "cartwright", "tinker", "builders_works", "armory", "saddlery", "fletcher"})
+        expect(Society(Roster::None).citySellers(buyer, "iron_bar") == std::vector<std::string>({"foundry"}),
+               std::string(buyer) + "'s of the foundry alone");
 
     // On, with the woods (the ironworks' charcoal from the store room: the woods' and the Upper hearths'): founded, the
     // shops' goods from the works' stores and none from the Country.

@@ -170,7 +170,9 @@ void theWorkshopsData()
                 expect(!business, label + ": no business's");
         }
     }
-    expect(posts == 39, "39 posts (18 before country5b's carry-overs, 35 before the still, 37 before its two hands of doc 73's round 3): " +
+    expect(posts == 32, "32 posts (18 before country5b's carry-overs, 35 before the still, 37 before its two hands of doc 73's round 3, 39 "
+                        "before round 4's: Oakhaven's press, the soapworks and Coldwater's looms two hands fewer each, "
+                        "Larkfield's looms one): " +
                            std::to_string(posts));
     // Where the map has laid a workshop (communities.json, a community's `workshops`), its work spots are the map's (by
     // its stations), never workshops.json's own.
