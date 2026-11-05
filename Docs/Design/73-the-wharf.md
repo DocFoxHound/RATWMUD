@@ -835,3 +835,117 @@ charcoal store 10.1, cartographer 9.7. The report's till table gives the reasons
 butchers and preservers (takings 63, 31, 78, 80p against costs 46, 24, 62, 64p), low sales or too many hands for the
 glassworks, sawmill, brickworks and bakeries. The smiths' share grew most since the farms' baskets were bounded (the
 baskets bought from the smiths and the ironworks).
+
+### Round 2 of stabilizing (branch `r2-stable8b`, 2026-11-04): the butchers' by-products sold, the stills' cider
+
+The user: "Do what you need to in order to stabilize the economy. If we need more logging make more logging." No
+treasury lever (toll, wage support, float), no move of the Wharf's credit or its injection, cheese left as it is, no DEV
+write.
+
+**The trace** (stable8's logs, 3 years; a day unless marked):
+
+- **Wage support does not climb; what the treasury can pay of it does.** What the short tills could not pay their posts
+  (`support_wanted`, logged since doc 71) was 312, 309 and 326p by year. The treasury pays it only from what it holds over
+  its cap (treasuryCap 2,000p): it was over it on 107, 105 and 300 nights, so it paid 126, 221 and 293p and left 186, 87 and
+  32p unpaid. The paid figure climbs toward the wanted one, which is about level (+4% in year 3).
+- **Where the shortfall sits.** In year 3, 16 tills hold half of it (164p of 320p). They are: the two small inns of three
+  (Ashgate's and Gullmore's: 23p and 28p of takings against 21p owed); Halford's glassworks (three hands, 9.5p of
+  takings); the papermill, the cartographer, the charcoal store and the paintworks (two each, 5-10p of takings); the
+  sawmill and the Gilbey brickworks (three each); Beechshaw's press (four); all five smithies (7.8-8.7p each: two posts at
+  the 7p floor, 23-26p of takings, 17-20p of costs); and Bilgemarsh's preserver (no sales in year 3). These are crews too
+  big for what their place sells. Every post is filled (614 of working age, 620 paying posts), so a hand stood down
+  would have no post to go to. His wage would only move into the alms (10p a head).
+- **The smiths' share grew because year 1's demand was a spend-down.** In year 1 the estates spent their split purses
+  down (973p a day bought, then 321p and 196p) and the export basket bought 93p a day (16p by year 3). That year the
+  smithies sold ~65p a day to the Wharf and ~41p to the estates (steel bars, rivets, mining picks). By year 3 they sold
+  ~15p and ~10p, against the farms' ~95p.
+- **The Crown's and Greatly's purses spend down to their keep; this is not a deficit.** The estates spend what they hold
+  over their keep (estateKeep: the 200p reserve and two nights of posts, 1,848p for all five). All five averaged 2,191,
+  2,123 and 1,937p in years 1-3, so by year 3 they sat at their keep plus a day's spare. In year 3 their rents were
+  1,009p a day against 824p of posts and 196p bought: level. Greatly lives on the Crown's grants by design (28p of works
+  rent against its 126p of posts).
+- **The butchers' hides and bones had no buyer in the city.** A butcher buys a pig (~7.8p; 23.8 a day) and cuts it into
+  four meat, a bone, two tallow and a hide. Its tallow went to the chandlers (a `suppliers` line). But the tannery drew its
+  hides (2.6 a day) and the inns, the general stores, the jeweller and the tinker their bones (33.8 a day) from the farms.
+  So the butchers' hides (+21 a day) and bones (+23 a day) piled: 18,835 and 24,304 at the end. Their carcasses' cost paid
+  for by-products they never sold, and their shortfall rose from 13p to 30p.
+- **Cider and apple brandy are one shortage.** The cider was short at the distillery (Saltley) and at Marshholm's still,
+  12.5 and 11.5 a day by year 1's end. Both run cider into apple brandy, and the vintner buys its apple brandy from them,
+  so it was short too.
+- **The foundry's bars.** The smiths (swords), the jeweller (bracelets) and the glassworks (mirrors) use bronze and tin
+  bars, but they drew them from the Wharf, so the foundry sold none of them in the city.
+- **The works' piles** (timber, iron ore, stone, sand, oak bark) are yields over what was drawn.
+
+**More logging** (the economy file, normal level; Tests/world_check.cpp): `short_by_trade` (what each trade's short tills
+could not pay tonight, before the support), `rotted` (by good) and each estate's `keep` (estateKeep tonight, beside its
+purse). `tools/econ_report.py` adds three things. The first is wage support by year: wanted, paid, unpaid and the wanted
+by trade. The second is each estate's mean keep and its purse over it, by year. The third is what rotted.
+
+**The fixes** (data and one rule):
+
+- **The butchers' by-products go to the trades that use them** (city_loop.json `suppliers`). The tannery buys its hides,
+  and the inns (their stew), the general stores, the jeweller and the tinker (their charms) buy their bones, from the
+  butchers first. The foundry's bronze bars go to the smiths and the jeweller, and its tin bars to the glassworks.
+- **What still piles of a perishable by-product rots** (the rule `shopRot`, 1; `Society::rotStock`, at the wages' hour).
+  It covers a good a maker's crafts make and none of them uses, that is not food and has a `keeps` (the butchers' hides,
+  6 days: "Rots if not tanned"). Each night the maker's stock of it loses a keeps-th of what is over its keep, the
+  Wharf's keep for a shop (wharfKeepLeast, 28 days of its sales, its shelf). The tannery's own hides (its input) and the
+  bones (no `keeps`) never rot. Goods only: no money moves. The Editor's, Atlas's and map_editor's rule lists have it.
+- **Cider for the stills**: the Wharf's cider import's most from 20 to 40 a day, and the orchards' cider yields the
+  patch's whole step (supply-bound in every season; about +30%).
+- **Yields** (`--apply` of stable8's patch, half way): timber, oak bark, iron ore, stone and sand; then the farms' bones
+  (s8b-y1b's patch, half way: the butchers now supply 24 of the 34 a day the city draws).
+- Tests: `farms_tests` `aMakersByProducts` checks four things: the new supplier lines; a butcher's hides over its keep
+  losing a sixth a night, booked, the money unmoved; the tannery's hides not rotting; the rule off. The quarry's and the
+  pits' yields follow the patch. ctest 79 of 79; the Editor's lib tests 68 of 68 (`content.test.mjs`' Greyfen failure as
+  on ridgemere2).
+
+**A first try, not kept** (`s8b-y1`, 1 year): the Wharf's apple brandy and brandy imports on (10 and 3 a day). The
+vintner's apple brandy shortage fell from 10 to 0.7 a day, and the beyond's room grew enough that 18 hides a day were
+taken from the butchers. But the households' comforts then went beyond the realm for it. The Crown's workshops' takings
+fell from 89p to 68p a day in year 1 (pamphlets, soap, scarves), its rents from 682p to 644p, and the wanted support in
+the year's last quarter was 27p a day higher. So cider for the realm's own stills replaced it.
+
+**The 60-day smoke** (the first 60 days of the year's run below; deterministic, so the same as a 60-day run). Money was
+conserved every day (51,201p to 59,353p; stable8's 59,341p). The estates' posts were paid every night. Nobody was hungry
+(1 hour at most). The treasury's least was 1,172p. Wage support was 227p a day (wanted 243p). The beyond paid in 189p a
+day and was paid 189p.
+
+**The year's run, stable8b** (build 63's export, wharf7b's flags: `--farms 0`, an area every 28 days; 365 days, 907 s;
+`stable8b-report.md`, its patch and `stable8b.out`; the logs are kept, not committed). Against stable8's year 1:
+
+| | stable8b, year 1 | stable8, year 1 |
+|---|---|---|
+| Money conserved every day; the realm's money at the end | yes; 64,585p | yes; 64,570p |
+| Estates' posts | 824p of 824p, no night short | the same |
+| Estates' purses at the year's end (the Crown, Timberland, Greatly, Fell, Grayrock) | 1,542, 441, 64, 258, 50p | 1,629, 449, 67, 229, 45p |
+| The Crown's rents in | 663p (land 579p, shops 85p) | 682p (593p, 89p) |
+| Wage support wanted / paid / unpaid | 309 / 116 / 193p | 312 / 126 / 186p |
+| The butchers' support | 4.4p | 5.7p |
+| Hides, bones piling (a year) | none; hides held 265 at the end, 6.1 a day rotted | +3,380, +9,692 |
+| Cider short (Marshholm's still, the distillery) | 2.5, 1.5 a day | 8.9, 9.1 |
+| Apple brandy, brandy short (the vintner) | 11.3, 3.7 | 9.5, 3.5 |
+| The beyond paid in / was paid | 188.9 / 188.9p | 176.2 / 176.2p |
+| The export basket; the takes' unfit | 44p; 134p | 32p; 182p |
+| The foundry's wages paid; to its House | 100%; 37p | 100%; 37p |
+| The treasury's mean; least | 1,610p; 210p (day 230, as stable8's least) | 1,738p; 385p |
+| Hunger (the most hungry hours in a day; households short) | 3; 0.66 | 10; 0.57 |
+
+**Verdict: the piles and the stills' cider are mended, and wage support is not climbing.** The butchers' hides and bones
+now sell or rot, so no pile grows. The stills' cider shortage fell from ~18 to ~4 a day. What the short tills want is
+level, and what the treasury pays of it rises only toward that, as its room grows. Wage support itself is unchanged
+(~310p a day wanted). The treasury ran ~130p lower: the till-to-till by-products pass no gate toll. Not measured: years 2
+and 3, which a 3-year run would show.
+
+**Left, for the user:**
+
+- **The structural shortfall (~310p a day) is the over-staffed tills listed above.** With every post filled, no rule of
+  the loop can move their hands to work that sells. Two ways would end it: fewer posts at those tills (world data: the
+  two small inns, Halford's glassworks, the papermill, the cartographer, the charcoal store, the paintworks, one hand at
+  each smithy), or more of the realm's money reaching them (the estates' basket or the works' tools, crafts.json
+  `tools`, which no works buys yet). Either is a design choice; neither was made here.
+- **Imports pay for exports.** The beyond buys the realm's hides, bones and export goods only as far as the realm buys
+  from it (the credit). Each import moves comfort money out of the realm and its room back to the takes, as the first
+  try showed.
+- **Apple brandy is still short at the vintner** (~11 a day). The stills now have their cider, so it is their crews' hours
+  or the vintner's draw; not traced.

@@ -751,6 +751,14 @@ void Society::loopHourly(std::int64_t hour, int season)
         spendSurplus();                             // (Last: what the treasury still holds over its cap and reserve.)
         loopToday_.treasuryNight = cash("treasury");
         followTreasury(day);                        // (Its level tonight moves the toll and the alms, slowly.)
+        rotStock();                                 // (What no buyer took of a maker's perishable by-products.)
+        if (estatesOn())                            // (Each estate's keep tonight, beside its purse: the report's.)
+        {
+            const auto owed = estatePostsOwed();
+            for (const auto& e : items::cityLoop().estates)
+                if (const auto f = estateFund(e); account(f))
+                    loopToday_.estates[e.id].keep = estateKeep(f, owed);
+        }
     }
     // The least the treasury held at an hour's end today (doc 71, 4, the treasury's gate).
     if (const auto t = cash("treasury"); loopToday_.treasuryLow < 0 || t < loopToday_.treasuryLow)
@@ -1661,6 +1669,9 @@ void Society::payWages()
         {
             ++loopToday_.tillsShort;
             tillsShort_[payer] = owed - paid;       // (For the treasury's wage support, after every payer has paid.)
+            const auto* p = position(payer.substr(5));
+            const auto* business = p ? items::businessFor(p->title) : nullptr;
+            loopToday_.shortByTrade[business ? business->id : "other"] += owed - paid;
         }
         // A till over its float and floatWagesDays of its wages (a week: doc 68, "The follow-ups") pays its keeper the
         // rest, as profit.
@@ -1728,6 +1739,52 @@ std::int64_t Society::tillFloat(const std::string& till) const
     else if (const auto y = drawnYesterday_.find(till); y != drawnYesterday_.end())
         drawn = y->second;
     return std::max(TillFloat, drawn);
+}
+
+void Society::rotStock()
+{
+    if (rule("shopRot") <= 0)
+        return;
+    const int keepDays = rule("wharfKeepDays");
+    for (auto& [id, a] : state_.accounts)
+    {
+        if (id.rfind("till:", 0) != 0 || a.stock.empty())
+            continue;
+        const auto* p = position(id.substr(5));
+        const auto* business = p ? items::businessFor(p->title) : nullptr;
+        if (!business)
+            continue;
+        std::vector<std::pair<std::string, int>> rots;
+        const auto crafts = items::craftsFor(business->id);
+        for (const auto& [good, n] : a.stock)
+        {
+            const auto* item = n > 0 ? items::good(good) : nullptr;
+            if (!item || item->keeps <= 0 || edible(good))
+                continue;
+            // (A by-product: made by one of its crafts, an input of none; the tannery's hides are its leather's.)
+            bool made = false, used = false;
+            const auto has = [&](const std::vector<std::pair<std::string, int>>& v) {
+                return std::any_of(v.begin(), v.end(), [&](const auto& x) { return x.first == good; });
+            };
+            for (const auto* k : crafts)
+            {
+                made = made || has(k->out);
+                used = used || has(k->in);
+            }
+            if (!made || used)
+                continue;
+            double aDay = 0;
+            if (const auto t = state_.loop.sales.find(id); t != state_.loop.sales.end())
+                if (const auto w = t->second.find(good); w != t->second.end())
+                    aDay = w->second;
+            const int keep = std::max({rule("wharfKeepLeast"), int(std::ceil(aDay * keepDays - 1e-9)), shelfOf(id, good)});
+            if (const int over = n - keep; over > 0)
+                rots.push_back({good, int(std::ceil(double(over) / item->keeps - 1e-9))});
+        }
+        for (const auto& [good, n] : rots)
+            if (const int gone = consume(id, good, n, "rotted: no buyer took it"); gone > 0)
+                loopToday_.rotted[good] += gone;
+    }
 }
 
 void Society::supportWages()

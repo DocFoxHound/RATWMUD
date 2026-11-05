@@ -396,6 +396,29 @@ def report(econ, run, top, patch_path):
         say('')
         say(f'Tills short a night: mean {statistics.fmean(r.get("tills_short", 0) for r in econ):.1f}; wage support '
             f'{sum(r.get("support_by_trade", {}).get("farm", 0) for r in econ)}p to the farms.')
+    # By year (doc 73, round 2): what the short tills wanted against what the treasury paid (it pays only from what it
+    # holds over its cap, so the paid can climb while the wanted stays level), and the wanted by trade.
+    if econ and any('support_wanted' in r for r in econ):
+        years = collections.defaultdict(list)
+        for r in econ:
+            years[r.get('day', 0) // 365].append(r)
+        say('')
+        say('Wage support by year (a day): what the short tills could not pay (wanted), what the treasury paid, what went unpaid; '
+            'and the wanted by trade (the largest, before the support), where logged:')
+        say('')
+        trades = collections.Counter()
+        for r in econ:
+            trades.update(r.get('short_by_trade', {}))
+        top_trades = [t for t, _ in trades.most_common(6)]
+        rows = []
+        for y, rs in sorted(years.items()):
+            m = lambda k: sum(r.get(k, 0) for r in rs) / len(rs)
+            by = collections.Counter()
+            for r in rs:
+                by.update(r.get('short_by_trade', {}))
+            rows.append([str(y + 1), f'{m("support_wanted"):.0f}', f'{m("wage_support"):.0f}', f'{m("support_unpaid"):.0f}']
+                        + [f'{by[t] / len(rs):.1f}' for t in top_trades])
+        out += table(['year', 'wanted', 'paid', 'unpaid'] + top_trades, rows)
     say('')
     # 4. Money.
     say('## 4. Money: flows by season and the treasury')
@@ -600,6 +623,13 @@ def wharf_lines(econ):
            f'The credit: {credits[0]} -> {credits[-1]}p (least {min(credits)}, most {max(credits)}).'
            + (f' What the takes wanted that the room could not fit: {mean("unfit"):.0f}p a day.' if any('unfit' in w for _, w in days) else ''),
            '']
+    # What rotted of the makers' perishable by-products (the rule shopRot, doc 73, round 2), a day by good.
+    rotted = collections.Counter()
+    for r in econ:
+        rotted.update(r.get('rotted') or {})
+    if rotted:
+        out[-1:-1] = [f'Rotted at the makers (by-products no buyer took, a day): '
+                      + ', '.join(f'{g} {v / max(1, len(econ)):.1f}' for g, v in rotted.most_common()) + '.']
     by_season = collections.defaultdict(lambda: [0, 0, 0])
     for r, w in days:
         s = by_season[r.get('season', '?')]
@@ -694,16 +724,22 @@ def estates_lines(econ):
                     continue
                 mean = lambda key: sum(x.get(key, 0) for x in open_) / len(open_)
                 named = (open_[0].get('house') or e)
+                keeps = [x['keep'] for x in open_ if x.get('keep', -1) >= 0]
+                over = (f'{sum(x["purse"] - x["keep"] for x in open_ if x.get("keep", -1) >= 0) / len(keeps):+.0f}'
+                        if keeps else '-')
                 rows.append([(named if named.startswith('the ') else f'House {named}'), str(y + 1), f'{mean("rents"):.0f}',
                              f'{mean("land"):.0f} ({mean("surplus"):.0f})', f'{mean("works"):.0f}', f'{mean("shops"):.0f}',
                              f'{mean("fees"):.0f}', f'{mean("grants_in") - mean("grants_out"):+.0f}',
                              f'{mean("levy_in") - mean("levy_out"):+.0f}', f'{mean("posts_paid"):.0f}/{mean("posts_owed"):.0f}',
-                             sum(1 for x in open_ if x.get('posts_paid', 0) < x.get('posts_owed', 0)), str(open_[-1].get('purse', 0))])
+                             sum(1 for x in open_ if x.get('posts_paid', 0) < x.get('posts_owed', 0)), str(open_[-1].get('purse', 0)),
+                             f'{sum(keeps) / len(keeps):.0f}' if keeps else '-', over])
         out += (['The estates by year (a day; land: the food farms\' land rents, in brackets their surplus over their design\'s '
                  'basket; works: the works\' rents; shops: the workshops\' and the Houses\' city businesses\'; fees: the Wharf\'s; '
-                 'grants and levy net; the purse at the year\'s end):', ''] +
+                 'grants and levy net; the purse at the year\'s end; keep: its mean keep a night, estateKeep, its reserve\'s share, '
+                 'its posts\' nights and, the Crown\'s, what the others lack of theirs; over: its purse over its keep a night, '
+                 'what it may spend):', ''] +
                 table(['estate', 'year', 'rents in', 'land (surplus)', 'works', 'shops', 'fees', 'grants', 'levy', 'posts paid/owed',
-                       'nights short', 'purse'], rows) + [''])
+                       'nights short', 'purse', 'keep', 'over'], rows) + [''])
     return out
 
 

@@ -234,6 +234,10 @@ inline constexpr RuleInfo Rules[] = {
                                          // its till holds over its float and that each night its House's (after wharf7b,
                                          // doc 73: the dairies', the grain farms' and two orchards' baskets ~237p a day
                                          // over their design while the estates went short); 0: the basket all over it.
+    {"shopRot", 0, 1, 1},                // A maker's perishable by-product (made, used by none of its crafts, not food,
+                                         // items.json keeps > 0: the butchers' hides) held over its keep loses a keeps-th
+                                         // of what is over each night (doc 73, round 2: ~19 hides a day piling, 18,835
+                                         // at the butchers by stable8's year 3); 0: it keeps.
     // The luxuries (city_loop.json `luxuries`; doc 72, Phase 5, the user's decision: cheese, a comic luxury for wolves):
     // never bought as food; every household wants them, but buys them only from what it holds over its comforts' keep
     // after its food and its needs (the fuel among them), at most this percent of that a day,

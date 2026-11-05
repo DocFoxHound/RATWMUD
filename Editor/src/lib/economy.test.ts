@@ -52,7 +52,7 @@ const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {alm
     ruleDefaults: {comfortsMost: 200, almsADay: 10, treasuryCap: 2000, wageSupport: 100, workBankHours: 0, fairFood: 1, services: 1,
         servicesCityShare: 30, suppliers: 1, patrons: 1, armourEvery: 120, buyAheadDays: 1, floatDrawDays: 7, floatWagesDays: 7, workshopWagesDays: 2, workshopWageMost: 2,
         subsidyToNeed: 1, estatePostsDays: 2, estates: 1, landRent: 16, landRentFish: 9, landRentFruit: 4, landRentGrain: 28, landRentSalt: 8, landRentDairy: 32,
-        landRentThin: 0, farmSurplus: 1, luxuryShare: 10, luxuryMost: 1, luxuryAbove: 200, luxuryHouses: 40, luxuryHousesMost: 24, luxuryPriceBand: 700, luxuryPriceStep: 50,
+        landRentThin: 0, farmSurplus: 1, shopRot: 1, luxuryShare: 10, luxuryMost: 1, luxuryAbove: 200, luxuryHouses: 40, luxuryHousesMost: 24, luxuryPriceBand: 700, luxuryPriceStep: 50,
         surplus: 1, surplusKeep: 4000, surplusWorks: 20, surplusAlms: 80, surplusAlmsTo: 40,
         stockPrices: 1, stockPriceBand: 25, stockPriceStep: 10, shelfFollow: 1, shelfDays: 7, shelfCover: 125, shelfGrow: 25,
         wageDrift: 1, wageDriftDays: 28, wageDriftSpare: 50, wageDriftMost: 12, wageDriftHandMost: 12, wageDriftFloor: 7, treasuryDrift: 1,

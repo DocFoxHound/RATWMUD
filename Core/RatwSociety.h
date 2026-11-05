@@ -1081,6 +1081,7 @@ class Society
             // rents, the country workshops' and the Houses' city businesses' takings; and the Wharf's fees (the wharf's).
             std::int64_t land = 0, works = 0, shops = 0, fees = 0;
             std::int64_t surplus = 0;               // (Of `land`, the food farms' surplus over their design's basket.)
+            std::int64_t keep = -1;                 // (Its keep tonight, before its buying tomorrow: estateKeep; -1 not known.)
             int posts = 0;
         };
         std::map<std::string, Estate> estates;
@@ -1097,6 +1098,11 @@ class Society
         std::map<std::string, WharfGood> wharfTakenShops;      // (Of wharfTaken, what came from the city's shops.)
         std::int64_t wharfIn = 0, wharfOut = 0, wharfFee = 0, wharfMoved = 0, wharfBasket = 0, wharfTakeWant = -1;
         std::int64_t wharfTakeUnfit = 0;            // What the takes wanted that the export room could not fit (pennies).
+        // Round 2 of stabilizing (doc 73): the pieces of each good rotted tonight (rotStock); what each trade's short tills
+        // could not pay their posts tonight, before the treasury's wage support (supportWanted by trade: the till's own
+        // shortfall, not what the treasury had room for).
+        std::map<std::string, int> rotted;
+        std::map<std::string, std::int64_t> shortByTrade;
         std::map<std::string, std::int64_t> wharfLandedBeyond; // Of the landings' takings, what was paid beyond, by good.
     };
     const LoopDay& loopToday() const { return loopToday_; }
@@ -1276,6 +1282,11 @@ class Society
     const std::map<std::string, double>* priceFactors(const std::string& till) const;   // (Null: none but 1.)
     void judgeWages(const std::string& till, std::int64_t owed, std::int64_t paid, std::int64_t profit);
     void followTreasury(std::int64_t day);
+    // A maker's perishable by-products (the rule shopRot, doc 73, round 2): each night, a till's stock of a good its crafts
+    // make and none of them uses, not food, that keeps only so many days (items.json `keeps`: the butchers' hides), over
+    // its keep (the Wharf's for a shop: wharfKeepLeast, wharfKeepDays of its sales, its shelf) loses a `keeps`th of what
+    // is over: what no buyer took rots, so it never piles without end.
+    void rotStock();
     std::unordered_map<std::string, std::set<std::string>> soldOut_;   // Till -> wares its shelves ran out of today.
     std::map<std::string, std::int64_t> tillsShort_;   // Till -> what it could not pay its posts tonight (payWages).
     std::vector<ServiceNow> services_;              // (buildSeasons, with the rules.)

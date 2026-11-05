@@ -166,6 +166,7 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'landRentDairy', label: 'Land rent: dairies', max: 100, unit: '% of the cattle and dairy farms\' takings (the Crown; over the meat area\'s)'},
     {key: 'landRentThin', label: 'Land rent: the thinnest farms', max: 100, unit: '% of the lake boats\', salt works\' and three orchards\' takings (doc 72, Phase 5; over their areas\')'},
     {key: 'farmSurplus', label: 'The farms\' surplus to their House', max: 1, unit: '1 = a food farm\'s basket at most its design\'s a day, what its till holds over its float and that each night its House\'s (doc 73, after wharf7b); 0 = its basket spends all over its float'},
+    {key: 'shopRot', label: 'A maker\'s by-products rot', max: 1, unit: '1 = a maker\'s perishable by-product (the butchers\' hides) held over its keep loses a keeps-th of what is over each night (doc 73, round 2); 0 = it keeps'},
     // The luxuries (doc 72, Phase 5, the user's decision: cheese): never food; bought from what is over a household's keep.
     {key: 'luxuryShare', label: 'Luxuries\' share', max: 100, unit: '% a day, at most, of what a household holds over its keep, after its food and needs, spent on luxuries (cheese)'},
     {key: 'luxuryMost', label: 'Luxuries a head', max: 100, unit: 'pieces a head a day, at most'},
