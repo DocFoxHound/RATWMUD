@@ -606,6 +606,10 @@
       {
        "post": "baker",
        "count": 1
+      },
+      {
+       "post": "shop hand",
+       "count": 1
       }
      ],
      "work": [
@@ -1427,6 +1431,10 @@
       {
        "post": "baker",
        "count": 1
+      },
+      {
+       "post": "shop hand",
+       "count": 1
       }
      ],
      "work": [
@@ -2024,6 +2032,10 @@
       {
        "post": "alehouse keeper",
        "count": 1
+      },
+      {
+       "post": "pot hand",
+       "count": 1
       }
      ],
      "work": [
@@ -2420,6 +2432,10 @@
      "posts": [
       {
        "post": "alehouse keeper",
+       "count": 1
+      },
+      {
+       "post": "pot hand",
        "count": 1
       }
      ],

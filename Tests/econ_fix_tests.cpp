@@ -244,6 +244,7 @@ void almsAsASetting()
     for (const int level : {10, 13})
     {
         auto s = city(family(0), FamilyKin, [&](AuthoredRoster& r) {
+            r.economy.rules["almsNoEarner"] = 100;   // (As any household: almsNoEarnerHomes below.)
             if (level != 10)
                 r.economy.rules["almsADay"] = level;
         });
@@ -259,6 +260,34 @@ std::vector<ResidentSpec> barbers(std::int64_t purse)
 {
     return {person("barber", "merchant", "barber at The Close Trim", {"shop", 2.5, 2.5}, "home_barber", 40, purse),
             person("helper", "civilian", "helping at the barber's", {"shop", 4.5, 2.5}, "home_helper", 30, 30)};
+}
+
+void almsForHouseholdsWithNoEarner()
+{
+    // Doc 73, round 4: a household with no member in a paid post is made up to almsNoEarner percent of the alms a head;
+    // one with an earner to the day's, whatever its wage tonight.
+    auto none = city(family(0), FamilyKin, [](AuthoredRoster& r) { r.economy.rules["almsNoEarner"] = 150; });
+    run(none, 1 + 7.9 / 24, 1 + 18.5 / 24);
+    const auto held = none.cash("aa_mother") + none.cash("bb_kid") + none.cash("cc_kid");
+    const auto& d = none.loopToday();
+    expect(held == 45, "a household of three with no earner made up to half as much again, 15p a head: " + std::to_string(held));
+    expect(d.almsNoEarner == 15 && d.almsNoEarnerHomes == 1 && d.alms >= 45,
+           "its 15p over the day's booked apart: " + std::to_string(d.almsNoEarner) + "p, " + std::to_string(d.almsNoEarnerHomes) +
+               " household");
+    expect(none.conserved(), "conserved");
+    // The barber's hand earns (a hand's post at a shop), his wife keeps the house: the one day's alms, none booked apart.
+    auto residents = barbers(0);
+    residents.push_back(person("helper_wife", "civilian", "keeps the house", {"home_helper", 2.5, 2.5}, "home_helper", 30, 0));
+    residents[1].purse = 0;
+    auto with = city(residents, {{"helper", "helper_wife", "spouse"}}, [](AuthoredRoster& r) {
+        r.economy.rules["almsNoEarner"] = 150;
+        r.economy.rules["services"] = 0;
+    });
+    run(with, 1 + 7.9 / 24, 1 + 18.5 / 24);
+    const auto home = with.cash("helper") + with.cash("helper_wife");
+    expect(with.loopToday().almsNoEarner == 0 && with.loopToday().almsNoEarnerHomes == 0 && home < 30,
+           "an earner's household: the day's (" + std::to_string(home) + "p for two, the wage with it)");
+    expect(with.conserved(), "conserved");
 }
 
 void theTreasuryCapPaysShortTills()
@@ -460,6 +489,7 @@ int main()
         theRulesAndTheirRecords();
         fairFoodInAHousehold();
         almsAsASetting();
+        almsForHouseholdsWithNoEarner();
         theTreasuryCapPaysShortTills();
         theWorkBankHoldsTheLongestCraft();
         theHeadsPostsArePaid();

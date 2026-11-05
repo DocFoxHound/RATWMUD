@@ -1863,20 +1863,48 @@ void Society::giveAlms()
     // The city's alms (doc 68, 4): after the day's wages, a household still holding less than a day's food money a head
     // (the old who have retired, orphans, the out of work, a family whose shop couldn't pay) is given what makes it up,
     // from what the treasury holds over its float. Paid to the member with the least; whoever buys, buys for all.
+    // A household with no earner (no member holding a paid post) is made up to almsNoEarner percent of it a head (doc 73,
+    // round 4): one with nobody's wage coming buys a day's food with a day's alms and holds nothing over; the lone and
+    // the old were most of stable8c's households short of food. That part over the day's comes only of what the treasury
+    // holds over its cap, after the short tills' wages (a first try from its float as the day's alms come took ~64p a day
+    // from the wage support in stable9-y1's second half, the treasury under its cap); booked apart (almsNoEarner).
     const std::int64_t level = almsNow();            // (Pennies a head: doc 68, "First fixes"; it was 7. The treasury's
                                                      // level moves it: "Self-correcting rules".)
+    const std::int64_t share = std::max(100, rule("almsNoEarner"));
+    const std::int64_t cap = rule("treasuryCap");
     for (const auto& [home, members] : households())
     {
         std::int64_t held = 0;
+        bool earner = false;
         for (const auto& m : members)
+        {
             held += cash(m);
-        const auto want = level * std::int64_t(members.size()) - held;
-        const auto can = cash("treasury") - TreasuryFloat;
-        if (want <= 0 || can <= 0)
+            if (share > 100 && !earner)
+                if (const auto* job = jobOf(m))
+                    earner = payOf(*job).wage > 0;
+        }
+        const auto heads = std::int64_t(members.size());
+        const auto poorest = [&]() {
+            return *std::min_element(members.begin(), members.end(), [&](const std::string& a, const std::string& b) { return cash(a) < cash(b); });
+        };
+        // The day's, of what the treasury holds over its float.
+        if (const auto want = level * heads - held, can = cash("treasury") - TreasuryFloat; want > 0 && can > 0)
+            if (const auto coins = std::min(want, can); shift("treasury", poorest(), "", 0, coins, "alms"))
+            {
+                loopToday_.alms += coins;
+                held += coins;
+            }
+        // The no-earner's part over it, of what the treasury holds over its cap.
+        if (earner || share <= 100)
             continue;
-        const auto poorest = *std::min_element(members.begin(), members.end(), [&](const std::string& a, const std::string& b) { return cash(a) < cash(b); });
-        if (const auto coins = std::min(want, can); shift("treasury", poorest, "", 0, coins, "alms"))
-            loopToday_.alms += coins;
+        if (const auto want = level * heads * share / 100 - held, can = cash("treasury") - std::max<std::int64_t>(cap, TreasuryFloat);
+            want > 0 && can > 0)
+            if (const auto coins = std::min(want, can); shift("treasury", poorest(), "", 0, coins, "alms: a household with no earner"))
+            {
+                loopToday_.alms += coins;
+                loopToday_.almsNoEarner += coins;
+                ++loopToday_.almsNoEarnerHomes;
+            }
     }
 }
 

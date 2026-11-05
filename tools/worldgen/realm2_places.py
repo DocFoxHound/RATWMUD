@@ -138,6 +138,8 @@ MILLS = {'grain_long': 'mill_long', 'grain_lark': 'mill_lark'}
 # The communities: (id, name, site, look, street tile, cottages, market, gardens, hens, goats, what it is).
 # Market entries: (key, kind, name, text, posts) where kind is 'store' (a general store, the keeper's flat over it),
 # 'alehouse' or 'inn' (an inn has guest rooms upstairs), 'bakehouse' (a baker's, with a flat when `flat`).
+# (Doc 73, round 4: a shop hand at Coldwater's and Larkfield's bakehouses and a pot hand at Southmeadow's and Fenshore's
+# alehouses, each bound by its one post's hours in stable8c's year 3 with its bread or porridge at the price band's top.)
 COMMUNITIES = [
     dict(id='coldwater', name='Coldwater', site='coldwater', style='country', street='d', cottages=9, gardens=4,
          about='A lakeside village of the Greenholt where the East, River, High and Downs Roads meet north of '
@@ -151,7 +153,7 @@ COMMUNITIES = [
                   'drovers, boatmen and orchard hands crowd its benches of an evening.',
                   [('innkeeper', 1), ('pot hand', 1), ('cook', 1)]),
                  ('bakehouse', 'bakehouse', 'Coldwater Bakehouse', 'A warm brick oven and the village\'s bread on the '
-                  'racks by dawn; the farms\' wives bring their own dough to be baked for a penny.', [('baker', 1)])]),
+                  'racks by dawn; the farms\' wives bring their own dough to be baked for a penny.', [('baker', 1), ('shop hand', 1)])]),
     dict(id='larkfield', name='Larkfield', site='larkfield', style='country', street='d', cottages=4, gardens=3,
          about='A village at the Long River\'s crossing among the middle country\'s grain: timber cottages round a '
                'green and its well, a store, an alehouse and a bakehouse baking the Longmead mill\'s flour, kitchen '
@@ -161,7 +163,7 @@ COMMUNITIES = [
                  ('alehouse', 'alehouse', 'The Sheaf', 'A plain alehouse by the green, its benches worn smooth by the '
                   'harvest crews; a sheaf of last year\'s wheat hangs over the door.', [('alehouse keeper', 1), ('pot hand', 1)]),
                  ('bakehouse', 'bakehouse', 'Larkfield Bakehouse', 'An oven fired before dawn with the mill\'s own flour, '
-                  'the loaves set out on boards to cool.', [('baker', 1)], False)]),
+                  'the loaves set out on boards to cool.', [('baker', 1), ('shop hand', 1)], False)]),
     dict(id='southmeadow', name='Southmeadow', site='southmeadow', style='southern', street='d', cottages=3, gardens=2,
          about='A hamlet of the warm Sunfields: limewashed cottages under red tile round a green and its well, a '
                'store and an alehouse, kitchen gardens, hens and goats, the vines and the Lark\'s grain fields round it. '
@@ -169,7 +171,7 @@ COMMUNITIES = [
          market=[('store', 'store', 'Southmeadow Stores', 'Pruning knives, twine, salt and oil, and the hamlet\'s letters '
                   'waiting on a shelf for whoever goes up the road.', [('shopkeeper', 1)]),
                  ('alehouse', 'alehouse', 'The Vine and Sickle', 'A cool limewashed alehouse with the summer\'s wine '
-                  'in casks along one wall and a vine trained over the door.', [('alehouse keeper', 1)])]),
+                  'in casks along one wall and a vine trained over the door.', [('alehouse keeper', 1), ('pot hand', 1)])]),
     dict(id='fenshore', name='Fenshore', site='fenshore', style='fen', street='8', cottages=3, gardens=2,
          about='A hamlet of the Sallow Fens on a low island of dry ground: timber houses thatched with reed stand on '
                'stilts over the wet, joined by boardwalks; a store, an alehouse, kitchen gardens on the dry ground, '
@@ -177,7 +179,7 @@ COMMUNITIES = [
          market=[('store', 'store', 'Fenshore Stores', 'Eel traps, net twine, peat, salt and lamp oil, and a barrel of '
                   'something strong under the counter.', [('shopkeeper', 1)]),
                  ('alehouse', 'alehouse', 'The Heron', 'A smoky alehouse on stilts, its floor boards springing underfoot; '
-                  'smoked eel hangs from the rafters and the fen fog presses at the shutters.', [('alehouse keeper', 1)])]),
+                  'smoked eel hangs from the rafters and the fen fog presses at the shutters.', [('alehouse keeper', 1), ('pot hand', 1)])]),
     dict(id='saltwell', name='Saltwell', site='saltwell', style='adobe', street='f', cottages=3, gardens=2, by_water=True,
          about='The oasis hamlet of the Red Waste by its spring pool, on the way to the Saltpan: limewashed adobe houses '
                'with flat roofs round a well, a store and a caravan inn, gardens watered from the pool, hens and goats. '

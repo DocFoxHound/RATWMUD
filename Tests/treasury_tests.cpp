@@ -68,6 +68,7 @@ Society city(std::vector<ResidentSpec> residents, std::int64_t treasury, const s
     r.economy.storeRule = true;
     r.economy.rules = rules;
     r.economy.rules["services"] = 0;
+    r.economy.rules.emplace("almsNoEarner", 100);   // (The alms as any household's: econ_fix_tests has the no-earner's, doc 73, round 4.)
     r.economy.rules.emplace("wharfValve", 0);       // (The Wharf's valve shut, doc 73: the Country's flows as these tests have them; wharf_tests and farms_tests open it.)
     Society s(Roster::None);
     s.configure(r);

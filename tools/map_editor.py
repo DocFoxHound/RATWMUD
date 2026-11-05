@@ -91,7 +91,7 @@ SEASON_NAMES = ('Spring', 'Summer', 'Autumn', 'Winter')
 # services: {service id: {on, price, every}}, the services this world has changed (stored whole; a service not listed is
 # as city_loop.json's `services.list` and items.json's price). Core's Society::RuleNames, with their ranges.
 RULE_DEFAULTS = {'rules': {}, 'services': {}}
-RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'treasuryCap': 100000000, 'wageSupport': 100,
+RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'almsNoEarner': 300, 'treasuryCap': 100000000, 'wageSupport': 100,
                'workBankHours': 1000, 'fairFood': 1, 'services': 1, 'servicesCityShare': 100,
                # Trades and the follow-ups (doc 68, Progress, "Trades"): no migration (live.economy.rules is {name: N}).
                'suppliers': 1, 'patrons': 1, 'armourEvery': 3650, 'buyAheadDays': 5, 'floatDrawDays': 28,
