@@ -675,3 +675,123 @@ Grayrock and Greatly their gap, falls by year 3: its business rents are ~42p a d
 here; its two country workshops account for ~3p of it). The Wharf earns Grayrock almost nothing (3p of fees a day):
 with only butter imported, the credit is small, so the export basket buys ~25p a day and does not revive the foundry,
 and the takes never reach hides. Eggs and cider sell more but are still short.
+
+### Round 1 of stabilizing (branch `r2-stable8`, 2026-11-04): the estates paid, the foundry working
+
+The user: "Do what you need to in order to stabilize the economy. If we need more logging make more logging." No
+treasury lever (toll, wage support, float), no move of the Wharf's credit, cheese left as it is.
+
+**The trace** (wharf7b's logs; per business from the full log, by till and good):
+
+- **The Crown's business rents (60.9p a day in year 3 against producers7's 103.1p)** are its five country workshops'
+  takings over their keep: the soapworks 16.9p (36.3p), Coldwater's weavers 5.8p (16.9p), Larkfield's weavers 7.0p
+  (18.7p); the press and the smithy as before. Their takings fell 60p a day (the soapworks' 154 against 182p, the wool
+  weavers' 131 against 150p, the linen weavers' 118 against 132p) because the households' comforts fell 38p a day (398
+  against 436p): more of their food money went on eggs (66.9 a day against 49.5) and the Wharf's butter (~56 a day), and
+  Fell's still sold ~32p more apple brandy to them out of the same comforts budget. A workshop's wages are fixed, so its
+  House takes all its marginal takings; a farm's takings go first to its basket. Nothing was lost: the money moved from
+  the estates' workshops to the farms' baskets.
+- **The estates' gap was structural, not the Crown's alone.** Year 3's rents in, all five estates, were ~784p a day
+  against 824p of posts (year 2's ~855p): the estates' purses fell to about one night's posts (~850p together), and a
+  Restday's thin land rents (day 811: the farms' rents 130p, the day before 527p) left the next night short. Meanwhile
+  the dairies' baskets spent 100.8p a day each against their design's 53.5p (`basketADay`), the grain farms' 69.2 against
+  48.3p, orchards 1 and 3 62 against 41p, the eel marsh 33.7 against 22.1p: ~237p a day of the farms' takings over their
+  design spent on carts, stone and hoops while their Houses' people went unpaid.
+- **The Houses' city businesses** (the user's candidates: the Anchor and Nailers' forges, the Rivet and Rain, the
+  charcoal store and the sawmill; Greatly's plasterworks, colour works, masons' yard, yard and bank; Grayrock's
+  ropewalk) made their keepers 0-2.5p a day each in year 3: listed in `houseBusinesses`, they would send their Houses
+  nearly nothing. Not added.
+- **The foundry** sold iron bars it drew from the store room in year 1 (46.6p a day to the smiths); once the iron area
+  went on the store sent none, and the ironworks, first in every iron buyer's `suppliers` line, sold them all. No city
+  trade buys its own goods (bronze, copper and tin bars, handbells): its takings 1.9p a day in year 3, its wages 3.4%
+  paid. The Frosthollow mine digs 0.8 copper ore and 0.4 tin ore a day.
+- **The hides** piled at the butchers (~5,000 at each of the big ones by year 3, ~24 a day; their bones the same), the
+  byproduct of their carcasses: the tannery draws ~3.5 a day from the farms, and the takes only looked at the farms. And
+  the takes' run stopped at the first good the room couldn't fit, and its proportional shrink floored to 0 when the room
+  was small against the lot (room for one bone of 60 wanted: none taken).
+
+**More logging** (the economy file, normal level; Tests/world_check.cpp): each estate's rents in by source (`land`, of
+it `surplus`, `works`, `shops`: the workshops and the Houses' city businesses; `fees`: the Wharf's takings kept, its fee
+and what the credit had no room for); `wharf_day` the takes from the city's shops (`taken_shops`), what each landing
+paid beyond by good (`landed_beyond`) and what the takes wanted that the room could not fit (`unfit`).
+`tools/econ_report.py` adds the estates by year and by source (rents in, land and its surplus, works, shops, fees,
+grants and levy net, posts, nights short, the purse at the year's end), the takes from shops beside the farms', and the
+takes' unfit pennies.
+
+**The fixes** (commit 4a96d72):
+
+- **The farms' surplus is their House's** (the rule `farmSurplus`, 1; Core/RatwFarms.cpp `farmBasketMost`, `payRents`,
+  `farmsBuy`): a food farm's basket spends at most its design's a day (`basketADay`, its carriage within it), and once it
+  has paid its crew, what its till holds each night over its float and that is its House's estate's, as a works' surplus
+  is (doc 72: "each works pays its own crew and sends its surplus to the noble House whose land it is on"). The farms
+  under their design (the pigs, the sheep) are untouched; the estates spend what is over their keep on the Houses'
+  basket, tables and patrons, so the money goes back to the city's makers. The Editor's and Atlas's rule lists have it.
+- **The takes** (Core/RatwWharf.cpp `wharfTakesRun`): in the list's order (city_loop.json; it was the alphabet's), a good
+  the room can't fit left for the next, the shrink never past 1 at a step; a take's `shops` (businesses.json ids) are
+  the city's trades it is taken from too, at the stable price and inside the walls (no toll), each shop keeping `keep`
+  (or wharfKeepLeast, wharfKeepDays of its sales, or its shelf). The list now: the foundry's handbells first (keep 1, 4 a
+  day: its posts' wages), then tallow (12) and honey (10) from the farms, then hides (40) and bones (60) from the farms
+  and the butchers.
+- **Imports**: eggs (40 a day) and cider (20) when the farms can't fill a draw; copper and tin ore (4, 2), the bells'
+  metal.
+- **Yields**: wharf7b's patch, `--apply --goods eggs,cider,tallow,honey` (eggs and cider supply-bound, the whole way:
+  the dairies' eggs 24/25/21.7/18.5 to 30.3/30/27.6/25.6, the orchards' cider ~+50%; tallow and honey half way, ~-5%).
+- Tests: `farms_tests` `theFarmsSurplus` (the salt works given 3,000p: its basket within its design's, the rest the
+  Crown's that night, booked as its surplus, conserved; the rule off, no bound), `theWharf` (forty hides, the new most;
+  room for no hide but a bone takes the bones, the unfit booked; the butcher's hides over its keep taken whole, no toll);
+  `wharf_tests` (eggs and cider imported); the land rent's and the farms' basket tests run with the rule off. ctest 79
+  of 79; the Editor's lib tests 68 of 68 (`content.test.mjs`' Greyfen failure and `test_map_editor`'s Greyfen test fail
+  as on ridgemere2).
+
+**The 60-day smoke** (build 63's export, wharf7b's flags, the final build; `stable8-smoke.out`, not committed): money
+conserved every day (51,198 to 59,341p, wharf7b's smoke 59,355p); the estates' posts paid every night (824p of 824p);
+nobody hungry (1 hour at most); the treasury's least 1,021p; wage support 235p a day (wharf7b's smoke 248p); the beyond
+paid in 189p and was paid 190p a day; the butchers' hides and bones taken (8.4 and 7.7 a day), the foundry's bells 0.2.
+
+**The 3-year run, stable8** (build 63's export, wharf7b's flags: `--farms 0`, an area every 28 days; 1,095 days, ~40
+minutes beside another run, 1.5-2.6 s a day). Report, patch and log: `artifacts/economy/r2/stable8-report.md`,
+`stable8-report.md.patch.json`, `stable8.out`. Year 3 a day unless marked:
+
+| | stable8 | wharf7b |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| The realm's money at the end | 64,584p | 64,588p |
+| **Estates' posts** | **824p of 824p, never short in three years** | 788p of 824p, 107 nights short |
+| Estates' rents in (all five; posts 824p) | ~1,021p (the farms' surplus 293p: the Crown 212, Fell 64, Grayrock 18) | ~784p |
+| What the estates bought (basket, tables, patrons) | 196p (luxuries for the Houses 57p, patrons 36p) | 0p |
+| The Crown's purse (year ends; least) | 1,629, 1,557, 1,400p (909p) | 1,002, 976, 625p (178p) |
+| All five estates (year ends) | 2,419, 2,189, 2,054p | 1,610, 1,469, 1,094p |
+| The farms' baskets | 555p | 873p |
+| The foundry's wages paid; to its House | 100%; 11.9p (bells 2.4 a day to the Wharf) | 3.4%; 0p |
+| The ironworks to its House | 3.2p | 23.8p |
+| Eggs to households / short | 106.9 (85.1 the dairies') / 16.4 | 66.9 / 95.0 |
+| Cider from the orchards / short | 10.1 / 16.2 | 6.4 / 21.6 |
+| Apple brandy short | 9.3 | 4.6 |
+| Hides, bones piling (a year) | 6,860, 10,234 | 8,655, 9,095 |
+| The beyond paid in / was paid | 112.7 / 112.6p (the credit 0-50p) | 52.7 / 52.6p |
+| The takes (a day); what the room could not fit | tallow 10.3, honey 3.8, bells 2.4, hides 2.4, bones 0.9; 424p | honey, tallow 6, small pelts |
+| The treasury's least; its 4-week means | 1,573p; 3,266 -> 4,126p | 1,970p; 4,778 -> 5,777p |
+| Wage support (years 1, 2, 3) | 126, 221, 293p | 143, 242, 296p |
+| Hunger | 6 days, 9 hours at most, 0.31 households short | 6 days, 9 hours, 0.31 |
+
+Beside it, the same code before the bells went first and the basket's carriage went within its bound (`stable8-pre`):
+posts never short, the Crown 1,383, 1,457, 1,358p, wage support 115, 199, 277p, the foundry 24% paid. And the takes,
+imports and yields alone, without the farms' surplus (`stable8-takes`, stopped on day 824): 14 nights short in year 2
+and 20 in year 3's first 94 days, the Crown's purse 591p and falling, wage support 245p in year 2.
+
+**Verdict: better, not yet stable.** The estates are mended: every post paid every night for three years, their rents
+~200p a day over their posts, the surplus spent back into the city; the estates' purses fall slowly from year 1's
+2,419p as they spend down to their keep (2 nights of posts and the reserve), the Crown's with them (1,400p at the end,
+least 909p). The foundry pays its crew from its bells. The valve nets (its book 149,469p in, 149,480p out). What is
+left:
+
+- **Wage support still climbs year on year** (126, 221, 293p; wharf7b's 143, 242, 296p): the smiths' (38p a day), the
+  inns' (41p), the butchers' (27p), the glassworks' (18p). The farms' baskets, 318p a day smaller, bought the smiths' and
+  the ironworks' goods: the ironworks now sends Timberland 3p a day, not 24p, and the mine's ore piles (4,917 a year).
+- **The piles the credit can't reach**: the takes want ~424p a day more than the beyond's room (which is what the realm
+  imports: butter, cider, eggs, ~113p a day), so the hides (6,860 a year) and bones (10,234) still pile at the butchers.
+  The valve can only take as much as it lands; the real fix for these is a use or a smaller yield in the realm, not more
+  exports.
+- **Cider and apple brandy short** (the households' top shortages now; eggs 16 a day short, from 95).
+- In year 1 the Wharf lands the country workshops' own goods (linen cloth, scarves, soap, pamphlets: ~70p a day paid
+  beyond in the first 60 days) while their makers can't keep up; gone by year 2.

@@ -581,7 +581,7 @@ def wharf_lines(econ):
     start, the end and its least, and its moves; the money's check (in - out against the realm's money's change)."""
     days = [(r, r['wharf_day']) for r in econ if r.get('wharf_day')]
     n = max(1, len(days))
-    landed, landedP, taken, takenP = (collections.Counter() for _ in range(4))
+    landed, landedP, taken, takenP, shops = (collections.Counter() for _ in range(5))
     for _, w in days:
         for g, (pieces, pennies) in (w.get('imported') or {}).items():
             landed[g] += pieces
@@ -589,13 +589,17 @@ def wharf_lines(econ):
         for g, (pieces, pennies) in (w.get('taken') or {}).items():
             taken[g] += pieces
             takenP[g] += pennies
+        for g, (pieces, pennies) in (w.get('taken_shops') or {}).items():
+            shops[g] += pieces
     mean = lambda key: sum(w.get(key, 0) for _, w in days) / n
     credits = [w.get('credit', 0) for _, w in days]
     out = ['## The Wharf: beyond the realm', '',
            f'The valve {"on" if any(w.get("valve") for _, w in days) else "off"} ({n} days). A day: the beyond paid in '
            f'{mean("in"):.0f}p and was paid {mean("out"):.0f}p (net {mean("in") - mean("out"):+.0f}p into the realm); '
            f'the Wharf\'s fees {mean("fee"):.0f}p; its export basket {mean("basket"):.0f}p; the credit moved {mean("moved"):+.0f}p.',
-           f'The credit: {credits[0]} -> {credits[-1]}p (least {min(credits)}, most {max(credits)}).', '']
+           f'The credit: {credits[0]} -> {credits[-1]}p (least {min(credits)}, most {max(credits)}).'
+           + (f' What the takes wanted that the room could not fit: {mean("unfit"):.0f}p a day.' if any('unfit' in w for _, w in days) else ''),
+           '']
     by_season = collections.defaultdict(lambda: [0, 0, 0])
     for r, w in days:
         s = by_season[r.get('season', '?')]
@@ -607,8 +611,9 @@ def wharf_lines(econ):
                      [[k, f'{v[0] / v[2]:.0f}', f'{v[1] / v[2]:.0f}', f'{(v[0] - v[1]) / v[2]:+.0f}'] for k, v in by_season.items()]) + ['']
     goods = sorted(set(landed) | set(taken), key=lambda g: -(landedP[g] + takenP[g]))
     if goods:
-        out += table(['good', 'landed a day', 'paid for it a day', 'taken a day', 'the beyond paid a day'],
-                     [[g, f'{landed[g] / n:.1f}', f'{landedP[g] / n:.1f}', f'{taken[g] / n:.1f}', f'{takenP[g] / n:.1f}']
+        out += table(['good', 'landed a day', 'paid for it a day', 'taken a day (of it from shops)', 'the beyond paid a day'],
+                     [[g, f'{landed[g] / n:.1f}', f'{landedP[g] / n:.1f}',
+                       f'{taken[g] / n:.1f}' + (f' ({shops[g] / n:.1f})' if shops[g] else ''), f'{takenP[g] / n:.1f}']
                       for g in goods]) + ['']
     first, last = days[0][0], days[-1][0]
     if 'money' in first and 'money' in last:
@@ -670,10 +675,41 @@ def estates_lines(econ):
                      f'{mean("posts_paid"):.0f}/{mean("posts_owed"):.0f}',
                      sum(1 for x in open_ if x.get('posts_paid', 0) < x.get('posts_owed', 0)), f'{mean("spent"):.0f}',
                      f'{purses[0]} -> {purses[-1]} (least {min(purses)})'])
-    return ([f'The Houses\' estates (a day over the {n} days they were split; the Wharf\'s own sales are House Grayrock\'s, '
-             'which runs it):', ''] +
-            table(['estate', 'posts', 'rents in', 'grants in', 'grants out', 'levy in/out', 'posts paid/owed', 'nights short', 'bought', 'purse'], rows)
-            + [''])
+    out = ([f'The Houses\' estates (a day over the {n} days they were split; the Wharf\'s own sales are House Grayrock\'s, '
+            'which runs it):', ''] +
+           table(['estate', 'posts', 'rents in', 'grants in', 'grants out', 'levy in/out', 'posts paid/owed', 'nights short', 'bought', 'purse'], rows)
+           + [''])
+    # By year and by source (after wharf7b: an estate's income traced): its rents in by where they came from (the food
+    # farms' land rents, of which their surplus over their design's basket, the works' rents, the workshops' and the
+    # Houses' city businesses' takings, the Wharf's fees), its posts and nights short, and its purse at the year's end.
+    if any('land' in d[e] for d in days for e in d):
+        years = collections.defaultdict(list)
+        for d in days_with_day(econ):
+            years[d[0] // 365].append(d[1])
+        rows = []
+        for e in ids:
+            for y, ds in sorted(years.items()):
+                open_ = [d[e] for d in ds if e in d]
+                if not open_:
+                    continue
+                mean = lambda key: sum(x.get(key, 0) for x in open_) / len(open_)
+                named = (open_[0].get('house') or e)
+                rows.append([(named if named.startswith('the ') else f'House {named}'), str(y + 1), f'{mean("rents"):.0f}',
+                             f'{mean("land"):.0f} ({mean("surplus"):.0f})', f'{mean("works"):.0f}', f'{mean("shops"):.0f}',
+                             f'{mean("fees"):.0f}', f'{mean("grants_in") - mean("grants_out"):+.0f}',
+                             f'{mean("levy_in") - mean("levy_out"):+.0f}', f'{mean("posts_paid"):.0f}/{mean("posts_owed"):.0f}',
+                             sum(1 for x in open_ if x.get('posts_paid', 0) < x.get('posts_owed', 0)), str(open_[-1].get('purse', 0))])
+        out += (['The estates by year (a day; land: the food farms\' land rents, in brackets their surplus over their design\'s '
+                 'basket; works: the works\' rents; shops: the workshops\' and the Houses\' city businesses\'; fees: the Wharf\'s; '
+                 'grants and levy net; the purse at the year\'s end):', ''] +
+                table(['estate', 'year', 'rents in', 'land (surplus)', 'works', 'shops', 'fees', 'grants', 'levy', 'posts paid/owed',
+                       'nights short', 'purse'], rows) + [''])
+    return out
+
+
+def days_with_day(econ):
+    """(day, estates) of the economy lines with the estates open."""
+    return [(r.get('day', 0), r['estates']) for r in econ if r.get('estates')]
 
 
 def dumps(doc):
