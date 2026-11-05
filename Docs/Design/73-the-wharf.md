@@ -912,7 +912,8 @@ conserved every day (51,201p to 59,353p; stable8's 59,341p). The estates' posts 
 day and was paid 189p.
 
 **The year's run, stable8b** (build 63's export, wharf7b's flags: `--farms 0`, an area every 28 days; 365 days, 907 s;
-`stable8b-report.md`, its patch and `stable8b.out`; the logs are kept, not committed). Against stable8's year 1:
+`stable8b-y1-report.md`, its patch and `stable8b-y1.out`, renamed when the 3-year run below took the name; the logs
+are kept, not committed). Against stable8's year 1:
 
 | | stable8b, year 1 | stable8, year 1 |
 |---|---|---|
@@ -949,3 +950,75 @@ and 3, which a 3-year run would show.
   try showed.
 - **Apple brandy is still short at the vintner** (~11 a day). The stills now have their cider, so it is their crews' hours
   or the vintner's draw; not traced.
+
+### stable8b's 3-year run (ridgemere2 28df182, 2026-11-05)
+
+Round 2's fixes merged (the butchers' by-products, `shopRot`, the stills' cider, the yields), build-core rebuilt, build
+63's export, wharf7b's flags (`--farms 0`, an area every 28 days); 1,095 days, 2,266 s, 1.9-2.2 s a day. Report, patch
+and log: `artifacts/economy/r2/stable8b-report.md`, `stable8b-report.md.patch.json`, `stable8b.out` (the logs kept, not
+committed). Its first 365 days are the year's run above. A day unless marked; year 3, years 1-3 where given:
+
+| | stable8b | stable8 | wharf7b | producers7 |
+|---|---|---|---|---|
+| Money conserved every day; at the end | yes; 64,585p (minted 227,163 less sunk 162,602) | yes; 64,584p | yes; 64,588p | yes; 64,595p |
+| Estates' posts; nights short | 824p of 824p; none in three years | the same | 788p; 107 | 803p; 40 |
+| The Crown's purse (year ends; year 3's least) | 1,542, 1,599, 1,340p (867p) | 1,629, 1,557, 1,400p (909p) | 1,002, 976, 625p | 946, 1,005, 714p |
+| The Crown's purse by quarter, year 3; its keep | 1,416, 1,326, 1,386, 1,367p; 1,345p | 1,452, 1,379, 1,434, 1,417p | 566, 550, 572, 751p | 670, 595, 786, 952p |
+| Grayrock, Timberland, Greatly, Fell (year ends) | 50/27/29, 441/409/396, 64/60/46, 258/215/197p | 45/24/30, 449/393/396, 67/52/39, 229/163/189p | -, -, -, - | -, -, -, - |
+| All five estates (year ends) | 2,355, 2,310, 2,008p | 2,419, 2,189, 2,054p | 1,610, 1,469, 1,094p | 1,563, 1,451, 1,144p |
+| The Crown's rents in (years 1-3) | 663, 727, 667p (year 3: land 601p, of it surplus 201p; shops 66p) | 682, 747, 690p | 464p | 503p |
+| The Crown's grants out; bought | 517p; 76p | 516p; 96p | 502p; 0p | 529p; 0p |
+| The foundry's wages paid; to its House | 99%; 9.9p (bells 2.3 a day taken) | 100%; 11.9p | 3.4%; 0p | 0.2%; 0p |
+| The takes (pieces a day); unfit | tallow 10.3, honey 4.7, hides 3.2, bells 2.3, bones 1.1; 314p | tallow 10.3, honey 3.8, bells 2.4, hides 2.4, bones 0.9; 320p | - | - |
+| Eggs to households (the dairies'); short | 107.3 (85.1); 15.6 | 106.9 (85.1); 16.4 | 66.9 (66.9); 95.0 | 49.5; 114.1 |
+| Cider from the orchards; short | 13.4; **1.2** | 10.1; 16.2 | 6.4; 21.6 | 3.5; 9.7 |
+| Apple brandy to households; short | 11.0; 9.0 (the vintner) | 9.5; 9.3 | 5.5; 4.6 | - |
+| Hides rotted (years 1-3) | 6.1, 16.8, 18.0 a day | none (piled) | none (piled) | - |
+| The treasury's least; 4-week means | 1,290p; 2,372 -> 3,375p | 1,573p; 3,266 -> 4,126p | 1,970p; 4,778 -> 5,777p | 1,903p; 4,108 -> 4,633p |
+| Wage support wanted / paid / unpaid (years 1-3) | 309/116/193, 282/176/106, 309/270/39p | 312/126/186, 309/221/87, 326/293/32p | 303/296/7p (year 3) | 295p paid |
+| Hunger: days, the most hours, households short | 6, 9, **0.45** | 6, 9, 0.31 | 6, 9, 0.31 | 3, 8, 0.28 |
+| The beyond paid in / was paid (years 1-3) | 188.9/188.9, 136.3/136.3, 119.8/119.8p | 176.2, 120.7, 112.7p | 112.7, 56.3, 52.7p | - |
+| The Wharf's fees; export basket; the credit | 12.5p; 8.8p; 0-441p, 10p at the end | 11.5p; 7.8p | 3.2p; 25.4p | - |
+
+The beyond's year 3 by good (paid it a day): butter 55.7p, cider 33.4p (17.4 a day to the distillery and the country
+still), eggs 22.6p, tin ore 3.8p, copper ore 2.5p; it paid for the bells 58p a day over the run, hides 31p, honey 13p.
+
+**Piles in year 3** (day 730 to 1,094, all at the farms and works; the butchers' hides held level at ~300): bones +810
+at each of the eight meat farms (~6,500 in all), hemp +5,780 at the grain farms, iron ore +5,190 at the mine, wool +4,210
+at the sheep runs, timber +3,720 at the logging camps, limestone +2,735 at the lime quarry, honey +1,840 at the hives.
+The report's patch lowers each (bones at the dairies 4.4-5.3 to 2.0-2.6 a day, hemp to ~28, iron ore to ~46, wool to
+~21, timber to ~12, limestone to ~19, honey to ~23) and raises the mine's tin ore (0.4 to ~1.0: the foundry 4 a day
+short, its 2 a day from the beyond).
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| Estates' posts paid every night | 824p of 824p, no night short in three years | yes |
+| No estate purse trending down | the Crown's fell 1,599 -> 1,340p at year end and ~1,500 -> ~1,370p by quarter, to its keep (1,345p, 29p over it); level within year 3. Grayrock's and Greatly's (grant-fed, ~30-45p) drift down 5-10p a year; Timberland's and Fell's level | **no, narrowly**: the Crown is at its keep with no margin, its rents down 60p from year 2 |
+| The treasury over its float | least 1,290p, rising 2,372 -> 3,375p | yes |
+| Wage support not climbing | wanted 309, 282, 309p (level); paid 116, 176, 270p (rising toward it as the treasury's room grows) | **no** for what is paid; the wanted is level |
+| Hunger as low as wharf7b | the same days and hours (day 777's 9 hours); households short 0.45 against 0.31 (45 days with any, against 27) | **no, narrowly** |
+| No runaway pile, no standing shortage a producer should cover | the farm piles above; apple brandy 9 a day short at the vintner, the foundry's tin ore 4 | **no** |
+| The valve nets | 119.8p in, 119.8p out a day; the credit back to 10p | yes |
+
+**Verdict: not stable.** Round 2 did what it aimed at: the butchers' hides and bones no longer pile (they sell, are taken
+or rot), the stills' cider shortage is gone (1.2 a day from 16), money is conserved, every estate post was paid every
+night for three years, the treasury rises and the valve nets. What fails:
+
+1. **Wage support**: what the short tills want is level at ~300p, but the treasury pays more of it each year (270p in
+   year 3, its last four weeks 337p). The inns (44.8p), smithies (41.4p), glassworks (19.1p), preservers (17.0p),
+   butchers (14.8p), brickworks (13.6p), papermill, sawmill, charcoal store and cartographer (11-12p each) want it.
+   These are crews too big for their sales, or input costs too near their takings.
+2. **The Crown's purse is at its keep**, with no margin: its rents fell from 727p to 667p (land 632p to 601p, its
+   workshops 95p to 66p as the households' comforts fell from 426p to 408p a day). The same happened in stable8.
+3. **The farms' and works' piles** above: the yields are over what the realm uses.
+4. **Apple brandy** is 9 a day short at the vintner. It buys ~8 a day from Marshholm's still and the distillery, which
+   are bound by their cider (17 a day of it from the beyond) and their hours. The foundry is 4 a day short of tin ore.
+5. **More households short** (0.45 against 0.31) while the treasury leaves 39p a day of support unpaid (wharf7b's 7p,
+   stable8's 32p). The treasury's year-3 mean is 2,451p (stable8 2,714p, wharf7b 3,999p) and it pays support only over
+   its cap; the toll is 20p a day lower than stable8's (the by-products pass no gate). Which households are short was
+   not traced.
+6. **Hides rot** at 18 a day by year 3 (the tannery draws ~3 and the takes ~3): the butchers buy carcasses whose
+   hides waste. Cheese stays short at the draws, as decided.
