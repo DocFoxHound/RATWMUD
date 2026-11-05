@@ -1446,7 +1446,8 @@ struct EconomyWatch
                             << ", \"posts_owed\": " << x.postsOwed << ", \"posts_paid\": "
                             << x.postsPaid << ", \"posts\": " << x.posts << ", \"spent\": " << x.spent << ", \"moved\": " << x.moved
                             << ", \"land\": " << x.land << ", \"works\": " << x.works << ", \"shops\": " << x.shops
-                            << ", \"fees\": " << x.fees << ", \"surplus\": " << x.surplus << ", \"purse\": " << society.cash(fund) << "}";
+                            << ", \"fees\": " << x.fees << ", \"surplus\": " << x.surplus << ", \"keep\": " << x.keep
+                            << ", \"purse\": " << society.cash(fund) << "}";
                     first = false;
                 }
                 if (!first)
@@ -1456,6 +1457,9 @@ struct EconomyWatch
             for (auto it = d.supportByTrade.begin(); it != d.supportByTrade.end(); ++it)
                 seasons << (it == d.supportByTrade.begin() ? "" : ", ") << "\"" << it->first << "\": " << it->second;
             seasons << "}";
+            // (Round 2, doc 73: what each trade's short tills could not pay tonight before the support; what rotted.)
+            object("short_by_trade", d.shortByTrade);
+            object("rotted", d.rotted);
             const auto cap = society.rule("treasuryCap");
             seasons << ", \"farms\": {" << each.str() << "}, \"treasury_low\": " << d.treasuryLow << ", \"treasury_night\": "
                     << d.treasuryNight << ", \"under_cap\": " << (d.treasuryNight >= 0 && d.treasuryNight < cap ? 1 : 0)

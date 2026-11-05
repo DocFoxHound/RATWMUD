@@ -1061,17 +1061,17 @@ void theStoneWorks()
     // (doc 72): its patch half way (the stone its whole step in spring and summer), the pits' clay 7 a day more each for
     // the kiln hands. After country6a (doc 72): its patch half way, the pits' clay to what the potteries and the
     // brickworks drew (+5%: 8,367 had piled), half way (the early years drew more). After iron6 (doc 72): its patch half
-    // way.
+    // way. After stable8 (doc 73, round 2): its patch half way (2,438 a year piling).
     const auto& quarry = stone.farms.front();
-    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 25.64) < .01,
-           "the quarry's stone, 25.64 a day at summer's middle (iron6's patch half way)");
+    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 22.45) < .01,
+           "the quarry's stone, 22.45 a day at summer's middle (stable8's patch half way)");
     double stoneMean = 0;
     for (const double v : quarry.yield.at("stone"))
         stoneMean += v / 4;
-    expect(std::abs(stoneMean - 28.86) < .05, "28.86 a day over the year: " + std::to_string(stoneMean));
+    expect(std::abs(stoneMean - 25.67) < .05, "25.67 a day over the year: " + std::to_string(stoneMean));
     for (std::size_t i = 1; i < 3; ++i)
-        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 34.57) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 8.95) < .01,
-               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; after country6a: the clay half way to what was drawn, the sand half way; after iron6 both half way)");
+        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 34.57) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 7.96) < .01,
+               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; after country6a: the clay half way to what was drawn, the sand half way; after iron6 both half way; after stable8 the sand half way)");
     // On: founded; the mason's stone and sand from the works' stores, nothing to the Country; limestone still the Country's.
     auto s = city([](EconomySpec& e) { e.farms.areas["stone"].on = 1; },
                   {person("mason", "merchant", "stonemason in Chisel Row", {"masonry", 2.5, 2.5}, "home_mason", 40, 400)});
@@ -1806,6 +1806,65 @@ std::string drawerOf(const Society& s, const std::string& good)
     return {};
 }
 
+bool s_has(const std::vector<std::string>& v, const std::string& x)
+{
+    return std::find(v.begin(), v.end(), x) != v.end();
+}
+
+void aMakersByProducts()
+{
+    // Round 2 of stabilizing (doc 73): the butchers' hides and bones went to no city trade (the tannery and the inns drew
+    // theirs from the farms) and piled, ~19 hides and ~23 bones a day by stable8's year 3; now the tannery buys its hides
+    // and the inns, the general stores, the jeweller and the tinker their bones from the butchers first (suppliers), and
+    // the foundry's bronze and tin bars go to the smiths, the jeweller and the glassworks.
+    expect(s_has(Society(Roster::None).citySellers("tannery", "hide"), "butcher") &&
+               s_has(Society(Roster::None).citySellers("inn", "bones"), "butcher") &&
+               s_has(Society(Roster::None).citySellers("general", "bones"), "butcher") &&
+               s_has(Society(Roster::None).citySellers("smithy", "bronze_bar"), "foundry") &&
+               s_has(Society(Roster::None).citySellers("glassworks", "tin_bar"), "foundry"),
+           "the butchers' hides and bones, the foundry's bars, to the trades that use them");
+    // What still piles of a perishable by-product rots (the rule shopRot): each night a maker's stock of a good its crafts
+    // make, none of them uses, not food and with a `keeps` (the butcher's hides, 6 days) loses a keeps-th of what is over
+    // its keep (the Wharf's for a shop: wharfKeepLeast, 28 days of its sales, its shelf); its own inputs (the tannery's
+    // hides) and what keeps (bones) never rot.
+    const std::vector<ResidentSpec> tanner{person("tanner", "merchant", "the tanner at the tan pits", {"tanpits", 2.5, 2.5}, "home_tanner", 40, 400)};
+    auto s = city({}, tanner);
+    turn(s, 46);
+    const auto butcher = s.tillOf("butcher"), tannery = s.tillOf("tanner");
+    expect(!butcher.empty() && !tannery.empty(), "a butcher and a tannery");
+    bool piled = true;
+    for (int i = 0; i < 3; ++i)
+        piled = piled && s.create(butcher, "hide", 99, "test stock") && s.create(butcher, "bones", 99, "test stock");
+    expect(piled, "a pile of hides and bones at the butcher's");
+    const auto money = s.moneySupply();
+    run(s, 46 + .6 / 24, 46 + 17.95 / 24);          // (The day up to its wages; the hour's end rots.)
+    const int hides = held(s, butcher, "hide"), bones = held(s, butcher, "bones");
+    const int keep = std::max(s.rule("wharfKeepLeast"), s.shelfOf(butcher, "hide"));
+    run(s, 46 + 17.95 / 24, 46 + 18.05 / 24);
+    const int gone = hides - held(s, butcher, "hide");
+    expect(hides > keep && gone == int(std::ceil(double(hides - keep) / 6 - 1e-9)),
+           "a sixth of what was over its keep rotted: " + std::to_string(gone) + " of " + std::to_string(hides) + " (keep " +
+               std::to_string(keep) + ")");
+    expect(s.loopToday().rotted.count("hide") && s.loopToday().rotted.at("hide") == gone && !s.loopToday().rotted.count("bones") &&
+               held(s, butcher, "bones") >= bones - 99,
+           "booked; the bones keep (no `keeps`)");
+    expect(s.conserved() && s.moneySupply() == money, "goods only: the money conserved and unmoved by it");
+    // The tannery's own hides are its leather's input: none rot.
+    auto t = city({}, tanner);
+    turn(t, 46);
+    const auto tan = t.tillOf("tanner");
+    expect(t.create(tan, "hide", 99, "test stock") && t.create(tan, "hide", 99, "test stock"), "a pile at the tannery");
+    run(t, 46 + 17.95 / 24, 46 + 18.05 / 24);
+    expect(!t.loopToday().rotted.count("hide"), "the tannery's hides, its input, never rot");
+    // The rule off: it keeps.
+    auto off = city([](EconomySpec& e) { e.rules["shopRot"] = 0; });
+    turn(off, 46);
+    const auto b = off.tillOf("butcher");
+    expect(off.create(b, "hide", 99, "test stock") && off.create(b, "hide", 99, "test stock"), "a pile, the rule off");
+    run(off, 46 + 17.95 / 24, 46 + 18.05 / 24);
+    expect(off.loopToday().rotted.empty() && held(off, b, "hide") >= 198 - 1, "the rule off: nothing rots");
+}
+
 void theFarmsSurplus()
 {
     // The rule farmSurplus (after wharf7b, doc 73): a food farm's basket spends at most its design's a day (basketADay), and
@@ -2031,6 +2090,7 @@ int main()
         theDairy();
         theFarmsBasket();
         theFarmsSurplus();
+        aMakersByProducts();
         aShortFarm();
         theCountrysBasket();
         nothingUnlessSwitched();

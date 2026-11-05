@@ -408,7 +408,10 @@ void Society::payFarms()
         today.wagesOwed += owed;
         today.wagesPaid += paid;
         if (paid < owed)
+        {
             tillsShort_[f.till] = owed - paid;      // (For the treasury's wage support, with the city's short tills.)
+            loopToday_.shortByTrade["farm"] += owed - paid;   // (The log's, by trade, as the support's: doc 73, round 2.)
+        }
     }
     payRents();
 }
