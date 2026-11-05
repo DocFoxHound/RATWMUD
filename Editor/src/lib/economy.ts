@@ -127,6 +127,7 @@ export type ServicesBody = {set: Record<string, Partial<ServiceValues> | null>};
 export const RULES: {key: string; label: string; max: number; unit: string; onOff?: boolean}[] = [
     {key: 'comfortsMost', label: 'Comforts a day, at most', max: 100000, unit: 'purchases a household makes a day (it was 20)'},
     {key: 'almsADay', label: 'Alms', max: 1000, unit: 'p a head a household is made up to after the day\'s wages'},
+    {key: 'almsNoEarner', label: 'Alms with no earner', max: 300, unit: '% of the alms a head a household with no member in a paid post is made up to, the part over the alms from over the treasury\'s cap (100 or less: as any household; doc 73)'},
     {key: 'treasuryCap', label: 'Treasury cap', max: 100000000, unit: 'p kept; what is over it pays the shops\' short wages'},
     {key: 'wageSupport', label: 'Wage support', max: 100, unit: '% of a till\'s shortfall the treasury pays (from over the cap)'},
     {key: 'workBankHours', label: 'Work bank', max: 1000, unit: 'hours of the crew\'s work a shop may bank (0: its longest craft\'s)'},
