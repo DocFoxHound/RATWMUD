@@ -117,6 +117,12 @@ class Run:
         self.farm = collections.defaultdict(collections.Counter)           # farm -> sums
         self.draw_short = collections.defaultdict(list)   # (good, season, till) -> the pieces its draws lacked, a day
         self.sold_rate = collections.defaultdict(lambda: [0, 0])   # (till, good) -> pieces sold, days it had some or sold
+        # Round 3 (doc 73): each maker's crew-hours (put in, used, lost past its bank), and the households short of food
+        # (rows, those with no earner, their earners' payers, their class).
+        self.work = collections.defaultdict(collections.Counter)
+        self.hh_short = collections.Counter()
+        self.hh_payers = collections.Counter()
+        self.hh_homes = collections.Counter()
 
     def unmet_draws(self):
         """By (good, season), the pieces the shops would have drawn, had the supply sent them. A draw's lack is its shelf's
@@ -201,6 +207,14 @@ class Run:
                 t['shortfall'] += owed - paid
         for a, b, coins in d['flow']:
             self.flows[season][(n(a), n(b))] += coins
+        for till, hours, used, lost in d.get('work', []):
+            self.work[n(till)].update(hours=hours / 10, used=used / 10, lost=lost / 10, days=1)
+        for member, cls, members, purse, earners, *payers in d.get('hh_short', []):
+            self.hh_short.update(rows=1, alone=members == 1, none=earners == 0, purse=purse, **{'class:' + n(cls): 1})
+            self.hh_homes[n(member)] += 1
+            for p in payers:
+                if p >= 0:
+                    self.hh_payers[n(p)] += 1
         for row in d['class']:
             w = self.welfare[(season, n(row[0]))]
             w.update(days=1, residents=row[1], households=row[2], hungry_hours=row[3], purse=row[5], median=row[6],
@@ -392,6 +406,26 @@ def report(econ, run, top, patch_path):
                        round(b['costs'] / b['days']), round(b['owed'] / b['days']),
                        ', '.join(f'{k[4:]} {v}' for k, v in sorted(b.items()) if k.startswith('why:'))]
                       for tr, b in rows] or [['-'] * 9])
+        if run.work:
+            # Round 3 (doc 73): the short trades' crew-hours, and the makers that used every hour they had (bound by
+            # their crew, not their sales).
+            hours = collections.defaultdict(collections.Counter)
+            for till, w in run.work.items():
+                hours[run.till_trade.get(till, '?')].update(w)
+            say('')
+            say('Their crew-hours (a till\'s day: put in, used by its crafts, lost past its bank; the work table):')
+            say('')
+            out += table(['trade', 'hours/till-day', 'used', 'lost'],
+                         [[tr, round(hours[tr]['hours'] / max(1, hours[tr]['days']), 1),
+                           f"{100 * hours[tr]['used'] / max(1e-9, hours[tr]['hours']):.0f}%",
+                           f"{100 * hours[tr]['lost'] / max(1e-9, hours[tr]['hours']):.0f}%"] for tr, _ in rows if tr in hours]
+                         or [['-'] * 4])
+            bound = sorted((t for t, w in run.work.items() if w['hours'] > 0 and w['used'] >= 0.95 * w['hours']),
+                           key=lambda t: -run.work[t]['hours'])
+            say('')
+            say('Bound by their crew (used 95% or more of their hours): ' + (', '.join(
+                f"{short_name(t)} ({run.till_trade.get(t, '?')}, {run.work[t]['used'] / max(1, run.work[t]['days']):.1f} of "
+                f"{run.work[t]['hours'] / max(1, run.work[t]['days']):.1f} h)" for t in bound[:top]) or 'none') + '.')
     elif econ:
         say('')
         say(f'Tills short a night: mean {statistics.fmean(r.get("tills_short", 0) for r in econ):.1f}; wage support '
@@ -465,6 +499,15 @@ def report(econ, run, top, patch_path):
                          round(w['spent'] / d / homes, 1)])
         out += table(['season', 'class', 'residents', 'hungry h/head/day', 'purse/head', 'household median', 'comforts/home/day',
                       'spent/home/day'], rows)
+        if run.hh_short['rows']:
+            h = run.hh_short
+            say('')
+            say(f"Households short of food at the shops' last hour (the hh_short table): {h['rows'] / max(1, run.days):.2f} a day, "
+                f"{len(run.hh_homes)} households; {100 * h['none'] / h['rows']:.0f}% with no earner, {100 * h['alone'] / h['rows']:.0f}% "
+                f"alone, a mean purse of {h['purse'] / h['rows']:.1f}p; by class "
+                + ', '.join(f"{k[6:]} {v}" for k, v in sorted(h.items()) if k.startswith('class:'))
+                + (('; their earners\' payers ' + ', '.join(f'{short_name(p)} {v}' for p, v in run.hh_payers.most_common(top)))
+                   if run.hh_payers else '') + '.')
     elif econ:
         say(f'Hungry (mean of hours): {statistics.fmean(r.get("hungry_mean", 0) for r in econ):.1f}; households short a day: '
             f'{statistics.fmean(r.get("households_short", 0) for r in econ):.1f}; Gini of earners {econ[-1].get("gini_earners")}.')

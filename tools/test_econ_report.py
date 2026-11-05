@@ -37,7 +37,7 @@ class Fixture:
                         [i('-'), i('peat'), i('hh:lower'), 3, 3, i('firewood')]]
         row['class'] = [[i('lower'), 10, 4, 6, 1, 200, 40, 2, 30], [i('upper'), 2, 1, 0, 0, 300, 300, 1, 10]]
         for table, rows in (more(n) if more else {}).items():
-            row[table] += [[c if isinstance(c, int) else i(c) for c in r] for r in rows]
+            row.setdefault(table, []).extend([c if isinstance(c, int) else i(c) for c in r] for r in rows)
         f.write(json.dumps(dict({'day': n, 'season': season, 'year_day': n + 1, 'names': fresh}, **row)) + '\n')
 
 
@@ -92,6 +92,21 @@ class ReportTests(unittest.TestCase):
             self.assertEqual(R.main(['--apply', str(root / 'report.md.patch.json'), str(farms), '--damping', '1']), 0)
             self.assertIn('"flour": [12.15, 10, 10, 10]', farms.read_text())
             self.assertEqual(R.apply_patch(root / 'report.md.patch.json', farms, 1, {'oats'}), 0, 'only the goods named')
+
+    def test_crew_hours_and_short_households(self):
+        # Round 3 (doc 73): the baker put in 20 hours a day, used 19.5 (bound by its crew) and lost none; a lone pup with
+        # no earner was short of food on both days.
+        more = lambda n: {'work': [['till:job:baker', 200, 195, 0]],
+                          'hh_short': [['pup', 'lower', 1, 9, 0, -1, -1, -1]]}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, more=more)
+            out = root / 'report.md'
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            text = out.read_text()
+            self.assertIn('| bakery | 20.0 | 98% | 0% |', text, "the short trade's crew-hours")
+            self.assertIn('Bound by their crew (used 95% or more of their hours): baker (bakery, 19.5 of 20.0 h).', text)
+            self.assertIn('1.00 a day, 1 households; 100% with no earner, 100% alone, a mean purse of 9.0p; by class lower 2.', text)
 
     def test_draws_short_as_lost_sales(self):
         # The stables sold 3 oats on the day it held some, then stood 20 under its shelf both days: at most its day's sales

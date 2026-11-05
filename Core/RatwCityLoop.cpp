@@ -2099,6 +2099,9 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
     // longest craft and an hour more, so a long craft is made over two days; doc 68, "First fixes").
     const int crew = crewOf(till);
     auto& bank = workBank_[till];
+    auto& work = loopToday_.work[till];             // (Round 3, doc 73: the crew's hours, logged.)
+    work.hours += crew;
+    work.lost += std::max(0., bank + crew - workBankMost(till, business));
     bank = std::min(workBankMost(till, business), bank + crew);
     struct Want
     {
@@ -2282,6 +2285,7 @@ std::vector<std::string> Society::restockFromStore(const std::string& keeper, do
         for (const auto& [item, n] : k.out)
             create(till, item, n * batches, "made from the store room");
         bank -= batches * k.hours;
+        work.used += batches * k.hours;
         done.push_back("made " + std::to_string(batches) + " " + k.id);
     }
     return done;

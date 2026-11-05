@@ -1104,6 +1104,14 @@ class Society
         std::map<std::string, int> rotted;
         std::map<std::string, std::int64_t> shortByTrade;
         std::map<std::string, std::int64_t> wharfLandedBeyond; // Of the landings' takings, what was paid beyond, by good.
+        // Round 3 (doc 73): each maker's crew-hours today (restockFromStore's work bank): the hours its crew put in, what
+        // its crafts used of them, and what the bank could not hold (its cap, workBankMost: hours no craft wanted). A
+        // till that uses all its hours is bound by its crew; one that loses most of them, by its sales.
+        struct Work
+        {
+            double hours = 0, used = 0, lost = 0;
+        };
+        std::map<std::string, Work> work;
     };
     const LoopDay& loopToday() const { return loopToday_; }
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a

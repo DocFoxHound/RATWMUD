@@ -1165,8 +1165,10 @@ void theIronAndLime()
     expect(crews == std::map<std::string, std::pair<int, int>>(
                         {{"mine_frost_iron", {1, 1}}, {"charcoal_upper", {1, 2}}, {"quarry_lime", {0, 1}}}),
            "the mine 1 + 1, the hearths 1 + 2, the lime quarry one hand: 2 keepers and 4 hands, 72p a day");
-    expect(iron.farms.front().yield.at("iron_ore")[0] > 2 * 27 && iron.farms.back().yield.at("charcoal")[0] > 27,
-           "two ore and a sack of charcoal a bar for the ~27 bars a day the Country sold");
+    // (The ore since doc 73's round 3: the ~20 bars a day the city's makers bought in stable8b's year 3, the mine's
+    // ore piling ~14 a day over them.)
+    expect(iron.farms.front().yield.at("iron_ore")[0] > 2 * 20 && iron.farms.back().yield.at("charcoal")[0] > 27,
+           "two ore and a sack of charcoal a bar for the ~20 bars a day the city's makers buy");
     for (const char* good : {"copper_bar", "tin_bar", "bronze_bar"})
         for (const auto& a : f.areas)
             expect(std::find(a.goods.begin(), a.goods.end(), good) == a.goods.end(), std::string(good) + " no area's: the foundry makes it");
