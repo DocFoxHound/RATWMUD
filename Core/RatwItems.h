@@ -230,6 +230,10 @@ inline constexpr RuleInfo Rules[] = {
                                          // 3, the pigs' 45%; it was 24, on country3c's 67-70%).
     {"landRentThin", 0, 100, 0},         // The thinnest farms' (doc 72, Phase 5: the lake boats, the salt works, three
                                          // orchards, 5-8p a day over their wages and rent in country4's year 3).
+    {"farmSurplus", 0, 1, 1},            // A food farm's basket at most its design's (country_farms.json basketADay), what
+                                         // its till holds over its float and that each night its House's (after wharf7b,
+                                         // doc 73: the dairies', the grain farms' and two orchards' baskets ~237p a day
+                                         // over their design while the estates went short); 0: the basket all over it.
     // The luxuries (city_loop.json `luxuries`; doc 72, Phase 5, the user's decision: cheese, a comic luxury for wolves):
     // never bought as food; every household wants them, but buys them only from what it holds over its comforts' keep
     // after its food and its needs (the fuel among them), at most this percent of that a day,
@@ -352,6 +356,13 @@ struct WharfGood
 {
     int most = 0;
     bool on = true;
+    // A take's (doc 73, after wharf7b): its place in the list (the takes run in the file's order, not the alphabet's), the
+    // city's trades (businesses.json ids) whose shops it is taken from too, beside the farms and works (`shops`: the
+    // butchers' hides and bones, the byproduct of their carcasses that no draw takes), and the pieces such a shop keeps
+    // (`keep`; -1: wharfKeepLeast, or wharfKeepDays of what it sells a day, or its shelf, the most of them).
+    int rank = 0;
+    int keep = -1;
+    std::set<std::string> shops;
 };
 struct WharfLists
 {

@@ -627,8 +627,12 @@ void theDairy()
 
 void theFarmsBasket()
 {
-    // A farm with more than its float and tonight's wages spends the rest on the city's goods from their makers.
-    auto s = city([](EconomySpec& e) { e.farms.areas["salt"].on = 1; });
+    // A farm with more than its float and tonight's wages spends the rest on the city's goods from their makers (the rule
+    // farmSurplus off: below, on).
+    auto s = city([](EconomySpec& e) {
+        e.farms.areas["salt"].on = 1;
+        e.rules["farmSurplus"] = 0;
+    });
     turn(s, 46);
     const auto till = Society::farmTill("salt_works_1");
     expect(s.operatorTransfer("treasury", till, "", 0, 3000).ok, "the salt works given 3,000p (moved, not made)");
@@ -652,7 +656,10 @@ void theFarmsBasket()
     // The country workshops first (doc 72, after country5: Larkfield's smithy, short of its one wage, sold the farms 13p a
     // day of the ~85p of iron goods they bought): its nails and cookpots, none of the city smith's while it holds them;
     // what it doesn't make (fittings, locks, chain) still the city smith's.
-    auto both = city([](EconomySpec& e) { e.farms.areas["salt"].on = 1; },
+    auto both = city([](EconomySpec& e) {
+        e.farms.areas["salt"].on = 1;
+        e.rules["farmSurplus"] = 0;
+    },
                      {person("lark", "merchant", "village smith at Larkfield Smithy", {"cn_larkfield_smithy", 2.5, 2.5},
                              "cn_larkfield_smithy_flat", 40, 100)});
     turn(both, 46);
@@ -1336,7 +1343,10 @@ void theLandRent()
     for (const auto& a : f.areas)
         expect(a.works || houses.at(a.id) == a.house, a.id + ": its farms on " + a.house + "'s land");
     // The percents: the rule's 16 but where an area has its own (city_loop.json: fish 9, fruit 4, grain 28, salt 8).
-    auto s = city([](EconomySpec& e) { e.farms.areas["grain"].on = 1; }, aStore());
+    auto s = city([](EconomySpec& e) {
+        e.farms.areas["grain"].on = 1;
+        e.rules["farmSurplus"] = 0;                 // (The land rent alone: theFarmsSurplus has the rest.)
+    }, aStore());
     const std::map<std::string, int> percent{{"grain", 28}, {"fruit", 4}, {"meat", 16}, {"fish", 9}, {"honey", 16}, {"salt", 8},
                                              {"fuel", 0}, {"stone", 0}, {"iron", 0}, {"lime", 0}};
     // (Doc 72, Phase 4's payer: the three cattle and dairy farms their own rule, landRentDairy 32 (24 until country5), over the meat area's 16;
@@ -1466,7 +1476,7 @@ void theCountryPaysItsPosts()
                 e.wharfReserve = 0;
                 for (const auto& a : items::farms().areas)
                     e.farms.areas[a.id].on = a.works ? 0 : 1;
-                for (const char* r : {"landRent", "landRentFish", "landRentFruit", "landRentGrain", "landRentSalt", "landRentDairy"})
+                for (const char* r : {"landRent", "landRentFish", "landRentFruit", "landRentGrain", "landRentSalt", "landRentDairy", "farmSurplus"})
                     if (!rent)
                         e.rules[r] = 0;
             },
@@ -1796,6 +1806,44 @@ std::string drawerOf(const Society& s, const std::string& good)
     return {};
 }
 
+void theFarmsSurplus()
+{
+    // The rule farmSurplus (after wharf7b, doc 73): a food farm's basket spends at most its design's a day (basketADay), and
+    // what its till holds over its float and that each night, once it has paid its crew, is its House's (the salt works'
+    // the Crown's), as a works' surplus is: the dairies' and the grain farms' baskets ran ~237p a day over their design
+    // while the estates' posts went short. Moved, never made: conserved.
+    auto s = city([](EconomySpec& e) { e.farms.areas["salt"].on = 1; });
+    expect(s.rule("farmSurplus") == 1, "on in the data file");
+    turn(s, 46);
+    const auto till = Society::farmTill("salt_works_1");
+    const auto& f = farm(s, "salt_works_1");
+    const auto most = s.farmBasketMost(f);
+    expect(most == std::int64_t(std::ceil(f.def->basketADay - 1e-9)) && most > 0, "its basket's most, its design's: " + std::to_string(most));
+    expect(s.operatorTransfer("treasury", till, "", 0, 3000).ok, "the salt works given 3,000p (moved, not made)");
+    for (const char* good : {"nails", "fittings", "lock", "chain", "cookpot"})
+        expect(s.create("till:job:smith", good, 99, "test stock"), std::string("the smith holds ") + good);
+    const std::string crown = "estate:crown";
+    const auto money = s.moneySupply();
+    run(s, 46 + 8.5 / 24, 46 + 17.9 / 24);
+    const auto& day = s.loopToday().farms.at("salt_works_1");
+    expect(day.basket > 0 && day.basket + day.basketCarriage <= most, "its basket within its design's: " + std::to_string(day.basket));
+    const auto estate = s.cash(crown);
+    run(s, 46 + 17.9 / 24, 46 + 18.5 / 24);       // (The night's wages and rents.)
+    const auto& night = s.loopToday().farms.at("salt_works_1");
+    expect(night.surplus > 2000 && s.cash(till) == f.reserve + most, "the rest its House's tonight: " + std::to_string(night.surplus) +
+                                                                          ", it keeps " + std::to_string(s.cash(till)));
+    expect(s.cash(crown) - estate >= night.surplus && s.loopToday().estates.at("crown").surplus == night.surplus,
+           "into the Crown's estate, booked as its surplus");
+    expect(s.conserved() && s.moneySupply() == money, "conserved");
+    // A farm short of its crew's wages keeps all it has; a works (its rent) and the rule off are untouched.
+    auto off = city([](EconomySpec& e) {
+        e.farms.areas["salt"].on = 1;
+        e.rules["farmSurplus"] = 0;
+    });
+    turn(off, 46);
+    expect(off.farmBasketMost(farm(off, "salt_works_1")) < 0, "the rule off: no bound");
+}
+
 void theWharf()
 {
     // The Wharf (Docs/Design/73-the-wharf.md, 4.3-4.6): with the meat and fruit areas on, the farms' goods theirs first, the
@@ -1875,8 +1923,8 @@ void theWharf()
         expect(!shut.drawFromStore(keeper, good, 1, "restocked from the store room").ok && shut.supplyLeft(good) == 0,
                "the valve off: the farms' only");
     }
-    // Takes: a dairy holding far more hides than 28 days of its yield gives the excess at 16:00, at most 30 a day,
-    // within the credit; a farm under its keep gives none.
+    // Takes: a dairy holding far more hides than 28 days of its yield gives the excess at 16:00, at most its most a day
+    // (40 since wharf7b), within the credit; a farm under its keep gives none.
     const auto hides = Society::farmTill("cattle_and_dairy_farm_1"), other = Society::farmTill("cattle_and_dairy_farm_2");
     expect(s.create(hides, "hide", 99, "test stock") && s.create(hides, "hide", 99, "test stock"), "a pile of hides");
     const int pile = held(s, hides, "hide"), otherHeld = held(s, other, "hide");
@@ -1886,12 +1934,13 @@ void theWharf()
     const auto minted0 = s.state().minted, in0 = s.state().loop.wharf.in;
     run(s, 46 + 15.95 / 24, 46 + 16.05 / 24);
     const auto& taken = s.loopToday().wharfTaken;
-    expect(taken.count("hide") && taken.at("hide").pieces == 30, "thirty hides taken, its most: " +
+    const int most = items::cityLoop().wharf.takes.at("hide").most;
+    expect(most == 40 && taken.count("hide") && taken.at("hide").pieces == most, "forty hides taken, its most: " +
            std::to_string(taken.count("hide") ? taken.at("hide").pieces : 0));
-    expect(held(s, hides, "hide") == pile - 30, "out of the pile");
+    expect(held(s, hides, "hide") == pile - most, "out of the pile");
     expect(held(s, other, "hide") == otherHeld, "a farm under its keep gives none");
     const auto price = taken.at("hide").pennies;
-    expect(price == s.stablePrice("hide", 30), "at the stable price: " + std::to_string(price));
+    expect(price == s.stablePrice("hide", most), "at the stable price: " + std::to_string(price));
     const auto takeToll = std::int64_t(std::ceil(double(price) * s.gateTollNow() / 100.));
     expect(s.loopToday().farms.at("cattle_and_dairy_farm_1").takings - takings0 >= price - takeToll,
            "the farm paid the price less the toll, its takings (its rent's base tonight)");
@@ -1906,6 +1955,61 @@ void theWharf()
     run(dry, 46 + 15.9 / 24, 46 + 16.1 / 24);
     expect(!dry.loopToday().wharfTaken.count("hide") && dry.state().loop.wharf.credit < 0, "nothing taken without credit");
     expect(!s.wharfTakes("flax") && !s.wharfTakes("cheese") && s.wharfTakes("bones"), "flax off, cheese never, bones on");
+    // (After wharf7b.) The takes run in the list's order, and a good the room can't fit is left for the next, not the end
+    // of the run (wharf7b: the hides were never reached): the room for no hide, but for a bone, takes the bones.
+    {
+        auto k = city(open);
+        turn(k, 46);
+        bool piled = k.create(hides, "hide", 99, "test stock") && k.create(hides, "hide", 99, "test stock");
+        for (int i = 0; i < 20; ++i)
+            piled = piled && k.create(hides, "bones", 99, "test stock");
+        expect(piled, "piles of hides and bones");
+        run(k, 46 + .6 / 24, 46 + 15.95 / 24);
+        const auto bone = k.stablePrice("bones", 1) + k.carriageOn(Society::WharfFund, "bones", 1, false);
+        const auto hide = k.stablePrice("hide", 1) + k.carriageOn(Society::WharfFund, "hide", 1, false);
+        expect(bone < hide, "a bone dearer to ship than a hide? " + std::to_string(bone) + " " + std::to_string(hide));
+        const auto& book = k.state().loop.wharf;
+        expect(k.moveWharfCredit(bone - book.credit, "test", "room for a bone").ok && book.credit == bone,
+               "the credit at a bone's price: " + std::to_string(book.credit));
+        const auto& order = items::cityLoop().wharf.takes;
+        expect(order.at("hide").rank < order.at("bones").rank, "hides listed before bones");
+        run(k, 46 + 15.95 / 24, 46 + 16.05 / 24);
+        const auto& t = k.loopToday().wharfTaken;
+        expect(!t.count("hide") && t.count("bones") && t.at("bones").pieces >= 1 && k.loopToday().wharfTakeUnfit > 0,
+               "no hide, the bones taken after it: " + std::to_string(t.count("bones") ? t.at("bones").pieces : 0) + " (hides " +
+                   std::to_string(t.count("hide") ? t.at("hide").pieces : 0) + ", unfit " + std::to_string(k.loopToday().wharfTakeUnfit) +
+                   ", credit " + std::to_string(book.credit) + ", bones area " + std::to_string(k.farmAreaOf("bones")) + ", held " +
+                   std::to_string(held(k, hides, "bones")) + ")");
+        expect(k.conserved(), "conserved");
+    }
+    // A take's `shops` (after wharf7b): the butchers' hides, the byproduct of their carcasses, taken from the city's shop
+    // over its keep at the stable price, inside the walls (no toll); a shop under its keep gives none.
+    {
+        auto b = city(open);
+        turn(b, 46);
+        const auto till = b.tillOf("butcher");
+        expect(b.create(till, "hide", 99, "test stock"), "a pile of hides at the butcher's");
+        expect(b.moveWharfCredit(2000, "test", "the takes' credit").ok, "credit");
+        run(b, 46 + .6 / 24, 46 + 15.95 / 24);
+        const int before = held(b, till, "hide");
+        b.takeJournal();
+        run(b, 46 + 15.95 / 24, 46 + 16.05 / 24);
+        std::int64_t paid = 0;
+        bool tolled = false;
+        for (const auto& e : b.takeJournal())
+        {
+            if (e.kind == "bought for beyond the realm: hide" && e.to == till && e.quantity == 0)
+                paid += e.coins;
+            tolled = tolled || e.kind == "gate toll: to the wharf";
+        }
+        const auto& shops = b.loopToday().wharfTakenShops;
+        const int n = shops.count("hide") ? shops.at("hide").pieces : 0;
+        expect(n > 0 && n <= before - b.rule("wharfKeepLeast") && held(b, till, "hide") == before - n,
+               "the butcher's hides over its keep taken: " + std::to_string(n) + " of " + std::to_string(before));
+        expect(paid == b.stablePrice("hide", n) && shops.at("hide").pennies == paid && !tolled,
+               "paid whole, no toll: " + std::to_string(paid));
+        expect(b.conserved(), "conserved");
+    }
 }
 
 int main()
@@ -1926,6 +2030,7 @@ int main()
         spoiling();
         theDairy();
         theFarmsBasket();
+        theFarmsSurplus();
         aShortFarm();
         theCountrysBasket();
         nothingUnlessSwitched();

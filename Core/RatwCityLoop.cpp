@@ -1695,7 +1695,10 @@ void Society::payWages()
                     w.toHouse += excess;
                     loopToday_.rents[house] += excess;
                     if (const auto* e = estatesOn() ? estateOfFund(to) : nullptr)
+                    {
                         loopToday_.estates[e->id].rents += excess;
+                        loopToday_.estates[e->id].shops += excess;
+                    }
                 }
             }
             else if (const auto excess = cash(payer) - cap; held != state_.careers.positions.end() && !held->second.holder.empty() &&

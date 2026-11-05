@@ -97,6 +97,13 @@ void Society::wharfSink(std::int64_t coins, const std::string& why)
     record(why, WharfFund, "beyond", "", 0, coins);
 }
 
+void Society::bookWharfFee(std::int64_t coins)
+{
+    // (The Wharf's fees stay in its purse, House Grayrock's estate's while the estates are split: booked as its income.)
+    if (const auto* e = coins > 0 && estatesOn() ? estateOfFund(WharfFund) : nullptr)
+        loopToday_.estates[e->id].fees += coins;
+}
+
 bool Society::wharfPaysBeyond(const std::string& item) const
 {
     if (farmAreaOf(item) >= 0)
@@ -123,8 +130,12 @@ void Society::bookWharfLanding(const std::string& item, int n, std::int64_t coin
     wharfSink(beyond, "paid beyond the realm: " + base);
     state_.loop.wharf.fee += fee;
     loopToday_.wharfFee += fee;
+    bookWharfFee(coins - std::max<std::int64_t>(0, beyond));   // (What stays: its fee, and what the credit had no room for.)
     if (beyond > 0)
+    {
         credit += beyond;
+        loopToday_.wharfLandedBeyond[base] += beyond;
+    }
 }
 
 EconomyResult Society::orderFromWharf(const std::string& buyer, const std::string& item, int n, const std::string& why)
@@ -209,41 +220,84 @@ void Society::settleWharf()
 
 std::int64_t Society::wharfTakesRun(bool commit)
 {
-    // Each good on the takes list, in the list's order: the farms and works holding it over their keep, the largest
-    // excess first (then by till), whole pieces, within the good's most a day; committed, within the export room too.
+    // Each good on the takes list, in the list's order: the farms and works holding it over their keep, and the shops of
+    // its `shops` trades over theirs (after wharf7b: the butchers' hides and bones), the largest excess first (then by
+    // till), whole pieces, within the good's most a day; committed, within the export room too. A good the room can't
+    // fit is left for the next (wharf7b: the run stopped at the first, so the hides were never reached).
     if (!wharfValveOn() || !account(WharfFund))
         return 0;
     const auto& lists = items::cityLoop().wharf;
     const int fee = std::clamp(rule("wharfFee"), 0, 100);
-    std::int64_t wanted = 0;
+    std::vector<std::pair<const std::string*, const items::WharfGood*>> order;
     for (const auto& [good, def] : lists.takes)
+        order.push_back({&good, &def});
+    std::stable_sort(order.begin(), order.end(), [](const auto& a, const auto& b) { return a.second->rank < b.second->rank; });
+    // The shops of each trade a take names (a merchant's post held, its till open), once.
+    std::map<std::string, std::vector<std::string>> shopsOf;
+    const bool anyShops = std::any_of(order.begin(), order.end(), [](const auto& o) { return !o.second->shops.empty(); });
+    if (anyShops)
+        for (const auto& p : positions_)
+        {
+            if (p.role != "merchant")
+                continue;
+            const auto held = state_.careers.positions.find(p.id);
+            if (held == state_.careers.positions.end() || held->second.holder.empty() || dead_.count(held->second.holder))
+                continue;
+            if (const auto* b = items::businessFor(p.title); b && account("till:" + p.id))
+                shopsOf[b->id].push_back("till:" + p.id);
+        }
+    const int keepDays = rule("wharfKeepDays");
+    const auto shopKeep = [&](const std::string& till, const std::string& good, const items::WharfGood& def) {
+        if (def.keep >= 0)
+            return def.keep;
+        double aDay = 0;
+        if (const auto t = state_.loop.sales.find(till); t != state_.loop.sales.end())
+            if (const auto w = t->second.find(good); w != t->second.end())
+                aDay = w->second;
+        return std::max({rule("wharfKeepLeast"), int(std::ceil(aDay * keepDays - 1e-9)), shelfOf(till, good)});
+    };
+    std::int64_t wanted = 0;
+    for (const auto& [goodPtr, defPtr] : order)
     {
+        const auto& good = *goodPtr;
+        const auto& def = *defPtr;
         if (!wharfTakes(good))
             continue;
         const int area = farmAreaOf(good);
-        if (area < 0)
-            continue;                               // (No area of it on: nothing of the realm's own to take.)
+        if (area < 0 && def.shops.empty())
+            continue;                               // (No area of it on and no shop it is taken from: nothing to take.)
         const auto taken = loopToday_.wharfTaken.find(good);
         int capLeft = int(std::max<std::int64_t>(0, std::int64_t(def.most) * rule("wharfTakeScale") / 100 -
                                                         (taken == loopToday_.wharfTaken.end() ? 0 : taken->second.pieces)));
-        std::vector<std::pair<int, std::size_t>> holders;
-        for (std::size_t i = 0; i < farms_.size(); ++i)
+        struct Holder
         {
-            const auto& f = farms_[i];
-            if (!farmAreaOn(f.area) || !account(f.till) || !farmSells(f, std::size_t(area), good))
-                continue;
-            if (const int over = stock(*account(f.till), good) - wharfKeep(i, good); over > 0)
-                holders.push_back({over, i});
-        }
-        std::stable_sort(holders.begin(), holders.end(), [&](const auto& a, const auto& b) {
-            return a.first != b.first ? a.first > b.first : farms_[a.second].till < farms_[b.second].till;
+            int over;
+            std::string till;
+            int farm;                               // (Its index in farms_, or -1: a city shop.)
+        };
+        std::vector<Holder> holders;
+        if (area >= 0)
+            for (std::size_t i = 0; i < farms_.size(); ++i)
+            {
+                const auto& f = farms_[i];
+                if (!farmAreaOn(f.area) || !account(f.till) || !farmSells(f, std::size_t(area), good))
+                    continue;
+                if (const int over = stock(*account(f.till), good) - wharfKeep(i, good); over > 0)
+                    holders.push_back({over, f.till, int(i)});
+            }
+        for (const auto& trade : def.shops)
+            if (const auto found = shopsOf.find(trade); found != shopsOf.end())
+                for (const auto& till : found->second)
+                    if (const int over = stock(*account(till), good) - shopKeep(till, good, def); over > 0)
+                        holders.push_back({over, till, -1});
+        std::stable_sort(holders.begin(), holders.end(), [](const Holder& a, const Holder& b) {
+            return a.over != b.over ? a.over > b.over : a.till < b.till;
         });
-        for (const auto& [over, i] : holders)
+        for (const auto& h : holders)
         {
             if (capLeft <= 0)
                 break;
-            auto& f = farms_[i];
-            int n = std::min(over, capLeft);
+            int n = std::min(h.over, capLeft);
             const auto total = [&](int q) {
                 const auto p = stablePrice(good, q);
                 return p + carriageOn(WharfFund, good, q, false) + p * fee / 100;
@@ -255,39 +309,56 @@ std::int64_t Society::wharfTakesRun(bool commit)
                 continue;
             }
             const auto room = wharfExportRoom();
+            const int asked = n;
+            // (Down in proportion, but never past 1 at a step: from 60 bones and room for one, the proportion floored to 0.)
             while (n > 0 && total(n) > room)
-                n = std::min(n - 1, int(std::floor(double(n) * double(room) / double(std::max<std::int64_t>(1, total(n))))));
+                n = std::min(n - 1, std::max(1, int(std::floor(double(n) * double(room) / double(std::max<std::int64_t>(1, total(n)))))));
+            if (n < asked)
+                loopToday_.wharfTakeUnfit += total(asked) - (n > 0 ? total(n) : 0);
             if (n < 1)
-                return wanted;                      // (No room left today: the beyond buys no more.)
+                break;                              // (No room for this good today: the next, cheaper, may fit.)
+            const bool farm = h.farm >= 0;
             const auto price = stablePrice(good, n);
             const auto carriage = carriageOn(WharfFund, good, n, true);
             const auto wharfage = price * fee / 100;
-            const auto toll = gateToll(f.till, price, true);   // (The farm's goods pass the gate as any draw's.)
+            // (A farm's goods pass the gate as any draw's; a city shop's go to the wharf inside the walls.)
+            const auto toll = farm ? gateToll(h.till, price, true) : 0;
             const auto carter = carters();
             if (carriage > 0 && carter == CarriageFund && !account(CarriageFund))
                 openAccount(CarriageFund);
             wharfMint(price + carriage + wharfage, "from beyond the realm: " + good);
-            shift(WharfFund, f.till, "", 0, price - toll, "bought for beyond the realm: " + good);
+            shift(WharfFund, h.till, "", 0, price - toll, "bought for beyond the realm: " + good);
             if (toll > 0)
                 shift(WharfFund, "treasury", "", 0, toll, "gate toll: to the wharf");
             if (carriage > 0)
                 shift(WharfFund, carter, "", 0, carriage, "carriage to the wharf");
             for (int left = n; left > 0; left -= 99)
-                shift(f.till, WharfFund, good, std::min(left, 99), 0, "bought for beyond the realm: " + good);
+                shift(h.till, WharfFund, good, std::min(left, 99), 0, "bought for beyond the realm: " + good);
             consume(WharfFund, good, n, "shipped beyond the realm");
             auto& book = state_.loop.wharf;
             book.credit -= price + carriage + wharfage;
             book.fee += wharfage;
             loopToday_.wharfFee += wharfage;
+            bookWharfFee(wharfage);
             auto& t = loopToday_.wharfTaken[good];
             t.pieces += n;
             t.pennies += price;
-            auto& day = loopToday_.farms[f.def->id];
-            day.sold += n;
-            day.goods[good].sold += n;
-            day.takings += price - toll;
-            f.rentTakings += price - toll;          // (Its land rent's or works' rent's base tonight.)
-            loopToday_.goodsSold[good] += n;
+            if (farm)
+            {
+                auto& f = farms_[std::size_t(h.farm)];
+                auto& day = loopToday_.farms[f.def->id];
+                day.sold += n;
+                day.goods[good].sold += n;
+                day.takings += price - toll;
+                f.rentTakings += price - toll;      // (Its land rent's or works' rent's base tonight.)
+                loopToday_.goodsSold[good] += n;
+            }
+            else
+            {
+                auto& c = loopToday_.wharfTakenShops[good];
+                c.pieces += n;
+                c.pennies += price;
+            }
             loopToday_.toll += toll;
             loopToday_.carriage += carriage;
             capLeft -= n;
@@ -384,6 +455,7 @@ void Society::wharfExports(int hod)
     book.credit -= spent + carriage + wharfage;
     book.fee += wharfage;
     loopToday_.wharfFee += wharfage;
+    bookWharfFee(wharfage);
     loopToday_.wharfBasket += spent;
 }
 } // namespace ratw

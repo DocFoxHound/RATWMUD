@@ -894,6 +894,8 @@ class Society
     // Whether a farm sells a good of `area` from its store: a farm of that area, or of another area on whose yields grow it
     // (doc 72, the iron: the Frosthollow hearth's charcoal, the iron area's, beside the woods' own).
     bool farmSells(const FarmNow& farm, std::size_t area, const std::string& item) const;
+    // A food farm's basket a day at most (the rule farmSurplus, after wharf7b): its design's basketADay; -1, no bound.
+    std::int64_t farmBasketMost(const FarmNow& f) const;
     double farmPriceFactor(const std::string& item) const;
     // How far the Country's basket has moved to its re-weighted one (0 to 1): the share of the food areas' takings on.
     double wharfBasketShift() const;
@@ -1039,6 +1041,7 @@ class Society
             std::int64_t crewSpent = 0;
             std::int64_t peoplePaid = 0;            // Of wagesPaid, what its real posts' holders were paid (doc 71, Phase C).
             std::int64_t rent = 0;                  // A works' rent tonight, or a food farm's land rent, to its House's estate (doc 72).
+            std::int64_t surplus = 0;               // Of `rent`, a food farm's surplus over its design's basket (farmSurplus).
             int crewFood = 0, crewNeeds = 0, crewComforts = 0, crewServices = 0, crewShort = 0, tableShort = 0;
             double crewHungry = 0;
             // By good (world_check's full recording, doc 69, 10): the same pieces, and the table's short of it.
@@ -1074,6 +1077,10 @@ class Society
         {
             std::int64_t rents = 0, grantsIn = 0, grantsOut = 0, postsOwed = 0, postsPaid = 0, spent = 0, moved = 0;
             std::int64_t levyIn = 0, levyOut = 0;   // (The Crown's levy on the others' spare: in, the Crown's; out, each's.)
+            // Of `rents`, by source (after wharf7b, to trace an estate's income): the food farms' land rents, the works'
+            // rents, the country workshops' and the Houses' city businesses' takings; and the Wharf's fees (the wharf's).
+            std::int64_t land = 0, works = 0, shops = 0, fees = 0;
+            std::int64_t surplus = 0;               // (Of `land`, the food farms' surplus over their design's basket.)
             int posts = 0;
         };
         std::map<std::string, Estate> estates;
@@ -1087,7 +1094,10 @@ class Society
             std::int64_t pennies = 0;
         };
         std::map<std::string, WharfGood> wharfImported, wharfTaken;
+        std::map<std::string, WharfGood> wharfTakenShops;      // (Of wharfTaken, what came from the city's shops.)
         std::int64_t wharfIn = 0, wharfOut = 0, wharfFee = 0, wharfMoved = 0, wharfBasket = 0, wharfTakeWant = -1;
+        std::int64_t wharfTakeUnfit = 0;            // What the takes wanted that the export room could not fit (pennies).
+        std::map<std::string, std::int64_t> wharfLandedBeyond; // Of the landings' takings, what was paid beyond, by good.
     };
     const LoopDay& loopToday() const { return loopToday_; }
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a
@@ -1335,6 +1345,7 @@ class Society
     // The takes at WharfTakeHour (doc 73, 4.4): with `commit` false, only what they would want of the beyond today
     // (pennies: prices, carriage and fees), within the lists' caps but not the export room.
     std::int64_t wharfTakesRun(bool commit);
+    void bookWharfFee(std::int64_t coins);      // (Its fee as its estate's income, for the reports.)
     void wharfExports(int hourOfDay);               // The export basket (4.5), each shop hour after the estates'.
     void settleWharf();                             // The standing levers, at 18:00 before the estates (4.6).
     static constexpr int WharfTakeHour = 16;

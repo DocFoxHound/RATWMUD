@@ -728,8 +728,9 @@ void theWharfLands()
     for (const auto& [good, g] : lists.imports)
         expect(!lists.takes.count(good), good + ": not imported and taken both");
     expect(lists.imports.count("aqua_vitae") && lists.imports.at("aqua_vitae").on && lists.imports.count("offal") &&
-               lists.imports.at("offal").on && lists.imports.count("butter") && !lists.imports.at("eggs").on,
-           "aqua vitae, offal and butter imported; the new producers' goods listed off");
+               lists.imports.at("offal").on && lists.imports.count("butter") && lists.imports.at("eggs").on &&
+               lists.imports.at("cider").on && !lists.imports.at("wheat").on,
+           "aqua vitae, offal, butter, eggs and cider imported (eggs and cider since wharf7b); wheat listed off");
 }
 
 void anOrderByWagon()
