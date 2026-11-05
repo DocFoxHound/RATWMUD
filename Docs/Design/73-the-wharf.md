@@ -1610,4 +1610,9 @@ are 78p a day less, the wage support wanted is lower every year, apples are met,
    ~86p a day each way) or fewer posts there with somewhere to go (new work, not an idle till).
 3. **Timberland's purse falls in year 3** with its works' rents, as the basket's iron, charcoal and timber fall.
 4. **Hides** still rot at ~15 a day (no craft takes them; a hide glue or parchment craft would be new goods and buyers).
-5. **world_check's exit 134** (stable9): see the ASan run below.
+5. **world_check's exit 134** (stable9) was not found. An ASan and UBSan build (clang, RelWithDebInfo,
+   `-fsanitize=address,undefined`) of stable9's own code (7dd7991) ran export64 for 60 days and then for the full three
+   years with wharf7b's flags (2.4 hours): no error, exit 0, money conserved. Its numbers are not stable9's to the penny
+   (another compiler; the end money 64,584p against 64,590p), so it did not walk stable9's exact path. `s10c` (gcc
+   Release, this branch) also exited 0. The fault may be in glibc's allocator under one run's exact path, or in the
+   teardown; not traced further. A rerun of stable9 itself with `MALLOC_CHECK_=3` would show whether it repeats.
