@@ -170,7 +170,8 @@ void theWorkshopsData()
                 expect(!business, label + ": no business's");
         }
     }
-    expect(posts == 37, "37 posts (18 before country5b's carry-overs, 35 before the still): " + std::to_string(posts));
+    expect(posts == 39, "39 posts (18 before country5b's carry-overs, 35 before the still, 37 before its two hands of doc 73's round 3): " +
+                           std::to_string(posts));
     // Where the map has laid a workshop (communities.json, a community's `workshops`), its work spots are the map's (by
     // its stations), never workshops.json's own.
     std::ifstream in(fs::path(RATW_SOURCE_DIR) / "Data" / "Economy" / "communities.json", std::ios::binary);

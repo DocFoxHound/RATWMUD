@@ -13,6 +13,7 @@
 #include "RatwSociety.h"
 #include "RatwWorld.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <filesystem>
@@ -316,7 +317,21 @@ void theWorkBankHoldsTheLongestCraft()
         for (int h = 0; h < 40; ++h)
             s.restockFromStore("carto", 1 + (8 + h) / 24.);
         expect(s.conserved(), "conserved");
-        return std::pair<double, int>{most, Society::stock(*s.account(till), "map")};
+        // The crew's hours, logged (round 3, doc 73): put in an hour each open hour, what the maps used, the rest lost past
+        // the bank's cap or still banked.
+        const int made = Society::stock(*s.account(till), "map");
+        const auto found = s.loopToday().work.find(till);
+        expect(found != s.loopToday().work.end(), "the cartographer's hours logged");
+        const auto& w = found->second;
+        double mapHours = 0;
+        for (const auto* k : items::craftsFor(business->id))
+            if (std::any_of(k->out.begin(), k->out.end(), [](const auto& o) { return o.first == "map"; }))
+                mapHours = k->hours;
+        expect(w.hours >= 1 && w.hours <= 40 && std::abs(w.used - made * mapHours) < 1e-6 && w.lost >= 0 &&
+                   w.used + w.lost <= w.hours + 1e-6 && w.hours - w.used - w.lost <= most + 1e-6,
+               "its hours: " + std::to_string(w.hours) + " put in, " + std::to_string(w.used) + " used, " + std::to_string(w.lost) +
+                   " lost, " + std::to_string(made) + " maps");
+        return std::pair<double, int>{most, made};
     };
     const auto [longest, made] = maps(0);
     expect(longest >= 14.8 && longest < 15, "the bank holds the longest craft and an hour: " + std::to_string(longest));

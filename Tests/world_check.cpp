@@ -591,6 +591,7 @@ struct EconomyRecord
     };
     std::map<std::tuple<std::string, std::string, std::string, std::string>, Short> shorts;   // (Shop, good, group, instead.)
     std::map<std::string, std::int64_t> hungryHours, comforts, spent;   // Class -> today's.
+    std::set<std::string> shortHomes;               // Round 3 (doc 73): the households short of food today, by first member.
     std::set<std::string> comfortGoods;
     static bool drawKind(const std::string& k)
     {
@@ -703,6 +704,8 @@ struct EconomyRecord
     }
     void shortage(const Society::Shortage& s)
     {
+        if (s.item == "food" && s.shop.empty())
+            shortHomes.insert(s.buyer);             // (A household's food short at the shops' last hour: its first member.)
         auto& row = shorts[{s.shop.empty() ? std::string("-") : s.shop, s.item, group(s.buyer), s.instead}];
         row.buyers.insert(s.buyer);
         // (A shop's draw is tried every hour it is short: its most, not the sum.)
@@ -731,7 +734,14 @@ struct EconomyRecord
              "\"flow\": [\"from\", \"to\", \"pennies\"], "
              "\"short\": [\"shop\", \"good\", \"buyer\", \"buyers\", \"pieces\", \"instead\"], "
              "\"class\": [\"class\", \"residents\", \"households\", \"hungry_hours\", \"hungry_now\", \"purse\", "
-             "\"household_purse_median\", \"comforts\", \"spent\"]}, \"farms\": {";
+             "\"household_purse_median\", \"comforts\", \"spent\"], "
+             // Round 3 (doc 73): each maker's crew-hours in tenths (put in, used by its crafts, lost past its bank's cap);
+             // and each household short of food today: its first member, class, members, purse, its earners, and up to
+             // three of their payers (a till, the treasury, an estate; -1 none). (A till with no hours, use or loss today,
+             // its post empty, has no work row.)
+             "\"work\": [\"till\", \"hours10\", \"used10\", \"lost10\"], "
+             "\"hh_short\": [\"member\", \"class\", \"members\", \"purse\", \"earners\", \"payer1\", \"payer2\", "
+             "\"payer3\"]}, \"farms\": {";
         bool first = true;
         for (const auto& f : s.farms())
         {
@@ -930,6 +940,36 @@ struct EconomyRecord
             ++households[cls];
             homePurses[cls].push_back(held);
         }
+        table("work");
+        for (const auto& [till, w] : s.loopToday().work)
+            if (w.hours > 0 || w.used > 0 || w.lost > 0)
+                row({id(till), std::llround(w.hours * 10), std::llround(w.used * 10), std::llround(w.lost * 10)});
+        close();
+        table("hh_short");
+        if (!shortHomes.empty())
+            for (const auto& [home, members] : s.households())
+            {
+                if (members.empty() || !shortHomes.count(members.front()))
+                    continue;
+                std::int64_t held = 0;
+                int earners = 0;
+                std::vector<std::int64_t> payers;
+                for (const auto& m : members)
+                {
+                    held += s.cash(m);
+                    if (const auto* job = s.jobOf(m))
+                        if (const auto pay = s.payOf(*job); pay.wage > 0)
+                        {
+                            ++earners;
+                            if (payers.size() < 3)
+                                payers.push_back(id(pay.payer));
+                        }
+                }
+                payers.resize(3, -1);
+                row({id(members.front()), id(s.classOf(members.front())), std::int64_t(members.size()), held, earners, payers[0],
+                     payers[1], payers[2]});
+            }
+        close();
         table("class");
         for (const auto& [cls, n] : residents)
         {
@@ -955,6 +995,7 @@ struct EconomyRecord
         supportTo.clear();
         flows.clear();
         shorts.clear();
+        shortHomes.clear();
         hungryHours.clear();
         comforts.clear();
         spent.clear();

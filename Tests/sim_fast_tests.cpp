@@ -333,7 +333,8 @@ void theHarness(const std::string& binary, const fs::path& root)
         expect(json::parse(line, v, error), "a table line is JSON: " + error);
         if (v.has("meta"))
         {
-            metaSeen = v["meta"]["columns"].has("trade") && v["meta"]["farms"].has("grain_farm_1");
+            metaSeen = v["meta"]["columns"].has("trade") && v["meta"]["farms"].has("grain_farm_1") &&
+                       v["meta"]["columns"].has("work") && v["meta"]["columns"].has("hh_short");   // (Round 3, doc 73.)
             continue;
         }
         for (const auto& n : v.array("names"))
@@ -366,6 +367,18 @@ void theHarness(const std::string& binary, const fs::path& root)
         expect(grown == e.number("farms_grown"), "the farms' goods grown, by good, add up");
         expect(flowsIn >= e.number("toll"), "the treasury's inflows hold the toll");
         expect(v.array("class").size() >= 1 && v.array("farm").size() >= 1, "the classes and the farms, a row each");
+        // Round 3 (doc 73): each maker's crew-hours, in tenths: what it used and lost are within what it put in.
+        expect(v.has("work") && v.has("hh_short"), "the work and short households' tables");
+        for (const auto& r : v.array("work"))
+        {
+            const double hours = r.items()[1].asNumber(), used = r.items()[2].asNumber(), lost = r.items()[3].asNumber();
+            expect(names.at(std::size_t(r.items()[0].asNumber())).rfind("till:", 0) == 0 && hours >= 0 && used >= 0 && lost >= 0 &&
+                       hours + used + lost > 0 &&   // (No empty rows: a till whose post stood empty all day has none.)
+                       used + lost <= hours + 1 + 10 * 40,   // (Used may spend hours banked the day before: at most a bank.)
+                   "a till's crew-hours");
+        }
+        for (const auto& r : v.array("hh_short"))
+            expect(r.items().size() == 8 && r.items()[2].asNumber() >= 1, "a short household: its members and payers");
         ++tableDays;
     }
     expect(metaSeen && tableDays == 3, "the meta line, then a table line a day: " + std::to_string(tableDays));

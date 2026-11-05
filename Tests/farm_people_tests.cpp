@@ -125,7 +125,7 @@ void build(Fixture& x)
     add("fishes the waters off Greywater", 18, 20);
     add("traps eels in the fen", 3, 30);
     add("cuts reeds in the marsh", 3, 30);
-    add("keeps the house", 37, 20);                // (The workshops' 37 posts since the still: 20 were 18's, 36 35's.)
+    add("keeps the house", 39, 20);                // (The workshops' 39 posts since the still's hands, doc 73: 37 before.)
     add("serves at The Lantern", 12, 20);
     add("helps at The Stores", 10, 20);
     add("logging at Cedarfall", 5, 20);
@@ -446,7 +446,7 @@ void thePlacement()
         expect(atWorkshop[w.area] == want, w.area + ": its " + std::to_string(want) + " posts: " + std::to_string(atWorkshop[w.area]));
         workshopPosts += atWorkshop[w.area];
     }
-    expect(people.workshops.size() == 9 && workshopPosts == 37, "the nine workshops' 37 posts (the still since iron6, doc 72): " + std::to_string(workshopPosts));
+    expect(people.workshops.size() == 9 && workshopPosts == 39, "the nine workshops' 39 posts (the still since iron6, doc 72; its two more hands, doc 73): " + std::to_string(workshopPosts));
     expect(!keeperOf["cn_oakhaven_store"].empty(), "Oakhaven's store kept, with its works");
     // (The still's keeper the brewer, of its words: doc 72, after iron6.)
     expect(keeperOf["cn_larkfield_store"] == "shop_larkfield" && keeperOf["cn_coldwater_store"] == "shop_coldwater" &&
