@@ -1669,9 +1669,10 @@ void Society::payWages()
         {
             ++loopToday_.tillsShort;
             tillsShort_[payer] = owed - paid;       // (For the treasury's wage support, after every payer has paid.)
-            const auto* p = position(payer.substr(5));
+            // (By trade as supportWages books it: a farm's till "farm", whatever its post's title.)
+            const auto* p = farmOf_.count(payer) ? nullptr : position(payer.substr(5));
             const auto* business = p ? items::businessFor(p->title) : nullptr;
-            loopToday_.shortByTrade[business ? business->id : "other"] += owed - paid;
+            loopToday_.shortByTrade[farmOf_.count(payer) ? "farm" : business ? business->id : "other"] += owed - paid;
         }
         // A till over its float and floatWagesDays of its wages (a week: doc 68, "The follow-ups") pays its keeper the
         // rest, as profit.
