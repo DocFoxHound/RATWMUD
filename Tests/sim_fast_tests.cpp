@@ -372,7 +372,8 @@ void theHarness(const std::string& binary, const fs::path& root)
         for (const auto& r : v.array("work"))
         {
             const double hours = r.items()[1].asNumber(), used = r.items()[2].asNumber(), lost = r.items()[3].asNumber();
-            expect(names.at(std::size_t(r.items()[0].asNumber())).rfind("till:", 0) == 0 && hours > 0 && used >= 0 && lost >= 0 &&
+            expect(names.at(std::size_t(r.items()[0].asNumber())).rfind("till:", 0) == 0 && hours >= 0 && used >= 0 && lost >= 0 &&
+                       hours + used + lost > 0 &&   // (No empty rows: a till whose post stood empty all day has none.)
                        used + lost <= hours + 1 + 10 * 40,   // (Used may spend hours banked the day before: at most a bank.)
                    "a till's crew-hours");
         }

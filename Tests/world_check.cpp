@@ -736,8 +736,9 @@ struct EconomyRecord
              "\"class\": [\"class\", \"residents\", \"households\", \"hungry_hours\", \"hungry_now\", \"purse\", "
              "\"household_purse_median\", \"comforts\", \"spent\"], "
              // Round 3 (doc 73): each maker's crew-hours in tenths (put in, used by its crafts, lost past its bank's cap);
-             // and each household short of food today: its first member, class, members, purse, and up to three of its
-             // earners' payers (a till, the treasury, an estate; -1 none) with their wages owed and paid tonight.
+             // and each household short of food today: its first member, class, members, purse, its earners, and up to
+             // three of their payers (a till, the treasury, an estate; -1 none). (A till with no hours, use or loss today,
+             // its post empty, has no work row.)
              "\"work\": [\"till\", \"hours10\", \"used10\", \"lost10\"], "
              "\"hh_short\": [\"member\", \"class\", \"members\", \"purse\", \"earners\", \"payer1\", \"payer2\", "
              "\"payer3\"]}, \"farms\": {";
@@ -941,7 +942,8 @@ struct EconomyRecord
         }
         table("work");
         for (const auto& [till, w] : s.loopToday().work)
-            row({id(till), std::llround(w.hours * 10), std::llround(w.used * 10), std::llround(w.lost * 10)});
+            if (w.hours > 0 || w.used > 0 || w.lost > 0)
+                row({id(till), std::llround(w.hours * 10), std::llround(w.used * 10), std::llround(w.lost * 10)});
         close();
         table("hh_short");
         if (!shortHomes.empty())
