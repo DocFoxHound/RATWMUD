@@ -1065,15 +1065,16 @@ void theStoneWorks()
     // patch at no slack, the whole way, for the pits' clay (piling 5,958 in its year 3; it never spoils). (The stone's
     // whole cut, tried with it, left the masons ~22 short a day in the first winter, the quarry's store empty: kept.)
     const auto& quarry = stone.farms.front();
-    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 22.45) < .01,
-           "the quarry's stone, 22.45 a day at summer's middle (stable8's patch half way)");
+    expect(quarry.id == "quarry_granite" && quarry.yield.size() == 1 && std::abs(quarry.yield.at("stone")[1] - 20.43) < .01,
+           "the quarry's stone, 20.43 a day at summer's middle (stable8's patch half way, then doc 73's round 5: stable9's "
+           "years 2-3 takings + 5%, half way)");
     double stoneMean = 0;
     for (const double v : quarry.yield.at("stone"))
         stoneMean += v / 4;
-    expect(std::abs(stoneMean - 25.67) < .05, "25.67 a day over the year: " + std::to_string(stoneMean));
+    expect(std::abs(stoneMean - 23.36) < .05, "23.36 a day over the year: " + std::to_string(stoneMean));
     for (std::size_t i = 1; i < 3; ++i)
-        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 27.98) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 7.96) < .01,
-               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; after country6a: the clay half way to what was drawn, the sand half way; after iron6 both half way; after stable8 the sand half way; after stable8c the clay to what sold)");
+        expect(std::abs(stone.farms[i].yield.at("clay")[1] - 27.98) < .01 && std::abs(stone.farms[i].yield.at("sand")[1] - 7.2) < .01,
+               stone.farms[i].id + ": half the clay and half the sand (the game's pit gives both; after country6a: the clay half way to what was drawn, the sand half way; after iron6 both half way; after stable8 the sand half way; after stable8c the clay to what sold; after stable9 the sand to its years 2-3 takings + 5%, half way)");
     // On: founded; the mason's stone and sand from the works' stores, nothing to the Country; limestone still the Country's.
     auto s = city([](EconomySpec& e) { e.farms.areas["stone"].on = 1; },
                   {person("mason", "merchant", "stonemason in Chisel Row", {"masonry", 2.5, 2.5}, "home_mason", 40, 400)});
