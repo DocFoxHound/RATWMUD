@@ -800,3 +800,38 @@ left:
 of the same good (the cap a shrunk take left passed on to it, which the room then refused whole), so stable8's ~424p a
 day of unfit overstates what the takes wanted past the room. It is now booked once a good: what its holders held over
 their keep within its cap, less what was taken. Logging only; the takes themselves are as they were.
+
+### stable8's 3-year run, on the merged build (ridgemere2 2510e81, 2026-11-04)
+
+Run again in the main checkout after the merge, build-core rebuilt, the same flags (build 63's export, `--farms 0`, an
+area every 28 days; 1,095 days, 2,376 s, 2.17 s a day). Report, patch and log: `artifacts/economy/r2/stable8-report.md`,
+`stable8-report.md.patch.json`, `stable8.out` (the first run's logs kept beside it, not committed, as `stable8-r1.*`).
+**Every day's economy line is the same as the first run's but `unfit`**, and the end digests match (people
+d41e6b0216f355c0, society c962e2b0cb53c31d): the merge and the review's fix changed nothing in the run. `unfit`, now
+booked once a good: 182, 308, 320p a day by year (the first run's year 3: ~424p). So the round-1 table above stands.
+
+Year 3 against the stable definition:
+
+| | year 3 | stable? |
+|---|---|---|
+| Money conserved every day | yes (64,584p at the end; minted 214,188 less sunk 149,604) | yes |
+| Estates' posts | 824p of 824p, no night short in three years | yes |
+| Estates' purses (year ends) | Crown 1,629, 1,557, 1,400p; Grayrock 45, 24, 30p; Timberland 449, 393, 396p; Greatly 67, 52, 39p; Fell 229, 163, 189p; all five 2,419, 2,189, 2,054p | **no**: the Crown and Greatly fall every year |
+| The Crown's rents in | 682, 747, 689p a day (land 617p, of it surplus 211p; shops 72p, down from 100p) | falling in year 3 |
+| Treasury | over its float all three years (least 1,573p in year 3; 4-week means 3,266 -> 4,126p) | yes |
+| Wage support | 126, 221, 293p a day | **no**: still climbing |
+| Hunger | 6 days, 9 hours at most, 0.31 households short | as wharf7b |
+| Piles | hides +6,860 a year, bones +10,234, timber +4,857, iron ore +4,917 | **no** |
+| Standing shortages | cider (16 a day short), apple brandy (9.3), eggs 16 | **no** for cider and brandy |
+| The valve | 112.7p in, 112.6p out a day; the credit 0-50p | yes |
+| The foundry | wages 100% paid from its bells (2.4 a day taken), 11.9p to Grayrock | yes |
+
+**Verdict: not stable.** Four of the definition's tests fail: wage support climbs year on year, the Crown's and
+Greatly's purses fall, hides, bones, timber and iron ore pile, and cider and apple brandy stay short.
+
+Where the climbing wage support goes in year 3 (a day; year 1 in brackets): inns 40.7 (30.6), smiths 38.2 (14.7),
+butchers 26.7 (5.7), glassworks 17.6 (3.1), preservers 16.8 (14.7), brickworks 11.8, papermill 11.2, sawmill 10.4,
+charcoal store 10.1, cartographer 9.7. The report's till table gives the reasons: input costs for the inns, smiths,
+butchers and preservers (takings 63, 31, 78, 80p against costs 46, 24, 62, 64p), low sales or too many hands for the
+glassworks, sawmill, brickworks and bakeries. The smiths' share grew most since the farms' baskets were bounded (the
+baskets bought from the smiths and the ironworks).

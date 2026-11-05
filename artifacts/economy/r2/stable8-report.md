@@ -156,7 +156,7 @@ The estates by year (a day; land: the food farms' land rents, in brackets their 
 ## The Wharf: beyond the realm
 
 The valve on (1095 days). A day: the beyond paid in 137p and was paid 137p (net -0p into the realm); the Wharf's fees 14p; its export basket 16p; the credit moved +0p.
-The credit: 22 -> 11p (least 0, most 417). What the takes wanted that the room could not fit: 397p a day.
+The credit: 22 -> 11p (least 0, most 417). What the takes wanted that the room could not fit: 270p a day.
 
 | season | in a day | out a day | net a day |
 |---|---|---|---|
@@ -224,8 +224,8 @@ The credit: 22 -> 11p (least 0, most 417). What the takes wanted that the room c
 | resin | 0.1 | 0.1 | 0.0 | 0.0 |
 | small_pelt | 0.1 | 0.1 | 0.0 | 0.0 |
 | garlic | 0.1 | 0.1 | 0.0 | 0.0 |
-| charm | 0.0 | 0.1 | 0.0 | 0.0 |
 | thyme | 0.1 | 0.1 | 0.0 | 0.0 |
+| charm | 0.0 | 0.1 | 0.0 | 0.0 |
 | comfrey | 0.1 | 0.1 | 0.0 | 0.0 |
 | berries | 0.1 | 0.0 | 0.0 | 0.0 |
 | planks | 0.0 | 0.0 | 0.0 | 0.0 |
@@ -234,8 +234,8 @@ The credit: 22 -> 11p (least 0, most 417). What the takes wanted that the room c
 | steel_bar | 0.0 | 0.0 | 0.0 | 0.0 |
 | mushrooms | 0.1 | 0.0 | 0.0 | 0.0 |
 | lavender | 0.0 | 0.0 | 0.0 | 0.0 |
-| nails | 0.0 | 0.0 | 0.0 | 0.0 |
 | oak_galls | 0.0 | 0.0 | 0.0 | 0.0 |
+| nails | 0.0 | 0.0 | 0.0 | 0.0 |
 | glass_beads | 0.0 | 0.0 | 0.0 | 0.0 |
 | whitewash | 0.0 | 0.0 | 0.0 | 0.0 |
 | linseed_oil | 0.0 | 0.0 | 0.0 | 0.0 |
@@ -243,8 +243,8 @@ The credit: 22 -> 11p (least 0, most 417). What the takes wanted that the room c
 | paper | 0.0 | 0.0 | 0.0 | 0.0 |
 | mint | 0.0 | 0.0 | 0.0 | 0.0 |
 | valerian | 0.0 | 0.0 | 0.0 | 0.0 |
-| yarrow | 0.0 | 0.0 | 0.0 | 0.0 |
 | reeds | 0.0 | 0.0 | 0.0 | 0.0 |
+| yarrow | 0.0 | 0.0 | 0.0 | 0.0 |
 | feathers | 0.0 | 0.0 | 0.0 | 0.0 |
 | cord | 0.0 | 0.0 | 0.0 | 0.0 |
 
