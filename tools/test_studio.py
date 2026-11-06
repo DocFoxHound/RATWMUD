@@ -1070,6 +1070,8 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(self.call('POST', '/api/dm/economy/rules', {'world': self.dev, 'set': {'treasuryCap': 3000}}, token='dm-token')[0],
                          409, 'the steering holds the cap while it is on')
         self.assertEqual(self.call('POST', '/api/dm/economy/rules', {'world': self.dev, 'set': {'steerLean': 10}}, token='dm-token')[0], 400)
+        self.assertEqual(self.call('POST', '/api/dm/economy/rules', {'world': self.dev, 'set': {'skimMost': 80}}, token='dm-token')[0], 400,
+                         'the steering\'s own rules are Atlas\'s, read only on the DM tab')
         self.assertEqual(self.call('POST', '/api/dm/economy/steer', {'world': self.dev, 'lean': 3}, token='dm-token')[0], 400)
         status, data = self.call('POST', '/api/dm/economy/steer', {'world': self.dev, 'steer': False, 'lean': 0, 'neverBroke': True},
                                  token='dm-token')

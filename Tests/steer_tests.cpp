@@ -225,6 +225,13 @@ void theSkim()
     expect(x.cash("aa") == y.cash("aa") && x.cash("bb") == y.cash("bb") && x.cash("cc") == y.cash("cc") &&
                x.cash("aa") + x.cash("bb") + x.cash("cc") == 1800 - 301,
            "ties broken the same way every time");
+    // Never Hungry's 17:00 skim leaves the treasury out (tonight's wage support not yet known); 18:00's may take its spare.
+    auto t = city({at("aa", 600)}, 9000, {{"treasuryCap", 2000}});
+    const auto treasury = t.cash("treasury");
+    t.skim(200, "test", false);
+    expect(t.cash("treasury") == treasury && !t.loopToday().skimPayers.count("treasury"), "before 18:00, never the treasury");
+    t.skim(200, "test");
+    expect(t.cash("treasury") < treasury && t.cash("treasury") >= 2000, "at 18:00, the treasury's spare over its cap: " + n(t.cash("treasury")));
 }
 
 const std::vector<Kin> FamilyKin{{"aa_mother", "bb_kid", "parent"}, {"aa_mother", "cc_kid", "parent"}};

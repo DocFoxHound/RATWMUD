@@ -847,3 +847,23 @@ load of `export70-steer-centre-floors` read its rule lines); no run has been sta
    one list, not interleaved: the two have no common clock.
 7. **Never Broke's cost** (500-900p a day estimated) is unmeasured; at 18:00 the tills are at their caps, so the skim
    then falls on the keepers' purses, the estates and the treasury's spare. The floors smoke will show who pays.
+
+### The review (2026-11-06)
+
+Four fixes before the merge; nothing else in the money's path changed.
+
+1. **Never Hungry's skim leaves the treasury out.** It runs at 17:00, before the night's wages, so tonight's wage support
+   is not known yet, and what the treasury holds over its cap is exactly what pays it. Taking that at 17:00 could leave
+   a short till's posts unpaid. The 18:00 skims (Never Broke, the share-out) still take the treasury's spare, over its cap
+   and the wage support it has just paid.
+2. **A day's necessities a head is worked out each time it is asked**, not kept for the day: a DM's change to the alms in
+   the afternoon, or a save read back mid-day, now gives the same line as an unbroken run.
+3. **The DM's rules route refuses the steering's own rules** (`steerJudgeDays` to `skimKeepDays`), 400: they are an
+   author's, in Atlas, and the DM tab only shows them. Atlas's route still sets them.
+4. **The slider asks and saves once.** Letting go of it fired pointer-up and then blur (the confirmation takes the focus),
+   and each asked and sent again; an arrow key asked at every press. Now it asks once per position, on letting go, on
+   Enter or on leaving it. It can also be set while the steering is off (the confirmation says it takes effect when the
+   steering is turned on), as the confirmation already expected.
+
+Tests: ctest 80 of 80 (`steer_tests` adds the treasury check); `test_studio.py` 51, all but the old `test_the_farms`;
+`test_econ_report.py` 14; the Editor's steering and economy tests and `tsc` clean.

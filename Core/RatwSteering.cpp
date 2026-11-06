@@ -190,9 +190,8 @@ double Society::top10Share() const
 std::int64_t Society::necessitiesAHead() const
 {
     // The alms line (a day's food money), the reserve a household keeps for food, and a day's share of its needs (each
-    // need's cheapest good at the stable price, over its days), in whole pennies, rounded up; once a day.
-    if (necessitiesDay_ == loopToday_.day && necessitiesDay_ >= 0)
-        return necessities_;
+    // need's cheapest good at the stable price, over its days), in whole pennies, rounded up. (Worked out each time: a
+    // DM's change to the alms mid-day, or a save read back, gives the same line as an unbroken run.)
     const auto& h = items::households();
     double needs = 0;
     for (const auto& need : h.needs)
@@ -204,12 +203,10 @@ std::int64_t Society::necessitiesAHead() const
         if (least > 0 && need.everyDays > 0)
             needs += double(least) / need.everyDays;
     }
-    necessities_ = almsNow() + h.reserve + std::int64_t(std::ceil(needs - 1e-9));
-    necessitiesDay_ = loopToday_.day;
-    return necessities_;
+    return almsNow() + h.reserve + std::int64_t(std::ceil(needs - 1e-9));
 }
 
-std::vector<Society::Spare> Society::spares(bool deep)
+std::vector<Society::Spare> Society::spares(bool deep, bool treasury)
 {
     // Every holder's spare over its own needs, now (doc 74, 6.1): never a player's purse, the beyond's accounts, the
     // Wharf's credit or fund:relief itself. `deep`: the second pass, a household keeping one day's necessities a head.
@@ -274,7 +271,9 @@ std::vector<Society::Spare> Society::spares(bool deep)
     else if (account(WharfFund))
         if (const auto spare = estateSpare(WharfFund, estateOwed); spare > 0)
             out.push_back({WharfFund, "estates", spare, {}});
-    if (account("treasury"))
+    // The treasury: its spare over its cap and tonight's wage support; only once that is known (18:00), so never in Never
+    // Hungry's 17:00 skim, before the night's wage support has had what is over the cap.
+    if (treasury && account("treasury"))
         if (const auto spare = cash("treasury") - std::max<std::int64_t>(rule("treasuryCap"), TreasuryFloat) - loopToday_.supportWanted;
             spare > 0)
             out.push_back({"treasury", "treasury", spare, {}});
@@ -321,7 +320,7 @@ std::vector<std::int64_t> waterFill(const std::vector<Society::Spare>& holders, 
 }
 } // namespace
 
-std::int64_t Society::skim(std::int64_t sum, const std::string& purpose)
+std::int64_t Society::skim(std::int64_t sum, const std::string& purpose, bool treasury)
 {
     if (sum <= 0)
         return 0;
@@ -329,7 +328,7 @@ std::int64_t Society::skim(std::int64_t sum, const std::string& purpose)
         return 0;
     // The first pass: at most skimMost percent of each holder's spare; the second, short of it, the whole of the spare
     // (a household's line down to a day's necessities a head).
-    auto holders = spares(false);
+    auto holders = spares(false, treasury);
     const int most = std::clamp(rule("skimMost"), 1, 100);
     std::vector<std::int64_t> caps;
     std::int64_t room = 0;
@@ -337,7 +336,7 @@ std::int64_t Society::skim(std::int64_t sum, const std::string& purpose)
         room += caps.emplace_back(h.spare * most / 100);
     if (room < sum)
     {
-        holders = spares(true);
+        holders = spares(true, treasury);
         caps.clear();
         for (const auto& h : holders)
             caps.push_back(h.spare);
@@ -479,7 +478,7 @@ void Society::neverHungry(std::int64_t day)
             shortHomes.push_back(home);
     }
     if (bill > 0)
-        skim(bill - cash(ReliefFund), "never hungry");
+        skim(bill - cash(ReliefFund), "never hungry", false);
     std::set<std::string> given;
     for (const auto& l : lots)
     {

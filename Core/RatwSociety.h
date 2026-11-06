@@ -1202,9 +1202,10 @@ class Society
     // A day's necessities a head (doc 74, 6.1): the alms line, the household reserve and a day's share of the needs.
     std::int64_t necessitiesAHead() const;
     // The skim (doc 74, 6): `sum` pennies taken from the richest holders at this moment (by their spare over their own
-    // needs), into fund:relief; what it took (short of `sum` only when no holder had enough spare).
+    // needs), into fund:relief; what it took (short of `sum` only when no holder had enough spare). `treasury` false: the
+    // treasury not among them (before tonight's wage support is known).
     static constexpr const char* ReliefFund = "fund:relief";
-    std::int64_t skim(std::int64_t sum, const std::string& purpose);
+    std::int64_t skim(std::int64_t sum, const std::string& purpose, bool treasury = true);
     // Who could pay, and how much: each holder's spare now (account id, its group, pennies), richest first.
     struct Spare
     {
@@ -1212,7 +1213,7 @@ class Society
         std::int64_t spare = 0;
         std::vector<std::string> members;           // (A household's: its members, who pay.)
     };
-    std::vector<Spare> spares(bool deep);
+    std::vector<Spare> spares(bool deep, bool treasury = true);   // (`treasury` false: never the treasury.)
     // The controller (doc 74, 8): at 18:00, last of the money's steps (public for the tests, which judge a still world).
     void steerEconomy(std::int64_t day);
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a
@@ -1394,8 +1395,6 @@ class Society
     void steerSet(double push, std::int64_t day, const std::string& why, bool judging);
     void steerFollow(std::int64_t day);             // The DM's on/off and slider, followed at once.
     int ownRule(const std::string& name) const;     // A rule as the world has it, whatever the steering does.
-    mutable std::int64_t necessitiesDay_ = -1;
-    mutable std::int64_t necessities_ = 0;
     std::int64_t worksOrders(std::int64_t budget);      // The public works' orders from the city's trades, from `budget`.
     void turnShelves();
     // The self-correcting rules (doc 68, Progress, "Self-correcting rules"): at the day's turn the shops' wares' sales a

@@ -3,21 +3,28 @@
 // steering's on/off, and the two floors, Never Hungry and Never Broke; each change is confirmed, audited (economy.steer)
 // and sent to the running server. Everything else here is read only: each measure against its target at the slider, the
 // push and its band, each lever with its bounds there and its value now, the skim's last 28 days, and the log.
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {confirmText, leanWords, logLines, measureLines, preview, steerChange, type SteerBody, type SteeringView} from '../lib/steering';
 
 const fmt = (v: number | null | undefined, places = 1) => v === null || v === undefined ? '-' : (Math.round(v * 10 ** places) / 10 ** places).toString();
 
 export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; locked: boolean; setSteer: (body: SteerBody) => void}) {
     const [lean, setLean] = useState(view.settings.lean);
-    useEffect(() => setLean(view.settings.lean), [view.settings.lean]);
+    // (The slider's position last asked about: letting go fires pointer-up and then, as the confirmation takes the focus,
+    // blur, and each would ask and send again.)
+    const asked = useRef<number | null>(null);
+    useEffect(() => { setLean(view.settings.lean); asked.current = null; }, [view.settings.lean]);
     const send = (body: SteerBody) => {
         const change = steerChange(view, body);
         if (!change) { setLean(view.settings.lean); return; }
         if (!window.confirm(confirmText(view, change))) { setLean(view.settings.lean); return; }
         setSteer(change);
     };
-    const release = () => { if (lean !== view.settings.lean) send({lean}); };
+    const release = () => {
+        if (lean === view.settings.lean || asked.current === lean) return;
+        asked.current = lean;
+        send({lean});
+    };
     const p = preview(view, lean);
     const off = !view.settings.steer;
     const push = view.now?.on ? view.now.push : 0;
@@ -29,13 +36,14 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
             within bounds, toward that place, and shows below what it is doing and why. The levers can't be set by hand while
             it is on. Players are never skimmed and never given anything.</p>
         <label className="steer-slider"><b>Where the money rests</b>
-            <input type="range" min={-100} max={100} step={5} value={lean} disabled={locked || off} list="steer-marks"
-                aria-label="Where the money rests" onChange={e => setLean(Number(e.target.value))}
-                onPointerUp={release} onKeyUp={release} onBlur={release} />
+            <input type="range" min={-100} max={100} step={5} value={lean} disabled={locked} list="steer-marks"
+                aria-label="Where the money rests" onChange={e => { asked.current = null; setLean(Number(e.target.value)); }}
+                onPointerUp={release} onKeyUp={e => { if (e.key === 'Enter') release(); }} onBlur={release} />
             <datalist id="steer-marks">{[-100, -50, 0, 50, 100].map(m => <option key={m} value={m} />)}</datalist>
             <span className="steer-ends"><small>{view.words.left}</small><small>{view.words.centre}</small><small>{view.words.right}</small></span>
             <span>{lean} — {leanWords(view, lean)}{lean !== view.settings.lean && ' (not saved: let go to save it)'}</span></label>
-        {off && <p className="hint">The steering is off: the economy runs on its own rules.</p>}
+        {off && <p className="hint">The steering is off: the economy runs on its own rules. Where the money rests may still be
+            set; it takes effect when the steering is turned on.</p>}
         <label className="toggle-row"><input type="checkbox" checked={view.settings.steer} disabled={locked}
             onChange={e => send({steer: e.target.checked})} /> The steering: {view.settings.steer ? 'on' : 'off'}</label>
         <label className="toggle-row"><input type="checkbox" checked={view.settings.neverHungry} disabled={locked}

@@ -1315,6 +1315,11 @@ def make_handler(studio: Studio):
             self.writer(who)
             data = self.as_(studio.dm_suite).body()
             key = self.live_key(str(data.pop('world', '') or ''))
+            if path == '/api/economy/rules' and isinstance(data.get('set'), dict):
+                # (Doc 74, 10.4: the steering's own rules are an author's, in Atlas; the DM tab shows them read only.)
+                own = sorted(set(data['set']) & set(map_editor.STEER_OWN_RULES))
+                if own:
+                    raise D.DMError(f'{", ".join(own)}: the steering\'s own rules are set in Atlas; the DM tab shows them read only.', 400)
             result, action, target = self.economy_change(key, path, data, who)
             if result.get('changed'):
                 result = self.audited(who, key, action, target, result['detail'], result)
