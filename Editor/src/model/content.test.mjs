@@ -115,6 +115,10 @@ test('an older project\'s Country keys read as the Wharf\'s (doc 73, 2.3)', () =
     const e = normalizeProject(old).economy;
     assert.deepEqual([e.wharf, e.wharfReserve, e.wageWharf, e.wharfOff, e.rules], [false, 50, 6, ['fish'], {estatePostsDays: 3, wharfFee: 20}]);
     assert.ok(!('country' in e) && !('countryOff' in e), 'only the new names kept');
+    // Doc 73, round 11: the toll's drift limit in whole points reads as ten times as many tenths.
+    const drift = JSON.parse(JSON.stringify(p));
+    drift.economy = {...drift.economy, rules: {tollDriftMost: 2}};
+    assert.deepEqual(normalizeProject(drift).economy.rules, {tollDriftTenths: 20});
     assert.throws(() => setEconomy(p, {rules: {wharfFee: 51}}), /Economy requires|rules/, 'the fee at most 50');
 });
 

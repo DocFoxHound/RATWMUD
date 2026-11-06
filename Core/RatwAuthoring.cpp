@@ -593,6 +593,11 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 return reject("Malformed rule record.");
             fields >> value;
             name = items::ruleName(name);           // (An old name, doc 73: as the new.)
+            if (name == "tollDriftMost" && fields)  // (Whole points before doc 73's round 11: tenths now.)
+            {
+                name = "tollDriftTenths";
+                value = value >= 0 && value <= 90 ? value * 10 : -1;
+            }
             const auto* info = items::ruleInfo(name);
             if (!fields || !end(fields) || !info || value < info->low || value > info->high)
                 return reject("Invalid rule record: " + name);

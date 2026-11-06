@@ -237,6 +237,33 @@ void fairFoodInAHousehold()
     const double fed = got["aa_mother"] + got["bb_kid"] + got["cc_kid"];
     expect(fed >= 1.2, "the family bought the fish it could pay for, not roasts it couldn't: " + days(fed) + " days");
     expect(s.conserved(), "conserved");
+    // A thin purse leans to the food it can fill its want with (doc 73, round 11): ten wolves living alone, each holding
+    // 6p, at a hall of meals (6p, 50 nourishment) and porridge (1p, 20). A day's want (~46) a meal fills, so some take
+    // one; two days' a meal can't (12p), so the rest lean to porridge (5p for two days). Each is fed a day at least.
+    std::vector<ResidentSpec> lone{person("fish", "merchant", "fishmonger at the Fish Hall", {"hall", 2.5, 2.5}, "home_fish")};
+    for (int i = 0; i < 10; ++i)
+        lone.push_back(person("lone_" + std::to_string(i), "civilian", "keeps the house", {"home_" + std::to_string(i), 2.5, 2.5},
+                              "home_" + std::to_string(i), 60, 6));
+    auto t = city(lone, {}, [](AuthoredRoster& r) { r.economy.storeRule = false; });
+    const auto hall2 = t.tillOf("fish");
+    for (const auto& [item, n] : std::map<std::string, int>(t.account(hall2)->stock))
+        if (Society::edible(item))
+            t.consume(hall2, item, n, "test: nothing else");
+    t.create(hall2, "meal", 200, "test: meals");
+    t.create(hall2, "porridge", 200, "test: porridge");
+    run(t, 1 + 7.9 / 24, 1 + 17.5 / 24);
+    const auto journal = t.takeJournal();
+    int meals = 0, porridge = 0;
+    for (const auto& e : journal)
+        if (e.kind == "market")
+            (e.item == "meal" ? meals : porridge) += e.quantity;
+    const auto fedLone = received(journal);
+    for (int i = 0; i < 10; ++i)
+        expect(fedLone.count("lone_" + std::to_string(i)) && fedLone.at("lone_" + std::to_string(i)) >= 1,
+               "lone_" + std::to_string(i) + " fed a day at least");
+    expect(porridge > 3 * meals, "the thin purses leaned to porridge: " + std::to_string(porridge) + " porridge, " +
+                                     std::to_string(meals) + " meals");
+    expect(t.conserved(), "conserved");
 }
 
 void almsAsASetting()

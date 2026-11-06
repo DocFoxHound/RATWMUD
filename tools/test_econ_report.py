@@ -136,7 +136,7 @@ class ReportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
             econ = write_run(root, more, yields={'flour': [10, 10, 10, 10], 'oats': [3, 3, 3, 3]},
-                             areas={'grain': ['flour', 'oats', 'wheat']}, econ_more={'farms_out_goods': {'grapes': 3}})
+                             areas={'grain': ['flour', 'oats', 'wheat']}, econ_more={'farms_out_goods': {'grapes': 3, 'oats': 2, 'iron_bar': 9}})
             out = root / 'report.md'
             self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
             text = out.read_text()
@@ -145,7 +145,11 @@ class ReportTests(unittest.TestCase):
             self.assertEqual(patch['farms']['grain_farm_1']['oats'], [6.15, 3, 3, 3])
             self.assertIn('no farm grows', text)
             self.assertIn('wheat (grain) 14', text)
-            self.assertIn('| grapes | spring | 6 |', text, "the economy lines' draws cut short, at the full level too")
+            # (Only the goods some farm grows, doc 73's round 11: no farm here grows grapes or iron bars, whose draws on
+            # the farms are the makers' shelves, not a yield short.)
+            self.assertIn('| oats | spring | 4 |', text, "the economy lines' draws cut short, at the full level too")
+            self.assertNotIn('| grapes | spring |', text)
+            self.assertNotIn('| iron_bar | spring |', text)
 
     def test_the_farms_of_a_good_together(self):
         # Two farms grow flour alike, but the draws took it all from the first (its stock the larger): each is sized by

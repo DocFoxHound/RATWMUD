@@ -112,7 +112,7 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'almsNoEarner': 300, 't
                'stockPrices': 1, 'stockPriceBand': 90, 'stockPriceStep': 1000, 'shelfFollow': 1, 'shelfDays': 365,
                'shelfCover': 1000, 'shelfGrow': 500, 'wageDrift': 1, 'wageDriftDays': 365, 'wageDriftSpare': 1000,
                'wageDriftMost': 100, 'wageDriftHandMost': 100, 'wageDriftFloor': 1000, 'treasuryDrift': 1, 'treasuryTarget': 100000000,
-               'treasuryBand': 100, 'treasuryDays': 3650, 'treasuryJudgeDays': 365, 'tollStep': 100, 'tollDriftMost': 90,
+               'treasuryBand': 100, 'treasuryDays': 3650, 'treasuryJudgeDays': 365, 'tollStep': 100, 'tollDriftTenths': 900,
                'almsDriftMost': 1000}
 RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed', 'surplus', 'stockPrices', 'shelfFollow',
                  'wageDrift', 'treasuryDrift', 'wharfValve')   # 0 or 1: off or on.
@@ -120,13 +120,16 @@ RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed'
 # wins where a project has both); written only under the new names.
 ECONOMY_ALIASES = {'country': 'wharf', 'countryReserve': 'wharfReserve', 'wageCountry': 'wageWharf', 'countryOff': 'wharfOff'}
 RULE_ALIASES = {'countryPostsDays': 'estatePostsDays'}
+# A rule whose unit changed with its name (doc 73, round 11: the toll's drift limit in tenths of a point, not points):
+# the old name's value times the scale, under the new.
+RULE_SCALED = {'tollDriftMost': ('tollDriftTenths', 10)}
 
 
 def legacy_economy(economy):
     """The economy entity with an older project's Country keys and rule under the Wharf's names (a copy; as given when it
     has none or isn't an object)."""
     if not isinstance(economy, dict) or not (set(economy) & set(ECONOMY_ALIASES) or
-                                             (isinstance(economy.get('rules'), dict) and set(economy['rules']) & set(RULE_ALIASES))):
+                                             (isinstance(economy.get('rules'), dict) and set(economy['rules']) & (set(RULE_ALIASES) | set(RULE_SCALED)))):
         return economy
     e = dict(economy)
     for old, new in ECONOMY_ALIASES.items():
@@ -139,6 +142,10 @@ def legacy_economy(economy):
             if old in rules:
                 value = rules.pop(old)
                 rules.setdefault(new, value)
+        for old, (new, scale) in RULE_SCALED.items():
+            if old in rules:
+                value = rules.pop(old)
+                rules.setdefault(new, value * scale if isinstance(value, int) and not isinstance(value, bool) else value)
         e['rules'] = rules
     return e
 SERVICE_LIMITS = {'price': (1, 100000), 'every': (1, 3650)}

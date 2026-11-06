@@ -203,7 +203,7 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'treasuryDays', label: 'Level over', max: 3650, unit: 'days, about (the slow mean)'},
     {key: 'treasuryJudgeDays', label: 'Judged every', max: 365, unit: 'days (the toll and the alms move a step at most each time)'},
     {key: 'tollStep', label: 'Toll step', max: 100, unit: 'tenths of a point each time it is judged'},
-    {key: 'tollDriftMost', label: 'Toll drift, at most', max: 90, unit: 'points from the world\'s gate toll'},
+    {key: 'tollDriftTenths', label: 'Toll drift, at most', max: 900, unit: 'tenths of a point from the world\'s gate toll'},
     {key: 'almsDriftMost', label: 'Alms drift, at most', max: 1000, unit: 'p a head over the alms, at most (a penny each time; never under them)'},
 ];
 /** A rule as it stands: the world's own, else city_loop.json's. */

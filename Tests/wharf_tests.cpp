@@ -839,6 +839,15 @@ void theRecords()
                    w.society().rule("estatePostsDays") == 3,
                "as estatePostsDays");
     }
+    // The toll's drift limit in whole points (tollDriftMost, before doc 73's round 11) reads as ten times as many tenths.
+    {
+        World w;
+        expect(w.loadWorldFiles(files("rule \"tollDriftMost\" 2\n"), "test").ok, "the old drift limit loads");
+        const auto& rules = w.society().authored().economy.rules;
+        expect(rules.count("tollDriftTenths") && rules.at("tollDriftTenths") == 20 && !rules.count("tollDriftMost"),
+               "as tollDriftTenths 20");
+        expect(!World().loadWorldFiles(files("rule \"tollDriftMost\" 91\n"), "test").ok, "past its old range: refused");
+    }
 }
 } // namespace
 

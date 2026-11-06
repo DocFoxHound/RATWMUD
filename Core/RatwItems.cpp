@@ -652,7 +652,10 @@ Catalog build()
             const char* key = info.name;
             if (!rules.has(key) && std::string(key) == "estatePostsDays" && rules.has("countryPostsDays"))
                 key = "countryPostsDays";
-            c.cityLoop.rules[info.name] = std::clamp(int(std::lround(rules.number(key, info.fallback))), info.low, info.high);
+            double value = rules.number(key, info.fallback);
+            if (!rules.has(key) && std::string(key) == "tollDriftTenths" && rules.has("tollDriftMost"))
+                value = rules.number("tollDriftMost", 1) * 10;   // (Whole points before doc 73's round 11.)
+            c.cityLoop.rules[info.name] = std::clamp(int(std::lround(value)), info.low, info.high);
         }
         for (const auto& s : country.object("services").array("list"))
         {

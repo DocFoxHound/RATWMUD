@@ -490,6 +490,11 @@ class ContentTests(unittest.TestCase):
                          (False, 50, 6, ['fish'], {'estatePostsDays': 3, 'wharfFee': 20}))
         self.assertFalse(set(new) & set(editor.ECONOMY_ALIASES))
         self.assertEqual(editor.legacy_economy({'wharfOff': ['salt'], 'countryOff': ['fish']})['wharfOff'], ['salt'])
+        # Doc 73, round 11: the toll's drift limit in whole points reads as ten times as many tenths (the new name wins).
+        self.assertEqual(editor.legacy_economy({'rules': {'tollDriftMost': 2}})['rules'], {'tollDriftTenths': 20})
+        self.assertEqual(editor.legacy_economy({'rules': {'tollDriftMost': 2, 'tollDriftTenths': 5}})['rules'], {'tollDriftTenths': 5})
+        self.assertEqual(editor.check_economy({**self.greyfen()['economy'], 'rules': {'tollDriftMost': 90}}), [])
+        self.assertTrue(editor.check_economy({**self.greyfen()['economy'], 'rules': {'tollDriftMost': 91}}), 'past 900 tenths')
         lines = editor.loop_lines(old)
         self.assertIn('loop needs on country off reserve 50 toll 30 carriage 6 wages 14 8 8 6', lines)
         self.assertIn('countryoff "fish"', lines)

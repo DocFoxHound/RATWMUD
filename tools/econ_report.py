@@ -365,7 +365,13 @@ def report(econ, run, top, patch_path):
         for r in econ:
             for g, k in (r.get('farms_out_goods') or {}).items():
                 out_goods[(g, r.get('season'))] += k
-        say('The farms\' stock short of a shop\'s want (draws), by good and season:')
+        # (Doc 73, round 11: only goods some farm grows. A good of an area on that no farm grows, the iron bars the city's
+        # ironworks make of the mine's ore, counted every smithy's draw on the farms as short: 101,057 in stable10b's
+        # winter, while the bars' own shortage is the ironworks' shelf, in the shops' tables. Those are listed apart, below.)
+        grown = {g for f in ((run.meta or {}).get('farms') or {}).values() for g in (f.get('yield') or {})} if run else set()
+        if grown:
+            out_goods = collections.Counter({k: v for k, v in out_goods.items() if k[0] in grown})
+        say('The farms\' stock short of a shop\'s want (draws), by good and season' + (' (the goods some farm grows)' if grown else '') + ':')
         say('')
         out += table(['good', 'season', 'draws short'], [[g, s, k] for (g, s), k in out_goods.most_common(top)] or [['-'] * 3])
     say('')

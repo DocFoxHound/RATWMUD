@@ -1149,7 +1149,8 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(status, 200, data)
         drift = data['drift']
         self.assertTrue(drift['saved'])
-        # (A saved -1.5 reads as -1: tollDriftMost is 1 since doc 73's round 10, and the studio clamps as Core does.)
+        # (A saved -1.5 reads as -1: the drift's limit is 1 point (tollDriftTenths 10) since doc 73's round 10, and the studio
+        # clamps as Core does.)
         self.assertEqual((drift['toll'], drift['tollBase'], drift['alms'], drift['almsBase'], drift['level'], drift['target']),
                          (29.0, 30, 11, 10, 5612, 5500))
         self.assertEqual((drift['prices']['moved'], drift['prices']['low'], drift['prices']['high']), (2, 0.9, 1.2))

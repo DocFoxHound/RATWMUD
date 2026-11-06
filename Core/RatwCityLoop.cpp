@@ -922,6 +922,13 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
         for (int lot = 0; lot < 4 && got < want; ++lot)
         {
             sellersOf(shops, item, tills, weights);
+            // Only a seller whose price for one piece the household can pay (doc 73, round 11): a seller picked by its
+            // stock alone could be one whose price its stock had raised past the household's purse while another sold
+            // the piece for less, and the household then bought nothing at all that hour (stable10b's short households
+            // at the shops' last hour: 53% held the price of the cheapest food then on offer).
+            for (std::size_t i = 0; i < tills.size(); ++i)
+                if (weights[i] > 0 && payerFor(members, shopCost(tills[i]->till, item, 1), keep).empty())
+                    weights[i] = 0;
             const int pick = weighted(weights, roll(key + "|seller|" + std::to_string(lot)));
             if (pick < 0)
                 break;
@@ -1090,9 +1097,19 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                 }
                 // The better nourishment for the price the likelier: the season's price, times its shops' stock factors
                 // (their mean, by what each holds; doc 68, Progress, "Self-correcting rules"), so cheaper food sells more.
+                // A household that can't fill what it lacks with a food leans away from it, by the square of the share it
+                // could pay (doc 73, round 11: a household on the alms, 10p a head, bought two days of food at the median
+                // ~8.5p a day as readily as at porridge's 2.3p, and was short the next day; the better-off never notice).
                 for (std::size_t i = 0; i < foods.size(); ++i)
-                    value.push_back(double(nourishment(foods[i])) /
-                                    (double(std::max<std::int64_t>(1, catalogPrice(foods[i]))) * priceFactor(foods[i]) * (priced[i] / held[i])));
+                {
+                    const double each = double(std::max<std::int64_t>(1, catalogPrice(foods[i]))) * priceFactor(foods[i]) * (priced[i] / held[i]);
+                    double v = double(nourishment(foods[i])) / each;
+                    if (fair)
+                        if (const double fill = std::ceil((target - have) / std::max(1, nourishment(foods[i])) - 1e-9) * each;
+                            fill > double(most))
+                            v *= std::pow(double(most) / fill, 2);
+                    value.push_back(v);
+                }
                 const auto key = m + "|" + std::to_string(day) + "|" + std::to_string(hod) + "|" + std::to_string(k) + tag;
                 const int pick = weighted(value, roll(key));
                 if (pick < 0)
@@ -2647,7 +2664,7 @@ double Society::gateTollNow() const
     const int base = std::clamp(authored_.economy.gateToll, 0, 90);
     if (rule("treasuryDrift") <= 0 || state_.loop.toll == 0)
         return base;
-    const double most = rule("tollDriftMost");      // (The DM may have narrowed the bounds since it moved.)
+    const double most = rule("tollDriftTenths") / 10.;   // (The DM may have narrowed the bounds since it moved.)
     return std::clamp(base + std::clamp(state_.loop.toll, -most, most), 0., 90.);
 }
 
@@ -2879,8 +2896,8 @@ void Society::followTreasury(std::int64_t day)
     // every treasuryJudgeDays days against treasuryTarget. Over the target and its band and not falling: the toll eases by
     // tollStep tenths of a point and the alms rise a penny a head; under it and not rising: the toll firms and the alms
     // tighten; inside the band, or already moving back toward it, nothing (so a change has time to tell before the next).
-    // The toll within tollDriftMost points of the world's; the alms up to almsDriftMost pennies over almsADay, never under
-    // it (the world's alms are the line under hunger: tightened, they come back down to it and no further).
+    // The toll within tollDriftTenths tenths of a point of the world's; the alms up to almsDriftMost pennies over almsADay,
+    // never under it (the world's alms are the line under hunger: tightened, they come back down to it and no further).
     //
     // How it shares the work with the surplus (spendSurplus): the surplus is the ceiling, each night, at once (what is
     // over the cap and its reserve goes out); this rule is the slow trim of the flows under it, so the treasury sits about
@@ -2914,7 +2931,7 @@ void Society::followTreasury(std::int64_t day)
         toward = 1;
     if (toward != 0)
     {
-        const double most = rule("tollDriftMost");
+        const double most = rule("tollDriftTenths") / 10.;
         loop.toll = std::clamp(loop.toll + toward * rule("tollStep") / 10., -most, most);
         const int almsMost = rule("almsDriftMost");
         loop.alms = std::clamp(loop.alms - toward, 0, almsMost);
