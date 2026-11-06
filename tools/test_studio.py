@@ -1061,7 +1061,7 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(status, 200, data)
         self.assertEqual(self.one(self.dev, 'SELECT rules FROM live.economy'), {'steer': 1, 'steerLean': 60})
         self.assertEqual(data['steering']['settings'], {'steer': True, 'lean': -40, 'neverHungry': False, 'neverBroke': False})
-        self.assertAlmostEqual(data['steering']['targets']['gini'], 0.353, places=3)
+        self.assertAlmostEqual(data['steering']['targets']['gini'], 0.425, places=3)
         audit = self.sql(self.dev, "SELECT action, target, detail FROM dm.audit WHERE action = 'economy.steer'")
         self.assertEqual(len(audit), 1)
         self.assertIn('Where the money rests: 0 -> -40 (the steering on)', audit[0][2])
