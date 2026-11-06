@@ -1954,3 +1954,129 @@ its float and the valve netting; but the wage support paid still climbs (87 -> 1
 year-end purse falls (1,452 -> 1,305p; over its keep 403 -> 371p) on Grayrock's 318p a day of grants, Timberland's purse
 falls (576 -> 415p, though its margin over its keep is level at ~175p), and hides rot at ~16 a day. These are s12m's
 open points 1-4.
+
+### Round 8 of stabilizing (branch `r2-stable9e`, 2026-11-05): the households' paw bindings, three porters to the tannery; the toll's drift measured
+
+The user's go-ahead as for rounds 4-7 (posts moved in DEV, alms for those with no earner, a few rounds, real fixes). No
+treasury lever (toll, wage support, float, the treasury's target), no move of the Wharf's credit or its injection, cheese
+left as it is. **DEV written** (three posts, below; two more tried and put back; backed up first each time); no NPC made.
+The counterfactual runs below (`cfA`, `cfB`) change a lever in a scratch copy of the data only, to measure it; nothing of
+them is in the branch.
+
+**The trace** (stable9d's logs, and three runs made to test the causes; a day, year 3 unless marked):
+
+- **The toll's drift moves the estates' rents to the treasury.** The gate toll is carved out of a draw's cost (the till
+  pays the same; the farm or the Wharf gets the cost less the toll), so each step treasuryDrift firms it (31.5, 32.5,
+  33.5 at the year ends, the treasury at ~2,000p under its 5,500p target) comes off the producers. `cfA` (export67,
+  `s13cfA-report.md`; treasuryDrift 0, so the toll stays at the world's 30): the toll 1,442p against stable9d's 1,573p, the farms' takings
+  3,268p against 3,136p (the same 131p the other way), the estates' land rents 924p against 850p and the works' rents
+  336p against 313p. The Crown over its keep: 370, 451, 452p over the three years (level from year 2; stable9d's 403 ->
+  371p); Timberland 86, 201, 196p (stable9d 180 -> 173p). But then the treasury sits at its cap and can't pay: the wage
+  support paid 68, 49, 82p (wanted 274, 190, 171p; unpaid 90p in year 3), the no-earner's alms 12p and the low wage's
+  none (stable9d 90p and 79p), households short 0.50 against 0.11. So the drift buys the wage support and the extra alms
+  with the estates' rents, and the two failing tests (the support climbing, the estates' purses falling) are one cause.
+- **Where the drift stops.** `base5y` (export67, `s13base5y-report.md`; the ridgemere2 code and data, five years; its first three are stable9d's
+  to the byte): the toll reaches its limit (35, tollDriftMost) in year 5. Years 3, 4, 5: the support wanted 201, 215,
+  241p and paid 154, 169, 200p; the Crown over its keep 371, 329, 328p (level once the toll stops); Timberland 173, 154,
+  131p and Fell's rents 134, 119, 107p (still falling: their works' and orchards' sales, the farms' takings 3,136, 3,080,
+  3,068p); the low wage's alms 79, 136, 238p; the treasury 2,191, 2,688, 2,507p at the year ends; households short 0.11,
+  0.09, 0.00. So left alone the drift does not settle the estates in five years either.
+- **A target where the treasury settles** (`cfB`, export67, `s13cfB-report.md`; treasuryTarget 2,200p): the toll stops at 32.5 from year 2
+  (stable9d's 33.5, climbing). Year 3: the toll 1,548p, the Crown over its keep 387p (403p in year 2: -4%, stable9d -8%),
+  Timberland 176p (180p), the wage support paid 148p of 194p wanted (154 of 201p), households short 0.22. It is stable9d's
+  to the byte until day 882, when the drift would have firmed the toll again. That is the lever for the user (below).
+- **Hides and the tannery.** The Wharf Tannery used 44% of its two posts' hours: it bought 2.8 hides a day of the
+  butchers' ~20 and sold 5 leather a day, most to the farms' basket. No household buys anything of leather: the paw
+  wear in items.json (`leather_bindings`, 10p, 1 leather makes 2 in 6.9 hours) is made only for the estates and the
+  Wharf's basket. Leather bindings are labour-heavy (3.45 hours each), so the tannery can pay hands from them.
+
+**The fixes:**
+
+- **A household need: leather paw bindings** (crafts.json `households`): each grown wolf every 40 days, as the scarves
+  are every 25. Town households buy them from the city's tannery as any need no shop of theirs holds. The 60-day smoke
+  (export67, the need alone): the tannery's two posts bound (100% of their hours), its keeper 31.9p a day over its
+  wages, and 6.45 bindings a day wanted that no shop held.
+- **Three of the sea trade's porters moved in DEV to The Wharf Tannery** (round 4's script, three new moves, in the
+  scratchpad; each keeps home, evening and the rest, the work spot to a free floor tile beside the tannery's hand, the
+  label, greeting and description to match): rm_moll_dripdale, rm_lotte_bilgeton, rm_liv_cinderby ("carrying from Sump
+  Stairs" -> "helping at The Wharf Tannery"). Grayrock's posts 356 -> 332p a night. **DEV**: backed up first to
+  `artifacts/backups/ratw_dev_20261105-181905.pgdump` (and its Atlas json, revision 91); saved as **revision 92**, the
+  same map (its identity kept); `world_build.py dev`: **build 68**, exported to `artifacts/economy/r2/export68`. Against
+  export67 only these three residents differ.
+- **The logging camps' oak bark x1.5** (country_farms.json, both camps, every season: 7.0 -> 10.5 a day): the tannery
+  takes two to a leather batch, and the camps sold 5.5 of their 7.0 with ~1,000 in stock. In year 3: 10.6 grown, 10.0
+  sold.
+- **Tests**: `trades_tests` (the need is there, the tannery sells bindings, a household with money buys one or two in
+  80 days, money conserved); `farms_behaviors`, whose land-rent check expected the till at exactly its float after the
+  rent, now allows a penny or two over (a penny's sale now comes in the half hour after the rent, not before). ctest
+  **79 of 79**; `test_realm2`, `test_econ_report`, `test_farms_summary`, `test_country_industry` pass.
+
+**What was tried and taken back:** `s13b` (export69: the bindings every 30 days, the bark x1.9, and two more hands moved
+to the tannery from two of the idlest tills, rmx_tilde_slagwell from the Fell Preserving House, 13% of its hours used,
+and rmx_tobias_rainley from The Penny Loaf, 20%; DEV revision 94, build 69). The tannery took 181p a day and paid its
+seven posts, but year 3 was worse for the estates than s13a's: the Crown's rents 696p against 733p and over its keep
+335p against 390p, Timberland 203p against 213p, Greatly 35p, Fell 121p, the farms' takings 3,070p against 3,097p, the
+toll at 34.5. The larger need took more of the households' money off the farms' food and drink. The two moves were put
+back in DEV as they were (from revision 93's backup; backed up first to `artifacts/backups/ratw_dev_20261105-194850.pgdump`,
+revision 95; saved as **revision 96**, build 70, exported to `artifacts/economy/r2/export70`, identical to export68).
+
+**The 3-year run, `s13a`** (the branch's data, export68 = export70; wharf7b's flags: `--farms 0`, an area every 28 days;
+1,095 days, exit 0; `s13a-report.md`, its patch, `s13a.out`; the 60-day smoke with the branch's own build
+(`build-s9e`) on export70 matches its first 60 days to the byte: money conserved, the posts paid every night, nobody
+hungry). A day, years 1-3 where given:
+
+| | s13a | stable9d |
+|---|---|---|
+| Money conserved every day; at the end | yes; 64,592p | yes; 64,594p |
+| Estates' posts; nights short | 648p of 648p; none in three years | 672p of 672p; none |
+| The Crown: rents; grants (years 1-3) | 648, 752, **733p**; 203, 339, **350p** | 636, 750, 741p; 219, 364, 372p |
+| The Crown over its keep (years 1-3); its purse at the year ends | 391, 434, **390p**; 1,487, 1,568, 1,298p | 354, 403, 371p; 1,431, 1,452, 1,305p |
+| Timberland: rents; over its keep (years 1-3) | 167, 228, 213p; 81, 187, 169p | 166, 223, 215p; 82, 180, 173p |
+| Fell's and Greatly's rents (year 3) | 124p; 40p | 134p; 41p |
+| The farms' takings (year 3) | 3,097p | 3,136p |
+| Wage support wanted / paid / unpaid (years 1-3) | 279/91/188, 208/118/91, **191/149/42p** | 275/87/187, 209/121/88, 201/154/47p |
+| The toll (year 3); its rate at the year ends | 1,594p; 31.5, 33, 34 | 1,573p; 31.5, 32.5, 33.5 |
+| The treasury at the year ends | 1,899, 2,191, 2,191p | 2,014, 2,164, 2,191p |
+| Hunger: days, the most hours; households short (years 1-3) | 4, 5; 0.59, 0.65, **0.19** | 5, 6; 0.66, 0.73, 0.11 |
+| The households' purses (year ends) | 37,681, 36,727, 36,431p | 38,436, 37,637, 37,157p |
+| The tannery (year 3): takings; crew; hours used; keeper over its wages | 159p; 5; 86%; 27.6p | ~46p; 2; 44%; 2.7p |
+| Bindings sold a day (year 3); short | 10.4 (households 9.3, at ~12p); 0.3 | 1.1 (the estates); - |
+| Hides rotted (the run) | 12.8 a day | 15.8 |
+| Apples piling (year 3, at the orchards) | +18 a day (grown 273, sold 255) | +6 a day |
+| The valve (the run): in / out; credit at the end; takes the room could not fit | 86 / 86p; 8p; 262p | 78 / 78p; 1p; 277p |
+| The foundry (the run): wages paid; to its House | 25.8 of 25.8p; 28.1p | 25.7 of 25.8p; 26.4p |
+
+The three porters are paid in full by the tannery; Grayrock's grants are 22p a day lower. What the households spend on
+bindings (~112p a day) comes partly off their food and drink: apples sell ~15 a day fewer, Fell's rents are 10p lower,
+the farms' takings 39p lower.
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| Estates' posts paid every night | 648p of 648p, no night short in three years | yes |
+| No estate purse trending down | the Crown over its keep 434 -> 390p (-10%; stable9d -8%), its year-end purse 1,568 -> 1,298p; Timberland 187 -> 169p; Fell's rents 131 -> 124p | **no** |
+| The treasury over its float, wage support not climbing | least 1,345p in year 3; paid 91, 118, 149p, wanted 279, 208, 191p | treasury yes; paid **still rising** |
+| Hunger as low as wharf7b or lower | 0.19 against 0.31 (stable9d 0.11) | yes |
+| No runaway pile, no standing shortage a producer should cover | apples +18 a day of 273; iron ore 10 a day short in spring at the ironworks (its shelf's want), 0 from autumn | **nearly** |
+| The valve nets | 86p in, 86p out; the credit 8p | yes |
+
+**Verdict: not stable, and about where stable9d was.** The bindings give the rotting hides and three of the sea trade's
+posts work that sells, and lower the Crown's grants, but the estates' rents and the wage support move as before, because
+both follow the toll's drift. Every run of this round says the same: with the drift off (`cfA`) the estates are level
+and the support can't be paid; with it on (stable9d, s13a, five years of `base5y`) the estates slide and the support
+climbs until the toll reaches 35; with a target where the treasury settles (`cfB`) the toll stops at 32.5 and the
+estates fall half as fast. What is open:
+
+1. **The treasury's target (the user's lever).** The treasury can't near 5,500p: what it holds over its cap (2,000p) pays
+   the short tills and the alms each night, so the drift firms the toll every season until its limit. A target near
+   where it settles (`cfB`, 2,200p) stops the toll at 32.5 with the support still paid; or treasuryDrift off (`cfA`),
+   the estates level but ~90p a day of the support unpaid and more households short. Not changed here.
+2. **New needs move spending, they don't add it.** A need of ~112p a day employed three posts but took much of that off
+   the farms' food and drink (s13b's ~150p a day took more). More work that sells has to come with more money in the
+   households' hands (the support and the alms do that now, out of the toll), so the needs route is spent.
+3. **Fell's and Timberland's rents fall in years 4-5 even with the toll at its limit** (base5y): the orchards' and the
+   works' sales. Next to look at once the toll is settled.
+4. **Apples pile ~18 a day** (s13a): the orchards' yield could come down ~5% if this round is kept.
+5. **Hides** still rot at ~13 a day (12.8): the tannery takes 5 a day of the butchers' (2.8 before).

@@ -409,6 +409,33 @@ void theMedicines()
     expect(bought["willow_tea"] <= 3 && bought["dewormer"] <= 2, "now and then, not daily: willow tea " + std::to_string(bought["willow_tea"]));
 }
 
+// The households' leather paw bindings (Docs/Design/73-the-wharf.md, Progress, "Round 8 of stabilizing"): a need of each
+// grown wolf every 40 days, from the tannery (its hides the butchers' that rotted, its labour the sea trade's porters).
+void theLeatherBindings()
+{
+    bool found = false;
+    for (const auto& n : items::households().needs)
+        if (n.any == std::vector<std::string>{"leather_bindings"})
+            found = n.perPerson && n.everyDays == 40;
+    expect(found, "a household need: leather bindings, each grown wolf every 40 days");
+    auto t = city({person("tanner", "merchant", "tanner at The Wharf Tannery", {"tannery", 2.5, 2.5}, "home_a", 40, 200),
+                   person("buyer", "civilian", "keeps the house", {"home_b", 2.5, 2.5}, "home_b", 40, 3000)});
+    const auto wares = t.wares("tanner");
+    expect(std::find(wares.begin(), wares.end(), "leather_bindings") != wares.end(), "the tannery sells leather bindings");
+    const auto till = t.tillOf("tanner");
+    t.create(till, "leather_bindings", 99, "test: the shelves full");
+    t.create("buyer", "bread", 99, "test: fed");
+    const auto money = t.moneySupply();
+    int bought = 0;
+    run(t, 1, 1 + 81, [&](const std::vector<EconomyEntry>& j) {
+        for (const auto& e : j)
+            if (e.kind == "market" && e.to == till && e.from == "buyer" && e.item == "leather_bindings")
+                bought += e.quantity;
+    });
+    expect(t.conserved() && t.moneySupply() == money, "conserved");
+    expect(bought >= 1 && bought <= 3, "bindings now and then, not daily: " + std::to_string(bought));
+}
+
 // The day before a Restday: a household's market hour buys a day more.
 void buyingAhead()
 {
@@ -509,6 +536,7 @@ int main()
         thePhase4Suppliers();
         thePatrons();
         theMedicines();
+        theLeatherBindings();
         buyingAhead();
         theFloatRule();
         theSubsidyToNeed();
