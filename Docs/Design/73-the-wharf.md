@@ -2284,7 +2284,7 @@ short at the draws).
    hide product (a glue or parchment craft, new goods and buyers) or fewer carcasses' hides is the fix.
 4. **Iron bar** short at the farms' draws every season, more over five years (winter 123,112 draws short in s14f5y):
    the ironworks' limit not traced this round.
-6. **Apples**: the x0.96 holds the store for three years; in years 4-5 the sales ease (251, 255 a day) and it grows ~8
-   a day again. Another ~3% off, or an apple product.
 5. **world_check's exit 134** (stable9's, after day 1,095): not seen again. Every 3-year run since (stable9b-e, s13a-b,
    cfA, cfB, the five of this round) exited 0; round 5's ASan and UBSan run found nothing. Not traced further.
+6. **Apples**: the x0.96 holds the store for three years; in years 4-5 the sales ease (251, 255 a day) and it grows ~8
+   a day again. Another ~3% off, or an apple product.
