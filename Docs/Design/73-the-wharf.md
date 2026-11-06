@@ -2080,3 +2080,57 @@ estates fall half as fast. What is open:
    works' sales. Next to look at once the toll is settled.
 4. **Apples pile ~18 a day** (s13a): the orchards' yield could come down ~5% if this round is kept.
 5. **Hides** still rot at ~13 a day (12.8): the tannery takes 5 a day of the butchers' (2.8 before).
+
+### stable9e's 3-year run (ridgemere2 6d1e217, 2026-11-05)
+
+Round 8 on the merged build (`build-core`, up to date after the merge; round 8 changed only data, which the run reads
+from `Data/`), **export70** (= export68: round 8's DEV write, the three porters at the tannery; no new DEV write this
+time), wharf7b's flags (`--farms 0`, an area every 28 days); 1,095 days, 2,247 s, exit 0; `stable9e-report.md`, its
+patch, `stable9e.out`.
+
+**It is `s13a` to the byte.** The economy file, the loop state and the full log are identical to s13a's (`cmp`), the end
+digests match (people 641eeb682bb9f97b, society 688b9eeb1451fa5) and the report differs only in its patch's path. So
+every number in round 8's s13a table is this run's. Year 3 (a day unless marked), against wharf7b and producers7:
+
+| | stable9e (= s13a) | wharf7b | producers7 |
+|---|---|---|---|
+| Money conserved every day; at the year ends | yes; 64,568, 64,587, 64,587p | yes; 64,588p at the end | yes; 64,595p |
+| Estates' posts; nights short | 648p of 648p; none in three years | 788 of 824p; 107 | 803 of 824p; 40 |
+| The Crown: rents; grants out; purse at the year ends | 733p; 350p; 1,487, 1,568, **1,298p** | 464p; 502p; 1,002, 976, 625p | 503p; 529p; 946, 1,005, 714p |
+| Grayrock, Timberland, Greatly, Fell (purse at the year ends) | 53/15/11, 537/415/417, 56/49/93, 278/311/331p | 18, 361, 61, 29p (end) | 18, 318, 66, 28p |
+| The estates' purses together (year ends) | 2,411, 2,358, 2,150p | 1,610, 1,469, 1,094p | 1,563, 1,451, 1,144p |
+| Treasury: year ends; least in year 3 | 1,899, 2,191, 2,191p; 1,345p | 5,930p at the end; 1,970p | 4,940p; 1,903p |
+| Wage support wanted / paid / unpaid (years 1-3) | 279/91/188, 208/118/91, **191/149/42p** | paid 296p | paid 295p |
+| The toll; its rate at the year ends | 1,594p; 31.5, 33, 34 | 1,671p | 1,668p |
+| Hunger: days, the most hours; households short | 4, 5; 0.19 | 6, 9; 0.31 | 3, 8; 0.28 |
+| Eggs sold; short (pieces) | 220.9; 2.6 | 133.9; 95.0 | 99.1; 94.2 |
+| Cider sold; short | 120.1; 0.0 | 91.1; 21.6 | 91.4; 9.8 |
+| The foundry (the run): wages paid; to its House; hours used (year 3) | 25.8 of 25.8p; 28.1p; 99% | -; 3% | -; 0% |
+| The valve: in / out; the takes the room could not fit (years 1-3); credit at the end | 61 / 61p; 181, 285, **321p**; 8p | - | - |
+| Hides rotted (years 1-3) | 7.6, 14.0, **16.7** a day | - | - |
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| Estates' posts paid every night | 648p of 648p, no night short in three years | yes |
+| No estate purse trending down, the Crown's included | the Crown 1,568 -> 1,298p (over its keep 434 -> 390p); Grayrock 53 -> 15 -> 11p; Timberland 537 -> 415 -> 417p; Fell's rents 140, 131, 124p; the five together 2,411 -> 2,358 -> 2,150p | **no** |
+| The treasury over its float, wage support not climbing | least 1,345p in year 3, at its cap of 2,191p at the year ends; paid 91, 118, 149p | treasury yes; support **climbing** |
+| Hunger as low as wharf7b or lower | 0.19 against 0.31; 4 days against 6 | yes |
+| No runaway pile, no standing shortage a producer should cover | eggs and cider now met; apples pile ~18 a day at the orchards; hides rot and rising; iron bar and cheese short at the farms' draws (cheese left as it is) | **nearly** |
+| The valve nets | 61p in, 61p out; credit 8p | yes, though the unmet takes grow |
+
+**Verdict: not stable, as s13a.** Money, the posts, hunger, the treasury's float, eggs and cider and the valve all pass;
+the Crown's purse and the estates' together still fall in year 3, and the wage support paid still climbs with the toll's
+drift (round 8's open point 1, the user's lever). What is open, beyond round 8's list:
+
+1. **The Crown's grants to Grayrock** (295p a day of its 350p out) carry the sea trade's 36 posts (288p a night). That is
+   the Crown's slide: move more of the sea trade's idle porters to crew-bound makers (the six crew-bound tills in the
+   report, the tannery's own still at 86%) or trim the posts Grayrock can't carry, as the user approved.
+2. **The Wharf's takes that the room can't fit** climb 181 -> 285 -> 321p a day: what beyond wants is growing faster than
+   what the room holds; see which goods the `unfit` takes are before they turn into a drain.
+3. **Hides rot 7.6 -> 14.0 -> 16.7 a day**, rising, not level: the butchers' herds grow faster than the tannery's need.
+   A hide take at the valve, or a second hide product, rather than a larger household need (s13b).
+4. **Apples** (+18 a day at the orchards) and Fell's falling rents are one point: the orchards' yield down ~5%, or a
+   cider press's crew-bound posts (cider is now fully met, 0 short).
