@@ -2288,3 +2288,50 @@ short at the draws).
    cfA, cfB, the five of this round) exited 0; round 5's ASan and UBSan run found nothing. Not traced further.
 6. **Apples**: the x0.96 holds the store for three years; in years 4-5 the sales ease (251, 255 a day) and it grows ~8
    a day again. Another ~3% off, or an apple product.
+
+### stable10's 3-year run (ridgemere2 2dd3905, 2026-11-06)
+
+Round 9 on the merged build (`build-core`, rebuilt after the merge), **export70** (DEV revision 96, build 70, round 8's;
+no DEV write this round, so no new export), wharf7b's flags (`--farms 0`, an area every 28 days); 1,095 days, 2,244 s,
+exit 0; `stable10-report.md`, its patch, `stable10.out`.
+
+**It is `s14f` to the byte in what it ends with.** The end digests match (people 5368ecac2ab5cef8, society
+2b0f83158537371e), `stable10.out` is s14f's but for the timings, the patch is identical, and the report differs only in
+its patch's path and the order of two tied rows (mushrooms among the 0.0 goods of the Wharf's table). So every number in
+round 9's s14f table is this run's. Year 3 (a day unless marked), against wharf7b and producers7:
+
+| | stable10 (= s14f) | wharf7b | producers7 |
+|---|---|---|---|
+| Money conserved every day; at the year ends | yes; 64,579, 64,560, 64,573p | yes; 64,588p at the end | yes; 64,595p |
+| Estates' posts; nights short | 648p of 648p; none in three years | 788 of 824p; 107 | 803 of 824p; 40 |
+| The toll's rate at the year ends; the toll | 31.5, 32, 32; 1,529p | -; 1,671p | -; 1,668p |
+| The Crown: rents; grants out; purse at the year ends | 754p; 337p; 1,502, 1,501, **1,263p** | 464p; 502p; 1,002, 976, 625p | 503p; 529p; 946, 1,005, 714p |
+| The Crown: mean purse (years 1-3); by quarter in year 3; over its keep (years 2, 3) | 1,167, 1,429, 1,419p; 1,421, 1,420, 1,405, 1,432p; 443 -> 433p | - | - |
+| Grayrock, Timberland, Greatly, Fell (purse at the year ends) | 50/14/14, 559/424/433, 54/49/50, 282/290/340p | 18, 361, 61, 29p (end) | 18, 318, 66, 28p |
+| The estates' purses together: year ends; means (years 1-3) | 2,447, 2,278, 2,100p; 1,979, 2,096, 2,073p | 1,610, 1,469, 1,094p | 1,563, 1,451, 1,144p |
+| Treasury: year ends; least in year 3 | 1,863, 2,143, 2,134p; 1,156p | 5,930p at the end; 1,970p | 4,940p; 1,903p |
+| Wage support wanted / paid / unpaid (years 1-3) | 276/88/188, 207/105/102, **188/132/57p** | paid 296p | paid 295p |
+| Hunger: days, the most hours; households short (years 1-3) | 3, 8; 0.71, 0.79, **0.39** | 6, 9; 0.31 | 3, 8; 0.28 |
+| Eggs sold; short (pieces) | 218.6; 13.4 | 133.9; 95.0 | 99.1; 94.2 |
+| Cider sold; short | 119.2; 0.0 | 91.1; 21.6 | 91.4; 9.8 |
+| The foundry (the run): wages paid; to its House | 25.8 of 25.8p; 28.8p | - | - |
+| The valve (year 3): in / out; credit at the end; the unfit takes (years 1-3) | 70 / 70p; 22p; 181, 255, **293p** (hides 198p) | - | - |
+| Hides rotted (years 1-3) | 7.6, 12.0, 14.4 a day | - | - |
+| Apples at the orchards (year 3): grown, sold, eaten; in store at the end | 262, 249, 10; 3,909 | - | - |
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| Estates' posts paid every night | 648p of 648p, no night short in three years | yes |
+| No estate purse trending down, the Crown's included | the Crown's mean purse 1,429 -> 1,419p and level by quarter, but its year-end purse 1,501 -> 1,263p; Grayrock 14p held up by the Crown's grants (291p a day); Timberland over its keep 196 -> 185p; the five's means 2,096 -> 2,073p, their year ends 2,278 -> 2,100p | **nearly**: level on the means, down at the year ends |
+| The treasury over its float, wage support not climbing | least 1,156p, at its cap at the year ends; paid 88, 105, 132p, rising as the unpaid falls toward the wanted (~190p) | treasury yes; paid **still rising** |
+| Hunger as low as wharf7b or lower | 0.39 against 0.31; 3 days, 8 hours at most | **no**, close |
+| No runaway pile, no standing shortage a producer should cover | hides rot 14.4 a day, rising; apples +3 a day at the orchards; iron bar short at the draws every season (winter 84,108); cheese left as it is | **no** |
+| The valve nets | 70p in, 70p out; credit 22p; the unfit takes grow (293p) | yes |
+
+**Verdict: not stable on three years**, as s14f. The drift is settled (the toll stops at 32 on day 406), the money, the
+posts, the treasury and the valve pass; the support paid still rises, hunger is a little over wharf7b's, and the hides and
+iron bar stand. The 5-year run (s14f5y, above) is the evidence that the support and hunger settle in years 4-5; the
+open list of round 9 stands as written (the sea trade's posts, the short tills' idle posts, hides, iron bar, apples).
