@@ -1,5 +1,6 @@
 // Atlas's Economy controls (Docs/Design/67-ridgemere2-city.md, 6; tools/studio.py's /api/atlas/economy): the store
 // room's switches for the world and each business. What the page shows and sends, as pure functions (economy.test.ts).
+import type {SteeringView} from './steering';
 
 /** A good a business would draw: its catalogue price and what one costs at the world's markup for its kind. */
 export interface StoreGood { item: string; price: number; cost: number }
@@ -98,6 +99,8 @@ export interface ServiceListed { id: string; name: string; business: string; pri
 export interface RuleControls {
     rulesSupported: boolean; rulesProblem: string; rules: Record<string, number>; services: Record<string, ServiceValues>;
     ruleDefaults: Record<string, number>; serviceList: ServiceListed[]; drift?: DriftView;
+    /** Steering the economy (doc 74, 10; lib/steering.ts). */
+    steering?: SteeringView;
 }
 /** Where the self-correcting rules stand on the world's game, as its last save has them (doc 68, Progress,
  * "Self-correcting rules"): read only; the rules move it, never a setting. */
@@ -124,11 +127,14 @@ export function driftLines(d: DriftView | undefined): string[] {
 export type RulesBody = {set: Record<string, number | null>};
 export type ServicesBody = {set: Record<string, Partial<ServiceValues> | null>};
 /** The rules the page lists, their limits, whether each is an on/off switch, and what the page calls them. */
-export const RULES: {key: string; label: string; max: number; unit: string; onOff?: boolean}[] = [
+export const RULES: {key: string; label: string; max: number; unit: string; onOff?: boolean;
+    /** Steering the economy (doc 74): 'setting', the DM's four, set on the Steering panel only; 'own', the steering's own
+     *  rules (an author's in Atlas, read only on the DM's tab); 'held', a rule the steering moves while it is on. */
+    steer?: 'setting' | 'own' | 'held'}[] = [
     {key: 'comfortsMost', label: 'Comforts a day, at most', max: 100000, unit: 'purchases a household makes a day (it was 20)'},
     {key: 'almsADay', label: 'Alms', max: 1000, unit: 'p a head a household is made up to after the day\'s wages'},
     {key: 'almsNoEarner', label: 'Alms with no earner', max: 300, unit: '% of the alms a head a household with no member in a paid post is made up to, the part over the alms from over the treasury\'s cap; so is one whose earners\' wages together are under the alms a head, after the no-earner\'s and keeping tonight\'s wage support wanted (100 or less: as any household; doc 73, rounds 4 and 6)'},
-    {key: 'treasuryCap', label: 'Treasury cap', max: 100000000, unit: 'p kept; what is over it pays the shops\' short wages'},
+    {key: 'treasuryCap', label: 'Treasury cap', max: 100000000, unit: 'p kept; what is over it pays the shops\' short wages', steer: 'held'},
     {key: 'wageSupport', label: 'Wage support', max: 100, unit: '% of a till\'s shortfall the treasury pays (from over the cap)'},
     {key: 'workBankHours', label: 'Work bank', max: 1000, unit: 'hours of the crew\'s work a shop may bank (0: its longest craft\'s)'},
     {key: 'fairFood', label: 'Fair food in a household', max: 1, unit: 'the members with least food buy first', onOff: true},
@@ -178,10 +184,10 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'luxuryPriceStep', label: 'Luxuries\' price step', max: 1000, unit: 'thousandths of the price a day it climbs when the shop sells out'},
     // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms").
     {key: 'surplus', label: 'The treasury\'s surplus', max: 1, unit: 'what it holds over its cap and reserve goes out at 18:00, to public works and the poorest', onOff: true},
-    {key: 'surplusKeep', label: 'Reserve over the cap', max: 100000000, unit: 'p the treasury keeps over its cap for the lean seasons before its surplus goes out'},
+    {key: 'surplusKeep', label: 'Reserve over the cap', max: 100000000, unit: 'p the treasury keeps over its cap for the lean seasons before its surplus goes out', steer: 'held'},
     {key: 'surplusWorks', label: 'Surplus to public works', max: 100, unit: '% of the surplus a day: orders from the city\'s trades, till to till'},
     {key: 'surplusAlms', label: 'Surplus to the poorest', max: 100, unit: '% of the surplus a day: the poorest households, per head, poorest first'},
-    {key: 'surplusAlmsTo', label: 'The poorest raised to', max: 1000, unit: 'p a head, at most, the surplus brings the poorest households up to'},
+    {key: 'surplusAlmsTo', label: 'The poorest raised to', max: 1000, unit: 'p a head, at most, the surplus brings the poorest households up to', steer: 'held'},
     // The self-correcting rules (doc 68, Progress, "Self-correcting rules"): each drifts gently within its bounds; where
     // each stands now is the running game's (RuleControls.drift), shown beside them, read only.
     {key: 'stockPrices', label: 'Prices follow stock', max: 1, unit: 'a shop\'s price for a ware rises when it sells out and falls on a glut, the city\'s prices as a whole kept at the catalogue\'s', onOff: true},
@@ -205,6 +211,19 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'tollStep', label: 'Toll step', max: 100, unit: 'tenths of a point each time it is judged'},
     {key: 'tollDriftMost', label: 'Toll drift, at most', max: 90, unit: 'points from the world\'s gate toll'},
     {key: 'almsDriftMost', label: 'Alms drift, at most', max: 1000, unit: 'p a head over the alms, at most (a penny each time; never under them)'},
+    // Steering the economy (Docs/Design/74-steering-the-economy.md): the DM's four on the Steering panel, and its own rules.
+    {key: 'steer', label: 'The steering', max: 1, unit: 'a few levers follow where the DM says the money rests', onOff: true, steer: 'setting'},
+    {key: 'steerLean', label: 'Where the money rests', max: 200, unit: '0 shared, 100 today\'s economy, 200 held by the rich (the tab shows -100 to +100)', steer: 'setting'},
+    {key: 'neverHungry', label: 'Never Hungry', max: 1, unit: 'a wolf going hungry is given a day\'s food; the richest pay', onOff: true, steer: 'setting'},
+    {key: 'neverBroke', label: 'Never Broke', max: 1, unit: 'a household short of the next day\'s necessities is given just enough; the richest pay', onOff: true, steer: 'setting'},
+    {key: 'steerJudgeDays', label: 'The steering judged every', max: 182, unit: 'days (at least 7)', steer: 'own'},
+    {key: 'steerMeanDays', label: 'Its means over', max: 365, unit: 'days, about (the Gini and the shares; hunger, the short and the treasury over 28; at least 14)', steer: 'own'},
+    {key: 'steerStep', label: 'Its step', max: 25, unit: 'hundredths of the push at a judging (at least 1)', steer: 'own'},
+    {key: 'steerStepMost', label: 'Its larger step', max: 50, unit: 'hundredths, when a measure is over two bands off (at least 1)', steer: 'own'},
+    {key: 'steerWidthMid', label: 'Its band at the centre', max: 50, unit: 'hundredths of the push either side of the slider', steer: 'own'},
+    {key: 'steerWidthEnd', label: 'Its band at the ends', max: 100, unit: 'hundredths either side, at -100 and +100', steer: 'own'},
+    {key: 'skimMost', label: 'The skim, at most', max: 100, unit: '% of a holder\'s spare in its first pass (at least 1)', steer: 'own'},
+    {key: 'skimKeepDays', label: 'The skim leaves', max: 28, unit: 'days of its necessities a head in a household (at least 1)', steer: 'own'},
 ];
 /** A rule as it stands: the world's own, else city_loop.json's. */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;

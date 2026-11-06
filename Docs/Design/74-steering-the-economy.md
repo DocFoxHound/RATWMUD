@@ -755,3 +755,95 @@ cheap follow-ups, if the user wants them.
    toggles.
 6. **The ground rent goes to the Crown's estate only.** Shops are not mapped to the Houses whose land they stand on. A
    later design could pay the House of the shop's district.
+
+## Progress
+
+### The build (branch `r2-steering`, 2026-11-06)
+
+Built in one pass on `r2-steering` (from `ridgemere2` 85ea134), build dir `build-steer` (gcc Release). Nothing written to
+DEV; no economy sim run (they need the user's go-ahead, section 14).
+
+**What was built.**
+
+- **The rules** (all twelve) in the five places a rule lives: `Core/RatwItems.h` `Rules[]`, `Data/Items/city_loop.json`
+  `rules`, `tools/map_editor.py` `RULE_LIMITS` (the on/offs in `RULE_SWITCHES`; `STEER_SETTINGS`, `STEERED_RULES` and
+  `STEER_OWN_RULES` name the three kinds), `Editor/src/model/model.mjs` `RULE_LIMITS` (which also gains `almsNoEarner`,
+  missing there since round 4) and `Editor/src/lib/economy.ts` `RULES` (each tagged `steer: 'setting' | 'own' | 'held'`).
+- **The table** (sections 3 and 4) in `city_loop.json` `"steering"`, with `treasuryFloor` and `treasuryLow`, read into
+  `items::cityLoop().steering`; the same table is the code's default. `items::steerAt` reads a row; the studio
+  (`studio.steer_at`), the report (`econ_report.steer_at`) and the Editor (`lib/steering.ts` `steerAt`) reckon it the
+  same way, each tested on the shared cases in `Tests/fixtures/steer_table.json`.
+- **Core** (`Core/RatwSteering.cpp`, new, and hooks in `RatwCityLoop.cpp`, `RatwFarms.cpp`, `RatwWire.cpp`):
+  - `rule()` returns the table's `surplusKeep`, `treasuryCap` and `surplusAlmsTo` at the push while the steering is on
+    (the world's own stay in `rules_`, read by `ownRule()`); `steerLever()` gives every lever at the push, or its neutral
+    value with the steering off.
+  - The levers: the hands' share and the ground rent in `payWages` (both taken off the same excess, the till keeping its
+    cap); the rent scale in `landRentPercent` (`land_rent_extra` logged in `payRents`); the rich hold in the comforts'
+    budget (the luxuries' keep untouched, so cheese is as it was); the toll lean in `gateTollNow`, with its treasury
+    guard; `topUpPoorest(budget, from, to)` generalised; `shareOut()`; `housesDividend()` (nothing for 28 nights after any
+    estate's posts went short).
+  - The skim: `spares(deep)` (every holder's spare over its own needs now, the six kinds of section 6.1; the estates
+    together never under the one purse's keep), `skim(sum, purpose)` (water-filling from the top, at most `skimMost`% of
+    a spare, then the second pass; ties by id), through `fund:relief`.
+  - The floors: `neverHungry()` at 17:00 and `neverBroke()` at 18:00 after the alms.
+  - The controller: `steerFollow()` (on, off and the slider, followed at once: at 18:00 and whenever `adoptEconomy`
+    reads a DM's change) and `steerEconomy()` (the measures, the means, the judging, the hunger guard).
+  - The state in `LoopState::Steer`, saved as the loop's `"steer"` only once the steering or a floor has run, with the
+    last 24 judgings and the skim's last 28 days (by purpose, payer group and five largest payers) for the DM tab.
+- **Logging.** world_check's daily line has the fields of 12.1 (flat, as listed) whenever the steering or a floor is
+  on or has run; a run without them writes the line it always did. The full log's `flow` table has a `relief` group
+  for `fund:relief`. `tools/econ_report.py` has the section "The steering" (12.3).
+- **The DM tab.** `Editor/src/dm/SteeringPanel.tsx` at the top of the Economy tab: the slider (-100 to +100 in fives,
+  marks at -100, -50, 0, +50 and +100, the words at both ends and the centre; dragging previews the targets and the
+  levers' bounds, letting go confirms and saves), the on/off and the two floors (each confirmed), the measures against
+  their targets, the push on its scale with its band, the levers read only (now, at the centre, the bounds there), the
+  skim's last 28 days, and the log (the DM's `economy.steer` audit and the judgings). `RulesPanel` shows the three
+  steered rules read only while the steering is on ("steered: 1,000; yours: 4,000, used again when the steering is
+  off"), never the four settings, and on the DM's tab the steering's own rules read only. The pure parts are in
+  `Editor/src/lib/steering.ts`.
+- **The studio.** `POST /api/economy/steer` (both suites' route sets; audited `economy.steer`, target `steering`,
+  detail in words; `economy.sync` queued); `set_rules` refuses the four settings (400) and, with the steering on, the
+  three steered rules (409, "the steering holds this rule; turn the steering off to set it"); `Economy.read` has a
+  `steering` block (the settings, the targets and band at the slider, the levers' bounds, the table, the steering's
+  own rules, from the save the push, the means, the judgings and the skim, and the DM's last 24 changes).
+
+**Tests.** ctest 80 of 80 (the new `steer_behaviors`, 84 checks: the rules and the table; the centre leaving every
+account as the steering off does over two ticked days; the skim's order, caps, second pass, shortfall, freshness and
+ties; Never Broke to exactly the line after the alms; Never Hungry to a day's food and no more, from the shop at the
+stable price; the levers at both ends, the toll lean's guard, off restoring the world's rules; the hands' share and the
+ground rent with the till keeping its cap; the share-out levelling the poorest; the controller's feed-forward, its
+first judging on day 56, the larger step, the band's edge, determinism, a slider change, the save read again, off; the
+dead band; money conserved in each). `tools/test_studio.py` 51 (new: the routes with a stand-in, the steering offline
+with the economy in memory, the table against the shared cases, every rule of Core's `Rules[]` with the studio's, and on
+a scratch database (Database/.env linked in for the run, then removed) the steering through the real API: written to
+`live.economy.rules`, audited in words, `economy.sync` queued, read back, the refusals). `tools/test_econ_report.py` 14
+(new: the steering's section). The Editor's `lib` tests (new `steering.test.ts`, 6) and `tsc --noEmit` clean.
+Failing before this branch and still: `tools/test_map_editor.py`'s and `Editor/src/model/content.test.mjs`'s Greyfen
+resident count (11 against 10), `EconomyFlowTests.test_the_farms` (8 areas against 10), `Editor/src/lib/glyphs.test.ts`.
+
+**A scratch server** of DEV (`build-steer/ratw_server --database dev --scratch`) loaded the world with the new Core
+(build 70, 559 residents) and served the client; stopped after a few minutes. The DM tab is the studio's, not the game
+server's, so its slider was checked through the studio's API on a scratch database (above), not in a browser.
+
+**Not run: the smokes and the 3-year runs.** `artifacts/economy/r2/steer-smokes.sh` makes the four variant folders
+(`export70-steer-centre`, `-left`, `-right`, `-centre-floors`: export70's `world.ratw` with the rule lines after its
+store line, its cells and seams hard-linked) and, with `smokes` or `years`, runs the four in parallel on cores 2-5,
+6-9, 10-13 and 14-17 with stable10b's flags, waits for each and writes each report. The folders are made (a two-hour
+load of `export70-steer-centre-floors` read its rule lines); no run has been started.
+
+**Where the build differs from the design, or is unsure.**
+
+1. **Never Hungry covers the residents' households, not the farms' virtual crews** (`crew:*` accounts, one purse for
+   many heads, which buy at every open shop). Their short days stay as `farms.*.crewShort` in the log.
+2. **The earners' Gini in Core** is world_check's definition, taken at 18:00 after the money's steps; world_check's
+   own `gini_earners` (at 23:00) is unchanged, so stable10b's field still compares.
+3. **The skim's "no holder under its line" check** (section 9) is kept by construction and by the unit tests; the run's
+   log has no per-payer spare before and after.
+4. **The full log has no new `skim` and `relief` tables** (12.2): the daily line's `skim_by`, `skim_top` and `relief`
+   carry them, and the flow table's `relief` group.
+5. **The hunger guard** (7.3) is built but not unit-tested (it needs residents going hungry over ticked days); the
+   first smoke will show it. Never Hungry's Wharf fallback is likewise untested (the test city's valve is shut).
+6. **The DM's log** shows the DM's changes (by the audit's clock) and the judgings (by game day) one after the other in
+   one list, not interleaved: the two have no common clock.
+7. **Never Broke's cost** (500-900p a day estimated) is unmeasured; at 18:00 the tills are at their caps, so the skim
+   then falls on the keepers' purses, the estates and the treasury's spare. The floors smoke will show who pays.

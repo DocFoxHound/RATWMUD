@@ -1,0 +1,15 @@
+{
+  "about": "Steering the economy (Docs/Design/74-steering-the-economy.md, 4): the lever and target table of Data/Items/city_loop.json read at a few places, the same cases for Core (Tests/steer_tests.cpp) and the studio (tools/test_studio.py), so the two reckon it alike. own: the world's value of a lever (null for a target); want: null where there is none.",
+  "cases": [
+    {"kind": "levers", "name": "surplusKeep", "at": -0.25, "own": 4000, "want": 2500},
+    {"kind": "levers", "name": "shareOut", "at": -0.75, "own": 0, "want": 21},
+    {"kind": "levers", "name": "tollLean", "at": 0.75, "own": 0, "want": -1.5},
+    {"kind": "levers", "name": "richAbove", "at": 0.25, "own": 40, "want": 95},
+    {"kind": "levers", "name": "treasuryCap", "at": -1, "own": 2000, "want": 1500},
+    {"kind": "levers", "name": "rentScale", "at": 0.6, "own": 100, "want": 124},
+    {"kind": "targets", "name": "gini", "at": -0.25, "own": null, "want": 0.4035},
+    {"kind": "targets", "name": "upper", "at": 0.25, "own": null, "want": 16},
+    {"kind": "targets", "name": "gini", "at": 0.25, "own": null, "want": null},
+    {"kind": "targets", "name": "upper", "at": 0, "own": null, "want": 7}
+  ]
+}

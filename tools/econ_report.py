@@ -548,6 +548,9 @@ def report(econ, run, top, patch_path):
     # The makers' goods sold on, the country workshops and the luxuries (doc 72, Phase 5).
     if econ and any('city_resale' in r for r in econ):
         say(phase5_lines(econ))
+    # Steering the economy (doc 74, 12.3).
+    if econ and any('steer_push' in r for r in econ):
+        say(steering_lines(econ))
     # 7. Farms.
     if run and run.farm:
         say('## 7. Farms')
@@ -831,6 +834,118 @@ def apply_patch(patch_path, farms_path, damping=DAMPING, goods=None):
                     done += 1
     Path(farms_path).write_text(dumps(doc))
     return done
+
+
+def steer_at(marks, at, own=None):
+    """Core's items::steerAt (and the studio's steer_at): a row of the steering's table at `at` (-1..1)."""
+    at = max(-1.0, min(1.0, float(at)))
+    value = lambda i: own if marks[i] is None else float(marks[i])
+    place = (at + 1) * 2
+    i = min(3, int(place // 1))
+    t = place - i
+    if t <= 1e-12:
+        return value(i)
+    if t >= 1 - 1e-12:
+        return value(i + 1)
+    a, b = value(i), value(i + 1)
+    return None if a is None or b is None else a + (b - a) * t
+
+
+STEER_LEVER_FIELDS = (('lev_share_out', 'the share-out (%)'), ('lev_posts_share', 'the hands\' share (%)'), ('lev_toll', 'the toll lean (points)'),
+                      ('lev_surplus_keep', 'the treasury\'s keep (p)'), ('lev_cap', 'the treasury\'s cap (p)'),
+                      ('lev_alms_to', 'the poorest raised to (p)'), ('lev_ground_rent', 'the ground rent (%)'),
+                      ('lev_rent_scale', 'the rent scale (%)'), ('lev_dividend', 'the Houses\' dividend (%)'),
+                      ('lev_rich_above', 'the rich hold (p a head)'))
+
+
+def steering_lines(econ, table=None):
+    """Steering the economy (Docs/Design/74-steering-the-economy.md, 12.3): by year, each measure's mean against its target
+    and band at the slider, pass or fail; the push's course and the days at its band's edges; each lever's year mean; the
+    skim by purpose and by payer group, its steadiest payers; the skim's books (skimmed = relief paid + the fund's change);
+    the floors' cost a day and the households still short after Never Hungry."""
+    rows = [r for r in econ if 'steer_push' in r]
+    if table is None:
+        try:
+            table = json.loads((Path(__file__).resolve().parent.parent / 'Data/Items/city_loop.json').read_text())['steering']
+        except (OSError, ValueError, KeyError):
+            table = {'levers': {}, 'targets': {}}
+    targets = table.get('targets') or {}
+    lean = rows[-1].get('steer_lean', 0)
+    x = lean / 100
+    target = lambda name: steer_at(targets[name], x) if name in targets else None
+    out = ['## The steering', '',
+           f'Where the money rests: {lean:+d} (the steering {"on" if rows[-1].get("steer") else "off"}, {len(rows)} days). '
+           f'The push {rows[0]["steer_push"]:+.2f} -> {rows[-1]["steer_push"]:+.2f} (least {min(r["steer_push"] for r in rows):+.2f}, '
+           f'most {max(r["steer_push"] for r in rows):+.2f}); at its band\'s edge on '
+           f'{sum(1 for r in rows if r.get("steer") and (abs(r["steer_push"] - r.get("steer_push_lo", -9)) < 1e-6 or abs(r["steer_push"] - r.get("steer_push_hi", 9)) < 1e-6))} days; '
+           f'judged {sum(1 for r in rows if r.get("steer_judged"))} times.', '']
+    years = [rows[i:i + 365] for i in range(0, len(rows), 365)]
+    measures = [('m_gini', 'g_mean', 'the earners\' Gini', 'gini', 'giniBand', 3), ('m_upper_share', 's_mean', 'the upper share (%)', 'upper', 'upperBand', 1),
+                ('m_top10', 't10_mean', 'the top tenth\'s share (%)', None, None, 1), ('m_hungry', 'h_mean28', 'hungry an hour', None, None, 3),
+                ('m_short', 'k_mean28', 'households short', None, None, 2), ('m_treasury', 'tr_mean28', 'the treasury (p)', None, None, 0)]
+    head = ['measure', 'target at the slider'] + [f'year {i + 1}' for i in range(len(years))] + ['pass (last year)']
+    lines = []
+    for field, slow, name, t, band, places in measures:
+        vals = [statistics.mean(r.get(field, 0) for r in y if r.get(field, -1) >= 0) if any(r.get(field, -1) >= 0 for r in y) else None for y in years]
+        tv, bv = (target(t), target(band)) if t else (None, None)
+        if t is None and field == 'm_hungry':
+            tv, bv = target('hungerMost'), None
+        if t is None and field == 'm_short':
+            tv, bv = target('shortMost'), None
+        if field == 'm_top10':
+            most, least = target('top10Most'), target('top10Least')
+            say_t = f'at most {most:.0f}' if most is not None else f'at least {least:.0f}' if least is not None else 'logged'
+            ok = '-' if vals[-1] is None else ('yes' if (most is None or vals[-1] <= most) and (least is None or vals[-1] >= least) else 'no')
+        elif tv is None:
+            say_t, ok = 'watched', '-'
+        elif bv is None:
+            say_t = f'at most {tv:g}'
+            ok = '-' if vals[-1] is None else ('yes' if vals[-1] <= tv else 'no')
+        else:
+            say_t = f'{tv:g} ± {bv:g}'
+            ok = '-' if vals[-1] is None else ('yes' if abs(vals[-1] - tv) <= bv else 'no')
+        if field == 'm_treasury':
+            say_t, ok = f'floor {table.get("treasuryFloor", 1400)} (the toll lean\'s guard)', '-'
+        lines.append([name, say_t] + ['-' if v is None else f'{v:.{places}f}' for v in vals] + [ok])
+    out += table_lines(head, lines) + ['']
+    out += table_lines(['lever'] + [f'year {i + 1}' for i in range(len(years))],
+                       [[name] + [f'{statistics.mean(r.get(f, 0) for r in y):.1f}' for y in years] for f, name in STEER_LEVER_FIELDS
+                        if any(f in r for r in rows)]) + ['']
+    n = max(1, len(rows))
+    flows = [('share_out', 'the share-out'), ('posts_share', 'the hands\' share'), ('ground_rent', 'the ground rent'),
+             ('dividend', 'the Houses\' dividend'), ('land_rent_extra', 'the rent scale\'s extra')]
+    out.append('The levers\' money a day: ' + ', '.join(f'{name} {sum(r.get(k, 0) for r in rows) / n:.1f}p' for k, name in flows) + '.')
+    skim = sum(r.get('skim', 0) for r in rows)
+    purpose, group, steady = collections.Counter(), collections.Counter(), collections.Counter()
+    relief = collections.Counter()
+    for r in rows:
+        purpose.update(r.get('skim_for') or {})
+        group.update(r.get('skim_by') or {})
+        relief.update(r.get('relief') or {})
+        steady.update((r.get('skim_top') or {}).keys())
+    fund = rows[-1].get('relief_fund', 0)
+    paid = sum(relief.values())
+    out.append(f'The skim: {skim}p in all ({skim / n:.1f}p a day); by purpose ' +
+               (', '.join(f'{k} {v / n:.1f}p' for k, v in purpose.most_common()) or 'none') + '; by payer group ' +
+               (', '.join(f'{k} {v / n:.1f}p' for k, v in group.most_common()) or 'none') + '. Short of what was asked: '
+               f'{sum(r.get("skim_short", 0) for r in rows)}p.')
+    if steady:
+        out.append('Its steadiest payers (days among the day\'s five largest): ' + ', '.join(f'{k} {v}' for k, v in steady.most_common(5)) + '.')
+    out.append(f'The skim\'s books: skimmed {skim}p, relief paid {paid}p ({", ".join(f"{k} {v}" for k, v in sorted(relief.items())) or "none"}), '
+               f'fund:relief at the end {fund}p: {"balanced" if skim == paid + fund else "NOT BALANCED"} to the penny.')
+    nh = sum((r.get('never_hungry') or {}).get('pennies', 0) for r in rows)
+    nb = sum((r.get('never_broke') or {}).get('pennies', 0) for r in rows)
+    after = [r.get('households_short_after', -1) for r in rows if r.get('households_short_after', -1) >= 0]
+    out.append(f'The floors a day: Never Hungry {nh / n:.1f}p ({sum((r.get("never_hungry") or {}).get("pieces", 0) for r in rows) / n:.1f} pieces, '
+               f'of them from the Wharf {sum((r.get("never_hungry") or {}).get("wharf_pieces", 0) for r in rows) / n:.1f}), Never Broke '
+               f'{nb / n:.1f}p ({sum((r.get("never_broke") or {}).get("homes", 0) for r in rows) / n:.1f} homes).'
+               + (f' Households still short after Never Hungry: {sum(after)} in all, on {sum(1 for a in after if a > 0)} days.' if after else ''))
+    out.append('')
+    return '\n'.join(out)
+
+
+def table_lines(head, rows):
+    return table(head, rows)
 
 
 def phase5_lines(econ):

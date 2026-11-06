@@ -6,6 +6,7 @@ import type {Chronicle} from '../lib/chronicle';
 import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
 import type {ComfortsBody, EconomyChange, EconomyControls, FarmsBody, GoodsBody, LoopSettings, RulesBody, SeasonsBody,
     ServicesBody, StoreSwitches} from '../lib/economy';
+import type {SteerBody} from '../lib/steering';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
 export type Target = string;
@@ -387,6 +388,8 @@ export const dmApi = {
         setRules: (world: Target, body: RulesBody) => call<EconomyChange>('api/dm/economy/rules', {world, ...body}),
         setServices: (world: Target, body: ServicesBody) => call<EconomyChange>('api/dm/economy/services', {world, ...body}),
         setFarms: (world: Target, body: FarmsBody) => call<EconomyChange>('api/dm/economy/farms', {world, ...body}),
+        /** Steering the economy (doc 74, 10.3): the slider, the on/off and the two floors; audited economy.steer. */
+        setSteer: (world: Target, body: SteerBody) => call<EconomyChange>('api/dm/economy/steer', {world, ...body}),
     },
 };
 

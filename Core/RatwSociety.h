@@ -267,10 +267,49 @@ struct LoopState
         bool empty() const { return in == 0 && out == 0 && fee == 0 && moved == 0 && credit == 0; }
     };
     Wharf wharf;
+    // Steering the economy (Docs/Design/74-steering-the-economy.md, 8; the save's "loop" "steer"): whether it is on, the
+    // push (-1..1) and the slider it was set at (steerLean), the day it was last judged; the slow means (the earners' Gini,
+    // the upper share, the richest tenth's share: over about steerMeanDays nights) and the fast ones (hungry residents an
+    // hour, households short, the treasury at 18:00: over 28), over so many nights; the measures at the last judging; the
+    // toll lean applied (its guard may hold it apart from the table's); the last night an estate's posts went short; and
+    // the last 24 judgings and changes, each with its reason. Empty until the steering is first turned on.
+    struct Steer
+    {
+        struct Judging
+        {
+            std::int64_t day = 0;
+            std::string measure;                    // "gini", "upper", "both", "hunger", "" (a change, not a judging).
+            double value = 0, target = 0, band = 0, error = 0, step = 0, before = 0, after = 0;
+            std::string why;
+        };
+        bool on = false;
+        double push = 0;
+        int lean = 100;
+        std::int64_t judged = -1;
+        int days = 0;
+        double gini = -1, upper = -1, top10 = -1, hungry = -1, shortHomes = -1, treasury = -1;
+        double giniThen = -1, upperThen = -1;
+        double tollLean = 0;
+        std::int64_t estateShort = -1;
+        std::vector<Judging> history;
+        // The skim's last 28 days that had one (doc 74, 10.1: the DM tab's): what it took, by purpose, by payer group,
+        // its five largest payers, and what it could not find.
+        struct SkimDay
+        {
+            std::int64_t day = 0, total = 0, shortfall = 0;
+            std::map<std::string, std::int64_t> purpose, group, payers;
+        };
+        std::vector<SkimDay> skims;
+        bool empty() const
+        {
+            return !on && push == 0 && judged < 0 && days == 0 && tollLean == 0 && estateShort < 0 && history.empty() && skims.empty();
+        }
+    };
+    Steer steer;
     bool empty() const
     {
         return prices.empty() && sales.empty() && wages.empty() && level < 0 && levelDays == 0 && judged < 0 && toll == 0 &&
-               alms == 0 && wharf.empty();
+               alms == 0 && wharf.empty() && steer.empty();
     }
 };
 struct SocietyState
@@ -1121,8 +1160,61 @@ class Society
             double hours = 0, used = 0, lost = 0;
         };
         std::map<std::string, Work> work;
+        // Steering the economy (doc 74, 12): the measures tonight (-1 before they are first taken), whether the push was
+        // judged tonight and why it moved; hungry residents counted each hour (with the steering on), and the hours.
+        double mGini = -1, mUpper = -1, mTop10 = -1, mHungry = -1;
+        bool steerJudged = false;
+        std::string steerWhy;
+        std::int64_t hungrySum = 0;
+        int hungryHours = 0;
+        // The levers' money tonight: the share-out (and the households given it), the hands' share of the keepers' profit,
+        // the ground rent to the Crown, the Houses' dividend (and the households), what the rent scale added to the land rents.
+        std::int64_t shareOut = 0, postsShare = 0, groundRent = 0, dividend = 0, landRentExtra = 0;
+        int shareOutHomes = 0, dividendHomes = 0;
+        // The skim (doc 74, 6): what it took, by purpose ("never hungry", "never broke", "share-out"), by payer group
+        // and by payer, what it could not find; and the relief paid out of fund:relief, by kind ("food", "necessities",
+        // "share-out").
+        std::int64_t skim = 0, skimShort = 0;
+        std::map<std::string, std::int64_t> skimFor, skimBy, skimPayers, relief;
+        // Never Hungry (doc 74, 7.1): the pieces and pennies given, the homes, those of them from the Wharf, and the
+        // households still short after it; Never Broke (7.2): the pennies and the homes.
+        int neverHungryPieces = 0, neverHungryHomes = 0, neverHungryWharfPieces = 0, householdsShortAfter = 0;
+        std::int64_t neverHungryPennies = 0, neverHungryWharfPennies = 0, neverBrokePennies = 0;
+        int neverBrokeHomes = 0;
     };
     const LoopDay& loopToday() const { return loopToday_; }
+    // Steering the economy (Docs/Design/74-steering-the-economy.md). Whether the steering is acting now (the rule on and
+    // the push set: from the first 18:00 after it was turned on), the slider (-1..1), the push's band at the slider, a
+    // lever's value at the push (its neutral value while the steering is off: 0, 100 for the rent scale, the world's own
+    // for surplusKeep, treasuryCap, surplusAlmsTo and richAbove), and a target at the slider (NaN: none there).
+    bool steering() const;
+    double steerSlider() const;
+    std::pair<double, double> steerBand() const;
+    double steerLever(const std::string& lever) const;
+    double steerTarget(const std::string& target) const;
+    // The measures (8.1), as the steering takes them at 18:00: the Gini of the earning households' purses (world_check's
+    // gini_earners: residents' homes with a member holding a paid post), the upper share of all the money (upper-class
+    // households, the Houses' estates, the Houses' businesses' tills; percent), and the richest tenth of households'
+    // share of all households' purses (percent).
+    double giniEarners() const;
+    double upperShare();
+    double top10Share() const;
+    // A day's necessities a head (doc 74, 6.1): the alms line, the household reserve and a day's share of the needs.
+    std::int64_t necessitiesAHead() const;
+    // The skim (doc 74, 6): `sum` pennies taken from the richest holders at this moment (by their spare over their own
+    // needs), into fund:relief; what it took (short of `sum` only when no holder had enough spare).
+    static constexpr const char* ReliefFund = "fund:relief";
+    std::int64_t skim(std::int64_t sum, const std::string& purpose);
+    // Who could pay, and how much: each holder's spare now (account id, its group, pennies), richest first.
+    struct Spare
+    {
+        std::string id, group;
+        std::int64_t spare = 0;
+        std::vector<std::string> members;           // (A household's: its members, who pay.)
+    };
+    std::vector<Spare> spares(bool deep);
+    // The controller (doc 74, 8): at 18:00, last of the money's steps (public for the tests, which judge a still world).
+    void steerEconomy(std::int64_t day);
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a
     // resident, a crew or a till) went without `pieces` of `item` at `shop` (a till; "" where no open shop had it), and
     // took `instead` in its place ("" for nothing). A household's food short at the shops' last hour is item "food" (its
@@ -1291,7 +1383,19 @@ class Society
     void supportWages();                            // The treasury over its cap pays the short tills' posts (18:00).
     // Then what it holds over its cap and surplusKeep goes to the public works and the poorest households (18:00, last).
     void spendSurplus();
-    std::int64_t topUpPoorest(std::int64_t budget);     // The poorest households topped up, per head, from `budget`.
+    // The poorest households topped up, per head, from `budget` of `from`'s (the treasury's surplus: up to surplusAlmsTo a
+    // head; fund:relief's share-out: no cap, `to` < 0).
+    std::int64_t topUpPoorest(std::int64_t budget, const std::string& from = "treasury", std::int64_t to = -2);
+    // Steering the economy (doc 74): the two floors, the share-out, the Houses' dividend and the controller.
+    void neverHungry(std::int64_t day);             // At the shops' last hour.
+    void neverBroke();                              // At 18:00, after the alms.
+    void shareOut();                                // At 18:00, after Never Broke (the push left of the centre).
+    void housesDividend();                          // At 18:00 (the push right of the centre).
+    void steerSet(double push, std::int64_t day, const std::string& why, bool judging);
+    void steerFollow(std::int64_t day);             // The DM's on/off and slider, followed at once.
+    int ownRule(const std::string& name) const;     // A rule as the world has it, whatever the steering does.
+    mutable std::int64_t necessitiesDay_ = -1;
+    mutable std::int64_t necessities_ = 0;
     std::int64_t worksOrders(std::int64_t budget);      // The public works' orders from the city's trades, from `budget`.
     void turnShelves();
     // The self-correcting rules (doc 68, Progress, "Self-correcting rules"): at the day's turn the shops' wares' sales a
