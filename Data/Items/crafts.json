@@ -209,6 +209,7 @@
       {"any": ["candle_tallow"], "everyDays": 2},
       {"any": ["clay_pot"], "everyDays": 30},
       {"any": ["wool_scarf", "straw_hat", "linen_neckerchief"], "everyDays": 25, "perPerson": true},
+      {"any": ["leather_bindings"], "everyDays": 40, "perPerson": true},
       {"any": ["bandages"], "everyDays": 20},
       {"any": ["nails"], "everyDays": 20},
       {"any": ["cookpot"], "everyDays": 60},

@@ -1447,10 +1447,13 @@ void theLandRent()
            "the grain farm's till set to 3p over its float and wages: due " + std::to_string(due));
     run(s, 47 + 17.9 / 24, 47 + 18.5 / 24);
     // (Less than the whole due, and its float left whole; a sale in the rent's hour adds its pennies: after iron6's
-    // yields, doc 72, one did, a penny.)
+    // yields, doc 72, one did, a penny, to the rent; since the households' leather bindings (doc 73, round 8) a penny's
+    // sale comes in the half hour after the rent, so the till may hold a penny or two over its float.)
     expect(s.loopToday().farms.at("grain_farm_1").rent >= 3 && s.loopToday().farms.at("grain_farm_1").rent < due &&
-               s.cash(t1) == farm(s, "grain_farm_1").reserve,
-           "it paid the 3p over its float and wages, no more: " + std::to_string(s.loopToday().farms.at("grain_farm_1").rent));
+               s.cash(t1) >= farm(s, "grain_farm_1").reserve && s.cash(t1) <= farm(s, "grain_farm_1").reserve + 2,
+           "it paid the 3p over its float and wages, no more: " + std::to_string(s.loopToday().farms.at("grain_farm_1").rent) + " due " +
+               std::to_string(due) + ", its till " + std::to_string(s.cash(t1)) + " against its float " +
+               std::to_string(farm(s, "grain_farm_1").reserve));
     // Short of its wages, it pays none (its takings' rent let go; the treasury's support as before).
     const auto third = s.drawFromStore("baker", "flour", 30, "restocked from the store room");
     expect(third.ok, "another day's flour: " + third.message);
