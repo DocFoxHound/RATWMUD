@@ -1,7 +1,8 @@
 // Steering the economy (Docs/Design/74-steering-the-economy.md): one number, the push (-1..1), that a few levers follow
-// toward where the DM's slider says the money should rest; the skim, which takes money off the top of whoever is richest
-// at that moment; and the two floors it pays for, Never Hungry and Never Broke. Every coin moves by shift between
-// accounts that exist (fund:relief only passes money through), so the money is conserved; nothing here is random.
+// toward where the DM's slider says the money should rest; the skim, which takes idle money in a set order of payers
+// (the estates, the treasury, then the savings of upper-class, keepers' and middle-class households); and the two floors
+// it pays for, Never Hungry and Never Broke (credit toward necessities). Every coin moves by shift between accounts that
+// exist (fund:relief only passes money through), so the money is conserved; nothing here is random.
 #include "RatwItems.h"
 #include "RatwSociety.h"
 
@@ -330,55 +331,194 @@ std::vector<std::int64_t> waterFill(const std::vector<Society::Spare>& holders, 
 }
 } // namespace
 
+std::int64_t Society::comfortableAHead() const
+{
+    // A household's line for the skim (doc 74, 6.1, "The skim reworked"): what it holds under `comfortable` times its
+    // necessities a head is its spending money, never taken; and never under the comforts' keep.
+    const auto nec = double(necessitiesAHead());
+    return std::max<std::int64_t>(comfortsAbove(), std::int64_t(std::ceil(items::cityLoop().steering.comfortable * nec - 1e-9)));
+}
+
+bool Society::skimGuardOn() const
+{
+    // The tills short's guard (doc 74, 6.2): with Never Broke on, once its mean has had 28 nights, while the tills short's
+    // 28-night mean is over the centre's level by more than tillsShortOver percent.
+    const auto& st = state_.loop.steer;
+    const auto& t = items::cityLoop().steering;
+    return ownRule("neverBroke") > 0 && st.tillsDays >= 28 && st.tillsShort > t.tillsShortNormal * (1 + t.tillsShortOver / 100.);
+}
+
+std::vector<Society::Spare> Society::skimStep(int step, bool treasury)
+{
+    // The skim's payers at one step (doc 74, 6.1), worked out fresh: never a till, a farm, a player's purse, the beyond's
+    // accounts, the Wharf's credit or fund:relief itself.
+    std::vector<Spare> out;
+    if (step == 1)
+    {
+        // The estates: each its spare over its keep (its posts' nights, the Wharf's reserve, the Crown's grants), and all
+        // of them together never under the one purse's keep. (Idle by its nature: what the day's basket left.)
+        const auto estateOwed = estatePostsOwed();
+        if (estatesOn())
+        {
+            std::int64_t all = 0, posts = 0;
+            for (const auto& e : items::cityLoop().estates)
+                if (const auto f = estateFund(e); account(f))
+                {
+                    all += cash(f);
+                    if (const auto found = estateOwed.find(f); found != estateOwed.end())
+                        posts += found->second;
+                }
+            auto pool = all - authored_.economy.wharfReserve - std::int64_t(std::max(1, rule("estatePostsDays"))) * posts;
+            for (const auto& e : items::cityLoop().estates)
+                if (const auto f = estateFund(e); account(f) && pool > 0)
+                    if (const auto spare = std::min(pool, estateSpare(f, estateOwed)); spare > 0)
+                    {
+                        out.push_back({f, "estates: " + e.house, spare, {}, spare});
+                        pool -= spare;
+                    }
+        }
+        else if (account(WharfFund))
+            if (const auto spare = estateSpare(WharfFund, estateOwed); spare > 0)
+                out.push_back({WharfFund, "estates", spare, {}, spare});
+    }
+    else if (step == 2)
+    {
+        // The treasury: its spare over its cap and tonight's wage support; only once that is known (18:00), so never in
+        // Never Hungry's 17:00 skim, before the night's wage support has had what is over the cap.
+        if (treasury && account("treasury"))
+            if (const auto spare = cash("treasury") - std::max<std::int64_t>(rule("treasuryCap"), TreasuryFloat) - loopToday_.supportWanted;
+                spare > 0)
+                out.push_back({"treasury", "treasury", spare, {}, spare});
+    }
+    else if (step >= 3 && step <= SkimSteps)
+    {
+        // The households over the comfortable line: 3 upper-class, 4 a keeper's (its shop's profit in its purses), 5 the
+        // other middle-class (and any other class but the lower, which never pays). Each by its idle spare: what it has held
+        // over the line for weeks (the lower of its spare now and its idle spare, which rises a 28th of the way a night).
+        std::set<std::string> keepers;
+        for (const auto& p : positions_)
+            if (const auto held = state_.careers.positions.find(p.id);
+                held != state_.careers.positions.end() && !held->second.holder.empty() && !dead_.count(held->second.holder) &&
+                payOf(p).kind == "keeper")
+                keepers.insert(held->second.holder);
+        const auto line = comfortableAHead();
+        const auto& st = state_.loop.steer;
+        const bool seeded = st.idleDay >= 0;
+        for (const auto& [home, members] : households())
+        {
+            const auto& cls = homeClass(home, members);
+            if (cls == "lower")
+                continue;
+            const bool keeper = std::any_of(members.begin(), members.end(), [&](const std::string& m) { return keepers.count(m) > 0; });
+            const int at = cls == "upper" ? 3 : keeper ? 4 : 5;
+            if (at != step)
+                continue;
+            std::int64_t held = 0;
+            for (const auto& m : members)
+                held += cash(m);
+            const auto spare = held - line * std::int64_t(members.size());
+            if (spare <= 0)
+                continue;
+            const auto id = "home " + home;
+            const auto found = st.idle.find(id);
+            const auto idle = !seeded ? spare : found == st.idle.end() ? 0 : std::min(spare, found->second);
+            out.push_back({id, at == 4 ? std::string("keepers") : "households: " + cls, spare, members, idle});
+        }
+    }
+    std::sort(out.begin(), out.end(), [](const Spare& a, const Spare& b) {
+        return a.idle != b.idle ? a.idle > b.idle : a.spare != b.spare ? a.spare > b.spare : a.id < b.id;
+    });
+    return out;
+}
+
+void Society::skimIdleNight(std::int64_t day)
+{
+    // Each household's idle spare, followed at the night's end (doc 74, 6.2): down at once to its spare, up toward it by
+    // 1/idleDays of the gap (rounded up); the first night, each at its spare. A household with no spare is dropped (0).
+    auto& st = state_.loop.steer;
+    if (st.idleDay == day)
+        return;
+    const auto days = std::int64_t(items::cityLoop().steering.idleDays);
+    std::map<std::string, std::int64_t> next;
+    for (int step = 3; step <= SkimSteps; ++step)
+        for (const auto& h : skimStep(step, false))
+        {
+            const auto found = st.idle.find(h.id);
+            const auto was = st.idleDay < 0 ? h.spare : found == st.idle.end() ? 0 : found->second;
+            next[h.id] = h.spare <= was ? h.spare : was + (h.spare - was + days - 1) / days;
+        }
+    st.idle = std::move(next);
+    st.idleDay = day;
+}
+
 std::int64_t Society::skim(std::int64_t sum, const std::string& purpose, bool treasury)
 {
     if (sum <= 0)
         return 0;
     if (!account(ReliefFund) && !openAccount(ReliefFund))
         return 0;
-    // The first pass: at most skimMost percent of each holder's spare; the second, short of it, the whole of the spare
-    // (a household's line down to a day's necessities a head).
-    auto holders = spares(false, treasury);
+    // Idle money first (doc 74, 6.2): the steps in order, the richest first within each. The first pass: at most skimMost
+    // percent of each holder's idle spare, step by step; the second, short of it: up to the whole of each spare, step by
+    // step again. With the tills short's guard on, the first pass takes the estates' and the treasury's whole spare.
     const int most = std::clamp(rule("skimMost"), 1, 100);
-    std::vector<std::int64_t> caps;
-    std::int64_t room = 0;
-    for (const auto& h : holders)
-        room += caps.emplace_back(h.spare * most / 100);
-    if (room < sum)
-    {
-        holders = spares(true, treasury);
-        caps.clear();
-        for (const auto& h : holders)
-            caps.push_back(h.spare);
-    }
-    const auto take = waterFill(holders, caps, sum);
+    const bool guard = skimGuardOn();
+    loopToday_.skimGuard = loopToday_.skimGuard || guard;
     std::int64_t taken = 0;
-    for (std::size_t i = 0; i < holders.size(); ++i)
-    {
-        auto left = take[i];
-        if (left <= 0)
-            continue;
-        const auto& h = holders[i];
-        std::int64_t gave = 0;
-        if (!h.members.empty())
+    for (int pass = 0; pass < 2 && taken < sum; ++pass)
+        for (int step = 1; step <= SkimSteps && taken < sum; ++step)
         {
-            // A household pays from the member with the most first.
-            auto members = h.members;
-            std::sort(members.begin(), members.end(), [&](const std::string& a, const std::string& b) {
-                return cash(a) != cash(b) ? cash(a) > cash(b) : a < b;
+            auto holders = skimStep(step, treasury);
+            if (holders.empty())
+                continue;
+            std::vector<std::int64_t> caps;
+            for (auto& h : holders)
+            {
+                const bool whole = pass == 1 || (guard && step <= 2);
+                if (!whole)
+                    h.spare = h.idle;               // (Water-filled on the idle spare: the money that has sat.)
+                caps.push_back(whole ? h.spare : h.spare * most / 100);
+            }
+            std::vector<std::size_t> order(holders.size());
+            for (std::size_t i = 0; i < order.size(); ++i)
+                order[i] = i;
+            std::sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) {
+                return holders[a].spare != holders[b].spare ? holders[a].spare > holders[b].spare : holders[a].id < holders[b].id;
             });
-            for (const auto& m : members)
-                if (const auto c = std::min(left - gave, cash(m)); c > 0 && shift(m, ReliefFund, "", 0, c, "skim: " + purpose))
-                    gave += c;
+            std::vector<Spare> ranked;
+            std::vector<std::int64_t> rankedCaps;
+            for (const auto i : order)
+            {
+                ranked.push_back(holders[i]);
+                rankedCaps.push_back(caps[i]);
+            }
+            const auto take = waterFill(ranked, rankedCaps, sum - taken);
+            for (std::size_t i = 0; i < ranked.size(); ++i)
+            {
+                auto left = take[i];
+                if (left <= 0)
+                    continue;
+                const auto& h = ranked[i];
+                std::int64_t gave = 0;
+                if (!h.members.empty())
+                {
+                    // A household pays from the member with the most first.
+                    auto members = h.members;
+                    std::sort(members.begin(), members.end(), [&](const std::string& a, const std::string& b) {
+                        return cash(a) != cash(b) ? cash(a) > cash(b) : a < b;
+                    });
+                    for (const auto& m : members)
+                        if (const auto c = std::min(left - gave, cash(m)); c > 0 && shift(m, ReliefFund, "", 0, c, "skim: " + purpose))
+                            gave += c;
+                }
+                else if (shift(h.id, ReliefFund, "", 0, left, "skim: " + purpose))
+                    gave = left;
+                if (gave <= 0)
+                    continue;
+                taken += gave;
+                loopToday_.skimBy[h.group] += gave;
+                loopToday_.skimPayers[h.id] += gave;
+            }
         }
-        else if (shift(h.id, ReliefFund, "", 0, left, "skim: " + purpose))
-            gave = left;
-        if (gave <= 0)
-            continue;
-        taken += gave;
-        loopToday_.skimBy[h.group] += gave;
-        loopToday_.skimPayers[h.id] += gave;
-    }
     loopToday_.skim += taken;
     loopToday_.skimFor[purpose] += taken;
     loopToday_.skimShort += std::max<std::int64_t>(0, sum - taken);
@@ -550,20 +690,26 @@ void Society::neverHungry(std::int64_t day)
 
 void Society::neverBroke()
 {
-    // Never Broke (doc 74, 7.2): at 18:00, after the day's wages and the city's alms, a household whose purses together are
-    // under its next day's necessities (necessitiesAHead a head) is topped up to exactly that, paid to the member with the
-    // least; the night's top-ups added up first, raised by the skim from the richest, and paid out of fund:relief.
+    // Never Broke (doc 74, 7.2, "The skim reworked"): at 18:00, after the day's wages and the city's alms, a household whose
+    // purses together are under its next day's necessities (necessitiesAHead a head) is given credit for exactly what the
+    // alms left it short: not cash, but credit toward its necessities, drawn from fund:relief as it buys its food and
+    // needs at the shops tomorrow. Last night's credit lapses; what of it was not spent is still in the fund, so tonight's
+    // skim raises only the rest. The poorest a head first, as far as the fund then holds.
+    auto& st = state_.loop.steer;
+    st.tillsDays = std::min(st.tillsDays + 1, 3650);   // (The tills short's mean, for the skim's guard.)
+    const double rate = 1. / std::min(st.tillsDays, 28), tills = loopToday_.tillsShort;
+    st.tillsShort = st.tillsShort < 0 ? tills : st.tillsShort + (tills - st.tillsShort) * rate;
+    st.credit.clear();
+    loopToday_.skimGuard = loopToday_.skimGuard || skimGuardOn();
     const auto nec = necessitiesAHead();
     struct Short
     {
         std::string home;
-        const std::vector<std::string>* members;
         std::int64_t held, heads;
     };
-    const auto homes = households();
     std::vector<Short> shorts;
     std::int64_t bill = 0;
-    for (const auto& [home, members] : homes)
+    for (const auto& [home, members] : households())
     {
         std::int64_t held = 0;
         for (const auto& m : members)
@@ -571,7 +717,7 @@ void Society::neverBroke()
         const auto heads = std::int64_t(members.size());
         if (held < nec * heads)
         {
-            shorts.push_back({home, &members, held, heads});
+            shorts.push_back({home, held, heads});
             bill += nec * heads - held;
         }
     }
@@ -581,21 +727,25 @@ void Society::neverBroke()
     std::sort(shorts.begin(), shorts.end(), [](const Short& a, const Short& b) {
         return a.held * b.heads != b.held * a.heads ? a.held * b.heads < b.held * a.heads : a.home < b.home;
     });
+    auto left = cash(ReliefFund);
     for (const auto& s : shorts)
     {
-        const auto coins = std::min(nec * s.heads - s.held, cash(ReliefFund));
-        if (coins <= 0)
+        const auto credit = std::min(nec * s.heads - s.held, left);
+        if (credit <= 0)
             break;
-        const auto poorest = *std::min_element(s.members->begin(), s.members->end(), [&](const std::string& a, const std::string& b) {
-            return cash(a) != cash(b) ? cash(a) < cash(b) : a < b;
-        });
-        if (shift(ReliefFund, poorest, "", 0, coins, "relief: necessities"))
-        {
-            loopToday_.neverBrokePennies += coins;
-            ++loopToday_.neverBrokeHomes;
-            loopToday_.relief["necessities"] += coins;
-        }
+        st.credit[s.home] = credit;
+        left -= credit;
+        loopToday_.neverBrokeCredit += credit;
+        ++loopToday_.neverBrokeHomes;
     }
+}
+
+std::int64_t Society::neverBrokeOwed() const
+{
+    std::int64_t owed = 0;
+    for (const auto& [home, credit] : state_.loop.steer.credit)
+        owed += credit;
+    return owed;
 }
 
 void Society::shareOut()
@@ -665,7 +815,8 @@ void Society::shareOut()
     }
     loopToday_.skim += raised;
     loopToday_.skimFor["share-out"] += raised;
-    loopToday_.shareOut += topUpPoorest(cash(ReliefFund), ReliefFund, -1);
+    // (Never Broke's credit tonight stays in the fund for the households' necessities tomorrow: never shared out.)
+    loopToday_.shareOut += topUpPoorest(std::max<std::int64_t>(0, cash(ReliefFund) - neverBrokeOwed()), ReliefFund, -1);
 }
 
 void Society::housesDividend()

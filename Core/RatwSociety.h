@@ -300,9 +300,18 @@ struct LoopState
             std::map<std::string, std::int64_t> purpose, group, payers;
         };
         std::vector<SkimDay> skims;
+        // The skim reworked (doc 74, 6): each holder's idle spare (a household "home <key>", an estate's fund, the
+        // treasury), the night it was last followed (-1: never, so the first night seeds each at its spare); Never Broke's
+        // credit toward necessities, by household (its home key), until the next night's; and the tills short's 28-night
+        // mean while Never Broke is on (the skim's guard), over so many nights.
+        std::map<std::string, std::int64_t> idle, credit;
+        std::int64_t idleDay = -1;
+        double tillsShort = -1;
+        int tillsDays = 0;
         bool empty() const
         {
-            return !on && push == 0 && judged < 0 && days == 0 && tollLean == 0 && estateShort < 0 && history.empty() && skims.empty();
+            return !on && push == 0 && judged < 0 && days == 0 && tollLean == 0 && estateShort < 0 && history.empty() && skims.empty() &&
+                   idle.empty() && credit.empty() && idleDay < 0 && tillsDays == 0;
         }
     };
     Steer steer;
@@ -1181,6 +1190,10 @@ class Society
         int neverHungryPieces = 0, neverHungryHomes = 0, neverHungryWharfPieces = 0, householdsShortAfter = 0;
         std::int64_t neverHungryPennies = 0, neverHungryWharfPennies = 0, neverBrokePennies = 0;
         int neverBrokeHomes = 0;
+        // (The skim reworked: Never Broke's pennies are the credit spent at the shops today; neverBrokeCredit the credit
+        // given tonight; skimGuard, the tills short's guard on tonight.)
+        std::int64_t neverBrokeCredit = 0;
+        bool skimGuard = false;
     };
     const LoopDay& loopToday() const { return loopToday_; }
     // Steering the economy (Docs/Design/74-steering-the-economy.md). Whether the steering is acting now (the rule on and
@@ -1206,14 +1219,25 @@ class Society
     // treasury not among them (before tonight's wage support is known).
     static constexpr const char* ReliefFund = "fund:relief";
     std::int64_t skim(std::int64_t sum, const std::string& purpose, bool treasury = true);
-    // Who could pay, and how much: each holder's spare now (account id, its group, pennies), richest first.
+    // Who could pay, and how much: each holder's spare now (account id, its group, pennies), richest first. (The
+    // share-out's own other holders: the tills, the farms, the estates and the treasury, as the first build's skim had them.)
     struct Spare
     {
         std::string id, group;
         std::int64_t spare = 0;
         std::vector<std::string> members;           // (A household's: its members, who pay.)
+        std::int64_t idle = 0;                      // (The skim's: its idle spare, at most its spare.)
     };
     std::vector<Spare> spares(bool deep, bool treasury = true);   // (`treasury` false: never the treasury.)
+    // The skim's payers (doc 74, 6.1, "The skim reworked"), one step at a time, idle money first: 1 the estates, 2 the
+    // treasury (when `treasury`), 3 upper-class households, 4 the keepers' households, 5 other middle-class households (a
+    // household over comfortableAHead a head; a lower-class one never); each with its idle spare, richest first.
+    static constexpr int SkimSteps = 5;
+    std::vector<Spare> skimStep(int step, bool treasury);
+    std::int64_t comfortableAHead() const;          // A household's line for the skim: comfortable x necessities a head.
+    bool skimGuardOn() const;                       // The tills short's guard (Never Broke on, the tills short high).
+    std::int64_t neverBrokeOwed() const;            // Never Broke's credit not yet spent (held in fund:relief).
+    void skimIdleNight(std::int64_t day);           // At 18:00, last: each holder's idle spare followed.
     // The controller (doc 74, 8): at 18:00, last of the money's steps (public for the tests, which judge a still world).
     void steerEconomy(std::int64_t day);
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a
@@ -1389,7 +1413,7 @@ class Society
     std::int64_t topUpPoorest(std::int64_t budget, const std::string& from = "treasury", std::int64_t to = -2);
     // Steering the economy (doc 74): the two floors, the share-out, the Houses' dividend and the controller.
     void neverHungry(std::int64_t day);             // At the shops' last hour.
-    void neverBroke();                              // At 18:00, after the alms.
+    void neverBroke();                              // At 18:00, after the alms: credit toward necessities.
     void shareOut();                                // At 18:00, after Never Broke (the push left of the centre).
     void housesDividend();                          // At 18:00 (the push right of the centre).
     void steerSet(double push, std::int64_t day, const std::string& why, bool judging);

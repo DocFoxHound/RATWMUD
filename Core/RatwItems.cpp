@@ -716,6 +716,10 @@ Catalog build()
                 }
             c.cityLoop.steering.treasuryFloor = std::clamp(steer.number("treasuryFloor", 800), 0., 1e9);
             c.cityLoop.steering.treasuryLow = std::clamp(steer.number("treasuryLow", 500), 0., c.cityLoop.steering.treasuryFloor);
+            c.cityLoop.steering.comfortable = std::clamp(steer.number("comfortable", 4), 1., 100.);
+            c.cityLoop.steering.idleDays = int(std::clamp(steer.number("idleDays", 28), 1., 365.));
+            c.cityLoop.steering.tillsShortNormal = std::clamp(steer.number("tillsShortNormal", 25), 0., 1e6);
+            c.cityLoop.steering.tillsShortOver = std::clamp(steer.number("tillsShortOver", 15), 0., 1000.);
         }
         // The Houses' city businesses (doc 72, after iron6): a building and its House each, the first entry for a building.
         for (const auto& b : country.object("houseBusinesses").array("list"))

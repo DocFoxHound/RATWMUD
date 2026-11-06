@@ -269,60 +269,80 @@ and the no-earner and low-wage alms draw more, since those come only from what i
 
 ## 6. The skim
 
-The skim is one function that takes a sum of money from whoever is richest at that moment and puts it in `fund:relief`.
-It has three callers: Never Hungry, Never Broke and the share-out. (The share-out's households-over-the-mean part is its
-own; section 5.1.)
+The skim is one function that takes a sum of money from idle money and puts it in `fund:relief`. It has two callers:
+Never Hungry and Never Broke. (The share-out takes its own, section 5.1: its households over the mean, then the richest
+tenth of the other holders, the tills, farms, estates and treasury, as the first build's skim had them.)
 
-### 6.1 Who can be skimmed, and their spare
+The skim was reworked after Tune round 1 (Progress, "The skim reworked"). In `steer-centre-floors-t1` it took 508p a day,
+almost all for Never Broke, and most of it from households who shop (middle households 147p, lower households 57p) and
+from the treasury that pays the wage support; the city's tills went short 31-32 a day against 22-27. The rework takes
+from idle money instead, in a set order.
 
-The spare is what a holder has over its own needs, worked out fresh each time.
+### 6.1 Who pays, in order
 
-| holder | spare |
-|---|---|
-| An NPC household (never a player's purse) | its purses together − `max(comfortsAbove, skimKeepDays × necessities a head)` × heads |
-| A city shop's till | cash − its float − (`floatWagesDays` + 1) × tonight's wages owed |
-| A House business's or workshop's till | cash − its float − (`workshopWagesDays` + 1) × tonight's wages owed |
-| A farm's till | cash − its float − its basket's most − its crew's night |
-| An estate (each of the five) | `estateSpare(fund, owed)`: its posts' nights, the Wharf's reserve and the Crown's grants kept |
-| The treasury | cash − max(`treasuryCap`, `TreasuryFloat`) − tonight's wage support wanted |
+Five steps, idle money first. Each step is worked out fresh, at the moment of the skim.
 
+| step | payers | spare |
+|---|---|---|
+| 1 | The estates (each of the five) | `estateSpare(fund, owed)`: its posts' nights, the Wharf's reserve and the Crown's grants kept |
+| 2 | The treasury (never at 17:00) | cash − max(`treasuryCap`, `TreasuryFloat`) − tonight's wage support wanted |
+| 3 | Upper-class households | its purses together − the comfortable line × heads |
+| 4 | Keepers' households (not upper or lower class): a member keeps a shop | the same |
+| 5 | Other middle-class households, last | the same |
+
+- **The comfortable line** a head is `comfortable` (the steering table, 4) × necessities a head, and never under the
+  comforts' keep (`comfortsAbove`, 40p). With necessities about 19p a head, that is about 76p a head. What a household
+  holds under it is its spending money and is never taken.
+- **Lower-class households never pay.** A household's class is `homeClass` (an upper member makes it upper).
+- **A keeper's profit** is skimmed only from the keeper's own purses (step 4), over the comfortable line. **No till pays:**
+  not a shop's, a House business's, a workshop's or a farm's, so a till's float and wage days are never touched.
 - **Never skimmed:** `fund:relief` itself, the accounts of the beyond (`outside:*` other than an estate's), the Wharf's
   credit (a limit, not coins) and players.
 - **Necessities a head** are a day's: `almsNow()` (the alms line, a day's food), plus `households.reserve` (6p), plus the
   day's share of the household needs (fuel and the rest in `crafts.json` `needs`: each one's stable price divided by its
-  `everyDays`, worked out once a day).
-- **The tills at the two times.** At the shops' last hour a till holds the day's takings, so its spare is real. At
-  PayHour, after `payWages`, it holds exactly its cap, so its spare is about 0. By then the night's profit is in the
-  keeper's purse, which is skimmed as a household.
+  `everyDays`).
+- **The treasury at 17:00.** Never Hungry's skim leaves it out, since tonight's wage support isn't known yet (the review's
+  fix). At 18:00 Never Broke's skim may take its spare.
 
-### 6.2 How it takes: water-filling from the top
+### 6.2 How it takes: idle first, step by step
 
-- **Rank** every holder with spare > 0 by its spare in pennies, most first. Ties are broken by account id, so the order is
-  deterministic.
-- **Cap:** each holder may give at most `skimMost`% of its spare in one skim (50%).
-- **Level:** find the highest whole-penny level `L` such that the holders over `L`, each taken down to `max(L, its spare ×
-  (1 - skimMost/100))`, give at least the sum. Take that, from the most spare down, and the last pennies in rank order.
-  The richest give first and most. A holder near the top gives a little. No one is taken under its needs.
-- **Short?** If the first pass can't raise the sum (every cap reached), a second pass lifts the cap to 100% of the spare.
-  If that still falls short, the shortfall is logged (`skim_short`), and the caller pays what was raised. A household's
-  spare line drops to one day's necessities in the second pass; nothing else's does.
-- **It is fresh each time.** The ranking is made at the moment of the skim from cash now. A House rich this week and
-  drawn down pays less next week, and a till full on market day pays that day. **No group is fixed.**
+- **How long money has sat.** Each household keeps an idle spare (saved: `steer.idle`). At the end of each 18:00, while a
+  floor is on (`skimIdleNight`), it falls at once to the household's spare if the spare is lower, and otherwise rises
+  toward it by 1/`idleDays` (28) of the gap, rounded up. So money that has sat for weeks counts almost wholly, and money
+  that came in today counts hardly at all. The first night, each household starts at its spare. A household that later
+  gains a spare starts at 0. The estates' and the treasury's spare count as idle as they are.
+- **Rank** within a step by the idle spare, most first; ties by spare, then by id. The order is deterministic.
+- **The first pass** goes through the steps in order. In each step it water-fills on the idle spare: at most `skimMost`%
+  (50%) of each holder's idle spare, the holders with the most brought down toward one level first, the last pennies in
+  rank order. It moves to the next step only when this step's caps are reached.
+- **The second pass**, if the first fell short, goes through the steps again, now up to the whole of each spare (the busy
+  money too), richest first. A household's line stays the comfortable line; it never drops. If that still falls short, the
+  shortfall is logged (`skim_short`), and the caller pays what was raised.
+- **The tills short's guard.** While Never Broke is on, its 28-night mean of the tills short a night (`steer.tillsShort`,
+  followed each night Never Broke runs) is kept. Once it has 28 nights, while it is over `tillsShortNormal` (25, the
+  centre's level: stable10b's years were 22-27) by more than `tillsShortOver` percent (15%, so over 28.75), the first pass
+  takes the estates' and the treasury's whole spare before any household pays. Logged as `skim_guard`.
+- **It is fresh each time.** The ranking is made at the moment of the skim from cash now and the idle spares as last
+  followed. A House rich this week and drawn down pays less next week. **No payer is fixed**, only the order of the steps.
 
 ### 6.3 Exactly what the toggles add
 
 - Each caller first works out what it will pay out (the batch). It asks the skim for that sum less what `fund:relief`
   already holds, then pays out of the fund.
-- So the fund only passes money through. Its balance at the end of each night is 0 or a few pennies left over from a
-  share-out that couldn't place them. That leftover is used first next time and logged daily (`relief_fund`).
+- So the fund only passes money through. At the end of each night it holds Never Broke's credit for tomorrow (7.2), plus
+  a few pennies the share-out couldn't place. What is left of the credit a night later is used first by the next skim, so
+  it is never drawn twice. The balance is logged daily (`relief_fund`), the credit apart (`never_broke.credit_left`).
+- The share-out never pays out Never Broke's credit: it places only what the fund holds over the credit owed.
 - Over any span: **skimmed = paid out by the toggles and the share-out + the change in `fund:relief`**. The report checks
   this to the penny (section 9).
 
 ### 6.4 The ledger
 
 Every skim `shift` has the reason `skim: never hungry`, `skim: never broke` or `skim: share-out`. Every payment out of
-the fund has `relief: food`, `relief: necessities` or `relief: share-out`. The day's line counts the skim by payer group
-(households by class, shops, House businesses, farms, estates by House, the treasury), and by purpose. It also names the
+the fund has `relief: food`, `relief: necessities` or `relief: share-out` (a lot that came cheaper than its credit sends
+the difference back as `relief: necessities, not spent`). The day's line counts the skim by payer group (the estates by
+House, the treasury, `households: upper`, `keepers`, `households: middle`; the share-out's own payers as before: shops,
+House businesses, farms), and by purpose. It also names the
 day's five largest payers. The full log adds a `skim` table: payer, group, pennies, purpose.
 
 ## 7. Never Hungry and Never Broke
@@ -358,19 +378,25 @@ players.
 ### 7.2 Never Broke
 
 - **When:** at PayHour, right after `giveAlms`. The day's wages and the city's alms come first, and Never Broke covers
-  what is left.
+  only what the alms didn't.
 - **Who:** every NPC household whose purses together are under its necessities: necessities a head (6.1) × heads.
-- **What:** it is topped up to exactly that line, paid to the member with the least. A household over the line gets
-  nothing, and no one is given more than the next day's food, reserve and needs. This is "just enough".
-- **How it is paid for:** the night's top-ups are added up first, the skim raises that sum from whoever is richest at
-  18:00, and the fund pays out.
-- **Expected cost:** a household given the alms holds 10p a head (the alms line), so Never Broke adds the reserve and the
-  needs, about 6-9p a head. In stable10b, roughly 100 residents end a night on the alms, so it may be **500-900p a
-  day**. That is much more than Never Hungry: a real flow from the rich to the poorest. The steer-centre-floors run
-  measures it.
+- **What:** credit toward necessities for exactly the gap, not cash (`steer.credit`, by household, saved). The next day,
+  when the household buys its food (never a luxury) or a need at the shops, the credit pays first: the part it covers
+  goes from `fund:relief` to the buyer and straight on to the till in the same purchase. The household's purse pays only
+  what the credit doesn't cover, under its usual keep. The credit can't be saved or spent on comforts, luxuries or
+  services. Tonight's credit replaces last night's; what wasn't spent lapses, and the money for it, still in the fund,
+  goes toward tonight's (so it is not drawn again). Turning the toggle off lapses the credit at once; the fund keeps the
+  money, which the next skim uses first.
+- **How it is paid for:** the night's credit is added up first, the skim raises that sum less what the fund already holds
+  from whoever is first in the order at 18:00 (6.1), and the credit is given, the poorest a head first, as far as the fund
+  then holds.
+- **What it costs:** the credit given is logged as `never_broke.credit`, and the credit spent at the shops as
+  `never_broke.pennies` and `relief.necessities` (on the day it is spent). The reserve's 6p a head is in the credit, but a
+  household only spends it if its food and needs that day come to more, so it costs less than the first build's top-up.
+  The first build's cost, for comparison: 444-574p a day in `steer-centre-floors-t1`. The rework hasn't been run.
 - **The steering compensates.** With the steering on, it sees the flattening in the Gini and the upper share and leans
-  the push right within its band. With the steering off, nothing compensates, and the toggle simply costs the rich that
-  much.
+  the push right within its band (unless the Gini is under its band, which counts as Never Broke's own levelling: Tune
+  round 1). With the steering off, nothing compensates.
 
 ### 7.3 The floor, the toggles and the slider together
 
@@ -444,6 +470,7 @@ At PayHour (18:00):
 9. `treasuryNight`, `followTreasury`.
 10. **`steerEconomy`:** measure, update the means, judge, and move the push. The new levers take effect from the next
     hour's steps.
+10a. **`skimIdleNight`** (a floor on): each household's idle spare followed (6.2).
 11. `rotStock` and the estates' keep, as today.
 
 The measures are read after every money step, so the Gini is the evening's, after the share-out.
@@ -475,7 +502,10 @@ The measures are read after every money step, so the Gini is the evening's, afte
 - the measures at the last judging;
 - the toll lean (its guard can hold it apart from the table);
 - a short history: the last 24 judgings, each with day, measure, target, band, error, step, push before and after, and
-  the reason text.
+  the reason text;
+- since the skim's rework: each household's idle spare (`idle`) and the night it was last followed (`idleDay`), Never
+  Broke's credit by household (`credit`), and the tills short's 28-night mean and its nights (`tillsShort`,
+  `tillsDays`).
 
 The history gives the DM tab its "why", read from the latest `game.checkpoints` as the toll's drift is today
 (`studio.py drift()`).
@@ -1039,3 +1069,52 @@ right's treasury guard is set from the centre's own treasury. The skim and the f
 the estates' posts hold at every position. Left open: the right's treasury at its float on 21 days, with the shops'
 unpaid wages up; the left's shops 15-19% over stable10b in years 2-3; Never Broke's cost to the shops (tills short 31
 against 22-27).
+
+### The skim reworked (2026-11-06)
+
+The user's go-ahead after Tune round 1: "Yeah make your suggested changes. Don't run any more simulations though."
+Branch `r2-skim`. **No simulation was run** (no world_check run, no smoke, no econ_watch): the change is tested by unit
+tests only and **untested in a run**. Nothing written to DEV.
+
+**Why.** In `steer-centre-floors-t1` (its report, section 6) the skim took 508p a day, almost all for Never Broke (66
+homes, about 7.7p each): middle households 147p, the Crown's estate 137p, upper households 63p, lower households 57p,
+Timberland 50p, the treasury 43p, shops 0.1p. It barely touched the tills, but it took from the households who shop and
+from the treasury that pays the wage support, and the tills went short 31-32 a day against 22-27.
+
+**The changes** (sections 6.1, 6.2, 6.3, 6.4, 7.2, 8.3, 8.6):
+
+1. **Idle money, not spending money.** A household pays only on what it holds over the comfortable line, `comfortable`
+   (4) × its necessities a head (and never under the comforts' keep). Lower-class households never pay. The second pass
+   no longer drops a household's line to a day's necessities.
+2. **A set order of payers:** the estates' spare, the treasury over its cap and tonight's wage support (still never at
+   17:00), upper-class households, the keepers' households, middle-class households last. No till or farm pays any more.
+   Within each step, richest first, judged afresh each time. The cap is kept: the first pass takes at most `skimMost`% of
+   each holder's idle spare, step by step; the second, short of it, up to the whole of each spare, step by step again.
+3. **Idle before busy.** Each household's idle spare (saved) rises a 28th of the way to its spare a night and falls at
+   once. Within a step the first pass ranks and takes by it, so savings that have sat for weeks pay before the busy purse.
+4. **Never Broke cheaper and exact.** After the alms, credit for just what the alms left short, spent at the shops on the
+   household's food and needs, drawn from `fund:relief` as it buys. Credit unused by the next night lapses and is not
+   drawn again. Money is conserved: every penny moves by `shift` between accounts that exist.
+5. **The tills short's guard.** With Never Broke on, while the tills short's 28-night mean is over the centre's level (25)
+   by more than 15%, the first pass takes the estates' and the treasury's whole spare before any household.
+
+The share-out (5.1) keeps its own payers; the first build's spare function (`spares`) is now only the share-out's.
+
+**Tests** (unit tests only): `steer_tests` 173 checks (was 107), among them: a lower-class household never pays and no
+till does; the order (the estates before the treasury, the treasury before households, upper before the keeper before
+the middle); idle before busy, the idle spare's 28th a night, its fall, once a night, fresh money still paying in the
+second pass; a middle household pays only over the comfortable line; Never Broke after the alms as credit (the purses hold
+only the alms, the credit spent at the shop as relief for necessities, the fund holding the rest, the next night's skim
+raising only what the fund lacks, the credit lapsing when turned off); the guard (on over 28.75, off under, only with
+Never Broke on, only after 28 nights, the mean followed nightly); money conserved throughout; two identical worlds the
+same; the new state saved and read again. ctest 80 of 80; `test_econ_report` (and its stale centre target for the upper
+share, 13 ± 2 since Tune round 1, corrected); `test_studio` 51 OK; the Editor's lib tests 74 of 74 and `tsc` clean.
+
+**Logging.** The daily line adds `never_broke.credit` (given tonight), `never_broke.credit_left`, `skim_guard` and
+`tills_short_mean28`; `never_broke.pennies` is now the credit spent that day. `tools/econ_report.py` "The steering" adds
+a line: the credit given and spent a day, and the guard's days. The DM tab's skim summary says where the money comes from.
+
+**Not known until a run:** what the skim now costs each group and whether the tills short come back toward 22-27; whether
+4 × necessities is the right comfortable line; whether the estates and the treasury can carry Never Hungry and Never Broke
+without households (the second pass then takes the households' busy money); and how much of the credit is spent.
+

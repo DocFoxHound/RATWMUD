@@ -303,7 +303,8 @@ inline constexpr RuleInfo Rules[] = {
     {"steerWidthMid", 0, 50, 15},        // the push within this many hundredths of the slider at the centre,
     {"steerWidthEnd", 0, 100, 30},       // and this many at either end (between, in proportion).
     {"skimMost", 1, 100, 50},            // The skim takes at most this percent of a holder's spare in its first pass,
-    {"skimKeepDays", 1, 28, 3},          // and leaves a household this many days of its necessities a head.
+    {"skimKeepDays", 1, 28, 3},          // and the share-out leaves a household this many days of its necessities a head
+                                         // (the skim's own line is the steering table's `comfortable`).
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // A rule's name now for one it had before (doc 73: countryPostsDays is estatePostsDays), else the name as given: a world's
@@ -428,6 +429,13 @@ struct CityLoop
     {
         std::map<std::string, std::array<double, 5>> levers, targets;
         double treasuryFloor = 800, treasuryLow = 500;   // The toll lean's guard (5.3).
+        // The skim (doc 74, 6, "The skim reworked"): a household pays only on what it holds over `comfortable` times its
+        // necessities a head; a holder's idle spare rises toward its spare by 1/idleDays of the gap a night (falls at once);
+        // with Never Broke on, the skim's guard leans on the estates and the treasury while the tills short's 28-night
+        // mean is over tillsShortNormal by more than tillsShortOver percent.
+        double comfortable = 4;
+        int idleDays = 28;
+        double tillsShortNormal = 25, tillsShortOver = 15;
     };
     Steering steering;
 };
