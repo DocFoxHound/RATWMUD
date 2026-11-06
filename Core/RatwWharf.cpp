@@ -368,7 +368,11 @@ std::int64_t Society::wharfTakesRun(bool commit)
             wanted += price + carriage + wharfage;
         }
         if (const int missed = wantN - (capStart - capLeft); commit && missed > 0)
-            loopToday_.wharfTakeUnfit += total(missed);
+        {
+            const auto unfit = total(missed);
+            loopToday_.wharfTakeUnfit += unfit;
+            loopToday_.wharfTakeUnfitBy[good] += unfit;
+        }
     }
     return wanted;
 }

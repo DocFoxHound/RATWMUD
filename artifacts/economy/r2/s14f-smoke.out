@@ -1,0 +1,184 @@
+  money at the start (50252p in all; 42 residents short of a day's food money): holder, total, how many, median
+    adults without work: 1616p, 46, 32p
+    capital's treasury: 1000p, 1, 1000p
+    children: 0p, 4, 0p
+    guards: 262p, 14, 15p
+    home stores: 0p, 896, 0p
+    merchants: 13416p, 102, 136p
+    outside: 0p, 1, 0p
+    paid civilians: 11055p, 300, 38p
+    till: 13416p, 102, 136p
+    unpaid civilians: 9487p, 93, 84p
+  the farms' switch: the first area on day 0 (the world is on day 0), one every 28 days
+economy level full: artifacts/economy/r2/s14f-smoke.full.jsonl.gz
+  run day 1: 2.24875 s wall, 288000 ticks; 2.24875 s so far
+  run day 2: 1.71278 s wall, 288000 ticks; 3.96153 s so far
+  run day 3: 1.60898 s wall, 288000 ticks; 5.57051 s so far
+  run day 4: 1.53254 s wall, 288000 ticks; 7.10305 s so far
+  run day 5: 1.49642 s wall, 288000 ticks; 8.59947 s so far
+  run day 6: 1.8632 s wall, 288000 ticks; 10.4627 s so far
+  run day 7: 1.28199 s wall, 288000 ticks; 11.7447 s so far
+  run day 8: 1.44467 s wall, 288000 ticks; 13.1893 s so far
+  run day 9: 1.43765 s wall, 288000 ticks; 14.627 s so far
+  run day 10: 1.56666 s wall, 288000 ticks; 16.1936 s so far
+  run day 11: 1.54247 s wall, 288000 ticks; 17.7361 s so far
+  run day 12: 1.57315 s wall, 288000 ticks; 19.3093 s so far
+  run day 13: 1.72015 s wall, 288000 ticks; 21.0294 s so far
+  run day 14: 1.34217 s wall, 288000 ticks; 22.3716 s so far
+  run day 15: 1.58914 s wall, 288000 ticks; 23.9607 s so far
+  run day 16: 1.60604 s wall, 288000 ticks; 25.5668 s so far
+  run day 17: 1.60133 s wall, 288000 ticks; 27.1681 s so far
+  run day 18: 1.65775 s wall, 288000 ticks; 28.8258 s so far
+  run day 19: 1.70304 s wall, 288000 ticks; 30.5289 s so far
+  run day 20: 1.82199 s wall, 288000 ticks; 32.3509 s so far
+  run day 21: 1.47027 s wall, 288000 ticks; 33.8211 s so far
+  run day 22: 1.7264 s wall, 288000 ticks; 35.5475 s so far
+  run day 23: 1.68855 s wall, 288000 ticks; 37.2361 s so far
+  run day 24: 1.55651 s wall, 288000 ticks; 38.7926 s so far
+  run day 25: 1.56344 s wall, 288000 ticks; 40.356 s so far
+  run day 26: 1.56408 s wall, 288000 ticks; 41.9201 s so far
+  run day 27: 1.61538 s wall, 288000 ticks; 43.5355 s so far
+  run day 28: 1.36258 s wall, 288000 ticks; 44.8981 s so far
+  run day 29: 1.72914 s wall, 288000 ticks; 46.6272 s so far
+  run day 30: 1.95853 s wall, 288000 ticks; 48.5858 s so far
+  run day 31: 1.83985 s wall, 288000 ticks; 50.4256 s so far
+  run day 32: 1.80874 s wall, 288000 ticks; 52.2343 s so far
+  run day 33: 1.80837 s wall, 288000 ticks; 54.0427 s so far
+  run day 34: 1.87431 s wall, 288000 ticks; 55.917 s so far
+  run day 35: 1.46179 s wall, 288000 ticks; 57.3788 s so far
+  run day 36: 1.81463 s wall, 288000 ticks; 59.1934 s so far
+  run day 37: 1.83003 s wall, 288000 ticks; 61.0235 s so far
+  run day 38: 1.8228 s wall, 288000 ticks; 62.8463 s so far
+  run day 39: 1.80969 s wall, 288000 ticks; 64.656 s so far
+  run day 40: 1.81184 s wall, 288000 ticks; 66.4678 s so far
+  run day 41: 1.91238 s wall, 288000 ticks; 68.3802 s so far
+  run day 42: 1.49496 s wall, 288000 ticks; 69.8751 s so far
+  run day 43: 1.79631 s wall, 288000 ticks; 71.6714 s so far
+  run day 44: 1.76824 s wall, 288000 ticks; 73.4397 s so far
+  run day 45: 1.86387 s wall, 288000 ticks; 75.3036 s so far
+  run day 46: 1.80372 s wall, 288000 ticks; 77.1073 s so far
+  run day 47: 1.80107 s wall, 288000 ticks; 78.9083 s so far
+  run day 48: 1.90222 s wall, 288000 ticks; 80.8106 s so far
+  run day 49: 1.51844 s wall, 288000 ticks; 82.329 s so far
+  run day 50: 1.79849 s wall, 288000 ticks; 84.1275 s so far
+  run day 51: 1.81177 s wall, 288000 ticks; 85.9393 s so far
+  run day 52: 1.82771 s wall, 288000 ticks; 87.767 s so far
+  run day 53: 1.812 s wall, 288000 ticks; 89.579 s so far
+  run day 54: 1.83377 s wall, 288000 ticks; 91.4127 s so far
+  run day 55: 1.93802 s wall, 288000 ticks; 93.3508 s so far
+  run day 56: 1.64879 s wall, 288000 ticks; 94.9995 s so far
+  run day 57: 2.16316 s wall, 288000 ticks; 97.1627 s so far
+  run day 58: 2.09125 s wall, 288000 ticks; 99.254 s so far
+  run day 59: 2.08355 s wall, 288000 ticks; 101.338 s so far
+  run day 60: 2.10384 s wall, 288000 ticks; 103.441 s so far
+  inside World::tick, total ms (worst tick): streaming 0 (0) schedules 0 (0) movement 0 (0) separation 0 (0) views 0 (0); 0 route searches expanding 0 nodes (at most 0 in one)
+  path cache: 0 found, 0 searched
+  slowest route search: 0 ms in , 0 nodes, 0 waypoints
+  slowest World::tick after the first minute (tick 0): 0 ms = streaming 0, schedules 0 (0 route searches), movement 0, separation 0, views 0
+703 residents, no player, 17280000 ticks (17280000 of 0.05 s) from 6:00 to 1446:00: 103.442 s wall, 1.72403 s a game day, mean 0.0059862 ms a tick; 508 residents moved; at most 691 places in memory; 4 threads
+  by run day (wall s; ticks; with the profile on, the schedules' stages in s: society bonds roads crime errands streaming routes):
+    day 1: 2.24875; 288000; 0 0 0 0 0 0 0
+    day 2: 1.71278; 288000; 0 0 0 0 0 0 0
+    day 3: 1.60898; 288000; 0 0 0 0 0 0 0
+    day 4: 1.53254; 288000; 0 0 0 0 0 0 0
+    day 5: 1.49642; 288000; 0 0 0 0 0 0 0
+    day 6: 1.8632; 288000; 0 0 0 0 0 0 0
+    day 7: 1.28199; 288000; 0 0 0 0 0 0 0
+    day 8: 1.44467; 288000; 0 0 0 0 0 0 0
+    day 9: 1.43765; 288000; 0 0 0 0 0 0 0
+    day 10: 1.56666; 288000; 0 0 0 0 0 0 0
+    day 11: 1.54247; 288000; 0 0 0 0 0 0 0
+    day 12: 1.57315; 288000; 0 0 0 0 0 0 0
+    day 13: 1.72015; 288000; 0 0 0 0 0 0 0
+    day 14: 1.34217; 288000; 0 0 0 0 0 0 0
+    day 15: 1.58914; 288000; 0 0 0 0 0 0 0
+    day 16: 1.60604; 288000; 0 0 0 0 0 0 0
+    day 17: 1.60133; 288000; 0 0 0 0 0 0 0
+    day 18: 1.65775; 288000; 0 0 0 0 0 0 0
+    day 19: 1.70304; 288000; 0 0 0 0 0 0 0
+    day 20: 1.82199; 288000; 0 0 0 0 0 0 0
+    day 21: 1.47027; 288000; 0 0 0 0 0 0 0
+    day 22: 1.7264; 288000; 0 0 0 0 0 0 0
+    day 23: 1.68855; 288000; 0 0 0 0 0 0 0
+    day 24: 1.55651; 288000; 0 0 0 0 0 0 0
+    day 25: 1.56344; 288000; 0 0 0 0 0 0 0
+    day 26: 1.56408; 288000; 0 0 0 0 0 0 0
+    day 27: 1.61538; 288000; 0 0 0 0 0 0 0
+    day 28: 1.36258; 288000; 0 0 0 0 0 0 0
+    day 29: 1.72914; 288000; 0 0 0 0 0 0 0
+    day 30: 1.95853; 288000; 0 0 0 0 0 0 0
+    day 31: 1.83985; 288000; 0 0 0 0 0 0 0
+    day 32: 1.80874; 288000; 0 0 0 0 0 0 0
+    day 33: 1.80837; 288000; 0 0 0 0 0 0 0
+    day 34: 1.87431; 288000; 0 0 0 0 0 0 0
+    day 35: 1.46179; 288000; 0 0 0 0 0 0 0
+    day 36: 1.81463; 288000; 0 0 0 0 0 0 0
+    day 37: 1.83003; 288000; 0 0 0 0 0 0 0
+    day 38: 1.8228; 288000; 0 0 0 0 0 0 0
+    day 39: 1.80969; 288000; 0 0 0 0 0 0 0
+    day 40: 1.81184; 288000; 0 0 0 0 0 0 0
+    day 41: 1.91238; 288000; 0 0 0 0 0 0 0
+    day 42: 1.49496; 288000; 0 0 0 0 0 0 0
+    day 43: 1.79631; 288000; 0 0 0 0 0 0 0
+    day 44: 1.76824; 288000; 0 0 0 0 0 0 0
+    day 45: 1.86387; 288000; 0 0 0 0 0 0 0
+    day 46: 1.80372; 288000; 0 0 0 0 0 0 0
+    day 47: 1.80107; 288000; 0 0 0 0 0 0 0
+    day 48: 1.90222; 288000; 0 0 0 0 0 0 0
+    day 49: 1.51844; 288000; 0 0 0 0 0 0 0
+    day 50: 1.79849; 288000; 0 0 0 0 0 0 0
+    day 51: 1.81177; 288000; 0 0 0 0 0 0 0
+    day 52: 1.82771; 288000; 0 0 0 0 0 0 0
+    day 53: 1.812; 288000; 0 0 0 0 0 0 0
+    day 54: 1.83377; 288000; 0 0 0 0 0 0 0
+    day 55: 1.93802; 288000; 0 0 0 0 0 0 0
+    day 56: 1.64879; 288000; 0 0 0 0 0 0 0
+    day 57: 2.16316; 288000; 0 0 0 0 0 0 0
+    day 58: 2.09125; 288000; 0 0 0 0 0 0 0
+    day 59: 2.08355; 288000; 0 0 0 0 0 0 0
+    day 60: 2.10384; 288000; 0 0 0 0 0 0 0
+  703 residents offstage at the end; money conserved; 1 places in memory at the end; 51631 bonds between them
+  money at the end (59342p in all; 59 residents short of a day's food money): holder, total, how many, median
+    adults without work: 558p, 44, 10p
+    apprentices: 76p, 11, 7p
+    capital's treasury: 2036p, 1, 2036p
+    children: 64p, 11, 5p
+    crew: 0p, 19, 0p
+    estate: 1254p, 4, 223p
+    farm: 2303p, 19, 120p
+    guards: 347p, 14, 17p
+    home stores: 0p, 1100, 0p
+    merchants: 11262p, 122, 87p
+    outside: 663p, 1, 663p
+    paid civilians: 18530p, 408, 45p
+    till: 19761p, 122, 141p
+    unpaid civilians: 2488p, 93, 15p
+  roads: 0 towns (); 0 caravans on the road, 0 robbed; 0 bandit camps; 0 open contracts; 1315 rumours held
+  crime: 0 incidents (); 0 wanted, 0 held
+  people: 700 residents living (the oldest 82), 135 married couples; 3 born, 141 arrived from the Country and 3 died in the run; 0 children and 0 arrivals asked for and not made; 0 children still owed for the dead; 383 unplaced NPCs left in the world's list
+  the unplaced of working age by old trade: bees 6; children 4; fields and mills 47; fishing and the marsh 27; herds and flocks 19; keeps the house 27; mines, stone and clay 28; orchards and vines 3; service and labour 29; the Heights 17; the old 7; the towns' trades and shops 17; the watch 12; woods 36;
+  the farms' people placed: family 12; family hand 1; hand coldwater 19; hand fenshore 1; hand larkfield 11; hand ridgemere 17; hand saltwell 3; hand southmeadow 6; keeper 19; market coldwater 8; market fenshore 3; market larkfield 5; market saltwell 3; market southmeadow 3; workshop cn_coldwater_soapworks 6; workshop cn_coldwater_still 4; workshop cn_coldwater_weavers 5; workshop cn_fenshore_pottery 2; workshop cn_larkfield_press 4; workshop cn_larkfield_smithy 2; workshop cn_larkfield_weavers 5; workshop cn_southmeadow_pottery 1; posts 77 (77 held), virtual crew left 55; 122 living in the realm's homes, 47 households (by size: 1x28 2x1 3x4 4x2 5x2 6x8 7x2), 0 hungry (60+) at the end, the hungriest 58.2
+    shopkeeper at Larkfield Stores (tn_lf_pike_chalkley): till 41p, 174 pieces
+    keeps the taproom at The Sheaf (tn_sm_linden_harvestton): till 59p, 59 pieces
+    baker at Larkfield Bakehouse (tn_lf_lichen_hedgemead): till 215p, 69 pieces
+    linen loom master at Larkfield Looms (cty_gorse_hedgewell): till 30p, 8 pieces
+    country printer at Larkfield Print House (cty_nell_plummeadow): till 224p, 33 pieces
+    village smith at Larkfield Smithy (tn_mb_tansy_eelbridge): till 124p, 40 pieces
+    shopkeeper at Southmeadow Stores (tn_sm_rusk_plummeadow): till 28p, 167 pieces
+    keeps the taproom at The Vine and Sickle (tn_sm_moss_blossomwell): till 30p, 55 pieces
+    village potter at Southmeadow Kilns (tn_sm_dun_harvestley): till 55p, 14 pieces
+    shopkeeper at Coldwater Stores (tn_cw_myrtle_stillford): till 35p, 175 pieces
+    keeps the taproom at The Glasswater Inn (tn_fh_loam_pinefell): till 40p, 73 pieces
+    baker at Coldwater Bakehouse (tn_sm_eskar_cornley): till 307p, 101 pieces
+    soap boiler at Coldwater Soapworks (tn_lf_sage_wheatridge): till 248p, 40 pieces
+    wool loom master at Coldwater Looms (tn_cw_fallow_lakewick): till 56p, 26 pieces
+    stillmaster at Coldwater Still (tn_mb_aspen_marshholm): till 85p, 7 pieces
+    shopkeeper at Saltwell Stores (tn_mb_roan_pikewater): till 22p, 161 pieces
+    keeps the taproom at The Oasis Inn (tn_oh_thorn_ashwood): till 21p, 33 pieces
+    shopkeeper at Fenshore Stores (tn_fh_thistle_stonepick): till 0p, 77 pieces
+    keeps the taproom at The Heron (tn_cw_bramble_reedford): till 53p, 31 pieces
+    village potter at Fenshore Kilns (tn_oh_eskar_acornholt): till 46p, 5 pieces
+  at their scheduled place: 388, on their way: 315, without a route: 0
+  the Wharf beyond the realm: in 8942p, out 8990p, net -48p; its fees 813p; credit 48p (moved 0p); money conserved: true (money 59342p = minted 68332 - sunk 8990)
+  the Wharf (outside:wharf): 663p; treasury 2036p; carriage to till:job:rmx_orm_carlisle 505p; restocking rule on; needs on
+  digest: people 606db4ee57e9dc26, society 63f73e157df9e6db, map memory 14650fb0739d0383 (0 tiles remembered)

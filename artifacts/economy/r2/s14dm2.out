@@ -1,0 +1,2261 @@
+  money at the start (50252p in all; 42 residents short of a day's food money): holder, total, how many, median
+    adults without work: 1616p, 46, 32p
+    capital's treasury: 1000p, 1, 1000p
+    children: 0p, 4, 0p
+    guards: 262p, 14, 15p
+    home stores: 0p, 896, 0p
+    merchants: 13416p, 102, 136p
+    outside: 0p, 1, 0p
+    paid civilians: 11055p, 300, 38p
+    till: 13416p, 102, 136p
+    unpaid civilians: 9487p, 93, 84p
+  the farms' switch: the first area on day 0 (the world is on day 0), one every 28 days
+economy level full: artifacts/economy/r2/s14dm2.full.jsonl.gz
+  run day 1: 3.6598 s wall, 288000 ticks; 3.6598 s so far
+  run day 2: 2.45024 s wall, 288000 ticks; 6.11004 s so far
+  run day 3: 2.09984 s wall, 288000 ticks; 8.20988 s so far
+  run day 4: 2.05217 s wall, 288000 ticks; 10.262 s so far
+  run day 5: 2.00397 s wall, 288000 ticks; 12.266 s so far
+  run day 6: 2.54457 s wall, 288000 ticks; 14.8106 s so far
+  run day 7: 1.86309 s wall, 288000 ticks; 16.6737 s so far
+  run day 8: 1.99977 s wall, 288000 ticks; 18.6735 s so far
+  run day 9: 2.09197 s wall, 288000 ticks; 20.7654 s so far
+  run day 10: 2.24009 s wall, 288000 ticks; 23.0055 s so far
+  run day 11: 2.33237 s wall, 288000 ticks; 25.3379 s so far
+  run day 12: 2.35551 s wall, 288000 ticks; 27.6934 s so far
+  run day 13: 2.58653 s wall, 288000 ticks; 30.2799 s so far
+  run day 14: 1.98371 s wall, 288000 ticks; 32.2636 s so far
+  run day 15: 2.29367 s wall, 288000 ticks; 34.5573 s so far
+  run day 16: 2.2409 s wall, 288000 ticks; 36.7982 s so far
+  run day 17: 2.28957 s wall, 288000 ticks; 39.0878 s so far
+  run day 18: 2.41546 s wall, 288000 ticks; 41.5032 s so far
+  run day 19: 2.46403 s wall, 288000 ticks; 43.9673 s so far
+  run day 20: 2.50694 s wall, 288000 ticks; 46.4742 s so far
+  run day 21: 1.80382 s wall, 288000 ticks; 48.278 s so far
+  run day 22: 2.11937 s wall, 288000 ticks; 50.3974 s so far
+  run day 23: 2.07172 s wall, 288000 ticks; 52.4691 s so far
+  run day 24: 2.06704 s wall, 288000 ticks; 54.5362 s so far
+  run day 25: 2.09064 s wall, 288000 ticks; 56.6268 s so far
+  run day 26: 2.13156 s wall, 288000 ticks; 58.7584 s so far
+  run day 27: 2.29123 s wall, 288000 ticks; 61.0496 s so far
+  run day 28: 1.82353 s wall, 288000 ticks; 62.8731 s so far
+  run day 29: 2.28003 s wall, 288000 ticks; 65.1532 s so far
+  run day 30: 2.74245 s wall, 288000 ticks; 67.8956 s so far
+  run day 31: 2.62074 s wall, 288000 ticks; 70.5163 s so far
+  run day 32: 2.56489 s wall, 288000 ticks; 73.0812 s so far
+  run day 33: 2.57483 s wall, 288000 ticks; 75.6561 s so far
+  run day 34: 2.81699 s wall, 288000 ticks; 78.473 s so far
+  run day 35: 2.12258 s wall, 288000 ticks; 80.5956 s so far
+  run day 36: 2.65887 s wall, 288000 ticks; 83.2545 s so far
+  run day 37: 2.73548 s wall, 288000 ticks; 85.99 s so far
+  run day 38: 2.76386 s wall, 288000 ticks; 88.7538 s so far
+  run day 39: 2.64857 s wall, 288000 ticks; 91.4024 s so far
+  run day 40: 2.81768 s wall, 288000 ticks; 94.2201 s so far
+  run day 41: 3.05696 s wall, 288000 ticks; 97.277 s so far
+  run day 42: 2.29309 s wall, 288000 ticks; 99.5701 s so far
+  run day 43: 2.91985 s wall, 288000 ticks; 102.49 s so far
+  run day 44: 3.08729 s wall, 288000 ticks; 105.577 s so far
+  run day 45: 3.08077 s wall, 288000 ticks; 108.658 s so far
+  run day 46: 2.77715 s wall, 288000 ticks; 111.435 s so far
+  run day 47: 2.79107 s wall, 288000 ticks; 114.226 s so far
+  run day 48: 3.04186 s wall, 288000 ticks; 117.268 s so far
+  run day 49: 2.40606 s wall, 288000 ticks; 119.674 s so far
+  run day 50: 2.88772 s wall, 288000 ticks; 122.562 s so far
+  run day 51: 3.20755 s wall, 288000 ticks; 125.769 s so far
+  run day 52: 2.7798 s wall, 288000 ticks; 128.549 s so far
+  run day 53: 2.93874 s wall, 288000 ticks; 131.488 s so far
+  run day 54: 2.75237 s wall, 288000 ticks; 134.24 s so far
+  run day 55: 3.08151 s wall, 288000 ticks; 137.322 s so far
+  run day 56: 3.0849 s wall, 288000 ticks; 140.407 s so far
+  run day 57: 3.80525 s wall, 288000 ticks; 144.212 s so far
+  run day 58: 3.22488 s wall, 288000 ticks; 147.437 s so far
+  run day 59: 3.32043 s wall, 288000 ticks; 150.757 s so far
+  run day 60: 3.40238 s wall, 288000 ticks; 154.16 s so far
+  run day 61: 3.87556 s wall, 288000 ticks; 158.035 s so far
+  run day 62: 4.66842 s wall, 288000 ticks; 162.704 s so far
+  run day 63: 3.65387 s wall, 288000 ticks; 166.358 s so far
+  run day 64: 4.59179 s wall, 288000 ticks; 170.949 s so far
+  run day 65: 4.64026 s wall, 288000 ticks; 175.59 s so far
+  run day 66: 3.95939 s wall, 288000 ticks; 179.549 s so far
+  run day 67: 4.05524 s wall, 288000 ticks; 183.604 s so far
+  run day 68: 4.19717 s wall, 288000 ticks; 187.801 s so far
+  run day 69: 4.73211 s wall, 288000 ticks; 192.534 s so far
+  run day 70: 3.42076 s wall, 288000 ticks; 195.954 s so far
+  run day 71: 3.91763 s wall, 288000 ticks; 199.872 s so far
+  run day 72: 4.91 s wall, 288000 ticks; 204.782 s so far
+  run day 73: 4.79397 s wall, 288000 ticks; 209.576 s so far
+  run day 74: 4.25667 s wall, 288000 ticks; 213.833 s so far
+  run day 75: 4.61068 s wall, 288000 ticks; 218.443 s so far
+  run day 76: 4.45275 s wall, 288000 ticks; 222.896 s so far
+  run day 77: 3.73347 s wall, 288000 ticks; 226.629 s so far
+  run day 78: 4.23389 s wall, 288000 ticks; 230.863 s so far
+  run day 79: 4.36112 s wall, 288000 ticks; 235.224 s so far
+  run day 80: 4.4105 s wall, 288000 ticks; 239.635 s so far
+  run day 81: 4.37858 s wall, 288000 ticks; 244.014 s so far
+  run day 82: 4.55753 s wall, 288000 ticks; 248.571 s so far
+  run day 83: 4.97992 s wall, 288000 ticks; 253.551 s so far
+  run day 84: 3.96926 s wall, 288000 ticks; 257.52 s so far
+  run day 85: 4.8852 s wall, 288000 ticks; 262.405 s so far
+  run day 86: 4.25919 s wall, 288000 ticks; 266.665 s so far
+  run day 87: 4.80287 s wall, 288000 ticks; 271.468 s so far
+  run day 88: 4.49656 s wall, 288000 ticks; 275.964 s so far
+  run day 89: 5.15408 s wall, 288000 ticks; 281.118 s so far
+  run day 90: 5.16177 s wall, 288000 ticks; 286.28 s so far
+  run day 91: 3.92798 s wall, 288000 ticks; 290.208 s so far
+  run day 92: 5.57464 s wall, 288000 ticks; 295.783 s so far
+  run day 93: 4.42915 s wall, 288000 ticks; 300.212 s so far
+  run day 94: 4.50939 s wall, 288000 ticks; 304.721 s so far
+  run day 95: 5.48908 s wall, 288000 ticks; 310.21 s so far
+  run day 96: 5.07259 s wall, 288000 ticks; 315.283 s so far
+  run day 97: 5.0593 s wall, 288000 ticks; 320.342 s so far
+  run day 98: 3.48254 s wall, 288000 ticks; 323.825 s so far
+  run day 99: 4.84629 s wall, 288000 ticks; 328.671 s so far
+  run day 100: 4.90481 s wall, 288000 ticks; 333.576 s so far
+  run day 101: 4.79809 s wall, 288000 ticks; 338.374 s so far
+  run day 102: 4.70322 s wall, 288000 ticks; 343.077 s so far
+  run day 103: 4.67827 s wall, 288000 ticks; 347.755 s so far
+  run day 104: 5.95754 s wall, 288000 ticks; 353.713 s so far
+  run day 105: 4.39648 s wall, 288000 ticks; 358.109 s so far
+  run day 106: 5.57319 s wall, 288000 ticks; 363.682 s so far
+  run day 107: 4.48687 s wall, 288000 ticks; 368.169 s so far
+  run day 108: 4.84397 s wall, 288000 ticks; 373.013 s so far
+  run day 109: 4.44608 s wall, 288000 ticks; 377.459 s so far
+  run day 110: 4.4468 s wall, 288000 ticks; 381.906 s so far
+  run day 111: 4.69898 s wall, 288000 ticks; 386.605 s so far
+  run day 112: 4.03239 s wall, 288000 ticks; 390.638 s so far
+  run day 113: 5.05742 s wall, 288000 ticks; 395.695 s so far
+  run day 114: 4.63278 s wall, 288000 ticks; 400.328 s so far
+  run day 115: 4.70237 s wall, 288000 ticks; 405.03 s so far
+  run day 116: 4.08235 s wall, 288000 ticks; 409.113 s so far
+  run day 117: 4.24118 s wall, 288000 ticks; 413.354 s so far
+  run day 118: 4.99736 s wall, 288000 ticks; 418.351 s so far
+  run day 119: 4.07053 s wall, 288000 ticks; 422.422 s so far
+  run day 120: 5.32948 s wall, 288000 ticks; 427.751 s so far
+  run day 121: 5.25413 s wall, 288000 ticks; 433.005 s so far
+  run day 122: 4.39876 s wall, 288000 ticks; 437.404 s so far
+  run day 123: 4.61064 s wall, 288000 ticks; 442.015 s so far
+  run day 124: 4.62413 s wall, 288000 ticks; 446.639 s so far
+  run day 125: 5.00162 s wall, 288000 ticks; 451.64 s so far
+  run day 126: 4.28468 s wall, 288000 ticks; 455.925 s so far
+  run day 127: 5.67659 s wall, 288000 ticks; 461.602 s so far
+  run day 128: 4.92675 s wall, 288000 ticks; 466.528 s so far
+  run day 129: 5.70528 s wall, 288000 ticks; 472.234 s so far
+  run day 130: 4.9481 s wall, 288000 ticks; 477.182 s so far
+  run day 131: 5.05118 s wall, 288000 ticks; 482.233 s so far
+  run day 132: 6.00265 s wall, 288000 ticks; 488.236 s so far
+  run day 133: 3.83277 s wall, 288000 ticks; 492.068 s so far
+  run day 134: 5.04462 s wall, 288000 ticks; 497.113 s so far
+  run day 135: 5.30736 s wall, 288000 ticks; 502.42 s so far
+  run day 136: 4.7009 s wall, 288000 ticks; 507.121 s so far
+  run day 137: 4.84264 s wall, 288000 ticks; 511.964 s so far
+  run day 138: 4.46093 s wall, 288000 ticks; 516.425 s so far
+  run day 139: 5.34708 s wall, 288000 ticks; 521.772 s so far
+  run day 140: 4.01126 s wall, 288000 ticks; 525.783 s so far
+  run day 141: 5.35685 s wall, 288000 ticks; 531.14 s so far
+  run day 142: 5.3982 s wall, 288000 ticks; 536.538 s so far
+  run day 143: 4.8238 s wall, 288000 ticks; 541.362 s so far
+  run day 144: 5.11224 s wall, 288000 ticks; 546.474 s so far
+  run day 145: 4.71011 s wall, 288000 ticks; 551.184 s so far
+  run day 146: 5.4088 s wall, 288000 ticks; 556.593 s so far
+  run day 147: 4.90066 s wall, 288000 ticks; 561.494 s so far
+  run day 148: 5.81098 s wall, 288000 ticks; 567.305 s so far
+  run day 149: 5.00324 s wall, 288000 ticks; 572.308 s so far
+  run day 150: 4.75549 s wall, 288000 ticks; 577.064 s so far
+  run day 151: 4.54741 s wall, 288000 ticks; 581.611 s so far
+  run day 152: 5.33001 s wall, 288000 ticks; 586.941 s so far
+  run day 153: 5.72241 s wall, 288000 ticks; 592.663 s so far
+  run day 154: 4.50246 s wall, 288000 ticks; 597.166 s so far
+  run day 155: 4.99254 s wall, 288000 ticks; 602.158 s so far
+  run day 156: 4.82385 s wall, 288000 ticks; 606.982 s so far
+  run day 157: 5.564 s wall, 288000 ticks; 612.546 s so far
+  run day 158: 4.90945 s wall, 288000 ticks; 617.456 s so far
+  run day 159: 5.7318 s wall, 288000 ticks; 623.187 s so far
+  run day 160: 5.48419 s wall, 288000 ticks; 628.672 s so far
+  run day 161: 3.7337 s wall, 288000 ticks; 632.405 s so far
+  run day 162: 5.26678 s wall, 288000 ticks; 637.672 s so far
+  run day 163: 5.03781 s wall, 288000 ticks; 642.71 s so far
+  run day 164: 4.22298 s wall, 288000 ticks; 646.933 s so far
+  run day 165: 3.99526 s wall, 288000 ticks; 650.928 s so far
+  run day 166: 4.01904 s wall, 288000 ticks; 654.947 s so far
+  run day 167: 4.23146 s wall, 288000 ticks; 659.179 s so far
+  run day 168: 3.61306 s wall, 288000 ticks; 662.792 s so far
+  run day 169: 4.18618 s wall, 288000 ticks; 666.978 s so far
+  run day 170: 4.04903 s wall, 288000 ticks; 671.027 s so far
+  run day 171: 4.3262 s wall, 288000 ticks; 675.353 s so far
+  run day 172: 4.13415 s wall, 288000 ticks; 679.487 s so far
+  run day 173: 4.18347 s wall, 288000 ticks; 683.671 s so far
+  run day 174: 4.40257 s wall, 288000 ticks; 688.073 s so far
+  run day 175: 3.65041 s wall, 288000 ticks; 691.724 s so far
+  run day 176: 4.44121 s wall, 288000 ticks; 696.165 s so far
+  run day 177: 4.7526 s wall, 288000 ticks; 700.918 s so far
+  run day 178: 4.0679 s wall, 288000 ticks; 704.985 s so far
+  run day 179: 4.75512 s wall, 288000 ticks; 709.741 s so far
+  run day 180: 3.96895 s wall, 288000 ticks; 713.71 s so far
+  run day 181: 4.30249 s wall, 288000 ticks; 718.012 s so far
+  run day 182: 3.12685 s wall, 288000 ticks; 721.139 s so far
+  run day 183: 3.86718 s wall, 288000 ticks; 725.006 s so far
+  run day 184: 4.00132 s wall, 288000 ticks; 729.007 s so far
+  run day 185: 3.87532 s wall, 288000 ticks; 732.883 s so far
+  run day 186: 4.14217 s wall, 288000 ticks; 737.025 s so far
+  run day 187: 4.5252 s wall, 288000 ticks; 741.55 s so far
+  run day 188: 4.91121 s wall, 288000 ticks; 746.461 s so far
+  run day 189: 3.59566 s wall, 288000 ticks; 750.057 s so far
+  run day 190: 4.09028 s wall, 288000 ticks; 754.147 s so far
+  run day 191: 4.1246 s wall, 288000 ticks; 758.272 s so far
+  run day 192: 4.28023 s wall, 288000 ticks; 762.552 s so far
+  run day 193: 4.04511 s wall, 288000 ticks; 766.597 s so far
+  run day 194: 4.13398 s wall, 288000 ticks; 770.731 s so far
+  run day 195: 4.57671 s wall, 288000 ticks; 775.308 s so far
+  run day 196: 3.55298 s wall, 288000 ticks; 778.861 s so far
+  run day 197: 4.37227 s wall, 288000 ticks; 783.233 s so far
+  run day 198: 4.09762 s wall, 288000 ticks; 787.331 s so far
+  run day 199: 5.15129 s wall, 288000 ticks; 792.482 s so far
+  run day 200: 4.21984 s wall, 288000 ticks; 796.702 s so far
+  run day 201: 4.51164 s wall, 288000 ticks; 801.214 s so far
+  run day 202: 4.96575 s wall, 288000 ticks; 806.179 s so far
+  run day 203: 3.32126 s wall, 288000 ticks; 809.501 s so far
+  run day 204: 4.12486 s wall, 288000 ticks; 813.625 s so far
+  run day 205: 4.08962 s wall, 288000 ticks; 817.715 s so far
+  run day 206: 4.30976 s wall, 288000 ticks; 822.025 s so far
+  run day 207: 4.71408 s wall, 288000 ticks; 826.739 s so far
+  run day 208: 4.2432 s wall, 288000 ticks; 830.982 s so far
+  run day 209: 4.28851 s wall, 288000 ticks; 835.271 s so far
+  run day 210: 3.26112 s wall, 288000 ticks; 838.532 s so far
+  run day 211: 4.16132 s wall, 288000 ticks; 842.693 s so far
+  run day 212: 5.1075 s wall, 288000 ticks; 847.8 s so far
+  run day 213: 4.33487 s wall, 288000 ticks; 852.135 s so far
+  run day 214: 3.90021 s wall, 288000 ticks; 856.036 s so far
+  run day 215: 3.88603 s wall, 288000 ticks; 859.922 s so far
+  run day 216: 4.24164 s wall, 288000 ticks; 864.163 s so far
+  run day 217: 3.28868 s wall, 288000 ticks; 867.452 s so far
+  run day 218: 4.01045 s wall, 288000 ticks; 871.462 s so far
+  run day 219: 3.76912 s wall, 288000 ticks; 875.231 s so far
+  run day 220: 3.85117 s wall, 288000 ticks; 879.083 s so far
+  run day 221: 4.07588 s wall, 288000 ticks; 883.159 s so far
+  run day 222: 3.86157 s wall, 288000 ticks; 887.02 s so far
+  run day 223: 4.17919 s wall, 288000 ticks; 891.199 s so far
+  run day 224: 3.38913 s wall, 288000 ticks; 894.588 s so far
+  run day 225: 4.04624 s wall, 288000 ticks; 898.635 s so far
+  run day 226: 4.2012 s wall, 288000 ticks; 902.836 s so far
+  run day 227: 4.00454 s wall, 288000 ticks; 906.84 s so far
+  run day 228: 4.11101 s wall, 288000 ticks; 910.951 s so far
+  run day 229: 4.10591 s wall, 288000 ticks; 915.057 s so far
+  run day 230: 3.61182 s wall, 288000 ticks; 918.669 s so far
+  run day 231: 3.25125 s wall, 288000 ticks; 921.92 s so far
+  run day 232: 4.3692 s wall, 288000 ticks; 926.29 s so far
+  run day 233: 3.95178 s wall, 288000 ticks; 930.241 s so far
+  run day 234: 3.92011 s wall, 288000 ticks; 934.161 s so far
+  run day 235: 4.12628 s wall, 288000 ticks; 938.288 s so far
+  run day 236: 3.92308 s wall, 288000 ticks; 942.211 s so far
+  run day 237: 4.66449 s wall, 288000 ticks; 946.875 s so far
+  run day 238: 3.32686 s wall, 288000 ticks; 950.202 s so far
+  run day 239: 4.36648 s wall, 288000 ticks; 954.569 s so far
+  run day 240: 3.97198 s wall, 288000 ticks; 958.541 s so far
+  run day 241: 4.25332 s wall, 288000 ticks; 962.794 s so far
+  run day 242: 4.34589 s wall, 288000 ticks; 967.14 s so far
+  run day 243: 4.0202 s wall, 288000 ticks; 971.16 s so far
+  run day 244: 4.21576 s wall, 288000 ticks; 975.376 s so far
+  run day 245: 3.32558 s wall, 288000 ticks; 978.701 s so far
+  run day 246: 4.04728 s wall, 288000 ticks; 982.749 s so far
+  run day 247: 4.06139 s wall, 288000 ticks; 986.81 s so far
+  run day 248: 4.08942 s wall, 288000 ticks; 990.899 s so far
+  run day 249: 4.05943 s wall, 288000 ticks; 994.959 s so far
+  run day 250: 4.1697 s wall, 288000 ticks; 999.129 s so far
+  run day 251: 4.5315 s wall, 288000 ticks; 1003.66 s so far
+  run day 252: 3.78438 s wall, 288000 ticks; 1007.44 s so far
+  run day 253: 4.04592 s wall, 288000 ticks; 1011.49 s so far
+  run day 254: 4.08643 s wall, 288000 ticks; 1015.58 s so far
+  run day 255: 4.12907 s wall, 288000 ticks; 1019.71 s so far
+  run day 256: 4.26272 s wall, 288000 ticks; 1023.97 s so far
+  run day 257: 4.46732 s wall, 288000 ticks; 1028.44 s so far
+  run day 258: 4.54874 s wall, 288000 ticks; 1032.98 s so far
+  run day 259: 3.46379 s wall, 288000 ticks; 1036.45 s so far
+  run day 260: 4.16428 s wall, 288000 ticks; 1040.61 s so far
+  run day 261: 4.02921 s wall, 288000 ticks; 1044.64 s so far
+  run day 262: 4.01582 s wall, 288000 ticks; 1048.66 s so far
+  run day 263: 4.0341 s wall, 288000 ticks; 1052.69 s so far
+  run day 264: 4.0703 s wall, 288000 ticks; 1056.76 s so far
+  run day 265: 4.32359 s wall, 288000 ticks; 1061.09 s so far
+  run day 266: 3.29843 s wall, 288000 ticks; 1064.38 s so far
+  run day 267: 3.84174 s wall, 288000 ticks; 1068.23 s so far
+  run day 268: 3.69737 s wall, 288000 ticks; 1071.92 s so far
+  run day 269: 3.66002 s wall, 288000 ticks; 1075.58 s so far
+  run day 270: 3.59318 s wall, 288000 ticks; 1079.18 s so far
+  run day 271: 3.60544 s wall, 288000 ticks; 1082.78 s so far
+  run day 272: 3.75067 s wall, 288000 ticks; 1086.53 s so far
+  run day 273: 3.15256 s wall, 288000 ticks; 1089.69 s so far
+  run day 274: 3.76572 s wall, 288000 ticks; 1093.45 s so far
+  run day 275: 3.74178 s wall, 288000 ticks; 1097.19 s so far
+  run day 276: 3.95295 s wall, 288000 ticks; 1101.15 s so far
+  run day 277: 3.83342 s wall, 288000 ticks; 1104.98 s so far
+  run day 278: 4.98807 s wall, 288000 ticks; 1109.97 s so far
+  run day 279: 4.36473 s wall, 288000 ticks; 1114.33 s so far
+  run day 280: 3.19943 s wall, 288000 ticks; 1117.53 s so far
+  run day 281: 4.04101 s wall, 288000 ticks; 1121.57 s so far
+  run day 282: 4.37498 s wall, 288000 ticks; 1125.95 s so far
+  run day 283: 3.95006 s wall, 288000 ticks; 1129.9 s so far
+  run day 284: 3.99055 s wall, 288000 ticks; 1133.89 s so far
+  run day 285: 4.24487 s wall, 288000 ticks; 1138.13 s so far
+  run day 286: 4.37114 s wall, 288000 ticks; 1142.5 s so far
+  run day 287: 3.43114 s wall, 288000 ticks; 1145.94 s so far
+  run day 288: 4.02169 s wall, 288000 ticks; 1149.96 s so far
+  run day 289: 4.43959 s wall, 288000 ticks; 1154.4 s so far
+  run day 290: 4.12046 s wall, 288000 ticks; 1158.52 s so far
+  run day 291: 4.08086 s wall, 288000 ticks; 1162.6 s so far
+  run day 292: 4.53674 s wall, 288000 ticks; 1167.13 s so far
+  run day 293: 4.78979 s wall, 288000 ticks; 1171.92 s so far
+  run day 294: 3.18408 s wall, 288000 ticks; 1175.11 s so far
+  run day 295: 4.10999 s wall, 288000 ticks; 1179.22 s so far
+  run day 296: 4.13762 s wall, 288000 ticks; 1183.36 s so far
+  run day 297: 4.11593 s wall, 288000 ticks; 1187.47 s so far
+  run day 298: 4.67818 s wall, 288000 ticks; 1192.15 s so far
+  run day 299: 4.27161 s wall, 288000 ticks; 1196.42 s so far
+  run day 300: 4.29343 s wall, 288000 ticks; 1200.71 s so far
+  run day 301: 3.37849 s wall, 288000 ticks; 1204.09 s so far
+  run day 302: 4.1806 s wall, 288000 ticks; 1208.27 s so far
+  run day 303: 4.13568 s wall, 288000 ticks; 1212.41 s so far
+  run day 304: 4.38572 s wall, 288000 ticks; 1216.8 s so far
+  run day 305: 5.19635 s wall, 288000 ticks; 1221.99 s so far
+  run day 306: 4.9401 s wall, 288000 ticks; 1226.93 s so far
+  run day 307: 5.75483 s wall, 288000 ticks; 1232.69 s so far
+  run day 308: 3.81311 s wall, 288000 ticks; 1236.5 s so far
+  run day 309: 4.14593 s wall, 288000 ticks; 1240.65 s so far
+  run day 310: 4.11336 s wall, 288000 ticks; 1244.76 s so far
+  run day 311: 4.12455 s wall, 288000 ticks; 1248.88 s so far
+  run day 312: 4.08983 s wall, 288000 ticks; 1252.97 s so far
+  run day 313: 4.12962 s wall, 288000 ticks; 1257.1 s so far
+  run day 314: 4.54743 s wall, 288000 ticks; 1261.65 s so far
+  run day 315: 3.3274 s wall, 288000 ticks; 1264.98 s so far
+  run day 316: 3.93282 s wall, 288000 ticks; 1268.91 s so far
+  run day 317: 3.9399 s wall, 288000 ticks; 1272.85 s so far
+  run day 318: 4.10957 s wall, 288000 ticks; 1276.96 s so far
+  run day 319: 4.17683 s wall, 288000 ticks; 1281.14 s so far
+  run day 320: 4.38799 s wall, 288000 ticks; 1285.53 s so far
+  run day 321: 3.67072 s wall, 288000 ticks; 1289.2 s so far
+  run day 322: 3.26982 s wall, 288000 ticks; 1292.47 s so far
+  run day 323: 4.12794 s wall, 288000 ticks; 1296.59 s so far
+  run day 324: 4.15983 s wall, 288000 ticks; 1300.75 s so far
+  run day 325: 4.16386 s wall, 288000 ticks; 1304.92 s so far
+  run day 326: 5.33388 s wall, 288000 ticks; 1310.25 s so far
+  run day 327: 6.51043 s wall, 288000 ticks; 1316.76 s so far
+  run day 328: 4.67861 s wall, 288000 ticks; 1321.44 s so far
+  run day 329: 3.49744 s wall, 288000 ticks; 1324.94 s so far
+  run day 330: 3.9988 s wall, 288000 ticks; 1328.94 s so far
+  run day 331: 3.93846 s wall, 288000 ticks; 1332.87 s so far
+  run day 332: 4.36538 s wall, 288000 ticks; 1337.24 s so far
+  run day 333: 4.58969 s wall, 288000 ticks; 1341.83 s so far
+  run day 334: 5.03223 s wall, 288000 ticks; 1346.86 s so far
+  run day 335: 5.20108 s wall, 288000 ticks; 1352.06 s so far
+  run day 336: 3.45514 s wall, 288000 ticks; 1355.52 s so far
+  run day 337: 4.2404 s wall, 288000 ticks; 1359.76 s so far
+  run day 338: 4.63476 s wall, 288000 ticks; 1364.39 s so far
+  run day 339: 4.9111 s wall, 288000 ticks; 1369.3 s so far
+  run day 340: 4.21199 s wall, 288000 ticks; 1373.52 s so far
+  run day 341: 4.60212 s wall, 288000 ticks; 1378.12 s so far
+  run day 342: 4.62445 s wall, 288000 ticks; 1382.74 s so far
+  run day 343: 3.24408 s wall, 288000 ticks; 1385.99 s so far
+  run day 344: 4.62065 s wall, 288000 ticks; 1390.61 s so far
+  run day 345: 4.96313 s wall, 288000 ticks; 1395.57 s so far
+  run day 346: 4.64198 s wall, 288000 ticks; 1400.21 s so far
+  run day 347: 4.21026 s wall, 288000 ticks; 1404.42 s so far
+  run day 348: 4.2726 s wall, 288000 ticks; 1408.7 s so far
+  run day 349: 4.78163 s wall, 288000 ticks; 1413.48 s so far
+  run day 350: 3.56035 s wall, 288000 ticks; 1417.04 s so far
+  run day 351: 4.93272 s wall, 288000 ticks; 1421.97 s so far
+  run day 352: 4.94309 s wall, 288000 ticks; 1426.91 s so far
+  run day 353: 4.25703 s wall, 288000 ticks; 1431.17 s so far
+  run day 354: 4.63257 s wall, 288000 ticks; 1435.8 s so far
+  run day 355: 4.42871 s wall, 288000 ticks; 1440.23 s so far
+  run day 356: 4.50323 s wall, 288000 ticks; 1444.74 s so far
+  run day 357: 3.39116 s wall, 288000 ticks; 1448.13 s so far
+  run day 358: 4.20125 s wall, 288000 ticks; 1452.33 s so far
+  run day 359: 4.14028 s wall, 288000 ticks; 1456.47 s so far
+  run day 360: 4.23266 s wall, 288000 ticks; 1460.7 s so far
+  run day 361: 4.23934 s wall, 288000 ticks; 1464.94 s so far
+  run day 362: 4.0738 s wall, 288000 ticks; 1469.01 s so far
+  run day 363: 4.39841 s wall, 288000 ticks; 1473.41 s so far
+  run day 364: 3.37586 s wall, 288000 ticks; 1476.79 s so far
+  run day 365: 4.107 s wall, 288000 ticks; 1480.89 s so far
+  run day 366: 4.80324 s wall, 288000 ticks; 1485.7 s so far
+  run day 367: 4.62329 s wall, 288000 ticks; 1490.32 s so far
+  run day 368: 4.63628 s wall, 288000 ticks; 1494.96 s so far
+  run day 369: 4.46878 s wall, 288000 ticks; 1499.43 s so far
+  run day 370: 4.49983 s wall, 288000 ticks; 1503.93 s so far
+  run day 371: 3.75626 s wall, 288000 ticks; 1507.68 s so far
+  run day 372: 4.19062 s wall, 288000 ticks; 1511.87 s so far
+  run day 373: 4.25272 s wall, 288000 ticks; 1516.13 s so far
+  run day 374: 4.30642 s wall, 288000 ticks; 1520.43 s so far
+  run day 375: 4.19357 s wall, 288000 ticks; 1524.63 s so far
+  run day 376: 4.22375 s wall, 288000 ticks; 1528.85 s so far
+  run day 377: 4.53677 s wall, 288000 ticks; 1533.39 s so far
+  run day 378: 3.4617 s wall, 288000 ticks; 1536.85 s so far
+  run day 379: 4.19451 s wall, 288000 ticks; 1541.04 s so far
+  run day 380: 4.2577 s wall, 288000 ticks; 1545.3 s so far
+  run day 381: 4.14458 s wall, 288000 ticks; 1549.45 s so far
+  run day 382: 4.32002 s wall, 288000 ticks; 1553.77 s so far
+  run day 383: 4.40827 s wall, 288000 ticks; 1558.17 s so far
+  run day 384: 4.53227 s wall, 288000 ticks; 1562.71 s so far
+  run day 385: 3.4738 s wall, 288000 ticks; 1566.18 s so far
+  run day 386: 4.24057 s wall, 288000 ticks; 1570.42 s so far
+  run day 387: 4.25929 s wall, 288000 ticks; 1574.68 s so far
+  run day 388: 4.41318 s wall, 288000 ticks; 1579.09 s so far
+  run day 389: 4.07879 s wall, 288000 ticks; 1583.17 s so far
+  run day 390: 4.30374 s wall, 288000 ticks; 1587.47 s so far
+  run day 391: 4.55058 s wall, 288000 ticks; 1592.03 s so far
+  run day 392: 3.44928 s wall, 288000 ticks; 1595.47 s so far
+  run day 393: 4.17049 s wall, 288000 ticks; 1599.65 s so far
+  run day 394: 3.9793 s wall, 288000 ticks; 1603.62 s so far
+  run day 395: 4.33019 s wall, 288000 ticks; 1607.95 s so far
+  run day 396: 4.37406 s wall, 288000 ticks; 1612.33 s so far
+  run day 397: 4.25223 s wall, 288000 ticks; 1616.58 s so far
+  run day 398: 4.41921 s wall, 288000 ticks; 1621 s so far
+  run day 399: 3.53482 s wall, 288000 ticks; 1624.54 s so far
+  run day 400: 4.14293 s wall, 288000 ticks; 1628.68 s so far
+  run day 401: 4.05043 s wall, 288000 ticks; 1632.73 s so far
+  run day 402: 4.25402 s wall, 288000 ticks; 1636.98 s so far
+  run day 403: 4.03515 s wall, 288000 ticks; 1641.02 s so far
+  run day 404: 4.06372 s wall, 288000 ticks; 1645.08 s so far
+  run day 405: 4.62199 s wall, 288000 ticks; 1649.7 s so far
+  run day 406: 3.54904 s wall, 288000 ticks; 1653.25 s so far
+  run day 407: 4.56863 s wall, 288000 ticks; 1657.82 s so far
+  run day 408: 4.35124 s wall, 288000 ticks; 1662.17 s so far
+  run day 409: 4.21884 s wall, 288000 ticks; 1666.39 s so far
+  run day 410: 4.32489 s wall, 288000 ticks; 1670.72 s so far
+  run day 411: 3.73118 s wall, 288000 ticks; 1674.45 s so far
+  run day 412: 4.47056 s wall, 288000 ticks; 1678.92 s so far
+  run day 413: 3.60329 s wall, 288000 ticks; 1682.52 s so far
+  run day 414: 4.30294 s wall, 288000 ticks; 1686.82 s so far
+  run day 415: 4.24511 s wall, 288000 ticks; 1691.07 s so far
+  run day 416: 4.49087 s wall, 288000 ticks; 1695.56 s so far
+  run day 417: 4.49111 s wall, 288000 ticks; 1700.05 s so far
+  run day 418: 4.32454 s wall, 288000 ticks; 1704.38 s so far
+  run day 419: 4.65375 s wall, 288000 ticks; 1709.03 s so far
+  run day 420: 3.56407 s wall, 288000 ticks; 1712.59 s so far
+  run day 421: 4.21716 s wall, 288000 ticks; 1716.81 s so far
+  run day 422: 4.24783 s wall, 288000 ticks; 1721.06 s so far
+  run day 423: 4.29458 s wall, 288000 ticks; 1725.35 s so far
+  run day 424: 4.30305 s wall, 288000 ticks; 1729.66 s so far
+  run day 425: 4.41956 s wall, 288000 ticks; 1734.08 s so far
+  run day 426: 5.02424 s wall, 288000 ticks; 1739.1 s so far
+  run day 427: 3.37707 s wall, 288000 ticks; 1742.48 s so far
+  run day 428: 4.34791 s wall, 288000 ticks; 1746.82 s so far
+  run day 429: 4.41749 s wall, 288000 ticks; 1751.24 s so far
+  run day 430: 4.34281 s wall, 288000 ticks; 1755.59 s so far
+  run day 431: 4.28385 s wall, 288000 ticks; 1759.87 s so far
+  run day 432: 4.21828 s wall, 288000 ticks; 1764.09 s so far
+  run day 433: 4.48182 s wall, 288000 ticks; 1768.57 s so far
+  run day 434: 3.99643 s wall, 288000 ticks; 1772.57 s so far
+  run day 435: 4.22827 s wall, 288000 ticks; 1776.79 s so far
+  run day 436: 4.71066 s wall, 288000 ticks; 1781.5 s so far
+  run day 437: 4.19128 s wall, 288000 ticks; 1785.7 s so far
+  run day 438: 4.2731 s wall, 288000 ticks; 1789.97 s so far
+  run day 439: 4.26084 s wall, 288000 ticks; 1794.23 s so far
+  run day 440: 4.63751 s wall, 288000 ticks; 1798.87 s so far
+  run day 441: 3.35588 s wall, 288000 ticks; 1802.22 s so far
+  run day 442: 4.12626 s wall, 288000 ticks; 1806.35 s so far
+  run day 443: 4.17168 s wall, 288000 ticks; 1810.52 s so far
+  run day 444: 4.13584 s wall, 288000 ticks; 1814.66 s so far
+  run day 445: 4.40427 s wall, 288000 ticks; 1819.06 s so far
+  run day 446: 4.30632 s wall, 288000 ticks; 1823.37 s so far
+  run day 447: 4.32594 s wall, 288000 ticks; 1827.69 s so far
+  run day 448: 3.58389 s wall, 288000 ticks; 1831.28 s so far
+  run day 449: 4.48083 s wall, 288000 ticks; 1835.76 s so far
+  run day 450: 4.31793 s wall, 288000 ticks; 1840.08 s so far
+  run day 451: 4.43487 s wall, 288000 ticks; 1844.51 s so far
+  run day 452: 4.43172 s wall, 288000 ticks; 1848.94 s so far
+  run day 453: 4.45281 s wall, 288000 ticks; 1853.4 s so far
+  run day 454: 4.95655 s wall, 288000 ticks; 1858.35 s so far
+  run day 455: 3.60842 s wall, 288000 ticks; 1861.96 s so far
+  run day 456: 4.29057 s wall, 288000 ticks; 1866.25 s so far
+  run day 457: 4.22105 s wall, 288000 ticks; 1870.47 s so far
+  run day 458: 4.48441 s wall, 288000 ticks; 1874.96 s so far
+  run day 459: 4.28405 s wall, 288000 ticks; 1879.24 s so far
+  run day 460: 4.19684 s wall, 288000 ticks; 1883.44 s so far
+  run day 461: 4.39018 s wall, 288000 ticks; 1887.83 s so far
+  run day 462: 4.02119 s wall, 288000 ticks; 1891.85 s so far
+  run day 463: 4.39066 s wall, 288000 ticks; 1896.24 s so far
+  run day 464: 4.30813 s wall, 288000 ticks; 1900.55 s so far
+  run day 465: 4.23982 s wall, 288000 ticks; 1904.79 s so far
+  run day 466: 4.44208 s wall, 288000 ticks; 1909.23 s so far
+  run day 467: 4.3521 s wall, 288000 ticks; 1913.58 s so far
+  run day 468: 4.5898 s wall, 288000 ticks; 1918.17 s so far
+  run day 469: 3.37318 s wall, 288000 ticks; 1921.54 s so far
+  run day 470: 4.36738 s wall, 288000 ticks; 1925.91 s so far
+  run day 471: 4.25247 s wall, 288000 ticks; 1930.16 s so far
+  run day 472: 4.28249 s wall, 288000 ticks; 1934.45 s so far
+  run day 473: 4.26597 s wall, 288000 ticks; 1938.71 s so far
+  run day 474: 4.20306 s wall, 288000 ticks; 1942.92 s so far
+  run day 475: 4.56801 s wall, 288000 ticks; 1947.48 s so far
+  run day 476: 3.47384 s wall, 288000 ticks; 1950.96 s so far
+  run day 477: 4.57635 s wall, 288000 ticks; 1955.53 s so far
+  run day 478: 4.57902 s wall, 288000 ticks; 1960.11 s so far
+  run day 479: 4.967 s wall, 288000 ticks; 1965.08 s so far
+  run day 480: 4.42254 s wall, 288000 ticks; 1969.5 s so far
+  run day 481: 4.42541 s wall, 288000 ticks; 1973.93 s so far
+  run day 482: 4.68494 s wall, 288000 ticks; 1978.61 s so far
+  run day 483: 4.0898 s wall, 288000 ticks; 1982.7 s so far
+  run day 484: 4.21535 s wall, 288000 ticks; 1986.92 s so far
+  run day 485: 4.13103 s wall, 288000 ticks; 1991.05 s so far
+  run day 486: 3.96986 s wall, 288000 ticks; 1995.02 s so far
+  run day 487: 4.18338 s wall, 288000 ticks; 1999.2 s so far
+  run day 488: 4.28421 s wall, 288000 ticks; 2003.49 s so far
+  run day 489: 4.83098 s wall, 288000 ticks; 2008.32 s so far
+  run day 490: 3.6083 s wall, 288000 ticks; 2011.93 s so far
+  run day 491: 4.28095 s wall, 288000 ticks; 2016.21 s so far
+  run day 492: 4.31856 s wall, 288000 ticks; 2020.53 s so far
+  run day 493: 5.1842 s wall, 288000 ticks; 2025.71 s so far
+  run day 494: 4.29003 s wall, 288000 ticks; 2030 s so far
+  run day 495: 4.37397 s wall, 288000 ticks; 2034.37 s so far
+  run day 496: 4.66646 s wall, 288000 ticks; 2039.04 s so far
+  run day 497: 3.78143 s wall, 288000 ticks; 2042.82 s so far
+  run day 498: 4.33283 s wall, 288000 ticks; 2047.15 s so far
+  run day 499: 4.20773 s wall, 288000 ticks; 2051.36 s so far
+  run day 500: 4.42244 s wall, 288000 ticks; 2055.78 s so far
+  run day 501: 4.37154 s wall, 288000 ticks; 2060.16 s so far
+  run day 502: 4.3139 s wall, 288000 ticks; 2064.47 s so far
+  run day 503: 3.88194 s wall, 288000 ticks; 2068.35 s so far
+  run day 504: 3.5691 s wall, 288000 ticks; 2071.92 s so far
+  run day 505: 4.81194 s wall, 288000 ticks; 2076.73 s so far
+  run day 506: 4.60341 s wall, 288000 ticks; 2081.34 s so far
+  run day 507: 4.39698 s wall, 288000 ticks; 2085.73 s so far
+  run day 508: 4.11705 s wall, 288000 ticks; 2089.85 s so far
+  run day 509: 4.19604 s wall, 288000 ticks; 2094.05 s so far
+  run day 510: 4.84772 s wall, 288000 ticks; 2098.89 s so far
+  run day 511: 3.2868 s wall, 288000 ticks; 2102.18 s so far
+  run day 512: 4.40435 s wall, 288000 ticks; 2106.59 s so far
+  run day 513: 4.44241 s wall, 288000 ticks; 2111.03 s so far
+  run day 514: 4.29704 s wall, 288000 ticks; 2115.32 s so far
+  run day 515: 4.38983 s wall, 288000 ticks; 2119.71 s so far
+  run day 516: 4.61263 s wall, 288000 ticks; 2124.33 s so far
+  run day 517: 4.634 s wall, 288000 ticks; 2128.96 s so far
+  run day 518: 3.83503 s wall, 288000 ticks; 2132.8 s so far
+  run day 519: 4.47528 s wall, 288000 ticks; 2137.27 s so far
+  run day 520: 4.53493 s wall, 288000 ticks; 2141.81 s so far
+  run day 521: 4.29629 s wall, 288000 ticks; 2146.1 s so far
+  run day 522: 4.18973 s wall, 288000 ticks; 2150.29 s so far
+  run day 523: 4.31721 s wall, 288000 ticks; 2154.61 s so far
+  run day 524: 4.48893 s wall, 288000 ticks; 2159.1 s so far
+  run day 525: 3.75895 s wall, 288000 ticks; 2162.86 s so far
+  run day 526: 5.03691 s wall, 288000 ticks; 2167.89 s so far
+  run day 527: 4.36548 s wall, 288000 ticks; 2172.26 s so far
+  run day 528: 4.0626 s wall, 288000 ticks; 2176.32 s so far
+  run day 529: 4.09666 s wall, 288000 ticks; 2180.42 s so far
+  run day 530: 4.44203 s wall, 288000 ticks; 2184.86 s so far
+  run day 531: 4.58265 s wall, 288000 ticks; 2189.44 s so far
+  run day 532: 3.53841 s wall, 288000 ticks; 2192.98 s so far
+  run day 533: 4.37763 s wall, 288000 ticks; 2197.36 s so far
+  run day 534: 4.35719 s wall, 288000 ticks; 2201.72 s so far
+  run day 535: 4.36039 s wall, 288000 ticks; 2206.08 s so far
+  run day 536: 4.20718 s wall, 288000 ticks; 2210.28 s so far
+  run day 537: 4.55324 s wall, 288000 ticks; 2214.84 s so far
+  run day 538: 4.3729 s wall, 288000 ticks; 2219.21 s so far
+  run day 539: 3.51639 s wall, 288000 ticks; 2222.73 s so far
+  run day 540: 4.43281 s wall, 288000 ticks; 2227.16 s so far
+  run day 541: 4.2742 s wall, 288000 ticks; 2231.43 s so far
+  run day 542: 4.25444 s wall, 288000 ticks; 2235.69 s so far
+  run day 543: 4.59235 s wall, 288000 ticks; 2240.28 s so far
+  run day 544: 4.36956 s wall, 288000 ticks; 2244.65 s so far
+  run day 545: 4.74708 s wall, 288000 ticks; 2249.4 s so far
+  run day 546: 3.73907 s wall, 288000 ticks; 2253.14 s so far
+  run day 547: 4.43123 s wall, 288000 ticks; 2257.57 s so far
+  run day 548: 4.19963 s wall, 288000 ticks; 2261.77 s so far
+  run day 549: 4.58618 s wall, 288000 ticks; 2266.35 s so far
+  run day 550: 4.99132 s wall, 288000 ticks; 2271.34 s so far
+  run day 551: 4.5371 s wall, 288000 ticks; 2275.88 s so far
+  run day 552: 4.67896 s wall, 288000 ticks; 2280.56 s so far
+  run day 553: 3.85203 s wall, 288000 ticks; 2284.41 s so far
+  run day 554: 4.96844 s wall, 288000 ticks; 2289.38 s so far
+  run day 555: 4.47968 s wall, 288000 ticks; 2293.86 s so far
+  run day 556: 4.56635 s wall, 288000 ticks; 2298.43 s so far
+  run day 557: 4.44321 s wall, 288000 ticks; 2302.87 s so far
+  run day 558: 4.8271 s wall, 288000 ticks; 2307.7 s so far
+  run day 559: 4.62616 s wall, 288000 ticks; 2312.32 s so far
+  run day 560: 3.54702 s wall, 288000 ticks; 2315.87 s so far
+  run day 561: 4.54514 s wall, 288000 ticks; 2320.42 s so far
+  run day 562: 5.00549 s wall, 288000 ticks; 2325.42 s so far
+  run day 563: 4.42182 s wall, 288000 ticks; 2329.84 s so far
+  run day 564: 4.48225 s wall, 288000 ticks; 2334.33 s so far
+  run day 565: 4.91612 s wall, 288000 ticks; 2339.24 s so far
+  run day 566: 4.7429 s wall, 288000 ticks; 2343.98 s so far
+  run day 567: 3.49817 s wall, 288000 ticks; 2347.48 s so far
+  run day 568: 4.47264 s wall, 288000 ticks; 2351.96 s so far
+  run day 569: 4.46163 s wall, 288000 ticks; 2356.42 s so far
+  run day 570: 4.47517 s wall, 288000 ticks; 2360.89 s so far
+  run day 571: 4.20573 s wall, 288000 ticks; 2365.1 s so far
+  run day 572: 4.63488 s wall, 288000 ticks; 2369.73 s so far
+  run day 573: 4.53276 s wall, 288000 ticks; 2374.27 s so far
+  run day 574: 3.64783 s wall, 288000 ticks; 2377.91 s so far
+  run day 575: 4.45506 s wall, 288000 ticks; 2382.37 s so far
+  run day 576: 4.24445 s wall, 288000 ticks; 2386.61 s so far
+  run day 577: 4.3337 s wall, 288000 ticks; 2390.95 s so far
+  run day 578: 4.10158 s wall, 288000 ticks; 2395.05 s so far
+  run day 579: 4.17502 s wall, 288000 ticks; 2399.22 s so far
+  run day 580: 4.52634 s wall, 288000 ticks; 2403.75 s so far
+  run day 581: 3.32047 s wall, 288000 ticks; 2407.07 s so far
+  run day 582: 4.07468 s wall, 288000 ticks; 2411.14 s so far
+  run day 583: 4.1179 s wall, 288000 ticks; 2415.26 s so far
+  run day 584: 4.51004 s wall, 288000 ticks; 2419.77 s so far
+  run day 585: 4.2327 s wall, 288000 ticks; 2424.01 s so far
+  run day 586: 4.28057 s wall, 288000 ticks; 2428.29 s so far
+  run day 587: 4.41968 s wall, 288000 ticks; 2432.71 s so far
+  run day 588: 3.53508 s wall, 288000 ticks; 2436.24 s so far
+  run day 589: 4.30776 s wall, 288000 ticks; 2440.55 s so far
+  run day 590: 4.80929 s wall, 288000 ticks; 2445.36 s so far
+  run day 591: 4.44571 s wall, 288000 ticks; 2449.8 s so far
+  run day 592: 4.36806 s wall, 288000 ticks; 2454.17 s so far
+  run day 593: 4.29954 s wall, 288000 ticks; 2458.47 s so far
+  run day 594: 5.22289 s wall, 288000 ticks; 2463.69 s so far
+  run day 595: 3.68212 s wall, 288000 ticks; 2467.38 s so far
+  run day 596: 4.63474 s wall, 288000 ticks; 2472.01 s so far
+  run day 597: 4.37212 s wall, 288000 ticks; 2476.38 s so far
+  run day 598: 4.25583 s wall, 288000 ticks; 2480.64 s so far
+  run day 599: 4.31827 s wall, 288000 ticks; 2484.96 s so far
+  run day 600: 4.2456 s wall, 288000 ticks; 2489.2 s so far
+  run day 601: 4.54265 s wall, 288000 ticks; 2493.75 s so far
+  run day 602: 3.58825 s wall, 288000 ticks; 2497.33 s so far
+  run day 603: 4.46094 s wall, 288000 ticks; 2501.79 s so far
+  run day 604: 4.70214 s wall, 288000 ticks; 2506.5 s so far
+  run day 605: 4.9365 s wall, 288000 ticks; 2511.43 s so far
+  run day 606: 4.52179 s wall, 288000 ticks; 2515.95 s so far
+  run day 607: 4.29737 s wall, 288000 ticks; 2520.25 s so far
+  run day 608: 4.62973 s wall, 288000 ticks; 2524.88 s so far
+  run day 609: 3.81874 s wall, 288000 ticks; 2528.7 s so far
+  run day 610: 4.48258 s wall, 288000 ticks; 2533.18 s so far
+  run day 611: 4.68476 s wall, 288000 ticks; 2537.87 s so far
+  run day 612: 4.52979 s wall, 288000 ticks; 2542.4 s so far
+  run day 613: 4.55667 s wall, 288000 ticks; 2546.95 s so far
+  run day 614: 4.27838 s wall, 288000 ticks; 2551.23 s so far
+  run day 615: 4.44026 s wall, 288000 ticks; 2555.67 s so far
+  run day 616: 3.5852 s wall, 288000 ticks; 2559.26 s so far
+  run day 617: 4.32313 s wall, 288000 ticks; 2563.58 s so far
+  run day 618: 4.51176 s wall, 288000 ticks; 2568.09 s so far
+  run day 619: 4.38244 s wall, 288000 ticks; 2572.48 s so far
+  run day 620: 4.20109 s wall, 288000 ticks; 2576.68 s so far
+  run day 621: 4.84038 s wall, 288000 ticks; 2581.52 s so far
+  run day 622: 4.80813 s wall, 288000 ticks; 2586.33 s so far
+  run day 623: 3.89183 s wall, 288000 ticks; 2590.22 s so far
+  run day 624: 4.54213 s wall, 288000 ticks; 2594.76 s so far
+  run day 625: 4.4771 s wall, 288000 ticks; 2599.24 s so far
+  run day 626: 4.42762 s wall, 288000 ticks; 2603.66 s so far
+  run day 627: 4.57432 s wall, 288000 ticks; 2608.24 s so far
+  run day 628: 4.70766 s wall, 288000 ticks; 2612.95 s so far
+  run day 629: 4.55423 s wall, 288000 ticks; 2617.5 s so far
+  run day 630: 3.5993 s wall, 288000 ticks; 2621.1 s so far
+  run day 631: 4.49807 s wall, 288000 ticks; 2625.6 s so far
+  run day 632: 4.47948 s wall, 288000 ticks; 2630.08 s so far
+  run day 633: 4.43644 s wall, 288000 ticks; 2634.51 s so far
+  run day 634: 4.20046 s wall, 288000 ticks; 2638.71 s so far
+  run day 635: 4.32706 s wall, 288000 ticks; 2643.04 s so far
+  run day 636: 6.10115 s wall, 288000 ticks; 2649.14 s so far
+  run day 637: 3.51532 s wall, 288000 ticks; 2652.66 s so far
+  run day 638: 4.75326 s wall, 288000 ticks; 2657.41 s so far
+  run day 639: 5.46083 s wall, 288000 ticks; 2662.87 s so far
+  run day 640: 4.62402 s wall, 288000 ticks; 2667.5 s so far
+  run day 641: 4.21499 s wall, 288000 ticks; 2671.71 s so far
+  run day 642: 4.48681 s wall, 288000 ticks; 2676.2 s so far
+  run day 643: 4.72805 s wall, 288000 ticks; 2680.93 s so far
+  run day 644: 3.77656 s wall, 288000 ticks; 2684.7 s so far
+  run day 645: 4.48981 s wall, 288000 ticks; 2689.19 s so far
+  run day 646: 4.52897 s wall, 288000 ticks; 2693.72 s so far
+  run day 647: 4.46608 s wall, 288000 ticks; 2698.19 s so far
+  run day 648: 4.68944 s wall, 288000 ticks; 2702.88 s so far
+  run day 649: 4.47328 s wall, 288000 ticks; 2707.35 s so far
+  run day 650: 4.68198 s wall, 288000 ticks; 2712.03 s so far
+  run day 651: 3.44693 s wall, 288000 ticks; 2715.48 s so far
+  run day 652: 4.57012 s wall, 288000 ticks; 2720.05 s so far
+  run day 653: 4.45131 s wall, 288000 ticks; 2724.5 s so far
+  run day 654: 4.39872 s wall, 288000 ticks; 2728.9 s so far
+  run day 655: 4.52016 s wall, 288000 ticks; 2733.42 s so far
+  run day 656: 4.39563 s wall, 288000 ticks; 2737.81 s so far
+  run day 657: 4.64791 s wall, 288000 ticks; 2742.46 s so far
+  run day 658: 3.6582 s wall, 288000 ticks; 2746.12 s so far
+  run day 659: 4.52379 s wall, 288000 ticks; 2750.64 s so far
+  run day 660: 4.3992 s wall, 288000 ticks; 2755.04 s so far
+  run day 661: 5.11634 s wall, 288000 ticks; 2760.16 s so far
+  run day 662: 4.76281 s wall, 288000 ticks; 2764.92 s so far
+  run day 663: 4.81986 s wall, 288000 ticks; 2769.74 s so far
+  run day 664: 5.50542 s wall, 288000 ticks; 2775.25 s so far
+  run day 665: 4.32888 s wall, 288000 ticks; 2779.58 s so far
+  run day 666: 4.82665 s wall, 288000 ticks; 2784.4 s so far
+  run day 667: 4.56309 s wall, 288000 ticks; 2788.97 s so far
+  run day 668: 4.38469 s wall, 288000 ticks; 2793.35 s so far
+  run day 669: 4.75548 s wall, 288000 ticks; 2798.11 s so far
+  run day 670: 5.40829 s wall, 288000 ticks; 2803.52 s so far
+  run day 671: 4.97038 s wall, 288000 ticks; 2808.49 s so far
+  run day 672: 3.62881 s wall, 288000 ticks; 2812.11 s so far
+  run day 673: 4.40424 s wall, 288000 ticks; 2816.52 s so far
+  run day 674: 4.59379 s wall, 288000 ticks; 2821.11 s so far
+  run day 675: 4.52604 s wall, 288000 ticks; 2825.64 s so far
+  run day 676: 4.5696 s wall, 288000 ticks; 2830.21 s so far
+  run day 677: 4.34718 s wall, 288000 ticks; 2834.56 s so far
+  run day 678: 4.74467 s wall, 288000 ticks; 2839.3 s so far
+  run day 679: 3.62606 s wall, 288000 ticks; 2842.93 s so far
+  run day 680: 4.38299 s wall, 288000 ticks; 2847.31 s so far
+  run day 681: 4.83706 s wall, 288000 ticks; 2852.15 s so far
+  run day 682: 5.15531 s wall, 288000 ticks; 2857.3 s so far
+  run day 683: 4.45593 s wall, 288000 ticks; 2861.76 s so far
+  run day 684: 4.5378 s wall, 288000 ticks; 2866.29 s so far
+  run day 685: 4.98393 s wall, 288000 ticks; 2871.28 s so far
+  run day 686: 4.10236 s wall, 288000 ticks; 2875.38 s so far
+  run day 687: 4.55053 s wall, 288000 ticks; 2879.93 s so far
+  run day 688: 4.35051 s wall, 288000 ticks; 2884.28 s so far
+  run day 689: 4.44367 s wall, 288000 ticks; 2888.73 s so far
+  run day 690: 4.7505 s wall, 288000 ticks; 2893.48 s so far
+  run day 691: 5.35841 s wall, 288000 ticks; 2898.83 s so far
+  run day 692: 5.39236 s wall, 288000 ticks; 2904.23 s so far
+  run day 693: 4.14169 s wall, 288000 ticks; 2908.37 s so far
+  run day 694: 4.38438 s wall, 288000 ticks; 2912.75 s so far
+  run day 695: 4.42829 s wall, 288000 ticks; 2917.18 s so far
+  run day 696: 4.46888 s wall, 288000 ticks; 2921.65 s so far
+  run day 697: 4.3896 s wall, 288000 ticks; 2926.04 s so far
+  run day 698: 4.58348 s wall, 288000 ticks; 2930.62 s so far
+  run day 699: 4.90442 s wall, 288000 ticks; 2935.53 s so far
+  run day 700: 3.58659 s wall, 288000 ticks; 2939.11 s so far
+  run day 701: 4.45101 s wall, 288000 ticks; 2943.57 s so far
+  run day 702: 4.40764 s wall, 288000 ticks; 2947.97 s so far
+  run day 703: 4.58445 s wall, 288000 ticks; 2952.56 s so far
+  run day 704: 4.59391 s wall, 288000 ticks; 2957.15 s so far
+  run day 705: 5.17886 s wall, 288000 ticks; 2962.33 s so far
+  run day 706: 4.70695 s wall, 288000 ticks; 2967.04 s so far
+  run day 707: 3.52062 s wall, 288000 ticks; 2970.56 s so far
+  run day 708: 4.41966 s wall, 288000 ticks; 2974.98 s so far
+  run day 709: 4.36007 s wall, 288000 ticks; 2979.34 s so far
+  run day 710: 4.42208 s wall, 288000 ticks; 2983.76 s so far
+  run day 711: 4.49337 s wall, 288000 ticks; 2988.25 s so far
+  run day 712: 5.32011 s wall, 288000 ticks; 2993.57 s so far
+  run day 713: 4.62328 s wall, 288000 ticks; 2998.2 s so far
+  run day 714: 3.89655 s wall, 288000 ticks; 3002.09 s so far
+  run day 715: 4.46873 s wall, 288000 ticks; 3006.56 s so far
+  run day 716: 4.41868 s wall, 288000 ticks; 3010.98 s so far
+  run day 717: 4.44345 s wall, 288000 ticks; 3015.42 s so far
+  run day 718: 4.35863 s wall, 288000 ticks; 3019.78 s so far
+  run day 719: 4.7547 s wall, 288000 ticks; 3024.54 s so far
+  run day 720: 4.86389 s wall, 288000 ticks; 3029.4 s so far
+  run day 721: 3.78935 s wall, 288000 ticks; 3033.19 s so far
+  run day 722: 5.50203 s wall, 288000 ticks; 3038.69 s so far
+  run day 723: 4.42946 s wall, 288000 ticks; 3043.12 s so far
+  run day 724: 4.3904 s wall, 288000 ticks; 3047.51 s so far
+  run day 725: 4.48761 s wall, 288000 ticks; 3052 s so far
+  run day 726: 4.38461 s wall, 288000 ticks; 3056.38 s so far
+  run day 727: 4.60689 s wall, 288000 ticks; 3060.99 s so far
+  run day 728: 3.42336 s wall, 288000 ticks; 3064.41 s so far
+  run day 729: 4.0036 s wall, 288000 ticks; 3068.42 s so far
+  run day 730: 3.78051 s wall, 288000 ticks; 3072.2 s so far
+  run day 731: 3.9491 s wall, 288000 ticks; 3076.15 s so far
+  run day 732: 3.73813 s wall, 288000 ticks; 3079.89 s so far
+  run day 733: 3.92217 s wall, 288000 ticks; 3083.81 s so far
+  run day 734: 4.03963 s wall, 288000 ticks; 3087.85 s so far
+  run day 735: 3.08827 s wall, 288000 ticks; 3090.94 s so far
+  run day 736: 3.79334 s wall, 288000 ticks; 3094.73 s so far
+  run day 737: 3.83154 s wall, 288000 ticks; 3098.56 s so far
+  run day 738: 4.05148 s wall, 288000 ticks; 3102.61 s so far
+  run day 739: 3.93072 s wall, 288000 ticks; 3106.54 s so far
+  run day 740: 4.22327 s wall, 288000 ticks; 3110.77 s so far
+  run day 741: 4.36947 s wall, 288000 ticks; 3115.14 s so far
+  run day 742: 3.57217 s wall, 288000 ticks; 3118.71 s so far
+  run day 743: 4.16997 s wall, 288000 ticks; 3122.88 s so far
+  run day 744: 4.31418 s wall, 288000 ticks; 3127.19 s so far
+  run day 745: 4.29004 s wall, 288000 ticks; 3131.48 s so far
+  run day 746: 4.3805 s wall, 288000 ticks; 3135.86 s so far
+  run day 747: 5.00373 s wall, 288000 ticks; 3140.87 s so far
+  run day 748: 4.58681 s wall, 288000 ticks; 3145.45 s so far
+  run day 749: 3.51059 s wall, 288000 ticks; 3148.96 s so far
+  run day 750: 4.17734 s wall, 288000 ticks; 3153.14 s so far
+  run day 751: 4.52104 s wall, 288000 ticks; 3157.66 s so far
+  run day 752: 4.48626 s wall, 288000 ticks; 3162.15 s so far
+  run day 753: 4.37909 s wall, 288000 ticks; 3166.53 s so far
+  run day 754: 4.16575 s wall, 288000 ticks; 3170.69 s so far
+  run day 755: 4.64839 s wall, 288000 ticks; 3175.34 s so far
+  run day 756: 3.66463 s wall, 288000 ticks; 3179.01 s so far
+  run day 757: 4.42584 s wall, 288000 ticks; 3183.43 s so far
+  run day 758: 4.28167 s wall, 288000 ticks; 3187.71 s so far
+  run day 759: 4.57702 s wall, 288000 ticks; 3192.29 s so far
+  run day 760: 4.60656 s wall, 288000 ticks; 3196.9 s so far
+  run day 761: 4.63318 s wall, 288000 ticks; 3201.53 s so far
+  run day 762: 5.01643 s wall, 288000 ticks; 3206.55 s so far
+  run day 763: 3.85006 s wall, 288000 ticks; 3210.4 s so far
+  run day 764: 5.71042 s wall, 288000 ticks; 3216.11 s so far
+  run day 765: 5.35809 s wall, 288000 ticks; 3221.47 s so far
+  run day 766: 5.19868 s wall, 288000 ticks; 3226.66 s so far
+  run day 767: 4.75014 s wall, 288000 ticks; 3231.41 s so far
+  run day 768: 4.34965 s wall, 288000 ticks; 3235.76 s so far
+  run day 769: 4.777 s wall, 288000 ticks; 3240.54 s so far
+  run day 770: 3.88796 s wall, 288000 ticks; 3244.43 s so far
+  run day 771: 4.45041 s wall, 288000 ticks; 3248.88 s so far
+  run day 772: 4.70993 s wall, 288000 ticks; 3253.59 s so far
+  run day 773: 5.12453 s wall, 288000 ticks; 3258.71 s so far
+  run day 774: 4.35977 s wall, 288000 ticks; 3263.07 s so far
+  run day 775: 4.66234 s wall, 288000 ticks; 3267.74 s so far
+  run day 776: 3.95083 s wall, 288000 ticks; 3271.69 s so far
+  run day 777: 3.68443 s wall, 288000 ticks; 3275.37 s so far
+  run day 778: 4.46377 s wall, 288000 ticks; 3279.84 s so far
+  run day 779: 4.57454 s wall, 288000 ticks; 3284.41 s so far
+  run day 780: 4.95885 s wall, 288000 ticks; 3289.37 s so far
+  run day 781: 4.40015 s wall, 288000 ticks; 3293.77 s so far
+  run day 782: 4.94926 s wall, 288000 ticks; 3298.72 s so far
+  run day 783: 4.74277 s wall, 288000 ticks; 3303.46 s so far
+  run day 784: 3.63577 s wall, 288000 ticks; 3307.1 s so far
+  run day 785: 4.26016 s wall, 288000 ticks; 3311.36 s so far
+  run day 786: 4.33436 s wall, 288000 ticks; 3315.69 s so far
+  run day 787: 4.47795 s wall, 288000 ticks; 3320.17 s so far
+  run day 788: 4.42468 s wall, 288000 ticks; 3324.59 s so far
+  run day 789: 4.39134 s wall, 288000 ticks; 3328.99 s so far
+  run day 790: 4.82306 s wall, 288000 ticks; 3333.81 s so far
+  run day 791: 3.92343 s wall, 288000 ticks; 3337.73 s so far
+  run day 792: 4.59226 s wall, 288000 ticks; 3342.32 s so far
+  run day 793: 4.71072 s wall, 288000 ticks; 3347.03 s so far
+  run day 794: 4.62372 s wall, 288000 ticks; 3351.66 s so far
+  run day 795: 4.36196 s wall, 288000 ticks; 3356.02 s so far
+  run day 796: 4.24683 s wall, 288000 ticks; 3360.27 s so far
+  run day 797: 4.52595 s wall, 288000 ticks; 3364.79 s so far
+  run day 798: 3.65266 s wall, 288000 ticks; 3368.45 s so far
+  run day 799: 4.3732 s wall, 288000 ticks; 3372.82 s so far
+  run day 800: 4.27918 s wall, 288000 ticks; 3377.1 s so far
+  run day 801: 4.47589 s wall, 288000 ticks; 3381.57 s so far
+  run day 802: 4.37803 s wall, 288000 ticks; 3385.95 s so far
+  run day 803: 4.21344 s wall, 288000 ticks; 3390.17 s so far
+  run day 804: 4.76682 s wall, 288000 ticks; 3394.93 s so far
+  run day 805: 3.59015 s wall, 288000 ticks; 3398.52 s so far
+  run day 806: 4.41971 s wall, 288000 ticks; 3402.94 s so far
+  run day 807: 4.60989 s wall, 288000 ticks; 3407.55 s so far
+  run day 808: 4.54766 s wall, 288000 ticks; 3412.1 s so far
+  run day 809: 4.40267 s wall, 288000 ticks; 3416.5 s so far
+  run day 810: 4.36379 s wall, 288000 ticks; 3420.87 s so far
+  run day 811: 4.74923 s wall, 288000 ticks; 3425.62 s so far
+  run day 812: 3.86535 s wall, 288000 ticks; 3429.48 s so far
+  run day 813: 4.57898 s wall, 288000 ticks; 3434.06 s so far
+  run day 814: 4.85445 s wall, 288000 ticks; 3438.91 s so far
+  run day 815: 4.66718 s wall, 288000 ticks; 3443.58 s so far
+  run day 816: 4.37014 s wall, 288000 ticks; 3447.95 s so far
+  run day 817: 4.78324 s wall, 288000 ticks; 3452.73 s so far
+  run day 818: 4.66639 s wall, 288000 ticks; 3457.4 s so far
+  run day 819: 3.61474 s wall, 288000 ticks; 3461.02 s so far
+  run day 820: 4.18615 s wall, 288000 ticks; 3465.2 s so far
+  run day 821: 4.48748 s wall, 288000 ticks; 3469.69 s so far
+  run day 822: 4.5539 s wall, 288000 ticks; 3474.24 s so far
+  run day 823: 4.54921 s wall, 288000 ticks; 3478.79 s so far
+  run day 824: 4.5046 s wall, 288000 ticks; 3483.3 s so far
+  run day 825: 4.67964 s wall, 288000 ticks; 3487.98 s so far
+  run day 826: 3.76518 s wall, 288000 ticks; 3491.74 s so far
+  run day 827: 5.20825 s wall, 288000 ticks; 3496.95 s so far
+  run day 828: 4.88896 s wall, 288000 ticks; 3501.84 s so far
+  run day 829: 5.27737 s wall, 288000 ticks; 3507.12 s so far
+  run day 830: 5.66209 s wall, 288000 ticks; 3512.78 s so far
+  run day 831: 4.64938 s wall, 288000 ticks; 3517.43 s so far
+  run day 832: 4.62883 s wall, 288000 ticks; 3522.06 s so far
+  run day 833: 3.71517 s wall, 288000 ticks; 3525.77 s so far
+  run day 834: 4.53945 s wall, 288000 ticks; 3530.31 s so far
+  run day 835: 4.64944 s wall, 288000 ticks; 3534.96 s so far
+  run day 836: 4.48522 s wall, 288000 ticks; 3539.45 s so far
+  run day 837: 4.32899 s wall, 288000 ticks; 3543.78 s so far
+  run day 838: 4.77419 s wall, 288000 ticks; 3548.55 s so far
+  run day 839: 4.82754 s wall, 288000 ticks; 3553.38 s so far
+  run day 840: 3.59938 s wall, 288000 ticks; 3556.98 s so far
+  run day 841: 5.05057 s wall, 288000 ticks; 3562.03 s so far
+  run day 842: 4.41404 s wall, 288000 ticks; 3566.44 s so far
+  run day 843: 4.87847 s wall, 288000 ticks; 3571.32 s so far
+  run day 844: 5.25321 s wall, 288000 ticks; 3576.57 s so far
+  run day 845: 4.59639 s wall, 288000 ticks; 3581.17 s so far
+  run day 846: 4.74794 s wall, 288000 ticks; 3585.92 s so far
+  run day 847: 3.75162 s wall, 288000 ticks; 3589.67 s so far
+  run day 848: 4.64371 s wall, 288000 ticks; 3594.31 s so far
+  run day 849: 4.69564 s wall, 288000 ticks; 3599.01 s so far
+  run day 850: 4.53902 s wall, 288000 ticks; 3603.55 s so far
+  run day 851: 4.47081 s wall, 288000 ticks; 3608.02 s so far
+  run day 852: 4.79979 s wall, 288000 ticks; 3612.82 s so far
+  run day 853: 5.18862 s wall, 288000 ticks; 3618.01 s so far
+  run day 854: 3.78196 s wall, 288000 ticks; 3621.79 s so far
+  run day 855: 4.31813 s wall, 288000 ticks; 3626.11 s so far
+  run day 856: 4.45348 s wall, 288000 ticks; 3630.56 s so far
+  run day 857: 4.65328 s wall, 288000 ticks; 3635.21 s so far
+  run day 858: 4.47899 s wall, 288000 ticks; 3639.69 s so far
+  run day 859: 4.57768 s wall, 288000 ticks; 3644.27 s so far
+  run day 860: 4.77744 s wall, 288000 ticks; 3649.05 s so far
+  run day 861: 3.68949 s wall, 288000 ticks; 3652.74 s so far
+  run day 862: 4.58477 s wall, 288000 ticks; 3657.32 s so far
+  run day 863: 4.59836 s wall, 288000 ticks; 3661.92 s so far
+  run day 864: 4.56033 s wall, 288000 ticks; 3666.48 s so far
+  run day 865: 4.48104 s wall, 288000 ticks; 3670.96 s so far
+  run day 866: 4.6418 s wall, 288000 ticks; 3675.6 s so far
+  run day 867: 4.78904 s wall, 288000 ticks; 3680.39 s so far
+  run day 868: 4.02792 s wall, 288000 ticks; 3684.42 s so far
+  run day 869: 4.37611 s wall, 288000 ticks; 3688.8 s so far
+  run day 870: 4.64575 s wall, 288000 ticks; 3693.44 s so far
+  run day 871: 4.37455 s wall, 288000 ticks; 3697.82 s so far
+  run day 872: 4.35159 s wall, 288000 ticks; 3702.17 s so far
+  run day 873: 4.2821 s wall, 288000 ticks; 3706.45 s so far
+  run day 874: 4.75374 s wall, 288000 ticks; 3711.2 s so far
+  run day 875: 3.65413 s wall, 288000 ticks; 3714.86 s so far
+  run day 876: 4.41758 s wall, 288000 ticks; 3719.28 s so far
+  run day 877: 4.61829 s wall, 288000 ticks; 3723.89 s so far
+  run day 878: 4.90548 s wall, 288000 ticks; 3728.8 s so far
+  run day 879: 4.82944 s wall, 288000 ticks; 3733.63 s so far
+  run day 880: 4.58738 s wall, 288000 ticks; 3738.22 s so far
+  run day 881: 4.78504 s wall, 288000 ticks; 3743 s so far
+  run day 882: 3.67406 s wall, 288000 ticks; 3746.68 s so far
+  run day 883: 4.32854 s wall, 288000 ticks; 3751 s so far
+  run day 884: 4.57936 s wall, 288000 ticks; 3755.58 s so far
+  run day 885: 4.3391 s wall, 288000 ticks; 3759.92 s so far
+  run day 886: 4.33745 s wall, 288000 ticks; 3764.26 s so far
+  run day 887: 4.4651 s wall, 288000 ticks; 3768.72 s so far
+  run day 888: 5.02423 s wall, 288000 ticks; 3773.75 s so far
+  run day 889: 3.79078 s wall, 288000 ticks; 3777.54 s so far
+  run day 890: 4.48151 s wall, 288000 ticks; 3782.02 s so far
+  run day 891: 4.43924 s wall, 288000 ticks; 3786.46 s so far
+  run day 892: 4.26296 s wall, 288000 ticks; 3790.72 s so far
+  run day 893: 4.33486 s wall, 288000 ticks; 3795.06 s so far
+  run day 894: 4.57598 s wall, 288000 ticks; 3799.63 s so far
+  run day 895: 4.84797 s wall, 288000 ticks; 3804.48 s so far
+  run day 896: 3.73585 s wall, 288000 ticks; 3808.22 s so far
+  run day 897: 6.26949 s wall, 288000 ticks; 3814.49 s so far
+  run day 898: 4.77728 s wall, 288000 ticks; 3819.26 s so far
+  run day 899: 4.65809 s wall, 288000 ticks; 3823.92 s so far
+  run day 900: 4.53828 s wall, 288000 ticks; 3828.46 s so far
+  run day 901: 4.6779 s wall, 288000 ticks; 3833.14 s so far
+  run day 902: 4.69682 s wall, 288000 ticks; 3837.84 s so far
+  run day 903: 3.65619 s wall, 288000 ticks; 3841.49 s so far
+  run day 904: 4.87292 s wall, 288000 ticks; 3846.36 s so far
+  run day 905: 4.53208 s wall, 288000 ticks; 3850.9 s so far
+  run day 906: 4.51661 s wall, 288000 ticks; 3855.41 s so far
+  run day 907: 4.31437 s wall, 288000 ticks; 3859.73 s so far
+  run day 908: 4.52256 s wall, 288000 ticks; 3864.25 s so far
+  run day 909: 4.8131 s wall, 288000 ticks; 3869.06 s so far
+  run day 910: 3.8271 s wall, 288000 ticks; 3872.89 s so far
+  run day 911: 4.71583 s wall, 288000 ticks; 3877.61 s so far
+  run day 912: 4.49877 s wall, 288000 ticks; 3882.11 s so far
+  run day 913: 4.58342 s wall, 288000 ticks; 3886.69 s so far
+  run day 914: 4.57959 s wall, 288000 ticks; 3891.27 s so far
+  run day 915: 4.51263 s wall, 288000 ticks; 3895.78 s so far
+  run day 916: 4.69369 s wall, 288000 ticks; 3900.47 s so far
+  run day 917: 3.78574 s wall, 288000 ticks; 3904.26 s so far
+  run day 918: 4.46537 s wall, 288000 ticks; 3908.73 s so far
+  run day 919: 4.64728 s wall, 288000 ticks; 3913.37 s so far
+  run day 920: 5.38305 s wall, 288000 ticks; 3918.76 s so far
+  run day 921: 4.52386 s wall, 288000 ticks; 3923.28 s so far
+  run day 922: 4.39745 s wall, 288000 ticks; 3927.68 s so far
+  run day 923: 4.5437 s wall, 288000 ticks; 3932.22 s so far
+  run day 924: 3.74009 s wall, 288000 ticks; 3935.96 s so far
+  run day 925: 4.41723 s wall, 288000 ticks; 3940.38 s so far
+  run day 926: 4.42727 s wall, 288000 ticks; 3944.81 s so far
+  run day 927: 4.32871 s wall, 288000 ticks; 3949.13 s so far
+  run day 928: 4.99709 s wall, 288000 ticks; 3954.13 s so far
+  run day 929: 5.50004 s wall, 288000 ticks; 3959.63 s so far
+  run day 930: 4.88251 s wall, 288000 ticks; 3964.51 s so far
+  run day 931: 3.691 s wall, 288000 ticks; 3968.21 s so far
+  run day 932: 4.44018 s wall, 288000 ticks; 3972.65 s so far
+  run day 933: 4.70269 s wall, 288000 ticks; 3977.35 s so far
+  run day 934: 4.80441 s wall, 288000 ticks; 3982.15 s so far
+  run day 935: 4.61683 s wall, 288000 ticks; 3986.77 s so far
+  run day 936: 4.53531 s wall, 288000 ticks; 3991.3 s so far
+  run day 937: 4.51658 s wall, 288000 ticks; 3995.82 s so far
+  run day 938: 3.71733 s wall, 288000 ticks; 3999.54 s so far
+  run day 939: 4.7464 s wall, 288000 ticks; 4004.28 s so far
+  run day 940: 4.74064 s wall, 288000 ticks; 4009.03 s so far
+  run day 941: 4.80555 s wall, 288000 ticks; 4013.83 s so far
+  run day 942: 4.37521 s wall, 288000 ticks; 4018.21 s so far
+  run day 943: 4.58153 s wall, 288000 ticks; 4022.79 s so far
+  run day 944: 6.35286 s wall, 288000 ticks; 4029.14 s so far
+  run day 945: 4.46585 s wall, 288000 ticks; 4033.61 s so far
+  run day 946: 4.64981 s wall, 288000 ticks; 4038.26 s so far
+  run day 947: 4.61349 s wall, 288000 ticks; 4042.87 s so far
+  run day 948: 4.54687 s wall, 288000 ticks; 4047.42 s so far
+  run day 949: 4.50564 s wall, 288000 ticks; 4051.92 s so far
+  run day 950: 4.57176 s wall, 288000 ticks; 4056.49 s so far
+  run day 951: 4.85237 s wall, 288000 ticks; 4061.35 s so far
+  run day 952: 4.00241 s wall, 288000 ticks; 4065.35 s so far
+  run day 953: 4.53378 s wall, 288000 ticks; 4069.88 s so far
+  run day 954: 4.86306 s wall, 288000 ticks; 4074.75 s so far
+  run day 955: 5.33249 s wall, 288000 ticks; 4080.08 s so far
+  run day 956: 4.57249 s wall, 288000 ticks; 4084.65 s so far
+  run day 957: 4.50876 s wall, 288000 ticks; 4089.16 s so far
+  run day 958: 4.93639 s wall, 288000 ticks; 4094.1 s so far
+  run day 959: 3.96729 s wall, 288000 ticks; 4098.06 s so far
+  run day 960: 4.24285 s wall, 288000 ticks; 4102.31 s so far
+  run day 961: 4.52154 s wall, 288000 ticks; 4106.83 s so far
+  run day 962: 4.32489 s wall, 288000 ticks; 4111.15 s so far
+  run day 963: 4.71053 s wall, 288000 ticks; 4115.86 s so far
+  run day 964: 4.5839 s wall, 288000 ticks; 4120.45 s so far
+  run day 965: 4.78455 s wall, 288000 ticks; 4125.23 s so far
+  run day 966: 3.65058 s wall, 288000 ticks; 4128.88 s so far
+  run day 967: 4.60622 s wall, 288000 ticks; 4133.49 s so far
+  run day 968: 4.50461 s wall, 288000 ticks; 4137.99 s so far
+  run day 969: 5.39218 s wall, 288000 ticks; 4143.38 s so far
+  run day 970: 5.3436 s wall, 288000 ticks; 4148.73 s so far
+  run day 971: 4.57959 s wall, 288000 ticks; 4153.31 s so far
+  run day 972: 4.6419 s wall, 288000 ticks; 4157.95 s so far
+  run day 973: 3.76004 s wall, 288000 ticks; 4161.71 s so far
+  run day 974: 4.68053 s wall, 288000 ticks; 4166.39 s so far
+  run day 975: 4.61085 s wall, 288000 ticks; 4171 s so far
+  run day 976: 4.38037 s wall, 288000 ticks; 4175.38 s so far
+  run day 977: 4.50867 s wall, 288000 ticks; 4179.89 s so far
+  run day 978: 4.44667 s wall, 288000 ticks; 4184.34 s so far
+  run day 979: 5.21738 s wall, 288000 ticks; 4189.55 s so far
+  run day 980: 4.13777 s wall, 288000 ticks; 4193.69 s so far
+  run day 981: 4.54466 s wall, 288000 ticks; 4198.24 s so far
+  run day 982: 4.63337 s wall, 288000 ticks; 4202.87 s so far
+  run day 983: 4.44416 s wall, 288000 ticks; 4207.31 s so far
+  run day 984: 4.60729 s wall, 288000 ticks; 4211.92 s so far
+  run day 985: 4.39692 s wall, 288000 ticks; 4216.32 s so far
+  run day 986: 4.60126 s wall, 288000 ticks; 4220.92 s so far
+  run day 987: 4.2955 s wall, 288000 ticks; 4225.22 s so far
+  run day 988: 5.18542 s wall, 288000 ticks; 4230.4 s so far
+  run day 989: 4.57914 s wall, 288000 ticks; 4234.98 s so far
+  run day 990: 4.82309 s wall, 288000 ticks; 4239.8 s so far
+  run day 991: 4.79368 s wall, 288000 ticks; 4244.6 s so far
+  run day 992: 5.51038 s wall, 288000 ticks; 4250.11 s so far
+  run day 993: 4.9932 s wall, 288000 ticks; 4255.1 s so far
+  run day 994: 3.82633 s wall, 288000 ticks; 4258.93 s so far
+  run day 995: 4.7083 s wall, 288000 ticks; 4263.63 s so far
+  run day 996: 4.63058 s wall, 288000 ticks; 4268.27 s so far
+  run day 997: 4.87938 s wall, 288000 ticks; 4273.14 s so far
+  run day 998: 5.47392 s wall, 288000 ticks; 4278.62 s so far
+  run day 999: 4.48745 s wall, 288000 ticks; 4283.11 s so far
+  run day 1000: 4.71822 s wall, 288000 ticks; 4287.82 s so far
+  run day 1001: 3.7384 s wall, 288000 ticks; 4291.56 s so far
+  run day 1002: 4.4174 s wall, 288000 ticks; 4295.98 s so far
+  run day 1003: 4.58326 s wall, 288000 ticks; 4300.56 s so far
+  run day 1004: 4.43193 s wall, 288000 ticks; 4305 s so far
+  run day 1005: 4.35355 s wall, 288000 ticks; 4309.35 s so far
+  run day 1006: 4.81272 s wall, 288000 ticks; 4314.16 s so far
+  run day 1007: 5.00781 s wall, 288000 ticks; 4319.17 s so far
+  run day 1008: 3.97298 s wall, 288000 ticks; 4323.14 s so far
+  run day 1009: 4.74034 s wall, 288000 ticks; 4327.88 s so far
+  run day 1010: 4.75671 s wall, 288000 ticks; 4332.64 s so far
+  run day 1011: 4.48683 s wall, 288000 ticks; 4337.13 s so far
+  run day 1012: 4.30366 s wall, 288000 ticks; 4341.43 s so far
+  run day 1013: 4.8933 s wall, 288000 ticks; 4346.32 s so far
+  run day 1014: 4.74222 s wall, 288000 ticks; 4351.07 s so far
+  run day 1015: 4.26726 s wall, 288000 ticks; 4355.33 s so far
+  run day 1016: 5.90009 s wall, 288000 ticks; 4361.23 s so far
+  run day 1017: 4.89238 s wall, 288000 ticks; 4366.13 s so far
+  run day 1018: 4.71612 s wall, 288000 ticks; 4370.84 s so far
+  run day 1019: 4.63354 s wall, 288000 ticks; 4375.48 s so far
+  run day 1020: 4.66408 s wall, 288000 ticks; 4380.14 s so far
+  run day 1021: 4.78212 s wall, 288000 ticks; 4384.92 s so far
+  run day 1022: 3.73426 s wall, 288000 ticks; 4388.66 s so far
+  run day 1023: 4.54551 s wall, 288000 ticks; 4393.2 s so far
+  run day 1024: 5.04233 s wall, 288000 ticks; 4398.24 s so far
+  run day 1025: 5.60836 s wall, 288000 ticks; 4403.85 s so far
+  run day 1026: 5.10609 s wall, 288000 ticks; 4408.96 s so far
+  run day 1027: 4.39043 s wall, 288000 ticks; 4413.35 s so far
+  run day 1028: 4.95593 s wall, 288000 ticks; 4418.3 s so far
+  run day 1029: 3.63385 s wall, 288000 ticks; 4421.94 s so far
+  run day 1030: 4.78893 s wall, 288000 ticks; 4426.73 s so far
+  run day 1031: 5.10631 s wall, 288000 ticks; 4431.83 s so far
+  run day 1032: 5.09201 s wall, 288000 ticks; 4436.93 s so far
+  run day 1033: 4.48423 s wall, 288000 ticks; 4441.41 s so far
+  run day 1034: 4.43722 s wall, 288000 ticks; 4445.85 s so far
+  run day 1035: 4.74751 s wall, 288000 ticks; 4450.59 s so far
+  run day 1036: 3.9006 s wall, 288000 ticks; 4454.49 s so far
+  run day 1037: 4.46765 s wall, 288000 ticks; 4458.96 s so far
+  run day 1038: 4.57465 s wall, 288000 ticks; 4463.54 s so far
+  run day 1039: 4.59964 s wall, 288000 ticks; 4468.14 s so far
+  run day 1040: 4.64674 s wall, 288000 ticks; 4472.78 s so far
+  run day 1041: 4.69311 s wall, 288000 ticks; 4477.48 s so far
+  run day 1042: 4.83734 s wall, 288000 ticks; 4482.31 s so far
+  run day 1043: 3.78056 s wall, 288000 ticks; 4486.09 s so far
+  run day 1044: 4.74317 s wall, 288000 ticks; 4490.84 s so far
+  run day 1045: 4.57335 s wall, 288000 ticks; 4495.41 s so far
+  run day 1046: 4.4558 s wall, 288000 ticks; 4499.87 s so far
+  run day 1047: 4.51638 s wall, 288000 ticks; 4504.38 s so far
+  run day 1048: 4.40755 s wall, 288000 ticks; 4508.79 s so far
+  run day 1049: 5.03784 s wall, 288000 ticks; 4513.83 s so far
+  run day 1050: 3.37703 s wall, 288000 ticks; 4517.21 s so far
+  run day 1051: 3.4055 s wall, 288000 ticks; 4520.61 s so far
+  run day 1052: 3.98112 s wall, 288000 ticks; 4524.59 s so far
+  run day 1053: 3.86049 s wall, 288000 ticks; 4528.45 s so far
+  run day 1054: 3.81559 s wall, 288000 ticks; 4532.27 s so far
+  run day 1055: 3.7693 s wall, 288000 ticks; 4536.04 s so far
+  run day 1056: 3.96882 s wall, 288000 ticks; 4540.01 s so far
+  run day 1057: 3.19974 s wall, 288000 ticks; 4543.21 s so far
+  run day 1058: 3.7406 s wall, 288000 ticks; 4546.95 s so far
+  run day 1059: 3.66382 s wall, 288000 ticks; 4550.61 s so far
+  run day 1060: 3.59539 s wall, 288000 ticks; 4554.21 s so far
+  run day 1061: 3.69207 s wall, 288000 ticks; 4557.9 s so far
+  run day 1062: 3.71428 s wall, 288000 ticks; 4561.61 s so far
+  run day 1063: 3.97575 s wall, 288000 ticks; 4565.59 s so far
+  run day 1064: 3.65681 s wall, 288000 ticks; 4569.24 s so far
+  run day 1065: 4.31547 s wall, 288000 ticks; 4573.56 s so far
+  run day 1066: 3.95706 s wall, 288000 ticks; 4577.52 s so far
+  run day 1067: 3.74941 s wall, 288000 ticks; 4581.27 s so far
+  run day 1068: 3.48881 s wall, 288000 ticks; 4584.76 s so far
+  run day 1069: 3.25432 s wall, 288000 ticks; 4588.01 s so far
+  run day 1070: 3.54625 s wall, 288000 ticks; 4591.56 s so far
+  run day 1071: 2.72049 s wall, 288000 ticks; 4594.28 s so far
+  run day 1072: 3.54167 s wall, 288000 ticks; 4597.82 s so far
+  run day 1073: 3.55437 s wall, 288000 ticks; 4601.37 s so far
+  run day 1074: 3.29082 s wall, 288000 ticks; 4604.66 s so far
+  run day 1075: 3.29627 s wall, 288000 ticks; 4607.96 s so far
+  run day 1076: 3.30575 s wall, 288000 ticks; 4611.27 s so far
+  run day 1077: 3.44637 s wall, 288000 ticks; 4614.71 s so far
+  run day 1078: 2.64034 s wall, 288000 ticks; 4617.35 s so far
+  run day 1079: 3.09223 s wall, 288000 ticks; 4620.44 s so far
+  run day 1080: 2.94637 s wall, 288000 ticks; 4623.39 s so far
+  run day 1081: 2.99607 s wall, 288000 ticks; 4626.39 s so far
+  run day 1082: 3.0954 s wall, 288000 ticks; 4629.48 s so far
+  run day 1083: 3.19453 s wall, 288000 ticks; 4632.68 s so far
+  run day 1084: 3.39729 s wall, 288000 ticks; 4636.07 s so far
+  run day 1085: 2.62493 s wall, 288000 ticks; 4638.7 s so far
+  run day 1086: 3.26496 s wall, 288000 ticks; 4641.96 s so far
+  run day 1087: 3.41365 s wall, 288000 ticks; 4645.38 s so far
+  run day 1088: 3.22565 s wall, 288000 ticks; 4648.6 s so far
+  run day 1089: 3.19163 s wall, 288000 ticks; 4651.79 s so far
+  run day 1090: 3.08996 s wall, 288000 ticks; 4654.88 s so far
+  run day 1091: 3.18641 s wall, 288000 ticks; 4658.07 s so far
+  run day 1092: 2.61409 s wall, 288000 ticks; 4660.69 s so far
+  run day 1093: 3.24504 s wall, 288000 ticks; 4663.93 s so far
+  run day 1094: 3.16948 s wall, 288000 ticks; 4667.1 s so far
+  run day 1095: 3.28983 s wall, 288000 ticks; 4670.39 s so far
+  run day 1096 (part): 2.01449 s wall, 144000 ticks; 4672.4 s so far
+  inside World::tick, total ms (worst tick): streaming 0 (0) schedules 0 (0) movement 0 (0) separation 0 (0) views 0 (0); 0 route searches expanding 0 nodes (at most 0 in one)
+  path cache: 0 found, 0 searched
+  slowest route search: 0 ms in , 0 nodes, 0 waypoints
+  slowest World::tick after the first minute (tick 0): 0 ms = streaming 0, schedules 0 (0 route searches), movement 0, separation 0, views 0
+840 residents, no player, 315504000 ticks (315504000 of 0.05 s) from 6:00 to 26298:00: 4672.4 s wall, 4.26509 s a game day, mean 0.0148093 ms a tick; 195 residents moved; at most 691 places in memory; 4 threads
+  by run day (wall s; ticks; with the profile on, the schedules' stages in s: society bonds roads crime errands streaming routes):
+    day 1: 3.6598; 288000; 0 0 0 0 0 0 0
+    day 2: 2.45024; 288000; 0 0 0 0 0 0 0
+    day 3: 2.09984; 288000; 0 0 0 0 0 0 0
+    day 4: 2.05217; 288000; 0 0 0 0 0 0 0
+    day 5: 2.00397; 288000; 0 0 0 0 0 0 0
+    day 6: 2.54457; 288000; 0 0 0 0 0 0 0
+    day 7: 1.86309; 288000; 0 0 0 0 0 0 0
+    day 8: 1.99977; 288000; 0 0 0 0 0 0 0
+    day 9: 2.09197; 288000; 0 0 0 0 0 0 0
+    day 10: 2.24009; 288000; 0 0 0 0 0 0 0
+    day 11: 2.33237; 288000; 0 0 0 0 0 0 0
+    day 12: 2.35551; 288000; 0 0 0 0 0 0 0
+    day 13: 2.58653; 288000; 0 0 0 0 0 0 0
+    day 14: 1.98371; 288000; 0 0 0 0 0 0 0
+    day 15: 2.29367; 288000; 0 0 0 0 0 0 0
+    day 16: 2.2409; 288000; 0 0 0 0 0 0 0
+    day 17: 2.28957; 288000; 0 0 0 0 0 0 0
+    day 18: 2.41546; 288000; 0 0 0 0 0 0 0
+    day 19: 2.46403; 288000; 0 0 0 0 0 0 0
+    day 20: 2.50694; 288000; 0 0 0 0 0 0 0
+    day 21: 1.80382; 288000; 0 0 0 0 0 0 0
+    day 22: 2.11937; 288000; 0 0 0 0 0 0 0
+    day 23: 2.07172; 288000; 0 0 0 0 0 0 0
+    day 24: 2.06704; 288000; 0 0 0 0 0 0 0
+    day 25: 2.09064; 288000; 0 0 0 0 0 0 0
+    day 26: 2.13156; 288000; 0 0 0 0 0 0 0
+    day 27: 2.29123; 288000; 0 0 0 0 0 0 0
+    day 28: 1.82353; 288000; 0 0 0 0 0 0 0
+    day 29: 2.28003; 288000; 0 0 0 0 0 0 0
+    day 30: 2.74245; 288000; 0 0 0 0 0 0 0
+    day 31: 2.62074; 288000; 0 0 0 0 0 0 0
+    day 32: 2.56489; 288000; 0 0 0 0 0 0 0
+    day 33: 2.57483; 288000; 0 0 0 0 0 0 0
+    day 34: 2.81699; 288000; 0 0 0 0 0 0 0
+    day 35: 2.12258; 288000; 0 0 0 0 0 0 0
+    day 36: 2.65887; 288000; 0 0 0 0 0 0 0
+    day 37: 2.73548; 288000; 0 0 0 0 0 0 0
+    day 38: 2.76386; 288000; 0 0 0 0 0 0 0
+    day 39: 2.64857; 288000; 0 0 0 0 0 0 0
+    day 40: 2.81768; 288000; 0 0 0 0 0 0 0
+    day 41: 3.05696; 288000; 0 0 0 0 0 0 0
+    day 42: 2.29309; 288000; 0 0 0 0 0 0 0
+    day 43: 2.91985; 288000; 0 0 0 0 0 0 0
+    day 44: 3.08729; 288000; 0 0 0 0 0 0 0
+    day 45: 3.08077; 288000; 0 0 0 0 0 0 0
+    day 46: 2.77715; 288000; 0 0 0 0 0 0 0
+    day 47: 2.79107; 288000; 0 0 0 0 0 0 0
+    day 48: 3.04186; 288000; 0 0 0 0 0 0 0
+    day 49: 2.40606; 288000; 0 0 0 0 0 0 0
+    day 50: 2.88772; 288000; 0 0 0 0 0 0 0
+    day 51: 3.20755; 288000; 0 0 0 0 0 0 0
+    day 52: 2.7798; 288000; 0 0 0 0 0 0 0
+    day 53: 2.93874; 288000; 0 0 0 0 0 0 0
+    day 54: 2.75237; 288000; 0 0 0 0 0 0 0
+    day 55: 3.08151; 288000; 0 0 0 0 0 0 0
+    day 56: 3.0849; 288000; 0 0 0 0 0 0 0
+    day 57: 3.80525; 288000; 0 0 0 0 0 0 0
+    day 58: 3.22488; 288000; 0 0 0 0 0 0 0
+    day 59: 3.32043; 288000; 0 0 0 0 0 0 0
+    day 60: 3.40238; 288000; 0 0 0 0 0 0 0
+    day 61: 3.87556; 288000; 0 0 0 0 0 0 0
+    day 62: 4.66842; 288000; 0 0 0 0 0 0 0
+    day 63: 3.65387; 288000; 0 0 0 0 0 0 0
+    day 64: 4.59179; 288000; 0 0 0 0 0 0 0
+    day 65: 4.64026; 288000; 0 0 0 0 0 0 0
+    day 66: 3.95939; 288000; 0 0 0 0 0 0 0
+    day 67: 4.05524; 288000; 0 0 0 0 0 0 0
+    day 68: 4.19717; 288000; 0 0 0 0 0 0 0
+    day 69: 4.73211; 288000; 0 0 0 0 0 0 0
+    day 70: 3.42076; 288000; 0 0 0 0 0 0 0
+    day 71: 3.91763; 288000; 0 0 0 0 0 0 0
+    day 72: 4.91; 288000; 0 0 0 0 0 0 0
+    day 73: 4.79397; 288000; 0 0 0 0 0 0 0
+    day 74: 4.25667; 288000; 0 0 0 0 0 0 0
+    day 75: 4.61068; 288000; 0 0 0 0 0 0 0
+    day 76: 4.45275; 288000; 0 0 0 0 0 0 0
+    day 77: 3.73347; 288000; 0 0 0 0 0 0 0
+    day 78: 4.23389; 288000; 0 0 0 0 0 0 0
+    day 79: 4.36112; 288000; 0 0 0 0 0 0 0
+    day 80: 4.4105; 288000; 0 0 0 0 0 0 0
+    day 81: 4.37858; 288000; 0 0 0 0 0 0 0
+    day 82: 4.55753; 288000; 0 0 0 0 0 0 0
+    day 83: 4.97992; 288000; 0 0 0 0 0 0 0
+    day 84: 3.96926; 288000; 0 0 0 0 0 0 0
+    day 85: 4.8852; 288000; 0 0 0 0 0 0 0
+    day 86: 4.25919; 288000; 0 0 0 0 0 0 0
+    day 87: 4.80287; 288000; 0 0 0 0 0 0 0
+    day 88: 4.49656; 288000; 0 0 0 0 0 0 0
+    day 89: 5.15408; 288000; 0 0 0 0 0 0 0
+    day 90: 5.16177; 288000; 0 0 0 0 0 0 0
+    day 91: 3.92798; 288000; 0 0 0 0 0 0 0
+    day 92: 5.57464; 288000; 0 0 0 0 0 0 0
+    day 93: 4.42915; 288000; 0 0 0 0 0 0 0
+    day 94: 4.50939; 288000; 0 0 0 0 0 0 0
+    day 95: 5.48908; 288000; 0 0 0 0 0 0 0
+    day 96: 5.07259; 288000; 0 0 0 0 0 0 0
+    day 97: 5.0593; 288000; 0 0 0 0 0 0 0
+    day 98: 3.48254; 288000; 0 0 0 0 0 0 0
+    day 99: 4.84629; 288000; 0 0 0 0 0 0 0
+    day 100: 4.90481; 288000; 0 0 0 0 0 0 0
+    day 101: 4.79809; 288000; 0 0 0 0 0 0 0
+    day 102: 4.70322; 288000; 0 0 0 0 0 0 0
+    day 103: 4.67827; 288000; 0 0 0 0 0 0 0
+    day 104: 5.95754; 288000; 0 0 0 0 0 0 0
+    day 105: 4.39648; 288000; 0 0 0 0 0 0 0
+    day 106: 5.57319; 288000; 0 0 0 0 0 0 0
+    day 107: 4.48687; 288000; 0 0 0 0 0 0 0
+    day 108: 4.84397; 288000; 0 0 0 0 0 0 0
+    day 109: 4.44608; 288000; 0 0 0 0 0 0 0
+    day 110: 4.4468; 288000; 0 0 0 0 0 0 0
+    day 111: 4.69898; 288000; 0 0 0 0 0 0 0
+    day 112: 4.03239; 288000; 0 0 0 0 0 0 0
+    day 113: 5.05742; 288000; 0 0 0 0 0 0 0
+    day 114: 4.63278; 288000; 0 0 0 0 0 0 0
+    day 115: 4.70237; 288000; 0 0 0 0 0 0 0
+    day 116: 4.08235; 288000; 0 0 0 0 0 0 0
+    day 117: 4.24118; 288000; 0 0 0 0 0 0 0
+    day 118: 4.99736; 288000; 0 0 0 0 0 0 0
+    day 119: 4.07053; 288000; 0 0 0 0 0 0 0
+    day 120: 5.32948; 288000; 0 0 0 0 0 0 0
+    day 121: 5.25413; 288000; 0 0 0 0 0 0 0
+    day 122: 4.39876; 288000; 0 0 0 0 0 0 0
+    day 123: 4.61064; 288000; 0 0 0 0 0 0 0
+    day 124: 4.62413; 288000; 0 0 0 0 0 0 0
+    day 125: 5.00162; 288000; 0 0 0 0 0 0 0
+    day 126: 4.28468; 288000; 0 0 0 0 0 0 0
+    day 127: 5.67659; 288000; 0 0 0 0 0 0 0
+    day 128: 4.92675; 288000; 0 0 0 0 0 0 0
+    day 129: 5.70528; 288000; 0 0 0 0 0 0 0
+    day 130: 4.9481; 288000; 0 0 0 0 0 0 0
+    day 131: 5.05118; 288000; 0 0 0 0 0 0 0
+    day 132: 6.00265; 288000; 0 0 0 0 0 0 0
+    day 133: 3.83277; 288000; 0 0 0 0 0 0 0
+    day 134: 5.04462; 288000; 0 0 0 0 0 0 0
+    day 135: 5.30736; 288000; 0 0 0 0 0 0 0
+    day 136: 4.7009; 288000; 0 0 0 0 0 0 0
+    day 137: 4.84264; 288000; 0 0 0 0 0 0 0
+    day 138: 4.46093; 288000; 0 0 0 0 0 0 0
+    day 139: 5.34708; 288000; 0 0 0 0 0 0 0
+    day 140: 4.01126; 288000; 0 0 0 0 0 0 0
+    day 141: 5.35685; 288000; 0 0 0 0 0 0 0
+    day 142: 5.3982; 288000; 0 0 0 0 0 0 0
+    day 143: 4.8238; 288000; 0 0 0 0 0 0 0
+    day 144: 5.11224; 288000; 0 0 0 0 0 0 0
+    day 145: 4.71011; 288000; 0 0 0 0 0 0 0
+    day 146: 5.4088; 288000; 0 0 0 0 0 0 0
+    day 147: 4.90066; 288000; 0 0 0 0 0 0 0
+    day 148: 5.81098; 288000; 0 0 0 0 0 0 0
+    day 149: 5.00324; 288000; 0 0 0 0 0 0 0
+    day 150: 4.75549; 288000; 0 0 0 0 0 0 0
+    day 151: 4.54741; 288000; 0 0 0 0 0 0 0
+    day 152: 5.33001; 288000; 0 0 0 0 0 0 0
+    day 153: 5.72241; 288000; 0 0 0 0 0 0 0
+    day 154: 4.50246; 288000; 0 0 0 0 0 0 0
+    day 155: 4.99254; 288000; 0 0 0 0 0 0 0
+    day 156: 4.82385; 288000; 0 0 0 0 0 0 0
+    day 157: 5.564; 288000; 0 0 0 0 0 0 0
+    day 158: 4.90945; 288000; 0 0 0 0 0 0 0
+    day 159: 5.7318; 288000; 0 0 0 0 0 0 0
+    day 160: 5.48419; 288000; 0 0 0 0 0 0 0
+    day 161: 3.7337; 288000; 0 0 0 0 0 0 0
+    day 162: 5.26678; 288000; 0 0 0 0 0 0 0
+    day 163: 5.03781; 288000; 0 0 0 0 0 0 0
+    day 164: 4.22298; 288000; 0 0 0 0 0 0 0
+    day 165: 3.99526; 288000; 0 0 0 0 0 0 0
+    day 166: 4.01904; 288000; 0 0 0 0 0 0 0
+    day 167: 4.23146; 288000; 0 0 0 0 0 0 0
+    day 168: 3.61306; 288000; 0 0 0 0 0 0 0
+    day 169: 4.18618; 288000; 0 0 0 0 0 0 0
+    day 170: 4.04903; 288000; 0 0 0 0 0 0 0
+    day 171: 4.3262; 288000; 0 0 0 0 0 0 0
+    day 172: 4.13415; 288000; 0 0 0 0 0 0 0
+    day 173: 4.18347; 288000; 0 0 0 0 0 0 0
+    day 174: 4.40257; 288000; 0 0 0 0 0 0 0
+    day 175: 3.65041; 288000; 0 0 0 0 0 0 0
+    day 176: 4.44121; 288000; 0 0 0 0 0 0 0
+    day 177: 4.7526; 288000; 0 0 0 0 0 0 0
+    day 178: 4.0679; 288000; 0 0 0 0 0 0 0
+    day 179: 4.75512; 288000; 0 0 0 0 0 0 0
+    day 180: 3.96895; 288000; 0 0 0 0 0 0 0
+    day 181: 4.30249; 288000; 0 0 0 0 0 0 0
+    day 182: 3.12685; 288000; 0 0 0 0 0 0 0
+    day 183: 3.86718; 288000; 0 0 0 0 0 0 0
+    day 184: 4.00132; 288000; 0 0 0 0 0 0 0
+    day 185: 3.87532; 288000; 0 0 0 0 0 0 0
+    day 186: 4.14217; 288000; 0 0 0 0 0 0 0
+    day 187: 4.5252; 288000; 0 0 0 0 0 0 0
+    day 188: 4.91121; 288000; 0 0 0 0 0 0 0
+    day 189: 3.59566; 288000; 0 0 0 0 0 0 0
+    day 190: 4.09028; 288000; 0 0 0 0 0 0 0
+    day 191: 4.1246; 288000; 0 0 0 0 0 0 0
+    day 192: 4.28023; 288000; 0 0 0 0 0 0 0
+    day 193: 4.04511; 288000; 0 0 0 0 0 0 0
+    day 194: 4.13398; 288000; 0 0 0 0 0 0 0
+    day 195: 4.57671; 288000; 0 0 0 0 0 0 0
+    day 196: 3.55298; 288000; 0 0 0 0 0 0 0
+    day 197: 4.37227; 288000; 0 0 0 0 0 0 0
+    day 198: 4.09762; 288000; 0 0 0 0 0 0 0
+    day 199: 5.15129; 288000; 0 0 0 0 0 0 0
+    day 200: 4.21984; 288000; 0 0 0 0 0 0 0
+    day 201: 4.51164; 288000; 0 0 0 0 0 0 0
+    day 202: 4.96575; 288000; 0 0 0 0 0 0 0
+    day 203: 3.32126; 288000; 0 0 0 0 0 0 0
+    day 204: 4.12486; 288000; 0 0 0 0 0 0 0
+    day 205: 4.08962; 288000; 0 0 0 0 0 0 0
+    day 206: 4.30976; 288000; 0 0 0 0 0 0 0
+    day 207: 4.71408; 288000; 0 0 0 0 0 0 0
+    day 208: 4.2432; 288000; 0 0 0 0 0 0 0
+    day 209: 4.28851; 288000; 0 0 0 0 0 0 0
+    day 210: 3.26112; 288000; 0 0 0 0 0 0 0
+    day 211: 4.16132; 288000; 0 0 0 0 0 0 0
+    day 212: 5.1075; 288000; 0 0 0 0 0 0 0
+    day 213: 4.33487; 288000; 0 0 0 0 0 0 0
+    day 214: 3.90021; 288000; 0 0 0 0 0 0 0
+    day 215: 3.88603; 288000; 0 0 0 0 0 0 0
+    day 216: 4.24164; 288000; 0 0 0 0 0 0 0
+    day 217: 3.28868; 288000; 0 0 0 0 0 0 0
+    day 218: 4.01045; 288000; 0 0 0 0 0 0 0
+    day 219: 3.76912; 288000; 0 0 0 0 0 0 0
+    day 220: 3.85117; 288000; 0 0 0 0 0 0 0
+    day 221: 4.07588; 288000; 0 0 0 0 0 0 0
+    day 222: 3.86157; 288000; 0 0 0 0 0 0 0
+    day 223: 4.17919; 288000; 0 0 0 0 0 0 0
+    day 224: 3.38913; 288000; 0 0 0 0 0 0 0
+    day 225: 4.04624; 288000; 0 0 0 0 0 0 0
+    day 226: 4.2012; 288000; 0 0 0 0 0 0 0
+    day 227: 4.00454; 288000; 0 0 0 0 0 0 0
+    day 228: 4.11101; 288000; 0 0 0 0 0 0 0
+    day 229: 4.10591; 288000; 0 0 0 0 0 0 0
+    day 230: 3.61182; 288000; 0 0 0 0 0 0 0
+    day 231: 3.25125; 288000; 0 0 0 0 0 0 0
+    day 232: 4.3692; 288000; 0 0 0 0 0 0 0
+    day 233: 3.95178; 288000; 0 0 0 0 0 0 0
+    day 234: 3.92011; 288000; 0 0 0 0 0 0 0
+    day 235: 4.12628; 288000; 0 0 0 0 0 0 0
+    day 236: 3.92308; 288000; 0 0 0 0 0 0 0
+    day 237: 4.66449; 288000; 0 0 0 0 0 0 0
+    day 238: 3.32686; 288000; 0 0 0 0 0 0 0
+    day 239: 4.36648; 288000; 0 0 0 0 0 0 0
+    day 240: 3.97198; 288000; 0 0 0 0 0 0 0
+    day 241: 4.25332; 288000; 0 0 0 0 0 0 0
+    day 242: 4.34589; 288000; 0 0 0 0 0 0 0
+    day 243: 4.0202; 288000; 0 0 0 0 0 0 0
+    day 244: 4.21576; 288000; 0 0 0 0 0 0 0
+    day 245: 3.32558; 288000; 0 0 0 0 0 0 0
+    day 246: 4.04728; 288000; 0 0 0 0 0 0 0
+    day 247: 4.06139; 288000; 0 0 0 0 0 0 0
+    day 248: 4.08942; 288000; 0 0 0 0 0 0 0
+    day 249: 4.05943; 288000; 0 0 0 0 0 0 0
+    day 250: 4.1697; 288000; 0 0 0 0 0 0 0
+    day 251: 4.5315; 288000; 0 0 0 0 0 0 0
+    day 252: 3.78438; 288000; 0 0 0 0 0 0 0
+    day 253: 4.04592; 288000; 0 0 0 0 0 0 0
+    day 254: 4.08643; 288000; 0 0 0 0 0 0 0
+    day 255: 4.12907; 288000; 0 0 0 0 0 0 0
+    day 256: 4.26272; 288000; 0 0 0 0 0 0 0
+    day 257: 4.46732; 288000; 0 0 0 0 0 0 0
+    day 258: 4.54874; 288000; 0 0 0 0 0 0 0
+    day 259: 3.46379; 288000; 0 0 0 0 0 0 0
+    day 260: 4.16428; 288000; 0 0 0 0 0 0 0
+    day 261: 4.02921; 288000; 0 0 0 0 0 0 0
+    day 262: 4.01582; 288000; 0 0 0 0 0 0 0
+    day 263: 4.0341; 288000; 0 0 0 0 0 0 0
+    day 264: 4.0703; 288000; 0 0 0 0 0 0 0
+    day 265: 4.32359; 288000; 0 0 0 0 0 0 0
+    day 266: 3.29843; 288000; 0 0 0 0 0 0 0
+    day 267: 3.84174; 288000; 0 0 0 0 0 0 0
+    day 268: 3.69737; 288000; 0 0 0 0 0 0 0
+    day 269: 3.66002; 288000; 0 0 0 0 0 0 0
+    day 270: 3.59318; 288000; 0 0 0 0 0 0 0
+    day 271: 3.60544; 288000; 0 0 0 0 0 0 0
+    day 272: 3.75067; 288000; 0 0 0 0 0 0 0
+    day 273: 3.15256; 288000; 0 0 0 0 0 0 0
+    day 274: 3.76572; 288000; 0 0 0 0 0 0 0
+    day 275: 3.74178; 288000; 0 0 0 0 0 0 0
+    day 276: 3.95295; 288000; 0 0 0 0 0 0 0
+    day 277: 3.83342; 288000; 0 0 0 0 0 0 0
+    day 278: 4.98807; 288000; 0 0 0 0 0 0 0
+    day 279: 4.36473; 288000; 0 0 0 0 0 0 0
+    day 280: 3.19943; 288000; 0 0 0 0 0 0 0
+    day 281: 4.04101; 288000; 0 0 0 0 0 0 0
+    day 282: 4.37498; 288000; 0 0 0 0 0 0 0
+    day 283: 3.95006; 288000; 0 0 0 0 0 0 0
+    day 284: 3.99055; 288000; 0 0 0 0 0 0 0
+    day 285: 4.24487; 288000; 0 0 0 0 0 0 0
+    day 286: 4.37114; 288000; 0 0 0 0 0 0 0
+    day 287: 3.43114; 288000; 0 0 0 0 0 0 0
+    day 288: 4.02169; 288000; 0 0 0 0 0 0 0
+    day 289: 4.43959; 288000; 0 0 0 0 0 0 0
+    day 290: 4.12046; 288000; 0 0 0 0 0 0 0
+    day 291: 4.08086; 288000; 0 0 0 0 0 0 0
+    day 292: 4.53674; 288000; 0 0 0 0 0 0 0
+    day 293: 4.78979; 288000; 0 0 0 0 0 0 0
+    day 294: 3.18408; 288000; 0 0 0 0 0 0 0
+    day 295: 4.10999; 288000; 0 0 0 0 0 0 0
+    day 296: 4.13762; 288000; 0 0 0 0 0 0 0
+    day 297: 4.11593; 288000; 0 0 0 0 0 0 0
+    day 298: 4.67818; 288000; 0 0 0 0 0 0 0
+    day 299: 4.27161; 288000; 0 0 0 0 0 0 0
+    day 300: 4.29343; 288000; 0 0 0 0 0 0 0
+    day 301: 3.37849; 288000; 0 0 0 0 0 0 0
+    day 302: 4.1806; 288000; 0 0 0 0 0 0 0
+    day 303: 4.13568; 288000; 0 0 0 0 0 0 0
+    day 304: 4.38572; 288000; 0 0 0 0 0 0 0
+    day 305: 5.19635; 288000; 0 0 0 0 0 0 0
+    day 306: 4.9401; 288000; 0 0 0 0 0 0 0
+    day 307: 5.75483; 288000; 0 0 0 0 0 0 0
+    day 308: 3.81311; 288000; 0 0 0 0 0 0 0
+    day 309: 4.14593; 288000; 0 0 0 0 0 0 0
+    day 310: 4.11336; 288000; 0 0 0 0 0 0 0
+    day 311: 4.12455; 288000; 0 0 0 0 0 0 0
+    day 312: 4.08983; 288000; 0 0 0 0 0 0 0
+    day 313: 4.12962; 288000; 0 0 0 0 0 0 0
+    day 314: 4.54743; 288000; 0 0 0 0 0 0 0
+    day 315: 3.3274; 288000; 0 0 0 0 0 0 0
+    day 316: 3.93282; 288000; 0 0 0 0 0 0 0
+    day 317: 3.9399; 288000; 0 0 0 0 0 0 0
+    day 318: 4.10957; 288000; 0 0 0 0 0 0 0
+    day 319: 4.17683; 288000; 0 0 0 0 0 0 0
+    day 320: 4.38799; 288000; 0 0 0 0 0 0 0
+    day 321: 3.67072; 288000; 0 0 0 0 0 0 0
+    day 322: 3.26982; 288000; 0 0 0 0 0 0 0
+    day 323: 4.12794; 288000; 0 0 0 0 0 0 0
+    day 324: 4.15983; 288000; 0 0 0 0 0 0 0
+    day 325: 4.16386; 288000; 0 0 0 0 0 0 0
+    day 326: 5.33388; 288000; 0 0 0 0 0 0 0
+    day 327: 6.51043; 288000; 0 0 0 0 0 0 0
+    day 328: 4.67861; 288000; 0 0 0 0 0 0 0
+    day 329: 3.49744; 288000; 0 0 0 0 0 0 0
+    day 330: 3.9988; 288000; 0 0 0 0 0 0 0
+    day 331: 3.93846; 288000; 0 0 0 0 0 0 0
+    day 332: 4.36538; 288000; 0 0 0 0 0 0 0
+    day 333: 4.58969; 288000; 0 0 0 0 0 0 0
+    day 334: 5.03223; 288000; 0 0 0 0 0 0 0
+    day 335: 5.20108; 288000; 0 0 0 0 0 0 0
+    day 336: 3.45514; 288000; 0 0 0 0 0 0 0
+    day 337: 4.2404; 288000; 0 0 0 0 0 0 0
+    day 338: 4.63476; 288000; 0 0 0 0 0 0 0
+    day 339: 4.9111; 288000; 0 0 0 0 0 0 0
+    day 340: 4.21199; 288000; 0 0 0 0 0 0 0
+    day 341: 4.60212; 288000; 0 0 0 0 0 0 0
+    day 342: 4.62445; 288000; 0 0 0 0 0 0 0
+    day 343: 3.24408; 288000; 0 0 0 0 0 0 0
+    day 344: 4.62065; 288000; 0 0 0 0 0 0 0
+    day 345: 4.96313; 288000; 0 0 0 0 0 0 0
+    day 346: 4.64198; 288000; 0 0 0 0 0 0 0
+    day 347: 4.21026; 288000; 0 0 0 0 0 0 0
+    day 348: 4.2726; 288000; 0 0 0 0 0 0 0
+    day 349: 4.78163; 288000; 0 0 0 0 0 0 0
+    day 350: 3.56035; 288000; 0 0 0 0 0 0 0
+    day 351: 4.93272; 288000; 0 0 0 0 0 0 0
+    day 352: 4.94309; 288000; 0 0 0 0 0 0 0
+    day 353: 4.25703; 288000; 0 0 0 0 0 0 0
+    day 354: 4.63257; 288000; 0 0 0 0 0 0 0
+    day 355: 4.42871; 288000; 0 0 0 0 0 0 0
+    day 356: 4.50323; 288000; 0 0 0 0 0 0 0
+    day 357: 3.39116; 288000; 0 0 0 0 0 0 0
+    day 358: 4.20125; 288000; 0 0 0 0 0 0 0
+    day 359: 4.14028; 288000; 0 0 0 0 0 0 0
+    day 360: 4.23266; 288000; 0 0 0 0 0 0 0
+    day 361: 4.23934; 288000; 0 0 0 0 0 0 0
+    day 362: 4.0738; 288000; 0 0 0 0 0 0 0
+    day 363: 4.39841; 288000; 0 0 0 0 0 0 0
+    day 364: 3.37586; 288000; 0 0 0 0 0 0 0
+    day 365: 4.107; 288000; 0 0 0 0 0 0 0
+    day 366: 4.80324; 288000; 0 0 0 0 0 0 0
+    day 367: 4.62329; 288000; 0 0 0 0 0 0 0
+    day 368: 4.63628; 288000; 0 0 0 0 0 0 0
+    day 369: 4.46878; 288000; 0 0 0 0 0 0 0
+    day 370: 4.49983; 288000; 0 0 0 0 0 0 0
+    day 371: 3.75626; 288000; 0 0 0 0 0 0 0
+    day 372: 4.19062; 288000; 0 0 0 0 0 0 0
+    day 373: 4.25272; 288000; 0 0 0 0 0 0 0
+    day 374: 4.30642; 288000; 0 0 0 0 0 0 0
+    day 375: 4.19357; 288000; 0 0 0 0 0 0 0
+    day 376: 4.22375; 288000; 0 0 0 0 0 0 0
+    day 377: 4.53677; 288000; 0 0 0 0 0 0 0
+    day 378: 3.4617; 288000; 0 0 0 0 0 0 0
+    day 379: 4.19451; 288000; 0 0 0 0 0 0 0
+    day 380: 4.2577; 288000; 0 0 0 0 0 0 0
+    day 381: 4.14458; 288000; 0 0 0 0 0 0 0
+    day 382: 4.32002; 288000; 0 0 0 0 0 0 0
+    day 383: 4.40827; 288000; 0 0 0 0 0 0 0
+    day 384: 4.53227; 288000; 0 0 0 0 0 0 0
+    day 385: 3.4738; 288000; 0 0 0 0 0 0 0
+    day 386: 4.24057; 288000; 0 0 0 0 0 0 0
+    day 387: 4.25929; 288000; 0 0 0 0 0 0 0
+    day 388: 4.41318; 288000; 0 0 0 0 0 0 0
+    day 389: 4.07879; 288000; 0 0 0 0 0 0 0
+    day 390: 4.30374; 288000; 0 0 0 0 0 0 0
+    day 391: 4.55058; 288000; 0 0 0 0 0 0 0
+    day 392: 3.44928; 288000; 0 0 0 0 0 0 0
+    day 393: 4.17049; 288000; 0 0 0 0 0 0 0
+    day 394: 3.9793; 288000; 0 0 0 0 0 0 0
+    day 395: 4.33019; 288000; 0 0 0 0 0 0 0
+    day 396: 4.37406; 288000; 0 0 0 0 0 0 0
+    day 397: 4.25223; 288000; 0 0 0 0 0 0 0
+    day 398: 4.41921; 288000; 0 0 0 0 0 0 0
+    day 399: 3.53482; 288000; 0 0 0 0 0 0 0
+    day 400: 4.14293; 288000; 0 0 0 0 0 0 0
+    day 401: 4.05043; 288000; 0 0 0 0 0 0 0
+    day 402: 4.25402; 288000; 0 0 0 0 0 0 0
+    day 403: 4.03515; 288000; 0 0 0 0 0 0 0
+    day 404: 4.06372; 288000; 0 0 0 0 0 0 0
+    day 405: 4.62199; 288000; 0 0 0 0 0 0 0
+    day 406: 3.54904; 288000; 0 0 0 0 0 0 0
+    day 407: 4.56863; 288000; 0 0 0 0 0 0 0
+    day 408: 4.35124; 288000; 0 0 0 0 0 0 0
+    day 409: 4.21884; 288000; 0 0 0 0 0 0 0
+    day 410: 4.32489; 288000; 0 0 0 0 0 0 0
+    day 411: 3.73118; 288000; 0 0 0 0 0 0 0
+    day 412: 4.47056; 288000; 0 0 0 0 0 0 0
+    day 413: 3.60329; 288000; 0 0 0 0 0 0 0
+    day 414: 4.30294; 288000; 0 0 0 0 0 0 0
+    day 415: 4.24511; 288000; 0 0 0 0 0 0 0
+    day 416: 4.49087; 288000; 0 0 0 0 0 0 0
+    day 417: 4.49111; 288000; 0 0 0 0 0 0 0
+    day 418: 4.32454; 288000; 0 0 0 0 0 0 0
+    day 419: 4.65375; 288000; 0 0 0 0 0 0 0
+    day 420: 3.56407; 288000; 0 0 0 0 0 0 0
+    day 421: 4.21716; 288000; 0 0 0 0 0 0 0
+    day 422: 4.24783; 288000; 0 0 0 0 0 0 0
+    day 423: 4.29458; 288000; 0 0 0 0 0 0 0
+    day 424: 4.30305; 288000; 0 0 0 0 0 0 0
+    day 425: 4.41956; 288000; 0 0 0 0 0 0 0
+    day 426: 5.02424; 288000; 0 0 0 0 0 0 0
+    day 427: 3.37707; 288000; 0 0 0 0 0 0 0
+    day 428: 4.34791; 288000; 0 0 0 0 0 0 0
+    day 429: 4.41749; 288000; 0 0 0 0 0 0 0
+    day 430: 4.34281; 288000; 0 0 0 0 0 0 0
+    day 431: 4.28385; 288000; 0 0 0 0 0 0 0
+    day 432: 4.21828; 288000; 0 0 0 0 0 0 0
+    day 433: 4.48182; 288000; 0 0 0 0 0 0 0
+    day 434: 3.99643; 288000; 0 0 0 0 0 0 0
+    day 435: 4.22827; 288000; 0 0 0 0 0 0 0
+    day 436: 4.71066; 288000; 0 0 0 0 0 0 0
+    day 437: 4.19128; 288000; 0 0 0 0 0 0 0
+    day 438: 4.2731; 288000; 0 0 0 0 0 0 0
+    day 439: 4.26084; 288000; 0 0 0 0 0 0 0
+    day 440: 4.63751; 288000; 0 0 0 0 0 0 0
+    day 441: 3.35588; 288000; 0 0 0 0 0 0 0
+    day 442: 4.12626; 288000; 0 0 0 0 0 0 0
+    day 443: 4.17168; 288000; 0 0 0 0 0 0 0
+    day 444: 4.13584; 288000; 0 0 0 0 0 0 0
+    day 445: 4.40427; 288000; 0 0 0 0 0 0 0
+    day 446: 4.30632; 288000; 0 0 0 0 0 0 0
+    day 447: 4.32594; 288000; 0 0 0 0 0 0 0
+    day 448: 3.58389; 288000; 0 0 0 0 0 0 0
+    day 449: 4.48083; 288000; 0 0 0 0 0 0 0
+    day 450: 4.31793; 288000; 0 0 0 0 0 0 0
+    day 451: 4.43487; 288000; 0 0 0 0 0 0 0
+    day 452: 4.43172; 288000; 0 0 0 0 0 0 0
+    day 453: 4.45281; 288000; 0 0 0 0 0 0 0
+    day 454: 4.95655; 288000; 0 0 0 0 0 0 0
+    day 455: 3.60842; 288000; 0 0 0 0 0 0 0
+    day 456: 4.29057; 288000; 0 0 0 0 0 0 0
+    day 457: 4.22105; 288000; 0 0 0 0 0 0 0
+    day 458: 4.48441; 288000; 0 0 0 0 0 0 0
+    day 459: 4.28405; 288000; 0 0 0 0 0 0 0
+    day 460: 4.19684; 288000; 0 0 0 0 0 0 0
+    day 461: 4.39018; 288000; 0 0 0 0 0 0 0
+    day 462: 4.02119; 288000; 0 0 0 0 0 0 0
+    day 463: 4.39066; 288000; 0 0 0 0 0 0 0
+    day 464: 4.30813; 288000; 0 0 0 0 0 0 0
+    day 465: 4.23982; 288000; 0 0 0 0 0 0 0
+    day 466: 4.44208; 288000; 0 0 0 0 0 0 0
+    day 467: 4.3521; 288000; 0 0 0 0 0 0 0
+    day 468: 4.5898; 288000; 0 0 0 0 0 0 0
+    day 469: 3.37318; 288000; 0 0 0 0 0 0 0
+    day 470: 4.36738; 288000; 0 0 0 0 0 0 0
+    day 471: 4.25247; 288000; 0 0 0 0 0 0 0
+    day 472: 4.28249; 288000; 0 0 0 0 0 0 0
+    day 473: 4.26597; 288000; 0 0 0 0 0 0 0
+    day 474: 4.20306; 288000; 0 0 0 0 0 0 0
+    day 475: 4.56801; 288000; 0 0 0 0 0 0 0
+    day 476: 3.47384; 288000; 0 0 0 0 0 0 0
+    day 477: 4.57635; 288000; 0 0 0 0 0 0 0
+    day 478: 4.57902; 288000; 0 0 0 0 0 0 0
+    day 479: 4.967; 288000; 0 0 0 0 0 0 0
+    day 480: 4.42254; 288000; 0 0 0 0 0 0 0
+    day 481: 4.42541; 288000; 0 0 0 0 0 0 0
+    day 482: 4.68494; 288000; 0 0 0 0 0 0 0
+    day 483: 4.0898; 288000; 0 0 0 0 0 0 0
+    day 484: 4.21535; 288000; 0 0 0 0 0 0 0
+    day 485: 4.13103; 288000; 0 0 0 0 0 0 0
+    day 486: 3.96986; 288000; 0 0 0 0 0 0 0
+    day 487: 4.18338; 288000; 0 0 0 0 0 0 0
+    day 488: 4.28421; 288000; 0 0 0 0 0 0 0
+    day 489: 4.83098; 288000; 0 0 0 0 0 0 0
+    day 490: 3.6083; 288000; 0 0 0 0 0 0 0
+    day 491: 4.28095; 288000; 0 0 0 0 0 0 0
+    day 492: 4.31856; 288000; 0 0 0 0 0 0 0
+    day 493: 5.1842; 288000; 0 0 0 0 0 0 0
+    day 494: 4.29003; 288000; 0 0 0 0 0 0 0
+    day 495: 4.37397; 288000; 0 0 0 0 0 0 0
+    day 496: 4.66646; 288000; 0 0 0 0 0 0 0
+    day 497: 3.78143; 288000; 0 0 0 0 0 0 0
+    day 498: 4.33283; 288000; 0 0 0 0 0 0 0
+    day 499: 4.20773; 288000; 0 0 0 0 0 0 0
+    day 500: 4.42244; 288000; 0 0 0 0 0 0 0
+    day 501: 4.37154; 288000; 0 0 0 0 0 0 0
+    day 502: 4.3139; 288000; 0 0 0 0 0 0 0
+    day 503: 3.88194; 288000; 0 0 0 0 0 0 0
+    day 504: 3.5691; 288000; 0 0 0 0 0 0 0
+    day 505: 4.81194; 288000; 0 0 0 0 0 0 0
+    day 506: 4.60341; 288000; 0 0 0 0 0 0 0
+    day 507: 4.39698; 288000; 0 0 0 0 0 0 0
+    day 508: 4.11705; 288000; 0 0 0 0 0 0 0
+    day 509: 4.19604; 288000; 0 0 0 0 0 0 0
+    day 510: 4.84772; 288000; 0 0 0 0 0 0 0
+    day 511: 3.2868; 288000; 0 0 0 0 0 0 0
+    day 512: 4.40435; 288000; 0 0 0 0 0 0 0
+    day 513: 4.44241; 288000; 0 0 0 0 0 0 0
+    day 514: 4.29704; 288000; 0 0 0 0 0 0 0
+    day 515: 4.38983; 288000; 0 0 0 0 0 0 0
+    day 516: 4.61263; 288000; 0 0 0 0 0 0 0
+    day 517: 4.634; 288000; 0 0 0 0 0 0 0
+    day 518: 3.83503; 288000; 0 0 0 0 0 0 0
+    day 519: 4.47528; 288000; 0 0 0 0 0 0 0
+    day 520: 4.53493; 288000; 0 0 0 0 0 0 0
+    day 521: 4.29629; 288000; 0 0 0 0 0 0 0
+    day 522: 4.18973; 288000; 0 0 0 0 0 0 0
+    day 523: 4.31721; 288000; 0 0 0 0 0 0 0
+    day 524: 4.48893; 288000; 0 0 0 0 0 0 0
+    day 525: 3.75895; 288000; 0 0 0 0 0 0 0
+    day 526: 5.03691; 288000; 0 0 0 0 0 0 0
+    day 527: 4.36548; 288000; 0 0 0 0 0 0 0
+    day 528: 4.0626; 288000; 0 0 0 0 0 0 0
+    day 529: 4.09666; 288000; 0 0 0 0 0 0 0
+    day 530: 4.44203; 288000; 0 0 0 0 0 0 0
+    day 531: 4.58265; 288000; 0 0 0 0 0 0 0
+    day 532: 3.53841; 288000; 0 0 0 0 0 0 0
+    day 533: 4.37763; 288000; 0 0 0 0 0 0 0
+    day 534: 4.35719; 288000; 0 0 0 0 0 0 0
+    day 535: 4.36039; 288000; 0 0 0 0 0 0 0
+    day 536: 4.20718; 288000; 0 0 0 0 0 0 0
+    day 537: 4.55324; 288000; 0 0 0 0 0 0 0
+    day 538: 4.3729; 288000; 0 0 0 0 0 0 0
+    day 539: 3.51639; 288000; 0 0 0 0 0 0 0
+    day 540: 4.43281; 288000; 0 0 0 0 0 0 0
+    day 541: 4.2742; 288000; 0 0 0 0 0 0 0
+    day 542: 4.25444; 288000; 0 0 0 0 0 0 0
+    day 543: 4.59235; 288000; 0 0 0 0 0 0 0
+    day 544: 4.36956; 288000; 0 0 0 0 0 0 0
+    day 545: 4.74708; 288000; 0 0 0 0 0 0 0
+    day 546: 3.73907; 288000; 0 0 0 0 0 0 0
+    day 547: 4.43123; 288000; 0 0 0 0 0 0 0
+    day 548: 4.19963; 288000; 0 0 0 0 0 0 0
+    day 549: 4.58618; 288000; 0 0 0 0 0 0 0
+    day 550: 4.99132; 288000; 0 0 0 0 0 0 0
+    day 551: 4.5371; 288000; 0 0 0 0 0 0 0
+    day 552: 4.67896; 288000; 0 0 0 0 0 0 0
+    day 553: 3.85203; 288000; 0 0 0 0 0 0 0
+    day 554: 4.96844; 288000; 0 0 0 0 0 0 0
+    day 555: 4.47968; 288000; 0 0 0 0 0 0 0
+    day 556: 4.56635; 288000; 0 0 0 0 0 0 0
+    day 557: 4.44321; 288000; 0 0 0 0 0 0 0
+    day 558: 4.8271; 288000; 0 0 0 0 0 0 0
+    day 559: 4.62616; 288000; 0 0 0 0 0 0 0
+    day 560: 3.54702; 288000; 0 0 0 0 0 0 0
+    day 561: 4.54514; 288000; 0 0 0 0 0 0 0
+    day 562: 5.00549; 288000; 0 0 0 0 0 0 0
+    day 563: 4.42182; 288000; 0 0 0 0 0 0 0
+    day 564: 4.48225; 288000; 0 0 0 0 0 0 0
+    day 565: 4.91612; 288000; 0 0 0 0 0 0 0
+    day 566: 4.7429; 288000; 0 0 0 0 0 0 0
+    day 567: 3.49817; 288000; 0 0 0 0 0 0 0
+    day 568: 4.47264; 288000; 0 0 0 0 0 0 0
+    day 569: 4.46163; 288000; 0 0 0 0 0 0 0
+    day 570: 4.47517; 288000; 0 0 0 0 0 0 0
+    day 571: 4.20573; 288000; 0 0 0 0 0 0 0
+    day 572: 4.63488; 288000; 0 0 0 0 0 0 0
+    day 573: 4.53276; 288000; 0 0 0 0 0 0 0
+    day 574: 3.64783; 288000; 0 0 0 0 0 0 0
+    day 575: 4.45506; 288000; 0 0 0 0 0 0 0
+    day 576: 4.24445; 288000; 0 0 0 0 0 0 0
+    day 577: 4.3337; 288000; 0 0 0 0 0 0 0
+    day 578: 4.10158; 288000; 0 0 0 0 0 0 0
+    day 579: 4.17502; 288000; 0 0 0 0 0 0 0
+    day 580: 4.52634; 288000; 0 0 0 0 0 0 0
+    day 581: 3.32047; 288000; 0 0 0 0 0 0 0
+    day 582: 4.07468; 288000; 0 0 0 0 0 0 0
+    day 583: 4.1179; 288000; 0 0 0 0 0 0 0
+    day 584: 4.51004; 288000; 0 0 0 0 0 0 0
+    day 585: 4.2327; 288000; 0 0 0 0 0 0 0
+    day 586: 4.28057; 288000; 0 0 0 0 0 0 0
+    day 587: 4.41968; 288000; 0 0 0 0 0 0 0
+    day 588: 3.53508; 288000; 0 0 0 0 0 0 0
+    day 589: 4.30776; 288000; 0 0 0 0 0 0 0
+    day 590: 4.80929; 288000; 0 0 0 0 0 0 0
+    day 591: 4.44571; 288000; 0 0 0 0 0 0 0
+    day 592: 4.36806; 288000; 0 0 0 0 0 0 0
+    day 593: 4.29954; 288000; 0 0 0 0 0 0 0
+    day 594: 5.22289; 288000; 0 0 0 0 0 0 0
+    day 595: 3.68212; 288000; 0 0 0 0 0 0 0
+    day 596: 4.63474; 288000; 0 0 0 0 0 0 0
+    day 597: 4.37212; 288000; 0 0 0 0 0 0 0
+    day 598: 4.25583; 288000; 0 0 0 0 0 0 0
+    day 599: 4.31827; 288000; 0 0 0 0 0 0 0
+    day 600: 4.2456; 288000; 0 0 0 0 0 0 0
+    day 601: 4.54265; 288000; 0 0 0 0 0 0 0
+    day 602: 3.58825; 288000; 0 0 0 0 0 0 0
+    day 603: 4.46094; 288000; 0 0 0 0 0 0 0
+    day 604: 4.70214; 288000; 0 0 0 0 0 0 0
+    day 605: 4.9365; 288000; 0 0 0 0 0 0 0
+    day 606: 4.52179; 288000; 0 0 0 0 0 0 0
+    day 607: 4.29737; 288000; 0 0 0 0 0 0 0
+    day 608: 4.62973; 288000; 0 0 0 0 0 0 0
+    day 609: 3.81874; 288000; 0 0 0 0 0 0 0
+    day 610: 4.48258; 288000; 0 0 0 0 0 0 0
+    day 611: 4.68476; 288000; 0 0 0 0 0 0 0
+    day 612: 4.52979; 288000; 0 0 0 0 0 0 0
+    day 613: 4.55667; 288000; 0 0 0 0 0 0 0
+    day 614: 4.27838; 288000; 0 0 0 0 0 0 0
+    day 615: 4.44026; 288000; 0 0 0 0 0 0 0
+    day 616: 3.5852; 288000; 0 0 0 0 0 0 0
+    day 617: 4.32313; 288000; 0 0 0 0 0 0 0
+    day 618: 4.51176; 288000; 0 0 0 0 0 0 0
+    day 619: 4.38244; 288000; 0 0 0 0 0 0 0
+    day 620: 4.20109; 288000; 0 0 0 0 0 0 0
+    day 621: 4.84038; 288000; 0 0 0 0 0 0 0
+    day 622: 4.80813; 288000; 0 0 0 0 0 0 0
+    day 623: 3.89183; 288000; 0 0 0 0 0 0 0
+    day 624: 4.54213; 288000; 0 0 0 0 0 0 0
+    day 625: 4.4771; 288000; 0 0 0 0 0 0 0
+    day 626: 4.42762; 288000; 0 0 0 0 0 0 0
+    day 627: 4.57432; 288000; 0 0 0 0 0 0 0
+    day 628: 4.70766; 288000; 0 0 0 0 0 0 0
+    day 629: 4.55423; 288000; 0 0 0 0 0 0 0
+    day 630: 3.5993; 288000; 0 0 0 0 0 0 0
+    day 631: 4.49807; 288000; 0 0 0 0 0 0 0
+    day 632: 4.47948; 288000; 0 0 0 0 0 0 0
+    day 633: 4.43644; 288000; 0 0 0 0 0 0 0
+    day 634: 4.20046; 288000; 0 0 0 0 0 0 0
+    day 635: 4.32706; 288000; 0 0 0 0 0 0 0
+    day 636: 6.10115; 288000; 0 0 0 0 0 0 0
+    day 637: 3.51532; 288000; 0 0 0 0 0 0 0
+    day 638: 4.75326; 288000; 0 0 0 0 0 0 0
+    day 639: 5.46083; 288000; 0 0 0 0 0 0 0
+    day 640: 4.62402; 288000; 0 0 0 0 0 0 0
+    day 641: 4.21499; 288000; 0 0 0 0 0 0 0
+    day 642: 4.48681; 288000; 0 0 0 0 0 0 0
+    day 643: 4.72805; 288000; 0 0 0 0 0 0 0
+    day 644: 3.77656; 288000; 0 0 0 0 0 0 0
+    day 645: 4.48981; 288000; 0 0 0 0 0 0 0
+    day 646: 4.52897; 288000; 0 0 0 0 0 0 0
+    day 647: 4.46608; 288000; 0 0 0 0 0 0 0
+    day 648: 4.68944; 288000; 0 0 0 0 0 0 0
+    day 649: 4.47328; 288000; 0 0 0 0 0 0 0
+    day 650: 4.68198; 288000; 0 0 0 0 0 0 0
+    day 651: 3.44693; 288000; 0 0 0 0 0 0 0
+    day 652: 4.57012; 288000; 0 0 0 0 0 0 0
+    day 653: 4.45131; 288000; 0 0 0 0 0 0 0
+    day 654: 4.39872; 288000; 0 0 0 0 0 0 0
+    day 655: 4.52016; 288000; 0 0 0 0 0 0 0
+    day 656: 4.39563; 288000; 0 0 0 0 0 0 0
+    day 657: 4.64791; 288000; 0 0 0 0 0 0 0
+    day 658: 3.6582; 288000; 0 0 0 0 0 0 0
+    day 659: 4.52379; 288000; 0 0 0 0 0 0 0
+    day 660: 4.3992; 288000; 0 0 0 0 0 0 0
+    day 661: 5.11634; 288000; 0 0 0 0 0 0 0
+    day 662: 4.76281; 288000; 0 0 0 0 0 0 0
+    day 663: 4.81986; 288000; 0 0 0 0 0 0 0
+    day 664: 5.50542; 288000; 0 0 0 0 0 0 0
+    day 665: 4.32888; 288000; 0 0 0 0 0 0 0
+    day 666: 4.82665; 288000; 0 0 0 0 0 0 0
+    day 667: 4.56309; 288000; 0 0 0 0 0 0 0
+    day 668: 4.38469; 288000; 0 0 0 0 0 0 0
+    day 669: 4.75548; 288000; 0 0 0 0 0 0 0
+    day 670: 5.40829; 288000; 0 0 0 0 0 0 0
+    day 671: 4.97038; 288000; 0 0 0 0 0 0 0
+    day 672: 3.62881; 288000; 0 0 0 0 0 0 0
+    day 673: 4.40424; 288000; 0 0 0 0 0 0 0
+    day 674: 4.59379; 288000; 0 0 0 0 0 0 0
+    day 675: 4.52604; 288000; 0 0 0 0 0 0 0
+    day 676: 4.5696; 288000; 0 0 0 0 0 0 0
+    day 677: 4.34718; 288000; 0 0 0 0 0 0 0
+    day 678: 4.74467; 288000; 0 0 0 0 0 0 0
+    day 679: 3.62606; 288000; 0 0 0 0 0 0 0
+    day 680: 4.38299; 288000; 0 0 0 0 0 0 0
+    day 681: 4.83706; 288000; 0 0 0 0 0 0 0
+    day 682: 5.15531; 288000; 0 0 0 0 0 0 0
+    day 683: 4.45593; 288000; 0 0 0 0 0 0 0
+    day 684: 4.5378; 288000; 0 0 0 0 0 0 0
+    day 685: 4.98393; 288000; 0 0 0 0 0 0 0
+    day 686: 4.10236; 288000; 0 0 0 0 0 0 0
+    day 687: 4.55053; 288000; 0 0 0 0 0 0 0
+    day 688: 4.35051; 288000; 0 0 0 0 0 0 0
+    day 689: 4.44367; 288000; 0 0 0 0 0 0 0
+    day 690: 4.7505; 288000; 0 0 0 0 0 0 0
+    day 691: 5.35841; 288000; 0 0 0 0 0 0 0
+    day 692: 5.39236; 288000; 0 0 0 0 0 0 0
+    day 693: 4.14169; 288000; 0 0 0 0 0 0 0
+    day 694: 4.38438; 288000; 0 0 0 0 0 0 0
+    day 695: 4.42829; 288000; 0 0 0 0 0 0 0
+    day 696: 4.46888; 288000; 0 0 0 0 0 0 0
+    day 697: 4.3896; 288000; 0 0 0 0 0 0 0
+    day 698: 4.58348; 288000; 0 0 0 0 0 0 0
+    day 699: 4.90442; 288000; 0 0 0 0 0 0 0
+    day 700: 3.58659; 288000; 0 0 0 0 0 0 0
+    day 701: 4.45101; 288000; 0 0 0 0 0 0 0
+    day 702: 4.40764; 288000; 0 0 0 0 0 0 0
+    day 703: 4.58445; 288000; 0 0 0 0 0 0 0
+    day 704: 4.59391; 288000; 0 0 0 0 0 0 0
+    day 705: 5.17886; 288000; 0 0 0 0 0 0 0
+    day 706: 4.70695; 288000; 0 0 0 0 0 0 0
+    day 707: 3.52062; 288000; 0 0 0 0 0 0 0
+    day 708: 4.41966; 288000; 0 0 0 0 0 0 0
+    day 709: 4.36007; 288000; 0 0 0 0 0 0 0
+    day 710: 4.42208; 288000; 0 0 0 0 0 0 0
+    day 711: 4.49337; 288000; 0 0 0 0 0 0 0
+    day 712: 5.32011; 288000; 0 0 0 0 0 0 0
+    day 713: 4.62328; 288000; 0 0 0 0 0 0 0
+    day 714: 3.89655; 288000; 0 0 0 0 0 0 0
+    day 715: 4.46873; 288000; 0 0 0 0 0 0 0
+    day 716: 4.41868; 288000; 0 0 0 0 0 0 0
+    day 717: 4.44345; 288000; 0 0 0 0 0 0 0
+    day 718: 4.35863; 288000; 0 0 0 0 0 0 0
+    day 719: 4.7547; 288000; 0 0 0 0 0 0 0
+    day 720: 4.86389; 288000; 0 0 0 0 0 0 0
+    day 721: 3.78935; 288000; 0 0 0 0 0 0 0
+    day 722: 5.50203; 288000; 0 0 0 0 0 0 0
+    day 723: 4.42946; 288000; 0 0 0 0 0 0 0
+    day 724: 4.3904; 288000; 0 0 0 0 0 0 0
+    day 725: 4.48761; 288000; 0 0 0 0 0 0 0
+    day 726: 4.38461; 288000; 0 0 0 0 0 0 0
+    day 727: 4.60689; 288000; 0 0 0 0 0 0 0
+    day 728: 3.42336; 288000; 0 0 0 0 0 0 0
+    day 729: 4.0036; 288000; 0 0 0 0 0 0 0
+    day 730: 3.78051; 288000; 0 0 0 0 0 0 0
+    day 731: 3.9491; 288000; 0 0 0 0 0 0 0
+    day 732: 3.73813; 288000; 0 0 0 0 0 0 0
+    day 733: 3.92217; 288000; 0 0 0 0 0 0 0
+    day 734: 4.03963; 288000; 0 0 0 0 0 0 0
+    day 735: 3.08827; 288000; 0 0 0 0 0 0 0
+    day 736: 3.79334; 288000; 0 0 0 0 0 0 0
+    day 737: 3.83154; 288000; 0 0 0 0 0 0 0
+    day 738: 4.05148; 288000; 0 0 0 0 0 0 0
+    day 739: 3.93072; 288000; 0 0 0 0 0 0 0
+    day 740: 4.22327; 288000; 0 0 0 0 0 0 0
+    day 741: 4.36947; 288000; 0 0 0 0 0 0 0
+    day 742: 3.57217; 288000; 0 0 0 0 0 0 0
+    day 743: 4.16997; 288000; 0 0 0 0 0 0 0
+    day 744: 4.31418; 288000; 0 0 0 0 0 0 0
+    day 745: 4.29004; 288000; 0 0 0 0 0 0 0
+    day 746: 4.3805; 288000; 0 0 0 0 0 0 0
+    day 747: 5.00373; 288000; 0 0 0 0 0 0 0
+    day 748: 4.58681; 288000; 0 0 0 0 0 0 0
+    day 749: 3.51059; 288000; 0 0 0 0 0 0 0
+    day 750: 4.17734; 288000; 0 0 0 0 0 0 0
+    day 751: 4.52104; 288000; 0 0 0 0 0 0 0
+    day 752: 4.48626; 288000; 0 0 0 0 0 0 0
+    day 753: 4.37909; 288000; 0 0 0 0 0 0 0
+    day 754: 4.16575; 288000; 0 0 0 0 0 0 0
+    day 755: 4.64839; 288000; 0 0 0 0 0 0 0
+    day 756: 3.66463; 288000; 0 0 0 0 0 0 0
+    day 757: 4.42584; 288000; 0 0 0 0 0 0 0
+    day 758: 4.28167; 288000; 0 0 0 0 0 0 0
+    day 759: 4.57702; 288000; 0 0 0 0 0 0 0
+    day 760: 4.60656; 288000; 0 0 0 0 0 0 0
+    day 761: 4.63318; 288000; 0 0 0 0 0 0 0
+    day 762: 5.01643; 288000; 0 0 0 0 0 0 0
+    day 763: 3.85006; 288000; 0 0 0 0 0 0 0
+    day 764: 5.71042; 288000; 0 0 0 0 0 0 0
+    day 765: 5.35809; 288000; 0 0 0 0 0 0 0
+    day 766: 5.19868; 288000; 0 0 0 0 0 0 0
+    day 767: 4.75014; 288000; 0 0 0 0 0 0 0
+    day 768: 4.34965; 288000; 0 0 0 0 0 0 0
+    day 769: 4.777; 288000; 0 0 0 0 0 0 0
+    day 770: 3.88796; 288000; 0 0 0 0 0 0 0
+    day 771: 4.45041; 288000; 0 0 0 0 0 0 0
+    day 772: 4.70993; 288000; 0 0 0 0 0 0 0
+    day 773: 5.12453; 288000; 0 0 0 0 0 0 0
+    day 774: 4.35977; 288000; 0 0 0 0 0 0 0
+    day 775: 4.66234; 288000; 0 0 0 0 0 0 0
+    day 776: 3.95083; 288000; 0 0 0 0 0 0 0
+    day 777: 3.68443; 288000; 0 0 0 0 0 0 0
+    day 778: 4.46377; 288000; 0 0 0 0 0 0 0
+    day 779: 4.57454; 288000; 0 0 0 0 0 0 0
+    day 780: 4.95885; 288000; 0 0 0 0 0 0 0
+    day 781: 4.40015; 288000; 0 0 0 0 0 0 0
+    day 782: 4.94926; 288000; 0 0 0 0 0 0 0
+    day 783: 4.74277; 288000; 0 0 0 0 0 0 0
+    day 784: 3.63577; 288000; 0 0 0 0 0 0 0
+    day 785: 4.26016; 288000; 0 0 0 0 0 0 0
+    day 786: 4.33436; 288000; 0 0 0 0 0 0 0
+    day 787: 4.47795; 288000; 0 0 0 0 0 0 0
+    day 788: 4.42468; 288000; 0 0 0 0 0 0 0
+    day 789: 4.39134; 288000; 0 0 0 0 0 0 0
+    day 790: 4.82306; 288000; 0 0 0 0 0 0 0
+    day 791: 3.92343; 288000; 0 0 0 0 0 0 0
+    day 792: 4.59226; 288000; 0 0 0 0 0 0 0
+    day 793: 4.71072; 288000; 0 0 0 0 0 0 0
+    day 794: 4.62372; 288000; 0 0 0 0 0 0 0
+    day 795: 4.36196; 288000; 0 0 0 0 0 0 0
+    day 796: 4.24683; 288000; 0 0 0 0 0 0 0
+    day 797: 4.52595; 288000; 0 0 0 0 0 0 0
+    day 798: 3.65266; 288000; 0 0 0 0 0 0 0
+    day 799: 4.3732; 288000; 0 0 0 0 0 0 0
+    day 800: 4.27918; 288000; 0 0 0 0 0 0 0
+    day 801: 4.47589; 288000; 0 0 0 0 0 0 0
+    day 802: 4.37803; 288000; 0 0 0 0 0 0 0
+    day 803: 4.21344; 288000; 0 0 0 0 0 0 0
+    day 804: 4.76682; 288000; 0 0 0 0 0 0 0
+    day 805: 3.59015; 288000; 0 0 0 0 0 0 0
+    day 806: 4.41971; 288000; 0 0 0 0 0 0 0
+    day 807: 4.60989; 288000; 0 0 0 0 0 0 0
+    day 808: 4.54766; 288000; 0 0 0 0 0 0 0
+    day 809: 4.40267; 288000; 0 0 0 0 0 0 0
+    day 810: 4.36379; 288000; 0 0 0 0 0 0 0
+    day 811: 4.74923; 288000; 0 0 0 0 0 0 0
+    day 812: 3.86535; 288000; 0 0 0 0 0 0 0
+    day 813: 4.57898; 288000; 0 0 0 0 0 0 0
+    day 814: 4.85445; 288000; 0 0 0 0 0 0 0
+    day 815: 4.66718; 288000; 0 0 0 0 0 0 0
+    day 816: 4.37014; 288000; 0 0 0 0 0 0 0
+    day 817: 4.78324; 288000; 0 0 0 0 0 0 0
+    day 818: 4.66639; 288000; 0 0 0 0 0 0 0
+    day 819: 3.61474; 288000; 0 0 0 0 0 0 0
+    day 820: 4.18615; 288000; 0 0 0 0 0 0 0
+    day 821: 4.48748; 288000; 0 0 0 0 0 0 0
+    day 822: 4.5539; 288000; 0 0 0 0 0 0 0
+    day 823: 4.54921; 288000; 0 0 0 0 0 0 0
+    day 824: 4.5046; 288000; 0 0 0 0 0 0 0
+    day 825: 4.67964; 288000; 0 0 0 0 0 0 0
+    day 826: 3.76518; 288000; 0 0 0 0 0 0 0
+    day 827: 5.20825; 288000; 0 0 0 0 0 0 0
+    day 828: 4.88896; 288000; 0 0 0 0 0 0 0
+    day 829: 5.27737; 288000; 0 0 0 0 0 0 0
+    day 830: 5.66209; 288000; 0 0 0 0 0 0 0
+    day 831: 4.64938; 288000; 0 0 0 0 0 0 0
+    day 832: 4.62883; 288000; 0 0 0 0 0 0 0
+    day 833: 3.71517; 288000; 0 0 0 0 0 0 0
+    day 834: 4.53945; 288000; 0 0 0 0 0 0 0
+    day 835: 4.64944; 288000; 0 0 0 0 0 0 0
+    day 836: 4.48522; 288000; 0 0 0 0 0 0 0
+    day 837: 4.32899; 288000; 0 0 0 0 0 0 0
+    day 838: 4.77419; 288000; 0 0 0 0 0 0 0
+    day 839: 4.82754; 288000; 0 0 0 0 0 0 0
+    day 840: 3.59938; 288000; 0 0 0 0 0 0 0
+    day 841: 5.05057; 288000; 0 0 0 0 0 0 0
+    day 842: 4.41404; 288000; 0 0 0 0 0 0 0
+    day 843: 4.87847; 288000; 0 0 0 0 0 0 0
+    day 844: 5.25321; 288000; 0 0 0 0 0 0 0
+    day 845: 4.59639; 288000; 0 0 0 0 0 0 0
+    day 846: 4.74794; 288000; 0 0 0 0 0 0 0
+    day 847: 3.75162; 288000; 0 0 0 0 0 0 0
+    day 848: 4.64371; 288000; 0 0 0 0 0 0 0
+    day 849: 4.69564; 288000; 0 0 0 0 0 0 0
+    day 850: 4.53902; 288000; 0 0 0 0 0 0 0
+    day 851: 4.47081; 288000; 0 0 0 0 0 0 0
+    day 852: 4.79979; 288000; 0 0 0 0 0 0 0
+    day 853: 5.18862; 288000; 0 0 0 0 0 0 0
+    day 854: 3.78196; 288000; 0 0 0 0 0 0 0
+    day 855: 4.31813; 288000; 0 0 0 0 0 0 0
+    day 856: 4.45348; 288000; 0 0 0 0 0 0 0
+    day 857: 4.65328; 288000; 0 0 0 0 0 0 0
+    day 858: 4.47899; 288000; 0 0 0 0 0 0 0
+    day 859: 4.57768; 288000; 0 0 0 0 0 0 0
+    day 860: 4.77744; 288000; 0 0 0 0 0 0 0
+    day 861: 3.68949; 288000; 0 0 0 0 0 0 0
+    day 862: 4.58477; 288000; 0 0 0 0 0 0 0
+    day 863: 4.59836; 288000; 0 0 0 0 0 0 0
+    day 864: 4.56033; 288000; 0 0 0 0 0 0 0
+    day 865: 4.48104; 288000; 0 0 0 0 0 0 0
+    day 866: 4.6418; 288000; 0 0 0 0 0 0 0
+    day 867: 4.78904; 288000; 0 0 0 0 0 0 0
+    day 868: 4.02792; 288000; 0 0 0 0 0 0 0
+    day 869: 4.37611; 288000; 0 0 0 0 0 0 0
+    day 870: 4.64575; 288000; 0 0 0 0 0 0 0
+    day 871: 4.37455; 288000; 0 0 0 0 0 0 0
+    day 872: 4.35159; 288000; 0 0 0 0 0 0 0
+    day 873: 4.2821; 288000; 0 0 0 0 0 0 0
+    day 874: 4.75374; 288000; 0 0 0 0 0 0 0
+    day 875: 3.65413; 288000; 0 0 0 0 0 0 0
+    day 876: 4.41758; 288000; 0 0 0 0 0 0 0
+    day 877: 4.61829; 288000; 0 0 0 0 0 0 0
+    day 878: 4.90548; 288000; 0 0 0 0 0 0 0
+    day 879: 4.82944; 288000; 0 0 0 0 0 0 0
+    day 880: 4.58738; 288000; 0 0 0 0 0 0 0
+    day 881: 4.78504; 288000; 0 0 0 0 0 0 0
+    day 882: 3.67406; 288000; 0 0 0 0 0 0 0
+    day 883: 4.32854; 288000; 0 0 0 0 0 0 0
+    day 884: 4.57936; 288000; 0 0 0 0 0 0 0
+    day 885: 4.3391; 288000; 0 0 0 0 0 0 0
+    day 886: 4.33745; 288000; 0 0 0 0 0 0 0
+    day 887: 4.4651; 288000; 0 0 0 0 0 0 0
+    day 888: 5.02423; 288000; 0 0 0 0 0 0 0
+    day 889: 3.79078; 288000; 0 0 0 0 0 0 0
+    day 890: 4.48151; 288000; 0 0 0 0 0 0 0
+    day 891: 4.43924; 288000; 0 0 0 0 0 0 0
+    day 892: 4.26296; 288000; 0 0 0 0 0 0 0
+    day 893: 4.33486; 288000; 0 0 0 0 0 0 0
+    day 894: 4.57598; 288000; 0 0 0 0 0 0 0
+    day 895: 4.84797; 288000; 0 0 0 0 0 0 0
+    day 896: 3.73585; 288000; 0 0 0 0 0 0 0
+    day 897: 6.26949; 288000; 0 0 0 0 0 0 0
+    day 898: 4.77728; 288000; 0 0 0 0 0 0 0
+    day 899: 4.65809; 288000; 0 0 0 0 0 0 0
+    day 900: 4.53828; 288000; 0 0 0 0 0 0 0
+    day 901: 4.6779; 288000; 0 0 0 0 0 0 0
+    day 902: 4.69682; 288000; 0 0 0 0 0 0 0
+    day 903: 3.65619; 288000; 0 0 0 0 0 0 0
+    day 904: 4.87292; 288000; 0 0 0 0 0 0 0
+    day 905: 4.53208; 288000; 0 0 0 0 0 0 0
+    day 906: 4.51661; 288000; 0 0 0 0 0 0 0
+    day 907: 4.31437; 288000; 0 0 0 0 0 0 0
+    day 908: 4.52256; 288000; 0 0 0 0 0 0 0
+    day 909: 4.8131; 288000; 0 0 0 0 0 0 0
+    day 910: 3.8271; 288000; 0 0 0 0 0 0 0
+    day 911: 4.71583; 288000; 0 0 0 0 0 0 0
+    day 912: 4.49877; 288000; 0 0 0 0 0 0 0
+    day 913: 4.58342; 288000; 0 0 0 0 0 0 0
+    day 914: 4.57959; 288000; 0 0 0 0 0 0 0
+    day 915: 4.51263; 288000; 0 0 0 0 0 0 0
+    day 916: 4.69369; 288000; 0 0 0 0 0 0 0
+    day 917: 3.78574; 288000; 0 0 0 0 0 0 0
+    day 918: 4.46537; 288000; 0 0 0 0 0 0 0
+    day 919: 4.64728; 288000; 0 0 0 0 0 0 0
+    day 920: 5.38305; 288000; 0 0 0 0 0 0 0
+    day 921: 4.52386; 288000; 0 0 0 0 0 0 0
+    day 922: 4.39745; 288000; 0 0 0 0 0 0 0
+    day 923: 4.5437; 288000; 0 0 0 0 0 0 0
+    day 924: 3.74009; 288000; 0 0 0 0 0 0 0
+    day 925: 4.41723; 288000; 0 0 0 0 0 0 0
+    day 926: 4.42727; 288000; 0 0 0 0 0 0 0
+    day 927: 4.32871; 288000; 0 0 0 0 0 0 0
+    day 928: 4.99709; 288000; 0 0 0 0 0 0 0
+    day 929: 5.50004; 288000; 0 0 0 0 0 0 0
+    day 930: 4.88251; 288000; 0 0 0 0 0 0 0
+    day 931: 3.691; 288000; 0 0 0 0 0 0 0
+    day 932: 4.44018; 288000; 0 0 0 0 0 0 0
+    day 933: 4.70269; 288000; 0 0 0 0 0 0 0
+    day 934: 4.80441; 288000; 0 0 0 0 0 0 0
+    day 935: 4.61683; 288000; 0 0 0 0 0 0 0
+    day 936: 4.53531; 288000; 0 0 0 0 0 0 0
+    day 937: 4.51658; 288000; 0 0 0 0 0 0 0
+    day 938: 3.71733; 288000; 0 0 0 0 0 0 0
+    day 939: 4.7464; 288000; 0 0 0 0 0 0 0
+    day 940: 4.74064; 288000; 0 0 0 0 0 0 0
+    day 941: 4.80555; 288000; 0 0 0 0 0 0 0
+    day 942: 4.37521; 288000; 0 0 0 0 0 0 0
+    day 943: 4.58153; 288000; 0 0 0 0 0 0 0
+    day 944: 6.35286; 288000; 0 0 0 0 0 0 0
+    day 945: 4.46585; 288000; 0 0 0 0 0 0 0
+    day 946: 4.64981; 288000; 0 0 0 0 0 0 0
+    day 947: 4.61349; 288000; 0 0 0 0 0 0 0
+    day 948: 4.54687; 288000; 0 0 0 0 0 0 0
+    day 949: 4.50564; 288000; 0 0 0 0 0 0 0
+    day 950: 4.57176; 288000; 0 0 0 0 0 0 0
+    day 951: 4.85237; 288000; 0 0 0 0 0 0 0
+    day 952: 4.00241; 288000; 0 0 0 0 0 0 0
+    day 953: 4.53378; 288000; 0 0 0 0 0 0 0
+    day 954: 4.86306; 288000; 0 0 0 0 0 0 0
+    day 955: 5.33249; 288000; 0 0 0 0 0 0 0
+    day 956: 4.57249; 288000; 0 0 0 0 0 0 0
+    day 957: 4.50876; 288000; 0 0 0 0 0 0 0
+    day 958: 4.93639; 288000; 0 0 0 0 0 0 0
+    day 959: 3.96729; 288000; 0 0 0 0 0 0 0
+    day 960: 4.24285; 288000; 0 0 0 0 0 0 0
+    day 961: 4.52154; 288000; 0 0 0 0 0 0 0
+    day 962: 4.32489; 288000; 0 0 0 0 0 0 0
+    day 963: 4.71053; 288000; 0 0 0 0 0 0 0
+    day 964: 4.5839; 288000; 0 0 0 0 0 0 0
+    day 965: 4.78455; 288000; 0 0 0 0 0 0 0
+    day 966: 3.65058; 288000; 0 0 0 0 0 0 0
+    day 967: 4.60622; 288000; 0 0 0 0 0 0 0
+    day 968: 4.50461; 288000; 0 0 0 0 0 0 0
+    day 969: 5.39218; 288000; 0 0 0 0 0 0 0
+    day 970: 5.3436; 288000; 0 0 0 0 0 0 0
+    day 971: 4.57959; 288000; 0 0 0 0 0 0 0
+    day 972: 4.6419; 288000; 0 0 0 0 0 0 0
+    day 973: 3.76004; 288000; 0 0 0 0 0 0 0
+    day 974: 4.68053; 288000; 0 0 0 0 0 0 0
+    day 975: 4.61085; 288000; 0 0 0 0 0 0 0
+    day 976: 4.38037; 288000; 0 0 0 0 0 0 0
+    day 977: 4.50867; 288000; 0 0 0 0 0 0 0
+    day 978: 4.44667; 288000; 0 0 0 0 0 0 0
+    day 979: 5.21738; 288000; 0 0 0 0 0 0 0
+    day 980: 4.13777; 288000; 0 0 0 0 0 0 0
+    day 981: 4.54466; 288000; 0 0 0 0 0 0 0
+    day 982: 4.63337; 288000; 0 0 0 0 0 0 0
+    day 983: 4.44416; 288000; 0 0 0 0 0 0 0
+    day 984: 4.60729; 288000; 0 0 0 0 0 0 0
+    day 985: 4.39692; 288000; 0 0 0 0 0 0 0
+    day 986: 4.60126; 288000; 0 0 0 0 0 0 0
+    day 987: 4.2955; 288000; 0 0 0 0 0 0 0
+    day 988: 5.18542; 288000; 0 0 0 0 0 0 0
+    day 989: 4.57914; 288000; 0 0 0 0 0 0 0
+    day 990: 4.82309; 288000; 0 0 0 0 0 0 0
+    day 991: 4.79368; 288000; 0 0 0 0 0 0 0
+    day 992: 5.51038; 288000; 0 0 0 0 0 0 0
+    day 993: 4.9932; 288000; 0 0 0 0 0 0 0
+    day 994: 3.82633; 288000; 0 0 0 0 0 0 0
+    day 995: 4.7083; 288000; 0 0 0 0 0 0 0
+    day 996: 4.63058; 288000; 0 0 0 0 0 0 0
+    day 997: 4.87938; 288000; 0 0 0 0 0 0 0
+    day 998: 5.47392; 288000; 0 0 0 0 0 0 0
+    day 999: 4.48745; 288000; 0 0 0 0 0 0 0
+    day 1000: 4.71822; 288000; 0 0 0 0 0 0 0
+    day 1001: 3.7384; 288000; 0 0 0 0 0 0 0
+    day 1002: 4.4174; 288000; 0 0 0 0 0 0 0
+    day 1003: 4.58326; 288000; 0 0 0 0 0 0 0
+    day 1004: 4.43193; 288000; 0 0 0 0 0 0 0
+    day 1005: 4.35355; 288000; 0 0 0 0 0 0 0
+    day 1006: 4.81272; 288000; 0 0 0 0 0 0 0
+    day 1007: 5.00781; 288000; 0 0 0 0 0 0 0
+    day 1008: 3.97298; 288000; 0 0 0 0 0 0 0
+    day 1009: 4.74034; 288000; 0 0 0 0 0 0 0
+    day 1010: 4.75671; 288000; 0 0 0 0 0 0 0
+    day 1011: 4.48683; 288000; 0 0 0 0 0 0 0
+    day 1012: 4.30366; 288000; 0 0 0 0 0 0 0
+    day 1013: 4.8933; 288000; 0 0 0 0 0 0 0
+    day 1014: 4.74222; 288000; 0 0 0 0 0 0 0
+    day 1015: 4.26726; 288000; 0 0 0 0 0 0 0
+    day 1016: 5.90009; 288000; 0 0 0 0 0 0 0
+    day 1017: 4.89238; 288000; 0 0 0 0 0 0 0
+    day 1018: 4.71612; 288000; 0 0 0 0 0 0 0
+    day 1019: 4.63354; 288000; 0 0 0 0 0 0 0
+    day 1020: 4.66408; 288000; 0 0 0 0 0 0 0
+    day 1021: 4.78212; 288000; 0 0 0 0 0 0 0
+    day 1022: 3.73426; 288000; 0 0 0 0 0 0 0
+    day 1023: 4.54551; 288000; 0 0 0 0 0 0 0
+    day 1024: 5.04233; 288000; 0 0 0 0 0 0 0
+    day 1025: 5.60836; 288000; 0 0 0 0 0 0 0
+    day 1026: 5.10609; 288000; 0 0 0 0 0 0 0
+    day 1027: 4.39043; 288000; 0 0 0 0 0 0 0
+    day 1028: 4.95593; 288000; 0 0 0 0 0 0 0
+    day 1029: 3.63385; 288000; 0 0 0 0 0 0 0
+    day 1030: 4.78893; 288000; 0 0 0 0 0 0 0
+    day 1031: 5.10631; 288000; 0 0 0 0 0 0 0
+    day 1032: 5.09201; 288000; 0 0 0 0 0 0 0
+    day 1033: 4.48423; 288000; 0 0 0 0 0 0 0
+    day 1034: 4.43722; 288000; 0 0 0 0 0 0 0
+    day 1035: 4.74751; 288000; 0 0 0 0 0 0 0
+    day 1036: 3.9006; 288000; 0 0 0 0 0 0 0
+    day 1037: 4.46765; 288000; 0 0 0 0 0 0 0
+    day 1038: 4.57465; 288000; 0 0 0 0 0 0 0
+    day 1039: 4.59964; 288000; 0 0 0 0 0 0 0
+    day 1040: 4.64674; 288000; 0 0 0 0 0 0 0
+    day 1041: 4.69311; 288000; 0 0 0 0 0 0 0
+    day 1042: 4.83734; 288000; 0 0 0 0 0 0 0
+    day 1043: 3.78056; 288000; 0 0 0 0 0 0 0
+    day 1044: 4.74317; 288000; 0 0 0 0 0 0 0
+    day 1045: 4.57335; 288000; 0 0 0 0 0 0 0
+    day 1046: 4.4558; 288000; 0 0 0 0 0 0 0
+    day 1047: 4.51638; 288000; 0 0 0 0 0 0 0
+    day 1048: 4.40755; 288000; 0 0 0 0 0 0 0
+    day 1049: 5.03784; 288000; 0 0 0 0 0 0 0
+    day 1050: 3.37703; 288000; 0 0 0 0 0 0 0
+    day 1051: 3.4055; 288000; 0 0 0 0 0 0 0
+    day 1052: 3.98112; 288000; 0 0 0 0 0 0 0
+    day 1053: 3.86049; 288000; 0 0 0 0 0 0 0
+    day 1054: 3.81559; 288000; 0 0 0 0 0 0 0
+    day 1055: 3.7693; 288000; 0 0 0 0 0 0 0
+    day 1056: 3.96882; 288000; 0 0 0 0 0 0 0
+    day 1057: 3.19974; 288000; 0 0 0 0 0 0 0
+    day 1058: 3.7406; 288000; 0 0 0 0 0 0 0
+    day 1059: 3.66382; 288000; 0 0 0 0 0 0 0
+    day 1060: 3.59539; 288000; 0 0 0 0 0 0 0
+    day 1061: 3.69207; 288000; 0 0 0 0 0 0 0
+    day 1062: 3.71428; 288000; 0 0 0 0 0 0 0
+    day 1063: 3.97575; 288000; 0 0 0 0 0 0 0
+    day 1064: 3.65681; 288000; 0 0 0 0 0 0 0
+    day 1065: 4.31547; 288000; 0 0 0 0 0 0 0
+    day 1066: 3.95706; 288000; 0 0 0 0 0 0 0
+    day 1067: 3.74941; 288000; 0 0 0 0 0 0 0
+    day 1068: 3.48881; 288000; 0 0 0 0 0 0 0
+    day 1069: 3.25432; 288000; 0 0 0 0 0 0 0
+    day 1070: 3.54625; 288000; 0 0 0 0 0 0 0
+    day 1071: 2.72049; 288000; 0 0 0 0 0 0 0
+    day 1072: 3.54167; 288000; 0 0 0 0 0 0 0
+    day 1073: 3.55437; 288000; 0 0 0 0 0 0 0
+    day 1074: 3.29082; 288000; 0 0 0 0 0 0 0
+    day 1075: 3.29627; 288000; 0 0 0 0 0 0 0
+    day 1076: 3.30575; 288000; 0 0 0 0 0 0 0
+    day 1077: 3.44637; 288000; 0 0 0 0 0 0 0
+    day 1078: 2.64034; 288000; 0 0 0 0 0 0 0
+    day 1079: 3.09223; 288000; 0 0 0 0 0 0 0
+    day 1080: 2.94637; 288000; 0 0 0 0 0 0 0
+    day 1081: 2.99607; 288000; 0 0 0 0 0 0 0
+    day 1082: 3.0954; 288000; 0 0 0 0 0 0 0
+    day 1083: 3.19453; 288000; 0 0 0 0 0 0 0
+    day 1084: 3.39729; 288000; 0 0 0 0 0 0 0
+    day 1085: 2.62493; 288000; 0 0 0 0 0 0 0
+    day 1086: 3.26496; 288000; 0 0 0 0 0 0 0
+    day 1087: 3.41365; 288000; 0 0 0 0 0 0 0
+    day 1088: 3.22565; 288000; 0 0 0 0 0 0 0
+    day 1089: 3.19163; 288000; 0 0 0 0 0 0 0
+    day 1090: 3.08996; 288000; 0 0 0 0 0 0 0
+    day 1091: 3.18641; 288000; 0 0 0 0 0 0 0
+    day 1092: 2.61409; 288000; 0 0 0 0 0 0 0
+    day 1093: 3.24504; 288000; 0 0 0 0 0 0 0
+    day 1094: 3.16948; 288000; 0 0 0 0 0 0 0
+    day 1095: 3.28983; 288000; 0 0 0 0 0 0 0
+    day 1096: 2.01449; 144000; 0 0 0 0 0 0 0
+  840 residents offstage at the end; money conserved; 1 places in memory at the end; 83254 bonds between them
+  money at the end (64575p in all; 225 residents short of a day's food money): holder, total, how many, median
+    adults without work: 363p, 77, 0p
+    apprentices: 68p, 13, 1p
+    capital's treasury: 3712p, 1, 3712p
+    children: 276p, 64, 5p
+    crew: 0p, 42, 0p
+    estate: 1430p, 4, 188p
+    farm: 6319p, 42, 121p
+    guards: 267p, 14, 8p
+    home stores: 0p, 1200, 0p
+    merchants: 7029p, 127, 59p
+    outside: 20p, 1, 20p
+    paid civilians: 19191p, 456, 47p
+    till: 24305p, 127, 131p
+    unpaid civilians: 1595p, 89, 6p
+  roads: 0 towns (); 0 caravans on the road, 0 robbed; 0 bandit camps; 0 open contracts; 66 rumours held
+  crime: 3 incidents (3 attempted theft); 0 wanted, 0 held
+  people: 782 residents living (the oldest 77), 254 married couples; 58 born, 223 arrived from the Country and 58 died in the run; 0 children and 0 arrivals asked for and not made; 0 children still owed for the dead; 301 unplaced NPCs left in the world's list
+  the unplaced of working age by old trade: children 4; fields and mills 40; fishing and the marsh 3; herds and flocks 16; keeps the house 25; mines, stone and clay 19; orchards and vines 3; service and labour 28; the Heights 16; the old 7; the towns' trades and shops 12; the watch 12; woods 17;
+  the farms' people placed: family 18; family hand 2; hand coldwater 20; hand fenshore 10; hand frosthollow 4; hand larkfield 13; hand oakhaven 3; hand ridgemere 28; hand saltwell 5; hand southmeadow 8; keeper 39; market coldwater 8; market fenshore 3; market frosthollow 2; market larkfield 5; market oakhaven 2; market saltwell 3; market southmeadow 3; workshop cn_coldwater_soapworks 6; workshop cn_coldwater_still 4; workshop cn_coldwater_weavers 5; workshop cn_fenshore_pottery 2; workshop cn_larkfield_press 4; workshop cn_larkfield_smithy 2; workshop cn_larkfield_weavers 5; workshop cn_oakhaven_press 1; workshop cn_southmeadow_pottery 1; posts 132 (132 held), virtual crew left 0; 180 living in the realm's homes, 51 households (by size: 1x15 2x11 3x5 4x4 5x1 6x5 7x7 8x1 10x2), 0 hungry (60+) at the end, the hungriest 59
+    shopkeeper at Larkfield Stores (tn_lf_pike_chalkley): till 145p, 187 pieces
+    keeps the taproom at The Sheaf (tn_sm_linden_harvestton): till 115p, 86 pieces
+    baker at Larkfield Bakehouse (tn_lf_lichen_hedgemead): till 296p, 69 pieces
+    linen loom master at Larkfield Looms (cty_gorse_hedgewell): till 313p, 20 pieces
+    country printer at Larkfield Print House (cty_nell_plummeadow): till 304p, 26 pieces
+    village smith at Larkfield Smithy (tn_mb_tansy_eelbridge): till 58p, 12 pieces
+    shopkeeper at Southmeadow Stores (tn_sm_rusk_plummeadow): till 109p, 175 pieces
+    keeps the taproom at The Vine and Sickle (tn_sm_moss_blossomwell): till 57p, 58 pieces
+    village potter at Southmeadow Kilns (tn_sm_dun_harvestley): till 28p, 0 pieces
+    shopkeeper at Coldwater Stores (tn_cw_myrtle_stillford): till 258p, 211 pieces
+    keeps the taproom at The Glasswater Inn (tn_fh_loam_pinefell): till 191p, 127 pieces
+    baker at Coldwater Bakehouse (tn_sm_eskar_cornley): till 569p, 125 pieces
+    soap boiler at Coldwater Soapworks (tn_lf_sage_wheatridge): till 341p, 41 pieces
+    wool loom master at Coldwater Looms (tn_cw_fallow_lakewick): till 56p, 14 pieces
+    stillmaster at Coldwater Still (tn_mb_aspen_marshholm): till 135p, 11 pieces
+    shopkeeper at Saltwell Stores (tn_mb_roan_pikewater): till 91p, 168 pieces
+    keeps the taproom at The Oasis Inn (tn_oh_thorn_ashwood): till 83p, 44 pieces
+    shopkeeper at Fenshore Stores (tn_fh_thistle_stonepick): till 165p, 186 pieces
+    keeps the taproom at The Heron (tn_cw_bramble_reedford): till 90p, 74 pieces
+    village potter at Fenshore Kilns (tn_oh_eskar_acornholt): till 39p, 0 pieces
+    shopkeeper at Oakhaven Stores (tn_oh_cairn_oakhaven): till 26p, 166 pieces
+    keeps the taproom at The Felled Cedar (tn_fh_tamsin_icefell): till 27p, 38 pieces
+    country printer at Oakhaven Print House (tn_oh_ludo_beechshaw): till 23p, 9 pieces
+    shopkeeper at Frosthollow Stores (tn_fh_aster_coldfell): till 32p, 168 pieces
+    keeps the taproom at The Lamp and Pick (tn_mb_oriel_marshditch): till 23p, 41 pieces
+  at their scheduled place: 833, on their way: 7, without a route: 0
+  the Wharf beyond the realm: in 99389p, out 99409p, net -20p; its fees 8746p; credit 20p (moved 0p); money conserved: true (money 64575p = minted 163984 - sunk 99409)
+  the Wharf (outside:wharf): 20p; treasury 3712p; carriage to till:job:rmx_orm_carlisle 756p; restocking rule on; needs on
+  digest: people ba69a500c16f538c, society 28b36023d6b226dc, map memory 14650fb0739d0383 (0 tiles remembered)

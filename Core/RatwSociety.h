@@ -1106,6 +1106,7 @@ class Society
         std::map<std::string, WharfGood> wharfTakenShops;      // (Of wharfTaken, what came from the city's shops.)
         std::int64_t wharfIn = 0, wharfOut = 0, wharfFee = 0, wharfMoved = 0, wharfBasket = 0, wharfTakeWant = -1;
         std::int64_t wharfTakeUnfit = 0;            // What the takes wanted that the export room could not fit (pennies).
+        std::map<std::string, std::int64_t> wharfTakeUnfitBy; // (Round 9, doc 73: wharfTakeUnfit by good.)
         // Round 2 of stabilizing (doc 73): the pieces of each good rotted tonight (rotStock); what each trade's short tills
         // could not pay their posts tonight, before the treasury's wage support (supportWanted by trade: the till's own
         // shortfall, not what the treasury had room for).

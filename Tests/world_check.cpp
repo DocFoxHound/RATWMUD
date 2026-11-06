@@ -1530,6 +1530,13 @@ struct EconomyWatch
                 for (auto it = d.wharfLandedBeyond.begin(); it != d.wharfLandedBeyond.end(); ++it)
                     seasons << (it == d.wharfLandedBeyond.begin() ? "" : ", ") << EconomyDetail::quoted(it->first) << ": " << it->second;
                 seasons << "}, \"unfit\": " << d.wharfTakeUnfit;
+                if (!d.wharfTakeUnfitBy.empty())    // (Round 9, doc 73: by good, only on a day some take did not fit.)
+                {
+                    seasons << ", \"unfit_by\": {";
+                    for (auto it = d.wharfTakeUnfitBy.begin(); it != d.wharfTakeUnfitBy.end(); ++it)
+                        seasons << (it == d.wharfTakeUnfitBy.begin() ? "" : ", ") << EconomyDetail::quoted(it->first) << ": " << it->second;
+                    seasons << "}";
+                }
                 seasons << ", \"basket\": " << d.wharfBasket << ", \"in\": " << d.wharfIn << ", \"out\": " << d.wharfOut
                         << ", \"fee\": " << d.wharfFee << ", \"moved\": " << d.wharfMoved << ", \"credit\": " << book.credit
                         << ", \"book_in\": " << book.in << ", \"book_out\": " << book.out << ", \"book_fee\": " << book.fee
