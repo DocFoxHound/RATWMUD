@@ -2493,3 +2493,52 @@ households' margin (they end the market at the alms line) and the piles the roun
 5. **Fell's margin** eases in every run (to 86-102p). Look at its orchards' and vines' sales.
 6. The `iron_bar` "draws short" counts in the report's first section swing with the run (s15e 63,238 in winter, s15f
    101,057). They count the smithies' draws on the farms, which grow no bars. Read the ironworks' shelf instead.
+
+### stable10b's 3-year run (ridgemere2 58d14d4, 2026-11-06)
+
+Round 10 on the merged build (`build-core`, rebuilt after the merge, gcc Release), **export70** (DEV revision 96, build
+70, round 8's; no DEV write this round, so no new export), wharf7b's flags (`--farms 0`, an area every 28 days); 1,095
+days, 2,256 s, exit 0; `stable10b-report.md`, its patch, `stable10b.out`.
+
+**It is `s15f` to the byte.** The economy file is s15f's byte for byte, the end digests match (people
+c0e6a8f7ab13c2cb, society d6bafc91c5b76425), the patch is identical, and the report differs only in its patch's path.
+`stable10b.out` is s15f's except for the timings and the full log's path. So every number in round 10's s15f table
+holds for this run. Year 3 (a day unless marked), against wharf7b and producers7:
+
+| | stable10b (= s15f) | wharf7b | producers7 |
+|---|---|---|---|
+| Money conserved every day; at the end | yes; 64,525p | yes; 64,588p | yes; 64,595p |
+| Estates' posts; nights short (year 3; the run) | 648p of 648p; 0; 0 | 788 of 824p; 107; 108 | 803 of 824p; 40 |
+| The toll's rate (last moved day 238); the toll | 31; 1,486p | -; 1,671p | -; 1,668p |
+| The Crown: rents; grants out; purse at the year ends | 776p; 333p; 1,537, 1,505, 1,305p | 464p; 502p; 1,002, 976, 625p | 503p; 529p; 946, 1,005, 714p |
+| The Crown: mean purse (years 1-3); over its keep (years 2, 3) | 1,168, 1,447, 1,448p; 460 -> 465p | - | - |
+| Grayrock, Timberland, Greatly, Fell (purse at the year ends) | 43/7/12, 570/477/473, 53/52/46, 207/346/341p | 18, 361, 61, 29p (end) | 18, 318, 66, 28p |
+| The estates' purses together: year ends; means (years 1-3) | 2,410, 2,387, 2,177p; 1,981, 2,142, 2,136p | 1,610, 1,469, 1,094p | 1,563, 1,451, 1,144p |
+| The farms' takings; land rents; works' rents | 3,223; 890; 358p | -; 449p; 335p | - |
+| Treasury: year ends; least in year 3 | 1,779, 2,149, 2,131p; 1,027p | 5,930p at the end; 1,970p | 4,940p; 1,903p |
+| Wage support wanted / paid / unpaid (years 1-3) | 272/82/190, 192/70/122, **182/106/76p** | paid 296p | paid 295p |
+| Alms; the no-earner's; the low wage's | 411; 30; 7p | - | - |
+| Hunger: days, the most hours; households short (years 1-3) | 6, 6; 0.91, 0.61, **0.45** | 6, 9; 0.31 | 3, 8; 0.28 |
+| Eggs sold; short (pieces) | 220.4; 1.8 | 133.9; 95.0 | 99.1; 94.2 |
+| Cider sold; short | 117.4; 0.0 | 91.1; 21.6 | 91.4; 9.8 |
+| Iron bars sold; short at the tills; iron ore sold | 25.7; **11.7**; 52.0 | 28.2; 0.0; 56.4 | 27.7; 0.0; 55.4 |
+| The foundry (the run): wages paid; to its House. The ironworks: wages; to its House | 25.8 of 25.8p; 31.2p. 45.4 of 47.2p; 13.5p | 3.4% of its wages (year 3) | - |
+| The valve (year 3): in / out; credit at the end; the unfit takes (years 1-3) | 85 / 85p; 70p; 173, 245, **269p** (hides 187p) | - | - |
+| Hides rotted (years 1-3) | 7.2, 11.6, 13.1 a day | - | - |
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| Estates' posts paid every night | 648p of 648p, no night short in three years | yes |
+| No estate purse trending down, the Crown's included | the Crown's mean 1,447 -> 1,448p, over its keep 460 -> 465p; Timberland 380 -> 379p mean; the five's means 2,142 -> 2,136p; but the year ends 2,387 -> 2,177p (the Crown 1,505 -> 1,305p on the last day), Fell's margin 104 -> 95p, Grayrock and Greatly held up by the Crown's grants (333p a day) | **yes on the means**; Fell eases |
+| The treasury over its float, wage support not climbing | least 1,027p; paid 82, 70, 106p a year, by half-year 105, 106p (flat in year 3) | yes |
+| Hunger as low as wharf7b or lower | 0.45 against 0.31; 6 days, 6 hours at most (wharf7b 9) | **no** |
+| No runaway pile, no standing shortage a producer should cover | iron bars short at the smithies 11.7 a day (none in wharf7b), the mine's ore drawn down (-327 in year 3); hides rot 13.1 a day; firewood, tallow, peat and apples pile at the farms (+2,222, +1,869, +1,855, +1,591 in year 3); flax, stone and clay short; cheese left as it is | **no** |
+| The valve nets | 85p in, 85p out; the credit 70p | yes |
+
+**Verdict: not stable on three years**, as s15f. The softer toll (1 point) holds the estates, the Crown, the treasury,
+the wage support and the valve. Hunger stays over wharf7b's and iron bars run short. Round 10's open list stands as
+written (the short households at the alms line, iron at the lower toll, the posts, hides, Fell's margin, the iron_bar
+draw count).
