@@ -163,9 +163,9 @@ void theDefaults()
            "wages follow cover: on, every 28 days, half to spare, at most 12p a keeper and 12p a hand, never under 7p");
     expect(s.rule("treasuryDrift") == 1 && s.rule("treasuryTarget") == 5500 && s.rule("treasuryBand") == 15 &&
                s.rule("treasuryDays") == 182 && s.rule("treasuryJudgeDays") == 28 && s.rule("tollStep") == 5 &&
-               s.rule("tollDriftMost") == 5 && s.rule("almsDriftMost") == 2,
+               s.rule("tollDriftMost") == 2 && s.rule("almsDriftMost") == 2,
            "the toll and the alms follow the treasury: on, 5,500p within 15%, over 182 days, judged every 28, half a point "
-           "each time, 5 points, 2p");
+           "each time, 2 points (doc 73, round 9), 2p");
     expect(near(s.gateTollNow(), 30) && s.almsNow() == 10 && s.state().loop.empty(), "nothing drifted in a new society");
 }
 
@@ -615,6 +615,8 @@ Town treasury(std::int64_t treasury, std::map<std::string, int> rules)
     rules["treasuryDays"] = rules.count("treasuryDays") ? rules["treasuryDays"] : 1;
     rules["treasuryJudgeDays"] = rules.count("treasuryJudgeDays") ? rules["treasuryJudgeDays"] : Fortnight;
     rules["wageSupport"] = 0;
+    // (The drift's bounds as they were before round 9 (doc 73: tollDriftMost 2 since), so its steps show.)
+    rules["tollDriftMost"] = rules.count("tollDriftMost") ? rules["tollDriftMost"] : 5;
     return Town(city({person("ann", "civilian", "keeps the house", {"home_ann", 2.5, 2.5}, "home_ann", 35, 5000),
                       person("bob", "civilian", "keeps the house", {"home_bob", 2.5, 2.5}, "home_bob", 35, 0)},
                      treasury, rules));
@@ -656,7 +658,7 @@ void tollAndAlmsFollowTheTreasury()
         // The eased toll on a draw: 25% of its cost to the treasury.
         auto u = Town(city({person("fish", "merchant", "fishmonger at the Fish Hall", {"hall", 2.5, 2.5}, "home_fish", 30, 0)}, 50000,
                            {{"treasuryDrift", 1}, {"treasuryDays", 1}, {"treasuryJudgeDays", Fortnight}, {"treasuryTarget", 1000},
-                            {"tollStep", 50}, {"wageSupport", 0}, {"almsADay", 0}}));
+                            {"tollStep", 50}, {"tollDriftMost", 5}, {"wageSupport", 0}, {"almsADay", 0}}));
         u.until(16);
         expect(near(u.s.gateTollNow(), 25), "eased to 25%: " + str(u.s.gateTollNow()));
         u.s.shift("treasury", u.s.tillOf("fish"), "", 0, 1000, "test: a till to draw with");

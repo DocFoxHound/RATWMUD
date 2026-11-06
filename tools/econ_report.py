@@ -666,6 +666,12 @@ def wharf_lines(econ):
            f'The credit: {credits[0]} -> {credits[-1]}p (least {min(credits)}, most {max(credits)}).'
            + (f' What the takes wanted that the room could not fit: {mean("unfit"):.0f}p a day.' if any('unfit' in w for _, w in days) else ''),
            '']
+    # (Round 9, doc 73: the unfit by good, where the run logged it.)
+    unfit_by = collections.Counter()
+    for _, w in days:
+        unfit_by.update(w.get('unfit_by') or {})
+    if unfit_by:
+        out[-1:-1] = ['Of it, by good (a day): ' + ', '.join(f'{g} {v / n:.0f}p' for g, v in unfit_by.most_common()) + '.']
     # What rotted of the makers' perishable by-products (the rule shopRot, doc 73, round 2), a day by good.
     rotted = collections.Counter()
     for r in econ:

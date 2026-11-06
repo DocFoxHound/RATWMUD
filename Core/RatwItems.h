@@ -288,7 +288,7 @@ inline constexpr RuleInfo Rules[] = {
     {"treasuryDays", 1, 3650, 182},      // the mean over about this many days (half a year);
     {"treasuryJudgeDays", 1, 365, 28},   // judged every this many days (28, from a fortnight);
     {"tollStep", 0, 100, 5},             // the toll moves by this many tenths of a point at each judging,
-    {"tollDriftMost", 0, 90, 5},         // at most this many points from the world's gate toll;
+    {"tollDriftMost", 0, 90, 2},         // at most this many points from the world's gate toll (2 since doc 73's round 9; 5);
     {"almsDriftMost", 0, 1000, 2},       // the alms by a penny a head at each, up to this many over almsADay (never under).
 };
 const RuleInfo* ruleInfo(const std::string& name);

@@ -2051,6 +2051,12 @@ void theWharf()
                    std::to_string(t.count("hide") ? t.at("hide").pieces : 0) + ", unfit " + std::to_string(k.loopToday().wharfTakeUnfit) +
                    ", credit " + std::to_string(book.credit) + ", bones area " + std::to_string(k.farmAreaOf("bones")) + ", held " +
                    std::to_string(held(k, hides, "bones")) + ")");
+        // (Round 9: the unfit by good, the hides', and adding up to the whole.)
+        std::int64_t unfitBy = 0;
+        for (const auto& [good, pennies] : k.loopToday().wharfTakeUnfitBy)
+            unfitBy += pennies;
+        expect(k.loopToday().wharfTakeUnfitBy.count("hide") && unfitBy == k.loopToday().wharfTakeUnfit,
+               "the unfit by good: " + std::to_string(unfitBy) + " of " + std::to_string(k.loopToday().wharfTakeUnfit));
         expect(k.conserved(), "conserved");
     }
     // A take's `shops` (after wharf7b): the butchers' hides, the byproduct of their carcasses, taken from the city's shop

@@ -2134,3 +2134,126 @@ drift (round 8's open point 1, the user's lever). What is open, beyond round 8's
    A hide take at the valve, or a second hide product, rather than a larger household need (s13b).
 4. **Apples** (+18 a day at the orchards) and Fell's falling rents are one point: the orchards' yield down ~5%, or a
    cider press's crew-bound posts (cider is now fully met, 0 short).
+
+### Round 9 of stabilizing (branch `r2-stable10`, 2026-11-05): the toll's drift softened to 2 points
+
+The user's decision (2026-11-05): **soften the toll's drift** (the rule treasuryDrift: how far the gate toll firms while
+the treasury sits under its target), to the value the runs show best. That is this round's only lever. Not touched: the
+treasury's target (5,500p), its float and cap, the wage support's settings, the toll's base rate (the world's 30), the
+DM's `wharf.credit` and `wharfInjectADay`. Cheese left as it is. **No DEV write this round** (no post moved, no NPC
+made): every run is on **export70** (DEV revision 96, build 70, round 8's), with wharf7b's flags (`--farms 0`, an area
+every 28 days).
+
+**The drift, measured.** Four 3-year runs of ridgemere2's code and data (e356467) with one value changed in a scratch
+copy of the data (`s14st2`, `s14st3`, `s14dm2`, `s14dm3`; their reports in `artifacts/economy/r2/`), against stable9e
+(tollStep 5, a half point at each judging; tollDriftMost 5, so at most 35). Each economy file is stable9e's to the byte until
+the toll first differs from its (day 210 for the steps; day 518 for `dm2` and 882 for `dm3`, the first judgings their
+limits hold back). Year 3, a day:
+
+| | stable9e (step 0.5, most 5) | st2 (step 0.2) | st3 (step 0.3) | **dm2 (most 2)** | dm3 (most 3) |
+|---|---|---|---|---|---|
+| The toll's rate at the year ends | 31.5, 33, 34 | 30.6, 31.4, 32.2 | 30.9, 32.1, 32.7 | 31.5, **32, 32** | 31.5, 33, 33 |
+| Its last move | still firming | still firming (day 966) | still firming (day 966) | **day 406** | day 546 |
+| The Crown over its keep (years 2, 3) | 434 -> 390p (-10%) | 461 -> 440p (-5%) | 450 -> 426p (-5%) | **446 -> 439p (-2%)** | 434 -> 406p (-6%) |
+| The Crown over its keep, the last three half-years | - | 451, 458, 423p | 437, 438, 416p | **443, 445, 434p** | 418, 416, 398p |
+| Timberland over its keep (years 2, 3) | 187 -> 169p | 196 -> 186p | 196 -> 189p | 194 -> 184p | 187 -> 170p |
+| Fell over its keep (years 2, 3) | 90 -> 81p | 97 -> 92p | 97 -> 88p | 95 -> 86p | 90 -> 79p |
+| The farms' takings; the estates' land rents | 3,097; 827p | 3,184; 873p | 3,160; 857p | 3,170; 864p | 3,116; 837p |
+| Wage support wanted / paid / unpaid | 191/149/42p | 183/123/60p | 184/141/44p | 189/131/58p | 189/145/44p |
+| Paid, the last two half-years | - | 108, 137p | 134, 147p | **131, 131p** | 134, 155p |
+| The no-earner's and the low wage's alms | 90, 80p | 42, 19p | 72, 29p | 43, 12p | 73, 42p |
+| Households short (the economy file's mean); hungry days, the most hours | 0.19; 4, 5 | 0.34; 4, 7 | 0.33; 6, 6 | 0.32; 9, 7 | 0.15; 6, 6 |
+| The treasury: least in year 3; at the end | 1,345; 2,191p | 1,082; 2,173p | 1,255; 2,184p | 1,006; 2,168p | 1,309; 2,184p |
+
+- **A slower step only delays the drift.** The treasury's level never nears 5,500p (it settles at ~2,000-2,200p, its cap
+  and what it pays out over it), so at any step the toll firms each season it is judged, until its limit: st2 and st3
+  were still firming in year 3's last quarter, and the estates sliding (the Crown -5%) as stable9e's did.
+- **A lower limit stops it.** At most 2 points the toll stops at 32 on day 406 and stays there; from then the Crown's
+  margin is level within ~2% (443, 445, 434p by half-year), its mean purse 1,434 -> 1,427p, its rents 762 -> 762p, and
+  the wage support paid is level in year 3 (131p both halves). At 3 points the toll reaches 33 on day 546, and the
+  estates still slide after it stops (the Crown 418 -> 398p over year 3's halves): a toll of 33 takes more of the
+  farms' takings than the Crown's rents can stand.
+- **What 2 costs.** Of what the treasury holds over its cap less goes to the alms for those with no earner and on low
+  wages (43 and 12p a day against stable9e's 90 and 80p), and more of the support goes unpaid (58p against 42p). The
+  households short of food at the shops' last hour are about wharf7b's (0.32 against 0.31; stable9e's 0.19); the hungry
+  days are mostly the same few in every run (days 777, 960, 1051: a few hours each).
+
+**The fixes:**
+
+- **The toll's drift at most 2 points** (city_loop.json `tollDriftMost` 5 -> 2, and the rule's default in RatwItems.h,
+  the editor's test and the studio's fallback). The step (tollStep, a half point every 28 days) and the target are as
+  they were: the toll firms from 30 to 32 in the first year and a half as before and then stops. **Why 2**: it is the
+  only value of the four whose year 3 has the estates level and the wage support paid level; a slower step (st2, st3)
+  is still firming and the estates still sliding in year 3, and 3 points stops the toll too high for the Crown's rents.
+  A world whose saved toll has drifted further (DEV's, PROD's) is held to the new limit at once (gateTollNow clamps to
+  the rule as it is now).
+- **The Wharf's unfit takes, by good** (the user's "more logging"): the economy file's `wharf_day` has `unfit_by`
+  (pennies a good, only on a day some take did not fit; RatwWharf.cpp, loopToday's `wharfTakeUnfitBy`), and the report
+  lists them. In s14f: **hides are most of it**, then bones and the foundry's handbells (years 1-3: hide 126, 173, 198p;
+  bones 49, 64, 65p; handbells 4, 10, 20p; of 181, 255, 293p). The takes are the butchers' by-products the beyond would
+  buy that the credit (what the realm paid for its imports) has no room for: the same hides that rot (7.6, 12.0, 14.4 a
+  day). So points 3 and 4 of stable9e's list are one: the realm's hides over what the tannery and the netting valve can
+  take. Not fixed here (below).
+- **The orchards' apples x0.96** (country_farms.json, the five orchards, every season): stable9e's orchards grew 273 a
+  day and sold and ate 265, the store 12,059 at the end. In s14f, 262 grown, 259 sold and eaten, 3,909 at the end
+  (+3 a day). Fell's rents 131p in year 3 (stable9e 124p).
+- **Tests**: `selfcorrect_tests` (the defaults: tollDriftMost 2; the drift's own tests keep 5 so their steps to 35 and
+  25 show), `farms_tests` (the unfit by good: the hides', adding up to the whole). ctest **79 of 79**; `test_realm2`,
+  `test_econ_report`, `test_farms_summary`, `test_country_industry` and the editor's `economy.test.ts` pass.
+
+**The 3-year run, `s14f`** (the branch as committed, `build-s10b` gcc Release, export70, wharf7b's flags; 1,095 days,
+exit 0; `s14f-report.md`, its patch, `s14f.out`). **The 60-day smoke** (`s14f-smoke`, the same build and flags, 1446
+hours): exit 0, money conserved every day, the estates' posts paid every night, nobody hungry; stable9e's to the byte
+until day 28 (the fruit area: the apples). A day, years 1-3 where given:
+
+| | s14f | stable9e |
+|---|---|---|
+| Money conserved every day; at the end | yes; 64,573p | yes; 64,587p |
+| Estates' posts; nights short | 648p of 648p; none in three years | 648p of 648p; none |
+| The toll's rate at the year ends; the toll (year 3) | 31.5, 32, 32; 1,529p | 31.5, 33, 34; 1,594p |
+| The Crown: rents; grants out (years 2, 3) | 759, **754p**; 336, 337p | 752, 733p; 339, 350p |
+| The Crown: mean purse (years 2, 3); by quarter in year 3 | 1,429, **1,419p**; 1,421, 1,420, 1,405, 1,432p | 1,423, 1,388p |
+| The Crown over its keep (years 1-3) | 390, 443, **433p** | 391, 434, 390p |
+| The five estates' purses together (mean, years 2, 3) | 2,096, 2,073p | 2,075, 2,005p |
+| Timberland, Fell, Greatly over their keep (years 2, 3) | 196 -> 185, 93 -> 90, -169 -> -170p | 187 -> 169, 90 -> 81, -170 -> -177p |
+| The farms' takings; the land rents (year 3) | 3,177; 866p | 3,097; 827p |
+| Wage support wanted / paid / unpaid (years 1-3) | 276/88/188, 207/105/102, **188/132/57p** | 279/91/188, 208/118/91, 191/149/42p |
+| Paid by half-year (years 2, 3) | 104, 108, 125, 138p | - |
+| The treasury: least in year 3; at the year ends | 1,156p; 1,863, 2,143, 2,134p | 1,345p; 1,899, 2,191, 2,191p |
+| Hunger: days, the most hours (year 3); households short (years 1-3) | 3, 8; 0.71, 0.70, **0.39** | 4, 5; 0.59, 0.65, 0.19 |
+| The valve: in / out (the run); credit at the end | 93 / 93p; 20p | 86 / 86p; 8p |
+| The unfit takes (years 1-3) | 181, 255, 293p (hides 198p in year 3) | 181, 285, 321p |
+| Hides rotted (years 1-3) | 7.6, 12.0, 14.4 a day | 7.6, 14.0, 16.7 |
+| Apples at the orchards (year 3): grown, sold and eaten, in store at the end | 262, 259; 3,909 | 273, 265; 12,059 |
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| Estates' posts paid every night | 648p of 648p, no night short in three years | yes |
+| No estate purse trending down, the Crown's included | the Crown's mean purse 1,429 -> 1,419p, its rents 759 -> 754p, over its keep 443 -> 433p (-2%); the five together 2,096 -> 2,073p (-1%); Timberland 196 -> 185p (-6%), Fell 93 -> 90p | **nearly**: the Crown level, Timberland still easing |
+| The treasury over its float, wage support not climbing | least 1,156p; paid 105 -> 132p a year, 125 -> 138p by year 3's halves, as the unpaid falls (102 -> 57p) toward the wanted (~190p) | treasury yes; paid **still rising**, toward the wanted |
+| Hunger as low as wharf7b or lower | 0.39 against 0.31 (dm2, the same rule without the apples, 0.32); 3 days, 8 hours at most | **about**, not lower |
+| No runaway pile, no standing shortage a producer should cover | apples +3 a day; hides rot (14.4 a day, rising); iron bar short at the draws (cheese left as it is) | **nearly** |
+| The valve nets | 93p in, 93p out; the credit 20p | yes |
+
+**Verdict: not yet stable, but the drift is no longer what moves.** The toll stops at 32 in year 2, and with it the
+Crown's slide (-10% a year in stable9e) is down to ~2%, and the support paid no longer follows the toll; what still
+moves is the support paid catching up with what the short tills want (its unpaid falling), Timberland's works' rents,
+and the hides. The `s14f5y` run (the same, five years) is to show whether the support and the estates settle once
+the unpaid is gone (below, when it ends).
+
+**What is open** (not done this round: the user's request was the drift alone, and these need DEV writes or new goods):
+
+1. **The sea trade's posts** (Grayrock's 36, 288p a night) are still the Crown's grants (291p a day of its 337p):
+   moving idle porters to crew-bound makers, or giving Grayrock earning work, needs DEV writes (the posts) and was not
+   done this round.
+2. **The short tills' idle posts** (preserver, general store, cooperage at 27-32% of their crew-hours): what the wage
+   support pays (wanted by trade in year 3: inn 19.9, preserver 14.5, smithy 11.5, bakery 10.2, cooperage 8.3, general
+   6.0p). Moving those posts is the real fix for the support; it needs DEV writes.
+3. **Hides**: the unfit log shows the beyond would take ~200p a day of them; the netting valve has no room. A second
+   hide product (a glue or parchment craft, new goods and buyers) or fewer carcasses' hides is the fix.
+4. **Iron bar** short at the farms' draws every season: the ironworks' limit not traced this round.
+5. **world_check's exit 134** (stable9's, after day 1,095): not seen again. Every 3-year run since (stable9b-e, s13a-b,
+   cfA, cfB, the five of this round) exited 0; round 5's ASan and UBSan run found nothing. Not traced further.
