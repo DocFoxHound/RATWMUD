@@ -290,6 +290,20 @@ inline constexpr RuleInfo Rules[] = {
     {"tollStep", 0, 100, 5},             // the toll moves by this many tenths of a point at each judging,
     {"tollDriftMost", 0, 90, 1},         // at most this many points from the world's gate toll (1 since doc 73's round 10; 2, 5);
     {"almsDriftMost", 0, 1000, 2},       // the alms by a penny a head at each, up to this many over almsADay (never under).
+    // Steering the economy (Docs/Design/74-steering-the-economy.md): the DM's slider and on/off, and the two floors.
+    {"steer", 0, 1, 0},                  // On: a few levers follow the push toward where the slider says the money rests.
+    {"steerLean", 0, 200, 100},          // Where the money rests: 0 shared (-100 on the tab), 100 today's, 200 held by the rich.
+    {"neverHungry", 0, 1, 0},            // A wolf going hungry is given a day's food at the stable price; the richest pay.
+    {"neverBroke", 0, 1, 0},             // A household short of the next day's necessities is given just enough; the richest pay.
+    // The steering's own rules (an author's, in Atlas; the DM tab shows them read only):
+    {"steerJudgeDays", 7, 182, 28},      // the push is judged every this many days,
+    {"steerMeanDays", 14, 365, 56},      // on means over about this many days (the hunger, the short and the treasury: 28);
+    {"steerStep", 1, 25, 5},             // a step is this many hundredths of the push,
+    {"steerStepMost", 1, 50, 10},        // and this many when the measure is more than two bands off;
+    {"steerWidthMid", 0, 50, 15},        // the push within this many hundredths of the slider at the centre,
+    {"steerWidthEnd", 0, 100, 30},       // and this many at either end (between, in proportion).
+    {"skimMost", 1, 100, 50},            // The skim takes at most this percent of a holder's spare in its first pass,
+    {"skimKeepDays", 1, 28, 3},          // and leaves a household this many days of its necessities a head.
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // A rule's name now for one it had before (doc 73: countryPostsDays is estatePostsDays), else the name as given: a world's
@@ -407,8 +421,20 @@ struct CityLoop
     std::vector<Patrons> patrons;
     std::vector<WorksOrder> works;
     std::map<std::string, int> shelves;             // A dear good's shelf (theriac: 1), in place of GoodsKept.
+    // Steering the economy (Docs/Design/74-steering-the-economy.md, 3 and 4; city_loop.json `steering`): each lever's value
+    // and each target at the five marks of the push or the slider (-1, -.5, 0, .5, 1), straight lines between. A lever's
+    // NaN is the world's own value of it (W); a target's NaN, none there.
+    struct Steering
+    {
+        std::map<std::string, std::array<double, 5>> levers, targets;
+        double treasuryFloor = 1400, treasuryLow = 1000;   // The toll lean's guard (5.3).
+    };
+    Steering steering;
 };
 const CityLoop& cityLoop();
+// A steering table's value at `at` (-1..1): straight lines between the five marks; a lever's NaN read as `own`. For a
+// target (own NaN): NaN where either neighbouring mark has none (unless `at` is on the mark that has one).
+double steerAt(const std::array<double, 5>& marks, double at, double own);
 // The Country's food farms (Data/Economy/country_farms.json; Docs/Design/71-the-country-s-industries.md, 4): modelled
 // producers with virtual crews that take an area of the Country's food over when the area is switched on. These are the
 // defaults a world's own settings change (EconomySpec::farms): a farm's own setting first, then its area's, then these.

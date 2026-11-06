@@ -332,6 +332,34 @@ class ReportTests(unittest.TestCase):
             self.assertIn('The normal level only', text)
             self.assertIn('Tills short a night: mean 1.0', text)
 
+    def test_the_steering(self):
+        # Doc 74, 12.3: the measures against their targets at the slider, the push, the levers, the skim and its books, the
+        # floors' cost; a run without the steering's fields has no such section.
+        more = {'steer': 1, 'steer_lean': 0, 'steer_push': 0.0, 'steer_push_lo': -0.15, 'steer_push_hi': 0.15, 'steer_judged': False,
+                'm_gini': 0.49, 'm_upper_share': 7.5, 'm_top10': 34.0, 'm_hungry': 0.01, 'm_short': 0, 'm_treasury': 1700,
+                'g_mean': 0.49, 's_mean': 7.5, 't10_mean': 34.0, 'h_mean28': 0.01, 'k_mean28': 0, 'tr_mean28': 1700,
+                'lev_share_out': 0, 'lev_toll': 0, 'lev_cap': 2000, 'skim': 30, 'skim_for': {'never broke': 30},
+                'skim_by': {'shops': 20, 'treasury': 10}, 'skim_top': {'till:job:baker': 20}, 'skim_short': 0, 'relief_fund': 0,
+                'relief': {'necessities': 30}, 'never_hungry': {'pieces': 0, 'pennies': 0, 'homes': 0, 'wharf_pieces': 0, 'wharf_pennies': 0},
+                'households_short_after': -1, 'never_broke': {'pennies': 30, 'homes': 3}, 'share_out': 0, 'posts_share': 0,
+                'ground_rent': 0, 'dividend': 0, 'land_rent_extra': 0}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, None, econ_more=more)
+            out = root / 'report.md'
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            text = out.read_text()
+            self.assertIn('## The steering', text)
+            self.assertIn('Where the money rests: +0 (the steering on, 2 days)', text)
+            self.assertIn("| the earners' Gini | 0.487 ± 0.035 | 0.490 | yes |", text)
+            self.assertIn('| the upper share (%) | 7 ± 2.5 | 7.5 | yes |', text)
+            self.assertIn('by purpose never broke 30.0p', text)
+            self.assertIn("The skim's books: skimmed 60p, relief paid 60p (necessities 60), fund:relief at the end 0p: balanced", text)
+            self.assertIn('Never Broke 30.0p (3.0 homes)', text)
+            plain = write_run(root / 'x' if (root / 'x').mkdir() is None else root, None)
+            self.assertEqual(R.main([str(plain), '--out', str(out)]), 0)
+            self.assertNotIn('## The steering', out.read_text())
+
     def test_phase5(self):
         # Doc 72, Phase 5: the goods bought from the makers to sell on, the workshops' wages and their Houses' share, the
         # luxuries; and a world without the workshops' buildings said so.

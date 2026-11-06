@@ -1000,6 +1000,42 @@ Value society(const SocietyState& s)
             w.add("credit", l.wharf.credit);
             loop.add("wharf", w);
         }
+        if (!l.steer.empty())
+        {
+            // Steering the economy (doc 74, 8.6): the push, its slider and judging, the means, the toll lean, the
+            // estates' last short night, and the last judgings.
+            const auto& st = l.steer;
+            auto j = Value::object(), history = Value::array();
+            j.add("on", st.on); j.add("push", st.push); j.add("lean", st.lean); j.add("judged", st.judged); j.add("days", st.days);
+            j.add("gini", st.gini); j.add("upper", st.upper); j.add("top10", st.top10); j.add("hungry", st.hungry);
+            j.add("short", st.shortHomes); j.add("treasury", st.treasury); j.add("giniThen", st.giniThen);
+            j.add("upperThen", st.upperThen); j.add("tollLean", st.tollLean); j.add("estateShort", st.estateShort);
+            for (const auto& h : st.history)
+            {
+                auto e = Value::object();
+                e.add("day", h.day); e.add("measure", h.measure); e.add("value", h.value); e.add("target", h.target);
+                e.add("band", h.band); e.add("error", h.error); e.add("step", h.step); e.add("before", h.before);
+                e.add("after", h.after); e.add("why", h.why);
+                history.push(e);
+            }
+            j.add("history", history);
+            auto skims = Value::array();
+            for (const auto& k : st.skims)
+            {
+                auto e = Value::object();
+                e.add("day", k.day); e.add("total", k.total); e.add("short", k.shortfall);
+                for (const auto& [key, m] : {std::pair{"purpose", &k.purpose}, std::pair{"group", &k.group}, std::pair{"payers", &k.payers}})
+                {
+                    auto o2 = Value::object();
+                    for (const auto& [name, coins] : *m)
+                        o2.add(name, coins);
+                    e.add(key, o2);
+                }
+                skims.push(e);
+            }
+            j.add("skims", skims);
+            loop.add("steer", j);
+        }
         o.add("loop", loop);
     }
     return o;
@@ -1040,6 +1076,54 @@ LoopState readLoop(const Value& o)
                                     inRange(w["fee"], 0, 1e12) && inRange(w["moved"], -1e12, 1e12) && inRange(w["credit"], -1e12, 1e12))
         l.wharf = {std::int64_t(w["in"].asNumber()), std::int64_t(w["out"].asNumber()), std::int64_t(w["fee"].asNumber()),
                    std::int64_t(w["moved"].asNumber()), std::int64_t(w["credit"].asNumber())};
+    if (const auto& st = o["steer"]; st.isObject() && inRange(st["push"], -1, 1) && inRange(st["lean"], 0, 200) &&
+                                     inRange(st["judged"], -1, 1e12) && inRange(st["days"], 0, 3650))
+    {
+        auto& s = l.steer;
+        s.on = st.boolean("on");
+        s.push = st["push"].asNumber();
+        s.lean = int(st["lean"].asNumber());
+        s.judged = std::int64_t(st["judged"].asNumber());
+        s.days = int(st["days"].asNumber());
+        for (const auto& [key, into] : {std::pair{"gini", &s.gini}, std::pair{"upper", &s.upper}, std::pair{"top10", &s.top10},
+                                        std::pair{"hungry", &s.hungry}, std::pair{"short", &s.shortHomes},
+                                        std::pair{"treasury", &s.treasury}, std::pair{"giniThen", &s.giniThen},
+                                        std::pair{"upperThen", &s.upperThen}})
+            if (inRange(st[key], -1, 1e12))
+                *into = st[key].asNumber();
+        if (inRange(st["tollLean"], -90, 90))
+            s.tollLean = st["tollLean"].asNumber();
+        if (inRange(st["estateShort"], -1, 1e12))
+            s.estateShort = std::int64_t(st["estateShort"].asNumber());
+        for (const auto& h : st.array("history"))
+            if (h.isObject() && inRange(h["day"], 0, 1e12) && s.history.size() < 24)
+            {
+                LoopState::Steer::Judging j;
+                j.day = std::int64_t(h["day"].asNumber());
+                j.measure = h.string("measure").substr(0, 20);
+                for (const auto& [key, into] : {std::pair{"value", &j.value}, std::pair{"target", &j.target}, std::pair{"band", &j.band},
+                                                std::pair{"error", &j.error}, std::pair{"step", &j.step}, std::pair{"before", &j.before},
+                                                std::pair{"after", &j.after}})
+                    if (inRange(h[key], -1e12, 1e12))
+                        *into = h[key].asNumber();
+                j.why = h.string("why").substr(0, 600);
+                s.history.push_back(std::move(j));
+            }
+        for (const auto& k : st.array("skims"))
+            if (k.isObject() && inRange(k["day"], 0, 1e12) && inRange(k["total"], 0, 1e12) && inRange(k["short"], 0, 1e12) &&
+                s.skims.size() < 28)
+            {
+                LoopState::Steer::SkimDay d;
+                d.day = std::int64_t(k["day"].asNumber());
+                d.total = std::int64_t(k["total"].asNumber());
+                d.shortfall = std::int64_t(k["short"].asNumber());
+                for (const auto& [key, into] : {std::pair{"purpose", &d.purpose}, std::pair{"group", &d.group}, std::pair{"payers", &d.payers}})
+                    for (const auto& [name, coins] : k.object(key).fields())
+                        if (name.size() <= 120 && inRange(coins, 0, 1e12) && into->size() < 40)
+                            (*into)[name] = std::int64_t(coins.asNumber());
+                s.skims.push_back(std::move(d));
+            }
+    }
     return l;
 }
 

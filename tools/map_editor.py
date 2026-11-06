@@ -113,9 +113,19 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'almsNoEarner': 300, 't
                'shelfCover': 1000, 'shelfGrow': 500, 'wageDrift': 1, 'wageDriftDays': 365, 'wageDriftSpare': 1000,
                'wageDriftMost': 100, 'wageDriftHandMost': 100, 'wageDriftFloor': 1000, 'treasuryDrift': 1, 'treasuryTarget': 100000000,
                'treasuryBand': 100, 'treasuryDays': 3650, 'treasuryJudgeDays': 365, 'tollStep': 100, 'tollDriftMost': 90,
-               'almsDriftMost': 1000}
+               'almsDriftMost': 1000,
+               # Steering the economy (Docs/Design/74-steering-the-economy.md): the DM's four (the Steering panel's; the
+               # rules route refuses them) and the steering's own; no migration.
+               'steer': 1, 'steerLean': 200, 'neverHungry': 1, 'neverBroke': 1, 'steerJudgeDays': 182, 'steerMeanDays': 365,
+               'steerStep': 25, 'steerStepMost': 50, 'steerWidthMid': 50, 'steerWidthEnd': 100, 'skimMost': 100, 'skimKeepDays': 28}
 RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed', 'surplus', 'stockPrices', 'shelfFollow',
-                 'wageDrift', 'treasuryDrift', 'wharfValve')   # 0 or 1: off or on.
+                 'wageDrift', 'treasuryDrift', 'wharfValve', 'steer', 'neverHungry', 'neverBroke')   # 0 or 1: off or on.
+# Steering the economy (doc 74): the DM's settings, set only through the Steering panel (/api/economy/steer), and the
+# rules the steering moves while it is on (the rules route refuses them then).
+STEER_SETTINGS = ('steer', 'steerLean', 'neverHungry', 'neverBroke')
+STEERED_RULES = ('surplusKeep', 'treasuryCap', 'surplusAlmsTo')
+STEER_OWN_RULES = ('steerJudgeDays', 'steerMeanDays', 'steerStep', 'steerStepMost', 'steerWidthMid', 'steerWidthEnd', 'skimMost',
+                   'skimKeepDays')
 # The Country's economy keys and rule before doc 73 (Docs/Design/73-the-wharf.md, 2.3), read as the Wharf's (the new name
 # wins where a project has both); written only under the new names.
 ECONOMY_ALIASES = {'country': 'wharf', 'countryReserve': 'wharfReserve', 'wageCountry': 'wageWharf', 'countryOff': 'wharfOff'}

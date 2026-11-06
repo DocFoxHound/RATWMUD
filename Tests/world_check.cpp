@@ -544,6 +544,8 @@ struct EconomyRecord
             g = "minted";                           // (Made, or the world's founding money: "outside" to "settlement".)
         else if (account == carter || account.rfind("fund:carriage", 0) == 0)
             g = "carters";
+        else if (account == Society::ReliefFund)
+            g = "relief";                           // (The steering's pass-through, doc 74, 6: the skim in, the relief out.)
         else if (account.rfind("till:", 0) == 0)
             g = "shop:" + tradeOf[account];
         else if (account.rfind("crew:", 0) == 0)
@@ -1552,6 +1554,56 @@ struct EconomyWatch
                         << ", \"book_moved\": " << book.moved << ", \"sunk\": " << society.state().sunk << "}";
             }
         }
+        // Steering the economy (Docs/Design/74-steering-the-economy.md, 12.1): only when the steering or a floor is on (or
+        // has been), so a run without them writes the line it always did.
+        std::ostringstream steering;
+        if (const auto& st = society.state().loop.steer; society.rule("steer") > 0 || society.rule("neverHungry") > 0 ||
+                                                          society.rule("neverBroke") > 0 || !st.empty())
+        {
+            const auto map = [&](const char* name, const std::map<std::string, std::int64_t>& m) {
+                steering << ", \"" << name << "\": {";
+                for (auto it = m.begin(); it != m.end(); ++it)
+                    steering << (it == m.begin() ? "" : ", ") << EconomyDetail::quoted(it->first) << ": " << it->second;
+                steering << "}";
+            };
+            const auto [lo, hi] = society.steerBand();
+            steering << ", \"steer\": " << (society.steering() ? 1 : 0) << ", \"steer_lean\": " << society.rule("steerLean") - 100
+                     << ", \"steer_push\": " << st.push << ", \"steer_push_lo\": " << lo << ", \"steer_push_hi\": " << hi
+                     << ", \"steer_judged\": " << (d.steerJudged ? "true" : "false");
+            if (!d.steerWhy.empty())
+                steering << ", \"steer_why\": " << EconomyDetail::quoted(d.steerWhy);
+            steering << ", \"m_gini\": " << d.mGini << ", \"m_upper_share\": " << d.mUpper << ", \"m_top10\": " << d.mTop10
+                     << ", \"m_hungry\": " << d.mHungry << ", \"m_short\": " << d.householdsShort << ", \"m_treasury\": "
+                     << d.treasuryNight << ", \"g_mean\": " << st.gini << ", \"s_mean\": " << st.upper << ", \"t10_mean\": "
+                     << st.top10 << ", \"h_mean28\": " << st.hungry << ", \"k_mean28\": " << st.shortHomes << ", \"tr_mean28\": "
+                     << st.treasury;
+            for (const auto& [field, lever] : {std::pair{"lev_share_out", "shareOut"}, std::pair{"lev_posts_share", "postsShare"},
+                                               std::pair{"lev_surplus_keep", "surplusKeep"}, std::pair{"lev_cap", "treasuryCap"},
+                                               std::pair{"lev_alms_to", "surplusAlmsTo"}, std::pair{"lev_ground_rent", "groundRent"},
+                                               std::pair{"lev_rent_scale", "rentScale"}, std::pair{"lev_dividend", "dividend"},
+                                               std::pair{"lev_rich_above", "richAbove"}})
+                steering << ", \"" << field << "\": " << society.steerLever(lever);
+            steering << ", \"lev_toll\": " << (society.steering() ? st.tollLean : 0.) << ", \"share_out\": " << d.shareOut
+                     << ", \"share_out_homes\": " << d.shareOutHomes << ", \"posts_share\": " << d.postsShare
+                     << ", \"ground_rent\": " << d.groundRent << ", \"dividend\": " << d.dividend << ", \"dividend_homes\": "
+                     << d.dividendHomes << ", \"land_rent_extra\": " << d.landRentExtra << ", \"skim\": " << d.skim;
+            map("skim_for", d.skimFor);
+            map("skim_by", d.skimBy);
+            std::vector<std::pair<std::int64_t, std::string>> payers;
+            for (const auto& [who, n] : d.skimPayers)
+                payers.push_back({-n, who});
+            std::sort(payers.begin(), payers.end());
+            steering << ", \"skim_top\": {";
+            for (std::size_t i = 0; i < payers.size() && i < 5; ++i)
+                steering << (i ? ", " : "") << EconomyDetail::quoted(payers[i].second) << ": " << -payers[i].first;
+            steering << "}, \"skim_short\": " << d.skimShort << ", \"relief_fund\": " << society.cash(Society::ReliefFund);
+            map("relief", d.relief);
+            steering << ", \"never_hungry\": {\"pieces\": " << d.neverHungryPieces << ", \"pennies\": " << d.neverHungryPennies
+                     << ", \"homes\": " << d.neverHungryHomes << ", \"wharf_pieces\": " << d.neverHungryWharfPieces
+                     << ", \"wharf_pennies\": " << d.neverHungryWharfPennies << "}, \"households_short_after\": "
+                     << (society.rule("neverHungry") > 0 ? d.householdsShortAfter : -1) << ", \"never_broke\": {\"pennies\": "
+                     << d.neverBrokePennies << ", \"homes\": " << d.neverBrokeHomes << "}";
+        }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households
             << ", \"households_fed\": " << fedHouseholds << ", \"shops\": " << shops << ", \"shops_stocked\": " << shopsStocked
@@ -1568,7 +1620,7 @@ struct EconomyWatch
             << (tillCash.empty() ? 0 : tillCash[tillCash.size() / 2]) << ", \"purses\": " << purses << ", \"money\": "
             << society.moneySupply() << ", \"money_start\": " << money0 << ", \"conserved\": " << (society.conserved() ? "true" : "false")
             << ", \"gini_earners\": " << gini(wealth) << ", \"earning_households\": " << wealth.size() << ", \"births\": " << born
-            << ", \"arrivals\": " << arrivals << ", \"deaths\": " << deadNow - deadAtLine << seasons.str() << ", \"hungry_who\": \""
+            << ", \"arrivals\": " << arrivals << ", \"deaths\": " << deadNow - deadAtLine << seasons.str() << steering.str() << ", \"hungry_who\": \""
             << who << "\"}" << std::endl;
         if (detail && detailOut)
             detail->day(server, int(absoluteHour / 24), *detailOut);

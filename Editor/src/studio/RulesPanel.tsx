@@ -7,11 +7,14 @@
 import {useEffect, useState} from 'react';
 import {RULES, driftLines, ruleChange, ruleOf, serviceChange, serviceText, serviceValue, wholeOf, type RuleControls,
     type RulesBody, type ServiceListed, type ServicesBody} from '../lib/economy';
+import {heldText} from '../lib/steering';
 
 type Typed = Record<string, string>;
 
-export function RulesPanel({data, locked, setRules, setServices}: {data: RuleControls; locked: boolean;
-    setRules: (body: RulesBody) => void; setServices: (body: ServicesBody) => void}) {
+export function RulesPanel({data, locked, setRules, setServices, steerOwnReadOnly = false}: {data: RuleControls; locked: boolean;
+    setRules: (body: RulesBody) => void; setServices: (body: ServicesBody) => void;
+    /** The DM's tab (doc 74, 10.4): the steering's own rules shown, read only; they are an author's, in Atlas. */
+    steerOwnReadOnly?: boolean}) {
     const [typed, setTyped] = useState<Typed>({});
     useEffect(() => {
         const out: Typed = {};
@@ -62,7 +65,11 @@ export function RulesPanel({data, locked, setRules, setServices}: {data: RuleCon
                         <ul>{data.drift.wages!.moved.map(w => <li key={w.till}>{w.name}: {w.step > 0 ? '+' : ''}{w.step}p a post</li>)}</ul>
                     </details>}</>
                 : <p className="hint">{data.drift?.problem || 'Nothing to show yet.'}</p>}</div>
-        {RULES.map(r => r.onOff
+        {RULES.filter(r => r.steer !== 'setting' && !(steerOwnReadOnly && r.steer === 'own')).map(r => heldText(data.steering, r.key,
+            data.rules[r.key] ?? data.ruleDefaults[r.key]) !== null
+            ? <p key={r.key} className="economy-markup"><b>{r.label}</b>: {heldText(data.steering, r.key, data.rules[r.key] ?? data.ruleDefaults[r.key])}
+                {' '}<small className="hint">(the Steering panel above)</small></p>
+            : r.onOff
             ? <div key={r.key}><label className="toggle-row"><input type="checkbox"
                 checked={(data.rules[r.key] ?? data.ruleDefaults[r.key]) === 1} disabled={off}
                 onChange={e => { const body = ruleChange(data, r.key, e.target.checked ? 1 : 0); if (body) setRules(body); }} />
@@ -71,6 +78,9 @@ export function RulesPanel({data, locked, setRules, setServices}: {data: RuleCon
             : <label key={r.key} className="economy-markup">{r.label}
                 {field(r.key, 8, r.label, () => commitRule(r.key, r.max), String(data.ruleDefaults[r.key] ?? ''))}
                 <small>{r.unit}</small></label>)}
+        {steerOwnReadOnly && <details><summary>The steering's own rules (read only: an author sets them in Atlas)</summary>
+            <ul>{RULES.filter(r => r.steer === 'own').map(r => <li key={r.key}>{r.label}: {data.rules[r.key] ?? data.ruleDefaults[r.key]} {r.unit}</li>)}</ul>
+        </details>}
         <h3>The city's services</h3>
         <p className="hint">Things the barber, the moneychanger, the pawnbroker, the stables, the shipwright and the builders'
             yard do for a household, bought only from money it has to spare (its comforts budget, before comforts), about once

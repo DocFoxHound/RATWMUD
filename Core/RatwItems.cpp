@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <mutex>
 #include <set>
 #include <sstream>
@@ -575,6 +576,21 @@ Catalog build()
                 c.households.needs.push_back(std::move(need));
         }
     }
+    // Steering the economy (doc 74, 3 and 4): the table as the doc has it, then city_loop.json's `steering` over it.
+    {
+        const double W = std::numeric_limits<double>::quiet_NaN();
+        auto& t = c.cityLoop.steering;
+        t.levers = {{"shareOut", {30, 12, 0, 0, 0}},      {"postsShare", {50, 25, 0, 0, 0}},
+                    {"tollLean", {3, 1.5, 0, -1, -2}},    {"surplusKeep", {0, 1000, W, W, W}},
+                    {"treasuryCap", {1500, W, W, W, W}},  {"surplusAlmsTo", {80, 60, W, W, W}},
+                    {"groundRent", {0, 0, 0, 20, 45}},    {"rentScale", {100, 100, 100, 120, 140}},
+                    {"dividend", {0, 0, 0, 20, 40}},      {"richAbove", {W, W, W, 150, 600}}};
+        t.targets = {{"gini", {.15, .32, .487, W, W}},        {"giniBand", {.04, .04, .035, W, W}},
+                     {"upper", {W, W, 7, 25, 45}},            {"upperBand", {W, W, 2.5, 4, 5}},
+                     {"upperMost", {7, 7, W, W, W}},          {"top10Most", {20, 30, W, W, W}},
+                     {"top10Least", {W, W, W, 40, 55}},       {"hungerMost", {.02, .05, .15, .15, .15}},
+                     {"shortMost", {.1, .5, 3.5, 4, 5}}};
+    }
     // The Country and the city's loop (doc 68): optional; without it, one market with an empty basket.
     // (Doc 73: the file was country.json; an older data folder's is still read.)
     json::Value country;
@@ -671,6 +687,34 @@ Catalog build()
                     supplier.goods.push_back(g.asString({}));
             if (!supplier.buyer.empty() && !supplier.seller.empty() && supplier.buyer != supplier.seller)
                 c.cityLoop.suppliers.push_back(std::move(supplier));
+        }
+        // Steering the economy (doc 74): each lever's or target's five marks (a number, or null: the world's own value for
+        // a lever, none for a target); a name the code doesn't know, or a row not of five, is left as the doc has it.
+        if (const auto& steer = country.object("steering"); steer.isObject())
+        {
+            for (const auto& [kind, into] : {std::pair{"levers", &c.cityLoop.steering.levers}, std::pair{"targets", &c.cityLoop.steering.targets}})
+                for (const auto& [name, row] : steer.object(kind).fields())
+                {
+                    const auto found = into->find(name);
+                    const auto& marks = row.items();
+                    if (found == into->end() || marks.size() != 5)
+                        continue;
+                    std::array<double, 5> v{};
+                    bool sound = true;
+                    for (std::size_t i = 0; i < 5; ++i)
+                    {
+                        if (marks[i].isNumber() && std::isfinite(marks[i].asNumber()) && std::abs(marks[i].asNumber()) <= 1e9)
+                            v[i] = marks[i].asNumber();
+                        else if (marks[i].isNull())
+                            v[i] = std::numeric_limits<double>::quiet_NaN();
+                        else
+                            sound = false;
+                    }
+                    if (sound)
+                        found->second = v;
+                }
+            c.cityLoop.steering.treasuryFloor = std::clamp(steer.number("treasuryFloor", 1400), 0., 1e9);
+            c.cityLoop.steering.treasuryLow = std::clamp(steer.number("treasuryLow", 1000), 0., c.cityLoop.steering.treasuryFloor);
         }
         // The Houses' city businesses (doc 72, after iron6): a building and its House each, the first entry for a building.
         for (const auto& b : country.object("houseBusinesses").array("list"))
@@ -1065,6 +1109,23 @@ const Ladder& ladder()
 const Households& households()
 {
     return catalog().households;
+}
+
+double steerAt(const std::array<double, 5>& marks, double at, double own)
+{
+    at = std::clamp(std::isfinite(at) ? at : 0., -1., 1.);
+    const auto value = [&](std::size_t i) { return std::isnan(marks[i]) ? own : marks[i]; };
+    const double place = (at + 1) * 2;              // (0..4: the marks' index.)
+    const auto i = std::min<std::size_t>(3, std::size_t(std::floor(place)));
+    const double t = place - double(i);
+    if (t <= 1e-12)
+        return value(i);
+    if (t >= 1 - 1e-12)
+        return value(i + 1);
+    const double a = value(i), b = value(i + 1);
+    if (std::isnan(a) || std::isnan(b))
+        return std::numeric_limits<double>::quiet_NaN();
+    return a + (b - a) * t;
 }
 
 const CityLoop& cityLoop()

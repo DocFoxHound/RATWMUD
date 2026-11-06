@@ -118,13 +118,14 @@ PLAY_ROUTES = frozenset({('GET', '/api/play/server'), ('POST', '/api/play/server
 ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/store'), ('POST', '/api/economy/businesses'),
                             ('POST', '/api/economy/loop'), ('POST', '/api/economy/goods'), ('POST', '/api/economy/seasons'),
                             ('POST', '/api/economy/comforts'), ('POST', '/api/economy/rules'), ('POST', '/api/economy/services'),
-                            ('POST', '/api/economy/farms')})
+                            ('POST', '/api/economy/farms'), ('POST', '/api/economy/steer')})
 # The DM's view of the city's loop on a live world (Docs/Design/68-the-country-and-the-city-loop.md, 9): the treasury's
 # levers (the gate toll, wages, the subsidies) and the Country's, read by anyone signed in, changed by dm and admin.
 # Since doc 68's seasons: every setting the loop and the store room have (the per-business switches stay Atlas's).
 DM_ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/loop'), ('POST', '/api/economy/store'),
                                ('POST', '/api/economy/goods'), ('POST', '/api/economy/seasons'), ('POST', '/api/economy/comforts'),
-                               ('POST', '/api/economy/rules'), ('POST', '/api/economy/services'), ('POST', '/api/economy/farms')})
+                               ('POST', '/api/economy/rules'), ('POST', '/api/economy/services'), ('POST', '/api/economy/farms'),
+                               ('POST', '/api/economy/steer')})
 LOOP_KEYS = tuple(k for k in map_editor.LOOP_DEFAULTS if k != 'wharfOff')
 COMFORT_KEYS = ('comfortsAbove', 'comfortsShare')
 NO_RULE = 'The loop needs the restocking rule on, or shops sell out and stay empty.'
@@ -139,6 +140,51 @@ NO_RULES_HERE = ('This world lacks migration 0058: its rules and services are as
 NO_FARMS_HERE = ('This world lacks migration 0060: its farms are as Data/Economy/country_farms.json has them and can\'t be '
                  'changed here.')
 FARM_SET_KEYS = ('start', 'every', 'order', 'keeper', 'hand', 'areas', 'farms')
+# Steering the economy (Docs/Design/74-steering-the-economy.md, 10): the DM's four settings on /api/economy/steer, the
+# slider's words at its two ends and its centre, the levers in words, and the table's five marks.
+STEER_BODY = ('steer', 'lean', 'neverHungry', 'neverBroke')
+STEER_WORDS = {'left': 'Shared: money and food equal across all wolves', 'centre': 'Today\'s economy',
+               'right': 'Held by the rich: the upper class and the Houses'}
+STEER_HELD = 'the steering holds this rule; turn the steering off to set it'
+STEER_LEVERS = (('shareOut', 'The share-out', '% of the rich\'s spare levelled to the poorest each night'),
+                ('postsShare', 'The hands\' share', '% of a keeper\'s nightly profit paid to the shop\'s other posts'),
+                ('tollLean', 'The toll lean', 'points on the gate toll, over the treasury\'s drift'),
+                ('surplusKeep', 'The treasury\'s keep', 'p the treasury keeps over its cap before its surplus goes out'),
+                ('treasuryCap', 'The treasury\'s cap', 'p; over it, the wage support, the extra alms and the surplus'),
+                ('surplusAlmsTo', 'The poorest raised to', 'p a head the surplus brings the poorest households up to'),
+                ('groundRent', 'The ground rent', '% of a keeper\'s nightly profit to the Crown\'s estate'),
+                ('rentScale', 'The rent scale', '% on every food farm\'s land rent'),
+                ('dividend', 'The Houses\' dividend', '% of the estates\' spare paid to upper-class households each night'),
+                ('richAbove', 'The rich hold', 'p a head an upper-class household keeps before its comforts'))
+STEER_MEASURES = (('gini', 'giniBand', 'The earners\' Gini', ''), ('upper', 'upperBand', 'The upper share', '%'))
+STEER_MARKS = (-1.0, -0.5, 0.0, 0.5, 1.0)
+
+
+def steer_at(marks, at, own=None):
+    """Core's items::steerAt: a table row's value at `at` (-1..1), straight lines between the five marks; a lever's null
+    is `own` (the world's value); a target's null (own None) is none, as is a place between a mark with none and one."""
+    at = max(-1.0, min(1.0, float(at) if isinstance(at, (int, float)) and math.isfinite(at) else 0.0))
+
+    def value(i):
+        return own if marks[i] is None else float(marks[i])
+    place = (at + 1) * 2
+    i = min(3, int(math.floor(place)))
+    t = place - i
+    if t <= 1e-12:
+        return value(i)
+    if t >= 1 - 1e-12:
+        return value(i + 1)
+    a, b = value(i), value(i + 1)
+    if a is None or b is None:
+        return None
+    return a + (b - a) * t
+
+
+def steer_width(rules, x):
+    """The push's band at slider `x` (doc 74, 4): steerWidthMid at the centre to steerWidthEnd at the ends."""
+    mid, end = int(rules.get('steerWidthMid', 15)) / 100, int(rules.get('steerWidthEnd', 30)) / 100
+    w = mid + (end - mid) * abs(x)
+    return max(-1.0, x - w), min(1.0, x + w)
 
 
 class Economy:
@@ -265,7 +311,8 @@ class Economy:
                 'wharfLists': {k: (country.get('wharf') or {}).get(k) or ([] if k == 'never' else {}) for k in ('imports', 'takes', 'never')},
                 **self.seasons_view(country, economy, seasons_ok), **self.rules_view(economy, rules_ok),
                 **self.farms_view(economy, farms_ok), 'farmsSaved': self.farms_saved(key, w),
-                'drift': self.drift(key, w, economy, {r['id']: r['name'] for r in rows})}
+                'drift': self.drift(key, w, economy, {r['id']: r['name'] for r in rows}),
+                'steering': self.steering(key, w, economy, country)}
 
     @staticmethod
     def farms_view(economy, supported) -> dict:
@@ -369,6 +416,125 @@ class Economy:
                         'down': sum(1 for s in steps.values() if s < 0),
                         'mean': round(sum(steps.values()) / len(steps), 2) if steps else 0, 'moved': moved}
         return out
+
+    def steering(self, key, world, economy, country=None) -> dict:
+        """Steering the economy (doc 74, 10): the DM's four settings; at the slider, each measure's target and band, the
+        push's band, and each lever's value at the centre and its bounds there (from city_loop.json's table, as Core reads
+        it); and, from the world's last save (the society's loop "steer"), the push, the means, the judgings newest first
+        and the skim's last 28 days. Read only but for the four settings."""
+        rules = {**map_editor.rule_defaults(), **dict(economy.get('rules') or {})}
+        table = (country if country is not None else map_editor.city_loop_file()).get('steering') or {}
+        levers, targets = table.get('levers') or {}, table.get('targets') or {}
+        lean = int(rules.get('steerLean', 100)) - 100
+        x = lean / 100
+        lo, hi = steer_width(rules, x)
+        comforts = economy.get('comfortsAbove')
+        comforts = int(comforts if comforts is not None else ((country or {}).get('comforts') or {}).get('above', 60))
+        own = {'surplusKeep': int(rules.get('surplusKeep', 4000)), 'treasuryCap': int(rules.get('treasuryCap', 2000)),
+               'surplusAlmsTo': int(rules.get('surplusAlmsTo', 40)), 'richAbove': comforts, 'rentScale': 100}
+        out = {'settings': {'steer': int(rules.get('steer', 0)) > 0, 'lean': lean, 'neverHungry': int(rules.get('neverHungry', 0)) > 0,
+                            'neverBroke': int(rules.get('neverBroke', 0)) > 0},
+               'words': STEER_WORDS, 'held': list(map_editor.STEERED_RULES), 'own': {k: rules.get(k) for k in map_editor.STEER_OWN_RULES},
+               'table': {'levers': levers, 'targets': targets, 'marks': list(STEER_MARKS),
+                         'treasuryFloor': table.get('treasuryFloor', 1400), 'treasuryLow': table.get('treasuryLow', 1000)},
+               'band': [round(lo, 4), round(hi, 4)], 'saved': None, 'problem': '', 'changes': []}
+        try:                                       # (The DM's own changes, newest first: the audit's economy.steer.)
+            with self._connect_dm(key) as conn:
+                out['changes'] = [{'at': r[0], 'who': r[1], 'detail': r[2]} for r in conn.execute(
+                    "SELECT at, who, detail FROM dm.audit WHERE action = 'economy.steer' ORDER BY at DESC LIMIT 24").fetchall()]
+        except Exception:  # noqa: BLE001 (no audit to read: nothing to show)
+            pass
+
+        def rounded(v, places=3):
+            return None if v is None else round(v, places)
+        out['targets'] = {name: rounded(steer_at(marks, x)) for name, marks in targets.items()
+                          if isinstance(marks, list) and len(marks) == 5}
+        out['levers'] = [{'key': k, 'label': label, 'unit': unit, 'own': own.get(k, 0),
+                          'centre': rounded(steer_at(levers[k], 0, own.get(k, 0)), 2),
+                          'low': rounded(steer_at(levers[k], lo, own.get(k, 0)), 2),
+                          'high': rounded(steer_at(levers[k], hi, own.get(k, 0)), 2)}
+                         for k, label, unit in STEER_LEVERS if isinstance(levers.get(k), list) and len(levers[k]) == 5]
+        try:
+            with self._connect_dm(key) as conn:
+                row = conn.execute("SELECT payload::jsonb->'society'->'loop'->'steer', saved_at::text FROM game.checkpoints "
+                                   'WHERE world_id = %s', (world,)).fetchone()
+        except Exception as error:  # noqa: BLE001 (a world without a save, or out of reach: nothing to show)
+            out['problem'] = f'The world\'s save could not be read: {error}'
+            return out
+        if not row:
+            out['problem'] = 'The world has no save yet: the steering has done nothing.'
+            return out
+        steer = row[0] if isinstance(row[0], dict) else json.loads(row[0]) if row[0] else {}
+        out['saved'] = row[1]
+        if not steer:
+            out['problem'] = 'The steering has not run on this world yet.'
+            return out
+        push = float(steer.get('push') or 0) if steer.get('on') else 0.0
+        out['now'] = {'on': bool(steer.get('on')), 'push': round(push, 4), 'judged': steer.get('judged'), 'days': steer.get('days'),
+                      'means': {k: rounded(steer.get(k), 4) for k in ('gini', 'upper', 'top10', 'hungry', 'short', 'treasury')},
+                      'tollLean': steer.get('tollLean', 0)}
+        for lever in out['levers']:
+            lever['now'] = (rounded(steer.get('tollLean', 0), 2) if lever['key'] == 'tollLean'
+                            else rounded(steer_at(levers[lever['key']], push, lever['own']), 2))
+        out['history'] = list(reversed(steer.get('history') or []))
+        skims = steer.get('skims') or []
+        summary = {'total': 0, 'short': 0, 'days': len(skims), 'purpose': {}, 'group': {}, 'payers': {}}
+        for k in skims:
+            summary['total'] += int(k.get('total') or 0)
+            summary['short'] += int(k.get('short') or 0)
+            for part in ('purpose', 'group', 'payers'):
+                for name, coins in (k.get(part) or {}).items():
+                    summary[part][name] = summary[part].get(name, 0) + int(coins)
+        summary['payers'] = dict(sorted(summary['payers'].items(), key=lambda p: (-p[1], p[0]))[:5])
+        out['skim'] = summary
+        return out
+
+    def set_steer(self, key, data, editor) -> dict:
+        """Steering the economy (doc 74, 10.3): {steer?: true|false, lean?: -100..100 in fives, neverHungry?: true|false,
+        neverBroke?: true|false}, written as the rules steer, steerLean (lean + 100), neverHungry and neverBroke."""
+        if not isinstance(data, dict) or not data or set(data) - set(STEER_BODY):
+            raise D.DMError('Send any of: steer (true or false), lean (-100 to 100, in fives), neverHungry and neverBroke '
+                            '(true or false).', 400)
+        for name in ('steer', 'neverHungry', 'neverBroke'):
+            if name in data and not isinstance(data[name], bool):
+                raise D.DMError(f'{name} must be true or false.', 400)
+        if 'lean' in data:
+            lean = data['lean']
+            if isinstance(lean, bool) or not isinstance(lean, int) or not -100 <= lean <= 100 or lean % 5:
+                raise D.DMError('lean (where the money rests) must be a whole number from -100 to 100, in fives.', 400)
+        wanted = {}
+        if 'steer' in data:
+            wanted['steer'] = 1 if data['steer'] else 0
+        if 'lean' in data:
+            wanted['steerLean'] = data['lean'] + 100
+        for name in ('neverHungry', 'neverBroke'):
+            if name in data:
+                wanted[name] = 1 if data[name] else 0
+        defaults = map_editor.rule_defaults()
+        said = []
+
+        def change(e):
+            rules = dict(e.get('rules') or {})
+            now = {**defaults, **rules}
+            onoff = {1: 'on', 0: 'off'}
+            if 'steerLean' in wanted and wanted['steerLean'] != int(now.get('steerLean', 100)):
+                steering = wanted.get('steer', int(now.get('steer', 0)))
+                said.append(f'Where the money rests: {int(now.get("steerLean", 100)) - 100} -> {wanted["steerLean"] - 100}'
+                            f' (the steering {onoff[1 if steering else 0]})')
+            if 'steer' in wanted and wanted['steer'] != int(now.get('steer', 0)):
+                said.append(f'The steering {onoff[wanted["steer"]]}')
+            for name, words in (('neverHungry', 'Never Hungry'), ('neverBroke', 'Never Broke')):
+                if name in wanted and wanted[name] != int(now.get(name, 0)):
+                    said.append(f'{words} {onoff[wanted[name]]}')
+            for name, value in wanted.items():
+                if value == defaults.get(name):
+                    rules.pop(name, None)     # (At city_loop.json's: no entry kept.)
+                else:
+                    rules[name] = value
+            return {**e, 'rules': rules}
+        result = self._edit(key, editor, 'The steering: ' + ', '.join(f'{k} {v}' for k, v in wanted.items()), change, rules=True)
+        detail = '; '.join(said) or 'The steering: as it was'
+        return {**result, 'detail': f'{detail}.'}
 
     @staticmethod
     def rules_view(economy, supported) -> dict:
@@ -569,9 +735,15 @@ class Economy:
         problems = map_editor.check_rules({k: v for k, v in wanted.items() if v is not None}, {})
         if problems:
             raise D.DMError(' '.join(problems), 400)
+        settings = sorted(set(wanted) & set(map_editor.STEER_SETTINGS))
+        if settings:
+            raise D.DMError(f'{", ".join(settings)}: the steering\'s settings are set on the Steering panel (/api/economy/steer).', 400)
 
         def change(e):
             rules = dict(e.get('rules') or {})
+            held = sorted(set(wanted) & set(map_editor.STEERED_RULES))
+            if held and int({**map_editor.rule_defaults(), **rules}.get('steer', 0)) > 0:
+                raise D.DMError(f'{", ".join(held)}: {STEER_HELD}.', 409)
             for name, value in wanted.items():
                 if value is None:
                     rules.pop(name, None)
@@ -1087,7 +1259,7 @@ def make_handler(studio: Studio):
                 result = studio.economy.set_goods(key, data, who['username'])
                 action, target = 'economy.goods', 'the Country\'s goods'
             elif path in ('/api/economy/seasons', '/api/economy/comforts', '/api/economy/rules', '/api/economy/services',
-                          '/api/economy/farms'):
+                          '/api/economy/farms', '/api/economy/steer'):
                 result, action, target = self.economy_change(key, path, data, who)
             else:
                 result = studio.economy.set_businesses(key, data, who['username'])
@@ -1113,6 +1285,8 @@ def make_handler(studio: Studio):
                 wanted = data.get('set') if isinstance(data.get('set'), dict) else {}
                 named = [n for k in ('areas', 'farms') if isinstance(wanted.get(k), dict) for n in wanted[k]]
                 return studio.economy.set_farms(key, data, who['username']), 'economy.farms', named[0] if len(named) == 1 else 'farms'
+            if path == '/api/economy/steer':
+                return studio.economy.set_steer(key, data, who['username']), 'economy.steer', 'steering'
             if path in ('/api/economy/rules', '/api/economy/services'):
                 wanted = data.get('set') if isinstance(data.get('set'), dict) else {}
                 kind = path.rsplit('/', 1)[1]
@@ -1141,6 +1315,11 @@ def make_handler(studio: Studio):
             self.writer(who)
             data = self.as_(studio.dm_suite).body()
             key = self.live_key(str(data.pop('world', '') or ''))
+            if path == '/api/economy/rules' and isinstance(data.get('set'), dict):
+                # (Doc 74, 10.4: the steering's own rules are an author's, in Atlas; the DM tab shows them read only.)
+                own = sorted(set(data['set']) & set(map_editor.STEER_OWN_RULES))
+                if own:
+                    raise D.DMError(f'{", ".join(own)}: the steering\'s own rules are set in Atlas; the DM tab shows them read only.', 400)
             result, action, target = self.economy_change(key, path, data, who)
             if result.get('changed'):
                 result = self.audited(who, key, action, target, result['detail'], result)
