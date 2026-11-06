@@ -352,10 +352,19 @@ class ReportTests(unittest.TestCase):
             self.assertIn('## The steering', text)
             self.assertIn('Where the money rests: +0 (the steering on, 2 days)', text)
             self.assertIn("| the earners' Gini | 0.487 ± 0.035 | 0.490 | yes |", text)
-            self.assertIn('| the upper share (%) | 7 ± 2.5 | 7.5 | yes |', text)
+            self.assertIn('| the upper share (%) | 13 ± 2 | 7.5 | no |', text)   # (The centre's target since Tune round 1.)
             self.assertIn('by purpose never broke 30.0p', text)
             self.assertIn("The skim's books: skimmed 60p, relief paid 60p (necessities 60), fund:relief at the end 0p: balanced", text)
             self.assertIn('Never Broke 30.0p (3.0 homes)', text)
+            self.assertNotIn("Never Broke's credit", text)
+            # The skim reworked: Never Broke's credit given and spent, and the tills short's guard.
+            credit = dict(more, never_broke={'pennies': 30, 'homes': 3, 'credit': 40, 'credit_left': 10}, skim_guard=1,
+                          tills_short_mean28=31.5)
+            econ = write_run(root, None, econ_more=credit)
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            text = out.read_text()
+            self.assertIn("Never Broke's credit: 40.0p a day given, 30.0p a day spent at the shops (75% of it); the tills short's guard "
+                          "on 2 days (the tills short's 28-night mean 31.5 at the end, the centre's level 25 + 15%).", text)
             plain = write_run(root / 'x' if (root / 'x').mkdir() is None else root, None)
             self.assertEqual(R.main([str(plain), '--out', str(out)]), 0)
             self.assertNotIn('## The steering', out.read_text())

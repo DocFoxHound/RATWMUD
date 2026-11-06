@@ -944,6 +944,14 @@ def steering_lines(econ, table=None):
                f'of them from the Wharf {sum((r.get("never_hungry") or {}).get("wharf_pieces", 0) for r in rows) / n:.1f}), Never Broke '
                f'{nb / n:.1f}p ({sum((r.get("never_broke") or {}).get("homes", 0) for r in rows) / n:.1f} homes).'
                + (f' Households still short after Never Hungry: {sum(after)} in all, on {sum(1 for a in after if a > 0)} days.' if after else ''))
+    if any('credit' in (r.get('never_broke') or {}) for r in rows):
+        # The skim reworked (doc 74): Never Broke's credit toward necessities, given and spent, and the tills short's guard.
+        given = sum((r.get('never_broke') or {}).get('credit', 0) for r in rows)
+        out.append(f'Never Broke\'s credit: {given / n:.1f}p a day given, {nb / n:.1f}p a day spent at the shops '
+                   f'({100 * nb / given:.0f}% of it)' if given else 'Never Broke\'s credit: none given')
+        out[-1] += (f'; the tills short\'s guard on {sum(1 for r in rows if r.get("skim_guard"))} days '
+                    f'(the tills short\'s 28-night mean {rows[-1].get("tills_short_mean28", -1):.1f} at the end, '
+                    f'the centre\'s level {table.get("tillsShortNormal", 25)} + {table.get("tillsShortOver", 15)}%).')
     out.append('')
     return '\n'.join(out)
 

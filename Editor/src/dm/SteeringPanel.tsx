@@ -48,10 +48,11 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
             onChange={e => send({steer: e.target.checked})} /> The steering: {view.settings.steer ? 'on' : 'off'}</label>
         <label className="toggle-row"><input type="checkbox" checked={view.settings.neverHungry} disabled={locked}
             onChange={e => send({neverHungry: e.target.checked})} /> Never Hungry: a wolf going hungry is given a day's food,
-            bought at the stable price; the richest pay for it.</label>
+            bought at the stable price; idle money pays for it.</label>
         <label className="toggle-row"><input type="checkbox" checked={view.settings.neverBroke} disabled={locked}
             onChange={e => send({neverBroke: e.target.checked})} /> Never Broke: a household short of the next day's necessities
-            is given just enough; the richest pay for it.</label>
+            after the alms is given credit for just enough, spent at the shops on its food and needs (never loose cash); idle
+            money pays for it.</label>
 
         <h4>Where it is against where it is going</h4>
         {view.problem && <p className="hint">{view.problem}</p>}
@@ -78,7 +79,9 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
 
         <h4>The skim, the last 28 days</h4>
         {skim && skim.days > 0 ? <ul>
-            <li>{skim.total}p taken from the richest at the time, on {skim.days} days{skim.short > 0 ? `; ${skim.short}p it could not find` : ''}.</li>
+            <li>{skim.total}p taken from idle money, on {skim.days} days{skim.short > 0 ? `; ${skim.short}p it could not find` : ''}: the
+                estates' spare first, then the treasury over its cap, then the savings of upper-class households, of the keepers and
+                of middle-class households, each over four days' necessities a head (lower-class households never pay).</li>
             <li>For: {Object.entries(skim.purpose).map(([k, v]) => `${k} ${v}p`).join(', ') || 'nothing'}.</li>
             <li>From: {Object.entries(skim.group).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}p`).join(', ')}.</li>
             <li>The largest payers: {Object.entries(skim.payers).map(([k, v]) => `${k} ${v}p`).join(', ')}.</li>

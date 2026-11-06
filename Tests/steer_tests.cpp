@@ -201,7 +201,8 @@ void theSkim()
     expect(bb2 - s.cash("bb") == 50 && s.cash("aa") == aa2, "fresh each time: the richest now is bb, and bb pays");
     // Water-filling from the top: the two richest brought toward one level, each within half its spare.
     auto w = city({at("aa", 600), at("bb", 300), at("cc", 5)}, 2000, {{"treasuryCap", 2000}});
-    const auto line = std::max<std::int64_t>(w.comfortsAbove(), 3 * w.necessitiesAHead());
+    const auto line = w.comfortableAHead();
+    expect(line == std::max<std::int64_t>(w.comfortsAbove(), 4 * w.necessitiesAHead()), "the comfortable line: four days' necessities a head: " + n(line));
     const auto got = w.skim(300, "test");
     const auto fromA = 600 - w.cash("aa"), fromB = 300 - w.cash("bb");
     expect(got == 300 && fromA + fromB == 300 && fromA > fromB && fromB > 0 && fromA <= (600 - line) / 2 && fromB <= (300 - line) / 2,
@@ -211,13 +212,14 @@ void theSkim()
         byGroup += group.rfind("households: ", 0) == 0 ? coins : 0;
     expect(byGroup == 300 && w.loopToday().skimPayers.size() == 2 && w.loopToday().skimFor.at("test") == 300,
            "logged by payer and purpose");
-    // Asked for more than anyone has spare: the second pass to a day's necessities, then short, logged.
+    // Asked for more than anyone has spare: the second pass to the whole of each spare (never under the comfortable
+    // line: the second pass no longer drops a household's line), then short, logged.
     auto all = city({at("aa", 600), at("bb", 300), at("cc", 5)}, 2000, {{"treasuryCap", 2000}});
     const auto raised = all.skim(1000000, "test");
     expect(raised < 1000000 && all.loopToday().skimShort == 1000000 - raised, "short, logged: " + n(raised));
-    expect(all.cash("aa") >= all.necessitiesAHead() && all.cash("bb") >= all.necessitiesAHead() && all.cash("cc") == 5 &&
+    expect(all.cash("aa") == all.comfortableAHead() && all.cash("bb") == all.comfortableAHead() && all.cash("cc") == 5 &&
                all.cash("treasury") >= 2000,
-           "nobody under its line: a day's necessities kept, the treasury its cap");
+           "nobody under its line: the comfortable line kept, the treasury its cap: " + n(all.cash("aa")));
     // Never fund:relief itself, and deterministic.
     const auto again = all.skim(10, "test");
     expect(!all.loopToday().skimPayers.count(Society::ReliefFund) && again == 0, "never fund:relief; nothing left to give");
@@ -248,26 +250,242 @@ std::vector<ResidentSpec> family(std::int64_t purse)
 
 void neverBroke()
 {
+    // The skim reworked: Never Broke after the alms, as credit toward necessities, not cash.
     for (const bool on : {false, true})
     {
         auto s = city(family(0), 3000, {{"neverBroke", on ? 1 : 0}, {"treasuryCap", 2000}}, FamilyKin);
+        s.create(s.tillOf("fish"), "fish", 200, "test: a full fish hall");
         const auto money = s.moneySupply();
         run(s, 1 + 17.9 / 24, 1 + 18.5 / 24);
         const auto held = s.cash("aa_mother") + s.cash("bb_kid") + s.cash("cc_kid");
         const auto& d = s.loopToday();
+        expect(held == 30, std::string(on ? "on" : "off") + ": the purses hold the day's alms only, 10p a head (no loose cash): " + n(held));
         if (!on)
         {
-            expect(held == 30 && d.neverBrokePennies == 0, "off: the day's alms only, 10p a head: " + n(held));
+            expect(d.neverBrokePennies == 0 && d.neverBrokeCredit == 0 && s.state().loop.steer.credit.empty(), "off: nothing");
             continue;
         }
-        expect(held == 3 * s.necessitiesAHead(), "on: topped up to exactly the next day's necessities: " + n(held) + " for " +
-                                                     n(3 * s.necessitiesAHead()));
-        expect(d.neverBrokeHomes == 1 && d.neverBrokePennies == held - 30, "the alms first, then just enough: " + n(d.neverBrokePennies));
-        expect(d.skimFor.at("never broke") == d.relief.at("necessities") + s.cash(Society::ReliefFund),
-               "the skim raised exactly what was paid out");
-        expect(s.cash(Society::ReliefFund) == 0 && s.conserved() && s.moneySupply() == money, "nothing left in the fund; conserved");
-        expect(s.cash("zz_rich") >= 3000 - d.skim && s.cash("zz_rich") > 3 * s.necessitiesAHead(), "the rich household over the line: paid, not given");
+        const auto& credit = s.state().loop.steer.credit;
+        const auto want = 3 * s.necessitiesAHead() - 30;
+        expect(credit.size() == 1 && credit.begin()->second == want && d.neverBrokeCredit == want && d.neverBrokeHomes == 1,
+               "after the alms, credit for just what they left short: " + n(d.neverBrokeCredit) + " for " + n(want));
+        expect(d.neverBrokePennies == 0 && !d.relief.count("necessities"), "nothing spent yet: the shops are shut");
+        expect(s.cash(Society::ReliefFund) == want && s.neverBrokeOwed() == want && d.skimFor.at("never broke") == want,
+               "the skim raised the credit; it waits in fund:relief");
+        expect(s.cash("zz_rich") >= 3000 - d.skim && s.cash("zz_rich") >= s.comfortableAHead(), "the rich household over the line: paid, not given");
+        expect(s.conserved() && s.moneySupply() == money, "conserved");
+        // The next day: the credit spent at the shops on the household's food and needs, never into a purse.
+        run(s, 1 + 18.5 / 24, 2 + 17.9 / 24);
+        const auto& e = s.loopToday();
+        const auto left = s.neverBrokeOwed();
+        const auto spent = e.neverBrokePennies;
+        expect(spent > 0 && spent == e.relief.at("necessities") && spent + left == want,
+               "spent at the shops, as relief for necessities: " + n(spent) + " of " + n(want) + ", " + n(left) + " left");
+        expect(s.cash("aa_mother") + s.cash("bb_kid") + s.cash("cc_kid") <= 30, "the purses never hold the credit");
+        expect(s.cash(Society::ReliefFund) == left, "the fund holds what is left of it");
+        // The next night: the unused credit lapses and is not drawn again; the skim raises only the rest.
+        const auto fund = s.cash(Society::ReliefFund);
+        run(s, 2 + 17.9 / 24, 2 + 18.5 / 24);
+        const auto& f = s.loopToday();
+        const auto raised = f.skimFor.count("never broke") ? f.skimFor.at("never broke") : 0;
+        expect(f.neverBrokeCredit > 0 && raised == std::max<std::int64_t>(0, f.neverBrokeCredit - fund),
+               "unused credit not drawn again: tonight's credit " + n(f.neverBrokeCredit) + ", raised " + n(raised) + ", " + n(fund) + " already held");
+        expect(s.cash(Society::ReliefFund) == s.neverBrokeOwed() && s.conserved() && s.moneySupply() == money, "conserved");
+        // Turned off: the credit lapses at once.
+        setRules(s, {{"neverBroke", 0}});
+        run(s, 2 + 18.5 / 24, 3 + 18.5 / 24);
+        expect(s.state().loop.steer.credit.empty() && s.conserved(), "off: its credit lapses; conserved");
     }
+}
+
+// Rich households of each kind: an upper-class one, a keeper's (the barber's), a middle-class one and a lower-class one
+// (the hand, in someone else's shop), each alone and each holding `purse`.
+std::vector<ResidentSpec> classes(std::int64_t purse)
+{
+    return {person("barber", "merchant", "barber at The Close Trim", {"shop", 2.5, 2.5}, "home_barber", 40, purse),
+            person("hand", "civilian", "assistant at The Close Trim", {"shop", 3.5, 2.5}, "home_hand", 30, purse),
+            person("lord", "civilian", "at home in the heights", {"home_lord", 2.5, 2.5}, "home_lord", 50, purse),
+            at("mid", purse)};
+}
+
+void theSkimOrder()
+{
+    auto s = city(classes(900), 9000, {{"treasuryCap", 2000}, {"estates", 0}});
+    expect(s.classOf("lord") == "upper" && s.classOf("hand") == "lower" && s.classOf("mid") == "middle" && s.classOf("barber") == "middle",
+           "the classes: " + s.classOf("lord") + ", " + s.classOf("hand") + ", " + s.classOf("mid") + ", " + s.classOf("barber"));
+    const auto ids = [&](int step, bool treasury) {
+        std::string out;
+        for (const auto& h : s.skimStep(step, treasury))
+            out += (out.empty() ? "" : ",") + h.id;
+        return out;
+    };
+    expect(ids(2, true) == "treasury" && ids(2, false).empty(), "step 2 the treasury (never at 17:00)");
+    expect(ids(3, true) == "home home_lord" && ids(4, true) == "home home_barber" && ids(5, true) == "home home_mid",
+           "steps 3-5: upper, the keeper's, the middle: " + ids(3, true) + " / " + ids(4, true) + " / " + ids(5, true));
+    for (int step = 1; step <= Society::SkimSteps; ++step)
+        expect(ids(step, true).find("home_hand") == std::string::npos && ids(step, true).find("till:") == std::string::npos,
+               "a lower-class household never pays, nor a till");
+    const auto money = s.moneySupply();
+    // At 18:00 the treasury's spare first, with the households untouched.
+    const auto treasury = s.cash("treasury");
+    s.skim(100, "test");
+    expect(treasury - s.cash("treasury") == 100 && s.cash("lord") == 900 && s.cash("barber") == 900 && s.cash("mid") == 900,
+           "the treasury (step 2) before any household");
+    // At 17:00 (no treasury): the upper first, up to half its idle spare; then the keeper's; then the middle, last.
+    // (The cap is each skim's: half of each holder's idle spare at that moment.)
+    const auto line = s.comfortableAHead(), half = (900 - line) / 2;
+    s.skim(half, "test", false);
+    expect(900 - s.cash("lord") == half && s.cash("barber") == 900 && s.cash("mid") == 900, "the upper first: " + n(900 - s.cash("lord")));
+    auto o = city(classes(900), 9000, {{"treasuryCap", 2000}, {"estates", 0}});
+    o.skim(half + 20, "test", false);
+    expect(900 - o.cash("lord") == half && 900 - o.cash("barber") == 20 && o.cash("mid") == 900,
+           "then the keeper's savings: " + n(900 - o.cash("barber")));
+    auto l = city(classes(900), 9000, {{"treasuryCap", 2000}, {"estates", 0}});
+    l.skim(2 * half + 10, "test", false);
+    expect(900 - l.cash("lord") == half && 900 - l.cash("barber") == half && 900 - l.cash("mid") == 10 && l.cash("hand") == 900,
+           "the middle last; the lower never: " + n(900 - l.cash("mid")));
+    // Short of the first pass (every cap reached): the second takes the rest of each spare, in the same order, down to
+    // the comfortable line and never under it; the lower household still pays nothing.
+    s.skim(1000000, "test", false);
+    expect(s.cash("lord") == line && s.cash("barber") == line && s.cash("mid") == line && s.cash("hand") == 900,
+           "the second pass to the comfortable line: " + n(s.cash("lord")) + ", " + n(s.cash("mid")) + "; the hand " + n(s.cash("hand")));
+    std::int64_t groups = 0;
+    for (const auto& [group, coins] : s.loopToday().skimBy)
+        groups += coins;
+    expect(s.loopToday().skimBy.count("households: upper") && s.loopToday().skimBy.count("keepers") &&
+               s.loopToday().skimBy.count("households: middle") && !s.loopToday().skimBy.count("households: lower") &&
+               groups == s.loopToday().skim,
+           "logged by the new groups");
+    expect(s.cash(Society::ReliefFund) == s.loopToday().skim && s.conserved() && s.moneySupply() == money, "conserved");
+    // Middle-class savings pay only over the comfortable line: 30p over, 30p taken, however much is asked.
+    auto m = city({at("mm", 0)}, 2000, {{"treasuryCap", 2000}});
+    m.shift("treasury", "mm", "", 0, m.comfortableAHead() + 30, "test: just over the line");
+    expect(m.skim(500, "test") == 30 && m.cash("mm") == m.comfortableAHead(), "a middle household pays only over its line: 30p");
+    auto under = city({at("mm", 0)}, 2000, {{"treasuryCap", 2000}});
+    under.shift("treasury", "mm", "", 0, under.comfortableAHead(), "test: at the line");
+    expect(under.skim(500, "test") == 0 && under.cash("mm") == under.comfortableAHead(), "at the line: nothing");
+    // The estates first of all (step 1), before the treasury.
+    auto e = city(town(), 1000000, {{"treasuryCap", 2000}});
+    const auto f = Society::estateFund(items::cityLoop().estates.front());
+    expect(e.account(f) && e.shift("treasury", f, "", 0, 500000, "test: a rich estate"), "an estate given money: " + f);
+    const auto steps = e.skimStep(1, true);
+    expect(!steps.empty() && steps.front().group.rfind("estates", 0) == 0, "step 1 the estates");
+    const auto t = e.cash("treasury");
+    e.skim(50, "test");
+    expect(e.cash("treasury") == t && e.loopToday().skimBy.size() == 1 && e.loopToday().skimBy.begin()->first.rfind("estates", 0) == 0,
+           "the estates (step 1) before the treasury: " + e.loopToday().skimBy.begin()->first);
+    expect(e.conserved(), "conserved");
+}
+
+void idleBeforeBusy()
+{
+    // Two middle households: aa's savings have sat; bb's came today, more than aa's. The first pass takes from aa.
+    auto s = city({at("aa", 600), at("bb", 0)}, 9000, {{"treasuryCap", 2000}, {"estates", 0}});
+    s.skimIdleNight(1);                             // (The first night: each at its spare; bb has none.)
+    expect(s.state().loop.steer.idle.at("home home_aa") == 600 - s.comfortableAHead() && !s.state().loop.steer.idle.count("home home_bb"),
+           "seeded at the spare");
+    s.shift("treasury", "bb", "", 0, 900, "test: bb's takings today");
+    s.skim(40, "test", false);
+    expect(600 - s.cash("aa") == 40 && s.cash("bb") == 900, "the idle purse before the busy one, though the busy one is richer");
+    // Its idle spare rises a 28th of the gap a night: after a few weeks bb's money has sat, and bb (the richer) pays first.
+    for (int day = 2; day <= 90; ++day)
+        s.skimIdleNight(day);
+    const auto bbIdle = s.state().loop.steer.idle.at("home home_bb");
+    const auto bbSpare = 900 - s.comfortableAHead();
+    expect(bbIdle > bbSpare * 9 / 10 && bbIdle < bbSpare && bbIdle > s.state().loop.steer.idle.at("home home_aa"),
+           "after 89 nights most of bb's spare counts as idle (a 28th of the gap a night): " + n(bbIdle) + " of " + n(bbSpare));
+    auto one = city({at("aa", 0)}, 9000, {{"treasuryCap", 2000}, {"estates", 0}});
+    one.skimIdleNight(1);
+    one.shift("treasury", "aa", "", 0, one.comfortableAHead() + 280, "test: 280p over the line");
+    one.skimIdleNight(2);
+    expect(one.state().loop.steer.idle.at("home home_aa") == 10, "a night: a 28th of 280p, 10p: " + n(one.state().loop.steer.idle.at("home home_aa")));
+    one.skimIdleNight(2);
+    expect(one.state().loop.steer.idle.at("home home_aa") == 10, "once a night only");
+    const auto bb = s.cash("bb"), aa = s.cash("aa");
+    s.skim(40, "test", false);
+    expect(bb - s.cash("bb") == 40 && s.cash("aa") == aa, "now the richer pays");
+    // Spent, its idle spare falls at once.
+    s.shift("bb", "treasury", "", 0, 500, "test: bb spends");
+    s.skimIdleNight(91);
+    expect(s.state().loop.steer.idle.at("home home_bb") == std::max<std::int64_t>(0, s.cash("bb") - s.comfortableAHead()), "falls at once");
+    // Busy money still pays in the second pass, when the idle money is not enough.
+    auto b = city({at("aa", 0)}, 9000, {{"treasuryCap", 2000}, {"estates", 0}});
+    b.skimIdleNight(1);
+    b.shift("treasury", "aa", "", 0, 500, "test: fresh money");
+    expect(b.skim(20, "test", false) == 20 && b.cash("aa") == 480, "the second pass: fresh money pays when nothing idle can");
+    expect(s.conserved() && b.conserved(), "conserved");
+}
+
+void theTillsGuard()
+{
+    // With Never Broke on, while the tills short's 28-night mean is well over the centre's level, the first pass takes the
+    // estates' and the treasury's whole spare before any household's.
+    const auto make = [](bool high) {
+        auto s = city({at("aa", 2000)}, 4000, {{"treasuryCap", 2000}, {"estates", 0}, {"neverBroke", 1}});
+        auto state = s.state();
+        state.loop.steer.tillsDays = 28;
+        state.loop.steer.tillsShort = high ? 40 : 20;
+        expect(s.restore(state), "the state read back");
+        return s;
+    };
+    auto plain = make(false), guarded = make(true);
+    expect(!plain.skimGuardOn() && guarded.skimGuardOn(), "the guard on over 25 x 1.15 = 28.75, off under");
+    const auto spare = guarded.cash("treasury") - 2000;
+    plain.skim(spare, "test");
+    guarded.skim(spare, "test");
+    expect(plain.cash("aa") < 2000 && plain.cash("treasury") > 2000, "unguarded: half the treasury's spare, then the household");
+    expect(guarded.cash("aa") == 2000 && guarded.cash("treasury") == 2000 && guarded.loopToday().skimGuard,
+           "guarded: the treasury's whole spare first, the household untouched");
+    // Off with Never Broke off, and before its mean has had 28 nights.
+    setRules(guarded, {{"neverBroke", 0}});
+    expect(!guarded.skimGuardOn(), "only while Never Broke is on");
+    auto young = make(true);
+    auto state = young.state();
+    state.loop.steer.tillsDays = 27;
+    young.restore(state);
+    expect(!young.skimGuardOn(), "not before 28 nights");
+    // Followed each night Never Broke runs.
+    auto s = city(family(0), 3000, {{"neverBroke", 1}, {"treasuryCap", 2000}}, FamilyKin);
+    run(s, 1 + 17.9 / 24, 2 + 18.5 / 24);
+    expect(s.state().loop.steer.tillsDays == 2 && s.state().loop.steer.tillsShort >= 0, "the mean followed nightly: " + n(s.state().loop.steer.tillsDays));
+    // Turned off, the mean starts again: turned on weeks later, the guard is never judged on nights from before.
+    {
+        auto st = s.state();
+        st.loop.steer.tillsDays = 40;
+        st.loop.steer.tillsShort = 90;
+        expect(s.restore(st), "the state read back");
+    }
+    expect(s.skimGuardOn(), "a high mean: the guard on");
+    setRules(s, {{"neverBroke", 0}, {"neverHungry", 0}});
+    run(s, 2 + 18.5 / 24, 3 + 18.5 / 24);
+    expect(s.state().loop.steer.tillsDays == 0 && s.state().loop.steer.tillsShort < 0, "off: the tills short's mean cleared");
+    expect(s.state().loop.steer.idle.empty() && s.state().loop.steer.idleDay < 0, "both floors off: the idle spares cleared");
+    setRules(s, {{"neverBroke", 1}});
+    expect(!s.skimGuardOn(), "on again: no guard until its mean has had 28 nights again");
+    expect(plain.conserved() && guarded.conserved(), "conserved");
+}
+
+void theSkimSavedAndDeterministic()
+{
+    const auto make = [] {
+        auto s = city(family(0), 3000, {{"neverBroke", 1}, {"neverHungry", 1}, {"treasuryCap", 2000}}, FamilyKin);
+        s.create(s.tillOf("fish"), "fish", 200, "test: a full fish hall");
+        run(s, 1 + 7.9 / 24, 3 + 18.5 / 24);
+        return s;
+    };
+    auto a = make(), b = make();
+    for (const auto& [id, acc] : a.state().accounts)
+        expect(b.cash(id) == acc.cash, "two identical worlds, the same money: " + id);
+    const auto& sa = a.state().loop.steer;
+    const auto& sb = b.state().loop.steer;
+    expect(sa.idle == sb.idle && sa.credit == sb.credit && sa.tillsShort == sb.tillsShort && sa.idleDay == sb.idleDay,
+           "the same idle spares, credit and mean");
+    expect(sa.idleDay == 3 && !sa.idle.empty() && !sa.credit.empty() && sa.tillsDays == 3, "the new state there: " + n(double(sa.idle.size())));
+    const auto back = wire::readSociety(wire::society(a.state())).loop.steer;
+    expect(back.idle == sa.idle && back.credit == sa.credit && back.idleDay == sa.idleDay && back.tillsShort == sa.tillsShort &&
+               back.tillsDays == sa.tillsDays,
+           "saved and read again");
+    expect(a.conserved() && a.cash(Society::ReliefFund) >= a.neverBrokeOwed(), "conserved; the fund holds the credit");
 }
 
 void neverHungry()
@@ -537,6 +755,10 @@ int main()
         theCentreLeavesTodayAlone();
         theSkim();
         neverBroke();
+        theSkimOrder();
+        idleBeforeBusy();
+        theTillsGuard();
+        theSkimSavedAndDeterministic();
         neverHungry();
         theLeversAtTheEnds();
         theHandsShareAndTheGroundRent();

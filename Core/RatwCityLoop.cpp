@@ -782,7 +782,15 @@ void Society::loopHourly(std::int64_t hour, int season)
         supportWages();                             // (What the treasury holds over its cap, to the short tills' posts.)
         giveAlms();                                 // (After the day's wages: the treasury's posts come first.)
         if (rule("neverBroke") > 0)
-            neverBroke();                           // (Doc 74, 7.2: after the alms, just enough to the short.)
+            neverBroke();                           // (Doc 74, 7.2: after the alms, credit for just enough to the short.)
+        else
+        {
+            // (Turned off: its credit lapses, the fund keeping what was unspent; and the tills short's mean starts again
+            // when it is next turned on, never judged on nights from before it was off.)
+            state_.loop.steer.credit.clear();
+            state_.loop.steer.tillsShort = -1;
+            state_.loop.steer.tillsDays = 0;
+        }
         if (steering())
         {
             shareOut();                             // (Doc 74, 5.1 and 5.7: the push left, the share-out; right, the
@@ -793,6 +801,13 @@ void Society::loopHourly(std::int64_t hour, int season)
         followTreasury(day);                        // (Its level tonight moves the toll and the alms, slowly.)
         if (rule("steer") > 0 || !state_.loop.steer.empty())
             steerEconomy(day);                      // (Doc 74, 8: measured after every money step; the push moves.)
+        if (rule("neverHungry") > 0 || rule("neverBroke") > 0)
+            skimIdleNight(day);                     // (Doc 74, 6.2: how long each household's spare has sat.)
+        else if (state_.loop.steer.idleDay >= 0)
+        {
+            state_.loop.steer.idle.clear();         // (Both floors off: the idle spares are not followed, so they start
+            state_.loop.steer.idleDay = -1;         // again, each at its spare, when a floor is next turned on.)
+        }
         if (loopToday_.skim > 0 || loopToday_.skimShort > 0)
         {
             // (The skim's day, kept 28 days for the DM tab: doc 74, 10.1.)
@@ -968,6 +983,25 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                 best = &m;
         return best && held - price >= keep ? *best : std::string();
     };
+    // Never Broke's credit (doc 74, 7.2, "The skim reworked"): the household shopping now's credit toward its necessities
+    // (null: none), drawn from fund:relief for its food (never a luxury) and its needs, first, before its own purse.
+    std::int64_t* credit = nullptr;
+    const auto necessity = [&](const std::string& item) {
+        if (edible(item) && !luxury(item))
+            return true;
+        for (const auto& need : items::households().needs)
+            if (std::find(need.any.begin(), need.any.end(), item) != need.any.end())
+                return true;
+        return false;
+    };
+    const auto creditFor = [&](const std::string& item, std::int64_t price) {
+        return credit && *credit > 0 && price > 0 && necessity(item) ? std::min({*credit, price, cash(ReliefFund)}) : std::int64_t(0);
+    };
+    // Who pays for a necessity with the credit: the part the credit covers kept from no purse; the rest as payerFor.
+    const auto payerWith = [&](const std::vector<std::string>& members, const std::string& item, std::int64_t price, std::int64_t keep) {
+        const auto use = creditFor(item, price);
+        return use >= price && use > 0 ? payerFor(members, 0, 0) : payerFor(members, price - use, keep);
+    };
     // Buys `want` of `item` from the shops (sellers by stock), paid by the household; returns how many came.
     // What a lot costs a resident: the catalogue's price, times the season's for a good of a season group (doc 68,
     // Progress, "Seasons"), in whole pennies for the lot; paid as a sale at its whole pennies a piece and the odd pennies.
@@ -984,16 +1018,24 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             const auto& till = tills[std::size_t(pick)]->till;
             int n = std::min({want - got, stock(*tills[std::size_t(pick)]->account, item), 99});
             std::string payer;
-            while (n > 0 && (payer = payerFor(members, shopCost(till, item, n), keep)).empty())
-                n = payerFor(members, shopCost(till, item, 1), keep).empty() ? 0 : std::max(1, n / 2);
+            while (n > 0 && (payer = payerWith(members, item, shopCost(till, item, n), keep)).empty())
+                n = payerWith(members, item, shopCost(till, item, 1), keep).empty() ? 0 : std::max(1, n / 2);
             if (n < 1)
                 break;
+            // Never Broke's credit: what it covers of the lot from fund:relief to the payer, spent at once on the lot.
+            auto use = creditFor(item, shopCost(till, item, n));
+            if (use > 0 && !shift(ReliefFund, payer, "", 0, use, "relief: necessities"))
+                use = 0;
             // At the catalogue's price, then the season's difference (and the shop's, from its stock: doc 68, Progress,
             // "Self-correcting rules"): the payer's fractions of a penny kept against it until they make one (as the gate
             // toll's are), so a penny's good costs its season's price over many buys.
             const auto base = catalogPrice(item) * n;
             if (!sale(till, payer, item, n, catalogPrice(item), "market"))
+            {
+                if (use > 0)
+                    shift(payer, ReliefFund, "", 0, use, "relief: necessities, not spent");
                 break;
+            }
             auto cost = base;
             if (const double f = priceFactor(item) * stockFactor(till, item); f != 1)
             {
@@ -1008,6 +1050,17 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             }
             if (payer != to && !shift(payer, to, item, n, 0, "for the household"))
                 consume(payer, item, n, "used at home");   // (Not reached: the member's purse has room.)
+            if (use > cost)
+            {
+                shift(payer, ReliefFund, "", 0, use - cost, "relief: necessities, not spent");   // (The lot came cheaper.)
+                use = cost;
+            }
+            if (use > 0)
+            {
+                *credit -= use;
+                loopToday_.neverBrokePennies += use;
+                loopToday_.relief["necessities"] += use;
+            }
             got += n;
             if (crewDay)
                 crewDay->crewSpent += cost;
@@ -1092,6 +1145,10 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
         const int marketHour = ShopOpen + int(fnv(home + "|market") % std::uint64_t(ShopShut - ShopOpen));
         if (hod < marketHour)
             return;
+        credit = nullptr;
+        if (auto& owed = state_.loop.steer.credit; !crew && !owed.empty())
+            if (const auto found = owed.find(home); found != owed.end())
+                credit = &found->second;
         const bool first = hod == marketHour;
         const double per = crew ? double(heads) : 1.;
         const auto community = crew || !day_.communityOf ? std::string() : day_.communityOf(state_.residents.at(members.front()).homeCell);
@@ -1111,6 +1168,8 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                     most = 0;
                     for (const auto& x : members)
                         most = std::max(most, cash(x));
+                    if (credit && *credit > 0)
+                        most += std::min(*credit, cash(ReliefFund));   // (Never Broke's credit pays for food too.)
                 }
                 std::vector<std::string> foods;
                 std::vector<double> value, held, priced;   // (Pieces on offer, and pieces times their shop's stock factor.)
@@ -1261,7 +1320,7 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
                     continue;
             }
             const auto& item = options[fnv(home + "|" + std::to_string(day) + "|" + std::to_string(i)) % options.size()];
-            const auto payer = payerFor(members, seasonalCost(item, count), keep);
+            const auto payer = payerWith(members, item, seasonalCost(item, count), keep);
             if (payer.empty())
                 continue;
             if (const int got = buy(shops, members, payer, item, count, keep, home + "|need|" + std::to_string(day) + "|" + std::to_string(i)); got > 0)

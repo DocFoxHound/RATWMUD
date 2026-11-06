@@ -1603,7 +1603,9 @@ struct EconomyWatch
                      << ", \"homes\": " << d.neverHungryHomes << ", \"wharf_pieces\": " << d.neverHungryWharfPieces
                      << ", \"wharf_pennies\": " << d.neverHungryWharfPennies << "}, \"households_short_after\": "
                      << (society.rule("neverHungry") > 0 ? d.householdsShortAfter : -1) << ", \"never_broke\": {\"pennies\": "
-                     << d.neverBrokePennies << ", \"homes\": " << d.neverBrokeHomes << "}";
+                     << d.neverBrokePennies << ", \"homes\": " << d.neverBrokeHomes << ", \"credit\": " << d.neverBrokeCredit
+                     << ", \"credit_left\": " << society.neverBrokeOwed() << "}, \"skim_guard\": " << (d.skimGuard ? 1 : 0)
+                     << ", \"tills_short_mean28\": " << st.tillsShort;
         }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households

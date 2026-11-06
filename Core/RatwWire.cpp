@@ -1034,6 +1034,15 @@ Value society(const SocietyState& s)
                 skims.push(e);
             }
             j.add("skims", skims);
+            // The skim reworked: each household's idle spare, Never Broke's credit, and the tills short's mean.
+            for (const auto& [key, m] : {std::pair{"idle", &st.idle}, std::pair{"credit", &st.credit}})
+            {
+                auto o2 = Value::object();
+                for (const auto& [name, coins] : *m)
+                    o2.add(name, coins);
+                j.add(key, o2);
+            }
+            j.add("idleDay", st.idleDay); j.add("tillsShort", st.tillsShort); j.add("tillsDays", st.tillsDays);
             loop.add("steer", j);
         }
         o.add("loop", loop);
@@ -1123,6 +1132,17 @@ LoopState readLoop(const Value& o)
                             (*into)[name] = std::int64_t(coins.asNumber());
                 s.skims.push_back(std::move(d));
             }
+        for (const auto& [key, into] : {std::pair{"idle", &s.idle}, std::pair{"credit", &s.credit}})
+            for (const auto& [name, coins] : st.object(key).fields())
+                if (name.size() <= 200 && inRange(coins, 0, 1e12) && into->size() < 100000)
+                    (*into)[name] = std::int64_t(coins.asNumber());
+        if (inRange(st["idleDay"], -1, 1e12))
+            s.idleDay = std::int64_t(st["idleDay"].asNumber());
+        if (inRange(st["tillsShort"], -1, 1e12) && inRange(st["tillsDays"], 0, 3650))
+        {
+            s.tillsShort = st["tillsShort"].asNumber();
+            s.tillsDays = int(st["tillsDays"].asNumber());
+        }
     }
     return l;
 }
