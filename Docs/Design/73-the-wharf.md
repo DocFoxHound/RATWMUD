@@ -1826,3 +1826,103 @@ open: the wage support paid climbs toward a falling want (82 -> 153p against 280
 falls (1,493 -> 1,327p) on Grayrock's grants (318p a day in year 3; its 40 sea-trade posts, 356p a night on 33p of its
 own rents) and Timberland's (490 -> 398p); iron ore, clay and limestone 2.5-4.4 pieces a day short; hides rot at ~16-19
 a day. These are s11e's open points 1-5.
+
+### Round 7 of stabilizing (branch `r2-stable9d`, 2026-11-05): three smithies' idle hands moved; the yields tried and taken back
+
+The user's go-ahead as for rounds 4-6 (posts moved in DEV, alms for those with no earner, a few rounds, real fixes). No
+treasury lever (toll, wage support, float, the treasury's target), no move of the Wharf's credit or its injection, cheese
+left as it is. **DEV written** (three posts, below; backed up first); no NPC made; **no code or data change** in the
+end: the yields tried below are all taken back.
+
+**The trace** (stable9c's logs, year 3; a day):
+
+- **The wage support is spread thin and follows the treasury's room, not any one till.** 92 tills drew some of it; the
+  largest were four smithies (6.5, 6.5, 6.4, 5.5p: keeper and hand, 18-22 hours a day, a quarter to a third of them
+  used; takings ~28p against ~19.5p of iron bars, so the hand's 7p came from the treasury), the Colour Works 5.8p, the
+  wheelwright 5.6p, the cartographer 4.4p, then dozens at 1-4p (the one-crew inns, the bakeries, the preservers, the
+  toll on their draws at 34%). What the treasury pays rises with what it takes in: the toll 1,493, 1,537, 1,586p a day
+  over the years (its rate 31.5 -> 32.5 -> 34, treasuryDrift, the treasury under its 5,500p target) and the support
+  paid 82, 106, 153p, while what is wanted falls (280, 225, 200p). So the climb is the toll's drift (a lever), and what
+  is wanted is what must come down.
+- **Few tills can pay a hand.** Of the city's tills with one shop in their building, crew-bound or nearly (71-93% of
+  their hours) and with a keeper's profit over a hand's wage in every season of year 3: Wickham's Chandlery (18-26p),
+  Greywool (14-23p), The Lamp & Wick (15-18p). The others with spare profit share a hall (the Market Hall, Market
+  Square) or fall to 0-7p in a season.
+- **The goods short every day are a shelf's want, not a demand.** Resin was "short" 2.9 a day (three shops, 300-354 days
+  of year 3) but sold 0.1 a day once the woods grew it; iron ore, clay, limestone, flax and eggs were short on the days
+  their yields dipped, and pile once raised (below).
+
+**The fix: three posts moved in DEV** (round 4's script, three new moves, in the scratchpad: each keeps home, evening,
+the rest; the work spot to a free floor tile beside the till's hands, the label, greeting and description to match):
+rm_silas_sootworth from Timberland's Nailers' Forge to Wickham's Chandlery, rm_brenna_ropehand from Eastgate Farriers to
+Greywool, rmx_magnus_wetherell from Timberland's Forge Row to The Lamp & Wick (the Anchor Forge's second post is a
+door-minder, the family's eldest, left as he is). Each forge's keeper alone covers its used hours (5.4-5.6 of 10-12).
+**DEV**: backed up first to `artifacts/backups/ratw_dev_20261105-152845.pgdump` (and its Atlas json, revision 89); saved
+as **revision 90**, the same map (its identity kept); `world_build.py dev`: **build 67**, exported to
+`artifacts/economy/r2/export67` (not committed). Against export66 only these three residents differ.
+
+**What was tried and taken back** (3-year runs on export67, wharf7b's flags: `--farms 0`, an area every 28 days; the
+moves in all):
+
+- `s12a`: stable9c's patch half way (the bound seasons whole) for pig, iron ore, tin and copper ore, wine, charcoal,
+  clay, sand, limestone, lime, stone, flax, eggs and sheep, and the conifer camp's resin to its patch (0.4-0.7 a day).
+  Year 3's shortages went (iron ore, clay, limestone, flax, eggs, resin; pig 4.0 -> 3.0 a day) but they became piles
+  (flax +2,879, tallow +2,488, clay +1,863, iron ore +1,829 a year), wormwood went short 4.6 a day (the masking oil, now
+  with resin), and the Houses' rents fell: Timberland 215 -> 200p a day, Greatly 41 -> 35p, the Crown's margin over its
+  keep 371 -> 349p.
+- `s12b` (the same without the wine and charcoal trims) and `s12c` (pig, the three ores and resin alone): the same
+  turn, Timberland 196 and 198p, the Crown's margin 349 and 328p, iron ore piling ~1,900 a year in both. (A first try
+  with resin at 3 a day, the shelves' want, sold 0.1 of it.) So the yields stay stable9c's, as s11f found.
+
+**The 3-year run, `s12m`** (the branch, `build-s9d` gcc Release, the ridgemere2 code; **export67**, wharf7b's flags;
+1,095 days, exit 0; `s12m-report.md`, its patch, `s12m.out`; its first 60 days are the 60-day smoke: money conserved,
+the posts paid every night, nobody hungry, 0.70 households short against stable9c's 0.47 in the same days). A day,
+years 1-3 where given:
+
+| | s12m | stable9c |
+|---|---|---|
+| Money conserved every day; at the end | yes; 64,594p | yes; 64,594p |
+| Estates' posts; nights short | 672p of 672p; none in three years | the same |
+| The Crown: rents; grants (years 1-3) | 636, 750, **741p**; 219, 364, 372p | 641, 756, 730p; 218, 363, 372p |
+| The Crown over its keep by quarter, years 2 and 3 | 433/378/383/418, 403/374/323/384p (year means 403, 371p) | 447/405/396/402, 402/368/300/355p (413, 356p) |
+| The Crown's purse at the year ends | 1,431, 1,452, 1,305p | 1,457, 1,493, 1,327p |
+| Timberland: rents; over its keep; purse at the year ends | 166, 223, 215p; 82, 180, 173p; 576, 460, 415p | 164, 226, 215p; 81, 184, 174p; 566, 490, 398p |
+| Grayrock, Greatly, Fell (year ends) | 40/27/19, 52/44/94, 304/294/325p | 30/31/20, 50/40/73, 289/216/279p |
+| The treasury: year ends; least in year 3 | 2,014, 2,164, 2,191p; 1,450p | 1,954, 2,139, 2,210p; 1,166p |
+| Wage support wanted / paid / unpaid (years 1-3) | 275/87/187, 209/121/88, **201/154/47p** | 280/82/199, 225/106/119, 200/153/47p |
+| The three forges' support (year 3) | 1.2, 1.1, 1.3p | 6.5, 6.4, 5.5p |
+| Hunger: days, the most hours; households short (years 1-3) | 5, 6; 0.66, 0.73, **0.11** | 4, 5; 0.85, 0.61, 0.22 |
+| The households' purses (year ends) | 38,436, 37,637, 37,157p | 38,500, 37,348, 37,548p |
+| Shortages in year 3 (pieces a day, cheese aside) | iron ore 4.0, pig 4.0, resin 2.8, flax 2.5, milk 2.3, tin ore 2.3, clay 2.2 | iron ore 4.4, pig 3.9, clay 3.9, eggs 2.9, resin 2.9, flax 2.7 |
+| Piles in year 3 (farms and shops) | apples +2,355, charcoal +1,181, salt +885, wine +792, bones +709 | apples +1,555, charcoal +1,216, wine +871, salt +724, tallow +672 |
+| The valve (the run): in / out; credit at the end; hides rotted | 78 / 78p; 1p; 15.8 a day | 83 / 83p; 1p; 15.8 |
+
+The moved hands are paid in full by their new tills (Greywool's takings 148 -> 168p a day in year 3, its keeper's
+profit 18.2p after the hand; Wickham's 14.6p; The Lamp & Wick 18.9p). The three forges' support fell ~15p a day, but
+the total wanted did not: other tills' shortfalls rose about as much (the Gorm Rustmarsh press 7.4p, the paper mill
+4.0p, the distillery 3.6p), a three-year run's spread at this size.
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| Estates' posts paid every night | 672p of 672p, no night short in three years | yes |
+| No estate purse trending down | the Crown over its keep 403 -> 371p (-8%; stable9c -14%), its year-end purse 1,452 -> 1,305p; Timberland 180 -> 173p over its keep, its purse 460 -> 415p; Greatly and Fell up | **nearly** |
+| The treasury over its float, wage support not climbing | least 1,450p; wanted 275, 209, 201p (levelling), paid 87, 121, 154p as the toll's take rises | treasury yes; paid **still rising** (the toll's drift) |
+| Hunger as low as wharf7b or lower | 0.11 households short against 0.31 | **yes** |
+| No runaway pile, no standing shortage a producer should cover | the largest pile apples +2,355 a year (~6 a day of 270); iron ore 4.0 a day short on the low-yield days; raising the yields turns these into piles | **nearly** |
+| The valve nets | 78p in, 78p out over the run; the credit 1p | yes |
+
+**Verdict: not stable, and about where stable9c was.** Hunger is the lowest yet (0.11) and the Crown's margin falls
+less (-8% against -14%), but within a run's spread. What is open:
+
+1. **The wage support paid climbs because the toll does** (its take 1,495 -> 1,573p a day from year 1 to 3, its rate 31.5 -> 33.5,
+   treasuryDrift chasing the 5,500p target the treasury never nears); what is wanted has levelled at ~200p, spread over
+   ~90 tills at 1-4p each. Moving hands no longer lowers it: the tills that can pay one are used up. The remaining
+   choices are the user's: the treasury's target (or treasuryDrift) so the toll stops rising, or more work that sells.
+2. **The Crown's margin** falls ~8% in year 3 on the same grants to Grayrock (318p a day for its 39 sea-trade posts, 312p
+   a night, on ~32p of its own rents). No city till is left to take a pier hand; trimming the posts back means alms.
+3. **The yields are at their balance**: the shortages left are the low days of a season, and every raise tried here
+   (and in s11f) piled the rest and lowered the Houses' works' rents.
+4. **Hides** rot at ~16 a day (the tannery uses 44% of its hours; nobody but the farms' basket buys leather).
