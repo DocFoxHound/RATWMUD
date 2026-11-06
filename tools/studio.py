@@ -155,7 +155,8 @@ STEER_LEVERS = (('shareOut', 'The share-out', '% of the rich\'s spare levelled t
                 ('groundRent', 'The ground rent', '% of a keeper\'s nightly profit to the Crown\'s estate'),
                 ('rentScale', 'The rent scale', '% on every food farm\'s land rent'),
                 ('dividend', 'The Houses\' dividend', '% of the estates\' spare paid to upper-class households each night'),
-                ('richAbove', 'The rich hold', 'p a head an upper-class household keeps before its comforts'))
+                ('richAbove', 'The rich hold', 'p a head an upper-class household keeps before its comforts'),
+                ('spendAbove', 'The spending keep', 'p a head every other household keeps before its comforts'))
 STEER_MEASURES = (('gini', 'giniBand', 'The earners\' Gini', ''), ('upper', 'upperBand', 'The upper share', '%'))
 STEER_MARKS = (-1.0, -0.5, 0.0, 0.5, 1.0)
 
@@ -431,12 +432,12 @@ class Economy:
         comforts = economy.get('comfortsAbove')
         comforts = int(comforts if comforts is not None else ((country or {}).get('comforts') or {}).get('above', 60))
         own = {'surplusKeep': int(rules.get('surplusKeep', 4000)), 'treasuryCap': int(rules.get('treasuryCap', 2000)),
-               'surplusAlmsTo': int(rules.get('surplusAlmsTo', 40)), 'richAbove': comforts, 'rentScale': 100}
+               'surplusAlmsTo': int(rules.get('surplusAlmsTo', 40)), 'richAbove': comforts, 'spendAbove': comforts, 'rentScale': 100}
         out = {'settings': {'steer': int(rules.get('steer', 0)) > 0, 'lean': lean, 'neverHungry': int(rules.get('neverHungry', 0)) > 0,
                             'neverBroke': int(rules.get('neverBroke', 0)) > 0},
                'words': STEER_WORDS, 'held': list(map_editor.STEERED_RULES), 'own': {k: rules.get(k) for k in map_editor.STEER_OWN_RULES},
                'table': {'levers': levers, 'targets': targets, 'marks': list(STEER_MARKS),
-                         'treasuryFloor': table.get('treasuryFloor', 1400), 'treasuryLow': table.get('treasuryLow', 1000)},
+                         'treasuryFloor': table.get('treasuryFloor', 800), 'treasuryLow': table.get('treasuryLow', 500)},
                'band': [round(lo, 4), round(hi, 4)], 'saved': None, 'problem': '', 'changes': []}
         try:                                       # (The DM's own changes, newest first: the audit's economy.steer.)
             with self._connect_dm(key) as conn:

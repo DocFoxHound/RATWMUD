@@ -78,7 +78,7 @@ const char* leverName(const std::string& lever)
         {"shareOut", "the share-out"},       {"postsShare", "the hands' share"},    {"tollLean", "the toll lean"},
         {"surplusKeep", "the treasury's keep"}, {"treasuryCap", "the treasury's cap"}, {"surplusAlmsTo", "the poorest raised to"},
         {"groundRent", "the ground rent"},   {"rentScale", "the rent scale"},        {"dividend", "the Houses' dividend"},
-        {"richAbove", "the rich hold"}};
+        {"richAbove", "the rich hold"}, {"spendAbove", "the spending keep"}};
     const auto found = names.find(lever);
     return found == names.end() ? "a lever" : found->second;
 }
@@ -107,7 +107,7 @@ double Society::steerLever(const std::string& lever) const
     double own = 0;
     if (lever == "surplusKeep" || lever == "treasuryCap" || lever == "surplusAlmsTo")
         own = ownRule(lever);
-    else if (lever == "richAbove")
+    else if (lever == "richAbove" || lever == "spendAbove")
         own = comfortsAbove();
     else if (lever == "rentScale")
         own = 100;
@@ -425,6 +425,7 @@ void Society::neverHungry(std::int64_t day)
         return worth(a) != worth(b) ? worth(a) < worth(b) : a < b;
     });
     std::vector<Lot> wharfLots;
+    std::map<std::string, int> wharfPlanned;                       // Food -> the Wharf's pieces already in the batch.
     std::int64_t bill = 0;
     const auto homes = households();
     for (const auto& [home, members] : homes)
@@ -465,13 +466,28 @@ void Society::neverHungry(std::int64_t day)
                     }
                 if (!bestTill)
                 {
-                    if (wharfFoods.empty())
+                    // The cheapest of the Wharf's foods it can still land today, with this hour's lots counted (Tune round
+                    // 1: steer-centre-floors' few households left short after it were lots of the cheapest food over the
+                    // Wharf's day's room, refused at the order, the next food never tried).
+                    const std::string* food = nullptr;
+                    int n = 0;
+                    for (const auto& f : wharfFoods)
+                    {
+                        const int want = std::max(1, int(std::ceil((line - have) / nourishment(f) - 1e-9)));
+                        const int room = (farmAreaOf(f) < 0 ? supplyLeft(f) : wharfRoom(f)) - wharfPlanned[f];
+                        if (want <= room && want <= StoreDrawMost)
+                        {
+                            food = &f;
+                            n = want;
+                            break;
+                        }
+                    }
+                    if (!food)
                         break;
-                    const auto& food = wharfFoods.front();
-                    const int n = std::max(1, int(std::ceil((line - have) / nourishment(food) - 1e-9)));
-                    wharfLots.push_back({m, "", food, n, 0});
-                    bill += stablePrice(food, n) + carriageSplit(ReliefFund, food, n, false).first;
-                    have += double(n) * nourishment(food);
+                    wharfPlanned[*food] += n;
+                    wharfLots.push_back({m, "", *food, n, 0});
+                    bill += stablePrice(*food, n) + carriageSplit(ReliefFund, *food, n, false).first;
+                    have += double(n) * nourishment(*food);
                     helped = true;
                     break;
                 }
@@ -717,7 +733,7 @@ void Society::steerSet(double push, std::int64_t day, const std::string& why, bo
     // the history naming what moved.
     auto& st = state_.loop.steer;
     static const char* const Levers[] = {"shareOut", "postsShare", "tollLean", "surplusKeep", "treasuryCap", "surplusAlmsTo",
-                                         "groundRent", "rentScale", "dividend", "richAbove"};
+                                         "groundRent", "rentScale", "dividend", "richAbove", "spendAbove"};
     std::map<std::string, double> before;
     for (const char* l : Levers)
         before[l] = steerLever(l);
@@ -829,18 +845,21 @@ void Society::steerEconomy(std::int64_t day)
     // step at a time, the push was still +0.65 on day 252 with 30 residents hungry an hour and 150 households short, the
     // treasury at its float and the alms short): with Never Hungry off, every seventh night the push goes back toward the
     // centre by the larger step (never past it), whatever the judging, while the hungry or the short are over twice their
-    // ceilings, or the treasury (which pays the alms) is under treasuryFloor, both on their 28-night means and tonight. (The
+    // ceilings, or the treasury (which pays the alms) is under treasuryLow, both on their 28-night means and tonight. (The
     // treasury first: in the runs it fell for three weeks before the hunger came, and the hunger lasted two months.) (Tonight
     // too, so the pull stops once the night's hunger has come back, not a month later when the means have: the first build
     // of this pulled the push from 1 to 0 and overshot.) The judging only lets it lean right again once all are back.
     const auto [hFar, farWhy] = [&]() -> std::pair<bool, std::string> {
-        const double hMost = steerTarget("hungerMost"), kMost = steerTarget("shortMost"), floor = items::cityLoop().steering.treasuryFloor;
+        // (Tune round 1: on treasuryLow, not treasuryFloor. Under its floor the ground rent goes to the treasury, which kept
+        // the right's hunger at its ceilings through the summer, the treasury's mean 680-780p; on the floor the pull still
+        // took the push from 1 to 0.15 by the autumn with nobody hungry.)
+        const double hMost = steerTarget("hungerMost"), kMost = steerTarget("shortMost"), floor = items::cityLoop().steering.treasuryLow;
         const bool hungerFar = (hMost >= 0 && st.hungry > 2 * hMost && h > 2 * hMost) || (kMost >= 0 && st.shortHomes > 2 * kMost && k > 2 * kMost);
         const bool poor = st.treasury < floor && tr < floor;
         if (!hungerFar && !poor)
             return {false, {}};
         return {true, "hungry " + fixed(st.hungry, 3) + " an hour (ceiling " + fixed(hMost, 2) + "), households short " + fixed(st.shortHomes, 2) +
-                          " (ceiling " + fixed(kMost, 1) + "), the treasury " + fixed(st.treasury, 0) + "p (its floor " + fixed(floor, 0) + "p)"};
+                          " (ceiling " + fixed(kMost, 1) + "), the treasury " + fixed(st.treasury, 0) + "p (its low " + fixed(floor, 0) + "p)"};
     }();
     if (ownRule("neverHungry") <= 0 && st.push > 0 && day % 7 == 0 && st.days >= 28 && hFar)   // (Once the means have a month.)
     {
@@ -856,7 +875,14 @@ void Society::steerEconomy(std::int64_t day)
     j.before = st.push;
     const double gT = steerTarget("gini"), gB = steerTarget("giniBand"), sT = steerTarget("upper"), sB = steerTarget("upperBand");
     const bool useG = x <= 0 && !std::isnan(gT) && gB > 0, useS = x >= 0 && !std::isnan(sT) && sB > 0;
-    const double eG = useG ? (gT - st.gini) / gB : 0, eS = useS ? (sT - st.upper) / sB : 0;   // (+: too equal, push right.)
+    double eG = useG ? (gT - st.gini) / gB : 0;
+    const double eS = useS ? (sT - st.upper) / sB : 0;   // (+: too equal, push right.)
+    // With Never Broke on, a Gini under its band is the floor's own levelling, not something to steer against (Tune
+    // round 1: steer-centre-floors leaned right to its band's edge, +0.15, from day 111 to the end, the Gini at 0.42-0.44
+    // under the centre's 0.452, the steering pulling against the floor the DM turned on): it counts as in its band.
+    const bool floorsLevel = ownRule("neverBroke") > 0 && eG > 1;
+    if (floorsLevel)
+        eG = 0;
     const auto inWords = [&](bool gi) {
         return gi ? "the earners' Gini " + fixed(st.gini, 3) + " against its target " + fixed(gT, 3) + " (band " + fixed(gB, 3) + ")"
                   : "the upper share " + fixed(st.upper, 1) + "% against its target " + fixed(sT, 1) + "% (band " + fixed(sB, 1) + ")";
@@ -878,7 +904,8 @@ void Society::steerEconomy(std::int64_t day)
             err = onG ? eG : eS;
         }
         else
-            why = inWords(true) + " and " + inWords(false) + ": both in their bands";
+            why = inWords(true) + (floorsLevel ? " (under its band: Never Broke's levelling, not steered against)" : "") + " and " + inWords(false) +
+                  ": both in their bands";
         j.measure = "both";
     }
     else if (useG || useS)
@@ -886,7 +913,7 @@ void Society::steerEconomy(std::int64_t day)
         err = useG ? eG : eS;
         j.measure = useG ? "gini" : "upper";
         if (std::abs(err) <= 1)
-            why = inWords(useG) + ": in its band";
+            why = inWords(useG) + (useG && floorsLevel ? ": under its band, Never Broke's levelling: not steered against" : ": in its band");
     }
     if (!j.measure.empty() && j.measure == "both" && err != 0)
         j.measure = onG ? "gini" : "upper";
@@ -913,7 +940,7 @@ void Society::steerEconomy(std::int64_t day)
     {
         const double hMost = steerTarget("hungerMost"), kMost = steerTarget("shortMost");
         const bool over = (hMost >= 0 && st.hungry > hMost) || (kMost >= 0 && st.shortHomes > kMost) ||
-                          st.treasury < items::cityLoop().steering.treasuryLow;   // (The alms' purse low: no leaning right.)
+                          st.treasury < items::cityLoop().steering.treasuryFloor;   // (The alms' purse low: no leaning right.)
         const bool far = hFar;                      // (As the weekly pull's: the means and tonight both far over.)
         const std::string hunger = "hungry " + fixed(st.hungry, 3) + " an hour (ceiling " + fixed(hMost, 2) + "), households short " +
                                    fixed(st.shortHomes, 2) + " (ceiling " + fixed(kMost, 1) + "), the treasury " + fixed(st.treasury, 0) + "p";

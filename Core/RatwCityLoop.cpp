@@ -576,6 +576,12 @@ int Society::rule(const std::string& name) const
         const auto* info = items::ruleInfo(name);
         return std::clamp(int(std::lround(steerLever(name))), info->low, info->high);
     }
+    // The toll drift's target with the steering on (Tune round 1): never over the steered ceiling, the cap and its keep,
+    // where the surplus spends what is over. (The world's 5,500p under the centre's 6,000p, so the centre is the world's
+    // own; at the far left, 1,500p, so the drift judges the treasury where the left's surplus holds it, not at a level it
+    // can never reach.)
+    if (name == "treasuryTarget" && state_.loop.steer.on && ownRule("steer") > 0)
+        return std::min(ownRule(name), rule("treasuryCap") + rule("surplusKeep"));
     return ownRule(name);
 }
 
@@ -1328,10 +1334,15 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
             held += cash(m);
         // (The rich hold, doc 74, 5.8: with the steering leaning right, an upper-class household keeps more a head before
         // its comforts; the luxuries' keep above is untouched.)
+        // (The spending keep, Tune round 1: with it leaning left, every other household keeps less a head before its
+        // comforts, so the money the share-out levels to them comes back to the shops; steer-left held 4,200p more in the
+        // purses and 3,900p less in the tills than the centre, its comforts down a third and its tills short 50% more.)
         std::int64_t keepAbove = comfortsAbove();
         if (!crew && steering())
-            if (const auto rich = std::int64_t(std::lround(steerLever("richAbove"))); rich != keepAbove && homeClass(home, members) == "upper")
-                keepAbove = rich;
+        {
+            const bool upper = homeClass(home, members) == "upper";
+            keepAbove = std::int64_t(std::lround(steerLever(upper ? "richAbove" : "spendAbove")));
+        }
         auto budget = std::int64_t(std::floor((held - keepAbove * std::int64_t(heads)) * comfortsShare()));
         // The city's services first, each about once every `every` days (a fixed roll of the home and the day: nothing
         // saved), when the budget covers it (doc 68, "First fixes": only from money nothing else needs).
@@ -1806,15 +1817,25 @@ void Society::payWages()
                     }
                     if (const double g = steerLever("groundRent"); g > 0)
                     {
+                        // To the Crown's estate; but while the treasury (the alms' and the wage support's purse) is under
+                        // its floor, on its 28-night mean or now, to the treasury (Tune round 1: at the far right the rich's
+                        // money left the shops' circulation, the toll fell with it and the treasury reached its float every
+                        // summer, the wage support and the alms short and hunger after; the Crown is the city's landlord
+                        // and its treasury both).
+                        const double floor = items::cityLoop().steering.treasuryFloor, mean = state_.loop.steer.treasury;
+                        const bool low = account("treasury") && (double(cash("treasury")) < floor || (mean >= 0 && mean < floor));
                         std::string to = "treasury";
-                        if (estatesOn())
+                        if (estatesOn() && !low)
                             for (const auto& e : items::cityLoop().estates)
                                 if (e.grants && account(estateFund(e)))
                                     to = estateFund(e);
                         if (const auto rent = std::int64_t(double(excess) * std::min(g, 100.) / 100.);
-                            rent > 0 && account(to) && cash(to) <= MoneyCap - rent && shift(payer, to, "", 0, rent, "ground rent: the Crown"))
+                            rent > 0 && account(to) && cash(to) <= MoneyCap - rent &&
+                            shift(payer, to, "", 0, rent, to == "treasury" && low && estatesOn() ? "ground rent: the treasury" : "ground rent: the Crown"))
                         {
                             loopToday_.groundRent += rent;
+                            if (to == "treasury" && low && estatesOn())
+                                loopToday_.groundRentTreasury += rent;   // (Booked apart: the Crown's, to the treasury.)
                             excess -= rent;
                             if (const auto* e = estatesOn() ? estateOfFund(to) : nullptr)
                                 loopToday_.estates[e->id].rents += rent;

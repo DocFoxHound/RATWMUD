@@ -581,14 +581,15 @@ Catalog build()
         const double W = std::numeric_limits<double>::quiet_NaN();
         auto& t = c.cityLoop.steering;
         t.levers = {{"shareOut", {30, 12, 0, 0, 0}},      {"postsShare", {50, 25, 0, 0, 0}},
-                    {"tollLean", {3, 1.5, 0, -1, -2}},    {"surplusKeep", {0, 1000, W, W, W}},
+                    {"tollLean", {1, .5, 0, 0, 0}},    {"surplusKeep", {0, 1000, W, W, W}},
                     {"treasuryCap", {1500, W, W, W, W}},  {"surplusAlmsTo", {80, 60, W, W, W}},
-                    {"groundRent", {0, 0, 0, 20, 45}},    {"rentScale", {100, 100, 100, 120, 140}},
-                    {"dividend", {0, 0, 0, 20, 40}},      {"richAbove", {W, W, W, 150, 600}}};
-        t.targets = {{"gini", {.15, .32, .487, W, W}},        {"giniBand", {.04, .04, .035, W, W}},
-                     {"upper", {W, W, 13, 25, 45}},           {"upperBand", {W, W, 2, 4, 5}},
-                     {"upperMost", {13, 13, W, W, W}},        {"top10Most", {20, 30, W, W, W}},
-                     {"top10Least", {W, W, W, 40, 55}},       {"hungerMost", {.02, .05, .15, .15, .15}},
+                    {"groundRent", {0, 0, 0, 15, 30}},    {"rentScale", {100, 100, 100, 112, 125}},
+                    {"dividend", {0, 0, 0, 15, 30}},      {"richAbove", {W, W, W, 100, 150}},
+                    {"spendAbove", {25, 32, W, W, W}}};
+        t.targets = {{"gini", {.33, .41, .487, W, W}},        {"giniBand", {.04, .04, .035, W, W}},
+                     {"upper", {W, W, 13, 18.5, 24}},           {"upperBand", {W, W, 2, 2.5, 3}},
+                     {"upperMost", {14, 14, W, W, W}},        {"top10Most", {27, 31, W, W, W}},
+                     {"top10Least", {W, W, W, 37, 40}},       {"hungerMost", {.02, .05, .15, .15, .15}},
                      {"shortMost", {.1, .5, 3.5, 4, 5}}};
     }
     // The Country and the city's loop (doc 68): optional; without it, one market with an empty basket.
@@ -713,8 +714,8 @@ Catalog build()
                     if (sound)
                         found->second = v;
                 }
-            c.cityLoop.steering.treasuryFloor = std::clamp(steer.number("treasuryFloor", 1400), 0., 1e9);
-            c.cityLoop.steering.treasuryLow = std::clamp(steer.number("treasuryLow", 1000), 0., c.cityLoop.steering.treasuryFloor);
+            c.cityLoop.steering.treasuryFloor = std::clamp(steer.number("treasuryFloor", 800), 0., 1e9);
+            c.cityLoop.steering.treasuryLow = std::clamp(steer.number("treasuryLow", 500), 0., c.cityLoop.steering.treasuryFloor);
         }
         // The Houses' city businesses (doc 72, after iron6): a building and its House each, the first entry for a building.
         for (const auto& b : country.object("houseBusinesses").array("list"))

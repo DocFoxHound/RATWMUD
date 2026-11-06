@@ -1169,7 +1169,7 @@ class Society
         int hungryHours = 0;
         // The levers' money tonight: the share-out (and the households given it), the hands' share of the keepers' profit,
         // the ground rent to the Crown, the Houses' dividend (and the households), what the rent scale added to the land rents.
-        std::int64_t shareOut = 0, postsShare = 0, groundRent = 0, dividend = 0, landRentExtra = 0;
+        std::int64_t shareOut = 0, postsShare = 0, groundRent = 0, groundRentTreasury = 0, dividend = 0, landRentExtra = 0;
         int shareOutHomes = 0, dividendHomes = 0;
         // The skim (doc 74, 6): what it took, by purpose ("never hungry", "never broke", "share-out"), by payer group
         // and by payer, what it could not find; and the relief paid out of fund:relief, by kind ("food", "necessities",
@@ -1186,7 +1186,7 @@ class Society
     // Steering the economy (Docs/Design/74-steering-the-economy.md). Whether the steering is acting now (the rule on and
     // the push set: from the first 18:00 after it was turned on), the slider (-1..1), the push's band at the slider, a
     // lever's value at the push (its neutral value while the steering is off: 0, 100 for the rent scale, the world's own
-    // for surplusKeep, treasuryCap, surplusAlmsTo and richAbove), and a target at the slider (NaN: none there).
+    // for surplusKeep, treasuryCap, surplusAlmsTo, richAbove and spendAbove), and a target at the slider (NaN: none there).
     bool steering() const;
     double steerSlider() const;
     std::pair<double, double> steerBand() const;

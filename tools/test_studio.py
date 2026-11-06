@@ -1331,7 +1331,7 @@ class SteeringTests(unittest.TestCase):
         view = self.economy.steering('w', 1, {'rules': {'steer': 1, 'steerLean': 50}})
         self.assertEqual(view['settings'], {'steer': True, 'lean': -50, 'neverHungry': False, 'neverBroke': False})
         self.assertEqual(view['band'], [-0.725, -0.275])
-        self.assertEqual((view['targets']['gini'], view['targets']['upper']), (0.32, None))
+        self.assertEqual((view['targets']['gini'], view['targets']['upper']), (0.41, None))
         levers = {l['key']: l for l in view['levers']}
         self.assertEqual((levers['surplusKeep']['centre'], levers['surplusKeep']['low'], levers['surplusKeep']['high']), (4000, 550, 2350))
         self.assertEqual(levers['shareOut']['centre'], 0)

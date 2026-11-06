@@ -103,14 +103,20 @@ toggles still work.
 The controller judges each measure on its 56-day mean (section 6.1). A target with a band is steered toward. A ceiling
 or floor is a guard.
 
+**Since Tune round 1 (Progress) the table reads as below**; the first design's values are in brackets where they moved.
+The ends were set to what the economy holds with its safety floor intact: the left's share-out at 30% reaches a Gini of
+about 0.32 (open question 1), and the right, with the rich hold at 600p a head, starved the shops and the treasury
+(open question 2).
+
 | measure | -100 | -50 | 0 | +50 | +100 |
 |---|---|---|---|---|---|
-| **Gini of earning households** (steers the left half and the centre) | 0.15 ± 0.04 | 0.32 ± 0.04 | **0.487 ± 0.035** | watched | watched |
-| **The upper share** (steers the right half and the centre) | at most 7% | at most 7% | **7.0% ± 2.5 points** | 25% ± 4 | 45% ± 5 |
-| Top-10% share of household purses (watched, logged) | at most 20% | at most 30% | logged (about 35%) | at least 40% | at least 55% |
+| **Gini of earning households** (steers the left half and the centre) | 0.33 ± 0.04 (0.15) | 0.41 ± 0.04 (0.32) | **0.487 ± 0.035** | watched | watched |
+| **The upper share** (steers the right half and the centre) | at most 14% (7) | at most 14% (7) | **13% ± 2** (7 ± 2.5) | 18.5% ± 2.5 (25 ± 4) | 24% ± 3 (45 ± 5) |
+| Top-10% share of household purses (watched, logged) | at most 27% (20) | at most 31% (30) | logged (about 35%) | at least 37% (40) | at least 40% (55) |
 | Hunger ceiling: hungry residents an hour, 28-day mean (every position) | 0.02 | 0.05 | 0.15 | 0.15 | 0.15 |
 | Households short a day, 28-day mean (ceiling) | 0.1 | 0.5 | 3.5 | 4.0 | 5.0 |
-| The treasury, 28-day mean (floor for lowering the toll) | 1,400p | 1,400p | 1,400p | 1,400p | 1,400p |
+| The treasury, 28-day mean: `treasuryFloor` (no leaning right, no lowering the toll; the ground rent to the treasury) | 800p (1,400) | 800p | 800p | 800p | 800p |
+| The treasury, 28-day mean and that night: `treasuryLow` (the hunger guard's weekly pull) | 500p (1,000) | 500p | 500p | 500p | 500p |
 
 - **The upper share** is everything the upper class and the Houses hold, over all the money in the realm: upper-class
   households' purses, the five estates, and the tills of the Houses' businesses (`houseOfPost`: the ironworks, the
@@ -138,14 +144,15 @@ The push `u` is one number from -1 to +1, kept in `LoopState.steer.push`. Each l
 |---|---|---|---|---|---|---|
 | **share-out** (new) | % of the rich's spare, levelled to the poorest each night | 30 | 12 | 0 | 0 | 0 |
 | **hands' share** (new) | % of a till's nightly profit paid to its posts instead of the keeper | 50 | 25 | 0 | 0 | 0 |
-| **toll lean** (new, on the toll) | points added to the gate toll | +3 | +1.5 | 0 | -1 | -2 |
+| **toll lean** (new, on the toll) | points added to the gate toll | +1 (+3) | +0.5 (+1.5) | 0 | 0 (-1) | 0 (-2) |
 | `surplusKeep` (existing) | what the treasury keeps over its cap before the surplus goes out | 0 | 1,000 | W (4,000) | W | W |
 | `treasuryCap` (existing) | over this, the wage support, the extra alms and the surplus | 1,500 | W (2,000) | W | W | W |
 | `surplusAlmsTo` (existing) | the surplus alms level the poorest up to this, a head | 80 | 60 | W (40) | W | W |
-| **ground rent** (new) | % of a keeper's nightly profit to the Crown's estate | 0 | 0 | 0 | 20 | 45 |
-| **rent scale** (new) | % on every land rent (`landRent*`) | 100 | 100 | 100 | 120 | 140 |
-| **the Houses' dividend** (new) | % of the estates' pooled spare paid to upper-class households each night | 0 | 0 | 0 | 20 | 40 |
-| **the rich hold** (new) | the comforts threshold for upper-class households, pennies a head | W (40) | W | W | 150 | 600 |
+| **ground rent** (new) | % of a keeper's nightly profit to the Crown's estate (to the treasury while it is under `treasuryFloor`) | 0 | 0 | 0 | 15 (20) | 30 (45) |
+| **rent scale** (new) | % on every land rent (`landRent*`) | 100 | 100 | 100 | 112 (120) | 125 (140) |
+| **the Houses' dividend** (new) | % of the estates' pooled spare paid to upper-class households each night | 0 | 0 | 0 | 15 (20) | 30 (40) |
+| **the rich hold** (new) | the comforts threshold for upper-class households, pennies a head | W (40) | W | W | 100 (150) | 150 (600) |
+| **the spending keep** (new in Tune round 1) | the comforts threshold for every other household, pennies a head | 25 | 32 | W (40) | W | W |
 
 The table is data, in `Data/Items/city_loop.json` under `"steering": {"levers": {...}, "targets": {...}}`, read with
 the rest of the city loop's data. A DM can't edit it. Atlas shows it, and an author can edit the file. The new levers

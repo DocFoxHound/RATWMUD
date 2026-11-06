@@ -427,7 +427,7 @@ struct CityLoop
     struct Steering
     {
         std::map<std::string, std::array<double, 5>> levers, targets;
-        double treasuryFloor = 1400, treasuryLow = 1000;   // The toll lean's guard (5.3).
+        double treasuryFloor = 800, treasuryLow = 500;   // The toll lean's guard (5.3).
     };
     Steering steering;
 };
