@@ -1581,11 +1581,12 @@ struct EconomyWatch
                                                std::pair{"lev_surplus_keep", "surplusKeep"}, std::pair{"lev_cap", "treasuryCap"},
                                                std::pair{"lev_alms_to", "surplusAlmsTo"}, std::pair{"lev_ground_rent", "groundRent"},
                                                std::pair{"lev_rent_scale", "rentScale"}, std::pair{"lev_dividend", "dividend"},
-                                               std::pair{"lev_rich_above", "richAbove"}})
+                                               std::pair{"lev_rich_above", "richAbove"},
+                                               std::pair{"lev_spend_above", "spendAbove"}})
                 steering << ", \"" << field << "\": " << society.steerLever(lever);
             steering << ", \"lev_toll\": " << (society.steering() ? st.tollLean : 0.) << ", \"share_out\": " << d.shareOut
                      << ", \"share_out_homes\": " << d.shareOutHomes << ", \"posts_share\": " << d.postsShare
-                     << ", \"ground_rent\": " << d.groundRent << ", \"dividend\": " << d.dividend << ", \"dividend_homes\": "
+                     << ", \"ground_rent\": " << d.groundRent << ", \"ground_rent_treasury\": " << d.groundRentTreasury << ", \"dividend\": " << d.dividend << ", \"dividend_homes\": "
                      << d.dividendHomes << ", \"land_rent_extra\": " << d.landRentExtra << ", \"skim\": " << d.skim;
             map("skim_for", d.skimFor);
             map("skim_by", d.skimBy);

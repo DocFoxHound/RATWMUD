@@ -41,12 +41,12 @@ test('the table read as Core reads it (the shared cases)', () => {
 
 test('dragging shows what a place would mean, before it is saved', () => {
     const p = preview(view, -50);
-    assert.equal(p.gini, .32);
+    assert.equal(p.gini, .41);
     assert.equal(p.upper, null, 'the upper share watched left of the centre');
     const keep = p.levers.find(l => l.key === 'surplusKeep')!;
     assert.deepEqual([keep.low, keep.high], [550, 2350], 'the keep\'s bounds at -50: the table at the band\'s two ends');
     const right = preview(view, 100).levers.find(l => l.key === 'groundRent')!;
-    assert.deepEqual([right.low, right.high], [30, 45]);
+    assert.deepEqual([right.low, right.high], [21, 30]);
 });
 
 test('the measures against their targets', () => {

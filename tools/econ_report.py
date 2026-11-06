@@ -855,7 +855,8 @@ STEER_LEVER_FIELDS = (('lev_share_out', 'the share-out (%)'), ('lev_posts_share'
                       ('lev_surplus_keep', 'the treasury\'s keep (p)'), ('lev_cap', 'the treasury\'s cap (p)'),
                       ('lev_alms_to', 'the poorest raised to (p)'), ('lev_ground_rent', 'the ground rent (%)'),
                       ('lev_rent_scale', 'the rent scale (%)'), ('lev_dividend', 'the Houses\' dividend (%)'),
-                      ('lev_rich_above', 'the rich hold (p a head)'))
+                      ('lev_rich_above', 'the rich hold (p a head)'),
+                      ('lev_spend_above', 'the spending keep (p a head)'))
 
 
 def steering_lines(econ, table=None):
@@ -905,7 +906,7 @@ def steering_lines(econ, table=None):
             say_t = f'{tv:g} ± {bv:g}'
             ok = '-' if vals[-1] is None else ('yes' if abs(vals[-1] - tv) <= bv else 'no')
         if field == 'm_treasury':
-            say_t, ok = f'floor {table.get("treasuryFloor", 1400)} (the toll lean\'s guard)', '-'
+            say_t, ok = f'floor {table.get("treasuryFloor", 800)} (the toll lean\'s guard)', '-'
         lines.append([name, say_t] + ['-' if v is None else f'{v:.{places}f}' for v in vals] + [ok])
     out += table_lines(head, lines) + ['']
     out += table_lines(['lever'] + [f'year {i + 1}' for i in range(len(years))],
@@ -915,6 +916,9 @@ def steering_lines(econ, table=None):
     flows = [('share_out', 'the share-out'), ('posts_share', 'the hands\' share'), ('ground_rent', 'the ground rent'),
              ('dividend', 'the Houses\' dividend'), ('land_rent_extra', 'the rent scale\'s extra')]
     out.append('The levers\' money a day: ' + ', '.join(f'{name} {sum(r.get(k, 0) for r in rows) / n:.1f}p' for k, name in flows) + '.')
+    if any('ground_rent_treasury' in r for r in rows):
+        out.append(f'Of the ground rent, to the treasury while it was under its floor: '
+                   f'{sum(r.get("ground_rent_treasury", 0) for r in rows) / n:.1f}p a day.')
     skim = sum(r.get('skim', 0) for r in rows)
     purpose, group, steady = collections.Counter(), collections.Counter(), collections.Counter()
     relief = collections.Counter()
