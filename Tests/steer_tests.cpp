@@ -321,6 +321,20 @@ void theLeversAtTheEnds()
     auto poor = city(town(), 1000, {{"steer", 1}, {"steerLean", 200}});
     run(poor, 1 + 17.9 / 24, 1 + 18.5 / 24);
     expect(poor.state().loop.steer.tollLean == 0, "a treasury under 1,400p: the lean not under 0: " + n(poor.state().loop.steer.tollLean));
+    // Judged each night, not only when the push moves (the runs of 2026-11-06): the slider set far right while the treasury
+    // was over its floor, which the night's money then took under it. The lean goes back half a point a night to 0, long
+    // before the first judging (day 56), and the money is conserved.
+    auto fell = city(town(), 1500, {});
+    run(fell, 1 + 7.9 / 24, 1 + 17.5 / 24);
+    setRules(fell, {{"steer", 1}, {"steerLean", 200}});
+    expect(fell.state().loop.steer.tollLean == -2, "over its floor: the lean -2 at once: " + n(fell.state().loop.steer.tollLean));
+    fell.shift("treasury", "aa_rich", "", 0, fell.cash("treasury") - 1100, "test: the treasury drawn down");
+    run(fell, 1 + 17.5 / 24, 1 + 18.5 / 24);
+    expect(fell.state().loop.steer.tollLean == -1.5, "under its floor that night: the lean half a point back: " + n(fell.state().loop.steer.tollLean));
+    run(fell, 1 + 18.5 / 24, 5 + 18.5 / 24);
+    expect(fell.state().loop.steer.tollLean == 0 && fell.state().loop.steer.push == 1,
+           "four nights on: the lean 0, the push still at the slider: " + n(fell.state().loop.steer.tollLean));
+    expect(fell.conserved(), "conserved");
 }
 
 void theHandsShareAndTheGroundRent()

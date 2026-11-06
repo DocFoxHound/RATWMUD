@@ -54,6 +54,16 @@ double gini(std::vector<double> v)
     return sum <= 0 ? 0 : (2 * weighted) / (double(v.size()) * sum) - (double(v.size()) + 1) / double(v.size());
 }
 
+// The toll lean at the push, with its guard (doc 74, 5.3): while the treasury's 28-night mean (before it has one,
+// tonight's) is under treasuryFloor, the toll is never leaned down: the lean is at least 0.
+double tollLeanWanted(const Society& s)
+{
+    const auto& st = s.state().loop.steer;
+    const double want = s.steerLever("tollLean");
+    const double treasury = st.treasury >= 0 ? st.treasury : double(s.cash("treasury"));
+    return treasury < items::cityLoop().steering.treasuryFloor ? std::max(want, 0.) : want;
+}
+
 std::string fixed(double v, int places)
 {
     std::ostringstream o;
@@ -702,9 +712,9 @@ void Society::housesDividend()
 
 void Society::steerSet(double push, std::int64_t day, const std::string& why, bool judging)
 {
-    // The push moved (or the toll lean's guard judged): the levers at the new push, the toll lean with its guard (doc 74,
-    // 5.3: not lowered under 0 while the treasury's 28-night mean is under treasuryFloor; under treasuryLow, back up half
-    // a point a judging), and a line in the history naming what moved.
+    // The push moved: the levers at the new push, the toll lean with its guard (doc 74, 5.3: at least 0 while the
+    // treasury's 28-night mean is under treasuryFloor; each night, steerEconomy brings it back toward that), and a line in
+    // the history naming what moved.
     auto& st = state_.loop.steer;
     static const char* const Levers[] = {"shareOut", "postsShare", "tollLean", "surplusKeep", "treasuryCap", "surplusAlmsTo",
                                          "groundRent", "rentScale", "dividend", "richAbove"};
@@ -713,16 +723,8 @@ void Society::steerSet(double push, std::int64_t day, const std::string& why, bo
         before[l] = steerLever(l);
     const double was = st.push;
     st.push = std::clamp(push, -1., 1.);
-    const auto& t = items::cityLoop().steering;
-    const double want = steerLever("tollLean");
-    const double treasury = st.treasury >= 0 ? st.treasury : double(cash("treasury"));   // (Before its mean: tonight's.)
-    double lean = want;
-    if (treasury < t.treasuryLow && st.tollLean < 0)
-        lean = std::min(0., st.tollLean + .5);
-    else if (treasury < t.treasuryFloor && want < 0)
-        lean = std::max(want, std::min(st.tollLean, 0.));
     const double leanWas = st.tollLean;
-    st.tollLean = steering() ? lean : 0.;
+    st.tollLean = steering() ? tollLeanWanted(*this) : 0.;
     std::string moved;
     for (const char* l : Levers)
     {
@@ -811,6 +813,18 @@ void Society::steerEconomy(std::int64_t day)
     follow(st.hungry, h, fast);
     follow(st.shortHomes, k, fast);
     follow(st.treasury, tr, fast);
+    // The toll lean's guard, each night on the treasury's mean after tonight's money (doc 74, 5.3; the runs of 2026-11-06:
+    // judged only when the push moved, a lean set at 18:00 before the wages held the toll down for 56 nights while the
+    // treasury fell to 594p): the lean goes toward what the push and the guard want, at most half a point a night.
+    if (const double want = tollLeanWanted(*this); std::abs(want - st.tollLean) > 1e-9)
+    {
+        const double was = st.tollLean;
+        st.tollLean = std::abs(want - was) <= .5 ? want : was + (want > was ? .5 : -.5);
+        if ((want >= 0) != (was >= 0) || std::abs(st.tollLean - want) < 1e-9)
+            loopToday_.steerWhy = "Day " + std::to_string(day) + ": the treasury's 28-night mean " + fixed(st.treasury, 0) +
+                                  "p against its floor " + fixed(items::cityLoop().steering.treasuryFloor, 0) + "p: the toll lean " +
+                                  fixed(was, 1) + " -> " + fixed(st.tollLean, 1);
+    }
     if (st.days < ownRule("steerMeanDays") || day - st.judged < ownRule("steerJudgeDays"))
         return;
     // Judging.

@@ -1661,6 +1661,15 @@ int main(int argc, char** argv)
     int startDay = 0;                               // --day N: start on day N of the year (1-365; 0: the world's own).
     bool atSeams = false;                           // --at-seams: the players after the first by seams (doc 70).
     int farmsFrom = -2, farmsEvery = 0;             // --farms DAY [--farms-every N]: the farms' switch (doc 71), from that day.
+    // --rule-at DAY NAME VALUE (repeatable): a rule set at the start of that day (the economy line's "day", at 00:00),
+    // as the DM's economy.sync would set it: the world's rules with that one changed, adopted at once (doc 74's sweep).
+    struct RuleAt
+    {
+        int day = 0;
+        std::string name;
+        int value = 0;
+    };
+    std::vector<RuleAt> rulesAt;
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -1719,6 +1728,13 @@ int main(int argc, char** argv)
             farmsEvery = std::atoi(argv[++i]);
             usage = usage || farmsEvery < 1 || farmsEvery > 3650;
         }
+        else if (flag == "--rule-at" && i + 3 < argc)
+        {
+            RuleAt r{std::atoi(argv[i + 1]), argv[i + 2], std::atoi(argv[i + 3])};
+            i += 3;
+            usage = usage || r.day < 0 || !items::ruleInfo(r.name);
+            rulesAt.push_back(std::move(r));
+        }
         else if (flag == "--day" && i + 1 < argc)
         {
             startDay = std::atoi(argv[++i]);
@@ -1732,7 +1748,7 @@ int main(int argc, char** argv)
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic]"
                      " [--events FILE] [--threads N] [--economy FILE [--economy-detail FILE] [--economy-level off|normal|full [--economy-full FILE]]]"
                      " [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
-                     " [--unseen-step N] [--straight] [--coarse-ticks] [--farms DAY [--farms-every N]]]\n";
+                     " [--unseen-step N] [--straight] [--coarse-ticks] [--farms DAY [--farms-every N]] [--rule-at DAY NAME VALUE]...]\n";
         return 2;
     }
     if (playerCount < 0)
@@ -2078,6 +2094,17 @@ int main(int argc, char** argv)
         const int stride = coarse && !server.anyoneOnstage() ? std::min(CoarseSteps - i % CoarseSteps, ticks - i) : 1;
         if (economyOut && i % 12000 == 0)          // Each game hour (12,000 ticks): the economy's samples.
             watch.hour(server, int(std::floor(from + i * 0.05 / 600.0 + 1e-9)), economyOut);
+        if (!rulesAt.empty() && i % 12000 == 0)
+            if (const int at = int(std::floor(from + i * 0.05 / 600.0 + 1e-9)); at % 24 == 0)
+                for (const auto& r : rulesAt)
+                    if (r.day == at / 24)
+                    {
+                        // As economy.sync: the world's economy with the rule changed, adopted (the steering followed at once).
+                        auto e = server.society().authored().economy;
+                        e.rules[r.name] = r.value;
+                        server.society().adoptEconomy(e);
+                        std::cout << "  day " << r.day << ": the rule " << r.name << " set to " << r.value << "\n";
+                    }
         if (!sampling)
         {
             server.tick(0.05 * stride);

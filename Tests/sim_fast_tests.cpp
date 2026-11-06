@@ -382,6 +382,32 @@ void theHarness(const std::string& binary, const fs::path& root)
         ++tableDays;
     }
     expect(metaSeen && tableDays == 3, "the meta line, then a table line a day: " + std::to_string(tableDays));
+    // --rule-at DAY NAME VALUE (doc 74's sweep): the steering turned on at day 1's start and the slider moved to the far left at
+    // day 2's, as the DM's economy.sync would: day 0's line as the run without them, day 1 steered at the centre, day 2 with
+    // the push at once at the slider (feed-forward) and the levers with it.
+    const auto [ruled, ruledOut] = runIt("ruled", "--threads 1 --rule-at 1 steer 1 --rule-at 2 steerLean 0");
+    expect(ruledOut.find("day 1: the rule steer set to 1") != std::string::npos && ruledOut.find("day 2: the rule steerLean set to 0") != std::string::npos,
+           "--rule-at: says what it set: " + ruledOut.substr(0, 600));
+    {
+        std::istringstream lines(ruled), plain(one);
+        std::string l0, p0, l1, l2;
+        std::getline(lines, l0);
+        std::getline(plain, p0);
+        std::getline(lines, l1);
+        std::getline(lines, l2);
+        expect(l0 == p0, "day 0 is as the run without --rule-at");
+        json::Value v1, v2;
+        std::string error;
+        expect(json::parse(l1, v1, error) && json::parse(l2, v2, error), "the ruled lines are JSON: " + error);
+        expect(v1.number("steer", -1) == 1 && v1.number("steer_lean", -1) == 0 && v1.number("steer_push", -9) == 0,
+               "day 1: the steering on, at the centre: " + l1.substr(0, 200));
+        expect(v2.number("steer", -1) == 1 && v2.number("steer_lean", 0) == -100 && v2.number("steer_push", 0) == -1 &&
+                   v2.number("lev_share_out", 0) == 30 && v2.number("steer_push_hi", 0) > -1,
+               "day 2: the slider far left, the push and the share-out with it at once");
+        expect(v2["conserved"].asBool(), "and the money conserved");
+    }
+    const auto badRule = "\"" + binary + "\" \"" + root.string() + "\" --simulate 6 30 --rule-at 1 noSuchRule 1 > /dev/null 2>&1";
+    expect(std::system(badRule.c_str()) != 0, "--rule-at refuses a rule that isn't one");
     const auto [fast, fastOut] = runIt("fast", "--threads 1 --fast");
     expect(fastOut.find("unseen step 30 s") != std::string::npos && fastOut.find("straight") != std::string::npos &&
                fastOut.find("0.5 s ticks") != std::string::npos,
