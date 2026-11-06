@@ -1926,3 +1926,31 @@ less (-8% against -14%), but within a run's spread. What is open:
 3. **The yields are at their balance**: the shortages left are the low days of a season, and every raise tried here
    (and in s11f) piled the rest and lowered the Houses' works' rents.
 4. **Hides** rot at ~16 a day (the tannery uses 44% of its hours; nobody but the farms' basket buys leather).
+
+### stable9d's 3-year run (ridgemere2 d09dd16, 2026-11-05)
+
+Round 7 on the merged build (`build-core`, gcc Release, up to date after the merge), **export67** (round 7's DEV write,
+the three moved posts; no new DEV write this time), wharf7b's flags (`--farms 0`, an area every 28 days); 1,095 days,
+2,238 s, exit 0; `stable9d-report.md`, its patch, `stable9d.out`.
+
+**It is `s12m` to the byte.** The economy file, the loop state and the full log are identical to s12m's (`cmp`), the end
+digests match (people b3ca15e81bbcfc26, society 75411962682476a2), the patch's yields are identical and the report
+differs only in its patch's path. The merge held only the doc and s12m's files, so this was expected; every number in
+s12m's table above is this run's. Year 3, against wharf7b and producers7:
+
+| | stable9d (= s12m) | wharf7b | producers7 |
+|---|---|---|---|
+| Money conserved every day | yes; 64,594p at the end | yes | yes |
+| Estates' posts; nights short (year 3) | 672p of 672p; none in three years | 788 of 824p; Grayrock and Greatly short | 803 of 824p |
+| The Crown: rents in; grants out; purse at year ends | 741p; 372p; 1,431, 1,452, 1,305p | 464p; 502p; 625p at the end | 503p; 529p; 714p |
+| Grayrock, Timberland, Greatly, Fell (year ends) | 40/27/19, 576/460/415, 52/44/94, 304/294/325p | 18, 361, 61, 29p (end) | 18, 318, 66, 28p |
+| Treasury: year ends; wage support wanted / paid | 2,014, 2,164, 2,191p (least 1,450p in year 3); 201 / 154p (paid 87, 121, 154p) | mean 3,999p; 303 / 296p | mean 3,271p; 311 / 295p |
+| Hunger: days; households short (economy line) | 5; 0.11 | 6; 0.31 | 3; 0.30 |
+| The foundry (the run): wages paid; to its House | 25.7 of 25.8p; 26.4p | - | - |
+| The valve (the run): in / out; credit at the end; takes the room could not fit | 78 / 78p; 1p; 277p a day | - | - |
+
+**Verdict: not stable, as s12m.** Money conserved, the posts paid every night, hunger the lowest yet, the treasury over
+its float and the valve netting; but the wage support paid still climbs (87 -> 154p, the toll's drift), the Crown's
+year-end purse falls (1,452 -> 1,305p; over its keep 403 -> 371p) on Grayrock's 318p a day of grants, Timberland's purse
+falls (576 -> 415p, though its margin over its keep is level at ~175p), and hides rot at ~16 a day. These are s12m's
+open points 1-4.
