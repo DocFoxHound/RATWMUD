@@ -107,6 +107,21 @@ class ReportTests(unittest.TestCase):
             self.assertIn('| bakery | 20.0 | 98% | 0% |', text, "the short trade's crew-hours")
             self.assertIn('Bound by their crew (used 95% or more of their hours): baker (bakery, 19.5 of 20.0 h).', text)
             self.assertIn('1.00 a day, 1 households; 100% with no earner, 100% alone, a mean purse of 9.0p; by class lower 2.', text)
+            self.assertNotIn('At the shops\' last hour', text, 'the older rows have no hour')
+
+    def test_short_households_at_the_last_hour(self):
+        # Round 10 (doc 73): the rows' last three, the meals lacked, the purse then and the cheapest food on offer: on the
+        # first day the pup held 1p against a 2p bun (lacking 2 meals), on the second 3p (lacking 1), so it could pay.
+        more = lambda n: {'hh_short': [['pup', 'lower', 1, 9, 0, -1, -1, -1, 2 - n, 1 + 2 * n, 2]]}
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            econ = write_run(root, more=more)
+            out = root / 'report.md'
+            self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
+            text = out.read_text()
+            self.assertIn('a mean purse of 9.0p; by class lower 2.', text, 'the payers are the three before them')
+            self.assertIn("At the shops' last hour they lacked 1.5 meals and held 2.0p; 50% could have paid for the cheapest "
+                          'food then on offer, 0% found no food in any open shop.', text)
 
     def test_draws_short_as_lost_sales(self):
         # The stables sold 3 oats on the day it held some, then stood 20 under its shelf both days: at most its day's sales

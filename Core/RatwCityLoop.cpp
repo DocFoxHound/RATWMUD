@@ -1150,10 +1150,23 @@ void Society::householdsShop(int hod, std::int64_t day, int season)
         {
             // (Recorded at the shops' last hour: the meals' worth its members still lack of shortDays.)
             double lack = 0;
+            std::int64_t held = 0, cheapest = 0;
             for (const auto& m : members)
                 if (const auto* wallet = account(m))
+                {
                     lack += std::max(0., cfg.shortDays * NourishADay * per - onHand(*wallet));
-            shortageWatcher_({members.front(), "", "food", "", std::max(1, int(std::ceil(lack / std::max(1, nourishment("meal")) - 1e-9)))});
+                    held += cash(m);
+                }
+            // (The cheapest piece then on offer, at its shop's price: is it money or the shops' stock it lacks?)
+            for (const auto* s : all)
+                for (const auto& [item, n] : s->account->stock)
+                    if (n > 0 && edible(item) && !luxury(item))
+                        if (const auto c = shopCost(s->till, item, 1); c > 0 && (cheapest == 0 || c < cheapest))
+                            cheapest = c;
+            Shortage row{members.front(), "", "food", "", std::max(1, int(std::ceil(lack / std::max(1, nourishment("meal")) - 1e-9)))};
+            row.held = held;
+            row.cheapest = cheapest;
+            shortageWatcher_(row);
         }
         if (!first)
             return;

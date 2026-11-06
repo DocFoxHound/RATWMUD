@@ -209,8 +209,12 @@ class Run:
             self.flows[season][(n(a), n(b))] += coins
         for till, hours, used, lost in d.get('work', []):
             self.work[n(till)].update(hours=hours / 10, used=used / 10, lost=lost / 10, days=1)
-        for member, cls, members, purse, earners, *payers in d.get('hh_short', []):
+        for member, cls, members, purse, earners, *rest in d.get('hh_short', []):
+            payers, then = rest[:3], rest[3:]       # (Since doc 73's round 10: the meals lacked, the purse then, the cheapest food.)
             self.hh_short.update(rows=1, alone=members == 1, none=earners == 0, purse=purse, **{'class:' + n(cls): 1})
+            if len(then) == 3:
+                self.hh_short.update(then=1, lack=then[0], purse_then=then[1], afford=then[2] > 0 and then[1] >= then[2],
+                                     no_food=then[2] == 0)
             self.hh_homes[n(member)] += 1
             for p in payers:
                 if p >= 0:
@@ -508,6 +512,10 @@ def report(econ, run, top, patch_path):
                 + ', '.join(f"{k[6:]} {v}" for k, v in sorted(h.items()) if k.startswith('class:'))
                 + (('; their earners\' payers ' + ', '.join(f'{short_name(p)} {v}' for p, v in run.hh_payers.most_common(top)))
                    if run.hh_payers else '') + '.')
+            if h['then']:
+                say(f"At the shops' last hour they lacked {h['lack'] / h['then']:.1f} meals and held {h['purse_then'] / h['then']:.1f}p; "
+                    f"{100 * h['afford'] / h['then']:.0f}% could have paid for the cheapest food then on offer, "
+                    f"{100 * h['no_food'] / h['then']:.0f}% found no food in any open shop.")
     elif econ:
         say(f'Hungry (mean of hours): {statistics.fmean(r.get("hungry_mean", 0) for r in econ):.1f}; households short a day: '
             f'{statistics.fmean(r.get("households_short", 0) for r in econ):.1f}; Gini of earners {econ[-1].get("gini_earners")}.')
@@ -688,7 +696,7 @@ def wharf_lines(econ):
     if len(by_season) > 1:
         out += table(['season', 'in a day', 'out a day', 'net a day'],
                      [[k, f'{v[0] / v[2]:.0f}', f'{v[1] / v[2]:.0f}', f'{(v[0] - v[1]) / v[2]:+.0f}'] for k, v in by_season.items()]) + ['']
-    goods = sorted(set(landed) | set(taken), key=lambda g: -(landedP[g] + takenP[g]))
+    goods = sorted(set(landed) | set(taken), key=lambda g: (-(landedP[g] + takenP[g]), g))   # (By name on a tie: a set's order isn't fixed.)
     if goods:
         out += table(['good', 'landed a day', 'paid for it a day', 'taken a day (of it from shops)', 'the beyond paid a day'],
                      [[g, f'{landed[g] / n:.1f}', f'{landedP[g] / n:.1f}',

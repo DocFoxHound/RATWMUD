@@ -1132,6 +1132,9 @@ class Society
     {
         std::string buyer, shop, item, instead;
         int pieces = 0;
+        // A household's food short (doc 73, round 10, the user's "more logging"): its purse then, at the shops' last hour,
+        // and the cheapest piece of food it could have bought then (0: no open shop held any), in pennies.
+        std::int64_t held = 0, cheapest = 0;
     };
     void setShortageWatcher(std::function<void(const Shortage&)> watcher) { shortageWatcher_ = std::move(watcher); }
     const LoopDay& loopYesterday() const { return loopYesterday_; }

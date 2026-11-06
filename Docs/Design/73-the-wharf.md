@@ -2335,3 +2335,161 @@ round 9's s14f table is this run's. Year 3 (a day unless marked), against wharf7
 posts, the treasury and the valve pass; the support paid still rises, hunger is a little over wharf7b's, and the hides and
 iron bar stand. The 5-year run (s14f5y, above) is the evidence that the support and hunger settle in years 4-5; the
 open list of round 9 stands as written (the sea trade's posts, the short tills' idle posts, hides, iron bar, apples).
+
+### Round 10 of stabilizing (branch `r2-stable10b`, 2026-11-06): the toll's drift softened to 1 point; the mine's ore
+
+The user's request: **soften the toll's drift** (again, after round 9 took it from 5 points to 2). That is the only lever
+this round changes. Not touched: the treasury's target (5,500p), its float and cap, the wage support's settings, the
+toll's base rate (the world's 30), the DM's `wharf.credit` and `wharfInjectADay`. Cheese left as it is.
+
+**No DEV write, so no new export.** The workflow's task asked for posts moved in DEV (idle hands to crew-bound makers),
+but the permission check refused the move script, its dry run included, as a write to a shared world, and the user's
+own request this round is the drift alone. So no post was moved and no NPC made. Every run is on **export70** (DEV
+revision 96, build 70, round 8's), with wharf7b's flags (`--farms 0`, an area every 28 days). DEV itself now reads
+revision 97, which is not this round's and was not looked into.
+
+**The trace** (stable10's logs; a day, year 3 unless marked):
+
+- **The idle posts have little work to go to.** The wage support is spread thin: the largest are the Fell Press House
+  (3 posts, 28% of their hours used, 8.2p), Cinder Wheelwrights (2, 15%, 5.5p), Rustwick's smithy (2, 32%, 4.8p), the
+  Greatly Colour Works (2, 30%, 4.0p) and the Fell Preserving House (3, 17%, 3.8p); about 100 tills want 1-3p each.
+  The makers bound by their crews that could take a hand are few, and they are short of inputs, not demand:
+  - The Wharf Tannery (89% of its hours, its keeper 32.6p over its wages) has no oak bark at the day's end on any day.
+    Its bindings were short only 0.34 a day.
+  - Greywool, the weaver (85%, 24.0p), is short of flax.
+
+  The raw materials sell out at the farms: stone, clay, sand, flax, timber, limestone, lime and iron ore have no stock on
+  43-83% of days. But the makers they feed (the mason, the brickworks, the plasterworks, the sawmill, the glassworks)
+  have stock of their own goods left at the day's end on most days. So more inputs would not sell more. Moving hands
+  would shift who pays them (a keeper's profit in place of the treasury's support); nothing here sells more.
+- **Iron.** The mine sold all it grew (48 a day; no stock on 68% of days), and the ironworks' bars sold out on 62% of
+  days. Its 5 posts used 53% of their hours.
+- **The short households, at the shops' last hour** (new logging, below; s15f): they lacked a meal (1.0) and held 1.5p.
+  On no day was an open shop out of food. So it is money, not stock: they live on the alms line, and 64% have no
+  earner. Hungry hours stay small in every run (6 days in year 3, 6 hours at most).
+
+**The drift, measured on this branch's data** (five 3-year runs, export70; `s15a`-`s15d` with the mine's ore at x1.3, a
+first try; `s15e` and `s15f` with the x1.08 kept). One value is changed in a scratch copy of the data:
+- `s15a`, `s15e`: 2 points, the rule as round 9 left it.
+- `s15b`, `s15f`: 1 point.
+- `s15c`: a slower step, 0.2 a judging (2 points at most).
+- `s15d`: no drift (0 points).
+
+Year 3, a day (years 2 -> 3 where given):
+
+| | 2 pts (s15e) | 2 pts (s15a) | **1 pt (s15f)** | 1 pt (s15b) | step 0.2 (s15c) | 0 (s15d) |
+|---|---|---|---|---|---|---|
+| The toll's rate at the year ends; its last move | 31.5, 32, 32; day 406 | 31.5, 32, 32; day 406 | **31, 31, 31; day 238** | 31, 31, 31; day 238 | 30.6, 31.6, 32; day 910 | 30 |
+| The Crown over its keep (years 2 -> 3) | 444 -> 437p | 442 -> 439p | **460 -> 465p** | 462 -> 469p | 461 -> 443p | 485 -> 479p |
+| The Crown's mean purse | 1,431 -> 1,426p | 1,429 -> 1,425p | **1,447 -> 1,448p** | 1,449 -> 1,451p | 1,447 -> 1,429p | 1,467 -> 1,459p |
+| Timberland over its keep | 211 -> 199p | 212 -> 198p | **214 -> 213p** | 217 -> 215p | 216 -> 210p | 218 -> 220p |
+| Fell over its keep | 96 -> 86p | 99 -> 89p | 104 -> 95p | 104 -> 97p | 102 -> 89p | 109 -> 102p |
+| The five estates' mean purses together | 2,115 -> 2,087p | 2,117 -> 2,090p | **2,142 -> 2,136p** | 2,148 -> 2,145p | 2,143 -> 2,107p | 2,176 -> 2,165p |
+| The farms' takings; the estates' land rents | 3,176; 862p | 3,180; 865p | 3,223; 890p | 3,228; 893p | 3,191; 870p | 3,267; 915p |
+| Wage support wanted / paid / unpaid | 182/129/53p | 189/132/58p | 182/106/76p | 175/108/68p | 184/131/53p | 173/72/100p |
+| Paid by half-year (years 2, 3) | 102, 102, 125, 133p | 102, 100, 130, 134p | 61, 80, **105, 106p** | 61, 81, 106, 109p | 60, 91, 123, 140p | 27, 72, 67, 77p |
+| The no-earner's and the low wage's alms | 49, 18p | 45, 14p | 30, 7p | 30, 5p | 53, 14p | 10, 0p |
+| Households short (years 1-3) | 0.72, 0.55, 0.39 | 0.72, 0.55, 0.24 | 0.91, 0.61, 0.45 | 0.91, 0.66, 0.42 | 0.76, 0.71, 0.33 | 0.86, 0.76, 0.41 |
+| Hungry days, the most hours | 6, 12 | 8, 6 | 6, 6 | 6, 6 | 6, 7 | 5, 6 |
+| The treasury: least in year 3; at the end | 1,135; 2,114p | 1,178; 2,154p | 1,027; 2,131p | 1,050; 2,057p | 1,155; 2,143p | 973; 2,007p |
+
+- **What the drift does.** Each point the toll firms comes out of the farms' takings and the estates' rents: about 45p a
+  day off the farms and 25p off the land rents for each point, and Timberland's works' rents with them. It goes to the
+  treasury's room over its cap, which pays the wage support and the extra alms. At 0 the estates are level, but more
+  than half of the support goes unpaid (100p of 173p), and the no-earner's and low wage's alms nearly stop.
+- **At 2 points** the Crown's margin over its keep is level within 2% in year 3. But Timberland's falls 6% (works' rents
+  360 -> 347p) and Fell's 10%.
+- **At 1 point** the toll stops at 31 on day 238. In year 3 the Crown (460 -> 465p), Timberland (214 -> 213p) and the
+  five estates together (2,142 -> 2,136p) are level, and the support paid is level by half-year (105, 106p). The cost:
+  - About 23p a day less of the support is paid (76p unpaid against 53p).
+  - The no-earner's and low wage's alms are 37p a day against 67p.
+  - A few more households are short in years 1-2 (0.91 and 0.61 against 0.72 and 0.55).
+  - Year 3's 0.45 is within the noise the two 2-point runs show (0.39 and 0.24 from a change in the ore alone).
+  - The hungry are the same few: 6 days, 6 hours at most.
+- **A slower step** (0.2) only delays the drift: the toll is still firming in year 3 (32 on day 910), and the Crown's
+  margin falls 4% in that year.
+- Fell's margin eases in every run, even with no drift (109 -> 102p), so the toll does not cause it. Its orchards' and
+  vines' sales are the next thing to look at.
+
+**The fixes:**
+
+- **The toll's drift at most 1 point** (city_loop.json `tollDriftMost` 2 -> 1, the rule's default in RatwItems.h, the
+  editor's test, the studio's fallback). The step (half a point every 28 days) and the target are unchanged.
+  - **Why 1**: it is the softest limit that keeps the wage support paid. Of the four values tried, it is the one whose
+    year 3 has every estate's margin level but Fell's, which falls without the drift too, and the support paid level.
+    At 2 the estates still ease (Timberland -6%). At 0, 100p a day of the support goes unpaid.
+  - A saved toll that drifted further (DEV's at 32, PROD's) is held to 31 at once, as gateTollNow clamps to the rule.
+- **The mine's iron ore x1.08** in spring, summer and winter (country_farms.json, mine_frost_iron; autumn as it was,
+  when its stock carried over). The first try, x1.3 (`s15a`-`s15d`), sold only ~3 a day more ore and ~2.5 more bars,
+  and the rest piled at the mine (+3,869 a year). At x1.08 under a 2-point toll (`s15e`):
+  - The mine sells all it grows (51 a day), and its stock is level (150-650 over the run).
+  - The ironworks' bars are out on 8% of days (62% before), and its takings are 188p against 165p.
+
+  Under the 1-point toll (`s15f`) the households hold more and buy more iron: the foundry is at 99% of its hours, the
+  mine's ore is out on 43% of days and the ironworks' bars on 82% (below).
+- **The short households' last hour** (the user's "more logging"): the full log's `hh_short` rows gain `lack` (meals
+  short), `purse_then` (its purse at the shops' last hour) and `cheapest` (the cheapest piece of food then on offer at
+  its shop's price; 0: no open shop held any). They come from Society::Shortage's new `held` and `cheapest`, filled only
+  when a watcher records. The report prints them under the hh_short line.
+- **The report's Wharf table** sorts tied goods by name (the order of stable10's two 0.0 rows).
+- **Tests**: `selfcorrect_tests` (the default, 1), `sim_fast_tests` (the hh_short rows' 11 columns), `test_econ_report`
+  (the last-hour line; the older 8-column rows still read). ctest **79 of 79**; `test_econ_report`,
+  `test_farms_summary`, `test_country_industry`, `test_realm2` and the editor's `economy.test.ts` pass.
+
+**The 3-year run, `s15f`** (the branch as committed, `build-s11` gcc Release, export70, wharf7b's flags; 1,095 days,
+exit 0; `s15f-report.md`, its patch, `s15f.out`). **The 60-day smoke** (`s15f-smoke`, 1446 hours) exits 0, with money
+conserved, the estates' posts paid every night and nobody hungry. Its economy file is `s15-smoke`'s to the byte, and
+its digests are s14f-smoke's: in the first 60 days the iron area isn't on and the drift isn't yet judged (its first
+judging is day 154). A day, years 1-3 where given:
+
+| | s15f | stable10 |
+|---|---|---|
+| Money conserved every day; at the end | yes; 64,525p | yes; 64,573p |
+| Estates' posts; nights short | 648p of 648p; none in three years | 648p of 648p; none |
+| The toll's rate at the year ends; the toll (year 3) | 31, 31, 31; 1,486p | 31.5, 32, 32; 1,529p |
+| The Crown: rents; grants out (years 2, 3) | 771, **776p**; 335, 333p | 759, 754p; 336, 337p |
+| The Crown: mean purse; over its keep (years 2, 3) | 1,447 -> **1,448p**; 460 -> **465p** | 1,429 -> 1,419p; 443 -> 433p |
+| Timberland, Fell over their keep (years 2, 3) | 214 -> 213p, 104 -> 95p | 196 -> 185p, 93 -> 90p |
+| The five estates' purses together: means; year ends | 2,142 -> 2,136p; 2,410, 2,387, 2,177p | 2,096 -> 2,073p; 2,447, 2,278, 2,100p |
+| The farms' takings; the land rents (year 3) | 3,223; 890p | 3,177; 866p |
+| Wage support wanted / paid / unpaid (years 1-3) | 272/82/190, 192/70/122, **182/106/76p** | 276/88/188, 207/105/102, 188/132/57p |
+| Paid by half-year (years 2, 3) | 61, 80, **105, 106p** | 104, 108, 125, 138p |
+| The treasury: least in year 3; at the year ends | 1,027p; 1,779, 2,149, 2,131p | 1,156p; 1,863, 2,143, 2,134p |
+| The no-earner's and the low wage's alms (year 3) | 30, 7p | 55, 16p |
+| Hunger: days, the most hours (year 3); households short (years 1-3) | 6, 6; 0.91, 0.61, **0.45** | 3, 8; 0.71, 0.79, 0.39 |
+| The valve (the run): in / out; credit at the end; unfit takes | 102 / 102p; 70p; 229p | 93 / 93p; 22p; 243p |
+| Hides rotted (years 1-3) | 7.2, 11.6, 13.1 a day | 7.6, 12.0, 14.4 |
+| The ironworks (year 3): takings; bars out (days); the mine's ore out | 178p; 82%; 43% | 165p; 62%; 68% |
+
+**Against the stable definition, year 3:**
+
+| test | result | stable? |
+|---|---|---|
+| Money conserved every day | yes | yes |
+| Estates' posts paid every night | 648p of 648p, no night short in three years | yes |
+| No estate purse trending down, the Crown's included | the Crown's mean purse 1,447 -> 1,448p, over its keep 460 -> 465p; Timberland 214 -> 213p; the five's means 2,142 -> 2,136p; Fell 104 -> 95p (as in every run, drift or none); the year-end purses 2,387 -> 2,177p (the Crown's 1,505 -> 1,305p on the year's last day, its year-3 quarters' means 1,449, 1,449, 1,450, 1,447p) | **yes on the means**, but Fell eases |
+| The treasury over its float, wage support not climbing | least 1,027p; paid by half-year 105, 106p (70p in year 2, the treasury down to 478p in its summer) | yes |
+| Hunger as low as wharf7b or lower | 0.45 against 0.31; 6 days, 6 hours at most | **no** (about stable10's 0.39) |
+| No runaway pile, no standing shortage a producer should cover | iron bars short again under the lower toll (the ironworks out on 82% of days); hides rot 13.1 a day; apples, stone and flax as before | **no** |
+| The valve nets | 102p in, 102p out; the credit 70p | yes |
+
+**Verdict: not stable, but the estates and the wage support now pass.** At 1 point the toll stops in the first year,
+and from year 2 the Crown's and Timberland's margins and the support paid are level. What still fails is the poorest
+households' margin (they end the market at the alms line) and the piles the round did not reach.
+
+**What is open:**
+
+1. **The short households are the alms line itself.** At the shops' last hour they hold 1.5p, lack a meal, and no shop
+   is out of food. 64% have no earner and half live alone. A softer toll leaves the treasury less room over its cap
+   for their extra alms (30p a day against 55p). The approved design, alms for those with no earner or living alone
+   paid before the wage support or out of its own flow, is not built.
+2. **Iron at the lower toll**: ore x1.15 or so to cover what the foundry and ironworks take at 31. That is a guess from
+   s15f's ore sold (52 a day of 51 grown, out on 43% of days); it needs its own run.
+3. **The posts** (the wage support's idle hands, the sea trade's 36 porters on the Crown's grants, 288p a night) need a
+   DEV write, which the user did not ask for this round. The trace above says little would sell more: moving them
+   would change who pays them, not add sales.
+4. **Hides** (13.1 a day rotting): the tannery is short of oak bark every day. But leather bindings were short only
+   0.34 a day, so more bark alone would pile leather. It needs a second hide product with buyers.
+5. **Fell's margin** eases in every run (to 86-102p). Look at its orchards' and vines' sales.
+6. The `iron_bar` "draws short" counts in the report's first section swing with the run (s15e 63,238 in winter, s15f
+   101,057). They count the smithies' draws on the farms, which grow no bars. Read the ironworks' shelf instead.
