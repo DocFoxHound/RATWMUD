@@ -2238,11 +2238,39 @@ until day 28 (the fruit area: the apples). A day, years 1-3 where given:
 | No runaway pile, no standing shortage a producer should cover | apples +3 a day; hides rot (14.4 a day, rising); iron bar short at the draws (cheese left as it is) | **nearly** |
 | The valve nets | 93p in, 93p out; the credit 20p | yes |
 
-**Verdict: not yet stable, but the drift is no longer what moves.** The toll stops at 32 in year 2, and with it the
+**Verdict on three years: not yet stable, but the drift is no longer what moves.** The toll stops at 32 in year 2, and with it the
 Crown's slide (-10% a year in stable9e) is down to ~2%, and the support paid no longer follows the toll; what still
 moves is the support paid catching up with what the short tills want (its unpaid falling), Timberland's works' rents,
-and the hides. The `s14f5y` run (the same, five years) is to show whether the support and the estates settle once
-the unpaid is gone (below, when it ends).
+and the hides. So the same was run for five years (below).
+
+**The 5-year run, `s14f5y`** (the same build, data and flags, 1,825 days, exit 0; `s14f5y-report.md`, its patch,
+`s14f5y.out`; its first 1,095 days are s14f's economy file to the byte). Money conserved every day (64,516p at the
+end), the estates' posts paid every night of the five years. A day, years 2-5:
+
+| | year 2 | year 3 | year 4 | year 5 |
+|---|---|---|---|---|
+| The toll's rate; the toll | 32; 1,537p | 32; 1,529p | 32; 1,527p | 32; 1,545p |
+| The Crown: mean purse; rents; grants out | 1,429; 759; 336p | 1,419; 754; 337p | 1,422; 757; 341p | 1,436; 766; 338p |
+| The Crown over its keep | 443p | 433p | 433p | 449p |
+| Timberland, Fell, Greatly over their keep | 196, 93, -169p | 185, 90, -170p | 186, 81, -171p | 192, 81, -171p |
+| The five estates' purses together (mean) | 2,096p | 2,073p | 2,063p | 2,085p |
+| Wage support wanted / paid / unpaid | 207/105/102p | 188/132/57p | 198/141/58p | 182/138/44p |
+| The treasury: least; at the year's end | 843; 2,143p | 1,156; 2,134p | 1,155; 2,129p | 1,517; 2,203p |
+| Households short; hungry days, the most hours | 0.70; 3, 2 | 0.39; 3, 8 | 0.44; 4, 4 | **0.11**; 4, 5 |
+| The no-earner's and the low wage's alms | 33, 28p | 55, 16p | 63, 33p | 97, 93p |
+| The unfit takes (hides of them); hides rotted | 255 (173)p; 12.0 | 293 (198)p; 14.4 | 305 (208)p; 16.3 | 286 (200)p; 15.0 |
+| The valve in / out; the credit at the year's end | 91 / 91p; 35p | 70 / 70p; 22p | 62 / 62p; 7p | 68 / 68p; 26p |
+| Apples: grown, sold and eaten; in store at the end | 262, 257; 2,683 | 262, 259; 3,909 | 262, 251; 7,792 | 262, 255; 10,564 |
+
+**It settles.** With the toll stopped at 32 the Crown is level for four years (its mean purse 1,419-1,436p, over its
+keep 433-449p), the five estates together 2,063-2,096p, the wage support paid level from year 3 (132, 141, 138p) as
+the wanted is (188, 198, 182p), the treasury over its float and at its cap at each year's end, and hunger in year 5
+the run's lowest (0.11, under wharf7b's 0.31). Fell's margin steps down in year 4 (90 -> 81p) and holds; the apples'
+sales ease in years 4-5 and the store grows ~8 a day again; the hides rot ~15 a day, level from year 4.
+
+**Verdict on five years: stable on the money, the posts, the Crown and the estates, the treasury, the wage support,
+hunger and the valve**; not yet on the piles (the hides rotting ~15 a day, the apples' store growing again, iron bar
+short at the draws).
 
 **What is open** (not done this round: the user's request was the drift alone, and these need DEV writes or new goods):
 
@@ -2254,6 +2282,9 @@ the unpaid is gone (below, when it ends).
    6.0p). Moving those posts is the real fix for the support; it needs DEV writes.
 3. **Hides**: the unfit log shows the beyond would take ~200p a day of them; the netting valve has no room. A second
    hide product (a glue or parchment craft, new goods and buyers) or fewer carcasses' hides is the fix.
-4. **Iron bar** short at the farms' draws every season: the ironworks' limit not traced this round.
+4. **Iron bar** short at the farms' draws every season, more over five years (winter 123,112 draws short in s14f5y):
+   the ironworks' limit not traced this round.
+6. **Apples**: the x0.96 holds the store for three years; in years 4-5 the sales ease (251, 255 a day) and it grows ~8
+   a day again. Another ~3% off, or an apple product.
 5. **world_check's exit 134** (stable9's, after day 1,095): not seen again. Every 3-year run since (stable9b-e, s13a-b,
    cfA, cfB, the five of this round) exited 0; round 5's ASan and UBSan run found nothing. Not traced further.
