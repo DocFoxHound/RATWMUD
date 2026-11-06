@@ -14,7 +14,7 @@ const view: SteeringView = {
     levers: [{key: 'surplusKeep', label: 'The treasury\'s keep', unit: 'p', own: 4000, centre: 4000, low: 2950, high: 4000, now: 4000},
         {key: 'groundRent', label: 'The ground rent', unit: '%', own: 0, centre: 0, low: 0, high: 6}],
     saved: '2026-11-06', problem: '', changes: [],
-    now: {on: true, push: 0, judged: 56, days: 60, tollLean: 0, means: {gini: .49, upper: 7.1, top10: 34, hungry: .01, short: .4, treasury: 1690}},
+    now: {on: true, push: 0, judged: 56, days: 60, tollLean: 0, means: {gini: .49, upper: 13.1, top10: 34, hungry: .01, short: .4, treasury: 1690}},
 };
 
 test('the slider: -100..+100 on the tab, 0..200 in the rule, in fives', () => {
@@ -53,7 +53,7 @@ test('the measures against their targets', () => {
     const lines = measureLines(view);
     assert.equal(lines[0].target, '0.487 ± 0.035');
     assert.equal(lines[0].inside, true);
-    assert.equal(lines[1].target, '7.0 ± 2.5');
+    assert.equal(lines[1].target, '13.0 ± 2.0');
     assert.equal(lines[3].inside, true, 'hunger under its ceiling');
 });
 

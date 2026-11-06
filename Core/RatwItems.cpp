@@ -586,8 +586,8 @@ Catalog build()
                     {"groundRent", {0, 0, 0, 20, 45}},    {"rentScale", {100, 100, 100, 120, 140}},
                     {"dividend", {0, 0, 0, 20, 40}},      {"richAbove", {W, W, W, 150, 600}}};
         t.targets = {{"gini", {.15, .32, .487, W, W}},        {"giniBand", {.04, .04, .035, W, W}},
-                     {"upper", {W, W, 7, 25, 45}},            {"upperBand", {W, W, 2.5, 4, 5}},
-                     {"upperMost", {7, 7, W, W, W}},          {"top10Most", {20, 30, W, W, W}},
+                     {"upper", {W, W, 13, 25, 45}},           {"upperBand", {W, W, 2, 4, 5}},
+                     {"upperMost", {13, 13, W, W, W}},        {"top10Most", {20, 30, W, W, W}},
                      {"top10Least", {W, W, W, 40, 55}},       {"hungerMost", {.02, .05, .15, .15, .15}},
                      {"shortMost", {.1, .5, 3.5, 4, 5}}};
     }

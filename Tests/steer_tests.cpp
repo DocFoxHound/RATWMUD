@@ -152,7 +152,7 @@ void theRulesAndTheTable()
         }
     }
     expect(std::isnan(items::steerAt(t.targets.at("gini"), .25, std::nan(""))) && items::steerAt(t.targets.at("gini"), 0, std::nan("")) == .487 &&
-               std::abs(items::steerAt(t.targets.at("upper"), .25, std::nan("")) - 16) < 1e-9,
+               std::abs(items::steerAt(t.targets.at("upper"), .25, std::nan("")) - 19) < 1e-9,
            "a target is none where a neighbouring mark has none: the Gini only watched right of the centre");
 }
 
@@ -435,6 +435,35 @@ void theDeadBand()
                st.history.back().why.find("in their bands") != std::string::npos,
            "the dead band: no move: " + st.history.back().why);
 }
+void theHungerGuard()
+{
+    // The hunger guard's weekly pull (the runs of 2026-11-06): with the far right's treasury, which pays the alms, far under
+    // its floor (1,400p) on its mean and tonight, every seventh night the push goes back 0.10 toward the centre, before any
+    // judging, never past it; with Never Hungry on, the floor is that toggle's and nothing is pulled.
+    const auto hungry = [](bool fed) {
+        std::map<std::string, int> rules{{"steer", 1}, {"steerLean", 200}};
+        if (fed)
+            rules["neverHungry"] = 1;
+        auto s = city(town(), 9000, rules);
+        run(s, 1 + 7.9 / 24, 1 + 18.5 / 24);
+        auto state = s.state();
+        state.loop.steer.days = 3650;               // (The means' 28-night rate: they stay far over for weeks.)
+        state.loop.steer.treasury = 300;            // (The alms' purse far under its low, its mean and tonight.)
+        expect(s.restore(state), "the state read back");
+        s.shift("treasury", "aa_rich", "", 0, s.cash("treasury") - 300, "test: the treasury drawn down");
+        run(s, 1 + 18.5 / 24, 14 + 18.5 / 24);      // (Days 7 and 14 are the guard's nights.)
+        return s;
+    };
+    auto right = hungry(false);
+    const auto& st = right.state().loop.steer;
+    expect(std::abs(st.push - .8) < 1e-9, "two weeks far over: the push 1 -> 0.8, under its band (0.7..1 is not a floor): " + n(st.push));
+    expect(!st.history.empty() && st.history.back().why.find("weekly pull") != std::string::npos, "the reason logged: " +
+           (st.history.empty() ? std::string() : st.history.back().why));
+    expect(right.steerLever("dividend") < 40 && right.steerLever("richAbove") < 600, "the right's levers with it");
+    expect(right.conserved(), "conserved");
+    auto fed = hungry(true);
+    expect(fed.state().loop.steer.push == 1, "Never Hungry on: no pull: " + n(fed.state().loop.steer.push));
+}
 } // namespace
 
 int main()
@@ -452,6 +481,7 @@ int main()
         theShareOut();
         theController();
         theDeadBand();
+        theHungerGuard();
     }
     catch (const std::exception& error)
     {

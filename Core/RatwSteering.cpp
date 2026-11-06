@@ -825,6 +825,29 @@ void Society::steerEconomy(std::int64_t day)
                                   "p against its floor " + fixed(items::cityLoop().steering.treasuryFloor, 0) + "p: the toll lean " +
                                   fixed(was, 1) + " -> " + fixed(st.tollLean, 1);
     }
+    // The hunger guard's weekly pull (doc 74, 7.3; the runs of 2026-11-06: at the far right, judged only every 28 nights a
+    // step at a time, the push was still +0.65 on day 252 with 30 residents hungry an hour and 150 households short, the
+    // treasury at its float and the alms short): with Never Hungry off, every seventh night the push goes back toward the
+    // centre by the larger step (never past it), whatever the judging, while the hungry or the short are over twice their
+    // ceilings, or the treasury (which pays the alms) is under treasuryFloor, both on their 28-night means and tonight. (The
+    // treasury first: in the runs it fell for three weeks before the hunger came, and the hunger lasted two months.) (Tonight
+    // too, so the pull stops once the night's hunger has come back, not a month later when the means have: the first build
+    // of this pulled the push from 1 to 0 and overshot.) The judging only lets it lean right again once all are back.
+    const auto [hFar, farWhy] = [&]() -> std::pair<bool, std::string> {
+        const double hMost = steerTarget("hungerMost"), kMost = steerTarget("shortMost"), floor = items::cityLoop().steering.treasuryFloor;
+        const bool hungerFar = (hMost >= 0 && st.hungry > 2 * hMost && h > 2 * hMost) || (kMost >= 0 && st.shortHomes > 2 * kMost && k > 2 * kMost);
+        const bool poor = st.treasury < floor && tr < floor;
+        if (!hungerFar && !poor)
+            return {false, {}};
+        return {true, "hungry " + fixed(st.hungry, 3) + " an hour (ceiling " + fixed(hMost, 2) + "), households short " + fixed(st.shortHomes, 2) +
+                          " (ceiling " + fixed(kMost, 1) + "), the treasury " + fixed(st.treasury, 0) + "p (its floor " + fixed(floor, 0) + "p)"};
+    }();
+    if (ownRule("neverHungry") <= 0 && st.push > 0 && day % 7 == 0 && st.days >= 28 && hFar)   // (Once the means have a month.)
+    {
+        const double next = std::max(0., st.push - ownRule("steerStepMost") / 100.);
+        steerSet(next, day, "Day " + std::to_string(day) + ": " + farWhy + ": the hunger guard's weekly pull, the push " + fixed(st.push, 2) + " -> " +
+                                fixed(next, 2), false);
+    }
     if (st.days < ownRule("steerMeanDays") || day - st.judged < ownRule("steerJudgeDays"))
         return;
     // Judging.
@@ -889,10 +912,11 @@ void Society::steerEconomy(std::int64_t day)
     if (ownRule("neverHungry") <= 0)
     {
         const double hMost = steerTarget("hungerMost"), kMost = steerTarget("shortMost");
-        const bool over = (hMost >= 0 && st.hungry > hMost) || (kMost >= 0 && st.shortHomes > kMost);
-        const bool far = (hMost >= 0 && st.hungry > 2 * hMost) || (kMost >= 0 && st.shortHomes > 2 * kMost);
+        const bool over = (hMost >= 0 && st.hungry > hMost) || (kMost >= 0 && st.shortHomes > kMost) ||
+                          st.treasury < items::cityLoop().steering.treasuryLow;   // (The alms' purse low: no leaning right.)
+        const bool far = hFar;                      // (As the weekly pull's: the means and tonight both far over.)
         const std::string hunger = "hungry " + fixed(st.hungry, 3) + " an hour (ceiling " + fixed(hMost, 2) + "), households short " +
-                                   fixed(st.shortHomes, 2) + " (ceiling " + fixed(kMost, 1) + ")";
+                                   fixed(st.shortHomes, 2) + " (ceiling " + fixed(kMost, 1) + "), the treasury " + fixed(st.treasury, 0) + "p";
         if (far && st.push > 0)
         {
             step = -std::min(st.push, unit);

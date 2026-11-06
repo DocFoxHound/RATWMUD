@@ -8,8 +8,8 @@
     {"kind": "levers", "name": "treasuryCap", "at": -1, "own": 2000, "want": 1500},
     {"kind": "levers", "name": "rentScale", "at": 0.6, "own": 100, "want": 124},
     {"kind": "targets", "name": "gini", "at": -0.25, "own": null, "want": 0.4035},
-    {"kind": "targets", "name": "upper", "at": 0.25, "own": null, "want": 16},
+    {"kind": "targets", "name": "upper", "at": 0.25, "own": null, "want": 19},
     {"kind": "targets", "name": "gini", "at": 0.25, "own": null, "want": null},
-    {"kind": "targets", "name": "upper", "at": 0, "own": null, "want": 7}
+    {"kind": "targets", "name": "upper", "at": 0, "own": null, "want": 13}
   ]
 }
