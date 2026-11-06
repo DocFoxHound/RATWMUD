@@ -1100,7 +1100,12 @@ from the treasury that pays the wage support, and the tills went short 31-32 a d
 
 The share-out (5.1) keeps its own payers; the first build's spare function (`spares`) is now only the share-out's.
 
-**Tests** (unit tests only): `steer_tests` 173 checks (was 107), among them: a lower-class household never pays and no
+**After review.** Turning Never Broke off now also clears the tills short's 28-night mean, so the guard, when Never
+Broke is turned on again, waits for 28 fresh nights instead of judging on nights from before it was off; and with both
+floors off the idle spares are cleared, so a floor turned on again starts each household at its spare (as on the first
+night) instead of at figures weeks old.
+
+**Tests** (unit tests only): `steer_tests` 178 checks (was 107), among them: a lower-class household never pays and no
 till does; the order (the estates before the treasury, the treasury before households, upper before the keeper before
 the middle); idle before busy, the idle spare's 28th a night, its fall, once a night, fresh money still paying in the
 second pass; a middle household pays only over the comfortable line; Never Broke after the alms as credit (the purses hold

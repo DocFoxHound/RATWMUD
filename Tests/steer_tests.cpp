@@ -448,6 +448,20 @@ void theTillsGuard()
     auto s = city(family(0), 3000, {{"neverBroke", 1}, {"treasuryCap", 2000}}, FamilyKin);
     run(s, 1 + 17.9 / 24, 2 + 18.5 / 24);
     expect(s.state().loop.steer.tillsDays == 2 && s.state().loop.steer.tillsShort >= 0, "the mean followed nightly: " + n(s.state().loop.steer.tillsDays));
+    // Turned off, the mean starts again: turned on weeks later, the guard is never judged on nights from before.
+    {
+        auto st = s.state();
+        st.loop.steer.tillsDays = 40;
+        st.loop.steer.tillsShort = 90;
+        expect(s.restore(st), "the state read back");
+    }
+    expect(s.skimGuardOn(), "a high mean: the guard on");
+    setRules(s, {{"neverBroke", 0}, {"neverHungry", 0}});
+    run(s, 2 + 18.5 / 24, 3 + 18.5 / 24);
+    expect(s.state().loop.steer.tillsDays == 0 && s.state().loop.steer.tillsShort < 0, "off: the tills short's mean cleared");
+    expect(s.state().loop.steer.idle.empty() && s.state().loop.steer.idleDay < 0, "both floors off: the idle spares cleared");
+    setRules(s, {{"neverBroke", 1}});
+    expect(!s.skimGuardOn(), "on again: no guard until its mean has had 28 nights again");
     expect(plain.conserved() && guarded.conserved(), "conserved");
 }
 

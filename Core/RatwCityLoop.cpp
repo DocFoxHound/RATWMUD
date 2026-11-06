@@ -784,7 +784,13 @@ void Society::loopHourly(std::int64_t hour, int season)
         if (rule("neverBroke") > 0)
             neverBroke();                           // (Doc 74, 7.2: after the alms, credit for just enough to the short.)
         else
-            state_.loop.steer.credit.clear();       // (Turned off: its credit lapses; the fund keeps what was unspent.)
+        {
+            // (Turned off: its credit lapses, the fund keeping what was unspent; and the tills short's mean starts again
+            // when it is next turned on, never judged on nights from before it was off.)
+            state_.loop.steer.credit.clear();
+            state_.loop.steer.tillsShort = -1;
+            state_.loop.steer.tillsDays = 0;
+        }
         if (steering())
         {
             shareOut();                             // (Doc 74, 5.1 and 5.7: the push left, the share-out; right, the
@@ -797,6 +803,11 @@ void Society::loopHourly(std::int64_t hour, int season)
             steerEconomy(day);                      // (Doc 74, 8: measured after every money step; the push moves.)
         if (rule("neverHungry") > 0 || rule("neverBroke") > 0)
             skimIdleNight(day);                     // (Doc 74, 6.2: how long each household's spare has sat.)
+        else if (state_.loop.steer.idleDay >= 0)
+        {
+            state_.loop.steer.idle.clear();         // (Both floors off: the idle spares are not followed, so they start
+            state_.loop.steer.idleDay = -1;         // again, each at its spare, when a floor is next turned on.)
+        }
         if (loopToday_.skim > 0 || loopToday_.skimShort > 0)
         {
             // (The skim's day, kept 28 days for the DM tab: doc 74, 10.1.)
