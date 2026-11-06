@@ -6,6 +6,7 @@
 #   bash artifacts/economy/r2/steer-smokes.sh smokes        prepare, then the four 60-day smokes in parallel, then reports
 #   bash artifacts/economy/r2/steer-smokes.sh years         prepare, then the four 3-year runs in parallel, then reports
 #   STEER_ONLY="observe left" ...                           only those runs (their names as in `rules` below)
+#   STEER_ONLY="centre left right centre-floors sweep" bash ... t1   Tune round 1's 3-year runs, named steer-<run>-t1
 # The runs of 2026-11-06 (doc 74, Progress, "The slider's runs") add `observe` (the steering on at the centre with its band
 # 0 wide: the push held at 0, so the economy is stable10b's and the measures are logged: the centre's calibration) and
 # `sweep` (one run, the slider moved by --rule-at as the DM's economy.sync would: the centre for year 1, far left for
@@ -25,6 +26,8 @@ declare -A rules=(
 )
 declare -A cores=([centre]=2-5 [left]=6-9 [right]=10-13 [centre-floors]=14-17 [observe]=2-5 [sweep]=6-9)
 declare -A threads=()
+# Tune round 1 (doc 74, Progress): the five 3-year runs at once, the sweep on cores 18-19 with two threads, named -t1.
+if [[ "${1:-}" == t1 ]]; then cores[sweep]=18-19; threads[sweep]=2; fi
 declare -A extra=([sweep]="--rule-at 365 steerLean 0 --rule-at 730 steerLean 200")
 names="${STEER_ONLY:-centre left right centre-floors}"
 prepare() {
@@ -61,5 +64,6 @@ case "${1:-prepare}" in
   prepare) prepare ;;
   smokes) prepare; run 1446 -60 ;;
   years) prepare; run 26298 "" ;;
+  t1) prepare; run 26298 -t1 ;;   # STEER_ONLY="centre left right centre-floors sweep"
   *) sed -n 2,8p "$0"; exit 2 ;;
 esac

@@ -14,9 +14,10 @@ R2 = os.path.dirname(os.path.abspath(__file__))
 LEVERS = [("lev_share_out", "share-out %"), ("lev_posts_share", "hands' share %"), ("lev_toll", "toll lean"),
           ("lev_surplus_keep", "treasury keep p"), ("lev_cap", "treasury cap p"), ("lev_alms_to", "poorest raised to p"),
           ("lev_ground_rent", "ground rent %"), ("lev_rent_scale", "rent scale %"), ("lev_dividend", "dividend %"),
-          ("lev_rich_above", "rich hold p")]
+          ("lev_rich_above", "rich hold p"), ("lev_spend_above", "spending keep p")]
 FLOWS = [("share_out", "share-out"), ("posts_share", "hands' share"), ("ground_rent", "ground rent"),
-         ("dividend", "dividend"), ("land_rent_extra", "rent scale extra"), ("surplus_paid", "surplus paid")]
+         ("dividend", "dividend"), ("land_rent_extra", "rent scale extra"), ("surplus_paid", "surplus paid"),
+         ("ground_rent_treasury", "ground rent to the treasury")]
 
 
 SUFFIX = ""

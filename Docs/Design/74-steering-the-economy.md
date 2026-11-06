@@ -958,3 +958,84 @@ the poor's money keeps circulating), or the push leaning right from the centre a
 right's treasury guard taken from the centre's own treasury (its 28-night mean in `steer-observe` is under 1,400p on
 166 nights of year 1, 50 of year 2 and none of year 3); a wider centre band with Never Broke on; the left's Gini target set to what 30% reaches (about 0.32), or
 a stronger share-out; and `treasuryTarget` set from the steered cap and keep while the steering is on.
+
+### Tune round 1 (2026-11-06)
+
+The same go-ahead as "The slider's runs". Branch `r2-steering-t1` (merged as 9daf44a, pushed). Tuned on 1-year runs of
+export70 copies with stable10b's flags, five at a time on their own cores, then the 3-year runs from the main checkout
+(`steer-smokes.sh t1`: `steer-<run>-t1`). The table of every run by year: `artifacts/economy/r2/steer-runs-t1-report.md`;
+each run's own `steer-<run>-t1-report.md`. Nothing written to DEV.
+
+**What the 1-year runs found.**
+
+- **The far right starves the shops, not only the treasury.** The rich hold keeps upper-class money out of the shops; in
+  `rc` (the rich hold 150p) the purses held 2,500p more than the centre and the tills 1,900p less, the shoppers spent 400p
+  a day less, and the toll fell with the draws. Every summer (the treasury's lean season even at the centre: its least
+  is its 200p float in year 1) the treasury reached its float and the hunger followed: 1.1 an hour at the rich hold 200p,
+  4.5 at 300p, 0.45 even at 150p. A gentler table alone didn't hold it.
+- **Fix: the ground rent goes to the treasury while the treasury is under its floor** (on its 28-night mean or that
+  night). With it the same table's summer hunger was 0.004-0.06 an hour. The weekly pull then reacted only to the treasury,
+  which the ground rent was already refilling, and took the push from 1 to 0.15 with nobody hungry, so it now pulls on
+  `treasuryLow`; `treasuryFloor` bars leaning right.
+- **The floors from the centre's own treasury:** `treasuryFloor` 800p, `treasuryLow` 500p. In `steer-observe` the
+  treasury's 28-night mean was never under 909p (under 1,400p on 164 nights of year 1).
+- **The far left's shops** were short because the levelled money was held, not spent. The purses held 4,200p more than
+  the centre and the tills 3,900p less, comforts fell by a third, and the toll lean (+3, then +1) made no difference
+  (tills short 37.8 against 37.7). New lever **the spending keep** (`spendAbove`): the comforts threshold of every
+  household not of the Houses, 25p a head at -1 (32p at -0.5; the world's 40p from the centre right). In year 1 the
+  left's tills short went from 37 to 27.6 a day (stable10b 26.5). 15p was a little better for the shops (25.6) and a
+  little worse for the Gini (0.34).
+- The far right table chosen: the rich hold 150p, ground rent 30%, the dividend 30%, the rents 125%, no toll lean (it
+  only drained the treasury and fought the drift). A stronger one (200p / 45% / 40% / 140%) reached 27% but brought the
+  treasury's mean to 509p and hunger's 28-night mean to 0.23 an hour.
+
+**The changes** (each tested: steer_tests 107 checks; ctest 80 of 80; test_studio 51 OK; test_econ_report; the Editor's
+steering tests): the lever and target tables in sections 3 and 4 (the first design's values in brackets); the ground
+rent to the treasury under its floor (booked `ground rent: the treasury`, logged `ground_rent_treasury`); the guard on
+`treasuryLow`; `spendAbove`; the toll drift's target, with the steering on, never over the steered cap and keep (the far
+left's 1,500p, where its surplus holds the treasury; the centre's stays the world's 5,500p); with Never Broke on, a Gini
+under its band is that floor's own levelling and isn't steered against (open question 3, by a one-sided band rather than
+a wider one); Never Hungry tries the Wharf's next food when the cheapest is over the Wharf's day's room.
+
+**The 3-year runs** (year means; stable10b in brackets):
+
+| run | push | Gini earners | upper share | top 10% | hungry/h | short | treasury (least) | tills short | wage support | support unpaid |
+|---|---|---|---|---|---|---|---|---|---|---|
+| centre y1-y3 | 0 | 0.489/0.489/0.484 | 13.7/13.2/12.7 | 35.5/35.5/34.3 | stable10b to the field, every day | | | | | |
+| left y1/y2/y3 | -1 | 0.328/0.339/0.344 (target 0.33 ± 0.04) | 13.1/13.1/12.8 | 26.2/26.8/27.2 (at most 27) | 0.000/0.003/0.000 | 0 | 1,514 (1,402) y3 | 27.6/26.8/26.5 (26.5/23.2/22.2) | 251/224/215 (82/70/106) | 86/57/54 (190/122/76) |
+| right y1/y2/y3 | 0.87/0.75/0.75 | 0.539/0.548/0.547 | 22.8/22.3/21.8 (target 24 ± 3) | 40.9/40.7/40.3 (at least 40) | 0.017/0.005/0.018 | 1.24/0.88/0.70 | 1,007/894/984 (200) | 31.8/26.5/24.2 | 41/15/17 | 301/201/184 |
+| centre-floors y1/y2/y3 | 0 | 0.415/0.426/0.422 | 12.5/12.3/11.9 | 31.2/31.7/30.8 | 0 | 0.05/0/0 | 2,298 (1,788) y3 | 32.3/30.8/30.8 | 280/241/242 | 94/50/52 |
+
+- **Every run: money conserved every day; the estates' posts paid every night** (236,416 of 236,416 in year 3); every
+  lever on every day exactly the table's at the push (checked against `city_loop.json`), the toll lean never outside 0
+  and the table's.
+- **centre**: stable10b to the field all 1,095 days, the push 0.
+- **left**: the push -1 all run, every judging in its band; the Gini 0.32-0.35 against 0.33 ± 0.04, up a little each
+  year (0.347 in its worst quarter); nobody hungry or short; the skim 777,767p in, 777,767p out. The toll drift stays
+  at 0 (its target 1,500p, the treasury in its band), so it doesn't fight the lean. The tills short are 27.6 in year 1
+  (stable10b 26.5), but 15-19% over stable10b in years 2-3; the treasury's wage support is 2-3 times stable10b's, paid
+  from what the left's lower cap lets it spend.
+- **right**: the push from 1 to 0.75 on days 167-175 (the treasury's 28-night mean 445-458p, under its low), then in
+  band at 0.75 for the rest of the run; the upper share 21-23.5% a quarter, in its band; the top tenth 39-43%; hunger's
+  28-night mean at most 0.18 an hour (once over its 0.15 ceiling), households short at most 3.7; the ground rent 125p a
+  day, 47p of it to the treasury. But the treasury sits low (year means 894-1,007p) and is at its 200p float on 21 days
+  (it never goes under), and the shops' support unpaid is 1.6-2.4 times stable10b's.
+- **centre-floors**: the push 0 throughout (it was +0.15 from day 111): the Gini 0.42-0.43 accepted as Never Broke's
+  levelling, the upper share 11.9-12.5% in its band. The skim 556,534p taken and 556,534p paid out, fund:relief 0, no
+  day off; no group over 35% of any quarter (middle households 22-35%, the Crown's estate 14-31%, upper households
+  6-29%, the treasury up to 32% of the last three days). Never Broke 444-574p a day; no household short after Never
+  Hungry on any day (9 household-days before). Tills short 31-32 (stable10b 22-27).
+- **sweep** (centre, far left at day 365, far right at day 730): the push followed each move the same night (0 -> -1
+  -> +1), every lever with it. After the move left the Gini went 0.504 -> 0.338, half the way in 40 days and 90% in 137.
+  After the move right the upper share went 12.8 -> 24.3%, half in 56 days and 90% in 143; the push stayed at +1
+  through year 3 with the treasury's 28-night mean at least 773p and hunger's at most 0.17.
+
+**Judged.** (a) The automation follows the slider: the push tracks the slider and its band, every lever follows the
+push, and at every position the measures reach their bands: the left's Gini, the right's upper share and the centre's
+both. But the ends are where this economy can hold them with its safety floor intact, not the first design's: 0.33,
+not 0.15, at the far left; 24%, not 45%, at the far right. (b) The steered levers move only with the push. The toll
+drift no longer works against the lean: the right has no lean, and the left's drift is judged against its own cap. The
+right's treasury guard is set from the centre's own treasury. The skim and the floors balance to the penny, and money and
+the estates' posts hold at every position. Left open: the right's treasury at its float on 21 days, with the shops'
+unpaid wages up; the left's shops 15-19% over stable10b in years 2-3; Never Broke's cost to the shops (tills short 31
+against 22-27).
