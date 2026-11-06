@@ -867,3 +867,87 @@ Four fixes before the merge; nothing else in the money's path changed.
 
 Tests: ctest 80 of 80 (`steer_tests` adds the treasury check); `test_studio.py` 51, all but the old `test_the_farms`;
 `test_econ_report.py` 14; the Editor's steering and economy tests and `tsc` clean.
+
+### The slider's runs (2026-11-06)
+
+The user's go-ahead (verbatim): "Yeah, run the tests. Just make sure that the automated system is following the slider
+and that the system, as a whole, is being managed by the automated system". Runs on export70 copies with stable10b's
+flags (`--simulate 6 26298 --no-check --deterministic --threads 4 --no-profile --farms 0 --economy-level full`); nothing
+written to DEV. The table of every run by year against stable10b: `artifacts/economy/r2/steer-runs-report.md` (made by
+`steer-compare.py`); each run's own report `steer-<run>-report.md`; the runner `steer-smokes.sh`.
+
+**The smokes (60 days, the merge's code).** Money conserved in all four. `steer-centre` was stable10b to the field for
+days 0-54, then its first judging leaned *left* (the push to -0.10): the upper share measured 14.2% against the design's
+7 ± 2.5. `steer-right` set its toll lean to -2 at 18:00 on day 0 from the treasury before the night's wages (over its
+1,400p floor) and, judged only when the push moved, kept it there while the treasury fell to 594p (stable10b 1,773p).
+`steer-left` and `steer-centre-floors` showed no defect (the skim balanced to the penny, Never Broke 413p a day).
+
+**Three fixes, each tested, merged and pushed** (72a8dbb, cdbaa2e):
+
+1. **The toll lean's guard each night** (5.3): on the treasury's 28-night mean after the money's steps, the lean at
+   least 0 while the mean is under `treasuryFloor`, moving at most half a point a night. (`treasuryLow`'s half-point a
+   judging is gone; `treasuryLow` now bars leaning right, below.)
+2. **The hunger guard's weekly pull** (7.3). The first far-right 3-year run (`steer-right-v1`, stopped at day 268): the
+   rich hold (600p a head) and the ground rent took about 9,000p out of circulation, the toll and the alms followed, the
+   treasury sat at its float from day 84, and hunger reached 36 residents an hour and 189 households short (28-night
+   means) while the guard, a 0.05 step every 28 nights, had the push at +0.65 on day 252. Now, with Never Hungry off and
+   the means a month old, every seventh night the push goes back toward the centre by `steerStepMost` (0.10, never past
+   0) while the hungry or the short are over twice their ceilings, or the treasury under `treasuryFloor`, on their means
+   and that night; the judging also won't lean right with the treasury's mean under `treasuryLow`. (A version on hunger
+   and `treasuryLow` alone still let hunger reach 5.4 an hour: the treasury falls three weeks before the hunger comes.)
+3. **The centre's upper share where it is: 13 ± 2** (was 7 ± 2.5; the left's watched most 13). `steer-observe` (the
+   steering on, its centre band 0 wide, so the push held at 0) is stable10b to the field for all 1,095 days and logs the
+   measures: the upper share's 56-day mean 12.6-14.5% (year means 13.7, 13.2, 12.7), the top tenth 34.3-35.5%. The
+   design's 7% missed the Houses' businesses' tills (about 7% of the money).
+
+Also `world_check --rule-at DAY NAME VALUE`: a rule set at a day's start as `economy.sync` sets it (`adoptEconomy`),
+for the sweep; tested in `sim_fast_tests`.
+
+**The 3-year runs** (the fixed code; `steer-left` and `steer-observe` ran on the code before fixes 2-3, which don't
+touch them: the left's push is never over 0 and its targets didn't change). Year means; stable10b's year 3 in brackets.
+
+| run | push | Gini earners | upper share | top 10% | hungry/h | short | treasury (least) | tills short | wage support | alms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| stable10b y3 | - | 0.484 | (12.7) | (34.3) | 0.011 | 0.45 | 1,759 (1,027) | 22.2 | 106 | 411 |
+| centre y3 | 0 | 0.484 | 12.7 | 34.3 | 0.011 | 0.45 | 1,759 (1,027) | 22.2 | 106 | 411 |
+| left y3 | -1 | 0.324 | 11.2 | 25.5 | 0.000 | 0.00 | 1,499 (1,175) | 36.7 | 337 | 0 |
+| right y1/y2/y3 | 0.27/0.08/0.21 | 0.507/0.489/0.500 | 17.4/14.2/15.9 | 37.1/34.6/35.2 | 0.021/0.007/0.014 | 1.14/0.76/0.65 | 1,489 (654) y3 | 23.1 | 57 | 428 |
+| centre-floors y3 | +0.15 | 0.437 | 14.0 | 30.8 | 0.000 | 0.00 | 2,251 (1,712) | 30.2 | 235 | 225 |
+
+- **Money conserved every day in every run; the estates' posts paid every night** (236,416 of 236,416 in year 3).
+- **steer-centre is stable10b to the field, all 1,095 days**: every judging in both bands, the push 0 throughout.
+- **steer-left**: the push at -1 (its band's edge) all run; the share-out 787-823p a night, the hands' share 222-251p,
+  the surplus firing (205-251p a day) with the cap at 1,500p and the keep 0; nobody hungry or short; alms almost never
+  needed. But the Gini settles at 0.31-0.32, not 0.15 (open question 1: the share-out at 30% is not enough against the
+  daily churn), and drifts up a little each year; the top tenth 25%, not 20%. Tills short 37-38 a day against 22-26,
+  and the wage support 3-4 times stable10b's: the left's toll (+3) and its low cap cost the shops.
+- **steer-right**: the guard holds the floor (hunger's 28-night mean at most 0.18 an hour, households short at most
+  2.7), but it holds the push near the centre: it was pulled from 1 to 0 by day 112 and since then climbs a step a
+  judging and is pulled back each time the treasury's mean goes under 1,400p, which the centre's own treasury is under
+  for much of year 1. The upper share 14-17%, far from 40-45%; the top tenth 35-37%, not 55%. The far right, as the
+  lever table has it, can't be held by this economy without the alms' purse running dry.
+- **steer-centre-floors**: Never Broke 470-640p a day (61-76 homes), Never Hungry under a penny a day (mostly from the
+  Wharf: the shops' food shelves are bare at 17:00 when it is wanted), households short after it 9 household-days in
+  three years. The skim: 596,332p taken, 596,332p paid out, fund:relief 0 at the end, balanced every day to the penny;
+  its payers shift (upper households 22-39% of a quarter, the Crown's estate 14-31%, middle households 17-30%, the
+  treasury up to 21%, Timberland's estate up to 17%; no group over 39% of any quarter). The steering leaned right to its
+  band's edge (+0.15) by day 111 and stayed there: the Gini 0.42-0.44 stays under the centre's band (0.452) (open
+  question 3: the band is too narrow to make up for Never Broke). Tills short 30-33, wage support 235-273p.
+- **steer-sweep** (centre, then far left at day 365, far right at day 730): the push followed each move the same night
+  (0 -> -1 -> +1), every lever with it. After the move left, the 56-day Gini went half the way (0.504 -> 0.324) in 41
+  days, 90% in 129; the top tenth 36.6 -> 25.7% half in 42 days. After the move right, the upper share rose 11.5 ->
+  22% in 56 days, then the guard pulled the push to +0.4 by day 786 (hunger's mean 0.34 an hour at its worst, 11.5
+  households short) and +0.1 by day 982, and it climbed again to +0.5 by the end.
+
+**Judged.** (a) The automation follows the slider in direction everywhere and exactly at the centre, but not in
+reach: the far left gets the Gini to 0.32 (target 0.15) and the far right is held near the centre by its own safety
+guard. (b) With the steering on, the steered levers move only with the push, and every lever moved when the push did;
+the skim and the floors balance to the penny; the money is conserved and the estates' posts paid at every position.
+Outside the automation still: the toll drift's `treasuryTarget` (5,500p, never reached at any position, so the drift sits
+at +1 against the right's lean), and the treasury floor the right's guard leans on is a fixed 1,400p.
+
+**Next, for the user to choose** (no run started): a gentler far right (the rich hold at +1 nearer 200p than 600p, so
+the poor's money keeps circulating), or the push leaning right from the centre a step at a time instead of at once; the
+right's treasury guard taken from the centre's own treasury (its 28-night mean in `steer-observe` is under 1,400p on
+166 nights of year 1, 50 of year 2 and none of year 3); a wider centre band with Never Broke on; the left's Gini target set to what 30% reaches (about 0.32), or
+a stronger share-out; and `treasuryTarget` set from the steered cap and keep while the steering is on.
