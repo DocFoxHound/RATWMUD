@@ -346,7 +346,7 @@ class Economy:
         def on(name):
             return int(rules.get(name, 1)) > 0
         toll, alms = float(loop.get('toll') or 0), int(loop.get('alms') or 0)
-        most = float(rules.get('tollDriftMost', 2))
+        most = float(rules.get('tollDriftMost', 1))
         out['toll'] = (min(90.0, max(0.0, out['tollBase'] + max(-most, min(most, toll)))) if on('treasuryDrift')
                        else float(out['tollBase']))
         out['alms'] = (max(0, out['almsBase'] + max(-int(rules.get('almsDriftMost', 2)), min(int(rules.get('almsDriftMost', 2)), alms)))

@@ -378,7 +378,7 @@ void theHarness(const std::string& binary, const fs::path& root)
                    "a till's crew-hours");
         }
         for (const auto& r : v.array("hh_short"))
-            expect(r.items().size() == 8 && r.items()[2].asNumber() >= 1, "a short household: its members and payers");
+            expect(r.items().size() == 11 && r.items()[2].asNumber() >= 1, "a short household: its members, payers and the hour's purse");
         ++tableDays;
     }
     expect(metaSeen && tableDays == 3, "the meta line, then a table line a day: " + std::to_string(tableDays));

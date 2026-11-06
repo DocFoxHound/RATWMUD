@@ -592,6 +592,8 @@ struct EconomyRecord
     std::map<std::tuple<std::string, std::string, std::string, std::string>, Short> shorts;   // (Shop, good, group, instead.)
     std::map<std::string, std::int64_t> hungryHours, comforts, spent;   // Class -> today's.
     std::set<std::string> shortHomes;               // Round 3 (doc 73): the households short of food today, by first member.
+    // Round 10 (doc 73): each one's at the shops' last hour: the meals it lacked, its purse then, the cheapest food on offer.
+    std::map<std::string, std::array<std::int64_t, 3>> shortAt;
     std::set<std::string> comfortGoods;
     static bool drawKind(const std::string& k)
     {
@@ -705,7 +707,10 @@ struct EconomyRecord
     void shortage(const Society::Shortage& s)
     {
         if (s.item == "food" && s.shop.empty())
+        {
             shortHomes.insert(s.buyer);             // (A household's food short at the shops' last hour: its first member.)
+            shortAt[s.buyer] = {s.pieces, s.held, s.cheapest};
+        }
         auto& row = shorts[{s.shop.empty() ? std::string("-") : s.shop, s.item, group(s.buyer), s.instead}];
         row.buyers.insert(s.buyer);
         // (A shop's draw is tried every hour it is short: its most, not the sum.)
@@ -737,11 +742,12 @@ struct EconomyRecord
              "\"household_purse_median\", \"comforts\", \"spent\"], "
              // Round 3 (doc 73): each maker's crew-hours in tenths (put in, used by its crafts, lost past its bank's cap);
              // and each household short of food today: its first member, class, members, purse, its earners, and up to
-             // three of their payers (a till, the treasury, an estate; -1 none). (A till with no hours, use or loss today,
+             // three of their payers (a till, the treasury, an estate; -1 none); since round 10 the meals it lacked at the shops'
+             // last hour, its purse then and the cheapest piece of food then on offer (0: none). (A till with no hours, use or loss today,
              // its post empty, has no work row.)
              "\"work\": [\"till\", \"hours10\", \"used10\", \"lost10\"], "
              "\"hh_short\": [\"member\", \"class\", \"members\", \"purse\", \"earners\", \"payer1\", \"payer2\", "
-             "\"payer3\"]}, \"farms\": {";
+             "\"payer3\", \"lack\", \"purse_then\", \"cheapest\"]}, \"farms\": {";
         bool first = true;
         for (const auto& f : s.farms())
         {
@@ -966,8 +972,10 @@ struct EconomyRecord
                         }
                 }
                 payers.resize(3, -1);
+                const auto at = shortAt.find(members.front());
+                const auto then = at != shortAt.end() ? at->second : std::array<std::int64_t, 3>{0, 0, 0};
                 row({id(members.front()), id(s.classOf(members.front())), std::int64_t(members.size()), held, earners, payers[0],
-                     payers[1], payers[2]});
+                     payers[1], payers[2], then[0], then[1], then[2]});
             }
         close();
         table("class");
@@ -996,6 +1004,7 @@ struct EconomyRecord
         flows.clear();
         shorts.clear();
         shortHomes.clear();
+        shortAt.clear();
         hungryHours.clear();
         comforts.clear();
         spent.clear();
