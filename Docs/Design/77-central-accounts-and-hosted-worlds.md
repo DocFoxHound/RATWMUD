@@ -1170,6 +1170,39 @@ For the user to decide:
 3. **The arrival limits' numbers** (600 an hour a world, 3 an hour an account, 100 wolves at once) are guesses, to tune
    with the rest.
 
+**2026-11-07: Phase 3, the client (branch `r2-desktop`), PAUSED (WIP).** About 2 hours so far. No real server, no
+simulation; tests use throwaway `ratw_central_test` / `ratw_central_clienttest` and a ticket world on a free port, all
+stopped after.
+
+Done (committed):
+- **Central:** `GET /worlds` (the stub registry: worlds with an address; `ratw_central.py worlds add --address HOST:PORT
+  [--secure] [--protocol N] [--description]` and `worlds set WORLD_ID ...`), `GET /rules` (the creator's Gift families
+  through a new `ratw_identity` check `rules`). `test_central.py` 46 of 46; `identity_tests` 77 checks.
+- **The page (Client/):** the client's flow in `client.ts` (central sign-in with the age gate, remember me where the shell
+  keeps it, logout, delete account, delete one wolf; the roster; the identity-only creator: Body, Coat, Markings, Eyes,
+  Gift family (optional), Name & age; the world list with `/status` pings, protocol and client-data filter, the
+  direct-address box; join by ticket, `hello{ticket, protocol}`, the world's first-arrival screen (tier, strengths,
+  town, tie), straight in next time, leaving back to the list, Reconnect after a lost world). `FrontDoor` gained a
+  `central` mode; browser play on password worlds is unchanged (plus a Reconnect button that polls and reloads).
+  `net/central.ts` (FetchCentral for a browser with `?central=URL`, tokens in memory only; ShellCentral for the
+  client), `net/worlds.ts`, `net/build.ts` + `build-info.mjs` (protocol and client-data hash baked in by Vite, checked
+  against `tools/client_data_hash.py`), `shell.ts` (the in-world key guard, Ctrl/Cmd skipped on keydown, Meta clears
+  held keys, context menu, `beforeunload`, F11/Alt+Enter and the close question through Tauri), `ui/dialog.ts` (in-page
+  dialogs), `play.ts` (the game screen; the half-minute report now stops with it). Portraits no longer copied into dist.
+- **Tests:** `npm test` 136 of 136; `test:browser` 8 of 8, including the new `client.browser.test.mjs`: the whole flow
+  in headless Chromium against a real central and a ticket world (`tests/harness.mjs`), about 3 s plus start-up.
+
+In progress (written, not yet built or wired in): `Desktop/src-tauri/src/central.rs`, the shell's central client
+(the address rule with `--central`, the allow-list, tokens kept by the shell and stripped from replies, refresh once on
+401, `world_status`), with unit tests.
+
+Next: `tokens.rs` (keychain via `keyring` 3.6, else a 0600 file in the app data folder), `lib.rs` rewritten for the
+real client (commands `central_info`, `central_call`, `central_resume`, `world_status`; `--central URL`,
+`--token-store`, the loopback relay behind `--relay`; window-state plugin, first-run size, the navigation rule, the
+title, a strict CSP; `frontendDist` = `Client/dist`), Cargo.toml (ureq 3, keyring, tauri-plugin-window-state; drop the
+websocket plugin), capabilities, `cargo test`; an end-to-end run of the real app (a cargo feature `e2e`); replacing the
+15 `confirm`/`prompt` calls with `ui/dialog.ts`; ctest; the how-to-run steps here.
+
 ## Review (2026-11-07)
 
 One adversarial review of the first draft, checked against the code at 0af9bc0. No database was queried and nothing
