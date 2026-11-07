@@ -523,7 +523,7 @@ The ladder is chosen per end, so the left can ship Full while the right ships F1
 
 ## Progress
 
-Phases 1-4 done on `r2-controller` (below); the user's answers to section 9 first. Next: Phase 5, acceptance.
+Phases 1-4 and the Phase 4 review done on `r2-controller` (below); the user's answers to section 9 first. Next: Phase 5, acceptance.
 
 ### 2026-11-06: the user's decisions
 
@@ -975,3 +975,77 @@ T4-T7, so the treasury rule plus either table change fixes R33's float days and 
 
 **Not done:** `econ_report.py` does not yet print the supervisor's fields (the daily lines and `steer_accept` have them);
 the DM tab's edicts, ledger and year of log are Phase 7's; the reach labels are re-measured in Phase 5/6.
+
+### Phase 4 review (2026-11-06, branch `r2-controller`)
+
+An adversarial review of Phase 4's diff (47c02c8) before acceptance spends runs on it. About 45 minutes. Two 110-day runs
+at +1 for an A/B (`steer-p4r.json`, `steer-p4rb.json`; not counted as one-year runs, so still 24 of 34); both exited 0.
+Nothing written to DEV or PROD; no server.
+
+**Checked and found sound.** Money: rule 1's route is a `shift` from the till, taken off the excess before the rest of the
+rent, and every run conserved money every night. The skim leaving the treasury be only drops one payer. Back-offs never
+pass the world's value: `steerLever` clips the tithe at 0 and the rich hold at the world's 40p; `move` clips to the room
+each night, so a slider move takes the back-off with it; a rule whose lever is gone clears the same night. Save and load:
+every field of `sup` is written and read back (the test compares them exactly). It starts afresh when the steering is
+turned on or off. Determinism: no randomness; the hold-back of charters is whole charters, newest first. The floors'
+month is `day % 365`, which is the calendar's day of the year (`dayOfYear - 1`), so the floors stay in phase with the
+seasons on any world. The centre: the 60-day check is the same as steer-cal-C on every shared field of all 60 days
+(re-checked), and with the floors off no rule has a lever there. The supervisor's 7-night means follow the daily
+lines' tills short, households short and wage support unpaid exactly. The treasury mean is within 24p of the daily line
+(read at 18:00, before the surplus). The hunger mean is the steering's own hourly count, up to 0.15 from world_check's
+`hungry_mean`. The DM labels match the calibration: G 0.066 at L50 is "0.07"; the right's "22-27% (29-35% counting the
+chartered tills)" spans the smokes and R33. They stay provisional.
+
+**One defect, fixed: a back-off kept deepening after its cause had cleared.** A rule stays on through its clearing
+nights, and while on it pulled its lever at the full rate, even with its measure already back over its trigger. In the
+three smokes, 83 of S1's 138 rule-on nights, 56 of S2's 116 and 58 of S3's 115 (48-60%) had no trigger true. Section
+3.6 says a rule backs off "until the cause clears", and the lever returns once the rule has cleared, so in between it
+should hold. Now (`steerSupervise`): a rule pulls only on nights its trigger is true. On but under its trigger, its lever
+holds (no deeper, no return), and it returns at half its rate only once every rule on it has cleared. Tests (544 checks,
+was 541): the tithe's back-off held through the clearing nights, held on a quiet night, and pulled again on a bad night.
+A replay of the smokes' logged rules (open loop, so no feedback) cut the rich hold's mean back-off on days 120-365 from
+78.5p, 65.1p and 52.3p to 22.6p, 19.5p and 8.5p. Days backed off fell from 100% to 63-76%, still over T3's 30%.
+
+The A/B in a world, +1, the committed table, 110 days (days 60-109; the two runs are the same until the rule first fires
+on day 69):
+
+| run | rule 1 | rich hold eased by day 100 | S without chartered cash | treasury mean | float days | support unpaid | tills short | nights acting |
+|---|---|---|---|---|---|---|---|---|
+| Phase 4 as built | on days 69-106 | 45.7p (53.6p when it cleared) | 25.8 | 647 | 4 | 189 | 31.0 | 38 |
+| the review's hold | on day 69, still on at 109 | 31.4p, held | 26.1 | 608 | 4 | 208 | 31.5 | 41 |
+
+So the hold keeps more of the slider's reach (the rich hold 31p eased, not 54p), but its smaller back-off also lifts
+the treasury more slowly: rule 1 was still on at day 109 (7-night mean 637p, under its 667p clearing line), and so far it
+acts more nights. The evidence is mixed over this window. It is the plan's rule, and the change is one function, so
+acceptance judges it. If A5 fails T8 on long rule-1 episodes, the fix round's levers are rule 1's clearing line
+(`clearShare`) or `clearNights`. The first 110 days do not test the table's target change (the toll's first judging is
+about day 182).
+
+**Found, not changed (for the coordinator):**
+
+1. **T3 against the plan's own rates.** A back-off that returns at half the rate it left is at a back-off for about 3 x
+   its pulling nights. With T3 at 30% of days 120-365 (74 days), a year allows about 25 pulling nights in all, about two
+   minimal rule-1 episodes. The right had 3-5 a year in every smoke. Whether T3's 30% or the return rate gives way is a
+   scorecard call. The plan's fix rounds allow a rate change.
+2. **Rule 1's route does almost nothing at +1.** The right's floor is 600p, under the table's own `treasuryFloor` 800p.
+   So whenever rule 1 is on, the table's route is already sending the ground rent to the treasury: in S3, 19,344p of the
+   20,862p rent on rule-1 nights went there that way. At the right, rule 1 works through the rich hold, and through the
+   skim with the floors on. The route matters only where the floor is over 800p (+0.5 in autumn and winter).
+3. **Two back-offs on the rich hold.** Rules 1 and 2 both ease it, against 3.1's "at most one back-off" a lever. They
+   pull the same way, once a night at the faster rate, so they never fight. S1 against steer-cal-R33 (the same until
+   day 76) shows the easing pays the treasury: on days 76-181, 887p against 685p, float days 2 against 7, tills short
+   29.7 against 35.3. The cost is S.
+4. **The floors' first month** comes from the run's last day (day 365 wraps to year day 0) and the 15-day smoothing:
+   days 0-7 only, from the year's end (1,506p at the centre, 1,135p at the left). It applies to days 0-27, when a new
+   world's treasury is near 1,200p. The tests found nothing bad: the centre's treasury is over 2,000p then, and with the
+   floors off the rule has no lever at the centre or the left. With the floors on, rule 1 could fire there in the first
+   month (the skim only).
+5. **The supervisor shares the steering's 24-line history** with the DM's slider changes, so a busy year pushes those
+   out. That is Phase 7's year of log.
+6. **Charters backed off before any exist:** during the ramp's 28-night wait, rule 3's back-off can grow while no charter
+   is held. The ramp then starts that many short, and the edge is logged about charters never granted. This is cosmetic
+   unless hunger fires in the first month.
+7. **The right's treasury target is the world's 5,500p** against a cap of 980p. That pins the toll drift up on purpose,
+   as at the centre. It is section 1's pattern 3, chosen knowingly after S2. That combination is still unrun past day 110.
+
+Tests: steer_tests 544, ctest 80 of 80.

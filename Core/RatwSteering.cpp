@@ -1185,8 +1185,9 @@ void Society::steerSupervise(std::int64_t day, const SupNight& tonight)
     //   4 a lever backed off edgeNights nights running: "at the envelope's edge", logged, nothing done.
     // A rule fires only where it has a lever to move, and clears when its measure has been back under clearShare of its
     // trigger (for the treasury, over the floor by as much) for clearNights nights running. Each lever moves once a night,
-    // at the fastest rate of the rules on it; with none on, back toward its table value at half the rate it left. A back-off
-    // never takes a lever past the world's own value.
+    // at the fastest rate of the rules on it whose trigger is true tonight; with rules on but none over its trigger, it holds;
+    // with none on, back toward its table value at half the rate it left. A back-off never takes a lever past the world's
+    // own value.
     auto& st = state_.loop.steer;
     auto& sup = st.sup;
     const auto& t = items::cityLoop().steering;
@@ -1270,26 +1271,35 @@ void Society::steerSupervise(std::int64_t day, const SupNight& tonight)
         if (sup.on[i])
             loopToday_.supOn.push_back(rules[i].name);
     // The levers, once each a night.
-    const auto move = [&](double& off, double& left, double room, double week, const char* lever, const std::string& unit) {
+    // (Phase 4 review: a rule backs its lever off only while its trigger is true, "until the cause clears" (3.6); on but
+    // back under its trigger, waiting out its clearing nights, the lever holds where it is, and returns only once every
+    // rule on it has cleared. Deepening through the clearing nights made each back-off a standing table change: in the
+    // Phase 4 smokes 48-60% of the nights a rule was on its trigger was already false.)
+    const auto move = [&](double& off, double& left, double room, double week, bool held, const char* lever, const std::string& unit) {
         const double before = off;
         if (week > 0 && room > 0)
         {
             left = week / 7;
             off = std::min(room, off + left);
         }
-        else if (off > 0)
+        else if (off > 0 && !held)
             off = std::max(0., off - left / 2);
         off = std::min(off, room);                  // (Never past the world's own: the slider may have moved.)
         if (off != before && (before == 0 || off == 0 || off == room))
             say(std::string(leverName(lever)) + (off > before ? " eased by " : " back to within ") + fixed(off, 1) + unit +
                 (off > before ? "" : " of the table"));
     };
-    const double levelWeek = std::max(sup.on[1] ? t.titheShopsWeek : 0., sup.on[2] ? t.titheHungerWeek : 0.);
-    const double richWeek = (sup.on[0] || sup.on[1]) ? t.richShopsWeek : 0.;
-    const double chartersWeek = sup.on[2] ? t.chartersHungerWeek : 0.;
-    move(sup.levelling, sup.levellingRate, roomLevel, roomLevel > 0 ? levelWeek : 0., "levelling", " points");
-    move(sup.richAbove, sup.richRate, roomRich, roomRich > 0 ? richWeek : 0., "richAbove", "p");
-    move(sup.charters, sup.chartersRate, roomCharters, roomLevel > 0 ? 0. : chartersWeek, "charters", " charters");
+    std::array<bool, 3> pull{};                     // (On and its trigger true tonight: it pulls its lever further.)
+    for (std::size_t i = 0; i < rules.size(); ++i)
+        pull[i] = sup.on[i] && rules[i].trigger;
+    const double levelWeek = std::max(pull[1] ? t.titheShopsWeek : 0., pull[2] ? t.titheHungerWeek : 0.);
+    const double richWeek = (pull[0] || pull[1]) ? t.richShopsWeek : 0.;
+    const double chartersWeek = pull[2] ? t.chartersHungerWeek : 0.;
+    move(sup.levelling, sup.levellingRate, roomLevel, roomLevel > 0 ? levelWeek : 0., roomLevel > 0 && (sup.on[1] || sup.on[2]),
+         "levelling", " points");
+    move(sup.richAbove, sup.richRate, roomRich, roomRich > 0 ? richWeek : 0., roomRich > 0 && (sup.on[0] || sup.on[1]), "richAbove", "p");
+    move(sup.charters, sup.chartersRate, roomCharters, roomLevel > 0 ? 0. : chartersWeek, roomLevel <= 0 && sup.on[2], "charters",
+         " charters");
     // Rule 1's route: in proportion to the gap while it is on (and held there until it clears), easing back over 14 nights.
     if (sup.on[0])
         sup.route = std::max(sup.route, std::clamp((floor - sup.treasury) / (t.routeAt * floor), 0., 1.));

@@ -863,10 +863,41 @@ void theSupervisor()
         const double was = u.levelling;
         s.steerSupervise(d++, N{9000, trigger + 20, 1, 0, 0});
         expect(std::abs(u.levelling - was - 5 / week) < 1e-9 && u.levelling > before, "both on: 5/7 a night, not 8/7: " + n(u.levelling - was));
-        // Clearing: under 90% of each trigger for 7 nights running; a night back over starts the count again.
+        // Clearing: under 90% of each trigger for 7 nights running; a night back over starts the count again. (Phase 4
+        // review: on but back under its trigger, a rule's lever holds; it neither eases further nor returns until it clears.)
+        double heldAt = -1;
+        bool steady = true;
+        int heldNights = 0;
         for (int k = 0; k < 100 && (u.on[1] || u.on[2]); ++k)
+        {
             s.steerSupervise(d++, N{9000, 0, 0, 0, 0});
+            if ((u.on[1] || u.on[2]) && u.tills <= trigger && u.hungry <= s.steerTarget("hungerMost"))
+            {
+                if (heldAt < 0)
+                    heldAt = u.levelling;
+                steady = steady && u.levelling == heldAt;
+                ++heldNights;
+            }
+        }
         expect(!u.on[1] && !u.on[2], "cleared");
+        expect(heldAt > 0 && steady && heldNights >= t.clearNights - 1,
+               "while clearing, back under both triggers: the tithe's back-off held at " + n(heldAt) + " for " + n(heldNights) + " nights");
+        // A bad night while it is clearing: it pulls again from where it held.
+        {
+            auto r = supervised(0);
+            const auto& v = r.state().loop.steer.sup;
+            int e = 1;
+            for (; e < 60 && !v.on[1]; ++e)
+                r.steerSupervise(e, N{9000, trigger + 20, 0, 0, 0});
+            for (; e < 200 && v.tills > trigger; ++e)
+                r.steerSupervise(e, N{9000, 0, 0, 0, 0});
+            const double held = v.levelling;
+            r.steerSupervise(e++, N{9000, 0, 0, 0, 0});
+            expect(v.on[1] && v.levelling == held, "on, under its trigger: held at " + n(held));
+            for (int k = 0; k < 10 && v.tills <= trigger; ++k)
+                r.steerSupervise(e++, N{9000, trigger * 3, 0, 0, 0});
+            expect(v.on[1] && v.levelling > held, "back over its trigger: the tithe eases again: " + n(v.levelling));
+        }
         // Back toward the table at half the rate it left (the last, 5/7 a night).
         const double off = u.levelling;
         s.steerSupervise(d++, N{9000, 0, 0, 0, 0});

@@ -1,0 +1,18 @@
+{
+  "about": "Doc 75, Phase 4 review: the right end (R33) with the committed table (treasuryTarget the world's right of the centre, treasuryCap 980p at +1), toggles off, steering on from day 0, 110 days: the review's build (a rule's lever holds while it is back under its trigger and clearing); steer-p4rb.json is the A/B's other half.",
+  "base": "artifacts/economy/r2/export70",
+  "out": "artifacts/economy/r2",
+  "prefix": "steer-p4r-",
+  "days": 110,
+  "binary": ".claude/worktrees/r2-controller/build-c/world_check.p4r",
+  "data": ".claude/worktrees/r2-controller/build-c/data.p4r",
+  "runs": [
+    {
+      "name": "hold",
+      "rules": {
+        "steer": 1,
+        "steerLean": 200
+      }
+    }
+  ]
+}
