@@ -366,7 +366,7 @@ class Central:
     def create_wolf(self, address: str, token, body: dict) -> tuple[int, dict]:
         """{"name", "age", "appearance", "family"?, "profile"?: fields} -> the wolf, as ratw_identity made it."""
         _, account = self._account(token)
-        self._limit(('wolves', account['id']), self.settings.limits.wolves_per_account, 'new wolves')
+        self._limit(('changes', account['id']), self.settings.limits.changes_per_account, 'attempts')
         unknown = set(body) - {'name', 'age', 'appearance', 'family', 'profile'}
         if unknown:
             raise refused(400, 'A wolf is a name, an age, a look, a Gift family and a profile; not ' +
@@ -382,6 +382,7 @@ class Central:
             if not made.get('ok'):
                 raise refused(400, made.get('error', 'That profile cannot be saved.'), 'invalid_profile')
             profile = made['profile']
+        self._limit(('wolves', account['id']), self.settings.limits.wolves_per_account, 'new wolves')
         record = {'id': 'wolf-' + secrets.token_hex(16), 'account_id': account['id'], 'name': wolf['name'],
                   'name_key': name_key(wolf['name']), 'sex': wolf['sex'], 'age': int(wolf['age']),
                   'appearance': wolf['appearance'], 'family': wolf['family'], 'profile': profile}

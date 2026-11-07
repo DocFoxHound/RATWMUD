@@ -43,7 +43,8 @@ def conninfo(dbname: str | None = None, role: str | None = None) -> dict:
         raise world_db.DatabaseError(f'{dbname} is a world database; central keeps its own (ratw_central).')
     password = s.get(f'RATW_{role.upper()}_PASSWORD')
     if not password:
-        raise world_db.DatabaseError(f'No password for ratw_{role} in Database/.env.')
+        raise world_db.DatabaseError(f'No password for ratw_{role} in Database/.env (in a git worktree, which has no '
+                                     ".env of its own, export the main checkout's: set -a; . MAIN/Database/.env; set +a).")
     return {'host': s.get('RATW_CENTRAL_HOST', s.get('RATW_DB_HOST', '127.0.0.1')),
             'port': s.get('RATW_CENTRAL_PORT', s.get('RATW_DB_PORT', '5433')), 'dbname': dbname,
             'user': f'ratw_{role}', 'password': password, 'application_name': 'ratw-central', 'connect_timeout': '5'}

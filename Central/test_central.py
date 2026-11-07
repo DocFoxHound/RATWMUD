@@ -15,7 +15,6 @@ import datetime as dt
 import hashlib
 import hmac
 import json
-import os
 from pathlib import Path
 import stat
 import sys

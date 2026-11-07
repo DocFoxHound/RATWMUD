@@ -889,6 +889,118 @@ them itself.
    Expected failures, not problems: the direct `wss://` (no certificate hook on WebView2) and the plugin's `wss://`
    (`UnknownIssuer`).
 
+**2026-11-07: Phase 1, central core (branch `r2-desktop`).** About 2 hours. No game server, no simulation; no world's
+database was touched (tests use a throwaway `ratw_central_test`, made and dropped with the Postgres superuser from
+`Database/.env`; no role was made or changed).
+
+What was built:
+- **`ratw_identity`** (`Server/ratw_identity.cpp`, in CMake): a small command built from Core. One JSON request per line
+  on stdin, one reply per line on stdout; central keeps one running. Checks: `wolf` (name, age, appearance, family),
+  `look` (an appearance, for a change), `profile` (the roleplay profile's fields, `people::applyFields`), `build` (a
+  tier and strengths, for Phase 2's first arrival) and `version`. It replies with the game's own form of each (the
+  name trimmed and capitalised, the appearance as `wire::appearance` writes it), which is what central stores.
+  - The rules are not copied: the name, age and Gift checks moved out of `character_create` into
+    `Core/RatwIdentity.{h,cpp}`, and **creation now calls them too** (`RatwGame.cpp`, same messages). The look is
+    `wire::readAppearance` (male or female only), the build `practice::checkBuild`, the profile `people::applyFields`.
+  - `Tests/identity_tests.cpp` (ctest `identity_behaviors`): the rules alone, then the command driven as central drives
+    it. 74 checks.
+- **`ratw_central`** (`Central/`, a new top-level folder; Python, psycopg 3 through `tools/world_db.py`):
+  - `Central/migrations/0001_central.sql`, schema `central`: accounts, sessions, spent refresh tokens, wolves, reserved
+    names, deleted wolves, issued tickets, and a **stub** `worlds` table (added by hand; host tokens, heartbeat and the
+    list are Phase 4). Applied with `world_db.migrate`, recorded as `central-0001`. Its own database, default
+    `ratw_central`; it refuses a world's database by name. It isn't in `Database/worlds.json`, so the world tools never
+    touch it.
+  - `central_store.py` (the database), `central_service.py` (the calls, apart from HTTP), `central_tickets.py` (the
+    signing, the key ring and the reference ticket check), `central_identity.py` (the `ratw_identity` process),
+    `ratw_central.py` (the HTTP server and the command line), `test_central.py`.
+- **The calls:** `POST /account/register`, `/account/login`, `/account/refresh`, `/account/logout`, `GET` and
+  `DELETE /account`, `GET`/`POST /wolves`, `PATCH /wolves/ID`, `POST /wolves/name` (is a name free), `POST /tickets`,
+  `GET /keys`, `GET /health`. JSON in and out; `{"ok": false, "error", "code"}` with the HTTP status on a refusal.
+- **Accounts.** Usernames 3-32 and passwords 12-128 exactly as `Core/RatwAccountsCore` (lower-cased; a letter first;
+  bytes, UTF-16 units and control characters counted the same way). Passwords: PBKDF2-HMAC-SHA256, 600,000 rounds, a
+  32-byte salt, as the world's accounts (not `world_db`'s scrypt, which section 4.1 allowed). A missing user costs the
+  same hash. Hashing runs in at most a few places at once (half the cores, up to 4); a sign-in past that waits up to
+  30 s for its turn, then gets 503. Access tokens last 15 minutes; refresh tokens 30 days with "remember me" (rolling
+  from each refresh), else the session ends 12 hours after sign-in. Both are random and kept only as SHA-256 hashes. A
+  refresh replaces both; a spent refresh token used again ends the whole session (it was copied). Logout ends this
+  session, or every one (`everywhere`).
+- **Age gate:** a birth year at registration; 16 or older (Q8). Only in the year someone turns 16 is the month asked
+  too (turned 16 by this month). The birth year is never stored, only that the check passed.
+- **Wolves:** up to 6 an account; checked by `ratw_identity`. **Names unique across central** (Q6), compared folded
+  (NFKC, case-folded, spaces collapsed). A change may touch only the look (never the sex) and the profile, with a
+  revision number against lost updates; the name, sex, age and family never change. The Gift is the **family only**
+  (Q12 (a)): the tier and the strengths are a world's first-arrival choice, so the ticket carries no `build`.
+- **Tickets:** JWT, `alg` `Ed25519` (RFC 9864), `typ` `JWT`, `kid` in the header. Claims: `sub`, `wolf`, `name`, `sex`,
+  `age`, `look`, `gift` (the family, `""` for none), `aud` (the world id), `kind`, `jti` (128 random bits), `iat`,
+  `exp` = `iat` + 60. `sub` is the account id on an official world and a pairwise id elsewhere (HMAC-SHA256 of the
+  account and world ids with a secret of central's, in the `acct-<32 hex>` shape). Every ticket is recorded
+  (`central.tickets`, a week) and counted per world. Only for a world in the registry and not delisted, a wolf of the
+  caller's, and an account that isn't banned.
+  - `central_tickets.verify` is the reference check for Phase 2: the algorithm pinned before anything else is read,
+    repeated JSON keys refused, the header's fields fixed, the claims' types strict, `aud`, `exp` with 2 minutes'
+    leeway, `iat` after the world's start (with the leeway), and each `jti` once.
+- **Keys:** in a directory of their own (`Saved/Central/keys` by default; mode 0700, files 0600), never in the database.
+  A key signs for 30 days. The next one is made and published at `/keys` a day before it signs; when it starts, the old
+  one stops signing and stays published for an hour's grace, then its file is deleted. `keys rotate --now` is the
+  emergency rotation: a new key signs at once and every other key leaves `/keys`, revoking every ticket out.
+  Housekeeping (keys, pruning expired sessions, spent tokens, reservations and old tickets) runs at start and every
+  5 minutes.
+- **Deletion** (`DELETE /account` with the password): the account, its sessions and its wolves go at once. The username
+  and the wolves' names are reserved for 30 days. The wolves' ids go to `central.deleted_wolves` (no personal data),
+  for the heartbeat reply to pass to worlds (Phase 4).
+- **Rate limits,** in memory, as sliding windows (one central process). Per address: every call 300 a minute, 5
+  registrations an hour, 30 sign-ins in 10 minutes, 60 refreshes in 10 minutes, 10 deletions an hour. Per account: 10
+  failed sign-ins in 15 minutes locks that account's sign-in for the rest of the window (from any address), 10 new
+  wolves an hour, 60 changes or checks an hour, 20 tickets a minute. Per world: 600 tickets a minute. A refusal is 429
+  with `Retry-After`. Behind Caddy, `--trust-proxy` takes the address from `X-Forwarded-For` (only from loopback).
+- **By hand:** `worlds add --name N --kind official|community` (prints the world id) and `worlds list`;
+  `accounts flag USERNAME --banned|--unbanned|--host|--admin...` (a ban also ends its sessions); `accounts
+  set-password USERNAME` (Q7: no email in the closed beta, the user resets a password by hand; it ends every session).
+
+How to run it on this laptop (in a git worktree, which has no `Database/.env` of its own, first
+`set -a; . /home/martinb/Documents/GitHub/MUDProject/Database/.env; set +a`):
+
+    cmake --build build-core --target ratw_identity        # or RATW_IDENTITY=path/to/ratw_identity
+    python3 Central/ratw_central.py db-create              # ratw_central, owned by ratw_owner
+    python3 Central/ratw_central.py worlds add --name "Laptop world" --kind official
+    python3 Central/ratw_central.py serve                  # http://127.0.0.1:7790/ (migrates first)
+    python3 Central/test_central.py                        # makes and drops ratw_central_test
+
+`RATW_CENTRAL_DBNAME` picks another database (the smoke run used `ratw_central_smoke`, dropped after);
+`RATW_CENTRAL_ROLE` another RATW role (default `owner`, for development; the box gets a role of its own in Phase 7).
+
+Tests:
+- `Central/test_central.py`: **40 tests, all pass** (about 2.5 s). The rules alone (usernames, passwords, names, the
+  age gate, today's PBKDF2 at the real 600,000 rounds); every call; refresh rotation, a reused refresh token, expiry of
+  access and refresh tokens, logout; the rate limits (registrations and sign-ins per address, failed sign-ins per
+  account, tickets per account and per world, new wolves, sign-ins queuing for the hashing threads); wolves refused by
+  the game's rules (bad name, age, look, sex `other`, NPC-only family, unknown fields, bad profile), names unique across
+  central, six an account, changes; tickets (the claims, pairwise ids, an expired ticket, a replayed `jti`, the wrong
+  `aud`, a ticket from before the world's start, a world clock 90 s off, a changed payload, `alg` `none`, `EdDSA`,
+  lower-case `ed25519` and HS256 with the public key, a doubled `alg`, malformed tickets; unknown worlds, delisted
+  worlds, others' wolves, banned accounts); key rotation (published a day ahead, a world meeting a new `kid` and
+  fetching `/keys` again, the old key's grace and removal), keys surviving a restart with private files, the emergency
+  rotation; deletion and its 30-day name and username reservation, then the names free again; over HTTP (the whole way
+  through, bad requests, limits by the forwarded address); `ratw_identity` restarting after a crash, a missing binary
+  (503 `identity_unavailable`), and central refusing the world databases.
+- ctest: **81 of 81 pass** (with the new `identity_behaviors`, and `character_create` on the shared rules).
+- A smoke run of `serve`: register, make a wolf, ticket for an official world, `/keys`, against a database made for it
+  and dropped after.
+
+Left for later phases, on purpose: the world list, host tokens' use and the heartbeat (Phase 4); private-world
+passwords (Q9); reports; the word filter for names (4b); serving the creator's identity rules from `Data/` (section
+3.1, needed by the client in Phase 3: `ratw_identity` is the natural place); the admin call for the DM tool (Phase 7);
+a role of central's own and CORS (`--cors ORIGIN` exists, unused until Phase 3 decides whether the page or the shell
+calls central).
+
+For the user to decide (none blocks Phase 2):
+1. **A wolf with a family and a Normal tier.** Under Q12 (a) the family is chosen at central and the tier at each
+   first arrival. A wolf may also have no family, which then can only arrive as Normal. Is a family required, so every
+   wolf can choose a tier in any world? Built: optional.
+2. **Can a wolf be deleted on its own** (not the whole account)? Doc 4.2 lists no such call, and a world can't delete
+   a character today. Built: only with the account.
+3. **The limits' numbers** above are first guesses.
+
 ## Review (2026-11-07)
 
 One adversarial review of the first draft, checked against the code at 0af9bc0. No database was queried and nothing
