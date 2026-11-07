@@ -136,6 +136,8 @@ export class FrontDoor {
     arriveWolf: Json | null = null;          // Central mode: the wolf arriving in a world for the first time.
     arriveWorld = '';
     tierChoices: string[] = [];
+    private typedUsername = '';
+
     private showGiftDetails = false;
     private worldLines = new Map<string, {status: HTMLElement; join: HTMLButtonElement; note: HTMLElement}>();
     private creationRequestId = '';
@@ -380,6 +382,8 @@ export class FrontDoor {
         const register = this.page === 'register';
         const user = el('input', {type: 'text', autocomplete: 'username', placeholder: '3–32 letters, digits, _ or -', maxLength: 32});
         user.name = 'username';
+        user.value = this.typedUsername;                // (Kept when the page is shown again after a refusal; never the password.)
+        user.addEventListener('input', () => { this.typedUsername = user.value; });
         const pass = el('input', {type: 'password', autocomplete: register ? 'new-password' : 'current-password',
             placeholder: '12–128 characters'});
         pass.name = 'password';
@@ -709,7 +713,7 @@ export class FrontDoor {
         const row = el('div', {className: 'gift-tiers'});
         for (const tier of this.tierChoices) {
             const t = obj(tiers, tier);
-            const locked = tier !== 'normal' && this.tierLocked(tier);
+            const locked = this.arriveLocked(tier);
             const b = el('button', {type: 'button', className: `gift-card${this.draftTier === tier ? ' chosen' : ''}${locked ? ' locked' : ''}`},
                 el('strong', {}, `${locked ? '🔒 ' : ''}${str(t, 'name', title(tier))}`), el('span', {}, str(obj(family, tier), 'best') || str(t, 'best')),
                 ...(locked ? arr(obj(this.tiers, tier), 'progress').filter(isObject).map(p => el('small', {className: 'gift-progress'}, str(p, 'label'))) : []));
@@ -734,7 +738,7 @@ export class FrontDoor {
             this.show('arrive');
             return this.setMessage('That build costs more points than there are (a Gift tier may cost some too).', true);
         }
-        if (this.draftTier !== 'normal' && this.tierLocked(this.draftTier)) {
+        if (this.arriveLocked(this.draftTier)) {
             this.creatorTab = 'gift';
             this.show('arrive');
             return this.setMessage(str(obj(this.tiers, this.draftTier), 'message', `${title(this.draftTier)} isn't open to your account here yet.`), true);
@@ -1354,7 +1358,14 @@ export class FrontDoor {
         return str(this.starts.find(t => str(t, 'id') === id), 'name', title(id));
     }
 
+    /** At a first arrival only Quickened waits on this world's standing: a wolf with a family can't arrive Normal, so
+     *  Gifted is always open to it (doc 77, Phase 2; Core/RatwGameTickets.cpp, arrive). */
+    private arriveLocked(tier: string): boolean {
+        return tier === 'quickened' && this.tierLocked(tier);
+    }
+
     /** Whether the account hasn't opened a Gift tier yet (doc 49; an older server sends no tiers: all open). */
+
     private tierLocked(tier: string): boolean {
         const t = obj(this.tiers, tier);
         return !!t && t.open === false;

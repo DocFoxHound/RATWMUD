@@ -52,6 +52,7 @@ export class ClientApp {
     private ticket = '';
     private keyTries = 0;
     private answered = false;                        // The world has said something on this connection.
+    private admitted = false;                        // ...and has taken the ticket (the arrival, or in the world).
     private asking = new Set<string>();
     private app: HTMLElement;
     private footnote: string;
@@ -278,6 +279,8 @@ export class ClientApp {
         this.ticket = ticket;
         this.keyTries = 0;
         this.answered = false;
+        this.admitted = false;
+
 
         const view: SessionView = {
             lobby: event => this.worldLobby(connection, event),
@@ -321,7 +324,10 @@ export class ClientApp {
         }
         this.answered = true;
         const stage = str(event, 'stage');
+        // The world's greeting, before it has read the hello: nothing to do yet.
+        if (stage === 'ticket' && event.ok === true && !this.admitted) return;
         if (stage === 'arrive') {
+            this.admitted = true;
             if (this.play) this.toDoor();
             this.door ??= this.newDoor();
             this.door.receive(event);
@@ -340,6 +346,7 @@ export class ClientApp {
 
     private entered(connection: Connection) {
         if (connection !== this.connection) return;
+        this.admitted = true;
         this.door?.destroy();
         this.door = null;
         this.lost = null;
