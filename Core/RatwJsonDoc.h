@@ -98,4 +98,7 @@ std::string dump(const Value& v);
 // Strict JSON (RFC 8259): false with a message on anything else, or nesting deeper than 256. Duplicate keys keep the
 // last value, as Unreal's reader does.
 bool parse(const std::string& text, Value& out, std::string& error);
+// The same, but a key repeated in any one object is refused (central's tickets: Docs/Design/77, 5; Phase 0 found that
+// parse() keeps the last copy, as Python's json does).
+bool parseUnique(const std::string& text, Value& out, std::string& error);
 } // namespace ratw::json

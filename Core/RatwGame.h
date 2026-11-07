@@ -40,6 +40,7 @@
 #include "RatwStorylines.h"
 #include "RatwWatch.h"
 #include "RatwHealth.h"
+#include "RatwTickets.h"
 #include "RatwWorld.h"
 
 #include <cstdint>
@@ -71,7 +72,13 @@ class Connection
     virtual bool allowsLocalCredentials() const = 0;
 
     std::uint64_t id = 0;                                     // Unique for the life of the server.
+    // The account: its username (password mode), or central's id for it from a ticket (ticket mode, doc 77).
     std::string entityId, developmentIdentity, accountUsername;
+    // Ticket mode (doc 77, 5): the wolf the ticket admitted, and the identity it carried, until the wolf arrives or
+    // leaves; and how many hellos this connection has sent.
+    std::string ticketWolf;
+    json::Value ticketIdentity;
+    int hellos = 0;
     std::string motionSession, motionCell;
     int motionGeneration = 0;
     sections::Held held;                                      // What of its snapshots it is known to hold.
@@ -196,6 +203,21 @@ struct Options
     double speed = 1;
     // --speed max (Game::setSpeedMax): as fast as the machine goes while nobody is connected, MaxSpeed while anyone is.
     bool speedMax = false;
+    // Ticket mode (Docs/Design/77-central-accounts-and-hosted-worlds.md, 5 and 5.1): opt-in, with `url` set (the
+    // server's --central). Wolves then join with hello{ticket, protocol} from central, checked here with central's
+    // public keys (the file `keysFile`, which the world agent keeps: tools/world_agent.py); they arrive once
+    // (character_arrive) and come straight in after. No passwords at all, from loopback or anywhere; no development
+    // identities; on an official world no dev tools or open tiers either. Without `url`, everything is as it was.
+    struct Central
+    {
+        std::string url, worldId, keysFile;
+        bool official = false;                    // As central lists it: tickets name the kind, and must agree.
+        std::string worldName = "A Run Against the World world";
+        int playerLimit = 100;                    // Wolves in the world at once.
+        // First arrivals (each makes an economy account and a welcome: doc 77, 5.1): at most so many an hour in the
+        // world, and an hour for one account. First guesses.
+        int arrivalsPerHour = 600, accountArrivalsPerHour = 3;
+    } central;
 };
 
 class Game
@@ -228,6 +250,15 @@ class Game
     static constexpr double SpikeMs = 100;
     // Where notes go (level: "info", "warning", "error"). Standard error until set.
     std::function<void(const char* level, const std::string& text)> log;
+
+    // Ticket mode (Options::central): whether it is on; this world's /status (doc 77, 5.1: world id, name, protocol,
+    // build, the client-data hash, players, limit, voices, private, cheats), for the server to serve; the wall clock
+    // tickets are checked against (Unix seconds; tests set it before start()); central's keys read again from their
+    // file now (false, with why, if they can't be).
+    bool ticketMode() const { return !options_.central.url.empty(); }
+    json::Value worldStatus() const;
+    std::function<double()> ticketClock;
+    bool reloadCentralKeys(std::string& problem);
 
     void connect(Connection* c);                              // A new client: it is shown the lobby.
     void disconnect(Connection* c);                           // Its character leaves the world first.
@@ -409,6 +440,33 @@ class Game
     mind::Client mind_;
     accounts::Accounts accounts_;
     accounts::RateLimit authRate_;
+    // Ticket mode (doc 77): the checker and its keys' file as last read; when the keys were last asked for again;
+    // first arrivals, for their limits (in this world, and by account).
+    tickets::Checker tickets_;
+    double keysReadAt_ = -1, keysAskedAt_ = -1e9, keysCheckedAt_ = -1e9;
+    std::string keysStamp_;
+    std::deque<double> arrivals_;
+    std::map<std::string, std::deque<double>> accountArrivals_;
+    double ticketNow() const;
+    bool startTickets(std::string& problem);
+    void ticketHello(Connection* c, const json::Value& j);
+    void ticketLobby(Connection* c, bool ok, const std::string& message, const std::string& code = {});
+    bool arrive(Connection* c, const json::Value& j);
+    void forgetTicket(Connection* c);
+    // The rest of a new wolf's making, once its choices are checked: shared by character_create (password mode) and
+    // character_arrive (ticket mode). False, with the lobby told, if it couldn't be made; nothing is left behind then.
+    struct NewWolf
+    {
+        std::string id, name, tier, family, start, tie, commandId, print;
+        double age = 0;
+        Appearance appearance;
+        practice::Build build;
+    };
+    bool makeWolf(Connection* c, const NewWolf& w);
+    // The choices character_create and character_arrive share: the tier against the account's standing (doc 49), the
+    // start town and the tie (doc 52), the build (doc 49). False, with the lobby told, for a choice refused.
+    bool arrivalChoices(Connection* c, const json::Value& j, const std::string& tier, std::string& start, std::string& tie,
+                        practice::Build& build);
     // Passwords are worked on off this thread (doc 31): a sign-in or registration finishes in a later tick.
     accounts::Hasher hasher_;
     struct PendingSignIn

@@ -263,7 +263,9 @@ FRatwCellPrefetch& prefetcher()
 bool prefetching = false;
 } // namespace
 
-Game::Game(Options options) : options_(std::move(options)), random_(std::random_device{}())
+Game::Game(Options options)
+    : options_(std::move(options)), accounts_(options_.central.url.empty() ? accounts::AccountKind::Password : accounts::AccountKind::Central),
+      random_(std::random_device{}())
 {
     // A Chapter's rented places are locked to all but its members and guests (doc 32, 5.2).
     world_.mayEnter = [this](const std::string& who, const std::string& cell) { return mayEnterPlace(who, cell); };
@@ -321,6 +323,9 @@ std::string Game::guid()
 
 bool Game::start(std::string& problem)
 {
+    // Ticket mode (doc 77, 5): opt-in, and strict about what may come with it.
+    if (ticketMode() && !startTickets(problem))
+        return false;
     // Cheaper voices (doc 28): the router, and the ledger. Not needed to play.
     if (!options_.voiceData.empty())
     {
@@ -1997,6 +2002,7 @@ void Game::disconnect(Connection* c)
         it = it->second.c == c ? signIns_.erase(it) : std::next(it);
     leaveCharacter(c);
     c->accountUsername.clear();
+    forgetTicket(c);
     authRate_.forget(std::to_string(c->id));
     clients_.erase(std::remove(clients_.begin(), clients_.end(), c), clients_.end());
     waiting_.erase(std::remove_if(waiting_.begin(), waiting_.end(), [c](const Waiting& w) { return w.c == c; }), waiting_.end());
@@ -2046,6 +2052,11 @@ void Game::lobby(Connection* c, bool ok, const std::string& message)
     if (!c->entityId.empty())
     {
         system(c, message.empty() ? "Leave your character before returning to account selection." : message);
+        return;
+    }
+    if (ticketMode())
+    {
+        ticketLobby(c, ok, message);
         return;
     }
     auto e = Value::object();
@@ -2321,7 +2332,8 @@ void Game::releaseLingering()
 bool Game::accountCommand(Connection* c, const Value& j, const std::string& type)
 {
     if (type != "auth_register" && type != "auth_login" && type != "character_create" && type != "character_enter" &&
-        type != "character_leave" && type != "auth_logout" && type != "account_handle")
+        type != "character_leave" && type != "auth_logout" && type != "account_handle" &&
+        !(type == "character_arrive" && ticketMode()))
         return false;
     if (type == "account_handle")
     {
@@ -2330,6 +2342,36 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
             return false;
         const auto done = setHandle(c->accountUsername, c->accountUsername, j.string("handle"));
         lobby(c, done.ok, done.message);
+        return true;
+    }
+    if (ticketMode())
+    {
+        // Ticket mode (doc 77, 5): a wolf comes in by hello{ticket}, arrives once (character_arrive) and leaves back to
+        // the world list; passwords and the roster aren't here at all, from loopback or anywhere.
+        if (type == "auth_logout" || type == "character_leave")
+        {
+            leaveCharacter(c);
+            forgetTicket(c);
+            ticketLobby(c, storageReady_, storageReady_ ? "Your wolf has left the world."
+                                                       : "Storage failed; your wolf was removed from play, but the latest state could not be saved.");
+        }
+        else if (type == "character_arrive")
+            arrive(c, j);
+        else if (type == "character_enter" && !c->entityId.empty() && j.string("id") == c->entityId)
+        {
+            auto entered = Value::object();
+            entered.add("type", "entered");
+            entered.add("id", c->entityId);
+            entered.add("motionSession", c->motionSession);
+            c->held.reset();
+            send(c, entered);
+            sendSnapshot(c);
+        }
+        else if (!c->entityId.empty())
+            system(c, "Leave the world before joining again.");
+        else
+            ticketLobby(c, false, "This world joins by ticket from central: there are no passwords or characters to choose here.",
+                        "ticket_only");
         return true;
     }
     if (type == "auth_logout" || type == "character_leave")
@@ -2454,58 +2496,10 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
             lobby(c, false, "Choose Normal, or Gifted or Quickened with one of the eight Gift families.");
             return true;
         }
-        // Earned Gift tiers (doc 49, Phase 5): a tier the account hasn't opened is refused, with what it still needs.
-        if (tier != "normal" && !options_.openTiers)
-        {
-            const auto record = standing_.find(c->accountUsername);
-            const standing::Record r = record == standing_.end() ? standing::Record{} : record->second;
-            const bool open = standing::open(r, "gifted") && (tier == "gifted" || standing::open(r, "quickened"));
-            if (!open)
-            {
-                const auto m = measuresOf(c->accountUsername);
-                lobby(c, false, standing::lockedMessage(standing::open(r, "gifted") ? tier : "gifted", m, standing::thresholds()));
-                return true;
-            }
-        }
-        // The start town (doc 52, 1): any of this world's start towns, the busiest when none is named; refused if it
-        // names one the world doesn't offer. A world without start towns starts everyone at its spawn.
-        const auto towns = startTowns();
-        std::string start;
-        if (const auto* given = j.find("start"); given && !(given->isString() && given->asString({}).empty()))
-        {
-            start = given->isString() ? given->asString({}) : std::string("?");
-            if (std::find(towns.begin(), towns.end(), start) == towns.end())
-            {
-                lobby(c, false, towns.empty() ? "This world has one place to arrive: leave the start town out."
-                                              : "Choose one of the start towns to arrive in.");
-                return true;
-            }
-        }
-        // The tie (doc 52, 4): a story starter; a new account's first wolf must take one, later ones may not.
-        const std::string tie = j.find("tie") && j.find("tie")->isString() ? j.string("tie") : std::string();
-        const bool tieRequired = accounts_.characters(c->accountUsername).empty() && !newcomers::tieRules().starters.empty() &&
-                                 !options_.tiesOptional;
-        if ((j.find("tie") && !j.find("tie")->isString()) || (!tie.empty() && !newcomers::starter(tie)))
-        {
-            lobby(c, false, "Choose one of the story starters for your tie.");
-            return true;
-        }
-        if (tie.empty() && tieRequired)
-        {
-            lobby(c, false, "A first wolf takes a tie: choose a story starter that links them to someone here.");
-            return true;
-        }
-        // The build (doc 49, Phase 4): grades and a specialty within the budget; none is a plain wolf with none.
+        std::string start, tie;
         practice::Build build;
-        if (const auto* given = j.find("build"))
-        {
-            std::string why;
-            if (!practice::checkBuild(*given, tier, build, why))
-            {
-                lobby(c, false, why);
-                return true;
-            }
-        }
+        if (!arrivalChoices(c, j, tier, start, tie, build))
+            return true;
         auto canonical = Value::object();
         canonical.add("name", name);
         canonical.add("age", age);
@@ -2551,53 +2545,20 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
             lobby(c, false, "This local account already has six characters. Deletion is not available.");
             return true;
         }
-        // Undone exactly if it fails (no copy of the whole world first: doc 31). The new character has nothing
-        // anywhere yet but what is made here.
-        const auto beforeAccounts = accounts_;
-        const std::string newId = "wolf-" + guid();
-        if (characters_.count(newId) || !accounts_.addCharacter(c->accountUsername, newId, commandId, print))
-        {
-            lobby(c, false, "Character ownership could not be allocated; please try again.");
-            return true;
-        }
-        std::string arriveCell;
-        Vec2 arriveAt;
-        if (!start.empty())
-            for (const auto& s : newcomers::rules().starts)
-                if (s.id == start && !world_.arrivalIn(start, arriveCell, arriveAt, s.cell, {s.x, s.y}))
-                    arriveCell.clear();             // (No spot will do there: the spawn, as ever.)
-        auto& player = arriveCell.empty() ? world_.addPlayer(newId, name) : world_.addPlayer(newId, name, arriveCell, arriveAt);
-        if (!world_.society().account(newId))
-        {
-            world_.removePlayer(newId);
-            accounts_ = beforeAccounts;
-            lobby(c, false, "Character creation could not allocate a valid economy account; no character was saved.");
-            return true;
-        }
-        player.age = int(age);
-        player.lastBirthdayDay = world_.calendarDays();
-        player.ageNoticePending = 0;
-        player.appearance = appearance;
-        World::applyBuild(player, build);
-        if (auto& person = personOf(c->accountUsername); person.firstCharacter.empty())
-            person.firstCharacter = newId;          // (The account's first wolf: doc 52's newcomers.)
-        if (!family.empty())
-            world_.giveGift(newId, family, tier == "quickened");
-        player.speakingColor = int(characters_.size() * 9) % 32;
-        characters_[player.id] = player;
-        world_.removePlayer(newId);
-        logEvent("character created", newId);
-        record(Accounts | Economy | Character, newId);
-        if (!storageReady_)
-        {
-            characters_.erase(newId);
-            accounts_ = beforeAccounts;
-            lobby(c, false, "Character creation could not be saved. No character was acknowledged.");
-            return true;
-        }
-        if (!tie.empty())                           // (Seeking at once: a mentor may be found while they finish up.)
-            startTie(newId, c->accountUsername, tie, start, characters_[newId].cellId);
-        lobby(c, true, "Character saved. Select it to enter the world.");
+        NewWolf w;
+        w.id = "wolf-" + guid();
+        w.name = name;
+        w.age = age;
+        w.appearance = appearance;
+        w.tier = tier;
+        w.family = family;
+        w.build = build;
+        w.start = start;
+        w.tie = tie;
+        w.commandId = commandId;
+        w.print = print;
+        if (makeWolf(c, w))
+            lobby(c, true, "Character saved. Select it to enter the world.");
         return true;
     }
     const std::string id = j.string("id");
@@ -2607,6 +2568,115 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
         return true;
     }
     enterCharacter(c, id, characters_.at(id).name);
+    return true;
+}
+
+bool Game::arrivalChoices(Connection* c, const Value& j, const std::string& tier, std::string& start, std::string& tie,
+                          practice::Build& build)
+{
+    // Earned Gift tiers (doc 49, Phase 5): a tier the account hasn't opened is refused, with what it still needs.
+    if (tier != "normal" && !options_.openTiers)
+    {
+        const auto record = standing_.find(c->accountUsername);
+        const standing::Record r = record == standing_.end() ? standing::Record{} : record->second;
+        const bool open = standing::open(r, "gifted") && (tier == "gifted" || standing::open(r, "quickened"));
+        if (!open)
+        {
+            const auto m = measuresOf(c->accountUsername);
+            lobby(c, false, standing::lockedMessage(standing::open(r, "gifted") ? tier : "gifted", m, standing::thresholds()));
+            return false;
+        }
+    }
+    // The start town (doc 52, 1): any of this world's start towns, the busiest when none is named; refused if it
+    // names one the world doesn't offer. A world without start towns starts everyone at its spawn.
+    const auto towns = startTowns();
+    start.clear();
+    if (const auto* given = j.find("start"); given && !(given->isString() && given->asString({}).empty()))
+    {
+        start = given->isString() ? given->asString({}) : std::string("?");
+        if (std::find(towns.begin(), towns.end(), start) == towns.end())
+        {
+            lobby(c, false, towns.empty() ? "This world has one place to arrive: leave the start town out."
+                                          : "Choose one of the start towns to arrive in.");
+            return false;
+        }
+    }
+    // The tie (doc 52, 4): a story starter; a new account's first wolf must take one, later ones may not.
+    tie = j.find("tie") && j.find("tie")->isString() ? j.string("tie") : std::string();
+    const bool tieRequired = accounts_.characters(c->accountUsername).empty() && !newcomers::tieRules().starters.empty() &&
+                             !options_.tiesOptional;
+    if ((j.find("tie") && !j.find("tie")->isString()) || (!tie.empty() && !newcomers::starter(tie)))
+    {
+        lobby(c, false, "Choose one of the story starters for your tie.");
+        return false;
+    }
+    if (tie.empty() && tieRequired)
+    {
+        lobby(c, false, "A first wolf takes a tie: choose a story starter that links them to someone here.");
+        return false;
+    }
+    // The build (doc 49, Phase 4): grades and a specialty within the budget; none is a plain wolf with none.
+    build = practice::Build{};
+    if (const auto* given = j.find("build"))
+    {
+        std::string why;
+        if (!practice::checkBuild(*given, tier, build, why))
+        {
+            lobby(c, false, why);
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Game::makeWolf(Connection* c, const NewWolf& w)
+{
+    // Undone exactly if it fails (no copy of the whole world first: doc 31). The new character has nothing
+    // anywhere yet but what is made here.
+    const auto beforeAccounts = accounts_;
+    const std::string& newId = w.id;
+    if (characters_.count(newId) || !accounts_.addCharacter(c->accountUsername, newId, w.commandId, w.print))
+    {
+        lobby(c, false, "Character ownership could not be allocated; please try again.");
+        return false;
+    }
+    std::string arriveCell;
+    Vec2 arriveAt;
+    if (!w.start.empty())
+        for (const auto& s : newcomers::rules().starts)
+            if (s.id == w.start && !world_.arrivalIn(w.start, arriveCell, arriveAt, s.cell, {s.x, s.y}))
+                arriveCell.clear();                 // (No spot will do there: the spawn, as ever.)
+    auto& player = arriveCell.empty() ? world_.addPlayer(newId, w.name) : world_.addPlayer(newId, w.name, arriveCell, arriveAt);
+    if (!world_.society().account(newId))
+    {
+        world_.removePlayer(newId);
+        accounts_ = beforeAccounts;
+        lobby(c, false, "Character creation could not allocate a valid economy account; no character was saved.");
+        return false;
+    }
+    player.age = int(w.age);
+    player.lastBirthdayDay = world_.calendarDays();
+    player.ageNoticePending = 0;
+    player.appearance = w.appearance;
+    World::applyBuild(player, w.build);
+    if (auto& person = personOf(c->accountUsername); person.firstCharacter.empty())
+        person.firstCharacter = newId;              // (The account's first wolf: doc 52's newcomers.)
+    if (w.tier != "normal" && !w.family.empty())   // (A ticket's wolf may have a family and arrive Normal: doc 77, Q12.)
+        world_.giveGift(newId, w.family, w.tier == "quickened");
+    player.speakingColor = int(characters_.size() * 9) % 32;
+    characters_[player.id] = player;
+    world_.removePlayer(newId);
+    logEvent("character created", newId);
+    record(Accounts | Economy | Character, newId);
+    if (!storageReady_)
+    {
+        characters_.erase(newId);
+        accounts_ = beforeAccounts;
+        lobby(c, false, "Character creation could not be saved. No character was acknowledged.");
+        return false;
+    }
+    if (!w.tie.empty())                         // (Seeking at once: a mentor may be found while they finish up.)
+        startTie(newId, c->accountUsername, w.tie, w.start, characters_[newId].cellId);
     return true;
 }
 
@@ -2824,6 +2894,12 @@ void Game::tick(double dt)
         autosave();
     }
     finishSignIns();
+    if (ticketMode() && clock() - keysCheckedAt_ >= 10)
+    {
+        keysCheckedAt_ = clock();                   // (Central's keys, if the world agent has fetched new ones.)
+        std::string trouble;
+        reloadCentralKeys(trouble);
+    }
     {
         perf::Scope timed(meter_, perf::Saves);
         reapSnapshot(false);
@@ -4668,7 +4744,10 @@ void Game::command(Connection* c, const std::string& raw)
         return;
     if (type == "hello")
     {
-        login(c, j);
+        if (ticketMode())
+            ticketHello(c, j);                      // hello{ticket, protocol} (doc 77, 5).
+        else
+            login(c, j);
         return;
     }
     const auto id = c->entityId;
@@ -6016,11 +6095,12 @@ void Game::load(const std::string& payload)
         note("error", "RATW restore rejected (" + problem + "); checkpoint preserved, autosave disabled");
         return;
     }
-    accounts::Accounts restored;
+    accounts::Accounts restored(accounts_.kind());   // (One kind or the other, as this world keeps: doc 77, 5.1.)
     if (document.has("accounts") && !restored.restore(state.accounts))
     {
         storageReady_ = false;
-        note("error", "RATW invalid account checkpoint; preserved and autosave disabled.");
+        note("error", ticketMode() ? "RATW the save's accounts are not ticket accounts (a world never mixes them: doc 77); preserved and autosave disabled."
+                                   : "RATW invalid account checkpoint; preserved and autosave disabled.");
         return;
     }
     sequence_ = state.sequence;

@@ -1,0 +1,8 @@
+// Made by CMake from Core/RatwBuildInfo.cpp.in. Do not edit.
+#include "RatwBuildInfo.h"
+
+namespace ratw::build
+{
+const char* clientDataHash() { return "@RATW_CLIENT_DATA_HASH@"; }
+const char* id() { return "@RATW_BUILD_ID@"; }
+} // namespace ratw::build

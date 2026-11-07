@@ -48,9 +48,25 @@ struct PasswordResult
 // The work itself: the same for a Hasher's thread and for the synchronous calls below.
 PasswordResult passwordWork(const PasswordJob& job);
 
+// A world keeps one kind of account or the other, never both (Docs/Design/77, 5.1). Password: today's local accounts
+// (a username, a PBKDF2 verifier, the characters). Central (ticket mode, --central): an account is central's id for it
+// (acct-<32 hex>, from a ticket's `sub`) and the wolves it has brought here, with no salt or verifier; it is made at the
+// account's first arrival. Saved as {"version":2,"kind":"central","entries":[{"username": <the central id>,
+// "characters", "creations"}]}: the field keeps its name, since it is game.accounts' row key (migration 0012).
+enum class AccountKind
+{
+    Password,
+    Central,
+};
+
 class Accounts
 {
   public:
+    explicit Accounts(AccountKind kind = AccountKind::Password) : kind_(kind) {}
+    AccountKind kind() const { return kind_; }
+    // Central accounts: the account for a ticket's id, made if it is new. False if the id isn't one, or the world
+    // holds AccountLimit accounts already.
+    bool addCentral(const std::string& accountId);
     bool registerAccount(const std::string& username, const std::string& password, std::string& error);
     bool authenticate(const std::string& username, const std::string& password) const;
     // The same in two steps, for a Hasher: whether a name may be registered (checked again when it is added), the job
@@ -76,6 +92,7 @@ class Accounts
     bool referencesOnly(const std::set<std::string>& characterIds) const;
 
   private:
+    AccountKind kind_ = AccountKind::Password;
     struct Creation
     {
         std::string character, fingerprint;

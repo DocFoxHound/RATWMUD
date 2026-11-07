@@ -286,6 +286,7 @@ struct Reader
     const char* p;
     const char* end;
     std::string error;
+    bool uniqueKeys = false;                       // parseUnique: a key twice in one object is refused.
 
     bool fail(const char* why)
     {
@@ -454,6 +455,7 @@ struct Reader
                 ++p;
                 Value item;
                 if (!value(item, depth + 1)) return false;
+                if (uniqueKeys && out.has(key)) return fail("Repeated key.");
                 out.set(key, std::move(item));
                 space();
                 if (p < end && *p == ',') { ++p; continue; }
@@ -473,9 +475,11 @@ struct Reader
 };
 } // namespace
 
-bool parse(const std::string& text, Value& out, std::string& error)
+namespace
 {
-    Reader r{text.data(), text.data() + text.size(), {}};
+bool read(const std::string& text, Value& out, std::string& error, bool uniqueKeys)
+{
+    Reader r{text.data(), text.data() + text.size(), {}, uniqueKeys};
     Value v;
     if (!r.value(v, 0))
     {
@@ -491,4 +495,8 @@ bool parse(const std::string& text, Value& out, std::string& error)
     out = std::move(v);
     return true;
 }
+} // namespace
+
+bool parse(const std::string& text, Value& out, std::string& error) { return read(text, out, error, false); }
+bool parseUnique(const std::string& text, Value& out, std::string& error) { return read(text, out, error, true); }
 } // namespace ratw::json

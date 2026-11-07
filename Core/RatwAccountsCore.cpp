@@ -40,6 +40,15 @@ bool characterId(const std::string& id)
             return false;
     return true;
 }
+bool centralId(const std::string& id)
+{
+    if (id.rfind("acct-", 0) != 0 || id.size() != 37)
+        return false;
+    for (std::size_t i = 5; i < id.size(); ++i)
+        if (!(id[i] >= '0' && id[i] <= '9') && !(id[i] >= 'a' && id[i] <= 'f'))
+            return false;
+    return true;
+}
 bool exact(const json::Value& o, std::initializer_list<const char*> fields)
 {
     if (!o.isObject() || o.size() != fields.size())
@@ -179,8 +188,26 @@ PasswordResult passwordWork(const PasswordJob& job)
     return out;
 }
 
+bool Accounts::addCentral(const std::string& accountId)
+{
+    if (kind_ != AccountKind::Central || !centralId(accountId))
+        return false;
+    if (accounts_.count(accountId))
+        return true;
+    if (accounts_.size() >= AccountLimit)
+        return false;
+    accounts_[accountId] = Account{};
+    accounts_[accountId].iterations = 0;
+    return true;
+}
+
 bool Accounts::mayRegister(const std::string& username, std::string& error) const
 {
+    if (kind_ == AccountKind::Central)
+    {
+        error = "This world joins by ticket from central: it has no passwords.";
+        return false;
+    }
     std::string user;
     if (!normalizeUsername(username, user))
     {
@@ -199,7 +226,7 @@ PasswordJob Accounts::signInJob(const std::string& username, const std::string& 
 {
     PasswordJob job;
     job.password = password;
-    if (!normalizeUsername(username, job.username) || !validPassword(password))
+    if (kind_ == AccountKind::Central || !normalizeUsername(username, job.username) || !validPassword(password))
         return job;                                // Unknown: checked at the same cost, and refused.
     if (const auto found = accounts_.find(job.username); found != accounts_.end())
     {
@@ -383,16 +410,22 @@ std::string Accounts::createdCharacter(const std::string& username, const std::s
 
 json::Value Accounts::state() const
 {
+    const bool central = kind_ == AccountKind::Central;
     auto root = json::Value::object();
-    root.add("version", 1);
+    root.add("version", central ? 2 : 1);
+    if (central)
+        root.add("kind", "central");
     auto entries = json::Value::array();
     for (const auto& [user, account] : accounts_)     // (A map: in name order, as the Unreal accounts sort them.)
     {
         auto entry = json::Value::object();
         entry.add("username", user);
-        entry.add("salt", account.salt);
-        entry.add("verifier", account.verifier);
-        entry.add("iterations", account.iterations);
+        if (!central)
+        {
+            entry.add("salt", account.salt);
+            entry.add("verifier", account.verifier);
+            entry.add("iterations", account.iterations);
+        }
         auto ids = json::Value::array();
         for (const auto& id : account.characters)
             ids.push(id);
@@ -414,24 +447,38 @@ json::Value Accounts::state() const
 
 bool Accounts::restore(const json::Value& root)
 {
-    if (!exact(root, {"version", "entries"}) || wire::strictNumber(root, "version", -1) != 1)
+    // One kind or the other, as this world keeps (doc 77, 5.1). A save with no accounts at all may be either: a world
+    // that had nobody yet can go over to tickets, or back.
+    const bool central = kind_ == AccountKind::Central;
+    const bool savedCentral = exact(root, {"version", "kind", "entries"}) && wire::strictNumber(root, "version", -1) == 2 &&
+                              root.string("kind") == "central";
+    const bool savedPassword = exact(root, {"version", "entries"}) && wire::strictNumber(root, "version", -1) == 1;
+    if (!savedCentral && !savedPassword)
         return false;
     const auto* entries = root.find("entries");
     if (!entries || !entries->isArray() || entries->size() > AccountLimit)
+        return false;
+    if (savedCentral != central && !entries->items().empty())
         return false;
     std::map<std::string, Account> candidate;
     std::set<std::string> owned;
     std::uint8_t bytes[32];
     for (const auto& entry : entries->items())
     {
-        if (!exact(entry, {"username", "salt", "verifier", "iterations", "characters", "creations"}))
-            return false;
         Account account;
         std::string user, normalized;
-        if (!text(entry, "username", user) || !normalizeUsername(user, normalized) || user != normalized || candidate.count(user) ||
-            !text(entry, "salt", account.salt) || !sys::readHex(account.salt, bytes, 32) ||
-            !text(entry, "verifier", account.verifier) || !sys::readHex(account.verifier, bytes, 32) ||
-            wire::strictNumber(entry, "iterations", -1) != PasswordIterations)
+        if (central)
+        {
+            if (!exact(entry, {"username", "characters", "creations"}) || !text(entry, "username", user) || !centralId(user) ||
+                candidate.count(user))
+                return false;
+            account.iterations = 0;
+        }
+        else if (!exact(entry, {"username", "salt", "verifier", "iterations", "characters", "creations"}) ||
+                 !text(entry, "username", user) || !normalizeUsername(user, normalized) || user != normalized || candidate.count(user) ||
+                 !text(entry, "salt", account.salt) || !sys::readHex(account.salt, bytes, 32) ||
+                 !text(entry, "verifier", account.verifier) || !sys::readHex(account.verifier, bytes, 32) ||
+                 wire::strictNumber(entry, "iterations", -1) != PasswordIterations)
             return false;
         const auto* ids = entry.find("characters");
         if (!ids || !ids->isArray() || ids->size() > CharacterSlots)

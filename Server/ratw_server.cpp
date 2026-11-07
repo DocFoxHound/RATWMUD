@@ -18,6 +18,12 @@
 //            faster, as fast as the machine can if it can't keep up; /speed in the Dev Console changes it; Game::setSpeed)
 //            --speed max (no cap while nobody is connected: ticks back to back, as fast as the machine goes; 1000 while
 //            anyone is; /speed max in the Dev Console; Game::setSpeedMax, doc 69)
+//   ticket mode (Docs/Design/77-central-accounts-and-hosted-worlds.md, 5 and 5.1; opt-in): --central URL --world-id ID
+//            --central-keys FILE [--official] [--world-name NAME] [--player-limit N] [--arrivals-per-hour N]. Wolves
+//            join with tickets from central, checked with central's keys (FILE, kept by tools/world_agent.py keys);
+//            no passwords, from loopback or anywhere; any Origin; no page (--web is refused) and GET /status answers
+//            (doc 5.1's fields, 2 KB at most, Access-Control-Allow-Origin: *). Refuses --dev-identity, and --dev-tools
+//            or --open-tiers on an official world. Without --central, everything is as it was.
 //   --scratch: a scratch server (game::Options::scratch): it reads the world and its save but writes nothing, and
 //            needn't own the world (so it runs beside the real server). Whoever starts it stops it when done; it stops
 //            by itself after an hour unless --for says otherwise. --idle-exit SECONDS (any server) stops it once nobody
@@ -143,7 +149,7 @@ class Network
         std::string payload;
     };
 
-    Network(int listener, std::string webRoot) : listener_(listener), webRoot_(std::move(webRoot))
+    Network(int listener, std::string webRoot, bool tickets) : listener_(listener), webRoot_(std::move(webRoot)), tickets_(tickets)
     {
         events_ = ::epoll_create1(EPOLL_CLOEXEC);
         wake_ = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
@@ -208,6 +214,13 @@ class Network
         clients_.clear();
     }
     std::size_t connected() const { return connected_.load(); }
+    // Ticket mode's GET /status (doc 77, 5.1): the game thread sets it (Game::worldStatus, about once a second); the
+    // network thread answers from it, with no work for the game.
+    void setStatus(std::string json)
+    {
+        std::lock_guard<std::mutex> guard(statusLock_);
+        status_ = std::move(json);
+    }
 
   private:
     static void signal(int fd)
@@ -269,14 +282,59 @@ class Network
             post({Message::Gone, c});
         }
     }
+    // GET /status, at most StatusPerMinute times a minute from one address.
+    static constexpr std::size_t StatusPerMinute = 30;
+    bool statusAllowed(const std::string& address)
+    {
+        const auto now = std::chrono::steady_clock::now();
+        const auto minute = std::chrono::seconds(60);
+        if (statusAsks_.size() > 4096)              // (Many addresses: the stale ones go.)
+            for (auto it = statusAsks_.begin(); it != statusAsks_.end();)
+                it = it->second.empty() || now - it->second.back() > minute ? statusAsks_.erase(it) : std::next(it);
+        auto& asks = statusAsks_[address];
+        while (!asks.empty() && now - asks.front() > minute)
+            asks.pop_front();
+        if (asks.size() >= StatusPerMinute)
+            return false;
+        asks.push_back(now);
+        return true;
+    }
     // An HTTP request: the game's WebSocket, or one of the client's files.
     void serve(const std::shared_ptr<Client>& c, const web::Request& r)
     {
+        if (tickets_ && r.path != web::GamePath)
+        {
+            // Ticket mode serves no page (doc 77, 5.1: a host must not serve one that looks like the game); only
+            // /status, public, for central's call-back and the client's ping.
+            if (r.path != "/status")
+                c->append(web::response(404, "text/plain; charset=utf-8", "This world serves no page: join it from the Run Against the World client.\n"));
+            else if (r.method != "GET" && r.method != "HEAD")
+                c->append(web::response(405, "text/plain; charset=utf-8", "Only GET.\n", "Allow: GET, HEAD\r\n"));
+            else if (!statusAllowed(c->address))
+                c->append(web::response(429, "text/plain; charset=utf-8", "Too many requests.\n", "Retry-After: 60\r\n"));
+            else
+            {
+                std::string body;
+                {
+                    std::lock_guard<std::mutex> guard(statusLock_);
+                    body = status_;
+                }
+                std::string reply = web::response(200, "application/json", body,
+                                                  "Cache-Control: no-store\r\nAccess-Control-Allow-Origin: *\r\n");
+                if (r.method == "HEAD")
+                    reply.resize(reply.size() - body.size());
+                c->append(reply);
+            }
+            c->finish();
+            return;
+        }
         if (r.path == web::GamePath)
         {
             if (!web::upgradeRequested(r))
                 c->append(web::response(426, "text/plain; charset=utf-8", "The game is played over a WebSocket.\n", "Upgrade: websocket\r\n"));
-            else if (!web::originAllowed(r))
+            // (Ticket mode accepts any Origin: nothing ambient rides on the socket, and the client's bundled page has an
+            // origin of its own, tauri://localhost. Password mode keeps the check: doc 77, 5.1.)
+            else if (!tickets_ && !web::originAllowed(r))
                 c->append(web::response(403, "text/plain; charset=utf-8", "This page may not open the game.\n"));
             else if (const std::string accept = web::acceptKey(r.header("sec-websocket-key")); accept.empty())
                 c->append(web::response(500, "text/plain; charset=utf-8", "The server cannot accept WebSockets.\n"));
@@ -419,7 +477,7 @@ class Network
                         ::inet_ntop(AF_INET, &peer.sin_addr, text, sizeof text);
                         c->fd = accepted;
                         c->address = text;
-                        c->local = accounts::isLoopbackAddress(c->address);
+                        c->local = !tickets_ && accounts::isLoopbackAddress(c->address);   // (Ticket mode: loopback grants nothing.)
                         c->id = nextId_++;
                         c->network = this;
                         watch(accepted, false, EPOLL_CTL_ADD);
@@ -466,6 +524,10 @@ class Network
 
     int listener_, events_ = -1, wake_ = -1, gameWake_ = -1;
     std::string webRoot_;
+    bool tickets_ = false;
+    std::mutex statusLock_;
+    std::string status_ = "{}";
+    std::map<std::string, std::deque<std::chrono::steady_clock::time_point>> statusAsks_;   // The network thread's.
     std::map<int, std::shared_ptr<Client>> clients_;        // The network thread's.
     std::uint64_t nextId_ = 1;
     std::atomic<std::size_t> connected_{0};
@@ -537,7 +599,9 @@ void usage()
 {
     std::cerr << "usage: ratw_server (--database KEY [--world-kind dev|live] | [--world MANIFEST | --world-export DIR] --save FILE) [--port N] [--bind ADDR]\n"
                  "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--talk-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
-                 "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N|max] [--scratch [--idle-exit SECONDS]]\n";
+                 "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N|max] [--scratch [--idle-exit SECONDS]]\n"
+                 "                   [--central URL --world-id ID --central-keys FILE [--official] [--world-name NAME] [--player-limit N]\n"
+                 "                    [--arrivals-per-hour N]]   (ticket mode: Docs/Design/77)\n";
 }
 
 void blocking(int fd, bool on)
@@ -590,6 +654,13 @@ int main(int argc, char** argv)
         else if (a == "--scratch") options.scratch = true;
         else if (a == "--refound-economy") options.refoundEconomy = true;   // Doc 64, Phase 1: the economy afresh.
         else if (a == "--idle-exit") idleExit = std::atof(next().c_str());
+        else if (a == "--central") options.central.url = next();             // Ticket mode (doc 77): opt-in.
+        else if (a == "--world-id") options.central.worldId = next();
+        else if (a == "--central-keys") options.central.keysFile = next();
+        else if (a == "--official") options.central.official = true;
+        else if (a == "--world-name") options.central.worldName = next();
+        else if (a == "--player-limit") options.central.playerLimit = std::atoi(next().c_str());
+        else if (a == "--arrivals-per-hour") options.central.arrivalsPerHour = std::atoi(next().c_str());
         else if (a == "--speed")
         {
             const auto asked = next();
@@ -607,6 +678,22 @@ int main(int argc, char** argv)
     if (options.database.empty() && options.savePath.empty())
     {
         usage();
+        return 2;
+    }
+    const bool tickets = !options.central.url.empty();
+    if (!tickets && (!options.central.worldId.empty() || !options.central.keysFile.empty() || options.central.official))
+    {
+        std::cerr << "RATW_WORLD_REJECTED: --world-id, --central-keys and --official are for ticket mode (--central URL).\n";
+        return 2;
+    }
+    if (tickets && options.central.url.rfind("http://", 0) != 0 && options.central.url.rfind("https://", 0) != 0)
+    {
+        std::cerr << "RATW_WORLD_REJECTED: --central is central's address, http(s)://...\n";
+        return 2;
+    }
+    if (tickets && !webRoot.empty())
+    {
+        std::cerr << "RATW_WORLD_REJECTED: a ticket-mode world serves no page (doc 77, 5.1): leave --web out.\n";
         return 2;
     }
     if (!options.database.empty())
@@ -659,7 +746,21 @@ int main(int argc, char** argv)
     std::signal(SIGINT, stop);
     std::signal(SIGTERM, stop);
     std::signal(SIGPIPE, SIG_IGN);
-    Network network(listener, webRoot);
+    Network network(listener, webRoot, tickets);
+    // GET /status's body (ticket mode), at most 2 KB (doc 77, 5.1): the world's name is cut short before that.
+    const auto publishStatus = [&] {
+        auto status = g.worldStatus();
+        std::string body = json::dump(status);
+        if (body.size() > 2048)
+        {
+            status.set("name", "");
+            body = json::dump(status);
+        }
+        network.setStatus(body.size() <= 2048 ? body : "{}");
+    };
+    auto nextStatus = std::chrono::steady_clock::now();
+    if (tickets)
+        publishStatus();
     network.start();
     std::cout << "RATW server listening on port " << port << " (" << bind << "); ready in "
               << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count() << " s" << std::endl;
@@ -789,6 +890,11 @@ int main(int argc, char** argv)
                 nextTick = Clock::now();            // Fell far behind (a stall): carry on from now, not in a rush.
             uncappedTicks = 0;
             uncappedSince = Clock::now();
+        }
+        if (tickets && Clock::now() >= nextStatus)
+        {
+            publishStatus();
+            nextStatus = Clock::now() + std::chrono::seconds(1);
         }
         busy += std::chrono::duration<double, std::milli>(Clock::now() - woke).count();
         if (ticked)
