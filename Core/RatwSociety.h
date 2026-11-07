@@ -137,8 +137,8 @@ struct LifeDay
     std::map<std::string, DayPlan> plans;           // By community (a region), and a city's other markets ("<city>#1"...).
     std::shared_ptr<const Markets> markets;         // (Null: one market to a community.)
     std::function<std::string(const std::string& cell)> communityOf;
-    // The House whose district a cell is in (its territory's first claim by a House, by the House's name: "Greatly"; "" for
-    // none): the Crown's charters' (Docs/Design/75-the-economy-controller.md, 4.2).
+    // The House whose district a cell is in (by the House's name: "Greatly"; "" for none; World::districtHouse: the cell's
+    // own claim by a House, else the street its door leads out to): the Crown's charters' (Docs/Design/75, 4.2).
     std::function<std::string(const std::string& cell)> houseOf;
     std::function<int(const Spot& at)> sky;  // There: -1 indoors, 0 fair, 1 wet (rain), 2 harsh (storm, snow).
 };

@@ -694,6 +694,11 @@ void theCharters()
     table.chartersRampDays = 4;
     const auto make = [] {
         auto s = city(shops(), 9000, {{"steer", 1}, {"steerLean", 200}, {"wageDrift", 0}});
+        LifeDay day = s.day();                      // (aa's shop in Greatly's district; bb's in a House's with no estate.)
+        day.houseOf = [](const std::string& cell) {
+            return cell == "shop_aa_keep" ? std::string("Greatly") : cell == "shop_bb_keep" ? std::string("Nowhere") : std::string();
+        };
+        s.setDay(day);
         expect(s.classOf("gull") == "upper" && s.classOf("aa_keep") == "middle", "the classes: " + s.classOf("gull") + ", " + s.classOf("aa_keep"));
         run(s, 1 + 17.9 / 24, 1 + 18.5 / 24);      // (Turned on: the ramp to 4, waiting for the keepers' profit's month.)
         auto state = s.state();
@@ -725,6 +730,10 @@ void theCharters()
         order += (order.empty() ? "" : ",") + till.substr(9);
     expect(st.charters.size() == 4 && order.find("gull") == std::string::npos,
            "four nights: all four middle keepers' tills, the upper keeper's never: " + order);
+    expect(s.charterOf(s.tillOf("aa_keep")) == "Greatly" && s.charterOf(s.tillOf("bb_keep")) == "the Crown" &&
+               s.charterOf(s.tillOf("dd_keep")) == "the Crown",
+           "each to the House whose district it is in, else the Crown: " + s.charterOf(s.tillOf("aa_keep")) + ", " +
+               s.charterOf(s.tillOf("bb_keep")));
     expect(s.conserved(), "conserved");
     // Saved and read again.
     const auto back = wire::readSociety(wire::society(s.state())).loop.steer;

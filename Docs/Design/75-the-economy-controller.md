@@ -731,3 +731,35 @@ clean.
    cap and keep and cut its surplus alms, so it is left to the calibration to measure.
 4. **The DM tab** still has the push's scale (now a point at the slider) and no charter or tithe edicts: Phase 7's.
 
+
+### Phase 2 review (2026-11-06, branch `r2-controller`)
+
+A review of Phase 2's diff before the calibration spends runs on it. Checked and found sound: the tithe's pennies (exact
+in whole numbers, remainders largest first, ties by household, the total kept, payers never under the mean), the
+charters' profit path (after the hands' share and the ground rent, to the House's estate, booked as rents and shops; a
+failed shift leaves the money in the till), the dividend's rise (0 at the centre and the left), the overlay in the
+upper share and the skim's keepers' step (`houseOfPost` is left alone on purpose, so a chartered till keeps a keeper's
+7 wage days and wage bound), the till's wage buffer, determinism (the ranking sorted by mean then id; the profit means
+saved in their shortest exact form), save and reload, the centre (no charter, no tithe, the treasury target the
+world's), and the removed levers (nothing of the share-out, the toll lean, the rent scale, the pulls or the push still
+acts; the only remnant is `topUpPoorest`'s unused fund:relief branch, harmless).
+
+**One defect, fixed.** A charter's House came from the shop's own cell's claims. In Ridgemere 2.0 most shops are
+interiors that no House claims while the street outside is a House's, so about 25 middle keepers' shops in Greatly's
+and Grayrock's streets (the Morning Oven, the Hook and Cleaver, Harbour Provisions...) were chartered to the Crown.
+`World::districtHouse` now takes the cell's own House claim, else that of the cells its doors lead out to, the nearest
+first, never past the first street (so never a neighbour's across a seam). Tests: `authoring_tests` (a street's House
+by the faction's name, a room with none takes its street's, a room a House claims keeps its own, a street with none has
+none) and `steer_tests` (a till in a House's district is that House's; a House with no estate, or none, the Crown's).
+A 60-day check at the right (`steer-p2fix-right`, against `steer-p2-right`): the same 29 charters, S 34.98% against
+34.92%, tills short 18.2 against 18.4, money conserved; the chartered profit over 60 days now Greatly 1,754p (was 49),
+Grayrock 1,517p (486), the Crown 5,951p (8,828).
+
+**Tidied.** The five removed rules (`steerJudgeDays`, `steerStep`, `steerStepMost`, `steerWidthMid`, `steerWidthEnd`)
+were still in `city_loop.json`'s rules, read by nothing; gone. The editor's rule list marks `treasuryTarget` as held by
+the steering, as the studio's `STEERED_RULES` already did.
+
+**Noted, not changed.** At -0.5 the blended treasury target (3,500p) is over the cap and keep there (1,750p + 1,000p),
+so the toll drift is pinned up as it is at the centre against 5,500p. That is the plan's blend (3.2), and the
+calibration's half-mark runs will show whether it matters. The dividend's rise follows the charters' table strength
+from the first night, while the charters themselves wait 28 nights and ramp over 14.

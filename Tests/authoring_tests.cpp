@@ -482,6 +482,34 @@ int probe(const std::string& path)
               << ",\"seamPassed\":" << (seamPassed ? "true" : "false") << "}\n";
     return testedSeam && !seamPassed ? 3 : 0;
 }
+// The House whose district a cell is in (doc 75, 4.2, the Crown's charters): a cell's own House claim; an interior with
+// none, the street its door leads out from; a street with none, none.
+void districtHouses()
+{
+    Fixture fixture;
+    fixture.manifest(BaseManifest +
+                     "faction \"council\" \"The Council\" \"#7d8a96\"\n"
+                     "faction \"house_mossgrave\" \"House Timberland\" \"#7a8a3a\"\n"
+                     "faction \"house_greatly\" \"House Greatly\" \"#2f4f6f\"\n"
+                     "territory \"west\" \"ridgemere\" \"-\" 2 \"council\" \"house_mossgrave\"\n"
+                     "territory \"room\" \"ridgemere\" \"-\" 1 \"council\"\n"
+                     "territory \"east\" \"ridgemere\" \"-\" 1 \"council\"\n");
+    World world;
+    const auto loaded = world.loadWorldFile(fixture.path());
+    expect(loaded.ok, "the districts' manifest imports: " + loaded.message);
+    expect(world.districtHouse("west") == "Timberland", "a street's House, by the faction's name: " + world.districtHouse("west"));
+    expect(world.districtHouse("room") == "Timberland", "a room no House claims: the street its door leads out from: " + world.districtHouse("room"));
+    expect(world.districtHouse("east").empty(), "a street no House claims: none, never a neighbour's across a seam");
+    expect(world.districtHouse("nowhere").empty(), "an unknown cell: none");
+    fixture.manifest(BaseManifest +
+                     "faction \"house_mossgrave\" \"House Timberland\" \"#7a8a3a\"\n"
+                     "faction \"house_greatly\" \"House Greatly\" \"#2f4f6f\"\n"
+                     "territory \"west\" \"ridgemere\" \"-\" 1 \"house_mossgrave\"\n"
+                     "territory \"room\" \"ridgemere\" \"-\" 1 \"house_greatly\"\n");
+    World own;
+    expect(own.loadWorldFile(fixture.path()).ok, "the second manifest imports");
+    expect(own.districtHouse("room") == "Greatly", "a room a House claims itself: that House's: " + own.districtHouse("room"));
+}
 } // namespace
 int main(int argc, char** argv)
 {
@@ -494,6 +522,7 @@ int main(int argc, char** argv)
         cellValidation();
         cornersAndPassages();
         boundsAndCollisionValidation();
+        districtHouses();
         std::cout << checks << " authoring checks passed\n";
         return 0;
     }

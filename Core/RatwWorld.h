@@ -1257,6 +1257,10 @@ class World
     std::int64_t owedBy(const Warrant& w) const;             // Restitution and the fine, in pennies.
     bool guardOnDuty(const std::string& id) const;
     std::string lawTown(const std::string& cellId) const;   // Whose Watch keeps the law here ("" for nobody's).
+    // The House whose district a cell is in, by the House's name ("Greatly"; "" for none): the first claim by a faction
+    // named "House <name>" on the cell, else on the cells its doors lead out to (a flat to its shop, a shop to its
+    // street), the nearest first, never past the first outdoor cell (the Crown's charters: Docs/Design/75, 4.2).
+    std::string districtHouse(const std::string& cellId) const;
     // Schedules (Phase 9). A cell's community is its town (a region, where there are no town records); "" for none.
     std::string communityOf(const std::string& cellId) const { return lawTown(cellId); }
     DayPlan dayPlan(const std::string& community);          // Today's, as residents live it.

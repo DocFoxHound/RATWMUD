@@ -204,7 +204,7 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'wageDriftHandMost', label: 'A hand\'s wage drift, at most', max: 100, unit: 'p either way on a hand\'s wage'},
     {key: 'wageDriftFloor', label: 'Wage floor', max: 1000, unit: 'p a day: no post lowered under it (a day\'s food)'},
     {key: 'treasuryDrift', label: 'Toll and alms follow the treasury', max: 1, unit: 'over its target the toll eases and the alms rise; under it the toll firms and the alms tighten', onOff: true},
-    {key: 'treasuryTarget', label: 'Treasury target', max: 100000000, unit: 'p, its level (a slow mean at 18:00) is judged against'},
+    {key: 'treasuryTarget', label: 'Treasury target', max: 100000000, unit: 'p, its level (a slow mean at 18:00) is judged against', steer: 'held'},
     {key: 'treasuryBand', label: 'Target band', max: 100, unit: '% either side of the target in which nothing moves'},
     {key: 'treasuryDays', label: 'Level over', max: 3650, unit: 'days, about (the slow mean)'},
     {key: 'treasuryJudgeDays', label: 'Judged every', max: 365, unit: 'days (the toll and the alms move a step at most each time)'},

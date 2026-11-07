@@ -168,12 +168,7 @@
     "steerLean": 100,
     "neverHungry": 0,
     "neverBroke": 0,
-    "steerJudgeDays": 28,
     "steerMeanDays": 56,
-    "steerStep": 5,
-    "steerStepMost": 10,
-    "steerWidthMid": 15,
-    "steerWidthEnd": 30,
     "skimMost": 50,
     "skimKeepDays": 3
   },
