@@ -7,7 +7,7 @@ const logEl = document.getElementById("log");
 const nowMs = () => performance.timeOrigin + performance.now();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LOOP = "ws://127.0.0.1:47811";
-const LAN = "ws://192.168.122.1:47811";
+let LAN = "ws://192.168.122.1:47811"; // Replaced by the shell's SPIKE_LAN.
 const SECURE = "wss://127.0.0.1:47812";
 
 function report(obj) {
@@ -238,7 +238,14 @@ async function quick(kind, url) {
 }
 
 (async () => {
+  let os = "?";
+  try {
+    const cfg = await T.core.invoke("spike_config");
+    LAN = cfg.lan;
+    os = cfg.os;
+  } catch {}
   report({
+    os,
     test: "env",
     origin: location.origin,
     secureContext: window.isSecureContext,

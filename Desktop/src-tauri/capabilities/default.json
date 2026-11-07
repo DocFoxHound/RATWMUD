@@ -8,6 +8,7 @@
     "core:window:allow-set-fullscreen",
     "core:window:allow-is-fullscreen",
     "websocket:default",
+    "allow-spike-config",
     "allow-spike-report",
     "allow-relay-open",
     "allow-relay-send",

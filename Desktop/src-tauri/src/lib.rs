@@ -54,6 +54,16 @@ async fn dial(url: &str) -> Result<Ws, String> {
     Ok(ws)
 }
 
+// The spike's addresses: SPIKE_LAN, a plain ws:// world that isn't loopback (default ws://192.168.122.1:47811, this
+// laptop's libvirt bridge); SPIKE_HOST, the test world's loopback host (default 127.0.0.1).
+#[tauri::command]
+fn spike_config() -> serde_json::Value {
+    serde_json::json!({
+        "lan": std::env::var("SPIKE_LAN").unwrap_or_else(|_| "ws://192.168.122.1:47811".into()),
+        "os": std::env::consts::OS,
+    })
+}
+
 #[tauri::command]
 fn spike_report(line: String) {
     println!("SPIKE {line}");
@@ -254,7 +264,7 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![spike_report, relay_open, relay_send, relay_close, loopback_relay])
+        .invoke_handler(tauri::generate_handler![spike_config, spike_report, relay_open, relay_send, relay_close, loopback_relay])
         .run(tauri::generate_context!())
         .expect("error while running the spike");
 }
