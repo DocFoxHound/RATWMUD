@@ -8,6 +8,7 @@ import {inParty, withPlayers} from '../../game/party.ts';
 import {button, el, setClass, setText, show} from './dom.ts';
 import {arr, bool, isObject, num, obj, str} from '../../game/json.ts';
 import {sceneNeedsLabel, sceneQuietLabel} from '../../game/labels.ts';
+import {ask} from '../dialog.ts';
 
 const MaxShown = 300;
 
@@ -186,8 +187,8 @@ export class StoryPanel {
             if (scenes.length > 1 && bool(scene, 'next')) el('span', 'label gold', head, '← YOUR WORDS GO HERE').title =
                 'Said now, your words count toward this scene' + (bool(scene, 'party') ? ' (a party mate is here)' : '');
             if (!bool(scene, 'fight')) {
-                const leave = button('LEAVE', 'small', head, () => {
-                    if (window.confirm('Step out of this scene? You are paid now if you have said enough; the others carry on.'))
+                const leave = button('LEAVE', 'small', head, async () => {
+                    if (await ask('Step out of this scene? You are paid now if you have said enough; the others carry on.', {ok: 'Step out'}))
                         s.sendSocial({verb: 'leave', session: str(scene, 'id')});
                 });
                 leave.title = 'Step out of this scene: settled for you now, the others carry on';

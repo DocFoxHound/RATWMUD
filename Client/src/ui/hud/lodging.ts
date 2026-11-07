@@ -4,6 +4,7 @@
 import type {GameState} from '../../game/state.ts';
 import {arr, bool, isObject, num, obj, str} from '../../game/json.ts';
 import {button, el, setText, show} from './dom.ts';
+import {ask} from '../dialog.ts';
 
 export class LodgingPanel {
     readonly root: HTMLElement;
@@ -49,7 +50,7 @@ export class LodgingPanel {
                     button(bool(mine, 'open') ? 'CLOSE THE DOORS' : 'OPEN THE DOORS', 'small', this.body, () => send({verb: bool(mine, 'open') ? 'close' : 'open'}))
                         .title = 'Open: anyone may come in tonight (a player-run night)';
             }
-            button('GIVE IT UP', 'small', this.body, () => { if (window.confirm('Give up your lodging?')) send({verb: 'end'}); });
+            button('GIVE IT UP', 'small', this.body, async () => { if (await ask('Give up your lodging?', {ok: 'Give it up'})) send({verb: 'end'}); });
             return;
         }
         setText(this.title, 'TO LET');

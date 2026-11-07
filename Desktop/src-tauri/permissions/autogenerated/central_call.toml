@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-central-call"
+description = "Enables the central_call command without any pre-configured scope."
+commands.allow = ["central_call"]
+
+[[permission]]
+identifier = "deny-central-call"
+description = "Denies the central_call command without any pre-configured scope."
+commands.deny = ["central_call"]

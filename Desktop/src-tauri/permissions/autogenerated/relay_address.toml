@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-relay-address"
+description = "Enables the relay_address command without any pre-configured scope."
+commands.allow = ["relay_address"]
+
+[[permission]]
+identifier = "deny-relay-address"
+description = "Denies the relay_address command without any pre-configured scope."
+commands.deny = ["relay_address"]

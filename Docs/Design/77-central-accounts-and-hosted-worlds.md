@@ -793,10 +793,9 @@ What was built (all spike code, under `Desktop/`, plus one workflow file):
 - By default (DMA-BUF renderer), `requestAnimationFrame` ran at **0 fps** while locked; that is normal throttling of a
   hidden view. With `WEBKIT_DISABLE_DMABUF_RENDERER=1` it ran at 60-62 fps. `GDK_BACKEND=x11`,
   `WEBKIT_DISABLE_COMPOSITING_MODE=1`, Mesa's EGL and software GL all behaved the same.
-- **Still to check, by the user, unlocked:** the moving squares show and move smoothly. Run
-  `cd Desktop/src-tauri && cargo build --release`, then `SPIKE_PROFILE=release bash Desktop/spike/look.sh mine`, and
-  look at the window or at `spike/out/mine.png`. If it is blank, try again with `WEBKIT_DISABLE_DMABUF_RENDERER=1`.
-  Doc 76's other Phase 0 checks (fullscreen, pickers, sound, ten minutes minimised) wait for an unlocked session too.
+- ~~Still to check, unlocked: the moving squares.~~ **Checked in Phase 3 (2026-11-07) with the real client:** the
+  window draws, 60 frames a second in the world, fullscreen works (see Phase 3's entry). Doc 76's other Phase 0 checks
+  (pickers, sound, ten minutes minimised) are still open.
 
 **2. Sockets from the bundled page (Linux, WebKitGTK 2.50.5).**
 - **The page's own `WebSocket` opens plain `ws://` to a non-loopback address** from `tauri://localhost`: no
@@ -874,7 +873,8 @@ them itself.
      a GitHub runner and uploads the `.exe`, the installer and `windows.jsonl`); or
    - build on the PC: rustup (MSVC) plus the Visual Studio C++ build tools, Node 22, then in `Desktop/`: `npm ci` and
      `npx tauri build --bundles nsis`.
-2. **Run the spike on the PC:**
+2. **Run the spike on the PC** (from the Phase 0 commit: Phase 3 replaced the spike's app with the real client, so
+   `git checkout b7aed3d` in a spare clone or worktree first):
    - in `Desktop/`: `npm ci`, then `bash spike/make_certs.sh` (Git Bash);
    - `node spike/ws_server.mjs --lan <the PC's LAN IPv4>` (allow it through the firewall on private networks);
    - in PowerShell: `$env:SPIKE_LAN="ws://<that IPv4>:47811"`,
@@ -1170,11 +1170,11 @@ For the user to decide:
 3. **The arrival limits' numbers** (600 an hour a world, 3 an hour an account, 100 wolves at once) are guesses, to tune
    with the rest.
 
-**2026-11-07: Phase 3, the client (branch `r2-desktop`), PAUSED (WIP).** About 2 hours so far. No real server, no
+**2026-11-07: Phase 3, the client (branch `r2-desktop`).** About 3½ hours over two sittings. No real server, no
 simulation; tests use throwaway `ratw_central_test` / `ratw_central_clienttest` and a ticket world on a free port, all
 stopped after.
 
-Done (committed):
+The page and central (the first sitting):
 - **Central:** `GET /worlds` (the stub registry: worlds with an address; `ratw_central.py worlds add --address HOST:PORT
   [--secure] [--protocol N] [--description]` and `worlds set WORLD_ID ...`), `GET /rules` (the creator's Gift families
   through a new `ratw_identity` check `rules`). `test_central.py` 46 of 46; `identity_tests` 77 checks.
@@ -1192,16 +1192,68 @@ Done (committed):
 - **Tests:** `npm test` 136 of 136; `test:browser` 8 of 8, including the new `client.browser.test.mjs`: the whole flow
   in headless Chromium against a real central and a ticket world (`tests/harness.mjs`), about 3 s plus start-up.
 
-In progress (written, not yet built or wired in): `Desktop/src-tauri/src/central.rs`, the shell's central client
-(the address rule with `--central`, the allow-list, tokens kept by the shell and stripped from replies, refresh once on
-401, `world_status`), with unit tests.
+The shell, the real app (the second sitting):
+- **`Desktop/src-tauri`** is the real client now, not the spike: the page is `Client/dist`, built in
+  (`beforeBuildCommand` builds it for `tauri build`). The window is "Run Against the World".
+  - `central.rs`: every call to central goes through the shell (`central_info`, `central_call`, `central_resume`), on
+    Tauri's blocking pool (ureq 3, 15 s, no redirects, 1 MB at most). Only the client's own calls are allowed, the same
+    list as the page's. The shell keeps the access and refresh tokens and takes them out of every reply. It refreshes
+    once after a 401 (`/account/refresh` is never the page's). `--central URL` takes `https://` anywhere, or `http://`
+    to this computer only. The built-in address is `http://127.0.0.1:7790` until central has its box (Q10).
+  - `world_status`: a world's `/status` for the list (2 s, 2 KB, no redirects).
+  - `tokens.rs`, **"remember me"**: only the refresh token is kept, never the password. It goes in the OS's keychain
+    (keyring 3.6: Secret Service, Credential Manager, Keychain), one entry per central. With no keychain it goes in a
+    0600 file in the app's data folder, written whole or not at all. `--token-store keychain|file|memory`. Signing
+    out, a deleted account or a refused refresh forgets it.
+  - The window: **size and place kept between launches** (tauri-plugin-window-state). On the first launch it is
+    1280 × 800 centred, or maximised on a smaller screen. **The navigation rule:** the window never leaves the page's
+    own origin. **A strict CSP:** no `eval`, scripts only from the app, `ws:`/`wss:` for worlds.
+  - `relay.rs`, **the loopback relay behind `--relay`** (D1's fallback, for Windows if WebView2 refuses plain `ws://`).
+    The token is now 32 random bytes, and the relay only goes to a world's `ws://` or `wss://` `/ws`. The page uses it
+    when the shell offers it (`relay_address`; `worldSocket` in `client.ts`).
+  - The spike's own commands, its page (`Desktop/page`), `run_app.sh`/`look.sh` and the websocket plugin are gone. The
+    Windows spike for D1 runs from the Phase 0 commit (`b7aed3d`); the workflow checks that commit out.
+  - `--features e2e` (never in a release) adds a hook a test drives the page through (`src/e2e.rs`).
+- **The game's 15 pop-up questions** (`window.confirm`/`prompt`: leases, stalls, lodging, tables, tales, scenes,
+  stories, nicknames, the Chapter's toll, camp and ranks, leaving the Chapter, the whisper thread) are the page's own
+  dialogs now (`ui/dialog.ts`). A webview may show none of its own.
+- **The sign-in screen on a window narrower than 1440:** WebKit pinned its oversized layout to the left before scaling,
+  so it ran off the right of a 1280-wide window. It is centred by position now (`styles.css`, `.door-stage`). Chromium
+  never showed it.
+- **Tests:** `cargo test` 14 (the address rule, the allow-list, tokens never reaching the page, refresh once,
+  resume, the file store's 0600, the options, the navigation rule, the relay's targets and frames both ways through
+  it). `npm test` 136, `test:browser` 8. The flow is shared now (`Client/tests/flow.mjs`): the browser's test, and
+  **`Desktop/tests/app.test.mjs`, the real app end to end**, about 13 s plus start-up. It runs the whole flow, then
+  checks what only the app has: no `eval`, it can't navigate away, the page can't ask for a refresh, fullscreen there and
+  back, and "remember me": a 0600 file with the refresh token and not the password, never in the page's storage,
+  "Welcome back" on relaunch, and forgotten after signing out.
+- **The window draws (Phase 0's open check, Linux):** `Desktop/tests/look.mjs` screenshots the sign-in, the creator,
+  the world list and the world (`Desktop/spike/out/look-*.png`). Everything shows; **60 frames a second** in the world
+  (KDE Plasma, Wayland, the default DMA-BUF renderer, unlocked). Doc 76's other Phase 0 checks (file pickers, sound, ten
+  minutes minimised) and the release build were not tried.
 
-Next: `tokens.rs` (keychain via `keyring` 3.6, else a 0600 file in the app data folder), `lib.rs` rewritten for the
-real client (commands `central_info`, `central_call`, `central_resume`, `world_status`; `--central URL`,
-`--token-store`, the loopback relay behind `--relay`; window-state plugin, first-run size, the navigation rule, the
-title, a strict CSP; `frontendDist` = `Client/dist`), Cargo.toml (ureq 3, keyring, tauri-plugin-window-state; drop the
-websocket plugin), capabilities, `cargo test`; an end-to-end run of the real app (a cargo feature `e2e`); replacing the
-15 `confirm`/`prompt` calls with `ui/dialog.ts`; ctest; the how-to-run steps here.
+How to run the client on this laptop (in the worktree; Postgres's settings as in Phase 1's entry):
+
+    cmake --build build-central --target ratw_server ratw_identity      # if not built yet
+    python3 Central/ratw_central.py db-create                               # once
+    python3 Central/ratw_central.py serve &                                 # central, http://127.0.0.1:7790/
+    python3 Central/ratw_central.py worlds add --name "Laptop world" --kind community --address 127.0.0.1:7788
+    python3 tools/world_agent.py keys --central http://127.0.0.1:7790 --out Saved/World/central-keys.json &
+    build-central/ratw_server --port 7788 --save /tmp/laptop-world.json --central http://127.0.0.1:7790 \
+        --world-id world-... --central-keys Saved/World/central-keys.json --world-name "Laptop world" &
+    cd Desktop && npm ci && npm run app        # builds the page and the shell, opens the window
+
+`npm run app` uses the built-in central (`127.0.0.1:7790`); for another, run
+`Desktop/src-tauri/target/debug/ratw-desktop --central URL`. Stop central, the agent and the world after (`kill %1 %2
+%3`). An installer: `cd Desktop && npm run build` (deb, rpm, AppImage; not tried yet). The tests:
+`cd Desktop && npm test && npm run test:app` (the second opens a window for about half a minute).
+
+Left, on purpose:
+- The page doesn't open links outside the app (nothing in it does today); a link would be refused by the navigation
+  rule, not opened in the browser.
+- The keychain itself was not tried by the tests (they use the file store, so as not to touch this computer's keychain
+  or start a KWallet prompt). Try it by hand: tick "remember me", close, open again.
+- The relay is tested in Rust only; the page through it waits for Windows (D1).
 
 ## Review (2026-11-07)
 

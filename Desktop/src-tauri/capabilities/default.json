@@ -1,18 +1,17 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "The bundled page (spike): our relay commands, the websocket plugin, and window basics.",
+  "description": "The bundled game page: central through the shell, worlds' /status, the relay's address, and the window's fullscreen and close question.",
   "windows": ["main"],
   "permissions": [
     "core:default",
     "core:window:allow-set-fullscreen",
     "core:window:allow-is-fullscreen",
-    "websocket:default",
-    "allow-spike-config",
-    "allow-spike-report",
-    "allow-relay-open",
-    "allow-relay-send",
-    "allow-relay-close",
-    "allow-loopback-relay"
+    "core:window:allow-destroy",
+    "allow-central-info",
+    "allow-central-call",
+    "allow-central-resume",
+    "allow-world-status",
+    "allow-relay-address"
   ]
 }

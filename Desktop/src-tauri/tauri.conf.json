@@ -4,27 +4,52 @@
   "version": "0.0.1",
   "identifier": "net.ratw.client",
   "build": {
-    "frontendDist": "../page"
+    "frontendDist": "../../Client/dist",
+    "beforeBuildCommand": "npm --prefix ../Client run build"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
         "label": "main",
-        "title": "Run Against the World (spike)",
+        "title": "Run Against the World",
         "width": 1280,
         "height": 800,
         "minWidth": 1024,
-        "minHeight": 640
+        "minHeight": 640,
+        "visible": false,
+        "center": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self' 'wasm-unsafe-eval'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data: blob:",
+        "font-src": "'self' data:",
+        "media-src": "'self' data: blob:",
+        "connect-src": "'self' ipc: http://ipc.localhost ws: wss:",
+        "object-src": "'none'",
+        "base-uri": "'none'",
+        "form-action": "'none'",
+        "frame-src": "'none'"
+      }
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["deb", "rpm", "appimage", "nsis"],
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.png", "icons/icon.ico"]
+    "targets": [
+      "deb",
+      "rpm",
+      "appimage",
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ]
   }
 }

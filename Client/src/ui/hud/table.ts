@@ -6,6 +6,7 @@ import type {GameState} from '../../game/state.ts';
 import {arr, bool, isObject, num, obj, str, type Maybe} from '../../game/json.ts';
 import {boardRows, dieFace, knucklebonesLine, nextBid, nextRound, targetsFrom} from '../../game/tableGames.ts';
 import {button, el, setText, show} from './dom.ts';
+import {ask} from '../dialog.ts';
 
 export class TablePanel {
     readonly root: HTMLElement;
@@ -67,8 +68,8 @@ export class TablePanel {
             if (game === 'knucklebones') this.knucklebones(state, seats, seat, myTurn, send);
             else if (game === 'wolves') this.wolves(state, seat, myTurn, send);
             else this.liars(state, seats, myTurn, send);
-            if (seat >= 0) button('LEAVE THE GAME', 'small', this.body, () => {
-                if (num(table, 'stake') <= 0 || window.confirm('Leave the game? Your stake stays in the pot.')) send({verb: 'leave'});
+            if (seat >= 0) button('LEAVE THE GAME', 'small', this.body, async () => {
+                if (num(table, 'stake') <= 0 || await ask('Leave the game? Your stake stays in the pot.', {ok: 'Leave'})) send({verb: 'leave'});
             });
         }
         const log = el('div', 'muted small', this.body);

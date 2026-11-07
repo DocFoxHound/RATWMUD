@@ -3,6 +3,7 @@
 import type {GameState} from '../../game/state.ts';
 import {arr, bool, isObject, num, obj, str} from '../../game/json.ts';
 import {button, el, setText, show} from './dom.ts';
+import {ask} from '../dialog.ts';
 
 export class PlacePanel {
     readonly root: HTMLElement;
@@ -67,8 +68,8 @@ export class PlacePanel {
             button('PUT ONE IN', 'small', row, () => send({verb: 'store', item, quantity: 1}));
             if (num(stores, item) > 0) button('TAKE ONE', 'small', row, () => send({verb: 'take', item, quantity: 1}));
         }
-        button('GIVE UP THE LEASE', 'small', this.body, () => {
-            if (window.confirm('Give up the lease?')) send({verb: 'endlease'});
+        button('GIVE UP THE LEASE', 'small', this.body, async () => {
+            if (await ask('Give up the lease?', {ok: 'Give it up'})) send({verb: 'endlease'});
         });
     }
 }

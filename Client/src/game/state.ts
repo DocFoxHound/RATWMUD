@@ -24,6 +24,7 @@ export interface EncounterView {
     version: number;
 }
 import {inParty, readParty, type PartyView} from './party.ts';
+import {askText} from '../ui/dialog.ts';
 
 export interface Post {
     id: string;
@@ -889,9 +890,10 @@ export class GameState {
             case 'ally':
                 if (ally && ally.status === 'fighting') {
                     if (g.id === 'whisper_thread') {
-                        const words = typeof window !== 'undefined' && window.prompt ? window.prompt(`Whisper to ${ally.name}, along a thread no one else hears:`) : '';
-                        if (words) send({target: ally.id, text: words.slice(0, 400)});
-                        else this.aiming = '';
+                        void askText(`Whisper to ${ally.name}, along a thread no one else hears:`, {ok: 'Whisper'}).then(words => {
+                            if (words) send({target: ally.id, text: words.slice(0, 400)});
+                            else this.aiming = '';
+                        });
                         return;
                     }
                     send({target: ally.id});

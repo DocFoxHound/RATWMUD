@@ -4,6 +4,7 @@
 import type {GameState} from '../../game/state.ts';
 import {arr, bool, isObject, num, obj, objects, str} from '../../game/json.ts';
 import {button, el, setText, show} from './dom.ts';
+import {ask, askText} from '../dialog.ts';
 
 export class StallPanel {
     readonly root: HTMLElement;
@@ -40,8 +41,8 @@ export class StallPanel {
                 const row = el('div', 'story-row', this.body);
                 el('span', 'small', row, `${str(w, 'name')} × ${num(w, 'quantity')} · ${num(w, 'price')}p`);
                 if (!bool(mine, 'here')) continue;
-                button('PRICE', 'small', row, () => {
-                    const price = Number(window.prompt(`Price apiece for ${str(w, 'name')} (in pennies, 1 or more)`, String(num(w, 'price'))));
+                button('PRICE', 'small', row, async () => {
+                    const price = Number(await askText(`Price apiece for ${str(w, 'name')} (in pennies, 1 or more)`, {value: String(num(w, 'price')), ok: 'Set'}));
                     if (price >= 1) send({verb: 'price', item: str(w, 'id'), price: Math.trunc(price)});
                 });
                 button('TAKE OFF', 'small', row, () => send({verb: 'unlist', item: str(w, 'id')}));
@@ -65,7 +66,7 @@ export class StallPanel {
                     if (pick.value) send({verb: 'list', item: pick.value, quantity: Math.trunc(Number(qty.value)), price: Math.trunc(Number(price.value))});
                 });
             } else el('div', 'muted small', this.body, 'Go back to your stall to sell, or to change it.');
-            button('PACK UP', 'small', this.body, () => { if (window.confirm('Pack up your stall for the day?')) send({verb: 'close'}); });
+            button('PACK UP', 'small', this.body, async () => { if (await ask('Pack up your stall for the day?', {ok: 'Pack up'})) send({verb: 'close'}); });
             return;
         }
         const here = obj(stall, 'here');

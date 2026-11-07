@@ -56,6 +56,7 @@ export class ClientApp {
     private asking = new Set<string>();
     private app: HTMLElement;
     private footnote: string;
+    private relay: string | null = null;             // The shell's loopback relay (only with --relay, doc 77 D1).
 
     constructor(app: HTMLElement, central: Central, shell: Shell) {
         this.app = app;
@@ -71,6 +72,7 @@ export class ClientApp {
     async start() {
         const door = this.newDoor();
         door.setMessage('Contacting central…');
+        if (this.shell.native) this.relay = await this.shell.invoke<string | null>('relay_address').catch(() => null);
         try {
             const resumed = await this.central.resume();
             if (resumed) {
@@ -293,7 +295,7 @@ export class ClientApp {
                 this.play?.game.artworkEvent(event);
             },
         };
-        const connection = new Connection(socketUrl(target.address), view, open => {
+        const connection = new Connection(worldSocket(target.address, this.relay), view, open => {
             if (open && connection === this.connection) this.hello(connection);
         });
         this.connection = connection;
@@ -372,4 +374,10 @@ export class ClientApp {
 
 function message(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
+}
+
+/** The world's socket: straight to it, or through the shell's loopback relay when the shell runs one. */
+export function worldSocket(a: WorldAddress, relay: string | null): string {
+    const direct = socketUrl(a);
+    return relay && /^ws:\/\/127\.0\.0\.1:[0-9]+\/[0-9a-f]{32,}$/.test(relay) ? `${relay}?to=${encodeURIComponent(direct)}` : direct;
 }

@@ -4,6 +4,7 @@
 import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts';
 import type {GameState} from '../../game/state.ts';
 import {button, el} from './dom.ts';
+import {ask} from '../dialog.ts';
 
 /** Moves the record at `i` one place up (-1) or down (+1); the same order if it can't. */
 export function moveRecord(order: readonly string[], i: number, by: -1 | 1): string[] {
@@ -90,8 +91,8 @@ export function renderStoryline(box: HTMLElement, s: GameState, t: Json) {
     if (!open) return;
     const actions = el('div', 'story-row', box);
     button(bool(t, 'tracked') ? 'UNTRACK' : 'TRACK', 'small', actions, () => send('track'));
-    if (!bool(t, 'mine')) button(str(t, 'kind') === 'tale' ? 'LEAVE' : 'ABANDON', 'small', actions, () => {
-        if (window.confirm(str(t, 'kind') === 'tale' ? 'Leave this story?' : 'Put this story aside for good?')) send(str(t, 'kind') === 'tale' ? 'leave' : 'abandon');
+    if (!bool(t, 'mine')) button(str(t, 'kind') === 'tale' ? 'LEAVE' : 'ABANDON', 'small', actions, async () => {
+        if (await ask(str(t, 'kind') === 'tale' ? 'Leave this story?' : 'Put this story aside for good?')) send(str(t, 'kind') === 'tale' ? 'leave' : 'abandon');
     });
 }
 

@@ -1,4 +1,6 @@
 # Doc 77, Phase 0: the desktop client's spike on Windows (WebView2). DRAFT, UNTESTED: written on Linux and never run.
+# The spike's app was replaced by the real client in Phase 3, so this checks out the Phase 0 commit (b7aed3d) and
+# runs the spike from there, whatever branch it is started on.
 # Started by hand only (Actions tab, "Run workflow"), so pushing this file runs nothing.
 #
 # It builds Desktop/ for Windows, then runs the spike there: the stand-in world (spike/ws_server.mjs) on loopback and
@@ -19,6 +21,8 @@ jobs:
         working-directory: Desktop
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: b7aed3d0e44eee8831ec4005a4e89e682d1a086c   # Phase 0: the spike's app and page.
       - uses: actions/setup-node@v4
         with:
           node-version: 22

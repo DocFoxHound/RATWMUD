@@ -1,270 +1,225 @@
-// Phase 0 spike (doc 77, section 9 and Phase 0): a Tauri window with a bundled page, and three ways for that page to
-// reach a plain ws:// world it can't open itself:
-//   - the websocket plugin (tauri-plugin-websocket: frames cross as JSON arrays of numbers);
-//   - "ipc relay": our own socket in Rust, binary frames handed to the page as raw bytes over a Tauri channel, and
-//     sent from the page as a raw invoke body;
-//   - "loopback relay": our own ws:// listener on 127.0.0.1 with a random token; the page opens it with its own
-//     WebSocket and Rust pipes the frames to the world.
-// Spike code only: not the shape of the real client.
-use std::collections::HashMap;
-use std::sync::atomic::{AtomicU32, Ordering};
-use std::sync::{Arc, Mutex};
+// Run Against the World, the desktop client's shell (Docs/Design/76-the-desktop-client.md, as amended by
+// Docs/Design/77-central-accounts-and-hosted-worlds.md, sections 3.1 and 9). The game's page (Client/dist) is bundled
+// in the app, so no world can swap it. The shell:
+//   - makes the page's calls to central and keeps the tokens (central.rs), with "remember me" in the OS's keychain
+//     (tokens.rs);
+//   - asks a world's /status for the world list (central.rs, world_status);
+//   - keeps the window's size and place between launches (the window-state plugin), and the page on its own origin
+//     (the navigation rule);
+//   - with --relay, runs the loopback relay for worlds the webview can't reach itself (relay.rs).
+//
+// Arguments:
+//   --central URL          central's address (default: central.rs BUILT_IN); https://, or http:// to this computer
+//   --token-store KIND     keychain (default; a file when there is none), file, or memory
+//   --data-dir PATH        where the app keeps its files (default: the OS's app data folder); for tests
+//   --relay                run the loopback relay
+mod central;
+#[cfg(feature = "e2e")]
+mod e2e;
+mod relay;
+mod tokens;
 
-use futures_util::{SinkExt, StreamExt};
-use tauri::ipc::{Channel, InvokeBody, InvokeResponseBody, Request};
+use std::path::PathBuf;
+use std::sync::Arc;
+
+use serde_json::{json, Value};
 use tauri::{Manager, State};
-use tokio::sync::mpsc;
-use tokio_tungstenite::tungstenite::Message;
-use tokio_tungstenite::Connector;
 
-#[derive(Default)]
-struct Relays {
-    next: AtomicU32,
-    open: Mutex<HashMap<u32, mpsc::UnboundedSender<Message>>>,
+use central::Central;
+
+/// What the shell was started with.
+#[derive(Debug, PartialEq)]
+pub struct Options {
+    pub central: String,
+    pub token_store: String,
+    pub data_dir: Option<PathBuf>,
+    pub relay: bool,
 }
 
-struct Loopback {
-    port: u16,
-    token: String,
-}
-
-// A TLS setup that also trusts the spike's own CA (SPIKE_CA=path to a PEM), for wss:// to the local test server.
-fn connector() -> Option<Connector> {
-    let path = std::env::var("SPIKE_CA").ok()?;
-    let pem = std::fs::read(&path).ok()?;
-    let mut roots = rustls::RootCertStore::empty();
-    for cert in rustls::pki_types::pem::PemObject::pem_slice_iter(&pem) {
-        let cert: rustls::pki_types::CertificateDer = cert.ok()?;
-        roots.add(cert).ok()?;
-    }
-    let config = rustls::ClientConfig::builder_with_provider(Arc::new(rustls::crypto::ring::default_provider()))
-        .with_safe_default_protocol_versions()
-        .ok()?
-        .with_root_certificates(roots)
-        .with_no_client_auth();
-    Some(Connector::Rustls(Arc::new(config)))
-}
-
-type Ws = tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
-
-async fn dial(url: &str) -> Result<Ws, String> {
-    let (ws, _) = tokio_tungstenite::connect_async_tls_with_config(url, None, true, connector())
-        .await
-        .map_err(|e| e.to_string())?;
-    Ok(ws)
-}
-
-// The spike's addresses: SPIKE_LAN, a plain ws:// world that isn't loopback (default ws://192.168.122.1:47811, this
-// laptop's libvirt bridge); SPIKE_HOST, the test world's loopback host (default 127.0.0.1).
-#[tauri::command]
-fn spike_config() -> serde_json::Value {
-    serde_json::json!({
-        "lan": std::env::var("SPIKE_LAN").unwrap_or_else(|_| "ws://192.168.122.1:47811".into()),
-        "os": std::env::consts::OS,
-    })
-}
-
-#[tauri::command]
-fn spike_report(line: String) {
-    println!("SPIKE {line}");
-    if let Ok(path) = std::env::var("SPIKE_REPORT") {
-        use std::io::Write;
-        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(path) {
-            let _ = writeln!(f, "{line}");
-        }
-    }
-    if line.contains("\"done\":true") && std::env::var("SPIKE_QUIT").is_ok() {
-        std::process::exit(0);
-    }
-}
-
-// Opens a socket to `url` in Rust. Frames from the world reach the page on `on_frame`: binary as raw bytes
-// (an ArrayBuffer in the page), text as a JSON string. Returns the relay's id.
-#[tauri::command]
-async fn relay_open(
-    url: String,
-    on_frame: Channel<InvokeResponseBody>,
-    relays: State<'_, Relays>,
-) -> Result<u32, String> {
-    let ws = dial(&url).await?;
-    let (mut write, mut read) = ws.split();
-    let (tx, mut rx) = mpsc::unbounded_channel::<Message>();
-    let id = relays.next.fetch_add(1, Ordering::Relaxed) + 1;
-    relays.open.lock().unwrap().insert(id, tx);
-    tauri::async_runtime::spawn(async move {
-        while let Some(m) = rx.recv().await {
-            let close = matches!(m, Message::Close(_));
-            if write.send(m).await.is_err() || close {
-                break;
-            }
-        }
-    });
-    tauri::async_runtime::spawn(async move {
-        while let Some(Ok(m)) = read.next().await {
-            let sent = match m {
-                Message::Binary(b) => on_frame.send(InvokeResponseBody::Raw(b.to_vec())),
-                Message::Text(t) => on_frame.send(InvokeResponseBody::Json(
-                    serde_json::to_string(t.as_str()).unwrap_or_default(),
-                )),
-                Message::Close(_) => break,
-                _ => Ok(()),
-            };
-            if sent.is_err() {
-                break;
-            }
-        }
-        let _ = on_frame.send(InvokeResponseBody::Json("null".into()));
-    });
-    Ok(id)
-}
-
-// A frame for relay `relay-id` (a header): a raw body is sent as binary, a JSON string as text.
-#[tauri::command]
-fn relay_send(request: Request<'_>, relays: State<'_, Relays>) -> Result<(), String> {
-    let id: u32 = request
-        .headers()
-        .get("relay-id")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.parse().ok())
-        .ok_or("no relay-id")?;
-    let message = match request.body() {
-        InvokeBody::Raw(bytes) => Message::Binary(bytes.clone().into()),
-        InvokeBody::Json(v) => match v.get("text").and_then(|t| t.as_str()) {
-            Some(text) => Message::Text(text.to_owned().into()),
-            None => Message::Text(v.to_string().into()),
-        },
-    };
-    let open = relays.open.lock().unwrap();
-    open.get(&id).ok_or("no such relay")?.send(message).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn relay_close(id: u32, relays: State<'_, Relays>) {
-    if let Some(tx) = relays.open.lock().unwrap().remove(&id) {
-        let _ = tx.send(Message::Close(None));
-    }
-}
-
-// The loopback relay's address: ws://127.0.0.1:PORT/TOKEN?to=<world url>.
-#[tauri::command]
-fn loopback_relay(loopback: State<'_, Loopback>) -> String {
-    format!("ws://127.0.0.1:{}/{}", loopback.port, loopback.token)
-}
-
-async fn loopback_serve(listener: tokio::net::TcpListener, token: String) {
-    loop {
-        let Ok((stream, _)) = listener.accept().await else { continue };
-        let _ = stream.set_nodelay(true);
-        let token = token.clone();
-        tauri::async_runtime::spawn(async move {
-            let mut target = None;
-            let callback = |req: &tokio_tungstenite::tungstenite::handshake::server::Request,
-                            resp: tokio_tungstenite::tungstenite::handshake::server::Response| {
-                let uri = req.uri();
-                let ok = uri.path() == format!("/{token}");
-                target = uri.query().and_then(|q| q.strip_prefix("to=")).map(percent_decode);
-                if ok && target.is_some() {
-                    Ok(resp)
-                } else {
-                    let mut refuse = tokio_tungstenite::tungstenite::handshake::server::ErrorResponse::new(None);
-                    *refuse.status_mut() = tokio_tungstenite::tungstenite::http::StatusCode::FORBIDDEN;
-                    Err(refuse)
-                }
-            };
-            let Ok(page) = tokio_tungstenite::accept_hdr_async(stream, callback).await else { return };
-            let Some(url) = target else { return };
-            let Ok(world) = dial(&url).await else { return };
-            let (mut page_tx, mut page_rx) = page.split();
-            let (mut world_tx, mut world_rx) = world.split();
-            let up = async {
-                while let Some(Ok(m)) = page_rx.next().await {
-                    if world_tx.send(m).await.is_err() {
-                        break;
-                    }
-                }
-            };
-            let down = async {
-                while let Some(Ok(m)) = world_rx.next().await {
-                    if page_tx.send(m).await.is_err() {
-                        break;
-                    }
-                }
-            };
-            tokio::select! { _ = up => {}, _ = down => {} }
-        });
-    }
-}
-
-fn percent_decode(s: &str) -> String {
-    let bytes = s.as_bytes();
-    let mut out = Vec::with_capacity(bytes.len());
+pub fn options(args: &[String]) -> Result<Options, String> {
+    let mut o = Options { central: central::BUILT_IN.into(), token_store: "keychain".into(), data_dir: None, relay: false };
     let mut i = 0;
-    while i < bytes.len() {
-        if bytes[i] == b'%' && i + 2 < bytes.len() {
-            if let Ok(v) = u8::from_str_radix(&s[i + 1..i + 3], 16) {
-                out.push(v);
-                i += 3;
-                continue;
+    while i < args.len() {
+        let (name, inline) = match args[i].split_once('=') {
+            Some((n, v)) if n.starts_with("--") => (n.to_owned(), Some(v.to_owned())),
+            _ => (args[i].clone(), None),
+        };
+        let mut value = || -> Result<String, String> {
+            if let Some(v) = inline.clone() {
+                return Ok(v);
             }
+            i += 1;
+            args.get(i).cloned().ok_or(format!("{name} needs a value"))
+        };
+        match name.as_str() {
+            "--central" => o.central = value()?,
+            "--token-store" => o.token_store = value()?,
+            "--data-dir" => o.data_dir = Some(PathBuf::from(value()?)),
+            "--relay" => o.relay = true,
+            other if other.starts_with("--") => return Err(format!("{other}: not an option (--central, --token-store, --data-dir, --relay)")),
+            _ => {} // (A file the OS hands the app, say: nothing to do with it.)
         }
-        out.push(bytes[i]);
         i += 1;
     }
-    String::from_utf8_lossy(&out).into_owned()
+    Ok(o)
 }
 
-fn random_token() -> String {
-    // Spike only: good enough to keep other local programs off the relay by accident.
-    use std::hash::{BuildHasher, Hasher};
-    let mut out = String::new();
-    for _ in 0..2 {
-        let mut h = std::collections::hash_map::RandomState::new().build_hasher();
-        h.write_u128(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos());
-        out.push_str(&format!("{:016x}", h.finish()));
+/// The page's own origin, and nothing else: a link or a script can't take the window to another site, where the
+/// shell's commands would answer it.
+pub fn page_origin(url: &tauri::Url) -> bool {
+    match (url.scheme(), url.host_str()) {
+        ("tauri", Some("localhost")) => true,                               // Linux, macOS.
+        ("http" | "https", Some("tauri.localhost")) => true,                // Windows (WebView2).
+        ("about", _) => url.as_str() == "about:blank",
+        _ => false,
     }
-    out
+}
+
+#[tauri::command]
+fn central_info(central: State<'_, Arc<Central>>) -> Value {
+    json!({"where": central.shown, "development": central.development, "remembered": central.remembered(), "store": central.store_kind()})
+}
+
+#[tauri::command]
+async fn central_call(method: String, path: String, body: Option<Value>, central: State<'_, Arc<Central>>) -> Result<Value, String> {
+    let central = central.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || central.call(&method, &path, body)).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn central_resume(central: State<'_, Arc<Central>>) -> Result<Value, String> {
+    let central = central.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || central.resume()).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn world_status(host: String, port: u16, secure: bool) -> Result<Value, String> {
+    tauri::async_runtime::spawn_blocking(move || central::world_status(&host, port, secure)).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn relay_address(relay: State<'_, Option<relay::Relay>>) -> Option<String> {
+    relay.as_ref().map(|r| r.address())
+}
+
+/// The first launch's window: 1280 x 800 (the config) where the screen has room, else maximised. Later launches get
+/// the size and place the window-state plugin kept.
+fn first_size(window: &tauri::WebviewWindow) {
+    let Ok(Some(monitor)) = window.current_monitor() else { return };
+    let area = monitor.work_area().size.to_logical::<f64>(monitor.scale_factor());
+    if area.width < 1280.0 * 1.05 || area.height < 800.0 * 1.05 {
+        let _ = window.maximize();
+    } else {
+        let _ = window.center();
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let opts = match options(&args) {
+        Ok(o) => o,
+        Err(e) => {
+            eprintln!("ratw-desktop: {e}");
+            std::process::exit(2);
+        }
+    };
+    let (base, shown) = match central::parse_central(&opts.central) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("ratw-desktop: --central {}: {e}", opts.central);
+            std::process::exit(2);
+        }
+    };
     let _ = rustls::crypto::ring::default_provider().install_default();
-    tauri::Builder::default()
-        .plugin(tauri_plugin_websocket::init())
-        .manage(Relays::default())
-        .setup(|app| {
-            let listener = tauri::async_runtime::block_on(tokio::net::TcpListener::bind("127.0.0.1:0"))?;
-            let port = listener.local_addr()?.port();
-            let token = random_token();
-            app.manage(Loopback { port, token: token.clone() });
-            tauri::async_runtime::spawn(loopback_serve(listener, token));
 
-            // Let the page's own WebSocket trust the spike's self-signed certificate (SPIKE_CA) on 127.0.0.1, so the
-            // direct wss:// test means something (SPIKE_CERT: the server's own certificate). Linux only (WebKitGTK).
-            #[cfg(target_os = "linux")]
-            if let Ok(path) = std::env::var("SPIKE_CERT") {
-                if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.with_webview(move |webview| {
-                        use webkit2gtk::{WebContextExt, WebViewExt};
-                        if let Some(context) = webview.inner().context() {
-                            match webkit2gtk::gio::TlsCertificate::from_file(&path) {
-                                Ok(cert) => {
-                                    context.allow_tls_certificate_for_host(&cert, "127.0.0.1");
-                                    println!("SPIKE-NOTE allowed the spike certificate for 127.0.0.1");
-                                }
-                                Err(e) => println!("SPIKE-NOTE certificate not loaded: {e}"),
-                            }
-                        }
-                    });
-                }
-            }
+    let state_flags = tauri_plugin_window_state::StateFlags::all() - tauri_plugin_window_state::StateFlags::VISIBLE;
+    let builder = tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::default().with_state_flags(state_flags).build())
+        .plugin(
+            tauri::plugin::Builder::<tauri::Wry, ()>::new("page-only")
+                .on_navigation(|_, url| {
+                    let ok = page_origin(url);
+                    if !ok {
+                        eprintln!("ratw-desktop: refused to leave the page for {url}");
+                    }
+                    ok
+                })
+                .build(),
+        )
+        .setup(move |app| {
+            let data_dir = match &opts.data_dir {
+                Some(d) => d.clone(),
+                None => app.path().app_data_dir()?,
+            };
+            let store = tokens::choose(&opts.token_store, data_dir.clone(), &shown)?;
+            let development = central::is_loopback(tauri::Url::parse(&base)?.host_str().unwrap_or_default());
+            let central = Central::new(base.clone(), shown.clone(), development, Box::new(central::UreqHttp::new()), Arc::from(store));
+            app.manage(Arc::new(central));
+
+            let relay = if opts.relay {
+                let listener = tauri::async_runtime::block_on(tokio::net::TcpListener::bind("127.0.0.1:0"))?;
+                let r = relay::Relay { port: listener.local_addr()?.port(), token: relay::random_token()? };
+                tauri::async_runtime::spawn(relay::serve(listener, r.token.clone()));
+                Some(r)
+            } else {
+                None
+            };
+            app.manage(relay);
+
             if let Some(window) = app.get_webview_window("main") {
-                if let Ok(url) = window.url() {
-                    println!("SPIKE-NOTE page origin: {}", url.origin().ascii_serialization());
+                let kept = app.path().app_config_dir().map(|d| d.join(tauri_plugin_window_state::DEFAULT_FILENAME).exists()).unwrap_or(false);
+                if !kept {
+                    first_size(&window);
                 }
+                let _ = window.show();
+            }
+
+            #[cfg(feature = "e2e")]
+            if let Some(address) = e2e::wanted() {
+                app.add_capability(
+                    tauri::ipc::CapabilityBuilder::new("e2e").window("main").permission("allow-e2e-result"),
+                )?;
+                e2e::start(app.handle(), address)?;
             }
             Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![spike_config, spike_report, relay_open, relay_send, relay_close, loopback_relay])
-        .run(tauri::generate_context!())
-        .expect("error while running the spike");
+        });
+
+    #[cfg(not(feature = "e2e"))]
+    let builder = builder.invoke_handler(tauri::generate_handler![central_info, central_call, central_resume, world_status, relay_address]);
+    #[cfg(feature = "e2e")]
+    let builder = builder.invoke_handler(tauri::generate_handler![central_info, central_call, central_resume, world_status, relay_address, e2e::e2e_result]);
+
+    builder.run(tauri::generate_context!()).expect("the window could not be opened");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn args(a: &[&str]) -> Vec<String> {
+        a.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn the_options() {
+        let o = options(&[]).unwrap();
+        assert_eq!(o.central, central::BUILT_IN);
+        assert_eq!(o.token_store, "keychain");
+        assert!(!o.relay);
+        let o = options(&args(&["--central", "https://c.example.net", "--token-store=file", "--data-dir", "/tmp/x", "--relay"])).unwrap();
+        assert_eq!(o, Options { central: "https://c.example.net".into(), token_store: "file".into(), data_dir: Some("/tmp/x".into()), relay: true });
+        assert!(options(&args(&["--central"])).is_err());
+        assert!(options(&args(&["--server", "x"])).is_err());
+    }
+
+    #[test]
+    fn the_window_stays_on_the_page() {
+        for ok in ["tauri://localhost/", "tauri://localhost/index.html?x=1", "http://tauri.localhost/", "https://tauri.localhost/a"] {
+            assert!(page_origin(&tauri::Url::parse(ok).unwrap()), "{ok}");
+        }
+        for bad in ["https://evil.example.net/", "http://127.0.0.1:7788/", "tauri://evil/", "file:///etc/passwd", "http://tauri.localhost.evil.net/"] {
+            assert!(!page_origin(&tauri::Url::parse(bad).unwrap()), "{bad}");
+        }
+    }
 }

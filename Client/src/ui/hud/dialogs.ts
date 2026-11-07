@@ -14,6 +14,7 @@ import {renderBoard} from './board.ts';
 import {renderArchive, renderChronicle, renderJournal, renderWelcome} from './archive.ts';
 import {renderCredits, renderStoryteller, storytellerNote} from './storyteller.ts';
 import {nicknameLine, unfinishedLine} from '../../game/fame.ts';
+import {ask, askText} from '../dialog.ts';
 
 /** Social standing is the account's (doc 49): scenes, stars and Stories across all one's wolves. The bar runs from the
  * level's start to the next (an older server sends neither: then a hundred a level, as it was). */
@@ -290,8 +291,8 @@ export class Dialogs {
             const row = el('div', 'story-row', parent);
             el('span', bool(n, 'dropped') ? 'muted small' : 'small', row, nicknameLine(n));
             if (!bool(n, 'dropped'))
-                button('ASK FOLK NOT TO USE IT', 'small', row, () => {
-                    if (window.confirm(`Ask folk not to call you "${str(n, 'text')}"? They stop at once, and it won't come back.`))
+                button('ASK FOLK NOT TO USE IT', 'small', row, async () => {
+                    if (await ask(`Ask folk not to call you "${str(n, 'text')}"? They stop at once, and it won't come back.`))
                         this.s.send({type: 'social', verb: 'dropnickname', id: str(n, 'id')});
                 }).title = 'Residents stop using it at once, and that deed never earns it again';
         }
@@ -395,9 +396,9 @@ export class Dialogs {
             const row = el('div', 'story-row', this.panel);
             el('span', 'small', row, `The Chapter's Hold claims ${str(hold, 'claims')} · toll ${num(hold, 'toll')}p for others coming in.`);
             if (rank === 0)
-                button('SET TOLL', 'small', row, () => {
+                button('SET TOLL', 'small', row, async () => {
                     const most = num(hold, 'tollMost', 5);
-                    const toll = window.prompt(`Toll in pennies (0 to ${most})`, String(num(hold, 'toll')));
+                    const toll = await askText(`Toll in pennies (0 to ${most})`, {value: String(num(hold, 'toll')), ok: 'Set'});
                     if (toll !== null && /^[0-9]+$/.test(toll.trim()) && +toll.trim() <= most) send({verb: 'toll', amount: +toll.trim()});
                 });
         }
@@ -445,8 +446,8 @@ export class Dialogs {
         if (!sites.length) el('div', 'muted small', right, num(ch, 'level') >= 3 ? 'No camp yet.' : 'A Company (level III) may make camp.');
         for (const site of sites) el('div', 'small', right, `${str(site, 'name')} · ${str(site, 'place')} · ${num(site, 'built')} built`);
         if (rank <= 1 && num(ch, 'level') >= 3)
-            button('MAKE CAMP HERE', 'small', right, () => {
-                const name = window.prompt('A name for the camp', `${str(ch, 'name')}'s camp`);
+            button('MAKE CAMP HERE', 'small', right, async () => {
+                const name = await askText('A name for the camp', {value: `${str(ch, 'name')}'s camp`, ok: 'Make camp'});
                 if (name?.trim()) send({verb: 'camp', name: name.trim()});
             });
         const treaties = arr(hold, 'treaties').filter(isObject), levies = arr(hold, 'levies').filter(isObject);
@@ -500,16 +501,16 @@ export class Dialogs {
         if (rank === 0 && num(ch, 'level') >= 2) {
             el('div', 'label gold', right, 'RANK NAMES');
             ranks.forEach((r, i) => {
-                const b = button(r, 'small', right, () => {
-                    const name = window.prompt(`A new name for the rank "${r}"`, r);
+                const b = button(r, 'small', right, async () => {
+                    const name = await askText(`A new name for the rank "${r}"`, {value: r, ok: 'Rename'});
                     if (name?.trim()) send({verb: 'rankname', rank: i, name: name.trim()});
                 });
                 b.title = 'Rename this rank';
             });
         }
         const actions = el('div', 'sheet-actions', this.panel);
-        button('LEAVE THE CHAPTER', 'secondary', actions, () => {
-            if (window.confirm('Leave the Chapter?')) send({verb: 'leave'});
+        button('LEAVE THE CHAPTER', 'secondary', actions, async () => {
+            if (await ask('Leave the Chapter?', {ok: 'Leave', danger: true})) send({verb: 'leave'});
         });
     }
 

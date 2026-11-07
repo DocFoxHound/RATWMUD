@@ -4,6 +4,7 @@
 import type {GameState} from '../../game/state.ts';
 import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts';
 import {button, el} from './dom.ts';
+import {ask} from '../dialog.ts';
 
 const Kinds: [string, string][] = [['told', 'You judge it done'], ['place', 'Be at a place'], ['talk', 'Talk to a resident'],
     ['scene', 'A scene together'], ['contract', 'A job done'], ['hunt', 'A kill'], ['fight', 'A fight won'], ['gift', 'A Gift used'], ['deliver', 'An item given']];
@@ -52,8 +53,8 @@ export function renderStoryteller(panel: HTMLElement, s: GameState, redraw: () =
         const row = el('div', 'story-row', box);
         if (state === 'draft' || state === 'paused') button('BEGIN', 'small', row, () => send('start', {tale: id}));
         if (state !== 'running') continue;
-        button('END · DONE', 'small', row, () => { if (window.confirm('End the tale, done?')) send('end', {tale: id, how: 'done'}); });
-        button('END · FAILED', 'small', row, () => { if (window.confirm('End the tale, failed?')) send('end', {tale: id, how: 'failed'}); });
+        button('END · DONE', 'small', row, async () => { if (await ask('End the tale, done?', {ok: 'End it'})) send('end', {tale: id, how: 'done'}); });
+        button('END · FAILED', 'small', row, async () => { if (await ask('End the tale, failed?', {ok: 'End it', danger: true})) send('end', {tale: id, how: 'failed'}); });
         button('POST A CALL', 'small', row, () => send('call', {tale: id})).title = 'On this town\'s board: strangers may ask to join; you admit them';
         arr(t, 'objectives').filter(isObject).forEach((o, k) => {
             const r = el('div', 'story-row', box);

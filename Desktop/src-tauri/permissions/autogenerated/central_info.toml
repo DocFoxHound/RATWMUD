@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-central-info"
+description = "Enables the central_info command without any pre-configured scope."
+commands.allow = ["central_info"]
+
+[[permission]]
+identifier = "deny-central-info"
+description = "Denies the central_info command without any pre-configured scope."
+commands.deny = ["central_info"]
