@@ -199,6 +199,7 @@ async function flood(s, size, count, timeoutS = 60) {
     framesPerS: Math.round(got / wall),
     mbPerS: +(bytes / wall / 1e6).toFixed(1),
     lastFrameDelayMs: +lastDelay.toFixed(1),
+    serverSendMs: +end.serverMs.toFixed(1),
     ...fps(),
   };
 }
@@ -210,13 +211,14 @@ async function full(kind, url) {
     out.connectMs = s.connectMs;
     out.rtt450 = await rtt(s, 300, 450);
     out.rtt3k = await rtt(s, 100, 3000);
-    // One player's view: 20 motion frames a second, a 3 KB snapshot each second.
-    out.game = await stream(s, { size: 450, hz: 20, snapEvery: 20, snapSize: 3000 }, 5);
+    // One player's view: 20 motion frames a second plus 5 snapshots of 3 KB (doc 31: five views a second).
+    out.game = await stream(s, { size: 450, hz: 25, snapEvery: 5, snapSize: 3000 }, 5);
     // A crowd: 50 players' motion (1,000 frames a second), with a 3 KB snapshot every 50.
     out.crowd = await stream(s, { size: 450, hz: 1000, snapEvery: 50, snapSize: 3000 }, 4);
     out.flood450 = await flood(s, 450, 20000);
     out.flood3k = await flood(s, 3000, 5000);
-    out.flood1m = await flood(s, 1 << 20, 16, 90);
+    out.flood64k = await flood(s, 64 << 10, 500); // A full first snapshot is tens of KB (doc 31).
+    out.flood1m = await flood(s, 1 << 20, 64, 120);
     s.conn.close();
   } catch (e) {
     out.error = String(e && e.message ? e.message : e);

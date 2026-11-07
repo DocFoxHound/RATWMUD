@@ -759,6 +759,136 @@ may not be on the same one as Hetzner. I'll setup the main server separately lat
   then central runs on this laptop for development (`--central http://127.0.0.1:...`), and Phase 7 deploys it to the
   user's box. Nothing in Phases 0-6 depends on where it runs.
 
+**2026-11-07: Phase 0, the spike (branch `r2-desktop`, worktree `.claude/worktrees/r2-desktop`).** About 25 minutes of
+wall time on this laptop. Nothing in `Core/`, `Server/` or `Client/` changed; no game server was started.
+
+What was built (all spike code, under `Desktop/`, plus one workflow file):
+- `Desktop/src-tauri`: a Tauri **2.12.5** app ("Run Against the World", identifier `net.ratw.client`) with a bundled
+  test page (`Desktop/page`). Tauri 2.12's MSRV is Rust 1.90, so **Fedora's Rust 1.94 is enough; no rustup**. Debug
+  build about 3 minutes cold; release binary 5.9 MB. `.gitignore` gains `Desktop/node_modules`, `src-tauri/target`,
+  `src-tauri/gen` and `spike/out`.
+- Three ways for the shell to carry a socket, beside the page's own `WebSocket`:
+  - `tauri-plugin-websocket` 2.5.0. Confirmed by reading it: binary frames cross as **JSON arrays of numbers** both
+    ways.
+  - **IPC relay** (ours): tokio-tungstenite in Rust; binary frames go to the page as raw bytes on a Tauri `Channel`
+    (an `ArrayBuffer` in the page) and come back as a raw `invoke` body.
+  - **Loopback relay** (ours, about 60 lines): a `ws://127.0.0.1:<random port>/<random token>?to=<world>` listener in
+    Rust. The page opens it with its own `WebSocket`, and Rust pipes frames to the world unchanged.
+- `Desktop/spike/ws_server.mjs`: a stand-in world in Node (`ws`). It echoes, sends paced streams and floods. It listens
+  on `ws://127.0.0.1:47811`, on `ws://192.168.122.1:47811` (the libvirt bridge: a plain `ws://` world that isn't
+  loopback, and not on the LAN), and on `wss://127.0.0.1:47812` with a throwaway CA from `spike/make_certs.sh`.
+- `Desktop/spike/run_app.sh` runs the client once and collects the page's results (`spike/out/*.jsonl`).
+  `spike/look.sh` opens it and takes a screenshot.
+- `Desktop/spike/ticket/`: `sign_ticket.py` (central's side) and `verify_ticket.cpp` (a world's side), run by `run.sh`.
+- `Desktop/spike/heartbeat_stub.py`: a stub central and the world agent (`selftest`).
+- `.github/workflows/desktop-windows.yml`: a draft, **never run**. It only starts by hand (`workflow_dispatch`), so a
+  push runs nothing.
+
+**1. The window (Linux, KDE Plasma on Wayland, Intel + RTX 4070).**
+- The window opens, the page's script runs, and every test completes. The page's origin is `tauri://localhost`, and
+  `isSecureContext` is true. The data folder is `~/.local/share/net.ratw.client`.
+- **The rendering could not be judged.** The session was **locked** for the whole spike (`LockedHint=yes`), so the
+  compositor drew nothing new. Every screenshot shows only the empty window background, including Fedora's own
+  WebKitGTK `MiniBrowser` on the same page.
+- By default (DMA-BUF renderer), `requestAnimationFrame` ran at **0 fps** while locked; that is normal throttling of a
+  hidden view. With `WEBKIT_DISABLE_DMABUF_RENDERER=1` it ran at 60-62 fps. `GDK_BACKEND=x11`,
+  `WEBKIT_DISABLE_COMPOSITING_MODE=1`, Mesa's EGL and software GL all behaved the same.
+- **Still to check, by the user, unlocked:** the moving squares show and move smoothly. Run
+  `cd Desktop/src-tauri && cargo build --release`, then `SPIKE_PROFILE=release bash Desktop/spike/look.sh mine`, and
+  look at the window or at `spike/out/mine.png`. If it is blank, try again with `WEBKIT_DISABLE_DMABUF_RENDERER=1`.
+  Doc 76's other Phase 0 checks (fullscreen, pickers, sound, ten minutes minimised) wait for an unlocked session too.
+
+**2. Sockets from the bundled page (Linux, WebKitGTK 2.50.5).**
+- **The page's own `WebSocket` opens plain `ws://` to a non-loopback address** from `tauri://localhost`: no
+  mixed-content block (doc 77 had left this open). It opens loopback `ws://` too, and `wss://` with the spike's
+  certificate. A self-signed certificate needs the shell to allow it (`allow_tls_certificate_for_host`, done in
+  `lib.rs`); a real certificate needs nothing.
+- **Origins.** The world sees `Origin: tauri://localhost` from the page's own socket, which today's password-mode
+  `originAllowed` refuses with 403, as section 5.1 expects. Both relays send **no** `Origin`, which today's server
+  accepts. A relay must therefore be closed to anyone but the page (the token does this). Ticket mode doesn't rely on
+  `Origin`.
+- **Both relays work for `ws://` and for `wss://`.** They trust the spike's CA through `SPIKE_CA`; real worlds use
+  webpki's built-in roots. The plugin refuses the spike's CA (`UnknownIssuer`): it would need its own `TlsConnector`
+  state or the native-roots feature. That is not a problem for real certificates.
+- **Measured.** Release build, loopback, default renderer; the second figure in a cell is from the run with
+  `WEBKIT_DISABLE_DMABUF_RENDERER=1` (where rAF runs, so "worst frame" shows how long the page was blocked).
+  - **At game rates every transport is fine.** One player's view (20 motion frames of 450 B a second plus 5 snapshots
+    of 3 KB) and a crowd (1,000 frames a second for 4 s): every frame arrived, in order. Delay above the floor was
+    0.6-0.8 ms at the median and at most about 2 ms at p99 (about 4-5 ms in the second run), at 60 fps. The plugin
+    had one outlier (17 ms at p99).
+  - **Ceilings differ by 10-50 times:**
+
+| Transport | Echo of 450 B, mean | 20,000 × 450 B flood | 500 × 64 KB | 64 × 1 MB | Page blocked during the 450 B flood |
+|---|---|---|---|---|---|
+| Page's own `WebSocket` | 0.05 ms | 357k frames/s | 2.3 GB/s | 1.8 GB/s | 24 ms |
+| Loopback relay (ours) | 0.08 ms | 455k frames/s | 1.8 GB/s | 1.9 GB/s | 17 ms |
+| IPC relay (ours, raw channel) | 0.18 ms | 27k frames/s | 460 MB/s | 600 MB/s | **738 ms** |
+| `tauri-plugin-websocket` (JSON arrays) | 0.25 ms | 27k frames/s | 53 MB/s | **40 MB/s (26 ms a frame)** | 319 ms |
+
+  - The plugin takes about 1.5 ms per 64 KB frame (a large first snapshot) and 26 ms per 1 MB, all on the page's
+    thread.
+  - The IPC relay costs about 36 µs a frame, so a flood of small frames stalls the page.
+  - The loopback relay is as fast as the page's own socket, and the page keeps its ordinary `WebSocket` code.
+
+**3. The Ed25519 ticket.**
+- RFC 9864 (October 2025) registers `"alg": "Ed25519"` and deprecates the polymorphic `EdDSA`. That is checked.
+- `sign_ticket.py` signs with the system Python's `cryptography` 46.0.5; nothing was installed.
+- `verify_ticket.cpp` loads `libcrypto.so.3` with `dlopen`, as `RatwSystemLibs` does, and binds six functions:
+  `EVP_PKEY_new_raw_public_key`, `EVP_PKEY_free`, `EVP_MD_CTX_new`, `EVP_MD_CTX_free`, `EVP_DigestVerifyInit` and
+  `EVP_DigestVerify`. It parses with `Core/RatwJsonDoc`, and the keys come as a JWK set (what `/keys` would serve).
+- **Results: 25 of 25 cases as expected.**
+  - Admitted: a good ticket, an official one, one expired 90 s ago (inside the 2-minute leeway), and one from a clock
+    90 s fast.
+  - Refused: wrong `aud`, expired, a replayed `jti`, issued before the world started, a flipped signature bit, a changed
+    payload, another key, an unknown or missing `kid`, `alg` `none`, `EdDSA`, `HS256` with the public key as the
+    secret, a lowercase `ed25519`, padding characters, two or four parts, a missing `wolf`, `exp` as a string, and a
+    malformed wolf id.
+- A ticket with sample look and build is **658 bytes**. A check takes **81.5 µs**: parse, verify and claims. Phase 2
+  can keep one `EVP_PKEY` per `kid`.
+- **Finding for Phase 2:** `RatwJsonDoc` keeps the *last* copy of a repeated key, as Python's `json` does. A doubled
+  `alg` or `aud` is therefore read the same way by central and the world, and the cases above were refused. The
+  world's ticket parser should still refuse repeated keys outright (a strict mode).
+
+**4. The world agent.** `heartbeat_stub.py selftest`: 7 of 7. It covers these:
+- a wrong host token is refused (401);
+- one beat lists the world with 2 players;
+- the address comes from the connection;
+- the keys file is written atomically;
+- central's bans are left as a file for the operator bridge;
+- the clock offset is logged (under 50 ms);
+- the world drops off after silence.
+
+One beat (heartbeat, `/keys`, two files) takes 1.6 ms. Standard library only.
+
+**D1, Linux: plain `ws://` community worlds are possible (Q3 (a)), with no relay at all.** The bundled page reaches
+them itself.
+- **Recommendation for Phase 3:** the page uses its own `WebSocket` wherever the engine allows it.
+- If WebView2 blocks plain `ws://` to another machine, use **the loopback relay**. It is as fast as the page's own
+  socket, needs no change to the page's socket code, and is guarded by a random token.
+- Don't use `tauri-plugin-websocket`: big frames are slow and the page's thread does the work. The IPC relay is the
+  second choice.
+
+**Still to check on the user's Windows PC (D1 is open until then):**
+1. **Get a build.** Either:
+   - push `r2-desktop` and start "desktop-windows (spike, untested)" from the Actions tab (it builds, runs the spike on
+     a GitHub runner and uploads the `.exe`, the installer and `windows.jsonl`); or
+   - build on the PC: rustup (MSVC) plus the Visual Studio C++ build tools, Node 22, then in `Desktop/`: `npm ci` and
+     `npx tauri build --bundles nsis`.
+2. **Run the spike on the PC:**
+   - in `Desktop/`: `npm ci`, then `bash spike/make_certs.sh` (Git Bash);
+   - `node spike/ws_server.mjs --lan <the PC's LAN IPv4>` (allow it through the firewall on private networks);
+   - in PowerShell: `$env:SPIKE_LAN="ws://<that IPv4>:47811"`,
+     `$env:SPIKE_REPORT="$PWD\spike\out\windows.jsonl"`, `$env:SPIKE_CA="$PWD\spike\out\ca.pem"`, `$env:SPIKE_QUIT=1`;
+   - start `src-tauri\target\release\ratw-desktop.exe`, and send back `spike\out\windows.jsonl`.
+3. **What answers D1:**
+   - the `env` line's origin (expected `http://tauri.localhost`);
+   - whether `quick direct ws://<LAN>` connects or errors (WebView2's mixed-content rule);
+   - whether the relays connect;
+   - whether the window draws the moving squares.
+
+   Expected failures, not problems: the direct `wss://` (no certificate hook on WebView2) and the plugin's `wss://`
+   (`UnknownIssuer`).
+
 ## Review (2026-11-07)
 
 One adversarial review of the first draft, checked against the code at 0af9bc0. No database was queried and nothing
