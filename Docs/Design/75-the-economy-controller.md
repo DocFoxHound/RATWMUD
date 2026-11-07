@@ -523,7 +523,7 @@ The ladder is chosen per end, so the left can ship Full while the right ships F1
 
 ## Progress
 
-Phases 1-5 and the Phase 4 review done on `r2-controller` (below); the user's answers to section 9 first. Phase 5's D3: the left ships Full (L50); the right ships F1 written into the table, and F1 fails its own bar by small margins (T4, T6), so the right is open for the coordinator. Next: Phase 6, confirmation.
+Phases 1-6 done on `r2-controller` and merged into `ridgemere2` (below); the user's answers to section 9 first. **What shipped:** the left Full (the Levelling tithe at 50%, L50); the right F1 (no charters; the dividend 30%, the ground rent, the rich hold 150p, the cap 980p, the supervisor), which fails F1's own bar by small margins in every year (T4, T6), with the supervisor on most nights at +1. Next: Phase 7 (the DM tab's edicts, ledger and year of log), and the open items in Phase 6's entry.
 
 ### 2026-11-06: the user's decisions
 
@@ -1189,3 +1189,138 @@ failure that is not the steering's (`content.test.mjs`: bundled Greyfen has 11 p
 2. **The sweep's leg 3 in G** missed by a day (90% in 76 days, at most 75), from +1 back to the centre.
 3. **-0.5's G target** moved to what the table delivers (0.186), and **+0.5's floor** to its own run's; both were set after
    seeing the runs, by the plan's own rules for targets and floors.
+
+### Phase 6: confirmation and ship (2026-11-07, branch `r2-controller`, merged into `ridgemere2`)
+
+About 1 h 50 min of wall clock (00:18 to about 02:10 MST), most of it the runs. **The five 3-year runs of 5.4** in one
+batch (`steer-p6.json`, prefix `steer-p6-`; a copy of 25de4d4's build and Data, `build-c/world_check.p6`, `build-c/data.p6`),
+five at once on cores 2-19, every run exited 0 (65-91 minutes; the plan said about 40), nothing left running. No other
+run: no trim was needed (below), so no targeted check. **Runs used in all: about 38.6 one-year runs and the five 3-year
+runs** (the plan's 34 and 5). Scratch copies of export70 only; nothing written to DEV or PROD; no server.
+
+**What the coordinator decided before the runs** (under the user's delegation): ship the right at F1 as Phase 5 left it,
+choice (a) of Phase 5's "Open", and confirm it, rather than spend runs on (b)-(d). Each of those changes a plan rule or the
+user's treasury levers, and none had been run.
+
+**Year 1 is Phase 5's, byte for byte.** The first 366 daily lines of A1, A5, A7 and A8 are the same as `steer-p5-A1`,
+`steer-p5c-A5`, `steer-p5b-A7` and `steer-p5c-A8` on every field, and A3's are the same as `steer-p5b-A3`. So A1 really is
+the same run on the shipped build, which Phase 5 had argued but not run. A3 is stable10b on all 1,095 daily lines (T10).
+
+**The targets for years 2 and 3** (`steer-targets-p6.json`, written before any year 2 or 3 was read): T6 needs each
+mark's floors-off tills short for every year, and tills short falls after year 1 everywhere (stable10b: 29.1, 23.2,
+22.2). The centre's are stable10b's own years. +1's are steer-right-t1's (F1's own 3-year run; steer-b0-right is its first
+year). -1's are L50's year-1 32.15, scaled by steer-left-t1's own year-to-year ratio (27.6, 27.3), since no 3-year run of
+the L50 table existed. The half marks are halfway.
+
+**The results** (`steer-accept-p6.md`; year 1 is days 120-365, years 2 and 3 are whole; means a day):
+
+| run | x, floors | year | G day | S % | H/h | K | treasury mean | float days | tills short | support unpaid | supervisor acts / backed off |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| A1 `steer-p6-A1` | -1, off | 1 | 0.066 | 12.7 | 0.000 | 0.00 | 1,492 | 0 | 32.2 | 101 | 0% / 0% |
+| | | 2 | 0.062 | 12.3 | 0.001 | 0.00 | 1,512 | 0 | 29.1 | 71 | 8% / 10% |
+| | | 3 | 0.060 | 12.1 | 0.000 | 0.00 | 1,510 | 0 | 28.3 | 66 | 0% / 0% |
+| A3 `steer-p6-A3` | 0, off | 1 | 0.350 | 13.4 | 0.022 | 0.91 | 1,316 | 2 | 29.1 | 219 | 0% / 0% |
+| | | 2 | 0.349 | 13.2 | 0.010 | 0.61 | 1,615 | 0 | 23.2 | 122 | 0% / 0% |
+| | | 3 | 0.340 | 12.7 | 0.011 | 0.45 | 1,759 | 0 | 22.2 | 76 | 0% / 0% |
+| A5 `steer-p6-A5` | +1 F1, off | 1 | 0.404 | 21.8 | 0.030 | 0.64 | 708 | 4 | 35.2 | 156 | 65% / 86% |
+| | | 2 | 0.421 | 22.3 | 0.009 | 1.01 | 692 | 4 | 28.1 | 83 | 61% / 82% |
+| | | 3 | 0.439 | 23.5 | 0.020 | 0.84 | 706 | 4 | 27.7 | 86 | 51% / 60% |
+| A7 `steer-p6-A7` | -1, both | 1 | 0.066 | 12.7 | 0.000 | 0.00 | 1,491 | 0 | 31.8 | 101 | 0% / 0% |
+| | | 2 | 0.062 | 12.4 | 0.000 | 0.00 | 1,511 | 0 | 28.9 | 67 | 4% / 4% |
+| | | 3 | 0.060 | 12.1 | 0.000 | 0.00 | 1,509 | 0 | 27.5 | 64 | 0% / 0% |
+| A8 `steer-p6-A8` | +1 F1, both | 1 | 0.294 | 14.2 | 0.000 | 0.07 | 1,147 | 0 | 33.5 | 81 | 0% / 0% |
+| | | 2 | 0.316 | 15.4 | 0.000 | 0.00 | 1,286 | 0 | 27.8 | 40 | 0% / 0% |
+| | | 3 | 0.304 | 15.1 | 0.000 | 0.00 | 1,294 | 0 | 27.2 | 35 | 0% / 0% |
+| steer-right-t1 (F1's ref) | +1, off | 1 / 2 / 3 | - | 23.3 / 22.3 / 21.8 | .024 / .005 / .018 | .74 / .88 / .70 | 815 / 894 / 984 | 12 / 10 / 12 | 34.4 / 26.5 / 24.2 | 334 / 201 / 184 | - |
+
+Money was conserved on every night of all five runs (3 x 1,095 nights). The estates' posts were paid every night.
+
+**The verdicts: 109 of 116 tests pass.**
+
+- **A1, A7 (the left, Full): every test passes in every year, T13 too.** G's year means are 0.066, 0.062 and 0.060. Year
+  2 to 3 moved 0.002, under half a band. The supervisor acted on 8% (A1) and 4% (A7) of year 2's nights, on hunger and the
+  shops, and cleared both times; it was quiet in year 3. With both floors on, T11 passes every year: nobody hungry, nobody
+  short after relief, Never Hungry's Wharf pennies 0.10-0.23 a day, and all of the floors' money idle.
+- **A8 (+1 F1, both floors, judged on the full scorecard, S one-sided): every test passes in every year, T11 and T13
+  too.** F1's floors reference has one year only, so it could not be judged on F1's own bar.
+- **A3 (the centre): T10 passes; T13 passes; T2 fails in year 3.** G's 28-day mean was in its band (0.350 +- 0.021) on
+  76% of year 3's days. A3 is stable10b byte for byte, and at the centre no lever moves, so this is the centre's own
+  drift (0.350, 0.349, 0.340) against a year-1 target: a test defect, not a controller fault (5.3: "where a test fails
+  today's centre, the test is wrong"). Re-centring on years 2-3 (below) moves it to year 1 (just under 90% of days, against 90%). At x = 0,
+  T10 is the test that binds.
+- **A5 (+1 F1, on F1's bar, "no worse than steer-right-t1 in T4-T7"): T5 and T7 pass every year; T4 and T6 fail every
+  year, by small margins.** T4: H 0.030 / 0.009 / 0.020 against 0.024 / 0.005 / 0.018, and K 1.01 / 0.84 against 0.88 /
+  0.70 in years 2 and 3. T6: tills short 35.2 / 28.1 / 27.7 against 34.4 / 26.5 / 24.2. Support unpaid is half the ref's,
+  83-156p against 184-334p. The float days are a third of the ref's, 4 a year against 10-12. On the full scorecard (for
+  information, `steer-accept-p6-info.md`) A5 also fails T3 and T8 every year: the supervisor acts on 65%, 61% and 51% of
+  nights, because the treasury lives at its 600p floor at +1. It fails T5 in year 2 (13 spring days under the floor, 4
+  summer float days). T13 in S fails narrowly: 21.8, 22.3, 23.5, a change of 1.21 against half a band, 1.18. The drift is
+  toward its target (23.3) as the supervisor eases less each year (at a back-off 86%, 82%, 60% of days).
+
+**No trim (4.4).** No measure drifted on the shipped scorecard: T13 passes on A1, A3, A7 and A8. A5's S moved 1.2 points
+in year 3, which is under one band. It moved toward the target, and S has no actuator at F1: the plan's S trim is "n by
+one table step", and F1 has no charters. So no trim was built, and nothing joined a last fix round.
+
+**Re-centred on years 2-3** (3.5.4; set after seeing the runs, as the plan says; `steer-targets-p6-recentred.json`,
+re-judged in `steer-accept-p6-recentred.md` and `steer-accept-p6-info-recentred.md`):
+
+| mark | measure | year-1 target (band) | years 2-3 (band) |
+|---|---|---|---|
+| -1 | G | 0.066 (0.010) | 0.061 (0.010) |
+| 0 | G | 0.350 (0.021) | 0.344 (0.021) |
+| 0 | S | 13.4 (1.0) | 12.9 (1.0) |
+| +1 | S | 23.3 (2.36) | 22.9 (3.48) |
+
+The verdicts are the same in substance. 109 of 116 pass: A3's T2 moves to year 1, and A5's F1 failures are unchanged.
+On the full scorecard A5's T2 and T13 now pass, because the wider band comes from years 2-3's own spread. That is a
+mechanical result, not an improvement.
+
+**The labels** (the table's `reach`, re-centred on years 2-3):
+- left: "Shared: Gini 0.06 through the day (cash a head over all households; 0.34 at the centre)"
+- right: "Held by the rich: about 23% of all money with the upper class and the Houses (13% at the centre)"
+
+**The treasury floors were not re-centred.** 3.5.4 says re-centring changes "the supervisor's floors, not the table",
+but the floors are in the table (`treasuryFloors`). From A1, stable10b and A5 (`steer_floors.py`):
+- -1: 1,111-1,135p (months 2-4 were 600p, from year 1's empty first 120 days).
+- The centre: 954-1,576p (was 600-1,506p).
+- +1: 600p, as now.
+Raising the centre's floor by up to 650p changes what Never Hungry's and Never Broke's skim may take from the treasury at
+the centre and at -0.5 (A6, A2), and no run has judged that. They stay as Phase 4 wrote them; this is open.
+
+**What shipped, rung by rung:**
+
+| end | rung | what | measured reach (years 2-3) | its bar |
+|---|---|---|---|---|
+| left (-1) | **Full** | the Levelling tithe 50%, the hands' share 50%, `spendAbove` 25p, the treasury 1,500p, the supervisor | G 0.061 through the day (the centre 0.344) | the scorecard: passes every test, 1 and 3 years, floors on and off |
+| -0.5 | Full | the tithe 13.7%, treasury target 1,400p | G 0.186 (year 1; A2, no 3-year run) | passes (Phase 5) |
+| centre | - | the world, byte for byte | stable10b | T10 passes on 1,095 lines |
+| +0.5 | F1 | half of +1, cap 1,490p | S 19.5% (year 1; A4) | fails F1's T4 (K 0.76 against 0.74; Phase 5) |
+| right (+1) | **F1** | no charters (built, unused), the dividend 30%, the ground rent 30%, the rich hold 150p, cap 980p, target the world's, the supervisor | S 22.9% (the centre 12.9%) | fails F1's bar in T4 and T6 by small margins every year; with both floors it passes the full scorecard |
+
+**Checked, as the user asked.** The system follows the slider: Phase 5's sweep moved every lever the night the slider
+moved, and the measures followed. Over three years each end holds its mark with no drift: G 0.066 to 0.060 at the left; S
+21.8 to 23.5 at the right, toward its 23.3. The whole economy is managed by the controller. With the steering on, the DM
+has only the slider, the on/off, Never Hungry and Never Broke; every lever is the table's or the supervisor's, and the
+supervisor only ever moves a lever back toward the world's own value.
+
+**Tests:**
+- `steer_tests` 548 checks; ctest 80 of 80 (`build-c`).
+- `test_studio` (52 tests, 16 skipped) and `test_econ_report` pass.
+- The Editor's lib tests 75 of 75 and `tsc` clean.
+- The Editor's `src/model` tests: 80 of 81. The one failure is not the steering's: `content.test.mjs`, bundled Greyfen
+  has 11 people and the test wants 10.
+- `test_studio`, `steering.test.ts` and `Tests/fixtures/steer_table.json` were already on the shipped table (Phase 5) and
+  read the labels by their prefix only, so the re-centred labels changed no test.
+
+**Open:**
+
+1. **The right end at F1.** It fails F1's own bar by small margins (T4, T6), and the supervisor is on 51-65% of nights,
+   because the right's treasury lives at 600-800p and the plan's floor is never under 600p. Phase 5's choices (b)-(d) are
+   still the levers: a floor under 600p at the right (the user's), the world's 2,000p cap at +1 (the user's treasury
+   levers), or rule 1 without its rich-hold move at the right (Phase 4's addition). Each needs about one run at +1 and one
+   at +0.5.
+2. **The treasury floors** re-centred on years 2-3 are computed but not in the table (above).
+3. **T2 at the centre** cannot hold a single year-1 band over three years. The centre has no lever, and its G wanders
+   0.337-0.375. The scorecard should judge T2 at x = 0 against each year's own stable10b, or not at all (T10 binds there).
+4. The sweep's leg 3 in G (Phase 5: 76 days against 75) was not re-run.
+5. Phase 7, the DM tab's edicts, ledger and year of log.

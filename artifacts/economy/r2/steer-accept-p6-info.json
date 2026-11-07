@@ -1,0 +1,3 @@
+{"about": "Doc 75, Phase 6, for information: A5 (+1 at F1, 3 years) on the full scorecard, T13 among it, against steer-targets-p6.json (the right's S F1's own, 23.3% +- 2.36).",
+ "dir": "artifacts/economy/r2", "baseline": "stable10b", "targets": "artifacts/economy/r2/steer-targets-p6.json",
+ "runs": [{"name": "steer-p6-A5", "x": 1, "floors": false, "rung": "full"}]}
