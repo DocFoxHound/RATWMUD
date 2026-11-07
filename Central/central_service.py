@@ -481,7 +481,10 @@ class Central:
         claims = {'sub': sub, 'wolf': wolf['id'], 'name': wolf['name'], 'sex': wolf['sex'], 'age': wolf['age'],
                   'look': wolf['appearance'], 'gift': wolf['family'], 'aud': world_id, 'kind': world['kind'],
                   'jti': secrets.token_hex(16), 'iat': now, 'exp': now + central_tickets.LIFETIME}
-        ticket, kid = self.keys.sign(claims, now)
+        # Signed at central's own clock, not the whole second the claims carry: in the second a key was made its
+        # activation is still ahead of int(now), and the ring would make a second, unpublished key for this ticket
+        # (found by Phase 2's join test, doc 77).
+        ticket, kid = self.keys.sign(claims, self.clock())
         self.store.record_ticket(claims['jti'], world_id, wolf['id'], account['id'], kid, now, claims['exp'])
         return ok(ticket=ticket, expires=claims['exp'], world=world_id, kind=world['kind'])
 

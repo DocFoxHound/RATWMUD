@@ -462,6 +462,23 @@ class Tickets(Base):
         self.assertEqual(claims['aud'], self.community)
         self.assertNotIn('build', claims, 'the strengths are chosen at each first arrival (Q12 (a))')
 
+    def test_a_ticket_in_the_second_a_key_is_made_uses_that_key(self):
+        # Doc 77, Phase 2's review: signing at int(now) found no key yet in the second the first key was made, and made
+        # a second one that no world had fetched.
+        keydir = tempfile.TemporaryDirectory()
+        self.addCleanup(keydir.cleanup)
+        clock = Clock(START + 0.6)
+        ring = ct.KeyRing(Path(keydir.name))
+        ring.maintain(clock())
+        published = ct.public_keys(ring.jwks(clock()))
+        central = cs.Central(STORE, ring, IDENTITY, clock=clock, settings=cs.Settings(iterations=1000))
+        clock.advance(0.2)
+        status, reply = central.call(central.ticket, '198.51.100.9', self.token, {'world': self.community,
+                                                                                  'wolf': self.wolf_id})
+        self.assertEqual(status, 200, reply)
+        self.assertEqual(len(ring.describe(clock())), 1, 'no second key was made')
+        ct.verify(reply['ticket'], published, self.community, clock(), clock() - 10, {})
+
     def test_community_worlds_get_pairwise_account_ids(self):
         a1 = self.check(self.ticket(self.community))['sub']
         a2 = self.check(self.ticket(self.community))['sub']
