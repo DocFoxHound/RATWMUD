@@ -5,6 +5,7 @@
 #include "RatwWire.h"
 #include "RatwGifts.h"
 #include "RatwCreation.h"
+#include "RatwIdentity.h"
 #include "RatwLevels.h"
 #include "RatwItems.h"
 #include "RatwWild.h"
@@ -2436,33 +2437,22 @@ bool Game::accountCommand(Connection* c, const Value& j, const std::string& type
     }
     if (type == "character_create")
     {
-        // A name always starts with a capital (the user, 2026-10-07): it reads as a name, and it is veiled from those
-        // who don't know it wherever it is written (names::veil looks for capitalised names).
-        const std::string name = names::capitalised(mind::trim(j.string("name")));
-        const double age = wire::strictNumber(j, "age", -1);
+        // The identity's rules (name, age, look, Gift) are RatwIdentity's, shared with central's ratw_identity (doc 77).
+        const std::string name = identity::name(j.string("name"));
+        const double age = identity::age(j);
         Appearance appearance;
         const std::string commandId = j.string("commandId");
-        if (!accounts::validDisplayName(name) || age < 6 || age > 99 || age != std::floor(age) ||
-            !wire::readAppearance(j["appearance"], appearance) || !accounts::validCommandId(commandId))
+        if (name.empty() || age < 0 || !wire::readAppearance(j["appearance"], appearance) || !accounts::validCommandId(commandId))
         {
             lobby(c, false, "Choose a 2\xe2\x80\x93" "32 character name, a whole age from 6\xe2\x80\x93" "99, and a complete valid wolf appearance.");
             return true;
         }
         // The Gift (doc 43): {"tier": "normal" | "gifted" | "quickened", "family": a playable family}; none is Normal.
-        std::string tier = "normal", family;
-        if (const auto* gift = j.find("gift"))
+        std::string tier, family;
+        if (!identity::gift(j.find("gift"), tier, family))
         {
-            bool fine = gift->isObject() && gift->size() <= 2;
-            for (const auto& [key, v] : gift->fields())
-                fine = fine && (key == "tier" || key == "family") && v.isString();
-            tier = fine ? gift->string("tier") : std::string();
-            family = fine ? gift->string("family") : std::string();
-            if (!fine || (tier != "normal" && tier != "gifted" && tier != "quickened") || (tier == "normal") != family.empty() ||
-                (!family.empty() && !gifts::playable(family)))
-            {
-                lobby(c, false, "Choose Normal, or Gifted or Quickened with one of the eight Gift families.");
-                return true;
-            }
+            lobby(c, false, "Choose Normal, or Gifted or Quickened with one of the eight Gift families.");
+            return true;
         }
         // Earned Gift tiers (doc 49, Phase 5): a tier the account hasn't opened is refused, with what it still needs.
         if (tier != "normal" && !options_.openTiers)
