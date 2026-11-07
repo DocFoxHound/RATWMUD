@@ -460,6 +460,7 @@ void readSteering(const json::Value& steer, CityLoop::Steering& t)
         t.tillsOver = std::clamp(s.number("tillsOver", t.tillsOver), 1., 100.);
         t.clearShare = std::clamp(s.number("clearShare", t.clearShare), .1, 1.);
         t.routeAt = std::clamp(s.number("routeAt", t.routeAt), .01, 1.);
+        t.returnShare = std::clamp(s.number("returnShare", t.returnShare), .01, 1.);
         t.clearNights = int(std::clamp(s.number("clearNights", t.clearNights), 1., 365.));
         t.edgeNights = int(std::clamp(s.number("edgeNights", t.edgeNights), 1., 3650.));
         t.titheShopsWeek = std::clamp(s.number("titheShopsWeek", t.titheShopsWeek), 0., 100.);

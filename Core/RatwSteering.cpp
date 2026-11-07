@@ -969,6 +969,11 @@ void Society::steerFollow(std::int64_t day)
         st.lean = lean;
         st.judged = day;
         st.gini = st.upper = st.top10 = -1;         // (Re-seated tonight: the first look after a move is at the new place.)
+        // (Doc 75, Phase 5: the supervisor's 7-night means too, so no rule judges the new place on the old one's nights for
+        // meanNights nights. In the sweep, A9, the centre's 0.9 households short tripped the far left's 0.1 the night of the
+        // move.)
+        st.sup.nights = 0;
+        st.sup.treasury = st.sup.tills = st.sup.hungry = st.sup.shortHomes = st.sup.unpaid = -1;
         steerSet(x, day, "Day " + std::to_string(day) + ": where the money rests moved from " + said(was) + " to " + said(lean));
         ramp();
     }
@@ -1186,7 +1191,7 @@ void Society::steerSupervise(std::int64_t day, const SupNight& tonight)
     // A rule fires only where it has a lever to move, and clears when its measure has been back under clearShare of its
     // trigger (for the treasury, over the floor by as much) for clearNights nights running. Each lever moves once a night,
     // at the fastest rate of the rules on it whose trigger is true tonight; with rules on but none over its trigger, it holds;
-    // with none on, back toward its table value at half the rate it left. A back-off never takes a lever past the world's
+    // with none on, back toward its table value at returnShare of the rate it left. A back-off never takes a lever past the world's
     // own value.
     auto& st = state_.loop.steer;
     auto& sup = st.sup;
@@ -1264,7 +1269,8 @@ void Society::steerSupervise(std::int64_t day, const SupNight& tonight)
             sup.on[i] = false;
             sup.clear[i] = 0;
             say(std::string("the supervisor's ") + r.name + " rule clears" + (r.work ? "" : " (no lever of its here)") +
-                ": the levers return toward the table at half the rate they left");
+                ": the levers return toward the table" + (t.returnShare >= 1 ? std::string(" at the rate they left") :
+                                                          " at " + fixed(100 * t.returnShare, 0) + "% of the rate they left"));
         }
     }
     for (std::size_t i = 0; i < rules.size(); ++i)
@@ -1283,7 +1289,7 @@ void Society::steerSupervise(std::int64_t day, const SupNight& tonight)
             off = std::min(room, off + left);
         }
         else if (off > 0 && !held)
-            off = std::max(0., off - left / 2);
+            off = std::max(0., off - left * t.returnShare);
         off = std::min(off, room);                  // (Never past the world's own: the slider may have moved.)
         if (off != before && (before == 0 || off == 0 || off == room))
             say(std::string(leverName(lever)) + (off > before ? " eased by " : " back to within ") + fixed(off, 1) + unit +

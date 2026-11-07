@@ -138,7 +138,7 @@ void theRulesAndTheTable()
                items::steerAt(t.levers.at("surplusKeep"), -1, 4000) == 0,
            "W is the world's own: the keep 4,000 at the centre, 2,500 at -0.25, 0 at the far left");
     expect(items::steerAt(t.levers.at("treasuryCap"), -.5, 2000) == 1750 && items::steerAt(t.levers.at("treasuryCap"), .5, 2000) == 1490 &&
-               items::steerAt(t.levers.at("treasuryCap"), 1, 2000) == 980,
+               items::steerAt(t.levers.at("treasuryCap"), 1, 2000) == 980 && items::steerAt(t.levers.at("treasuryCap"), .75, 2000) == 1235,
            "a null half mark blends its neighbours: the cap 1,750 at -0.5; 980 at the far right (doc 75, 4.5: the wage support paid "
            "over it), 1,490 at +0.5");
     expect(items::steerAt(t.levers.at("treasuryTarget"), 0, 5500) == 5500 && items::steerAt(t.levers.at("treasuryTarget"), -1, 5500) == 1500 &&
@@ -150,9 +150,11 @@ void theRulesAndTheTable()
            "the rich hold 150p a head at the far right");
     expect(items::steerAt(t.levers.at("spendAbove"), -1, 40) == 25 && items::steerAt(t.levers.at("spendAbove"), 0, 40) == 40,
            "the spending keep 25p a head at the far left");
-    expect(items::steerAt(t.levers.at("charters"), 1, 0) == 33 && items::steerAt(t.levers.at("charters"), .5, 0) == 16.5 &&
-               items::steerAt(t.levers.at("charters"), 0, 0) == 0 && t.chartersRampDays == 14 && std::abs(t.dividendPerCharter - .45) < 1e-12,
-           "the charters 33% of the middle keepers' tills at the far right, over a 14-night ramp; the dividend 0.45 a point");
+    expect(items::steerAt(t.levers.at("charters"), 1, 0) == 0 && items::steerAt(t.levers.at("charters"), .5, 0) == 0 &&
+               items::steerAt(t.levers.at("dividend"), 1, 0) == 30 && items::steerAt(t.levers.at("dividend"), .5, 0) == 15 &&
+               t.chartersRampDays == 14 && std::abs(t.dividendPerCharter - .45) < 1e-12,
+           "the right ships F1 (doc 75, Phase 5's D3): no charters (built, the ramp 14 nights, the dividend 0.45 a point of them), "
+           "the dividend 30% at the far right");
     // The shared cases (Tests/fixtures/steer_table.json), which the studio's tests read too.
     {
         std::ifstream in(fs::path(RATW_SOURCE_DIR) / "Tests/fixtures/steer_table.json");
@@ -566,11 +568,11 @@ void theLeversAtTheEnds()
     expect(left.conserved(), "conserved");
     auto right = city(town(), 9000, {{"steer", 1}, {"steerLean", 200}});
     run(right, 1 + 17.9 / 24, 1 + 18.5 / 24);
-    expect(right.state().loop.steer.push == 1 && right.steerLever("groundRent") == 30 && right.steerLever("charters") == 33 &&
-               std::abs(right.steerLever("dividend") - (15 + .45 * 33)) < 1e-9 && right.steerLever("richAbove") == 150 &&
+    expect(right.state().loop.steer.push == 1 && right.steerLever("groundRent") == 30 && right.steerLever("charters") == 0 &&
+               right.steerLever("dividend") == 30 && right.steerLever("richAbove") == 150 &&
                right.rule("treasuryCap") == 980 && right.rule("treasuryTarget") == 5500 && right.steerLever("levelling") == 0,
-           "at the far right: the ground rent 30%, the charters 33%, the dividend 15% and 0.45 a point of them, the rich hold "
-           "150p, the cap 980p, the target the world's: " + n(right.steerLever("dividend")));
+           "at the far right (F1): the ground rent 30%, no charters, the dividend 30%, the rich hold 150p, the cap 980p, the "
+           "target the world's: " + n(right.steerLever("dividend")));
     expect(right.gateTollNow() == centre.gateTollNow() && left.gateTollNow() == centre.gateTollNow(),
            "no toll lean at either end: the toll the drift's alone");
     // Off again: the world's own rules at once.
@@ -898,10 +900,12 @@ void theSupervisor()
                 r.steerSupervise(e++, N{9000, trigger * 3, 0, 0, 0});
             expect(v.on[1] && v.levelling > held, "back over its trigger: the tithe eases again: " + n(v.levelling));
         }
-        // Back toward the table at half the rate it left (the last, 5/7 a night).
+        // Back toward the table at returnShare of the rate it left (the last, 5/7 a night; the table's returnShare 1 since
+        // doc 75, Phase 5's fix round, the plan's half before).
+        expect(t.returnShare == 1, "the table's returnShare: 1");
         const double off = u.levelling;
         s.steerSupervise(d++, N{9000, 0, 0, 0, 0});
-        expect(std::abs(off - u.levelling - 2.5 / week) < 1e-9, "the return at half the rate: " + n(off - u.levelling));
+        expect(std::abs(off - u.levelling - t.returnShare * 5 / week) < 1e-9, "the return at returnShare of the rate: " + n(off - u.levelling));
         for (int k = 0; k < 400; ++k)
             s.steerSupervise(d++, N{9000, 0, 0, 0, 0});
         expect(u.levelling == 0 && s.steerLever("levelling") == 50, "back at the table");
@@ -960,15 +964,19 @@ void theSupervisor()
             s.steerSupervise(d, N{2000, 0, 0, 0, 0});
         const double route = u.route, rich = u.richAbove;
         s.steerSupervise(d++, N{2000, 0, 0, 0, 0});
-        expect(!u.on[0] && std::abs(route - u.route - 1. / 14) < 1e-9 && std::abs(rich - u.richAbove - 5 / week) < 1e-9 && !s.skimStep(2, true).empty(),
-               "cleared: the route eases, the rich hold returns at half its rate, the skim may take from the treasury again");
+        expect(!u.on[0] && std::abs(route - u.route - 1. / 14) < 1e-9 && std::abs(rich - u.richAbove - t.returnShare * 10 / week) < 1e-9 &&
+                   !s.skimStep(2, true).empty(),
+               "cleared: the route eases, the rich hold returns at returnShare of its rate, the skim may take from the treasury again");
         // Rule 2 on the wage support unpaid alone.
         for (int k = 0; k < 400; ++k)
             s.steerSupervise(d++, N{2000, 0, 0, 0, 0});
         expect(u.richAbove == 0 && u.route == 0, "back at the table");
         for (; d < 900 && !u.on[1]; ++d)
             s.steerSupervise(d, N{2000, 0, 0, 0, 400});
-        expect(u.on[1] && !u.on[0] && u.richAbove > 0, "the wage support 400p a night unpaid against 328p: the shops' rule eases the rich hold");
+        expect(!u.on[1], "the wage support 400p a night unpaid, under unpaidMost 426p (1.3 x T6's 328p): nothing");
+        for (; d < 1200 && !u.on[1]; ++d)
+            s.steerSupervise(d, N{2000, 0, 0, 0, 500});
+        expect(u.on[1] && !u.on[0] && u.richAbove > 0, "the wage support 500p a night unpaid against 426p: the shops' rule eases the rich hold");
         // Saved and read again.
         const auto back = wire::readSociety(wire::society(s.state())).loop.steer.sup;
         expect(back.on == u.on && back.clear == u.clear && back.fires == u.fires && back.edge == u.edge && back.nights == u.nights &&
@@ -997,8 +1005,12 @@ void theSlider()
     for (int day = 2; day <= 200; ++day)
         s.steerEconomy(day);
     expect(std::abs(st.push + .5) < 1e-12 && st.history.size() == 1 && st.days == 200, "200 nights: nothing trimmed, nothing judged");
+    expect(st.sup.nights >= 7, "the supervisor's means have had their 7 nights: " + n(st.sup.nights));
     setRules(s, {{"steerLean", 150}});
     s.steerEconomy(201);
+    // (Doc 75, Phase 5: the supervisor's 7-night means re-seated on a move, so the new place is not judged on the old one's
+    // nights: tonight's is their first night, and no rule judges until they have had 7.)
+    expect(st.sup.nights <= 1 && st.sup.on == std::array<bool, 3>{}, "a slider change: the supervisor's means re-seated: " + n(st.sup.nights));
     expect(std::abs(st.push - .5) < 1e-12 && st.judged == 201 && s.steerLever("groundRent") == 15 && st.history.size() == 2 &&
                st.history.back().why.find("moved from -50 to 50") != std::string::npos,
            "a slider change: the levers there the same night: " + st.history.back().why);

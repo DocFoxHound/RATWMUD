@@ -1,0 +1,7 @@
+{"about": "Doc 75, Phase 5: the right with the charters (R33), the acceptance runs and fix round 1, on the full scorecard against steer-targets-p4.json (S without the chartered tills' own cash). This is the record of why the right ships F1 (D3).",
+ "dir": "artifacts/economy/r2", "baseline": "stable10b", "targets": "artifacts/economy/r2/steer-targets-p4.json",
+ "runs": [{"name": "steer-p5-A4", "x": 0.5, "floors": false, "rung": "full"},
+          {"name": "steer-p5-A5", "x": 1, "floors": false, "rung": "full"},
+          {"name": "steer-p5b-A5", "x": 1, "floors": false, "rung": "full"},
+          {"name": "steer-p5-A8", "x": 1, "floors": true, "rung": "full", "floors_off": "steer-p5-A5"},
+          {"name": "steer-p5-A9", "x": 0, "floors": false, "rung": "full", "legs": [[120, -1], [240, 1], [360, 0]]}]}

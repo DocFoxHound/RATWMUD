@@ -1,0 +1,59 @@
+{
+ "about": "Doc 75, Phase 5, D3: the right end at F1 (the fallback ladder: the charters off, the dividend 30% at +1, treasuryCap 980p at +1, 1,490p at +0.5), with fix round 1's supervisor (the means re-seated on a slider move, returnShare 1, unpaidMost 426p, the +0.5 floor from A4): A9 (the sweep), A5, A8 and A4 again.",
+ "base": "artifacts/economy/r2/export70",
+ "out": "artifacts/economy/r2",
+ "prefix": "steer-p5c-",
+ "days": 366,
+ "binary": ".claude/worktrees/r2-controller/build-c/world_check.p5b",
+ "data": ".claude/worktrees/r2-controller/build-c/data.p5c",
+ "runs": [
+  {
+   "name": "A9",
+   "rules": {
+    "steer": 1,
+    "steerLean": 100
+   },
+   "days": 480,
+   "at": [
+    [
+     120,
+     "steerLean",
+     0
+    ],
+    [
+     240,
+     "steerLean",
+     200
+    ],
+    [
+     360,
+     "steerLean",
+     100
+    ]
+   ]
+  },
+  {
+   "name": "A5",
+   "rules": {
+    "steer": 1,
+    "steerLean": 200
+   }
+  },
+  {
+   "name": "A8",
+   "rules": {
+    "steer": 1,
+    "steerLean": 200,
+    "neverHungry": 1,
+    "neverBroke": 1
+   }
+  },
+  {
+   "name": "A4",
+   "rules": {
+    "steer": 1,
+    "steerLean": 150
+   }
+  }
+ ]
+}

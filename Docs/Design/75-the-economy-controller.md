@@ -523,7 +523,7 @@ The ladder is chosen per end, so the left can ship Full while the right ships F1
 
 ## Progress
 
-Phases 1-4 and the Phase 4 review done on `r2-controller` (below); the user's answers to section 9 first. Next: Phase 5, acceptance.
+Phases 1-5 and the Phase 4 review done on `r2-controller` (below); the user's answers to section 9 first. Phase 5's D3: the left ships Full (L50); the right ships F1 written into the table, and F1 fails its own bar by small margins (T4, T6), so the right is open for the coordinator. Next: Phase 6, confirmation.
 
 ### 2026-11-06: the user's decisions
 
@@ -1049,3 +1049,143 @@ about day 182).
    as at the centre. It is section 1's pattern 3, chosen knowingly after S2. That combination is still unrun past day 110.
 
 Tests: steer_tests 544, ctest 80 of 80.
+
+### Phase 5: acceptance, fix round 1 and D3 (2026-11-06/07, branch `r2-controller`)
+
+About 1 h 35 min of wall clock (22:41 to 00:16 MST). Three batches, every run exited 0, nothing left running; scratch
+copies of export70 only, on cores 2-19; nothing written to DEV or PROD; no server. **Runs used: 12 one-year runs and two
+480-day sweeps, 14.6 one-year runs' worth** (the task's "about 13" was overrun by 1.6; with Phases 1-4's 24 that is 38.6
+against the plan's 34). No 3-year run.
+
+| batch | build and table | runs |
+|---|---|---|
+| `steer-p5.json` (prefix `steer-p5-`) | ab8067d as committed (R33 at the right) | A1, A4, A5, A8, A9 |
+| `steer-p5b.json` (`steer-p5b-`) | fix round 1 (below), R33 at the right | A2, A3, A6, A7 (their first runs) and A5 again |
+| `steer-p5c.json` (`steer-p5c-`) | fix round 1 with the right at F1 (D3): the shipped build and table | A4, A5, A8, A9 |
+
+**What the first batch said.** The left (A1) passed every test, the supervisor never acting. A8 (+1, both floors on)
+passed every test. The right failed on the supervisor: A5 (+1) had rule 1 on from day 69 to day 247 (178 nights), because
+with `treasuryCap` 980p the treasury lives at 600-700p and its floor at +1 is 600p (`floorLeast`): its 7-night mean dipped
+under 600p on 9% of days but was over the clearing line (667p) for 7 nights running almost never. So the rich hold was
+eased 38p on average, S without the chartered tills' cash fell to 23.5% (target 27.3 +- 1.47), and A5 failed T2, T3 (at a
+back-off 100% of days) and T8 (acting on 66% of nights); T4-T7 passed. A4 (+0.5) failed T3, T8 and T5 (4 float days in
+summer); its late-year fires came from the +0.5 floor halfway between the centre's and +1's (the centre's winter floor,
+about 1,000p, under a treasury holding about 1,000p there). A9 (the sweep) passed legs 1 and 3 and failed leg 2 (S at +1
+90% of the way in 86 days, at most 75): the supervisor's 7-night means carried the centre's nights into the far left's
+ceilings (the night of the move to -1 rule 3 fired on the centre's 0.47 households short against the left's 0.1), and at
++1 rule 2 fired on the wage support's 7-night mean at 348p against 328p.
+
+**Fix round 1** (one code fix, the rest table values; `steer_tests` 548 checks, was 544):
+
+1. **The supervisor's means re-seated on a slider move** (`steerFollow`): its nights to 0 and the means afresh, so no rule
+   judges the new place on the old one's nights for 7 nights. This is 3.3's re-seating, which Phase 4 had not given the
+   supervisor's own means. A test checks it.
+2. **`returnShare` 1** (`supervisor.returnShare`, new; the plan's half before): a lever returns at the rate it left. At
+   half, a back-off is at a back-off about three times as long as it pulls (the Phase 4 review's finding 1), so one
+   month's episode alone was over T3's 30%.
+3. **`unpaidMost` 426p** at every mark: rule 2's wage support half judged as its tills half is, 1.3 x its bar (T6's 328p).
+   A 7-night mean of a seasonal measure against an annual bar fired on ordinary weeks (A4: 334-336p twice).
+4. **The +0.5 floor from A4** (the first run of the +0.5 table; the plan's rule, the mark's own seasonal profile less 2
+   sigma, at least 600p): 600-735p. Set after seeing A4, and the scorecard's `floor_from` at +0.5 is A4 too
+   (`steer-targets-p5.json`), so the supervisor and the judge use the same floor.
+5. **`treasuryCap` 1,300p at +1**, to lift the treasury off its floor. **It did not work and is undone:** in A5 again the
+   treasury rose only 70p (681 to 781p) while the wage support unpaid rose 152 to 282p and the float days 6 to 20; A5 still
+   failed T3 (69% at a back-off), T5 and T8 (52%). The cap moves money between the treasury and the wage support; it does
+   not raise the treasury's level. The +0.5 cap was held at the 1,490p it had.
+
+An open-loop replay of the supervisor's rules on A5's and S3's daily lines (no feedback, a guide only) found no setting of
+the plan's own fix-round levers (`clearShare` 0.9-1.0, `clearNights` 4-7, the return rate) that keeps rule 1 at +1 under
+T8's 15% with the floor at 600p: 15-25% of nights, 4-5 fires. Only the world's cap (2,000p, smoke S2) keeps the treasury
+clear of its floor (7-10% of nights), and there the wage support unpaid is about T6's bar. At the right, T6 (the wage
+support) and T8 (a quiet supervisor) pull the cap opposite ways, and the plan's floor is the right's ordinary treasury.
+
+**D3 (the coordinator's call 2 and the ladder):** the charters failed acceptance after the fix round (R33: A5 T2, T3, T8;
+A5 again T3, T5, T8; `steer-accept-p5-r33.md`). There is no F2 under R33, so **the right takes F1**, written into
+`city_loop.json`: charters 0 at +1 (built, unused), the dividend 30% at +1, the cap 980p at +1 (1,490p at +0.5), the
+target the world's, the supervisor with fix round 1. The +1 and +0.5 targets are F1's own (steer-b0-right, F1's open-loop
+run: S 23.3% +- 2.36, tills 34.4; +0.5 halfway). **F1 fails its own bar narrowly** ("no worse than steer-b0-right in
+T4-T7", with no tolerance): A5 T4 (H 0.030 an hour against 0.024) and T6 (tills short 35.2 against 34.4; the wage support
+unpaid 156p against 334p passes), A4 T4 (K 0.76 against 0.74). A8 passes F1's bar (against steer-d1b-right-floors) and
+T11. On the full scorecard (for information, `steer-accept-p5-info.md`) A5 at F1 passes T1, T2 and T4-T7 and fails T3
+(86% at a back-off) and T8 (65% of nights): the supervisor's rule 1 is on most of the year at +1 here too, easing the rich
+hold 38p on average, and that is why A5's S is 21.8%, not F1's open-loop 23.3%. F3 (doc 74's t1 controller) is no longer
+in the code (Phase 2 removed it), so the ladder has no rung under F1 to take. **The right end is open:** F1 is in the table
+as the last buildable rung, with its failures named; what to do about it is the coordinator's (see "Open" below).
+
+**The left ships Full (L50).** -0.5's G target is now A2's own, by the calibrate rule (the mark's days 120-365 mean, its
+band 2 sigma of its 28-day mean): 0.186 +- 0.020. Phase 4 had it halfway (0.208 +- 0.01) because no run had that table;
+the tithe at 13.7% delivers 0.186 there (more equal than aimed). Set after seeing A2, and said so.
+
+**The acceptance as shipped** (`steer-accept-p5.json`, `steer-accept-p5.md`): **60 of 64 tests pass; the 4 that fail are
+F1's T4 at A4 and A5, F1's T6 at A5, and the sweep's leg 3 in G.** A1 is from the first batch: it has no supervisor action
+and no slider move, and nothing the fix round changed is read at -1, so it is the same run on the shipped build. A2, A3,
+A6 and A7 ran on the shipped build; the table left of +0.5 is the shipped one.
+
+| run | x | floors | G day | S % (without chartered cash) | H/h | K | treasury mean | float days | tills short | support unpaid | supervisor acts / backed off | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| A1 `steer-p5-A1` | -1 | off | 0.066 | 12.7 | 0.000 | 0.00 | 1,492 | 0 | 32.2 | 101 | 0% / 0% | Full: every test passes |
+| A2 `steer-p5b-A2` | -0.5 | off | 0.186 | 13.1 | 0.001 | 0.07 | 1,909 | 0 | 32.8 | 79 | 13% / 17% | Full: every test passes (G on A2's target) |
+| A3 `steer-p5b-A3` | 0 | off | 0.350 | 13.4 | 0.022 | 0.91 | 1,316 | 2 | 29.1 | 219 | 0% / 0% | Full: every test passes; T10 byte for byte stable10b (366 lines) |
+| A4 `steer-p5c-A4` | +0.5 | off | 0.392 | 19.5 | 0.017 | 0.76 | 850 | 10 | 31.8 | 258 | 27% / 35% | F1: T4 fails (K 0.76 against 0.74) |
+| A5 `steer-p5c-A5` | +1 | off | 0.404 | 21.8 | 0.030 | 0.64 | 708 | 4 | 35.2 | 156 | 65% / 86% | F1: T4 and T6 fail |
+| A6 `steer-p5b-A6` | 0 | both | 0.285 | 11.8 | 0.000 | 0.04 | 2,158 | 0 | 34.1 (1.17 x A3) | 90 | 0% / 0% | Full: every test passes, T11 too |
+| A7 `steer-p5b-A7` | -1 | both | 0.066 | 12.7 | 0.000 | 0.00 | 1,491 | 0 | 31.8 (0.99 x A1) | 101 | 0% / 0% | Full: every test passes, T11 too |
+| A8 `steer-p5c-A8` | +1 | both | 0.294 | 14.2 | 0.000 | 0.07 | 1,147 | 0 | 33.5 | 81 | 0% / 0% | F1: passes, T11 too |
+| R33: A5 `steer-p5-A5` | +1 | off | 0.403 | 32.1 (23.5) | 0.015 | 0.62 | 681 | 6 | 34.3 | 152 | 66% / 100% | Full: T2, T3, T8 fail |
+| R33: A5 again `steer-p5b-A5` (cap 1,300p) | +1 | off | 0.443 | 34.1 (26.6) | 0.025 | 1.14 | 781 | 20 | 35.7 | 282 | 52% / 69% | Full: T2, T3, T5, T8 fail |
+| R33: A4 `steer-p5-A4` | +0.5 | off | 0.372 | 24.5 (19.0) | 0.013 | 0.81 | 938 | 7 | 29.2 | 232 | 55% / 93% | Full: T3, T5, T8 fail |
+| R33: A8 `steer-p5-A8` | +1 | both | 0.297 | 24.2 (16.2) | 0.000 | 0.00 | 1,156 | 0 | 33.6 | 89 | 0% / 0% | Full: every test passes |
+
+Days 120-365, means a day. The A9 sweep (`steer-p5c-A9`, 480 days, toggles off; 0 -> -1 at day 120, -> +1 at 240, -> 0 at
+360):
+
+| leg | measure | from -> target | half the way | 90% | overshoot | T12 |
+|---|---|---|---|---|---|---|
+| 1, to -1 | G | 0.361 -> 0.066 | 15 days | 26 days | 0 | PASS |
+| 2, to +1 | S | 12.4 -> 23.3 | 25 days | 41 days | 1.40 (band 2.36) | PASS |
+| 3, to 0 | G | 0.450 -> 0.350 | 23 days | 76 days (at most 75) | 0 | FAIL, by a day |
+| 3, to 0 | S | 24.7 -> 13.4 | 19 days | 33 days | 0 | PASS |
+
+(On the first batch's build, R33 at +1, leg 2 failed, 86 days, and legs 1 and 3 passed.)
+
+**What was checked, as the user asked:**
+
+- **The system follows the slider.** In the sweep every lever moved the night the slider did (day 120: the tithe 0 -> 50,
+  the hands' share 0 -> 50; day 240: the tithe back to 0, the ground rent 0 -> 30, the rich hold 40 -> 150p; day 360: the
+  cap 980 -> 2,000p, the ground rent 30 -> 0, the rich hold back to the world's 40p), and the measures followed: G 0.348 ->
+  0.068 in about 10 days at -1; S 13.5 -> 21-24.5% at +1; G 0.358 and S 13.8-14.4% back at the centre. The ends hold
+  their marks: A1's G 0.066 against its 0.066 target on 100% of days, A2's 0.186, A3 byte for byte stable10b.
+- **Money is conserved** every night of every run: the daily line's `conserved` is true on every day of all 14 runs, the
+  two sweeps' 480 days included; T7 passes on every run it judges (the estates' posts paid every night, the Wharf net
+  within 8p a day of stable10b's where judged).
+- **The supervisor acted when it should, and only then.** Nothing fired at the centre (A3, A6) or with the floors on (A6,
+  A7, A8). At the left it fired on real excursions and cleared: A2's hunger rule on day 224 (2.43 households short against
+  0.5) eased the tithe and cleared by day 241; in the sweep the hunger rule fired on day 224 at -1 (1.29 households short
+  against 0.1) and eased the tithe to 38.6% by the next move (day 240). At the right it fired on the treasury under its
+  600p floor, but there that floor is the treasury's ordinary level, so it acted on 27-65% of nights: that is the right
+  end's failure, not a quiet guard.
+- **The scorecard per test** is in `steer-accept-p5.md` (shipped), `steer-accept-p5-info.md` (the right at F1 on the full
+  scorecard) and `steer-accept-p5-r33.md` (the charters).
+
+**The labels** (`reach` in the table): the left "Shared: Gini 0.07 through the day" (A1: 0.066); the right now "Held by
+the rich: about 22% of all money with the upper class and the Houses (13% at the centre)" (A5 at F1: 21.8%). Both are for
+Phase 6 to re-centre on years 2-3.
+
+**Tests:** `steer_tests` 548 checks; ctest 80 of 80; `test_studio` and `test_econ_report` pass; the Editor's lib tests 75 of
+75 and `tsc` clean (with the main checkout's `node_modules` linked in for the run). The Editor's `src/model` tests have one
+failure that is not the steering's (`content.test.mjs`: bundled Greyfen has 11 people, the test wants 10).
+
+**Open, for the coordinator (not decided here):**
+
+1. **The right end.** F1 is in the table and fails its own bar narrowly (T4: H 0.030 against 0.024; K 0.76 against 0.74 at
+   +0.5; T6: tills short 35.2 against 34.4), with the supervisor on most nights at +1. The cause is the same with or
+   without charters: the right's treasury lives at 600-800p and the plan's floor is never under 600p. The choices I see,
+   none of them run: (a) accept F1 as it is, with the margins named; (b) the right's floor under 600p (the plan's
+   `floorLeast`, so the user's call), which would let rule 1 fire only on real dips; (c) the world's cap at +1 (2,000p, as
+   S2: the treasury about 1,180p, the supervisor quiet), with the wage support unpaid then about T6's bar (S2: 272p with
+   the rich hold eased); (d) rule 1 at the right without its rich-hold move (Phase 4's addition, beyond the plan), so a
+   low treasury there no longer eats the slider's reach. Each needs about one run at +1 and one at +0.5, which this phase's
+   budget did not have.
+2. **The sweep's leg 3 in G** missed by a day (90% in 76 days, at most 75), from +1 back to the centre.
+3. **-0.5's G target** moved to what the table delivers (0.186), and **+0.5's floor** to its own run's; both were set after
+   seeing the runs, by the plan's own rules for targets and floors.

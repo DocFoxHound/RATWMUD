@@ -8,7 +8,7 @@
     {"kind": "levers", "name": "spendAbove", "at": -0.25, "own": 40, "want": 36},
     {"kind": "levers", "name": "richAbove", "at": 0.25, "own": 40, "want": 70},
     {"kind": "levers", "name": "treasuryCap", "at": -1, "own": 2000, "want": 1500},
-    {"kind": "levers", "name": "charters", "at": 0.75, "own": 0, "want": 24.75},
+    {"kind": "levers", "name": "dividend", "at": 0.75, "own": 0, "want": 22.5},
     {"kind": "levers", "name": "treasuryTarget", "at": 0.75, "own": 5500, "want": 5500},
     {"kind": "levers", "name": "treasuryCap", "at": 0.75, "own": 2000, "want": 1235},
     {"kind": "targets", "name": "gini", "at": -0.25, "own": null, "want": 0.4485},

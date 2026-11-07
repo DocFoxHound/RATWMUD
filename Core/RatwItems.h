@@ -446,13 +446,13 @@ struct CityLoop
         // floorLeast; a NaN row at a half mark is halfway between its neighbours, at the centre or an end floorLeast.
         // Its rules' settings: the measures' nights (7), a rule's trigger over its target (tills short 1.3 x the
         // mark's), clearing under clearShare of the trigger for clearNights nights running, the back-off rates a week
-        // (the tithe 3 points for the shops, 5 for hunger; the rich hold 10p; 3 charters), a lever's return at half the
-        // rate it left, the ground rent all to the treasury at routeAt of the floor under it, and the envelope's edge
+        // (the tithe 3 points for the shops, 5 for hunger; the rich hold 10p; 3 charters), a lever's return at returnShare
+        // of the rate it left (the plan's half; doc 75, Phase 5's fix round: the whole), the ground rent all to the treasury at routeAt of the floor under it, and the envelope's edge
         // after edgeNights nights running at a back-off.
         static constexpr int FloorMonths = 13;
         std::array<std::array<double, FloorMonths>, 5> treasuryFloors{};
         bool floorsGiven = false;
-        double floorLeast = 600, meanNights = 7, tillsOver = 1.3, clearShare = .9, routeAt = .5;
+        double floorLeast = 600, meanNights = 7, tillsOver = 1.3, clearShare = .9, routeAt = .5, returnShare = .5;
         int clearNights = 7, edgeNights = 28;
         double titheShopsWeek = 3, titheHungerWeek = 5, richShopsWeek = 10, chartersHungerWeek = 3;
         // Words for the slider's ends (doc 75, 3.5: the measured reach), shown on the DM tab; "" none.

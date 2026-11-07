@@ -37,7 +37,11 @@ test('the table read as Core reads it (the shared cases)', () => {
     }
     assert.deepEqual(bandAt(view.own, 0), [0, 0], 'doc 75: the levers read at the slider itself');
     assert.deepEqual(bandAt(view.own, -100), [-1, -1]);
-    assert.ok(Math.abs((leverAt(view.table, 'dividend', 1, 0) as number) - (15 + .45 * 33)) < 1e-9, 'the dividend rises with the charters');
+    // (Doc 75, Phase 5's D3: the right ships F1, no charters, the dividend 30% at the far right; with charters, it rises.)
+    assert.ok(Math.abs((leverAt(view.table, 'dividend', 1, 0) as number) - 30) < 1e-9, 'F1: the dividend 30% at the far right');
+    const chartered = structuredClone(view.table);
+    chartered.levers.charters = [0, 0, 0, null, 33];
+    assert.ok(Math.abs((leverAt(chartered, 'dividend', 1, 0) as number) - (30 + .45 * 33)) < 1e-9, 'the dividend rises with the charters');
     assert.equal(leverAt(view.table, 'dividend', 0, 0), 0);
 });
 

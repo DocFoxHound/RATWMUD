@@ -5,6 +5,7 @@ from live and the DM's server, maintenance, live switch, Import from dev and rel
 Offline with a stand-in DM (accounts by token, every other method recorded) and a stand-in sync engine; two classes
 work for real on scratch databases (dropped afterwards; skipped without the local PostgreSQL): a sign-in, and pull,
 import, rollback and the live switch on throwaway worlds (test_world_sync's). DEV and PROD are never touched."""
+import copy
 import http.client
 import json
 import os
@@ -1286,8 +1287,12 @@ class SteeringTests(unittest.TestCase):
                 self.assertIsNone(got, c)
             else:
                 self.assertAlmostEqual(got, c['want'], places=9, msg=c)
-        # The dividend with its rise for the charters, as Core's steerLever (doc 75, 4.2): 15 + 0.45 x 33 at the far right.
-        self.assertAlmostEqual(ST.steer_lever(table, 'dividend', 1, 0), 15 + 0.45 * 33, places=9)
+        # The dividend with its rise for the charters, as Core's steerLever (doc 75, 4.2). The right ships F1 (doc 75, Phase 5's
+        # D3): no charters, the dividend 30% at the far right; with charters 33% there, 30 + 0.45 x 33.
+        self.assertAlmostEqual(ST.steer_lever(table, 'dividend', 1, 0), 30, places=9)
+        chartered = copy.deepcopy(table)
+        chartered['levers']['charters'] = [0, 0, 0, None, 33]
+        self.assertAlmostEqual(ST.steer_lever(chartered, 'dividend', 1, 0), 30 + 0.45 * 33, places=9)
         self.assertEqual(ST.steer_lever(table, 'dividend', 0, 0), 0)
         self.assertEqual(ST.steer_lever(table, 'treasuryTarget', 0, 5500), 5500)
 
