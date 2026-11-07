@@ -203,6 +203,27 @@ def steer_lever(table, key, at, own):
     return v
 
 
+def steer_reach(table):
+    """The slider's ends labelled with their measured reach (doc 75, 3.5): the table's `reach`, else none."""
+    reach = table.get('reach') if isinstance(table.get('reach'), dict) else {}
+    return {'left': str(reach.get('left') or ''), 'right': str(reach.get('right') or '')}
+
+
+SUP_RULES = ('the treasury under its floor', 'the shops short', 'hunger')
+
+
+def steer_supervisor(steer):
+    """The safety supervisor's state from the save (doc 75, 3.6): the rules on, the back-offs, rule 1's route, the
+    charters held back, and its last words in the log."""
+    sup = steer.get('sup') or {}
+    rules = sup.get('rules') or []
+    on = [SUP_RULES[i] for i, r in enumerate(rules[:3]) if isinstance(r, dict) and r.get('on')]
+    last = next((h.get('why') for h in reversed(steer.get('history') or []) if h.get('measure') == 'supervisor'), None)
+    return {'on': on, 'levelling': round(float(sup.get('levelling') or 0), 2), 'richAbove': round(float(sup.get('richAbove') or 0), 2),
+            'chartersHeld': int(sup.get('chartersHeld') or 0), 'route': round(float(sup.get('route') or 0), 3),
+            'fires': [int(r.get('fires') or 0) for r in rules[:3] if isinstance(r, dict)], 'last': last}
+
+
 class Economy:
     """The store room's settings of a dev world (doc 67, 6): the world's switches and markups, and each placed
     merchant's business with what it would draw, as the game reckons it (tools/item_catalog.py mirrors Core)."""
@@ -452,7 +473,7 @@ class Economy:
                'richAbove': comforts, 'spendAbove': comforts}
         out = {'settings': {'steer': int(rules.get('steer', 0)) > 0, 'lean': lean, 'neverHungry': int(rules.get('neverHungry', 0)) > 0,
                             'neverBroke': int(rules.get('neverBroke', 0)) > 0},
-               'words': STEER_WORDS, 'held': list(map_editor.STEERED_RULES), 'own': {k: rules.get(k) for k in map_editor.STEER_OWN_RULES},
+               'words': STEER_WORDS, 'reach': steer_reach(table), 'held': list(map_editor.STEERED_RULES), 'own': {k: rules.get(k) for k in map_editor.STEER_OWN_RULES},
                'table': {'levers': levers, 'targets': targets, 'marks': list(STEER_MARKS),
                          'treasuryFloor': table.get('treasuryFloor', 800), 'treasuryLow': table.get('treasuryLow', 500)},
                'band': [round(lo, 4), round(hi, 4)], 'saved': None, 'problem': '', 'changes': []}
@@ -491,8 +512,16 @@ class Economy:
         out['now'] = {'on': bool(steer.get('on')), 'push': round(push, 4), 'judged': steer.get('judged'), 'days': steer.get('days'),
                       'means': {k: rounded(steer.get(k), 4) for k in ('gini', 'upper', 'top10', 'hungry', 'short', 'treasury')},
                       'charters': len(steer.get('charters') or []), 'chartersTo': steer.get('chartersTo', 0)}
+        sup = steer.get('sup') or {}
+        backs = {'levelling': float(sup.get('levelling') or 0), 'richAbove': float(sup.get('richAbove') or 0)}
         for lever in out['levers']:
-            lever['now'] = rounded(steer_lever(table, lever['key'], push, lever['own']), 2)
+            v = steer_lever(table, lever['key'], push, lever['own'])
+            # (The supervisor's back-off, doc 75, 3.6: toward the world's own value, never past it.)
+            if v is not None and backs.get(lever['key'], 0) > 0:
+                v = max(min(v, lever['own']), v - backs[lever['key']]) if lever['key'] == 'levelling' else \
+                    (max(lever['own'], v - backs[lever['key']]) if v > lever['own'] else v)
+            lever['now'] = rounded(v, 2)
+        out['now']['supervisor'] = steer_supervisor(steer)
         out['history'] = list(reversed(steer.get('history') or []))
         skims = steer.get('skims') or []
         summary = {'total': 0, 'short': 0, 'days': len(skims), 'purpose': {}, 'group': {}, 'payers': {}}

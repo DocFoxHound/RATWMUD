@@ -1615,6 +1615,26 @@ struct EconomyWatch
                      << d.neverBrokePennies << ", \"homes\": " << d.neverBrokeHomes << ", \"credit\": " << d.neverBrokeCredit
                      << ", \"credit_left\": " << society.neverBrokeOwed() << "}, \"skim_guard\": " << (d.skimGuard ? 1 : 0)
                      << ", \"tills_short_mean28\": " << st.tillsShort;
+            // The safety supervisor (doc 75, 3.6): the rules on tonight, any lever backed off, the back-offs, rule 1's
+            // route and the floor, its 7-night means, the levers at the envelope's edge and what it did in words.
+            {
+                const auto& u = st.sup;
+                const auto list = [&](const char* name, const std::vector<std::string>& v) {
+                    steering << ", \"" << name << "\": [";
+                    for (std::size_t i = 0; i < v.size(); ++i)
+                        steering << (i ? ", " : "") << EconomyDetail::quoted(v[i]);
+                    steering << "]";
+                };
+                list("sup_actions", d.supOn);
+                steering << ", \"sup_backoff\": " << (u.levelling > 0 || u.richAbove > 0 || u.chartersHeld > 0 ? 1 : 0)
+                         << ", \"sup_levelling\": " << u.levelling << ", \"sup_rich_above\": " << u.richAbove
+                         << ", \"sup_charters\": " << u.chartersHeld << ", \"sup_route\": " << u.route << ", \"sup_floor\": " << d.supFloor
+                         << ", \"sup_tr7\": " << u.treasury << ", \"sup_tills7\": " << u.tills << ", \"sup_h7\": " << u.hungry
+                         << ", \"sup_k7\": " << u.shortHomes << ", \"sup_unpaid7\": " << u.unpaid << ", \"m_upper_net\": " << d.mUpperNet;
+                list("sup_edge", d.supEdge);
+                if (!d.supWhy.empty())
+                    steering << ", \"sup_why\": " << EconomyDetail::quoted(d.supWhy);
+            }
         }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households

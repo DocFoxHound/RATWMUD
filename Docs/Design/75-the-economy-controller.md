@@ -523,7 +523,7 @@ The ladder is chosen per end, so the left can ship Full while the right ships F1
 
 ## Progress
 
-Phases 1-3 done on `r2-controller` (below); the user's answers to section 9 first. Next: the check-in with the user.
+Phases 1-4 done on `r2-controller` (below); the user's answers to section 9 first. Next: Phase 5, acceptance.
 
 ### 2026-11-06: the user's decisions
 
@@ -846,3 +846,132 @@ proposed floor.
 5. **The half mark at -0.5**: its band is 0.01 (Hm's spread is under that) and its target 0.208 lies between the runs
    made, so A2 in Phase 5 is the first run at a tithe of 13.7%.
 
+### After Phase 3: the user's word and the coordinator's calls
+
+The user, on the check-in: "I wouldn't wait for my check-in on this one. Run the full planned 13-ish hours and make the
+adjustments you feel is best, or run it however long you feel like is best until this is done. I will allot you up to 15
+hours max for this". Under that delegation the coordinator decided, **after seeing the Phase 3 results** (so these are not
+choices made blind, and the doc says so):
+
+1. **The floor reading is adopted.** T5's floor is at least the centre's own noise under the profile (`T5.sigma_least`
+   191p, stable10b's sigma, in `steer-scorecard.json`). A treasury held flat at its cap had a sigma of 1-5p, so a 20p
+   wobble counted as a dip: a defect in the test, not in the left's economy. With it the left takes L50 (Full), if
+   acceptance agrees. The dry run is unchanged in substance (steer-centre-t1 passes every test; 132 of 142 pass, one
+   more than before).
+2. **The right takes R33 into acceptance.** Without the chartered tills' own cash the charters add +4.0 to +6.6 real
+   points of S over F1 (over the user's 3-point bar). The supervisor's treasury rule is to try to fix R33's float days and
+   unpaid wage support. If R33 with the supervisor still fails acceptance after the fix rounds, the right ships F1 by the
+   ladder. S at the right is judged **without** the chartered tills' own cash (`m_upper_net`, new on the daily line);
+   both are reported.
+3. **The -0.5 mark's treasury target is 1,400p** (the plan's rule 4.5: a level the treasury reaches there, between its
+   neighbours' 1,316p and 1,492p; the blend's 3,500p pinned the toll up, and Hm held 2,291p with tills short 1.19x the
+   centre's). The +0.5 mark was checked likewise: see Phase 4's smoke, which moved the whole right side's target.
+
+### Phase 4: the safety supervisor (2026-11-06, branch `r2-controller`)
+
+About 35 minutes of wall clock (the plan's 2 h), the three one-year smoke runs the task allowed at the right with R33
+and a 60-day centre check, on scratch copies of export70 (`steer-p4.json`; a copy of this build, `build-c/world_check.p4`,
+and of its Data, `build-c/data.p4`), cores 2-17; every run exited 0. **24 of the budget's 34 one-year runs used** (21 +
+3; the 60-day check is not counted as one); no 3-year run. Nothing written to DEV or PROD; no server.
+
+**Built** (`Society::steerSupervise`, `RatwSteering.cpp`; nightly, last of the steering's night, so what it moves is read
+from the next night):
+
+- **The measures:** 7-night means (the treasury at 18:00, the tills short, hungry residents an hour, households short, the
+  wage support unpaid). No rule fires until they have had 7 nights (the first ctest run showed why: a world's first night
+  is its hungriest, and a mean of one night fired rule 3 on day 1).
+- **Rule 1, the treasury under its floor:** the ground rent to the treasury in proportion to the gap (all of it at half
+  the floor under it), held there until the rule clears and easing off over 14 nights after; the skim leaves the
+  treasury be (`skimStep` 2 is empty); and the rich hold eases 10p a week toward the world's 40p. That last is beyond
+  the plan's rule 1: at the right the rich holding over the world's keep is the money out of the shops' and the toll's
+  circulation (doc 74: "200p cost the treasury"), so it is the lever that pays for a low treasury there. The plan's
+  rule 1 as written would have done less than today's: the table's own route (all the ground rent to the treasury under
+  `treasuryFloor` 800p, doc 74's) already fires under the right's floor of 600p, so the table's route is kept beside it
+  and the supervisor's can only add.
+- **Rule 2, the shops:** the tills short over 1.3 x the mark's (`targets.tillsShort`: 32.2 at -1, 29.1 at the centre,
+  34.3 at +1, the half marks halfway), **or the wage support unpaid over `targets.unpaidMost`** (328p a night, T6's bar,
+  1.5 x stable10b's 219): the tithe eases 3 points a week (left), the rich hold 10p a week (right). The unpaid half is
+  new, for the right's problem.
+- **Rule 3, hunger:** H over `hungerMost` or K over `shortMost` (each judged only with its floor off): the tithe eases 5
+  points a week (left); at the right, 3 charters a week handed back, newest first (`sup.charters`, a whole one at a time
+  through `chartersHeld`; the ramp and the table's count are reckoned without them, so a hand-back never compounds).
+- **Rule 4:** a lever backed off 28 nights running is "at the envelope's edge": in the log and `sup_edge`, nothing done.
+- **Hysteresis and rates:** a rule fires only where it has a lever to move (so nothing fires at the centre, whatever the
+  night), and clears once its measure is under 90% of its trigger (the treasury: over the floor / 0.9) for 7 nights
+  running; a bad night starts the count again. Each lever moves once a night, at the fastest rate of the rules on it
+  (rules 2 and 3 on the tithe together: 5/7 of a point a night, not 8/7); with none on, it returns at half the rate it
+  left. A back-off never takes a lever past the world's own value, and is clipped nightly if the slider moves. Every
+  fire, clear, a lever's first and last move and the edge are a line in the steering's log (the DM tab's), e.g. "Day 76:
+  the supervisor acts: the shops ran short (29.9 tills short against 44.6, the wage support 341p a night unpaid against
+  328p); the rich hold eased by 1.4p".
+- **The treasury floors** (`treasuryFloors` in the table, 13 months of 28 days a mark, written by the new
+  `tools/steer_floors.py` from each mark's calibration run, steer_accept's T5 floor with sigma at least 191p, never under
+  600p): -1 from L50 (1,075-1,135p from day 120 on), the centre from C (600-1,506p), +1 from R33 (600p all year); the
+  half marks null, halfway between. The first 120 days of each mark's floor run carry no profile, so months 1-3 are 600p.
+- **Logged on the daily line:** `sup_actions` (the rules on), `sup_backoff`, `sup_levelling`, `sup_rich_above`,
+  `sup_charters`, `sup_route`, `sup_floor`, the 7-night means `sup_tr7`, `sup_tills7`, `sup_h7`, `sup_k7`,
+  `sup_unpaid7`, `sup_edge`, `sup_why`; and `m_upper_net`, S without the chartered tills' own cash.
+- **Saved:** the loop state's `steer.sup` (the means, each rule's state, the back-offs and their rates, the route, the
+  charters held back); reset when the steering is turned on or off.
+- **The DM tab:** the slider's ends carry the table's `reach` labels; a supervisor line ("The supervisor: the treasury
+  under its floor; the rich hold eased 20p, 1 charter handed back, 50% of the ground rent to the treasury."), and each
+  lever's "now" with its back-off (`studio.py` `steer_reach`, `steer_supervisor`; `steering.ts` `supervisorLine`;
+  `SteeringPanel.tsx`). The labels are provisional until acceptance re-measures them: left "Shared: Gini 0.07 through the
+  day", right "about 22-27% ... (29-35% counting the chartered shops' tills)".
+- **The table** (`city_loop.json`): levelling 50 at -1 and 13.7 at -0.5 (Phase 3's floor reading); charters 33 at +1;
+  `treasuryTarget` 1,400p at -0.5 and the world's own right of the centre; `treasuryCap` 980p at +1 (below).
+- **The scorecard and targets:** `T5.sigma_least` 191; `steer-targets-p4.json` (from `steer-targets-cal-floor.json`;
+  +1 R33's S without its chartered cash, 27.3% +- 1.47, tills 34.25, its floor; +0.5 halfway; the half marks' tills and
+  floors halfway, `floor_from` a list being the mean of the runs' floors, new in steer_accept); and T2 now FAILs a run
+  backed off on every day of a year (it judged nothing and passed).
+
+**Tests.** `steer_tests` 541 checks (was 235): the floors at the slider and by month; nothing at the centre; the left's
+rule 2 at 3/7 a night, a week 3 points, rules 2 and 3 together at 5/7, clearing, the return at half the rate, back at the
+table; nothing judged before 7 nights; the treasury's rule with nothing to move at the left; hysteresis (a night short of
+clearing, a bad night resets the count); the right's rule 1 (the route in proportion to the gap, all of it at half the
+floor, the skim leaving the treasury be, the rich hold to 40p and never past it, the edge after 28 nights, the route and
+the rich hold easing back after); rule 2 on the wage support alone; the supervisor saved and read again; off, afresh;
+the charters held back newest first and given back. `sim_fast_tests`, `test_studio` (the reach, the supervisor from
+the save), `steering.test.ts` (the supervisor's line), `test_econ_report` pass; ctest 80 of 80; `tsc` clean.
+
+**The centre is unchanged:** a 60-day run at the centre, steering on (`steer-p4-centre60`), is the same as steer-cal-C
+(byte for byte stable10b) on every shared field of all 60 daily lines; only the new fields are added, and the supervisor
+never fired.
+
+**The smoke at the right** (R33, toggles off, steering on from day 0, 1 year, days 120-365; S1 the table as first built
+with the target 850p and the world's cap; S2 with the toll drift's target the world's at +1; S3 with the cap 980p at +1):
+
+| run | S % | S without chartered cash | H/h | K | treasury mean (28-day least) | float days | tills short | support unpaid | wage support | toll | rich hold (mean) | supervisor acts / backed off | fires |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| F1 (steer-b0-right) | 23.3 | 23.3 | 0.024 | 0.74 | 815 (364) | 12 | 34.4 | 334 | 11 | 30.7 | 130 | - | - |
+| R33, no supervisor | 34.9 | 27.3 | 0.023 | 0.61 | 804 (437) | 6 | 34.3 | 348 | 12 | 30.0 | 150 | - | - |
+| S1 | 29.3 | 20.1 | 0.007 | 0.36 | 892 (685) | 12 | 28.9 | 275 | 8 | 29.6 | 72 | 38% / 100% | shops 4, treasury 2, hunger 1 |
+| S2: target the world's | 29.6 | 21.0 | 0.020 | 0.64 | 1,179 (724) | 2 | 29.0 | 272 | 26 | 30.6 | 85 | 29% / 100% | shops 3, treasury 1, hunger 1 |
+| S3: cap 980p | 31.3 | 22.2 | 0.026 | 0.39 | 747 (609) | 4 | 32.2 | 140 | 193 | 30.0 | 98 | 31% / 100% | treasury 3, shops 1, hunger 2 |
+
+On the scorecard (`steer-accept-p4.md`, information only, not acceptance): S1 fails T5 (12 float days); S2 and S3 pass
+T4-T7, so the treasury rule plus either table change fixes R33's float days and unpaid wage support. All three fail T2
+(backed off every day), T3 (backed off 100% of days, at most 30%) and T8 (acting on 29-38% of nights, at most 15%).
+
+**What it says.**
+
+1. **The supervisor can fix the right's problem, at a price.** Rule 2's wage-support trigger fired around day 76 and
+   kept the rich hold eased for the rest of the year (to about 65-100p), which cut the unpaid support (348 to 272-275p)
+   and the tills short (34.3 to 29), but took 5-7 points of real S (27.3% to 20-22%, under F1's 23.3%). With a 7-night
+   mean of a seasonal measure against T6's annual bar, the rule acted as a standing table change, not a guard.
+2. **The table should carry the structural fix.** S2 shows the right's treasury shortfall is mostly the toll drift's own
+   target: at 850p the toll sat a point under the centre's (which is pinned up against 5,500p); with the world's target
+   the toll held its point, the treasury rose 287p and float days fell 12 to 2. S3 shows the unpaid support is the cap:
+   at 2,000p the right's treasury (about 800p) never paid any; at 980p it paid 193p a day and the unpaid fell to 140p.
+3. **So the table now has both** (target the world's right of the centre, so +0.5 is checked too: its blend was 3,175p
+   and is now 5,500p, the toll held up as at the centre; and the cap 980p at +1, 1,490p at +0.5). With the cap paying
+   the support, the unpaid should sit well under 328p and rule 2 should fire only on real excursions, so the rich hold
+   should stay near 150p and S near R33's 27%. **That combination has not been run:** the task's three smoke runs went
+   on single-lever A/Bs. It is A4, A5 and A8 in Phase 5, with the fix rounds behind them.
+4. **T3 and T8 will be tight for any rule that fires for weeks:** the return at half the rate means a 60-night back-off
+   takes months to come back, all of them "at a back-off". If A5 still fails T3/T8 with the new table, the fix round's
+   levers are `unpaidMost` (to the mark's own level x 1.3, as the tills), the return rate, or rule 1's rich-hold move.
+   Not changed here.
+
+**Not done:** `econ_report.py` does not yet print the supervisor's fields (the daily lines and `steer_accept` have them);
+the DM tab's edicts, ledger and year of log are Phase 7's; the reach labels are re-measured in Phase 5/6.

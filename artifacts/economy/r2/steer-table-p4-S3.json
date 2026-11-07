@@ -1,0 +1,4 @@
+{
+ "about": "Doc 75, Phase 4 smoke S3: as the table, but the treasury's cap at +1 980p (plan 4.5: the target x 1.15), so the wage support is paid from what it holds over that.",
+ "steering": {"levers": {"treasuryCap": [1500, null, null, null, 980]}}
+}

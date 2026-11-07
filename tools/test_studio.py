@@ -1336,11 +1336,25 @@ class SteeringTests(unittest.TestCase):
         self.assertEqual((view['targets']['gini'], view['targets']['upper']), (0.41, None))
         levers = {l['key']: l for l in view['levers']}
         self.assertEqual((levers['surplusKeep']['centre'], levers['surplusKeep']['low'], levers['surplusKeep']['high']), (4000, 1000, 1000))
-        self.assertEqual((levers['levelling']['centre'], levers['levelling']['high']), (0, 20))
-        self.assertEqual((levers['treasuryTarget']['centre'], levers['treasuryTarget']['high']), (5500, 3500))
+        self.assertEqual((levers['levelling']['centre'], levers['levelling']['high']), (0, 13.7))
+        self.assertEqual((levers['treasuryTarget']['centre'], levers['treasuryTarget']['high']), (5500, 1400),
+                         'doc 75, Phase 4: the half mark\'s target a level the treasury reaches there')
         self.assertNotIn('shareOut', levers)
         self.assertIn('could not be read', view['problem'], 'no save: said so')
         self.assertEqual(view['words']['left'], 'Shared: money and food equal across all wolves')
+        self.assertTrue(view['reach']['left'].startswith('Shared: Gini') and view['reach']['right'].startswith('Held by the rich'),
+                        'doc 75, 3.5: the ends labelled with their measured reach')
+
+    def test_the_supervisor_from_the_save(self):
+        # Doc 75, 3.6: the supervisor's rules on, its back-offs (the levers now with them) and its last words, from the save.
+        steer = {'on': True, 'push': 1, 'history': [{'day': 3, 'measure': 'supervisor', 'why': 'Day 3: the supervisor acts'}],
+                 'sup': {'nights': 9, 'rules': [{'on': True, 'fires': 1}, {'on': False, 'fires': 0}, {'on': False, 'fires': 0}],
+                         'richAbove': 20, 'route': 0.5, 'chartersHeld': 2}}
+        sup = ST.steer_supervisor(steer)
+        self.assertEqual((sup['on'], sup['richAbove'], sup['chartersHeld'], sup['route'], sup['fires'], sup['last']),
+                         (['the treasury under its floor'], 20.0, 2, 0.5, [1, 0, 0], 'Day 3: the supervisor acts'))
+        self.assertEqual(ST.steer_supervisor({}), {'on': [], 'levelling': 0, 'richAbove': 0, 'chartersHeld': 0, 'route': 0,
+                                                  'fires': [], 'last': None})
 
 
 def W_default_economy():

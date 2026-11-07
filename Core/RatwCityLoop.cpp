@@ -1889,8 +1889,20 @@ void Society::payWages()
                             for (const auto& e : items::cityLoop().estates)
                                 if (e.grants && account(estateFund(e)))
                                     to = estateFund(e);
-                        if (const auto rent = std::int64_t(double(excess) * std::min(g, 100.) / 100.);
-                            rent > 0 && account(to) && cash(to) <= MoneyCap - rent &&
+                        auto rent = std::int64_t(double(excess) * std::min(g, 100.) / 100.);
+                        // (Doc 75, 3.6, the supervisor's rule 1: over the table's floor but under the mark's own, its share
+                        // of the rent to the treasury, in proportion to the gap; the rest to the Crown as ever.)
+                        if (const double route = state_.loop.steer.sup.route; !low && route > 0 && to != "treasury" && rent > 0 &&
+                                                                              account("treasury") && cash("treasury") <= MoneyCap - rent)
+                            if (const auto part = std::min(rent, std::int64_t(std::llround(double(rent) * std::min(route, 1.))));
+                                part > 0 && shift(payer, "treasury", "", 0, part, "ground rent: the treasury"))
+                            {
+                                loopToday_.groundRent += part;
+                                loopToday_.groundRentTreasury += part;
+                                excess -= part;
+                                rent -= part;
+                            }
+                        if (rent > 0 && account(to) && cash(to) <= MoneyCap - rent &&
                             shift(payer, to, "", 0, rent, to == "treasury" && low && estatesOn() ? "ground rent: the treasury" : "ground rent: the Crown"))
                         {
                             loopToday_.groundRent += rent;

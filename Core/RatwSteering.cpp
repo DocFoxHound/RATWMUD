@@ -101,7 +101,7 @@ double Society::steerSlider() const
     return std::clamp((ownRule("steerLean") - 100) / 100., -1., 1.);
 }
 
-double Society::steerLever(const std::string& lever) const
+double Society::steerLever(const std::string& lever, bool table) const
 {
     double own = 0;
     if (lever == "surplusKeep" || lever == "treasuryCap" || lever == "treasuryTarget" || lever == "surplusAlmsTo")
@@ -117,7 +117,16 @@ double Society::steerLever(const std::string& lever) const
         v = own;
     // The dividend rises with the charters (doc 75, 4.2), so the Houses' new profit moves on to upper purses.
     if (lever == "dividend")
-        v += t.dividendPerCharter * steerLever("charters");
+        v += t.dividendPerCharter * steerLever("charters", true);
+    // The supervisor's back-off (doc 75, 3.6): toward the world's own value, never past it.
+    if (!table)
+    {
+        const auto& sup = state_.loop.steer.sup;
+        if (lever == "levelling" && sup.levelling > 0)
+            v = std::max(std::min(v, own), v - sup.levelling);
+        else if (lever == "richAbove" && sup.richAbove > 0 && v > own)
+            v = std::max(own, v - sup.richAbove);
+    }
     return v;
 }
 
@@ -342,7 +351,8 @@ std::vector<Society::Spare> Society::skimStep(int step, bool treasury)
     {
         // The treasury: its spare over its cap and tonight's wage support; only once that is known (18:00), so never in
         // Never Hungry's 17:00 skim, before the night's wage support has had what is over the cap.
-        if (treasury && account("treasury"))
+        // (Doc 75, 3.6, rule 1: while the treasury is under its floor, the skim leaves it be.)
+        if (treasury && account("treasury") && !state_.loop.steer.sup.on[0])
             if (const auto spare = cash("treasury") - std::max<std::int64_t>(rule("treasuryCap"), TreasuryFloat) - loopToday_.supportWanted;
                 spare > 0)
                 out.push_back({"treasury", "treasury", spare, {}, spare});
@@ -923,7 +933,7 @@ void Society::steerFollow(std::int64_t day)
         // The number of charters at the new place: its share of the middle keepers' tills (those that may be chartered
         // and those that are), reached over chartersRampDays nights from tonight's.
         const double share = std::clamp(steerLever("charters"), 0., 100.) / 100.;
-        st.chartersFrom = int(st.charters.size());
+        st.chartersFrom = int(st.charters.size()) + st.sup.chartersHeld;   // (Without the supervisor's held back.)
         st.chartersTo = int(std::lround(share * double(charterable().size() + st.charters.size())));
         st.chartersNights = st.chartersTo == st.chartersFrom ? -1 : 0;
     };
@@ -939,12 +949,14 @@ void Society::steerFollow(std::int64_t day)
             st.charters.clear();
             st.chartersFrom = st.chartersTo = 0;
             st.chartersNights = -1;
+            st.sup = {};                            // (The supervisor starts afresh when it is next turned on.)
         }
         return;
     }
     if (!st.on)
     {
         st.on = true;
+        st.sup = {};
         st.lean = lean;
         st.judged = day;
         st.push = 0;
@@ -1037,7 +1049,8 @@ void Society::chartersNight(std::int64_t day)
                       st.charters.end());
     // (The ramp waits for a month of the keepers' profit, so the best tills are known.)
     const bool waiting = st.chartersNights >= 0 && st.profitNights < 28;
-    int want = int(st.charters.size());
+    // (The number the ramp or the table wants, before the supervisor's: those chartered and those it holds back.)
+    int want = int(st.charters.size()) + st.sup.chartersHeld;
     if (st.chartersNights >= 0 && !waiting)
     {
         const int days = std::max(1, items::cityLoop().steering.chartersRampDays);
@@ -1046,6 +1059,9 @@ void Society::chartersNight(std::int64_t day)
         if (t >= 1)
             st.chartersNights = -1;
     }
+    // The supervisor's rule 3 (doc 75, 3.6): the charters it holds back, newest first (a whole one at a time).
+    st.sup.chartersHeld = std::clamp(int(std::floor(st.sup.charters + 1e-9)), 0, std::max(0, want));
+    want -= st.sup.chartersHeld;
     if (int(st.charters.size()) < want)
     {
         const auto& estates = items::cityLoop().estates;
@@ -1091,6 +1107,13 @@ void Society::steerEconomy(std::int64_t day)
     loopToday_.mGAll = giniHeads();
     loopToday_.mFood = foodGini();
     loopToday_.mUpper = s;
+    if (const auto all = moneySupply(); all > 0)
+    {
+        std::int64_t chartered = 0;
+        for (const auto& [till, house] : st.charters)
+            chartered += cash(till);
+        loopToday_.mUpperNet = s - 100. * double(chartered) / double(all);
+    }
     loopToday_.mTop10 = t10;
     loopToday_.mHungry = h;
     st.days = std::min(st.days + 1, 3650);
@@ -1117,5 +1140,187 @@ void Society::steerEconomy(std::int64_t day)
         next[till] = was == st.profit.end() ? now : was->second + (now - was->second) * rate;
     }
     st.profit = std::move(next);
+    steerSupervise(day);
+}
+
+double Society::treasuryFloorAt(double x, std::int64_t day) const
+{
+    // The mark's seasonal treasury profile less 2 sigma (the table's months), blended between the marks as a lever is,
+    // never under floorLeast; with no floors in the table, floorLeast.
+    const auto& t = items::cityLoop().steering;
+    if (!t.floorsGiven)
+        return t.floorLeast;
+    const auto yd = ((day % 365) + 365) % 365;
+    const auto month = std::min<std::int64_t>(items::CityLoop::Steering::FloorMonths - 1, yd / 28);
+    std::array<double, 5> column{};
+    for (std::size_t m = 0; m < 5; ++m)
+        column[m] = t.treasuryFloors[m][std::size_t(month)];
+    const double v = items::steerAt(column, x, t.floorLeast);
+    return std::max(t.floorLeast, std::isnan(v) ? t.floorLeast : v);
+}
+
+void Society::steerSupervise(std::int64_t day)
+{
+    SupNight tonight;
+    tonight.treasury = double(cash("treasury"));
+    tonight.tills = double(loopToday_.tillsShort);
+    tonight.hungry = loopToday_.hungryHours > 0 ? double(loopToday_.hungrySum) / loopToday_.hungryHours : 0;
+    tonight.shortHomes = double(loopToday_.householdsShort);
+    tonight.unpaid = double(loopToday_.supportUnpaidSwitch + loopToday_.supportUnpaidOrdinary);
+    steerSupervise(day, tonight);
+}
+
+void Society::steerSupervise(std::int64_t day, const SupNight& tonight)
+{
+    // The safety supervisor (doc 75, 3.6), at 18:00, last: it judges tonight's 7-night means and moves the levers read from
+    // tomorrow. In priority order:
+    //   1 the treasury's 7-night mean under its floor: the ground rent to the treasury in proportion to the gap (all of it
+    //     at routeAt of the floor under it), the skim leaves the treasury be, and the rich hold eases toward the world's
+    //     (at the right the rich holding over the world's keep is the money out of the shops' and the toll's circulation:
+    //     doc 74's "200p cost the treasury");
+    //   2 the tills short over tillsOver x this mark's, or the wage support unpaid over this mark's most: the tithe eases
+    //     (left), the rich hold eases (right);
+    //   3 hungry residents or households short over their ceilings (each with its floor off): the tithe eases faster
+    //     (left), charters are handed back, newest first (right);
+    //   4 a lever backed off edgeNights nights running: "at the envelope's edge", logged, nothing done.
+    // A rule fires only where it has a lever to move, and clears when its measure has been back under clearShare of its
+    // trigger (for the treasury, over the floor by as much) for clearNights nights running. Each lever moves once a night,
+    // at the fastest rate of the rules on it; with none on, back toward its table value at half the rate it left. A back-off
+    // never takes a lever past the world's own value.
+    auto& st = state_.loop.steer;
+    auto& sup = st.sup;
+    const auto& t = items::cityLoop().steering;
+    const double x = st.push;
+    loopToday_.supOn.clear();
+    loopToday_.supEdge.clear();
+    loopToday_.supWhy.clear();
+    // The 7-night means.
+    sup.nights = std::min(sup.nights + 1, 3650);
+    const double rate = 1. / std::min(double(sup.nights), t.meanNights);
+    const auto follow = [&](double& mean, double now) { mean = mean < 0 ? now : mean + (now - mean) * rate; };
+    follow(sup.treasury, tonight.treasury);
+    follow(sup.tills, tonight.tills);
+    follow(sup.hungry, tonight.hungry);
+    follow(sup.shortHomes, tonight.shortHomes);
+    follow(sup.unpaid, tonight.unpaid);
+    // Each lever's room: how far its table value is from the world's here.
+    const double roomLevel = std::max(0., steerLever("levelling", true));
+    const double roomRich = std::max(0., steerLever("richAbove", true) - double(comfortsAbove()));
+    const int chartersBase = int(st.charters.size()) + sup.chartersHeld;
+    const double roomCharters = double(std::max(0, std::max(chartersBase, st.chartersNights >= 0 ? st.chartersTo : 0)));
+    const bool floors = ownRule("neverHungry") > 0 || ownRule("neverBroke") > 0;
+    const double floor = treasuryFloorAt(x, day);
+    loopToday_.supFloor = floor;
+    const double tillsTarget = steerTarget("tillsShort"), unpaidMost = steerTarget("unpaidMost");
+    const double hungerMost = steerTarget("hungerMost"), shortMost = steerTarget("shortMost");
+    const bool hungerJudged = ownRule("neverHungry") <= 0 && !std::isnan(hungerMost);
+    const bool shortJudged = ownRule("neverBroke") <= 0 && !std::isnan(shortMost);
+    // Each rule: its trigger, its clearing, whether it has a lever here, and its name and words.
+    const double cs = t.clearShare;
+    const bool tillsJudged = !std::isnan(tillsTarget) && tillsTarget > 0, unpaidJudged = !std::isnan(unpaidMost) && unpaidMost > 0;
+    struct Rule
+    {
+        bool trigger, cleared, work;
+        const char* name;
+        std::string why;
+    };
+    const std::array<Rule, 3> rules{{
+        {sup.treasury < floor, sup.treasury >= floor / cs,
+         steerLever("groundRent", true) > 0 || floors || roomRich > 0, "treasury",
+         "the treasury under its floor (" + fixed(sup.treasury, 0) + "p a night over 7 nights, its floor " + fixed(floor, 0) + "p)"},
+        {(tillsJudged && sup.tills > t.tillsOver * tillsTarget) || (unpaidJudged && sup.unpaid > unpaidMost),
+         (!tillsJudged || sup.tills < cs * t.tillsOver * tillsTarget) && (!unpaidJudged || sup.unpaid < cs * unpaidMost),
+         roomLevel > 0 || roomRich > 0, "shops",
+         "the shops ran short (" + fixed(sup.tills, 1) + " tills short" + (tillsJudged ? " against " + fixed(t.tillsOver * tillsTarget, 1) : "") +
+             (unpaidJudged ? ", the wage support " + fixed(sup.unpaid, 0) + "p a night unpaid against " + fixed(unpaidMost, 0) + "p" : "") + ")"},
+        {(hungerJudged && sup.hungry > hungerMost) || (shortJudged && sup.shortHomes > shortMost),
+         (!hungerJudged || sup.hungry < cs * hungerMost) && (!shortJudged || sup.shortHomes < cs * shortMost),
+         roomLevel > 0 || roomCharters > 0, "hunger",
+         "hunger (" + fixed(sup.hungry, 3) + " hungry an hour, " + fixed(sup.shortHomes, 2) + " households short)"},
+    }};
+    std::string said;
+    const auto say = [&](const std::string& words) { said += (said.empty() ? "" : "; ") + words; };
+    // (No rule fires until its means have had meanNights nights: one night's measure, the steering's first, is not a
+    // week's. A first night after a world starts is often its hungriest.)
+    const bool judged = sup.nights >= t.meanNights;
+    for (std::size_t i = 0; i < rules.size(); ++i)
+    {
+        const auto& r = rules[i];
+        if (!sup.on[i])
+        {
+            if (judged && r.trigger && r.work)
+            {
+                sup.on[i] = true;
+                sup.clear[i] = 0;
+                ++sup.fires[i];
+                say("the supervisor acts: " + r.why);
+            }
+            continue;
+        }
+        sup.clear[i] = r.cleared ? sup.clear[i] + 1 : 0;
+        if (!r.work || sup.clear[i] >= t.clearNights)
+        {
+            sup.on[i] = false;
+            sup.clear[i] = 0;
+            say(std::string("the supervisor's ") + r.name + " rule clears" + (r.work ? "" : " (no lever of its here)") +
+                ": the levers return toward the table at half the rate they left");
+        }
+    }
+    for (std::size_t i = 0; i < rules.size(); ++i)
+        if (sup.on[i])
+            loopToday_.supOn.push_back(rules[i].name);
+    // The levers, once each a night.
+    const auto move = [&](double& off, double& left, double room, double week, const char* lever, const std::string& unit) {
+        const double before = off;
+        if (week > 0 && room > 0)
+        {
+            left = week / 7;
+            off = std::min(room, off + left);
+        }
+        else if (off > 0)
+            off = std::max(0., off - left / 2);
+        off = std::min(off, room);                  // (Never past the world's own: the slider may have moved.)
+        if (off != before && (before == 0 || off == 0 || off == room))
+            say(std::string(leverName(lever)) + (off > before ? " eased by " : " back to within ") + fixed(off, 1) + unit +
+                (off > before ? "" : " of the table"));
+    };
+    const double levelWeek = std::max(sup.on[1] ? t.titheShopsWeek : 0., sup.on[2] ? t.titheHungerWeek : 0.);
+    const double richWeek = (sup.on[0] || sup.on[1]) ? t.richShopsWeek : 0.;
+    const double chartersWeek = sup.on[2] ? t.chartersHungerWeek : 0.;
+    move(sup.levelling, sup.levellingRate, roomLevel, roomLevel > 0 ? levelWeek : 0., "levelling", " points");
+    move(sup.richAbove, sup.richRate, roomRich, roomRich > 0 ? richWeek : 0., "richAbove", "p");
+    move(sup.charters, sup.chartersRate, roomCharters, roomLevel > 0 ? 0. : chartersWeek, "charters", " charters");
+    // Rule 1's route: in proportion to the gap while it is on (and held there until it clears), easing back over 14 nights.
+    if (sup.on[0])
+        sup.route = std::max(sup.route, std::clamp((floor - sup.treasury) / (t.routeAt * floor), 0., 1.));
+    else
+        sup.route = std::max(0., sup.route - 1. / 14);
+    if (steerLever("groundRent", true) <= 0)
+        sup.route = 0;
+    // Rule 4: the envelope's edge.
+    const std::array<std::pair<double, const char*>, 3> backs{{{sup.levelling, "levelling"}, {sup.richAbove, "richAbove"}, {sup.charters, "charters"}}};
+    for (std::size_t i = 0; i < backs.size(); ++i)
+    {
+        sup.edge[i] = backs[i].first > 0 ? std::min(sup.edge[i] + 1, 3650) : 0;
+        if (sup.edge[i] >= t.edgeNights)
+        {
+            loopToday_.supEdge.push_back(backs[i].second);
+            if (sup.edge[i] == t.edgeNights)
+                say(std::string(leverName(backs[i].second)) + " backed off " + std::to_string(t.edgeNights) +
+                    " nights running: at the envelope's edge");
+        }
+    }
+    if (!said.empty())
+    {
+        loopToday_.supWhy = said;
+        LoopState::Steer::Judging j;
+        j.day = day;
+        j.measure = "supervisor";
+        j.after = st.push;
+        j.why = "Day " + std::to_string(day) + ": " + said;
+        st.history.push_back(j);
+        if (st.history.size() > 24)
+            st.history.erase(st.history.begin());
+    }
 }
 } // namespace ratw

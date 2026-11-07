@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {bandAt, confirmText, heldText, leanToRule, leanWords, leverAt, measureLines, preview, ruleToLean, snapLean, steerAt,
-    steerChange, type SteeringView} from './steering.ts';
+    steerChange, supervisorLine, type SteeringView} from './steering.ts';
 
 // Steering the economy (Docs/Design/74-steering-the-economy.md, 10): what the DM's Steering panel reads and sends.
 const file = JSON.parse(readFileSync(new URL('../../../Data/Items/city_loop.json', import.meta.url), 'utf8'));
@@ -72,4 +72,17 @@ test('a rule the steering holds is read only while it is on', () => {
     assert.equal(heldText(view, 'surplusKeep', 4000), 'steered: 4000; yours: 4000, used again when the steering is off');
     assert.equal(heldText(view, 'almsADay', 10), null);
     assert.equal(heldText({...view, settings: {...view.settings, steer: false}}, 'surplusKeep', 4000), null);
+});
+
+test('the supervisor\'s line (doc 75, 3.6)', () => {
+    const quiet = {...view, now: {...view.now!, supervisor: {on: [], levelling: 0, richAbove: 0, chartersHeld: 0, route: 0, fires: [], last: null}}};
+    assert.equal(supervisorLine(quiet), 'The supervisor: quiet; every lever at the table\'s value.');
+    const acting = {...view, now: {...view.now!, supervisor: {on: ['the treasury under its floor'], levelling: 0, richAbove: 20, chartersHeld: 1,
+        route: .5, fires: [1, 0, 0], last: null}}};
+    assert.equal(supervisorLine(acting), 'The supervisor: the treasury under its floor; the rich hold eased 20p, 1 charter handed back, '
+        + '50% of the ground rent to the treasury.');
+    const back = {...view, now: {...view.now!, supervisor: {on: [], levelling: 2.5, richAbove: 0, chartersHeld: 0, route: 0, fires: [0, 1, 0], last: null}}};
+    assert.equal(supervisorLine(back), 'The supervisor: nothing wrong now; the tithe eased 2.5 points, returning to the table.');
+    assert.equal(supervisorLine({...view, now: undefined}), null);
+    assert.ok(file.steering.reach.left.startsWith('Shared') && file.steering.reach.right.startsWith('Held by the rich'), 'the ends\' reach in the table');
 });

@@ -20,13 +20,32 @@ export interface SteeringView {
     own: Record<string, number | undefined>; table: SteerTable; band: [number, number];
     targets: Record<string, number | null>; levers: SteerLever[]; saved: string | null; problem: string;
     changes: {at: number | string; who: string; detail: string}[];
+    /** The slider's ends labelled with their measured reach (doc 75, 3.5; "" none). */
+    reach?: {left: string; right: string};
     now?: {on: boolean; push: number; judged: number | null; days: number | null; charters?: number; chartersTo?: number;
-        means: Record<string, number | null>};
+        means: Record<string, number | null>; supervisor?: SupervisorView};
     history?: SteerJudging[];
     skim?: {total: number; short: number; days: number; purpose: Record<string, number>; group: Record<string, number>;
         payers: Record<string, number>};
 }
 export type SteerBody = Partial<SteerSettings>;
+/** The safety supervisor (doc 75, 3.6), from the save: the rules on, the back-offs, rule 1's route and its last words. */
+export interface SupervisorView { on: string[]; levelling: number; richAbove: number; chartersHeld: number; route: number;
+    fires: number[]; last: string | null }
+
+/** The supervisor's line on the panel: what it is backing off and why, or that it is quiet. */
+export function supervisorLine(v: SteeringView): string | null {
+    const s = v.now?.supervisor;
+    if (!v.now?.on || !s) return null;
+    const backs: string[] = [];
+    if (s.levelling > 0) backs.push(`the tithe eased ${s.levelling.toFixed(1)} points`);
+    if (s.richAbove > 0) backs.push(`the rich hold eased ${Math.round(s.richAbove)}p`);
+    if (s.chartersHeld > 0) backs.push(`${s.chartersHeld} charter${s.chartersHeld === 1 ? '' : 's'} handed back`);
+    if (s.route > 0) backs.push(`${Math.round(s.route * 100)}% of the ground rent to the treasury`);
+    if (!s.on.length && !backs.length) return 'The supervisor: quiet; every lever at the table\'s value.';
+    return `The supervisor: ${s.on.length ? s.on.join(', ') : 'nothing wrong now'}`
+        + (backs.length ? `; ${backs.join(', ')}${s.on.length ? '' : ', returning to the table'}` : '') + '.';
+}
 
 /** The slider's -100..+100 and the rule's 0..200. */
 export const leanToRule = (lean: number) => lean + 100;

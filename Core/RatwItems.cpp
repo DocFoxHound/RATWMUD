@@ -425,6 +425,53 @@ void readSteering(const json::Value& steer, CityLoop::Steering& t)
     t.tillsShortOver = std::clamp(steer.number("tillsShortOver", t.tillsShortOver), 0., 1000.);
     t.chartersRampDays = int(std::clamp(steer.number("chartersRampDays", t.chartersRampDays), 1., 365.));
     t.dividendPerCharter = std::clamp(steer.number("dividendPerCharter", t.dividendPerCharter), 0., 10.);
+    // The safety supervisor (doc 75, 3.6): the treasury's floors at the five marks (a row of 13 months, or null), and its
+    // settings (`supervisor`).
+    if (const auto& floors = steer["treasuryFloors"].items(); floors.size() == 5)
+    {
+        auto next = t.treasuryFloors;
+        bool sound = true;
+        for (std::size_t m = 0; m < 5 && sound; ++m)
+        {
+            const auto& row = floors[m].items();
+            if (floors[m].isNull())
+            {
+                next[m].fill(std::numeric_limits<double>::quiet_NaN());
+                continue;
+            }
+            sound = row.size() == next[m].size();
+            for (std::size_t i = 0; sound && i < row.size(); ++i)
+            {
+                sound = row[i].isNumber() && std::isfinite(row[i].asNumber()) && row[i].asNumber() >= 0 && row[i].asNumber() <= 1e9;
+                if (sound)
+                    next[m][i] = row[i].asNumber();
+            }
+        }
+        if (sound)
+        {
+            t.treasuryFloors = next;
+            t.floorsGiven = true;
+        }
+    }
+    if (const auto& s = steer.object("supervisor"); s.isObject())
+    {
+        t.floorLeast = std::clamp(s.number("floorLeast", t.floorLeast), 0., 1e9);
+        t.meanNights = std::clamp(s.number("meanNights", t.meanNights), 1., 365.);
+        t.tillsOver = std::clamp(s.number("tillsOver", t.tillsOver), 1., 100.);
+        t.clearShare = std::clamp(s.number("clearShare", t.clearShare), .1, 1.);
+        t.routeAt = std::clamp(s.number("routeAt", t.routeAt), .01, 1.);
+        t.clearNights = int(std::clamp(s.number("clearNights", t.clearNights), 1., 365.));
+        t.edgeNights = int(std::clamp(s.number("edgeNights", t.edgeNights), 1., 3650.));
+        t.titheShopsWeek = std::clamp(s.number("titheShopsWeek", t.titheShopsWeek), 0., 100.);
+        t.titheHungerWeek = std::clamp(s.number("titheHungerWeek", t.titheHungerWeek), 0., 100.);
+        t.richShopsWeek = std::clamp(s.number("richShopsWeek", t.richShopsWeek), 0., 1e6);
+        t.chartersHungerWeek = std::clamp(s.number("chartersHungerWeek", t.chartersHungerWeek), 0., 1e4);
+    }
+    if (const auto& r = steer.object("reach"); r.isObject())
+    {
+        t.reachLeft = r.string("left", t.reachLeft).substr(0, 200);
+        t.reachRight = r.string("right", t.reachRight).substr(0, 200);
+    }
     if (const auto& order = steer["skimOrder"].items(); !order.empty())
     {
         static const std::map<std::string, int> steps = {{"estates", 1}, {"treasury", 2}, {"upper", 3}, {"keepers", 4}, {"middle", 5}};
@@ -645,7 +692,10 @@ Catalog build()
                      {"upper", {W, W, 13, 18.5, 24}},           {"upperBand", {W, W, 2, 2.5, 3}},
                      {"upperMost", {14, 14, W, W, W}},        {"top10Most", {27, 31, W, W, W}},
                      {"top10Least", {W, W, W, 37, 40}},       {"hungerMost", {.02, .05, .15, .15, .15}},
-                     {"shortMost", {.1, .5, 3.5, 4, 5}}};
+                     {"shortMost", {.1, .5, 3.5, 4, 5}},
+                     // (Doc 75, 3.6: the supervisor's, each mark's floors-off tills short and the wage support's most
+                     // unpaid a day, a 7-night mean; none: the rule doesn't judge it there.)
+                     {"tillsShort", {W, W, W, W, W}},        {"unpaidMost", {W, W, W, W, W}}};
     }
     // The Country and the city's loop (doc 68): optional; without it, one market with an empty basket.
     // (Doc 73: the file was country.json; an older data folder's is still read.)

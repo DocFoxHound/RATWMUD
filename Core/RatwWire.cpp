@@ -1057,6 +1057,25 @@ Value society(const SocietyState& s)
                 profit.add(till, mean);
             j.add("profit", profit);
             j.add("profitNights", st.profitNights);
+            if (!st.sup.empty())
+            {
+                // The safety supervisor (doc 75, 3.6): its means, each rule's state, the back-offs and their rates.
+                const auto& u = st.sup;
+                auto v = Value::object(), rules = Value::array();
+                v.add("nights", u.nights); v.add("treasury", u.treasury); v.add("tills", u.tills); v.add("hungry", u.hungry);
+                v.add("short", u.shortHomes); v.add("unpaid", u.unpaid);
+                for (std::size_t i = 0; i < u.on.size(); ++i)
+                {
+                    auto r = Value::object();
+                    r.add("on", u.on[i]); r.add("clear", u.clear[i]); r.add("fires", u.fires[i]); r.add("edge", u.edge[i]);
+                    rules.push(r);
+                }
+                v.add("rules", rules);
+                v.add("levelling", u.levelling); v.add("richAbove", u.richAbove); v.add("charters", u.charters);
+                v.add("levellingRate", u.levellingRate); v.add("richRate", u.richRate); v.add("chartersRate", u.chartersRate);
+                v.add("route", u.route); v.add("chartersHeld", u.chartersHeld);
+                j.add("sup", v);
+            }
             loop.add("steer", j);
         }
         o.add("loop", loop);
@@ -1169,6 +1188,33 @@ LoopState readLoop(const Value& o)
                 s.profit[till] = mean.asNumber();
         if (inRange(st["profitNights"], 0, 3650))
             s.profitNights = int(st["profitNights"].asNumber());
+        if (const auto& v = st["sup"]; v.isObject() && inRange(v["nights"], 0, 3650))
+        {
+            auto& u = s.sup;
+            u.nights = int(v["nights"].asNumber());
+            for (const auto& [key, into] : {std::pair{"treasury", &u.treasury}, std::pair{"tills", &u.tills}, std::pair{"hungry", &u.hungry},
+                                            std::pair{"short", &u.shortHomes}, std::pair{"unpaid", &u.unpaid}})
+                if (inRange(v[key], -1, 1e12))
+                    *into = v[key].asNumber();
+            const auto& rules = v.array("rules");
+            for (std::size_t i = 0; i < rules.size() && i < u.on.size(); ++i)
+                if (rules[i].isObject())
+                {
+                    u.on[i] = rules[i].boolean("on");
+                    if (inRange(rules[i]["clear"], 0, 3650)) u.clear[i] = int(rules[i]["clear"].asNumber());
+                    if (inRange(rules[i]["fires"], 0, 1e9)) u.fires[i] = int(rules[i]["fires"].asNumber());
+                    if (inRange(rules[i]["edge"], 0, 3650)) u.edge[i] = int(rules[i]["edge"].asNumber());
+                }
+            for (const auto& [key, into] : {std::pair{"levelling", &u.levelling}, std::pair{"richAbove", &u.richAbove},
+                                            std::pair{"charters", &u.charters}, std::pair{"levellingRate", &u.levellingRate},
+                                            std::pair{"richRate", &u.richRate}, std::pair{"chartersRate", &u.chartersRate}})
+                if (inRange(v[key], 0, 1e9))
+                    *into = v[key].asNumber();
+            if (inRange(v["route"], 0, 1))
+                u.route = v["route"].asNumber();
+            if (inRange(v["chartersHeld"], 0, 10000))
+                u.chartersHeld = int(v["chartersHeld"].asNumber());
+        }
     }
     return l;
 }

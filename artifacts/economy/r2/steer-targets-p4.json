@@ -1,0 +1,86 @@
+{
+ "about": "Doc 75, Phase 4: the acceptance targets at each mark. From steer-targets-cal-floor.json (Phase 3, the floor reading) with the coordinator's decisions applied: the right end takes steer-cal-R33 (S judged without the chartered tills' own cash, m_upper_net: 27.3% +- 1.47); the half marks' tills short and treasury floors halfway between their neighbours' (as the supervisor's table reads them; floor_from a list is the mean of the runs' floors), since -0.5's treasury target is now 1,400p and Hm ran with 3,500p, and no +0.5 run has the R33 table. Doc 75, Phase 3: each mark's targets from the calibration runs (tools/steer_calibrate.py): G (m_g_day) left of the centre, S (m_upper_share) right of it, both at the centre, as the mean of days 120-365 of the run at that mark, the band 2 standard deviations of its 28-day mean there (at least 0.01 in G, 1 point in S); hungerMost and shortMost the table's; tills the run's tills short; floor_from the run whose seasonal treasury profile gives the mark's floor. A half mark's target is halfway between the centre's and the end's; its band, tills and floor are the half-mark run's.",
+ "marks": {
+  "-1": {
+   "hungerMost": 0.02,
+   "shortMost": 0.1,
+   "G": {
+    "field": "m_g_day",
+    "target": 0.0657,
+    "band": 0.01
+   },
+   "tills": {
+    "1": 32.15
+   },
+   "floor_from": "steer-cal-L50",
+   "treasury": 1492.0
+  },
+  "-0.5": {
+   "hungerMost": 0.05,
+   "shortMost": 0.5,
+   "G": {
+    "field": "m_g_day",
+    "target": 0.2079,
+    "band": 0.01
+   },
+   "tills": {
+    "1": 30.64
+   },
+   "floor_from": [
+    "steer-cal-L50",
+    "steer-cal-C"
+   ]
+  },
+  "0": {
+   "hungerMost": 0.15,
+   "shortMost": 3.5,
+   "G": {
+    "field": "m_g_day",
+    "target": 0.35,
+    "band": 0.0208
+   },
+   "S": {
+    "field": "m_upper_share",
+    "target": 13.4346,
+    "band": 1.0
+   },
+   "tills": {
+    "1": 29.14
+   },
+   "floor_from": "steer-cal-C",
+   "treasury": 1316.0
+  },
+  "0.5": {
+   "hungerMost": 0.15,
+   "shortMost": 4,
+   "S": {
+    "field": "m_upper_net",
+    "target": 20.3673,
+    "band": 1.47
+   },
+   "tills": {
+    "1": 31.7
+   },
+   "floor_from": [
+    "steer-cal-C",
+    "steer-cal-R33"
+   ],
+   "note": "halfway between the centre and steer-cal-R33 (no run at +0.5 with the R33 table yet); its band R33's"
+  },
+  "1": {
+   "hungerMost": 0.15,
+   "shortMost": 5,
+   "S": {
+    "field": "m_upper_net",
+    "target": 27.3,
+    "band": 1.47
+   },
+   "tills": {
+    "1": 34.25
+   },
+   "floor_from": "steer-cal-R33",
+   "treasury": 804.0,
+   "note": "the coordinator's decision 2: R33 into acceptance; S judged without the chartered tills' own cash (m_upper_net; with it, steer-cal-R33 held 34.9%)"
+  }
+ }
+}

@@ -4,7 +4,7 @@
 // and sent to the running server. Everything else here is read only: each measure against its target at the slider, the
 // push and its band, each lever with its bounds there and its value now, the skim's last 28 days, and the log.
 import {useEffect, useRef, useState} from 'react';
-import {confirmText, leanWords, logLines, measureLines, preview, steerChange, type SteerBody, type SteeringView} from '../lib/steering';
+import {confirmText, leanWords, logLines, measureLines, preview, steerChange, supervisorLine, type SteerBody, type SteeringView} from '../lib/steering';
 
 const fmt = (v: number | null | undefined, places = 1) => v === null || v === undefined ? '-' : (Math.round(v * 10 ** places) / 10 ** places).toString();
 
@@ -41,6 +41,8 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
                 onPointerUp={release} onKeyUp={e => { if (e.key === 'Enter') release(); }} onBlur={release} />
             <datalist id="steer-marks">{[-100, -50, 0, 50, 100].map(m => <option key={m} value={m} />)}</datalist>
             <span className="steer-ends"><small>{view.words.left}</small><small>{view.words.centre}</small><small>{view.words.right}</small></span>
+            {(view.reach?.left || view.reach?.right) && <span className="steer-ends" title="What each end delivered when it was measured (doc 75, 3.5)">
+                <small className="hint">{view.reach?.left}</small><small /><small className="hint">{view.reach?.right}</small></span>}
             <span>{lean} — {leanWords(view, lean)}{lean !== view.settings.lean && ' (not saved: let go to save it)'}</span></label>
         {off && <p className="hint">The steering is off: the economy runs on its own rules. Where the money rests may still be
             set; it takes effect when the steering is turned on.</p>}
@@ -75,7 +77,8 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
                 <td>{fmt(l.now ?? (view.now?.on ? null : l.centre))}</td><td>{fmt(l.centre)}</td>
                 <td>{fmt(l.low)} to {fmt(l.high)}</td></tr>)}</tbody>
         </table></div>
-        {view.history?.[0] && <p className="hint">The last judging: {view.history[0].why}</p>}
+        {supervisorLine(view) && <p className="hint">{supervisorLine(view)}</p>}
+        {view.history?.[0] && <p className="hint">The last change: {view.history[0].why}</p>}
 
         <h4>The skim, the last 28 days</h4>
         {skim && skim.days > 0 ? <ul>

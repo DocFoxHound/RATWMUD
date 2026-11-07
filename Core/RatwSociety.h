@@ -319,11 +319,35 @@ struct LoopState
         std::int64_t idleDay = -1;
         double tillsShort = -1;
         int tillsDays = 0;
+        // The safety supervisor (doc 75, 3.6): its 7-night means (the treasury at 18:00, the tills short, hungry residents
+        // an hour, households short, the wage support unpaid), over so many nights; each rule's state (1 the treasury, 2
+        // the shops, 3 hunger: on, the nights its measure has been back under clearShare of its trigger, how often it has
+        // fired); each lever's back-off (the tithe's points, the rich hold's pennies, the charters held back, a fraction
+        // of one) and the rate a night it left at (it returns at half that), the nights each has been backed off running;
+        // the share of the ground rent rule 1 sends to the treasury; and the charters it holds back tonight.
+        struct Supervisor
+        {
+            int nights = 0;
+            double treasury = -1, tills = -1, hungry = -1, shortHomes = -1, unpaid = -1;
+            std::array<bool, 3> on{};
+            std::array<int, 3> clear{}, fires{};
+            double levelling = 0, richAbove = 0, charters = 0;
+            double levellingRate = 0, richRate = 0, chartersRate = 0;
+            std::array<int, 3> edge{};                  // (The tithe, the rich hold, the charters.)
+            double route = 0;
+            int chartersHeld = 0;
+            bool empty() const
+            {
+                return nights == 0 && levelling == 0 && richAbove == 0 && charters == 0 && route == 0 && chartersHeld == 0 &&
+                       on == std::array<bool, 3>{} && fires == std::array<int, 3>{};
+            }
+        };
+        Supervisor sup;
         bool empty() const
         {
             return !on && push == 0 && judged < 0 && days == 0 && estateShort < 0 && history.empty() && skims.empty() && idle.empty() &&
                    credit.empty() && idleDay < 0 && tillsDays == 0 && charters.empty() && chartersNights < 0 && profit.empty() &&
-                   profitNights == 0;
+                   profitNights == 0 && sup.empty();
         }
     };
     Steer steer;
@@ -1185,6 +1209,8 @@ class Society
         // tonight (a change of the slider or the on/off); hungry residents counted each hour (with the steering on), and
         // the hours.
         double mGini = -1, mUpper = -1, mTop10 = -1, mHungry = -1;
+        // (Doc 75, Phase 4: the upper share without the chartered tills' own cash, the money really moved to the rich.)
+        double mUpperNet = -1;
         // Doc 75 (3.4): G, the Gini of cash a head over all resident households weighted by heads, after tonight's money
         // (mGAll) and before the Levelling tithe (mGBefore; -1 on a night with no tithe, when it is mGAll); F, the same
         // Gini of pantry days a head.
@@ -1220,6 +1246,11 @@ class Society
         // given tonight; skimGuard, the tills short's guard on tonight.)
         std::int64_t neverBrokeCredit = 0;
         bool skimGuard = false;
+        // The safety supervisor tonight (doc 75, 3.6): the rules on ("treasury", "shops", "hunger"), the treasury's floor
+        // tonight, the levers at the envelope's edge, and what it did, in words.
+        std::vector<std::string> supOn, supEdge;
+        double supFloor = -1;
+        std::string supWhy;
     };
     const LoopDay& loopToday() const { return loopToday_; }
     // Steering the economy (Docs/Design/74-steering-the-economy.md; doc 75). Whether the steering is acting now (the rule
@@ -1228,8 +1259,22 @@ class Society
     // richAbove and spendAbove; the dividend with its rise for the charters), and a target at the slider (NaN: none there).
     bool steering() const;
     double steerSlider() const;
-    double steerLever(const std::string& lever) const;
+    // (`table`: the table's value at the slider, before the supervisor's back-off.)
+    double steerLever(const std::string& lever, bool table = false) const;
     double steerTarget(const std::string& target) const;
+    // The safety supervisor (doc 75, 3.6; Phase 4): nightly, last of the steering's night, its rules in order (1 the
+    // treasury under its floor, 2 the shops short, 3 hunger, 4 a lever at the envelope's edge), each backing off the lever
+    // that pays, at a fixed rate, until its cause clears; and the treasury's floor at the slider on a day (public for the
+    // tests).
+    // (The night's measures it follows: the treasury at 18:00, the tills short, hungry residents an hour, households short
+    // and the wage support unpaid; the tests give their own.)
+    struct SupNight
+    {
+        double treasury = 0, tills = 0, hungry = 0, shortHomes = 0, unpaid = 0;
+    };
+    void steerSupervise(std::int64_t day);
+    void steerSupervise(std::int64_t day, const SupNight& tonight);
+    double treasuryFloorAt(double x, std::int64_t day) const;
     // The measures (8.1), as the steering takes them at 18:00: the Gini of the earning households' purses (world_check's
     // gini_earners: residents' homes with a member holding a paid post), the upper share of all the money (upper-class
     // households, the Houses' estates, the Houses' businesses' tills; percent), and the richest tenth of households'

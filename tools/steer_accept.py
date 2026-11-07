@@ -193,6 +193,9 @@ class Judge:
             for y, a, b in years:
                 pairs = [(d, v) for d, v in zip(days, series) if a <= d["day"] <= b and not d.get("sup_backoff")]
                 if not pairs:
+                    # (Doc 75, Phase 4: a run backed off every day has nothing T2 may judge; that is not a hold.)
+                    if any(a <= d["day"] <= b for d in days):
+                        self.add(name, y, f"T2 hold {key}", False, "every day at a supervisor back-off: nothing held")
                     continue
                 share = sum(self.inside(v, spec, floors) for _, v in pairs) / len(pairs)
                 vals = [v for _, v in pairs if v is not None]
@@ -226,7 +229,7 @@ class Judge:
         """The numbers T4-T7 read, for one span."""
         h = [d.get("hungry_mean", 0) for d in ys]
         h28 = [v for d, v in zip(days, trailing([d.get("hungry_mean", 0) for d in days], 28)) if ys[0]["day"] <= d["day"] <= ys[-1]["day"]]
-        floor, _ = treasury_floor(load(self.dir, run["floor_from"]) if run.get("floor_from") else days, self.sc)
+        floor = self.floor(run.get("floor_from"), days)
         tr28 = trailing([d.get("treasury") for d in days], 28)
         under = collections.Counter()
         at_float = collections.Counter()
@@ -246,6 +249,17 @@ class Judge:
             "wharf": mean(nets) if any(n is not None for n in nets) else None,
             "treasury": mean(d.get("treasury") for d in ys),
         }
+
+    def floor(self, source, days):
+        """T5's floor by year-day: a run's (its seasonal profile less 2 sigma), the mean of a list of runs' (a half mark's,
+        halfway between its neighbours', as the supervisor's table reads it: doc 75, Phase 4), or the run's own."""
+        if not source:
+            return treasury_floor(days, self.sc)[0]
+        if isinstance(source, str):
+            return treasury_floor(load(self.dir, source), self.sc)[0]
+        floors = [treasury_floor(load(self.dir, r), self.sc)[0] for r in source]
+        least = self.sc["T5"]["floor_least"]
+        return {k: max(least, mean([f.get(k, least) for f in floors])) for k in range(365)}
 
     def t4_t7(self, name, days, ys, y, a, b, run):
         m = self.mark(run["x"])
