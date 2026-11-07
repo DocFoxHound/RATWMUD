@@ -438,6 +438,26 @@ class Central:
             raise refused(409, 'The wolf was changed elsewhere. Reload it and try again.', 'stale')
         return ok(wolf=self._public_wolf(changed))
 
+    def delete_wolf(self, address: str, token, body: dict, wolf_id: str) -> tuple[int, dict]:
+        """{"password"}: one wolf goes now, the account stays (the user, 2026-11-07). Its name is held back for 30 days,
+        as an account's are, and its id is listed for the worlds to forget. The password is asked again, as for
+        deleting the account: a stolen access token alone can't take a wolf."""
+        self._limit(('delete', address), self.settings.limits.delete_per_address, 'deletions from here')
+        _, account = self._account(token)
+        password = body.get('password')
+        if set(body) - {'password'} or not isinstance(password, str) or len(password) > 256:
+            raise refused(401, 'Give your password to delete a wolf.', 'bad_sign_in')
+        limit = self.settings.limits.login_failures_per_account
+        if self.limiter.peek(('login-fail', account['username']), limit):
+            raise Reply(429, 'Too many failed attempts for this account. Try again later.', 'rate_limited', 60)
+        if not self._hash(lambda: password_matches(account['password'], password, self.settings.iterations)):
+            self.limiter.hit(('login-fail', account['username']), limit)
+            raise refused(401, 'Give your password to delete a wolf.', 'bad_sign_in')
+        now = self.clock()
+        if not WOLF_ID.match(wolf_id or '') or not self.store.delete_wolf(account['id'], wolf_id, now, now + NAME_RESERVED):
+            raise refused(404, 'That wolf is not on this account.', 'not_found')
+        return ok(deleted=wolf_id)
+
     # ---------------------------------------------------------------- Tickets and keys
 
     def ticket(self, address: str, token, body: dict) -> tuple[int, dict]:

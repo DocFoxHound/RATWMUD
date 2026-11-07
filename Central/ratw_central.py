@@ -21,7 +21,7 @@ The calls (JSON bodies; `Authorization: Bearer ACCESS_TOKEN` where an account is
   POST /account/register {username, password, birth_year, birth_month?, remember?}   POST /account/login {username,
   password, remember?}   POST /account/refresh {refresh_token}   POST /account/logout {everywhere?}   GET /account
   DELETE /account {password}   GET /wolves   POST /wolves {name, age, appearance, family?, profile?}
-  PATCH /wolves/WOLF_ID {revision, appearance?, profile?}   POST /wolves/name {name}   POST /tickets {world, wolf}
+  PATCH /wolves/WOLF_ID {revision, appearance?, profile?}   DELETE /wolves/WOLF_ID {password}   POST /wolves/name {name}   POST /tickets {world, wolf}
   GET /keys   GET /health
 Replies are {"ok": true, ...} or {"ok": false, "error": "...", "code": "..."} with the HTTP status; a rate limit is
 429 with Retry-After.
@@ -156,6 +156,8 @@ def handler_class(central: central_service.Central, trust_proxy: bool = False, c
                 match = WOLF_PATH.match(path)
                 if method == 'PATCH' and match:
                     status, reply = central.call(central.patch_wolf, address, self.bearer(), body, match.group(1))
+                elif method == 'DELETE' and match:
+                    status, reply = central.call(central.delete_wolf, address, self.bearer(), body, match.group(1))
                 elif (method, path) in table:
                     status, reply = central.call(table[(method, path)], address, self.bearer(), body)
                 else:

@@ -189,6 +189,22 @@ class Store:
             conn.execute('DELETE FROM central.accounts WHERE id = %s', (account_id,))
             return {'username': row[0], 'wolves': [w for w, _ in wolves]}
 
+    def delete_wolf(self, account_id: str, wolf_id: str, now: float, reserve_until: float) -> bool:
+        """Removes one wolf of the account (the user, 2026-11-07: a wolf may go without its account); reserves its name
+        until then and lists it for the worlds to forget. False if the account has no such wolf."""
+        with self.connection() as conn, conn.transaction():
+            row = conn.execute('SELECT name_key FROM central.wolves WHERE id = %s AND account_id = %s FOR UPDATE',
+                               (wolf_id, account_id)).fetchone()
+            if row is None:
+                return False
+            conn.execute('INSERT INTO central.reserved_names (kind, name_key, until) VALUES (%s, %s, %s) '
+                         'ON CONFLICT (kind, name_key) DO UPDATE SET until = GREATEST(central.reserved_names.until, '
+                         'EXCLUDED.until)', ('wolf', row[0], ts(reserve_until)))
+            conn.execute('INSERT INTO central.deleted_wolves (wolf_id, deleted_at) VALUES (%s, %s) ON CONFLICT DO NOTHING',
+                         (wolf_id, ts(now)))
+            conn.execute('DELETE FROM central.wolves WHERE id = %s', (wolf_id,))
+            return True
+
     def deleted_wolves(self, since: float = 0) -> list[str]:
         with self.connection() as conn:
             return [r[0] for r in conn.execute('SELECT wolf_id FROM central.deleted_wolves WHERE deleted_at >= %s '

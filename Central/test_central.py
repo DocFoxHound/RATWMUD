@@ -612,6 +612,46 @@ class Deletion(Base):
         with STORE.connection() as conn:
             self.assertEqual(conn.execute('SELECT count(*) FROM central.reserved_names').fetchone()[0], 0)
 
+    def test_one_wolf_goes_and_the_account_stays(self):
+        # The user, 2026-11-07: a wolf may be deleted without deleting the account.
+        token = self.register('ash')['access_token']
+        ash, birch = self.wolf(token, 'Ash Tallow')['id'], self.wolf(token, 'Birch Fen')['id']
+        other = self.register('cedar')['access_token']
+        cedars = self.wolf(other, 'Cedar')['id']
+        self.assertEqual(self.call('delete_wolf', {'password': 'wrong password!'}, token, None, ash)[0], 401)
+        self.assertEqual(self.call('delete_wolf', {}, token, None, ash)[0], 401, 'the password is asked')
+        self.assertEqual(self.call('delete_wolf', {'password': PASSWORD}, None, None, ash)[0], 401, 'signed in')
+        self.assertEqual(self.call('delete_wolf', {'password': PASSWORD}, token, None, cedars)[0], 404,
+                         "nobody else's wolf")
+        self.assertEqual(self.call('delete_wolf', {'password': PASSWORD}, token, None, 'wolf-x')[0], 404)
+        status, reply = self.call('delete_wolf', {'password': PASSWORD}, token, None, ash)
+        self.assertEqual((status, reply['deleted']), (200, ash), reply)
+        self.assertIsNone(STORE.wolf(ash))
+        self.assertEqual([w['id'] for w in self.call('list_wolves', token=token)[1]['wolves']], [birch],
+                         'the account and its other wolves stay')
+        self.assertIsNotNone(STORE.wolf(cedars))
+        self.assertEqual(STORE.deleted_wolves(), [ash], 'listed for the worlds to forget')
+        self.assertEqual(self.call('delete_wolf', {'password': PASSWORD}, token, None, ash)[0], 404, 'once')
+        self.assertEqual(self.call('create_wolf', {'name': 'ash tallow', 'age': 7, 'appearance': LOOK}, other)[1]['code'],
+                         'name_taken', 'its name is held back for 30 days')
+        self.assertEqual(self.call('create_wolf', {'name': 'Ash Tallow', 'age': 7, 'appearance': LOOK}, token)[1]['code'],
+                         'name_taken', 'from its own account too')
+        world = self.world()
+        self.assertEqual(self.call('ticket', {'world': world, 'wolf': ash}, token)[0], 404, 'no ticket for it')
+        self.wolf(token, 'Ash Again')                 # (Its slot is free again.)
+        self.clock.advance(30 * DAY)
+        self.central.maintain()
+        token = self.call('login', {'username': 'ash', 'password': PASSWORD})[1]['access_token']
+        self.wolf(token, 'Ash Tallow')
+
+    def test_failed_wolf_deletions_count_as_failed_sign_ins(self):
+        token = self.register('ash')['access_token']
+        ash = self.wolf(token, 'Ash Tallow')['id']
+        for _ in range(10):
+            self.assertEqual(self.call('delete_wolf', {'password': 'wrong password!'}, token, None, ash)[0], 401)
+        self.assertEqual(self.call('delete_wolf', {'password': PASSWORD}, token, None, ash)[0], 429)
+        self.assertIsNotNone(STORE.wolf(ash))
+
     def test_deletion_needs_a_signed_in_account(self):
         self.assertEqual(self.call('delete_account', {'password': PASSWORD}, None)[0], 401)
 
@@ -666,6 +706,10 @@ class Http(Base):
         self.assertEqual((status, headers['Cache-Control']), (200, 'public, max-age=300'))
         claims = ct.verify(ticket['ticket'], ct.public_keys(keys), world, self.clock(), self.clock() - 10, {})
         self.assertEqual(claims['name'], 'Ash')
+        status, second, _ = self.http('POST', '/wolves', {'name': 'Bramble', 'age': 9, 'appearance': LOOK}, token)
+        status, gone, _ = self.http('DELETE', f'/wolves/{second["wolf"]["id"]}', {'password': PASSWORD}, token)
+        self.assertEqual((status, gone['deleted']), (200, second['wolf']['id']), gone)
+        self.assertEqual([w['id'] for w in self.http('GET', '/wolves', token=token)[1]['wolves']], [wolf_id])
         self.assertEqual(self.http('POST', '/account/logout', {}, token)[0], 200)
         self.assertEqual(self.http('GET', '/account', token=token)[0], 401)
         self.assertEqual(self.http('GET', '/health')[0], 200)

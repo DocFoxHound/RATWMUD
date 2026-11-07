@@ -4,7 +4,8 @@ A ticket is a JWT (RFC 7519) signed with the fully specified `Ed25519` algorithm
 its header. Central signs; a world checks it offline with central's public keys (`GET /keys`, a JWK set). `verify()`
 here is the reference check, the same rules Phase 2's C++ check follows (and the Phase 0 spike, Desktop/spike/ticket):
 the algorithm pinned before anything else is read, repeated keys refused, `aud` the world's own id, `exp` with 2
-minutes' leeway, `iat` after the world started, each `jti` once.
+minutes' leeway, `iat` after the world started and not ahead of the world's clock, a lifetime of at most 10 minutes,
+each `jti` once.
 
 The keys live in a directory of their own (mode 0700, each file 0600), never in the database: one JSON file per key,
 with its private half, and the secret for the per-world account ids. Rotation: the next key is made and published a
@@ -32,6 +33,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey,
 ALG = 'Ed25519'
 LIFETIME = 60            # seconds a ticket lives
 LEEWAY = 120             # a world's allowance for a wrong clock (doc 77, 5)
+MAX_LIFETIME = 600       # a world refuses a ticket that would live longer (Core/RatwTickets.h, the same)
 LEAD = 24 * 3600         # the next key is published this long before it signs
 ROTATE_AFTER = 30 * 24 * 3600   # a key signs for this long
 GRACE = 3600             # a retired key stays in /keys this long (covers every ticket it signed, and the leeway)
@@ -128,8 +130,12 @@ def verify(token: str, keys: dict[str, bytes], world: str, now: float, world_sta
         raise TicketError('ticket for another world')
     if now > claims['exp'] + leeway:
         raise TicketError('expired')
+    if claims['iat'] > now + leeway:
+        raise TicketError('issued in the future')
     if claims['iat'] < world_start - leeway:
         raise TicketError('issued before this world started')
+    if not 0 < claims['exp'] - claims['iat'] <= MAX_LIFETIME:
+        raise TicketError('wrong lifetime')
     if not WOLF_ID.match(claims['wolf']) or claims['sex'] not in ('female', 'male') or \
             claims['kind'] not in ('official', 'community') or not 16 <= len(claims['jti']) <= 64:
         raise TicketError('malformed identity')
