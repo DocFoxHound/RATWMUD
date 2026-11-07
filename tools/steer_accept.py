@@ -131,6 +131,9 @@ def treasury_floor(days, sc):
     resid = [t - profile[d["day"] % 365] for d, t in zip(days, tr)
              if d["day"] >= sc["window"][0] and t is not None and d["day"] % 365 in profile]
     sigma = statistics.pstdev(resid) if len(resid) > 1 else 0
+    # (A floor at least `sigma_least` under the profile, when the scorecard names one: a treasury held flat at its cap
+    # has a sigma of a few pennies, and its floor would then count a 20p wobble as a dip.)
+    sigma = max(sigma, sc["T5"].get("sigma_least", 0))
     least = sc["T5"]["floor_least"]
     return {k: max(least, v - 2 * sigma) for k, v in profile.items()}, sigma
 

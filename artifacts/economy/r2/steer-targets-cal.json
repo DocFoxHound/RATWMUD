@@ -1,0 +1,44 @@
+{
+ "about": "Doc 75, Phase 3: each mark's targets from the calibration runs (tools/steer_calibrate.py): G (m_g_day) left of the centre, S (m_upper_share) right of it, both at the centre, as the mean of days 120-365 of the run at that mark, the band 2 standard deviations of its 28-day mean there (at least 0.01 in G, 1 point in S); hungerMost and shortMost the table's; tills the run's tills short; floor_from the run whose seasonal treasury profile gives the mark's floor. A half mark's target is halfway between the centre's and the end's; its band, tills and floor are the half-mark run's.",
+ "marks": {
+  "-1": {
+   "hungerMost": 0.02,
+   "shortMost": 0.1,
+   "note": "this side ships its fallback rung; its targets are the rung's reference run's"
+  },
+  "-0.5": {
+   "hungerMost": 0.05,
+   "shortMost": 0.5,
+   "note": "this side ships its fallback rung; its targets are the rung's reference run's"
+  },
+  "0": {
+   "hungerMost": 0.15,
+   "shortMost": 3.5,
+   "G": {
+    "field": "m_g_day",
+    "target": 0.35,
+    "band": 0.0208
+   },
+   "S": {
+    "field": "m_upper_share",
+    "target": 13.4346,
+    "band": 1.0
+   },
+   "tills": {
+    "1": 29.14
+   },
+   "floor_from": "steer-cal-C",
+   "treasury": 1316.0
+  },
+  "0.5": {
+   "hungerMost": 0.15,
+   "shortMost": 4,
+   "note": "this side ships its fallback rung; its targets are the rung's reference run's"
+  },
+  "1": {
+   "hungerMost": 0.15,
+   "shortMost": 5,
+   "note": "this side ships its fallback rung; its targets are the rung's reference run's"
+  }
+ }
+}

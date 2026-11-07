@@ -523,7 +523,7 @@ The ladder is chosen per end, so the left can ship Full while the right ships F1
 
 ## Progress
 
-Phases 1 and 2 done on `r2-controller` (below); the user's answers to section 9 first.
+Phases 1-3 done on `r2-controller` (below); the user's answers to section 9 first. Next: the check-in with the user.
 
 ### 2026-11-06: the user's decisions
 
@@ -763,3 +763,86 @@ the steering, as the studio's `STEERED_RULES` already did.
 so the toll drift is pinned up as it is at the centre against 5,500p. That is the plan's blend (3.2), and the
 calibration's half-mark runs will show whether it matters. The dividend's rise follows the charters' table strength
 from the first night, while the charters themselves wait 28 nights and ramp over 14.
+
+### Phase 3: calibrate (2026-11-06, branch `r2-controller`)
+
+About 1 h 20 min (the plan's 1 h plus 30 min of runs; the runs took 55). The 10 one-year runs of 5.2, in two batches
+(`steer-cal1.json`, `steer-cal2.json`; a copy of dd9f354's build, `build-c/world_check.p3`), open-loop, toggles off, on
+scratch copies of export70 on the task's cores; every run exited 0. 21 of the budget's 34 one-year runs used; no 3-year
+run. Nothing written to DEV or PROD; no server. **Data/Items/city_loop.json is not changed**: the table waits for the
+user's word at the check-in.
+
+**Built.** `tools/steer_calibrate.py SPEC`: the selection rule (steer_accept's own T4-T7, year 1, days 120-365, against
+the targets agreed before any run, `steer-targets-t1.json`: the t1 run's tills short at each end, the table's hungerMost
+and shortMost; T5's floor from the run's own profile, since the run is its mark's floor run); D2; the half marks on the
+measured curve (the centre to the half-mark run, then the ends' slope); the targets at each mark (the measure's mean,
+its band 2 sigma of its 28-day mean, at least 0.01 in G and 1 point in S; tills short; the floor run); the measures
+table, with S also shown without the chartered tills' own cash (their floats, from the full log and the loop state's
+list). For the check-in only, each right strength is also judged on F1's own bar. `steer_accept.py` gains an optional
+`T5.sigma_least` (unused by the scorecard as written). Reports: `steer-calibration.md` (the scorecard as written),
+`steer-calibration-floor.md` (the floor reading below); tables `steer-table-calibrated.json`,
+`steer-table-calibrated-floor.json`; targets `steer-targets-cal.json`, `steer-targets-cal-floor.json`.
+
+**What the runs measured** (days 120-365, means a day):
+
+| run | G day (before; after) | Gini earners | S % (without chartered cash) | H/h | K | treasury mean (28-day least) | float days | tills short | support unpaid | wage support |
+|---|---|---|---|---|---|---|---|---|---|---|
+| C (centre) | 0.350 | 0.489 | 13.4 | 0.022 | 0.91 | 1,316 (870) | 2 | 29.1 | 219 | 60 |
+| L30 | 0.100 (0.123; 0.078) | 0.325 | 13.1 | 0 | 0 | 1,492 (1,451) | 0 | 31.5 | 96 | 284 |
+| L40 | 0.081 (0.105; 0.056) | 0.312 | 13.0 | 0 | 0 | 1,493 (1,454) | 0 | 31.3 | 99 | 289 |
+| L50 | 0.066 (0.092; 0.039) | 0.302 | 12.7 | 0 | 0 | 1,492 (1,454) | 0 | 32.2 | 101 | 298 |
+| Hm (-0.5, tithe 20) | 0.143 | 0.334 | 12.6 | 0.001 | 0.07 | 2,291 (1,916) | 0 | 34.5 | 43 | 363 |
+| P (L40, spendAbove 30) | 0.078 | 0.305 | 12.5 | 0.001 | 0.07 | 1,482 (1,441) | 0 | 34.0 | 113 | 308 |
+| F1 (steer-b0-right) | 0.430 | 0.546 | 23.3 | 0.024 | 0.74 | 815 (364) | 12 | 34.4 | 334 | 11 |
+| R33 (29 charters) | 0.457 | 0.568 | 34.9 (27.3) | 0.023 | 0.61 | 804 (437) | 6 | 34.3 | 348 | 12 |
+| R66 (58) | 0.476 | 0.583 | 42.0 (29.6) | 0.031 | 0.93 | 650 (351) | 23 | 36.3 | 371 | 8 |
+| R100 (88) | 0.478 | 0.584 | 47.5 (29.9) | 0.022 | 0.95 | 708 (470) | 15 | 37.5 | 376 | 9 |
+| Hp (+0.5, 29 charters) | 0.400 | 0.518 | 30.3 (21.8) | 0.017 | 0.41 | 1,066 (516) | 10 | 30.2 | 276 | 34 |
+
+The tithe moved 933, 1,071 and 1,158p a night at L30-L50. The chartered profit to the Houses was 179, 247 and 313p a
+day at R33-R100, and the dividend 206, 332 and 467p; the estates' funds rose 25%, 18% and 10% from days 120-147 to
+338-365 (R33 over the 20% that would call for patronage in Phase 6). Cheese (rules untouched) cost households and Houses
+5.0p a piece at the left, 6.9p at the centre, 14.7-20.1p at the right; 3.7 pieces a day everywhere. The skim did
+nothing (the toggles were off). C is byte for byte stable10b on all 366 daily lines' shared fields.
+P against L40: 0.54 tills short a penny of `spendAbove` (doc 74 measured 0.6).
+
+**The selection rule, as the scorecard is written: no strength passes at either end.**
+
+- The left: every strength passes T4, T6 and T7, and fails T5 on 5-6 summer days "under its floor". The floor is the
+  run's seasonal profile less 2 sigma, and a treasury held at its cap all year has a sigma of 1-5p: the floor sits a few
+  pennies under the profile, and a 20p wobble in a 28-day mean that never left 1,450-1,515p counts as a dip. On the
+  t1 run's floor instead (the targets agreed beforehand) the left fails worse, for the same reason. So the left takes F3.
+- The right: every strength fails T5 (6-23 float days against stable10b's 2) and T6 (support unpaid 348-376p a day
+  against 1.5 x 219 = 328). F1's own reference fails the same two tests open-loop (12 float days, 334 unpaid). On F1's
+  own bar (no worse than steer-b0-right), R33 passes T4, T5 and T7 and fails T6 on support unpaid alone: 348 against
+  334. So the right takes F1.
+
+**A reading proposed for the check-in** (`steer-cal-spec-floor.json`; not the scorecard as written, and not adopted):
+T5's floor at least as far under the profile as the centre's own noise (sigma at least stable10b's, 191p, so the floor
+is at least 383p under the profile). Then all three left strengths pass and **the left takes L50 (Full)**: G 0.066 through
+the day at -1, the half mark's tithe 13.7% (on the curve from the centre's 0.350 through Hm's 0.143, aiming at 0.208).
+The right is F1 under either reading.
+
+**D2.** The right: F1, by the selection rule, though the charters add a lot of S: +11.6 points at R33 (+4.0 without the
+chartered tills' own cash), +18.7 (+6.3) at R66, +24.2 (+6.6) at R100. The left: F3 as written; Full at L50 with the
+proposed floor.
+
+**For the check-in.**
+
+1. **The floor reading.** Adopt it (the left ships Full at L50) or keep the scorecard as written (the left ships F3)?
+   Adopting it means `T5.sigma_least` in the scorecard, and the dry run is unchanged by it (the centre's floor is
+   stable10b's own, already 191p).
+2. **The right.** F1 by the rule. The alternative the rule does not allow: carry R33 into acceptance and let the
+   supervisor's rule 1 (the ground rent to the treasury under its floor, the skim skipping the treasury) try to fix the
+   float days and support unpaid that the open-loop right shows with or without charters. About a third of R33's added S
+   is real money moving (4 points of 11.6); the rest is the chartered tills' own floats counted in S.
+3. **The -0.5 mark's treasury.** Its blended target (3,500p) is above what the treasury reaches, so the toll drift is
+   pinned up: Hm holds 2,291p (800p more than either neighbour) and its tills short is 34.5, 1.19 x the centre's and over
+   both ends'. Setting the half mark's `treasuryTarget` to a measured value (about 1,400p) is the plan's own rule (4.5);
+   not done here.
+4. **The ends' treasury rules** stay as they ran (left target 1,500, cap 1,500, keep 0; right target 850): both targets
+   are already within 60p of what the runs held (1,492 and 804), so the plan's x 1.15 cap and x 0.5 keep rule was not
+   applied, since it would change the ends from what was measured.
+5. **The half mark at -0.5**: its band is 0.01 (Hm's spread is under that) and its target 0.208 lies between the runs
+   made, so A2 in Phase 5 is the first run at a tithe of 13.7%.
+

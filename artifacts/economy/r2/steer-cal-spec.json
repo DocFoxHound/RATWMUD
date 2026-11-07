@@ -1,0 +1,11 @@
+{"about": "Doc 75, Phase 3: the calibration's spec for tools/steer_calibrate.py.",
+ "dir": "artifacts/economy/r2", "select_targets": "artifacts/economy/r2/steer-targets-t1.json", "baseline": "stable10b",
+ "f1": "steer-b0-right", "centre": "steer-cal-C",
+ "ends": {"-1": {"lever": "levelling", "measure": "G", "runs": [["steer-cal-L30", 30], ["steer-cal-L40", 40], ["steer-cal-L50", 50]]},
+          "1": {"lever": "charters", "measure": "S", "runs": [["steer-cal-R33", 33], ["steer-cal-R66", 66], ["steer-cal-R100", 100]]}},
+ "halves": {"-0.5": ["steer-cal-Hm", 20], "0.5": ["steer-cal-Hp", 33]},
+ "perturb": {"run": "steer-cal-P", "against": "steer-cal-L40", "lever": "spendAbove", "from": 25, "to": 30},
+ "table_out": "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/r2-controller/artifacts/economy/r2/steer-table-calibrated.json",
+ "targets_out": "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/r2-controller/artifacts/economy/r2/steer-targets-cal.json",
+ "report": "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/r2-controller/artifacts/economy/r2/steer-calibration.md",
+ "data": "/home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/r2-controller/Data/Items/city_loop.json"}

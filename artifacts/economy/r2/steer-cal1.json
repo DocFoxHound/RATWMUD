@@ -1,0 +1,51 @@
+{
+  "about": "Doc 75, Phase 3 (5.2): the calibration, open-loop (the table only, no supervisor yet), toggles off, 1 year from day 0, on dd9f354's build. Batch 1: the three strengths at the left, two at the right.",
+  "base": "artifacts/economy/r2/export70",
+  "out": "artifacts/economy/r2",
+  "prefix": "steer-cal-",
+  "days": 366,
+  "binary": ".claude/worktrees/r2-controller/build-c/world_check.p3",
+  "data": ".claude/worktrees/r2-controller/Data",
+  "runs": [
+    {
+      "name": "L30",
+      "rules": {
+        "steer": 1,
+        "steerLean": 0
+      },
+      "table": ".claude/worktrees/r2-controller/artifacts/economy/r2/steer-table-cal-L30.json"
+    },
+    {
+      "name": "L40",
+      "rules": {
+        "steer": 1,
+        "steerLean": 0
+      },
+      "table": ".claude/worktrees/r2-controller/artifacts/economy/r2/steer-table-cal-L40.json"
+    },
+    {
+      "name": "L50",
+      "rules": {
+        "steer": 1,
+        "steerLean": 0
+      },
+      "table": ".claude/worktrees/r2-controller/artifacts/economy/r2/steer-table-cal-L50.json"
+    },
+    {
+      "name": "R33",
+      "rules": {
+        "steer": 1,
+        "steerLean": 200
+      },
+      "table": ".claude/worktrees/r2-controller/artifacts/economy/r2/steer-table-cal-R33.json"
+    },
+    {
+      "name": "R66",
+      "rules": {
+        "steer": 1,
+        "steerLean": 200
+      },
+      "table": ".claude/worktrees/r2-controller/artifacts/economy/r2/steer-table-cal-R66.json"
+    }
+  ]
+}
