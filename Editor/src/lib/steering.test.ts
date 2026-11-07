@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {bandAt, confirmText, heldText, leanToRule, leanWords, leverAt, measureLines, preview, ruleToLean, snapLean, steerAt,
+import {bandAt, confirmText, heldText, leanToRule, leanWords, ledgerTitle, ledgerWho, leverAt, logLines, measureLines, preview, ruleToLean, snapLean, steerAt,
     steerChange, supervisorLine, type SteeringView} from './steering.ts';
 
 // Steering the economy (Docs/Design/74-steering-the-economy.md, 10): what the DM's Steering panel reads and sends.
@@ -89,4 +89,21 @@ test('the supervisor\'s line (doc 75, 3.6)', () => {
     assert.equal(supervisorLine(back), 'The supervisor: nothing wrong now; the tithe eased 2.5 points, returning to the table.');
     assert.equal(supervisorLine({...view, now: undefined}), null);
     assert.ok(file.steering.reach.left.startsWith('Shared') && file.steering.reach.right.startsWith('Held by the rich'), 'the ends\' reach in the table');
+});
+
+test('doc 75, Phase 7: the year of log, by kind, and the ledger in words', () => {
+    const v: SteeringView = {...view, changes: [{at: '2026-11-07', who: 'dm-user', detail: 'Where the money rests: 0 -> -100'}],
+        history: [
+            {day: 9, measure: 'supervisor', value: 0, target: 0, band: 0, error: 0, step: 0, before: 0, after: -1, why: 'Day 9: the tithe eased'},
+            {day: 2, measure: '', value: 0, target: 0, band: 0, error: 0, step: 0, before: 0, after: -1, why: 'Day 2: where the money rests moved'},
+        ]};
+    assert.deepEqual(logLines(v), ['The DM, dm-user: Where the money rests: 0 -> -100', 'Day 9: the tithe eased', 'Day 2: where the money rests moved']);
+    assert.deepEqual(logLines(v, 'dm'), ['The DM, dm-user: Where the money rests: 0 -> -100']);
+    assert.deepEqual(logLines(v, 'supervisor'), ['Day 9: the tithe eased']);
+    assert.deepEqual(logLines(v, 'slider'), ['Day 2: where the money rests moved']);
+    const week = {week: 4, from: 28, to: 34, nights: 2, levers: [], parties: []};
+    assert.equal(ledgerTitle(week), 'Days 28 to 34 (2 nights so far)');
+    assert.equal(ledgerTitle({...week, nights: 7}), 'Days 28 to 34');
+    assert.equal(ledgerWho([['upper-class households', 1300], ['the treasury', 9]]), 'upper-class households 1,300p, the treasury 9p');
+    assert.equal(ledgerWho([]), '-');
 });

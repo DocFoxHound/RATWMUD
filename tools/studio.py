@@ -210,6 +210,102 @@ def steer_reach(table):
 
 
 SUP_RULES = ('the treasury under its floor', 'the shops short', 'hunger')
+# The weekly ledger's levers (doc 75, 3.8, Phase 7), in the order the panel lists them, as Core's steerLedgerNight books
+# them: the steering's own levers, the treasury's that the table sets, the gate toll, and the floors' skim.
+LEDGER_LEVERS = (('levelling', 'The Levelling tithe'), ('charters', 'The Crown\'s charters'), ('groundRent', 'The ground rent'),
+                 ('postsShare', 'The hands\' share'), ('dividend', 'The Houses\' dividend'),
+                 ('wageSupport', 'The treasury\'s wage support'), ('surplusAlms', 'The surplus to the poorest'),
+                 ('toll', 'The gate toll'), ('skim', 'The skim (Never Hungry and Never Broke)'))
+LEDGER_CLASSES = {'upper': 'upper-class households', 'middle': 'middle-class households', 'lower': 'lower-class households',
+                  # (The skim's payer groups, Core's skimStep, in the same words.)
+                  'households: upper': 'upper-class households', 'households: middle': 'middle-class households',
+                  'keepers': 'the keepers\' households', 'treasury': 'the treasury', 'estates': 'the Houses\' estates'}
+
+
+def steer_ledger(steer, weeks=8):
+    """The weekly ledger (doc 75, 3.8, Phase 7; EVE's monthly report of faucets and sinks, by the week): from the save's
+    `ledger`, newest week first, at most `weeks`: each lever's pennies moved, who paid them and who was given them (largest
+    first), and by payer and receiver (households by class) what went in and out across the levers. Read only."""
+    out = []
+    for w in reversed([w for w in (steer.get('ledger') or []) if isinstance(w, dict)][-weeks:]):
+        week = int(w.get('week') or 0)
+        paid, got = w.get('paid') or {}, w.get('got') or {}
+        levers, parties = [], {}
+        for key, label in LEDGER_LEVERS:
+            p = {k: int(v) for k, v in (paid.get(key) or {}).items() if int(v) > 0}
+            g = {k: int(v) for k, v in (got.get(key) or {}).items() if int(v) > 0}
+            if not p and not g:
+                continue
+            levers.append({'key': key, 'label': label, 'moved': sum(g.values()) or sum(p.values()),
+                           'paid': sorted(([LEDGER_CLASSES.get(k, k), v] for k, v in p.items()), key=lambda e: (-e[1], e[0])),
+                           'got': sorted(([LEDGER_CLASSES.get(k, k), v] for k, v in g.items()), key=lambda e: (-e[1], e[0]))})
+            for k, v in p.items():
+                parties.setdefault(LEDGER_CLASSES.get(k, k), [0, 0])[1] += v
+            for k, v in g.items():
+                parties.setdefault(LEDGER_CLASSES.get(k, k), [0, 0])[0] += v
+        out.append({'week': week, 'from': week * 7, 'to': week * 7 + 6, 'nights': int(w.get('nights') or 0), 'levers': levers,
+                    'parties': [{'who': who, 'in': io[0], 'out': io[1], 'net': io[0] - io[1]}
+                                for who, io in sorted(parties.items(), key=lambda e: (-(abs(e[1][0] - e[1][1])), e[0]))]})
+    return out
+
+
+def steer_toll(economy, rules, loop_toll):
+    """The gate toll now, as Core's gateTollNow: the world's, moved by the treasury's drift within tollDriftMost."""
+    base = float(economy.get('gateToll', 30) if economy.get('gateToll') is not None else 30)
+    if int(rules.get('treasuryDrift', 1)) <= 0 or not loop_toll:
+        return base
+    most = float(rules.get('tollDriftMost', 1))
+    return min(90.0, max(0.0, base + max(-most, min(most, float(loop_toll)))))
+
+
+def steer_edicts(now, levers, targets, toll):
+    """The edicts (doc 75, 3.8, Phase 7): one line per actuator the slider has moved off the world's own, as an in-world
+    law, with the measure it is for against its aim at the slider; and the gate toll with the treasury. `now` the view's
+    "now", `levers` the view's levers (with their values now), `targets` the view's targets. Words only: nothing here is a
+    setting (the DM moves only the slider)."""
+    if not now or not now.get('on'):
+        return []
+    lever = {l['key']: l for l in levers}
+    means = now.get('means') or {}
+
+    def value(key):
+        l = lever.get(key)
+        return None if not l or l.get('now') is None else float(l['now'])
+
+    def off(key):
+        v, l = value(key), lever.get(key)
+        return v is not None and l is not None and abs(v - float(l.get('own') or 0)) >= 0.05
+
+    def aim(name, places, unit=''):
+        m, t, b = means.get(name), targets.get(name), targets.get(name + 'Band')
+        said = '-' if m is None or m < 0 else f'{m:.{places}f}{unit}'
+        if t is None:
+            return said
+        return f'{said} (aim {t:.{places}f}{unit}' + (f' \u00b1 {b:.{places}f}{unit}' if b is not None else '') + ')'
+    out = []
+    if off('levelling'):
+        out.append(f"The Levelling tithe: {value('levelling'):.0f}% of the way to the mean a night. The earners' Gini {aim('gini', 2)}.")
+    if off('postsShare'):
+        out.append(f"The hands' share: {value('postsShare'):.0f}% of a keeper's nightly profit to the shop's other posts.")
+    if now.get('chartersTo') or now.get('charters'):
+        n = int(now.get('charters') or 0)
+        out.append(f"Crown charters: {n} shop{'' if n == 1 else 's'} held by the Houses"
+                   + (f" (going to {now['chartersTo']})" if now.get('chartersTo') and now['chartersTo'] != n else '')
+                   + f". The upper class and the Houses hold {aim('upper', 1, '%')}.")
+    if off('dividend'):
+        out.append(f"The Houses' dividend: {value('dividend'):.0f}% of the estates' spare to the upper class a night. "
+                   f"The upper class and the Houses hold {aim('upper', 1, '%')}.")
+    if off('groundRent'):
+        out.append(f"The ground rent: {value('groundRent'):.0f}% of a keeper's nightly profit to the Crown.")
+    if off('richAbove'):
+        out.append(f"The rich hold: {value('richAbove'):.0f}p a head kept before an upper-class household's comforts.")
+    if off('spendAbove'):
+        out.append(f"The spending keep: {value('spendAbove'):.0f}p a head kept before every other household's comforts.")
+    treasury = means.get('treasury')
+    target = value('treasuryTarget')
+    out.append(f'The gate toll: {toll:.1f}. Treasury {"-" if treasury is None or treasury < 0 else f"{treasury:,.0f}p"}'
+               + (f' (the toll drifts toward {target:,.0f}p).' if target is not None else '.'))
+    return out
 
 
 def steer_supervisor(steer):
@@ -476,11 +572,11 @@ class Economy:
                'words': STEER_WORDS, 'reach': steer_reach(table), 'held': list(map_editor.STEERED_RULES), 'own': {k: rules.get(k) for k in map_editor.STEER_OWN_RULES},
                'table': {'levers': levers, 'targets': targets, 'marks': list(STEER_MARKS),
                          'treasuryFloor': table.get('treasuryFloor', 800), 'treasuryLow': table.get('treasuryLow', 500)},
-               'band': [round(lo, 4), round(hi, 4)], 'saved': None, 'problem': '', 'changes': []}
+               'band': [round(lo, 4), round(hi, 4)], 'saved': None, 'problem': '', 'changes': [], 'edicts': [], 'ledger': []}
         try:                                       # (The DM's own changes, newest first: the audit's economy.steer.)
             with self._connect_dm(key) as conn:
                 out['changes'] = [{'at': r[0], 'who': r[1], 'detail': r[2]} for r in conn.execute(
-                    "SELECT at, who, detail FROM dm.audit WHERE action = 'economy.steer' ORDER BY at DESC LIMIT 24").fetchall()]
+                    "SELECT at, who, detail FROM dm.audit WHERE action = 'economy.steer' ORDER BY at DESC LIMIT 1000").fetchall()]
         except Exception:  # noqa: BLE001 (no audit to read: nothing to show)
             pass
 
@@ -495,7 +591,8 @@ class Economy:
                          for k, label, unit in STEER_LEVERS if isinstance(levers.get(k), list) and len(levers[k]) == 5]
         try:
             with self._connect_dm(key) as conn:
-                row = conn.execute("SELECT payload::jsonb->'society'->'loop'->'steer', saved_at::text FROM game.checkpoints "
+                row = conn.execute("SELECT payload::jsonb->'society'->'loop'->'steer', saved_at::text, "
+                                   "payload::jsonb->'society'->'loop'->'toll' FROM game.checkpoints "
                                    'WHERE world_id = %s', (world,)).fetchone()
         except Exception as error:  # noqa: BLE001 (a world without a save, or out of reach: nothing to show)
             out['problem'] = f'The world\'s save could not be read: {error}'
@@ -522,6 +619,11 @@ class Economy:
                     (max(lever['own'], v - backs[lever['key']]) if v > lever['own'] else v)
             lever['now'] = rounded(v, 2)
         out['now']['supervisor'] = steer_supervisor(steer)
+        loop_toll = row[2] if len(row) > 2 else None
+        out['edicts'] = steer_edicts(out['now'], out['levers'], out['targets'],
+                                     steer_toll(economy, rules, loop_toll if isinstance(loop_toll, (int, float)) else 0))
+        out['ledger'] = steer_ledger(steer)
+        # (Doc 75, Phase 7: the year of log, newest first: Core keeps a year of lines, not 24.)
         out['history'] = list(reversed(steer.get('history') or []))
         skims = steer.get('skims') or []
         summary = {'total': 0, 'short': 0, 'days': len(skims), 'purpose': {}, 'group': {}, 'payers': {}}

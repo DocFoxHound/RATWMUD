@@ -275,9 +275,13 @@ struct LoopState
     // was set at (steerLean), the night the slider last moved; the slow means (the earners' Gini, the upper share, the
     // richest tenth's share: over about steerMeanDays nights, re-seated when the slider moves) and the fast ones (hungry
     // residents an hour, households short, the treasury at 18:00: over 28), over so many nights; the last night an
-    // estate's posts went short; and the last 24 changes, each with its reason. Empty until the steering is first on.
+    // estate's posts went short; and the changes of the last LogDays days (at most LogMost; doc 75, Phase 7: a year, not 24),
+    // each with its reason. Empty until the steering is first on.
     struct Steer
     {
+        static constexpr std::int64_t LogDays = 366;
+        static constexpr std::size_t LogMost = 1000;
+        static constexpr std::int64_t LedgerWeeks = 52;
         struct Judging
         {
             std::int64_t day = 0;
@@ -311,6 +315,18 @@ struct LoopState
             std::map<std::string, std::int64_t> purpose, group, payers;
         };
         std::vector<SkimDay> skims;
+        // The weekly ledger (doc 75, 3.8, Phase 7; the DM tab's, EVE style): by week of the world's days (day / 7), the
+        // nights counted and, by lever, the pennies each payer paid and each receiver was given (households by class,
+        // "upper", "middle", "lower"; the rest by name: "the Houses' estates", "the treasury", "the keepers' tills"...),
+        // the last LedgerWeeks weeks. Counted only; nothing reads it back but the DM tab, and it is left out of empty() so
+        // that counting it never wakes the steering's nightly step (it is saved with the rest whenever that is).
+        struct LedgerWeek
+        {
+            std::int64_t week = 0;
+            int nights = 0;
+            std::map<std::string, std::map<std::string, std::int64_t>> paid, got;
+        };
+        std::vector<LedgerWeek> ledger;
         // The skim reworked (doc 74, 6): each holder's idle spare (a household "home <key>", an estate's fund, the
         // treasury), the night it was last followed (-1: never, so the first night seeds each at its spare); Never Broke's
         // credit toward necessities, by household (its home key), until the next night's; and the tills short's 28-night
@@ -1230,6 +1246,8 @@ class Society
         // profit to their Houses.
         std::int64_t tithe = 0, charterProfit = 0;
         int titheGave = 0, titheGot = 0, charters = 0, chartersWant = 0, chartersGranted = 0, chartersBack = 0;
+        // (Doc 75, Phase 7: the tithe tonight by the paying and the given households' class, for the weekly ledger.)
+        std::map<std::string, std::int64_t> titheOut, titheIn;
         // The skim (doc 74, 6): what it took, by purpose ("never hungry", "never broke", "share-out"), by payer group
         // and by payer, what it could not find; and the relief paid out of fund:relief, by kind ("food", "necessities",
         // "share-out").
@@ -1505,6 +1523,10 @@ class Society
     void levellingTithe();                          // At 18:00, after the alms, before Never Broke (left of the centre).
     void housesDividend();                          // At 18:00 (the push right of the centre).
     void steerSet(double x, std::int64_t day, const std::string& why);
+    // Doc 75, Phase 7: a line in the steering's log (kept LogDays days, at most LogMost), and tonight's money in the
+    // weekly ledger (after every money step, with the steering or a floor on).
+    void steerLog(LoopState::Steer::Judging j);
+    void steerLedgerNight(std::int64_t day);
     void steerFollow(std::int64_t day);             // The DM's on/off and slider, followed at once.
     int ownRule(const std::string& name) const;     // A rule as the world has it, whatever the steering does.
     std::int64_t worksOrders(std::int64_t budget);      // The public works' orders from the city's trades, from `budget`.

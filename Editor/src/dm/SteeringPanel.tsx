@@ -2,9 +2,12 @@
 // tab. The DM sets only four things: where the money rests (a slider, -100 shared to +100 held by the rich), the
 // steering's on/off, and the two floors, Never Hungry and Never Broke; each change is confirmed, audited (economy.steer)
 // and sent to the running server. Everything else here is read only: each measure against its target at the slider, the
-// push and its band, each lever with its bounds there and its value now, the skim's last 28 days, and the log.
+// push and its band, each lever with its bounds there and its value now, the skim's last 28 days, and the log. Doc 75,
+// Phase 7: the edicts (each lever the slider moved, as a law), the weekly ledger and a year of log, all read only: the DM
+// never sets a lever by hand.
 import {useEffect, useRef, useState} from 'react';
-import {confirmText, leanWords, logLines, measureLines, preview, steerChange, supervisorLine, type SteerBody, type SteeringView} from '../lib/steering';
+import {confirmText, leanWords, ledgerTitle, ledgerWho, logLines, measureLines, preview, steerChange, supervisorLine, type LogKind,
+    type SteerBody, type SteeringView} from '../lib/steering';
 
 const fmt = (v: number | null | undefined, places = 1) => v === null || v === undefined ? '-' : (Math.round(v * 10 ** places) / 10 ** places).toString();
 
@@ -13,6 +16,8 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
     // (The slider's position last asked about: letting go fires pointer-up and then, as the confirmation takes the focus,
     // blur, and each would ask and send again.)
     const asked = useRef<number | null>(null);
+    const [week, setWeek] = useState(0);            // (The ledger's week shown: 0 the newest.)
+    const [kind, setKind] = useState<LogKind>('all');
     useEffect(() => { setLean(view.settings.lean); asked.current = null; }, [view.settings.lean]);
     const send = (body: SteerBody) => {
         const change = steerChange(view, body);
@@ -30,6 +35,9 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
     const push = view.now?.on ? view.now.push : 0;
     const at = (v: number) => `${(v + 1) * 50}%`;            // (-1..1 on the scale's width.)
     const skim = view.skim;
+    const ledger = view.ledger ?? [];
+    const shown = ledger[Math.min(week, Math.max(0, ledger.length - 1))];
+    const log = logLines(view, kind);
     return <section className="economy-switches steering-panel">
         <h3>Steering the economy</h3>
         <p className="hint">Tell the steering where the money should rest. A few of the economy's levers move to that place the
@@ -55,6 +63,13 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
             onChange={e => send({neverBroke: e.target.checked})} /> Never Broke: a household short of the next day's necessities
             after the alms is given credit for just enough, spent at the shops on its food and needs (never loose cash); idle
             money pays for it.</label>
+
+        {view.edicts && view.edicts.length > 0 && <>
+            <h4>The edicts</h4>
+            <p className="hint">The laws the steering keeps at {view.settings.lean} tonight, each with what it is for. They follow
+                the slider; none is set by hand.</p>
+            <ul className="steer-edicts">{view.edicts.map((e, i) => <li key={i}>{e}</li>)}</ul>
+        </>}
 
         <h4>Where it is against where it is going</h4>
         {view.problem && <p className="hint">{view.problem}</p>}
@@ -90,7 +105,27 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
             <li>The largest payers: {Object.entries(skim.payers).map(([k, v]) => `${k} ${v}p`).join(', ')}.</li>
         </ul> : <p className="hint">Nothing skimmed in the last 28 days.</p>}
 
-        <details><summary>The log: the DM's changes and the steering's judgings</summary>
-            <ul>{logLines(view).map((l, i) => <li key={i}>{l}</li>)}</ul></details>
+        <h4>The ledger, by the week</h4>
+        {shown ? <>
+            <label className="steer-week">Week <select value={week} onChange={e => setWeek(Number(e.target.value))}>
+                {ledger.map((w, i) => <option key={w.week} value={i}>{ledgerTitle(w)}</option>)}</select></label>
+            <div className="dm-table-wrap"><table className="dm-table">
+                <thead><tr><th>Lever</th><th>Moved</th><th>Paid by</th><th>Given to</th></tr></thead>
+                <tbody>{shown.levers.map(l => <tr key={l.key}><td>{l.label}</td><td>{l.moved.toLocaleString('en-GB')}p</td>
+                    <td>{ledgerWho(l.paid)}</td><td>{ledgerWho(l.got)}</td></tr>)}</tbody>
+            </table></div>
+            <div className="dm-table-wrap"><table className="dm-table">
+                <thead><tr><th>Who</th><th>In</th><th>Out</th><th>Net</th></tr></thead>
+                <tbody>{shown.parties.map(p => <tr key={p.who}><td>{p.who}</td><td>{p.in.toLocaleString('en-GB')}p</td>
+                    <td>{p.out.toLocaleString('en-GB')}p</td><td>{p.net > 0 ? '+' : ''}{p.net.toLocaleString('en-GB')}p</td></tr>)}</tbody>
+            </table></div>
+        </> : <p className="hint">No ledger yet: it counts each night the steering or a floor is on.</p>}
+
+        <details><summary>The log: a year of the DM's changes and the steering's lines ({log.length})</summary>
+            <label className="steer-log-kind">Show <select value={kind} onChange={e => setKind(e.target.value as LogKind)}>
+                <option value="all">everything</option><option value="dm">the DM's changes</option>
+                <option value="slider">the slider as the world took it</option><option value="supervisor">the supervisor</option>
+            </select></label>
+            <ul className="steer-log">{log.map((l, i) => <li key={i}>{l}</li>)}</ul></details>
     </section>;
 }

@@ -787,11 +787,13 @@ void Society::levellingTithe()
         return;
     const auto homes = households();
     std::vector<const std::vector<std::string>*> members;
+    std::vector<std::string> classes;               // (Each household's class, for the weekly ledger: doc 75, Phase 7.)
     std::vector<std::int64_t> held, heads;
     for (const auto& [home, m] : homes)
     {
         if (m.empty())
             continue;
+        classes.push_back(homeClass(home, m));
         std::int64_t c = 0;
         for (const auto& id : m)
             c += cash(id);
@@ -818,6 +820,8 @@ void Society::levellingTithe()
                 gave += c;
         raised += gave;
         loopToday_.titheGave += gave > 0;
+        if (gave > 0)
+            loopToday_.titheOut[classes[i]] += gave;
     }
     for (std::size_t i = 0; i < held.size() && raised > 0; ++i)
     {
@@ -834,6 +838,7 @@ void Society::levellingTithe()
             raised -= get;
             loopToday_.tithe += get;
             ++loopToday_.titheGot;
+            loopToday_.titheIn[classes[i]] += get;
         }
     }
 }
@@ -913,10 +918,64 @@ void Society::steerSet(double x, std::int64_t day, const std::string& why)
     j.day = day;
     j.after = st.push;
     j.why = why + (moved.empty() ? "" : " (" + moved + ")");
-    st.history.push_back(j);
-    if (st.history.size() > 24)
-        st.history.erase(st.history.begin());
     loopToday_.steerWhy = j.why;
+    steerLog(std::move(j));
+}
+
+void Society::steerLog(LoopState::Steer::Judging j)
+{
+    // Doc 75, Phase 7: the log keeps a year of lines (the DM's slider moves, the supervisor's actions), not the last 24, so
+    // a busy year of the supervisor no longer pushes the DM's changes out; at most LogMost lines, the oldest first out.
+    auto& h = state_.loop.steer.history;
+    const auto day = j.day;
+    h.push_back(std::move(j));
+    h.erase(std::remove_if(h.begin(), h.end(), [&](const auto& x) { return x.day <= day - LoopState::Steer::LogDays; }), h.end());
+    if (h.size() > LoopState::Steer::LogMost)
+        h.erase(h.begin(), h.begin() + std::ptrdiff_t(h.size() - LoopState::Steer::LogMost));
+}
+
+void Society::steerLedgerNight(std::int64_t day)
+{
+    // The weekly ledger (doc 75, 3.8, Phase 7): tonight's money by lever, who paid it and who was given it, added to this
+    // week's (day / 7); the last LedgerWeeks weeks kept. It only counts what the night's steps booked in loopToday_.
+    const auto& d = loopToday_;
+    auto& weeks = state_.loop.steer.ledger;
+    const auto week = day / 7;
+    if (weeks.empty() || weeks.back().week != week)
+    {
+        weeks.push_back({});
+        weeks.back().week = week;
+    }
+    auto& w = weeks.back();
+    ++w.nights;
+    const auto flow = [&](const char* lever, const std::string& from, const std::string& to, std::int64_t coins) {
+        if (coins <= 0)
+            return;
+        w.paid[lever][from] += coins;
+        w.got[lever][to] += coins;
+    };
+    for (const auto& [cls, coins] : d.titheOut)
+        if (coins > 0)
+            w.paid["levelling"][cls] += coins;
+    for (const auto& [cls, coins] : d.titheIn)
+        if (coins > 0)
+            w.got["levelling"][cls] += coins;
+    flow("charters", "the chartered shops", "the Houses' estates", d.charterProfit);
+    flow("groundRent", "the keepers' tills", "the Crown's estate", d.groundRent - d.groundRentTreasury);
+    flow("groundRent", "the keepers' tills", "the treasury", d.groundRentTreasury);
+    flow("postsShare", "the keepers' tills", "the shops' hands", d.postsShare);
+    flow("dividend", "the Houses' estates", "upper", d.dividend);
+    flow("wageSupport", "the treasury", "the short tills' posts", d.wageSupport);
+    flow("surplusAlms", "the treasury", "the poorest households", d.surplusAlms);
+    flow("toll", "the shops' store draws", "the treasury", d.toll);
+    for (const auto& [group, coins] : d.skimBy)
+        if (coins > 0)
+            w.paid["skim"][group] += coins;
+    for (const auto& [purpose, coins] : d.skimFor)
+        if (coins > 0)
+            w.got["skim"][purpose] += coins;
+    while (!weeks.empty() && weeks.front().week <= week - LoopState::Steer::LedgerWeeks)
+        weeks.erase(weeks.begin());
 }
 
 void Society::steerFollow(std::int64_t day)
@@ -1334,9 +1393,7 @@ void Society::steerSupervise(std::int64_t day, const SupNight& tonight)
         j.measure = "supervisor";
         j.after = st.push;
         j.why = "Day " + std::to_string(day) + ": " + said;
-        st.history.push_back(j);
-        if (st.history.size() > 24)
-            st.history.erase(st.history.begin());
+        steerLog(std::move(j));
     }
 }
 } // namespace ratw
