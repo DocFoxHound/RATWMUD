@@ -11,8 +11,13 @@ laptop it runs on loopback for development: worlds and the client reach it with 
   python3 Central/ratw_central.py keys list|rotate [--now]
                                                      the ticket keys; rotate publishes the next one a day ahead, --now
                                                      signs with a new one at once and revokes every ticket out
-  python3 Central/ratw_central.py worlds add --name N --kind official|community | worlds list
-                                                     the world registry by hand (the heartbeat and the list: Phase 4)
+  python3 Central/ratw_central.py worlds add --name N --kind official|community [--address HOST:PORT] [--secure]
+                                         [--protocol N] [--description TEXT]
+  python3 Central/ratw_central.py worlds set WORLD_ID [--address HOST:PORT] [--secure|--plain] [--protocol N]
+                                         [--description TEXT] [--delisted|--listed]
+  python3 Central/ratw_central.py worlds list
+                                                     the world registry by hand (the heartbeat and the list: Phase 4);
+                                                     a world with an address is in GET /worlds
   python3 Central/ratw_central.py accounts flag USERNAME [--banned|--unbanned] [--host|--no-host] [--admin|--no-admin]
   python3 Central/ratw_central.py accounts set-password USERNAME   (no email in the closed beta: the user resets by hand)
   python3 Central/ratw_central.py db-drop --yes       drop its database
@@ -22,7 +27,7 @@ The calls (JSON bodies; `Authorization: Bearer ACCESS_TOKEN` where an account is
   password, remember?}   POST /account/refresh {refresh_token}   POST /account/logout {everywhere?}   GET /account
   DELETE /account {password}   GET /wolves   POST /wolves {name, age, appearance, family?, profile?}
   PATCH /wolves/WOLF_ID {revision, appearance?, profile?}   DELETE /wolves/WOLF_ID {password}   POST /wolves/name {name}   POST /tickets {world, wolf}
-  GET /keys   GET /health
+  GET /keys   GET /health   GET /rules (the creator's Gift families)   GET /worlds (the list: a stub until Phase 4)
 Replies are {"ok": true, ...} or {"ok": false, "error": "...", "code": "..."} with the HTTP status; a rate limit is
 429 with Retry-After.
 
@@ -70,6 +75,8 @@ def routes(central: central_service.Central) -> dict:
         ('POST', '/wolves/name'): central.name_free,
         ('POST', '/tickets'): central.ticket,
         ('GET', '/keys'): central.jwks,
+        ('GET', '/rules'): central.rules,
+        ('GET', '/worlds'): central.list_worlds,
     }
 
 
@@ -163,7 +170,7 @@ def handler_class(central: central_service.Central, trust_proxy: bool = False, c
                 else:
                     known = any(p == path for _, p in table) or bool(match) or path == '/health'
                     raise central_service.Reply(405 if known else 404, 'No such call.', 'not_found')
-                self.send(status, reply, 'public, max-age=300' if path == '/keys' and status == 200 else 'no-store')
+                self.send(status, reply, 'public, max-age=300' if path in ('/keys', '/rules') and status == 200 else 'no-store')
             except central_service.Reply as reply:
                 self.close_connection = True        # (The body may not have been read.)
                 body = {'ok': False, 'error': reply.error, 'code': reply.code}
@@ -236,6 +243,15 @@ class Server:
         self.http.server_close()
 
 
+def split_address(parser, given: str) -> tuple[str, int]:
+    """HOST:PORT ([v6]:PORT) for a world's address."""
+    match = re.fullmatch(r'\[([0-9a-fA-F:.]+)\]:(\d{1,5})|([A-Za-z0-9.-]+):(\d{1,5})', given.strip())
+    port = int(match.group(2) or match.group(4)) if match else 0
+    if not match or not 0 < port < 65536:
+        parser.error('--address is HOST:PORT')
+    return match.group(1) or match.group(3), port
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest='command', required=True)
@@ -255,9 +271,17 @@ def main(argv=None) -> int:
     keys.add_argument('--now', action='store_true')
     keys.add_argument('--keys', type=Path, default=DEFAULT_KEYS)
     worlds = sub.add_parser('worlds')
-    worlds.add_argument('action', choices=('add', 'list'))
+    worlds.add_argument('action', choices=('add', 'set', 'list'))
+    worlds.add_argument('world', nargs='?', help='the world id (worlds set)')
     worlds.add_argument('--name')
     worlds.add_argument('--kind', choices=('official', 'community'), default='community')
+    worlds.add_argument('--address', help='HOST:PORT where the client reaches it (ws://HOST:PORT/ws)')
+    worlds.add_argument('--secure', dest='secure', action='store_true', default=None, help='wss:// (behind TLS)')
+    worlds.add_argument('--plain', dest='secure', action='store_false')
+    worlds.add_argument('--protocol', type=int, help='the protocol it speaks (default 1 when added)')
+    worlds.add_argument('--description')
+    worlds.add_argument('--delisted', dest='delisted', action='store_true', default=None)
+    worlds.add_argument('--listed', dest='delisted', action='store_false')
     accounts = sub.add_parser('accounts')
     accounts.add_argument('action', choices=('flag', 'set-password'))
     accounts.add_argument('username')
@@ -292,13 +316,22 @@ def main(argv=None) -> int:
             return 0
         store.migrate()
         if args.command == 'worlds':
+            host, port = split_address(parser, args.address) if args.address else (None, None)
+            listing = {k: v for k, v in (('secure', args.secure), ('protocol', args.protocol),
+                                         ('description', args.description)) if v is not None}
             if args.action == 'add':
                 if not args.name:
                     parser.error('worlds add needs --name')
                 import secrets
                 world_id = 'world-' + secrets.token_hex(16)
-                store.add_world(world_id, args.name, args.kind, time.time())
+                store.add_world(world_id, args.name, args.kind, time.time(), address=host, port=port,
+                                listing={'protocol': 1, 'secure': False, **listing})
                 print(world_id)
+            elif args.action == 'set':
+                if not args.world or not store.set_world(args.world, host, port, listing, args.delisted):
+                    print('no such world', file=sys.stderr)
+                    return 1
+                print(json.dumps(store.world(args.world)))
             else:
                 for w in store.worlds():
                     print(json.dumps(w))

@@ -12,10 +12,13 @@
 //       -> {"ok": true, "profile": {...}}: the saved profile (or a new one) with the fields applied, as the game saves it
 //   {"check": "build", "tier": "normal"?, "family": ""?, "build": {...}}
 //       -> {"ok": true, "build": {"grades": {...}, "specialty": "..."}} (for a world's first arrival, doc 77, Q12 (a))
+//   {"check": "rules"}                                 -> {"ok": true, "gifts": {...}}: what the creator shows of the
+//          identity's rules (the Gift families, as a world's lobby sends them), for central's GET /rules (doc 77, 3.1)
 //   {"check": "version"}                               -> {"ok": true, "version": 1}
 // A refusal is {"ok": false, "error": "..."}, with the words creation uses. A line that isn't JSON is refused the same
 // way. Data/ comes from RATW_DATA_DIR, else the working directory or above it, else the source tree.
 #include "RatwCreation.h"
+#include "RatwGifts.h"
 #include "RatwIdentity.h"
 #include "RatwJsonDoc.h"
 #include "RatwPeople.h"
@@ -71,6 +74,13 @@ Value check(const Value& request)
         auto o = Value::object();
         o.add("ok", true);
         o.add("version", Version);
+        return o;
+    }
+    if (what == "rules")
+    {
+        auto o = Value::object();
+        o.add("ok", true);
+        o.add("gifts", gifts::creatorCatalog());
         return o;
     }
     if (what == "wolf")
@@ -147,7 +157,7 @@ Value check(const Value& request)
         o.add("build", b);
         return o;
     }
-    return refuse("Unknown check: use wolf, look, profile, build or version.");
+    return refuse("Unknown check: use wolf, look, profile, build, rules or version.");
 }
 } // namespace
 

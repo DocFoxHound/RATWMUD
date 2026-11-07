@@ -316,22 +316,45 @@ class Store:
 
     # ---------------------------------------------------------------- Worlds (a stub until Phase 4) and tickets
 
-    def add_world(self, world_id: str, name: str, kind: str, now: float, host_account: str | None = None) -> None:
+    def add_world(self, world_id: str, name: str, kind: str, now: float, host_account: str | None = None,
+                  address: str | None = None, port: int | None = None, listing: dict | None = None) -> None:
         with self.connection() as conn:
-            conn.execute('INSERT INTO central.worlds (id, name, kind, host_account, created_at) '
-                         'VALUES (%s, %s, %s, %s, %s)', (world_id, name, kind, host_account, ts(now)))
+            conn.execute('INSERT INTO central.worlds (id, name, kind, host_account, created_at, address, port, listing) '
+                         'VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
+                         (world_id, name, kind, host_account, ts(now), address, port, world_db.Jsonb(listing or {})))
+
+    def set_world(self, world_id: str, address: str | None = None, port: int | None = None,
+                  listing: dict | None = None, delisted: bool | None = None) -> bool:
+        """Changes a world's address, listing fields (merged) or delisting, by hand (the heartbeat does it in Phase 4)."""
+        sets, values = [], []
+        if address is not None:
+            sets += ['address = %s', 'port = %s']
+            values += [address, port]
+        if listing:
+            sets.append('listing = listing || %s')
+            values.append(world_db.Jsonb(listing))
+        if delisted is not None:
+            sets.append('delisted = %s')
+            values.append(delisted)
+        if not sets:
+            return self.world(world_id) is not None
+        with self.connection() as conn:
+            return conn.execute(f'UPDATE central.worlds SET {", ".join(sets)} WHERE id = %s',
+                                (*values, world_id)).rowcount == 1
+
+    WORLD_FIELDS = ('id', 'name', 'kind', 'host_account', 'delisted', 'address', 'port', 'listing')
 
     def world(self, world_id: str) -> dict | None:
         with self.connection() as conn:
-            row = conn.execute('SELECT id, name, kind, host_account, delisted FROM central.worlds WHERE id = %s',
+            row = conn.execute(f'SELECT {", ".join(self.WORLD_FIELDS)} FROM central.worlds WHERE id = %s',
                                (world_id,)).fetchone()
-            return None if row is None else dict(zip(('id', 'name', 'kind', 'host_account', 'delisted'), row))
+            return None if row is None else dict(zip(self.WORLD_FIELDS, row))
 
     def worlds(self) -> list[dict]:
         with self.connection() as conn:
-            rows = conn.execute('SELECT id, name, kind, host_account, delisted FROM central.worlds '
+            rows = conn.execute(f'SELECT {", ".join(self.WORLD_FIELDS)} FROM central.worlds '
                                 'ORDER BY created_at, id').fetchall()
-            return [dict(zip(('id', 'name', 'kind', 'host_account', 'delisted'), r)) for r in rows]
+            return [dict(zip(self.WORLD_FIELDS, r)) for r in rows]
 
     def record_ticket(self, jti: str, world_id: str, wolf_id: str, account_id: str, kid: str, now: float,
                       expires: float) -> None:

@@ -103,6 +103,9 @@ class Identity:
     def profile(self, saved: dict | None, fields) -> dict:
         return self.check({'check': 'profile', 'profile': saved, 'fields': fields})
 
+    def rules(self) -> dict:
+        return self.check({'check': 'rules'})
+
     def close(self):
         with self._lock:
             if self._process and self._process.stdin:

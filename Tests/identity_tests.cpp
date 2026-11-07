@@ -111,6 +111,7 @@ void theCommand(const std::string& command)
         R"({"check":"build","tier":"gifted","build":{}})",
         "not json",
         R"({"check":"nothing"})",
+        R"({"check":"rules"})",
     });
     expect(r[0].boolean("ok") && r[0].number("version") == 1, "version");
     const auto& wolf = r[1]["wolf"];
@@ -131,6 +132,13 @@ void theCommand(const std::string& command)
     expect(!r[12].boolean("ok"), "an unknown grade");
     expect(!r[13].boolean("ok"), "a tier needs a family");
     expect(!r[14].boolean("ok") && !r[15].boolean("ok"), "not JSON, an unknown check");
+    // The creator's rules for central's GET /rules: the families, as a world's lobby sends them.
+    const auto& families = r[16]["gifts"]["families"];
+    expect(r[16].boolean("ok") && families.isArray() && families.size() == 8, "the rules: eight families " + json::dump(r[16]).substr(0, 200));
+    bool fire = false;
+    for (const auto& f : families.items())
+        fire = fire || (f.string("id") == "fire" && f["gifted"].isObject() && f["quickened"].isObject());
+    expect(fire, "a family with its gifted and quickened sides");
 }
 } // namespace
 

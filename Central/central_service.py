@@ -189,6 +189,7 @@ class Central:
         self.settings = settings or Settings()
         self.limiter = RateLimiter(clock)
         self._hashers = threading.BoundedSemaphore(self.settings.hash_threads)
+        self._rules: dict | None = None
 
     # ---------------------------------------------------------------- Plumbing
 
@@ -487,6 +488,35 @@ class Central:
         ticket, kid = self.keys.sign(claims, self.clock())
         self.store.record_ticket(claims['jti'], world_id, wolf['id'], account['id'], kid, now, claims['exp'])
         return ok(ticket=ticket, expires=claims['exp'], world=world_id, kind=world['kind'])
+
+    # ---------------------------------------------------------------- What the client shows
+
+    def rules(self, address: str, token, body: dict) -> tuple[int, dict]:
+        """The creator's identity rules (doc 77, 3.1): the Gift families, from the game's own Data/ through
+        ratw_identity, as a world's lobby sends them; the slots and the ages. Public; asked once and kept."""
+        if self._rules is None:
+            got = self.identity.rules()
+            if not got.get('ok') or not isinstance(got.get('gifts'), dict):
+                raise refused(503, 'The creator\'s rules cannot be read just now.', 'identity_unavailable')
+            self._rules = {'gifts': got['gifts'], 'slots': WOLF_SLOTS, 'ages': [6, 99]}
+        return ok(**self._rules)
+
+    def list_worlds(self, address: str, token, body: dict) -> tuple[int, dict]:
+        """The world list (doc 77, 3.1 and 7). A stub until Phase 4: the worlds added by hand with an address
+        (`ratw_central.py worlds add --address HOST:PORT` or `worlds set`), unless delisted. Each is {id, name, kind,
+        address ("host:port"), secure (wss://), protocol (null when unknown), description}. Public."""
+        out = []
+        for w in self.store.worlds():
+            if w['delisted'] or not w['address'] or not w['port']:
+                continue
+            listing = w['listing'] if isinstance(w['listing'], dict) else {}
+            host = f'[{w["address"]}]' if ':' in w['address'] else w['address']
+            protocol = listing.get('protocol')
+            out.append({'id': w['id'], 'name': w['name'], 'kind': w['kind'], 'address': f'{host}:{w["port"]}',
+                        'secure': listing.get('secure') is True,
+                        'protocol': protocol if isinstance(protocol, int) and not isinstance(protocol, bool) else None,
+                        'description': listing.get('description') if isinstance(listing.get('description'), str) else ''})
+        return ok(worlds=out)
 
     def jwks(self, address: str, token, body: dict) -> tuple[int, dict]:
         return 200, self.keys.jwks(self.clock())

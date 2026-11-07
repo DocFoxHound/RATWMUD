@@ -730,6 +730,10 @@ class Http(Base):
         self.assertEqual(self.http('POST', '/account/logout', {}, token)[0], 200)
         self.assertEqual(self.http('GET', '/account', token=token)[0], 401)
         self.assertEqual(self.http('GET', '/health')[0], 200)
+        status, rules, headers = self.http('GET', '/rules')
+        self.assertEqual((status, len(rules['gifts']['families']), headers['Cache-Control']), (200, 8, 'public, max-age=300'))
+        status, listed, _ = self.http('GET', '/worlds')
+        self.assertEqual((status, listed['worlds']), (200, []), 'no world has an address yet')
 
     def test_bad_requests(self):
         self.assertEqual(self.http('GET', '/nowhere')[0], 404)
@@ -751,6 +755,50 @@ class Http(Base):
         self.assertGreater(int(headers['Retry-After']), 3500)
         self.assertEqual(self.http('POST', '/account/register', {**body, 'username': 'birch'},
                                    headers={'X-Forwarded-For': '203.0.113.8'})[0], 200)
+
+
+# --------------------------------------------------------------------------- What the client shows (doc 77, Phase 3)
+
+class ClientViews(Base):
+    def test_the_world_list_is_the_worlds_with_an_address(self):
+        hidden = self.world('community', 'No address yet')
+        listed = 'world-' + 'a' * 32
+        STORE.add_world(listed, 'Laptop', 'official', self.clock(), address='127.0.0.1', port=7788,
+                        listing={'protocol': 1, 'secure': False, 'description': 'Here'})
+        v6 = 'world-' + 'b' * 32
+        STORE.add_world(v6, 'Six', 'community', self.clock(), address='::1', port=7801, listing={'protocol': 'x'})
+        gone = 'world-' + 'c' * 32
+        STORE.add_world(gone, 'Gone', 'community', self.clock(), address='127.0.0.1', port=7802)
+        self.assertTrue(STORE.set_world(gone, delisted=True))
+        status, reply = self.call('list_worlds')
+        self.assertEqual(status, 200)
+        self.assertEqual([w['id'] for w in reply['worlds']], [listed, v6], 'no address, or delisted: not listed')
+        self.assertEqual(reply['worlds'][0], {'id': listed, 'name': 'Laptop', 'kind': 'official',
+                                              'address': '127.0.0.1:7788', 'secure': False, 'protocol': 1,
+                                              'description': 'Here'})
+        self.assertEqual((reply['worlds'][1]['address'], reply['worlds'][1]['protocol']), ('[::1]:7801', None))
+        self.assertTrue(STORE.set_world(hidden, '127.0.0.1', 7803, {'protocol': 2, 'secure': True}))
+        moved = [w for w in self.call('list_worlds')[1]['worlds'] if w['id'] == hidden][0]
+        self.assertEqual((moved['address'], moved['protocol'], moved['secure']), ('127.0.0.1:7803', 2, True))
+        self.assertFalse(STORE.set_world('world-' + 'd' * 32, '127.0.0.1', 1))
+
+    def test_the_creators_rules_come_from_the_game(self):
+        status, reply = self.call('rules')
+        self.assertEqual(status, 200, reply)
+        families = reply['gifts']['families']
+        self.assertEqual(len(families), 8)
+        self.assertIn('fire', [f['id'] for f in families])
+        self.assertTrue(all('gifted' in f and 'quickened' in f for f in families))
+        self.assertEqual((reply['slots'], reply['ages']), (6, [6, 99]))
+
+    def test_the_command_line_sets_a_worlds_address(self):
+        parser = __import__('argparse').ArgumentParser()
+        self.assertEqual(ratw_central.split_address(parser, '127.0.0.1:7788'), ('127.0.0.1', 7788))
+        self.assertEqual(ratw_central.split_address(parser, '[::1]:7788'), ('::1', 7788))
+        self.assertEqual(ratw_central.split_address(parser, 'play.example.net:443'), ('play.example.net', 443))
+        for bad in ('127.0.0.1', '127.0.0.1:0', 'host:70000', 'ws://host:1', 'a b:1'):
+            with self.assertRaises(SystemExit), __import__('contextlib').redirect_stderr(__import__('io').StringIO()):
+                ratw_central.split_address(parser, bad)
 
 
 # --------------------------------------------------------------------------- The identity check
