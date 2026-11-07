@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-relay-close"
+description = "Enables the relay_close command without any pre-configured scope."
+commands.allow = ["relay_close"]
+
+[[permission]]
+identifier = "deny-relay-close"
+description = "Denies the relay_close command without any pre-configured scope."
+commands.deny = ["relay_close"]

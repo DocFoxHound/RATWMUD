@@ -1,0 +1,17 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The bundled page (spike): our relay commands, the websocket plugin, and window basics.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-is-fullscreen",
+    "websocket:default",
+    "allow-spike-report",
+    "allow-relay-open",
+    "allow-relay-send",
+    "allow-relay-close",
+    "allow-loopback-relay"
+  ]
+}

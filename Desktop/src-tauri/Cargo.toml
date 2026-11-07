@@ -1,0 +1,34 @@
+[package]
+name = "ratw-desktop"
+version = "0.0.1"
+description = "Run Against the World: the desktop client (doc 76/77). Phase 0 spike."
+edition = "2021"
+rust-version = "1.90"
+publish = false
+
+[lib]
+name = "ratw_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2.12", features = [] }
+tauri-plugin-websocket = "2.5"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+futures-util = "0.3"
+tokio = { version = "1", features = ["net", "sync", "macros", "rt-multi-thread", "time"] }
+# The same tokio-tungstenite and rustls as tauri-plugin-websocket, so nothing builds twice.
+tokio-tungstenite = { version = "0.29", features = ["rustls-tls-webpki-roots"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = "2.0"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

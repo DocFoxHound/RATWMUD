@@ -1,0 +1,17 @@
+{
+  "name": "ratw-desktop",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Run Against the World: the desktop client's shell (Tauri 2). Phase 0 spike, doc 77.",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "spike-server": "node spike/ws_server.mjs"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.4",
+    "ws": "8.18.3"
+  }
+}

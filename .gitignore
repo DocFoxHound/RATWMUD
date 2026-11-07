@@ -48,3 +48,9 @@ __pycache__/
 /artifacts/realm/project.json
 /artifacts/economy/r2/export50/
 /artifacts/economy/r2/farms_export/
+
+# The desktop client (Desktop/, doc 76/77): its tools, the Rust build, generated schemas, spike outputs.
+/Desktop/node_modules/
+/Desktop/src-tauri/target/
+/Desktop/src-tauri/gen/
+/Desktop/spike/out/
