@@ -1327,7 +1327,7 @@ supervisor only ever moves a lever back toward the world's own value.
 
 ### Phase 7: the DM tab's edicts, ledger and year of log (2026-11-07, branch `r2-controller-dm`)
 
-Built from `ridgemere2` at 3caefe8, about 02:01 to 02:40 MST. No simulation was needed. One check ran: two 20-day runs
+Built from `ridgemere2` at 3caefe8, 02:01 to about 02:25 MST with the merge and push. No simulation was needed. One check ran: two 20-day runs
 (left and right, both floors on) on the Phase 6 binary and two on this one, to show the change only counts. Together they
 are about a tenth of a one-year run, on scratch copies of export70. Nothing was written to DEV or PROD, and no server ran.
 
