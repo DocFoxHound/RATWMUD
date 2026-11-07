@@ -364,7 +364,7 @@ class ReportTests(unittest.TestCase):
             self.assertEqual(R.main([str(econ), '--out', str(out)]), 0)
             text = out.read_text()
             self.assertIn("Never Broke's credit: 40.0p a day given, 30.0p a day spent at the shops (75% of it); the tills short's guard "
-                          "on 2 days (the tills short's 28-night mean 31.5 at the end, the centre's level 25 + 15%).", text)
+                          "on 2 days (the tills short's 28-night mean 31.5 at the end, the centre's level 25 + 1000%).", text)
             plain = write_run(root / 'x' if (root / 'x').mkdir() is None else root, None)
             self.assertEqual(R.main([str(plain), '--out', str(out)]), 0)
             self.assertNotIn('## The steering', out.read_text())

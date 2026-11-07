@@ -436,6 +436,10 @@ struct CityLoop
         double comfortable = 4;
         int idleDays = 28;
         double tillsShortNormal = 25, tillsShortOver = 15;
+        // The skim's order of payers (doc 75, D1): its five steps by number (1 the estates, 2 the treasury, 3 upper-class
+        // households, 4 keepers' households, 5 other middle-class households), first to last; `skimOrder` in the table,
+        // by those names. A list that is not all five once each is left as it was.
+        std::array<int, 5> skimOrder{1, 2, 3, 4, 5};
     };
     Steering steering;
 };

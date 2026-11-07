@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -390,6 +391,56 @@ void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& ru
     p.loaded = !p.farms.empty() && !p.kinds.empty();
 }
 
+// Steering the economy (doc 74): each lever's or target's five marks (a number, or null: the world's own value for a
+// lever, none for a target); a name the code doesn't know, or a row not of five, is left as it was. Read from
+// city_loop.json's `steering`, then from a steering table file over it (world_check --steer-table, doc 75, 5.1).
+void readSteering(const json::Value& steer, CityLoop::Steering& t)
+{
+    for (const auto& [kind, into] : {std::pair{"levers", &t.levers}, std::pair{"targets", &t.targets}})
+        for (const auto& [name, row] : steer.object(kind).fields())
+        {
+            const auto found = into->find(name);
+            const auto& marks = row.items();
+            if (found == into->end() || marks.size() != 5)
+                continue;
+            std::array<double, 5> v{};
+            bool sound = true;
+            for (std::size_t i = 0; i < 5; ++i)
+            {
+                if (marks[i].isNumber() && std::isfinite(marks[i].asNumber()) && std::abs(marks[i].asNumber()) <= 1e9)
+                    v[i] = marks[i].asNumber();
+                else if (marks[i].isNull())
+                    v[i] = std::numeric_limits<double>::quiet_NaN();
+                else
+                    sound = false;
+            }
+            if (sound)
+                found->second = v;
+        }
+    t.treasuryFloor = std::clamp(steer.number("treasuryFloor", t.treasuryFloor), 0., 1e9);
+    t.treasuryLow = std::clamp(steer.number("treasuryLow", t.treasuryLow), 0., t.treasuryFloor);
+    t.comfortable = std::clamp(steer.number("comfortable", t.comfortable), 1., 100.);
+    t.idleDays = int(std::clamp(steer.number("idleDays", t.idleDays), 1., 365.));
+    t.tillsShortNormal = std::clamp(steer.number("tillsShortNormal", t.tillsShortNormal), 0., 1e6);
+    t.tillsShortOver = std::clamp(steer.number("tillsShortOver", t.tillsShortOver), 0., 1000.);
+    if (const auto& order = steer["skimOrder"].items(); !order.empty())
+    {
+        static const std::map<std::string, int> steps = {{"estates", 1}, {"treasury", 2}, {"upper", 3}, {"keepers", 4}, {"middle", 5}};
+        std::array<int, 5> next{};
+        std::set<int> seen;
+        bool sound = order.size() == next.size();
+        for (std::size_t i = 0; sound && i < order.size(); ++i)
+        {
+            const auto found = steps.find(order[i].asString({}));
+            sound = found != steps.end() && seen.insert(found->second).second;
+            if (sound)
+                next[i] = found->second;
+        }
+        if (sound)
+            t.skimOrder = next;
+    }
+}
+
 Catalog build()
 {
     Catalog c;
@@ -689,38 +740,9 @@ Catalog build()
             if (!supplier.buyer.empty() && !supplier.seller.empty() && supplier.buyer != supplier.seller)
                 c.cityLoop.suppliers.push_back(std::move(supplier));
         }
-        // Steering the economy (doc 74): each lever's or target's five marks (a number, or null: the world's own value for
-        // a lever, none for a target); a name the code doesn't know, or a row not of five, is left as the doc has it.
+        // Steering the economy (doc 74): the table's marks and settings (readSteering).
         if (const auto& steer = country.object("steering"); steer.isObject())
-        {
-            for (const auto& [kind, into] : {std::pair{"levers", &c.cityLoop.steering.levers}, std::pair{"targets", &c.cityLoop.steering.targets}})
-                for (const auto& [name, row] : steer.object(kind).fields())
-                {
-                    const auto found = into->find(name);
-                    const auto& marks = row.items();
-                    if (found == into->end() || marks.size() != 5)
-                        continue;
-                    std::array<double, 5> v{};
-                    bool sound = true;
-                    for (std::size_t i = 0; i < 5; ++i)
-                    {
-                        if (marks[i].isNumber() && std::isfinite(marks[i].asNumber()) && std::abs(marks[i].asNumber()) <= 1e9)
-                            v[i] = marks[i].asNumber();
-                        else if (marks[i].isNull())
-                            v[i] = std::numeric_limits<double>::quiet_NaN();
-                        else
-                            sound = false;
-                    }
-                    if (sound)
-                        found->second = v;
-                }
-            c.cityLoop.steering.treasuryFloor = std::clamp(steer.number("treasuryFloor", 800), 0., 1e9);
-            c.cityLoop.steering.treasuryLow = std::clamp(steer.number("treasuryLow", 500), 0., c.cityLoop.steering.treasuryFloor);
-            c.cityLoop.steering.comfortable = std::clamp(steer.number("comfortable", 4), 1., 100.);
-            c.cityLoop.steering.idleDays = int(std::clamp(steer.number("idleDays", 28), 1., 365.));
-            c.cityLoop.steering.tillsShortNormal = std::clamp(steer.number("tillsShortNormal", 25), 0., 1e6);
-            c.cityLoop.steering.tillsShortOver = std::clamp(steer.number("tillsShortOver", 15), 0., 1000.);
-        }
+            readSteering(steer, c.cityLoop.steering);
         // The Houses' city businesses (doc 72, after iron6): a building and its House each, the first entry for a building.
         for (const auto& b : country.object("houseBusinesses").array("list"))
             if (const auto building = b.string("building"), house = b.string("house"); !building.empty() && !house.empty())
@@ -831,6 +853,20 @@ Catalog build()
     }
     if (c.cityLoop.markets.empty())
         c.cityLoop.markets.push_back({"wharf", "the Wharf", {}});
+    // A steering table over city_loop.json's (doc 75, 5.1: world_check --steer-table FILE sets RATW_STEER_TABLE, so a run's
+    // variant needs no copied Data folder): a file with a `steering` object, or the object itself. A run never goes on with
+    // a table it could not read, since it would quietly be today's economy.
+    if (const char* file = std::getenv("RATW_STEER_TABLE"); file && *file)
+    {
+        json::Value table;
+        std::string problem;
+        if (!readJson(file, table, problem) || !table.isObject())
+        {
+            std::fprintf(stderr, "RATW_STEER_TABLE: %s\n", problem.empty() ? "not a JSON object" : problem.c_str());
+            std::exit(2);
+        }
+        readSteering(table.object("steering").isObject() ? table.object("steering") : table, c.cityLoop.steering);
+    }
     // The Country's food farms (Data/Economy/country_farms.json; doc 71, 4): optional; without it, none.
     if (const auto file = dir.parent_path() / "Economy" / "country_farms.json"; std::filesystem::exists(file))
     {

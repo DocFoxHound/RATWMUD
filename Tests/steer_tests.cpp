@@ -202,7 +202,8 @@ void theSkim()
     // Water-filling from the top: the two richest brought toward one level, each within half its spare.
     auto w = city({at("aa", 600), at("bb", 300), at("cc", 5)}, 2000, {{"treasuryCap", 2000}});
     const auto line = w.comfortableAHead();
-    expect(line == std::max<std::int64_t>(w.comfortsAbove(), 4 * w.necessitiesAHead()), "the comfortable line: four days' necessities a head: " + n(line));
+    const auto days = std::int64_t(items::cityLoop().steering.comfortable);   // (2 since doc 75's D1; 4 before.)
+    expect(line == std::max<std::int64_t>(w.comfortsAbove(), days * w.necessitiesAHead()), "the comfortable line: the table's days of necessities a head: " + n(line));
     const auto got = w.skim(300, "test");
     const auto fromA = 600 - w.cash("aa"), fromB = 300 - w.cash("bb");
     expect(got == 300 && fromA + fromB == 300 && fromA > fromB && fromB > 0 && fromA <= (600 - line) / 2 && fromB <= (300 - line) / 2,
@@ -364,16 +365,28 @@ void theSkimOrder()
     auto under = city({at("mm", 0)}, 2000, {{"treasuryCap", 2000}});
     under.shift("treasury", "mm", "", 0, under.comfortableAHead(), "test: at the line");
     expect(under.skim(500, "test") == 0 && under.cash("mm") == under.comfortableAHead(), "at the line: nothing");
-    // The estates first of all (step 1), before the treasury.
+    // The estates (step 1) last of all since doc 75's D1 (the table's skimOrder: the treasury, upper, keepers, middle,
+    // estates): with the treasury's spare, the treasury pays and the estate keeps its money.
+    const auto& order = items::cityLoop().steering.skimOrder;
+    expect(order == std::array<int, 5>{2, 3, 4, 5, 1}, "the table's order: the treasury, upper, keepers, middle, the estates last");
     auto e = city(town(), 1000000, {{"treasuryCap", 2000}});
     const auto f = Society::estateFund(items::cityLoop().estates.front());
     expect(e.account(f) && e.shift("treasury", f, "", 0, 500000, "test: a rich estate"), "an estate given money: " + f);
     const auto steps = e.skimStep(1, true);
     expect(!steps.empty() && steps.front().group.rfind("estates", 0) == 0, "step 1 the estates");
-    const auto t = e.cash("treasury");
+    const auto t = e.cash("treasury"), held = e.cash(f);
     e.skim(50, "test");
-    expect(e.cash("treasury") == t && e.loopToday().skimBy.size() == 1 && e.loopToday().skimBy.begin()->first.rfind("estates", 0) == 0,
-           "the estates (step 1) before the treasury: " + e.loopToday().skimBy.begin()->first);
+    expect(t - e.cash("treasury") == 50 && e.cash(f) == held, "the treasury before the estates: " + e.loopToday().skimBy.begin()->first);
+    // With the treasury at its cap, a skim larger than every household's spare reaches the estates, last.
+    auto g = city(town(), 2000, {{"treasuryCap", 2000}});
+    const auto gf = Society::estateFund(items::cityLoop().estates.front());
+    const bool spare = g.account(gf) && !g.skimStep(1, true).empty();
+    g.skim(100000000, "test");
+    std::int64_t estates = 0;
+    for (const auto& [group, coins] : g.loopToday().skimBy)
+        estates += group.rfind("estates", 0) == 0 ? coins : 0;
+    expect(!spare || estates > 0, "the estates pay last, when everyone before them is spent: " + n(estates));
+    expect(g.conserved(), "conserved");
     expect(e.conserved(), "conserved");
 }
 
@@ -420,16 +433,19 @@ void theTillsGuard()
 {
     // With Never Broke on, while the tills short's 28-night mean is well over the centre's level, the first pass takes the
     // estates' and the treasury's whole spare before any household's.
-    const auto make = [](bool high) {
+    // (The trip from the table: 25 x 1.15 = 28.75 before doc 75's D1 turned the guard off, tillsShortOver 1000: 275.)
+    const auto& table = items::cityLoop().steering;
+    const double trip = table.tillsShortNormal * (1 + table.tillsShortOver / 100.);
+    const auto make = [trip](bool high) {
         auto s = city({at("aa", 2000)}, 4000, {{"treasuryCap", 2000}, {"estates", 0}, {"neverBroke", 1}});
         auto state = s.state();
         state.loop.steer.tillsDays = 28;
-        state.loop.steer.tillsShort = high ? 40 : 20;
+        state.loop.steer.tillsShort = high ? trip + 10 : trip - 1;
         expect(s.restore(state), "the state read back");
         return s;
     };
     auto plain = make(false), guarded = make(true);
-    expect(!plain.skimGuardOn() && guarded.skimGuardOn(), "the guard on over 25 x 1.15 = 28.75, off under");
+    expect(!plain.skimGuardOn() && guarded.skimGuardOn(), "the guard on over its trip, off under: " + n(trip));
     const auto spare = guarded.cash("treasury") - 2000;
     plain.skim(spare, "test");
     guarded.skim(spare, "test");
@@ -452,7 +468,7 @@ void theTillsGuard()
     {
         auto st = s.state();
         st.loop.steer.tillsDays = 40;
-        st.loop.steer.tillsShort = 90;
+        st.loop.steer.tillsShort = trip + 60;
         expect(s.restore(st), "the state read back");
     }
     expect(s.skimGuardOn(), "a high mean: the guard on");
@@ -746,6 +762,28 @@ void theDriftAndTheFloors()
 }
 } // namespace
 
+// Doc 75 (3.4): G, the Gini of cash a head over all households weighted by heads, and F, of pantry days a head.
+void theMeasures()
+{
+    auto s = city({at("aa", 600), at("bb", 300), at("cc", 0)}, 2000, {});
+    // Three households of one: the pairs' differences 300 + 600 + 300 = 1200, over 3 heads x 900p: 0.444.
+    expect(std::abs(s.giniHeads() - 1200. / 2700.) < 1e-9, "G over three single households: " + n(s.giniHeads()));
+    auto e = city({at("aa", 100), at("bb", 100)}, 2000, {});
+    expect(std::abs(e.giniHeads()) < 1e-12, "G is 0 when every household holds the same a head");
+    expect(e.foodGini() == 0, "F is 0 when no household holds food");
+    // A household of two with 600p between them is 300p a head, weighted twice: against one alone at 300p, G is 0.
+    auto k = city({person("aa", "civilian", "keeps the house", {"home_ab", 2.5, 2.5}, "home_ab", 35, 600),
+                   person("bb", "civilian", "keeps the house", {"home_ab", 2.5, 2.5}, "home_ab", 35, 0), at("cc", 300)},
+                  2000, {});
+    expect(k.households().size() == 2 && std::abs(k.giniHeads()) < 1e-9,
+           "weighted by heads: two sharing a home at 300p a head and one alone at 300p: " + n(k.giniHeads()));
+    auto u = city({person("aa", "civilian", "keeps the house", {"home_ab", 2.5, 2.5}, "home_ab", 35, 600),
+                   person("bb", "civilian", "keeps the house", {"home_ab", 2.5, 2.5}, "home_ab", 35, 0), at("cc", 0)},
+                  2000, {});
+    // Heads at 300, 300 and 0: pairs (2 x 1) x 300 = 600, over 3 heads x 600p: 1/3.
+    expect(std::abs(u.giniHeads() - 1. / 3) < 1e-9, "a couple at 300p a head and one alone with nothing: " + n(u.giniHeads()));
+}
+
 int main()
 {
     try
@@ -767,6 +805,7 @@ int main()
         theDeadBand();
         theHungerGuard();
         theDriftAndTheFloors();
+        theMeasures();
     }
     catch (const std::exception& error)
     {

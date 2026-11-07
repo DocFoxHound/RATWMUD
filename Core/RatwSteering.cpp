@@ -65,6 +65,30 @@ double tollLeanWanted(const Society& s)
     return treasury < items::cityLoop().steering.treasuryFloor ? std::max(want, 0.) : want;
 }
 
+// A Gini of values each with a weight (doc 75, 3.4: a household's cash a head, weighted by its heads): the mean absolute
+// difference over pairs of heads, over twice the mean.
+double giniWeighted(std::vector<std::pair<double, double>> v)
+{
+    std::sort(v.begin(), v.end());
+    double w = 0, sum = 0;
+    for (const auto& [x, n] : v)
+    {
+        w += n;
+        sum += x * n;
+    }
+    if (w <= 0 || sum <= 0)
+        return 0;
+    // Sum over pairs |xi - xj| ni nj, in one pass over the sorted values: each xi less those below it.
+    double below = 0, belowSum = 0, diff = 0;
+    for (const auto& [x, n] : v)
+    {
+        diff += n * (x * below - belowSum);
+        below += n;
+        belowSum += x * n;
+    }
+    return diff / (w * sum);
+}
+
 std::string fixed(double v, int places)
 {
     std::ostringstream o;
@@ -174,6 +198,37 @@ double Society::upperShare()
         if (!houseOf(&p).empty())
             upper += cash("till:" + p.id);
     return 100. * double(upper) / double(all);
+}
+
+double Society::giniHeads() const
+{
+    std::vector<std::pair<double, double>> v;
+    for (const auto& [home, members] : households())
+    {
+        if (members.empty())
+            continue;
+        double held = 0;
+        for (const auto& m : members)
+            held += double(cash(m));
+        v.emplace_back(held / double(members.size()), double(members.size()));
+    }
+    return giniWeighted(std::move(v));
+}
+
+double Society::foodGini() const
+{
+    std::vector<std::pair<double, double>> v;
+    for (const auto& [home, members] : households())
+    {
+        if (members.empty())
+            continue;
+        double food = 0;
+        for (const auto& m : members)
+            if (const auto* a = account(m))
+                food += eatable(*a);
+        v.emplace_back(food / (NourishADay * double(members.size())), double(members.size()));
+    }
+    return giniWeighted(std::move(v));
 }
 
 double Society::top10Share() const
@@ -465,8 +520,10 @@ std::int64_t Society::skim(std::int64_t sum, const std::string& purpose, bool tr
     loopToday_.skimGuard = loopToday_.skimGuard || guard;
     std::int64_t taken = 0;
     for (int pass = 0; pass < 2 && taken < sum; ++pass)
-        for (int step = 1; step <= SkimSteps && taken < sum; ++step)
+        for (const int step : items::cityLoop().steering.skimOrder)   // (Doc 75, D1: the order a table value.)
         {
+            if (taken >= sum)
+                break;
             auto holders = skimStep(step, treasury);
             if (holders.empty())
                 continue;
@@ -515,6 +572,7 @@ std::int64_t Society::skim(std::int64_t sum, const std::string& purpose, bool tr
                 if (gave <= 0)
                     continue;
                 taken += gave;
+                (pass == 0 ? loopToday_.skimIdle : loopToday_.skimBusy) += gave;
                 loopToday_.skimBy[h.group] += gave;
                 loopToday_.skimPayers[h.id] += gave;
             }
@@ -968,6 +1026,8 @@ void Society::steerEconomy(std::int64_t day)
     const double h = loopToday_.hungryHours > 0 ? double(loopToday_.hungrySum) / loopToday_.hungryHours : 0;
     const double k = loopToday_.householdsShort, tr = double(cash("treasury"));
     loopToday_.mGini = g;
+    loopToday_.mGAll = giniHeads();
+    loopToday_.mFood = foodGini();
     loopToday_.mUpper = s;
     loopToday_.mTop10 = t10;
     loopToday_.mHungry = h;

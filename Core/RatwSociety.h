@@ -1172,6 +1172,10 @@ class Society
         // Steering the economy (doc 74, 12): the measures tonight (-1 before they are first taken), whether the push was
         // judged tonight and why it moved; hungry residents counted each hour (with the steering on), and the hours.
         double mGini = -1, mUpper = -1, mTop10 = -1, mHungry = -1;
+        // Doc 75 (3.4): G, the Gini of cash a head over all resident households weighted by heads, after tonight's money
+        // (mGAll) and before the Levelling tithe (mGBefore; -1 on a night with no tithe, when it is mGAll); F, the same
+        // Gini of pantry days a head.
+        double mGAll = -1, mGBefore = -1, mFood = -1;
         bool steerJudged = false;
         std::string steerWhy;
         std::int64_t hungrySum = 0;
@@ -1184,6 +1188,8 @@ class Society
         // and by payer, what it could not find; and the relief paid out of fund:relief, by kind ("food", "necessities",
         // "share-out").
         std::int64_t skim = 0, skimShort = 0;
+        // (Doc 75, D1: of the skim, what its first pass took, the idle money, and its second, the busy money.)
+        std::int64_t skimIdle = 0, skimBusy = 0;
         std::map<std::string, std::int64_t> skimFor, skimBy, skimPayers, relief;
         // Never Hungry (doc 74, 7.1): the pieces and pennies given, the homes, those of them from the Wharf, and the
         // households still short after it; Never Broke (7.2): the pennies and the homes.
@@ -1212,6 +1218,10 @@ class Society
     double giniEarners() const;
     double upperShare();
     double top10Share() const;
+    // Doc 75 (3.4): the Gini of cash a head over all resident households, each weighted by its heads (G); and of pantry
+    // days a head (F: what its members hold to eat over the heads' days of nourishment).
+    double giniHeads() const;
+    double foodGini() const;
     // A day's necessities a head (doc 74, 6.1): the alms line, the household reserve and a day's share of the needs.
     std::int64_t necessitiesAHead() const;
     // The skim (doc 74, 6): `sum` pennies taken from the richest holders at this moment (by their spare over their own

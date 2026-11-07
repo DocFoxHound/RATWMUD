@@ -1,0 +1,75 @@
+{
+ "about": "Doc 75's dry run: doc 74's targets at the marks (its table, Data/Items/city_loop.json and RatwItems.cpp) on its own measures (the earners' Gini m_gini, the upper share m_upper_share), and each mark's floors-off tills short from the t1 run at that mark (stable10b at the centre), by year. Not the controller's targets: steer_calibrate.py writes those from the calibration. floor_from: the run whose seasonal treasury profile gives the mark's floor (T5).",
+ "marks": {
+  "-1": {
+   "G": {
+    "field": "m_gini",
+    "target": 0.33,
+    "band": 0.04
+   },
+   "hungerMost": 0.02,
+   "shortMost": 0.1,
+   "tills": {
+    "1": 31.22,
+    "2": 26.81,
+    "3": 26.51
+   },
+   "floor_from": "steer-left-t1"
+  },
+  "-0.5": {
+   "G": {
+    "field": "m_gini",
+    "target": 0.41,
+    "band": 0.04
+   },
+   "hungerMost": 0.05,
+   "shortMost": 0.5,
+   "tills": null
+  },
+  "0": {
+   "G": {
+    "field": "m_gini",
+    "target": 0.487,
+    "band": 0.035
+   },
+   "S": {
+    "field": "m_upper_share",
+    "target": 13,
+    "band": 2
+   },
+   "hungerMost": 0.15,
+   "shortMost": 3.5,
+   "tills": {
+    "1": 29.14,
+    "2": 23.19,
+    "3": 22.19
+   },
+   "floor_from": "stable10b"
+  },
+  "0.5": {
+   "S": {
+    "field": "m_upper_share",
+    "target": 18.5,
+    "band": 2.5
+   },
+   "hungerMost": 0.15,
+   "shortMost": 4,
+   "tills": null
+  },
+  "1": {
+   "S": {
+    "field": "m_upper_share",
+    "target": 24,
+    "band": 3
+   },
+   "hungerMost": 0.15,
+   "shortMost": 5,
+   "tills": {
+    "1": 34.43,
+    "2": 26.46,
+    "3": 24.18
+   },
+   "floor_from": "steer-right-t1"
+  }
+ }
+}

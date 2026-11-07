@@ -523,10 +523,125 @@ The ladder is chosen per end, so the left can ship Full while the right ships F1
 
 ## Progress
 
-Nothing built yet. The plan waits for the answers in section 9.
+Phase 1 done on `r2-controller` (below); the user's answers to section 9 first.
 
 ### 2026-11-06: the user's decisions
 
 The user said "Okay. Do it." to the plan with every recommendation in section 9: the run budget yes, once for the
 whole plan; try the charters, F1 if they add under 3 points; the tithe's strength picked by the rule, up to 50%; the
 ends labelled by the measured reach; the scorecard is the judge; no warm starts; the check-in after Phase 3 kept.
+
+### Phase 1: tools, baseline, dry run (2026-11-06, branch `r2-controller`)
+
+About 1 h 20 min of the phase's 2.5 h. 11 one-year runs of the budget's 34 (Batch 0's five, D1's six); no 3-year run.
+All from scratch copies of export70 (`export-<run>/`, hard-linked), on the cores the task gave (2-5, 6-9, 10-13, 14-17,
+18-19 with two threads). Nothing written to DEV or PROD; no server.
+
+**Built.**
+
+- `world_check --steer-table FILE`: the steering table read from a file over city_loop.json's (a file with a
+  `steering` object, or the object itself; a key it leaves out keeps the data's value). The flag sets
+  `RATW_STEER_TABLE` before the catalogue is read; a file that is missing or not JSON stops the run (exit 2), since it
+  would quietly be today's economy. (`readSteering` in `RatwItems.cpp`, one reader for both.)
+- The new measures on the daily line (with the steering on): `m_g_after`, `m_g_before`, `m_g_day` (G: the Gini of cash
+  a head over all households, weighted by heads; with no tithe yet, before = after), `m_food_gini` (F, pantry days a
+  head), and the floors' skim split `skim_idle` (its first pass) and `skim_busy` (its second). S is today's
+  `m_upper_share`, which already counts every House till through `houseOf`; the charters (Phase 2) join it there. Income
+  shares by class, the luxuries and cheese's price are read from the full log (`flow`, `trade`, `ware`) by
+  `tools/steer_measures.py`. Logging only: the centre's daily lines are the same as steer-centre-t1's on every field it
+  has (checked on an 8-day smoke).
+- `tools/steer_runs.py MANIFEST`: the variants (rule lines, a table file, `--rule-at` moves), the export folders, five
+  at a time, waits for every run, then `econ_report`. Manifests: `steer-b0.json`, `steer-d1.json`, `steer-d1b.json`
+  (each run's binary is a copy, `build-c/world_check.b0`, `.d1`, `.d1b`, so a rebuild never touches a running batch).
+- `tools/steer_accept.py BATCH`: T1-T13 from the daily lines, PASS/FAIL/n/a per run and year, a markdown report, exit 1
+  on any FAIL. Rungs `full`/`F2` on the scorecard; `F1`/`F3` on "no worse than `ref`" in T4-T7.
+- `artifacts/economy/r2/steer-scorecard.json` (5.3's numbers) and `steer-targets-t1.json` (the dry run's targets:
+  doc 74's table on its own measures, each mark's floors-off tills short from the t1 run there, and `floor_from`, the run
+  whose seasonal treasury profile gives the mark's floor).
+- `tools/steer_measures.py OUT RUN...`: the measures table for a batch (`steer-phase1-measures.md`).
+- `steer_tests` 186 checks (was 178): G's head-weighted Gini on known purses (three singles, 0.444; a couple and one
+  alone); the comfortable line, the order and the guard read from the table. ctest 80 of 80; `test_econ_report` (its
+  guard line now prints the table's 1000%) and `test_studio` OK.
+
+**The dry run** (`steer-accept-dry.md`, no simulation): **steer-centre-t1 passes every test** (T3 and T8 n/a: no
+supervisor yet), T10 included (1,095 daily lines the same as stable10b's on every field). Two tests were wrong on
+today's centre and were fixed first:
+
+- T13 failed the centre (G 0.489, 0.489, 0.484: year 2 to 3 moved 0.005 against 0.000 before). Now a change under half
+  a band also passes as no drift (`T13.noise_bands` 0.5).
+- T5 judged each run under its own seasonal profile, so a healthy treasury could count "under its floor". Now each mark
+  names the run its floor comes from (`floor_from`: the calibration run in Phase 3).
+
+The rungs' bars pass on the runs they ship (F1 on steer-right-t1; F3 on the left and right t1 runs). For information,
+the full scorecard on the t1 runs: steer-right-t1 fails T5 (8-12 float days a year, mostly summer) and T6 (support
+unpaid 1.5-2.4x stable10b's); steer-left-t1 fails T5's floor days in year 1 (its floor is its 3-year profile, and year 1
+is still settling); steer-centre-floors-t1 fails T6 (tills short 36.6, 1.26x the centre on days 120-365; the hand check
+of 1.22x was the whole year).
+
+**Batch 0** (today's code, 1 year, days 120-365; `steer-phase1-measures.md`, `steer-accept-b0.md`). steer-b0-left and
+steer-b0-right are byte for byte the t1 runs' first year: the skim rework touches only the floors.
+
+| run | G (after; day) | F | Gini earners | S % | H/h | K | treasury mean (least) | float days | tills short (x floors off) | support unpaid | floors' skim/day: idle / busy | skim by payer group (p a day) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| centre (stable10b) | - | - | 0.489 | 13.4 | 0.022 | 0.91 | 1,316 (200) | 2 | 29.1 | 219 | - | - |
+| left | 0.101 | 0.062 | 0.331 | 13.3 | 0.000 | 0.00 | 1,495 (1,115) | 0 | 31.2 | 91 | - | (the share-out's own: middle 337, upper 179, lower 151, the Crown 112) |
+| left, floors | 0.099 | 0.062 | 0.329 | 13.3 | 0.000 | 0.00 | 1,491 (1,081) | 0 | 31.6 (1.01) | 92 | 5 / 0 | the floors almost nothing: the share-out has levelled them |
+| right | 0.430 | 0.066 | 0.546 | 23.3 | 0.024 | 0.74 | 815 (200) | 12 | 34.4 | 334 | - | - |
+| right, floors | 0.368 | 0.062 | 0.489 | 18.3 | 0.000 | 0.07 | 2,040 (1,579) | 0 | 41.6 (1.21) | 169 | 680 / 0 | the Crown 460, upper 103, Timberland 72, Fell 46 |
+| centre, floors | 0.298 | 0.062 | 0.445 | 11.8 | 0.000 | 0.07 | 2,099 (1,619) | 0 | 37.9 (1.30) | 118 | 526 / 58 (10% busy) | the Crown 310, Timberland 92, keepers 79, Fell 49, upper 43, middle 10, treasury 1 |
+
+The upper share at the centre is steer-centre-t1's (stable10b logs none). Income shares by class hardly move (upper 6-8%,
+middle 53-55%, lower 38-39%). Cheese (rules untouched): households and Houses paid 6.9p a piece at the centre, 15.5p at
+the right, 25.1p at the right with floors; 3.7 pieces a day everywhere.
+
+**D1: triggered, by the shops.** The skim took only 10% of the floors' money from busy money (under half), but the
+centre's tills short with both floors was 37.9 against 29.1 without, 1.30x (over 1.25x). The money came from the
+estates (77% of it; the guard, on 245 of 246 nights, took their whole spare first), and the estates' spare is what buys
+their baskets (559p a day at the centre, 128p with the floors), luxuries (92p to 7p) and patrons' works from the city's
+makers. "Idle" by the estates' own measure, busy for the shops. The rule's levers only (the order and the comfortable
+line, as table values; `skimOrder` is new in the table, its five steps by name), on the centre with both floors:
+
+| variant | tills short (x 29.1) | floors' skim/day | busy share | from |
+|---|---|---|---|---|
+| Batch 0 (estates first, the guard on, comfortable 4) | 37.9 (1.30) | 584 | 10% | estates 77% |
+| the guard off | 37.0 (1.27) | 567 | 35% | estates 66% |
+| the estates last, the guard off | 36.7 (1.26) | 547 | 42% | estates 48%, keepers 33% |
+| **the estates last, the guard off, comfortable 2** | **34.1 (1.17)** | 507 | 0% | keepers 58%, upper 39%, treasury 3% |
+
+**Applied in city_loop.json's steering:** `skimOrder` the treasury, upper, keepers, middle, the estates last;
+`comfortable` 2 (was 4: the line a head is now about 38p, two days' necessities, still never under the comforts' keep);
+the guard off (`tillsShortOver` 1000: its trip, 275, is never reached; it leaned on the estates first, the opposite of
+the fix). Re-run at all three positions (`steer-d1b-*`; the centre's run is byte for byte the --steer-table run, so the
+flag and the data give the same run):
+
+| run (both floors) | tills short (x floors off) | S % | G after | H | treasury mean (least) | floors' skim/day (busy) | from | Houses' luxuries p/day |
+|---|---|---|---|---|---|---|---|---|
+| left | 31.1 (1.00) | 13.2 | 0.099 | 0 | 1,494 (1,135) | 5 (0%) | - | 91 |
+| centre | 34.1 (1.17) | 11.8 | 0.285 | 0 | 2,158 (1,633) | 507 (0%) | keepers 293, upper 198, treasury 15 | 98 |
+| right | 33.8 (0.98) | 13.7 | 0.288 | 0 | 2,131 (1,647) | 510 (0%) | upper 412, keepers 84, treasury 14 | 100 |
+
+All three now pass T6's floors bar and T11 (H 0, short after relief 0, Never Hungry's Wharf pennies 0.17 a day, all of
+the floors' money idle).
+
+**What changes the plan.**
+
+1. **The right end with both floors on is nearly the centre.** With the estates last, the floors are paid by upper
+   purses at the right (412p a day), and S falls from 23.3 to 13.7 (with Batch 0's order it fell to 18.3, but the
+   shops paid: 1.21x). A8 passes (S is one-sided there), but the slider's label at the right must say what it holds
+   with the floors on. If the user wants the right to keep its reach with the floors, the estates can go back ahead of
+   the upper households at the right only, a table value per mark; not done here, since D1's rule is about the shops.
+2. **G is a different scale from the earners' Gini.** Over all households, a head: about 0.29-0.30 at the centre with
+   the floors (0.33-0.37 at the centre's first days without them; the calibration's C run will measure it), 0.10 at
+   the left after tonight's share-out and 0.43 at the right. Today's left already reaches 0.10 after the share-out; the
+   before-the-levelling value is not taken in today's code. The tithe (Phase 2) must set `m_g_before` before it moves
+   money, or the left's G will flatter by about half the day's re-divergence. Section 9.3's "0.20-0.28 through the day"
+   was on a guess of the scale; the calibration sets the labels.
+3. **F says little.** Pantry days a head have a Gini of about 0.06 at every position (households top up to two days'
+   food), so F is kept as a watched line, not a measure with a target.
+4. **Runs take longer than the plan's figures.** A 1-year run took 16-20 minutes on four threads and 29 minutes in the
+   two-thread slot or with five at once (the plan says 13). A batch of five is about 30 minutes, not 15: calibration
+   about 60 minutes, acceptance about 60, the 3-year confirmation about 90. About 1.5 hours more wall clock overall.
+5. **Today's floors run on the left with the share-out are almost free** (5p a day): the share-out levels the purses
+   first. When the tithe replaces it, A7's floors cost should stay near that.
+
+**Not done in this phase:** no change to `steer-compare.py` or the DM tab; `steer_calibrate.py` is Phase 3's.

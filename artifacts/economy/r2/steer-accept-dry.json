@@ -1,0 +1,15 @@
+{
+  "about": "Doc 75, 5.3: the scorecard's dry run on the runs already on disk (no simulation). Today's centre (steer-centre-t1) must pass every test; each rung's bar must pass on the run that rung ships (F1: steer-right-t1; F3: the t1 run at that end). The other rows are the t1 runs against the full scorecard, for information: what the new build has to beat.",
+  "dir": "artifacts/economy/r2",
+  "baseline": "stable10b",
+  "targets": "artifacts/economy/r2/steer-targets-t1.json",
+  "runs": [
+    {"name": "steer-centre-t1", "x": 0, "rung": "full"},
+    {"name": "steer-centre-floors-t1", "x": 0, "floors": true, "floors_off": "steer-centre-t1", "rung": "full"},
+    {"name": "steer-right-t1", "x": 1, "rung": "F1", "ref": "steer-right-t1"},
+    {"name": "steer-left-t1", "x": -1, "rung": "F3", "ref": "steer-left-t1"},
+    {"name": "steer-right-t1", "x": 1, "rung": "F3", "ref": "steer-right-t1"},
+    {"name": "steer-left-t1", "x": -1, "rung": "full"},
+    {"name": "steer-right-t1", "x": 1, "rung": "full"}
+  ]
+}

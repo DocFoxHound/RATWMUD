@@ -1,0 +1,14 @@
+{
+  "about": "Doc 75, Phase 1, D1: Batch 0's centre with both floors had tills short 1.30 x the centre's without them (over 1.25). The skim's step order and comfortable line, by table only: the guard off; the estates last; the estates last with the comfortable line at 2.",
+  "base": "artifacts/economy/r2/export70",
+  "out": "artifacts/economy/r2",
+  "prefix": "steer-d1-",
+  "days": 366,
+  "binary": ".claude/worktrees/r2-controller/build-c/world_check.d1",
+  "data": ".claude/worktrees/r2-controller/Data",
+  "runs": [
+    {"name": "noguard", "rules": {"steer": 1, "steerLean": 100, "neverHungry": 1, "neverBroke": 1}, "table": ".claude/worktrees/r2-controller/artifacts/economy/r2/steer-table-d1-noguard.json"},
+    {"name": "estates-last", "rules": {"steer": 1, "steerLean": 100, "neverHungry": 1, "neverBroke": 1}, "table": ".claude/worktrees/r2-controller/artifacts/economy/r2/steer-table-d1-estates-last.json"},
+    {"name": "estates-last-c2", "rules": {"steer": 1, "steerLean": 100, "neverHungry": 1, "neverBroke": 1}, "table": ".claude/worktrees/r2-controller/artifacts/economy/r2/steer-table-d1-estates-last-c2.json"}
+  ]
+}
