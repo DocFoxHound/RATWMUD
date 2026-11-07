@@ -417,6 +417,14 @@ void World::planDays()
     if (festivalsBegun_.size() > 4096)
         festivalsBegun_.clear();
     day.communityOf = [this](const std::string& cellId) { return lawTown(cellId); };
+    day.houseOf = [this](const std::string& cellId) {
+        // (A faction named "House <name>": the House's name.)
+        if (const auto* c = cell(cellId))
+            for (const auto& claim : c->factionClaims)
+                if (const auto f = factions_.find(claim); f != factions_.end() && f->second.name.rfind("House ", 0) == 0)
+                    return f->second.name.substr(6);
+        return std::string();
+    };
     day.sky = [this](const Spot& at) { return skyAt(at.cell, {at.x, at.y}); };   // The weather where they'd be.
     society_.setDay(std::move(day));
 }

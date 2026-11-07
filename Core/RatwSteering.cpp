@@ -1,8 +1,9 @@
-// Steering the economy (Docs/Design/74-steering-the-economy.md): one number, the push (-1..1), that a few levers follow
-// toward where the DM's slider says the money should rest; the skim, which takes idle money in a set order of payers
-// (the estates, the treasury, then the savings of upper-class, keepers' and middle-class households); and the two floors
-// it pays for, Never Hungry and Never Broke (credit toward necessities). Every coin moves by shift between accounts that
-// exist (fund:relief only passes money through), so the money is conserved; nothing here is random.
+// Steering the economy (Docs/Design/74-steering-the-economy.md; Docs/Design/75-the-economy-controller.md): the DM's
+// slider, read by a table of levers at its place (the centre the world's own); the two actuators doc 75 gave the ends,
+// the Levelling tithe (left) and the Crown's charters on middle keepers' tills (right); the skim, which takes idle money in
+// a set order of payers; and the two floors it pays for, Never Hungry and Never Broke (credit toward necessities). Every
+// coin moves by shift between accounts that exist (fund:relief only passes money through), so the money is conserved;
+// nothing here is random.
 #include "RatwItems.h"
 #include "RatwSociety.h"
 
@@ -29,18 +30,6 @@ double eatable(const EconomyAccount& a)
     return n;
 }
 
-// The House a till's post works for: a country workshop's, or a House's city business's ("" a keeper's own).
-std::string houseOf(const Position* p)
-{
-    if (!p)
-        return {};
-    if (const auto* w = items::farmPeople().workshop(p->work.cell))
-        return w->house;
-    const auto& owned = items::cityLoop().houseTills;
-    const auto found = owned.find(p->work.cell);
-    return found == owned.end() ? std::string() : found->second;
-}
-
 double gini(std::vector<double> v)
 {
     if (v.size() < 2)
@@ -53,16 +42,6 @@ double gini(std::vector<double> v)
         weighted += double(i + 1) * v[i];
     }
     return sum <= 0 ? 0 : (2 * weighted) / (double(v.size()) * sum) - (double(v.size()) + 1) / double(v.size());
-}
-
-// The toll lean at the push, with its guard (doc 74, 5.3): while the treasury's 28-night mean (before it has one,
-// tonight's) is under treasuryFloor, the toll is never leaned down: the lean is at least 0.
-double tollLeanWanted(const Society& s)
-{
-    const auto& st = s.state().loop.steer;
-    const double want = s.steerLever("tollLean");
-    const double treasury = st.treasury >= 0 ? st.treasury : double(s.cash("treasury"));
-    return treasury < items::cityLoop().steering.treasuryFloor ? std::max(want, 0.) : want;
 }
 
 // A Gini of values each with a weight (doc 75, 3.4: a household's cash a head, weighted by its heads): the mean absolute
@@ -100,13 +79,16 @@ std::string fixed(double v, int places)
 const char* leverName(const std::string& lever)
 {
     static const std::map<std::string, const char*> names = {
-        {"shareOut", "the share-out"},       {"postsShare", "the hands' share"},    {"tollLean", "the toll lean"},
-        {"surplusKeep", "the treasury's keep"}, {"treasuryCap", "the treasury's cap"}, {"surplusAlmsTo", "the poorest raised to"},
-        {"groundRent", "the ground rent"},   {"rentScale", "the rent scale"},        {"dividend", "the Houses' dividend"},
+        {"levelling", "the Levelling tithe"}, {"charters", "the Crown's charters"}, {"postsShare", "the hands' share"},
+        {"surplusKeep", "the treasury's keep"}, {"treasuryCap", "the treasury's cap"}, {"treasuryTarget", "the treasury's target"},
+        {"surplusAlmsTo", "the poorest raised to"}, {"groundRent", "the ground rent"}, {"dividend", "the Houses' dividend"},
         {"richAbove", "the rich hold"}, {"spendAbove", "the spending keep"}};
     const auto found = names.find(lever);
     return found == names.end() ? "a lever" : found->second;
 }
+// The levers a change of the slider names in its line (each lever of the table, in this order).
+const char* const Levers[] = {"levelling", "charters", "postsShare", "surplusKeep", "treasuryCap", "treasuryTarget",
+                              "surplusAlmsTo", "groundRent", "dividend", "richAbove", "spendAbove"};
 } // namespace
 
 bool Society::steering() const
@@ -119,29 +101,24 @@ double Society::steerSlider() const
     return std::clamp((ownRule("steerLean") - 100) / 100., -1., 1.);
 }
 
-std::pair<double, double> Society::steerBand() const
-{
-    const double x = steerSlider();
-    const double mid = ownRule("steerWidthMid") / 100., end = ownRule("steerWidthEnd") / 100.;
-    const double w = mid + (end - mid) * std::abs(x);
-    return {std::max(-1., x - w), std::min(1., x + w)};
-}
-
 double Society::steerLever(const std::string& lever) const
 {
     double own = 0;
-    if (lever == "surplusKeep" || lever == "treasuryCap" || lever == "surplusAlmsTo")
+    if (lever == "surplusKeep" || lever == "treasuryCap" || lever == "treasuryTarget" || lever == "surplusAlmsTo")
         own = ownRule(lever);
     else if (lever == "richAbove" || lever == "spendAbove")
         own = comfortsAbove();
-    else if (lever == "rentScale")
-        own = 100;
-    const auto& levers = items::cityLoop().steering.levers;
-    const auto found = levers.find(lever);
-    if (!steering() || found == levers.end())
+    const auto& t = items::cityLoop().steering;
+    const auto found = t.levers.find(lever);
+    if (!steering() || found == t.levers.end())
         return own;
-    const double v = items::steerAt(found->second, state_.loop.steer.push, own);
-    return std::isnan(v) ? own : v;
+    double v = items::steerAt(found->second, state_.loop.steer.push, own);
+    if (std::isnan(v))
+        v = own;
+    // The dividend rises with the charters (doc 75, 4.2), so the Houses' new profit moves on to upper purses.
+    if (lever == "dividend")
+        v += t.dividendPerCharter * steerLever("charters");
+    return v;
 }
 
 double Society::steerTarget(const std::string& target) const
@@ -195,8 +172,8 @@ double Society::upperShare()
     else
         upper += cash(WharfFund);
     for (const auto& p : positions_)
-        if (!houseOf(&p).empty())
-            upper += cash("till:" + p.id);
+        if (!tillHouse(&p).empty())
+            upper += cash("till:" + p.id);   // (A House's till, by the catalogue or by charter.)
     return 100. * double(upper) / double(all);
 }
 
@@ -270,81 +247,6 @@ std::int64_t Society::necessitiesAHead() const
             needs += double(least) / need.everyDays;
     }
     return almsNow() + h.reserve + std::int64_t(std::ceil(needs - 1e-9));
-}
-
-std::vector<Society::Spare> Society::spares(bool deep, bool treasury)
-{
-    // Every holder's spare over its own needs, now (doc 74, 6.1): never a player's purse, the beyond's accounts, the
-    // Wharf's credit or fund:relief itself. `deep`: the second pass, a household keeping one day's necessities a head.
-    std::vector<Spare> out;
-    const auto nec = necessitiesAHead();
-    const std::int64_t keepHead = deep ? nec : std::max<std::int64_t>(comfortsAbove(), std::int64_t(rule("skimKeepDays")) * nec);
-    for (const auto& [home, members] : households())
-    {
-        std::int64_t held = 0;
-        for (const auto& m : members)
-            held += cash(m);
-        if (const auto spare = held - keepHead * std::int64_t(members.size()); spare > 0)
-            out.push_back({"home " + home, "households: " + homeClass(home, members), spare, members});
-    }
-    // Tonight's wages owed by each payer, as payWages counts them.
-    std::map<std::string, std::int64_t> owed;
-    for (const auto& p : positions_)
-        if (const auto held = state_.careers.positions.find(p.id);
-            held != state_.careers.positions.end() && !held->second.holder.empty() && !dead_.count(held->second.holder))
-            if (const auto pay = payOf(p); !pay.kind.empty() && pay.wage > 0)
-                owed[pay.payer] += pay.wage;
-    const auto owedOf = [&](const std::string& id) {
-        const auto found = owed.find(id);
-        return found == owed.end() ? std::int64_t(0) : found->second;
-    };
-    for (const auto& [id, a] : state_.accounts)
-    {
-        if (id.rfind("till:", 0) != 0 || farmOf_.count(id) || a.cash <= 0)
-            continue;
-        const auto house = houseOf(position(id.substr(5)));
-        const std::int64_t days = house.empty() ? rule("floatWagesDays") : rule("workshopWagesDays");
-        if (const auto spare = a.cash - tillFloat(id) - (days + 1) * owedOf(id); spare > 0)
-            out.push_back({id, house.empty() ? "shops" : "House businesses", spare, {}});
-    }
-    for (const auto& f : farms_)
-        if (account(f.till) && farmAreaOn(f.area))
-            if (const auto spare = cash(f.till) - f.reserve - std::max<std::int64_t>(0, farmBasketMost(f)) - f.wages() - owedOf(f.till);
-                spare > 0)
-                out.push_back({f.till, "farms", spare, {}});
-    // The estates: each its spare over its keep (its posts' nights, the Wharf's reserve, the Crown's grants), and all of
-    // them together never under the one purse's keep.
-    const auto estateOwed = estatePostsOwed();
-    if (estatesOn())
-    {
-        std::int64_t all = 0, posts = 0;
-        for (const auto& e : items::cityLoop().estates)
-            if (const auto f = estateFund(e); account(f))
-            {
-                all += cash(f);
-                if (const auto found = estateOwed.find(f); found != estateOwed.end())
-                    posts += found->second;
-            }
-        auto pool = all - authored_.economy.wharfReserve - std::int64_t(std::max(1, rule("estatePostsDays"))) * posts;
-        for (const auto& e : items::cityLoop().estates)
-            if (const auto f = estateFund(e); account(f) && pool > 0)
-                if (const auto spare = std::min(pool, estateSpare(f, estateOwed)); spare > 0)
-                {
-                    out.push_back({f, "estates: " + e.house, spare, {}});
-                    pool -= spare;
-                }
-    }
-    else if (account(WharfFund))
-        if (const auto spare = estateSpare(WharfFund, estateOwed); spare > 0)
-            out.push_back({WharfFund, "estates", spare, {}});
-    // The treasury: its spare over its cap and tonight's wage support; only once that is known (18:00), so never in Never
-    // Hungry's 17:00 skim, before the night's wage support has had what is over the cap.
-    if (treasury && account("treasury"))
-        if (const auto spare = cash("treasury") - std::max<std::int64_t>(rule("treasuryCap"), TreasuryFloat) - loopToday_.supportWanted;
-            spare > 0)
-            out.push_back({"treasury", "treasury", spare, {}});
-    std::sort(out.begin(), out.end(), [](const Spare& a, const Spare& b) { return a.spare != b.spare ? a.spare > b.spare : a.id < b.id; });
-    return out;
 }
 
 namespace
@@ -454,8 +356,8 @@ std::vector<Society::Spare> Society::skimStep(int step, bool treasury)
         for (const auto& p : positions_)
             if (const auto held = state_.careers.positions.find(p.id);
                 held != state_.careers.positions.end() && !held->second.holder.empty() && !dead_.count(held->second.holder) &&
-                payOf(p).kind == "keeper")
-                keepers.insert(held->second.holder);
+                payOf(p).kind == "keeper" && charterOf("till:" + p.id).empty())
+                keepers.insert(held->second.holder);   // (A chartered shop's keeper is paid a wage: no profit.)
         const auto line = comfortableAHead();
         const auto& st = state_.loop.steer;
         const bool seeded = st.idleDay >= 0;
@@ -589,7 +491,8 @@ void Society::neverHungry(std::int64_t day)
     // under a day's food (shortDays: the line that marks a household short) is given food up to it and no more, in its own
     // stock, bought at the stable price from an open shop's real stock in its community (else any open one), the cheapest
     // nourishment first; with no shop's food in reach, ordered from the Wharf within its valve's rules. The whole hour's
-    // bill is worked out first, the skim raises it from the richest, and fund:relief pays the tills.
+    // bill is worked out first, the skim raises it from the richest, and fund:relief pays the tills. (Doc 75, 3.7: the
+    // farms' crews too, each a household of its heads in one account, as they shop.)
     (void)day;
     const double line = items::cityLoop().shortDays * NourishADay;
     struct Lot
@@ -625,9 +528,21 @@ void Society::neverHungry(std::int64_t day)
     std::vector<Lot> wharfLots;
     std::map<std::string, int> wharfPlanned;                       // Food -> the Wharf's pieces already in the batch.
     std::int64_t bill = 0;
-    const auto homes = households();
+    auto homes = households();
+    std::map<std::string, double> heads;            // (A crew's line is its heads' days; a resident's, one.)
+    for (const auto& f : farms_)
+        if (farmAreaOn(f.area) && account(f.crew) && f.heads() > 0)
+        {
+            homes[f.crew] = {f.crew};
+            heads[f.crew] = double(f.heads());
+        }
+    const auto lineOf = [&](const std::string& home) {
+        const auto found = heads.find(home);
+        return found == heads.end() ? line : line * found->second;
+    };
     for (const auto& [home, members] : homes)
     {
+        const double line = lineOf(home);
         const auto& community = day_.communityOf && state_.residents.count(members.front())
                                     ? day_.communityOf(state_.residents.at(members.front()).homeCell) : std::string();
         const auto here = byCommunity.find(community);
@@ -733,7 +648,7 @@ void Society::neverHungry(std::int64_t day)
     // The households still short after it (none, unless the skim or the shops fell short).
     int after = 0;
     for (const auto& [home, members] : homes)
-        after += std::any_of(members.begin(), members.end(), [&](const std::string& m) {
+        after += std::any_of(members.begin(), members.end(), [&, line = lineOf(home)](const std::string& m) {
             const auto* a = account(m);
             return a && eatable(*a) < line;
         });
@@ -806,75 +721,111 @@ std::int64_t Society::neverBrokeOwed() const
     return owed;
 }
 
-void Society::shareOut()
+std::vector<std::int64_t> Society::tithed(const std::vector<std::int64_t>& cash, const std::vector<std::int64_t>& heads, double r)
 {
-    // The share-out (doc 74, 5.1; the push left of the centre): each household over the mean purse a head gives r percent
-    // of what it holds over the mean (never under skimKeepDays of its necessities a head), and the richest tenth of the
-    // other holders r percent of their spare (at most skimMost percent of it); all of it into fund:relief, then out at
-    // once to the poorest households, per head, poorest first, with no cap. What it can't place stays for tomorrow.
-    const double r = std::min(steerLever("shareOut"), 100.);
+    // Exactly, in whole numbers: r in millionths (R), the heads N and the total T, each want is
+    // (cash (10^6 - R) N + R T heads) / (10^6 N), its floor and its remainder exact, so ties are true ties.
+    std::vector<std::int64_t> out = cash;
+    constexpr std::int64_t Parts = 1000000;
+    const auto R = std::int64_t(std::llround(std::clamp(r, 0., 1.) * double(Parts)));
+    std::int64_t total = 0, n = 0;
+    for (std::size_t i = 0; i < cash.size() && i < heads.size(); ++i)
+    {
+        total += cash[i];
+        n += std::max<std::int64_t>(0, heads[i]);
+    }
+    if (R <= 0 || n <= 0 || cash.size() != heads.size())
+        return out;
+    const __int128 den = __int128(Parts) * n;
+    std::vector<__int128> part(cash.size(), 0);
+    std::int64_t placed = 0;
+    for (std::size_t i = 0; i < cash.size(); ++i)
+    {
+        const __int128 num = __int128(cash[i]) * (Parts - R) * n + __int128(R) * total * std::max<std::int64_t>(0, heads[i]);
+        out[i] = num > 0 ? std::int64_t(num / den) : 0;
+        part[i] = num > 0 ? num % den : 0;
+        placed += out[i];
+    }
+    // The pennies the rounding left over (fewer than the households), one each, the largest remainders first, ties in
+    // the order given.
+    std::vector<std::size_t> order(cash.size());
+    for (std::size_t i = 0; i < order.size(); ++i)
+        order[i] = i;
+    std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) { return part[a] > part[b]; });
+    for (std::size_t k = 0; placed < total && k < order.size(); ++k)
+    {
+        ++out[order[k]];
+        ++placed;
+    }
+    return out;
+}
+
+double Society::giniOf(std::vector<std::pair<double, double>> values)
+{
+    return giniWeighted(std::move(values));
+}
+
+void Society::levellingTithe()
+{
+    // The Levelling tithe (doc 75, 4.1; left of the centre): each resident household's cash a head moves r of the way to
+    // the head-weighted mean, through fund:relief (what the households over the mean pay, those under it are given, the
+    // same pennies tonight). Tills, farms, the estates and the treasury are never touched. G is taken before it moves.
+    const double r = std::clamp(steerLever("levelling"), 0., 100.) / 100.;
     if (r <= 0)
         return;
     if (!account(ReliefFund) && !openAccount(ReliefFund))
         return;
     const auto homes = households();
-    std::int64_t held = 0, heads = 0;
-    for (const auto& [home, members] : homes)
+    std::vector<const std::vector<std::string>*> members;
+    std::vector<std::int64_t> held, heads;
+    for (const auto& [home, m] : homes)
     {
-        for (const auto& m : members)
-            held += cash(m);
-        heads += std::int64_t(members.size());
-    }
-    if (heads <= 0)
-        return;
-    const double mean = double(held) / double(heads);
-    const auto keep = std::int64_t(rule("skimKeepDays")) * necessitiesAHead();
-    std::int64_t raised = 0;
-    for (const auto& [home, members] : homes)
-    {
-        std::int64_t own = 0;
-        for (const auto& m : members)
-            own += cash(m);
-        const auto n = std::int64_t(members.size());
-        const double over = double(own) - mean * double(n);
-        if (over <= 0)
+        if (m.empty())
             continue;
-        auto give = std::min(std::int64_t(std::floor(over * r / 100.)), own - std::max<std::int64_t>(keep * n, std::int64_t(std::ceil(mean * double(n)))));
+        std::int64_t c = 0;
+        for (const auto& id : m)
+            c += cash(id);
+        members.push_back(&m);
+        held.push_back(c);
+        heads.push_back(std::int64_t(m.size()));
+    }
+    loopToday_.mGBefore = giniHeads();
+    const auto next = tithed(held, heads, r);
+    std::int64_t raised = 0;
+    for (std::size_t i = 0; i < held.size(); ++i)
+    {
+        const auto give = held[i] - next[i];
         if (give <= 0)
             continue;
-        auto order = members;
+        // A household pays from the member with the most first.
+        auto order = *members[i];
         std::sort(order.begin(), order.end(), [&](const std::string& a, const std::string& b) {
             return cash(a) != cash(b) ? cash(a) > cash(b) : a < b;
         });
         std::int64_t gave = 0;
         for (const auto& m : order)
-            if (const auto c = std::min(give - gave, cash(m)); c > 0 && shift(m, ReliefFund, "", 0, c, "skim: share-out"))
+            if (const auto c = std::min(give - gave, cash(m)); c > 0 && shift(m, ReliefFund, "", 0, c, "the Levelling tithe"))
                 gave += c;
-        if (gave > 0)
-        {
-            raised += gave;
-            loopToday_.skimBy["households: " + homeClass(home, members)] += gave;
-            loopToday_.skimPayers["home " + home] += gave;
-        }
+        raised += gave;
+        loopToday_.titheGave += gave > 0;
     }
-    auto others = spares(false);
-    others.erase(std::remove_if(others.begin(), others.end(), [](const Spare& s) { return !s.members.empty(); }), others.end());
-    const int most = std::clamp(rule("skimMost"), 1, 100);
-    for (std::size_t i = 0, top = (others.size() + 9) / 10; i < top; ++i)
+    for (std::size_t i = 0; i < held.size() && raised > 0; ++i)
     {
-        const auto& h = others[i];
-        if (const auto c = std::min(std::int64_t(std::floor(double(h.spare) * r / 100.)), h.spare * most / 100);
-            c > 0 && shift(h.id, ReliefFund, "", 0, c, "skim: share-out"))
+        const auto get = std::min(next[i] - held[i], raised);
+        if (get <= 0)
+            continue;
+        // To the member with the most (as the dividend's).
+        const auto& m = *members[i];
+        const auto richest = *std::max_element(m.begin(), m.end(), [&](const std::string& a, const std::string& b) {
+            return cash(a) != cash(b) ? cash(a) < cash(b) : a > b;
+        });
+        if (shift(ReliefFund, richest, "", 0, get, "the Levelling tithe"))
         {
-            raised += c;
-            loopToday_.skimBy[h.group] += c;
-            loopToday_.skimPayers[h.id] += c;
+            raised -= get;
+            loopToday_.tithe += get;
+            ++loopToday_.titheGot;
         }
     }
-    loopToday_.skim += raised;
-    loopToday_.skimFor["share-out"] += raised;
-    // (Never Broke's credit tonight stays in the fund for the households' necessities tomorrow: never shared out.)
-    loopToday_.shareOut += topUpPoorest(std::max<std::int64_t>(0, cash(ReliefFund) - neverBrokeOwed()), ReliefFund, -1);
 }
 
 void Society::housesDividend()
@@ -935,60 +886,59 @@ void Society::housesDividend()
     loopToday_.dividendHomes += int(paidHomes.size());
 }
 
-void Society::steerSet(double push, std::int64_t day, const std::string& why, bool judging)
+void Society::steerSet(double x, std::int64_t day, const std::string& why)
 {
-    // The push moved: the levers at the new push, the toll lean with its guard (doc 74, 5.3: at least 0 while the
-    // treasury's 28-night mean is under treasuryFloor; each night, steerEconomy brings it back toward that), and a line in
-    // the history naming what moved.
+    // The slider moved (or the steering turned on or off): the levers read at the new place, and a line in the history
+    // naming what moved.
     auto& st = state_.loop.steer;
-    static const char* const Levers[] = {"shareOut", "postsShare", "tollLean", "surplusKeep", "treasuryCap", "surplusAlmsTo",
-                                         "groundRent", "rentScale", "dividend", "richAbove", "spendAbove"};
     std::map<std::string, double> before;
     for (const char* l : Levers)
         before[l] = steerLever(l);
-    const double was = st.push;
-    st.push = std::clamp(push, -1., 1.);
-    const double leanWas = st.tollLean;
-    st.tollLean = steering() ? tollLeanWanted(*this) : 0.;
+    st.push = std::clamp(x, -1., 1.);
     std::string moved;
     for (const char* l : Levers)
-    {
-        const double now = std::string(l) == "tollLean" ? st.tollLean : steerLever(l);
-        const double then = std::string(l) == "tollLean" ? leanWas : before[l];
-        if (std::abs(now - then) >= .05)
-            moved += std::string(moved.empty() ? "" : "; ") + leverName(l) + " " + fixed(then, 1) + " -> " + fixed(now, 1);
-    }
+        if (const double now = steerLever(l); std::abs(now - before[l]) >= .05)
+            moved += std::string(moved.empty() ? "" : "; ") + leverName(l) + " " + fixed(before[l], 1) + " -> " + fixed(now, 1);
     LoopState::Steer::Judging j;
     j.day = day;
-    j.before = was;
     j.after = st.push;
     j.why = why + (moved.empty() ? "" : " (" + moved + ")");
-    if (!judging)
-    {
-        st.history.push_back(j);
-        if (st.history.size() > 24)
-            st.history.erase(st.history.begin());
-    }
+    st.history.push_back(j);
+    if (st.history.size() > 24)
+        st.history.erase(st.history.begin());
     loopToday_.steerWhy = j.why;
 }
 
 void Society::steerFollow(std::int64_t day)
 {
-    // The DM's settings followed at once (doc 74, 8.2): turned on, the push at the slider; the slider moved, the push to
-    // it and the judging's days started again; turned off, the push 0 and every rule the world's own (the means kept).
+    // The DM's settings followed at once (doc 74, 8.2; doc 75, 3.3): turned on, the levers at the slider; the slider
+    // moved, the levers to its new place the same night, the charters' ramp begun toward its new number and the slow means
+    // re-seated tonight; turned off, every rule the world's own and every charter handed back (the means kept).
     auto& st = state_.loop.steer;
     const int lean = ownRule("steerLean");
     const double x = steerSlider();
     const auto said = [](int l) { return std::to_string(l - 100); };
     day = std::max<std::int64_t>(0, day);
+    const auto ramp = [&] {
+        // The number of charters at the new place: its share of the middle keepers' tills (those that may be chartered
+        // and those that are), reached over chartersRampDays nights from tonight's.
+        const double share = std::clamp(steerLever("charters"), 0., 100.) / 100.;
+        st.chartersFrom = int(st.charters.size());
+        st.chartersTo = int(std::lround(share * double(charterable().size() + st.charters.size())));
+        st.chartersNights = st.chartersTo == st.chartersFrom ? -1 : 0;
+    };
     if (ownRule("steer") <= 0)
     {
         if (st.on)
         {
-            steerSet(0, day, "Day " + std::to_string(day) + ": the steering turned off; every rule is the world's own again", false);
+            steerSet(0, day, "Day " + std::to_string(day) + ": the steering turned off; every rule is the world's own again" +
+                                 (st.charters.empty() ? "" : ", and the " + std::to_string(st.charters.size()) + " charters handed back"));
+            loopToday_.chartersBack += int(st.charters.size());
             st.on = false;
             st.push = 0;
-            st.tollLean = 0;
+            st.charters.clear();
+            st.chartersFrom = st.chartersTo = 0;
+            st.chartersNights = -1;
         }
         return;
     }
@@ -998,30 +948,142 @@ void Society::steerFollow(std::int64_t day)
         st.lean = lean;
         st.judged = day;
         st.push = 0;
-        steerSet(x, day, "Day " + std::to_string(day) + ": the steering turned on, where the money rests at " + said(lean), false);
+        steerSet(x, day, "Day " + std::to_string(day) + ": the steering turned on, where the money rests at " + said(lean));
+        ramp();
     }
     else if (st.lean != lean)
     {
         const int was = st.lean;
         st.lean = lean;
-        st.judged = day;                            // (The move tells before it is trimmed.)
-        steerSet(x, day, "Day " + std::to_string(day) + ": where the money rests moved from " + said(was) + " to " + said(lean), false);
+        st.judged = day;
+        st.gini = st.upper = st.top10 = -1;         // (Re-seated tonight: the first look after a move is at the new place.)
+        steerSet(x, day, "Day " + std::to_string(day) + ": where the money rests moved from " + said(was) + " to " + said(lean));
+        ramp();
     }
+}
+
+std::string Society::charterOf(const std::string& till) const
+{
+    for (const auto& [t, house] : state_.loop.steer.charters)
+        if (t == till)
+            return house;
+    return {};
+}
+
+std::string Society::tillHouse(const Position* post) const
+{
+    if (!post)
+        return {};
+    if (const auto* w = items::farmPeople().workshop(post->work.cell))
+        return w->house;
+    const auto& owned = items::cityLoop().houseTills;
+    if (const auto found = owned.find(post->work.cell); found != owned.end())
+        return found->second;
+    return charterOf("till:" + post->id);           // (The overlay: a middle keeper's till chartered to a House.)
+}
+
+std::vector<std::string> Society::charterable()
+{
+    // A city keeper's till (a merchant's post, held by the living; not a farm's, not a House's by the catalogue, not
+    // chartered), whose keeper's household is not upper class: the six large keepers are upper class already (doc 75,
+    // 4.2), so chartering them would only move their profit within S.
+    std::map<std::string, std::pair<std::string, const std::vector<std::string>*>> homeOf;   // Resident -> home, members.
+    const auto homes = households();
+    for (const auto& [home, members] : homes)
+        for (const auto& m : members)
+            homeOf[m] = {home, &members};
+    const auto& st = state_.loop.steer;
+    std::vector<std::pair<double, std::string>> ranked;
+    for (const auto& p : positions_)
+    {
+        if (p.role != "merchant")
+            continue;
+        const auto till = "till:" + p.id;
+        if (farmOf_.count(till) || !account(till) || items::farmPeople().workshop(p.work.cell) ||
+            items::cityLoop().houseTills.count(p.work.cell) || !charterOf(till).empty())
+            continue;
+        const auto held = state_.careers.positions.find(p.id);
+        if (held == state_.careers.positions.end() || held->second.holder.empty() || dead_.count(held->second.holder))
+            continue;
+        const auto home = homeOf.find(held->second.holder);
+        if (home != homeOf.end() && homeClass(home->second.first, *home->second.second) == "upper")
+            continue;
+        const auto mean = st.profit.find(till);
+        ranked.push_back({mean == st.profit.end() ? 0. : -mean->second, till});
+    }
+    std::sort(ranked.begin(), ranked.end());
+    std::vector<std::string> out;
+    for (const auto& [unused, till] : ranked)
+        out.push_back(till);
+    return out;
+}
+
+void Society::chartersNight(std::int64_t day)
+{
+    // The Crown's charters (doc 75, 4.2), at 18:00 before the wages: tonight's number on the ramp (equal steps from its
+    // number at the move to the new one over chartersRampDays of these nights, once the keepers' profit has had its 28
+    // nights: until then the ramp waits), the best middle keepers' tills granted, the newest handed back first. A till is
+    // chartered to the House whose district it is in (its cell's House), else the Crown's.
+    (void)day;
+    auto& st = state_.loop.steer;
+    if (!steering())
+        return;
+    // (A chartered till gone, or its post now a House's by the catalogue: its charter lapses.)
+    st.charters.erase(std::remove_if(st.charters.begin(), st.charters.end(),
+                                     [&](const auto& c) {
+                                         const auto* p = account(c.first) ? position(c.first.substr(5)) : nullptr;
+                                         return !p || items::farmPeople().workshop(p->work.cell) || items::cityLoop().houseTills.count(p->work.cell);
+                                     }),
+                      st.charters.end());
+    // (The ramp waits for a month of the keepers' profit, so the best tills are known.)
+    const bool waiting = st.chartersNights >= 0 && st.profitNights < 28;
+    int want = int(st.charters.size());
+    if (st.chartersNights >= 0 && !waiting)
+    {
+        const int days = std::max(1, items::cityLoop().steering.chartersRampDays);
+        const double t = std::min(1., double(++st.chartersNights) / days);
+        want = st.chartersFrom + int(std::lround((st.chartersTo - st.chartersFrom) * t));
+        if (t >= 1)
+            st.chartersNights = -1;
+    }
+    if (int(st.charters.size()) < want)
+    {
+        const auto& estates = items::cityLoop().estates;
+        std::string crown;
+        for (const auto& e : estates)
+            if (e.grants)
+                crown = e.house;
+        for (const auto& till : charterable())
+        {
+            if (int(st.charters.size()) >= want)
+                break;
+            const auto* p = position(till.substr(5));
+            auto house = p && day_.houseOf ? day_.houseOf(p->work.cell) : std::string();
+            if (std::none_of(estates.begin(), estates.end(), [&](const items::Estate& e) { return e.house == house; }))
+                house = crown.empty() ? std::string("the Crown") : crown;
+            st.charters.push_back({till, house});
+            ++loopToday_.chartersGranted;
+        }
+    }
+    while (int(st.charters.size()) > std::max(0, want))
+    {
+        st.charters.pop_back();                     // (Newest first.)
+        ++loopToday_.chartersBack;
+    }
+    loopToday_.charters = int(st.charters.size());
+    loopToday_.chartersWant = st.chartersNights >= 0 ? st.chartersTo : want;
 }
 
 void Society::steerEconomy(std::int64_t day)
 {
-    // The controller (doc 74, 8): last of 18:00's money steps. The slider sets the push at once (feed-forward); then,
-    // once its means have had steerMeanDays nights, every steerJudgeDays nights it trims the push a step toward the
-    // slider's target (the earners' Gini left of the centre, the upper share right of it, both at it), within its band,
-    // waiting while a measure is already coming back; the hunger guard (with Never Hungry off) stops it leaning right
-    // while hunger is over its ceiling and pulls it back toward the centre (never past it) at twice the ceiling.
+    // The steering's night (doc 75, 3.4): last of 18:00's money steps. The slider is followed; the measures tonight and
+    // their means (slow, over about steerMeanDays nights; fast, over 28); the middle keepers' profit means for the
+    // charters. Nothing is judged here: the table set the levers (doc 75 took the push's trim and the hunger pulls away;
+    // the supervisor of Phase 4 backs off a lever that is paying).
     auto& st = state_.loop.steer;
     steerFollow(day);
     if (!st.on)
         return;
-    const double x = steerSlider();
-    // The measures tonight, and their means.
     const double g = giniEarners(), s = upperShare(), t10 = top10Share();
     const double h = loopToday_.hungryHours > 0 ? double(loopToday_.hungrySum) / loopToday_.hungryHours : 0;
     const double k = loopToday_.householdsShort, tr = double(cash("treasury"));
@@ -1040,153 +1102,20 @@ void Society::steerEconomy(std::int64_t day)
     follow(st.hungry, h, fast);
     follow(st.shortHomes, k, fast);
     follow(st.treasury, tr, fast);
-    // The toll lean's guard, each night on the treasury's mean after tonight's money (doc 74, 5.3; the runs of 2026-11-06:
-    // judged only when the push moved, a lean set at 18:00 before the wages held the toll down for 56 nights while the
-    // treasury fell to 594p): the lean goes toward what the push and the guard want, at most half a point a night.
-    if (const double want = tollLeanWanted(*this); std::abs(want - st.tollLean) > 1e-9)
+    // The middle keepers' profit tonight (none: 0), each till's 28-night mean; the chartered tills' too.
+    st.profitNights = std::min(st.profitNights + 1, 3650);
+    const double rate = 1. / std::min(st.profitNights, 28);
+    std::map<std::string, double> next;
+    auto tills = charterable();
+    for (const auto& [till, house] : st.charters)
+        tills.push_back(till);
+    for (const auto& till : tills)
     {
-        const double was = st.tollLean;
-        st.tollLean = std::abs(want - was) <= .5 ? want : was + (want > was ? .5 : -.5);
-        if ((want >= 0) != (was >= 0) || std::abs(st.tollLean - want) < 1e-9)
-            loopToday_.steerWhy = "Day " + std::to_string(day) + ": the treasury's 28-night mean " + fixed(st.treasury, 0) +
-                                  "p against its floor " + fixed(items::cityLoop().steering.treasuryFloor, 0) + "p: the toll lean " +
-                                  fixed(was, 1) + " -> " + fixed(st.tollLean, 1);
+        const auto tonight = loopToday_.keeperProfit.find(till);
+        const double now = tonight == loopToday_.keeperProfit.end() ? 0. : double(tonight->second);
+        const auto was = st.profit.find(till);
+        next[till] = was == st.profit.end() ? now : was->second + (now - was->second) * rate;
     }
-    // The hunger guard's weekly pull (doc 74, 7.3; the runs of 2026-11-06: at the far right, judged only every 28 nights a
-    // step at a time, the push was still +0.65 on day 252 with 30 residents hungry an hour and 150 households short, the
-    // treasury at its float and the alms short): with Never Hungry off, every seventh night the push goes back toward the
-    // centre by the larger step (never past it), whatever the judging, while the hungry or the short are over twice their
-    // ceilings, or the treasury (which pays the alms) is under treasuryLow, both on their 28-night means and tonight. (The
-    // treasury first: in the runs it fell for three weeks before the hunger came, and the hunger lasted two months.) (Tonight
-    // too, so the pull stops once the night's hunger has come back, not a month later when the means have: the first build
-    // of this pulled the push from 1 to 0 and overshot.) The judging only lets it lean right again once all are back.
-    const auto [hFar, farWhy] = [&]() -> std::pair<bool, std::string> {
-        // (Tune round 1: on treasuryLow, not treasuryFloor. Under its floor the ground rent goes to the treasury, which kept
-        // the right's hunger at its ceilings through the summer, the treasury's mean 680-780p; on the floor the pull still
-        // took the push from 1 to 0.15 by the autumn with nobody hungry.)
-        const double hMost = steerTarget("hungerMost"), kMost = steerTarget("shortMost"), floor = items::cityLoop().steering.treasuryLow;
-        const bool hungerFar = (hMost >= 0 && st.hungry > 2 * hMost && h > 2 * hMost) || (kMost >= 0 && st.shortHomes > 2 * kMost && k > 2 * kMost);
-        const bool poor = st.treasury < floor && tr < floor;
-        if (!hungerFar && !poor)
-            return {false, {}};
-        return {true, "hungry " + fixed(st.hungry, 3) + " an hour (ceiling " + fixed(hMost, 2) + "), households short " + fixed(st.shortHomes, 2) +
-                          " (ceiling " + fixed(kMost, 1) + "), the treasury " + fixed(st.treasury, 0) + "p (its low " + fixed(floor, 0) + "p)"};
-    }();
-    if (ownRule("neverHungry") <= 0 && st.push > 0 && day % 7 == 0 && st.days >= 28 && hFar)   // (Once the means have a month.)
-    {
-        const double next = std::max(0., st.push - ownRule("steerStepMost") / 100.);
-        steerSet(next, day, "Day " + std::to_string(day) + ": " + farWhy + ": the hunger guard's weekly pull, the push " + fixed(st.push, 2) + " -> " +
-                                fixed(next, 2), false);
-    }
-    if (st.days < ownRule("steerMeanDays") || day - st.judged < ownRule("steerJudgeDays"))
-        return;
-    // Judging.
-    LoopState::Steer::Judging j;
-    j.day = day;
-    j.before = st.push;
-    const double gT = steerTarget("gini"), gB = steerTarget("giniBand"), sT = steerTarget("upper"), sB = steerTarget("upperBand");
-    const bool useG = x <= 0 && !std::isnan(gT) && gB > 0, useS = x >= 0 && !std::isnan(sT) && sB > 0;
-    double eG = useG ? (gT - st.gini) / gB : 0;
-    const double eS = useS ? (sT - st.upper) / sB : 0;   // (+: too equal, push right.)
-    // With Never Broke on, a Gini under its band is the floor's own levelling, not something to steer against (Tune
-    // round 1: steer-centre-floors leaned right to its band's edge, +0.15, from day 111 to the end, the Gini at 0.42-0.44
-    // under the centre's 0.452, the steering pulling against the floor the DM turned on): it counts as in its band.
-    const bool floorsLevel = ownRule("neverBroke") > 0 && eG > 1;
-    if (floorsLevel)
-        eG = 0;
-    const auto inWords = [&](bool gi) {
-        return gi ? "the earners' Gini " + fixed(st.gini, 3) + " against its target " + fixed(gT, 3) + " (band " + fixed(gB, 3) + ")"
-                  : "the upper share " + fixed(st.upper, 1) + "% against its target " + fixed(sT, 1) + "% (band " + fixed(sB, 1) + ")";
-    };
-    bool onG = useG && (!useS || std::abs(eG) > 1);
-    double err = 0;
-    std::string why;
-    if (useG && useS)
-    {
-        const bool outG = std::abs(eG) > 1, outS = std::abs(eS) > 1;
-        if (outG && outS && (eG > 0) != (eS > 0))
-        {
-            why = inWords(true) + " and " + inWords(false) + " disagree: no move";
-            onG = true;
-        }
-        else if (outG || outS)
-        {
-            onG = outG && (!outS || std::abs(eG) >= std::abs(eS));
-            err = onG ? eG : eS;
-        }
-        else
-            why = inWords(true) + (floorsLevel ? " (under its band: Never Broke's levelling, not steered against)" : "") + " and " + inWords(false) +
-                  ": both in their bands";
-        j.measure = "both";
-    }
-    else if (useG || useS)
-    {
-        err = useG ? eG : eS;
-        j.measure = useG ? "gini" : "upper";
-        if (std::abs(err) <= 1)
-            why = inWords(useG) + (useG && floorsLevel ? ": under its band, Never Broke's levelling: not steered against" : ": in its band");
-    }
-    if (!j.measure.empty() && j.measure == "both" && err != 0)
-        j.measure = onG ? "gini" : "upper";
-    j.value = onG ? st.gini : st.upper;
-    j.target = onG ? gT : sT;
-    j.band = onG ? gB : sB;
-    j.error = err;
-    const double unit = ownRule("steerStep") / 100., most = ownRule("steerStepMost") / 100.;
-    double step = std::abs(err) > 1 ? (std::abs(err) > 2 ? most : unit) * (err > 0 ? 1 : -1) : 0;
-    if (step != 0)
-    {
-        const double then = onG ? st.giniThen : st.upperThen;
-        if (then >= 0 && std::abs(then - j.target) - std::abs(j.value - j.target) >= .25 * std::abs(j.value - j.target))
-        {
-            why = inWords(onG) + ", already coming back: waiting";
-            step = 0;
-        }
-        else
-            why = inWords(onG) + (err > 0 ? ": too equal, leaning right" : ": too unequal, leaning left");
-    }
-    // The hunger guard (with Never Hungry off: on, the floor is that toggle's).
-    bool pulled = false;
-    if (ownRule("neverHungry") <= 0)
-    {
-        const double hMost = steerTarget("hungerMost"), kMost = steerTarget("shortMost");
-        const bool over = (hMost >= 0 && st.hungry > hMost) || (kMost >= 0 && st.shortHomes > kMost) ||
-                          st.treasury < items::cityLoop().steering.treasuryFloor;   // (The alms' purse low: no leaning right.)
-        const bool far = hFar;                      // (As the weekly pull's: the means and tonight both far over.)
-        const std::string hunger = "hungry " + fixed(st.hungry, 3) + " an hour (ceiling " + fixed(hMost, 2) + "), households short " +
-                                   fixed(st.shortHomes, 2) + " (ceiling " + fixed(kMost, 1) + "), the treasury " + fixed(st.treasury, 0) + "p";
-        if (far && st.push > 0)
-        {
-            step = -std::min(st.push, unit);
-            pulled = true;
-            why = hunger + ": the hunger guard pulls the push back toward the centre";
-            j.measure = "hunger";
-        }
-        else if (over && step > 0)
-        {
-            step = 0;
-            why = hunger + ": the hunger guard holds the push from leaning right";
-            j.measure = "hunger";
-        }
-    }
-    const auto [lo, hi] = steerBand();
-    double next = st.push + std::clamp(step, -most, most);
-    next = pulled ? std::max(0., next) : std::clamp(next, std::min(lo, st.push), std::max(hi, st.push));
-    if (!pulled && step != 0 && (next == hi || next == lo) && std::abs(next - st.push) < 1e-9)
-        why += ", but the push is at its band's edge";
-    j.step = next - st.push;
-    st.judged = day;
-    st.giniThen = st.gini;
-    st.upperThen = st.upper;
-    const std::string line = "Day " + std::to_string(day) + ": " + (why.empty() ? std::string("no measure to steer on") : why) +
-                             (j.step != 0 ? "; the push went " + std::string(j.step > 0 ? "+" : "") + fixed(j.step, 2) + ", to " + fixed(next, 2)
-                                          : "; the push stays at " + fixed(st.push, 2));
-    steerSet(next, day, line, true);
-    j.after = st.push;
-    j.why = loopToday_.steerWhy;
-    st.history.push_back(j);
-    if (st.history.size() > 24)
-        st.history.erase(st.history.begin());
-    loopToday_.steerJudged = true;
+    st.profit = std::move(next);
 }
 } // namespace ratw

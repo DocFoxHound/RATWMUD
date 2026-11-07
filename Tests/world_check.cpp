@@ -1566,10 +1566,9 @@ struct EconomyWatch
                     steering << (it == m.begin() ? "" : ", ") << EconomyDetail::quoted(it->first) << ": " << it->second;
                 steering << "}";
             };
-            const auto [lo, hi] = society.steerBand();
+            // (Doc 75: steer_push is where the levers are read, the slider; the push's band and judging are gone.)
             steering << ", \"steer\": " << (society.steering() ? 1 : 0) << ", \"steer_lean\": " << society.rule("steerLean") - 100
-                     << ", \"steer_push\": " << st.push << ", \"steer_push_lo\": " << lo << ", \"steer_push_hi\": " << hi
-                     << ", \"steer_judged\": " << (d.steerJudged ? "true" : "false");
+                     << ", \"steer_push\": " << st.push;
             if (!d.steerWhy.empty())
                 steering << ", \"steer_why\": " << EconomyDetail::quoted(d.steerWhy);
             steering << ", \"m_gini\": " << d.mGini << ", \"m_upper_share\": " << d.mUpper << ", \"m_top10\": " << d.mTop10
@@ -1584,17 +1583,19 @@ struct EconomyWatch
                 steering << ", \"m_g_after\": " << after << ", \"m_g_before\": " << before << ", \"m_g_day\": "
                          << (after >= 0 ? (after + before) / 2 : -1.) << ", \"m_food_gini\": " << d.mFood;
             }
-            for (const auto& [field, lever] : {std::pair{"lev_share_out", "shareOut"}, std::pair{"lev_posts_share", "postsShare"},
-                                               std::pair{"lev_surplus_keep", "surplusKeep"}, std::pair{"lev_cap", "treasuryCap"},
+            for (const auto& [field, lever] : {std::pair{"lev_levelling", "levelling"}, std::pair{"lev_charters", "charters"},
+                                               std::pair{"lev_posts_share", "postsShare"}, std::pair{"lev_surplus_keep", "surplusKeep"},
+                                               std::pair{"lev_cap", "treasuryCap"}, std::pair{"lev_target", "treasuryTarget"},
                                                std::pair{"lev_alms_to", "surplusAlmsTo"}, std::pair{"lev_ground_rent", "groundRent"},
-                                               std::pair{"lev_rent_scale", "rentScale"}, std::pair{"lev_dividend", "dividend"},
-                                               std::pair{"lev_rich_above", "richAbove"},
+                                               std::pair{"lev_dividend", "dividend"}, std::pair{"lev_rich_above", "richAbove"},
                                                std::pair{"lev_spend_above", "spendAbove"}})
                 steering << ", \"" << field << "\": " << society.steerLever(lever);
-            steering << ", \"lev_toll\": " << (society.steering() ? st.tollLean : 0.) << ", \"share_out\": " << d.shareOut
-                     << ", \"share_out_homes\": " << d.shareOutHomes << ", \"posts_share\": " << d.postsShare
+            steering << ", \"posts_share\": " << d.postsShare
                      << ", \"ground_rent\": " << d.groundRent << ", \"ground_rent_treasury\": " << d.groundRentTreasury << ", \"dividend\": " << d.dividend << ", \"dividend_homes\": "
-                     << d.dividendHomes << ", \"land_rent_extra\": " << d.landRentExtra << ", \"skim\": " << d.skim
+                     << d.dividendHomes << ", \"tithe\": " << d.tithe << ", \"tithe_gave\": " << d.titheGave << ", \"tithe_got\": "
+                     << d.titheGot << ", \"charters\": " << d.charters << ", \"charters_want\": " << d.chartersWant
+                     << ", \"charters_granted\": " << d.chartersGranted << ", \"charters_back\": " << d.chartersBack
+                     << ", \"charter_profit\": " << d.charterProfit << ", \"skim\": " << d.skim
                      << ", \"skim_idle\": " << d.skimIdle << ", \"skim_busy\": " << d.skimBusy;
             map("skim_for", d.skimFor);
             map("skim_by", d.skimBy);

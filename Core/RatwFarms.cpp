@@ -464,9 +464,6 @@ void Society::payRents()
             continue;
         if (rent > 0 && cash(to) <= MoneyCap - rent && shift(f.till, to, "", 0, rent, "a land rent: " + named))
         {
-            if (steering())
-                if (const double scale = steerLever("rentScale"); scale > 100)
-                    loopToday_.landRentExtra += rent - std::int64_t(std::lround(double(rent) * 100. / scale));
             today.rent += rent;
             loopToday_.landRents[house] += rent;
             if (estate)
@@ -507,11 +504,6 @@ int Society::landRentPercent(const FarmNow& f) const
 {
     if (f.works || !f.def || f.area >= items::farms().areas.size())
         return 0;
-    // (The steering's rent scale, doc 74, 5.6: percent on every land rent, the push right of the centre.)
-    const double scale = steering() ? steerLever("rentScale") : 100.;
-    const auto scaled = [&](int percent) {
-        return std::clamp(scale == 100. ? percent : int(std::lround(percent * scale / 100.)), 0, 100);
-    };
     // Its own rule first (a farm's `landRent`: the dairies' landRentDairy, doc 72, Phase 4), then its area's, then landRent.
     for (const auto* which : {&f.def->landRent, &items::farms().areas[f.area].id})
     {
@@ -521,9 +513,9 @@ int Society::landRentPercent(const FarmNow& f) const
         name[8] = char(std::toupper(static_cast<unsigned char>(name[8])));
         if (items::ruleInfo(name))
             if (const int own = rule(name); own >= 0)
-                return scaled(own);
+                return own;
     }
-    return scaled(rule("landRent"));
+    return rule("landRent");
 }
 
 std::int64_t Society::landRentDue(const FarmNow& f) const

@@ -216,12 +216,7 @@ export const RULES: {key: string; label: string; max: number; unit: string; onOf
     {key: 'steerLean', label: 'Where the money rests', max: 200, unit: '0 shared, 100 today\'s economy, 200 held by the rich (the tab shows -100 to +100)', steer: 'setting'},
     {key: 'neverHungry', label: 'Never Hungry', max: 1, unit: 'a wolf going hungry is given a day\'s food; the richest pay', onOff: true, steer: 'setting'},
     {key: 'neverBroke', label: 'Never Broke', max: 1, unit: 'a household short of the next day\'s necessities is given just enough; the richest pay', onOff: true, steer: 'setting'},
-    {key: 'steerJudgeDays', label: 'The steering judged every', max: 182, unit: 'days (at least 7)', steer: 'own'},
     {key: 'steerMeanDays', label: 'Its means over', max: 365, unit: 'days, about (the Gini and the shares; hunger, the short and the treasury over 28; at least 14)', steer: 'own'},
-    {key: 'steerStep', label: 'Its step', max: 25, unit: 'hundredths of the push at a judging (at least 1)', steer: 'own'},
-    {key: 'steerStepMost', label: 'Its larger step', max: 50, unit: 'hundredths, when a measure is over two bands off (at least 1)', steer: 'own'},
-    {key: 'steerWidthMid', label: 'Its band at the centre', max: 50, unit: 'hundredths of the push either side of the slider', steer: 'own'},
-    {key: 'steerWidthEnd', label: 'Its band at the ends', max: 100, unit: 'hundredths either side, at -100 and +100', steer: 'own'},
     {key: 'skimMost', label: 'The skim, at most', max: 100, unit: '% of a holder\'s spare in its first pass (at least 1)', steer: 'own'},
     {key: 'skimKeepDays', label: 'The skim leaves', max: 28, unit: 'days of its necessities a head in a household (at least 1)', steer: 'own'},
 ];

@@ -296,12 +296,8 @@ inline constexpr RuleInfo Rules[] = {
     {"neverHungry", 0, 1, 0},            // A wolf going hungry is given a day's food at the stable price; the richest pay.
     {"neverBroke", 0, 1, 0},             // A household short of the next day's necessities is given just enough; the richest pay.
     // The steering's own rules (an author's, in Atlas; the DM tab shows them read only):
-    {"steerJudgeDays", 7, 182, 28},      // the push is judged every this many days,
-    {"steerMeanDays", 14, 365, 56},      // on means over about this many days (the hunger, the short and the treasury: 28);
-    {"steerStep", 1, 25, 5},             // a step is this many hundredths of the push,
-    {"steerStepMost", 1, 50, 10},        // and this many when the measure is more than two bands off;
-    {"steerWidthMid", 0, 50, 15},        // the push within this many hundredths of the slider at the centre,
-    {"steerWidthEnd", 0, 100, 30},       // and this many at either end (between, in proportion).
+    {"steerMeanDays", 14, 365, 56},      // its slow means over about this many days (the hunger, the short and the treasury:
+                                         // 28). (Doc 75: the push's judging, its steps and its band are gone.)
     {"skimMost", 1, 100, 50},            // The skim takes at most this percent of a holder's spare in its first pass,
     {"skimKeepDays", 1, 28, 3},          // and the share-out leaves a household this many days of its necessities a head
                                          // (the skim's own line is the steering table's `comfortable`).
@@ -428,7 +424,7 @@ struct CityLoop
     struct Steering
     {
         std::map<std::string, std::array<double, 5>> levers, targets;
-        double treasuryFloor = 800, treasuryLow = 500;   // The toll lean's guard (5.3).
+        double treasuryFloor = 800, treasuryLow = 500;   // The ground rent to the treasury under the floor (doc 74, 5.5).
         // The skim (doc 74, 6, "The skim reworked"): a household pays only on what it holds over `comfortable` times its
         // necessities a head; a holder's idle spare rises toward its spare by 1/idleDays of the gap a night (falls at once);
         // with Never Broke on, the skim's guard leans on the estates and the treasury while the tills short's 28-night
@@ -440,12 +436,18 @@ struct CityLoop
         // households, 4 keepers' households, 5 other middle-class households), first to last; `skimOrder` in the table,
         // by those names. A list that is not all five once each is left as it was.
         std::array<int, 5> skimOrder{1, 2, 3, 4, 5};
+        // The Crown's charters (doc 75, 4.2): a change in their number is reached in equal nightly steps over this many
+        // nights; and the Houses' dividend rises by this many points for each point of the charters (30%, 45%, 60% at
+        // 33%, 66%, 100% of the middle keepers' tills with the dividend's own 15 at the far right).
+        int chartersRampDays = 14;
+        double dividendPerCharter = .45;
     };
     Steering steering;
 };
 const CityLoop& cityLoop();
-// A steering table's value at `at` (-1..1): straight lines between the five marks; a lever's NaN read as `own`. For a
-// target (own NaN): NaN where either neighbouring mark has none (unless `at` is on the mark that has one).
+// A steering table's value at `at` (-1..1): straight lines between the five marks; a NaN at the centre or an end read as
+// `own`, at a half mark as halfway between its neighbours. For a target (own NaN): NaN where either neighbouring mark has
+// none (unless `at` is on the mark that has one).
 double steerAt(const std::array<double, 5>& marks, double at, double own);
 // The Country's food farms (Data/Economy/country_farms.json; Docs/Design/71-the-country-s-industries.md, 4): modelled
 // producers with virtual crews that take an area of the Country's food over when the area is switched on. These are the

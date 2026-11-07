@@ -12,7 +12,7 @@ export interface SteerLever { key: string; label: string; unit: string; own: num
 export interface SteerSettings { steer: boolean; lean: number; neverHungry: boolean; neverBroke: boolean }
 export interface SteerTable {
     levers: Record<string, (number | null)[]>; targets: Record<string, (number | null)[]>; marks: number[];
-    treasuryFloor: number; treasuryLow: number;
+    treasuryFloor: number; treasuryLow: number; dividendPerCharter?: number;
 }
 /** The studio's steering block (studio.py Economy.steering). */
 export interface SteeringView {
@@ -20,7 +20,7 @@ export interface SteeringView {
     own: Record<string, number | undefined>; table: SteerTable; band: [number, number];
     targets: Record<string, number | null>; levers: SteerLever[]; saved: string | null; problem: string;
     changes: {at: number | string; who: string; detail: string}[];
-    now?: {on: boolean; push: number; judged: number | null; days: number | null; tollLean: number;
+    now?: {on: boolean; push: number; judged: number | null; days: number | null; charters?: number; chartersTo?: number;
         means: Record<string, number | null>};
     history?: SteerJudging[];
     skim?: {total: number; short: number; days: number; purpose: Record<string, number>; group: Record<string, number>;
@@ -34,11 +34,17 @@ export const ruleToLean = (rule: number) => rule - 100;
 /** A slider position as the DM may set it: a whole multiple of 5 within -100..100. */
 export const snapLean = (value: number) => Math.max(-100, Math.min(100, Math.round(value / 5) * 5));
 
-/** Core's items::steerAt: a row at `at` (-1..1), straight lines between the five marks; a lever's null is `own`, a
- *  target's (own null) none, as is a place between a mark with none and one. */
+/** Core's items::steerAt: a row at `at` (-1..1), straight lines between the five marks; a lever's null at the centre or an
+ *  end is `own`, at a half mark halfway between its neighbours (doc 75, 3.2); a target's (own null) none, as is a place
+ *  between a mark with none and one. */
 export function steerAt(marks: (number | null)[], at: number, own: number | null = null): number | null {
     const x = Math.max(-1, Math.min(1, Number.isFinite(at) ? at : 0));
-    const value = (i: number) => marks[i] === null || marks[i] === undefined ? own : marks[i] as number;
+    const end = (i: number) => marks[i] === null || marks[i] === undefined ? own : marks[i] as number;
+    const value = (i: number) => {
+        if (i % 2 === 0 || (marks[i] !== null && marks[i] !== undefined)) return end(i);
+        const a = end(i - 1), b = end(i + 1);
+        return a === null || b === null ? null : (a + b) / 2;
+    };
     const place = (x + 1) * 2;
     const i = Math.min(3, Math.floor(place));
     const t = place - i;
@@ -48,11 +54,20 @@ export function steerAt(marks: (number | null)[], at: number, own: number | null
     return a === null || b === null ? null : a + (b - a) * t;
 }
 
-/** The push's band at a slider position (lean -100..100): steerWidthMid at the centre to steerWidthEnd at the ends. */
-export function bandAt(own: Record<string, number | undefined>, lean: number): [number, number] {
-    const x = lean / 100, mid = (own.steerWidthMid ?? 15) / 100, end = (own.steerWidthEnd ?? 30) / 100;
-    const w = mid + (end - mid) * Math.abs(x);
-    return [Math.max(-1, x - w), Math.min(1, x + w)];
+/** Where the levers are read at a slider position (lean -100..100): the slider itself, twice (doc 75 took the push's
+ *  band away; the pair is kept for the panel's scale). */
+export function bandAt(_own: Record<string, number | undefined>, lean: number): [number, number] {
+    const x = Math.max(-1, Math.min(1, lean / 100));
+    return [x, x];
+}
+
+/** A lever at `at`, as Core's Society::steerLever: its row, and the dividend with its rise for the charters. */
+export function leverAt(table: SteerTable, key: string, at: number, own: number | null): number | null {
+    const row = table.levers[key];
+    if (!row) return own;
+    const v = steerAt(row, at, own);
+    if (key !== 'dividend' || v === null || !table.levers.charters) return v;
+    return v + (table.dividendPerCharter ?? .45) * (steerAt(table.levers.charters, at, 0) ?? 0);
 }
 
 /** The slider's words at a position: the end's or the centre's, or "leaning" between. */
@@ -70,7 +85,7 @@ export function preview(v: SteeringView, lean: number) {
     const t = (name: string) => v.table.targets[name] ? steerAt(v.table.targets[name], x) : null;
     const levers = v.levers.map(l => {
         const row = v.table.levers[l.key];
-        const a = row ? steerAt(row, lo, l.own) : null, b = row ? steerAt(row, hi, l.own) : null;
+        const a = row ? leverAt(v.table, l.key, lo, l.own) : null, b = row ? leverAt(v.table, l.key, hi, l.own) : null;
         return {...l, low: a === null || b === null ? a : Math.min(a, b), high: a === null || b === null ? b : Math.max(a, b)};
     });
     return {band: [lo, hi] as [number, number], gini: t('gini'), giniBand: t('giniBand'), upper: t('upper'), upperBand: t('upperBand'),
@@ -94,8 +109,8 @@ export function measureLines(v: SteeringView, lean = v.settings.lean): {name: st
             inside: m.top10 === null || m.top10 === undefined ? null : (p.top10Most === null || m.top10 <= p.top10Most) && (p.top10Least === null || m.top10 >= p.top10Least)},
         {name: 'Hungry wolves an hour (28-day mean)', now: fixed(m.hungry, 3), target: `at most ${fixed(p.hungerMost, 2)}`, inside: ceiling(m.hungry, p.hungerMost)},
         {name: 'Households short of food a day (28-day mean)', now: fixed(m.short, 2), target: `at most ${fixed(p.shortMost, 1)}`, inside: ceiling(m.short, p.shortMost)},
-        {name: 'The treasury at 18:00 (28-day mean)', now: fixed(m.treasury, 0), target: `the toll lean held at 0 under ${v.table.treasuryFloor}p`,
-            inside: null},
+        {name: 'The treasury at 18:00 (28-day mean)', now: fixed(m.treasury, 0),
+            target: `the toll drifts toward ${fixed(p.levers.find(l => l.key === 'treasuryTarget')?.high, 0)}p`, inside: null},
     ];
 }
 
@@ -103,7 +118,7 @@ export function measureLines(v: SteeringView, lean = v.settings.lean): {name: st
 export function confirmText(v: SteeringView, body: SteerBody): string {
     if (body.lean !== undefined)
         return `Move where the money rests from ${v.settings.lean} to ${body.lean}? `
-            + (v.settings.steer || body.steer ? 'The steering moves its levers toward it over the coming weeks.'
+            + (v.settings.steer || body.steer ? 'The steering moves its levers there tonight (the Crown\'s charters over two weeks).'
                 : 'The steering is off: it takes effect when the steering is turned on.');
     if (body.steer !== undefined)
         return body.steer ? `Turn the steering on, where the money rests at ${v.settings.lean}? Its levers move at once to that place.`

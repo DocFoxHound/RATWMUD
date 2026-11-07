@@ -1,0 +1,31 @@
+{
+  "about": "Doc 75, Phase 2: today's centre before the actuators, 60 days: c4ae14e's world_check (build-c/world_check.p2base) and c4ae14e's Data (git archive c4ae14e Data, into a scratch folder: the path below is that session's), the steering on at the centre, off, and the centre with both floors. The Phase 2 build (steer-p2.json) is compared with these on every field the two share.",
+  "base": "artifacts/economy/r2/export70",
+  "out": "artifacts/economy/r2",
+  "prefix": "steer-p2base-",
+  "days": 60,
+  "binary": ".claude/worktrees/r2-controller/build-c/world_check.p2base",
+  "data": "/tmp/claude-1000/-home-martinb-Documents-GitHub-MUDProject/da6a1181-05f7-491a-a334-c3e7343d5540/scratchpad/data-p2base/Data",
+  "runs": [
+    {
+      "name": "centre",
+      "rules": {
+        "steer": 1,
+        "steerLean": 100
+      }
+    },
+    {
+      "name": "off",
+      "rules": {}
+    },
+    {
+      "name": "centre-floors",
+      "rules": {
+        "steer": 1,
+        "steerLean": 100,
+        "neverHungry": 1,
+        "neverBroke": 1
+      }
+    }
+  ]
+}

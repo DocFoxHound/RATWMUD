@@ -1,13 +1,14 @@
 {
-  "about": "Steering the economy (Docs/Design/74-steering-the-economy.md, 4): the lever and target table of Data/Items/city_loop.json read at a few places, the same cases for Core (Tests/steer_tests.cpp) and the studio (tools/test_studio.py), so the two reckon it alike. own: the world's value of a lever (null for a target); want: null where there is none.",
+  "about": "Steering the economy (Docs/Design/74-steering-the-economy.md, 4; doc 75, 3.2: a null half mark is halfway between its neighbours): the lever and target table of Data/Items/city_loop.json read at a few places, the same cases for Core (Tests/steer_tests.cpp) and the studio (tools/test_studio.py), so the two reckon it alike. own: the world's value of a lever (null for a target); want: null where there is none.",
   "cases": [
     {"kind": "levers", "name": "surplusKeep", "at": -0.25, "own": 4000, "want": 2500},
-    {"kind": "levers", "name": "shareOut", "at": -0.75, "own": 0, "want": 21},
-    {"kind": "levers", "name": "tollLean", "at": -0.75, "own": 0, "want": 0.75},
+    {"kind": "levers", "name": "levelling", "at": -0.75, "own": 0, "want": 30},
+    {"kind": "levers", "name": "treasuryCap", "at": -0.75, "own": 2000, "want": 1625},
     {"kind": "levers", "name": "spendAbove", "at": -0.25, "own": 40, "want": 36},
     {"kind": "levers", "name": "richAbove", "at": 0.25, "own": 40, "want": 70},
     {"kind": "levers", "name": "treasuryCap", "at": -1, "own": 2000, "want": 1500},
-    {"kind": "levers", "name": "rentScale", "at": 0.6, "own": 100, "want": 114.6},
+    {"kind": "levers", "name": "charters", "at": 0.75, "own": 0, "want": 24.75},
+    {"kind": "levers", "name": "treasuryTarget", "at": 0.75, "own": 5500, "want": 2012.5},
     {"kind": "targets", "name": "gini", "at": -0.25, "own": null, "want": 0.4485},
     {"kind": "targets", "name": "upper", "at": 0.25, "own": null, "want": 15.75},
     {"kind": "targets", "name": "gini", "at": 0.25, "own": null, "want": null},

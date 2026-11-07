@@ -1002,14 +1002,13 @@ Value society(const SocietyState& s)
         }
         if (!l.steer.empty())
         {
-            // Steering the economy (doc 74, 8.6): the push, its slider and judging, the means, the toll lean, the
-            // estates' last short night, and the last judgings.
+            // Steering the economy (doc 74, 8.6; doc 75): where the levers are read, the slider and its last move, the
+            // means, the estates' last short night, the last changes, and the Crown's charters.
             const auto& st = l.steer;
             auto j = Value::object(), history = Value::array();
             j.add("on", st.on); j.add("push", st.push); j.add("lean", st.lean); j.add("judged", st.judged); j.add("days", st.days);
             j.add("gini", st.gini); j.add("upper", st.upper); j.add("top10", st.top10); j.add("hungry", st.hungry);
-            j.add("short", st.shortHomes); j.add("treasury", st.treasury); j.add("giniThen", st.giniThen);
-            j.add("upperThen", st.upperThen); j.add("tollLean", st.tollLean); j.add("estateShort", st.estateShort);
+            j.add("short", st.shortHomes); j.add("treasury", st.treasury); j.add("estateShort", st.estateShort);
             for (const auto& h : st.history)
             {
                 auto e = Value::object();
@@ -1043,6 +1042,21 @@ Value society(const SocietyState& s)
                 j.add(key, o2);
             }
             j.add("idleDay", st.idleDay); j.add("tillsShort", st.tillsShort); j.add("tillsDays", st.tillsDays);
+            // The Crown's charters (doc 75, 4.2): each till and its House in the order granted, the ramp, the profit means.
+            auto charters = Value::array();
+            for (const auto& [till, house] : st.charters)
+            {
+                auto e = Value::object();
+                e.add("till", till); e.add("house", house);
+                charters.push(e);
+            }
+            j.add("charters", charters);
+            j.add("chartersFrom", st.chartersFrom); j.add("chartersTo", st.chartersTo); j.add("chartersNights", st.chartersNights);
+            auto profit = Value::object();
+            for (const auto& [till, mean] : st.profit)
+                profit.add(till, mean);
+            j.add("profit", profit);
+            j.add("profitNights", st.profitNights);
             loop.add("steer", j);
         }
         o.add("loop", loop);
@@ -1096,12 +1110,9 @@ LoopState readLoop(const Value& o)
         s.days = int(st["days"].asNumber());
         for (const auto& [key, into] : {std::pair{"gini", &s.gini}, std::pair{"upper", &s.upper}, std::pair{"top10", &s.top10},
                                         std::pair{"hungry", &s.hungry}, std::pair{"short", &s.shortHomes},
-                                        std::pair{"treasury", &s.treasury}, std::pair{"giniThen", &s.giniThen},
-                                        std::pair{"upperThen", &s.upperThen}})
+                                        std::pair{"treasury", &s.treasury}})
             if (inRange(st[key], -1, 1e12))
                 *into = st[key].asNumber();
-        if (inRange(st["tollLean"], -90, 90))
-            s.tollLean = st["tollLean"].asNumber();
         if (inRange(st["estateShort"], -1, 1e12))
             s.estateShort = std::int64_t(st["estateShort"].asNumber());
         for (const auto& h : st.array("history"))
@@ -1143,6 +1154,21 @@ LoopState readLoop(const Value& o)
             s.tillsShort = st["tillsShort"].asNumber();
             s.tillsDays = int(st["tillsDays"].asNumber());
         }
+        for (const auto& c : st.array("charters"))
+            if (c.isObject() && c.string("till").rfind("till:", 0) == 0 && c.string("till").size() <= 120 && !c.string("house").empty() &&
+                c.string("house").size() <= 80 && s.charters.size() < 10000)
+                s.charters.push_back({c.string("till"), c.string("house")});
+        if (inRange(st["chartersFrom"], 0, 10000) && inRange(st["chartersTo"], 0, 10000) && inRange(st["chartersNights"], -1, 1e12))
+        {
+            s.chartersFrom = int(st["chartersFrom"].asNumber());
+            s.chartersTo = int(st["chartersTo"].asNumber());
+            s.chartersNights = std::int64_t(st["chartersNights"].asNumber());
+        }
+        for (const auto& [till, mean] : st.object("profit").fields())
+            if (till.size() <= 120 && inRange(mean, -1e12, 1e12) && s.profit.size() < 10000)
+                s.profit[till] = mean.asNumber();
+        if (inRange(st["profitNights"], 0, 3650))
+            s.profitNights = int(st["profitNights"].asNumber());
     }
     return l;
 }

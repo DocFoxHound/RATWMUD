@@ -32,9 +32,9 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
     const skim = view.skim;
     return <section className="economy-switches steering-panel">
         <h3>Steering the economy</h3>
-        <p className="hint">Tell the steering where the money should rest. It moves a few of the economy's levers slowly, and
-            within bounds, toward that place, and shows below what it is doing and why. The levers can't be set by hand while
-            it is on. Players are never skimmed and never given anything.</p>
+        <p className="hint">Tell the steering where the money should rest. A few of the economy's levers move to that place the
+            same night (the Crown's charters over two weeks), as the table says, and below it shows what they are doing. The
+            levers can't be set by hand while it is on. Players are never skimmed and never given anything.</p>
         <label className="steer-slider"><b>Where the money rests</b>
             <input type="range" min={-100} max={100} step={5} value={lean} disabled={locked} list="steer-marks"
                 aria-label="Where the money rests" onChange={e => { asked.current = null; setLean(Number(e.target.value)); }}
@@ -62,11 +62,11 @@ export function SteeringPanel({view, locked, setSteer}: {view: SteeringView; loc
             <tbody>{measureLines(view, lean).map(m => <tr key={m.name}><td>{m.name}</td><td>{m.now}</td><td>{m.target}</td>
                 <td>{m.inside === null ? '' : m.inside ? 'in its band' : 'outside it'}</td></tr>)}</tbody>
         </table></div>
-        <div className="steer-scale" title="The push: where the levers are now, and the band the slider allows it">
+        <div className="steer-scale" title="Where the levers are read now (the slider since doc 75)">
             <span className="steer-band" style={{left: at(p.band[0]), width: `${(p.band[1] - p.band[0]) * 50}%`}} />
             <span className="steer-push" style={{left: at(push)}} />
         </div>
-        <p className="hint">The push {fmt(push, 2)} (its band at {lean}: {fmt(p.band[0], 2)} to {fmt(p.band[1], 2)}).</p>
+        <p className="hint">The levers are read at {fmt(push, 2)}{view.now?.chartersTo ? `; the Crown's charters: ${view.now.charters ?? 0} of ${view.now.chartersTo}` : ''}.</p>
 
         <h4>The levers (read only)</h4>
         <div className="dm-table-wrap"><table className="dm-table">

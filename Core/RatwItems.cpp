@@ -423,6 +423,8 @@ void readSteering(const json::Value& steer, CityLoop::Steering& t)
     t.idleDays = int(std::clamp(steer.number("idleDays", t.idleDays), 1., 365.));
     t.tillsShortNormal = std::clamp(steer.number("tillsShortNormal", t.tillsShortNormal), 0., 1e6);
     t.tillsShortOver = std::clamp(steer.number("tillsShortOver", t.tillsShortOver), 0., 1000.);
+    t.chartersRampDays = int(std::clamp(steer.number("chartersRampDays", t.chartersRampDays), 1., 365.));
+    t.dividendPerCharter = std::clamp(steer.number("dividendPerCharter", t.dividendPerCharter), 0., 10.);
     if (const auto& order = steer["skimOrder"].items(); !order.empty())
     {
         static const std::map<std::string, int> steps = {{"estates", 1}, {"treasury", 2}, {"upper", 3}, {"keepers", 4}, {"middle", 5}};
@@ -631,11 +633,13 @@ Catalog build()
     {
         const double W = std::numeric_limits<double>::quiet_NaN();
         auto& t = c.cityLoop.steering;
-        t.levers = {{"shareOut", {30, 12, 0, 0, 0}},      {"postsShare", {50, 25, 0, 0, 0}},
-                    {"tollLean", {1, .5, 0, 0, 0}},    {"surplusKeep", {0, 1000, W, W, W}},
-                    {"treasuryCap", {1500, W, W, W, W}},  {"surplusAlmsTo", {80, 60, W, W, W}},
-                    {"groundRent", {0, 0, 0, 15, 30}},    {"rentScale", {100, 100, 100, 112, 125}},
-                    {"dividend", {0, 0, 0, 15, 30}},      {"richAbove", {W, W, W, 100, 150}},
+        // (Doc 75, 4: the share-out, the toll lean and the rent scale gone; the Levelling tithe, the Crown's charters and
+        // the toll drift's target new. A lever's NaN at a half mark is the straight line between its neighbours.)
+        t.levers = {{"levelling", {40, W, 0, 0, 0}},     {"charters", {0, 0, 0, W, 33}},
+                    {"postsShare", {50, 25, 0, 0, 0}},   {"surplusKeep", {0, 1000, W, W, W}},
+                    {"treasuryCap", {1500, W, W, W, W}}, {"treasuryTarget", {1500, W, W, W, 850}},
+                    {"surplusAlmsTo", {80, 60, W, W, W}}, {"groundRent", {0, 0, 0, 15, 30}},
+                    {"dividend", {0, 0, 0, W, 15}},      {"richAbove", {W, W, W, 100, 150}},
                     {"spendAbove", {25, 32, W, W, W}}};
         t.targets = {{"gini", {.33, .41, .487, W, W}},        {"giniBand", {.04, .04, .035, W, W}},
                      {"upper", {W, W, 13, 18.5, 24}},           {"upperBand", {W, W, 2, 2.5, 3}},
@@ -1155,7 +1159,10 @@ const Households& households()
 double steerAt(const std::array<double, 5>& marks, double at, double own)
 {
     at = std::clamp(std::isfinite(at) ? at : 0., -1., 1.);
-    const auto value = [&](std::size_t i) { return std::isnan(marks[i]) ? own : marks[i]; };
+    // A mark's NaN: at the centre or an end, `own` (the world's value); at a half mark, halfway between its two
+    // neighbours (doc 75, 3.2: a measured end blends in with |x| from the world's value at the centre).
+    const auto end = [&](std::size_t i) { return std::isnan(marks[i]) ? own : marks[i]; };
+    const auto value = [&](std::size_t i) { return i % 2 == 0 || !std::isnan(marks[i]) ? end(i) : (end(i - 1) + end(i + 1)) / 2; };
     const double place = (at + 1) * 2;              // (0..4: the marks' index.)
     const auto i = std::min<std::size_t>(3, std::size_t(std::floor(place)));
     const double t = place - double(i);

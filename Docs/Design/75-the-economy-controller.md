@@ -523,7 +523,7 @@ The ladder is chosen per end, so the left can ship Full while the right ships F1
 
 ## Progress
 
-Phase 1 done on `r2-controller` (below); the user's answers to section 9 first.
+Phases 1 and 2 done on `r2-controller` (below); the user's answers to section 9 first.
 
 ### 2026-11-06: the user's decisions
 
@@ -645,3 +645,89 @@ the floors' money idle).
    first. When the tithe replaces it, A7's floors cost should stay near that.
 
 **Not done in this phase:** no change to `steer-compare.py` or the DM tab; `steer_calibrate.py` is Phase 3's.
+
+### Phase 2: the actuators (2026-11-06, branch `r2-controller`)
+
+About 2 h of the phase's 3 h. No calibration run: a 60-day check of the centre (three runs on today's code, three on
+the new) and two 60-day smokes at the ends, on scratch copies of export70, on the task's cores. Nothing written to DEV
+or PROD; no server.
+
+**Built.**
+
+- **The Levelling tithe** (`Society::levellingTithe`, `tithed`; `RatwSteering.cpp`): each night after the alms and before
+  Never Broke, every resident household's cash a head moves r of the way to the head-weighted mean, through
+  fund:relief; tills, farms, the estates and the treasury untouched. `tithed` works in whole numbers (r in millionths,
+  each want's floor and remainder exact), so the pennies left over go to the largest remainders, true ties in the
+  households' order, and the total is exact. G is taken just before it moves (`m_g_before`); `m_g_after` stays the
+  night's end, `m_g_day` their mean. The table lever `levelling`: 40% at -1 (provisional: the calibration picks 30, 40
+  or 50), blended to 0 at the centre.
+- **The Crown's charters** (`chartersNight`, `charterable`, `charterOf`, `tillHouse`): the lever `charters`, a percent of
+  the middle keepers' tills (a merchant's city till, not a farm's, not a House's by the catalogue, its keeper's
+  household not upper class), 33% at +1 (provisional). The number is fixed when the slider moves (its share of the
+  tills that may be chartered and those that are) and reached in equal nightly steps over `chartersRampDays` (14)
+  nights, best tills first (28-night mean profit, then id), handed back newest first; all handed back at once when the
+  steering is turned off. The ramp waits until the keepers' profit means have had 28 nights, so the ranking is real
+  (with the steering on from day 0 the first charters come on day 28). A charter goes to the House whose district the
+  shop is in (`LifeDay::houseOf`: the cell's first claim by a faction named "House ..."), else the Crown. Saved:
+  the list in order, the ramp, the profit means.
+  - The overlay in all three lookups: the till's profit (`payWages`: a chartered till's profit goes to the House's fund,
+    booked as the House's shops' rent; the hands' share and the ground rent come off first as for any keeper); the
+    upper share (`upperShare` through `tillHouse`); the skim's keepers' step (a chartered shop's keeper is no longer a
+    keeper there). Its own rules: the cap stays `floatWagesDays` (not `workshopWagesDays`) and the wage rise stays the
+    keeper's bound (not `workshopWageMost`), since the static catalogue (`houseOfPost`) does not see charters.
+- **The dividend tied to the charters:** `dividend` at x is the row's value plus `dividendPerCharter` (0.45) points a
+  point of charters; the row is 15 at +1, so 33%, 66% and 100% give 29.85%, 44.7% and 60%.
+- **The blended values at x (3.2):** `items::steerAt` reads a null at a half mark as halfway between its neighbours
+  (a null at the centre or an end is still the world's own), so an end value blends in with |x|. The same rule in the
+  studio, `steering.ts` and `econ_report.py`; the shared fixture has cases for it.
+- **`followTreasury` fed a reachable target (4.5):** `treasuryTarget` is a steered rule now: 5,500 at the centre (the
+  world's), 1,500 at -1 and 850 at +1 (the t1 runs' year-1 means; provisional), blended between. The old
+  `min(target, cap + keep)` rule is gone. The cap and keep at the ends are left as t1 had them (the left 1,500 and 0);
+  the plan's "cap = target x 1.15, keep = target x 0.5" is for `steer_calibrate.py` to write in Phase 3, not set here.
+- **Removed:** the share-out, the toll lean (and its guard), the rent scale, the weekly and judging hunger pulls, the
+  push's trim and judging (`steerBand`, the `steerJudgeDays`, `steerStep`, `steerStepMost`, `steerWidthMid`,
+  `steerWidthEnd` rules), `spares()`. `push` in the save is now the slider's place; a slider move re-seats the slow
+  means. The history keeps the changes only.
+- **Never Hungry** covers the farms' crews (each a household of its heads in one account, the line its heads' days).
+- **The lists:** Core's rules and table, city_loop.json, `map_editor.py` (`RULE_LIMITS`, `STEERED_RULES` with
+  `treasuryTarget`, `STEER_OWN_RULES`), `model.mjs`, `economy.ts`, the studio's levers and its view (`band` is the
+  slider twice), `steering.ts` (`leverAt`), the panel's two lines, `econ_report.py`, world_check's daily line (new:
+  `lev_levelling`, `lev_charters`, `lev_target`, `tithe`, `tithe_gave`, `tithe_got`, `charters`, `charters_want`,
+  `charters_granted`, `charters_back`, `charter_profit`; gone: `lev_share_out`, `lev_toll`, `lev_rent_scale`,
+  `share_out`, `share_out_homes`, `land_rent_extra`, `steer_push_lo`, `steer_push_hi`, `steer_judged`).
+
+**Tests.** `steer_tests` 235 checks (was 186): the table and its blends; the levers at the ends; the tithe (the Gini
+identity in doubles at five r; the remainders and ties in pennies; the total kept; r 0 and all-at-the-mean move
+nothing; deterministic; in the city, conserved, G before over G after, nothing at the centre); the charters (none
+while the profit means are under 28 nights; one a night on a 4-night ramp, the best first; the Crown's for a district
+no House claims; the profit to the House, the keeper on a wage; the overlay; the skim's keepers' step; the upper keeper
+never chartered; saved and read again; two worlds the same; handed back newest first; all back when off); the slider
+(the levers there the same night, nothing judged in 200 nights, saved). `sim_fast_tests` reads the tithe in place of
+the share-out. ctest 80 of 80; `test_studio`, `test_econ_report`, `steering.test.ts`, `economy.test.ts` pass; `tsc`
+clean.
+
+**The centre is unchanged** (`steer-p2base.json`: c4ae14e's binary and Data; `steer-p2.json`: this build; 60 days):
+
+| run | daily lines | the loop state |
+|---|---|---|
+| steering off | byte for byte the same file | the same |
+| on, at the centre | every shared field the same on all 60 days | the same but the steering's own record (the removed fields, the new ones, the history without day 55's judging) |
+| on, at the centre, both floors | every shared field the same on all 60 days | as above |
+
+**The smokes at the ends** (60 days, the provisional table, not calibration; money conserved every night, nobody hungry):
+
+- Left (tithe 40%): G before the tithe about 0.10, after the night about 0.05 (0.37 and 0.22 on day 0); about 900p a
+  night moved; the treasury held at 1,500p; tills short 16 a day.
+- Right (charters 33%): none until day 28, 27 by day 40, 29 by day 50 (29 of about 88 middle keepers' tills); S 18-19%
+  before them, about 34-36% after; tills short 18 a day.
+
+**Not sure, for Phase 3.**
+
+1. **S jumps when a till is chartered**, because the till's whole cash (its float and a week's wages) counts in S the
+   night it is chartered, before any profit moves. Part of the right's 34% is that relabelling, not money moving to
+   the rich. The calibration should report S with and without the chartered tills' own cash.
+2. **The ramp's 28-night wait** is not in the plan. Without it the first charters would be ranked on no profit at all.
+3. **The left's treasury values** stay as t1 had them (see above); the plan's 1.15 and 0.5 rule would raise the left's
+   cap and keep and cut its surplus alms, so it is left to the calibration to measure.
+4. **The DM tab** still has the push's scale (now a point at the slider) and no charter or tithe edicts: Phase 7's.
+
