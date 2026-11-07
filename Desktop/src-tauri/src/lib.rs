@@ -119,8 +119,10 @@ fn relay_send(request: Request<'_>, relays: State<'_, Relays>) -> Result<(), Str
         .ok_or("no relay-id")?;
     let message = match request.body() {
         InvokeBody::Raw(bytes) => Message::Binary(bytes.clone().into()),
-        InvokeBody::Json(serde_json::Value::String(s)) => Message::Text(s.clone().into()),
-        InvokeBody::Json(v) => Message::Text(v.to_string().into()),
+        InvokeBody::Json(v) => match v.get("text").and_then(|t| t.as_str()) {
+            Some(text) => Message::Text(text.to_owned().into()),
+            None => Message::Text(v.to_string().into()),
+        },
     };
     let open = relays.open.lock().unwrap();
     open.get(&id).ok_or("no such relay")?.send(message).map_err(|e| e.to_string())
@@ -227,9 +229,9 @@ pub fn run() {
             tauri::async_runtime::spawn(loopback_serve(listener, token));
 
             // Let the page's own WebSocket trust the spike's self-signed certificate (SPIKE_CA) on 127.0.0.1, so the
-            // direct wss:// test means something. Linux only (WebKitGTK).
+            // direct wss:// test means something (SPIKE_CERT: the server's own certificate). Linux only (WebKitGTK).
             #[cfg(target_os = "linux")]
-            if let Ok(path) = std::env::var("SPIKE_CA") {
+            if let Ok(path) = std::env::var("SPIKE_CERT") {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.with_webview(move |webview| {
                         use webkit2gtk::{WebContextExt, WebViewExt};
