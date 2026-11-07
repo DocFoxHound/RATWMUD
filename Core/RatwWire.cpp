@@ -1033,6 +1033,27 @@ Value society(const SocietyState& s)
                 skims.push(e);
             }
             j.add("skims", skims);
+            // The weekly ledger (doc 75, Phase 7): by week, the nights, and by lever who paid and who was given.
+            auto ledger = Value::array();
+            for (const auto& w : st.ledger)
+            {
+                auto e = Value::object();
+                e.add("week", w.week); e.add("nights", w.nights);
+                for (const auto& [key, m] : {std::pair{"paid", &w.paid}, std::pair{"got", &w.got}})
+                {
+                    auto byLever = Value::object();
+                    for (const auto& [lever, who] : *m)
+                    {
+                        auto o2 = Value::object();
+                        for (const auto& [name, coins] : who)
+                            o2.add(name, coins);
+                        byLever.add(lever, o2);
+                    }
+                    e.add(key, byLever);
+                }
+                ledger.push(e);
+            }
+            j.add("ledger", ledger);
             // The skim reworked: each household's idle spare, Never Broke's credit, and the tills short's mean.
             for (const auto& [key, m] : {std::pair{"idle", &st.idle}, std::pair{"credit", &st.credit}})
             {
@@ -1135,7 +1156,7 @@ LoopState readLoop(const Value& o)
         if (inRange(st["estateShort"], -1, 1e12))
             s.estateShort = std::int64_t(st["estateShort"].asNumber());
         for (const auto& h : st.array("history"))
-            if (h.isObject() && inRange(h["day"], 0, 1e12) && s.history.size() < 24)
+            if (h.isObject() && inRange(h["day"], 0, 1e12) && s.history.size() < LoopState::Steer::LogMost)
             {
                 LoopState::Steer::Judging j;
                 j.day = std::int64_t(h["day"].asNumber());
@@ -1161,6 +1182,22 @@ LoopState readLoop(const Value& o)
                         if (name.size() <= 120 && inRange(coins, 0, 1e12) && into->size() < 40)
                             (*into)[name] = std::int64_t(coins.asNumber());
                 s.skims.push_back(std::move(d));
+            }
+        for (const auto& w : st.array("ledger"))
+            if (w.isObject() && inRange(w["week"], 0, 1e12) && inRange(w["nights"], 0, 7) &&
+                s.ledger.size() < std::size_t(LoopState::Steer::LedgerWeeks) &&
+                (s.ledger.empty() || std::int64_t(w["week"].asNumber()) > s.ledger.back().week))
+            {
+                LoopState::Steer::LedgerWeek d;
+                d.week = std::int64_t(w["week"].asNumber());
+                d.nights = int(w["nights"].asNumber());
+                for (const auto& [key, into] : {std::pair{"paid", &d.paid}, std::pair{"got", &d.got}})
+                    for (const auto& [lever, who] : w.object(key).fields())
+                        if (lever.size() <= 40 && who.isObject() && into->size() < 40)
+                            for (const auto& [name, coins] : who.fields())
+                                if (name.size() <= 120 && inRange(coins, 0, 1e15) && (*into)[lever].size() < 40)
+                                    (*into)[lever][name] = std::int64_t(coins.asNumber());
+                s.ledger.push_back(std::move(d));
             }
         for (const auto& [key, into] : {std::pair{"idle", &s.idle}, std::pair{"credit", &s.credit}})
             for (const auto& [name, coins] : st.object(key).fields())

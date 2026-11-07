@@ -27,6 +27,17 @@ export interface SteeringView {
     history?: SteerJudging[];
     skim?: {total: number; short: number; days: number; purpose: Record<string, number>; group: Record<string, number>;
         payers: Record<string, number>};
+    /** The edicts (doc 75, 3.8, Phase 7): a line per lever the slider has moved, as an in-world law, and the gate toll. */
+    edicts?: string[];
+    /** The weekly ledger (doc 75, 3.8, Phase 7), newest week first. */
+    ledger?: LedgerWeek[];
+}
+/** A week of the ledger: each lever's pennies moved, who paid and who was given them (largest first), and by payer and
+ *  receiver (households by class) what went in and out across the levers. */
+export interface LedgerWeek {
+    week: number; from: number; to: number; nights: number;
+    levers: {key: string; label: string; moved: number; paid: [string, number][]; got: [string, number][]}[];
+    parties: {who: string; in: number; out: number; net: number}[];
 }
 export type SteerBody = Partial<SteerSettings>;
 /** The safety supervisor (doc 75, 3.6), from the save: the rules on, the back-offs, rule 1's route and its last words. */
@@ -168,9 +179,24 @@ export function heldText(v: SteeringView | undefined, key: string, yours: number
     return `steered: ${now === null || now === undefined ? '-' : Math.round(now)}; yours: ${yours}, used again when the steering is off`;
 }
 
-/** One log of the DM's changes and the steering's judgings, newest first. */
-export function logLines(v: SteeringView): string[] {
-    const mine = v.changes.map(c => `${c.who}: ${c.detail}`);
-    const judged = (v.history ?? []).map(h => h.why);
-    return [...mine.map(l => `The DM, ${l}`), ...judged];
+/** Which lines of the log to show: all, the DM's own changes (the audit), the slider's moves as the world took them, or
+ *  the supervisor's. */
+export type LogKind = 'all' | 'dm' | 'slider' | 'supervisor';
+/** The log (doc 75, Phase 7: a year of it, not 24 lines): the DM's changes, newest first, then the world's lines, newest
+ *  first (the slider's moves as the world took them, and the supervisor's), as `kind` asks. */
+export function logLines(v: SteeringView, kind: LogKind = 'all'): string[] {
+    const mine = kind === 'all' || kind === 'dm' ? v.changes.map(c => `The DM, ${c.who}: ${c.detail}`) : [];
+    const world = (v.history ?? []).filter(h => kind === 'all'
+        || (kind === 'supervisor' ? h.measure === 'supervisor' : kind === 'slider' && h.measure !== 'supervisor')).map(h => h.why);
+    return [...mine, ...world];
+}
+
+/** A ledger week's title: its days, and the nights counted so far when it is not a whole week. */
+export function ledgerTitle(w: LedgerWeek): string {
+    return `Days ${w.from} to ${w.to}${w.nights < 7 ? ` (${w.nights} night${w.nights === 1 ? '' : 's'} so far)` : ''}`;
+}
+
+/** A ledger line's payers or receivers in words: "upper-class households 300p, the treasury 9p". */
+export function ledgerWho(list: [string, number][]): string {
+    return list.length ? list.map(([who, p]) => `${who} ${p.toLocaleString('en-GB')}p`).join(', ') : '-';
 }

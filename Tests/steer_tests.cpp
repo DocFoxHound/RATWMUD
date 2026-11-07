@@ -1024,6 +1024,80 @@ void theSlider()
 }
 } // namespace
 
+// Doc 75, Phase 7: the DM tab's weekly ledger (tonight's money by lever, who paid and who was given) and the year of log.
+void theLedgerAndTheLog()
+{
+    const auto sum = [](const std::map<std::string, std::int64_t>& m) {
+        std::int64_t t = 0;
+        for (const auto& [k, v] : m)
+            t += v;
+        return t;
+    };
+    {
+        // The far left's tithe night: the levelling's pennies paid and given alike, by class, in this week's line.
+        auto s = city({at("aa", 900), at("bb", 100), at("cc", 0), at("dd", 0)}, 2000, {{"steer", 1}, {"steerLean", 0}, {"treasuryCap", 2000}});
+        run(s, 1 + 17.9 / 24, 1 + 18.5 / 24);
+        const auto& st = s.state().loop.steer;
+        const auto& d = s.loopToday();
+        expect(st.ledger.size() == 1 && st.ledger[0].week == 0 && st.ledger[0].nights == 1, "one night in week 0's line: " + n(double(st.ledger.size())));
+        const auto& w = st.ledger[0];
+        expect(w.paid.count("levelling") && w.got.count("levelling") && sum(w.paid.at("levelling")) == d.tithe &&
+                   sum(w.got.at("levelling")) == d.tithe && sum(d.titheOut) == d.tithe && sum(d.titheIn) == d.tithe,
+               "the tithe: paid and given alike, " + n(double(d.tithe)) + "p");
+        for (const auto& [cls, coins] : w.paid.at("levelling"))
+            expect(cls == "upper" || cls == "middle" || cls == "lower", "by household class: " + cls);
+        const auto back = wire::readSociety(wire::society(s.state())).loop.steer;
+        expect(back.ledger.size() == 1 && back.ledger[0].paid == w.paid && back.ledger[0].got == w.got && back.ledger[0].nights == 1,
+               "the ledger saved and read again");
+        expect(s.conserved(), "conserved with the ledger counted");
+        // Neither the steering nor a floor on: no ledger, and the save's steering stays empty as before.
+        auto c = city({at("aa", 900), at("bb", 100)}, 2000, {{"treasuryCap", 2000}});
+        run(c, 1 + 17.9 / 24, 1 + 18.5 / 24);
+        expect(c.state().loop.steer.ledger.empty() && c.state().loop.steer.empty(), "the steering off: no ledger");
+    }
+    {
+        // A save's ledger read with care: a year of weeks at most, each after the last, the nights at most a week's.
+        auto s = city({at("aa", 900)}, 2000, {{"steer", 1}, {"steerLean", 0}});
+        s.steerEconomy(1);
+        auto v = wire::society(s.state());
+        auto ledger = wire::Value::array();
+        for (int k = 0; k < 60; ++k)
+        {
+            auto e = wire::Value::object(), paid = wire::Value::object(), lever = wire::Value::object();
+            lever.add("upper", 10 + k);
+            paid.add("dividend", lever);
+            e.add("week", k == 5 ? 2 : k);          // (Week 5's line out of order: dropped.)
+            e.add("nights", k == 3 ? 9 : 7);        // (Week 3's nine nights: dropped.)
+            e.add("paid", paid);
+            e.add("got", wire::Value::object());
+            ledger.push(e);
+        }
+        v.find("loop")->find("steer")->set("ledger", ledger);
+        const auto back = wire::readSociety(v).loop.steer;
+        expect(back.ledger.size() == std::size_t(LoopState::Steer::LedgerWeeks) && back.ledger[3].week == 4 &&
+                   back.ledger[4].week == 6 && back.ledger[0].paid.at("dividend").at("upper") == 10,
+               "the save's ledger: at most a year of weeks, in order, each a week at most: " + n(double(back.ledger.size())));
+    }
+    {
+        // The log keeps a year, not 24 lines: 30 slider moves all kept, saved and read again; a year on, the old ones gone.
+        auto s = city({at("aa", 900), at("bb", 100)}, 9000, {{"steer", 1}, {"steerLean", 100}});
+        s.steerEconomy(1);
+        for (int day = 2; day <= 31; ++day)
+        {
+            setRules(s, {{"steerLean", day % 2 ? 50 : 150}});
+            s.steerEconomy(day);
+        }
+        const auto& st = s.state().loop.steer;
+        expect(st.history.size() == 31, "31 lines kept (the first on, 30 moves): " + n(double(st.history.size())));
+        const auto back = wire::readSociety(wire::society(s.state())).loop.steer;
+        expect(back.history.size() == 31 && back.history.front().why == st.history.front().why, "the year of log saved and read again");
+        setRules(s, {{"steerLean", 100}});
+        s.steerEconomy(31 + LoopState::Steer::LogDays);
+        expect(st.history.size() == 1 && st.history.back().day == 31 + LoopState::Steer::LogDays,
+               "a year on, the lines older than a year gone: " + n(double(st.history.size())));
+    }
+}
+
 // Doc 75 (3.4): G, the Gini of cash a head over all households weighted by heads, and F, of pantry days a head.
 void theMeasures()
 {
@@ -1067,6 +1141,7 @@ int main()
         theSlider();
         theSupervisor();
         theMeasures();
+        theLedgerAndTheLog();
     }
     catch (const std::exception& error)
     {

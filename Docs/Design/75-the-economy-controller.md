@@ -523,7 +523,7 @@ The ladder is chosen per end, so the left can ship Full while the right ships F1
 
 ## Progress
 
-Phases 1-6 done on `r2-controller` and merged into `ridgemere2` (below); the user's answers to section 9 first. **What shipped:** the left Full (the Levelling tithe at 50%, L50); the right F1 (no charters; the dividend 30%, the ground rent, the rich hold 150p, the cap 980p, the supervisor), which fails F1's own bar by small margins in every year (T4, T6), with the supervisor on most nights at +1. Next: Phase 7 (the DM tab's edicts, ledger and year of log), and the open items in Phase 6's entry.
+Phases 1-6 done on `r2-controller` and Phase 7 on `r2-controller-dm`, both merged into `ridgemere2` (below); the user's answers to section 9 first. **What shipped:** the left Full (the Levelling tithe at 50%, L50); the right F1 (no charters; the dividend 30%, the ground rent, the rich hold 150p, the cap 980p, the supervisor), which fails F1's own bar by small margins in every year (T4, T6), with the supervisor on most nights at +1. Phase 7 (the DM tab's edicts, weekly ledger and year of log) is built. Next: the open items in Phase 6's entry.
 
 ### 2026-11-06: the user's decisions
 
@@ -1324,3 +1324,77 @@ supervisor only ever moves a lever back toward the world's own value.
    0.337-0.375. The scorecard should judge T2 at x = 0 against each year's own stable10b, or not at all (T10 binds there).
 4. The sweep's leg 3 in G (Phase 5: 76 days against 75) was not re-run.
 5. Phase 7, the DM tab's edicts, ledger and year of log.
+
+### Phase 7: the DM tab's edicts, ledger and year of log (2026-11-07, branch `r2-controller-dm`)
+
+Built from `ridgemere2` at 3caefe8, about 02:01 to 02:40 MST. No simulation was needed. One check ran: two 20-day runs
+(left and right, both floors on) on the Phase 6 binary and two on this one, to show the change only counts. Together they
+are about a tenth of a one-year run, on scratch copies of export70. Nothing was written to DEV or PROD, and no server ran.
+
+**What the DM tab gains.** Everything new is read only. The DM still has the slider, the on/off, Never Hungry and Never
+Broke, and nothing else (3.8).
+
+1. **The edicts.** Each lever the slider has moved off the world's own value gets one line, written as a law. The line
+   says what the lever is for and compares that measure with its aim at the slider. Two examples:
+   - "The Levelling tithe: 50% of the way to the mean a night. The earners' Gini 0.34 (aim 0.33 ± 0.04)."
+   - "The Houses' dividend: 30% of the estates' spare to the upper class a night. The upper class and the Houses hold
+     22.4% (aim 24.0% ± 3.0%)."
+
+   The charters get a line whenever any are held or wanted, and the hands' share, the ground rent, the rich hold and the
+   spending keep get one each when moved. The last line is always the gate toll, as Core reckons it (`gateTollNow`), with
+   the treasury's 28-day mean and the target the slider gives the drift. Example: "The gate toll: 30.5. Treasury 1,491p
+   (the toll drifts toward 1,500p)."
+
+   The tithe's edict uses the earners' Gini, not 3.8's "Gini through the day". The table's target and the save's mean are
+   both the earners' Gini, and the save holds no mean of G through the day; that measure lives only in a run's daily
+   lines. The supervisor's line ("The supervisor: ...; the rich hold eased 20p") stays as Phase 4 built it, beside the
+   levers.
+2. **The weekly ledger**, EVE style. Core keeps a new `ledger` in the steering's save: a week per `day / 7`, the last 52
+   weeks. Each week holds the nights counted and, for each lever, the pennies each payer paid and each receiver was given.
+   The levers are the tithe, the charters, the ground rent (the Crown's estate and the treasury apart), the hands' share,
+   the dividend, the treasury's wage support, the surplus to the poorest, the gate toll and the skim (by payer group and
+   by purpose). Households are counted by class: the tithe now books what it took and gave by household class
+   (`titheOut`, `titheIn`). The ledger is counted each night the steering or a floor is on, after every money step.
+
+   The tab shows one week at a time, the newest first, picked from a list of the last eight. It gives two tables: each
+   lever's money moved, who paid it and who was given it; and, for each payer or receiver (households by class) across
+   all the levers, money in, money out and net.
+3. **A year of log.** Core's steering log now keeps the lines of the last 366 days, at most 1,000, where before it kept
+   the last 24. A busy year of the supervisor no longer pushes the DM's slider moves out (Phase 4 review, point 5). The
+   studio reads the DM's audited changes up to 1,000 lines (it was 24). The tab's log has a filter: everything, the DM's
+   changes, the slider as the world took it, or the supervisor.
+
+**It only counts.** The ledger is left out of the steering's `empty()`, so counting it never wakes the steering's nightly
+step on a world where that step would not run. The tithe's class lookup is the day's cached `homeClass`, which the
+dividend and the luxuries already use. The 20-day check passed:
+- The daily lines (`.jsonl`) match byte for byte on both runs.
+- The full recordings (`.full.jsonl.gz`) match byte for byte.
+- The end-of-run loop dumps differ only in the new `loop.steer.ledger`.
+
+The real ledger read sensibly. At the left in week 1, the tithe moved 7,075p: middle-class households paid 4,371p and
+were given 4,355p, upper-class households paid 1,576p, and lower-class households were given 2,399p. At the right, the
+ground rent paid the Crown's estate 1,796p, the dividend paid upper-class households 170p, and the skim's 2,622p for Never
+Broke came from upper-class households and the treasury.
+
+**Files:**
+- Core: `RatwSociety.h` (`LedgerWeek`, `ledger`, the log's limits, `titheOut`/`titheIn`), `RatwSteering.cpp`
+  (`steerLog`, `steerLedgerNight`, the tithe by class), `RatwCityLoop.cpp` (the nightly call) and `RatwWire.cpp` (save
+  and strict load: at most 52 weeks, each after the last, each at most 7 nights).
+- Studio: `tools/studio.py` (`steer_edicts`, `steer_ledger`, `steer_toll`; the save's toll read beside the steering).
+- Editor: `Editor/src/lib/steering.ts` (`LedgerWeek`, `logLines` by kind, `ledgerTitle`, `ledgerWho`),
+  `Editor/src/dm/SteeringPanel.tsx` and `dm.css`.
+
+**Tests:**
+- `steer_tests` 558 checks (from 548), with a new `theLedgerAndTheLog`. It checks that:
+  - the tithe's pennies are paid and given alike, by class;
+  - the ledger is saved and read again;
+  - a save's ledger is read with care (52 weeks at most, in order, a week at most 7 nights);
+  - with the steering off there is no ledger;
+  - 31 lines of log are kept, saved and read again, and a year later the old lines are gone.
+- ctest 80 of 80.
+- `test_studio` 53 tests (16 skipped, the database ones), with a new offline test of the edicts, the ledger and the
+  year of log. `test_econ_report` passes.
+- The Editor's lib tests 76 of 76, with a new one for the log by kind and the ledger's words, and `tsc` is clean.
+- The `src/model` tests are still 80 of 81: the same `content.test.mjs` Greyfen failure (11 people against 10), not
+  this work.
+

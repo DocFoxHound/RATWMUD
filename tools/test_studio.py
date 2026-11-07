@@ -1362,6 +1362,56 @@ class SteeringTests(unittest.TestCase):
                                                   'fires': [], 'last': None})
 
 
+    def test_the_edicts_the_ledger_and_the_log(self):
+        # Doc 75, 3.8, Phase 7: from the world's save, the edicts (a line per lever the slider moved, with its measure
+        # against its aim), the weekly ledger by lever and by class, and a year of log, all read only.
+        history = [{'day': d, 'measure': 'supervisor' if d % 2 else '', 'why': f'Day {d}: line {d}'} for d in range(1, 41)]
+        ledger = [{'week': 3, 'nights': 7, 'paid': {'levelling': {'upper': 300, 'middle': 120}, 'skim': {'treasury': 9}},
+                   'got': {'levelling': {'lower': 400, 'middle': 20}, 'skim': {'never hungry': 9}}},
+                  {'week': 4, 'nights': 2, 'paid': {'toll': {"the shops' store draws": 80}}, 'got': {'toll': {'the treasury': 80}}}]
+        steer = {'on': True, 'push': -1, 'gini': 0.335, 'upper': 9.1, 'treasury': 1490.6, 'charters': [], 'chartersTo': 0,
+                 'history': history, 'ledger': ledger, 'sup': {}}
+
+        class Conn:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+            def execute(self, sql, args=None):
+                class Rows:
+                    def fetchall(self):
+                        return [('2026-11-07', 'dm-user', 'Where the money rests: 0 -> -100')] if 'dm.audit' in sql else []
+
+                    def fetchone(self):
+                        return (steer, '2026-11-07 02:00', 0.5)
+                return Rows()
+        economy = ST.Economy(connect=lambda key: Conn(), connect_dm=lambda key: Conn())
+        view = economy.steering('w', 1, {'rules': {'steer': 1, 'steerLean': 0}, 'gateToll': 30})
+        self.assertEqual(view['problem'], '')
+        edicts = view['edicts']
+        self.assertTrue(edicts[0].startswith('The Levelling tithe: 50% of the way to the mean a night. The earners\' Gini 0.34 (aim 0.33'), edicts)
+        self.assertIn('The hands\' share: 50%', ' '.join(edicts))
+        self.assertEqual(edicts[-1], 'The gate toll: 30.5. Treasury 1,491p (the toll drifts toward 1,500p).',
+                         'the toll as Core reckons it, the treasury against the target the slider gives the drift')
+        self.assertFalse(any('charters' in e.lower() for e in edicts), 'no charters at the left: no edict for them')
+        week = view['ledger'][0]
+        self.assertEqual((week['week'], week['from'], week['to'], week['nights']), (4, 28, 34, 2), 'newest week first')
+        last = view['ledger'][1]
+        tithe = next(l for l in last['levers'] if l['key'] == 'levelling')
+        self.assertEqual((tithe['moved'], tithe['paid'][0], tithe['got'][0]), (420, ['upper-class households', 300], ['lower-class households', 400]))
+        parties = {p['who']: p for p in last['parties']}
+        self.assertEqual((parties['middle-class households']['in'], parties['middle-class households']['out'],
+                          parties['middle-class households']['net']), (20, 120, -100), 'in and out by class, across the levers')
+        self.assertEqual([l['key'] for l in last['levers']], ['levelling', 'skim'], 'in the ledger\'s order, only those that moved')
+        self.assertEqual(len(view['history']), 40, 'a year of log, not 24 lines')
+        self.assertEqual(view['history'][0]['why'], 'Day 40: line 40', 'newest first')
+        self.assertEqual(ST.steer_edicts({'on': False}, [], {}, 30), [], 'the steering off: no edicts')
+        self.assertEqual(ST.steer_toll({'gateToll': 30}, {'treasuryDrift': 1, 'tollDriftMost': 1}, 4), 31)
+        self.assertEqual(ST.steer_toll({'gateToll': 30}, {'treasuryDrift': 0}, 4), 30)
+        self.assertEqual(len(ST.steer_ledger({'ledger': [{'week': k} for k in range(20)]})), 8, 'the last eight weeks')
+
 def W_default_economy():
     import world_store
     return world_store.default_economy()

@@ -133,6 +133,8 @@
 .steering-panel .steer-slider { display: grid; gap: 4px; max-width: 640px; }
 .steering-panel .steer-slider input[type=range] { width: 100%; }
 .steering-panel .steer-ends { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); }
+.steering-panel .steer-log { max-height: 360px; overflow-y: auto; }
+.steering-panel .steer-week, .steering-panel .steer-log-kind { display: inline-flex; gap: 6px; align-items: center; margin: 4px 0; }
 .steering-panel .steer-ends small:nth-child(2) { text-align: center; }
 .steering-panel .steer-ends small:last-child { text-align: right; }
 .steering-panel .steer-scale { position: relative; height: 12px; max-width: 640px; border-radius: 6px; background: #1c2522; margin: 8px 0 2px; }

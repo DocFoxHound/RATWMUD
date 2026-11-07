@@ -818,6 +818,8 @@ void Society::loopHourly(std::int64_t hour, int season)
             skims.push_back(std::move(k));
             skims.erase(std::remove_if(skims.begin(), skims.end(), [&](const auto& x) { return x.day <= day - 28; }), skims.end());
         }
+        if (steering() || rule("neverHungry") > 0 || rule("neverBroke") > 0)
+            steerLedgerNight(day);                  // (Doc 75, Phase 7: tonight's money in the DM tab's weekly ledger.)
         rotStock();                                 // (What no buyer took of a maker's perishable by-products.)
         if (estatesOn())                            // (Each estate's keep tonight, beside its purse: the report's.)
         {
