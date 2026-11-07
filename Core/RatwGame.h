@@ -463,7 +463,8 @@ class Game
         practice::Build build;
     };
     bool makeWolf(Connection* c, const NewWolf& w);
-    // The choices character_create and character_arrive share: the tier against the account's standing (doc 49), the
+    // The choices character_create and character_arrive share: the tier against the account's standing (doc 49; in
+    // ticket mode Gifted is open to a wolf with a family, which can't arrive Normal, and Quickened is gated), the
     // start town and the tie (doc 52), the build (doc 49). False, with the lobby told, for a choice refused.
     bool arrivalChoices(Connection* c, const json::Value& j, const std::string& tier, std::string& start, std::string& tie,
                         practice::Build& build);

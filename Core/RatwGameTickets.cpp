@@ -178,6 +178,15 @@ void Game::ticketLobby(Connection* c, bool ok, const std::string& message, const
     {
         // The arrival (doc 77, 5.1): what today's creator asked that isn't the wolf's identity, which came in the ticket.
         e.add("wolf", c->ticketIdentity);
+        auto choices = Value::array();              // (No family: Normal only; a family: Gifted or Quickened.)
+        if (c->ticketIdentity.string("family").empty())
+            choices.push("normal");
+        else
+        {
+            choices.push("gifted");
+            choices.push("quickened");
+        }
+        e.add("tierChoices", choices);
         e.add("gifts", gifts::creatorCatalog());
         e.add("creation", practice::creationCatalog());
         e.add("tiers", tiersView(account));
@@ -361,16 +370,19 @@ bool Game::arrive(Connection* c, const Value& j)
     }
     const auto& identity = c->ticketIdentity;
     const std::string family = identity.string("family");
+    // The tier (the user, 2026-11-07): a wolf with no Gift family is Normal, everywhere; a wolf with one arrives Gifted
+    // or Quickened, never Normal, Quickened only where this account's standing here has opened it (doc 49).
     const auto* tierValue = j.find("tier");
-    const std::string tier = !tierValue ? std::string("normal") : tierValue->isString() ? tierValue->asString() : std::string();
-    if (tier != "normal" && tier != "gifted" && tier != "quickened")
-    {
-        ticketLobby(c, false, "Choose Normal, Gifted or Quickened.", "invalid");
-        return true;
-    }
-    if (tier != "normal" && family.empty())
+    const std::string tier = !tierValue ? (family.empty() ? std::string("normal") : std::string())
+                             : tierValue->isString() ? tierValue->asString() : std::string();
+    if (family.empty() && tier != "normal")
     {
         ticketLobby(c, false, "Your wolf has no Gift family, so they arrive as Normal.", "invalid");
+        return true;
+    }
+    if (!family.empty() && tier != "gifted" && tier != "quickened")
+    {
+        ticketLobby(c, false, "Your wolf has a Gift family: choose Gifted or Quickened.", "invalid");
         return true;
     }
     std::string start, tie;
