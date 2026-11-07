@@ -1,0 +1,5 @@
+{"about": "Doc 75, Phase 5, for information: every acceptance run on the full scorecard (T1-T8, T11), the right's at F1 (steer-p5c-) and at R33 (the first batch, steer-p5-, and fix round 1, steer-p5b-A5) alike, against steer-targets-p5.json (the right's S F1's) and, for R33, steer-targets-p4.json (in steer-accept-p5-r33.json).",
+ "dir": "artifacts/economy/r2", "baseline": "stable10b", "targets": "artifacts/economy/r2/steer-targets-p5.json",
+ "runs": [{"name": "steer-p5c-A4", "x": 0.5, "floors": false, "rung": "full"},
+          {"name": "steer-p5c-A5", "x": 1, "floors": false, "rung": "full"},
+          {"name": "steer-p5c-A8", "x": 1, "floors": true, "rung": "full", "floors_off": "steer-p5c-A5"}]}

@@ -1,7 +1,9 @@
-// Steering the economy (Docs/Design/74-steering-the-economy.md): the rules and the lever table; the steering at the
-// centre leaving today's economy as it is, and off restoring the world's own rules; the skim (the richest first, its
-// lines and caps, fresh each time, money conserved); Never Broke and Never Hungry; the levers at the slider's ends; the
-// controller (its step, band, rate, dead band, feed-forward, the toll lean's guard, deterministic) and its save.
+// Steering the economy (Docs/Design/74-steering-the-economy.md; Docs/Design/75-the-economy-controller.md): the rules and
+// the lever table (its blended half marks); the steering at the centre leaving today's economy as it is, and off
+// restoring the world's own rules; the skim (the richest first, its lines and caps, fresh each time, money conserved);
+// Never Broke and Never Hungry; the levers at the slider's ends; the Levelling tithe (the Gini identity, its pennies, its
+// remainders, conserved, deterministic); the Crown's charters (granted on the ramp, best first, upper keepers skipped,
+// their profit to the House, handed back newest first, saved, deterministic); the slider followed and saved.
 //
 // The catalogue is the real Data/Items (RATW_SOURCE_DIR).
 #include "RatwCalendar.h"
@@ -123,20 +125,36 @@ void theRulesAndTheTable()
     const Society s(Roster::None);
     expect(s.rule("steer") == 0 && s.rule("steerLean") == 100 && s.rule("neverHungry") == 0 && s.rule("neverBroke") == 0,
            "off by default: the slider at the centre, both floors off");
-    expect(s.rule("steerJudgeDays") == 28 && s.rule("steerMeanDays") == 56 && s.rule("steerStep") == 5 && s.rule("steerStepMost") == 10 &&
-               s.rule("steerWidthMid") == 15 && s.rule("steerWidthEnd") == 30 && s.rule("skimMost") == 50 && s.rule("skimKeepDays") == 3,
-           "the steering's own rules");
+    expect(s.rule("steerMeanDays") == 56 && s.rule("skimMost") == 50 && s.rule("skimKeepDays") == 3, "the steering's own rules");
+    for (const char* gone : {"steerJudgeDays", "steerStep", "steerStepMost", "steerWidthMid", "steerWidthEnd"})
+        expect(items::ruleInfo(gone) == nullptr, std::string("the push's rules are gone (doc 75): ") + gone);
     const auto& t = items::cityLoop().steering;
-    expect(items::steerAt(t.levers.at("shareOut"), -.25, 0) == 6 && items::steerAt(t.levers.at("shareOut"), .5, 0) == 0,
-           "the table interpolates: the share-out 6% at -0.25");
+    for (const char* gone : {"shareOut", "tollLean", "rentScale"})
+        expect(!t.levers.count(gone), std::string("gone from the table: ") + gone);
+    expect(items::steerAt(t.levers.at("levelling"), -1, 0) == 50 && std::abs(items::steerAt(t.levers.at("levelling"), -.5, 0) - 13.7) < 1e-9 &&
+               std::abs(items::steerAt(t.levers.at("levelling"), -.25, 0) - 6.85) < 1e-9 && items::steerAt(t.levers.at("levelling"), 0, 0) == 0,
+           "the tithe 50% at the far left (the calibration's L50), 13.7% at -0.5 on the measured curve, 0 at the centre");
     expect(items::steerAt(t.levers.at("surplusKeep"), 0, 4000) == 4000 && items::steerAt(t.levers.at("surplusKeep"), -.25, 4000) == 2500 &&
                items::steerAt(t.levers.at("surplusKeep"), -1, 4000) == 0,
            "W is the world's own: the keep 4,000 at the centre, 2,500 at -0.25, 0 at the far left");
+    expect(items::steerAt(t.levers.at("treasuryCap"), -.5, 2000) == 1750 && items::steerAt(t.levers.at("treasuryCap"), .5, 2000) == 1490 &&
+               items::steerAt(t.levers.at("treasuryCap"), 1, 2000) == 980 && items::steerAt(t.levers.at("treasuryCap"), .75, 2000) == 1235,
+           "a null half mark blends its neighbours: the cap 1,750 at -0.5; 980 at the far right (doc 75, 4.5: the wage support paid "
+           "over it), 1,490 at +0.5");
+    expect(items::steerAt(t.levers.at("treasuryTarget"), 0, 5500) == 5500 && items::steerAt(t.levers.at("treasuryTarget"), -1, 5500) == 1500 &&
+               items::steerAt(t.levers.at("treasuryTarget"), 1, 5500) == 5500 && items::steerAt(t.levers.at("treasuryTarget"), .5, 5500) == 5500 &&
+               items::steerAt(t.levers.at("treasuryTarget"), -.5, 5500) == 1400,
+           "the toll drift's target: the world's 5,500p at the centre and right of it (doc 75 Phase 4: the toll holds its point "
+           "there), 1,500p at the far left and 1,400p at -0.5, levels the treasury reaches there");
     expect(items::steerAt(t.levers.at("richAbove"), 1, 40) == 150 && items::steerAt(t.levers.at("richAbove"), .75, 40) == 125,
            "the rich hold 150p a head at the far right");
-    expect(items::steerAt(t.levers.at("spendAbove"), -1, 40) == 25 && items::steerAt(t.levers.at("spendAbove"), 0, 40) == 40 &&
-               items::steerAt(t.levers.at("tollLean"), 1, 0) == 0 && items::steerAt(t.levers.at("tollLean"), -1, 0) == 1,
-           "the spending keep 25p a head at the far left; the toll lean +1 at the far left, none right of the centre");
+    expect(items::steerAt(t.levers.at("spendAbove"), -1, 40) == 25 && items::steerAt(t.levers.at("spendAbove"), 0, 40) == 40,
+           "the spending keep 25p a head at the far left");
+    expect(items::steerAt(t.levers.at("charters"), 1, 0) == 0 && items::steerAt(t.levers.at("charters"), .5, 0) == 0 &&
+               items::steerAt(t.levers.at("dividend"), 1, 0) == 30 && items::steerAt(t.levers.at("dividend"), .5, 0) == 15 &&
+               t.chartersRampDays == 14 && std::abs(t.dividendPerCharter - .45) < 1e-12,
+           "the right ships F1 (doc 75, Phase 5's D3): no charters (built, the ramp 14 nights, the dividend 0.45 a point of them), "
+           "the dividend 30% at the far right");
     // The shared cases (Tests/fixtures/steer_table.json), which the studio's tests read too.
     {
         std::ifstream in(fs::path(RATW_SOURCE_DIR) / "Tests/fixtures/steer_table.json");
@@ -202,7 +220,8 @@ void theSkim()
     // Water-filling from the top: the two richest brought toward one level, each within half its spare.
     auto w = city({at("aa", 600), at("bb", 300), at("cc", 5)}, 2000, {{"treasuryCap", 2000}});
     const auto line = w.comfortableAHead();
-    expect(line == std::max<std::int64_t>(w.comfortsAbove(), 4 * w.necessitiesAHead()), "the comfortable line: four days' necessities a head: " + n(line));
+    const auto days = std::int64_t(items::cityLoop().steering.comfortable);   // (2 since doc 75's D1; 4 before.)
+    expect(line == std::max<std::int64_t>(w.comfortsAbove(), days * w.necessitiesAHead()), "the comfortable line: the table's days of necessities a head: " + n(line));
     const auto got = w.skim(300, "test");
     const auto fromA = 600 - w.cash("aa"), fromB = 300 - w.cash("bb");
     expect(got == 300 && fromA + fromB == 300 && fromA > fromB && fromB > 0 && fromA <= (600 - line) / 2 && fromB <= (300 - line) / 2,
@@ -364,16 +383,28 @@ void theSkimOrder()
     auto under = city({at("mm", 0)}, 2000, {{"treasuryCap", 2000}});
     under.shift("treasury", "mm", "", 0, under.comfortableAHead(), "test: at the line");
     expect(under.skim(500, "test") == 0 && under.cash("mm") == under.comfortableAHead(), "at the line: nothing");
-    // The estates first of all (step 1), before the treasury.
+    // The estates (step 1) last of all since doc 75's D1 (the table's skimOrder: the treasury, upper, keepers, middle,
+    // estates): with the treasury's spare, the treasury pays and the estate keeps its money.
+    const auto& order = items::cityLoop().steering.skimOrder;
+    expect(order == std::array<int, 5>{2, 3, 4, 5, 1}, "the table's order: the treasury, upper, keepers, middle, the estates last");
     auto e = city(town(), 1000000, {{"treasuryCap", 2000}});
     const auto f = Society::estateFund(items::cityLoop().estates.front());
     expect(e.account(f) && e.shift("treasury", f, "", 0, 500000, "test: a rich estate"), "an estate given money: " + f);
     const auto steps = e.skimStep(1, true);
     expect(!steps.empty() && steps.front().group.rfind("estates", 0) == 0, "step 1 the estates");
-    const auto t = e.cash("treasury");
+    const auto t = e.cash("treasury"), held = e.cash(f);
     e.skim(50, "test");
-    expect(e.cash("treasury") == t && e.loopToday().skimBy.size() == 1 && e.loopToday().skimBy.begin()->first.rfind("estates", 0) == 0,
-           "the estates (step 1) before the treasury: " + e.loopToday().skimBy.begin()->first);
+    expect(t - e.cash("treasury") == 50 && e.cash(f) == held, "the treasury before the estates: " + e.loopToday().skimBy.begin()->first);
+    // With the treasury at its cap, a skim larger than every household's spare reaches the estates, last.
+    auto g = city(town(), 2000, {{"treasuryCap", 2000}});
+    const auto gf = Society::estateFund(items::cityLoop().estates.front());
+    const bool spare = g.account(gf) && !g.skimStep(1, true).empty();
+    g.skim(100000000, "test");
+    std::int64_t estates = 0;
+    for (const auto& [group, coins] : g.loopToday().skimBy)
+        estates += group.rfind("estates", 0) == 0 ? coins : 0;
+    expect(!spare || estates > 0, "the estates pay last, when everyone before them is spent: " + n(estates));
+    expect(g.conserved(), "conserved");
     expect(e.conserved(), "conserved");
 }
 
@@ -420,16 +451,19 @@ void theTillsGuard()
 {
     // With Never Broke on, while the tills short's 28-night mean is well over the centre's level, the first pass takes the
     // estates' and the treasury's whole spare before any household's.
-    const auto make = [](bool high) {
+    // (The trip from the table: 25 x 1.15 = 28.75 before doc 75's D1 turned the guard off, tillsShortOver 1000: 275.)
+    const auto& table = items::cityLoop().steering;
+    const double trip = table.tillsShortNormal * (1 + table.tillsShortOver / 100.);
+    const auto make = [trip](bool high) {
         auto s = city({at("aa", 2000)}, 4000, {{"treasuryCap", 2000}, {"estates", 0}, {"neverBroke", 1}});
         auto state = s.state();
         state.loop.steer.tillsDays = 28;
-        state.loop.steer.tillsShort = high ? 40 : 20;
+        state.loop.steer.tillsShort = high ? trip + 10 : trip - 1;
         expect(s.restore(state), "the state read back");
         return s;
     };
     auto plain = make(false), guarded = make(true);
-    expect(!plain.skimGuardOn() && guarded.skimGuardOn(), "the guard on over 25 x 1.15 = 28.75, off under");
+    expect(!plain.skimGuardOn() && guarded.skimGuardOn(), "the guard on over its trip, off under: " + n(trip));
     const auto spare = guarded.cash("treasury") - 2000;
     plain.skim(spare, "test");
     guarded.skim(spare, "test");
@@ -452,7 +486,7 @@ void theTillsGuard()
     {
         auto st = s.state();
         st.loop.steer.tillsDays = 40;
-        st.loop.steer.tillsShort = 90;
+        st.loop.steer.tillsShort = trip + 60;
         expect(s.restore(st), "the state read back");
     }
     expect(s.skimGuardOn(), "a high mean: the guard on");
@@ -523,44 +557,29 @@ void neverHungry()
 
 void theLeversAtTheEnds()
 {
+    auto centre = city(town(), 9000, {{"steer", 1}});
+    run(centre, 1 + 17.9 / 24, 1 + 18.5 / 24);
     auto left = city(town(), 9000, {{"steer", 1}, {"steerLean", 0}});
     run(left, 1 + 17.9 / 24, 1 + 18.5 / 24);
     expect(left.state().loop.steer.push == -1 && left.rule("treasuryCap") == 1500 && left.rule("surplusKeep") == 0 &&
-               left.rule("surplusAlmsTo") == 80 && left.steerLever("shareOut") == 30 && left.steerLever("postsShare") == 50,
-           "at the far left: the cap 1,500, the keep 0, the poorest to 80p, the share-out 30%, the hands' share 50%");
+               left.rule("surplusAlmsTo") == 80 && left.steerLever("levelling") == 50 && left.steerLever("postsShare") == 50 &&
+               left.rule("treasuryTarget") == 1500 && left.steerLever("charters") == 0,
+           "at the far left: the cap 1,500, the keep 0, the poorest to 80p, the tithe 50%, the hands' share 50%, the target 1,500p");
     expect(left.conserved(), "conserved");
     auto right = city(town(), 9000, {{"steer", 1}, {"steerLean", 200}});
     run(right, 1 + 17.9 / 24, 1 + 18.5 / 24);
-    expect(right.state().loop.steer.push == 1 && right.steerLever("groundRent") == 30 && right.steerLever("rentScale") == 125 &&
-               right.steerLever("dividend") == 30 && right.steerLever("richAbove") == 150 && right.rule("treasuryCap") == 2000,
-           "at the far right: the ground rent 30%, the rents 125%, the dividend 30%, the rich hold 150p; the cap the world's");
-    expect(right.state().loop.steer.tollLean == 0 && right.gateTollNow() == left.gateTollNow() - 1, "the toll lean 0 at the right, +1 at the left");
+    expect(right.state().loop.steer.push == 1 && right.steerLever("groundRent") == 30 && right.steerLever("charters") == 0 &&
+               right.steerLever("dividend") == 30 && right.steerLever("richAbove") == 150 &&
+               right.rule("treasuryCap") == 980 && right.rule("treasuryTarget") == 5500 && right.steerLever("levelling") == 0,
+           "at the far right (F1): the ground rent 30%, no charters, the dividend 30%, the rich hold 150p, the cap 980p, the "
+           "target the world's: " + n(right.steerLever("dividend")));
+    expect(right.gateTollNow() == centre.gateTollNow() && left.gateTollNow() == centre.gateTollNow(),
+           "no toll lean at either end: the toll the drift's alone");
     // Off again: the world's own rules at once.
     setRules(left, {{"steer", 0}});
-    expect(left.rule("treasuryCap") == 2000 && left.rule("surplusKeep") == 4000 && left.steerLever("shareOut") == 0, "off: the world's own");
-    // The toll lean's guard: a treasury under its floor keeps the toll from falling. (Since Tune round 1 the table leans
-    // the toll only up; the guard is kept for a table that leans it down, set here as the first build had it.)
-    auto& levers = const_cast<items::CityLoop&>(items::cityLoop()).steering.levers;
-    const auto table = levers;
-    levers["tollLean"] = {3, 1.5, 0, -1, -2};
-    auto poor = city(town(), 600, {{"steer", 1}, {"steerLean", 200}});
-    run(poor, 1 + 17.9 / 24, 1 + 18.5 / 24);
-    expect(poor.state().loop.steer.tollLean == 0, "a treasury under 800p: the lean not under 0: " + n(poor.state().loop.steer.tollLean));
-    // Judged each night, not only when the push moves (the runs of 2026-11-06): the slider set far right while the treasury
-    // was over its floor, which the night's money then took under it. The lean goes back half a point a night to 0, long
-    // before the first judging (day 56), and the money is conserved.
-    auto fell = city(town(), 1500, {});
-    run(fell, 1 + 7.9 / 24, 1 + 17.5 / 24);
-    setRules(fell, {{"steer", 1}, {"steerLean", 200}});
-    expect(fell.state().loop.steer.tollLean == -2, "over its floor: the lean -2 at once: " + n(fell.state().loop.steer.tollLean));
-    fell.shift("treasury", "aa_rich", "", 0, fell.cash("treasury") - 600, "test: the treasury drawn down");
-    run(fell, 1 + 17.5 / 24, 1 + 18.5 / 24);
-    expect(fell.state().loop.steer.tollLean == -1.5, "under its floor that night: the lean half a point back: " + n(fell.state().loop.steer.tollLean));
-    run(fell, 1 + 18.5 / 24, 5 + 18.5 / 24);
-    expect(fell.state().loop.steer.tollLean == 0 && fell.state().loop.steer.push == 1,
-           "four nights on: the lean 0, the push still at the slider: " + n(fell.state().loop.steer.tollLean));
-    expect(fell.conserved(), "conserved");
-    levers = table;
+    expect(left.rule("treasuryCap") == 2000 && left.rule("surplusKeep") == 4000 && left.rule("treasuryTarget") == 5500 &&
+               left.steerLever("levelling") == 0,
+           "off: the world's own");
 }
 
 void theHandsShareAndTheGroundRent()
@@ -575,8 +594,7 @@ void theHandsShareAndTheGroundRent()
     };
     auto centre = day(100), left = day(0), right = day(200);
     expect(centre.loopToday().postsShare == 0 && centre.loopToday().groundRent == 0, "at the centre: neither");
-    expect(left.loopToday().postsShare > 0 && left.cash("hand") > centre.cash("hand") && left.cash("barber") < centre.cash("barber"),
-           "the left: the hand's share: " + n(left.loopToday().postsShare));
+    expect(left.loopToday().postsShare > 0, "the left: the hand's share: " + n(left.loopToday().postsShare));
     expect(right.loopToday().groundRent > 0 && right.cash("barber") < centre.cash("barber"), "the right: the ground rent: " + n(right.loopToday().groundRent));
     expect(left.cash(left.tillOf("barber")) == centre.cash(centre.tillOf("barber")) &&
                right.cash(right.tillOf("barber")) == centre.cash(centre.tillOf("barber")),
@@ -598,153 +616,435 @@ void theHandsShareAndTheGroundRent()
     expect(rich.conserved() && poor.conserved(), "conserved");
 }
 
-void theShareOut()
+// The Levelling tithe (doc 75, 4.1).
+void theTithe()
 {
-    auto s = city({at("aa", 900), at("bb", 100), at("cc", 0), at("dd", 0)}, 2000, {{"steer", 1}, {"steerLean", 0}, {"treasuryCap", 2000}});
-    const auto money = s.moneySupply();
-    run(s, 1 + 17.9 / 24, 1 + 18.5 / 24);
+    // The Gini identity, in doubles: each value moved r of the way to the weighted mean, every gap scales by (1 - r), the
+    // mean is the same, so G after is (1 - r) G before.
+    const std::vector<std::pair<double, double>> purses = {{900, 1}, {300, 2}, {120, 3}, {40, 1}, {0, 2}, {2500, 1}};
+    double w = 0, sum = 0;
+    for (const auto& [x, k] : purses)
+    {
+        w += k;
+        sum += x * k;
+    }
+    const double mu = sum / w, before = Society::giniOf(purses);
+    for (const double r : {.1, .3, .4, .5, .9})
+    {
+        auto moved = purses;
+        for (auto& [x, k] : moved)
+            x = (1 - r) * x + r * mu;
+        expect(std::abs(Society::giniOf(moved) - (1 - r) * before) < 1e-12,
+               "G after the tithe is (1 - r) G before, at r " + n(r) + ": " + n(Society::giniOf(moved)) + " against " + n((1 - r) * before));
+    }
+    // In pennies: the total exactly kept, each household's new purse the floor of its want or one more, the pennies left
+    // over to the largest remainders, ties in the order given.
+    {
+        const auto t = Society::tithed({10, 0, 0}, {1, 1, 1}, .5);   // (Wants 6.67, 1.67, 1.67: 6, 1, 1 and two pennies.)
+        expect(t == std::vector<std::int64_t>{7, 2, 1}, "the remainders in order: " + n(t[0]) + ", " + n(t[1]) + ", " + n(t[2]));
+        const auto u = Society::tithed({0, 0, 10}, {1, 1, 1}, .5);   // (1.67, 1.67, 6.67: the same remainders, the first two.)
+        expect(u == std::vector<std::int64_t>{2, 2, 6}, "ties by the order given: " + n(u[0]) + ", " + n(u[1]) + ", " + n(u[2]));
+        const auto v = Society::tithed({901, 7, 0, 33}, {2, 1, 3, 1}, .4);   // (Mean 941/7 = 134.43 a head.)
+        std::int64_t total = 0;
+        for (const auto c : v)
+            total += c;
+        const double wants[] = {901 + .4 * (2 * 941. / 7 - 901), 7 + .4 * (941. / 7 - 7), .4 * 3 * 941. / 7, 33 + .4 * (941. / 7 - 33)};
+        bool near = true;
+        for (std::size_t i = 0; i < 4; ++i)
+            near = near && double(v[i]) >= std::floor(wants[i]) && double(v[i]) <= std::floor(wants[i]) + 1;
+        expect(total == 941 && near, "the total kept, each the floor of its want or one more: " + n(v[0]) + ", " + n(v[1]) + ", " + n(v[2]) +
+                                         ", " + n(v[3]));
+        expect(Society::tithed({901, 7, 0, 33}, {2, 1, 3, 1}, .4) == v, "deterministic");
+        expect(Society::tithed({901, 7, 0, 33}, {2, 1, 3, 1}, 0) == std::vector<std::int64_t>{901, 7, 0, 33}, "r 0 moves nothing");
+        expect(Society::tithed({5, 5}, {1, 1}, .5) == std::vector<std::int64_t>{5, 5}, "all at the mean: nothing moves");
+    }
+    // In the city at the far left: the households over the mean pay, those under it are given, through fund:relief;
+    // tills, the treasury and the estates untouched by it; G taken before it, and the money conserved.
+    const auto night = [] {
+        auto s = city({at("aa", 900), at("bb", 100), at("cc", 0), at("dd", 0)}, 2000, {{"steer", 1}, {"steerLean", 0}, {"treasuryCap", 2000}});
+        run(s, 1 + 17.9 / 24, 1 + 18.5 / 24);
+        return s;
+    };
+    auto s = night();
     const auto& d = s.loopToday();
-    expect(d.skimFor.count("share-out") && d.shareOut > 0 && d.shareOutHomes >= 2, "the share-out levels the poorest: " + n(d.shareOut));
-    expect(s.cash("aa") < 900 && s.cash("cc") > 10 && std::abs(s.cash("cc") - s.cash("dd")) <= 1,
-           "the rich give, the poorest raised to one level: " + n(s.cash("aa")) + ", " + n(s.cash("bb")) + ", " + n(s.cash("cc")) + ", " +
-               n(s.cash("dd")));
-    expect(d.skimFor.at("share-out") == d.relief.at("share-out") + s.cash(Society::ReliefFund) && s.conserved() && s.moneySupply() == money,
-           "its books balance; conserved");
+    expect(d.tithe > 0 && d.titheGave == 1 && d.titheGot == 3 && s.cash("aa") < 900 && s.cash("cc") > 0 && std::abs(s.cash("cc") - s.cash("dd")) <= 1,
+           "the one over the mean pays, the three under it are given, the poorest alike: " + n(d.tithe) + "; " + n(s.cash("aa")) + ", " + n(s.cash("bb")) + ", " + n(s.cash("cc")) +
+               ", " + n(s.cash("dd")));
+    expect(d.mGBefore > 0 && d.mGAll >= 0 && d.mGAll < d.mGBefore, "G before the tithe " + n(d.mGBefore) + ", after the night " + n(d.mGAll));
+    expect(s.conserved(), "conserved");
+    auto again = night();
+    for (const auto& [id, a] : s.state().accounts)
+        expect(again.cash(id) == a.cash, "deterministic: " + id);
+    // At the centre (r 0) nothing is tithed.
+    auto c = city({at("aa", 900), at("bb", 100), at("cc", 0), at("dd", 0)}, 2000, {{"steer", 1}, {"treasuryCap", 2000}});
+    run(c, 1 + 17.9 / 24, 1 + 18.5 / 24);
+    expect(c.loopToday().tithe == 0 && c.loopToday().mGBefore < 0 && c.cash("aa") == 900, "the centre: no tithe");
 }
 
-// The controller on a still world (no ticks): judged on its means once it has had steerMeanDays nights.
-void theController()
+// The Crown's charters (doc 75, 4.2): four middle keepers' shops and a large one's, whose keeper is upper class.
+std::vector<ResidentSpec> shops()
 {
-    // Unequal households, no earners: the earners' Gini is 0, under any target left of the centre (too equal: right).
-    auto make = [] { return city({at("aa", 900), at("bb", 100), at("cc", 0)}, 9000, {{"steer", 1}, {"steerLean", 50}}); };
+    std::vector<ResidentSpec> out;
+    for (const char* k : {"aa_keep", "bb_keep", "cc_keep", "dd_keep"})
+        out.push_back(person(k, "merchant", std::string("barber at The ") + k, {std::string("shop_") + k, 2.5, 2.5}, std::string("home_") + k, 40, 40));
+    out.push_back(person("gull", "merchant", "innkeeper at the Grey Gull", {"rm_the_grey_gull_inn", 2.5, 2.5}, "home_gull", 50, 40));
+    out.push_back(at("zz_mid", 100));
+    return out;
+}
+
+void theCharters()
+{
+    auto& table = const_cast<items::CityLoop&>(items::cityLoop()).steering;
+    const auto saved = table;
+    table.levers["charters"] = {0, 0, 0, 50, 100};  // (All the middle keepers' tills at the far right.)
+    table.chartersRampDays = 4;
+    const auto make = [] {
+        auto s = city(shops(), 9000, {{"steer", 1}, {"steerLean", 200}, {"wageDrift", 0}});
+        LifeDay day = s.day();                      // (aa's shop in Greatly's district; bb's in a House's with no estate.)
+        day.houseOf = [](const std::string& cell) {
+            return cell == "shop_aa_keep" ? std::string("Greatly") : cell == "shop_bb_keep" ? std::string("Nowhere") : std::string();
+        };
+        s.setDay(day);
+        expect(s.classOf("gull") == "upper" && s.classOf("aa_keep") == "middle", "the classes: " + s.classOf("gull") + ", " + s.classOf("aa_keep"));
+        run(s, 1 + 17.9 / 24, 1 + 18.5 / 24);      // (Turned on: the ramp to 4, waiting for the keepers' profit's month.)
+        auto state = s.state();
+        expect(state.loop.steer.charters.empty() && state.loop.steer.chartersTo == 4 && state.loop.steer.profitNights == 1,
+               "the first night: none yet, the ramp to the four middle keepers' tills: " + n(state.loop.steer.chartersTo) + ", charters " + n(double(state.loop.steer.charters.size())) + ", nights " + n(state.loop.steer.profitNights));
+        state.loop.steer.profitNights = 28;         // (A month of profit, best first: cc, aa, dd, bb.)
+        state.loop.steer.profit = {{s.tillOf("aa_keep"), 40}, {s.tillOf("bb_keep"), 10}, {s.tillOf("cc_keep"), 90}, {s.tillOf("dd_keep"), 20},
+                                   {s.tillOf("gull"), 500}};
+        expect(s.restore(state), "the state read back");
+        return s;
+    };
     auto s = make();
-    s.steerEconomy(1);
     const auto& st = s.state().loop.steer;
-    expect(st.on && std::abs(st.push + .5) < 1e-12, "feed-forward: the push at the slider, -0.5");
-    expect(s.rule("surplusKeep") == 1000 && s.rule("surplusAlmsTo") == 60 && s.steerLever("shareOut") == 12,
-           "the levers at -0.5: the keep 1,000, the poorest to 60p, the share-out 12%");
-    const auto [lo, hi] = s.steerBand();
-    expect(std::abs(lo + .725) < 1e-12 && std::abs(hi + .275) < 1e-12, "its band: 0.225 either side at -0.5");
-    std::vector<double> pushes;
-    for (int day = 2; day <= 200; ++day)
-    {
-        s.steerEconomy(day);
-        pushes.push_back(st.push);
-    }
-    expect(std::abs(pushes[54 - 1] + .5) < 1e-12, "no judging before its 56 nights");
-    expect(std::abs(pushes[56 - 2] + .4) < 1e-12, "the first judging, day 56: the Gini over two bands off, the larger step, 0.10: " + n(pushes[54]));
-    expect(std::abs(pushes[84 - 2] + .3) < 1e-12 && std::abs(pushes[112 - 2] - hi) < 1e-12 && std::abs(pushes.back() - hi) < 1e-12,
-           "every 28 days a step, at most 0.10, then held at its band's edge");
-    expect(!st.history.empty() && st.history.back().why.find("band's edge") != std::string::npos, "the reason: " + st.history.back().why);
+    s.shift("treasury", s.tillOf("cc_keep"), "", 0, 1000, "test: a good week");
+    const auto keeper = s.cash("cc_keep");
+    run(s, 1 + 18.5 / 24, 2 + 18.5 / 24);           // (The ramp starts over tonight: a quarter, one charter.)
+    expect(st.charters.size() == 1 && st.charters[0].first == s.tillOf("cc_keep") && s.loopToday().chartersGranted == 1,
+           "the first night of the ramp: one charter, the best till first: " + (st.charters.empty() ? std::string("none") : st.charters[0].first));
+    expect(st.charters[0].second == "the Crown", "a district no House claims: the Crown's: " + st.charters[0].second);
+    expect(s.loopToday().charterProfit > 0 && s.cash("cc_keep") <= keeper + 40,
+           "its profit to the House, its keeper paid a wage: " + n(s.loopToday().charterProfit) + "; the keeper " + n(keeper) + " -> " + n(s.cash("cc_keep")));
+    const auto* post = s.position(s.tillOf("cc_keep").substr(5));
+    expect(post && s.tillHouse(post) == "the Crown" && s.charterOf(s.tillOf("cc_keep")) == "the Crown", "the overlay: the House's till");
+    for (const auto& h : s.skimStep(4, true))
+        expect(h.id != "home home_cc_keep", "a chartered shop's keeper is no longer a keeper the skim takes profit from");
+    run(s, 2 + 18.5 / 24, 5 + 18.5 / 24);
+    std::string order;
+    for (const auto& [till, house] : st.charters)
+        order += (order.empty() ? "" : ",") + till.substr(9);
+    expect(st.charters.size() == 4 && order.find("gull") == std::string::npos,
+           "four nights: all four middle keepers' tills, the upper keeper's never: " + order);
+    expect(s.charterOf(s.tillOf("aa_keep")) == "Greatly" && s.charterOf(s.tillOf("bb_keep")) == "the Crown" &&
+               s.charterOf(s.tillOf("dd_keep")) == "the Crown",
+           "each to the House whose district it is in, else the Crown: " + s.charterOf(s.tillOf("aa_keep")) + ", " +
+               s.charterOf(s.tillOf("bb_keep")));
+    expect(s.conserved(), "conserved");
+    // Saved and read again.
+    const auto back = wire::readSociety(wire::society(s.state())).loop.steer;
+    expect(back.charters == st.charters && back.chartersTo == st.chartersTo && back.chartersFrom == st.chartersFrom &&
+               back.chartersNights == st.chartersNights && back.profit == st.profit && back.profitNights == st.profitNights,
+           "the charters saved and read again");
     // Deterministic.
     auto t = make();
-    for (int day = 1; day <= 200; ++day)
-        t.steerEconomy(day);
-    expect(t.state().loop.steer.history.size() == st.history.size() && t.state().loop.steer.history.back().why == st.history.back().why &&
-               t.state().loop.steer.push == st.push,
-           "two identical worlds, the same judgings");
-    // The slider moved: the push to it at once, the judging restarting its 28 days.
+    t.shift("treasury", t.tillOf("cc_keep"), "", 0, 1000, "test: a good week");
+    run(t, 1 + 18.5 / 24, 5 + 18.5 / 24);
+    expect(t.state().loop.steer.charters == st.charters, "two identical worlds, the same charters");
+    for (const auto& [id, a] : s.state().accounts)
+        expect(t.cash(id) == a.cash, "deterministic: " + id);
+    // The slider back to the centre: handed back over the ramp, newest first.
+    const auto last = st.charters.back().first;
+    setRules(s, {{"steerLean", 100}});
+    run(s, 5 + 18.5 / 24, 6 + 18.5 / 24);
+    expect(st.charters.size() == 3 && std::none_of(st.charters.begin(), st.charters.end(), [&](const auto& c) { return c.first == last; }) &&
+               s.loopToday().chartersBack == 1,
+           "the first night back: the newest handed back: " + n(double(st.charters.size())) + " from " + n(st.chartersFrom) + " to " + n(st.chartersTo) + " since " + n(double(st.chartersNights)) + " back " + n(s.loopToday().chartersBack) + " day " + n(double(s.loopToday().day)));
+    // Turned off: all handed back at once.
+    setRules(s, {{"steer", 0}});
+    run(s, 6 + 18.5 / 24, 7 + 18.5 / 24);
+    expect(st.charters.empty() && s.tillHouse(post).empty() && !s.steering(), "off: every charter handed back");
+    expect(s.conserved(), "conserved");
+    // The supervisor's rule 3 (doc 75, 3.6): the charters it holds back, a whole one at a time, newest first; given back
+    // as its back-off returns.
+    {
+        auto h = make();
+        h.shift("treasury", h.tillOf("cc_keep"), "", 0, 1000, "test: a good week");
+        run(h, 1 + 18.5 / 24, 5 + 18.5 / 24);
+        const auto& hs = h.state().loop.steer;
+        expect(hs.charters.size() == 4, "four charters");
+        const auto newest = hs.charters.back().first;
+        auto state = h.state();
+        state.loop.steer.sup.charters = 1.4;        // (Rule 3's back-off, still, its rate none.)
+        state.loop.steer.sup.chartersRate = 0;
+        expect(h.restore(state), "the state read back");
+        run(h, 5 + 18.5 / 24, 6 + 18.5 / 24);
+        expect(hs.charters.size() == 3 && hs.sup.chartersHeld == 1 &&
+                   std::none_of(hs.charters.begin(), hs.charters.end(), [&](const auto& c) { return c.first == newest; }),
+               "1.4 charters backed off: one held back, the newest: " + n(double(hs.charters.size())) + ", held " + n(hs.sup.chartersHeld));
+        state = h.state();
+        state.loop.steer.sup.charters = 0;
+        expect(h.restore(state), "the state read back");
+        run(h, 6 + 18.5 / 24, 7 + 18.5 / 24);
+        expect(hs.charters.size() == 4 && hs.sup.chartersHeld == 0, "its back-off gone: the four again: " + n(double(hs.charters.size())));
+        expect(h.conserved(), "conserved");
+    }
+    table = saved;
+}
+
+// The safety supervisor (doc 75, 3.6; Phase 4): its rules in order, each backing off the lever that pays at its rate, one
+// move a lever a night, clearing with hysteresis, the levers returning at half the rate they left; rule 1's route and the
+// skim leaving the treasury be; rule 3's charters held back newest first; the floors at the slider; the envelope's edge;
+// nothing at the centre; saved and read again; off, afresh.
+Society supervised(int lean, const std::map<std::string, int>& more = {})
+{
+    std::map<std::string, int> rules = {{"steer", 1}, {"steerLean", lean}};
+    for (const auto& [k, v] : more)
+        rules[k] = v;
+    auto s = city({at("aa", 900), at("bb", 100), at("cc", 0)}, 9000, rules);
+    s.steerEconomy(0);                              // (Turned on: the levers at the slider; the supervisor's first night.)
+    return s;
+}
+
+void theSupervisor()
+{
+    const auto& t = items::cityLoop().steering;
+    using N = Society::SupNight;
+    const double week = 7;
+    // The floors at the slider: the table's months, blended between the marks, never under 600p.
+    {
+        auto s = supervised(100);
+        expect(t.floorsGiven && s.treasuryFloorAt(-1, 0) == 1135 && s.treasuryFloorAt(0, 150) == 653 &&
+                   std::abs(s.treasuryFloorAt(-.5, 150) - (1075 + 653) / 2.) < 1e-9 && s.treasuryFloorAt(1, 300) == 600 &&
+                   s.treasuryFloorAt(0, 364) == 1427 && s.treasuryFloorAt(0, 365 + 150) == 653,
+               "the floors: the far left's first month 1,135p, the centre's sixth 653p, -0.5 halfway, the right 600p, the "
+               "year's last day the 13th month's, a year on the same: " + n(s.treasuryFloorAt(-.5, 150)));
+        for (double x = -1; x <= 1; x += .25)
+            for (int d = 0; d < 365; d += 13)
+                expect(s.treasuryFloorAt(x, d) >= 600, "never under 600p");
+    }
+    // The centre: nothing to move, so nothing fires, however bad the night.
+    {
+        auto s = supervised(100);
+        for (int d = 1; d <= 30; ++d)
+            s.steerSupervise(d, N{0, 500, 5, 50, 5000});
+        const auto& u = s.state().loop.steer.sup;
+        expect(u.on == std::array<bool, 3>{} && u.levelling == 0 && u.richAbove == 0 && u.charters == 0 && u.route == 0,
+               "the centre: no rule fires, no lever moves");
+    }
+    // The left: rule 2 (the shops) eases the tithe 3 points a week; rule 3 (hunger) 5; both on, once a night at the faster.
+    {
+        auto s = supervised(0);
+        const auto& u = s.state().loop.steer.sup;
+        const double trigger = t.tillsOver * 32.2;
+        expect(std::abs(s.steerTarget("tillsShort") - 32.2) < 1e-9 && s.steerLever("levelling") == 50, "the far left: the tithe 50%, tills short 32.2");
+        int d = 1;
+        for (; d < 6; ++d)
+            s.steerSupervise(d, N{9000, 500, 5, 0, 0});
+        expect(!u.on[1] && !u.on[2] && u.levelling == 0, "nothing judged before its means have had 7 nights");
+        for (; d < 100; ++d)                        // (Quiet nights till the means clear, then the shops short.)
+            s.steerSupervise(d, N{9000, 0, 0, 0, 0});
+        for (int k = 0; k < 400; ++k)
+            s.steerSupervise(d++, N{9000, 0, 0, 0, 0});
+        expect(!u.on[1] && !u.on[2] && u.levelling == 0, "quiet, every lever back at the table");
+        const int fired = u.fires[1];
+        for (int k = 0; k < 40 && !u.on[1]; ++k)
+            s.steerSupervise(d++, N{9000, trigger + 20, 0, 0, 0});
+        expect(u.on[1] && !u.on[0] && !u.on[2] && u.fires[1] == fired + 1, "the tills short over 1.3 x the mark's: the shops' rule on");
+        expect(std::abs(u.levelling - 3 / week) < 1e-9 && std::abs(s.steerLever("levelling") - (50 - 3 / week)) < 1e-9,
+               "its first night: the tithe eased 3/7 of a point: " + n(s.steerLever("levelling")));
+        expect(s.state().loop.steer.history.back().why.find("the shops ran short") != std::string::npos, "the log says why: " + s.state().loop.steer.history.back().why);
+        for (int k = 0; k < 6; ++k)
+            s.steerSupervise(d++, N{9000, trigger + 20, 0, 0, 0});
+        expect(std::abs(u.levelling - 3) < 1e-9, "a week: 3 points: " + n(u.levelling));
+        // Hunger too: one move a night, at the faster rule's rate, never the two added.
+        const double before = u.levelling;
+        for (int k = 0; k < 40 && !u.on[2]; ++k)
+            s.steerSupervise(d++, N{9000, trigger + 20, 1, 0, 0});
+        expect(u.on[1] && u.on[2], "both rules on");
+        const double was = u.levelling;
+        s.steerSupervise(d++, N{9000, trigger + 20, 1, 0, 0});
+        expect(std::abs(u.levelling - was - 5 / week) < 1e-9 && u.levelling > before, "both on: 5/7 a night, not 8/7: " + n(u.levelling - was));
+        // Clearing: under 90% of each trigger for 7 nights running; a night back over starts the count again. (Phase 4
+        // review: on but back under its trigger, a rule's lever holds; it neither eases further nor returns until it clears.)
+        double heldAt = -1;
+        bool steady = true;
+        int heldNights = 0;
+        for (int k = 0; k < 100 && (u.on[1] || u.on[2]); ++k)
+        {
+            s.steerSupervise(d++, N{9000, 0, 0, 0, 0});
+            if ((u.on[1] || u.on[2]) && u.tills <= trigger && u.hungry <= s.steerTarget("hungerMost"))
+            {
+                if (heldAt < 0)
+                    heldAt = u.levelling;
+                steady = steady && u.levelling == heldAt;
+                ++heldNights;
+            }
+        }
+        expect(!u.on[1] && !u.on[2], "cleared");
+        expect(heldAt > 0 && steady && heldNights >= t.clearNights - 1,
+               "while clearing, back under both triggers: the tithe's back-off held at " + n(heldAt) + " for " + n(heldNights) + " nights");
+        // A bad night while it is clearing: it pulls again from where it held.
+        {
+            auto r = supervised(0);
+            const auto& v = r.state().loop.steer.sup;
+            int e = 1;
+            for (; e < 60 && !v.on[1]; ++e)
+                r.steerSupervise(e, N{9000, trigger + 20, 0, 0, 0});
+            for (; e < 200 && v.tills > trigger; ++e)
+                r.steerSupervise(e, N{9000, 0, 0, 0, 0});
+            const double held = v.levelling;
+            r.steerSupervise(e++, N{9000, 0, 0, 0, 0});
+            expect(v.on[1] && v.levelling == held, "on, under its trigger: held at " + n(held));
+            for (int k = 0; k < 10 && v.tills <= trigger; ++k)
+                r.steerSupervise(e++, N{9000, trigger * 3, 0, 0, 0});
+            expect(v.on[1] && v.levelling > held, "back over its trigger: the tithe eases again: " + n(v.levelling));
+        }
+        // Back toward the table at returnShare of the rate it left (the last, 5/7 a night; the table's returnShare 1 since
+        // doc 75, Phase 5's fix round, the plan's half before).
+        expect(t.returnShare == 1, "the table's returnShare: 1");
+        const double off = u.levelling;
+        s.steerSupervise(d++, N{9000, 0, 0, 0, 0});
+        expect(std::abs(off - u.levelling - t.returnShare * 5 / week) < 1e-9, "the return at returnShare of the rate: " + n(off - u.levelling));
+        for (int k = 0; k < 400; ++k)
+            s.steerSupervise(d++, N{9000, 0, 0, 0, 0});
+        expect(u.levelling == 0 && s.steerLever("levelling") == 50, "back at the table");
+        // Rule 1 at the left: no lever (no ground rent, no floor on, the rich hold the world's): never fires.
+        for (int k = 0; k < 20; ++k)
+            s.steerSupervise(d++, N{0, 0, 0, 0, 0});
+        expect(!u.on[0], "the treasury's rule has nothing to move at the left with the floors off");
+    }
+    // Hysteresis: back over the clearing line before 7 nights resets the count.
+    {
+        auto s = supervised(0);
+        const auto& u = s.state().loop.steer.sup;
+        int d = 1;
+        for (; d < 40 && !u.on[2]; ++d)
+            s.steerSupervise(d, N{9000, 0, 1, 0, 0});
+        for (int k = 0; k < 60; ++k)                // (The 7-night mean well under the line.)
+            s.steerSupervise(d++, N{9000, 0, 0, 0, 0});
+        expect(!u.on[2], "cleared after quiet nights");
+        for (; d < 200 && !u.on[2]; ++d)
+            s.steerSupervise(d, N{9000, 0, 1, 0, 0});
+        expect(u.on[2] && u.fires[2] == 2, "fired again");
+        int quiet = 0;
+        for (; quiet < 40 && u.clear[2] < t.clearNights - 1; ++quiet)
+            s.steerSupervise(d++, N{9000, 0, 0, 0, 0});
+        expect(u.on[2] && u.clear[2] == t.clearNights - 1, "a night short of clearing");
+        s.steerSupervise(d++, N{9000, 0, 1, 0, 0});
+        s.steerSupervise(d++, N{9000, 0, 1, 0, 0});
+        expect(u.on[2] && u.clear[2] == 0, "a bad night: the count starts again: " + n(u.clear[2]));
+    }
+    // The right: rule 1 (the treasury under its floor) routes the ground rent in proportion to the gap, the skim leaves the
+    // treasury be, and the rich hold eases 10p a week toward the world's 40p, never past it; rule 2's wage support unpaid.
+    {
+        auto s = supervised(200);
+        const auto& u = s.state().loop.steer.sup;
+        expect(s.steerLever("richAbove") == 150 && s.treasuryFloorAt(1, 50) == 600, "the far right: the rich hold 150p, the floor 600p");
+        expect(!s.skimStep(2, true).empty(), "the treasury over its cap: the skim's second step has it");
+        int d = 1;
+        for (; d < 40 && !u.on[0]; ++d)
+            s.steerSupervise(d, N{450, 0, 0, 0, 0});
+        expect(u.on[0] && !u.on[1], "the treasury's 7-night mean under 600p: rule 1 on");
+        expect(u.route > 0 && u.route <= 1 && std::abs(u.route - std::clamp((600 - u.treasury) / 300, 0., 1.)) < 1e-9,
+               "the route in proportion to the gap, all of it at half the floor: " + n(u.route) + " at " + n(u.treasury));
+        expect(s.skimStep(2, true).empty(), "the skim leaves the treasury be");
+        expect(std::abs(s.steerLever("richAbove") - (150 - 10 / week)) < 1e-9, "the rich hold eased 10/7p: " + n(s.steerLever("richAbove")));
+        for (int k = 0; k < 120; ++k)
+            s.steerSupervise(d++, N{100, 0, 0, 0, 0});
+        expect(u.route == 1 && s.steerLever("richAbove") == 40 && u.richAbove == 110, "at its bound: the world's 40p, never past it");
+        expect(std::find(s.loopToday().supEdge.begin(), s.loopToday().supEdge.end(), "richAbove") != s.loopToday().supEdge.end(),
+               "28 nights backed off: at the envelope's edge");
+        bool said = false;
+        for (const auto& h : s.state().loop.steer.history)
+            said = said || h.why.find("at the envelope's edge") != std::string::npos;
+        expect(said, "the edge in the log");
+        // Cleared: the route eases off over 14 nights, the rich hold returns at 5p a week.
+        for (; d < 400 && u.on[0]; ++d)
+            s.steerSupervise(d, N{2000, 0, 0, 0, 0});
+        const double route = u.route, rich = u.richAbove;
+        s.steerSupervise(d++, N{2000, 0, 0, 0, 0});
+        expect(!u.on[0] && std::abs(route - u.route - 1. / 14) < 1e-9 && std::abs(rich - u.richAbove - t.returnShare * 10 / week) < 1e-9 &&
+                   !s.skimStep(2, true).empty(),
+               "cleared: the route eases, the rich hold returns at returnShare of its rate, the skim may take from the treasury again");
+        // Rule 2 on the wage support unpaid alone.
+        for (int k = 0; k < 400; ++k)
+            s.steerSupervise(d++, N{2000, 0, 0, 0, 0});
+        expect(u.richAbove == 0 && u.route == 0, "back at the table");
+        for (; d < 900 && !u.on[1]; ++d)
+            s.steerSupervise(d, N{2000, 0, 0, 0, 400});
+        expect(!u.on[1], "the wage support 400p a night unpaid, under unpaidMost 426p (1.3 x T6's 328p): nothing");
+        for (; d < 1200 && !u.on[1]; ++d)
+            s.steerSupervise(d, N{2000, 0, 0, 0, 500});
+        expect(u.on[1] && !u.on[0] && u.richAbove > 0, "the wage support 500p a night unpaid against 426p: the shops' rule eases the rich hold");
+        // Saved and read again.
+        const auto back = wire::readSociety(wire::society(s.state())).loop.steer.sup;
+        expect(back.on == u.on && back.clear == u.clear && back.fires == u.fires && back.edge == u.edge && back.nights == u.nights &&
+                   back.treasury == u.treasury && back.tills == u.tills && back.unpaid == u.unpaid && back.hungry == u.hungry &&
+                   back.shortHomes == u.shortHomes && back.levelling == u.levelling && back.richAbove == u.richAbove &&
+                   back.charters == u.charters && back.richRate == u.richRate && back.route == u.route && back.chartersHeld == u.chartersHeld,
+               "the supervisor saved and read again");
+        // Off: afresh.
+        setRules(s, {{"steer", 0}});
+        s.steerEconomy(d);
+        expect(s.state().loop.steer.sup.empty() && s.steerLever("richAbove") == 40, "off: the supervisor starts afresh");
+    }
+}
+
+// The slider followed (doc 75, 3.3): the levers at its place the same night, nothing judged, the means re-seated on a
+// move; saved and read again; off, the world's own.
+void theSlider()
+{
+    auto s = city({at("aa", 900), at("bb", 100), at("cc", 0)}, 9000, {{"steer", 1}, {"steerLean", 50}});
+    s.steerEconomy(1);
+    const auto& st = s.state().loop.steer;
+    expect(st.on && std::abs(st.push + .5) < 1e-12, "the levers read at the slider, -0.5");
+    expect(s.rule("surplusKeep") == 1000 && s.rule("surplusAlmsTo") == 60 && std::abs(s.steerLever("levelling") - 13.7) < 1e-9 &&
+               s.rule("treasuryCap") == 1750 && s.rule("treasuryTarget") == 1400,
+           "the levers at -0.5: the keep 1,000, the poorest to 60p, the tithe 13.7%, the cap 1,750p, the target 1,400p");
+    for (int day = 2; day <= 200; ++day)
+        s.steerEconomy(day);
+    expect(std::abs(st.push + .5) < 1e-12 && st.history.size() == 1 && st.days == 200, "200 nights: nothing trimmed, nothing judged");
+    expect(st.sup.nights >= 7, "the supervisor's means have had their 7 nights: " + n(st.sup.nights));
     setRules(s, {{"steerLean", 150}});
     s.steerEconomy(201);
-    expect(std::abs(st.push - .5) < 1e-12 && st.judged == 201 && s.steerLever("groundRent") == 15, "a slider change: feed-forward");
-    // Saved and read again.
-    const auto saved = wire::society(s.state());
-    const auto back = wire::readSociety(saved).loop.steer;
+    // (Doc 75, Phase 5: the supervisor's 7-night means re-seated on a move, so the new place is not judged on the old one's
+    // nights: tonight's is their first night, and no rule judges until they have had 7.)
+    expect(st.sup.nights <= 1 && st.sup.on == std::array<bool, 3>{}, "a slider change: the supervisor's means re-seated: " + n(st.sup.nights));
+    expect(std::abs(st.push - .5) < 1e-12 && st.judged == 201 && s.steerLever("groundRent") == 15 && st.history.size() == 2 &&
+               st.history.back().why.find("moved from -50 to 50") != std::string::npos,
+           "a slider change: the levers there the same night: " + st.history.back().why);
+    const auto back = wire::readSociety(wire::society(s.state())).loop.steer;
     expect(back.on && back.push == st.push && back.lean == 150 && back.history.size() == st.history.size() && back.gini == st.gini &&
                back.history.back().why == st.history.back().why,
            "the steering's state saved and read again");
-    // Off: the push 0, the world's rules.
     setRules(s, {{"steer", 0}});
     s.steerEconomy(202);
-    expect(!st.on && st.push == 0 && s.rule("surplusKeep") == 4000, "off: the push 0, the world's own rules");
-}
-
-void theDeadBand()
-{
-    // At the centre, both measures in their bands: nothing moves (the targets set here to this world's own).
-    auto& t = const_cast<items::CityLoop&>(items::cityLoop()).steering.targets;
-    const auto saved = t;
-    auto s = city({at("aa", 100), at("bb", 100)}, 9000, {{"steer", 1}});
-    t["gini"][2] = s.giniEarners();
-    t["upper"][2] = s.upperShare();
-    for (int day = 1; day <= 120; ++day)
-        s.steerEconomy(day);
-    const auto& st = s.state().loop.steer;
-    t = saved;
-    expect(st.push == 0 && st.history.size() >= 3 && st.history.back().step == 0 &&
-               st.history.back().why.find("in their bands") != std::string::npos,
-           "the dead band: no move: " + st.history.back().why);
-}
-void theHungerGuard()
-{
-    // The hunger guard's weekly pull (the runs of 2026-11-06): with the far right's treasury, which pays the alms, far under
-    // its low (500p) on its mean and tonight, every seventh night the push goes back 0.10 toward the centre, before any
-    // judging, never past it; with Never Hungry on, the floor is that toggle's and nothing is pulled.
-    const auto hungry = [](bool fed) {
-        std::map<std::string, int> rules{{"steer", 1}, {"steerLean", 200}};
-        if (fed)
-            rules["neverHungry"] = 1;
-        auto s = city(town(), 9000, rules);
-        run(s, 1 + 7.9 / 24, 1 + 18.5 / 24);
-        auto state = s.state();
-        state.loop.steer.days = 3650;               // (The means' 28-night rate: they stay far over for weeks.)
-        state.loop.steer.treasury = 300;            // (The alms' purse far under its low, its mean and tonight.)
-        expect(s.restore(state), "the state read back");
-        s.shift("treasury", "aa_rich", "", 0, s.cash("treasury") - 300, "test: the treasury drawn down");
-        run(s, 1 + 18.5 / 24, 14 + 18.5 / 24);      // (Days 7 and 14 are the guard's nights.)
-        return s;
-    };
-    auto right = hungry(false);
-    const auto& st = right.state().loop.steer;
-    expect(std::abs(st.push - .8) < 1e-9, "two weeks far over: the push 1 -> 0.8, under its band (0.7..1 is not a floor): " + n(st.push));
-    expect(!st.history.empty() && st.history.back().why.find("weekly pull") != std::string::npos, "the reason logged: " +
-           (st.history.empty() ? std::string() : st.history.back().why));
-    expect(right.steerLever("dividend") < 30 && right.steerLever("richAbove") < 150, "the right's levers with it");
-    expect(right.conserved(), "conserved");
-    auto fed = hungry(true);
-    expect(fed.state().loop.steer.push == 1, "Never Hungry on: no pull: " + n(fed.state().loop.steer.push));
-}
-
-void theDriftAndTheFloors()
-{
-    // Tune round 1: the toll drift's target with the steering on is never over the steered ceiling (the cap and its keep),
-    // so at the far left the drift judges the treasury where the surplus holds it; at the centre it is the world's own.
-    {
-        auto left = city(town(), 9000, {{"steer", 1}, {"steerLean", 0}});
-        left.steerEconomy(1);
-        auto centre = city(town(), 9000, {{"steer", 1}});
-        centre.steerEconomy(1);
-        const Society off(Roster::None);
-        expect(left.rule("treasuryTarget") == 1500 && left.rule("treasuryCap") + left.rule("surplusKeep") == 1500,
-               "the far left: the drift's target 1,500p, the cap and its keep: " + n(left.rule("treasuryTarget")));
-        expect(centre.rule("treasuryTarget") == 5500 && off.rule("treasuryTarget") == 5500,
-               "the centre and the steering off: the world's 5,500p");
-        setRules(left, {{"steer", 0}});
-        left.steerEconomy(2);
-        expect(left.rule("treasuryTarget") == 5500, "turned off: the world's own again");
-    }
-    // With Never Broke on, a Gini under its band is the floor's levelling: no lean right against it. Off, the same world
-    // leans right.
-    auto& t = const_cast<items::CityLoop&>(items::cityLoop()).steering.targets;
-    const auto saved = t;
-    const auto judged = [&](bool broke) {
-        std::map<std::string, int> rules{{"steer", 1}};
-        if (broke)
-            rules["neverBroke"] = 1;
-        auto s = city({at("aa", 100), at("bb", 100)}, 9000, rules);
-        t["gini"][2] = s.giniEarners() + .2;        // (Far too equal for the centre's band.)
-        t["upper"][2] = s.upperShare();
-        for (int day = 1; day <= 120; ++day)
-            s.steerEconomy(day);
-        t = saved;
-        return s.state().loop.steer;
-    };
-    const auto broke = judged(true), plain = judged(false);
-    expect(broke.push == 0 && !broke.history.empty() && broke.history.back().why.find("Never Broke") != std::string::npos,
-           "Never Broke on: the Gini under its band not steered against: " + (broke.history.empty() ? std::string() : broke.history.back().why));
-    expect(plain.push > 0, "Never Broke off: the same world leans right: " + n(plain.push));
+    expect(!st.on && st.push == 0 && s.rule("surplusKeep") == 4000, "off: the world's own rules");
 }
 } // namespace
+
+// Doc 75 (3.4): G, the Gini of cash a head over all households weighted by heads, and F, of pantry days a head.
+void theMeasures()
+{
+    auto s = city({at("aa", 600), at("bb", 300), at("cc", 0)}, 2000, {});
+    // Three households of one: the pairs' differences 300 + 600 + 300 = 1200, over 3 heads x 900p: 0.444.
+    expect(std::abs(s.giniHeads() - 1200. / 2700.) < 1e-9, "G over three single households: " + n(s.giniHeads()));
+    auto e = city({at("aa", 100), at("bb", 100)}, 2000, {});
+    expect(std::abs(e.giniHeads()) < 1e-12, "G is 0 when every household holds the same a head");
+    expect(e.foodGini() == 0, "F is 0 when no household holds food");
+    // A household of two with 600p between them is 300p a head, weighted twice: against one alone at 300p, G is 0.
+    auto k = city({person("aa", "civilian", "keeps the house", {"home_ab", 2.5, 2.5}, "home_ab", 35, 600),
+                   person("bb", "civilian", "keeps the house", {"home_ab", 2.5, 2.5}, "home_ab", 35, 0), at("cc", 300)},
+                  2000, {});
+    expect(k.households().size() == 2 && std::abs(k.giniHeads()) < 1e-9,
+           "weighted by heads: two sharing a home at 300p a head and one alone at 300p: " + n(k.giniHeads()));
+    auto u = city({person("aa", "civilian", "keeps the house", {"home_ab", 2.5, 2.5}, "home_ab", 35, 600),
+                   person("bb", "civilian", "keeps the house", {"home_ab", 2.5, 2.5}, "home_ab", 35, 0), at("cc", 0)},
+                  2000, {});
+    // Heads at 300, 300 and 0: pairs (2 x 1) x 300 = 600, over 3 heads x 600p: 1/3.
+    expect(std::abs(u.giniHeads() - 1. / 3) < 1e-9, "a couple at 300p a head and one alone with nothing: " + n(u.giniHeads()));
+}
 
 int main()
 {
@@ -762,11 +1062,11 @@ int main()
         neverHungry();
         theLeversAtTheEnds();
         theHandsShareAndTheGroundRent();
-        theShareOut();
-        theController();
-        theDeadBand();
-        theHungerGuard();
-        theDriftAndTheFloors();
+        theTithe();
+        theCharters();
+        theSlider();
+        theSupervisor();
+        theMeasures();
     }
     catch (const std::exception& error)
     {

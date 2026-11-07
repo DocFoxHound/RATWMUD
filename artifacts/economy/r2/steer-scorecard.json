@@ -1,0 +1,58 @@
+{
+  "about": "Doc 75, 5.3: the acceptance scorecard, agreed before any new run and checked first on the runs already on disk (the dry run, steer-accept-dry.json). Read by tools/steer_accept.py. Each mark's targets (the distribution measure's field, target and band; hungerMost, shortMost; the floors-off tills short) are in a targets file, written by tools/steer_calibrate.py from the calibration runs (steer-targets-t1.json for the dry run: doc 74's table and the t1 runs' own means). Doc 75, Phase 4 (the coordinator's call, under the user's delegation, made after seeing the Phase 3 results): T5's floor is at least the centre's own noise under the profile (sigma at least stable10b's 191p); a treasury held flat at its cap had a sigma of 1-5p, so a 20p wobble counted as a dip, a defect in the test.",
+  "window": [
+    120,
+    365
+  ],
+  "mean_days": 28,
+  "profile_smooth": 15,
+  "T1": {
+    "by_day": 90
+  },
+  "T2": {
+    "share": 0.9
+  },
+  "T3": {
+    "fires_most": 4,
+    "backoff_share_most": 0.3
+  },
+  "T4": {
+    "h28_times": 2
+  },
+  "T5": {
+    "float": 200,
+    "plus": 3,
+    "floor_least": 600,
+    "sigma_least": 191
+  },
+  "T6": {
+    "times": 1.15,
+    "floors_times": 1.25,
+    "unpaid_times": 1.5
+  },
+  "T7": {
+    "wharf_within": 200
+  },
+  "T8": {
+    "nights_most": 0.15
+  },
+  "T11": {
+    "hunger_most": 0.01,
+    "short_after_most": 0.5,
+    "wharf_pennies_most": 5,
+    "idle_least": 0.5
+  },
+  "T12": {
+    "half_days": 30,
+    "ninety_days": 75
+  },
+  "rungs": {
+    "full": "the scorecard: T1-T8 on every run, T9-T13 on their runs",
+    "F2": "the scorecard, one calibrated strength down",
+    "F1": "the right without charters: no worse than steer-right-t1 in T4-T7 (its float days a year the ceiling)",
+    "F3": "doc 74's t1 controller at that end: no worse than the t1 run at that end in T4-T7"
+  },
+  "T13": {
+    "noise_bands": 0.5
+  }
+}

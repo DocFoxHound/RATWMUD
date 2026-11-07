@@ -1,0 +1,60 @@
+{
+  "about": "Doc 75, Phase 1: Batch 0 (today's code, 1 year) and the D1 runs with the skim's new order (steer-d1b-*) against the scorecard, on the dry run's targets (doc 74's, on its own measures), for information: what the new build must beat.",
+  "dir": "artifacts/economy/r2",
+  "baseline": "stable10b",
+  "targets": "artifacts/economy/r2/steer-targets-t1.json",
+  "runs": [
+    {
+      "name": "steer-b0-left",
+      "x": -1,
+      "rung": "full"
+    },
+    {
+      "name": "steer-b0-right",
+      "x": 1,
+      "rung": "full"
+    },
+    {
+      "name": "steer-b0-centre-floors",
+      "x": 0,
+      "floors": true,
+      "floors_off": "stable10b",
+      "rung": "full"
+    },
+    {
+      "name": "steer-b0-left-floors",
+      "x": -1,
+      "floors": true,
+      "floors_off": "steer-b0-left",
+      "rung": "full"
+    },
+    {
+      "name": "steer-b0-right-floors",
+      "x": 1,
+      "floors": true,
+      "floors_off": "steer-b0-right",
+      "rung": "full"
+    },
+    {
+      "name": "steer-d1b-centre-floors",
+      "x": 0,
+      "floors": true,
+      "floors_off": "stable10b",
+      "rung": "full"
+    },
+    {
+      "name": "steer-d1b-left-floors",
+      "x": -1,
+      "floors": true,
+      "floors_off": "steer-b0-left",
+      "rung": "full"
+    },
+    {
+      "name": "steer-d1b-right-floors",
+      "x": 1,
+      "floors": true,
+      "floors_off": "steer-b0-right",
+      "rung": "full"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+ "about": "Doc 75, Phase 4 smoke S2: as the table, but the toll drift's target at +1 the world's own (5,500p, as at the centre), so the toll holds its +1 point there as it does at the centre.",
+ "steering": {"levers": {"treasuryTarget": [1500, 1400, null, null, null]}}
+}

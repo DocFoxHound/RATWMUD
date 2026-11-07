@@ -146,14 +146,16 @@ STEER_BODY = ('steer', 'lean', 'neverHungry', 'neverBroke')
 STEER_WORDS = {'left': 'Shared: money and food equal across all wolves', 'centre': 'Today\'s economy',
                'right': 'Held by the rich: the upper class and the Houses'}
 STEER_HELD = 'the steering holds this rule; turn the steering off to set it'
-STEER_LEVERS = (('shareOut', 'The share-out', '% of the rich\'s spare levelled to the poorest each night'),
+# (Doc 75, 4: the share-out, the toll lean and the rent scale gone; the Levelling tithe, the Crown's charters and the toll
+# drift's target new.)
+STEER_LEVERS = (('levelling', 'The Levelling tithe', '% of the way each household\'s cash a head moves to the mean each night'),
+                ('charters', 'The Crown\'s charters', '% of the middle keepers\' shops whose profit goes to a House'),
                 ('postsShare', 'The hands\' share', '% of a keeper\'s nightly profit paid to the shop\'s other posts'),
-                ('tollLean', 'The toll lean', 'points on the gate toll, over the treasury\'s drift'),
                 ('surplusKeep', 'The treasury\'s keep', 'p the treasury keeps over its cap before its surplus goes out'),
                 ('treasuryCap', 'The treasury\'s cap', 'p; over it, the wage support, the extra alms and the surplus'),
+                ('treasuryTarget', 'The treasury\'s target', 'p the gate toll and the alms drift toward'),
                 ('surplusAlmsTo', 'The poorest raised to', 'p a head the surplus brings the poorest households up to'),
                 ('groundRent', 'The ground rent', '% of a keeper\'s nightly profit to the Crown\'s estate'),
-                ('rentScale', 'The rent scale', '% on every food farm\'s land rent'),
                 ('dividend', 'The Houses\' dividend', '% of the estates\' spare paid to upper-class households each night'),
                 ('richAbove', 'The rich hold', 'p a head an upper-class household keeps before its comforts'),
                 ('spendAbove', 'The spending keep', 'p a head every other household keeps before its comforts'))
@@ -163,11 +165,18 @@ STEER_MARKS = (-1.0, -0.5, 0.0, 0.5, 1.0)
 
 def steer_at(marks, at, own=None):
     """Core's items::steerAt: a table row's value at `at` (-1..1), straight lines between the five marks; a lever's null
-    is `own` (the world's value); a target's null (own None) is none, as is a place between a mark with none and one."""
+    at the centre or an end is `own` (the world's value), at a half mark halfway between its neighbours (doc 75, 3.2); a
+    target's null (own None) is none, as is a place between a mark with none and one."""
     at = max(-1.0, min(1.0, float(at) if isinstance(at, (int, float)) and math.isfinite(at) else 0.0))
 
-    def value(i):
+    def end(i):
         return own if marks[i] is None else float(marks[i])
+
+    def value(i):
+        if i % 2 == 0 or marks[i] is not None:
+            return end(i)
+        a, b = end(i - 1), end(i + 1)
+        return None if a is None or b is None else (a + b) / 2
     place = (at + 1) * 2
     i = min(3, int(math.floor(place)))
     t = place - i
@@ -181,11 +190,38 @@ def steer_at(marks, at, own=None):
     return a + (b - a) * t
 
 
-def steer_width(rules, x):
-    """The push's band at slider `x` (doc 74, 4): steerWidthMid at the centre to steerWidthEnd at the ends."""
-    mid, end = int(rules.get('steerWidthMid', 15)) / 100, int(rules.get('steerWidthEnd', 30)) / 100
-    w = mid + (end - mid) * abs(x)
-    return max(-1.0, x - w), min(1.0, x + w)
+def steer_lever(table, key, at, own):
+    """A lever's value at `at`, as Core's Society::steerLever: the table's row, and for the dividend its rise with the
+    charters (dividendPerCharter points a point of them, doc 75, 4.2)."""
+    levers = table.get('levers') or {}
+    row = levers.get(key)
+    if not isinstance(row, list) or len(row) != 5:
+        return own
+    v = steer_at(row, at, own)
+    if key == 'dividend' and v is not None and isinstance(levers.get('charters'), list) and len(levers['charters']) == 5:
+        v += float(table.get('dividendPerCharter', 0.45)) * (steer_at(levers['charters'], at, 0) or 0)
+    return v
+
+
+def steer_reach(table):
+    """The slider's ends labelled with their measured reach (doc 75, 3.5): the table's `reach`, else none."""
+    reach = table.get('reach') if isinstance(table.get('reach'), dict) else {}
+    return {'left': str(reach.get('left') or ''), 'right': str(reach.get('right') or '')}
+
+
+SUP_RULES = ('the treasury under its floor', 'the shops short', 'hunger')
+
+
+def steer_supervisor(steer):
+    """The safety supervisor's state from the save (doc 75, 3.6): the rules on, the back-offs, rule 1's route, the
+    charters held back, and its last words in the log."""
+    sup = steer.get('sup') or {}
+    rules = sup.get('rules') or []
+    on = [SUP_RULES[i] for i, r in enumerate(rules[:3]) if isinstance(r, dict) and r.get('on')]
+    last = next((h.get('why') for h in reversed(steer.get('history') or []) if h.get('measure') == 'supervisor'), None)
+    return {'on': on, 'levelling': round(float(sup.get('levelling') or 0), 2), 'richAbove': round(float(sup.get('richAbove') or 0), 2),
+            'chartersHeld': int(sup.get('chartersHeld') or 0), 'route': round(float(sup.get('route') or 0), 3),
+            'fires': [int(r.get('fires') or 0) for r in rules[:3] if isinstance(r, dict)], 'last': last}
 
 
 class Economy:
@@ -420,22 +456,24 @@ class Economy:
 
     def steering(self, key, world, economy, country=None) -> dict:
         """Steering the economy (doc 74, 10): the DM's four settings; at the slider, each measure's target and band, the
-        push's band, and each lever's value at the centre and its bounds there (from city_loop.json's table, as Core reads
-        it); and, from the world's last save (the society's loop "steer"), the push, the means, the judgings newest first
-        and the skim's last 28 days. Read only but for the four settings."""
+        place the levers are read (doc 75: the slider itself; `band` is that place twice, the push's band being gone), and
+        each lever's value at the centre and there (from city_loop.json's table, as Core reads it); and, from the world's
+        last save (the society's loop "steer"), the place, the means, the changes newest first, the charters and the
+        skim's last 28 days. Read only but for the four settings."""
         rules = {**map_editor.rule_defaults(), **dict(economy.get('rules') or {})}
         table = (country if country is not None else map_editor.city_loop_file()).get('steering') or {}
         levers, targets = table.get('levers') or {}, table.get('targets') or {}
         lean = int(rules.get('steerLean', 100)) - 100
         x = lean / 100
-        lo, hi = steer_width(rules, x)
+        lo, hi = x, x
         comforts = economy.get('comfortsAbove')
         comforts = int(comforts if comforts is not None else ((country or {}).get('comforts') or {}).get('above', 60))
         own = {'surplusKeep': int(rules.get('surplusKeep', 4000)), 'treasuryCap': int(rules.get('treasuryCap', 2000)),
-               'surplusAlmsTo': int(rules.get('surplusAlmsTo', 40)), 'richAbove': comforts, 'spendAbove': comforts, 'rentScale': 100}
+               'treasuryTarget': int(rules.get('treasuryTarget', 5500)), 'surplusAlmsTo': int(rules.get('surplusAlmsTo', 40)),
+               'richAbove': comforts, 'spendAbove': comforts}
         out = {'settings': {'steer': int(rules.get('steer', 0)) > 0, 'lean': lean, 'neverHungry': int(rules.get('neverHungry', 0)) > 0,
                             'neverBroke': int(rules.get('neverBroke', 0)) > 0},
-               'words': STEER_WORDS, 'held': list(map_editor.STEERED_RULES), 'own': {k: rules.get(k) for k in map_editor.STEER_OWN_RULES},
+               'words': STEER_WORDS, 'reach': steer_reach(table), 'held': list(map_editor.STEERED_RULES), 'own': {k: rules.get(k) for k in map_editor.STEER_OWN_RULES},
                'table': {'levers': levers, 'targets': targets, 'marks': list(STEER_MARKS),
                          'treasuryFloor': table.get('treasuryFloor', 800), 'treasuryLow': table.get('treasuryLow', 500)},
                'band': [round(lo, 4), round(hi, 4)], 'saved': None, 'problem': '', 'changes': []}
@@ -451,9 +489,9 @@ class Economy:
         out['targets'] = {name: rounded(steer_at(marks, x)) for name, marks in targets.items()
                           if isinstance(marks, list) and len(marks) == 5}
         out['levers'] = [{'key': k, 'label': label, 'unit': unit, 'own': own.get(k, 0),
-                          'centre': rounded(steer_at(levers[k], 0, own.get(k, 0)), 2),
-                          'low': rounded(steer_at(levers[k], lo, own.get(k, 0)), 2),
-                          'high': rounded(steer_at(levers[k], hi, own.get(k, 0)), 2)}
+                          'centre': rounded(steer_lever(table, k, 0, own.get(k, 0)), 2),
+                          'low': rounded(steer_lever(table, k, lo, own.get(k, 0)), 2),
+                          'high': rounded(steer_lever(table, k, hi, own.get(k, 0)), 2)}
                          for k, label, unit in STEER_LEVERS if isinstance(levers.get(k), list) and len(levers[k]) == 5]
         try:
             with self._connect_dm(key) as conn:
@@ -473,10 +511,17 @@ class Economy:
         push = float(steer.get('push') or 0) if steer.get('on') else 0.0
         out['now'] = {'on': bool(steer.get('on')), 'push': round(push, 4), 'judged': steer.get('judged'), 'days': steer.get('days'),
                       'means': {k: rounded(steer.get(k), 4) for k in ('gini', 'upper', 'top10', 'hungry', 'short', 'treasury')},
-                      'tollLean': steer.get('tollLean', 0)}
+                      'charters': len(steer.get('charters') or []), 'chartersTo': steer.get('chartersTo', 0)}
+        sup = steer.get('sup') or {}
+        backs = {'levelling': float(sup.get('levelling') or 0), 'richAbove': float(sup.get('richAbove') or 0)}
         for lever in out['levers']:
-            lever['now'] = (rounded(steer.get('tollLean', 0), 2) if lever['key'] == 'tollLean'
-                            else rounded(steer_at(levers[lever['key']], push, lever['own']), 2))
+            v = steer_lever(table, lever['key'], push, lever['own'])
+            # (The supervisor's back-off, doc 75, 3.6: toward the world's own value, never past it.)
+            if v is not None and backs.get(lever['key'], 0) > 0:
+                v = max(min(v, lever['own']), v - backs[lever['key']]) if lever['key'] == 'levelling' else \
+                    (max(lever['own'], v - backs[lever['key']]) if v > lever['own'] else v)
+            lever['now'] = rounded(v, 2)
+        out['now']['supervisor'] = steer_supervisor(steer)
         out['history'] = list(reversed(steer.get('history') or []))
         skims = steer.get('skims') or []
         summary = {'total': 0, 'short': 0, 'days': len(skims), 'purpose': {}, 'group': {}, 'payers': {}}

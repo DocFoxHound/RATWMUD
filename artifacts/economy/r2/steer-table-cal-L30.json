@@ -1,0 +1,14 @@
+{
+ "about": "Doc 75, 5.2: the Levelling tithe at 30% at -1 (blended to 0 at the centre).",
+ "steering": {
+  "levers": {
+   "levelling": [
+    30,
+    null,
+    0,
+    0,
+    0
+   ]
+  }
+ }
+}

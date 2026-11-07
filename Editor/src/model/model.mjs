@@ -133,8 +133,8 @@ export const RULE_LIMITS = {comfortsMost: 100000, almsADay: 1000, treasuryCap: 1
     treasuryTarget: 100000000, treasuryBand: 100, treasuryDays: 3650, treasuryJudgeDays: 365, tollStep: 100, tollDriftMost: 90,
     almsDriftMost: 1000, almsNoEarner: 300,
     // Steering the economy (Docs/Design/74-steering-the-economy.md): the DM's four (its Steering panel's) and the steering's own.
-    steer: 1, steerLean: 200, neverHungry: 1, neverBroke: 1, steerJudgeDays: 182, steerMeanDays: 365, steerStep: 25, steerStepMost: 50,
-    steerWidthMid: 50, steerWidthEnd: 100, skimMost: 100, skimKeepDays: 28};
+    // (Doc 75: the push's judging, steps and band are gone.)
+    steer: 1, steerLean: 200, neverHungry: 1, neverBroke: 1, steerMeanDays: 365, skimMost: 100, skimKeepDays: 28};
 const ruleSettingsOk = e => (!own(e, 'rules') || (object(e.rules) && Object.entries(e.rules).every(([k, v]) =>
         own(RULE_LIMITS, k) && integer(v, 0, RULE_LIMITS[k]))))
     && (!own(e, 'services') || (object(e.services) && Object.entries(e.services).every(([k, s]) => /^[a-z0-9_]{1,48}$/.test(k)

@@ -1,0 +1,21 @@
+{
+ "about": "Doc 75, Phase 3: the calibrated table, written by tools/steer_calibrate.py from the calibration runs (the levers it sets; every other lever as in city_loop.json).",
+ "steering": {
+  "levers": {
+   "levelling": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "charters": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ }
+}

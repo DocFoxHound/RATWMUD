@@ -1,0 +1,98 @@
+{
+ "about": "Doc 75, Phase 6, 3.5.4: the targets re-centred on years 2-3 of the 3-year confirmation runs (G at -1 and the centre, S at the centre and +1: the mean of days 365-1094, the band 2 sigma of its 28-day mean, at least 0.01 in G and 1 point in S), set after seeing those runs, as the plan says; the half marks have no 3-year run and keep steer-targets-p6.json's. Doc 75, Phase 6: the 3-year confirmation's targets, written before any year 2 or 3 of the Phase 6 runs was read. Years 2 and 3 need a floors-off tills short at each mark (T6), which the 1-year targets do not have; tills short falls after year 1 everywhere (stable10b 29.1, 23.2, 22.2). The centre's are stable10b's own years; +1's steer-right-t1's (F1's own 3-year run; steer-b0-right is its first year); -1's the calibrated year-1 value (L50's 32.15) scaled by steer-left-t1's own year-to-year ratio (no 3-year run of the L50 table exists); the half marks halfway. Everything else is steer-targets-p5.json's. Doc 75, Phase 5: the acceptance targets after acceptance's first batches. From steer-targets-p4.json, with: -0.5's G from steer-p5b-A2, the first run of the -0.5 table (the calibrate rule: the mark's days 120-365 mean, its band 2 sigma of its 28-day mean; Phase 4 had it halfway, 0.208 +- 0.01, as no run had that table; A2 delivered 0.186, set after seeing A2); +0.5's floor from steer-p5-A4, as the table's (fix round 1); the right at F1 (D3: the charters failed acceptance): +1's S the upper share (no chartered tills) of steer-b0-right, F1's own open-loop run, its band 2 sigma of its 28-day mean, its tills short F1's; +0.5's S halfway between the centre's and F1's, its band F1's. Doc 75, Phase 4: the acceptance targets at each mark. From steer-targets-cal-floor.json (Phase 3, the floor reading) with the coordinator's decisions applied: the right end takes steer-cal-R33 (S judged without the chartered tills' own cash, m_upper_net: 27.3% +- 1.47); the half marks' tills short and treasury floors halfway between their neighbours' (as the supervisor's table reads them; floor_from a list is the mean of the runs' floors), since -0.5's treasury target is now 1,400p and Hm ran with 3,500p, and no +0.5 run has the R33 table. Doc 75, Phase 3: each mark's targets from the calibration runs (tools/steer_calibrate.py): G (m_g_day) left of the centre, S (m_upper_share) right of it, both at the centre, as the mean of days 120-365 of the run at that mark, the band 2 standard deviations of its 28-day mean there (at least 0.01 in G, 1 point in S); hungerMost and shortMost the table's; tills the run's tills short; floor_from the run whose seasonal treasury profile gives the mark's floor. A half mark's target is halfway between the centre's and the end's; its band, tills and floor are the half-mark run's.",
+ "marks": {
+  "-1": {
+   "hungerMost": 0.02,
+   "shortMost": 0.1,
+   "G": {
+    "field": "m_g_day",
+    "target": 0.061,
+    "band": 0.01,
+    "note": "re-centred on years 2-3 of steer-p6-A1 (doc 75, 3.5.4), after the 3-year runs"
+   },
+   "tills": {
+    "1": 32.15,
+    "2": 27.61,
+    "3": 27.3
+   },
+   "floor_from": "steer-cal-L50",
+   "treasury": 1492.0
+  },
+  "-0.5": {
+   "hungerMost": 0.05,
+   "shortMost": 0.5,
+   "G": {
+    "field": "m_g_day",
+    "target": 0.1861,
+    "band": 0.0197,
+    "note": "from steer-p5b-A2 (the calibrate rule), set after seeing A2"
+   },
+   "tills": {
+    "1": 30.64,
+    "2": 25.4,
+    "3": 24.75
+   },
+   "floor_from": [
+    "steer-cal-L50",
+    "steer-cal-C"
+   ]
+  },
+  "0": {
+   "hungerMost": 0.15,
+   "shortMost": 3.5,
+   "G": {
+    "field": "m_g_day",
+    "target": 0.3443,
+    "band": 0.0212,
+    "note": "re-centred on years 2-3 of steer-p6-A3 (doc 75, 3.5.4), after the 3-year runs"
+   },
+   "S": {
+    "field": "m_upper_share",
+    "target": 12.9176,
+    "band": 1.0,
+    "note": "re-centred on years 2-3 of steer-p6-A3 (doc 75, 3.5.4), after the 3-year runs"
+   },
+   "tills": {
+    "1": 29.14,
+    "2": 23.19,
+    "3": 22.19
+   },
+   "floor_from": "steer-cal-C",
+   "treasury": 1316.0
+  },
+  "0.5": {
+   "hungerMost": 0.15,
+   "shortMost": 4,
+   "S": {
+    "field": "m_upper_share",
+    "target": 18.3671,
+    "band": 2.36
+   },
+   "tills": {
+    "1": 31.79,
+    "2": 24.83,
+    "3": 23.19
+   },
+   "floor_from": "steer-p5-A4",
+   "note": "F1: halfway between the centre and steer-b0-right (F1's open-loop run); the floor from steer-p5-A4"
+  },
+  "1": {
+   "hungerMost": 0.15,
+   "shortMost": 5,
+   "S": {
+    "field": "m_upper_share",
+    "target": 22.8593,
+    "band": 3.475,
+    "note": "re-centred on years 2-3 of steer-p6-A5 (doc 75, 3.5.4), after the 3-year runs"
+   },
+   "tills": {
+    "1": 34.43,
+    "2": 26.46,
+    "3": 24.18
+   },
+   "floor_from": "steer-cal-R33",
+   "treasury": 804.0,
+   "note": "F1 (D3): S, tills short from steer-b0-right; the floor steer-cal-R33's (600p all year, as F1's own)"
+  }
+ }
+}

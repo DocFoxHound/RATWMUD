@@ -837,9 +837,16 @@ def apply_patch(patch_path, farms_path, damping=DAMPING, goods=None):
 
 
 def steer_at(marks, at, own=None):
-    """Core's items::steerAt (and the studio's steer_at): a row of the steering's table at `at` (-1..1)."""
+    """Core's items::steerAt (and the studio's steer_at): a row of the steering's table at `at` (-1..1); a null half mark
+    halfway between its neighbours (doc 75, 3.2)."""
     at = max(-1.0, min(1.0, float(at)))
-    value = lambda i: own if marks[i] is None else float(marks[i])
+    end = lambda i: own if marks[i] is None else float(marks[i])
+
+    def value(i):
+        if i % 2 == 0 or marks[i] is not None:
+            return end(i)
+        a, b = end(i - 1), end(i + 1)
+        return None if a is None or b is None else (a + b) / 2
     place = (at + 1) * 2
     i = min(3, int(place // 1))
     t = place - i
@@ -851,8 +858,11 @@ def steer_at(marks, at, own=None):
     return None if a is None or b is None else a + (b - a) * t
 
 
-STEER_LEVER_FIELDS = (('lev_share_out', 'the share-out (%)'), ('lev_posts_share', 'the hands\' share (%)'), ('lev_toll', 'the toll lean (points)'),
+# (Doc 74's share-out, toll lean and rent scale: an older run's; doc 75's tithe, charters and target: a newer one's.)
+STEER_LEVER_FIELDS = (('lev_levelling', 'the Levelling tithe (%)'), ('lev_charters', 'the Crown\'s charters (% of the middle keepers\' tills)'),
+                      ('lev_share_out', 'the share-out (%)'), ('lev_posts_share', 'the hands\' share (%)'), ('lev_toll', 'the toll lean (points)'),
                       ('lev_surplus_keep', 'the treasury\'s keep (p)'), ('lev_cap', 'the treasury\'s cap (p)'),
+                      ('lev_target', 'the treasury\'s target (p)'),
                       ('lev_alms_to', 'the poorest raised to (p)'), ('lev_ground_rent', 'the ground rent (%)'),
                       ('lev_rent_scale', 'the rent scale (%)'), ('lev_dividend', 'the Houses\' dividend (%)'),
                       ('lev_rich_above', 'the rich hold (p a head)'),
@@ -879,7 +889,9 @@ def steering_lines(econ, table=None):
            f'The push {rows[0]["steer_push"]:+.2f} -> {rows[-1]["steer_push"]:+.2f} (least {min(r["steer_push"] for r in rows):+.2f}, '
            f'most {max(r["steer_push"] for r in rows):+.2f}); at its band\'s edge on '
            f'{sum(1 for r in rows if r.get("steer") and (abs(r["steer_push"] - r.get("steer_push_lo", -9)) < 1e-6 or abs(r["steer_push"] - r.get("steer_push_hi", 9)) < 1e-6))} days; '
-           f'judged {sum(1 for r in rows if r.get("steer_judged"))} times.', '']
+           f'judged {sum(1 for r in rows if r.get("steer_judged"))} times.'
+           + (f' The Crown\'s charters: {rows[-1]["charters"]} tills at the end (most {max(r.get("charters", 0) for r in rows)}).'
+              if any('charters' in r for r in rows) else ''), '']
     years = [rows[i:i + 365] for i in range(0, len(rows), 365)]
     measures = [('m_gini', 'g_mean', 'the earners\' Gini', 'gini', 'giniBand', 3), ('m_upper_share', 's_mean', 'the upper share (%)', 'upper', 'upperBand', 1),
                 ('m_top10', 't10_mean', 'the top tenth\'s share (%)', None, None, 1), ('m_hungry', 'h_mean28', 'hungry an hour', None, None, 3),
@@ -913,9 +925,11 @@ def steering_lines(econ, table=None):
                        [[name] + [f'{statistics.mean(r.get(f, 0) for r in y):.1f}' for y in years] for f, name in STEER_LEVER_FIELDS
                         if any(f in r for r in rows)]) + ['']
     n = max(1, len(rows))
-    flows = [('share_out', 'the share-out'), ('posts_share', 'the hands\' share'), ('ground_rent', 'the ground rent'),
-             ('dividend', 'the Houses\' dividend'), ('land_rent_extra', 'the rent scale\'s extra')]
-    out.append('The levers\' money a day: ' + ', '.join(f'{name} {sum(r.get(k, 0) for r in rows) / n:.1f}p' for k, name in flows) + '.')
+    flows = [('tithe', 'the Levelling tithe'), ('charter_profit', 'the chartered shops\' profit to the Houses'), ('share_out', 'the share-out'),
+             ('posts_share', 'the hands\' share'), ('ground_rent', 'the ground rent'), ('dividend', 'the Houses\' dividend'),
+             ('land_rent_extra', 'the rent scale\'s extra')]
+    out.append('The levers\' money a day: ' + ', '.join(f'{name} {sum(r.get(k, 0) for r in rows) / n:.1f}p' for k, name in flows
+                                                       if any(k in r for r in rows)) + '.')
     if any('ground_rent_treasury' in r for r in rows):
         out.append(f'Of the ground rent, to the treasury while it was under its floor: '
                    f'{sum(r.get("ground_rent_treasury", 0) for r in rows) / n:.1f}p a day.')

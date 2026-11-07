@@ -1,0 +1,7 @@
+{"about": "Doc 75, Phase 6: the 3-year confirmation (5.4) on the shipped build and table (25de4d4), judged by the scorecard against steer-targets-p6.json, every year (year 1 days 120-365, years 2 and 3 whole). The left and the centre on the full scorecard, T13 among it. A5 at F1 on F1's own bar: no worse than steer-right-t1 (doc 74's t1 right, 3 years; steer-b0-right, Phase 5's ref, is its first year byte for byte) in T4-T7, year by year. A8 (F1 with both floors) on the full scorecard, since F1's floors ref (steer-d1b-right-floors) has one year only; its T6 against A5's own 3 years. steer-accept-p6-info.json judges A5 on the full scorecard too, for T13.",
+ "dir": "artifacts/economy/r2", "baseline": "stable10b", "targets": "artifacts/economy/r2/steer-targets-p6.json",
+ "runs": [{"name": "steer-p6-A1", "x": -1, "floors": false, "rung": "full"},
+          {"name": "steer-p6-A3", "x": 0, "floors": false, "rung": "full"},
+          {"name": "steer-p6-A5", "x": 1, "floors": false, "rung": "F1", "ref": "steer-right-t1"},
+          {"name": "steer-p6-A7", "x": -1, "floors": true, "rung": "full", "floors_off": "steer-p6-A1"},
+          {"name": "steer-p6-A8", "x": 1, "floors": true, "rung": "full", "floors_off": "steer-p6-A5"}]}

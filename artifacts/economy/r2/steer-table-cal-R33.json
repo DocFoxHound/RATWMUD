@@ -1,0 +1,14 @@
+{
+ "about": "Doc 75, 5.2: Crown charters on 33% of the middle keepers' tills at +1; the dividend 15 + 0.45 a point (29.85%).",
+ "steering": {
+  "levers": {
+   "charters": [
+    0,
+    0,
+    0,
+    null,
+    33
+   ]
+  }
+ }
+}

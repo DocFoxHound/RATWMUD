@@ -1,0 +1,11 @@
+{"about": "Doc 75, Phase 5: acceptance as shipped (D3), judged by the scorecard against steer-targets-p5.json. The left and the centre on the full scorecard: A1 from the first batch (steer-p5-, ab8067d's build: no supervisor action and no slider move in it, and the fix round changed nothing at -1 it could read, so it is the same run on the shipped build), A2, A3, A6, A7 from fix round 1 (steer-p5b-, the shipped build; the table left of +0.5 is the shipped one). The right at F1 (steer-p5c-, the shipped build and table): on F1's own bar (no worse than steer-b0-right, F1's open-loop run, in T4-T7); steer-accept-p5-info.json judges them on the full scorecard too, for information. A9 the sweep on the shipped build and table.",
+ "dir": "artifacts/economy/r2", "baseline": "stable10b", "targets": "artifacts/economy/r2/steer-targets-p5.json",
+ "runs": [{"name": "steer-p5-A1", "x": -1, "floors": false, "rung": "full"},
+          {"name": "steer-p5b-A2", "x": -0.5, "floors": false, "rung": "full"},
+          {"name": "steer-p5b-A3", "x": 0, "floors": false, "rung": "full"},
+          {"name": "steer-p5c-A4", "x": 0.5, "floors": false, "rung": "F1", "ref": "steer-b0-right"},
+          {"name": "steer-p5c-A5", "x": 1, "floors": false, "rung": "F1", "ref": "steer-b0-right"},
+          {"name": "steer-p5b-A6", "x": 0, "floors": true, "rung": "full", "floors_off": "steer-p5b-A3"},
+          {"name": "steer-p5b-A7", "x": -1, "floors": true, "rung": "full", "floors_off": "steer-p5-A1"},
+          {"name": "steer-p5c-A8", "x": 1, "floors": true, "rung": "F1", "ref": "steer-d1b-right-floors"},
+          {"name": "steer-p5c-A9", "x": 0, "floors": false, "rung": "full", "legs": [[120, -1], [240, 1], [360, 0]]}]}

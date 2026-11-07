@@ -1566,10 +1566,9 @@ struct EconomyWatch
                     steering << (it == m.begin() ? "" : ", ") << EconomyDetail::quoted(it->first) << ": " << it->second;
                 steering << "}";
             };
-            const auto [lo, hi] = society.steerBand();
+            // (Doc 75: steer_push is where the levers are read, the slider; the push's band and judging are gone.)
             steering << ", \"steer\": " << (society.steering() ? 1 : 0) << ", \"steer_lean\": " << society.rule("steerLean") - 100
-                     << ", \"steer_push\": " << st.push << ", \"steer_push_lo\": " << lo << ", \"steer_push_hi\": " << hi
-                     << ", \"steer_judged\": " << (d.steerJudged ? "true" : "false");
+                     << ", \"steer_push\": " << st.push;
             if (!d.steerWhy.empty())
                 steering << ", \"steer_why\": " << EconomyDetail::quoted(d.steerWhy);
             steering << ", \"m_gini\": " << d.mGini << ", \"m_upper_share\": " << d.mUpper << ", \"m_top10\": " << d.mTop10
@@ -1577,17 +1576,27 @@ struct EconomyWatch
                      << d.treasuryNight << ", \"g_mean\": " << st.gini << ", \"s_mean\": " << st.upper << ", \"t10_mean\": "
                      << st.top10 << ", \"h_mean28\": " << st.hungry << ", \"k_mean28\": " << st.shortHomes << ", \"tr_mean28\": "
                      << st.treasury;
-            for (const auto& [field, lever] : {std::pair{"lev_share_out", "shareOut"}, std::pair{"lev_posts_share", "postsShare"},
-                                               std::pair{"lev_surplus_keep", "surplusKeep"}, std::pair{"lev_cap", "treasuryCap"},
+            // Doc 75 (3.4): G over all households a head, after tonight's money and before the tithe (the same on a night
+            // without one), and their mean, the Gini lived with through the day; F, pantry days a head.
+            {
+                const double after = d.mGAll, before = d.mGBefore >= 0 ? d.mGBefore : d.mGAll;
+                steering << ", \"m_g_after\": " << after << ", \"m_g_before\": " << before << ", \"m_g_day\": "
+                         << (after >= 0 ? (after + before) / 2 : -1.) << ", \"m_food_gini\": " << d.mFood;
+            }
+            for (const auto& [field, lever] : {std::pair{"lev_levelling", "levelling"}, std::pair{"lev_charters", "charters"},
+                                               std::pair{"lev_posts_share", "postsShare"}, std::pair{"lev_surplus_keep", "surplusKeep"},
+                                               std::pair{"lev_cap", "treasuryCap"}, std::pair{"lev_target", "treasuryTarget"},
                                                std::pair{"lev_alms_to", "surplusAlmsTo"}, std::pair{"lev_ground_rent", "groundRent"},
-                                               std::pair{"lev_rent_scale", "rentScale"}, std::pair{"lev_dividend", "dividend"},
-                                               std::pair{"lev_rich_above", "richAbove"},
+                                               std::pair{"lev_dividend", "dividend"}, std::pair{"lev_rich_above", "richAbove"},
                                                std::pair{"lev_spend_above", "spendAbove"}})
                 steering << ", \"" << field << "\": " << society.steerLever(lever);
-            steering << ", \"lev_toll\": " << (society.steering() ? st.tollLean : 0.) << ", \"share_out\": " << d.shareOut
-                     << ", \"share_out_homes\": " << d.shareOutHomes << ", \"posts_share\": " << d.postsShare
+            steering << ", \"posts_share\": " << d.postsShare
                      << ", \"ground_rent\": " << d.groundRent << ", \"ground_rent_treasury\": " << d.groundRentTreasury << ", \"dividend\": " << d.dividend << ", \"dividend_homes\": "
-                     << d.dividendHomes << ", \"land_rent_extra\": " << d.landRentExtra << ", \"skim\": " << d.skim;
+                     << d.dividendHomes << ", \"tithe\": " << d.tithe << ", \"tithe_gave\": " << d.titheGave << ", \"tithe_got\": "
+                     << d.titheGot << ", \"charters\": " << d.charters << ", \"charters_want\": " << d.chartersWant
+                     << ", \"charters_granted\": " << d.chartersGranted << ", \"charters_back\": " << d.chartersBack
+                     << ", \"charter_profit\": " << d.charterProfit << ", \"skim\": " << d.skim
+                     << ", \"skim_idle\": " << d.skimIdle << ", \"skim_busy\": " << d.skimBusy;
             map("skim_for", d.skimFor);
             map("skim_by", d.skimBy);
             std::vector<std::pair<std::int64_t, std::string>> payers;
@@ -1606,6 +1615,26 @@ struct EconomyWatch
                      << d.neverBrokePennies << ", \"homes\": " << d.neverBrokeHomes << ", \"credit\": " << d.neverBrokeCredit
                      << ", \"credit_left\": " << society.neverBrokeOwed() << "}, \"skim_guard\": " << (d.skimGuard ? 1 : 0)
                      << ", \"tills_short_mean28\": " << st.tillsShort;
+            // The safety supervisor (doc 75, 3.6): the rules on tonight, any lever backed off, the back-offs, rule 1's
+            // route and the floor, its 7-night means, the levers at the envelope's edge and what it did in words.
+            {
+                const auto& u = st.sup;
+                const auto list = [&](const char* name, const std::vector<std::string>& v) {
+                    steering << ", \"" << name << "\": [";
+                    for (std::size_t i = 0; i < v.size(); ++i)
+                        steering << (i ? ", " : "") << EconomyDetail::quoted(v[i]);
+                    steering << "]";
+                };
+                list("sup_actions", d.supOn);
+                steering << ", \"sup_backoff\": " << (u.levelling > 0 || u.richAbove > 0 || u.chartersHeld > 0 ? 1 : 0)
+                         << ", \"sup_levelling\": " << u.levelling << ", \"sup_rich_above\": " << u.richAbove
+                         << ", \"sup_charters\": " << u.chartersHeld << ", \"sup_route\": " << u.route << ", \"sup_floor\": " << d.supFloor
+                         << ", \"sup_tr7\": " << u.treasury << ", \"sup_tills7\": " << u.tills << ", \"sup_h7\": " << u.hungry
+                         << ", \"sup_k7\": " << u.shortHomes << ", \"sup_unpaid7\": " << u.unpaid << ", \"m_upper_net\": " << d.mUpperNet;
+                list("sup_edge", d.supEdge);
+                if (!d.supWhy.empty())
+                    steering << ", \"sup_why\": " << EconomyDetail::quoted(d.supWhy);
+            }
         }
         out << "{\"day\": " << absoluteHour / 24 << ", \"residents\": " << residents << ", \"hungry_mean\": "
             << (hours ? double(hungrySum) / hours : 0) << ", \"hungry_most\": " << hungryMost << ", \"households\": " << households
@@ -1644,6 +1673,18 @@ struct EconomyWatch
 int main(int argc, char** argv)
 {
     const bool simulate = argc >= 5 && std::string(argv[2]) == "--simulate";
+    // --steer-table FILE (doc 75, 5.1): the steering table read from FILE over city_loop.json's, so a run's variant needs
+    // no copied Data folder. Set before anything reads the catalogue (the flag is skipped in the loop below).
+    for (int i = 5; simulate && i + 1 < argc; ++i)
+        if (std::string(argv[i]) == "--steer-table")
+        {
+            if (!std::filesystem::exists(argv[i + 1]))
+            {
+                std::cerr << "world_check: no steering table " << argv[i + 1] << "\n";
+                return 2;
+            }
+            ::setenv("RATW_STEER_TABLE", argv[i + 1], 1);
+        }
     int playerCount = -1;                           // (-1: 1, or 0 for an economy run.)
     bool sample = false;                            // --sample: the per-tick sampling even with no player.
     bool profile = true;                            // --no-profile: World::tick's clocks off.
@@ -1738,6 +1779,8 @@ int main(int argc, char** argv)
             usage = usage || r.day < 0 || !items::ruleInfo(r.name);
             rulesAt.push_back(std::move(r));
         }
+        else if (flag == "--steer-table" && i + 1 < argc)
+            ++i;                                    // (Read above, before the catalogue.)
         else if (flag == "--day" && i + 1 < argc)
         {
             startDay = std::atoi(argv[++i]);
@@ -1751,7 +1794,7 @@ int main(int argc, char** argv)
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic]"
                      " [--events FILE] [--threads N] [--economy FILE [--economy-detail FILE] [--economy-level off|normal|full [--economy-full FILE]]]"
                      " [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
-                     " [--unseen-step N] [--straight] [--coarse-ticks] [--farms DAY [--farms-every N]] [--rule-at DAY NAME VALUE]...]\n";
+                     " [--unseen-step N] [--straight] [--coarse-ticks] [--farms DAY [--farms-every N]] [--rule-at DAY NAME VALUE]... [--steer-table FILE]]\n";
         return 2;
     }
     if (playerCount < 0)

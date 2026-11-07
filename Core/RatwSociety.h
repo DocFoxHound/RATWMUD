@@ -137,6 +137,9 @@ struct LifeDay
     std::map<std::string, DayPlan> plans;           // By community (a region), and a city's other markets ("<city>#1"...).
     std::shared_ptr<const Markets> markets;         // (Null: one market to a community.)
     std::function<std::string(const std::string& cell)> communityOf;
+    // The House whose district a cell is in (by the House's name: "Greatly"; "" for none; World::districtHouse: the cell's
+    // own claim by a House, else the street its door leads out to): the Crown's charters' (Docs/Design/75, 4.2).
+    std::function<std::string(const std::string& cell)> houseOf;
     std::function<int(const Spot& at)> sky;  // There: -1 indoors, 0 fair, 1 wet (rain), 2 harsh (storm, snow).
 };
 // Careers (Docs/Design/26-living-npcs.md, Phase 4). A position is a job the town has, built from the authored
@@ -267,12 +270,12 @@ struct LoopState
         bool empty() const { return in == 0 && out == 0 && fee == 0 && moved == 0 && credit == 0; }
     };
     Wharf wharf;
-    // Steering the economy (Docs/Design/74-steering-the-economy.md, 8; the save's "loop" "steer"): whether it is on, the
-    // push (-1..1) and the slider it was set at (steerLean), the day it was last judged; the slow means (the earners' Gini,
-    // the upper share, the richest tenth's share: over about steerMeanDays nights) and the fast ones (hungry residents an
-    // hour, households short, the treasury at 18:00: over 28), over so many nights; the measures at the last judging; the
-    // toll lean applied (its guard may hold it apart from the table's); the last night an estate's posts went short; and
-    // the last 24 judgings and changes, each with its reason. Empty until the steering is first turned on.
+    // Steering the economy (Docs/Design/74-steering-the-economy.md, 8; doc 75, 3; the save's "loop" "steer"): whether it is
+    // on, where the levers are read (`push`: the slider, -1..1, since doc 75 took the push's trim away) and the slider it
+    // was set at (steerLean), the night the slider last moved; the slow means (the earners' Gini, the upper share, the
+    // richest tenth's share: over about steerMeanDays nights, re-seated when the slider moves) and the fast ones (hungry
+    // residents an hour, households short, the treasury at 18:00: over 28), over so many nights; the last night an
+    // estate's posts went short; and the last 24 changes, each with its reason. Empty until the steering is first on.
     struct Steer
     {
         struct Judging
@@ -288,9 +291,17 @@ struct LoopState
         std::int64_t judged = -1;
         int days = 0;
         double gini = -1, upper = -1, top10 = -1, hungry = -1, shortHomes = -1, treasury = -1;
-        double giniThen = -1, upperThen = -1;
-        double tollLean = 0;
         std::int64_t estateShort = -1;
+        // The Crown's charters (doc 75, 4.2): the chartered tills in the order they were granted (a till, its House),
+        // handed back newest first; the ramp toward `chartersTo` from `chartersFrom`, `chartersNights` nights into it (-1:
+        // none);
+        // and each middle keeper's till's 28-night mean profit (what it paid its keeper or, chartered, its House, before
+        // the hands' share and the ground rent), the charters' ranking, over so many nights.
+        std::vector<std::pair<std::string, std::string>> charters;
+        int chartersFrom = 0, chartersTo = 0;
+        std::int64_t chartersNights = -1;
+        std::map<std::string, double> profit;
+        int profitNights = 0;
         std::vector<Judging> history;
         // The skim's last 28 days that had one (doc 74, 10.1: the DM tab's): what it took, by purpose, by payer group,
         // its five largest payers, and what it could not find.
@@ -308,10 +319,35 @@ struct LoopState
         std::int64_t idleDay = -1;
         double tillsShort = -1;
         int tillsDays = 0;
+        // The safety supervisor (doc 75, 3.6): its 7-night means (the treasury at 18:00, the tills short, hungry residents
+        // an hour, households short, the wage support unpaid), over so many nights; each rule's state (1 the treasury, 2
+        // the shops, 3 hunger: on, the nights its measure has been back under clearShare of its trigger, how often it has
+        // fired); each lever's back-off (the tithe's points, the rich hold's pennies, the charters held back, a fraction
+        // of one) and the rate a night it left at (it returns at half that), the nights each has been backed off running;
+        // the share of the ground rent rule 1 sends to the treasury; and the charters it holds back tonight.
+        struct Supervisor
+        {
+            int nights = 0;
+            double treasury = -1, tills = -1, hungry = -1, shortHomes = -1, unpaid = -1;
+            std::array<bool, 3> on{};
+            std::array<int, 3> clear{}, fires{};
+            double levelling = 0, richAbove = 0, charters = 0;
+            double levellingRate = 0, richRate = 0, chartersRate = 0;
+            std::array<int, 3> edge{};                  // (The tithe, the rich hold, the charters.)
+            double route = 0;
+            int chartersHeld = 0;
+            bool empty() const
+            {
+                return nights == 0 && levelling == 0 && richAbove == 0 && charters == 0 && route == 0 && chartersHeld == 0 &&
+                       on == std::array<bool, 3>{} && fires == std::array<int, 3>{};
+            }
+        };
+        Supervisor sup;
         bool empty() const
         {
-            return !on && push == 0 && judged < 0 && days == 0 && tollLean == 0 && estateShort < 0 && history.empty() && skims.empty() &&
-                   idle.empty() && credit.empty() && idleDay < 0 && tillsDays == 0;
+            return !on && push == 0 && judged < 0 && days == 0 && estateShort < 0 && history.empty() && skims.empty() && idle.empty() &&
+                   credit.empty() && idleDay < 0 && tillsDays == 0 && charters.empty() && chartersNights < 0 && profit.empty() &&
+                   profitNights == 0 && sup.empty();
         }
     };
     Steer steer;
@@ -1169,21 +1205,37 @@ class Society
             double hours = 0, used = 0, lost = 0;
         };
         std::map<std::string, Work> work;
-        // Steering the economy (doc 74, 12): the measures tonight (-1 before they are first taken), whether the push was
-        // judged tonight and why it moved; hungry residents counted each hour (with the steering on), and the hours.
+        // Steering the economy (doc 74, 12): the measures tonight (-1 before they are first taken), why the steering moved
+        // tonight (a change of the slider or the on/off); hungry residents counted each hour (with the steering on), and
+        // the hours.
         double mGini = -1, mUpper = -1, mTop10 = -1, mHungry = -1;
-        bool steerJudged = false;
+        // (Doc 75, Phase 4: the upper share without the chartered tills' own cash, the money really moved to the rich.)
+        double mUpperNet = -1;
+        // Doc 75 (3.4): G, the Gini of cash a head over all resident households weighted by heads, after tonight's money
+        // (mGAll) and before the Levelling tithe (mGBefore; -1 on a night with no tithe, when it is mGAll); F, the same
+        // Gini of pantry days a head.
+        double mGAll = -1, mGBefore = -1, mFood = -1;
         std::string steerWhy;
+        // (Doc 75, 4.2: each middle keeper's till's profit tonight before the shares, for the charters' ranking.)
+        std::map<std::string, std::int64_t> keeperProfit;
         std::int64_t hungrySum = 0;
         int hungryHours = 0;
         // The levers' money tonight: the share-out (and the households given it), the hands' share of the keepers' profit,
         // the ground rent to the Crown, the Houses' dividend (and the households), what the rent scale added to the land rents.
-        std::int64_t shareOut = 0, postsShare = 0, groundRent = 0, groundRentTreasury = 0, dividend = 0, landRentExtra = 0;
-        int shareOutHomes = 0, dividendHomes = 0;
+        std::int64_t postsShare = 0, groundRent = 0, groundRentTreasury = 0, dividend = 0;
+        int dividendHomes = 0;
+        // The Levelling tithe tonight (doc 75, 4.1): what the households over the mean paid and those under it were given
+        // (the same pennies), and how many households paid and were given; the Crown's charters: how many tills are
+        // chartered tonight, the number the ramp wants, those granted and handed back tonight, and the chartered tills'
+        // profit to their Houses.
+        std::int64_t tithe = 0, charterProfit = 0;
+        int titheGave = 0, titheGot = 0, charters = 0, chartersWant = 0, chartersGranted = 0, chartersBack = 0;
         // The skim (doc 74, 6): what it took, by purpose ("never hungry", "never broke", "share-out"), by payer group
         // and by payer, what it could not find; and the relief paid out of fund:relief, by kind ("food", "necessities",
         // "share-out").
         std::int64_t skim = 0, skimShort = 0;
+        // (Doc 75, D1: of the skim, what its first pass took, the idle money, and its second, the busy money.)
+        std::int64_t skimIdle = 0, skimBusy = 0;
         std::map<std::string, std::int64_t> skimFor, skimBy, skimPayers, relief;
         // Never Hungry (doc 74, 7.1): the pieces and pennies given, the homes, those of them from the Wharf, and the
         // households still short after it; Never Broke (7.2): the pennies and the homes.
@@ -1194,17 +1246,35 @@ class Society
         // given tonight; skimGuard, the tills short's guard on tonight.)
         std::int64_t neverBrokeCredit = 0;
         bool skimGuard = false;
+        // The safety supervisor tonight (doc 75, 3.6): the rules on ("treasury", "shops", "hunger"), the treasury's floor
+        // tonight, the levers at the envelope's edge, and what it did, in words.
+        std::vector<std::string> supOn, supEdge;
+        double supFloor = -1;
+        std::string supWhy;
     };
     const LoopDay& loopToday() const { return loopToday_; }
-    // Steering the economy (Docs/Design/74-steering-the-economy.md). Whether the steering is acting now (the rule on and
-    // the push set: from the first 18:00 after it was turned on), the slider (-1..1), the push's band at the slider, a
-    // lever's value at the push (its neutral value while the steering is off: 0, 100 for the rent scale, the world's own
-    // for surplusKeep, treasuryCap, surplusAlmsTo, richAbove and spendAbove), and a target at the slider (NaN: none there).
+    // Steering the economy (Docs/Design/74-steering-the-economy.md; doc 75). Whether the steering is acting now (the rule
+    // on, from the first 18:00 after it was turned on), the slider (-1..1), and a lever's value at the slider (its neutral
+    // value while the steering is off: 0, the world's own for surplusKeep, treasuryCap, treasuryTarget, surplusAlmsTo,
+    // richAbove and spendAbove; the dividend with its rise for the charters), and a target at the slider (NaN: none there).
     bool steering() const;
     double steerSlider() const;
-    std::pair<double, double> steerBand() const;
-    double steerLever(const std::string& lever) const;
+    // (`table`: the table's value at the slider, before the supervisor's back-off.)
+    double steerLever(const std::string& lever, bool table = false) const;
     double steerTarget(const std::string& target) const;
+    // The safety supervisor (doc 75, 3.6; Phase 4): nightly, last of the steering's night, its rules in order (1 the
+    // treasury under its floor, 2 the shops short, 3 hunger, 4 a lever at the envelope's edge), each backing off the lever
+    // that pays, at a fixed rate, until its cause clears; and the treasury's floor at the slider on a day (public for the
+    // tests).
+    // (The night's measures it follows: the treasury at 18:00, the tills short, hungry residents an hour, households short
+    // and the wage support unpaid; the tests give their own.)
+    struct SupNight
+    {
+        double treasury = 0, tills = 0, hungry = 0, shortHomes = 0, unpaid = 0;
+    };
+    void steerSupervise(std::int64_t day);
+    void steerSupervise(std::int64_t day, const SupNight& tonight);
+    double treasuryFloorAt(double x, std::int64_t day) const;
     // The measures (8.1), as the steering takes them at 18:00: the Gini of the earning households' purses (world_check's
     // gini_earners: residents' homes with a member holding a paid post), the upper share of all the money (upper-class
     // households, the Houses' estates, the Houses' businesses' tills; percent), and the richest tenth of households'
@@ -1212,6 +1282,10 @@ class Society
     double giniEarners() const;
     double upperShare();
     double top10Share() const;
+    // Doc 75 (3.4): the Gini of cash a head over all resident households, each weighted by its heads (G); and of pantry
+    // days a head (F: what its members hold to eat over the heads' days of nourishment).
+    double giniHeads() const;
+    double foodGini() const;
     // A day's necessities a head (doc 74, 6.1): the alms line, the household reserve and a day's share of the needs.
     std::int64_t necessitiesAHead() const;
     // The skim (doc 74, 6): `sum` pennies taken from the richest holders at this moment (by their spare over their own
@@ -1219,8 +1293,7 @@ class Society
     // treasury not among them (before tonight's wage support is known).
     static constexpr const char* ReliefFund = "fund:relief";
     std::int64_t skim(std::int64_t sum, const std::string& purpose, bool treasury = true);
-    // Who could pay, and how much: each holder's spare now (account id, its group, pennies), richest first. (The
-    // share-out's own other holders: the tills, the farms, the estates and the treasury, as the first build's skim had them.)
+    // A payer of the skim: its account id (a household's "home <key>"), its group, its spare now and its idle spare.
     struct Spare
     {
         std::string id, group;
@@ -1228,7 +1301,6 @@ class Society
         std::vector<std::string> members;           // (A household's: its members, who pay.)
         std::int64_t idle = 0;                      // (The skim's: its idle spare, at most its spare.)
     };
-    std::vector<Spare> spares(bool deep, bool treasury = true);   // (`treasury` false: never the treasury.)
     // The skim's payers (doc 74, 6.1, "The skim reworked"), one step at a time, idle money first: 1 the estates, 2 the
     // treasury (when `treasury`), 3 upper-class households, 4 the keepers' households, 5 other middle-class households (a
     // household over comfortableAHead a head; a lower-class one never); each with its idle spare, richest first.
@@ -1238,8 +1310,24 @@ class Society
     bool skimGuardOn() const;                       // The tills short's guard (Never Broke on, the tills short high).
     std::int64_t neverBrokeOwed() const;            // Never Broke's credit not yet spent (held in fund:relief).
     void skimIdleNight(std::int64_t day);           // At 18:00, last: each holder's idle spare followed.
-    // The controller (doc 74, 8): at 18:00, last of the money's steps (public for the tests, which judge a still world).
+    // The steering's night (doc 75, 3): at 18:00, last of the money's steps: the measures and their means (public for the
+    // tests, which measure a still world).
     void steerEconomy(std::int64_t day);
+    // The Levelling tithe (doc 75, 4.1) on given purses, in whole pennies: each household's cash a head moved `r` (0..1)
+    // of the way to the head-weighted mean, x' = (1 - r) x + r mu, each new purse rounded down and the pennies left over
+    // handed out one each, the largest remainders first, ties by the order given (the households' ids, sorted); the total
+    // exactly the same. (Public for the tests.)
+    static std::vector<std::int64_t> tithed(const std::vector<std::int64_t>& cash, const std::vector<std::int64_t>& heads, double r);
+    // The Gini of values each with a weight (G's: a household's cash a head, by its heads).
+    static double giniOf(std::vector<std::pair<double, double>> values);
+    // The Crown's charters (doc 75, 4.2): the House a till is chartered to ("" none); the House whose till it is, by the
+    // static catalogue (a country workshop's, a House's city business's) or, failing that, by charter; and the tills a
+    // charter may be granted to tonight, best first (a city keeper's till, not a House's, its keeper's household not
+    // upper class, by its 28-night mean profit, then by id).
+    std::string charterOf(const std::string& till) const;
+    std::string tillHouse(const Position* post) const;
+    std::vector<std::string> charterable();
+    void chartersNight(std::int64_t day);           // At 18:00, before the wages: the ramp's grants and hand-backs.
     // Wants the loop could not meet (world_check's full recording, Docs/Design/69-simulation-speed.md, 10): `buyer` (a
     // resident, a crew or a till) went without `pieces` of `item` at `shop` (a till; "" where no open shop had it), and
     // took `instead` in its place ("" for nothing). A household's food short at the shops' last hour is item "food" (its
@@ -1414,9 +1502,9 @@ class Society
     // Steering the economy (doc 74): the two floors, the share-out, the Houses' dividend and the controller.
     void neverHungry(std::int64_t day);             // At the shops' last hour.
     void neverBroke();                              // At 18:00, after the alms: credit toward necessities.
-    void shareOut();                                // At 18:00, after Never Broke (the push left of the centre).
+    void levellingTithe();                          // At 18:00, after the alms, before Never Broke (left of the centre).
     void housesDividend();                          // At 18:00 (the push right of the centre).
-    void steerSet(double push, std::int64_t day, const std::string& why, bool judging);
+    void steerSet(double x, std::int64_t day, const std::string& why);
     void steerFollow(std::int64_t day);             // The DM's on/off and slider, followed at once.
     int ownRule(const std::string& name) const;     // A rule as the world has it, whatever the steering does.
     std::int64_t worksOrders(std::int64_t budget);      // The public works' orders from the city's trades, from `budget`.

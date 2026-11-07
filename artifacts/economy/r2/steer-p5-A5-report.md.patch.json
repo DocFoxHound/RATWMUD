@@ -1,0 +1,240 @@
+{
+ "about": "yields to meet demand +5% (tools/econ_report.py); `whole`: the supply-bound goods; `wholeSeasons`: the seasons each was bound in, whose step --apply takes whole",
+ "farms": {
+  "beekeeper_1": {
+   "beeswax": [0.81, 0.28, 0.29, 0.45],
+   "honey": [21.14, 21.63, 20.22, 20.61]
+  },
+  "beekeeper_2": {
+   "beeswax": [0.81, 0.28, 0.29, 0.45],
+   "honey": [21.14, 21.63, 20.22, 20.61]
+  },
+  "beekeeper_3": {
+   "beeswax": [0.78, 0.26, 0.29, 0.44],
+   "honey": [21.14, 21.63, 20.22, 20.61]
+  },
+  "cattle_and_dairy_farm_1": {
+   "bones": [0.51, 1.54, 1.78, 1.94],
+   "eggs": [40.51, 35.33, 37.19, 38.2],
+   "meal": [15.97, 15.44, 16.22, 18.33],
+   "milk": [36.99, 42.29, 45.56, 40.18],
+   "raw_meat": [30.5, 27.51, 27.36, 30.48],
+   "tallow": [4.54, 9.21, 9.62, 7.18]
+  },
+  "cattle_and_dairy_farm_2": {
+   "bones": [0.51, 1.54, 1.78, 1.94],
+   "eggs": [40.51, 35.33, 37.19, 38.2],
+   "meal": [15.97, 15.41, 16.25, 18.33],
+   "milk": [36.6, 41.72, 45.03, 39.81],
+   "raw_meat": [30.5, 27.41, 27.36, 30.48],
+   "tallow": [4.54, 9.18, 9.62, 7.18]
+  },
+  "cattle_and_dairy_farm_3": {
+   "bones": [0.51, 1.54, 1.78, 1.94],
+   "eggs": [40.51, 35.33, 37.19, 38.2],
+   "meal": [15.97, 15.44, 16.22, 18.33],
+   "milk": [36.24, 41.44, 44.63, 39.46],
+   "raw_meat": [30.5, 27.51, 27.36, 30.48],
+   "tallow": [4.54, 9.21, 9.62, 7.18]
+  },
+  "charcoal_upper": {
+   "charcoal": [35.68, 27.77, 21.15, 31.09]
+  },
+  "clay_fens": {
+   "clay": [36.23, 27.98, 30.64, 30.81],
+   "sand": [10.5, 7.2, 8.19, 9.01]
+  },
+  "clay_mirebridge": {
+   "clay": [36.23, 27.98, 30.64, 30.81],
+   "sand": [10.5, 7.2, 8.19, 9.01]
+  },
+  "coppice_greenholt": {
+   "charcoal": [10.52, 3.99, 7.79, 10.86],
+   "firewood": [74.82, 75.36, 73.02, 95.14]
+  },
+  "coppice_rainwood": {
+   "firewood": [97.81, 98.53, 95.51, 124.41]
+  },
+  "eel_and_fowl_marsh_1": {
+   "comfrey": [0.47, 1.17, 1.03, 1.03],
+   "fish": [28.79, 28.27, 27.23, 28.96],
+   "garlic": [1.87, 1.31, 2.0, 1.32],
+   "herbs": [7.82, 7.89, 8.78, 6.86],
+   "thyme": [0.47, 1.1, 1.02, 2.61],
+   "willow_bark": [1.87, 2.07, 2.0, 3.83],
+   "wormwood": [3.97, 4.38, 3.82, 2.85]
+  },
+  "grain_farm_1": {
+   "flax": [38.17, 34.84, 33.22, 32.94],
+   "flour": [50.35, 56.98, 56.78, 52.52],
+   "hemp": [33.68, 28.25, 27.09, 25.29],
+   "oats": [52.08, 67.67, 73.06, 64.9],
+   "straw": [1.5, 1.94, 1.65, 1.9]
+  },
+  "grain_farm_2": {
+   "flax": [38.17, 34.84, 33.22, 32.94],
+   "flour": [50.35, 56.98, 56.78, 52.52],
+   "hemp": [33.68, 28.25, 27.09, 25.29],
+   "oats": [52.08, 67.67, 73.06, 64.9],
+   "straw": [1.5, 1.94, 1.65, 1.9]
+  },
+  "lake_and_river_boat_1": {
+   "fish": [22.16, 21.18, 20.35, 21.64]
+  },
+  "lake_and_river_boat_2": {
+   "fish": [22.16, 21.17, 20.35, 21.64]
+  },
+  "logging_oakhaven": {
+   "firewood": [57.54, 57.96, 56.18, 73.2],
+   "oak_bark": [5.25, 5.64, 5.07, 5.22],
+   "timber": [14.18, 14.54, 12.5, 14.17]
+  },
+  "logging_rainwood": {
+   "firewood": [57.54, 57.96, 56.18, 73.2],
+   "oak_bark": [5.25, 5.64, 5.07, 5.22],
+   "resin": [0.0, 0.2, 1.16, 0.55],
+   "timber": [14.18, 14.54, 12.5, 14.17]
+  },
+  "mine_frost_iron": {
+   "copper_ore": [1.05, 0.8, 1.03, 1.25],
+   "iron_ore": [54.6, 47.38, 49.08, 56.21],
+   "tin_ore": [2.11, 0.83, 1.38, 1.57]
+  },
+  "orchard_1": {
+   "apples": [65.18, 54.1, 54.4, 51.6],
+   "berries": [0.86, 0.31, 0.32, 0.22],
+   "cider": [5.29, 5.82, 6.86, 4.04],
+   "dried_apples": [29.87, 21.81, 22.6, 27.62],
+   "fruit_preserves": [20.95, 15.53, 17.95, 21.8]
+  },
+  "orchard_2": {
+   "apples": [65.15, 54.1, 54.4, 51.57],
+   "berries": [0.86, 0.31, 0.32, 0.22],
+   "cider": [4.89, 5.58, 6.48, 3.7]
+  },
+  "orchard_3": {
+   "apples": [65.11, 54.1, 54.42, 51.6],
+   "berries": [0.86, 0.31, 0.32, 0.22],
+   "cider": [4.58, 5.29, 5.97, 3.25],
+   "dried_apples": [29.87, 21.81, 22.6, 27.62],
+   "fruit_preserves": [20.95, 15.53, 17.95, 21.8]
+  },
+  "orchard_4": {
+   "apples": [65.11, 54.1, 54.4, 50.96],
+   "berries": [1.08, 0.84, 0.32, 0.22],
+   "cider": [4.26, 4.99, 5.65, 2.67]
+  },
+  "orchard_5": {
+   "apples": [65.11, 54.1, 54.4, 51.6],
+   "berries": [0.86, 0.31, 0.32, 0.22],
+   "cider": [3.72, 4.57, 4.95, 2.41]
+  },
+  "peat_fens": {
+   "peat": [111.3, 106.05, 101.12, 184.67]
+  },
+  "pig_farm_1": {
+   "bones": [0.28, 0.84, 0.97, 1.06],
+   "meal": [6.14, 6.34, 6.73, 6.94],
+   "pig": [11.02, 9.37, 9.33, 9.31],
+   "raw_meat": [13.96, 12.39, 12.08, 14.15],
+   "tallow": [2.22, 4.81, 5.16, 3.86]
+  },
+  "pig_farm_2": {
+   "bones": [0.28, 0.84, 0.97, 1.06],
+   "meal": [6.02, 6.23, 6.61, 6.8],
+   "pig": [11.06, 9.33, 9.33, 9.31],
+   "raw_meat": [13.94, 12.3, 12.01, 14.08],
+   "tallow": [2.24, 4.81, 5.18, 3.86]
+  },
+  "pig_farm_3": {
+   "bones": [0.28, 0.84, 0.97, 1.06],
+   "meal": [5.92, 6.12, 6.51, 6.65],
+   "pig": [11.09, 9.37, 9.33, 9.29],
+   "raw_meat": [13.88, 12.26, 11.94, 14.0],
+   "tallow": [2.24, 4.81, 5.18, 3.86]
+  },
+  "quarry_granite": {
+   "stone": [27.32, 20.43, 24.69, 29.49]
+  },
+  "quarry_lime": {
+   "lime": [2.11, 1.54, 1.19, 2.14],
+   "limestone": [23.13, 18.26, 21.41, 25.1]
+  },
+  "rabbit_warren_1": {
+   "rabbit": [74.73, 72.74, 70.28, 74.66],
+   "small_pelt": [1.02, 0.77, 0.65, 0.72]
+  },
+  "rabbit_warren_2": {
+   "rabbit": [74.73, 72.74, 70.28, 74.66],
+   "small_pelt": [1.02, 0.78, 0.65, 0.71]
+  },
+  "salt_works_1": {
+   "salt": [47.13, 38.14, 37.53, 40.1]
+  },
+  "salt_works_2": {
+   "salt": [47.13, 38.12, 37.56, 40.1]
+  },
+  "sea_fishing_boat_1": {
+   "fish": [16.85, 15.36, 14.66, 15.84],
+   "shellfish": [37.59, 29.7, 30.79, 38.46]
+  },
+  "sea_fishing_boat_2": {
+   "fish": [16.53, 15.35, 14.6, 15.64],
+   "shellfish": [36.9, 29.67, 30.54, 37.99]
+  },
+  "sea_fishing_boat_3": {
+   "fish": [16.73, 15.26, 14.52, 15.69],
+   "shellfish": [37.14, 29.54, 30.39, 38.1]
+  },
+  "sea_fishing_boat_4": {
+   "fish": [16.65, 15.2, 14.46, 15.64],
+   "shellfish": [37.0, 29.41, 30.29, 37.96]
+  },
+  "sheep_and_goat_run_1": {
+   "bones": [0.28, 0.84, 0.97, 1.06],
+   "mutton": [17.41, 18.04, 17.58, 18.15],
+   "sheep": [0.43, 0.52, 0.48, 0.55],
+   "sheepskin": [0.41, 0.15, 0.01, 0.0],
+   "tallow": [2.17, 4.69, 5.03, 3.76],
+   "wool": [13.26, 15.54, 17.22, 14.38]
+  },
+  "sheep_and_goat_run_2": {
+   "bones": [0.28, 0.84, 0.97, 1.06],
+   "mutton": [17.38, 18.04, 17.58, 18.15],
+   "sheep": [0.43, 0.52, 0.48, 0.55],
+   "sheepskin": [0.41, 0.15, 0.01, 0.0],
+   "tallow": [2.16, 4.69, 5.02, 3.76],
+   "wool": [13.19, 15.49, 17.22, 14.4]
+  },
+  "vineyard_1": {
+   "grapes": [11.3, 11.6, 13.48, 9.71],
+   "wine": [2.27, 1.45, 1.53, 1.46]
+  },
+  "vineyard_2": {
+   "grapes": [11.3, 11.6, 13.48, 9.71],
+   "wine": [2.13, 1.4, 1.48, 1.41]
+  }
+ },
+ "whole": ["apples", "berries", "butter", "charcoal", "cheese", "copper_ore", "flax", "garlic", "hemp", "lime", "limestone", "pig", "resin", "sheep", "small_pelt", "stone", "timber", "tin_ore", "wormwood"],
+ "wholeSeasons": {
+  "apples": ["spring"],
+  "berries": ["spring", "summer", "autumn", "winter"],
+  "butter": ["spring", "summer", "autumn", "winter"],
+  "charcoal": ["summer", "autumn"],
+  "cheese": ["spring", "summer", "autumn", "winter"],
+  "copper_ore": ["spring", "autumn", "winter"],
+  "flax": ["spring", "summer", "autumn", "winter"],
+  "garlic": ["autumn"],
+  "hemp": ["spring"],
+  "lime": ["spring", "winter"],
+  "limestone": ["spring", "winter"],
+  "pig": ["summer", "autumn", "winter"],
+  "resin": ["spring", "summer", "autumn", "winter"],
+  "sheep": ["summer", "autumn", "winter"],
+  "small_pelt": ["spring", "summer"],
+  "stone": ["spring", "winter"],
+  "timber": ["spring"],
+  "tin_ore": ["spring", "autumn", "winter"],
+  "wormwood": ["summer", "autumn"]
+ }
+}

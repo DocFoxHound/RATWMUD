@@ -5,6 +5,7 @@ from live and the DM's server, maintenance, live switch, Import from dev and rel
 Offline with a stand-in DM (accounts by token, every other method recorded) and a stand-in sync engine; two classes
 work for real on scratch databases (dropped afterwards; skipped without the local PostgreSQL): a sign-in, and pull,
 import, rollback and the live switch on throwaway worlds (test_world_sync's). DEV and PROD are never touched."""
+import copy
 import http.client
 import json
 import os
@@ -1286,8 +1287,14 @@ class SteeringTests(unittest.TestCase):
                 self.assertIsNone(got, c)
             else:
                 self.assertAlmostEqual(got, c['want'], places=9, msg=c)
-        self.assertEqual(ST.steer_width({}, 0), (-0.15, 0.15))
-        self.assertEqual(ST.steer_width({}, -1), (-1.0, -0.7))
+        # The dividend with its rise for the charters, as Core's steerLever (doc 75, 4.2). The right ships F1 (doc 75, Phase 5's
+        # D3): no charters, the dividend 30% at the far right; with charters 33% there, 30 + 0.45 x 33.
+        self.assertAlmostEqual(ST.steer_lever(table, 'dividend', 1, 0), 30, places=9)
+        chartered = copy.deepcopy(table)
+        chartered['levers']['charters'] = [0, 0, 0, None, 33]
+        self.assertAlmostEqual(ST.steer_lever(chartered, 'dividend', 1, 0), 30 + 0.45 * 33, places=9)
+        self.assertEqual(ST.steer_lever(table, 'dividend', 0, 0), 0)
+        self.assertEqual(ST.steer_lever(table, 'treasuryTarget', 0, 5500), 5500)
 
     def test_every_rule_listed_with_core(self):
         core = (Path(__file__).resolve().parent.parent / 'Core/RatwItems.h').read_text(encoding='utf-8')
@@ -1330,13 +1337,29 @@ class SteeringTests(unittest.TestCase):
     def test_the_view_at_the_slider(self):
         view = self.economy.steering('w', 1, {'rules': {'steer': 1, 'steerLean': 50}})
         self.assertEqual(view['settings'], {'steer': True, 'lean': -50, 'neverHungry': False, 'neverBroke': False})
-        self.assertEqual(view['band'], [-0.725, -0.275])
+        self.assertEqual(view['band'], [-0.5, -0.5], 'doc 75: the levers read at the slider itself')
         self.assertEqual((view['targets']['gini'], view['targets']['upper']), (0.41, None))
         levers = {l['key']: l for l in view['levers']}
-        self.assertEqual((levers['surplusKeep']['centre'], levers['surplusKeep']['low'], levers['surplusKeep']['high']), (4000, 550, 2350))
-        self.assertEqual(levers['shareOut']['centre'], 0)
+        self.assertEqual((levers['surplusKeep']['centre'], levers['surplusKeep']['low'], levers['surplusKeep']['high']), (4000, 1000, 1000))
+        self.assertEqual((levers['levelling']['centre'], levers['levelling']['high']), (0, 13.7))
+        self.assertEqual((levers['treasuryTarget']['centre'], levers['treasuryTarget']['high']), (5500, 1400),
+                         'doc 75, Phase 4: the half mark\'s target a level the treasury reaches there')
+        self.assertNotIn('shareOut', levers)
         self.assertIn('could not be read', view['problem'], 'no save: said so')
         self.assertEqual(view['words']['left'], 'Shared: money and food equal across all wolves')
+        self.assertTrue(view['reach']['left'].startswith('Shared: Gini') and view['reach']['right'].startswith('Held by the rich'),
+                        'doc 75, 3.5: the ends labelled with their measured reach')
+
+    def test_the_supervisor_from_the_save(self):
+        # Doc 75, 3.6: the supervisor's rules on, its back-offs (the levers now with them) and its last words, from the save.
+        steer = {'on': True, 'push': 1, 'history': [{'day': 3, 'measure': 'supervisor', 'why': 'Day 3: the supervisor acts'}],
+                 'sup': {'nights': 9, 'rules': [{'on': True, 'fires': 1}, {'on': False, 'fires': 0}, {'on': False, 'fires': 0}],
+                         'richAbove': 20, 'route': 0.5, 'chartersHeld': 2}}
+        sup = ST.steer_supervisor(steer)
+        self.assertEqual((sup['on'], sup['richAbove'], sup['chartersHeld'], sup['route'], sup['fires'], sup['last']),
+                         (['the treasury under its floor'], 20.0, 2, 0.5, [1, 0, 0], 'Day 3: the supervisor acts'))
+        self.assertEqual(ST.steer_supervisor({}), {'on': [], 'levelling': 0, 'richAbove': 0, 'chartersHeld': 0, 'route': 0,
+                                                  'fires': [], 'last': None})
 
 
 def W_default_economy():

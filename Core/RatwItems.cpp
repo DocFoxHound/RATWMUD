@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -390,6 +391,106 @@ void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& ru
     p.loaded = !p.farms.empty() && !p.kinds.empty();
 }
 
+// Steering the economy (doc 74): each lever's or target's five marks (a number, or null: the world's own value for a
+// lever, none for a target); a name the code doesn't know, or a row not of five, is left as it was. Read from
+// city_loop.json's `steering`, then from a steering table file over it (world_check --steer-table, doc 75, 5.1).
+void readSteering(const json::Value& steer, CityLoop::Steering& t)
+{
+    for (const auto& [kind, into] : {std::pair{"levers", &t.levers}, std::pair{"targets", &t.targets}})
+        for (const auto& [name, row] : steer.object(kind).fields())
+        {
+            const auto found = into->find(name);
+            const auto& marks = row.items();
+            if (found == into->end() || marks.size() != 5)
+                continue;
+            std::array<double, 5> v{};
+            bool sound = true;
+            for (std::size_t i = 0; i < 5; ++i)
+            {
+                if (marks[i].isNumber() && std::isfinite(marks[i].asNumber()) && std::abs(marks[i].asNumber()) <= 1e9)
+                    v[i] = marks[i].asNumber();
+                else if (marks[i].isNull())
+                    v[i] = std::numeric_limits<double>::quiet_NaN();
+                else
+                    sound = false;
+            }
+            if (sound)
+                found->second = v;
+        }
+    t.treasuryFloor = std::clamp(steer.number("treasuryFloor", t.treasuryFloor), 0., 1e9);
+    t.treasuryLow = std::clamp(steer.number("treasuryLow", t.treasuryLow), 0., t.treasuryFloor);
+    t.comfortable = std::clamp(steer.number("comfortable", t.comfortable), 1., 100.);
+    t.idleDays = int(std::clamp(steer.number("idleDays", t.idleDays), 1., 365.));
+    t.tillsShortNormal = std::clamp(steer.number("tillsShortNormal", t.tillsShortNormal), 0., 1e6);
+    t.tillsShortOver = std::clamp(steer.number("tillsShortOver", t.tillsShortOver), 0., 1000.);
+    t.chartersRampDays = int(std::clamp(steer.number("chartersRampDays", t.chartersRampDays), 1., 365.));
+    t.dividendPerCharter = std::clamp(steer.number("dividendPerCharter", t.dividendPerCharter), 0., 10.);
+    // The safety supervisor (doc 75, 3.6): the treasury's floors at the five marks (a row of 13 months, or null), and its
+    // settings (`supervisor`).
+    if (const auto& floors = steer["treasuryFloors"].items(); floors.size() == 5)
+    {
+        auto next = t.treasuryFloors;
+        bool sound = true;
+        for (std::size_t m = 0; m < 5 && sound; ++m)
+        {
+            const auto& row = floors[m].items();
+            if (floors[m].isNull())
+            {
+                next[m].fill(std::numeric_limits<double>::quiet_NaN());
+                continue;
+            }
+            sound = row.size() == next[m].size();
+            for (std::size_t i = 0; sound && i < row.size(); ++i)
+            {
+                sound = row[i].isNumber() && std::isfinite(row[i].asNumber()) && row[i].asNumber() >= 0 && row[i].asNumber() <= 1e9;
+                if (sound)
+                    next[m][i] = row[i].asNumber();
+            }
+        }
+        if (sound)
+        {
+            t.treasuryFloors = next;
+            t.floorsGiven = true;
+        }
+    }
+    if (const auto& s = steer.object("supervisor"); s.isObject())
+    {
+        t.floorLeast = std::clamp(s.number("floorLeast", t.floorLeast), 0., 1e9);
+        t.meanNights = std::clamp(s.number("meanNights", t.meanNights), 1., 365.);
+        t.tillsOver = std::clamp(s.number("tillsOver", t.tillsOver), 1., 100.);
+        t.clearShare = std::clamp(s.number("clearShare", t.clearShare), .1, 1.);
+        t.routeAt = std::clamp(s.number("routeAt", t.routeAt), .01, 1.);
+        t.returnShare = std::clamp(s.number("returnShare", t.returnShare), .01, 1.);
+        t.clearNights = int(std::clamp(s.number("clearNights", t.clearNights), 1., 365.));
+        t.edgeNights = int(std::clamp(s.number("edgeNights", t.edgeNights), 1., 3650.));
+        t.titheShopsWeek = std::clamp(s.number("titheShopsWeek", t.titheShopsWeek), 0., 100.);
+        t.titheHungerWeek = std::clamp(s.number("titheHungerWeek", t.titheHungerWeek), 0., 100.);
+        t.richShopsWeek = std::clamp(s.number("richShopsWeek", t.richShopsWeek), 0., 1e6);
+        t.chartersHungerWeek = std::clamp(s.number("chartersHungerWeek", t.chartersHungerWeek), 0., 1e4);
+    }
+    if (const auto& r = steer.object("reach"); r.isObject())
+    {
+        t.reachLeft = r.string("left", t.reachLeft).substr(0, 200);
+        t.reachRight = r.string("right", t.reachRight).substr(0, 200);
+    }
+    if (const auto& order = steer["skimOrder"].items(); !order.empty())
+    {
+        static const std::map<std::string, int> steps = {{"estates", 1}, {"treasury", 2}, {"upper", 3}, {"keepers", 4}, {"middle", 5}};
+        std::array<int, 5> next{};
+        std::set<int> seen;
+        bool sound = order.size() == next.size();
+        for (std::size_t i = 0; sound && i < order.size(); ++i)
+        {
+            const auto found = steps.find(order[i].asString({}));
+            sound = found != steps.end() && seen.insert(found->second).second;
+            if (sound)
+                next[i] = found->second;
+        }
+        if (sound)
+            t.skimOrder = next;
+    }
+}
+
 Catalog build()
 {
     Catalog c;
@@ -580,17 +681,22 @@ Catalog build()
     {
         const double W = std::numeric_limits<double>::quiet_NaN();
         auto& t = c.cityLoop.steering;
-        t.levers = {{"shareOut", {30, 12, 0, 0, 0}},      {"postsShare", {50, 25, 0, 0, 0}},
-                    {"tollLean", {1, .5, 0, 0, 0}},    {"surplusKeep", {0, 1000, W, W, W}},
-                    {"treasuryCap", {1500, W, W, W, W}},  {"surplusAlmsTo", {80, 60, W, W, W}},
-                    {"groundRent", {0, 0, 0, 15, 30}},    {"rentScale", {100, 100, 100, 112, 125}},
-                    {"dividend", {0, 0, 0, 15, 30}},      {"richAbove", {W, W, W, 100, 150}},
+        // (Doc 75, 4: the share-out, the toll lean and the rent scale gone; the Levelling tithe, the Crown's charters and
+        // the toll drift's target new. A lever's NaN at a half mark is the straight line between its neighbours.)
+        t.levers = {{"levelling", {40, W, 0, 0, 0}},     {"charters", {0, 0, 0, W, 33}},
+                    {"postsShare", {50, 25, 0, 0, 0}},   {"surplusKeep", {0, 1000, W, W, W}},
+                    {"treasuryCap", {1500, W, W, W, W}}, {"treasuryTarget", {1500, W, W, W, 850}},
+                    {"surplusAlmsTo", {80, 60, W, W, W}}, {"groundRent", {0, 0, 0, 15, 30}},
+                    {"dividend", {0, 0, 0, W, 15}},      {"richAbove", {W, W, W, 100, 150}},
                     {"spendAbove", {25, 32, W, W, W}}};
         t.targets = {{"gini", {.33, .41, .487, W, W}},        {"giniBand", {.04, .04, .035, W, W}},
                      {"upper", {W, W, 13, 18.5, 24}},           {"upperBand", {W, W, 2, 2.5, 3}},
                      {"upperMost", {14, 14, W, W, W}},        {"top10Most", {27, 31, W, W, W}},
                      {"top10Least", {W, W, W, 37, 40}},       {"hungerMost", {.02, .05, .15, .15, .15}},
-                     {"shortMost", {.1, .5, 3.5, 4, 5}}};
+                     {"shortMost", {.1, .5, 3.5, 4, 5}},
+                     // (Doc 75, 3.6: the supervisor's, each mark's floors-off tills short and the wage support's most
+                     // unpaid a day, a 7-night mean; none: the rule doesn't judge it there.)
+                     {"tillsShort", {W, W, W, W, W}},        {"unpaidMost", {W, W, W, W, W}}};
     }
     // The Country and the city's loop (doc 68): optional; without it, one market with an empty basket.
     // (Doc 73: the file was country.json; an older data folder's is still read.)
@@ -689,38 +795,9 @@ Catalog build()
             if (!supplier.buyer.empty() && !supplier.seller.empty() && supplier.buyer != supplier.seller)
                 c.cityLoop.suppliers.push_back(std::move(supplier));
         }
-        // Steering the economy (doc 74): each lever's or target's five marks (a number, or null: the world's own value for
-        // a lever, none for a target); a name the code doesn't know, or a row not of five, is left as the doc has it.
+        // Steering the economy (doc 74): the table's marks and settings (readSteering).
         if (const auto& steer = country.object("steering"); steer.isObject())
-        {
-            for (const auto& [kind, into] : {std::pair{"levers", &c.cityLoop.steering.levers}, std::pair{"targets", &c.cityLoop.steering.targets}})
-                for (const auto& [name, row] : steer.object(kind).fields())
-                {
-                    const auto found = into->find(name);
-                    const auto& marks = row.items();
-                    if (found == into->end() || marks.size() != 5)
-                        continue;
-                    std::array<double, 5> v{};
-                    bool sound = true;
-                    for (std::size_t i = 0; i < 5; ++i)
-                    {
-                        if (marks[i].isNumber() && std::isfinite(marks[i].asNumber()) && std::abs(marks[i].asNumber()) <= 1e9)
-                            v[i] = marks[i].asNumber();
-                        else if (marks[i].isNull())
-                            v[i] = std::numeric_limits<double>::quiet_NaN();
-                        else
-                            sound = false;
-                    }
-                    if (sound)
-                        found->second = v;
-                }
-            c.cityLoop.steering.treasuryFloor = std::clamp(steer.number("treasuryFloor", 800), 0., 1e9);
-            c.cityLoop.steering.treasuryLow = std::clamp(steer.number("treasuryLow", 500), 0., c.cityLoop.steering.treasuryFloor);
-            c.cityLoop.steering.comfortable = std::clamp(steer.number("comfortable", 4), 1., 100.);
-            c.cityLoop.steering.idleDays = int(std::clamp(steer.number("idleDays", 28), 1., 365.));
-            c.cityLoop.steering.tillsShortNormal = std::clamp(steer.number("tillsShortNormal", 25), 0., 1e6);
-            c.cityLoop.steering.tillsShortOver = std::clamp(steer.number("tillsShortOver", 15), 0., 1000.);
-        }
+            readSteering(steer, c.cityLoop.steering);
         // The Houses' city businesses (doc 72, after iron6): a building and its House each, the first entry for a building.
         for (const auto& b : country.object("houseBusinesses").array("list"))
             if (const auto building = b.string("building"), house = b.string("house"); !building.empty() && !house.empty())
@@ -831,6 +908,20 @@ Catalog build()
     }
     if (c.cityLoop.markets.empty())
         c.cityLoop.markets.push_back({"wharf", "the Wharf", {}});
+    // A steering table over city_loop.json's (doc 75, 5.1: world_check --steer-table FILE sets RATW_STEER_TABLE, so a run's
+    // variant needs no copied Data folder): a file with a `steering` object, or the object itself. A run never goes on with
+    // a table it could not read, since it would quietly be today's economy.
+    if (const char* file = std::getenv("RATW_STEER_TABLE"); file && *file)
+    {
+        json::Value table;
+        std::string problem;
+        if (!readJson(file, table, problem) || !table.isObject())
+        {
+            std::fprintf(stderr, "RATW_STEER_TABLE: %s\n", problem.empty() ? "not a JSON object" : problem.c_str());
+            std::exit(2);
+        }
+        readSteering(table.object("steering").isObject() ? table.object("steering") : table, c.cityLoop.steering);
+    }
     // The Country's food farms (Data/Economy/country_farms.json; doc 71, 4): optional; without it, none.
     if (const auto file = dir.parent_path() / "Economy" / "country_farms.json"; std::filesystem::exists(file))
     {
@@ -1119,7 +1210,10 @@ const Households& households()
 double steerAt(const std::array<double, 5>& marks, double at, double own)
 {
     at = std::clamp(std::isfinite(at) ? at : 0., -1., 1.);
-    const auto value = [&](std::size_t i) { return std::isnan(marks[i]) ? own : marks[i]; };
+    // A mark's NaN: at the centre or an end, `own` (the world's value); at a half mark, halfway between its two
+    // neighbours (doc 75, 3.2: a measured end blends in with |x| from the world's value at the centre).
+    const auto end = [&](std::size_t i) { return std::isnan(marks[i]) ? own : marks[i]; };
+    const auto value = [&](std::size_t i) { return i % 2 == 0 || !std::isnan(marks[i]) ? end(i) : (end(i - 1) + end(i + 1)) / 2; };
     const double place = (at + 1) * 2;              // (0..4: the marks' index.)
     const auto i = std::min<std::size_t>(3, std::size_t(std::floor(place)));
     const double t = place - double(i);

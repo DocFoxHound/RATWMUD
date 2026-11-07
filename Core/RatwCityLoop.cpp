@@ -569,19 +569,15 @@ void Society::buildSeasons()
 
 int Society::rule(const std::string& name) const
 {
-    // Steering the economy (doc 74, 8.5): with the steering on, the three rules it moves are the table's at the push; the
-    // world's own stay in rules_, used again the moment it is off.
-    if (state_.loop.steer.on && (name == "surplusKeep" || name == "treasuryCap" || name == "surplusAlmsTo") && ownRule("steer") > 0)
+    // Steering the economy (doc 74, 8.5; doc 75, 4.5): with the steering on, the four rules it moves are the table's at the
+    // slider (the toll drift's target among them: the world's 5,500p at the centre, blended to a level each end can reach);
+    // the world's own stay in rules_, used again the moment it is off.
+    if (state_.loop.steer.on && (name == "surplusKeep" || name == "treasuryCap" || name == "surplusAlmsTo" || name == "treasuryTarget") &&
+        ownRule("steer") > 0)
     {
         const auto* info = items::ruleInfo(name);
         return std::clamp(int(std::lround(steerLever(name))), info->low, info->high);
     }
-    // The toll drift's target with the steering on (Tune round 1): never over the steered ceiling, the cap and its keep,
-    // where the surplus spends what is over. (The world's 5,500p under the centre's 6,000p, so the centre is the world's
-    // own; at the far left, 1,500p, so the drift judges the treasury where the left's surplus holds it, not at a level it
-    // can never reach.)
-    if (name == "treasuryTarget" && state_.loop.steer.on && ownRule("steer") > 0)
-        return std::min(ownRule(name), rule("treasuryCap") + rule("surplusKeep"));
     return ownRule(name);
 }
 
@@ -777,10 +773,13 @@ void Society::loopHourly(std::int64_t hour, int season)
             steerFollow(day);                       // (Doc 74: the DM's slider and on/off before tonight's money moves.)
         settleWharf();                              // (The standing levers on the Wharf's credit: doc 73, 4.6.)
         settleEstates();                            // (The Houses' estates' purses and the Crown's grants, before the wages.)
+        chartersNight(day);                         // (Doc 75, 4.2: the Crown's charters on the ramp, before the wages.)
         payWages();
         payFarms();                                 // (The farms' crews; short, the wage support as a till's.)
         supportWages();                             // (What the treasury holds over its cap, to the short tills' posts.)
         giveAlms();                                 // (After the day's wages: the treasury's posts come first.)
+        if (steering())
+            levellingTithe();                       // (Doc 75, 4.1: left of the centre; before Never Broke judges who is short.)
         if (rule("neverBroke") > 0)
             neverBroke();                           // (Doc 74, 7.2: after the alms, credit for just enough to the short.)
         else
@@ -792,10 +791,7 @@ void Society::loopHourly(std::int64_t hour, int season)
             state_.loop.steer.tillsDays = 0;
         }
         if (steering())
-        {
-            shareOut();                             // (Doc 74, 5.1 and 5.7: the push left, the share-out; right, the
-            housesDividend();                       // Houses' dividend.)
-        }
+            housesDividend();                       // (Doc 74, 5.7: right of the centre, rising with the charters.)
         spendSurplus();                             // (Last: what the treasury still holds over its cap and reserve.)
         loopToday_.treasuryNight = cash("treasury");
         followTreasury(day);                        // (Its level tonight moves the toll and the alms, slowly.)
@@ -1854,6 +1850,11 @@ void Society::payWages()
             }
             else if (auto excess = cash(payer) - cap; held != state_.careers.positions.end() && !held->second.holder.empty() && excess > 0)
             {
+                // The Crown's charters (doc 75, 4.2): a chartered keeper's till keeps a keeper's till's rules (its cap of
+                // floatWagesDays of its wages, its wages' keeper bound); only its profit goes to the House, not its keeper.
+                const auto chartered = steering() ? charterOf(payer) : std::string();
+                if (steering())
+                    loopToday_.keeperProfit[payer] = excess;   // (Its profit before the shares: the charters' ranking.)
                 // Steering the economy (doc 74, 5.2 and 5.5): with the steering on, the hands' share of a city keeper's
                 // excess to the till's other posts (by their wages) and the ground rent to the Crown's estate, before the
                 // keeper's profit; the till keeps its cap as ever.
@@ -1888,8 +1889,20 @@ void Society::payWages()
                             for (const auto& e : items::cityLoop().estates)
                                 if (e.grants && account(estateFund(e)))
                                     to = estateFund(e);
-                        if (const auto rent = std::int64_t(double(excess) * std::min(g, 100.) / 100.);
-                            rent > 0 && account(to) && cash(to) <= MoneyCap - rent &&
+                        auto rent = std::int64_t(double(excess) * std::min(g, 100.) / 100.);
+                        // (Doc 75, 3.6, the supervisor's rule 1: over the table's floor but under the mark's own, its share
+                        // of the rent to the treasury, in proportion to the gap; the rest to the Crown as ever.)
+                        if (const double route = state_.loop.steer.sup.route; !low && route > 0 && to != "treasury" && rent > 0 &&
+                                                                              account("treasury") && cash("treasury") <= MoneyCap - rent)
+                            if (const auto part = std::min(rent, std::int64_t(std::llround(double(rent) * std::min(route, 1.))));
+                                part > 0 && shift(payer, "treasury", "", 0, part, "ground rent: the treasury"))
+                            {
+                                loopToday_.groundRent += part;
+                                loopToday_.groundRentTreasury += part;
+                                excess -= part;
+                                rent -= part;
+                            }
+                        if (rent > 0 && account(to) && cash(to) <= MoneyCap - rent &&
                             shift(payer, to, "", 0, rent, to == "treasury" && low && estatesOn() ? "ground rent: the treasury" : "ground rent: the Crown"))
                         {
                             loopToday_.groundRent += rent;
@@ -1901,7 +1914,23 @@ void Society::payWages()
                         }
                     }
                 }
-                if (excess > 0 && shift(payer, held->second.holder, "", 0, excess, "profit"))
+                if (!chartered.empty())
+                {
+                    const auto to = houseFund(chartered);
+                    if (excess > 0 && account(to) && cash(to) <= MoneyCap - excess &&
+                        shift(payer, to, "", 0, excess, "a chartered shop's takings to its House: " + chartered))
+                    {
+                        profit = excess;
+                        loopToday_.charterProfit += excess;
+                        loopToday_.rents[chartered] += excess;
+                        if (const auto* e = estatesOn() ? estateOfFund(to) : nullptr)
+                        {
+                            loopToday_.estates[e->id].rents += excess;
+                            loopToday_.estates[e->id].shops += excess;
+                        }
+                    }
+                }
+                else if (excess > 0 && shift(payer, held->second.holder, "", 0, excess, "profit"))
                     loopToday_.profit += (profit = excess);
             }
             judgeWages(payer, owed, paid, profit);  // (Its wage step, from its days: doc 68, "Self-correcting rules".)
@@ -2218,7 +2247,8 @@ std::int64_t Society::topUpPoorest(std::int64_t budget, const std::string& from,
         if (shift(from, poorest, "", 0, coins, treasury ? "alms from the surplus" : "relief: share-out"))
         {
             given += coins;
-            ++(treasury ? loopToday_.surplusHouseholds : loopToday_.shareOutHomes);
+            if (treasury)
+                ++loopToday_.surplusHouseholds;
         }
     }
     (treasury ? loopToday_.surplusAlms : loopToday_.relief["share-out"]) += given;
@@ -2825,12 +2855,11 @@ std::int64_t Society::shopCost(const std::string& till, const std::string& item,
 double Society::gateTollNow() const
 {
     const int base = std::clamp(authored_.economy.gateToll, 0, 90);
-    // The steering's toll lean (doc 74, 5.3), on top of the treasury's drift: the two never answer the same thing.
-    const double lean = steering() ? state_.loop.steer.tollLean : 0.;
+    // (Doc 75, 4.6: the steering's toll lean is gone; the drift owns the toll.)
     if (rule("treasuryDrift") <= 0 || state_.loop.toll == 0)
-        return lean == 0 ? base : std::clamp(base + lean, 0., 90.);
+        return base;
     const double most = rule("tollDriftMost");      // (The DM may have narrowed the bounds since it moved.)
-    return std::clamp(base + std::clamp(state_.loop.toll, -most, most) + lean, 0., 90.);
+    return std::clamp(base + std::clamp(state_.loop.toll, -most, most), 0., 90.);
 }
 
 std::int64_t Society::almsNow() const

@@ -417,7 +417,32 @@ void World::planDays()
     if (festivalsBegun_.size() > 4096)
         festivalsBegun_.clear();
     day.communityOf = [this](const std::string& cellId) { return lawTown(cellId); };
+    day.houseOf = [this](const std::string& cellId) { return districtHouse(cellId); };
     day.sky = [this](const Spot& at) { return skyAt(at.cell, {at.x, at.y}); };   // The weather where they'd be.
     society_.setDay(std::move(day));
+}
+
+std::string World::districtHouse(const std::string& cellId) const
+{
+    // Out from the cell through the doors that lead into it, the nearest first (doors in id order), stopping at the first
+    // outdoor cell: a shop's own cell rarely carries its district's claim (in Ridgemere 2.0 most interiors are claimed by
+    // no House while the street outside is), so the street's is the district's.
+    std::vector<std::string> queue{cellId};
+    std::set<std::string> seen{cellId};
+    for (std::size_t at = 0; at < queue.size() && at < 16; ++at)
+    {
+        const auto* c = cell(queue[at]);
+        if (!c)
+            continue;
+        for (const auto& claim : c->factionClaims)
+            if (const auto f = factions_.find(claim); f != factions_.end() && f->second.name.rfind("House ", 0) == 0)
+                return f->second.name.substr(6);
+        if (c->outdoors)
+            return {};                              // (The street has no House's claim: none.)
+        for (const auto& [id, d] : doors_)
+            if (d.targetCell == queue[at] && d.cellId != queue[at] && seen.insert(d.cellId).second)
+                queue.push_back(d.cellId);
+    }
+    return {};
 }
 } // namespace ratw

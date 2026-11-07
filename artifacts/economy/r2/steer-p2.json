@@ -1,0 +1,45 @@
+{
+  "about": "Doc 75, Phase 2: the Phase 2 build as committed (the tithe, the charters, the blended table), 60 days: the steering on at the centre, off, and the centre with both floors, each compared with steer-p2base-* (today's code, c4ae14e) on every field they share; and two smokes at the ends (not calibration: the provisional table).",
+  "base": "artifacts/economy/r2/export70",
+  "out": "artifacts/economy/r2",
+  "prefix": "steer-p2-",
+  "days": 60,
+  "binary": ".claude/worktrees/r2-controller/build-c/world_check.p2",
+  "data": ".claude/worktrees/r2-controller/Data",
+  "runs": [
+    {
+      "name": "centre",
+      "rules": {
+        "steer": 1,
+        "steerLean": 100
+      }
+    },
+    {
+      "name": "off",
+      "rules": {}
+    },
+    {
+      "name": "centre-floors",
+      "rules": {
+        "steer": 1,
+        "steerLean": 100,
+        "neverHungry": 1,
+        "neverBroke": 1
+      }
+    },
+    {
+      "name": "left",
+      "rules": {
+        "steer": 1,
+        "steerLean": 0
+      }
+    },
+    {
+      "name": "right",
+      "rules": {
+        "steer": 1,
+        "steerLean": 200
+      }
+    }
+  ]
+}

@@ -402,8 +402,9 @@ void theHarness(const std::string& binary, const fs::path& root)
         expect(v1.number("steer", -1) == 1 && v1.number("steer_lean", -1) == 0 && v1.number("steer_push", -9) == 0,
                "day 1: the steering on, at the centre: " + l1.substr(0, 200));
         expect(v2.number("steer", -1) == 1 && v2.number("steer_lean", 0) == -100 && v2.number("steer_push", 0) == -1 &&
-                   v2.number("lev_share_out", 0) == 30 && v2.number("steer_push_hi", 0) > -1,
-               "day 2: the slider far left, the push and the share-out with it at once");
+                   v2.number("lev_levelling", 0) == 50 && v2.number("tithe", -1) >= 0,
+               "day 2: the slider far left, the levers there (the Levelling tithe 50%) at once: " +
+                   std::to_string(v2.number("lev_levelling", 0)) + "%");
         expect(v2["conserved"].asBool(), "and the money conserved");
     }
     const auto badRule = "\"" + binary + "\" \"" + root.string() + "\" --simulate 6 30 --rule-at 1 noSuchRule 1 > /dev/null 2>&1";
