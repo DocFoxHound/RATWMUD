@@ -24,7 +24,9 @@ export interface NetSample {
 
 const PingEvery = 2000;     // ms
 
-/** The game's address on the server this page came from (ws: or wss: to match the page). */
+/** The game's address on the server this page came from (ws: or wss: to match the page). The desktop client's bundled
+ *  page connects to a chosen world's address instead (client.ts, net/worlds.ts). */
+
 export function gameUrl(location: {protocol: string; host: string}): string {
     return `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`;
 }
@@ -92,6 +94,10 @@ export class Connection {
 
     submit(command: Json) {
         this.session.submit(command);
+    }
+
+    submitExact(command: Json) {
+        this.session.submitExact(command);
     }
 
     /** Where the page's own wolf is: a few bytes, twenty times a second (doc 31, Phase 4). */

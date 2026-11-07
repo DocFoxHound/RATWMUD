@@ -1,10 +1,19 @@
 // The front door: signing in, the roster of up to six characters, and the creator (UI/SRatwFrontDoor.cpp), as
 // ordinary HTML forms. Account lobby only: credentials are never kept anywhere, and the password box is cleared as soon
 // as it has been sent.
+//
+// Two modes. 'world' (a browser on a password-mode world, as always): the world's own lobby, its accounts and its
+// creator. 'central' (the desktop client, Docs/Design/77-central-accounts-and-hosted-worlds.md, 3.1): signing in to
+// central, the wolves central keeps, a creator of the wolf's identity only (body, coat, markings, eyes, Gift family,
+// name and age), the world list, and the first arrival in a world (the tier, strengths, arrival town and tie, which
+// are the world's). In central mode its commands go to the client (client.ts), which answers with lobby events of the
+// same shape.
 import {CoatNames} from './theme.ts';
 import {drawPortrait, lifeStage, Portraits, readAppearance, shoulderHeightCm} from './portrait.ts';
 import {MaskNames, Masks} from './wolfArt.ts';
 import {artCache, sendPortrait, squarePixels} from './artwork.ts';
+import {askText} from './dialog.ts';
+
 
 // Natural coats, pale to dark (doc 29, phase 9); any colour is also allowed.
 const CoatSwatches = ['#f4efe6', '#e8e1d3', '#ddd2bd', '#cfc0a2', '#c2ab84', '#b39a72', '#a3865f', '#8e7350', '#7a6142', '#655037',
@@ -33,7 +42,27 @@ function randomiseAppearance(d: Json) {
 import {arr, bool, isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
 
-type Page = 'login' | 'register' | 'roster' | 'creator' | 'review';
+type Page = 'login' | 'register' | 'roster' | 'creator' | 'review' | 'worlds' | 'arrive';
+
+/** A world in the client's list, as the door shows it (client.ts makes these). */
+export interface DoorWorld {
+    id: string;              // '' for one reached by its address alone
+    name: string;
+    kind: string;            // 'official' | 'community'
+    address: string;         // "host:port"
+    secure: boolean;
+    description: string;
+    fit: string;             // 'ok' | 'update' | 'older' | 'data' | 'unknown'
+    note: string;            // Why it can't be joined, or ''.
+    status: string;          // "3 of 100 wolves · 12 ms", "Not answering", "" (not asked yet)
+}
+
+export interface DoorOptions {
+    mode?: 'world' | 'central';
+    edition?: string;        // The header's corner.
+    footnote?: string;       // The line under everything.
+    canRemember?: boolean;   // "Remember me" (central mode, the client only).
+}
 
 const Choices: Record<string, string[]> = {
     species: ['timber', 'maned', 'arctic', 'red', 'ethiopian'],
@@ -75,6 +104,8 @@ export function giftCaption(c: Json | null, gifts: Json | null, before: string):
 
 export class FrontDoor {
     readonly root: HTMLDivElement;
+    readonly mode: 'world' | 'central';
+    readonly canRemember: boolean;
     stage: 'login' | 'characters' = 'login';
     page: Page = 'login';
     message = '';
@@ -99,7 +130,14 @@ export class FrontDoor {
     draftTie = '';
     draftGrades: Record<string, string> = {};   // An attribute to "weak" or "strong" (plain when absent).
     draftSpecialty = '';
+    worlds: DoorWorld[] = [];                // Central mode: the world list.
+    worldsWolf = '';                         // Whose list it is (a wolf id).
+    lostWorld = '';                          // The world just lost, offered again (Reconnect).
+    arriveWolf: Json | null = null;          // Central mode: the wolf arriving in a world for the first time.
+    arriveWorld = '';
+    tierChoices: string[] = [];
     private showGiftDetails = false;
+    private worldLines = new Map<string, {status: HTMLElement; join: HTMLButtonElement; note: HTMLElement}>();
     private creationRequestId = '';
     private creationFingerprint = '';
     private sentAt = 0;
@@ -111,19 +149,23 @@ export class FrontDoor {
     private timer: number;
     private send: (command: Json) => void;
 
-    constructor(parent: HTMLElement, send: (command: Json) => void) {
+    constructor(parent: HTMLElement, send: (command: Json) => void, options: DoorOptions = {}) {
         this.send = send;
+        this.mode = options.mode ?? 'world';
+        this.canRemember = options.canRemember === true;
         this.body = el('div', {className: 'door-body'});
         this.status = el('p', {className: 'door-status'});
+        const central = this.mode === 'central';
         const stage = el('div', {className: 'door-stage'},
             el('header', {className: 'door-header'},
                 el('div', {className: 'door-mark'}, 'W›'),
                 el('div', {className: 'door-title'}, el('h1', {}, 'RUNS AGAINST THE WORLD'), el('p', {}, 'A living world. A story of your own.')),
-                el('div', {className: 'door-edition'}, 'BROWSER CLIENT  /  EARLY DEVELOPMENT')),
+                el('div', {className: 'door-edition'}, options.edition ?? (central ? 'EARLY DEVELOPMENT' : 'BROWSER CLIENT  /  EARLY DEVELOPMENT'))),
             this.body, this.status,
-            el('p', {className: 'door-footnote'},
-                'LOCAL TEST ACCOUNTS ONLY · This connection is not encrypted yet. Use a unique test password, never a real one.'));
+            el('p', {className: 'door-footnote'}, options.footnote ?? (central ? ''
+                : 'LOCAL TEST ACCOUNTS ONLY · This connection is not encrypted yet. Use a unique test password, never a real one.')));
         this.root = el('div', {className: 'door'}, stage);
+        this.root.dataset.mode = this.mode;
         parent.append(this.root);
         this.portraits.onReady = () => this.drawPortrait();
         artCache.onReady = () => this.drawPortrait();
@@ -149,7 +191,8 @@ export class FrontDoor {
 
     private onKey = (e: KeyboardEvent) => {
         if (e.code !== 'Escape' || this.busy) return;
-        const back: Partial<Record<Page, Page>> = {review: 'creator', creator: 'roster', register: 'login'};
+        const back: Partial<Record<Page, Page>> = {review: 'creator', creator: 'roster', register: 'login', worlds: 'roster'};
+
         const to = back[this.page];
         if (to) {
             e.preventDefault();
@@ -189,6 +232,50 @@ export class FrontDoor {
         const next = str(event, 'stage', 'login');
         this.setMessage(str(event, 'message'), !ok);
         if (this.password) this.password.value = '';
+        if (next === 'worlds') {
+            // Central mode: the world list for one wolf (client.ts).
+            this.stage = 'characters';
+            this.worlds = arr(event, 'worlds').filter(isObject).map(w => ({id: str(w, 'id'), name: str(w, 'name'), kind: str(w, 'kind'),
+                address: str(w, 'address'), secure: bool(w, 'secure'), description: str(w, 'description'), fit: str(w, 'fit', 'unknown'),
+                note: str(w, 'note'), status: str(w, 'status')}));
+            this.worldsWolf = str(event, 'wolf', this.selectedId);
+            if (this.worldsWolf) this.selectedId = this.worldsWolf;
+            this.lostWorld = str(event, 'lost');
+            this.show('worlds');
+            return;
+        }
+        if (next === 'arrive') {
+            // A world's first arrival (doc 77, 5.1; Core/RatwGameTickets.cpp, ticketLobby): its own catalogues, and the
+            // wolf from the ticket.
+            if (isObject(event.gifts)) this.gifts = event.gifts;
+            if (isObject(event.creation)) this.creation = event.creation;
+            this.tiers = isObject(event.tiers) ? event.tiers : null;
+            this.starts = arr(event, 'starts').filter(isObject);
+            this.ties = arr(event, 'ties').filter(isObject);
+            this.tieRequired = event.tieRequired === true;
+            this.firstCharacter = event.firstCharacter === true;
+            this.tierChoices = arr(event, 'tierChoices').filter((t): t is string => typeof t === 'string');
+            const wolf = isObject(event.wolf) ? event.wolf : null;
+            const same = this.page === 'arrive' && str(wolf, 'id') === str(this.arriveWolf, 'id');
+            this.arriveWolf = wolf;
+            this.arriveWorld = str(event, 'worldName');
+            if (!same) {
+                this.draftName = str(wolf, 'name');
+                this.draftAge = num(wolf, 'age', 18);
+                this.draftAppearance = obj(wolf, 'appearance') ? {...obj(wolf, 'appearance')} : null;
+                this.draftFamily = str(wolf, 'family');
+                this.draftTier = this.draftFamily ? (this.tierChoices.includes('gifted') ? 'gifted' : this.tierChoices[0] ?? 'gifted') : 'normal';
+                this.draftGrades = {};
+                this.draftSpecialty = '';
+                this.draftStart = str(this.starts.find(t => t.suggested === true) ?? this.starts[0], 'id');
+                this.draftTie = this.randomTie('');
+                this.creationRequestId = this.creationFingerprint = '';
+                this.creatorTab = this.draftFamily ? 'gift' : 'strengths';
+            }
+            this.stage = 'characters';
+            this.show('arrive');
+            return;
+        }
         if (next === 'characters') {
             if (isObject(event.gifts)) this.gifts = event.gifts;
             if (isObject(event.creation)) this.creation = event.creation;
@@ -227,8 +314,11 @@ export class FrontDoor {
         this.page = page;
         this.portraitCanvas = null;
         this.password = null;
+        this.worldLines.clear();
         this.body.replaceChildren(page === 'login' || page === 'register' ? this.loginPage()
-            : page === 'roster' ? this.rosterPage() : this.creatorPage(page === 'review'));
+            : page === 'roster' ? this.rosterPage() : page === 'worlds' ? this.worldsPage() : page === 'arrive' ? this.arrivePage()
+            : this.creatorPage(page === 'review'));
+
         this.root.dataset.page = page;
         this.drawPortrait();
         const first = this.body.querySelector<HTMLElement>('input, button.primary');
@@ -244,6 +334,7 @@ export class FrontDoor {
     // ------------------------------------------------------------------ Signing in
 
     private loginPage(): HTMLElement {
+        if (this.mode === 'central') return this.centralLoginPage();
         const register = this.page === 'register';
         const user = el('input', {type: 'text', autocomplete: 'username', placeholder: '3–32 letters, digits, _ or -', maxLength: 32});
         const pass = el('input', {type: 'password', autocomplete: register ? 'new-password' : 'current-password',
@@ -282,7 +373,78 @@ export class FrontDoor {
         return el('div', {className: 'door-row'}, pitch, form);
     }
 
+    /** Signing in to central (doc 77, 3.1): an account for every world; registering asks the year of birth (16 or
+     *  older, Q8; the month too only in the year one turns 16); "remember me" keeps a sign-in in the client's shell,
+     *  never the password. */
+    private centralLoginPage(): HTMLElement {
+        const register = this.page === 'register';
+        const user = el('input', {type: 'text', autocomplete: 'username', placeholder: '3–32 letters, digits, _ or -', maxLength: 32});
+        user.name = 'username';
+        const pass = el('input', {type: 'password', autocomplete: register ? 'new-password' : 'current-password',
+            placeholder: '12–128 characters'});
+        pass.name = 'password';
+        this.password = pass;
+        const thisYear = new Date().getFullYear();
+        const year = el('input', {type: 'number', min: '1900', max: String(thisYear), placeholder: 'e.g. 1990'});
+        year.name = 'birthYear';
+        const month = el('select', {});
+        month.name = 'birthMonth';
+        month.append(el('option', {value: '', textContent: 'Month'}),
+            ...['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+                .map((m, i) => el('option', {value: String(i + 1), textContent: m})));
+        const monthLabel = el('label', {}, el('span', {}, 'MONTH OF BIRTH · YOU TURN 16 THIS YEAR'), month);
+        const showMonth = () => { monthLabel.style.display = Number(year.value) === thisYear - 16 ? '' : 'none'; };
+        year.addEventListener('input', showMonth);
+        showMonth();
+        const remember = el('input', {type: 'checkbox'});
+        remember.name = 'remember';
+        const form = el('form', {className: 'door-card door-login'},
+            el('h2', {}, register ? 'Create an account' : 'Welcome back'),
+            el('p', {className: 'muted'}, register ? 'One account for every world. Your wolves\' names are what others see.'
+                : 'Sign in, then choose a wolf and a world.'),
+            el('label', {}, el('span', {}, 'ACCOUNT NAME'), user),
+            el('label', {}, el('span', {}, 'PASSWORD'), pass),
+            ...(register ? [el('label', {}, el('span', {}, 'YEAR OF BIRTH · YOU MUST BE 16 OR OLDER'), year), monthLabel] : []),
+            ...(this.canRemember ? [el('label', {className: 'door-check'}, remember, el('span', {}, 'REMEMBER ME ON THIS COMPUTER'))] : []),
+            el('button', {type: 'submit', className: 'primary', textContent: register ? 'CREATE ACCOUNT' : 'SIGN IN'}),
+            this.button(register ? 'Back to sign in' : 'New here? Create an account', () => {
+                pass.value = '';
+                this.setMessage('');
+                this.show(register ? 'login' : 'register');
+            }));
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            if (this.busy) return;
+            const username = user.value.trim(), secret = pass.value;
+            if (!username || !secret) return this.setMessage('Enter an account name and a password.', true);
+            if (username.length < 3 || username.length > 32 || utf8Length(secret) < 12 || utf8Length(secret) > 128)
+                return this.setMessage('Account names need 3–32 characters; passwords need 12–128 UTF-8 bytes.', true);
+            const command: Json = {type: register ? 'auth_register' : 'auth_login', username, password: secret, remember: remember.checked};
+            if (register) {
+                const born = Math.trunc(Number(year.value));
+                if (!year.value || !Number.isFinite(born) || born < 1900 || born > thisYear) return this.setMessage('Give your year of birth.', true);
+                command.birth_year = born;
+                if (born === thisYear - 16) {
+                    if (!month.value) return this.setMessage('You turn 16 this year: give the month you were born, too.', true);
+                    command.birth_month = Number(month.value);
+                }
+            }
+            pass.value = '';
+            this.setMessage('Contacting central…');
+            this.submit(command);
+        });
+        const pitch = el('section', {className: 'door-card door-pitch'},
+            el('p', {className: 'gold small'}, 'YOUR STORY BEGINS WITH A WOLF'),
+            el('h2', {className: 'big'}, 'A name. A voice.', el('br'), 'A place in the world.'),
+            el('p', {className: 'muted large'}, 'Your wolf is yours in every world: their name and their look go with them. ' +
+                'What they do in a world stays in that world.'),
+            el('p', {className: 'sage glyphs'}, 'W >   ·   ·   ·   #   +   #', el('br'), el('br'), 'ROLEPLAY  /  EXPLORATION  /  BELONGING'),
+            el('p', {className: 'muted'}, 'Your account holds up to six wolves.'));
+        return el('div', {className: 'door-row'}, pitch, form);
+    }
+
     // ------------------------------------------------------------------ The roster
+
 
     private rosterPage(): HTMLElement {
         const slots = el('div', {className: 'door-slots'}, el('p', {className: 'gold small'}, 'CHOOSE YOUR CHARACTER'));
@@ -292,7 +454,7 @@ export class FrontDoor {
             const age = num(c, 'age', 18);
             const b = el('button', {type: 'button', className: `slot${id && id === this.selectedId ? ' selected' : ''}`},
                 el('strong', {}, c ? str(c, 'name') : '+  Create a character'),
-                el('span', {}, c ? `Age ${age.toFixed(0)} · ${stageName(age)}${giftCaption(c, this.gifts, ' · ')}` : `Empty slot ${i + 1} of 6`));
+                el('span', {}, c ? `Age ${age.toFixed(0)} · ${stageName(age)}${this.caption(c, ' · ')}` : `Empty slot ${i + 1} of 6`));
             b.addEventListener('click', () => {
                 if (this.busy) return;
                 if (!id) this.startCreation();
@@ -303,8 +465,9 @@ export class FrontDoor {
             });
             slots.append(b);
         }
-        // The account's handle (doc 50): the name friends and circles see, never the sign-in name.
-        if (this.account && !str(this.account, 'handle')) {
+        // The account's handle (doc 50): the name friends and circles see, never the sign-in name. (Per world: in
+        // central mode a world asks at the first arrival, doc 77 Q5.)
+        if (this.mode === 'world' && this.account && !str(this.account, 'handle')) {
             const handle = el('input', {className: 'door-input', placeholder: 'Choose a handle (not your sign-in name)', maxLength: 24});
             handle.dataset.handle = '1';
             slots.append(el('div', {className: 'door-handle'},
@@ -319,21 +482,62 @@ export class FrontDoor {
             this.setMessage('Signing out…');
             this.submit({type: 'auth_logout'});
         }));
+        if (this.mode === 'central') {
+            const remove = this.button('Delete my account…', () => void this.deleteAccount());
+            remove.dataset.action = 'delete-account';
+            slots.append(remove);
+        }
         const c = this.selected();
         const age = num(c, 'age', 18);
         const canvas = el('canvas', {className: 'portrait', width: 480, height: 330});
         this.portraitCanvas = c ? canvas : null;
-        const enter = this.button('ENTER THE WORLD', () => this.enter(), true);
+        const enter = this.button(this.mode === 'central' ? 'CHOOSE A WORLD' : 'ENTER THE WORLD', () => this.enter(), true);
         enter.disabled = !c;
+        enter.dataset.action = 'enter';
+        const below: HTMLElement[] = [];
+        if (this.mode === 'world') below.push(c ? this.portraitControls(c) : el('p', {className: 'muted large'}, ''));
+        else if (c) {
+            const remove = this.button('Delete this wolf…', () => void this.deleteWolf(c));
+            remove.dataset.action = 'delete-wolf';
+            below.push(el('div', {className: 'portrait-controls'}, el('p', {className: 'muted'},
+                'Your wolf\'s name and look go with them to every world; what they do in a world stays there.'), remove));
+        }
         const detail = el('section', {className: 'door-card door-detail'},
             el('h2', {className: 'name'}, str(c, 'name', 'An unwritten story')),
             el('p', {className: 'muted large'}, c ? `${stageName(age)} · age ${age.toFixed(0)} · ${title(str(obj(c, 'appearance'), 'species', 'timber'))} wolf` +
-                giftCaption(c, this.gifts, ' · ')
+                this.caption(c, ' · ')
                 : 'Choose an empty slot to make your first wolf.'),
             canvas,
-            c ? this.portraitControls(c) : el('p', {className: 'muted large'}, ''),
+            ...below,
             enter);
         return el('div', {className: 'door-row'}, slots, detail);
+    }
+
+    /** "Gifted · Water" (a world's character), or "Water family" (a wolf on central, whose tier each world gives). */
+    private caption(c: Json | null, before: string): string {
+        if (this.mode === 'world') return giftCaption(c, this.gifts, before);
+        const family = str(c, 'family');
+        if (!family) return `${before}Normal`;
+        const f = arr(this.gifts, 'families').filter(isObject).find(x => str(x, 'id') === family);
+        return `${before}${str(f, 'name', title(family))} family`;
+    }
+
+    /** Central mode: one wolf deleted, the account kept; the password asked again (central does too). */
+    private async deleteWolf(c: Json) {
+        const password = await askText(`Delete ${str(c, 'name')} for good? Their name is held back for 30 days, and every world is told ` +
+            'to forget them. Give your password to confirm.', {password: true, ok: 'Delete the wolf', danger: true, placeholder: 'Your password'});
+        if (!password) return;
+        this.setMessage(`Deleting ${str(c, 'name')}…`);
+        this.submit({type: 'wolf_delete', id: str(c, 'id'), password});
+    }
+
+    /** Central mode: the whole account, every wolf with it. */
+    private async deleteAccount() {
+        const password = await askText('Delete your account and every wolf on it, for good? The names are held back for 30 days. ' +
+            'Give your password to confirm.', {password: true, ok: 'Delete my account', danger: true, placeholder: 'Your password'});
+        if (!password) return;
+        this.setMessage('Deleting your account…');
+        this.submit({type: 'account_delete', password});
     }
 
     /** Under a character's portrait: their own picture (uploaded, cropped square, approved by a DM before others see it). */
@@ -368,9 +572,191 @@ export class FrontDoor {
 
     private enter() {
         if (!this.selected() || this.busy) return;
+        if (this.mode === 'central') {
+            this.setMessage('Asking central for the worlds…');
+            this.submit({type: 'worlds_show', wolf: this.selectedId});
+            return;
+        }
         this.setMessage('Joining the world…');
         this.submit({type: 'character_enter', id: this.selectedId});
     }
+
+    // ------------------------------------------------------------------ The world list (central mode)
+
+    /** The worlds central lists (doc 77, 3.1): each one's name, kind, place and what it says of itself; greyed with
+     *  "needs an update" where this client can't play; a box for a world's address; Reconnect after a lost one. */
+    private worldsPage(): HTMLElement {
+        const wolf = this.selected();
+        const list = el('div', {className: 'world-list'});
+        if (!this.worlds.length) list.append(el('p', {className: 'muted large'}, 'Central lists no worlds just now. Try again in a while, or join one by its address.'));
+        for (const w of this.worlds) {
+            const kind = el('span', {className: `world-kind ${w.kind === 'official' ? 'official' : ''}`}, w.kind === 'official' ? 'OFFICIAL' : 'COMMUNITY');
+            const status = el('span', {className: 'world-status muted'}, w.status);
+            const note = el('p', {className: 'world-note gold'}, w.note);
+            const plain = !w.secure && !/^(127\.|localhost:|\[::1\]:)/.test(w.address);
+            const join = this.button(w.id === this.lostWorld ? 'RECONNECT' : 'JOIN', () => this.joinWorld(w), true);
+            join.disabled = w.fit !== 'ok' && w.fit !== 'unknown';
+            join.dataset.world = w.id;
+            const row = el('div', {className: `world-row${join.disabled ? ' unfit' : ''}`},
+                el('div', {className: 'world-text'},
+                    el('div', {className: 'world-title'}, el('strong', {}, w.name), kind, ...(plain ? [el('span', {className: 'world-kind'}, 'NOT ENCRYPTED')] : [])),
+                    ...(w.description ? [el('p', {className: 'muted'}, w.description)] : []),
+                    el('p', {className: 'muted small'}, w.address, '  ·  ', status),
+                    note),
+                join);
+            row.dataset.world = w.id;
+            this.worldLines.set(w.id, {status, join, note});
+            list.append(row);
+        }
+        const address = el('input', {type: 'text', placeholder: 'host:port, e.g. 192.168.1.20:7788', maxLength: 260});
+        address.name = 'address';
+        const direct = el('form', {className: 'world-direct'},
+            el('label', {}, el('span', {}, 'A WORLD BY ITS ADDRESS · ON YOUR NETWORK, OR PRIVATE'), address),
+            el('button', {type: 'submit', className: 'secondary', textContent: 'JOIN BY ADDRESS'}));
+        direct.addEventListener('submit', e => {
+            e.preventDefault();
+            if (this.busy) return;
+            if (!address.value.trim()) return this.setMessage('Type a world\'s address: host:port.', true);
+            this.setMessage(`Asking ${address.value.trim()}…`);
+            this.submit({type: 'world_join', address: address.value.trim(), wolf: this.selectedId});
+        });
+        const card = el('section', {className: 'door-card door-form door-worlds'},
+            el('p', {className: 'gold small'}, `WHERE WILL ${str(wolf, 'name', 'YOUR WOLF').toUpperCase()} GO?`),
+            el('div', {className: 'scroll'}, list),
+            direct,
+            el('div', {className: 'door-actions'},
+                this.button('Back to your wolves', () => this.show('roster')),
+                this.button('Refresh the list', () => {
+                    this.setMessage('Asking central for the worlds…');
+                    this.submit({type: 'worlds_show', wolf: this.selectedId});
+                })));
+        const canvas = el('canvas', {className: 'portrait', width: 480, height: 330});
+        this.portraitCanvas = wolf ? canvas : null;
+        const side = el('section', {className: 'door-card door-preview'},
+            el('h2', {className: 'name'}, str(wolf, 'name')),
+            el('p', {className: 'muted large'}, wolf ? `${stageName(num(wolf, 'age', 18))} · age ${num(wolf, 'age', 18).toFixed(0)}${this.caption(wolf, ' · ')}` : ''),
+            canvas,
+            el('p', {className: 'muted'}, 'In a world your wolf hasn\'t been to, you choose where they arrive and who they know there. Next time, they go straight in.'));
+        return el('div', {className: 'door-row'}, side, card);
+    }
+
+    /** A world's line, as the client learns more (its status, asked after the list is shown): no page redrawn. */
+    updateWorld(id: string, status: string, fit: string, note: string) {
+        const w = this.worlds.find(x => x.id === id);
+        if (w) Object.assign(w, {status, fit, note});
+        const line = this.worldLines.get(id);
+        if (!line) return;
+        line.status.textContent = status;
+        line.note.textContent = note;
+        line.join.disabled = fit !== 'ok' && fit !== 'unknown';
+        line.join.closest('.world-row')?.classList.toggle('unfit', line.join.disabled);
+    }
+
+    private joinWorld(w: DoorWorld) {
+        if (this.busy) return;
+        this.setMessage(`Joining ${w.name}…`);
+        this.submit({type: 'world_join', world: w.id, wolf: this.selectedId});
+    }
+
+    // ------------------------------------------------------------------ A first arrival in a world (central mode)
+
+    /** What a world asks when a wolf first comes (doc 77, 3.1 step 5; Q12 (a)): the tier (a wolf with a Gift family
+     *  arrives Gifted or Quickened, as this world's standing allows; one without is Normal), strengths and weaknesses,
+     *  the town and the tie. The world opens the purse and places the wolf. */
+    private arrivePage(): HTMLElement {
+        const nameHeading = el('h2', {className: 'name'}, this.draftName);
+        const summary = el('p', {className: 'sage large pre'}, this.describe());
+        const canvas = el('canvas', {className: 'portrait', width: 480, height: 330});
+        this.portraitCanvas = canvas;
+        const tabNames: Array<[string, string]> = [...(this.draftFamily ? [['gift', 'Gift'] as [string, string]] : []), ['strengths', 'Strengths'],
+            ...(this.starts.length ? [['arrival', 'Arrival'] as [string, string]] : []), ...(this.ties.length ? [['tie', 'Tie'] as [string, string]] : [])];
+        if (!tabNames.some(([id]) => id === this.creatorTab)) this.creatorTab = tabNames[0][0];
+        const tabs = el('div', {className: 'creator-tabs'});
+        const panel = el('div', {className: 'creator-panel'});
+        const render = () => {
+            summary.textContent = this.describe();
+            this.drawPortrait();
+            tabs.replaceChildren(...tabNames.map(([id, label]) => {
+                const b = el('button', {type: 'button', className: id === this.creatorTab ? 'tab active' : 'tab', textContent: label});
+                b.dataset.tab = id;
+                b.addEventListener('click', () => {
+                    this.creatorTab = id;
+                    render();
+                });
+                return b;
+            }));
+            const changed = () => render();
+            panel.replaceChildren(...(this.creatorTab === 'gift' ? this.arriveGiftPanel(changed) : this.creatorTab === 'strengths' ? this.strengthsPanel(changed)
+                : this.creatorTab === 'arrival' ? this.arrivalPanel(changed) : this.tiePanel(changed)));
+        };
+        render();
+        const preview = el('section', {className: 'door-card door-preview'},
+            el('p', {className: 'gold small'}, `FIRST TIME IN ${this.arriveWorld.toUpperCase()}`),
+            nameHeading, summary, canvas,
+            el('p', {className: 'muted'}, 'What you choose here is this world\'s: another world asks again.'));
+        const actions = el('div', {className: 'door-actions'},
+            this.button('Leave', () => this.submit({type: 'arrive_cancel'})),
+            this.button('ARRIVE', () => this.arrive(), true));
+        const form = el('section', {className: 'door-card door-form'},
+            el('div', {className: 'scroll'}, el('div', {className: 'door-fields'}, el('div', {className: 'creator'}, tabs, panel))), actions);
+        return el('div', {className: 'door-row'}, preview, form);
+    }
+
+    /** The tier at arrival: the wolf's family is fixed (central's); Gifted or Quickened as the world offers them. */
+    private arriveGiftPanel(changed: () => void): HTMLElement[] {
+        const tiers = obj(this.gifts, 'tiers');
+        const family = arr(this.gifts, 'families').filter(isObject).find(f => str(f, 'id') === this.draftFamily);
+        const row = el('div', {className: 'gift-tiers'});
+        for (const tier of this.tierChoices) {
+            const t = obj(tiers, tier);
+            const locked = tier !== 'normal' && this.tierLocked(tier);
+            const b = el('button', {type: 'button', className: `gift-card${this.draftTier === tier ? ' chosen' : ''}${locked ? ' locked' : ''}`},
+                el('strong', {}, `${locked ? '🔒 ' : ''}${str(t, 'name', title(tier))}`), el('span', {}, str(obj(family, tier), 'best') || str(t, 'best')),
+                ...(locked ? arr(obj(this.tiers, tier), 'progress').filter(isObject).map(p => el('small', {className: 'gift-progress'}, str(p, 'label'))) : []));
+            b.dataset.tier = tier;
+            b.addEventListener('click', () => {
+                this.draftTier = tier;
+                changed();
+            });
+            row.append(b);
+        }
+        const out: HTMLElement[] = [el('p', {className: 'muted'}, `Your wolf's Gift is the ${str(family, 'name', title(this.draftFamily))} family. ` +
+            'Here they arrive Gifted or Quickened: Quickened opens with standing earned in this world.'),
+            el('span', {className: 'gift-heading'}, 'IN THIS WORLD'), row];
+        if (family) out.push(this.giftDetails(family));
+        return out;
+    }
+
+    private arrive() {
+        if (this.busy || this.page !== 'arrive') return;
+        if (this.creation && !this.buildFits(this.draftGrades)) {
+            this.creatorTab = 'strengths';
+            this.show('arrive');
+            return this.setMessage('That build costs more points than there are (a Gift tier may cost some too).', true);
+        }
+        if (this.draftTier !== 'normal' && this.tierLocked(this.draftTier)) {
+            this.creatorTab = 'gift';
+            this.show('arrive');
+            return this.setMessage(str(obj(this.tiers, this.draftTier), 'message', `${title(this.draftTier)} isn't open to your account here yet.`), true);
+        }
+        if (this.tieRequired && !this.draftTie) {
+            this.creatorTab = 'tie';
+            this.show('arrive');
+            return this.setMessage('Your first wolf here takes a tie: pick a story starter, or keep the one suggested.', true);
+        }
+        const command: Json = {type: 'character_arrive', tier: this.draftTier};
+        if (this.draftStart && this.starts.some(t => str(t, 'id') === this.draftStart)) command.start = this.draftStart;
+        if (this.draftTie) command.tie = this.draftTie;
+        if (Object.keys(this.draftGrades).length || this.draftSpecialty) command.build = {grades: {...this.draftGrades}, specialty: this.draftSpecialty};
+        const fingerprint = JSON.stringify(command);
+        if (!this.creationRequestId || this.creationFingerprint !== fingerprint) {
+            this.creationRequestId = newCommandId();
+            this.creationFingerprint = fingerprint;
+        }
+        this.setMessage('Arriving…');
+        this.submit({...command, commandId: this.creationRequestId});
+    }
+
 
     // ------------------------------------------------------------------ Creating a character
 
@@ -414,7 +800,8 @@ export class FrontDoor {
         const a = readAppearance(this.draftAppearance);
         return `${stageName(this.draftAge)} · age ${this.draftAge}\n${title(str(this.draftAppearance, 'stature'))} stature · ` +
             `${a ? shoulderHeightCm(a, this.draftAge).toFixed(0) : '0'} cm at shoulder` +
-            giftCaption({gift: this.draftFamily, quickened: this.draftTier === 'quickened'}, this.gifts, '\n');
+            (this.mode === 'central' && this.page !== 'arrive' ? this.caption({family: this.draftFamily}, '\n')
+                : giftCaption({gift: this.draftFamily, quickened: this.draftTier === 'quickened'}, this.gifts, '\n'));
     }
 
     private creatorPage(reviewOnly: boolean): HTMLElement {
@@ -429,7 +816,20 @@ export class FrontDoor {
         };
         const fields = el('div', {className: 'door-fields'});
         if (!reviewOnly) fields.append(this.creatorFields(draft, refresh, nameHeading));
-        else {
+        else if (this.mode === 'central') {
+            const colour = (field: string) => CoatNames[Math.min(7, Math.max(0, Math.trunc(num(draft, field))))];
+            const family = arr(this.gifts, 'families').filter(isObject).find(f => str(f, 'id') === this.draftFamily);
+            fields.append(
+                el('h2', {}, 'Review your wolf'),
+                el('p', {className: 'gold name'}, this.draftName),
+                el('p', {className: 'large pre'}, `${title(str(draft, 'species'))} wolf · ${title(str(draft, 'sex'))}\nAge ${this.draftAge} · ` +
+                    `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${title(str(draft, 'pattern'))} markings`),
+                el('p', {className: 'muted'}, `Coat: ${str(draft, 'coat') || colour('baseColor')} · eyes ${str(draft, 'eyes') || 'amber'} · build ${title(str(draft, 'build') || 'average')}`),
+                el('p', {className: family ? 'gold' : 'muted'}, family ? `Gift: the ${str(family, 'name')} family. In each world your wolf arrives Gifted or Quickened, as that world allows.`
+                    : 'Gift: none. Your wolf is Normal in every world.'),
+                el('p', {className: 'muted large'}, 'Creating saves this wolf to your account on central: their name, age, sex and Gift never change; their ' +
+                    'look can. Where they arrive, whom they know, and their strengths are chosen in each world, the first time they go there.'));
+        } else {
             const colour = (field: string) => CoatNames[Math.min(7, Math.max(0, Math.trunc(num(draft, field))))];
             fields.append(
                 el('h2', {}, 'Review your wolf'),
@@ -468,12 +868,17 @@ export class FrontDoor {
         const wrap = el('div', {className: 'creator'});
         const tabs = el('div', {className: 'creator-tabs'});
         const panel = el('div', {className: 'creator-panel'});
-        const tabNames: Array<[string, string]> = [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['gift', 'Gift'],
-            ['strengths', 'Strengths'], ...(this.starts.length ? [['arrival', 'Arrival'] as [string, string]] : []),
-            ...(this.ties.length ? [['tie', 'Tie'] as [string, string]] : []), ['name', 'Name & age']];
+        // Central mode (doc 77, 3.1): the wolf's identity only; the strengths, the town and the tie are each world's.
+        const tabNames: Array<[string, string]> = this.mode === 'central'
+            ? [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['gift', 'Gift'], ['name', 'Name & age']]
+            : [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Markings'], ['eyes', 'Eyes'], ['gift', 'Gift'],
+                ['strengths', 'Strengths'], ...(this.starts.length ? [['arrival', 'Arrival'] as [string, string]] : []),
+                ...(this.ties.length ? [['tie', 'Tie'] as [string, string]] : []), ['name', 'Name & age']];
+        if (!tabNames.some(([id]) => id === this.creatorTab)) this.creatorTab = 'body';
         const render = () => {
             tabs.replaceChildren(...tabNames.map(([id, label]) => {
                 const b = el('button', {type: 'button', className: id === this.creatorTab ? 'tab active' : 'tab', textContent: label});
+                b.dataset.tab = id;
                 b.addEventListener('click', () => {
                     this.creatorTab = id;
                     render();
@@ -548,7 +953,7 @@ export class FrontDoor {
             return [swatches('coat', 'COAT', CoatSwatches), swatches('gradientTint', 'BELLY AND LEGS', CoatSwatches),
                 amount('gradientAmount', 'HOW FAR THE BELLY COLOUR REACHES')];
         if (tab === 'eyes') return [swatches('eyes', 'EYES', EyeSwatches)];
-        if (tab === 'gift') return this.giftPanel(changed);
+        if (tab === 'gift') return this.mode === 'central' ? this.familyPanel(changed) : this.giftPanel(changed);
         if (tab === 'strengths') return this.strengthsPanel(changed);
         if (tab === 'arrival') return this.arrivalPanel(changed);
         if (tab === 'tie') return this.tiePanel(changed);
@@ -675,6 +1080,57 @@ export class FrontDoor {
             this.showGiftDetails = false;
         }
         else out.push(el('p', {className: 'muted'}, 'Choose a family to see what it gives.'));
+        return out;
+    }
+
+    /** Central mode's Gift tab: a family or none. The family is the wolf's in every world; the tier is each world's
+     *  (doc 77, Q12 (a); the user, 2026-11-07: a wolf with no family is Normal, one with a family Gifted or Quickened). */
+    private familyPanel(changed: () => void): HTMLElement[] {
+        const families = arr(this.gifts, 'families').filter(isObject);
+        const out: HTMLElement[] = [el('p', {className: 'muted'}, 'Most wolves have no Gift: they are Normal in every world. A wolf with one of the ' +
+            'eight Gift families arrives in each world Gifted or Quickened, as that world allows.')];
+        const none = el('button', {type: 'button', className: `gift-card${this.draftFamily ? '' : ' chosen'}`},
+            el('strong', {}, 'No Gift'), el('span', {}, 'Normal, everywhere'));
+        none.dataset.family = '';
+        none.addEventListener('click', () => {
+            this.draftFamily = '';
+            this.draftTier = 'normal';
+            changed();
+        });
+        out.push(el('span', {className: 'gift-heading'}, 'GIFT'), el('div', {className: 'gift-tiers'}, none));
+        if (!families.length) {
+            out.push(el('p', {className: 'gold'}, 'The Gift families have not arrived from central yet.'));
+            return out;
+        }
+        const grid = el('div', {className: 'gift-families'});
+        for (const f of families) {
+            const id = str(f, 'id');
+            const b = el('button', {type: 'button', className: `gift-family${this.draftFamily === id ? ' chosen' : ''}`},
+                el('strong', {}, str(f, 'name')), el('span', {}, str(f, 'domain')));
+            b.dataset.family = id;
+            b.style.setProperty('--family', str(f, 'colour', '#d9b67b'));
+            b.addEventListener('click', () => {
+                this.draftFamily = id;
+                this.draftTier = 'gifted';
+                this.showGiftDetails = true;
+                changed();
+            });
+            grid.append(b);
+        }
+        out.push(el('span', {className: 'gift-heading'}, 'GIFT FAMILY'), grid);
+        const chosen = families.find(f => str(f, 'id') === this.draftFamily);
+        if (chosen) {
+            const box = el('div', {className: 'gift-details'});
+            box.style.setProperty('--family', str(chosen, 'colour', '#d9b67b'));
+            box.append(el('p', {className: 'gold small'}, str(chosen, 'name').toUpperCase()), el('p', {className: 'muted'}, str(chosen, 'domain')),
+                el('dl', {className: 'gift-terms'},
+                    el('dt', {}, 'Gifted'), el('dd', {}, str(obj(chosen, 'gifted'), 'best')),
+                    el('dt', {}, 'Quickened'), el('dd', {}, str(obj(chosen, 'quickened'), 'best'))),
+                el('p', {className: 'muted'}, 'Gifted wolves are the best at work and help their side in a fight; Quickened ones fight with it, and draw the Wardens.'));
+            out.push(box);
+            if (this.showGiftDetails) requestAnimationFrame(() => box.scrollIntoView({block: 'start'}));
+            this.showGiftDetails = false;
+        }
         return out;
     }
 
@@ -916,6 +1372,11 @@ export class FrontDoor {
         this.draftName = this.draftName.trim();
         if (this.draftName.length < 2 || this.draftName.length > 32)
             return this.setMessage('Choose a character name between 2 and 32 characters. The authority validates the final name.', true);
+        if (this.mode === 'central') {
+            this.setMessage('Review your wolf. Creating saves them to your account; they enter no world yet.');
+            this.show('review');
+            return;
+        }
         if (this.creation && !this.buildFits(this.draftGrades)) {
             this.creatorTab = 'strengths';
             this.show('creator');
@@ -942,6 +1403,13 @@ export class FrontDoor {
 
     private create() {
         if (this.busy || !this.draftAppearance || this.page !== 'review') return;
+        if (this.mode === 'central') {
+            const wolf: Json = {type: 'wolf_create', name: this.draftName, age: this.draftAge, appearance: this.draftAppearance};
+            if (this.draftFamily) wolf.family = this.draftFamily;
+            this.setMessage('Creating your wolf…');
+            this.submit(wolf);
+            return;
+        }
         const command: Json = {type: 'character_create', name: this.draftName, age: this.draftAge, appearance: this.draftAppearance};
         if (this.draftTier !== 'normal') command.gift = {tier: this.draftTier, family: this.draftFamily};
         if (this.draftStart && this.starts.some(t => str(t, 'id') === this.draftStart)) command.start = this.draftStart;
@@ -963,7 +1431,8 @@ export class FrontDoor {
         if (!canvas) return;
         const c = canvas.getContext('2d')!;
         c.clearRect(0, 0, canvas.width, canvas.height);
-        const creating = this.page === 'creator' || this.page === 'review';
+        const creating = this.page === 'creator' || this.page === 'review' || this.page === 'arrive';
+
         const appearance = creating ? this.draftAppearance : obj(this.selected(), 'appearance');
         const age = creating ? this.draftAge : num(this.selected(), 'age', 18);
         const artwork = creating ? undefined : str(this.selected(), 'artwork') || undefined;

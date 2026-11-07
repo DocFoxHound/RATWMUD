@@ -70,6 +70,12 @@ export class Session {
         this.transport.command(JSON.stringify(withId));
     }
 
+    /** A message sent exactly as given, with no request ID added: a ticket world's hello is a ticket and a protocol,
+     *  and nothing else (doc 77, 5). */
+    submitExact(command: Json) {
+        this.transport.command(JSON.stringify(command));
+    }
+
     receiveEvent(event: Json) {
         const type = str(event, 'type');
         if (type === 'lobby') {
@@ -138,8 +144,9 @@ export class Session {
     }
 
     connectionLost() {
-        this.showLobby(lobbyEvent(false, 'The connection to the world server was lost.'));
+        this.showLobby({...lobbyEvent(false, 'The connection to the world server was lost.'), code: 'connection_lost'});
     }
+
 
     private showLobby(event: Json) {
         if (typeof event.credentialsAllowed === 'boolean') this.credentialsAllowed = event.credentialsAllowed;

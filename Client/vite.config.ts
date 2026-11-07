@@ -1,13 +1,14 @@
 import {defineConfig, type Plugin} from 'vite';
-import {copyFileSync, mkdirSync, readdirSync, readFileSync} from 'node:fs';
+import {copyFileSync, mkdirSync, readFileSync} from 'node:fs';
 import {join, resolve} from 'node:path';
+import {clientDataHash, protocol} from './build-info.mjs';
 
 const data = resolve(import.meta.dirname, '../Data');
 
-// The portraits and the fonts live in Data/ (the server and tools read them too); the build copies them in.
+// The fonts live in Data/ (the server and tools read them too); the build copies them in. (The portrait sheets are no
+// longer copied: the page draws its wolves in code, ui/wolfArt.ts, and never loaded them.)
 function gameData(): Plugin {
     const files = () => [
-        ...readdirSync(join(data, 'Portraits')).filter(f => f.endsWith('.png')).map(f => [join(data, 'Portraits', f), `portraits/${f}`]),
         ...['DejaVuSansMono.ttf', 'DejaVuSansMono-LICENSE.txt', 'Roboto-Regular.ttf', 'Roboto-Medium.ttf', 'Roboto-LICENSE.txt']
             .map(f => [join(data, 'Fonts', f), `fonts/${f}`]),
     ];
@@ -38,6 +39,8 @@ function gameData(): Plugin {
 export default defineConfig({
     plugins: [gameData()],
     base: './',
+    // The protocol and client-data hash this page speaks (doc 77, 5.1: net/build.ts).
+    define: {__RATW_BUILD__: JSON.stringify({protocol: protocol(), clientData: clientDataHash()})},
     build: {outDir: 'dist', emptyOutDir: true},
     server: {port: 5174, proxy: {'/ws': {target: 'ws://127.0.0.1:7788', ws: true}}},
 });

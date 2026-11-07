@@ -13,6 +13,7 @@ import {Sound} from '../ui/sound.ts';
 import type {Json} from './json.ts';
 import type {MotionFrame} from '../net/motion.ts';
 import type {NetSample} from '../net/connection.ts';
+import {gameTakesKeyDown, metaKey} from '../shell.ts';
 
 const MovementKeys = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD']);
 
@@ -162,7 +163,11 @@ export class GameView {
     private listen() {
         const s = this.state, textarea = this.composer.element;
         this.on(window, 'keydown', e => {
+            // Cmd going down lets go of everything held (macOS WebKit sends no keyup for other keys while it is down).
+            if (metaKey(e)) s.focusLost();
             if (e.target === textarea || e.target instanceof HTMLInputElement) return;   // (Typing a name, say.)
+            // Ctrl and Cmd leave the page's own keys alone (copy, paste...): Ctrl+C on a story copies (doc 76, 4.4).
+            if (!gameTakesKeyDown(e)) return;
             if (e.repeat && MovementKeys.has(e.code)) {
                 e.preventDefault();
                 return;
@@ -170,7 +175,9 @@ export class GameView {
             if (s.keyDown(keyOf(e))) e.preventDefault();
         });
         this.on(window, 'keyup', e => {
+            if (metaKey(e)) s.focusLost();
             if (e.target === textarea || e.target instanceof HTMLInputElement) return;
+
             if (s.keyUp(keyOf(e))) e.preventDefault();
         });
         // Nothing stays held when attention goes elsewhere.
