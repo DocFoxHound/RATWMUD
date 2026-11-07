@@ -1001,6 +1001,175 @@ For the user to decide (none blocks Phase 2):
    a character today. Built: only with the account.
 3. **The limits' numbers** above are first guesses.
 
+**2026-11-07: the user's decisions on Phase 1's questions** (verbatim): "Everyone wolf does not need a class. Rather,
+Normal (not gifted or quickened) wolves have no class at all. Both Gifted and Quickened must choose a class. Yes players
+should be able to delete a wolf without deleting their account. An account may have several wolves. We will tune rate
+limits later." ("Class" is the Gift family.)
+- **A wolf with no family is Normal, everywhere; a wolf with a family arrives Gifted or Quickened, never Normal.**
+  Central keeps the family optional, as built. The game's own creation (password mode) already required exactly this
+  (`identity::gift`: a family exactly when the tier isn't Normal), and `ratw_identity`'s `build` check uses the same
+  rule, so nothing there changed. The arrival (Phase 2, below) follows it.
+- **One wolf can be deleted without the account:** `DELETE /wolves/ID {password}` (Phase 2, below).
+- **Rate limits:** unchanged, tuned later.
+
+**2026-11-07: Phase 2, worlds join by ticket (branch `r2-desktop`).** About 3 hours. No simulation; no real server
+was started (the join test runs its own `ratw_server` on a free port with the demo world and a throwaway save file,
+and stops it); no world's database was touched (central's tests use throwaway `ratw_central_test` and
+`ratw_central_jointest`, made and dropped with the Postgres superuser from `Database/.env`).
+
+**Review of Phase 1 first** (b7aed3d..81974b8: `Central/`, `Core/RatwIdentity`, `Server/ratw_identity.cpp`, the
+`RatwGame.cpp` change). The creation change keeps every message and check as it was (ctest's creation tests pass
+unchanged). One real defect, found by Phase 2's join test and fixed with a test
+(`test_a_ticket_in_the_second_a_key_is_made_uses_that_key`, which fails without the fix):
+- **Central signed tickets at `int(now)`.** In the second a key was made, its activation (a fraction of a second
+  later than the whole second) was still "ahead", so `KeyRing.sign` found no signing key and made a second one at once,
+  which no world had fetched; that ticket was then refused as an unknown key until the world agent fetched again. Now
+  the ticket is signed at central's own clock; the claims keep whole seconds.
+- Also brought into line with the C++ check (not defects): the reference `central_tickets.verify` now refuses a ticket
+  whose `iat` is more than the leeway ahead, and a lifetime over 10 minutes (`MAX_LIFETIME`), as the world does.
+
+What was built:
+- **The ticket check in C++** (`Core/RatwTickets.{h,cpp}`), by the reference check's rules: `alg` exactly `Ed25519`
+  before anything else is believed; a header of `alg`, `typ` (`JWT`) and `kid` only; an unknown `kid` is its own
+  verdict (`UnknownKey`), so the world fetches the keys again; Ed25519 through libcrypto's EVP calls, bound at run time
+  in `RatwSystemLibs` apart from the password calls (so a libcrypto without them still serves password worlds); strict
+  base64url (no padding, no stray bits); the claims parsed with **`json::parseUnique`, which refuses a key repeated in
+  any object** (Phase 0's finding: `json::parse` keeps the last copy); `aud` this world, `kind` this world's kind, `exp`
+  with 2 minutes' leeway, `iat` not ahead by more than the leeway and not before the world started, a lifetime of at
+  most 10 minutes, each `jti` once (remembered until `exp` plus the leeway, then forgotten); the identity in the game's
+  own forms (`identity::name` must give the name back unchanged, a whole age 6-99, `wire::readAppearance` with the sex
+  the look's own, `identity::family`), `wolf` a `wolf-` id and `sub` an `acct-` id. A ticket over 4 KB is refused.
+- **Central's keys reach the world through a file.** `tools/world_agent.py keys --central URL --out FILE` (standard
+  library only; the heartbeat joins it in Phase 4) fetches `GET /keys` at start, daily, and whenever the server asks:
+  a ticket under an unknown `kid` makes the server write `FILE.wanted` (at most once a minute), and the agent fetches
+  again and removes it. The file is written whole and atomically; if central can't be reached or sends no usable key it
+  is left as it was (doc 12: a world keeps its last keys). It also records central's clock offset (`GET /health`),
+  which the server logs (a warning past a minute). The server re-reads the file when it changes (checked every 10 s,
+  and at once on an unknown `kid`, so the same, still unused ticket is admitted on the next try). http:// is for a
+  central on this computer; https:// is checked as usual by Python.
+- **Ticket mode** (`game::Options::central`; the server's `--central URL --world-id ID --central-keys FILE
+  [--official] [--world-name NAME] [--player-limit N] [--arrivals-per-hour N]`). Opt-in: without `--central` nothing
+  changed, and `--world-id`, `--central-keys` and `--official` alone are refused. In it:
+  - `hello{ticket, protocol}` is the only way in (any other field refused; five tries a connection). `auth_register`,
+    `auth_login`, `character_create` and `character_enter` are refused (`code: "ticket_only"`), **from loopback too**:
+    the server's `allowsLocalCredentials` is false in ticket mode, and the game refuses them regardless.
+  - The world refuses to start with `--dev-identity`, and with `--dev-tools` or `--open-tiers` when `--official`. A
+    community world with dev tools starts, and says `"cheats": true` in its status.
+  - **Any `Origin` is accepted** on `/ws`; password mode keeps today's check. **No page is served** (`--web` is refused
+    at start; any path but `/ws` and `/status` is 404).
+  - **`GET /status`** (and HEAD): `{ratw, id, name, kind, protocol, build, clientData, players, limit, voices, private,
+    cheats}`, at most 2 KB, `Access-Control-Allow-Origin: *`, `Cache-Control: no-store`, 30 a minute from one
+    address. The game thread sets it once a second (`Game::worldStatus`); the network thread answers from that copy.
+  - The **lobby** in ticket mode: `{mode: "ticket", stage: "ticket" | "arrive", ok, code?, protocol, clientData,
+    world, worldName, kind, message}`, and at `arrive` the wolf from the ticket, `tierChoices`, the Gift catalogue,
+    the strengths' catalogue, this account's tiers here, its account view (the handle), the starts and the ties.
+- **The account entry** (`accounts::AccountKind::Central`): an account is central's id for it (the ticket's `sub`)
+  and the wolves it has brought here, with no salt or verifier; made at its first arrival. Saved as `{"version": 2,
+  "kind": "central", "entries": [{"username": <central id>, "characters", "creations"}]}`: the field keeps the name
+  `username` because it is `game.accounts`' row key (migration 0012), so **no migration** was needed. A world holds
+  one kind only: a save with accounts of the other kind is refused at start (a password world won't start on a ticket
+  world's save, nor the other way); a save with no accounts may be either, so a world with nobody yet (DEV today) can
+  go over to tickets. `Accounts::restore` checks the entries by kind; `referencesOnly` is unchanged (every `wolf-`
+  character owned).
+- **The account-level sections on central ids:** the game keeps every account-level thing (standing, handles,
+  friends, circles, stars, safety marks, storytellers, reports...) by `Connection::accountUsername`, which in ticket
+  mode *is* the central id, and they all check an account by `accounts_.exists`, never by the username's shape; so the
+  sweep needed no change to those sections. A world in ticket mode never learns a username at all. The join test
+  sweeps the whole save after two wolves have played: the accounts are the tickets' ids, and no username, salt,
+  verifier or password appears anywhere.
+- **`character_arrive{commandId, start?, tie?, tier?, build?}`** runs the rest of today's `character_create` once per
+  world, through the same code (the shared part is now `Game::arrivalChoices` and `Game::makeWolf`; password-mode
+  creation calls them too, with the same messages and order): the start town, the tie (a first wolf of the account
+  here must take one, unless the world has none), the strengths (`practice::checkBuild`), `Society::addPlayer`'s
+  welcome (20 pennies and 2 herbs from the treasury, 3 meals made), the creation receipt (idempotent by `commandId`),
+  the account's first wolf for doc 52; then the wolf comes in. Name, age, look and family come from the ticket, and
+  can't be given here. **The tier (the user's decision above):** no family, Normal only; a family, Gifted or Quickened.
+  Gifted is open to such a wolf (it can't arrive Normal), and **Quickened is gated by this world's standing as today**
+  (doc 49).
+- **Straight in after:** a ticket for a wolf that has arrived brings it in at once. The **look is refreshed from each
+  ticket**; the name never changes (a different name on central is logged and the world's kept); a ticket whose sex
+  differs from the world's wolf is refused. A wolf owned by another account here is refused. One wolf per account in
+  the world at once, as today. Leaving (`character_leave`) takes the wolf out and ends the ticket's account on that
+  connection: a new ticket brings it back.
+- **Arrival limits** (`Options::central`, first guesses, tuned later): at most 600 first arrivals an hour in the world
+  and 3 an hour for one account; at most `--player-limit` (100) wolves in the world; and once the world holds
+  `MaxPlayerAccounts` (8,192) player economy accounts it says "room for no more new wolves" instead of failing deep.
+- **Protocol and client-data hash** (`Core/RatwBuildInfo.h`): `build::Protocol = 1`, in the lobby, `hello` and
+  `/status`. The client-data hash is made by CMake at configure time from what the page bakes in (`Data/Terrain/
+  terrain.json`, `Core/RatwTerrainCatalog.inc`, `Core/RatwStep.*`, `Client/wasm/walk.cpp`, `Core/RatwPack.*`,
+  `Core/RatwMotionCore.*`, `Core/RatwLink.h`; line endings as LF), and `tools/client_data_hash.py` makes the same one
+  for the client's build (the join test checks they agree). The terrain catalogue is compiled into the server, so the
+  hash of the sources is the hash of what it runs. `build` is the commit at configure time.
+- **Central: one wolf deleted without the account** (the user's decision): `DELETE /wolves/ID {password}`. The password
+  is asked again (as for deleting the account), and a wrong one counts as a failed sign-in for the account's lock. The
+  name is held back for 30 days and the id listed for the worlds to forget, as an account's deletion does; the slot is
+  free again.
+
+Tests:
+- ctest: **82 of 82 pass**, with the new `ticket_behaviors` (`Tests/ticket_tests.cpp`, **422 checks**): RFC 8032's
+  first test vector through the run-time binding; base64url and `parseUnique`; every ticket rule (the good ticket, a
+  replay, another world, expired, 90 s past and 90 s ahead admitted, 200 s ahead refused, before the world's start and
+  the leeway at it, lifetimes, `none`/`EdDSA`/`HS256`/`ed25519`/`RS256`/empty/missing `alg`, an unsigned ticket, a
+  doubled `alg`, `jku`, another `typ`, a doubled claim and a key doubled deep in the look, an unknown and a missing
+  `kid`, another key under a known `kid`, changed signature and payload, padding, two and four parts, too long, stray
+  bits, every claim's type and identity, the kind both ways, odd `jti`s, unknown claims ignored, a JWK set's odd keys,
+  `jti`s forgotten); ticket mode's start refusals; the whole join (no password, creation or development identity from
+  loopback, the protocol, the arrival's tiers, the welcome conserved, leave, replay refused, straight back in, the look
+  refreshed and the name kept, another account's wolf refused, one wolf per account, standing by central id, the save
+  by central id with no password in it, a restart refusing tickets from before it, Quickened after earned standing, a
+  wolf without a family arriving Normal, neither kind of save loading as the other); the arrival and player limits;
+  a new key fetched on an unknown `kid` with the same ticket then admitted.
+- `Central/test_central.py`: **43 tests, all pass** (with one wolf's deletion, failed deletions locking the account,
+  `DELETE /wolves/ID` over HTTP, and the signing-clock test).
+- `Central/test_world_join.py`: **2 tests, both pass** (about 3 s): a real central on `ratw_central_jointest`, the
+  world agent, and `ratw_server` in ticket mode on a free port with the demo world and a throwaway save. `/status`'s
+  fields and its hash against the tool's; no page; a bundled page's `Origin: tauri://localhost` accepted; a loopback
+  password refused; two accounts' wolves (one with a family, arriving Gifted; one without, Normal) get tickets, join,
+  arrive and chat; `/status` counts them; a replayed ticket refused; both leave and rejoin straight in by new tickets;
+  the world stops, saves, and its save holds the tickets' account ids and the wolves, and no username or password.
+  And the server refusing `--dev-identity`, `--official` with `--dev-tools` or `--open-tiers`, `--web`, and
+  `--world-id` without `--central`. Every process it starts is stopped and the database dropped.
+
+How to run a ticket world on this laptop (with central running as in Phase 1's entry, and a world added there):
+
+    python3 tools/world_agent.py keys --central http://127.0.0.1:7790 --out Saved/World/central-keys.json &
+    build-central/ratw_server --save /tmp/ticket-world.json --central http://127.0.0.1:7790 \
+        --world-id world-... --central-keys Saved/World/central-keys.json --world-name "Laptop world"
+
+Decisions taken here:
+1. **`--world-id` instead of the host token, for now.** Host tokens are Phase 4a; until then the world is named by
+   the id `ratw_central.py worlds add` prints. The token will name it then.
+2. **`--official` is declared by the world, and checked against every ticket:** tickets carry the kind central set,
+   and a ticket of the other kind is refused. So an official world started as community (to get dev tools) admits
+   nobody, and the refusal of dev tools on official worlds can't be dodged.
+3. **The roleplay profile stays per world, and is not in the ticket.** Doc 5.1 said the world takes the ticket's
+   profile; but players already edit their profile in play, which would be overwritten at every join, and a full
+   profile would make a ticket several KB. Only the look is refreshed. (For the user: see below.)
+4. **The server never fetches anything itself:** the world agent keeps the keys file, and the server asks it by a
+   marker file; no child process, no HTTP client in the game process (doc 5.1's recommendation).
+5. **The account entry keeps the field name `username`** for central's id, so `game.accounts` needs no migration.
+
+Left, on purpose:
+- **Folding a dormant wolf's economy account back into the treasury after a season** (5.1): not built. It is an
+  economy change (conserving: money and goods back to the treasury) with a question of its own: what a returning wolf
+  gets. The cap's refusal stands in until then.
+- Bans at `hello` and sending out a banned wolf (5.1, with the heartbeat: Phase 4); the world's own bans (Phase 5's
+  host commands); the resume token (5, point 7); private worlds (Q9).
+- The DM tool on central ids (Phase 7); deleting a wolf inside a world when central deletes it (Phase 7: the heartbeat
+  passes the ids).
+- The client's side of all this: the protocol and hash it bakes in, the lobby's ticket stages, `/status` from the shell
+  (Phase 3).
+- The client tools (`tools/client/scenario.ts`, `newcomer.mjs`) were not run: password mode's code path is unchanged
+  but for the creation helpers, which ctest's creation, newcomer and server end-to-end tests cover.
+
+For the user to decide:
+1. **Gifted at first arrival is open to every wolf with a family** (it can't arrive Normal any more), so doc 49's gate
+   now holds only Quickened in ticket mode. In password mode (DEV, scratch servers) creation still gates Gifted too.
+   Is that what you want, or should a family wolf on a world where Gifted isn't open yet wait (it can't come in)?
+2. **The roleplay profile:** per world (as built), or carried by the ticket from central (and edited only there)?
+3. **The arrival limits' numbers** (600 an hour a world, 3 an hour an account, 100 wolves at once) are guesses, to tune
+   with the rest.
+
 ## Review (2026-11-07)
 
 One adversarial review of the first draft, checked against the code at 0af9bc0. No database was queried and nothing

@@ -342,5 +342,23 @@ class JoinByTicket(unittest.TestCase):
             self.assertNotIn(word, text)
 
 
+    def test_ticket_mode_refuses_what_it_must(self):
+        # Doc 77, 5: no development identities; no dev tools or open tiers on an official world; no page (5.1).
+        tmp = Path(self.tmp.name)
+        base = [str(self.server_binary), '--save', str(tmp / 'refused.json'), '--port', '0', '--perf-log', '0',
+                '--workers', '0', '--for', '5', '--central', self.central, '--world-id', self.world, '--central-keys',
+                str(self.keys)]
+        for extra, why in ((['--dev-identity'], 'dev-identity'), (['--official', '--dev-tools'], 'official'),
+                           (['--official', '--open-tiers'], 'official'), (['--web', str(tmp)], 'serves no page')):
+            run = subprocess.run(base + extra, capture_output=True, text=True, timeout=120)
+            self.assertNotEqual(run.returncode, 0, extra)
+            self.assertIn('RATW_WORLD_REJECTED', run.stderr + run.stdout, extra)
+            self.assertIn(why, run.stderr + run.stdout, extra)
+            self.assertNotIn('listening on port', run.stdout, extra)
+        run = subprocess.run([str(self.server_binary), '--save', str(tmp / 'refused.json'), '--world-id', self.world],
+                             capture_output=True, text=True, timeout=60)
+        self.assertNotEqual(run.returncode, 0, '--world-id without --central')
+
+
 if __name__ == '__main__':
     unittest.main()
