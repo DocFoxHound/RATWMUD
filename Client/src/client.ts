@@ -64,7 +64,7 @@ export class ClientApp {
         this.shell = shell;
         const where = central.transport.where;
         this.footnote = `CENTRAL ${where.toUpperCase()}${central.transport.development ? ' (DEVELOPMENT)' : ''} · A world sees your wolf, never your password.`;
-        shell.askToClose = () => ask('Leave the world? Your wolf leaves it with you.', {ok: 'Leave', cancel: 'Stay'});
+        shell.askToClose = () => ask('Leave the world? Your wolf leaves it with you.', {ok: 'Leave', cancel: 'Stay', now: true});
         artCache.send = command => this.connection?.submit(command);
     }
 

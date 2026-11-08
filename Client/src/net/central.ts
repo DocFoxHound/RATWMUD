@@ -58,7 +58,9 @@ export class FetchCentral implements CentralTransport {
     async call(method: string, path: string, body?: Json): Promise<CentralReply> {
         if (!allowedCall(method, path)) return {status: 400, body: {ok: false, error: 'Not a call the client makes.', code: 'bad_request'}};
         let reply = await this.send(method, path, body);
-        if (reply.status === 401 && this.refresh && !path.startsWith('/account/')) {
+        // Refreshed only when the access token is the problem ('unauthenticated'): a wrong password (bad_sign_in) on a
+        // deletion is not tried twice. Signing out is retried too, so an expired token still ends the session.
+        if (reply.status === 401 && reply.body.code === 'unauthenticated' && this.refresh && path !== '/account/login' && path !== '/account/register') {
             if ((await this.renew()).status === 200) reply = await this.send(method, path, body);
         }
         if ((path === '/account/login' || path === '/account/register') && reply.status === 200) {

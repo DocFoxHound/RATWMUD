@@ -5,9 +5,10 @@
   "description": "Run Against the World: the desktop client's shell (Tauri 2), docs 76 and 77. The page is Client/.",
   "type": "module",
   "scripts": {
+    "setup": "npm ci && npm --prefix ../Client ci",
     "tauri": "tauri",
     "build": "tauri build",
-    "app": "npm --prefix ../Client run build && cargo build --manifest-path src-tauri/Cargo.toml && ./src-tauri/target/debug/ratw-desktop",
+    "app": "npm --prefix ../Client run build && cargo run --manifest-path src-tauri/Cargo.toml --",
     "test": "cargo test --manifest-path src-tauri/Cargo.toml",
     "test:app": "npm --prefix ../Client run build && cargo build --manifest-path src-tauri/Cargo.toml --features e2e && node --test tests/app.test.mjs",
     "spike-server": "node spike/ws_server.mjs"

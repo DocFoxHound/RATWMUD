@@ -109,10 +109,17 @@ export class Shell {
         });
         if (this.api) {
             const window = this.api.window.getCurrentWindow();
+            let asking = false;
             void window.onCloseRequested(async event => {
                 if (!this.inWorld) return;
                 event.preventDefault();
-                if (await this.askToClose()) await window.destroy();
+                if (asking) return;                      // (One question, however often the X is clicked.)
+                asking = true;
+                try {
+                    if (await this.askToClose()) await window.destroy();
+                } finally {
+                    asking = false;
+                }
             });
         }
     }

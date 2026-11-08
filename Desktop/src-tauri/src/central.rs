@@ -96,6 +96,7 @@ impl UreqHttp {
             .timeout_global(Some(Duration::from_secs(15)))
             .http_status_as_error(false)
             .max_redirects(0)
+            .proxy(None) // (Never HTTP_PROXY from the environment: the password and tokens go to central alone.)
             .user_agent(concat!("ratw-desktop/", env!("CARGO_PKG_VERSION")))
             .build()
             .into();
@@ -156,12 +157,15 @@ pub struct Central {
     http: Box<dyn Http>,
     store: Arc<dyn TokenStore>,
     tokens: Mutex<Option<Tokens>>,
+    /// Bumped by every sign-in, sign-out and deletion: a refresh that was under way when one happened is dropped, so it
+    /// can't bring back the tokens of a session the user just left.
+    generation: Mutex<u64>,
     renewing: Mutex<()>,
 }
 
 impl Central {
     pub fn new(base: String, shown: String, development: bool, http: Box<dyn Http>, store: Arc<dyn TokenStore>) -> Self {
-        Central { base, shown, development, http, store, tokens: Mutex::new(None), renewing: Mutex::new(()) }
+        Central { base, shown, development, http, store, tokens: Mutex::new(None), generation: Mutex::new(0), renewing: Mutex::new(()) }
     }
 
     pub fn store_kind(&self) -> &'static str {
@@ -176,9 +180,22 @@ impl Central {
         self.tokens.lock().unwrap().as_ref().map(|t| t.access.clone())
     }
 
+    fn generation(&self) -> u64 {
+        *self.generation.lock().unwrap()
+    }
+
     fn forget(&self) {
+        let mut g = self.generation.lock().unwrap();
+        *g += 1;
         *self.tokens.lock().unwrap() = None;
         self.store.clear();
+    }
+
+    /// A sign-in's tokens: a new session, so any refresh under way for the old one is dropped.
+    fn sign_in(&self, reply: &Value, remember: bool) {
+        let mut g = self.generation.lock().unwrap();
+        *g += 1;
+        self.take_tokens(reply, remember);
     }
 
     fn take_tokens(&self, reply: &Value, remember: bool) {
@@ -208,13 +225,15 @@ impl Central {
             let remember = body.as_ref().and_then(|b| b.get("remember")).and_then(Value::as_bool).unwrap_or(false);
             let (status, reply) = self.http.send(method, &url, body.as_ref(), None);
             if status == 200 {
-                self.take_tokens(&reply, remember);
+                self.sign_in(&reply, remember);
             }
             (status, reply)
         } else {
             let used = self.access();
             let (mut status, mut reply) = self.http.send(method, &url, body.as_ref(), used.as_deref());
-            if status == 401 && path != "/account/logout" && self.renew_after(used.as_deref()) {
+            // Refreshed only when the access token is the problem: a wrong password on a deletion (bad_sign_in) is not
+            // sent twice. Signing out is retried too, so a token that expired while playing still ends the session.
+            if status == 401 && reply["code"] == "unauthenticated" && self.renew_after(used.as_deref()) {
                 (status, reply) = self.http.send(method, &url, body.as_ref(), self.access().as_deref());
             }
             if path == "/account/logout" || (path == "/account" && method == "DELETE" && status == 200) {
@@ -233,9 +252,8 @@ impl Central {
             };
             *self.tokens.lock().unwrap() = Some(Tokens { access: String::new(), refresh, remember: true });
         }
-        let used = self.access();
         let _one = self.renewing.lock().unwrap();
-        let (status, reply) = self.renew(used.as_deref());
+        let (status, reply) = self.renew();
         json!({"status": status, "body": strip(reply)})
     }
 
@@ -245,10 +263,13 @@ impl Central {
         if self.access().as_deref() != used {
             return self.access().is_some();            // (Another call refreshed meanwhile.)
         }
-        self.renew(used).0 == 200
+        self.renew().0 == 200
     }
 
-    fn renew(&self, _used: Option<&str>) -> (u16, Value) {
+    /// Spends the refresh token for new ones (with `renewing` held). If the user signed in, out or deleted the account
+    /// meanwhile, the answer is dropped, whatever it was.
+    fn renew(&self) -> (u16, Value) {
+        let started = self.generation();
         let (refresh, remember) = match self.tokens.lock().unwrap().as_ref() {
             Some(t) if !t.refresh.is_empty() => (t.refresh.clone(), t.remember),
             _ => return (401, refusal("Sign in.", "unauthenticated")),
@@ -256,21 +277,39 @@ impl Central {
         let mut body = Map::new();
         body.insert("refresh_token".into(), Value::String(refresh));
         let (status, reply) = self.http.send("POST", &format!("{}/account/refresh", self.base), Some(&Value::Object(body)), None);
+        let g = self.generation.lock().unwrap();
+        if *g != started {
+            return (401, refusal("Sign in.", "unauthenticated"));
+        }
         if status == 200 {
             self.take_tokens(&reply, remember);
         } else if status == 401 || status == 403 {
-            self.forget();
+            *self.tokens.lock().unwrap() = None;
+            self.store.clear();
         }
+        drop(g);
         (status, reply)
     }
 }
 
 /// A world's GET /status (doc 77, 5.1 and 7: the client's ping): one request, 2 seconds, a reply of at most 2 KB, no
-/// redirects. {status, body, ms}; status 0 when it couldn't be reached.
+/// redirects, no proxy. {status, body, ms}; status 0 when it couldn't be reached or isn't a world.
+///
+/// The page names the address, and a script slipped into the page could name any, so: never a link-local, unspecified,
+/// multicast or broadcast address (cloud metadata lives at 169.254.169.254), and only a world's own reply comes back
+/// (`ratw: "world"` and a world id), cut down to the fields the list shows. Anything else on this computer or the LAN
+/// gives the page nothing to read. (Loopback and private addresses stay allowed: a world on this computer or the LAN is
+/// what the direct-address box is for.)
 pub fn world_status(host: &str, port: u16, secure: bool) -> Value {
+    let unreachable = json!({"status": 0, "body": null, "ms": 0});
     let fine = !host.is_empty() && host.len() <= 253 && host.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-' || b == b':');
     if !fine || port == 0 {
-        return json!({"status": 0, "body": null, "ms": 0});
+        return unreachable;
+    }
+    use std::net::ToSocketAddrs;
+    let Ok(addresses) = (host, port).to_socket_addrs().map(|a| a.collect::<Vec<_>>()) else { return unreachable };
+    if addresses.is_empty() || addresses.iter().any(|a| !pingable(a.ip())) {
+        return unreachable;
     }
     let host_part = if host.contains(':') { format!("[{host}]") } else { host.to_owned() };
     let url = format!("{}://{host_part}:{port}/status", if secure { "https" } else { "http" });
@@ -278,6 +317,7 @@ pub fn world_status(host: &str, port: u16, secure: bool) -> Value {
         .timeout_global(Some(Duration::from_secs(2)))
         .http_status_as_error(false)
         .max_redirects(0)
+        .proxy(None)
         .build()
         .into();
     let started = std::time::Instant::now();
@@ -286,13 +326,51 @@ pub fn world_status(host: &str, port: u16, secure: bool) -> Value {
             let status = response.status().as_u16();
             let text = response.body_mut().with_config().limit(2048).read_to_string();
             let ms = started.elapsed().as_secs_f64() * 1000.0;
-            match text.ok().and_then(|t| serde_json::from_str::<Value>(&t).ok()) {
+            match text.ok().and_then(|t| serde_json::from_str::<Value>(&t).ok()).and_then(|b| world_reply(&b)) {
                 Some(body) => json!({"status": status, "body": body, "ms": ms}),
-                None => json!({"status": 0, "body": null, "ms": ms}),
+                None => unreachable,
             }
         }
-        Err(_) => json!({"status": 0, "body": null, "ms": 0}),
+        Err(_) => unreachable,
     }
+}
+
+/// Whether the ping may go to this address.
+pub fn pingable(ip: std::net::IpAddr) -> bool {
+    use std::net::IpAddr;
+    match ip {
+        IpAddr::V4(a) => !(a.is_link_local() || a.is_unspecified() || a.is_multicast() || a.is_broadcast()),
+        IpAddr::V6(a) => {
+            if let Some(v4) = a.to_ipv4_mapped() {
+                return pingable(IpAddr::V4(v4));
+            }
+            let link_local = (a.segments()[0] & 0xffc0) == 0xfe80;
+            !(link_local || a.is_unspecified() || a.is_multicast())
+        }
+    }
+}
+
+/// A world's /status, cut down to what the list shows (Client/src/net/worlds.ts, readStatus); None if it isn't one.
+pub fn world_reply(body: &Value) -> Option<Value> {
+    let id = body.get("id")?.as_str()?;
+    let world_id = id.len() == 38 && id.starts_with("world-") && id[6..].bytes().all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase());
+    if body.get("ratw")?.as_str()? != "world" || !world_id || !body.get("protocol")?.is_number() {
+        return None;
+    }
+    let mut out = Map::new();
+    for key in ["ratw", "id", "name", "kind", "protocol", "clientData", "players", "limit", "voices", "cheats", "private"] {
+        if let Some(v) = body.get(key) {
+            let small = match v {
+                Value::String(t) => t.chars().count() <= 64,
+                Value::Number(_) | Value::Bool(_) => true,
+                _ => false,
+            };
+            if small {
+                out.insert(key.into(), v.clone());
+            }
+        }
+    }
+    Some(Value::Object(out))
 }
 
 #[cfg(test)]
@@ -330,6 +408,7 @@ mod tests {
     struct Fake {
         seen: Mutex<Vec<(String, String, Option<String>)>>,
         access: Mutex<String>,
+        slow_refresh_ms: Mutex<u64>,
     }
 
     impl Http for Arc<Fake> {
@@ -343,6 +422,7 @@ mod tests {
                     (200, json!({"ok": true, "account": {"id": "acct-1"}, "access_token": "A1", "access_expires": 1, "refresh_token": "R1", "refresh_expires": 2}))
                 }
                 "/account/refresh" => {
+                    std::thread::sleep(Duration::from_millis(*self.slow_refresh_ms.lock().unwrap()));
                     if body.and_then(|b| b["refresh_token"].as_str()) == Some("R1") || body.and_then(|b| b["refresh_token"].as_str()) == Some("R2") {
                         *self.access.lock().unwrap() = "A2".into();
                         (200, json!({"ok": true, "account": {"id": "acct-1"}, "access_token": "A2", "refresh_token": "R2"}))
@@ -350,6 +430,7 @@ mod tests {
                         (401, json!({"ok": false, "code": "unauthenticated"}))
                     }
                 }
+                "/account" if body.is_some_and(|b| b["password"] != "pw") => (401, json!({"ok": false, "code": "bad_sign_in"})),
                 _ if bearer == Some(current.as_str()) && !current.is_empty() => (200, json!({"ok": true, "wolves": []})),
                 _ => (401, json!({"ok": false, "code": "unauthenticated"})),
             }
@@ -357,7 +438,7 @@ mod tests {
     }
 
     fn central(store: Arc<MemoryStore>) -> (Central, Arc<Fake>) {
-        let fake = Arc::new(Fake { seen: Mutex::new(vec![]), access: Mutex::new(String::new()) });
+        let fake = Arc::new(Fake { seen: Mutex::new(vec![]), access: Mutex::new(String::new()), slow_refresh_ms: Mutex::new(0) });
         (Central::new("http://central".into(), "central".into(), true, Box::new(fake.clone()), store), fake)
     }
 
@@ -422,5 +503,67 @@ mod tests {
         assert_eq!(world_status("evil/path", 80, false)["status"], 0);
         assert_eq!(world_status("", 80, false)["status"], 0);
         assert_eq!(world_status("127.0.0.1", 0, false)["status"], 0);
+    }
+
+    fn refreshes(fake: &Fake) -> usize {
+        fake.seen.lock().unwrap().iter().filter(|(_, p, _)| p == "/account/refresh").count()
+    }
+
+    #[test]
+    fn a_wrong_password_is_not_sent_twice() {
+        let (c, fake) = central(Arc::new(MemoryStore::default()));
+        c.call("POST", "/account/login", Some(json!({"username": "ash", "password": "pw", "remember": true})));
+        let r = c.call("DELETE", "/account", Some(json!({"password": "typo"})));
+        assert_eq!(r["status"], 401);
+        assert_eq!(refreshes(&fake), 0, "bad_sign_in is not a stale token");
+        assert_eq!(fake.seen.lock().unwrap().iter().filter(|(m, p, _)| m == "DELETE" && p == "/account").count(), 1);
+    }
+
+    #[test]
+    fn signing_out_with_an_expired_token_still_ends_the_session() {
+        let store = Arc::new(MemoryStore::default());
+        let (c, fake) = central(store.clone());
+        c.call("POST", "/account/login", Some(json!({"username": "ash", "password": "pw", "remember": true})));
+        *fake.access.lock().unwrap() = "expired".into();
+        let r = c.call("POST", "/account/logout", Some(json!({})));
+        assert_eq!(r["status"], 200, "refreshed, then signed out on central");
+        assert_eq!(refreshes(&fake), 1);
+        assert_eq!(store.load(), None);
+        assert_eq!(c.call("GET", "/wolves", None)["status"], 401);
+    }
+
+    #[test]
+    fn a_refresh_under_way_cannot_bring_back_an_old_session() {
+        let store = Arc::new(MemoryStore::default());
+        let (c, fake) = central(store.clone());
+        let c = Arc::new(c);
+        c.call("POST", "/account/login", Some(json!({"username": "ash", "password": "pw", "remember": true})));
+        *fake.access.lock().unwrap() = "expired".into();
+        *fake.slow_refresh_ms.lock().unwrap() = 300;
+        let slow = { let c = c.clone(); std::thread::spawn(move || c.call("GET", "/wolves", None)) };
+        std::thread::sleep(Duration::from_millis(100));
+        // Meanwhile: a sign-in to another session, not remembered.
+        c.call("POST", "/account/login", Some(json!({"username": "ash", "password": "pw", "remember": false})));
+        slow.join().unwrap();
+        assert_eq!(store.load(), None, "the old session's new refresh token was not kept");
+        assert_eq!(c.access().as_deref(), Some("A1"), "the new sign-in's token stands");
+    }
+
+    #[test]
+    fn the_ping_goes_only_to_worlds() {
+        use std::net::IpAddr;
+        for bad in ["169.254.169.254", "0.0.0.0", "224.0.0.1", "255.255.255.255", "fe80::1", "::", "::ffff:169.254.169.254"] {
+            assert!(!pingable(bad.parse::<IpAddr>().unwrap()), "{bad}");
+        }
+        for ok in ["127.0.0.1", "192.168.1.20", "10.0.0.5", "::1", "2001:db8::1", "93.184.216.34"] {
+            assert!(pingable(ok.parse::<IpAddr>().unwrap()), "{ok}");
+        }
+        assert_eq!(world_status("169.254.169.254", 80, false)["status"], 0);
+        let id = format!("world-{}", "a".repeat(32));
+        let w = world_reply(&json!({"ratw": "world", "id": id, "protocol": 1, "name": "Hollow", "players": 2, "secret": "x", "kind": {"a": 1}})).unwrap();
+        assert_eq!(w["name"], "Hollow");
+        assert!(w.get("secret").is_none() && w.get("kind").is_none(), "only the list's own fields");
+        assert!(world_reply(&json!({"ok": true, "status": "running"})).is_none(), "another service's reply gives nothing");
+        assert!(world_reply(&json!({"ratw": "world", "id": "world-x", "protocol": 1})).is_none());
     }
 }

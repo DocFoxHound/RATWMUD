@@ -1,6 +1,10 @@
 # Doc 77, Phase 0: the desktop client's spike on Windows (WebView2). DRAFT, UNTESTED: written on Linux and never run.
-# The spike's app was replaced by the real client in Phase 3, so this checks out the Phase 0 commit (b7aed3d) and
-# runs the spike from there, whatever branch it is started on.
+# The spike's app was replaced by the real client in Phase 3, so this checks out the Phase 0 commit (the tag
+# desktop-spike-phase0, b7aed3d) and runs the spike from there, whatever branch it is started on.
+#
+# GitHub offers "Run workflow" only for a workflow file on the default branch (codex/mvp-foundation), and the tag must be
+# pushed (git push origin desktop-spike-phase0). Until this file is on the default branch, building on the PC (doc 77,
+# Phase 0's Windows steps) is the way.
 # Started by hand only (Actions tab, "Run workflow"), so pushing this file runs nothing.
 #
 # It builds Desktop/ for Windows, then runs the spike there: the stand-in world (spike/ws_server.mjs) on loopback and
@@ -22,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: b7aed3d0e44eee8831ec4005a4e89e682d1a086c   # Phase 0: the spike's app and page.
+          ref: desktop-spike-phase0   # The Phase 0 commit (b7aed3d): the spike's app and page. Push the tag first.
       - uses: actions/setup-node@v4
         with:
           node-version: 22

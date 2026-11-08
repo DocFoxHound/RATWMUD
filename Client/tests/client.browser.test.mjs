@@ -30,7 +30,7 @@ before(async () => {
     });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     const origin = `http://127.0.0.1:${server.address().port}`;
-    h = await startHarness({cors: origin});
+    h = await startHarness({cors: origin, database: `ratw_central_clienttest_${process.pid}`});
     if (h.skip) {
         skip = h.skip;
         return;

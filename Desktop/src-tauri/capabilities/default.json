@@ -1,10 +1,11 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "The bundled game page: central through the shell, worlds' /status, the relay's address, and the window's fullscreen and close question.",
+  "description": "The bundled game page, and only what it uses: central through the shell, worlds' /status, the relay's address; the window's fullscreen, its close question (listen) and closing it. No core:default: a script slipped into the page gets no menus, paths or events.",
   "windows": ["main"],
   "permissions": [
-    "core:default",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
     "core:window:allow-set-fullscreen",
     "core:window:allow-is-fullscreen",
     "core:window:allow-destroy",

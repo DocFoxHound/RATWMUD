@@ -76,7 +76,7 @@ function startWorldPage() {
     let door: FrontDoor | null = null;
     let play: Play | null = null;
     let lastLobby: Json | null = null;
-    shell.askToClose = () => ask('Leave the world? Your wolf leaves it with you.', {ok: 'Leave', cancel: 'Stay'});
+    shell.askToClose = () => ask('Leave the world? Your wolf leaves it with you.', {ok: 'Leave', cancel: 'Stay', now: true});
 
     const connection: Connection = new Connection(url, {
         lobby(event) {

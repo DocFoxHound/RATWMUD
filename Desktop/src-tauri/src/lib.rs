@@ -13,6 +13,7 @@
 //   --token-store KIND     keychain (default; a file when there is none), file, or memory
 //   --data-dir PATH        where the app keeps its files (default: the OS's app data folder); for tests
 //   --relay                run the loopback relay
+//   --e2e-check            (an e2e build only) print "ratw-desktop e2e" and exit: how the tests know the hook is in
 mod central;
 #[cfg(feature = "e2e")]
 mod e2e;
@@ -67,17 +68,29 @@ pub fn options(args: &[String]) -> Result<Options, String> {
 /// The page's own origin, and nothing else: a link or a script can't take the window to another site, where the
 /// shell's commands would answer it.
 pub fn page_origin(url: &tauri::Url) -> bool {
-    match (url.scheme(), url.host_str()) {
-        ("tauri", Some("localhost")) => true,                               // Linux, macOS.
-        ("http" | "https", Some("tauri.localhost")) => true,                // Windows (WebView2).
-        ("about", _) => url.as_str() == "about:blank",
-        _ => false,
-    }
+    page_origin_on(url, cfg!(windows))
 }
 
+/// The rule for one platform: `tauri://localhost` on Linux and macOS; `http://tauri.localhost` on Windows (WebView2,
+/// without `useHttpsScheme`). Never a port: `http://tauri.localhost:7788` is whatever answers on this computer's 7788.
+pub fn page_origin_on(url: &tauri::Url, windows: bool) -> bool {
+    if url.as_str() == "about:blank" {
+        return true;
+    }
+    let wanted = if windows { "http" } else { "tauri" };
+    let host = if windows { "tauri.localhost" } else { "localhost" };
+    url.scheme() == wanted && url.host_str() == Some(host) && url.port().is_none() && url.username().is_empty() && url.password().is_none()
+}
+
+/// Async (on the blocking pool): reading the keychain can wait on an unlock prompt, and must never hold the window.
 #[tauri::command]
-fn central_info(central: State<'_, Arc<Central>>) -> Value {
-    json!({"where": central.shown, "development": central.development, "remembered": central.remembered(), "store": central.store_kind()})
+async fn central_info(central: State<'_, Arc<Central>>) -> Result<Value, String> {
+    let central = central.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        json!({"where": central.shown, "development": central.development, "remembered": central.remembered(), "store": central.store_kind()})
+    })
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -105,7 +118,14 @@ fn relay_address(relay: State<'_, Option<relay::Relay>>) -> Option<String> {
 /// The first launch's window: 1280 x 800 (the config) where the screen has room, else maximised. Later launches get
 /// the size and place the window-state plugin kept.
 fn first_size(window: &tauri::WebviewWindow) {
-    let Ok(Some(monitor)) = window.current_monitor() else { return };
+    // (Shown first: a hidden window has no monitor on Wayland. With none found at all, maximised, the safe side.)
+    let monitor = window.current_monitor().ok().flatten()
+        .or_else(|| window.primary_monitor().ok().flatten())
+        .or_else(|| window.available_monitors().ok().and_then(|m| m.into_iter().next()));
+    let Some(monitor) = monitor else {
+        let _ = window.maximize();
+        return;
+    };
     let area = monitor.work_area().size.to_logical::<f64>(monitor.scale_factor());
     if area.width < 1280.0 * 1.05 || area.height < 800.0 * 1.05 {
         let _ = window.maximize();
@@ -114,9 +134,34 @@ fn first_size(window: &tauri::WebviewWindow) {
     }
 }
 
+/// macOS's menu bar, built by hand (doc 76, 4.4): Tauri's default menu has a Quit that ends the app at once, without
+/// the page's question in the world. Ours closes the window instead, which asks first. Edit keeps copy and paste.
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+fn mac_menu(app: &tauri::AppHandle) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
+    use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
+    let quit = MenuItemBuilder::with_id("quit", "Quit Run Against the World").accelerator("CmdOrCtrl+Q").build(app)?;
+    let ours = SubmenuBuilder::new(app, "Run Against the World").hide().hide_others().show_all().separator().item(&quit).build()?;
+    let edit = SubmenuBuilder::new(app, "Edit").undo().redo().separator().cut().copy().paste().select_all().build()?;
+    let window = SubmenuBuilder::new(app, "Window").minimize().separator().close_window().build()?;
+    MenuBuilder::new(app).items(&[&ours, &edit, &window]).build()
+}
+
+/// Closing goes through the window (the page asks first in the world), whatever asked: our Quit, the Dock's, the OS.
+fn close_main(app: &tauri::AppHandle) -> bool {
+    match app.get_webview_window("main") {
+        Some(window) => window.close().is_ok(),
+        None => false,
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    #[cfg(feature = "e2e")]
+    if args.iter().any(|a| a == "--e2e-check") {
+        println!("ratw-desktop e2e");
+        return;
+    }
     let opts = match options(&args) {
         Ok(o) => o,
         Err(e) => {
@@ -134,8 +179,14 @@ pub fn run() {
     let _ = rustls::crypto::ring::default_provider().install_default();
 
     let state_flags = tauri_plugin_window_state::StateFlags::all() - tauri_plugin_window_state::StateFlags::VISIBLE;
+    // With --data-dir (tests), the window's size and place are kept there too, never over the real ones.
+    let state_file = opts.data_dir.as_ref().map(|d| d.join("window-state.json"));
+    let mut window_state = tauri_plugin_window_state::Builder::default().with_state_flags(state_flags);
+    if let Some(f) = &state_file {
+        window_state = window_state.with_filename(f.to_string_lossy());
+    }
     let builder = tauri::Builder::default()
-        .plugin(tauri_plugin_window_state::Builder::default().with_state_flags(state_flags).build())
+        .plugin(window_state.build())
         .plugin(
             tauri::plugin::Builder::<tauri::Wry, ()>::new("page-only")
                 .on_navigation(|_, url| {
@@ -168,11 +219,14 @@ pub fn run() {
             app.manage(relay);
 
             if let Some(window) = app.get_webview_window("main") {
-                let kept = app.path().app_config_dir().map(|d| d.join(tauri_plugin_window_state::DEFAULT_FILENAME).exists()).unwrap_or(false);
+                let kept = match &state_file {
+                    Some(f) => f.exists(),
+                    None => app.path().app_config_dir().map(|d| d.join(tauri_plugin_window_state::DEFAULT_FILENAME).exists()).unwrap_or(false),
+                };
+                let _ = window.show();
                 if !kept {
                     first_size(&window);
                 }
-                let _ = window.show();
             }
 
             #[cfg(feature = "e2e")]
@@ -190,7 +244,24 @@ pub fn run() {
     #[cfg(feature = "e2e")]
     let builder = builder.invoke_handler(tauri::generate_handler![central_info, central_call, central_resume, world_status, relay_address, e2e::e2e_result]);
 
-    builder.run(tauri::generate_context!()).expect("the window could not be opened");
+    #[cfg(target_os = "macos")]
+    let builder = builder.menu(mac_menu).on_menu_event(|app, event| {
+        if event.id() == "quit" {
+            close_main(app);
+        }
+    });
+
+    let app = builder.build(tauri::generate_context!()).expect("the window could not be opened");
+    app.run(|handle, event| {
+        // An exit asked of the app while the window is open (the Dock's Quit, the OS logging out) closes the window
+        // instead, so the page asks first in the world; once the window is gone, the app exits. app.exit(code), which
+        // has a code, is let through.
+        if let tauri::RunEvent::ExitRequested { code: None, api, .. } = &event {
+            if close_main(handle) {
+                api.prevent_exit();
+            }
+        }
+    });
 }
 
 #[cfg(test)]
@@ -215,11 +286,19 @@ mod tests {
 
     #[test]
     fn the_window_stays_on_the_page() {
-        for ok in ["tauri://localhost/", "tauri://localhost/index.html?x=1", "http://tauri.localhost/", "https://tauri.localhost/a"] {
-            assert!(page_origin(&tauri::Url::parse(ok).unwrap()), "{ok}");
+        let on = |url: &str, windows: bool| page_origin_on(&tauri::Url::parse(url).unwrap(), windows);
+        for ok in ["tauri://localhost/", "tauri://localhost/index.html?x=1", "about:blank"] {
+            assert!(on(ok, false), "{ok}");
         }
-        for bad in ["https://evil.example.net/", "http://127.0.0.1:7788/", "tauri://evil/", "file:///etc/passwd", "http://tauri.localhost.evil.net/"] {
-            assert!(!page_origin(&tauri::Url::parse(bad).unwrap()), "{bad}");
+        for ok in ["http://tauri.localhost/", "http://tauri.localhost/index.html", "about:blank"] {
+            assert!(on(ok, true), "{ok} on Windows");
+        }
+        for bad in ["https://evil.example.net/", "http://127.0.0.1:7788/", "tauri://evil/", "file:///etc/passwd", "http://tauri.localhost.evil.net/",
+            "http://tauri.localhost/", "https://tauri.localhost/", "tauri://localhost:7788/", "about:srcdoc"] {
+            assert!(!on(bad, false), "{bad}");
+        }
+        for bad in ["tauri://localhost/", "http://tauri.localhost:7788/", "https://tauri.localhost/", "http://localhost/", "http://u@tauri.localhost/"] {
+            assert!(!on(bad, true), "{bad} on Windows");
         }
     }
 }

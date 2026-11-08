@@ -4,6 +4,7 @@
 // RATW_E2E=127.0.0.1:PORT: the shell connects to the test there. The test sends one JSON line per step:
 //   {"id": 1, "js": "<an expression>"}   evaluated in the page (awaited); the reply {"id": 1, "ok": true, "value": ...}
 //   {"quit": 0}                          the app exits with that code
+//   {"close": true}                      the window is closed as by its X (the page's close question, then the exit)
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpStream;
 use std::sync::Mutex;
@@ -30,6 +31,12 @@ pub fn start(app: &AppHandle, address: String) -> Result<(), String> {
             if let Some(code) = step.get("quit").and_then(|c| c.as_i64()) {
                 app.exit(code as i32);
                 return;
+            }
+            if step.get("close").is_some() {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.close();
+                }
+                continue;
             }
             let (Some(id), Some(js)) = (step.get("id").and_then(|i| i.as_u64()), step.get("js").and_then(|j| j.as_str())) else { continue };
             if let Some(window) = app.get_webview_window("main") {

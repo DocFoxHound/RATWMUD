@@ -146,6 +146,19 @@ export async function clientFlow(page, h, {native = false} = {}) {
 
     // Delete the wolf (the password asked again, in the page's own dialog), then sign out and back in.
     await clickText('Back to your wolves');
+    // The page's own dialog: Tab stays in it, and Enter on a focused Cancel doesn't confirm.
+    await click('button[data-action=delete-wolf]');
+    await page.waitFor(`document.querySelector('.ratw-dialog')`);
+    const key = code => page.evaluate(`(() => { (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keydown',
+        {code: '${code}', key: '${code}', bubbles: true, cancelable: true})); return true; })()`);
+    for (let i = 0; i < 5; ++i) await key('Tab');
+    assert.equal(await page.evaluate(`document.querySelector('.ratw-dialog').contains(document.activeElement)`), true, 'Tab stays in the dialog');
+    await page.evaluate(`(() => { document.querySelector('.ratw-dialog .secondary').focus(); return true; })()`);
+    await key('Enter');
+    assert.equal(await page.evaluate(`!!document.querySelector('.ratw-dialog')`), true, 'Enter on Cancel did not confirm');
+    await click('.ratw-dialog .secondary');
+    await page.waitFor(`!document.querySelector('.ratw-dialog')`);
+    assert.equal(await door('d.characters.length'), 1);
     await click('button[data-action=delete-wolf]');
     await answerDialog('not my password at all');
     await waitDoor('!d.busy');

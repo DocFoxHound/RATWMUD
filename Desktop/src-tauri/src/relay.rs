@@ -41,9 +41,21 @@ pub fn target(query: Option<&str>) -> Option<String> {
     fine.then(|| url.to_string())
 }
 
+/// How long the page has to finish its handshake, and the world to answer: a stalled one is dropped, so the page sees
+/// its socket close (and the client says it couldn't reach the world) instead of waiting for ever.
+const HANDSHAKE: std::time::Duration = std::time::Duration::from_secs(10);
+const WORLD: std::time::Duration = std::time::Duration::from_secs(15);
+
 pub async fn serve(listener: tokio::net::TcpListener, token: String) {
     loop {
-        let Ok((stream, _)) = listener.accept().await else { continue };
+        let stream = match listener.accept().await {
+            Ok((stream, _)) => stream,
+            Err(_) => {
+                // (Out of file handles, say: wait rather than spin.)
+                tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+                continue;
+            }
+        };
         let _ = stream.set_nodelay(true);
         let token = token.clone();
         tauri::async_runtime::spawn(async move {
@@ -59,9 +71,14 @@ pub async fn serve(listener: tokio::net::TcpListener, token: String) {
                     Err(refuse)
                 }
             };
-            let Ok(page) = tokio_tungstenite::accept_hdr_async(stream, check).await else { return };
+            let Ok(Ok(page)) = tokio::time::timeout(HANDSHAKE, tokio_tungstenite::accept_hdr_async(stream, check)).await else { return };
             let Some(url) = to else { return };
-            let Ok((world, _)) = tokio_tungstenite::connect_async_tls_with_config(url.as_str(), None, true, None).await else { return };
+            let world = tokio::time::timeout(WORLD, tokio_tungstenite::connect_async_tls_with_config(url.as_str(), None, true, None)).await;
+            let Ok(Ok((world, _))) = world else {
+                let mut page = page;
+                let _ = page.close(None).await;
+                return;
+            };
             let (mut page_tx, mut page_rx) = page.split();
             let (mut world_tx, mut world_rx) = world.split();
             let up = async {

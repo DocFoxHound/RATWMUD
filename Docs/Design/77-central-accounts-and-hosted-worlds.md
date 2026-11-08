@@ -868,13 +868,17 @@ them itself.
   second choice.
 
 **Still to check on the user's Windows PC (D1 is open until then):**
-1. **Get a build.** Either:
-   - push `r2-desktop` and start "desktop-windows (spike, untested)" from the Actions tab (it builds, runs the spike on
-     a GitHub runner and uploads the `.exe`, the installer and `windows.jsonl`); or
-   - build on the PC: rustup (MSVC) plus the Visual Studio C++ build tools, Node 22, then in `Desktop/`: `npm ci` and
-     `npx tauri build --bundles nsis`.
-2. **Run the spike on the PC** (from the Phase 0 commit: Phase 3 replaced the spike's app with the real client, so
-   `git checkout b7aed3d` in a spare clone or worktree first):
+Phase 3 replaced the spike's app with the real client, so the spike is run from the Phase 0 commit, tagged
+`desktop-spike-phase0` (`b7aed3d`).
+1. **Get the spike's build.** Either:
+   - on the PC: a clone with the tag (`git push origin desktop-spike-phase0` from here first), then
+     `git checkout desktop-spike-phase0`. Install rustup (MSVC), the Visual Studio C++ build tools and Node 22, then in
+     that checkout's `Desktop/`: `npm ci` and `npx tauri build --bundles nsis`; or
+   - the workflow "desktop-windows (spike, untested)": it checks the tag out, builds, runs the spike on a GitHub runner
+     and uploads the `.exe`, the installer and `windows.jsonl`. GitHub offers "Run workflow" only once the workflow
+     file is on the default branch (`codex/mvp-foundation`) and the tag is pushed. Copy its `ratw-desktop.exe` into
+     the tag checkout's `Desktop\src-tauri\target\release\` for step 2.
+2. **Run the spike on the PC**, in the tag checkout:
    - in `Desktop/`: `npm ci`, then `bash spike/make_certs.sh` (Git Bash);
    - `node spike/ws_server.mjs --lan <the PC's LAN IPv4>` (allow it through the firewall on private networks);
    - in PowerShell: `$env:SPIKE_LAN="ws://<that IPv4>:47811"`,
@@ -1220,9 +1224,10 @@ The shell, the real app (the second sitting):
 - **The sign-in screen on a window narrower than 1440:** WebKit pinned its oversized layout to the left before scaling,
   so it ran off the right of a 1280-wide window. It is centred by position now (`styles.css`, `.door-stage`). Chromium
   never showed it.
-- **Tests:** `cargo test` 14 (the address rule, the allow-list, tokens never reaching the page, refresh once,
-  resume, the file store's 0600, the options, the navigation rule, the relay's targets and frames both ways through
-  it). `npm test` 136, `test:browser` 8. The flow is shared now (`Client/tests/flow.mjs`): the browser's test, and
+- **Tests:** `cargo test` 18 after the review (the address rule, the allow-list, tokens never reaching the page,
+  refresh once and only for a stale token, sign-out with an expired token, a refresh racing a sign-in, resume, the
+  ping's addresses and replies, the file store's 0600, the options, the navigation rule per platform, the relay's
+  targets and frames both ways through it). `npm test` 136, `test:browser` 8. The flow is shared now (`Client/tests/flow.mjs`): the browser's test, and
   **`Desktop/tests/app.test.mjs`, the real app end to end**, about 13 s plus start-up. It runs the whole flow, then
   checks what only the app has: no `eval`, it can't navigate away, the page can't ask for a refresh, fullscreen there and
   back, and "remember me": a 0600 file with the refresh token and not the password, never in the page's storage,
@@ -1236,17 +1241,20 @@ How to run the client on this laptop (in the worktree; Postgres's settings as in
 
     cmake --build build-central --target ratw_server ratw_identity      # if not built yet
     python3 Central/ratw_central.py db-create                               # once
-    python3 Central/ratw_central.py serve &                                 # central, http://127.0.0.1:7790/
     python3 Central/ratw_central.py worlds add --name "Laptop world" --kind community --address 127.0.0.1:7788
+                                                                            # (migrates; prints the world id)
+    python3 Central/ratw_central.py serve &                                 # central, http://127.0.0.1:7790/
     python3 tools/world_agent.py keys --central http://127.0.0.1:7790 --out Saved/World/central-keys.json &
     build-central/ratw_server --port 7788 --save /tmp/laptop-world.json --central http://127.0.0.1:7790 \
         --world-id world-... --central-keys Saved/World/central-keys.json --world-name "Laptop world" &
-    cd Desktop && npm ci && npm run app        # builds the page and the shell, opens the window
+    cd Desktop && npm run setup && npm run app      # setup once (Desktop's and Client's packages); app builds and opens
 
-`npm run app` uses the built-in central (`127.0.0.1:7790`); for another, run
-`Desktop/src-tauri/target/debug/ratw-desktop --central URL`. Stop central, the agent and the world after (`kill %1 %2
-%3`). An installer: `cd Desktop && npm run build` (deb, rpm, AppImage; not tried yet). The tests:
-`cd Desktop && npm test && npm run test:app` (the second opens a window for about half a minute).
+(`worlds add` before `serve`: both migrate a new database, and two at once would collide.) `npm run app` uses the
+built-in central (`127.0.0.1:7790`); for another, `npm run app -- --central URL`. Stop central, the agent and the world
+after (`kill %1 %2 %3`). An installer: `cd Desktop && npm run build` (deb, rpm, AppImage; not tried yet). The tests:
+`cd Desktop && npm test && npm run test:app` (the second opens a window for about half a minute), and
+`node Desktop/tests/look.mjs` for screenshots and the in-world close question (needs the e2e build that `test:app`
+makes, and the screen on: with it off or locked, nothing is drawn and the screenshots are blank).
 
 Left, on purpose:
 - The page doesn't open links outside the app (nothing in it does today); a link would be refused by the navigation
@@ -1254,6 +1262,46 @@ Left, on purpose:
 - The keychain itself was not tried by the tests (they use the file store, so as not to touch this computer's keychain
   or start a KWallet prompt). Try it by hand: tick "remember me", close, open again.
 - The relay is tested in Rust only; the page through it waits for Windows (D1).
+
+**Review (2026-11-07, after the first commit `db2bf96`).** Six reviewers (tokens and central, the window, the relay, the
+dialogs, the tests, this doc), each finding put to two skeptics: 37 findings, 30 kept, all fixed:
+- **Tokens.** A wrong password on deleting a wolf or the account (401 `bad_sign_in`) was refreshed and sent again, so
+  each typo counted twice against the sign-in limit (5 typos locked the account out for 15 minutes). Now only
+  `unauthenticated` refreshes, in the shell and in the browser's `FetchCentral`. **Signing out** with an access token
+  that expired while playing never reached central (the session lived on for up to 30 days): it is refreshed and
+  retried now. A refresh under way during a sign-in, sign-out or deletion could bring the old session's tokens back:
+  a generation number drops it. Central's calls and the pings ignore `HTTP_PROXY`.
+- **The ping** (`world_status`) went to any address the page named and handed back any JSON: a script in the page could
+  read local and LAN services. It refuses link-local (cloud metadata), unspecified, multicast and broadcast addresses,
+  and returns only a world's own reply, cut to the list's fields. (Loopback and LAN stay allowed for the address box;
+  a port's open-or-closed is still visible through the timing.)
+- **The window.** `core:default` is gone from the capability: only listen/unlisten, fullscreen, is-fullscreen and
+  destroy, plus our commands. The navigation rule matches the platform's exact origin with no port
+  (`http://tauri.localhost:7788` was let through). `central_info` reads the keychain off the window's thread (an unlock
+  prompt would have frozen it). The first launch shows the window before measuring the screen (a hidden window has no
+  monitor on Wayland, so it never maximised). With `--data-dir` the window's size and place are kept there, not over
+  the real ones. **macOS:** a menu of our own whose Quit closes the window (Tauri's default Quit skipped the close
+  question), and an exit the OS asks for closes the window first (written, untested: no Mac).
+- **The relay** backs off when accepting fails, and drops a page or a world that stalls in its handshake (10 s, 15 s).
+- **The dialogs.** Enter on a focused Cancel confirmed (it cancels now); Tab left the dialog for the page behind it (it
+  cycles inside now); an IME's Enter confirmed a half-typed name; the close question waited behind an open dialog and
+  stacked one per click on X (it comes at once now, cancelling the open one, and only once).
+- **The tests.** A failed launch left the window open and the run hanging; a build without the e2e hook (after
+  `npm run app`) hung for a minute instead of being skipped (`--e2e-check` now); the app, browser and look runs shared
+  one central database and dropped it under each other (each has its own now); the token check now looks at every
+  reply the shell hands the page, the navigation check at the shell's refusal, F11 is pressed as a key, and the
+  relaunch's exceptions are checked. The X out of the world closes and exits; in the world (`look.mjs`) it asks once,
+  Stay stays, Leave exits.
+- **This doc.** The Windows steps built the real client and then ran a spike that was never built; the workflow can
+  only run from the default branch, with the tag pushed; the how-to started `serve` and `worlds add` together (two
+  migrations at once) and never installed the Client's packages.
+
+Dropped by the skeptics (left as they are): no macOS bundle targets (a Mac build stays unlisted, doc 76); the app test's
+`tauri:` origin on Windows (it accepts `http://tauri.localhost` now anyway); `wss://` through the relay trusting only
+webpki's roots (the relay is only for Windows's plain `ws://` question).
+
+Not yet seen with the screen on, after the fixes: the first launch's size, and drawing (the screen was off for the last
+runs; before the fixes it drew at 60 frames a second).
 
 ## Review (2026-11-07)
 
