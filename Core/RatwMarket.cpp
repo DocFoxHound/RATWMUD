@@ -642,6 +642,11 @@ void Society::setTradePoints(market::Topology topology)
 {
     topology.fromWorld = true;
     topology.index();
+    // (Each market's tills before, so a household's food shop is chosen again when a market's shops move.)
+    std::map<std::string, std::vector<std::string>> tillsWere;
+    const bool first = !worldTopology_.fromWorld;   // (At a restore the bands were worked out on Society's own market.)
+    for (const auto& m : worldTopology_.markets)
+        tillsWere[m.id] = m.tills;
     worldTopology_ = std::move(topology);
     districtLeast_.clear();
     districtWarm_ = false;
@@ -654,6 +659,32 @@ void Society::setTradePoints(market::Topology topology)
         it = known(it->first) ? std::next(it) : b.pushed.erase(it);
     for (auto it = b.netToday.begin(); it != b.netToday.end();)
         it = known(it->first) ? std::next(it) : b.netToday.erase(it);
+    // Today's households against the world's markets (doc 79, 5.1 and 6.5): after a restore their markets, food shops and
+    // provisions were worked out before the world had found its markets (Society's own one market, "realm"), and the
+    // day's pass would not come again until midnight. Again now, each keeping its band (as at a restore), when the
+    // markets are new or a household's market or a market's shops have moved.
+    if (staged() && stagedDay_ >= 0 && !stagedHomes_.empty())
+    {
+        bool again = first;
+        for (const auto& m : worldTopology_.markets)
+            if (const auto w = tillsWere.find(m.id); w == tillsWere.end() || w->second != m.tills)
+                again = true;
+        for (auto h = stagedHomes_.begin(); !again && h != stagedHomes_.end(); ++h)
+        {
+            std::string homeCell;
+            if (!h->second.members.empty())
+                if (const auto r = state_.residents.find(h->second.members.front()); r != state_.residents.end())
+                    homeCell = r->second.homeCell;
+            again = marketOfHome(homeCell, h->second.members) != h->second.market;
+        }
+        if (again)
+        {
+            const bool was = restoring_;
+            restoring_ = true;
+            stagedBands(stagedDay_);
+            restoring_ = was;
+        }
+    }
 }
 
 const market::Topology& Society::tradePoints() const

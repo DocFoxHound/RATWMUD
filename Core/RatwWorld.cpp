@@ -6679,6 +6679,9 @@ Result World::restore(const PersistedWorld& saved)
     travelRetryAt_.clear();
     travelProgress_.clear();
     furnishHomes();                                 // A save from before home storage gets it now (doc 36).
+    // The markets at once, while staged (doc 79, 5.1): Society's restore worked the households out before the world had
+    // found them, so their markets, food shops and provisions are worked out again on the world's (setTradePoints).
+    ensureTradePoints();
     return {true, "Saved world restored.", {}};
 }
 

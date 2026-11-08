@@ -683,23 +683,66 @@ void householdsInTheBoardsMarkets()
         manifest << resident("wx", "Cotter x", "civilian", "working", 6, 4.5, 6, 4.5);   // (The wilds between Larkfield and Oakhaven.)
     }
     fs::remove_all(root / "save");
-    Town town(worldPath, (root / "save").string());
-    auto& w = town.g.world();
-    auto& s = w.society();
-    town.run(3);
-    expect(w.towns().size() == 3 && w.lawTown(cellId(6)).empty() && w.lawTown(cellId(4)) == "larkfield",
-           "three towns, the wilds in none: " + std::to_string(w.towns().size()));
-    const auto marketOf = [&](const std::string& id) {
-        const auto* st = s.statusOf(id);
-        return st ? st->market : std::string("(no band)");
+    // Through a restart (9.2): straight after the load, before any turn, the households have the Board's markets again
+    // and each food shop's provision sits on its own till, never on Society's one-market stand-in ("realm") until midnight.
+    const auto provisions = [](const Society& so) {
+        std::map<std::string, int> out;
+        std::set<std::string> foods;
+        for (const auto& row : so.statusTable().rows)
+            foods.insert(row.food.begin(), row.food.end());
+        for (const auto& m : so.tradePoints().markets)
+            for (const auto& till : m.tills)
+                for (const auto& f : foods)
+                    if (const int n = so.provisionFor(till, f); n > 0)
+                        out[m.id + "/" + till + "/" + f] = n;
+        return out;
     };
-    expect(marketOf("u1") == "ridgemere" && marketOf("s1") == "larkfield" && marketOf("r1") == "oakhaven",
-           "each town's households its own market: " + marketOf("u1") + " " + marketOf("s1") + " " + marketOf("r1"));
-    expect(marketOf("wx") == "larkfield", "the cotter in the wilds the nearest market by path: " + marketOf("wx"));
-    expect(marketOf("um") == s.marketOf(s.tillOf("um")), "a keeper's household and its till in one market");
-    s.setPressure("larkfield", "meal", .5, "test");
-    expect(Society::boardHooks().pressure(s, marketOf("wx"), "meal") > .4,
-           "the pressure on the cotter's staple reaches its short days");
+    const auto describe = [](const std::map<std::string, int>& p) {
+        std::string out;
+        for (const auto& [k, n] : p)
+            out += k + "=" + std::to_string(n) + " ";
+        return out;
+    };
+    std::map<std::string, int> before;
+    {
+        Town town(worldPath, (root / "save").string());
+        auto& w = town.g.world();
+        auto& s = w.society();
+        town.run(3);
+        expect(w.towns().size() == 3 && w.lawTown(cellId(6)).empty() && w.lawTown(cellId(4)) == "larkfield",
+               "three towns, the wilds in none: " + std::to_string(w.towns().size()));
+        const auto marketOf = [&](const std::string& id) {
+            const auto* st = s.statusOf(id);
+            return st ? st->market : std::string("(no band)");
+        };
+        expect(marketOf("u1") == "ridgemere" && marketOf("s1") == "larkfield" && marketOf("r1") == "oakhaven",
+               "each town's households its own market: " + marketOf("u1") + " " + marketOf("s1") + " " + marketOf("r1"));
+        expect(marketOf("wx") == "larkfield", "the cotter in the wilds the nearest market by path: " + marketOf("wx"));
+        expect(marketOf("um") == s.marketOf(s.tillOf("um")), "a keeper's household and its till in one market");
+        s.setPressure("larkfield", "meal", .5, "test");
+        expect(Society::boardHooks().pressure(s, marketOf("wx"), "meal") > .4,
+               "the pressure on the cotter's staple reaches its short days");
+        before = provisions(s);
+        expect(!before.empty(), "the food shops' provisions before the save");
+        town.g.save();
+    }
+    {
+        Town again(worldPath, (root / "save").string());
+        auto& s2 = again.g.world().society();
+        const auto marketAgain = [&](const std::string& id) {
+            const auto* st = s2.statusOf(id);
+            return st ? st->market : std::string("(no band)");
+        };
+        expect(s2.tradePoints().fromWorld, "the world's markets at once after the load");
+        expect(marketAgain("u1") == "ridgemere" && marketAgain("s1") == "larkfield" && marketAgain("r1") == "oakhaven" &&
+                   marketAgain("wx") == "larkfield",
+               "after a restart each household its market at once: " + marketAgain("u1") + " " + marketAgain("s1") + " " +
+                   marketAgain("r1") + " " + marketAgain("wx"));
+        const auto after = provisions(s2);
+        expect(after == before, "and each food shop's provision on its own till: " + describe(after) + "(was " + describe(before) + ")");
+        again.run(3);
+        expect(marketAgain("s1") == "larkfield" && provisions(s2) == before, "and still so after the world's turns");
+    }
     fs::remove_all(root);
 }
 
