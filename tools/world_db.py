@@ -333,16 +333,18 @@ def ensure_env(path: Path = ENV_FILE) -> bool:
 def ensure_passwords(path: Path = ENV_FILE) -> list[str]:
     """Adds generated passwords for login roles added since the settings file was made. Returns the keys added."""
     have = read_env(path)
-    missing = [key for key in PASSWORD_KEYS if key not in have]
+    # (A password given in the environment, as a world package's container gives them all, needs none written.)
+    missing = [key for key in PASSWORD_KEYS if key not in have and not os.environ.get(key)]
     if missing:
         with path.open('a', encoding='utf-8') as out:
             out.write(''.join(f'{key}={secrets.token_urlsafe(24)}\n' for key in missing))
     return missing
 
 
-def ensure_roles() -> list[str]:
+def ensure_roles(databases: list[str] | None = None) -> list[str]:
     """Creates login roles that do not exist yet (roles added after the database was first set up). Needs the
-    superuser from Database/.env. Returns the roles created."""
+    superuser from Database/.env. Returns the roles created. The dm role's CONNECT is granted on `databases` (default:
+    every registered world's)."""
     from psycopg import sql
     ensure_passwords()
     s = settings()
@@ -355,7 +357,7 @@ def ensure_roles() -> list[str]:
                     sql.Identifier(name), sql.Literal(s[f'RATW_{role.upper()}_PASSWORD'])))
                 created.append(name)
         # The Dungeon Master works on every world.
-        for database in [w['database'] for w in worlds()]:
+        for database in [w['database'] for w in worlds()] if databases is None else databases:
             if su.execute('SELECT 1 FROM pg_database WHERE datname = %s', (database,)).fetchone():
                 su.execute(f'GRANT CONNECT ON DATABASE {database} TO ratw_dm')
     return created
@@ -649,16 +651,24 @@ def _owner_info(database: str) -> dict:
 
 
 def new_world(key: str, name: str, of_kind: str = 'dev', upstream_key: str | None = None, source: str | None = None,
-              without_map: bool = False, database: str | None = None, placements: Path | None = None, log=print) -> dict:
+              without_map: bool = False, database: str | None = None, placements: Path | None = None, log=print,
+              registered: bool = False) -> dict:
     """Makes a world: its database (owned by ratw_owner, the roles' CONNECT granted), either empty with every migration
     applied or a copy of `source`'s (refused while anyone else is connected to it; `without_map` then takes the map
-    away), and registers it. Returns the registry entry."""
+    away), and registers it. Returns the registry entry. `registered`: the world is in the registry already (a world
+    package's one-world registry, tools/world_package.py): only its database is made, under the registry's name."""
     from psycopg import sql
-    database = database or f'ratw_{key}'
-    entry = {'key': key, 'name': name, 'database': database, 'kind': of_kind, **({'upstream': upstream_key} if upstream_key else {})}
-    if key in keys() or key in ALIASES:
-        raise DatabaseError(f'There is already a world called {key}.')
-    check_registry(worlds() + [entry])
+    if registered:
+        entry = world(key)
+        if entry['kind'] != of_kind:
+            raise DatabaseError(f'{key} is registered as a {entry["kind"]} world, not {of_kind}.')
+        database = entry['database']
+    else:
+        database = database or f'ratw_{key}'
+        entry = {'key': key, 'name': name, 'database': database, 'kind': of_kind, **({'upstream': upstream_key} if upstream_key else {})}
+        if key in keys() or key in ALIASES:
+            raise DatabaseError(f'There is already a world called {key}.')
+        check_registry(worlds() + [entry])
     if without_map and not source:
         raise DatabaseError('--without-map takes the map away from a copy: name the world to copy with --from.')
     source_db = world(source)['database'] if source else None
@@ -704,14 +714,16 @@ def new_world(key: str, name: str, of_kind: str = 'dev', upstream_key: str | Non
                     took = take_map_away(conn, key, placements)
                     log(f'{database}: the map taken away ({took["cells"]} cells); what stood on it saved in '
                         f'{took["saved"]}.')
-            register(entry)
+            if not registered:
+                register(entry)
         except BaseException as error:
             su.execute(sql.SQL('DROP DATABASE IF EXISTS {} WITH (FORCE)').format(sql.Identifier(database)))
             log(f'Dropped {database} again.')
             if isinstance(error, psycopg.Error):
                 raise DatabaseError(f'Making {key} failed, nothing kept: {str(error).strip()}') from error
             raise
-    log(f'Registered {key} ("{name}", {of_kind}' + (f', upstream {upstream_key}' if upstream_key else '') + ').')
+    if not registered:
+        log(f'Registered {key} ("{name}", {of_kind}' + (f', upstream {upstream_key}' if upstream_key else '') + ').')
     return entry
 
 
