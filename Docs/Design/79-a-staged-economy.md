@@ -1797,6 +1797,17 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     (made here 0.95, far 1.08: bread 12p a dozen in Ridgemere, recommend keeping); the crafting cap strict until the
     Craft panel (recommend); Times still from the slider alone, so the bands' Times shift adds to the slider (for
     Phase 10's look and feel).
+- **2026-11-08: Phase 3 (the cut) built, paused before its last check.** Committed `d06abb7`..`e5605a0`: the tools,
+  Editor and docs cut; the cut in Core (the staged economy is the only economy; no `staged` switch); the tests for
+  the one economy; `world_check` without the economy's reports; two rounds of fixes from two adversarial checkers
+  (saves, money and exploits; leftovers and completeness). The user paused the session during the second round's
+  re-check, so that re-check never reported. Checked by hand at the pause: a clean Release build, ctest 79/79, and
+  `test_world_package`, `test_studio` and `test_map_editor` OK. **To resume:** re-run that last check (both lenses)
+  on `8450efe..e5605a0`; add the running pre-79 DEV save (made 2026-11-08 at `cab65ee` from DEV's world in file mode,
+  2 days 16 hours, holding `loop` and `outside:wharf`; kept outside the repo in the session's job folder,
+  `pre79-running/checkpoint.json.gz`, 295 KB) to `Tests/fixtures/pre79/` and `save_compat`; apply the user's price
+  decisions (narrow the season span; keep the region factors; the crafting cap strict); then Review A, which ends
+  slice 1.
 - **2026-11-08: Phase 3 built** (the cut; `r2-staged` `d06abb7`, `487f9db`, `cd5de64`, `e61b833`, then a repair round after
   two independent checks). The staged economy is the only economy: the rule `staged` is gone; the city loop, steering,
   the Wharf, farm money, the store room, minting and the wire loop are deleted; restore reconciles (dead accounts
