@@ -3202,6 +3202,8 @@ void Game::sendSnapshot(Connection* c)
         }
         if (me->dungeonMaster)
             self.set("dungeonMaster", true);       // The Dev Console is theirs (RatwGameDev.cpp).
+        if (isHost(c))
+            self.set("host", true);                // A community world's host: the host's console (doc 77, 3.2).
         if (me->noPvp)
             self.set("noPvp", true);               // Auto-decline fights with players (doc 40).
         if (me->noHuntPartners)
@@ -5740,7 +5742,7 @@ void Game::command(Connection* c, const std::string& raw)
         const std::string channel = j.string("channel");
         if (std::string until; silenced(id, &until))
         {
-            feedback(false, "A Dungeon Master has silenced your account for another " + until + ".");   // (Doc 50, 7.)
+            feedback(false, (communityWorld() ? "The host has" : "A Dungeon Master has") + std::string(" silenced your account for another ") + until + ".");   // (Doc 50, 7.)
             return;
         }
         if (channel == "circle")

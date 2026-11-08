@@ -31,6 +31,7 @@ constexpr double OnlineEvery = 15;                  // online.json is written th
 constexpr double BansEvery = 5;                     // ...and bans.json looked at this often.
 constexpr std::uintmax_t MaxBansFile = 8u << 20;    // (Many bans fit: an account's id is 37 bytes.)
 const char* const BannedMessage = "This account is banned from central's worlds.";
+const char* const WorldBannedMessage = "This account is banned from this world by its host.";
 
 void prune(std::deque<double>& times, double now)
 {
@@ -69,6 +70,8 @@ bool Game::startTickets(std::string& problem)
         note("warning", "RATW_TICKETS no keys from central yet (" + trouble + "): nobody can join until the world agent fetches them");
     if (std::filesystem::exists(agentFile("bans.json")) && !reloadBans(trouble))
         note("warning", "RATW_BANS central's ban list can't be read yet (" + trouble + ")");
+    if (std::filesystem::exists(agentFile("host.json")) && !reloadHost(trouble))
+        note("warning", "RATW_HOST the world's host can't be read yet (" + trouble + ")");
     if (options_.scratch)
         note("info", "RATW_ONLINE a scratch server writes no online.json: the world agent's directory is the real world's");
     note("info", "RATW_TICKETS ticket mode: world " + o.worldId + " (" + (o.official ? "official" : "community") + "), central " +
@@ -289,6 +292,13 @@ void Game::ticketHello(Connection* c, const Value& j)
         // ban is refused here; one issued after it never is, since central issues none.
         note("info", "RATW_TICKET refused " + claims.wolf + ": its account is banned by central");
         ticketLobby(c, false, BannedMessage, "banned");
+        return;
+    }
+    if (bannedHere(claims.account))
+    {
+        // The host's own world ban (doc 77, 3.2): by account, so a fresh wolf of the same account is refused too.
+        note("info", "RATW_TICKET refused " + claims.wolf + ": its account is banned from this world by its host");
+        ticketLobby(c, false, WorldBannedMessage, "world_banned");
         return;
     }
     std::size_t inWorld = 0;
@@ -514,6 +524,7 @@ void Game::ticketFiles()
     {
         bansCheckedAt_ = clock();
         reloadBans(trouble);                        // (No file yet is no bans yet; a bad one keeps the last list.)
+        reloadHost(trouble);                        // (Likewise the host.)
     }
 }
 
@@ -643,11 +654,93 @@ void Game::sendOutBanned()
         if (c->accountUsername.empty() || !bannedByCentral(c->accountUsername))
             continue;
         const std::string wolf = !c->entityId.empty() ? c->entityId : c->ticketWolf;
-        leaveCharacter(c);
-        forgetTicket(c);                            // (Its account goes with it: a ticket's lasts as long as its wolf.)
-        ticketLobby(c, false, std::string(BannedMessage) + " Your wolf has left this world.", "banned");
-        c->closeAfterSending();
+        sendOut(c, std::string(BannedMessage) + " Your wolf has left this world.", "banned");
         note("info", "RATW_BANS sent out " + wolf + ": its account is banned by central");
     }
+}
+
+void Game::sendOut(Connection* c, const std::string& message, const std::string& code)
+{
+    // Told why, taken out of the world as on leaving, its ticket's account forgotten, and the connection closed. It
+    // may come back with a new ticket unless it is banned.
+    leaveCharacter(c);
+    forgetTicket(c);                                // (Its account goes with it: a ticket's lasts as long as its wolf.)
+    ticketLobby(c, false, message, code);
+    c->closeAfterSending();
+}
+
+bool Game::bannedHere(const std::string& account) const
+{
+    const auto it = people_.find(account);
+    return it != people_.end() && it->second.worldBan.on;
+}
+
+bool Game::isHost(const Connection* c) const
+{
+    return c && communityWorld() && !hostSub_.empty() && c->accountUsername == hostSub_ && !c->entityId.empty();
+}
+
+std::string Game::deciders(bool capital) const
+{
+    if (communityWorld())
+        return capital ? "The host" : "the host";
+    return capital ? "The Dungeon Masters" : "the Dungeon Masters";
+}
+
+bool Game::reloadHost(std::string& problem)
+{
+    // host.json (doc 77, 3.2): {"at", "host": the host account's ticket sub here, or null}, from the agent. Read again
+    // only when it changed; a missing or unreadable file keeps the host as it was. An official world reads nothing:
+    // it has no host, whatever a file says.
+    if (!communityWorld())
+    {
+        problem = ticketMode() ? "an official world has no host" : "not in ticket mode";
+        return false;
+    }
+    const auto path = agentFile("host.json");
+    std::error_code failed;
+    const auto size = std::filesystem::file_size(path, failed);
+    if (failed)
+    {
+        problem = "no host file at " + path.string();
+        return false;
+    }
+    const auto written = std::filesystem::last_write_time(path, failed);
+    if (failed || size > 4096)
+    {
+        problem = "the host file can't be read";
+        return false;
+    }
+    const std::string stamp = std::to_string(written.time_since_epoch().count()) + ":" + std::to_string(size);
+    if (stamp == hostStamp_)
+        return true;
+    std::ifstream in(path, std::ios::binary);
+    std::stringstream text;
+    text << in.rdbuf();
+    Value doc;
+    std::string error;
+    if (!json::parse(text.str(), doc, error) || !doc.isObject())
+    {
+        problem = "the host file isn't JSON (" + error + ")";
+        return false;
+    }
+    const auto* host = doc.find("host");
+    if (!host || !(host->isNull() || (host->isString() && !host->asString().empty() && host->asString().size() <= 64)))
+    {
+        problem = "the host file names no account (\"host\": an account's sub, or null)";
+        return false;
+    }
+    hostStamp_ = stamp;
+    const std::string was = hostSub_;
+    hostSub_ = host->isString() ? host->asString() : std::string();
+    if (hostSub_ != was)
+    {
+        note("info", hostSub_.empty() ? std::string("RATW_HOST this world has no host now") : "RATW_HOST this world's host: account " + hostSub_);
+        for (auto* c : clients_)
+            if (!c->entityId.empty() && (c->accountUsername == was || c->accountUsername == hostSub_))
+                system(c, c->accountUsername == hostSub_ ? "You are this world's host: the host's console is yours (the ` key)."
+                                                         : "You are no longer this world's host.");
+    }
+    return true;
 }
 } // namespace ratw::game

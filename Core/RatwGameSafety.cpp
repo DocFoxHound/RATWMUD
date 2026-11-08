@@ -202,7 +202,7 @@ bool Game::safetyCommand(Connection* c, const json::Value& j, Result& result)
                 today += r.reporterAccount == mine && now() - r.created < 86400;
             if (today >= ReportsADay)
             {
-                result = {false, "You have made " + std::to_string(ReportsADay) + " reports today; a Dungeon Master will look at them.", {}};
+                result = {false, "You have made " + std::to_string(ReportsADay) + " reports today; " + (communityWorld() ? std::string("the host") : std::string("a Dungeon Master")) + " will look at them.", {}};
                 return true;
             }
             reports::Report r;
@@ -232,7 +232,7 @@ bool Game::safetyCommand(Connection* c, const json::Value& j, Result& result)
             {
                 reportCache_[r.id] = r;
                 note("info", "RATW_REPORT " + r.id + " " + r.category + " against " + r.reportedCharacter);
-                result = {true, "Reported. A Dungeon Master will look at it.", {}};
+                result = {true, communityWorld() ? "Reported. The host will look at it." : "Reported. A Dungeon Master will look at it.", {}};
                 if (j.boolean("block"))
                 {
                     auto& marks = safety_[mine];

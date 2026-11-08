@@ -1640,16 +1640,26 @@ export class GameState {
         return bool(obj(this.snapshot, 'self'), 'dungeonMaster');
     }
 
+    /** A community world's host (doc 77, 3.2): the same console, with the host's commands, never the Dev Console's. */
+    isHost() {
+        return bool(obj(this.snapshot, 'self'), 'host');
+    }
+
+    /** Whether the console is this player's: a Dungeon Master's Dev Console, or a host's. */
+    hasConsole() {
+        return this.isDungeonMaster() || this.isHost();
+    }
+
     /** A Dev Console command ("/fight-test-1"), for the server to answer with a devResult. */
     runDevCommand(command: string) {
         const text = command.trim();
-        if (!text || !this.isDungeonMaster()) return;
+        if (!text || !this.hasConsole()) return;
         this.send({type: 'dev', command: text.startsWith('/') ? text : `/${text}`});
     }
 
     /** Opens or closes the Dev Console (only ever for a Dungeon Master); the first time, asks the server what it offers. */
     toggleDevConsole(open = !this.devConsole) {
-        this.devConsole = open && this.isDungeonMaster();
+        this.devConsole = open && this.hasConsole();
         if (this.devConsole) {
             this.modal = '';
             this.setChat(false);
@@ -1842,7 +1852,7 @@ export class GameState {
             this.setChat(true);
             return true;
         }
-        if (code === 'Backquote' && this.isDungeonMaster() && !this.chat) {
+        if (code === 'Backquote' && this.hasConsole() && !this.chat) {
             this.toggleDevConsole();                                         // The Dev Console (a Dungeon Master's).
             return true;
         }

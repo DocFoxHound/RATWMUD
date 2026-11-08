@@ -275,6 +275,19 @@ class Game
     bool writeOnline(std::string& problem);
     bool reloadBans(std::string& problem);
     bool bannedByCentral(const std::string& account) const { return centralBans_.count(account) > 0; }
+    // The world's host (doc 77, 3.2): host.json in the same directory, {"at", "host": the host account's ticket `sub`
+    // here, or null}, written by the agent from each heartbeat's reply and read again when it changes, as bans.json is.
+    // Only a community world in ticket mode has a host; every wolf of the host's account has the host commands
+    // (RatwGameDev.cpp), never the Dev Console's. A world ban is the host's, by account, kept with the account record
+    // (people::AccountRecord::worldBan): refused at hello, the account's wolves here sent out.
+    bool communityWorld() const { return ticketMode() && !options_.central.official; }
+    bool reloadHost(std::string& problem);
+    const std::string& hostAccount() const { return hostSub_; }
+    bool isHost(const Connection* c) const;
+    bool bannedHere(const std::string& account) const;
+    // Who decides what waits on a decision, as a reply names them: "the host" on a community world, else "the
+    // Dungeon Masters" (capitalised for a sentence's start).
+    std::string deciders(bool capital = false) const;
 
     void connect(Connection* c);                              // A new client: it is shown the lobby.
     void disconnect(Connection* c);                           // Its character leaves the world first.
@@ -464,10 +477,12 @@ class Game
     // Central's banned accounts (bans.json as last read), and when the two files were last written or checked.
     std::set<std::string> centralBans_;
     std::string bansStamp_;
+    std::string hostSub_, hostStamp_;                // The host's account here (host.json as last read).
     double onlineWrittenAt_ = -1e9, bansCheckedAt_ = -1e9;
     bool onlineFailing_ = false;
     std::filesystem::path agentFile(const std::string& name) const;
     void sendOutBanned();
+    void sendOut(Connection* c, const std::string& message, const std::string& code);
     std::deque<double> arrivals_;
     std::map<std::string, std::deque<double>> accountArrivals_;
     double ticketNow() const;
@@ -530,6 +545,9 @@ class Game
     bool battleCommand(Connection* c, const json::Value& j, Result& result);
     // The Dev Console's commands, for a player marked Dungeon Master (RatwGameDev.cpp): answered with a "devResult".
     void devCommand(Connection* c, const json::Value& j);
+    // The host's commands (RatwGameDev.cpp; doc 77, 3.2), offered through the same console to a community world's host.
+    void hostCommand(Connection* c, const json::Value& j);
+    std::string hostTarget(const std::string& rest, std::string& wolf, std::string& why) const;
     std::map<std::string, double> lingering_;      // Players gone mid-fight, their bodies kept until then (doc 33).
     void releaseLingering();
     // Parties (RatwGameParty.cpp; doc 32, Part 2): the "party" commands (false: not one of them), an invitation, the

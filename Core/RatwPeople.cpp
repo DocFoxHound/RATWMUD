@@ -519,6 +519,13 @@ json::Value saveAccount(const AccountRecord& a)
         o.add("firstCharacter", a.firstCharacter);
     if (a.silencedUntil > 0)
         o.add("silencedUntil", a.silencedUntil);
+    if (a.worldBan.on)
+    {
+        auto b = json::Value::object();
+        b.add("at", a.worldBan.at);
+        b.add("reason", a.worldBan.reason);
+        o.add("worldBan", b);
+    }
     if (a.graduated)
         o.add("graduated", true);
     if (a.mentor.on || a.mentor.revoked || a.mentor.guided > 0 || !a.mentor.tie.empty())
@@ -554,6 +561,12 @@ AccountRecord loadAccount(const json::Value& o)
     a.playedSeconds = std::max(0.0, o.number("playedSeconds", 0));
     a.firstCharacter = o.string("firstCharacter").substr(0, 80);
     a.silencedUntil = o.number("silencedUntil", -1);
+    if (const auto* b = o.find("worldBan"); b && b->isObject())
+    {
+        a.worldBan.on = true;
+        a.worldBan.at = b->number("at", -1);
+        a.worldBan.reason = b->string("reason").substr(0, 200);
+    }
     a.graduated = o.boolean("graduated", false);
     const auto& m = o.object("mentor");
     a.mentor.on = m.boolean("on", false);

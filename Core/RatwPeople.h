@@ -52,6 +52,13 @@ struct AccountRecord
     std::string firstCharacter;
     Settings settings;
     double silencedUntil = -1;                                      // A DM's silence (doc 50, 7): real seconds.
+    // A community world's own ban by its host (doc 77, 3.2): the account is refused here until unbanned.
+    struct WorldBan
+    {
+        bool on = false;
+        double at = -1;
+        std::string reason;
+    } worldBan;
     bool graduated = false;                                         // No longer a newcomer, for good (doc 52, 2).
     // Mentoring (doc 52, 3): opted in, available (else busy), turned off by a Dungeon Master until restored; resting
     // after a tie until (real seconds), the tie it is on, ties that ended with a shared scene, the last tie's time.

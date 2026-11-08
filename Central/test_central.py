@@ -948,6 +948,7 @@ class ServerList(Base):
         self.assertEqual(status, 200, reply)
         self.assertEqual(reply, {'ok': True, 'world': world, 'kind': 'community', 'listed': True, 'reachable': True,
                                  'why': '', 'address': f'127.0.0.1:{stand_in.port}', 'players': 0, 'bans': [],
+                                 'host': ct.pairwise_id(self.keys.pairwise_secret(), self.host['account']['id'], world),
                                  'time': self.clock(), 'every': 60})
         self.assertEqual(stand_in.seen, [('/status', f'127.0.0.1:{stand_in.port}')])
         status, reply = self.call('list_worlds')

@@ -15,13 +15,14 @@ export class DevConsole {
     private listKey = '';
     private selected = -1;          // The suggestion chosen with the arrows, or -1 for what is typed.
     private wasOpen = false;
+    private heading: HTMLElement;
 
     constructor(parent: HTMLElement, state: GameState) {
         this.s = state;
         this.root = el('section', 'dev-console', parent);
         this.root.setAttribute('aria-label', 'Dev Console');
         const head = el('div', 'dev-console-head', this.root);
-        el('span', 'label gold', head, 'DEV CONSOLE · DUNGEON MASTER');
+        this.heading = el('span', 'label gold', head, 'DEV CONSOLE · DUNGEON MASTER');
         el('span', 'muted', head, 'Tab completes · ↑ ↓ choose · Enter runs · Esc or ` closes');
         button('×', 'close', head, () => this.close()).title = 'Close (Esc or `)';
         this.log = el('div', 'dev-console-log', this.root);
@@ -90,6 +91,11 @@ export class DevConsole {
         if (!open && this.wasOpen) this.input.blur();
         this.wasOpen = open;
         if (!open) return;
+        // A community world's host has the same console with the host's commands (doc 77, 3.2), and its own heading.
+        const host = s.isHost() && !s.isDungeonMaster();
+        this.heading.textContent = host ? "HOST'S CONSOLE · THIS WORLD'S HOST" : 'DEV CONSOLE · DUNGEON MASTER';
+        this.root.setAttribute('aria-label', host ? "Host's console" : 'Dev Console');
+        this.input.maxLength = host ? 300 : 60;
         // What it has printed: each command, and what came of it.
         const last = s.devLog.at(-1);
         const logKey = `${s.devLog.length}:${last?.command}:${last?.text}`;

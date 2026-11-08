@@ -143,6 +143,9 @@ bool Game::artworkCommand(Connection* c, const json::Value& j, const std::string
         reply(e);
         return true;
     }
+    // Portrait uploads are off on a community world (doc 77, 3.2): nobody there reviews them. The painted portraits stay.
+    if (communityWorld())
+        return refuse("Portrait uploads are off on community worlds. The painted portrait stays yours.");
     // artwork_upload: {characterId, uploadId, part, parts, data}: raw 256×256 RGBA pixels in base64, in up to eight parts.
     const auto character = j.string("characterId");
     if (!ownsCharacter(c, character))

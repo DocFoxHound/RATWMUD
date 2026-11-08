@@ -893,6 +893,233 @@ void aScratchServerWritesNoOnlineFile()
     expect(g.bannedByCentral(Acct2), "it still reads central's bans");
     g.disconnect(&a);
 }
+
+// host.json as the world agent writes it.
+void writeHost(const std::filesystem::path& dir, const std::string& body)
+{
+    const auto temp = dir / ".host.json.test";
+    std::ofstream(temp) << body;
+    std::filesystem::rename(temp, dir / "host.json");
+}
+
+// A console command, and its answer.
+const Value* console(game::Game& g, Client* c, const std::string& text)
+{
+    say(g, c, cmd({{"type", "dev"}, {"command", text}}));
+    return c->last("devResult");
+}
+
+bool saidSomething(const Client& c, const std::string& words)
+{
+    for (const auto& e : c.events)
+        if (json::dump(e).find(words) != std::string::npos)
+            return true;
+    return false;
+}
+
+void theHostDecidesKicksBansAndSilences()
+{
+    // Doc 77, 3.2: central names a community world's host (host.json); every wolf of that account has the host's
+    // commands, nobody else does, the host can't turn them on itself, and its bans and silences are the world's own.
+    Fixture f;
+    const auto save = (f.dir / "save.json").string();
+    const auto acct3 = std::string("acct-cccccccccccccccccccccccccccccccc");
+    const auto wolf4 = std::string("wolf-44444444444444444444444444444444");
+    writeHost(f.dir, "{\"at\": 1, \"host\": \"" + Acct1 + "\"}");
+    auto o = f.options(false, save);
+    o.oneWolfPerAccount = false;
+    o.central.accountArrivalsPerHour = 5;
+    {
+        game::Game g(o);
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "starts: " + problem);
+        expect(g.hostAccount() == Acct1, "the world reads its host as it starts");
+        Client a, b, c;
+        a.id = 1;
+        b.id = 2;
+        c.id = 3;
+        for (auto* x : {&a, &b, &c})
+            g.connect(x);
+        say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren Reed")));
+        say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "w1"}, {"tier", "gifted"}}));
+        say(g, &b, hello(f.ticket(Wolf2, Acct2, "Moss Hollow")));
+        say(g, &b, cmd({{"type", "character_arrive"}, {"commandId", "m1"}, {"tier", "gifted"}}));
+        say(g, &c, hello(f.ticket(Wolf3, acct3, "Fern")));
+        say(g, &c, cmd({{"type", "character_arrive"}, {"commandId", "f1"}, {"tier", "gifted"}}));
+        expect(a.entityId == Wolf1 && b.entityId == Wolf2 && c.entityId == Wolf3, "three wolves in the world");
+        expect(g.isHost(&a) && !g.isHost(&b) && !g.isHost(&c), "the host's wolf is the host, the others aren't");
+
+        // Nobody else has them, and the host has no cheats.
+        for (const auto* text : {"/pending", "/ban Wren Reed", "/kick Wren Reed", "/silence Wren Reed 6", "/help"})
+            expect(!console(g, &b, text)->boolean("ok"), std::string("a wolf who isn't the host can't use ") + text);
+        say(g, &b, cmd({{"type", "devCommands"}}));
+        expect(b.last("devCommands")->array("commands").empty(), "and is offered none");
+        say(g, &a, cmd({{"type", "devCommands"}}));
+        const auto offered = json::dump(*a.last("devCommands"));
+        expect(offered.find("/ban") != std::string::npos && offered.find("/pending") != std::string::npos &&
+                   offered.find("/speed") == std::string::npos && offered.find("/give") == std::string::npos,
+               "the host is offered the host's commands, none of the Dev Console's: " + offered);
+        expect(!console(g, &a, "/speed 100")->boolean("ok") && !console(g, &a, "/give hat 1")->boolean("ok"),
+               "and the Dev Console's cheats are refused to the host");
+        expect(console(g, &a, "/help")->boolean("ok"), "the host's /help");
+
+        // What waits: a treaty, a House request, a storyteller application.
+        expect(console(g, &a, "/pending")->string("text") == "Nothing waits on you.", "nothing waits yet");
+        faction::Treaty t;
+        t.id = g.factions().nextTreatyId();
+        t.faction = "crown";
+        t.chapter = "chapter-9";
+        g.factions().treaties().push_back(t);
+        g.factions().houseRequests().push_back({"chapter-8", "crown", "pending", 0});
+        g.ledger().points[Wolf2] = 1000000;
+        say(g, &b, cmd({{"type", "storyteller"}, {"verb", "apply"}, {"note", "Tales of the drowned bell."}}));
+        expect(saidSomething(b, "with the host"), "a community world's applicant is told the host decides");
+        const auto pending = console(g, &a, "/pending")->string("text");
+        expect(pending.find(t.id) != std::string::npos && pending.find("chapter-8") != std::string::npos &&
+                   pending.find("Moss Hollow") != std::string::npos && pending.find("drowned bell") != std::string::npos,
+               "/pending lists the treaty, the House request and the application: " + pending);
+        expect(!console(g, &a, "/treaty " + t.id + " maybe")->boolean("ok"), "a treaty is yes or no");
+        expect(console(g, &a, "/treaty " + t.id + " yes")->boolean("ok") && g.factions().treaties().back().state == "active",
+               "the host agrees a treaty");
+        expect(!console(g, &a, "/treaty " + t.id + " yes")->boolean("ok"), "once");
+        expect(console(g, &a, "/house chapter-8 crown no")->boolean("ok") && g.factions().houseRequests().back().state == "refused",
+               "the host refuses a House request");
+        expect(console(g, &a, "/storyteller Moss Hollow yes")->boolean("ok") && saidSomething(b, "The host has made you a storyteller"),
+               "the host approves a storyteller, by a name with a space in it");
+        expect(console(g, &a, "/storyteller " + Wolf2 + " revoke too many bells")->boolean("ok") &&
+                   saidSomething(b, "no longer a storyteller: too many bells"),
+               "and revokes it, by the wolf's id, with a reason");
+        expect(console(g, &a, "/pending")->string("text") == "Nothing waits on you.", "nothing waits now");
+
+        // The host can't kick, ban or silence its own account.
+        for (const auto* text : {"/ban Wren Reed", "/kick Wren Reed", "/silence Wren Reed 6", "/unban Wren Reed"})
+        {
+            const auto* r = console(g, &a, text);
+            expect(!r->boolean("ok") && r->string("text").find("your own account") != std::string::npos,
+                   std::string("the host can't use ") + text + " on itself: " + r->string("text"));
+        }
+        expect(a.entityId == Wolf1 && !g.bannedHere(Acct1), "and is still here");
+        expect(!console(g, &a, "/ban Nobody")->boolean("ok"), "an unknown wolf is no target");
+
+        // A silence, world chat refused; a kick, which may come back; a ban, which refuses any of the account's wolves.
+        expect(!console(g, &a, "/silence Fern 5")->boolean("ok"), "a silence is 1, 6, 24 or 72 hours");
+        expect(console(g, &a, "/silence Fern 24")->boolean("ok") && saidSomething(c, "The host has silenced your account"),
+               "the host silences an account");
+        say(g, &c, cmd({{"type", "chat"}, {"text", "Hello all."}}));
+        expect(c.last("error") && c.last("error")->string("text").find("silenced") != std::string::npos,
+               "a silenced wolf's world chat is refused");
+        expect(console(g, &a, "/kick Fern")->boolean("ok") && c.code() == "kicked" && c.closed && c.entityId.empty() &&
+                   !g.bannedHere(acct3),
+               "the host kicks a wolf: sent out, not banned: " + c.message());
+        expect(console(g, &a, "/ban Moss Hollow spamming the square")->boolean("ok") && g.bannedHere(Acct2) && b.code() == "world_banned" &&
+                   b.closed && b.entityId.empty() && b.message().find("spamming the square") != std::string::npos,
+               "the host bans an account: its wolf is sent out, told why: " + b.message());
+        Client d;
+        d.id = 4;
+        g.connect(&d);
+        say(g, &d, hello(f.ticket(wolf4, Acct2, "Birch")));
+        expect(d.entityId.empty() && d.accountUsername.empty() && d.code() == "world_banned" && !g.characters().count(wolf4),
+               "a fresh wolf of the banned account is refused at hello: " + d.message());
+        g.disconnect(&b);
+        g.disconnect(&c);
+        g.disconnect(&d);
+        expect(console(g, &a, "/ban Moss Hollow")->string("text").find("still banned") != std::string::npos,
+               "a ban again says it holds already");
+        g.save();
+        g.disconnect(&a);
+    }
+    {
+        // A save and a load: the ban and the silence are the world's own, and stay.
+        game::Game g(o);
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "starts again from its save: " + problem);
+        expect(g.bannedHere(Acct2) && !g.bannedHere(acct3), "the ban survives the restart");
+        Client b, c, a;
+        b.id = 5;
+        c.id = 6;
+        a.id = 7;
+        for (auto* x : {&a, &b, &c})
+            g.connect(x);
+        say(g, &b, hello(f.ticket(Wolf2, Acct2, "Moss Hollow")));
+        expect(b.entityId.empty() && b.code() == "world_banned", "the banned wolf is refused after the restart");
+        say(g, &c, hello(f.ticket(Wolf3, acct3, "Fern")));
+        expect(c.entityId == Wolf3, "the kicked wolf comes back: " + c.message());
+        say(g, &c, cmd({{"type", "chat"}, {"text", "Hello again."}}));
+        expect(c.last("error") && c.last("error")->string("text").find("silenced") != std::string::npos,
+               "the silence survives the restart");
+        say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren Reed")));
+        expect(console(g, &a, "/unsilence Fern")->boolean("ok") && console(g, &a, "/unban Moss Hollow")->boolean("ok") &&
+                   !g.bannedHere(Acct2),
+               "the host lifts them");
+        for (int i = 0; i < 12; ++i)
+            g.tick(0.05);                           // (Posts are half a second apart.)
+        say(g, &c, cmd({{"type", "chat"}, {"text", "Free to speak."}}));
+        expect(c.last("chatAccepted"), "the unsilenced wolf speaks");
+        Client b2;
+        b2.id = 8;
+        g.connect(&b2);
+        say(g, &b2, hello(f.ticket(Wolf2, Acct2, "Moss Hollow")));
+        expect(b2.entityId == Wolf2, "and the unbanned one comes back: " + b2.message());
+
+        // The host changes: the old host's wolf loses the commands at once.
+        writeHost(f.dir, "{\"at\": 2, \"host\": null}");
+        expect(g.reloadHost(problem) && g.hostAccount().empty() && !g.isHost(&a), "a host cleared by the agent is no host: " + problem);
+        expect(!console(g, &a, "/pending")->boolean("ok"), "and has no commands");
+        writeHost(f.dir, "{\"at\": 3}");
+        expect(!g.reloadHost(problem), "a host file that names nobody is refused");
+        writeHost(f.dir, "{\"at\": 4, \"host\": \"" + Acct2 + "\"}");
+        expect(g.reloadHost(problem) && g.isHost(&b2) && !g.isHost(&a), "the new host's wolf is the host");
+        for (auto* x : {&a, &b, &c, &b2})
+            g.disconnect(x);
+    }
+    {
+        // An official world has no host, whatever host.json says; and keeps its Dungeon Masters' words.
+        writeHost(f.dir, "{\"at\": 5, \"host\": \"" + Acct1 + "\"}");
+        game::Game g(f.options(true));
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "an official world starts: " + problem);
+        expect(g.hostAccount().empty() && !g.reloadHost(problem), "an official world reads no host: " + problem);
+        Client a;
+        a.id = 9;
+        g.connect(&a);
+        say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren Reed", [](Value& claim) { claim.set("kind", "official"); })));
+        say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "w1"}, {"tier", "gifted"}}));
+        expect(a.entityId == Wolf1 && !g.isHost(&a), "the account central names is no host on an official world: " + a.message() + " " + a.code());
+        expect(!console(g, &a, "/pending")->boolean("ok") && !console(g, &a, "/ban Wren Reed")->boolean("ok"), "and has no host commands");
+        g.ledger().points[Wolf1] = 1000000;
+        say(g, &a, cmd({{"type", "storyteller"}, {"verb", "apply"}, {"note", "Tales."}}));
+        expect(saidSomething(a, "with the Dungeon Masters"), "an official world's applicant waits on the Dungeon Masters");
+        g.disconnect(&a);
+    }
+}
+
+void portraitUploadsAreOffOnCommunityWorlds()
+{
+    Fixture f;
+    for (const bool official : {false, true})
+    {
+        game::Game g(f.options(official));
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "starts: " + problem);
+        Client a;
+        a.id = 1;
+        g.connect(&a);
+        say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren Reed", [&](Value& claim) { claim.set("kind", official ? "official" : "community"); })));
+        expect(a.stage() == "arrive", "a ticket for the world: " + a.message());
+        say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "w1"}, {"tier", "gifted"}}));
+        say(g, &a, cmd({{"type", "artwork_upload"}, {"characterId", Wolf1}, {"uploadId", "u1"}, {"part", 0}, {"parts", 1}, {"data", "AAAA"}}));
+        const auto* refused = a.last("artworkError");
+        expect(official ? (!refused || refused->string("text").find("community") == std::string::npos)
+                        : (refused && refused->string("text").find("off on community worlds") != std::string::npos),
+               std::string(official ? "an official world takes uploads as ever" : "a community world refuses portrait uploads") +
+                   (refused ? ": " + refused->string("text") : std::string()));
+        g.disconnect(&a);
+    }
+}
 } // namespace
 
 int main()
@@ -907,6 +1134,8 @@ int main()
         aNewKeyIsFetchedWhenATicketNamesIt();
         theAgentsFilesCountTheWolvesAndCarryCentralsBans();
         aScratchServerWritesNoOnlineFile();
+        theHostDecidesKicksBansAndSilences();
+        portraitUploadsAreOffOnCommunityWorlds();
     }
     catch (const std::exception& error)
     {

@@ -49,7 +49,7 @@ std::string Game::whyNotApply(const std::string& character) const
     if (account.empty())
         return "No account.";
     if (const auto s = storytellers_.find(account); s != storytellers_.end() && (s->second.state == "applied" || s->second.state == "approved"))
-        return s->second.state == "applied" ? "Your application is with the Dungeon Masters." : "You tell stories already.";
+        return s->second.state == "applied" ? "Your application is with " + deciders() + "." : std::string("You tell stories already.");
     if (socialLevel(character) < r.applyLevel)
         return "Storytellers are wolves of social level " + std::to_string(r.applyLevel) + " or more.";
     if (upheldReportsWithin(account, r.reportDays) > 0)
@@ -84,7 +84,7 @@ void Game::decideStoryteller(const std::string& account, bool approve, const std
     s.reason = reason.substr(0, 400);
     for (auto* c : clients_)
         if (accountKey(c) == account)
-            storylineToast(c, approve ? "The Dungeon Masters have made you a storyteller: the STORYTELLER button is yours."
+            storylineToast(c, approve ? deciders(true) + (communityWorld() ? " has" : " have") + " made you a storyteller: the STORYTELLER button is yours."
                                       : "Your application to tell stories was refused" + (reason.empty() ? std::string(".") : ": " + reason));
     saveSoon();
 }
@@ -405,14 +405,14 @@ bool Game::storytellerCommand(Connection* c, const Value& j, Result& result)
             s.character = id;
             s.appliedAt = now();
             storyLogAdd(id, {}, "apply", {}, {}, note.substr(0, 200));
-            result = {true, "Your application is with the Dungeon Masters.", {}};
+            result = {true, "Your application is with " + deciders() + ".", {}};
             saveSoon();
         }
         return true;
     }
     if (!approvedStoryteller(account))
     {
-        result = {false, "Only storytellers the Dungeon Masters have approved can do that.", {}};
+        result = {false, "Only storytellers " + deciders() + (communityWorld() ? " has" : " have") + " approved can do that.", {}};
         return true;
     }
     if (verb == "save")

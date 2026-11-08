@@ -371,7 +371,7 @@ export class Hud {
             this.forageButton.title = 'Forage ' + str(wild, 'forageWhat');
             this.huntButton.title = 'Go out after game: a hunt, like a fight, against what lives here';
         }
-        show(this.devButton, s.isDungeonMaster());
+        show(this.devButton, s.hasConsole());
         show(this.tellerButton, str(obj(obj(s.snapshot, 'self'), 'storyteller'), 'state') === 'approved');
         const waiting = s.friendRequestsIn.length + s.circleInvites.length;   // (Friend requests and circle invitations.)
         const howlIn = num(obj(obj(s.snapshot, 'self'), 'social'), 'howlIn');

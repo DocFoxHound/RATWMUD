@@ -1035,6 +1035,22 @@ test('playtest fixes: attacking a resident asks first; faint voices once; one\'s
     assert.equal(s.posts.at(-1)!.revealed, s.posts.at(-1)!.text.length, 'one\'s own words are not written out again');
 });
 
+test("a community world's host has the console (the host's commands), but chat slashes stay its own", () => {
+    const {state: s, commands, composer} = testGame();
+    s.snapshot = {self: {name: 'Ada', host: true}};
+    assert.ok(s.hasConsole() && s.isHost() && !s.isDungeonMaster(), 'a host has the console, and is no Dungeon Master');
+    s.keyDown({code: 'Backquote'});
+    assert.ok(s.devConsole, '` opens it');
+    assert.deepEqual(commands.filter(c => c.type === 'devCommands'), [{type: 'devCommands'}], 'which asks the server what it offers');
+    s.runDevCommand('/ban Ash Tallow spam');
+    assert.deepEqual(commands.at(-1), {type: 'dev', command: '/ban Ash Tallow spam'}, 'its commands go to the server as typed');
+    s.keyDown({code: 'Escape'});
+    s.keyDown({code: 'Enter'});
+    composer.text = '/howl';
+    s.composerKey({code: 'Enter'});
+    assert.ok(!commands.some(c => c.type === 'dev' && c.command === '/howl'), "a host's slash in chat is not taken by the console");
+});
+
 test('the Dev Console: only a Dungeon Master has it; slash commands go to it, never into the world as words', () => {
     const {state: s, commands, composer} = testGame();
     s.snapshot = {self: {name: 'Ada'}};

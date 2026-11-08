@@ -26,7 +26,9 @@
 //            or --open-tiers on an official world. In the directory holding FILE (the world agent's: tools/world_agent.py
 //            run --dir DIR), it writes online.json (the wolves in the world, about every 15 s, for the heartbeat) and
 //            reads bans.json (central's banned accounts, from the heartbeat's reply): a banned account's hello is refused
-//            and its wolf here sent out (doc 77, 7). Without --central, everything is as it was.
+//            and its wolf here sent out (doc 77, 7); and, on a community world, host.json (the host account's ticket
+//            sub): its wolves get the host's console (/pending, /treaty, /house, /storyteller, /kick, /ban, /silence;
+//            doc 77, 3.2). Without --central, everything is as it was.
 //   --scratch: a scratch server (game::Options::scratch): it reads the world and its save but writes nothing, and
 //            needn't own the world (so it runs beside the real server). Whoever starts it stops it when done; it stops
 //            by itself after an hour unless --for says otherwise. --idle-exit SECONDS (any server) stops it once nobody
@@ -943,7 +945,7 @@ int main(int argc, char** argv)
         if (tickets && Clock::now() >= nextStatus)
         {
             publishStatus();
-            g.ticketFiles();                        // online.json for the world agent; bans.json from it (doc 77, 7).
+            g.ticketFiles();                        // online.json for the world agent; bans.json and host.json from it (doc 77, 7).
             nextStatus = Clock::now() + std::chrono::seconds(1);
         }
         busy += std::chrono::duration<double, std::milli>(Clock::now() - woke).count();
