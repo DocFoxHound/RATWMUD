@@ -1,0 +1,110 @@
+# Docs 76/77/78: the desktop client on Windows (WebView2). Started by hand only (Actions tab, "Run workflow"), so pushing
+# this file runs nothing. GitHub offers "Run workflow" only for a workflow file on the default branch
+# (codex/mvp-foundation); the jobs check out the branch or tag they build, whatever branch the file is started from.
+#
+# Two jobs:
+# - client: the real desktop client from a branch (default r2-desktop): Client/ built and bundled, `cargo test`, the
+#   release build and its NSIS installer. Uploads the installer and the bare .exe for the user's Windows PC.
+# - spike: doc 77 Phase 0's transport spike from the tag desktop-spike-phase0 (b7aed3d): the stand-in world on
+#   loopback and on the runner's own address, the spike app once (it runs the page's transport tests and quits).
+#   Uploads its .exe and results (spike/out/*.jsonl). Whether a GitHub runner can show a WebView2 window at all is
+#   part of what it finds out; the user's own PC is the real check (doc 77, Phase 0, "Still to check").
+
+name: desktop-windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch or tag for the real client"
+        default: r2-desktop
+        required: true
+      spike:
+        description: "Also run the Phase 0 spike"
+        type: boolean
+        default: true
+
+jobs:
+  client:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: Desktop
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.94.0"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: Desktop/src-tauri
+      - run: npm run setup
+      - name: Shell tests
+        run: npm test
+      - name: Build (release, NSIS installer; builds Client/dist first)
+        run: npx tauri build --bundles nsis
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ratw-desktop-windows
+          path: |
+            Desktop/src-tauri/target/release/ratw-desktop.exe
+            Desktop/src-tauri/target/release/bundle/nsis/*.exe
+
+  spike:
+    if: ${{ inputs.spike }}
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: Desktop
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: desktop-spike-phase0   # The Phase 0 commit (b7aed3d): the spike's app and page.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.94.0"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: Desktop/src-tauri
+      - run: npm ci
+      - name: Build (release, NSIS installer)
+        run: npx tauri build --bundles nsis
+      - name: Run the spike
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force spike/out | Out-Null
+          $ip = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } | Select-Object -First 1).IPAddress
+          Write-Host "non-loopback address: $ip"
+          # The wss:// part needs spike/make_certs.sh (bash + openssl, both on the runner through Git for Windows).
+          bash spike/make_certs.sh
+          $server = Start-Process node -ArgumentList "spike/ws_server.mjs","--lan",$ip,"--for","900" -PassThru -RedirectStandardOutput spike/out/server.log -RedirectStandardError spike/out/server.err
+          Start-Sleep 2
+          $env:SPIKE_LAN = "ws://${ip}:47811"
+          $env:SPIKE_REPORT = "$PWD/spike/out/windows.jsonl"
+          $env:SPIKE_QUIT = "1"
+          $env:SPIKE_CA = "$PWD/spike/out/ca.pem"
+          $app = Start-Process src-tauri/target/release/ratw-desktop.exe -PassThru -RedirectStandardOutput spike/out/windows.stdout
+          if (-not $app.WaitForExit(600000)) { Stop-Process $app -Force; Write-Host "the client did not finish in 10 minutes" }
+          Stop-Process $server -Force
+          Get-Content spike/out/windows.jsonl -ErrorAction SilentlyContinue
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ratw-desktop-windows-spike
+          path: |
+            Desktop/src-tauri/target/release/ratw-desktop.exe
+            Desktop/src-tauri/target/release/bundle/nsis/*.exe
+            Desktop/spike/out/*.jsonl
+            Desktop/spike/out/*.stdout
+            Desktop/spike/out/*.log
