@@ -585,6 +585,7 @@ void theWorldsMarkets()
     // ripples and the morning restock read the real markets, never Society's one-market stand-in.
     town.run(3);
     expect(w.society().tradePoints().fromWorld, "the markets found by the world's own turn, before any trade");
+    expect(w.society().stagedHooked(), "the Board's Times, pressure and shelves feed the bands in play (World::ensureTradePoints)");
     w.ensureTradePoints();
     const auto& t = w.society().tradePoints();
     expect(t.fromWorld && t.markets.size() == 3 && t.find("ridgemere") && t.find("larkfield") && t.find("oakhaven"),
@@ -782,6 +783,94 @@ void theBoardThroughTheGame()
     (void)aBoardThroughTheGame();
 }
 
+void theHolderBeforeTheWelcome()
+{
+    // D23 through the Game (doc 79): character creation (makeWolf) and entry (enterCharacter) set the account holder
+    // before the wolf is added, so the welcome is counted by the account: one account's two wolves made in one week get
+    // one welcome's coins between them, tallied under the account, never under a wolf. The holder isn't saved, so a
+    // server started again sets it at entry.
+    const auto root = fs::temp_directory_path() / ("ratw-p12stage-holder-" + std::to_string(::getpid()));
+    fs::remove_all(root);
+    const auto worldPath = writeStrip(root / "world");
+    std::ofstream(fs::path(worldPath) / "world.ratw", std::ios::app) << "rule \"staged\" 1\n";
+    const auto save = (root / "save.json").string();
+    const auto options = [&] {
+        game::Options o;
+        o.hiddenNames = false;
+        o.forkSnapshots = false;
+        o.tiesOptional = true;
+        o.oneWolfPerAccount = false;
+        o.worldExport = worldPath;
+        o.savePath = save;
+        return o;
+    };
+    const auto appearance = parseText(R"({"species": "timber", "sex": "female", "stature": "average", "pattern": "solid", "baseColor": 3,
+                                          "gradientColor": 1, "markingColor": 5, "gradientAmount": 0.5, "patternAmount": 0.5})",
+                                      "an appearance");
+    std::vector<std::string> wolves;
+    {
+        game::Game g(options());
+        std::string problem;
+        expect(g.start(problem), "starts: " + problem);
+        auto& s = g.world().society();
+        expect(s.staged(), "the world's rule on");
+        Client c;
+        c.id = 1;
+        g.connect(&c);
+        g.command(&c, cmd({{"type", "auth_register"}, {"username", "bob"}, {"password", "a long enough password"}}));
+        g.settle();
+        for (int i = 0; i < 2; ++i)
+            g.command(&c, cmd({{"type", "character_create"}, {"name", i ? "Bo Two" : "Bo One"}, {"age", 24}, {"appearance", appearance},
+                               {"commandId", "bob" + std::to_string(i)}}));
+        g.settle();
+        expect(c.last("lobby") != nullptr, "a lobby for bob");
+        for (const auto& ch : c.last("lobby")->array("characters"))
+            wolves.push_back(ch.string("id"));
+        expect(wolves.size() == 2, "two wolves for bob: " + c.last("lobby")->string("message"));
+        // (The welcome's coins as the door tallied them today, by holder: faucetToday adds the goods' worth too.)
+        const auto welcomeCoins = [&s](const std::string& holder) {
+            std::int64_t n = 0;
+            for (const auto& [day, holders] : s.state().staged.faucets)
+                if (const auto h = holders.find(holder); h != holders.end())
+                    if (const auto w = h->second.find("welcome"); w != h->second.end())
+                        n += w->second.made;
+            return n;
+        };
+        std::int64_t coins = 0;
+        for (const auto& id : wolves)
+        {
+            expect(s.holderOf(id) == "bob", "made: the wolf's holder is its account: " + s.holderOf(id));
+            expect(s.faucetToday(id, "welcome") == 0 && welcomeCoins(id) == 0, "no welcome tallied under the wolf itself: " + id);
+            coins += s.cash(id);
+        }
+        const auto welcome = s.statusTable().caps.count("welcomeCoins") ? s.statusTable().cap("welcomeCoins") : Society::PlayerWelcome;
+        expect(welcomeCoins("bob") == welcome, "one welcome's coins tallied under the account: " + std::to_string(welcomeCoins("bob")));
+        expect(coins == welcome, "one welcome's coins between the account's two wolves: " + std::to_string(coins));
+        g.command(&c, cmd({{"type", "character_enter"}, {"id", wolves[0]}}));
+        g.settle();
+        expect(g.world().entity(wolves[0]) && s.holderOf(wolves[0]) == "bob", "entered: still the account's");
+        g.save();
+    }
+    {
+        game::Game g(options());
+        std::string problem;
+        expect(g.start(problem), "starts again: " + problem);
+        auto& s = g.world().society();
+        expect(s.holderOf(wolves[1]) == wolves[1], "(the holder isn't saved)");
+        Client c;
+        c.id = 1;
+        g.connect(&c);
+        g.command(&c, cmd({{"type", "auth_login"}, {"username", "bob"}, {"password", "a long enough password"}}));
+        g.settle();
+        g.command(&c, cmd({{"type", "character_enter"}, {"id", wolves[1]}}));
+        g.settle();
+        expect(g.world().entity(wolves[1]) != nullptr, "the second wolf entered after the restart");
+        expect(s.holderOf(wolves[1]) == "bob", "entry sets the holder again: " + s.holderOf(wolves[1]));
+        expect(s.faucetToday(wolves[1], "welcome") == 0, "and nothing welcomed under the wolf at entry");
+    }
+    fs::remove_all(root);
+}
+
 // --write-board DIR: the replayed checkpoint (board.json) and the live Board (board.expected.json), for
 // Tests/market_pg.py to save through game.save_checkpoint into a throwaway database and load back.
 int writeBoard(const fs::path& dir)
@@ -857,6 +946,7 @@ int main(int argc, char** argv)
         theRuleOff();
         theWorldsMarkets();
         theBoardThroughTheGame();
+        theHolderBeforeTheWelcome();
     }
     catch (const std::exception& error)
     {

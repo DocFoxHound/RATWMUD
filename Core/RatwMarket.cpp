@@ -705,6 +705,23 @@ void Society::setProsperity(int target, bool now)
         b.slider = b.sliderTarget;                 // (The DM's "now": no smoothing, doc 79, 6.3.)
 }
 
+int Society::marketTimes(const std::string& market) const
+{
+    (void)market;                                   // (Each market its own once harvests and wagons feed it: 5.3.)
+    return std::clamp(market::timesOf(state_.board.slider), 0, 4) - 2;
+}
+
+Society::StagedHooks Society::boardHooks()
+{
+    StagedHooks h;
+    h.times = [](const Society& s, const std::string& market) { return s.marketTimes(market); };
+    h.pressure = [](const Society& s, const std::string& market, const std::string& good) {
+        return market.empty() ? 0. : s.pressure(market, items::baseOf(good));
+    };
+    h.shelf = &Society::tillShelf;
+    return h;
+}
+
 void Society::stepSlider(std::int64_t day, bool now)
 {
     // The one slider (doc 79, 5.2; D17): the Board's dawn and the bands' day's pass both step it, once a day whichever
@@ -861,7 +878,7 @@ double Society::marketBase(const std::string& market, const std::string& base, d
             }
     double times = 1;
     if (const auto row = d.times.find(market::groupOf(base)); row != d.times.end())
-        times = row->second[std::size_t(market::timesOf(state_.board.slider))];
+        times = row->second[std::size_t(marketTimes(market) + 2)];
     return stagedSeason(base) * region * district * times;
 }
 
@@ -1070,11 +1087,16 @@ Society::StagedLot Society::stagedLadder(const std::string& till, const std::str
 
 std::int64_t Society::budgetOf(const std::string& till) const
 {
-    // budget(shop) = 40p × the keeper's band × the slider's ×0.8 to ×1.2 (doc 79, 7.5). The band is Phase 2's: until it
-    // lands every keeper's is the comfortable 1.0. Never raised by what players buy.
-    (void)till;
+    // budget(shop) = 40p × the keeper's band × the slider's ×0.8 to ×1.2 (doc 79, 7.5): the band's `budget` in status.json
+    // (destitute 0.4, poor 0.7, comfortable 1.0, rich 1.5), the comfortable 1.0 for a keeper not banded yet. The band
+    // reads no player pressure; never raised by what players buy.
+    double band = 1.0;
+    if (till.rfind("till:", 0) == 0)
+        if (const auto post = state_.careers.positions.find(till.substr(5)); post != state_.careers.positions.end() && !post->second.holder.empty())
+            if (const auto* st = statusOf(post->second.holder))
+                band = statusTable().rows[std::size_t(std::clamp(st->band, 0, status::Bands - 1))].budget;
     const double slider = 1 + .2 * std::clamp(state_.board.slider, -100, 100) / 100.;
-    return std::max<std::int64_t>(0, std::llround(market::data().budget * 1.0 * slider));
+    return std::max<std::int64_t>(0, std::llround(market::data().budget * band * slider));
 }
 
 std::int64_t Society::budgetLeft(const std::string& till) const
@@ -1153,6 +1175,20 @@ std::int64_t Society::discountRoom(const std::string& chapter) const
         return most;
     const auto paid = b.discountWeek.find(chapter);
     return std::max<std::int64_t>(0, most - (paid == b.discountWeek.end() ? 0 : paid->second));
+}
+
+std::int64_t Society::payFactionDiscount(const std::string& merchant, const std::string& player, const std::string& chapter,
+                                        std::int64_t back)
+{
+    if (back <= 0)
+        return 0;
+    if (staged())
+        back = std::min(back, discountRoom(chapter));
+    if (back <= 0 || !shift(merchant, player, "", 0, back, "faction discount"))
+        return 0;
+    if (staged())
+        discountPaid(chapter, back);
+    return back;
 }
 
 void Society::discountPaid(const std::string& chapter, std::int64_t pennies)
@@ -1421,7 +1457,6 @@ void Society::marketMorning(std::int64_t day)
     auto& b = state_.board;
     const auto& rules = marketRules();
     const double now = marketClock();
-    const auto days = std::max<std::int64_t>(1, day - b.day);
     for (const auto& [m, goods] : b.netToday)
         for (const auto& [good, holders] : goods)
         {
@@ -1537,9 +1572,10 @@ void Society::marketMorning(std::int64_t day)
 
 int Society::shelfTarget(const std::string& till, const std::string& ware) const
 {
-    // shelf(g) × abundance (the season's shelf) × (1 − 0.5 × max(P, 0)) × shelfScale (doc 79, 7.7).
-    // shelf(g): market.json's `shelves` (moved from city_loop.json's), else the starting stock (4; swords 3); the
-    // season's shelf from market.json's groups.
+    // shelf(g) × abundance (the season's shelf) × (1 − 0.5 × max(P, 0)) × shelfScale (doc 79, 7.7), plus the day's food
+    // provision the households it feeds take (provisionFor: "targets cover the day's staged food provision as well as
+    // players"). shelf(g): market.json's `shelves` (moved from city_loop.json's), else the starting stock (4; swords 3);
+    // the season's shelf from market.json's groups.
     const auto base = items::baseOf(ware);
     const auto& shelves = market::data().shelves;
     const auto own = shelves.find(base);
@@ -1547,7 +1583,7 @@ int Society::shelfTarget(const std::string& till, const std::string& ware) const
     std::array<int, 4> by{};
     const double abundance = yearDay_ >= 0 && stagedSeasonGroup(base, nullptr, &by) ? market::seasonal(by, yearDay_) : 1.;
     const double P = std::max(0., pressure(marketOf(till), base));
-    const double want = double(shelf) * abundance * (1 - .5 * P) * marketRules().shelfScale;
+    const double want = double(shelf) * abundance * (1 - .5 * P) * marketRules().shelfScale + provisionFor(till, ware);
     return shelf <= 0 ? 0 : std::clamp(int(std::ceil(want - 1e-9)), 1, StoreDrawMost);
 }
 
@@ -1633,6 +1669,10 @@ void World::ensureTradePoints()
     // joins the nearest market by path, or one "outside" market; each market's k nearest by path. Only while staged.
     if (!society_.staged())
         return;
+    // The Board feeds the bands (doc 79, 5 and 6.5): its Times, its pressure and its shelves, in play and in sims, so the
+    // poor go short when players empty a shelf. Once; a test's own hooks are kept.
+    if (!society_.stagedHooked())
+        society_.setStagedHooks(Society::boardHooks());
     if (tradePointsReady_ && tradePointsRevision_ == society_.rosterRevision())
         return;
     tradePointsReady_ = true;

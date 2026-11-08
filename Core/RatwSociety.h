@@ -790,6 +790,11 @@ class Society
     // and the discount paid.
     std::int64_t discountRoom(const std::string& chapter) const;
     void discountPaid(const std::string& chapter, std::int64_t pennies);
+    // The discount itself, merchant to player (the Game's afterFactionTrade): staged, at most the Chapter's room this
+    // week, recorded as paid; the merchant topped up by shift (Phase 2's topUp: a staged payer), so the cap here is the
+    // only limit on it and it is checked once, here. Off: what the merchant's purse pays, as ever. What was paid.
+    std::int64_t payFactionDiscount(const std::string& merchant, const std::string& player, const std::string& chapter,
+                                    std::int64_t back);
     // A row of the shop list (7.1): the list count (12 for a good under 3p) and the price of that lot, the lot the
     // buy button buys (the list count, or what is on the shelf), the smallest sell lot worth a penny and its quote, the
     // trend (+1 ▲, -1 ▼) with its cause in words, and the shop's buying budget left today.
@@ -1114,8 +1119,8 @@ class Society
     void openRealBalance();
     std::int64_t realFaucets() const { return faucetTotal_; }
     std::int64_t realSinks() const { return sinkTotal_; }
-    // What a payer can pay a player now (9.2): all of it from a staged payer (topped up on demand by shift), else what it
-    // holds. With the staged economy off, what it holds.
+    // What a payer can pay a player now (9.2): all of it from a staged payer (topped up on demand by shift) but a till,
+    // else what it holds (a till's, as topUp never tops one up). With the staged economy off, what it holds.
     std::int64_t payable(const std::string& payer, std::int64_t amount) const;
     // What of an escrow's payout of `coins` a player may have under a daily cap (9.3; "rewardsADay" for prizes and
     // rewards): its real coins whole, its staged-sourced ones within the holder's room today, the rest sent back to `back`
@@ -1150,6 +1155,18 @@ class Society
     };
     void setStagedHooks(StagedHooks hooks) { hooks_ = std::move(hooks); }
     static int tillShelf(Society& s, const std::string& till, const std::string& good, int want);
+    // The Board's own hooks (the merge of Phases 1 and 2): a market's Times (marketTimes), a good's pressure there, and the
+    // shelf: the till's stock, which the morning restock sets out (stagedRestock, its targets covering the day's food
+    // provision: provisionFor) and players buy down, so the poor it serves go short when players empty it (6.5, T2). The
+    // World installs them while staged (World::ensureTradePoints), in play and in sims; tests may too.
+    static StagedHooks boardHooks();
+    bool stagedHooked() const { return bool(hooks_.shelf); }
+    // A market's Times, -2 hard .. 2 boom (5.3: the slider for now; harvests, raids, events and the DM's nudge come in
+    // Phases 4, 5, 7 and 9). Never any player-caused pressure. The Board's prices and the bands both read it.
+    int marketTimes(const std::string& market) const;
+    // The pieces of a good the households whose food shop is this till take from it in a day (6.5; at most two days' food a
+    // head, a Restday's buying ahead too), worked out with the bands: what the shelf target covers besides players (7.7).
+    int provisionFor(const std::string& till, const std::string& ware) const;
     // (The quarters a resident lives in, "heights", "estate", "sump", for the score and the guarantees: setQuarters, above,
     // the same map the Board's district factor reads.)
     // The day's provisions (6.6), each (a household's member, its food keeper), for the world's familiarity step; taken.
@@ -1866,6 +1883,7 @@ class Society
     std::unordered_map<std::string, std::string> holders_;
     StagedHooks hooks_;
     std::vector<std::pair<std::string, std::string>> provisions_;
+    std::unordered_map<std::string, std::map<std::string, int>> provisionDemand_;   // Till -> food -> pieces a day (provisionFor).
     std::set<std::string> postedAtPass_;
     std::unordered_map<std::string, std::string> jobCategories_;   // (talk::jobCategory by post, label, role, child or not.)
     std::int64_t realOpening_ = -1, faucetTotal_ = 0, sinkTotal_ = 0;

@@ -486,19 +486,12 @@ void Game::afterFactionTrade(const std::string& playerId, const std::string& mer
     // Its quartermasters' terms (4.3): a Chapter it trusts pays 15% less, one sworn to it 25% less (given back, purse
     // to purse, after the sale: the trade itself is untouched).
     // Staged (doc 79, 7.8, D28): capped per Chapter a week (the rule factionDiscountMost), so a loop through it wins at
-    // most the cap; the merchant's purse topped up to pay it (a staged payer), never short.
+    // most the cap; the merchant's purse topped up to pay it (a staged payer: shift's topUp), never short. The cap is in
+    // Society::payFactionDiscount, the one path a discount is paid by.
     auto& society = world_.society();
-    std::int64_t back = eff >= 40 ? spent * (eff >= 75 ? 25 : 15) / 100 : 0;
-    if (back > 0 && society.staged())
+    const std::int64_t terms = eff >= 40 ? spent * (eff >= 75 ? 25 : 15) / 100 : 0;
+    if (const auto back = society.payFactionDiscount(merchantId, playerId, c->id, terms); back > 0)
     {
-        back = std::min(back, society.discountRoom(c->id));
-        if (back > 0 && society.cash(merchantId) < back)
-            society.stagedSet(merchantId, back);
-    }
-    if (back > 0 && society.shift(merchantId, playerId, "", 0, back, "faction discount"))
-    {
-        if (society.staged())
-            society.discountPaid(c->id, back);
         if (auto* cl = clientOf(playerId))
             system(cl, "\"For a friend of " + (factions_.find(member->first) ? factions_.find(member->first)->name : member->first) + ", " +
                            std::to_string(back) + " back.\"");

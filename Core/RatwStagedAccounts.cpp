@@ -177,7 +177,8 @@ std::int64_t Society::payable(const std::string& payer, std::int64_t amount) con
 {
     if (amount <= 0)
         return 0;
-    if (staged() && classify(payer) == AccountKind::Staged && account(payer))
+    // (A till is never topped up by the door (topUp): it pays what it holds, as topUp says.)
+    if (staged() && classify(payer) == AccountKind::Staged && account(payer) && !startsWith(payer, "till:"))
         return std::min<std::int64_t>(amount, MoneyCap);
     return std::min(amount, cash(payer));
 }
@@ -439,7 +440,7 @@ void Society::stagedBands(std::int64_t day, bool now)
         const auto& title = post ? post->title : std::string();
         const int age = s ? s->age : 30;
         const std::string key = title + '\x1f' + (s ? s->workLabel : std::string()) + '\x1f' + (s ? s->role : std::string()) +
-                                (age < 15 ? "\x1fy" : "\x1fa");
+                                (age < 15 ? "\x1f" "y" : "\x1f" "a");
         auto found = jobCategories_.find(key);
         if (found == jobCategories_.end())
             found = jobCategories_.emplace(key, talk::jobCategory(title, s ? s->workLabel : std::string(), s ? s->role : std::string(), age)).first;
@@ -744,6 +745,34 @@ void Society::stagedKeepers()
         if (home.food.empty())
             home.food = itemValid("meal") ? "meal" : "";
     }
+    // What each food shop gives its households in a day (provisionFor, for its shelf target): each head's band's meals
+    // (and tomorrow's buying ahead) in pieces of its food, at most the two days' (and ahead) a larder holds, as stagedFood.
+    provisionDemand_.clear();
+    const double tomorrow = double(stagedDay_ + 1) + .5;
+    const int ahead = calendar::weekdayOf(tomorrow) == calendar::Restday || calendar::festivalDay(tomorrow) ? std::max(0, ownRule("buyAheadDays")) : 0;
+    const double mealWorth = std::max(1, nourishment("meal"));
+    for (const auto& [key, home] : stagedHomes_)
+    {
+        if (home.till.empty() || home.food.empty() || home.lifted)
+            continue;
+        const auto& row = t.rows[std::size_t(std::clamp(home.band, 0, status::Bands - 1))];
+        const double each = std::max(1, nourishment(home.food));
+        const double head = std::min(row.meals * mealWorth + ahead * NourishADay, (2 + ahead) * NourishADay);
+        const int pieces = int(std::ceil(head / each - 1e-9)) * int(home.members.size());
+        if (pieces > 0)
+            provisionDemand_[home.till][home.food] = std::min(StoreDrawMost, provisionDemand_[home.till][home.food] + pieces);
+    }
+}
+
+int Society::provisionFor(const std::string& till, const std::string& ware) const
+{
+    if (!staged())
+        return 0;
+    const auto found = provisionDemand_.find(till);
+    if (found == provisionDemand_.end())
+        return 0;
+    const auto food = found->second.find(ware);
+    return food == found->second.end() ? 0 : food->second;
 }
 
 std::vector<std::pair<std::string, std::string>> Society::takeProvisions()

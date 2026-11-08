@@ -501,6 +501,8 @@ void Game::offerChain(const Contract& done)
     const auto* purse = society.account(done.poster);
     if (to.empty() || !purse || purse->cash < reward + 20)
         return;                                     // (It keeps its own food money.)
+    if (!world_.npcCourierRoom())
+        return;                                     // (Staged: the day's NPC courier contracts are all posted, doc 79, 9.3.)
     auto& k = world_.postContract("courier", done.poster, town, to, reward, 7, "a parcel for " + nameOf(to));
     k.offeredTo = done.taker;
     k.offeredUntil = world_.calendarDays() + 1;

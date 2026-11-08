@@ -105,9 +105,12 @@ void Game::endTable(Table& t, int winner, const std::string& why)
         const auto cut = coins > 0 ? std::min(HousePenny, coins) : 0;
         if (cut > 0)
             society.shift(account(t), t.house, "", 0, cut, "the house's penny");
-        if (coins - cut > 0)
-            society.shift(account(t), who, "", 0, coins - cut, "a game won");
-        paid = coins - cut > 0 ? " (" + std::to_string(coins - cut) + "p)" : "";
+        // (Staged: what a player wins of the residents' stakes is within the holder's day's cap at the payout too, whoever
+        // invited them: the rest goes back to the house, doc 79, 9.3. Off, or a resident winning: all of it.)
+        const auto won = coins - cut > 0 ? society.cappedPayout(account(t), who, coins - cut, "stakesADay", t.house) : 0;
+        if (won > 0)
+            society.shift(account(t), who, "", 0, won, "a game won");
+        paid = won > 0 ? " (" + std::to_string(won) + "p)" : "";
         world_.recordEvent({"table game", who, {}, t.cell, 0, 0, t.game, int(t.seats.size()), coins, gameName(t.game)});
         for (auto* other : clients_)
             if (other && std::find(t.seats.begin(), t.seats.end(), other->entityId) != t.seats.end())

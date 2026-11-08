@@ -1023,6 +1023,11 @@ class World
     bool withdrawContract(const std::string& id);
     Contract& postContract(const std::string& kind, const std::string& poster, const std::string& town,
                            const std::string& target, std::int64_t reward, double days, const std::string& detail);
+    // Staged (doc 79, 9.3): an NPC-posted courier contract is a faucet, at most the status table's courierADay posted a
+    // day across the realm. Today's count, and whether another may be posted (always, with the staged economy off).
+    // Every NPC courier posting asks first: the letters (tendRoads) and the storyline parcels.
+    std::int64_t npcCouriersToday() const;
+    bool npcCourierRoom() const;
     // What someone has heard: a claim about a subject, from a source, this sure (0..1). Rumours spread along bonds
     // each day, losing confidence, and between towns with the caravans.
     void believe(const std::string& holder, const std::string& subject, const std::string& claim,

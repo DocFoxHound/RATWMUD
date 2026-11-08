@@ -8,6 +8,7 @@
 #include "RatwItems.h"
 #include "RatwJournal.h"
 #include "RatwJsonDoc.h"
+#include "RatwMarket.h"
 #include "RatwSociety.h"
 #include "RatwStatus.h"
 #include "RatwWire.h"
@@ -227,6 +228,105 @@ void foodFromTheShelf()
     const auto provisions = shop.takeProvisions();
     expect(std::any_of(provisions.begin(), provisions.end(), [](const auto& p) { return p.second == "moss"; }),
            "the provision's familiarity step between a member and the keeper (no WorldEvent)");
+}
+
+void playersEmptyTheShelf()
+{
+    // The two phases joined (doc 79, 6.5, 7.5, 7.7, T2): with the Board's own hooks, the morning restock sets the stall's
+    // meals out to a target that covers its households' provision as well as players; a player who buys the shelf bare
+    // leaves the poor household it serves short today. The keeper's buying budget follows its band. The trade is counted
+    // once at the door.
+    struct Run
+    {
+        int provision = 0, target = 0, onShelf = 0;
+        double fedPoor = 0, fedLady = 0;
+        std::int64_t paid = 0, sunk = 0, budget = 0, budgetRich = 0, budgetExpected = 0;
+    };
+    const auto run = [](bool buyOut) {
+        Run out;
+        auto s = docksSociety();
+        s.setStatusOverride(std::make_unique<json::Value>(parse(R"({"rows":{"poor":{"short":0}}})")).get());
+        s.setStagedHooks(Society::boardHooks());
+        s.setHolder("player-ada", "acct:ada");
+        s.addPlayer("player-ada");
+        s.stagedBands(2, true);
+        s.overrideBand(s.householdOf("ivar"), status::Poor, 100);
+        const auto till = s.tillOf("moss");
+        out.provision = s.provisionFor(till, "meal");
+        out.target = s.shelfTarget(till, "meal");
+        const auto* mossBand = s.statusOf("moss");
+        out.budget = s.budgetOf(till);
+        out.budgetExpected = std::llround(market::data().budget * s.statusTable().rows[std::size_t(mossBand ? mossBand->band : 2)].budget);
+        // The morning's restock (the stall's wares set out to their targets: its meals, the poor household's food here, as
+        // the stall sells no bread).
+        s.setMarketClock(2 + 9. / 24);
+        s.stagedRestock("moss");
+        out.onShelf = Society::stock(*s.account(till), "meal");
+        for (const auto& id : {"ivar", "una", "tam", "lady"})
+            emptyLarder(s, id);
+        if (buyOut)
+        {
+            s.shift("treasury", "player-ada", "", 0, 5000, "test purse");
+            for (int left; (left = Society::stock(*s.account(till), "meal")) > 0;)
+            {
+                const auto bought = s.trade("player-ada", "moss", "meal", std::min(99, left), true, "acct:ada");
+                if (!bought.ok)
+                    break;
+                out.paid += bought.total;
+            }
+            for (const auto& [day, holders] : s.state().staged.faucets)
+                if (const auto h = holders.find("acct:ada"); h != holders.end())
+                    for (const auto& [reason, t] : h->second)
+                        if (reason == "local trade")
+                            out.sunk += t.sunk;
+        }
+        s.stagedFood(s.householdOf("ivar"), {"ivar", "una", "tam"}, "lower");
+        s.stagedFood(s.householdOf("lady"), {"lady"}, "upper");
+        out.fedPoor = food(s, "ivar") + food(s, "una") + food(s, "tam");
+        out.fedLady = food(s, "lady");
+        s.overrideBand(s.householdOf("moss"), status::Rich, 100);
+        out.budgetRich = s.budgetOf(till);
+        return out;
+    };
+    const auto stocked = run(false);
+    expect(stocked.provision > 0, "the stall feeds the poor household: its day's provision counted");
+    expect(stocked.target >= stocked.provision && stocked.onShelf >= stocked.provision,
+           "the shelf target covers the provision: " + std::to_string(stocked.target) + " for " + std::to_string(stocked.provision));
+    expect(stocked.fedPoor >= 3 * 15, "a stocked shelf feeds every member of the poor household: " + std::to_string(stocked.fedPoor));
+    expect(stocked.budget == stocked.budgetExpected, "the keeper's buying budget by its band: " + std::to_string(stocked.budget));
+    expect(stocked.budgetRich == std::llround(market::data().budget * 1.5), "a rich keeper's budget 1.5 times: " + std::to_string(stocked.budgetRich));
+    const auto bare = run(true);
+    expect(bare.paid > 0, "the player bought the shelf");
+    expect(bare.fedPoor == 0, "the shelf bought bare: the poor household goes short today: " + std::to_string(bare.fedPoor));
+    expect(bare.fedLady >= Society::NourishADay, "the comfortable fed from elsewhere");
+    expect(bare.sunk == bare.paid, "each purchase counted once at the door: " + std::to_string(bare.sunk) + " of " + std::to_string(bare.paid));
+}
+
+void stakesAndTillsAtPayout()
+{
+    // The table's payout (Game::endTable) puts a player's winnings of residents' stakes through the stakes cap whoever
+    // invited them (doc 79, 9.3): of a pot of 50p the residents staked, a player takes at most stakesADay (30p) a day, the
+    // rest back to the house. And a till pays what it holds (payable agrees with topUp: a till is never topped up).
+    auto s = docksSociety();
+    s.setHolder("player-ada", "acct:ada");
+    s.addPlayer("player-ada");
+    s.stagedBands(2, true);
+    const auto cap = s.statusTable().cap("stakesADay");
+    expect(s.openAccount("table:t1"), "a table's pot");
+    for (const auto& id : {"ivar", "una", "birch", "wren", "moss"})
+        expect(s.shift(id, "table:t1", "", 0, 10, "a table stake"), std::string("a resident's stake: ") + id);
+    const auto house = s.tillOf("moss");
+    const auto houseBefore = s.cash(house);
+    const auto won = s.cappedPayout("table:t1", "player-ada", 50, "stakesADay", house);
+    expect(won == cap, "the player's winnings of residents' stakes capped at payout: " + std::to_string(won));
+    expect(s.cash(house) == houseBefore + 50 - cap, "the rest back to the house");
+    expect(s.shift("table:t1", "player-ada", "", 0, won, "a game won") && s.faucetRoom("player-ada", "stakesADay") == 0,
+           "the day's stakes room used up");
+    expect(s.cappedPayout("table:t1", "player-ada", 0, "stakesADay", house) == 0, "(nothing left in the pot)");
+    // A till pays what it holds.
+    s.stagedSet(house, 7);
+    expect(s.payable(house, 100) == 7, "a till's payable is its cash: " + std::to_string(s.payable(house, 100)));
+    expect(s.payable("moss", 100) == 100, "a resident's purse is topped up on demand");
 }
 
 void holdsLeanAndTheTrim()
@@ -863,6 +963,8 @@ int main()
             throw std::runtime_error("the catalogue didn't load");
         householdsShareABand();
         foodFromTheShelf();
+        playersEmptyTheShelf();
+        stakesAndTillsAtPayout();
         holdsLeanAndTheTrim();
         theDoorAndRealMoney();
         theWelcomeOncePerHolderPerWeek();

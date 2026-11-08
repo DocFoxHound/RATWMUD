@@ -100,6 +100,14 @@ void sharesOnAnyWorld()
     // Never Broke empties destitute.
     hard.neverBroke = true;
     expect(counted(status::assign(t, pool(200), hard))[status::Destitute] == 0, "Never Broke: nobody destitute");
+    // The homeless and beggars too (their guarantee gives poor then); only a DM's own override still holds one destitute.
+    auto guaranteed = pool(200, "homeless");
+    guaranteed[0].fixed = status::Destitute, guaranteed[0].reason = true;            // (The homeless' guarantee.)
+    guaranteed[1].fixed = status::Destitute, guaranteed[1].overridden = true;        // (A DM's override.)
+    const auto broke = status::assign(t, guaranteed, hard);
+    expect(broke[0] == status::Poor, "Never Broke: the homeless poor, not destitute");
+    expect(broke[1] == status::Destitute, "Never Broke: a DM's override of destitute kept");
+    expect(counted(broke)[status::Destitute] == 1, "Never Broke: no other household destitute");
 }
 
 void monotoneInTheSlider()

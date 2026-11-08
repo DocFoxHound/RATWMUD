@@ -144,7 +144,8 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
             for (const auto* item : {"meal", "herbs"})
             {
                 const int held = stock ? Society::stock(*stock, item) : 0;
-                const auto quote = society.quote(playerId, npcId, item, 1, true);
+                // (Quoted for the shop list's account holder, so the price named is the one shown: doc 79, 16.9.)
+                const auto quote = society.quote(playerId, npcId, item, 1, true, accountOf(playerId));
                 const std::string what = std::string(item) == "meal" ? "A meal" : "A bundle of herbs";
                 if (held > 0 && quote.unitPrice > 0)
                     goods.push_back(what + " is " + std::to_string(quote.unitPrice) + (quote.unitPrice == 1 ? " penny" : " pennies") +

@@ -928,6 +928,14 @@ void lettersCapped()
         for (const auto& k : w.roads().contracts)
             if (k.kind == "courier" && w.entity(k.poster) && w.entity(k.poster)->npc)
                 ++byDay[std::int64_t(std::floor(k.created))], ++n;
+        // The one gate every NPC courier posting asks (the letters here, the storyline parcels in the Game).
+        if (cap >= 0 && w.society().staged())
+        {
+            expect(w.npcCouriersToday() <= cap, "today's NPC courier contracts within the cap");
+            expect(w.npcCourierRoom() == (w.npcCouriersToday() < cap), "the gate says no once the day's cap is posted");
+        }
+        else
+            expect(w.npcCourierRoom(), "with the rule off, the gate always has room");
         return n;
     };
     std::map<std::int64_t, int> off;

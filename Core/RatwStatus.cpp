@@ -462,11 +462,17 @@ std::vector<int> assign(const Table& t, const std::vector<Candidate>& households
         band[i] = b;
         percentile[i] = 100. * below / double(std::max<std::size_t>(1, pool.size()));
     }
+    // A band set outright (a DM's override, the homeless, a House's). Never Broke empties destitute (16.1): the homeless'
+    // and beggars' guarantee then gives poor; only the DM's own override still holds a household destitute.
+    const auto fixedBand = [&](const Candidate& h) {
+        const int b = std::clamp(h.fixed, 0, Bands - 1);
+        return b == Destitute && o.neverBroke && !h.overridden ? int(Poor) : b;
+    };
     // The guarantees and the bounds every band keeps, applied again after the hysteresis.
     const auto bound = [&](std::size_t i, int b) {
         const auto& h = households[i];
         if (h.fixed >= 0)
-            return std::clamp(h.fixed, 0, Bands - 1);
+            return fixedBand(h);
         if (!h.recent)                              // (Near its home: one band away, two down where it has a reason.)
             b = std::clamp(b, std::max(0, h.implied - (h.reason ? 2 : 1)), std::min(Bands - 1, h.implied + 1));
         b = std::clamp(b, h.atLeast, h.atMost);
@@ -502,7 +508,7 @@ std::vector<int> assign(const Table& t, const std::vector<Candidate>& households
             else
                 b = h.previous;
         }
-        band[i] = h.fixed >= 0 ? std::clamp(h.fixed, 0, Bands - 1) : b;
+        band[i] = h.fixed >= 0 ? fixedBand(h) : b;
     }
     // The realm's minimum: a destitute and a rich household where there are ten or more, at the lowest and highest scores
     // of those whose bounds allow it (a reason for destitute; near enough its home) and the hysteresis too: one band from

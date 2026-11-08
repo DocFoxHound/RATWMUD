@@ -280,6 +280,22 @@ Contract& World::postContract(const std::string& kind, const std::string& poster
     return roads_.contracts.back();
 }
 
+std::int64_t World::npcCouriersToday() const
+{
+    const auto today = std::int64_t(std::floor(calendarDays_));
+    std::int64_t n = 0;
+    for (const auto& k : roads_.contracts)
+        if (k.kind == "courier" && std::int64_t(std::floor(k.created)) == today)
+            if (const auto* poster = entity(k.poster); poster && poster->npc)
+                ++n;
+    return n;
+}
+
+bool World::npcCourierRoom() const
+{
+    return !society_.staged() || npcCouriersToday() < society_.statusTable().cap("courierADay");
+}
+
 bool World::withdrawContract(const std::string& id)
 {
     for (auto& c : roads_.contracts)
@@ -1108,16 +1124,12 @@ void World::roadsDaily()
     const std::int64_t writes = 10;
     std::set<std::string> writing;
     // (Staged: an NPC-posted courier contract is a faucet, at most courierADay posted a day across the realm: doc 79, 9.3.)
-    std::int64_t postedToday = 0;
+    // (Counted once here, then as this loop posts: npcCourierRoom's count without its scan each time.)
+    std::int64_t postedToday = npcCouriersToday();
     const std::int64_t mostToday = society_.staged() ? society_.statusTable().cap("courierADay") : -1;
     for (const auto& k : roads_.contracts)
-    {
         if (k.kind == "courier" && (k.status == "open" || k.status == "taken"))
             writing.insert(k.poster);
-        if (k.kind == "courier" && std::int64_t(std::floor(k.created)) == today)
-            if (const auto* poster = entity(k.poster); poster && poster->npc)
-                ++postedToday;
-    }
     for (const auto& [id, e] : entities_)
     {
         if (mostToday >= 0 && postedToday >= mostToday)
