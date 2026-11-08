@@ -153,15 +153,15 @@ json::Value save(const Document& d)
 Document load(const json::Value& v)
 {
     Document d;
-    d.id = v.string("id").substr(0, 64);
-    d.kind = v.string("kind", "letter").substr(0, 32);
-    d.author = v.string("author").substr(0, 128);
-    d.scent = v.string("scent").substr(0, 128);
-    d.to = v.string("to").substr(0, 128);
+    d.id = json::utf8Prefix(v.string("id"), 64);
+    d.kind = json::utf8Prefix(v.string("kind", "letter"), 32);
+    d.author = json::utf8Prefix(v.string("author"), 128);
+    d.scent = json::utf8Prefix(v.string("scent"), 128);
+    d.to = json::utf8Prefix(v.string("to"), 128);
     d.text = v.string("text").substr(0, std::size_t(rules().textMost) * 4);   // (Letters, not bytes: room for UTF-8.)
-    d.sign = v.string("sign").substr(0, 80);
-    d.fromTown = v.string("fromTown").substr(0, 128);
-    d.postTown = v.string("postTown").substr(0, 128);
+    d.sign = json::utf8Prefix(v.string("sign"), 80);
+    d.fromTown = json::utf8Prefix(v.string("fromTown"), 128);
+    d.postTown = json::utf8Prefix(v.string("postTown"), 128);
     d.state = v.string("state", "travelling");
     if (d.state != "travelling" && d.state != "waiting" && d.state != "delivered" && d.state != "read" && d.state != "returned" && d.state != "carried")
         d.state = "travelling";
@@ -171,29 +171,29 @@ Document load(const json::Value& v)
     d.kept = v.boolean("kept");
     d.viaCourier = v.boolean("viaCourier");
     d.answered = v.boolean("answered");
-    d.replyTo = v.string("replyTo").substr(0, 64);
-    d.facts = v.string("facts").substr(0, 200);
-    d.contract = v.string("contract").substr(0, 64);
-    d.occasion = v.string("occasion").substr(0, 128);
+    d.replyTo = json::utf8Prefix(v.string("replyTo"), 64);
+    d.facts = json::utf8Prefix(v.string("facts"), 200);
+    d.contract = json::utf8Prefix(v.string("contract"), 64);
+    d.occasion = json::utf8Prefix(v.string("occasion"), 128);
     d.answer = std::clamp(int(v.number("answer")), -1, 1);
-    d.pact = v.string("pact").substr(0, 64);
-    d.board = v.string("board").substr(0, 128);
-    d.noticeKind = v.string("noticeKind").substr(0, 16);
-    d.what = v.string("what").substr(0, 128);
+    d.pact = json::utf8Prefix(v.string("pact"), 64);
+    d.board = json::utf8Prefix(v.string("board"), 128);
+    d.noticeKind = json::utf8Prefix(v.string("noticeKind"), 16);
+    d.what = json::utf8Prefix(v.string("what"), 128);
     d.expires = v.number("expires");
-    d.answeredBy = v.string("answeredBy").substr(0, 128);
-    d.answeredHow = v.string("answeredHow").substr(0, 32);
-    d.party = v.string("party").substr(0, 128);
+    d.answeredBy = json::utf8Prefix(v.string("answeredBy"), 128);
+    d.answeredHow = json::utf8Prefix(v.string("answeredHow"), 32);
+    d.party = json::utf8Prefix(v.string("party"), 128);
     for (const auto& s : v.array("seals"))
         if (s.isString() && d.seals.size() < 8)
-            d.seals.push_back(s.asString().substr(0, 128));
+            d.seals.push_back(json::utf8Prefix(s.asString(), 128));
     for (const auto& w : v.array("witnesses"))
         if (w.isString() && d.witnesses.size() < 3)
-            d.witnesses.push_back(w.asString().substr(0, 128));
+            d.witnesses.push_back(json::utf8Prefix(w.asString(), 128));
     if (const auto& e = v.object("enclosure"); !e.string("account").empty())
     {
-        d.escrow = e.string("account").substr(0, 80);
-        d.encItem = e.string("item").substr(0, 128);
+        d.escrow = json::utf8Prefix(e.string("account"), 80);
+        d.encItem = json::utf8Prefix(e.string("item"), 128);
         d.encQuantity = std::max(0, int(e.number("quantity")));
         d.encCoins = std::max<std::int64_t>(0, std::int64_t(e.number("coins")));
         d.scented = e.boolean("scented");

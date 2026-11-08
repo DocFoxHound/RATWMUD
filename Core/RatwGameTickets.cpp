@@ -70,7 +70,8 @@ bool Game::startTickets(std::string& problem)
         note("warning", "RATW_TICKETS no keys from central yet (" + trouble + "): nobody can join until the world agent fetches them");
     if (std::filesystem::exists(agentFile("bans.json")) && !reloadBans(trouble))
         note("warning", "RATW_BANS central's ban list can't be read yet (" + trouble + ")");
-    if (std::filesystem::exists(agentFile("host.json")) && !reloadHost(trouble))
+    // (An official world has no host: its agent's host.json says null, and nothing is read from it.)
+    if (communityWorld() && std::filesystem::exists(agentFile("host.json")) && !reloadHost(trouble))
         note("warning", "RATW_HOST the world's host can't be read yet (" + trouble + ")");
     if (options_.scratch)
         note("info", "RATW_ONLINE a scratch server writes no online.json: the world agent's directory is the real world's");
@@ -510,9 +511,10 @@ void Game::ticketFiles()
     if (!ticketMode())
         return;
     std::string trouble;
-    if (!options_.scratch && clock() - onlineWrittenAt_ >= OnlineEvery)
+    const double at = ticketFilesClock ? ticketFilesClock() : clock();
+    if (!options_.scratch && at - onlineWrittenAt_ >= OnlineEvery)
     {
-        onlineWrittenAt_ = clock();
+        onlineWrittenAt_ = at;
         const bool wrote = writeOnline(trouble);
         if (wrote == onlineFailing_)                // (Said once when it starts failing, and once when it mends.)
             note(wrote ? "info" : "warning", wrote ? "RATW_ONLINE online.json is written again"
@@ -520,11 +522,12 @@ void Game::ticketFiles()
                                                          "): central will count nobody here");
         onlineFailing_ = !wrote;
     }
-    if (clock() - bansCheckedAt_ >= BansEvery)
+    if (at - bansCheckedAt_ >= BansEvery)
     {
-        bansCheckedAt_ = clock();
+        bansCheckedAt_ = at;
         reloadBans(trouble);                        // (No file yet is no bans yet; a bad one keeps the last list.)
-        reloadHost(trouble);                        // (Likewise the host.)
+        if (communityWorld())
+            reloadHost(trouble);                    // (Likewise the host; an official world has none.)
     }
 }
 

@@ -2,7 +2,7 @@
 # Read once, when the world starts: after a change, `docker compose restart world`.
 
 [world]
-# The world's name on the server list and in the game: 1-48 characters.
+# The world's name on the server list and in the game: at most 48 bytes (a plain letter is one, an accented one two).
 name = "My Ridgemere"
 # A line or two for the server list (300 characters at most).
 description = "A friendly world. Everyone welcome."
@@ -21,24 +21,27 @@ private = false
 id = ""
 
 [central]
-# Central, where players' accounts and wolves live and the server list is kept. Leave it empty ("") for a private LAN
-# world: no server list, and accounts and passwords kept by this world itself (README.md, "A LAN world").
+# Central, where players' accounts and wolves live and the server list is kept. Needed: every world signs its players
+# in through central (private and LAN worlds come later).
 url = "https://central.example.org"
 # The host token, from central's Host page (it starts rh_). Either put it in a .env file beside compose.yaml as
 #   RATW_HOST_TOKEN=rh_...
-# or in a file of its own beside this one, named here:
+# or in a file of its own beside this one, named here (it may be private to you, chmod 600: the container reads it as
+# root):
 # token_file = "host-token"
-# Without a token the world can still be joined by its address, but it isn't on the server list.
+# Without a token the world can still be joined by its address, but it isn't on the server list, you have no host's
+# commands in it, and central's ban list doesn't reach it.
 # A DNS name that points at this computer, listed instead of its address (optional):
 # host = "wolves.example.org"
-# True only if the world is reached through wss:// (a proxy with a certificate for the host name above).
+# True only if the world is reached through wss:// (a proxy with a certificate for the host name above, which it
+# then needs).
 secure = false
 
 [ai]
 # An OpenAI API key lets the residents talk with the model's words (you pay for what they say). Without one they use
 # their authored lines, which work well too. The key stays in this container; it is never sent to central.
 key = ""
-# Or a file holding the key, beside this one:
+# Or a file holding the key, beside this one (this file and the key's may be chmod 600):
 # key_file = "ai-key"
 # The models (these defaults are what the official world uses; see Docs/Design/28):
 # model = "gpt-5.4-mini"          # the residents' main voice

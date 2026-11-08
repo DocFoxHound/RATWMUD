@@ -681,7 +681,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
     }
     for (const auto& j : root.array("beliefs"))
         saved.roads.beliefs.push_back({j.string("holder"), j.string("subject"), j.string("claim"), j.string("source"),
-                                       num(j, "confidence"), num(j, "day"), j.string("incident"), j.string("as").substr(0, 64)});
+                                       num(j, "confidence"), num(j, "day"), j.string("incident"), json::utf8Prefix(j.string("as"), 64)});
     for (const auto& j : root.array("festivals"))
         saved.festivals.push_back({j.string("community"), j.string("name"), std::int64_t(num(j, "day"))});
     if (const auto& crime = root["crime"]; crime.isObject())
@@ -838,7 +838,7 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
         s.parent = j.string("parent");
         for (const auto& line : j.array("log"))
             if (line.isString() && s.log.size() < SocialLedger::MostFightLog)
-                s.log.push_back(line.asString().substr(0, 400));
+                s.log.push_back(json::utf8Prefix(line.asString(), 400));
         for (const auto& k : j.array("members"))
         {
             Contribution m;

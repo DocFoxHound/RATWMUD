@@ -126,12 +126,12 @@ void Game::storylineProgress(const std::vector<storylines::Progress>& progress)
         if (p.kind == "objective")
         {
             const auto& o = s->steps[p.step].objectives[p.objective];
-            logEvent("storyline objective", p.actor, s->id, o.line.substr(0, 120) + (p.byHand ? " (by hand)" : ""));
+            logEvent("storyline objective", p.actor, s->id, json::utf8Prefix(o.line, 120) + (p.byHand ? " (by hand)" : ""));
         }
         else if (p.kind == "step")
         {
             const auto& step = s->steps[p.step];
-            logEvent("storyline step", p.actor, s->id, step.title.substr(0, 120));
+            logEvent("storyline step", p.actor, s->id, json::utf8Prefix(step.title, 120));
             for (const auto& [id, part] : s->participants)
             {
                 if (!part.active())
@@ -157,7 +157,7 @@ void Game::finishStoryline(const storylines::Storyline& s)
 {
     // Recognition only (the user, 2026-10-08): a chronicle line, and for a personal storyline the server made, a small
     // deed for whoever took part. A tale's end is its storyteller's (RatwGameStoryteller.cpp).
-    logEvent("storyline done", s.owner.empty() ? s.authorCharacter : s.owner, s.id, s.title.substr(0, 120));
+    logEvent("storyline done", s.owner.empty() ? s.authorCharacter : s.owner, s.id, json::utf8Prefix(s.title, 120));
     for (const auto& [id, part] : s.participants)
     {
         if (!part.active())
@@ -355,7 +355,7 @@ bool Game::storylineCommand(Connection* c, const Value& j, Result& result)
         if (!anyone && s->kind != "tale")
             storylines_.end(s->id, "abandoned", now());
         storylines_.touch();
-        logEvent(s->kind == "tale" ? "tale left" : "storyline abandoned", id, s->id, s->title.substr(0, 120));
+        logEvent(s->kind == "tale" ? "tale left" : "storyline abandoned", id, s->id, json::utf8Prefix(s->title, 120));
         result = {true, s->kind == "tale" ? "You leave the story." : "You put it aside.", {}};
     }
     else

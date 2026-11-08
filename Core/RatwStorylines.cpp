@@ -192,7 +192,7 @@ Storyline* Book::begin(const Template& t, const std::string& owner, const std::v
         Step step;
         step.title = filled(st.string("title"), cast).substr(0, std::size_t(r.stepTitle));
         step.text = filled(st.string("text"), cast).substr(0, std::size_t(r.stepText));
-        step.brief = filled(st.string("brief"), cast).substr(0, 300);
+        step.brief = json::utf8Prefix(filled(st.string("brief"), cast), 300);
         step.distinct = st.boolean("distinct");
         if (const auto role = st.string("marker"); !role.empty() && markerFor)
         {
@@ -208,7 +208,7 @@ Storyline* Book::begin(const Template& t, const std::string& owner, const std::v
             obj.to = filled(o.string("to"), cast);
             obj.x = o.number("x", -1), obj.y = o.number("y", -1), obj.radius = o.number("radius", 0);
             obj.count = std::max(1, int(o.number("count", 2)));
-            obj.line = filled(o.string("line"), cast).substr(0, 160);
+            obj.line = json::utf8Prefix(filled(o.string("line"), cast), 160);
             obj.suits = o.string("suits");
             if (obj.kind.empty() || obj.target.find('{') != std::string::npos || obj.to.find('{') != std::string::npos)
             {

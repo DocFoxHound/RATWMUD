@@ -501,12 +501,12 @@ Entity readEntity(const Value& o)
         if (!j.isObject() || e.injuries.size() >= injury::MostKept)
             continue;
         Injury i;
-        i.id = j.string("id").substr(0, 96);
+        i.id = json::utf8Prefix(j.string("id"), 96);
         i.type = j.string("type");
         i.kind = injury::lasting(i.type) ? "lasting" : "acute";
         i.side = j.string("side") == "left" || j.string("side") == "right" ? j.string("side") : "";
-        i.cause = j.string("cause").substr(0, 16);
-        i.from = j.string("from").substr(0, 80);
+        i.cause = json::utf8Prefix(j.string("cause"), 16);
+        i.from = json::utf8Prefix(j.string("from"), 80);
         i.severity = std::clamp(int(strictNumber(j, "severity", 1)), 1, 3);
         i.restFull = std::clamp(strictNumber(j, "restFull", 0), 0.0, 24.0 * 60);
         i.restLeft = std::clamp(strictNumber(j, "restLeft", 0), 0.0, i.restFull);
@@ -528,29 +528,29 @@ Entity readEntity(const Value& o)
         if (wolf.isString() && e.toldWardens.size() < 500)
             e.toldWardens.insert(wolf.asString());
     e.vouchedDay = strictNumber(o, "vouchedDay", -1e9);
-    e.vouchedFor = o.string("vouchedFor").substr(0, 128);
+    e.vouchedFor = json::utf8Prefix(o.string("vouchedFor"), 128);
     e.wardenStanding = std::clamp(strictNumber(o, "wardenStanding", 0.0), -100.0, 100.0);
-    e.postTown = o.string("postTown").substr(0, 128);
+    e.postTown = json::utf8Prefix(o.string("postTown"), 128);
     e.leftAt = std::max(0.0, strictNumber(o, "leftAt", 0));
     for (const auto& id : o.array("lore"))
         if (id.isString() && e.lore.size() < 500)
-            e.lore.push_back(id.asString().substr(0, 64));
+            e.lore.push_back(json::utf8Prefix(id.asString(), 64));
     for (const auto& [species, seen] : o.object("bestiary").fields())
         if (seen.isArray() && seen.items().size() == 2 && e.bestiary.size() < 200)
-            e.bestiary[species.substr(0, 64)] = {seen.items()[0].asNumber(), int(seen.items()[1].asNumber())};
+            e.bestiary[json::utf8Prefix(species, 64)] = {seen.items()[0].asNumber(), int(seen.items()[1].asNumber())};
     for (const auto& [item, found] : o.object("herbarium").fields())
         if (found.isArray() && found.items().size() == 2 && e.herbarium.size() < 200)
-            e.herbarium[item.substr(0, 64)] = {found.items()[0].asNumber(), found.items()[1].asString(std::string()).substr(0, 96)};
+            e.herbarium[json::utf8Prefix(item, 64)] = {found.items()[0].asNumber(), json::utf8Prefix(found.items()[1].asString(std::string()), 96)};
     for (const auto& cell : o.array("places"))
         if (cell.isString() && e.places.size() < 5000)
-            e.places.insert(cell.asString().substr(0, 128));
+            e.places.insert(json::utf8Prefix(cell.asString(), 128));
     for (const auto& [game, skill] : o.object("gameSkills").fields())
         if (skill.isNumber() && e.gameSkills.size() < 8 && game.size() <= 32)
             e.gameSkills[game] = std::clamp(skill.asNumber(), 0., 100.);
     e.groomedUntil = strictNumber(o, "groomedUntil", -1);
     e.groomScentUntil = strictNumber(o, "groomScentUntil", -1);
     e.groomHalf = o.boolean("groomHalf");
-    e.groomedBy = o.string("groomedBy").substr(0, 128);
+    e.groomedBy = json::utf8Prefix(o.string("groomedBy"), 128);
     e.groomedOtherDay = strictNumber(o, "groomedOtherDay", -1e9);
     e.groomedSelfDay = strictNumber(o, "groomedSelfDay", -1e9);
     e.fedUntil = strictNumber(o, "fedUntil", -1);
@@ -558,7 +558,7 @@ Entity readEntity(const Value& o)
     e.ateAt = strictNumber(o, "ateAt", -1);
     for (const auto& s : o.array("scents"))
         if (s.isObject() && e.scents.size() < 60 && !s.string("item").empty() && s.number("count") > 0)
-            e.scents.push_back({s.string("item").substr(0, 128), s.string("maker").substr(0, 128), s.string("giver").substr(0, 128),
+            e.scents.push_back({json::utf8Prefix(s.string("item"), 128), json::utf8Prefix(s.string("maker"), 128), json::utf8Prefix(s.string("giver"), 128),
                                 std::clamp(int(s.number("count")), 1, 9999), s.number("madeDay", -1), s.number("givenDay", -1)});
     e.dungeonMaster = !e.npc && o.boolean("dungeonMaster");
     e.mana = std::clamp(strictNumber(o, "mana", 0.0), 0.0, 100.0);
@@ -568,7 +568,7 @@ Entity readEntity(const Value& o)
     for (const auto& [attribute, grade] : o.object("grades").fields())
         if (const auto* s = practice::skill(attribute); s && s->attribute && (grade.asString({}) == "weak" || grade.asString({}) == "strong"))
             e.grades[attribute] = grade.asString({});
-    e.specialty = o.string("specialty").substr(0, 32);
+    e.specialty = json::utf8Prefix(o.string("specialty"), 32);
     for (const auto& [skill, value] : o.object("skills").fields())
         if (const auto* s = practice::skill(skill); s && !s->attribute && s->field.empty() && value.isNumber())
             e.skills[skill] = std::clamp(value.asNumber(0), 0.0, 100.0);
@@ -1160,13 +1160,13 @@ LoopState readLoop(const Value& o)
             {
                 LoopState::Steer::Judging j;
                 j.day = std::int64_t(h["day"].asNumber());
-                j.measure = h.string("measure").substr(0, 20);
+                j.measure = json::utf8Prefix(h.string("measure"), 20);
                 for (const auto& [key, into] : {std::pair{"value", &j.value}, std::pair{"target", &j.target}, std::pair{"band", &j.band},
                                                 std::pair{"error", &j.error}, std::pair{"step", &j.step}, std::pair{"before", &j.before},
                                                 std::pair{"after", &j.after}})
                     if (inRange(h[key], -1e12, 1e12))
                         *into = h[key].asNumber();
-                j.why = h.string("why").substr(0, 600);
+                j.why = json::utf8Prefix(h.string("why"), 600);
                 s.history.push_back(std::move(j));
             }
         for (const auto& k : st.array("skims"))

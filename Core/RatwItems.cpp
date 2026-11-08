@@ -470,8 +470,8 @@ void readSteering(const json::Value& steer, CityLoop::Steering& t)
     }
     if (const auto& r = steer.object("reach"); r.isObject())
     {
-        t.reachLeft = r.string("left", t.reachLeft).substr(0, 200);
-        t.reachRight = r.string("right", t.reachRight).substr(0, 200);
+        t.reachLeft = json::utf8Prefix(r.string("left", t.reachLeft), 200);
+        t.reachRight = json::utf8Prefix(r.string("right", t.reachRight), 200);
     }
     if (const auto& order = steer["skimOrder"].items(); !order.empty())
     {

@@ -8,12 +8,13 @@ a world exported as plain files, with every player taken out of its save, for a 
         Read only: one read-only transaction on the source. Nothing is left in DIR if anything fails.
   python3 tools/world_package.py scan DIR [--source KEY]
         the gate: no player id anywhere, money conserved, goods within limits (--source: also the source world's
-        usernames, and its characters' names as warnings). Exit 1 if it fails.
+        usernames, and the names its players chose as warnings). Exit 1 if it fails.
   python3 tools/world_package.py import DIR --key KEY [--name NAME]
         first start: makes world KEY's database (a live world), runs the migrations and imports the package in one
         transaction. Connection settings from the environment (RATW_*, POSTGRES_*; RATW_WORLDS_FILE a one-world
-        registry, written if missing; a key the registry lacks is registered), so it works in a container with no
-        Database/.env. Does nothing if the database already holds this package; refuses if it holds another world.
+        registry, written if missing; a key the registry lacks is registered first), so it works in a container with no
+        Database/.env. A database that already holds a package keeps its world: the migrations run, and a different
+        package (a newer image's) is not applied, only noted. Refuses a database holding a world no package made.
 
 The package (format 1), every part gzip-compressed:
   package.json          format, package id and version, source key, build id and fingerprint, protocol, client-data
@@ -32,10 +33,10 @@ source, old builds, live.npc_state (newer rows would overwrite purses), live.gam
 The strip is a table (SECTIONS) of small functions, one for each top-level section of the save. A section the table
 doesn't name stops the export (a section added to the game later can't slip through unstripped) unless it is listed
 in KNOWN_SAFE. It conserves money: every coin of a removed account (a player's, and the escrow a player's things held:
-chapter:, contract:, letter:...@wolf-, let:, stall:, table:) goes to the treasury (a resident's letter escrow back to
-the resident), so the sum of cash still equals minted - sunk; goods go along within the 64 kinds and 10,000 a kind an
-account may hold, and the rest is discarded (goods aren't conserved). Maker marks of players (item@wolf-...) are taken
-off items everywhere. Society::restore lets a leftover player account through, so only the scan catches an incomplete
+chapter:, contract:, letter:...@wolf-, let:<lodging>, stall:, table:) goes to the treasury (a resident's letter escrow
+back to the resident), so the sum of cash still equals minted - sunk; goods go along within the 64 kinds and 10,000 a
+kind an account may hold, and the rest is discarded (goods aren't conserved). Maker marks of players (item@wolf-...) are
+taken off items everywhere. Society::restore lets a leftover player account through, so only the scan catches an incomplete
 strip.
 """
 from __future__ import annotations
@@ -96,7 +97,15 @@ class Strip:
         self.closed = 0                            # Accounts closed into others.
         self.usernames = {e.get('username') for e in (doc.get('accounts') or {}).get('entries', [])
                           if isinstance(e, dict) and isinstance(e.get('username'), str)}
+        # Names players chose, looked for in free text as warnings: characters', Chapters' and their camps'.
         self.names = {p.get('name') for p in doc.get('players', []) if isinstance(p, dict) and p.get('name')}
+        chapters, camps = doc.get('chapters'), doc.get('camps')
+        self.names |= {c.get('name') for c in (chapters.get('chapters', []) if isinstance(chapters, dict) else [])
+                       if isinstance(c, dict) and isinstance(c.get('name'), str) and c.get('name')}
+        self.names |= {s.get('name') for s in (camps.get('sites', []) if isinstance(camps, dict) else [])
+                       if isinstance(s, dict) and not town_site(s) and isinstance(s.get('name'), str) and s.get('name')}
+        self.camp_staff: set[str] = set()          # NPCs who worked at a camp that goes (their "working at <camp>").
+        self.lodgings: set[str] | None = None      # The lodgings kept (None: the save has no lodgings).
         day = (doc.get('society') or {}).get('careers', {}).get('day')
         self.day = day if isinstance(day, (int, float)) else int(doc.get('calendarDays') or 0)
 
@@ -109,6 +118,11 @@ class Strip:
 
 
 REMOVE = object()
+
+
+def town_site(site) -> bool:
+    """camp::townSite: a camp site a town owns (doc 57's projects stand on one), not a Chapter's."""
+    return isinstance(site, dict) and isinstance(site.get('chapter'), str) and site['chapter'].startswith('town:')
 
 
 def hit(text) -> bool:
@@ -189,11 +203,13 @@ def scrub(value, st: Strip, section: str, add_merged: bool = False):
 
 
 def emptied(value):
-    """A section of players' own records emptied, keeping its shape and counters: lists and maps empty, numbers kept."""
+    """A section of players' own records emptied, keeping its shape and counters: lists and maps empty, numbers kept.
+    For sections whose keys are field names (parties, chapters, standing); a key or a value naming a player goes."""
     if isinstance(value, list):
         return []
     if isinstance(value, dict):
-        return {k: ([] if isinstance(v, list) else {} if isinstance(v, dict) else v) for k, v in value.items()}
+        return {k: ([] if isinstance(v, list) else {} if isinstance(v, dict) else v) for k, v in value.items()
+                if not PLAYER.search(k) and not hit(v)}
     return value
 
 
@@ -216,6 +232,14 @@ def empty_section(doc, key, st):
     doc[key] = emptied(before)
 
 
+def clear_section(doc, key, st):
+    """A map keyed by player (commandReceipts, scenesHeard, aliases...) or naming one in every value (companions:
+    resident -> the player who hired them): nothing in it is the world's, so all of it goes."""
+    before = doc[key]
+    st.count(key, _size(before))
+    doc[key] = {} if isinstance(before, dict) else [] if isinstance(before, list) else before
+
+
 def prune_section(doc, key, st):
     doc[key] = prune(doc[key], st, key)
 
@@ -233,7 +257,67 @@ def strip_journal(doc, key, st):
 
 
 def strip_npcs(doc, key, st):
-    doc[key] = [scrub(e, st, key) for e in doc[key]]
+    out = []
+    for e in doc[key]:
+        e = scrub(e, st, key)
+        if isinstance(e, dict) and e.get('id') in st.camp_staff and e.get('activity'):
+            e['activity'] = ''              # ("working at <the camp's name>": a name a player chose.)
+            st.count(key)
+        out.append(e)
+    doc[key] = out
+
+
+def strip_camps(doc, key, st):
+    """A Chapter's camps go with the Chapter (doc 32); a town's own sites (owner "town:<town>": doc 57's projects stand
+    on them) stay, with their structures, staff and offers."""
+    camps = doc[key]
+    if not isinstance(camps, dict):
+        return empty_section(doc, key, st)
+    kept = set()
+    sites = []
+    for site in camps.get('sites', []):
+        if town_site(site) and not mentions(site):
+            sites.append(site)
+            kept.add(site.get('id'))
+        else:
+            st.count(key)
+    camps['sites'] = sites
+    for part in ('structures', 'staff', 'offers'):
+        entries = camps.get(part)
+        if not isinstance(entries, list):
+            continue
+        keep = []
+        for entry in entries:
+            if isinstance(entry, dict) and entry.get('site') in kept and not mentions(entry):
+                keep.append(entry)
+                continue
+            st.count(key)
+            if part == 'staff' and isinstance(entry, dict) and isinstance(entry.get('npc'), str):
+                st.camp_staff.add(entry['npc'])
+        camps[part] = keep
+    if isinstance(camps.get('offered'), dict):
+        offered = camps['offered']
+        camps['offered'] = {site: day for site, day in offered.items() if site in kept}
+        st.count(key, len(offered) - len(camps['offered']))
+    for k in list(camps):
+        if k not in ('sites', 'structures', 'staff', 'offers', 'offered') and isinstance(camps[k], (list, dict)):
+            camps[k] = prune(camps[k], st, key)
+
+
+def strip_audiences(doc, key, st):
+    """socialAudiences ("<session>|<member>" -> who last heard them): only for the sessions kept (socialSessions
+    runs first), without players."""
+    audiences = doc[key]
+    if not isinstance(audiences, dict):
+        return clear_section(doc, key, st)
+    sessions = {s.get('id') for s in doc.get('socialSessions', []) if isinstance(s, dict)}
+    out = {}
+    for k, v in audiences.items():
+        if k.split('|', 1)[0] in sessions and not PLAYER.search(k):
+            out[k] = prune(v, st, key)
+        else:
+            st.count(key)
+    doc[key] = out
 
 
 def strip_chapters(doc, key, st):
@@ -323,15 +407,22 @@ PEOPLE_PRUNE = ('deeds', 'nicknames', 'troublesHeard', 'troublesSolved', 'troubl
 
 
 def people_lodgings(people, st, section):
+    """A player's lodging goes, and its chest ("let:<id>", doc 54) with it into the treasury. Its `account` is the
+    landlord's (the till, the town's stores or the resident lodger's own purse the rent is paid into:
+    Core/RatwLodgings.cpp), which stays. A lodging someone else holds stays, without the players among its guests."""
     kept = []
     for lodging in people['lodgings']:
-        if mentions(lodging):
-            if lodging.get('account'):
-                st.close(lodging['account'])
+        if not isinstance(lodging, dict):
+            continue
+        if hit(lodging.get('holder')) or not lodging.get('holder'):
+            st.close(f'let:{lodging.get("id")}')
             st.count(section)
-        else:
-            kept.append(lodging)
+            continue
+        if mentions(lodging):
+            lodging = scrub(lodging, st, section)
+        kept.append(lodging)
     people['lodgings'] = kept
+    st.lodgings = {lodging.get('id') for lodging in kept}
 
 
 def people_stalls(people, st, section):
@@ -452,6 +543,10 @@ def strip_society(doc, key, st):
     for name in accounts:
         if name != TREASURY and (PLAYER.search(name) or name.startswith(CLOSED_PREFIXES)):
             closing.setdefault(name, None)
+        elif name.startswith('let:') and name[4:] not in (st.lodgings or ()):
+            # A chest whose lodging is gone: a lodging given its id again (nextLodging_ counts from those kept) would
+            # find what the last renter left in it.
+            closing.setdefault(name, None)
     for letter in st.letters:
         for name in accounts:
             if name.startswith(f'letter:{letter}@'):
@@ -494,18 +589,19 @@ SECTIONS = {
     'accounts': drop_section,       # (Left out, not emptied: an empty list of the wrong kind of accounts is refused.)
     'players': empty_section,
     'director': drop_section,       # (The operator bridge's own identity and receipts: a new world makes its own.)
-    'aliases': empty_section,
-    'notes': empty_section,
-    'scenesHeard': empty_section,
-    'commandReceipts': empty_section,
-    'responseReceipts': empty_section,
+    # (Maps keyed by player, Core/RatwCheckpoint.cpp: a key per player who sent a command, heard a scene, chose an
+    # alias; companions are resident -> the player who hired them; notes are kept as the game was given them.)
+    'aliases': clear_section,
+    'notes': clear_section,
+    'scenesHeard': clear_section,
+    'commandReceipts': clear_section,
+    'responseReceipts': clear_section,
+    'companions': clear_section,
     'socialStars': empty_section,
     'socialStories': empty_section,
-    'socialAudiences': empty_section,
     'standing': empty_section,
-    'companions': empty_section,
     'parties': empty_section,
-    'camps': empty_section,         # (Every camp is a Chapter's.)
+    'camps': strip_camps,           # (Before the NPCs: camp staff of a camp that goes.)
     'chapters': strip_chapters,
     'people': strip_people,
     # NPC-side state that names players.
@@ -523,6 +619,7 @@ SECTIONS = {
     'ledger': prune_section,
     'socialRecent': prune_section,
     'socialSessions': prune_section,
+    'socialAudiences': strip_audiences,     # (After socialSessions.)
     'mapMemories': prune_section,
     'factions': prune_section,      # (Treaties, levies and House requests are Chapters'; standings, missions, burdens.)
     'estates': prune_section,       # (The places stay; leases to players or Chapters go.)
@@ -555,17 +652,67 @@ def strip(doc: dict) -> Strip:
 
 # --------------------------------------------------------------------------- The scan
 
-def _walk(value, path='$'):
-    """(path, text) for every key and every string in a value."""
+def _walk(value, path='$', field=''):
+    """(path, text, field) for every key and every string in a value; field: the name of the map entry it is in (for a
+    key, the map's own)."""
     if isinstance(value, str):
-        yield path, value
+        yield path, value, field
     elif isinstance(value, dict):
         for k, v in value.items():
-            yield f'{path}.{k}', k
-            yield from _walk(v, f'{path}.{k}')
+            yield f'{path}.{k}', k, field
+            yield from _walk(v, f'{path}.{k}', k)
     elif isinstance(value, list):
         for i, v in enumerate(value):
-            yield from _walk(v, f'{path}[{i}]')
+            yield from _walk(v, f'{path}[{i}]', field)
+
+
+# Fields that hold an account's key (a username) where they appear: a username there is an error even if it is also a
+# word the game uses. So is any field named ...Account(s), as Core names them (giverAccount, recipientAccount:
+# RatwStars.cpp; reporterAccount, reportedAccount: RatwReports.cpp; otherAccount: RatwNewcomers.cpp; authorAccount).
+ACCOUNT_FIELDS = frozenset({'account', 'accounts', 'username', 'usernames', 'authorAccount', 'friend'})
+
+
+def account_field(field) -> bool:
+    return isinstance(field, str) and (field in ACCOUNT_FIELDS or field.endswith(('Account', 'Accounts')))
+# The DM tool's accounts as the game and the tool write them ("dm:<username>"; Core/RatwGame.cpp, tools/dungeon_master.py).
+DM_ACCOUNT = re.compile(r'(?<![A-Za-z0-9_])dm:[a-z]')
+WORD = re.compile(r'[a-z][a-z0-9_-]{2,31}')
+_vocabulary: frozenset | None = None
+
+
+def vocabulary() -> frozenset:
+    """The words the game itself uses: in Core's string literals and in Data's JSON (keys and strings), as usernames are
+    spelt (3-32 characters, lowercase). A username that is one of them ("night", "guard", "timber", "open") is a word
+    where it stands in a save (a lodging's period, a role), so only a warning, outside the account fields. Empty where
+    the source isn't there (a package's container)."""
+    global _vocabulary
+    if _vocabulary is None:
+        words = set()
+        literal = re.compile(r'"((?:[^"\\\n]|\\.){1,400})"')
+        for path in sorted((ROOT / 'Core').glob('*.[ch]*')):
+            try:
+                for text in literal.findall(path.read_text(encoding='utf-8', errors='replace')):
+                    words.update(WORD.findall(text.lower()))
+            except OSError:
+                continue
+
+        def walk(v):
+            if isinstance(v, str):
+                words.update(WORD.findall(v.lower()))
+            elif isinstance(v, dict):
+                for k, x in v.items():
+                    words.update(WORD.findall(k.lower()))
+                    walk(x)
+            elif isinstance(v, list):
+                for x in v:
+                    walk(x)
+        for path in sorted((ROOT / 'Data').rglob('*.json')):
+            try:
+                walk(json.loads(path.read_text(encoding='utf-8')))
+            except (OSError, ValueError):
+                continue
+        _vocabulary = frozenset(words)
+    return _vocabulary
 
 
 def money(doc: dict) -> list[str]:
@@ -594,36 +741,48 @@ def money(doc: dict) -> list[str]:
 
 
 def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tables=None, limit=40) -> tuple[list, list]:
-    """(errors, warnings): player ids (wolf-, player-, acct-, dev:, Chapters) in any key or string of the snapshot or
-    a shipped row; a source username as a whole value or a part of a compound key; the money; and character names in
-    free text (warnings)."""
+    """(errors, warnings): player ids (wolf-, player-, acct-, dev:, Chapters) and DM tool accounts (dm:<name>) in any
+    key or string of the snapshot or a shipped row; a source username (a player's or a DM tool's) as a whole value or a
+    part of a compound key; the money; and the names players chose (characters', Chapters', camps') in free text
+    (warnings). A username that is also one of the world's own identifiers (a resident, an account, an item, an area)
+    is a warning; so is one that is a word the game uses (vocabulary()), except in a field that holds account keys
+    (account_field)."""
     errors, warnings = [], []
     usernames = {u for u in usernames if u}
     ambient = set()                 # (World identifiers a username may happen to equal: a warning, not an error.)
     if snapshot:
         ambient |= {e.get('id') for e in snapshot.get('npcs', []) if isinstance(e, dict)}
-        for a in (snapshot.get('society') or {}).get('accounts', {}).values():
+        for name, a in (snapshot.get('society') or {}).get('accounts', {}).items():
+            ambient |= {name, *re.split(r'[|:@#]', name)}
             ambient |= set(a.get('stock', {}))
     for table, table_rows in rows.items():
         if table == 'world.areas':
             ambient |= {r[0] for r in table_rows}
-    name_res = [re.compile(r'\b' + re.escape(n) + r'\b') for n in sorted({n for n in names if n and len(n) > 1})]
+    words = vocabulary() if usernames else frozenset()
+    name_res = [(n, re.compile(r'\b' + re.escape(n) + r'\b')) for n in sorted({n for n in names if n and len(n) > 1})]
 
     def check(where, value):
-        for path, text in _walk(value, where):
+        for path, text, field in _walk(value, where):
             found = PLAYER.search(text)
             if found:
                 errors.append(f'{path}: names a player or a Chapter ({found.group(0)[:12]}...)')
+            found = DM_ACCOUNT.search(text)
+            if found:
+                errors.append(f'{path}: names a DM tool account ({found.group(0)}...)')
             if usernames:
                 parts = [text] + re.split(r'[|:@#]', text)
                 for part in parts:
                     if part in usernames:
-                        (warnings if part in ambient else errors).append(
-                            f'{path}: a source username ({"also a world identifier" if part in ambient else "account"})')
+                        if part in ambient:
+                            warnings.append(f'{path}: a source username (also a world identifier)')
+                        elif part in words and not account_field(field):
+                            warnings.append(f'{path}: a source username (also a word the game uses)')
+                        else:
+                            errors.append(f'{path}: a source username (account)')
                         break
-            for name_re in name_res:
+            for name, name_re in name_res:
                 if name_re.search(text):
-                    warnings.append(f'{path}: holds a character\'s name ("{name_re.pattern[2:-2]}")')
+                    warnings.append(f'{path}: holds a name a player chose ("{name}")')
                     break
 
     if snapshot is not None:
@@ -641,6 +800,29 @@ def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tabl
 
 
 # --------------------------------------------------------------------------- Reading the source
+
+# Who wrote a seed row, where the DM tool writes its account's username (tools/dungeon_master.py): shipped as the
+# package instead (dm.* stays out, and with it the DM tool's logins). Story visitors count as approved while approved_by
+# is set (Core/RatwGameStoryteller.cpp), so it is kept set.
+PROVENANCE = {'live.npc_voice': ('written_by', lambda v: 'dm' if isinstance(v, str) and v.startswith('dm:') else v),
+              'live.story_visitors': ('approved_by', lambda v: None if v is None else 'package'),
+              'live.faction_relations': ('updated_by', lambda v: '')}
+
+
+def without_provenance(table: str, row: dict) -> dict:
+    if table in PROVENANCE:
+        column, value = PROVENANCE[table]
+        if column in row:
+            row[column] = value(row[column])
+    return row
+
+
+def dm_usernames(conn) -> set:
+    """The DM tool's account names in the source (read only), for the scan: none may ship."""
+    if not conn.execute("SELECT to_regclass('dm.admins') IS NOT NULL").fetchone()[0]:
+        return set()
+    return {r[0] for r in conn.execute('SELECT username FROM dm.admins').fetchall()}
+
 
 def live_specs():
     import world_sync
@@ -731,12 +913,13 @@ def read_source(conn, with_snapshot=True, log=print) -> dict:
                 posts.setdefault(route, []).append({'seq': seq, 'area': area, 'x': x, 'y': y})
             for row in found.values():
                 row['posts'] = posts.get(row['id'], [])
-        live[spec.table] = [world_sync.normalized(r) for _, r in sorted(found.items(), key=lambda kv: repr(kv[0]))]
+        live[spec.table] = [without_provenance(spec.table, world_sync.normalized(r))
+                            for _, r in sorted(found.items(), key=lambda kv: repr(kv[0]))]
     live['live.economy'] = [world_sync.normalized(r) for r in world_sync.read(conn, 'live.economy', world_id).values()]
     out = {'world_id': world_id, 'world': world_row, 'areas': areas, 'live': live,
            'build': {'id': build[0], 'fingerprint': build[1], 'created_at': build[2].isoformat(), 'manifest': build[3],
                      'cells': cells},
-           'snapshot': None, 'usernames': set(), 'names': set()}
+           'snapshot': None, 'usernames': dm_usernames(conn), 'names': set()}
     if with_snapshot:
         text = conn.execute('SELECT game.load_checkpoint(%s)', (world_id,)).fetchone()[0]
         if text is None:
@@ -926,20 +1109,28 @@ def scan_directory(directory: Path, usernames=(), names=()) -> tuple[list, list]
 
 
 def source_people(key: str) -> tuple[set, set]:
-    """The usernames and character names of a source world's save (read only), for scan --source."""
+    """The usernames (its players' and its DM tool's), and the names players chose (characters', Chapters', camps'), of
+    a source world (read only), for scan --source."""
     with W.connect(W.resolve(key), 'owner', options='-c default_transaction_read_only=on') as conn:
         world_id = conn.execute('SELECT id FROM world.worlds').fetchone()
         text = conn.execute('SELECT game.load_checkpoint(%s)', (world_id[0],)).fetchone()[0] if world_id else None
+        admins = dm_usernames(conn)
     doc = json.loads(text) if text else {}
     st = Strip(doc)
-    return st.usernames, st.names
+    return st.usernames | admins, st.names
 
 
 # --------------------------------------------------------------------------- Import (first start)
 
+def database_of(key: str) -> str:
+    """A package world's database: ratw_<key>, a '-' in the key as '_' (a database name is lowercase letters, digits and
+    '_': world_db.check_registry)."""
+    return f'ratw_{key.replace("-", "_")}'
+
+
 def _write_registry(path: Path, key: str, name: str):
     path.parent.mkdir(parents=True, exist_ok=True)
-    entry = {'key': key, 'name': name, 'database': f'ratw_{key.replace("-", "_")}', 'kind': 'live'}
+    entry = {'key': key, 'name': name, 'database': database_of(key), 'kind': 'live'}
     W.check_registry([entry])
     path.write_text('{"worlds": [\n  ' + json.dumps(entry) + '\n]}\n', encoding='utf-8')
 
@@ -949,10 +1140,28 @@ def _database_exists(database: str) -> bool:
         return bool(su.execute('SELECT 1 FROM pg_database WHERE datname = %s', (database,)).fetchone())
 
 
+def _held(database: str) -> str | None:
+    """What an existing database holds that makes it no half-made import (read as the superuser, nothing changed):
+    a world (world.worlds rows) or a package's marker; None if neither (empty, or made by an import stopped part way)."""
+    with W.superuser(database) as su:
+        if su.execute("SELECT to_regclass('admin.settings') IS NOT NULL").fetchone()[0]:
+            have = su.execute(f"SELECT value FROM admin.settings WHERE key = '{SETTING}'").fetchone()
+            if have:
+                return f'package {have[0].get("version")} ({have[0].get("id")})'
+        if su.execute("SELECT to_regclass('world.worlds') IS NOT NULL").fetchone()[0]:
+            world_id = su.execute('SELECT id FROM world.worlds LIMIT 1').fetchone()
+            if world_id:
+                return f'world {world_id[0]}'
+    return None
+
+
 def import_package(directory: Path, key: str, name: str | None = None, log=print) -> str:
-    """First start: world `key`'s database made and the package imported. Returns 'imported' or 'already'. Raises
-    PackageError if the database holds anything else."""
-    import world_sync
+    """First start: world `key`'s database made and the package imported. Returns 'imported'; 'already' (this package
+    is in it already); or 'kept' (it was started from another package: an update's image carries a newer one, and the
+    world keeps its own state, with the migrations applied). Raises PackageError if the database holds a world that no
+    package made. A key the registry lacked is registered first (a rerun after a crash part way finds it and completes
+    the import); if the import then fails or is refused, the key is unregistered again and a database this run made is
+    dropped, and an existing database it would take over is first checked to hold no world and no package (_held)."""
     manifest = verify(directory)
     world = read_json_gz(directory / 'world.json.gz')
     name = name or world['world'].get('name') or key
@@ -961,9 +1170,40 @@ def import_package(directory: Path, key: str, name: str | None = None, log=print
         _write_registry(registry, key, name)
         log(f'Wrote a one-world registry, {registry}.')
     W.worlds()
-    if key not in W.keys():
-        W.ensure_roles([])
-        W.new_world(key, name, 'live', log=log)            # (Registered with it: a new world in this registry.)
+    if key in W.keys():
+        return _import(directory, key, name, manifest, world, log)
+    # Registered before its database is made: a rerun after a crash part way finds the key and the database, and
+    # completes the migrations (new_world unregistered would refuse a database it didn't register).
+    if key in W.ALIASES:
+        raise PackageError(f'{key} is another world\'s alias; give the package its own key.')
+    database = database_of(key)
+    existed = _database_exists(database)
+    if existed:
+        held = _held(database)
+        if held:
+            raise PackageError(f'A database called {database} already exists and holds {held}, but no registered world '
+                               f'is {key}; nothing imported (choose another key, or register it by hand if it is this '
+                               'world).')
+        log(f'{database} is there already, with no world in it (an import stopped part way): completing it.')
+    W.register({'key': key, 'name': name, 'database': database, 'kind': 'live'})
+    log(f'Registered {key} ("{name}", live).')
+    try:
+        return _import(directory, key, name, manifest, world, log)
+    except BaseException:
+        # (What register did, undone, as new_world registers only on success; a crash, which runs no cleanup, leaves
+        # both for the rerun.)
+        if not existed and _database_exists(database):
+            from psycopg import sql
+            with W.superuser() as su:
+                su.execute(sql.SQL('DROP DATABASE IF EXISTS {} WITH (FORCE)').format(sql.Identifier(database)))
+            log(f'Dropped {database} again.')
+        W.unregister(key)
+        log(f'Unregistered {key} again.')
+        raise
+
+
+def _import(directory: Path, key: str, name: str, manifest: dict, world: dict, log) -> str:
+    import world_sync
     entry = W.world(key)
     if entry['kind'] != 'live':
         raise PackageError(f'{key} is a {entry["kind"]} world; a package is imported into a live world.')
@@ -978,11 +1218,18 @@ def import_package(directory: Path, key: str, name: str | None = None, log=print
             if have[0].get('id') == manifest['id']:
                 log(f'{key} already holds package {manifest["version"]} ({manifest["id"]}); nothing to do.')
                 return 'already'
-            raise PackageError(f'{key} already holds another package ({have[0].get("version")}, {have[0].get("id")}); '
-                               f'it is not replaced by {manifest["version"]}.')
+            # An update (doc 77, section 8): the image carries a newer package, the volume the world as it was played.
+            log(f'{key}: this world was started from package {have[0].get("version")} ({have[0].get("id")}) and keeps '
+                f'its own state; the image carries package {manifest["version"]} ({manifest["id"]}), which is not '
+                'applied to an existing world; to start fresh from the new package run docker compose down -v (this '
+                'deletes the world).')
+            return 'kept'
         worlds = conn.execute('SELECT id FROM world.worlds').fetchall()
         if worlds:
             raise PackageError(f'{key} already holds a world ({worlds[0][0]}) that no package made; nothing imported.')
+        # (A database made by a run that stopped part way: what new_world does after making it, again; both idempotent.)
+        W.grant_connect(entry['database'], 'live')
+        W.seed_publish_password(conn)
         live = read_json_gz(directory / 'live.json.gz')['tables']
         snapshot_path = directory / 'snapshot.json.gz'
         snapshot = read_json_gz(snapshot_path) if snapshot_path.exists() else None

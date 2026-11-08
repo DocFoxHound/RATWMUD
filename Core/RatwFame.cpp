@@ -56,7 +56,7 @@ std::vector<std::string> strings(const Value& a, std::size_t most)
     std::vector<std::string> out;
     for (const auto& s : a.items())
         if (s.isString() && out.size() < most)
-            out.push_back(s.asString().substr(0, 128));
+            out.push_back(json::utf8Prefix(s.asString(), 128));
     return out;
 }
 } // namespace
@@ -300,7 +300,7 @@ Deed fromJson(const Value& j)
     d.town = j.string("town");
     d.cell = j.string("cell");
     d.place = j.string("place");
-    d.detail = j.string("detail").substr(0, 200);
+    d.detail = json::utf8Prefix(j.string("detail"), 200);
     d.source = j.string("source");
     d.x = j.number("x");
     d.y = j.number("y");
@@ -311,13 +311,13 @@ Deed fromJson(const Value& j)
         w.id = o.string("id");
         for (const auto& [doer, name] : o.object("as").fields())
             if (name.isString())
-                w.as[doer] = name.asString().substr(0, 64);
+                w.as[doer] = json::utf8Prefix(name.asString(), 64);
         if (!w.id.empty() && d.witnesses.size() < 16)
             d.witnesses.push_back(std::move(w));
     }
     for (const auto& [doer, look] : j.object("looks").fields())
         if (look.isString())
-            d.looks[doer] = look.asString().substr(0, 128);
+            d.looks[doer] = json::utf8Prefix(look.asString(), 128);
     for (const auto& [doer, list] : j.object("names").fields())
         d.names[doer] = strings(list, 4);
     for (const auto& o : j.array("towns"))
@@ -447,7 +447,7 @@ void Ledger::loadNicknames(const Value& list)
     nicknames_.clear();
     for (const auto& j : list.items())
     {
-        Nickname n{j.string("id"), j.string("wolf"), j.string("text").substr(0, 120), j.string("family"), j.string("deed"),
+        Nickname n{j.string("id"), j.string("wolf"), json::utf8Prefix(j.string("text"), 120), j.string("family"), j.string("deed"),
                    j.string("coinedBy"), j.string("town"), j.number("day"), j.boolean("dropped")};
         if (n.id.rfind("nick-", 0) != 0 || n.wolf.empty() || n.text.empty())
             continue;

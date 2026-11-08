@@ -241,10 +241,10 @@ json::Value saveVouch(const Vouch& v)
 Vouch loadVouch(const json::Value& o)
 {
     Vouch v;
-    v.id = o.string("id").substr(0, 80);
-    v.resident = o.string("resident").substr(0, 80);
-    v.voucher = o.string("voucher").substr(0, 80);
-    v.vouched = o.string("vouched").substr(0, 80);
+    v.id = json::utf8Prefix(o.string("id"), 80);
+    v.resident = json::utf8Prefix(o.string("resident"), 80);
+    v.voucher = json::utf8Prefix(o.string("voucher"), 80);
+    v.vouched = json::utf8Prefix(o.string("vouched"), 80);
     v.state = o.string("state", "active");
     if (v.state != "active" && v.state != "ended" && v.state != "broken")
         v.state = "ended";
@@ -254,7 +254,7 @@ Vouch loadVouch(const json::Value& o)
     v.given = {o.number("trust", 0), o.number("liking", 0), o.number("familiarity", 0)};
     for (const auto& h : o.array("household"))
         if (v.household.size() < 64)
-            v.household.push_back({h.string("id").substr(0, 80), h.number("trust", 0), h.number("liking", 0), h.number("familiarity", 0)});
+            v.household.push_back({json::utf8Prefix(h.string("id"), 80), h.number("trust", 0), h.number("liking", 0), h.number("familiarity", 0)});
     v.raised = o.boolean("raised", false);
     return v;
 }
@@ -363,22 +363,22 @@ json::Value saveTie(const Tie& t)
 Tie loadTie(const json::Value& o)
 {
     Tie t;
-    t.id = o.string("id").substr(0, 80);
-    t.newcomer = o.string("newcomer").substr(0, 80);
-    t.account = o.string("account").substr(0, 80);
-    t.other = o.string("other").substr(0, 80);
-    t.otherAccount = o.string("otherAccount").substr(0, 80);
-    t.starter = o.string("starter").substr(0, 40);
+    t.id = json::utf8Prefix(o.string("id"), 80);
+    t.newcomer = json::utf8Prefix(o.string("newcomer"), 80);
+    t.account = json::utf8Prefix(o.string("account"), 80);
+    t.other = json::utf8Prefix(o.string("other"), 80);
+    t.otherAccount = json::utf8Prefix(o.string("otherAccount"), 80);
+    t.starter = json::utf8Prefix(o.string("starter"), 40);
     t.state = o.string("state", "seeking");
     if (t.state != "seeking" && t.state != "offered" && t.state != "active" && t.state != "lapsed" && t.state != "ended")
         t.state = "ended";
-    t.town = o.string("town").substr(0, 80);
-    t.arrivalCell = o.string("arrivalCell").substr(0, 80);
-    t.offeredTo = o.string("offeredTo").substr(0, 80);
+    t.town = json::utf8Prefix(o.string("town"), 80);
+    t.arrivalCell = json::utf8Prefix(o.string("arrivalCell"), 80);
+    t.offeredTo = json::utf8Prefix(o.string("offeredTo"), 80);
     t.offerUntil = o.number("offerUntil", 0);
     for (const auto& a : o.array("asked"))
         if (a.isString() && t.asked.size() < 200)
-            t.asked.push_back(a.asString({}).substr(0, 80));
+            t.asked.push_back(json::utf8Prefix(a.asString({}), 80));
     t.mentorsDone = o.boolean("mentorsDone", false);
     t.resident = o.boolean("resident", false);
     t.told = o.boolean("told", false);
@@ -388,8 +388,8 @@ Tie loadTie(const json::Value& o)
     t.lapsesAt = o.number("lapsesAt", 0);
     t.ended = o.number("ended", 0);
     t.scenesAtStart = int(o.number("scenesAtStart", 0));
-    t.spotCell = o.string("spotCell").substr(0, 80);
-    t.spotPlace = o.string("spotPlace").substr(0, 120);
+    t.spotCell = json::utf8Prefix(o.string("spotCell"), 80);
+    t.spotPlace = json::utf8Prefix(o.string("spotPlace"), 120);
     t.spotX = o.number("spotX", 0);
     t.spotY = o.number("spotY", 0);
     t.markerUntil = o.number("markerUntil", 0);

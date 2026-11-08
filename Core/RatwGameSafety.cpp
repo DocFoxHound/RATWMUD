@@ -61,7 +61,7 @@ void Game::heardLine(const std::string& listener, std::uint64_t seq, const std::
     // A connected player's record of what reached them (doc 50, 7): only ever read for their own reports.
     auto& lines = heard_[listener];
     const double t = now();
-    lines.push_back({seq, t, author, channel, text.substr(0, 2000)});
+    lines.push_back({seq, t, author, channel, json::utf8Prefix(text, 2000)});   // Report evidence: never cut in a character.
     while (!lines.empty() && (lines.size() > HeardKept || t - lines.front().at > HeardSeconds))
         lines.erase(lines.begin());
 }
@@ -291,7 +291,7 @@ Result Game::decideReport(const std::string& id, const std::string& decision, co
         auto& person = personOf(r.reportedAccount);
         person.silencedUntil = std::max(person.silencedUntil, now() + hours * 3600.0);
         tell("A Dungeon Master has silenced your account for " + std::to_string(hours) + (hours == 1 ? " hour" : " hours") +
-             ": you can't speak, in character or out of it, until then.");
+             ": you can't speak, in character or out of it, or send private messages or letters, until then.");
     }
     if (accounts_.exists(r.reportedAccount))
         checkUnlocks(r.reportedAccount);           // (An upheld report holds Quickened back: doc 49.)

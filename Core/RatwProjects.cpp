@@ -278,7 +278,7 @@ void Ledger::load(const Value& saved)
         p.kind = o.string("kind");
         if (p.id.rfind("proj-", 0) != 0 || p.id.size() > 40 || !rules().kind(p.kind))
             continue;
-        p.town = o.string("town"); p.cell = o.string("cell"); p.title = o.string("title").substr(0, 120);
+        p.town = o.string("town"); p.cell = o.string("cell"); p.title = json::utf8Prefix(o.string("title"), 120);
         p.state = o.string("state", "open"); p.by = o.string("by"); p.site = o.string("site"); p.structure = o.string("structure");
         p.namedFor = o.string("namedFor"); p.x = int(o.number("x")); p.y = int(o.number("y"));
         p.hours = std::max(1.0, o.number("hours", 20)); p.worked = std::clamp(o.number("worked"), 0.0, p.hours);
@@ -288,7 +288,7 @@ void Ledger::load(const Value& saved)
                 p.needs[item] = int(n.asNumber());
         for (const auto& [who, name] : o.object("shown").fields())
             if (name.isString() && who.size() <= 80)
-                p.shown[who] = name.asString().substr(0, 60);
+                p.shown[who] = json::utf8Prefix(name.asString(), 60);
         for (const auto& j : o.array("gifts"))
             if (j.string("who").size() <= 80 && j.number("amount") > 0 && p.gifts.size() < 2000)
                 p.gifts.push_back({j.string("who"), j.string("kind"), j.string("item"), j.number("amount"), j.number("value"), j.number("day")});

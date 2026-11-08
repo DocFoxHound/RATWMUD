@@ -340,8 +340,8 @@ void Game::peopleLoad(const json::Value& saved)
     safety_.clear();
     for (const auto& e : saved.array("safety"))
         if (const auto kind = e.string("kind"); (kind == "mute" || kind == "block") && !e.string("holder").empty() && !e.string("target").empty())
-            safety_[e.string("holder")].push_back({kind, e.string("target").substr(0, 80), e.string("character").substr(0, 80),
-                                                   e.string("label").substr(0, 80), e.number("at")});
+            safety_[e.string("holder")].push_back({kind, json::utf8Prefix(e.string("target"), 80), json::utf8Prefix(e.string("character"), 80),
+                                                   json::utf8Prefix(e.string("label"), 80), e.number("at")});
     friendsLoad(saved);
     knownLoad(saved);
     circlesLoad(saved);

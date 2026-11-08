@@ -51,6 +51,7 @@ std::string replyFits(Town& t, Client& c, const std::function<bool(const std::st
     for (int i = 0; i < 80; ++i)
     {
         t.run(.5);
+        t.g.settle();                               // (A reply held for the journal's writer is let out.)
         std::this_thread::sleep_for(std::chrono::milliseconds(20));   // (Replies come from the dialogue thread.)
         for (const auto& e : c.events)
             if (e.string("type") == "roleplay" && fits(e.string("text")))
@@ -192,6 +193,10 @@ Result act(Town& t, Client& c, const std::string& action, const std::string& tar
 {
     c.events.clear();
     t.g.command(&c, cmd({{"type", "action"}, {"action", action}, {"target", target}}));
+    // Its reply waits for the journal's writer thread to commit what it changed (doc 31): settled, as a server's next
+    // pass would find it, rather than hoped done within the ticks (a busy machine missed them: a flake since before
+    // doc 77's Phase 5).
+    t.g.settle();
     t.run(.5);
     const auto said = c.said();
     return {!said.empty() && !contains(said, "Come closer") && !contains(said, "haven't") && !contains(said, "doesn't") &&

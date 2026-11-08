@@ -73,7 +73,7 @@ void Game::perceivedLine(const std::string& listener, const std::string& who, co
         return;
     const auto& r = people::rules();
     auto& p = perceived_[listener];
-    p.lines.push_back({now(), me->cellId, who, text.substr(0, 600)});
+    p.lines.push_back({now(), me->cellId, who, json::utf8Prefix(text, 600)});
     p.characters += p.lines.back().text.size();
     while (!p.lines.empty() && (p.lines.size() > std::size_t(r.bufferLines) || p.characters > std::size_t(r.bufferCharacters)))
     {

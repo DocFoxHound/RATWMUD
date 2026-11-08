@@ -111,7 +111,7 @@ bool Game::placeProject(projects::Project& p)
     std::string siteId = site ? site->id : std::string();
     if (siteId.empty())
     {
-        const auto made = camps_.found(owner, p.cell, p.x, p.y, townWords(p.town).substr(0, 40), world_.calendarDays(), now());
+        const auto made = camps_.found(owner, p.cell, p.x, p.y, json::utf8Prefix(townWords(p.town), 40), world_.calendarDays(), now());
         if (!made.ok)
             return false;
         siteId = made.message;
@@ -140,7 +140,7 @@ Result Game::postProject(const std::string& kind, const std::string& town, const
     for (const auto& [id, p] : projects_.all())
         if (p.town == town && p.kind == kind && p.state == "open")
             return {false, "The town has one of those under way already.", {}};
-    auto& p = projects_.post(*k, town, cell, x, y, title.empty() ? projects::titleFor(*k, townWords(town)) : title.substr(0, 80),
+    auto& p = projects_.post(*k, town, cell, x, y, title.empty() ? projects::titleFor(*k, townWords(town)) : json::utf8Prefix(title, 80),
                              world_.calendarDays(), by);
     if (!placeProject(p))
     {
@@ -402,7 +402,7 @@ void Game::finishProject(projects::Project& p)
             for (const auto& kind : Society::kindsHeld(*purse, item))
                 if (left > 0)
                     left -= society.consume(p.purse(), kind, std::min(left, Society::stock(*society.account(p.purse()), kind)),
-                                            "used in " + p.title.substr(0, 60));
+                                            "used in " + json::utf8Prefix(p.title, 60));
     }
     p.state = mendingKind ? "done" : "built";
     p.finished = world_.calendarDays();

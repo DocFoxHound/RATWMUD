@@ -180,20 +180,20 @@ Book load(const json::Value& o)
         std::vector<std::string> out;
         for (const auto& v : a.items())
             if (v.isString() && out.size() < most)
-                out.push_back(v.asString().substr(0, 80));
+                out.push_back(json::utf8Prefix(v.asString(), 80));
         return out;
     };
     Book b;
-    b.id = o.string("id").substr(0, 80);
+    b.id = json::utf8Prefix(o.string("id"), 80);
     b.title = text(o.string("title"), r.title);
-    b.keeper = o.string("keeper").substr(0, 80);
+    b.keeper = json::utf8Prefix(o.string("keeper"), 80);
     b.summary = text(o.string("summary"), r.bookSummary, true);
-    b.summaryBy = o.string("summaryBy").substr(0, 80);
+    b.summaryBy = json::utf8Prefix(o.string("summaryBy"), 80);
     b.summaryModel = o.boolean("summaryModel");
     b.flavour = text(o.string("flavour"), r.flavour, true);
     b.sharing = validSharing(o.string("sharing")) ? o.string("sharing") : "members";
-    b.circle = o.string("circle").substr(0, 80);
-    b.chapter = o.string("chapter").substr(0, 80);
+    b.circle = json::utf8Prefix(o.string("circle"), 80);
+    b.chapter = json::utf8Prefix(o.string("chapter"), 80);
     b.storyline = text(o.string("storyline"), 120);
     b.wolves = list(o.array("wolves"), std::size_t(r.wolves));
     for (const auto& h : list(o.array("hidden"), std::size_t(r.wolves)))
@@ -203,15 +203,15 @@ Book load(const json::Value& o)
         if (b.chapters.size() >= std::size_t(r.chapters))
             break;
         Chapter c;
-        c.id = j.string("id").substr(0, 80);
-        c.session = j.string("session").substr(0, 120);
+        c.id = json::utf8Prefix(j.string("id"), 80);
+        c.session = json::utf8Prefix(j.string("session"), 120);
         c.title = text(j.string("title"), r.chapterTitle);
         c.summary = text(j.string("summary"), r.summary, true);
-        c.summaryBy = j.string("summaryBy").substr(0, 80);
+        c.summaryBy = json::utf8Prefix(j.string("summaryBy"), 80);
         c.model = j.boolean("model");
         c.privateScene = j.boolean("private");
         c.place = text(j.string("place"), 120);
-        c.linkedBy = j.string("linkedBy").substr(0, 80);
+        c.linkedBy = json::utf8Prefix(j.string("linkedBy"), 80);
         c.at = j.number("at");
         c.ended = j.number("ended");
         c.wolves = list(j.array("wolves"), 64);
@@ -227,10 +227,10 @@ Book load(const json::Value& o)
         b.agreed.insert(a);
     for (const auto& a : list(o.array("objected"), std::size_t(r.wolves)))
         b.objected.insert(a);
-    b.story = o.string("story").substr(0, 80);
+    b.story = json::utf8Prefix(o.string("story"), 80);
     for (const auto& j : o.array("links"))
         if (validLink(j.string("kind")) && b.links.size() < 32)
-            b.links.push_back({j.string("book").substr(0, 80), j.string("kind")});
+            b.links.push_back({json::utf8Prefix(j.string("book"), 80), j.string("kind")});
     for (const auto& n : list(o.array("nextScene"), std::size_t(r.wolves)))
         b.nextScene.insert(n);
     return b;

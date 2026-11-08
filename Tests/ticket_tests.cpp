@@ -5,6 +5,7 @@
 // through the same libcrypto (sys::ed25519Sign); Central/test_world_join.py does it with central itself.
 #include "RatwBuildInfo.h"
 #include "RatwGame.h"
+#include "RatwSections.h"
 #include "RatwSystemLibs.h"
 #include "RatwTickets.h"
 #include "RatwWire.h"
@@ -328,7 +329,16 @@ struct Client final : game::Connection
         expect(json::parse(text, v, error), "events are JSON");
         events.push_back(v);
     }
-    void snapshot(const std::string&) override {}
+    std::vector<Value> snapshots;
+    sections::Cache cache;
+    void snapshot(const std::string& text) override
+    {
+        Value v;
+        std::string error;
+        expect(json::parse(text, v, error), "snapshots are JSON: " + error);
+        expect(sections::fill(v, cache), "a snapshot can be filled from what the client holds");   // (As the client does.)
+        snapshots.push_back(v);
+    }
     void motion(const Value&) override {}
     bool allowsLocalCredentials() const override { return local; }
     bool closed = false;                            // (The game sent it out: the server would close the socket.)
@@ -909,6 +919,19 @@ const Value* console(game::Game& g, Client* c, const std::string& text)
     return c->last("devResult");
 }
 
+// What the client's page is told of itself (snapshot.self) after a few ticks, each snapshot acknowledged as a client does.
+Value selfOf(game::Game& g, std::initializer_list<Client*> clients, Client& c)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        g.tick(.05);
+        for (auto* x : clients)
+            if (!x->snapshots.empty())
+                g.acknowledge(x, x->snapshots.back().number("revision"), false);
+    }
+    return c.snapshots.empty() ? Value{} : c.snapshots.back()["self"];
+}
+
 bool saidSomething(const Client& c, const std::string& words)
 {
     for (const auto& e : c.events)
@@ -949,6 +972,10 @@ void theHostDecidesKicksBansAndSilences()
         say(g, &c, cmd({{"type", "character_arrive"}, {"commandId", "f1"}, {"tier", "gifted"}}));
         expect(a.entityId == Wolf1 && b.entityId == Wolf2 && c.entityId == Wolf3, "three wolves in the world");
         expect(g.isHost(&a) && !g.isHost(&b) && !g.isHost(&c), "the host's wolf is the host, the others aren't");
+        // The page is told (snapshot.self.host): the only thing that gives a host's client the console.
+        expect(selfOf(g, {&a, &b, &c}, a).boolean("host") && !selfOf(g, {&a, &b, &c}, b).has("host") &&
+                   !selfOf(g, {&a, &b, &c}, c).has("host"),
+               "the host's page is told it is the host's, and no other wolf's page is");
 
         // Nobody else has them, and the host has no cheats.
         for (const auto* text : {"/pending", "/ban Wren Reed", "/kick Wren Reed", "/silence Wren Reed 6", "/help"})
@@ -990,6 +1017,38 @@ void theHostDecidesKicksBansAndSilences()
         expect(console(g, &a, "/storyteller " + Wolf2 + " revoke too many bells")->boolean("ok") &&
                    saidSomething(b, "no longer a storyteller: too many bells"),
                "and revokes it, by the wolf's id, with a reason");
+        {
+            // Reasons and an application in three- and four-byte characters: 200 euro signs are 600 bytes, 101 wolves
+            // 404, and the 166 dashes of a note 498. A cut by bytes (400, or the log's 200) would fall inside one, and
+            // Postgres would refuse every save after; they're kept whole, or cut between characters.
+            const auto repeat = [](const char* one, int n) {
+                std::string out;
+                for (int i = 0; i < n; ++i)
+                    out += one;
+                return out;
+            };
+            const auto euros = repeat("\xe2\x82\xac", 200), wolves = repeat("\xf0\x9f\x90\xba", 101), dashes = repeat("\xe2\x80\x94", 166);
+            const auto saved = [&] {
+                g.save();
+                std::ifstream in(save, std::ios::binary);
+                std::stringstream text;
+                text << in.rdbuf();
+                return text.str();
+            };
+            say(g, &b, cmd({{"type", "storyteller"}, {"verb", "apply"}, {"note", dashes}}));
+            expect(saidSomething(b, "with the host"), "an application in dashes");
+            expect(console(g, &a, "/storyteller Moss Hollow no " + euros)->boolean("ok") && saidSomething(b, "refused: " + euros),
+                   "refused, the whole reason told");
+            auto text = saved();
+            expect(json::validUtf8(text) && text.find(euros) != std::string::npos && text.find(repeat("\xe2\x80\x94", 66)) != std::string::npos,
+                   "the save is UTF-8 throughout, with the whole reason and the log's note cut between dashes");
+            say(g, &b, cmd({{"type", "storyteller"}, {"verb", "apply"}, {"note", "Again."}}));
+            expect(console(g, &a, "/storyteller Moss Hollow yes")->boolean("ok") && console(g, &a, "/storyteller Moss Hollow revoke " + wolves)->boolean("ok") &&
+                       saidSomething(b, "no longer a storyteller: " + wolves),
+                   "revoked, with a reason of 101 wolves");
+            text = saved();
+            expect(json::validUtf8(text) && text.find(wolves) != std::string::npos, "and the save is still UTF-8, the reason whole");
+        }
         expect(console(g, &a, "/pending")->string("text") == "Nothing waits on you.", "nothing waits now");
 
         // The host can't kick, ban or silence its own account.
@@ -1009,6 +1068,12 @@ void theHostDecidesKicksBansAndSilences()
         say(g, &c, cmd({{"type", "chat"}, {"text", "Hello all."}}));
         expect(c.last("error") && c.last("error")->string("text").find("silenced") != std::string::npos,
                "a silenced wolf's world chat is refused");
+        for (int i = 0; i < 12; ++i)
+            g.tick(0.05);                           // (Posts are half a second apart.)
+        c.events.clear();
+        say(g, &c, cmd({{"type", "chat"}, {"channel", "private"}, {"to", "Wren Reed"}, {"text", "Psst."}}));
+        expect(c.last("error") && c.last("error")->string("text").find("silenced") != std::string::npos && !saidSomething(a, "Psst."),
+               "and its private messages (the user's decision, 2026-11-08; letters likewise: letters_tests)");
         expect(console(g, &a, "/kick Fern")->boolean("ok") && c.code() == "kicked" && c.closed && c.entityId.empty() &&
                    !g.bannedHere(acct3),
                "the host kicks a wolf: sent out, not banned: " + c.message());
@@ -1026,6 +1091,32 @@ void theHostDecidesKicksBansAndSilences()
         g.disconnect(&d);
         expect(console(g, &a, "/ban Moss Hollow")->string("text").find("still banned") != std::string::npos,
                "a ban again says it holds already");
+        {
+            // A reason of 150 accented letters: 166 characters, as the console allows, but more than 300 bytes. The line
+            // is cut on characters, never inside one: a broken byte in a saved reason would have Postgres refuse every
+            // save after. Nor is a command that isn't UTF-8 taken at all.
+            std::string reason;
+            for (int i = 0; i < 150; ++i)
+                reason += "\xc3\xa9";
+            for (const auto* lead : {"", "x"})         // (Either way 300 bytes would fall, one of them inside a letter.)
+            {
+                const auto* r = console(g, &a, "/ban Moss Hollow " + std::string(lead) + reason);
+                expect(r->boolean("ok") && json::validUtf8(r->string("command")) && json::validUtf8(r->string("text")),
+                       "a long accented reason: banned, the reply whole UTF-8: " + r->string("command"));
+            }
+            const auto before = a.events.size();
+            say(g, &a, "{\"type\":\"dev\",\"command\":\"/unban Moss Hollow \xc3\"}");
+            expect(a.events.size() == before && g.bannedHere(Acct2), "a command that isn't UTF-8 is no command");
+            g.save();
+            std::ifstream in(save, std::ios::binary);
+            std::stringstream text;
+            text << in.rdbuf();
+            expect(json::validUtf8(text.str()), "the save is UTF-8 throughout");
+            std::string kept;
+            for (int i = 0; i < 140; ++i)
+                kept += "\xc3\xa9";
+            expect(text.str().find(kept) != std::string::npos, "with the reason in it");
+        }
         g.save();
         g.disconnect(&a);
     }
@@ -1063,14 +1154,28 @@ void theHostDecidesKicksBansAndSilences()
         say(g, &b2, hello(f.ticket(Wolf2, Acct2, "Moss Hollow")));
         expect(b2.entityId == Wolf2, "and the unbanned one comes back: " + b2.message());
 
-        // The host changes: the old host's wolf loses the commands at once.
+        // The host changes: the old host's wolf loses the commands as the world next looks (ticketFiles, about every
+        // 5 s, as the server calls it), and its page is told.
+        double files = 1000;
+        g.ticketFilesClock = [&files] { return files; };
+        g.ticketFiles();                            // (A first look.)
+        expect(selfOf(g, {&a, &b, &c, &b2}, a).boolean("host"), "the host's page, before");
         writeHost(f.dir, "{\"at\": 2, \"host\": null}");
-        expect(g.reloadHost(problem) && g.hostAccount().empty() && !g.isHost(&a), "a host cleared by the agent is no host: " + problem);
+        files += 1;
+        g.ticketFiles();
+        expect(g.hostAccount() == Acct1, "not looked at again within 5 s");
+        files += 5;
+        g.ticketFiles();
+        expect(g.hostAccount().empty() && !g.isHost(&a), "a host cleared by the agent is no host, once the world looks");
         expect(!console(g, &a, "/pending")->boolean("ok"), "and has no commands");
+        expect(!selfOf(g, {&a, &b, &c, &b2}, a).has("host"), "and its page is told it no longer is");
         writeHost(f.dir, "{\"at\": 3}");
         expect(!g.reloadHost(problem), "a host file that names nobody is refused");
         writeHost(f.dir, "{\"at\": 4, \"host\": \"" + Acct2 + "\"}");
-        expect(g.reloadHost(problem) && g.isHost(&b2) && !g.isHost(&a), "the new host's wolf is the host");
+        files += 5;
+        g.ticketFiles();
+        expect(g.hostAccount() == Acct2 && g.isHost(&b2) && !g.isHost(&a), "the new host's wolf is the host, by ticketFiles too");
+        expect(selfOf(g, {&a, &b, &c, &b2}, b2).boolean("host"), "and its page is told");
         for (auto* x : {&a, &b, &c, &b2})
             g.disconnect(x);
     }
@@ -1079,8 +1184,15 @@ void theHostDecidesKicksBansAndSilences()
         writeHost(f.dir, "{\"at\": 5, \"host\": \"" + Acct1 + "\"}");
         game::Game g(f.options(true));
         f.wire(g);
+        std::vector<std::string> warnings;
+        g.log = [&warnings](const char* level, const std::string& text) {
+            if (std::string(level) == "warning")
+                warnings.push_back(text);
+        };
         std::string problem;
         expect(g.start(problem), "an official world starts: " + problem);
+        for (const auto& w : warnings)
+            expect(w.find("RATW_HOST") == std::string::npos, "an official world's start says nothing of a host file: " + w);
         expect(g.hostAccount().empty() && !g.reloadHost(problem), "an official world reads no host: " + problem);
         Client a;
         a.id = 9;
@@ -1088,6 +1200,7 @@ void theHostDecidesKicksBansAndSilences()
         say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren Reed", [](Value& claim) { claim.set("kind", "official"); })));
         say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "w1"}, {"tier", "gifted"}}));
         expect(a.entityId == Wolf1 && !g.isHost(&a), "the account central names is no host on an official world: " + a.message() + " " + a.code());
+        expect(!selfOf(g, {&a}, a).has("host"), "nor is its page told it is");
         expect(!console(g, &a, "/pending")->boolean("ok") && !console(g, &a, "/ban Wren Reed")->boolean("ok"), "and has no host commands");
         g.ledger().points[Wolf1] = 1000000;
         say(g, &a, cmd({{"type", "storyteller"}, {"verb", "apply"}, {"note", "Tales."}}));

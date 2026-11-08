@@ -165,8 +165,8 @@ struct Rules
 const Rules& rules();
 int limit(const std::string& field);
 
-// Text as a profile keeps it: control characters removed (newlines kept where `multiline`), trimmed, cut to `most`
-// characters (never inside a character).
+// Text as a profile keeps it: control characters and anything that isn't UTF-8 removed (newlines kept where
+// `multiline`), trimmed, cut to `most` characters (never inside a character).
 std::string clean(const std::string& text, std::size_t most, bool multiline = false);
 
 // Applies a `profile` command's fields to a profile: each checked and cleaned; unknown fields, icons, senses, sliders

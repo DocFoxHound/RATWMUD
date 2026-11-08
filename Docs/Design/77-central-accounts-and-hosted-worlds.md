@@ -1397,6 +1397,38 @@ Three builders, side by side, on separate files:
 Then: the hosting guide and the UPnP attempt; an end-to-end run of the bundle on this laptop; the Windows PC (the
 user's) last.
 
+**2026-11-08: Phase 5 built** (9a0331a host field, cf5bc0d build id, 4ce8b3d bundle, 1c38d43 host commands, db045f7 and
+c495841 the export, scan and import), then reviewed (8 reviewers, 3 skeptics per finding: 35 findings, 27 kept) and
+fixed (3 fixers, an independent checker each with one repair round, then one integration run).
+- **Numbers.** DEV's package: 45 MB compressed (gzip; not the 24 MB guessed in section 8), 320 MB unpacked, 1,212
+  cells, 4,364 rows; export about 6 s, import about 7-14 s. The world image: 82 MB compressed, 312 MB on disk;
+  with Postgres a host's first download is about 250 MB. First start about 18 s; later starts skip the import. Idle
+  memory: the world about 760 MiB, the database about 215 MiB. DEV's save holds no players at all, so the tests
+  plant players into every strip path and load the result in a real server.
+- **The user's decisions** (2026-11-08): hosts may approve themselves as storytellers; silence also covers private
+  messages and letters, on every world; hosts are the admins of their own worlds: "the whole point of someone being
+  able to run their own server is so that they can edit and run their own world/server". That last one is doc 78.
+- **The assistant's decisions in the fixes** (open to the user): **updates keep the world** (a new image with a new
+  package doesn't replace an existing world; it applies migrations and says how to start fresh, `docker compose down
+  -v`); **no-central (LAN) worlds are out of the package for v1** (password mode allows accounts only from loopback,
+  which a container never sees); the world id goes in `world.toml`; the port is the same inside and out.
+- **Kept findings, fixed:** the strip left player-keyed maps (receipts, scenes heard, aliases, companions), so no world
+  anyone had played in could be exported; emptying camps took towns' own project buildings; the lodging strip closed
+  the landlord's till instead of the lodging's chest; a username that is also a game word blocked the export; DM
+  usernames shipped in seed rows; a crash mid-import left a database every rerun refused; an update put the world in a
+  restart loop; a 300-byte cut could split a UTF-8 character into a saved reason (now cut by characters across Core);
+  every child of the container could read the database passwords (the server runs as its own user; the passwords are
+  root's); `stage.sh --out ""` could delete the current directory; two world folders shared one compose project; the
+  agent's messages never reached `docker compose logs`; BOMs, private files and byte-long names broke the start-up;
+  official worlds logged a false host warning; the `troubles_behaviors` flake (a wall-clock race in a test).
+- **Tests:** ctest 82/82 twice, central 70, the join test 2, the agent 18, the package 38, `Package/test_package.py`
+  18, the client 145, the browser run 8, the shell 19. **End to end** on this laptop: DEV exported, staged, built,
+  `docker compose up` against a real local central (rootless Docker, so central on the LAN address with
+  `--local-worlds`): imported and loaded, the agent listed the world, `GET /worlds` showed it, `host.json` named the
+  host's pairwise id, a restart kept the world.
+- **Not done yet:** the hosting guide's full version and the UPnP attempt; the Windows PC with Docker Desktop (the
+  user's); publishing the image to a registry (the README's pull step waits on it); a measured memory limit.
+
 ## Review (2026-11-07)
 
 One adversarial review of the first draft, checked against the code at 0af9bc0. No database was queried and nothing

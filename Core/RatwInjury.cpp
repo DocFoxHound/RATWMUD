@@ -2,6 +2,7 @@
 #include "RatwInjury.h"
 
 #include "RatwCalendar.h"
+#include "RatwJsonDoc.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -355,7 +356,7 @@ Injury given(const std::string& type, int severity, const std::string& side, con
     i.type = type;
     i.kind = k->lasting ? "lasting" : "acute";
     i.side = k->sided && (side == "left" || side == "right") ? side : k->sided ? "left" : "";
-    i.from = from.substr(0, 80);
+    i.from = json::utf8Prefix(from, 80);
     if (i.kind == "acute")
     {
         i.severity = std::clamp(severity, 1, 3);

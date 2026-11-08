@@ -90,7 +90,7 @@ const Lore& lore()
         const auto fragments = readJson("fragments.json");   // (Kept: the loop reads into it.)
         for (const auto& f : fragments.array("fragments"))
             if (!f.string("id").empty() && !f.string("text").empty())
-                out.fragments.push_back({f.string("id"), f.string("region"), f.string("topic"), f.string("text").substr(0, 400), f.string("after")});
+                out.fragments.push_back({f.string("id"), f.string("region"), f.string("topic"), json::utf8Prefix(f.string("text"), 400), f.string("after")});
         return out;
     }();
     return l;

@@ -799,7 +799,7 @@ BondChange Game::regard(const std::string& holder, const std::string& other, Bon
         return change;
     world_.bonds().change(holder, other, change, world_.calendarDays());
     auto& ledger = regardLedger_[holder + "|" + other];
-    ledger.push_back({world_.calendarDays(), source, reason.substr(0, 160), change});
+    ledger.push_back({world_.calendarDays(), source, json::utf8Prefix(reason, 160), change});
     while (ledger.size() > 12)
         ledger.pop_front();
     return change;

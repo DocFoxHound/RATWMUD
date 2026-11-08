@@ -185,9 +185,23 @@ namespace
 {
 void writeString(std::string& out, const std::string& s)
 {
+    // Text that isn't UTF-8 (a byte cut inside a character, say) is written whole but repaired: each byte that is no
+    // character becomes U+FFFD. JSON text is UTF-8, and Postgres refuses a save holding anything else, so one broken
+    // field would otherwise stop every save after it (doc 77, Phase 5).
     out += '"';
-    for (unsigned char c : s)
+    for (std::size_t at = 0; at < s.size();)
     {
+        const auto c = static_cast<unsigned char>(s[at]);
+        if (c >= 0x80)
+        {
+            const auto length = utf8Length(s, at);
+            if (length)
+                out.append(s, at, length), at += length;
+            else
+                out += "\xEF\xBF\xBD", ++at;
+            continue;
+        }
+        ++at;
         switch (c)
         {
         case '"': out += "\\\""; break;
@@ -498,5 +512,61 @@ bool read(const std::string& text, Value& out, std::string& error, bool uniqueKe
 } // namespace
 
 bool parse(const std::string& text, Value& out, std::string& error) { return read(text, out, error, false); }
+
+std::size_t utf8Length(const std::string& text, std::size_t at)
+{
+    if (at >= text.size())
+        return 0;
+    const auto byte = [&](std::size_t k) { return static_cast<unsigned char>(text[at + k]); };
+    const unsigned char lead = byte(0);
+    if (lead < 0x80)
+        return 1;
+    // The lead byte gives the length and the range the second byte must be in (no overlong forms, no surrogates,
+    // nothing past U+10FFFF); every byte after the second is 80-BF.
+    std::size_t length = 0;
+    unsigned char low = 0x80, high = 0xBF;
+    if (lead >= 0xC2 && lead <= 0xDF)
+        length = 2;
+    else if (lead >= 0xE0 && lead <= 0xEF)
+    {
+        length = 3;
+        low = lead == 0xE0 ? 0xA0 : 0x80;
+        high = lead == 0xED ? 0x9F : 0xBF;
+    }
+    else if (lead >= 0xF0 && lead <= 0xF4)
+    {
+        length = 4;
+        low = lead == 0xF0 ? 0x90 : 0x80;
+        high = lead == 0xF4 ? 0x8F : 0xBF;
+    }
+    if (!length || at + length > text.size() || byte(1) < low || byte(1) > high)
+        return 0;
+    for (std::size_t k = 2; k < length; ++k)
+        if ((byte(k) & 0xC0) != 0x80)
+            return 0;
+    return length;
+}
+
+std::string utf8Prefix(const std::string& text, std::size_t most)
+{
+    if (text.size() <= most)
+        return text;
+    std::size_t at = most;
+    while (at > 0 && (static_cast<unsigned char>(text[at]) & 0xC0) == 0x80)
+        --at;                                       // Back to the start of the character the cut fell in.
+    return text.substr(0, at);
+}
+
+bool validUtf8(const std::string& text)
+{
+    for (std::size_t at = 0; at < text.size();)
+    {
+        const auto length = utf8Length(text, at);
+        if (!length)
+            return false;
+        at += length;
+    }
+    return true;
+}
 bool parseUnique(const std::string& text, Value& out, std::string& error) { return read(text, out, error, true); }
 } // namespace ratw::json

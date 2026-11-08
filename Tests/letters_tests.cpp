@@ -200,6 +200,54 @@ void lettersInTheGame()
     fs::remove(save);
 }
 
+// A silenced account sends no letters, written or answered, as it sends no chat or private messages (the user's
+// decision, 2026-11-08; a DM's silence here, a community world's host's is the same account field: ticket_tests).
+void aSilenceKeepsLettersBack()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-letters-silence-" + std::to_string(::getpid()));
+    const auto save = (fs::temp_directory_path() / ("ratw-letters-silence-" + std::to_string(::getpid()) + ".json")).string();
+    fs::remove(save);
+    const auto world = writeStrip(root);
+    {
+        Town t(world, save);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 11.5);  // At Ridgemere's inn.
+        t.enter(t.bo, 2, "bo", "Bo", 1, 12.5);
+        t.enter(t.cy, 3, "cy", "Cy", 1, 13.5);
+        t.run(1);
+        t.g.command(&t.bo, cmd({{"type", "chat"}, {"text", "\"I'm Bo.\""}, {"commandId", "b1"}}));
+        t.run(1);
+        t.g.command(&t.ash, cmd({{"type", "chat"}, {"text", "\"I'm Ash.\""}, {"commandId", "a1"}}));
+        t.run(1);
+        auto r = t.letter(t.bo, "write", {{"to", "Ash"}, {"text", "Write back."}, {"sign", "Bo"}});
+        expect(r.ok, "Bo writes to Ash: " + r.message);
+        t.place(t.ash, 0, 6.5);                     // (In town: the messenger finds her.)
+        t.hours(1.1);
+        auto letters = t.caseOf(t.ash).array("letters");
+        expect(letters.size() == 1, "Ash has Bo's letter");
+        const auto id = letters[0].string("id");
+        t.letter(t.ash, "read", {{"id", id}});
+        t.place(t.ash, 1, 11.5);
+        t.g.command(&t.cy, cmd({{"type", "safety"}, {"verb", "report"}, {"target", t.ash.entityId}, {"category", "spam"}}));
+        t.run(.5);
+        expect(!t.g.reportsKept().empty() && t.g.decideReport(t.g.reportsKept().begin()->first, "uphold", "silence", 1, "dm:test").ok,
+               "a DM silences Ash's account");
+        expect(contains(t.ash.said(), "or send private messages or letters"), "and she is told what it covers");
+        const auto purse = t.g.world().society().account(t.ash.entityId)->cash;
+        r = t.letter(t.ash, "write", {{"to", "Bo"}, {"text", "Can you hear me?"}});
+        expect(contains(r.message, "silenced your account") && contains(r.message, "no letters"), "a silenced wolf writes no letter: " + r.message);
+        r = t.letter(t.ash, "reply", {{"id", id}, {"text", "I hear you."}});
+        expect(contains(r.message, "silenced your account"), "nor answers one: " + r.message);
+        expect(t.g.world().society().account(t.ash.entityId)->cash == purse, "and pays no postage");
+        t.place(t.bo, 0, 6.5);
+        t.hours(1.1);
+        expect(t.caseOf(t.bo).array("letters").empty(), "nothing reaches Bo");
+        r = t.letter(t.cy, "write", {{"to", "Bo"}, {"text", "Hello."}});
+        expect(!contains(r.message, "silenced"), "a wolf not silenced still writes (or is refused for its own reasons): " + r.message);
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
 // Catalog goods with weight (for filling a pack with kinds).
 std::vector<std::string> someGoods(std::size_t n)
 {
@@ -726,6 +774,7 @@ int main()
         theCourier();
         theStore();
         lettersInTheGame();
+        aSilenceKeepsLettersBack();
         giving();
         grooming();
         makersScent();

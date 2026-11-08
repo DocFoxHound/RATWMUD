@@ -291,6 +291,15 @@ def register(entry: dict) -> None:
     worlds()
 
 
+def unregister(key: str) -> None:
+    """Takes a world out of the registry again (its database is left alone): what register did, undone, where making
+    the world failed after (tools/world_package.py). Refused if it is the registry's only world."""
+    entries = check_registry([w for w in worlds() if w['key'] != key])
+    lines = ',\n'.join('  ' + json.dumps(w) for w in entries)
+    _write_json(registry_file(), '{"worlds": [\n' + lines + '\n]}\n')
+    worlds()
+
+
 def __getattr__(name):
     # (WORKING was the one working world before the registry: Atlas's world now.)
     if name == 'WORKING':
@@ -359,7 +368,7 @@ def ensure_roles(databases: list[str] | None = None) -> list[str]:
         # The Dungeon Master works on every world.
         for database in [w['database'] for w in worlds()] if databases is None else databases:
             if su.execute('SELECT 1 FROM pg_database WHERE datname = %s', (database,)).fetchone():
-                su.execute(f'GRANT CONNECT ON DATABASE {database} TO ratw_dm')
+                su.execute(sql.SQL('GRANT CONNECT ON DATABASE {} TO ratw_dm').format(sql.Identifier(database)))
     return created
 
 
@@ -650,6 +659,19 @@ def _owner_info(database: str) -> dict:
             'user': 'ratw_owner', 'password': s['RATW_OWNER_PASSWORD'], 'application_name': 'ratw-tools', 'connect_timeout': '5'}
 
 
+def _grant_connect(su, database: str, of_kind: str) -> None:
+    from psycopg import sql
+    su.execute(sql.SQL('REVOKE ALL ON DATABASE {} FROM PUBLIC').format(sql.Identifier(database)))
+    su.execute(sql.SQL('GRANT CONNECT ON DATABASE {} TO {}').format(
+        sql.Identifier(database), sql.SQL(', ').join(sql.Identifier(f'ratw_{r}') for r in CONNECT_ROLES[of_kind])))
+
+
+def grant_connect(database: str, of_kind: str) -> None:
+    """A world's database open to the roles of its kind only, as new_world leaves it (again: idempotent)."""
+    with superuser() as su:
+        _grant_connect(su, database, of_kind)
+
+
 def new_world(key: str, name: str, of_kind: str = 'dev', upstream_key: str | None = None, source: str | None = None,
               without_map: bool = False, database: str | None = None, placements: Path | None = None, log=print,
               registered: bool = False) -> dict:
@@ -691,9 +713,7 @@ def new_world(key: str, name: str, of_kind: str = 'dev', upstream_key: str | Non
             raise DatabaseError(f'Cannot create {database}: {str(error).strip()}') from error
         log(f'Created {database}' + (f' as a copy of {source_db}.' if source_db else '.'))
         try:
-            su.execute(sql.SQL('REVOKE ALL ON DATABASE {} FROM PUBLIC').format(sql.Identifier(database)))
-            su.execute(sql.SQL('GRANT CONNECT ON DATABASE {} TO {}').format(
-                sql.Identifier(database), sql.SQL(', ').join(sql.Identifier(f'ratw_{r}') for r in CONNECT_ROLES[of_kind])))
+            _grant_connect(su, database, of_kind)
             with psycopg.connect(autocommit=True, **_owner_info(database)) as conn:
                 if not source_db:
                     applied = migrate(conn)

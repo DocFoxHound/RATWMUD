@@ -47,22 +47,22 @@ json::Value toJson(const Report& r)
 Report fromJson(const json::Value& o)
 {
     Report r;
-    r.id = o.string("id").substr(0, 64);
+    r.id = json::utf8Prefix(o.string("id"), 64);
     r.created = o.number("created");
-    r.reporterAccount = o.string("reporterAccount").substr(0, 80);
-    r.reporterCharacter = o.string("reporterCharacter").substr(0, 80);
-    r.reportedAccount = o.string("reportedAccount").substr(0, 80);
-    r.reportedCharacter = o.string("reportedCharacter").substr(0, 80);
-    r.kind = o.string("kind", "speech").substr(0, 16);
+    r.reporterAccount = json::utf8Prefix(o.string("reporterAccount"), 80);
+    r.reporterCharacter = json::utf8Prefix(o.string("reporterCharacter"), 80);
+    r.reportedAccount = json::utf8Prefix(o.string("reportedAccount"), 80);
+    r.reportedCharacter = json::utf8Prefix(o.string("reportedCharacter"), 80);
+    r.kind = json::utf8Prefix(o.string("kind", "speech"), 16);
     r.category = validCategory(o.string("category")) ? o.string("category") : "other";
-    r.note = o.string("note").substr(0, 600);
+    r.note = json::utf8Prefix(o.string("note"), 600);
     for (const auto& l : o.array("evidence"))
         if (r.evidence.size() < 40)
-            r.evidence.push_back({std::uint64_t(l.number("seq")), l.number("at"), l.string("channel").substr(0, 16), l.string("text").substr(0, 4000)});
+            r.evidence.push_back({std::uint64_t(l.number("seq")), l.number("at"), json::utf8Prefix(l.string("channel"), 16), json::utf8Prefix(l.string("text"), 4000)});
     r.status = o.string("status", "open");
-    r.decidedBy = o.string("decidedBy").substr(0, 80);
+    r.decidedBy = json::utf8Prefix(o.string("decidedBy"), 80);
     r.decidedAt = o.number("decidedAt", -1);
-    r.outcome = o.string("outcome").substr(0, 16);
+    r.outcome = json::utf8Prefix(o.string("outcome"), 16);
     r.silenceHours = int(o.number("silenceHours", 0));
     return r;
 }

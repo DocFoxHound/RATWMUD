@@ -101,4 +101,14 @@ bool parse(const std::string& text, Value& out, std::string& error);
 // The same, but a key repeated in any one object is refused (central's tickets: Docs/Design/77, 5; Phase 0 found that
 // parse() keeps the last copy, as Python's json does).
 bool parseUnique(const std::string& text, Value& out, std::string& error);
+
+// UTF-8 as Postgres takes it (RFC 3629): the length (1-4) of the well-formed character at `at`, or 0 when the bytes
+// there aren't one (a stray continuation byte, a character cut short, an overlong form, a surrogate, past U+10FFFF).
+// JSON text is UTF-8, and a save holding anything else is refused whole (doc 77, Phase 5).
+std::size_t utf8Length(const std::string& text, std::size_t at);
+// At most `most` bytes of `text`, cut before the character the limit falls inside, never in it: UTF-8 text stays UTF-8.
+// For saved text with a byte limit; a cut by characters is people::clean's.
+std::string utf8Prefix(const std::string& text, std::size_t most);
+// Whether all of `text` is well-formed UTF-8.
+bool validUtf8(const std::string& text);
 } // namespace ratw::json

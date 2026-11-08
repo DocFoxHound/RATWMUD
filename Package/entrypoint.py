@@ -1,25 +1,36 @@
 #!/usr/bin/env python3
 """The world container's entrypoint (Docs/Design/77, section 8; Package/README.md). Standard library only (with the
-image's psycopg through tools/world_db.py). Run by tini as PID 1's child; one container holds the whole world:
+image's psycopg through tools/world_db.py). Run by tini as PID 1's child, as root, and only to read what is private
+and start the children; each child runs as a user of its own. One container holds the whole world:
 
-1. Reads /package/host/world.toml (the host's settings, Package/world.toml; their folder is mounted at /package/host)
-   and the database passwords the db service made on its first start (/run/ratw-secrets/passwords.env).
+1. Reads the host's settings, /etc/ratw/host/world.toml (Package/world.toml; their folder is mounted at
+   /etc/ratw/host, inside /etc/ratw, which only root may open), the host token and AI key files it names, and the
+   database passwords the db service made on its first start (/run/ratw-secrets/passwords.env). Root reads them
+   whatever their modes, so a host may keep them 0600.
 2. Waits for the database, then imports the world package (/package/world) into it: `tools/world_package.py import
-   /package/world --key world --name NAME`, which does nothing if it was imported before. RATW_PACKAGE_IMPORT=skip
-   instead only applies the migrations (an image built without a world export, to try the start-up).
+   /package/world --key world --name NAME`. On the first start that makes the world; on every later one it applies
+   the migrations and keeps the world as it is, even when this image carries another package (an update keeps the
+   world's own state; `docker compose down -v` starts afresh). Only a real failure stops the start.
+   RATW_PACKAGE_IMPORT=skip instead only applies the migrations (an image built without a world export).
 3. With an AI key, writes the NPC Mind's config (tools/npc_bridge.py's format, mode 0600) and starts the Mind on
    127.0.0.1; without one, NPCs speak their authored lines.
-4. With a central: ticket mode. The world agent runs with the host token (RATW_HOST_TOKEN, or world.toml's token_file;
-   never an argument), keeping central's keys, the heartbeat and the ban list; without a token, only central's keys
-   are kept (`world_agent.py keys`), so players can join by address but the world isn't listed. Without a central:
-   a private LAN world in password mode (accounts kept by the world itself), serving the bundled page if the image
-   has one (README.md).
+4. Ticket mode, always: a world signs players in through central (a world with no central, a LAN world, isn't offered
+   yet: doc 77, Q9). The world agent runs with the host token (RATW_HOST_TOKEN, or world.toml's token_file, read
+   here and given in its environment, never an argument), keeping central's keys, the heartbeat and the ban list;
+   without a token, only central's keys are kept (`world_agent.py keys`), so players can join by address but the
+   world isn't listed and has no host. The agent's lines go to the container's log as well as logs/world-agent.log.
 5. Runs ratw_server, forwarding SIGTERM and SIGINT to it. Exit 75 (a new release, nobody on) starts it again; 76
    (closed for maintenance) waits a minute and tries again; any other code stops the Mind and the agent and leaves
    with the server's code. A Mind or agent that stops on its own is started again (at most once a minute).
 
-Each child gets only the secrets it needs: the server its database connection (as ratw_game), the Mind the game role's
-password, the agent the host token, the import the superuser's and the owner's.
+Each child is given only the secrets it needs, in its environment: the import the superuser's and the owner's
+passwords; the Mind the game role's password and the AI key; the agent the host token. Those three run as ratw, so
+they are kept from the passwords file and the host's folder (root's alone), but not from one another: while both
+run, the Mind could read the agent's environment and the agent the Mind's (the host token; the game role's password,
+the AI key and its config). The server, which faces the internet, is the one kept apart: it runs as ratw-server with
+only its database connection (as ratw_game), and can't read the passwords file, the host's folder (under
+/etc/ratw), the Mind's config or the other processes' environments (another user's). Started as another user than
+root (a test), everything runs as that user.
 """
 from __future__ import annotations
 
@@ -27,31 +38,34 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 import tomllib
 
-APP = Path('/opt/ratw')
+APP = Path(os.environ.get('RATW_APP_DIR', '/opt/ratw'))
 TOOLS = APP / 'tools'
 SERVER = APP / 'bin' / 'ratw_server'
 DATA = Path(os.environ.get('RATW_DATA_DIR', APP / 'Data'))
-WEB = APP / 'web'
 PACKAGE = Path(os.environ.get('RATW_PACKAGE_DIR', '/package'))
-SETTINGS = Path(os.environ.get('RATW_WORLD_TOML', PACKAGE / 'host' / 'world.toml'))   # (The host's folder, read-only.)
+SETTINGS = Path(os.environ.get('RATW_WORLD_TOML', '/etc/ratw/host/world.toml'))   # (The host's folder, read-only.)
 SECRETS = Path(os.environ.get('RATW_SECRETS_FILE', '/run/ratw-secrets/passwords.env'))
-STATE = Path('/var/lib/ratw')
+STATE = Path(os.environ.get('RATW_STATE_DIR', '/var/lib/ratw'))
 LOGS = STATE / 'logs'
 KEY = 'world'                                   # The one world's key in this container's registry.
 MIND_PORT = 18766
 RELEASE_EXIT, MAINTENANCE_EXIT = 75, 76         # (Core/RatwGame.cpp and RatwGame.h; tools/live.sh loops on them.)
 WORLD_ID = re.compile(r'^world-[0-9a-f]{32}$')
+NAME_BYTES = 48                                 # (Core/RatwGameTickets.cpp: the server counts a name's UTF-8 bytes.)
 PASSWORDS = ('POSTGRES_PASSWORD', 'RATW_OWNER_PASSWORD', 'RATW_EDITOR_PASSWORD', 'RATW_PUBLISHER_PASSWORD',
              'RATW_GAME_PASSWORD', 'RATW_DM_PASSWORD')
 SECRET_ENV = PASSWORDS + ('RATW_HOST_TOKEN', 'RATW_AI_KEY', 'RATW_DATABASE_URL')
 DEFAULT_MODELS = {'model': 'gpt-5.4-mini', 'light_model': 'gpt-5.4-nano', 'fallback_model': 'gpt-5.4-mini',
                   'story_model': 'gpt-5.6-luna'}   # (Doc 28: the main voice, the light one, the fallback, stories.)
+HELPER, SERVER_USER = 'ratw', 'ratw-server'     # (The image's users, Package/Dockerfile: uids 10001 and 10002.)
 
 stopping = False
 server: subprocess.Popen | None = None
@@ -64,6 +78,25 @@ def say(text: str) -> None:
 def fail(text: str, code: int = 2) -> None:
     print(f'RATW_PACKAGE error: {text}', file=sys.stderr, flush=True)
     sys.exit(code)
+
+
+def as_root() -> bool:
+    return os.geteuid() == 0
+
+
+def unreadable_hint() -> str:
+    if as_root():          # (Root reads any file; under rootless Docker, only one of the user running Docker.)
+        return 'Make it a file of the user that runs Docker.'
+    return (f'This container runs as uid {os.geteuid()}, not root as compose.yaml starts it: the file must be '
+            'readable by that uid (chmod 644, or give it that group with chmod 640).')
+
+
+def agent_module():
+    """tools/world_agent.py, for its token and http:// checks (the same the agent makes, made here so they're seen)."""
+    if str(TOOLS) not in sys.path:
+        sys.path.insert(0, str(TOOLS))
+    import world_agent
+    return world_agent
 
 
 # --------------------------------------------------------------------------------------------------- settings
@@ -94,12 +127,31 @@ def flag(table: dict, name: str, default: bool = False) -> bool:
     return value
 
 
-def read_settings() -> dict:
+def host_path(name: str) -> Path:
+    """A file world.toml names: absolute, or beside world.toml."""
+    return Path(name) if name.startswith('/') else SETTINGS.parent / name
+
+
+def read_host_file(path: Path, what: str) -> str:
+    """A file of the host's, as text (utf-8, a byte-order mark allowed: Notepad and PowerShell 5 write one)."""
     try:
-        raw = tomllib.loads(SETTINGS.read_text(encoding='utf-8'))
+        return path.read_text(encoding='utf-8-sig')
     except FileNotFoundError:
+        fail(f'{what}: there is no {path}.')
+    except PermissionError:
+        fail(f'{what}: {path} can\'t be read (permission denied). {unreadable_hint()}')
+    except OSError as error:
+        fail(f'{what}: {path} can\'t be read ({error.strerror}).')
+    except UnicodeDecodeError:
+        fail(f'{what}: {path} is not UTF-8 text.')
+
+
+def read_settings() -> dict:
+    if not SETTINGS.is_file():
         fail(f'no {SETTINGS}: copy world.toml beside compose.yaml (see README.md).')
-    except (tomllib.TOMLDecodeError, UnicodeDecodeError) as error:
+    try:
+        raw = tomllib.loads(read_host_file(SETTINGS, 'world.toml'))
+    except tomllib.TOMLDecodeError as error:
         fail(f'world.toml is not valid TOML: {error}')
     world, central, ai, server_ = (raw.get(t, {}) for t in ('world', 'central', 'ai', 'server'))
     if not all(isinstance(t, dict) for t in (world, central, ai, server_)):
@@ -108,7 +160,7 @@ def read_settings() -> dict:
     if not isinstance(tags, list) or not all(isinstance(t, str) for t in tags):
         fail('world.toml: tags is a list of words, ["a", "b"].')
     s = {
-        'name': text(world, 'name', most=48),
+        'name': text(world, 'name', most=NAME_BYTES),
         'description': text(world, 'description', most=300),
         'region': text(world, 'region', most=32),
         'tags': [t.strip() for t in tags if t.strip()],
@@ -128,31 +180,58 @@ def read_settings() -> dict:
     }
     if not s['name']:
         fail('world.toml: give the world a name ([world] name = "...").')
+    if len(s['name'].encode('utf-8')) > NAME_BYTES:
+        fail(f'world.toml: the name is {len(s["name"].encode("utf-8"))} bytes; at most {NAME_BYTES} (an accented '
+             'letter takes two or more): make it shorter.')
     if any(ord(c) < 32 or ord(c) == 127 for c in s['name']):
         fail('world.toml: the name has a control character in it.')
     if len(s['tags']) > 5 or any(len(t) > 16 for t in s['tags']):
         fail('world.toml: up to 5 tags, 16 characters each at most.')
     if s['private']:
         say('warning: private worlds (a password kept on central) aren\'t built yet; the world is listed as public.')
-    if s['central']:
-        if not re.match(r'^https?://[^/\s]+$', s['central']):
-            fail('world.toml: central\'s url is https://name (no path).')
-        if not WORLD_ID.match(s['world_id']):
-            fail('world.toml: a world on central needs its id ([world] id = "world-..."), shown on the Host page '
-                 'beside the host token.')
+    if not s['central']:
+        fail('world.toml: [central] url is needed: a world signs its players in through central. A world without '
+             'one (a private or LAN world) isn\'t offered yet.')
+    if not re.match(r'^https?://[^/\s]+$', s['central']):
+        fail('world.toml: central\'s url is https://name (no path).')
+    if not WORLD_ID.match(s['world_id']):
+        fail('world.toml: a world on central needs its id ([world] id = "world-..."), shown on the Host page '
+             'beside the host token.')
+    if s['secure'] and not s['host']:
+        fail('world.toml: secure = true needs host = "a.dns.name": the certificate in front of the world is for a '
+             'name.')
     if s['ai_key_file'] and not s['ai_key']:
         s['ai_key'] = read_secret_file(s['ai_key_file'], 'the AI key')
     if s['cost_mode'] not in ('generous', 'balanced', 'frugal'):
         fail('world.toml: cost_mode is generous, balanced or frugal.')
+    s['token'] = read_host_token(s)
+    if s['token'] and s['central'].startswith('http://'):
+        allowed, why = agent_module().plain_http_allowed(s['central'])
+        if allowed is False:
+            fail(f'world.toml: central\'s url is http:// but {why}: the host token would go in clear. http:// is only '
+                 'for a central on this computer or a private network; give its https:// address.')
+        if allowed is None:
+            say(f'warning: {why}: the world agent sends no heartbeat until it can tell that central is on this '
+                'computer or a private network')
     return s
 
 
 def read_secret_file(name: str, what: str) -> str:
-    path = Path(name) if name.startswith('/') else SETTINGS.parent / name
-    try:
-        return path.read_text(encoding='utf-8').strip()
-    except OSError as error:
-        fail(f'world.toml names {path} for {what}, but it can\'t be read ({error.strerror}).')
+    return read_host_file(host_path(name), f'world.toml names a file for {what}').strip()
+
+
+def read_host_token(s: dict) -> str:
+    """The host token: world.toml's token_file, or RATW_HOST_TOKEN. '' if there is none; stops at one that can't be
+    read, or that isn't a token (the agent would refuse it, out of sight, once a minute)."""
+    if s['token_file']:
+        token, where = read_secret_file(s['token_file'], 'the host token'), str(host_path(s['token_file']))
+    else:
+        token, where = os.environ.get('RATW_HOST_TOKEN', '').strip(), 'RATW_HOST_TOKEN'
+    if s['token_file'] and not token:
+        fail(f'{where} is empty: put the host token from the Host page in it.')
+    if token and not agent_module().TOKEN.match(token):
+        fail(f'{where}: the host token has spaces or odd characters in it: copy it again from the Host page.')
+    return token
 
 
 def load_passwords() -> None:
@@ -185,25 +264,53 @@ def default_workers() -> int:
     return max(0, min(16, cpus - 2))
 
 
+# ------------------------------------------------------------------------------------------- users and files
+
 def child_env(*keep: str, **extra: str) -> dict:
     """The environment without any secret but those named."""
     env = {k: v for k, v in os.environ.items() if k not in SECRET_ENV or k in keep}
+    env['HOME'] = str(STATE)                     # (Not root's: libpq looks there for a .pgpass.)
     env.update(extra)
     return env
 
 
-def private_dir(path: Path) -> Path:
+def run_as(user: str) -> dict:
+    """Popen's arguments that start a child as `user` (its own group, no others), when this runs as root."""
+    return {'user': user, 'group': user, 'extra_groups': []} if as_root() else {}
+
+
+def own(path: Path, user: str | None, group: str | None = None) -> None:
+    if as_root() and user:
+        shutil.chown(path, user, group or user)
+
+
+def private_dir(path: Path, user: str | None = HELPER, group: str | None = None, mode: int = 0o700) -> Path:
+    """A directory of `user`'s (and `group`'s too, with mode 0o770: both write there; what each writes is 0644)."""
     path.mkdir(parents=True, exist_ok=True)
-    os.chmod(path, 0o700)
+    own(path, user, group)
+    os.chmod(path, mode)
     return path
 
 
-def write_private(path: Path, body: str) -> None:
+def write_private(path: Path, body: str, user: str | None = HELPER) -> None:
     temp = path.with_name(f'.{path.name}.new')
     fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, 'w', encoding='utf-8') as out:
         out.write(body)
+    own(temp, user)
     os.replace(temp, path)
+
+
+def prepare_state() -> None:
+    """The container's own state, each part its user's: the logs (a volume) and the agent's directory shared by the
+    helpers and the server, the server's voice log and DM directory its own."""
+    private_dir(STATE, None, mode=0o755)
+    private_dir(LOGS, HELPER, SERVER_USER, 0o770)
+    voices = LOGS / 'npc-voices.jsonl'
+    voices.touch(exist_ok=True)
+    own(voices, SERVER_USER)
+    if as_root():
+        os.chmod(voices, 0o640)
 
 
 # ---------------------------------------------------------------------------------------------- the database
@@ -236,10 +343,13 @@ def wait_for_database(seconds: float = 180) -> None:
 
 
 def tool(args: list[str], *keep: str) -> int:
-    return subprocess.run([sys.executable, *args], cwd=STATE, env=child_env(*keep)).returncode
+    return subprocess.run([sys.executable, *args], cwd=STATE, env=child_env(*keep), **run_as(HELPER)).returncode
 
 
 def import_world(name: str) -> None:
+    """The world package into the database: made on the first start; on every other, the migrations and the world kept
+    as it is (tools/world_package.py import). A non-zero exit is a real failure (a database holding a world no package
+    made, an unreadable package, no database): it stops the start."""
     started = time.monotonic()
     if os.environ.get('RATW_PACKAGE_IMPORT', '').lower() == 'skip':
         say('RATW_PACKAGE_IMPORT=skip: the migrations only, no world imported')
@@ -284,6 +394,8 @@ class Helper:
         except subprocess.TimeoutExpired:
             self.process.kill()
             self.process.wait()
+        if getattr(self.process, 'tee', None) is not None:
+            self.process.tee.join(2)               # (Its last lines, such as the agent's leave, into the log.)
 
 
 def mind_config(s: dict) -> Path | None:
@@ -302,7 +414,8 @@ def start_mind(config: Path) -> subprocess.Popen:
     log = (LOGS / 'npc-mind.log').open('a', encoding='utf-8')
     return subprocess.Popen([sys.executable, str(TOOLS / 'npc_mind.py'), '--config', str(config), '--database', KEY,
                              '--port', str(MIND_PORT), '--ledger', str(LOGS / 'npc-mind-calls.jsonl')],
-                            cwd=STATE, stdout=log, stderr=subprocess.STDOUT, env=child_env('RATW_GAME_PASSWORD'))
+                            cwd=STATE, stdout=log, stderr=subprocess.STDOUT, env=child_env('RATW_GAME_PASSWORD'),
+                            **run_as(HELPER))
 
 
 def mind_ready(mind: Helper, seconds: float = 10) -> bool:
@@ -325,26 +438,28 @@ def mind_ready(mind: Helper, seconds: float = 10) -> bool:
     return False
 
 
-def host_token(s: dict) -> tuple[list[str], dict]:
-    """The agent's token: its --token-file, or RATW_HOST_TOKEN in its environment. ([], {}) if there is none."""
-    if s['token_file']:
-        path = Path(s['token_file']) if s['token_file'].startswith('/') else SETTINGS.parent / s['token_file']
-        if not path.is_file():
-            fail(f'world.toml names {path} for the host token, but there is no such file.')
-        return ['--token-file', str(path)], {}
-    token = os.environ.get('RATW_HOST_TOKEN', '').strip()
-    return ([], {'RATW_HOST_TOKEN': token}) if token else ([], {})
+def tee(stream, log_path: Path) -> None:
+    """A child's lines into its log file and the container's log (`docker compose logs world`)."""
+    with log_path.open('a', encoding='utf-8') as log:
+        for line in stream:
+            log.write(line)
+            log.flush()
+            if line.strip():
+                say(line.rstrip('\n'))
 
 
 def agent_starter(s: dict, port: int, agent_dir: Path):
-    args, env = host_token(s)
     log_path = LOGS / 'world-agent.log'
-    if not args and not env:
+    env = {'RATW_HOST_TOKEN': s['token']} if s['token'] else {}
+    if not s['token']:
         say('warning: no host token (RATW_HOST_TOKEN, or token_file in world.toml): the world keeps central\'s keys, '
-            'so players can join it by address, but it isn\'t on the server list.')
+            'so players can join it by address, but it isn\'t on the server list, nobody has the host\'s commands '
+            '(/kick, /ban, /silence, /pending...), and central\'s ban list doesn\'t reach it.')
+        for stale in ('host.json', 'bans.json'):   # (A token's last host and bans: none without one.)
+            (agent_dir / stale).unlink(missing_ok=True)
         command = ['keys', '--central', s['central'], '--out', str(agent_dir / 'central-keys.json')]
     else:
-        command = ['run', '--central', s['central'], '--dir', str(agent_dir), '--world-port', str(port), *args]
+        command = ['run', '--central', s['central'], '--dir', str(agent_dir), '--world-port', str(port)]
         for name in ('description', 'region', 'host'):
             if s[name]:
                 command += [f'--{name}', s[name]]
@@ -354,28 +469,29 @@ def agent_starter(s: dict, port: int, agent_dir: Path):
             command.append('--secure')
 
     def start() -> subprocess.Popen:
-        log = log_path.open('a', encoding='utf-8')
-        return subprocess.Popen([sys.executable, str(TOOLS / 'world_agent.py'), *command], cwd=STATE, stdout=log,
-                                stderr=subprocess.STDOUT, env=child_env(**env))
+        process = subprocess.Popen([sys.executable, str(TOOLS / 'world_agent.py'), *command], cwd=STATE,
+                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8',
+                                   errors='replace', env=child_env(**env), **run_as(HELPER))
+        process.tee = threading.Thread(target=tee, args=(process.stdout, log_path), daemon=True)
+        process.tee.start()
+        return process
     return start
 
 
 # ------------------------------------------------------------------------------------------------- the server
 
-def server_command(s: dict, port: int, agent_dir: Path | None, dialogue: bool, workers: int) -> list[str]:
+def server_command(s: dict, port: int, agent_dir: Path, dialogue: bool, workers: int) -> list[str]:
     command = [str(SERVER), '--database', KEY, '--world-kind', 'live', '--port', str(port), '--bind', '0.0.0.0',
                '--workers', str(workers), '--talk-data', str(DATA / 'Talk'), '--voice-data', str(DATA / 'Voice'),
-               '--voice-log', str(LOGS / 'npc-voices.jsonl'), '--dm-directory', str(private_dir(STATE / 'dm'))]
+               '--voice-log', str(LOGS / 'npc-voices.jsonl'),
+               '--dm-directory', str(private_dir(STATE / 'dm', SERVER_USER)),
+               '--central', s['central'], '--world-id', s['world_id'], '--central-keys',
+               str(agent_dir / 'central-keys.json'), '--world-name', s['name'],
+               '--player-limit', str(s['player_limit'])]
+    if s['arrivals_per_hour']:
+        command += ['--arrivals-per-hour', str(s['arrivals_per_hour'])]
     if dialogue:
         command += ['--dialogue', f'http://127.0.0.1:{MIND_PORT}/dialogue']
-    if s['central']:
-        command += ['--central', s['central'], '--world-id', s['world_id'], '--central-keys',
-                    str(agent_dir / 'central-keys.json'), '--world-name', s['name'], '--player-limit',
-                    str(s['player_limit'])]
-        if s['arrivals_per_hour']:
-            command += ['--arrivals-per-hour', str(s['arrivals_per_hour'])]
-    elif (WEB / 'index.html').is_file():
-        command += ['--web', str(WEB)]
     return command
 
 
@@ -390,19 +506,20 @@ def main() -> int:
     global server
     for number in (signal.SIGTERM, signal.SIGINT):
         signal.signal(number, on_signal)
+    if not as_root():
+        say('warning: not started as root: the server runs as the same user as the rest, and could read their '
+            'secrets')
     s = read_settings()
     load_passwords()
     os.environ.setdefault('RATW_DB_HOST', 'db')
     os.environ.setdefault('RATW_DB_PORT', '5432')
     os.environ.setdefault('POSTGRES_USER', 'postgres')
-    LOGS.mkdir(parents=True, exist_ok=True)
     port = int(os.environ.get('RATW_PORT', '7788'))
     if not 1 <= port <= 65535:
         fail('RATW_PORT is a port number.')
+    prepare_state()
     workers = s['workers'] if s['workers'] is not None else default_workers()
-    say(f'"{s["name"]}": ' + (f'on central {s["central"]} as {s["world_id"]}' if s['central'] else
-                              'a private LAN world (no central: accounts and passwords kept by this world)') +
-        f', port {port}, {workers} worker thread(s)')
+    say(f'"{s["name"]}": on central {s["central"]} as {s["world_id"]}, port {port}, {workers} worker thread(s)')
 
     write_registry(s['name'])
     wait_for_database()
@@ -426,20 +543,18 @@ def main() -> int:
             helpers.append(mind)
     else:
         say('no AI key: NPCs use their authored lines')
-    agent_dir = None
-    if s['central']:
-        agent_dir = private_dir(STATE / 'agent')
-        agent = Helper('world agent', agent_starter(s, port, agent_dir))
-        agent.run()
-        helpers.append(agent)
-    elif not (WEB / 'index.html').is_file():
-        say('warning: a LAN world with no page in this image: players need a client that signs in to it directly')
+    # (The agent and the server talk through files here: both write, each reads the other's.)
+    agent_dir = private_dir(STATE / 'agent', HELPER, SERVER_USER, 0o770)
+    agent = Helper('world agent', agent_starter(s, port, agent_dir))
+    agent.run()
+    helpers.append(agent)
 
     command = server_command(s, port, agent_dir, dialogue, workers)
     code = 0
     while not stopping:
         say('starting the world server')
-        server = subprocess.Popen(command, cwd=STATE, env=child_env(RATW_DATABASE_URL=database_url))
+        server = subprocess.Popen(command, cwd=STATE, env=child_env(RATW_DATABASE_URL=database_url),
+                                  **run_as(SERVER_USER))
         while server.poll() is None:
             try:
                 server.wait(5)

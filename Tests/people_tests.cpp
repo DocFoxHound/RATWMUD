@@ -36,6 +36,8 @@ void theRules()
     expect(people::clean("  Hello\x01 there\n  ", 80) == "Hello there", "control characters out, trimmed, newlines spaced");
     expect(people::clean("one\ntwo", 80, true) == "one\ntwo", "newlines kept where the field allows");
     expect(people::clean("abcdef", 3) == "abc" && people::clean("éééé", 2) == "éé", "cut by characters, never inside one");
+    expect(people::clean("ab\xc3 c\xa9" "d\xed\xa0\x80\xc3", 80) == "ab cd" && people::clean("\xc3\xa9\xc3", 80) == "\xc3\xa9",
+           "anything that isn't UTF-8 left out (a character cut short, a stray byte, a surrogate), so no save is refused");
     people::Profile p;
     std::string why;
     expect(people::applyFields(p, parsed(R"({"description": "A lean grey wolf.", "currently": "mending nets",

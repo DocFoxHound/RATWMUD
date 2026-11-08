@@ -88,7 +88,7 @@ constexpr DevCommand HostCommands[] = {
     {"kick", "kick <wolf>: sends the wolf out of this world; it may come back."},
     {"ban", "ban <wolf> [reason]: bans the wolf's account from this world (any of its wolves), and sends it out."},
     {"unban", "unban <wolf>: lifts this world's ban on the wolf's account."},
-    {"silence", "silence <wolf> 1|6|24|72: the wolf's account can't speak in world chat here for that many hours."},
+    {"silence", "silence <wolf> 1|6|24|72: the wolf's account can't speak in world chat, or send private messages or letters, here for that many hours."},
     {"unsilence", "unsilence <wolf>: lifts the silence."},
 };
 
@@ -301,11 +301,12 @@ std::string Game::hostTarget(const std::string& rest, std::string& wolf, std::st
 void Game::hostCommand(Connection* c, const json::Value& j)
 {
     const std::string id = c->entityId;
-    std::string line = trimmed(j.string("command"));
+    // At most 300 characters, as the client's console takes (a wolf's id, a name and a reason fit): cut on a character,
+    // never inside one, and nothing that isn't UTF-8, since a ban's or a storyteller's reason is saved from it.
+    std::string line = people::clean(j.string("command"), 301);
     if (!line.empty() && line.front() == '/')
         line.erase(0, 1);
-    if (line.size() > 300)
-        line.resize(300);                           // (A wolf's id, a name and a reason fit.)
+    line = people::clean(line, 300);
     const auto space = line.find(' ');
     const std::string command = lower(line.substr(0, space));
     const std::string rest = space == std::string::npos ? std::string() : trimmed(line.substr(space + 1));
@@ -519,7 +520,8 @@ void Game::hostCommand(Connection* c, const json::Value& j)
                 for (const auto& cid : accounts_.characters(account))
                     if (auto* other = clientOf(cid))
                         system(other, command == "silence" ? "The host has silenced your account in this world for " + std::to_string(hours) +
-                                                                 (hours == 1 ? " hour." : " hours.")
+                                                                 (hours == 1 ? " hour" : " hours") +
+                                                                 ": you can't speak, or send private messages or letters, here until then."
                                                            : "The host has lifted your silence.");
                 saveSoon();
                 result = {true, command == "silence" ? nameOf(target) + "'s account is silenced for " + std::to_string(hours) + (hours == 1 ? " hour." : " hours.")
@@ -532,9 +534,9 @@ void Game::hostCommand(Connection* c, const json::Value& j)
 
     // Every use is logged (doc 77, 3.2): the server's log, and the event log for what it changed.
     note("info", "RATW_HOST /" + line + " by " + (id.empty() ? std::string("?") : id) + " (account " + c->accountUsername + "): " +
-                     (result.ok ? "done" : "refused") + ": " + result.message.substr(0, 200));
+                     (result.ok ? "done" : "refused") + ": " + people::clean(result.message, 200));
     if (host && result.ok && command != "help" && command != "pending" && !command.empty())
-        logEvent("operator", id, target, "host /" + command + (rest.empty() ? "" : " " + rest.substr(0, 120)));
+        logEvent("operator", id, target, "host /" + command + (rest.empty() ? "" : " " + people::clean(rest, 120)));
     auto reply = json::Value::object();
     reply.add("type", "devResult");
     reply.add("command", "/" + line);

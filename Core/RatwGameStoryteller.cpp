@@ -66,9 +66,10 @@ void Game::storyLogAdd(const std::string& character, const std::string& storylin
     e.character = character;
     e.storyline = storyline;
     e.kind = kind;
-    e.target = target.substr(0, 80);
-    e.text = text.substr(0, 1000);
-    e.detail = detail.substr(0, 200);
+    // Cut by bytes but never inside a character: the log is in the save, and Postgres takes only UTF-8.
+    e.target = json::utf8Prefix(target, 80);
+    e.text = json::utf8Prefix(text, 1000);
+    e.detail = json::utf8Prefix(detail, 200);
     e.at = now();
     storyLog_.push_back(std::move(e));
     if (storyLog_.size() > 5000)
@@ -81,11 +82,11 @@ void Game::decideStoryteller(const std::string& account, bool approve, const std
     s.state = approve ? "approved" : "refused";
     s.decidedBy = by;
     s.decidedAt = now();
-    s.reason = reason.substr(0, 400);
+    s.reason = people::clean(reason, 400);          // By characters: a cut inside one would stop every save after.
     for (auto* c : clients_)
         if (accountKey(c) == account)
             storylineToast(c, approve ? deciders(true) + (communityWorld() ? " has" : " have") + " made you a storyteller: the STORYTELLER button is yours."
-                                      : "Your application to tell stories was refused" + (reason.empty() ? std::string(".") : ": " + reason));
+                                      : "Your application to tell stories was refused" + (s.reason.empty() ? std::string(".") : ": " + s.reason));
     saveSoon();
 }
 
@@ -96,7 +97,7 @@ void Game::revokeStoryteller(const std::string& account, const std::string& by, 
     s.state = "revoked";
     s.decidedBy = by;
     s.decidedAt = now();
-    s.reason = reason.substr(0, 400);
+    s.reason = people::clean(reason, 400);
     for (const auto& [id, tale] : storylines_.all())
         if (tale.kind == "tale" && tale.authorAccount == account && tale.state == "running")
         {
@@ -109,7 +110,7 @@ void Game::revokeStoryteller(const std::string& account, const std::string& by, 
     storylines_.touch();
     for (auto* c : clients_)
         if (accountKey(c) == account)
-            storylineToast(c, "You are no longer a storyteller" + (reason.empty() ? std::string(".") : ": " + reason));
+            storylineToast(c, "You are no longer a storyteller" + (s.reason.empty() ? std::string(".") : ": " + s.reason));
     saveSoon();
 }
 
@@ -273,17 +274,17 @@ Result Game::saveTale(const std::string& teller, const Value& j)
         if (step.title.empty() || int(step.title.size()) > r.stepTitle || int(step.text.size()) > r.stepText)
             return {false, "Each step needs a title (" + std::to_string(r.stepTitle) + " letters at most) and a text of " + std::to_string(r.stepText) + " at most.", {}};
         if (const auto& m = s.object("marker"); m.isObject() && world_.cell(m.string("cell")))
-            step.marker = {m.string("cell"), m.string("label", world_.cell(m.string("cell"))->name).substr(0, 60), m.number("x", 8), m.number("y", 8), 0};
+            step.marker = {m.string("cell"), json::utf8Prefix(m.string("label", world_.cell(m.string("cell"))->name), 60), m.number("x", 8), m.number("y", 8), 0};
         for (const auto& o : s.array("objectives"))
         {
             storylines::Objective obj;
             obj.kind = o.string("kind", "told");
-            obj.target = o.string("target").substr(0, 80);
-            obj.cell = o.string("cell").substr(0, 80);
+            obj.target = json::utf8Prefix(o.string("target"), 80);
+            obj.cell = json::utf8Prefix(o.string("cell"), 80);
             obj.x = o.number("x", -1), obj.y = o.number("y", -1), obj.radius = std::clamp(o.number("radius", 0), 0.0, 16.0);
             obj.count = std::clamp(int(o.number("count", 2)), 1, 12);
-            obj.line = o.string("line", step.title).substr(0, 160);
-            obj.suits = o.string("suits").substr(0, 20);
+            obj.line = json::utf8Prefix(o.string("line", step.title), 160);
+            obj.suits = json::utf8Prefix(o.string("suits"), 20);
             if (!ObjectiveKinds.count(obj.kind))
                 return {false, "Objectives are told, place, talk, scene, contract, hunt, fight, gift or deliver.", {}};
             if (step.objectives.size() < 3)
@@ -302,7 +303,7 @@ Result Game::saveTale(const std::string& teller, const Value& j)
             return {false, "A cast of " + std::to_string(r.cast) + " at most, each name " + std::to_string(r.castName) + " letters at most.", {}};
         if (castNameTaken(name))
             return {false, "\"" + name + "\" is a real wolf's name: story characters never are.", {}};
-        tale.cast.push_back({name, c.string("looks").substr(0, 160)});
+        tale.cast.push_back({name, json::utf8Prefix(c.string("looks"), 160)});
     }
     tale.lastActivity = now();
     auto& kept = storylines_.add(std::move(tale));
@@ -380,7 +381,7 @@ bool Game::storytellerCommand(Connection* c, const Value& j, Result& result)
                 result = {false, error, {}};
             else
             {
-                const auto why = j.string("for").substr(0, 80);
+                const auto why = json::utf8Prefix(j.string("for"), 80);
                 deliverStory(*tale, id, "roll", {}, (tale->authorCharacter == id ? "rolls " : "rolls (a participant) ") + rolled + (why.empty() ? "" : " for " + why));
                 storyLogAdd(id, tale->id, "roll", {}, {}, rolled + (why.empty() ? "" : " for " + why));
                 result = {true, {}, {}};
@@ -404,7 +405,7 @@ bool Game::storytellerCommand(Connection* c, const Value& j, Result& result)
             s.note = note;
             s.character = id;
             s.appliedAt = now();
-            storyLogAdd(id, {}, "apply", {}, {}, note.substr(0, 200));
+            storyLogAdd(id, {}, "apply", {}, {}, note);
             result = {true, "Your application is with " + deciders() + ".", {}};
             saveSoon();
         }
@@ -570,7 +571,7 @@ void Game::endTale(storylines::Storyline& tale, const std::string& how)
         if (v.tale == tale.id)
             world_.sendVisitorAway(vid);
     storyLogAdd(tale.authorCharacter, tale.id, "end", {}, {}, how);
-    logEvent("tale ended", tale.authorCharacter, tale.id, tale.title.substr(0, 100) + " (" + how + ")");
+    logEvent("tale ended", tale.authorCharacter, tale.id, json::utf8Prefix(tale.title, 100) + " (" + how + ")");
     Credits cr;
     cr.id = "credits-" + std::to_string(storyLogNext_++);
     cr.kind = "tale";
@@ -694,7 +695,7 @@ Result Game::storyCall(const std::string& teller, storylines::Storyline& tale, c
         return {false, "Post a call where a town keeps a notice board.", {}};
     tale.calledOn = true;
     tale.calledTown = town;
-    const auto words = j.string("text", "Wolves wanted for a story: \"" + tale.title + "\". Ask to join.").substr(0, 200);
+    const auto words = json::utf8Prefix(j.string("text", "Wolves wanted for a story: \"" + tale.title + "\". Ask to join."), 200);
     tale.callText = words;
     storyLogAdd(teller, tale.id, "call", town, {}, words);
     return {true, "Your call is up on " + townWords(town) + "'s board.", {}};
@@ -707,8 +708,8 @@ void Game::setStoryVisitors(const Value& list)
     {
         StoryVisitorDef d;
         d.id = o.string("id");
-        d.name = o.string("name").substr(0, 60);
-        d.description = o.string("description").substr(0, 400);
+        d.name = json::utf8Prefix(o.string("name"), 60);
+        d.description = json::utf8Prefix(o.string("description"), 400);
         d.enabled = o.boolean("enabled", true);
         if (o.object("appearance").isObject())
             wire::readAppearance(o.object("appearance"), d.appearance);
@@ -848,7 +849,7 @@ Result Game::starCredit(const std::string& giver, const std::string& creditsId, 
     s.at = now();
     const auto kept = starBook_.record(s);
     mine.insert(to);
-    logEvent(tale ? "tale star" : "milestone star", giver, to, cr.title.substr(0, 100));
+    logEvent(tale ? "tale star" : "milestone star", giver, to, json::utf8Prefix(cr.title, 100));
     saveSoon();
     sendCredits(giver, cr);
     return {true, std::string(kept.counted ? "Your star is given." : "Your star is given (it doesn't count toward their total: the pair's limits)."), {}};
@@ -862,8 +863,8 @@ Result Game::creditMilestone(const Value& payload)
     Credits cr;
     cr.id = "credits-" + std::to_string(storyLogNext_++);
     cr.kind = "milestone";
-    cr.story = payload.string("story").substr(0, 80);
-    cr.title = payload.string("milestone").substr(0, 80);
+    cr.story = json::utf8Prefix(payload.string("story"), 80);
+    cr.title = json::utf8Prefix(payload.string("milestone"), 80);
     cr.made = now();
     cr.until = now() + storylines::rules().creditsDays * 86400.0;
     if (cr.title.empty())

@@ -1139,9 +1139,9 @@ void Game::standingLoad(const json::Value& saved)
         auto& r = standing_[account];
         r.account = account;
         r.giftedAt = wire::strictNumber(e, "giftedAt", -1);
-        r.giftedBy = e.string("giftedBy").substr(0, 80);
+        r.giftedBy = json::utf8Prefix(e.string("giftedBy"), 80);
         r.quickenedAt = wire::strictNumber(e, "quickenedAt", -1);
-        r.quickenedBy = e.string("quickenedBy").substr(0, 80);
+        r.quickenedBy = json::utf8Prefix(e.string("quickenedBy"), 80);
         r.hold = e.boolean("hold");
     }
     for (const auto& account : accounts_.usernames())

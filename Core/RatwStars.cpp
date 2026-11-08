@@ -346,24 +346,24 @@ void Book::load(const json::Value& saved)
     {
         if (e.string("account").empty())
             continue;
-        auto& t = tallies_[e.string("account").substr(0, 80)];
+        auto& t = tallies_[json::utf8Prefix(e.string("account"), 80)];
         t.total = std::max(0, int(e.number("total")));
         t.chances = std::max(0, int(e.number("chances")));
         t.goldReceived = std::max(0, int(e.number("goldReceived")));
         for (const auto& [k, n] : e.object("kinds").fields())
-            t.kinds[k.substr(0, 20)] = std::max(0, int(n.asNumber(0)));
+            t.kinds[json::utf8Prefix(k, 20)] = std::max(0, int(n.asNumber(0)));
         for (const auto& [k, n] : e.object("tags").fields())
             if (std::find(rules().tags.begin(), rules().tags.end(), k) != rules().tags.end())
                 t.tags[k] = std::max(0, int(n.asNumber(0)));
         for (const auto& g : e.array("givers"))
             if (g.isString() && t.givers.size() < 100000)
-                t.givers.insert(g.asString().substr(0, 80));
+                t.givers.insert(json::utf8Prefix(g.asString(), 80));
     }
     for (const auto& e : saved.array("recent"))
-        recent_.push_back({e.string("id").substr(0, 80), e.string("kind").substr(0, 20), e.string("source").substr(0, 120),
-                           e.string("giverAccount").substr(0, 80), e.string("giverCharacter").substr(0, 80),
-                           e.string("recipientAccount").substr(0, 80), e.string("recipientCharacter").substr(0, 80),
-                           e.string("tag").substr(0, 20), e.number("at"), int(e.number("xp")), e.boolean("counted")});
+        recent_.push_back({json::utf8Prefix(e.string("id"), 80), json::utf8Prefix(e.string("kind"), 20), json::utf8Prefix(e.string("source"), 120),
+                           json::utf8Prefix(e.string("giverAccount"), 80), json::utf8Prefix(e.string("giverCharacter"), 80),
+                           json::utf8Prefix(e.string("recipientAccount"), 80), json::utf8Prefix(e.string("recipientCharacter"), 80),
+                           json::utf8Prefix(e.string("tag"), 20), e.number("at"), int(e.number("xp")), e.boolean("counted")});
     std::sort(recent_.begin(), recent_.end(), [](const Star& a, const Star& b) { return a.at < b.at; });
 }
 } // namespace ratw::stars

@@ -969,7 +969,7 @@ void Game::applyDmActions(double dt)
                 outcome = {false, "Move the credit by a whole number of pennies.", target};
             else
             {
-                const auto r = world_.society().moveWharfCredit(std::int64_t(amount), by, payload.string("note").substr(0, 160));
+                const auto r = world_.society().moveWharfCredit(std::int64_t(amount), by, json::utf8Prefix(payload.string("note"), 160));
                 outcome = {r.ok, r.message, target};
                 if (r.ok)
                     saveSoon();
@@ -1002,7 +1002,7 @@ void Game::applyDmActions(double dt)
             {
                 const auto weight = fame::weightOf(payload.string("weight", "great"));
                 const auto id = recordDeed(payload.string("kind", "award"), {target}, payload.string("beneficiary"),
-                                           payload.string("cell", doer->cellId), "dm", payload.string("detail").substr(0, 160), weight);
+                                           payload.string("cell", doer->cellId), "dm", json::utf8Prefix(payload.string("detail"), 160), weight);
                 outcome = id.empty() ? Result{false, "No such kind of deed.", target} : Result{true, "Awarded " + id + ".", target};
             }
             saveSoon();
@@ -4729,7 +4729,9 @@ void Game::talkNext(const std::string& npcId)
 
 void Game::command(Connection* c, const std::string& raw)
 {
-    if (!c || raw.size() > 65536)
+    // JSON text is UTF-8 (a browser sends nothing else): anything else is no command, so no text a client sends can put
+    // bytes in the world that Postgres refuses, failing every save after.
+    if (!c || raw.size() > 65536 || !json::validUtf8(raw))
         return;
     struct Hold
     {

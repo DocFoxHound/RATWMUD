@@ -491,7 +491,7 @@ void Game::friendsLoad(const json::Value& saved)
     const auto& r = people::rules();
     for (const auto& e : saved.array("requests"))
         if (known(e.string("from")) && known(e.string("to")) && e.number("at") >= now() - r.requestDays * 86400.0)
-            friendRequests_.push_back({e.string("from"), e.string("to"), e.string("character").substr(0, 80), e.number("at")});
+            friendRequests_.push_back({e.string("from"), e.string("to"), json::utf8Prefix(e.string("character"), 80), e.number("at")});
     for (const auto& e : saved.array("inbox"))
     {
         auto m = people::loadMessage(e);

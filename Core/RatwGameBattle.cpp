@@ -749,7 +749,7 @@ bool Game::battleCommand(Connection* c, const Value& j, Result& result)
         else if (!at.empty())
             aim = aim.empty() ? at : aim + "@" + at;
         if (const auto text = j.string("text"); !text.empty())
-            aim += "|" + text.substr(0, 400);
+            aim += "|" + json::utf8Prefix(text, 400);
         result = world_.useGift(id, ability, aim);
     }
     else if (verb == "react")

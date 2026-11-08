@@ -1,16 +1,24 @@
 # A Ridgemere world (Docs/Design/77, section 8). Edit world.toml, then: docker compose up -d   (README.md)
 #
-#   world  the world server, the NPC Mind (only with an AI key) and the world agent (only with a central), in one
-#          container: the server sends dialogue only to 127.0.0.1, and the agent reads the server's /status there.
+#   world  the world server, the NPC Mind (only with an AI key) and the world agent, in one container: the server
+#          sends dialogue only to 127.0.0.1, and the agent reads the server's /status there. Its entrypoint runs as
+#          root, reads this folder and the passwords, and starts each child as a user of its own (the server as one
+#          that can reach none of the secrets: Package/entrypoint.py).
 #   db     PostgreSQL 18, the world's database, on the internal network only (no port on this computer).
 #
 # Settings in a .env file beside this one (optional): RATW_PORT (default 7788; players and central reach the world on
 # it, and it is the same port inside the container), RATW_HOST_TOKEN (the host token from central's Host page, if not
-# in a token file named by world.toml), RATW_IMAGE (the world image).
+# in a token file named by world.toml), RATW_IMAGE (the world image), COMPOSE_PROJECT_NAME (a second world on this
+# computer: see below).
 #
 # Memory: the world saves itself by forking, and the copy holds every page the world touches while it writes (up to
 # twice the world's memory for a moment). If you give the world a memory limit, allow for that (uncomment mem_limit:
 # about 2 GB for a quiet world is a guess, not yet measured; doc 77, section 8).
+#
+# The project's name (its containers and volumes, the world's database among them) is ratw-world wherever this folder
+# is, so moving or renaming the folder keeps the world. A second world on the same computer, in a folder of its own,
+# needs a name and a port of its own in that folder's .env (COMPOSE_PROJECT_NAME=ratw-second, RATW_PORT=7789), or it
+# takes over this world's containers and database (README.md).
 name: ratw-world
 services:
   world:
@@ -21,6 +29,10 @@ services:
         condition: service_healthy
     ports:
       - "${RATW_PORT:-7788}:${RATW_PORT:-7788}"
+    # Root only to read the host's files and start the children as their own users (and stop them).
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, KILL, SETGID, SETUID]
+    security_opt: ["no-new-privileges:true"]
     environment:
       RATW_PORT: ${RATW_PORT:-7788}
       RATW_HOST_TOKEN: ${RATW_HOST_TOKEN:-}
@@ -28,8 +40,8 @@ services:
       RATW_DB_PORT: "5432"
       RATW_PACKAGE_IMPORT: ${RATW_PACKAGE_IMPORT:-}
     volumes:
-      # This folder (world.toml, and a token or key file it names), read-only.
-      - ./:/package/host:ro
+      # This folder (world.toml, and a token or key file it names), read-only, where only root can open it.
+      - ./:/etc/ratw/host:ro
       - secrets:/run/ratw-secrets:ro
       - logs:/var/lib/ratw/logs
     # The world saves on SIGTERM before it stops: give it time.
@@ -38,8 +50,8 @@ services:
   db:
     image: postgres:18
     restart: unless-stopped
-    # Makes the database passwords on the first start (kept in the secrets volume, readable by the world's user), then
-    # runs PostgreSQL's own entrypoint.
+    # Makes the database passwords on the first start (kept in the secrets volume, root's alone: the world's
+    # entrypoint reads them as root and gives each child only its own), then runs PostgreSQL's own entrypoint.
     entrypoint: ["bash", "/ratw/db-start.sh"]
     command: ["postgres"]
     configs:
@@ -74,10 +86,11 @@ configs:
                     RATW_GAME_PASSWORD RATW_DM_PASSWORD; do
           printf '%s=%s\n' "$$name" "$$(head -c 24 /dev/urandom | base64 | tr '+/' '-_' | tr -d '=\n')"
         done > "$$tmp"
-        # (The world's user, uid 10001 in its image, reads them through its group.)
-        chown 0:10001 "$$tmp" && chmod 0640 "$$tmp" && mv "$$tmp" "$$dir/passwords.env"
-        chown 0:10001 "$$dir" && chmod 0750 "$$dir"
+        mv "$$tmp" "$$dir/passwords.env"
       fi
+      # Root's alone, on every start (a volume made when the world's user could read them is tightened too): only the
+      # world's entrypoint (root) reads them; PostgreSQL has them in its environment, from here.
+      chown 0:0 "$$dir" "$$dir/passwords.env" && chmod 0700 "$$dir" && chmod 0600 "$$dir/passwords.env"
       set -a
       . "$$dir/passwords.env"
       set +a

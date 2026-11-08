@@ -1,6 +1,7 @@
 #include "RatwWorld.h"
 
 #include "RatwItems.h"
+#include "RatwJsonDoc.h"
 #include "RatwSight.h"
 #include "RatwStep.h"
 
@@ -2907,11 +2908,8 @@ void jsonText(std::string& out, const std::string& text, std::size_t limit)
     for (std::size_t i = 0; i < text.size() && characters < limit;)
     {
         const auto byte = static_cast<unsigned char>(text[i]);
-        const std::size_t length = byte < 0x80 ? 1 : (byte >> 5) == 0x6 ? 2 : (byte >> 4) == 0xE ? 3 : (byte >> 3) == 0x1E ? 4 : 0;
-        bool valid = length && i + length <= text.size();
-        for (std::size_t k = 1; valid && k < length; ++k)
-            valid = (static_cast<unsigned char>(text[i + k]) & 0xC0) == 0x80;
-        if (!valid)
+        const std::size_t length = json::utf8Length(text, i);   // (Strictly: no overlong form or surrogate either.)
+        if (!length)
         {
             ++i;                                    // Not UTF-8: left out.
             continue;
@@ -3096,7 +3094,7 @@ void World::promise(const std::string& by, const std::string& to, const std::str
 {
     if (by.empty() || to.empty() || by == to || what.empty() || !std::isfinite(days) || days <= 0)
         return;
-    promises_.push_back({by, to, what.substr(0, 200), calendarDays_, calendarDays_ + std::min(days, 30.0), "open"});
+    promises_.push_back({by, to, json::utf8Prefix(what, 200), calendarDays_, calendarDays_ + std::min(days, 30.0), "open"});
     // Settled promises are history (the event log keeps them); a few hundred open ones are plenty.
     promises_.erase(std::remove_if(promises_.begin(), promises_.end(), [&](const Promise& p) {
                         return p.status != "open" && calendarDays_ - p.due > 30;

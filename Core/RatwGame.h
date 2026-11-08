@@ -272,6 +272,7 @@ class Game
     // in password mode. writeOnline and reloadBans do each at once (false, with why, if they couldn't). A scratch server
     // (Options::scratch) reads bans.json but never writes online.json: the directory is the real world's agent's.
     void ticketFiles();
+    std::function<double()> ticketFilesClock;       // (Tests: the seconds ticketFiles' periods count; else monotonic.)
     bool writeOnline(std::string& problem);
     bool reloadBans(std::string& problem);
     bool bannedByCentral(const std::string& account) const { return centralBans_.count(account) > 0; }

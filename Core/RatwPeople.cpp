@@ -160,14 +160,24 @@ std::string clean(const std::string& text, std::size_t most, bool multiline)
 {
     std::string out;
     out.reserve(std::min(text.size(), most * 4));
-    for (const unsigned char c : text)
+    for (std::size_t i = 0; i < text.size();)
     {
-        if (c == '\n' && multiline)
-            out += '\n';
-        else if (c == '\t' || c == '\n' || c == '\r')
-            out += ' ';
-        else if (c >= 32 && c != 127)
-            out += char(c);
+        const auto c = static_cast<unsigned char>(text[i]);
+        const auto length = json::utf8Length(text, i);
+        if (!length)
+            ++i;                                    // Not UTF-8 (a character cut short, say): left out, so no save fails.
+        else if (length > 1)
+            out.append(text, i, length), i += length;
+        else
+        {
+            if (c == '\n' && multiline)
+                out += '\n';
+            else if (c == '\t' || c == '\n' || c == '\r')
+                out += ' ';
+            else if (c >= 32 && c != 127)
+                out += char(c);
+            ++i;
+        }
     }
     // Trim, then cut to `most` characters.
     const auto first = out.find_first_not_of(" \n");
@@ -559,13 +569,13 @@ AccountRecord loadAccount(const json::Value& o)
     a.handleChangedAt = o.number("handleChangedAt", -1);
     a.experience = validExperience(o.string("experience")) ? o.string("experience") : std::string();
     a.playedSeconds = std::max(0.0, o.number("playedSeconds", 0));
-    a.firstCharacter = o.string("firstCharacter").substr(0, 80);
+    a.firstCharacter = json::utf8Prefix(o.string("firstCharacter"), 80);
     a.silencedUntil = o.number("silencedUntil", -1);
     if (const auto* b = o.find("worldBan"); b && b->isObject())
     {
         a.worldBan.on = true;
         a.worldBan.at = b->number("at", -1);
-        a.worldBan.reason = b->string("reason").substr(0, 200);
+        a.worldBan.reason = json::utf8Prefix(b->string("reason"), 200);
     }
     a.graduated = o.boolean("graduated", false);
     const auto& m = o.object("mentor");
@@ -574,7 +584,7 @@ AccountRecord loadAccount(const json::Value& o)
     a.mentor.revoked = m.boolean("revoked", false);
     a.mentor.restingUntil = m.number("restingUntil", -1);
     a.mentor.lastTieAt = m.number("lastTieAt", -1);
-    a.mentor.tie = m.string("tie").substr(0, 80);
+    a.mentor.tie = json::utf8Prefix(m.string("tie"), 80);
     a.mentor.guided = std::max(0, int(m.number("guided", 0)));
     const auto& s = o.object("settings");
     a.settings.showMature = s.boolean("showMature", false);
@@ -600,10 +610,10 @@ json::Value saveMessage(const PrivateMessage& m)
 PrivateMessage loadMessage(const json::Value& o)
 {
     PrivateMessage m;
-    m.id = o.string("id").substr(0, 80);
-    m.to = o.string("to").substr(0, 80);
-    m.from = o.string("from").substr(0, 80);
-    m.fromCharacter = o.string("fromCharacter").substr(0, 80);
+    m.id = json::utf8Prefix(o.string("id"), 80);
+    m.to = json::utf8Prefix(o.string("to"), 80);
+    m.from = json::utf8Prefix(o.string("from"), 80);
+    m.fromCharacter = json::utf8Prefix(o.string("fromCharacter"), 80);
     m.text = clean(o.string("text"), std::size_t(rules().messageMost), true);
     m.at = o.number("at");
     return m;
@@ -642,7 +652,7 @@ KnownWolf loadKnown(const json::Value& o)
     k.firstMet = o.number("firstMet");
     k.lastMet = o.number("lastMet");
     k.lastMetDay = o.number("lastMetDay", -1);
-    k.lastPlace = o.string("lastPlace").substr(0, 80);
+    k.lastPlace = json::utf8Prefix(o.string("lastPlace"), 80);
     k.label = clean(o.string("label"), 120);
     k.scenes = std::max(0, int(o.number("scenes")));
     k.customTag = o.boolean("customTag");
@@ -676,15 +686,15 @@ json::Value saveRecap(const Recap& r)
 Recap loadRecap(const json::Value& o)
 {
     Recap r;
-    r.id = o.string("id").substr(0, 80);
-    r.session = o.string("session").substr(0, 120);
+    r.id = json::utf8Prefix(o.string("id"), 80);
+    r.session = json::utf8Prefix(o.string("session"), 120);
     r.place = clean(o.string("place"), 120);
     r.text = clean(o.string("text"), std::size_t(std::max(rules().recapMost, 1200)), true);
     r.at = o.number("at");
     r.minutes = std::max(0, int(o.number("minutes")));
     for (const auto& id : o.array("others"))
         if (id.isString() && r.others.size() < 20)
-            r.others.push_back(id.asString().substr(0, 80));
+            r.others.push_back(json::utf8Prefix(id.asString(), 80));
     r.model = o.boolean("model");
     return r;
 }
@@ -735,7 +745,7 @@ Circle loadCircle(const json::Value& o)
 {
     const auto& r = rules();
     Circle c;
-    c.id = o.string("id").substr(0, 80);
+    c.id = json::utf8Prefix(o.string("id"), 80);
     c.name = clean(o.string("name"), std::size_t(r.circleName));
     c.created = o.number("created");
     for (const auto& e : o.array("members"))
@@ -746,15 +756,15 @@ Circle loadCircle(const json::Value& o)
             m.role = role == "keeper" || role == "officer" ? role : "member";
             m.shares = e.boolean("shares");
             m.joined = e.number("joined");
-            c.members[e.string("account").substr(0, 80)] = m;
+            c.members[json::utf8Prefix(e.string("account"), 80)] = m;
         }
     for (const auto& e : o.array("invited"))
         if (!e.string("account").empty())
-            c.invited[e.string("account").substr(0, 80)] = {e.string("by").substr(0, 80), e.number("at")};
+            c.invited[json::utf8Prefix(e.string("account"), 80)] = {json::utf8Prefix(e.string("by"), 80), e.number("at")};
     for (const auto& e : o.array("nights"))
         if (int(c.nights.size()) < r.circleNights)
-            c.nights.push_back({e.string("id").substr(0, 80), clean(e.string("place"), std::size_t(r.nightPlace)),
-                                clean(e.string("line"), std::size_t(r.nightLine)), e.string("by").substr(0, 80), e.number("at")});
+            c.nights.push_back({json::utf8Prefix(e.string("id"), 80), clean(e.string("place"), std::size_t(r.nightPlace)),
+                                clean(e.string("line"), std::size_t(r.nightLine)), json::utf8Prefix(e.string("by"), 80), e.number("at")});
     return c;
 }
 

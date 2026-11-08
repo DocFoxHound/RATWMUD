@@ -195,6 +195,10 @@ documents::Document* Game::sendLetter(Connection* c, const std::string& toId, st
     auto* w = world_.entity(writer);
     if (!w || w->npc)
         return result = {false, "No such character.", {}}, nullptr;
+    if (std::string until; silenced(writer, &until))   // (A silence is from letters too, the host's or a DM's.)
+        return result = {false, std::string(communityWorld() ? "The host has" : "A Dungeon Master has") +
+                                    " silenced your account for another " + until + ": no letters until then.", {}},
+               nullptr;
     refreshLetterPlaces();
     if (!writingPlace(writer))
         return result = {false, "Letters are written at an inn or tavern, at a scriptorium's desk, or in your Chapter's own place.", {}}, nullptr;
