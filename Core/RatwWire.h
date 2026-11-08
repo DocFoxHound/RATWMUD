@@ -57,4 +57,15 @@ Value careerPosition(const PositionState& p);
 CareerState readCareers(const Value& o);
 // A malformed subtree invalidates the complete checkpoint (minted -1). Never silently refill purses.
 SocietyState readSociety(const Value& o);
+// The staged economy's saved state (doc 79, Phase 2: the society's "staged"), written and read leniently.
+Value stagedValue(const StagedState& st);
+Value stagedTallies(const std::map<std::string, StagedState::Tally>& reasons);   // (One holder's day: the journal's too.)
+// The journal's changes for the holders whose day's tallies or welcome changed (doc 79, 9.3 and D23: Game::record), each a
+// "set" of society.staged.faucets.<day>.<holder> and society.staged.welcomed.<holder>, so a crash keeps the caps.
+Value stagedChanges(const StagedState& st, const std::vector<std::pair<std::int64_t, std::string>>& changed);
+// The journal's changes for the rest of the staged state between two records (bands, overrides, holds, lean days, escrow
+// sources, status events, the slider and the staged hour and day): a "set" for each entry new or changed and an "erase"
+// for each gone, so a crash between checkpoints changes nothing a player can see (doc 79, 9.2).
+Value stagedDiff(const StagedState& was, const StagedState& now);
+StagedState readStaged(const Value& o);
 } // namespace ratw::wire

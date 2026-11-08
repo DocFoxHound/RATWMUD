@@ -84,7 +84,9 @@ void Game::clearStall(Stall& st, const std::string& why, bool refund)
     if (refund && st.fee > 0)
     {
         const auto treasury = society.treasuryOf(st.community);
-        society.shift(treasury, st.keeper, "", 0, std::min(st.fee, society.cash(treasury)), "stall fee returned");
+        // (Staged: the town's purse topped up on demand for a player's refund, at most the fee on record: doc 79, 9.3.)
+        const auto back = playerAccountId(st.keeper) ? society.payable(treasury, st.fee) : std::min(st.fee, society.cash(treasury));
+        society.shift(treasury, st.keeper, "", 0, back, "stall fee returned");
     }
     if (!st.closed)
         world_.recordEvent({"stall closed", st.keeper, {}, st.cell, 0, 0, {}, 0, st.takings, st.id});

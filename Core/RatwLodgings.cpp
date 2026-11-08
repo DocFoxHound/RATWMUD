@@ -240,7 +240,8 @@ void Game::endLodging(std::size_t index, const std::string& why, std::int64_t re
             if (n > 0 && !society.shift("let:" + l.id, l.holder, item, n, 0, "taken from a chest"))
                 left = society.shift("let:" + l.id, l.account, item, n, 0, "left with the landlord") || left;
     }
-    if (refund > 0 && !society.shift(l.account, l.holder, "", 0, std::min(refund, society.cash(l.account)), "rent returned"))
+    // (Staged: the landlord's purse topped up on demand, so the refund, at most the rent on record, is paid: doc 79, 9.3.)
+    if (refund > 0 && !society.shift(l.account, l.holder, "", 0, society.payable(l.account, refund), "rent returned"))
         world_.bonds().addOwed(l.holder, l.landlord, refund, world_.calendarDays());
     world_.recordEvent({"lease ended", l.holder, l.landlord, l.cell, 0, 0, l.kind, 0, refund, l.id});
     if (auto* c = clientOf(l.holder))

@@ -538,8 +538,11 @@ void Society::buildSeasons()
             value = own->second;
         rules_[info.name] = std::clamp(value, info.low, info.high);
     }
+    const bool wasStaged = staged();
     stagedRule_ = rules_["staged"] > 0;             // (Doc 79, Phase 0: the staged economy's switch.)
     marketRules_ = readMarketRules();               // (Doc 79, Phase 1: the Market Board's rules, read once.)
+    if (staged() && !wasStaged)
+        openRealBalance();                          // (Phase 2: player money counted from the moment it is staged.)
     services_.clear();
     for (const auto& def : items::cityLoop().services)
     {

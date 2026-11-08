@@ -10,6 +10,7 @@
     "job": ["merchant", "smith", "baker", "brewer", "innkeeper", "guard", "soldier", "farmer", "fisher", "miner", "healer", "priest", "scholar", "laborer", "carter", "crafter", "herder", "noble", "servant", "child", "beggar", "sailor", "apprentice", "cook", "woodcutter", "official", "none"],
     "role": ["merchant", "guard", "civilian"],
     "wealth": ["destitute", "poor", "comfortable", "rich"],
+    "class": ["upper", "middle", "lower"],
     "wealth_days": "number",
     "on_dole": ["yes", "no"],
     "owes": ["yes", "no"],

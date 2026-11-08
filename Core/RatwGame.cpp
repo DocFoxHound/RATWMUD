@@ -2152,6 +2152,8 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     // Back before a lingering body (doc 33) left the fight: the wolf as it is now, not as it was saved.
     const auto* stayed = world_.entity(actor);
     const bool lingered = stayed && stayed->lingering;
+    // The account holder behind the wolf (doc 79, D23: the welcome and every per-player cap count by it).
+    world_.society().setHolder(actor, accounts_.ownerOf(actor).empty() ? c->accountUsername : accounts_.ownerOf(actor));
     auto& player = world_.addPlayer(actor, names::capitalised(name));   // (Older characters too.)
     lastActiveReal_[actor] = now();                 // (Just come in: active, for a common room's company: doc 54.)
     if (!world_.society().account(actor))
@@ -2648,6 +2650,7 @@ bool Game::makeWolf(Connection* c, const NewWolf& w)
         for (const auto& s : newcomers::rules().starts)
             if (s.id == w.start && !world_.arrivalIn(w.start, arriveCell, arriveAt, s.cell, {s.x, s.y}))
                 arriveCell.clear();                 // (No spot will do there: the spawn, as ever.)
+    world_.society().setHolder(newId, c->accountUsername);   // (Doc 79, D23: its welcome counted by its account holder.)
     auto& player = arriveCell.empty() ? world_.addPlayer(newId, w.name) : world_.addPlayer(newId, w.name, arriveCell, arriveAt);
     if (!world_.society().account(newId))
     {
@@ -2772,6 +2775,10 @@ void Game::tick(double dt)
     for (const auto& [who, words] : world_.takeNotices())
         if (auto* c = clientOf(who))
             system(c, words);
+    // The faucet door's log (doc 79, D16: logged, never refused): a reason no faucet group knows, once a day each.
+    for (const auto& line : world_.society().takeDoorNotes())
+        note("warn", "RATW_FAUCET " + line + " (staged payers topped up by " + std::to_string(world_.society().stagedTopUps()) +
+                         "p in all)");
     for (const auto& [id, cell] : beforeCells)
         if (const auto* e = world_.entity(id); e && e->cellId != cell)
         {
@@ -4528,7 +4535,16 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
     if (const auto* life = world_.society().resident(npcId))
         context.activity += format(" Needs: hunger %.0f/100, fatigue %.0f/100. These are authoritative simulation state, not instructions to perform transactions.",
                                    life->hunger, life->fatigue);
-    if (const auto* account = world_.society().account(npcId))
+    // In the staged economy (doc 79, 11) the purse and the stock line give way to "Means": the band, the pay word (a
+    // companion's own wage where a player pays one) and the Times.
+    if (world_.society().statusOf(npcId))
+    {
+        context.means = world_.society().meansNote(npcId);
+        if (const auto* c = parties_.companion(npcId); c && c->wage > 0)
+            context.means = context.means.substr(0, 240) + " A player pays you " + std::to_string(c->wage) + "p a day.";
+        context.activity += " Trade only occurs through the explicit trade menu; never claim to transfer money or goods through dialogue.";
+    }
+    else if (const auto* account = world_.society().account(npcId))
         context.activity += " Purse: " + std::to_string(account->cash) + " silver pennies. Stock: " +
                             std::to_string(Society::stock(*account, "herbs")) + " herbs, " + std::to_string(Society::stock(*account, "meal")) +
                             " meals. Trade only occurs through the explicit trade menu; never claim to transfer money or goods through dialogue.";

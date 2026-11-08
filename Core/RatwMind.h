@@ -25,6 +25,7 @@ struct Context
     std::string fame;                          // What it knows of the speaker's deeds, and how sure (doc 56): ≤ 400.
     std::string away;                          // The speaker is back after a long while, and when it last saw them: ≤ 200.
     std::string trouble;                       // Its own trouble, true, to speak of if the talk turns that way (doc 57): ≤ 300.
+    std::string means;                         // How it gets by: band, pay word, the Times (doc 79, 11): ≤ 300.
 };
 
 // Every field checked: the emotion one of a few words, the nudges -3..3, the notes short.

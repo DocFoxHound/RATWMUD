@@ -299,6 +299,8 @@ json::Value encode(const Board& b)
     auto o = Value::object();
     o.add("slider", b.slider);
     o.add("sliderTarget", b.sliderTarget);
+    if (b.sliderDay >= 0)
+        o.add("sliderDay", b.sliderDay);
     o.add("day", b.day);
     auto cells = Value::object();
     for (const auto& [m, goods] : b.cell)
@@ -406,6 +408,7 @@ Board decode(const json::Value& v)
     const auto good = [&](const std::string& s) { return name(s) && (itemValid(s) || items::good(s)); };
     b.slider = int(whole(v["slider"], -100, 100, 0));
     b.sliderTarget = int(whole(v["sliderTarget"], -100, 100, 0));
+    b.sliderDay = std::int64_t(whole(v["sliderDay"], -1, 365000000, -1));
     b.day = std::int64_t(whole(v["day"], -1, 365000000, -1));
     for (const auto& [m, goods] : v.object("cell").fields())
         if (name(m))
@@ -700,6 +703,23 @@ void Society::setProsperity(int target, bool now)
     b.sliderTarget = std::clamp(target, -100, 100);
     if (now)
         b.slider = b.sliderTarget;                 // (The DM's "now": no smoothing, doc 79, 6.3.)
+}
+
+void Society::stepSlider(std::int64_t day, bool now)
+{
+    // The one slider (doc 79, 5.2; D17): the Board's dawn and the bands' day's pass both step it, once a day whichever
+    // comes first, at most the status table's smoothing (10, SliderStepADay) a day toward the DM's; "now" goes at once.
+    // Its first step (no day yet) counts as one day's.
+    auto& b = state_.board;
+    if (now)
+        b.slider = b.sliderTarget;
+    else if (day > b.sliderDay)
+    {
+        const auto days = b.sliderDay < 0 ? 1 : std::min<std::int64_t>(day - b.sliderDay, 365);
+        const int step = int(std::min<std::int64_t>(200, std::llround(statusTable().smoothing * double(days))));
+        b.slider = b.slider < b.sliderTarget ? std::min(b.sliderTarget, b.slider + step) : std::max(b.sliderTarget, b.slider - step);
+    }
+    b.sliderDay = std::max(b.sliderDay, day);
 }
 
 void Society::setPressure(const std::string& market, const std::string& base, double P, const std::string& cause)
@@ -1509,8 +1529,7 @@ void Society::marketMorning(std::int64_t day)
         it = it->second < day - 1 ? b.restocked.erase(it) : std::next(it);
     for (auto it = b.settingOut.begin(); it != b.settingOut.end();)
         it = it->second < now ? b.settingOut.erase(it) : std::next(it);
-    const int step = int(std::min<std::int64_t>(200, std::int64_t(market::SliderStepADay) * days));
-    b.slider = b.slider < b.sliderTarget ? std::min(b.sliderTarget, b.slider + step) : std::max(b.sliderTarget, b.slider - step);
+    stepSlider(day);
     while (b.recent.size() > market::RecentKept)
         b.recent.pop_front();
     b.day = day;

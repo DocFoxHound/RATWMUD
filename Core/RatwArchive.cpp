@@ -192,7 +192,10 @@ void Game::finishArchiveTask(Connection* c, const ArchiveTask& t, bool half, con
     auto& society = world_.society();
     const auto community = world_.lawTown(t.cell);
     const auto treasury = society.treasuryOf(community);
-    const auto paid = std::min(archivePay(t.cell, half), society.cash(treasury));
+    // (Staged: the town's purse topped up on demand, the pay held to the day's rewards cap by account holder: doc 79, 9.)
+    auto paid = society.payable(treasury, archivePay(t.cell, half));
+    if (society.staged())
+        paid = std::min(paid, society.faucetRoom(me, "rewardsADay"));
     if (paid > 0)
         society.shift(treasury, me, "", 0, paid, "archive work");
     ++archiveToday_[me + "|" + std::to_string(std::int64_t(std::floor(world_.calendarDays())))];

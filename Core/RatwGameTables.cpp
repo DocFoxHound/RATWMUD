@@ -337,6 +337,11 @@ bool Game::tableCommand(Connection* c, const json::Value& j, Result& result)
         const auto today = std::to_string(std::int64_t(std::floor(world_.calendarDays())));
         const Entity* pick = nullptr;
         double nearest = 1e9;
+        // (Staged: the stakes of the residents already seated count against the asker's day's cap: doc 79, 9.3.)
+        std::int64_t seatedStakes = 0;
+        for (const auto& s : t.seats)
+            if (const auto* o = world_.entity(s); o && o->npc)
+                seatedStakes += t.stake;
         for (const auto* r : world_.entitiesIn(t.cell))
         {
             if (!r || !r->npc || r->dead || r->age < (t.stake > 0 ? 16 : 14) || world_.seatedResident(r->id) || world_.inBattle(r->id))
@@ -354,6 +359,9 @@ bool Game::tableCommand(Connection* c, const json::Value& j, Result& result)
                 const auto* purse = society.account(r->id);
                 if (!purse || purse->cash < ResidentPurseLeast || t.stake * 20 > purse->cash ||
                     stakedToday_[r->id + "|" + today] >= StakedGamesADay)
+                    continue;
+                // (Staged: residents stake only within the asker's day's cap on winnings from them: doc 79, 9.3.)
+                if (society.staged() && society.faucetRoom(me, "stakesADay") - seatedStakes < t.stake)
                     continue;
             }
             if (const double d = std::hypot(r->position.x - t.x - .5, r->position.y - t.y - .5); d < nearest)

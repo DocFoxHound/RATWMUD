@@ -114,7 +114,11 @@ struct Ripple
 };
 struct Board
 {
-    int slider = 0, sliderTarget = 0;                // The smoothed prosperity and where it heads (-100..100).
+    // The DM's prosperity, the one slider of the staged economy (doc 79, 5.2): the smoothed value the Board's Times and
+    // budgets and Phase 2's bands all read, where it heads, and the day it last stepped (-1: not yet). It moves at most
+    // the status table's smoothing (SliderStepADay) a day (D17; Society::stepSlider).
+    int slider = 0, sliderTarget = 0;
+    std::int64_t sliderDay = -1;
     std::map<std::string, std::map<std::string, Cell>> cell;                 // Market -> base good.
     std::int64_t day = -1;                           // The market day the counts below are for.
     std::map<std::string, std::int64_t> budgetLeft;  // Till -> its buying budget left today (absent: the whole).
@@ -131,7 +135,7 @@ struct Board
     std::deque<Ripple> recent;
     bool empty() const
     {
-        return slider == 0 && sliderTarget == 0 && cell.empty() && day < 0 && budgetLeft.empty() && takenToday.empty() &&
+        return slider == 0 && sliderTarget == 0 && sliderDay < 0 && cell.empty() && day < 0 && budgetLeft.empty() && takenToday.empty() &&
                pushed.empty() && netToday.empty() && soldToday.empty() && week < 0 && discountWeek.empty() &&
                restocked.empty() && settingOut.empty() && recent.empty();
     }

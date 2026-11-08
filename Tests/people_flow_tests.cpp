@@ -423,10 +423,27 @@ void theStagedEconomy()
     for (const auto& [id, life] : s.state().residents)
         expect(fed(s, id) >= Society::NourishADay && fed(s, id) < 2 * Society::NourishADay + 50,
                id + " fed a day or two: " + std::to_string(fed(s, id)));
-    expect(Society::stock(*s.account("ivar"), "bread") > 0 && Society::stock(*s.account("lady"), "meal") > 0,
-           "the docks' household bread, the Heights' meals");
-    expect(s.cash("lady") > 40 && s.cash("ivar") < 40 && s.cash("ivar") >= 3, "purses drawn toward their class: the lady " +
-           std::to_string(s.cash("lady")) + "p, the docker " + std::to_string(s.cash("ivar")) + "p");
+    // (Doc 79, Phase 2: fed by band, each household the first of its band's foods there is.)
+    for (const auto& [id, life] : s.state().residents)
+    {
+        const auto* st = s.statusOf(id);
+        expect(st != nullptr, id + " has a status");
+        bool eats = false;
+        for (const auto& food : s.statusTable().rows[std::size_t(st->band)].food)
+            eats |= Society::stock(*s.account(id), food) > 0;
+        expect(eats, id + " holds its band's food (" + status::bandName(st->band) + ")");
+    }
+    expect(s.statusOf("lady")->band >= status::Comfortable, "the Heights' lady at least comfortable");
+    // (Doc 79, Phase 2: toward their band's range, from the 40p each was written with.)
+    for (const auto& [id, life] : s.state().residents)
+    {
+        if (id == "moss")
+            continue;                               // (Given the treasury above: drawn down, not yet in range.)
+        const auto& row = s.statusTable().rows[std::size_t(s.statusOf(id)->band)];
+        expect(s.cash(id) >= std::min<std::int64_t>(40, row.purseLow) && s.cash(id) <= std::max<std::int64_t>(40, row.purseHigh) &&
+                   s.cash(id) != 40,
+               "purses drawn toward their band's: " + id + " " + std::to_string(s.cash(id)) + "p");
+    }
     expect(s.cash("treasury") >= Society::TreasuryFloat && s.cash("treasury") <= Society::StagedTreasuryMost,
            "the treasury set within its range: " + std::to_string(s.cash("treasury")));
     const auto wagesAfter = std::count_if(s.state().ledger.begin(), s.state().ledger.end(),

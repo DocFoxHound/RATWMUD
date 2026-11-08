@@ -3478,6 +3478,11 @@ void World::absorbJournal()
         e.coins = entry.coins;
         recordEvent(std::move(e));
     }
+    // The staged economy's provisions (doc 79, 6.6): the economy event's familiarity step, direct, between a household's
+    // member and its food keeper. No WorldEvent: the event store doesn't fill, no promise is kept, no gift remembered.
+    for (const auto& [member, keeper] : society_.takeProvisions())
+        if (const auto *a = entity(member), *b = entity(keeper); a && b && !a->dead && !b->dead && member != keeper)
+            bonds_.mutual(member, keeper, {.5, .5, 1, 0, 0}, calendarDays_);
 }
 
 std::size_t World::offstageCount() const

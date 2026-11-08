@@ -44,6 +44,16 @@ std::vector<std::int64_t> counters(const SocietyState& s)
             std::int64_t(s.decisionRemainder * 1e9)};
 }
 
+// The staged state but its tallies and welcomes (those go by holder: wire::stagedChanges), for the journal's shadow.
+StagedState stagedRest(const StagedState& st)
+{
+    StagedState out;
+    out.bands = st.bands; out.overrides = st.overrides; out.holds = st.holds; out.lean = st.lean;
+    out.escrowSource = st.escrowSource; out.events = st.events;
+    out.hour = st.hour; out.day = st.day;
+    return out;
+}
+
 Value companionsOf(const std::map<std::string, std::string>& owners)
 {
     auto out = Value::object();
@@ -131,6 +141,7 @@ void Game::prime(Shadow& s) const
     s.ledgerSize = society.ledger.size();
     s.ledgerLast = society.ledger.empty() ? 0 : std::uint64_t(society.ledger.back().sequence);
     s.positions = society.careers.positions;
+    s.staged = stagedRest(society.staged);
     s.roads = json::dump(checkpoint::roads(world_.roads()));
     s.crime = json::dump(checkpoint::crime(world_.crime()));
     s.companions = json::dump(companionsOf(companionOwner_));
@@ -190,6 +201,25 @@ void Game::record(unsigned what, const std::string& character)
             set(path({"society", "herbPatch"}), society.herbPatch);
             set(path({"society", "decisionRemainder"}), society.decisionRemainder);
             shadow_.economy = now;
+        }
+        // The staged economy's tallies and welcomes by account holder (doc 79, 9.3 and D23), the holders changed since the
+        // last record: journalled, so a crash between checkpoints neither reopens a welcome nor resets a day's caps.
+        if (const auto changed = world_.society().takeStagedChanged(); !changed.empty())
+        {
+            auto staged = wire::stagedChanges(society.staged, changed);
+            for (auto& change : staged.items())
+                changes.push(std::move(change));
+        }
+        // The rest of it (doc 79, 9.2): escrow sources, holds, lean days, status events, bands and overrides changed since the
+        // last record, so a crash keeps a pot's staged-sourced part, a victim's lean days and the bands as they were.
+        {
+            auto rest = wire::stagedDiff(shadow_.staged, society.staged);
+            if (!rest.items().empty())
+            {
+                for (auto& change : rest.items())
+                    changes.push(std::move(change));
+                shadow_.staged = stagedRest(society.staged);
+            }
         }
         const std::uint64_t last = society.ledger.empty() ? 0 : std::uint64_t(society.ledger.back().sequence);
         if (society.ledger.size() != shadow_.ledgerSize || last != shadow_.ledgerLast)
