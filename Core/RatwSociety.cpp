@@ -7,6 +7,9 @@
 #include <cctype>
 #include <cmath>
 #include <limits>
+#include <cstdlib>
+#include <functional>
+#include <map>
 
 namespace ratw
 {
@@ -369,6 +372,19 @@ void Society::addPlayer(const std::string& id)
 {
     if (!playerAccountId(id) || state_.accounts.count(id) || state_.accounts.size() >= MaxAccounts)
         return;
+    if (staged())
+    {
+        // The welcome as a faucet (doc 79, 9.2): made, not taken from the treasury, so a dry treasury never starts a
+        // player with nothing. (Its cap, once per account holder per world per game week, is the Game's: Phase 2.)
+        state_.accounts[id] = EconomyAccount{};
+        auto& made = state_.accounts.at(id);
+        made.cash = PlayerWelcome;
+        state_.minted += PlayerWelcome;
+        record("welcome", "made", id, "", 0, PlayerWelcome);
+        create(id, "herbs", 2, "welcome");
+        create(id, "meal", StartingMeals, "provisions to start with");
+        return;
+    }
     auto& reserve = state_.accounts.at("treasury");
     EconomyAccount created;
     created.cash = std::min<std::int64_t>(PlayerWelcome, reserve.cash);
@@ -581,7 +597,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         setYearDay(absoluteDay);                    // (The seasons in the Country's supply: doc 68, Progress.)
         // The city's loop (doc 68), each game hour as it turns: hours missed run once each, at most a day of them; the
         // first hour a society decides (a fresh world, a restore) is not run, so nothing is paid twice.
-        if (!needsPaused())
+        if (!needsPaused() && !staged())
         {
             const auto hour = std::int64_t(std::floor(absoluteDay * 24));
             if (loopHour_ < 0 || hour < loopHour_)
@@ -597,6 +613,11 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         }
         else
             loopHour_ = -1;
+        // The staged economy instead (doc 79, Phase 0): food by class, the nightly purse and treasury set.
+        if (!needsPaused() && staged())
+            stagedHourly(std::int64_t(std::floor(absoluteDay * 24)));
+        else
+            stagedHour_ = -1;
         return decideAuthored(absoluteDay, bodies);
     }
     const double hour = (absoluteDay - std::floor(absoluteDay)) * 24.;
@@ -1691,6 +1712,227 @@ int Society::startingStock(const std::string& ware)
 }
 
 // restockFromStore: RatwCityLoop.cpp (doc 68, 7).
+
+// The staged economy, Phase 0 (Docs/Design/79-a-staged-economy.md, 19): the households, their food by class, the nightly
+// purse and treasury set. Raw sets: no ledger entry, no journal record, no WorldEvent.
+namespace
+{
+std::uint64_t stagedHash(const std::string& text)
+{
+    std::uint64_t h = 1469598103934665603ULL;
+    for (const unsigned char c : text)
+        h = (h ^ c) * 1099511628211ULL;
+    return h;
+}
+// A lot from 0 to 1, fixed by its words (the same on every platform and thread).
+double stagedLot(const std::string& words)
+{
+    return double(stagedHash(words) % 1000003ULL) / 1000003.;
+}
+// What an account holds to eat, in nourishment.
+double stagedOnHand(const EconomyAccount& a)
+{
+    double n = 0;
+    for (const auto& [item, count] : a.stock)
+        if (count > 0)
+            n += double(Society::nourishment(item)) * count;
+    return n;
+}
+} // namespace
+
+bool Society::stagedForced()
+{
+    static const bool forced = [] {
+        const char* on = std::getenv("RATW_STAGED_ECONOMY");
+        return on && std::string(on) == "1";
+    }();
+    return forced;
+}
+
+bool Society::staged() const
+{
+    return stagedRule_ || stagedForced();          // (stagedRule_: the rule as buildSeasons last read the world's rules.)
+}
+
+std::map<std::string, std::vector<std::string>> Society::households(bool homeless) const
+{
+    // (From RatwCityLoop.cpp, doc 79, 6.2: the city's loop goes in Phase 3, the households stay.)
+    // A household: the residents sharing a home (in a communal home, each alone), with a child under 16 and a spouse who
+    // live elsewhere (a child given a room of its own upstairs): whoever earns feeds the family.
+    std::map<std::string, std::string> keyOf;          // Resident -> its home's key.
+    for (const auto& [id, life] : state_.residents)
+        if (spec(id) && !dead_.count(id) && !life.homeCell.empty())
+            keyOf[id] = communalHome(life.homeCell) ? life.homeCell + "|" + id : life.homeCell;
+    std::map<std::string, std::string> joined;         // Home key -> the key it shops with (union by kin).
+    const std::function<std::string(const std::string&)> root = [&](const std::string& k) {
+        const auto found = joined.find(k);
+        return found == joined.end() || found->second == k ? k : (joined[k] = root(found->second));
+    };
+    const auto join = [&](const std::string& a, const std::string& b) {
+        const auto ka = keyOf.find(a), kb = keyOf.find(b);
+        if (ka == keyOf.end() || kb == keyOf.end())
+            return;
+        const auto ra = root(ka->second), rb = root(kb->second);
+        if (ra != rb)
+            joined[std::max(ra, rb)] = std::min(ra, rb);
+    };
+    for (const auto& [child, parents] : state_.careers.parents)
+        if (const auto* c = spec(child); c && c->age < 16)
+            for (const auto& parent : parents)
+                join(child, parent);
+    for (const auto& [a, b] : state_.careers.spouses)
+        join(a, b);
+    std::map<std::string, std::vector<std::string>> homes;
+    for (const auto& [id, key] : keyOf)
+        homes[root(key)].push_back(id);
+    // The homeless (doc 79, 6.2): each a household of its own, joined to nobody.
+    if (homeless)
+        for (const auto& [id, life] : state_.residents)
+            if (life.homeCell.empty() && spec(id) && !dead_.count(id))
+                homes["|" + id].push_back(id);
+    return homes;
+}
+
+std::string Society::householdClass(const std::vector<std::string>& members, ClassPass* pass) const
+{
+    std::map<std::string, int> count;
+    for (const auto& m : members)
+    {
+        auto c = classOf(m, 0, pass);               // (The public classOf's: middle while unknown.)
+        ++count[c.empty() ? std::string("middle") : c];
+    }
+    std::string cls = count.count("upper") ? "upper" : "middle";
+    if (!count.count("upper"))
+        for (const auto& [c, n] : count)
+            if (n > count[cls])
+                cls = c;
+    return cls;
+}
+
+void Society::stagedHourly(std::int64_t hour)
+{
+    // Each game hour as it turns, hours missed run once each (at most a day of them); the first hour is not run (a fresh
+    // world, a restore), as the city's loop's.
+    if (stagedHour_ < 0 || hour < stagedHour_)
+    {
+        stagedHour_ = hour;
+        stagedHouseholds(hour / 24);
+        return;
+    }
+    for (auto h = std::max(stagedHour_ + 1, hour - 23); h <= hour; ++h)
+    {
+        const int hod = int(h % 24);
+        const auto day = h / 24;
+        if (hod == 0)
+            stagedNight(day);                       // (The night's set by yesterday's households, then today's.)
+        if (day != stagedDay_)
+            stagedHouseholds(day);
+        if (hod >= ShopOpen && hod < ShopShut)
+            for (const auto& [home, h0] : stagedHomes_)
+                if (h0.hour == hod)
+                    stagedFood(home, h0.members, h0.cls);
+    }
+    stagedHour_ = hour;
+}
+
+std::map<std::string, std::string> Society::householdClasses(const std::map<std::string, std::vector<std::string>>& homes) const
+{
+    ClassPass pass;
+    std::map<std::string, std::string> out;
+    for (const auto& [home, members] : homes)
+        out.emplace(home, home.rfind("|", 0) == 0 ? std::string("homeless") : householdClass(members, &pass));
+    return out;
+}
+
+void Society::stagedHouseholds(std::int64_t day)
+{
+    stagedDay_ = day;
+    countFarmPosts();                               // (The farms' posts held, as tendFarms counted them each day.)
+    stagedHomes_.clear();
+    auto homes = households(true);
+    auto classes = householdClasses(homes);
+    for (auto& [home, members] : homes)
+    {
+        StagedHome h;
+        h.cls = std::move(classes.at(home));
+        h.hour = ShopOpen + int(stagedHash(home) % std::uint64_t(ShopShut - ShopOpen));
+        h.members = std::move(members);
+        stagedHomes_.emplace(home, std::move(h));
+    }
+}
+
+void Society::stagedFood(const std::string& home, const std::vector<std::string>& members, const std::string& cls)
+{
+    // Minimal food by class (doc 79, 19, Phase 0; the bands and the shelf come in Phase 2): a day's nourishment a head of
+    // the class's staple (a meal for the upper and middle class; bread for the lower and the homeless), never more than
+    // two days' on hand. Made, not bought.
+    (void)home;
+    const std::string staple = cls == "upper" || cls == "middle" || !itemValid("bread") ? "meal" : "bread";
+    const int each = std::max(1, nourishment(staple));
+    for (const auto& id : members)
+    {
+        const auto found = state_.accounts.find(id);
+        if (found == state_.accounts.end() || dead_.count(id) || !spec(id))
+            continue;
+        auto& wallet = found->second;
+        const double have = stagedOnHand(wallet);
+        const double want = std::min(2 * NourishADay, have + NourishADay);
+        if (have >= want)
+            continue;
+        const int pieces = int(std::ceil((want - have) / each - 1e-9));
+        if (pieces < 1 || stock(wallet, staple) > StockLimit - pieces ||
+            (!wallet.stock.count(staple) && wallet.stock.size() >= MaxGoodsKinds))
+            continue;
+        wallet.stock[staple] += pieces;
+    }
+}
+
+std::int64_t Society::stagedPurse(const std::string& id, const std::string& home, const std::string& cls, std::int64_t day) const
+{
+    // A stable point in its class's range from its home's lot, with a little jitter by the day (doc 79, 6.5's purse
+    // targets: upper as the rich, middle as the comfortable, lower as the poor, the homeless as the destitute).
+    const auto [low, high] = cls == "upper" ? std::pair<std::int64_t, std::int64_t>{60, 300}
+                             : cls == "middle" ? std::pair<std::int64_t, std::int64_t>{12, 60}
+                             : cls == "homeless" ? std::pair<std::int64_t, std::int64_t>{0, 3}
+                                                 : std::pair<std::int64_t, std::int64_t>{3, 12};
+    const double at = .8 * stagedLot(home + "|purse") + .2 * stagedLot(id + "|" + std::to_string(day));
+    return low + std::int64_t(std::llround(double(high - low) * at));
+}
+
+void Society::stagedNight(std::int64_t day)
+{
+    // Each resident's purse halfway toward its target (down as well as up), and the treasury and each town treasury
+    // within TreasuryFloat and StagedTreasuryMost (doc 79, 9.2).
+    for (const auto& [home, h] : stagedHomes_)
+        for (const auto& id : h.members)
+            if (const auto* a = account(id); a && !dead_.count(id))
+            {
+                const auto target = stagedPurse(id, home, h.cls, day);
+                const auto gap = target - a->cash;
+                if (gap != 0)
+                    stagedSet(id, a->cash + (gap > 0 ? (gap + 1) / 2 : -((-gap + 1) / 2)));
+            }
+    std::vector<std::string> treasuries;
+    for (const auto& [id, a] : state_.accounts)
+        if (id == "treasury" || id.rfind("stores:", 0) == 0)
+            treasuries.push_back(id);
+    for (const auto& id : treasuries)
+        stagedSet(id, std::clamp<std::int64_t>(cash(id), TreasuryFloat, StagedTreasuryMost));
+}
+
+void Society::stagedSet(const std::string& accountId, std::int64_t coins)
+{
+    const auto found = state_.accounts.find(accountId);
+    if (found == state_.accounts.end())
+        return;
+    coins = std::clamp<std::int64_t>(coins, 0, MoneyLimit);
+    const auto delta = coins - found->second.cash;
+    if (delta > 0)
+        state_.minted += delta;
+    else
+        state_.sunk -= delta;
+    found->second.cash = coins;
+}
 
 // A Gift or a paw lent to a maker (docs 43 and 53), kept for the economy rules to come.
 void Society::lendGift(const std::string& maker, double lift, double untilDay)

@@ -633,7 +633,9 @@ class Society
     // it, lower office), "lower" (hands, waged and service work, the Country's labour), "any" (the Watch, the clergy: their
     // own cases), or "" (no post that pays: lessons, play, leisure); and a wolf's class, resident or unplaced ("upper",
     // "middle" or "lower"): its own work's as written, else its family's, else its household's, else middle.
-    std::string postClass(const Position& p) const;
+    // (With `pass`, a pass over many wolves at once, as the staged day's turn: ClassPass below.)
+    struct ClassPass;
+    std::string postClass(const Position& p, ClassPass* pass = nullptr) const;
     std::string classOf(const std::string& id) const
     {
         auto cls = classOf(id, 0);
@@ -735,6 +737,13 @@ class Society
     // carries. A switch since doc 68 (EconomySpec::needsPaused), off by default: the city's loop runs. Always paused
     // outside an authored world.
     bool needsPaused() const { return roster_ != Roster::Authored || authored_.economy.needsPaused; }
+    // The staged economy (Docs/Design/79-a-staged-economy.md, Phase 0): the one rule ("staged", off by default) that
+    // switches the conserving economy off: the city's loop (households' shopping, the wages, the alms), the steering, the
+    // Wharf's money and the farms' money. Residents are fed by their household's class instead, their purses and the
+    // treasuries set each night, and a player's welcome made rather than taken from the treasury. Hunger stays real (so
+    // needsPaused() still pauses everything). RATW_STAGED_ECONOMY=1 in the environment forces it on (the test switch).
+    bool staged() const;
+    static bool stagedForced();
     // Goods made (not bought: a grant, a player's work): only goods, never money.
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
@@ -873,8 +882,52 @@ class Society
     // back in the Country's purse.
     void settleEstates();
     // The households that buy together (doc 68, 3): by home, joined by kin (a child under 16, a spouse), by a key each.
-    // (Public for world_check's --economy-detail, which reads it.)
-    std::map<std::string, std::vector<std::string>> households() const;
+    // (Public for world_check's --economy-detail, which reads it.) With `homeless` (doc 79, 6.2), a resident with no
+    // home is a household of its own ("|<id>"), so the homeless are counted and fed; the city's loop leaves them out.
+    std::map<std::string, std::vector<std::string>> households(bool homeless = false) const;
+    // A household's class (doc 79, 6.1): upper where any member is, else most of its members' (middle at a tie).
+    std::string householdClass(const std::vector<std::string>& members, ClassPass* pass = nullptr) const;
+    // Every household's class at once (the staged day's turn), each the same as householdClass's: with one ClassPass,
+    // each wolf's class, each work room's shops and each home's residents are worked out once for the pass, not once a
+    // member (O(residents + posts), not their product: dev-old's 1,083 residents took 13 ms, one by one).
+    std::map<std::string, std::string> householdClasses(const std::map<std::string, std::vector<std::string>>& homes) const;
+    // What a pass over the classes works out once (nothing outside it changes while it runs: a local, never a member,
+    // so no thread shares one). Each cache filled on first use.
+    struct ClassPass
+    {
+        std::map<std::pair<std::string, int>, std::string> classes;                     // classOf(id, depth).
+        bool shopsBuilt = false, homesBuilt = false, kinBuilt = false;
+        std::unordered_map<std::string, std::pair<int, const Position*>> shops;            // Work cell -> shops, the last.
+        std::unordered_map<std::string, std::vector<const std::string*>> homes;            // Home cell -> residents, by id.
+        std::unordered_map<std::string, std::vector<const Kin*>> kin;                      // Wolf -> its written kin records.
+    };
+    // What a post is (doc 79, 6.3; payOf's kind, without the city's loop): "keeper" (a merchant), "farm" (a farm's or a
+    // works' post: `farm`, `farmKeeper`), "watch" (a guard; `rule` its head's wage rule, or -1), "hand" (a post whose
+    // work room holds exactly one shop: `shop`), "public" or "estate" (the first postRules() rule with a word in its title:
+    // `rule`), or "" (none).
+    struct PostKind
+    {
+        std::string kind;
+        int rule = -1, farm = -1;
+        bool farmKeeper = false;
+        const Position* shop = nullptr;
+    };
+    PostKind postKind(const Position& post, ClassPass* pass = nullptr) const;
+    // The posts' rules by the words of their titles (city_loop.json's `wages` before doc 79; RatwCareers.cpp): each its
+    // name, payer ("treasury" or "estates") and wage word ("keeper": a head's), in order.
+    static const std::vector<items::WageRule>& postRules();
+    // Phase 0's staged steps (doc 79, 6.5 and 9.2; RatwSociety.cpp), each game hour while staged() and !needsPaused():
+    // the households and their classes at the day's turn, each household's food at its hour (8:00-18:00), and the
+    // nightly set at 0:00. The purse a resident is drawn toward (its household class's range: lower 3-12p, middle 12-60p,
+    // upper 60-300p, the homeless 0-3p) and the treasuries' range (TreasuryFloat to StagedTreasuryMost).
+    void stagedHourly(std::int64_t hour);
+    void stagedFood(const std::string& home, const std::vector<std::string>& members, const std::string& cls);
+    void stagedNight(std::int64_t day);
+    std::int64_t stagedPurse(const std::string& id, const std::string& home, const std::string& cls, std::int64_t day) const;
+    static constexpr std::int64_t StagedTreasuryMost = 2000;
+    // A staged account set to `coins` (doc 79, 9.2: a raw set, no ledger or journal entry). Until Phase 3 removes the
+    // conservation gate, the difference is counted as minted or sunk, so conserved() and restore still hold.
+    void stagedSet(const std::string& account, std::int64_t coins);
     // A shop's crew (its keeper and hands): the hours an hour it can give to making.
     int crewOf(const std::string& till) const;
     // The carters' till that takes carriage now (the one holding least), or CarriageFund where there is none.
@@ -987,7 +1040,8 @@ class Society
     static std::string farmCrew(const std::string& farm) { return "crew:" + farm; }
     const std::vector<FarmNow>& farms() const { return farms_; }
     // Whether an area (of items::farms().areas) is on today, and the area on that supplies a good (-1: the Country does).
-    bool farmAreaOn(std::size_t area) const { return area < areaOn_.size() && areaOn_[area]; }
+    // (In the staged economy every area is on: doc 79, 8.2, the farm list stays and its posts fill.)
+    bool farmAreaOn(std::size_t area) const { return area < areaOn_.size() && (areaOn_[area] || staged()); }
     int farmAreaOf(const std::string& item) const;
     // The pieces of a good the on farms hold, all together; their price for it a year (0: the season's, as the store room).
     int farmsHold(const std::string& item) const;
@@ -1502,6 +1556,18 @@ class Society
     std::unordered_map<std::string, std::int64_t> restockedAt_;   // Keeper -> the game hour it last restocked (not saved).
     // The city's loop (doc 68; none of it saved: after a restart the shelves start again from the starting stock).
     std::int64_t loopHour_ = -1;                    // The last game hour the loop ran (-1: not yet; the first is not run).
+    // The staged economy's hours (doc 79, Phase 0): the last it ran (-1: not yet; the first is not run, as the loop's),
+    // and today's households with their class and the hour each is fed (rebuilt at the day's turn). Not saved.
+    std::int64_t stagedHour_ = -1, stagedDay_ = -1;
+    bool stagedRule_ = false;                       // The rule "staged" (buildSeasons), so staged() is cheap.
+    struct StagedHome
+    {
+        std::vector<std::string> members;
+        std::string cls;
+        int hour = ShopOpen;
+    };
+    std::map<std::string, StagedHome> stagedHomes_;
+    void stagedHouseholds(std::int64_t day);
     void loopHourly(std::int64_t hour, int season);
     void householdsShop(int hourOfDay, std::int64_t day, int season);
     void giveAlms();
@@ -1636,7 +1702,8 @@ class Society
     mutable bool careersIndexed_ = false;
     std::vector<ResidentRequest> requests_;
     std::map<std::string, int> fills_;
-    std::string classOf(const std::string& id, int depth) const;
+    std::string classOf(const std::string& id, int depth, ClassPass* pass = nullptr) const;
+    std::string workOutClass(const std::string& id, int depth, ClassPass* pass) const;   // (classOf's work, uncached.)
     void tendBirths(double now, const CareerWorld& world);
     // A wolf of the city for an empty post (PostWaitDays), of its class (classStep 0) or the next (1), or "".
     std::string cityWolfFor(const Position& p, const CareerWorld& world, int classStep) const;

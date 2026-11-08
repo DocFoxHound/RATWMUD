@@ -380,7 +380,9 @@ bool Society::arrive(const ResidentRequest& request)
             return false;
         authored_.unplaced.erase(std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
                                               [&](const ResidentSpec& u) { return u.id == r.id; }));
-        if (!request.purseFrom.empty())
+        if (staged())
+            stagedSet(r.id, std::min<std::int64_t>(request.purse, ArrivalPurse));   // (Doc 79: no Wharf or crew purse.)
+        else if (!request.purseFrom.empty())
             if (const auto purse = std::min(request.purse, cash(request.purseFrom)); purse > 0)
                 shift(request.purseFrom, r.id, "", 0, purse,
                       request.purseFrom == WharfFund ? "an arrival's purse, from the Wharf" : "a farm crew's purse, to its people");
@@ -411,39 +413,139 @@ bool Society::arrive(const ResidentRequest& request)
         return false;
     authored_.unplaced.erase(std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
                                           [&](const ResidentSpec& u) { return u.id == r.id; }));
-    // Its purse from the Country's account (an unplaced NPC's own is outside the economy's money): moved, never made.
-    if (const auto purse = std::min(request.purse, cash(WharfFund)); purse > 0)
+    // Its purse from the Country's account (an unplaced NPC's own is outside the economy's money): moved, never made. In
+    // the staged economy (doc 79, 6.5) a plain amount, the night's set drawing it to its household's.
+    if (staged())
+        stagedSet(r.id, std::min<std::int64_t>(request.purse, ArrivalPurse));
+    else if (const auto purse = std::min(request.purse, cash(WharfFund)); purse > 0)
         shift(WharfFund, r.id, "", 0, purse, "an arrival's purse, from the Wharf");
     return true;
 }
 
-std::string Society::postClass(const Position& p) const
+const std::vector<items::WageRule>& Society::postRules()
 {
-    const auto pay = payOf(p);
-    if (pay.kind.empty())
+    // City_loop.json's `wages` as they stood at doc 79 (the order matters: the first rule with a word in a title wins), so
+    // a post's kind and class no longer need the city's loop (doc 79, 6.3). payOf, postClass and payWages read this copy,
+    // so city_loop.json's `wages` is no longer read for pay or class: people_flow_tests' postKindsWithoutTheLoop checks
+    // the two still agree (and goes when Phase 3 deletes the key).
+    static const std::vector<items::WageRule> rules = {
+        {"the Crown's and the offices' heads", "treasury", "keeper",
+         {"the queen", "the king's daughter", "running the city office", "reigning", "chancellor", "royal secretary",
+          "the crown's treasurer", "hearing cases", "keeping the rolls", "collecting the crown's customs",
+          "warden of the market", "abbot", "keeping the washhouse", "keeping the bathhouse", "commanding the watch"}},
+        {"the Houses' heads", "estates", "keeper",
+         {"lending", "overseeing the grayrock wharf", "harbourmaster", "overseeing the counting house"}},
+        {"the sea trade", "estates", "",
+         {"unloading ships", "working the cranes", "carrying from", "tallying in the", "keeping the iron store",
+          "keeping the long store", "keeping the new store", "keeping the wharf's books", "wharf office"}},
+        {"the Houses' people", "estates", "",
+         {"ruling house", "keeping greatly house", "keeping grayrock hall", "keeping timberland court", "stewarding",
+          "serving at greatly house", "serving in the hall", "in service to the", "keeping the fell",
+          "running the house's", "on house business", "keeping the greatly stables", "counting house",
+          "at home in the heights", "reading in the gardens", "walking the gardens", "visiting the sick"}},
+        {"public posts", "treasury", "",
+         {"reigning", "the crown's", "royal secretary", "herald", "usher", "the king's household",
+          "keeping the chambers", "chancellor", "the council", "hearing cases", "pleading cases",
+          "keeping order in court", "magistrate", "clerking", "copying", "keeping the rolls", "records office",
+          "customs", "couriers", "lamps", "warden of the market", "the watch", "minding the shop door", "portering",
+          "crying wares", "washhouse", "bathhouse", "teaching", "abbey", "abbot", "cathedral", "chapel", "priest",
+          "deacon", "sexton", "choir"}},
+    };
+    return rules;
+}
+
+Society::PostKind Society::postKind(const Position& p, ClassPass* pass) const
+{
+    PostKind k;
+    if (p.role == "merchant")
+    {
+        k.kind = "keeper";
+        return k;
+    }
+    // A farm's post (doc 71, Phase C) or a works' (doc 72): the kept farm list's (RatwFarms.cpp).
+    if (const int farm = farmOfPost(p, &k.farmKeeper); farm >= 0)
+    {
+        k.kind = "farm";
+        k.farm = farm;
+        return k;
+    }
+    const auto title = lower(p.title);
+    const auto& rules = postRules();
+    if (p.role == "guard")
+    {
+        // The watch, and its head (a treasury rule that names a wage: "commanding the watch").
+        k.kind = "watch";
+        for (std::size_t r = 0; r < rules.size() && k.rule < 0; ++r)
+            if (rules[r].payer == "treasury" && !rules[r].wage.empty())
+                for (const auto& word : rules[r].words)
+                    if (title.find(word) != std::string::npos)
+                    {
+                        k.rule = int(r);
+                        break;
+                    }
+        return k;
+    }
+    // A hand: a post whose work room holds exactly one shop.
+    int shops = 0;
+    if (pass)
+    {
+        if (!pass->shopsBuilt)
+        {
+            for (const auto& q : positions_)
+                if (q.role == "merchant")
+                {
+                    auto& [n, last] = pass->shops[q.work.cell];
+                    ++n, last = &q;
+                }
+            pass->shopsBuilt = true;
+        }
+        if (const auto found = pass->shops.find(p.work.cell); found != pass->shops.end())
+            shops = found->second.first, k.shop = found->second.second;
+    }
+    else
+        for (const auto& q : positions_)
+            if (q.role == "merchant" && q.work.cell == p.work.cell)
+                ++shops, k.shop = &q;
+    if (shops == 1)
+    {
+        k.kind = "hand";
+        return k;
+    }
+    k.shop = nullptr;
+    for (std::size_t r = 0; r < rules.size(); ++r)
+        for (const auto& word : rules[r].words)
+            if (title.find(word) != std::string::npos)
+            {
+                k.kind = rules[r].payer == "treasury" ? "public" : "estate";
+                k.rule = int(r);
+                return k;
+            }
+    return k;
+}
+
+std::string Society::postClass(const Position& p, ClassPass* pass) const
+{
+    const auto kind = postKind(p, pass);
+    if (kind.kind.empty())
         return {};                                  // No post that pays: lessons, play, leisure.
     if (p.role == "guard" || clergy(p.title))
         return "any";
-    if (pay.kind == "farm")
-    {
-        bool keeper = false;
-        farmOfPost(p, &keeper);
-        return keeper ? "middle" : "lower";         // (A farm's keeper and its hands: doc 71, Phase C.)
-    }
+    if (kind.kind == "farm")
+        return kind.farmKeeper ? "middle" : "lower";   // (A farm's keeper and its hands: doc 71, Phase C.)
     const auto t = lower(p.title);
     if (houseHead(p.title))
         return "upper";
-    if (pay.kind == "keeper")
+    if (kind.kind == "keeper")
         return anyOf(p.work.cell, LargeBusinesses) ? "upper" : "middle";
-    if (pay.kind == "hand")
+    if (kind.kind == "hand")
     {
         // Helping in the family's own shop, living over it: middle; a hand in someone else's business: lower.
         const auto* founder = spec(p.founder);
         return founder && !p.work.cell.empty() && founder->home.cell.rfind(p.work.cell, 0) == 0 ? "middle" : "lower";
     }
-    // A House's own affairs and the offices' heads (the wage rules that pay a keeper's wage), and a House's family at
+    // A House's own affairs and the offices' heads (the post rules that pay a keeper's wage), and a House's family at
     // home in the Heights (kept by its estates), are upper; then the words.
-    for (const auto& rule : items::cityLoop().wages)
+    for (const auto& rule : postRules())
         if (rule.wage == "keeper")
             for (const auto& word : rule.words)
                 if (t.find(word) != std::string::npos)
@@ -457,9 +559,22 @@ std::string Society::postClass(const Position& p) const
     return "middle";
 }
 
-std::string Society::classOf(const std::string& id, int depth) const
+std::string Society::classOf(const std::string& id, int depth, ClassPass* pass) const
 {
-    // "" while unknown (the public classOf: middle).
+    // "" while unknown (the public classOf: middle). In a pass, each (id, depth) once.
+    if (pass)
+    {
+        if (const auto found = pass->classes.find({id, depth}); found != pass->classes.end())
+            return found->second;
+        auto cls = workOutClass(id, depth, pass);
+        pass->classes.emplace(std::pair{id, depth}, cls);
+        return cls;
+    }
+    return workOutClass(id, depth, nullptr);
+}
+
+std::string Society::workOutClass(const std::string& id, int depth, ClassPass* pass) const
+{
     const auto* r = spec(id);
     const auto* away = r ? nullptr : unplaced(id);
     if (!r && !away)
@@ -470,7 +585,7 @@ std::string Society::classOf(const std::string& id, int depth) const
     {
         if (const auto* own = position("job:" + id))
         {
-            const auto cls = postClass(*own);
+            const auto cls = postClass(*own, pass);
             if (cls == "any")
                 return "middle";
             if (!cls.empty())
@@ -489,24 +604,65 @@ std::string Society::classOf(const std::string& id, int depth) const
         kin.push_back(s->second);
     if (const auto ps = state_.careers.parents.find(id); ps != state_.careers.parents.end())
         kin.insert(kin.end(), ps->second.begin(), ps->second.end());
-    for (const auto& k : authored_.kin)
+    const auto written = [&](const auto& k) {
         if (k.kind == "spouse" && (k.a == id || k.b == id))
             kin.insert(kin.begin(), k.a == id ? k.b : k.a);
         else if (k.kind != "spouse" && k.b == id)
             kin.push_back(k.a);
+    };
+    if (pass)
+    {
+        // (The same records in the same order, from the pass's index of the written kin by wolf.)
+        if (!pass->kinBuilt)
+        {
+            for (const auto& k : authored_.kin)
+                if (k.kind == "spouse")
+                {
+                    pass->kin[k.a].push_back(&k);
+                    if (k.b != k.a)
+                        pass->kin[k.b].push_back(&k);
+                }
+                else
+                    pass->kin[k.b].push_back(&k);
+            pass->kinBuilt = true;
+        }
+        if (const auto found = pass->kin.find(id); found != pass->kin.end())
+            for (const auto* k : found->second)
+                written(*k);
+    }
+    else
+        for (const auto& k : authored_.kin)
+            written(k);
     for (const auto& other : kin)
         if (other != id)
-            if (auto cls = classOf(other, depth + 1); !cls.empty())
+            if (auto cls = classOf(other, depth + 1, pass); !cls.empty())
                 return cls;
     // Else its household's: most of those it lives with.
     if (r && depth == 0)
     {
         const auto* life = resident(id);
         std::map<std::string, int> count;
-        for (const auto& [other, theirs] : state_.residents)
-            if (other != id && life && !life->homeCell.empty() && theirs.homeCell == life->homeCell)
-                if (auto cls = classOf(other, 2); !cls.empty())
-                    ++count[cls];
+        if (pass && life && !life->homeCell.empty())
+        {
+            // (The same residents in the same order, by id, from the pass's index of homes.)
+            if (!pass->homesBuilt)
+            {
+                for (const auto& [other, theirs] : state_.residents)
+                    if (!theirs.homeCell.empty())
+                        pass->homes[theirs.homeCell].push_back(&other);
+                pass->homesBuilt = true;
+            }
+            if (const auto home = pass->homes.find(life->homeCell); home != pass->homes.end())
+                for (const auto* other : home->second)
+                    if (*other != id)
+                        if (auto cls = classOf(*other, 2, pass); !cls.empty())
+                            ++count[cls];
+        }
+        else if (!pass)
+            for (const auto& [other, theirs] : state_.residents)
+                if (other != id && life && !life->homeCell.empty() && theirs.homeCell == life->homeCell)
+                    if (auto cls = classOf(other, 2); !cls.empty())
+                        ++count[cls];
         std::string most;
         for (const auto& [cls, n] : count)
             if (most.empty() || n > count[most])

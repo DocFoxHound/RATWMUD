@@ -101,6 +101,13 @@ add_test(NAME json_behaviors COMMAND json_tests)
 add_executable(checkpoint_tests Tests/checkpoint_tests.cpp)
 target_link_libraries(checkpoint_tests PRIVATE ratw_core)
 add_test(NAME checkpoint_behaviors COMMAND checkpoint_tests)
+# Saves from before doc 79 (Tests/fixtures/pre79/README.md): each loads with today's code, purses and escrow exact.
+add_executable(save_compat_tests Tests/save_compat_tests.cpp)
+target_link_libraries(save_compat_tests PRIVATE ratw_core)
+target_compile_definitions(save_compat_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME save_compat COMMAND save_compat_tests)
+# The same saves through Postgres (game.save_checkpoint/load_checkpoint, a throwaway database): skipped without Database/.env's settings.
+add_test(NAME save_compat_pg COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/save_compat_pg.py $<TARGET_FILE:save_compat_tests>)
 add_executable(server_parts_tests Tests/server_parts_tests.cpp)
 target_link_libraries(server_parts_tests PRIVATE ratw_core)
 target_compile_definitions(server_parts_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

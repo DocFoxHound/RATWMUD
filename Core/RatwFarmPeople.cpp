@@ -324,7 +324,8 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
     {
         const auto* site = people.farm(f.def->id);
         const auto kind = people.kinds.find(f.def->kind);
-        if (!site || kind == people.kinds.end() || !farmAreaOn(f.area) || !account(f.till) || !account(f.crew) ||
+        // (In the staged economy a farm has no till or crew account to need: doc 79, 8.2.)
+        if (!site || kind == people.kinds.end() || !farmAreaOn(f.area) || (!staged() && (!account(f.till) || !account(f.crew))) ||
             (!site->works && !world.place(site->home.area)) ||
             std::any_of(site->workplaces.begin(), site->workplaces.end(), [&](const items::PlaceRoom& w) { return !world.place(w.area); }))
             continue;
@@ -346,7 +347,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                         ++atSecond;
             want.second = site->workplaces.size() > 1 ? std::max(0, std::min(k.secondCount - atSecond, want.hands)) : 0;
             // Its crew's founding purse, shared out a head at a time to those who take its posts.
-            want.share = f.heads() > 0 ? cash(f.crew) / f.heads() : 0;
+            want.share = f.heads() > 0 && account(f.crew) ? cash(f.crew) / f.heads() : 0;
             // The posts at each work room in use count against its spots, so the newcomers take the next ones.
             for (const auto& p : positions_)
                 for (int room = 0; room < 2 && room < int(site->workplaces.size()); ++room)

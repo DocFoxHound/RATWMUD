@@ -115,57 +115,43 @@ std::string Society::marketFor(const std::string& item) const
 Society::Pay Society::payOf(const Position& p) const
 {
     const auto& e = authored_.economy;
+    // What the post is (postKind, RatwCareers.cpp: doc 79 moved it there so class needs no loop), then who pays it.
+    const auto k = postKind(p);
     // A till's posts (its keeper and hands) at its wage step (doc 68, Progress, "Self-correcting rules"); the treasury's
     // and the Country's posts keep their fixed wages.
-    if (p.role == "merchant")
+    if (k.kind == "keeper")
         return {"keeper", "till:" + p.id, driftedWage("till:" + p.id, e.wageKeeper)};
     // A farm's post (doc 71, Phase C): its till's, at the farm's fixed wages (a keeper's or a hand's), paid with its crew.
-    bool farmKeeper = false;
-    if (const int farm = farmOfPost(p, &farmKeeper); farm >= 0)
+    if (k.kind == "farm")
     {
-        const auto& f = farms_[std::size_t(farm)];
-        return {"farm", f.till, farmKeeper ? f.keeper : f.hand};
+        const auto& f = farms_[std::size_t(k.farm)];
+        return {"farm", f.till, k.farmKeeper ? f.keeper : f.hand};
     }
-    const auto title = lower(p.title);
     // A rule may pay another of the world's wages than its payer's (a head's post: a keeper's; doc 68, "First fixes").
     const auto wageOf = [&](const std::string& kind, int otherwise) {
         return kind == "keeper" ? e.wageKeeper : kind == "hand" ? e.wageHand : kind == "public" ? e.wagePublic
                : kind == "estate" ? e.wageWharf : otherwise;
     };
-    if (p.role == "guard")
+    const auto& rules = postRules();
+    // The watch: the treasury's, at a public wage, but for its head (a treasury rule that names a wage: "commanding the
+    // watch", doc 68, Progress, "Trades").
+    if (k.kind == "watch")
+        return {"watch", "treasury", k.rule >= 0 ? wageOf(rules[std::size_t(k.rule)].wage, e.wagePublic) : e.wagePublic};
+    if (k.kind == "hand")
+        return {"hand", "till:" + k.shop->id, driftedWage("till:" + k.shop->id, e.wageHand, true)};
+    if (k.kind == "public")
+        return {"public", "treasury", wageOf(rules[std::size_t(k.rule)].wage, e.wagePublic), k.rule};
+    if (k.kind == "estate")
     {
-        // The watch: the treasury's, at a public wage, but for its head (a treasury rule that names a wage: "commanding
-        // the watch", doc 68, Progress, "Trades").
-        for (const auto& rule : items::cityLoop().wages)
-            if (rule.payer == "treasury" && !rule.wage.empty())
-                for (const auto& word : rule.words)
-                    if (title.find(word) != std::string::npos)
-                        return {"watch", "treasury", wageOf(rule.wage, e.wagePublic)};
-        return {"watch", "treasury", e.wagePublic};
+        const auto& rule = rules[std::size_t(k.rule)];
+        // An estates' post (doc 73: the Country's were): its House's estate's, once the estates are split and its purse
+        // open (doc 72, Phase 6), else the Wharf's purse (Grayrock's, the one purse the estates were).
+        auto payer = rule.payer == "estates" ? std::string(WharfFund) : marketFund(rule.payer);
+        if (payer == WharfFund && estatesOn())
+            if (const auto* estate = estateOfPost(p); estate && account(estateFund(*estate)))
+                payer = estateFund(*estate);
+        return {"estate", payer, wageOf(rule.wage, e.wageWharf), k.rule};
     }
-    // A hand: a post whose work room holds exactly one shop.
-    int shops = 0;
-    const Position* shop = nullptr;
-    for (const auto& q : positions_)
-        if (q.role == "merchant" && q.work.cell == p.work.cell)
-            ++shops, shop = &q;
-    if (shops == 1)
-        return {"hand", "till:" + shop->id, driftedWage("till:" + shop->id, e.wageHand, true)};
-    const auto& rules = items::cityLoop().wages;
-    for (std::size_t r = 0; r < rules.size(); ++r)
-        for (const auto& word : rules[r].words)
-            if (title.find(word) != std::string::npos)
-            {
-                if (rules[r].payer == "treasury")
-                    return {"public", "treasury", wageOf(rules[r].wage, e.wagePublic), int(r)};
-                // An estates' post (doc 73: the Country's were): its House's estate's, once the estates are split and its
-                // purse open (doc 72, Phase 6), else the Wharf's purse (Grayrock's, the one purse the estates were).
-                auto payer = rules[r].payer == "estates" ? std::string(WharfFund) : marketFund(rules[r].payer);
-                if (payer == WharfFund && estatesOn())
-                    if (const auto* estate = estateOfPost(p); estate && account(estateFund(*estate)))
-                        payer = estateFund(*estate);
-                return {"estate", payer, wageOf(rules[r].wage, e.wageWharf), int(r)};
-            }
     return {};
 }
 
@@ -552,6 +538,7 @@ void Society::buildSeasons()
             value = own->second;
         rules_[info.name] = std::clamp(value, info.low, info.high);
     }
+    stagedRule_ = rules_["staged"] > 0;             // (Doc 79, Phase 0: the staged economy's switch.)
     services_.clear();
     for (const auto& def : items::cityLoop().services)
     {
@@ -573,7 +560,7 @@ int Society::rule(const std::string& name) const
     // slider (the toll drift's target among them: the world's 5,500p at the centre, blended to a level each end can reach);
     // the world's own stay in rules_, used again the moment it is off.
     if (state_.loop.steer.on && (name == "surplusKeep" || name == "treasuryCap" || name == "surplusAlmsTo" || name == "treasuryTarget") &&
-        ownRule("steer") > 0)
+        ownRule("steer") > 0 && !staged())
     {
         const auto* info = items::ruleInfo(name);
         return std::clamp(int(std::lround(steerLever(name))), info->low, info->high);
@@ -887,38 +874,7 @@ struct OpenShop
 };
 } // namespace
 
-std::map<std::string, std::vector<std::string>> Society::households() const
-{
-    // A household: the residents sharing a home (in a communal home, each alone), with a child under 16 and a spouse who
-    // live elsewhere (a child given a room of its own upstairs): whoever earns feeds the family.
-    std::map<std::string, std::string> keyOf;          // Resident -> its home's key.
-    for (const auto& [id, life] : state_.residents)
-        if (spec(id) && !dead_.count(id) && !life.homeCell.empty())
-            keyOf[id] = communalHome(life.homeCell) ? life.homeCell + "|" + id : life.homeCell;
-    std::map<std::string, std::string> joined;         // Home key -> the key it shops with (union by kin).
-    const std::function<std::string(const std::string&)> root = [&](const std::string& k) {
-        const auto found = joined.find(k);
-        return found == joined.end() || found->second == k ? k : (joined[k] = root(found->second));
-    };
-    const auto join = [&](const std::string& a, const std::string& b) {
-        const auto ka = keyOf.find(a), kb = keyOf.find(b);
-        if (ka == keyOf.end() || kb == keyOf.end())
-            return;
-        const auto ra = root(ka->second), rb = root(kb->second);
-        if (ra != rb)
-            joined[std::max(ra, rb)] = std::min(ra, rb);
-    };
-    for (const auto& [child, parents] : state_.careers.parents)
-        if (const auto* c = spec(child); c && c->age < 16)
-            for (const auto& parent : parents)
-                join(child, parent);
-    for (const auto& [a, b] : state_.careers.spouses)
-        join(a, b);
-    std::map<std::string, std::vector<std::string>> homes;
-    for (const auto& [id, key] : keyOf)
-        homes[root(key)].push_back(id);
-    return homes;
-}
+// households(): RatwSociety.cpp (doc 79, 6.2).
 
 void Society::householdsShop(int hod, std::int64_t day, int season)
 {
@@ -1540,15 +1496,7 @@ const std::string& Society::homeClass(const std::string& home, const std::vector
     }
     if (const auto found = homeClass_.find(home); found != homeClass_.end())
         return found->second;
-    std::map<std::string, int> count;
-    for (const auto& m : members)
-        ++count[classOf(m)];
-    std::string cls = count.count("upper") ? "upper" : "middle";
-    if (!count.count("upper"))
-        for (const auto& [c, n] : count)
-            if (n > count[cls])
-                cls = c;
-    return homeClass_.emplace(home, cls).first->second;
+    return homeClass_.emplace(home, householdClass(members)).first->second;
 }
 
 std::int64_t Society::housesLuxuries(const std::string& fund, std::int64_t spare,
@@ -1781,7 +1729,7 @@ void Society::payWages()
             // The Country's posts by rule (doc 72, Phase 0: its report's lines).
             if (country)
             {
-                const auto& rules = items::cityLoop().wages;
+                const auto& rules = postRules();
                 const auto name = d.rule >= 0 && std::size_t(d.rule) < rules.size() ? rules[std::size_t(d.rule)].name : std::string("other");
                 ++loopToday_.estatePostsHeld[name];
                 if (done)

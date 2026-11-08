@@ -1,0 +1,53 @@
+{
+  "format": 1,
+  "id": "78b797c72faf4ead80eb9de46b4aa362",
+  "version": "dev-b70-202611081506",
+  "source": "dev",
+  "world_id": "upper_accord",
+  "build": {
+    "id": 70,
+    "fingerprint": "e23d6a1a97f9e4a986d2cbc094bbd8a86f93ef2e411ba83589fd15217bdd97b9",
+    "made": "2026-11-06T02:49:55.184785+00:00",
+    "cells": 1212
+  },
+  "protocol": 1,
+  "client_data": "f501a723ba2635c333eb70095837a8d0",
+  "made_at": "2026-11-08T15:06:22+00:00",
+  "compression": "gzip",
+  "snapshot": true,
+  "rows": {
+    "world.worlds": 1,
+    "world.areas": 1212,
+    "live.professions": 10,
+    "live.characters": 6,
+    "live.patrol_routes": 12,
+    "live.npc_areas": 0,
+    "live.spawns": 0,
+    "live.factions": 6,
+    "live.faction_claims": 615,
+    "live.npcs": 1083,
+    "live.profession_slots": 0,
+    "live.faction_members": 0,
+    "live.faction_relations": 0,
+    "live.npc_voice": 1083,
+    "live.npc_relations": 329,
+    "live.business_settings": 0,
+    "live.dialects": 6,
+    "live.figures": 0,
+    "live.story_visitors": 0,
+    "live.economy": 1
+  },
+  "unpacked_bytes": {
+    "world.json.gz": 41550,
+    "live.json.gz": 1709203,
+    "snapshot.json.gz": 1319445,
+    "build.tar.gz": 316747064
+  },
+  "strip": {
+    "removed": {},
+    "player_ids_found": {},
+    "accounts_closed": 0,
+    "goods_discarded": 0
+  },
+  "warnings": 0
+}

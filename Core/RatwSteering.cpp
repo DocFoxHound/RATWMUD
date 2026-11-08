@@ -93,7 +93,7 @@ const char* const Levers[] = {"levelling", "charters", "postsShare", "surplusKee
 
 bool Society::steering() const
 {
-    return state_.loop.steer.on && ownRule("steer") > 0;
+    return state_.loop.steer.on && ownRule("steer") > 0 && !staged();   // (Off in the staged economy: doc 79, Phase 0.)
 }
 
 double Society::steerSlider() const

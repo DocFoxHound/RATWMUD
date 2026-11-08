@@ -187,6 +187,8 @@ EconomyResult Society::orderFromWharf(const std::string& buyer, const std::strin
 
 EconomyResult Society::moveWharfCredit(std::int64_t amount, const std::string& who, const std::string& note)
 {
+    if (staged())
+        return {false, "The Wharf's credit is off in the staged economy (doc 79)."};
     const auto most = rule("wharfActionMost");
     if (most <= 0)
         return {false, "The Wharf's credit can't be moved in this world (wharfActionMost is 0)."};

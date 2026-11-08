@@ -120,8 +120,8 @@ void Society::refreshAreas(std::int64_t day, bool found)
         }
         areaOn_[a] = char(on > 0);
     }
-    if (!found || roster_ != Roster::Authored)
-        return;
+    if (!found || roster_ != Roster::Authored || staged())
+        return;                                     // (The staged economy founds no farm's till or crew: doc 79.)
     for (auto& f : farms_)
         if (farmAreaOn(f.area) && (!account(f.till) || !account(f.crew)))
             foundFarm(f);

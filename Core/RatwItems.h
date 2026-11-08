@@ -301,6 +301,9 @@ inline constexpr RuleInfo Rules[] = {
     {"skimMost", 1, 100, 50},            // The skim takes at most this percent of a holder's spare in its first pass,
     {"skimKeepDays", 1, 28, 3},          // and the share-out leaves a household this many days of its necessities a head
                                          // (the skim's own line is the steering table's `comfortable`).
+    // The staged economy (Docs/Design/79-a-staged-economy.md, Phase 0): on, the city's loop, the steering, the Wharf's
+    // money and the farms' money are off; residents are fed by class and their purses and the treasuries set nightly.
+    {"staged", 0, 1, 0},
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // A rule's name now for one it had before (doc 73: countryPostsDays is estatePostsDays), else the name as given: a world's

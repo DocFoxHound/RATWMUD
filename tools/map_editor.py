@@ -118,9 +118,12 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'almsNoEarner': 300, 't
                # rules route refuses them) and the steering's own; no migration.
                # (Doc 75: the push's judging, steps and band are gone.)
                'steer': 1, 'steerLean': 200, 'neverHungry': 1, 'neverBroke': 1, 'steerMeanDays': 365, 'skimMost': 100,
-               'skimKeepDays': 28}
+               'skimKeepDays': 28,
+               # The staged economy (Docs/Design/79-a-staged-economy.md, Phase 0): test-only until Phases 1-2 (doc 79, 19);
+               # no migration.
+               'staged': 1}
 RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed', 'surplus', 'stockPrices', 'shelfFollow',
-                 'wageDrift', 'treasuryDrift', 'wharfValve', 'steer', 'neverHungry', 'neverBroke')   # 0 or 1: off or on.
+                 'wageDrift', 'treasuryDrift', 'wharfValve', 'steer', 'neverHungry', 'neverBroke', 'staged')   # 0 or 1: off or on.
 # Steering the economy (doc 74): the DM's settings, set only through the Steering panel (/api/economy/steer), and the
 # rules the steering moves while it is on (the rules route refuses them then).
 STEER_SETTINGS = ('steer', 'steerLean', 'neverHungry', 'neverBroke')
