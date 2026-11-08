@@ -136,7 +136,10 @@ export const RULE_LIMITS = {comfortsMost: 100000, almsADay: 1000, treasuryCap: 1
     // (Doc 75: the push's judging, steps and band are gone.)
     steer: 1, steerLean: 200, neverHungry: 1, neverBroke: 1, steerMeanDays: 365, skimMost: 100, skimKeepDays: 28,
     // The staged economy (Docs/Design/79-a-staged-economy.md, Phase 0): test-only until Phases 1-2.
-    staged: 1};
+    staged: 1,
+    // The Market Board (Docs/Design/79-a-staged-economy.md, Phase 1): read only while staged.
+    halfLifePerishable: 300, halfLifeKeeping: 300, halfLifeDurable: 300, ripple: 70, depthScale: 1000, playerPushMost: 50,
+    playerSellMost: 5000, takeAllowance: 100, shelfScale: 1000, factionDiscountMost: 1000};
 const ruleSettingsOk = e => (!own(e, 'rules') || (object(e.rules) && Object.entries(e.rules).every(([k, v]) =>
         own(RULE_LIMITS, k) && integer(v, 0, RULE_LIMITS[k]))))
     && (!own(e, 'services') || (object(e.services) && Object.entries(e.services).every(([k, s]) => /^[a-z0-9_]{1,48}$/.test(k)

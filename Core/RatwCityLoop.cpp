@@ -539,6 +539,7 @@ void Society::buildSeasons()
         rules_[info.name] = std::clamp(value, info.low, info.high);
     }
     stagedRule_ = rules_["staged"] > 0;             // (Doc 79, Phase 0: the staged economy's switch.)
+    marketRules_ = readMarketRules();               // (Doc 79, Phase 1: the Market Board's rules, read once.)
     services_.clear();
     for (const auto& def : items::cityLoop().services)
     {

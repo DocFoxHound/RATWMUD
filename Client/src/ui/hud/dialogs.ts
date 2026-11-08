@@ -1309,34 +1309,51 @@ export class Dialogs {
     private trade(self: Json | null) {
         const s = this.s, merchant = obj(s.snapshot, 'merchant');
         const available = !!str(merchant, 'id');
-        this.heading('LOCAL TRADE / REAL GOODS & REAL PURSES', available ? str(merchant, 'name', 'The keeper').slice(0, 38) : 'The counter is unattended');
+        const staged = s.stagedTrade();
+        this.heading(staged ? 'LOCAL TRADE / REAL GOODS' : 'LOCAL TRADE / REAL GOODS & REAL PURSES',
+            available ? str(merchant, 'name', 'The keeper').slice(0, 38) : 'The counter is unattended');
         if (!available) {
             el('p', 'muted', this.panel, 'The keeper is no longer awake, visible, and within reach. Return to them to see current stock and offers.');
             return;
         }
-        el('p', 'muted', this.panel, 'One item per exchange. The authority rechecks every offer.');
+        el('p', 'muted', this.panel, staged ? 'Cheap goods go by the dozen. The authority rechecks every offer.' : 'One item per exchange. The authority rechecks every offer.');
         const purses = el('div', 'purses', this.panel);
         el('span', 'gold', purses, `YOUR PURSE · ${countText(self, 'cash')} p`);
-        el('span', 'sage', purses, `KEEPER'S PURSE · ${countText(merchant, 'cash')} p`);
+        // The staged economy (doc 79, 7.5): what the keeper will still spend today, not its purse.
+        el('span', 'sage', purses, staged ? `BUYING TODAY · ${countText(merchant, 'buyingToday')} p` : `KEEPER'S PURSE · ${countText(merchant, 'cash')} p`);
         // What this trader deals in, as the server lists it (a shopkeeper: herbs and meals; a smith: swords).
         for (const good of arr(merchant, 'items').filter(isObject).map(i => str(i, 'id')).filter(Boolean)) {
             const item = s.tradeItem(good);
             const card = el('div', 'trade', this.panel);
-            el('div', 'item-name', card, str(item, 'name', good));
-            el('div', 'label muted', card, `KEEPER STOCK ${countText(item, 'stock')} · YOU CARRY ${countText(item, 'owned')}`);
+            const name = el('div', 'item-name', card, str(item, 'name', good));
+            if (staged) {
+                // ▲ or ▼ where the shown price is a penny or more off its price at rest, with its cause on hover.
+                const trend = typeof item?.trend === 'number' ? item.trend : 0;
+                if (trend !== 0) {
+                    const mark = el('span', trend > 0 ? 'gold' : 'sage', name, trend > 0 ? ' ▲' : ' ▼');
+                    mark.title = str(item, 'trendCause', trend > 0 ? 'dearer than usual' : 'cheaper than usual').slice(0, 80);
+                }
+                const listCount = wholeCount(item, 'listCount', 1, 99);
+                el('div', 'label muted', card, `${listCount > 1 ? `${listCount} FOR ${countText(item, 'listPrice')} p · ` : ''}KEEPER STOCK ${countText(item, 'stock')} · YOU CARRY ${countText(item, 'owned')}`);
+            } else
+                el('div', 'label muted', card, `KEEPER STOCK ${countText(item, 'stock')} · YOU CARRY ${countText(item, 'owned')}`);
             const row = el('div', 'trade-row', card);
             for (const buy of [true, false]) {
                 const side = el('div', '', row);
                 const enabled = s.canTradeItem(good, buy);
-                const b = button(`${buy ? 'BUY 1 · ' : 'SELL 1 · '}${countText(item, buy ? 'buyPrice' : 'sellPrice')} p`, 'primary', side,
+                const count = staged ? s.tradeCount(good, buy) : 1;
+                const price = staged ? countText(item, buy ? 'buyLotPrice' : 'sellLotPrice') : countText(item, buy ? 'buyPrice' : 'sellPrice');
+                const b = button(`${buy ? 'BUY' : 'SELL'} ${Math.max(count, 1)} · ${price} p`, 'primary', side,
                     () => this.act(buy ? 'trade_buy' : 'trade_sell', good));
                 b.disabled = !enabled;
                 el('p', enabled ? 'muted small' : 'gold small', side, enabled
-                    ? (buy ? "Your purse pays for one item from the keeper's stock." : 'The keeper pays for one item from your pack.')
-                    : str(item, buy ? 'buyReason' : 'sellReason', 'This offer is currently unavailable.').slice(0, 102));
+                    ? (buy ? `Your purse pays for ${count > 1 ? 'the lot' : 'one item'} from the keeper's stock.`
+                           : `The keeper pays for ${count > 1 ? 'the lot' : 'one item'} from your pack.`)
+                    : s.tradeReason(good, buy));
             }
         }
-        el('p', 'muted small', this.panel, 'p = silver penny · stock, demand, and cash are finite. Prices change as residents gather, cook, buy, and eat.');
+        el('p', 'muted small', this.panel, staged ? "p = silver penny · Prices follow what's bought and sold here, and what the roads bring."
+            : 'p = silver penny · stock, demand, and cash are finite. Prices change as residents gather, cook, buy, and eat.');
     }
 
     private settings() {

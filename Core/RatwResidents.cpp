@@ -769,6 +769,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             // Q2): a keeper at work brings its wares back to their starting stock, at most once a game hour.
             if (authored_.economy.storeRule && job->role == "merchant"sv)
                 restockFromStore(id, absoluteDay);   // (Shelves and making by the crew's hours since doc 68, 7.)
+            // The staged economy's morning restock (doc 79, 7.7): its wares set out to their shelf targets, once a market day,
+            // the keeper seen "setting out the wares" for a few minutes.
+            if (job->role == "merchant"sv && staged() && (stagedRestock(id) || settingOut(id)))
+                life.reason = "Setting out the wares.";
         }
         if (learning && body.cell == learning->work.cell && within(hour, learning->startHour, learning->endHour))
         {

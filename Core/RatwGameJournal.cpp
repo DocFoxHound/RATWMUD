@@ -135,6 +135,7 @@ void Game::prime(Shadow& s) const
     s.crime = json::dump(checkpoint::crime(world_.crime()));
     s.companions = json::dump(companionsOf(companionOwner_));
     s.signIns = json::dump(accounts_.state());
+    s.board = society.board.empty() ? std::string() : json::dump(market::encode(society.board));
     s.primed = true;
 }
 
@@ -197,6 +198,14 @@ void Game::record(unsigned what, const std::string& character)
             shadow_.ledgerSize = society.ledger.size();
             shadow_.ledgerLast = last;
         }
+        // The Market Board (doc 79, Phase 1): a trade's pressure, budget and caps, so a crash replays them (only once
+        // the staged economy has moved it: a world without it journals nothing new).
+        if (!society.board.empty())
+            if (auto now = json::dump(market::encode(society.board)); now != shadow_.board)
+            {
+                set(path({"society", "board"}), market::encode(society.board));
+                shadow_.board = std::move(now);
+            }
     }
     if (what & Careers)
     {

@@ -1916,6 +1916,7 @@ class Game
         std::size_t ledgerSize = 0;
         std::map<std::string, PositionState> positions;
         std::string roads, crime, companions, signIns;
+        std::string board;                          // The Market Board (doc 79, Phase 1), as last journalled.
     };
     void prime(Shadow& shadow) const;
     std::uint64_t journalSeq_ = 0;

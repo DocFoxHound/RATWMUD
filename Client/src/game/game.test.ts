@@ -602,6 +602,59 @@ test('cell atmosphere follows the room, never the viewport; lighting presets for
     assert.ok(e.glowStrength === 0 && e.artificialLight === 0 && e.illumination === 1 && e.lightingTone === 'neutral');
 });
 
+test('the staged list: dozens, sell lots, a 0 unit price (doc 79, 7.1)', () => {
+    const {state: s, commands} = testGame();
+    const self: Json = {id: 'self', cash: 20, x: 16, y: 7.5};
+    // Bread at 1p: a single loaf sells for nothing (sellPrice 0), so the list offers it by the lot.
+    const bread: Json = {id: 'bread', name: 'Bread', stock: 30, owned: 5, buyPrice: 1, sellPrice: 0, canBuy: true, canSell: false,
+        listCount: 12, listPrice: 13, buyCount: 12, buyLotPrice: 13, canBuyLot: true, buyLotReason: 'Available',
+        sellLot: 3, sellLotPrice: 1, canSellLot: true, sellLotReason: 'Available', trend: 1, trendCause: 'travellers buying'};
+    const ore: Json = {id: 'iron_ore', name: 'Iron ore', stock: 0, owned: 2, buyPrice: 1, sellPrice: 0, canBuy: false, canSell: false,
+        listCount: 12, listPrice: 11, buyCount: 1, buyLotPrice: 1, canBuyLot: false, buyLotReason: 'There is not enough stock.',
+        sellLot: 3, sellLotPrice: 1, canSellLot: true, sellLotReason: 'Available', trend: 0, trendCause: ''};
+    const merchant: Json = {id: 'baker', name: 'The baker', cash: 0, staged: true, buyingToday: 40, items: [bread, ore]};
+    s.applySnapshot({cell: {id: 'shop', outdoors: false}, self, merchant, inventory: []});
+    assert.ok(s.stagedTrade());
+    assert.ok(s.tradeItem('bread') && s.tradeItem('iron_ore'), 'every listed ware, not only herbs and meals');
+    assert.equal(s.tradeCount('bread', true), 12);
+    assert.equal(s.tradeCount('bread', false), 3);
+    assert.ok(s.canTradeItem('bread', true), 'a dozen for 13p, affordable');
+    assert.ok(s.canTradeItem('bread', false), 'a 0 unit price is no bar: the lot of three is worth a penny');
+    assert.ok(!s.canTradeItem('iron_ore', false), 'two ore carried, three to a lot');
+    ore.owned = 3;
+    assert.ok(s.canTradeItem('iron_ore', false), 'a broke-looking keeper still buys: its budget is the server\'s');
+    assert.ok(!s.canTradeItem('iron_ore', true), 'nothing on the shelf');
+    self.cash = 12;
+    assert.ok(!s.canTradeItem('bread', true), 'the dozen unaffordable');
+    self.cash = 20;
+    bread.canSellLot = 'true';
+    assert.ok(!s.canTradeItem('bread', false), 'string booleans authorise nothing');
+    bread.canSellLot = true;
+    s.contextTarget = 'baker';
+    s.activate({rect: rect(0, 0, 0, 0), action: 'context', target: 'trade'});
+    commands.length = 0;
+    s.activate({rect: rect(0, 0, 0, 0), action: 'trade_buy', target: 'bread'});
+    assert.deepEqual(commands, [{type: 'trade', target: 'baker', item: 'bread', quantity: 12, buy: true}], 'the dozen sent');
+    commands.length = 0;
+    s.activate({rect: rect(0, 0, 0, 0), action: 'trade_sell', target: 'bread'});
+    assert.deepEqual(commands, [{type: 'trade', target: 'baker', item: 'bread', quantity: 3, buy: false}], 'the smallest lot sold');
+    // The keeper's refusals (doc 79, 7.5) turn the button off and are shown in its words.
+    for (const reason of ['Not worth the counting. I buy those by the half-dozen.', "I've no room for more today.",
+        "I've spent all I'll spend today.", 'No one here is buying more from you today.']) {
+        bread.canSellLot = false;
+        bread.sellLotReason = reason;
+        assert.ok(!s.canTradeItem('bread', false), `refused: ${reason}`);
+        assert.equal(s.tradeReason('bread', false), reason);
+    }
+    bread.canSellLot = true;
+    bread.sellLotReason = 'Available';
+    assert.equal(s.tradeReason('bread', true), 'Available', 'the lot reason, not the piece reason, while staged');
+    // Without `staged`, the old list: herbs and meals only, one at a time.
+    delete merchant.staged;
+    s.applySnapshot({cell: {id: 'shop', outdoors: false}, self, merchant, inventory: []});
+    assert.ok(!s.stagedTrade() && !s.tradeItem('bread') && s.tradeCount('bread', true) === 1);
+});
+
 test('calendar, moon and the finite economy', () => {
     const {state: s, commands, painter} = testGame();
     const calendar: Json = {year: 3, dayOfYear: 191, dayOfSeason: 7, season: 'autumn', moonName: 'full moon', moonIllumination: 1};

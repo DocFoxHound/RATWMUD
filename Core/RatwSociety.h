@@ -16,6 +16,8 @@
 #include <vector>
 #include "RatwAppearance.h"
 #include "RatwItems.h"
+#include "RatwMarket.h"
+#include <limits>
 
 // The residents' society: their lives (schedules, posts, careers, families), and the money and goods they hold.
 //
@@ -384,6 +386,7 @@ struct SocietyState
     double decisionRemainder = 0;
     CareerState careers;
     LoopState loop;
+    market::Board board;                            // The Market Board (doc 79, Phase 1): saved only while not empty.
 };
 struct EconomyResult
 {
@@ -700,10 +703,86 @@ class Society
     // catalogue's times shopFactor: the season's and the shop's from its stock; doc 68, Progress, "Players in the shifting
     // market"), in whole pennies a piece, a tenth off at a market stall; and what it buys from a player at SellBackShare
     // of that price. What the shop's list, the keeper's word and the trade itself say is this one price.
+    // With staged() (doc 79, Phase 1; RatwMarket.cpp): the Market Board's price instead (the per-piece ladder at its
+    // pressure, inside the clamp, with I1-I5), the shop's budget, take allowance and the account holder's caps; `holder`
+    // is the player's account holder (the Game's accountOf; empty: the player).
     EconomyResult quote(const std::string& player, const std::string& merchant, const std::string& item,
-                        int quantity, bool buy) const;
+                        int quantity, bool buy, const std::string& holder = {}) const;
     EconomyResult trade(const std::string& player, const std::string& merchant, const std::string& item,
-                        int quantity, bool buy);
+                        int quantity, bool buy, const std::string& holder = {});
+    // The Market Board (Docs/Design/79-a-staged-economy.md, 5 and 7; Phase 1; RatwMarket.cpp), read and moved only while
+    // staged(). The markets the world found (World::ensureTradePoints), else Society's own (one market of every till);
+    // a till's market; the keepers' quarters (their voice tables', for the district factor); the DM's prosperity (the
+    // Board's slider heads there by SliderStepADay a day; `now` skips it); the Board's rules (the rules of the names).
+    const market::Board& board() const { return state_.board; }
+    void setTradePoints(market::Topology topology);
+    const market::Topology& tradePoints() const;
+    std::string marketOf(const std::string& till) const;
+    void setQuarters(std::map<std::string, std::string> quarters);
+    void setProsperity(int target, bool now = false);
+    const market::Rules& marketRules() const { return marketRules_; }
+    // The Board's clock (game days): decide()'s, or a test's.
+    void setMarketClock(double absoluteDay) { marketAt_ = absoluteDay; }
+    double marketClock() const;
+    std::int64_t marketDay() const;               // The market day (it turns at dawn: market::DawnHour).
+    double pressure(const std::string& market, const std::string& base) const;   // P now (decayed).
+    double pushedBy(const std::string& market, const std::string& holder, const std::string& base) const;
+    double depthOf(const std::string& market, const std::string& base) const;
+    // The factor before pressure: the season (rescaled), region, district and Times.
+    double baseFactor(const std::string& till, const std::string& item) const;
+    // I3's backstop's base: the cheapest lot of `item` and `quantity` any shop could sell now (7.6).
+    std::int64_t cheapestLot(const std::string& item, int quantity) const;
+    double cheapestEach(const std::string& item) const;
+    // I5's cap (7.6): the most a sold lot of a crafted good pays, 1.6 × its inputs' cheapest buy price (none: no cap).
+    std::int64_t craftCap(const std::string& item, int quantity) const;
+    std::int64_t budgetOf(const std::string& till) const;     // Today's whole buying budget.
+    std::int64_t budgetLeft(const std::string& till) const;   // What is left of it today.
+    int takeAllowance(const std::string& till, const std::string& item) const;
+    int takenToday(const std::string& till, const std::string& item) const;
+    std::int64_t soldToday(const std::string& holder) const;  // Pennies shops paid this holder today.
+    // The faction discount's weekly cap per Chapter (7.8, D28; the rule factionDiscountMost): what is left this week,
+    // and the discount paid.
+    std::int64_t discountRoom(const std::string& chapter) const;
+    void discountPaid(const std::string& chapter, std::int64_t pennies);
+    // A row of the shop list (7.1): the list count (12 for a good under 3p) and the price of that lot, the lot the
+    // buy button buys (the list count, or what is on the shelf), the smallest sell lot worth a penny and its quote, the
+    // trend (+1 ▲, -1 ▼) with its cause in words, and the shop's buying budget left today.
+    struct Listing
+    {
+        int listCount = 1, buyCount = 1, sellLot = 0, trend = 0;
+        std::int64_t listPrice = 0, buyingToday = 0;
+        EconomyResult buy, sell, buyOne, sellOne;   // (The lots', and one piece's: the list's unit prices.)
+        std::string cause;
+    };
+    Listing listing(const std::string& player, const std::string& merchant, const std::string& item, const std::string& holder = {}) const;
+    // The Board's hour (decide() calls it while staged): the market day's turn at dawn (marketMorning: yesterday's net
+    // positions ripple through the recipes, the day's counts reset, the sweep, the slider's step).
+    void marketTick(double absoluteDay);
+    void marketMorning(std::int64_t day);
+    // A ware's shelf target (7.7) and the morning restock (a keeper's first time at work in the market day; true when
+    // anything was set out), and whether its keeper is still seen setting out the wares (a few minutes after).
+    int shelfTarget(const std::string& till, const std::string& ware) const;
+    bool stagedRestock(const std::string& keeper);
+    bool settingOut(const std::string& keeper) const;
+    std::uint64_t rosterRevision() const { return rosterRevision_; }
+    // What a shop sets out (7.7: its wares less what it only buys, unless it makes or supplies them): the restock's, and
+    // a market's `sold` (I3's backstop: a good no shop sets out is priced at the clamp's floor).
+    std::vector<std::string> stagedShelfGoods(const std::string& founder) const;
+    // Builds what the shop lists read lazily (Society's own markets, each market's least district factor, the keepers'
+    // wares), so the snapshot threads only read (World::prepareReading; doc 31, Phase 4). Only while staged.
+    void prepareMarket() const;
+    // The farm and works crews by community (a market's catchment counts its own: 7.3): every post at a farm or works.
+    std::map<std::string, int> farmCrews() const;
+    // A good's pressure set outright, within its range (the DM's "reset prices" to come, Phase 9; and tests), with its
+    // cause; and a merchant put at a stall or back in its shop (decide() sets them each second; for tests).
+    void setPressure(const std::string& market, const std::string& base, double P, const std::string& cause = "event");
+    void setAtStall(const std::string& merchant, bool at)
+    {
+        if (at)
+            atStall_.insert(merchant);
+        else
+            atStall_.erase(merchant);
+    }
     // A good's catalogue price a piece, in pennies (its quality's: items.json, doc 35): every shop's.
     static std::int64_t catalogPrice(const std::string& item);
     static constexpr double SellBackShare = .55;   // What a shop pays a player for a good (doc 15: a little over half).
@@ -1568,6 +1647,62 @@ class Society
     };
     std::map<std::string, StagedHome> stagedHomes_;
     void stagedHouseholds(std::int64_t day);
+    // The Market Board's (doc 79, Phase 1; RatwMarket.cpp). None of these is saved but the Board (state_.board).
+    struct StagedLot
+    {
+        std::string market, base;
+        double sum = 0, P0 = 0, P = 0, push = 0;
+        std::int64_t lot = 0;
+    };
+    StagedLot stagedLadder(const std::string& till, const std::string& item, int quantity, bool buy, const std::string& holder,
+                           bool stall, bool atRest = false) const;
+    // A ladder's start, worked out once a quote (the market, the factor before pressure, the depth, P, the holder's push
+    // and cap), and the ladder run from it for a lot.
+    struct LadderStart
+    {
+        std::string market, base;
+        double depth = market::DepthLeast, factor = 1, each = 1, P = 0, push = 0, cap = .15;
+    };
+    LadderStart ladderStart(const std::string& till, const std::string& item, const std::string& holder, bool atRest = false) const;
+    StagedLot ladder(const LadderStart& start, int quantity, bool buy, bool stall) const;
+    struct SellBounds;
+    EconomyResult stagedQuote(const std::string& player, const std::string& seller, const std::string& item, int quantity,
+                              bool buy, const std::string& holder, StagedLot* lot, const SellBounds* bounds = nullptr) const;
+    EconomyResult stagedTrade(const std::string& player, const std::string& trader, const std::string& item, int quantity,
+                              bool buy, const std::string& holder);
+    // I3's and I5's bases for a good, worked out once a quote (sellBounds): the least factor any shop setting it out could
+    // sell it at now (infinity: none does), the least its recipes' inputs cost a piece made (infinity: no recipe), and its
+    // quality's share of the base's catalogue price (at least 1).
+    struct SellBounds
+    {
+        double least = std::numeric_limits<double>::infinity(), craft = std::numeric_limits<double>::infinity(), quality = 1;
+    };
+    SellBounds sellBounds(const std::string& item) const;
+    std::int64_t cheapestLot(const std::string& item, const SellBounds& bounds, int quantity) const;
+    std::int64_t craftCap(const SellBounds& bounds, int quantity) const;
+    std::int64_t stagedSoldFor(const std::string& seller, const std::string& item, const LadderStart& start, const StagedLot& sold,
+                               int quantity, const SellBounds& bounds) const;
+    int stagedLeastLot(const std::string& seller, const std::string& item, const LadderStart& start, int from, const SellBounds& bounds) const;
+    market::Rules readMarketRules() const;
+    market::Rules marketRules_;                     // (readMarketRules, as buildSeasons last read the world's rules.)
+    bool exchange(const std::string& seller, const std::string& buyer, const std::string& item, int quantity,
+                  std::int64_t total, const std::string& kind);
+    void rollMarket();
+    double stagedSeason(const std::string& item) const;
+    // A good's season group (market.json's, 7.1) with this world's season record laid over its price and shelf.
+    const market::Data::Season* stagedSeasonGroup(const std::string& base, std::array<int, 4>* price, std::array<int, 4>* shelf) const;
+    double districtFactor(const std::string& till, const std::string& base) const;
+    double districtGroupFactor(const std::string& till, const std::string& group) const;
+    const std::map<std::string, double>* districtRow(const std::string& till) const;
+    double marketBase(const std::string& market, const std::string& base, double district) const;
+    double leastDistrict(const std::string& market, const std::string& base) const;
+    market::Topology worldTopology_;
+    mutable market::Topology ownTopology_;
+    mutable std::uint64_t ownTopologyKey_ = 0;
+    mutable std::unordered_map<std::string, double> districtLeast_;   // Market|group -> its least district factor,
+    mutable bool districtWarm_ = false;                                // filled whole (prepareMarket) before any read.
+    std::map<std::string, std::string> quarters_;
+    double marketAt_ = -1;
     void loopHourly(std::int64_t hour, int season);
     void householdsShop(int hourOfDay, std::int64_t day, int season);
     void giveAlms();

@@ -767,6 +767,7 @@ void World::prepareReading() const
 {
     entitiesIn(std::string());
     society_.prepareReading();
+    society_.prepareMarket();                       // (Doc 79: the shop lists' lazy tables, only while staged.)
 }
 
 void World::observeAll(const std::vector<std::string>& observerIds)
@@ -4527,6 +4528,7 @@ bool World::continueSchedules(double budgetMs)
                 }
             }
             planDays();
+            ensureTradePoints();                    // (Doc 79, 5.1: the markets, found again after a load or a roster move.)
             const bool decided = society_.decidesWithin(.5);
             society_.tick(.5, calendarDays_, int(calendar::calendarAt(calendarDays_).season), withBodies ? bodies_ : noBodies);
             unseenErrands_ = decided && society_.unseenDecided();   // (The unseen go about what they decided, below.)
@@ -5789,7 +5791,8 @@ Result World::useSeasonalWeather(const std::string& id)
     refreshWeatherField(true);
     return {true, "Seasonal weather enabled.", id};
 }
-Result World::trade(const std::string& player, const std::string& trader, const std::string& item, int quantity, bool buy)
+Result World::trade(const std::string& player, const std::string& trader, const std::string& item, int quantity, bool buy,
+                    const std::string& holder)
 {
     const auto* p = entity(player);
     const auto* m = entity(trader);
@@ -5798,7 +5801,8 @@ Result World::trade(const std::string& player, const std::string& trader, const 
         distance(p->position, m->position) > 2. || visionClarity(player, trader) <= 0)
         return {false, "No accessible trader is within reach.", {}};
     if (m->posture == "lying" || (life && life->task == "sleep")) return {false, "The trader is sleeping.", trader};
-    auto result = society_.trade(player, trader, item, quantity, buy);
+    ensureTradePoints();                            // (Doc 79: the markets, while staged.)
+    auto result = society_.trade(player, trader, item, quantity, buy, holder);
     absorbJournal();
     return {result.ok, result.message, trader};
 }
@@ -6647,6 +6651,7 @@ Result World::restore(const PersistedWorld& saved)
             beliefs_[b.holder].push_back(b);
     roads_.beliefs.clear();
     townsReady_ = false;
+    tradePointsReady_ = false;
     homesReady_ = false;
     folk_.clear();
     encounters_.clear();

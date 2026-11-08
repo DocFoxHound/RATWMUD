@@ -1101,6 +1101,8 @@ Value society(const SocietyState& s)
         }
         o.add("loop", loop);
     }
+    if (!s.board.empty())
+        o.add("board", market::encode(s.board));   // (The Market Board, doc 79, Phase 1: only while staged has moved it.)
     return o;
 }
 
@@ -1301,7 +1303,7 @@ SocietyState readSociety(const Value& o)
     }
     // Twelve fields; careers since Phase 4. A save from before doc 66's Phase 5 also has the economy's (craftingStocked,
     // books, houses, memory, orchestrator): read past, and dropped with the rules they kept.
-    std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("loop") ? 1 : 0);
+    std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("loop") ? 1 : 0) - (o.has("board") ? 1 : 0);
     for (const char* gone : {"craftingStocked", "books", "houses", "memory", "orchestrator"})
         fields -= o.has(gone) ? 1 : 0;
     bool valid = fields == 12;
@@ -1366,6 +1368,7 @@ SocietyState readSociety(const Value& o)
         }
     s.careers = readCareers(o["careers"]);
     s.loop = readLoop(o["loop"]);                   // (doc 68, Progress, "Self-correcting rules"; none in an older save.)
+    s.board = market::decode(o["board"]);           // (Doc 79, Phase 1: lenient, never a refusal; none in an older save.)
     if (!valid)
         s.minted = -1;
     return s;

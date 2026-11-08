@@ -3073,6 +3073,7 @@ void Game::sendSnapshots(const std::vector<Connection*>& sending)
         }
         world_.observeAll(due);
     }
+    world_.ensureTradePoints();                     // (Doc 79, 5.1, while staged: on this thread, never the pool's.)
     world_.prepareReading();
     batching_ = true;
     if (pool_)
@@ -4103,10 +4104,19 @@ void Game::sendSnapshot(Connection* c)
         std::hypot(trader->position.x - view.self.position.x, trader->position.y - view.self.position.y) <= 2)
         if (const auto* account = world_.society().account(world_.society().tillOf(trader->id)))
         {
+            const bool staged = world_.society().staged();
+            if (staged && !batching_)
+                world_.ensureTradePoints();         // (The Market Board's markets: doc 79, 5.1; sendSnapshots' before its threads.)
             auto m = Value::object();
             m.add("id", trader->id);
             m.add("name", names::capitalised(labelFor(id, trader->id)));
             m.add("cash", account->cash);
+            if (staged)
+            {
+                // The staged list (doc 79, 7.1): the shop's buying budget today ("BUYING TODAY"), not its purse.
+                m.add("staged", true);
+                m.add("buyingToday", world_.society().budgetLeft(world_.society().tillOf(trader->id)));
+            }
             auto goods = Value::array();
             // Each of its goods, and any other quality of it the shop or this wolf has (doc 35, Part 4: "Fine hide").
             std::vector<std::string> kinds;
@@ -4127,14 +4137,33 @@ void Game::sendSnapshot(Connection* c)
                 good.add("name", itemLabel(id, itemId));
                 good.add("stock", Society::stock(*account, itemId));
                 good.add("owned", Society::stock(*purse, itemId));
-                const auto buy = world_.society().quote(id, trader->id, itemId, 1, true);
-                const auto sell = world_.society().quote(id, trader->id, itemId, 1, false);
+                // (Staged: one piece's quotes from the row's listing, worked out once.)
+                const auto row = staged ? world_.society().listing(id, trader->id, itemId, accountOf(id)) : Society::Listing{};
+                const auto buy = staged ? row.buyOne : world_.society().quote(id, trader->id, itemId, 1, true, accountOf(id));
+                const auto sell = staged ? row.sellOne : world_.society().quote(id, trader->id, itemId, 1, false, accountOf(id));
                 good.add("buyPrice", buy.unitPrice);
                 good.add("sellPrice", sell.unitPrice);
                 good.add("canBuy", buy.ok);
                 good.add("canSell", sell.ok);
                 good.add("buyReason", buy.message);
                 good.add("sellReason", sell.message);
+                if (staged)
+                {
+                    // The dozen list, the smallest sell lot and the trend with its cause (doc 79, 7.1), at this wolf's own
+                    // ladder and account holder's cap.
+                    good.add("listCount", row.listCount);
+                    good.add("listPrice", row.listPrice);
+                    good.add("buyCount", row.buyCount);
+                    good.add("buyLotPrice", row.buy.total);
+                    good.add("canBuyLot", row.buy.ok);
+                    good.add("buyLotReason", row.buy.message);
+                    good.add("sellLot", row.sellLot);
+                    good.add("sellLotPrice", row.sell.total);
+                    good.add("canSellLot", row.sell.ok);
+                    good.add("sellLotReason", row.sell.message);
+                    good.add("trend", row.trend);
+                    good.add("trendCause", row.cause);
+                }
                 goods.push(good);
             }
             m.add("items", goods);
@@ -4919,7 +4948,7 @@ void Game::command(Connection* c, const std::string& raw)
                : qty >= 1 && qty <= 99 && qty == std::floor(qty) && buy && buy->isBool()
                      ? (!factionTrade(id, j.string("target"), buy->asBool(), refusal)
                             ? refusal
-                            : world_.trade(id, j.string("target"), j.string("item"), int(qty), buy->asBool()))
+                            : world_.trade(id, j.string("target"), j.string("item"), int(qty), buy->asBool(), accountOf(id)))
                      : Result{false, "Invalid trade request.", {}};
         if (result.ok && buy && buy->asBool())
             if (const auto* after = world_.society().account(id))

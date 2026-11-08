@@ -261,7 +261,9 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
     const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant);
     if (!r)
         return smith(merchant) ? std::vector<std::string>{"sword"} : std::vector<std::string>{"herbs", "meal"};
-    if (const auto kept = waresCache_.find(merchant); kept != waresCache_.end() && kept->second.first == r->workLabel)
+    // (Kept by its label, and whether the staged economy's buys are in it: doc 79, D5.)
+    const auto key = staged() ? r->workLabel + "\n" : r->workLabel;
+    if (const auto kept = waresCache_.find(merchant); kept != waresCache_.end() && kept->second.first == key)
         return kept->second.second;
     std::vector<std::string> out;
     const auto* business = items::businessFor(r->workLabel);
@@ -320,6 +322,12 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
         for (const auto& item : items::buysFor(business->id))
             if (item != "meal" && item != "herbs" && std::find(out.begin(), out.end(), item) == out.end())
                 out.push_back(item);
+    // The staged economy's own buys (market.json `buys`; doc 79, D5: the smithy, the ironworks and the foundry buy ore).
+    if (business && staged())
+        if (const auto extra = market::data().buys.find(business->id); extra != market::data().buys.end())
+            for (const auto& item : extra->second)
+                if (std::find(out.begin(), out.end(), item) == out.end())
+                    out.push_back(item);
     static const char* Food[] = {"general", "provisioner", "stall", "bakery", "butcher", "fishmonger", "brewery", "inn"};   // (foodShop)
     const bool food = business && std::find(std::begin(Food), std::end(Food), business->id) != std::end(Food);
     if (smith(merchant) && std::find(out.begin(), out.end(), "sword") == out.end())
@@ -329,7 +337,7 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
     if (!business || business->id == "herbalist" || business->id == "apothecary" || business->id == "general" || business->id == "stall" ||
         business->id == "inn")
         out.push_back("herbs");
-    waresCache_[merchant] = {r->workLabel, out};
+    waresCache_[merchant] = {key, out};
     return out;
 }
 const char* Society::itemName(const std::string& id)
@@ -439,8 +447,10 @@ std::int64_t Society::catalogPrice(const std::string& item)
     return good && good->price > 0 ? good->price : 1;
 }
 EconomyResult Society::quote(const std::string& player, const std::string& seller, const std::string& item,
-                             int quantity, bool buy) const
+                             int quantity, bool buy, const std::string& holder) const
 {
+    if (staged())
+        return stagedQuote(player, seller, item, quantity, buy, holder, nullptr);   // (The Market Board's: doc 79, 7.)
     if (!state_.enabled || !merchant(seller) || !playerAccountId(player) || !account(player) || !account(seller))
         return {false, "This trader is unavailable."};
     if (quantity < 1 || quantity > 99)
@@ -490,8 +500,10 @@ EconomyResult Society::quote(const std::string& player, const std::string& selle
     return {true, "Available", price, total};
 }
 EconomyResult Society::trade(const std::string& player, const std::string& trader, const std::string& item,
-                             int quantity, bool buy)
+                             int quantity, bool buy, const std::string& holder)
 {
+    if (staged())
+        return stagedTrade(player, trader, item, quantity, buy, holder);   // (The Market Board's: doc 79, 7.)
     auto result = quote(player, trader, item, quantity, buy);
     if (!result.ok)
         return result;
@@ -595,6 +607,8 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
     if (roster_ == Roster::Authored)
     {
         setYearDay(absoluteDay);                    // (The seasons in the Country's supply: doc 68, Progress.)
+        if (staged())
+            marketTick(absoluteDay);                // (The Market Board's dawn: doc 79, Phase 1; RatwMarket.cpp.)
         // The city's loop (doc 68), each game hour as it turns: hours missed run once each, at most a day of them; the
         // first hour a society decides (a fresh world, a restore) is not run, so nothing is paid twice.
         if (!needsPaused() && !staged())
