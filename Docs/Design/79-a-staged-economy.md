@@ -1783,6 +1783,20 @@ Each has a recommendation. "Go with the recommendations" takes them all.
 
   Today's code already sits at or past section 15's bar (p99 at most 5.3 ms, worst at most 25 ms) in the 6-8 and
   17-19 windows, so the gate compares against these numbers: no window slower than this baseline beyond noise.
+- **2026-11-08: Phases 1 and 2 built and joined** (each in its own worktree, checked adversarially with two repair
+  rounds; branches `r2-staged-p1` `26dd898` and `r2-staged-p2` `8748a0d`; merged on `r2-staged` `561d4b1`..`84313ee`,
+  then checked again: no problems left). The Market Board (`Core/RatwMarket.*`, `Data/Economy/market.json`): pressure,
+  the per-piece ladder, the per-holder cap, morning ripples, depth, the clamp, I1-I5 and the backstop, shelves and the
+  morning restock, the client's dozens, markers and "BUYING TODAY". Bands and staged accounts (`Core/RatwStatus.*`,
+  `Core/RatwStagedAccounts.cpp`, `Data/Economy/status.json`): the score, the reasoned cut, precedence, food from the
+  shelf, faucet caps and tallies, staged payers topped up, the welcome once per account holder per world per game
+  week. One slider, in the Board, stepping 10 a day. Tests: ctest 89/89 with the rule off; with it on 71/89, the 18
+  failures being Phase 0's 17 and `shops` (all deleted or rewritten in Phase 3); `exploit_tests` 782,451 checks,
+  `market_tests` 1,685, `status_tests` 21,969, `life_status_tests` 2,190; the client 146.
+  - Open for the user: the season swing against the clamp (recommend narrowing the season span); region factors
+    (made here 0.95, far 1.08: bread 12p a dozen in Ridgemere, recommend keeping); the crafting cap strict until the
+    Craft panel (recommend); Times still from the slider alone, so the bands' Times shift adds to the slider (for
+    Phase 10's look and feel).
 
 Nothing built yet.
 
