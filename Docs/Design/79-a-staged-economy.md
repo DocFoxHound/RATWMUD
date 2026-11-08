@@ -1762,6 +1762,23 @@ Each has a recommendation. "Go with the recommendations" takes them all.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations" (all 30, D1-D30), and doc 79 before doc 78.
 
+- **2026-11-08: Phase 0 done** (`671fe91`, branch `r2-staged`): the rule `staged` (test-only, default off), staged food
+  and purses, `postKind` and `households()` moved, the pre-79 fixtures and `save_compat`/`save_compat_pg`. ctest 83/83
+  with the rule off, 66/83 with it on; every failure and kept reader is in `79-phase0-failures.md`. Open: fixture (a)
+  is DEV's fresh-boot save (no `loop`, steering, `fund:relief`, `outside:wharf` or `farm:` accounts); a richer one
+  needs a copy of DEV's world run past a night (the user's go-ahead).
+- **Perf baseline on today's code** (`cab65ee`, Release, 8 threads, DEV build 70 exported read-only, `world_check
+  EXPORT --simulate A B --players 20`, 559 residents, laptop idle at load 0.4-2.0):
+
+  | Window | mean | p50 | p99 | p99 after the first minute | worst after the first minute | worst |
+  |---|---|---|---|---|---|---|
+  | 6-8 | 2.58 | 2.52 | 5.79 | 5.55 | 20.97 | 31.66 |
+  | 17-19 | 2.21 | 2.07 | 5.56 | 5.28 | 27.95 | 27.95 |
+  | 23-25 | 1.61 | 1.48 | 4.71 | 4.02 | 9.64 | 45.21 (first minute) |
+
+  Today's code already sits at or past section 15's bar (p99 at most 5.3 ms, worst at most 25 ms) in the 6-8 and
+  17-19 windows, so the gate compares against these numbers: no window slower than this baseline beyond noise.
+
 Nothing built yet.
 
 - **2026-11-08: drafted.** From seven code maps, three designs and three judges' grafts. Plan only.
