@@ -1,0 +1,56 @@
+# Your world's settings (Docs/Design/77, section 8). Edit this file, then `docker compose up -d` (README.md).
+# Read once, when the world starts: after a change, `docker compose restart world`.
+
+[world]
+# The world's name on the server list and in the game: 1-48 characters.
+name = "My Ridgemere"
+# A line or two for the server list (300 characters at most).
+description = "A friendly world. Everyone welcome."
+# Where the world is, roughly, so players can pick a near one (32 characters at most).
+region = "Europe"
+# Up to 5 tags, 16 characters each at most.
+tags = ["friendly", "roleplay"]
+# How many wolves can be in the world at once.
+player_limit = 40
+# New wolves arriving for the first time, at most, per hour (leave it out for the server's own default).
+# arrivals_per_hour = 30
+# Private worlds (a password kept on central) aren't built yet: leave this false.
+private = false
+# This world's id on central, shown on the Host page beside its host token ("world-" and 32 letters and digits).
+# Needed when the world is on central (below).
+id = ""
+
+[central]
+# Central, where players' accounts and wolves live and the server list is kept. Leave it empty ("") for a private LAN
+# world: no server list, and accounts and passwords kept by this world itself (README.md, "A LAN world").
+url = "https://central.example.org"
+# The host token, from central's Host page (it starts rh_). Either put it in a .env file beside compose.yaml as
+#   RATW_HOST_TOKEN=rh_...
+# or in a file of its own beside this one, named here:
+# token_file = "host-token"
+# Without a token the world can still be joined by its address, but it isn't on the server list.
+# A DNS name that points at this computer, listed instead of its address (optional):
+# host = "wolves.example.org"
+# True only if the world is reached through wss:// (a proxy with a certificate for the host name above).
+secure = false
+
+[ai]
+# An OpenAI API key lets the residents talk with the model's words (you pay for what they say). Without one they use
+# their authored lines, which work well too. The key stays in this container; it is never sent to central.
+key = ""
+# Or a file holding the key, beside this one:
+# key_file = "ai-key"
+# The models (these defaults are what the official world uses; see Docs/Design/28):
+# model = "gpt-5.4-mini"          # the residents' main voice
+# light_model = "gpt-5.4-nano"    # short replies
+# fallback_model = "gpt-5.4-mini" # when the main one fails
+# story_model = "gpt-5.6-luna"    # the stories
+# How much talk to buy: generous, balanced or frugal.
+cost_mode = "balanced"
+
+[server]
+# The game's worker threads. Leave it out to use the CPUs Docker gives the container, less two (0-16).
+# workers = 2
+
+# The port is set beside compose.yaml, not here: RATW_PORT in .env (default 7788). Players and central reach the
+# world on it, so open it on your router (TCP).

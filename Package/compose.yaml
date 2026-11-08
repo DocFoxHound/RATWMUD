@@ -1,0 +1,102 @@
+# A Ridgemere world (Docs/Design/77, section 8). Edit world.toml, then: docker compose up -d   (README.md)
+#
+#   world  the world server, the NPC Mind (only with an AI key) and the world agent (only with a central), in one
+#          container: the server sends dialogue only to 127.0.0.1, and the agent reads the server's /status there.
+#   db     PostgreSQL 18, the world's database, on the internal network only (no port on this computer).
+#
+# Settings in a .env file beside this one (optional): RATW_PORT (default 7788; players and central reach the world on
+# it, and it is the same port inside the container), RATW_HOST_TOKEN (the host token from central's Host page, if not
+# in a token file named by world.toml), RATW_IMAGE (the world image).
+#
+# Memory: the world saves itself by forking, and the copy holds every page the world touches while it writes (up to
+# twice the world's memory for a moment). If you give the world a memory limit, allow for that (uncomment mem_limit:
+# about 2 GB for a quiet world is a guess, not yet measured; doc 77, section 8).
+name: ratw-world
+services:
+  world:
+    image: ${RATW_IMAGE:-ratw-world:latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${RATW_PORT:-7788}:${RATW_PORT:-7788}"
+    environment:
+      RATW_PORT: ${RATW_PORT:-7788}
+      RATW_HOST_TOKEN: ${RATW_HOST_TOKEN:-}
+      RATW_DB_HOST: db
+      RATW_DB_PORT: "5432"
+      RATW_PACKAGE_IMPORT: ${RATW_PACKAGE_IMPORT:-}
+    volumes:
+      # This folder (world.toml, and a token or key file it names), read-only.
+      - ./:/package/host:ro
+      - secrets:/run/ratw-secrets:ro
+      - logs:/var/lib/ratw/logs
+    # The world saves on SIGTERM before it stops: give it time.
+    stop_grace_period: 90s
+    # mem_limit: 2g
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    # Makes the database passwords on the first start (kept in the secrets volume, readable by the world's user), then
+    # runs PostgreSQL's own entrypoint.
+    entrypoint: ["bash", "/ratw/db-start.sh"]
+    command: ["postgres"]
+    configs:
+      - source: db-start
+        target: /ratw/db-start.sh
+      - source: db-roles
+        target: /docker-entrypoint-initdb.d/10-roles.sh
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - secrets:/run/ratw-secrets
+    healthcheck:
+      # Over TCP, which the image's first-start setup doesn't listen on: healthy only once the real server is up.
+      test: ["CMD-SHELL", ". /run/ratw-secrets/passwords.env && PGPASSWORD=\"$$POSTGRES_PASSWORD\" psql -h 127.0.0.1 -U postgres -d ratw_world -tAc 'SELECT 1' >/dev/null"]
+      interval: 3s
+      timeout: 5s
+      retries: 60
+      start_period: 30s
+    stop_grace_period: 60s
+volumes:
+  pgdata:
+  secrets:
+  logs:
+configs:
+  db-start:
+    content: |
+      set -euo pipefail
+      dir=/run/ratw-secrets
+      if [ ! -s "$$dir/passwords.env" ]; then
+        # (mktemp makes it 0600; no umask here, which PostgreSQL's own entrypoint would inherit.)
+        tmp="$$(mktemp "$$dir/.passwords.XXXXXX")"
+        for name in POSTGRES_PASSWORD RATW_OWNER_PASSWORD RATW_EDITOR_PASSWORD RATW_PUBLISHER_PASSWORD \
+                    RATW_GAME_PASSWORD RATW_DM_PASSWORD; do
+          printf '%s=%s\n' "$$name" "$$(head -c 24 /dev/urandom | base64 | tr '+/' '-_' | tr -d '=\n')"
+        done > "$$tmp"
+        # (The world's user, uid 10001 in its image, reads them through its group.)
+        chown 0:10001 "$$tmp" && chmod 0640 "$$tmp" && mv "$$tmp" "$$dir/passwords.env"
+        chown 0:10001 "$$dir" && chmod 0750 "$$dir"
+      fi
+      set -a
+      . "$$dir/passwords.env"
+      set +a
+      exec docker-entrypoint.sh "$$@"
+  db-roles:
+    content: |
+      #!/bin/bash
+      # Runs once, when the data volume is first made: the five login roles (the migrations grant to all of them; a
+      # world logs in only as ratw_owner, for the migrations and the import, and ratw_game) and the world's database.
+      set -euo pipefail
+      psql -v ON_ERROR_STOP=1 --username "$$POSTGRES_USER" --dbname postgres \
+          -v owner_pw="$$RATW_OWNER_PASSWORD" -v editor_pw="$$RATW_EDITOR_PASSWORD" \
+          -v publisher_pw="$$RATW_PUBLISHER_PASSWORD" -v game_pw="$$RATW_GAME_PASSWORD" -v dm_pw="$$RATW_DM_PASSWORD" <<'SQL'
+      CREATE ROLE ratw_owner LOGIN PASSWORD :'owner_pw';
+      CREATE ROLE ratw_editor LOGIN PASSWORD :'editor_pw';
+      CREATE ROLE ratw_publisher LOGIN PASSWORD :'publisher_pw';
+      CREATE ROLE ratw_game LOGIN PASSWORD :'game_pw';
+      CREATE ROLE ratw_dm LOGIN PASSWORD :'dm_pw';
+      CREATE DATABASE ratw_world OWNER ratw_owner;
+      REVOKE ALL ON DATABASE ratw_world FROM PUBLIC;
+      GRANT CONNECT ON DATABASE ratw_world TO ratw_publisher, ratw_game, ratw_dm;
+      SQL
