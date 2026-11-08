@@ -898,6 +898,15 @@ Phase 3 replaced the spike's app with the real client, so the spike is run from 
    Expected failures, not problems: the direct `wss://` (no certificate hook on WebView2) and the plugin's `wss://`
    (`UnknownIssuer`).
 
+**2026-11-08: D1 on Windows, from a GitHub runner** (workflow `desktop-windows`, run 42478075238, the Phase 0 spike
+from `desktop-spike-phase0`; Windows Server with WebView2, Edge 156). The page's origin is `http://tauri.localhost`, a
+secure context. **The bundled page opens plain `ws://` directly to a non-loopback address** (the runner's own
+172.26.176.1: connect 4 ms, round trip 0.4 ms) as well as to loopback, so WebView2's mixed-content rule doesn't block
+it: **D1 is answered "plain `ws://` works" on both platforms** (Q3 (a)); no relay is needed. The relays and the plugin
+also work; the canvas ran at 64 frames a second. As expected, `wss://` to the spike's own CA failed (no certificate
+hook). The spike hung after its results instead of quitting (not a finding). Still worth doing on the user's PC: a
+real LAN address and a real screen.
+
 **2026-11-07: Phase 1, central core (branch `r2-desktop`).** About 2 hours. No game server, no simulation; no world's
 database was touched (tests use a throwaway `ratw_central_test`, made and dropped with the Postgres superuser from
 `Database/.env`; no role was made or changed).
