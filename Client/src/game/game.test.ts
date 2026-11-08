@@ -649,7 +649,8 @@ test('the staged list: dozens, sell lots, a 0 unit price (doc 79, 7.1)', () => {
     bread.canSellLot = true;
     bread.sellLotReason = 'Available';
     assert.equal(s.tradeReason('bread', true), 'Available', 'the lot reason, not the piece reason, while staged');
-    // Without `staged`, the old list: herbs and meals only, one at a time.
+    // Without `staged` (a server from before doc 79, kept for PROD and the desktop's server list), the old list: herbs and
+    // meals only, one at a time.
     delete merchant.staged;
     s.applySnapshot({cell: {id: 'shop', outdoors: false}, self, merchant, inventory: []});
     assert.ok(!s.stagedTrade() && !s.tradeItem('bread') && s.tradeCount('bread', true) === 1);

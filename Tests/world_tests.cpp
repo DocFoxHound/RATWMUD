@@ -1,12 +1,14 @@
 #include "RatwWorld.h"
 #include "RatwStep.h"
 
+#include <chrono>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <random>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 using namespace ratw;
 namespace
@@ -1565,9 +1567,19 @@ void schedules()
     World routed;
     routed.setRoutesOffThread(true);
     advance(routed, 68);
-    const auto* walker = routed.entity("npc_scout");
-    expect(walker->cellId == "exterior" || walker->position.y > start.y + 1,
-           "A resident whose route is searched off the game thread still walks toward the next routine");
+    const auto walking = [&] {
+        const auto* walker = routed.entity("npc_scout");
+        return walker->cellId == "exterior" || walker->position.y > start.y + 1;
+    };
+    // (The route thread runs on wall time, the ticks don't: under a loaded machine its answer can come after the 68 game
+    // seconds above. It is waited for, a tick at a time, for up to ten seconds of wall time.)
+    const auto waitUntil = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+    while (!walking() && std::chrono::steady_clock::now() < waitUntil)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        routed.tick(.1);
+    }
+    expect(walking(), "A resident whose route is searched off the game thread still walks toward the next routine");
     World party;
     party.entity("npc_scout")->leaderId = "p";
     const auto held = party.entity("npc_scout")->position;

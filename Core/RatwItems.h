@@ -128,20 +128,6 @@ struct Ladder
     double catalogueDay = 12;
 };
 const Ladder& ladder();
-// A household's need besides food (crafts.json `households`, doc 35, Part 7): one of `any`, every `everyDays` (in winter
-// every `winterDays` where that is more than 0), once a home, or once a grown head (`perPerson`).
-struct HouseholdNeed
-{
-    std::vector<std::string> any;
-    double everyDays = 1, winterDays = 0;
-    bool perPerson = false;
-};
-struct Households
-{
-    int reserve = 6;                                // Pennies a head a household keeps back for food before its needs.
-    std::vector<HouseholdNeed> needs;
-};
-const Households& households();
 // A post's rule by the words of its title (doc 79, 6.3; RatwCareers.cpp's postRules, once city_loop.json's `wages`): its
 // name, its payer ("treasury" or "estates": what kind of post it is, "public" or "estate") and its wage word.
 struct WageRule

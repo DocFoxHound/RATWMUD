@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""The item catalogue's Python side (tools/item_catalog.py): the catalogue is sound, and the store room's reckoning
-(Docs/Design/67-ridgemere2-city.md, 4 and 6) agrees with the game's: business_for (Core's items::businessFor) and
-store_goods (Core's Society::storeGoods) against Tests/fixtures/business_labels.json, which Tests/store_room_tests.cpp
-reads too, so the two cannot drift."""
+"""The item catalogue's Python side (tools/item_catalog.py): the catalogue is sound; business_for agrees with Core's
+items::businessFor (Docs/Design/67-ridgemere2-city.md, 4) on Tests/fixtures/business_labels.json's labels, which
+Tests/shops_tests.cpp reads too, so the two cannot drift. store_goods and store_cost (doc 67, 6) feed only the studio's
+store-room view now (Core's store room went with doc 79's Phase 3); they and their tests go with that view in Phase 9."""
 import json
 import unittest
 from pathlib import Path

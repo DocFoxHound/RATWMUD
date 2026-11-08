@@ -1,5 +1,8 @@
 # Economy test report and handoff (2026-10-05)
 
+> **Superseded by doc 79 (2026-11-08)** (Docs/Design/79-a-staged-economy.md): the conserving economy this report tests
+> (doc 42's) went with doc 79's Phase 3. The text below is kept as history.
+
 Where the work on the NPC economy stands, for the next session. The design and every rule built is in
 `Docs/Design/42-money-in-circulation.md`; fast-forward and the deterministic mode are in
 `Docs/Design/31-responsiveness.md` ("Fast-forward").

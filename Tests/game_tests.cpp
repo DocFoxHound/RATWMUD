@@ -970,6 +970,100 @@ void unreadableSavesAreKept()
     std::remove(path.c_str());
 }
 
+// Goods the world no longer knows (doc 79, 14) are set aside at restore and given back when the item returns; the restore
+// changes accounts the checkpoint holds otherwise, so it is journalled at once: a crash before the next checkpoint
+// neither counts the goods twice (an item come back) nor loses them (an item gone).
+void aRestoresQuarantineSurvivesACrash()
+{
+    const std::string path = "/tmp/ratw-game-test-quarantine-" + std::to_string(::getpid()) + ".json";
+    const auto clean = [&] {
+        std::remove(path.c_str());
+        std::remove((path + ".journal").c_str());
+    };
+    clean();
+    const auto options = [&] {
+        game::Options o;
+        o.tiesOptional = true;
+        o.hiddenNames = false;
+        o.savePath = path;
+        o.devIdentity = true;
+        return o;
+    };
+    std::string id;
+    int herbs0 = 0;
+    {
+        game::Game g(options());
+        std::string problem;
+        expect(g.start(problem), "starts with a file save: " + problem);
+        Client c;
+        c.id = 40;
+        g.connect(&c);
+        g.command(&c, cmd({{"type", "hello"}, {"id", "ash"}, {"name", "Ash"}}));
+        g.settle();
+        id = c.entityId;
+        const auto* account = g.world().society().account(id);
+        expect(account != nullptr, "Ash has a purse");
+        herbs0 = account ? Society::stock(*account, "herbs") : 0;
+        g.save();
+        g.settle();
+    }
+    // The save as an older catalogue left it: herbs set aside (an item that has since come back) and a good the world no
+    // longer knows still in Ash's purse.
+    {
+        json::Value doc;
+        std::string error;
+        expect(json::parse(readFile(path), doc, error), "the save reads: " + error);
+        auto* society = doc.find("society");
+        auto* accounts = society ? society->find("accounts") : nullptr;
+        auto* ash = accounts ? accounts->find(id) : nullptr;
+        auto* stock = ash ? ash->find("stock") : nullptr;
+        expect(stock != nullptr, "Ash's purse is in the save");
+        if (!stock)
+            return clean();
+        stock->set("junk_gone_from_the_world", 3);
+        auto* staged = society->find("staged");
+        if (!staged)
+            staged = &society->set("staged", json::Value::object());
+        auto quarantine = json::Value::object(), goods = json::Value::object();
+        goods.add("herbs", 2);
+        quarantine.add(id, goods);
+        staged->set("quarantine", quarantine);
+        writeFile(path, json::dump(doc));
+    }
+    const auto check = [&](game::Game& g, const std::string& when) {
+        const auto* account = g.world().society().account(id);
+        const auto* q = g.world().society().quarantined(id);
+        expect(account && Society::stock(*account, "herbs") == herbs0 + 2 && !account->stock.count("junk_gone_from_the_world"),
+               "the herbs set aside are given back once, the unknown good set aside (" + when + ")");
+        expect(q && q->size() == 1 && q->count("junk_gone_from_the_world") && q->at("junk_gone_from_the_world") == 3,
+               "and the unknown good waits in quarantine, not lost (" + when + ")");
+    };
+    {
+        game::Game g(options());
+        std::string problem;
+        expect(g.start(problem), "starts on the older save: " + problem);
+        check(g, "at the restore");
+        g.settle();                                // (The journal's writer has it.)
+        expect(readFile(path + ".journal").find("quarantine") != std::string::npos, "the restore's moves are journalled");
+        // A crash: the game goes without saving.
+    }
+    {
+        game::Game g(options());
+        std::string problem;
+        expect(g.start(problem), "starts again after the crash: " + problem);
+        check(g, "the journal replayed over the older save");
+        g.save();
+        g.settle();
+    }
+    {
+        game::Game g(options());
+        std::string problem;
+        expect(g.start(problem), "and starts on its own checkpoint: " + problem);
+        check(g, "the checkpoint alone");
+    }
+    clean();
+}
+
 // Accounts and characters must agree: an account owning a character the save doesn't have, or a made character
 // nobody owns, stops the load.
 // Saves that never stop the game (Docs/Design/31-responsiveness.md, Phase 2). A valuable command's reply waits for its
@@ -2074,6 +2168,7 @@ int main()
         unreadableSavesAreKept();
         mismatchedOwnersAreRefused();
         theJournalKeepsWhatACrashWouldLose();
+        aRestoresQuarantineSurvivesACrash();
         fightsThroughTheGame();
         swordsMuffleAndBodiesLinger();
         aSermonOnRestday();

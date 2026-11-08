@@ -82,10 +82,11 @@ Walk into a building's door to go in, and back out through the doorway to
 leave (clicking a door and choosing **Enter** also works). Day guards rotate around nine posts every 15 game minutes, and the
 captain watches the square. Night guards take over at 18:00. Off-watch guards sleep
 in their bunks. Civilians work 08:00–17:00, gather at the fountain until 22:00, then
-go home to sleep. Anyone hungry buys a real meal from Wren while the shop is open.
-Wages come from the town treasury. Wren restocks from the town stores and pays
-market dues back, so money stays conserved. A daily carter refills the stores with
-goods, never money. Players can gather from the herb garden west of the square.
+go home to sleep. Residents eat from the nearest food shop's shelf, Wren's while
+the shop is open. Their money is staged (Docs/Design/79-a-staged-economy.md): each
+household's purse is set every night by its band, so nothing pays them wages and
+nothing is conserved between them; shops restock each morning. A player's coins
+are real to the penny. Players can gather from the herb garden west of the square.
 
 After editing that atlas file by hand, run `python3 tools/bundle_worlds.py` to
 regenerate its game files.

@@ -500,10 +500,34 @@ class ContentTests(unittest.TestCase):
                     {'areas': {'gardens': {'on': 'yes'}}}, {'areas': {'gardens': {'luck': 1}}}, {'order': ['grain', 'grain']},
                     {'order': ['grain', 7]}, {'order': []}):
             self.assertTrue(editor.check_farms(bad), bad)
+            self.assertTrue(editor.check_economy({**self.greyfen()['economy'], 'farms': bad}), 'a change to it is refused')
+            # (Doc 79, 14 and 17: the farms' settings are dead, so a project holding a bad one loads, warned of.)
             q = self.greyfen()
             q['economy']['farms'] = bad
-            with self.assertRaises(editor.ValidationError):
-                editor.check_project(q)
+            _, warnings = editor.check_project(q)
+            self.assertTrue(any(w.startswith('economy.farms') and 'no longer reads' in w for w in warnings), warnings)
+
+    def test_a_bad_dead_setting_loads_warned_of_and_is_written_at_its_default(self):
+        # Doc 79, 14: the economy is lenient. The store room's, the loop's, the comforts' and the farms' settings are no
+        # longer read: a project holding a bad one loads with a warning; a change to one is still refused; the world's
+        # row takes the default (the columns' checks stay until migration 0061). A kept setting out of range still fails.
+        import world_store
+        p = self.greyfen()
+        p['economy'].update(storeMarkup=5000, gateToll=999, comfortsShare=-1, businesses={'brann': 'off'}, wharf='yes')
+        _, warnings = editor.check_project(p)
+        for key in ('storeMarkup', 'gateToll', 'comfortsShare', 'businesses', 'wharf'):
+            self.assertTrue(any(w.startswith(f'economy.{key}') and 'kept, it does nothing' in w for w in warnings), (key, warnings))
+        self.assertEqual(len(editor.check_economy(p['economy'])), 5)
+        row = world_store.economy_row('w', p['economy'])
+        self.assertEqual(row, world_store.economy_row('w', {k: v for k, v in p['economy'].items()
+                                                            if k not in ('storeMarkup', 'gateToll', 'comfortsShare', 'wharf')}))
+        self.assertEqual(world_store.business_rows('w', p['economy']), [])
+        q = self.greyfen()
+        q['economy'].update(needsPaused='yes', treasury=-1, rules={'ripple': 900})
+        with self.assertRaises(editor.ValidationError) as refused:
+            editor.check_project(q)
+        for key in ('needsPaused', 'treasury', 'rules.ripple'):
+            self.assertIn(f'economy.{key}', str(refused.exception))
 
     def test_worlds_without_people_still_export_version_1(self):
         p = self.greyfen()

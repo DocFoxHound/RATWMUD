@@ -6648,11 +6648,15 @@ Result World::restore(const PersistedWorld& saved)
     fights_.clear();
     crimeHour_ = -1;
     // (Doc 79, 9.1: a caravan's account is the old economy's, dropped at the society's restore. The caravan goes with it,
-    // and the letters it carried are open again for another courier, their coins still in their escrow: 16.5.)
+    // and the letters it carried are open again for another courier, their coins still in their escrow: 16.5; so are the
+    // escorts its guards and players had taken, their pay still in theirs, for the next caravan to that town. Until
+    // Phase 4's departures, which carry no account, a caravan doesn't outlive a restart; only tests send one now.)
     for (const auto& c : roads_.caravans)
         if (!society_.account(c.account))
             for (auto& k : roads_.contracts)
-                if (k.kind == "courier" && k.status == "taken" && k.taker == c.account)
+                if (k.status == "taken" &&
+                    ((k.kind == "courier" && k.taker == c.account) ||
+                     (k.kind == "escort" && k.town == c.to && std::find(c.escorts.begin(), c.escorts.end(), k.taker) != c.escorts.end())))
                 {
                     k.status = "open";
                     k.taker.clear();

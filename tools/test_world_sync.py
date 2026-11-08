@@ -1353,15 +1353,12 @@ class ServerMaintenanceTests(ScratchWorlds, unittest.TestCase):
             result = economy.set_seasons(self.dev, {'set': {'grain': {'normal': 40}}}, 'Ada')
             self.assertTrue(result['changed'], result)
             # (Doc 68, Progress, "First fixes", migration 0058: the rules' and the services' records are read live too.)
-            result = economy.set_rules(self.dev, {'set': {'almsADay': 12, 'fairFood': 0}}, 'Ada')
+            # (Doc 79, 12: the rules are the staged economy's, the Market Board's and the clamps'.)
+            result = economy.set_rules(self.dev, {'set': {'ripple': 30, 'takeAllowance': 80, 'neverHungry': 1}}, 'Ada')
             self.assertTrue(result['changed'], result)
             result = economy.set_services(self.dev, {'set': {'groom_and_trim': {'on': False, 'every': 9}}}, 'Ada')
             self.assertTrue(result['changed'], result)
-            # (Doc 71, 4, migration 0060: the farms' records too.)
-            result = economy.set_farms(self.dev, {'set': {'start': 400, 'order': ['salt', 'grain'],
-                                                          'areas': {'grain': {'yieldScale': 120, 'on': False}},
-                                                          'farms': {'grain_farm_1': {'hand': 11}}}}, 'Ada')
-            self.assertTrue(result['changed'], result)
+            # (The farms' records went with doc 79's Phase 3: Core reads none of them, so none is sent here.)
             action = economy.queue_sync(self.dev, 'Ada')
             for _ in range(60):
                 with W.connect(self.dev, 'dm') as dm:

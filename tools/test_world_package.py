@@ -496,6 +496,13 @@ class ScanTest(unittest.TestCase):
         errors, _ = P.scan(None, {'game.accounts': [], 'live.npcs': []}, allowed_tables=P.allowed_tables())
         self.assertEqual(errors, ['game.accounts: not a table a package may hold.'])
 
+    def test_a_table_a_package_made_before_doc_79_holds_is_a_warning(self):
+        # (Every pre-79 package holds live.business_settings, if only with no rows: doc 79, 16.7.)
+        errors, warnings = P.scan(None, {'live.business_settings': [], 'live.npcs': []}, allowed_tables=P.allowed_tables())
+        self.assertEqual(errors, [])
+        self.assertTrue(any(w.startswith('live.business_settings:') and 'left out' in w for w in warnings), warnings)
+        self.assertNotIn('live.business_settings', P.allowed_tables())
+
 
 class JournalTest(unittest.TestCase):
     def test_replay_after_the_documents_own(self):
@@ -832,6 +839,38 @@ class EndToEndTest(unittest.TestCase):
 
     def test_the_planted_players_strip_loads_too(self):
         self.check_loaded(self.key('b'), self.planted, planted=True)
+
+    def test_a_package_made_before_doc_79_imports_and_loads(self):
+        # Doc 79, 16.7: the frozen pre-79 package (Tests/fixtures/pre79/package, exported at cab65ee: its live tables
+        # hold live.business_settings, its save minted, sunk and the city's accounts), with DEV's build from this run's
+        # export in place of the build.tar.gz the fixture leaves out (the same build: skipped when DEV has moved on).
+        fixture = ROOT / 'Tests' / 'fixtures' / 'pre79' / 'package'
+        old = json.loads((fixture / P.MANIFEST).read_text(encoding='utf-8'))
+        if old['build']['fingerprint'] != self.manifest['build']['fingerprint']:
+            self.skipTest(f"DEV's build is no longer the pre-79 package's (build {old['build']['id']})")
+        directory = Path(self.folder.name) / 'pre79'
+        directory.mkdir()
+        for name in (P.MANIFEST, 'world.json.gz', 'live.json.gz', 'snapshot.json.gz'):
+            (directory / name).write_bytes((fixture / name).read_bytes())
+        (directory / 'build.tar.gz').symlink_to(self.out / 'build.tar.gz')
+        P.write_sums(directory)
+        self.assertIn('live.business_settings', P.read_json_gz(directory / 'live.json.gz')['tables'])
+        self.assertIn('minted', P.read_json_gz(directory / 'snapshot.json.gz')['society'])
+        errors, warnings = P.scan_directory(directory)
+        self.assertEqual(errors, [])
+        self.assertTrue(any(w.startswith('live.business_settings:') for w in warnings), warnings)
+        key = self.key('p')
+        before, _ = self.check_loaded(key, directory)
+        with W.connect(key, 'owner') as conn:
+            self.assertEqual(conn.execute("SELECT value->>'id' FROM admin.settings WHERE key = 'package'").fetchone()[0],
+                             old['id'])
+            self.assertEqual(conn.execute('SELECT count(*) FROM live.npcs').fetchone()[0], old['rows']['live.npcs'])
+        after = self.stored_save(key)
+        for gone in ('minted', 'sunk', 'loop'):
+            self.assertNotIn(gone, after['society'], gone)
+        escrow = lambda doc: {k: a for k, a in doc['society']['accounts'].items() if P.account_kind(k) == 'escrow'}
+        self.assertEqual({k: a.get('cash', 0) for k, a in escrow(after).items()},
+                         {k: a.get('cash', 0) for k, a in escrow(before).items()}, 'escrow to the penny')
 
     def test_a_world_no_package_made_is_refused(self):
         key = self.key('d')

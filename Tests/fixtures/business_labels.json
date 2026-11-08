@@ -1,5 +1,5 @@
 {
-  "about": "Work labels and the business each resolves to (Docs/Design/67-ridgemere2-city.md, 4): the lower-cased label, the first business in Data/Items/businesses.json order with a match word in it, or null; and some merchant keepers' store room goods (doc 67, 6: making, then resale). Read by tools/test_item_catalog.py (item_catalog.business_for, store_goods) and Tests/store_room_tests.cpp (items::businessFor, Society::storeGoods), so the two cannot drift.",
+  "about": "Work labels and the business each resolves to (Docs/Design/67-ridgemere2-city.md, 4): the lower-cased label, the first business in Data/Items/businesses.json order with a match word in it, or null; and some merchant keepers' store room goods (doc 67, 6: making, then resale). The labels are read by tools/test_item_catalog.py (item_catalog.business_for) and Tests/shops_tests.cpp (items::businessFor), so the two cannot drift. The keepers are the tools' alone (item_catalog.store_goods, which the studio's store-room view reads until doc 79's Phase 9 cuts it; Core's store room went with Phase 3).",
   "labels": [
     {
       "label": "working at the Greatly works",

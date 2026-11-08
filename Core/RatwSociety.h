@@ -652,7 +652,8 @@ class Society
     }
     // A good's catalogue price a piece, in pennies (its quality's: items.json, doc 35): every shop's.
     static std::int64_t catalogPrice(const std::string& item);
-    static constexpr double SellBackShare = .55;   // What a shop pays a player for a good (doc 15: a little over half).
+    // What a shop pays a player for a good (doc 15: a little over half): the Market Board's SellShare, one constant.
+    static constexpr double SellBackShare = market::SellShare;
     EconomyResult gather(const std::string& player); // World validates physical herb-patch reach.
     EconomyResult eat(const std::string& player);
     // Operator-only adapters call these; neither is a player command.
@@ -746,12 +747,11 @@ class Society
     // The staged steps (doc 79, 6.5 and 9.2; RatwSociety.cpp), each game hour while !needsPaused():
     // the households and their classes at the day's turn, each household's food at its hour (8:00-18:00), and the
     // nightly set at 0:00. The purse a resident is drawn toward (its household class's range: lower 3-12p, middle 12-60p,
-    // upper 60-300p, the homeless 0-3p) and the treasuries' range (TreasuryFloat to StagedTreasuryMost).
+    // upper 60-300p, the homeless 0-3p) and the treasuries' range (status.json's treasuryFloor to treasuryCeiling).
     void stagedHourly(std::int64_t hour);
     void stagedFood(const std::string& home, const std::vector<std::string>& members, const std::string& cls);
     void stagedNight(std::int64_t day);
     std::int64_t stagedPurse(const std::string& id, const std::string& home, const std::string& cls, std::int64_t day) const;
-    static constexpr std::int64_t StagedTreasuryMost = 2000;
     // A staged account set to `coins` (doc 79, 9.2: a raw set, no ledger or journal entry, nothing counted).
     void stagedSet(const std::string& account, std::int64_t coins);
 
@@ -839,6 +839,9 @@ class Society
     void stagedJoined(const std::string& id, const std::vector<std::string>& kin);
     // The holders whose day's tallies or welcome changed since last taken (for the journal: doc 79, 9.2), each (day, holder).
     std::vector<std::pair<std::int64_t, std::string>> takeStagedChanged();
+    // The accounts whose quarantined goods the last restore moved (set aside or given back: doc 79, 14), since last taken:
+    // the Game journals them at once, so a crash before the next checkpoint replays them as moved (Game::journalRestored).
+    std::set<std::string> takeQuarantineMoved() { return std::exchange(quarantineMoved_, {}); }
     bool leanNow(const std::string& account) const;   // Robbed in its lean days: not refilled, and a second theft finds nothing.
     bool heldNow(const std::string& account) const;   // Keeping a change (a theft, a gift, a prize, players' pay) for now.
     // A status event for a resident (6.3: bereaved, lostPost, robbed, failing, helped, earning), today, read by the score
@@ -912,7 +915,6 @@ class Society
     static constexpr int SmithSwords = 3;            // A smith's swords on its shelf to begin with.
     static constexpr int CheapPrice = 6;              // A shop's handful of goods cost at most this (pennies), for now.
     static constexpr int GoodsKept = 4;               // How many of each good a new shop starts with, and buys up to.
-    static constexpr int SuppliesKept = 40;           // ...of a good it supplies or buys (crafts.json), a store's worth.
     // A new player's own meals to start with (doc 36), and its welcome's coins (doc 79, 9.2; status.json's caps over them).
     static constexpr int StartingMeals = 3;
     static constexpr std::int64_t PlayerWelcome = 20;
@@ -1120,6 +1122,7 @@ class Society
     std::vector<std::string> doorNotes_;            // (D16: unregistered faucet reasons, for the Game's log.)
     std::set<std::string> doorNoted_;               // (Those noted today: "day|reason".)
     std::set<std::pair<std::int64_t, std::string>> stagedChanged_;   // (Holders whose tallies or welcome changed: the journal's.)
+    std::set<std::string> quarantineMoved_;         // (Accounts whose quarantine the last restore changed: the journal's.)
     bool stagedRecount_ = false;                    // (A new household member alone: the bands again at the next hour.)
     // The door (9.3), from record: a move between accounts sorted and counted.
     void stagedDoor(const std::string& kind, const std::string& from, const std::string& to, const std::string& item, int quantity,

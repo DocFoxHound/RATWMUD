@@ -535,7 +535,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         else if (command == "service")
         {
             // A city service as this world has it (doc 68, Progress, "First fixes"; migration 0058), once a service:
-            // service "<id>" on|off price N every DAYS. One city_loop.json no longer lists is kept and does nothing.
+            // service "<id>" on|off price N every DAYS. One Data/Economy/market.json no longer lists is kept and does nothing.
             std::string id, onOff, w[2];
             long long price = -1, every = -1;
             if (!quoted(fields, id) || !identifier(id, 48))
@@ -551,7 +551,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         {
             // A season group as this world has it (doc 68, Progress, "Seasons"; migration 0057), once a group:
             // season "<group>" supply SP SU AU WI price SP SU AU WI shelf SP SU AU WI normal N (percent by season; N
-            // pieces a day). A group city_loop.json no longer has is kept and does nothing.
+            // pieces a day). A group Data/Economy/market.json no longer has is kept and does nothing.
             std::string group, w[4];
             EconomySpec::Season season;
             if (!quoted(fields, group) || !identifier(group, 40))

@@ -514,6 +514,7 @@ bool Game::start(std::string& problem)
     mind_.configure(options_.dialogueEndpoint);
     consolidate();
     prime(shadow_);
+    journalRestored();
     note("info", "RATW authoritative world ready; 20Hz; save=" +
                      std::string(options_.scratch ? "none (scratch: read from " + (live ? options_.database + " database" : options_.savePath) + ")"
                                  : live ? options_.database + " database" : options_.savePath.empty() ? "memory" : options_.savePath) +

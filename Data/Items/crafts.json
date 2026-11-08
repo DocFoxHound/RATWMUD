@@ -201,27 +201,6 @@
     "stables": {"hay": 3, "oats": 1},
     "cartwright": {"cart_wheel": 0.1, "axle": 0.05}
   },
-  "households": {
-    "about": "What a household uses up besides food (doc 35, Part 7): each need is bought once every `everyDays` (in winter every `winterDays`, if given), from a shop in its community that has it, by whoever in the household has the most money, and used up at home. `any`: one of these, whichever a shop has. `perPerson`: for each grown wolf in the household rather than once. A household keeps `reserve` pennies a head back for food. Numbers are placeholders.",
-    "reserve": 6,
-    "needs": [
-      {"any": ["firewood", "peat"], "everyDays": 1, "winterDays": 0.5},
-      {"any": ["candle_tallow"], "everyDays": 2},
-      {"any": ["clay_pot"], "everyDays": 30},
-      {"any": ["wool_scarf", "straw_hat", "linen_neckerchief"], "everyDays": 25, "perPerson": true},
-      {"any": ["leather_bindings"], "everyDays": 40, "perPerson": true},
-      {"any": ["bandages"], "everyDays": 20},
-      {"any": ["nails"], "everyDays": 20},
-      {"any": ["cookpot"], "everyDays": 60},
-      {"any": ["cider"], "everyDays": 4},
-      {"any": ["willow_tea"], "everyDays": 60, "winterDays": 30},
-      {"any": ["thyme_syrup"], "everyDays": 90, "winterDays": 30},
-      {"any": ["paw_balm"], "everyDays": 60, "winterDays": 30},
-      {"any": ["flea_powder"], "everyDays": 60},
-      {"any": ["dewormer"], "everyDays": 120},
-      {"any": ["garlic_salve", "comfrey_salve"], "everyDays": 90}
-    ]
-  },
   "institutions": {
     "about": "A town's own buyers (doc 35, Part 7): each uses up its basket every day (per 100 residents, or per guard, of its community), keeps `days` of it in stock, buys from the town's shops, and posts a contract for goods for what it can't find (a reward of `premium` times the price, held in escrow; players deliver to any merchant in that town). The town's own treasury funds each with what its basket costs, a day at a time, never more than a twentieth of its money; one with `funds: tithes` (the church) lives on the tithes instead (doc 42), given four weeks' basket by the town when it is founded. Numbers are placeholders.",
     "days": 3,

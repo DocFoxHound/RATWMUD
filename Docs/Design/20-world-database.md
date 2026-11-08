@@ -230,13 +230,15 @@ from `RATW_DATABASE_URL`, which `live.sh` builds from `Database/.env`.
   engine's toolchain uses its own older C library, and a server that does not use
   the database never needs PostgreSQL installed.
 - **NPC running state** (step 7). Every save also writes each NPC's position,
-  age, task, hunger, fatigue, purse and goods to `live.npc_state`, in the same
-  transaction and with the same timestamp as the checkpoint. At start-up, rows
-  newer than the server's own checkpoint were written from outside (DEV copying
-  PROD's) and are applied over the restored state: positions only onto open
-  ground in a cell that exists, and purse changes balanced against the town
-  treasury so money stays conserved. `alive` is there for deaths when the game
-  has them.
+  age, task, hunger, fatigue and its household's band to `live.npc_state`, in the
+  same transaction and with the same timestamp as the checkpoint (since doc 79,
+  section 14, no purse or goods: a resident's are staged, set each night by its
+  band). At start-up, rows newer than the server's own checkpoint were written
+  from outside (DEV copying PROD's) and are applied over the restored state:
+  positions only onto open ground in a cell that exists, and a band only as a
+  DM's override with an expiry; a row's cash and stock (an older server's) are
+  ignored, and nothing moves through the treasury. `alive` is there for deaths
+  when the game has them.
 - **The client** is unchanged: snapshots carry only what the player perceives in
   the current cell. The existing **World Map** is the minimap: it is built from
   each player's own exploration memory (part of the save), so undiscovered places

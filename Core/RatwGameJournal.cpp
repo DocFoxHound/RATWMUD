@@ -56,7 +56,7 @@ StagedState stagedRest(const StagedState& st)
 {
     StagedState out;
     out.bands = st.bands; out.overrides = st.overrides; out.holds = st.holds; out.lean = st.lean;
-    out.escrowSource = st.escrowSource; out.events = st.events;
+    out.escrowSource = st.escrowSource; out.events = st.events; out.quarantine = st.quarantine;
     out.hour = st.hour; out.day = st.day;
     return out;
 }
@@ -158,6 +158,43 @@ void Game::prime(Shadow& s) const
     s.signIns = json::dump(accounts_.state());
     s.board = society.board.empty() ? std::string() : json::dump(market::encode(society.board));
     s.primed = true;
+}
+
+void Game::journalRestored()
+{
+    // A restore that set goods aside in quarantine, or gave them back, changed accounts the checkpoint holds otherwise: the
+    // account (whole) and its quarantine are journalled now, so a crash before the next checkpoint replays them as moved
+    // (the goods neither counted twice when an item came back nor lost when one went: doc 79, 14).
+    auto& society = world_.society();
+    const auto moved = society.takeQuarantineMoved();
+    auto* writer = store_ ? store_->journal() : nullptr;
+    if (moved.empty() || !writer || !storageReady_)
+        return;
+    const auto& state = society.state();
+    auto changes = Value::array();
+    for (const auto& id : moved)
+    {
+        if (const auto a = state.accounts.find(id); a != state.accounts.end() && journalled(id))
+        {
+            auto change = Value::object();
+            change.add("set", path({"society", "accounts", id}));
+            change.add("value", wire::economyAccount(a->second));
+            changes.push(std::move(change));
+        }
+        auto change = Value::object();
+        if (const auto q = state.staged.quarantine.find(id); q != state.staged.quarantine.end())
+        {
+            auto goods = Value::object();
+            for (const auto& [item, n] : q->second)
+                goods.add(item, n);
+            change.add("set", path({"society", "staged", "quarantine", id}));
+            change.add("value", std::move(goods));
+        }
+        else
+            change.add("erase", path({"society", "staged", "quarantine", id}));
+        changes.push(std::move(change));
+    }
+    writer->append({++journalSeq_, json::dump(changes)});
 }
 
 void Game::record(unsigned what, const std::string& character)

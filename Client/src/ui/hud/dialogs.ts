@@ -1309,6 +1309,9 @@ export class Dialogs {
     private trade(self: Json | null) {
         const s = this.s, merchant = obj(s.snapshot, 'merchant');
         const available = !!str(merchant, 'id');
+        // A server since doc 79 always sends `staged`. The other branch is kept on purpose for servers from before it (PROD
+        // is still on one, and the desktop client's server list may name others): their keeper has a real purse and
+        // trades one item at a time. It goes once no such server is left.
         const staged = s.stagedTrade();
         this.heading(staged ? 'LOCAL TRADE / REAL GOODS' : 'LOCAL TRADE / REAL GOODS & REAL PURSES',
             available ? str(merchant, 'name', 'The keeper').slice(0, 38) : 'The counter is unattended');

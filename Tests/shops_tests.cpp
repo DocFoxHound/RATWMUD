@@ -9,7 +9,9 @@
 #include "RatwWire.h"
 
 #include <cmath>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <stdexcept>
@@ -208,6 +210,26 @@ void anOlderSaveLoads()
     const auto again = wire::readSociety(saved);
     expect(again.nextEntry > 0, "and a save of now reads too");
 }
+// A work label's business (Docs/Design/67-ridgemere2-city.md, 4): Core's items::businessFor against the fixture
+// tools/test_item_catalog.py checks item_catalog.business_for with, so the game and the tools cannot drift.
+void labelsResolveAsTheToolsResolveThem()
+{
+    std::ifstream in(std::string(RATW_SOURCE_DIR) + "/Tests/fixtures/business_labels.json", std::ios::binary);
+    const std::string text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    json::Value fixture;
+    std::string error;
+    expect(json::parse(text, fixture, error), "the fixture reads: " + error);
+    const auto& labels = fixture.array("labels");
+    expect(labels.size() > 20, "with its labels");
+    for (const auto& row : labels)
+    {
+        const auto* business = items::businessFor(row.string("label"));
+        const auto want = row["business"].isNull() ? std::string() : row.string("business");
+        expect((business ? business->id : std::string()) == want, "\"" + row.string("label") + "\" is " +
+                                                                     (want.empty() ? "no business" : want) + ", not " +
+                                                                     (business ? business->id : "none"));
+    }
+}
 } // namespace
 
 int main()
@@ -219,6 +241,7 @@ int main()
         noCapOnAPiece();
         residentsGoAboutTheirDays();
         anOlderSaveLoads();
+        labelsResolveAsTheToolsResolveThem();
     }
     catch (const std::exception& error)
     {

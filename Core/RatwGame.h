@@ -1920,6 +1920,8 @@ class Game
         StagedState staged;                         // (Doc 79: all but the tallies and welcomes, which go by holder.)
     };
     void prime(Shadow& shadow) const;
+    // After a restore: the accounts whose quarantined goods it moved (doc 79, 14), journalled whole with their quarantine.
+    void journalRestored();
     std::uint64_t journalSeq_ = 0;
     Shadow shadow_;
     // Replies held for a command whose record isn't written yet: released by releaseCommitted() in each tick.

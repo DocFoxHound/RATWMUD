@@ -999,6 +999,18 @@ bool Society::restore(const SocietyState& saved)
     }
     s.ledger.erase(std::remove_if(s.ledger.begin(), s.ledger.end(), [](const EconomyEntry& e) { return !e.item.empty() && !itemValid(e.item); }),
                    s.ledger.end());
+    // The accounts whose goods went into or came out of quarantine: the save no longer says what they hold, so the journal
+    // is told (Game::journalRestored), or a crash before the next checkpoint would count the goods twice or lose them.
+    quarantineMoved_.clear();
+    using Quarantine = std::map<std::string, std::map<std::string, int>>;
+    for (const Quarantine* side : {&saved.staged.quarantine, static_cast<const Quarantine*>(&s.staged.quarantine)})
+        for (const auto& [id, goods] : *side)
+        {
+            const auto a = saved.staged.quarantine.find(id);
+            const auto b = s.staged.quarantine.find(id);
+            if (a == saved.staged.quarantine.end() || b == s.staged.quarantine.end() || a->second != b->second)
+                quarantineMoved_.insert(id);
+        }
     state_ = s;
     indexTills();
     friendGroups_.clear();

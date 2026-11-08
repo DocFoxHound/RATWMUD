@@ -348,7 +348,8 @@ def economy_row(w, economy, store=True, loop=None, seasons=None, rules=None, far
     `loop` (0056; as `store` unless said), the city loop's settings; with `seasons` (0057; as `loop` unless said), the
     seasons' and the comforts'; with `rules` (0058; as `seasons` unless said), the rules' and the services'; with `farms`
     (0060; as `rules` unless said), the farms'."""
-    e = {**DEFAULT_ECONOMY, **(map_editor.legacy_economy(economy) or {})}   # (Doc 73: an older entity's Country keys.)
+    # (Doc 73: an older entity's Country keys. Doc 79: a dead setting a project holds unsound, at its default.)
+    e = {**DEFAULT_ECONOMY, **(map_editor.dead_settings_sound(map_editor.legacy_economy(economy)) or {})}
     row = (w, e['treasury'], e['storeHerbs'], e['storeMeals'], e['dailyHerbs'], e['dailyMeals'])
     if not store:
         return row
@@ -377,6 +378,8 @@ def economy_row_for(w, economy, tables):
 def business_rows(w, economy):
     """live.business_settings rows: one per business switched off (a row back at its default is not kept)."""
     businesses = (economy or {}).get('businesses') or {}
+    if not isinstance(businesses, dict):
+        return []
     return [(w, npc, False) for npc, s in sorted(businesses.items()) if isinstance(s, dict) and s.get('internalStore') is False]
 
 

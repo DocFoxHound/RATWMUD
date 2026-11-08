@@ -866,7 +866,9 @@ def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tabl
         warnings.extend(money_warnings(snapshot))
     if allowed_tables is not None:
         for table in rows:
-            if table not in allowed_tables:
+            if table in DEAD_TABLES:
+                warnings.append(f'{table}: {DEAD_TABLES[table]}; its {len(rows[table])} row(s) are left out at import.')
+            elif table not in allowed_tables:
                 errors.append(f'{table}: not a table a package may hold.')
     for table, table_rows in rows.items():
         check(table, table_rows)
@@ -1106,6 +1108,13 @@ def allowed_tables() -> set:
     return {s.table for s in live_specs()} | {'live.economy', 'world.worlds', 'world.areas'}
 
 
+# Tables a package made before doc 79 holds that no package holds now (doc 79, 14 and 16.7: a pre-79 package still
+# imports and loads): read past, with a warning at the scan and a note at the import, never refused.
+# live.business_settings was the store room's per-business switch (doc 67, 6); the store room went with the city's loop
+# (doc 79, 12 and 17) and migration 0061 drops the table.
+DEAD_TABLES = {'live.business_settings': 'the store room\'s per-business switch, gone with the store room (doc 79)'}
+
+
 # --------------------------------------------------------------------------- Export
 
 def export(key: str, out: Path, with_snapshot=True, version=None, log=print, transform=None) -> dict:
@@ -1320,6 +1329,9 @@ def _import(directory: Path, key: str, name: str, manifest: dict, world: dict, l
                                 [(world_id, a, k) for a, k in world['areas']])
             order = [s.table for s in live_specs()] + ['live.economy']
             for table in sorted(live, key=lambda t: order.index(t) if t in order else len(order)):
+                if table in DEAD_TABLES:
+                    log(f'note: {table} ({DEAD_TABLES[table]}): its {len(live[table])} row(s) are left out.')
+                    continue
                 if table not in allowed_tables() or table.startswith('world.'):
                     raise PackageError(f'The package holds {table}, which a package may not.')
                 if not world_sync.shape(conn, table)[0]:

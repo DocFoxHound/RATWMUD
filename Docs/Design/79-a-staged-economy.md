@@ -1122,7 +1122,7 @@ loader and travel with the world package.
 
 | Lever (today) | Verdict | Why |
 |---|---|---|
-| `steerLean` 0-200 (shared ↔ held by the rich) | **Change:** a new rule `prosperity`, −100 hard to +100 boom, steps of 5, with an optional cause text; same storage, audit `economy.steer` and route `/api/economy/steer` (`tools/studio.py:640-686`) | The user's one control. The axis changes from distribution to prosperity. The old value is **not** mapped across: old worlds open at 0. Out-of-range or non-numbers are clamped, never refused |
+| `steerLean` 0-200 (shared ↔ held by the rich) | **Change:** a new rule `prosperity`, −100 hard to +100 boom, steps of 5, with an optional cause text; same storage, audit `economy.steer` and route `/api/economy/steer` (`tools/studio.py:640-686`; the route went with the steering in Phase 3, since nothing read a slider then, and Phase 9 brings it back carrying `prosperity`) | The user's one control. The axis changes from distribution to prosperity. The old value is **not** mapped across: old worlds open at 0. Out-of-range or non-numbers are clamped, never refused |
 | `steer` on/off | **Cut** | The slider is always in force; 0 is ordinary times |
 | `neverHungry` | **Change:** a clamp, no band has short days | Gentle servers want it; no machinery behind it |
 | `neverBroke` | **Change:** a clamp, the destitute band is empty | No begging or need-theft |
@@ -1355,7 +1355,7 @@ All seeded and offline; each ctest takes seconds. No balance runs.
     - `tools/test_world_package.py` rewritten (:171-178, :180-, :228, :305-314, :442-571, :703, :716-718): players
       gone, no player ids, staged accounts and pressure dropped, the host's rule overrides carried, the package loads
       on a fresh server.
-    - `tools/test_studio.py`'s slider test retargeted at `prosperity`; `tools/test_world_sync.py:1340` (seasons,
+    - `tools/test_studio.py`'s slider test retargeted at `prosperity` (Phase 9, with the route); `tools/test_world_sync.py:1340` (seasons,
       rules and services reaching the server) still passes; the edicts, ledger and year-log tests go.
     - The client tests next to `canTradeItem` (`state.ts:2456`) cover a 0 unit price, the dozen list and the new
       refusal strings.
@@ -1503,7 +1503,7 @@ before they start, and a merge line adds about 2-3 plan, 1-2 expected (D30).
 
 | Phase | Work | Plan | Expected |
 |---|---|---|---|
-| 9. DM, Atlas and the database | Migration 0061; lenient Authoring with season lines; `world_store`, `live_edit`, `world_build`; the studio slimmed; host overrides of `status.json` and `market.json` in `live.economy.rules`; the Prosperity tab with the player-money report and the week's wagons, ships and events; the slider re-meant with its cause; band, harvest and Times overrides; reset prices; the Band picker; the `paid` relabel; Editor panels cut and retargeted; `dm_service` and the Director; DM tests | 16-22 | 5-6.5 |
+| 9. DM, Atlas and the database | Migration 0061; lenient Authoring with season lines; `world_store`, `live_edit`, `world_build`; the studio slimmed; host overrides of `status.json` and `market.json` in `live.economy.rules`; the Prosperity tab with the player-money report and the week's wagons, ships and events; the slider re-meant with its cause; band, harvest and Times overrides; reset prices; the Band picker; the `paid` relabel; Editor panels cut and retargeted (left by Phase 3, named in its Progress entry: the store room's, the loop's, the comforts', the Wharf's and the farms' money panels, routes and validators, and `country_farms.json`'s money fields); `dm_service` and the Director; DM tests | 16-22 | 5-6.5 |
 | 10. Look and feel | A hard box: the user plays a scratch server against the T1-T17 checklist; numbers tuned (meal counts, depthBase, half-lives, shares, event rates); then stop and ask | 6-10 | 3-5 |
 | 11. Gates | `--stage`; the 17-19 and 23-25 windows; the soak (the user's go-ahead); the PROD apply plan; the doc's Progress | 6-9 | 2-3 |
 | Review B | Before PROD, if the user wants it | 6-8 | 6-8 |
@@ -1797,8 +1797,41 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     (made here 0.95, far 1.08: bread 12p a dozen in Ridgemere, recommend keeping); the crafting cap strict until the
     Craft panel (recommend); Times still from the slider alone, so the bands' Times shift adds to the slider (for
     Phase 10's look and feel).
-
-Nothing built yet.
+- **2026-11-08: Phase 3 built** (the cut; `r2-staged` `d06abb7`, `487f9db`, `cd5de64`, `e61b833`, then a repair round after
+  two independent checks). The staged economy is the only economy: the rule `staged` is gone; the city loop, steering,
+  the Wharf, farm money, the store room, minting and the wire loop are deleted; restore reconciles (dead accounts
+  dropped, quarantine, read-past), never refusing a world over economy data; `world_check` keeps only the sim-speed
+  flags; `conserved()` is `realBalanced()` everywhere; the world package deletes players and drops staged and dead
+  accounts. The repair round: a package made before doc 79 imports again (its `live.business_settings` read past, a
+  warning at the scan: `world_package.DEAD_TABLES`, with an end-to-end test on the frozen pre-79 package); a restore's
+  quarantine moves are journalled at once (`Game::journalRestored`), so a crash before the next checkpoint neither
+  doubles nor loses the goods; a dropped caravan's escorts reopen with its letters; Atlas's project checks warn of a
+  bad dead setting instead of refusing the project; the dead `items::households()`, `SuppliesKept` and
+  `StagedTreasuryMost` removed, `SellBackShare` is the Board's `SellShare`; the Core half of the business-label parity
+  check is back (`shops_tests`); stale docs reworded. Tests: ctest 79/79 (three full runs; `world_behaviors`' off-thread route check now waits for the route thread, which had failed once under load); `save_compat` 17,403 checks; `tools/test_world_package.py` 43 with a server and the database, none skipped (DEV exported read only, `p3stage` throwaway worlds); `tools/test_world_sync.py` 52, none skipped, twice; the other tools' tests without the database; the client 146.
+  - **Left to later phases, by owner** (section 17's rows not cut in Phase 3):
+    - **Phase 9** (the studio, Atlas and the Editor): the store room's, the loop's, the comforts', the Wharf's and the
+      farms' money UI and routes still work and control nothing (`studio.py`'s `economy/store`, `/businesses`,
+      `/loop`, `/goods`, `/comforts` and `/farms` and their views; `map_editor.py`'s `STORE_DEFAULTS`,
+      `LOOP_DEFAULTS`, the comforts, `FARM_*`, `ECONOMY_ALIASES`/`RULE_ALIASES` and their record lines;
+      `model.mjs`'s store and loop defaults; `EconomyControls.tsx`'s store room and restocking rule, `WharfPanel.tsx`,
+      `FarmsPanel.tsx`'s wages, schedule and scales; `item_catalog.store_goods`/`store_cost` and their tests, and
+      `business_labels.json`'s `keepers`); `Data/Economy/country_farms.json`'s money fields (`defaults`, `basket`,
+      `wharfBasket`, `switchTrades`, per-area `yieldScale`, `crewScale`, `priceFactor`, `wages`), which only that UI
+      reads; and `/api/economy/steer`, which comes back carrying `prosperity` (Core reads no `prosperity` rule
+      before Phase 9: `Society::setProsperity` has no caller outside tests). Until then the validators warn of a bad
+      dead setting and write it at its default, and a change to one is still checked.
+    - **Phase 4** (the roads): `RatwRoads.cpp`'s `stores:` loads, the two-towns gate and `sendCaravan`, which has no
+      caller in play now (only tests send caravans). Its `caravan:` account is a dead prefix, so until Phase 4's
+      account-free departures a caravan out on the road doesn't outlive a restart: it is dropped cleanly, its letters
+      and escorts open again with their coins in escrow (`roads_tests`, `save_compat`).
+    - **Phase 6** (street life): `foodDays` as the measure of wealth in troubles (`RatwTroubles.cpp`,
+      `RatwGameTroubles.cpp`'s help check).
+    - **Phase 8** (talk): `talkRichLine`, `richLine_`/`poorLine_` and the per-speaker `foodDays` scan with
+      `wealth_days` (a fallback for a resident without a band).
+  - The client keeps its trade view for servers from before doc 79 (PROD is one), commented as such.
+  - **Open for the user:** marking the memory pointers to the conserving economy as history (section 19's Phase 3
+    row; it needs the user's say-so, so nothing was changed); `artifacts/economy` (D18).
 
 - **2026-11-08: drafted.** From seven code maps, three designs and three judges' grafts. Plan only.
 - **2026-11-08: revised** after four reviews (see Review). Plan only.

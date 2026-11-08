@@ -1055,6 +1055,12 @@ Value stagedDiff(const StagedState& was, const StagedState& now)
     diff("holds", was.holds, now.holds, equal, number);
     diff("lean", was.lean, now.lean, equal, number);
     diff("escrowSource", was.escrowSource, now.escrowSource, equal, number);
+    diff("quarantine", was.quarantine, now.quarantine, equal, [](const std::map<std::string, int>& goods) {
+        auto j = Value::object();
+        for (const auto& [item, n] : goods)
+            j.add(item, n);
+        return j;
+    });
     diff("events", was.events, now.events,
          [](const std::vector<StagedState::Event>& a, const std::vector<StagedState::Event>& b) {
              return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](const StagedState::Event& x, const StagedState::Event& y) {

@@ -1,6 +1,6 @@
 // The farms' people (Docs/Design/71-the-country-s-industries.md, Phase C; the user, 2026-11-03): real NPCs replace the
-// farms' virtual crews. When a farm's area is switched on and its till founded, each of its posts is filled from the
-// unplaced NPCs (doc 66, 2), by their old trade (doc 71, 3's table), deterministically: its keeper the oldest suitable
+// farms' virtual crews. Every farm's area is on (doc 79, 17: the switch, the tills and the crews' money went with Phase
+// 3), and each of its posts is filled from the unplaced NPCs (doc 66, 2), by their old trade (doc 71, 3's table), deterministically: its keeper the oldest suitable
 // adult of its trades with family among the unplaced where one has, and that family (spouse, children, parents) with
 // them at the farmhouse, nobody else; its hands of working age from its own trades first (a family member of them among
 // them), then the fallback trades; the hands housed in the farm's community (Data/Economy/communities.json, at most

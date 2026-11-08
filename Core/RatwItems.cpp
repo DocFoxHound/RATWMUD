@@ -35,7 +35,6 @@ struct Catalog
     std::vector<Producer> producers;
     std::map<std::string, std::vector<std::string>> supplies, buys;
     Ladder ladder;
-    Households households;
     Farms farms;
     FarmPeople farmPeople;
 };
@@ -488,21 +487,6 @@ Catalog build()
             for (const auto& g : goods.items())
                 if (known(g.asString({})))
                     c.supplies[business].push_back(g.asString({}));
-        // Households' needs (doc 35, Part 7; bought again by the city's loop, doc 68).
-        const auto& h = crafts.object("households");
-        c.households.reserve = std::clamp(int(h.number("reserve", 6)), 0, 1000);
-        for (const auto& n : h.array("needs"))
-        {
-            HouseholdNeed need;
-            for (const auto& g : n.array("any"))
-                if (known(g.asString({})))
-                    need.any.push_back(g.asString({}));
-            need.everyDays = n.number("everyDays", 0);
-            need.winterDays = n.number("winterDays", 0);
-            need.perPerson = n.boolean("perPerson");
-            if (!need.any.empty() && need.everyDays > 0 && need.everyDays <= 3650 && need.winterDays >= 0 && need.winterDays <= 3650)
-                c.households.needs.push_back(std::move(need));
-        }
     }
     // The farms and works (Data/Economy/country_farms.json; doc 71, 4): optional; without it, none.
     if (const auto file = dir.parent_path() / "Economy" / "country_farms.json"; std::filesystem::exists(file))
@@ -782,11 +766,6 @@ std::vector<std::string> goodsSold(const Business& business, int maxPrice)
 const Ladder& ladder()
 {
     return catalog().ladder;
-}
-
-const Households& households()
-{
-    return catalog().households;
 }
 
 const Farms& farms()

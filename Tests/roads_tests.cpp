@@ -368,6 +368,53 @@ void couriers()
     expect(w.society().realBalanced(), "Real money is balanced");
 }
 
+// Doc 79, 9.1 and Phase 3: a caravan's account is the old economy's (a dead prefix), so until Phase 4's departures, which
+// carry no account, a caravan out on the road doesn't outlive a restart (only tests send one now: sendCaravan has no
+// caller in play). It is dropped cleanly: the letters it carried and the escorts taken for it open again with their
+// coins still in escrow, nothing is made or lost, and the road goes on.
+void aCaravanMidTripIsDroppedCleanlyOnRestore()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    auto* ada = w.entity("player-ada");
+    ada->cellId = id(8);
+    ada->position = {8.5, 8.5};
+    w.tick(.6);
+    const std::string escort = w.postContract("escort", "treasury", "west", "west", 12, 7, "guarding the next caravan to west").id;
+    expect(w.takeContract("player-ada", escort).ok, "Ada takes the escort");
+    auto& letter = w.postContract("courier", "em", "west", "wm", 5, 30, "a letter from Ember to Wren");
+    const std::string letterId = letter.id;
+    letter.created -= 8;                         // (A week untaken: the carters take it.)
+    ada->cellId = id(1);
+    ada->position = {8.5, 10.5};
+    const auto* sent = send(w);
+    expect(sent && sent->letters == std::vector<std::string>{letterId} &&
+               sent->escorts == std::vector<std::string>{"player-ada"},
+           "The caravan carries the letter, Ada its escort");
+    const std::string trip = sent ? sent->id : std::string();
+    w.roads().camps.clear();                     // (No bandits this time.)
+    run(w, 20);                                  // Out on the road (it reaches west in under a minute).
+    expect(w.roads().caravans.size() == 1 && w.roads().caravans[0].status == "travelling", "Still on its way");
+    const auto escrow = [&](const std::string& k) { return w.society().cash("contract:" + k); };
+    const auto letterPay = escrow(letterId), escortPay = escrow(escort);
+    const auto purse = w.society().cash("player-ada");
+    auto saved = w.save();
+    expect(w.restore(saved).ok, "The save restores");
+    expect(w.roads().caravans.empty() && !w.entity("road:" + trip), "The caravan is dropped on load, its wagon with it");
+    int reopened = 0;
+    for (const auto& k : w.roads().contracts)
+        if (k.id == letterId || k.id == escort)
+            reopened += k.status == "open" && k.taker.empty();
+    expect(reopened == 2, "Its letter and its escort are open again");
+    expect(escrow(letterId) == letterPay && escrow(escort) == escortPay && w.society().cash("player-ada") == purse,
+           "their coins still in escrow, Ada's purse as it was");
+    expect(w.society().realBalanced(), "Real money is balanced after the restore");
+    run(w, 150);
+    expect(w.roads().caravans.empty() && w.society().realBalanced(), "and the road goes on without it");
+}
+
 // Bandits of this camp standing in the world now.
 std::vector<const Entity*> bandits(const World& w, const std::string& camp)
 {
@@ -948,6 +995,7 @@ int main()
         banditsAndContracts();
         anEscortWhoIsntThere();
         couriers();
+        aCaravanMidTripIsDroppedCleanlyOnRestore();
         rumoursSpread();
         banditsInPerson();
         banditsCreepUp();

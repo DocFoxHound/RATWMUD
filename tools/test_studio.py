@@ -836,14 +836,13 @@ class EconomyRouteTests(unittest.TestCase):
             self.assertIn((f'set_{route}', 'dev-old', body, 'dm-user'), self.economy.calls)
         self.assertIn(('queue_sync', 'dev-old', 'dm-user'), self.economy.calls, 'Atlas\'s edits reach a server running its world')
 
-    def test_the_steering_is_gone(self):
-        # Doc 79, 17: steering went with the conserving economy; its route is no economy route of either suite.
-        for routes in (ST.ECONOMY_ROUTES, ST.DM_ECONOMY_ROUTES):
-            self.assertNotIn(('POST', '/api/economy/steer'), routes)
-        editor = {'X-RATW-Editor': self.host.atlas_token()}
-        self.assertNotEqual(self.call('POST', '/api/dm/economy/steer', {'steer': True}, token='dm-token')[0], 200)
-        self.assertNotEqual(self.call('POST', '/api/atlas/economy/steer', {'neverBroke': True}, token='admin-token',
-                                      headers=editor)[0], 200)
+    def test_the_steerings_rules_are_gone(self):
+        # Doc 79, 12 and 17: the steering went with the conserving economy: its on/off and its lean are no rules a world
+        # sets, and the old lean is not mapped across (old worlds open at prosperity 0). (The slider's route,
+        # /api/economy/steer, comes back in Phase 9 carrying `prosperity`, with its test retargeted: doc 79, 16.10.)
+        for rule in ('steer', 'steerLean'):
+            self.assertNotIn(rule, map_editor.RULES)
+            self.assertEqual(map_editor.check_rules({rule: 150}, {}), [], 'a world holding it is kept, warned of')
         self.assertFalse([c for c in self.economy.calls if c[0] == 'set_steer'])
 
     def test_route_sets_are_apart(self):

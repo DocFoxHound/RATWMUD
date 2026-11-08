@@ -271,6 +271,7 @@ target_compile_definitions(exploit_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURREN
 add_test(NAME exploit_behaviors COMMAND exploit_tests)
 add_executable(shops_tests Tests/shops_tests.cpp)
 target_link_libraries(shops_tests PRIVATE ratw_core)
+target_compile_definitions(shops_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME shops_behaviors COMMAND shops_tests)
 # Births follow deaths, arrivals from the Country (doc 68, Progress, "Births follow deaths; arrivals from the Country; the
 # treasury's target"): a child for each resident's death, a player's never; no NPC made but by birth; an empty post filled

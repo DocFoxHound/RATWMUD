@@ -822,6 +822,11 @@ Totals checkRoad(bool print)
         if (k.kind == "courier" && k.poster == "player-bo")
             expect(k.status == "open" && k.taker.empty() && whole.society().cash("contract:" + k.id) == 4,
                    "the road: Bo's letter open again, its 4p in escrow: " + k.status);
+    for (const auto& k : whole.roads().contracts)
+        if (k.kind == "escort" && k.town == "west")
+            expect(k.status == "open" && k.taker.empty() && loaded.saved.society.accounts.count("contract:" + k.id) &&
+                       whole.society().cash("contract:" + k.id) == loaded.saved.society.accounts.at("contract:" + k.id).cash,
+                   "the road: Ada's escort of the dropped caravan open again, its pay still in escrow: " + k.status);
     return totals;
 }
 

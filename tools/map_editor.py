@@ -321,9 +321,34 @@ def loop_defaults() -> dict:
 
 
 def check_economy(economy, person_ids=None) -> list[str]:
-    """The economy entity's problems (none: it is sound). `person_ids`: the NPCs a `businesses` key may name."""
+    """The economy entity's problems (none: it is sound), the dead settings' among them: what a change is checked
+    against. `person_ids`: the NPCs a `businesses` key may name."""
+    errors, dead = economy_problems(economy, person_ids)
+    return errors + dead
+
+
+# The settings the staged economy no longer reads (Docs/Design/79-a-staged-economy.md, 12 and 17; Core's Authoring skips
+# their records): the store room's, the city's loop's but needsPaused, the comforts and the farms' money. Their panels and
+# routes go with doc 79's Phase 9; until then a project holding a bad one loads, warned of (doc 79, 14: the economy is
+# lenient), and only a change to one is refused.
+DEAD_ECONOMY = ({*STORE_DEFAULTS, 'businesses', *LOOP_DEFAULTS, 'comfortsAbove', 'comfortsShare', *FARM_DEFAULTS}
+                - {'needsPaused'})
+
+
+def dead_settings_sound(economy):
+    """The economy entity with each dead setting that fails its check (economy_problems' dead) taken out, so it is
+    written at its default: a copy, or as given when none fails."""
     if not isinstance(economy, dict):
-        return ['economy must be an object.']
+        return economy
+    _, dead = economy_problems(economy)
+    named = {m.group(1) for m in (re.match(r'economy\.(\w+)', d) for d in dead) if m}
+    return {k: v for k, v in economy.items() if k not in named} if named else economy
+
+
+def economy_problems(economy, person_ids=None) -> tuple[list[str], list[str]]:
+    """(errors, dead): the economy entity's problems, the dead settings' (DEAD_ECONOMY) apart."""
+    if not isinstance(economy, dict):
+        return ['economy must be an object.'], []
     economy = legacy_economy(economy)
     errors = []
     keys = set(economy)
@@ -380,7 +405,8 @@ def check_economy(economy, person_ids=None) -> list[str]:
                 errors.append(f'economy.businesses.{npc} must be {{"internalStore": true or false}}.')
             elif person_ids is not None and npc not in person_ids:
                 errors.append(f'economy.businesses names no NPC: {npc}.')
-    return errors
+    dead_key = re.compile(r'economy\.(' + '|'.join(sorted(DEAD_ECONOMY, key=len, reverse=True)) + r')\b')
+    return [e for e in errors if not dead_key.match(e)], [e for e in errors if dead_key.match(e)]
 
 
 def store_line(economy) -> str | None:
@@ -764,8 +790,10 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
 
     economy = p.get('economy', DEFAULT_ECONOMY)
     people_list = p.get('people', [])
-    errors += check_economy(economy, {person.get('id') for person in people_list if isinstance(person, dict)}
-                            if isinstance(people_list, list) else set())
+    economy_errors, dead = economy_problems(economy, {person.get('id') for person in people_list if isinstance(person, dict)}
+                                            if isinstance(people_list, list) else set())
+    errors += economy_errors
+    warnings += [f'{w[:-1]}: a setting the staged economy no longer reads (doc 79): kept, it does nothing.' for w in dead]
     if isinstance(economy, dict):
         warnings += [f'{w[:-1]}: kept, it does nothing while the file lacks it.' for w in unknown_farms(economy.get('farms'))]
         warnings += [f'economy.rules.{name}: a rule the game no longer has (doc 79): kept, it does nothing.'

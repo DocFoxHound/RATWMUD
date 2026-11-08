@@ -698,7 +698,14 @@ def new_world(key: str, name: str, of_kind: str = 'dev', upstream_key: str | Non
         if su.execute('SELECT 1 FROM pg_database WHERE datname = %s', (database,)).fetchone():
             raise DatabaseError(f'A database called {database} already exists; choose another key (or drop it first).')
         if source_db:
+            # (A session just closed can linger a moment in pg_stat_activity, its backend still exiting: given up to two
+            # seconds to go. A server, Atlas or the DM still on the world stays, and is refused.)
             busy = other_sessions(su, source_db)
+            for _ in range(20):
+                if not busy:
+                    break
+                time.sleep(.1)
+                busy = other_sessions(su, source_db)
             if busy:
                 raise DatabaseError(f'{source_db} has {len(busy)} other session(s) ({", ".join(sorted(set(busy))[:6])}); '
                                     'a copy needs it to itself. Stop its servers, Atlas and the DM first.')
