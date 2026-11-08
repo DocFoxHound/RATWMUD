@@ -21,10 +21,17 @@ foreach(f IN LISTS RATW_CLIENT_DATA_FILES)
 endforeach()
 string(SHA256 RATW_CLIENT_DATA_HASH "${RATW_CLIENT_DATA_MANIFEST}")
 string(SUBSTRING "${RATW_CLIENT_DATA_HASH}" 0 32 RATW_CLIENT_DATA_HASH)
-execute_process(COMMAND git rev-parse --short=12 HEAD WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-                OUTPUT_VARIABLE RATW_BUILD_ID OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+# The build id: RATW_BUILD_ID when given (-DRATW_BUILD_ID=..., as the world package's image is built, with no .git
+# inside Docker: Package/stage.sh), else the git commit, else "unknown".
+if(NOT RATW_BUILD_ID)
+  execute_process(COMMAND git rev-parse --short=12 HEAD WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                  OUTPUT_VARIABLE RATW_BUILD_ID OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+endif()
 if(NOT RATW_BUILD_ID)
   set(RATW_BUILD_ID "unknown")
+endif()
+if(NOT RATW_BUILD_ID MATCHES "^[A-Za-z0-9._+-]+$")
+  message(FATAL_ERROR "RATW_BUILD_ID must be letters, digits and . _ + - only (it goes into the binary as is).")
 endif()
 configure_file(Core/RatwBuildInfo.cpp.in "${CMAKE_CURRENT_BINARY_DIR}/generated/RatwBuildInfo.cpp" @ONLY)
 target_sources(ratw_core PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated/RatwBuildInfo.cpp")
