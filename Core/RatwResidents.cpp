@@ -719,6 +719,10 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             life.goalCell.clear();
             life.reason = "Ordinary work is suspended while recruited.";
             life.progress = 0;
+            // (A recruited keeper's shop still sets out its wares once a market day in its hours (doc 79, 7.7): the
+            // households it feeds, its food shop's, don't go short while it's away.)
+            if (job->role == "merchant"sv && staged() && within(hour, job->startHour, job->endHour))
+                stagedRestock(id);
             continue;
         }
         const auto& task = c.task;

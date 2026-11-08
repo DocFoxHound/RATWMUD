@@ -202,6 +202,24 @@ std::int64_t Society::cappedPayout(const std::string& escrow, const std::string&
     return coins - over;
 }
 
+void Society::shareStakes(const std::string& pot, const std::vector<std::string>& seats, const std::string& house)
+{
+    const auto* a = account(pot);
+    const auto coins = a ? a->cash : 0;
+    if (coins <= 0 || seats.empty())
+        return;
+    const auto share = coins / std::int64_t(seats.size());
+    auto order = seats;
+    if (staged())
+        std::stable_partition(order.begin(), order.end(), [&](const std::string& who) { return classify(who) != AccountKind::Real; });
+    for (const auto& who : order)
+        if (share > 0)
+            if (const auto paid = cappedPayout(pot, who, share, "stakesADay", house); paid > 0)
+                shift(pot, who, "", 0, paid, "stakes returned");
+    if (const auto* left = account(pot); left && left->cash > 0)
+        shift(pot, house, "", 0, left->cash, "the house's penny");
+}
+
 void Society::stagedDoor(const std::string& kind, const std::string& from, const std::string& to, const std::string& item,
                          int quantity, std::int64_t coins)
 {
@@ -486,9 +504,8 @@ void Society::stagedBands(std::int64_t day, bool now)
         if (!members.empty())
             if (const auto found = state_.residents.find(members.front()); found != state_.residents.end())
                 homeCell = found->second.homeCell;
-        c.market = day_.communityOf && !homeCell.empty() ? day_.communityOf(homeCell) : std::string();
-        if (c.market.empty() && !members.empty())
-            c.market = communityOfResident(members.front());
+        // (The Board's market, not the Watch's town (lawTown): the two phases name markets alike, whatever the towns.)
+        c.market = marketOfHome(homeCell, members);
         home.market = c.market;
         if (!times.count(c.market))
             times[c.market] = hooks_.times ? std::clamp(hooks_.times(*this, c.market), -2, 2) : 0;
@@ -697,8 +714,10 @@ int Society::tillShelf(Society& s, const std::string& till, const std::string& g
 
 void Society::stagedKeepers()
 {
-    // Each household's food shop (a merchant's till that sells or holds the band's food, in its market; by a fixed lot
-    // among them) and the food it gives: the first of the band's foods sold there. None: food made (fed from elsewhere).
+    // Each household's food shop (a merchant's till that sets the band's food out, in its market; by a fixed lot among
+    // them) and the food it gives: the first of the band's foods sold there. None: food made (fed from elsewhere). A
+    // till sells a food only if the morning restock fills it (stagedShelfGoods, what stagedRestock sets out): a till
+    // that only holds some (a starting stock, leftovers, a buy) is never chosen, as nothing would refill it.
     std::map<std::string, std::map<std::string, std::vector<std::string>>> sellers;   // Food -> market -> tills.
     const auto& t = statusTable();
     std::set<std::string> foods;
@@ -715,10 +734,10 @@ void Society::stagedKeepers()
         const auto* a = account(till);
         if (held == state_.careers.positions.end() || held->second.holder.empty() || !a)
             continue;
-        const auto market = day_.communityOf ? day_.communityOf(p.work.cell) : std::string();
-        const auto sold = spec(p.founder) ? wares(p.founder) : std::vector<std::string>{};
+        const auto market = marketOf(till);
+        const auto sold = spec(p.founder) ? stagedShelfGoods(p.founder) : std::vector<std::string>{};
         for (const auto& f : foods)
-            if (stock(*a, f) > 0 || std::find(sold.begin(), sold.end(), f) != sold.end())
+            if (std::find(sold.begin(), sold.end(), f) != sold.end())
                 sellers[f][market].push_back(till);
     }
     for (auto& [key, home] : stagedHomes_)

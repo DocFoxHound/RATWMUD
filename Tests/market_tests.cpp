@@ -670,6 +670,39 @@ void theWorldsMarkets()
     fs::remove_all(root);
 }
 
+// The bands name markets as the Board does (doc 79, 5.1 and 6.5): in a world of three towns, a household in each town
+// has its town's market, and one living out in the wilds between towns (lawTown "") the nearest market by path, so the
+// pressure players put on its staple reaches its short days.
+void householdsInTheBoardsMarkets()
+{
+    const auto root = fs::temp_directory_path() / "ratw-p12stage-market-homes";
+    const auto worldPath = writeStrip(root / "world");
+    {
+        std::ofstream manifest(fs::path(worldPath) / "world.ratw", std::ios::app);
+        manifest << "rule \"staged\" 1\n";
+        manifest << resident("wx", "Cotter x", "civilian", "working", 6, 4.5, 6, 4.5);   // (The wilds between Larkfield and Oakhaven.)
+    }
+    fs::remove_all(root / "save");
+    Town town(worldPath, (root / "save").string());
+    auto& w = town.g.world();
+    auto& s = w.society();
+    town.run(3);
+    expect(w.towns().size() == 3 && w.lawTown(cellId(6)).empty() && w.lawTown(cellId(4)) == "larkfield",
+           "three towns, the wilds in none: " + std::to_string(w.towns().size()));
+    const auto marketOf = [&](const std::string& id) {
+        const auto* st = s.statusOf(id);
+        return st ? st->market : std::string("(no band)");
+    };
+    expect(marketOf("u1") == "ridgemere" && marketOf("s1") == "larkfield" && marketOf("r1") == "oakhaven",
+           "each town's households its own market: " + marketOf("u1") + " " + marketOf("s1") + " " + marketOf("r1"));
+    expect(marketOf("wx") == "larkfield", "the cotter in the wilds the nearest market by path: " + marketOf("wx"));
+    expect(marketOf("um") == s.marketOf(s.tillOf("um")), "a keeper's household and its till in one market");
+    s.setPressure("larkfield", "meal", .5, "test");
+    expect(Society::boardHooks().pressure(s, marketOf("wx"), "meal") > .4,
+           "the pressure on the cotter's staple reaches its short days");
+    fs::remove_all(root);
+}
+
 // ------------------------------------------------------------------- The Board through the Game's saves (16.7)
 
 // The Board's fields a trade moves: what the journal must carry and a save keep.
@@ -945,6 +978,7 @@ int main(int argc, char** argv)
         theFactionDiscountCap();
         theRuleOff();
         theWorldsMarkets();
+        householdsInTheBoardsMarkets();
         theBoardThroughTheGame();
         theHolderBeforeTheWelcome();
     }

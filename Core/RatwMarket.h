@@ -150,7 +150,9 @@ struct TradePoint
 {
     std::string id, place;                           // place: the cell of its thickest merchants.
     std::vector<std::string> tills;
-    std::set<std::string> cells;                     // The cells of its community (law aside).
+    std::set<std::string> cells;                     // The cells of its community (law aside), and of the home regions
+                                                     // it serves (the nearest market by path to a region of homes that
+                                                     // is no market): where its households live (Society::marketOfHome).
     double catchment = PassingTrade;                 // Households, farm and works crews, and passing trade.
     std::vector<std::string> routes;                 // Other markets, nearest first.
     std::set<std::string> made;                      // Base goods made here: its workshops' and its areas'.
@@ -159,10 +161,11 @@ struct TradePoint
 struct Topology
 {
     std::vector<TradePoint> markets;
-    std::unordered_map<std::string, std::size_t> ofTill, ofId;
+    std::unordered_map<std::string, std::size_t> ofTill, ofId, ofCell;
     bool fromWorld = false;                          // Found by the world; else Society's own (one market).
     const TradePoint* find(const std::string& id) const;
     const TradePoint* ofTillId(const std::string& till) const;
+    const TradePoint* ofCellId(const std::string& cell) const;
     void index();
 };
 

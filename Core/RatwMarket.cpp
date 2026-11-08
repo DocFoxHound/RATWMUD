@@ -488,15 +488,24 @@ const TradePoint* Topology::ofTillId(const std::string& till) const
     return at == ofTill.end() || at->second >= markets.size() ? nullptr : &markets[at->second];
 }
 
+const TradePoint* Topology::ofCellId(const std::string& cell) const
+{
+    const auto at = ofCell.find(cell);
+    return at == ofCell.end() || at->second >= markets.size() ? nullptr : &markets[at->second];
+}
+
 void Topology::index()
 {
     ofTill.clear();
     ofId.clear();
+    ofCell.clear();
     for (std::size_t i = 0; i < markets.size(); ++i)
     {
         ofId.emplace(markets[i].id, i);
         for (const auto& till : markets[i].tills)
             ofTill.emplace(till, i);
+        for (const auto& cell : markets[i].cells)
+            ofCell.emplace(cell, i);
     }
     if (ofId.size() != markets.size())
         ofId.clear();                               // (Two markets of one id: find() looks along the list, the first.)
@@ -687,6 +696,22 @@ std::string Society::marketOf(const std::string& till) const
     if (const auto* m = t.ofTillId(till))
         return m->id;
     // (A shop the markets don't know yet, a keeper with no till: the first market's, else "outside".)
+    return t.markets.empty() ? std::string("outside") : t.markets.front().id;
+}
+
+std::string Society::marketOfHome(const std::string& homeCell, const std::vector<std::string>& members) const
+{
+    const auto& t = tradePoints();
+    if (const auto* m = homeCell.empty() ? nullptr : t.ofCellId(homeCell))
+        return m->id;
+    for (const auto& id : members)
+        if (const auto* job = jobOf(id))
+        {
+            if (const auto* m = job->role == "merchant" ? t.ofTillId("till:" + job->id) : nullptr)
+                return m->id;
+            if (const auto* m = t.ofCellId(job->work.cell))
+                return m->id;
+        }
     return t.markets.empty() ? std::string("outside") : t.markets.front().id;
 }
 
@@ -1682,6 +1707,7 @@ void World::ensureTradePoints()
         return c && !c->region.empty() && c->region != "unassigned" ? c->region : std::string();
     };
     std::map<std::string, int> homes;
+    std::map<std::string, std::string> homeCellIn;  // Region -> a home cell in it (the first household's).
     for (const auto& [key, members] : society_.households(true))
     {
         if (members.empty())
@@ -1689,7 +1715,10 @@ void World::ensureTradePoints()
         const auto* life = society_.resident(members.front());
         if (life)
             if (const auto region = regionOf(life->homeCell); !region.empty())
+            {
                 ++homes[region];
+                homeCellIn.emplace(region, life->homeCell);
+            }
     }
     struct Shop
     {
@@ -1784,9 +1813,28 @@ void World::ensureTradePoints()
     for (const auto& [community, n] : society_.farmCrews())
         if (const int at = marketIndex(community); at >= 0)
             t.markets[std::size_t(at)].catchment += n;
+    // Where households live: a market's own region's cells, and a region of homes that is no market (a farmstead, a
+    // hamlet) the nearest market's by path, as a lone merchant's, so a household's market (Society::marketOfHome) is the
+    // Board's own, whatever the towns (lawTown) say.
+    std::map<std::string, int> served;               // Region -> market.
+    for (const auto& [region, home] : homeCellIn)
+    {
+        if (const int at = marketIndex(region); at >= 0)
+            continue;
+        std::size_t best = std::numeric_limits<std::size_t>::max();
+        int at = -1;
+        for (std::size_t i = 0; i < t.markets.size(); ++i)
+            if (t.markets[i].id != "outside")
+                if (const auto route = routeBetween(home, t.markets[i].place); route.size() >= 1 && route.size() < best)
+                    best = route.size(), at = int(i);
+        if (at >= 0)
+            served[region] = at;
+    }
     for (const auto& [id, c] : cells_)
         if (const int at = marketIndex(c.region); at >= 0)
             t.markets[std::size_t(at)].cells.insert(id);
+        else if (const auto s = served.find(c.region); s != served.end())
+            t.markets[std::size_t(s->second)].cells.insert(id);
     // Routes: each market's k nearest others by path (pairs with no path left out quietly).
     const auto k = std::size_t(market::data().routes);
     for (auto& m : t.markets)

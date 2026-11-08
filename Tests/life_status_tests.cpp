@@ -209,11 +209,15 @@ void foodFromTheShelf()
     }
     expect(ladyMost < 70, "a comfortable household never goes hungry: " + std::to_string(ladyMost));
     expect(ivarMost >= 70, "a destitute household goes hungry on its short days: " + std::to_string(ivarMost));
-    // A bare shelf (the Board's hook, here the till's own stock): the poor it serves go short; the comfortable don't.
+    // A bare shelf (the Board's hook, here the till's own stock): the poor it serves go short; the comfortable don't. (The
+    // stall's meals, the poor's first food it sets out: it sells no bread, so loaves it held would make it no bread shop.)
     auto shop = docksSociety();
     shop.setStagedHooks({nullptr, nullptr, &Society::tillShelf});
     const auto till = shop.tillOf("moss");
-    expect(!till.empty() && shop.create(till, "bread", 6, "test: the shelf"), "the stall's shelf holds 6 loaves");
+    for (const auto& [item, n] : std::map<std::string, int>(shop.account(till)->stock))
+        if (n > 0 && Society::nourishment(item) > 0)
+            shop.consume(till, item, n, "test: the shelf cleared");
+    expect(!till.empty() && shop.create(till, "meal", 6, "test: the shelf"), "the stall's shelf holds 6 meals");
     shop.stagedBands(2, true);
     shop.overrideBand(shop.householdOf("ivar"), status::Poor, 100);
     for (const auto& id : {"ivar", "una", "tam"})
@@ -221,9 +225,9 @@ void foodFromTheShelf()
     for (int h = 0; h < 24; ++h)
         shop.tick(1., 3 + h / 24. + 1e-4, 0, {});
     const double fedPoor = food(shop, "ivar") + food(shop, "una") + food(shop, "tam");
-    expect(Society::stock(*shop.account(till), "bread") < 6, "the household's loaves came off the shelf: " +
-                                                                 std::to_string(Society::stock(*shop.account(till), "bread")));
-    expect(fedPoor <= 6 * 15 + 1e-9, "the poor fed only from what the shelf held: " + std::to_string(fedPoor));
+    expect(Society::stock(*shop.account(till), "meal") < 6, "the household's meals came off the shelf: " +
+                                                                std::to_string(Society::stock(*shop.account(till), "meal")));
+    expect(fedPoor <= 6 * Society::nourishment("meal") + 1e-9, "the poor fed only from what the shelf held: " + std::to_string(fedPoor));
     expect(food(shop, "lady") >= Society::NourishADay, "the comfortable fed from elsewhere when the shelf is bare");
     const auto provisions = shop.takeProvisions();
     expect(std::any_of(provisions.begin(), provisions.end(), [](const auto& p) { return p.second == "moss"; }),
@@ -300,6 +304,53 @@ void playersEmptyTheShelf()
     expect(bare.fedPoor == 0, "the shelf bought bare: the poor household goes short today: " + std::to_string(bare.fedPoor));
     expect(bare.fedLady >= Society::NourishADay, "the comfortable fed from elsewhere");
     expect(bare.sunk == bare.paid, "each purchase counted once at the door: " + std::to_string(bare.sunk) + " of " + std::to_string(bare.paid));
+}
+
+void foodShopsTheRestockFills()
+{
+    // A household's food shop is a till the Board's morning restock fills (doc 79, 6.5 and 7.7: stagedShelfGoods): a
+    // ropewalk that only holds meals and loaves (its starting stock, leftovers) is never one, though the stall sells no
+    // bread; the stall is. And a recruited keeper's shop still sets out its wares in its hours, so the households it
+    // feeds don't go short while it's away.
+    auto roster = docks();
+    roster.residents.push_back(person("kari", "merchant", "at the rope walk", 36, {"rope_loft", 2.5, 2.5}, {"ropewalk", 2.5, 2.5}));
+    Society s(Roster::None);
+    s.configure(roster);
+    s.tendCareers(1.3, careers(s));
+    const auto rope = s.tillOf("kari"), stall = s.tillOf("moss");
+    expect(rope != "kari" && s.account(rope) && s.merchant("kari"), "the ropewalk's till");
+    expect(s.create(rope, "meal", 12, "test: leftovers") && s.create(rope, "bread", 12, "test: leftovers"), "the ropewalk holds food");
+    const auto shelf = s.stagedShelfGoods("kari");
+    expect(std::find(shelf.begin(), shelf.end(), "meal") == shelf.end() && std::find(shelf.begin(), shelf.end(), "bread") == shelf.end(),
+           "the ropewalk sets out no food");
+    s.stagedBands(2, true);
+    std::set<std::string> foods;
+    for (const auto& row : s.statusTable().rows)
+        foods.insert(row.food.begin(), row.food.end());
+    int atRope = 0, atStall = 0;
+    for (const auto& f : foods)
+        atRope += s.provisionFor(rope, f), atStall += s.provisionFor(stall, f);
+    expect(atRope == 0, "no household's food shop is the ropewalk: " + std::to_string(atRope));
+    expect(atStall > 0, "the stall feeds households: " + std::to_string(atStall));
+    // Recruited (a party's, a Hold's): moss's stall still set out today.
+    const auto copy = s.account(stall)->stock;
+    for (const auto& [item, n] : copy)
+        if (n > 0 && Society::nourishment(item) > 0)
+            s.consume(stall, item, n, "test: bought bare");
+    std::map<std::string, LifeBody> bodies;
+    for (const auto& r : s.authored().residents)
+    {
+        LifeBody b{r.work.cell, r.work.x, r.work.y};
+        b.age = r.age;
+        b.companion = r.id == "moss";
+        bodies[r.id] = b;
+    }
+    for (int sec = 0; sec < 600; sec += 10)
+        s.tick(10., 3 + 10. / 24 + sec / 86400., 0, bodies);
+    expect(s.resident("moss")->task == "companion", "moss is away with whoever recruited it: " + s.resident("moss")->task);
+    const auto restocked = s.board().restocked.find(stall);
+    expect(restocked != s.board().restocked.end() && restocked->second == s.marketDay(),
+           "the recruited keeper's stall set out today all the same");
 }
 
 void stakesAndTillsAtPayout()
@@ -964,6 +1015,7 @@ int main()
         householdsShareABand();
         foodFromTheShelf();
         playersEmptyTheShelf();
+        foodShopsTheRestockFills();
         stakesAndTillsAtPayout();
         holdsLeanAndTheTrim();
         theDoorAndRealMoney();

@@ -764,6 +764,9 @@ class Society
     void setTradePoints(market::Topology topology);
     const market::Topology& tradePoints() const;
     std::string marketOf(const std::string& till) const;
+    // A household's market, the Board's own (the bands' cut, Times and pressure, its food shop): its home's (a market's
+    // region, or the region of homes it serves), else a member's shop's or workplace's, else the first market's.
+    std::string marketOfHome(const std::string& homeCell, const std::vector<std::string>& members) const;
     void setQuarters(std::map<std::string, std::string> quarters);
     void setProsperity(int target, bool now = false);
     const market::Rules& marketRules() const { return marketRules_; }
@@ -1128,6 +1131,11 @@ class Society
     // player: `coins`.
     std::int64_t cappedPayout(const std::string& escrow, const std::string& player, std::int64_t coins, const std::string& cap,
                               const std::string& back = {});
+    // A table game broken up (Game::endTable with no winner): the pot shared evenly among those still seated, its odd
+    // pennies to `house`. Staged, each player's share is a payout under the stakes cap like a winner's (cappedPayout,
+    // "stakesADay", the excess to `house`), and residents still seated are paid first, so they take back the pot's
+    // staged part before any reaches a player (doc 79, 9.3). Off: the shares in seat order, as before.
+    void shareStakes(const std::string& pot, const std::vector<std::string>& seats, const std::string& house);
     // The door's log (D16, log only in play): reasons staged coins reached a player by that are in no faucet group the
     // door knows (each once a day, with its holder and coins: the reason names its call site), and the pennies staged
     // payers were topped up by since the world began. Taken by the Game for its log.

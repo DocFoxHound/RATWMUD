@@ -118,14 +118,7 @@ void Game::endTable(Table& t, int winner, const std::string& why)
                                   paid + ".");
     }
     else if (coins > 0 && !t.seats.empty())
-    {
-        const auto share = coins / std::int64_t(t.seats.size());
-        for (const auto& who : t.seats)
-            if (share > 0)
-                society.shift(account(t), who, "", 0, share, "stakes returned");
-        if (const auto* left = society.account(account(t)); left && left->cash > 0)
-            society.shift(account(t), t.house, "", 0, left->cash, "the house's penny");
-    }
+        society.shareStakes(account(t), t.seats, t.house);   // (Staged: each player's share under the stakes cap, doc 79, 9.3.)
     // Practice: each wolf at the table sharpens, faster against a better player.
     if (winner >= 0)
         for (const auto& who : t.seats)
