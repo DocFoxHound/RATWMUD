@@ -1,23 +1,29 @@
 #!/usr/bin/env python3
-"""Central: accounts, wolves and tickets for every world (Docs/Design/77-central-accounts-and-hosted-worlds.md,
-sections 4 and 5; Phase 1). JSON over HTTP; behind Caddy (HTTPS) when it goes on its own server (Phase 7). On this
+"""Central: accounts, wolves, tickets and the server list for every world (Docs/Design/77-central-accounts-and-hosted-
+worlds.md, sections 4, 5 and 7; Phases 1-4). JSON over HTTP; behind Caddy (HTTPS) when it goes on its own server (Phase 7). On this
 laptop it runs on loopback for development: worlds and the client reach it with `--central http://127.0.0.1:7790`.
 
   python3 Central/ratw_central.py db-create          make its database (ratw_central; the Postgres superuser from
                                                      Database/.env, no role made or changed)
   python3 Central/ratw_central.py migrate            apply Central/migrations
   python3 Central/ratw_central.py serve [--port 7790] [--bind 127.0.0.1] [--keys DIR] [--trust-proxy] [--cors ORIGIN]
-                                                     run it (migrating first); keys in Saved/Central/keys by default
+                                         [--local-worlds]
+                                                     run it (migrating first); keys in Saved/Central/keys by default;
+                                                     --local-worlds (development) lists worlds on loopback and private
+                                                     addresses, which are never listed otherwise
   python3 Central/ratw_central.py keys list|rotate [--now]
                                                      the ticket keys; rotate publishes the next one a day ahead, --now
                                                      signs with a new one at once and revokes every ticket out
-  python3 Central/ratw_central.py worlds add --name N --kind official|community [--address HOST:PORT] [--secure]
-                                         [--protocol N] [--description TEXT]
-  python3 Central/ratw_central.py worlds set WORLD_ID [--address HOST:PORT] [--secure|--plain] [--protocol N]
-                                         [--description TEXT] [--delisted|--listed]
-  python3 Central/ratw_central.py worlds list
-                                                     the world registry by hand (the heartbeat and the list: Phase 4);
-                                                     a world with an address is in GET /worlds
+  python3 Central/ratw_central.py worlds add --name N --kind official|community [--host USERNAME]
+                                                     a world in the registry (prints its id)
+  python3 Central/ratw_central.py worlds token WORLD_ID
+                                                     makes its host token (prints only the token, on stdout's last
+                                                     line; shown this once), revoking the one before
+  python3 Central/ratw_central.py worlds revoke WORLD_ID      drops its token: off the list until it has a new one
+  python3 Central/ratw_central.py worlds set WORLD_ID --delisted|--listed
+  python3 Central/ratw_central.py worlds list        listed or not (and why), last heartbeat, reachable, check note,
+                                                     players. A world is listed only by its heartbeat (doc 77, 7): run
+                                                     the world agent with its token (tools/world_agent.py run)
   python3 Central/ratw_central.py accounts flag USERNAME [--banned|--unbanned] [--host|--no-host] [--admin|--no-admin]
   python3 Central/ratw_central.py accounts set-password USERNAME   (no email in the closed beta: the user resets by hand)
   python3 Central/ratw_central.py db-drop --yes       drop its database
@@ -27,7 +33,11 @@ The calls (JSON bodies; `Authorization: Bearer ACCESS_TOKEN` where an account is
   password, remember?}   POST /account/refresh {refresh_token}   POST /account/logout {everywhere?}   GET /account
   DELETE /account {password}   GET /wolves   POST /wolves {name, age, appearance, family?, profile?}
   PATCH /wolves/WOLF_ID {revision, appearance?, profile?}   DELETE /wolves/WOLF_ID {password}   POST /wolves/name {name}   POST /tickets {world, wolf}
-  GET /keys   GET /health   GET /rules (the creator's Gift families)   GET /worlds (the list: a stub until Phase 4)
+  GET /keys   GET /health   GET /rules (the creator's Gift families)   GET /worlds (the list)
+The Host page's calls (an account with the host flag): GET /host/worlds   POST /host/worlds {name}
+  POST /host/worlds/WORLD_ID/token   DELETE /host/worlds/WORLD_ID
+The world agent's (Authorization: Bearer HOST_TOKEN): POST /worlds/heartbeat {port, name, protocol, ...}
+  POST /worlds/leave
 Replies are {"ok": true, ...} or {"ok": false, "error": "...", "code": "..."} with the HTTP status; a rate limit is
 429 with Retry-After.
 
@@ -59,7 +69,10 @@ ROOT = HERE.parent
 DEFAULT_KEYS = ROOT / 'Saved' / 'Central' / 'keys'
 DEFAULT_PORT = 7790
 MAX_BODY = 16 * 1024
+HEARTBEAT_BODY = 512 * 1024         # (Up to 10,000 online wolf ids.)
 WOLF_PATH = re.compile(r'^/wolves/(wolf-[0-9a-f]{32})$')
+HOST_WORLD_PATH = re.compile(r'^/host/worlds/(world-[0-9a-f]{32})$')
+HOST_TOKEN_PATH = re.compile(r'^/host/worlds/(world-[0-9a-f]{32})/token$')
 
 
 def routes(central: central_service.Central) -> dict:
@@ -77,6 +90,10 @@ def routes(central: central_service.Central) -> dict:
         ('GET', '/keys'): central.jwks,
         ('GET', '/rules'): central.rules,
         ('GET', '/worlds'): central.list_worlds,
+        ('POST', '/worlds/heartbeat'): central.heartbeat,
+        ('POST', '/worlds/leave'): central.leave,
+        ('GET', '/host/worlds'): central.host_worlds,
+        ('POST', '/host/worlds'): central.host_make_world,
     }
 
 
@@ -118,7 +135,7 @@ def handler_class(central: central_service.Central, trust_proxy: bool = False, c
             self.end_headers()
             self.wfile.write(data)
 
-        def body(self) -> dict:
+        def body(self, most: int = MAX_BODY) -> dict:
             if self.headers.get('Transfer-Encoding'):
                 raise central_service.Reply(400, 'Transfer encoding is not supported.', 'bad_request')
             lengths = self.headers.get_all('Content-Length', [])
@@ -127,7 +144,7 @@ def handler_class(central: central_service.Central, trust_proxy: bool = False, c
             if len(lengths) != 1 or not lengths[0].isdigit():
                 raise central_service.Reply(400, 'A bad Content-Length.', 'bad_request')
             size = int(lengths[0])
-            if size > MAX_BODY:
+            if size > most:
                 raise central_service.Reply(413, 'The request is too large.', 'too_large')
             if size == 0:
                 return {}
@@ -156,19 +173,25 @@ def handler_class(central: central_service.Central, trust_proxy: bool = False, c
                 wait = central.limiter.hit(('any', address), central.settings.limits.any_per_address)
                 if wait:
                     raise central_service.Reply(429, 'Too many requests from here.', 'rate_limited', wait)
-                body = self.body()
+                body = self.body(HEARTBEAT_BODY if path == '/worlds/heartbeat' else MAX_BODY)
                 if method == 'GET' and path == '/health':
                     self.send(200, {'ok': True, 'time': central.clock()})
                     return
                 match = WOLF_PATH.match(path)
+                hosted, token = HOST_WORLD_PATH.match(path), HOST_TOKEN_PATH.match(path)
                 if method == 'PATCH' and match:
                     status, reply = central.call(central.patch_wolf, address, self.bearer(), body, match.group(1))
                 elif method == 'DELETE' and match:
                     status, reply = central.call(central.delete_wolf, address, self.bearer(), body, match.group(1))
+                elif method == 'DELETE' and hosted:
+                    status, reply = central.call(central.host_remove_world, address, self.bearer(), body,
+                                                 hosted.group(1))
+                elif method == 'POST' and token:
+                    status, reply = central.call(central.host_new_token, address, self.bearer(), body, token.group(1))
                 elif (method, path) in table:
                     status, reply = central.call(table[(method, path)], address, self.bearer(), body)
                 else:
-                    known = any(p == path for _, p in table) or bool(match) or path == '/health'
+                    known = any(p == path for _, p in table) or bool(match or hosted or token) or path == '/health'
                     raise central_service.Reply(405 if known else 404, 'No such call.', 'not_found')
                 self.send(status, reply, 'public, max-age=300' if path in ('/keys', '/rules') and status == 200 else 'no-store')
             except central_service.Reply as reply:
@@ -243,13 +266,58 @@ class Server:
         self.http.server_close()
 
 
-def split_address(parser, given: str) -> tuple[str, int]:
-    """HOST:PORT ([v6]:PORT) for a world's address."""
-    match = re.fullmatch(r'\[([0-9a-fA-F:.]+)\]:(\d{1,5})|([A-Za-z0-9.-]+):(\d{1,5})', given.strip())
-    port = int(match.group(2) or match.group(4)) if match else 0
-    if not match or not 0 < port < 65536:
-        parser.error('--address is HOST:PORT')
-    return match.group(1) or match.group(3), port
+def worlds_command(parser, args, store: central_store.Store) -> int:
+    """The world registry by hand. A world is listed only by its heartbeat (doc 77, 7), never by an address given
+    here: make its host token, and run the world agent with it."""
+    now = time.time()
+    if args.action == 'add':
+        if not args.name:
+            parser.error('worlds add needs --name')
+        host = None
+        if args.host:
+            account = store.account_by_username(central_service.normalize_username(args.host) or '')
+            if account is None:
+                print('no such account', file=sys.stderr)
+                return 1
+            host = account['id']
+        import secrets
+        world_id = 'world-' + secrets.token_hex(16)
+        store.add_world(world_id, args.name, args.kind, now, host_account=host)
+        print(world_id)
+        return 0
+    if args.action == 'list':
+        for w in store.worlds():
+            listing = w['listing'] if isinstance(w['listing'], dict) else {}
+            why = central_service.Central.why_not_listed(w, now)
+            print(json.dumps({'id': w['id'], 'name': listing.get('name') or w['name'], 'kind': w['kind'],
+                              'listed': not why, 'why': why, 'last_heartbeat': w['last_heartbeat'],
+                              'reachable': w['reachable'], 'check_note': w['check_note'], 'players': w['players'],
+                              'address': w['address'], 'port': w['port'], 'host_name': w['host_name'],
+                              'delisted': w['delisted'], 'removed': w['removed'], 'token': w['has_token']}))
+        return 0
+    world = store.world(args.world) if args.world else None
+    if world is None:
+        print('no such world', file=sys.stderr)
+        return 1
+    if args.action == 'token':
+        if world['removed']:
+            print('that world was removed', file=sys.stderr)
+            return 1
+        token = central_service.new_host_token()
+        store.set_world_token(world['id'], central_service.token_hash(token), now)
+        print('The host token, shown this once (the one before it no longer works). Give it to the world agent '
+              'through --token-file or RATW_HOST_TOKEN:', file=sys.stderr, flush=True)
+        print(token)
+        return 0
+    if args.action == 'revoke':
+        store.set_world_token(world['id'], None, now)
+        print('token revoked: the world is off the list until it has a new one')
+        return 0
+    if args.delisted is None:
+        parser.error('worlds set needs --delisted or --listed')
+    store.set_world(world['id'], delisted=args.delisted)
+    print(f'{world["id"]} {"delisted" if args.delisted else "may be listed (while its heartbeat arrives)"}')
+    return 0
 
 
 def main(argv=None) -> int:
@@ -266,20 +334,18 @@ def main(argv=None) -> int:
     serve.add_argument('--trust-proxy', action='store_true', help='take the address from X-Forwarded-For when the '
                        'connection comes from loopback (behind Caddy)')
     serve.add_argument('--cors', action='append', default=[], help='an Origin allowed to call it from a page')
+    serve.add_argument('--local-worlds', action='store_true', help='development: list worlds whose heartbeat comes '
+                       'from loopback or a private address (never link-local, unspecified or multicast)')
     keys = sub.add_parser('keys')
     keys.add_argument('action', choices=('list', 'rotate'))
     keys.add_argument('--now', action='store_true')
     keys.add_argument('--keys', type=Path, default=DEFAULT_KEYS)
     worlds = sub.add_parser('worlds')
-    worlds.add_argument('action', choices=('add', 'set', 'list'))
-    worlds.add_argument('world', nargs='?', help='the world id (worlds set)')
+    worlds.add_argument('action', choices=('add', 'token', 'revoke', 'set', 'list'))
+    worlds.add_argument('world', nargs='?', help='the world id (token, revoke, set)')
     worlds.add_argument('--name')
     worlds.add_argument('--kind', choices=('official', 'community'), default='community')
-    worlds.add_argument('--address', help='HOST:PORT where the client reaches it (ws://HOST:PORT/ws)')
-    worlds.add_argument('--secure', dest='secure', action='store_true', default=None, help='wss:// (behind TLS)')
-    worlds.add_argument('--plain', dest='secure', action='store_false')
-    worlds.add_argument('--protocol', type=int, help='the protocol it speaks (default 1 when added)')
-    worlds.add_argument('--description')
+    worlds.add_argument('--host', help="the username of the account that hosts it (worlds add)")
     worlds.add_argument('--delisted', dest='delisted', action='store_true', default=None)
     worlds.add_argument('--listed', dest='delisted', action='store_false')
     accounts = sub.add_parser('accounts')
@@ -316,26 +382,7 @@ def main(argv=None) -> int:
             return 0
         store.migrate()
         if args.command == 'worlds':
-            host, port = split_address(parser, args.address) if args.address else (None, None)
-            listing = {k: v for k, v in (('secure', args.secure), ('protocol', args.protocol),
-                                         ('description', args.description)) if v is not None}
-            if args.action == 'add':
-                if not args.name:
-                    parser.error('worlds add needs --name')
-                import secrets
-                world_id = 'world-' + secrets.token_hex(16)
-                store.add_world(world_id, args.name, args.kind, time.time(), address=host, port=port,
-                                listing={'protocol': 1, 'secure': False, **listing})
-                print(world_id)
-            elif args.action == 'set':
-                if not args.world or not store.set_world(args.world, host, port, listing, args.delisted):
-                    print('no such world', file=sys.stderr)
-                    return 1
-                print(json.dumps(store.world(args.world)))
-            else:
-                for w in store.worlds():
-                    print(json.dumps(w))
-            return 0
+            return worlds_command(parser, args, store)
         if args.command == 'accounts':
             account = store.account_by_username(central_service.normalize_username(args.username) or '')
             if account is None:
@@ -360,13 +407,14 @@ def main(argv=None) -> int:
         store.close()
     # serve
     central = central_service.Central(store := central_store.Store(), central_tickets.KeyRing(args.keys),
-                                      central_identity.Identity())
+                                      central_identity.Identity(),
+                                      settings=central_service.Settings(local_worlds=args.local_worlds))
     store.migrate()
     for line in central.maintain():
         print(f'central: {line}', flush=True)
     server = Server(central, args.bind, args.port, args.trust_proxy, args.cors).start()
     print(f'ratw_central listening on http://{args.bind}:{server.port}/ (database {store.info["dbname"]}, '
-          f'keys {args.keys})', flush=True)
+          f'keys {args.keys}{", local worlds listed" if args.local_worlds else ""})', flush=True)
     try:
         threading.Event().wait()
     except KeyboardInterrupt:

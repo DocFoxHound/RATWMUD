@@ -23,7 +23,10 @@
 //            join with tickets from central, checked with central's keys (FILE, kept by tools/world_agent.py keys);
 //            no passwords, from loopback or anywhere; any Origin; no page (--web is refused) and GET /status answers
 //            (doc 5.1's fields, 2 KB at most, Access-Control-Allow-Origin: *). Refuses --dev-identity, and --dev-tools
-//            or --open-tiers on an official world. Without --central, everything is as it was.
+//            or --open-tiers on an official world. In the directory holding FILE (the world agent's: tools/world_agent.py
+//            run --dir DIR), it writes online.json (the wolves in the world, about every 15 s, for the heartbeat) and
+//            reads bans.json (central's banned accounts, from the heartbeat's reply): a banned account's hello is refused
+//            and its wolf here sent out (doc 77, 7). Without --central, everything is as it was.
 //   --scratch: a scratch server (game::Options::scratch): it reads the world and its save but writes nothing, and
 //            needn't own the world (so it runs beside the real server). Whoever starts it stops it when done; it stops
 //            by itself after an hour unless --for says otherwise. --idle-exit SECONDS (any server) stops it once nobody
@@ -125,6 +128,9 @@ class Client final : public game::Connection
     bool allowsLocalCredentials() const override { return local; }
     // Sends what is queued and then closes (an HTTP response, a WebSocket closing handshake).
     void finish() { finishing = true; }
+    // The game sends this client out (a wolf whose account central has banned: doc 77, 5.1): what is queued goes, then
+    // a WebSocket close (1008, policy) and the socket closes; nothing more is read from it.
+    void closeAfterSending() override;
     // Raw bytes (a frame or an HTTP response) for the network thread to send.
     void append(const std::string& bytes);
 
@@ -550,6 +556,19 @@ void Client::append(const std::string& bytes)
         network->wantWrite(this);
 }
 
+void Client::closeAfterSending()
+{
+    if (closing || finishing)
+        return;
+    const char code[2] = {char(1008 >> 8), char(1008 & 255)};
+    std::string frame;
+    web::appendFrame(frame, web::Close, code, 2);
+    append(frame);
+    finishing = true;
+    if (network)
+        network->wantWrite(this);                  // (In case the frame went before `finishing` was set.)
+}
+
 void Client::queue(link::Kind kind, const std::string& raw, bool replaceable)
 {
     if (closing || finishing)
@@ -894,6 +913,7 @@ int main(int argc, char** argv)
         if (tickets && Clock::now() >= nextStatus)
         {
             publishStatus();
+            g.ticketFiles();                        // online.json for the world agent; bans.json from it (doc 77, 7).
             nextStatus = Clock::now() + std::chrono::seconds(1);
         }
         busy += std::chrono::duration<double, std::milli>(Clock::now() - woke).count();
@@ -937,6 +957,11 @@ int main(int argc, char** argv)
     for (auto& c : network.remaining())
         letGo(*c);
     network.closeAll();
+    if (tickets)
+    {
+        std::string trouble;                        // (Nobody is here now: the agent's next heartbeat says so.)
+        g.writeOnline(trouble);
+    }
     g.save();                                       // (A scratch server's store keeps nothing.)
     ::close(listener);
     if (idleStop)

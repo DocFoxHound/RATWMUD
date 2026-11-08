@@ -186,6 +186,9 @@ class Store:
                 conn.execute(upsert, ('wolf', key, ts(reserve_until)))
                 conn.execute('INSERT INTO central.deleted_wolves (wolf_id, deleted_at) VALUES (%s, %s) '
                              'ON CONFLICT DO NOTHING', (wolf_id, ts(now)))
+            # Its hosted worlds go with it: removed, as from the Host page (official worlds have no host account).
+            conn.execute('UPDATE central.worlds SET removed = true, delisted = true, last_heartbeat = NULL, '
+                         'reachable = false WHERE host_account = %s', (account_id,))
             conn.execute('DELETE FROM central.accounts WHERE id = %s', (account_id,))
             return {'username': row[0], 'wolves': [w for w, _ in wolves]}
 
@@ -314,7 +317,7 @@ class Store:
                                f'RETURNING {WOLF}', (*values, wolf_id, revision)).fetchone()
             return _wolf(row)
 
-    # ---------------------------------------------------------------- Worlds (a stub until Phase 4) and tickets
+    # ---------------------------------------------------------------- Worlds and tickets
 
     def add_world(self, world_id: str, name: str, kind: str, now: float, host_account: str | None = None,
                   address: str | None = None, port: int | None = None, listing: dict | None = None) -> None:
@@ -325,7 +328,8 @@ class Store:
 
     def set_world(self, world_id: str, address: str | None = None, port: int | None = None,
                   listing: dict | None = None, delisted: bool | None = None) -> bool:
-        """Changes a world's address, listing fields (merged) or delisting, by hand (the heartbeat does it in Phase 4)."""
+        """Changes a world's address, listing fields (merged) or delisting by hand. Since Phase 4 an address alone
+        lists nothing: a world is listed only by its heartbeat (doc 77, 7). Tests use it to set a world up."""
         sets, values = [], []
         if address is not None:
             sets += ['address = %s', 'port = %s']
@@ -342,19 +346,113 @@ class Store:
             return conn.execute(f'UPDATE central.worlds SET {", ".join(sets)} WHERE id = %s',
                                 (*values, world_id)).rowcount == 1
 
-    WORLD_FIELDS = ('id', 'name', 'kind', 'host_account', 'delisted', 'address', 'port', 'listing')
+    def set_world_token(self, world_id: str, token_hash: str | None, now: float) -> bool:
+        """Gives the world a new host token (by its hash), which revokes the old one; None drops it (the world is off
+        the list until it has a new one). A removed world gets none."""
+        with self.connection() as conn:
+            return conn.execute('UPDATE central.worlds SET token_hash = %s, token_created = %s, token_used = NULL '
+                                'WHERE id = %s AND NOT removed',
+                                (token_hash, ts(now) if token_hash else None, world_id)).rowcount == 1
+
+    WORLD_FIELDS = ('id', 'name', 'kind', 'host_account', 'delisted', 'address', 'port', 'listing', 'online',
+                    'created_at', 'last_heartbeat', 'token_created', 'token_used', 'reachable', 'checked_at',
+                    'check_note', 'check_address', 'host_name', 'players', 'removed')
+    WORLD_TIMES = ('created_at', 'last_heartbeat', 'token_created', 'token_used', 'checked_at')
+
+    def _world(self, row, extra: tuple = ()) -> dict | None:
+        if row is None:
+            return None
+        out = dict(zip(self.WORLD_FIELDS + extra, row))
+        for key in self.WORLD_TIMES:
+            out[key] = epoch(out[key])
+        return out
+
+    def _worlds_query(self, where: str = '', params: tuple = (), order: str = 'w.created_at, w.id') -> list[dict]:
+        columns = ', '.join(f'w.{c}' for c in self.WORLD_FIELDS)
+        with self.connection() as conn:
+            rows = conn.execute(f'SELECT {columns}, w.token_hash IS NOT NULL, coalesce(a.banned, false) '
+                                f'FROM central.worlds w LEFT JOIN central.accounts a ON a.id = w.host_account '
+                                f'{where} ORDER BY {order}', params).fetchall()
+        return [self._world(r, ('has_token', 'host_banned')) for r in rows]
 
     def world(self, world_id: str) -> dict | None:
-        with self.connection() as conn:
-            row = conn.execute(f'SELECT {", ".join(self.WORLD_FIELDS)} FROM central.worlds WHERE id = %s',
-                               (world_id,)).fetchone()
-            return None if row is None else dict(zip(self.WORLD_FIELDS, row))
+        found = self._worlds_query('WHERE w.id = %s', (world_id,))
+        return found[0] if found else None
+
+    def world_by_token(self, token_hash: str) -> dict | None:
+        found = self._worlds_query('WHERE w.token_hash = %s', (token_hash,))
+        return found[0] if found else None
 
     def worlds(self) -> list[dict]:
+        return self._worlds_query()
+
+    def host_worlds(self, account_id: str) -> list[dict]:
+        return self._worlds_query('WHERE w.host_account = %s AND NOT w.removed', (account_id,))
+
+    def listed_worlds(self, now: float, heartbeat_within: float, token_unused: float) -> list[dict]:
+        """The list (doc 77, 7): not delisted or removed, a host token that hasn't gone unused too long, a heartbeat
+        within `heartbeat_within` seconds, reachable by central's call-back, with an address; and no banned host."""
+        return self._worlds_query(
+            'WHERE NOT w.delisted AND NOT w.removed AND w.token_hash IS NOT NULL '
+            'AND coalesce(w.token_used, w.token_created) > %s AND w.last_heartbeat > %s AND w.reachable '
+            'AND w.address IS NOT NULL AND w.port IS NOT NULL AND NOT coalesce(a.banned, false)',
+            (ts(now - token_unused), ts(now - heartbeat_within)),
+            "(w.kind = 'official') DESC, w.players DESC, w.created_at, w.id")
+
+    def create_host_world(self, world_id: str, name: str, account_id: str, token_hash: str, now: float,
+                          most: int) -> bool:
+        """A new community world of a host account, with its first token, unless the account has `most` already
+        (removed ones don't count). False if it has."""
+        with self.connection() as conn, conn.transaction():
+            conn.execute('SELECT 1 FROM central.accounts WHERE id = %s FOR UPDATE', (account_id,))
+            have = conn.execute('SELECT count(*) FROM central.worlds WHERE host_account = %s AND NOT removed',
+                                (account_id,)).fetchone()[0]
+            if have >= most:
+                return False
+            conn.execute("INSERT INTO central.worlds (id, name, kind, host_account, created_at, token_hash, "
+                         "token_created) VALUES (%s, %s, 'community', %s, %s, %s, %s)",
+                         (world_id, name, account_id, ts(now), token_hash, ts(now)))
+            return True
+
+    def remove_world(self, world_id: str) -> bool:
+        """Removed for good: delisted and off the list at once, and its token can do nothing more (no new one is
+        given to a removed world). The token's hash is kept only so that its world agent is told why (403
+        'delisted', "removed by its host") instead of an unknown token."""
         with self.connection() as conn:
-            rows = conn.execute(f'SELECT {", ".join(self.WORLD_FIELDS)} FROM central.worlds '
-                                'ORDER BY created_at, id').fetchall()
-            return [dict(zip(self.WORLD_FIELDS, r)) for r in rows]
+            return conn.execute('UPDATE central.worlds SET removed = true, delisted = true, last_heartbeat = NULL, '
+                                'reachable = false WHERE id = %s AND NOT removed', (world_id,)).rowcount == 1
+
+    def heartbeat(self, world_id: str, now: float, address: str, port: int, host_name: str | None, listing: dict,
+                  online: list[str], check: dict | None) -> None:
+        """One heartbeat: where it came from, its listing fields (replacing the last ones), the honest online list,
+        the token's use, and (if one ran, or the address was refused without one) the call-back's outcome."""
+        sets = ['last_heartbeat = %s', 'token_used = %s', 'address = %s', 'port = %s', 'host_name = %s',
+                'listing = %s', 'online = %s', 'players = %s']
+        values = [ts(now), ts(now), address, port, host_name, world_db.Jsonb(listing), world_db.Jsonb(online),
+                  len(online)]
+        if check is not None:
+            sets += ['reachable = %s', 'checked_at = %s', 'check_note = %s', 'check_address = %s']
+            values += [check['reachable'], ts(now), check['note'], check['address']]
+        with self.connection() as conn:
+            conn.execute(f'UPDATE central.worlds SET {", ".join(sets)} WHERE id = %s', (*values, world_id))
+
+    def leave(self, world_id: str) -> None:
+        """A world's clean shutdown: off the list at once (its next heartbeat brings it back)."""
+        with self.connection() as conn:
+            conn.execute('UPDATE central.worlds SET last_heartbeat = NULL WHERE id = %s', (world_id,))
+
+    def banned_accounts(self) -> list[str]:
+        with self.connection() as conn:
+            return [r[0] for r in conn.execute('SELECT id FROM central.accounts WHERE banned ORDER BY id').fetchall()]
+
+    def ticketed_wolves(self, world_id: str, wolves: list[str], since: float) -> set[str]:
+        """Which of these wolves central issued a ticket for, for this world, since then (the honest count)."""
+        if not wolves:
+            return set()
+        with self.connection() as conn:
+            return {r[0] for r in conn.execute('SELECT DISTINCT wolf_id FROM central.tickets WHERE world_id = %s AND '
+                                               'issued_at >= %s AND wolf_id = ANY(%s)',
+                                               (world_id, ts(since), list(wolves))).fetchall()}
 
     def record_ticket(self, jti: str, world_id: str, wolf_id: str, account_id: str, kid: str, now: float,
                       expires: float) -> None:
@@ -369,7 +467,7 @@ class Store:
 
     # ---------------------------------------------------------------- Housekeeping
 
-    def prune(self, now: float, tickets_kept: float = 7 * 86400) -> dict:
+    def prune(self, now: float, tickets_kept: float = 30 * 86400) -> dict:
         with self.connection() as conn, conn.transaction():
             return {
                 'sessions': conn.execute('DELETE FROM central.sessions WHERE refresh_expires <= %s',

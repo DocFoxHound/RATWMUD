@@ -1,14 +1,15 @@
 // The desktop client's flow (Docs/Design/77-central-accounts-and-hosted-worlds.md, 3.1; doc 76 as amended): sign in to
 // central, the wolves, the creator of a wolf's identity, the world list, a ticket, the world's first-arrival screen or
-// straight in, and back to the list on leaving. The page is bundled in the client: it reaches a world at that world's
-// own address with the page's own WebSocket (doc 77 Phase 0, D1), never through the page's host.
+// straight in, and back to the list on leaving. A host's account also has the Host page (3.2): its own worlds, their
+// tokens, and why central does or doesn't list them. The page is bundled in the client: it reaches a world at that
+// world's own address with the page's own WebSocket (doc 77 Phase 0, D1), never through the page's host.
 //
 // The front door (ui/frontDoor.ts, central mode) sends this its commands and is answered with lobby events of the shape
 // a world's lobby has. Nothing here is kept between launches but what the shell keeps ("remember me").
-import {Central, CentralError, type ListedWorld} from './net/central.ts';
+import {Central, CentralError, type HostWorld, type ListedWorld} from './net/central.ts';
 import {Connection} from './net/connection.ts';
 import {ClientBuild} from './net/build.ts';
-import {addressText, compatibility, fetchStatus, isLoopback, parseAddress, socketUrl, type WorldAddress, type WorldStatus} from './net/worlds.ts';
+import {addressText, compatibility, fetchStatus, isLoopback, parseAddress, socketUrl, statusLine, type WorldAddress, type WorldStatus} from './net/worlds.ts';
 import type {SessionView} from './net/session.ts';
 import {FrontDoor, type DoorWorld} from './ui/frontDoor.ts';
 import {artCache} from './ui/artwork.ts';
@@ -27,13 +28,6 @@ interface Target {
     description: string;
 }
 
-/** What the world list says of a world's status. */
-export function statusLine(s: WorldStatus | null | undefined): string {
-    if (s === undefined) return 'Asking…';
-    if (s === null) return 'Not answering';
-    return `${s.players} of ${s.limit} wolves · ${s.ms} ms${s.voices ? ' · AI voices' : ''}${s.cheats ? ' · cheats on' : ''}`;
-}
-
 export class ClientApp {
     readonly central: Central;
     readonly shell: Shell;
@@ -44,6 +38,8 @@ export class ClientApp {
     wolves: Json[] = [];
     gifts: Json | null = null;
     listed: ListedWorld[] = [];
+    hostWorlds: HostWorld[] = [];                    // The Host page: the account's own worlds, and how many it may have.
+    hostMost = 3;
     readonly statuses = new Map<string, WorldStatus | null>();
     wolf = '';                                       // The wolf chosen for the world list.
     target: Target | null = null;                    // The world being joined or played.
@@ -106,12 +102,36 @@ export class ClientApp {
         door.receive({type: 'lobby', stage: 'characters', ok: stage === 'characters' ? ok : true, message: stage === 'characters' ? text : '',
             characters: this.wolves.map(w => ({id: str(w, 'id'), name: str(w, 'name'), age: num(w, 'age', 18), appearance: w.appearance,
                 family: str(w, 'family')})),
+            host: this.account?.host === true,
             ...(this.gifts ? {gifts: this.gifts} : {})});
         if (this.wolf && this.wolves.some(w => str(w, 'id') === this.wolf)) door.selectedId = this.wolf;
         if (stage === 'worlds') {
             door.receive({type: 'lobby', stage: 'worlds', ok, message: text, wolf: this.wolf, lost: this.lost?.id ?? '', worlds: this.doorWorlds()});
             for (const w of this.listed) if (!this.statuses.has(w.id) && !this.asking.has(w.id)) void this.askStatus(w);
         } else if (door.page === 'roster') door.show('roster');
+    }
+
+    /** The Host page (doc 77, 3.2), with a token to show once when one was just made. */
+    private hostLobby(ok: boolean, text: string, token = '', tokenWorld = '') {
+        const door = this.door ?? this.newDoor();
+        door.receive({type: 'lobby', stage: 'host', ok, message: text, most: this.hostMost, central: this.central.transport.url,
+            worlds: this.hostWorlds.map(w => ({...w})), ...(token ? {token, tokenWorld} : {})});
+    }
+
+    private async loadHostWorlds() {
+        const {worlds, most} = await this.central.hostWorlds();
+        this.hostWorlds = worlds;
+        this.hostMost = most;
+    }
+
+    /** The list again after a token was made: if central can't be asked just now, the token is shown all the same
+     *  (it can't be shown later), beside the world it was made for. */
+    private async reloadHostWorlds(made: HostWorld | null) {
+        try {
+            await this.loadHostWorlds();
+        } catch {
+            if (made && !this.hostWorlds.some(w => w.id === made.id)) this.hostWorlds = [...this.hostWorlds, made];
+        }
     }
 
     private doorWorlds(): DoorWorld[] {
@@ -122,8 +142,9 @@ export class ClientApp {
             seen.add(t.id);
             const status = this.statuses.get(t.id);
             const fit = compatibility(ClientBuild, status ?? null, t.listedProtocol);
+            const listed = this.listed.find(w => w.id === t.id) ?? null;
             out.push({id: t.id, name: t.name, kind: t.kind, address: addressText(t.address), secure: t.address.secure, description: t.description,
-                fit: fit.fit, note: fit.note, status: statusLine(status)});
+                region: listed?.region ?? '', tags: listed?.tags ?? [], fit: fit.fit, note: fit.note, status: statusLine(status, listed)});
         };
         for (const w of this.listed) {
             const t = this.targetOf(w);
@@ -147,7 +168,7 @@ export class ClientApp {
         // A world that answers with another id than central's is not that world: say nothing of it.
         this.statuses.set(w.id, status && status.id === w.id ? status : null);
         const fit = compatibility(ClientBuild, this.statuses.get(w.id) ?? null, w.protocol);
-        this.door?.updateWorld(w.id, statusLine(this.statuses.get(w.id)), fit.fit, fit.note);
+        this.door?.updateWorld(w.id, statusLine(this.statuses.get(w.id), w), fit.fit, fit.note);
     }
 
     /** What went wrong, on the page the door is showing. */
@@ -155,6 +176,7 @@ export class ClientApp {
         const page = this.door?.page ?? 'login';
         if (page === 'login' || page === 'register') this.lobby('login', false, text);
         else if (page === 'worlds' || page === 'arrive') this.lobby('worlds', false, text);
+        else if (page === 'host') this.hostLobby(false, text);
         else this.lobby('characters', false, text);
     }
 
@@ -202,6 +224,25 @@ export class ClientApp {
                 this.listed = await this.central.worlds();
                 this.statuses.clear();
                 this.lobby('worlds', true, this.listed.length ? 'Choose a world.' : '');
+            } else if (type === 'host_show') {
+                await this.loadHostWorlds();
+                this.hostLobby(true, this.hostWorlds.length ? '' : 'You have no worlds yet. Give one a name to make it.');
+            } else if (type === 'host_make') {
+                const {world, token} = await this.central.makeWorld(str(c, 'name').trim());
+                await this.reloadHostWorlds(world);
+                this.hostLobby(true, `${world?.name || 'The world'} is made. Copy its token now: it is shown only this once.`, token, world?.id ?? '');
+            } else if (type === 'host_token') {
+                const id = str(c, 'world');
+                const token = await this.central.newToken(id);
+                await this.reloadHostWorlds(null);
+                const name = this.hostWorlds.find(w => w.id === id)?.name || 'the world';
+                this.hostLobby(true, `A new token for ${name}: the old one has stopped working. Copy it now: it is shown only this once.`, token, id);
+            } else if (type === 'host_remove') {
+                const id = str(c, 'world');
+                const name = this.hostWorlds.find(w => w.id === id)?.name || 'The world';
+                await this.central.removeWorld(id);
+                await this.loadHostWorlds();
+                this.hostLobby(true, `${name} is removed: central won't list it again.`);
             } else if (type === 'world_join') {
                 await this.join(c);
             } else if (type === 'arrive_cancel') {
@@ -240,6 +281,7 @@ export class ClientApp {
         this.wolves = [];
         this.wolf = '';
         this.listed = [];
+        this.hostWorlds = [];
         this.direct = [];
         this.lost = null;
         this.lobby('login', ok, text);

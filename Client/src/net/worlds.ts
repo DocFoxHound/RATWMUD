@@ -76,6 +76,13 @@ export function readStatus(body: unknown, ms: number): WorldStatus | null {
         cheats: b.cheats === true, private: b.private === true, ms: Math.max(0, Math.round(ms))};
 }
 
+/** What the world list says of a world's status: until the world's own /status answers, central's count. */
+export function statusLine(s: WorldStatus | null | undefined, listed?: {players: number; limit: number} | null): string {
+    if (s === undefined) return listed ? `${listed.players}${listed.limit ? ` of ${listed.limit}` : ''} wolves · asking…` : 'Asking…';
+    if (s === null) return 'Not answering';
+    return `${s.players} of ${s.limit} wolves · ${s.ms} ms${s.voices ? ' · AI voices' : ''}${s.cheats ? ' · cheats on' : ''}`;
+}
+
 export type Fit = 'ok' | 'update' | 'older' | 'data' | 'unknown';
 
 /** Whether this client can play on a world: its protocol (from /status, else the list) and its client-data hash

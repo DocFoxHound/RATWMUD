@@ -6,6 +6,10 @@ Rules kept from the world's accounts (Core/RatwAccountsCore): usernames 3-32 (a 
 -; compared in lower case), passwords 12-128 bytes without control characters (at most 128 UTF-16 units), PBKDF2-HMAC-
 SHA256 at 600,000 rounds with a 32-byte salt, and a missing user costs the same hash as a real one. The hashing runs on
 a few threads of its own: sign-ins past that wait their turn (doc 77, 4.3: queue, don't fail), and a refresh skips it.
+
+The server list (doc 77, 7; Phase 4): host tokens, the world agent's heartbeat and leave, central's call-back to a
+world's /status, the honest player count, the bans each world is told, the Host page's calls, and the word filter
+(central_words) on usernames, wolf names and world listings.
 """
 from __future__ import annotations
 
@@ -14,9 +18,13 @@ from dataclasses import dataclass, field
 import datetime as dt
 import hashlib
 import hmac
+import ipaddress
+import json
 import os
 import re
 import secrets
+import socket
+import ssl
 import threading
 import time
 import unicodedata
@@ -24,6 +32,7 @@ import unicodedata
 import central_store
 from central_store import Conflict
 import central_tickets
+import central_words
 from central_identity import IdentityError
 
 PASSWORD_ITERATIONS = 600_000
@@ -37,6 +46,24 @@ USERNAME = re.compile(r'^[a-z][a-z0-9_-]{2,31}$')
 WORLD_ID = re.compile(r'^world-[0-9a-f]{32}$')
 WOLF_ID = re.compile(r'^wolf-[0-9a-f]{32}$')
 BAD_SIGN_IN = 'That username and password do not match an account.'
+
+# The server list (doc 77, 7).
+HOST_TOKEN_PREFIX = 'rh_'
+TOKEN_UNUSED = 90 * 86400           # A host token unused this long is refused, and its world drops off.
+HEARTBEAT_EVERY = 60                # What the world agent is told.
+HEARTBEAT_LASTS = 180               # A world with no heartbeat for this long is off the list.
+CHECK_EVERY = 600                   # Central's call-back to a listed world.
+CHECK_TIMEOUT = 5.0
+STATUS_MOST = 2048                  # The most of a /status reply's body central reads (the world caps it at 2 KB).
+STATUS_HEAD_MOST = 4096             # And of its status line and headers.
+TICKETS_COUNTED = 30 * 86400        # A wolf online counts if central issued it a ticket for that world this recently.
+HOST_WORLDS = 3                     # Worlds an account may host (not counting removed ones).
+ONLINE_MOST = 10000
+HOST_NAME = re.compile(r'^(?=.{1,253}$)([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}'
+                       r'[A-Za-z0-9])?)*\.?$')
+CGNAT = ipaddress.ip_network('100.64.0.0/10')
+GAME_NAMES = ('runagainsttheworld', 'runsagainsttheworld')
+NOT_ON_THE_INTERNET = "This world's address (IP) is not on the internet."
 
 
 # --------------------------------------------------------------------------- Rules
@@ -100,6 +127,135 @@ def token_hash(token: str) -> str:
     return hashlib.sha256(token.encode('utf-8')).hexdigest()
 
 
+def new_host_token() -> str:
+    """A host token (doc 77, 7): shown once, kept only as its hash."""
+    return HOST_TOKEN_PREFIX + secrets.token_urlsafe(32)
+
+
+# --------------------------------------------------------------------------- The server list's fields
+
+def plain_text(value, most: int, least: int = 0) -> str | None:
+    """A string of `least` to `most` characters once trimmed, with no control or format characters (the joiner
+    emoji use apart); None if not."""
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    if not least <= len(value) <= most:
+        return None
+    if any(unicodedata.category(c).startswith('C') and c != '\u200d' for c in value):
+        return None
+    return value
+
+
+def whole_number(value, least: int, most: int) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and least <= value <= most
+
+
+def is_ip_literal(text: str) -> bool:
+    try:
+        ipaddress.ip_address(text.strip('[]'))
+        return True
+    except ValueError:
+        return bool(re.fullmatch(r'[0-9.]+', text))      # (Not a name: "10.1" or "1.2.3.4.5".)
+
+
+def plain_ip(address: str):
+    """An address as one form: an IPv4 address mapped into IPv6 is the IPv4 address, and a zone is dropped."""
+    ip = ipaddress.ip_address(address.split('%', 1)[0])
+    return ip.ipv4_mapped if ip.version == 6 and ip.ipv4_mapped else ip
+
+
+def bracketed(address: str) -> str:
+    return f'[{address}]' if ':' in address else address
+
+
+def whole_seconds(value: float | None) -> int | None:
+    return None if value is None else int(value)
+
+
+def listing_refused(fields: dict, kind: str) -> str:
+    """'' if a world's name and listing text may be shown; else why not. The word filter for every world; and a
+    community world can't call itself official or use the game's name (doc 77, 7: the badge is central's)."""
+    texts = [fields.get('name') or '', fields.get('description') or '', fields.get('region') or '',
+             *(fields.get('tags') or [])]
+    if any(central_words.refused(t) for t in texts):
+        return 'That name or description uses a word central does not allow.'
+    if kind != 'official':
+        for text in (fields.get('name') or '', fields.get('description') or ''):
+            plain = central_words.normalise(text)
+            squashed = ''.join(re.findall(r'[a-z]+', plain))
+            if 'official' in squashed or any(g in squashed for g in GAME_NAMES) or \
+                    re.search(r'(?<![a-z0-9])r[^a-z0-9]*a[^a-z0-9]*t[^a-z0-9]*w(?![a-z0-9])', plain):
+                return ('A community world cannot call itself official or use the game\'s name (Run Against the '
+                        'World, RATW).')
+    return ''
+
+
+def read_status(sock, deadline: float) -> bytes | str:
+    """Reads a world's answer to GET /status: its body (at most 2 KB), or why it can't be used. Only a 200 is taken;
+    a redirect is never followed. The whole answer must arrive by the deadline: a body of known length, else what
+    comes before the world closes the connection (central asked it to), chunked or not."""
+    data, head, length, chunked = b'', None, None, False
+    while True:
+        left = deadline - time.monotonic()
+        if left <= 0:
+            raise TimeoutError
+        sock.settimeout(left)
+        piece = sock.recv(4096)
+        if not piece:
+            break
+        data += piece
+        if head is None:
+            end = data.find(b'\r\n\r\n')
+            if end < 0:
+                if len(data) > STATUS_HEAD_MOST:
+                    return 'its reply\'s headers are too long'
+                continue
+            head, data = data[:end].decode('latin-1'), data[end + 4:]
+            lines = head.split('\r\n')
+            match = re.match(r'HTTP/1\.[01] (\d{3})', lines[0])
+            if not match:
+                return 'it does not answer HTTP'
+            code = int(match.group(1))
+            if 300 <= code < 400:
+                return f'it answered with a redirect (HTTP {code}), which central does not follow'
+            if code != 200:
+                return f'its /status answered HTTP {code}'
+            for line in lines[1:]:
+                key, _, value = line.partition(':')
+                key, value = key.strip().lower(), value.strip()
+                if key == 'content-length':
+                    if not value.isdigit():
+                        return 'its reply has a bad Content-Length'
+                    length = int(value)
+                    if length > STATUS_MOST:
+                        return 'its /status is over 2 KB'
+                elif key == 'transfer-encoding' and value.lower() != 'identity':
+                    chunked = True
+        if head is not None:
+            if len(data) > (STATUS_MOST + 512 if chunked else STATUS_MOST):
+                return 'its /status is over 2 KB'
+            if length is not None and not chunked and len(data) >= length:
+                return data[:length]
+    if head is None:
+        return 'it closed the connection without answering'
+    if chunked:
+        body, rest = b'', data
+        while True:
+            size, _, rest = rest.partition(b'\r\n')
+            try:
+                size = int(size.split(b';')[0], 16)
+            except ValueError:
+                return 'its reply is badly chunked'
+            if size == 0:
+                break
+            body, rest = body + rest[:size], rest[size + 2:]
+        return body if len(body) <= STATUS_MOST else 'its /status is over 2 KB'
+    if length is not None and len(data) < length:
+        return 'its reply was cut short'
+    return data
+
+
 # --------------------------------------------------------------------------- Rate limits
 
 @dataclass
@@ -116,6 +272,8 @@ class Limits:
     tickets_per_account: tuple = (20, 60)
     tickets_per_world: tuple = (600, 60)
     delete_per_address: tuple = (10, 3600)
+    heartbeats_per_token: tuple = (10, 60)
+    host_changes_per_account: tuple = (30, 3600)
 
 
 class RateLimiter:
@@ -180,6 +338,9 @@ class Settings:
     hash_threads: int = max(1, min(4, (os.cpu_count() or 2) // 2))
     hash_wait: float = 30.0                 # a sign-in waits this long for a hashing thread, then 503
     limits: Limits = field(default_factory=Limits)
+    local_worlds: bool = False              # development: list worlds on loopback and private addresses (serve
+                                            # --local-worlds); link-local, unspecified and multicast never
+    check_timeout: float = CHECK_TIMEOUT    # central's call-back to a world, all of it
 
 
 class Central:
@@ -266,6 +427,8 @@ class Central:
         if username is None or not valid_password(password):
             raise refused(400, 'Use a 3–32 character username starting with a letter (letters, digits, _ or -), '
                                'and a 12–128 byte password without control characters.', 'invalid')
+        if central_words.refused(username):
+            raise refused(400, 'That username is not allowed. Choose another.', 'name_refused')
         now = self.clock()
         old = old_enough(body.get('birth_year'), body.get('birth_month'), dt.datetime.fromtimestamp(now, dt.timezone.utc).date())
         if old is None:
@@ -373,10 +536,15 @@ class Central:
             raise refused(400, 'A wolf is a name, an age, a look, a Gift family and a profile; not ' +
                           ', '.join(sorted(unknown)) + '.', 'invalid')
         wolf_in = {k: body[k] for k in ('name', 'age', 'appearance', 'family') if k in body}
+        name_refused = refused(400, 'That name is not allowed. Choose another.', 'name_refused')
+        if isinstance(wolf_in.get('name'), str) and central_words.refused(wolf_in['name']):
+            raise name_refused
         checked = self.identity.wolf(wolf_in)
         if not checked.get('ok'):
             raise refused(400, checked.get('error', 'That wolf cannot be made.'), 'invalid')
         wolf = checked['wolf']
+        if central_words.refused(wolf['name']):
+            raise name_refused
         profile = {}
         if body.get('profile') is not None:
             made = self.identity.profile(None, body['profile'])
@@ -470,7 +638,7 @@ class Central:
             raise refused(400, 'Name a world and one of your wolves.', 'invalid')
         self._limit(('tickets', account['id']), self.settings.limits.tickets_per_account, 'joins')
         world = self.store.world(world_id)
-        if world is None or world['delisted']:
+        if world is None or world['delisted'] or world['removed']:
             raise refused(404, 'That world is not open.', 'no_world')
         wolf = self.store.wolf(wolf_id)
         if wolf is None or wolf['account_id'] != account['id']:
@@ -502,21 +670,323 @@ class Central:
         return ok(**self._rules)
 
     def list_worlds(self, address: str, token, body: dict) -> tuple[int, dict]:
-        """The world list (doc 77, 3.1 and 7). A stub until Phase 4: the worlds added by hand with an address
-        (`ratw_central.py worlds add --address HOST:PORT` or `worlds set`), unless delisted. Each is {id, name, kind,
-        address ("host:port"), secure (wss://), protocol (null when unknown), description}. Public."""
+        """The world list (doc 77, 3.1 and 7). A world is in it while its heartbeat arrives (within 3 minutes) with a
+        live host token, from an address central could call back, and it isn't delisted or removed. Each is {id, name
+        (the heartbeat's), kind (central's), address ("host:port"), secure (wss://), protocol, description, players
+        (the honest count), limit, region, tags, voices, cheats}: official worlds first, then the most players. Public."""
         out = []
-        for w in self.store.worlds():
-            if w['delisted'] or not w['address'] or not w['port']:
-                continue
+        for w in self.store.listed_worlds(self.clock(), HEARTBEAT_LASTS, TOKEN_UNUSED):
             listing = w['listing'] if isinstance(w['listing'], dict) else {}
-            host = f'[{w["address"]}]' if ':' in w['address'] else w['address']
-            protocol = listing.get('protocol')
-            out.append({'id': w['id'], 'name': w['name'], 'kind': w['kind'], 'address': f'{host}:{w["port"]}',
-                        'secure': listing.get('secure') is True,
-                        'protocol': protocol if isinstance(protocol, int) and not isinstance(protocol, bool) else None,
-                        'description': listing.get('description') if isinstance(listing.get('description'), str) else ''})
+            where = w['host_name'] or bracketed(w['address'])
+            out.append({'id': w['id'], 'name': listing.get('name') or w['name'], 'kind': w['kind'],
+                        'address': f'{where}:{w["port"]}', 'secure': listing.get('secure') is True,
+                        'protocol': listing.get('protocol'), 'description': listing.get('description', ''),
+                        'players': w['players'], 'limit': listing.get('limit'), 'region': listing.get('region', ''),
+                        'tags': listing.get('tags', []), 'voices': listing.get('voices') is True,
+                        'cheats': listing.get('cheats') is True})
         return ok(worlds=out)
+
+    # ---------------------------------------------------------------- The world's own calls (doc 77, 7)
+
+    def _world_token(self, token: str | None) -> dict:
+        """The world a host token names, or the refusal: 401 for an unknown, revoked or expired token; 403 for a
+        delisted or removed world, or a banned host. At most 10 calls a minute a token."""
+        bad = refused(401, 'Central does not know this host token (it was revoked, replaced or never made). Make a '
+                           'new one on the Host page.', 'bad_token')
+        if not token or not token.startswith(HOST_TOKEN_PREFIX) or len(token) > 128:
+            raise bad
+        hashed = token_hash(token)
+        self._limit(('heartbeat', hashed), self.settings.limits.heartbeats_per_token, 'heartbeats')
+        world = self.store.world_by_token(hashed)
+        if world is None:
+            raise bad
+        if world['removed'] or world['delisted']:
+            raise refused(403, 'This world is delisted.' if not world['removed'] else 'This world was removed by its '
+                          'host.', 'delisted')
+        used = world['token_used'] or world['token_created']
+        if used is None or used <= self.clock() - TOKEN_UNUSED:
+            raise refused(401, 'This host token went unused for 90 days and has expired. Make a new one on the Host '
+                               'page.', 'bad_token')
+        if world['host_banned']:
+            raise refused(403, "This world's host account is banned.", 'banned')
+        return world
+
+    def _listing(self, body: dict, kind: str) -> dict:
+        """The heartbeat's fields, checked (unknown ones ignored): 400 'invalid' or 'name_refused'."""
+        def bad(what):
+            raise refused(400, f"The heartbeat's {what} is not right.", 'invalid')
+
+        port = body.get('port')
+        if not whole_number(port, 1, 65535):
+            bad('port (1-65535)')
+        name = plain_text(body.get('name'), 48, 1)
+        if name is None:
+            bad('name (1-48 characters)')
+        out = {'port': port, 'name': name}
+        for key, most in (('description', 300), ('region', 32), ('build', 64), ('clientData', 64)):
+            value = plain_text(body.get(key, ''), most) if body.get(key) is not None else ''
+            if value is None:
+                bad(f'{key} (at most {most} characters)')
+            out[key] = value
+        tags = body.get('tags', [])
+        if tags is None:
+            tags = []
+        if not isinstance(tags, list) or len(tags) > 5:
+            bad('tags (at most 5)')
+        out['tags'] = []
+        for tag in tags:
+            tag = plain_text(tag, 16, 1)
+            if tag is None:
+                bad('tags (1-16 characters each)')
+            if tag not in out['tags']:
+                out['tags'].append(tag)
+        limit = body.get('limit')
+        if limit is not None and not whole_number(limit, 1, 10000):
+            bad('limit (1-10000)')
+        out['limit'] = limit
+        for key in ('private', 'voices', 'cheats', 'secure'):
+            value = body.get(key, False)
+            if value is None:
+                value = False
+            if not isinstance(value, bool):
+                bad(f'{key} (true or false)')
+            out[key] = value
+        protocol = body.get('protocol')
+        if not whole_number(protocol, 0, 2 ** 31 - 1):
+            bad('protocol')
+        out['protocol'] = protocol
+        host = body.get('host')
+        if host in (None, ''):
+            host = None
+        elif not isinstance(host, str) or not HOST_NAME.match(host) or is_ip_literal(host):
+            bad('host (a DNS name)')
+        else:
+            host = host.rstrip('.').lower()
+        out['host'] = host
+        online = body.get('online', [])
+        if online is None:
+            online = []
+        if not isinstance(online, list) or len(online) > ONLINE_MOST:
+            bad(f'online (a list of at most {ONLINE_MOST} wolf ids)')
+        out['online'] = list(dict.fromkeys(w for w in online if isinstance(w, str) and WOLF_ID.match(w)))
+        why = listing_refused(out, kind)
+        if why:
+            raise refused(400, why, 'name_refused')
+        return out
+
+    def _address_refused(self, ip) -> str:
+        """'' if a world at this address may be listed; else why not."""
+        if ip.is_unspecified or ip.is_multicast or ip.is_link_local:
+            return NOT_ON_THE_INTERNET
+        if self.settings.local_worlds and (ip.is_loopback or ip.is_private or (ip.version == 4 and ip in CGNAT)):
+            return ''
+        if not ip.is_global or ip.is_private or ip.is_loopback or ip.is_reserved or \
+                (ip.version == 4 and ip in CGNAT):
+            return NOT_ON_THE_INTERNET
+        return ''
+
+    def resolve(self, host: str, port: int) -> set:
+        """The addresses a host name resolves to (a test may replace it). Raises OSError when it doesn't."""
+        return {plain_ip(info[4][0]) for info in socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)}
+
+    def _host_refused(self, host: str, ip, port: int) -> str:
+        try:
+            found = self.resolve(host, port)
+        except (OSError, UnicodeError, ValueError):
+            return f'The host name {host} does not resolve (DNS). Point it at {ip}, or leave the host out.'
+        if ip not in found:
+            shown = ', '.join(sorted(str(a) for a in found)[:3]) or 'nothing'
+            return (f"The host name {host} does not point at this world's address ({ip}): it points at {shown}. "
+                    'Point it at this address, or leave the host out.')
+        return ''
+
+    def heartbeat(self, address: str, token, body: dict) -> tuple[int, dict]:
+        """POST /worlds/heartbeat (doc 77, 7), from the world agent every 60 s with the world's host token. The address
+        is where the request came from, never a field. Central calls the world back (GET /status) before first
+        listing, every 10 minutes, and when its address changes. The reply says whether it is listed (and why not),
+        the honest count, central's bans as this world sees them (each banned account's ticket `sub` here), and
+        central's clock."""
+        world = self._world_token(token)
+        fields = self._listing(body, world['kind'])
+        now = self.clock()
+        ip = plain_ip(address)
+        port, host, secure = fields['port'], fields['host'], fields['secure']
+        seen = f'{bracketed(str(ip))}:{port}'
+        why = self._address_refused(ip)
+        if not why and host:
+            why = self._host_refused(host, ip, port)
+        if not why and secure and not host:
+            why = 'A secure (wss://) world needs a host name (the name on its certificate): give the host.'
+        check = None
+        if why:                                         # (Refused without calling: central never connects there.)
+            check = {'reachable': False, 'note': why, 'address': seen}
+        else:
+            listing = world['listing'] if isinstance(world['listing'], dict) else {}
+            due = not world['reachable'] or world['checked_at'] is None or \
+                now - world['checked_at'] >= CHECK_EVERY or world['check_address'] != seen or \
+                world['host_name'] != host or (listing.get('secure') is True) != secure
+            if due:
+                why = self.call_back(ip, port, host, secure, world['id'])
+                check = {'reachable': not why, 'note': why, 'address': seen}
+        online = fields.pop('online')
+        counted = self.store.ticketed_wolves(world['id'], online, now - TICKETS_COUNTED)
+        online = [w for w in online if w in counted]
+        listing = {k: fields[k] for k in ('name', 'description', 'region', 'tags', 'limit', 'private', 'voices',
+                                          'cheats', 'secure', 'protocol', 'build', 'clientData')}
+        self.store.heartbeat(world['id'], now, str(ip), port, host, listing, online, check)
+        banned = self.store.banned_accounts()
+        if world['kind'] != 'official' and banned:
+            secret = self.keys.pairwise_secret()
+            banned = [central_tickets.pairwise_id(secret, a, world['id']) for a in banned]
+        return ok(world=world['id'], kind=world['kind'], listed=not why, reachable=not why, why=why, address=seen,
+                  players=len(online), bans=banned, time=now, every=HEARTBEAT_EVERY)
+
+    def leave(self, address: str, token, body: dict) -> tuple[int, dict]:
+        """POST /worlds/leave: a world's clean shutdown takes it off the list at once."""
+        world = self._world_token(token)
+        self.store.leave(world['id'])
+        return ok()
+
+    def call_back(self, ip, port: int, host: str | None, secure: bool, world_id: str) -> str:
+        """Central's call-back (doc 77, 7): GET /status from the address the heartbeat came from (no second name
+        lookup), wss:// worlds over TLS checked against the host name. 5 seconds in all, at most 2 KB of reply, no
+        redirects. '' if it answers as this world; else why not, for the host to read."""
+        seen = f'{bracketed(str(ip))}:{port}'
+
+        def unreachable(reason):
+            return f'Central could not reach this world at {seen}: {reason}. Open port {port} to the internet (TCP).'
+
+        timeout = self.settings.check_timeout
+        deadline = time.monotonic() + timeout
+        late = f'it did not answer within {timeout:g} seconds'
+        try:
+            sock = socket.create_connection((str(ip), port), timeout=timeout)
+        except (socket.timeout, TimeoutError):
+            return unreachable(late)
+        except ConnectionRefusedError:
+            return unreachable('the connection was refused')
+        except OSError as error:
+            return unreachable(f'the connection failed ({error.strerror or type(error).__name__})')
+        try:
+            if secure:
+                sock.settimeout(max(0.05, deadline - time.monotonic()))
+                sock = ssl.create_default_context().wrap_socket(sock, server_hostname=host)
+            name = host or bracketed(str(ip))
+            header = name if port == (443 if secure else 80) else f'{name}:{port}'
+            sock.settimeout(max(0.05, deadline - time.monotonic()))
+            sock.sendall(f'GET /status HTTP/1.1\r\nHost: {header}\r\nUser-Agent: ratw-central/1\r\n'
+                         'Accept: application/json\r\nConnection: close\r\n\r\n'.encode('ascii', 'replace'))
+            answer = read_status(sock, deadline)
+        except (socket.timeout, TimeoutError):
+            return unreachable(late)
+        except ssl.SSLCertVerificationError as error:
+            return unreachable(f'its certificate was refused ({error.verify_message})')
+        except ssl.SSLError as error:
+            return unreachable(f'the secure connection failed ({error.reason or "TLS"})')
+        except OSError as error:
+            return unreachable(f'the connection failed ({error.strerror or type(error).__name__})')
+        finally:
+            sock.close()
+        if isinstance(answer, str):
+            return unreachable(answer)
+        try:
+            status = json.loads(answer.decode('utf-8'))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return unreachable('its /status is not JSON')
+        if not isinstance(status, dict) or status.get('ratw') != 'world':
+            return unreachable('what answers there is not a RATW world (its /status)')
+        if status.get('id') != world_id:
+            other = status.get('id') if isinstance(status.get('id'), str) and WORLD_ID.match(status['id']) else \
+                'another id'
+            return (f'The world at {seen} is another world (its /status names {other}), not the one this host token '
+                    'is for. Give this world its own token.')
+        return ''
+
+    # ---------------------------------------------------------------- The Host page (doc 77, 3.2)
+
+    def _host(self, token) -> dict:
+        _, account = self._account(token)
+        if not account['host']:
+            raise refused(403, 'This account cannot host worlds. In the closed beta, hosts are approved by hand.',
+                          'not_host')
+        return account
+
+    @staticmethod
+    def why_not_listed(w: dict, now: float) -> str:
+        """Why a world is not listed ('' when it is): the list's own rules, in the host's words."""
+        if w['removed']:
+            return 'This world was removed.'
+        if w['delisted']:
+            return 'Central has delisted this world.'
+        if w['host_banned']:
+            return "This world's host account is banned."
+        if not w['has_token']:
+            return 'It has no host token: make a new one.'
+        used = w['token_used'] or w['token_created']
+        if used is None or used <= now - TOKEN_UNUSED:
+            return 'Its host token went unused for 90 days and has expired: make a new one.'
+        if w['last_heartbeat'] is None or not w['address'] or not w['port']:
+            return 'No heartbeat from it: start the world and its world agent (with the host token).'
+        if w['last_heartbeat'] <= now - HEARTBEAT_LASTS:
+            minutes = int((now - w['last_heartbeat']) // 60)
+            return f'No heartbeat for {minutes} minutes: is its world agent running?'
+        if not w['reachable']:
+            return w['check_note'] or 'Central has not reached it yet.'
+        return ''
+
+    def _host_view(self, w: dict, now: float) -> dict:
+        listing = w['listing'] if isinstance(w['listing'], dict) else {}
+        why = self.why_not_listed(w, now)
+        return {'id': w['id'], 'name': listing.get('name') or w['name'], 'kind': w['kind'], 'listed': not why,
+                'reachable': bool(w['reachable']), 'why': why,
+                'address': f'{bracketed(w["address"])}:{w["port"]}' if w['address'] and w['port'] else None,
+                'players': w['players'], 'last_heartbeat': whole_seconds(w['last_heartbeat']),
+                'token_created': whole_seconds(w['token_created'])}
+
+    def _hosted(self, account: dict, world_id: str) -> dict:
+        world = self.store.world(world_id) if WORLD_ID.match(world_id or '') else None
+        if world is None or world['host_account'] != account['id'] or world['removed']:
+            raise refused(404, 'That world is not one of yours.', 'not_found')
+        return world
+
+    def host_worlds(self, address: str, token, body: dict) -> tuple[int, dict]:
+        """GET /host/worlds: the account's worlds, listed or not and why."""
+        account = self._host(token)
+        now = self.clock()
+        return ok(worlds=[self._host_view(w, now) for w in self.store.host_worlds(account['id'])], most=HOST_WORLDS)
+
+    def host_make_world(self, address: str, token, body: dict) -> tuple[int, dict]:
+        """POST /host/worlds {name}: a new community world and its host token, shown this once."""
+        account = self._host(token)
+        self._limit(('host', account['id']), self.settings.limits.host_changes_per_account, 'changes to your worlds')
+        name = plain_text(body.get('name'), 48, 1)
+        if name is None:
+            raise refused(400, "A world's name is 1-48 characters.", 'invalid')
+        why = listing_refused({'name': name}, 'community')
+        if why:
+            raise refused(400, why, 'name_refused')
+        now = self.clock()
+        world_id, made = 'world-' + secrets.token_hex(16), new_host_token()
+        if not self.store.create_host_world(world_id, name, account['id'], token_hash(made), now, HOST_WORLDS):
+            raise refused(403, f'An account hosts at most {HOST_WORLDS} worlds. Remove one first.', 'too_many')
+        return ok(world=self._host_view(self.store.world(world_id), now), token=made)
+
+    def host_new_token(self, address: str, token, body: dict, world_id: str) -> tuple[int, dict]:
+        """POST /host/worlds/ID/token: a new host token, shown this once; the old one stops working at once."""
+        account = self._host(token)
+        self._limit(('host', account['id']), self.settings.limits.host_changes_per_account, 'changes to your worlds')
+        world = self._hosted(account, world_id)
+        made = new_host_token()
+        self.store.set_world_token(world['id'], token_hash(made), self.clock())
+        return ok(token=made)
+
+    def host_remove_world(self, address: str, token, body: dict, world_id: str) -> tuple[int, dict]:
+        """DELETE /host/worlds/ID: removed for good (off the list at once, its token dropped)."""
+        account = self._host(token)
+        self._limit(('host', account['id']), self.settings.limits.host_changes_per_account, 'changes to your worlds')
+        world = self._hosted(account, world_id)
+        self.store.remove_world(world['id'])
+        return ok(removed=world['id'])
 
     def jwks(self, address: str, token, body: dict) -> tuple[int, dict]:
         return 200, self.keys.jwks(self.clock())

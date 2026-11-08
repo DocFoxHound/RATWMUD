@@ -1,8 +1,9 @@
 // A local central and a ticket-mode world for the client's end-to-end tests (Docs/Design/77, Phase 3), as
-// Central/test_world_join.py starts them: central (ratw_central.py serve) on a throwaway database made and dropped with
-// the Postgres superuser from Database/.env (no world's database is touched, no role made or changed); the world agent
-// keeping central's keys in a file; and ratw_server in ticket mode on a free port with the built-in demo world and a
-// throwaway save file. Everything started here is stopped by stop().
+// a host runs them (doc 77, Phase 4): central (ratw_central.py serve --local-worlds, so a world on this computer can be
+// listed) on a throwaway database made and dropped with the Postgres superuser from Database/.env (no world's database
+// is touched, no role made or changed); a world with a host token; the world agent (`run`: central's keys, and the
+// heartbeat that lists the world); and ratw_server in ticket mode on a free port with the built-in demo world and a
+// throwaway save file. It returns once central lists the world. Everything started here is stopped by stop().
 //
 //   const h = await startHarness({cors: 'http://127.0.0.1:PORT'});   // or null when it can't run here (why: h.skip)
 //   ... h.central, h.world.id, h.world.port ...
@@ -12,6 +13,7 @@ import {existsSync, mkdtempSync, readFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
 import {createInterface} from 'node:readline';
+import {createServer} from 'node:net';
 
 export const root = resolve(import.meta.dirname, '..', '..');
 
@@ -76,6 +78,17 @@ function python(code, env) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+function freePort() {
+    return new Promise((resolve, reject) => {
+        const probe = createServer();
+        probe.once('error', reject);
+        probe.listen(0, '127.0.0.1', () => {
+            const {port} = probe.address();
+            probe.close(() => resolve(port));
+        });
+    });
+}
+
 /** Starts central and one world; null with `skip` set when this computer can't (no Postgres settings, no binaries). */
 export async function startHarness({cors = [], database = 'ratw_central_clienttest', worldName = 'Client Test Hollow'} = {}) {
     const dbEnv = databaseEnv();
@@ -97,6 +110,11 @@ export async function startHarness({cors = [], database = 'ratw_central_clientte
             try { python(`import central_store; central_store.drop_database(${JSON.stringify(database)})`, env); } catch { /* gone */ }
             rmSync(tmp, {recursive: true, force: true});
         },
+        /** Makes an account a host (`ratw_central.py accounts flag USERNAME --host`), as the user does by hand (Q11). */
+        flagHost(username) {
+            execFileSync('python3', [join(root, 'Central', 'ratw_central.py'), 'accounts', 'flag', username, '--host'],
+                {cwd: root, env: {...process.env, ...env}, encoding: 'utf8'});
+        },
         /** Stops the world alone (a world going down mid-game). */
         async stopWorld() {
             const c = harness.world.process;
@@ -106,33 +124,42 @@ export async function startHarness({cors = [], database = 'ratw_central_clientte
         },
     };
     try {
-        const worldId = python(`
-import secrets, time, central_store
+        const worldSetup = python(`
+import secrets, time, central_store, central_service
 central_store.drop_database(${JSON.stringify(database)})
 central_store.create_database(${JSON.stringify(database)})
 s = central_store.Store(${JSON.stringify(database)}); s.migrate()
 w = 'world-' + secrets.token_hex(16)
 s.add_world(w, ${JSON.stringify(worldName)}, 'community', time.time() - 5)
-s.close(); print(w)`, env);
-        const c = started(['python3', join(root, 'Central', 'ratw_central.py'), 'serve', '--port', '0', '--keys', join(tmp, 'central-keys'),
+token = 'rh_' + secrets.token_urlsafe(32)
+assert s.set_world_token(w, central_service.token_hash(token), time.time())
+s.close(); print(w, token)`, env);
+        const [worldId, hostToken] = worldSetup.split(' ');
+        const c = started(['python3', join(root, 'Central', 'ratw_central.py'), 'serve', '--port', '0', '--local-worlds', '--keys', join(tmp, 'central-keys'),
             ...[cors].flat().flatMap(o => ['--cors', o])], env, /listening on (http:\/\/[0-9.:]+)\//);
         children.push(c.child);
         harness.central = await c.found;
-        const keys = join(tmp, 'world', 'central-keys.json');
-        const agent = started(['python3', join(root, 'tools', 'world_agent.py'), 'keys', '--central', harness.central, '--out', keys], env, null);
+        const agentDir = join(tmp, 'world'), keys = join(agentDir, 'central-keys.json');
+        // The world's port is chosen here (the agent needs it before the world starts): a free one, asked of the OS.
+        const port = await freePort();
+        const agent = started(['python3', join(root, 'tools', 'world_agent.py'), 'run', '--central', harness.central, '--dir', agentDir,
+            '--world-port', String(port), '--every', '7', '--description', 'A test world on this computer.'], {RATW_HOST_TOKEN: hostToken}, null);
         children.push(agent.child);
+        harness.agent = agent;
         for (let i = 0; i < 200 && !existsSync(keys); ++i) await sleep(100);
-        if (!existsSync(keys)) throw new Error('the world agent fetched no keys');
-        const w = started([server, '--save', join(tmp, 'world', 'save.json'), '--port', '0', '--perf-log', '0', '--workers', '0', '--for', '1200',
+        if (!existsSync(keys)) throw new Error(`the world agent fetched no keys: ${agent.lines.slice(-10).join('\n')}`);
+        const w = started([server, '--save', join(agentDir, 'save.json'), '--port', String(port), '--perf-log', '0', '--workers', '0', '--for', '1200',
             '--central', harness.central, '--world-id', worldId, '--central-keys', keys, '--world-name', worldName],
             {}, /listening on port (\d+)/, 120);
         children.push(w.child);
         harness.world = {id: worldId, port: Number(await w.found), process: w.child, lines: w.lines};
-        python(`
-import central_store
-s = central_store.Store(${JSON.stringify(database)})
-assert s.set_world(${JSON.stringify(worldId)}, '127.0.0.1', ${harness.world.port}, {'protocol': 1, 'secure': False, 'description': 'A test world on this computer.'})
-s.close()`, env);
+        // Listed once a heartbeat finds the world up and central's call-back reaches it.
+        for (let i = 0; i < 300; ++i) {
+            const listed = await fetch(`${harness.central}/worlds`).then(r => r.json()).catch(() => null);
+            if (listed?.worlds?.some(x => x.id === worldId)) break;
+            if (i === 299) throw new Error(`central never listed the world: ${agent.lines.slice(-10).join('\n')}`);
+            await sleep(100);
+        }
         return harness;
     } catch (error) {
         await harness.stop();

@@ -16,7 +16,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <sys/stat.h>
 #include <unistd.h>
+#include <cmath>
 
 using namespace ratw;
 using json::Value;
@@ -329,6 +331,8 @@ struct Client final : game::Connection
     void snapshot(const std::string&) override {}
     void motion(const Value&) override {}
     bool allowsLocalCredentials() const override { return local; }
+    bool closed = false;                            // (The game sent it out: the server would close the socket.)
+    void closeAfterSending() override { closed = true; }
     const Value* last(const std::string& type) const
     {
         for (auto it = events.rbegin(); it != events.rend(); ++it)
@@ -735,6 +739,126 @@ void aNewKeyIsFetchedWhenATicketNamesIt()
     say(g, &a, hello(ticket));
     expect(a.stage() == "arrive", "and the same ticket, unused, is admitted once they come: " + a.message());
 }
+Value readJson(const std::filesystem::path& path)
+{
+    std::ifstream in(path);
+    std::stringstream text;
+    text << in.rdbuf();
+    Value v;
+    std::string error;
+    expect(json::parse(text.str(), v, error), path.string() + " is JSON: " + error);
+    return v;
+}
+
+// bans.json as the world agent writes it: whole, then renamed into place.
+void writeBans(const std::filesystem::path& dir, const std::string& body)
+{
+    const auto temp = dir / ".bans.json.test";
+    std::ofstream(temp) << body;
+    std::filesystem::rename(temp, dir / "bans.json");
+}
+
+void theAgentsFilesCountTheWolvesAndCarryCentralsBans()
+{
+    // Doc 77, 7 and 5.1: online.json for the heartbeat's honest count; bans.json from its reply.
+    Fixture f;
+    const auto acct3 = std::string("acct-cccccccccccccccccccccccccccccccc");
+    std::filesystem::path online = f.dir / "online.json";
+    {
+        game::Game g(f.options());
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "starts: " + problem);
+        expect(!std::filesystem::exists(online), "nothing is written before the world's first pass");
+        Client a, b, c;
+        a.id = 1;
+        b.id = 2;
+        c.id = 3;
+        for (auto* x : {&a, &b, &c})
+            g.connect(x);
+        say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren")));
+        say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "w1"}, {"tier", "gifted"}}));
+        say(g, &b, hello(f.ticket(Wolf2, Acct2, "Moss")));
+        say(g, &b, cmd({{"type", "character_arrive"}, {"commandId", "m1"}, {"tier", "gifted"}}));
+        say(g, &c, hello(f.ticket(Wolf3, acct3, "Fern")));
+        expect(a.entityId == Wolf1 && b.entityId == Wolf2 && c.stage() == "arrive", "two wolves in the world, a third arriving");
+        g.ticketFiles();
+        auto list = readJson(online);
+        expect(list.string("world") == World1 && list.number("players") == 2 && list.array("online").size() == 2 &&
+                   list.array("online")[0].asString() == Wolf1 && list.array("online")[1].asString() == Wolf2 &&
+                   list.number("at") == std::floor(f.clock),
+               "online.json names the wolves in the world now, and when: " + json::dump(list));
+        expect(!std::filesystem::exists(f.dir / ".online.json.new"), "no temporary file is left behind");
+        // Atomically: each write is a new file renamed over the last (another inode), never the old one rewritten.
+        struct stat before{}, after{};
+        expect(::stat(online.c_str(), &before) == 0, "online.json is there");
+        expect(g.writeOnline(problem), "written again: " + problem);
+        expect(::stat(online.c_str(), &after) == 0 && after.st_ino != before.st_ino,
+               "by a temporary file renamed into place (the inode changed)");
+        // Central's bans: the wolf in the world is sent out, the one arriving let go, the third untouched.
+        expect(!g.bannedByCentral(Acct2), "nobody is banned without a bans file");
+        writeBans(f.dir, "{\"at\": 1800000000, \"accounts\": [\"" + Acct2 + "\", \"" + acct3 + "\"]}");
+        expect(g.reloadBans(problem) && g.bannedByCentral(Acct2) && g.bannedByCentral(acct3) && !g.bannedByCentral(Acct1),
+               "bans.json is read: " + problem);
+        expect(b.entityId.empty() && b.accountUsername.empty() && b.code() == "banned" && b.closed &&
+                   b.message().find("banned from central's worlds") != std::string::npos,
+               "a banned wolf in the world is told so and its connection closed: " + b.message());
+        expect(!g.world().entity(Wolf2) && g.characters().count(Wolf2), "taken out of the world as on leaving, and kept");
+        expect(c.accountUsername.empty() && c.code() == "banned" && c.closed, "a banned account's ticket waiting to arrive is let go");
+        expect(a.entityId == Wolf1 && !a.closed && g.world().entity(Wolf1), "a wolf not banned plays on");
+        expect(g.writeOnline(problem) && readJson(online).array("online").size() == 1 && readJson(online).number("players") == 1,
+               "and online.json no longer counts the one sent out");
+        Client d;
+        d.id = 4;
+        g.connect(&d);
+        say(g, &d, hello(f.ticket(Wolf2, Acct2, "Moss")));
+        expect(d.entityId.empty() && d.accountUsername.empty() && d.code() == "banned" &&
+                   d.message() == "This account is banned from central's worlds.",
+               "a banned account's hello is refused with code 'banned': " + d.message());
+        // A bad file keeps the last list; a changed one is picked up.
+        writeBans(f.dir, "{\"accounts\": [7]}");
+        expect(!g.reloadBans(problem) && g.bannedByCentral(Acct2), "a bans file that names no accounts keeps the last list");
+        writeBans(f.dir, "{\"at\": 1, \"accounts\": [\"" + acct3 + "\"]}");
+        expect(g.reloadBans(problem) && !g.bannedByCentral(Acct2) && g.bannedByCentral(acct3), "a changed bans file is read again");
+        say(g, &d, hello(f.ticket(Wolf2, Acct2, "Moss")));
+        expect(d.entityId == Wolf2, "and an account no longer banned comes back in: " + d.message());
+        g.disconnect(&a);
+        g.disconnect(&b);
+        g.disconnect(&c);
+        g.disconnect(&d);
+        expect(g.writeOnline(problem) && readJson(online).array("online").empty(), "nobody left, nobody counted");
+    }
+    {
+        game::Game g(f.options());
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "starts again: " + problem);
+        expect(g.bannedByCentral(acct3) && !g.bannedByCentral(Acct2), "a world reads bans.json as it starts");
+    }
+    // Password mode: no files at all, and nothing about central.
+    const auto plainDir = f.dir / "password";
+    std::filesystem::create_directories(plainDir);
+    game::Options plain;
+    plain.tiesOptional = true;
+    plain.hiddenNames = false;
+    plain.savePath = (plainDir / "save.json").string();
+    game::Game g(plain);
+    g.log = [](const char*, const std::string&) {};
+    std::string problem;
+    expect(g.start(problem), "a password world starts: " + problem);
+    Client a;
+    a.id = 5;
+    g.connect(&a);
+    say(g, &a, cmd({{"type", "auth_register"}, {"username", "wren"}, {"password", "a long enough password"}}));
+    g.settle();
+    g.ticketFiles();
+    expect(a.accountUsername == "wren" && !g.writeOnline(problem) && !g.reloadBans(problem), "a password world registers as ever");
+    for (const auto& entry : std::filesystem::directory_iterator(plainDir))
+        expect(entry.path().filename() == "save.json" || entry.path().filename().string().rfind("save.json", 0) == 0,
+               "and writes nothing of central's: " + entry.path().string());
+    expect(!std::filesystem::exists("online.json") && !std::filesystem::exists("bans.json"), "not even where it runs");
+    g.disconnect(&a);
+}
 } // namespace
 
 int main()
@@ -747,6 +871,7 @@ int main()
         wolvesJoinArriveAndComeStraightBack();
         theArrivalLimitsHold();
         aNewKeyIsFetchedWhenATicketNamesIt();
+        theAgentsFilesCountTheWolvesAndCarryCentralsBans();
     }
     catch (const std::exception& error)
     {

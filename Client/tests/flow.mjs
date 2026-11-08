@@ -168,12 +168,42 @@ export async function clientFlow(page, h, {native = false} = {}) {
     await answerDialog(PASSWORD);
     await waitDoor('!d.busy && d.characters.length === 0');
     assert.match(await message(), /Emberline is deleted/);
+    // The user makes this account a host (Q11: approved hosts); it shows from the next sign-in.
+    assert.equal(await page.evaluate(`document.querySelector('button[data-action=host]')`), null, 'no Host page before');
+    h.flagHost('clientwolf');
     await clickText('Sign out of account');
     await waitDoor(`d.page === 'login' && !d.busy`);
     await fill('input[name=username]', 'clientwolf');
     await fill('input[name=password]', PASSWORD);
     await page.evaluate(`document.querySelector('form.door-login').requestSubmit()`);
     await waitDoor(`d.page === 'roster' && !d.busy`);
+
+    // The Host page (doc 77, 3.2 and Phase 4): make a world, its token shown once; a refused name; a new token; remove it.
+    await click('button[data-action=host]');
+    await waitDoor(`d.page === 'host' && !d.busy`);
+    assert.equal(await door('d.hostWorlds.length'), 0);
+    await fill('input[name=worldName]', 'The Official Hollow');
+    await click('button[data-action=host-make]');
+    await waitDoor('!d.busy');
+    assert.match(await message(), /official|name/i, 'a community world can\'t call itself official');
+    assert.equal(await door('d.hostWorlds.length'), 0);
+    await fill('input[name=worldName]', 'Laptop Hollow');
+    await click('button[data-action=host-make]');
+    await waitDoor(`!d.busy && d.hostWorlds.length === 1`);
+    const firstToken = await door('d.hostToken');
+    assert.match(firstToken, /^rh_[A-Za-z0-9_-]{40,}$/, 'the token, shown once');
+    assert.equal(await page.evaluate(`document.querySelector('input[name=hostToken]').value`), firstToken);
+    assert.equal(await door('d.hostWorlds[0].listed'), false, 'not listed until its agent sends a heartbeat');
+    const made = await door('d.hostWorlds[0].id');
+    await click(`button[data-action=host-token][data-world="${made}"]`);
+    await answerDialog();
+    await waitDoor(`!d.busy && d.hostToken && d.hostToken !== ${JSON.stringify(firstToken)}`);
+    await click(`button[data-action=host-remove][data-world="${made}"]`);
+    await answerDialog();
+    await waitDoor(`!d.busy && d.hostWorlds.length === 0`);
+    assert.equal(await door('d.hostToken'), '', 'its token gone with it');
+    await click('button[data-action=host-back]');
+    await waitDoor(`d.page === 'roster'`);
 
     // Delete the account.
     await click('button[data-action=delete-account]');

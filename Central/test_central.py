@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Central's tests (Docs/Design/77-central-accounts-and-hosted-worlds.md, Phase 1; section 11).
+"""Central's tests (Docs/Design/77-central-accounts-and-hosted-worlds.md, Phases 1-4; section 11).
 
     python3 Central/test_central.py            (or: python3 -m unittest discover -s Central)
 
-They run against a throwaway database, `ratw_central_test`, made on the local Postgres (Database/compose.yaml) with the
-superuser from Database/.env and dropped at the end; no world's database is touched, and no role is made or changed.
-They need a built ratw_identity (RATW_IDENTITY, else build-core/, build-central/ or Build/). Time is a fake clock, and
-passwords use 1,000 PBKDF2 rounds (one test checks the real 600,000).
+They run against a throwaway database, `ratw_central_test` (or RATW_CENTRAL_TEST_DB), made on the local Postgres
+(Database/compose.yaml) with the superuser from Database/.env and dropped at the end; no world's database is touched,
+and no role is made or changed. They need a built ratw_identity (RATW_IDENTITY, else build-core/, build-central/ or
+Build/). Time is a fake clock, and passwords use 1,000 PBKDF2 rounds (one test checks the real 600,000). The server
+list's tests run stand-in worlds' /status on loopback, with central listing local worlds (serve --local-worlds).
 """
 from __future__ import annotations
 
@@ -14,8 +15,14 @@ import base64
 import datetime as dt
 import hashlib
 import hmac
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import ipaddress
+import io
 import json
+import os
 from pathlib import Path
+import secrets
+import socket
 import stat
 import sys
 import tempfile
@@ -30,9 +37,10 @@ import central_identity  # noqa: E402
 import central_service as cs  # noqa: E402
 import central_store  # noqa: E402
 import central_tickets as ct  # noqa: E402
+import central_words  # noqa: E402
 import ratw_central  # noqa: E402
 
-TEST_DB = 'ratw_central_test'
+TEST_DB = os.environ.get('RATW_CENTRAL_TEST_DB', 'ratw_central_test')
 START = dt.datetime(2026, 11, 7, 12, 0, tzinfo=dt.timezone.utc).timestamp()
 DAY = 86400
 LOOK = {'species': 'timber', 'sex': 'female', 'stature': 'average', 'pattern': 'solid', 'baseColor': 3,
@@ -760,28 +768,6 @@ class Http(Base):
 # --------------------------------------------------------------------------- What the client shows (doc 77, Phase 3)
 
 class ClientViews(Base):
-    def test_the_world_list_is_the_worlds_with_an_address(self):
-        hidden = self.world('community', 'No address yet')
-        listed = 'world-' + 'a' * 32
-        STORE.add_world(listed, 'Laptop', 'official', self.clock(), address='127.0.0.1', port=7788,
-                        listing={'protocol': 1, 'secure': False, 'description': 'Here'})
-        v6 = 'world-' + 'b' * 32
-        STORE.add_world(v6, 'Six', 'community', self.clock(), address='::1', port=7801, listing={'protocol': 'x'})
-        gone = 'world-' + 'c' * 32
-        STORE.add_world(gone, 'Gone', 'community', self.clock(), address='127.0.0.1', port=7802)
-        self.assertTrue(STORE.set_world(gone, delisted=True))
-        status, reply = self.call('list_worlds')
-        self.assertEqual(status, 200)
-        self.assertEqual([w['id'] for w in reply['worlds']], [listed, v6], 'no address, or delisted: not listed')
-        self.assertEqual(reply['worlds'][0], {'id': listed, 'name': 'Laptop', 'kind': 'official',
-                                              'address': '127.0.0.1:7788', 'secure': False, 'protocol': 1,
-                                              'description': 'Here'})
-        self.assertEqual((reply['worlds'][1]['address'], reply['worlds'][1]['protocol']), ('[::1]:7801', None))
-        self.assertTrue(STORE.set_world(hidden, '127.0.0.1', 7803, {'protocol': 2, 'secure': True}))
-        moved = [w for w in self.call('list_worlds')[1]['worlds'] if w['id'] == hidden][0]
-        self.assertEqual((moved['address'], moved['protocol'], moved['secure']), ('127.0.0.1:7803', 2, True))
-        self.assertFalse(STORE.set_world('world-' + 'd' * 32, '127.0.0.1', 1))
-
     def test_the_creators_rules_come_from_the_game(self):
         status, reply = self.call('rules')
         self.assertEqual(status, 200, reply)
@@ -791,15 +777,640 @@ class ClientViews(Base):
         self.assertTrue(all('gifted' in f and 'quickened' in f for f in families))
         self.assertEqual((reply['slots'], reply['ages']), (6, [6, 99]))
 
-    def test_the_command_line_sets_a_worlds_address(self):
-        parser = __import__('argparse').ArgumentParser()
-        self.assertEqual(ratw_central.split_address(parser, '127.0.0.1:7788'), ('127.0.0.1', 7788))
-        self.assertEqual(ratw_central.split_address(parser, '[::1]:7788'), ('::1', 7788))
-        self.assertEqual(ratw_central.split_address(parser, 'play.example.net:443'), ('play.example.net', 443))
-        for bad in ('127.0.0.1', '127.0.0.1:0', 'host:70000', 'ws://host:1', 'a b:1'):
-            with self.assertRaises(SystemExit), __import__('contextlib').redirect_stderr(__import__('io').StringIO()):
-                ratw_central.split_address(parser, bad)
 
+# --------------------------------------------------------------------------- The word filter (doc 77, 7; Phase 4)
+
+class Words(unittest.TestCase):
+    def test_whole_words_and_inside_words(self):
+        self.assertTrue(central_words.refused('Shit Hollow'))
+        self.assertTrue(central_words.refused('the shits'), 'with a plural s')
+        self.assertTrue(central_words.refused('BITCHES'), 'with a plural es, in capitals')
+        self.assertFalse(central_words.refused('Shitake'), 'a whole-word entry inside a longer word passes')
+        self.assertTrue(central_words.refused('Fuckwit Fen'), "a '*' entry inside a longer word")
+        self.assertTrue(central_words.refused('f.u.c.k'), "a '*' entry with stops between its letters")
+        self.assertFalse(central_words.refused(''))
+        self.assertFalse(central_words.refused(None))
+
+    def test_look_alikes_and_accents(self):
+        self.assertTrue(central_words.refused('sh1t'))
+        self.assertTrue(central_words.refused('5h1t'))
+        self.assertTrue(central_words.refused('b1tch'))
+        self.assertTrue(central_words.refused('fück'))
+        self.assertTrue(central_words.refused('@ssh0le'))
+
+    def test_ordinary_words_pass(self):
+        for fine in ('Scunthorpe', 'Essex', 'Penistone', 'Cockburn', 'Ash Tallow', 'Greyfen Crossing',
+                     'Middlesex Wolves', 'Assassin', 'Grasshopper', 'Shiitake', 'Dickens', 'Spice Road',
+                     'Cocktail Hour', 'Bass Lake', 'Sussex Pack', 'Arsenal', 'Niger Delta', 'Therapist'):
+            self.assertFalse(central_words.refused(fine), fine)
+
+    def test_the_list_is_read_from_its_file(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'words.txt'
+            path.write_text('# a comment\nbramble  # after the word\n*thorn\n\n', encoding='utf-8')
+            self.assertTrue(central_words.refused('Bramble', path))
+            self.assertTrue(central_words.refused('Blackthorns', path))
+            self.assertFalse(central_words.refused('Bramblewood', path))
+            self.assertFalse(central_words.refused('comment', path))
+        self.assertGreaterEqual(len(central_words._words()[0]) + len(central_words._words()[1]), 30)
+
+
+# --------------------------------------------------------------------------- The server list (doc 77, 7; Phase 4)
+
+class StandIn:
+    """A stand-in world's /status on loopback. `mode` picks its answer: world (its id), wrong (another id), redirect,
+    big (over 2 KB), notjson, missing (404); or silent (a socket that takes the connection and never answers)."""
+
+    def __init__(self, world_id: str, mode: str = 'world'):
+        self.world_id, self.mode, self.seen = world_id, mode, []
+        if mode == 'silent':
+            self.sock = socket.socket()
+            self.sock.bind(('127.0.0.1', 0))
+            self.sock.listen(8)
+            self.port, self.http = self.sock.getsockname()[1], None
+            return
+        outer = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *_):
+                pass
+
+            def do_GET(self):
+                outer.seen.append((self.path, self.headers.get('Host')))
+                if outer.mode == 'redirect':
+                    self.send_response(302)
+                    self.send_header('Location', 'http://169.254.169.254/latest/meta-data/')
+                    self.send_header('Content-Length', '0')
+                    self.end_headers()
+                    return
+                if outer.mode == 'missing':
+                    self.send_response(404)
+                    self.send_header('Content-Length', '0')
+                    self.end_headers()
+                    return
+                status = {'ratw': 'world', 'id': outer.world_id if outer.mode != 'wrong' else 'world-' + 'e' * 32,
+                          'name': 'Stand-in', 'protocol': 1, 'players': 0}
+                if outer.mode == 'big':
+                    status['padding'] = 'x' * 3000
+                data = b'<html>hello</html>' if outer.mode == 'notjson' else json.dumps(status).encode()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+
+        self.http = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        self.http.daemon_threads = True
+        self.port = self.http.server_address[1]
+        threading.Thread(target=self.http.serve_forever, args=(0.05,), daemon=True).start()
+
+    def close(self):
+        if self.http:
+            self.http.shutdown()
+            self.http.server_close()
+        else:
+            self.sock.close()
+
+
+def free_port() -> int:
+    with socket.socket() as sock:
+        sock.bind(('127.0.0.1', 0))
+        return sock.getsockname()[1]
+
+
+class ServerList(Base):
+    local_worlds = True
+
+    def setUp(self):
+        super().setUp()
+        self.central.settings.local_worlds = self.local_worlds
+        self.central.settings.check_timeout = 0.5
+        self.stand_ins = []
+        self.host = self.register('hazel')
+        STORE.set_flags(self.host['account']['id'], host=True)
+        self.token = self.host['access_token']
+
+    def tearDown(self):
+        for stand_in in self.stand_ins:
+            stand_in.close()
+        super().tearDown()
+
+    def make(self, name='Greyfen Hollow', token=None):
+        status, reply = self.call('host_make_world', {'name': name}, token or self.token)
+        self.assertEqual(status, 200, reply)
+        return reply['world']['id'], reply['token']
+
+    def stand_in(self, world_id, mode='world'):
+        made = StandIn(world_id, mode)
+        self.stand_ins.append(made)
+        return made
+
+    def beat(self, host_token, world_port, address='127.0.0.1', **more):
+        body = {'port': world_port, 'name': 'Greyfen Hollow', 'protocol': 1, **more}
+        return self.call('heartbeat', body, host_token, address)
+
+    def view(self, world):
+        """The Host page's view of one world (signing in again: the fake clock outruns access tokens)."""
+        token = self.call('login', {'username': 'hazel', 'password': PASSWORD})[1]['access_token']
+        return [w for w in self.call('host_worlds', {}, token)[1]['worlds'] if w['id'] == world][0]
+
+    def listed(self):
+        return [w['id'] for w in self.call('list_worlds')[1]['worlds']]
+
+    def test_a_heartbeat_lists_the_world(self):
+        world, host_token = self.make()
+        self.assertRegex(host_token, r'^rh_[A-Za-z0-9_-]{43}$')
+        with STORE.connection() as conn:
+            stored = conn.execute('SELECT token_hash FROM central.worlds WHERE id = %s', (world,)).fetchone()[0]
+        self.assertEqual(stored, cs.token_hash(host_token), 'kept only as its hash')
+        self.assertEqual(self.listed(), [], 'not before its first heartbeat')
+        stand_in = self.stand_in(world)
+        status, reply = self.beat(host_token, stand_in.port, description='A quiet valley.', region='EU',
+                                  tags=['rp', 'slow', 'rp'], limit=40, voices=True, build='abc', clientData='f00d')
+        self.assertEqual(status, 200, reply)
+        self.assertEqual(reply, {'ok': True, 'world': world, 'kind': 'community', 'listed': True, 'reachable': True,
+                                 'why': '', 'address': f'127.0.0.1:{stand_in.port}', 'players': 0, 'bans': [],
+                                 'time': self.clock(), 'every': 60})
+        self.assertEqual(stand_in.seen, [('/status', f'127.0.0.1:{stand_in.port}')])
+        status, reply = self.call('list_worlds')
+        self.assertEqual(reply['worlds'], [{'id': world, 'name': 'Greyfen Hollow', 'kind': 'community',
+                                            'address': f'127.0.0.1:{stand_in.port}', 'secure': False, 'protocol': 1,
+                                            'description': 'A quiet valley.', 'players': 0, 'limit': 40,
+                                            'region': 'EU', 'tags': ['rp', 'slow'], 'voices': True, 'cheats': False}])
+        self.clock.advance(60)
+        self.assertTrue(self.beat(host_token, stand_in.port, name='Greyfen Vale')[1]['listed'])
+        self.assertEqual(len(stand_in.seen), 1, 'checked again only after 10 minutes')
+        self.assertEqual(self.call('list_worlds')[1]['worlds'][0]['name'], 'Greyfen Vale', "the heartbeat's name")
+        self.clock.advance(600)
+        self.assertTrue(self.beat(host_token, stand_in.port)[1]['listed'])
+        self.assertEqual(len(stand_in.seen), 2, 'every 10 minutes')
+        other = self.stand_in(world)
+        self.clock.advance(60)
+        self.assertTrue(self.beat(host_token, other.port)[1]['listed'])
+        self.assertEqual(len(other.seen), 1, 'and at once when the address changes')
+
+    def test_host_tokens_good_bad_rotated_and_expired(self):
+        world, host_token = self.make()
+        stand_in = self.stand_in(world)
+        for bad in (None, '', 'nonsense', 'rh_' + 'x' * 43, host_token + 'x'):
+            status, reply = self.beat(bad, stand_in.port)
+            self.assertEqual((status, reply['code']), (401, 'bad_token'), bad)
+        self.assertEqual(self.beat(host_token, stand_in.port)[0], 200)
+        status, reply = self.call('host_new_token', {}, self.token, None, world)
+        self.assertEqual(status, 200, reply)
+        rotated = reply['token']
+        self.assertEqual(self.beat(host_token, stand_in.port)[1]['code'], 'bad_token', 'the old one stops at once')
+        self.assertTrue(self.beat(rotated, stand_in.port)[1]['listed'])
+        # A token used keeps going; unused for 90 days it is refused, and the world is off the list.
+        self.clock.advance(89 * DAY)
+        self.assertEqual(self.beat(rotated, stand_in.port)[0], 200)
+        self.clock.advance(89 * DAY)
+        self.assertEqual(self.beat(rotated, stand_in.port)[0], 200)
+        self.assertEqual(self.listed(), [world])
+        with STORE.connection() as conn:     # (Its heartbeat kept arriving, but from a world whose token went unused.)
+            conn.execute('UPDATE central.worlds SET token_used = %s WHERE id = %s',
+                         (central_store.ts(self.clock() - 91 * DAY), world))
+        self.assertEqual(self.listed(), [], 'an expired token drops the world off at once')
+        status, reply = self.beat(rotated, stand_in.port)
+        self.assertEqual((status, reply['code']), (401, 'bad_token'))
+        self.assertIn('90 days', reply['error'])
+        view = self.view(world)
+        self.assertFalse(view['listed'])
+        self.assertIn('90 days', view['why'])
+        self.token = self.call('login', {'username': 'hazel', 'password': PASSWORD})[1]['access_token']
+        fresh = self.call('host_new_token', {}, self.token, None, world)[1]['token']
+        self.assertTrue(self.beat(fresh, stand_in.port)[1]['listed'])
+        # Revoked by hand (ratw_central.py worlds revoke): refused, and off the list.
+        STORE.set_world_token(world, None, self.clock())
+        self.assertEqual(self.beat(fresh, stand_in.port)[1]['code'], 'bad_token')
+        self.assertEqual(self.listed(), [])
+
+    def test_heartbeats_are_limited_per_token(self):
+        world, host_token = self.make()
+        stand_in = self.stand_in(world)
+        for _ in range(10):
+            self.assertEqual(self.beat(host_token, stand_in.port)[0], 200)
+        status, reply = self.beat(host_token, stand_in.port)
+        self.assertEqual((status, reply['code']), (429, 'rate_limited'))
+        self.clock.advance(61)
+        self.assertEqual(self.beat(host_token, stand_in.port)[0], 200)
+
+    def test_the_address_is_where_the_heartbeat_came_from(self):
+        world, host_token = self.make()
+        stand_in = self.stand_in(world)
+        status, reply = self.beat(host_token, stand_in.port, address='127.0.0.1', ip='8.8.8.8',
+                                  addressOverride='10.0.0.1')
+        self.assertEqual((status, reply['address']), (200, f'127.0.0.1:{stand_in.port}'), 'unknown fields ignored')
+        self.assertEqual(self.call('list_worlds')[1]['worlds'][0]['address'], f'127.0.0.1:{stand_in.port}')
+        status, reply = self.beat(host_token, stand_in.port, address='::ffff:127.0.0.1')
+        self.assertEqual(reply['address'], f'127.0.0.1:{stand_in.port}', 'IPv4 mapped into IPv6 is IPv4')
+
+    def test_private_and_loopback_are_not_listed_without_local_worlds(self):
+        self.central.settings.local_worlds = False
+        world, host_token = self.make()
+        stand_in = self.stand_in(world)
+        for address in ('127.0.0.1', '10.0.0.5', '192.168.1.2', '172.16.0.9', '100.64.1.1', '169.254.169.254',
+                        '0.0.0.0', '224.0.0.1', '240.0.0.1', '::1', 'fc00::1', 'fe80::1', '::', '192.0.2.4'):
+            status, reply = self.beat(host_token, stand_in.port, address=address)
+            self.assertEqual(status, 200, address)
+            self.assertEqual((reply['listed'], reply['why']), (False, cs.NOT_ON_THE_INTERNET), address)
+            self.clock.advance(7)
+        self.assertEqual(stand_in.seen, [], 'central never called them')
+        self.assertEqual(self.listed(), [])
+        # A public address is called back (here a stand-in call-back: no packet leaves this computer).
+        called = []
+        self.central.call_back = lambda *args: called.append(args) or ''
+        status, reply = self.beat(host_token, 7788, address='8.8.8.8')
+        self.assertTrue(reply['listed'], reply)
+        self.assertEqual(called, [(ipaddress.ip_address('8.8.8.8'), 7788, None, False, world)])
+        self.assertEqual(self.call('list_worlds')[1]['worlds'][0]['address'], '8.8.8.8:7788')
+        self.clock.advance(7)
+        reply = self.beat(host_token, 7788, address='2001:4860:4860::8888')[1]
+        self.assertEqual((reply['listed'], reply['address']), (True, '[2001:4860:4860::8888]:7788'))
+        self.assertEqual(self.call('list_worlds')[1]['worlds'][0]['address'], '[2001:4860:4860::8888]:7788')
+
+    def test_local_worlds_lists_loopback_and_private_but_never_link_local(self):
+        world, host_token = self.make()
+        stand_in = self.stand_in(world)
+        self.assertTrue(self.beat(host_token, stand_in.port, address='127.0.0.1')[1]['listed'])
+        called = []
+        self.central.call_back = lambda *args: called.append(args) or ''
+        for address in ('10.0.0.5', '192.168.1.2', '::1', 'fd00::7'):
+            self.clock.advance(7)
+            self.assertTrue(self.beat(host_token, 7788, address=address)[1]['listed'], address)
+        for address in ('169.254.169.254', 'fe80::1', '0.0.0.0', '::', '224.0.0.1', 'ff02::1'):
+            self.clock.advance(7)
+            reply = self.beat(host_token, 7788, address=address)[1]
+            self.assertEqual((reply['listed'], reply['why']), (False, cs.NOT_ON_THE_INTERNET), address)
+        self.assertEqual(len(called), 4, 'never called back at those')
+
+    def test_a_host_name_must_resolve_to_the_source(self):
+        world, host_token = self.make()
+        stand_in = self.stand_in(world)
+        names = {'play.example.net': {ipaddress.ip_address('203.0.113.9')},
+                 'home.example.net': {ipaddress.ip_address('127.0.0.1'), ipaddress.ip_address('::1')}}
+
+        def resolve(host, port):
+            if host not in names:
+                raise socket.gaierror(-2, 'Name or service not known')
+            return names[host]
+        self.central.resolve = resolve
+        reply = self.beat(host_token, stand_in.port, host='play.example.net')[1]
+        self.assertFalse(reply['listed'])
+        self.assertIn('does not point at', reply['why'])
+        self.clock.advance(7)
+        reply = self.beat(host_token, stand_in.port, host='nowhere.example.net')[1]
+        self.assertFalse(reply['listed'])
+        self.assertIn('does not resolve', reply['why'])
+        self.assertEqual(stand_in.seen, [], 'not called back')
+        self.clock.advance(7)
+        reply = self.beat(host_token, stand_in.port, host='Home.Example.Net.')[1]
+        self.assertTrue(reply['listed'], reply)
+        self.assertEqual(stand_in.seen, [('/status', f'home.example.net:{stand_in.port}')], 'Host is the name')
+        self.assertEqual(self.call('list_worlds')[1]['worlds'][0]['address'], f'home.example.net:{stand_in.port}')
+        self.clock.advance(7)
+        reply = self.beat(host_token, stand_in.port, secure=True)[1]
+        self.assertFalse(reply['listed'])
+        self.assertIn('needs a host name', reply['why'])
+        for bad in ('127.0.0.1', '[::1]', 'a b', 'x' * 254, '-bad.example.net', 7):
+            self.clock.advance(7)
+            status, reply = self.beat(host_token, stand_in.port, host=bad)
+            self.assertEqual((status, reply['code']), (400, 'invalid'), bad)
+        # The real resolver: localhost is this computer.
+        del self.central.resolve
+        self.clock.advance(7)
+        self.assertTrue(self.beat(host_token, stand_in.port, host='localhost')[1]['listed'])
+
+    def test_the_call_back(self):
+        world, host_token = self.make()
+        cases = [('wrong', 'is another world (its /status names world-' + 'e' * 32),
+                 ('redirect', 'redirect (HTTP 302), which central does not follow'),
+                 ('big', 'over 2 KB'), ('notjson', 'not JSON'), ('missing', 'HTTP 404'),
+                 ('silent', 'did not answer within 0.5 seconds')]
+        for mode, expected in cases:
+            stand_in = self.stand_in(world, mode)
+            status, reply = self.beat(host_token, stand_in.port)
+            self.assertEqual(status, 200, mode)
+            self.assertFalse(reply['listed'], mode)
+            self.assertFalse(reply['reachable'], mode)
+            self.assertIn(expected, reply['why'], mode)
+            if mode != 'wrong':
+                self.assertTrue(reply['why'].startswith(f'Central could not reach this world at 127.0.0.1:'
+                                                        f'{stand_in.port}: '), reply['why'])
+                self.assertTrue(reply['why'].endswith(f'Open port {stand_in.port} to the internet (TCP).'))
+            self.assertEqual(self.listed(), [], mode)
+            self.assertEqual(self.view(world)['why'], reply['why'], 'the Host page says why')
+            self.clock.advance(7)
+        closed = free_port()
+        reply = self.beat(host_token, closed)[1]
+        self.assertIn('the connection was refused', reply['why'])
+        self.assertIn(f'Open port {closed}', reply['why'])
+        # Not reachable yet: every heartbeat calls again, so the host's fix shows within a minute.
+        stand_in = self.stand_in(world, 'missing')
+        self.beat(host_token, stand_in.port)
+        self.clock.advance(7)
+        stand_in.mode = 'world'
+        self.assertTrue(self.beat(host_token, stand_in.port)[1]['listed'])
+        self.assertEqual(len(stand_in.seen), 2)
+        self.assertEqual(self.listed(), [world])
+        # Listed, then it goes wrong: the 10-minute check takes it off.
+        self.clock.advance(601)
+        stand_in.mode = 'wrong'
+        self.assertFalse(self.beat(host_token, stand_in.port)[1]['listed'])
+        self.assertEqual(self.listed(), [])
+
+    def test_off_the_list_after_180_seconds_or_at_once_on_leaving(self):
+        world, host_token = self.make()
+        stand_in = self.stand_in(world)
+        self.beat(host_token, stand_in.port)
+        self.clock.advance(179)
+        self.assertEqual(self.listed(), [world])
+        self.clock.advance(2)
+        self.assertEqual(self.listed(), [])
+        view = self.view(world)
+        self.assertEqual((view['listed'], view['why']), (False, 'No heartbeat for 3 minutes: is its world agent running?'))
+        self.beat(host_token, stand_in.port)
+        self.assertEqual(self.listed(), [world])
+        status, reply = self.call('leave', {}, host_token)
+        self.assertEqual((status, reply), (200, {'ok': True}))
+        self.assertEqual(self.listed(), [], 'leaving takes it off at once')
+        self.assertEqual(self.call('leave', {}, 'rh_nonsense')[1]['code'], 'bad_token')
+        self.assertTrue(self.beat(host_token, stand_in.port)[1]['listed'], 'and the next heartbeat brings it back')
+
+    def test_honest_counts(self):
+        world, host_token = self.make()
+        other_world, _ = self.make('Other Vale')
+        stand_in = self.stand_in(world)
+        a = self.register('ash')['access_token']
+        b = self.register('birch')['access_token']
+        ash, bramble = self.wolf(a, 'Ash Tallow')['id'], self.wolf(b, 'Bramble')['id']
+        thorn = self.wolf(b, 'Thorn')['id']
+        self.assertEqual(self.call('ticket', {'world': world, 'wolf': ash}, a)[0], 200)
+        self.assertEqual(self.call('ticket', {'world': other_world, 'wolf': bramble}, b)[0], 200)
+        made_up = 'wolf-' + secrets.token_hex(16)
+        online = [ash, bramble, made_up, 'wolf-NOTHEX', 7, ash, thorn]
+        reply = self.beat(host_token, stand_in.port, online=online)[1]
+        self.assertEqual(reply['players'], 1, 'only a wolf central gave a ticket for this world counts')
+        self.assertEqual(self.call('list_worlds')[1]['worlds'][0]['players'], 1)
+        self.assertEqual(STORE.world(world)['online'], [ash])
+        self.assertEqual(self.view(world)['players'], 1)
+        with STORE.connection() as conn:
+            conn.execute('UPDATE central.tickets SET issued_at = %s', (central_store.ts(self.clock() - 31 * DAY),))
+        self.clock.advance(7)
+        self.assertEqual(self.beat(host_token, stand_in.port, online=online)[1]['players'], 0, 'tickets of 30 days')
+        status, reply = self.beat(host_token, stand_in.port, online=['wolf-' + 'a' * 32] * 10001)
+        self.assertEqual((status, reply['code']), (400, 'invalid'))
+
+    def test_the_list_puts_official_worlds_first_then_the_most_players(self):
+        quiet, quiet_token = self.make('Quiet Vale')
+        busy, busy_token = self.make('Busy Vale')
+        official = 'world-' + secrets.token_hex(16)
+        STORE.add_world(official, 'Ridgemere', 'official', self.clock())
+        official_token = cs.new_host_token()
+        STORE.set_world_token(official, cs.token_hash(official_token), self.clock())
+        a = self.register('ash')['access_token']
+        ash = self.wolf(a, 'Ash Tallow')['id']
+        self.call('ticket', {'world': busy, 'wolf': ash}, a)
+        for world, host_token, online in ((quiet, quiet_token, []), (busy, busy_token, [ash]),
+                                          (official, official_token, [])):
+            stand_in = self.stand_in(world)
+            self.assertTrue(self.beat(host_token, stand_in.port, online=online,
+                                      name='Run Against the World' if world == official else 'Vale')[1]['listed'])
+        self.assertEqual(self.listed(), [official, busy, quiet])
+        self.assertEqual(self.call('list_worlds')[1]['worlds'][0]['kind'], 'official')
+
+    def test_bans_as_each_world_sees_them(self):
+        community, community_token = self.make()
+        official = 'world-' + secrets.token_hex(16)
+        STORE.add_world(official, 'Ridgemere', 'official', self.clock())
+        official_token = cs.new_host_token()
+        STORE.set_world_token(official, cs.token_hash(official_token), self.clock())
+        reply = self.register('ash')
+        account, a = reply['account']['id'], reply['access_token']
+        ash = self.wolf(a, 'Ash Tallow')['id']
+        ticket = self.call('ticket', {'world': community, 'wolf': ash}, a)[1]['ticket']
+        sub = ct.verify(ticket, ct.public_keys(self.keys.jwks(self.clock())), community, self.clock(),
+                        self.clock() - 10, {})['sub']
+        STORE.set_flags(account, banned=True)
+        stand_in = self.stand_in(community)
+        bans = self.beat(community_token, stand_in.port)[1]['bans']
+        self.assertEqual(bans, [sub], "a community world gets the banned account's ticket sub there")
+        self.assertNotEqual(sub, account)
+        self.assertEqual(bans, [ct.pairwise_id(self.keys.pairwise_secret(), account, community)])
+        official_stand_in = self.stand_in(official)
+        self.assertEqual(self.beat(official_token, official_stand_in.port)[1]['bans'], [account],
+                         'an official world gets the account id')
+
+    def test_names_and_fields(self):
+        world, host_token = self.make()
+        stand_in = self.stand_in(world)
+        for name in ('Official Greyfen', 'The 0fficial Server', 'Run Against The World II', 'runs against the world',
+                     'R.A.T.W. fans', 'ratw', 'Sh1t Hollow', 'Fuckwit Fen'):
+            self.clock.advance(7)
+            status, reply = self.beat(host_token, stand_in.port, name=name)
+            self.assertEqual((status, reply['code']), (400, 'name_refused'), name)
+        self.clock.advance(7)
+        self.assertEqual(self.beat(host_token, stand_in.port, description='Not an official world.')[1]['code'],
+                         'name_refused')
+        self.clock.advance(7)
+        self.assertEqual(self.beat(host_token, stand_in.port, tags=['shit'])[1]['code'], 'name_refused')
+        for name in ('Ratwell Crossing', 'Scunthorpe Wolves', 'Against the Wind'):
+            self.clock.advance(7)
+            self.assertEqual(self.beat(host_token, stand_in.port, name=name)[0], 200, name)
+        self.assertEqual(self.call('host_make_world', {'name': 'RATW Official'}, self.token)[1]['code'],
+                         'name_refused')
+        official = 'world-' + secrets.token_hex(16)
+        STORE.add_world(official, 'Ridgemere', 'official', self.clock())
+        official_token = cs.new_host_token()
+        STORE.set_world_token(official, cs.token_hash(official_token), self.clock())
+        self.assertEqual(self.beat(official_token, stand_in.port, name='Run Against the World (official)')[0], 200,
+                         'an official world may')
+        self.assertEqual(self.beat(official_token, stand_in.port, name='Shit Town')[1]['code'], 'name_refused')
+        bad = [{'port': 0}, {'port': 70000}, {'port': '7788'}, {'port': None}, {'name': ''}, {'name': 'x' * 49},
+               {'name': 'Tab\there'}, {'name': None}, {'description': 'x' * 301}, {'region': 'x' * 33},
+               {'tags': ['a'] * 6}, {'tags': ['x' * 17]}, {'tags': 'rp'}, {'limit': 0}, {'limit': 10001},
+               {'limit': True}, {'private': 'yes'}, {'voices': 1}, {'protocol': None}, {'protocol': '1'},
+               {'build': 'x' * 65}, {'clientData': 'x' * 65}, {'online': 'wolf'}, {'name': 'A‮B'}]
+        for fields in bad:
+            self.clock.advance(7)
+            status, reply = self.beat(host_token, stand_in.port, **fields)
+            self.assertEqual((status, reply['code']), (400, 'invalid'), fields)
+
+    def test_delisted_removed_and_banned_hosts(self):
+        world, host_token = self.make()
+        stand_in = self.stand_in(world)
+        self.assertTrue(self.beat(host_token, stand_in.port)[1]['listed'])
+        STORE.set_world(world, delisted=True)
+        self.assertEqual(self.listed(), [])
+        status, reply = self.beat(host_token, stand_in.port)
+        self.assertEqual((status, reply['code']), (403, 'delisted'))
+        STORE.set_world(world, delisted=False)
+        self.assertEqual(self.beat(host_token, stand_in.port)[0], 200)
+        STORE.set_flags(self.host['account']['id'], banned=True)
+        self.assertEqual(self.listed(), [], "a banned host's worlds drop off at once")
+        status, reply = self.beat(host_token, stand_in.port)
+        self.assertEqual((status, reply['code']), (403, 'banned'))
+        status, reply = self.call('host_worlds', {}, self.token)
+        self.assertEqual((status, reply['code']), (403, 'banned'))
+
+    def test_the_host_calls(self):
+        guest = self.register('rowan')['access_token']
+        for method, extra in (('host_worlds', ()), ('host_make_world', ())):
+            status, reply = self.call(method, {'name': 'Mine'}, guest, None, *extra)
+            self.assertEqual((status, reply['code']), (403, 'not_host'), method)
+        self.assertEqual(self.call('host_worlds', {}, None)[0], 401)
+        first, first_token = self.make('First Vale')
+        status, listing = self.call('host_worlds', {}, self.token)
+        self.assertEqual(status, 200)
+        self.assertEqual(listing['most'], 3)
+        view = self.view(first)
+        self.assertEqual(set(view), {'id', 'name', 'kind', 'listed', 'reachable', 'why', 'address', 'players',
+                                     'last_heartbeat', 'token_created'})
+        self.assertEqual((view['id'], view['name'], view['kind'], view['listed'], view['address'], view['last_heartbeat'],
+                          view['token_created']), (first, 'First Vale', 'community', False, None, None, int(START)))
+        self.assertIn('No heartbeat', view['why'])
+        self.make('Second Vale')
+        third, _ = self.make('Third Vale')
+        status, reply = self.call('host_make_world', {'name': 'Fourth Vale'}, self.token)
+        self.assertEqual((status, reply['code']), (403, 'too_many'))
+        for bad in ('', 'x' * 49, None, 7):
+            self.assertEqual(self.call('host_make_world', {'name': bad}, self.token)[1]['code'], 'invalid', bad)
+        # Someone else's world: not found, for the token and for removing.
+        willow = self.register('willow')
+        STORE.set_flags(willow['account']['id'], host=True)
+        willow = willow['access_token']
+        for method in ('host_new_token', 'host_remove_world'):
+            status, reply = self.call(method, {}, willow, None, first)
+            self.assertEqual((status, reply['code']), (404, 'not_found'), method)
+            self.assertEqual(self.call(method, {}, self.token, None, 'world-' + 'f' * 32)[1]['code'], 'not_found')
+        # A new token revokes the old.
+        stand_in = self.stand_in(first)
+        self.assertEqual(self.beat(first_token, stand_in.port)[0], 200)
+        self.clock.advance(30)
+        renewed = self.call('host_new_token', {}, self.token, None, first)[1]['token']
+        self.assertNotEqual(renewed, first_token)
+        self.assertEqual(self.beat(first_token, stand_in.port)[0], 401)
+        self.assertTrue(self.beat(renewed, stand_in.port)[1]['listed'])
+        view = self.view(first)
+        self.assertEqual((view['listed'], view['reachable'], view['why'], view['address'], view['last_heartbeat'],
+                          view['token_created']),
+                         (True, True, '', f'127.0.0.1:{stand_in.port}', int(self.clock()), int(START + 30)))
+        # Removed: off the list at once, its token dropped, gone from the page, and its place free.
+        status, reply = self.call('host_remove_world', {}, self.token, None, first)
+        self.assertEqual((status, reply), (200, {'ok': True, 'removed': first}))
+        self.assertEqual(self.listed(), [])
+        status, reply = self.beat(renewed, stand_in.port)
+        self.assertEqual((status, reply['code']), (403, 'delisted'), 'its agent is told it was removed')
+        self.assertIn('removed', reply['error'])
+        self.assertNotIn(first, [w['id'] for w in self.call('host_worlds', {}, self.token)[1]['worlds']])
+        self.assertEqual(self.call('host_new_token', {}, self.token, None, first)[1]['code'], 'not_found')
+        self.assertEqual(self.call('host_remove_world', {}, self.token, None, first)[1]['code'], 'not_found')
+        self.assertFalse(STORE.set_world_token(first, cs.token_hash(cs.new_host_token()), self.clock()))
+        self.assertEqual(self.call('host_make_world', {'name': 'Fourth Vale'}, self.token)[0], 200)
+        a = self.register('ash')['access_token']
+        ash = self.wolf(a, 'Ash Tallow')['id']
+        self.assertEqual(self.call('ticket', {'world': first, 'wolf': ash}, a)[1]['code'], 'no_world')
+        self.assertEqual(self.call('ticket', {'world': third, 'wolf': ash}, a)[0], 200)
+
+    def test_usernames_and_wolf_names_go_through_the_filter(self):
+        status, reply = self.call('register', {'username': 'sh1thead', 'password': PASSWORD, 'birth_year': 1990})
+        self.assertEqual((status, reply['code']), (400, 'name_refused'))
+        status, reply = self.call('register', {'username': 'big_fuck', 'password': PASSWORD, 'birth_year': 1990})
+        self.assertEqual((status, reply['code']), (400, 'name_refused'))
+        self.register('scunthorpe')
+        status, reply = self.call('create_wolf', {'name': 'Bitch', 'age': 7, 'appearance': LOOK}, self.token)
+        self.assertEqual((status, reply['code']), (400, 'name_refused'))
+        self.wolf(self.token, 'Penistone')
+
+    def test_the_command_line(self):
+        out = io.StringIO()
+        os.environ['RATW_CENTRAL_DBNAME'] = TEST_DB
+        try:
+            def run(*argv):
+                out.seek(0)
+                out.truncate()
+                with __import__('contextlib').redirect_stdout(out), \
+                        __import__('contextlib').redirect_stderr(io.StringIO()):
+                    code = ratw_central.main(list(argv))
+                return code, out.getvalue().strip().splitlines()
+            code, lines = run('worlds', 'add', '--name', 'Laptop', '--kind', 'community', '--host', 'Hazel')
+            self.assertEqual(code, 0)
+            world = lines[-1]
+            self.assertRegex(world, r'^world-[0-9a-f]{32}$')
+            self.assertEqual(STORE.world(world)['host_account'], self.host['account']['id'])
+            self.assertEqual(run('worlds', 'add', '--name', 'X', '--host', 'nobody')[0], 1)
+            code, lines = run('worlds', 'token', world)
+            host_token = lines[-1]
+            self.assertEqual((code, len(lines)), (0, 1), 'only the token on stdout')
+            self.assertRegex(host_token, r'^rh_')
+            stand_in = self.stand_in(world)
+            self.assertTrue(self.beat(host_token, stand_in.port)[1]['listed'])
+            code, lines = run('worlds', 'list')
+            row = json.loads(lines[0])
+            self.assertEqual((row['id'], row['reachable'], row['players'], row['check_note'], row['last_heartbeat']),
+                             (world, True, 0, '', self.clock()), '(listed by the real clock, so not asked)')
+            code, lines = run('worlds', 'token', world)
+            self.assertEqual(self.beat(host_token, stand_in.port)[0], 401, 'a new token revokes the old')
+            renewed = lines[-1]
+            self.assertEqual(self.beat(renewed, stand_in.port)[0], 200)
+            self.assertEqual(run('worlds', 'set', world, '--delisted')[0], 0)
+            self.assertEqual(self.beat(renewed, stand_in.port)[1]['code'], 'delisted')
+            self.assertEqual(run('worlds', 'set', world, '--listed')[0], 0)
+            self.assertEqual(self.beat(renewed, stand_in.port)[0], 200)
+            self.assertEqual(run('worlds', 'revoke', world)[0], 0)
+            self.assertEqual(self.beat(renewed, stand_in.port)[1]['code'], 'bad_token')
+            self.assertEqual(run('worlds', 'token', 'world-' + 'f' * 32)[0], 1)
+            with self.assertRaises(SystemExit), __import__('contextlib').redirect_stderr(io.StringIO()):
+                ratw_central.main(['worlds', 'add', '--name', 'X', '--address', '127.0.0.1:7788'])
+        finally:
+            os.environ.pop('RATW_CENTRAL_DBNAME', None)
+
+    def test_over_http(self):
+        server = ratw_central.Server(self.central, '127.0.0.1', 0, every=3600).start()
+        try:
+            base = f'http://127.0.0.1:{server.port}'
+
+            def http(method, path, body=None, token=None):
+                data = json.dumps(body).encode() if body is not None else None
+                request = urllib.request.Request(base + path, data=data, method=method)
+                if data is not None:
+                    request.add_header('Content-Type', 'application/json')
+                if token:
+                    request.add_header('Authorization', f'Bearer {token}')
+                try:
+                    with urllib.request.urlopen(request, timeout=10) as response:
+                        return response.status, json.loads(response.read())
+                except urllib.error.HTTPError as error:
+                    with error:
+                        return error.code, json.loads(error.read() or b'{}')
+            status, made = http('POST', '/host/worlds', {'name': 'Greyfen Hollow'}, self.token)
+            self.assertEqual(status, 200, made)
+            world, host_token = made['world']['id'], made['token']
+            self.assertEqual(http('GET', '/host/worlds', token=self.token)[1]['worlds'][0]['id'], world)
+            stand_in = self.stand_in(world)
+            a = self.register('ash')['access_token']
+            ash = self.wolf(a, 'Ash Tallow')['id']
+            self.call('ticket', {'world': world, 'wolf': ash}, a)
+            online = [ash] + ['wolf-' + secrets.token_hex(16) for _ in range(2000)]     # (About 80 KB.)
+            status, beat = http('POST', '/worlds/heartbeat', {'port': stand_in.port, 'name': 'Greyfen Hollow',
+                                                              'protocol': 1, 'online': online}, host_token)
+            self.assertEqual(status, 200, beat)
+            self.assertEqual((beat['listed'], beat['address'], beat['players']),
+                             (True, f'127.0.0.1:{stand_in.port}', 1), 'the address is the connection itself')
+            self.assertEqual([w['id'] for w in http('GET', '/worlds')[1]['worlds']], [world])
+            self.assertEqual(http('POST', '/worlds/heartbeat', {'port': 1}, 'rh_nope')[1]['code'], 'bad_token')
+            self.assertEqual(http('POST', '/worlds/leave', {}, host_token), (200, {'ok': True}))
+            self.assertEqual(http('GET', '/worlds')[1]['worlds'], [])
+            status, renewed = http('POST', f'/host/worlds/{world}/token', {}, self.token)
+            self.assertEqual(status, 200, renewed)
+            self.assertEqual(http('POST', '/worlds/leave', {}, host_token)[0], 401)
+            self.assertEqual(http('DELETE', f'/host/worlds/{world}', None, self.token), (200, {'ok': True,
+                                                                                               'removed': world}))
+            self.assertEqual(http('POST', '/worlds/heartbeat', {}, renewed['token'])[1]['code'], 'delisted')
+            self.assertEqual(http('GET', f'/host/worlds/{world}', None, self.token)[0], 405)
+            self.assertEqual(http('POST', '/wolves', {'name': 'x'}, None)[0], 401)
+        finally:
+            server.stop()
 
 # --------------------------------------------------------------------------- The identity check
 

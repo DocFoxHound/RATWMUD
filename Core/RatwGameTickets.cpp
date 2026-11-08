@@ -2,7 +2,9 @@
 // ticket from central, checked here offline with central's public keys (RatwTickets.h), and arrive once, choosing what
 // today's character_create chose that isn't their identity: where they arrive, who they know (doc 52), and the Gift
 // tier and strengths (doc 77, Q12 (a): gated by this world's standing, doc 49). After that a ticket brings them straight
-// in. Everything here is opt-in (Options::central); without it the world keeps its passwords, as ever.
+// in. The world agent's files (doc 77, 7) are kept here too: online.json for the heartbeat's honest count, and
+// bans.json, central's banned accounts, refused at hello and sent out. Everything here is opt-in (Options::central);
+// without it the world keeps its passwords, as ever.
 #include "RatwBuildInfo.h"
 #include "RatwCreation.h"
 #include "RatwGame.h"
@@ -24,6 +26,10 @@ namespace
 {
 constexpr int MaxHellos = 5;                        // A ticket's tries on one connection.
 constexpr double ArrivalWindow = 3600;              // The arrival limits count the last hour.
+constexpr double OnlineEvery = 15;                  // online.json is written this often (seconds)...
+constexpr double BansEvery = 5;                     // ...and bans.json looked at this often.
+constexpr std::uintmax_t MaxBansFile = 8u << 20;    // (Many bans fit: an account's id is 37 bytes.)
+const char* const BannedMessage = "This account is banned from central's worlds.";
 
 void prune(std::deque<double>& times, double now)
 {
@@ -60,6 +66,8 @@ bool Game::startTickets(std::string& problem)
     std::string trouble;
     if (!reloadCentralKeys(trouble))
         note("warning", "RATW_TICKETS no keys from central yet (" + trouble + "): nobody can join until the world agent fetches them");
+    if (std::filesystem::exists(agentFile("bans.json")) && !reloadBans(trouble))
+        note("warning", "RATW_BANS central's ban list can't be read yet (" + trouble + ")");
     note("info", "RATW_TICKETS ticket mode: world " + o.worldId + " (" + (o.official ? "official" : "community") + "), central " +
                      o.url + ", " + std::to_string(tickets_.keys().size()) + " key(s), protocol " + std::to_string(build::Protocol) +
                      ", client data " + build::clientDataHash());
@@ -272,6 +280,14 @@ void Game::ticketHello(Connection* c, const Value& j)
         ticketLobby(c, false, "That ticket was not accepted (" + why + "). Get a new one from central and try again.", "ticket");
         return;
     }
+    if (bannedByCentral(claims.account))
+    {
+        // Central's account bans (bans.json, from the heartbeat's reply: doc 77, 5.1). A ticket issued just before the
+        // ban is refused here; one issued after it never is, since central issues none.
+        note("info", "RATW_TICKET refused " + claims.wolf + ": its account is banned by central");
+        ticketLobby(c, false, BannedMessage, "banned");
+        return;
+    }
     std::size_t inWorld = 0;
     for (const auto* other : clients_)
         inWorld += other->entityId.empty() ? 0 : 1;
@@ -466,5 +482,162 @@ bool Game::arrive(Connection* c, const Value& j)
     if (!enterCharacter(c, wolf, w.name))
         forgetTicket(c);                            // (Made and kept: a new ticket brings them in.)
     return true;
+}
+// ------------------------------------------------------------------------------------------------ The agent's files
+
+std::filesystem::path Game::agentFile(const std::string& name) const
+{
+    // The world agent's directory is the one that holds central's keys (tools/world_agent.py run --dir DIR).
+    auto dir = std::filesystem::path(options_.central.keysFile).parent_path();
+    return (dir.empty() ? std::filesystem::path(".") : dir) / name;
+}
+
+void Game::ticketFiles()
+{
+    if (!ticketMode())
+        return;
+    std::string trouble;
+    if (clock() - onlineWrittenAt_ >= OnlineEvery)
+    {
+        onlineWrittenAt_ = clock();
+        const bool wrote = writeOnline(trouble);
+        if (wrote == onlineFailing_)                // (Said once when it starts failing, and once when it mends.)
+            note(wrote ? "info" : "warning", wrote ? "RATW_ONLINE online.json is written again"
+                                                   : "RATW_ONLINE online.json can't be written (" + trouble +
+                                                         "): central will count nobody here");
+        onlineFailing_ = !wrote;
+    }
+    if (clock() - bansCheckedAt_ >= BansEvery)
+    {
+        bansCheckedAt_ = clock();
+        reloadBans(trouble);                        // (No file yet is no bans yet; a bad one keeps the last list.)
+    }
+}
+
+bool Game::writeOnline(std::string& problem)
+{
+    // online.json (doc 77, 7): the wolves in the world now, for the heartbeat's honest count. Written whole to a
+    // temporary file and renamed over the last, so the agent never reads half of one.
+    if (!ticketMode())
+    {
+        problem = "not in ticket mode";
+        return false;
+    }
+    std::vector<std::string> wolves;
+    for (const auto* c : clients_)
+        if (!c->entityId.empty())
+            wolves.push_back(c->entityId);
+    std::sort(wolves.begin(), wolves.end());
+    wolves.erase(std::unique(wolves.begin(), wolves.end()), wolves.end());
+    auto online = Value::array();
+    for (const auto& wolf : wolves)
+        online.push(wolf);
+    auto o = Value::object();
+    o.add("world", options_.central.worldId);
+    o.add("at", std::floor(ticketNow()));
+    o.add("players", wolves.size());
+    o.add("online", online);
+    const auto path = agentFile("online.json");
+    const auto temp = agentFile(".online.json.new");
+    {
+        std::ofstream out(temp, std::ios::binary | std::ios::trunc);
+        out << json::dump(o) << '\n';
+        out.close();
+        if (!out)
+        {
+            std::error_code ignored;
+            std::filesystem::remove(temp, ignored);
+            problem = "can't write " + temp.string();
+            return false;
+        }
+    }
+    std::error_code failed;
+    std::filesystem::rename(temp, path, failed);
+    if (failed)
+    {
+        std::filesystem::remove(temp, failed);
+        problem = "can't replace " + path.string();
+        return false;
+    }
+    return true;
+}
+
+bool Game::reloadBans(std::string& problem)
+{
+    // bans.json (doc 77, 5.1): {"at": unix seconds, "accounts": [the tickets' sub of every banned account]}, written by
+    // the world agent from each heartbeat's reply. Read again only when it changed; a missing or unreadable file
+    // leaves the list as it was (as the keys are kept), and a new list sends out any banned wolf here now.
+    if (!ticketMode())
+    {
+        problem = "not in ticket mode";
+        return false;
+    }
+    const auto path = agentFile("bans.json");
+    std::error_code failed;
+    const auto size = std::filesystem::file_size(path, failed);
+    if (failed)
+    {
+        problem = "no bans file at " + path.string();
+        return false;
+    }
+    const auto written = std::filesystem::last_write_time(path, failed);
+    if (failed || size > MaxBansFile)
+    {
+        problem = "the bans file can't be read";
+        return false;
+    }
+    const std::string stamp = std::to_string(written.time_since_epoch().count()) + ":" + std::to_string(size);
+    if (stamp == bansStamp_)
+        return true;
+    std::ifstream in(path, std::ios::binary);
+    std::stringstream text;
+    text << in.rdbuf();
+    Value doc;
+    std::string error;
+    if (!json::parse(text.str(), doc, error) || !doc.isObject())
+    {
+        problem = "the bans file isn't JSON (" + error + ")";
+        return false;
+    }
+    const auto* accounts = doc.find("accounts");
+    if (!accounts || !accounts->isArray())
+    {
+        problem = "the bans file has no list of accounts";
+        return false;
+    }
+    std::set<std::string> bans;
+    for (const auto& a : accounts->items())
+    {
+        if (!a.isString() || a.asString().empty() || a.asString().size() > 64)
+        {
+            problem = "the bans file names something that isn't an account";
+            return false;
+        }
+        bans.insert(a.asString());
+    }
+    bansStamp_ = stamp;
+    if (bans != centralBans_)
+        note("info", "RATW_BANS central's ban list: " + std::to_string(bans.size()) + " account(s)");
+    centralBans_ = std::move(bans);
+    sendOutBanned();
+    return true;
+}
+
+void Game::sendOutBanned()
+{
+    // A wolf already here when its account's ban arrives is sent out: told so, taken out of the world as on leaving,
+    // and its connection closed. A connection that has shown a ticket but not yet arrived is let go the same way.
+    const std::vector<Connection*> everyone = clients_;
+    for (auto* c : everyone)
+    {
+        if (c->accountUsername.empty() || !bannedByCentral(c->accountUsername))
+            continue;
+        const std::string wolf = !c->entityId.empty() ? c->entityId : c->ticketWolf;
+        leaveCharacter(c);
+        forgetTicket(c);                            // (Its account goes with it: a ticket's lasts as long as its wolf.)
+        ticketLobby(c, false, std::string(BannedMessage) + " Your wolf has left this world.", "banned");
+        c->closeAfterSending();
+        note("info", "RATW_BANS sent out " + wolf + ": its account is banned by central");
+    }
 }
 } // namespace ratw::game

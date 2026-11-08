@@ -831,6 +831,33 @@ button.given { opacity: .6; }
 .door .world-direct button { margin: 0; }
 .door .door-lost { margin-top: 10px; }
 
+/* The Host page (doc 77, Phase 4): a host's worlds, the token shown once, the agent's command. */
+.door .roster-actions { margin-top: 10px; }
+.door .roster-actions button, .door .host-actions button, .door .host-buttons button, .door .host-token-row button, .door .host-side button.secondary { margin: 0; }
+.door .roster-actions button.secondary { flex: none; }
+.host-side { gap: 0; }
+.host-side .grow { flex: 1; }
+.host-side h2 { font-size: 39px; }
+.host-make { display: flex; flex-direction: column; gap: 12px; margin: 4px 0 14px; }
+.host-make label { display: flex; flex-direction: column; gap: 9px; }
+.door .host-make input:disabled { opacity: .5; }
+.host-list .scroll { min-height: 120px; }
+.host-row .world-text p.small { letter-spacing: 0; }
+.world-kind.listed { color: var(--ink); background: var(--sage); }
+.world-kind.unlisted { color: var(--gold); outline: 1px solid var(--gold); background: transparent; }
+.host-buttons { display: flex; gap: 10px; }
+.door .host-buttons button { padding: 11px 14px; font-size: 15px; }
+.door .host-buttons button.secondary { background: var(--panel); }
+.door button.danger, .door .host-buttons button.danger { background: #c9714f; color: var(--ink); }
+.host-token-box { display: flex; flex-direction: column; gap: 8px; background: var(--ink); border-left: 4px solid var(--gold); padding: 14px 16px; }
+.door .host-token-box p { margin: 0; }
+.host-token-row { display: flex; align-items: center; gap: 12px; }
+.host-token-row > p { flex: 1; }
+.door input.host-token { flex: 1; min-width: 0; font-family: ui-monospace, 'DejaVu Sans Mono', monospace; font-size: 17px; color: var(--gold); }
+.door .host-token-row button { padding: 10px 16px; font-size: 15px; }
+.door .host-command { margin: 0; padding: 10px 12px; background: var(--panel); color: var(--paper); font-family: ui-monospace, 'DejaVu Sans Mono', monospace;
+    font-size: 14px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; }
+
 /* The page's own dialogs (ui/dialog.ts), in place of confirm and prompt. */
 .ratw-dialog { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: rgba(8, 12, 13, .72); }
 .ratw-dialog-box { width: min(560px, calc(100vw - 32px)); background: var(--panel); border: 1px solid var(--raised); padding: 26px 28px;

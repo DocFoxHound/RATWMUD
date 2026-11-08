@@ -45,6 +45,7 @@
 
 #include <cstdint>
 #include <deque>
+#include <filesystem>
 #include <functional>
 #include <fstream>
 #include <map>
@@ -70,6 +71,9 @@ class Connection
     virtual void motion(const json::Value& frame) = 0;        // May be lost (the host sends it in binary).
     // Account passwords are accepted only from this computer: the native transport is not encrypted.
     virtual bool allowsLocalCredentials() const = 0;
+    // Ends the connection once what is queued for it has been sent: a wolf whose account central has banned is sent
+    // out (doc 77, 5.1). The host does it (the server closes the WebSocket); by default nothing happens.
+    virtual void closeAfterSending() {}
 
     std::uint64_t id = 0;                                     // Unique for the life of the server.
     // The account: its username (password mode), or central's id for it from a ticket (ticket mode, doc 77).
@@ -259,6 +263,17 @@ class Game
     json::Value worldStatus() const;
     std::function<double()> ticketClock;
     bool reloadCentralKeys(std::string& problem);
+    // Ticket mode's files beside central's keys, in the world agent's directory (the one holding --central-keys; doc 77,
+    // 7): online.json, the wolves in the world now, which the agent's heartbeat sends central, written about every 15 s
+    // whole and atomically (a temporary file, then a rename); and bans.json, the accounts central has banned as this
+    // world sees them (the tickets' `sub`), which the agent writes from each heartbeat's reply and this world reads
+    // again when it changes (checked about every 5 s, by size and time as the keys are). A banned account's hello is
+    // refused, and its wolf in the world is sent out. The server calls ticketFiles about once a second; nothing happens
+    // in password mode. writeOnline and reloadBans do each at once (false, with why, if they couldn't).
+    void ticketFiles();
+    bool writeOnline(std::string& problem);
+    bool reloadBans(std::string& problem);
+    bool bannedByCentral(const std::string& account) const { return centralBans_.count(account) > 0; }
 
     void connect(Connection* c);                              // A new client: it is shown the lobby.
     void disconnect(Connection* c);                           // Its character leaves the world first.
@@ -445,6 +460,13 @@ class Game
     tickets::Checker tickets_;
     double keysReadAt_ = -1, keysAskedAt_ = -1e9, keysCheckedAt_ = -1e9;
     std::string keysStamp_;
+    // Central's banned accounts (bans.json as last read), and when the two files were last written or checked.
+    std::set<std::string> centralBans_;
+    std::string bansStamp_;
+    double onlineWrittenAt_ = -1e9, bansCheckedAt_ = -1e9;
+    bool onlineFailing_ = false;
+    std::filesystem::path agentFile(const std::string& name) const;
+    void sendOutBanned();
     std::deque<double> arrivals_;
     std::map<std::string, std::deque<double>> accountArrivals_;
     double ticketNow() const;

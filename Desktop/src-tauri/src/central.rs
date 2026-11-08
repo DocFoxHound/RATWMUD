@@ -57,12 +57,24 @@ pub fn allowed(method: &str, path: &str) -> bool {
         ("/worlds", &["GET"]),
         ("/rules", &["GET"]),
         ("/health", &["GET"]),
+        ("/host/worlds", &["GET", "POST"]),
     ];
     if let Some((_, methods)) = exact.iter().find(|(p, _)| *p == path) {
         return methods.contains(&method);
     }
-    let wolf = path.strip_prefix("/wolves/wolf-").map(|id| id.len() == 32 && id.bytes().all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase()));
-    wolf == Some(true) && (method == "PATCH" || method == "DELETE")
+    let id = |s: &str| s.len() == 32 && s.bytes().all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase());
+    if let Some(wolf) = path.strip_prefix("/wolves/wolf-") {
+        return id(wolf) && (method == "PATCH" || method == "DELETE");
+    }
+    // The Host page (doc 77, 3.2): a new token for one of the account's worlds, or the world removed. The world's own
+    // calls (/worlds/heartbeat, /worlds/leave) are the world agent's, never the client's.
+    if let Some(world) = path.strip_prefix("/host/worlds/world-") {
+        return match world.strip_suffix("/token") {
+            Some(token_of) => id(token_of) && method == "POST",
+            None => id(world) && method == "DELETE",
+        };
+    }
+    false
 }
 
 const TOKEN_FIELDS: [&str; 4] = ["access_token", "access_expires", "refresh_token", "refresh_expires"];
@@ -402,6 +414,23 @@ mod tests {
         assert!(!allowed("GET", "/keys"));
         assert!(!allowed("GET", "/wolves/wolf-0123456789abcdef0123456789abcdef"));
         assert!(!allowed("GET", "/account/../keys"));
+        // The Host page's calls, and not the world's own.
+        let world = "/host/worlds/world-0123456789abcdef0123456789abcdef";
+        assert!(allowed("GET", "/host/worlds"));
+        assert!(allowed("POST", "/host/worlds"));
+        assert!(!allowed("DELETE", "/host/worlds"));
+        assert!(allowed("POST", &format!("{world}/token")));
+        assert!(!allowed("GET", &format!("{world}/token")));
+        assert!(!allowed("DELETE", &format!("{world}/token")));
+        assert!(allowed("DELETE", world));
+        assert!(!allowed("GET", world));
+        assert!(!allowed("POST", world));
+        assert!(!allowed("DELETE", "/host/worlds/world-0123456789ABCDEF0123456789abcdef"));
+        assert!(!allowed("DELETE", "/host/worlds/world-0123456789abcdef0123456789abcde"));
+        assert!(!allowed("POST", "/host/worlds/world-0123456789abcdef0123456789abcdef/token/"));
+        assert!(!allowed("POST", "/host/worlds/wolf-0123456789abcdef0123456789abcdef/token"));
+        assert!(!allowed("POST", "/worlds/heartbeat"), "the heartbeat is the world agent's");
+        assert!(!allowed("POST", "/worlds/leave"));
     }
 
     /// Central, faked: records what it was sent and answers by the path.

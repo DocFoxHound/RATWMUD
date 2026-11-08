@@ -5,14 +5,15 @@
 // Two modes. 'world' (a browser on a password-mode world, as always): the world's own lobby, its accounts and its
 // creator. 'central' (the desktop client, Docs/Design/77-central-accounts-and-hosted-worlds.md, 3.1): signing in to
 // central, the wolves central keeps, a creator of the wolf's identity only (body, coat, markings, eyes, Gift family,
-// name and age), the world list, and the first arrival in a world (the tier, strengths, arrival town and tie, which
-// are the world's). In central mode its commands go to the client (client.ts), which answers with lobby events of the
+// name and age), the world list, the first arrival in a world (the tier, strengths, arrival town and tie, which
+// are the world's), and for a host's account the Host page (3.2: its worlds, their tokens, why each is or isn't
+// listed). In central mode its commands go to the client (client.ts), which answers with lobby events of the
 // same shape.
 import {CoatNames} from './theme.ts';
 import {drawPortrait, lifeStage, Portraits, readAppearance, shoulderHeightCm} from './portrait.ts';
 import {MaskNames, Masks} from './wolfArt.ts';
 import {artCache, sendPortrait, squarePixels} from './artwork.ts';
-import {askText} from './dialog.ts';
+import {ask, askText} from './dialog.ts';
 
 
 // Natural coats, pale to dark (doc 29, phase 9); any colour is also allowed.
@@ -41,8 +42,9 @@ function randomiseAppearance(d: Json) {
 }
 import {arr, bool, isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
+import {agentCommand, agoText} from '../net/central.ts';
 
-type Page = 'login' | 'register' | 'roster' | 'creator' | 'review' | 'worlds' | 'arrive';
+type Page = 'login' | 'register' | 'roster' | 'creator' | 'review' | 'worlds' | 'arrive' | 'host';
 
 /** A world in the client's list, as the door shows it (client.ts makes these). */
 export interface DoorWorld {
@@ -52,9 +54,25 @@ export interface DoorWorld {
     address: string;         // "host:port"
     secure: boolean;
     description: string;
+    region: string;          // What the world's host says of it: where it is, and a few tags.
+    tags: string[];
     fit: string;             // 'ok' | 'update' | 'older' | 'data' | 'unknown'
     note: string;            // Why it can't be joined, or ''.
     status: string;          // "3 of 100 wolves · 12 ms", "Not answering", "" (not asked yet)
+}
+
+/** One of a host's own worlds, on the Host page (client.ts makes these from GET /host/worlds). */
+export interface DoorHostWorld {
+    id: string;
+    name: string;
+    kind: string;            // 'official' | 'community'
+    listed: boolean;         // In central's list now.
+    reachable: boolean;      // Central's call-back last reached it.
+    why: string;             // Why it isn't listed, in central's words ('' when it is).
+    address: string;         // "ip:port" as central last saw it, or ''.
+    players: number;
+    lastHeartbeat: number | null;    // Unix seconds.
+    tokenCreated: number | null;
 }
 
 export interface DoorOptions {
@@ -136,6 +154,12 @@ export class FrontDoor {
     arriveWolf: Json | null = null;          // Central mode: the wolf arriving in a world for the first time.
     arriveWorld = '';
     tierChoices: string[] = [];
+    canHost = false;                         // Central mode: the account is a host's (central sets it), so the Host page.
+    hostWorlds: DoorHostWorld[] = [];        // The Host page: the account's worlds, how many it may have, and central's URL.
+    hostMost = 3;
+    hostCentral = '';
+    hostToken = '';                          // A token just made, shown this once (gone when the page is left).
+    hostTokenWorld = '';
     private typedUsername = '';
 
     private showGiftDetails = false;
@@ -193,7 +217,7 @@ export class FrontDoor {
 
     private onKey = (e: KeyboardEvent) => {
         if (e.code !== 'Escape' || this.busy) return;
-        const back: Partial<Record<Page, Page>> = {review: 'creator', creator: 'roster', register: 'login', worlds: 'roster'};
+        const back: Partial<Record<Page, Page>> = {review: 'creator', creator: 'roster', register: 'login', worlds: 'roster', host: 'roster'};
 
         const to = back[this.page];
         if (to) {
@@ -238,12 +262,31 @@ export class FrontDoor {
             // Central mode: the world list for one wolf (client.ts).
             this.stage = 'characters';
             this.worlds = arr(event, 'worlds').filter(isObject).map(w => ({id: str(w, 'id'), name: str(w, 'name'), kind: str(w, 'kind'),
-                address: str(w, 'address'), secure: bool(w, 'secure'), description: str(w, 'description'), fit: str(w, 'fit', 'unknown'),
+                address: str(w, 'address'), secure: bool(w, 'secure'), description: str(w, 'description'), region: str(w, 'region'),
+                tags: arr(w, 'tags').filter((t): t is string => typeof t === 'string'), fit: str(w, 'fit', 'unknown'),
                 note: str(w, 'note'), status: str(w, 'status')}));
             this.worldsWolf = str(event, 'wolf', this.selectedId);
             if (this.worldsWolf) this.selectedId = this.worldsWolf;
             this.lostWorld = str(event, 'lost');
             this.show('worlds');
+            return;
+        }
+        if (next === 'host') {
+            // Central mode: the Host page (client.ts).
+            this.stage = 'characters';
+            const time = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null);
+            this.hostWorlds = arr(event, 'worlds').filter(isObject).map(w => ({id: str(w, 'id'), name: str(w, 'name'), kind: str(w, 'kind'),
+                listed: bool(w, 'listed'), reachable: bool(w, 'reachable'), why: str(w, 'why'), address: str(w, 'address'),
+                players: num(w, 'players'), lastHeartbeat: time(w.lastHeartbeat), tokenCreated: time(w.tokenCreated)}));
+            this.hostMost = num(event, 'most', 3);
+            this.hostCentral = str(event, 'central', this.hostCentral);
+            if (str(event, 'token')) {
+                this.hostToken = str(event, 'token');
+                this.hostTokenWorld = str(event, 'tokenWorld');
+            }
+            // A token whose world is gone is no use to anyone.
+            if (this.hostToken && !this.hostWorlds.some(w => w.id === this.hostTokenWorld)) this.hostToken = this.hostTokenWorld = '';
+            this.show('host');
             return;
         }
         if (next === 'arrive') {
@@ -285,6 +328,7 @@ export class FrontDoor {
             if (isObject(event.account)) this.account = event.account;
             if (Array.isArray(event.starts)) this.starts = event.starts.filter(isObject);
             if (Array.isArray(event.ties)) this.ties = event.ties.filter(isObject);
+            this.canHost = this.mode === 'central' && event.host === true;
             this.tieRequired = event.tieRequired === true;
             this.firstCharacter = event.firstCharacter === true;
             this.characters = (Array.isArray(event.characters) ? event.characters : []).filter(isObject).slice(0, 6);
@@ -300,6 +344,9 @@ export class FrontDoor {
             this.stage = 'login';
             this.characters = [];
             this.selectedId = '';
+            this.canHost = false;
+            this.hostWorlds = [];
+            this.hostToken = this.hostTokenWorld = '';
             if (wasIn || (this.page !== 'login' && this.page !== 'register')) {
                 this.draftAppearance = null;
                 this.draftName = '';
@@ -313,12 +360,15 @@ export class FrontDoor {
     }
 
     show(page: Page) {
+        // A host token is shown once: leaving the Host page forgets it.
+        if (page !== 'host') this.hostToken = this.hostTokenWorld = '';
         this.page = page;
         this.portraitCanvas = null;
         this.password = null;
         this.worldLines.clear();
         this.body.replaceChildren(page === 'login' || page === 'register' ? this.loginPage()
             : page === 'roster' ? this.rosterPage() : page === 'worlds' ? this.worldsPage() : page === 'arrive' ? this.arrivePage()
+            : page === 'host' ? this.hostPage()
             : this.creatorPage(page === 'review'));
 
         this.root.dataset.page = page;
@@ -506,6 +556,15 @@ export class FrontDoor {
             below.push(el('div', {className: 'portrait-controls'}, el('p', {className: 'muted'},
                 'Your wolf\'s name and look go with them to every world; what they do in a world stays there.'), remove));
         }
+        let go: HTMLElement = enter;
+        if (this.mode === 'central' && this.canHost) {
+            const host = this.button('HOST A WORLD', () => {
+                this.setMessage('Asking central for your worlds…');
+                this.submit({type: 'host_show'});
+            });
+            host.dataset.action = 'host';
+            go = el('div', {className: 'door-actions roster-actions'}, host, enter);
+        }
         const detail = el('section', {className: 'door-card door-detail'},
             el('h2', {className: 'name'}, str(c, 'name', 'An unwritten story')),
             el('p', {className: 'muted large'}, c ? `${stageName(age)} · age ${age.toFixed(0)} · ${title(str(obj(c, 'appearance'), 'species', 'timber'))} wolf` +
@@ -513,7 +572,7 @@ export class FrontDoor {
                 : 'Choose an empty slot to make your first wolf.'),
             canvas,
             ...below,
-            enter);
+            go);
         return el('div', {className: 'door-row'}, slots, detail);
     }
 
@@ -605,6 +664,7 @@ export class FrontDoor {
                 el('div', {className: 'world-text'},
                     el('div', {className: 'world-title'}, el('strong', {}, w.name), kind, ...(plain ? [el('span', {className: 'world-kind'}, 'NOT ENCRYPTED')] : [])),
                     ...(w.description ? [el('p', {className: 'muted'}, w.description)] : []),
+                    ...(w.region || w.tags.length ? [el('p', {className: 'sage small'}, [w.region, ...w.tags].filter(Boolean).join('  ·  '))] : []),
                     el('p', {className: 'muted small'}, w.address, '  ·  ', status),
                     note),
                 join);
@@ -660,6 +720,146 @@ export class FrontDoor {
         if (this.busy) return;
         this.setMessage(`Joining ${w.name}…`);
         this.submit({type: 'world_join', world: w.id, wolf: this.selectedId});
+    }
+
+    // ------------------------------------------------------------------ The Host page (central mode)
+
+    /** A host's own worlds (doc 77, 3.2 and 7): each one listed or not and why, where central saw it, its wolves and its
+     *  last heartbeat; a new world by name (up to three); a token shown once, with the world agent's command; a new
+     *  token, and removing a world, both asked first. Everything central says is shown as text. */
+    private hostPage(): HTMLElement {
+        const name = el('input', {type: 'text', placeholder: 'e.g. The Long Valley', maxLength: 48});
+        name.name = 'worldName';
+        const full = this.hostWorlds.length >= this.hostMost;
+        const make = el('button', {type: 'submit', className: 'primary', textContent: 'MAKE A WORLD'});
+        make.dataset.action = 'host-make';
+        make.disabled = full;
+        name.disabled = full;
+        const form = el('form', {className: 'host-make'},
+            el('label', {}, el('span', {}, 'A NEW WORLD · ITS NAME, 1–48 CHARACTERS'), name), make);
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            if (this.busy || full) return;
+            const given = name.value.trim();
+            if (!given || given.length > 48) return this.setMessage('Give the world a name of 1–48 characters.', true);
+            this.setMessage(`Making ${given}…`);
+            this.submit({type: 'host_make', name: given});
+        });
+        const back = this.button('Back to your wolves', () => {
+            this.setMessage('');
+            this.show('roster');
+        });
+        back.dataset.action = 'host-back';
+        const side = el('section', {className: 'door-card door-preview host-side'},
+            el('p', {className: 'gold small'}, 'HOST A WORLD'),
+            el('h2', {}, 'Your worlds'),
+            el('p', {className: 'muted large'}, 'A world you run on your own computer. Central lists it while it is up and central can ' +
+                'reach it from the internet.'),
+            el('p', {className: 'muted'}, 'Run the world, and the world agent beside it with the world\'s token: the agent tells central ' +
+                'the world is up every minute, and says here why it isn\'t listed if it isn\'t (most often, a port to open).'),
+            el('div', {className: 'grow'}),
+            el('p', {className: 'muted small'}, full ? `You have ${this.hostWorlds.length} of ${this.hostMost} worlds: remove one to make another.`
+                : `${this.hostWorlds.length} of ${this.hostMost} worlds.`),
+            form, back);
+
+        const list = el('div', {className: 'world-list'});
+        if (!this.hostWorlds.length) list.append(el('p', {className: 'muted large'}, 'No worlds yet. Give one a name to make it and its token.'));
+        for (const w of this.hostWorlds) {
+            const renew = this.button('NEW TOKEN', () => void this.renewToken(w));
+            renew.dataset.action = 'host-token';
+            renew.dataset.world = w.id;
+            const remove = this.button('REMOVE', () => void this.removeWorld(w));
+            remove.dataset.action = 'host-remove';
+            remove.dataset.world = w.id;
+            remove.classList.add('danger');
+            const facts = [w.address || 'Not heard from yet', `${w.players} ${w.players === 1 ? 'wolf' : 'wolves'} in it`,
+                `last heartbeat ${agoText(w.lastHeartbeat)}`, ...(w.tokenCreated ? [`token made ${agoText(w.tokenCreated)}`] : ['no token'])];
+            const row = el('div', {className: `world-row host-row${w.listed ? ' listed' : ''}`},
+                el('div', {className: 'world-text'},
+                    el('div', {className: 'world-title'}, el('strong', {}, w.name),
+                        el('span', {className: `world-kind ${w.kind === 'official' ? 'official' : ''}`}, w.kind === 'official' ? 'OFFICIAL' : 'COMMUNITY'),
+                        el('span', {className: `world-kind ${w.listed ? 'listed' : 'unlisted'}`}, w.listed ? 'LISTED' : 'NOT LISTED')),
+                    el('p', {className: 'muted small'}, facts.join('  ·  ')),
+                    el('p', {className: 'world-note gold'}, w.listed ? '' : w.why || 'Not listed yet: start the world and its agent.')),
+                el('div', {className: 'host-buttons'}, renew, remove));
+            row.dataset.world = w.id;
+            list.append(row);
+        }
+        const refresh = this.button('Refresh', () => {
+            this.setMessage('Asking central for your worlds…');
+            this.submit({type: 'host_show'});
+        });
+        refresh.dataset.action = 'host-refresh';
+        const card = el('section', {className: 'door-card door-form door-worlds host-list'},
+            el('p', {className: 'gold small'}, 'YOUR WORLDS ON CENTRAL'),
+            ...(this.hostToken ? [this.tokenBox()] : []),
+            el('div', {className: 'scroll'}, list),
+            el('div', {className: 'door-actions host-actions'}, refresh));
+        return el('div', {className: 'door-row'}, side, card);
+    }
+
+    /** The token just made, shown this once, and the agent's command with it. */
+    private tokenBox(): HTMLElement {
+        const world = this.hostWorlds.find(w => w.id === this.hostTokenWorld);
+        const token = el('input', {type: 'text', readOnly: true, value: this.hostToken, className: 'host-token'});
+        token.name = 'hostToken';
+        token.spellcheck = false;
+        token.addEventListener('focus', () => token.select());
+        const command = agentCommand(this.hostToken, this.hostCentral || 'URL');
+        const copyToken = this.button('COPY', () => void this.copy(this.hostToken, 'The token is copied.', token));
+        copyToken.dataset.action = 'host-copy';
+        const shown = el('pre', {className: 'host-command'}, command);
+        const copyCommand = this.button('COPY THE COMMAND', () => void this.copy(command, 'The command is copied.', null));
+        copyCommand.dataset.action = 'host-copy-command';
+        return el('div', {className: 'host-token-box'},
+            el('p', {className: 'gold small'}, `THE TOKEN FOR ${(world?.name ?? 'YOUR WORLD').toUpperCase()} · SHOWN THIS ONCE`),
+            el('div', {className: 'host-token-row'}, token, copyToken),
+            el('p', {className: 'muted small'}, `The world runs with --world-id ${this.hostTokenWorld} --central-keys ` +
+                'Saved/World/central-keys.json; beside it, the world agent with the token:'),
+            shown,
+            el('div', {className: 'host-token-row'}, el('p', {className: 'muted small'}, 'Keep it somewhere safe: it isn\'t shown again. ' +
+                'Anyone with it can list a world as this one.'), copyCommand));
+    }
+
+    /** Text to the clipboard, the page's way or the old way; or, if neither works, selected for the host to copy. */
+    private async copy(text: string, done: string, select: HTMLInputElement | null) {
+        try {
+            await navigator.clipboard.writeText(text);
+            this.setMessage(done);
+            return;
+        } catch {
+            // (Falls back below.)
+        }
+        const box = el('textarea', {value: text});
+        box.style.position = 'fixed';
+        box.style.opacity = '0';
+        document.body.append(box);
+        box.select();
+        let copied = false;
+        try {
+            copied = document.execCommand('copy');
+        } catch {
+            copied = false;
+        }
+        box.remove();
+        if (copied) return this.setMessage(done);
+        select?.focus();
+        select?.select();
+        this.setMessage('This computer wouldn\'t let the page copy it: select it and press Ctrl+C.', true);
+    }
+
+    private async renewToken(w: DoorHostWorld) {
+        if (!await ask(`Make a new token for ${w.name}? The old one stops working at once: the world leaves the list until its agent ` +
+            'runs with the new one.', {ok: 'Make a new token', danger: true})) return;
+        this.setMessage(`Making a new token for ${w.name}…`);
+        this.submit({type: 'host_token', world: w.id});
+    }
+
+    private async removeWorld(w: DoorHostWorld) {
+        if (!await ask(`Remove ${w.name} for good? Its token stops working and central never lists it again. The world's own save, ` +
+            'on the computer it runs on, is kept.', {ok: 'Remove the world', danger: true})) return;
+        this.setMessage(`Removing ${w.name}…`);
+        this.submit({type: 'host_remove', world: w.id});
     }
 
     // ------------------------------------------------------------------ A first arrival in a world (central mode)
