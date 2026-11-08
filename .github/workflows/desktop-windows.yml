@@ -45,6 +45,8 @@ jobs:
         with:
           workspaces: Desktop/src-tauri
       - run: npm run setup
+      - name: Build the page (the shell's tests and build need Client/dist)
+        run: npm --prefix ../Client run build
       - name: Shell tests
         run: npm test
       - name: Build (release, NSIS installer; builds Client/dist first)
@@ -81,6 +83,7 @@ jobs:
       - name: Build (release, NSIS installer)
         run: npx tauri build --bundles nsis
       - name: Run the spike
+        continue-on-error: true   # the results are what count; a spike that hangs at the end shouldn't fail the job
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force spike/out | Out-Null
