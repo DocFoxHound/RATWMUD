@@ -895,6 +895,54 @@ void communitiesStayPlain()
            "the old map's town of the same name is a town as ever");
 }
 
+// NPC-posted courier contracts (the letters): with the staged economy on they are a faucet, at most courierADay posted a
+// day across the realm (doc 79, 9.3). With it off, as before. (The staged part runs where RATW_STAGED_ECONOMY forces it.)
+void lettersCapped()
+{
+    const auto letters = [](std::int64_t cap, std::map<std::int64_t, int>& byDay) {
+        auto f = strip();
+        auto w = load(f);
+        if (cap >= 0)
+        {
+            auto o = json::Value::object(), caps = json::Value::object();
+            caps.add("courierADay", double(cap));
+            o.add("caps", caps);
+            w.society().setStatusOverride(&o);
+        }
+        const std::vector<std::string> east{"em", "e1", "e2", "e3", "e4", "e5"}, west{"wm", "w1", "w2", "w3", "w4", "w5"};
+        for (const auto& a : east)
+            for (const auto& b : west)
+                w.bonds().change(a, b, {100, 50, 50, 0, 0}, 0), w.bonds().change(b, a, {100, 50, 50, 0, 0}, 0);
+        for (int day = 0; day < 60; ++day)
+        {
+            nextMorning(w);
+            for (int t = 0; t < 8; ++t)
+            {
+                for (const auto& a : east)              // (Kept in coin, so only the cap holds them back.)
+                    if (w.society().cash(a) < 20)
+                        w.society().stagedSet(a, 40);
+                w.tick(.6);
+            }
+        }
+        int n = 0;
+        for (const auto& k : w.roads().contracts)
+            if (k.kind == "courier" && w.entity(k.poster) && w.entity(k.poster)->npc)
+                ++byDay[std::int64_t(std::floor(k.created))], ++n;
+        return n;
+    };
+    std::map<std::int64_t, int> off;
+    if (!Society::stagedForced())
+    {
+        expect(letters(-1, off) > 0, "with the rule off, the letters are posted as before");
+        return;
+    }
+    std::map<std::int64_t, int> none, one;
+    expect(letters(0, none) == 0, "staged, a cap of 0: no NPC-posted letters");
+    expect(letters(1, one) > 0, "staged, a cap of 1: letters still posted");
+    for (const auto& [day, n] : one)
+        expect(n <= 1, "staged, a cap of 1: at most one letter posted on day " + std::to_string(day) + ": " + std::to_string(n));
+}
+
 int main()
 {
     try
@@ -914,6 +962,7 @@ int main()
         shopsSellTheirGoods();
         travelKeepsToTheRoads();
         communitiesStayPlain();
+        lettersCapped();
     }
     catch (const std::exception& error)
     {

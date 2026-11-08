@@ -148,11 +148,17 @@ std::string birthSex(const std::string& couple, std::int64_t day)
     return (mix(couple + "|sex", day) >> 37) & 1 ? "male" : "female";
 }
 
+const std::vector<std::string>& facilityPrefixes()
+{
+    static const std::vector<std::string> prefixes{"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:", "project:", "outside:", "farm:", "crew:", "estate:"};   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots; project: doc 57's town projects; outside: doc 68's markets outside the city, the Country; farm: and crew: doc 71's farms' tills and their crews' households; estate: doc 72's Houses' estates, Phase 6)
+    return prefixes;
+}
+
 bool facilityAccount(const std::string& id)
 {
-    for (const char* prefix : {"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:", "project:", "outside:", "farm:", "crew:", "estate:"})   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots; project: doc 57's town projects; outside: doc 68's markets outside the city, the Country; farm: and crew: doc 71's farms' tills and their crews' households; estate: doc 72's Houses' estates, Phase 6)
+    for (const auto& prefix : facilityPrefixes())
         if (id.rfind(prefix, 0) == 0)
-            return id.size() <= 80 && id.size() > std::string(prefix).size();
+            return id.size() <= 80 && id.size() > prefix.size();
     return false;
 }
 
@@ -206,7 +212,10 @@ int Society::consume(const std::string& account, const std::string& item, int qu
 bool Society::shift(const std::string& from, const std::string& to, const std::string& item, int quantity,
                     std::int64_t coins, const std::string& kind)
 {
-    // Existing money and goods only; what the receiver can't hold stays where it was.
+    // Existing money and goods only; what the receiver can't hold stays where it was. (In the staged economy a staged payer
+    // paying a player or escrow is topped up first: doc 79, 9.2.)
+    if (coins > 0 && staged())
+        topUp(from, to, coins);
     const auto a = state_.accounts.find(from), b = state_.accounts.find(to);
     if (a == state_.accounts.end() || b == state_.accounts.end() || from == to || coins < 0 || quantity < 0 ||
         a->second.cash < coins || (!item.empty() && stock(a->second, item) < quantity))
@@ -320,13 +329,17 @@ CareerNote Society::welcome(const ResidentRequest& request, const std::string& i
             shift(*giver, id, "", 0, std::min<std::int64_t>(ChildPurse, account(*giver)->cash),
                   "a child's first pennies");
         forgetCareers();
+        stagedJoined(id, request.parents);          // (Doc 79, 6.5: the household's band at once.)
         return {"birth", id, request.parents.empty() ? std::string() : request.parents[0],
                 request.parents.size() > 1 ? "child of " + request.parents[0] + " and " + request.parents[1] : std::string()};
     }
     // Placed by the farms' rule (doc 71, Phase C): its post is its own (founded with it: addResident), or none (family).
     if (request.kind == "farm")
+    {
+        stagedJoined(id, {});                       // (Doc 79, 6.5: placed in a post, its household's band at once.)
         return {"newcomer", id, {}, request.workLabel == "-" ? "came in from the Country with their family"
                                                                : "came in from the Country to be " + request.workLabel};
+    }
     // An arrival from the Country takes up the post it came for. (Its town's talk of it as a newcomer: "is new in town".)
     auto found = c.positions.find(request.positionId);
     const auto* p = position(request.positionId);
@@ -340,6 +353,7 @@ CareerNote Society::welcome(const ResidentRequest& request, const std::string& i
     auto& known = c.skill[skillKey(id, p->id)];
     known = std::max({known, 5.0, request.skill});     // What it knows of the work from the Country (arrivalFor).
     forgetCareers();
+    stagedJoined(id, {});                           // (Doc 79, 6.5: an arrival placed in a post joins its household's band.)
     return {"newcomer", id, found->second.lastHolder, "came in from the Country to take up " + p->title};
 }
 
@@ -1011,6 +1025,9 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
             heirs.push_back("treasury");
         // Shares of the estate as it stood, not of what is left after each heir.
         const auto shares = std::int64_t(heirs.size());
+        // (The staged economy, doc 79, 6.5: between NPCs the goods alone are inherited; the coins are staged and drop.)
+        if (staged() && classify(dead) == AccountKind::Staged)
+            stagedSet(dead, 0);
         const std::int64_t cash = estate.cash;
         for (std::size_t h = 0; h < heirs.size(); ++h)
         {

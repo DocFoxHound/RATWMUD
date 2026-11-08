@@ -1101,7 +1101,244 @@ Value society(const SocietyState& s)
         }
         o.add("loop", loop);
     }
+    // The staged economy's state (doc 79, Phase 2), when there is any: a save without it reads as nothing staged yet.
+    if (!s.staged.empty())
+        o.add("staged", stagedValue(s.staged));
     return o;
+}
+
+Value stagedTallies(const std::map<std::string, StagedState::Tally>& reasons)
+{
+    auto h = Value::object();
+    for (const auto& [reason, t] : reasons)
+    {
+        auto j = Value::array();
+        j.push(double(t.made)); j.push(double(t.sunk)); j.push(double(t.goodsMade)); j.push(double(t.goodsSunk));
+        h.add(reason, j);
+    }
+    return h;
+}
+
+Value stagedChanges(const StagedState& st, const std::vector<std::pair<std::int64_t, std::string>>& changed)
+{
+    auto out = Value::array();
+    const auto set = [&](std::initializer_list<std::string> keys, Value value) {
+        auto at = Value::array();
+        for (const auto& k : keys)
+            at.push(k);
+        auto change = Value::object();
+        change.add("set", std::move(at));
+        change.add("value", std::move(value));
+        out.push(std::move(change));
+    };
+    for (const auto& [day, holder] : changed)
+    {
+        if (const auto d = st.faucets.find(day); d != st.faucets.end())
+            if (const auto h = d->second.find(holder); h != d->second.end())
+                set({"society", "staged", "faucets", std::to_string(day), holder}, stagedTallies(h->second));
+        if (const auto w = st.welcomed.find(holder); w != st.welcomed.end())
+            set({"society", "staged", "welcomed", holder}, double(w->second));
+    }
+    return out;
+}
+
+Value stagedDiff(const StagedState& was, const StagedState& now)
+{
+    auto out = Value::array();
+    const auto at = [](const char* map, const std::string& key) {
+        auto a = Value::array();
+        a.push(std::string("society")); a.push(std::string("staged")); a.push(std::string(map));
+        if (!key.empty())
+            a.push(key);
+        return a;
+    };
+    const auto set = [&](Value where, Value value) {
+        auto change = Value::object();
+        change.add("set", std::move(where));
+        change.add("value", std::move(value));
+        out.push(std::move(change));
+    };
+    const auto erase = [&](Value where) {
+        auto change = Value::object();
+        change.add("erase", std::move(where));
+        out.push(std::move(change));
+    };
+    // One map: a set for each key new or changed, an erase for each key gone.
+    const auto diff = [&](const char* name, const auto& before, const auto& after, auto same, auto value) {
+        for (const auto& [key, v] : after)
+            if (const auto old = before.find(key); old == before.end() || !same(old->second, v))
+                set(at(name, key), value(v));
+        for (const auto& [key, v] : before)
+            if (!after.count(key))
+                erase(at(name, key));
+    };
+    const auto equal = [](const auto& a, const auto& b) { return a == b; };
+    const auto number = [](std::int64_t n) { return Value(double(n)); };
+    diff("bands", was.bands, now.bands,
+         [](const StagedState::Band& a, const StagedState::Band& b) { return a.band == b.band && a.since == b.since && a.liftedUntil == b.liftedUntil; },
+         [](const StagedState::Band& b) {
+             auto j = Value::object();
+             j.add("band", b.band); j.add("since", double(b.since)); j.add("liftedUntil", double(b.liftedUntil));
+             return j;
+         });
+    diff("overrides", was.overrides, now.overrides,
+         [](const StagedState::Override& a, const StagedState::Override& b) { return a.band == b.band && a.until == b.until; },
+         [](const StagedState::Override& v) {
+             auto j = Value::object();
+             j.add("band", v.band); j.add("until", double(v.until));
+             return j;
+         });
+    diff("holds", was.holds, now.holds, equal, number);
+    diff("lean", was.lean, now.lean, equal, number);
+    diff("escrowSource", was.escrowSource, now.escrowSource, equal, number);
+    diff("events", was.events, now.events,
+         [](const std::vector<StagedState::Event>& a, const std::vector<StagedState::Event>& b) {
+             return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](const StagedState::Event& x, const StagedState::Event& y) {
+                 return x.kind == y.kind && x.day == y.day && x.weight == y.weight;
+             });
+         },
+         [](const std::vector<StagedState::Event>& list) {
+             auto a = Value::array();
+             for (const auto& e : list)
+             {
+                 auto j = Value::object();
+                 j.add("kind", e.kind); j.add("day", double(e.day)); j.add("weight", e.weight);
+                 a.push(j);
+             }
+             return a;
+         });
+    if (was.slider != now.slider)
+        set(at("slider", ""), now.slider);
+    for (const auto& [name, a, b] : {std::tuple{"sliderDay", was.sliderDay, now.sliderDay}, std::tuple{"hour", was.hour, now.hour},
+                                     std::tuple{"day", was.day, now.day}})
+        if (a != b)
+            set(at(name, ""), double(b));
+    return out;
+}
+
+Value stagedValue(const StagedState& st)
+{
+    auto o = Value::object(), bands = Value::object(), overrides = Value::object(), holds = Value::object(),
+         lean = Value::object(), source = Value::object(), events = Value::object(), faucets = Value::object(),
+         welcomed = Value::object();
+    for (const auto& [key, b] : st.bands)
+    {
+        auto j = Value::object();
+        j.add("band", b.band); j.add("since", double(b.since)); j.add("liftedUntil", double(b.liftedUntil));
+        bands.add(key, j);
+    }
+    for (const auto& [key, v] : st.overrides)
+    {
+        auto j = Value::object();
+        j.add("band", v.band); j.add("until", double(v.until));
+        overrides.add(key, j);
+    }
+    for (const auto& [into, from] : {std::pair{&holds, &st.holds}, std::pair{&lean, &st.lean}, std::pair{&source, &st.escrowSource},
+                                     std::pair{&welcomed, &st.welcomed}})
+        for (const auto& [key, n] : *from)
+            into->add(key, double(n));
+    for (const auto& [id, list] : st.events)
+    {
+        auto a = Value::array();
+        for (const auto& e : list)
+        {
+            auto j = Value::object();
+            j.add("kind", e.kind); j.add("day", double(e.day)); j.add("weight", e.weight);
+            a.push(j);
+        }
+        events.add(id, a);
+    }
+    for (const auto& [day, holders] : st.faucets)
+    {
+        auto d = Value::object();
+        for (const auto& [holder, reasons] : holders)
+            d.add(holder, stagedTallies(reasons));
+        faucets.add(std::to_string(day), d);
+    }
+    o.add("bands", bands); o.add("overrides", overrides); o.add("holds", holds); o.add("lean", lean);
+    o.add("escrowSource", source); o.add("events", events); o.add("faucets", faucets); o.add("welcomed", welcomed);
+    o.add("slider", st.slider); o.add("sliderDay", double(st.sliderDay)); o.add("hour", double(st.hour)); o.add("day", double(st.day));
+    return o;
+}
+
+StagedState readStaged(const Value& o)
+{
+    // Lenient (doc 79, 14): only what is sound is kept; the rest reads as not staged yet.
+    StagedState st;
+    if (!o.isObject())
+        return st;
+    const auto whole = [](const Value& v, double low, double high, std::int64_t& into) {
+        if (v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() >= low && v.asNumber() <= high && v.asNumber() == std::floor(v.asNumber()))
+        {
+            into = std::int64_t(v.asNumber());
+            return true;
+        }
+        return false;
+    };
+    const auto keyOk = [](const std::string& k) { return !k.empty() && k.size() <= 200; };
+    for (const auto& [key, b] : o.object("bands").fields())
+    {
+        StagedState::Band band;
+        std::int64_t n = 0;
+        if (!keyOk(key) || !whole(b["band"], 0, status::Bands - 1, n) || st.bands.size() >= MaxResidents)
+            continue;
+        band.band = int(n);
+        whole(b["since"], 0, 365000000, band.since);
+        whole(b["liftedUntil"], -1, 365000000, band.liftedUntil);
+        st.bands[key] = band;
+    }
+    for (const auto& [key, b] : o.object("overrides").fields())
+    {
+        StagedState::Override v;
+        std::int64_t n = 0;
+        if (keyOk(key) && whole(b["band"], 0, status::Bands - 1, n) && whole(b["until"], 0, 365000000, v.until) && st.overrides.size() < MaxResidents)
+            v.band = int(n), st.overrides[key] = v;
+    }
+    for (const auto& [key, into, high] : {std::tuple{"holds", &st.holds, 365000000.}, std::tuple{"lean", &st.lean, 365000000.},
+                                          std::tuple{"escrowSource", &st.escrowSource, 1e9}, std::tuple{"welcomed", &st.welcomed, 365000000.}})
+        for (const auto& [id, v] : o.object(key).fields())
+        {
+            std::int64_t n = 0;
+            if (keyOk(id) && into->size() < MaxAccounts && whole(v, 0, high, n))
+                (*into)[id] = n;
+        }
+    for (const auto& [id, list] : o.object("events").fields())
+        if (keyOk(id) && list.isArray() && st.events.size() < MaxResidents)
+            for (const auto& e : list.items())
+            {
+                StagedState::Event ev;
+                ev.kind = e.string("kind");
+                const auto& w = e["weight"];
+                if (ev.kind.empty() || ev.kind.size() > 40 || !whole(e["day"], 0, 365000000, ev.day) || !w.isNumber() ||
+                    !std::isfinite(w.asNumber()) || st.events[id].size() >= 12)
+                    continue;
+                ev.weight = std::clamp(w.asNumber(), -5., 5.);
+                st.events[id].push_back(ev);
+            }
+    for (const auto& [dayText, holders] : o.object("faucets").fields())
+    {
+        char* end = nullptr;
+        const double day = std::strtod(dayText.c_str(), &end);
+        if (!end || *end || !std::isfinite(day) || day < 0 || day > 365000000 || st.faucets.size() >= 64)
+            continue;
+        for (const auto& [holder, reasons] : holders.fields())
+            if (keyOk(holder))
+                for (const auto& [reason, t] : reasons.fields())
+                {
+                    const auto& v = t.items();
+                    StagedState::Tally tally;
+                    if (reason.empty() || reason.size() > 80 || !t.isArray() || v.size() != 4 || !whole(v[0], 0, 1e12, tally.made) ||
+                        !whole(v[1], 0, 1e12, tally.sunk) || !whole(v[2], 0, 1e12, tally.goodsMade) || !whole(v[3], 0, 1e12, tally.goodsSunk))
+                        continue;
+                    st.faucets[std::int64_t(day)][holder][reason] = tally;
+                }
+    }
+    if (const auto& v = o["slider"]; v.isNumber() && std::isfinite(v.asNumber()))
+        st.slider = std::clamp(v.asNumber(), -100., 100.);
+    whole(o["sliderDay"], -1, 365000000, st.sliderDay);
+    whole(o["hour"], -1, 24. * 365000000, st.hour);
+    whole(o["day"], -1, 365000000, st.day);
+    return st;
 }
 
 LoopState readLoop(const Value& o)
@@ -1304,6 +1541,7 @@ SocietyState readSociety(const Value& o)
     std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("loop") ? 1 : 0);
     for (const char* gone : {"craftingStocked", "books", "houses", "memory", "orchestrator"})
         fields -= o.has(gone) ? 1 : 0;
+    fields -= o.has("staged") ? 1 : 0;              // (Doc 79, Phase 2: optional.)
     bool valid = fields == 12;
     const auto integer = [&](const Value& j, const char* key, double max) -> std::int64_t {
         const double n = strictNumber(j, key, -1);
@@ -1366,6 +1604,7 @@ SocietyState readSociety(const Value& o)
         }
     s.careers = readCareers(o["careers"]);
     s.loop = readLoop(o["loop"]);                   // (doc 68, Progress, "Self-correcting rules"; none in an older save.)
+    s.staged = readStaged(o["staged"]);             // (Doc 79, Phase 2; none in an older save.)
     if (!valid)
         s.minted = -1;
     return s;

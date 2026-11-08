@@ -147,8 +147,10 @@ void Game::endContest(Fair& f, Contest& c, const std::vector<std::string>& ranke
             {
                 const auto give = each + (rest > 0 ? 1 : 0);
                 rest -= rest > 0;
-                if (give > 0)
-                    society.shift(account, w, "", 0, give, "a festival prize");
+                // (Staged: the pot's staged-sourced part held to the winner's day's rewards cap, the rest back to the
+                // town: doc 79, 9.3.)
+                if (const auto paid = society.cappedPayout(account, w, give, "rewardsADay", treasury); paid > 0)
+                    society.shift(account, w, "", 0, paid, "a festival prize");
             }
         };
         share(first, toFirst);
@@ -214,7 +216,7 @@ void Game::beginContest(Fair& f, Contest& c)
     // The town adds to the pot.
     const auto treasury = society.treasuryOf(f.community);
     const auto add = std::min({TownMost, TownPerEntrant * std::int64_t(c.entrants.size()),
-                               society.cash(treasury)});
+                               society.payable(treasury, TownMost)});   // (Staged: topped up on demand, doc 79, 9.2.)
     if (add > 0 && society.shift(treasury, account, "", 0, add, "the town's festival purse"))
         c.paid[""] += add;
     if (c.entrants.size() < 2)

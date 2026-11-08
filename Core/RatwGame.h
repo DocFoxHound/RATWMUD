@@ -1916,6 +1916,7 @@ class Game
         std::size_t ledgerSize = 0;
         std::map<std::string, PositionState> positions;
         std::string roads, crime, companions, signIns;
+        StagedState staged;                         // (Doc 79: all but the tallies and welcomes, which go by holder.)
     };
     void prime(Shadow& shadow) const;
     std::uint64_t journalSeq_ = 0;

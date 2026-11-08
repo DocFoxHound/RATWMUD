@@ -16,6 +16,7 @@
 #include <vector>
 #include "RatwAppearance.h"
 #include "RatwItems.h"
+#include "RatwStatus.h"
 
 // The residents' society: their lives (schedules, posts, careers, families), and the money and goods they hold.
 //
@@ -76,6 +77,8 @@ bool playerAccountId(const std::string& id);
 // bandit camp's loot ("bandits:<id>"), a contract's reward held in trust ("contract:<id>"), a shop's till
 // ("till:<position>"), a home's stores ("home:<cell>:<kind>")...
 bool facilityAccount(const std::string& id);
+// Every prefix facilityAccount knows (doc 79, 9.1: a test checks classify sorts each).
+const std::vector<std::string>& facilityPrefixes();
 // Goods the economy knows: herbs, meals, the sword, and the catalog's goods (doc 35).
 bool itemValid(const std::string& item);
 // The most kinds of goods one account holds (a wardrobe of clothes, a jeweller's counter).
@@ -373,6 +376,49 @@ struct LoopState
                alms == 0 && wharf.empty() && steer.empty();
     }
 };
+// What the staged economy keeps between days (Docs/Design/79-a-staged-economy.md, Phase 2; the save's "staged", only when
+// there is any: a save without it reads as nothing staged yet). Nothing here is money: the coins stay in the accounts.
+struct StagedState
+{
+    struct Band
+    {
+        int band = status::Comfortable;
+        std::int64_t since = 0;                     // The day it took this band.
+        std::int64_t liftedUntil = -1;              // Lifted by a player's help until this day (-1: not).
+    };
+    std::map<std::string, Band> bands;              // By household (Society::householdOf's key).
+    struct Override
+    {
+        int band = status::Comfortable;
+        std::int64_t until = 0;                     // The day it ends.
+    };
+    std::map<std::string, Override> overrides;      // A DM's band for a household (6.3, precedence 1).
+    std::map<std::string, std::int64_t> holds;      // Account -> the day its hold ends (6.5, holdUntil).
+    std::map<std::string, std::int64_t> lean;       // Account -> the day its lean days end (6.5).
+    std::map<std::string, std::int64_t> escrowSource;   // Escrow account -> how many of its coins came from the staged side.
+    struct Event
+    {
+        std::string kind;                           // bereaved, lostPost, robbed, failing, helped, earning.
+        std::int64_t day = 0;
+        double weight = 0;
+    };
+    std::map<std::string, std::vector<Event>> events;   // Resident -> its status events of the last eventDays days.
+    struct Tally
+    {
+        std::int64_t made = 0, sunk = 0;            // Coins to and from players.
+        std::int64_t goodsMade = 0, goodsSunk = 0;  // Goods, at the catalogue's price (for the report, not the balance).
+    };
+    std::map<std::int64_t, std::map<std::string, std::map<std::string, Tally>>> faucets;   // Day -> holder -> reason.
+    std::map<std::string, std::int64_t> welcomed;   // Account holder -> the game week of its last welcome in coins.
+    double slider = 0;                              // The prosperity the bands read, smoothed (6.3, D17).
+    std::int64_t sliderDay = -1;                    // The day it last moved (-1: not yet: it starts at the setting).
+    std::int64_t hour = -1, day = -1;               // The last staged hour run and day turned (-1: not yet).
+    bool empty() const
+    {
+        return bands.empty() && overrides.empty() && holds.empty() && lean.empty() && escrowSource.empty() && events.empty() &&
+               faucets.empty() && welcomed.empty() && slider == 0 && sliderDay < 0 && hour < 0 && day < 0;
+    }
+};
 struct SocietyState
 {
     bool enabled = false;
@@ -384,6 +430,7 @@ struct SocietyState
     double decisionRemainder = 0;
     CareerState careers;
     LoopState loop;
+    StagedState staged;                             // (Doc 79, Phase 2.)
 };
 struct EconomyResult
 {
@@ -928,6 +975,113 @@ class Society
     // A staged account set to `coins` (doc 79, 9.2: a raw set, no ledger or journal entry). Until Phase 3 removes the
     // conservation gate, the difference is counted as minted or sunk, so conserved() and restore still hold.
     void stagedSet(const std::string& account, std::int64_t coins);
+
+    // ---- Doc 79, Phase 2: bands and staged accounts (RatwStagedAccounts.cpp; sections 6 and 9) ----
+    // A resident's economic status (6.2): its household's band and class, the household's score, whether a DM's override
+    // or a guarantee set it, and until when a player's help lifts it. Worked out once a day at the staged day's turn
+    // (single-threaded) and at restore; the threaded half of deciding only reads it. Null outside the staged economy, or
+    // for one in no household (a player, the dead).
+    struct Status
+    {
+        int band = status::Comfortable;
+        std::string cls, household, market;         // Class (upper, middle, lower; homeless), its household and market.
+        double score = 0;
+        bool overridden = false, guaranteed = false, reason = false;   // (reason: one that may be destitute.)
+        std::int64_t liftedUntil = -1;
+    };
+    const Status* statusOf(const std::string& id) const;
+    std::string householdOf(const std::string& id) const;   // "" for none.
+    // The status table this world runs (status.json's, with this world's override over it: setStatusOverride).
+    const status::Table& statusTable() const;
+    // A host's or a test's changes to status.json (doc 79, 12; Phase 9 reads them from live.economy.rules): read over the
+    // defaults by status::read, lenient; null clears them. Takes effect at the next day's turn.
+    void setStatusOverride(const json::Value* v, std::vector<std::string>* warnings = nullptr);
+    // The day's pass (public for tests): households scored, ranked and cut into bands. `now` (the DM's "now") skips the
+    // slider's smoothing and the bands' hysteresis.
+    void stagedBands(std::int64_t day, bool now = false);
+    // A DM's band for a household until a day (-1 band: cleared), and a player's help lifting one (6.7). Both take effect at
+    // once (the bands are worked out again).
+    bool overrideBand(const std::string& household, int band, std::int64_t until);
+    bool liftHousehold(const std::string& household, std::int64_t until);
+    double prosperity() const { return state_.staged.slider; }   // The smoothed slider the bands read.
+    // The DM's prosperity setting, -100 (hard times) .. 100 (boom), clamped (not saved: the world's setting; Phase 9 sets it
+    // from live.economy's `prosperity` rule). The bands' slider moves toward it at the day's turn.
+    void setProsperity(int setting) { prosperityTarget_ = std::clamp(setting, -100, 100); }
+    int prosperitySetting() const { return prosperityTarget_; }
+    // The kind of an account (9.1), by its prefix: real (a player, a Chapter), escrow (holding real coins in trust, with
+    // its staged-sourced part counted apart), staged (elastic: residents, tills, treasuries, town works), or dead (the old
+    // loop's: dropped at restore in Phase 3).
+    enum class AccountKind
+    {
+        Real,
+        Escrow,
+        Staged,
+        Dead
+    };
+    static AccountKind classify(const std::string& id);
+    // The account holder behind a player's character (doc 79, words: the central account, else the login, else the
+    // character): every per-player cap counts by it. The Game sets it as a character enters; not saved.
+    void setHolder(const std::string& player, const std::string& holder);
+    std::string holderOf(const std::string& account) const;
+    // The faucet door (9.3): coins and goods to and from players, by holder and reason, each day (log only in play, D16).
+    // A cap's room left today for a player's holder (status.json caps: "rewardsADay", "theftADay", "stakesADay"), and
+    // what a holder has had today from a group of faucets ("reward", "theft", "stakes", "welcome", "refund", "trade").
+    std::int64_t faucetRoom(const std::string& player, const std::string& cap) const;
+    std::int64_t faucetToday(const std::string& holder, const std::string& group) const;
+    static std::string faucetGroup(const std::string& reason);
+    static bool registeredFaucet(const std::string& reason);   // (D16: a reason in a group the door knows.)
+    // Real money (9.4): player and Chapter cash plus escrow's real coins; balanced while it equals what it opened at plus
+    // the faucets less the sinks since (the test gate; never checked in play). openRealBalance starts the count again.
+    std::int64_t realTotal() const;
+    bool realBalanced() const;
+    void openRealBalance();
+    std::int64_t realFaucets() const { return faucetTotal_; }
+    std::int64_t realSinks() const { return sinkTotal_; }
+    // What a payer can pay a player now (9.2): all of it from a staged payer (topped up on demand by shift), else what it
+    // holds. With the staged economy off, what it holds.
+    std::int64_t payable(const std::string& payer, std::int64_t amount) const;
+    // What of an escrow's payout of `coins` a player may have under a daily cap (9.3; "rewardsADay" for prizes and
+    // rewards): its real coins whole, its staged-sourced ones within the holder's room today, the rest sent back to `back`
+    // (a staged account; the treasury if not) at once. The caller pays what this returns. Off, or not escrow to a
+    // player: `coins`.
+    std::int64_t cappedPayout(const std::string& escrow, const std::string& player, std::int64_t coins, const std::string& cap,
+                              const std::string& back = {});
+    // The door's log (D16, log only in play): reasons staged coins reached a player by that are in no faucet group the
+    // door knows (each once a day, with its holder and coins: the reason names its call site), and the pennies staged
+    // payers were topped up by since the world began. Taken by the Game for its log.
+    std::vector<std::string> takeDoorNotes();
+    std::int64_t stagedTopUps() const { return topUps_; }
+    // Doc 79, 6.5: a born child or an arrival placed in a post takes its household's band at once (the next pass
+    // re-ranks it with the rest); one in a household of its own, at the next hour's pass.
+    void stagedJoined(const std::string& id, const std::vector<std::string>& kin);
+    // The holders whose day's tallies or welcome changed since last taken (for the journal: doc 79, 9.2), each (day, holder).
+    std::vector<std::pair<std::int64_t, std::string>> takeStagedChanged();
+    bool leanNow(const std::string& account) const;   // Robbed in its lean days: not refilled, and a second theft finds nothing.
+    bool heldNow(const std::string& account) const;   // Keeping a change (a theft, a gift, a prize, players' pay) for now.
+    // A status event for a resident (6.3: bereaved, lostPost, robbed, failing, helped, earning), today, read by the score
+    // for eventDays. (Most are noted by the door itself: a theft, a player's gift or pay.)
+    void noteStatusEvent(const std::string& resident, const std::string& kind, double weight = 0);
+    // What Phase 1's Board gives the bands (doc 79, 5): a market's Times (-2 hard .. 2 boom), a good's pressure there, and
+    // the shelf a household's food comes from (how many of a good a till gives up now, at most `want`). Until Phase 1
+    // fills them: ordinary Times, no pressure, and food made (Phase 0's), so no shelf is ever bare. tillShelf is the
+    // plain shelf (the till's own stock), for Phase 1 and the tests.
+    struct StagedHooks
+    {
+        std::function<int(const Society&, const std::string& market)> times;
+        std::function<double(const Society&, const std::string& market, const std::string& good)> pressure;
+        std::function<int(Society&, const std::string& till, const std::string& good, int want)> shelf;
+    };
+    void setStagedHooks(StagedHooks hooks) { hooks_ = std::move(hooks); }
+    static int tillShelf(Society& s, const std::string& till, const std::string& good, int want);
+    // Who the district a resident lives in is (the voice table's quarter: "heights", "estate", "sump"; the Game sets them
+    // from live.npc_voice), for the score and the guarantees.
+    void setQuarters(std::map<std::string, std::string> quarters) { quarters_ = std::move(quarters); }
+    // The day's provisions (6.6), each (a household's member, its food keeper), for the world's familiarity step; taken.
+    std::vector<std::pair<std::string, std::string>> takeProvisions();
+    // The pay word for a resident's post (11): pennies a day at the slider, by its kind; 0 for no post that pays.
+    std::int64_t payWord(const std::string& id) const;
+    // The Mind's "Means" note (11, at most 300 characters): the band, how it gets by, the pay word, the market's Times.
+    std::string meansNote(const std::string& id) const;
     // A shop's crew (its keeper and hands): the hours an hour it can give to making.
     int crewOf(const std::string& till) const;
     // The carters' till that takes carriage now (the one holding least), or CarriageFund where there is none.
@@ -1565,9 +1719,47 @@ class Society
         std::vector<std::string> members;
         std::string cls;
         int hour = ShopOpen;
+        int band = status::Comfortable;             // (Doc 79, Phase 2: its band, market, food shop and food.)
+        std::string market, till, food;
+        bool lifted = false;
     };
     std::map<std::string, StagedHome> stagedHomes_;
     void stagedHouseholds(std::int64_t day);
+    // Doc 79, Phase 2 (RatwStagedAccounts.cpp): each resident's status (rebuilt with the bands), the household each is
+    // in, the world's status override, the holders, the Board's hooks, the quarters, the day's provisions, who held a
+    // post at the last pass (for a lost post), and the real money's count since it opened. None saved.
+    std::unordered_map<std::string, Status> status_;
+    std::shared_ptr<const status::Table> statusOverride_;
+    std::unordered_map<std::string, std::string> holders_;
+    StagedHooks hooks_;
+    std::map<std::string, std::string> quarters_;
+    std::vector<std::pair<std::string, std::string>> provisions_;
+    std::set<std::string> postedAtPass_;
+    std::unordered_map<std::string, std::string> jobCategories_;   // (talk::jobCategory by post, label, role, child or not.)
+    std::int64_t realOpening_ = -1, faucetTotal_ = 0, sinkTotal_ = 0;
+    int prosperityTarget_ = 0;
+    std::int64_t topUps_ = 0;                       // Pennies staged payers were topped up by (the door's log).
+    std::vector<std::string> doorNotes_;            // (D16: unregistered faucet reasons, for the Game's log.)
+    std::set<std::string> doorNoted_;               // (Those noted today: "day|reason".)
+    std::set<std::pair<std::int64_t, std::string>> stagedChanged_;   // (Holders whose tallies or welcome changed: the journal's.)
+    bool stagedRecount_ = false;                    // (A new household member alone: the bands again at the next hour.)
+    // The door (9.3), from record: a move between accounts sorted and counted.
+    void stagedDoor(const std::string& kind, const std::string& from, const std::string& to, const std::string& item, int quantity,
+                    std::int64_t coins);
+    void tally(const std::string& holder, const std::string& reason, std::int64_t made, std::int64_t sunk, std::int64_t goodsMade,
+               std::int64_t goodsSunk);
+    // A staged payer short of what it must pay a real or escrow account, topped up first (9.2); logged.
+    void topUp(const std::string& payer, const std::string& payee, std::int64_t coins);
+    // The nightly trims and settles (9.2): staged wallets' goods, the old tallies, events and holds.
+    void stagedTrim(const std::string& id, int band);
+    void stagedPrune(std::int64_t day);
+    // At restore (9.2): the staged hour and day as saved, the bands worked out from the saved state, and staged accounts out
+    // of range settled.
+    void stagedRestored();
+    // A household's food keeper (the till) and the good it gives, chosen at the day's turn (6.5).
+    void stagedKeepers();
+    void stagedHomesFor(std::int64_t day);          // (Today's households and their classes, before the bands.)
+    bool restoring_ = false;                        // (At restore: each household keeps its saved band.)
     void loopHourly(std::int64_t hour, int season);
     void householdsShop(int hourOfDay, std::int64_t day, int season);
     void giveAlms();

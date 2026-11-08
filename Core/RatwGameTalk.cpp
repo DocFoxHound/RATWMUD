@@ -127,10 +127,15 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     std::int64_t held = 0;
     const double days = troubles::foodDays(household, life->homeCell, troubleReads(), &held);
     f["wealth_days"] = std::to_string(int(std::floor(days)));
+    // In the staged economy (doc 79, 11) wealth is the household's band, worked out once a day with its guarantees, and
+    // class a fact beside it: no scan of every household for the lines.
+    const auto* standing = society.statusOf(e.id);
     // (Lines: under three days destitute; poor, the bottom fifth of the world's households (never under a week's
     // food); rich, the top twentieth (never under six weeks' food). Standing is added below.)
-    const double richLine = talkRichLine();
-    int wealth = days < 3 ? 0 : days < poorLine_ ? 1 : days < richLine ? 2 : 3;
+    const double richLine = standing ? 0. : talkRichLine();
+    int wealth = standing ? std::clamp(standing->band, 0, 3) : days < 3 ? 0 : days < poorLine_ ? 1 : days < richLine ? 2 : 3;
+    if (standing)
+        f["class"] = standing->cls == "homeless" ? std::string("lower") : standing->cls;
     f["on_dole"] = "no";
     bool owes = false;
     if (const auto* bonds = world_.bonds().of(e.id))
@@ -144,17 +149,19 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     // their servants), are comfortable at least; the Sump's are poor at most; the homeless are destitute.
     for (const auto& h : society.houses())
     {
+        if (standing)
+            break;                                  // (The band's guarantees have it: doc 79, 6.3.)
         const auto head = society.state().careers.positions.find(h.head);
         const auto& holder = head != society.state().careers.positions.end() ? head->second.holder : std::string();
         if ((post && post->id == h.head) || (!holder.empty() && (holder == e.id || society.family(e.id, holder))))
             wealth = 3;
     }
     const auto quarter = f.find("quarter");
-    if (quarter != f.end() && (quarter->second == "heights" || quarter->second == "estate") && job != "servant")
+    if (!standing && quarter != f.end() && (quarter->second == "heights" || quarter->second == "estate") && job != "servant")
         wealth = std::max(wealth, 2);
-    else if (quarter != f.end() && quarter->second == "sump")
+    else if (!standing && quarter != f.end() && quarter->second == "sump")
         wealth = std::min(wealth, 1);           // (The Sump is poor, whatever's in the larder.)
-    if (life->homeCell.empty() || job == "beggar")
+    if (!standing && (life->homeCell.empty() || job == "beggar"))
         wealth = 0;
     static const char* const Wealth[] = {"destitute", "poor", "comfortable", "rich"};
     f["wealth"] = Wealth[wealth];
@@ -874,6 +881,14 @@ void Game::loadVoices()
         if (!rules.count(id))
             talk_.setCharacter(id, "", problem);
     npcVoice_ = std::move(voices);
+    {
+        // The quarters (the Heights, the Sump, an estate) for the bands' score and guarantees (doc 79, 6.3).
+        std::map<std::string, std::string> quarters;
+        for (const auto& [id, v] : npcVoice_)
+            if (!v.quarter.empty())
+                quarters[id] = v.quarter;
+        world_.society().setQuarters(std::move(quarters));
+    }
     voiceLayers_ = std::move(layers);
     voiceRules_ = std::move(rules);
     // Figures (decision 8).

@@ -294,8 +294,11 @@ bool World::withdrawContract(const std::string& id)
 void World::settleContract(Contract& c, const std::string& status, const std::string& paidTo)
 {
     const auto escrow = "contract:" + c.id;
-    if (c.reward > 0)
-        society_.shift(escrow, paidTo.empty() ? c.poster : paidTo, "", 0, c.reward,
+    // (Staged: a contract's, bounty's or escort's staged-sourced reward held to the taker's day's rewards cap, the rest back
+    // to its poster: doc 79, 9.3.)
+    const auto reward = paidTo.empty() ? c.reward : society_.cappedPayout(escrow, paidTo, c.reward, "rewardsADay", c.poster);
+    if (reward > 0)
+        society_.shift(escrow, paidTo.empty() ? c.poster : paidTo, "", 0, reward,
                        paidTo.empty() ? "reward returned" : "contract reward");
     society_.closeAccount(escrow);
     if (const auto* who = entity(paidTo); who && !who->npc)
@@ -1104,11 +1107,21 @@ void World::roadsDaily()
     // 3p to 7p for the carrying).
     const std::int64_t writes = 10;
     std::set<std::string> writing;
+    // (Staged: an NPC-posted courier contract is a faucet, at most courierADay posted a day across the realm: doc 79, 9.3.)
+    std::int64_t postedToday = 0;
+    const std::int64_t mostToday = society_.staged() ? society_.statusTable().cap("courierADay") : -1;
     for (const auto& k : roads_.contracts)
+    {
         if (k.kind == "courier" && (k.status == "open" || k.status == "taken"))
             writing.insert(k.poster);
+        if (k.kind == "courier" && std::int64_t(std::floor(k.created)) == today)
+            if (const auto* poster = entity(k.poster); poster && poster->npc)
+                ++postedToday;
+    }
     for (const auto& [id, e] : entities_)
     {
+        if (mostToday >= 0 && postedToday >= mostToday)
+            break;
         const auto* mine = bonds_.of(id);
         const auto* purse = society_.account(id);
         const auto* here = townOf(e.cellId);
@@ -1123,6 +1136,7 @@ void World::roadsDaily()
             postContract("courier", id, there->id, other, 3 + std::int64_t(roll(id, today) % 5), ContractDays,
                          "a letter from " + e.name + " to " + o->name + " in " + there->id);
             writing.insert(id);
+            ++postedToday;
             break;
         }
     }

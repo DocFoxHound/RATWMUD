@@ -70,6 +70,12 @@ void Society::reset(Roster roster)
 {
     roster_ = roster;
     state_ = {};
+    status_.clear();                                // (Doc 79, Phase 2: nothing staged yet, and no real money.)
+    stagedHomes_.clear();
+    stagedHour_ = stagedDay_ = -1;
+    postedAtPass_.clear();
+    provisions_.clear();
+    realOpening_ = faucetTotal_ = sinkTotal_ = 0;
     tills_.clear();
     farmsDay_ = -1;                                 // (The farms' carried fractions and crews' wants start again: doc 71.)
     farmsMinted_ = 0;
@@ -344,6 +350,8 @@ const char* Society::itemName(const std::string& id)
 void Society::record(const std::string& kind, const std::string& from, const std::string& to, const std::string& item,
                      int quantity, std::int64_t coins)
 {
+    if (staged())
+        stagedDoor(kind, from, to, item, quantity, coins);   // (The faucet door: doc 79, 9.3.)
     state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
     if (state_.ledger.size() > 128)
         state_.ledger.erase(state_.ledger.begin());
@@ -375,14 +383,27 @@ void Society::addPlayer(const std::string& id)
     if (staged())
     {
         // The welcome as a faucet (doc 79, 9.2): made, not taken from the treasury, so a dry treasury never starts a
-        // player with nothing. (Its cap, once per account holder per world per game week, is the Game's: Phase 2.)
+        // player with nothing; its coins and herbs once per account holder per world per game week (D23: setHolder), a
+        // later wolf on the same account that week starting with its meals only.
         state_.accounts[id] = EconomyAccount{};
-        auto& made = state_.accounts.at(id);
-        made.cash = PlayerWelcome;
-        state_.minted += PlayerWelcome;
-        record("welcome", "made", id, "", 0, PlayerWelcome);
-        create(id, "herbs", 2, "welcome");
-        create(id, "meal", StartingMeals, "provisions to start with");
+        const auto& t = statusTable();
+        const auto holder = holderOf(id);
+        const auto week = state_.budgetDay / std::max<std::int64_t>(1, t.cap("welcomeDays"));
+        const auto last = state_.staged.welcomed.find(holder);
+        if (last == state_.staged.welcomed.end() || last->second != week)
+        {
+            const auto coins = std::clamp<std::int64_t>(t.caps.count("welcomeCoins") ? t.cap("welcomeCoins") : PlayerWelcome, 0, 1000);
+            state_.accounts.at(id).cash = coins;
+            state_.minted += coins;
+            state_.staged.welcomed[holder] = week;
+            stagedChanged_.insert({state_.budgetDay, holder});   // (Journalled with the welcome: D23 across a crash.)
+            if (coins > 0)
+                record("welcome", "made", id, "", 0, coins);
+            if (const auto herbs = int(std::clamp<std::int64_t>(t.caps.count("welcomeHerbs") ? t.cap("welcomeHerbs") : 2, 0, 20)); herbs > 0)
+                create(id, "herbs", herbs, "welcome");
+        }
+        if (const auto meals = int(std::clamp<std::int64_t>(t.caps.count("welcomeMeals") ? t.cap("welcomeMeals") : StartingMeals, 0, 20)); meals > 0)
+            create(id, "meal", meals, "provisions to start with");
         return;
     }
     auto& reserve = state_.accounts.at("treasury");
@@ -1139,6 +1160,7 @@ bool Society::restore(const SocietyState& saved)
         loopHour_ = -1;
         farmsDay_ = -1;                             // (The farms are tended again from the next hour; their accounts are the save's.)
     }
+    stagedRestored();                               // (Doc 79, Phase 2: the staged day and the bands as saved.)
     return true;
 }
 bool Society::rehome(const std::string& id)
@@ -1817,6 +1839,8 @@ void Society::stagedHourly(std::int64_t hour)
     {
         stagedHour_ = hour;
         stagedHouseholds(hour / 24);
+        state_.staged.hour = stagedHour_;
+        state_.staged.day = stagedDay_;
         return;
     }
     for (auto h = std::max(stagedHour_ + 1, hour - 23); h <= hour; ++h)
@@ -1832,7 +1856,11 @@ void Society::stagedHourly(std::int64_t hour)
                 if (h0.hour == hod)
                     stagedFood(home, h0.members, h0.cls);
     }
+    if (stagedRecount_ && stagedDay_ >= 0)
+        stagedHouseholds(stagedDay_);               // (A new resident in a household of its own: the bands again.)
     stagedHour_ = hour;
+    state_.staged.hour = stagedHour_;               // (Saved, so a restart runs the hours it missed: Phase 2.)
+    state_.staged.day = stagedDay_;
 }
 
 std::map<std::string, std::string> Society::householdClasses(const std::map<std::string, std::vector<std::string>>& homes) const
@@ -1846,7 +1874,14 @@ std::map<std::string, std::string> Society::householdClasses(const std::map<std:
 
 void Society::stagedHouseholds(std::int64_t day)
 {
+    stagedHomesFor(day);
+    stagedBands(day);                               // (Doc 79, Phase 2: each household's band, food shop and food.)
+}
+
+void Society::stagedHomesFor(std::int64_t day)
+{
     stagedDay_ = day;
+    stagedRecount_ = false;
     countFarmPosts();                               // (The farms' posts held, as tendFarms counted them each day.)
     stagedHomes_.clear();
     auto homes = households(true);
@@ -1863,61 +1898,134 @@ void Society::stagedHouseholds(std::int64_t day)
 
 void Society::stagedFood(const std::string& home, const std::vector<std::string>& members, const std::string& cls)
 {
-    // Minimal food by class (doc 79, 19, Phase 0; the bands and the shelf come in Phase 2): a day's nourishment a head of
-    // the class's staple (a meal for the upper and middle class; bread for the lower and the homeless), never more than
-    // two days' on hand. Made, not bought.
-    (void)home;
-    const std::string staple = cls == "upper" || cls == "middle" || !itemValid("bread") ? "meal" : "bread";
-    const int each = std::max(1, nourishment(staple));
+    // Food from the shelf by the household's band (doc 79, 6.5): its band's meals a head a day, of the first of its foods its
+    // food shop sells, up to two days' on hand (more the day before a Restday or a festival: buying ahead), never beyond.
+    // A short day (a fixed lot by the household and the day, against its band's chance at the slider, the poor's raised
+    // by their staple's pressure) gives half; a bare shelf gives the poor and destitute a short day, the others are fed
+    // from elsewhere. Never Hungry: no short days. A raw stock change: no ledger entry, no journal record, no WorldEvent.
+    (void)cls;
+    const auto found = stagedHomes_.find(home);
+    if (found == stagedHomes_.end() || found->second.food.empty())
+        return;
+    const auto& h = found->second;
+    const auto& t = statusTable();
+    const int band = std::clamp(h.band, 0, status::Bands - 1);
+    const auto& row = t.rows[std::size_t(band)];
+    const auto day = stagedDay_;
+    const bool neverHungry = ownRule("neverHungry") > 0;
+    const bool poor = band <= status::Poor && !h.lifted && !neverHungry;
+    bool shortDay = false;
+    if (!neverHungry && !h.lifted)
+    {
+        double chance = status::shortChance(t, band, prosperity());
+        if (band <= status::Poor && hooks_.pressure)
+        {
+            const double p = hooks_.pressure(*this, h.market, h.food);
+            if (std::isfinite(p) && p > 0)
+                chance *= std::min(t.shortPressureMost, 1 + (t.shortPressureMost - 1) * p / t.shortPressureAt);
+        }
+        shortDay = status::lot(home + "|short|" + std::to_string(day)) < std::clamp(chance, 0., 1.);
+    }
+    const double tomorrow = double(day + 1) + .5;
+    const int ahead = calendar::weekdayOf(tomorrow) == calendar::Restday || calendar::festivalDay(tomorrow) ? std::max(0, ownRule("buyAheadDays")) : 0;
+    const double ceiling = (2 + ahead) * NourishADay;
+    const double mealWorth = std::max(1, nourishment("meal"));
+    const int each = std::max(1, nourishment(h.food));
+    // Each member's pieces, and the household's from the shelf.
+    std::vector<std::pair<EconomyAccount*, int>> wants;
+    int total = 0;
     for (const auto& id : members)
     {
-        const auto found = state_.accounts.find(id);
-        if (found == state_.accounts.end() || dead_.count(id) || !spec(id))
+        const auto acc = state_.accounts.find(id);
+        if (acc == state_.accounts.end() || dead_.count(id) || !spec(id))
             continue;
-        auto& wallet = found->second;
+        auto& wallet = acc->second;
         const double have = stagedOnHand(wallet);
-        const double want = std::min(2 * NourishADay, have + NourishADay);
-        if (have >= want)
-            continue;
-        const int pieces = int(std::ceil((want - have) / each - 1e-9));
-        if (pieces < 1 || stock(wallet, staple) > StockLimit - pieces ||
-            (!wallet.stock.count(staple) && wallet.stock.size() >= MaxGoodsKinds))
-            continue;
-        wallet.stock[staple] += pieces;
+        const double provision = row.meals * mealWorth * (shortDay ? .5 : 1) + ahead * NourishADay;
+        const double want = std::min(ceiling, have + provision);
+        // (Whole pieces: up on a full day, down on a short one, so a short day of a big dish is short indeed.)
+        int pieces = want <= have ? 0 : shortDay ? int(std::floor((want - have) / each + 1e-9)) : int(std::ceil((want - have) / each - 1e-9));
+        if (pieces < 1 || stock(wallet, h.food) > StockLimit - pieces || (!wallet.stock.count(h.food) && wallet.stock.size() >= MaxGoodsKinds))
+            pieces = 0;
+        wants.push_back({&wallet, pieces});
+        total += pieces;
     }
+    if (total <= 0)
+        return;
+    int got = total;
+    if (!h.till.empty() && hooks_.shelf)
+        got = std::clamp(hooks_.shelf(*this, h.till, h.food, total), 0, total);
+    if (got < total && poor && !shortDay)
+    {
+        // A bare shelf: the poor and destitute it serves go short today (half of what they'd have had, at most what came).
+        int halfTotal = 0;
+        for (auto& w : wants)
+            halfTotal += (w.second = w.second / 2);
+        if (got > halfTotal)
+        {
+            // (More came than half: the rest goes back on the shelf it came from.)
+            if (const auto till = state_.accounts.find(h.till); till != state_.accounts.end())
+                till->second.stock[h.food] += got - halfTotal;
+            got = halfTotal;
+        }
+        total = halfTotal;
+    }
+    int left = poor ? std::min(got, total) : total;   // (The comfortable and rich: what the shelf lacked, from elsewhere.)
+    for (auto& [wallet, pieces] : wants)
+    {
+        const int n = std::min(pieces, left);
+        if (n > 0)
+            wallet->stock[h.food] += n;
+        left -= n;
+    }
+    // The familiarity step between one member and the keeper (6.6): no WorldEvent, so nothing remembered as a gift.
+    if (!h.till.empty() && !members.empty() && provisions_.size() < 8192)
+        if (const auto held = state_.careers.positions.find(h.till.substr(5)); held != state_.careers.positions.end() &&
+                                                                               !held->second.holder.empty() &&
+                                                                               held->second.holder != members.front())
+            provisions_.push_back({members.front(), held->second.holder});
 }
 
 std::int64_t Society::stagedPurse(const std::string& id, const std::string& home, const std::string& cls, std::int64_t day) const
 {
-    // A stable point in its class's range from its home's lot, with a little jitter by the day (doc 79, 6.5's purse
-    // targets: upper as the rich, middle as the comfortable, lower as the poor, the homeless as the destitute).
-    const auto [low, high] = cls == "upper" ? std::pair<std::int64_t, std::int64_t>{60, 300}
-                             : cls == "middle" ? std::pair<std::int64_t, std::int64_t>{12, 60}
-                             : cls == "homeless" ? std::pair<std::int64_t, std::int64_t>{0, 3}
-                                                 : std::pair<std::int64_t, std::int64_t>{3, 12};
+    // A stable point in its band's range from its home's lot, with a little jitter by the day (doc 79, 6.5: destitute
+    // 0-3p, poor 3-12p, comfortable 12-60p, rich 60-300p, as status.json says, at most 500p).
+    (void)cls;
+    const auto found = stagedHomes_.find(home);
+    const int band = found == stagedHomes_.end() ? status::Comfortable : std::clamp(found->second.band, 0, status::Bands - 1);
+    const auto& row = statusTable().rows[std::size_t(band)];
+    const auto low = std::min(row.purseLow, row.purseHigh), high = std::min<std::int64_t>(500, row.purseHigh);
     const double at = .8 * stagedLot(home + "|purse") + .2 * stagedLot(id + "|" + std::to_string(day));
-    return low + std::int64_t(std::llround(double(high - low) * at));
+    return low + std::int64_t(std::llround(double(std::max<std::int64_t>(0, high - low)) * at));
 }
 
 void Society::stagedNight(std::int64_t day)
 {
-    // Each resident's purse halfway toward its target (down as well as up), and the treasury and each town treasury
-    // within TreasuryFloat and StagedTreasuryMost (doc 79, 9.2).
+    // Each resident's purse halfway toward its band's target (down as well as up), except while held (a theft, a gift, a
+    // prize, players' pay: 6.5) and never up in its lean days; staged wallets' goods trimmed to the band's; the treasury and
+    // each town treasury set within status.json's floor and ceiling (doc 79, 9.2); the old tallies, events and holds pruned.
     for (const auto& [home, h] : stagedHomes_)
         for (const auto& id : h.members)
             if (const auto* a = account(id); a && !dead_.count(id))
             {
+                stagedTrim(id, h.band);
+                if (heldNow(id))
+                    continue;
                 const auto target = stagedPurse(id, home, h.cls, day);
                 const auto gap = target - a->cash;
+                if (gap > 0 && leanNow(id))
+                    continue;
                 if (gap != 0)
                     stagedSet(id, a->cash + (gap > 0 ? (gap + 1) / 2 : -((-gap + 1) / 2)));
             }
+    const auto& t = statusTable();
     std::vector<std::string> treasuries;
     for (const auto& [id, a] : state_.accounts)
         if (id == "treasury" || id.rfind("stores:", 0) == 0)
             treasuries.push_back(id);
     for (const auto& id : treasuries)
-        stagedSet(id, std::clamp<std::int64_t>(cash(id), TreasuryFloat, StagedTreasuryMost));
+        stagedSet(id, std::clamp<std::int64_t>(cash(id), t.treasuryFloor, std::max(t.treasuryFloor, t.treasuryCeiling)));
+    stagedPrune(day);
 }
 
 void Society::stagedSet(const std::string& accountId, std::int64_t coins)

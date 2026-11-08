@@ -22,6 +22,7 @@
 #include "RatwWire.h"
 #include "RatwWorld.h"
 
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -957,12 +958,61 @@ void onTheFullWorlds()
         fs::remove_all(dir);
     }
 }
+// Doc 79, Phase 2's decision point (19): the bands of each fixture's households (the frozen copies of DEV and dev-old:
+// read, never a world) at -100, 0 and +100, by class (save_compat_tests --census). A read, not a simulation.
+int census()
+{
+    for (const auto& e : expected())
+    {
+        if (std::string(e.name) == "package")
+            continue;
+        const auto world = worldOf(Fixtures / e.world);
+        const auto loaded = loadSave(world, parse(gunzip(Fixtures / e.save), e.save), e.name);
+        auto roster = world.society().authored();
+        roster.economy.rules["staged"] = 1;
+        Society s(Roster::None);
+        s.configure(roster);
+        s.setDay(world.society().day());
+        expect(s.restore(loaded.saved.society), std::string(e.name) + ": restores for the census");
+        std::cout << e.name << " (" << s.state().residents.size() << " residents):\n";
+        for (const int slider : {-100, 0, 100})
+        {
+            s.setProsperity(slider);
+            const auto began = std::chrono::steady_clock::now();
+            s.stagedBands(loaded.saved.society.budgetDay, true);
+            for (int again = std::getenv("RATW_CENSUS_REPEAT") ? std::atoi(std::getenv("RATW_CENSUS_REPEAT")) : 0; again > 0; --again)
+                s.stagedBands(loaded.saved.society.budgetDay, true);
+            const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - began).count();
+            std::map<std::string, std::array<int, status::Bands>> byClass;
+            std::array<int, status::Bands> all{};
+            std::set<std::string> seen;
+            for (const auto& [id, life] : s.state().residents)
+                if (const auto* st = s.statusOf(id); st && seen.insert(st->household).second)
+                {
+                    ++all[std::size_t(st->band)];
+                    ++byClass[st->cls][std::size_t(st->band)];
+                }
+            const auto row = [](const std::array<int, status::Bands>& n) {
+                std::string out;
+                for (int b = 0; b < status::Bands; ++b)
+                    out += std::string(b ? ", " : "") + status::bandName(b) + " " + std::to_string(n[std::size_t(b)]);
+                return out;
+            };
+            std::cout << "  at " << slider << ": " << seen.size() << " households: " << row(all) << " (the pass " << ms << " ms)\n";
+            for (const auto& [cls, n] : byClass)
+                std::cout << "    " << cls << ": " << row(n) << "\n";
+        }
+    }
+    return 0;
+}
 } // namespace
 
 int main(int argc, char** argv)
 {
     try
     {
+        if (argc == 2 && std::string(argv[1]) == "--census")
+            return census();
         if (argc == 3 && std::string(argv[1]) == "--make-tail")
             return makeTail(argv[2]);
         if (argc == 3 && std::string(argv[1]) == "--make-road")

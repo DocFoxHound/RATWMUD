@@ -66,7 +66,7 @@ class DecodingTests(unittest.TestCase):
 
     def test_context_is_checked(self):
         for bad in ({**CONTEXT, "heard": ""}, {**CONTEXT, "npc": " "}, {**CONTEXT, "relationship": "x" * 2000},
-                    {**CONTEXT, "fame": "x" * 401}, {**CONTEXT, "trouble": "x" * 301}, {**CONTEXT, "mood": 3}, []):
+                    {**CONTEXT, "fame": "x" * 401}, {**CONTEXT, "trouble": "x" * 301}, {**CONTEXT, "means": "x" * 301}, {**CONTEXT, "mood": 3}, []):
             with self.assertRaises(BridgeError):
                 mind.clean_dialogue_context(bad)
 
@@ -87,6 +87,10 @@ class MindTests(unittest.TestCase):
         mind.Mind(provider, audit=lambda e: None).dialogue({**CONTEXT, "trouble": "Your trouble (true): the shop owes 40p."})
         self.assertIn("owes 40p", provider.calls[-1]["user"]["trouble"])   # (Doc 57: its own trouble, to a wolf it trusts.)
         self.assertTrue(mind.decode_dialogue(reply(mentions_trouble=True))["mentions_trouble"])
+        mind.Mind(provider, audit=lambda e: None).dialogue(
+            {**CONTEXT, "means": "Means: poor; gets by week to week; pay about eight pence a day."})
+        self.assertIn("eight pence", provider.calls[-1]["user"]["means"])   # (Doc 79, 11: the band and the pay word.)
+        self.assertIn('"means"', mind.RULES)
         for kept_out in ("backstory", "personality", "description", "npcId", "subjectId"):
             self.assertNotIn(kept_out, call["user"])
         self.assertEqual("Mind the crust.", got["text"])
