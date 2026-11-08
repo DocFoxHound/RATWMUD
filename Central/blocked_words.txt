@@ -1,16 +1,22 @@
 # Words central refuses in usernames, wolf names and world listings (Central/central_words.py; doc 77, 7).
 #
-# One entry a line; '#' starts a comment. An entry is refused only as a whole word (and with a plural s or es), so
-# place names and ordinary words that happen to hold one pass (Scunthorpe, Essex, Penistone, Cockburn). A leading '*'
-# refuses it inside longer words too: only for words no ordinary English word contains.
-# Look-alikes (0 1 3 4 5 7 @ $) and accents are read as letters before matching, so list the plain spelling only.
+# One entry a line; '#' starts a comment. An entry is refused only as a whole word (and with a plural: s, or es after
+# s, x, z, ch or sh), so place names and ordinary words that happen to hold one pass (Scunthorpe, Essex, Penistone,
+# Cockburn, spices). A leading '*' refuses it inside longer words too: only for words no ordinary English word
+# contains, or whose ordinary words are listed with a leading '!' (let through: snigger). An irregular plural is an
+# entry of its own.
+# Look-alikes (0 1 | 3 4 5 7 @ $), repeated letters, Cyrillic and Greek look-alike letters, accents and invisible
+# characters are all read before matching, so list the plain spelling only.
 #
-# A modest first list: the commonest English slurs and the strongest profanities. The report button and delisting
-# by hand catch the rest.
+# A modest first list: the commonest English slurs and the strongest profanities. A word with a common innocent
+# meaning is left out (chink, spick, dyke, bastard, prick, pussy, coon, retard, fag: a chink in the armour, spick and
+# span, Offa's Dyke, a bastard sword, a pin-prick, pussy willow, Coon Rapids, fire-retarded, a fag end): the report
+# button and delisting by hand catch their slur uses, and the rest.
 
 # Inside any word.
 *fuck
 *nigger
+!snigger                # (sniggers, sniggering)
 *faggot
 *cocksucker
 
@@ -26,25 +32,15 @@ bullshit
 asshole
 arsehole
 bitch
-bastard
 dickhead
 wanker
 whore
 slut
-pussy
-prick
-fag
-dyke
 tranny
-retard
-retarded
 spic
-spick
-chink
 gook
 kike
 wetback
-coon
 raghead
 towelhead
 paki

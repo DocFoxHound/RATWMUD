@@ -788,7 +788,9 @@ void theAgentsFilesCountTheWolvesAndCarryCentralsBans()
                    list.array("online")[0].asString() == Wolf1 && list.array("online")[1].asString() == Wolf2 &&
                    list.number("at") == std::floor(f.clock),
                "online.json names the wolves in the world now, and when: " + json::dump(list));
-        expect(!std::filesystem::exists(f.dir / ".online.json.new"), "no temporary file is left behind");
+        for (const auto& entry : std::filesystem::directory_iterator(f.dir))
+            expect(entry.path().filename().string().rfind(".online.json", 0) != 0,
+                   "no temporary file is left behind: " + entry.path().string());
         // Atomically: each write is a new file renamed over the last (another inode), never the old one rewritten.
         struct stat before{}, after{};
         expect(::stat(online.c_str(), &before) == 0, "online.json is there");
@@ -859,6 +861,38 @@ void theAgentsFilesCountTheWolvesAndCarryCentralsBans()
     expect(!std::filesystem::exists("online.json") && !std::filesystem::exists("bans.json"), "not even where it runs");
     g.disconnect(&a);
 }
+void aScratchServerWritesNoOnlineFile()
+{
+    // A scratch server (Options::scratch) beside the real ticket world, with the same --central-keys, must not count
+    // its own players into the real world's online.json (nor write the empty one as it stops); it still reads bans.json.
+    Fixture f;
+    std::filesystem::path online = f.dir / "online.json";
+    const std::string real = "{\"world\": \"" + World1 + "\", \"at\": 1, \"players\": 1, \"online\": [\"" + Wolf3 + "\"]}\n";
+    std::ofstream(online) << real;
+    writeBans(f.dir, "{\"at\": 1, \"accounts\": [\"" + Acct2 + "\"]}");
+    auto o = f.options();
+    o.scratch = true;
+    game::Game g(o);
+    f.wire(g);
+    std::string problem;
+    expect(g.start(problem), "a scratch server starts in ticket mode: " + problem);
+    Client a;
+    a.id = 1;
+    g.connect(&a);
+    say(g, &a, hello(f.ticket(Wolf1, Acct1, "Wren")));
+    say(g, &a, cmd({{"type", "character_arrive"}, {"commandId", "w1"}, {"tier", "gifted"}}));
+    expect(a.entityId == Wolf1, "a wolf arrives on the scratch server");
+    g.ticketFiles();
+    expect(!g.writeOnline(problem) && problem.find("scratch") != std::string::npos, "writeOnline refuses: " + problem);
+    std::ifstream in(online, std::ios::binary);
+    std::stringstream text;
+    text << in.rdbuf();
+    expect(text.str() == real, "the real world's online.json is left as it was: " + text.str());
+    for (const auto& entry : std::filesystem::directory_iterator(f.dir))
+        expect(entry.path().filename().string().rfind(".online.json", 0) != 0, "and no temporary file: " + entry.path().string());
+    expect(g.bannedByCentral(Acct2), "it still reads central's bans");
+    g.disconnect(&a);
+}
 } // namespace
 
 int main()
@@ -872,6 +906,7 @@ int main()
         theArrivalLimitsHold();
         aNewKeyIsFetchedWhenATicketNamesIt();
         theAgentsFilesCountTheWolvesAndCarryCentralsBans();
+        aScratchServerWritesNoOnlineFile();
     }
     catch (const std::exception& error)
     {

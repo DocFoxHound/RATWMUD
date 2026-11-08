@@ -347,10 +347,13 @@ class Store:
                                 (*values, world_id)).rowcount == 1
 
     def set_world_token(self, world_id: str, token_hash: str | None, now: float) -> bool:
-        """Gives the world a new host token (by its hash), which revokes the old one; None drops it (the world is off
-        the list until it has a new one). A removed world gets none."""
+        """Gives the world a new host token (by its hash), which revokes the old one; None drops it. Either way the
+        world is off the list at once (doc 77, 7: revoking delists): the old token's heartbeat, address and call-back
+        are forgotten, so only a heartbeat with the new token, called back again, lists it. A removed world gets
+        none."""
         with self.connection() as conn:
-            return conn.execute('UPDATE central.worlds SET token_hash = %s, token_created = %s, token_used = NULL '
+            return conn.execute('UPDATE central.worlds SET token_hash = %s, token_created = %s, token_used = NULL, '
+                                'last_heartbeat = NULL, reachable = false, checked_at = NULL, check_address = NULL '
                                 'WHERE id = %s AND NOT removed',
                                 (token_hash, ts(now) if token_hash else None, world_id)).rowcount == 1
 
@@ -422,10 +425,12 @@ class Store:
             return conn.execute('UPDATE central.worlds SET removed = true, delisted = true, last_heartbeat = NULL, '
                                 'reachable = false WHERE id = %s AND NOT removed', (world_id,)).rowcount == 1
 
-    def heartbeat(self, world_id: str, now: float, address: str, port: int, host_name: str | None, listing: dict,
-                  online: list[str], check: dict | None) -> None:
+    def heartbeat(self, world_id: str, token_hash: str, now: float, address: str, port: int, host_name: str | None,
+                  listing: dict, online: list[str], check: dict | None) -> bool:
         """One heartbeat: where it came from, its listing fields (replacing the last ones), the honest online list,
-        the token's use, and (if one ran, or the address was refused without one) the call-back's outcome."""
+        the token's use, and (if one ran, or the address was refused without one) the call-back's outcome. Written
+        only while the world still has the token it was checked with and is neither removed nor delisted (a token
+        replaced or revoked during the call-back writes nothing): False if not."""
         sets = ['last_heartbeat = %s', 'token_used = %s', 'address = %s', 'port = %s', 'host_name = %s',
                 'listing = %s', 'online = %s', 'players = %s']
         values = [ts(now), ts(now), address, port, host_name, world_db.Jsonb(listing), world_db.Jsonb(online),
@@ -434,25 +439,34 @@ class Store:
             sets += ['reachable = %s', 'checked_at = %s', 'check_note = %s', 'check_address = %s']
             values += [check['reachable'], ts(now), check['note'], check['address']]
         with self.connection() as conn:
-            conn.execute(f'UPDATE central.worlds SET {", ".join(sets)} WHERE id = %s', (*values, world_id))
+            return conn.execute(f'UPDATE central.worlds SET {", ".join(sets)} WHERE id = %s AND token_hash = %s AND '
+                                'NOT removed AND NOT delisted', (*values, world_id, token_hash)).rowcount == 1
 
-    def leave(self, world_id: str) -> None:
-        """A world's clean shutdown: off the list at once (its next heartbeat brings it back)."""
+    def leave(self, world_id: str, token_hash: str) -> bool:
+        """A world's clean shutdown: off the list at once (its next heartbeat brings it back). Only with the world's
+        own token (False if it was replaced meanwhile)."""
         with self.connection() as conn:
-            conn.execute('UPDATE central.worlds SET last_heartbeat = NULL WHERE id = %s', (world_id,))
+            return conn.execute('UPDATE central.worlds SET last_heartbeat = NULL WHERE id = %s AND token_hash = %s',
+                                (world_id, token_hash)).rowcount == 1
 
     def banned_accounts(self) -> list[str]:
         with self.connection() as conn:
             return [r[0] for r in conn.execute('SELECT id FROM central.accounts WHERE banned ORDER BY id').fetchall()]
 
     def ticketed_wolves(self, world_id: str, wolves: list[str], since: float) -> set[str]:
-        """Which of these wolves central issued a ticket for, for this world, since then (the honest count)."""
+        """Which of these wolves count as online at this world (the honest count): its latest ticket from central, to
+        any world, was for this one and since then; and the wolf still exists, on an account that isn't banned. (A
+        past visitor now on another world, a deleted wolf or a banned account's wolf doesn't count.)"""
         if not wolves:
             return set()
         with self.connection() as conn:
-            return {r[0] for r in conn.execute('SELECT DISTINCT wolf_id FROM central.tickets WHERE world_id = %s AND '
-                                               'issued_at >= %s AND wolf_id = ANY(%s)',
-                                               (world_id, ts(since), list(wolves))).fetchall()}
+            return {r[0] for r in conn.execute(
+                'SELECT t.wolf_id FROM (SELECT DISTINCT ON (wolf_id) wolf_id, world_id FROM central.tickets '
+                '                       WHERE wolf_id = ANY(%s) AND issued_at >= %s '
+                '                       ORDER BY wolf_id, issued_at DESC, jti DESC) t '
+                'JOIN central.wolves w ON w.id = t.wolf_id JOIN central.accounts a ON a.id = w.account_id '
+                'WHERE t.world_id = %s AND NOT a.banned',
+                (list(wolves), ts(since), world_id)).fetchall()}
 
     def record_ticket(self, jti: str, world_id: str, wolf_id: str, account_id: str, kid: str, now: float,
                       expires: float) -> None:

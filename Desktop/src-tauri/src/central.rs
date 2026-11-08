@@ -180,6 +180,12 @@ impl Central {
         Central { base, shown, development, http, store, tokens: Mutex::new(None), generation: Mutex::new(0), renewing: Mutex::new(()) }
     }
 
+    /// What the page is told of central (central_info): where it is to say, and the base URL itself as `url`, scheme
+    /// and all, for the commands on the Host page (an https:// central can be on this computer too: never guessed).
+    pub fn info(&self) -> Value {
+        json!({"where": self.shown, "url": self.base, "development": self.development, "remembered": self.remembered(), "store": self.store_kind()})
+    }
+
     pub fn store_kind(&self) -> &'static str {
         self.store.kind()
     }
@@ -400,6 +406,21 @@ mod tests {
         for bad in ["http://192.168.1.4:7790", "http://central.example.net", "ftp://127.0.0.1", "https://a.net/path", "https://a.net/?x=1",
             "https://user:pw@a.net", "127.0.0.1:7790", "", "ws://127.0.0.1:7790"] {
             assert!(parse_central(bad).is_err(), "{bad} should be refused");
+        }
+    }
+
+    #[test]
+    fn the_page_is_told_centrals_real_url() {
+        for (given, url) in [("https://127.0.0.1:7790", "https://127.0.0.1:7790"), ("http://localhost:7790/", "http://localhost:7790"),
+            ("https://central.example.net", "https://central.example.net")] {
+            let (base, shown) = parse_central(given).unwrap();
+            let (mut c, _) = central(Arc::new(MemoryStore::default()));
+            c.base = base;
+            c.shown = shown.clone();
+            let info = c.info();
+            assert_eq!(info["url"], url, "{given}");
+            assert_eq!(info["where"], shown);
+            assert!(info.get("access_token").is_none() && info.get("refresh_token").is_none());
         }
     }
 

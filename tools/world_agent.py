@@ -33,25 +33,35 @@ FILE.wanted, and the agent fetches again (at most once a minute) and removes it.
 against this machine's (`offset`, seconds; GET URL/health), which the server logs. If central can't be reached, or
 answers with no usable key, the file is left as it was: a world keeps its last keys (doc 77, 12).
 
-http:// is for a central on this computer (development); anything else should be https://, whose certificate is
-checked as usual. The heartbeat and the leave never follow a redirect (the token would go with them).
+`run` takes http:// only for a central on this computer or on a private network (development, or a PC testing
+against a laptop on the same LAN: loopback, 10/8, 172.16/12, 192.168/16, link-local, and the like; a name must resolve
+to such addresses only, and is looked at again before each post); a central on the internet is https://, whose
+certificate is checked as usual, since the host token goes with every heartbeat. `keys` carries no token and takes
+either (it warns about http:// to the internet). The heartbeat and the leave never follow a redirect (the token would
+go with them), and the world's own /status is fetched straight from 127.0.0.1, never through an HTTP(S)_PROXY.
 """
 from __future__ import annotations
 
 import argparse
+import http.client
+import ipaddress
 import json
 import os
 from pathlib import Path
 import re
 import signal
+import socket
 import sys
 import tempfile
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 MAX_REPLY = 64 * 1024
+MAX_HEARTBEAT_REPLY = 8 << 20                 # Every ban rides on it (~41 bytes each): the server's MaxBansFile.
+HEARTBEAT_TIMEOUT = 30.0                      # Central may look up a host name and call the world back (5 s) first.
 KID = re.compile(r'^[A-Za-z0-9_.-]{1,64}$')
 X = re.compile(r'^[A-Za-z0-9_-]{43}$')       # 32 bytes in unpadded base64url.
 WANTED_EVERY = 60
@@ -65,13 +75,37 @@ class AgentError(RuntimeError):
     pass
 
 
-def fetch_json(url: str, timeout: float = 10.0) -> dict:
+class AgentTimeout(AgentError):
+    """Central (or the world) did not answer in time."""
+
+
+def _timed_out(error: BaseException) -> bool:
+    return isinstance(error, TimeoutError) or isinstance(getattr(error, 'reason', None), TimeoutError)
+
+
+class _NoRedirects(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None                             # (urllib then raises the 3xx as an HTTPError: never followed.)
+
+
+_POSTER = urllib.request.build_opener(_NoRedirects)
+# The world's own /status on 127.0.0.1: never through a proxy (HTTP_PROXY with no NO_PROXY would send it there), and
+# never redirected elsewhere.
+_LOCAL = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirects)
+
+
+def fetch_json(url: str, timeout: float = 10.0, opener=None) -> dict:
     request = urllib.request.Request(url, headers={'Accept': 'application/json', 'User-Agent': 'ratw-world-agent/1'})
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as reply:
+        with (opener.open(request, timeout=timeout) if opener else urllib.request.urlopen(request, timeout=timeout)) as reply:
             body = reply.read(MAX_REPLY + 1)
-    except (urllib.error.URLError, OSError, ValueError) as error:
-        raise AgentError(f'{url}: {error}') from error
+    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as error:
+        # (HTTPException: something on the port that doesn't speak HTTP, or a reply cut short.)
+        if isinstance(error, urllib.error.HTTPError):
+            error.close()
+        if _timed_out(error):
+            raise AgentTimeout(f'{url}: no answer in {timeout:g} s') from error
+        raise AgentError(f'{url}: {error!r}' if isinstance(error, http.client.HTTPException) else f'{url}: {error}') from error
     if len(body) > MAX_REPLY:
         raise AgentError(f'{url}: the reply is too large')
     try:
@@ -152,6 +186,10 @@ class KeyKeeper:
             self.log(f'world agent: could not fetch central\'s keys: {error}')
             self.next_due = now + min(self.every, 60)
             return False
+        except Exception as error:                # (Anything else: said, and tried again within a minute.)
+            self.log(f'world agent: could not fetch central\'s keys: {type(error).__name__}: {error}')
+            self.next_due = now + min(self.every, 60)
+            return False
 
 
 def keys_loop(central: str, out: Path, every: float, once: bool, log=print) -> int:
@@ -167,44 +205,64 @@ def keys_loop(central: str, out: Path, every: float, once: bool, log=print) -> i
     return 0
 
 
-class _NoRedirects(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None                             # (urllib then raises the 3xx as an HTTPError: never followed.)
+def plain_http_allowed(url: str) -> tuple[bool | None, str]:
+    """Whether the host token may go to `url` in clear: https://, or http:// to this computer or a private network
+    (every address its name has is loopback, private, link-local or otherwise not on the internet). (allowed, why not):
+    allowed is None when the name can't be looked up now (so it can't be told; nothing is sent until it can)."""
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme == 'https':
+        return True, ''
+    host = parts.hostname or ''
+    if not host:
+        return False, f'{url} names no host'
+    try:
+        addresses = {ipaddress.ip_address(host)}
+    except ValueError:
+        try:
+            addresses = {ipaddress.ip_address(info[4][0].split('%')[0])
+                         for info in socket.getaddrinfo(host, parts.port or 80, proto=socket.IPPROTO_TCP)}
+        except (OSError, ValueError, UnicodeError) as error:
+            return None, f'{host} can\'t be looked up ({error})'
+    public = sorted(str(a) for a in addresses if a.is_global or (a.version == 6 and a.ipv4_mapped and a.ipv4_mapped.is_global))
+    if not addresses or public:
+        return False, (f'{host} is on the internet ({", ".join(public)})' if public else f'{host} has no address')
+    return True, ''
 
 
-_POSTER = urllib.request.build_opener(_NoRedirects)
-
-
-def post_json(url: str, token: str, body: dict, timeout: float = 10.0) -> tuple[int, dict]:
-    """POSTs `body` with the host token: (the HTTP status, the reply's JSON object or {}). AgentError if no reply."""
+def post_json(url: str, token: str, body: dict, timeout: float = 10.0,
+              max_reply: int = MAX_REPLY) -> tuple[int, dict | None]:
+    """POSTs `body` with the host token: (the HTTP status, the reply's JSON object, or None if it was larger than
+    `max_reply` or not a JSON object). AgentError if no reply (AgentTimeout if none in `timeout` seconds)."""
     request = urllib.request.Request(url, data=json.dumps(body).encode('utf-8'), method='POST', headers={
         'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': f'Bearer {token}',
         'User-Agent': 'ratw-world-agent/1'})
     try:
         with _POSTER.open(request, timeout=timeout) as reply:
-            status, raw = reply.status, reply.read(MAX_REPLY + 1)
+            status, raw = reply.status, reply.read(max_reply + 1)
     except urllib.error.HTTPError as error:
         status = error.code
         try:
-            raw = error.read(MAX_REPLY + 1)
-        except OSError:
+            raw = error.read(max_reply + 1)
+        except (OSError, http.client.HTTPException):
             raw = b''
         finally:
             error.close()
-    except (urllib.error.URLError, OSError, ValueError) as error:
-        raise AgentError(f'{url}: {error}') from error
+    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as error:
+        if _timed_out(error):
+            raise AgentTimeout(f'{url}: no answer in {timeout:g} s') from error
+        raise AgentError(f'{url}: {error!r}' if isinstance(error, http.client.HTTPException) else f'{url}: {error}') from error
     try:
-        value = json.loads(raw.decode('utf-8')) if len(raw) <= MAX_REPLY else {}
+        value = json.loads(raw.decode('utf-8')) if len(raw) <= max_reply else None
     except (UnicodeDecodeError, json.JSONDecodeError):
-        value = {}
-    return status, value if isinstance(value, dict) else {}
+        value = None
+    return status, value if isinstance(value, dict) else None
 
 
 def read_token(token_file: Path | None) -> str:
     """The host token, from the file or RATW_HOST_TOKEN; AgentError if there is none that looks like one."""
     if token_file is not None:
         try:
-            token = token_file.read_text(encoding='utf-8').strip()
+            token = token_file.read_text(encoding='utf-8-sig').strip()   # (-sig: Notepad's byte-order mark.)
         except (OSError, UnicodeDecodeError) as error:
             raise AgentError(f'the host token file can\'t be read: {error}') from error
     else:
@@ -247,6 +305,10 @@ class Agent:
         self.halted = False                     # The token is another world's: no more heartbeats, and no leave.
         self.accepted = False                   # Central has answered a heartbeat (so a leave means something).
         self.state = None                       # What was last said about the listing, so each change is said once.
+        self.bans_failing = False               # bans.json can't be written: said when it starts and when it mends.
+        self.trouble = None                     # The last unexpected error in the loop, said once.
+        self.heartbeat_timeout = HEARTBEAT_TIMEOUT
+        self.plain = urllib.parse.urlsplit(self.central).scheme != 'https'
         self.online_note = None
         self.clock_said = False
 
@@ -256,7 +318,7 @@ class Agent:
             self.log(f'world agent: {line}')
 
     def world_status(self) -> dict:
-        status = fetch_json(f'http://127.0.0.1:{self.world_port}/status', timeout=5.0)
+        status = fetch_json(f'http://127.0.0.1:{self.world_port}/status', timeout=5.0, opener=_LOCAL)
         if status.get('ratw') != 'world' or not isinstance(status.get('id'), str):
             raise AgentError(f'port {self.world_port} does not answer as a ticket-mode world')
         return status
@@ -307,11 +369,28 @@ class Agent:
         except AgentError as error:
             self.say(('world',), f'the world on port {self.world_port} does not answer ({error}): no heartbeat until it does')
             return False
+        if self.plain:
+            allowed, why = plain_http_allowed(self.central)
+            if allowed is not True:             # (Looked at again each time: a name may come to resolve elsewhere.)
+                self.say(('plain http', why), f'no heartbeat: {why}, and the host token would go in clear over http:// ' +
+                         ('until it is known to be this computer or a private network' if allowed is None else
+                          'to the internet: give central\'s https:// address'))
+                return False
         try:
-            code, reply = post_json(self.central + '/worlds/heartbeat', self.token, self.body(status))
+            code, reply = post_json(self.central + '/worlds/heartbeat', self.token, self.body(status),
+                                    timeout=self.heartbeat_timeout, max_reply=MAX_HEARTBEAT_REPLY)
+        except AgentTimeout:
+            self.say(('timeout',), f'central did not answer in time ({self.heartbeat_timeout:g} s): the heartbeat may '
+                                   'have counted, but the ban list is not updated until one is answered')
+            return False
         except AgentError as error:
             self.say(('central',), f'could not reach central: {error}')
             return False
+        if code == 200 and reply is None:
+            self.say(('bad reply',), 'central answered the heartbeat (HTTP 200) with a reply that is too large or not '
+                                     f'JSON ({MAX_HEARTBEAT_REPLY >> 20} MB at most): the ban list is not updated')
+            return False
+        reply = reply or {}
         if code != 200 or reply.get('ok') is not True:
             what = reply.get('code') if isinstance(reply.get('code'), str) else f'HTTP {code}'
             error = reply.get('error') if isinstance(reply.get('error'), str) else ''
@@ -333,8 +412,13 @@ class Agent:
         self.accepted = True
         try:
             self.write_bans(reply.get('bans'))
+            if self.bans_failing:
+                self.bans_failing = False
+                self.log('world agent: bans.json is written again')
         except OSError as error:
-            self.say(('bans',), f'could not write bans.json: {error}')
+            if not self.bans_failing:
+                self.bans_failing = True
+                self.log(f'world agent: could not write bans.json: {error} (the world keeps its last ban list)')
         listed = reply.get('listed') is True
         why = reply.get('why') if isinstance(reply.get('why'), str) else ''
         address = reply.get('address') if isinstance(reply.get('address'), str) else '?'
@@ -350,11 +434,23 @@ class Agent:
         return True
 
     def leave(self) -> None:
+        if self.plain:
+            allowed, why = plain_http_allowed(self.central)
+            if allowed is not True:
+                self.log(f'world agent: no leave sent: {why}, and the host token would go in clear over http://')
+                return
         try:
             code, _ = post_json(self.central + '/worlds/leave', self.token, {}, timeout=5.0)
             self.log('world agent: left central\'s list' if code == 200 else f'world agent: the leave was refused (HTTP {code})')
         except AgentError as error:
             self.log(f'world agent: could not tell central the world is leaving: {error}')
+
+    def unexpected(self, what: str, error: BaseException) -> None:
+        """An error nothing above expected: said once (without the token), and the loop carries on."""
+        line = f'{what}: {type(error).__name__}: {error}'.replace(self.token, '<host token>')
+        if line != self.trouble:
+            self.trouble = line
+            self.log(f'world agent: unexpected trouble in {line} (carrying on)')
 
     def run(self) -> int:
         self.log(f'world agent: heartbeats every {self.every:g} s for the world on port {self.world_port}, to '
@@ -362,10 +458,17 @@ class Agent:
         next_beat = 0.0
         while not self.stop.is_set():
             now = time.monotonic()
-            self.keys.step(now)
+            try:
+                self.keys.step(now)
+            except Exception as error:          # (KeyKeeper.step says its own; this is a last resort.)
+                self.keys.next_due = now + 60
+                self.unexpected('the keys', error)
             if not self.halted and now >= next_beat:
                 next_beat = now + self.every
-                self.heartbeat()
+                try:
+                    self.heartbeat()
+                except Exception as error:
+                    self.unexpected('the heartbeat', error)
             self.stop.wait(min(0.5, self.every))
         if self.accepted and not self.halted:
             self.leave()
@@ -398,6 +501,12 @@ def main(argv=None) -> int:
         parser.error('--central is http(s)://...')
     log = lambda line: print(line, flush=True)   # noqa: E731
     if args.command == 'run':
+        allowed, why = plain_http_allowed(args.central)
+        if allowed is None:                     # (Not fatal: each heartbeat looks again, and sends nothing till then.)
+            log(f'world agent: warning: {why}: no heartbeat until it can be, and is this computer or a private network')
+        elif not allowed:
+            parser.error(f'--central: {why}, and the host token would go in clear: http:// is only for a central on '
+                         'this computer or a private network; give its https:// address')
         if not 0 < args.world_port < 65536:
             parser.error('--world-port is 1-65535')
         if args.every <= 0:
@@ -416,6 +525,9 @@ def main(argv=None) -> int:
             signal.signal(sig, lambda *_: agent.stop.set())
         return agent.run()
     if args.command == 'keys':
+        if plain_http_allowed(args.central)[0] is False:
+            log(f'world agent: warning: {args.central} is http:// to the internet: keys fetched in clear could be '
+                'swapped on the way; use https://')
         return keys_loop(args.central, args.out, max(60.0, args.every) if not args.once else args.every, args.once, log=log)
     return 2
 

@@ -9,7 +9,8 @@
 import {Central, CentralError, type HostWorld, type ListedWorld} from './net/central.ts';
 import {Connection} from './net/connection.ts';
 import {ClientBuild} from './net/build.ts';
-import {addressText, compatibility, fetchStatus, isLoopback, parseAddress, socketUrl, statusLine, type WorldAddress, type WorldStatus} from './net/worlds.ts';
+import {addressText, compatibility, fetchStatus, isLoopback, parseAddress, shownAddress, socketUrl, statusLine, type WorldAddress,
+    type WorldStatus} from './net/worlds.ts';
 import type {SessionView} from './net/session.ts';
 import {FrontDoor, type DoorWorld} from './ui/frontDoor.ts';
 import {artCache} from './ui/artwork.ts';
@@ -23,7 +24,8 @@ interface Target {
     id: string;
     name: string;
     kind: string;
-    address: WorldAddress;
+    address: WorldAddress;   // Where the client connects (and pings).
+    host: string;            // The host name central lists it under, shown in its place, or ''.
     listedProtocol: number | null;
     description: string;
 }
@@ -143,7 +145,8 @@ export class ClientApp {
             const status = this.statuses.get(t.id);
             const fit = compatibility(ClientBuild, status ?? null, t.listedProtocol);
             const listed = this.listed.find(w => w.id === t.id) ?? null;
-            out.push({id: t.id, name: t.name, kind: t.kind, address: addressText(t.address), secure: t.address.secure, description: t.description,
+            out.push({id: t.id, name: t.name, kind: t.kind, address: addressText(t.address), host: t.host ? shownAddress(t.address, t.host) : '',
+                secure: t.address.secure, description: t.description,
                 region: listed?.region ?? '', tags: listed?.tags ?? [], fit: fit.fit, note: fit.note, status: statusLine(status, listed)});
         };
         for (const w of this.listed) {
@@ -156,7 +159,7 @@ export class ClientApp {
 
     private targetOf(w: ListedWorld): Target | null {
         const address = parseAddress(w.address, w.secure);
-        return address ? {id: w.id, name: w.name, kind: w.kind, address, listedProtocol: w.protocol, description: w.description} : null;
+        return address ? {id: w.id, name: w.name, kind: w.kind, address, host: w.host, listedProtocol: w.protocol, description: w.description} : null;
     }
 
     private async askStatus(w: ListedWorld) {
@@ -304,7 +307,7 @@ export class ClientApp {
             if (!address) return this.fail('That is not a world\'s address: type host:port, for example 192.168.1.20:7788.');
             status = await fetchStatus(address, this.shell.native ? (cmd, a) => this.shell.invoke(cmd, a) : null);
             if (!status) return this.fail(`No world answers at ${addressText(address)}.`);
-            target = {id: status.id, name: status.name || addressText(address), kind: status.kind, address, listedProtocol: null, description: ''};
+            target = {id: status.id, name: status.name || addressText(address), kind: status.kind, address, host: '', listedProtocol: null, description: ''};
             this.statuses.set(status.id, status);
             if (!this.listed.some(w => w.id === status!.id)) this.direct = [target, ...this.direct.filter(t => t.id !== target!.id)].slice(0, 5);
         }
@@ -357,7 +360,7 @@ export class ClientApp {
             this.toDoor();
             this.connection = null;
             this.lobby('worlds', false, wasIn ? `The connection to ${name} was lost. Reconnect asks central for a new ticket.`
-                : `Could not reach ${name} at ${this.target ? addressText(this.target.address) : 'its address'}.`);
+                : `Could not reach ${name} at ${this.target ? shownAddress(this.target.address, this.target.host) : 'its address'}.`);
             return;
         }
         if (str(event, 'mode') !== 'ticket') {

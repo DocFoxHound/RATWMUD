@@ -448,7 +448,12 @@ official worlds could both write one wolf.
 - **The address is where the heartbeat came from**, never a field the host fills in. Otherwise a listing could point
   every client's ping, and central's own call-back, at someone else's machine or at addresses inside central's box
   (its database, the DM tool, the cloud's metadata address). An optional host name is accepted only if it resolves to
-  that same address. Private, loopback, link-local and reserved ranges are never listed.
+  exactly that address and nothing else; single-label names and names under `.internal`, `.local`, `.localhost`,
+  `.lan` and `.home.arpa` are refused before any lookup, and a refusal never shows central's own DNS answers.
+  Private, loopback, link-local and reserved ranges are never listed.
+- **What the list gives the client.** `address` is always what to connect to. A plain `ws://` world lists the
+  checked IP and port there (a name could be re-pointed after the check: DNS rebinding), with the name in `host` for
+  display only. A `wss://` world lists `name:port`, since its certificate binds the name, plus the checked `ip`.
 - **Call-back.** Before first listing, and every 10 minutes after, central fetches `http://address:port/status`, with
   a 5-second timeout, a 2 KB cap, no redirects, and the connection made to the address already checked (no second
   name lookup).
@@ -1302,6 +1307,49 @@ webpki's roots (the relay is only for Windows's plain `ws://` question).
 
 Not yet seen with the screen on, after the fixes: the first launch's size, and drawing (the screen was off for the last
 runs; before the fixes it drew at 60 frames a second).
+
+**2026-11-07/08: Phase 4, the world list (4a and 4b together; branch `r2-desktop`, `d5c6d8c` then the review's
+fixes).** No simulation and no real server; throwaway databases only.
+
+Built:
+- **Central** (migration 0002, 0003): host tokens (`rh_…`, hashed, shown once, expire after 90 days unused; a new
+  token or a revoke delists the world at once). `POST /worlds/heartbeat` and `/worlds/leave`, `GET /worlds` from
+  heartbeats under 3 minutes old. The address comes from the heartbeat's source (private addresses only with
+  `serve --local-worlds`, for this laptop and the LAN); the call-back to `/status` before listing and every 10 minutes.
+  Honest counts: a wolf counts only if its latest ticket, to any world, in the last day, was for this world, it still
+  exists and its account isn't banned; capped at the player limit. A ban list per world (pairwise ids on community
+  worlds) in the heartbeat's reply. The Host page's calls (approved hosts, 3 worlds each). A word filter
+  (`central_words.py`, `blocked_words.txt`) on wolf names and every listing field. `ratw_central.py worlds
+  add/token/revoke/set/list`.
+- **The world:** `online.json` written every 15 s for the agent (not by a `--scratch` server), `bans.json` read; a
+  banned account refused at `hello` and sent out if it's in the world.
+- **The world agent** (`tools/world_agent.py run`): keys, the heartbeat from the world's own `/status` and
+  `online.json`, `bans.json`, leave on stop.
+- **The client:** the Host page (make a world, its token shown once with both commands a host runs, a new token,
+  remove); the list shows central's counts until the shell's ping answers, and `host` as the display address.
+
+**Review (after `d5c6d8c`).** 25 findings kept, all fixed (the fixing was cut off by a power failure on 2026-11-08 and
+finished from the half-done tree):
+- **Central (14).** A host name with extra A/AAAA records was listed (the resolved set must now equal the source); a
+  `ws://` listing handed out the bare name (rebinding: see section 7); unknown tokens grew the rate limiter without
+  bound (tokens are looked up first; failures counted per address, per /64 on IPv6; empty keys swept); heartbeat
+  replies echoed central's DNS answers for internal names; past visitors padded the count; a new token didn't delist;
+  a heartbeat in flight during a revoke still wrote (the update is tied to the token it was checked with). The word
+  filter: invisible characters, homoglyphs, `1`/`|` for `l`, digit suffixes, repeated letters and the region and tag
+  fields got through; the `-es` rule refused "spices", `*nigger` refused "snigger", and ten ordinary words were on the
+  list (taken off).
+- **The world and its agent (9).** A closing connection read without limit (now thrown away, 5 s deadline); a scratch
+  server wrote the real agent's `online.json`; ban lists over 64 KB were dropped (8 MB now, about 1,600 bans before);
+  a reply that isn't HTTP crashed the agent; the token went in clear to any `http://` central (plain http only to a
+  loopback or private address); `/status` went through `HTTP_PROXY`; a token file with a BOM was refused; the timeout
+  had no margin (30 s); a `bans.json` write failure repeated in the log every minute.
+- **The client (2).** The Host page left out `--central` and `--bind 0.0.0.0`; the page guessed central's scheme (the
+  shell now gives the real URL).
+
+Tests: central 69/69, the join test 2/2, ctest 82/82, the agent 17/17, the client 144/144, the shell 19/19, the
+browser run 8/8. The real app's run wasn't repeated after the fixes.
+
+Left, on purpose: reports and delisting tools for the user (Phase 7); the official flag stays by hand.
 
 ## Review (2026-11-07)
 

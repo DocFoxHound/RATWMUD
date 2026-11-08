@@ -18,7 +18,8 @@ export interface CentralReply {
 export interface CentralTransport {
     /** Where central is, for the page to say ("127.0.0.1:7790"), and whether it is the built-in one. */
     readonly where: string;
-    /** Central's address as a URL ("http://127.0.0.1:7790"), for the world agent's command on the Host page. */
+    /** Central's address as a URL ("http://127.0.0.1:7790"), for the world's and the agent's commands on the Host page;
+     *  '' when it isn't known. */
     readonly url: string;
     readonly development: boolean;
     /** Whether "remember me" is kept between launches. */
@@ -123,9 +124,11 @@ export class ShellCentral implements CentralTransport {
     readonly canRemember = true;
     private invoke: <T>(command: string, args?: Record<string, unknown>) => Promise<T>;
 
-    constructor(info: {where: string; development: boolean}, invoke: <T>(command: string, args?: Record<string, unknown>) => Promise<T>) {
+    /** `info` is the shell's central_info: `url` is the base it was started with, scheme and all (never guessed here:
+     *  an https:// central can be on this computer too). */
+    constructor(info: {where: string; url?: unknown; development: boolean}, invoke: <T>(command: string, args?: Record<string, unknown>) => Promise<T>) {
         this.where = info.where;
-        this.url = centralUrl(info.where);
+        this.url = baseUrl(info.url);
         this.development = info.development;
         this.invoke = invoke;
     }
@@ -149,12 +152,10 @@ export class ShellCentral implements CentralTransport {
     }
 }
 
-/** The shell names central without its scheme ("127.0.0.1:7790"); it takes plain http:// only to this computer and
- *  https:// anywhere else (Desktop/src-tauri/src/central.rs, parse_central), so the scheme follows from the host. */
-export function centralUrl(where: string): string {
-    const host = where.startsWith('[') ? where.slice(1, where.indexOf(']')) : where.replace(/:\d+$/, '');
-    const loopback = host === 'localhost' || host === '::1' || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host);
-    return `${loopback ? 'http' : 'https'}://${where}`;
+/** Central's base URL as the shell gives it (central.rs, parse_central: a scheme, a host and a port, nothing else), or ''
+ *  when it isn't one: it goes into commands a host copies, so nothing but that shape is taken. */
+export function baseUrl(given: unknown): string {
+    return typeof given === 'string' && /^https?:\/\/(\[[0-9a-f:.]+\]|[a-z0-9.-]+)(:\d{1,5})?$/i.test(given) ? given : '';
 }
 
 function isJson(v: unknown): v is Json {
@@ -183,7 +184,8 @@ export interface ListedWorld {
     id: string;
     name: string;
     kind: string;            // 'official' or 'community', set by central.
-    address: string;         // "host:port"
+    address: string;         // Where to connect: "ip:port" central called back (ws://), or "host:port" (wss://).
+    host: string;            // A host name to show in its place, or '' (doc 77, 7: shown, never connected to for ws://).
     secure: boolean;         // wss://
     protocol: number | null;
     description: string;
@@ -219,15 +221,28 @@ export function agoText(at: number | null, now = Date.now() / 1000): string {
     return new Date(at * 1000).toISOString().slice(0, 10);
 }
 
+/** A word for a POSIX shell: as it is when it is plain, in single quotes otherwise (a world's name can hold anything). */
+export function shellWord(word: string): string {
+    return /^[A-Za-z0-9_@%+=:,./-]+$/.test(word) ? word : `'${word.replace(/'/g, `'\\''`)}'`;
+}
+
+/** The world server's command in ticket mode, for a host to run (doc 77, 5.1): on every address (--bind 0.0.0.0), or
+ *  central's call-back can't reach it; central's keys from the agent's file. Phase 5's package makes both commands one. */
+export function serverCommand(world: string, name: string, central: string): string {
+    return `ratw_server --save Saved/World/save.json --port 7788 --bind 0.0.0.0 --central ${shellWord(central)} ` +
+        `--world-id ${shellWord(world)} --central-keys Saved/World/central-keys.json --world-name ${shellWord(name)}`;
+}
+
 /** The world agent's command, for a host to run beside their world (tools/world_agent.py run, doc 77 Phase 4): the token
  *  goes in by the environment, never as an argument, so it stays out of the process list. */
 export function agentCommand(token: string, central: string): string {
-    return `RATW_HOST_TOKEN=${token} python3 tools/world_agent.py run --central ${central} --dir Saved/World --world-port 7788`;
+    return `RATW_HOST_TOKEN=${shellWord(token)} python3 tools/world_agent.py run --central ${shellWord(central)} --dir Saved/World --world-port 7788`;
 }
 
 const WorldId = /^world-[0-9a-f]{32}$/;
 const text = (v: unknown, most: number) => (typeof v === 'string' ? v.slice(0, most) : '');
 const count = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.trunc(v)) : 0);
+const HostName = /^(?=.{1,253}$)[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i;
 const when = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null);
 
 /** A world from central's public list, or null when it isn't one. */
@@ -235,7 +250,8 @@ export function readListedWorld(w: Json): ListedWorld | null {
     const id = String(w.id ?? '');
     const address = text(w.address, 260);
     if (!WorldId.test(id) || !address) return null;
-    return {id, name: text(w.name, 48), kind: w.kind === 'official' ? 'official' : 'community', address, secure: w.secure === true,
+    const host = typeof w.host === 'string' && HostName.test(w.host) ? w.host.toLowerCase() : '';
+    return {id, name: text(w.name, 48), kind: w.kind === 'official' ? 'official' : 'community', address, host, secure: w.secure === true,
         protocol: typeof w.protocol === 'number' ? w.protocol : null, description: text(w.description, 300),
         players: count(w.players), limit: count(w.limit), region: text(w.region, 32),
         tags: (Array.isArray(w.tags) ? w.tags : []).filter((t): t is string => typeof t === 'string').slice(0, 5).map(t => t.slice(0, 16)),

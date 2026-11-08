@@ -42,7 +42,7 @@ function randomiseAppearance(d: Json) {
 }
 import {arr, bool, isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
-import {agentCommand, agoText} from '../net/central.ts';
+import {agentCommand, agoText, serverCommand} from '../net/central.ts';
 
 type Page = 'login' | 'register' | 'roster' | 'creator' | 'review' | 'worlds' | 'arrive' | 'host';
 
@@ -51,7 +51,8 @@ export interface DoorWorld {
     id: string;              // '' for one reached by its address alone
     name: string;
     kind: string;            // 'official' | 'community'
-    address: string;         // "host:port"
+    address: string;         // "host:port", the one connected to.
+    host: string;            // What to show for it (the world's host name and port), or '' to show the address.
     secure: boolean;
     description: string;
     region: string;          // What the world's host says of it: where it is, and a few tags.
@@ -262,7 +263,7 @@ export class FrontDoor {
             // Central mode: the world list for one wolf (client.ts).
             this.stage = 'characters';
             this.worlds = arr(event, 'worlds').filter(isObject).map(w => ({id: str(w, 'id'), name: str(w, 'name'), kind: str(w, 'kind'),
-                address: str(w, 'address'), secure: bool(w, 'secure'), description: str(w, 'description'), region: str(w, 'region'),
+                address: str(w, 'address'), host: str(w, 'host'), secure: bool(w, 'secure'), description: str(w, 'description'), region: str(w, 'region'),
                 tags: arr(w, 'tags').filter((t): t is string => typeof t === 'string'), fit: str(w, 'fit', 'unknown'),
                 note: str(w, 'note'), status: str(w, 'status')}));
             this.worldsWolf = str(event, 'wolf', this.selectedId);
@@ -665,7 +666,7 @@ export class FrontDoor {
                     el('div', {className: 'world-title'}, el('strong', {}, w.name), kind, ...(plain ? [el('span', {className: 'world-kind'}, 'NOT ENCRYPTED')] : [])),
                     ...(w.description ? [el('p', {className: 'muted'}, w.description)] : []),
                     ...(w.region || w.tags.length ? [el('p', {className: 'sage small'}, [w.region, ...w.tags].filter(Boolean).join('  ·  '))] : []),
-                    el('p', {className: 'muted small'}, w.address, '  ·  ', status),
+                    el('p', {className: 'muted small', title: w.host ? w.address : ''}, w.host || w.address, '  ·  ', status),
                     note),
                 join);
             row.dataset.world = w.id;
@@ -798,25 +799,38 @@ export class FrontDoor {
         return el('div', {className: 'door-row'}, side, card);
     }
 
-    /** The token just made, shown this once, and the agent's command with it. */
+    /** The token just made, shown this once, and the two commands a host runs with it: the world server in ticket mode and
+     *  the world agent beside it (Phase 5's package will make them one). */
     private tokenBox(): HTMLElement {
         const world = this.hostWorlds.find(w => w.id === this.hostTokenWorld);
         const token = el('input', {type: 'text', readOnly: true, value: this.hostToken, className: 'host-token'});
         token.name = 'hostToken';
         token.spellcheck = false;
         token.addEventListener('focus', () => token.select());
-        const command = agentCommand(this.hostToken, this.hostCentral || 'URL');
+        const central = this.hostCentral || 'URL';
+        const server = serverCommand(this.hostTokenWorld, world?.name ?? '', central);
+        const command = agentCommand(this.hostToken, central);
+        const shownServer = el('pre', {className: 'host-command'}, server);
+        shownServer.dataset.command = 'server';
+        shownServer.style.flex = '1';   // (Beside its COPY: styles.css lays out the row for an input.)
+        const shownAgent = el('pre', {className: 'host-command'}, command);
+        shownAgent.dataset.command = 'agent';
         const copyToken = this.button('COPY', () => void this.copy(this.hostToken, 'The token is copied.', token));
         copyToken.dataset.action = 'host-copy';
-        const shown = el('pre', {className: 'host-command'}, command);
+        const copyServer = this.button('COPY', () => void this.copy(server, 'The world\'s command is copied.', null));
+        copyServer.dataset.action = 'host-copy-server';
         const copyCommand = this.button('COPY THE COMMAND', () => void this.copy(command, 'The command is copied.', null));
         copyCommand.dataset.action = 'host-copy-command';
         return el('div', {className: 'host-token-box'},
             el('p', {className: 'gold small'}, `THE TOKEN FOR ${(world?.name ?? 'YOUR WORLD').toUpperCase()} · SHOWN THIS ONCE`),
             el('div', {className: 'host-token-row'}, token, copyToken),
-            el('p', {className: 'muted small'}, `The world runs with --world-id ${this.hostTokenWorld} --central-keys ` +
-                'Saved/World/central-keys.json; beside it, the world agent with the token:'),
-            shown,
+            el('p', {className: 'muted small'}, 'Run the world, on every address of this computer (--bind 0.0.0.0) so central can ' +
+                'call it back, with central\'s keys from the agent\'s folder:'),
+            el('div', {className: 'host-token-row'}, shownServer, copyServer),
+            el('p', {className: 'muted small'}, 'Beside it, in the same folder, the world agent with the token (it fetches the keys ' +
+                'and keeps the world on the list):'),
+            shownAgent,
+            el('p', {className: 'muted small'}, 'One package will run both with one command (doc 77, Phase 5).'),
             el('div', {className: 'host-token-row'}, el('p', {className: 'muted small'}, 'Keep it somewhere safe: it isn\'t shown again. ' +
                 'Anyone with it can list a world as this one.'), copyCommand));
     }

@@ -37,6 +37,12 @@ export function addressText(a: WorldAddress): string {
     return `${hostPart(a)}:${a.port}`;
 }
 
+/** What the page shows for a world: its listed host name with the port (doc 77, 7: shown only; a ws:// world is reached
+ *  at the address central called back), or the address itself. */
+export function shownAddress(a: WorldAddress, host: string): string {
+    return host ? `${host}:${a.port}` : addressText(a);
+}
+
 export function socketUrl(a: WorldAddress): string {
     return `${a.secure ? 'wss' : 'ws'}://${hostPart(a)}:${a.port}/ws`;
 }

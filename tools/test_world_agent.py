@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """The world agent (tools/world_agent.py; Docs/Design/77-central-accounts-and-hosted-worlds.md, 5.1 and 7) against a fake
 central and a fake world, both small http.servers on this computer: the heartbeat's body, online.json and bans.json,
-the listing's changes in the log, a token for another world, refusals, no redirects, the keys, and the leave on
-SIGTERM. Standard library only; starts no game server and touches no database.
+the listing's changes in the log, a token for another world, refusals, no redirects, the keys, the leave on
+SIGTERM, plain http:// only to this computer or a private network, a large ban list, replies that aren't HTTP, slow
+or broken centrals, no proxy for the world's own /status, and a token file with a byte-order mark. Standard library only; starts no game server and touches no database.
 
   python3 tools/test_world_agent.py
 """
 from __future__ import annotations
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import importlib.util
 import json
 import os
 from pathlib import Path
 import signal
+import socket
 import subprocess
 import sys
 import tempfile
@@ -61,7 +64,10 @@ class Fake:
                 for name, value in extra.items():
                     self.send_header(name, value)
                 self.end_headers()
-                self.wfile.write(data)
+                try:
+                    self.wfile.write(data)
+                except (BrokenPipeError, ConnectionResetError):
+                    pass                            # (The agent gave up waiting: a test of a slow central.)
 
             def do_GET(self):
                 self.answer('GET')
@@ -89,6 +95,35 @@ def world_status(world_id=WORLD, **change):
               'private': False, 'cheats': True}
     status.update(change)
     return status
+
+
+class Garbage:
+    """Something on a port that doesn't speak HTTP: each connection gets a line of nonsense and is closed."""
+
+    def __init__(self):
+        self.socket = socket.socket()
+        self.socket.bind(('127.0.0.1', 0))
+        self.socket.listen()
+        self.port = self.socket.getsockname()[1]
+        self.url = f'http://127.0.0.1:{self.port}'
+        self.thread = threading.Thread(target=self.serve, daemon=True)
+        self.thread.start()
+
+    def serve(self):
+        while True:
+            try:
+                connection, _ = self.socket.accept()
+            except OSError:
+                return
+            with connection:
+                try:
+                    connection.recv(65536)
+                    connection.sendall(b'SSH-2.0-OpenSSH_9.6 not a web server\r\n')
+                except OSError:
+                    pass
+
+    def close(self):
+        self.socket.close()
 
 
 class Central:
@@ -294,9 +329,139 @@ class AgentTests(unittest.TestCase):
         token_file = self.dir / 'token'
         token_file.write_text(TOKEN + '\n')
         self.assertEqual(agent.read_token(token_file), TOKEN)
+        token_file.write_bytes(b'\xef\xbb\xbf' + TOKEN.encode() + b'\r\n')   # (Notepad's byte-order mark.)
+        self.assertEqual(agent.read_token(token_file), TOKEN)
         token_file.write_text('rh_has a space\n')
         with self.assertRaises(agent.AgentError):
             agent.read_token(token_file)
+
+    def test_plain_http_goes_only_to_this_computer_or_a_private_network(self):
+        for url in ('http://127.0.0.1:8080', 'http://localhost:8080', 'http://10.1.2.3', 'http://172.20.0.5:80',
+                    'http://192.168.1.20:8787', 'http://169.254.7.7', 'http://[::1]:8080', 'http://[fd00::5]',
+                    'https://central.example.net', 'https://8.8.8.8'):
+            self.assertEqual(agent.plain_http_allowed(url), (True, ''), url)
+        for url in ('http://8.8.8.8', 'http://1.1.1.1:8080', 'http://[2606:4700:4700::1111]', 'http://[::ffff:8.8.8.8]'):
+            allowed, why = agent.plain_http_allowed(url)
+            self.assertIs(allowed, False, url)
+            self.assertIn('on the internet', why)
+        self.assertIs(agent.plain_http_allowed('http://no-such-central.invalid')[0], None, "a name that can't be looked up")
+        # The agent posts nothing to a public http:// central (the token would go in clear) and says so once.
+        a = agent.Agent('http://8.8.8.8:9', self.dir, self.world.port, TOKEN, log=self.lines.append)
+        self.assertFalse(a.heartbeat())
+        self.assertFalse(a.heartbeat())
+        self.assertEqual(sum('in clear' in line and 'https://' in line for line in self.lines), 1, self.lines)
+        a.accepted = True
+        a.leave()
+        self.assertIn('no leave sent', self.lines[-1])
+        # And the command refuses one outright, before anything is sent.
+        done = subprocess.run([sys.executable, str(Path(agent.__file__)), 'run', '--central', 'http://8.8.8.8:9',
+                               '--dir', str(self.dir), '--world-port', str(self.world.port)],
+                              env=dict(os.environ, RATW_HOST_TOKEN=TOKEN), capture_output=True, text=True, timeout=10)
+        self.assertEqual(done.returncode, 2)
+        self.assertIn('https://', done.stderr)
+        self.assertNotIn(TOKEN, done.stdout + done.stderr)
+
+    def test_a_large_ban_list_reaches_the_world(self):
+        self.central.bans = [f'acct-{n:032x}' for n in range(5000)]   # (~200 KB of reply: well past 64 KB.)
+        a = self.make()
+        self.assertTrue(a.heartbeat())
+        self.assertEqual(len(json.loads((self.dir / 'bans.json').read_text())['accounts']), 5000)
+        # A reply past the cap (or not JSON) is its own trouble, not a refusal, and the last bans.json is kept.
+        old = agent.MAX_HEARTBEAT_REPLY
+        agent.MAX_HEARTBEAT_REPLY = 64 * 1024
+        try:
+            self.assertFalse(a.heartbeat())
+        finally:
+            agent.MAX_HEARTBEAT_REPLY = old
+        self.assertIn('too large or not JSON', self.lines[-1])
+        self.assertNotIn('refused', self.lines[-1])
+        self.assertEqual(len(json.loads((self.dir / 'bans.json').read_text())['accounts']), 5000)
+
+    def test_something_that_is_not_http_is_an_error_not_a_crash(self):
+        garbage = Garbage()
+        try:
+            a = agent.Agent(self.fake.url, self.dir, garbage.port, TOKEN, log=self.lines.append)
+            self.assertFalse(a.heartbeat())
+            self.assertIn('does not answer', self.lines[-1])
+            a = agent.Agent(garbage.url, self.dir, self.world.port, TOKEN, log=self.lines.append)
+            self.assertFalse(a.heartbeat())
+            self.assertIn('could not reach central', self.lines[-1])
+            with self.assertRaises(agent.AgentError):
+                agent.fetch_keys(garbage.url, self.dir / 'keys.json')
+            self.assertFalse(agent.KeyKeeper(garbage.url, self.dir / 'keys.json', 3600, self.lines.append).step(0.0))
+        finally:
+            garbage.close()
+
+    def test_the_loop_carries_on_after_an_unexpected_error_and_never_logs_the_token(self):
+        a = self.make(every=0.1)
+        beats = []
+
+        def broken():
+            beats.append(1)
+            raise RuntimeError(f'something odd with Bearer {TOKEN}')
+        a.heartbeat = broken
+        thread = threading.Thread(target=a.run)
+        thread.start()
+        deadline = time.time() + 10
+        while len(beats) < 3 and time.time() < deadline:
+            time.sleep(0.05)
+        a.stop.set()
+        thread.join(5)
+        self.assertFalse(thread.is_alive())
+        self.assertGreaterEqual(len(beats), 3, 'the loop went on beating')
+        self.assertEqual(sum('unexpected trouble' in line for line in self.lines), 1, self.lines)
+        self.assertFalse([line for line in self.lines if TOKEN in line], 'the token is never logged')
+
+    def test_a_slow_central_is_said_as_such(self):
+        def slow(body, headers):
+            time.sleep(1.0)
+            return self.central.heartbeat(body, headers)
+        self.fake.routes[('POST', '/worlds/heartbeat')] = slow
+        a = self.make()
+        self.assertEqual(a.heartbeat_timeout, 30.0, 'well past central\'s look-up and call-back')
+        a.heartbeat_timeout = 0.3
+        self.assertFalse(a.heartbeat())
+        self.assertIn('did not answer in time', self.lines[-1])
+        self.assertFalse((self.dir / 'bans.json').exists())
+
+    def test_a_bans_file_that_cant_be_written_is_said_when_it_starts_and_when_it_mends(self):
+        (self.dir / 'bans.json').mkdir()             # (os.replace can't put a file over a directory.)
+        a = self.make()
+        for _ in range(3):
+            self.assertTrue(a.heartbeat())
+        self.assertEqual(sum('could not write bans.json' in line for line in self.lines), 1, self.lines)
+        self.assertEqual(sum('not listed' in line for line in self.lines), 1, self.lines)
+        (self.dir / 'bans.json').rmdir()
+        a.heartbeat()
+        a.heartbeat()
+        self.assertEqual(sum('bans.json is written again' in line for line in self.lines), 1, self.lines)
+        self.assertEqual(sum('not listed' in line for line in self.lines), 1, 'the listing is not said again')
+
+    def test_the_worlds_own_status_goes_past_a_proxy_and_no_redirect(self):
+        proxy = Fake({})
+        old = {k: os.environ.get(k) for k in ('HTTP_PROXY', 'http_proxy', 'NO_PROXY', 'no_proxy')}
+        try:
+            for k in old:
+                os.environ.pop(k, None)
+            os.environ['HTTP_PROXY'] = os.environ['http_proxy'] = proxy.url
+            spec = importlib.util.spec_from_file_location('world_agent_proxied', agent.__file__)
+            proxied = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(proxied)        # (Its openers are built with the proxy in the environment.)
+            a = proxied.Agent(self.fake.url, self.dir, self.world.port, TOKEN, log=self.lines.append)
+            self.assertEqual(a.world_status()['id'], WORLD)
+            self.assertFalse(proxy.seen, 'the local /status did not go to the proxy')
+            self.assertEqual(len(self.world.calls('/status')), 1)
+        finally:
+            for k, v in old.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+            proxy.close()
+        self.world.routes[('GET', '/status')] = lambda body, headers: (302, {}, {'Location': self.world.url + '/elsewhere'})
+        with self.assertRaises(agent.AgentError):
+            self.make().world_status()
+        self.assertFalse(self.world.calls('/elsewhere'), 'not followed')
 
     def test_the_keys_command_is_as_it_was(self):
         out = self.dir / 'keys.json'

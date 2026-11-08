@@ -2,9 +2,9 @@
 // page's calls (Docs/Design/77-central-accounts-and-hosted-worlds.md, 3.2 and 7).
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {agentCommand, agoText, allowedCall, Central, CentralError, centralUrl, readHostWorld, readListedWorld,
-    type CentralReply, type CentralTransport} from './central.ts';
-import {statusLine} from './worlds.ts';
+import {agentCommand, agoText, allowedCall, baseUrl, Central, CentralError, readHostWorld, readListedWorld, serverCommand, shellWord,
+    ShellCentral, type CentralReply, type CentralTransport} from './central.ts';
+import {parseAddress, shownAddress, statusLine} from './worlds.ts';
 import type {Json} from '../game/json.ts';
 
 const World = 'world-0123456789abcdef0123456789abcdef';
@@ -43,6 +43,7 @@ test('central\'s list carries the count and the listing until a world\'s own sta
     assert.equal(readListedWorld({id: 'world-nope', address: '1.2.3.4:7788'}), null);
     assert.equal(readListedWorld({id: World}), null, 'no address, not joinable');
     assert.equal(readListedWorld({id: World, address: 'a:1', kind: 'official?'})?.kind, 'community', 'only central says official');
+    assert.equal(w.host, '', 'no host name, the address shown');
     assert.equal(statusLine(undefined, w), '3 of 40 wolves · asking…');
     assert.equal(statusLine(undefined, null), 'Asking…');
     assert.equal(statusLine(null, w), 'Not answering');
@@ -115,14 +116,49 @@ test('the Host page\'s calls go where the contract says, and central\'s refusals
     await assert.rejects(refused.makeWorld('Fourth'), (e: unknown) => e instanceof CentralError && e.code === 'too_many' && e.message === 'At most 3 worlds.');
 });
 
-test('central\'s URL for the agent\'s command, from the shell\'s name for it', () => {
-    assert.equal(centralUrl('127.0.0.1:7790'), 'http://127.0.0.1:7790');
-    assert.equal(centralUrl('localhost:7790'), 'http://localhost:7790');
-    assert.equal(centralUrl('[::1]:7790'), 'http://[::1]:7790');
-    assert.equal(centralUrl('central.example.net'), 'https://central.example.net');
-    assert.equal(centralUrl('203.0.113.9:8443'), 'https://203.0.113.9:8443');
-    const command = agentCommand('rh_abc', 'http://127.0.0.1:7790');
-    assert.equal(command, 'RATW_HOST_TOKEN=rh_abc python3 tools/world_agent.py run --central http://127.0.0.1:7790 --dir Saved/World --world-port 7788');
+test('a world listed under a host name: connected to (and pinged) at its address, shown by its name', () => {
+    // ws://: the address is the IP central called back; the name is for showing only (doc 77, 7: no DNS rebinding).
+    const plain = readListedWorld({id: World, name: 'Valley', address: '203.0.113.5:7788', host: 'Valley.Example.net', secure: false});
+    assert.ok(plain);
+    assert.equal(plain.address, '203.0.113.5:7788');
+    assert.equal(plain.host, 'valley.example.net');
+    const at = parseAddress(plain.address, plain.secure);
+    assert.ok(at);
+    assert.equal(at.host, '203.0.113.5', 'the client connects to the address, never the name');
+    assert.equal(shownAddress(at, plain.host), 'valley.example.net:7788');
+    assert.equal(shownAddress(at, ''), '203.0.113.5:7788');
+    // wss://: the address is host:port (the certificate binds the name), the IP beside it.
+    const secure = readListedWorld({id: World, address: 'valley.example.net:443', host: 'valley.example.net', ip: '203.0.113.5', secure: true});
+    assert.equal(secure?.address, 'valley.example.net:443');
+    // Anything that isn't a host name is left out, never shown.
+    for (const bad of [null, 7, '', 'valley', '<b>x</b>.net', 'a b.net', '-a.net', 'a..net', `${'a'.repeat(64)}.net`])
+        assert.equal(readListedWorld({id: World, address: '203.0.113.5:7788', host: bad as Json[string]})?.host, '', String(bad));
+});
+
+test('central\'s URL comes from the shell, scheme and all, never guessed from the host', () => {
+    const invoke = async <T>() => ({}) as T;
+    assert.equal(new ShellCentral({where: '127.0.0.1:7790', url: 'https://127.0.0.1:7790', development: true}, invoke).url, 'https://127.0.0.1:7790');
+    assert.equal(new ShellCentral({where: '127.0.0.1:7790', url: 'http://127.0.0.1:7790', development: true}, invoke).url, 'http://127.0.0.1:7790');
+    assert.equal(new ShellCentral({where: '[::1]:7790', url: 'http://[::1]:7790', development: true}, invoke).url, 'http://[::1]:7790');
+    assert.equal(new ShellCentral({where: 'central.example.net', url: 'https://central.example.net', development: false}, invoke).url,
+        'https://central.example.net');
+    // No URL from the shell, or not one: '' (the Host page then says URL), never a guess.
+    assert.equal(new ShellCentral({where: '127.0.0.1:7790', development: true}, invoke).url, '');
+    for (const bad of ['127.0.0.1:7790', 'ftp://a.net', 'https://a.net/x', 'https://a.net; rm -rf ~', 'https://a.net:7790 --x', 7]) assert.equal(baseUrl(bad), '', String(bad));
+});
+
+test('the Host page\'s two commands: the world server in ticket mode and the agent beside it', () => {
+    const server = serverCommand(World, 'The Long Valley', 'https://127.0.0.1:7790');
+    assert.equal(server, `ratw_server --save Saved/World/save.json --port 7788 --bind 0.0.0.0 --central https://127.0.0.1:7790 --world-id ${World} ` +
+        '--central-keys Saved/World/central-keys.json --world-name \'The Long Valley\'');
+    // The agent's folder is the server's: its keys file, and the same port.
+    const agent = agentCommand('rh_abc', 'https://127.0.0.1:7790');
+    assert.equal(agent, 'RATW_HOST_TOKEN=rh_abc python3 tools/world_agent.py run --central https://127.0.0.1:7790 --dir Saved/World --world-port 7788');
+    assert.ok(server.includes('--port 7788') && agent.includes('--world-port 7788'));
+    // A name is one word to the shell, whatever is in it.
+    assert.equal(shellWord("Ash's $(rm -rf ~) `x`"), `'Ash'\\''s $(rm -rf ~) \`x\`'`);
+    assert.equal(shellWord(''), "''");
+    assert.ok(serverCommand(World, "O'Neil", 'URL').endsWith(`--world-name 'O'\\''Neil'`));
 });
 
 test('how long since a heartbeat', () => {

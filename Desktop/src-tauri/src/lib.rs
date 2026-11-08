@@ -23,7 +23,7 @@ mod tokens;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use serde_json::{json, Value};
+use serde_json::Value;
 use tauri::{Manager, State};
 
 use central::Central;
@@ -86,11 +86,7 @@ pub fn page_origin_on(url: &tauri::Url, windows: bool) -> bool {
 #[tauri::command]
 async fn central_info(central: State<'_, Arc<Central>>) -> Result<Value, String> {
     let central = central.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || {
-        json!({"where": central.shown, "development": central.development, "remembered": central.remembered(), "store": central.store_kind()})
-    })
-    .await
-    .map_err(|e| e.to_string())
+    tauri::async_runtime::spawn_blocking(move || central.info()).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]

@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
 
 namespace ratw::game
 {
@@ -68,6 +69,8 @@ bool Game::startTickets(std::string& problem)
         note("warning", "RATW_TICKETS no keys from central yet (" + trouble + "): nobody can join until the world agent fetches them");
     if (std::filesystem::exists(agentFile("bans.json")) && !reloadBans(trouble))
         note("warning", "RATW_BANS central's ban list can't be read yet (" + trouble + ")");
+    if (options_.scratch)
+        note("info", "RATW_ONLINE a scratch server writes no online.json: the world agent's directory is the real world's");
     note("info", "RATW_TICKETS ticket mode: world " + o.worldId + " (" + (o.official ? "official" : "community") + "), central " +
                      o.url + ", " + std::to_string(tickets_.keys().size()) + " key(s), protocol " + std::to_string(build::Protocol) +
                      ", client data " + build::clientDataHash());
@@ -497,7 +500,7 @@ void Game::ticketFiles()
     if (!ticketMode())
         return;
     std::string trouble;
-    if (clock() - onlineWrittenAt_ >= OnlineEvery)
+    if (!options_.scratch && clock() - onlineWrittenAt_ >= OnlineEvery)
     {
         onlineWrittenAt_ = clock();
         const bool wrote = writeOnline(trouble);
@@ -517,10 +520,17 @@ void Game::ticketFiles()
 bool Game::writeOnline(std::string& problem)
 {
     // online.json (doc 77, 7): the wolves in the world now, for the heartbeat's honest count. Written whole to a
-    // temporary file and renamed over the last, so the agent never reads half of one.
+    // temporary file of this process's own (another server on the same directory never shares it) and renamed over
+    // the last, so the agent never reads half of one. A scratch server writes nothing: beside the real world, with
+    // the same --central-keys, it would count its own players over the real world's.
     if (!ticketMode())
     {
         problem = "not in ticket mode";
+        return false;
+    }
+    if (options_.scratch)
+    {
+        problem = "a scratch server writes nothing";
         return false;
     }
     std::vector<std::string> wolves;
@@ -538,7 +548,7 @@ bool Game::writeOnline(std::string& problem)
     o.add("players", wolves.size());
     o.add("online", online);
     const auto path = agentFile("online.json");
-    const auto temp = agentFile(".online.json.new");
+    const auto temp = agentFile(".online.json." + std::to_string(::getpid()) + ".new");
     {
         std::ofstream out(temp, std::ios::binary | std::ios::trunc);
         out << json::dump(o) << '\n';

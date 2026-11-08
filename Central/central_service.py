@@ -56,13 +56,20 @@ CHECK_EVERY = 600                   # Central's call-back to a listed world.
 CHECK_TIMEOUT = 5.0
 STATUS_MOST = 2048                  # The most of a /status reply's body central reads (the world caps it at 2 KB).
 STATUS_HEAD_MOST = 4096             # And of its status line and headers.
-TICKETS_COUNTED = 30 * 86400        # A wolf online counts if central issued it a ticket for that world this recently.
+TICKETS_COUNTED = 86400             # A wolf online counts if its latest ticket (to any world) was for this world, this
+                                    # recently, and it and its account are in good standing.
 HOST_WORLDS = 3                     # Worlds an account may host (not counting removed ones).
 ONLINE_MOST = 10000
 HOST_NAME = re.compile(r'^(?=.{1,253}$)([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}'
                        r'[A-Za-z0-9])?)*\.?$')
 CGNAT = ipaddress.ip_network('100.64.0.0/10')
-GAME_NAMES = ('runagainsttheworld', 'runsagainsttheworld')
+# Names that are never on the public internet's DNS, refused before central looks them up (and single-label names).
+LOCAL_NAMES = ('.internal', '.local', '.localhost', '.lan', '.home.arpa')
+GAME_NAMES = ('official', 'runagainsttheworld', 'runsagainsttheworld')
+_SIGNS = central_words.WORD_SIGNS
+# R-A-T-W as a word of its own (stops and spaces between its letters, digits after it, or "RATWorld").
+GAME_INITIALS = re.compile(f'(?<![{_SIGNS}])' + f'[^{_SIGNS}]*'.join(central_words.look_alike(c) for c in 'ratw') +
+                           f'(?:(?![{_SIGNS}])|{central_words.look_alike("orld")})')
 NOT_ON_THE_INTERNET = "This world's address (IP) is not on the internet."
 
 
@@ -86,9 +93,18 @@ def valid_password(password) -> bool:
     return 12 <= len(raw) <= 128 and units <= 128 and not any(b < 32 or b == 127 for b in raw)
 
 
+def invisible(c: str) -> bool:
+    """A character that shows nothing of its own in a name: a format character (zero-width spaces and joiners, soft
+    hyphens, direction marks), an enclosing mark, a variation selector or the grapheme joiner."""
+    return unicodedata.category(c) in ('Cf', 'Me') or '\ufe00' <= c <= '\ufe0f' or \
+        '\U000e0100' <= c <= '\U000e01ef' or c in '\u034f\u180b\u180c\u180d\u180f'
+
+
 def name_key(name: str) -> str:
-    """Names are unique by this: compatibility-normalised, case-folded, runs of spaces as one."""
-    return ' '.join(unicodedata.normalize('NFKC', name).casefold().split())
+    """Names are unique by this: compatibility-normalised, case-folded, invisible characters taken out, runs of spaces
+    as one."""
+    folded = unicodedata.normalize('NFKC', name).casefold()
+    return ' '.join(''.join(c for c in folded if not invisible(c)).split())
 
 
 def old_enough(birth_year, birth_month, today: dt.date) -> bool | None:
@@ -165,6 +181,16 @@ def plain_ip(address: str):
     return ip.ipv4_mapped if ip.version == 6 and ip.ipv4_mapped else ip
 
 
+def address_block(address: str) -> str:
+    """The block one sender is counted by: an IPv4 address itself; an IPv6 address's /64 (one home or server has a
+    whole /64 to pick from)."""
+    try:
+        ip = plain_ip(address)
+    except (ValueError, AttributeError):
+        return str(address)
+    return str(ipaddress.ip_network(f'{ip}/64', strict=False)) if ip.version == 6 else str(ip)
+
+
 def bracketed(address: str) -> str:
     return f'[{address}]' if ':' in address else address
 
@@ -175,17 +201,17 @@ def whole_seconds(value: float | None) -> int | None:
 
 def listing_refused(fields: dict, kind: str) -> str:
     """'' if a world's name and listing text may be shown; else why not. The word filter for every world; and a
-    community world can't call itself official or use the game's name (doc 77, 7: the badge is central's)."""
+    community world can't call itself official or use the game's name (doc 77, 7: the badge is central's), in its
+    name, description, region or any tag, read as central_words reads text (look-alike letters of other scripts, 0 as
+    o, 1 and | as i or l, stops and spaces between letters)."""
     texts = [fields.get('name') or '', fields.get('description') or '', fields.get('region') or '',
              *(fields.get('tags') or [])]
     if any(central_words.refused(t) for t in texts):
         return 'That name or description uses a word central does not allow.'
     if kind != 'official':
-        for text in (fields.get('name') or '', fields.get('description') or ''):
-            plain = central_words.normalise(text)
-            squashed = ''.join(re.findall(r'[a-z]+', plain))
-            if 'official' in squashed or any(g in squashed for g in GAME_NAMES) or \
-                    re.search(r'(?<![a-z0-9])r[^a-z0-9]*a[^a-z0-9]*t[^a-z0-9]*w(?![a-z0-9])', plain):
+        for text in texts:
+            if central_words.holds(text, GAME_NAMES) or \
+                    any(GAME_INITIALS.search(form) for form in central_words.forms(text)):
                 return ('A community world cannot call itself official or use the game\'s name (Run Against the '
                         'World, RATW).')
     return ''
@@ -272,7 +298,8 @@ class Limits:
     tickets_per_account: tuple = (20, 60)
     tickets_per_world: tuple = (600, 60)
     delete_per_address: tuple = (10, 3600)
-    heartbeats_per_token: tuple = (10, 60)
+    heartbeats_per_token: tuple = (10, 60)          # (per world: the token's world, whichever token it has)
+    bad_tokens_per_address: tuple = (30, 60)        # unknown host tokens, per address (per /64 for IPv6)
     host_changes_per_account: tuple = (30, 3600)
 
 
@@ -283,37 +310,49 @@ class RateLimiter:
     def __init__(self, clock):
         self.clock = clock
         self._events: dict[tuple, deque] = {}
+        self._spans: dict[tuple, float] = {}     # each key's window, so a sweep knows when its events are all old
         self._lock = threading.Lock()
 
-    def _window(self, key, seconds, now):
-        events = self._events.setdefault(key, deque())
+    def _window(self, key, seconds, now, make: bool):
+        events = self._events.get(key)
+        if events is None:
+            if not make:
+                return ()
+            events = self._events[key] = deque()
+        self._spans[key] = max(seconds, self._spans.get(key, 0))
         while events and events[0] <= now - seconds:
             events.popleft()
         return events
 
     def peek(self, key, limit: tuple) -> float:
-        """0 if there is room, else the seconds until there is."""
+        """0 if there is room, else the seconds until there is. (A key never hit is not kept.)"""
         count, seconds = limit
         now = self.clock()
         with self._lock:
-            events = self._window(key, seconds, now)
+            events = self._window(key, seconds, now, False)
             return 0.0 if len(events) < count else max(0.001, events[0] + seconds - now)
 
     def hit(self, key, limit: tuple) -> float:
         count, seconds = limit
         now = self.clock()
         with self._lock:
-            events = self._window(key, seconds, now)
+            events = self._window(key, seconds, now, True)
             if len(events) >= count:
                 return max(0.001, events[0] + seconds - now)
             events.append(now)
             return 0.0
 
     def sweep(self, longest: float = 86400):
+        """Drops every key whose events have all left its window (or are older than `longest`)."""
         now = self.clock()
         with self._lock:
-            for key in [k for k, e in self._events.items() if not e or e[-1] <= now - longest]:
+            for key in [k for k, e in self._events.items()
+                        if not e or e[-1] <= now - min(self._spans.get(k, longest), longest)]:
                 del self._events[key]
+                self._spans.pop(key, None)
+
+    def __len__(self) -> int:
+        return len(self._events)
 
 
 # --------------------------------------------------------------------------- The service
@@ -537,12 +576,19 @@ class Central:
                           ', '.join(sorted(unknown)) + '.', 'invalid')
         wolf_in = {k: body[k] for k in ('name', 'age', 'appearance', 'family') if k in body}
         name_refused = refused(400, 'That name is not allowed. Choose another.', 'name_refused')
-        if isinstance(wolf_in.get('name'), str) and central_words.refused(wolf_in['name']):
-            raise name_refused
+        hidden = refused(400, "A wolf's name cannot hold invisible or decorative characters (zero-width spaces, "
+                              'joiners, soft hyphens, variation selectors, enclosing marks).', 'invalid')
+        if isinstance(wolf_in.get('name'), str):
+            if any(invisible(c) for c in wolf_in['name']):
+                raise hidden
+            if central_words.refused(wolf_in['name']):
+                raise name_refused
         checked = self.identity.wolf(wolf_in)
         if not checked.get('ok'):
             raise refused(400, checked.get('error', 'That wolf cannot be made.'), 'invalid')
         wolf = checked['wolf']
+        if any(invisible(c) for c in wolf['name']):
+            raise hidden
         if central_words.refused(wolf['name']):
             raise name_refused
         profile = {}
@@ -672,34 +718,49 @@ class Central:
     def list_worlds(self, address: str, token, body: dict) -> tuple[int, dict]:
         """The world list (doc 77, 3.1 and 7). A world is in it while its heartbeat arrives (within 3 minutes) with a
         live host token, from an address central could call back, and it isn't delisted or removed. Each is {id, name
-        (the heartbeat's), kind (central's), address ("host:port"), secure (wss://), protocol, description, players
-        (the honest count), limit, region, tags, voices, cheats}: official worlds first, then the most players. Public."""
+        (the heartbeat's), kind (central's), address (the one to connect to), host (a name to show, or null), secure
+        (wss://), protocol, description, players (the honest count), limit, region, tags, voices, cheats}: official
+        worlds first, then the most players. A ws:// world's address is the "ip:port" central called back, never its
+        name (nothing binds a name to the checked address there, so the name is for showing only); a wss:// world's is
+        "host:port" (its certificate binds the name), with the called-back address as "ip" too. Public."""
         out = []
         for w in self.store.listed_worlds(self.clock(), HEARTBEAT_LASTS, TOKEN_UNUSED):
             listing = w['listing'] if isinstance(w['listing'], dict) else {}
-            where = w['host_name'] or bracketed(w['address'])
-            out.append({'id': w['id'], 'name': listing.get('name') or w['name'], 'kind': w['kind'],
-                        'address': f'{where}:{w["port"]}', 'secure': listing.get('secure') is True,
-                        'protocol': listing.get('protocol'), 'description': listing.get('description', ''),
-                        'players': w['players'], 'limit': listing.get('limit'), 'region': listing.get('region', ''),
-                        'tags': listing.get('tags', []), 'voices': listing.get('voices') is True,
-                        'cheats': listing.get('cheats') is True})
+            secure = listing.get('secure') is True and bool(w['host_name'])
+            entry = {'id': w['id'], 'name': listing.get('name') or w['name'], 'kind': w['kind'],
+                     'address': f'{w["host_name"] if secure else bracketed(w["address"])}:{w["port"]}',
+                     'host': w['host_name'] or None, 'secure': secure, 'protocol': listing.get('protocol'),
+                     'description': listing.get('description', ''), 'players': w['players'],
+                     'limit': listing.get('limit'), 'region': listing.get('region', ''),
+                     'tags': listing.get('tags', []), 'voices': listing.get('voices') is True,
+                     'cheats': listing.get('cheats') is True}
+            if secure:
+                entry['ip'] = w['address']
+            out.append(entry)
         return ok(worlds=out)
 
     # ---------------------------------------------------------------- The world's own calls (doc 77, 7)
 
-    def _world_token(self, token: str | None) -> dict:
-        """The world a host token names, or the refusal: 401 for an unknown, revoked or expired token; 403 for a
-        delisted or removed world, or a banned host. At most 10 calls a minute a token."""
+    def _world_token(self, token: str | None, address: str) -> dict:
+        """The world a host token names (its 'token_hash' added), or the refusal: 401 for an unknown, revoked or
+        expired token; 403 for a delisted or removed world, or a banned host. At most 10 calls a minute a world; and
+        unknown tokens are counted per address (per /64 for IPv6), so made-up ones can't grow the limiter's keys."""
         bad = refused(401, 'Central does not know this host token (it was revoked, replaced or never made). Make a '
                            'new one on the Host page.', 'bad_token')
-        if not token or not token.startswith(HOST_TOKEN_PREFIX) or len(token) > 128:
-            raise bad
-        hashed = token_hash(token)
-        self._limit(('heartbeat', hashed), self.settings.limits.heartbeats_per_token, 'heartbeats')
-        world = self.store.world_by_token(hashed)
+        guesses = ('bad_token', address_block(address))
+        wait = self.limiter.peek(guesses, self.settings.limits.bad_tokens_per_address)
+        if wait:
+            raise Reply(429, f'Too many unknown host tokens from here. Try again in {int(wait) + 1} seconds.',
+                        'rate_limited', wait)
+        world = None
+        if token and token.startswith(HOST_TOKEN_PREFIX) and len(token) <= 128:
+            hashed = token_hash(token)
+            world = self.store.world_by_token(hashed)
         if world is None:
+            self.limiter.hit(guesses, self.settings.limits.bad_tokens_per_address)
             raise bad
+        world['token_hash'] = hashed
+        self._limit(('heartbeat', world['id']), self.settings.limits.heartbeats_per_token, 'heartbeats')
         if world['removed'] or world['delisted']:
             raise refused(403, 'This world is delisted.' if not world['removed'] else 'This world was removed by its '
                           'host.', 'delisted')
@@ -790,14 +851,19 @@ class Central:
         return {plain_ip(info[4][0]) for info in socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)}
 
     def _host_refused(self, host: str, ip, port: int) -> str:
+        """'' if the host name may stand for this world: it resolves to exactly the address the heartbeat came from
+        (no other A or AAAA record, which clients might pick instead). Single-label names and local-only suffixes are
+        refused without a lookup, and central's own DNS answers are never shown (they could map its own network)."""
+        if '.' not in host or any(host == s[1:] or host.endswith(s) for s in LOCAL_NAMES):
+            return (f'The host name {host} is not a public DNS name (one label, or a local-only name such as .local or '
+                    '.internal). Give a name on the public DNS, or leave the host out.')
         try:
             found = self.resolve(host, port)
         except (OSError, UnicodeError, ValueError):
             return f'The host name {host} does not resolve (DNS). Point it at {ip}, or leave the host out.'
-        if ip not in found:
-            shown = ', '.join(sorted(str(a) for a in found)[:3]) or 'nothing'
-            return (f"The host name {host} does not point at this world's address ({ip}): it points at {shown}. "
-                    'Point it at this address, or leave the host out.')
+        if found != {ip}:
+            return (f"The host name {host} does not point at this world's address ({ip}) alone: give it just this "
+                    'one address (no other A or AAAA record), or leave the host out.')
         return ''
 
     def heartbeat(self, address: str, token, body: dict) -> tuple[int, dict]:
@@ -806,7 +872,7 @@ class Central:
         listing, every 10 minutes, and when its address changes. The reply says whether it is listed (and why not),
         the honest count, central's bans as this world sees them (each banned account's ticket `sub` here), and
         central's clock."""
-        world = self._world_token(token)
+        world = self._world_token(token, address)
         fields = self._listing(body, world['kind'])
         now = self.clock()
         ip = plain_ip(address)
@@ -830,10 +896,14 @@ class Central:
                 check = {'reachable': not why, 'note': why, 'address': seen}
         online = fields.pop('online')
         counted = self.store.ticketed_wolves(world['id'], online, now - TICKETS_COUNTED)
-        online = [w for w in online if w in counted]
+        online = [w for w in online if w in counted][:fields['limit'] or ONLINE_MOST]
         listing = {k: fields[k] for k in ('name', 'description', 'region', 'tags', 'limit', 'private', 'voices',
                                           'cheats', 'secure', 'protocol', 'build', 'clientData')}
-        self.store.heartbeat(world['id'], now, str(ip), port, host, listing, online, check)
+        if not self.store.heartbeat(world['id'], world['token_hash'], now, str(ip), port, host, listing, online,
+                                    check):
+            # (Its token was replaced or revoked, or the world delisted, while central called it back.)
+            raise refused(401, 'Central does not know this host token (it was revoked, replaced or never made). Make a '
+                               'new one on the Host page.', 'bad_token')
         banned = self.store.banned_accounts()
         if world['kind'] != 'official' and banned:
             secret = self.keys.pairwise_secret()
@@ -843,8 +913,10 @@ class Central:
 
     def leave(self, address: str, token, body: dict) -> tuple[int, dict]:
         """POST /worlds/leave: a world's clean shutdown takes it off the list at once."""
-        world = self._world_token(token)
-        self.store.leave(world['id'])
+        world = self._world_token(token, address)
+        if not self.store.leave(world['id'], world['token_hash']):
+            raise refused(401, 'Central does not know this host token (it was revoked, replaced or never made). Make a '
+                               'new one on the Host page.', 'bad_token')
         return ok()
 
     def call_back(self, ip, port: int, host: str | None, secure: bool, world_id: str) -> str:

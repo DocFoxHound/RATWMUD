@@ -85,6 +85,9 @@ void stop(int) { stopping = 1; }
 
 // Replaceable frames (snapshots, motion) are dropped for a client this far behind; past the second, it is let go.
 constexpr std::size_t DropReplaceableAt = 4u << 20, DisconnectAt = 32u << 20;
+// A connection that is ending (Client::finish, closeAfterSending) has this long to take what is queued for it; then it
+// is closed whatever is left. Nothing it sends meanwhile is kept.
+constexpr auto FinishWithin = std::chrono::seconds(5);
 
 class Network;
 bool readFile(const std::string& path, std::string& out);
@@ -104,6 +107,7 @@ class Client final : public game::Connection
     Mode mode = Mode::Http;
     web::Reader reader;
     bool watchingOut = false;                       // epoll also wakes for this socket being writable.
+    std::chrono::steady_clock::time_point finishingSince{};   // When it was first seen ending (FinishWithin).
     // Set once at accept.
     std::string address;
     bool local = false;
@@ -505,7 +509,8 @@ class Network
                         const auto n = ::recv(c->fd, buffer, sizeof buffer, 0);
                         if (n > 0)
                         {
-                            c->in.append(buffer, std::size_t(n));
+                            if (!c->finishing)     // (An ending connection's bytes are read and thrown away.)
+                                c->in.append(buffer, std::size_t(n));
                             meter.received(std::size_t(n));
                         }
                         else
@@ -517,14 +522,38 @@ class Network
                     }
                     if (!c->closing)
                         handle(c);
+                    if (c->finishing)
+                        c->in.clear();             // (Nothing more is read from it: what it sent after is let go.)
                 }
                 if (!c->closing)
                     flush(*c);                     // A reply now, and anything waiting for the socket.
                 if (c->closing)
                     gone.push_back(fd);
             }
+            expireFinishing(gone);
             for (int fd : gone)
                 drop(fd);
+        }
+    }
+    // Ending connections that haven't taken what is queued within FinishWithin are closed (a client that stops reading
+    // would otherwise hold its socket, and its queue, for ever). Looked at about once a second.
+    void expireFinishing(std::vector<int>& gone)
+    {
+        const auto now = std::chrono::steady_clock::now();
+        if (now < nextFinishCheck_)
+            return;
+        nextFinishCheck_ = now + std::chrono::seconds(1);
+        for (auto& [fd, c] : clients_)
+        {
+            if (!c->finishing || c->closing)
+                continue;
+            if (c->finishingSince == std::chrono::steady_clock::time_point{})
+                c->finishingSince = now;
+            else if (now - c->finishingSince >= FinishWithin)
+            {
+                c->closing = true;
+                gone.push_back(fd);
+            }
         }
     }
 
@@ -535,6 +564,7 @@ class Network
     std::string status_ = "{}";
     std::map<std::string, std::deque<std::chrono::steady_clock::time_point>> statusAsks_;   // The network thread's.
     std::map<int, std::shared_ptr<Client>> clients_;        // The network thread's.
+    std::chrono::steady_clock::time_point nextFinishCheck_{};   // The network thread's.
     std::uint64_t nextId_ = 1;
     std::atomic<std::size_t> connected_{0};
     std::mutex inboxLock_, writeLock_;

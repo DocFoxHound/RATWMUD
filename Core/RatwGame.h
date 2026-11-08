@@ -269,7 +269,8 @@ class Game
     // world sees them (the tickets' `sub`), which the agent writes from each heartbeat's reply and this world reads
     // again when it changes (checked about every 5 s, by size and time as the keys are). A banned account's hello is
     // refused, and its wolf in the world is sent out. The server calls ticketFiles about once a second; nothing happens
-    // in password mode. writeOnline and reloadBans do each at once (false, with why, if they couldn't).
+    // in password mode. writeOnline and reloadBans do each at once (false, with why, if they couldn't). A scratch server
+    // (Options::scratch) reads bans.json but never writes online.json: the directory is the real world's agent's.
     void ticketFiles();
     bool writeOnline(std::string& problem);
     bool reloadBans(std::string& problem);
