@@ -427,7 +427,7 @@ void travellersWalkTheirRoute()
            "The traveller rests on the road rather than going home");
 }
 
-// Dungeon Master live changes: one NPC at a time, taken from a validated candidate world, money conserved.
+// Dungeon Master live changes: one NPC at a time, taken from a validated candidate world, real money balanced.
 void residentsChangeLive()
 {
     auto world = town();

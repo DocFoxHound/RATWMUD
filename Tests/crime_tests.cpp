@@ -1,5 +1,6 @@
 // Crime and law (Core/RatwCrime.h; Docs/Design/26-living-npcs.md, Phase 7), in Greyfen: Wren keeps shop, four guards
 // keep the Watch.
+#include "test_purse.h"
 #include "RatwCheckpoint.h"
 #include "battle_play.h"
 #include "RatwWorld.h"
@@ -60,11 +61,11 @@ std::string stealUntilSeen(World& w, const std::string& thief, const std::string
     }
     throw std::runtime_error("No theft was ever noticed");
 }
-// Money from or to the treasury, so the money supply stays conserved.
+// Money from or to the treasury: a test's own purse (taken into the gate's opening) or a sink.
 void give(World& w, const std::string& id, std::int64_t coins)
 {
     if (coins > 0)
-        w.society().shift("treasury", id, "", 0, coins, "test");
+        testPurse(w.society(), id, coins, "test");
     else if (coins < 0)
         w.society().shift(id, "treasury", "", 0, -coins, "test");
 }

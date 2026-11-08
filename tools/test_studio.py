@@ -1226,5 +1226,20 @@ def W_default_economy():
     return world_store.default_economy()
 
 
+class WharfListsTests(unittest.TestCase):
+    def test_the_wharf_lists_come_from_market_json_once_city_loop_json_is_gone(self):
+        """Doc 79, 17: the Wharf's goods moved to market.json as names only; the panel still shows them."""
+        market = map_editor.market_file().get('wharf') or {}
+        lists = ST.Economy.wharf_lists({})
+        self.assertTrue(market.get('imports') and market.get('takes'), 'market.json names the Wharf\'s goods')
+        self.assertEqual(sorted(lists['imports']), sorted(market['imports']))
+        self.assertEqual(sorted(lists['takes']), sorted(market['takes']))
+        self.assertEqual(lists['never'], market.get('never'))
+        self.assertTrue(all(v == {} for v in lists['imports'].values()), 'goods with no limits set')
+        # A world's own city_loop.json lists, while it has them, are shown as they are.
+        own = {'wharf': {'imports': {'salt': {'most': 3}}, 'takes': {}, 'never': ['cheese']}}
+        self.assertEqual(ST.Economy.wharf_lists(own), {'imports': {'salt': {'most': 3}}, 'takes': {}, 'never': ['cheese']})
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -219,7 +219,7 @@ Tally run(const fs::path& root, int days, unsigned threads, bool profile, std::s
     if (const auto* fen = w.entity("fen"))
     {
         // Fen lodges with the household of his class (the homes are all in the first cell), never alone at the market; his
-        // purse is the Country's, the money conserved.
+        // purse is the Country's, real money balanced.
         const auto* life = w.society().resident("fen");
         expect(life && life->homeCell == cellId(0) && !fen->dead, "Fen lives with a household of the town: " + (life ? life->homeCell : ""));
         expect(w.society().jobOf("fen") && w.society().jobOf("fen")->id == "job:tamsin", "and keeps the smithy");

@@ -3,6 +3,7 @@
 // per-piece ladder and the per-holder cap, the morning's ripples through recipes, the shown dozen, the budget, take
 // allowance and sell total with their reasons, the morning restock, the Board saved and restored, the markets the world
 // finds, the faction discount's weekly cap. And with the rule off: the old price path, untouched, and nothing saved.
+#include "test_purse.h"
 #include "RatwCheckpoint.h"
 #include "RatwGame.h"
 #include "RatwItems.h"
@@ -113,7 +114,7 @@ Society world(const std::vector<Shop>& shops, const std::map<std::string, double
 std::string player(Society& s, const std::string& id, std::int64_t purse = 5000)
 {
     s.addPlayer(id);
-    expect(s.shift("treasury", id, "", 0, purse, "test purse"), "a purse for " + id);
+    expect(testPurse(s, id, purse), "a purse for " + id);
     return id;
 }
 void stock(Society& s, const std::string& merchant, const std::string& item, int n)
@@ -650,7 +651,7 @@ void theWorldsMarkets()
     town.g.factions().setMember("ui", "guild", "", true);
     town.g.factions().change("guild", lodge, 90, "test", w.calendarDays(), 0, false);
     s.create(till, "meal", 400, "test");
-    expect(s.shift("treasury", town.ash.entityId, "", 0, std::min<std::int64_t>(400, s.cash("treasury")), "test purse") &&
+    expect(testPurse(s, town.ash.entityId, std::min<std::int64_t>(400, s.cash("treasury"))) &&
                s.cash(town.ash.entityId) >= 300,
            "a purse for the Lodge's buying: " + std::to_string(s.cash(town.ash.entityId)) + " (the treasury " + std::to_string(s.cash("treasury")) + ")");
     const auto room = s.discountRoom(lodge);

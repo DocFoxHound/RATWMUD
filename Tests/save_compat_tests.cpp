@@ -17,6 +17,7 @@
 // exactly as World::restore does it (Society::restore), without the tile checks on homes and positions. With
 // RATW_PRE79_BUILDS=DIR, where DIR/dev and DIR/dev-old hold the builds as `tools/world_build.py export` writes them,
 // the whole save is also loaded by a game server (Game::start, the file store) on the full world.
+#include "test_purse.h"
 #include "RatwCheckpoint.h"
 #include "RatwGame.h"
 #include "RatwJournal.h"

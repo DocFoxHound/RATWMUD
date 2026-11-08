@@ -5,6 +5,7 @@
 // rolls); a tick by hand; a visitor from the DM's list (a fight with it refused); a prize from a real purse to a participant
 // only; the end card and the storyteller's star; a milestone's credits screen with up to 3 stars and deeds for the main
 // contributors; across a restart.
+#include "test_purse.h"
 #include "RatwGame.h"
 #include "RatwWorld.h"
 
@@ -82,7 +83,7 @@ void tales()
         t.enter(t.bo, 2, "bo", "Bo", 1, 10.5);
         t.enter(t.cy, 3, "cy", "Cy", 5, 8.5);
         const auto ash = t.ash.entityId, bo = t.bo.entityId, cy = t.cy.entityId;
-        s.shift("treasury", ash, "", 0, 100, "test purse");
+        testPurse(s, ash, 100);
         // Applying.
         auto said = order(t, t.ash, {{"type", "storyteller"}, {"verb", "apply"}, {"note", "Tales of the drowned bell."}});
         expect(contains(said, "social level 5"), "not yet at social level 5: " + said);

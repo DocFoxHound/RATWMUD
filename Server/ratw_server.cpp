@@ -703,7 +703,6 @@ int main(int argc, char** argv)
         else if (a == "--perf-log") perfLog = std::atof(next().c_str());
         else if (a == "--workers") workers = std::atoi(next().c_str());
         else if (a == "--scratch") options.scratch = true;
-        else if (a == "--refound-economy") options.refoundEconomy = true;   // Doc 64, Phase 1: the economy afresh.
         else if (a == "--idle-exit") idleExit = std::atof(next().c_str());
         else if (a == "--central") options.central.url = next();             // Ticket mode (doc 77): opt-in.
         else if (a == "--world-id") options.central.worldId = next();

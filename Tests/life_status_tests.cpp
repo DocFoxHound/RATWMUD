@@ -4,6 +4,7 @@
 // days and the goods trim; the faucet door and real money balanced; staged payers topped up; the welcome once per account
 // holder per world per game week (D23: an exploit test); the staged day settled across a restart; the Mind's Means.
 // Seeded and offline; the catalogue is the real Data/Items (RATW_SOURCE_DIR).
+#include "test_purse.h"
 #include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwJournal.h"
@@ -269,7 +270,7 @@ void playersEmptyTheShelf()
             emptyLarder(s, id);
         if (buyOut)
         {
-            s.shift("treasury", "player-ada", "", 0, 5000, "test purse");
+            testPurse(s, "player-ada", 5000);
             for (int left; (left = Society::stock(*s.account(till), "meal")) > 0;)
             {
                 const auto bought = s.trade("player-ada", "moss", "meal", std::min(99, left), true, "acct:ada");
@@ -451,7 +452,7 @@ void theDoorAndRealMoney()
         const auto& a = ids[status::hash("a" + std::to_string(i)) % ids.size()];
         const auto& b = ids[status::hash("b" + std::to_string(i)) % ids.size()];
         if (a != b)
-            s.shift(a, b, "", 0, std::int64_t(status::hash("c" + std::to_string(i)) % 9), "test move " + std::to_string(i % 7));
+            s.shift(a, b, "", 0, std::int64_t(status::hash("c" + std::to_string(i)) % 9), "test trade, move " + std::to_string(i % 7));
         expect(s.realBalanced(), "real money balanced after move " + std::to_string(i));
     }
     // The gate's point (doc 79, 9.4): a penny made from nothing in a player's purse, or in escrow's real part, by any path
@@ -687,12 +688,19 @@ void playersPayAndTheCaps()
     expect(s.shift("contract:two", "player-ada", "", 0, second, "contract reward") && s.realBalanced() &&
                s.faucetToday("central:ada", "reward") == cap,
            "nothing past the cap counted");
-    // D16: an unregistered faucet logged (once a day), never refused; a registered one not.
+    // D16: an unregistered faucet logged (once a day), never refused in play; a registered one not. In tests it is
+    // enforced: its coins are not counted as a faucet, so realBalanced() fails on them (9.4).
     s.takeDoorNotes();
+    expect(s.realBalanced(), "balanced before the windfall");
+    const auto adaBefore = s.cash("player-ada");
     expect(s.shift("treasury", "player-ada", "", 0, 1, "a mysterious windfall") &&
-               s.shift("treasury", "player-ada", "", 0, 1, "a mysterious windfall"),
+               s.shift("treasury", "player-ada", "", 0, 1, "a mysterious windfall") && s.cash("player-ada") == adaBefore + 2,
            "an unregistered faucet still pays");
+    expect(!s.realBalanced() && s.unregisteredFaucets() == 2, "an unregistered faucet fails the test gate: " +
+                                                                  std::to_string(s.unregisteredFaucets()) + "p");
+    s.openRealBalance();
     s.shift("treasury", "player-ada", "", 0, 1, "faction mission reward");
+    expect(s.realBalanced() && s.unregisteredFaucets() == 0, "a registered faucet keeps the gate");
     const auto notes = s.takeDoorNotes();
     expect(notes.size() == 1 && notes[0].find("a mysterious windfall") != std::string::npos, "logged once, by its reason: " +
                                                                                                std::to_string(notes.size()));

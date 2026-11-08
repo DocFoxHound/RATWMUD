@@ -1,7 +1,8 @@
 // The base the economy's rules were erased to (Docs/Design/66-worlds-atlas-and-dm.md, Phase 5): the catalogue's goods
 // and qualities, shops that hold stock at catalogue prices in their tills, players buying from them and selling to
-// them, money conserved; and residents who go about their days with nothing bought, made, paid or eaten up, their
+// them, real money balanced; and residents who go about their days with nothing bought, made, paid or eaten up, their
 // hunger paused (EconomySpec::needsPaused, doc 68's switch). An older save, with the economy's state in it, still loads.
+#include "test_purse.h"
 #include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwJsonDoc.h"
@@ -132,7 +133,7 @@ void noCapOnAPiece()
 {
     auto s = town(100000);
     s.addPlayer("player-ada");
-    expect(s.shift("treasury", "player-ada", "", 0, 20000, "test: a purse") && s.create("smith", "sword", 3, "test: forged"),
+    expect(testPurse(s, "player-ada", 20000, "test: a purse") && s.create("smith", "sword", 3, "test: forged"),
            "Ada has 20,000p and the smith three swords");
     const auto before = s.account("player-ada")->cash;
     expect(s.sale("smith", "player-ada", "sword", 1, 12000, "test: dear") && s.account("player-ada")->cash == before - 12000,

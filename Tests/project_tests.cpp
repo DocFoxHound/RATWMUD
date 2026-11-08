@@ -4,6 +4,7 @@
 // two wolves in two roles work at 1.8 to one's 1; goods handed in and a contract delivered; a jobless resident hired as
 // a hand and paid from its purse; the structure standing with its plaque, named for its chief giver; a cancelled project's
 // gifts returned; every penny accounted for; across a restart. Phase 4: what standing projects do (see effects()).
+#include "test_purse.h"
 #include "RatwGame.h"
 #include "RatwProjects.h"
 #include "RatwWorld.h"
@@ -93,7 +94,7 @@ void built()
         t.enter(t.ash, 1, "ash", "Ash", 1, 10.5);
         t.enter(t.bo, 2, "bo", "Bo", 1, 11.5);
         const auto ash = t.ash.entityId, bo = t.bo.entityId;
-        s.shift("treasury", ash, "", 0, 500, "test purse");
+        testPurse(s, ash, 500);
         expect(s.realBalanced(), "real money balanced at the start");
 
         // A Dungeon Master posts a market cover in Ridgemere.
@@ -171,7 +172,7 @@ void built()
         posted = t.g.postProject("mend", "larkfield", "", -1, -1, "", "dm");
         expect(posted.ok, "a mending at Larkfield: " + posted.message);
         t.place(t.bo, 5, 8.5);
-        s.shift("treasury", bo, "", 0, 100, "test purse");
+        testPurse(s, bo, 100);
         const auto boCash = s.account(bo)->cash;
         said = order(t, t.bo, cmd({{"type", "project"}, {"verb", "give"}, {"project", posted.targetId}, {"coins", 40}}));
         expect(contains(said, "You give 40"), "Bo gives 40p as a friend of the town: " + said);

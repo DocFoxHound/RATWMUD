@@ -60,11 +60,10 @@ export function RulesPanel({data, locked, setRules, setServices}: {data: RuleCon
                 <small>{r.unit}</small></label>)}
         <h3>The city's services</h3>
         <p className="hint">Things the barber, the moneychanger, the pawnbroker, the stables, the shipwright and the builders'
-            yard do for a household, bought only from money it has to spare (its comforts budget, before comforts), about once
-            every so many days; done at once, nothing kept. The city's share of each price goes to the treasury, the rest to
-            the shop's till. The armoury's, the shipwright's and the builders' yard's work for their patrons (doc 68, "Trades")
-            is paid by the treasury, the Houses' estates or the wharf, for each armed wolf, hull or building about once every
-            so many days, all to the shop's till.</p>
+            yard do for a household or a patron, about once every so many days; done at once, nothing kept.</p>
+        <p className="publish-error">Not in play yet: since the staged economy (Docs/Design/79-a-staged-economy.md, Phase 3)
+            nothing buys these. They are kept, and a change here is saved, for street life (doc 79's Phase 6), which makes
+            them staged sales at their frequency by band.</p>
         <div className="dm-table-wrap"><table className="dm-table services-table">
             <thead><tr><th>Service</th><th>On</th><th>Price (p)</th><th>Every (days)</th><th></th></tr></thead>
             <tbody>{data.serviceList.map(s => {

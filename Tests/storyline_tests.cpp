@@ -2,6 +2,7 @@
 // ticked; place, talk and scene objectives; parallel parts and two angles; take; abandon; the limit; save and load);
 // then through the game: a Dungeon Master gives Ash "The debt"; her journal shows it with its marker; talking to the
 // resident, unrecognised, ticks a step; walking to the place ticks the next; a restart keeps it.
+#include "test_purse.h"
 #include "RatwGame.h"
 #include "RatwStorylines.h"
 #include "RatwWorld.h"
@@ -160,8 +161,8 @@ void sources()
         t.enter(t.ash, 1, "ash", "Ash", 1, 9.5);
         t.enter(t.bo, 2, "bo", "Bo", 1, 10.5);
         const auto ash = t.ash.entityId, bo = t.bo.entityId;
-        s.shift("treasury", ash, "", 0, 200, "test purse");
-        s.shift("treasury", bo, "", 0, 200, "test purse");
+        testPurse(s, ash, 200);
+        testPurse(s, bo, 200);
         // A trouble: the inn's household short of coin (its purses emptied into the treasury, its food eaten).
         const auto home = s.resident("ui")->homeCell;
         std::string head;

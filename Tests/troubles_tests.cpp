@@ -4,6 +4,7 @@
 // one has it in its unfinished business until it is gone; across a restart. Phase 2, solved: a loan paid off, a short
 // household helped (by coin, and by a gift), a feud ended, a resident spoken for, a youth's apprenticeship sponsored;
 // each changes the simulation and the bonds, makes a deed and its rumour, and keeps its limits across a restart.
+#include "test_purse.h"
 #include "RatwGame.h"
 #include "RatwWorld.h"
 
@@ -224,8 +225,8 @@ void solved()
         t.enter(t.ash, 1, "ash", "Ash", 1, 10.5);
         t.enter(t.bo, 2, "bo", "Bo", 0, 10.5);
         const auto ash = t.ash.entityId, bo = t.bo.entityId;
-        s.shift("treasury", ash, "", 0, 400, "test purse");
-        s.shift("treasury", bo, "", 0, 400, "test purse");
+        testPurse(s, ash, 400);
+        testPurse(s, bo, 400);
         const auto put = [&](const char* who, int cell, double x, double y = 8.5) {
             auto* e = w.entity(who);
             e->cellId = cellId(cell);

@@ -1829,6 +1829,24 @@ Each has a recommendation. "Go with the recommendations" takes them all.
       `RatwGameTroubles.cpp`'s help check).
     - **Phase 8** (talk): `talkRichLine`, `richLine_`/`poorLine_` and the per-speaker `foodDays` scan with
       `wealth_days` (a fallback for a resident without a band).
+    - **Data kept in `market.json` that Core doesn't read yet** (each `about` says so): `services` and `luxuries`
+      for **Phase 6** (the staged sales at frequency by band, section 6.5; the Rules panel marks the services "not
+      in play yet"); `wharf` (`never`, `imports`, `takes`, names only) for **Phase 5** (the ships' manifests;
+      Atlas's Wharf panel reads them from `market.json` meanwhile); `houseBusinesses` and `estates` for **Phase 8**
+      (talk: who owns what, a House's people; the bands find the Houses' people by `houses()` and the guarantees go
+      by district since Phase 2), and Phase 9 drops either if talk doesn't take it.
+  - **Second repair round** (after two more independent checks): an unregistered faucet now fails CI as section 9.4
+    says. `Society::tally` counts a coin to a player as a faucet only when its reason is registered
+    (`registeredFaucet`); an unregistered one is still paid and logged in play (D16), but it leaves `realBalanced()`
+    false (`unregisteredFaucets()` counts it). The DM's `operator transfer` is registered. A test's own setup
+    purses go through `Tests/test_purse.h` (`testPurse`: the coins taken into the gate's opening, a gate already
+    broken left broken); no path of play was found unregistered across the whole ctest. `--refound-economy`
+    (doc 64's Phase 1: it threw away the whole saved society, players' purses and escrow included) is deleted with
+    its test, as nothing needs a re-founding now that restore reconciles. The pre-79 package's end-to-end test plants
+    escrow (a resident's and a treasury's courier contracts, a bandits' hoard, as the old code wrote them) and checks
+    it to the penny after a real server played it. `crafts.json`'s dead `tools`, `upkeep`, `farmUpkeep` and
+    `institutions`, `pendingJournal()` and `items::kindsOf` removed; the data files' `about`s and the tests'
+    comments reworded.
   - The client keeps its trade view for servers from before doc 79 (PROD is one), commented as such.
   - **Open for the user:** marking the memory pointers to the conserving economy as history (section 19's Phase 3
     row; it needs the user's say-so, so nothing was changed); `artifacts/economy` (D18).

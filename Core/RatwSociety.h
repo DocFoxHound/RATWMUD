@@ -809,12 +809,14 @@ class Society
     static std::string faucetGroup(const std::string& reason);
     static bool registeredFaucet(const std::string& reason);   // (D16: a reason in a group the door knows.)
     // Real money (9.4): player and Chapter cash plus escrow's real coins; balanced while it equals what it opened at plus
-    // the faucets less the sinks since (the test gate; never checked in play). openRealBalance starts the count again.
+    // the registered faucets less the sinks since (the test gate; never checked in play), so a coin made from nothing, or
+    // paid by an unregistered faucet path, fails it (D16). openRealBalance starts the count again.
     std::int64_t realTotal() const;
     bool realBalanced() const;
     void openRealBalance();
     std::int64_t realFaucets() const { return faucetTotal_; }
     std::int64_t realSinks() const { return sinkTotal_; }
+    std::int64_t unregisteredFaucets() const { return unregisteredMade_; }
     // What a payer can pay a player now (9.2): all of it from a staged payer (topped up on demand by shift) but a till,
     // else what it holds (a till's, as topUp never tops one up). With the staged economy off, what it holds.
     std::int64_t payable(const std::string& payer, std::int64_t amount) const;
@@ -946,7 +948,6 @@ class Society
     // For the world's event log; never saved. Keeps at most JournalKept if nobody collects it.
     static constexpr std::size_t JournalKept = 50000;
     std::vector<EconomyEntry> takeJournal();
-    const std::vector<EconomyEntry>& pendingJournal() const { return journal_; }
 
     // Lives (doc 64, Phase 8; RatwCareers.cpp, RatwWorld.cpp's tendOldAge): deaths by age (a yearly chance of DeathA *
     // e^(DeathB * years), InfantDeath under five); each wolf retires at its own age, RetireLeast..RetireMost (a lot by
@@ -1118,6 +1119,7 @@ class Society
     std::set<std::string> postedAtPass_;
     std::unordered_map<std::string, std::string> jobCategories_;   // (talk::jobCategory by post, label, role, child or not.)
     std::int64_t realOpening_ = -1, faucetTotal_ = 0, sinkTotal_ = 0;
+    std::int64_t unregisteredMade_ = 0;             // (D16: coins to players by unregistered faucets: not in faucetTotal_.)
     std::int64_t topUps_ = 0;                       // Pennies staged payers were topped up by (the door's log).
     std::vector<std::string> doorNotes_;            // (D16: unregistered faucet reasons, for the Game's log.)
     std::set<std::string> doorNoted_;               // (Those noted today: "day|reason".)

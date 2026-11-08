@@ -850,8 +850,31 @@ class EndToEndTest(unittest.TestCase):
             self.skipTest(f"DEV's build is no longer the pre-79 package's (build {old['build']['id']})")
         directory = Path(self.folder.name) / 'pre79'
         directory.mkdir()
-        for name in (P.MANIFEST, 'world.json.gz', 'live.json.gz', 'snapshot.json.gz'):
+        for name in (P.MANIFEST, 'world.json.gz', 'live.json.gz'):
             (directory / name).write_bytes((fixture / name).read_bytes())
+        # The frozen package holds no escrow (DEV had no players and no road contracts), so the escrow a pre-79 world
+        # carries is planted in this copy, as the old code wrote it (no escrow sources before doc 79): a resident's
+        # courier contract and a treasury-posted one, each with its contract:, and a bandit camp's bandits: hoard (the
+        # old strip left a hoard's coins in place: Tests/fixtures/pre79/road). The fixture itself is never changed.
+        snapshot = P.read_json_gz(fixture / 'snapshot.json.gz')
+        self.assertNotIn('escrowSource', json.dumps(snapshot['society']), 'a save from before escrow sources')
+        accounts = snapshot['society']['accounts']
+        residents = [e for e in snapshot['npcs'] if e['id'] in accounts]
+        poster, target = residents[0], residents[1]
+        roads = snapshot['roads']
+        roads['contracts'] = list(roads.get('contracts') or []) + [
+            {'id': 'k-p79npc', 'kind': 'courier', 'poster': poster['id'], 'town': 'ridgemere', 'target': target['id'],
+             'taker': '', 'status': 'open', 'reward': 6, 'created': 0, 'due': 30, 'detail': 'a letter to a neighbour'},
+            {'id': 'k-p79tres', 'kind': 'courier', 'poster': 'treasury', 'town': 'ridgemere', 'target': target['id'],
+             'taker': '', 'status': 'open', 'reward': 5, 'created': 0, 'due': 30, 'detail': 'a notice to carry'}]
+        roads['camps'] = list(roads.get('camps') or []) + [
+            {'id': 'camp_p79', 'cell': poster['cell'], 'strength': 9, 'hunger': 0, 'lastRaid': -100, 'active': True,
+             'x': 8.5, 'y': 7.5}]
+        accounts['contract:k-p79npc'] = {'cash': 6, 'stock': {}}
+        accounts['contract:k-p79tres'] = {'cash': 5, 'stock': {}}
+        accounts['bandits:camp_p79'] = {'cash': 20, 'stock': {'meal': 2}}
+        planted = {'contract:k-p79npc': 6, 'contract:k-p79tres': 5, 'bandits:camp_p79': 20}
+        P.write_json_gz(directory / 'snapshot.json.gz', snapshot)
         (directory / 'build.tar.gz').symlink_to(self.out / 'build.tar.gz')
         P.write_sums(directory)
         self.assertIn('live.business_settings', P.read_json_gz(directory / 'live.json.gz')['tables'])
@@ -868,9 +891,11 @@ class EndToEndTest(unittest.TestCase):
         after = self.stored_save(key)
         for gone in ('minted', 'sunk', 'loop'):
             self.assertNotIn(gone, after['society'], gone)
-        escrow = lambda doc: {k: a for k, a in doc['society']['accounts'].items() if P.account_kind(k) == 'escrow'}
-        self.assertEqual({k: a.get('cash', 0) for k, a in escrow(after).items()},
-                         {k: a.get('cash', 0) for k, a in escrow(before).items()}, 'escrow to the penny')
+        escrow = lambda doc: {k: a.get('cash', 0) for k, a in doc['society']['accounts'].items()
+                              if P.account_kind(k) == 'escrow'}
+        self.assertEqual({k: escrow(before).get(k) for k in planted}, planted, 'the planted escrow imported as it was')
+        self.assertEqual(escrow(after), escrow(before), 'escrow to the penny after a real server loaded and played it')
+        self.assertEqual(sum(escrow(after).values()), sum(planted.values()))
 
     def test_a_world_no_package_made_is_refused(self):
         key = self.key('d')

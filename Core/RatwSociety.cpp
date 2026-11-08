@@ -75,7 +75,7 @@ void Society::reset(Roster roster)
     stagedHour_ = stagedDay_ = -1;
     postedAtPass_.clear();
     provisions_.clear();
-    realOpening_ = faucetTotal_ = sinkTotal_ = 0;
+    realOpening_ = faucetTotal_ = sinkTotal_ = unregisteredMade_ = 0;
     tills_.clear();
     friendGroups_.clear();
     groupsDay_ = -1;

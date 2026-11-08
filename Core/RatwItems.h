@@ -294,7 +294,6 @@ std::string withQuality(const std::string& base, int quality);
 const char* qualityName(int quality);                       // "Crude", "Common", "Fine", "Masterwork".
 double qualityPrice(int quality);
 bool qualityApplies(const std::string& base);
-std::vector<std::string> kindsOf(const std::string& base);  // The good in every quality, common first (marks aside).
 // What a quality's use lasts, against the common kind's: crude 0.6, fine 1.5, masterwork 2.5.
 double qualityDurability(int quality);
 // A weapon's blow, against the common kind's (doc 33's damage: crude 0.92, fine 1.05, masterwork 1.1), and armour's

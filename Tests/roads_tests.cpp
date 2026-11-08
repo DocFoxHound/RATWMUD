@@ -2,6 +2,7 @@
 // and rumours. A strip of nine cells: the capital "east" at one end, "west" at the other, wild country between.
 // Nothing sends a caravan of itself since the economy's rules were erased (Docs/Design/66-worlds-atlas-and-dm.md,
 // Phase 5): the tests send them (World::sendCaravan, the hook for the rules to come).
+#include "test_purse.h"
 #include "RatwCheckpoint.h"
 #include "RatwItems.h"
 #include "RatwWire.h"
@@ -647,7 +648,7 @@ void beatenAndRobbed()
     ada->cellId = id(4);
     ada->position = {w.roads().camps[0].x - 3, w.roads().camps[0].y};
     ada->stamina = 30;
-    w.society().shift("treasury", "player-ada", "", 0, 80, "test: a fuller purse");
+    testPurse(w.society(), "player-ada", 80, "test: a fuller purse");
     const auto purse = w.society().account("player-ada")->cash;
     // She neither pays nor leaves: they lose patience, and it is a fight; she lets every turn go by.
     bool beaten = false;
@@ -806,7 +807,7 @@ void shopsSellTheirGoods()
         ada.cellId = baker->cellId;
         ada.position = {baker->position.x + 1, baker->position.y};
     }
-    w.society().shift("treasury", "player-ada", "", 0, 50, "test: a purse");
+    testPurse(w.society(), "player-ada", 50, "test: a purse");
     const auto bought = w.trade("player-ada", "baker1", ware, 1, true);
     expect(bought.ok && stock(w, "player-ada", ware) == 1 && w.society().account("player-ada")->cash == 50 + Society::PlayerWelcome - Society::catalogPrice(ware),
            "A player buys one at the catalogue's price (" + bought.message + ")");

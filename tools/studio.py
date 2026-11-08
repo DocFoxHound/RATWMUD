@@ -258,7 +258,8 @@ class Economy:
                 'market': {'id': market.get('id', 'wharf'), 'name': market.get('name', 'the Wharf'), 'people': market.get('people', '')},
                 'basket': basket, 'goods': goods, 'ruleWarning': '' if economy['storeRule'] else NO_RULE,
                 # The Wharf's lists (doc 73, 4.2), as the file has them: Atlas shows them; the rules are on the Rules panel.
-                'wharfLists': {k: (country.get('wharf') or {}).get(k) or ([] if k == 'never' else {}) for k in ('imports', 'takes', 'never')},
+                # Since doc 79 (17) they are names only, in market.json: shown as goods with no limits.
+                'wharfLists': self.wharf_lists(country),
                 **self.seasons_view(country, economy, seasons_ok), **self.rules_view(economy, rules_ok),
                 **self.farms_view(economy, farms_ok)}
 
@@ -302,6 +303,22 @@ class Economy:
         return {'rulesSupported': supported, 'rulesProblem': '' if supported else NO_RULES_HERE,
                 'rules': dict(economy.get('rules') or {}), 'services': copy.deepcopy(dict(economy.get('services') or {})),
                 'ruleDefaults': map_editor.rule_defaults(), 'serviceList': map_editor.service_list()}
+
+    @staticmethod
+    def wharf_lists(country: dict) -> dict:
+        """The Wharf's `imports`, `takes` and `never`: city_loop.json's while a world has it, else market.json's names
+        (doc 79, 17), each import or take as a good with no limits set."""
+        wharf = country.get('wharf') or map_editor.market_file().get('wharf') or {}
+        out = {}
+        for k in ('imports', 'takes', 'never'):
+            v = wharf.get(k)
+            if k == 'never':
+                out[k] = [x for x in (v or []) if isinstance(x, str)]
+            elif isinstance(v, list):
+                out[k] = {x: {} for x in v if isinstance(x, str)}
+            else:
+                out[k] = v if isinstance(v, dict) else {}
+        return out
 
     @staticmethod
     def seasons_view(country, economy, supported) -> dict:

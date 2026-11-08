@@ -724,49 +724,6 @@ void aRestartFromAFile()
     std::remove(path.c_str());
 }
 
-// Re-founding the economy (Docs/Design/64-economy-migration.md, Phase 1): a server started with refoundEconomy sets
-// the saved economy aside and the realm's money stands afresh; without it, the saved economy is what loads.
-void theEconomyRefounds()
-{
-    const std::string path = "/tmp/ratw-refound-test-" + std::to_string(::getpid()) + ".json";
-    std::remove(path.c_str());
-    std::int64_t fresh = 0;
-    {
-        game::Options o;
-        o.savePath = path;
-        game::Game g(o);
-        std::string problem;
-        expect(g.start(problem), "starts with a file save: " + problem);
-        auto& society = g.world().society();
-        fresh = society.realTotal();
-        // (Escrow, so a restore keeps it to the penny: a fund: account is the old economy's, dropped at load since doc 79.)
-        expect(society.openAccount("contract:test-marker") && society.shift("treasury", "contract:test-marker", "", 0, 7, "a test's mark"),
-               "a mark is made in the economy");
-        g.save();
-    }
-    const auto start = [&](bool refound) {
-        game::Options o;
-        o.savePath = path;
-        o.refoundEconomy = refound;
-        auto g = std::make_unique<game::Game>(o);
-        std::string problem;
-        expect(g->start(problem), "a server starts from the file: " + problem);
-        return g;
-    };
-    {
-        const auto kept = start(false);
-        const auto* mark = kept->world().society().account("contract:test-marker");
-        expect(mark && mark->cash == 7, "without the option, the saved economy loads (the mark is there)");
-    }
-    {
-        const auto refounded = start(true);
-        const auto& society = refounded->world().society();
-        expect(!society.account("contract:test-marker"), "with it, the saved economy is set aside (no mark)");
-        expect(society.realBalanced() && society.realTotal() == fresh, "and the realm's real money stands afresh, as at the start");
-    }
-    std::remove(path.c_str());
-}
-
 // A player session, not a development one: the sky, the clock, the lamps and the calendar are not theirs to change,
 // and a pace that isn't a whole step from 0 to 10 is refused.
 // The health tracker (doc 31): a page's pings, told every half minute, go into the minute's window; a long tick is
@@ -2161,7 +2118,6 @@ int main()
         signingInNeverHoldsTheGame();
         freeMovementIsChecked();
         aRestartFromAFile();
-    theEconomyRefounds();
         healthIsKept();
         playersCannotRuleTheSky();
         othersSeeNoPrivateStats();

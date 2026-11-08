@@ -2,6 +2,7 @@
 // letters between players in the game: written at an inn, to a wolf known by name, the fee to the town's treasury,
 // handed over in town or waiting at the reader's post town's inns, collected or sent on; scent read by name, by sight,
 // unknown, masked or faded; a signature introduces; an anonymous letter answered by the same courier; limits; saved.
+#include "test_purse.h"
 #include "RatwCalendar.h"
 #include "RatwDocuments.h"
 #include "RatwGame.h"

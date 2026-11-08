@@ -2,6 +2,7 @@
 // its witnesses hold it with the name they knew the doer by (or by look), and warm to the doer once; merchants in other
 // towns hear nothing; a promise kept makes a small deed and a "keeps promises" rumour; capped kinds stop; a DM award and
 // a revoke; all of it across a restart.
+#include "test_purse.h"
 #include "RatwGame.h"
 #include "RatwWorld.h"
 

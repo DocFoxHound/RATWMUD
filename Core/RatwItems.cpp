@@ -744,14 +744,6 @@ bool qualityApplies(const std::string& base)
     return base != "herbs" && base != "meal" && base != "water" && base.find_first_of("~@") == std::string::npos;
 }
 
-std::vector<std::string> kindsOf(const std::string& base)
-{
-    const auto b = baseOf(base);
-    if (!qualityApplies(b))
-        return {b};
-    return {b, b + "~crude", b + "~fine", b + "~masterwork"};
-}
-
 std::vector<std::string> goodsSold(const Business& business, int maxPrice)
 {
     std::vector<std::string> out;

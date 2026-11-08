@@ -90,13 +90,19 @@ void Society::tally(const std::string& holder, const std::string& reason, std::i
     t.sunk += sunk;
     t.goodsMade += goodsMade;
     t.goodsSunk += goodsSunk;
-    faucetTotal_ += made;
+    // D16 (9.4): only a registered faucet counts towards the balance, so a coin from an unregistered path leaves
+    // realBalanced() false: a test fails on it while play only logs it (it is still paid and tallied for the report).
+    const bool registered = registeredFaucet(reason);
+    if (registered)
+        faucetTotal_ += made;
+    else
+        unregisteredMade_ += made;
     sinkTotal_ += sunk;
     if (stagedChanged_.size() < 65536)
         stagedChanged_.insert({state_.budgetDay, holder.substr(0, 200)});
     // D16: a faucet by a reason in no group the door knows is logged (once a day a reason), never refused. The reasons are
     // the call sites' own words, so the reason names where it came from.
-    if ((made > 0 || goodsMade > 0) && !registeredFaucet(reason))
+    if ((made > 0 || goodsMade > 0) && !registered)
         if (const auto key = std::to_string(state_.budgetDay) + "|" + reason.substr(0, 80);
             doorNoted_.size() < 4096 && doorNoted_.insert(key).second && doorNotes_.size() < 256)
             doorNotes_.push_back("an unregistered faucet path, \"" + reason.substr(0, 80) + "\": " + std::to_string(made) + "p and " +
@@ -106,13 +112,15 @@ void Society::tally(const std::string& holder, const std::string& reason, std::i
 bool Society::registeredFaucet(const std::string& reason)
 {
     // The faucets the door knows (9.3): every group but the catch-all, and the trade group's own words (sales and
-    // purchases, wages and shares, chests, stalls and letters, finds in a fight, gifts and help).
+    // purchases, wages and shares, chests, stalls and letters, finds in a fight, gifts and help, and the DM's own
+    // transfers, which the Director journals as "operator transfer").
     if (faucetGroup(reason) != "trade")
         return true;
     for (const char* word : {"trade", "sale", "sold", "sell", "bought", "buy", "market", "wage", "pay", "share", "rent", "fee",
                              "chest", "stall", "enclosure", "letter", "picked up", "knocked loose", "gift", "help", "alms",
                              "restitution", "inheritance", "lent", "hunt", "goods", "price", "the odd pennies", "faction",
-                             "project", "dividend", "profit", "provisions", "carriage", "courier", "inn", "meal", "food"})
+                             "project", "dividend", "profit", "provisions", "carriage", "courier", "inn", "meal", "food",
+                             "operator transfer"})
         if (has(reason, word))
             return true;
     return false;
@@ -338,7 +346,7 @@ std::int64_t Society::realTotal() const
 void Society::openRealBalance()
 {
     realOpening_ = realTotal();
-    faucetTotal_ = sinkTotal_ = 0;
+    faucetTotal_ = sinkTotal_ = unregisteredMade_ = 0;
 }
 
 bool Society::realBalanced() const

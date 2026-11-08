@@ -2,6 +2,7 @@
 // each other active player up to +30%, residents not counted, +30% with a performer; a full rest only in a bed the wolf
 // has a right to; performing starts in a common room, one a room, and lapses when quiet; a wolf away at an inn builds
 // rested practice half again as fast.
+#include "test_purse.h"
 #include "RatwCalendar.h"
 #include "RatwGame.h"
 #include "RatwItems.h"
@@ -217,7 +218,7 @@ void boards()
 // Renting by individuals (Phase 3): a bed at an inn by the night (to the inn's till), a full rest only in it, away at the
 // inn half again the rested practice; the whole upstairs not while a bed is let; the night over at noon; a lodger's spare
 // bed in a home (to the head's purse), refused by a head who dislikes the wolf; the chest's goods home at the end; held
-// for a story, refused and given notice with the rest returned; money conserved.
+// for a story, refused and given notice with the rest returned; real money balanced.
 void lodgings()
 {
     const auto root = fs::temp_directory_path() / ("ratw-lodgings-" + std::to_string(::getpid()));
@@ -429,7 +430,7 @@ void stalls()
 
 // Phase 5, tavern games: a table in the common room; Knucklebones between two wolves to a winner, with practice;
 // Liar's Bones for 3p against a resident (residents with little money refused), the pot paid less the house's penny,
-// money conserved, the resident kept in its seat; a wolf leaving Wolves and Deer hands the game to the other.
+// real money balanced, the resident kept in its seat; a wolf leaving Wolves and Deer hands the game to the other.
 void tables()
 {
     const auto root = fs::temp_directory_path() / ("ratw-tables-" + std::to_string(::getpid()));
@@ -494,7 +495,7 @@ void tables()
     auto* u1 = w.entity("u1");
     u1->cellId = cellId(1);
     u1->position = {11.5, 12.5};
-    society.shift("treasury", "u1", "", 0, 100, "test purse");
+    testPurse(society, "u1", 100);
     t.run(.5);
     said = table(t.ash, {{"verb", "resident"}});
     expect(contains(said, "took a seat at Liar's Bones"), "a resident takes a seat: " + said);
@@ -546,7 +547,7 @@ void tables()
 // Phase 6, festivals: a called festival's programme; sign-ups (a penny each); the feast once and rested time at the
 // square; the race run round its marks; the tug on the beat; the howling with cheers; the tourney and the hunting
 // contest among residents; the storytelling judged by stars from different wolves; the steward's calls; the town's
-// purse in the pots; money conserved.
+// purse in the pots; real money balanced.
 void festivals()
 {
     const auto root = fs::temp_directory_path() / ("ratw-festivals-" + std::to_string(::getpid()));

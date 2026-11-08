@@ -259,7 +259,7 @@ add_test(NAME server_end_to_end COMMAND server_smoke $<TARGET_FILE:ratw_server>)
 add_executable(careers_tests Tests/careers_tests.cpp)
 target_link_libraries(careers_tests PRIVATE ratw_core)
 add_test(NAME careers_behaviors COMMAND careers_tests)
-# The Market Board (Docs/Design/79-a-staged-economy.md, Phase 1): the staged prices and their exploits, the rule on.
+# The Market Board (Docs/Design/79-a-staged-economy.md, Phase 1): the staged prices and their exploits.
 add_executable(market_tests Tests/market_tests.cpp)
 target_link_libraries(market_tests PRIVATE ratw_core)
 target_compile_definitions(market_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
@@ -275,7 +275,7 @@ target_compile_definitions(shops_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_
 add_test(NAME shops_behaviors COMMAND shops_tests)
 # Births follow deaths, arrivals from the Country (doc 68, Progress, "Births follow deaths; arrivals from the Country; the
 # treasury's target"): a child for each resident's death, a player's never; no NPC made but by birth; an empty post filled
-# from the city first, then from the world's own unplaced NPCs, by class; where arrivals stay; money conserved.
+# from the city first, then from the world's own unplaced NPCs, by class; where arrivals stay; real money balanced.
 add_executable(farm_people_tests Tests/farm_people_tests.cpp)
 target_link_libraries(farm_people_tests PRIVATE ratw_core)
 target_compile_definitions(farm_people_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

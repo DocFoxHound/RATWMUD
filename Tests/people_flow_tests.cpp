@@ -6,7 +6,7 @@
 // never; no NPC is ever made but by birth; a post that pays, empty eight days, goes to a wolf of the city with no post
 // that pays (grown pups first) of its class, else to an unplaced NPC of the world's own list, of its class, who comes in
 // from the Country: to the dead's home if empty, else to a household of its class with room, else the lodgings; never
-// alone at the work; its purse from the Country's account, the money conserved. The catalogue is the real Data/Items
+// alone at the work; its purse from the Country's account, real money balanced. The catalogue is the real Data/Items
 // (RATW_SOURCE_DIR): the posts' pay and so their class are the world's rules.
 #include "RatwItems.h"
 #include "RatwJsonDoc.h"

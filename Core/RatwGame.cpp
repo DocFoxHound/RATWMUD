@@ -6131,12 +6131,6 @@ void Game::load(const std::string& payload)
         note("error", "RATW character/account ownership is incomplete; autosave disabled.");
         return;
     }
-    if (options_.refoundEconomy)
-    {
-        saved.hasSociety = false;
-        saved.roads = RoadsState{};
-        note("warning", "RATW_ECONOMY_REFOUNDED the saved economy is set aside; the realm's money stands afresh");
-    }
     const auto result = world_.restore(saved);
     if (!result.ok)
     {

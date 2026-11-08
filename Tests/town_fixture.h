@@ -168,7 +168,7 @@ struct Town
         g.connect(&c);
         g.command(&c, cmd({{"type", "hello"}, {"id", id}, {"name", name}}));
         place(c, cell, x);
-        g.world().society().shift("treasury", c.entityId, "", 0, 50, "test purse");
+        testPurse(g.world().society(), c.entityId, 50);
     }
     void place(Client& c, int cell, double x, double y = 8.5)
     {

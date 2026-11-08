@@ -1,7 +1,7 @@
 {
   "format": "ratw-market",
   "version": 1,
-  "about": "The Market Board's data (Docs/Design/79-a-staged-economy.md, 5 and 7; Core/RatwMarket.cpp). `groups`: each good's depth group and its depthBase (a market's depth for a good is max(20, depthBase x catchment^0.6) x depthScale). A good's group is its entry in `goods`, else its catalogue category's in `categories`, else `fallback`. `district`: a static price factor by a keeper's quarter (its voice table's `quarter`), by group or `all`, inside the clamp. `times`: the slider's narrow move on staples and luxuries (D2), at hard, lean, ordinary, good and boom. `seasonSpanMost`: a season group's price swing (its dearest season over its cheapest) is rescaled to at most this, so it fits the clamp with room for pressure. `region`: dearer where a good isn't made. `buys`: what a kind of shop also buys from players in the staged economy (D5: the smithy, the ironworks and the foundry buy iron ore). `shelves`: a ware's shelf where it isn't the starting stock (4, swords 3; moved from city_loop.json: theriac, the apothecary's rare cure-all, one at a time). `seasons`: the seven season groups (moved from city_loop.json, gone since doc 79's Phase 3): each group's goods and, for Spring, Summer, Autumn and Winter (each the value at the season's middle day, the days between blended), in percent of normal, its `price` (rescaled to fit the clamp) and its `shelf` (how full the shops keep it). A world's own season records (the DM's Economy tab) still lay their price and shelf over a group's. The clamp's ends (0.80, 1.28), the sell share (0.55) and the backstop (0.95) are constants, never data. `rules`, `services`, `luxuries`, `houseBusinesses`, `estates` and `wharf`: moved from city_loop.json in Phase 3 (each with its own `about`).",
+  "about": "The Market Board's data (Docs/Design/79-a-staged-economy.md, 5 and 7; Core/RatwMarket.cpp). `groups`: each good's depth group and its depthBase (a market's depth for a good is max(20, depthBase x catchment^0.6) x depthScale). A good's group is its entry in `goods`, else its catalogue category's in `categories`, else `fallback`. `district`: a static price factor by a keeper's quarter (its voice table's `quarter`), by group or `all`, inside the clamp. `times`: the slider's narrow move on staples and luxuries (D2), at hard, lean, ordinary, good and boom. `seasonSpanMost`: a season group's price swing (its dearest season over its cheapest) is rescaled to at most this, so it fits the clamp with room for pressure. `region`: dearer where a good isn't made. `buys`: what a kind of shop also buys from players in the staged economy (D5: the smithy, the ironworks and the foundry buy iron ore). `shelves`: a ware's shelf where it isn't the starting stock (4, swords 3; moved from city_loop.json: theriac, the apothecary's rare cure-all, one at a time). `seasons`: the seven season groups (moved from city_loop.json, gone since doc 79's Phase 3): each group's goods and, for Spring, Summer, Autumn and Winter (each the value at the season's middle day, the days between blended), in percent of normal, its `price` (rescaled to fit the clamp) and its `shelf` (how full the shops keep it). A world's own season records (the DM's Economy tab) still lay their price and shelf over a group's. The clamp's ends (0.80, 1.28), the sell share (0.55) and the backstop (0.95) are constants, never data. `rules` (Core's Rules[] defaults), and `services`, `luxuries`, `houseBusinesses`, `estates` and `wharf`, kept from the city's loop in Phase 3 for the phases that will read them (each `about` names its phase; nothing in Core reads those five yet).",
   "groups": {
     "staple": 2.0,
     "food": 1.0,
@@ -108,7 +108,7 @@
     "factionDiscountMost": 30
   },
   "services": {
-    "about": "The city's services (moved from city_loop.json, doc 79, 6.5): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Kept for the services to come (bands and talk); nothing in Core reads them yet. A world's `service` records change them.",
+    "about": "The city's services (doc 79, 6.5 and 12: kept, at a frequency by band): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Nothing in Core reads them yet: Phase 6 (street life) makes them staged sales at `every` x band; until then a change here, or a world's `service` record (the Rules panel), has no effect in play.",
     "list": [
       {
         "id": "groom_and_trim",
@@ -233,13 +233,13 @@
     ]
   },
   "luxuries": {
-    "about": "The luxuries (moved from city_loop.json, doc 79, 17; doc 72, Phase 5: cheese, a comic luxury for wolves): the goods the rich buy and the Times touch. Kept for the bands and talk; the Board's `times` gives their group (luxury) its swing.",
+    "about": "The luxuries (doc 72, Phase 5: cheese, a comic luxury for wolves): the goods the rich buy. Nothing in Core reads this list yet: the Board's `times` swings their depth group (luxury, by `goods` and `categories` above); Phase 6 (street life) reads it for the rich's staged buying, Phase 8 (talk) for their boasts and complaints.",
     "goods": [
       "cheese"
     ]
   },
   "houseBusinesses": {
-    "about": "The Houses' businesses in the city (moved from city_loop.json, doc 79, 17; doc 72): a business at one of these buildings is its House's, for the bands (a House head is rich) and for talk. No money moves by it.",
+    "about": "The Houses' businesses in the city (doc 72): a business at one of these buildings is its House's. No money moves by it, and nothing in Core reads it yet: the bands find the Houses' people by `houses()` today; Phase 8 (talk) reads this list for who owns what.",
     "list": [
       {
         "building": "rm_the_grayrock_ironworks",
@@ -254,7 +254,7 @@
     ]
   },
   "estates": {
-    "about": "The Houses' estates (moved from city_loop.json, doc 79, 17; doc 72, Phase 6): each House's people by the words of their posts, for the guarantees (doc 79, 6.3: the Heights and the estates' residents at least comfortable). No purse: the estates' money went with the city's loop.",
+    "about": "The Houses' estates (doc 72, Phase 6): each House's people by the words of their posts. No purse (the estates' money went with the city's loop), and nothing in Core reads it: the guarantees (doc 79, 6.3) go by district (the Heights and the estates) since Phase 2. Kept for Phase 8 (talk: a House's people); Phase 9 drops it if talk doesn't take it.",
     "list": [
       {
         "id": "grayrock",
@@ -311,7 +311,7 @@
     ]
   },
   "wharf": {
-    "about": "The Wharf's goods (moved from city_loop.json, doc 79, 17; doc 73, 6: of its controls only the never-imported list stays, for the port to come, Phase 5): `never`, goods the ships never bring (cheese: the user's); `imports` and `takes`, the goods its lists named (names only: the money and the most a day went with the Wharf's valve).",
+    "about": "The Wharf's goods (doc 73, 6; of its controls only these lists stay): `never`, goods the ships never bring (cheese: the user's); `imports` and `takes`, the goods its lists named (names only: the money and the most a day went with the Wharf's valve in doc 79's Phase 3). Nothing in Core reads them yet: Phase 5 (the port) draws its ships' manifests from them; Atlas's Wharf panel shows them until Phase 9 retargets it.",
     "never": [
       "cheese"
     ],
