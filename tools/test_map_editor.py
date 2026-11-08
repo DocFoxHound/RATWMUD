@@ -413,7 +413,7 @@ class ContentTests(unittest.TestCase):
         files = editor.export_files(self.greyfen())
         manifest = files['world.ratw'].splitlines()
         self.assertEqual(manifest[0], 'RATW_WORLD 2')
-        self.assertEqual(sum(line.startswith('resident ') for line in manifest), 10)
+        self.assertEqual(sum(line.startswith('resident ') for line in manifest), 11)    # (Brann the smith since doc 33.)
         self.assertIn('herbs "town" 4.5 14.5', manifest)
         self.assertTrue(any(line.startswith('route "town_watch" 9 ') for line in manifest))
         self.assertIn('economy 1000 100 50 10 12', manifest)
@@ -493,7 +493,9 @@ class ContentTests(unittest.TestCase):
         lines = editor.loop_lines(old)
         self.assertIn('loop needs on country off reserve 50 toll 30 carriage 6 wages 14 8 8 6', lines)
         self.assertIn('countryoff "fish"', lines)
-        self.assertTrue(editor.check_economy({**self.greyfen()['economy'], 'rules': {'wharfFee': 51}}), 'the fee at most 50')
+        # (Doc 79, 17: wharfFee is a rule the game no longer has: kept and ignored. A kept rule out of range is refused.)
+        self.assertEqual(editor.check_economy({**self.greyfen()['economy'], 'rules': {'wharfFee': 51}}), [])
+        self.assertTrue(editor.check_economy({**self.greyfen()['economy'], 'rules': {'halfLifeDurable': 301}}), 'at most 300')
         for bad in ({'farms': {'orchard_9': {'hand': 1001}}}, {'farms': {'Orchard 9': {'hand': 1}}}, {'farms': {'orchard_9': 1}},
                     {'areas': {'gardens': {'on': 'yes'}}}, {'areas': {'gardens': {'luck': 1}}}, {'order': ['grain', 'grain']},
                     {'order': ['grain', 7]}, {'order': []}):

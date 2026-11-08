@@ -1,5 +1,8 @@
 # 72. Pulling the Country into the world (2026-11-03)
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 The user, 2026-11-03 (verbatim, by speech to text):
 
 > But yeah, the communities will become towns. I don't think I want to implement full towns yet because we haven't

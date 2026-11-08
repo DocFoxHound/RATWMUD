@@ -30,9 +30,11 @@ The authority atomically replaces `snapshot.json` every two seconds:
     "homeX":19.5,"homeY":15.5,"relocating":false,
     "relocationTarget":"","lastActiveAtUnix":0}],
   "accounts": [{"id":"treasury","cash":1000,"stock":{"herbs":100,"meal":50}}],
-  "economy": {"minted":1480,"sunk":0,"ledger":[]}
+  "economy": {"ledger":[]}
 }
 ```
+
+(Since Docs/Design/79-a-staged-economy.md, 13, `economy` holds no `minted` or `sunk`: an older game's are read past.)
 
 Lists above are illustrative shapes, not fabricated live content. Offline saved
 characters are included with `online:false`, last-known location, and

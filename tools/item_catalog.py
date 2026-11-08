@@ -195,8 +195,8 @@ def check_crafts():
             cost, value, gain = margin(c)
             if gain <= 0:
                 problems.append(f'craft {c["id"]}: makes nothing ({cost:.3g} LD in, {value:.3g} LD out)')
-        if not isinstance(c.get('hours'), (int, float)) or c['hours'] <= 0:
-            problems.append(f'craft {c["id"]}: needs its hours (tools/econ_model/apply_ladder.py)')
+        if 'hours' in c and (not isinstance(c['hours'], (int, float)) or isinstance(c['hours'], bool) or c['hours'] <= 0):
+            problems.append(f'craft {c["id"]}: its hours, when given, must be above 0')   # (Optional since doc 79, 17.)
     for pr in PRODUCERS:
         if not pr.get('match') or pr.get('seconds', 0) <= 0 or not pr.get('out'):
             problems.append(f'producer {pr.get("id")}: needs match words, seconds and goods')
@@ -205,8 +205,8 @@ def check_crafts():
                 problems.append(f'producer {pr["id"]}: {k} must be a known good in a whole count')
         if any(x not in (0, 1, 2, 3) for x in pr.get('seasons', [])):
             problems.append(f'producer {pr["id"]}: seasons are 0 to 3')
-        if not isinstance(pr.get('hours'), (int, float)) or pr['hours'] <= 0:
-            problems.append(f'producer {pr["id"]}: needs its hours (tools/econ_model/apply_ladder.py)')
+        if 'hours' in pr and (not isinstance(pr['hours'], (int, float)) or isinstance(pr['hours'], bool) or pr['hours'] <= 0):
+            problems.append(f'producer {pr["id"]}: its hours, when given, must be above 0')
     for b, goods in BUYS.items():
         if b not in BUSINESSES:
             problems.append(f'buys: unknown business {b}')

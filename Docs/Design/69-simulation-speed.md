@@ -1,5 +1,8 @@
 # 69. Simulation speed: where a run's time goes, and a fast mode (2026-10-31)
 
+> **Parts superseded by doc 79 (2026-11-08):** its economy (Docs/Design/79-a-staged-economy.md, section 21, says
+> which parts). The rest stands.
+
 The user, 2026-10-31 (verbatim):
 
 > Okay, so we need a fast mode. There's no reason these simulations should be taking nearly an hour for two months.

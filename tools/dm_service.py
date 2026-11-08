@@ -292,7 +292,7 @@ def normalize_snapshot(raw, now):
         checked(not actor['active'] or actor['online'] and not actor['npc'], 'Invalid active-player flag.')
     economy = raw.get('economy', {})
     checked(isinstance(economy, dict), 'Invalid economy metadata.')
-    result['economy'] = {key: number(economy.get(key, 0), 0, 1e15, integer=True) for key in ('minted', 'sunk')}
+    result['economy'] = {}            # (Doc 79, 13: no minted and sunk; the snapshot's are read past.)
     ledger = economy.get('ledger', [])
     checked(isinstance(ledger, list) and len(ledger) <= 128, 'Invalid bounded economy ledger.')
     result['economy']['ledger'] = []

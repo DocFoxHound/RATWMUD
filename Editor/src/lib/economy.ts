@@ -1,6 +1,5 @@
 // Atlas's Economy controls (Docs/Design/67-ridgemere2-city.md, 6; tools/studio.py's /api/atlas/economy): the store
 // room's switches for the world and each business. What the page shows and sends, as pure functions (economy.test.ts).
-import type {SteeringView} from './steering';
 
 /** A good a business would draw: its catalogue price and what one costs at the world's markup for its kind. */
 export interface StoreGood { item: string; price: number; cost: number }
@@ -98,127 +97,29 @@ export interface ServiceValues { on: boolean; price: number; every: number }
 export interface ServiceListed { id: string; name: string; business: string; price: number; every: number; for?: string }
 export interface RuleControls {
     rulesSupported: boolean; rulesProblem: string; rules: Record<string, number>; services: Record<string, ServiceValues>;
-    ruleDefaults: Record<string, number>; serviceList: ServiceListed[]; drift?: DriftView;
-    /** Steering the economy (doc 74, 10; lib/steering.ts). */
-    steering?: SteeringView;
-}
-/** Where the self-correcting rules stand on the world's game, as its last save has them (doc 68, Progress,
- * "Self-correcting rules"): read only; the rules move it, never a setting. */
-export interface DriftView {
-    saved: string | null; problem: string; tollBase: number; almsBase: number;
-    toll?: number; alms?: number; level?: number | null; target?: number;
-    prices?: {on: boolean; moved: number; mean: number; low: number; high: number};
-    shelves?: {on: boolean; wares: number; mean: number | null};
-    wages?: {on: boolean; tills: number; up: number; down: number; mean: number; moved: {till: string; name: string; step: number}[]};
-}
-/** The drift in a line each, for the page (empty when the world has no save). */
-export function driftLines(d: DriftView | undefined): string[] {
-    if (!d || !d.saved) return [];
-    const off = (on: boolean | undefined) => on ? '' : ' (the rule is off)';
-    const out = [`The gate toll ${d.toll?.toFixed(1)}% (the world's ${d.tollBase}%), the alms ${d.alms}p a head (${d.almsBase}p)`
-        + `: the treasury's level ${d.level ?? '-'}p against its target ${d.target}p.`];
-    if (d.prices) out.push(`Price factors: ${d.prices.moved} wares off the catalogue's price, mean ${d.prices.mean}, from ${d.prices.low} to `
-        + `${d.prices.high}${off(d.prices.on)}.`);
-    if (d.shelves) out.push(`Shelves from sales: ${d.shelves.wares} wares, ${d.shelves.mean ?? '-'} on a shelf on average${off(d.shelves.on)}.`);
-    if (d.wages) out.push(`Wage steps: ${d.wages.up} tills up, ${d.wages.down} down of ${d.wages.tills}, mean ${d.wages.mean}p a post`
-        + `${off(d.wages.on)}.`);
-    return out;
+    ruleDefaults: Record<string, number>; serviceList: ServiceListed[];
 }
 export type RulesBody = {set: Record<string, number | null>};
 export type ServicesBody = {set: Record<string, Partial<ServiceValues> | null>};
-/** The rules the page lists, their limits, whether each is an on/off switch, and what the page calls them. */
-export const RULES: {key: string; label: string; max: number; unit: string; onOff?: boolean;
-    /** Steering the economy (doc 74): 'setting', the DM's four, set on the Steering panel only; 'own', the steering's own
-     *  rules (an author's in Atlas, read only on the DM's tab); 'held', a rule the steering moves while it is on. */
-    steer?: 'setting' | 'own' | 'held'}[] = [
-    {key: 'comfortsMost', label: 'Comforts a day, at most', max: 100000, unit: 'purchases a household makes a day (it was 20)'},
-    {key: 'almsADay', label: 'Alms', max: 1000, unit: 'p a head a household is made up to after the day\'s wages'},
-    {key: 'almsNoEarner', label: 'Alms with no earner', max: 300, unit: '% of the alms a head a household with no member in a paid post is made up to, the part over the alms from over the treasury\'s cap; so is one whose earners\' wages together are under the alms a head, after the no-earner\'s and keeping tonight\'s wage support wanted (100 or less: as any household; doc 73, rounds 4 and 6)'},
-    {key: 'treasuryCap', label: 'Treasury cap', max: 100000000, unit: 'p kept; what is over it pays the shops\' short wages', steer: 'held'},
-    {key: 'wageSupport', label: 'Wage support', max: 100, unit: '% of a till\'s shortfall the treasury pays (from over the cap)'},
-    {key: 'workBankHours', label: 'Work bank', max: 1000, unit: 'hours of the crew\'s work a shop may bank (0: its longest craft\'s)'},
-    {key: 'fairFood', label: 'Fair food in a household', max: 1, unit: 'the members with least food buy first', onOff: true},
-    {key: 'services', label: 'The city\'s services', max: 1, unit: 'households buy them from their comforts budget', onOff: true},
-    {key: 'servicesCityShare', label: 'The city\'s share', max: 100, unit: '% of each service\'s price to the treasury'},
-    // Trades and the follow-ups (doc 68, Progress, "Trades").
-    {key: 'suppliers', label: 'City suppliers first', max: 1, unit: 'a keeper buys its craft inputs from the city\'s makers before the store room (the cooper\'s casks)', onOff: true},
-    {key: 'patrons', label: 'Patrons', max: 1, unit: 'the treasury, the Houses and the wharf pay for their kit, hulls and buildings\' work', onOff: true},
-    {key: 'armourEvery', label: 'New kit every', max: 3650, unit: 'days, for each armed wolf (the armoury\'s new pieces)'},
-    {key: 'buyAheadDays', label: 'Buy ahead', max: 5, unit: 'days of food more a household buys before a Restday or festival'},
-    {key: 'floatDrawDays', label: 'A till\'s float', max: 28, unit: 'days of draws averaged for the float it keeps back (1: yesterday\'s)'},
-    {key: 'floatWagesDays', label: 'Wages kept before profit', max: 60, unit: 'days of its posts\' wages a till keeps over its float'},
-    {key: 'workshopWagesDays', label: 'A workshop\'s wages kept', max: 60, unit: 'days of its posts\' wages a country workshop keeps over its float before its House\'s share (doc 72)'},
-    {key: 'workshopWageMost', label: 'A workshop\'s wage rise', max: 100, unit: 'pennies at most a country workshop\'s wages drift over the world\'s, its House taking the profit (doc 72)'},
-    {key: 'subsidyToNeed', label: 'Carriage subsidy only to need', max: 1, unit: 'the treasury pays the carters only what they lack of their wages', onOff: true},
-    {key: 'estatePostsDays', label: 'The estates\' posts first', max: 30, unit: 'nights of its posts\' wages an estate keeps before it buys (doc 72)'},
-    {key: 'estates', label: 'The Houses\' estates', max: 1, unit: 'each House its own estate purse, paying its own people, the Crown granting the short (doc 72, Phase 6); off: the Wharf\'s one purse', onOff: true},
-    // The Wharf (Docs/Design/73-the-wharf.md, 6): the realm's valve to the world beyond it.
-    {key: 'wharfValve', label: 'The Wharf\'s valve', max: 1, unit: 'it imports the realm\'s shortages, takes its piles and buys its exports at the stable price, money in and out of the realm (off: the Country renamed)', onOff: true},
-    {key: 'wharfFee', label: 'Wharfage', max: 50, unit: '% the Wharf keeps of its imports\' takings, and over its exports\' (paid by the beyond)'},
-    {key: 'wharfKeepDays', label: 'A farm keeps', max: 365, unit: 'days of its yield of a good before the Wharf takes the rest'},
-    {key: 'wharfKeepLeast', label: 'A farm keeps at least', max: 10000, unit: 'pieces of a good'},
-    {key: 'wharfImportScale', label: 'Imports scale', max: 1000, unit: '% on each import\'s most a day (0: none)'},
-    {key: 'wharfTakeScale', label: 'Takes scale', max: 1000, unit: '% on each take\'s most a day (0: none)'},
-    {key: 'wharfExportMost', label: 'The beyond pays in, at most', max: 100000, unit: 'p a day (takes, the export basket, carriage, wharfage)'},
-    {key: 'wharfCreditMost', label: 'Trade credit, at most', max: 1000000, unit: 'p the realm may have paid beyond and not had back'},
-    {key: 'wharfInjectADay', label: 'Inject through the Wharf', max: 1000, unit: 'p a day added to the credit: money in, as goods bought'},
-    {key: 'wharfTakeADay', label: 'Take through the Wharf', max: 1000, unit: 'p a day taken from the credit: money out, as the beyond buys less'},
-    {key: 'wharfActionMost', label: 'A DM\'s credit move, at most', max: 1000000, unit: 'p one wharf.credit action may move either way (0: refused)'},
-    // The food farms' land rent (doc 72, open question 2): to the House whose land each is on, from its basket's share.
-    {key: 'landRent', label: 'The farms\' land rent', max: 100, unit: '% of a food farm\'s takings to its House\'s estate each night, after its wages (the areas below have their own)'},
-    {key: 'landRentFish', label: 'Land rent: fish', max: 100, unit: '% of the fishing\'s takings (House Grayrock)'},
-    {key: 'landRentFruit', label: 'Land rent: orchards and vines', max: 100, unit: '% of their takings (House Fell)'},
-    {key: 'landRentGrain', label: 'Land rent: grain', max: 100, unit: '% of the grain farms\' takings (the Crown)'},
-    {key: 'landRentSalt', label: 'Land rent: salt', max: 100, unit: '% of the salt works\' takings (the Crown)'},
-    {key: 'landRentDairy', label: 'Land rent: dairies', max: 100, unit: '% of the cattle and dairy farms\' takings (the Crown; over the meat area\'s)'},
-    {key: 'landRentThin', label: 'Land rent: the thinnest farms', max: 100, unit: '% of the lake boats\', salt works\' and three orchards\' takings (doc 72, Phase 5; over their areas\')'},
-    {key: 'farmSurplus', label: 'The farms\' surplus to their House', max: 1, unit: '1 = a food farm\'s basket at most its design\'s a day, what its till holds over its float and that each night its House\'s (doc 73, after wharf7b); 0 = its basket spends all over its float'},
-    {key: 'shopRot', label: 'A maker\'s by-products rot', max: 1, unit: '1 = a maker\'s perishable by-product (the butchers\' hides) held over its keep loses a keeps-th of what is over each night (doc 73, round 2); 0 = it keeps'},
-    // The luxuries (doc 72, Phase 5, the user's decision: cheese): never food; bought from what is over a household's keep.
-    {key: 'luxuryShare', label: 'Luxuries\' share', max: 100, unit: '% a day, at most, of what a household holds over its keep, after its food and needs, spent on luxuries (cheese)'},
-    {key: 'luxuryMost', label: 'Luxuries a head', max: 100, unit: 'pieces a head a day, at most'},
-    {key: 'luxuryAbove', label: 'Luxuries\' keep', max: 10000, unit: 'pennies a head a household not of the Houses keeps before it buys a luxury (the Houses\' keep their comforts\' keep)'},
-    {key: 'luxuryHouses', label: 'Luxuries: the Houses\' tables', max: 100, unit: '% a day of what the Country\'s purse holds over its reserve and its posts, spent on luxuries for the Houses'},
-    {key: 'luxuryHousesMost', label: 'Luxuries: the Houses\' most', max: 1000, unit: 'pieces a day, at most, for the Houses\' tables'},
-    {key: 'luxuryPriceBand', label: 'Luxuries\' price band', max: 1000, unit: '% over the season\'s price a shop\'s price for a luxury may climb while it sells out (700: eight times)'},
-    {key: 'luxuryPriceStep', label: 'Luxuries\' price step', max: 1000, unit: 'thousandths of the price a day it climbs when the shop sells out'},
-    // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms").
-    {key: 'surplus', label: 'The treasury\'s surplus', max: 1, unit: 'what it holds over its cap and reserve goes out at 18:00, to public works and the poorest', onOff: true},
-    {key: 'surplusKeep', label: 'Reserve over the cap', max: 100000000, unit: 'p the treasury keeps over its cap for the lean seasons before its surplus goes out', steer: 'held'},
-    {key: 'surplusWorks', label: 'Surplus to public works', max: 100, unit: '% of the surplus a day: orders from the city\'s trades, till to till'},
-    {key: 'surplusAlms', label: 'Surplus to the poorest', max: 100, unit: '% of the surplus a day: the poorest households, per head, poorest first'},
-    {key: 'surplusAlmsTo', label: 'The poorest raised to', max: 1000, unit: 'p a head, at most, the surplus brings the poorest households up to', steer: 'held'},
-    // The self-correcting rules (doc 68, Progress, "Self-correcting rules"): each drifts gently within its bounds; where
-    // each stands now is the running game's (RuleControls.drift), shown beside them, read only.
-    {key: 'stockPrices', label: 'Prices follow stock', max: 1, unit: 'a shop\'s price for a ware rises when it sells out and falls on a glut, the city\'s prices as a whole kept at the catalogue\'s', onOff: true},
-    {key: 'stockPriceBand', label: 'Price band', max: 90, unit: '% either side of the catalogue\'s (the season\'s) price, at most'},
-    {key: 'stockPriceStep', label: 'Price step', max: 1000, unit: 'thousandths of the price a day (a quarter of it back toward the catalogue\'s on a quiet day)'},
-    {key: 'shelfFollow', label: 'Shelves follow sales', max: 1, unit: 'a shelf follows its ware\'s sales a day, smoothed (off: a quarter over yesterday\'s)', onOff: true},
-    {key: 'shelfDays', label: 'Sales smoothed over', max: 365, unit: 'days, about'},
-    {key: 'shelfCover', label: 'Shelf', max: 1000, unit: '% of the smoothed sales a day on the shelf (never under its starting stock)'},
-    {key: 'shelfGrow', label: 'Grows on selling out', max: 500, unit: '% more than its shelf a day it sells out counts as sold'},
-    {key: 'wageDrift', label: 'Wages follow cover', max: 1, unit: 'a till\'s posts\' wages rise a penny when it pays them with plenty to spare, fall a penny when it keeps falling short', onOff: true},
-    {key: 'wageDriftDays', label: 'Wages judged every', max: 365, unit: 'days'},
-    {key: 'wageDriftSpare', label: 'Plenty to spare', max: 1000, unit: '% of its wages its keeper\'s profit is, over those days, for a raise'},
-    {key: 'wageDriftMost', label: 'Wage drift, at most', max: 100, unit: 'p either way on a keeper\'s wage'},
-    {key: 'wageDriftHandMost', label: 'A hand\'s wage drift, at most', max: 100, unit: 'p either way on a hand\'s wage'},
-    {key: 'wageDriftFloor', label: 'Wage floor', max: 1000, unit: 'p a day: no post lowered under it (a day\'s food)'},
-    {key: 'treasuryDrift', label: 'Toll and alms follow the treasury', max: 1, unit: 'over its target the toll eases and the alms rise; under it the toll firms and the alms tighten', onOff: true},
-    {key: 'treasuryTarget', label: 'Treasury target', max: 100000000, unit: 'p, its level (a slow mean at 18:00) is judged against', steer: 'held'},
-    {key: 'treasuryBand', label: 'Target band', max: 100, unit: '% either side of the target in which nothing moves'},
-    {key: 'treasuryDays', label: 'Level over', max: 3650, unit: 'days, about (the slow mean)'},
-    {key: 'treasuryJudgeDays', label: 'Judged every', max: 365, unit: 'days (the toll and the alms move a step at most each time)'},
-    {key: 'tollStep', label: 'Toll step', max: 100, unit: 'tenths of a point each time it is judged'},
-    {key: 'tollDriftMost', label: 'Toll drift, at most', max: 90, unit: 'points from the world\'s gate toll'},
-    {key: 'almsDriftMost', label: 'Alms drift, at most', max: 1000, unit: 'p a head over the alms, at most (a penny each time; never under them)'},
-    // Steering the economy (Docs/Design/74-steering-the-economy.md): the DM's four on the Steering panel, and its own rules.
-    {key: 'steer', label: 'The steering', max: 1, unit: 'a few levers follow where the DM says the money rests', onOff: true, steer: 'setting'},
-    {key: 'steerLean', label: 'Where the money rests', max: 200, unit: '0 shared, 100 today\'s economy, 200 held by the rich (the tab shows -100 to +100)', steer: 'setting'},
-    {key: 'neverHungry', label: 'Never Hungry', max: 1, unit: 'a wolf going hungry is given a day\'s food; the richest pay', onOff: true, steer: 'setting'},
-    {key: 'neverBroke', label: 'Never Broke', max: 1, unit: 'a household short of the next day\'s necessities is given just enough; the richest pay', onOff: true, steer: 'setting'},
-    {key: 'steerMeanDays', label: 'Its means over', max: 365, unit: 'days, about (the Gini and the shares; hunger, the short and the treasury over 28; at least 14)', steer: 'own'},
-    {key: 'skimMost', label: 'The skim, at most', max: 100, unit: '% of a holder\'s spare in its first pass (at least 1)', steer: 'own'},
-    {key: 'skimKeepDays', label: 'The skim leaves', max: 28, unit: 'days of its necessities a head in a household (at least 1)', steer: 'own'},
+/** The rules the page lists (Core's items::Rules since doc 79, 17: the clamps and the Market Board's), their limits,
+ *  whether each is an on/off switch, and what the page calls them. A world's rule not listed here is one the game no
+ *  longer has: kept and ignored. */
+export const RULES: {key: string; label: string; low?: number; max: number; unit: string; onOff?: boolean}[] = [
+    // The clamps (doc 79, 6.4).
+    {key: 'neverHungry', label: 'Never Hungry', max: 1, unit: 'no household has short days, whatever its band', onOff: true},
+    {key: 'neverBroke', label: 'Never Broke', max: 1, unit: 'no household is destitute', onOff: true},
+    {key: 'buyAheadDays', label: 'Buying ahead', max: 5, unit: 'days of food more a household is given the day before a Restday or festival'},
+    // The Market Board (doc 79, 5 and 12's pressure settings).
+    {key: 'halfLifePerishable', label: 'Half-life, perishable food', low: 5, max: 300, unit: 'tenths of a day a good\'s pressure takes to halve'},
+    {key: 'halfLifeKeeping', label: 'Half-life, keeping food', low: 5, max: 300, unit: 'tenths of a day'},
+    {key: 'halfLifeDurable', label: 'Half-life, the rest', low: 5, max: 300, unit: 'tenths of a day'},
+    {key: 'ripple', label: 'The ripple', max: 70, unit: '% of a good\'s pressure passed to its inputs and outputs a step, each morning'},
+    {key: 'depthScale', label: 'Market depth', low: 10, max: 1000, unit: '% on every market\'s depth (deeper: prices move less)'},
+    {key: 'playerPushMost', label: 'One holder\'s push, at most', max: 50, unit: 'hundredths on a good\'s pressure'},
+    {key: 'playerSellMost', label: 'One holder\'s sales a day, at most', max: 5000, unit: 'p the shops pay one account holder a day'},
+    {key: 'takeAllowance', label: 'The take allowance', low: 5, max: 100, unit: '% of a market\'s depth its shops take of a good a day'},
+    {key: 'shelfScale', label: 'Shelves', low: 10, max: 1000, unit: '% on every shelf\'s target'},
+    {key: 'factionDiscountMost', label: 'The faction discount, at most', max: 1000, unit: 'p a Chapter a week'},
 ];
 /** A rule as it stands: the world's own, else city_loop.json's. */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;
@@ -271,15 +172,9 @@ export interface FarmSettings {
     start?: number; every?: number; order?: string[]; keeper?: number; hand?: number;
     areas?: Record<string, FarmAreaOwn>; farms?: Record<string, FarmOwn>;
 }
-/** The farms on the world's game, as its last save has them (read only): each farm's till, its store and its crew's purse. */
-export interface FarmsSaved {
-    saved: string | null; problem: string;
-    farms: Record<string, {till: number; stock: number; goods: Record<string, number>; crewPurse: number}>;
-}
 export interface FarmControls {
     farmsSupported: boolean; farmsProblem: string; farms: FarmSettings;
     farmDefaults: {start: number; every: number; order: string[]; keeper: number; hand: number; floatDays: number; areas: FarmAreaDefault[]};
-    farmsSaved?: FarmsSaved;
 }
 type Unset<T> = {[K in keyof T]?: T[K] | null};
 export type FarmsBody = {set: Unset<Omit<FarmSettings, 'areas' | 'farms'>> & {

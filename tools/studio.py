@@ -71,7 +71,6 @@ import copy
 import errno
 import http.client
 import json
-import math
 import os
 import socket
 import subprocess
@@ -118,14 +117,13 @@ PLAY_ROUTES = frozenset({('GET', '/api/play/server'), ('POST', '/api/play/server
 ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/store'), ('POST', '/api/economy/businesses'),
                             ('POST', '/api/economy/loop'), ('POST', '/api/economy/goods'), ('POST', '/api/economy/seasons'),
                             ('POST', '/api/economy/comforts'), ('POST', '/api/economy/rules'), ('POST', '/api/economy/services'),
-                            ('POST', '/api/economy/farms'), ('POST', '/api/economy/steer')})
+                            ('POST', '/api/economy/farms')})
 # The DM's view of the city's loop on a live world (Docs/Design/68-the-country-and-the-city-loop.md, 9): the treasury's
 # levers (the gate toll, wages, the subsidies) and the Country's, read by anyone signed in, changed by dm and admin.
 # Since doc 68's seasons: every setting the loop and the store room have (the per-business switches stay Atlas's).
 DM_ECONOMY_ROUTES = frozenset({('GET', '/api/economy'), ('POST', '/api/economy/loop'), ('POST', '/api/economy/store'),
                                ('POST', '/api/economy/goods'), ('POST', '/api/economy/seasons'), ('POST', '/api/economy/comforts'),
-                               ('POST', '/api/economy/rules'), ('POST', '/api/economy/services'), ('POST', '/api/economy/farms'),
-                               ('POST', '/api/economy/steer')})
+                               ('POST', '/api/economy/rules'), ('POST', '/api/economy/services'), ('POST', '/api/economy/farms')})
 LOOP_KEYS = tuple(k for k in map_editor.LOOP_DEFAULTS if k != 'wharfOff')
 COMFORT_KEYS = ('comfortsAbove', 'comfortsShare')
 NO_RULE = 'The loop needs the restocking rule on, or shops sell out and stay empty.'
@@ -140,186 +138,6 @@ NO_RULES_HERE = ('This world lacks migration 0058: its rules and services are as
 NO_FARMS_HERE = ('This world lacks migration 0060: its farms are as Data/Economy/country_farms.json has them and can\'t be '
                  'changed here.')
 FARM_SET_KEYS = ('start', 'every', 'order', 'keeper', 'hand', 'areas', 'farms')
-# Steering the economy (Docs/Design/74-steering-the-economy.md, 10): the DM's four settings on /api/economy/steer, the
-# slider's words at its two ends and its centre, the levers in words, and the table's five marks.
-STEER_BODY = ('steer', 'lean', 'neverHungry', 'neverBroke')
-STEER_WORDS = {'left': 'Shared: money and food equal across all wolves', 'centre': 'Today\'s economy',
-               'right': 'Held by the rich: the upper class and the Houses'}
-STEER_HELD = 'the steering holds this rule; turn the steering off to set it'
-# (Doc 75, 4: the share-out, the toll lean and the rent scale gone; the Levelling tithe, the Crown's charters and the toll
-# drift's target new.)
-STEER_LEVERS = (('levelling', 'The Levelling tithe', '% of the way each household\'s cash a head moves to the mean each night'),
-                ('charters', 'The Crown\'s charters', '% of the middle keepers\' shops whose profit goes to a House'),
-                ('postsShare', 'The hands\' share', '% of a keeper\'s nightly profit paid to the shop\'s other posts'),
-                ('surplusKeep', 'The treasury\'s keep', 'p the treasury keeps over its cap before its surplus goes out'),
-                ('treasuryCap', 'The treasury\'s cap', 'p; over it, the wage support, the extra alms and the surplus'),
-                ('treasuryTarget', 'The treasury\'s target', 'p the gate toll and the alms drift toward'),
-                ('surplusAlmsTo', 'The poorest raised to', 'p a head the surplus brings the poorest households up to'),
-                ('groundRent', 'The ground rent', '% of a keeper\'s nightly profit to the Crown\'s estate'),
-                ('dividend', 'The Houses\' dividend', '% of the estates\' spare paid to upper-class households each night'),
-                ('richAbove', 'The rich hold', 'p a head an upper-class household keeps before its comforts'),
-                ('spendAbove', 'The spending keep', 'p a head every other household keeps before its comforts'))
-STEER_MEASURES = (('gini', 'giniBand', 'The earners\' Gini', ''), ('upper', 'upperBand', 'The upper share', '%'))
-STEER_MARKS = (-1.0, -0.5, 0.0, 0.5, 1.0)
-
-
-def steer_at(marks, at, own=None):
-    """Core's items::steerAt: a table row's value at `at` (-1..1), straight lines between the five marks; a lever's null
-    at the centre or an end is `own` (the world's value), at a half mark halfway between its neighbours (doc 75, 3.2); a
-    target's null (own None) is none, as is a place between a mark with none and one."""
-    at = max(-1.0, min(1.0, float(at) if isinstance(at, (int, float)) and math.isfinite(at) else 0.0))
-
-    def end(i):
-        return own if marks[i] is None else float(marks[i])
-
-    def value(i):
-        if i % 2 == 0 or marks[i] is not None:
-            return end(i)
-        a, b = end(i - 1), end(i + 1)
-        return None if a is None or b is None else (a + b) / 2
-    place = (at + 1) * 2
-    i = min(3, int(math.floor(place)))
-    t = place - i
-    if t <= 1e-12:
-        return value(i)
-    if t >= 1 - 1e-12:
-        return value(i + 1)
-    a, b = value(i), value(i + 1)
-    if a is None or b is None:
-        return None
-    return a + (b - a) * t
-
-
-def steer_lever(table, key, at, own):
-    """A lever's value at `at`, as Core's Society::steerLever: the table's row, and for the dividend its rise with the
-    charters (dividendPerCharter points a point of them, doc 75, 4.2)."""
-    levers = table.get('levers') or {}
-    row = levers.get(key)
-    if not isinstance(row, list) or len(row) != 5:
-        return own
-    v = steer_at(row, at, own)
-    if key == 'dividend' and v is not None and isinstance(levers.get('charters'), list) and len(levers['charters']) == 5:
-        v += float(table.get('dividendPerCharter', 0.45)) * (steer_at(levers['charters'], at, 0) or 0)
-    return v
-
-
-def steer_reach(table):
-    """The slider's ends labelled with their measured reach (doc 75, 3.5): the table's `reach`, else none."""
-    reach = table.get('reach') if isinstance(table.get('reach'), dict) else {}
-    return {'left': str(reach.get('left') or ''), 'right': str(reach.get('right') or '')}
-
-
-SUP_RULES = ('the treasury under its floor', 'the shops short', 'hunger')
-# The weekly ledger's levers (doc 75, 3.8, Phase 7), in the order the panel lists them, as Core's steerLedgerNight books
-# them: the steering's own levers, the treasury's that the table sets, the gate toll, and the floors' skim.
-LEDGER_LEVERS = (('levelling', 'The Levelling tithe'), ('charters', 'The Crown\'s charters'), ('groundRent', 'The ground rent'),
-                 ('postsShare', 'The hands\' share'), ('dividend', 'The Houses\' dividend'),
-                 ('wageSupport', 'The treasury\'s wage support'), ('surplusAlms', 'The surplus to the poorest'),
-                 ('toll', 'The gate toll'), ('skim', 'The skim (Never Hungry and Never Broke)'))
-LEDGER_CLASSES = {'upper': 'upper-class households', 'middle': 'middle-class households', 'lower': 'lower-class households',
-                  # (The skim's payer groups, Core's skimStep, in the same words.)
-                  'households: upper': 'upper-class households', 'households: middle': 'middle-class households',
-                  'keepers': 'the keepers\' households', 'treasury': 'the treasury', 'estates': 'the Houses\' estates'}
-
-
-def steer_ledger(steer, weeks=8):
-    """The weekly ledger (doc 75, 3.8, Phase 7; EVE's monthly report of faucets and sinks, by the week): from the save's
-    `ledger`, newest week first, at most `weeks`: each lever's pennies moved, who paid them and who was given them (largest
-    first), and by payer and receiver (households by class) what went in and out across the levers. Read only."""
-    out = []
-    for w in reversed([w for w in (steer.get('ledger') or []) if isinstance(w, dict)][-weeks:]):
-        week = int(w.get('week') or 0)
-        paid, got = w.get('paid') or {}, w.get('got') or {}
-        levers, parties = [], {}
-        for key, label in LEDGER_LEVERS:
-            p = {k: int(v) for k, v in (paid.get(key) or {}).items() if int(v) > 0}
-            g = {k: int(v) for k, v in (got.get(key) or {}).items() if int(v) > 0}
-            if not p and not g:
-                continue
-            levers.append({'key': key, 'label': label, 'moved': sum(g.values()) or sum(p.values()),
-                           'paid': sorted(([LEDGER_CLASSES.get(k, k), v] for k, v in p.items()), key=lambda e: (-e[1], e[0])),
-                           'got': sorted(([LEDGER_CLASSES.get(k, k), v] for k, v in g.items()), key=lambda e: (-e[1], e[0]))})
-            for k, v in p.items():
-                parties.setdefault(LEDGER_CLASSES.get(k, k), [0, 0])[1] += v
-            for k, v in g.items():
-                parties.setdefault(LEDGER_CLASSES.get(k, k), [0, 0])[0] += v
-        out.append({'week': week, 'from': week * 7, 'to': week * 7 + 6, 'nights': int(w.get('nights') or 0), 'levers': levers,
-                    'parties': [{'who': who, 'in': io[0], 'out': io[1], 'net': io[0] - io[1]}
-                                for who, io in sorted(parties.items(), key=lambda e: (-(abs(e[1][0] - e[1][1])), e[0]))]})
-    return out
-
-
-def steer_toll(economy, rules, loop_toll):
-    """The gate toll now, as Core's gateTollNow: the world's, moved by the treasury's drift within tollDriftMost."""
-    base = float(economy.get('gateToll', 30) if economy.get('gateToll') is not None else 30)
-    if int(rules.get('treasuryDrift', 1)) <= 0 or not loop_toll:
-        return base
-    most = float(rules.get('tollDriftMost', 1))
-    return min(90.0, max(0.0, base + max(-most, min(most, float(loop_toll)))))
-
-
-def steer_edicts(now, levers, targets, toll):
-    """The edicts (doc 75, 3.8, Phase 7): one line per actuator the slider has moved off the world's own, as an in-world
-    law, with the measure it is for against its aim at the slider; and the gate toll with the treasury. `now` the view's
-    "now", `levers` the view's levers (with their values now), `targets` the view's targets. Words only: nothing here is a
-    setting (the DM moves only the slider)."""
-    if not now or not now.get('on'):
-        return []
-    lever = {l['key']: l for l in levers}
-    means = now.get('means') or {}
-
-    def value(key):
-        l = lever.get(key)
-        return None if not l or l.get('now') is None else float(l['now'])
-
-    def off(key):
-        v, l = value(key), lever.get(key)
-        return v is not None and l is not None and abs(v - float(l.get('own') or 0)) >= 0.05
-
-    def aim(name, places, unit=''):
-        m, t, b = means.get(name), targets.get(name), targets.get(name + 'Band')
-        said = '-' if m is None or m < 0 else f'{m:.{places}f}{unit}'
-        if t is None:
-            return said
-        return f'{said} (aim {t:.{places}f}{unit}' + (f' \u00b1 {b:.{places}f}{unit}' if b is not None else '') + ')'
-    out = []
-    if off('levelling'):
-        out.append(f"The Levelling tithe: {value('levelling'):.0f}% of the way to the mean a night. The earners' Gini {aim('gini', 2)}.")
-    if off('postsShare'):
-        out.append(f"The hands' share: {value('postsShare'):.0f}% of a keeper's nightly profit to the shop's other posts.")
-    if now.get('chartersTo') or now.get('charters'):
-        n = int(now.get('charters') or 0)
-        out.append(f"Crown charters: {n} shop{'' if n == 1 else 's'} held by the Houses"
-                   + (f" (going to {now['chartersTo']})" if now.get('chartersTo') and now['chartersTo'] != n else '')
-                   + f". The upper class and the Houses hold {aim('upper', 1, '%')}.")
-    if off('dividend'):
-        out.append(f"The Houses' dividend: {value('dividend'):.0f}% of the estates' spare to the upper class a night. "
-                   f"The upper class and the Houses hold {aim('upper', 1, '%')}.")
-    if off('groundRent'):
-        out.append(f"The ground rent: {value('groundRent'):.0f}% of a keeper's nightly profit to the Crown.")
-    if off('richAbove'):
-        out.append(f"The rich hold: {value('richAbove'):.0f}p a head kept before an upper-class household's comforts.")
-    if off('spendAbove'):
-        out.append(f"The spending keep: {value('spendAbove'):.0f}p a head kept before every other household's comforts.")
-    treasury = means.get('treasury')
-    target = value('treasuryTarget')
-    out.append(f'The gate toll: {toll:.1f}. Treasury {"-" if treasury is None or treasury < 0 else f"{treasury:,.0f}p"}'
-               + (f' (the toll drifts toward {target:,.0f}p).' if target is not None else '.'))
-    return out
-
-
-def steer_supervisor(steer):
-    """The safety supervisor's state from the save (doc 75, 3.6): the rules on, the back-offs, rule 1's route, the
-    charters held back, and its last words in the log."""
-    sup = steer.get('sup') or {}
-    rules = sup.get('rules') or []
-    on = [SUP_RULES[i] for i, r in enumerate(rules[:3]) if isinstance(r, dict) and r.get('on')]
-    last = next((h.get('why') for h in reversed(steer.get('history') or []) if h.get('measure') == 'supervisor'), None)
-    return {'on': on, 'levelling': round(float(sup.get('levelling') or 0), 2), 'richAbove': round(float(sup.get('richAbove') or 0), 2),
-            'chartersHeld': int(sup.get('chartersHeld') or 0), 'route': round(float(sup.get('route') or 0), 3),
-            'fires': [int(r.get('fires') or 0) for r in rules[:3] if isinstance(r, dict)], 'last': last}
-
-
 class Economy:
     """The store room's settings of a dev world (doc 67, 6): the world's switches and markups, and each placed
     merchant's business with what it would draw, as the game reckons it (tools/item_catalog.py mirrors Core)."""
@@ -414,8 +232,7 @@ class Economy:
                                'making': making, 'resale': resale, 'internalStore': own, 'effective': effective, 'why': why})
         # The city's loop (doc 68): its settings, the Country's basket (Data/Items/city_loop.json) with its makers here, and
         # every good the listed businesses draw, with whether the Country supplies it.
-        import pathlib
-        country = json.loads((pathlib.Path(__file__).resolve().parent.parent / 'Data/Items/city_loop.json').read_text(encoding='utf-8'))
+        country = map_editor.city_loop_file()       # ({} once the file is gone: doc 79, 17.)
         present = {b['business'] for b in businesses if b['business']}
         market = (country.get('markets') or [{}])[0]
         basket = []
@@ -443,9 +260,7 @@ class Economy:
                 # The Wharf's lists (doc 73, 4.2), as the file has them: Atlas shows them; the rules are on the Rules panel.
                 'wharfLists': {k: (country.get('wharf') or {}).get(k) or ([] if k == 'never' else {}) for k in ('imports', 'takes', 'never')},
                 **self.seasons_view(country, economy, seasons_ok), **self.rules_view(economy, rules_ok),
-                **self.farms_view(economy, farms_ok), 'farmsSaved': self.farms_saved(key, w),
-                'drift': self.drift(key, w, economy, {r['id']: r['name'] for r in rows}),
-                'steering': self.steering(key, w, economy, country)}
+                **self.farms_view(economy, farms_ok)}
 
     @staticmethod
     def farms_view(economy, supported) -> dict:
@@ -480,210 +295,6 @@ class Economy:
                                  'hand': (d.get('wages') or {}).get('hand', 10), 'floatDays': d.get('floatDays', 2),
                                  'areas': areas}}
 
-    def farms_saved(self, key, world) -> dict:
-        """The farms on the world's game as its last save has them (doc 71, 4: what the DM sees), read only: each farm's
-        till (its money and the pieces in store) and its crew's purse; nothing for a farm not founded yet."""
-        try:
-            with self._connect_dm(key) as conn:
-                row = conn.execute("SELECT payload::jsonb->'society'->'accounts', saved_at::text FROM game.checkpoints "
-                                   'WHERE world_id = %s', (world,)).fetchone()
-        except Exception as error:  # noqa: BLE001 (a world without a save, or out of reach: nothing to show)
-            return {'saved': None, 'farms': {}, 'problem': f'The world\'s save could not be read: {error}'}
-        if not row:
-            return {'saved': None, 'farms': {}, 'problem': 'The world has no save yet: no farm is founded.'}
-        accounts = row[0] if isinstance(row[0], dict) else json.loads(row[0]) if row[0] else {}
-        out = {}
-        for name, a in (accounts or {}).items():
-            if not isinstance(a, dict) or not (name.startswith('farm:') or name.startswith('crew:')):
-                continue
-            entry = out.setdefault(name.split(':', 1)[1], {'till': 0, 'stock': 0, 'goods': {}, 'crewPurse': 0})
-            if name.startswith('farm:'):
-                entry['till'] = int(a.get('cash') or 0)
-                entry['goods'] = {g: int(n) for g, n in (a.get('stock') or {}).items()}
-                entry['stock'] = sum(entry['goods'].values())
-            else:
-                entry['crewPurse'] = int(a.get('cash') or 0)
-        return {'saved': row[1], 'farms': out, 'problem': ''}
-
-    def drift(self, key, world, economy, names) -> dict:
-        """Where the self-correcting rules stand on the world's game (doc 68, Progress, "Self-correcting rules"), as its
-        last save has them (the society's "loop"), read only: the gate toll and the alms as the treasury's level has moved
-        them, that level; the shops' price factors and shelves (how many, their mean and range); the tills' wage steps
-        (each one not 0, by its keeper's name). `names`: {merchant id: name}. None of it is a setting: the rules move it."""
-        rules = {**map_editor.rule_defaults(), **dict(economy.get('rules') or {})}
-        out = {'saved': None, 'problem': '', 'tollBase': economy.get('gateToll', 30), 'almsBase': rules.get('almsADay', 10)}
-        try:
-            with self._connect_dm(key) as conn:
-                row = conn.execute("SELECT payload::jsonb->'society'->'loop', saved_at::text FROM game.checkpoints "
-                                   'WHERE world_id = %s', (world,)).fetchone()
-        except Exception as error:  # noqa: BLE001 (a world without a save, or out of reach: nothing to show)
-            return {**out, 'problem': f'The world\'s save could not be read: {error}'}
-        if not row:
-            return {**out, 'problem': 'The world has no save yet: nothing has drifted.'}
-        loop = row[0] if isinstance(row[0], dict) else json.loads(row[0]) if row[0] else {}
-        out['saved'] = row[1]
-
-        def on(name):
-            return int(rules.get(name, 1)) > 0
-        toll, alms = float(loop.get('toll') or 0), int(loop.get('alms') or 0)
-        most = float(rules.get('tollDriftMost', 1))
-        out['toll'] = (min(90.0, max(0.0, out['tollBase'] + max(-most, min(most, toll)))) if on('treasuryDrift')
-                       else float(out['tollBase']))
-        out['alms'] = (max(0, out['almsBase'] + max(-int(rules.get('almsDriftMost', 2)), min(int(rules.get('almsDriftMost', 2)), alms)))
-                       if on('treasuryDrift') else out['almsBase'])
-        level = loop.get('level')
-        out['level'] = round(level) if isinstance(level, (int, float)) and level >= 0 else None
-        out['target'] = int(rules.get('treasuryTarget', 5500))
-        factors = [f for wares in (loop.get('prices') or {}).values() for f in wares.values()]
-        out['prices'] = {'on': on('stockPrices'), 'moved': len(factors),
-                         'mean': round(sum(factors) / len(factors), 3) if factors else 1,
-                         'low': round(min(factors), 3) if factors else 1, 'high': round(max(factors), 3) if factors else 1}
-        cover = int(rules.get('shelfCover', 125)) / 100
-        shelves = [max(4, math.ceil(m * cover - 1e-9)) for wares in (loop.get('sales') or {}).values() for m in wares.values()]
-        out['shelves'] = {'on': on('shelfFollow'), 'wares': len(shelves),
-                          'mean': round(sum(shelves) / len(shelves), 1) if shelves else None}
-        steps = {t: int(w.get('step') or 0) for t, w in (loop.get('wages') or {}).items() if isinstance(w, dict)}
-        moved = sorted(({'till': t, 'name': names.get(t.removeprefix('till:job:'), t), 'step': s} for t, s in steps.items() if s),
-                       key=lambda w: (-w['step'], w['name']))
-        out['wages'] = {'on': on('wageDrift'), 'tills': len(steps), 'up': sum(1 for s in steps.values() if s > 0),
-                        'down': sum(1 for s in steps.values() if s < 0),
-                        'mean': round(sum(steps.values()) / len(steps), 2) if steps else 0, 'moved': moved}
-        return out
-
-    def steering(self, key, world, economy, country=None) -> dict:
-        """Steering the economy (doc 74, 10): the DM's four settings; at the slider, each measure's target and band, the
-        place the levers are read (doc 75: the slider itself; `band` is that place twice, the push's band being gone), and
-        each lever's value at the centre and there (from city_loop.json's table, as Core reads it); and, from the world's
-        last save (the society's loop "steer"), the place, the means, the changes newest first, the charters and the
-        skim's last 28 days. Read only but for the four settings."""
-        rules = {**map_editor.rule_defaults(), **dict(economy.get('rules') or {})}
-        table = (country if country is not None else map_editor.city_loop_file()).get('steering') or {}
-        levers, targets = table.get('levers') or {}, table.get('targets') or {}
-        lean = int(rules.get('steerLean', 100)) - 100
-        x = lean / 100
-        lo, hi = x, x
-        comforts = economy.get('comfortsAbove')
-        comforts = int(comforts if comforts is not None else ((country or {}).get('comforts') or {}).get('above', 60))
-        own = {'surplusKeep': int(rules.get('surplusKeep', 4000)), 'treasuryCap': int(rules.get('treasuryCap', 2000)),
-               'treasuryTarget': int(rules.get('treasuryTarget', 5500)), 'surplusAlmsTo': int(rules.get('surplusAlmsTo', 40)),
-               'richAbove': comforts, 'spendAbove': comforts}
-        out = {'settings': {'steer': int(rules.get('steer', 0)) > 0, 'lean': lean, 'neverHungry': int(rules.get('neverHungry', 0)) > 0,
-                            'neverBroke': int(rules.get('neverBroke', 0)) > 0},
-               'words': STEER_WORDS, 'reach': steer_reach(table), 'held': list(map_editor.STEERED_RULES), 'own': {k: rules.get(k) for k in map_editor.STEER_OWN_RULES},
-               'table': {'levers': levers, 'targets': targets, 'marks': list(STEER_MARKS),
-                         'treasuryFloor': table.get('treasuryFloor', 800), 'treasuryLow': table.get('treasuryLow', 500)},
-               'band': [round(lo, 4), round(hi, 4)], 'saved': None, 'problem': '', 'changes': [], 'edicts': [], 'ledger': []}
-        try:                                       # (The DM's own changes, newest first: the audit's economy.steer.)
-            with self._connect_dm(key) as conn:
-                out['changes'] = [{'at': r[0], 'who': r[1], 'detail': r[2]} for r in conn.execute(
-                    "SELECT at, who, detail FROM dm.audit WHERE action = 'economy.steer' ORDER BY at DESC LIMIT 1000").fetchall()]
-        except Exception:  # noqa: BLE001 (no audit to read: nothing to show)
-            pass
-
-        def rounded(v, places=3):
-            return None if v is None else round(v, places)
-        out['targets'] = {name: rounded(steer_at(marks, x)) for name, marks in targets.items()
-                          if isinstance(marks, list) and len(marks) == 5}
-        out['levers'] = [{'key': k, 'label': label, 'unit': unit, 'own': own.get(k, 0),
-                          'centre': rounded(steer_lever(table, k, 0, own.get(k, 0)), 2),
-                          'low': rounded(steer_lever(table, k, lo, own.get(k, 0)), 2),
-                          'high': rounded(steer_lever(table, k, hi, own.get(k, 0)), 2)}
-                         for k, label, unit in STEER_LEVERS if isinstance(levers.get(k), list) and len(levers[k]) == 5]
-        try:
-            with self._connect_dm(key) as conn:
-                row = conn.execute("SELECT payload::jsonb->'society'->'loop'->'steer', saved_at::text, "
-                                   "payload::jsonb->'society'->'loop'->'toll' FROM game.checkpoints "
-                                   'WHERE world_id = %s', (world,)).fetchone()
-        except Exception as error:  # noqa: BLE001 (a world without a save, or out of reach: nothing to show)
-            out['problem'] = f'The world\'s save could not be read: {error}'
-            return out
-        if not row:
-            out['problem'] = 'The world has no save yet: the steering has done nothing.'
-            return out
-        steer = row[0] if isinstance(row[0], dict) else json.loads(row[0]) if row[0] else {}
-        out['saved'] = row[1]
-        if not steer:
-            out['problem'] = 'The steering has not run on this world yet.'
-            return out
-        push = float(steer.get('push') or 0) if steer.get('on') else 0.0
-        out['now'] = {'on': bool(steer.get('on')), 'push': round(push, 4), 'judged': steer.get('judged'), 'days': steer.get('days'),
-                      'means': {k: rounded(steer.get(k), 4) for k in ('gini', 'upper', 'top10', 'hungry', 'short', 'treasury')},
-                      'charters': len(steer.get('charters') or []), 'chartersTo': steer.get('chartersTo', 0)}
-        sup = steer.get('sup') or {}
-        backs = {'levelling': float(sup.get('levelling') or 0), 'richAbove': float(sup.get('richAbove') or 0)}
-        for lever in out['levers']:
-            v = steer_lever(table, lever['key'], push, lever['own'])
-            # (The supervisor's back-off, doc 75, 3.6: toward the world's own value, never past it.)
-            if v is not None and backs.get(lever['key'], 0) > 0:
-                v = max(min(v, lever['own']), v - backs[lever['key']]) if lever['key'] == 'levelling' else \
-                    (max(lever['own'], v - backs[lever['key']]) if v > lever['own'] else v)
-            lever['now'] = rounded(v, 2)
-        out['now']['supervisor'] = steer_supervisor(steer)
-        loop_toll = row[2] if len(row) > 2 else None
-        out['edicts'] = steer_edicts(out['now'], out['levers'], out['targets'],
-                                     steer_toll(economy, rules, loop_toll if isinstance(loop_toll, (int, float)) else 0))
-        out['ledger'] = steer_ledger(steer)
-        # (Doc 75, Phase 7: the year of log, newest first: Core keeps a year of lines, not 24.)
-        out['history'] = list(reversed(steer.get('history') or []))
-        skims = steer.get('skims') or []
-        summary = {'total': 0, 'short': 0, 'days': len(skims), 'purpose': {}, 'group': {}, 'payers': {}}
-        for k in skims:
-            summary['total'] += int(k.get('total') or 0)
-            summary['short'] += int(k.get('short') or 0)
-            for part in ('purpose', 'group', 'payers'):
-                for name, coins in (k.get(part) or {}).items():
-                    summary[part][name] = summary[part].get(name, 0) + int(coins)
-        summary['payers'] = dict(sorted(summary['payers'].items(), key=lambda p: (-p[1], p[0]))[:5])
-        out['skim'] = summary
-        return out
-
-    def set_steer(self, key, data, editor) -> dict:
-        """Steering the economy (doc 74, 10.3): {steer?: true|false, lean?: -100..100 in fives, neverHungry?: true|false,
-        neverBroke?: true|false}, written as the rules steer, steerLean (lean + 100), neverHungry and neverBroke."""
-        if not isinstance(data, dict) or not data or set(data) - set(STEER_BODY):
-            raise D.DMError('Send any of: steer (true or false), lean (-100 to 100, in fives), neverHungry and neverBroke '
-                            '(true or false).', 400)
-        for name in ('steer', 'neverHungry', 'neverBroke'):
-            if name in data and not isinstance(data[name], bool):
-                raise D.DMError(f'{name} must be true or false.', 400)
-        if 'lean' in data:
-            lean = data['lean']
-            if isinstance(lean, bool) or not isinstance(lean, int) or not -100 <= lean <= 100 or lean % 5:
-                raise D.DMError('lean (where the money rests) must be a whole number from -100 to 100, in fives.', 400)
-        wanted = {}
-        if 'steer' in data:
-            wanted['steer'] = 1 if data['steer'] else 0
-        if 'lean' in data:
-            wanted['steerLean'] = data['lean'] + 100
-        for name in ('neverHungry', 'neverBroke'):
-            if name in data:
-                wanted[name] = 1 if data[name] else 0
-        defaults = map_editor.rule_defaults()
-        said = []
-
-        def change(e):
-            rules = dict(e.get('rules') or {})
-            now = {**defaults, **rules}
-            onoff = {1: 'on', 0: 'off'}
-            if 'steerLean' in wanted and wanted['steerLean'] != int(now.get('steerLean', 100)):
-                steering = wanted.get('steer', int(now.get('steer', 0)))
-                said.append(f'Where the money rests: {int(now.get("steerLean", 100)) - 100} -> {wanted["steerLean"] - 100}'
-                            f' (the steering {onoff[1 if steering else 0]})')
-            if 'steer' in wanted and wanted['steer'] != int(now.get('steer', 0)):
-                said.append(f'The steering {onoff[wanted["steer"]]}')
-            for name, words in (('neverHungry', 'Never Hungry'), ('neverBroke', 'Never Broke')):
-                if name in wanted and wanted[name] != int(now.get(name, 0)):
-                    said.append(f'{words} {onoff[wanted[name]]}')
-            for name, value in wanted.items():
-                if value == defaults.get(name):
-                    rules.pop(name, None)     # (At city_loop.json's: no entry kept.)
-                else:
-                    rules[name] = value
-            return {**e, 'rules': rules}
-        result = self._edit(key, editor, 'The steering: ' + ', '.join(f'{k} {v}' for k, v in wanted.items()), change, rules=True)
-        detail = '; '.join(said) or 'The steering: as it was'
-        return {**result, 'detail': f'{detail}.'}
-
     @staticmethod
     def rules_view(economy, supported) -> dict:
         """The loop's rules and the city's services (doc 68, Progress, "First fixes"): this world's changes ({} for none),
@@ -698,9 +309,7 @@ class Economy:
         with city_loop.json's own numbers beside it, and the comforts (null: city_loop.json's)."""
         own = economy.get('seasons') or {}
         groups = []
-        for g in (country.get('seasons') or {}).get('groups') or []:
-            if not isinstance(g, dict) or not g.get('id'):
-                continue
+        for g in map_editor.season_groups():
             base = {k: list(g.get(k) or [100] * 4) for k in ('supply', 'price', 'shelf')}
             base['normal'] = int(g.get('normal') or 0)
             mine = own.get(g['id'])
@@ -883,15 +492,9 @@ class Economy:
         problems = map_editor.check_rules({k: v for k, v in wanted.items() if v is not None}, {})
         if problems:
             raise D.DMError(' '.join(problems), 400)
-        settings = sorted(set(wanted) & set(map_editor.STEER_SETTINGS))
-        if settings:
-            raise D.DMError(f'{", ".join(settings)}: the steering\'s settings are set on the Steering panel (/api/economy/steer).', 400)
 
         def change(e):
             rules = dict(e.get('rules') or {})
-            held = sorted(set(wanted) & set(map_editor.STEERED_RULES))
-            if held and int({**map_editor.rule_defaults(), **rules}.get('steer', 0)) > 0:
-                raise D.DMError(f'{", ".join(held)}: {STEER_HELD}.', 409)
             for name, value in wanted.items():
                 if value is None:
                     rules.pop(name, None)
@@ -1407,7 +1010,7 @@ def make_handler(studio: Studio):
                 result = studio.economy.set_goods(key, data, who['username'])
                 action, target = 'economy.goods', 'the Country\'s goods'
             elif path in ('/api/economy/seasons', '/api/economy/comforts', '/api/economy/rules', '/api/economy/services',
-                          '/api/economy/farms', '/api/economy/steer'):
+                          '/api/economy/farms'):
                 result, action, target = self.economy_change(key, path, data, who)
             else:
                 result = studio.economy.set_businesses(key, data, who['username'])
@@ -1433,8 +1036,6 @@ def make_handler(studio: Studio):
                 wanted = data.get('set') if isinstance(data.get('set'), dict) else {}
                 named = [n for k in ('areas', 'farms') if isinstance(wanted.get(k), dict) for n in wanted[k]]
                 return studio.economy.set_farms(key, data, who['username']), 'economy.farms', named[0] if len(named) == 1 else 'farms'
-            if path == '/api/economy/steer':
-                return studio.economy.set_steer(key, data, who['username']), 'economy.steer', 'steering'
             if path in ('/api/economy/rules', '/api/economy/services'):
                 wanted = data.get('set') if isinstance(data.get('set'), dict) else {}
                 kind = path.rsplit('/', 1)[1]
@@ -1463,11 +1064,6 @@ def make_handler(studio: Studio):
             self.writer(who)
             data = self.as_(studio.dm_suite).body()
             key = self.live_key(str(data.pop('world', '') or ''))
-            if path == '/api/economy/rules' and isinstance(data.get('set'), dict):
-                # (Doc 74, 10.4: the steering's own rules are an author's, in Atlas; the DM tab shows them read only.)
-                own = sorted(set(data['set']) & set(map_editor.STEER_OWN_RULES))
-                if own:
-                    raise D.DMError(f'{", ".join(own)}: the steering\'s own rules are set in Atlas; the DM tab shows them read only.', 400)
             result, action, target = self.economy_change(key, path, data, who)
             if result.get('changed'):
                 result = self.audited(who, key, action, target, result['detail'], result)

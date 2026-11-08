@@ -7,7 +7,7 @@ a world exported as plain files, with every player taken out of its save, for a 
         its save with the players stripped out; scanned, and written to DIR (which must not exist or be empty).
         Read only: one read-only transaction on the source. Nothing is left in DIR if anything fails.
   python3 tools/world_package.py scan DIR [--source KEY]
-        the gate: no player id anywhere, money conserved, goods within limits (--source: also the source world's
+        the gate: no player id anywhere, no negative cash, goods within limits (--source: also the source world's
         usernames, and the names its players chose as warnings). Exit 1 if it fails.
   python3 tools/world_package.py import DIR --key KEY [--name NAME]
         first start: makes world KEY's database (a live world), runs the migrations and imports the package in one
@@ -32,12 +32,14 @@ source, old builds, live.npc_state (newer rows would overwrite purses), live.gam
 
 The strip is a table (SECTIONS) of small functions, one for each top-level section of the save. A section the table
 doesn't name stops the export (a section added to the game later can't slip through unstripped) unless it is listed
-in KNOWN_SAFE. It conserves money: every coin of a removed account (a player's, and the escrow a player's things held:
-chapter:, contract:, letter:...@wolf-, let:<lodging>, stall:, table:) goes to the treasury (a resident's letter escrow
-back to the resident), so the sum of cash still equals minted - sunk; goods go along within the 64 kinds and 10,000 a
-kind an account may hold, and the rest is discarded (goods aren't conserved). Maker marks of players (item@wolf-...) are
-taken off items everywhere. Society::restore lets a leftover player account through, so only the scan catches an incomplete
-strip.
+in KNOWN_SAFE. Players go by deletion (Docs/Design/79-a-staged-economy.md, 13): a player's purse, and the escrow a
+player's things held (chapter:, contract:, letter:...@wolf- and a letter to a player, let:<lodging>, stall:, table:,
+the player coins in a bandits: hoard), are deleted with their goods, never poured into the treasury. The staged
+accounts (residents' purses, till:, stores:, town:, home:) are derived, so they are dropped too and the importing
+server makes them at load; only the treasury is kept. Accounts under the dead prefixes (caravan:, fund:, bank:,
+outside:, farm:, crew:, estate:, house:) go. Maker marks of players (item@wolf-...) are taken off items everywhere, the
+goods merged within the 64 kinds and 10,000 a kind an account may hold. Society::restore lets a leftover player
+account through, so only the scan catches an incomplete strip.
 """
 from __future__ import annotations
 
@@ -72,10 +74,16 @@ ID_PATTERN = r'wolf-[0-9a-f]{32}|player-[a-z0-9_-]{2,32}|acct-[0-9a-f]{32}|dev:'
 CHAPTER_PATTERN = r'chapter-\d+'
 PLAYER = re.compile(f'{ID_PATTERN}|{CHAPTER_PATTERN}')
 MAX_GOODS_KINDS = 64                # Society::MaxGoodsKinds
+MONEY_LIMIT = 1_000_000_000         # Society::MoneyLimit (RatwSociety.cpp)
 STOCK_LIMIT = 10000                 # Society::StockLimit
 TREASURY = 'treasury'
 # Escrow and player-owned facility accounts that go wholesale (doc 54's stakes; doc 32's Chapter treasuries).
 CLOSED_PREFIXES = ('chapter:', 'table:')
+# The account kinds (doc 79, 9.1; Society::classify): escrow holds players' coins or staged-sourced ones and stays (less
+# what a player's things held); the dead prefixes' accounts are dropped at restore, so never packaged; everything else
+# but a player's (real) is staged: derived, made again by the importing server.
+ESCROW_PREFIXES = ('contract:', 'letter:', 'let:', 'stall:', 'table:', 'fest:', 'project:', 'ground:', 'bandits:')
+DEAD_PREFIXES = ('caravan:', 'fund:', 'bank:', 'outside:', 'farm:', 'crew:', 'estate:', 'house:')
 
 
 class PackageError(RuntimeError):
@@ -91,10 +99,11 @@ class Strip:
         self.doc = doc
         self.removed: dict[str, int] = {}          # Entries dropped or fields cleared, by section.
         self.found: dict[str, int] = {}            # Distinct player ids in each section before the strip.
-        self.closing: dict[str, str | None] = {}   # Account -> where its contents go (None: the treasury).
+        self.closing: set[str] = set()             # Accounts a player's things held: deleted with their contents.
         self.letters: set[str] = set()             # Letters (people.documents) dropped.
-        self.discarded = 0                         # Goods that found no room (not conserved: never money).
-        self.closed = 0                            # Accounts closed into others.
+        self.discarded = 0                         # Goods a maker mark's merge found no room for.
+        self.closed = 0                            # Players' accounts and their escrow deleted.
+        self.dropped = 0                           # Staged and dead accounts dropped (the server makes the staged again).
         self.usernames = {e.get('username') for e in (doc.get('accounts') or {}).get('entries', [])
                           if isinstance(e, dict) and isinstance(e.get('username'), str)}
         # Names players chose, looked for in free text as warnings: characters', Chapters' and their camps'.
@@ -113,8 +122,8 @@ class Strip:
         if n:
             self.removed[section] = self.removed.get(section, 0) + n
 
-    def close(self, account: str, to: str | None = None):
-        self.closing.setdefault(account, to)
+    def close(self, account: str):
+        self.closing.add(account)
 
 
 REMOVE = object()
@@ -407,7 +416,7 @@ PEOPLE_PRUNE = ('deeds', 'nicknames', 'troublesHeard', 'troublesSolved', 'troubl
 
 
 def people_lodgings(people, st, section):
-    """A player's lodging goes, and its chest ("let:<id>", doc 54) with it into the treasury. Its `account` is the
+    """A player's lodging goes, and its chest ("let:<id>", doc 54) with it. Its `account` is the
     landlord's (the till, the town's stores or the resident lodger's own purse the rent is paid into:
     Core/RatwLodgings.cpp), which stays. A lodging someone else holds stays, without the players among its guests."""
     kept = []
@@ -520,7 +529,8 @@ def strip_careers(careers, st, section):
 
 
 def pour(into: dict, stock: dict, st: Strip):
-    """Goods into an account, as many as it may hold (64 kinds, 10,000 a kind); the rest is discarded."""
+    """Goods into an account, as many as it may hold (64 kinds, 10,000 a kind); the rest is discarded. Goods only: no
+    coin is ever moved by the strip (doc 79, 13)."""
     have = into.setdefault('stock', {})
     for item, n in stock.items():
         item = unmarked(item) if hit(item) else item
@@ -534,36 +544,80 @@ def pour(into: dict, stock: dict, st: Strip):
         st.discarded += max(0, n - room)
 
 
+def account_kind(name: str) -> str:
+    """Society::classify (doc 79, 9.1): 'real' (a player's purse, a Chapter's treasury), 'escrow', 'dead' or 'staged'
+    (the treasury, stores:, till:, town:, home: and residents' purses)."""
+    if PLAYER.search(name) and not name.startswith(ESCROW_PREFIXES) or name.startswith('chapter:'):
+        return 'real'
+    if name.startswith(ESCROW_PREFIXES):
+        return 'escrow'
+    if name.startswith(DEAD_PREFIXES):
+        return 'dead'
+    return 'staged'
+
+
+# The staged state's parts keyed by account holders (usernames, which the player pattern can't see): never packaged.
+STAGED_HOLDERS = ('faucets', 'welcomed')
+# The society's state of the conserving economy (doc 79, 14: read past at restore): never packaged.
+DEAD_SOCIETY = ('loop', 'orchestrator')
+
+
+def strip_staged(staged: dict, accounts: dict, st: Strip, section: str):
+    """The staged state (doc 79, 6 and 9; society.staged): the faucet tallies and the welcomes (keyed by account
+    holders) go whole; holds, lean days and escrow sources only for the accounts kept; a household lifted by a player's
+    help is lifted no longer. Bands, overrides and events stay (they name households and residents)."""
+    for k in STAGED_HOLDERS:
+        if staged.pop(k, None):
+            st.count(section)
+    for k in ('holds', 'lean', 'escrowSource'):
+        part = staged.get(k)
+        if isinstance(part, dict):
+            staged[k] = {name: v for name, v in part.items() if name in accounts}
+            st.count(section, len(part) - len(staged[k]))
+    for band in (staged.get('bands') or {}).values():
+        if isinstance(band, dict) and isinstance(band.get('liftedUntil'), (int, float)) and band['liftedUntil'] >= 0:
+            band['liftedUntil'] = -1
+            st.count(section)
+
+
 def strip_society(doc, key, st):
     society = doc[key]
     accounts = society.get('accounts', {})
-    if TREASURY not in accounts:
-        raise PackageError('The save\'s society has no treasury account: the strip has nowhere to put the money.')
-    closing = dict(st.closing)
+    staged = society.get('staged') if isinstance(society.get('staged'), dict) else {}
+    sources = staged.get('escrowSource') if isinstance(staged.get('escrowSource'), dict) else {}
+    closing = set(st.closing)
     for name in accounts:
-        if name != TREASURY and (PLAYER.search(name) or name.startswith(CLOSED_PREFIXES)):
-            closing.setdefault(name, None)
+        if name == TREASURY:
+            continue
+        if account_kind(name) == 'real' or name.startswith(CLOSED_PREFIXES):
+            closing.add(name)
         elif name.startswith('let:') and name[4:] not in (st.lodgings or ()):
             # A chest whose lodging is gone: a lodging given its id again (nextLodging_ counts from those kept) would
             # find what the last renter left in it.
-            closing.setdefault(name, None)
-    for letter in st.letters:
-        for name in accounts:
-            if name.startswith(f'letter:{letter}@'):
-                writer = name.split('@', 1)[1]
-                back = writer if writer in accounts and not hit(writer) and writer not in closing else None
-                closing[name] = back
-    closed = {}
-    for name, to in closing.items():
-        if name not in accounts or name == TREASURY:
-            continue
-        held = accounts.pop(name)
-        closed[name] = to or TREASURY
-        st.closed += 1
-        st.count(key)
-        target = accounts[to or TREASURY]
-        target['cash'] = target.get('cash', 0) + held.get('cash', 0)
-        pour(target, held.get('stock', {}), st)
+            closing.add(name)
+        elif name.startswith('letter:') and (hit(name) or name[7:].split('@', 1)[0] in st.letters):
+            closing.add(name)               # (A letter that went: a player's, or a resident's to a player.)
+    closed = set()
+    for name in sorted(closing):
+        if name in accounts and name != TREASURY:
+            del accounts[name]              # Deleted with its goods: nothing poured (doc 79, 13).
+            closed.add(name)
+            st.closed += 1
+            st.count(key)
+    # The staged accounts are derived (the importing server makes them at load), and the dead ones are dropped at
+    # restore: only the treasury and the escrow are packaged.
+    for name in [n for n in accounts if n != TREASURY and account_kind(n) in ('staged', 'dead')]:
+        del accounts[name]
+        st.dropped += 1
+    # A bandits' hoard keeps only what came from the staged side (its escrow source): the rest was robbed from players
+    # (a save from before doc 79 has no sources, so all of its coins go). Its goods stay.
+    for name, account in accounts.items():
+        if name.startswith('bandits:') and account.get('cash', 0) > 0:
+            keep = sources.get(name, 0)
+            keep = int(keep) if isinstance(keep, (int, float)) and keep > 0 else 0
+            if keep < account['cash']:
+                account['cash'] = keep
+                st.count(key)
     # Players' maker marks off every item kept (merged, within the limit).
     for name, account in accounts.items():
         stock = account.get('stock')
@@ -577,6 +631,12 @@ def strip_society(doc, key, st):
     st.count(key, len(ledger) - len(society['ledger']))
     if isinstance(society.get('careers'), dict):
         strip_careers(society['careers'], st, key)
+    if staged:
+        strip_staged(staged, accounts, st, key)
+    for k in DEAD_SOCIETY:
+        if k in society:
+            del society[k]
+            st.count(key)
     # The Market Board (doc 79, 5.2 and 13): a shipped world starts at normal prices, so its pressure is reset
     # (`cell` emptied) and the shops' budgets left today dropped (a new world's dawn sets them whole); its per-holder
     # records (pushed, the day's net and sell totals, keyed by account usernames the player pattern can't see) and the
@@ -728,22 +788,18 @@ def vocabulary() -> frozenset:
 
 
 def money(doc: dict) -> list[str]:
-    """What restore would refuse in the society's books: cash not minted - sunk, an account over its goods limits."""
+    """What restore would refuse in the society's books: a negative or overflowing account, an account over its goods
+    limits. (Since doc 79 the accounts' sum is no longer minted - sunk: a package holds no player money and its staged
+    accounts are made again at load. A missing treasury is only a warning: restore makes one, money_warnings.)"""
     errors = []
     society = doc.get('society')
     if not isinstance(society, dict):
         return errors
-    accounts = society.get('accounts', {})
-    total = sum(a.get('cash', 0) for a in accounts.values())
-    minted, sunk = society.get('minted', 0), society.get('sunk', 0)
-    if total != minted - sunk:
-        errors.append(f'money: the accounts hold {total}, but minted - sunk is {minted} - {sunk} = {minted - sunk}.')
-    if TREASURY not in accounts:
-        errors.append('money: there is no treasury account.')
-    for name, a in accounts.items():
+    for name, a in society.get('accounts', {}).items():
         stock = a.get('stock', {})
-        if a.get('cash', 0) < 0:
-            errors.append(f'money: account {name} holds {a.get("cash")} (below nothing).')
+        cash = a.get('cash', 0)
+        if not isinstance(cash, (int, float)) or cash < 0 or cash > MONEY_LIMIT:
+            errors.append(f'money: account {name} holds {cash} (0 to {MONEY_LIMIT}).')
         if len(stock) > MAX_GOODS_KINDS:
             errors.append(f'goods: account {name} holds {len(stock)} kinds of goods (at most {MAX_GOODS_KINDS}).')
         for item, n in stock.items():
@@ -752,10 +808,17 @@ def money(doc: dict) -> list[str]:
     return errors
 
 
+def money_warnings(doc: dict) -> list[str]:
+    society = doc.get('society')
+    if isinstance(society, dict) and TREASURY not in society.get('accounts', {}):
+        return ['money: there is no treasury account (the importing server makes one).']
+    return []
+
+
 def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tables=None, limit=40) -> tuple[list, list]:
     """(errors, warnings): player ids (wolf-, player-, acct-, dev:, Chapters) and DM tool accounts (dm:<name>) in any
     key or string of the snapshot or a shipped row; a source username (a player's or a DM tool's) as a whole value or a
-    part of a compound key; the money; and the names players chose (characters', Chapters', camps') in free text
+    part of a compound key; the accounts' limits (money()); and the names players chose (characters', Chapters', camps') in free text
     (warnings). A username that is also one of the world's own identifiers (a resident, an account, an item, an area)
     is a warning; so is one that is a word the game uses (vocabulary()), except in a field that holds account keys
     (account_field)."""
@@ -800,6 +863,7 @@ def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tabl
     if snapshot is not None:
         check('snapshot', snapshot)
         errors.extend(money(snapshot))
+        warnings.extend(money_warnings(snapshot))
     if allowed_tables is not None:
         for table in rows:
             if table not in allowed_tables:
@@ -1088,7 +1152,8 @@ def export(key: str, out: Path, with_snapshot=True, version=None, log=print, tra
             'rows': {t: len(r) for t, r in rows.items()},
             'unpacked_bytes': sizes,
             'strip': None if st is None else {'removed': st.removed, 'player_ids_found': st.found,
-                                              'accounts_closed': st.closed, 'goods_discarded': st.discarded},
+                                              'accounts_closed': st.closed, 'accounts_dropped': st.dropped,
+                                              'goods_discarded': st.discarded},
             'warnings': len(warnings),
         }
         (work / MANIFEST).write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')

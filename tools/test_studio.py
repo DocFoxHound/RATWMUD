@@ -745,10 +745,6 @@ class StandInEconomy:
         self.calls.append(('set_farms', key, data, editor))
         return {'changed': True, 'detail': 'The farms: grain yieldScale 120.'}
 
-    def set_steer(self, key, data, editor):
-        self.calls.append(('set_steer', key, data, editor))
-        return {'changed': True, 'detail': 'Where the money rests: 0 -> -40 (the steering on).'}
-
     def queue_sync(self, key, who):
         self.calls.append(('queue_sync', key, who))
         return 7
@@ -840,21 +836,15 @@ class EconomyRouteTests(unittest.TestCase):
             self.assertIn((f'set_{route}', 'dev-old', body, 'dm-user'), self.economy.calls)
         self.assertIn(('queue_sync', 'dev-old', 'dm-user'), self.economy.calls, 'Atlas\'s edits reach a server running its world')
 
-    def test_the_steering_from_the_dm(self):
-        # Doc 74, 10.3: the slider, the on/off and the two floors on their own route, audited economy.steer in words, and
-        # sent to the running server; a viewer looks only.
-        live = W.live_world()
-        body = {'steer': True, 'lean': -40}
-        self.assertEqual(self.call('POST', '/api/dm/economy/steer', body, token='viewer-token')[0], 403)
-        status, data = self.call('POST', '/api/dm/economy/steer', dict(body), token='dm-token')
-        self.assertEqual((status, data.get('sync')), (200, 7), data)
-        self.assertIn(('set_steer', live, body, 'dm-user'), self.economy.calls)
-        logged = [(world, action, target, detail) for name, (who, world, action, target, detail) in self.dm.calls if name == 'log']
-        self.assertEqual(logged, [(live, 'economy.steer', 'steering', 'Where the money rests: 0 -> -40 (the steering on).')])
+    def test_the_steering_is_gone(self):
+        # Doc 79, 17: steering went with the conserving economy; its route is no economy route of either suite.
+        for routes in (ST.ECONOMY_ROUTES, ST.DM_ECONOMY_ROUTES):
+            self.assertNotIn(('POST', '/api/economy/steer'), routes)
         editor = {'X-RATW-Editor': self.host.atlas_token()}
-        status, data = self.call('POST', '/api/atlas/economy/steer', {'neverBroke': True}, token='admin-token', headers=editor)
-        self.assertEqual(status, 200, data)
-        self.assertIn(('set_steer', 'dev-old', {'neverBroke': True}, 'admin-user'), self.economy.calls)
+        self.assertNotEqual(self.call('POST', '/api/dm/economy/steer', {'steer': True}, token='dm-token')[0], 200)
+        self.assertNotEqual(self.call('POST', '/api/atlas/economy/steer', {'neverBroke': True}, token='admin-token',
+                                      headers=editor)[0], 200)
+        self.assertFalse([c for c in self.economy.calls if c[0] == 'set_steer'])
 
     def test_route_sets_are_apart(self):
         self.assertFalse(ST.ECONOMY_ROUTES & ST.SYNC_ROUTES)
@@ -1019,26 +1009,26 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual((listed['groom_and_trim']['business'], listed['groom_and_trim']['name']), ('barber', 'A groom and trim'))
         trim = listed['groom_and_trim']
         editor = {'X-RATW-Editor': self.host.atlas_token()}
-        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': 12, 'fairFood': 0}}, token='dm-token', headers=editor)
-        self.assertEqual((status, data['rules']), (200, {'almsADay': 12, 'fairFood': 0}), data)
+        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'playerSellMost': 300, 'neverBroke': 1}}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['rules']), (200, {'playerSellMost': 300, 'neverBroke': 1}), data)
         status, data = self.call('POST', '/api/atlas/economy/services', {'set': {'groom_and_trim': {'on': False}}},
                                  token='dm-token', headers=editor)
         self.assertEqual(status, 200, data)
         self.assertEqual(data['services'], {'groom_and_trim': {'on': False, 'price': trim['price'], 'every': trim['every']}},
                          'stored whole: the rest as city_loop.json has it')
         lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
-        self.assertIn('rule "almsADay" 12', lines)
-        self.assertIn('rule "fairFood" 0', lines)
+        self.assertIn('rule "playerSellMost" 300', lines)
+        self.assertIn('rule "neverBroke" 1', lines)
         self.assertIn(f'service "groom_and_trim" off price {trim["price"]} every {trim["every"]}', lines)
         queued = self.sql(self.dev, "SELECT kind FROM dm.actions WHERE kind = 'economy.sync'")
         self.assertEqual(len(queued), 2, 'each change sent to the running server')
         # The DM, on the same dev world.
-        status, data = self.call('POST', '/api/dm/economy/rules', {'world': self.dev, 'set': {'treasuryCap': 3000}}, token='dm-token')
-        self.assertEqual((status, data['rules'].get('treasuryCap')), (200, 3000), data)
+        status, data = self.call('POST', '/api/dm/economy/rules', {'world': self.dev, 'set': {'ripple': 40}}, token='dm-token')
+        self.assertEqual((status, data['rules'].get('ripple')), (200, 40), data)
         actions = [r[0] for r in self.sql(self.dev, 'SELECT action FROM dm.audit')]
         self.assertTrue({'economy.rules', 'economy.services'} <= set(actions), actions)
         # Back to city_loop.json's: no record, nothing kept.
-        self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': None, 'fairFood': None, 'treasuryCap': None}},
+        self.call('POST', '/api/atlas/economy/rules', {'set': {'playerSellMost': None, 'neverBroke': None, 'ripple': None}},
                   token='dm-token', headers=editor)
         status, data = self.call('POST', '/api/atlas/economy/services', {'set': {'groom_and_trim': {'on': True}}},
                                  token='dm-token', headers=editor)
@@ -1046,39 +1036,11 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual((self.one(self.dev, 'SELECT rules FROM live.economy'), self.one(self.dev, 'SELECT services FROM live.economy')), ({}, {}))
         lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
         self.assertFalse([l for l in lines if l.startswith(('rule ', 'service '))], lines)
-        for route, bad in (('rules', {'set': {'luck': 1}}), ('rules', {'set': {'almsADay': 1001}}), ('rules', {'set': {'fairFood': 2}}),
-                           ('rules', {'almsADay': 1}), ('services', {'set': {'haircut': {'on': False}}}),
+        for route, bad in (('rules', {'set': {'luck': 1}}), ('rules', {'set': {'playerSellMost': 5001}}), ('rules', {'set': {'neverBroke': 2}}),
+                           ('rules', {'set': {'depthScale': 9}}), ('rules', {'set': {'almsADay': 12}}), ('rules', {'playerSellMost': 1}), ('services', {'set': {'haircut': {'on': False}}}),
                            ('services', {'set': {'groom_and_trim': {'price': 0}}}), ('services', {'set': {'groom_and_trim': {'colour': 1}}}),
                            ('services', {'set': {'groom_and_trim': {'on': 'no'}}})):
             self.assertEqual(self.call('POST', f'/api/atlas/economy/{route}', bad, token='dm-token', headers=editor)[0], 400, (route, bad))
-
-    def test_the_steering(self):
-        # Doc 74, 10.3: the slider, the on/off and the floors written into live.economy.rules, audited economy.steer in
-        # words, sent to the running server; read back with the table's targets; the rules route refusing the steering's.
-        status, data = self.call('GET', '/api/dm/economy?world=' + self.dev, token='viewer-token')
-        self.assertEqual(status, 200, data)
-        self.assertEqual(data['steering']['settings'], {'steer': False, 'lean': 0, 'neverHungry': False, 'neverBroke': False})
-        status, data = self.call('POST', '/api/dm/economy/steer', {'world': self.dev, 'steer': True, 'lean': -40}, token='dm-token')
-        self.assertEqual(status, 200, data)
-        self.assertEqual(self.one(self.dev, 'SELECT rules FROM live.economy'), {'steer': 1, 'steerLean': 60})
-        self.assertEqual(data['steering']['settings'], {'steer': True, 'lean': -40, 'neverHungry': False, 'neverBroke': False})
-        self.assertAlmostEqual(data['steering']['targets']['gini'], 0.425, places=3)
-        audit = self.sql(self.dev, "SELECT action, target, detail FROM dm.audit WHERE action = 'economy.steer'")
-        self.assertEqual(len(audit), 1)
-        self.assertIn('Where the money rests: 0 -> -40 (the steering on)', audit[0][2])
-        self.assertEqual(self.sql(self.dev, "SELECT kind FROM dm.actions WHERE kind = 'economy.sync'"), [('economy.sync',)])
-        self.assertEqual(data['steering']['changes'][0]['who'], 'dm-user', 'the DM\'s change in the panel\'s log')
-        self.assertEqual(self.call('POST', '/api/dm/economy/rules', {'world': self.dev, 'set': {'treasuryCap': 3000}}, token='dm-token')[0],
-                         409, 'the steering holds the cap while it is on')
-        self.assertEqual(self.call('POST', '/api/dm/economy/rules', {'world': self.dev, 'set': {'steerLean': 10}}, token='dm-token')[0], 400)
-        self.assertEqual(self.call('POST', '/api/dm/economy/rules', {'world': self.dev, 'set': {'skimMost': 80}}, token='dm-token')[0], 400,
-                         'the steering\'s own rules are Atlas\'s, read only on the DM tab')
-        self.assertEqual(self.call('POST', '/api/dm/economy/steer', {'world': self.dev, 'lean': 3}, token='dm-token')[0], 400)
-        status, data = self.call('POST', '/api/dm/economy/steer', {'world': self.dev, 'steer': False, 'lean': 0, 'neverBroke': True},
-                                 token='dm-token')
-        self.assertEqual((status, self.one(self.dev, 'SELECT rules FROM live.economy')), (200, {'neverBroke': 1}), data)
-        lines = self.one(self.dev, "SELECT live.people_manifest('greyfen')").split('\n')
-        self.assertIn('rule "neverBroke" 1', lines)
 
     def test_the_farms(self):
         # Doc 71, 4 (migration 0060): country_farms.json's farms beside the world's changes; what reaches the NPC records;
@@ -1088,7 +1050,8 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertTrue(data['farmsSupported'])
         self.assertEqual(data['farms'], {})
         d = data['farmDefaults']
-        self.assertEqual((d['start'], d['every'], d['keeper'], d['hand'], len(d['areas'])), (-1, 28, 16, 10, 8))
+        self.assertEqual((d['start'], d['every'], d['keeper'], d['hand'], len(d['areas'])),
+                         (-1, 28, 16, 10, len(map_editor.farms_file()['areas'])))
         grain = next(a for a in d['areas'] if a['id'] == 'grain')
         self.assertEqual(([f['id'] for f in grain['farms']], grain['price'], grain['priceFactor']),
                          (['grain_farm_1', 'grain_farm_2'], 'year', 101))
@@ -1124,16 +1087,6 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
                     {'set': {'areas': {'grain': {'on': 'yes'}}}}, {'set': {'farms': {'grain_farm_9': {'hand': 1}}}},
                     {'set': {'luck': 1}}, {'set': {'areas': []}}, {'start': 0}):
             self.assertEqual(self.call('POST', '/api/atlas/economy/farms', bad, token='dm-token', headers=editor)[0], 400, bad)
-        # The farms on the world's game, as its save has them.
-        self.sql(self.dev, 'DELETE FROM game.checkpoints')
-        status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
-        self.assertIn('no save', data['farmsSaved']['problem'])
-        accounts = {'farm:grain_farm_1': {'cash': 140, 'stock': {'flour': 300, 'oats': 200}}, 'crew:grain_farm_1': {'cash': 296, 'stock': {}}}
-        self.sql(self.dev, "INSERT INTO game.checkpoints (world_id, schema_version, revision, payload) VALUES ('greyfen', 1, 1, %s)",
-                 (json.dumps({'society': {'accounts': accounts}}),))
-        status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
-        self.assertEqual(data['farmsSaved']['farms'], {'grain_farm_1': {'till': 140, 'stock': 500, 'goods': {'flour': 300, 'oats': 200},
-                                                                        'crewPurse': 296}})
 
     def test_a_farm_country_farms_json_no_longer_has(self):
         # Doc 71, 4: a world's setting for a farm the file no longer has (regenerated with fewer farms: their ids are
@@ -1144,12 +1097,12 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         for key in (self.dev, self.live):
             self.sql(key, 'UPDATE live.economy SET farms = %s', (json.dumps(stale),))
         editor = {'X-RATW-Editor': self.host.atlas_token()}
-        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': 12}}, token='dm-token', headers=editor)
-        self.assertEqual((status, data.get('rules')), (200, {'almsADay': 12}), data)
+        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'playerSellMost': 300}}, token='dm-token', headers=editor)
+        self.assertEqual((status, data.get('rules')), (200, {'playerSellMost': 300}), data)
         status, data = self.call('POST', '/api/atlas/economy/farms', {'set': {'areas': {'grain': {'yieldScale': 120}}}},
                                  token='dm-token', headers=editor)
         self.assertEqual((status, data.get('farms')), (200, {**stale, 'areas': {'grain': {'yieldScale': 120}}}), data)
-        status, data = self.call('POST', '/api/dm/economy/rules', {'world': self.live, 'set': {'almsADay': 13}}, token='dm-token')
+        status, data = self.call('POST', '/api/dm/economy/rules', {'world': self.live, 'set': {'playerSellMost': 310}}, token='dm-token')
         self.assertEqual(status, 200, data)
         status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.live, 'set': {'keeper': 17}}, token='dm-token')
         self.assertEqual((status, data.get('farms')), (200, {**stale, 'keeper': 17}), data)
@@ -1177,40 +1130,16 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         status, data = self.call('POST', '/api/dm/economy/farms', {'world': self.dev, **body}, token='dm-token')
         self.assertEqual(status, 409, data)
         self.assertIn('0060', data['error'])
-        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'almsADay': 12}}, token='dm-token', headers=editor)
-        self.assertEqual((status, data['rules']), (200, {'almsADay': 12}), 'the rules still change on a world with 0058')
+        status, data = self.call('POST', '/api/atlas/economy/rules', {'set': {'playerSellMost': 300}}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['rules']), (200, {'playerSellMost': 300}), 'the rules still change on a world with 0058')
 
-    def test_where_the_self_correcting_rules_stand(self):
-        # Doc 68, Progress, "Self-correcting rules": what they have drifted to, read only, from the world's save.
-        self.sql(self.dev, 'DELETE FROM game.checkpoints')
+    def test_no_view_of_the_removed_economy(self):
+        # Doc 79, 17: the save's loop (the self-correcting rules' drift), its steering and the farms' tills are gone, and
+        # the economy page shows none of them.
         status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
         self.assertEqual(status, 200, data)
-        self.assertIsNone(data['drift']['saved'])
-        self.assertIn('no save', data['drift']['problem'])
-        keeper = next(n for n in self.sql(self.dev, "SELECT id, name FROM live.npcs WHERE role = 'merchant' AND home_area IS NOT NULL "
-                                                    'AND spawn_id IS NULL ORDER BY id'))
-        loop = {'prices': {'till:job:x': {'bread': 1.2, 'fish': 0.9}}, 'sales': {'till:job:x': {'bread': 10, 'fish': 2}},
-                'wages': {f'till:job:{keeper[0]}': {'step': 2, 'days': 3, 'shortDays': 0, 'owed': 66, 'profit': 90},
-                          'till:job:y': {'step': 0, 'days': 3, 'shortDays': 3, 'owed': 66, 'profit': 0}},
-                'level': 5612.4, 'levelDays': 120, 'levelThen': 5600, 'judged': 400, 'toll': -1.5, 'alms': 1}
-        self.sql(self.dev, "INSERT INTO game.checkpoints (world_id, schema_version, revision, payload) VALUES ('greyfen', 1, 1, %s)",
-                 (json.dumps({'society': {'loop': loop}}),))
-        status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
-        self.assertEqual(status, 200, data)
-        drift = data['drift']
-        self.assertTrue(drift['saved'])
-        # (A saved -1.5 reads as -1: tollDriftMost is 1 since doc 73's round 10, and the studio clamps as Core does.)
-        self.assertEqual((drift['toll'], drift['tollBase'], drift['alms'], drift['almsBase'], drift['level'], drift['target']),
-                         (29.0, 30, 11, 10, 5612, 5500))
-        self.assertEqual((drift['prices']['moved'], drift['prices']['low'], drift['prices']['high']), (2, 0.9, 1.2))
-        self.assertEqual((drift['shelves']['wares'], drift['shelves']['mean']), (2, 8.5), 'ceil(10 x 1.25) = 13 and the least, 4')
-        self.assertEqual((drift['wages']['tills'], drift['wages']['up'], drift['wages']['down']), (2, 1, 0))
-        self.assertEqual(drift['wages']['moved'], [{'till': f'till:job:{keeper[0]}', 'name': keeper[1], 'step': 2}])
-        # A rule off: the world's own toll and alms, whatever the save holds.
-        editor = {'X-RATW-Editor': self.host.atlas_token()}
-        self.call('POST', '/api/atlas/economy/rules', {'set': {'treasuryDrift': 0}}, token='dm-token', headers=editor)
-        status, data = self.call('GET', f'/api/dm/economy?world={self.dev}', token='viewer-token')
-        self.assertEqual((data['drift']['toll'], data['drift']['alms']), (30.0, 10))
+        for gone in ('drift', 'steering', 'farmsSaved'):
+            self.assertNotIn(gone, data)
 
     def test_a_world_without_migration_0058(self):
         unmigrate_rules(self.dev)
@@ -1220,7 +1149,7 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertFalse(data['rulesSupported'])
         self.assertIn('lacks migration 0058', data['rulesProblem'])
         editor = {'X-RATW-Editor': self.host.atlas_token()}
-        for route, body in (('rules', {'set': {'almsADay': 12}}), ('services', {'set': {'groom_and_trim': {'on': False}}})):
+        for route, body in (('rules', {'set': {'playerSellMost': 300}}), ('services', {'set': {'groom_and_trim': {'on': False}}})):
             status, data = self.call('POST', f'/api/atlas/economy/{route}', body, token='dm-token', headers=editor)
             self.assertEqual(status, 409, data)
             self.assertIn('0058', data['error'])
@@ -1262,39 +1191,8 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertIn('0055', data['error'])
 
 
-class SteeringTests(unittest.TestCase):
-    """Doc 74: the steering's settings, refusals and view, offline (the economy entity held in memory, no database)."""
-
-    def setUp(self):
-        self.economy = ST.Economy(connect=lambda key: (_ for _ in ()).throw(OSError('no database')),
-                                  connect_dm=lambda key: (_ for _ in ()).throw(OSError('no database')))
-        self.entity = {**W_default_economy(), 'rules': {}}
-        test = self
-
-        def edit(key, editor, label, change, **kinds):
-            after = change(json.loads(json.dumps(test.entity)))
-            changed = after != test.entity
-            test.entity = after
-            return {'changed': changed}
-        self.economy._edit = edit
-
-    def test_the_table_reckoned_as_core_reckons_it(self):
-        cases = json.loads((Path(__file__).resolve().parent.parent / 'Tests/fixtures/steer_table.json').read_text(encoding='utf-8'))
-        table = map_editor.city_loop_file()['steering']
-        for c in cases['cases']:
-            got = ST.steer_at(table[c['kind']][c['name']], c['at'], c['own'])
-            if c['want'] is None:
-                self.assertIsNone(got, c)
-            else:
-                self.assertAlmostEqual(got, c['want'], places=9, msg=c)
-        # The dividend with its rise for the charters, as Core's steerLever (doc 75, 4.2). The right ships F1 (doc 75, Phase 5's
-        # D3): no charters, the dividend 30% at the far right; with charters 33% there, 30 + 0.45 x 33.
-        self.assertAlmostEqual(ST.steer_lever(table, 'dividend', 1, 0), 30, places=9)
-        chartered = copy.deepcopy(table)
-        chartered['levers']['charters'] = [0, 0, 0, None, 33]
-        self.assertAlmostEqual(ST.steer_lever(chartered, 'dividend', 1, 0), 30 + 0.45 * 33, places=9)
-        self.assertEqual(ST.steer_lever(table, 'dividend', 0, 0), 0)
-        self.assertEqual(ST.steer_lever(table, 'treasuryTarget', 0, 5500), 5500)
+class RuleListTests(unittest.TestCase):
+    """The rules the studio offers are Core's (Rules[] in Core/RatwItems.h), with their ranges."""
 
     def test_every_rule_listed_with_core(self):
         core = (Path(__file__).resolve().parent.parent / 'Core/RatwItems.h').read_text(encoding='utf-8')
@@ -1303,114 +1201,26 @@ class SteeringTests(unittest.TestCase):
         self.assertEqual({n for n, *_ in names}, set(map_editor.RULE_LIMITS), 'Core\'s rules and the studio\'s alike')
         for name, low, high, fallback in names:
             self.assertEqual(int(high), map_editor.RULE_LIMITS[name], name)
-        for name in map_editor.STEER_SETTINGS + map_editor.STEER_OWN_RULES:
-            self.assertIn(name, map_editor.rule_defaults(), f'{name} in city_loop.json')
+            self.assertEqual((int(low), int(high), int(fallback)), map_editor.RULES[name], name)
+        self.assertEqual(set(map_editor.rule_defaults()), set(map_editor.RULES), 'a default for every rule')
 
-    def test_the_settings_written_as_rules(self):
-        result = self.economy.set_steer('w', {'steer': True, 'lean': -40}, 'dm-user')
-        self.assertEqual(self.entity['rules'], {'steer': 1, 'steerLean': 60})
-        self.assertEqual(result['detail'], 'Where the money rests: 0 -> -40 (the steering on); The steering on.')
-        result = self.economy.set_steer('w', {'neverHungry': True, 'neverBroke': True}, 'dm-user')
-        self.assertEqual(result['detail'], 'Never Hungry on; Never Broke on.')
-        self.economy.set_steer('w', {'lean': 0, 'steer': False}, 'dm-user')
-        self.assertEqual(self.entity['rules'], {'neverHungry': 1, 'neverBroke': 1}, 'back at city_loop.json\'s: no entry kept')
-        for bad in ({}, {'lean': 7}, {'lean': 105}, {'lean': True}, {'lean': '5'}, {'steer': 1}, {'neverBroke': 'yes'}, {'colour': 1}):
-            with self.assertRaises(D.DMError) as caught:
-                self.economy.set_steer('w', bad, 'dm-user')
-            self.assertEqual(caught.exception.status, 400, bad)
+    def test_a_rule_the_game_no_longer_has_is_kept_and_ignored(self):
+        # Doc 79, 14 and 17: an old world's rule (the steering's, the loop's) refuses nothing, warns, and never reaches
+        # the world file (Core would refuse it); a known rule out of its range is still refused.
+        rules = {'steer': 1, 'almsADay': 12, 'neverBroke': 1}
+        self.assertEqual(map_editor.check_rules(rules, {}), [])
+        self.assertEqual(map_editor.unknown_rules(rules), ['almsADay', 'steer'])
+        self.assertEqual(map_editor.rule_lines({'rules': rules}), ['rule "neverBroke" 1'])
+        self.assertTrue(map_editor.check_rules({'halfLifeDurable': 4}, {}), 'under its low')
+        self.assertTrue(map_editor.check_rules({'neverBroke': 2}, {}))
 
-    def test_the_rules_route_refuses_the_steerings(self):
-        with self.assertRaises(D.DMError) as caught:
-            self.economy.set_rules('w', {'set': {'steerLean': 150}}, 'dm-user')
-        self.assertEqual(caught.exception.status, 400)
-        self.economy.set_rules('w', {'set': {'treasuryCap': 3000}}, 'dm-user')
-        self.assertEqual(self.entity['rules'], {'treasuryCap': 3000}, 'the steering off: the DM\'s to set')
-        self.economy.set_steer('w', {'steer': True}, 'dm-user')
-        for name in map_editor.STEERED_RULES:
-            with self.assertRaises(D.DMError) as caught:
-                self.economy.set_rules('w', {'set': {name: 100}}, 'dm-user')
-            self.assertEqual(caught.exception.status, 409)
-            self.assertIn('turn the steering off to set it', str(caught.exception))
-        self.economy.set_rules('w', {'set': {'almsADay': 11}}, 'dm-user')
-        self.assertEqual(self.entity['rules']['almsADay'], 11, 'a rule the steering doesn\'t move: as ever')
+    def test_no_steering(self):
+        # Doc 79, 17: the steering went with the conserving economy.
+        for name in ('steer_at', 'steer_lever', 'steer_edicts', 'steer_ledger', 'STEER_LEVERS'):
+            self.assertFalse(hasattr(ST, name), name)
+        self.assertFalse(hasattr(ST.Economy, 'set_steer'))
+        self.assertFalse(hasattr(map_editor, 'STEER_SETTINGS'))
 
-    def test_the_view_at_the_slider(self):
-        view = self.economy.steering('w', 1, {'rules': {'steer': 1, 'steerLean': 50}})
-        self.assertEqual(view['settings'], {'steer': True, 'lean': -50, 'neverHungry': False, 'neverBroke': False})
-        self.assertEqual(view['band'], [-0.5, -0.5], 'doc 75: the levers read at the slider itself')
-        self.assertEqual((view['targets']['gini'], view['targets']['upper']), (0.41, None))
-        levers = {l['key']: l for l in view['levers']}
-        self.assertEqual((levers['surplusKeep']['centre'], levers['surplusKeep']['low'], levers['surplusKeep']['high']), (4000, 1000, 1000))
-        self.assertEqual((levers['levelling']['centre'], levers['levelling']['high']), (0, 13.7))
-        self.assertEqual((levers['treasuryTarget']['centre'], levers['treasuryTarget']['high']), (5500, 1400),
-                         'doc 75, Phase 4: the half mark\'s target a level the treasury reaches there')
-        self.assertNotIn('shareOut', levers)
-        self.assertIn('could not be read', view['problem'], 'no save: said so')
-        self.assertEqual(view['words']['left'], 'Shared: money and food equal across all wolves')
-        self.assertTrue(view['reach']['left'].startswith('Shared: Gini') and view['reach']['right'].startswith('Held by the rich'),
-                        'doc 75, 3.5: the ends labelled with their measured reach')
-
-    def test_the_supervisor_from_the_save(self):
-        # Doc 75, 3.6: the supervisor's rules on, its back-offs (the levers now with them) and its last words, from the save.
-        steer = {'on': True, 'push': 1, 'history': [{'day': 3, 'measure': 'supervisor', 'why': 'Day 3: the supervisor acts'}],
-                 'sup': {'nights': 9, 'rules': [{'on': True, 'fires': 1}, {'on': False, 'fires': 0}, {'on': False, 'fires': 0}],
-                         'richAbove': 20, 'route': 0.5, 'chartersHeld': 2}}
-        sup = ST.steer_supervisor(steer)
-        self.assertEqual((sup['on'], sup['richAbove'], sup['chartersHeld'], sup['route'], sup['fires'], sup['last']),
-                         (['the treasury under its floor'], 20.0, 2, 0.5, [1, 0, 0], 'Day 3: the supervisor acts'))
-        self.assertEqual(ST.steer_supervisor({}), {'on': [], 'levelling': 0, 'richAbove': 0, 'chartersHeld': 0, 'route': 0,
-                                                  'fires': [], 'last': None})
-
-
-    def test_the_edicts_the_ledger_and_the_log(self):
-        # Doc 75, 3.8, Phase 7: from the world's save, the edicts (a line per lever the slider moved, with its measure
-        # against its aim), the weekly ledger by lever and by class, and a year of log, all read only.
-        history = [{'day': d, 'measure': 'supervisor' if d % 2 else '', 'why': f'Day {d}: line {d}'} for d in range(1, 41)]
-        ledger = [{'week': 3, 'nights': 7, 'paid': {'levelling': {'upper': 300, 'middle': 120}, 'skim': {'treasury': 9}},
-                   'got': {'levelling': {'lower': 400, 'middle': 20}, 'skim': {'never hungry': 9}}},
-                  {'week': 4, 'nights': 2, 'paid': {'toll': {"the shops' store draws": 80}}, 'got': {'toll': {'the treasury': 80}}}]
-        steer = {'on': True, 'push': -1, 'gini': 0.335, 'upper': 9.1, 'treasury': 1490.6, 'charters': [], 'chartersTo': 0,
-                 'history': history, 'ledger': ledger, 'sup': {}}
-
-        class Conn:
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *a):
-                return False
-
-            def execute(self, sql, args=None):
-                class Rows:
-                    def fetchall(self):
-                        return [('2026-11-07', 'dm-user', 'Where the money rests: 0 -> -100')] if 'dm.audit' in sql else []
-
-                    def fetchone(self):
-                        return (steer, '2026-11-07 02:00', 0.5)
-                return Rows()
-        economy = ST.Economy(connect=lambda key: Conn(), connect_dm=lambda key: Conn())
-        view = economy.steering('w', 1, {'rules': {'steer': 1, 'steerLean': 0}, 'gateToll': 30})
-        self.assertEqual(view['problem'], '')
-        edicts = view['edicts']
-        self.assertTrue(edicts[0].startswith('The Levelling tithe: 50% of the way to the mean a night. The earners\' Gini 0.34 (aim 0.33'), edicts)
-        self.assertIn('The hands\' share: 50%', ' '.join(edicts))
-        self.assertEqual(edicts[-1], 'The gate toll: 30.5. Treasury 1,491p (the toll drifts toward 1,500p).',
-                         'the toll as Core reckons it, the treasury against the target the slider gives the drift')
-        self.assertFalse(any('charters' in e.lower() for e in edicts), 'no charters at the left: no edict for them')
-        week = view['ledger'][0]
-        self.assertEqual((week['week'], week['from'], week['to'], week['nights']), (4, 28, 34, 2), 'newest week first')
-        last = view['ledger'][1]
-        tithe = next(l for l in last['levers'] if l['key'] == 'levelling')
-        self.assertEqual((tithe['moved'], tithe['paid'][0], tithe['got'][0]), (420, ['upper-class households', 300], ['lower-class households', 400]))
-        parties = {p['who']: p for p in last['parties']}
-        self.assertEqual((parties['middle-class households']['in'], parties['middle-class households']['out'],
-                          parties['middle-class households']['net']), (20, 120, -100), 'in and out by class, across the levers')
-        self.assertEqual([l['key'] for l in last['levers']], ['levelling', 'skim'], 'in the ledger\'s order, only those that moved')
-        self.assertEqual(len(view['history']), 40, 'a year of log, not 24 lines')
-        self.assertEqual(view['history'][0]['why'], 'Day 40: line 40', 'newest first')
-        self.assertEqual(ST.steer_edicts({'on': False}, [], {}, 30), [], 'the steering off: no edicts')
-        self.assertEqual(ST.steer_toll({'gateToll': 30}, {'treasuryDrift': 1, 'tollDriftMost': 1}, 4), 31)
-        self.assertEqual(ST.steer_toll({'gateToll': 30}, {'treasuryDrift': 0}, 4), 30)
-        self.assertEqual(len(ST.steer_ledger({'ledger': [{'week': k} for k in range(20)]})), 8, 'the last eight weeks')
 
 def W_default_economy():
     import world_store

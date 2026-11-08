@@ -34,7 +34,6 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
     const off = locked || !data.farmsSupported;
     const d = data.farmDefaults;
     const {start} = farmSchedule(data);
-    const saved = data.farmsSaved;
 
     // A number typed in: empty is country_farms.json's (null), else a whole number within low..high.
     const commit = (where: 'all' | 'areas' | 'farms', id: string, key: string, low: number, high: number) => {
@@ -95,7 +94,6 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
             <small>p a day; a hand's</small>
             {field('all.hand', 5, 'A hand\'s wage', () => commit('all', '', 'hand', 0, 1000), String(d.hand))}
             <small>p (fixed: the basket takes what is over them)</small></label>
-        {saved && <p className="hint">{saved.saved ? `The farms as the world's last save has them (saved ${saved.saved}).` : saved.problem}</p>}
         {d.areas.map(a => {
             const sw = areaSwitch(data, a), from = areaOnFrom(data, a.id);
             const own = data.farms?.areas?.[a.id];
@@ -124,9 +122,9 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
                     <small>% of the catalogue's, all year (its store)</small></label>}
                 <div className="dm-table-wrap"><table className="dm-table farms-table">
                     <thead><tr><th>{a.works ? 'Works' : 'Farm'}</th><th>Crew, wages</th><th>Yields %</th><th>Hands %</th><th>Keeper p</th><th>Hand p</th>
-                        <th>Float, purse</th><th>Yields a day (Sp/Su/Au/Wi)</th><th>Saved</th></tr></thead>
+                        <th>Float, purse</th><th>Yields a day (Sp/Su/Au/Wi)</th></tr></thead>
                     <tbody>{a.farms.map(x => {
-                        const now = farmNow(data, a, x), mine = data.farms?.farms?.[x.id], s = saved?.farms?.[x.id];
+                        const now = farmNow(data, a, x), mine = data.farms?.farms?.[x.id];
                         return <tr key={x.id} className={mine ? 'changed' : ''}>
                             <td title={x.region}><b>{x.id}</b><br /><small className="hint">{x.kind}{x.house ? `, ${houseName(x.house)}'s land` : ''}</small></td>
                             <td>{now.keepers} + {now.hands}, {now.wages}p a day</td>
@@ -136,7 +134,6 @@ export function FarmsPanel({data, locked, setFarms}: {data: FarmControls; locked
                             <td>{field(`farms.${x.id}.hand`, 4, `${x.id}: hand's wage`, () => commit('farms', x.id, 'hand', 0, 1000), String(now.hand))}</td>
                             <td>{now.reserve}p, {now.purse}p</td>
                             <td><small>{yieldText(x, now.yieldPercent)}</small></td>
-                            <td>{s ? <small>till {s.till}p, {s.stock} in store, crew {s.crewPurse}p</small> : <small className="hint">not founded</small>}</td>
                         </tr>;
                     })}</tbody>
                 </table></div>

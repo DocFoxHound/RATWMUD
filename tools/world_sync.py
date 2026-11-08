@@ -428,7 +428,8 @@ SYNCED = [Spec(*s) for s in (
     ('live.faction_relations', 'faction relations', 'live'),
     ('live.npc_voice', 'NPC voices', 'live'),
     ('live.npc_relations', 'families', 'live'),
-    ('live.business_settings', 'business settings', 'live'),   # The store room's per-business switch (doc 67, 6; 0055).
+    # (live.business_settings, the store room's per-business switch (doc 67, 6; 0055), is no longer synced: the store
+    # room went with the city's loop, Docs/Design/79-a-staged-economy.md, 17. Migration 0061 drops the table.)
     ('live.dialects', 'dialects', 'live'),
     ('live.figures', 'figures', 'live'),
     ('live.story_visitors', 'story visitors', 'live'),
@@ -440,8 +441,7 @@ VOLATILE = ('updated_at', 'revision')
 SPAWNED = '(SELECT id FROM live.npcs WHERE spawn_id IS NOT NULL)'
 ONLY = {'live.npcs': 'spawn_id IS NULL', 'live.npc_voice': f'npc_id NOT IN {SPAWNED}',
         'live.faction_members': f'npc_id NOT IN {SPAWNED}',
-        'live.npc_relations': f'npc_id NOT IN {SPAWNED} AND other_id NOT IN {SPAWNED}',
-        'live.business_settings': f'npc_id NOT IN {SPAWNED}'}
+        'live.npc_relations': f'npc_id NOT IN {SPAWNED} AND other_id NOT IN {SPAWNED}'}
 AREAS_OF = {'world.cells': 'cell', 'world.interiors': 'interior'}
 
 
@@ -715,7 +715,7 @@ def undecided(item: Item) -> list[str]:
 # Rows that hang on an NPC (their foreign keys cascade from it): removed in a world with the NPC, so such a removal is
 # the NPC's, not theirs. And the other rows each needs to stand (a faction member's faction).
 NPC_DEPENDENTS = {'live.npc_voice': ('npc_id',), 'live.npc_relations': ('npc_id', 'other_id'),
-                  'live.faction_members': ('npc_id',), 'live.business_settings': ('npc_id',)}
+                  'live.faction_members': ('npc_id',)}
 DEPENDENTS_NEED = {'live.faction_members': (('live.factions', 'faction_id'),)}
 
 

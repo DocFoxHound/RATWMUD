@@ -1,5 +1,8 @@
 # 46. The economy orchestrator
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 Planned 2026-10-06. It follows doc 42 (money in circulation) and replaces most of what doc 42 built for the **big
 holders**: shops, farms, great houses, churches, towns and cities. Residents keep their own decisions. Every number is a
 *placeholder* for the balance pass.

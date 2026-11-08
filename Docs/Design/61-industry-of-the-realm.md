@@ -1,5 +1,8 @@
 # 61. Industry of the realm: the Houses' businesses, the towns' trades, the flow of goods
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 The user, 2026-10-12: get the economy right. The outlying towns need specialties, each with its own outputs and the
 inputs it needs; Ridgemere is an industrial powerhouse, and each of its great Houses has a specific business. House
 Greatly's is building materials: walls, paint, plasterworks and the like. Develop industry between the towns and the

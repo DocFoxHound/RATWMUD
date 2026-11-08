@@ -1,5 +1,8 @@
 # 65. A supported economy: as many shops, farms and mines as the residents can keep (2026-10-30)
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 The user, 2026-10-30: "I'm wondering if we should redesign shops/farms/smiths/etc. ... look at our residents, determine how many shops they need to be supported across the capital and outlying towns, and figure out what the best approach is to this economy. Do a deep dive on what we have, what we can support, and even what we might be missing so that we can set ourselves up to have a more realistic and stable economy from the start."
 
 **Words used here:**

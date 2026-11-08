@@ -11,7 +11,7 @@ const world = () => { const p = createProject(32, 24, 'Test'); cutGrid(p, 16, 12
 
 test('bundled Greyfen is a clean, exportable atlas', () => {
     const p = normalizeProject(greyfen());
-    assert.equal(p.people.length, 10);
+    assert.equal(p.people.length, 11);      // (Brann the smith since doc 33.)
     assert.equal(p.routes[0].posts.length, 9);
     assert.deepEqual(validate(p).errors, []);
     assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))), p, 'round-trips without loss');
@@ -115,7 +115,7 @@ test('an older project\'s Country keys read as the Wharf\'s (doc 73, 2.3)', () =
     const e = normalizeProject(old).economy;
     assert.deepEqual([e.wharf, e.wharfReserve, e.wageWharf, e.wharfOff, e.rules], [false, 50, 6, ['fish'], {estatePostsDays: 3, wharfFee: 20}]);
     assert.ok(!('country' in e) && !('countryOff' in e), 'only the new names kept');
-    assert.throws(() => setEconomy(p, {rules: {wharfFee: 51}}), /Economy requires|rules/, 'the fee at most 50');
+    assert.throws(() => setEconomy(p, {rules: {halfLifeDurable: 301}}), /Economy requires|rules/, 'a half-life at most 300');
 });
 
 test('the seasons\' and comforts\' economy keys are optional, checked and kept (doc 68, Progress; migration 0057)', () => {
@@ -134,10 +134,12 @@ test('the seasons\' and comforts\' economy keys are optional, checked and kept (
 test('the rules\' and services\' economy keys are optional, checked and kept (doc 68, Progress, "First fixes"; migration 0058)', () => {
     const p = world();
     const trim = {on: false, price: 2, every: 5};
-    setEconomy(p, {rules: {almsADay: 12, fairFood: 0, treasuryCap: 3000}, services: {groom_and_trim: trim}});
+    // (almsADay: a rule the game no longer has, doc 79, 17: kept and ignored, never refused.)
+    setEconomy(p, {rules: {almsADay: 12, neverBroke: 1, playerSellMost: 300}, services: {groom_and_trim: trim}});
     assert.deepEqual(validate(p).errors, []);
     assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
-    for (const bad of [{rules: []}, {rules: {luck: 1}}, {rules: {almsADay: 1001}}, {rules: {fairFood: 2}}, {rules: {treasuryCap: -1}},
+    for (const bad of [{rules: []}, {rules: {playerSellMost: 5001}}, {rules: {neverBroke: 2}}, {rules: {depthScale: 9}},
+                       {rules: {ripple: -1}},
                        {services: {groom_and_trim: {...trim, price: 0}}}, {services: {groom_and_trim: {...trim, every: 3651}}},
                        {services: {groom_and_trim: {...trim, on: 1}}}, {services: {groom_and_trim: {on: true}}},
                        {services: {'Trim!': trim}}])

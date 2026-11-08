@@ -326,14 +326,10 @@ class City(unittest.TestCase):
                     self.assertEqual(x[key], b[key], (x['id'], key))
         self.assertTrue(all(x['home'] for x in p['people'] if x['id'] in fixed))     # (Only the placed.)
 
-    # -- The food rebalance (doc 67, Progress, "Food rebalance") --
-    def test_the_food_trades_and_the_carters(self):
+    # -- The carters and the refitted rooms (doc 67, Progress, "Food rebalance"; its capacity estimate went with the
+    # city's loop, doc 79, 17) --
+    def test_the_carters_and_the_refits(self):
         from worldgen import ridgemere2 as R
-        cap = self.m['capacity']['after']
-        self.assertTrue(cap['ok'], cap['food'])
-        self.assertLessEqual(cap['foodBusinesses'] - cap['businesses'].get('stall', 0), 56)
-        self.assertGreaterEqual(cap['foodBusinesses'], 45)
-        self.assertLessEqual(cap['householdBusinesses'], 15)
         people = self.m['project']['people']
         self.assertEqual(sum(1 for x in people if x['workLabel'] == 'driving for the carters'), PP.CARTERS)
         rooms = {r['id']: r for r in self.m['project']['rooms']}

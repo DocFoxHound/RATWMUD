@@ -86,53 +86,20 @@ SUBSIDISED = ('carriage',)                           # Society::Subsidised
 SEASON_DEFAULTS = {'comfortsAbove': None, 'comfortsShare': None, 'seasons': {}}
 SEASON_LIMITS = {'supply': (0, 1000), 'price': (10, 1000), 'shelf': (0, 1000)}
 SEASON_NAMES = ('Spring', 'Summer', 'Autumn', 'Winter')
-# The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys.
-# rules: {name: whole number}, the rules this world has changed (a rule not listed is as city_loop.json's `rules`);
+# The rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys. rules:
+# {name: whole number}, the rules this world has changed (a rule not listed is as the data files have it: rule_defaults);
 # services: {service id: {on, price, every}}, the services this world has changed (stored whole; a service not listed is
-# as city_loop.json's `services.list` and items.json's price). Core's Society::RuleNames, with their ranges.
+# as the data files' list and items.json's price). Core's items::Rules, with their ranges and fallbacks: since doc 79
+# (17) only the staged economy's, the clamps and the Market Board's; a world's rule Core no longer has is kept and
+# ignored (a warning, never a refusal: doc 79, 14), and never written to the world file.
 RULE_DEFAULTS = {'rules': {}, 'services': {}}
-RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'almsNoEarner': 300, 'treasuryCap': 100000000, 'wageSupport': 100,
-               'workBankHours': 1000, 'fairFood': 1, 'services': 1, 'servicesCityShare': 100,
-               # Trades and the follow-ups (doc 68, Progress, "Trades"): no migration (live.economy.rules is {name: N}).
-               'suppliers': 1, 'patrons': 1, 'armourEvery': 3650, 'buyAheadDays': 5, 'floatDrawDays': 28,
-               'floatWagesDays': 60, 'workshopWagesDays': 60, 'workshopWageMost': 100, 'subsidyToNeed': 1, 'estatePostsDays': 30, 'estates': 1,
-               # The Wharf (Docs/Design/73-the-wharf.md, 6): no migration.
-               'wharfValve': 1, 'wharfFee': 50, 'wharfKeepDays': 365, 'wharfKeepLeast': 10000, 'wharfImportScale': 1000,
-               'wharfTakeScale': 1000, 'wharfExportMost': 100000, 'wharfCreditMost': 1000000, 'wharfInjectADay': 1000,
-               'wharfTakeADay': 1000, 'wharfActionMost': 1000000,
-               # The food farms' land rent (Docs/Design/72-pulling-the-country-into-the-world.md, open question 2): no migration.
-               'landRent': 100, 'landRentFish': 100, 'landRentFruit': 100, 'landRentGrain': 100, 'landRentSalt': 100,
-               'landRentDairy': 100, 'landRentThin': 100, 'farmSurplus': 1, 'shopRot': 1,
-               # The luxuries (doc 72, Phase 5: cheese): no migration.
-               'luxuryShare': 100, 'luxuryMost': 100, 'luxuryAbove': 10000, 'luxuryHouses': 100, 'luxuryHousesMost': 1000, 'luxuryPriceBand': 1000, 'luxuryPriceStep': 1000,
-               # The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): no migration.
-               'surplus': 1, 'surplusKeep': 100000000, 'surplusWorks': 100, 'surplusAlms': 100, 'surplusAlmsTo': 1000,
-               # The self-correcting rules (doc 68, Progress, "Self-correcting rules"): no migration (what they drift to is
-               # the game's save, not live.economy).
-               'stockPrices': 1, 'stockPriceBand': 90, 'stockPriceStep': 1000, 'shelfFollow': 1, 'shelfDays': 365,
-               'shelfCover': 1000, 'shelfGrow': 500, 'wageDrift': 1, 'wageDriftDays': 365, 'wageDriftSpare': 1000,
-               'wageDriftMost': 100, 'wageDriftHandMost': 100, 'wageDriftFloor': 1000, 'treasuryDrift': 1, 'treasuryTarget': 100000000,
-               'treasuryBand': 100, 'treasuryDays': 3650, 'treasuryJudgeDays': 365, 'tollStep': 100, 'tollDriftMost': 90,
-               'almsDriftMost': 1000,
-               # Steering the economy (Docs/Design/74-steering-the-economy.md): the DM's four (the Steering panel's; the
-               # rules route refuses them) and the steering's own; no migration.
-               # (Doc 75: the push's judging, steps and band are gone.)
-               'steer': 1, 'steerLean': 200, 'neverHungry': 1, 'neverBroke': 1, 'steerMeanDays': 365, 'skimMost': 100,
-               'skimKeepDays': 28,
-               # The staged economy (Docs/Design/79-a-staged-economy.md, Phase 0): test-only until Phases 1-2 (doc 79, 19);
-               # no migration.
-               'staged': 1,
-               # The Market Board (Docs/Design/79-a-staged-economy.md, Phase 1): read only while staged; no migration.
-               'halfLifePerishable': 300, 'halfLifeKeeping': 300, 'halfLifeDurable': 300, 'ripple': 70, 'depthScale': 1000,
-               'playerPushMost': 50, 'playerSellMost': 5000, 'takeAllowance': 100, 'shelfScale': 1000,
-               'factionDiscountMost': 1000}
-RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed', 'surplus', 'stockPrices', 'shelfFollow',
-                 'wageDrift', 'treasuryDrift', 'wharfValve', 'steer', 'neverHungry', 'neverBroke', 'staged')   # 0 or 1: off or on.
-# Steering the economy (doc 74): the DM's settings, set only through the Steering panel (/api/economy/steer), and the
-# rules the steering moves while it is on (the rules route refuses them then).
-STEER_SETTINGS = ('steer', 'steerLean', 'neverHungry', 'neverBroke')
-STEERED_RULES = ('surplusKeep', 'treasuryCap', 'treasuryTarget', 'surplusAlmsTo')
-STEER_OWN_RULES = ('steerMeanDays', 'skimMost', 'skimKeepDays')
+RULES = {  # name: (low, high, fallback), as Core/RatwItems.h's Rules[].
+    'neverHungry': (0, 1, 0), 'neverBroke': (0, 1, 0), 'buyAheadDays': (0, 5, 1),
+    'halfLifePerishable': (5, 300, 20), 'halfLifeKeeping': (5, 300, 50), 'halfLifeDurable': (5, 300, 80),
+    'ripple': (0, 70, 50), 'depthScale': (10, 1000, 100), 'playerPushMost': (0, 50, 15), 'playerSellMost': (0, 5000, 400),
+    'takeAllowance': (5, 100, 50), 'shelfScale': (10, 1000, 100), 'factionDiscountMost': (0, 1000, 30)}
+RULE_LIMITS = {name: high for name, (_, high, _) in RULES.items()}
+RULE_SWITCHES = ('neverHungry', 'neverBroke')     # 0 or 1: off or on.
 # The Country's economy keys and rule before doc 73 (Docs/Design/73-the-wharf.md, 2.3), read as the Wharf's (the new name
 # wins where a project has both); written only under the new names.
 ECONOMY_ALIASES = {'country': 'wharf', 'countryReserve': 'wharfReserve', 'wageCountry': 'wageWharf', 'countryOff': 'wharfOff'}
@@ -170,18 +137,43 @@ FARM_AREA = {'yieldScale': (0, 1000), 'crewScale': (0, 1000), 'keeper': (0, 1000
 FARM_FARM = {'yieldScale': (0, 1000), 'crewScale': (0, 1000), 'keeper': (0, 1000), 'hand': (0, 1000)}
 
 
-def city_loop_file() -> dict:
-    """Data/Items/city_loop.json as the file has it ({} if it can't be read)."""
+def _data_file(path: str) -> dict:
     try:
-        return json.loads((ROOT / 'Data/Items/city_loop.json').read_text(encoding='utf-8'))
+        value = json.loads((ROOT / path).read_text(encoding='utf-8'))
+        return value if isinstance(value, dict) else {}
     except (OSError, ValueError):
         return {}
 
 
+def city_loop_file() -> dict:
+    """Data/Items/city_loop.json as the file has it ({} if it can't be read: doc 79, 17 takes it apart)."""
+    return _data_file('Data/Items/city_loop.json')
+
+
+def market_file() -> dict:
+    """Data/Economy/market.json (doc 79, 5: the Board's defaults, and the seasons, services and rules moved from
+    city_loop.json), {} if it can't be read."""
+    return _data_file('Data/Economy/market.json')
+
+
 def rule_defaults() -> dict:
-    """city_loop.json's rules ({name: N}, without its `about`)."""
-    rules = city_loop_file().get('rules') or {}
-    return {k: v for k, v in rules.items() if k in RULE_LIMITS}
+    """The rules' defaults ({name: N}, without an `about`): city_loop.json's while it has them, then market.json's and
+    status.json's over them (doc 79, 17: where the kept rules move)."""
+    rules = {}
+    for f in (city_loop_file(), market_file(), _data_file('Data/Economy/status.json')):
+        if isinstance(f.get('rules'), dict):
+            rules.update(f['rules'])
+    out = {name: fallback for name, (_, _, fallback) in RULES.items()}
+    for k, v in rules.items():
+        if k in RULES and isinstance(v, (int, float)) and not isinstance(v, bool):
+            low, high, _ = RULES[k]
+            out[k] = min(high, max(low, int(round(v))))   # (Clamped, as Core reads them.)
+    return out
+
+
+def unknown_rules(rules) -> list[str]:
+    """The rules a world names that Core no longer has (doc 79, 17): kept, ignored, never written to the world file."""
+    return sorted(k for k in rules if k not in RULES) if isinstance(rules, dict) else []
 
 
 def service_list() -> list[dict]:
@@ -193,7 +185,8 @@ def service_list() -> list[dict]:
     except (OSError, ValueError, KeyError):
         items = {}
     out = []
-    for s in (city_loop_file().get('services') or {}).get('list') or []:
+    listed = market_file().get('services') or city_loop_file().get('services') or {}
+    for s in (listed.get('list') if isinstance(listed, dict) else listed) or []:
         if isinstance(s, dict) and s.get('id'):
             item = items.get(s['id'], {})
             out.append({'id': s['id'], 'name': item.get('name', s['id']), 'business': s.get('business', ''),
@@ -209,10 +202,11 @@ def check_rules(rules, services) -> list[str]:
         errors.append('economy.rules must be {rule: whole number}.')
     else:
         for name, value in rules.items():
-            if name not in RULE_LIMITS:
-                errors.append(f'economy.rules names no rule: {name} (the rules: {", ".join(RULE_LIMITS)}).')
-            elif not number(value, 0, RULE_LIMITS[name], integer=True):
-                errors.append(f'economy.rules.{name} must be a whole number from 0 to {RULE_LIMITS[name]}.')
+            if name not in RULES:
+                continue                    # (A rule Core no longer has: kept and ignored, unknown_rules warns.)
+            low, high, _ = RULES[name]
+            if not number(value, low, high, integer=True):
+                errors.append(f'economy.rules.{name} must be a whole number from {low} to {high}.')
     if not isinstance(services, dict):
         errors.append('economy.services must be {service: {on, price, every}}.')
         return errors
@@ -298,12 +292,12 @@ def check_farms(farms) -> list[str]:
 
 
 def season_groups() -> list[dict]:
-    """city_loop.json's season groups (Core's items::Country::seasons), as the file has them."""
-    try:
-        country = json.loads((ROOT / 'Data/Items/city_loop.json').read_text(encoding='utf-8'))
-    except (OSError, ValueError):
-        return []
-    return [g for g in (country.get('seasons') or {}).get('groups') or [] if isinstance(g, dict) and g.get('id')]
+    """The season groups as the files have them: market.json's (doc 79, 7.1: price and shelf, which Core reads), else
+    city_loop.json's."""
+    groups = market_file().get('seasons')
+    if not isinstance(groups, list):
+        groups = (city_loop_file().get('seasons') or {}).get('groups') or []
+    return [g for g in groups if isinstance(g, dict) and g.get('id')]
 
 
 def check_season(group, setting) -> list[str]:
@@ -433,7 +427,7 @@ def rule_lines(economy) -> list[str]:
     """The NPC records' rule and service lines (live.people_manifest's since 0058): a "rule" line a rule this world has
     changed, a "service" line a service."""
     e = {**RULE_DEFAULTS, **(economy or {})}
-    out = [f'rule {quote(name)} {value}' for name, value in sorted((e['rules'] or {}).items())]
+    out = [f'rule {quote(name)} {value}' for name, value in sorted((e['rules'] or {}).items()) if name in RULES]
     word = lambda on: 'on' if on else 'off'
     out += [f'service {quote(sid)} {word(s["on"])} price {s["price"]} every {s["every"]}'
             for sid, s in sorted((e['services'] or {}).items())]
@@ -774,6 +768,8 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
                             if isinstance(people_list, list) else set())
     if isinstance(economy, dict):
         warnings += [f'{w[:-1]}: kept, it does nothing while the file lacks it.' for w in unknown_farms(economy.get('farms'))]
+        warnings += [f'economy.rules.{name}: a rule the game no longer has (doc 79): kept, it does nothing.'
+                     for name in unknown_rules(economy.get('rules'))]
     herbs = p.get('herbPatch')
     if herbs is not None:
         place(herbs, 'Herb patch')

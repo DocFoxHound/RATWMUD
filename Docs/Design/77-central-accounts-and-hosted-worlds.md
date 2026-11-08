@@ -1,5 +1,8 @@
 # 77. Central accounts and hosted worlds (2026-11-07)
 
+> **Parts superseded by doc 79 (2026-11-08):** its economy (Docs/Design/79-a-staged-economy.md, section 21, says
+> which parts). The rest stands.
+
 Drafted 2026-11-07, revised the same day after a review (see "Review" at the end). **Agreed 2026-11-07** with every
 recommendation in section 14, except Q10: central runs on its own server, which the user sets up later (see Progress).
 

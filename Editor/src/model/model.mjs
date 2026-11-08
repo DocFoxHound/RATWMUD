@@ -116,32 +116,19 @@ const seasonSettingsOk = e => (!own(e, 'comfortsAbove') || e.comfortsAbove === n
     && (!own(e, 'seasons') || (object(e.seasons) && Object.entries(e.seasons).every(([g, s]) => /^[a-z0-9_]{1,40}$/.test(g)
         && object(s) && Object.keys(s).length === 4 && four(s.supply, 0, 1000) && four(s.price, 10, 1000) && four(s.shelf, 0, 1000)
         && integer(s.normal, 0, 1000000))));
-// The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys, as
+// The rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys, as
 // tools/map_editor.py's RULE_DEFAULTS (rules: {name: N}, the rules this world has changed; services: {id: {on, price,
-// every}}, the services it has changed; {}: all as Data/Items/city_loop.json has them).
+// every}}, the services it has changed; {}: all as the data files have them). The rules are Core's items::Rules, low,
+// high and fallback (since doc 79, 17 only the clamps and the Market Board's); a rule Core no longer has is kept and
+// ignored (doc 79, 14), never refused.
 export const RULE_DEFAULTS = {rules: {}, services: {}};
-export const RULE_LIMITS = {comfortsMost: 100000, almsADay: 1000, treasuryCap: 100000000, wageSupport: 100, workBankHours: 1000,
-    fairFood: 1, services: 1, servicesCityShare: 100, suppliers: 1, patrons: 1, armourEvery: 3650, buyAheadDays: 5, floatDrawDays: 28,
-    floatWagesDays: 60, workshopWagesDays: 60, workshopWageMost: 100, subsidyToNeed: 1, estatePostsDays: 30, estates: 1,
-    // The Wharf (Docs/Design/73-the-wharf.md, 6): no migration.
-    wharfValve: 1, wharfFee: 50, wharfKeepDays: 365, wharfKeepLeast: 10000, wharfImportScale: 1000, wharfTakeScale: 1000,
-    wharfExportMost: 100000, wharfCreditMost: 1000000, wharfInjectADay: 1000, wharfTakeADay: 1000, wharfActionMost: 1000000,
-    landRent: 100, landRentFish: 100, landRentFruit: 100, landRentGrain: 100, landRentSalt: 100, landRentDairy: 100, landRentThin: 100, farmSurplus: 1, shopRot: 1, luxuryShare: 100, luxuryMost: 100, luxuryAbove: 10000, luxuryHouses: 100, luxuryHousesMost: 1000, luxuryPriceBand: 1000, luxuryPriceStep: 1000, surplus: 1, surplusKeep: 100000000, surplusWorks: 100, surplusAlms: 100, surplusAlmsTo: 1000,
-    // The self-correcting rules (doc 68, Progress, "Self-correcting rules").
-    stockPrices: 1, stockPriceBand: 90, stockPriceStep: 1000, shelfFollow: 1, shelfDays: 365, shelfCover: 1000, shelfGrow: 500,
-    wageDrift: 1, wageDriftDays: 365, wageDriftSpare: 1000, wageDriftMost: 100, wageDriftHandMost: 100, wageDriftFloor: 1000, treasuryDrift: 1,
-    treasuryTarget: 100000000, treasuryBand: 100, treasuryDays: 3650, treasuryJudgeDays: 365, tollStep: 100, tollDriftMost: 90,
-    almsDriftMost: 1000, almsNoEarner: 300,
-    // Steering the economy (Docs/Design/74-steering-the-economy.md): the DM's four (its Steering panel's) and the steering's own.
-    // (Doc 75: the push's judging, steps and band are gone.)
-    steer: 1, steerLean: 200, neverHungry: 1, neverBroke: 1, steerMeanDays: 365, skimMost: 100, skimKeepDays: 28,
-    // The staged economy (Docs/Design/79-a-staged-economy.md, Phase 0): test-only until Phases 1-2.
-    staged: 1,
-    // The Market Board (Docs/Design/79-a-staged-economy.md, Phase 1): read only while staged.
-    halfLifePerishable: 300, halfLifeKeeping: 300, halfLifeDurable: 300, ripple: 70, depthScale: 1000, playerPushMost: 50,
-    playerSellMost: 5000, takeAllowance: 100, shelfScale: 1000, factionDiscountMost: 1000};
+export const RULES = {neverHungry: [0, 1, 0], neverBroke: [0, 1, 0], buyAheadDays: [0, 5, 1],
+    halfLifePerishable: [5, 300, 20], halfLifeKeeping: [5, 300, 50], halfLifeDurable: [5, 300, 80], ripple: [0, 70, 50],
+    depthScale: [10, 1000, 100], playerPushMost: [0, 50, 15], playerSellMost: [0, 5000, 400], takeAllowance: [5, 100, 50],
+    shelfScale: [10, 1000, 100], factionDiscountMost: [0, 1000, 30]};
+export const RULE_LIMITS = Object.fromEntries(Object.entries(RULES).map(([k, [, high]]) => [k, high]));
 const ruleSettingsOk = e => (!own(e, 'rules') || (object(e.rules) && Object.entries(e.rules).every(([k, v]) =>
-        own(RULE_LIMITS, k) && integer(v, 0, RULE_LIMITS[k]))))
+        !own(RULES, k) || integer(v, RULES[k][0], RULES[k][1]))))
     && (!own(e, 'services') || (object(e.services) && Object.entries(e.services).every(([k, s]) => /^[a-z0-9_]{1,48}$/.test(k)
         && object(s) && Object.keys(s).length === 3 && typeof s.on === 'boolean' && integer(s.price, 1, 100000) && integer(s.every, 1, 3650))));
 // The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): an optional economy key, as
@@ -372,7 +359,7 @@ function checkShape(value) {
         check(!object(e) || seasonSettingsOk(e), 'The seasons and comforts: comfortsAbove 0-1000000 and comfortsShare 0-100 (or null '
             + "for city_loop.json's), each season group {supply, shelf: four percents 0-1000, price: four 10-1000, normal: pieces a day}.");
         check(!object(e) || ruleSettingsOk(e), 'The rules and services: each rule a whole number within its limit ('
-            + Object.entries(RULE_LIMITS).map(([k, max]) => `${k} 0-${max}`).join(', ')
+            + Object.entries(RULES).map(([k, [low, max]]) => `${k} ${low}-${max}`).join(', ')
             + '), each service {on: true or false, price: 1-100000 pennies, every: 1-3650 days}.');
         check(!object(e) || farmSettingsOk(e), 'The farms: start -1 to 365000000, every 1-3650 days, order distinct area ids, '
             + 'wages 0-1000; an area {on: true or false, yieldScale, crewScale 0-1000, keeper, hand 0-1000, priceFactor 10-1000}; '

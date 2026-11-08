@@ -1,5 +1,8 @@
 # 66. Worlds, Atlas and the DM: many worlds, NPCs without a map, one tool, safe pushes (2026-10-30)
 
+> **Parts superseded by doc 79 (2026-11-08):** its economy (Docs/Design/79-a-staged-economy.md, section 21, says
+> which parts). The rest stands.
+
 The user, 2026-10-30:
 
 - "We need to be able to switch servers easily, and we need the NPC'S to be unset to a business and home and

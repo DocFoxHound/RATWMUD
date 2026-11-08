@@ -1,5 +1,8 @@
 # 73. The Wharf (2026-11-04)
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 The user, 2026-11-04 (verbatim):
 
 > The Country should turn into the Wharf, which is going to turn into where, for the game, we can inject and take money,

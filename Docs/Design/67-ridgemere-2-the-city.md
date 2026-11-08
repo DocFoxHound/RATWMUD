@@ -1,5 +1,8 @@
 # 67. Ridgemere 2.0: the city (2026-10-30, revised 2026-10-31)
 
+> **Parts superseded by doc 79 (2026-11-08):** its economy (Docs/Design/79-a-staged-economy.md, section 21, says
+> which parts). The rest stands.
+
 The user, 2026-10-30 (verbatim):
 
 > Okay, let's start working on Ridgemere2. I want you to build this world out for me. What we need is to start with

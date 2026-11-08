@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""The world package (tools/world_package.py; doc 77, section 8 and Progress, "Phase 5's plan"): the strip on small
-hand-made saves (money conserved, escrow, maker marks, compound keys, unknown sections refused), the scan (an id
-planted in a key, in a nested string, in a row; usernames; money; goods), the journal replay, and end to end: DEV
+"""The world package (tools/world_package.py; doc 77, section 8 and Progress, "Phase 5's plan"; doc 79, 13): the strip
+on small hand-made saves (players and their escrow deleted, never poured; staged and dead accounts dropped; maker
+marks, compound keys, unknown sections refused), the scan (an id planted in a key, in a nested string, in a row;
+usernames; the accounts' limits), the journal replay, and end to end: DEV
 exported read only (one read-only transaction), scanned, imported into throwaway worlds and loaded by a real
 ratw_server there, once as it is and once with players planted in its save before the strip.
 
@@ -37,7 +38,9 @@ def database_available():
 
 ROOT = Path(__file__).resolve().parent.parent
 SERVERS = [ROOT / 'build-central' / 'ratw_server', ROOT / 'build-core' / 'ratw_server']
-SERVER = next((s for s in SERVERS if s.exists()), None)
+# (RATW_TEST_SERVER: another build's, such as a worktree's.)
+SERVER = (Path(os.environ['RATW_TEST_SERVER']) if os.environ.get('RATW_TEST_SERVER') else
+          next((s for s in SERVERS if s.exists()), None))
 
 # Throwaway worlds' keys start with this (RATW_TEST_KEY_PREFIX: a run's own, to tell its databases from others').
 KEY_PREFIX = os.environ.get('RATW_TEST_KEY_PREFIX', 'pkg')
@@ -47,7 +50,7 @@ WOLF2 = 'wolf-' + 'b' * 32
 
 
 def save(**extra):
-    """A small save: a treasury, two residents, books that balance."""
+    """A small save: a treasury, two residents, a player and the escrow its things hold."""
     doc = {
         'schema': 1, 'journal': 3, 'revision': 7, 'sequence': 2, 'time': 10.0, 'calendarDays': 4.5,
         'accounts': {'version': 1, 'entries': [{'username': 'ashley', 'characters': [WOLF]}]},
@@ -60,7 +63,7 @@ def save(**extra):
         'society': {
             'minted': 1067, 'sunk': 100, 'nextEntry': 10, 'budgetDay': 4,
             'accounts': {
-                'treasury': {'cash': 500, 'stock': {'meal': 5}},
+                'treasury': {'cash': 500, 'stock': {'meal': 5, 'sword@' + WOLF: 2, 'sword': 1, 'pelt@wren': 1}},
                 'wren': {'cash': 100, 'stock': {'sword@' + WOLF: 2, 'sword': 1, 'pelt@wren': 1}},
                 'bram': {'cash': 50, 'stock': {}},
                 WOLF: {'cash': 120, 'stock': {'herbs': 4, 'meal@' + WOLF: 2}},
@@ -168,29 +171,74 @@ class StripTest(unittest.TestCase):
         errors, _ = P.scan(self.doc, {}, usernames={'ashley'})
         self.assertEqual(errors, [])
 
-    def test_money_is_conserved_into_the_treasury(self):
-        self.assertEqual(cash(self.doc), self.before)
-        self.assertEqual(cash(self.doc), 1067 - 100)
+    def test_players_and_their_escrow_are_deleted_never_poured(self):
+        # Doc 79, 13: the player's purse and every escrow its things held go with their goods; the treasury keeps its own.
+        self.assertEqual(self.accounts['treasury']['cash'], 500)
+        self.assertEqual(cash(self.doc), 500)
         self.assertEqual(P.money(self.doc), [])
-        # Player 120, the Chapter 40, the contract 30, the player's letter 20, the stall 5, the table 20, the chest of a
-        # lodging gone 7.
-        self.assertEqual(self.accounts['treasury']['cash'], 500 + 120 + 40 + 30 + 20 + 5 + 20 + 7)
-        self.assertEqual(self.accounts['bram']['cash'], 50 + 15, "a resident's letter to a player: back to its writer")
+        self.assertNotIn('herbs', self.accounts['treasury']['stock'], "the player's goods are not poured")
+        self.assertNotIn('rope', self.accounts['treasury']['stock'], "nor the Chapter's")
 
-    def test_escrow_accounts_close(self):
+    def test_escrow_accounts_close_and_staged_ones_drop(self):
         for name in (WOLF, 'chapter:chapter-1', 'contract:k1', f'letter:L1@{WOLF}', 'letter:L2@bram', 'let:lodge1',
                      'stall:s1', 'table:t1', 'let:lodging-9'):
             self.assertNotIn(name, self.accounts)
-        self.assertEqual(set(self.accounts), {'treasury', 'wren', 'bram', 'till:job:bram', 'let:lodging-2'})
         self.assertEqual(self.st.closed, 9)
+        # The residents' purses and the till are staged: derived, made again by the importing server.
+        self.assertEqual(set(self.accounts), {'treasury', 'let:lodging-2'})
+        self.assertEqual(self.st.dropped, 3)
 
-    def test_lodgings_keep_the_landlords_account(self):
-        """A lodging's account is its landlord's (the rent's), never closed; the player's chest is."""
-        self.assertEqual(self.accounts['till:job:bram'], {'cash': 60, 'stock': {'ale': 4}})
+    def test_a_kept_lodging_keeps_its_chest_and_names_its_landlords_account(self):
+        """A lodging's account is its landlord's (the rent's): a staged till the server makes again; the player's chest
+        goes, a resident's stays."""
         self.assertEqual(self.accounts['let:lodging-2'], {'cash': 0, 'stock': {'soap': 1}})
         self.assertEqual(self.doc['people']['lodgings'],
                          [{'id': 'lodging-2', 'holder': 'bram', 'landlord': 'bram', 'account': 'till:job:bram',
                            'period': 'night', 'guests': ['wren']}])
+
+    def test_dead_accounts_and_the_staged_state(self):
+        doc = save()
+        accounts = doc['society']['accounts']
+        for name in ('fund:relief', 'outside:wharf', 'farm:grain_farm_1', 'crew:grain_farm_1', 'estate:fell',
+                     'caravan:c1', 'house:house_fell', 'bank:x', 'stores:coldwater', 'town:ridgemere:works',
+                     'home:r2_home_1:larder'):
+            accounts[name] = {'cash': 9, 'stock': {'meal': 1}}
+        accounts['bandits:camp1'] = {'cash': 30, 'stock': {'pelt': 2}}      # 20p robbed from a player, 10p staged.
+        accounts['bandits:camp2'] = {'cash': 12, 'stock': {}}               # A save from before doc 79: no source.
+        accounts['contract:k9'] = {'cash': 6, 'stock': {}}                  # A resident's posting: staged-sourced.
+        doc['society']['staged'] = {
+            'bands': {'r2_home_1': {'band': 2, 'since': 1, 'liftedUntil': 9}, 'r2_home_2': {'band': 1, 'since': 2, 'liftedUntil': -1}},
+            'overrides': {}, 'holds': {'wren': 5, 'treasury': 4}, 'lean': {'bram': 6}, 'events': {'wren': [{'kind': 'robbed', 'day': 3, 'weight': 1}]},
+            'escrowSource': {'bandits:camp1': 10, 'contract:k9': 6, 'contract:k1': 3},
+            'faucets': {'3': {'ashley': {'sale': {'made': 4, 'sunk': 0, 'goodsMade': 0, 'goodsSunk': 0}}}},
+            'welcomed': {'ashley': 1}, 'hour': 5, 'day': 4}
+        doc['society']['loop'] = {'steer': {'on': True}, 'wharf': {'credit': 5}}       # (A pre-79 save's: read past.)
+        st = P.strip(doc)
+        self.assertNotIn('loop', doc['society'])
+        self.assertEqual(set(accounts), {'treasury', 'let:lodging-2', 'bandits:camp1', 'bandits:camp2', 'contract:k9'})
+        self.assertEqual(st.dropped, 3 + 11)
+        self.assertEqual(accounts['bandits:camp1'], {'cash': 10, 'stock': {'pelt': 2}}, "the players' coins go, the goods stay")
+        self.assertEqual(accounts['bandits:camp2']['cash'], 0)
+        self.assertEqual(accounts['contract:k9']['cash'], 6)
+        staged = doc['society']['staged']
+        for gone in P.STAGED_HOLDERS:
+            self.assertNotIn(gone, staged)
+        self.assertNotIn('ashley', json.dumps(doc['society']))
+        self.assertEqual(staged['holds'], {'treasury': 4})
+        self.assertEqual(staged['lean'], {})
+        self.assertEqual(staged['escrowSource'], {'bandits:camp1': 10, 'contract:k9': 6})
+        self.assertEqual(staged['bands']['r2_home_1']['liftedUntil'], -1, "a player's help is not packaged")
+        self.assertEqual(staged['events'], {'wren': [{'kind': 'robbed', 'day': 3, 'weight': 1}]})
+        self.assertEqual((staged['hour'], staged['day']), (5, 4))
+        self.assertEqual(P.scan(doc, {}, usernames={'ashley'})[0], [])
+
+    def test_the_account_kinds_follow_society_classify(self):
+        for name, kind in ((WOLF, 'real'), ('chapter:chapter-1', 'real'), (f'letter:L1@{WOLF}', 'escrow'),
+                           ('contract:k1', 'escrow'), ('ground:lost', 'escrow'), ('fest:f1', 'escrow'),
+                           ('project:p1', 'escrow'), ('treasury', 'staged'), ('till:job:bram', 'staged'),
+                           ('stores:coldwater', 'staged'), ('wren', 'staged'), ('fund:relief', 'dead'),
+                           ('house:house_fell', 'dead'), ('outside:wharf', 'dead')):
+            self.assertEqual(P.account_kind(name), kind, name)
 
     def test_player_keyed_maps_go(self):
         d = self.doc
@@ -223,9 +271,8 @@ class StripTest(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertTrue(any('talkMemory.person:wren.rumour' in w and 'Iron Fangs' in w for w in warnings), warnings)
 
-    def test_goods_follow_and_maker_marks_come_off(self):
-        self.assertEqual(self.accounts['wren']['stock'], {'sword': 3, 'pelt@wren': 1}, 'an NPC mark stays')
-        self.assertEqual(self.accounts['treasury']['stock'], {'meal': 7, 'herbs': 4, 'rope': 1, 'candle': 2})
+    def test_maker_marks_come_off(self):
+        self.assertEqual(self.accounts['treasury']['stock'], {'meal': 5, 'sword': 3, 'pelt@wren': 1}, 'an NPC mark stays')
         self.assertEqual(self.doc['npcs'][0]['scents'][0]['item'], 'pelt')
 
     def test_compound_keys_and_relations(self):
@@ -321,15 +368,17 @@ class StripTest(unittest.TestCase):
         with self.assertRaisesRegex(P.PackageError, 'newList'):
             P.strip(doc)
 
-    def test_the_treasury_keeps_within_its_goods_limits(self):
+    def test_a_maker_marks_merge_keeps_within_the_goods_limits(self):
         doc = save()
-        doc['society']['accounts']['treasury']['stock'] = {f'good{i}': 1 for i in range(63)}
-        doc['society']['accounts'][WOLF2] = {'cash': 0, 'stock': {'a': 1, 'b': 2, 'good0': 9999}}
+        treasury = doc['society']['accounts']['treasury']
+        treasury['stock'] = {f'good{i}': 1 for i in range(63)}
+        treasury['stock']['good0'] = 9999
+        treasury['stock'][f'good0@{WOLF}'] = 5
         st = P.strip(doc)
-        treasury = doc['society']['accounts']['treasury']['stock']
-        self.assertEqual(len(treasury), 64)
-        self.assertEqual(treasury['good0'], 10000)
-        self.assertGreater(st.discarded, 0)
+        stock = doc['society']['accounts']['treasury']['stock']
+        self.assertEqual(len(stock), 63)
+        self.assertEqual(stock['good0'], 10000)
+        self.assertEqual(st.discarded, 4)
         self.assertEqual(P.money(doc), [])
 
 
@@ -424,14 +473,24 @@ class ScanTest(unittest.TestCase):
 
     def test_money_and_goods(self):
         doc = self.clean()
-        doc['society']['accounts']['wren']['cash'] += 1
+        doc['society']['minted'] += 7              # (Doc 79: the sum is no longer minted - sunk; not checked.)
+        self.assertEqual(P.scan(doc, {})[0], [])
+        doc['society']['accounts']['treasury']['cash'] = -1
         self.assertTrue(any(e.startswith('money:') for e in P.scan(doc, {})[0]))
         doc = self.clean()
-        doc['society']['accounts']['bram']['stock'] = {f'g{i}': 1 for i in range(65)}
+        doc['society']['accounts']['treasury']['cash'] = P.MONEY_LIMIT + 1
+        self.assertTrue(any(e.startswith('money:') for e in P.scan(doc, {})[0]))
+        doc = self.clean()
+        doc['society']['accounts']['treasury']['stock'] = {f'g{i}': 1 for i in range(65)}
         self.assertTrue(any(e.startswith('goods:') for e in P.scan(doc, {})[0]))
         doc = self.clean()
-        doc['society']['accounts']['bram']['stock'] = {'meal': 10001}
+        doc['society']['accounts']['treasury']['stock'] = {'meal': 10001}
         self.assertTrue(any(e.startswith('goods:') for e in P.scan(doc, {})[0]))
+        doc = self.clean()
+        del doc['society']['accounts']['treasury']
+        errors, warnings = P.scan(doc, {})
+        self.assertEqual(errors, [], 'restore makes a treasury')
+        self.assertTrue(any('no treasury' in w for w in warnings), warnings)
 
     def test_tables_a_package_may_not_hold(self):
         errors, _ = P.scan(None, {'game.accounts': [], 'live.npcs': []}, allowed_tables=P.allowed_tables())
@@ -464,8 +523,8 @@ def plant(source):
     it (both with enclosures); the wolf's lodging (rent into a landlord's till, its chest let:) and stall (stall:);
     stakes on a table (table:); gifts to the project; storylines; a treaty, a mission and standings; a party with a
     companion; aliases, scenes heard, command and response receipts, a social scene and its audiences, a nickname and
-    a deed; and the bonds, beliefs, apprentice, regard, talk memory, ledger entry and crime of the first version. Every
-    coin planted comes out of the treasury, so the books still balance."""
+    a deed; and the bonds, beliefs, apprentice, regard, talk memory, ledger entry and crime of the first version. (Since
+    doc 79 the books need not balance: the coins planted are simply made.)"""
     doc = source['snapshot']
     society = doc['society']
     accounts = society['accounts']
@@ -475,18 +534,17 @@ def plant(source):
     town = 'ridgemere'
     faction = source['live']['live.factions'][0]['id']
     till = next(k for k in accounts if k.startswith('till:'))
-    planted = {'till': till, 'till_cash': accounts[till]['cash'], 'resident': a, 'resident_cash': accounts[a]['cash']}
+    planted = {'till': till, 'resident': a}
 
     def account(name, coins, stock=None):
         accounts[name] = {'cash': coins, 'stock': dict(stock or {})}
-        accounts['treasury']['cash'] -= coins
 
     account(WOLF, 30, {'meal': 2, 'herbs': 3})
     account('chapter:chapter-1', 10)
     account('contract:k-wolf', 25)                         # Posted by the wolf: goes.
     account('contract:k-res', 15)                          # Posted by a resident, taken by the wolf: stays, open.
-    account(f'letter:doc-wolf@{WOLF}', 12)                 # The wolf's letter's enclosure: to the treasury.
-    account(f'letter:doc-res@{a}', 8)                      # A resident's letter to the wolf: back to its writer.
+    account(f'letter:doc-wolf@{WOLF}', 12)                 # The wolf's letter's enclosure: deleted.
+    account(f'letter:doc-res@{a}', 8)                      # A resident's letter to the wolf: deleted (staged-sourced).
     account('let:lodging-1', 3, {'candle_tallow': 2})      # The wolf's chest at its lodging.
     account('stall:st1', 4, {'herbs': 1})
     account('table:t1', 6)
@@ -675,9 +733,9 @@ class EndToEndTest(unittest.TestCase):
         self.assertIn('contract:k-res', accounts, "a resident's contract keeps its escrow")
         self.assertFalse([k for k in accounts if k.startswith('letter:doc-')])
         resident = self.planting['resident']
-        self.assertEqual(accounts[resident]['cash'], self.planting['resident_cash'] + 8, "the resident's enclosure back")
-        till = self.planting['till']
-        self.assertEqual(accounts[till]['cash'], self.planting['till_cash'], "the landlord's till is left alone")
+        self.assertNotIn(resident, accounts, "a resident's purse is staged: made again at load")
+        self.assertNotIn(self.planting['till'], accounts, 'a till is staged: made again at load')
+        self.assertFalse([k for k in accounts if k != 'treasury' and P.account_kind(k) in ('staged', 'dead', 'real')])
         contracts = [k for k in snapshot['roads']['contracts'] if k['id'] in ('k-wolf', 'k-res')]
         self.assertEqual([(k['id'], k['poster'], k['taker'], k['status'], 'offeredTo' in k) for k in contracts],
                          [('k-res', resident, '', 'open', False)])
@@ -720,6 +778,7 @@ class EndToEndTest(unittest.TestCase):
         self.assertEqual(P.import_package(directory, key, log=logs.append), 'already')
         before = self.stored_save(key)
         self.assertEqual(P.money(before), [])
+        self.assertFalse([k for k in before['society']['accounts'] if P.account_kind(k) == 'real'])
         with W.connect(key, 'owner') as conn:        # (Before the server plays: it writes events and NPC states.)
             for table in ('game.journal', 'game.events', 'game.artwork', 'game.reports', 'game.accounts',
                           'game.characters', 'live.npc_state', 'live.game_changes', 'dm.stories', 'dm.admins',
@@ -732,9 +791,11 @@ class EndToEndTest(unittest.TestCase):
         self.assertNotIn('rejected', log)
         self.assertNotIn('autosave disabled', log)
         after = self.stored_save(key)                 # (Saved again by the server as it stopped.)
-        self.assertEqual(P.money(after), [], 'money conserved after the server played it')
+        self.assertEqual(P.money(after), [], 'within the limits after the server played it')
         society = after['society']
-        self.assertEqual(sum(a['cash'] for a in society['accounts'].values()), society['minted'] - society['sunk'])
+        self.assertIn('treasury', society['accounts'])
+        self.assertTrue([k for k in society['accounts'] if P.account_kind(k) == 'staged' and k != 'treasury'],
+                        'the server made the staged accounts again')
         self.assertEqual(P.scan(after, {})[0], [])
         if planted:
             # The town's site and the granary its project built are still on the ground after the server played it.
@@ -743,7 +804,7 @@ class EndToEndTest(unittest.TestCase):
             self.assertIn('structure-1', {s['id'] for s in after['camps']['structures'] if s['site'] == 'site-1'})
             project = next(p for p in after['people']['projects'] if p['id'] == 'proj-1')
             self.assertEqual((project['site'], project['structure']), ('site-1', 'structure-1'))
-            self.assertIn(self.planting['till'], after['society']['accounts'])
+            self.assertIn(self.planting['till'], after['society']['accounts'], 'its till made again at load')
         return before, log
 
     def test_imported_and_loaded_by_a_real_server(self):

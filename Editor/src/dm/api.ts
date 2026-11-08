@@ -6,7 +6,6 @@ import type {Chronicle} from '../lib/chronicle';
 import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
 import type {ComfortsBody, EconomyChange, EconomyControls, FarmsBody, GoodsBody, LoopSettings, RulesBody, SeasonsBody,
     ServicesBody, StoreSwitches} from '../lib/economy';
-import type {SteerBody} from '../lib/steering';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
 export type Target = string;
@@ -252,9 +251,6 @@ export interface Money {
     towns: Record<string, MoneyTown>; houses: {id: string; cash: number}[]; tills: {count: number; total: number};
     /** Facility funds (fund:...) and the markets outside the city (outside:..., the Wharf's purse: doc 68, 2; doc 73). */
     funds?: {id: string; cash: number}[];
-    /** Beyond the realm (doc 73, 6): the Wharf's book since the world began (pennies in from beyond, out to it, net, its
-     *  fees, the DM's and the rules' moves of the credit) and the trade credit now. */
-    beyond?: {in: number; out: number; net: number; fee: number; moved: number; credit: number};
     /** The carters' yards' tills: what carriage paid them (doc 68, 6). */
     carters?: {id: string; name: string; label: string; cash: number}[];
     residents: {count: number; total: number; median: number | null; poorestTenth: number | null; richestTenth: number | null;
@@ -388,8 +384,6 @@ export const dmApi = {
         setRules: (world: Target, body: RulesBody) => call<EconomyChange>('api/dm/economy/rules', {world, ...body}),
         setServices: (world: Target, body: ServicesBody) => call<EconomyChange>('api/dm/economy/services', {world, ...body}),
         setFarms: (world: Target, body: FarmsBody) => call<EconomyChange>('api/dm/economy/farms', {world, ...body}),
-        /** Steering the economy (doc 74, 10.3): the slider, the on/off and the two floors; audited economy.steer. */
-        setSteer: (world: Target, body: SteerBody) => call<EconomyChange>('api/dm/economy/steer', {world, ...body}),
     },
 };
 

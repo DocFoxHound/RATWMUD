@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {areaOnFrom, areaSwitch, basketRows, bulk, choices, comfortOf, comfortsText, driftLines, farmChange, farmNow, filtered,
+import {areaOnFrom, areaSwitch, basketRows, bulk, choices, comfortOf, comfortsText, farmChange, farmNow, filtered,
     goodsBulk, goodsShown, goodsText, markupOf, percent, percentsOf, percentsText, ruleChange, ruleOf, RULES, ruleValue, scheduleText,
     seasonal, seasonChange, serviceChange, serviceText, serviceValue, switchText, wholeOf, wouldChange, yieldText, type BasketGood,
     type WharfGood, type FarmAreaDefault, type FarmControls, type RuleControls, type SeasonGroup, type StoreBusiness} from './economy.ts';
@@ -48,45 +48,24 @@ test('the comforts: the world\'s own, or city_loop.json\'s', () => {
 
 // The rules and the services (doc 68, Progress, "First fixes"; migration 0058).
 const trim = {id: 'groom_and_trim', name: 'A groom and trim', business: 'barber', price: 1, every: 4};
-const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {almsADay: 12}, services: {},
-    ruleDefaults: {comfortsMost: 200, almsADay: 10, almsNoEarner: 150, treasuryCap: 2000, wageSupport: 100, workBankHours: 0, fairFood: 1, services: 1,
-        servicesCityShare: 30, suppliers: 1, patrons: 1, armourEvery: 120, buyAheadDays: 1, floatDrawDays: 7, floatWagesDays: 7, workshopWagesDays: 2, workshopWageMost: 2,
-        subsidyToNeed: 1, estatePostsDays: 2, estates: 1, landRent: 16, landRentFish: 9, landRentFruit: 4, landRentGrain: 28, landRentSalt: 8, landRentDairy: 32,
-        landRentThin: 0, farmSurplus: 1, shopRot: 1, luxuryShare: 10, luxuryMost: 1, luxuryAbove: 200, luxuryHouses: 40, luxuryHousesMost: 24, luxuryPriceBand: 700, luxuryPriceStep: 50,
-        surplus: 1, surplusKeep: 4000, surplusWorks: 20, surplusAlms: 80, surplusAlmsTo: 40,
-        stockPrices: 1, stockPriceBand: 25, stockPriceStep: 10, shelfFollow: 1, shelfDays: 7, shelfCover: 125, shelfGrow: 25,
-        wageDrift: 1, wageDriftDays: 28, wageDriftSpare: 50, wageDriftMost: 12, wageDriftHandMost: 12, wageDriftFloor: 7, treasuryDrift: 1,
-        treasuryTarget: 5500, treasuryBand: 15, treasuryDays: 182, treasuryJudgeDays: 28, tollStep: 5, tollDriftMost: 1, almsDriftMost: 2,
-        wharfValve: 1, wharfFee: 10, wharfKeepDays: 28, wharfKeepLeast: 20, wharfImportScale: 100, wharfTakeScale: 100, wharfExportMost: 300,
-        wharfCreditMost: 2000, wharfInjectADay: 0, wharfTakeADay: 0, wharfActionMost: 2000,
-        steer: 0, steerLean: 100, neverHungry: 0, neverBroke: 0, steerMeanDays: 56, skimMost: 50, skimKeepDays: 3},
+const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {playerSellMost: 300}, services: {},
+    ruleDefaults: {neverHungry: 0, neverBroke: 0, buyAheadDays: 1, halfLifePerishable: 20, halfLifeKeeping: 50, halfLifeDurable: 80,
+        ripple: 50, depthScale: 100, playerPushMost: 15, playerSellMost: 400, takeAllowance: 50, shelfScale: 100, factionDiscountMost: 30},
     serviceList: [trim]};
 
-test('a rule is the world\'s own or city_loop.json\'s, and a change is sent only when it changes something', () => {
-    assert.deepEqual(RULES.map(r => r.key).sort(), Object.keys(rules.ruleDefaults).sort(), 'every rule of city_loop.json listed');
-    assert.equal(ruleValue(rules, 'almsADay'), 12);
-    assert.equal(ruleValue(rules, 'treasuryCap'), 2000);
-    assert.equal(ruleChange(rules, 'almsADay', 12), null);
-    assert.deepEqual(ruleChange(rules, 'almsADay', 7), {set: {almsADay: 7}});
-    assert.deepEqual(ruleChange(rules, 'almsADay', null), {set: {almsADay: null}}, 'back to city_loop.json\'s');
-    assert.equal(ruleChange(rules, 'treasuryCap', null), null, 'already city_loop.json\'s');
-    assert.equal(ruleChange(rules, 'treasuryCap', 2000), null, 'city_loop.json\'s value typed in: nothing to change');
-    assert.deepEqual(ruleChange(rules, 'fairFood', 0), {set: {fairFood: 0}});
+test('a rule is the world\'s own or the default, and a change is sent only when it changes something', () => {
+    assert.deepEqual(RULES.map(r => r.key).sort(), Object.keys(rules.ruleDefaults).sort(), 'every rule Core has listed');
+    assert.equal(ruleValue(rules, 'playerSellMost'), 300);
+    assert.equal(ruleValue(rules, 'ripple'), 50);
+    assert.equal(ruleChange(rules, 'playerSellMost', 300), null);
+    assert.deepEqual(ruleChange(rules, 'playerSellMost', 250), {set: {playerSellMost: 250}});
+    assert.deepEqual(ruleChange(rules, 'playerSellMost', null), {set: {playerSellMost: null}}, 'back to the default');
+    assert.equal(ruleChange(rules, 'ripple', null), null, 'already the default');
+    assert.equal(ruleChange(rules, 'ripple', 50), null, 'the default typed in: nothing to change');
+    assert.deepEqual(ruleChange(rules, 'neverBroke', 1), {set: {neverBroke: 1}});
     assert.equal(ruleOf('', 1000), null);
     assert.equal(ruleOf('15', 1000), 15);
     assert.equal(ruleOf('1001', 1000), undefined);
-});
-
-test('where the self-correcting rules stand: a line each, nothing before the world has a save', () => {
-    assert.deepEqual(driftLines(undefined), []);
-    assert.deepEqual(driftLines({saved: null, problem: 'The world has no save yet: nothing has drifted.', tollBase: 30, almsBase: 10}), []);
-    const lines = driftLines({saved: '2026-11-01 10:00', problem: '', tollBase: 30, almsBase: 10, toll: 28.5, alms: 11, level: 5612,
-        target: 5000, prices: {on: true, moved: 120, mean: 1.02, low: 0.8, high: 1.25}, shelves: {on: true, wares: 400, mean: 12.5},
-        wages: {on: false, tills: 110, up: 30, down: 5, mean: 0.9, moved: []}});
-    assert.equal(lines.length, 4);
-    assert.match(lines[0], /toll 28\.5% \(the world's 30%\), the alms 11p a head \(10p\): the treasury's level 5612p against its target 5000p/);
-    assert.match(lines[1], /120 wares .* mean 1\.02, from 0\.8 to 1\.25\.$/);
-    assert.match(lines[3], /30 tills up, 5 down of 110, mean 0\.9p a post \(the rule is off\)\.$/);
 });
 
 test('a service: city_loop.json\'s until changed, one of its three at a time', () => {

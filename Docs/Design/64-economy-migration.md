@@ -1,5 +1,8 @@
 # 64. Bringing the model into the game
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 > **Removed (2026-10-30).** On Ridgemere 2.0 every mechanism this document describes was erased from the code, with
 > those of docs 42, 61 and 63 (Docs/Design/66-worlds-atlas-and-dm.md, Phase 5; the user: "erase all economy rules that
 > we have put in place so far"): work by the hours, the books, the worth ladder's pricing, production, costed prices and

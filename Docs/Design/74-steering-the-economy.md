@@ -1,5 +1,8 @@
 # 74. Steering the economy (2026-11-06)
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 The user, 2026-11-06 (verbatim):
 
 > we've spent a long time trying to make the economy stable, I think it's as close as its going to get. We need to use

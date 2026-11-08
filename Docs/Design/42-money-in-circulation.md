@@ -1,5 +1,8 @@
 # 42. Money in circulation: taxes, tithes, wages, work and trade between towns
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 Planned 2026-10-04. It follows doc 35's Part 7 (buyers and contracts for goods) and keeps doc 15's money rules: **no
 money is ever made to keep the economy going.** Coins only move, so the work is keeping them moving: out of the purses
 where they pile up and back to the wolves who spend them. All numbers are *placeholders* for the balance pass.

@@ -1,5 +1,8 @@
 # 68. The Country and the city's loop (2026-10-31)
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 The user, 2026-10-31 (verbatim):
 
 - On the store room (doc 67, 6): "my idea is to use it in place of having farmers and mines and whatnot ahead of us

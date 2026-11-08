@@ -1,5 +1,8 @@
 # 75. The economy controller (2026-11-06)
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 The user, 2026-11-06 (verbatim):
 
 > I want you to expand the plan and take into consideration what we have already tried. Think about what works and what

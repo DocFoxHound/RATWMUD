@@ -1,11 +1,9 @@
 // Money: where the world's money is, as last saved. Each town's treasury, church and buyers; the great houses and the
 // shops' tills; residents' purses by kind of work, the poorest and richest tenth and how many are short of a day's food
-// money; money on the road; and beyond the realm (Docs/Design/73-the-wharf.md, 6): the Wharf's book with the world
-// beyond, and the form that moves its trade credit (the action wharf.credit, audited; money comes in only as goods the
-// beyond buys, and leaves only as goods landed).
+// money; money on the road. (The Wharf's book with the world beyond and its trade credit went with the Wharf's money:
+// Docs/Design/79-a-staged-economy.md, 17.)
 import {useCallback, useEffect, useState} from 'react';
 import {dmApi, type Me, type Money, type Target} from './api';
-import {WharfCredit} from './WharfCredit';
 
 const p = (n: number | null | undefined) => n === null || n === undefined ? '—' : `${Math.round(n).toLocaleString()}p`;
 const title = (id: string) => id.replace(/^(house|stores|town):/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -82,18 +80,6 @@ export function MoneyTab({target}: {target: Target; me?: Me}) {
                     {(data.carters ?? []).map(c => <tr key={c.id}><td title={`${c.label}: what carriage paid the yard (doc 68)`}>Carters: {c.name}</td>
                         <td className="num">{p(c.cash)}</td></tr>)}
                 </tbody></table>
-                {data.beyond && <>
-                    <h3>Beyond the realm</h3>
-                    <table className="dm-table"><tbody>
-                        <tr title="Paid in by the world beyond for the realm's goods (the Wharf's takes, its export basket, carriage, wharfage)"><td>In from beyond</td><td className="num">{p(data.beyond.in)}</td></tr>
-                        <tr title="Paid out to the world beyond for the goods the Wharf landed (less its wharfage)"><td>Out to beyond</td><td className="num">{p(data.beyond.out)}</td></tr>
-                        <tr><td>Net into the realm</td><td className="num">{p(data.beyond.net)}</td></tr>
-                        <tr><td>The Wharf's fees kept</td><td className="num">{p(data.beyond.fee)}</td></tr>
-                        <tr title="What the realm has paid beyond and not had back: the beyond buys only within it"><td>Trade credit now</td><td className="num">{p(data.beyond.credit)}</td></tr>
-                        <tr title="By the DM's actions and the rules wharfInjectADay and wharfTakeADay"><td>Credit moved, all</td><td className="num">{p(data.beyond.moved)}</td></tr>
-                    </tbody></table>
-                    <WharfCredit target={target} onDone={() => void load()} />
-                </>}
             </div>
         </div>}
     </div>;

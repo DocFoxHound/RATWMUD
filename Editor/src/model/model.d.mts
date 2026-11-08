@@ -75,6 +75,7 @@ export interface Economy {
 }
 export const SEASON_DEFAULTS: {comfortsAbove: null; comfortsShare: null; seasons: Record<string, never>};
 export const RULE_DEFAULTS: {rules: Record<string, never>; services: Record<string, never>};
+export const RULES: Record<string, [number, number, number]>;
 export const RULE_LIMITS: Record<string, number>;
 export const STORE_DEFAULTS: {internalStore: boolean; storeMarkup: number; storeResale: boolean; resaleMarkup: number; storeRule: boolean};
 export interface Faction { id: string; name: string; color: string }

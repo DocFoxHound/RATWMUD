@@ -1,5 +1,8 @@
 # 70. The realm: Ridgemere 2.0's map grown into a country (2026-11-01)
 
+> **Parts superseded by doc 79 (2026-11-08):** its economy (Docs/Design/79-a-staged-economy.md, section 21, says
+> which parts). The rest stands.
+
 The user, 2026-11-01 (verbatim):
 
 > The very first thing we need to do is expand the map. This is a big job, but here is what I want:

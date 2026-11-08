@@ -1,20 +1,16 @@
-// The loop's rules and the city's services (Docs/Design/68-the-country-and-the-city-loop.md, Progress, "First fixes";
-// migration 0058): the rules the DM can tune (comforts a day, the alms, the treasury's cap and its wage support, the
-// work bank, fair food, the services' switch and the city's share of them), each the world's own or Data/Items/
-// city_loop.json's; and the city's services (a groom and trim at the barber's, coin changed, a cart hired...), each on or
+// The rules and the city's services (Docs/Design/68-the-country-and-the-city-loop.md, Progress, "First fixes";
+// migration 0058): the rules the DM can tune (since Docs/Design/79-a-staged-economy.md, 17, the clamps and the Market
+// Board's), each the world's own or the default; and the city's services (a groom and trim at the barber's, coin changed, a cart hired...), each on or
 // off with its price and how often a household with money to spare buys it. On Atlas's Economy page and the DM's
 // Economy tab alike.
 import {useEffect, useState} from 'react';
-import {RULES, driftLines, ruleChange, ruleOf, serviceChange, serviceText, serviceValue, wholeOf, type RuleControls,
+import {RULES, ruleChange, ruleOf, serviceChange, serviceText, serviceValue, wholeOf, type RuleControls,
     type RulesBody, type ServiceListed, type ServicesBody} from '../lib/economy';
-import {heldText} from '../lib/steering';
 
 type Typed = Record<string, string>;
 
-export function RulesPanel({data, locked, setRules, setServices, steerOwnReadOnly = false}: {data: RuleControls; locked: boolean;
-    setRules: (body: RulesBody) => void; setServices: (body: ServicesBody) => void;
-    /** The DM's tab (doc 74, 10.4): the steering's own rules shown, read only; they are an author's, in Atlas. */
-    steerOwnReadOnly?: boolean}) {
+export function RulesPanel({data, locked, setRules, setServices}: {data: RuleControls; locked: boolean;
+    setRules: (body: RulesBody) => void; setServices: (body: ServicesBody) => void}) {
     const [typed, setTyped] = useState<Typed>({});
     useEffect(() => {
         const out: Typed = {};
@@ -29,9 +25,9 @@ export function RulesPanel({data, locked, setRules, setServices, steerOwnReadOnl
     if (!data.serviceList || !data.ruleDefaults) return null;
     const off = locked || !data.rulesSupported;
 
-    const commitRule = (key: string, max: number) => {
+    const commitRule = (key: string, max: number, low = 0) => {
         const value = ruleOf(typed[key] ?? '', max);
-        if (value === undefined) { window.alert(`A whole number from 0 to ${max}, or empty for city_loop.json's.`); return; }
+        if (value === undefined || (value !== null && value < low)) { window.alert(`A whole number from ${low} to ${max}, or empty for the default.`); return; }
         const body = ruleChange(data, key, value);
         if (body) setRules(body);
     };
@@ -48,39 +44,20 @@ export function RulesPanel({data, locked, setRules, setServices, steerOwnReadOnl
             onKeyDown={e => e.key === 'Enter' && commit()} />;
 
     return <section className="economy-switches rules-panel">
-        <h3>The loop's rules</h3>
-        <p className="hint">The rules that keep money moving and families fed (doc 68, "First fixes"). Empty: city_loop.json's
-            (shown faintly). The treasury's cap pays the shops' short wages only from what it holds over the cap, after its own
-            posts. Then what it still holds over the cap and its reserve (the surplus) goes out: a share to public works
-            orders from the city's trades, a share to the poorest households up to so much a head (doc 68, "The treasury's
-            surplus"). The self-correcting rules (doc 68, "Self-correcting rules") move a shop's prices with its stock, its
-            shelves with its sales, a till's wages with what it can pay, and the gate toll and the alms with the treasury's level,
-            each gently and within its bounds; where they stand now is below, as the world's last save has it.</p>
+        <h3>The rules</h3>
+        <p className="hint">The staged economy's rules (Docs/Design/79-a-staged-economy.md): the clamps Never Hungry and Never
+            Broke, and how the Market Board's prices move with what players buy and sell. Empty: the default (shown faintly).
+            A rule this world kept from before doc 79 does nothing and is not listed.</p>
         {!data.rulesSupported && <p className="publish-error">{data.rulesProblem}</p>}
-        <div className="drift-now"><b>Where the self-correcting rules stand</b>
-            {data.drift?.saved && <small className="hint"> (saved {data.drift.saved})</small>}
-            {data.drift?.saved
-                ? <><ul>{driftLines(data.drift).map(l => <li key={l}>{l}</li>)}</ul>
-                    {(data.drift.wages?.moved.length ?? 0) > 0 && <details><summary>Tills whose wages have moved</summary>
-                        <ul>{data.drift.wages!.moved.map(w => <li key={w.till}>{w.name}: {w.step > 0 ? '+' : ''}{w.step}p a post</li>)}</ul>
-                    </details>}</>
-                : <p className="hint">{data.drift?.problem || 'Nothing to show yet.'}</p>}</div>
-        {RULES.filter(r => r.steer !== 'setting' && !(steerOwnReadOnly && r.steer === 'own')).map(r => heldText(data.steering, r.key,
-            data.rules[r.key] ?? data.ruleDefaults[r.key]) !== null
-            ? <p key={r.key} className="economy-markup"><b>{r.label}</b>: {heldText(data.steering, r.key, data.rules[r.key] ?? data.ruleDefaults[r.key])}
-                {' '}<small className="hint">(the Steering panel above)</small></p>
-            : r.onOff
+        {RULES.filter(r => r.key in data.ruleDefaults).map(r => r.onOff
             ? <div key={r.key}><label className="toggle-row"><input type="checkbox"
                 checked={(data.rules[r.key] ?? data.ruleDefaults[r.key]) === 1} disabled={off}
                 onChange={e => { const body = ruleChange(data, r.key, e.target.checked ? 1 : 0); if (body) setRules(body); }} />
-                {' '}{r.label}: {r.unit}{data.rules[r.key] === undefined ? ' (city_loop.json\'s)' : ''}</label>
-                {data.rules[r.key] !== undefined && <button disabled={off} onClick={() => setRules({set: {[r.key]: null}})}>As city_loop.json</button>}</div>
+                {' '}{r.label}: {r.unit}{data.rules[r.key] === undefined ? ' (the default)' : ''}</label>
+                {data.rules[r.key] !== undefined && <button disabled={off} onClick={() => setRules({set: {[r.key]: null}})}>As the default</button>}</div>
             : <label key={r.key} className="economy-markup">{r.label}
-                {field(r.key, 8, r.label, () => commitRule(r.key, r.max), String(data.ruleDefaults[r.key] ?? ''))}
+                {field(r.key, 8, r.label, () => commitRule(r.key, r.max, r.low), String(data.ruleDefaults[r.key] ?? ''))}
                 <small>{r.unit}</small></label>)}
-        {steerOwnReadOnly && <details><summary>The steering's own rules (read only: an author sets them in Atlas)</summary>
-            <ul>{RULES.filter(r => r.steer === 'own').map(r => <li key={r.key}>{r.label}: {data.rules[r.key] ?? data.ruleDefaults[r.key]} {r.unit}</li>)}</ul>
-        </details>}
         <h3>The city's services</h3>
         <p className="hint">Things the barber, the moneychanger, the pawnbroker, the stables, the shipwright and the builders'
             yard do for a household, bought only from money it has to spare (its comforts budget, before comforts), about once

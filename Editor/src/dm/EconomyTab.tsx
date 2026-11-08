@@ -13,8 +13,6 @@ import {WharfPanel} from '../studio/WharfPanel';
 import {FarmsPanel} from '../studio/FarmsPanel';
 import {RulesPanel} from '../studio/RulesPanel';
 import {SeasonsPanel} from '../studio/SeasonsPanel';
-import {SteeringPanel} from './SteeringPanel';
-import type {SteerBody} from '../lib/steering';
 
 export function EconomyTab({me, target}: {me: Me; target: Target}) {
     const [data, setData] = useState<EconomyControls | null>(null);
@@ -49,7 +47,6 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
     const setRules = (body: RulesBody) => void change(() => dmApi.economy.setRules(target, body));
     const setServices = (body: ServicesBody) => void change(() => dmApi.economy.setServices(target, body));
     const setFarms = (body: FarmsBody) => void change(() => dmApi.economy.setFarms(target, body));
-    const setSteer = (body: SteerBody) => void change(() => dmApi.economy.setSteer(target, body));
     const commitMarkup = (key: 'storeMarkup' | 'resaleMarkup') => {
         if (!data) return;
         const value = markupOf(markups[key]);
@@ -72,7 +69,6 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
             {!canChange && <p className="hint">Your account ({me.role}) can look; changing these needs a dm or admin account.</p>}
             {said && <p className="publish-done">{said}</p>}
             {problem && <p className="publish-error">{problem}</p>}
-            {data.steering && <SteeringPanel view={data.steering} locked={locked || !data.rulesSupported} setSteer={setSteer} />}
             <section className="economy-switches">
                 <h3>The store room</h3>
                 {!data.supported && <p className="publish-error">{data.problem}</p>}
@@ -99,7 +95,7 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
             </section>
             <WharfPanel data={data} locked={locked} setLoop={setLoop} setGoods={setGoods} />
             <SeasonsPanel data={data} locked={locked} setSeasons={setSeasons} setComforts={setComforts} />
-            <RulesPanel data={data} locked={locked} setRules={setRules} setServices={setServices} steerOwnReadOnly />
+            <RulesPanel data={data} locked={locked} setRules={setRules} setServices={setServices} />
             <FarmsPanel data={data} locked={locked} setFarms={setFarms} />
         </div>
     </div>;

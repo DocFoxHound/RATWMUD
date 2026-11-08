@@ -1,5 +1,8 @@
 # 63. A stable economy: research (2026-10-14)
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 The user, 2026-10-14: despite the tools built for it (docs 42, 46, 61), the economy has never settled on its own; it
 runs only with ham-fisted intervention. Design a legitimate economy plan. Start with research: what we have, how games
 have managed lifelike economies without inflation, and what would make a closed economy reach equilibrium by itself.

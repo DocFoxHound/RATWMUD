@@ -34,7 +34,7 @@ def fixture(now):
             'characters': actors,
             'accounts': [{'id': 'treasury', 'cash': 1000, 'stock': {'herbs': 100, 'meal': 50}}] +
                         [{key: actor[key] for key in ('id', 'cash', 'stock')} for actor in actors],
-            'economy': {'minted': 1060, 'sunk': 0, 'ledger': []}}
+            'economy': {'minted': 1060, 'sunk': 0, 'ledger': []}}     # (minted and sunk: a pre-79 Director's, read past.)
 
 
 # The Storykeeper keeps its state in PostgreSQL: every test gets an empty dm schema in a scratch database.

@@ -3251,7 +3251,7 @@ def _components(codes, heights, seams=None):
 # ---------------------------------------------------------------------------------------------------------------
 # The checks (doc 67, section 8 A, Acceptance) and the report
 # ---------------------------------------------------------------------------------------------------------------
-def checks(p, world, city, plan, labels, walk, capacity=None, classes=None):
+def checks(p, world, city, plan, labels, walk, classes=None):
     """Every acceptance check of section 8 A: [(requirement, name, ok, detail)]."""
     from . import ridgemere2_people as pp
     out = []
@@ -3500,17 +3500,10 @@ def checks(p, world, city, plan, labels, walk, capacity=None, classes=None):
     ev = Counter(plan[x['id']].get('eveningPlace') for x in placed)
     over = {k: v for k, v in ev.items() if k != 'home' and v > 40}
     check('', 'no evening place takes more than 40', not over, f'{dict(ev)}')
-    # -- the food rebalance (doc 67, Progress): the capacity estimate of what the placed residents buy a day --
-    if capacity is not None:
-        cap = capacity['after']
-        f = cap['food']
-        rows = ', '.join(f'{b} {k}+{h}/{d:.1f}' for b, _, k, h, d in cap['rows'][:11])
-        check('R35', "the food trades' keepers and hands within 25% of the food they sell a day (keeper-days of their "
-              'own crafts, tools/city_capacity.py), and no food trade below half of its own', cap['ok'],
-              f'{f["staffed"]} staffed for {f["demand"]:.1f} keeper-days ({f["ratio"]:.0%}); below half: '
-              f'{f["short"] or "none"}; keepers+hands/demand: {rows}')
-        check('', 'the Carters\' Yard has its keeper and drivers', cap['businesses'].get('carters') == 1 and
-              sum(1 for x in placed if x['workLabel'] == 'driving for the carters') == pp.CARTERS)
+    # -- the carters (doc 67, Progress, "Food rebalance"; the capacity estimate went with the city's loop, doc 79, 17) --
+    carters = sum(1 for x in placed if x['role'] == 'merchant' and pp.business_for(x['workLabel']) == 'carters')
+    check('', 'the Carters\' Yard has its keeper and drivers', carters == 1 and
+          sum(1 for x in placed if x['workLabel'] == 'driving for the carters') == pp.CARTERS, f'{carters} keepers')
     # -- the jobs by class (doc 67, Progress): each household's earners in work of its quarter's class --
     if classes is not None:
         c_ = classes['after']
@@ -3752,46 +3745,10 @@ def make_all(project, seed=SEED, report=print):
     labels = pp.render_labels(plan, placement.people, names, {x['id']: x['workLabel'] for x in current['people']})
     final = compose(current, world, city, plan, labels, {x['id']: x for x in base['people']}, names)
     walk = area_graph_reachable(final, placed_rooms={room['id'] for r in city.records for room in r['rooms']})
-    capacity = {'before': food_capacity(current), 'after': food_capacity(final)}
     classes = pp.class_report(placement, plan, labels)
-    result = checks(final, world, city, plan, labels, walk, capacity, classes)
+    result = checks(final, world, city, plan, labels, walk, classes)
     return {'base': base, 'world': world, 'city': city, 'placement': placement, 'plan': plan, 'labels': labels,
-            'project': final, 'walk': walk, 'checks': result, 'capacity': capacity, 'classes': classes}
-
-
-def buildings_by_stairs(project):
-    """{interior: its building} (the interiors joined by stairs, named by the first of them)."""
-    adj = defaultdict(set)
-    for l in project['links']:
-        if l['kind'] == 'stairs':
-            adj[l['a']['cell']].add(l['b']['cell'])
-            adj[l['b']['cell']].add(l['a']['cell'])
-    out = {}
-    for r in sorted(adj):
-        if r in out:
-            continue
-        group, todo = set(), [r]
-        while todo:
-            x = todo.pop()
-            if x not in group:
-                group.add(x)
-                todo += adj[x]
-        for x in group:
-            out[x] = min(group)
-    return out
-
-
-def food_capacity(project):
-    """The capacity estimate (tools/city_capacity.py) for a project's placed people: what they buy a day as keeper-days
-    of each trade, the trades' keepers and hands, and the food check's figures."""
-    import city_capacity as cc
-    folk, keepers, hands = cc.from_project(project, buildings_by_stairs(project))
-    est = cc.estimate(folk, keepers)
-    ok, food = cc.food_balance(est, keepers + hands)
-    rows = cc.trade_rows(est, keepers, hands, cc.FOOD_TRADES + cc.HOUSEHOLD_TRADES)
-    return {'ok': ok, 'food': food, 'rows': rows, 'businesses': dict(keepers),
-            'foodBusinesses': sum(keepers.get(b, 0) for b in cc.FOOD_TRADES),
-            'householdBusinesses': sum(keepers.get(b, 0) for b in cc.HOUSEHOLD_TRADES)}
+            'project': final, 'walk': walk, 'checks': result, 'classes': classes}
 
 
 def write_outputs(m, folder=ART, images=True):
@@ -3900,8 +3857,7 @@ def report_data(m):
         'stables': [x['id'] for x in placed if pp.producer_for(x['workLabel']) == 'stock_breeding'],
         'sump': sump,
         'checks': m['checks'],
-        'capacity': {**m['capacity'], 'textFixes': dict(getattr(city, 'text_fixes', {})),
-                     'textFixed': getattr(city, 'text_fixed', [])},
+        'capacity': {'textFixes': dict(getattr(city, 'text_fixes', {})), 'textFixed': getattr(city, 'text_fixed', [])},
         'classes': m.get('classes'),
         'issues': m['placement'].issues[:50],
         'notes': ['The store room is not used by any NPC yet: lane B builds its restocking rule behind a switch that is '
@@ -3964,18 +3920,7 @@ def report_text(rep):
     lines.append('')
     cap = rep.get('capacity')
     if cap:
-        b, a = cap['before'], cap['after']
-        lines.append('The trades against what the placed residents buy a day (tools/city_capacity.py; keeper-days: the '
-                     'hours of each trade\'s own last step over 8), before and after this write:')
-        lines.append(f'  {"trade":12} {"businesses":>17} {"keepers":>13} {"hands":>11} {"keeper-days":>15}')
-        for (t, bb, bk, bh, bd), (_, ab, ak, ah, ad) in zip(b['rows'], a['rows']):
-            lines.append(f'  {t:12} {bb:8} -> {ab:<5} {bk:6} -> {ak:<4} {bh:4} -> {ah:<4} {bd:6.1f} -> {ad:<5.1f}')
-        for k, v in (('before', b), ('after', a)):
-            f = v['food']
-            lines.append(f'  {k}: food {v["foodBusinesses"]} businesses, {f["staffed"]} keepers and hands for '
-                         f'{f["demand"]:.1f} keeper-days ({f["ratio"]:.0%}), below half: {f["short"] or "none"}; '
-                         f'household goods {v["householdBusinesses"]} businesses')
-        lines.append(f'  People\'s text written again: {cap.get("textFixes", {})}')
+        lines.append(f'People\'s text written again: {cap.get("textFixes", {})}')
         lines.append('')
     cl = rep.get('classes')
     if cl:
