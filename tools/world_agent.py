@@ -455,10 +455,14 @@ class Agent:
         reply = reply or {}
         if code != 200 or reply.get('ok') is not True:
             what = reply.get('code') if isinstance(reply.get('code'), str) else f'HTTP {code}'
-            error = reply.get('error') if isinstance(reply.get('error'), str) else ''
+            error = reply.get('error').strip().rstrip('.') if isinstance(reply.get('error'), str) else ''
+            # (A hint of its own only where central's reason doesn't already say it: its bad_token reasons end
+            # "Make a new one on the Host page.")
             hint = {'bad_token': ' Make a new token on the Host page.',
                     'delisted': ' Central has taken this world off its list.',
                     'banned': ' The host account is banned.'}.get(what, '')
+            if error and (what != 'bad_token' or 'Host page' in error):
+                hint = ''
             self.say(('refused', what), f'central refused the heartbeat ({what}){": " + error if error else ""}.{hint}')
             if what in ('bad_token', 'delisted', 'banned') and (self.dir / 'host.json').exists():
                 self.write_host(None)           # (A revoked token, a delisted world or a banned host: no host powers.)

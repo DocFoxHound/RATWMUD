@@ -58,12 +58,22 @@ services:
     network_mode: host
     entrypoint: ["python3", "/opt/ratw/tools/world_upnp.py", "hold", "--port", "${RATW_PORT:-7788}",
                  "--settings", "/etc/ratw-upnp/world.toml"]
-    # Root only to read world.toml if the host made it private to them (chmod 600); no other power.
+    # Root only to read world.toml if the host made it private to them (chmod 600): DAC_OVERRIDE, which is in
+    # Docker's own default set, and nothing else. (Not DAC_READ_SEARCH: that would let open_by_handle_at reach any
+    # file on the host's filesystem from this process, which parses what any device on the network sends it.)
+    user: "0:0"
     cap_drop: [ALL]
-    cap_add: [DAC_READ_SEARCH]
+    cap_add: [DAC_OVERRIDE]
     security_opt: ["no-new-privileges:true"]
     volumes:
-      - ./world.toml:/etc/ratw-upnp/world.toml:ro
+      # world.toml alone. If it is missing (or saved as world.toml.txt), `docker compose up` stops with "bind source
+      # path does not exist: .../world.toml" instead of making an empty folder of that name here.
+      - type: bind
+        source: ./world.toml
+        target: /etc/ratw-upnp/world.toml
+        read_only: true
+        bind:
+          create_host_path: false
     # On a stop it removes the router's mapping (a few seconds at most).
     stop_grace_period: 20s
   db:

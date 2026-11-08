@@ -2,9 +2,13 @@
 
 Your own world of Ridgemere, on your own computer, listed on the game's world list.
 
-**The full guide is `Docs/Hosting.md`**, in the game's repository: what you need, every
-setting, the router's port, carrier-grade NAT, AI voices, updates, backups, the host's commands, your duties, and a
-table of what each error means. This page is the short version.
+**The full guide is `Hosting.md`**, beside this file (the game's team sends it with the package; in the game's
+repository it is `Docs/Hosting.md`): what you need, every setting, the router's port, carrier-grade NAT, AI voices,
+updates, backups, the host's commands, your duties, and a table of what each error means. This page is the short
+version.
+
+During the closed beta the game's team sends you this folder, the world image as a file (say `ratw-world.tar`), and
+central's address.
 
 ## What you need
 
@@ -18,15 +22,20 @@ table of what each error means. This page is the short version.
 
 ## Start
 
-1. Unpack this folder anywhere. Open a terminal in it.
-2. Edit `world.toml`: the world's name, description, region and tags, and its **id**. Leave central's `url` as it
-   is. An AI key is optional, and costs you money (the guide, section 10).
+1. Unpack this folder anywhere. Open a terminal in it. Load the world image (put its file here first):
+
+       docker load -i ratw-world.tar
+
+2. Edit `world.toml`: the world's name, description, region and tags, and its **id**. Central's `url` holds an
+   example address (`https://central.example.org`), which isn't a real central: put in the address the game's team
+   gave you. An AI key is optional, and costs you money (the guide, section 10).
 3. Make a file called `.env` beside `compose.yaml`, holding the token:
 
        RATW_HOST_TOKEN=rh_...
 
-   (On Windows, save it as "All files", or Notepad calls it `.env.txt`.) Keep it secret. If it leaks, choose **NEW
-   TOKEN** on the Host page.
+   (On Windows, save it as "All files", or Notepad calls it `.env.txt`; the same for any file you make here.) Keep it
+   secret. If it leaks, choose **NEW TOKEN** on the Host page, put the new one in `.env`, and type
+   `docker compose up -d`.
 4. Start it:
 
        docker compose up -d
@@ -35,7 +44,7 @@ table of what each error means. This page is the short version.
    listening and the world agent says `listed on central at ...`, players can see it.
 
 If something in `world.toml` is wrong, the log says what (a line starting `RATW_PACKAGE error:`), and the world doesn't
-start until it is put right. Then `docker compose up -d` again.
+start until it is put right. Then `docker compose restart world upnp`.
 
 ## The port
 
@@ -49,24 +58,28 @@ Under Docker Desktop or rootless Docker, forward the port by hand.
 
 If the log says `This world's address (IP) is not on the internet.`, or UPnP says the router's address is in
 `100.64.0.0/10`, your connection is behind carrier-grade NAT, and no port can be opened at home. Ask your provider for
-a public IPv4 address, or run the world on a rented server (the guide, section 9).
+a public IPv4 address, run the world on a rented server, or use a tunnel with port forwarding (the guide, section 9).
 
 ## Every day
 
 - Stop: `docker compose stop` (the world saves first, and leaves the list). Start again: `docker compose start`.
-- After editing `world.toml`: `docker compose restart world`.
+- After editing `world.toml` (or a token or key file it names): `docker compose restart world upnp`. After editing
+  `.env`: `docker compose up -d` (a restart doesn't read `.env` again).
 - Logs: `docker compose logs world`. The NPC Mind's and the agent's: `docker compose exec world ls logs`.
 - The host's commands in the game: press the ` key for the host's console, then `/help` (`/kick`, `/ban`,
   `/silence`, `/pending` and the rest). They need the host token: central tells the world who its host is.
 
 ## Update
 
-    docker compose pull
+Load the new image file from the game's team, then start the world on it:
+
+    docker load -i ratw-world.tar
     docker compose up -d
 
-Your world is kept, with everything that has happened in it. A new package's world is only for new worlds. A world
-whose game version is too old drops off the list, so update when a new version comes out. (Until the world image is
-published, `pull` can't fetch it: the guide says what to do.)
+(Once the image is published, `docker compose pull` then `docker compose up -d`.) Your world is kept, with everything
+that has happened in it. A new package's world is only for new worlds. A world on an older game version stays on the
+list, but players with a newer client see "This world is older than your client: its host needs to update it" and
+can't join, so update when a new version comes out.
 
 ## Backups
 
@@ -75,7 +88,7 @@ passwords to a file while the world is stopped, and to put them back.
 
 ## Settings beside compose.yaml (`.env`)
 
-- `RATW_PORT`: the port (default 7788). It is the same inside the container and out.
+- `RATW_PORT`: the port (default 7788), a number from 1 to 65535. It is the same inside the container and out.
 - `RATW_HOST_TOKEN`: the host token (or a file of its own, named by `token_file` in `world.toml`).
 - `RATW_IMAGE`: the world image, if you were given another one.
 - `COMPOSE_PROJECT_NAME`: only for a second world on this computer (below).

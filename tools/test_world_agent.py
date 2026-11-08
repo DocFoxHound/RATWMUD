@@ -291,6 +291,26 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(len(self.fake.calls('/worlds/heartbeat')), posted, 'no heartbeat without the world')
         self.assertIn('does not answer', self.lines[-1])
 
+    def test_centrals_own_reason_is_not_doubled(self):
+        """Central's bad_token reasons already end "Make a new one on the Host page.": no second hint, no '..'."""
+        own = ('Central does not know this host token (it was revoked, replaced or never made). Make a new one on '
+               'the Host page.')
+        self.fake.routes[('POST', '/worlds/heartbeat')] = lambda body, headers: (
+            401, {'ok': False, 'code': 'bad_token', 'error': own}, {})
+        a = self.make()
+        a.heartbeat()
+        self.assertEqual(self.lines[-1], f'world agent: central refused the heartbeat (bad_token): {own}')
+        self.fake.routes[('POST', '/worlds/heartbeat')] = lambda body, headers: (
+            403, {'ok': False, 'code': 'banned', 'error': "This world's host account is banned."}, {})
+        a.heartbeat()
+        self.assertEqual(self.lines[-1], "world agent: central refused the heartbeat (banned): This world's host "
+                                         'account is banned.')
+        self.fake.routes[('POST', '/worlds/heartbeat')] = lambda body, headers: (
+            403, {'ok': False, 'code': 'delisted'}, {})
+        a.heartbeat()
+        self.assertEqual(self.lines[-1], 'world agent: central refused the heartbeat (delisted). Central has taken '
+                                         'this world off its list.')
+
     def test_the_heartbeat_never_follows_a_redirect(self):
         self.fake.routes[('POST', '/worlds/heartbeat')] = lambda body, headers: (
             303, {"ok": False}, {"Location": self.fake.url + "/elsewhere"})

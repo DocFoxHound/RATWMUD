@@ -1,5 +1,5 @@
 # Your world's settings (Docs/Design/77, section 8). Edit this file, then `docker compose up -d` (README.md).
-# Read once, when the world starts: after a change, `docker compose restart world`.
+# Read once, when the world starts: after a change, `docker compose restart world upnp` (both read it).
 
 [world]
 # The world's name on the server list and in the game: at most 48 bytes (a plain letter is one, an accented one two).
@@ -22,7 +22,8 @@ id = ""
 
 [central]
 # Central, where players' accounts and wolves live and the server list is kept. Needed: every world signs its players
-# in through central (private and LAN worlds come later).
+# in through central (private and LAN worlds come later). During the closed beta this is an example address, not a
+# real central: put in the address the game's team gives you with the package.
 url = "https://central.example.org"
 # The host token, from central's Host page (it starts rh_). Either put it in a .env file beside compose.yaml as
 #   RATW_HOST_TOKEN=rh_...

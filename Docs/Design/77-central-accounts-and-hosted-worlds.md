@@ -1438,6 +1438,28 @@ fixed (3 fixers, an independent checker each with one repair round, then one int
 - **Not done yet:** the hosting guide's full version and the UPnP attempt; the Windows PC with Docker Desktop (the
   user's); publishing the image to a registry (the README's pull step waits on it); a measured memory limit.
 
+**2026-11-08: Phase 5 finished: the hosting guide and the UPnP attempt** (two builders, four independent checkers: 39
+problems, a fixer, a final verify that followed the guide end to end on this laptop against a real local central).
+- **`Docs/Hosting.md`**, the full guide for a host on Windows (Docker Desktop) or Linux; `Package/README.md` is the
+  short how-to that points to it. Measured on the way: a new world's database is about 342 MB; the images about 310 MB
+  plus Postgres's 650 MB on disk; a backup about 107 MB.
+- **`tools/world_upnp.py`** (standard library): one attempt (search, the router's description, its internet address,
+  an existing forward, the mapping), a one-hour lease renewed every 30 minutes, removed on a clean stop; only private
+  gateways on this machine's own network, the description at the reply's own address, no redirects or proxies, tight
+  time and size caps, no DOCTYPE or entities; a forward it doesn't own is never touched; carrier-grade NAT is named
+  in the log. **UPnP can't work from inside a container** here (rootless Docker), on Docker Desktop, or on rootful
+  Docker's bridge, so the bundle runs it from a small `upnp` service on the host's network (no secrets, capabilities
+  dropped); it works on Linux with Docker Engine. On Windows the guide has the host forward the port by hand. A
+  discovery-only probe from this laptop: the home router answers and its address is public (no mapping was made).
+- **Left:** no tool yet builds the host's folder and `docker save`s the image for sending (the guide says the game's
+  team sends both); the guide's port-in-use row lacks rootless Docker's wording when an ordinary program holds the
+  port; under Docker Desktop every player may share one address, so the world's per-address `/status` limit can
+  refuse central's call-back (a server change, noted in the guide); the Windows PC run with Docker Desktop (the
+  user's).
+- Note: commit `a0b5178` ("The Windows workflow…") swept in part of the UPnP builder's unfinished changes to
+  `tools/world_agent.py` and `Package/` by mistake (`commit -a` while the builder worked); this entry's commit holds
+  the finished versions.
+
 ## Review (2026-11-07)
 
 One adversarial review of the first draft, checked against the code at 0af9bc0. No database was queried and nothing
