@@ -333,6 +333,16 @@ void thePlacement()
     }
     expect(keepers == 39 && hands == 93, "39 keepers and 93 hands placed (doc 72's works' 8 and 17 among them): " +
                                               std::to_string(keepers) + ", " + std::to_string(hands));
+    // The crews by community, as a market's catchment counts them (doc 79, 7.3): every post, each its farm's community.
+    {
+        int crews = 0;
+        for (const auto& [community, n] : s.farmCrews())
+        {
+            expect(community == "ridgemere" || items::farmPeople().community(community), "a crew's community: " + community);
+            crews += n;
+        }
+        expect(crews >= keepers + hands, "every keeper's and hand's post in a crew: " + std::to_string(crews));
+    }
     // Where they live: a farmhouse its keeper's family's alone; hands in their farm's community (or the city's homes), at
     // most six to a home.
     const auto& people = items::farmPeople();

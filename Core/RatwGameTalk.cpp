@@ -874,6 +874,14 @@ void Game::loadVoices()
         if (!rules.count(id))
             talk_.setCharacter(id, "", problem);
     npcVoice_ = std::move(voices);
+    {
+        // The keepers' quarters for the Market Board's district factor (doc 79, 7.1: the Heights' luxuries dearer).
+        std::map<std::string, std::string> quarters;
+        for (const auto& [who, v] : npcVoice_)
+            if (!v.quarter.empty())
+                quarters[who] = v.quarter;
+        world_.society().setQuarters(std::move(quarters));
+    }
     voiceLayers_ = std::move(layers);
     voiceRules_ = std::move(rules);
     // Figures (decision 8).

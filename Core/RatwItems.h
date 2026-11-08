@@ -8,6 +8,7 @@
 #include <functional>
 #include <map>
 #include <set>
+#include <filesystem>
 #include <string>
 #include <utility>
 #include <vector>
@@ -49,6 +50,7 @@ struct Item
     int nourish = 0;                                // Food: how much it feeds (a meal 50); 0 for anything not eaten.
     double keeps = 0;                               // Food: the days it keeps before it spoils (items.json; 0: it keeps).
     bool drink = false;                             // Drunk rather than eaten (ale, cider): not for hunger.
+    std::vector<std::string> source;                // items.json `source`: where it comes from ("field", "hunting", "import"...).
     // Weapons and armour (doc 47): 1 Basic, 2 Professional, 3 Exceptional (0: none). Not a quality: a bronze sword is
     // Basic however well made.
     int tier = 0;
@@ -304,8 +306,26 @@ inline constexpr RuleInfo Rules[] = {
     // The staged economy (Docs/Design/79-a-staged-economy.md, Phase 0): on, the city's loop, the steering, the Wharf's
     // money and the farms' money are off; residents are fed by class and their purses and the treasuries set nightly.
     {"staged", 0, 1, 0},
+    // The Market Board (doc 79, Phase 1; 12's "pressure settings"), read only while staged: a good's half-life in tenths of
+    // a game day (perishable food, keeping food, the rest); the ripple's share a step (percent); the depth's scale
+    // (percent); the most one account holder pushes a good's pressure (hundredths); the most shops pay one holder a day
+    // (pennies); the take allowance's share of the depth (percent); the shelves' scale (percent); and the faction
+    // discount's cap per Chapter a week (pennies).
+    {"halfLifePerishable", 5, 300, 20},
+    {"halfLifeKeeping", 5, 300, 50},
+    {"halfLifeDurable", 5, 300, 80},
+    {"ripple", 0, 70, 50},
+    {"depthScale", 10, 1000, 100},
+    {"playerPushMost", 0, 50, 15},
+    {"playerSellMost", 0, 5000, 400},
+    {"takeAllowance", 5, 100, 50},
+    {"shelfScale", 10, 1000, 100},
+    {"factionDiscountMost", 0, 1000, 30},
 };
 const RuleInfo* ruleInfo(const std::string& name);
+// Data/Items as the catalogue reads it (RATW_DATA_DIR, the working directory or above, the source tree): its parent's
+// Economy holds market.json (doc 79).
+std::filesystem::path dataDirectory();
 // A rule's name now for one it had before (doc 73: countryPostsDays is estatePostsDays), else the name as given: a world's
 // rule records, the data file and the tools read the old name as the new.
 std::string ruleName(const std::string& name);

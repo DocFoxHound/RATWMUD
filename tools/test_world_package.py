@@ -246,6 +246,25 @@ class StripTest(unittest.TestCase):
         self.assertEqual(positions['job:smith']['vacantSince'], 4)
         self.assertEqual(positions['job:smith']['lastHolder'], 'bram')
 
+    def test_the_market_boards_holders_are_never_packaged(self):
+        # Doc 79, 5.2 and 13: `pushed`, the day's net and sell totals are keyed by account usernames (no player pattern),
+        # so the strip drops them whole; a shipped world starts at normal prices (the pressure reset, the budgets left
+        # dropped); the cause words of `recent` stay.
+        doc = save()
+        doc['society']['board'] = {
+            'slider': 10, 'cell': {'ridgemere': {'bread': {'P': 0.1, 'touched': 3, 'cause': 'players'}}},
+            'budgetLeft': {'till:baker': 12},
+            'pushed': {'ridgemere': {'ashley': {'bread': {'amount': 0.1, 'touched': 3}}}},
+            'netToday': {'ridgemere': {'bread': {'ashley': -12}}}, 'soldToday': {'ashley': 30},
+            'discountWeek': {'chapter-1': 12}, 'recent': [{'day': 3, 'delta': 0.1, 'market': 'ridgemere', 'good': 'bread', 'cause': 'players'}]}
+        P.strip(doc)
+        board = doc['society']['board']
+        for gone in ('pushed', 'netToday', 'soldToday', 'discountWeek', 'budgetLeft'):
+            self.assertNotIn(gone, board)
+        self.assertEqual(board['cell'], {})
+        self.assertEqual(len(board['recent']), 1)
+        self.assertNotIn('ashley', json.dumps(board))
+
     def test_ledger_keeps_order_without_players(self):
         self.assertEqual([e['sequence'] for e in self.doc['society']['ledger']], [4])
 

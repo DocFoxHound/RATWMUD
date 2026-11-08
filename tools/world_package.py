@@ -577,6 +577,18 @@ def strip_society(doc, key, st):
     st.count(key, len(ledger) - len(society['ledger']))
     if isinstance(society.get('careers'), dict):
         strip_careers(society['careers'], st, key)
+    # The Market Board (doc 79, 5.2 and 13): a shipped world starts at normal prices, so its pressure is reset
+    # (`cell` emptied) and the shops' budgets left today dropped (a new world's dawn sets them whole); its per-holder
+    # records (pushed, the day's net and sell totals, keyed by account usernames the player pattern can't see) and the
+    # Chapters' weekly discounts are never packaged. `recent` keeps only cause words, never names.
+    board = society.get('board')
+    if isinstance(board, dict):
+        if board.get('cell'):
+            st.count(key)
+        board['cell'] = {}
+        for k in ('pushed', 'netToday', 'soldToday', 'discountWeek', 'budgetLeft'):
+            if board.pop(k, None):
+                st.count(key)
     for k in list(society):
         if k not in ('accounts', 'ledger', 'careers') and isinstance(society[k], (list, dict)):
             society[k] = prune(society[k], st, key)

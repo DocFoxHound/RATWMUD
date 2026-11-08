@@ -2299,7 +2299,7 @@ export class GameState {
                 this.showToast('That offer is no longer available. Check the current stock and purses.');
                 return;
             }
-            this.send({type: 'trade', target: str(obj(this.snapshot, 'merchant'), 'id'), item: h.target, quantity: 1, buy});
+            this.send({type: 'trade', target: str(obj(this.snapshot, 'merchant'), 'id'), item: h.target, quantity: this.tradeCount(h.target, buy), buy});
         } else if (a === 'eat' || a === 'gather') {
             if ((a === 'eat' && this.inventoryQuantity('meal') <= 0) || (a === 'gather' && !this.canGather())) {
                 this.showToast(a === 'eat' ? 'You have no prepared meal to eat.' : 'Approach a visible herb patch with bundles remaining.');
@@ -2446,15 +2446,45 @@ export class GameState {
         return item ? wholeCount(item, 'quantity', 0) : 0;
     }
 
+    /** Whether the keeper's list is the staged economy's (doc 79, 7.1): lots, budgets and trend markers. */
+    stagedTrade(): boolean {
+        return explicitTrue(obj(this.snapshot, 'merchant'), 'staged');
+    }
+
     tradeItem(id: string): Json | null {
-        if (id !== 'herbs' && id !== 'meal') return null;
+        // The staged list deals in every ware it names; the old one in herbs and meals only.
+        if (!this.stagedTrade() && id !== 'herbs' && id !== 'meal') return null;
         const merchant = obj(this.snapshot, 'merchant');
         if (!str(merchant, 'id')) return null;
         return objects(merchant, 'items').find(i => str(i, 'id') === id) ?? null;
     }
 
+    /** How many a buy or sell button trades: the staged list's lot (a dozen, the smallest sell lot), else one. */
+    tradeCount(id: string, buy: boolean): number {
+        const item = this.tradeItem(id);
+        if (!this.stagedTrade()) return 1;
+        const n = wholeCount(item, buy ? 'buyCount' : 'sellLot', 0, 99);
+        return n >= 1 ? n : 0;
+    }
+
+    /** Why a buy or sell button is off, in the keeper's words as the server gave them (doc 79, 7.5: "I've no room for
+     *  more today.", "I've spent all I'll spend today.", "Not worth the counting. I buy those by the half-dozen."). */
+    tradeReason(id: string, buy: boolean): string {
+        const item = this.tradeItem(id);
+        const key = this.stagedTrade() ? (buy ? 'buyLotReason' : 'sellLotReason') : (buy ? 'buyReason' : 'sellReason');
+        return str(item, key, 'This offer is currently unavailable.').slice(0, 102);
+    }
+
     canTradeItem(id: string, buy: boolean): boolean {
         const item = this.tradeItem(id), merchant = obj(this.snapshot, 'merchant');
+        if (this.stagedTrade()) {
+            // The lot's price, not a piece's (a single loaf of a 1p good is worth nothing sold): the shop's budget is
+            // the server's to judge (the till is topped up), the buyer's purse the client's to check.
+            const count = this.tradeCount(id, buy), price = wholeCount(item, buy ? 'buyLotPrice' : 'sellLotPrice');
+            return !!item && count >= 1 && explicitTrue(item, buy ? 'canBuyLot' : 'canSellLot') && price > 0 &&
+                wholeCount(item, buy ? 'stock' : 'owned') >= count &&
+                (!buy || wholeCount(obj(this.snapshot, 'self'), 'cash') >= price);
+        }
         const price = wholeCount(item, buy ? 'buyPrice' : 'sellPrice');
         return !!item && explicitTrue(item, buy ? 'canBuy' : 'canSell') && price > 0 &&
             wholeCount(item, buy ? 'stock' : 'owned') > 0 && wholeCount(buy ? obj(this.snapshot, 'self') : merchant, 'cash') >= price;

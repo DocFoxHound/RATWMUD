@@ -739,7 +739,12 @@ class World
     bool canWalkBetween(const std::string& from, const std::string& to) const { return from == to || cachedSteps(from).count(to) > 0; }
     Result advanceCalendar(double days); // Explicit developer/test jump, never a client-authorized normal action.
     Result useSeasonalWeather(const std::string& cellId);
-    Result trade(const std::string& player, const std::string& merchant, const std::string& item, int quantity, bool buy);
+    // `holder`: the player's account holder (doc 79: the Market Board's per-holder caps; empty, the player).
+    Result trade(const std::string& player, const std::string& merchant, const std::string& item, int quantity, bool buy,
+                 const std::string& holder = {});
+    // The markets for the Market Board (doc 79, 5.1; RatwMarket.cpp): found while staged, again after a load or when the
+    // roster moves, and handed to the society.
+    void ensureTradePoints();
     Result gather(const std::string& player);
     // Hunting and foraging (Docs/Design/41-hunting-and-foraging.md; RatwHunt.cpp). Out in the wild a wolf may forage
     // the ground beside it, or set out to hunt: a fight in an arena whose other side is animals, found by the ground
@@ -1650,6 +1655,8 @@ class World
     std::uint64_t agesOf_ = 0;
     std::unordered_set<std::string> following_;     // Residents keeping up with something that moves, this pass.
     bool townsReady_ = false;
+    bool tradePointsReady_ = false;                 // (ensureTradePoints: doc 79, Phase 1.)
+    std::uint64_t tradePointsRevision_ = 0;
     // Home storage (Docs/Design/36-home-storage.md): every household's stores opened and stocked once (homesReady_),
     // and where each home's stand, placed when its interior is first in memory.
     bool homesReady_ = false;

@@ -527,6 +527,9 @@ Catalog build()
         good.nourish = int(i.object("food").number("nourish", 0));
         good.drink = i.object("food").number("drink", 0) > 0;
         good.keeps = std::max(0.0, i.number("keeps", 0));
+        for (const auto& from : i.array("source"))
+            if (!from.asString({}).empty())
+                good.source.push_back(from.asString({}));
         good.tier = tierOf(i.string("tier"));
         if (const auto r = rungs.find(i.object("worth").string("rung")); r != rungs.end())
         {
@@ -1307,6 +1310,11 @@ std::string FarmPeople::placeName(const FarmPlace& farm) const
 std::string ruleName(const std::string& name)
 {
     return name == "countryPostsDays" ? "estatePostsDays" : name;
+}
+
+std::filesystem::path dataDirectory()
+{
+    return itemsDir();
 }
 
 const RuleInfo* ruleInfo(const std::string& name)

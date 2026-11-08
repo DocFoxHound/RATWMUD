@@ -121,7 +121,11 @@ RULE_LIMITS = {'comfortsMost': 100000, 'almsADay': 1000, 'almsNoEarner': 300, 't
                'skimKeepDays': 28,
                # The staged economy (Docs/Design/79-a-staged-economy.md, Phase 0): test-only until Phases 1-2 (doc 79, 19);
                # no migration.
-               'staged': 1}
+               'staged': 1,
+               # The Market Board (Docs/Design/79-a-staged-economy.md, Phase 1): read only while staged; no migration.
+               'halfLifePerishable': 300, 'halfLifeKeeping': 300, 'halfLifeDurable': 300, 'ripple': 70, 'depthScale': 1000,
+               'playerPushMost': 50, 'playerSellMost': 5000, 'takeAllowance': 100, 'shelfScale': 1000,
+               'factionDiscountMost': 1000}
 RULE_SWITCHES = ('fairFood', 'services', 'suppliers', 'patrons', 'subsidyToNeed', 'surplus', 'stockPrices', 'shelfFollow',
                  'wageDrift', 'treasuryDrift', 'wharfValve', 'steer', 'neverHungry', 'neverBroke', 'staged')   # 0 or 1: off or on.
 # Steering the economy (doc 74): the DM's settings, set only through the Steering panel (/api/economy/steer), and the

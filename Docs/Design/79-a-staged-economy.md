@@ -587,6 +587,7 @@ For good g (base good b = `items::baseOf(g)`) at a shop in market m:
 factor(m, b) = clamp( season(b, m, day) × region(m, b) × district(shop, b) × times(m, b) × exp(P[m][b]),  0.80, 1.28 )
 buy lot      = round( Σ over the q pieces of  catalog(g) × factor(P stepped up a piece at a time) ), at least 1p
                (at a stall: × 0.9 and rounded down, at least 1p)
+               never under ceil( catalog(g) × 0.80 × 0.9 × q ), the clamp floor's stall price (Phase 1, the repair)
 sell lot     = floor( Σ over the q pieces of  catalog(g) × factor(P stepped down a piece at a time) × 0.55 )
                then capped by the backstop (7.6); a lot worth 0p is refused
 ```
@@ -612,7 +613,11 @@ for that lot now. For every other good it shows one piece. The client gets each 
 `listCount` (1 or 12) and `sellLot`, the smallest quantity whose sell lot is worth at least 1p ("I buy ore by the
 half-dozen"). The client's `canTradeItem` (`state.ts:2456-2460`) tests the lot's price, not the unit price, and
 allows a 0 unit price. A single 1p loaf still costs 1p; a dozen is where the move shows. Buying single loaves can save
-a player a penny or two on a dozen; it is a quirk, not a pump, because it only shrinks a sink.
+a player a penny or two on a dozen; it is a quirk, not a pump, because it only shrinks a sink. (Without the floor
+above it was a pump at a stall: rounded down, a 2p good bought singly cost 1p a piece, under the clamp, and sold on as
+a lot for more. With the floor, q pieces bought in any lots cost at least 0.72 × catalogue × q, and a lot of q sells
+for at most floor(0.704 × catalogue × q): a penny lost at least, whatever the moment or the place. I3's backstop is
+the cheapest of every split of q into lots.)
 
 **The trend marker.** Each row gets ▲ or ▼ when its shown price differs by at least 1p from the price at P = 0, with
 the cause word on hover ("travellers buying", "the wagon's late"). The footer reads "Prices follow what's bought and
