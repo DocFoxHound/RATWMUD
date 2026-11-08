@@ -1,0 +1,1919 @@
+# 79. A staged economy: an RPG economy that looks live (2026-11-08)
+
+Drafted 2026-11-08 and revised the same day after four reviews (the Review section at the end lists what changed).
+**Plan only.** No code was changed, nothing was built or run, no server was started and no database was touched. The
+code is `ridgemere2` at c8ac05c. Line numbers come from seven read-only code maps and from the reviews' checks the same
+day. Other sessions are working in `.claude/worktrees/`, so line numbers will drift.
+
+How this draft was made: seven code maps (the money core, production and trade, NPC behaviour, prices and players,
+steering and the DM, sims and tests, the dependents of conservation), a pass over how other games fake an economy,
+three competing designs and three judges. The judges picked the "believability first" design as the spine and grafted
+on the rules that stop exploits, the rules that keep a host's edits from breaking anything, and the cheapest
+mechanics. Four reviews then checked it: one against the code, one for exploits and saves, one for believability (a
+week as a player in Ridgemere and Coldwater), and one for scope and hours.
+
+Words used the same way throughout:
+- **staged:** worked out to look right, not kept to add up. NPC purses, shop tills, the treasuries, shop shelves,
+  caravans, ships and farm output are all staged.
+- **real:** player money, and the escrow that holds player money. It is the only money that has to add up.
+- **the slider:** the DM's one economy control, renamed **prosperity**: −100 (hard times) to +100 (boom), 0 for
+  ordinary times.
+- **a band:** an NPC household's economic status: destitute, poor, comfortable or rich (section 6).
+- **class:** upper, middle or lower, from the household's posts (`classOf`, `Core/RatwCareers.cpp:460-517`). It
+  already exists. It stays as a second axis beside the band.
+- **a market:** a trade point with merchants: the city, and each community with a merchant post (section 5.1). It is
+  not a town: law, the Watch and the town treasuries stay as they are. In code it is `TradePoint`, because `Markets`
+  (`RatwSociety.h:106`) and `items::cityLoop().markets` already exist.
+- **the Board:** one small saved table per world: for each market and good, its pressure; for each market, its
+  Times; for each farm area, its harvest; and the few commitments players can see (section 5.2).
+- **pressure (P):** a number per market and good that player trade and visible events push up or down, and that
+  decays back to 0. Prices, shelves, talk and caravans read it.
+- **Times:** a market's mood: hard, lean, ordinary, good or boom.
+- **an account holder:** the central account behind a character (from the ticket, doc 77), or the login in password
+  mode, or the character when neither exists. Every per-player cap counts per account holder.
+- **a faucet:** any move of coins or goods from the staged side to a player. **A sink:** any move from a player to
+  the staged side.
+- **shown price:** the price the client lists. For a good under 3p it is the price of a dozen (section 7.1).
+
+Standing rules, kept:
+- Births match deaths, one for one. NPCs are never generated. Empty posts are filled from the city, then from the
+  unplaced NPCs of the Country (memory `births-match-deaths`).
+- Every job keeps its apprenticeships (memory `living-npc-roadmap`).
+- Characters are male or female only.
+- Never the word for the domestic animal in anything players read (wolves; pups for young).
+- NPCs talk through Tracery dialects and salience (doc 62) and through the NPC Mind. The Mind bills the real model;
+  its tests stay offline.
+- DM-tweakable rules, robust to a host's edits in the DM tool and Atlas (doc 78).
+- The perf gate is `world_check --players 20`.
+- Ask before simulations and paid model runs. Nothing writes PROD.
+- No data migrations: migrations change schema only.
+
+## Headline
+
+- **The conserving economy goes.** The city loop, the steering and controller, farm money, the Wharf's money valve,
+  the store room, minting, `minted`/`sunk` and the conservation gates at restore all come out: about 7,800 lines of
+  Core, about 8,200 lines of economy tests, about 1,400 lines of `world_check`, about 10,600 lines of tools and about
+  2,300 lines of DM and Editor screens. Farm staffing, the farm list and the fast-sim flags stay.
+- **Players keep a real economy.** They buy, sell, earn, rent, pay fees and rob each other with real pennies. Player
+  purses and the escrow that holds player money are the only money that has to add up. The 260 `conserved()` asserts
+  become `realBalanced()` asserts, so tests still catch a penny made from nothing. The DM gets a daily report of
+  player money made against money sunk.
+- **The world's side is staged and elastic.** NPC purses, tills and treasuries stay as accounts, so the existing
+  `shift(` call sites (about 165 in 31 Core files) keep working. Each night they move toward a target set by the
+  slider and the NPC's band, and they never need to add up. A theft, a gift or a festival prize still shows for a few
+  days. A staged payer is topped up when it has to pay a player, so rewards and sales always pay, within caps.
+- **Every NPC household gets a band:** destitute, poor, comfortable or rich, the four `wealth` words the talk library
+  already uses (about 480 lines test `wealth` and keep working). Bands are given **by rank**: households are scored
+  (class, home, earners, a bounded family fortune, district, recent events, the market's Times) and cut into bands
+  by the slider's shares. Some households are always richer and some always poorer, at every slider position and on
+  a world of any size. Destitute needs a reason (no earner, a lost post, a death, no home).
+- **The band drives behaviour:** the food a household gets each day and how often it goes short (hunger stays real,
+  and it follows the bakery's shelf); its purse; what it buys; how many turn to theft; who begs; how they talk; and
+  the NPC Mind's one-line "Means" note.
+- **Prices follow players.** A Market Board keeps a pressure for each market and good. Players buying bread push its
+  price up, and the dozen price on the list shows it. A player dumping iron ore pushes ore down at once, and the next
+  morning the smiths' bars and nails a little ("working the new ore"). The next wagon out carries some of the glut to
+  the next market, and that market hears of it. Every piece is priced at the pressure after the pieces before it, so
+  a bulk buy or a dump pays its own price impact.
+- **Trade looks live.** Wagons driven by real carters run on committed, posted schedules between real markets; farm
+  carts come in from staffed farms every morning; ships call at the Wharf where there is one. Imported goods refill
+  only when a wagon or ship brings them, so a late wagon shows as thin shelves. Staged events (a House wedding, a fire
+  at a works, blight) give a quiet world something to talk about. Bandits, bounties, escorts and courier carts come
+  back to life in Ridgemere 2.0, where the road layer has been off since doc 66.
+- **Every change has a cause a player can find.** A slider move comes with a reason in the world (a war levy, a
+  silver strike). A DM override posts a notice. Talk names a price move only when the shown price really moved.
+- **No setting can open a money loop.** Rules inside `quote` hold whatever the DM sets: a bought lot of at least 1p;
+  sold lots rounded down; no profit from buying and selling back in one shop; one bound on how far the whole price
+  factor can differ between places and seasons; qualities moving together; and a backstop: a sold lot never pays
+  more than 0.95 × the cheapest lot of it anywhere. Every faucet has a cap per account holder. A rule can make prices
+  silly; it can never make them a pump.
+- **Lenient on read, strict on write.** Restore, authoring and the world package never refuse a world over economy
+  data. Unknown ids are dropped with a warning, unknown items in players' hands go to a quarantine list, missing
+  accounts are made at their target, out-of-range values are clamped. The world package's coins-add-up check goes.
+- **The DM's levers shrink to a handful:** the prosperity slider (with its cause), Never Hungry and Never Broke as
+  plain clamps, the seasons, harvest overrides, a Times nudge per market, a band override per household, the
+  pressure settings, the faucet caps, ships a week, caravans and staged events, and "reset prices". Everything else
+  is cut (section 12).
+- **It should be cheaper.** The hourly household shopping (4.2% of instructions in doc 69, before farms and the
+  Wharf were added), the store-room restocking and the 18:00 money spike go. What comes in is a few hundred numbers a
+  day. The perf gate gains two windows, 17-19 and 23-25, beside 6-8.
+- **The client changes a little:** each ware gains a list count, a smallest sell lot and a trend marker, and the
+  keeper's purse line becomes "BUYING TODAY".
+- **Size:** about 158-221 plan hours, about 73-101 expected, in three slices, with two reviews at face value. Slice
+  1 (the loop off first, then the Board, bands and the cut) is about 66-90 plan, 33-45 expected. The first check-in
+  with the user is Phase 0's list of what breaks when the loop is switched off.
+
+## 1. The user's direction (verbatim)
+
+The user, 2026-11-08 (verbatim excerpts):
+
+> overhaul the entire economy again because I do NOT think it's going to work very well for players that launch and
+> make their own servers/worlds. Our economy is finely tuned to work in a nearly lifelike way, and I think we just
+> need to SIMULATE an economy working...
+
+> pretty much undo all of the real economy stuff and just make a roleplay-game-like 'economy' that LOOKS like it's
+> working live... imports/exports through the port (if there is a port) and trades between towns and outlying farms
+> and areas is all simulated to look like its happening, complete with caravans and trade between towns and whatnot.
+
+> The Economy slider will influence NPC simulated wealth, to include how many turn to theft, how many are going
+> hungry, and how they talk about their economic statuses. Everything about their hunger and buying habits should be
+> gauged by the slider. That said, portions of the population should always be richer or poorer than the rest. I
+> think what we need to introduce is an economic status categorization for the NPC's so that their behavior can be
+> determined better...
+
+> throw away all of our delicate economy work in favor of an RPG-style economy that LOOKS and ACTS real but is very
+> much fake and automatically tuned by the slider.
+
+The user's answers the same day:
+- Players still buy, sell, craft and earn. What is simulated is the players' effect on the economy, verbatim: "if
+  there's a lot of players in an area buying bread then bread should increase in price. If another player dumps a
+  lot of iron ore into the economy there should be a ripple effect of how that changes things. But it should all be
+  simulated."
+- NPC prices still react (to that).
+- The DM's economy levers, verbatim: "I don't know if they'll even be needed anymore". This doc proposes keep,
+  change or cut for each (section 12).
+- The world package's coins-add-up check goes away.
+
+What that means here:
+- The aim is **believability**, not balance. Nothing is tuned by long runs. Behaviour is pinned by small seeded tests
+  that run in seconds (section 16), and the look is judged by the user on a scratch server in a boxed last phase.
+- Players' money stays real, because players can feel a fake purse. Everything players only see or hear is staged.
+- A host's world must work after any edit: a deleted Wharf, a town without merchants, a family moved, a rule set to
+  nonsense. There is no invariant left for an edit to break, except that player money adds up.
+- A small hosted world, with one to five players, must still look alive. Player trade alone won't move a city, so
+  wagons, harvests, ships and staged events carry the motion.
+
+## 2. What the plan rests on (today's code)
+
+Prices and trade:
+- `Society::quote` (`Core/RatwSociety.cpp:425-475`) makes every price a player sees: the shop list
+  (`Core/RatwGame.cpp:4100-4140`), the keeper's trade answer and `Society::trade` (:476-492). Its formula is
+  catalogue × `shopFactor` × share, with share 1 to buy, 0.9 at a market stall (the lot rounded down) and
+  `SellBackShare` 0.55 to sell (the lot rounded to the nearest penny). **Both lots are at least 1p a piece**
+  (:451-456).
+- The shop list shows `lot(1)`, the price of one piece (`RatwGame.cpp:4130-4133`). A 1p piece at any factor up to
+  1.28 shows 1p, so a 1p good's listed price never moves today.
+- A shop's buying is capped by what it holds (40 of a supplied or bought good, 4 of a wearable or sword, 24 meals, 20
+  herbs) and by its till's cash ("The trader cannot afford that purchase", :466-468).
+- `Society::transfer` refuses any price under 1p a piece (`price < 1`, :387). `Society::trade` splits a lot into
+  `each = total / quantity` plus the odd pennies (:483-485). So a sold lot worth less than 1p a piece can't execute
+  today.
+- The client turns off Buy or Sell when the unit price is 0 and compares the unit price with cash: `canTradeItem`
+  (`Client/src/game/state.ts:2456-2460`).
+- **58 catalogue goods cost 1p**, among them bread, wheat and iron ore. Salt, herbs, flour, fish and timber cost 2p,
+  nails 3p, hides 5p, iron bars 9p (`Data/Items/items.json`).
+- **No shop buys iron ore from players today.** `crafts.json` `buys` (:239-253) lists 12 kinds of shop that buy
+  gathered and hunted goods, and ore is in none of them. `general` buys stone, clay and sand, not timber (:243). The
+  ironworks and foundry already buy `iron_bar`, because a maker deals in what it makes.
+- `Game::afterFactionTrade` (`Core/RatwGameFactions.cpp:467-492`) pays a trusted Chapter 15% back, and a sworn one
+  25%, from the merchant's purse after the sale. Today the merchant's real cash limits it.
+- Season price ranges in `city_loop.json`: fruit runs 80-140 (×1.75), grain 85-115 (×1.35).
+
+Money and saves:
+- `Society::restore` (`RatwSociety.cpp:973-1121`) refuses a save when cash doesn't equal `minted − sunk` (:1037);
+  when an account names an unknown resident (:1030); when a resident's role changed (:1039-1048); when the resident
+  count differs from the authored roster (:1070-1074); and when a ledger entry is dated after `budgetDay` (:1064). An
+  authored-roster restore already drops departed residents' accounts into the treasury and mints newcomers' purses
+  (:986-1016).
+- `budgetDay` is the society's day clock, not economy state. `decide` rolls the day with it: herb patch regrowth,
+  `wagesToday` and `needsBodies` (:560-577). Ledger entries carry it (:344), and `World` refuses a save whose
+  society day is in the future (`RatwWorld.cpp:6388`).
+- `readSociety` (`RatwWire.cpp:1294-1372`) requires exactly 12 top-level fields: `enabled`, `minted`, `sunk`,
+  `nextEntry`, `budgetDay`, `exportsRemaining`, `importsRemaining`, `herbPatch`, `decisionRemainder`, `accounts`,
+  `residents` and `ledger` (:1304-1331). `careers` and `loop` are optional; five old fields are read past.
+- Town treasuries are `stores:<community>` accounts: `Society::treasuryOf` returns one when it exists and falls back
+  to `treasury` (:1200-1206). Festivals (purse and feast meal, `RatwFestivals.cpp:218, 607`), projects, letters,
+  boards, camps and stalls use them (14 files). The DM's money view reads them (`tools/dungeon_master.py:1011`), and
+  `recoverHoard` pays into `town->store` (`RatwRoads.cpp:1093`). A second `treasuryOf` in
+  `RatwGameEstates.cpp:18` returns `chapter:<id>`: a Chapter's treasury, real player money.
+- `facilityAccount` (`RatwCareers.cpp:153`) knows 22 prefixes: `stores:`, `caravan:`, `bandits:`, `contract:`,
+  `ground:`, `chapter:`, `home:`, `town:`, `house:`, `till:`, `fund:`, `bank:`, `letter:`, `let:`, `stall:`,
+  `table:`, `fest:`, `project:`, `outside:`, `farm:`, `crew:`, `estate:`.
+- `bandits:<camp>` holds real player coin, taken in `beaten` and `payBandits` (`RatwRoads.cpp:1442-1446,
+  1550-1552`), mixed with caravan coin (:711-713). `clearCamp` pays it all to the player who breaks the camp
+  (:1474-1480).
+- The welcome is taken from the treasury's cash (`RatwSociety.cpp:368-382`). Festival purses clamp to the treasury's
+  cash (`RatwFestivals.cpp:216`).
+- `Society::create` writes a ledger entry and a journal entry (`RatwSociety.cpp:531, 341-349`). Each journal entry
+  becomes a WorldEvent "economy" (`RatwWorld.cpp:3466-3479`), which `bondsFromEvent` reads (:2991-3032) and which
+  marks open promises between the two as kept (:3010-3018). The Mind's `describe_event` turns a 0-coin "economy"
+  event into "X gave Y N item" (`tools/npc_mind.py:609-613`).
+- 260 `conserved()` calls in 37 files (a grep over `Tests`, `Core` and `tools`).
+
+Careers and farms:
+- `postClass` (`RatwCareers.cpp:420-458`) starts from `payOf` (`RatwCityLoop.cpp:115-169`) and reads the keeper
+  words from `city_loop.json` `wages` (:446). Delete the city loop naively and class goes, and succession by class
+  stops filling posts empty for 8 days.
+- `staffFarms` (`Core/RatwFarmPeople.cpp:125`) loops over `farms_` and skips any farm whose `farm:` till or `crew:`
+  account is missing or whose area is off (:323-330). `farms_`, `farmWorkplace_` and the area switch come from
+  `buildFarms` and `refreshAreas` (`Core/RatwFarms.cpp:26-128`). `farmOfPost` (`RatwFarmPeople.cpp:58`) reads
+  `farms_`, and both `payOf` (`RatwCityLoop.cpp:124`) and `postClass` (`RatwCareers.cpp:428-432`) call it.
+- `items::producerFor` sets a post's skill level (`RatwCareers.cpp:542`), the head's learning rate
+  (`RatwResidents.cpp:764`), work-place reservations (:791) and players' farm activities (`RatwTogether.cpp:493, 522,
+  574`). Only the store room's call goes.
+- Arrivals' purses come from `WharfFund` in `RatwCareers.cpp:387-396, 414-416` and `RatwFarmPeople.cpp:527`.
+
+The roads:
+- `sendCaravan` (`RatwRoads.cpp:826`) has no callers. All 7 communities in `Data/Economy/communities.json` are
+  `"town": false`, so `setupTowns` (:112-258) finds one settlement and `tendRoads` returns at once (:453), before
+  `absorbJournal` and `roadsDaily`. So caravans, bandit camps, bounties, escorts, NPC contract-taking
+  (`residentsTakeWork`) and NPC courier letters (:1101-1128) are all off in Ridgemere 2.0.
+- `towns_` is also law (`lawTown`, `RatwCrime.cpp:80-89`) and is read in 9 other files.
+- Community sizes (homes plus flats): Coldwater 14, Larkfield 11, Frosthollow 9, Southmeadow, Fenshore and Oakhaven
+  6, Saltwell 4. Ridgemere has about 600 households.
+
+NPC life and talk:
+- The talk facts (`Data/Talk/facts.json`): `wealth` is destitute, poor, comfortable or rich (:12); `business` is
+  thriving, steady, failing or none (:16); `on_dole` yes or no (:14); `topic.item` only herbs or meal (:97).
+  `RatwGameTalk.cpp:115-162` works `wealth` out from days of food in the household, scanning every resident for each
+  speaker. `on_dole` is hard-coded "no" and `business` "none" (:139).
+- `robbed` already exists (theft in the last 3 days, `RatwGameTalk.cpp:175-181`), and so does `wealth_days` (:129),
+  which goes with `foodDays`. `errand=goods` comes from the tasks "fetching goods" and "delivering goods" (:211-212);
+  "shopping for the household" maps to `working=yes` (:184-186).
+- `households()` (`RatwCityLoop.cpp:890-921`) leaves out residents with an empty `homeCell`, so the homeless are in
+  no household today. Unplaced NPCs are not residents.
+- A resident needs `NourishADay` (`RatwSociety.h:828`) a day. Hunger grows .0035 a game second
+  (`RatwResidents.cpp:421`); an NPC eats from its wallet at hunger 60 (:510-516, :804-818). Today the only food in a
+  wallet is what the city loop's household shopping buys.
+- `steal()` (`RatwCrime.cpp:286-357`) takes from the victim's own purse: a maker-marked prize 1 time in 4, then coins
+  (1-5p), then a meal, then herbs (:310-338). `chooseMarks` (:743-776) picks a merchant whose till holds meals, but
+  the theft still lands on the keeper's purse. Its 40% gate (`roll(id,7)%10>=4`, :753) is fixed per NPC, not daily.
+- Residents join staked tables when their purse is at least 30p and at least 20× the stake
+  (`RatwGameTables.cpp:342-357`).
+- Talk counts, by a plain grep of `Data/Talk`: about 480 lines test `wealth`, about 108 test `business`, 16 mention
+  `price_cause`, about 18 `on_dole`, about 190 `prices`, and 11 caravan rules have nothing to feed them.
+
+Sims, hosts and data:
+- `--fast` is `--unseen-step 30 --straight --coarse-ticks` (`Tests/world_check.cpp:41, 1802`). `unseenStep_` is the
+  game's own offstage step (`RatwSociety.h:674-678, 1479`), and `sim_fast_tests.cpp:261-265` calls
+  `Society::setUnseenStep`. These stay.
+- `city_loop.json` holds `seasons`, `services`, `wharf`, `shelves` (`startingStock`, `RatwSociety.cpp:1684-1691`,
+  which `shelfOf` calls), `wages`, `luxuries`, `food`, `houseBusinesses` (`RatwItems.cpp:802`), `patrons`, `estates`
+  and `markets`.
+- `houses.json` and `specialties.json` no longer exist; b431ab1 deleted them.
+- Doc 78 makes `Data/` read-only in a hosted world's image (doc 78 :1463). Host edits live in the database.
+- The perf gate's window (`--simulate 6 8`) misses shop hours, the 18:00 pay step and the day's turn.
+
+## 3. The believability contract
+
+The player never sees a ledger. They see what a shop has and charges; who is in the street and what they are doing;
+what comes and goes on the roads and at the pier; what NPCs say; what the notice boards say; and whether all of that
+agrees. Each row is something a player can see or hear, what makes it, and what it must agree with. **These rows are
+the acceptance list for every phase.**
+
+| # | The player sees or hears | Made by | Must agree with |
+|---|---|---|---|
+| T1 | Bread costs more in Ridgemere after a crowd of players bought it: "12 for 13p" becomes "12 for 15p", with ▲ | Board `P[ridgemere][bread]` → `quote`, shown per dozen | the keeper's "bread's dear"; `world.bread_price=up` only once the shown price moved |
+| T2 | A shop sold out of bread by noon, or a thin shelf | the shelf target, refilled at opening | the client's stock count; the poor it serves go short that day |
+| T3 | Selling 30 iron ore at a smithy pays less per piece, then levels; "no room for more today" past the allowance | the per-piece ladder; the per-holder cap; the take allowance | next morning bars and nails a little cheaper, the smith "working the new ore"; the next wagon out carries ore; the next market hears of it |
+| T4 | A wagon driven by a named carter leaves the Ridgemere gate with a guard and arrives at a community's market | a committed, posted departure (the `road:<id>` wagon), its driver a real carter away from his post | the notice board listed it; the destination's shelves of its cargo refill on arrival; "Tam's on the Coldwater run" |
+| T5 | A caravan was raided: a bounty notice, bandit talk, the carter back robbed or hurt, salt dear where it was going | the existing raid path, plus a Board nudge at the raid | the price rises at the raid, never before; the salt is at the camp for whoever clears it |
+| T6 | Ship day at Grayrock: the Wharf's posts busy "unloading", the timetable on the board, imports cheaper after | a committed ship timetable | `world.ships`; the imports' P falls when the ship docks |
+| T7 | Hungry beggars by the chapel steps in hard times, almost none in a boom | the band mix × slider; the begging task | `wealth=destitute`, `hungry=yes`, the Mind's "Means" |
+| T8 | Petty theft at a food stall, more in hard times, never a crime wave | an expected theft count per market, capped | `world.crime`; the Watch's pursuit, unchanged |
+| T9 | A merchant says business is thriving or failing | the `business` fact from sales against the shelf, P on their wares and Times | their prices and stock; never "can't complain" in the same breath |
+| T10 | The rich buy luxuries and the poor complain of prices, at any slider position | band floors | the existing `wealth` lines; village rich boast of land and mills, not Houses |
+| T11 | A good or bad harvest in an area: farm carts heavy or light, grain cheap or dear | the area's harvest each season | `world.harvest`, cart loads, the staples' P |
+| T12 | Farm, works and Wharf people at their posts, apprentices learning | Careers, unchanged | succession; births one for one with deaths |
+| T13 | A staged event with its notice: a House wedding buying up wine, a fire at a works | the staged events layer | the notice or crier; the price move; talk |
+| T14 | An imported good goes thin between wagons, then refills when one comes in | regional restock | the timetable; "the wagon's due"; the price |
+| T15 | A beggar a player helped doesn't beg the next day, and thanks them later | the lifted state | `pair.owed` lines |
+| T16 | A slider move has a cause people talk about: a war levy, a silver strike | the slider's cause | `world.times_cause`, a crier, the Mind's Means |
+| T17 | The price an NPC names is the price on the list | talk reads the shown price | the client's list |
+
+**The timing rule:** every Board change caused by a visible event lands at the moment a player could see it (the
+wagon loads or arrives, the ship docks, the raid happens, the smith works the ore), never on a hidden pass. **Every
+ripple between markets has a visible cause:** there is no silent leak along the roads.
+
+**The standing-still rule:** in a cell a player occupies, or the next one, nothing visible changes without a visible
+actor. Stock doesn't tick down in an empty shop; a staged sale needs a buyer in the room.
+
+## 4. The shape
+
+```
+   the slider + its cause (smoothed)           player trade (buy / sell at a till)
+             │                                            │
+    ┌────────┼──────────────────┐                         ▼
+    ▼        ▼                  ▼                ┌──────────────────┐
+ band     Times per market   harvest per area ──▶│  The Market Board │◀── caravans, carts, ships,
+ shares      │  (no player      │                │  P[market][good] │    staged events (all visible)
+    │        │   pressure)      │                └────────┬─────────┘
+    ▼        │                  │                         │
+ households ranked ◀            │       ┌─────────────────┼─────────────────────┐
+ and cut into bands             │       ▼                 ▼                     ▼
+    │                           │   quote (prices,    shelf targets,       talk facts, notices,
+    ▼                           │   ladder, caps)     regional restock     the Prosperity tab
+ food (from the shelf), purse,  └──────────────────────────────────────────▶ wagon and cart loads
+ theft, begging, talk, Means
+```
+
+Four small staged systems, all reading the slider:
+1. **Bands** for households (section 6).
+2. **The Board** of pressures, Times and harvests (sections 5 and 7).
+3. **Staged trade:** committed schedules of visible caravans, carts and ships (section 8).
+4. **Staged events and causes** (sections 8.4 and 8.5).
+
+Under them, the account layer stays: player purses and escrow are real; NPC accounts are elastic (section 9).
+
+## 5. Markets and the Board
+
+### 5.1 Markets, split from towns
+
+Today the road layer needs two or more towns, and Ridgemere 2.0 has one. Instead:
+- **A market is a trade point,** separate from a town (law, the Watch). A `TradePoint` list sits next to `towns_`.
+  It is found at every load from merchants' work cells, by the "thickest merchants" rule at `RatwRoads.cpp:57-103`,
+  with a smaller minimum.
+- **A market's id is always its community id** (`townIdOf`, `RatwAmbient.cpp:89-95`); Ridgemere's is `ridgemere`.
+  Every community with a merchant post is a market, while it stays `plain` for law. Ridgemere is one market (D6).
+- **A merchant outside every community** belongs to its nearest market by path, or, with no path, to one "outside"
+  market with the depth floor.
+- **Endpoints that are not markets:**
+  - each staffed farm or works place (the 31 farm places and 11 works in `communities.json`, matched to
+    `farm_people.json` posts);
+  - the port: any place whose posts carry the Wharf job words (today Grayrock's 58 posts).
+- **The road layer moves to markets; law doesn't.** `Contract`, `Caravan` and `BanditCamp` keep their `town`
+  fields, now holding market ids. The road-layer uses of `towns_` and `townOfCell_` move to the market list: camps'
+  wild cells, `roadRoutes_`, bounty patrols' guards, `believe` and the courier letters' two ends. `lawTown` and the
+  other law uses stay on `towns_`, so communities never become law towns. Phase 4 lists each use by grep first.
+- **Routes:** for each market, the 3 nearest other markets by path on roads and farm tracks, plus each farm, works
+  and port endpoint to its nearest market. Pairs with no path are left out quietly. Routes are found at load and not
+  saved.
+
+**Host edits.** Markets, endpoints and routes are found again at each load. Delete the Wharf and there are no ships.
+Delete every farm and there are no carts. One market means no wagons between markets, but farm carts still come. A
+market with no route at all refills its imports each morning (section 7.7). Nothing refuses to load. This answers
+doc 73's open question 5 (wagons on the road).
+
+### 5.2 The Board (saved; small and sparse)
+
+```
+struct Board {
+  int slider;                                    // the smoothed prosperity, -100..100
+  Cause sliderCause;                             // its words, from the DM or a seeded list (8.5)
+  map<market, Times> times;                      // hard / lean / ordinary / good / boom, plus a DM nudge and expiry
+  map<market, map<baseGood, Cell>> cell;         // only non-zero entries
+  map<area, Harvest> harvest;                    // this season: poor / fair / good, plus a DM override and expiry
+  map<till, int> budgetLeft;                     // the shop's buying budget left today
+  map<till, map<baseGood, int>> takenToday;      // the take allowance, reset at dawn
+  map<market, map<holder, map<baseGood, Push>>> pushed;  // per account holder, decaying like P; never packaged
+  map<market, map<baseGood, int>> netToday;      // the day's net player position, for the morning's ripples
+  vector<Departure> committed;                   // wagons and ships posted on boards, with their causes
+  vector<StagedEvent> events;                    // live staged events (8.4)
+  deque<Ripple> recent;                          // the last ~50 notable moves, for price_cause and the DM's log
+};
+struct Cell { float P; double touched; std::string cause; };  // cause: players, dump, caravan, raid, ship, harvest, event
+```
+
+- On load, unknown market or good ids are dropped and values are clamped.
+- P is derived state. "Reset prices" eases every P to 0 over a game day, logged as "fresh stock everywhere", which is
+  safe after any edit.
+- `recent` holds cause words, never player names, so the world package can ship it (section 13).
+- `committed` holds only what a notice has promised: the next two days of wagons and the next week of ships.
+
+### 5.3 Times (per market)
+
+`timesScore(m) = slider + harvest of m's areas + raids and late wagons in 7 days + staged events + DM nudge`
+
+- **No player-caused pressure goes in.** Times sets band shares and shop budgets, so players must not be able to push
+  a market toward boom by dumping staples, or toward hard times by buying them.
+- The score is cut into five words: hard, lean, ordinary, good, boom.
+- Times feeds the band mix at that market (section 6.3), the staples' price factor (section 7.1, if D2 says so),
+  wagon frequency, the talk facts `world.times` and `world.times_cause`, and the DM's Prosperity tab.
+- Each market keeps its own: the realm can be in ordinary times while one community is lean because its salt wagon
+  was robbed twice.
+
+## 6. NPC economic status (bands)
+
+### 6.1 Four bands, with class as the second axis
+
+| Band | `wealth` fact | Who, typically |
+|---|---|---|
+| destitute | destitute | no earner in the home, a lost post or a death in the family; beggars; the homeless |
+| poor | poor | labourers and hands in lean homes; the Sump; households of apprentices |
+| comfortable | comfortable | most posted households: hands, carters, Wharf men, keepers, masters, officials |
+| rich | rich | Houses' heads and kin; owners of large businesses; estates; the Heights' well-off |
+
+- These are exactly the `wealth` words (`facts.json:12`), so the existing `wealth` lines, `pair.richer`,
+  `tools/voice_tables.py` and the Mind keep working with no content change.
+- **Class stays as a second axis.** Class is station, from the post; the band is fortune, from rank and the slider. A
+  poor upper-class widow and a rich lower-class carter can both happen, and both are good talk. `class` becomes a
+  talk fact (doc 62 lists it; `facts.json` lacks it).
+- **Option (D1):** a fifth status, "working", between poor and comfortable, which reads as "comfortable" to the
+  existing lines. Its shares are in section 6.3.
+
+### 6.2 Households
+
+- Households come from `households()` (`RatwCityLoop.cpp:890-921`), which moves into Society. A resident with an
+  empty `homeCell` is now a household of one, so the homeless are counted and fed. Farm crews are residents in homes
+  and are households like any other. Unplaced NPCs are not residents and have no band.
+- `Society::statusOf(id)` returns `{band, class, score, override, liftedUntil}`. It is worked out once a day,
+  single-threaded, at the day's turn, and cached in `ResidentRecord` the way `homeClass_` is
+  (`RatwSociety.h:1626-1628`). The threaded half of deciding (`RatwResidents.cpp:414-636`) only reads it.
+- **Saved:** each household's `{band, since, liftedUntil}`. Bands are worked out at restore from the saved state, not
+  at the next day's turn, so a restart never makes bands jump.
+
+### 6.3 Score, rank and the cut
+
+**Score, per household:**
+- **Class base:** upper 2, middle 1, lower 0.
+- **Home:** a house or grounds +0.5, a cottage 0, a flat −0.2, a room −0.5.
+- **Earners:** no earner in the home −1.5; one earner for four or more mouths −0.5.
+- **Fortune:** a stable lot for the home (`lotOf`/`mix`, `RatwCareers.cpp:38-56`) in [−0.5, 0.5], plus bounded noise of
+  ±0.3 worked out from the home and the week number and eased between weeks. Families rise and fall over seasons,
+  nothing is saved, and the noise can never pile up.
+- **District,** by label when the label exists: the Heights +0.5, the Sump −0.5. A label a host removed adds 0.
+- **Events in the last 28 days,** read from the WorldEvent memory that exists: bereaved −0.5, an earner lost a post
+  −1, robbed −0.2, a business failing three days running −0.3, helped by a player +0.4 to +1 (section 6.6), earning
+  from players +0.3 to +1 (companion and Hold wages, lodging rent, repairs paid to the household; section 6.6).
+- **The market's Times:** hard −0.6, lean −0.3, good +0.3, boom +0.6.
+
+**The pool.** Households with a guarantee, a DM override or a lifted state sit outside the ranked pool. The shares
+apply to the rest, so lifting one household never pushes another down.
+
+**The cut.** Households in the pool are sorted by score inside each market (Ridgemere is one market, so the Sump and
+the Heights sort against each other) and cut by the slider's shares (section 6.4), with largest-remainder rounding.
+- **Destitute needs a reason:** no earner in the home, an earner's lost post or a death in the family in the last 28
+  days, or no home. A household with no reason never takes a destitute place; that place goes to poor.
+- **The minimum is realm-wide:** at least one destitute and one rich household for every 10 in the realm (unless
+  Never Broke clears destitute), placed where the scores are lowest and highest. A 14-household village is not forced
+  to keep a beggar at +100.
+- **A band stays near its home.** A household's band is at most one away from what its class and home imply (a rich
+  family in a room, a destitute one in a manor, never), except after a recent event or a DM override.
+
+**Guarantees, in order of precedence** (the first that applies wins; each applies only if its subject exists;
+today's overrides at `RatwGameTalk.cpp:147-162`, made the rule):
+1. a DM override, until its expiry;
+2. the homeless (an empty `homeCell`, or the beggar job) are destitute;
+3. a House's head and kin are rich;
+4. the Sump is at most poor;
+5. the Heights and estate residents (not servants) are at least comfortable.
+
+**Hysteresis.** A household changes at most one band a week, and only when its rank is more than 2 percentiles past
+a band's edge. The slider the bands read is smoothed: it moves toward the DM's setting by at most 10 points a game
+day, so a full swing takes about 20 days (D17). The DM's "now" skips both the smoothing and the hysteresis.
+
+**Class without the city loop.** `payOf`'s kind detection (`RatwCityLoop.cpp:115-169`: merchant → keeper; the single
+shop in a work room → hand; guard → watch; then the public, estate and farm words) moves into `RatwCareers.cpp` as
+`postKind(pos)`. `farmOfPost` keeps reading the kept farm list (section 8.2). The keeper words move from
+`city_loop.json` `wages` into the class word lists (`RatwCareers.cpp:67-91`). `postClass` reads `postKind`. This
+lands in Phase 0, while the city loop is still there, with a test that succession still fills a post emptied for 8
+days.
+
+### 6.4 Slider to shares
+
+Percent of households in the pool, interpolated in straight lines between the rows. Defaults live in
+`Data/Economy/status.json`; a host's changes live in `live.economy.rules` (section 12).
+
+| Prosperity | Destitute | Poor | Comfortable | Rich |
+|---|---|---|---|---|
+| −100 hard times | 18 | 45 | 32 | 5 |
+| 0 ordinary | 5 | 25 | 60 | 10 |
+| +100 boom | 2 | 12 | 70 | 16 |
+
+- A market's Times shifts its own column by up to ±25 points of slider, so a lean community shows more poverty than
+  the city at the same slider.
+- **Never Broke:** the destitute share is moved into poor.
+- **The loader checks the table.** Each row must sum to 100 (otherwise it is normalised). Each share must be at least
+  `minShare`, 2%, a constant. Destitute must not rise and rich must not fall as the slider rises. A table that fails
+  falls back to the default with a warning; it is never applied half-valid.
+- Because the cut is by rank, the shares hold on any world size. A host's moved homes or deleted families simply
+  re-rank the next day.
+
+If D1 takes five statuses:
+
+| Prosperity | Destitute | Poor | Working | Comfortable | Rich |
+|---|---|---|---|---|---|
+| −100 | 14 | 30 | 36 | 15 | 5 |
+| 0 | 5 | 18 | 44 | 26 | 7 |
+| +100 | 2 | 8 | 42 | 37 | 11 |
+
+### 6.5 What each band does
+
+One row of `status.json` each. Every field has a clamp in the loader, and missing fields take these defaults. The
+numbers are first guesses; tuning waits for Phase 10 (memory `implement-before-balancing`).
+
+| | Destitute | Poor | Comfortable | Rich |
+|---|---|---|---|---|
+| Food a day, a head | 1 meal | 2 meals | 3 meals | 3, fine quality |
+| Chance of a short day at 0 (× 1.5 at −100, × 0.5 at +100) | 45% | 12% | 1% | 0 |
+| Purse target (clamped to at most 500p) | 0-3p | 3-12p | 12-60p | 60-300p |
+| A keeper's buying budget × | 0.4 | 0.7 | 1.0 | 1.5 |
+| Services and luxuries | none | a barber rarely | services by `every`; luxuries 10% a week | luxuries 40% a week; the tailor, the jeweller |
+| Theft weight | 1.0 | 0.35 | 0.05 | 0 (a sly one 0.02) |
+| What a pickpocket finds | 0-1p | 1-3p | 2-8p | 5-25p |
+| Begs | yes, if no post | no (asks kin) | no; gives alms on some Restdays | no; gives alms |
+| Talk tags | hunger, cold, the dole | prices, thin wages, debts | the work, the town, "can't complain" | by class: Houses, politics, boasts (upper); land, mills, the harvest (middle and lower) |
+
+How each row is applied:
+
+- **Food comes from the shelf.** At the household's market hour, the household's food is a staged sale from its
+  nearest food keeper: the till's stock of the staple drops by the provision, and the same count of meals (fish at
+  the Wharf, bread in the city, cheese for the rich) is added to each member's wallet, **up to** the band's two-day
+  target, never beyond. It is a raw stock change: no ledger entry, no journal record, no WorldEvent.
+  - **A short day** gives half. The roll is `hash(household, day) < chance`, so a replay gives the same days on one
+    thread or four. The chance for poor and destitute households rises with the staple's P at their market (up to
+    ×2 at +0.5), and with a raid or a poor harvest. A bad week shows as hungry poor people, not a starving city.
+  - **An empty shelf:** if the keeper's staple is out at the household's hour (players bought it out), poor and
+    destitute households served by that keeper have a short day. Comfortable and rich ones are fed from elsewhere.
+  - **Buying ahead:** the day before a Restday or a festival, staged sales and errand-runners at food shops run
+    `buyAheadDays` heavier (the visible queue before a feast).
+  - Hunger growth and eating stay as they are. NPCs still visibly stop to eat, `hungry` is real hunger, and the theft
+    gate's hunger test still means something.
+  - **Never Hungry:** every short-day chance is 0 and an empty shelf costs nobody a meal.
+  - This replaces `householdsShop` (`RatwCityLoop.cpp:923-1449`).
+- **Purse.** Each night every resident purse moves halfway toward a target in its band's range (a stable point from
+  the home's lot, plus a little daily jitter). It moves down as well as up, so coins players paid in drift away (a
+  sink) and a purse never grows into something worth farming. The move is a raw set: **no ledger entry, no journal
+  record, no mint.**
+  - **Holds:** a theft victim, a festival winner, a gift's recipient or a household earning from players keeps the
+    change until its `holdUntil` (3 days for a one-off, 14 days after the last steady player payment), then drifts
+    back. `holdUntil` is saved per account.
+  - **Lean days:** a resident robbed in the last 3 days isn't refilled, and a second theft from them pays nothing. The
+    existing `robbed` fact already says so.
+- **Goods in staged wallets are trimmed nightly:** food above two days' worth goes, and other goods above what the
+  band would hold. Dole bread, alms, restitution and inheritance can't pile up into a store for thieves.
+- **Luxuries and services.** Staged sales from the till: luxury goods leave the jeweller's shelf as the rich "buy",
+  so the jeweller's stock moves and `business` can read it. Only where a luxury shop exists; in a community, the rich
+  household's wants become a wagon's manifest line instead (section 8.1). Services keep the 22-entry `services`
+  list, at its frequency × band.
+- **Jobs.** The band never changes posts. Posts are authored, NPCs are never made, births stay one for one with
+  deaths. A born child takes the household's band at once. An arrival placed in a post joins that household. An
+  apprentice is scored with their household. An adult who loses a post takes the −1 event and may slip a band in a
+  week. A child's 5p from the parent and an arrival's purse become plain amounts from the band's range: no
+  `WharfFund`, no minted float.
+- **Inheritance.** Between NPCs, `Society::bequeath` (`RatwCareers.cpp:159`) moves goods only (trimmed that night);
+  the coins are staged and drop. The heir takes the bereaved −0.5; the inheritance itself is ignored by the score.
+- **Homes.** No evictions. Homelessness stays authored. Doc 59 (lamps and homes) is rewritten later as cosmetic only
+  (D13).
+
+### 6.6 Bonds without NPC shopping
+
+Household shopping fed keeper-customer familiarity through the ledger. Instead:
+- **Offstage:** once a day, each household's food provision applies `bondsFromEvent`'s familiarity step directly
+  between one member and the keeper. There is no WorldEvent, so the event store doesn't fill, no promise is marked
+  kept, and the Mind never remembers a provision as a gift.
+- **Near players (a rule, on by default, D21):** the household's errand-runner walks to the nearest open shop that
+  sells the good, stands at the counter for the 8 seconds the bites already use, and the till's stock drops by the
+  real items. The task is "fetching goods", so the existing `errand=goods` fact follows. Only where a player is in
+  the cell or the next one; at most 2 errand-runners in a player-occupied cell and 12 in a market.
+- An errand-runner who finds the shelf empty goes home without, and that household has a short day if it is poor or
+  destitute.
+
+### 6.7 Players and bands
+
+- A player's gift (`RatwGameGive.cpp:90`) or "help for a household" (`RatwGameTroubles.cpp:312`) to a poor or
+  destitute household gives it a **lifted state** at once: no begging, no short days and no hunger tags for a week's
+  help (a week's food or more) or a month's. The household leaves the ranked pool while lifted. Its score also gains
+  +0.4 or +1, fading over 28 days, so it may move up a band for real.
+- At most half a market's destitute share can be lifted at once, so a rich player can't empty a city of beggars
+  overnight. `fed_household` fame counts at most once per account holder per household per week.
+- The "short" trouble (`RatwTroubles.cpp:170-200`) fires from the band (a poor or destitute head of household)
+  instead of `foodDays`. Its coins are a fortnight of the band's food at the market's quoted price, at least 10p
+  (`RatwTroubles.cpp:190-196`). The help and refill check in `RatwGameTroubles.cpp:463` reads the band too. Solving
+  it lifts the household for its length.
+- Steady pay from players (companion wages, `RatwGameCompanions.cpp:135, 271`; Hold wages; lodging rent; repairs)
+  holds the purse (section 6.5) and adds the "earning from players" score event. A guard a Chapter pays 10p a day
+  doesn't drift back to poor and complain of thin wages.
+- So the beggar a player helped stops begging the next day, and thanks them later (an existing `pair.owed` line).
+
+## 7. Prices: what players pay and get
+
+### 7.1 The price and the shown price
+
+For good g (base good b = `items::baseOf(g)`) at a shop in market m:
+
+```
+factor(m, b) = clamp( season(b, m, day) × region(m, b) × district(shop, b) × times(m, b) × exp(P[m][b]),  0.80, 1.28 )
+buy lot      = round( Σ over the q pieces of  catalog(g) × factor(P stepped up a piece at a time) ), at least 1p
+               (at a stall: × 0.9 and rounded down, at least 1p)
+sell lot     = floor( Σ over the q pieces of  catalog(g) × factor(P stepped down a piece at a time) × 0.55 )
+               then capped by the backstop (7.6); a lot worth 0p is refused
+```
+
+- `catalogPrice` and the quality multipliers (`RatwItems.cpp:955-975`) don't change.
+- `season` is the seven season groups (grain, fruit, fish, meat, dairy, honey, preserved), moved from `city_loop.json`
+  to `Data/Economy/market.json`. **Fruit's 80-140 (×1.75) is wider than the clamp (×1.60) and is rescaled in Phase 1;**
+  grain's 85-115 fits. If seasons become per climate, the market's climate picks the row.
+- `region` is cheaper where a good is made (×0.85 to 1) and dearer far from it (1 to ×1.15). It comes from which
+  endpoints make the good: `workshops.json`, the communities' farm and works areas in `communities.json`, and
+  `crafts.json` `supplies`, with a harvest bias.
+- `district` is a static factor inside Ridgemere: Heights luxuries ×1.05-1.1, Sump goods ×0.95. It sits inside the
+  clamp and inside the backstop, so it opens nothing.
+- `times` touches only staples and luxuries: hard staples ×1.08, boom luxuries ×1.08, and so on. D2 decides whether
+  the slider moves player prices at all.
+- **This replaces `Society::shopFactor`** (`RatwCityLoop.cpp:2876`), the one call `quote` makes (:445), outright:
+  Phase 0 has already switched the loop off, so there is one price path. `followStock`, `loop.prices`/`loop.sales`
+  and the `soldToday_`/`soldOut_` counting in `transfer` (:404-409) go.
+
+**The shown price.** For a good whose catalogue price is under 3p, the list shows the buy lot of a dozen ("12 for
+13p"), worked out by the same ladder and the viewer's own cap, so the shown price is what that player would pay
+for that lot now. For every other good it shows one piece. The client gets each ware's
+`listCount` (1 or 12) and `sellLot`, the smallest quantity whose sell lot is worth at least 1p ("I buy ore by the
+half-dozen"). The client's `canTradeItem` (`state.ts:2456-2460`) tests the lot's price, not the unit price, and
+allows a 0 unit price. A single 1p loaf still costs 1p; a dozen is where the move shows. Buying single loaves can save
+a player a penny or two on a dozen; it is a quirk, not a pump, because it only shrinks a sink.
+
+**The trend marker.** Each row gets ▲ or ▼ when its shown price differs by at least 1p from the price at P = 0, with
+the cause word on hover ("travellers buying", "the wagon's late"). The footer reads "Prices follow what's bought and
+sold here, and what the roads bring."
+
+### 7.2 Why the clamp is 0.80-1.28 (the arbitrage arithmetic)
+
+A player can buy at a stall at 0.9 × the factor and sell to a shop at 0.55 × the factor. The round trip pays only if
+
+`0.55 × factor(dear) > 0.9 × factor(cheap)`, that is if `factor(dear) / factor(cheap) > 0.9 / 0.55 ≈ 1.64`.
+
+- Without the stall the bound is 1 / 0.55 ≈ 1.82. The stall's discount makes it 1.64.
+- **The clamp covers time as well as place.** Buying grain in the cheap season and selling in the dear one is the same
+  loop, so the season sits inside the clamp, not outside it.
+- 1.28 / 0.80 = 1.60, under 1.64. On factors alone that leaves a margin of about 2%.
+- **Rounding and faction discounts can still break it,** so the clamp is not trusted alone:
+  - Rounding to the nearest penny made small lots profitable (a 4p good bought at a stall for 2p and sold for 3p).
+    Sold lots now round down, and the backstop (I3) is applied to the rounded, floored lots. Every round trip loses
+    at least a penny.
+  - A sworn Chapter's 25% back makes the lowest buy share 0.9 × 0.75 = 0.675, and the bound about 1.23: well inside
+    the clamp. The discount is therefore capped in pennies per Chapter per week (section 7.8). A loop through it can
+    win at most the cap, which is the discount itself.
+
+So **hauling goods bought from one shop to sell to another never pays.** What stays fun about trade: selling your own
+gathered, hunted or (later) crafted goods where they fetch the most (a real difference of up to 1.6×), selling to
+other players at stalls, escorting wagons, recovering raided cargo and robbing bandits. A bounded trader's margin is
+D3.
+
+### 7.3 Pressure
+
+- **Range** −0.5 to +0.5 before the clamp.
+- **Player trade moves it, at the till.** In `Society::trade`, after a success: buying q pieces adds q / depth,
+  selling takes q / depth. Nothing reads what players *hold* (the Ultima Online lesson). Hunting and gathering add
+  nothing; selling the result does. Player-to-player stall sales add nothing in v1.
+- **A refused or 0p lot moves nothing.** Otherwise dumping worthless lots would be a free way to push prices.
+- **Piece by piece.** Inside a lot, each piece is priced at P after the pieces before it. Buying 99 bread costs
+  visibly more than 99 × the first loaf; dumping ore pays less for each piece. This replaces the one factor per lot
+  at `RatwSociety.cpp:451-456`.
+- **Depth.** `depth(m, b) = max(20, depthBase(group of b) × catchment(m)^0.6)`, where the catchment is the market's
+  households, plus its farm and works crews, plus 20 for passing trade. First guesses:
+
+  | Group | depthBase |
+  |---|---|
+  | staple food (bread, flour, grain, fish, cheese) | 2.0 |
+  | other food and drink | 1.0 |
+  | meat, game, hides and furs | 1.0 |
+  | herbs and forage | 0.8 |
+  | timber, stone, clay, sand | 1.0 |
+  | charcoal, peat, firewood | 1.0 |
+  | ores and bars | 1.0 |
+  | cloth and wear | 0.5 |
+  | tools and arms | 0.4 |
+  | luxuries | 0.3 |
+
+  Every catalogue good is mapped to a group in `market.json`, with "other food and drink" or "tools" as the default
+  for anything unmapped; a test checks coverage.
+- **Worked examples:**
+  - **Ridgemere,** catchment about 620: 620^0.6 ≈ 47. Bread's depth is about 95. One player buying 10 loaves adds
+    0.105, so the dozen goes from 13p to 14p, ▲ (a dozen's own ladder adds about 6%, so it is 13p at P = 0).
+    Twenty players buying reach the clamp: about 15p a dozen.
+  - **Coldwater,** 14 households, its crews and passing trade, catchment about 40: 40^0.6 ≈ 9, so every good sits on
+    the floor of 20. A player selling hides (5p) to its tannery: the first piece at P = 0, then −0.05 a piece. After
+    three hides P is −0.15 and the per-holder cap is reached; three hides pay floor(2.75 + 2.62 + 2.49) = 7p and
+    each further hide about 2.37p. The next day P is about −0.14; the next wagon out carries half the glut off
+    (section 8.1). The next visitor finds hides a little cheap and hears why.
+- **Decay:** `P ← P × 0.5^(days / halfLife)`. Half-life: perishables 2 days, keeping food 5, metals, tools, cloth and
+  hides 8. Applied lazily from `touched` when read, plus a nightly sweep that drops entries under 0.005. That keeps it
+  exact at any `--speed`.
+- **Cause:** each entry keeps the cause of its last big move (players, dump, caravan, raid, ship, harvest, event).
+- **Per-holder cap.** One account holder's pushes on one market and good are summed in `pushed`, which decays exactly
+  like P. While it is at 0.15 or more, further pieces price at the capped P and add no pressure. A lone player's day
+  moves no good in any market past ±0.15, and there is no reset at dawn to game. A second wolf on the same account
+  shares the cap.
+
+### 7.4 Ripples
+
+**Through goods, in the same market, the next morning.** A link table built at load from `crafts.json` (125 crafts)
+and `recipes.json` (343 recipes): each good's inputs and outputs, two steps at most, with a visited set so cycles are
+safe and unknown goods skipped. Uncapped, iron ore would reach 35 goods and charcoal 116, so **each step keeps at most
+6 goods,** chosen by how many recipes use the link (ties by catalogue price).
+- The day's **net** player position per market and good (`netToday`: pieces sold minus pieces bought, over all
+  holders) is what ripples. Buying and selling the same good the same day nets to nothing, so churn moves nothing
+  downstream.
+- **A net glut ripples downstream:** ore −Δ, iron bars −Δ/2, nails and tools −Δ/4.
+- **A net want ripples upstream, weighted by value:** bread +Δ, flour +Δ/2 × min(1, catalog(bread)/catalog(flour)),
+  wheat +Δ/4 × the same weight. A want for a cheap good can't lift a dear input more than its worth.
+- Ripples land at the next morning's restock, when the smith or the baker visibly works the new stock: `price_cause`
+  "cheap iron since the ore glut". They count against each holder's cap in proportion to their share of the net, and
+  ripple-caused |P| on any good is capped at 0.15.
+- At most 13 updates a good, once a morning. A host's new recipe joins the table at the next load. It is never a
+  production chain (the X4 lesson).
+
+**Between markets, only through visible wagons and ships.**
+- **At departure** (visible as "loading the wagon"): for each good on the manifest, the source's P moves halfway
+  toward 0 if it is below 0 (the glut leaves on the wagon). Player-sold surplus is the first line of the next
+  manifest out, so T3's ripple is a wagon a player can watch leave.
+- **At arrival:** `ΔP_dest = −0.2 × max(0, P_dest − P_source at departure)` for each good on the manifest, never
+  positive. A wagon that brings salt never makes salt dearer.
+- **A raid** adds +0.15 for its manifest goods at the destination, at the moment of the raid.
+- There is no daily leak along the roads. Wagons are scheduled toward the biggest gaps (section 8.1), so **the visible
+  wagon is the correction.**
+
+### 7.5 What a shop pays players
+
+- **The 1p-a-piece floor goes for sales.** A sold lot is the ladder's sum × 0.55 rounded down once per lot. Selling 99
+  ore at P = 0 would pay 54p, not 99p (in practice the per-holder cap flattens the ladder first). A lot worth 0p is
+  refused in words: "Not worth the counting. I buy those by the half-dozen."
+- **The sale moves goods and coins separately.** `trade` moves the goods with a goods-only `transfer` at price 0 and
+  the coins with one `shift` of the lot's total. `transfer` keeps its `price < 1` refusal for every other caller.
+- **The shop's buying budget.** `budget(shop) = 40p × keeper's band × slider (×0.8 to ×1.2)`. The keeper's band here
+  is worked out without player pressure. It is set at dawn, drawn down only by what the shop buys from players, and
+  saved as `budgetLeft`, so a restart doesn't refill it. **Player purchases never raise it,** so a second character
+  can't pump a till's buying power. Past it: "I've spent all I'll spend today." The client shows "BUYING TODAY · N p"
+  (`Client/src/ui/hud/dialogs.ts:1320`; the heading at :1312 drops "REAL PURSES").
+- **The till always has the cash.** When a player sells within the budget, the till's cash is topped up to the lot
+  first (a raw set). "The trader cannot afford that" stops happening.
+- **The take allowance,** per shop per day, counted against what it took today: gathered and hunted raw goods at
+  least 30 pieces (or depth × 0.5 if more), made goods at least 6, a wearable or sword 2. Past it: "I've no room for
+  more today." This replaces the 40 / 4 / 24 / 20 caps (:462-470).
+- **A daily sell total per account holder** across the world: a rule, default 400p, clamped to 0-5,000, logged. Past
+  it: "No one here is buying more from you today."
+- **Goods move on.** A till's stock above its shelf target leaves on the next wagon or cart out of that market. With
+  no departure, it keeps until one goes.
+
+### 7.6 Rules no setting can break
+
+Enforced inside `quote`, whatever the DM's rules say, and property-tested (section 16):
+- **I1. Price.** A bought lot costs at least 1p; every factor is finite (NaN or infinity becomes 1).
+- **I2. One shop.** A sold lot pays at most 0.6 × the bought lot for the same good, quantity, shop and moment, on the
+  rounded and floored lots. `SellBackShare` 0.55 is a constant, never a rule; the ladder only widens the gap.
+- **I3. Everywhere.** The whole factor, across every market and every day, stays inside 0.80-1.28. As a backstop
+  beneath it: **a sold lot never pays more than floor(0.95 × the cheapest bought lot of that good and quantity
+  anywhere in the world now),** stall-discounted. It is worked out live at quote time over every market (about 10-30),
+  never from a daily snapshot. For a good no shop sells (iron ore today), the cheapest lot is
+  `floor(catalog × 0.80 × 0.9 × q)`.
+- **I4. Qualities.** Crude, fine and masterwork share their base good's P, so they can't be played against each
+  other.
+- **I5. Crafting, for whoever builds it** (doc 35's Craft panel, unbuilt): an output's sell price may be at most 1.6 ×
+  its inputs' buy price (a labour premium). A recipe that breaks this sells at the cap.
+
+The clamp's ends (0.80, 1.28), `SellBackShare`, `minShare` and I1-I5 are constants, not DM levers.
+
+### 7.7 Shelves and restock
+
+- **Target:** `shelf(g) × abundance(m, g) × (1 − 0.5 × max(P, 0))`. `shelf` comes from `shelfOf`
+  (`RatwCityLoop.cpp:508-527`) and the `shelves` section of `city_loop.json` (`startingStock`,
+  `RatwSociety.cpp:1684-1691`), both moved to `RatwMarket`. `abundance` comes from the season, the harvest and recent
+  arrivals. Targets cover the day's staged food provision as well as players.
+- **Regional restock:**
+  - **Goods made in the market** (its workshops, its areas, the farms whose carts come to it) refill toward the target
+    each morning, when the keeper opens (the existing trigger, `RatwResidents.cpp:769-771`). The keeper is "setting
+    out the wares" for a few minutes, visibly. No inputs, no money, no store room.
+  - **Goods the market doesn't make** refill only when a wagon, cart or ship brings them. Between arrivals they come
+    from a small back-room buffer that runs down by a fifth a day. "The wagon's late", thin shelves and dearer prices
+    then agree (T4, T5, T14).
+  - A market with no route and no port refills everything each morning, so a host's lonely town never runs bare.
+- **When a wagon with that good arrives:** the till jumps toward the target, and the porters and keeper are
+  "unloading" (T4).
+- **Staged sales:** the day's food provision (section 6.5), luxuries and services take stock down. They run only when
+  no player is in the cell or the next one. Near players, each staged sale needs a visible buyer: an errand-runner, a
+  rich buyer, a servant. A ware players bought out stays thin until morning or the next wagon (T2).
+
+### 7.8 Other hooks
+
+- `worth()` in crime (`RatwCrime.cpp:42-48`) uses the quoted price. Today only meal, herbs and sword are worth
+  anything; every other stolen good counts 0 toward fines and restitution.
+- **Faction terms** (`RatwGameFactions.cpp:467-492`): the surcharge is unchanged. The 15% or 25% back stays coins but
+  is capped per Chapter per week (a rule, `factionDiscountMost`, default 30p) and logged as a faucet "faction
+  discount".
+- Repairs (`RatwDurability.cpp:159-196`) and the maker's scent don't change.
+- The keeper's trade answer (`RatwGameVoice.cpp:138-156`) lists the shop's real wares at their shown prices, and the
+  dearest or cheapest with its cause.
+
+## 8. Staged trade: caravans, farm carts, ships, events
+
+None of it conserves anything. Cargo is a list of goods with counts, for show. Arrivals are Board nudges and shelf
+refills.
+
+### 8.1 Caravans between markets
+
+**Reused:** RatwRoads' `Caravan` (`RatwRoads.h:20-41`), `sendCaravan`, `tendCaravan`, `caravanEntered` and
+`caravanArrived` (`RatwRoads.cpp:528-882`). The wagon walks where players are near and hops while unseen (a measured
+cost). Escorts, letters by carter, raids, bandit camps (:1216-1595), bounties, rumours, NPC contract-taking, NPC
+courier letters and the watchpost and waystation projects (`RatwGameProjects.cpp:703, 716`) all run again.
+
+**Changed:**
+- `Caravan.account` and the `caravan:<id>` load give way to `std::vector<std::pair<std::string, int>> manifest`. On
+  load, an old `account` field is ignored and the wagon comes home empty.
+- The loading and unloading between `stores:` accounts (:631-842) goes. `stores:<community>` stays, as the staged
+  town treasury (D24); `recoverHoard` pays into `treasuryOf(market)`.
+- **Bandits:** a raid on a staged caravan puts no coins in the camp. Its manifest becomes goods at the camp, made with
+  `create` (a goods faucet, capped at about 40p of goods a camp). Coins robbed from players stay real, in
+  `bandits:<camp>` (section 9.1).
+- **A dropped caravan** (its ends no longer exist) is removed on load. Its letters (`c.letters`, courier contracts
+  taken by `caravan:<id>`, `RatwRoads.cpp:458, 791, 871`) reopen at the origin, or go back to the writer if the
+  origin is gone too. Contracts whose `town` no longer exists refund their poster.
+
+**Schedule:**
+- **Committed when posted.** Two days ahead, each route rolls `hash(route, d) < frequency` for day d. A departure
+  that passes is posted on both ends' boards and saved in `committed`, with its hour, size and manifest. Frequency's
+  inputs are read once, at posting. After that only an announced cause may change it: a raid, a storm, "Overdue".
+- **Frequency** scales with the size of both ends: city to a community about every 2-4 days by the community's size,
+  between communities every 6-10 days, mostly through the city. × 0.6 at −100 to × 1.4 at +100, × the season, × up
+  to 1.5 when the biggest P gap on the route is over 0.2, × the DM's `caravanRate`.
+- **Drivers are real carters.** Each departure takes a carter from the market's Carters' Yard or the community's
+  carters, who is away from his post for the trip: his task is "on the Coldwater run", his schedule paused until he
+  is home. Wagons a day are capped by carters available, and wagons in transit by a rule (default 16). A host who
+  deletes the carters gets fewer wagons.
+- **Late,** with a seeded cause people talk about: a broken axle, mud, the weather.
+- **After a raid** the carter comes home robbed or hurt, never killed off-screen; deaths drive births, so off-screen
+  deaths would distort the population.
+- **Manifest:** up to 5 goods, each one some shop at the destination stocks or buys. First the source's player-sold
+  surplus, then what the source makes (its workshops, its areas' goods), then the goods with the largest
+  `P_destination − P_source`, then a rich household's want ("silk sent up from Ridgemere for the miller's wife").
+
+**What players see:**
+- The carter loading the wagon at the yard.
+- A notice on both ends' boards (kind `notice`, poster "the carters", expired by `RatwBoards.cpp:356-376`), with
+  the calendar's weekday names (Dawnday … Restday): "Wagon to Coldwater, Emberday: salt and nails for the general
+  store, cloth. Escort wanted." An escort contract posts when a camp is active on the route.
+- The caravan and bandit topics (`RatwAmbient.cpp:525-556`) gain `topic.what`, the manifest's first good, and the
+  driver's name.
+- An arriving wagon carries news: `world.news:<source>`, the source market's top cause ("ore's cheap in Ridgemere").
+
+**Bandits** never scale with players' wealth (the RimWorld complaint). Camps' spawn and strength take a mild slider
+and Times factor instead (D14). Camp strength and bounty value are capped by rules, since strength grows with each
+raid (`RatwRoads.cpp:715`).
+
+### 8.2 Farm carts
+
+- **The farm list stays.** `FarmNow` (def, kind, area, keepers, hands, outdoors), `farmWorkplace_`, `countFarmPosts`
+  and `farmOfPost` stay in `RatwFarms.cpp`, read from `country_farms.json`'s farm defs. The area switch is always on.
+  `staffFarms` (`RatwFarmPeople.cpp:125`) loses its `farm:`/`crew:` account checks (:323-330). Farm posts keep
+  filling after the cut, and a test says so.
+- **Every morning** each staffed farm or works place sends a small cart to its nearest market, heavier on Marketday.
+  The carter is the farm's keeper or a hand: a real NPC at a real post. It walks the farm track when seen.
+- **Harvest:** one word per area per season (poor, fair, good) from slider × season × a seeded weather hash, or the
+  DM's override with an expiry (which posts a notice). It sets the cart's load and the chance a cart comes: good
+  100%, fair 70%, poor 40%.
+- **Arrival:** the market's shelves of the area's goods refill. Their P is pulled toward the harvest's baseline (good
+  −0.15, fair 0, poor +0.15): halfway, and only downward for the cart's goods. Between carts P decays toward 0, so a
+  good harvest reads as cheap but steady, and a missed cart as a visible bump.
+- **Marketday stalls:** NPC stalls are stocked from that morning's farm carts, a visible tie.
+- **Talk:** `world.harvest:<area>`; the crew's own talk follows ("best barley in years").
+
+### 8.3 Ships (only where there is a port)
+
+- **A port** is a place whose posts carry the Wharf job words: Grayrock today.
+- **Timetable:** 1-3 ships a week by slider and season (fewer in winter storms), seeded by week and port, or
+  `shipsPerWeek` set by the DM (0 means none). Committed and saved a week ahead, when the timetable is pinned to the
+  Wharf office's board. A name from a Tracery list (the *Gull*, the *Saltwife*). Imports drawn from the 12 `wharf`
+  imports and exports from the 13 takes, kept as a short flavour list in `market.json`.
+- **Ship day:** the Wharf posts' task becomes "unloading the *Gull*" and the cell is a crowd (`here.crowd`). The
+  imports' P is pulled toward a ship baseline (−0.1) in the city; the exports' P rises ("the *Gull* took all the
+  hides"). The shops that sell the imports refill.
+- **A storm-cancelled ship** raises the imports' P by 0.1, is posted ("No ship this week") and talked of.
+- **A ship at the pier** is optional, about 4 hours of client work (D8).
+- **No port:** no timetable and no ship talk. Imports come by road from a map-edge "outside" endpoint if the host
+  marks one; otherwise the market refills them each morning.
+
+### 8.4 Staged events
+
+On a small world player trade rarely moves anything, so the world needs its own visible happenings.
+- **A seeded scheduler** posts 1-3 events per market a week (× the DM's `eventRate`, 0-3), from a list in
+  `market.json`: a House wedding buying up wine; a fire at a works; a good catch; blight in an orchard; a festival's
+  buy-ahead; a lame ox delaying the Coldwater cart; a ship's rich cargo.
+- **Each has a visible cause:** a notice, a crier, a crowd, a talk fact (`world.event`). Each pushes P toward a target
+  for a few days, inside the clamp, with its own cause word.
+- The DM sees the week's events on the Prosperity tab and can cancel or add one.
+- Events never touch money, bands or posts.
+
+### 8.5 A cause for every slider move
+
+- When the DM moves the slider, they may write its cause ("the Crown's war levy"). With none, one is picked from a
+  seeded list for the direction: a war levy, rot in the granaries, a bad winter; a silver strike, peace, a rich
+  harvest.
+- The cause becomes `world.times_cause`, a crier's line and a board notice in every market, and part of the Mind's
+  Means line.
+- The realm-wide harvest roll leans the same way while the slider is moving, so the cause and its effects agree.
+- Times nudges and harvest overrides post a visible notice too, by default (a DM rule can turn it off).
+
+### 8.6 The arrival table
+
+| Event | Board | Shelves | Notice | Talk |
+|---|---|---|---|---|
+| A wagon is posted | — | — | posted at both ends two days before | `caravan due` |
+| A wagon loads and leaves | the source's glut halved toward 0 for its goods | over-target stock leaves | — | `caravan left`, the driver |
+| A wagon arrives | −0.2 of the gap on its goods, never up | its goods refill at the destination | taken down | `caravan arrived` and what; `world.news` |
+| A wagon is late (a day past due) | +0.05 a day on its goods at the destination, at most +0.2 | the buffer runs down | "Overdue", with its cause | `late` and why |
+| A wagon is raided | +0.15 on its goods at the destination | the buffer only | bounty and escort contracts (`RatwRoads.cpp:700-740`) | `raided`, `bandits`, the carter hurt |
+| A farm cart comes in | the area's goods pulled toward the harvest's baseline | refill | — | harvest |
+| A ship docks | imports toward −0.1, exports up | the importers refill | timetable updated | `ships` |
+| A ship is lost or stormbound | imports +0.1 | — | "No ship this week" | `ships late` |
+| A staged event | its goods toward the event's target | as the event says | notice or crier | `world.event` |
+
+## 9. Accounts: what stays real, what is staged
+
+### 9.1 Every account, sorted
+
+`Society::classify(id)` sorts every account by prefix, never by a function name. A test checks that every
+`facilityAccount` prefix is in this table.
+
+| Prefix | Kind | Notes |
+|---|---|---|
+| a player id | **real** | purses, with their limits (64 kinds, 10,000 a stack, `MoneyLimit`) |
+| `chapter:` | **real** | Chapter treasuries (the second `treasuryOf`, `RatwGameEstates.cpp:18`) |
+| `contract:` | **escrow** | a player-posted contract holds real coins; an NPC-posted one holds staged-sourced coins |
+| `letter:` | **escrow** | enclosures; a resident's letter holds staged-sourced coins |
+| `let:` | **escrow** | lodging chests |
+| `stall:` | **escrow** | a player's stall; an NPC's Marketday stall is staged |
+| `table:` | **escrow** | stakes; NPC stakes are staged-sourced |
+| `fest:` | **escrow** | festival pots; NPC entries are staged-sourced |
+| `project:` | **escrow** | player money in town projects; town money in them is staged-sourced |
+| `ground:` | **escrow** | player grounds |
+| `bandits:` | **escrow** | coins robbed from players; staged raids add goods, never coins |
+| `treasury` | staged | the realm's treasury |
+| `stores:` | staged | each community's town treasury (D24) |
+| `till:` | staged | shop tills |
+| `town:` | staged | the Town Works, watch and church; `town:<t>:granary` reads the market's Times |
+| `home:` | staged | residents' larders |
+| NPC resident ids | staged | purses |
+| `house:` | staged if a kept call site reads it, otherwise dropped | Phase 0's list says which |
+| `caravan:`, `fund:`, `bank:`, `outside:`, `farm:`, `crew:`, `estate:` | dead | dropped at restore with their goods; `fund:relief` goes with them |
+
+**Escrow carries its source.** Each escrow account records how many of its coins came from the staged side. When it
+pays a player, the staged-sourced part counts as a faucet then, at payout. When it expires back to the staged side,
+nothing is counted twice. A festival prize counts as a faucet for the pot's payout minus the winner's own entry.
+
+### 9.2 Staged (elastic, set nightly)
+
+- **Resident purses:** halfway to the band's target each night (section 6.5), except while held.
+- **Goods in staged wallets:** trimmed to the band's targets (section 6.5).
+- **Tills:** the buying budget at dawn (section 7.5); shelves to target; anything over target leaves on the next
+  wagon.
+- **The treasury and each `stores:` town treasury:** set each night to between a floor of 200p (`TreasuryFloat`,
+  `RatwSociety.h:829`) and a ceiling of 2,000p. Fees, rent, postage, stall rent and fines vanish into it above the
+  ceiling.
+- **Staged payers are topped up on demand.** When a staged account must pay a player (a reward, a bounty, an escort, a
+  festival purse, archive pay, a faction reward), it is topped up to the amount first, logged by the faucet door. The
+  call sites that clamp to cash change: `RatwFestivals.cpp:216` and the rest found by grep in Phase 2.
+- **The welcome:** 20p, 2 herbs and 3 meals made with `create` (a faucet, "welcome"), once per account holder per
+  world per game week. A later wolf on the same account that week starts with 3 meals and no coins. It is no longer
+  taken from the treasury or capped by its cash (`RatwSociety.cpp:368-382`).
+- **At load,** only staged accounts that are missing or out of range are settled. Saved budgets, holds and lean days
+  are kept, so a crash or a host's Restart changes nothing a player could see.
+
+All of these are raw sets with no ledger or journal entries. The journal's account shadow-diff
+(`RatwGameJournal.cpp:150-180`) narrows to real and escrow accounts: today it diffs about 16,000 NPC accounts on every
+record.
+
+**Why keep NPC accounts at all** (instead of deleting them and rewriting the call sites): the existing `shift(` call
+sites expect a payee that exists. Thefts, gifts, festival entries, letter enclosures, lodgings and NPC eating all need
+*a* purse. Elastic accounts keep them working with no change at the call site. The cleaner end state is D16.
+
+### 9.3 The faucet door
+
+`classify` runs inside `shift`, `transfer` and player `create`, and sorts every move:
+- **staged → player:** a faucet, with a reason ("sale", "reward", "bounty", "theft", "refund", "welcome", ...);
+  goods count at their quoted price;
+- **player → staged:** a sink, with a reason ("purchase", "rent", "fee", "fine", ...);
+- **staged → escrow:** recorded on the escrow as staged-sourced; counted as a faucet when it pays a player;
+- **escrow → staged:** a sink for its real part (a project's leftovers to the town works,
+  `RatwGameProjects.cpp:465, 474`);
+- **player ↔ escrow, player ↔ player:** real, as today;
+- **staged → staged:** allowed and uncounted; the nightly set erases it.
+
+Every faucet and sink adds to a small daily tally per account holder and reason. The DM's Prosperity tab shows player
+coin made against coin sunk, per day and per holder: the EVE report.
+
+**In play, the door logs and alerts; it never refuses** (D16). An unregistered faucet path is logged with its call
+site, so nothing that works today breaks. In tests it is enforced (section 9.4).
+
+**Caps on faucets,** each per account holder, each a rule with a clamp:
+
+| Faucet | Cap |
+|---|---|
+| Selling to shops | the shop's daily budget; the take allowance; the per-holder P cap; the daily sell total (400p) |
+| Rewards (factions, archive, festival prizes, bounties, escorts, story prizes) | each system's fixed amounts, plus a daily cap per holder; bounty value capped by camp-strength rule |
+| Faction discount | 30p per Chapter per week |
+| NPC-posted courier contracts | 3-7p (`RatwRoads.cpp:1123`), at most 3 a day |
+| Theft from staged accounts (`RatwCrime.cpp:329-337`) | the band's take (section 6.5); lean days; at most 20p of coins and goods a day ("nothing worth the risk" past it); warrants as today |
+| Staked games against NPCs | net winnings from NPC stakes at most 30p a day; NPCs join only within that |
+| Raided cargo at a camp | about 40p of goods a camp |
+| Refunds (letters `RatwGameLetters.cpp:588`, lodgings `RatwLodgings.cpp:243`, Chapter rent `RatwGameEstates.cpp:194`, camp materials `RatwGameCamps.cpp:194`) | at most the payment on record |
+| The welcome | once per holder per world per game week |
+
+NPC alms and the Restday dole go only to NPC households, never to a player standing at the chapel steps. The bond-debt
+fallback in lodgings (`RatwLodgings.cpp:244`) becomes dead code, kept harmless.
+
+### 9.4 `realBalanced()`, the test gate
+
+The 260 `conserved()` calls in 37 files are converted, not stripped:
+
+`realBalanced()`: Σ player cash + Σ escrow's real coins == the opening real total + faucets − sinks, from the tally.
+
+- It is a mechanical rename, done in Phase 3. It keeps the only coverage that catches a duplication bug, which
+  players will hunt for, and it makes an unregistered faucet fail CI.
+- Coins only in v1; goods are counted in the tally for the report but not in the balance.
+- In play it is never checked at restore (lenient on read).
+
+## 10. Street life
+
+### 10.1 Theft: an expected count per market
+
+`chooseMarks` (`RatwCrime.cpp:743-776`) today needs hunger ≥ 70, no meal, cash under 6p and a fixed per-NPC hash.
+Instead, once a day per market:
+- **Expected thefts:** `E = base × Σ households' theft weight × Times factor`. The day's count is `floor(E)` plus one
+  more if `hash(market, day) < frac(E)`, capped at 4 a market. A 4-household hamlet sees a theft every few weeks; the
+  city a few a day. `base` is in `status.json`; `theftCap` is a DM rule.
+- **Candidates:** adults, never guards, never anyone in custody, not tried today. Weighted by band, by the `honesty`
+  trait (frank 0.2, plain 1, guarded 1.5, sly 3; read at `RatwGameTalk.cpp:103-110`) and ×2 if `hungry`. The roll is
+  a seeded daily hash.
+- **Targets fit the motive:**
+  - a hungry thief goes for a food till or stall and **takes food from the till's stock**: a new path in `steal()`,
+    since today it always takes from the keeper's own purse;
+  - a destitute thief who isn't hungry picks the pocket of a richer resident (`pair.richer`) at a crowded cell, and
+    `steal()` takes coins first, as now;
+  - NPCs picking players' pockets: D11.
+- **Unchanged:** everything after the target is chosen: the approach within 1.6 tiles, the unseen-by-guards check
+  (:720-741), witnesses, warrants, gaol and pursuit.
+- **When a player picks a staged pocket,** the take follows the victim's band (rich 5-25p), within the per-holder
+  daily cap.
+- **Fines and restitution** use `worth()` from the quoted price. Restitution to an NPC is a plain purse change; a fine
+  to the treasury is a sink.
+
+### 10.2 Begging, rough sleeping, the dole
+
+- **Begging (a new task):** destitute adults without a post and not lifted, on Marketday and Restday by day, at the
+  market or the chapel steps (a spot finder like `boardSpot`, `RatwBoards.cpp:19`), at most 2 a cell. A bark when a
+  player is near. Players give through `RatwGameGive`. Comfortable and rich NPCs passing sometimes give 1p: a visible
+  `shift`, and the beggar's purse moves.
+- **Rough sleeping:** `homeless=yes` stays authored. Destitute residents in communal lodging are "sleeping by the warm
+  wall" in a sheltered cell some winter nights (D12).
+- **The dole:** on Restday the chapel's priest, a real post, hands bread to destitute and poor households near the
+  chapel: a raw stock add into their wallets, visible, with no church account, trimmed with the rest. It sets
+  `on_dole` and wakes the `on_dole=yes` lines.
+
+### 10.3 Business
+
+`business` (hard-coded "none" at `RatwGameTalk.cpp:139`) is set for keepers from staged and player sales against the
+shelf, with P and Times as tie-breaks:
+- **thriving:** the shelf sells down faster than its target (a queue, an empty shelf by noon), or players bought more
+  at their till in 3 days than the market's median, or Times is good or boom;
+- **failing:** the shelf barely moves, or the mean P of their wares is under −0.15 (a glut), or Times is hard and their
+  wares are luxuries;
+- otherwise **steady**.
+- Three days of failing add a −0.3 score event to the keeper's household.
+- A salience rule: `business=failing` suppresses the comfortable band's "can't complain" tags.
+
+It wakes about 108 lines. The keeper whose ore players dumped says business is slow, which agrees with T3.
+
+## 11. Talk and the Mind
+
+The rule: **the price an NPC complains about is the price the client shows.** Talk calls the same function.
+
+**Person facts:** `wealth` (from the band), `class`, `business`, `on_dole`, `hungry` (real), `homeless`, `robbed`
+(exists), and `status` only if D1 takes five. `wealth_days` goes with `foodDays`.
+
+**World facts:**
+- `world.times` and `world.times_cause`;
+- `world.<good>_price` (up, down, steady) for the market's three largest moves **in shown price**: a good counts as up
+  or down only when its shown price differs from the price at P = 0 by 1p or more; otherwise it is steady.
+  `world.meal_price` and `world.herbs_price` stay;
+- `world.harvest:<area>`, `world.ships`, `world.ship_name`, `world.trade` (in, late, raided), `world.news:<source>`,
+  `world.event`.
+
+**Cause and direction** come from what actually moved the clamped factor (season, harvest, players, wagon, event).
+When the clamp swallowed the players' push in a dear season, talk says "it's winter", not "travellers buying".
+
+**Scene topics.** `prices` and `price_cause` come back in `sceneTopics` (`RatwAmbient.cpp:500-656`; they were deleted
+in b431ab1), with `topic.item` the good, `topic.dir`, and `topic.price` the shown price ("twelve for fourteen pence").
+Cause words: "travellers buying", "someone sold a heap", "the wagon's late", "the *Gull* came in", "a good harvest",
+"the wedding up at the Heights". `topic.item` in `facts.json` widens from herbs and meal to text: the existing
+`topic.item=herbs` lines keep matching, and new generic lines use `#topic.item#`.
+
+**Class-gated tags:** rich upper-class households talk of Houses and politics; rich middle and lower ones of land,
+mills and the harvest.
+
+**The Mind** (`dialogueContext`, `RatwGame.cpp:4499-4505`): the raw purse and the old herbs-and-meals stock line go.
+A `means` field, at most 300 characters, takes their place: "Means: poor; gets by week to week; pay about eight
+pence a day. Times in Coldwater: lean, since the Crown's war levy. Salt dear, 4p, since the wagon was robbed." It
+carries the shown price of the top-cause good and the post's pay word, so the Mind doesn't invent figures. It goes
+into `OPTIONAL_LIMITS` in `tools/npc_mind.py` (:50-52), beside `trouble`, with one RULES sentence. Tests stay offline.
+
+**Pay words** come from one table per post tier, × slider. Where a player really pays someone in that kind of post
+(companion and Hold wages), the word matches that wage, so talk and the purse agree.
+
+**New content,** about 450-650 Tracery and salience lines (doc 62): band × Times complaints and boasts, generic price
+lines, caravans with their cargo and driver, ships, harvests, staged events, slider causes, beggars' barks and the
+dole. Ship names and every new list pass the check for the forbidden word.
+
+**Performance:** talk reads the cached band instead of scanning every resident for each speaker
+(`RatwGameTalk.cpp:121-127`). `talkRichLine`, `richLine_`/`poorLine_` and `troubles::foodDays` as a measure of wealth
+go.
+
+## 12. DM levers: keep, change or cut
+
+All of them stay per world in `live.economy` (the `rules` jsonb) and reach a running server through `economy.sync`
+(`RatwGame.cpp:944-956`, kept). **Defaults live in `Data/`, which is read-only in a hosted world's image (doc 78).
+A host's changes to `status.json` or `market.json` values live in `live.economy.rules`,** are checked by the same
+loader and travel with the world package.
+
+| Lever (today) | Verdict | Why |
+|---|---|---|
+| `steerLean` 0-200 (shared ↔ held by the rich) | **Change:** a new rule `prosperity`, −100 hard to +100 boom, steps of 5, with an optional cause text; same storage, audit `economy.steer` and route `/api/economy/steer` (`tools/studio.py:640-686`) | The user's one control. The axis changes from distribution to prosperity. The old value is **not** mapped across: old worlds open at 0. Out-of-range or non-numbers are clamped, never refused |
+| `steer` on/off | **Cut** | The slider is always in force; 0 is ordinary times |
+| `neverHungry` | **Change:** a clamp, no band has short days | Gentle servers want it; no machinery behind it |
+| `neverBroke` | **Change:** a clamp, the destitute band is empty | No begging or need-theft |
+| The 11 steering levers, measures and targets, skim, tithe, dividend, charters, supervisor, weekly ledger, `steerMeanDays`, `skim*` | **Cut** | Nothing is conserved, so nothing is steered or audited |
+| Edicts | **Change:** "word on the street", read-only: the Board's top causes, harvests, ships, events, Times and the slider's cause | The same data talk reads, so the panel and the talk agree |
+| Year log | **Change:** slider moves with their causes, overrides and big ripples (a pressure move over 0.2) | Hosts can see why bread is dear |
+| `needsPaused` | **Keep** | Maintenance and testing |
+| Store room: `internalStore`, `storeMarkup`, `storeResale`, `resaleMarkup`, `storeRule`, per-business `nostore` (`live.business_settings`) | **Cut** | Restocking is free |
+| `wharf`, `wharfReserve`, the 11 wharf rules, `wharf.credit` | **Cut;** add `shipsPerWeek` (0 means no ships even with a port) | Ships are a timetable |
+| `wharfOff` goods | **Change:** `neverImported`, a goods list | Kept out of ships' manifests |
+| `gateToll`, `carriage`, subsidies | **Cut** | NPC-only plumbing |
+| `wageKeeper`, `wageHand`, `wagePublic`, `wageWharf` | **Change:** a pay word per post tier, × slider, for talk only ("eight pennies a day") | NPCs talk about pay; nothing pays them |
+| `seasons` | **Keep,** moved to `market.json`: price and abundance by group, inside the clamp | The best part of looking real |
+| `comfortsAbove`, `comfortsShare`; luxuries (7); alms and treasury (10); trades (12); land rent (7); `farmSurplus`; `shopRot`; wage drift (6); treasury drift (8) | **Cut** | The band sets buying; the treasuries are elastic. `buyAheadDays` stays as a constant (section 6.5) |
+| `stockPrices`, `stockPriceBand`, `stockPriceStep`, `shelfFollow`, `shelfDays`, `shelfCover`, `shelfGrow` | **Change** into the Board's rules: `halfLife.<group>` (0.5-30 days), `ripple` (0-0.7), `depthScale` (0.1-10), `playerPushMost` (0-0.5), `playerSellMost` (0-5,000p), `takeAllowance` (0.05-1), `shelfScale` | Where "players buying bread raises its price" is tuned. The clamp's ends are constants |
+| `services` and its 22-entry list | **Keep** (frequency by band); cut `servicesCityShare` | Visible purchases |
+| Farms panel: schedule, wages, `crewScale`, `priceFactor` | **Cut** | Crews are real NPCs at posts |
+| Farms panel: per-area `on`, `yieldScale` | **Change:** a harvest bias, and a per-area harvest override (poor, fair, good) with a season's expiry; areas are always on | A story lever: "blight at the orchards" |
+| `economy_transfer` (the Storykeeper; `RatwDirector.cpp:222, 381-388`; `dm_service.py:575`) | **Change:** "grant or fine a player" (a faucet or sink with a reason and a cap), and on an NPC target a band override with an expiry | It must not need a funded source; a story can still make Bram destitute |
+| `operatorTransfer` | **Keep** for real and escrow accounts | Stories |
+| Money tab (`MoneyTab.tsx`; `dungeon_master.py:986-1049`) | **Change** into a **Prosperity** tab: bands by market, the hungry, would-be thieves and beggars today, Times and causes, the price board (the largest pressures, with causes), wagons, ships and staged events this week, player coin made against sunk | The one read model |
+| Drift view (`studio.py:508-552`) | **Cut** | |
+| NpcTab "Paid by the town treasury" (`NpcTab.tsx:392`) | **Keep,** relabelled "A paid post (for succession)" | `p.paid` feeds succession rank (`RatwCareers.cpp:49-52, 894`) |
+| **New** | a Times nudge per market with an expiry ("boom at the port"); "reset prices" (eased over a day); `caravanRate` (0-3 ×); `eventRate` (0-3 ×); `theftCap`; the faucet caps (theft, stakes, faction discount, rewards, welcome); `wagonsMost`; a band override per household with an expiry; override notices on or off; `status.json`'s shares and behaviour table (edited in Atlas into `live.economy.rules`) | DM-tweakable, each with a clamp in `RULE_LIMITS` (`tools/map_editor.py`) |
+| `SellBackShare`, the clamp's ends, `minShare`, I1-I5 | **Not levers** | Anything a lever touched could open a money loop |
+
+## 13. The world package (doc 77)
+
+In `tools/world_package.py`:
+- **Remove:** the `minted − sunk` equality in `money()` (:718-741, called from `scan()` :790); "money conserved into
+  the treasury" in `strip_society` (:537-582, docstrings :9-11 and :35-41); the cash-moving part of `pour` (:522-534).
+- **Strip players by deletion.** Player accounts and player escrow (`chapter:`, `table:`, `stall:`, the `let:` of
+  stripped lodgings, player-posted `contract:`, `letter:…@wolf-`, the player coins in `bandits:`) are deleted with
+  their goods, not poured into the treasury. A resident's letter escrow still goes back to the writer.
+- **Drop staged accounts.** They are derived; the importing server makes them at load. That also shrinks packages.
+- **Reset pressure** in a shipped world (`board.cell` to {}, `pushed`, `netToday` and `budgetLeft` dropped), so a new
+  world starts at normal prices. `recent` holds only cause words; the scan checks it holds no player id.
+- **Scrub** the faucet tallies (they hold account ids) and every hold, lifted state and committed departure that
+  names a player.
+- **Keep:** a treasury present (a warning if missing, since restore makes it), no negative cash, the goods limits,
+  every player-id prune and scrub, the maker-mark removal (:567-574), the whole-snapshot id scan, `SECTIONS` and
+  `KNOWN_SAFE` (:589-634).
+- **`live.economy`** shipping (:918, :1030, :1244) follows the slim table and carries the host's rule overrides.
+- `tools/dm_service.py:293-303` drops `minted` and `sunk`.
+
+## 14. Saves and existing worlds
+
+**The checkpoint** (`readSociety`, `RatwWire.cpp:1294-1372`):
+- The strict "exactly 12 fields" becomes "required: `enabled`, `accounts`, `residents`, `ledger`, `nextEntry`,
+  `budgetDay`, `herbPatch`, `decisionRemainder`; `careers` optional; anything else read past". `minted`, `sunk`,
+  `exportsRemaining`, `importsRemaining` and `loop` join `orchestrator` on the read-past list (:1303-1305).
+  `budgetDay` stays: it is the society's day clock. `minted = -1` stops meaning "invalid".
+- New optional fields, each lenient: `board`, `bands` (`{band, since, liftedUntil}` per household), `holds`
+  (`holdUntil` per account), `overrides` (bands, harvests, Times nudges, each with an expiry), `lean` (lean days),
+  `faucets` (the daily tallies), `escrowSource` and `quarantine`.
+- The encoder loses the loop save (:970-1102) and `readLoop` (:1107-1258).
+
+**`Society::restore` (`RatwSociety.cpp:973-1121`), lenient:**
+- The sum gate (:1037), the `minted`/`sunk`/exports/imports range gates (:1017-1022) and the old-save fund moves
+  (:1094-1116) go.
+- **Every gate that refused over people becomes a reconcile:**
+  - an account for an unknown resident (:1030): dropped if staged; kept if real or escrow;
+  - a resident whose role changed (:1039-1048): takes the authored role;
+  - a resident count that differs from the authored roster (:1070-1074): departed residents' staged accounts are
+    dropped (not paid into the treasury), newcomers get purses at their band's target (not minted). This rewrites
+    the authored-roster path at :986-1016.
+- The ledger check `e.day > s.budgetDay` (:1064) stays, since `budgetDay` stays.
+- Accounts under dead prefixes (section 9.1) are dropped with their goods.
+- **Unknown items** (`itemValid`, :1032-1034): dropped from staged accounts. In real and escrow accounts they move to
+  a `quarantine` list on the account, shown to the player as "goods the world no longer knows", and come back if the
+  item returns. No faucet, nothing lost.
+- Staged accounts that are missing or out of range are settled to target. Saved budgets, holds and lean days are
+  kept. Real and escrow accounts are untouched.
+- Refusal stays only for real corruption: a negative or overflowing real or escrow account, or broken goods limits.
+
+**`live.npc_state`** (`npcStates`, `RatwCheckpoint.cpp:541-570`) stops writing residents' `cash` and `stock` and
+writes `band`. `applyExternalNpcStates` (`RatwGame.cpp:1797-1850`) ignores cash and stock, drops its treasury pay-in
+and pay-back (:1830-1846) and the `restore()` call that follows it (:1847), and applies a band only as an override.
+
+**Authoring is lenient.** `RatwAuthoring.cpp:494-740` (about 240 lines, to about 90) parses one `economy` line (with
+`treasury`, `store_herbs` and `store_meals`, :494-504), plus `rule`, `service` and `season` lines (:621-644).
+**Unknown economy record kinds and ids are skipped with a warning, never `reject()`.** This differs from the rest of
+the file's reject style (:842-979) on purpose: a host's half-finished edit must not stop the world loading.
+
+**`EconomySpec`** (`RatwSociety.h:455-511`) keeps `needsPaused`, `rules`, `Service`/`services` and
+`Season`/`seasons`, and the `treasury`, `storeHerbs` and `storeMeals` fields. Its `farms` and the rest go.
+
+**Migration 0061** (schema only; the last today is 0060):
+- `live.economy` keeps `world_id`, `rules` (jsonb: prosperity and its cause, the clamps' flags, the Board's rules,
+  the faucet caps, Times nudges, harvest overrides, the host's `status.json` and `market.json` overrides),
+  `seasons`, `services`, `needs_paused`, `treasury`, `store_herbs` and `store_meals`. The dead columns (the other
+  `store_*`, `country*`, `gate_toll`, `carriage`, `wage_*`, `subsidies`, `comforts_*`, `farms`) stay in place and
+  ignored (D20).
+- `live.business_settings` is dropped (D10). It comes out of world_sync's synced tables (`tools/world_sync.py:431,
+  444, 718`) and out of `tools/world_build.py:42-43`.
+- `live.npcs` gains a nullable `band_override`. `purse`, `herbs` and `meals` stay, ignored.
+- `live.people_manifest()` is redefined with one `economy` line plus `rule`, `service` and `season` lines.
+- Matching changes: `tools/world_store.py`'s versioned tables (:118-176), `tools/live_edit.py`'s `economy` key
+  (:172-358). `live.economy` stays never-synced (`world_sync.py:45, 63`).
+- NpcTab's Purse, Meals and Herbs (`Editor/src/dm/NpcTab.tsx:391-394`, `Editor/src/components/Inspector.tsx:368-374`)
+  become a Band picker, default "from rank". The Inspector's hint "Hungry residents buy meals at the nearest open
+  shop" (:373) becomes "Residents are fed by their band; the poor go short when the nearest food shop is bare."
+
+**Order.** DEV applies 0061 over 0060, after a backup (DEV is not precious). PROD is on the old map at 54; it applies
+55-61 in order when the user pushes, and 0061 only drops and redefines, so it is safe on either path. When PROD gets
+this is D19. On a world's first boot after the change, a one-line log notes "economy staged (doc 79)". Doc 78's
+build order is D22.
+
+## 15. Performance
+
+**Today:**
+- The society's hourly loop runs about 14 money steps at 18:00, single-threaded, inside `Society::decide`
+  (`RatwSociety.cpp:583-598`). The old map measured a 90-200 ms spike.
+- A year's run (`artifacts/economy/r2/steer-p5c-A9.out`) shows days getting 45% dearer over the year, unattributed.
+  It probably lived in loop or steering state; not proven.
+- The gate (`--simulate 6 8 --players 20`: mean 2.56 ms, p99 5.26 ms, worst 24.5 ms) never covers shop hours, 18:00
+  or the day's turn. Phase 0 takes a baseline of the 17-19 and 23-25 windows on today's code, with the user's
+  go-ahead.
+
+**Removed:** the hourly `householdsShop` (4.2% of instructions in doc 69, before farms and the Wharf), the store
+room's `restockFromStore` and its `producerFor` call (about 2.5%), the 18:00 money steps, most journal volume (no
+NPC-to-NPC trade entries, no provision events; the shadow-diff narrowed).
+
+**Added, per day:** households scored and sorted (about 800, under 1 ms); one provision per household at its hour
+(raw stock moves); the nightly set and goods trim over about 1,000 accounts; the Board's sweep over 100-500 entries;
+the morning ripples (at most 13 updates per good with a net position); posting checks for up to about 50 routes;
+10-16 wagons that hop while unseen (an existing cost); a few staged events. **Per trade:** two ladders of at most 99
+steps and I3's minimum over about 10-30 markets; no ripples at trade time. Errand-runners only near players, at most
+2 a cell.
+
+**The gate (Phase 11):**
+- `world_check --simulate 6 8`, `--simulate 17 19` (the old peak and shop hours) and `--simulate 23 25` (the nightly
+  set and the day's turn), all at `--players 20`;
+- p99 at most 5.3 ms and worst at most 25 ms in every window; 17-19 and 23-25 no slower than 6-8 beyond noise;
+- a 30-day `--coarse-ticks` soak with a flat day's wall time and no state growth (the Board, committed departures,
+  caravans, the journal, the tallies, holds and staged wallets' goods stay bounded). The soak is a simulation: ask
+  the user first.
+
+## 16. Tests and checks
+
+All seeded and offline; each ctest takes seconds. No balance runs.
+
+1. **`status_tests`**
+   - At −100, −50, 0, 50 and 100, on worlds of 1, 4, 9, 14, 120 and 800 households: shares of the unguaranteed pool
+     within one household of the table; the realm-wide minimum holds; no destitute household without a reason.
+   - Shares, short-day chances and theft odds are monotone in the slider.
+   - The guarantees hold in their order of precedence (a House head in the Sump is rich); with the Sump deleted, no
+     error. A band never sits more than one from its home and class without an event.
+   - Never Broke empties destitute; Never Hungry empties short days.
+   - At most one band a week; "now" skips it; the slider smoothed to 10 a day; the same result on 1 and 4 threads;
+     save and restore round-trip with no band jump; the fortune noise stays within ±0.3 over 500 weeks.
+   - A `status.json` override that sums to 140, isn't monotone or has a share under 2% falls back to the default.
+2. **`life_status_tests`**
+   - A born child takes the household's band; an arrival placed in a post takes its household's; losing a post
+     lowers the score.
+   - Kept from `people_flow`: `noNpcIsMadeButByBirth` and `birthsFollowDeaths` (:194, :132).
+   - `theClasses` (:115) re-based on `postKind`.
+   - **With the city loop gone, succession still fills a post emptied for 8 days, and farm posts still fill.**
+   - A seeded 3-day small world: a comfortable household never shows hungry; a destitute one does on its short days.
+3. **`market_tests`**
+   - Twenty players buying bread raise its **shown** dozen price inside the clamp, and it decays to half at the
+     half-life (lazy and nightly decay agree). One player buying 10 loaves in Ridgemere moves the dozen by 1p.
+   - A lone player's day in Coldwater moves no good past ±0.15.
+   - A 30-ore dump pays less for each piece, then levels at the cap; the next morning bars at half and nails at a
+     quarter, no third step; each step keeps at most 6 goods; a cyclic recipe graph terminates.
+   - Buying and selling the same good the same day leaves no downstream pressure.
+   - A wagon's departure halves the source's glut; its arrival never raises a cargo good's P; a raid adds 0.15.
+   - Imported goods thin between wagons and refill on arrival; a market with no route refills each morning.
+   - The take allowance, the budget and the per-holder caps refuse with their reasons; a restart keeps the budget.
+   - Every catalogue good has a depth group.
+4. **`exploit_tests`** (properties, over 10,000 random states of slider × season × climate × region × district × P ×
+   quality × stall × faction standing × quantity, on **rounded, floored, discounted lots**):
+   - I1: every bought lot at least 1p, everything finite;
+   - I2: a round trip in one shop loses at least 40%;
+   - I3: for every good and every pair of markets and days, buying (at a stall or a shop, with any faction discount
+     or surcharge) and selling elsewhere or later never pays; the sweep covers lots of 1-5 pieces of every good from
+     1p to 20p at both clamp ends, and q = 1 for every 1p and 2p good;
+   - I4: crude, fine and masterwork share P;
+   - a 0p lot is refused and moves no pressure;
+   - a second character on the same account shares every cap (pressure, sell total, theft, stakes, welcome);
+   - a second character's purchases never raise a shop's budget;
+   - a 1p good's sold lot falls as P falls;
+   - a second theft from a lean NPC pays nothing; the daily theft cap holds against thousands of victims;
+   - the faction discount can't pay more than its weekly cap;
+   - a refund never exceeds its payment;
+   - 10^6 trades: no overflow, no NaN, no price at or under 0.
+5. **`trade_show_tests`** (grown from `roads_tests`' `townsAndCaravans`, :205)
+   - Departures are committed when posted, between real markets on real routes, carry no account, and keep their
+     notice's promise through a DM change.
+   - The driver is a real carter, away from his post for the trip, home robbed or hurt after a raid, never dead.
+   - Manifests name only goods the destination's shops stock or buy; notices use the calendar's weekday names.
+   - An arrival refills shelves and moves the Board at that moment; a raid raises P at the destination, posts a
+     bounty and leaves recoverable goods at the camp.
+   - No port, no ships; no staffed farms, no carts; notices post and expire; staged events post with their cause.
+   - An endpoint deleted while a wagon travels is a clean drop on load, and its letters reopen or refund.
+6. **`host_edit_tests`** (the robustness gate). Each fixture loads, stages something plausible and refuses nothing:
+   no port; one market; a market's merchants deleted; a lone merchant outside every community; every farm deleted;
+   every shop deleted; every carter deleted; zero households; a business label changed; an NPC deleted while it holds
+   an account; an item deleted while a player holds it (quarantined); an unknown good in pressure, a rule or an
+   override; a slider of 9999 or "abc"; a `status.json` override that sums to 140; a purse target of 10^9 (clamped);
+   a contract whose town is gone (refunded).
+7. **`save_compat_tests`.** Fixtures, each copied once with the user's say-so:
+   - a frozen pre-79 DEV checkpoint, holding `minted`, `sunk`, `loop`, `steer`, `fund:relief`, `outside:wharf` and
+     `farm:` accounts;
+   - a PROD-shaped save from `dev-old` (the old map): `stores:` town treasuries, caravans in transit with letters and
+     escorts taken, `bandits:` hoards holding player coins, NPC-posted contract escrow;
+   - a world package made before doc 79 (players poured into the treasury);
+   - a journal tail written by pre-79 code and replayed by post-79 code (it sets `society.minted`, `budgetDay` and so
+     on);
+   - a doc 78 §12.6 "Reset economy rules" copy from before doc 79 (only `steerLean`), which opens at prosperity 0.
+   - Each loads. **Player purses and escrow survive to the penny.** Dead accounts are gone and staged accounts sit at
+     their targets. The new state round-trips through wire and through the `world_store` Postgres tests.
+8. **`street_tests`**
+   - Thefts a day per market stay within the cap and rise as the slider falls; a 4-household hamlet sees a theft
+     every few weeks, not daily; hungry thieves take food from a till.
+   - Beggars are only destitute adults without a post, at most 2 a cell; the Restday dole sets `on_dole`; alms go
+     only to NPCs.
+   - Players empty a market's staple: that market's poor show more hunger the next day; the comfortable never do.
+   - Help a beggar: the next day they don't beg, and a `pair.owed` line can fire.
+   - The standing-still check: a player standing in a shop sees no stock change without a buyer in the room.
+9. **Talk, voice and the Mind**
+   - `wealth` and `class` come from the band; the price an NPC names equals the shown price; `world.<good>_price`
+     says up only when the shown price moved; a clamped dear-season push is blamed on the season.
+   - `business=failing` never pairs with "can't complain".
+   - The `means` field stays under 300 characters and carries the shown price and pay word (`tools/test_npc_mind.py`,
+     offline).
+   - Every new Tracery list, ship name, event and notice passes the forbidden-word check (`talk_tests`,
+     `voice_tests`).
+10. **Package and DM**
+    - `tools/test_world_package.py` rewritten (:171-178, :180-, :228, :305-314, :442-571, :703, :716-718): players
+      gone, no player ids, staged accounts and pressure dropped, the host's rule overrides carried, the package loads
+      on a fresh server.
+    - `tools/test_studio.py`'s slider test retargeted at `prosperity`; `tools/test_world_sync.py:1340` (seasons,
+      rules and services reaching the server) still passes; the edicts, ledger and year-log tests go.
+    - The client tests next to `canTradeItem` (`state.ts:2456`) cover a 0 unit price, the dozen list and the new
+      refusal strings.
+11. **`realBalanced()` everywhere `conserved()` was:** society, crime, letters, projects, gathering, director,
+    journal, aging, careers, wire, checkpoint, estates, roads.
+12. **Kept and trimmed:** `shops_tests` (players buy and sell at the shown price; shelves refill; sold goods move on),
+    `sim_fast` 1-269 (with `setUnseenStep`), `farm_people` placement (:284, :535), `estate`, `roads`.
+13. **`world_check --stage FILE`:** one JSON line per game day: per band its share, hungry share and thefts; per
+    market its price index, Times and cause; wagons, ships and events seen; faucets and sinks. For reading a soak,
+    never for balancing. A script of about 100 lines replaces `econ_report`, `econ_weeks` and `people_summary`.
+
+## 17. What goes
+
+**Core** (about 7,800 lines):
+
+| File | What goes | Lines |
+|---|---|---|
+| `Core/RatwCityLoop.cpp` | All of it, after `households()` (to Society), `postKind` (to Careers), `homeClass`, `shelfOf` and the seasons' `seasonal`/`priceFactor` (to a new `Core/RatwMarket.cpp`) move out | 3,138 |
+| `Core/RatwSteering.cpp` | All of it | 1,399 |
+| `Core/RatwWharf.cpp` | All of it | 470 |
+| `Core/RatwFarms.cpp` | Farm money, the schedule, `crewScale` and the area switch's off state. Kept (about 200 lines): `FarmNow`, `buildFarms`' list, `farmWorkplace_`, `countFarmPosts`, `farmOfPost`'s data, the areas and their season groups | about 440 of 642 |
+| `Core/RatwFarmPeople.cpp` | `staffFarms`' till and crew checks (:323-330); the `WharfFund` arrival purse (:527) | |
+| `Core/RatwSociety.cpp` | The store room (:1355-1683) except `startingStock`, which moves; `foundShops`' mint (:1346-1350); minting in `reset`; the restore gates, rewritten as reconciles; the old-save moves; `moneySupply`/`conserved` (:357-367), replaced by `realBalanced`; `soldToday_`/`soldOut_` (:404-409); the Greyfen demo roster's own mint and sink (:933-969) | about 450 |
+| `Core/RatwSociety.h` | `LoopState` (:245-375); `EconomySpec`'s `farms` and the loop fields (keeping `needsPaused`, `rules`, services, seasons and the three economy-line fields); the loop, farm money, Wharf and steering declarations (:755-1363); `moneySupply`/`conserved`; `TillFloat` | about 850 of 1,688 |
+| `Core/RatwResidents.cpp` | The mints (:58-59, :79, :146, :177); `restockFromStore` behind `storeRule` becomes the morning restock | |
+| `Core/RatwCareers.cpp` | The mints in `arrive` (:387-396); the `WharfFund` purse (:414-416). `items::producerFor` stays | |
+| `Core/RatwWire.cpp` | The loop save and `readLoop`; `minted`/`sunk` | about 290 |
+| `Core/RatwItems.h/.cpp` | `CityLoop::Steering`, `readSteering` (:394-492), `RATW_STEER_TABLE` (:911-923), most of `Rules[]` (:178-304); `houseBusinesses` (:802) moves to `market.json` | |
+| `Core/RatwGame.cpp` | `wharf.credit` (:958-975); `applyExternalNpcStates`' cash path and its `restore()` (:1830-1847) | |
+| `Core/RatwGameDev.cpp` | The store-room draw becomes a raw add into the till | |
+| `Core/RatwDirector.cpp` | The `minted`/`sunk` export (:334-336) | |
+| `Core/RatwGameJournal.cpp` | The minted/sunk/budget counters (:41-45, :181-190); the shadow-diff narrowed | |
+| `Core/RatwGameTalk.cpp` | `talkRichLine`, `richLine_`/`poorLine_` (:23-50); the per-speaker scan (:121-127); `wealth_days` (:129) | |
+| `Core/RatwTroubles.cpp`, `Core/RatwGameTroubles.cpp` | `foodDays` as the measure of wealth (:134-160), the trouble's coin cost (:190-196) and the help check (:463), rewritten by band | |
+| `Core/RatwRoads.cpp` | the `stores:` loads, the two-towns requirement, real caravan loads; the road layer's `towns_` uses move to markets | |
+
+The stale header comments at `RatwSociety.h:20-27` and `RatwResidents.cpp:15-19` are rewritten.
+
+**Data:**
+- `Data/Items/city_loop.json` (67 KB) goes. Each section's fate:
+  - `seasons`, `services`, `wharf` names, `shelves` (`startingStock`), `luxuries` (which goods the rich buy and
+    `times` touches), `houseBusinesses` (Houses' ownership, for bands and talk), `estates` (for the guarantees) →
+    `Data/Economy/market.json`;
+  - `wages` keeper words → the class word lists in `RatwCareers.cpp`; the pay amounts → pay words in `status.json`;
+  - `food` (food days) → gone; `status.json`'s food rows replace it;
+  - `patrons` and `markets` → gone, unless Phase 0's list finds a kept reader, in which case they move to
+    `market.json` too.
+- `Data/Economy/country_farms.json` keeps its farm defs (keepers, hands, kind, area, works areas), which
+  `staffFarms`, `tools/worldgen/realm2_places.py:742-745` and `tools/test_realm2.py:167-197` read. Its money fields
+  (yields, prices, schedule, `crewScale`, wages) go.
+- `Data/Items/regions.json`: already dead; it goes.
+- Kept: `communities.json`, `farm_people.json`, `workshops.json` (buildings), `crafts.json`, `businesses.json`,
+  `items.json`, `ladder.json` (projects read it, `RatwGameProjects.cpp:36-37`).
+- New: `Data/Economy/status.json`, `Data/Economy/market.json`. Both are defaults; host changes live in
+  `live.economy.rules`.
+
+**Tests** (about 8,200 lines): `steer_tests`, `farms_tests` (its staffing cases move to `life_status_tests`),
+`wharf_tests`, `selfcorrect_tests`, `treasury_tests`, `econ_fix_tests`, `trades_tests`, `workshops_tests`,
+`season_tests` (its `theFactorsByDay` idea is rewritten into `market_tests`), `store_room_tests`, the unregistered
+`Tests/society_soak.cpp`, and their `add_test` registrations in `CMakeLists.txt` (:255-305). The 260 `conserved()`
+calls become `realBalanced()`.
+
+**`world_check`** (about 1,400 lines): `moneyReport`, `EconomyDetail`, `EconomyRecord`, `EconomyWatch`; the flags
+`--economy*`, `--steer-table`, `--farms*`, `--rule-at`, `--loop-state`; `Society::setShortageWatcher`. **Kept:**
+`--fast` (still `--unseen-step 30 --straight --coarse-ticks`), `--unseen-step`, `--straight`, `--coarse-ticks`,
+`--day`, `Society::setUnseenStep` and `World::setStraightOffstage`: they are sim speed, not economy.
+
+**Tools** (about 10,600 lines): `steer_accept`, `steer_calibrate`, `steer_floors`, `steer_measures`, `steer_runs`,
+`econ_report` and its test, `econ_detail`, `econ_weeks`, `econ_diff`, `econ_table`, `people_summary`,
+`farms_summary` and `test_farms_summary.py`, `wharf_rename_compare`, `city_loop`, `city_capacity` and
+`test_city_capacity.py`, `country_industry` and `test_country_industry.py`, `supply_balance`, and `tools/econ_model/`
+(already dead). In `item_catalog.py` (:199, :209), the requirement for craft and producer `hours` from `apply_ladder`
+goes, not only the pointer.
+
+**DM and Editor** (about 900 Python and 2,300 TS lines): `studio.py`'s steering helpers (:143-322), most of `Economy`
+(:323-1042) and the drift view; `map_editor.py`'s steering and loop settings; `dungeon_master.py`'s `money()` and
+`wharf_*` (its `stores:` read at :1011 now feeds the Prosperity tab's town treasuries); `SteeringPanel`,
+`steering.ts` and its test, `WharfCredit`, `WharfPanel`, `FarmsPanel`'s wages, `RulesPanel`'s held rules;
+`Editor/src/dm/EconomyTab.tsx` (106 lines) and `Editor/src/studio/EconomyControls.tsx` (150), rewritten for the slim
+rules; `SeasonsPanel.tsx` (97), retargeted at `market.json`'s overrides; `Editor/src/lib/economy.ts` and its test,
+trimmed of steer tags; `sync.ts`'s `economy` conflict block (:67-70, doc 66); the "economy is never touched" copy in
+`UpdateFromLive.tsx:82` and `ServerTab.tsx:192`, checked and reworded.
+
+**Artifacts:** `artifacts/economy`: 28 GB untracked on disk, 34 MB tracked. Deleting it is the user's call (D18).
+
+## 18. What players keep
+
+- **Their purses,** real to the penny, with every limit as today.
+- **Buying and selling at NPC shops,** through the same protocol (`RatwGame.cpp:4904-4937`, :4100-4140), with three
+  new ware fields (list count, smallest sell lot, trend). Prices still react, now to them: to their buying, their
+  selling, the season, the harvest, wagons, ships and staged events.
+- **Every player-to-player path:** stalls (`RatwStalls.cpp`), gifts, letters and enclosures, lending, game tables,
+  Chapters and their treasuries, projects, contract escrow, story prizes, theft between players.
+- **Ways to earn:** selling gathered, hunted and looted goods, rewards (factions, archive, festivals, bounties,
+  escorts, story prizes), courier contracts, recovering raided cargo, crime, stalls. All of them now always pay,
+  within each faucet's cap, because staged payers are topped up.
+- **Ways to spend:** shops, repairs, lodgings, Chapter rents and buildings, fees, postage, fines, companion and Hold
+  wages. They are the sinks, and the NPCs a player pays now show it.
+- **Faction terms** (the surcharge as today, the discount capped per Chapter per week), **the maker's scent, wear,
+  repairs, qualities, the 10% stall discount, `SellBackShare`.**
+- **Apprenticeships** with NPC masters (`Society::apprentice`), unchanged.
+- **The welcome** of 20p, 2 herbs and 3 meals, now never short, once per account per world per game week.
+- **Things that come back:** caravans to escort and bandits to rob, bounties, courier carts, ship days, beggars to
+  help, keepers who talk about business, staged events to follow.
+
+## 19. Phases
+
+"Plan" is the careful estimate. "Expected" is about 0.3 of it for familiar work (Python, DM screens, talk data, the
+port) and about **0.45** for the phases that are new kinds of work or untangle threaded C++: Phase 0, the Board, the
+bands, the cut, the roads, street life and staged events. The 0.3 comes from doc 77's record (0.12-0.26 on greenfield
+Python), so it is generous for familiar work. **Reviews are counted at face value,** as doc 78 does, because doc 77's
+reviews found 25-35 findings each. If a phase runs past its **expected** hours, stop and ask (memory
+`session-budget`).
+
+**Slice 1: the staged core**
+
+| Phase | Work | Plan | Expected |
+|---|---|---|---|
+| 0. Loop off | Copy the frozen DEV and `dev-old` fixtures (the user's say-so) and write `save_compat_tests` first; move `postKind` and `households()` (with the homeless); keep the farm list and drop `staffFarms`' account checks; minimal food by class, the nightly purse and treasury set, the welcome as a faucet; one rule that switches the city loop, steering, Wharf and farm money off (building on `needsPaused`); run the full ctest suite with it on and **list every failure and every kept reader of `city_loop.json`, `house:` and `towns_`**; a perf baseline of the 17-19 and 23-25 windows on today's code (the user's go-ahead) | 6-9 | 3-4 |
+| 1. The Market Board | `Core/RatwMarket.*`: markets found at load (ids, lone merchants, k-nearest routes); P, decay, the per-piece ladder, the per-holder decaying cap, net positions and the morning ripples (capped fan-out, upstream value weight); depth by catchment; the clamp with season and district inside it; I1-I5 in `quote`, floored sell lots, the per-holder backstop live; the goods-at-0 sale path; the budget (saved), the on-demand till top-up, the take allowance, the sell total; shelf targets and the morning restock; `quote` replaces `shopFactor` outright; the faction discount cap; the client's dozen list, `sellLot`, ▲/▼ markers, "BUYING TODAY" and `canTradeItem`; `board` saved; `market_tests` and `exploit_tests` | 18-24 | 8-11 |
+| 2. Bands and staged accounts | `statusOf`, the score (home, bounded fortune, events, earning from players), the pool, the reasoned cut, precedence, saved `{band, since, liftedUntil}`; `status.json` with its checks and overrides; food from the shelf with short days and buy-ahead; holds, lean days, the goods trim; refunds capped; `classify` with the full prefix table, escrow sources and the faucet tallies (log only); the faucet caps; staged payers topped up (the `min(cash)` sites); the direct familiarity step; `wealth`/`class` facts and the Mind's `means`; `status_tests` and `life_status_tests` | 16-21 | 7-9.5 |
+| 3. The cut | Delete the city loop (after what moves), steering, the Wharf, farm money, the store room, minting, the wire loop; restore's gates as reconciles, quarantine, read-past; journal narrowed; `world_check` stripped (sim flags kept); tests and tools deleted; `conserved()` → `realBalanced()`; `world_package` changed; Editor files trimmed; the succession and farm-post tests; docs marked superseded (section 21); notes and memory pointers marked history, with the user's say-so (0.5 h) | 20-28 | 9-12.5 |
+| Review A | Two reviewers: the code (exploits, saves, faucets) and the look (does T1-T17 hold so far) | 6-8 | 6-8 |
+| **Slice 1** | | **66-90** | **33-45** |
+
+Phases 1 and 2 can run in parallel after Phase 0. Both touch `RatwSociety.cpp`: Phase 1 owns `quote`, `trade` and
+`transfer`; Phase 2 owns `restore`, the accounts and the nightly set.
+
+**Slice 2: the world comes alive**
+
+| Phase | Work | Plan | Expected |
+|---|---|---|---|
+| 4. The roads | Markets drive the road layer (law stays on `towns_`); committed, saved departures; real carters as drivers; manifests filtered to the destination's shops; departure and arrival nudges; late with causes; raids, recoverable cargo, bounty caps; dropped caravans' letters and orphaned contracts; farm carts every morning with harvest loads and baselines; Marketday stalls from carts; regional restock and the back-room buffer; notices with weekday names; `world.news`; `trade_show_tests`, `host_edit_tests` | 20-28 | 9-12.5 |
+| 5. The port | The committed ship timetable, the Wharf's crowd and tasks, import and export nudges toward baselines, the board timetable, `world.ships`. (A ship at the pier: +4 plan, +1.5 expected, if D8 says so) | 6-9 | 2-3 |
+| 6. Street life | The expected theft count and targets, the till-food path in `steal()`, band-scaled takes, `worth()` from the Board; begging, the Restday dole, rough sleeping; errand-runners near players with per-cell caps; the standing-still rule for staged sales; `business` from sales, `on_dole`; the "short" trouble by band; the lifted state and its cap; `street_tests` | 14-19 | 6.5-8.5 |
+| 7. Staged events and causes | The seeded event scheduler and its list in `market.json`; the slider's cause (DM text or the seeded list), `world.times_cause`, criers and notices; override notices; the harvest lean | 4-6 | 2-3 |
+| 8. Talk | Price topics back with shown prices, the shown-price gate, cause attribution, `topic.item` widened, the keeper's trade answer, class-gated tags, the failing salience rule, 450-650 new lines, the forbidden-word check | 14-20 | 4-6 |
+| **Slice 2** | | **58-82** | **23.5-33** |
+
+Phases 4-8 all edit `Data/Talk/facts.json`, `RatwAmbient.cpp` `sceneTopics`, `RatwGameTalk.cpp` and `RatwRoads.cpp`.
+**They run in sequence by default.** If the user wants parallel sessions, the owner of each shared file is named
+before they start, and a merge line adds about 2-3 plan, 1-2 expected (D30).
+
+**Slice 3: hosts and gates**
+
+| Phase | Work | Plan | Expected |
+|---|---|---|---|
+| 9. DM, Atlas and the database | Migration 0061; lenient Authoring with season lines; `world_store`, `live_edit`, `world_build`; the studio slimmed; host overrides of `status.json` and `market.json` in `live.economy.rules`; the Prosperity tab with the player-money report and the week's wagons, ships and events; the slider re-meant with its cause; band, harvest and Times overrides; reset prices; the Band picker; the `paid` relabel; Editor panels cut and retargeted; `dm_service` and the Director; DM tests | 16-22 | 5-6.5 |
+| 10. Look and feel | A hard box: the user plays a scratch server against the T1-T17 checklist; numbers tuned (meal counts, depthBase, half-lives, shares, event rates); then stop and ask | 6-10 | 3-5 |
+| 11. Gates | `--stage`; the 17-19 and 23-25 windows; the soak (the user's go-ahead); the PROD apply plan; the doc's Progress | 6-9 | 2-3 |
+| Review B | Before PROD, if the user wants it | 6-8 | 6-8 |
+| **Slice 3** | | **34-49** | **16-22.5** |
+
+**All three: about 158-221 plan hours, about 73-101 expected,** with both reviews. Without Review B: about 152-213
+plan, 66-93 expected. The stop-and-ask rule uses these numbers.
+
+**What the reviews changed in the hours.** The first draft said 124-172 plan, 47-64 expected. The rise comes from:
+Phase 0 (new, 6-9 plan); the 0.45 factor on the cut and street life (+3-4.5 expected); reviews at face value (+6-8
+expected); the look-and-feel box (6-10 plan); staged events and causes (4-6 plan); and the believability work the
+reviews asked for: real carters, committed schedules, regional restock, shelf-tied hunger, the dozen list (about 12-16
+plan across Phases 1, 2, 4 and 6).
+
+Order and dependencies:
+- **0 → (1 and 2) → 3 is the critical path.** Food must come from bands before the city loop's shopping is cut, or
+  every NPC starves; Phase 0 puts minimal food in first. `postKind` and the farm list must be in before the cut, or
+  succession and farm staffing stop.
+- Phases 4-8 follow Phase 3, in sequence by default. Phase 9 can start after Phase 2.
+- Tuning waits for Phase 10 (memory `implement-before-balancing`).
+- **Doc 78:** its M0-M4 and R1 don't touch the economy and can go first. Its M5-M7 (the settings allowlist, "an
+  economy lever to try", "Reset economy rules", the `live.economy` copy) wait for Phase 9's migration 0061, or are
+  built against the slim table from the start. If they go first on today's table, add 2-3 plan, 1-1.5 expected to
+  Phase 9 for the rework (D22).
+
+### Decision points
+
+- **After Phase 0:** the first check-in. The failure list and the kept readers say whether Phase 3's hours hold. If
+  they don't, re-plan Phase 3 before Phase 1 starts.
+- After Phase 1: does the clamp leave the seasons enough swing? If not, D2 or the season tables change, never the
+  clamp's bound.
+- After Phase 2: show the user a census at −100, 0 and +100 on DEV's households (a read, not a simulation).
+- After Phase 3: Review A, then the user tries a scratch server before slice 2.
+- Phase 10 is boxed: at its expected hours, stop and ask.
+- Before Phase 11's soak: ask.
+
+## 20. Risks
+
+| Risk | What we do |
+|---|---|
+| Every NPC starves between cutting the loop and feeding by band | Phase 0 puts minimal food in before anything is cut; a seeded 3-day test that a comfortable household never shows hungry |
+| Succession or farm staffing stops when `payOf` and farm money go | `postKind` and the farm list rehomed in Phase 0; the 8-day succession and farm-post tests |
+| The cut is bigger than planned | Phase 0's failure list measures it before Phase 3 is re-planned |
+| Players find a money loop (hauling, seasons, rounding, stalls, qualities, faction discounts, a second character) | I1-I5 inside `quote`, constants not levers; sold lots floored; the per-holder backstop on rounded lots; the faction discount capped; every cap per account holder; property tests over small lots and both clamp ends |
+| A faucet runs unlimited now that the world always pays (theft, stakes, the welcome, bounties, raided cargo) | A cap per account holder on each, in the faucet table; `realBalanced()` in every test; the Prosperity tab's made-against-sunk report |
+| Players push Times to win bigger budgets or more thieves to report | Times reads no player-caused pressure |
+| One player crashes a market for everyone | The decaying per-holder cap (±0.15), the daily sell total, the take allowance, depth's floor of 20, decay |
+| Ripples ratchet prices for everyone at no cost | Ripples from the net daily position; value-weighted upstream; capped at 0.15; counted against the holder's cap |
+| A small hosted world looks dead | Wagons, harvest carts, ships and staged events move prices whatever players do; regional restock makes wagons matter |
+| Talk contradicts the shelf | Talk reads the shown price; up or down only when it moved by 1p; causes from what moved the clamped factor |
+| A notice lies | Departures and ships are committed and saved when posted; only announced causes change them |
+| Prices or bands move with no cause in the world | The timing rule; a cause for every slider move; override notices; the standing-still rule |
+| A restart changes what players see | Budgets, holds, lean days, bands and committed departures are saved; load settles only what is missing |
+| A host's edit stops a world loading | Lenient on read everywhere; quarantine for unknown items; `host_edit_tests`; `save_compat_tests` |
+| Player escrow is lost when a host deletes a town or a road | Letters reopen or refund; orphaned contracts refund; tests |
+| Hosts can't edit `Data/` | Defaults in `Data/`; host overrides in `live.economy.rules` |
+| Slider whiplash | Smoothing at 10 a day, one band a week, percentile hysteresis; "now" only on purpose |
+| Theft becomes a crime wave (Oblivion's Radiant AI) | An expected count per market, never more than 4 a day; food-first targets; lean days |
+| Bandits punish rich players (RimWorld) | Camps follow the slider and season, never players' purses; strength and bounties capped |
+| Keeper-customer bonds stop growing | The direct familiarity step each day; errand-runners near players |
+| The event store floods, or the Mind remembers provisions as gifts | Provisions are raw stock moves with no WorldEvent |
+| Off-screen carter deaths distort births | Raided carters come home robbed or hurt, never dead |
+| Old saves won't load | Read-past fields, lenient restore, four kinds of frozen fixture |
+| PROD's migration path | 0061 only drops and redefines; PROD applies 55-61 in order; the push is the user's |
+| Doc 78 is built on today's economy table | Its M5-M7 wait for 0061, or the rework is budgeted (D22) |
+| Parallel sessions collide on talk and roads files | Phases 4-8 in sequence by default; named owners and a merge line otherwise |
+| Tuning eats the schedule, as in docs 64, 73 and 75 | One boxed look-and-feel phase; no balance runs; stop and ask at its expected hours |
+| The day's cost growth over a year comes back | The soak watches the Board, departures, caravans, journal, tallies, holds and staged goods for growth |
+| Losing something visible people liked | T1-T17 as the acceptance list for every phase; Review A looks at the look as well as the code |
+
+## 21. What changes in docs 42, 61, 63-75, 77 and 78
+
+Each superseded doc gets a banner at its top: "Superseded by doc 79 (2026-11-08) except where doc 79 says it stays."
+The docs stay as history. `Docs/Hosting.md:8` ("their economy") is checked and reworded if needed. About 12
+auto-memory entries describe the dead economy (stable economy, the Wharf, economy steering, the orchestrator, money in
+circulation, industry of the realm and others); they are marked history with the user's say-so (Phase 3).
+
+**Doc 42, money in circulation.**
+- The brief, decisions and the rule against hoarding: history. The "rule against hoarding" now means only that a
+  staged purse moves down as well as up.
+- Phase 1 (town purses, the monthly reckoning): superseded; town treasuries are staged `stores:` accounts.
+- Phases 2, 3, 3b and 3c (who pays wages, a living for every wolf, work out of town, industry outside the gates):
+  superseded; nobody pays NPC wages. The posts themselves stay.
+- Phase 4 (NPCs take contracts): the NPC-posted courier contracts come back, as a capped faucet.
+- Phases 5 and 5b (towns and churches spending; Houses own businesses): the money goes; Houses' ownership stays (now
+  in `market.json` `houseBusinesses`) as an input to bands ("a House head is rich") and to talk.
+- Phase 6 (Restday at church): the schedule stays; the dole (section 10.2) is new.
+- Phase 7 (caravans and regional goods): replaced by staged caravans (section 8) and the region factor.
+- Phase 8 (watching the money): replaced by the Prosperity tab.
+- "Starting money": the 20p welcome stays, as a capped faucet. The later rounds (the month's test, pools, spoilage,
+  pressure, taxes, farmhands): history.
+
+**Doc 61, industry of the realm.** `houses.json` and `specialties.json` no longer exist (b431ab1). The Houses'
+businesses live on as `city_loop.json`'s `houseBusinesses`, moved to `market.json`, for bands and talk. The towns'
+trades live on through the region factor, read from `workshops.json`, `communities.json` and `crafts.json`
+`supplies`. Building materials: history. The farms become carts and harvests. Results and testing: history.
+
+**Doc 63, a stable economy.** All research, history. Its "rich and poor stay, and stay put" lives on as the rank-based
+bands; the seventh pass's lessons (hoarding, crashing markets) shaped the caps. The worth ladder stays only for
+`projectHourValue`.
+
+**Doc 64, bringing the model into the game.** Superseded whole: Phases 0-13 and every balancing round. What stays:
+"A. The penny" (whole pennies); Phase 8's lives, skills and masters (now Careers); Phase 10's hunting for players;
+Phase 11's Holds as keeps (Chapters' Holds).
+
+**Doc 65, a supported economy.** Superseded whole. The businesses and posts it placed stay.
+
+**Doc 66, worlds, Atlas and the DM.** Section 5 ("the economy rules erased") is the first erasure; doc 79 is the
+second, and its "what their needs bought (food) is paused" is replaced by food by band. The Progress note on "the live
+world's truth: NPCs and markets in conflicts" loses its market and purse conflicts (`sync.ts` :67-70): staged
+accounts are derived. The rest stays.
+
+**Doc 67, Ridgemere 2.0: the city.** Section 4 (businesses and jobs) and "jobs by class" stay; class now comes
+through `postKind`. Section 6 (the internal store room, R35-R39) and its Atlas Economy controls are removed. "Food
+rebalance": history.
+
+**Doc 68, the Country and the city's loop.** Sections 1-8 (the loop as money flows, the Country as money, residents'
+buying, wages, the treasury, carriage, the restocking rule, rent): superseded. Section 9 (Atlas, the DM and the
+settings) is cut down to section 12 here. Sections 10 and 12 (stability gates, export trades): history. In Progress:
+seasons stay (moved to `market.json`, inside the clamp); self-correcting rules go; "players in the shifting market" is
+replaced by the Board; "births follow deaths; arrivals from the Country" stays, minus the purses from the Wharf fund;
+the treasury's target goes.
+
+**Doc 69, simulation speed.** Fast-forward, threads, determinism, births on the harness path, `--fast`,
+`--unseen-step` and `--straight` all stay (sections 1-9). Section 10 (running an economy simulation) and "the
+economy's levels and report": superseded by `--stage`.
+
+**Doc 70, the realm.** The map stays. Section 7 (costs, the perf gate) gains the 17-19 and 23-25 windows.
+
+**Doc 71, the Country's industries.** "The model: how the game pays and feeds a wolf" and sections 1-3 (the Country's
+money, yields, reserves): superseded. Section 4's Phase C (real NPCs replace the virtual crews) stays as `staffFarms`,
+on the kept farm list. Section 6 (the placement list) stays.
+
+**Doc 72, pulling the Country into the world.** Sections 1, 3 and 4's money (what the Country sells and buys, who pays
+its posts, the industries' accounts) and the land rent: superseded. The siting, the works, the communities' places and
+farm tracks stay, as endpoints and routes. "The town sites, erased and kept": the communities become markets, plain
+for law. Cheese as the rich's luxury stays, as flavour.
+
+**Doc 73, the Wharf.** Section 2 (the rename) and section 3 (where it is: posts and places) stay. Section 4 (the
+market valve) and section 5 (orders by wagon) are removed. Section 6 (controls) keeps only `shipsPerWeek` and
+`neverImported`. Section 7 (reports) is removed. Sections 8-10 and the stabilizing rounds: history. Open question 5
+(wagons on the road) is answered by section 8 here.
+
+**Doc 74, steering the economy.** Superseded whole. Section 2's slider keeps its control and wiring with a new meaning
+and gains a cause. Section 7's Never Hungry and Never Broke become clamps. Section 9 (money conservation) goes, and
+`realBalanced()` takes its place in tests. Section 10 (the DM tab) is replaced by section 12 here.
+
+**Doc 75, the economy controller.** Superseded whole. Section 3.8 (how admins see it) becomes the Prosperity tab.
+Sections 3.6 (the supervisor) and 4.2 (Crown charters) go. Phase 7's edicts, ledger and year of log become "word on the
+street" and the slim log.
+
+**Doc 77, central accounts and hosted worlds.**
+- Section 2 (:129-130): the purse is still `society.accounts[charId]`, but only player money is conserved. Per-player
+  caps are keyed by the central account.
+- Section 5.1 (:374-376): folding a dormant wolf back becomes a plain delete of its account (still not built;
+  :1171-1172).
+- Section 8 (:497-504): the package's strip is by deletion, staged accounts are dropped, pressure is reset (section 13
+  here).
+- Section 11 (:630-631): "`Society::conserved` holds after a thousand arrivals" becomes "`realBalanced()` holds; the
+  package scan finds no player ids".
+- Section 14, Q1 (:428, :701-703): wallets can't travel between worlds "because of conservation" loses its reason. It
+  becomes a fresh question (D15). The Progress notes at :1102, :1135, :1375, :1474-1475 and :1494 that mention
+  conservation are history.
+
+**Doc 78, hosts run their own worlds.**
+- Section 2's tab table (:279-280): Economy becomes the prosperity slider and its cause, the clamps, seasons, harvest
+  overrides, Times nudges, band overrides, the pressure rules, the faucet caps, events and reset prices; "Money &
+  calendar" loses Wharf credit and gains the Prosperity tab.
+- Section 8's allowlist (:1132, :1135): Wharf credit goes; "the controller's floors are the safety net" becomes "the
+  clamps, the caps and the rules in `quote` are".
+- Section 12.2 and 12.6 (:1230, :1400, :1449): "Reset economy rules" copies a handful of fields; "the controller's
+  floors meanwhile" becomes "the invariants hold whatever the rules say".
+- Section 16 (:1650): the same change to the economy risk.
+- M5, M6 and M7 (:1510, :1518) stand, built on the slim table (D22).
+
+Also touched, not superseded: doc 62 (talk) gains the facts in section 11; doc 59 (lamps and homes) waits to be
+rewritten as cosmetic (D13); doc 35's crafting, when built, follows I5.
+
+## 22. Decisions for the user
+
+Each has a recommendation. "Go with the recommendations" takes them all.
+
+1. **D1. How many bands.** (a) Four (destitute, poor, comfortable, rich), the talk library's words, with class as a
+   second axis; (b) five, adding "working", which reads as comfortable to existing lines; (c) six, as some games do.
+   *Recommended: (a).* No content changes, fewer rows to tune. (b) can be added later without breaking (a).
+2. **D2. Should the slider move player prices?** (a) Narrowly: staples a little dearer in hard times and luxuries in
+   a boom, at most ±8%, inside the clamp; (b) not at all: it moves NPC wealth, hunger, theft and talk only.
+   *Recommended: (a).* Players feel hard times, and the clamp keeps it safe.
+3. **D3. Hauling between markets.** (a) Strict: buying from one shop to sell to another never pays (I3); trade's fun
+   is selling your own goods where they're dear, stalls, escorts, recovered cargo and bandits; (b) a bounded trader's
+   margin of up to X% on some routes, which turns hauling into a faucet. *Recommended: (a)* for hosted worlds; (b)
+   can be a later rule with its own cap.
+4. **D4. Cheap goods.** Bread, ore and 56 other goods cost 1p, so a single piece's price can't show a move. (a) List
+   goods under 3p by the dozen ("12 for 13p"), sell lots rounded down with a smallest sell lot, and 0p lots refused;
+   (b) raise staples and forage to at least 3p in `items.json` and keep single-piece lists. *Recommended: (a).* It
+   keeps today's prices and makes T1 visible; (b) is a data change that can follow if gathering income feels thin in
+   Phase 10.
+5. **D5. Who buys raw goods.** For "dump iron ore" to happen a shop must buy it. *Recommended: the smithy, the
+   ironworks and the foundry buy iron ore* (a data change in `crafts.json` `buys`). The ironworks and foundry already
+   buy iron bars; the general store keeps its stone, clay and sand.
+6. **D6. Ridgemere as markets.** (a) One market for prices, with bands ranked city-wide, the district factor and the
+   district guarantees giving each quarter its flavour; (b) several (the Commons, the Wharf, the Heights).
+   *Recommended: (a).*
+7. **D7. Communities as markets.** They become markets for trade, caravans and bandits but stay plain for law.
+   *Recommended: yes.* It answers doc 73's open question 5.
+8. **D8. A ship at the pier.** (a) Ships as notices, crowds and talk only; (b) a visible ship (+4 plan hours).
+   *Recommended: (a) first,* (b) later if wanted.
+9. **D9. The Greyfen demo roster** (`decide()`, `RatwSociety.cpp:563-972`, used by 5 test files). *Recommended: keep
+   it, without its own mint and sink (:933-969);* retire it separately later.
+10. **D10. `live.business_settings`.** *Recommended: drop it* in 0061. Re-meaning it as "this shop is closed" can
+    come later if hosts ask.
+11. **D11. NPCs picking players' pockets.** *Recommended: out in v1.* Theft stays NPC against NPC and shops; a
+    player-targeted version needs its own noticing and feedback.
+12. **D12. Evictions and rough sleeping.** *Recommended: never evict;* show destitute residents sleeping rough on some
+    winter nights.
+13. **D13. Doc 59 (lamps and homes).** *Recommended: rewrite it later as cosmetic by band* (lit windows, hearth smoke,
+    dimmer road lamps in hard times, lamplighters as an apprenticed post). Not in these phases.
+14. **D14. Bandits.** *Recommended: camps scale mildly with hard times and the season, never with players' wealth,*
+    with strength and bounties capped.
+15. **D15. Player purses across worlds** (doc 77, Q1). Conservation no longer forbids it. *Recommended: leave it
+    closed for v1;* it is a fairness question between worlds, not an economy one.
+16. **D16. The faucet door.** (a) Log and alert only in play, enforced in tests through `realBalanced()`; (b) enforce
+    in play at once. *Recommended: (a).* (b) would break paths nobody has registered yet. Later still, the call sites
+    could move to `spend`/`earn` and NPC accounts go entirely; not needed now.
+17. **D17. Smoothing.** The slider moves at most 10 points a day (a full swing in about 20 days), with a DM "now".
+    *Recommended: yes.* 20 days reads well in a game week or three.
+18. **D18. `artifacts/economy`.** 28 GB untracked, 34 MB tracked. *Recommended: delete the untracked runs; leave the
+    tracked reports where they are as history.* The user's call.
+19. **D19. PROD.** (a) Gets doc 79 when it moves to the new map; (b) gets it on the old map now. *Recommended: (a).*
+    One migration path, and the old map's economy isn't worth porting.
+20. **D20. Dead columns.** (a) Leave `live.economy`'s and `live.npcs`' dead columns in place, ignored; (b) drop them in
+    0061. *Recommended: (a)* for now, safe on either migration path; drop them once PROD has moved.
+21. **D21. Errand-runners near players.** Households' shopping trips shown where a player is near, at most 2 a cell
+    and 12 a market, behind a rule. *Recommended: on.* It is the one place a player watches NPCs buy.
+22. **D22. Order with doc 78.** (a) Doc 78's M0-M4 and R1 go when ready; M5-M7 wait for doc 79's Phase 9 (migration
+    0061); (b) doc 78 goes first on today's table and Phase 9 absorbs the rework (+2-3 plan, +1-1.5 expected).
+    *Recommended: (a).*
+23. **D23. Where the welcome is counted.** (a) Once per central account per world per game week, later wolves that
+    week getting 3 meals only; (b) once per character, as today. *Recommended: (a).* (b) is an unlimited faucet now
+    that the treasury never runs dry.
+24. **D24. Town treasuries.** (a) Keep `stores:<community>` as staged town treasuries (each set nightly between 200p
+    and 2,000p); (b) fold every town into the one `treasury`, so town festival purses become realm money.
+    *Recommended: (a).* Fourteen files use them; keeping them is less work and keeps towns distinct.
+25. **D25. Staged events.** (a) On, 1-3 per market a week, with notices; (b) off. *Recommended: (a).* It is what keeps
+    a one-player hosted world from looking dead.
+26. **D26. Real carters as drivers.** (a) Yes: a carter is away from his post for each trip, and wagons are capped by
+    carters; (b) the wagon stays a nameless character. *Recommended: (a).* It costs about 2-3 plan hours and makes T4
+    true.
+27. **D27. Regional restock.** (a) Imported goods refill only on arrivals, from a back-room buffer between; (b) every
+    shop refills everything each morning. *Recommended: (a).* Without it wagons change nothing a player can see.
+28. **D28. The faction discount.** (a) Keep it as coins back, capped per Chapter per week (30p); (b) pay it as
+    standing instead; (c) fold it into the backstop, lowering sworn players' sell prices. *Recommended: (a).* It keeps
+    the feature players know and bounds the loop to the cap.
+29. **D29. Phase 0 first.** (a) Switch the loop off first and measure what breaks, then build the Board on one price
+    path; (b) the first draft's order (Board beside the old loop, then bands, then the cut). *Recommended: (a).* The
+    real unknowns are on the far side of the switch.
+30. **D30. Phases 4-8.** (a) In sequence; (b) parallel sessions with named owners of the shared talk and roads files
+    and a merge line. *Recommended: (a),* unless the user wants the calendar time back.
+
+## Progress
+
+Nothing built yet.
+
+- **2026-11-08: drafted.** From seven code maps, three designs and three judges' grafts. Plan only.
+- **2026-11-08: revised** after four reviews (see Review). Plan only.
+
+## Review (2026-11-08)
+
+Four reviews of the first draft, all read-only against `ridgemere2` at c8ac05c: one checking the code claims, one on
+exploits, robustness and migration, one on believability (a week as a player in Ridgemere and Coldwater), and one on
+scope, hours and the first slice. No code was run and no database was queried.
+
+### Changed: money loops and faucets
+
+- **Rounding.** Sold lots now round down, and the backstop is applied to rounded, floored lots. The draft's "the
+  rounding moves a lot by under a penny" was wrong: selling one 1p good paid 1p at any factor over 0.91, and 13 small
+  lots made 1p a trip across markets. `exploit_tests` sweeps lots of 1-5 pieces of every good from 1p to 20p at both
+  clamp ends, plus q = 1 for 1p and 2p goods.
+- **Sub-penny sales.** `transfer` refuses a price under 1p a piece and `trade` splits the total by quantity, so the
+  draft's "99 ore pays 54p" could never execute. Sales now move goods at price 0 and coins with one `shift`. A 0p lot
+  is refused in words and moves no pressure. The client's `price > 0` test changes, and each ware carries its
+  smallest sell lot.
+- **Faction discounts** (`RatwGameFactions.cpp:467-492`) reopened the hauling loop: a sworn Chapter's 25% back
+  lowers the bound to about 1.23, well inside the clamp. The discount is now capped per Chapter per week and logged
+  as a faucet (D28). The draft's "faction terms don't change" is gone.
+- **The ripple ratchet.** Ripples now come from the day's net position, so churn moves nothing; they land the next
+  morning; upstream ripples are value-weighted; ripple-caused |P| is capped at 0.15; each counts against the
+  holder's cap. The fan-out is capped at 6 goods a step (uncapped, ore reached 35 goods and charcoal 116).
+- **Every per-player cap is per account holder,** so a second wolf shares them.
+- **New faucet caps:** pickpocketing staged NPCs (20p a day, take by band), staked games against NPCs (30p a day),
+  raided cargo (about 40p a camp), bounty value and camp strength, the welcome (once per account per world per week,
+  D23).
+- **"Always pays" is made true:** staged payers are topped up on demand, and tills are topped up to the lot within the
+  budget. The `min(cash)` sites are listed for change.
+- **`classify` covers every prefix** (all 22 of `facilityAccount`, plus player ids and `treasury`), by prefix, never
+  by function name. `bandits:` is escrow; `chapter:` is real (the second `treasuryOf` would have been wiped by a
+  nightly set written by name); `stores:` stays as the staged town treasury (D24). Escrow carries its source and the
+  faucet is counted at payout, which also settles festival pots.
+- **Goods in staged wallets are trimmed,** and food is topped up to a target, not added daily. Goods leaving the
+  staged side to a player count in the tally.
+- **Times reads no player pressure,** so players can't push budgets up or manufacture hard times.
+- **`conserved()` asserts become `realBalanced()`,** not stripped (260 calls in 37 files), so tests still catch
+  duplication bugs and unregistered faucets.
+
+### Changed: believability
+
+- **T1 can be seen.** Bread is 1p and the list showed one piece, so its listed price never moved. Goods under 3p are
+  listed by the dozen (D4), talk claims a move only when the shown price moved by 1p, and the client gets ▲/▼
+  markers with causes.
+- **Depth** is measured on a catchment with a floor of 20 and an exponent of 0.6, reworked against real community
+  sizes (Coldwater 14, Saltwell 4; the draft's "40 households" doesn't exist), with worked Ridgemere and Coldwater
+  examples. The per-holder cap is 0.15 and decays like P, with no reset at dawn.
+- **Staged events** (section 8.4) and **a cause for every slider move** (section 8.5) give a small world motion and
+  every change a reason. New T13-T17 and the standing-still rule.
+- **Caravans:** the pull's sign was backwards and its source half landed unseen. Departures now take the source's
+  glut at loading time; arrivals only lower cargo prices; player-sold surplus leads the next manifest; departures and
+  ships are committed and saved when posted; drivers are real carters, away from their posts, never killed off-screen
+  (D26); manifests match the destination's shops; notices use the calendar's weekday names; arriving wagons carry
+  news; routes are the 3 nearest and frequency scales with both ends' size.
+- **Regional restock** (D27): imported goods refill only on arrivals, so late wagons show.
+- **Carts and ships pull toward a baseline** instead of stacking fixed steps that pinned prices at the clamp. Farm
+  carts come every morning, heavier on Marketday; Marketday stalls are stocked from them.
+- **Bands:** a home term; bounded fortune noise (the draft's weekly walk had no bound); destitute needs a reason; the
+  minimum is realm-wide; a band stays within one of its home and class; guarantees have a precedence; helped and
+  guaranteed households sit outside the ranked pool; bands are saved with their `since`; help gives a lifted state at
+  once, so a helped beggar stops begging the next day; money players pay NPCs reaches their bands.
+- **Hunger follows the shelf:** food is a staged sale from the nearest food keeper, and an emptied shelf gives the
+  poor a short day. Buy-ahead before feasts is given a mechanism.
+- **Staged sales obey the standing-still rule,** and errand-runners are capped per player-occupied cell.
+- **Business** reads sales against the shelf, adds a score event after three failing days, and suppresses "can't
+  complain". Talk attributes causes from what actually moved the clamped factor. The Mind's Means carries the shown
+  price and the pay word; rich talk tags are gated by class.
+- **Theft** is an expected count, so hamlets don't have a daily crime wave, and takes follow the victim's band.
+  Bandit loot from staged caravans becomes recoverable goods.
+- **District factor** inside Ridgemere; reset prices eases over a day; every good maps to a depth group.
+
+### Changed: wrong code facts
+
+- Farm staffing depends on the farm code the draft cut (`staffFarms`, `farms_`, `farmOfPost`). The farm list,
+  `farmWorkplace_`, `countFarmPosts` and the area switch stay; only the account checks go. `country_farms.json` keeps
+  its farm defs, which `realm2_places.py` and `test_realm2.py` also read.
+- `items::producerFor` stays; only the store room's call goes.
+- Restore refuses over the roster count, changed roles and ledger days too; all are reconciles now. The departed and
+  newcomer paths are rewritten without `minted`. The unknown-resident line is :1030.
+- `budgetDay` is the society's day clock and stays required; the required set is corrected.
+- Town treasuries are `stores:` accounts; the draft both deleted and kept them.
+- `city_loop.json`'s other sections (`shelves`, `wages`, `luxuries`, `food`, `houseBusinesses`, `patrons`,
+  `estates`, `markets`) each have a fate. `houses.json` and `specialties.json` don't exist; doc 61's section points
+  at real sources.
+- `EconomySpec` keeps rules, services and seasons; authoring keeps `season` lines; 0061 keeps `treasury`,
+  `store_herbs` and `store_meals`.
+- `--fast`, `--unseen-step`, `--straight` and `setUnseenStep` stay: they are sim speed.
+- NPC theft takes from the keeper's purse, not the till; a till-food path is added. The order and the per-NPC gate
+  are stated correctly.
+- Provision food no longer goes through `create`: it would have written a ledger entry, a journal record and a
+  WorldEvent per household a day, marked promises kept, and been remembered by the Mind as gifts.
+- `robbed` and `wealth_days` already exist. Errands come from "fetching goods". The homeless were in no household;
+  they are households of one now. Unplaced NPCs are not residents. `means` goes into `OPTIONAL_LIMITS`.
+  `KEEPER'S PURSE` is at `dialogs.ts:1320`. "BUYING TODAY" needs a new merchant field, so the headline no longer
+  says the client's fields don't change. `test_world_sync.py:1340` tests seasons, rules and services. The new
+  struct is `TradePoint`, since `Markets` exists. Fruit's season range (×1.75) is over the clamp, stated as a fact.
+- Counts corrected: about 480 lines test `wealth`, about 108 test `business`, 16 mention `price_cause` (a plain grep
+  of `Data/Talk`); about 165 `shift(` matches in 31 Core files; 260 `conserved()` calls in 37 files; about 8,200
+  lines of tests.
+- D5 corrected: the general store buys stone, clay and sand, not timber; the ironworks and foundry already buy bars.
+- Forgotten dependents added: `RatwFarmPeople.cpp:527`, `world_build.py:42-43`, the three Python tests, the
+  `CMakeLists.txt` registrations, `item_catalog.py`'s hours requirement, the troubles' food checks, the Editor files,
+  `sync.ts`, `UpdateFromLive.tsx`, `ServerTab.tsx`, the Inspector hint, the `paid` toggle (kept, relabelled), and
+  `applyExternalNpcStates`' `restore()`.
+- `tendRoads` returning early also stops NPC contracts and courier letters today; the road layer's `towns_` uses move
+  to markets while law stays.
+
+### Changed: robustness and saves
+
+- Hosts can't edit `Data/` (doc 78). Defaults stay there; host changes live in `live.economy.rules`.
+- Budgets, holds, lean days, bands and committed departures are saved; load settles only what is missing or out of
+  range, so a restart changes nothing visible.
+- Lone merchants map to a market; routes are capped at 3 nearest; wagons in transit are capped.
+- Dropped caravans' letters reopen or refund; orphaned contracts refund.
+- Unknown items in players' hands go to a quarantine list.
+- Purse targets are clamped to 500p.
+- `save_compat_tests` gains a PROD-shaped fixture from `dev-old`, a pre-79 package, a replayed pre-79 journal tail
+  and a doc 78 "Reset economy rules" copy.
+
+### Changed: scope and hours
+
+- **Phase 0, "loop off",** comes first and its failure list is the first check-in (D29). Phase 1 then replaces
+  `shopFactor` outright, and Phases 1 and 2 can run in parallel.
+- The cut and street life use 0.45; reviews count at face value; a boxed look-and-feel phase is added; staged events
+  get their own phase; Phases 4-8 run in sequence by default (D30).
+- Doc 78's build order is stated (D22).
+- Notes and memory pointers are marked history in Phase 3, with the user's say-so.
+- Totals: about 158-221 plan, 73-101 expected (the draft said 124-172 and 47-64, and its headline and table
+  disagreed on slice 1).
+
+### Rejected, and why
+
+- **Rounding bought lots up** (exploits review). The floored sale and the backstop on actual lots already make every
+  round trip lose at least a penny. Rounding up would turn a 1% push on a 1p loaf into a doubled price, which is the
+  opposite of T1's look.
+- **Value-weighting downstream ripples** (exploits review). Ore is 1p and bars 9p, so weighting would cut the bar
+  ripple to a ninth and erase the user's own iron-ore example. Netting and the caps stop the ratchet; only upstream
+  ripples are weighted.
+- **Making buys and sells ripple to the same set** (exploits review). With ripples from the net position, churn nets
+  to zero whatever the sets are, so the sets stay as the link table gives them.
+- **Upstream ripples landing instantly** (believability review). All ripples land the next morning from the net
+  position: that closes the ratchet and gives every ripple a visible cause.
+- **Locking welcome goods against giving or selling for N days** (exploits review). It needs coin provenance on
+  purses. Counting the welcome per account per week bounds the faucet more simply.
+- **Refunding unknown items at their last catalogue price** (exploits review). It would be a faucet and needs a saved
+  price. Quarantine loses nothing and makes nothing.
+- **Paying the faction discount as standing** (scope review). It would change a feature players already know; a
+  weekly cap bounds the same loop.
+- **A separate shorter half-life on wagon routes** (believability review). The wagon's departure carrying the glut
+  off does the same job, visibly.
+- **Goods in `realBalanced()`** (scope review asked for coins and goods). Coins only in v1; goods would need prices in
+  the balance and add noise. Goods are in the tally and the report.
+- **Copying a fixture from PROD** (exploits review asked for a PROD-shaped save). `dev-old` has PROD's map and shape,
+  and nothing reads or writes PROD.
