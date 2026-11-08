@@ -955,26 +955,6 @@ void Game::applyDmActions(double dt)
             else
                 outcome = {false, "The economy's rules could not be read: " + problem, target};
         }
-        else if (kind == "wharf.credit")
-        {
-            // The Wharf's credit moved by the DM (Docs/Design/73-the-wharf.md, 4.6; payload {amount, note}): money in as
-            // the beyond buys more of the realm's goods, out as it buys less; never a grant. Within wharfActionMost.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const double amount = payload.number("amount", 0);
-            const auto by = row[3] ? *row[3] : std::string("dm");
-            if (!std::isfinite(amount) || amount != std::floor(amount) || std::fabs(amount) > 1e9)
-                outcome = {false, "Move the credit by a whole number of pennies.", target};
-            else
-            {
-                const auto r = world_.society().moveWharfCredit(std::int64_t(amount), by, json::utf8Prefix(payload.string("note"), 160));
-                outcome = {r.ok, r.message, target};
-                if (r.ok)
-                    saveSoon();
-            }
-        }
         else if (kind == "voice.sync")
         {
             // Talk (doc 62, phase 6): residents' voices, the dialects and the figures read again, after an edit; and
@@ -1797,10 +1777,12 @@ bool Game::spawnTile(const std::string& area, const std::string& tilesJson, int&
 
 void Game::applyExternalNpcStates()
 {
+    // A live world's copied NPC states (live.npc_state): positions, ages, death, needs, and a band only as a DM's override
+    // (doc 79, 14). Purses and goods are staged, so a copy's cash and stock are ignored: nothing moves through the treasury.
     const auto states = store_->externalNpcStates();
     if (states.empty())
         return;
-    SocietyState society = world_.society().state();
+    auto& society = world_.society();
     int applied = 0;
     for (const auto& [id, text] : states)
     {
@@ -1821,32 +1803,14 @@ void Game::applyExternalNpcStates()
             e->age = int(j.number("age"));
         if (j["dead"].isBool() && j.boolean("dead") != e->dead)
             world_.setDead(e->id, j.boolean("dead"));
-        if (auto life = society.residents.find(e->id); life != society.residents.end())
-        {
-            if (j["hunger"].isNumber()) life->second.hunger = std::clamp(j.number("hunger"), 0.0, 100.0);
-            if (j["fatigue"].isNumber()) life->second.fatigue = std::clamp(j.number("fatigue"), 0.0, 100.0);
-        }
-        auto account = society.accounts.find(e->id);
-        auto treasury = society.accounts.find("treasury");
-        if (account != society.accounts.end() && treasury != society.accounts.end())
-        {
-            if (j["cash"].isNumber() && j.number("cash") >= 0)
-            {
-                std::int64_t delta = std::int64_t(j.number("cash")) - account->second.cash;
-                delta = std::min<std::int64_t>(delta, treasury->second.cash);   // The treasury pays in...
-                delta = std::max<std::int64_t>(delta, -account->second.cash);   // ...or takes back.
-                account->second.cash += delta;
-                treasury->second.cash -= delta;
-            }
-            if (const auto& stock = j["stock"]; stock.isObject())
-                for (const auto& [item, count] : stock.fields())
-                    if (itemValid(item) && count.isNumber() && account->second.stock.size() < MaxGoodsKinds)
-                        account->second.stock[item] = int(std::clamp(count.asNumber(), 0.0, 10000.0));
-        }
+        if (const auto* life = society.resident(e->id))
+            society.setNeeds(e->id, j["hunger"].isNumber() ? j.number("hunger") : life->hunger,
+                             j["fatigue"].isNumber() ? j.number("fatigue") : life->fatigue);
+        if (const auto band = j["band"].isString() ? status::bandOf(j.string("band")) : -1; band >= 0)
+            if (const auto household = society.householdOf(e->id); !household.empty())
+                society.overrideBand(household, band, society.state().budgetDay + 28);
         ++applied;
     }
-    if (!world_.society().restore(society))
-        note("warning", "RATW copied NPC purses/needs were not valid for this world; positions and ages applied only.");
     note("info", "RATW_NPC_STATE_APPLIED count=" + std::to_string(applied));
 }
 
@@ -3080,7 +3044,7 @@ void Game::sendSnapshots(const std::vector<Connection*>& sending)
         }
         world_.observeAll(due);
     }
-    world_.ensureTradePoints();                     // (Doc 79, 5.1, while staged: on this thread, never the pool's.)
+    world_.ensureTradePoints();                     // (Doc 79, 5.1: on this thread, never the pool's.)
     world_.prepareReading();
     batching_ = true;
     if (pool_)
@@ -4111,19 +4075,15 @@ void Game::sendSnapshot(Connection* c)
         std::hypot(trader->position.x - view.self.position.x, trader->position.y - view.self.position.y) <= 2)
         if (const auto* account = world_.society().account(world_.society().tillOf(trader->id)))
         {
-            const bool staged = world_.society().staged();
-            if (staged && !batching_)
+            if (!batching_)
                 world_.ensureTradePoints();         // (The Market Board's markets: doc 79, 5.1; sendSnapshots' before its threads.)
             auto m = Value::object();
             m.add("id", trader->id);
             m.add("name", names::capitalised(labelFor(id, trader->id)));
             m.add("cash", account->cash);
-            if (staged)
-            {
-                // The staged list (doc 79, 7.1): the shop's buying budget today ("BUYING TODAY"), not its purse.
-                m.add("staged", true);
-                m.add("buyingToday", world_.society().budgetLeft(world_.society().tillOf(trader->id)));
-            }
+            // The staged list (doc 79, 7.1): the shop's buying budget today ("BUYING TODAY"), not its purse.
+            m.add("staged", true);
+            m.add("buyingToday", world_.society().budgetLeft(world_.society().tillOf(trader->id)));
             auto goods = Value::array();
             // Each of its goods, and any other quality of it the shop or this wolf has (doc 35, Part 4: "Fine hide").
             std::vector<std::string> kinds;
@@ -4144,17 +4104,16 @@ void Game::sendSnapshot(Connection* c)
                 good.add("name", itemLabel(id, itemId));
                 good.add("stock", Society::stock(*account, itemId));
                 good.add("owned", Society::stock(*purse, itemId));
-                // (Staged: one piece's quotes from the row's listing, worked out once.)
-                const auto row = staged ? world_.society().listing(id, trader->id, itemId, accountOf(id)) : Society::Listing{};
-                const auto buy = staged ? row.buyOne : world_.society().quote(id, trader->id, itemId, 1, true, accountOf(id));
-                const auto sell = staged ? row.sellOne : world_.society().quote(id, trader->id, itemId, 1, false, accountOf(id));
+                // (One piece's quotes from the row's listing, worked out once.)
+                const auto row = world_.society().listing(id, trader->id, itemId, accountOf(id));
+                const auto& buy = row.buyOne;
+                const auto& sell = row.sellOne;
                 good.add("buyPrice", buy.unitPrice);
                 good.add("sellPrice", sell.unitPrice);
                 good.add("canBuy", buy.ok);
                 good.add("canSell", sell.ok);
                 good.add("buyReason", buy.message);
                 good.add("sellReason", sell.message);
-                if (staged)
                 {
                     // The dozen list, the smallest sell lot and the trend with its cause (doc 79, 7.1), at this wolf's own
                     // ladder and account holder's cap.

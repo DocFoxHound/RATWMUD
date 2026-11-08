@@ -142,15 +142,8 @@ struct Households
     std::vector<HouseholdNeed> needs;
 };
 const Households& households();
-// The Country and the city's loop (Data/Items/city_loop.json, Docs/Design/68-the-country-and-the-city-loop.md): the
-// markets outside the city (one, the Country, for now), each with its purse ("outside:<id>") and its basket (shares of
-// its day's spending, by good); who pays a post that is neither a shop's nor the watch's (the first rule with a word in
-// the post's title, lower case: a market's id or "treasury"); and the residents' buying.
-struct Market
-{
-    std::string id, name;
-    std::vector<std::pair<std::string, int>> basket;
-};
+// A post's rule by the words of its title (doc 79, 6.3; RatwCareers.cpp's postRules, once city_loop.json's `wages`): its
+// name, its payer ("treasury" or "estates": what kind of post it is, "public" or "estate") and its wage word.
 struct WageRule
 {
     std::string name;                               // For the reports ("the sea trade", the Country's posts by rule).
@@ -158,159 +151,24 @@ struct WageRule
     std::string wage;                               // Which of the world's wages it pays ("keeper"...); "" for its payer's.
     std::vector<std::string> words;
 };
-// The Houses' estates (city_loop.json `estates`; Docs/Design/72-pulling-the-country-into-the-world.md, Phase 6): each
-// House's own purse, which collects its lands' rents (the works', the workshops' and the food farms', by their `house`)
-// and pays its own people, the Country's posts it holds (matched by `words`: first against a post's label, then against
-// its workplace's cell). `fund` "country": the Country's own purse (Grayrock's: it runs the wharf, so the sea trade's
-// takings, its basket and the arrivals stay in it); else "estate:<id>". `grants`: the Crown's, which keeps the posts no
-// other estate's words match and covers the others' posts when they are short (a grant, the Crown's levy on the land).
-struct Estate
-{
-    std::string id, house, name, fund;
-    bool grants = false;
-    std::vector<std::string> words;
-};
-// The loop's rules a world may tune (city_loop.json `rules`, a world's `rule` records; doc 68, Progress, "First fixes"):
-// each by name, its range and the value used where city_loop.json has none.
+// The economy's rules a world may tune (a world's `rule` records, live.economy.rules; doc 79, 12): each by name, its
+// range and its default (Data/Economy/market.json `rules` over it). A rule record of a name not here is skipped (doc 79,
+// 14: the old economy's rules, read past).
 struct RuleInfo
 {
     const char* name;
     int low, high, fallback;
 };
 inline constexpr RuleInfo Rules[] = {
-    {"comfortsMost", 0, 100000, 200},    // The most comforts a household buys a day.
-    {"almsADay", 0, 1000, 10},           // Pennies a head the alms make a household up to.
-    {"almsNoEarner", 0, 300, 100},       // A household with no earner (no member holding a paid post: the old, orphans,
-                                         // the out of work living alone) is made up to this percent of the alms a head,
-                                         // the part over the day's of what the treasury holds over its cap (doc 73, round
-                                         // 4: stable8c's short households, 68% with no earner and 63% alone, held 10p a
-                                         // head, a day's food and none over); round 6: so is one whose earners' wages
-                                         // together are under the day's alms a head, after the no-earner's and keeping
-                                         // tonight's wage support wanted back too; 100 or less: as any household. (Its low 0,
-                                         // as map_editor's RULE_LIMITS and Atlas take every rule from 0: a world holding
-                                         // less than a rule's low fails to load, Roster's "Invalid rule record".)
-    {"treasuryCap", 0, 100000000, 2000}, // What the treasury holds over this pays the short tills' wages,
-    {"wageSupport", 0, 100, 100},        // this percent of each till's shortfall.
-    {"workBankHours", 0, 1000, 0},       // A crew's banked hours, in hours of the crew; 0: its longest craft and an hour.
-    {"fairFood", 0, 1, 1},               // Food in a household: the least fed first, and only what someone can pay for.
-    {"services", 0, 1, 1},               // Households buy the city's services from their comforts budget.
-    {"servicesCityShare", 0, 100, 30},   // The percent of a service's price that goes to the treasury.
-    // Trades (doc 68, Progress, "Trades: medicine, patrons, office heads, and the follow-ups"):
-    {"suppliers", 0, 1, 1},              // A keeper's craft inputs come from the city's makers first (`suppliers`).
-    {"patrons", 0, 1, 1},                // The city, the Houses and the wharf pay for their kit, boats and halls (`patrons`).
-    {"armourEvery", 1, 3650, 120},       // Days between new pieces of kit, for each armed wolf.
-    {"buyAheadDays", 0, 5, 1},           // Days of food more a household buys the day before a Restday or festival.
-    {"floatDrawDays", 1, 28, 7},         // A till's working float: its mean draws a day over this many days (1: yesterday's).
-    {"floatWagesDays", 0, 60, 7},        // Days of its posts' wages a till keeps, over its float, before its keeper's profit.
-    {"workshopWagesDays", 0, 60, 4},     // A country workshop's, before its House's share (doc 72, after country5: the
-                                         // works' floatDays, 2; a House's till needs no week of wages in hand; 3 after
-                                         // country5b: with 2, Larkfield's smithy, its float a day's iron bars, was
-                                         // short on its Restdays; 4 after country6a: with 3, still on some, 98.0%).
-    {"workshopWageMost", 0, 100, 2},     // The most pennies a country workshop's wages drift over the world's (doc 72, after
-                                         // country6a: its House takes the profit, but the drift's step, judged on that
-                                         // share, raised its crews' wages ~130p a day over their base and left the House
-                                         // little; 2: a keeper 16p, a hand 10p at most, the works' fixed wages). Down as
-                                         // any till's (wageDriftMost, wageDriftHandMost).
-    {"subsidyToNeed", 0, 1, 1},          // The carriage subsidy only while the carters lack their crew's wages tonight.
-    {"estatePostsDays", 1, 30, 2},       // Nights of its posts' wages an estate keeps before its basket and patrons (doc 72;
-                                         // countryPostsDays before doc 73, read as this).
-    {"estates", 0, 1, 1},                // Each House its own estate purse (`estates`, doc 72, Phase 6); 0: the Wharf's one.
-    // The Wharf (Docs/Design/73-the-wharf.md, 6; city_loop.json `wharf`): the realm's valve to the world beyond it, its
-    // imports and takes at the stable price, the beyond's trade credit and the DM's moves of it.
-    {"wharfValve", 0, 1, 1},             // 0: the Wharf is the Country renamed (no beyond, no takes, no export basket).
-    {"wharfFee", 0, 50, 10},             // The Wharf's percent (wharfage): of its imports' takings, and over its exports'.
-    {"wharfKeepDays", 1, 365, 28},       // Days of a farm's yield of a good it keeps before the Wharf takes the rest,
-    {"wharfKeepLeast", 0, 10000, 20},    // and pieces it always keeps.
-    {"wharfImportScale", 0, 1000, 100},  // Percent on the imports' `most` a day (0: no imports of the lists' goods),
-    {"wharfTakeScale", 0, 1000, 100},    // and on the takes' (0: no takes).
-    {"wharfExportMost", 0, 100000, 300}, // Pennies a day the beyond pays in at most (takes, the export basket, carriage, fee).
-    {"wharfCreditMost", 0, 1000000, 2000},    // The most trade credit held (what the realm has paid beyond and not had back).
-    {"wharfInjectADay", 0, 1000, 0},     // The standing levers: pennies a day added to the credit at 18:00 (money in, as
-    {"wharfTakeADay", 0, 1000, 0},       // goods bought), and taken from it (money out, as the beyond buys less).
-    {"wharfActionMost", 0, 1000000, 2000},    // The most one DM action (wharf.credit) moves the credit (0: refused).
-    // The food farms' land rent (doc 72, open question 2): percent of a farm's takings to its House's estate each night,
-    // from its basket's share (after its wages, never its float); an area's own landRent<Area> over it (sized on country3,
-    // year 3: about half its thinnest farm's margin in its leanest season, so each keeps half its basket at worst).
-    {"landRent", 0, 100, 16},            // Every food area's without its own: the honey's, the meat's (margins ~32%).
-    {"landRentFish", 0, 100, 9},         // The fish's (its sea boats' autumn margin ~18% of their takings).
-    {"landRentFruit", 0, 100, 4},        // The orchards' and vines' (the vineyards' winter margin ~9%).
-    {"landRentGrain", 0, 100, 28},       // The grain's (~57%).
-    {"landRentSalt", 0, 100, 8},         // The salt's (its autumn margin ~17%).
-    // A farm's own over its area's (country_farms.json, a farm's `landRent`: landRent<Its>; doc 72, Phase 4's payer).
-    {"landRentDairy", 0, 100, 32},       // The cattle and dairy farms' (their margin 68-72% after wages in country5's year
-                                         // 3, the pigs' 45%; it was 24, on country3c's 67-70%).
-    {"landRentThin", 0, 100, 0},         // The thinnest farms' (doc 72, Phase 5: the lake boats, the salt works, three
-                                         // orchards, 5-8p a day over their wages and rent in country4's year 3).
-    {"farmSurplus", 0, 1, 1},            // A food farm's basket at most its design's (country_farms.json basketADay), what
-                                         // its till holds over its float and that each night its House's (after wharf7b,
-                                         // doc 73: the dairies', the grain farms' and two orchards' baskets ~237p a day
-                                         // over their design while the estates went short); 0: the basket all over it.
-    {"shopRot", 0, 1, 1},                // A maker's perishable by-product (made, used by none of its crafts, not food,
-                                         // items.json keeps > 0: the butchers' hides) held over its keep loses a keeps-th
-                                         // of what is over each night (doc 73, round 2: ~19 hides a day piling, 18,835
-                                         // at the butchers by stable8's year 3); 0: it keeps.
-    // The luxuries (city_loop.json `luxuries`; doc 72, Phase 5, the user's decision: cheese, a comic luxury for wolves):
-    // never bought as food; every household wants them, but buys them only from what it holds over its comforts' keep
-    // after its food and its needs (the fuel among them), at most this percent of that a day,
-    {"luxuryShare", 0, 100, 10},
-    {"luxuryMost", 0, 100, 1},           // and at most this many pieces a head a day;
-    {"luxuryAbove", 0, 10000, 200},      // a household not of the Houses (by its class) only over this many pennies a head
-                                         // (the Houses' households over the comforts' keep: after country5, the rich and
-                                         // the noble its buyers, not the middle class);
-    {"luxuryHouses", 0, 100, 40},        // the Houses' own tables: this percent a day of what the Country's purse holds
-    {"luxuryHousesMost", 0, 1000, 24},   // over its reserve and its posts' nights, and at most this many pieces a day;
-    {"luxuryPriceBand", 0, 1000, 700},   // a shop's price for one may climb this percent over the season's (its own band,
-    {"luxuryPriceStep", 0, 1000, 50},    // this many thousandths a day when it sells out; outside the city's price level).
-    // The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): what it holds over its cap and
-    // surplusKeep at 18:00, after its posts, the short tills' wages and the alms, goes back out each day:
-    {"surplus", 0, 1, 1},                // On: the surplus to public works orders and the poorest households.
-    {"surplusKeep", 0, 100000000, 4000}, // Pennies over the cap kept for the lean seasons (the summer's and autumn's fall).
-    {"surplusWorks", 0, 100, 20},        // Percent of the surplus to public works orders (`works`), till to till;
-    {"surplusAlms", 0, 100, 80},         // percent to the poorest households, per head, poorest first,
-    {"surplusAlmsTo", 0, 1000, 40},      // up to this many pennies a head.
-    // The self-correcting rules (doc 68, Progress, "Self-correcting rules"): values that drift, gently and within bounds,
-    // so that the economy rebalances itself. Each has its switch; what each has drifted to is saved with the society.
-    {"stockPrices", 0, 1, 1},            // 1. A shop's price for a ware follows its stock: up when it sells out, down on a glut,
-    {"stockPriceBand", 0, 90, 25},       // within this percent of the catalogue's (the season's) price,
-    {"stockPriceStep", 0, 1000, 10},     // by this many thousandths a day (a quarter of it back toward 1 on a quiet day).
-    {"shelfFollow", 0, 1, 1},            // 2. A shelf follows its ware's sales, smoothed (off: a quarter over yesterday's),
-    {"shelfDays", 1, 365, 7},            // over about this many days,
-    {"shelfCover", 25, 1000, 125},       // this percent of the smoothed sales a day on the shelf,
-    {"shelfGrow", 0, 500, 25},           // and a day it sells out counted as this percent more than its shelf.
-    {"wageDrift", 0, 1, 1},              // 3. A till's wages follow its cover: a penny a post every so many days,
-    {"wageDriftDays", 1, 365, 28},       // judged over this many days:
-    {"wageDriftSpare", 0, 1000, 50},     // up when it paid every wage and its keeper's profit was this percent of them;
-    {"wageDriftMost", 0, 100, 12},       // down when short on most days; never more than this many pennies either way on
-    {"wageDriftHandMost", 0, 100, 12},   // a keeper's wage, nor more than this many on a hand's,
-    {"wageDriftFloor", 0, 1000, 7},      // nor a post lowered under this (a day's food).
-    {"treasuryDrift", 0, 1, 1},          // 4. The gate toll and the alms follow the treasury's level:
-    {"treasuryTarget", 0, 100000000, 5500},  // its slow mean against this (5,500p, about where it settles: doc 68, Progress,
-                                         // "Births follow deaths; arrivals from the Country; the treasury's target"),
-    {"treasuryBand", 0, 100, 15},        // outside this percent of it (inside: no change; the season's swing),
-    {"treasuryDays", 1, 3650, 182},      // the mean over about this many days (half a year);
-    {"treasuryJudgeDays", 1, 365, 28},   // judged every this many days (28, from a fortnight);
-    {"tollStep", 0, 100, 5},             // the toll moves by this many tenths of a point at each judging,
-    {"tollDriftMost", 0, 90, 1},         // at most this many points from the world's gate toll (1 since doc 73's round 10; 2, 5);
-    {"almsDriftMost", 0, 1000, 2},       // the alms by a penny a head at each, up to this many over almsADay (never under).
-    // Steering the economy (Docs/Design/74-steering-the-economy.md): the DM's slider and on/off, and the two floors.
-    {"steer", 0, 1, 0},                  // On: a few levers follow the push toward where the slider says the money rests.
-    {"steerLean", 0, 200, 100},          // Where the money rests: 0 shared (-100 on the tab), 100 today's, 200 held by the rich.
-    {"neverHungry", 0, 1, 0},            // A wolf going hungry is given a day's food at the stable price; the richest pay.
-    {"neverBroke", 0, 1, 0},             // A household short of the next day's necessities is given just enough; the richest pay.
-    // The steering's own rules (an author's, in Atlas; the DM tab shows them read only):
-    {"steerMeanDays", 14, 365, 56},      // its slow means over about this many days (the hunger, the short and the treasury:
-                                         // 28). (Doc 75: the push's judging, its steps and its band are gone.)
-    {"skimMost", 1, 100, 50},            // The skim takes at most this percent of a holder's spare in its first pass,
-    {"skimKeepDays", 1, 28, 3},          // and the share-out leaves a household this many days of its necessities a head
-                                         // (the skim's own line is the steering table's `comfortable`).
-    // The staged economy (Docs/Design/79-a-staged-economy.md, Phase 0): on, the city's loop, the steering, the Wharf's
-    // money and the farms' money are off; residents are fed by class and their purses and the treasuries set nightly.
-    {"staged", 0, 1, 0},
-    // The Market Board (doc 79, Phase 1; 12's "pressure settings"), read only while staged: a good's half-life in tenths of
-    // a game day (perishable food, keeping food, the rest); the ripple's share a step (percent); the depth's scale
-    // (percent); the most one account holder pushes a good's pressure (hundredths); the most shops pay one holder a day
-    // (pennies); the take allowance's share of the depth (percent); the shelves' scale (percent); and the faction
-    // discount's cap per Chapter a week (pennies).
+    // The clamps (doc 79, 6.4): Never Hungry (no short days) and Never Broke (nobody destitute).
+    {"neverHungry", 0, 1, 0},
+    {"neverBroke", 0, 1, 0},
+    {"buyAheadDays", 0, 5, 1},           // Days of food more a household is given the day before a Restday or festival.
+    // The Market Board (doc 79, 5 and 12's "pressure settings"): a good's half-life in tenths of a game day (perishable
+    // food, keeping food, the rest); the ripple's share a step (percent); the depth's scale (percent); the most one account
+    // holder pushes a good's pressure (hundredths); the most shops pay one holder a day (pennies); the take allowance's
+    // share of the depth (percent); the shelves' scale (percent); and the faction discount's cap per Chapter a week
+    // (pennies).
     {"halfLifePerishable", 5, 300, 20},
     {"halfLifeKeeping", 5, 300, 50},
     {"halfLifeDurable", 5, 300, 80},
@@ -326,229 +184,22 @@ const RuleInfo* ruleInfo(const std::string& name);
 // Data/Items as the catalogue reads it (RATW_DATA_DIR, the working directory or above, the source tree): its parent's
 // Economy holds market.json (doc 79).
 std::filesystem::path dataDirectory();
-// A rule's name now for one it had before (doc 73: countryPostsDays is estatePostsDays), else the name as given: a world's
-// rule records, the data file and the tools read the old name as the new.
-std::string ruleName(const std::string& name);
-// A city service (city_loop.json `services.list`): a catalogue item a business does for a household, bought from its
-// comforts budget about once every `every` days; done at once (nothing is kept). `for: "patrons"`: a patron's (the
-// armoury's mending, a hull caulked, a public building's upkeep; doc 68, "Trades"), done for each unit of its business's
-// patrons (an armed wolf, a hull, a building) about once every `every` days and paid by the patron, never a household.
-struct ServiceDef
-{
-    std::string id, business;
-    int every = 30;
-    bool patron = false;                            // A patron's: for each of its patrons' units, never a household's.
-};
-// A city maker that supplies another business's inputs first (city_loop.json `suppliers`; doc 68, Progress, "Trades"):
-// what a `buyer`'s keeper draws for its crafts it buys from a `seller` of the city holding it, at the seller's price
-// (till to till), and from the store room (the Country) only what the city's sellers don't have. `goods`: the goods it
-// covers (empty: every input the seller sells).
-// `price` (doc 72, Phase 5: the resale goods): the percent of the catalogue's (the season's) price the seller is paid; 0,
-// its path's own: a craft input at the seller's price (100), a good the buyer sells on at the store room's (resaleMarkup),
-// so that a reseller's costs never rise for buying from the city's or the country's makers rather than the store room.
-struct Supplier
-{
-    std::string buyer, seller;
-    std::vector<std::string> goods;
-    int price = 0;
-};
-// A trade's patrons (city_loop.json `patrons.list`; doc 68, "Trades"): who pays for its patron services (and, for the
-// armoury, new kit). Each group's units are the posts of `roles` (the watch: "guard"), else `units` (the Houses'
-// retainers, the wharf's hulls, the public buildings: not placed, a number); `payer` is "treasury" or a market's id (the
-// Houses' estates and the wharf: the Country).
-struct PatronGroup
-{
-    std::string id, name, payer;
-    std::vector<std::string> roles;
-    int units = 0;
-};
-struct Patrons
-{
-    std::string business;                           // The trade that does the work ("armory", "shipwright", ...).
-    std::vector<PatronGroup> groups;
-    std::vector<std::string> pieces;                // New kit a unit buys now and then (armourEvery), of what the shop holds.
-};
-// The city's public works (city_loop.json `works.list`; doc 68, Progress, "The treasury's surplus: works and alms"): a
-// trade the treasury orders from with its surplus, for the upkeep of the public buildings and services, its share of
-// the orders (`weight`) and what it orders (`goods`, at the catalogue's price): a service (items.json category service)
-// done at once, else a good from the shop's shelves, used up in the works.
-struct WorksOrder
-{
-    std::string business;
-    std::vector<std::string> goods;
-    int weight = 1;
-};
-// The seasons in the Country's supply (city_loop.json's `seasons`; doc 68, Progress, "Seasons and the DM's rules"): a
-// group of goods (grain and its bread, fresh fruit, fresh fish, ...) with, by season (Spring, Summer, Autumn, Winter, each
-// the value at the season's middle day, days between blended in a straight line), in percent of normal: how much the
-// Country can supply a day (`supply`, of `normal` pieces a day for the whole group; 0 pieces: no cap), what its goods
-// cost (`price`: store draws and the shops' prices to residents), and how full the shops keep their shelves of them
-// (`shelf`: a maker stocking up ahead of a lean season). A good is in one group at most (the first that names it).
-struct SeasonGroup
-{
-    std::string id, name;
-    std::vector<std::string> goods;
-    std::array<int, 4> supply{100, 100, 100, 100}, price{100, 100, 100, 100}, shelf{100, 100, 100, 100};
-    int normal = 0;
-    // The Country's own stores of the group's goods (doc 68, Progress, "The follow-ups"): a maker that can't make one for
-    // the season's lack of an input draws the good itself, where it sells it on too (the preservers' winter fruit).
-    bool stores = false;
-};
-// The Wharf's lists (city_loop.json `wharf`; Docs/Design/73-the-wharf.md, 4.2): the goods it imports when the realm's
-// farms can't fill a draw (`imports`) and the goods it takes when they pile on the farms (`takes`), each on or off and its
-// most a day realm-wide (times the rules wharfImportScale and wharfTakeScale); `never`, goods it neither lands nor takes
-// whatever the lists or a world say (cheese, the user's). A good on both lists, or listed and on `never`, is dropped
-// from both at load (`refused`, for the catalogue's report): the Wharf never routes a good both ways.
-struct WharfGood
-{
-    int most = 0;
-    bool on = true;
-    // A take's (doc 73, after wharf7b): its place in the list (the takes run in the file's order, not the alphabet's), the
-    // city's trades (businesses.json ids) whose shops it is taken from too, beside the farms and works (`shops`: the
-    // butchers' hides and bones, the byproduct of their carcasses that no draw takes), and the pieces such a shop keeps
-    // (`keep`; -1: wharfKeepLeast, or wharfKeepDays of what it sells a day, or its shelf, the most of them).
-    int rank = 0;
-    int keep = -1;
-    std::set<std::string> shops;
-};
-struct WharfLists
-{
-    std::map<std::string, WharfGood> imports, takes;
-    std::set<std::string> never;
-    std::vector<std::string> refused;
-    bool refuses(const std::string& good) const { return never.count(good) > 0; }
-};
-struct CityLoop
-{
-    std::vector<Market> markets;
-    WharfLists wharf;                               // The Wharf's imports and takes (doc 73).
-    std::vector<SeasonGroup> seasons;
-    std::vector<WageRule> wages;
-    std::vector<Estate> estates;                    // The Houses' estates (doc 72, Phase 6); the granting one the Crown's.
-    double foodDays = 2, shortDays = 1;             // A household tops each member up to foodDays; under shortDays it tries again.
-    int comfortsAbove = 60;                         // Pennies a head held before a household buys comforts,
-    double comfortsShare = .1;                      // and the share of what is over it spent a day,
-    std::vector<std::string> comforts;              // on these (used up at once).
-    std::vector<std::string> luxuries;              // Never food: bought from the luxuries' budget (the rules luxury*).
-    std::map<std::string, int> rules;               // Every rule (Rules) by name, as city_loop.json gives it.
-    std::vector<ServiceDef> services;
-    std::vector<Supplier> suppliers;
-    // The Houses' city businesses (city_loop.json `houseBusinesses`; doc 72, after iron6): a till whose post works at one of
-    // these buildings is its House's, as a country workshop is: what it holds each night over its float and
-    // workshopWagesDays of its wages goes to that House's estate, not its keeper, and its wages drift at most
-    // workshopWageMost. Building (an area id) -> House.
-    std::map<std::string, std::string> houseTills;
-    std::vector<Patrons> patrons;
-    std::vector<WorksOrder> works;
-    std::map<std::string, int> shelves;             // A dear good's shelf (theriac: 1), in place of GoodsKept.
-    // Steering the economy (Docs/Design/74-steering-the-economy.md, 3 and 4; city_loop.json `steering`): each lever's value
-    // and each target at the five marks of the push or the slider (-1, -.5, 0, .5, 1), straight lines between. A lever's
-    // NaN is the world's own value of it (W); a target's NaN, none there.
-    struct Steering
-    {
-        std::map<std::string, std::array<double, 5>> levers, targets;
-        double treasuryFloor = 800, treasuryLow = 500;   // The ground rent to the treasury under the floor (doc 74, 5.5).
-        // The skim (doc 74, 6, "The skim reworked"): a household pays only on what it holds over `comfortable` times its
-        // necessities a head; a holder's idle spare rises toward its spare by 1/idleDays of the gap a night (falls at once);
-        // with Never Broke on, the skim's guard leans on the estates and the treasury while the tills short's 28-night
-        // mean is over tillsShortNormal by more than tillsShortOver percent.
-        double comfortable = 4;
-        int idleDays = 28;
-        double tillsShortNormal = 25, tillsShortOver = 15;
-        // The skim's order of payers (doc 75, D1): its five steps by number (1 the estates, 2 the treasury, 3 upper-class
-        // households, 4 keepers' households, 5 other middle-class households), first to last; `skimOrder` in the table,
-        // by those names. A list that is not all five once each is left as it was.
-        std::array<int, 5> skimOrder{1, 2, 3, 4, 5};
-        // The Crown's charters (doc 75, 4.2): a change in their number is reached in equal nightly steps over this many
-        // nights; and the Houses' dividend rises by this many points for each point of the charters (30%, 45%, 60% at
-        // 33%, 66%, 100% of the middle keepers' tills with the dividend's own 15 at the far right).
-        int chartersRampDays = 14;
-        double dividendPerCharter = .45;
-        // The safety supervisor (doc 75, 3.6; Phase 4). The treasury's floor at each mark through the year (13 months of
-        // 28 days, the year's last day the 13th's): the mark's seasonal treasury profile less 2 sigma, never under
-        // floorLeast; a NaN row at a half mark is halfway between its neighbours, at the centre or an end floorLeast.
-        // Its rules' settings: the measures' nights (7), a rule's trigger over its target (tills short 1.3 x the
-        // mark's), clearing under clearShare of the trigger for clearNights nights running, the back-off rates a week
-        // (the tithe 3 points for the shops, 5 for hunger; the rich hold 10p; 3 charters), a lever's return at returnShare
-        // of the rate it left (the plan's half; doc 75, Phase 5's fix round: the whole), the ground rent all to the treasury at routeAt of the floor under it, and the envelope's edge
-        // after edgeNights nights running at a back-off.
-        static constexpr int FloorMonths = 13;
-        std::array<std::array<double, FloorMonths>, 5> treasuryFloors{};
-        bool floorsGiven = false;
-        double floorLeast = 600, meanNights = 7, tillsOver = 1.3, clearShare = .9, routeAt = .5, returnShare = .5;
-        int clearNights = 7, edgeNights = 28;
-        double titheShopsWeek = 3, titheHungerWeek = 5, richShopsWeek = 10, chartersHungerWeek = 3;
-        // Words for the slider's ends (doc 75, 3.5: the measured reach), shown on the DM tab; "" none.
-        std::string reachLeft, reachRight;
-    };
-    Steering steering;
-};
-const CityLoop& cityLoop();
-// A steering table's value at `at` (-1..1): straight lines between the five marks; a NaN at the centre or an end read as
-// `own`, at a half mark as halfway between its neighbours. For a target (own NaN): NaN where either neighbouring mark has
-// none (unless `at` is on the mark that has one).
-double steerAt(const std::array<double, 5>& marks, double at, double own);
-// The Country's food farms (Data/Economy/country_farms.json; Docs/Design/71-the-country-s-industries.md, 4): modelled
-// producers with virtual crews that take an area of the Country's food over when the area is switched on. These are the
-// defaults a world's own settings change (EconomySpec::farms): a farm's own setting first, then its area's, then these.
+// The farms and works (Data/Economy/country_farms.json; doc 71, 4 and Phase C; doc 79, 17): each with its crew of posts
+// (keepers and hands), by area. Places of work only: their money went with doc 79's Phase 3.
 struct FarmDef
 {
     std::string id, kind, area;
-    std::string house;                              // The noble House whose land it is on ("": its area's), for its rent.
-    std::string landRent;                           // Its own land rent rule's name, landRent<This> ("": its area's).
-    int keepers = 1, hands = 0;                     // Its crew (virtual posts: nobody holds them yet).
-    int keeper = -1, hand = -1;                     // Its wages a day (-1: its area's, then the defaults').
-    std::int64_t reserve = 0, purse = 0;            // Its till's float and its crew's settled purse, made when it is founded.
-    double basketADay = 0;                          // The design's basket a day (for reports; the basket is what is over).
-    // Pieces a day of each good at each season's middle day (Spring, Summer, Autumn, Winter), blended as the seasons are
-    // (Society::seasonal): what it grows, and what the Country's own people eat of it there (the Country's table).
-    std::map<std::string, std::array<double, 4>> yield, table;
-    // What it makes of a yield it can't sell before it spoils (doc 72, the user's decision after country3b: the dairies'
-    // spare milk into butter and cheese): each morning, what of `from` is past keeping goes to these in order, `share`
-    // percent of it to each (the last all that is left), `in` pieces of it a piece of `good`, while its store holds under
-    // `store` pieces of `good`; what none takes spoils as before. `aDay` (doc 72, Phase 4's follow-up: the shops wanted
-    // far more butter and cheese than the spare made): pieces of `from` a day at each season's middle, blended, milked for
-    // this making alone and never offered to the shops (the cows kept for the cheese room), made each morning while its
-    // store has room (what it can't take that morning isn't milked for it), journalled "made at <farm> of its own
-    // <from>"; all zero: none, only the spare.
-    struct Make
-    {
-        std::string good, from;
-        int in = 1, share = 100, store = 0;
-        std::array<double, 4> aDay{};
-        bool dedicated() const { return aDay[0] > 0 || aDay[1] > 0 || aDay[2] > 0 || aDay[3] > 0; }
-    };
-    std::vector<Make> makes;
+    int keepers = 1, hands = 0;                     // Its crew's posts.
+    std::set<std::string> yields;                   // The goods it brings in (its `yield`'s): its market makes them (doc 79, 7.1).
 };
 struct FarmArea
 {
     std::string id, name;
-    std::vector<std::string> goods;                 // On, these are its farms' only (the Country no longer sends them).
-    int on = -1;                                    // -1: as the schedule says; 0: off; 1: on.
-    int yieldScale = 100, crewScale = 100;          // Percent on its farms' yields, and on their hands (rounded half up).
-    int keeper = -1, hand = -1;                     // Its farms' wages (-1: the defaults').
-    int priceFactor = 0;                            // The farms' price a year, percent of the catalogue's; 0: the season's.
-    double takings = 0;                             // The design's takings a day (the year's mean): the Country's basket's blend.
-    // A works' area (Docs/Design/72-pulling-the-country-into-the-world.md, Phase 0: the woods, the peat, later the
-    // quarries), not a food farm's: its works pay their crews and send what is over their floats to the House whose
-    // land they are on each night (the estates' rent), and buy no basket; `house` its works' House ("" none: a farm's).
-    bool works = false;
-    std::string house;
+    bool works = false;                             // A works' area (doc 72: the woods, the peat, the quarries), not a farm's.
     std::vector<FarmDef> farms;
 };
 struct Farms
 {
-    int keeper = 16, hand = 10;                     // The farms' wages a day (fixed: the basket takes what is over them).
-    int floatDays = 2, openingStockDays = 7;
-    // The Country's own people whose food the farms' `table` is (doc 71: the Houses' estates' and the other industries'
-    // workers, still in the Country): a works' crew, once its area is on, lives in the realm and buys its food in the
-    // shops, so it no longer eats at the table (doc 72, Phase 3; Society::tableShare).
-    int estatePeople = 24, otherWorkers = 68;
-    int start = -1, every = 28;                    // The switch: the first area on day `start` (-1: none), one every `every`
-    std::vector<std::string> order;                 // days after it, in this order.
-    std::vector<std::pair<std::string, int>> basket;          // The farms' basket of the city's goods, and shares.
-    std::vector<std::pair<std::string, int>> wharfBasket;   // The Country's basket once the farms have the food.
-    std::vector<std::string> switchTrades;          // The trades whose orders the switch takes (for reports).
     std::vector<FarmArea> areas;
 };
 const Farms& farms();

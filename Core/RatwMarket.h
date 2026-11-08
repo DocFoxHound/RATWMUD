@@ -1,7 +1,6 @@
 #pragma once
 
-// The Market Board (Docs/Design/79-a-staged-economy.md, sections 5 and 7; Phase 1). Only read while the rule `staged`
-// is on: a pressure P for each market and good that players' trade at the tills pushes up or down and that decays back
+// The Market Board (Docs/Design/79-a-staged-economy.md, sections 5 and 7; Phase 1): a pressure P for each market and good that players' trade at the tills pushes up or down and that decays back
 // to 0; the clamp every price factor sits inside; the per-piece ladder; the per-holder decaying cap; the day's net
 // positions and the morning's ripples through recipes; the shops' buying budgets, take allowances and the per-holder
 // sell total. The pure parts (data, factors, decay, the ladder, links) are here; Society applies them (quote, trade, the
@@ -50,6 +49,7 @@ struct Data
     int routes = 3;
     std::map<std::string, std::vector<std::string>> buys;   // Business -> goods it also buys (D5).
     std::map<std::string, int> shelves;              // Base good -> its shelf (else the starting stock: 4, swords 3).
+    std::map<std::string, int> rules;                // The rules' defaults (items::Rules' names), over Rules' own.
     // The seven season groups (7.1, moved from city_loop.json): each group's goods and, by season (Spring, Summer, Autumn,
     // Winter: the value at each season's middle day, blended between), its price and its shelf in percent of normal.
     struct Season

@@ -242,7 +242,7 @@ void Game::endLodging(std::size_t index, const std::string& why, std::int64_t re
     }
     // (Staged: the landlord's purse topped up on demand, so the refund, at most the rent on record, is paid: doc 79, 9.3.
     // Rent goes into the landlord's till, which the door never tops up, so this capped refund tops it up itself.)
-    if (refund > 0 && society.staged() && Society::classify(l.account) == Society::AccountKind::Staged &&
+    if (refund > 0 && Society::classify(l.account) == Society::AccountKind::Staged &&
         society.account(l.account) && society.cash(l.account) < refund)
         society.stagedSet(l.account, refund);
     if (refund > 0 && !society.shift(l.account, l.holder, "", 0, society.payable(l.account, refund), "rent returned"))

@@ -38,41 +38,42 @@ constexpr DevCommand DevCommands[] = {
     {"wearables", "wearables [word]: the catalog's wearables, by id (those whose id or name has the word)."},
     {"reckon", "The week's reckoning now (doc 42): every resident pays a tenth of its profit since the last to its town and its church."},
     {"speed", "speed [N]: how fast the world runs, 1 (as ever) to 1000 times; nothing is skipped, it just runs faster. Without N, the speed now."},
-    {"store", "store <keeper> [item count]: a shop keeper's store room (doc 67): its goods, prices and the fund; with an item and a count, draws them into its till. Dev worlds only."},
+    {"store", "store <keeper> [item count]: a shop keeper's till: its wares, what it holds and each shelf's target (doc 79, 7.7); with an item and a count, adds them to its till. Dev worlds only."},
 };
 
-// The store room by hand (Docs/Design/67-ridgemere2-city.md, 6): a keeper's goods, or a draw.
+// A shop's till by hand (doc 79, 17: the store room's draw is a raw add into the till now): its wares and shelves, or an add.
 Result storeCommand(Society& society, const std::string& rest)
 {
     std::istringstream words(rest);
     std::string keeper, item, extra;
     int count = 0;
     words >> keeper >> item;
-    const bool draw = !item.empty();
-    if (draw && !(words >> count))
+    const bool add = !item.empty();
+    if (add && !(words >> count))
         return {false, "Usage: /store <keeper> [item count].", {}};
     if (keeper.empty() || (words >> extra))
         return {false, "Usage: /store <keeper> [item count].", {}};
-    const auto fund = [&] {
-        return "The Wharf's purse (" + std::string(Society::WharfFund) + ") holds " + std::to_string(society.cash(Society::WharfFund)) +
-               "p; the treasury " + std::to_string(society.cash("treasury")) + "p; carriage goes to " + society.carters() + " (" +
-               std::to_string(society.cash(society.carters())) + "p).";
-    };
-    if (draw)
+    if (!society.merchant(keeper))
+        return {false, keeper + " keeps no shop.", {}};
+    const auto till = society.tillOf(keeper);
+    const auto* held = society.account(till);
+    if (!held)
+        return {false, keeper + "'s shop has no till.", {}};
+    if (add)
     {
-        const auto drawn = society.drawFromStore(keeper, item, count, "dev console: from the store room");
-        return {drawn.ok, drawn.message + " Till " + society.tillOf(keeper) + ": " + std::to_string(society.cash(society.tillOf(keeper))) + "p. " + fund(), {}};
+        if (count < 1 || count > 1000 || !itemValid(item))
+            return {false, "Add 1 to 1000 of a good the catalogue knows.", {}};
+        int left = count;
+        for (; left > 0; left -= std::min(left, 99))
+            if (!society.create(till, item, std::min(left, 99), "dev console: added to the till"))
+                break;
+        return {left <= 0, std::to_string(count - std::max(0, left)) + " " + item + " added to " + till + ": " +
+                               std::to_string(Society::stock(*society.account(till), item)) + " there now.", {}};
     }
-    const auto closed = society.storeClosed(keeper);
-    std::string text = keeper + ": the store room is " + (closed.empty() ? std::string("open") : "closed (" + closed + ")") + ". Till " +
-                       society.tillOf(keeper) + ": " + std::to_string(society.cash(society.tillOf(keeper))) + "p.";
-    const auto& goods = society.storeGoods(keeper);
-    for (const auto& good : goods)
-        text += "\n" + good + " (" + (society.storeUse(keeper, good) == Society::StoreUse::Make ? "making" : "resale") + "): " +
-                std::to_string(society.storeCost(keeper, good, 1)) + "p each (catalogue " + std::to_string(Society::catalogPrice(good)) + "p)";
-    if (goods.empty())
-        text += "\nNothing to draw.";
-    return {true, text + "\n" + fund(), {}};
+    std::string text = keeper + "'s till " + till + ": " + std::to_string(held->cash) + "p.";
+    for (const auto& ware : society.wares(keeper))
+        text += "\n" + ware + ": " + std::to_string(Society::stock(*held, ware)) + " held, shelf " + std::to_string(society.shelfTarget(till, ware));
+    return {true, text, {}};
 }
 } // namespace
 

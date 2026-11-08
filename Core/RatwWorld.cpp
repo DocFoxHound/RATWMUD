@@ -6647,6 +6647,16 @@ Result World::restore(const PersistedWorld& saved)
     marks_.clear();
     fights_.clear();
     crimeHour_ = -1;
+    // (Doc 79, 9.1: a caravan's account is the old economy's, dropped at the society's restore. The caravan goes with it,
+    // and the letters it carried are open again for another courier, their coins still in their escrow: 16.5.)
+    for (const auto& c : roads_.caravans)
+        if (!society_.account(c.account))
+            for (auto& k : roads_.contracts)
+                if (k.kind == "courier" && k.status == "taken" && k.taker == c.account)
+                {
+                    k.status = "open";
+                    k.taker.clear();
+                }
     roads_.caravans.erase(std::remove_if(roads_.caravans.begin(), roads_.caravans.end(),
                                          [&](const Caravan& c) { return !society_.account(c.account); }),
                           roads_.caravans.end());

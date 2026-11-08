@@ -357,7 +357,7 @@ bool Game::tableCommand(Connection* c, const json::Value& j, Result& result)
                     stakedToday_[r->id + "|" + today] >= StakedGamesADay)
                     continue;
                 // (Staged: residents stake only within the asker's day's cap on winnings from them: doc 79, 9.3.)
-                if (society.staged() && society.faucetRoom(me, "stakesADay") - seatedStakes < t.stake)
+                if (society.faucetRoom(me, "stakesADay") - seatedStakes < t.stake)
                     continue;
             }
             if (const double d = std::hypot(r->position.x - t.x - .5, r->position.y - t.y - .5); d < nearest)

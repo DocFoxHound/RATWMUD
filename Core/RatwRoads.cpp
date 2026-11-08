@@ -293,7 +293,7 @@ std::int64_t World::npcCouriersToday() const
 
 bool World::npcCourierRoom() const
 {
-    return !society_.staged() || npcCouriersToday() < society_.statusTable().cap("courierADay");
+    return npcCouriersToday() < society_.statusTable().cap("courierADay");
 }
 
 bool World::withdrawContract(const std::string& id)
@@ -1126,7 +1126,7 @@ void World::roadsDaily()
     // (Staged: an NPC-posted courier contract is a faucet, at most courierADay posted a day across the realm: doc 79, 9.3.)
     // (Counted once here, then as this loop posts: npcCourierRoom's count without its scan each time.)
     std::int64_t postedToday = npcCouriersToday();
-    const std::int64_t mostToday = society_.staged() ? society_.statusTable().cap("courierADay") : -1;
+    const std::int64_t mostToday = society_.statusTable().cap("courierADay");
     for (const auto& k : roads_.contracts)
         if (k.kind == "courier" && (k.status == "open" || k.status == "taken"))
             writing.insert(k.poster);

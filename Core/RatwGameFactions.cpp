@@ -274,8 +274,7 @@ void Game::completeMission(faction::Mission& m, double day)
     if (c)
         chapters_.addRenown(m.chapter, "mission", m.renown, m.id, m.taker, now());
     // (Staged: the treasury topped up on demand, the reward held to the day's rewards cap by account holder: doc 79, 9.)
-    if (world_.society().staged())
-        m.coins = std::min(m.coins, world_.society().faucetRoom(m.taker, "rewardsADay"));
+    m.coins = std::min(m.coins, world_.society().faucetRoom(m.taker, "rewardsADay"));
     const bool paid = m.coins > 0 && world_.society().shift("treasury", m.taker, "", 0, m.coins, "faction mission reward");
     if (paid)
         record(Economy, m.taker);

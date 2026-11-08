@@ -1,7 +1,7 @@
 // The Market Board (Docs/Design/79-a-staged-economy.md, sections 5 and 7; Phase 1): its data, the pure arithmetic of
 // pressure, the ladder and the clamp, the links through recipes, and Society's staged price path (quote, trade, the
-// dawn's turn and the morning restock) and the world's markets found at load. Read only while the rule `staged` is
-// on: with it off every price is the conserving economy's (Society::quote's own path, RatwSociety.cpp), unchanged.
+// dawn's turn and the morning restock) and the world's markets found at load. The only prices there are (doc 79,
+// Phase 3: the conserving economy's shopFactor went with the city's loop).
 #include "RatwMarket.h"
 
 #include "RatwCalendar.h"
@@ -124,7 +124,11 @@ Data load()
         for (const auto& [good, n] : shelves.fields())
             if (n.isNumber())
                 d.shelves[good] = int(clampNumber(n.asNumber(), 0, 1000, 4));
-    // The season groups (7.1; city_loop.json's until Phase 3 drops them there): a good in the first group naming it; a
+    // The rules' defaults (doc 79, 12: the rules of items::Rules, read over its own; a name it doesn't know is skipped).
+    for (const auto& [name, n] : v.object("rules").fields())
+        if (const auto* info = items::ruleInfo(name); info && n.isNumber())
+            d.rules[name] = std::clamp(int(std::lround(n.asNumber())), info->low, info->high);
+    // The season groups (7.1, moved from city_loop.json): a good in the first group naming it; a
     // group without an id or goods dropped, its numbers clamped (never a refusal).
     for (const auto& g : v.array("seasons"))
     {
@@ -217,7 +221,7 @@ const char* timesName(int times)
 
 double seasonal(const std::array<int, 4>& by, double yearDay)
 {
-    // (The same arithmetic as the city loop's Society::seasonal, here so the staged price outlives RatwCityLoop.cpp.)
+    // (Each season's value at its middle day, a straight line between: the old city loop's blend, kept.)
     static constexpr double Middle[4] = {46, 92 + 46, 184 + 45.5, 275 + 45};
     if (!finite(yearDay) || yearDay < 0)
         return 1;
@@ -607,9 +611,51 @@ std::string lotWords(int n)
 }
 } // namespace
 
+// The rules as this world has them (doc 79, 12): items::Rules' defaults, market.json's `rules` over them, the world's own
+// over those, each within its range; read once, with the Board's own (readMarketRules).
+void Society::buildRules()
+{
+    rules_.clear();
+    for (const auto& info : items::Rules)
+    {
+        int value = info.fallback;
+        if (const auto d = market::data().rules.find(info.name); d != market::data().rules.end())
+            value = d->second;
+        if (const auto own = authored_.economy.rules.find(info.name); own != authored_.economy.rules.end())
+            value = own->second;
+        rules_[info.name] = std::clamp(value, info.low, info.high);
+    }
+    marketRules_ = readMarketRules();
+}
+
+int Society::rule(const std::string& name) const
+{
+    if (const auto found = rules_.find(name); found != rules_.end())
+        return found->second;
+    const auto* info = items::ruleInfo(name);
+    return info ? info->fallback : -1;
+}
+
+void Society::adoptEconomy(const EconomySpec& economy)
+{
+    auto next = economy;
+    const auto& now = authored_.economy;
+    next.treasury = now.treasury;                   // (Starting amounts: spent long ago.)
+    next.storeHerbs = now.storeHerbs;
+    next.storeMeals = now.storeMeals;
+    authored_.economy = std::move(next);
+    buildRules();
+}
+
+void Society::setYearDay(double absoluteDay)
+{
+    if (std::isfinite(absoluteDay) && absoluteDay >= 0)
+        yearDay_ = std::fmod(absoluteDay, double(calendar::DaysPerYear));
+}
+
 market::Rules Society::readMarketRules() const
 {
-    // (Read once from the world's rules as buildSeasons sets them: marketRules() is on every price's path.)
+    // (Read once from the world's rules as buildRules sets them: marketRules() is on every price's path.)
     market::Rules r;
     const auto read = [&](const char* name, double scale, double fallback) {
         const int v = ownRule(name);
@@ -663,7 +709,7 @@ void Society::setTradePoints(market::Topology topology)
     // provisions were worked out before the world had found its markets (Society's own one market, "realm"), and the
     // day's pass would not come again until midnight. Again now, each keeping its band (as at a restore), when the
     // markets are new or a household's market or a market's shops have moved.
-    if (staged() && stagedDay_ >= 0 && !stagedHomes_.empty())
+    if (stagedDay_ >= 0 && !stagedHomes_.empty())
     {
         bool again = first;
         for (const auto& m : worldTopology_.markets)
@@ -975,8 +1021,6 @@ std::map<std::string, int> Society::farmCrews() const
 
 void Society::prepareMarket() const
 {
-    if (!staged())
-        return;
     const auto& t = tradePoints();                  // (Society's own markets, rebuilt here if the roster moved.)
     for (const auto& p : positions_)
         if (p.role == "merchant")
@@ -1238,12 +1282,10 @@ std::int64_t Society::payFactionDiscount(const std::string& merchant, const std:
 {
     if (back <= 0)
         return 0;
-    if (staged())
-        back = std::min(back, discountRoom(chapter));
+    back = std::min(back, discountRoom(chapter));
     if (back <= 0 || !shift(merchant, player, "", 0, back, "faction discount"))
         return 0;
-    if (staged())
-        discountPaid(chapter, back);
+    discountPaid(chapter, back);
     return back;
 }
 
@@ -1379,8 +1421,6 @@ bool Society::exchange(const std::string& seller, const std::string& buyer, cons
 
 void Society::rollMarket()
 {
-    if (!staged())
-        return;
     const auto day = marketDay();
     if (state_.board.day < 0)
         state_.board.day = day;
@@ -1640,7 +1680,7 @@ int Society::shelfTarget(const std::string& till, const std::string& ware) const
     const double abundance = yearDay_ >= 0 && stagedSeasonGroup(base, nullptr, &by) ? market::seasonal(by, yearDay_) : 1.;
     const double P = std::max(0., pressure(marketOf(till), base));
     const double want = double(shelf) * abundance * (1 - .5 * P) * marketRules().shelfScale + provisionFor(till, ware);
-    return shelf <= 0 ? 0 : std::clamp(int(std::ceil(want - 1e-9)), 1, StoreDrawMost);
+    return shelf <= 0 ? 0 : std::clamp(int(std::ceil(want - 1e-9)), 1, ShelfMost);
 }
 
 std::vector<std::string> Society::stagedShelfGoods(const std::string& founder) const
@@ -1671,8 +1711,6 @@ std::vector<std::string> Society::stagedShelfGoods(const std::string& founder) c
 bool Society::settingOut(const std::string& keeper) const
 {
     // Still setting out the wares from this morning's restock (7.7): what the keeper's activity reads.
-    if (!staged())
-        return false;
     const auto found = state_.board.settingOut.find(tillOf(keeper));
     return found != state_.board.settingOut.end() && marketClock() <= found->second;
 }
@@ -1683,8 +1721,6 @@ bool Society::stagedRestock(const std::string& keeper)
     // to their shelf targets: no inputs, no money, no store room; a raw stock change (no ledger entry). Goods the
     // market doesn't make wait for wagons in Phase 4 (D27's back-room buffer); until wagons run, everything refills, as a
     // market with no route does.
-    if (!staged())
-        return false;
     rollMarket();
     const auto* job = jobOf(keeper);
     if (!job || job->role != "merchant")
@@ -1722,9 +1758,7 @@ void World::ensureTradePoints()
 {
     // The markets (doc 79, 5.1), found again at each load and whenever the roster moves: a trade point for each
     // community (a region with homes) that has a merchant post, its id the region's; a merchant outside every community
-    // joins the nearest market by path, or one "outside" market; each market's k nearest by path. Only while staged.
-    if (!society_.staged())
-        return;
+    // joins the nearest market by path, or one "outside" market; each market's k nearest by path.
     // The Board feeds the bands (doc 79, 5 and 6.5): its Times, its pressure and its shelves, in play and in sims, so the
     // poor go short when players empty a shelf. Once; a test's own hooks are kept.
     if (!society_.stagedHooked())
@@ -1837,7 +1871,7 @@ void World::ensureTradePoints()
         for (const auto& area : items::farms().areas)
             for (const auto& def : area.farms)
                 if (def.id == f.farm)
-                    for (const auto& [good, _] : def.yield)
+                    for (const auto& good : def.yields)
                         t.markets[std::size_t(at)].made.insert(good);
     }
     // Its farm and works crews (7.3).

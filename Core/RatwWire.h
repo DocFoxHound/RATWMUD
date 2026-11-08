@@ -55,7 +55,8 @@ Value economyAccount(const EconomyAccount& a);
 Value economyLedger(const std::vector<EconomyEntry>& entries);
 Value careerPosition(const PositionState& p);
 CareerState readCareers(const Value& o);
-// A malformed subtree invalidates the complete checkpoint (minted -1). Never silently refill purses.
+// A malformed required field, or a real or escrow account's, invalidates the complete checkpoint (nextEntry 0, which
+// restore refuses); the old economy's fields are read past (doc 79, 14). Never silently refill a player's purse.
 SocietyState readSociety(const Value& o);
 // The staged economy's saved state (doc 79, Phase 2: the society's "staged"), written and read leniently.
 Value stagedValue(const StagedState& st);

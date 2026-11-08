@@ -1,7 +1,7 @@
 // Doc 79, Phase 2 (Docs/Design/79-a-staged-economy.md, sections 6 and 9): the bands and the staged accounts. Each
 // household scored, ranked and cut into a band once a day; the account kinds and the faucet door; the welcome's cap; the
 // staged payers topped up; holds, lean days, the goods trim; the bands and the staged day settled at restore; the Mind's
-// "Means" note. Everything here runs only in the staged economy (Society::staged()); with it off nothing here is reached.
+// "Means" note.
 #include "RatwCalendar.h"
 #include "RatwSociety.h"
 #include "RatwTalk.h"
@@ -43,7 +43,7 @@ Society::AccountKind Society::classify(const std::string& id)
     for (const char* p : {"contract:", "letter:", "let:", "stall:", "table:", "fest:", "project:", "ground:", "bandits:"})
         if (startsWith(id, p))
             return AccountKind::Escrow;
-    // (house: has no kept reader: Phase 0's list. The loop's own go with it in Phase 3.)
+    // (house: has no kept reader: Phase 0's list. The old economy's own are dropped at restore: doc 79, 14.)
     for (const char* p : {"caravan:", "fund:", "bank:", "outside:", "farm:", "crew:", "estate:", "house:"})
         if (startsWith(id, p))
             return AccountKind::Dead;
@@ -178,7 +178,7 @@ std::int64_t Society::payable(const std::string& payer, std::int64_t amount) con
     if (amount <= 0)
         return 0;
     // (A till is never topped up by the door (topUp): it pays what it holds, as topUp says.)
-    if (staged() && classify(payer) == AccountKind::Staged && account(payer) && !startsWith(payer, "till:"))
+    if (classify(payer) == AccountKind::Staged && account(payer) && !startsWith(payer, "till:"))
         return std::min<std::int64_t>(amount, MoneyCap);
     return std::min(amount, cash(payer));
 }
@@ -189,7 +189,7 @@ std::int64_t Society::cappedPayout(const std::string& escrow, const std::string&
     // An escrow's payout to a player under a daily cap (9.3: festival prizes, contract, bounty and escort rewards): its real
     // coins whole, its staged-sourced ones (paid first, as the door counts them) only within the holder's room today. The
     // rest goes back to the staged side first, so the door counts only what the player gets.
-    if (!staged() || coins <= 0 || classify(escrow) != AccountKind::Escrow || classify(player) != AccountKind::Real)
+    if (coins <= 0 || classify(escrow) != AccountKind::Escrow || classify(player) != AccountKind::Real)
         return coins;
     const auto src = state_.staged.escrowSource.find(escrow);
     const std::int64_t fromStaged = src == state_.staged.escrowSource.end() ? 0 : std::min(coins, src->second);
@@ -210,8 +210,7 @@ void Society::shareStakes(const std::string& pot, const std::vector<std::string>
         return;
     const auto share = coins / std::int64_t(seats.size());
     auto order = seats;
-    if (staged())
-        std::stable_partition(order.begin(), order.end(), [&](const std::string& who) { return classify(who) != AccountKind::Real; });
+    std::stable_partition(order.begin(), order.end(), [&](const std::string& who) { return classify(who) != AccountKind::Real; });
     for (const auto& who : order)
         if (share > 0)
             if (const auto paid = cappedPayout(pot, who, share, "stakesADay", house); paid > 0)
@@ -344,13 +343,13 @@ void Society::openRealBalance()
 
 bool Society::realBalanced() const
 {
-    return realOpening_ < 0 || !staged() || realTotal() == realOpening_ + faucetTotal_ - sinkTotal_;
+    return realOpening_ < 0 || realTotal() == realOpening_ + faucetTotal_ - sinkTotal_;
 }
 
 bool Society::leanNow(const std::string& account) const
 {
     const auto found = state_.staged.lean.find(account);
-    return staged() && found != state_.staged.lean.end() && found->second > state_.budgetDay;
+    return found != state_.staged.lean.end() && found->second > state_.budgetDay;
 }
 
 bool Society::heldNow(const std::string& account) const
@@ -397,8 +396,6 @@ void Society::setStatusOverride(const json::Value* v, std::vector<std::string>* 
 
 const Society::Status* Society::statusOf(const std::string& id) const
 {
-    if (!staged())
-        return nullptr;
     const auto found = status_.find(id);
     return found == status_.end() ? nullptr : &found->second;
 }
@@ -644,7 +641,7 @@ void Society::stagedJoined(const std::string& id, const std::vector<std::string>
     // A born child or an arrival placed in a post (6.5) takes its household's band at once: a parent's (a child under 16
     // is in its parents' household), else that of those it lodges with (not in a communal home: alone there). Alone, the
     // bands are worked out again at the next hour.
-    if (!staged() || stagedDay_ < 0)
+    if (stagedDay_ < 0)
         return;
     const auto life = state_.residents.find(id);
     if (life == state_.residents.end())
@@ -683,7 +680,7 @@ bool Society::overrideBand(const std::string& household, int band, std::int64_t 
         state_.staged.overrides.erase(household);
     else
         state_.staged.overrides[household] = {std::clamp(band, 0, status::Bands - 1), until};
-    if (staged() && stagedDay_ >= 0)
+    if (stagedDay_ >= 0)
         stagedBands(stagedDay_);                    // (Today's pass again: the override at once, nothing else moves.)
     return true;
 }
@@ -694,7 +691,7 @@ bool Society::liftHousehold(const std::string& household, std::int64_t until)
     if (found == state_.staged.bands.end())
         return false;
     found->second.liftedUntil = std::max(found->second.liftedUntil, until);
-    if (staged() && stagedDay_ >= 0)
+    if (stagedDay_ >= 0)
         stagedBands(stagedDay_);
     return true;
 }
@@ -779,14 +776,12 @@ void Society::stagedKeepers()
         const double head = std::min(row.meals * mealWorth + ahead * NourishADay, (2 + ahead) * NourishADay);
         const int pieces = int(std::ceil(head / each - 1e-9)) * int(home.members.size());
         if (pieces > 0)
-            provisionDemand_[home.till][home.food] = std::min(StoreDrawMost, provisionDemand_[home.till][home.food] + pieces);
+            provisionDemand_[home.till][home.food] = std::min(ShelfMost, provisionDemand_[home.till][home.food] + pieces);
     }
 }
 
 int Society::provisionFor(const std::string& till, const std::string& ware) const
 {
-    if (!staged())
-        return 0;
     const auto found = provisionDemand_.find(till);
     if (found == provisionDemand_.end())
         return 0;
@@ -896,7 +891,7 @@ void Society::stagedRestored()
     stagedHour_ = -1;
     postedAtPass_.clear();
     openRealBalance();
-    if (!staged() || roster_ != Roster::Authored)
+    if (roster_ != Roster::Authored)
         return;
     // The staged hour as saved, so a restart across 0:00 still runs that night's set (Phase 0's open item 10); the bands
     // worked out from the saved state, each keeping its saved band, so a restart never makes them jump.

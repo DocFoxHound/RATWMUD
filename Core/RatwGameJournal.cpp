@@ -40,8 +40,15 @@ bool samePosition(const PositionState& a, const PositionState& b)
 
 std::vector<std::int64_t> counters(const SocietyState& s)
 {
-    return {s.minted, s.sunk, s.nextEntry, s.budgetDay, s.exportsRemaining, s.importsRemaining, s.herbPatch,
-            std::int64_t(s.decisionRemainder * 1e9)};
+    return {s.nextEntry, s.budgetDay, s.herbPatch, std::int64_t(s.decisionRemainder * 1e9)};
+}
+
+// The accounts the journal follows (doc 79, 9.2): real and escrow only. Staged accounts are set nightly and settled at
+// load, so a crash between checkpoints loses nothing a player could see in them (and they were most of every record).
+bool journalled(const std::string& id)
+{
+    const auto kind = Society::classify(id);
+    return kind == Society::AccountKind::Real || kind == Society::AccountKind::Escrow;
 }
 
 // The staged state but its tallies and welcomes (those go by holder: wire::stagedChanges), for the journal's shadow.
@@ -136,7 +143,10 @@ struct Leftovers
 void Game::prime(Shadow& s) const
 {
     const auto& society = world_.society().state();
-    s.accounts = society.accounts;
+    s.accounts.clear();
+    for (const auto& [id, account] : society.accounts)
+        if (journalled(id))
+            s.accounts.emplace_hint(s.accounts.end(), id, account);
     s.economy = counters(society);
     s.ledgerSize = society.ledger.size();
     s.ledgerLast = society.ledger.empty() ? 0 : std::uint64_t(society.ledger.back().sequence);
@@ -173,6 +183,8 @@ void Game::record(unsigned what, const std::string& character)
     {
         for (const auto& [id, account] : society.accounts)
         {
+            if (!journalled(id))
+                continue;
             const auto old = shadow_.accounts.find(id);
             if (old == shadow_.accounts.end() || old->second.cash != account.cash || old->second.stock != account.stock)
             {
@@ -192,12 +204,8 @@ void Game::record(unsigned what, const std::string& character)
                 ++it;
         if (const auto now = counters(society); now != shadow_.economy)
         {
-            set(path({"society", "minted"}), society.minted);
-            set(path({"society", "sunk"}), society.sunk);
             set(path({"society", "nextEntry"}), society.nextEntry);
             set(path({"society", "budgetDay"}), society.budgetDay);
-            set(path({"society", "exportsRemaining"}), society.exportsRemaining);
-            set(path({"society", "importsRemaining"}), society.importsRemaining);
             set(path({"society", "herbPatch"}), society.herbPatch);
             set(path({"society", "decisionRemainder"}), society.decisionRemainder);
             shadow_.economy = now;

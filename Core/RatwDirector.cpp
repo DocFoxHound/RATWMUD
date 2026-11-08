@@ -331,8 +331,6 @@ Value Bridge::snapshot(const World& world, const std::map<std::string, Entity>& 
     }
     auto economy = Value::object();
     const auto full = wire::society(world.society().state());
-    economy.add("minted", world.society().state().minted);
-    economy.add("sunk", world.society().state().sunk);
     economy.add("ledger", full["ledger"]);
     o.add("cells", cells);
     o.add("factions", factions);

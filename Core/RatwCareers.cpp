@@ -212,9 +212,9 @@ int Society::consume(const std::string& account, const std::string& item, int qu
 bool Society::shift(const std::string& from, const std::string& to, const std::string& item, int quantity,
                     std::int64_t coins, const std::string& kind)
 {
-    // Existing money and goods only; what the receiver can't hold stays where it was. (In the staged economy a staged payer
-    // paying a player or escrow is topped up first: doc 79, 9.2.)
-    if (coins > 0 && staged())
+    // Existing money and goods only; what the receiver can't hold stays where it was. (A staged payer paying a player or
+    // escrow is topped up first: doc 79, 9.2.)
+    if (coins > 0)
         topUp(from, to, coins);
     const auto a = state_.accounts.find(from), b = state_.accounts.find(to);
     if (a == state_.accounts.end() || b == state_.accounts.end() || from == to || coins < 0 || quantity < 0 ||
@@ -394,21 +394,11 @@ bool Society::arrive(const ResidentRequest& request)
             return false;
         authored_.unplaced.erase(std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
                                               [&](const ResidentSpec& u) { return u.id == r.id; }));
-        if (staged())
-            stagedSet(r.id, std::min<std::int64_t>(request.purse, ArrivalPurse));   // (Doc 79: no Wharf or crew purse.)
-        else if (!request.purseFrom.empty())
-            if (const auto purse = std::min(request.purse, cash(request.purseFrom)); purse > 0)
-                shift(request.purseFrom, r.id, "", 0, purse,
-                      request.purseFrom == WharfFund ? "an arrival's purse, from the Wharf" : "a farm crew's purse, to its people");
+        stagedSet(r.id, std::min<std::int64_t>(request.purse, ArrivalPurse));   // (A plain amount: doc 79, 6.5.)
         if (r.role == "merchant")
         {
-            // A community's shop (doc 71, Phase C): its till opened, and its working float made as a city shop's was at
-            // the founding (its keeper's authored purse's worth: foundShops), counted with the farms' founding money.
-            const auto before = state_.minted;
-            foundShops();
+            foundShops();                           // (A community's shop, doc 71, Phase C: its till opened.)
             indexTills();
-            loopToday_.minted += state_.minted - before;
-            farmsMinted_ += state_.minted - before;
         }
         countFarmPosts();
         return true;
@@ -427,21 +417,15 @@ bool Society::arrive(const ResidentRequest& request)
         return false;
     authored_.unplaced.erase(std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
                                           [&](const ResidentSpec& u) { return u.id == r.id; }));
-    // Its purse from the Country's account (an unplaced NPC's own is outside the economy's money): moved, never made. In
-    // the staged economy (doc 79, 6.5) a plain amount, the night's set drawing it to its household's.
-    if (staged())
-        stagedSet(r.id, std::min<std::int64_t>(request.purse, ArrivalPurse));
-    else if (const auto purse = std::min(request.purse, cash(WharfFund)); purse > 0)
-        shift(WharfFund, r.id, "", 0, purse, "an arrival's purse, from the Wharf");
+    // Its purse a plain amount (doc 79, 6.5), the night's set drawing it to its household's.
+    stagedSet(r.id, std::min<std::int64_t>(request.purse, ArrivalPurse));
     return true;
 }
 
 const std::vector<items::WageRule>& Society::postRules()
 {
-    // City_loop.json's `wages` as they stood at doc 79 (the order matters: the first rule with a word in a title wins), so
-    // a post's kind and class no longer need the city's loop (doc 79, 6.3). payOf, postClass and payWages read this copy,
-    // so city_loop.json's `wages` is no longer read for pay or class: people_flow_tests' postKindsWithoutTheLoop checks
-    // the two still agree (and goes when Phase 3 deletes the key).
+    // The posts' rules (city_loop.json's `wages` as they stood at doc 79, the file gone since Phase 3; the order matters:
+    // the first rule with a word in a title wins): what kind of post a title is (postKind) and its class (postClass).
     static const std::vector<items::WageRule> rules = {
         {"the Crown's and the offices' heads", "treasury", "keeper",
          {"the queen", "the king's daughter", "running the city office", "reigning", "chancellor", "royal secretary",
@@ -1026,7 +1010,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         // Shares of the estate as it stood, not of what is left after each heir.
         const auto shares = std::int64_t(heirs.size());
         // (The staged economy, doc 79, 6.5: between NPCs the goods alone are inherited; the coins are staged and drop.)
-        if (staged() && classify(dead) == AccountKind::Staged)
+        if (classify(dead) == AccountKind::Staged)
             stagedSet(dead, 0);
         const std::int64_t cash = estate.cash;
         for (std::size_t h = 0; h < heirs.size(); ++h)

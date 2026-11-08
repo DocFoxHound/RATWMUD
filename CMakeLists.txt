@@ -5,7 +5,7 @@ option(RATW_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-add_library(ratw_core Core/RatwWorld.cpp Core/RatwAuthoring.cpp Core/RatwTravel.cpp Core/RatwCalendar.cpp Core/RatwSociety.cpp Core/RatwItems.cpp Core/RatwGifts.cpp Core/RatwMagic.cpp Core/RatwProgress.cpp Core/RatwPractice.cpp Core/RatwStanding.cpp Core/RatwPeople.cpp Core/RatwGamePeople.cpp Core/RatwGameSafety.cpp Core/RatwGameFriends.cpp Core/RatwGameKnown.cpp Core/RatwGameCircles.cpp Core/RatwGameHowl.cpp Core/RatwGameBooks.cpp Core/RatwBooks.cpp Core/RatwStars.cpp Core/RatwNewcomers.cpp Core/RatwGameNewcomers.cpp Core/RatwGameLetters.cpp Core/RatwGameGive.cpp Core/RatwGameFavours.cpp Core/RatwResidentLetters.cpp Core/RatwTaverns.cpp Core/RatwBoards.cpp Core/RatwLodgings.cpp Core/RatwStalls.cpp Core/RatwTavernGames.cpp Core/RatwGameTables.cpp Core/RatwFestivals.cpp Core/RatwArchive.cpp Core/RatwFame.cpp Core/RatwGameFame.cpp Core/RatwChronicle.cpp Core/RatwTroubles.cpp Core/RatwGameTroubles.cpp Core/RatwProjects.cpp Core/RatwGameProjects.cpp Core/RatwStorylines.cpp Core/RatwGameStorylines.cpp Core/RatwGameStoryteller.cpp Core/RatwFavours.cpp Core/RatwOccasions.cpp Core/RatwTogether.cpp Core/RatwTraining.cpp Core/RatwDocuments.cpp Core/RatwReports.cpp Core/RatwWear.cpp Core/RatwInjury.cpp Core/RatwAging.cpp Core/RatwAppearance.cpp Core/RatwResidents.cpp Core/RatwCityLoop.cpp Core/RatwMarket.cpp Core/RatwFarms.cpp Core/RatwWharf.cpp Core/RatwSteering.cpp Core/RatwFarmPeople.cpp Core/RatwWild.cpp Core/RatwHunt.cpp Core/RatwDurability.cpp Core/RatwMarks.cpp Core/RatwSermons.cpp Core/RatwPg.cpp Core/RatwBonds.cpp Core/RatwCareers.cpp Core/RatwRoads.cpp Core/RatwJsonDoc.cpp Core/RatwWire.cpp Core/RatwSocialCore.cpp Core/RatwCheckpoint.cpp Core/RatwDbStore.cpp Core/RatwSystemLibs.cpp Core/RatwAccountsCore.cpp Core/RatwIdentity.cpp Core/RatwTickets.cpp Core/RatwGameTickets.cpp Core/RatwMind.cpp Core/RatwSections.cpp Core/RatwMotionCore.cpp Core/RatwGame.cpp Core/RatwGameAmbient.cpp Core/RatwGameTalk.cpp Core/RatwGameVoice.cpp Core/RatwVoice.cpp Core/RatwDirector.cpp Core/RatwWeb.cpp Core/RatwCrime.cpp Core/RatwBattle.cpp Core/RatwSchedules.cpp Core/RatwAmbient.cpp Core/RatwTalk.cpp Core/RatwWeather.cpp Core/RatwArtwork.cpp Core/RatwGameArtwork.cpp Core/RatwJournal.cpp Core/RatwGameJournal.cpp Core/RatwGameBattle.cpp Core/RatwParty.cpp Core/RatwGameParty.cpp Core/RatwNames.cpp Core/RatwGameNames.cpp Core/RatwGameCompanions.cpp Core/RatwGameSocial.cpp Core/RatwChapters.cpp Core/RatwGameChapters.cpp Core/RatwFactions.cpp Core/RatwGameFactions.cpp Core/RatwEstates.cpp Core/RatwGameEstates.cpp Core/RatwCamps.cpp Core/RatwGameCamps.cpp Core/RatwGameHolds.cpp Core/RatwWatch.cpp Core/RatwGameWatch.cpp Core/RatwGameDev.cpp Core/RatwStep.cpp Core/RatwPack.cpp Core/RatwHealth.cpp Core/RatwGameHealth.cpp Core/RatwGameOwner.cpp)
+add_library(ratw_core Core/RatwWorld.cpp Core/RatwAuthoring.cpp Core/RatwTravel.cpp Core/RatwCalendar.cpp Core/RatwSociety.cpp Core/RatwItems.cpp Core/RatwGifts.cpp Core/RatwMagic.cpp Core/RatwProgress.cpp Core/RatwPractice.cpp Core/RatwStanding.cpp Core/RatwPeople.cpp Core/RatwGamePeople.cpp Core/RatwGameSafety.cpp Core/RatwGameFriends.cpp Core/RatwGameKnown.cpp Core/RatwGameCircles.cpp Core/RatwGameHowl.cpp Core/RatwGameBooks.cpp Core/RatwBooks.cpp Core/RatwStars.cpp Core/RatwNewcomers.cpp Core/RatwGameNewcomers.cpp Core/RatwGameLetters.cpp Core/RatwGameGive.cpp Core/RatwGameFavours.cpp Core/RatwResidentLetters.cpp Core/RatwTaverns.cpp Core/RatwBoards.cpp Core/RatwLodgings.cpp Core/RatwStalls.cpp Core/RatwTavernGames.cpp Core/RatwGameTables.cpp Core/RatwFestivals.cpp Core/RatwArchive.cpp Core/RatwFame.cpp Core/RatwGameFame.cpp Core/RatwChronicle.cpp Core/RatwTroubles.cpp Core/RatwGameTroubles.cpp Core/RatwProjects.cpp Core/RatwGameProjects.cpp Core/RatwStorylines.cpp Core/RatwGameStorylines.cpp Core/RatwGameStoryteller.cpp Core/RatwFavours.cpp Core/RatwOccasions.cpp Core/RatwTogether.cpp Core/RatwTraining.cpp Core/RatwDocuments.cpp Core/RatwReports.cpp Core/RatwWear.cpp Core/RatwInjury.cpp Core/RatwAging.cpp Core/RatwAppearance.cpp Core/RatwResidents.cpp Core/RatwMarket.cpp Core/RatwFarms.cpp Core/RatwFarmPeople.cpp Core/RatwWild.cpp Core/RatwHunt.cpp Core/RatwDurability.cpp Core/RatwMarks.cpp Core/RatwSermons.cpp Core/RatwPg.cpp Core/RatwBonds.cpp Core/RatwCareers.cpp Core/RatwRoads.cpp Core/RatwJsonDoc.cpp Core/RatwWire.cpp Core/RatwSocialCore.cpp Core/RatwCheckpoint.cpp Core/RatwDbStore.cpp Core/RatwSystemLibs.cpp Core/RatwAccountsCore.cpp Core/RatwIdentity.cpp Core/RatwTickets.cpp Core/RatwGameTickets.cpp Core/RatwMind.cpp Core/RatwSections.cpp Core/RatwMotionCore.cpp Core/RatwGame.cpp Core/RatwGameAmbient.cpp Core/RatwGameTalk.cpp Core/RatwGameVoice.cpp Core/RatwVoice.cpp Core/RatwDirector.cpp Core/RatwWeb.cpp Core/RatwCrime.cpp Core/RatwBattle.cpp Core/RatwSchedules.cpp Core/RatwAmbient.cpp Core/RatwTalk.cpp Core/RatwWeather.cpp Core/RatwArtwork.cpp Core/RatwGameArtwork.cpp Core/RatwJournal.cpp Core/RatwGameJournal.cpp Core/RatwGameBattle.cpp Core/RatwParty.cpp Core/RatwGameParty.cpp Core/RatwNames.cpp Core/RatwGameNames.cpp Core/RatwGameCompanions.cpp Core/RatwGameSocial.cpp Core/RatwChapters.cpp Core/RatwGameChapters.cpp Core/RatwFactions.cpp Core/RatwGameFactions.cpp Core/RatwEstates.cpp Core/RatwGameEstates.cpp Core/RatwCamps.cpp Core/RatwGameCamps.cpp Core/RatwGameHolds.cpp Core/RatwWatch.cpp Core/RatwGameWatch.cpp Core/RatwGameDev.cpp Core/RatwStep.cpp Core/RatwPack.cpp Core/RatwHealth.cpp Core/RatwGameHealth.cpp Core/RatwGameOwner.cpp)
 # What the game page bakes in (doc 77, 5.1: the client-data hash): the terrain catalogue, the walking rules and the
 # packed formats. A world and a client whose hashes differ can't play together; tools/client_data_hash.py makes the
 # same hash from the same files (line endings as LF), for the client's build. Re-run when any of them changes.
@@ -272,56 +272,6 @@ add_test(NAME exploit_behaviors COMMAND exploit_tests)
 add_executable(shops_tests Tests/shops_tests.cpp)
 target_link_libraries(shops_tests PRIVATE ratw_core)
 add_test(NAME shops_behaviors COMMAND shops_tests)
-# The store room (Docs/Design/67-ridgemere2-city.md, 6); reads Tests/fixtures/business_labels.json from the source tree.
-add_executable(store_room_tests Tests/store_room_tests.cpp)
-target_link_libraries(store_room_tests PRIVATE ratw_core)
-target_compile_definitions(store_room_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME store_room_behaviors COMMAND store_room_tests)
-# The Wharf (Docs/Design/73-the-wharf.md; the Country and the city's loop before it, doc 68).
-add_executable(wharf_tests Tests/wharf_tests.cpp)
-target_link_libraries(wharf_tests PRIVATE ratw_core)
-target_compile_definitions(wharf_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME wharf_behaviors COMMAND wharf_tests)
-# The seasons in the Country's supply and the world's own economy rules (doc 68, Progress, "Seasons and the DM's rules").
-add_executable(season_tests Tests/season_tests.cpp)
-target_link_libraries(season_tests PRIVATE ratw_core)
-target_compile_definitions(season_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME season_behaviors COMMAND season_tests)
-# The first economy fixes (doc 68, Progress, "First fixes"): the loop's rules as settings, and the city's services.
-add_executable(econ_fix_tests Tests/econ_fix_tests.cpp)
-target_link_libraries(econ_fix_tests PRIVATE ratw_core)
-target_compile_definitions(econ_fix_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME econ_fix_behaviors COMMAND econ_fix_tests)
-# Trades and the follow-ups (doc 68, Progress, "Trades"): office heads, the city's suppliers, the patrons, the medicines,
-# buying ahead, the float, the carriage subsidy to need, the winter stores.
-add_executable(trades_tests Tests/trades_tests.cpp)
-target_link_libraries(trades_tests PRIVATE ratw_core)
-target_compile_definitions(trades_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME trades_behaviors COMMAND trades_tests)
-add_executable(workshops_tests Tests/workshops_tests.cpp)
-target_link_libraries(workshops_tests PRIVATE ratw_core)
-target_compile_definitions(workshops_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME workshops_behaviors COMMAND workshops_tests)
-# The treasury's surplus (doc 68, Progress, "The treasury's surplus: works and alms"): its order at 18:00, the poorest
-# raised to a level, the public works' orders, money conserved.
-add_executable(treasury_tests Tests/treasury_tests.cpp)
-target_link_libraries(treasury_tests PRIVATE ratw_core)
-target_compile_definitions(treasury_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME treasury_behaviors COMMAND treasury_tests)
-add_executable(steer_tests Tests/steer_tests.cpp)
-target_link_libraries(steer_tests PRIVATE ratw_core)
-target_compile_definitions(steer_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME steer_behaviors COMMAND steer_tests)
-add_executable(farms_tests Tests/farms_tests.cpp)
-target_link_libraries(farms_tests PRIVATE ratw_core)
-target_compile_definitions(farms_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME farms_behaviors COMMAND farms_tests)
-# The self-correcting rules (doc 68, Progress, "Self-correcting rules"): prices follow stock, shelves sales, wages cover,
-# the toll and the alms the treasury's level; their bounds, rates, saves and switches, money conserved.
-add_executable(selfcorrect_tests Tests/selfcorrect_tests.cpp)
-target_link_libraries(selfcorrect_tests PRIVATE ratw_core)
-target_compile_definitions(selfcorrect_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-add_test(NAME selfcorrect_behaviors COMMAND selfcorrect_tests)
 # Births follow deaths, arrivals from the Country (doc 68, Progress, "Births follow deaths; arrivals from the Country; the
 # treasury's target"): a child for each resident's death, a player's never; no NPC made but by birth; an empty post filled
 # from the city first, then from the world's own unplaced NPCs, by class; where arrivals stay; money conserved.

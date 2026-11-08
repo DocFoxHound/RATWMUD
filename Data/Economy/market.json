@@ -1,7 +1,7 @@
 {
   "format": "ratw-market",
   "version": 1,
-  "about": "The Market Board's data (Docs/Design/79-a-staged-economy.md, 5 and 7; Core/RatwMarket.cpp), read only while the rule `staged` is on. `groups`: each good's depth group and its depthBase (a market's depth for a good is max(20, depthBase x catchment^0.6) x depthScale). A good's group is its entry in `goods`, else its catalogue category's in `categories`, else `fallback`. `district`: a static price factor by a keeper's quarter (its voice table's `quarter`), by group or `all`, inside the clamp. `times`: the slider's narrow move on staples and luxuries (D2), at hard, lean, ordinary, good and boom. `seasonSpanMost`: a season group's price swing (its dearest season over its cheapest) is rescaled to at most this, so it fits the clamp with room for pressure. `region`: dearer where a good isn't made. `buys`: what a kind of shop also buys from players in the staged economy (D5: the smithy, the ironworks and the foundry buy iron ore). `shelves`: a ware's shelf where it isn't the starting stock (4, swords 3; moved from city_loop.json: theriac, the apothecary's rare cure-all, one at a time). `seasons`: the seven season groups (moved from city_loop.json, whose copy the conserving economy reads until Phase 3): each group's goods and, for Spring, Summer, Autumn and Winter (each the value at the season's middle day, the days between blended), in percent of normal, its `price` (rescaled to fit the clamp) and its `shelf` (how full the shops keep it). A world's own season records (the DM's Economy tab) still lay their price and shelf over a group's. The clamp's ends (0.80, 1.28), the sell share (0.55) and the backstop (0.95) are constants, never data.",
+  "about": "The Market Board's data (Docs/Design/79-a-staged-economy.md, 5 and 7; Core/RatwMarket.cpp). `groups`: each good's depth group and its depthBase (a market's depth for a good is max(20, depthBase x catchment^0.6) x depthScale). A good's group is its entry in `goods`, else its catalogue category's in `categories`, else `fallback`. `district`: a static price factor by a keeper's quarter (its voice table's `quarter`), by group or `all`, inside the clamp. `times`: the slider's narrow move on staples and luxuries (D2), at hard, lean, ordinary, good and boom. `seasonSpanMost`: a season group's price swing (its dearest season over its cheapest) is rescaled to at most this, so it fits the clamp with room for pressure. `region`: dearer where a good isn't made. `buys`: what a kind of shop also buys from players in the staged economy (D5: the smithy, the ironworks and the foundry buy iron ore). `shelves`: a ware's shelf where it isn't the starting stock (4, swords 3; moved from city_loop.json: theriac, the apothecary's rare cure-all, one at a time). `seasons`: the seven season groups (moved from city_loop.json, gone since doc 79's Phase 3): each group's goods and, for Spring, Summer, Autumn and Winter (each the value at the season's middle day, the days between blended), in percent of normal, its `price` (rescaled to fit the clamp) and its `shelf` (how full the shops keep it). A world's own season records (the DM's Economy tab) still lay their price and shelf over a group's. The clamp's ends (0.80, 1.28), the sell share (0.55) and the backstop (0.95) are constants, never data. `rules`, `services`, `luxuries`, `houseBusinesses`, `estates` and `wharf`: moved from city_loop.json in Phase 3 (each with its own `about`).",
   "groups": {
     "staple": 2.0,
     "food": 1.0,
@@ -90,5 +90,259 @@
     {"id": "dairy", "name": "milk and dairy", "goods": ["milk", "butter", "cheese"], "price": [100, 95, 100, 110], "shelf": [100, 100, 100, 100]},
     {"id": "honey", "name": "honey", "goods": ["honey"], "price": [105, 95, 95, 115], "shelf": [100, 100, 100, 100]},
     {"id": "preserved", "name": "dried and preserved fruit", "goods": ["dried_apples", "fruit_preserves"], "price": [100, 100, 100, 90], "shelf": [100, 120, 250, 150]}
-  ]
+  ],
+  "rules": {
+    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays) and the Board's pressure settings. A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
+    "neverHungry": 0,
+    "neverBroke": 0,
+    "buyAheadDays": 1,
+    "halfLifePerishable": 20,
+    "halfLifeKeeping": 50,
+    "halfLifeDurable": 80,
+    "ripple": 50,
+    "depthScale": 100,
+    "playerPushMost": 15,
+    "playerSellMost": 400,
+    "takeAllowance": 50,
+    "shelfScale": 100,
+    "factionDiscountMost": 30
+  },
+  "services": {
+    "about": "The city's services (moved from city_loop.json, doc 79, 6.5): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Kept for the services to come (bands and talk); nothing in Core reads them yet. A world's `service` records change them.",
+    "list": [
+      {
+        "id": "groom_and_trim",
+        "business": "barber",
+        "every": 4
+      },
+      {
+        "id": "tooth_drawn",
+        "business": "barber",
+        "every": 60
+      },
+      {
+        "id": "coin_changed",
+        "business": "moneychanger",
+        "every": 7
+      },
+      {
+        "id": "letter_of_credit",
+        "business": "moneychanger",
+        "every": 30
+      },
+      {
+        "id": "pledge_redeemed",
+        "business": "pawnbroker",
+        "every": 10
+      },
+      {
+        "id": "small_loan_fee",
+        "business": "pawnbroker",
+        "every": 20
+      },
+      {
+        "id": "cart_hire",
+        "business": "stables",
+        "every": 20
+      },
+      {
+        "id": "stabling",
+        "business": "stables",
+        "every": 20
+      },
+      {
+        "id": "skiff_patched",
+        "business": "shipwright",
+        "every": 20
+      },
+      {
+        "id": "oars_mended",
+        "business": "shipwright",
+        "every": 20
+      },
+      {
+        "id": "roof_patched",
+        "business": "builders_yard",
+        "every": 30
+      },
+      {
+        "id": "wall_limewashed",
+        "business": "builders_yard",
+        "every": 20
+      },
+      {
+        "id": "armour_mended",
+        "business": "armory",
+        "every": 30,
+        "for": "patrons"
+      },
+      {
+        "id": "dent_beaten_out",
+        "business": "armory",
+        "every": 45,
+        "for": "patrons"
+      },
+      {
+        "id": "straps_replaced",
+        "business": "armory",
+        "every": 30,
+        "for": "patrons"
+      },
+      {
+        "id": "blade_ground",
+        "business": "armory",
+        "every": 15,
+        "for": "patrons"
+      },
+      {
+        "id": "hull_caulked",
+        "business": "shipwright",
+        "every": 6,
+        "for": "patrons"
+      },
+      {
+        "id": "strake_replaced",
+        "business": "shipwright",
+        "every": 10,
+        "for": "patrons"
+      },
+      {
+        "id": "spar_mended",
+        "business": "shipwright",
+        "every": 5,
+        "for": "patrons"
+      },
+      {
+        "id": "wall_repointed",
+        "business": "builders_yard",
+        "every": 10,
+        "for": "patrons"
+      },
+      {
+        "id": "slates_relaid",
+        "business": "builders_yard",
+        "every": 15,
+        "for": "patrons"
+      },
+      {
+        "id": "timbers_mended",
+        "business": "builders_yard",
+        "every": 12,
+        "for": "patrons"
+      }
+    ]
+  },
+  "luxuries": {
+    "about": "The luxuries (moved from city_loop.json, doc 79, 17; doc 72, Phase 5: cheese, a comic luxury for wolves): the goods the rich buy and the Times touch. Kept for the bands and talk; the Board's `times` gives their group (luxury) its swing.",
+    "goods": [
+      "cheese"
+    ]
+  },
+  "houseBusinesses": {
+    "about": "The Houses' businesses in the city (moved from city_loop.json, doc 79, 17; doc 72): a business at one of these buildings is its House's, for the bands (a House head is rich) and for talk. No money moves by it.",
+    "list": [
+      {
+        "building": "rm_the_grayrock_ironworks",
+        "house": "Timberland",
+        "name": "The Timberland Ironworks"
+      },
+      {
+        "building": "rm_the_grayrock_foundry",
+        "house": "Timberland",
+        "name": "The Timberland Foundry"
+      }
+    ]
+  },
+  "estates": {
+    "about": "The Houses' estates (moved from city_loop.json, doc 79, 17; doc 72, Phase 6): each House's people by the words of their posts, for the guarantees (doc 79, 6.3: the Heights and the estates' residents at least comfortable). No purse: the estates' money went with the city's loop.",
+    "list": [
+      {
+        "id": "grayrock",
+        "house": "Grayrock",
+        "name": "House Grayrock's estate (the wharf and the sea trade)",
+        "fund": "wharf",
+        "words": [
+          "grayrock",
+          "wharf",
+          "harbourmaster",
+          "unloading ships",
+          "working the cranes",
+          "carrying from",
+          "bonded warehouse",
+          "long store",
+          "new store"
+        ]
+      },
+      {
+        "id": "timberland",
+        "house": "Timberland",
+        "name": "House Timberland's estate",
+        "words": [
+          "timberland",
+          "mossgrave",
+          "iron store",
+          "iron trade"
+        ]
+      },
+      {
+        "id": "greatly",
+        "house": "Greatly",
+        "name": "House Greatly's estate",
+        "words": [
+          "greatly",
+          "counting house"
+        ]
+      },
+      {
+        "id": "fell",
+        "house": "Fell",
+        "name": "House Fell's estate",
+        "words": [
+          "fell"
+        ]
+      },
+      {
+        "id": "crown",
+        "house": "the Crown",
+        "name": "the Crown's estate",
+        "grants": true,
+        "words": []
+      }
+    ]
+  },
+  "wharf": {
+    "about": "The Wharf's goods (moved from city_loop.json, doc 79, 17; doc 73, 6: of its controls only the never-imported list stays, for the port to come, Phase 5): `never`, goods the ships never bring (cheese: the user's); `imports` and `takes`, the goods its lists named (names only: the money and the most a day went with the Wharf's valve).",
+    "never": [
+      "cheese"
+    ],
+    "imports": [
+      "apple_brandy",
+      "aqua_vitae",
+      "brandy",
+      "butter",
+      "cider",
+      "copper_ore",
+      "eggs",
+      "offal",
+      "sheep",
+      "sheepskin",
+      "tin_ore",
+      "wheat"
+    ],
+    "takes": [
+      "berries",
+      "bones",
+      "charcoal",
+      "flax",
+      "handbell",
+      "hide",
+      "honey",
+      "iron_ore",
+      "limestone",
+      "resin",
+      "small_pelt",
+      "straw",
+      "tallow"
+    ]
+  }
 }

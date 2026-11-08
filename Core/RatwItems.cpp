@@ -36,7 +36,6 @@ struct Catalog
     std::map<std::string, std::vector<std::string>> supplies, buys;
     Ladder ladder;
     Households households;
-    CityLoop cityLoop;
     Farms farms;
     FarmPeople farmPeople;
 };
@@ -90,52 +89,15 @@ int wearNumber(const json::Value& item, const char* key)
     return int(item.object("wear").number(key, 0));
 }
 
-// The farms' defaults (country_farms.json): its areas and their farms, each good one the catalogue knows.
+// The farms and works (country_farms.json, doc 79, 17: the list and each farm's crew; its money went with Phase 3).
 void readFarms(Catalog& c, const json::Value& file)
 {
-    const auto known = [&](const std::string& id) {
-        return std::any_of(c.goods.begin(), c.goods.end(), [&](const Item& g) { return g.id == id; });
-    };
     const auto id = [](const std::string& s) {
         return !s.empty() && s.size() <= 48 &&
                std::all_of(s.begin(), s.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
     };
-    // A wage or another whole number, or -1 where it is null (the next level's).
-    const auto orUnset = [](const json::Value& v, int high) {
-        return v.isNumber() ? std::clamp(int(std::lround(v.asNumber())), 0, high) : -1;
-    };
-    const auto four = [](const json::Value& v, std::array<double, 4>& into) {
-        if (!v.isArray() || v.size() != 4)
-            return false;
-        for (std::size_t i = 0; i < 4; ++i)
-            into[i] = std::clamp(v.items()[i].asNumber(0), 0., 100000.);
-        return true;
-    };
     auto& f = c.farms;
-    const auto& d = file.object("defaults");
-    f.keeper = std::max(0, orUnset(d.object("wages")["keeper"], 1000));
-    f.hand = std::max(0, orUnset(d.object("wages")["hand"], 1000));
-    f.floatDays = std::clamp(int(d.number("floatDays", 2)), 0, 365);
-    f.openingStockDays = std::clamp(int(d.number("openingStockDays", 7)), 0, 365);
-    f.estatePeople = std::clamp(int(d.number("estatePeople", 24)), 0, 100000);
-    f.otherWorkers = std::clamp(int(d.number("otherWorkers", 68)), 0, 100000);
-    const auto& schedule = d.object("schedule");
-    f.start = std::clamp(int(schedule.number("start", -1)), -1, 365000000);
-    f.every = std::clamp(int(schedule.number("every", 28)), 1, 3650);
-    for (const auto& a : schedule.array("order"))
-        if (id(a.asString({})))
-            f.order.push_back(a.asString({}));
-    for (const auto& [item, share] : file.object("basket").fields())
-        if (known(item) && share.asNumber(0) >= 1)
-            f.basket.push_back({item, int(std::min(1000000., share.asNumber(0)))});
-    // (Doc 73: the Country's basket is the Wharf's; an older file's countryBasket read as it.)
-    for (const auto& [item, share] : file.object(file.has("wharfBasket") ? "wharfBasket" : "countryBasket").fields())
-        if (known(item) && share.asNumber(0) >= 1)
-            f.wharfBasket.push_back({item, int(std::min(1000000., share.asNumber(0)))});
-    for (const auto& t : file.array("switchTrades"))
-        if (id(t.asString({})))
-            f.switchTrades.push_back(t.asString({}));
-    std::set<std::string> farmIds, areaGoods;
+    std::set<std::string> farmIds;
     for (const auto& a : file.array("areas"))
     {
         FarmArea area;
@@ -143,58 +105,20 @@ void readFarms(Catalog& c, const json::Value& file)
         area.name = a.string("name", area.id);
         if (!id(area.id) || std::any_of(f.areas.begin(), f.areas.end(), [&](const FarmArea& x) { return x.id == area.id; }))
             continue;
-        for (const auto& g : a.array("goods"))
-            if (known(g.asString({})) && areaGoods.insert(g.asString({})).second)
-                area.goods.push_back(g.asString({}));   // (A good in one area at most: the first that names it.)
-        area.on = a["on"].isBool() ? int(a["on"].asBool()) : -1;
-        area.yieldScale = std::clamp(int(a.number("yieldScale", 100)), 0, 1000);
-        area.crewScale = std::clamp(int(a.number("crewScale", 100)), 0, 1000);
-        area.keeper = orUnset(a.object("wages")["keeper"], 1000);
-        area.hand = orUnset(a.object("wages")["hand"], 1000);
-        if (a.string("price") == "year")
-            area.priceFactor = std::clamp(int(a.number("priceFactor", 100)), 10, 1000);
-        double takings = 0;
-        for (const auto& v : a.array("revenueADay"))
-            takings += std::max(0., v.asNumber(0)) / 4;
-        area.takings = takings;
         area.works = a.boolean("works", false);
-        area.house = a.string("house");
         for (const auto& x : a.array("farms"))
         {
             FarmDef farm;
             farm.id = x.string("id");
             farm.kind = x.string("kind");
             farm.area = area.id;
-            farm.house = x.string("house");
-            farm.landRent = x.string("landRent");
             if (!id(farm.id) || !farmIds.insert(farm.id).second)
                 continue;
             farm.keepers = std::clamp(int(x.object("crew").number("keepers", 1)), 0, 100);
             farm.hands = std::clamp(int(x.object("crew").number("hands", 0)), 0, 100);
-            farm.keeper = orUnset(x.object("wages")["keeper"], 1000);
-            farm.hand = orUnset(x.object("wages")["hand"], 1000);
-            farm.reserve = std::clamp<std::int64_t>(std::llround(x.number("reserve", 0)), 0, 1000000);
-            farm.purse = std::clamp<std::int64_t>(std::llround(x.number("purse", 0)), 0, 1000000);
-            farm.basketADay = std::clamp(x.number("basketADay", 0), 0., 1000000.);
-            for (const auto& [item, values] : x.object("yield").fields())
-                if (std::array<double, 4> v{}; known(item) && four(values, v))
-                    farm.yield[item] = v;
-            for (const auto& [item, values] : x.object("table").fields())
-                if (std::array<double, 4> v{}; farm.yield.count(item) && four(values, v))
-                    farm.table[item] = v;
-            for (const auto& m : x.array("makes"))
-            {
-                FarmDef::Make make;
-                make.good = m.string("good");
-                make.from = m.string("from");
-                make.in = std::clamp(int(m.number("in", 1)), 1, 1000);
-                make.share = std::clamp(int(m.number("share", 100)), 0, 100);
-                make.store = std::clamp(int(m.number("store", 0)), 0, 100000);
-                if (std::array<double, 4> v{}; four(m["aDay"], v))
-                    make.aDay = v;
-                if (known(make.good) && farm.yield.count(make.from) && make.good != make.from && make.store > 0)
-                    farm.makes.push_back(std::move(make));
-            }
+            for (const auto& [item, _] : x.object("yield").fields())
+                if (std::any_of(c.goods.begin(), c.goods.end(), [&](const Item& g) { return g.id == item; }))
+                    farm.yields.insert(item);
             area.farms.push_back(std::move(farm));
         }
         f.areas.push_back(std::move(area));
@@ -391,106 +315,6 @@ void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& ru
     p.loaded = !p.farms.empty() && !p.kinds.empty();
 }
 
-// Steering the economy (doc 74): each lever's or target's five marks (a number, or null: the world's own value for a
-// lever, none for a target); a name the code doesn't know, or a row not of five, is left as it was. Read from
-// city_loop.json's `steering`, then from a steering table file over it (world_check --steer-table, doc 75, 5.1).
-void readSteering(const json::Value& steer, CityLoop::Steering& t)
-{
-    for (const auto& [kind, into] : {std::pair{"levers", &t.levers}, std::pair{"targets", &t.targets}})
-        for (const auto& [name, row] : steer.object(kind).fields())
-        {
-            const auto found = into->find(name);
-            const auto& marks = row.items();
-            if (found == into->end() || marks.size() != 5)
-                continue;
-            std::array<double, 5> v{};
-            bool sound = true;
-            for (std::size_t i = 0; i < 5; ++i)
-            {
-                if (marks[i].isNumber() && std::isfinite(marks[i].asNumber()) && std::abs(marks[i].asNumber()) <= 1e9)
-                    v[i] = marks[i].asNumber();
-                else if (marks[i].isNull())
-                    v[i] = std::numeric_limits<double>::quiet_NaN();
-                else
-                    sound = false;
-            }
-            if (sound)
-                found->second = v;
-        }
-    t.treasuryFloor = std::clamp(steer.number("treasuryFloor", t.treasuryFloor), 0., 1e9);
-    t.treasuryLow = std::clamp(steer.number("treasuryLow", t.treasuryLow), 0., t.treasuryFloor);
-    t.comfortable = std::clamp(steer.number("comfortable", t.comfortable), 1., 100.);
-    t.idleDays = int(std::clamp(steer.number("idleDays", t.idleDays), 1., 365.));
-    t.tillsShortNormal = std::clamp(steer.number("tillsShortNormal", t.tillsShortNormal), 0., 1e6);
-    t.tillsShortOver = std::clamp(steer.number("tillsShortOver", t.tillsShortOver), 0., 1000.);
-    t.chartersRampDays = int(std::clamp(steer.number("chartersRampDays", t.chartersRampDays), 1., 365.));
-    t.dividendPerCharter = std::clamp(steer.number("dividendPerCharter", t.dividendPerCharter), 0., 10.);
-    // The safety supervisor (doc 75, 3.6): the treasury's floors at the five marks (a row of 13 months, or null), and its
-    // settings (`supervisor`).
-    if (const auto& floors = steer["treasuryFloors"].items(); floors.size() == 5)
-    {
-        auto next = t.treasuryFloors;
-        bool sound = true;
-        for (std::size_t m = 0; m < 5 && sound; ++m)
-        {
-            const auto& row = floors[m].items();
-            if (floors[m].isNull())
-            {
-                next[m].fill(std::numeric_limits<double>::quiet_NaN());
-                continue;
-            }
-            sound = row.size() == next[m].size();
-            for (std::size_t i = 0; sound && i < row.size(); ++i)
-            {
-                sound = row[i].isNumber() && std::isfinite(row[i].asNumber()) && row[i].asNumber() >= 0 && row[i].asNumber() <= 1e9;
-                if (sound)
-                    next[m][i] = row[i].asNumber();
-            }
-        }
-        if (sound)
-        {
-            t.treasuryFloors = next;
-            t.floorsGiven = true;
-        }
-    }
-    if (const auto& s = steer.object("supervisor"); s.isObject())
-    {
-        t.floorLeast = std::clamp(s.number("floorLeast", t.floorLeast), 0., 1e9);
-        t.meanNights = std::clamp(s.number("meanNights", t.meanNights), 1., 365.);
-        t.tillsOver = std::clamp(s.number("tillsOver", t.tillsOver), 1., 100.);
-        t.clearShare = std::clamp(s.number("clearShare", t.clearShare), .1, 1.);
-        t.routeAt = std::clamp(s.number("routeAt", t.routeAt), .01, 1.);
-        t.returnShare = std::clamp(s.number("returnShare", t.returnShare), .01, 1.);
-        t.clearNights = int(std::clamp(s.number("clearNights", t.clearNights), 1., 365.));
-        t.edgeNights = int(std::clamp(s.number("edgeNights", t.edgeNights), 1., 3650.));
-        t.titheShopsWeek = std::clamp(s.number("titheShopsWeek", t.titheShopsWeek), 0., 100.);
-        t.titheHungerWeek = std::clamp(s.number("titheHungerWeek", t.titheHungerWeek), 0., 100.);
-        t.richShopsWeek = std::clamp(s.number("richShopsWeek", t.richShopsWeek), 0., 1e6);
-        t.chartersHungerWeek = std::clamp(s.number("chartersHungerWeek", t.chartersHungerWeek), 0., 1e4);
-    }
-    if (const auto& r = steer.object("reach"); r.isObject())
-    {
-        t.reachLeft = json::utf8Prefix(r.string("left", t.reachLeft), 200);
-        t.reachRight = json::utf8Prefix(r.string("right", t.reachRight), 200);
-    }
-    if (const auto& order = steer["skimOrder"].items(); !order.empty())
-    {
-        static const std::map<std::string, int> steps = {{"estates", 1}, {"treasury", 2}, {"upper", 3}, {"keepers", 4}, {"middle", 5}};
-        std::array<int, 5> next{};
-        std::set<int> seen;
-        bool sound = order.size() == next.size();
-        for (std::size_t i = 0; sound && i < order.size(); ++i)
-        {
-            const auto found = steps.find(order[i].asString({}));
-            sound = found != steps.end() && seen.insert(found->second).second;
-            if (sound)
-                next[i] = found->second;
-        }
-        if (sound)
-            t.skimOrder = next;
-    }
-}
-
 Catalog build()
 {
     Catalog c;
@@ -680,252 +504,7 @@ Catalog build()
                 c.households.needs.push_back(std::move(need));
         }
     }
-    // Steering the economy (doc 74, 3 and 4): the table as the doc has it, then city_loop.json's `steering` over it.
-    {
-        const double W = std::numeric_limits<double>::quiet_NaN();
-        auto& t = c.cityLoop.steering;
-        // (Doc 75, 4: the share-out, the toll lean and the rent scale gone; the Levelling tithe, the Crown's charters and
-        // the toll drift's target new. A lever's NaN at a half mark is the straight line between its neighbours.)
-        t.levers = {{"levelling", {40, W, 0, 0, 0}},     {"charters", {0, 0, 0, W, 33}},
-                    {"postsShare", {50, 25, 0, 0, 0}},   {"surplusKeep", {0, 1000, W, W, W}},
-                    {"treasuryCap", {1500, W, W, W, W}}, {"treasuryTarget", {1500, W, W, W, 850}},
-                    {"surplusAlmsTo", {80, 60, W, W, W}}, {"groundRent", {0, 0, 0, 15, 30}},
-                    {"dividend", {0, 0, 0, W, 15}},      {"richAbove", {W, W, W, 100, 150}},
-                    {"spendAbove", {25, 32, W, W, W}}};
-        t.targets = {{"gini", {.33, .41, .487, W, W}},        {"giniBand", {.04, .04, .035, W, W}},
-                     {"upper", {W, W, 13, 18.5, 24}},           {"upperBand", {W, W, 2, 2.5, 3}},
-                     {"upperMost", {14, 14, W, W, W}},        {"top10Most", {27, 31, W, W, W}},
-                     {"top10Least", {W, W, W, 37, 40}},       {"hungerMost", {.02, .05, .15, .15, .15}},
-                     {"shortMost", {.1, .5, 3.5, 4, 5}},
-                     // (Doc 75, 3.6: the supervisor's, each mark's floors-off tills short and the wage support's most
-                     // unpaid a day, a 7-night mean; none: the rule doesn't judge it there.)
-                     {"tillsShort", {W, W, W, W, W}},        {"unpaidMost", {W, W, W, W, W}}};
-    }
-    // The Country and the city's loop (doc 68): optional; without it, one market with an empty basket.
-    // (Doc 73: the file was country.json; an older data folder's is still read.)
-    json::Value country;
-    std::string countryError;
-    if (readJson(dir / "city_loop.json", country, countryError) ||
-        (!std::filesystem::exists(dir / "city_loop.json") && readJson(dir / "country.json", country, countryError)))
-    {
-        const auto known = [&](const std::string& id) {
-            return std::any_of(c.goods.begin(), c.goods.end(), [&](const Item& g) { return g.id == id; });
-        };
-        for (const auto& m : country.array("markets"))
-        {
-            Market market;
-            market.id = m.string("id");
-            market.name = m.string("name", market.id);
-            for (const auto& [item, share] : m.object("basket").fields())
-                if (known(item) && share.asNumber(0) >= 1 && share.asNumber(0) <= 1000000)
-                    market.basket.push_back({item, int(share.asNumber(0))});
-            const bool idOk = !market.id.empty() && market.id.size() <= 40 &&
-                              std::all_of(market.id.begin(), market.id.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
-            if (idOk && std::none_of(c.cityLoop.markets.begin(), c.cityLoop.markets.end(), [&](const Market& x) { return x.id == market.id; }))
-                c.cityLoop.markets.push_back(std::move(market));
-        }
-        for (const auto& r : country.object("wages").array("rules"))
-        {
-            WageRule rule;
-            rule.payer = r.string("payer");
-            if (rule.payer == "country")
-                rule.payer = "estates";             // (Doc 73: the Country's posts are the estates', the Wharf's among them.)
-            rule.name = r.string("name", rule.payer);
-            rule.wage = r.string("wage");
-            for (const auto& w : r.array("words"))
-                if (!w.asString({}).empty())
-                    rule.words.push_back(w.asString({}));
-            if (!rule.payer.empty() && !rule.words.empty())
-                c.cityLoop.wages.push_back(std::move(rule));
-        }
-        // The Houses' estates (doc 72, Phase 6): an id and a House each, none twice; at most one grants.
-        for (const auto& e : country.object("estates").array("list"))
-        {
-            Estate estate{e.string("id"), e.string("house"), e.string("name"), e.string("fund"), e.boolean("grants"), {}};
-            if (estate.fund == "country")
-                estate.fund = "wharf";              // (Doc 73: the Country's purse is the Wharf's.)
-            if (estate.name.empty())
-                estate.name = estate.house;
-            for (const auto& w : e.array("words"))
-                if (!w.asString({}).empty())
-                    estate.words.push_back(w.asString({}));
-            const auto& all = c.cityLoop.estates;
-            const bool idOk = !estate.id.empty() && estate.id.size() <= 40 &&
-                              std::all_of(estate.id.begin(), estate.id.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
-            if (idOk && !estate.house.empty() &&
-                std::none_of(all.begin(), all.end(), [&](const Estate& x) { return x.id == estate.id || x.house == estate.house; }) &&
-                (!estate.grants || std::none_of(all.begin(), all.end(), [](const Estate& x) { return x.grants; })))
-                c.cityLoop.estates.push_back(std::move(estate));
-        }
-        const auto& food = country.object("food");
-        c.cityLoop.foodDays = std::clamp(food.number("days", 2), .5, 10.);
-        c.cityLoop.shortDays = std::clamp(food.number("shortDays", 1), .1, c.cityLoop.foodDays);
-        const auto& comforts = country.object("comforts");
-        c.cityLoop.comfortsAbove = std::clamp(int(comforts.number("above", 60)), 0, 1000000);
-        c.cityLoop.comfortsShare = std::clamp(comforts.number("share", .1), 0., 1.);
-        for (const auto& g : comforts.array("goods"))
-            if (known(g.asString({})))
-                c.cityLoop.comforts.push_back(g.asString({}));
-        for (const auto& g : country.object("luxuries").array("goods"))   // (Doc 72, Phase 5: cheese.)
-            if (const auto id = g.asString({}); known(id) &&
-                std::find(c.cityLoop.luxuries.begin(), c.cityLoop.luxuries.end(), id) == c.cityLoop.luxuries.end())
-                c.cityLoop.luxuries.push_back(id);
-        // The loop's rules and the city's services (doc 68, Progress, "First fixes").
-        for (const auto& info : Rules)
-        {
-            // (A rule under its old name, doc 73, where the file has no new one.)
-            const auto& rules = country.object("rules");
-            const char* key = info.name;
-            if (!rules.has(key) && std::string(key) == "estatePostsDays" && rules.has("countryPostsDays"))
-                key = "countryPostsDays";
-            c.cityLoop.rules[info.name] = std::clamp(int(std::lround(rules.number(key, info.fallback))), info.low, info.high);
-        }
-        for (const auto& s : country.object("services").array("list"))
-        {
-            ServiceDef def{s.string("id"), s.string("business"), std::clamp(int(s.number("every", 30)), 1, 3650),
-                           s.string("for") == "patrons"};
-            if (known(def.id) && !def.business.empty() &&
-                std::none_of(c.cityLoop.services.begin(), c.cityLoop.services.end(), [&](const ServiceDef& x) { return x.id == def.id; }))
-                c.cityLoop.services.push_back(std::move(def));
-        }
-        // Trades (doc 68, Progress, "Trades"): the city's suppliers, the armoury's patrons, dear goods' shelves.
-        for (const auto& s : country.object("suppliers").array("list"))
-        {
-            Supplier supplier{s.string("buyer"), s.string("seller"), {}, std::clamp(int(s.number("price", 0)), 0, 1000)};
-            for (const auto& g : s.array("goods"))
-                if (known(g.asString({})))
-                    supplier.goods.push_back(g.asString({}));
-            if (!supplier.buyer.empty() && !supplier.seller.empty() && supplier.buyer != supplier.seller)
-                c.cityLoop.suppliers.push_back(std::move(supplier));
-        }
-        // Steering the economy (doc 74): the table's marks and settings (readSteering).
-        if (const auto& steer = country.object("steering"); steer.isObject())
-            readSteering(steer, c.cityLoop.steering);
-        // The Houses' city businesses (doc 72, after iron6): a building and its House each, the first entry for a building.
-        for (const auto& b : country.object("houseBusinesses").array("list"))
-            if (const auto building = b.string("building"), house = b.string("house"); !building.empty() && !house.empty())
-                c.cityLoop.houseTills.emplace(building, house);
-        for (const auto& t : country.object("patrons").array("list"))
-        {
-            Patrons trade;
-            trade.business = t.string("business");
-            for (const auto& g : t.array("groups"))
-            {
-                PatronGroup group{g.string("id"), g.string("name"), g.string("payer"), {}, std::clamp(int(g.number("units", 0)), 0, 100000)};
-                if (group.payer == "country")
-                    group.payer = "estates";        // (Doc 73: as a wage rule's payer.)
-                for (const auto& r : g.array("roles"))
-                    if (!r.asString({}).empty())
-                        group.roles.push_back(r.asString({}));
-                if (!group.id.empty() && !group.payer.empty() && (!group.roles.empty() || group.units > 0))
-                    trade.groups.push_back(std::move(group));
-            }
-            for (const auto& g : t.array("pieces"))
-                if (known(g.asString({})))
-                    trade.pieces.push_back(g.asString({}));
-            if (!trade.business.empty() && !trade.groups.empty())
-                c.cityLoop.patrons.push_back(std::move(trade));
-        }
-        // The treasury's surplus (doc 68, Progress, "The treasury's surplus"): the public works' trades and their goods.
-        for (const auto& w : country.object("works").array("list"))
-        {
-            WorksOrder order{w.string("business"), {}, std::clamp(int(w.number("weight", 1)), 1, 1000)};
-            for (const auto& g : w.array("goods"))
-                if (known(g.asString({})))
-                    order.goods.push_back(g.asString({}));
-            if (!order.business.empty() && !order.goods.empty() &&
-                std::none_of(c.cityLoop.works.begin(), c.cityLoop.works.end(), [&](const WorksOrder& x) { return x.business == order.business; }))
-                c.cityLoop.works.push_back(std::move(order));
-        }
-        // The Wharf's lists (doc 73, 4.2): known goods only, `never` first, then a good on both lists dropped from both.
-        {
-            const auto& w = country.object("wharf");
-            auto& lists = c.cityLoop.wharf;
-            for (const auto& g : w.array("never"))
-                if (const auto id = g.asString({}); !id.empty())
-                    lists.never.insert(id);
-            const auto read = [&](const char* key, std::map<std::string, WharfGood>& into) {
-                for (const auto& [item, v] : w.object(key).fields())
-                {
-                    if (!known(item))
-                    {
-                        lists.refused.push_back(std::string(key) + ": no such good " + item);
-                        continue;
-                    }
-                    if (lists.never.count(item))
-                    {
-                        lists.refused.push_back(std::string(key) + ": " + item + " is never the Wharf's");
-                        continue;
-                    }
-                    WharfGood good{std::clamp(int(v.number("most", 0)), 0, 100000), !v.has("on") || v.boolean("on")};
-                    good.rank = int(into.size());
-                    good.keep = v.has("keep") ? std::clamp(int(v.number("keep", 0)), 0, 100000) : -1;
-                    for (const auto& b : v.array("shops"))
-                        if (const auto id = b.asString({}); !id.empty())
-                            good.shops.insert(id);
-                    into[item] = std::move(good);
-                }
-            };
-            read("imports", lists.imports);
-            read("takes", lists.takes);
-            for (auto it = lists.imports.begin(); it != lists.imports.end();)
-                if (lists.takes.erase(it->first))
-                {
-                    lists.refused.push_back("imports and takes: " + it->first + " on both");
-                    it = lists.imports.erase(it);
-                }
-                else
-                    ++it;
-        }
-        for (const auto& [item, n] : country.object("shelves").fields())
-            if (known(item) && n.asNumber(0) >= 1)
-                c.cityLoop.shelves[item] = std::clamp(int(n.asNumber(1)), 1, 1000);
-        // The seasons (a group of goods each; a good in the first group that names it).
-        std::set<std::string> grouped;
-        for (const auto& g : country.object("seasons").array("groups"))
-        {
-            SeasonGroup group;
-            group.id = g.string("id");
-            group.name = g.string("name", group.id);
-            const bool idOk = !group.id.empty() && group.id.size() <= 40 &&
-                              std::all_of(group.id.begin(), group.id.end(), [](unsigned char ch) { return std::islower(ch) || std::isdigit(ch) || ch == '_'; });
-            if (!idOk || std::any_of(c.cityLoop.seasons.begin(), c.cityLoop.seasons.end(), [&](const SeasonGroup& x) { return x.id == group.id; }))
-                continue;
-            for (const auto& item : g.array("goods"))
-                if (known(item.asString({})) && grouped.insert(item.asString({})).second)
-                    group.goods.push_back(item.asString({}));
-            const auto four = [&](const char* key, std::array<int, 4>& into, int low, int high) {
-                const auto& values = g.array(key);
-                if (values.size() == 4)
-                    for (std::size_t i = 0; i < 4; ++i)
-                        into[i] = std::clamp(int(std::lround(values[i].asNumber(100))), low, high);
-            };
-            four("supply", group.supply, 0, 1000);
-            four("price", group.price, 10, 1000);
-            four("shelf", group.shelf, 0, 1000);
-            group.normal = std::clamp(int(g.number("normal", 0)), 0, 1000000);
-            group.stores = g.boolean("stores");
-            if (!group.goods.empty())
-                c.cityLoop.seasons.push_back(std::move(group));
-        }
-    }
-    if (c.cityLoop.markets.empty())
-        c.cityLoop.markets.push_back({"wharf", "the Wharf", {}});
-    // A steering table over city_loop.json's (doc 75, 5.1: world_check --steer-table FILE sets RATW_STEER_TABLE, so a run's
-    // variant needs no copied Data folder): a file with a `steering` object, or the object itself. A run never goes on with
-    // a table it could not read, since it would quietly be today's economy.
-    if (const char* file = std::getenv("RATW_STEER_TABLE"); file && *file)
-    {
-        json::Value table;
-        std::string problem;
-        if (!readJson(file, table, problem) || !table.isObject())
-        {
-            std::fprintf(stderr, "RATW_STEER_TABLE: %s\n", problem.empty() ? "not a JSON object" : problem.c_str());
-            std::exit(2);
-        }
-        readSteering(table.object("steering").isObject() ? table.object("steering") : table, c.cityLoop.steering);
-    }
-    // The Country's food farms (Data/Economy/country_farms.json; doc 71, 4): optional; without it, none.
+    // The farms and works (Data/Economy/country_farms.json; doc 71, 4): optional; without it, none.
     if (const auto file = dir.parent_path() / "Economy" / "country_farms.json"; std::filesystem::exists(file))
     {
         json::Value farms;
@@ -1210,31 +789,6 @@ const Households& households()
     return catalog().households;
 }
 
-double steerAt(const std::array<double, 5>& marks, double at, double own)
-{
-    at = std::clamp(std::isfinite(at) ? at : 0., -1., 1.);
-    // A mark's NaN: at the centre or an end, `own` (the world's value); at a half mark, halfway between its two
-    // neighbours (doc 75, 3.2: a measured end blends in with |x| from the world's value at the centre).
-    const auto end = [&](std::size_t i) { return std::isnan(marks[i]) ? own : marks[i]; };
-    const auto value = [&](std::size_t i) { return i % 2 == 0 || !std::isnan(marks[i]) ? end(i) : (end(i - 1) + end(i + 1)) / 2; };
-    const double place = (at + 1) * 2;              // (0..4: the marks' index.)
-    const auto i = std::min<std::size_t>(3, std::size_t(std::floor(place)));
-    const double t = place - double(i);
-    if (t <= 1e-12)
-        return value(i);
-    if (t >= 1 - 1e-12)
-        return value(i + 1);
-    const double a = value(i), b = value(i + 1);
-    if (std::isnan(a) || std::isnan(b))
-        return std::numeric_limits<double>::quiet_NaN();
-    return a + (b - a) * t;
-}
-
-const CityLoop& cityLoop()
-{
-    return catalog().cityLoop;
-}
-
 const Farms& farms()
 {
     return catalog().farms;
@@ -1307,10 +861,6 @@ std::string FarmPeople::placeName(const FarmPlace& farm) const
     return steading;
 }
 
-std::string ruleName(const std::string& name)
-{
-    return name == "countryPostsDays" ? "estatePostsDays" : name;
-}
 
 std::filesystem::path dataDirectory()
 {

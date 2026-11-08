@@ -556,13 +556,15 @@ std::string npcStates(const PersistedWorld& saved, const std::vector<Entity>& np
             j.add("hunger", life->second.hunger);
             j.add("fatigue", life->second.fatigue);
         }
-        if (const auto account = saved.society.accounts.find(e.id); account != saved.society.accounts.end())
+        // (Doc 79, 14: no purse or goods, which are staged; the household's band where the save has it.)
+        if (const auto life = saved.society.residents.find(e.id); life != saved.society.residents.end() && !life->second.homeCell.empty())
         {
-            j.add("cash", double(account->second.cash));
-            auto stock = Value::object();
-            for (const auto& [item, n] : account->second.stock)
-                stock.add(item, n);
-            j.add("stock", stock);
+            const auto& bands = saved.society.staged.bands;
+            auto band = bands.find(life->second.homeCell);
+            if (band == bands.end())
+                band = bands.find(life->second.homeCell + "|" + e.id);
+            if (band != bands.end())
+                j.add("band", std::string(status::bandName(band->second.band)));
         }
         out.push(j);
     }

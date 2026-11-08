@@ -306,9 +306,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     candidate.herbCell_.clear();
     AuthoredRoster roster;
     std::set<std::string> residentIds;             // roster.residents by ID, to refuse a duplicate at once.
-    bool economy = false, herbs = false, store = false, loop = false, comforts = false, farms = false;
-    std::set<std::string> noStore;                 // Businesses kept out of the store room (nostore records), by founder.
-    std::set<std::string> subsidised;              // Services given a subsidy record (doc 68, 5).
+    bool economy = false, herbs = false, loop = false;
     std::vector<std::pair<std::string, Spot>> places;
     std::size_t cellFiles = 0;
     std::map<std::string, std::tuple<std::string, std::string, std::vector<std::string>>> territories;
@@ -503,101 +501,36 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 return reject("Invalid or duplicate economy record.");
             economy = true;
         }
-        else if (command == "store")
-        {
-            // The store room's switches and markups (Docs/Design/67-ridgemere2-city.md, 6), once:
-            // store on|off MARKUP resale on|off MARKUP rule on|off. Without it, everything is at its default.
-            auto& e = roster.economy;
-            std::string make, resaleWord, resale, ruleWord, rule;
-            int markup = -1, resaleMarkup = -1;
-            fields >> make >> markup >> resaleWord >> resale >> resaleMarkup >> ruleWord >> rule;
-            const auto onOff = [](const std::string& word) { return word == "on" || word == "off"; };
-            if (store || !end(fields) || !onOff(make) || !onOff(resale) || !onOff(rule) || resaleWord != "resale" ||
-                ruleWord != "rule" || markup < 0 || markup > 1000 || resaleMarkup < 0 || resaleMarkup > 1000)
-                return reject("Invalid or duplicate store record.");
-            e.internalStore = make == "on";
-            e.storeMarkup = markup;
-            e.storeResale = resale == "on";
-            e.resaleMarkup = resaleMarkup;
-            e.storeRule = rule == "on";
-            store = true;
-        }
         else if (command == "loop")
         {
-            // The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9), once:
-            // loop needs on|off country on|off reserve N toll N carriage N wages K H P C. Without it, the defaults.
-            auto& e = roster.economy;
-            std::string w[6], needs, country;
-            long long reserve = -1;
-            int toll = -1, carriage = -1, keeper = -1, hand = -1, publicWage = -1, countryWage = -1;
-            fields >> w[0] >> needs >> w[1] >> country >> w[2] >> reserve >> w[3] >> toll >> w[4] >> carriage >> w[5] >> keeper >>
-                hand >> publicWage >> countryWage;
-            const auto onOff = [](const std::string& word) { return word == "on" || word == "off"; };
-            const auto wage = [](int n) { return n >= 0 && n <= 1000; };
-            if (loop || !fields || !end(fields) || w[0] != "needs" || w[1] != "country" || w[2] != "reserve" || w[3] != "toll" ||
-                w[4] != "carriage" || w[5] != "wages" || !onOff(needs) || !onOff(country) || reserve < 0 || reserve > 100000 ||
-                toll < 0 || toll > 90 || carriage < 0 || carriage > 1000 || !wage(keeper) || !wage(hand) || !wage(publicWage) ||
-                !wage(countryWage))
+            // The city's loop's record (doc 68, 9): "loop needs on|off ..." once. Of it only the needs stay (doc 79, 14); the
+            // rest (the Country, reserve, toll, carriage, wages) is read past.
+            std::string word, needs;
+            fields >> word >> needs;
+            if (loop || word != "needs" || (needs != "on" && needs != "off"))
                 return reject("Invalid or duplicate loop record.");
-            e.needsPaused = needs == "off";
-            e.wharf = country == "on";
-            e.wharfReserve = reserve;
-            e.gateToll = toll;
-            e.carriage = carriage;
-            e.wageKeeper = keeper;
-            e.wageHand = hand;
-            e.wagePublic = publicWage;
-            e.wageWharf = countryWage;
+            roster.economy.needsPaused = needs == "off";
             loop = true;
         }
-        else if (command == "subsidy")
+        else if (command == "store" || command == "subsidy" || command == "comforts" || command == "farms" || command == "farmarea" ||
+                 command == "farm" || command == "countryoff" || command == "nostore")
         {
-            // A service the treasury pays a share of (doc 68, 5): subsidy "carriage" PERCENT, once a service.
-            std::string service;
-            int share = -1;
-            if (!quoted(fields, service))
-                return reject("Malformed subsidy record.");
-            fields >> share;
-            const bool known = std::any_of(std::begin(Society::Subsidised), std::end(Society::Subsidised),
-                                           [&](const char* s) { return service == s; });
-            if (!fields || !end(fields) || !known || share < 0 || share > 100 || !subsidised.insert(service).second)
-                return reject("Invalid or duplicate subsidy record.");
-            roster.economy.subsidies[service] = share;
-        }
-        else if (command == "comforts")
-        {
-            // The residents' comforts (doc 68, 3; migration 0057), once: comforts ABOVE SHARE, either "-" for
-            // city_loop.json's: pennies a head held before a household buys them, and the percent of the excess a day.
-            std::string above, share;
-            fields >> above >> share;
-            const auto read = [](const std::string& word, int high, int& into) {
-                if (word == "-")
-                    return true;
-                if (word.empty() || word.size() > 7 || !std::all_of(word.begin(), word.end(), [](unsigned char c) { return std::isdigit(c); }))
-                    return false;
-                into = std::stoi(word);
-                return into <= high;
-            };
-            auto& e = roster.economy;
-            if (comforts || !end(fields) || !read(above, 1000000, e.comfortsAbove) || !read(share, 100, e.comfortsShare))
-                return reject("Invalid or duplicate comforts record.");
-            comforts = true;
+            // The old economy's records (the store room, the subsidies, the comforts, the farms' money, the Country's goods,
+            // doc 79, 14): skipped, never a refusal, so a world written before the staged economy still loads.
         }
         else if (command == "rule")
         {
-            // One of the loop's rules as this world has it (doc 68, Progress, "First fixes"; migration 0058), once a rule:
-            // rule "<name>" N, a name of items::Rules within its range.
+            // A rule as this world has it (migration 0058): rule "<name>" N. Lenient (doc 79, 14): a name items::Rules no
+            // longer has (the old economy's) or a malformed value is skipped, a value out of range clamped, a second record
+            // of a name ignored; never a refusal.
             std::string name;
             long long value = -1;
-            if (!quoted(fields, name))
-                return reject("Malformed rule record.");
-            fields >> value;
-            name = items::ruleName(name);           // (An old name, doc 73: as the new.)
-            const auto* info = items::ruleInfo(name);
-            if (!fields || !end(fields) || !info || value < info->low || value > info->high)
-                return reject("Invalid rule record: " + name);
-            if (!roster.economy.rules.emplace(name, int(value)).second)
-                return reject("Duplicate rule record: " + name);
+            if (quoted(fields, name))
+            {
+                fields >> value;
+                if (const auto* info = items::ruleInfo(name); info && fields && end(fields))
+                    roster.economy.rules.emplace(name, int(std::clamp<long long>(value, info->low, info->high)));
+            }
         }
         else if (command == "service")
         {
@@ -642,93 +575,6 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
                 return reject("Invalid season record.");
             if (!roster.economy.seasons.emplace(group, season).second)
                 return reject("Duplicate season record: " + group);
-        }
-        else if (command == "farms" || command == "farmarea" || command == "farm")
-        {
-            // The Country's food farms as this world has them (Docs/Design/71-the-country-s-industries.md, 4; migration
-            // 0060), each word "-" for country_farms.json's:
-            //   farms start DAY every DAYS order AREA,AREA,... wages KEEPER HAND (once; start -1: no schedule)
-            //   farmarea "<area>" on on|off yield PERCENT crew PERCENT wages KEEPER HAND factor PERCENT (once an area)
-            //   farm "<farm>" yield PERCENT crew PERCENT wages KEEPER HAND (once a farm)
-            // An area or a farm country_farms.json no longer has is kept and does nothing.
-            const auto number = [](const std::string& word, int low, int high, int& into) {
-                if (word == "-")
-                    return true;
-                const bool negative = !word.empty() && word[0] == '-';
-                const auto digits = word.substr(negative ? 1 : 0);
-                if (digits.empty() || digits.size() > 9 || !std::all_of(digits.begin(), digits.end(), [](unsigned char c) { return std::isdigit(c); }))
-                    return false;
-                into = (negative ? -1 : 1) * std::stoi(digits);
-                return into >= low && into <= high;
-            };
-            auto& f = roster.economy.farms;
-            std::string w[6], v[6];
-            if (command == "farms")
-            {
-                fields >> w[0] >> v[0] >> w[1] >> v[1] >> w[2] >> v[2] >> w[3] >> v[3] >> v[4];
-                bool ok = !farms && fields && end(fields) && w[0] == "start" && w[1] == "every" && w[2] == "order" &&
-                          w[3] == "wages" && number(v[0], -1, 365000000, f.start) && number(v[1], 1, 3650, f.every) &&
-                          number(v[3], 0, 1000, f.keeper) && number(v[4], 0, 1000, f.hand);
-                if (ok && v[2] != "-")
-                {
-                    std::istringstream list(v[2]);
-                    for (std::string area; ok && std::getline(list, area, ',');)
-                        ok = identifier(area, 48) && std::find(f.order.begin(), f.order.end(), area) == f.order.end() &&
-                             (f.order.push_back(area), true);
-                    ok = ok && !f.order.empty();
-                }
-                if (!ok)
-                    return reject("Invalid or duplicate farms record.");
-                farms = true;
-            }
-            else if (command == "farmarea")
-            {
-                std::string id;
-                EconomySpec::Farms::Area a;
-                if (!quoted(fields, id) || !identifier(id, 48))
-                    return reject("Malformed farmarea record.");
-                fields >> w[0] >> v[0] >> w[1] >> v[1] >> w[2] >> v[2] >> w[3] >> v[3] >> v[4] >> w[4] >> v[5];
-                if (!fields || !end(fields) || w[0] != "on" || (v[0] != "on" && v[0] != "off" && v[0] != "-") || w[1] != "yield" ||
-                    w[2] != "crew" || w[3] != "wages" || w[4] != "factor" || !number(v[1], 0, 1000, a.yieldScale) ||
-                    !number(v[2], 0, 1000, a.crewScale) || !number(v[3], 0, 1000, a.keeper) || !number(v[4], 0, 1000, a.hand) ||
-                    !number(v[5], 10, 1000, a.priceFactor))
-                    return reject("Invalid farmarea record: " + id);
-                a.on = v[0] == "on" ? 1 : v[0] == "off" ? 0 : -1;
-                if (!f.areas.emplace(id, a).second)
-                    return reject("Duplicate farmarea record: " + id);
-            }
-            else
-            {
-                std::string id;
-                EconomySpec::Farms::Farm a;
-                if (!quoted(fields, id) || !identifier(id, 48))
-                    return reject("Malformed farm record.");
-                fields >> w[0] >> v[0] >> w[1] >> v[1] >> w[2] >> v[2] >> v[3];
-                if (!fields || !end(fields) || w[0] != "yield" || w[1] != "crew" || w[2] != "wages" ||
-                    !number(v[0], 0, 1000, a.yieldScale) || !number(v[1], 0, 1000, a.crewScale) ||
-                    !number(v[2], 0, 1000, a.keeper) || !number(v[3], 0, 1000, a.hand))
-                    return reject("Invalid farm record: " + id);
-                if (!f.farms.emplace(id, a).second)
-                    return reject("Duplicate farm record: " + id);
-            }
-        }
-        else if (command == "countryoff")
-        {
-            // A good the Country no longer supplies (doc 68, 2): its real producers' now.
-            std::string id;
-            if (!quoted(fields, id) || !end(fields) || !identifier(id, 48) || !itemValid(id))
-                return reject("Malformed countryoff record.");
-            if (!roster.economy.wharfOff.insert(id).second)
-                return reject("Duplicate countryoff record: " + id);
-        }
-        else if (command == "nostore")
-        {
-            // A business kept out of the store room (doc 67, 6): its founder's ID. Checked once every resident is known.
-            std::string id;
-            if (!quoted(fields, id) || !end(fields) || !identifier(id, 48))
-                return reject("Malformed nostore record.");
-            if (!noStore.insert(id).second)
-                return reject("Duplicate nostore record: " + id);
         }
         else if (command == "herbs")
         {
@@ -923,16 +769,6 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         for (const auto* spot : {&r.home, &r.work, &r.evening})
             places.push_back({"resident " + r.id, *spot});
         ++it;
-    }
-    // The businesses kept out of the store room (doc 67, 6): a resident's is switched off; an unplaced founder's is
-    // accepted and set aside (a business with no keeper here draws nothing); anyone else is an error.
-    for (const auto& id : noStore)
-    {
-        const auto owner = std::find_if(roster.residents.begin(), roster.residents.end(), [&](const ResidentSpec& r) { return r.id == id; });
-        if (owner != roster.residents.end())
-            owner->internalStore = false;
-        else if (std::none_of(roster.unplaced.begin(), roster.unplaced.end(), [&](const ResidentSpec& r) { return r.id == id; }))
-            return reject("nostore names no resident: " + id);
     }
     for (const auto& [id, to] : candidate.exits_)
         for (const auto& next : to)

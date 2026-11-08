@@ -904,12 +904,8 @@ Value society(const SocietyState& s)
 {
     auto o = Value::object();
     o.add("enabled", s.enabled);
-    o.add("minted", s.minted);
-    o.add("sunk", s.sunk);
     o.add("nextEntry", s.nextEntry);
     o.add("budgetDay", s.budgetDay);
-    o.add("exportsRemaining", s.exportsRemaining);
-    o.add("importsRemaining", s.importsRemaining);
     o.add("herbPatch", s.herbPatch);
     o.add("decisionRemainder", s.decisionRemainder);
     auto accounts = Value::object();
@@ -967,140 +963,6 @@ Value society(const SocietyState& s)
         owed.add(dead, day);
     careers.add("birthsOwed", owed);
     o.add("careers", careers);
-    // What the self-correcting rules have drifted to (doc 68, Progress, "Self-correcting rules"), when there is any: a save
-    // without it reads as nothing drifted yet.
-    if (!s.loop.empty())
-    {
-        const auto& l = s.loop;
-        auto loop = Value::object(), prices = Value::object(), sales = Value::object(), wages = Value::object();
-        for (const auto& [from, to] : {std::pair{&l.prices, &prices}, std::pair{&l.sales, &sales}})
-            for (const auto& [till, byWare] : *from)
-            {
-                auto j = Value::object();
-                for (const auto& [ware, v] : byWare)
-                    j.add(ware, v);
-                to->add(till, j);
-            }
-        for (const auto& [till, w] : l.wages)
-        {
-            auto j = Value::object();
-            j.add("step", w.step); j.add("days", w.days); j.add("shortDays", w.shortDays); j.add("owed", w.owed);
-            j.add("profit", w.profit);
-            wages.add(till, j);
-        }
-        loop.add("prices", prices); loop.add("sales", sales); loop.add("wages", wages);
-        loop.add("level", l.level); loop.add("levelDays", l.levelDays); loop.add("levelThen", l.levelThen);
-        loop.add("judged", l.judged);
-        loop.add("toll", l.toll); loop.add("alms", l.alms);
-        if (!l.wharf.empty())
-        {
-            // The Wharf's book with the beyond (doc 73, 4.6): its pennies in and out, fees, moves, and the credit now.
-            auto w = Value::object();
-            w.add("in", l.wharf.in); w.add("out", l.wharf.out); w.add("fee", l.wharf.fee); w.add("moved", l.wharf.moved);
-            w.add("credit", l.wharf.credit);
-            loop.add("wharf", w);
-        }
-        if (!l.steer.empty())
-        {
-            // Steering the economy (doc 74, 8.6; doc 75): where the levers are read, the slider and its last move, the
-            // means, the estates' last short night, the last changes, and the Crown's charters.
-            const auto& st = l.steer;
-            auto j = Value::object(), history = Value::array();
-            j.add("on", st.on); j.add("push", st.push); j.add("lean", st.lean); j.add("judged", st.judged); j.add("days", st.days);
-            j.add("gini", st.gini); j.add("upper", st.upper); j.add("top10", st.top10); j.add("hungry", st.hungry);
-            j.add("short", st.shortHomes); j.add("treasury", st.treasury); j.add("estateShort", st.estateShort);
-            for (const auto& h : st.history)
-            {
-                auto e = Value::object();
-                e.add("day", h.day); e.add("measure", h.measure); e.add("value", h.value); e.add("target", h.target);
-                e.add("band", h.band); e.add("error", h.error); e.add("step", h.step); e.add("before", h.before);
-                e.add("after", h.after); e.add("why", h.why);
-                history.push(e);
-            }
-            j.add("history", history);
-            auto skims = Value::array();
-            for (const auto& k : st.skims)
-            {
-                auto e = Value::object();
-                e.add("day", k.day); e.add("total", k.total); e.add("short", k.shortfall);
-                for (const auto& [key, m] : {std::pair{"purpose", &k.purpose}, std::pair{"group", &k.group}, std::pair{"payers", &k.payers}})
-                {
-                    auto o2 = Value::object();
-                    for (const auto& [name, coins] : *m)
-                        o2.add(name, coins);
-                    e.add(key, o2);
-                }
-                skims.push(e);
-            }
-            j.add("skims", skims);
-            // The weekly ledger (doc 75, Phase 7): by week, the nights, and by lever who paid and who was given.
-            auto ledger = Value::array();
-            for (const auto& w : st.ledger)
-            {
-                auto e = Value::object();
-                e.add("week", w.week); e.add("nights", w.nights);
-                for (const auto& [key, m] : {std::pair{"paid", &w.paid}, std::pair{"got", &w.got}})
-                {
-                    auto byLever = Value::object();
-                    for (const auto& [lever, who] : *m)
-                    {
-                        auto o2 = Value::object();
-                        for (const auto& [name, coins] : who)
-                            o2.add(name, coins);
-                        byLever.add(lever, o2);
-                    }
-                    e.add(key, byLever);
-                }
-                ledger.push(e);
-            }
-            j.add("ledger", ledger);
-            // The skim reworked: each household's idle spare, Never Broke's credit, and the tills short's mean.
-            for (const auto& [key, m] : {std::pair{"idle", &st.idle}, std::pair{"credit", &st.credit}})
-            {
-                auto o2 = Value::object();
-                for (const auto& [name, coins] : *m)
-                    o2.add(name, coins);
-                j.add(key, o2);
-            }
-            j.add("idleDay", st.idleDay); j.add("tillsShort", st.tillsShort); j.add("tillsDays", st.tillsDays);
-            // The Crown's charters (doc 75, 4.2): each till and its House in the order granted, the ramp, the profit means.
-            auto charters = Value::array();
-            for (const auto& [till, house] : st.charters)
-            {
-                auto e = Value::object();
-                e.add("till", till); e.add("house", house);
-                charters.push(e);
-            }
-            j.add("charters", charters);
-            j.add("chartersFrom", st.chartersFrom); j.add("chartersTo", st.chartersTo); j.add("chartersNights", st.chartersNights);
-            auto profit = Value::object();
-            for (const auto& [till, mean] : st.profit)
-                profit.add(till, mean);
-            j.add("profit", profit);
-            j.add("profitNights", st.profitNights);
-            if (!st.sup.empty())
-            {
-                // The safety supervisor (doc 75, 3.6): its means, each rule's state, the back-offs and their rates.
-                const auto& u = st.sup;
-                auto v = Value::object(), rules = Value::array();
-                v.add("nights", u.nights); v.add("treasury", u.treasury); v.add("tills", u.tills); v.add("hungry", u.hungry);
-                v.add("short", u.shortHomes); v.add("unpaid", u.unpaid);
-                for (std::size_t i = 0; i < u.on.size(); ++i)
-                {
-                    auto r = Value::object();
-                    r.add("on", u.on[i]); r.add("clear", u.clear[i]); r.add("fires", u.fires[i]); r.add("edge", u.edge[i]);
-                    rules.push(r);
-                }
-                v.add("rules", rules);
-                v.add("levelling", u.levelling); v.add("richAbove", u.richAbove); v.add("charters", u.charters);
-                v.add("levellingRate", u.levellingRate); v.add("richRate", u.richRate); v.add("chartersRate", u.chartersRate);
-                v.add("route", u.route); v.add("chartersHeld", u.chartersHeld);
-                j.add("sup", v);
-            }
-            loop.add("steer", j);
-        }
-        o.add("loop", loop);
-    }
     if (!s.board.empty())
         o.add("board", market::encode(s.board));   // (The Market Board, doc 79, Phase 1: only while staged has moved it.)
     // The staged economy's state (doc 79, Phase 2), when there is any: a save without it reads as nothing staged yet.
@@ -1257,6 +1119,19 @@ Value stagedValue(const StagedState& st)
     }
     o.add("bands", bands); o.add("overrides", overrides); o.add("holds", holds); o.add("lean", lean);
     o.add("escrowSource", source); o.add("events", events); o.add("faucets", faucets); o.add("welcomed", welcomed);
+    if (!st.quarantine.empty())
+    {
+        // Goods the world no longer knows, set aside in real and escrow accounts (doc 79, 14).
+        auto quarantine = Value::object();
+        for (const auto& [id, goods] : st.quarantine)
+        {
+            auto j = Value::object();
+            for (const auto& [item, n] : goods)
+                j.add(item, n);
+            quarantine.add(id, j);
+        }
+        o.add("quarantine", quarantine);
+    }
     o.add("hour", double(st.hour)); o.add("day", double(st.day));
     return o;
 }
@@ -1333,162 +1208,18 @@ StagedState readStaged(const Value& o)
                     st.faucets[std::int64_t(day)][holder][reason] = tally;
                 }
     }
+    for (const auto& [id, goods] : o.object("quarantine").fields())
+        if (keyOk(id) && st.quarantine.size() < MaxAccounts)
+            for (const auto& [item, n] : goods.fields())
+            {
+                std::int64_t count = 0;
+                if (!item.empty() && item.size() <= 80 && whole(n, 1, 10000, count) && st.quarantine[id].size() < 256)
+                    st.quarantine[id][item] = int(count);
+            }
     // (A "slider" here, from before the Board held the one slider, is ignored: lenient.)
     whole(o["hour"], -1, 24. * 365000000, st.hour);
     whole(o["day"], -1, 365000000, st.day);
     return st;
-}
-
-LoopState readLoop(const Value& o)
-{
-    // Only what is sound is kept (a number in range for a till and ware the save may still have): the rest reads as not
-    // drifted, which the rules start again from.
-    LoopState l;
-    if (!o.isObject())
-        return l;
-    const auto inRange = [](const Value& v, double low, double high) { return v.isNumber() && std::isfinite(v.asNumber()) && v.asNumber() >= low && v.asNumber() <= high; };
-    for (const auto& [key, into, low, high] : {std::tuple{"prices", &l.prices, .01, 10.}, std::tuple{"sales", &l.sales, 0., 1e6}})
-        for (const auto& [till, byWare] : o.object(key).fields())
-            if (till.size() <= 80 && byWare.isObject() && byWare.size() <= MaxGoodsKinds)
-                for (const auto& [ware, v] : byWare.fields())
-                    if (ware.size() <= 80 && inRange(v, low, high))
-                        (*into)[till][ware] = v.asNumber();
-    for (const auto& [till, w] : o.object("wages").fields())
-        if (till.size() <= 80 && w.isObject() && inRange(w["step"], -1000, 1000) && inRange(w["days"], 0, 3650) &&
-            inRange(w["shortDays"], 0, 3650) && inRange(w["owed"], 0, 1e12) && inRange(w["profit"], 0, 1e12))
-            l.wages[till] = {int(w["step"].asNumber()), int(w["days"].asNumber()), int(w["shortDays"].asNumber()),
-                             std::int64_t(w["owed"].asNumber()), std::int64_t(w["profit"].asNumber())};
-    if (inRange(o["level"], -1, 1e12) && inRange(o["levelThen"], -1, 1e12) && inRange(o["judged"], -1, 1e12) &&
-        inRange(o["levelDays"], 0, 3650))
-    {
-        l.level = o["level"].asNumber();
-        l.levelDays = int(o["levelDays"].asNumber());
-        l.levelThen = o["levelThen"].asNumber();
-        l.judged = std::int64_t(o["judged"].asNumber());
-    }
-    if (inRange(o["toll"], -90, 90))
-        l.toll = o["toll"].asNumber();
-    if (inRange(o["alms"], -1000, 1000))
-        l.alms = int(o["alms"].asNumber());
-    if (const auto& w = o["wharf"]; w.isObject() && inRange(w["in"], 0, 1e12) && inRange(w["out"], 0, 1e12) &&
-                                    inRange(w["fee"], 0, 1e12) && inRange(w["moved"], -1e12, 1e12) && inRange(w["credit"], -1e12, 1e12))
-        l.wharf = {std::int64_t(w["in"].asNumber()), std::int64_t(w["out"].asNumber()), std::int64_t(w["fee"].asNumber()),
-                   std::int64_t(w["moved"].asNumber()), std::int64_t(w["credit"].asNumber())};
-    if (const auto& st = o["steer"]; st.isObject() && inRange(st["push"], -1, 1) && inRange(st["lean"], 0, 200) &&
-                                     inRange(st["judged"], -1, 1e12) && inRange(st["days"], 0, 3650))
-    {
-        auto& s = l.steer;
-        s.on = st.boolean("on");
-        s.push = st["push"].asNumber();
-        s.lean = int(st["lean"].asNumber());
-        s.judged = std::int64_t(st["judged"].asNumber());
-        s.days = int(st["days"].asNumber());
-        for (const auto& [key, into] : {std::pair{"gini", &s.gini}, std::pair{"upper", &s.upper}, std::pair{"top10", &s.top10},
-                                        std::pair{"hungry", &s.hungry}, std::pair{"short", &s.shortHomes},
-                                        std::pair{"treasury", &s.treasury}})
-            if (inRange(st[key], -1, 1e12))
-                *into = st[key].asNumber();
-        if (inRange(st["estateShort"], -1, 1e12))
-            s.estateShort = std::int64_t(st["estateShort"].asNumber());
-        for (const auto& h : st.array("history"))
-            if (h.isObject() && inRange(h["day"], 0, 1e12) && s.history.size() < LoopState::Steer::LogMost)
-            {
-                LoopState::Steer::Judging j;
-                j.day = std::int64_t(h["day"].asNumber());
-                j.measure = json::utf8Prefix(h.string("measure"), 20);
-                for (const auto& [key, into] : {std::pair{"value", &j.value}, std::pair{"target", &j.target}, std::pair{"band", &j.band},
-                                                std::pair{"error", &j.error}, std::pair{"step", &j.step}, std::pair{"before", &j.before},
-                                                std::pair{"after", &j.after}})
-                    if (inRange(h[key], -1e12, 1e12))
-                        *into = h[key].asNumber();
-                j.why = json::utf8Prefix(h.string("why"), 600);
-                s.history.push_back(std::move(j));
-            }
-        for (const auto& k : st.array("skims"))
-            if (k.isObject() && inRange(k["day"], 0, 1e12) && inRange(k["total"], 0, 1e12) && inRange(k["short"], 0, 1e12) &&
-                s.skims.size() < 28)
-            {
-                LoopState::Steer::SkimDay d;
-                d.day = std::int64_t(k["day"].asNumber());
-                d.total = std::int64_t(k["total"].asNumber());
-                d.shortfall = std::int64_t(k["short"].asNumber());
-                for (const auto& [key, into] : {std::pair{"purpose", &d.purpose}, std::pair{"group", &d.group}, std::pair{"payers", &d.payers}})
-                    for (const auto& [name, coins] : k.object(key).fields())
-                        if (name.size() <= 120 && inRange(coins, 0, 1e12) && into->size() < 40)
-                            (*into)[name] = std::int64_t(coins.asNumber());
-                s.skims.push_back(std::move(d));
-            }
-        for (const auto& w : st.array("ledger"))
-            if (w.isObject() && inRange(w["week"], 0, 1e12) && inRange(w["nights"], 0, 7) &&
-                s.ledger.size() < std::size_t(LoopState::Steer::LedgerWeeks) &&
-                (s.ledger.empty() || std::int64_t(w["week"].asNumber()) > s.ledger.back().week))
-            {
-                LoopState::Steer::LedgerWeek d;
-                d.week = std::int64_t(w["week"].asNumber());
-                d.nights = int(w["nights"].asNumber());
-                for (const auto& [key, into] : {std::pair{"paid", &d.paid}, std::pair{"got", &d.got}})
-                    for (const auto& [lever, who] : w.object(key).fields())
-                        if (lever.size() <= 40 && who.isObject() && into->size() < 40)
-                            for (const auto& [name, coins] : who.fields())
-                                if (name.size() <= 120 && inRange(coins, 0, 1e15) && (*into)[lever].size() < 40)
-                                    (*into)[lever][name] = std::int64_t(coins.asNumber());
-                s.ledger.push_back(std::move(d));
-            }
-        for (const auto& [key, into] : {std::pair{"idle", &s.idle}, std::pair{"credit", &s.credit}})
-            for (const auto& [name, coins] : st.object(key).fields())
-                if (name.size() <= 200 && inRange(coins, 0, 1e12) && into->size() < 100000)
-                    (*into)[name] = std::int64_t(coins.asNumber());
-        if (inRange(st["idleDay"], -1, 1e12))
-            s.idleDay = std::int64_t(st["idleDay"].asNumber());
-        if (inRange(st["tillsShort"], -1, 1e12) && inRange(st["tillsDays"], 0, 3650))
-        {
-            s.tillsShort = st["tillsShort"].asNumber();
-            s.tillsDays = int(st["tillsDays"].asNumber());
-        }
-        for (const auto& c : st.array("charters"))
-            if (c.isObject() && c.string("till").rfind("till:", 0) == 0 && c.string("till").size() <= 120 && !c.string("house").empty() &&
-                c.string("house").size() <= 80 && s.charters.size() < 10000)
-                s.charters.push_back({c.string("till"), c.string("house")});
-        if (inRange(st["chartersFrom"], 0, 10000) && inRange(st["chartersTo"], 0, 10000) && inRange(st["chartersNights"], -1, 1e12))
-        {
-            s.chartersFrom = int(st["chartersFrom"].asNumber());
-            s.chartersTo = int(st["chartersTo"].asNumber());
-            s.chartersNights = std::int64_t(st["chartersNights"].asNumber());
-        }
-        for (const auto& [till, mean] : st.object("profit").fields())
-            if (till.size() <= 120 && inRange(mean, -1e12, 1e12) && s.profit.size() < 10000)
-                s.profit[till] = mean.asNumber();
-        if (inRange(st["profitNights"], 0, 3650))
-            s.profitNights = int(st["profitNights"].asNumber());
-        if (const auto& v = st["sup"]; v.isObject() && inRange(v["nights"], 0, 3650))
-        {
-            auto& u = s.sup;
-            u.nights = int(v["nights"].asNumber());
-            for (const auto& [key, into] : {std::pair{"treasury", &u.treasury}, std::pair{"tills", &u.tills}, std::pair{"hungry", &u.hungry},
-                                            std::pair{"short", &u.shortHomes}, std::pair{"unpaid", &u.unpaid}})
-                if (inRange(v[key], -1, 1e12))
-                    *into = v[key].asNumber();
-            const auto& rules = v.array("rules");
-            for (std::size_t i = 0; i < rules.size() && i < u.on.size(); ++i)
-                if (rules[i].isObject())
-                {
-                    u.on[i] = rules[i].boolean("on");
-                    if (inRange(rules[i]["clear"], 0, 3650)) u.clear[i] = int(rules[i]["clear"].asNumber());
-                    if (inRange(rules[i]["fires"], 0, 1e9)) u.fires[i] = int(rules[i]["fires"].asNumber());
-                    if (inRange(rules[i]["edge"], 0, 3650)) u.edge[i] = int(rules[i]["edge"].asNumber());
-                }
-            for (const auto& [key, into] : {std::pair{"levelling", &u.levelling}, std::pair{"richAbove", &u.richAbove},
-                                            std::pair{"charters", &u.charters}, std::pair{"levellingRate", &u.levellingRate},
-                                            std::pair{"richRate", &u.richRate}, std::pair{"chartersRate", &u.chartersRate}})
-                if (inRange(v[key], 0, 1e9))
-                    *into = v[key].asNumber();
-            if (inRange(v["route"], 0, 1))
-                u.route = v["route"].asNumber();
-            if (inRange(v["chartersHeld"], 0, 10000))
-                u.chartersHeld = int(v["chartersHeld"].asNumber());
-        }
-    }
-    return l;
 }
 
 CareerState readCareers(const Value& o)
@@ -1528,19 +1259,21 @@ CareerState readCareers(const Value& o)
 
 SocietyState readSociety(const Value& o)
 {
+    // Lenient (Docs/Design/79-a-staged-economy.md, 14): `enabled`, `accounts`, `residents`, `ledger`, `nextEntry`,
+    // `budgetDay`, `herbPatch` and `decisionRemainder` are required; `careers`, `board` and `staged` optional; anything else
+    // (the old economy's `minted`, `sunk`, `exportsRemaining`, `importsRemaining`, `loop`, `orchestrator`...) read past. A
+    // staged or dead account's money out of range is read and settled at restore, never a refusal; a broken required
+    // field, or a real or escrow account's, marks the save broken (nextEntry 0), which restore refuses.
     SocietyState s;
     if (!o.isObject())
     {
-        s.minted = -1;
+        s.nextEntry = 0;
         return s;
     }
-    // Twelve fields; careers since Phase 4. A save from before doc 66's Phase 5 also has the economy's (craftingStocked,
-    // books, houses, memory, orchestrator): read past, and dropped with the rules they kept.
-    std::size_t fields = o.size() - (o.has("careers") ? 1 : 0) - (o.has("loop") ? 1 : 0) - (o.has("board") ? 1 : 0);
-    for (const char* gone : {"craftingStocked", "books", "houses", "memory", "orchestrator"})
-        fields -= o.has(gone) ? 1 : 0;
-    fields -= o.has("staged") ? 1 : 0;              // (Doc 79, Phase 2: optional.)
-    bool valid = fields == 12;
+    bool valid = true;
+    for (const char* key : {"enabled", "accounts", "residents", "ledger", "nextEntry", "budgetDay", "herbPatch", "decisionRemainder"})
+        if (!o.has(key))
+            valid = false;
     const auto integer = [&](const Value& j, const char* key, double max) -> std::int64_t {
         const double n = strictNumber(j, key, -1);
         if (n < 0 || n > max || n != std::floor(n)) { valid = false; return 0; }
@@ -1550,25 +1283,40 @@ SocietyState readSociety(const Value& o)
     const auto text = [&](const Value& j, const char* key) { const auto* v = j.find(key); if (!v || !v->isString()) valid = false; return v ? v->asString("") : std::string(); };
     if (!o["enabled"].isBool()) valid = false;
     s.enabled = o.boolean("enabled");
-    s.minted = integer(o, "minted", 1e12); s.sunk = integer(o, "sunk", 1e12);
     s.nextEntry = integer(o, "nextEntry", 1e12); s.budgetDay = integer(o, "budgetDay", 365000000);
-    s.exportsRemaining = int(integer(o, "exportsRemaining", 8));
-    s.importsRemaining = int(integer(o, "importsRemaining", 4));
-    s.herbPatch = int(integer(o, "herbPatch", 60)); s.decisionRemainder = real(o, "decisionRemainder");
+    s.herbPatch = int(integer(o, "herbPatch", 1e6)); s.decisionRemainder = real(o, "decisionRemainder");
     const auto& accounts = o["accounts"];
     const auto& residents = o["residents"];
     if (!accounts.isObject() || accounts.size() > MaxAccounts || !residents.isObject() || residents.size() > MaxResidents)
         valid = false;
-    if (accounts.isObject() && accounts.size() <= 4096)
+    if (accounts.isObject() && accounts.size() <= MaxAccounts)
         for (const auto& [id, a] : accounts.fields())
         {
             EconomyAccount account;
-            account.cash = integer(a, "cash", 1e9);
+            const auto kind = Society::classify(id);
+            const bool real = kind == Society::AccountKind::Real || kind == Society::AccountKind::Escrow;
             const auto& stock = a["stock"];
-            if (!a.isObject() || a.size() != 2 || !stock.isObject() || stock.size() > MaxGoodsKinds) valid = false;
-            if (stock.isObject() && stock.size() <= MaxGoodsKinds)
-                for (const auto& [item, _] : stock.fields())
-                    account.stock[item] = int(integer(stock, item.c_str(), 10000));
+            if (!a.isObject() || !stock.isObject())
+            {
+                valid = valid && !real;             // (A staged or dead account broken: dropped, or made again at restore.)
+                continue;
+            }
+            if (real)
+            {
+                account.cash = integer(a, "cash", 1e9);
+                if (stock.size() > MaxGoodsKinds) valid = false;
+                if (stock.size() <= MaxGoodsKinds)
+                    for (const auto& [item, _] : stock.fields())
+                        account.stock[item] = int(integer(stock, item.c_str(), 10000));
+            }
+            else
+            {
+                const double cash = a.number("cash", 0);
+                account.cash = std::isfinite(cash) ? std::int64_t(std::clamp(std::floor(cash), 0., 1e9)) : 0;
+                for (const auto& [item, n] : stock.fields())
+                    if (n.isNumber() && std::isfinite(n.asNumber()) && n.asNumber() >= 0)
+                        account.stock[item] = int(std::min(std::floor(n.asNumber()), 10000.));
+            }
             s.accounts[id] = account;
         }
     if (residents.isObject() && residents.size() <= MaxResidents)
@@ -1601,11 +1349,10 @@ SocietyState readSociety(const Value& o)
             s.ledger.push_back(e);
         }
     s.careers = readCareers(o["careers"]);
-    s.loop = readLoop(o["loop"]);                   // (doc 68, Progress, "Self-correcting rules"; none in an older save.)
     s.board = market::decode(o["board"]);           // (Doc 79, Phase 1: lenient, never a refusal; none in an older save.)
     s.staged = readStaged(o["staged"]);             // (Doc 79, Phase 2; none in an older save.)
     if (!valid)
-        s.minted = -1;
+        s.nextEntry = 0;
     return s;
 }
 } // namespace ratw::wire

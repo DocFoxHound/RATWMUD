@@ -6,9 +6,9 @@
 // them), then the fallback trades; the hands housed in the farm's community (Data/Economy/communities.json, at most
 // HouseholdMost a home) or, near the city, as doc 68's arrivals are. A community's market (its store, inn or alehouse,
 // bakehouse) is staffed when its first farm is, its keepers of the towns' trades and shops. Each post filled is a
-// position of its own (its holder its founder, as every authored resident's is) at the farm's work room: the farm's
-// till pays it as it paid the virtual post it replaces (payFarms), and the crew's founding purse is shared out to those
-// who take its posts (moved, never made). Nobody is ever made: the host places each one (a "farm" request: arrive).
+// position of its own (its holder its founder, as every authored resident's is) at the farm's work room. Its purse is
+// the staged economy's (doc 79, 6.5: set nightly to its household's band). Nobody is ever made: the host places each one
+// (a "farm" request: arrive).
 #include "RatwItems.h"
 #include "RatwSociety.h"
 
@@ -227,8 +227,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         }
     const int most = std::min(HouseholdMost, people.householdMost);
     const auto place = [&](const ResidentSpec& r, const Spot& home, const Spot& work, const std::string& label, const std::string& role,
-                           double start, double end, std::int64_t purse, const std::string& from, const std::string& farm,
-                           const std::string& what) {
+                           double start, double end, std::int64_t purse, const std::string& farm, const std::string& what) {
         ResidentRequest q;
         q.kind = "farm";
         q.templateId = r.id;
@@ -241,7 +240,6 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         q.startHour = start;
         q.endHour = end;
         q.purse = std::max<std::int64_t>(0, purse);
-        q.purseFrom = from;
         q.farm = farm;
         requests_.push_back(q);
         pool.erase(r.id);
@@ -315,7 +313,6 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
     {
         int keepers = 0, hands = 0, second = 0;
         int nextSpot[2] = {0, 0};
-        std::int64_t share = 0;
         bool begun = false;
     };
     std::map<std::size_t, Wants> wants;
@@ -324,8 +321,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
     {
         const auto* site = people.farm(f.def->id);
         const auto kind = people.kinds.find(f.def->kind);
-        // (In the staged economy a farm has no till or crew account to need: doc 79, 8.2.)
-        if (!site || kind == people.kinds.end() || !farmAreaOn(f.area) || (!staged() && (!account(f.till) || !account(f.crew))) ||
+        if (!site || kind == people.kinds.end() ||
             (!site->works && !world.place(site->home.area)) ||
             std::any_of(site->workplaces.begin(), site->workplaces.end(), [&](const items::PlaceRoom& w) { return !world.place(w.area); }))
             continue;
@@ -346,8 +342,6 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                     if (p.work.cell == site->workplaces[1].area)
                         ++atSecond;
             want.second = site->workplaces.size() > 1 ? std::max(0, std::min(k.secondCount - atSecond, want.hands)) : 0;
-            // Its crew's founding purse, shared out a head at a time to those who take its posts.
-            want.share = f.heads() > 0 && account(f.crew) ? cash(f.crew) / f.heads() : 0;
             // The posts at each work room in use count against its spots, so the newcomers take the next ones.
             for (const auto& p : positions_)
                 for (int room = 0; room < 2 && room < int(site->workplaces.size()); ++room)
@@ -357,7 +351,6 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         int& needKeepers = want.keepers;
         int& needHands = want.hands;
         int& needSecond = want.second;
-        const auto share = want.share;
         if (needKeepers <= 0 && needHands <= 0)
             continue;
         const auto workSpot = [&](int room) {
@@ -369,7 +362,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         };
         const auto hire = [&](const ResidentSpec& r, bool second, const Spot& home, const std::string& what) {
             const auto label = farmLabel(f, second ? 2 : 1);
-            place(r, home, workSpot(second ? 1 : 0), label, "civilian", people.farmStart, people.farmEnd, share, f.crew, f.def->id, what);
+            place(r, home, workSpot(second ? 1 : 0), label, "civilian", people.farmStart, people.farmEnd, 0, f.def->id, what);
             --needHands;
             if (second)
                 --needSecond;
@@ -396,8 +389,8 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                 const auto home = community ? communityHome(*community, site->steading) : cityHome(cls, nearCity(*site), ownerSpec.id);
                 if (!home.cell.empty())
                 {
-                    place(ownerSpec, home, workSpot(0), farmLabel(f, 0), "civilian", people.farmStart, people.farmEnd, share, f.crew,
-                          f.def->id, "keeper");
+                    place(ownerSpec, home, workSpot(0), farmLabel(f, 0), "civilian", people.farmStart, people.farmEnd, 0, f.def->id,
+                          "keeper");
                     --needKeepers;
                     if (!community)
                         members[home.cell].push_back(ownerSpec.id);
@@ -417,8 +410,8 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
             {
                 const auto family = farmhouseEmpty ? familyOf(owner->id) : std::vector<std::string>{};
                 const auto ownerSpec = *owner;      // (The pool's pointer goes with it.)
-                place(ownerSpec, bedOf(site->home), workSpot(0), farmLabel(f, 0), "civilian", people.farmStart, people.farmEnd, share,
-                      f.crew, f.def->id, "keeper");
+                place(ownerSpec, bedOf(site->home), workSpot(0), farmLabel(f, 0), "civilian", people.farmStart, people.farmEnd, 0, f.def->id,
+                      "keeper");
                 --needKeepers;
                 const int room = std::min(most, site->home.capacity);
                 for (const auto& id : family)
@@ -433,7 +426,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                     if (needHands > 0 && working(member) && ofTrade && !upper(id))
                         hire(member, needSecond > 0 && wordsIn(member.workLabel, k.secondWords) > 0, bedOf(site->home), "family hand");
                     else
-                        place(member, bedOf(site->home), {}, "-", "civilian", 0, 0, 0, "", f.def->id, "family");
+                        place(member, bedOf(site->home), {}, "-", "civilian", 0, 0, 0, f.def->id, "family");
                 }
             }
         }
@@ -466,7 +459,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
     // The communities' markets (communities.json `market`): a post at each of their businesses not yet there, its keeper
     // of the towns' trades and shops (the post's words first, the most experienced), its hands of service and labour;
     // the keeper in the flat over the business where it has one, the rest in the community's houses. Their purses as
-    // doc 68's arrivals', from the Country's account.
+    // arrivals' (doc 79, 6.5).
     for (const auto& id : markets)
     {
         const auto* c = people.community(id);
@@ -525,7 +518,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                         break;
                     const auto& s = m.work[std::size_t(spot++) % m.work.size()];
                     place(spec, home, {m.area, s.first, s.second}, label, rule.role, people.marketStart, people.marketEnd,
-                          std::min<std::int64_t>(spec.purse, ArrivalPurse), WharfFund, "market:" + c->id,
+                          std::min<std::int64_t>(spec.purse, ArrivalPurse), "market:" + c->id,
                           workshop ? "workshop " + m.area : "market " + c->id);
                     kept = kept || keeper;
                 }

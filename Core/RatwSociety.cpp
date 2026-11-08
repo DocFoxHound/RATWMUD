@@ -77,20 +77,11 @@ void Society::reset(Roster roster)
     provisions_.clear();
     realOpening_ = faucetTotal_ = sinkTotal_ = 0;
     tills_.clear();
-    farmsDay_ = -1;                                 // (The farms' carried fractions and crews' wants start again: doc 71.)
-    farmsMinted_ = 0;
-    for (auto& f : farms_)
-    {
-        f.grown.clear();
-        f.eaten.clear();
-        f.hunger = 0;
-    }
     friendGroups_.clear();
     groupsDay_ = -1;
     ++rosterRevision_;
     state_.enabled = roster != Roster::None;
     state_.accounts["treasury"] = {1000, {{"herbs", 100}, {"meal", 50}}};
-    state_.minted = 1000;
     if (roster == Roster::Authored)
         return resetAuthored();
     if (roster != Roster::Demo)
@@ -105,13 +96,12 @@ void Society::reset(Roster roster)
         life.role = job.second;
         defaultHome(job.first, life);
         state_.residents[job.first] = life;
-        state_.minted += 80;
     }
     state_.accounts["npc_keeper"].stock = {{"herbs", 8}, {"meal", 12}};
     state_.accounts["npc_cook"].stock = {{"herbs", 12}, {"meal", 4}};
     state_.accounts["npc_porter"].stock = {{"herbs", 10}, {"meal", 2}};
     state_.accounts["npc_smith"].stock["sword"] = SmithSwords;    // Ash keeps a few dull bronze blades for sale.
-    record("initial funding", "outside", "settlement", "", 0, state_.minted);
+    record("initial funding", "outside", "settlement", "", 0, 1000 + 80 * std::int64_t(std::size(jobs)));
 }
 bool Society::cook(const std::string& who)
 {
@@ -204,7 +194,8 @@ void Society::configure(const AuthoredRoster& roster)
     authored_ = roster;
     forgetSpecs();
     buildPositions();
-    buildSeasons();
+    buildRules();
+    buildFarms();                                   // (The farms and works as places of work: doc 71.)
     reset(Roster::Authored);
 }
 const ResidentSpec* Society::unplaced(const std::string& id) const
@@ -267,8 +258,7 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
     const auto* r = roster_ == Roster::Demo ? nullptr : spec(merchant);
     if (!r)
         return smith(merchant) ? std::vector<std::string>{"sword"} : std::vector<std::string>{"herbs", "meal"};
-    // (Kept by its label, and whether the staged economy's buys are in it: doc 79, D5.)
-    const auto key = staged() ? r->workLabel + "\n" : r->workLabel;
+    const auto& key = r->workLabel;                // (Kept by its label.)
     if (const auto kept = waresCache_.find(merchant); kept != waresCache_.end() && kept->second.first == key)
         return kept->second.second;
     std::vector<std::string> out;
@@ -329,7 +319,7 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
             if (item != "meal" && item != "herbs" && std::find(out.begin(), out.end(), item) == out.end())
                 out.push_back(item);
     // The staged economy's own buys (market.json `buys`; doc 79, D5: the smithy, the ironworks and the foundry buy ore).
-    if (business && staged())
+    if (business)
         if (const auto extra = market::data().buys.find(business->id); extra != market::data().buys.end())
             for (const auto& item : extra->second)
                 if (std::find(out.begin(), out.end(), item) == out.end())
@@ -358,8 +348,7 @@ const char* Society::itemName(const std::string& id)
 void Society::record(const std::string& kind, const std::string& from, const std::string& to, const std::string& item,
                      int quantity, std::int64_t coins)
 {
-    if (staged())
-        stagedDoor(kind, from, to, item, quantity, coins);   // (The faucet door: doc 79, 9.3.)
+    stagedDoor(kind, from, to, item, quantity, coins);   // (The faucet door: doc 79, 9.3.)
     state_.ledger.push_back({state_.nextEntry++, state_.budgetDay, coins, kind, from, to, item, quantity});
     if (state_.ledger.size() > 128)
         state_.ledger.erase(state_.ledger.begin());
@@ -373,22 +362,10 @@ std::vector<EconomyEntry> Society::takeJournal()
     out.swap(journal_);
     return out;
 }
-std::int64_t Society::moneySupply() const
-{
-    std::int64_t result = 0;
-    for (const auto& pair : state_.accounts)
-        result += pair.second.cash;
-    return result;
-}
-bool Society::conserved() const
-{
-    return moneySupply() == state_.minted - state_.sunk;
-}
 void Society::addPlayer(const std::string& id)
 {
     if (!playerAccountId(id) || state_.accounts.count(id) || state_.accounts.size() >= MaxAccounts)
         return;
-    if (staged())
     {
         // The welcome as a faucet (doc 79, 9.2): made, not taken from the treasury, so a dry treasury never starts a
         // player with nothing; its coins and herbs once per account holder per world per game week (D23: setHolder), a
@@ -402,7 +379,6 @@ void Society::addPlayer(const std::string& id)
         {
             const auto coins = std::clamp<std::int64_t>(t.caps.count("welcomeCoins") ? t.cap("welcomeCoins") : PlayerWelcome, 0, 1000);
             state_.accounts.at(id).cash = coins;
-            state_.minted += coins;
             state_.staged.welcomed[holder] = week;
             stagedChanged_.insert({state_.budgetDay, holder});   // (Journalled with the welcome: D23 across a crash.)
             if (coins > 0)
@@ -412,18 +388,7 @@ void Society::addPlayer(const std::string& id)
         }
         if (const auto meals = int(std::clamp<std::int64_t>(t.caps.count("welcomeMeals") ? t.cap("welcomeMeals") : StartingMeals, 0, 20)); meals > 0)
             create(id, "meal", meals, "provisions to start with");
-        return;
     }
-    auto& reserve = state_.accounts.at("treasury");
-    EconomyAccount created;
-    created.cash = std::min<std::int64_t>(PlayerWelcome, reserve.cash);
-    reserve.cash -= created.cash;
-    created.stock["herbs"] = std::min(2, stock(reserve, "herbs"));
-    reserve.stock["herbs"] -= created.stock["herbs"];
-    state_.accounts[id] = created;
-    record("settlement welcome grant", "treasury", id, "", 0, created.cash);
-    // Everyone starts with food (doc 36): a few days' meals of their own, not taken from stores that may be empty.
-    create(id, "meal", StartingMeals, "provisions to start with");
 }
 bool Society::transfer(const std::string& seller, const std::string& buyer, const std::string& item, int quantity,
                        std::int64_t price, const std::string& kind)
@@ -447,12 +412,6 @@ bool Society::transfer(const std::string& seller, const std::string& buyer, cons
     b.cash -= total;
     s.cash += total;
     record(kind, buyer, seller, item, quantity, total);
-    if (seller.rfind("till:", 0) == 0)
-    {
-        soldToday_[seller][item] += quantity;      // (A shop's shelves follow its sales: doc 68, 7.)
-        if (left == 0)
-            soldOut_[seller].insert(item);          // (And its prices its stock: doc 68, "Self-correcting rules".)
-    }
     return true;
 }
 std::int64_t Society::catalogPrice(const std::string& item)
@@ -470,75 +429,12 @@ std::int64_t Society::catalogPrice(const std::string& item)
 EconomyResult Society::quote(const std::string& player, const std::string& seller, const std::string& item,
                              int quantity, bool buy, const std::string& holder) const
 {
-    if (staged())
-        return stagedQuote(player, seller, item, quantity, buy, holder, nullptr);   // (The Market Board's: doc 79, 7.)
-    if (!state_.enabled || !merchant(seller) || !playerAccountId(player) || !account(player) || !account(seller))
-        return {false, "This trader is unavailable."};
-    if (quantity < 1 || quantity > 99)
-        return {false, "Choose a whole quantity from 1 to 99."};
-    const auto deals = wares(seller);
-    // A shop deals in its goods of every quality (doc 35, Part 4): a tanner takes a fine hide as well as a common one.
-    if (!itemValid(item) || std::find(deals.begin(), deals.end(), items::baseOf(item)) == deals.end())
-        return {false, "This trader has no use for those goods."};
-    if (!account(tillOf(seller)))
-        return {false, "This trader is unavailable."};
-    const auto& m = *account(tillOf(seller));          // The shop's shelves and money (its till).
-    const auto& p = *account(player);
-    // The shop's price now (doc 68, Progress, "Players in the shifting market"; the user, 2026-11-01: "players should
-    // experience the economy shifts as well"): the catalogue's times the season's and the shop's own from its stock, for
-    // the lot to the nearest penny and never under a penny a piece; market stalls sell a little cheaper (a tenth off,
-    // rounded down); and a shop buys at SellBackShare of it, so a scarce ware fetches more and a glutted one less, its
-    // margin kept. (A lot's, not a piece's rounded: a penny's bread at a quarter over is 1p alone, 5p for four.)
-    const double f = shopFactor(tillOf(seller), item);
-    const auto each = catalogPrice(item);
-    const bool stall = buy && atStall(seller);
-    const double share = !buy ? SellBackShare : stall ? .9 : 1.;
-    if (each > std::numeric_limits<std::int64_t>::max() / 2 / quantity)
-        return {false, "That trade exceeds safe account capacity.", each, 0};
-    const auto lot = [&](int n) {
-        if (f == 1 && share == 1)
-            return each * n;
-        const double x = double(each) * f * share * n;
-        return std::max<std::int64_t>(n, stall ? std::int64_t(std::floor(x + 1e-9)) : std::llround(x));
-    };
-    // What it takes from a player is as much as it keeps of a good: a supplier's or buyer's store of what it supplies or
-    // buys (crafts.json), a few of anything else.
-    const auto* business = spec(seller) ? items::businessFor(spec(seller)->workLabel) : nullptr;
-    const auto dealsIn = [&](const std::vector<std::string>& list) { return std::find(list.begin(), list.end(), items::baseOf(item)) != list.end(); };
-    const bool stocked = business && (dealsIn(items::suppliesFor(business->id)) || dealsIn(items::buysFor(business->id)));
-    const int held = stock(m, item);
-    const int cap = stocked ? SuppliesKept : items::wearable(item) ? 4 : item == "meal" ? 24 : item == "sword" ? 4 : item == "herbs" ? 20 : GoodsKept;
-    const std::int64_t price = lot(1), total = lot(quantity);   // (A piece's, for the list; the lot's, paid.)
-    if (!buy && held + quantity > cap)
-        return {false, "The trader already has enough of those goods.", price, total};
-    if (stock(buy ? m : p, item) < quantity)
-        return {false, "There is not enough stock.", price, total};
-    if ((buy ? p : m).cash < total)
-        return {false, buy ? "You cannot afford that purchase." : "The trader cannot afford that purchase.", price,
-                total};
-    if ((buy ? m : p).cash > MoneyLimit - total || stock(buy ? p : m, item) > StockLimit - quantity)
-        return {false, "That trade exceeds safe account capacity.", price, total};
-    return {true, "Available", price, total};
+    return stagedQuote(player, seller, item, quantity, buy, holder, nullptr);   // (The Market Board's: doc 79, 7.)
 }
 EconomyResult Society::trade(const std::string& player, const std::string& trader, const std::string& item,
                              int quantity, bool buy, const std::string& holder)
 {
-    if (staged())
-        return stagedTrade(player, trader, item, quantity, buy, holder);   // (The Market Board's: doc 79, 7.)
-    auto result = quote(player, trader, item, quantity, buy);
-    if (!result.ok)
-        return result;
-    // The lot's price (quote): its whole pennies a piece in the sale, and the odd pennies after.
-    const auto till = tillOf(trader);
-    const auto& seller = buy ? till : player;
-    const auto& buyer = buy ? player : till;
-    const auto each = result.total / quantity, odd = result.total - each * quantity;
-    result.ok = transfer(seller, buyer, item, quantity, each, "local trade") &&
-                (odd == 0 || shift(buyer, seller, "", 0, odd, "local trade: the odd pennies"));
-    result.message = result.ok ? std::string(buy ? "Bought " : "Sold ") + std::to_string(quantity) + " " +
-                                     itemName(item) + " for " + std::to_string(result.total) + " silver pennies."
-                               : "The trade could not be completed.";
-    return result;
+    return stagedTrade(player, trader, item, quantity, buy, holder);   // (The Market Board's: doc 79, 7.)
 }
 EconomyResult Society::gather(const std::string& player)
 {
@@ -618,8 +514,6 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
     {
         // Missed days do not accumulate unbounded grants, orders or harvests.
         state_.budgetDay = day;
-        state_.exportsRemaining = 8;
-        state_.importsRemaining = 4;
         for (auto& resident : state_.residents)
             resident.second.wagesToday = 0;
         const int recovery[] = {20, 30, 12, 4};
@@ -627,29 +521,10 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
     }
     if (roster_ == Roster::Authored)
     {
-        setYearDay(absoluteDay);                    // (The seasons in the Country's supply: doc 68, Progress.)
-        if (staged())
-            marketTick(absoluteDay);                // (The Market Board's dawn: doc 79, Phase 1; RatwMarket.cpp.)
-        // The city's loop (doc 68), each game hour as it turns: hours missed run once each, at most a day of them; the
-        // first hour a society decides (a fresh world, a restore) is not run, so nothing is paid twice.
-        if (!needsPaused() && !staged())
-        {
-            const auto hour = std::int64_t(std::floor(absoluteDay * 24));
-            if (loopHour_ < 0 || hour < loopHour_)
-            {
-                loopHour_ = hour;
-                // (Which areas are on today, before that hour's draws: the farms' switch as of the date it now knows, an
-                // area switched on while it was down founded; doc 71, 4. The farms are tended from the next hour.)
-                refreshAreas(-1);
-            }
-            for (auto h = std::max(loopHour_ + 1, hour - 23); h <= hour; ++h)
-                loopHourly(h, season);
-            loopHour_ = hour;
-        }
-        else
-            loopHour_ = -1;
-        // The staged economy instead (doc 79, Phase 0): food by class, the nightly purse and treasury set.
-        if (!needsPaused() && staged())
+        setYearDay(absoluteDay);                    // (The season's price on the Board: doc 79, 7.1.)
+        marketTick(absoluteDay);                    // (The Market Board's dawn: doc 79, 5.)
+        // The staged economy (doc 79): food by band from the shelf, the nightly purse and treasury set.
+        if (!needsPaused())
             stagedHourly(std::int64_t(std::floor(absoluteDay * 24)));
         else
             stagedHour_ = -1;
@@ -756,8 +631,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             if (stock(wallet, "meal") > 0 &&
                 (stock(wallet, "meal") >= 6 || stock(*account("npc_keeper"), "meal") < 2 || wallet.cash < 2) &&
                 stock(*account("npc_keeper"), "meal") < 20 &&
-                (account("npc_keeper")->cash >= 5 || hungryCustomer() ||
-                 (state_.exportsRemaining > 0 && stock(wallet, "meal") + stock(*account("npc_keeper"), "meal") > 8)))
+                (account("npc_keeper")->cash >= 5 || hungryCustomer()))
             {
                 task = "deliver meals";
                 x = 10.5;
@@ -792,7 +666,7 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             task = "trade";
             x = 9.5;
             y = 6.5;
-            reason = "Serving customers and limited outside orders.";
+            reason = "Serving customers.";
         }
         else if (hour >= 8 && hour < 18 && life.wagesToday < 3)
         {
@@ -979,59 +853,22 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
             else
                 life.reason = "Work completed, but the employer cannot afford another contract.";
         }
-        else if (task == "trade")
-        {
-            if (state_.exportsRemaining > 0 && stock(wallet, "meal") > 8 && wallet.cash <= MoneyLimit - 7 &&
-                state_.minted <= MoneyLimit - 7)
-            {
-                --wallet.stock["meal"];
-                --state_.exportsRemaining;
-                wallet.cash += 7;
-                state_.minted += 7;
-                record("outside export order", "outside", pair.first, "meal", 1, 7);
-            }
-            else if (state_.exportsRemaining > 0 && wallet.cash < 5 && available("npc_cook"))
-            {
-                // The same outside order may buy a cook-owned surplus meal at
-                // the counter. Its seven pennies are split 5/2, not minted in
-                // addition to the existing order allowance. Eight real meals
-                // remain across the co-located seller and shop as a reserve.
-                const auto& producerBody = bodies.at("npc_cook");
-                auto& producer = state_.accounts.at("npc_cook");
-                if (near(producerBody, "tavern", 10.5, 6.5) && near(producerBody, body.cell, body.x, body.y) &&
-                    stock(producer, "meal") > 0 && stock(producer, "meal") + stock(wallet, "meal") > 8 &&
-                    producer.cash <= MoneyLimit - 5 && wallet.cash <= MoneyLimit - 2 && state_.minted <= MoneyLimit - 7)
-                {
-                    --producer.stock["meal"];
-                    --state_.exportsRemaining;
-                    producer.cash += 5;
-                    wallet.cash += 2;
-                    state_.minted += 7;
-                    record("outside consigned sale", "outside", "npc_cook", "meal", 1, 5);
-                    record("export commission", "outside", pair.first, "", 0, 2);
-                }
-            }
-            // Expensive, capped import fallback is a true money sink, not a free restock.
-            const bool localIngredients =
-                (available("npc_cook") && stock(*account("npc_cook"), "herbs") >= 2) ||
-                (available("npc_porter") && (stock(*account("npc_porter"), "herbs") >= 2 || state_.herbPatch >= 2));
-            if (stock(wallet, "herbs") < 2 && !localIngredients && state_.importsRemaining > 0 && wallet.cash >= 4)
-            {
-                ++wallet.stock["herbs"];
-                --state_.importsRemaining;
-                wallet.cash -= 4;
-                state_.sunk += 4;
-                record("outside import", pair.first, "outside", "herbs", 1, 4);
-            }
-        }
+        // (A merchant's "trade" is serving at the counter: the outside's export orders and imports, which made and sank
+        // money, went with doc 79's Phase 3.)
     }
 }
 bool Society::restore(const SocietyState& saved)
 {
+    // Lenient (Docs/Design/79-a-staged-economy.md, 14): a save is reconciled with the world it is loaded into, never
+    // refused over its economy. Dead accounts (9.1) go with their goods; an account of a resident the world no longer has
+    // goes if it is staged; a resident whose role changed takes the authored role; departed residents leave and newcomers
+    // start fresh at their authored purse; unknown goods are dropped from staged accounts and set aside in real and
+    // escrow ones (quarantined: they come back when the good does). Staged accounts out of range are settled after
+    // (stagedRestored). Real and escrow accounts are kept to the penny; only a broken one (negative or overflowing money,
+    // broken goods limits) or a broken save (its ledger, its counters) refuses.
     ++rosterRevision_;
-    // A checkpoint names its own population; World rejects one for another world.
-    // A checkpoint is validated against this society's own population; a
-    // society without one (None) accepts the legacy demo population.
+    // A checkpoint names its own population; World rejects one for another world. A society without one (None) accepts
+    // the legacy demo population.
     const Roster roster = !saved.enabled ? roster_ : roster_ == Roster::Authored ? Roster::Authored : Roster::Demo;
     if (roster == Roster::Authored && authored_.residents.empty() && authored_.unplaced.empty())
         return false;
@@ -1040,96 +877,128 @@ bool Society::restore(const SocietyState& saved)
     fresh.forgetSpecs();
     fresh.reset(roster);
     SocietyState s = saved;
-    if (s.enabled && roster == Roster::Authored && s.accounts.count("treasury"))
+    if (s.accounts.size() > MaxAccounts || s.residents.size() > MaxResidents || s.ledger.size() > 128 || s.nextEntry < 1 ||
+        s.nextEntry > 1000000000000LL || s.budgetDay < 0 || s.budgetDay > 365000000)
+        return false;
+    s.herbPatch = std::clamp(s.herbPatch, 0, 60);
+    if (!validNumber(s.decisionRemainder, 0, 1))
+        s.decisionRemainder = 0;
+    const auto& now = fresh.state_.residents;
+    // Only an authored world reconciles its people (a world rebuilt since, perhaps every resident new: doc 60): the demo's
+    // six are fixed, so a save with others is another world's, refused.
+    if (s.enabled && roster != Roster::Authored &&
+        (s.residents.size() != now.size() ||
+         std::any_of(s.residents.begin(), s.residents.end(), [&](const auto& r) { return !now.count(r.first); })))
+        return false;
+    // The accounts.
+    auto& quarantine = s.staged.quarantine;
+    for (auto it = s.accounts.begin(); it != s.accounts.end();)
     {
-        auto& treasury = s.accounts.at("treasury");
-        const auto& now = fresh.state_.residents;
-        for (auto it = s.residents.begin(); it != s.residents.end();)
-            it = now.count(it->first) ? std::next(it) : s.residents.erase(it);
-        for (auto it = s.accounts.begin(); it != s.accounts.end();)
-            if (it->first != "treasury" && !playerAccountId(it->first) && !facilityAccount(it->first) && !now.count(it->first))
-            {
-                treasury.cash += it->second.cash;           // A departed resident's coins go back to the town.
-                it = s.accounts.erase(it);
-            }
-            else
-                ++it;
-        for (const auto& life : now)
+        const auto& id = it->first;
+        auto& a = it->second;
+        const auto kind = classify(id);
+        const bool known = id == "treasury" || playerAccountId(id) || facilityAccount(id) || now.count(id);
+        if (id.empty() || id.size() > 80 || kind == AccountKind::Dead || (kind == AccountKind::Staged && !known))
         {
-            const auto was = s.residents.find(life.first);
-            if (was == s.residents.end() || !s.accounts.count(life.first))
-            {
-                s.residents[life.first] = life.second;      // A newcomer: a fresh life and the authored purse.
-                if (!s.accounts.count(life.first))
-                {
-                    s.accounts[life.first] = fresh.state_.accounts.at(life.first);
-                    s.minted += s.accounts[life.first].cash;
-                }
-            }
-            else if (was->second.role != life.second.role)
-                was->second = life.second;                  // Re-authored as something else: start that life fresh.
+            quarantine.erase(id);
+            it = s.accounts.erase(it);              // (Dead, or a resident's who is gone: dropped with its goods.)
+            continue;
         }
-    }
-    if (s.accounts.empty() || s.accounts.size() > MaxAccounts || !s.accounts.count("treasury") || s.residents.size() > MaxResidents ||
-        s.ledger.size() > 128 || s.minted < 0 || s.minted > MoneyLimit || s.sunk < 0 || s.sunk > s.minted ||
-        s.nextEntry < 1 || s.nextEntry > 1000000000000LL || s.budgetDay < 0 || s.budgetDay > 365000000 ||
-        s.exportsRemaining < 0 || s.exportsRemaining > 8 || s.importsRemaining < 0 || s.importsRemaining > 4 ||
-        s.herbPatch < 0 || s.herbPatch > 60 || !validNumber(s.decisionRemainder, 0, 1))
-        return false;
-    std::int64_t sum = 0;
-    for (const auto& a : s.accounts)
-    {
-        if (a.first.empty() || a.first.size() > 80 || a.second.cash < 0 || a.second.cash > MoneyLimit ||
-            a.second.stock.size() > MaxGoodsKinds)
-            return false;
-        if (a.first != "treasury" && !playerAccountId(a.first) && !facilityAccount(a.first) &&
-            !fresh.state_.residents.count(a.first))
-            return false;
-        sum += a.second.cash;
-        for (const auto& item : a.second.stock)
-            if (!itemValid(item.first) || item.second < 0 || item.second > StockLimit)
+        if (kind == AccountKind::Staged)
+        {
+            // Settled: money within range, unknown goods dropped, counts within the limits, at most MaxGoodsKinds kinds.
+            a.cash = std::clamp<std::int64_t>(a.cash, 0, MoneyLimit);
+            for (auto g = a.stock.begin(); g != a.stock.end();)
+                if (!itemValid(g->first) || g->second < 0)
+                    g = a.stock.erase(g);
+                else
+                    (g->second = std::min(g->second, StockLimit)), ++g;
+            while (a.stock.size() > MaxGoodsKinds)
+                a.stock.erase(std::prev(a.stock.end()));
+            quarantine.erase(id);
+        }
+        else
+        {
+            // Real and escrow: to the penny. Goods the world no longer knows are set aside, not lost; those it knows again
+            // come back.
+            if (a.cash < 0 || a.cash > MoneyLimit || a.stock.size() > MaxGoodsKinds)
                 return false;
+            for (auto g = a.stock.begin(); g != a.stock.end();)
+            {
+                if (g->second < 0 || g->second > StockLimit)
+                    return false;
+                if (!itemValid(g->first) && g->second > 0)
+                {
+                    auto& q = quarantine[id][g->first];
+                    q = std::min(StockLimit, q + g->second);
+                    g = a.stock.erase(g);
+                }
+                else
+                    ++g;
+            }
+            if (const auto q = quarantine.find(id); q != quarantine.end())
+            {
+                for (auto g = q->second.begin(); g != q->second.end();)
+                    if (itemValid(g->first) && (a.stock.count(g->first) || a.stock.size() < MaxGoodsKinds))
+                    {
+                        a.stock[g->first] = std::min(StockLimit, stock(a, g->first) + g->second);
+                        g = q->second.erase(g);
+                    }
+                    else
+                        ++g;
+                if (q->second.empty())
+                    quarantine.erase(q);
+            }
+        }
+        ++it;
     }
-    if (sum != s.minted - s.sunk)
-        return false;
-    for (const auto& l : s.residents)
-        if (!s.accounts.count(l.first) ||
-            !fresh.state_.residents.count(l.first) || fresh.state_.residents.at(l.first).role != l.second.role ||
-            !validNumber(l.second.hunger, 0, 100) || !validNumber(l.second.fatigue, 0, 100) ||
-            !validNumber(l.second.progress, 0, 1200) || l.second.wagesToday < 0 || l.second.wagesToday > PaidSpells ||
-            !validNumber(l.second.goalX, 0, 256) || !validNumber(l.second.goalY, 0, 256) || l.second.task.size() > MaxTaskText ||
-            l.second.reason.size() > 256 || l.second.goalCell.size() > 80 ||
-            l.second.homeCell.size() > 80 || l.second.relocationCell.size() > 80 ||
-            !validNumber(l.second.homeX, 0, 256) || !validNumber(l.second.homeY, 0, 256) ||
-            !validNumber(l.second.relocationX, 0, 256) || !validNumber(l.second.relocationY, 0, 256))
+    for (auto it = quarantine.begin(); it != quarantine.end();)
+        it = s.accounts.count(it->first) ? std::next(it) : quarantine.erase(it);
+    if (!s.accounts.count("treasury"))
+        s.accounts["treasury"] = fresh.state_.accounts.at("treasury");
+    // The residents: the departed leave, newcomers start fresh, a changed role takes the authored one. (A broken life, its
+    // needs or places not numbers in range, is a broken save, not the economy's: refused.)
+    if (!s.enabled)
+        s.residents.clear();
+    for (auto it = s.residents.begin(); it != s.residents.end();)
+        it = now.count(it->first) ? std::next(it) : s.residents.erase(it);
+    for (const auto& [id, life] : now)
+    {
+        const auto was = s.residents.find(id);
+        if (s.enabled && (was == s.residents.end() || was->second.role != life.role))
+            s.residents[id] = life;
+        if (s.enabled && !s.accounts.count(id))
+            s.accounts[id] = fresh.state_.accounts.at(id);   // (A newcomer: its authored purse, settled to its band after.)
+    }
+    for (const auto& [id, l] : s.residents)
+        if (!validNumber(l.hunger, 0, 100) || !validNumber(l.fatigue, 0, 100) || !validNumber(l.progress, 0, 1200) || l.wagesToday < 0 ||
+            l.wagesToday > PaidSpells || !validNumber(l.goalX, 0, 256) || !validNumber(l.goalY, 0, 256) || l.task.size() > MaxTaskText ||
+            l.reason.size() > 256 || l.goalCell.size() > 80 || l.homeCell.size() > 80 || l.relocationCell.size() > 80 ||
+            !validNumber(l.homeX, 0, 256) || !validNumber(l.homeY, 0, 256) || !validNumber(l.relocationX, 0, 256) ||
+            !validNumber(l.relocationY, 0, 256))
             return false;
     // Operators can't move those in essential work (see relocate); the only other move is to a spouse's home.
-    for (const auto& l : s.residents)
+    for (const auto& [id, l] : s.residents)
     {
-        if (l.second.relocationCell.empty() || l.second.role == "resident" || l.second.role == "civilian")
+        if (l.relocationCell.empty() || l.role == "resident" || l.role == "civilian")
             continue;
-        const auto spouse = s.careers.spouses.find(l.first);
+        const auto spouse = s.careers.spouses.find(id);
         const auto home = spouse == s.careers.spouses.end() ? s.residents.end() : s.residents.find(spouse->second);
-        if (home == s.residents.end() || home->second.homeCell != l.second.relocationCell ||
-            s.careers.spouses.count(spouse->second) == 0 || s.careers.spouses.at(spouse->second) != l.first)
+        if (home == s.residents.end() || home->second.homeCell != l.relocationCell || s.careers.spouses.count(spouse->second) == 0 ||
+            s.careers.spouses.at(spouse->second) != id)
             return false;
     }
+    // The ledger: a broken one refuses (it is the save's own order); an entry of a good the world no longer knows goes.
     std::int64_t previous = 0;
     for (const auto& e : s.ledger)
     {
         if (e.sequence <= previous || e.sequence >= s.nextEntry || e.day < 0 || e.day > s.budgetDay || e.coins < 0 ||
-            e.coins > MoneyLimit || e.quantity < 0 || e.quantity > 99 || e.kind.size() > 80 || e.from.size() > 80 ||
-            e.to.size() > 80 || (!e.item.empty() && !itemValid(e.item)))
+            e.coins > MoneyLimit || e.quantity < 0 || e.quantity > 99 || e.kind.size() > 80 || e.from.size() > 80 || e.to.size() > 80)
             return false;
         previous = e.sequence;
     }
-    if (s.residents.size() != (s.enabled ? fresh.state_.residents.size() : 0u))
-        return false;
-    if (s.enabled)
-        for (const auto& life : fresh.state_.residents)
-            if (!s.accounts.count(life.first) || !s.residents.count(life.first) ||
-                s.residents.at(life.first).role != life.second.role)
-                return false;
+    s.ledger.erase(std::remove_if(s.ledger.begin(), s.ledger.end(), [](const EconomyEntry& e) { return !e.item.empty() && !itemValid(e.item); }),
+                   s.ledger.end());
     state_ = s;
     indexTills();
     friendGroups_.clear();
@@ -1144,38 +1013,19 @@ bool Society::restore(const SocietyState& saved)
         else
             reconcileCareers();
         foundShops();                               // (A save from before tills: its shops' own, once.)
-        for (const auto& market : items::cityLoop().markets)
-            if (!state_.accounts.count(marketFund(market.id)))
-                openAccount(marketFund(market.id)); // (A save from before the Country: its purse, empty.)
-        // (A save from before doc 68: what the store room's fund took in is the Country's now.)
-        if (const auto* old = account(StoreFund))
-        {
-            if (old->cash > 0)
-                shift(StoreFund, marketFund(items::cityLoop().markets.front().id), "", 0, old->cash, "fund:store is the Country's now");
-            if (account(StoreFund)->cash == 0 && account(StoreFund)->stock.empty())
-                closeAccount(StoreFund);
-        }
-        // (A save from before doc 73: the Country's purse is the Wharf's now, its coins and its goods moved, nothing made;
-        // before the estates' first night, which keys on the purses open, so their split is not repeated.)
-        if (const auto* old = account(OldCountryFund); old && WharfFund != std::string(OldCountryFund))
-        {
-            if (!account(WharfFund))
-                openAccount(WharfFund);
-            if (old->cash > 0)
-                shift(OldCountryFund, WharfFund, "", 0, old->cash, "outside:country is the Wharf's now");
-            const std::vector<std::pair<std::string, int>> goods(account(OldCountryFund)->stock.begin(), account(OldCountryFund)->stock.end());
-            for (const auto& [item, n] : goods)
-                for (int left = n; left > 0; left -= 99)
-                    if (!shift(OldCountryFund, WharfFund, item, std::min(left, 99), 0, "outside:country is the Wharf's now"))
-                        break;
-            if (account(OldCountryFund)->cash == 0 && account(OldCountryFund)->stock.empty())
-                closeAccount(OldCountryFund);
-        }
-        loopHour_ = -1;
-        farmsDay_ = -1;                             // (The farms are tended again from the next hour; their accounts are the save's.)
     }
-    stagedRestored();                               // (Doc 79, Phase 2: the staged day and the bands as saved.)
+    stagedRestored();                               // (Doc 79, 14: the staged day and the bands as saved, out-of-range settled.)
     return true;
+}
+void Society::setNeeds(const std::string& id, double hunger, double fatigue)
+{
+    const auto life = state_.residents.find(id);
+    if (life == state_.residents.end())
+        return;
+    if (std::isfinite(hunger))
+        life->second.hunger = std::clamp(hunger, 0., 100.);
+    if (std::isfinite(fatigue))
+        life->second.fatigue = std::clamp(fatigue, 0., 100.);
 }
 bool Society::rehome(const std::string& id)
 {
@@ -1384,7 +1234,7 @@ void Society::foundShops()
         if (p.role != "merchant" || account(till) || !openAccount(till))
             continue;
         // The shop's goods are the till's: its keeper's wares (and anything it holds that isn't food; what it eats stays
-        // its own). Its money to begin with is as much as its founder's authored purse, made with the world as that is.
+        // its own). Its money is the Board's: set to what it pays when it buys (doc 79, 7.5), nothing made here.
         const auto& keeper = state_.careers.positions[p.id].holder;
         if (const auto* purse = keeper.empty() ? nullptr : account(keeper))
         {
@@ -1399,355 +1249,8 @@ void Society::foundShops()
                         shift(keeper, till, item, std::min(left, 99), 0, "the shop's till");
             }
         }
-        if (const auto* founder = spec(p.founder); founder && founder->purse > 0)
-        {
-            state_.accounts.at(till).cash += founder->purse;
-            state_.minted += founder->purse;
-            record("a shop's founding money", "made", till, "", 0, founder->purse);
-        }
     }
 }
-
-// The store room (Docs/Design/67-ridgemere2-city.md, 6).
-const Society::StoreList& Society::storeList(const std::string& keeper) const
-{
-    static const StoreList none;
-    const auto* job = roster_ == Roster::Authored ? jobOf(keeper) : nullptr;
-    if (!job || job->role != "merchant")
-        return none;
-    const auto& e = authored_.economy;
-    const auto signature = job->id + '|' + job->title + '|' + (e.internalStore ? 'm' : '-') + (e.storeResale ? 'r' : '-');
-    auto& kept = storeCache_[keeper];
-    if (kept.signature == signature)
-        return kept;
-    kept = {};
-    kept.signature = signature;
-    std::set<std::string> inputs, made;
-    const auto* business = items::businessFor(job->title);
-    if (business)
-        for (const auto* craft : items::craftsFor(business->id))
-        {
-            for (const auto& [item, n] : craft->in)
-                if (itemValid(item))
-                    inputs.insert(item);
-            for (const auto& [item, n] : craft->out)
-                made.insert(item);
-        }
-    // Making goods: every input of its own crafts, sorted. Resale goods: its supply list, then the kinds of wares its
-    // founder started with (Society::wares) that its crafts don't make; a good both ways is a making good.
-    std::vector<std::string> resale;
-    const auto resell = [&](const std::string& item) {
-        if (itemValid(item) && !inputs.count(item) && std::find(resale.begin(), resale.end(), item) == resale.end())
-            resale.push_back(item);
-    };
-    if (business)
-        for (const auto& item : items::suppliesFor(business->id))
-            resell(item);
-    if (spec(job->founder))
-        for (const auto& ware : wares(job->founder))
-            if (!made.count(ware))
-                resell(ware);
-    kept.anything = !inputs.empty() || !resale.empty();   // (The world's switches aside: storeClosed tells "nothing" from "off".)
-    if (e.internalStore)
-        kept.making.assign(inputs.begin(), inputs.end());
-    if (e.storeResale)
-        kept.resale = std::move(resale);
-    kept.goods = kept.making;
-    kept.goods.insert(kept.goods.end(), kept.resale.begin(), kept.resale.end());
-    return kept;
-}
-
-const std::vector<std::string>& Society::storeGoods(const std::string& keeper) const
-{
-    return storeList(keeper).goods;
-}
-
-std::string Society::storeClosed(const std::string& keeper) const
-{
-    if (roster_ != Roster::Authored)
-        return "the store room is only an authored world's";
-    if (!spec(keeper))
-        return unplaced(keeper) ? keeper + " is unplaced: no body, no shop to keep" : keeper + " is not a resident here";
-    const auto* job = jobOf(keeper);
-    if (!job || job->role != "merchant")
-        return keeper + " keeps no shop (only a shop's keeper draws, into its till)";
-    const auto till = tillOf(keeper);
-    if (till.rfind("till:", 0) != 0 || !account(till))
-        return "the shop has no till";
-    const auto& list = storeList(keeper);
-    if (list.goods.empty())
-        return list.anything ? "off for the whole world" : "this business has nothing to draw";
-    if (const auto* founder = spec(job->founder); founder && !founder->internalStore)
-        return "off for this business";
-    return {};
-}
-
-Society::StoreUse Society::storeUse(const std::string& keeper, const std::string& item) const
-{
-    const auto& list = storeList(keeper);
-    if (std::binary_search(list.making.begin(), list.making.end(), item))
-        return StoreUse::Make;
-    if (std::find(list.resale.begin(), list.resale.end(), item) != list.resale.end())
-        return StoreUse::Resell;
-    return StoreUse::None;
-}
-
-std::int64_t Society::storeCost(const std::string& keeper, const std::string& item, int quantity) const
-{
-    const auto use = storeUse(keeper, item);
-    if (use == StoreUse::None || quantity < 1)
-        return 0;
-    const auto& e = authored_.economy;
-    const std::int64_t markup = std::clamp(use == StoreUse::Make ? e.storeMarkup : e.resaleMarkup, 0, 1000);
-    if (markup == 0)
-        return 0;                                   // Free: the goods move, no money does.
-    const std::int64_t scaled = catalogPrice(item) * std::int64_t(std::min(quantity, StoreDrawMost)) * markup;
-    // The season's price for a good of a season group (doc 68, Progress, "Seasons"): dearer out of season; a farm's good of
-    // an area that sells from store at a price a year (doc 71, 4: the granary), that price.
-    const double year = farmPriceFactor(item);
-    if (const double f = year > 0 ? year : priceFactor(item); f != 1)
-        return std::max<std::int64_t>(1, std::int64_t(std::ceil(double(scaled) * f / 100. - 1e-9)));
-    return std::max<std::int64_t>(1, (scaled + 99) / 100);
-}
-
-EconomyResult Society::drawFromStore(const std::string& keeper, const std::string& item, int quantity, const std::string& why)
-{
-    if (const auto closed = storeClosed(keeper); !closed.empty())
-        return {false, "The store room is closed: " + closed + "."};
-    const auto use = storeUse(keeper, item);
-    if (use == StoreUse::None)
-        return {false, "The store room holds no " + item + " for this business."};
-    if (quantity < 1 || quantity > StoreDrawMost)
-        return {false, "Draw a whole quantity from 1 to " + std::to_string(StoreDrawMost) + "."};
-    // A good of an area the farms have taken over (doc 71, 4): theirs, as much as their stores hold; what they lack the
-    // Wharf lands as the draw's last lot when the good is on its imports list, within its most today (doc 73, 4.3).
-    // Counted short of the farms even when the Wharf filled it, so a real shortage stays seen.
-    const int area = farmAreaOf(item);
-    if (area < 0 && authored_.economy.wharfOff.count(items::baseOf(item)))
-        return {false, "The Wharf no longer lands " + item + ": the city's own producers make it."};
-    int fromWharf = 0;
-    if (area >= 0)
-    {
-        if (const int held = farmsHold(item); quantity > held)
-        {
-            ++loopToday_.areasOut[items::farms().areas[std::size_t(area)].id];
-            ++loopToday_.goodsOut[items::baseOf(item)];
-            if (quantity - held > wharfRoom(item))
-                return {false, "The farms have " + (held ? "only " + std::to_string(held) : std::string("no")) + " " + item +
-                                   " in store now" + (wharfImports(item) ? ", and the Wharf no more to land today." : ".")};
-            fromWharf = quantity - held;
-        }
-    }
-    // The season's supply (doc 68, Progress, "Seasons"): so much of a group a day, shared by every shop.
-    else if (const int left = supplyLeft(item); quantity > left)
-        return {false, "The Wharf has " + (left ? "only " + std::to_string(left) : std::string("no more")) + " " +
-                           seasonGroup(item)->name + " to send today (the season)."};
-    // Exactly what shift and create will check, before either: a draw is whole or nothing. Its cost is split between the
-    // Country (the market that supplies the good) and the treasury (the gate toll, doc 68, 5); carriage on its weight goes
-    // to the carters (doc 68, 6).
-    const auto till = tillOf(keeper);
-    const auto& shelves = *account(till);
-    const auto cost = storeCost(keeper, item, quantity);
-    const auto toll = gateToll(till, cost, false);
-    const auto unit = catalogPrice(item);
-    const auto country = marketFund(marketFor(item));
-    const auto carter = carters();
-    // Carriage in (the carters carry their own free), less the treasury's share of it (doc 68, 5).
-    const auto [carriage, subsidy] = carter == till ? std::pair<std::int64_t, std::int64_t>{0, 0} : carriageSplit(till, item, quantity, false);
-    if (!itemValid(item))
-        return {false, "No such goods: " + item + "."};
-    if (stock(shelves, item) > StockCap - quantity)
-        return {false, "The till can't hold that many " + item + ".", unit, cost};
-    if (!shelves.stock.count(item) && shelves.stock.size() >= MaxGoodsKinds)
-        return {false, "The till holds as many kinds of goods as it may.", unit, cost};
-    if (shelves.cash < cost + carriage)
-        return {false, "The till can't pay " + std::to_string(cost + carriage) + "p for it.", unit, cost};
-    const auto fits = [&](const std::string& to, std::int64_t coins) {
-        const auto* a = account(to);
-        return coins == 0 || (a && a->cash <= MoneyCap - coins);
-    };
-    // The farms' goods, spread over the farms holding them by their stock (the largest remainders the odd pieces), and the
-    // draw's cost less the toll to their tills by their pieces.
-    std::vector<std::pair<FarmNow*, int>> lots;
-    std::vector<std::int64_t> takings;
-    std::vector<double> carries;
-    // The Wharf's lot (doc 73, 4.3): its pieces' share of the cost less the toll, the farms' lots the rest by theirs.
-    const int fromFarms = quantity - fromWharf;
-    const auto wharfDue = fromWharf <= 0 ? std::int64_t(0)
-                          : fromFarms <= 0 ? cost - toll
-                                           : std::int64_t(std::llround(double(cost - toll) * fromWharf / quantity));
-    if (fromWharf > 0 && ((wharfDue > 0 && !account(WharfFund)) || !fits(WharfFund, wharfDue)))
-        return {false, "The Wharf's purse is missing or can hold no more money.", unit, cost};
-    if (area >= 0 && fromFarms > 0)
-    {
-        std::vector<std::pair<FarmNow*, int>> holders;
-        int held = 0;
-        for (auto& f : farms_)
-            if (const auto* a = farmSells(f, std::size_t(area), item) ? account(f.till) : nullptr)
-                if (const int n = stock(*a, item); n > 0)
-                {
-                    holders.push_back({&f, n});
-                    held += n;
-                }
-        std::vector<std::pair<double, std::size_t>> rest;
-        int given = 0;
-        for (std::size_t i = 0; i < holders.size(); ++i)
-        {
-            const double exact = double(fromFarms) * holders[i].second / held;
-            const int n = std::min(holders[i].second, int(std::floor(exact)));
-            lots.push_back({holders[i].first, n});
-            given += n;
-            rest.push_back({exact - n, i});
-        }
-        std::stable_sort(rest.begin(), rest.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
-        for (std::size_t k = 0; given < fromFarms && !rest.empty(); k = (k + 1) % rest.size())
-            if (auto& lot = lots[rest[k].second]; lot.second < holders[rest[k].second].second)
-            {
-                ++lot.second;
-                ++given;
-            }
-        // The pennies by their pieces: each farm's exact share with the fraction of a penny its earlier draws left it, in
-        // whole pennies, the odd ones to the largest fractions, and what is over carried to its next draw. (Cut in the
-        // list's order, the first farm lost the odd penny of nearly every small draw: about a third of its takings.)
-        const auto due = cost - toll - wharfDue;
-        std::vector<double> exact;
-        std::int64_t sum = 0;
-        for (const auto& [farm, n] : lots)
-        {
-            exact.push_back(n > 0 ? double(due) * n / fromFarms + farm->takingsCarry : 0);
-            takings.push_back(n > 0 ? std::max<std::int64_t>(0, std::int64_t(std::floor(exact.back() + 1e-9))) : 0);
-            sum += takings.back();
-        }
-        while (sum != due)
-        {
-            std::size_t pick = lots.size();
-            for (std::size_t i = 0; i < lots.size(); ++i)
-                if (lots[i].second > 0 && (sum < due || takings[i] > 0) &&
-                    (pick == lots.size() || (sum < due ? exact[i] - takings[i] > exact[pick] - takings[pick]
-                                                       : exact[i] - takings[i] < exact[pick] - takings[pick])))
-                    pick = i;
-            if (pick == lots.size())
-                break;                              // (Not reached: some farm sold a piece of every draw.)
-            takings[pick] += sum < due ? 1 : -1;
-            sum += sum < due ? 1 : -1;
-        }
-        for (std::size_t i = 0; i < lots.size(); ++i)
-        {
-            carries.push_back(lots[i].second > 0 ? exact[i] - double(takings[i]) : lots[i].first->takingsCarry);
-            if (!fits(lots[i].first->till, takings[i]))
-                return {false, "A farm's till can hold no more money.", unit, cost};
-        }
-    }
-    else if (cost - toll > 0 && !account(country))
-        return {false, "The Wharf's purse is missing.", unit, cost};
-    if (carriage + subsidy > 0 && carter == CarriageFund && !account(CarriageFund))
-        openAccount(CarriageFund);
-    if ((area < 0 && !fits(country, cost - toll)) || !fits("treasury", toll) || !fits(carter, carriage + subsidy))
-        return {false, "The Wharf, the treasury or the carters can hold no more money.", unit, cost};
-    const auto pay = [&](const std::string& to, std::int64_t coins, const std::string& kind) { return coins == 0 || shift(till, to, "", 0, coins, kind); };
-    bool paid = true;
-    if (area >= 0)
-    {
-        for (std::size_t i = 0; i < lots.size() && paid; ++i)
-            paid = pay(lots[i].first->till, takings[i], why);
-        paid = paid && pay(WharfFund, wharfDue, why);
-    }
-    else
-        paid = pay(country, cost - toll, why);
-    if (!paid || !pay("treasury", toll, "gate toll: " + why) || !pay(carter, carriage, "carriage in"))
-        return {false, "The store room could not be paid.", unit, cost};   // (Not reached: every check was made above.)
-    // The goods: made in the till from the Country's store room, or moved from the farms' stores (in lots of 99, as the
-    // ledger keeps them).
-    const auto deliver = [&]() {
-        if (area < 0)
-            return create(till, item, quantity, why);
-        for (const auto& [farm, n] : lots)
-            for (int left = n; left > 0; left -= 99)
-                if (!shift(farm->till, till, item, std::min(left, 99), 0, why))
-                    return false;
-        if (fromWharf <= 0 || create(till, item, fromWharf, why))   // (Landed at the wharf.)
-            return true;
-        for (const auto& [farm, n] : lots)          // (Not landed: the farms' goods back to them, as the money.)
-            for (int left = n; left > 0; left -= 99)
-                shift(till, farm->till, item, std::min(left, 99), 0, "refunded: " + why);
-        return false;
-    };
-    if (failStoreCreate_ || !deliver())
-    {
-        failStoreCreate_ = false;
-        // (Paid back: nothing changed.)
-        if (area >= 0)
-        {
-            for (std::size_t i = 0; i < lots.size(); ++i)
-            {
-                if (takings[i] > 0)
-                    shift(lots[i].first->till, till, "", 0, takings[i], "refunded: " + why);
-            }
-            if (wharfDue > 0)
-                shift(WharfFund, till, "", 0, wharfDue, "refunded: " + why);
-        }
-        else if (cost - toll > 0)
-            shift(country, till, "", 0, cost - toll, "refunded: " + why);
-        if (toll > 0)
-            shift("treasury", till, "", 0, toll, "refunded: gate toll");
-        if (carriage > 0)
-            shift(carter, till, "", 0, carriage, "refunded: carriage");
-        return {false, "The goods could not be put in the till; the money was paid back.", unit, cost};
-    }
-    gateToll(till, cost, true);
-    if (carter != till)
-        carriageSplit(till, item, quantity, true);
-    if (subsidy > 0 && shift("treasury", carter, "", 0, subsidy, "carriage subsidy"))
-        loopToday_.subsidy += subsidy;
-    drawnToday_[till] += cost + carriage;
-    // The Wharf's own goods, delivered (the sea trade's, doc 72's report): a good no area grows, all of it; an area's, its
-    // lot. Booked as any order from the Wharf: the beyond's share sunk, the credit raised (doc 73, 4.3).
-    if (area < 0)
-    {
-        loopToday_.wharfSales += cost - toll;
-        bookWharfLanding(item, quantity, cost - toll);
-    }
-    else if (fromWharf > 0)
-    {
-        loopToday_.wharfSales += wharfDue;
-        bookWharfLanding(item, fromWharf, wharfDue);
-    }
-    if (const auto* group = seasonGroup(item))
-    {
-        if (area < 0)
-            seasonDrawn_[group->id] += quantity;    // (The season's cap is the Country's: the farms' goods are their stock's.)
-        loopToday_.groups[group->id].drawn += quantity;
-    }
-    for (std::size_t i = 0; i < lots.size(); ++i)
-    {
-        auto& day = loopToday_.farms[lots[i].first->def->id];
-        day.sold += lots[i].second;
-        day.goods[item].sold += lots[i].second;
-        loopToday_.goodsSold[items::baseOf(item)] += lots[i].second;
-        day.takings += takings[i];
-        lots[i].first->rentTakings += takings[i];   // (Its land rent's base tonight: doc 72.)
-        lots[i].first->takingsCarry = carries[i];
-    }
-    loopToday_.drawn += cost;
-    loopToday_.toll += toll;
-    loopToday_.carriage += carriage + subsidy;
-    return {true, "Drew " + std::to_string(quantity) + " " + itemName(item) +
-                      (area < 0 ? " from the store room" : fromWharf <= 0 ? " from the farms" : fromFarms > 0 ? " from the farms and the Wharf" : " from the Wharf") +
-                      " for " + std::to_string(cost) +
-                      "p (" + (use == StoreUse::Make ? "making" : "resale") + (carriage ? ", " + std::to_string(carriage) + "p carriage" : "") + ").",
-            unit, cost};
-}
-
-int Society::startingStock(const std::string& ware)
-{
-    // A dear good keeps fewer (city_loop.json `shelves`: theriac, one; doc 68, Progress, "Trades").
-    if (const auto& shelves = items::cityLoop().shelves; !shelves.empty())
-        if (const auto found = shelves.find(items::baseOf(ware)); found != shelves.end())
-            return found->second;
-    return ware == "sword" ? SmithSwords : GoodsKept;
-}
-
-// restockFromStore: RatwCityLoop.cpp (doc 68, 7).
 
 // The staged economy, Phase 0 (Docs/Design/79-a-staged-economy.md, 19): the households, their food by class, the nightly
 // purse and treasury set. Raw sets: no ledger entry, no journal record, no WorldEvent.
@@ -1776,23 +1279,8 @@ double stagedOnHand(const EconomyAccount& a)
 }
 } // namespace
 
-bool Society::stagedForced()
-{
-    static const bool forced = [] {
-        const char* on = std::getenv("RATW_STAGED_ECONOMY");
-        return on && std::string(on) == "1";
-    }();
-    return forced;
-}
-
-bool Society::staged() const
-{
-    return stagedRule_ || stagedForced();          // (stagedRule_: the rule as buildSeasons last read the world's rules.)
-}
-
 std::map<std::string, std::vector<std::string>> Society::households(bool homeless) const
 {
-    // (From RatwCityLoop.cpp, doc 79, 6.2: the city's loop goes in Phase 3, the households stay.)
     // A household: the residents sharing a home (in a communal home, each alone), with a child under 16 and a spouse who
     // live elsewhere (a child given a room of its own upstairs): whoever earns feeds the family.
     std::map<std::string, std::string> keyOf;          // Resident -> its home's key.
@@ -1848,7 +1336,7 @@ std::string Society::householdClass(const std::vector<std::string>& members, Cla
 void Society::stagedHourly(std::int64_t hour)
 {
     // Each game hour as it turns, hours missed run once each (at most a day of them); the first hour is not run (a fresh
-    // world, a restore), as the city's loop's.
+    // world, a restore).
     if (stagedHour_ < 0 || hour < stagedHour_)
     {
         stagedHour_ = hour;
@@ -1896,7 +1384,7 @@ void Society::stagedHomesFor(std::int64_t day)
 {
     stagedDay_ = day;
     stagedRecount_ = false;
-    countFarmPosts();                               // (The farms' posts held, as tendFarms counted them each day.)
+    countFarmPosts();                               // (The farms' posts held, counted each day.)
     stagedHomes_.clear();
     auto homes = households(true);
     auto classes = householdClasses(homes);
@@ -2047,13 +1535,7 @@ void Society::stagedSet(const std::string& accountId, std::int64_t coins)
     const auto found = state_.accounts.find(accountId);
     if (found == state_.accounts.end())
         return;
-    coins = std::clamp<std::int64_t>(coins, 0, MoneyLimit);
-    const auto delta = coins - found->second.cash;
-    if (delta > 0)
-        state_.minted += delta;
-    else
-        state_.sunk -= delta;
-    found->second.cash = coins;
+    found->second.cash = std::clamp<std::int64_t>(coins, 0, MoneyLimit);
 }
 
 // A Gift or a paw lent to a maker (docs 43 and 53), kept for the economy rules to come.

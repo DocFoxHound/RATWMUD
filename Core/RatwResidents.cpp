@@ -15,9 +15,10 @@
 
 // Daily routines for residents authored in a world file (Atlas Workshop).
 // Everything here is driven by ResidentSpec data: roles, hours, places and
-// patrol routes. Nothing names a particular world. The economy's rules that
-// once ran through their days (wages, shopping, odd jobs, alms, larders,
-// production) were erased in Docs/Design/66-worlds-atlas-and-dm.md, Phase 5.
+// patrol routes. Nothing names a particular world. Their money and food are
+// the staged economy's (Docs/Design/79-a-staged-economy.md: food by band from
+// the shelf, purses set nightly; RatwStagedAccounts.cpp): nothing pays them a
+// wage or sells them a meal here.
 namespace ratw
 {
 using namespace std::string_view_literals;
@@ -56,8 +57,8 @@ void Society::resetAuthored()
 {
     const auto& e = authored_.economy;
     auto& treasury = state_.accounts.at("treasury");
-    state_.minted += e.treasury - treasury.cash;
     treasury = {e.treasury, {{"herbs", e.storeHerbs}, {"meal", e.storeMeals}}};
+    std::int64_t funding = e.treasury;
     for (const auto& r : authored_.residents)
     {
         EconomyAccount account;
@@ -73,7 +74,7 @@ void Society::resetAuthored()
             for (const auto& ware : wares(r.id))                      // A shop's own goods on its shelves (Docs/Design/39).
                 if (ware != "meal" && ware != "herbs" && ware != "sword")
                     state_.accounts[r.id].stock[ware] = GoodsKept;
-        state_.minted += account.cash;
+        funding += account.cash;
         ResidentLife life;
         life.role = r.role;
         life.homeCell = r.home.cell;
@@ -81,11 +82,9 @@ void Society::resetAuthored()
         life.homeY = r.home.y;
         state_.residents[r.id] = life;
     }
-    record("initial funding", "outside", "settlement", "", 0, state_.minted);
+    record("initial funding", "outside", "settlement", "", 0, funding);
     defaultCareers();
-    foundShops();                                   // Every shop's goods and money its own till's.
-    for (const auto& market : items::cityLoop().markets)
-        openAccount(marketFund(market.id));         // What the store room is paid: the Country's purse (doc 68), empty.
+    foundShops();                                   // Every shop's goods its own till's.
 }
 
 bool Society::adoptResident(const Society& from, const std::string& id)
@@ -97,8 +96,8 @@ bool Society::adoptResident(const Society& from, const std::string& id)
     const auto current = std::find_if(authored_.residents.begin(), authored_.residents.end(),
                                       [&](const ResidentSpec& r) { return r.id == id; });
     // Unplaced (doc 66, 2): kept aside as the candidate has them, a body or not. One given a home joins below as a
-    // newcomer; one whose home is taken away leaves the society below, as one who left the world (their coins go back
-    // to the town: an unplaced NPC holds none).
+    // newcomer; one whose home is taken away leaves the society below, as one who left the world (its staged purse and
+    // goods go with it: doc 79, 14).
     const ResidentSpec* away = from.unplaced(id);
     const auto parked = std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),
                                      [&](const ResidentSpec& r) { return r.id == id; });
@@ -116,19 +115,9 @@ bool Society::adoptResident(const Society& from, const std::string& id)
         forgetSpecs();
         buildPositions();
         reconcileCareers();
-        auto account = state_.accounts.find(id);
-        std::int64_t coins = 0;
-        if (account != state_.accounts.end())
-        {
-            auto& treasury = state_.accounts.at("treasury");
-            coins = account->second.cash;
-            treasury.cash += coins;
-            for (const auto& [item, count] : account->second.stock)
-                treasury.stock[item] = std::min(10000, treasury.stock[item] + count);
-            state_.accounts.erase(account);
-        }
+        state_.accounts.erase(id);
         state_.residents.erase(id);
-        record("resident left", id, "treasury", "", 0, coins);
+        record("resident left", id, "treasury", "", 0, 0);
         return true;
     }
     if (current == authored_.residents.end())
@@ -140,7 +129,6 @@ bool Society::adoptResident(const Society& from, const std::string& id)
         const auto* life = from.resident(id);
         state_.accounts[id] = account ? *account : EconomyAccount{};
         state_.residents[id] = life ? *life : ResidentLife{};
-        state_.minted += state_.accounts[id].cash;
         record("new resident", "outside", id, "", 0, state_.accounts[id].cash);
         reconcileCareers();                        // The newcomer holds the job they were written with.
         return true;
@@ -174,7 +162,6 @@ bool Society::addResident(const ResidentSpec& r, std::int64_t purse)
     life.homeX = r.home.x;
     life.homeY = r.home.y;
     state_.residents[r.id] = life;
-    state_.minted += purse;
     record("new resident", "outside", r.id, "", 0, purse);
     reconcileCareers();
     return true;
@@ -417,7 +404,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         const auto& body = *c.body;
         const auto& rec = *c.record;
         const DayPlan& plan = *(planned(rec) ? rec.plan : planAt(rec));
-        // Needs (doc 68: the city's loop feeds them; needsPaused holds hunger where it is); tiredness as ever.
+        // Needs (doc 79: their band's food feeds them; needsPaused holds hunger where it is); tiredness as ever.
         c.hunger = paused ? life.hunger : std::min(100., life.hunger + .0035 * c.step);
         c.fatigue = std::min(100., life.fatigue + .0025 * c.step);
         const double hunger = c.hunger, fatigue = c.fatigue;
@@ -721,7 +708,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             life.progress = 0;
             // (A recruited keeper's shop still sets out its wares once a market day in its hours (doc 79, 7.7): the
             // households it feeds, its food shop's, don't go short while it's away.)
-            if (job->role == "merchant"sv && staged() && within(hour, job->startHour, job->endHour))
+            if (job->role == "merchant"sv && within(hour, job->startHour, job->endHour))
                 stagedRestock(id);
             continue;
         }
@@ -769,13 +756,9 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
             const double year = calendar::DaysPerYear * PaidSpells * 600.;
             if (*at < SkillTop)
                 *at = std::min(SkillTop, *at + (head ? LearnHead : LearnAlone) * step / year);
-            // The store room's restocking rule (Docs/Design/67-ridgemere2-city.md, 6; off until the user confirms it,
-            // Q2): a keeper at work brings its wares back to their starting stock, at most once a game hour.
-            if (authored_.economy.storeRule && job->role == "merchant"sv)
-                restockFromStore(id, absoluteDay);   // (Shelves and making by the crew's hours since doc 68, 7.)
             // The staged economy's morning restock (doc 79, 7.7): its wares set out to their shelf targets, once a market day,
             // the keeper seen "setting out the wares" for a few minutes.
-            if (job->role == "merchant"sv && staged() && (stagedRestock(id) || settingOut(id)))
+            if (job->role == "merchant"sv && (stagedRestock(id) || settingOut(id)))
                 life.reason = "Setting out the wares.";
         }
         if (learning && body.cell == learning->work.cell && within(hour, learning->startHour, learning->endHour))

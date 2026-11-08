@@ -336,7 +336,7 @@ Result World::steal(const std::string& thief, const std::string& victimId)
             return {true, "You find nothing in " + v->name + "'s pack worth the risk.", victimId};
         // The staged economy (doc 79, 6.5 and 9.3): a second theft in a victim's lean days finds nothing, and a player's
         // take from a staged purse is held to the day's theft cap (coins and goods together, by account holder).
-        if (society_.staged() && v->npc)
+        if (v->npc)
         {
             const std::int64_t room = t->npc ? -1 : society_.faucetRoom(thief, "theftADay");
             if (coins > 0 && room >= 0)
