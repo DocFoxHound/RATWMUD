@@ -6,6 +6,7 @@ as is.
 
   RATW_HOST_TOKEN=rh_... python3 tools/world_agent.py run --central URL --dir DIR --world-port PORT
         [--token-file FILE] [--description TEXT] [--region TEXT] [--tags a,b] [--host NAME] [--secure] [--every 60]
+        [--upnp-port PORT [--upnp-name NAME]]
 
 The world's own agent. DIR is the agent directory: the server runs with --central-keys DIR/central-keys.json, and the
 two talk through files there, each written whole and atomically (a temporary file, then a rename):
@@ -28,7 +29,7 @@ logs when the world goes on or off the list, and why. If central's reply names a
 POST URL/worlds/leave, so the world drops off the list at once. The host token comes from --token-file FILE or the
 RATW_HOST_TOKEN environment variable, never an argument (anyone on the machine can read a process's arguments).
 
-  python3 tools/world_agent.py keys --central URL --out FILE [--once] [--every SECONDS]
+  python3 tools/world_agent.py keys --central URL --out FILE [--once] [--every SECONDS] [--upnp-port PORT ...]
 
 Fetches GET URL/keys and writes it to FILE whole and atomically (a temporary file, then a rename), for the server's
 --central-keys FILE. It fetches at start, every SECONDS (a day by default: central publishes its next key a day before
@@ -43,6 +44,12 @@ to such addresses only, and is looked at again before each post); a central on t
 certificate is checked as usual, since the host token goes with every heartbeat. `keys` carries no token and takes
 either (it warns about http:// to the internet). The heartbeat and the leave never follow a redirect (the token would
 go with them), and the world's own /status is fetched straight from 127.0.0.1, never through an HTTP(S)_PROXY.
+
+With --upnp-port PORT (`run` or `keys`, not --once), the agent first tries UPnP once (tools/world_upnp.py, doc 77
+section 8): it asks the router to forward PORT (TCP) to this computer, the mapping's description naming the world
+(--upnp-name), before the first heartbeat, so central's first call-back already finds it; it renews the lease while it
+runs and removes the mapping when it stops cleanly. One line says what happened. Only where this computer is on the
+router's own network: the world package's container isn't, so there compose.yaml's upnp service does it instead.
 """
 from __future__ import annotations
 
@@ -196,16 +203,50 @@ class KeyKeeper:
             return False
 
 
-def keys_loop(central: str, out: Path, every: float, once: bool, log=print) -> int:
+class Upnp:
+    """The agent's UPnP attempt (tools/world_upnp.py): made once by `open`, renewed by `step`, removed by `close`.
+    Nothing at all without a port. `options` are world_upnp.open_mapping's (the tests' fake router)."""
+
+    def __init__(self, port: int | None, name: str, log, **options):
+        self.port, self.name, self.options, self.mapping = port, name, options, None
+        self.log = lambda line: log(f'world agent: {line}')
+
+    def open(self) -> None:
+        if self.port:
+            import world_upnp                  # (Beside this file: tools/, or /opt/ratw/tools in the image.)
+            self.mapping = world_upnp.open_mapping(self.port, self.name, self.log, **self.options)
+
+    def step(self) -> None:
+        if self.mapping is not None:
+            try:
+                self.mapping.step()
+            except Exception as error:          # (Mapping.step says its own; never the heartbeat's loop.)
+                self.log(f'UPnP: unexpected trouble renewing the mapping ({type(error).__name__}: {error})')
+
+    def close(self) -> None:
+        if self.mapping is not None:
+            try:
+                self.mapping.close()
+            except Exception as error:
+                self.log(f'UPnP: unexpected trouble removing the mapping ({type(error).__name__}: {error})')
+            self.mapping = None
+
+
+def keys_loop(central: str, out: Path, every: float, once: bool, log=print, upnp: Upnp | None = None) -> int:
     stopping = []
     for sig in (signal.SIGTERM, signal.SIGINT):
         signal.signal(sig, lambda *_: stopping.append(True))
     keeper = KeyKeeper(central, out, every, log)
+    upnp = upnp or Upnp(None, '', log)
+    if not once:
+        upnp.open()
     while not stopping:
         fetched = keeper.step(time.monotonic())
         if once and fetched is not None:
             return 0 if fetched else 1
+        upnp.step()
         time.sleep(1)
+    upnp.close()
     return 0
 
 
@@ -288,7 +329,8 @@ class Agent:
 
     def __init__(self, central: str, directory: Path, world_port: int, token: str, *, description: str | None = None,
                  region: str | None = None, tags: list[str] | None = None, host: str | None = None,
-                 secure: bool = False, every: float = 60, keys_every: float = 86400, log=print):
+                 secure: bool = False, every: float = 60, keys_every: float = 86400, log=print,
+                 upnp_port: int | None = None, upnp_name: str = ''):
         self.central = central.rstrip('/')
         self.dir = directory
         self.world_port = world_port
@@ -316,6 +358,7 @@ class Agent:
         self.plain = urllib.parse.urlsplit(self.central).scheme != 'https'
         self.online_note = None
         self.clock_said = False
+        self.upnp = Upnp(upnp_port, upnp_name, log)
 
     def say(self, state, line: str) -> None:
         if state != self.state:
@@ -477,9 +520,11 @@ class Agent:
     def run(self) -> int:
         self.log(f'world agent: heartbeats every {self.every:g} s for the world on port {self.world_port}, to '
                  f'{self.central} (agent directory {self.dir})')
+        self.upnp.open()
         next_beat = 0.0
         while not self.stop.is_set():
             now = time.monotonic()
+            self.upnp.step()
             try:
                 self.keys.step(now)
             except Exception as error:          # (KeyKeeper.step says its own; this is a last resort.)
@@ -494,6 +539,7 @@ class Agent:
             self.stop.wait(min(0.5, self.every))
         if self.accepted and not self.halted:
             self.leave()
+        self.upnp.close()
         return 0
 
 
@@ -518,7 +564,13 @@ def main(argv=None) -> int:
     keys.add_argument('--out', required=True, type=Path, help='the file (the server\'s --central-keys)')
     keys.add_argument('--every', type=float, default=86400, help='seconds between fetches (default a day)')
     keys.add_argument('--once', action='store_true', help='fetch once and stop')
+    for command in (run, keys):
+        command.add_argument('--upnp-port', type=int,
+                             help='try UPnP once: ask the router to forward this TCP port here (tools/world_upnp.py)')
+        command.add_argument('--upnp-name', default='', help='the world\'s name, in the mapping\'s description')
     args = parser.parse_args(argv)
+    if args.upnp_port is not None and not 0 < args.upnp_port < 65536:
+        parser.error('--upnp-port is 1-65535')
     if not re.match(r'^https?://', args.central):
         parser.error('--central is http(s)://...')
     log = lambda line: print(line, flush=True)   # noqa: E731
@@ -542,7 +594,8 @@ def main(argv=None) -> int:
             return 2
         tags = [t.strip() for t in args.tags.split(',') if t.strip()] if args.tags else None
         agent = Agent(args.central, args.dir, args.world_port, token, description=args.description, region=args.region,
-                      tags=tags, host=args.host, secure=args.secure, every=args.every, log=log)
+                      tags=tags, host=args.host, secure=args.secure, every=args.every, log=log,
+                      upnp_port=args.upnp_port, upnp_name=args.upnp_name)
         for sig in (signal.SIGTERM, signal.SIGINT):
             signal.signal(sig, lambda *_: agent.stop.set())
         return agent.run()
@@ -550,7 +603,8 @@ def main(argv=None) -> int:
         if plain_http_allowed(args.central)[0] is False:
             log(f'world agent: warning: {args.central} is http:// to the internet: keys fetched in clear could be '
                 'swapped on the way; use https://')
-        return keys_loop(args.central, args.out, max(60.0, args.every) if not args.once else args.every, args.once, log=log)
+        return keys_loop(args.central, args.out, max(60.0, args.every) if not args.once else args.every, args.once, log=log,
+                         upnp=Upnp(args.upnp_port, args.upnp_name, log))
     return 2
 
 

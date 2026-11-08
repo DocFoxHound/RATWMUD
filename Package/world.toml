@@ -55,5 +55,12 @@ cost_mode = "balanced"
 # The game's worker threads. Leave it out to use the CPUs Docker gives the container, less two (0-16).
 # workers = 2
 
+
+[network]
 # The port is set beside compose.yaml, not here: RATW_PORT in .env (default 7788). Players and central reach the
-# world on it, so open it on your router (TCP).
+# world on it, so it must be open on your router (TCP, to this computer).
+# UPnP: when the world starts, ask the router to forward that port to this computer (for an hour at a time, renewed
+# while the world runs, and removed when it stops). It can only work on Linux with Docker Engine; under Docker
+# Desktop or rootless Docker, behind carrier-grade NAT, or with UPnP off on the router it can't, and
+# `docker compose logs upnp` says so: then forward the port by hand. Central's call-back says whether it is open.
+upnp = true

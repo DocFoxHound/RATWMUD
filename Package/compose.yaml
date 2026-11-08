@@ -5,6 +5,11 @@
 #          root, reads this folder and the passwords, and starts each child as a user of its own (the server as one
 #          that can reach none of the secrets: Package/entrypoint.py).
 #   db     PostgreSQL 18, the world's database, on the internal network only (no port on this computer).
+#   upnp   asks the router (UPnP) to forward the game port to this computer while the world runs, as world.toml's
+#          [network] upnp says. On the host's own network, since the world's isn't the router's: only that reaches the
+#          router's search. It works on Linux with Docker Engine; Docker Desktop (a VM) and rootless Docker keep even
+#          the host's network from the router, and it then says to forward the port by hand. It reads world.toml's
+#          name and that setting only (the file alone is mounted: no token, key or password), and listens on nothing.
 #
 # Settings in a .env file beside this one (optional): RATW_PORT (default 7788; players and central reach the world on
 # it, and it is the same port inside the container), RATW_HOST_TOKEN (the host token from central's Host page, if not
@@ -47,6 +52,20 @@ services:
     # The world saves on SIGTERM before it stops: give it time.
     stop_grace_period: 90s
     # mem_limit: 2g
+  upnp:
+    image: ${RATW_IMAGE:-ratw-world:latest}
+    restart: unless-stopped
+    network_mode: host
+    entrypoint: ["python3", "/opt/ratw/tools/world_upnp.py", "hold", "--port", "${RATW_PORT:-7788}",
+                 "--settings", "/etc/ratw-upnp/world.toml"]
+    # Root only to read world.toml if the host made it private to them (chmod 600); no other power.
+    cap_drop: [ALL]
+    cap_add: [DAC_READ_SEARCH]
+    security_opt: ["no-new-privileges:true"]
+    volumes:
+      - ./world.toml:/etc/ratw-upnp/world.toml:ro
+    # On a stop it removes the router's mapping (a few seconds at most).
+    stop_grace_period: 20s
   db:
     image: postgres:18
     restart: unless-stopped

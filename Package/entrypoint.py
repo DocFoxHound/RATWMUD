@@ -22,6 +22,9 @@ and start the children; each child runs as a user of its own. One container hold
 5. Runs ratw_server, forwarding SIGTERM and SIGINT to it. Exit 75 (a new release, nobody on) starts it again; 76
    (closed for maintenance) waits a minute and tries again; any other code stops the Mind and the agent and leaves
    with the server's code. A Mind or agent that stops on its own is started again (at most once a minute).
+6. UPnP (world.toml's [network] upnp, default true) isn't tried here: this container is on Docker's own network, from
+   which the router's search can't be reached. compose.yaml's upnp service tries it from the host's network
+   (tools/world_upnp.py hold); this only checks the setting and says where to look.
 
 Each child is given only the secrets it needs, in its environment: the import the superuser's and the owner's
 passwords; the Mind the game role's password and the AI key; the agent the host token. Those three run as ratw, so
@@ -153,9 +156,9 @@ def read_settings() -> dict:
         raw = tomllib.loads(read_host_file(SETTINGS, 'world.toml'))
     except tomllib.TOMLDecodeError as error:
         fail(f'world.toml is not valid TOML: {error}')
-    world, central, ai, server_ = (raw.get(t, {}) for t in ('world', 'central', 'ai', 'server'))
-    if not all(isinstance(t, dict) for t in (world, central, ai, server_)):
-        fail('world.toml: [world], [central], [ai] and [server] are tables.')
+    world, central, ai, server_, network = (raw.get(t, {}) for t in ('world', 'central', 'ai', 'server', 'network'))
+    if not all(isinstance(t, dict) for t in (world, central, ai, server_, network)):
+        fail('world.toml: [world], [central], [ai], [server] and [network] are tables.')
     tags = world.get('tags', [])
     if not isinstance(tags, list) or not all(isinstance(t, str) for t in tags):
         fail('world.toml: tags is a list of words, ["a", "b"].')
@@ -177,6 +180,7 @@ def read_settings() -> dict:
         'models': {k: text(ai, k, v, 128) for k, v in DEFAULT_MODELS.items()},
         'cost_mode': text(ai, 'cost_mode', 'balanced', 16),
         'workers': number(server_, 'workers', None, 0, 16),
+        'upnp': flag(network, 'upnp', True),
     }
     if not s['name']:
         fail('world.toml: give the world a name ([world] name = "...").')
@@ -495,6 +499,14 @@ def server_command(s: dict, port: int, agent_dir: Path, dialogue: bool, workers:
     return command
 
 
+def upnp_note(s: dict, port: int) -> str:
+    if not s['upnp']:
+        return (f'UPnP is off (world.toml: [network] upnp = false): forward port {port} (TCP) on your router to this '
+                'computer by hand')
+    return (f'UPnP: the upnp service asks the router to forward port {port} (TCP) here; `docker compose logs upnp` '
+            'says whether it could (only on Linux with Docker Engine; otherwise forward it by hand)')
+
+
 def on_signal(number, _frame) -> None:
     global stopping
     stopping = True
@@ -520,6 +532,7 @@ def main() -> int:
     prepare_state()
     workers = s['workers'] if s['workers'] is not None else default_workers()
     say(f'"{s["name"]}": on central {s["central"]} as {s["world_id"]}, port {port}, {workers} worker thread(s)')
+    say(upnp_note(s, port))
 
     write_registry(s['name'])
     wait_for_database()
