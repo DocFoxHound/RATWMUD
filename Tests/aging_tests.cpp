@@ -55,14 +55,18 @@ int main()
         check(!loaded.restore(damaged).ok && loaded.entity("player-age")->age == 19,
               "New-format resident life cannot restore without its physical NPC record");
         damaged = clean;
-        damaged.society.accounts.at("player-age").cash += 1;
-        check(!loaded.restore(damaged).ok && loaded.society().conserved() && loaded.calendarDays() == before &&
+        damaged.society.accounts.at("player-age").cash = -1;
+        check(!loaded.restore(damaged).ok && loaded.society().realBalanced() && loaded.calendarDays() == before &&
                   loaded.entity("player-age")->age == 19,
-              "Broken money conservation rejects the combined age/calendar/society checkpoint atomically");
+              "A broken real purse (negative) rejects the combined age/calendar/society checkpoint atomically");
         damaged = clean;
         damaged.society.accounts.erase("npc_keeper");
-        check(!loaded.restore(damaged).ok && loaded.society().account("npc_keeper") && loaded.society().conserved(),
-              "Missing required NPC economy account cannot partially replace live society");
+        {
+            // (Doc 79, 14: a resident's purse is staged; one missing is made again, not a refusal.)
+            ratw::World again;
+            check(again.restore(damaged).ok && again.society().account("npc_keeper") && again.society().realBalanced(),
+                  "A missing NPC (staged) account is made again at restore");
+        }
         damaged = clean;
         damaged.society.accounts.at("treasury").cash += damaged.society.accounts.at("player-age").cash;
         damaged.society.accounts.erase("player-age");
@@ -81,7 +85,7 @@ int main()
         const auto initialGrant = loaded.society().account("player-age")->cash;
         const auto initialTreasury = loaded.society().account("treasury")->cash;
         check(loaded.restore(clean).ok && loaded.society().account("player-age")->cash == initialGrant &&
-                  loaded.society().account("treasury")->cash == initialTreasury && loaded.society().conserved(),
+                  loaded.society().account("treasury")->cash == initialTreasury && loaded.society().realBalanced(),
               "Reload does not repeat a welcome grant or replenish the settlement treasury");
         auto* customer = loaded.entity("player-age");
         customer->cellId = "exterior";
@@ -92,8 +96,8 @@ int main()
         customer->cellId = "tavern";
         customer->position = {9.5, 7.5};
         loaded.entity("npc_keeper")->position = {9.5, 6.5};
-        check(loaded.trade(customer->id, "npc_keeper", "meal", 1, true).ok && loaded.society().conserved(),
-              "A nearby visible merchant performs an actual conserved transaction");
+        check(loaded.trade(customer->id, "npc_keeper", "meal", 1, true).ok && loaded.society().realBalanced(),
+              "A nearby visible merchant performs an actual transaction, real money balanced");
         const auto traded = loaded.save();
         ratw::World tradedReload;
         check(tradedReload.restore(traded).ok &&

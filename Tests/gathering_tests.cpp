@@ -210,7 +210,7 @@ void boards()
     t.run(2);
     board(t.ash, {{"verb", "read"}});
     expect(t.ash.last("board")->array("notices").empty(), "seven days on, the board is bare");
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     fs::remove_all(root);
 }
 
@@ -299,7 +299,7 @@ void lodgings()
     expect(society.account(t.ash.entityId)->cash >= before, "with the rest of the rent returned (or none left to return)");
     said = lodge(t.ash, {{"verb", "ask"}, {"target", "u1"}});
     expect(contains(said, "promised it to someone"), "held: no new lodging there: " + said);
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     fs::remove_all(root);
 }
 
@@ -397,7 +397,7 @@ void stalls()
             society.create(t.bo.entityId, g.id, 1, "test"), ++kinds;
     said = stall(t.bo, {{"verb", "buy"}, {"id", here.string("id")}, {"item", rare}, {"quantity", 1}});
     expect(contains(said, "another kind"), "64 kinds: refused: " + said);
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     // At 2 the stall clears, and her meals come home.
     toHour(calendar::Marketday, 14.2);
     expect(!t.selfOf(t.ash).has("stall") || !t.selfOf(t.ash).object("stall").has("mine"), "cleared at 2");
@@ -423,7 +423,7 @@ void stalls()
     expect(rented < unrented && society.account(t.ash.entityId)->cash == unrented, "a storm: the stall cleared and the fee returned");
     said = stall(t.ash, {{"verb", "rent"}});
     expect(contains(said, "too foul"), "no stalls in a storm: " + said);
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     fs::remove_all(root);
 }
 
@@ -527,7 +527,7 @@ void tables()
     expect(farthest < 2.5, "the resident kept to its seat through the game");
     expect(house == 1 || !till, "the house's penny to the inn's till");
     expect(!w.seatedResident("u1"), "the resident let go");
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     // Wolves and Deer: Bo leaves; Ash wins.
     t.run(61);
     table(t.ash, {{"verb", "start"}, {"game", "wolves"}});
@@ -610,7 +610,7 @@ void festivals()
     expect(contains(heard, "Home, in") && contains(heard, "The steward calls"), "Ash runs the race home and the winner is called: " + heard);
     auto programme = t.selfOf(t.ash).object("festival").array("programme");
     expect(programme[1].string("state") == "done" && programme[1].has("winner"), "the race done, with a winner");
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     // 14:00 the tug: pulls on the beat.
     t.place(t.ash, 1, 8.5, 9.5);
     toHour(14.01);
@@ -666,7 +666,7 @@ void festivals()
     programme = t.selfOf(t.ash).object("festival").array("programme");
     expect(programme[6].string("state") == "done" && programme[6].string("winner") == "You", "Ash wins the storytelling: " + json::dump(programme[6]));
     expect(society.account(t.ash.entityId)->cash > ashCash, "the pot (with the town's share) paid");
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     (void)treasury;
     fs::remove_all(root);
 }
@@ -793,7 +793,7 @@ void archive()
     const auto* journal = t.ash.last("journal");
     expect(journal && journal->array("lore").size() == 5 && journal->array("herbarium").size() == 1 && !journal->array("places").empty(),
            "the journal: lore, the herbarium and places");
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     fs::remove_all(root);
 }
 } // namespace

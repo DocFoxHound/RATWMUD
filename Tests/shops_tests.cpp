@@ -51,7 +51,7 @@ Society town(std::int64_t treasury = 500)
                         person("smith", "the smith at the forge", {"forge", 2.5, 2.5}), person("farmer", "farms the valley fields", {"fields", 4.5, 4.5}, "civilian"),
                         person("idler", "-", {"square", 3.5, 3.5}, "civilian")};
     roster.economy.treasury = treasury;
-    roster.economy.needsPaused = true;              // (Phase 5's pause, a switch since doc 68: the loop is country_tests'.)
+    roster.economy.needsPaused = true;              // (Needs paused: nobody grows hungry, nobody is fed.)
     Society s(Roster::None);
     s.configure(roster);
     return s;
@@ -98,8 +98,9 @@ void shopsHoldTheirStock()
     for (const auto& ware : wares)
         stocked += Society::stock(*s.account(till), ware) > 0;
     expect(stocked > 0, "with its wares on its shelves from the start");
-    expect(s.account(till)->cash == 200 && s.account("baker")->cash == 200, "its money its founder's purse's worth, made; the keeper's own kept");
-    expect(s.conserved(), "money is conserved");
+    // (Doc 79, 7.5: no founding money is made for a till; the Board sets it to what it pays when it buys.)
+    expect(s.account(till)->cash == 0 && s.account("baker")->cash == 200, "no money made for its till; the keeper's own kept");
+    expect(s.realBalanced(), "real money is balanced");
     // A player buys at the catalogue's price, and sells at SellBackShare of it.
     s.addPlayer("player-ada");
     const auto start = s.account("player-ada")->cash;
@@ -120,7 +121,7 @@ void shopsHoldTheirStock()
     const auto sold = s.trade("player-ada", "tanner", "hide~fine", 2, false);
     expect(sold.ok && Society::stock(*s.account(s.tillOf("tanner")), "hide~fine") == 2, "sold, onto the tanner's shelves: " + sold.message);
     expect(!s.quote("player-ada", "tanner", "hide~fine", 99, false).ok, "nobody sells what they haven't got");
-    expect(s.conserved(), "money is conserved");
+    expect(s.realBalanced(), "real money is balanced");
 }
 
 // No cap on what a single piece costs (the user, 2026-10-30): a dear price is paid when the buyer can pay; only a total
@@ -137,7 +138,7 @@ void noCapOnAPiece()
     expect(!s.sale("smith", "player-ada", "sword", 2, 12000, "test: dearer"), "not what she can't pay");
     expect(!s.sale("smith", "player-ada", "sword", 2, std::numeric_limits<std::int64_t>::max() / 2 + 1, "test: overflow"),
            "a price whose total would overflow is refused");
-    expect(s.conserved(), "money is conserved");
+    expect(s.realBalanced(), "real money is balanced");
 }
 
 void residentsGoAboutTheirDays()
@@ -156,12 +157,21 @@ void residentsGoAboutTheirDays()
         now += 1. / calendar::SecondsPerDay;
         s.tick(1, now, 0, bodies);
     }
-    expect(s.conserved(), "money is conserved");
+    expect(s.realBalanced(), "real money is balanced");
     const auto journal = s.takeJournal();
     expect(journal.empty(), "nobody bought, made, paid or used anything (" + std::to_string(journal.size()) + " entries)");
+    // (Doc 79, 7.7: a shop's keeper at work sets its wares out each morning to their shelf targets, a raw stock change and
+    // no money; every other account is as it was.)
     for (const auto& [id, a] : s.state().accounts)
-        expect(before.accounts.count(id) && before.accounts.at(id).cash == a.cash && before.accounts.at(id).stock == a.stock,
-               "every account as it was: " + id);
+    {
+        expect(before.accounts.count(id) && before.accounts.at(id).cash == a.cash, "every account's money as it was: " + id);
+        if (id.rfind("till:", 0) != 0)
+            expect(before.accounts.at(id).stock == a.stock, "every purse's goods as they were: " + id);
+        else
+            for (const auto& [item, n] : a.stock)
+                expect(n >= Society::stock(before.accounts.at(id), item) && n <= std::max(Society::stock(before.accounts.at(id), item), s.shelfTarget(id, item)),
+                       "a till's shelf set out, never past its target: " + id + " " + item);
+    }
     for (const auto& [id, life] : s.state().residents)
         expect(life.hunger == before.residents.at(id).hunger, "hunger paused: " + id + " at " + std::to_string(life.hunger));
     // At work in their hours, asleep at night.
@@ -193,10 +203,10 @@ void anOlderSaveLoads()
     old.add("memory", json::Value::object());
     old.add("orchestrator", json::Value::object());
     const auto read = wire::readSociety(old);
-    expect(read.minted >= 0 && read.accounts.size() == s.state().accounts.size(), "the older save is read");
+    expect(read.nextEntry > 0 && read.accounts.size() == s.state().accounts.size(), "the older save is read");
     expect(s.restore(read), "and restores");
     const auto again = wire::readSociety(saved);
-    expect(again.minted >= 0, "and a save of now reads too");
+    expect(again.nextEntry > 0, "and a save of now reads too");
 }
 } // namespace
 

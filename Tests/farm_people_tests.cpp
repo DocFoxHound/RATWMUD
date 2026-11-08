@@ -171,11 +171,7 @@ void build(Fixture& x)
     auto guarded = person("guarded", "works the fields at Wheatley", 58);
     guarded.protectedNpc = true;
     r.unplaced.push_back(guarded);
-    r.economy.treasury = 20000;
-    r.economy.storeRule = true;
-    r.economy.rules = {{"stockPrices", 0}, {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}, {"surplus", 0}, {"patrons", 0}};
-    for (const auto& a : items::farms().areas)
-        r.economy.farms.areas[a.id].on = 1;   // (Every area on from the first day.)
+    r.economy.treasury = 20000;                     // (Every area's farms are places of work from the first day: doc 79.)
     for (const auto& u : r.unplaced)
         x.unplacedAtStart.insert(u.id);
     for (const auto& u : r.residents)
@@ -286,13 +282,12 @@ void thePlacement()
     Fixture x;
     build(x);
     auto& s = x.s;
-    run(s, 1 - .5 / 24, 1 + .5 / 24);               // (The farms founded at the day's turn.)
+    run(s, 1 - .5 / 24, 1 + .5 / 24);
+    // (Doc 79, 17: a farm is a place of work, no till or crew account; its posts wait for their people.)
     for (const auto& f : s.farms())
-        expect(s.account(f.till) && s.account(f.crew) && f.heads() == f.crewSize(), f.def->id + " founded, all its crew virtual");
-    const auto mintedBefore = s.state().minted;
-    std::int64_t crewPurses = 0;
-    for (const auto& f : s.farms())
-        crewPurses += s.cash(f.crew);
+        expect(!s.account("farm:" + f.def->id) && !s.account("crew:" + f.def->id) && f.heldKeepers == 0 && f.heldHands == 0,
+               f.def->id + ": no money of its own, its posts to fill");
+    const auto realBefore = s.realTotal();
     const auto residentsBefore = s.state().residents.size();
     const auto unplacedBefore = s.unplacedCount();
     s.tendCareers(2, x.world);
@@ -328,7 +323,6 @@ void thePlacement()
     {
         expect(f.postKeepers == f.keepers && f.postHands == f.hands && f.heldKeepers == f.keepers && f.heldHands == f.hands,
                f.def->id + "'s posts all real and held: " + std::to_string(f.postKeepers) + "+" + std::to_string(f.postHands));
-        expect(f.heads() == 0 && f.virtualWages() == 0 && std::abs(f.working() - 1) < 1e-9, f.def->id + ": no virtual post left");
         keepers += f.keepers, hands += f.hands;
     }
     expect(keepers == 39 && hands == 93, "39 keepers and 93 hands placed (doc 72's works' 8 and 17 among them): " +
@@ -364,9 +358,9 @@ void thePlacement()
                 keeper = s.state().careers.positions.at(p.id).holder;
             if (s.farmOfPost(p) >= 0 && s.farms()[std::size_t(s.farmOfPost(p))].def == f.def)
             {
-                const auto pay = s.payOf(p);
-                expect(pay.kind == "farm" && pay.payer == f.till && pay.wage == (isKeeper ? f.keeper : f.hand),
-                       p.title + ": paid by its farm's till at its fixed wage");
+                const auto kind = s.postKind(p);
+                expect(kind.kind == "farm" && kind.farm == s.farmOfPost(p) && kind.farmKeeper == isKeeper,
+                       p.title + ": its farm's post (doc 79, 6.3: a farm's kind, no wage paid)");
             }
         }
         expect(!keeper.empty() && s.resident(keeper)->homeCell == site.home.area, site.farm + "'s keeper lives at its farmhouse");
@@ -473,56 +467,17 @@ void thePlacement()
         expect(s.account("till:job:" + keeper), cell + "'s till opened");
         expect(s.resident(keeper)->homeCell.rfind("cn_", 0) == 0, cell + "'s keeper lives in its community");
     }
-    // Money: the crews' founding purses went to those who took their posts (moved); only the market shops' floats were
-    // made, counted with the farms' founding.
-    std::int64_t made = 0, shared = 0;
-    for (const auto& [cell, keeper] : keeperOf)
-        made += s.spec(keeper)->purse;
-    expect(s.state().minted == mintedBefore + made && s.conserved(), "only the market shops' floats made, counted: conserved");
-    for (const auto& f : s.farms())
-        shared += s.cash(f.crew);
-    std::int64_t theirs = 0;
+    // Money (doc 79, 6.5): the newcomers' purses are staged, set nightly by their band; no real money is made or moved.
+    expect(s.realTotal() == realBefore && s.realBalanced(), "no real money made by the placements");
     for (const auto& r : requests)
-        if (r.purseFrom.rfind("crew:", 0) == 0)
-            theirs += s.cash(r.templateId);
-    expect(theirs + shared == crewPurses, "the crews' purses are their people's now, no more and no less: " + std::to_string(theirs) +
-                                              " + " + std::to_string(shared) + " = " + std::to_string(crewPurses));
-    // A day's work: wages from the farms' tills to their holders at the fixed wages; the crews' last pennies and larders to
-    // the keepers; the community stores selling; conserved.
-    run(s, 2 + .5 / 24, 2 + .6 / 24);              // (The hours since the day's turn caught up first: day 1's wages.)
-    s.takeJournal();
-    run(s, 2 + .6 / 24, 3 + .5 / 24);
-    const auto journal = s.takeJournal();       // (Every entry since: the saved ledger keeps only 128.)
-    std::map<std::string, std::int64_t> wages;
-    std::map<std::string, int> sold;                // By community store: its sales to the realm's households.
-    std::map<std::string, std::string> tillAt;
-    for (const auto& [cell, keeper] : keeperOf)
-        tillAt["till:job:" + keeper] = cell;
-    for (const auto& e : journal)
-    {
-        if (e.kind == "wages" && e.from.rfind("farm:", 0) == 0)
-            wages[e.to] += e.coins;
-        // (A sale: the buyer's coins to the till; a buyer of the community's own or its farms'.)
-        if (const auto at = tillAt.find(e.to); e.kind == "market" && at != tillAt.end() && s.resident(e.from) &&
-                                               communityOf(s.resident(e.from)->homeCell) == communityOf(at->second))
-            ++sold[at->second];
-    }
+        expect(s.cash(r.templateId) <= Society::ArrivalPurse, r.templateId + ": a plain arrival's purse at most");
+    // A day on: the posts still held, every placed resident kept (food by band), no real money made.
+    run(s, 2 + .5 / 24, 3 + .5 / 24);
     for (const auto& f : s.farms())
-        for (const auto& p : s.positions())
-            if (s.farmOfPost(p) >= 0 && s.farms()[std::size_t(s.farmOfPost(p))].def == f.def)
-            {
-                bool isKeeper = false;
-                s.farmOfPost(p, &isKeeper);
-                const auto& holder = s.state().careers.positions.at(p.id).holder;
-                expect(wages[holder] == (isKeeper ? f.keeper : f.hand), p.title + " paid " + std::to_string(wages[holder]));
-            }
-    for (const auto& f : s.farms())
-        expect(s.cash(f.crew) == 0, f.def->id + "'s crew holds nothing now (its people's)");
-    // (A community's market is staffed with its first farm or works: Oakhaven's with the Oakhaven cut, doc 72.)
-    for (const auto& c : people.communities)
-        if (std::any_of(people.farms.begin(), people.farms.end(), [&](const auto& f) { return f.community == c.id; }))
-            expect(sold["cn_" + c.id + "_store"] > 0, c.name + "'s store sold to its own households: " + std::to_string(sold["cn_" + c.id + "_store"]));
-    expect(s.conserved(), "a day on: conserved");
+        expect(f.heldKeepers == f.keepers && f.heldHands == f.hands, f.def->id + "'s posts still held a day on");
+    for (const auto& r : requests)
+        expect(s.resident(r.templateId) && s.statusOf(r.templateId), r.templateId + " banded a day on");
+    expect(s.realBalanced(), "a day on: real money balanced");
     // Placed once: the next day asks for nobody.
     s.tendCareers(3, x.world);
     const auto again = s.takeRequests();
@@ -537,9 +492,7 @@ void thePlacement()
     s.died(gone, 3.2);
     run(s, 3.9, 4 + .5 / 24);
     const auto& after = farm(s, "pig_farm_1");
-    expect(after.heldHands == after.hands - 1 && after.heads() == 0, "its post stands empty, and no virtual post comes back");
-    expect(std::abs(after.working() - double(after.crewSize() - 1) / after.crewSize()) < 1e-9,
-           "a hand short: it yields in proportion, " + std::to_string(after.working()));
+    expect(after.heldHands == after.hands - 1 && after.postHands == after.hands, "its post stands empty, a hand short");
 }
 
 void theWorksCrews()
@@ -579,8 +532,7 @@ void theWorksCrews()
                 continue;
             keepers += isKeeper;
             expect(p.work.cell == site.workplaces[0].area, p.title + ": at its works' cell");
-            const auto pay = s.payOf(p);
-            expect(pay.kind == "farm" && pay.payer == f.till && pay.wage == (isKeeper ? 16 : 10), p.title + ": paid by the works' till");
+            expect(s.postKind(p).kind == "farm", p.title + ": a works' post");
             const auto& holder = s.state().careers.positions.at(p.id).holder;
             const auto& home = s.resident(holder)->homeCell;
             if (site.community == "ridgemere")
@@ -593,7 +545,7 @@ void theWorksCrews()
                        site.farm + "'s keeper in the keeper's house the map built for it: " + home);
             if (site.farm == "peat_fens")
                 expect(trade == "keeps the house" || trade == "service and labour", "the peat's crew of those who keep the house: " + oldLabel.at(holder));
-            else if (f.house == "Greatly" || site.farm == "mine_frost_iron")
+            else if (f.def->area == "stone" || f.def->area == "lime" || site.farm == "mine_frost_iron")   // (Greatly's, and the mine.)
             {
                 const auto& old = oldLabel.at(holder);
                 const char* word = site.farm == "quarry_granite" ? "cutting stone" : site.farm == "mine_frost_iron" ? "digs ore"
@@ -627,11 +579,10 @@ void theWorksCrews()
     for (const auto* id : {"clay_mirebridge", "clay_fens"})
     {
         const auto& pit = farm(s, id);
-        expect(pit.keepers == 0 && pit.hands == 1 && pit.postKeepers == 0 && pit.heldHands == 1 && pit.heads() == 0 &&
-                   std::abs(pit.working() - 1) < 1e-9 && pit.house == "Greatly",
-               std::string(id) + ": no keeper, its one hand placed and working, House Greatly's");
+        expect(pit.keepers == 0 && pit.hands == 1 && pit.postKeepers == 0 && pit.heldHands == 1 && pit.def->area == "stone",
+               std::string(id) + ": no keeper, its one hand placed, the stone's");
     }
-    expect(s.conserved(), "conserved");
+    expect(s.realBalanced(), "real money balanced");
 }
 
 void aWorksPostFilledAgain()
@@ -686,7 +637,7 @@ void aWorksPostFilledAgain()
         expect(communityOf(home) == (works == "clay_fens" ? "southmeadow" : "ridgemere"), works + "'s new hand lives with its crew: " + home);
         expect(home.rfind("fs_", 0) != 0, works + "'s new hand not in a farmhouse (its keeper's family's alone): " + home);
     }
-    expect(s.conserved(), "conserved");
+    expect(s.realBalanced(), "real money balanced");
 }
 
 void nothingWithoutThePlaces()
@@ -701,7 +652,7 @@ void nothingWithoutThePlaces()
     x.s.tendCareers(2, x.world);
     expect(x.s.takeRequests().empty(), "no places, nobody placed");
     for (const auto& f : x.s.farms())
-        expect(f.heads() == f.crewSize(), "the crews stay virtual");
+        expect(f.heldKeepers == 0 && f.heldHands == 0, "the posts stay empty");
     // And without the world's answer at all (Society alone, as the farms' own tests run): nobody.
     Fixture y;
     build(y);
@@ -711,24 +662,23 @@ void nothingWithoutThePlaces()
     expect(y.s.takeRequests().empty(), "no world to ask, nobody placed");
 }
 
-void nothingUntilSwitched()
+void everyAreaAtOnce()
 {
-    // Before a farm's area is on (and its till founded) nobody is placed for it.
+    // The farms' area switch went with their money (doc 79, 17): every farm and works is a place of work from the first
+    // day, and its people are asked for at once, with its community's market.
     Fixture x;
     build(x);
-    auto e = x.s.authored().economy;
-    for (auto& [id, a] : e.farms.areas)
-        a.on = id == "grain" ? 1 : 0;
-    x.s.adoptEconomy(e);
     run(x.s, 1 - .5 / 24, 1 + .5 / 24);
     x.s.tendCareers(2, x.world);
     const auto requests = x.s.takeRequests();
     std::set<std::string> farms;
     for (const auto& r : requests)
         farms.insert(r.farm);
-    expect(!requests.empty() && farms.size() == 4 && farms.count("grain_farm_1") && farms.count("grain_farm_2") &&
-               farms.count("market:larkfield") && farms.count("market:southmeadow"),
-           "only the grain farms' people, and their two communities' markets: " + std::to_string(farms.size()));
+    for (const auto& f : x.s.farms())
+        expect(farms.count(f.def->id), f.def->id + "'s people asked for on the first day");
+    for (const auto& c : items::farmPeople().communities)
+        if (std::any_of(items::farmPeople().farms.begin(), items::farmPeople().farms.end(), [&](const auto& f) { return f.community == c.id; }))
+            expect(farms.count("market:" + c.id), c.id + "'s market staffed with its farms");
 }
 } // namespace
 
@@ -744,7 +694,7 @@ int main()
         theWorksCrews();
         aWorksPostFilledAgain();
         nothingWithoutThePlaces();
-        nothingUntilSwitched();
+        everyAreaAtOnce();
     }
     catch (const std::exception& error)
     {

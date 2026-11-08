@@ -286,7 +286,7 @@ ResidentSpec person(const std::string& id, const std::string& work, Spot home, i
     r.purse = 30;
     return r;
 }
-AuthoredRoster street(int households, bool staged = true)
+AuthoredRoster street(int households)
 {
     AuthoredRoster roster;
     for (int i = 0; i < households; ++i)
@@ -296,8 +296,6 @@ AuthoredRoster street(int households, bool staged = true)
     roster.residents.push_back(person("sumpman", "unloading ships at the piers", {"sump_rents_10", 2.5, 2.5}));
     roster.residents.push_back(person("heightsman", "at lessons", {"vance_grounds", 2.5, 2.5}));
     roster.residents.push_back(person("sleeper", "unloading ships at the piers", {}));
-    if (staged)
-        roster.economy.rules["staged"] = 1;
     return roster;
 }
 struct World
@@ -342,13 +340,6 @@ void theGuaranteesInOrder()
         expect(st != nullptr, id + " banded");
         expect(st->band != status::Destitute || st->reason, id + ": destitute only with a reason");
     }
-    // Off, nothing is banded. (Not where RATW_STAGED_ECONOMY forces it on.)
-    if (Society::stagedForced())
-        return;
-    Society off(Roster::None);
-    off.configure(street(5, false));
-    off.tendCareers(1.3, w.world(off));
-    expect(off.statusOf("w1") == nullptr, "the staged economy off: no bands");
 }
 
 void theSliderSmoothed()
@@ -418,7 +409,7 @@ void threadsAndSaves()
     expect(json::parse(text, back, error), "the save parses");
     expect(back.has("staged"), "the save holds the staged state");
     const auto state = wire::readSociety(back);
-    expect(state.minted >= 0, "the save reads back valid");
+    expect(state.nextEntry > 0, "the save reads back valid");
     expect(state.staged.bands.size() == one.state().staged.bands.size() && state.staged.hour == one.state().staged.hour &&
                state.board.slider == one.state().board.slider,
            "the staged state round-trips");
@@ -428,12 +419,6 @@ void threadsAndSaves()
     for (const auto& [id, life] : one.state().residents)
         expect(again.statusOf(id) && again.statusOf(id)->band == one.statusOf(id)->band, "no band jumps at a restart: " + id);
     expect(json::dump(wire::society(again.state())) == text, "a restore writes back the same save");
-    // Off: no staged field at all (save_compat's purses and escrow untouched).
-    if (Society::stagedForced())
-        return;
-    Society off(Roster::None);
-    off.configure(street(5, false));
-    expect(!wire::society(off.state()).has("staged"), "the staged economy off: nothing staged saved");
 }
 
 void neverHungryAndShortDays()

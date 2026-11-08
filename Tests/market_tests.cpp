@@ -1,5 +1,5 @@
-// The Market Board (Docs/Design/79-a-staged-economy.md, 5 and 7; Phase 1; Core/RatwMarket.*), with the rule `staged` on
-// in each test's own world (never the environment's): pressure from players' trade at the tills, its decay, the
+// The Market Board (Docs/Design/79-a-staged-economy.md, 5 and 7; Phase 1; Core/RatwMarket.*), in each test's own
+// world: pressure from players' trade at the tills, its decay, the
 // per-piece ladder and the per-holder cap, the morning's ripples through recipes, the shown dozen, the budget, take
 // allowance and sell total with their reasons, the morning restock, the Board saved and restored, the markets the world
 // finds, the faction discount's weekly cap. And with the rule off: the old price path, untouched, and nothing saved.
@@ -66,10 +66,10 @@ struct Shop
 {
     std::string id, work, market;
 };
-// A staged world of these shops (and two townsfolk), the rule on in its own economy; its markets as given, each with
+// A world of these shops (and two townsfolk); its markets as given, each with
 // its catchment; `rules`, more of the world's own.
 Society world(const std::vector<Shop>& shops, const std::map<std::string, double>& catchments,
-              const std::map<std::string, int>& rules = {}, bool staged = true)
+              const std::map<std::string, int>& rules = {})
 {
     AuthoredRoster roster;
     int n = 0;
@@ -80,8 +80,6 @@ Society world(const std::vector<Shop>& shops, const std::map<std::string, double
     roster.economy.treasury = 100000;
     roster.economy.needsPaused = true;
     roster.economy.rules = rules;
-    if (staged)
-        roster.economy.rules["staged"] = 1;
     Society s(Roster::None);
     s.configure(roster);
     if (!catchments.empty())
@@ -395,7 +393,7 @@ void theShopsLimits()
     expect(s.trade(ada, "tanner", "leather", 3, true).ok && s.budgetLeft(tanner) == left, "buying from it adds nothing to its budget");
     // A restart keeps the budget and the counts (the Board saved with the society).
     auto saved = wire::readSociety(wire::society(s.state()));
-    expect(saved.minted >= 0 && !saved.board.empty(), "the Board saved: " + json::dump(wire::society(s.state())).substr(0, 0));
+    expect(saved.nextEntry > 0 && !saved.board.empty(), "the Board saved: " + json::dump(wire::society(s.state())).substr(0, 0));
     auto t = world({{"tanner", "tanner at The Hide Yard", "coldwater"}, {"keeper", "shopkeeper of general goods", "coldwater"}},
                    {{"coldwater", 40}});
     expect(t.restore(saved), "restored");
@@ -446,24 +444,34 @@ void seasonsFitTheClamp()
         lo = std::min(lo, f), hi = std::max(hi, f);
     }
     expect(hi / lo <= market::data().seasonSpanMost + 1e-6 && hi / lo > 1.2, "fruit's swing rescaled: " + str(hi / lo));
-    // The seven groups and the shelves are market.json's (7.1, 7.7: moved from city_loop.json, which the conserving
-    // economy reads until Phase 3), the same as the loop's copy today.
+    // The seven groups and the shelves are market.json's (7.1, 7.7: moved from city_loop.json, gone since Phase 3).
     const auto& d = market::data();
     expect(d.seasons.size() == 7 && market::seasonOf("bread") && market::seasonOf("bread")->id == "grain" &&
                market::seasonOf("apples")->id == "fruit" && !market::seasonOf("stone"),
            "the seven season groups in market.json: " + std::to_string(d.seasons.size()));
-    for (const auto& g : items::cityLoop().seasons)
+    for (const auto& g : d.seasons)
+        expect(!g.goods.empty() && market::seasonOf(g.goods.front()) == &g, g.id + ": its goods its own");
+    expect(d.shelves.count("theriac") && d.shelves.at("theriac") == 1, "theriac's shelf moved: one");
+    // The season's arithmetic by day (season_tests' theFactorsByDay, doc 79, 17): each season's value at its middle day
+    // (Spring 46, Summer 138, Autumn 229.5, Winter 320), a straight line between, Winter running on into Spring.
     {
-        const auto* own = market::seasonOf(g.goods.front());
-        expect(own && own->id == g.id && own->price == g.price && own->shelf == g.shelf && own->goods == g.goods,
-               "market.json's " + g.id + " as city_loop.json's");
+        constexpr double Spring = 46, Summer = 138, Autumn = 229.5, Winter = 320;
+        const std::array<int, 4> by{10, 20, 30, 40};
+        expect(near(market::seasonal(by, Spring), .1) && near(market::seasonal(by, Summer), .2) &&
+                   near(market::seasonal(by, Autumn), .3) && near(market::seasonal(by, Winter), .4),
+               "each season's value at its middle day");
+        expect(near(market::seasonal(by, (Spring + Summer) / 2), .15), "halfway between two middles, halfway between them");
+        expect(near(market::seasonal(by, 0), .4 + (.1 - .4) * (365 - Winter) / (Spring + 365 - Winter)) &&
+                   near(market::seasonal(by, 364.9), .4 + (.1 - .4) * (364.9 - Winter) / (Spring + 365 - Winter)),
+               "winter runs on to spring across the year's turn");
+        expect(near(market::seasonal(by, Winter + 365), .4), "a later year is the same");
+        expect(market::seasonal(by, -1) == 1, "no date: no season");
+        for (double day = 0; day < 365; day += 7.3)
+            expect(near(market::seasonal({100, 100, 100, 100}, day), 1), "a flat group stays at 1");
+        expect(std::abs(market::seasonal({110, 95, 85, 115}, 46) - 1.1) < 1e-12, "grain's spring");
     }
-    expect(d.shelves.count("theriac") && d.shelves.at("theriac") == items::cityLoop().shelves.at("theriac"), "theriac's shelf moved");
-    expect(std::abs(market::seasonal({110, 95, 85, 115}, 46) - 1.1) < 1e-12 && market::seasonal({110, 95, 85, 115}, -1) == 1 &&
-               std::abs(market::seasonal({110, 95, 85, 115}, 300) * 100 - Society::seasonal({110, 95, 85, 115}, 300) * 100) < 1e-9,
-           "the season's arithmetic, the loop's own");
     // A world's season record lays its price over market.json's group.
-    auto t = world({{"keeper", "shopkeeper of general goods", "realm"}}, {{"realm", 100}}, {}, true);
+    auto t = world({{"keeper", "shopkeeper of general goods", "realm"}}, {{"realm", 100}});
     AuthoredRoster roster = t.authored();
     roster.economy.seasons["fruit"].price = {100, 100, 100, 100};
     t.configure(roster);
@@ -501,7 +509,7 @@ void theMorningRestock()
     s.stagedRestock("baker");
     const int after = Society::stock(*s.account(till), "bread");
     expect(after == s.shelfTarget(till, "bread") && after >= 1, "the next morning, to its target: " + std::to_string(after));
-    expect(s.conserved(), "no money moved");
+    expect(s.realBalanced(), "no money moved");
 }
 
 void theBoardRoundTrips()
@@ -546,24 +554,28 @@ void theFactionDiscountCap()
     expect(s.discountRoom("c1") == 30, "a new week");
 }
 
-void theRuleOff()
+void theOnePath()
 {
-    // The rule off: the old path, its prices the catalogue's times shopFactor, nothing on the Board, nothing saved.
-    auto s = world({{"baker", "baker at The Loaf", "ridgemere"}}, {}, {}, false);
-    expect(!s.staged() || Society::stagedForced(), "the rule off");
-    if (Society::stagedForced())
-        return;                                     // (The environment forces it on: nothing of the old path to see.)
+    // The Board's prices are the only ones (doc 79, Phase 3: the rule `staged` and the conserving economy's shopFactor are
+    // gone): a quote is the ladder's, a trade moves the Board and saves it, and the smithy buys ore (D5) in any world.
+    auto s = world({{"baker", "baker at The Loaf", "ridgemere"}}, {});
     stock(s, "baker", "bread", 50);
     const auto ada = player(s, "player-ada");
     const auto q = s.quote(ada, "baker", "bread", 12, true);
-    expect(q.ok && q.total == std::max<std::int64_t>(12, std::llround(Society::catalogPrice("bread") * s.shopFactor(s.tillOf("baker"), "bread") * 12)),
-           "the old price: " + std::to_string(q.total));
-    expect(s.trade(ada, "baker", "bread", 12, true).ok && s.board().empty(), "a trade moves no Board");
-    expect(!wire::society(s.state()).has("board"), "and none is saved");
-    std::vector<std::string> wares = s.wares("baker");
-    auto t = world({{"smith", "the smith at the forge", "ridgemere"}}, {}, {}, false);
+    const auto l = s.listing(ada, "baker", "bread");
+    expect(q.ok && l.listCount == 12 && q.total == l.listPrice, "the quote is the Board's dozen: " + std::to_string(q.total));
+    expect(s.trade(ada, "baker", "bread", 12, true).ok && !s.board().empty(), "a trade moves the Board");
+    expect(wire::society(s.state()).has("board"), "and it is saved");
+    auto t = world({{"smith", "the smith at the forge", "ridgemere"}}, {});
     const auto w = t.wares("smith");
-    expect(std::find(w.begin(), w.end(), "iron_ore") == w.end(), "no ore bought by the smithy with the rule off");
+    expect(std::find(w.begin(), w.end(), "iron_ore") != w.end(), "the smithy buys ore (market.json `buys`)");
+    // A world's old rule record of the conserving economy's is skipped, never refused (doc 79, 14).
+    AuthoredRoster roster = s.authored();
+    roster.economy.rules["staged"] = 0;
+    roster.economy.rules["steerLean"] = 150;
+    Society u(Roster::None);
+    u.configure(roster);
+    expect(u.rule("steerLean") == -1 && u.rule("staged") == -1 && u.rule("ripple") == 50, "the old rules are no rules now");
 }
 
 // ----------------------------------------------------------------------------------------- The world finds its markets
@@ -574,13 +586,9 @@ void theWorldsMarkets()
 {
     const auto root = fs::temp_directory_path() / "ratw-p12stage-market-tests";
     const auto worldPath = writeStrip(root / "world");
-    {
-        std::ofstream(fs::path(worldPath) / "world.ratw", std::ios::app) << "rule \"staged\" 1\n";
-    }
     fs::remove_all(root / "save");
     Town town(worldPath, (root / "save").string());
     auto& w = town.g.world();
-    expect(w.society().staged(), "the world's rule on");
     // Found at load (5.1): the world's turn finds them before any player trades or stands at a shop, so the dawn's
     // ripples and the morning restock read the real markets, never Society's one-market stand-in.
     town.run(3);
@@ -679,7 +687,6 @@ void householdsInTheBoardsMarkets()
     const auto worldPath = writeStrip(root / "world");
     {
         std::ofstream manifest(fs::path(worldPath) / "world.ratw", std::ios::app);
-        manifest << "rule \"staged\" 1\n";
         manifest << resident("wx", "Cotter x", "civilian", "working", 6, 4.5, 6, 4.5);   // (The wilds between Larkfield and Oakhaven.)
     }
     fs::remove_all(root / "save");
@@ -782,7 +789,6 @@ BoardSave aBoardThroughTheGame()
     const auto root = fs::temp_directory_path() / ("ratw-p12stage-board-" + std::to_string(::getpid()));
     fs::remove_all(root);
     const auto worldPath = writeStrip(root / "world");
-    std::ofstream(fs::path(worldPath) / "world.ratw", std::ios::app) << "rule \"staged\" 1\n";
     const auto save = (root / "save.json").string();
     BoardSave out;
     std::string savedText;
@@ -790,7 +796,6 @@ BoardSave aBoardThroughTheGame()
         Town town(worldPath, save);
         auto& w = town.g.world();
         auto& s = w.society();
-        expect(s.staged(), "the world's rule on");
         town.enter(town.ash, 1, "player-ash", "Ash", 1, 8.5);
         w.setTimeOfDay(12);
         // The keepers come to their posts and set out the day's wares, seen doing it (7.7), for a few minutes only.
@@ -868,7 +873,6 @@ void theHolderBeforeTheWelcome()
     const auto root = fs::temp_directory_path() / ("ratw-p12stage-holder-" + std::to_string(::getpid()));
     fs::remove_all(root);
     const auto worldPath = writeStrip(root / "world");
-    std::ofstream(fs::path(worldPath) / "world.ratw", std::ios::app) << "rule \"staged\" 1\n";
     const auto save = (root / "save.json").string();
     const auto options = [&] {
         game::Options o;
@@ -889,7 +893,6 @@ void theHolderBeforeTheWelcome()
         std::string problem;
         expect(g.start(problem), "starts: " + problem);
         auto& s = g.world().society();
-        expect(s.staged(), "the world's rule on");
         Client c;
         c.id = 1;
         g.connect(&c);
@@ -1019,7 +1022,7 @@ int main(int argc, char** argv)
         theMorningRestock();
         theBoardRoundTrips();
         theFactionDiscountCap();
-        theRuleOff();
+        theOnePath();
         theWorldsMarkets();
         householdsInTheBoardsMarkets();
         theBoardThroughTheGame();

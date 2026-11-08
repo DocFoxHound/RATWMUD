@@ -536,9 +536,11 @@ void wolvesJoinArriveAndComeStraightBack()
         expect(wren.name == "Wren Reed" && wren.age == 24 && wren.appearance->sex == "female" && wren.gift == "fire" && !wren.quickened,
                "as the ticket says: name, age, look, and its family as a Gifted wolf");
         const auto* purse = g.world().society().account(Wolf1);
-        expect(purse && purse->cash == 20 && g.world().society().account("treasury")->cash == treasuryBefore - 20 &&
-                   g.world().society().conserved(),
-               "with the welcome from the treasury, and the money conserved");
+        // (Doc 79, 9.2: the welcome is made, a faucet counted by the door; the treasury untouched.)
+        expect(purse && purse->cash == 20 && g.world().society().account("treasury")->cash == treasuryBefore &&
+                   g.world().society().faucetToday(g.world().society().holderOf(Wolf1), "welcome") >= 20 &&
+                   g.world().society().realBalanced(),
+               "with the welcome made (a faucet), the treasury untouched, real money balanced");
         // Leaving: back to the list; the ticket was used once.
         say(g, &a, cmd({{"type", "character_leave"}}));
         expect(a.entityId.empty() && a.accountUsername.empty() && a.stage() == "ticket", "leaving goes back to asking for a ticket");
@@ -719,7 +721,7 @@ void theArrivalLimitsHold()
     f.clock += 3601;
     auto& later = join(Wolf2, "acct-cccccccccccccccccccccccccccccccc", "Moss");
     expect(later.entityId == Wolf2, "an hour on, it arrives: " + later.message());
-    expect(g.world().society().conserved(), "every welcome conserved");
+    expect(g.world().society().realBalanced(), "every welcome counted: real money balanced");
     // Too many tries on one connection.
     Client spam;
     spam.id = 999;

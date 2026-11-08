@@ -106,7 +106,7 @@ void refusals()
     expect(!w.steal("player-ada", "wren").ok, "A purse out of reach is safe");
     beside(w, "player-ada", "wren");
     expect(w.steal("player-ada", "wren").ok && !w.steal("player-ada", "wren").ok, "One try at a time");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
 }
 
 void theftBeforeTheWatch()
@@ -144,7 +144,7 @@ void theftBeforeTheWatch()
     expect(paid.ok, "The fine is paid: " + paid.message);
     expect(!w.warrantFor("player-ada") && !w.custodyOf("player-ada"), "and the warrant is gone");
     expect(cash(w, "wren") >= wrenBefore || w.crime().incidents.back().kind == "attempted theft", "Wren gets back what was taken");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
     const auto& settled = *std::find_if(w.crime().incidents.begin(), w.crime().incidents.end(),
                                         [&](const Incident& i) { return i.id == id; });
     expect(settled.status == "settled", "The incident is settled");
@@ -174,7 +174,7 @@ void unpaidMeansGaol()
     for (int i = 0; i < 2 * 600 + 40 && w.custodyOf("player-ada"); ++i)
         w.tick(1);
     expect(!w.custodyOf("player-ada"), "Then they go free");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
 }
 
 // A wanted wolf lying Downed isn't asked to pay: the watch binds their wounds and carries them in (playtest,
@@ -229,7 +229,7 @@ void residentChasedDown()
     for (int i = 0; i < 20; ++i)
         w.tick(.5);
     expect(w.custodyOf("rook"), "and stays there, the chase over");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
 }
 
 void assaultBeatsDown()
@@ -368,7 +368,7 @@ void needMakesThieves()
             starve(w);
     }
     expect(tried, "A hungry resident with nothing tries to steal food or coin");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
 }
 
 void savedAndRestored()

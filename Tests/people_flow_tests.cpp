@@ -257,9 +257,7 @@ void postsFromTheCountry()
     s.configure(docks(false));
     Fates f;
     s.tendCareers(1.3, f.world(s));
-    s.shift("treasury", Society::WharfFund, "", 0, 500, "test: the Country's purse");
-    const auto money = s.moneySupply();
-    const auto country = s.cash(Society::WharfFund);
+    const auto real = s.realTotal();
     f.dead.insert("ivar");
     s.died("ivar", 1.5);
     std::vector<ResidentRequest> arrivals;
@@ -288,8 +286,8 @@ void postsFromTheCountry()
     const auto* spec = s.spec("cty_fisher");
     expect(spec->home.cell == "sump_rents" && spec->workLabel == "-" && !s.position("job:cty_fisher"),
            "placed without work: no post of his own made");
-    expect(s.cash("cty_fisher") == 30 && s.cash(Society::WharfFund) == country - 30, "his 30p from the Country's account");
-    expect(s.moneySupply() == money && s.conserved(), "the money conserved: nothing made");
+    expect(s.cash("cty_fisher") == 30, "his 30p, a plain amount (doc 79, 6.5: staged, the night's set draws it to his band's)");
+    expect(s.realTotal() == real && s.realBalanced(), "no real money made");
     expect(s.fills().at("from the Country") == 1, "from the Country");
 }
 
@@ -350,17 +348,15 @@ void whereArrivalsStay()
         expect(r.skill == 5, "new to the docks' work");
     }
 }
-// Doc 79, Phase 0: a post's kind and class without the city's loop (postKind, postRules in RatwCareers.cpp), the rules
-// as city_loop.json's `wages` had them while that file is still read.
+// Doc 79, 6.3: a post's kind and class without the city's loop (postKind, postRules in RatwCareers.cpp: city_loop.json's
+// `wages` as they stood, the file gone since Phase 3).
 void postKindsWithoutTheLoop()
 {
     const auto& kept = Society::postRules();
-    const auto& file = items::cityLoop().wages;
-    expect(kept.size() == file.size(), "the post rules, one for each of city_loop.json's wage rules");
-    for (std::size_t i = 0; i < kept.size() && i < file.size(); ++i)
-        expect(kept[i].name == file[i].name && kept[i].payer == file[i].payer && kept[i].wage == file[i].wage &&
-                   kept[i].words == file[i].words,
-               "post rule " + std::to_string(i) + " as city_loop.json's: " + kept[i].name);
+    expect(kept.size() == 5 && kept.front().name == "the Crown's and the offices' heads" && kept.front().payer == "treasury",
+           "the post rules, as city_loop.json's wage rules stood: " + std::to_string(kept.size()));
+    for (const auto& r : kept)
+        expect(!r.words.empty() && (r.payer == "treasury" || r.payer == "estates"), "a post rule with its words and kind: " + r.name);
     Society s(Roster::None);
     s.configure(docks());
     Fates f;
@@ -369,18 +365,13 @@ void postKindsWithoutTheLoop()
     expect(kind("job:moss") == "keeper" && kind("job:ivar") == "estate" && kind("job:lady") == "estate" && kind("job:tam").empty(),
            "a stall's keeper, the sea trade's and the Houses' people, lessons none: " + kind("job:moss") + " " + kind("job:ivar") +
                " " + kind("job:lady") + " '" + kind("job:tam") + "'");
-    for (const auto& p : s.positions())
-        expect(s.postKind(p).kind == s.payOf(p).kind, "payOf's kind is postKind's: " + p.id);
 }
 
-// Doc 79, Phase 0: with the rule "staged" on, the city's loop is off; households are fed by class, purses and the
-// treasury are set each night, the welcome is made, and posts still fill (from the city at eight days, and from the
-// Country with a purse of their own).
+// Doc 79: the city's loop is gone; households are fed by band, purses and the treasury are set each night, the welcome
+// is made, and posts still fill (from the city at eight days, and from the Country with a purse of their own).
 AuthoredRoster stagedDocks(bool withPup = true)
 {
-    auto roster = docks(withPup);
-    roster.economy.rules["staged"] = 1;
-    return roster;
+    return docks(withPup);
 }
 double fed(const Society& s, const std::string& id)
 {
@@ -393,7 +384,7 @@ void theStagedEconomy()
 {
     Society s(Roster::None);
     s.configure(stagedDocks());
-    expect(s.staged() && !s.needsPaused() && !s.steering(), "the staged economy on, needs not paused, no steering");
+    expect(!s.needsPaused(), "needs not paused");
     Fates f;
     s.tendCareers(1.3, f.world(s));
     // The welcome is made, not taken: with the treasury empty, a newcomer still starts with 20p, herbs and meals.
@@ -403,7 +394,7 @@ void theStagedEconomy()
     expect(s.cash("player-one") == Society::PlayerWelcome && Society::stock(*s.account("player-one"), "herbs") == 2 &&
                Society::stock(*s.account("player-one"), "meal") == Society::StartingMeals,
            "the welcome made with the treasury empty: " + std::to_string(s.cash("player-one")) + "p");
-    expect(s.conserved(), "conserved (the welcome counted as made)");
+    expect(s.realBalanced(), "real money balanced (the welcome counted as a faucet)");
     // The households: the homeless are one each; every resident is in one.
     const auto homes = s.households(true);
     std::size_t members = 0;
@@ -444,13 +435,14 @@ void theStagedEconomy()
                    s.cash(id) != 40,
                "purses drawn toward their band's: " + id + " " + std::to_string(s.cash(id)) + "p");
     }
-    expect(s.cash("treasury") >= Society::TreasuryFloat && s.cash("treasury") <= Society::StagedTreasuryMost,
+    expect(s.cash("treasury") >= s.statusTable().treasuryFloor && s.cash("treasury") <= s.statusTable().treasuryCeiling,
            "the treasury set within its range: " + std::to_string(s.cash("treasury")));
     const auto wagesAfter = std::count_if(s.state().ledger.begin(), s.state().ledger.end(),
                                           [](const EconomyEntry& e) { return e.kind == "wages"; });
-    expect(wagesAfter == wagesBefore, "no wages paid: the city's loop is off");
-    expect(s.conserved(), "conserved (the night's set counted as made and sunk until Phase 3)");
-    expect(!s.moveWharfCredit(10, "dm", "test").ok, "the Wharf's credit is off");
+    expect(wagesAfter == wagesBefore, "no wages paid: the city's loop is gone");
+    expect(s.realBalanced(), "real money balanced (the night's set is staged: nothing counted)");
+    for (const auto& [id, a] : s.state().accounts)
+        expect(Society::classify(id) != Society::AccountKind::Dead, "no account of the old economy opened: " + id);
 }
 void stagedPostsStillFill()
 {
@@ -488,7 +480,7 @@ void stagedPostsStillFill()
     s.welcome(arrivals[0], arrivals[0].templateId);
     expect(s.jobOf("cty_fisher") && s.jobOf("cty_fisher")->id == "job:ivar" && s.cash("cty_fisher") == 30,
            "staged: he takes the post with a purse of his own (30p), none from the Country's");
-    expect(s.conserved(), "staged: conserved");
+    expect(s.realBalanced(), "staged: real money balanced");
 }
 } // namespace
 

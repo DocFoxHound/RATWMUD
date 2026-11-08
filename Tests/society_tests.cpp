@@ -1,4 +1,5 @@
 #include "RatwSociety.h"
+#include "RatwWire.h"
 
 #include <cmath>
 #include <iostream>
@@ -18,6 +19,14 @@ void expect(bool condition, const char* message)
 bool near(double a, double b)
 {
     return std::abs(a - b) < 1e-7;
+}
+// Every penny in every account: the demo's money only moves (no wage, export or import makes or sinks any since doc 79).
+std::int64_t totalCash(const Society& society)
+{
+    std::int64_t n = 0;
+    for (const auto& [id, a] : society.state().accounts)
+        n += a.cash;
+    return n;
 }
 int held(const Society& society, const std::string& id, const std::string& item)
 {
@@ -47,31 +56,33 @@ SocietyState isolated(Society& society, const std::string& active)
 void balancesAndTrade()
 {
     Society society;
-    expect(society.state().enabled && society.state().residents.size() == 6 && society.moneySupply() == 1480 &&
-               society.conserved(),
-           "Demo begins with six funded residents and a finite conserved treasury");
-    const auto initial = society.moneySupply();
+    expect(society.state().enabled && society.state().residents.size() == 6 && totalCash(society) == 1480 &&
+               society.realBalanced() && society.realTotal() == 0,
+           "Demo begins with six funded residents, a finite treasury and no real money");
     society.addPlayer("player-one");
-    expect(society.account("player-one")->cash == 20 && society.account("treasury")->cash == 980 &&
+    expect(society.account("player-one")->cash == 20 && society.account("treasury")->cash == 1000 &&
                held(society, "player-one", "herbs") == 2 && held(society, "player-one", "meal") == Society::StartingMeals &&
-               society.account("treasury")->stock.at("meal") == 50 && society.moneySupply() == initial && society.conserved(),
-           "Welcome money and herbs come from the finite treasury; a few days' meals are a player's own (doc 36)");
+               society.account("treasury")->stock.at("herbs") == 100 && society.realTotal() == 20 &&
+               society.realFaucets() == 20 && society.realBalanced(),
+           "The welcome is made, a faucet (doc 79, 9.2): 20p, 2 herbs and a few days' meals, the treasury untouched");
     const auto entries = society.state().ledger.size();
     society.addPlayer("player-one");
     society.addPlayer("npc-impostor");
     expect(society.state().ledger.size() == entries && !society.account("npc-impostor") &&
                society.account("player-one")->cash == 20,
            "Repeated login and invalid identity cannot create grants");
+    // (The Market Board's price, doc 79, 7: a meal 6p, the second a step up the per-piece ladder.)
     const auto quote = society.quote("player-one", "npc_keeper", "meal", 2, true);
-    expect(quote.ok && quote.unitPrice == 6 && quote.total == 12 && society.state().ledger.size() == entries,
-           "Server quote derives a stock-dependent price without mutating accounts");
-    expect(society.trade("player-one", "npc_keeper", "meal", 2, true).ok && society.account("player-one")->cash == 8 &&
+    expect(quote.ok && quote.unitPrice == 6 && quote.total >= 12 && quote.total <= 14 && society.state().ledger.size() == entries,
+           "Server quote derives the Board's price without mutating accounts");
+    expect(society.trade("player-one", "npc_keeper", "meal", 2, true).ok && society.account("player-one")->cash == 20 - quote.total &&
                held(society, "player-one", "meal") == Society::StartingMeals + 2 && held(society, "npc_keeper", "meal") == 10 &&
-               society.conserved(),
+               society.realBalanced(),
            "Purchase atomically transfers both finite goods and money");
+    const auto offer = society.quote("player-one", "npc_keeper", "herbs", 2, false);
     const auto sale = society.trade("player-one", "npc_keeper", "herbs", 2, false);
-    expect(sale.ok && sale.total == 2 && held(society, "player-one", "herbs") == 0 &&
-               held(society, "npc_keeper", "herbs") == 10 && society.conserved(),
+    expect(sale.ok && sale.total == offer.total && sale.total >= 1 && held(society, "player-one", "herbs") == 0 &&
+               held(society, "npc_keeper", "herbs") == 10 && society.realBalanced(),
            "Merchant pays only its finite cash for wanted stocked goods");
     for (int quantity : {-1, 0, 100, std::numeric_limits<int>::max()})
         expect(!society.trade("player-one", "npc_keeper", "meal", quantity, true).ok,
@@ -84,7 +95,7 @@ void balancesAndTrade()
     const auto meals = held(society, "player-one", "meal");
     expect(!society.trade("player-one", "npc_keeper", "meal", 99, true).ok &&
                society.account("player-one")->cash == cash && held(society, "player-one", "meal") == meals &&
-               society.conserved(),
+               society.realBalanced(),
            "Failed trades leave both accounts unchanged");
     auto state = society.state();
     state.accounts["npc_keeper"].stock["herbs"] = 20;
@@ -99,14 +110,27 @@ void balancesAndTrade()
     expect(society.restore(state), "Cash-starved merchant fixture restores");
     expect(!society.quote("player-one", "npc_keeper", "herbs", 1, false).ok,
            "Demand alone does not grant a merchant unlimited purchasing power");
+    // The welcome's cap (D23): once per account holder per world per game week. Many characters of one account holder in
+    // a week: the first has the coins and herbs, the rest their meals only; a new week, a new welcome.
     Society treasury;
     for (int index = 0; index < 55; ++index)
+    {
+        treasury.setHolder("player-" + std::to_string(index), "holder-one");
         treasury.addPlayer("player-" + std::to_string(index));
-    expect(treasury.account("treasury")->cash == 0 && treasury.account("player-54")->cash == 0 &&
-               held(treasury, "player-54", "herbs") == 0 && treasury.moneySupply() == 1480 && treasury.conserved(),
-           "Many character creations exhaust the treasury's grants of money and herbs instead of minting them");
-    // The one exception (doc 36): everyone starts with a few days' food, the treasury empty or not.
+    }
+    expect(treasury.account("player-0")->cash == 20 && treasury.account("player-54")->cash == 0 &&
+               held(treasury, "player-54", "herbs") == 0 && treasury.account("treasury")->cash == 1000 &&
+               treasury.realTotal() == 20 && treasury.realBalanced(),
+           "Many characters of one account holder have one welcome's money and herbs a week, the treasury untouched");
+    // The one exception (doc 36): everyone starts with a few days' food.
     expect(held(treasury, "player-54", "meal") == Society::StartingMeals, "but every character still starts with its own meals");
+    treasury.setHolder("player-other", "holder-two");
+    treasury.addPlayer("player-other");
+    expect(treasury.account("player-other")->cash == 20, "another account holder has its own welcome");
+    treasury.tick(1, 7.5, 0, {});
+    treasury.setHolder("player-later", "holder-one");
+    treasury.addPlayer("player-later");
+    expect(treasury.account("player-later")->cash == 20 && treasury.realBalanced(), "and the first holder's next week, its next");
 }
 void resourcesAndLocalWork()
 {
@@ -115,7 +139,7 @@ void resourcesAndLocalWork()
     for (int count = 0; count < 40; ++count)
         expect(society.gather("player-one").ok, "Finite herb bundle can be gathered");
     expect(!society.gather("player-one").ok && society.state().herbPatch == 0 &&
-               held(society, "player-one", "herbs") == 42 && society.conserved(),
+               held(society, "player-one", "herbs") == 42 && society.realBalanced(),
            "Gathering depletes the shared patch without creating currency");
     for (int had = held(society, "player-one", "meal"); had > 0; --had)
         expect(society.eat("player-one").ok && held(society, "player-one", "meal") == had - 1, "Eating consumes a real meal");
@@ -125,9 +149,7 @@ void resourcesAndLocalWork()
     society.tick(1, 2, 1, {});
     expect(society.state().herbPatch == 34, "Summer regenerates more herbs than winter");
     society.tick(1, 1000, 1, {});
-    expect(society.state().herbPatch == 60 && society.state().exportsRemaining == 8 &&
-               society.state().importsRemaining == 4,
-           "Missed days reset one bounded budget, not a backlog of grants");
+    expect(society.state().herbPatch == 60, "Missed days reset one bounded budget, not a backlog of grants");
     Society cook;
     auto state = isolated(cook, "npc_cook");
     state.accounts["npc_cook"].stock = {{"herbs", 2}, {"meal", 0}};
@@ -145,7 +167,7 @@ void resourcesAndLocalWork()
     advance(cook, 44, bodies);
     expect(held(cook, "npc_cook", "meal") == 0, "Crafting waits for its whole action duration");
     advance(cook, 1, bodies);
-    expect(held(cook, "npc_cook", "herbs") == 0 && held(cook, "npc_cook", "meal") == 1 && cook.conserved(),
+    expect(held(cook, "npc_cook", "herbs") == 0 && held(cook, "npc_cook", "meal") == 1 && cook.realBalanced(),
            "Two real herbs transform into one meal without creating money");
     advance(cook, 1, bodies);
     expect(cook.resident("npc_cook")->task == "buy ingredients",
@@ -175,42 +197,25 @@ void resourcesAndLocalWork()
                near(sleeper.resident("npc_scout")->progress, 0),
            "Recruitment suspends ordinary work and clears stale station goals");
 }
-void cappedOutsideEconomy()
+void noOutsideMoney()
 {
+    // The demo's outside orders and imports (which made and sank money) went with doc 79's Phase 3: a keeper at its counter
+    // with a glut of meals and no herbs serves, and nothing makes or sinks a penny or brings a herb from outside.
     Society society;
     auto state = isolated(society, "npc_keeper");
     state.accounts["npc_keeper"].stock = {{"herbs", 0}, {"meal", 30}};
     state.accounts["npc_cook"].stock["herbs"] = 0;
     state.accounts["npc_porter"].stock["herbs"] = 0;
-    state.herbPatch = 0; // Imports are a genuine supply fallback, not automatic shelf filling.
+    state.herbPatch = 0;
     expect(society.restore(state), "Outside-trade fixture restores");
+    const auto supply = totalCash(society);
     const std::map<std::string, LifeBody> bodies = {{"npc_keeper", {"tavern", 9.5, 6.5, false}}};
-    advance(society, 120, bodies);
-    expect(society.state().exportsRemaining == 0 && society.state().minted == 1480 + 56 &&
-               held(society, "npc_keeper", "meal") == 22,
-           "Outside orders buy at most eight real meals for 56 new pennies per game day");
-    expect(society.state().importsRemaining == 2 && society.state().sunk == 8 &&
-               held(society, "npc_keeper", "herbs") == 2,
-           "Need-driven imports consume actual pennies and stop when minimum ingredients are available");
-    const auto supply = society.moneySupply();
-    advance(society, 120, bodies);
-    expect(society.moneySupply() == supply && society.state().minted == 1536 && society.conserved(),
-           "Exhausted outside orders do not refill money during the same game day");
-    state = society.state();
-    state.accounts["npc_keeper"].stock["herbs"] = 0;
-    expect(society.restore(state), "Consumed-import fixture restores");
-    advance(society, 24, bodies);
-    expect(society.state().importsRemaining == 0 && society.state().sunk == 16,
-           "At most four imported bundles can remove sixteen pennies per day");
-    state = society.state();
-    state.accounts["npc_keeper"].stock["herbs"] = 0;
-    expect(society.restore(state), "Exhausted-import fixture restores");
-    advance(society, 24, bodies);
-    expect(held(society, "npc_keeper", "herbs") == 0 && society.state().sunk == 16 && society.conserved(),
-           "Daily import cap prevents an unlimited outside restock even when merchant is wealthy");
+    advance(society, 240, bodies);
+    expect(society.resident("npc_keeper")->task == "trade" && totalCash(society) == supply &&
+               held(society, "npc_keeper", "meal") == 30 && held(society, "npc_keeper", "herbs") == 0 && society.realBalanced(),
+           "A keeper's trade at the counter neither exports meals nor imports herbs: no money made or sunk");
     society.tick(1, 1.5, 0, {});
-    expect(society.state().exportsRemaining == 8 && society.state().importsRemaining == 4,
-           "Shared-calendar day boundary renews bounded trade budgets");
+    expect(totalCash(society) == supply, "and a new day renews no outside budget");
 }
 void residentWagesAndBodyValidation()
 {
@@ -226,7 +231,7 @@ void residentWagesAndBodyValidation()
     expect(society.account("npc_scout")->cash == 80, "Wages require the complete service duration");
     advance(society, 1, bodies);
     expect(society.account("npc_scout")->cash == 82 && society.account("npc_keeper")->cash == 78 &&
-               society.resident("npc_scout")->wagesToday == 1 && society.conserved(),
+               society.resident("npc_scout")->wagesToday == 1 && society.realBalanced(),
            "Work pays from the employer's real purse rather than creating money");
     advance(society, 2400, bodies);
     expect(society.resident("npc_scout")->wagesToday == 3 && society.account("npc_scout")->cash == 86,
@@ -242,7 +247,7 @@ void residentWagesAndBodyValidation()
     expect(society.restore(state), "Unfunded-employer fixture restores");
     advance(society, 1200, bodies, 1.5);
     expect(society.account("npc_scout")->cash == 86 && society.resident("npc_scout")->wagesToday == 0 &&
-               society.conserved(),
+               society.realBalanced(),
            "A new day renews eligibility but not the employer's depleted cash");
     Society invalidBody;
     state = isolated(invalidBody, "npc_scout");
@@ -275,7 +280,7 @@ void sharedMerchantQueue()
                                                     {"npc_scout", {"tavern", 10.5, 6.5, false}}};
     advance(society, 12, bodies);
     expect(held(society, "npc_cook", "herbs") == 0 && held(society, "npc_scout", "meal") == 1 &&
-               society.account("npc_scout")->cash == 74 && society.conserved(),
+               society.account("npc_scout")->cash == 74 && society.realBalanced(),
            "A broke cook waiting at the shared counter cannot reserve food buyers out forever");
 }
 void procurementRecovery()
@@ -299,10 +304,9 @@ void procurementRecovery()
     expect(held(society, "npc_cook", "herbs") == 0, "Selecting a supplier cannot teleport distant goods");
     bodies["npc_cook"].x = 25.5; // Unit fixture supplies the navigation result, not the production effect.
     advance(society, 12, bodies);
-    expect(held(society, "npc_cook", "herbs") >= 2 && held(society, "npc_porter", "herbs") < 6 && society.conserved(),
+    expect(held(society, "npc_cook", "herbs") >= 2 && held(society, "npc_porter", "herbs") < 6 && society.realBalanced(),
            "Physically reunited supplier and cook transfer real paid-for ingredients");
-    expect(society.state().sunk == 0,
-           "Keeper does not burn emergency-import money while local ingredients can be delivered");
+    expect(totalCash(society) == 1480, "Nothing burns money while local ingredients can be delivered");
     state = isolated(society, "npc_cook");
     state.accounts["treasury"].cash += state.accounts["npc_keeper"].cash - 5;
     state.accounts["npc_keeper"].cash = 5;
@@ -312,7 +316,7 @@ void procurementRecovery()
     bodies = {{"npc_cook", {"tavern", 10.5, 6.5, false}}, {"npc_keeper", {"tavern", 9.5, 6.5, false}}};
     advance(society, 12, bodies);
     expect(held(society, "npc_keeper", "meal") == 1 && society.account("npc_keeper")->cash == 0 &&
-               held(society, "npc_cook", "meal") == 2 && society.conserved(),
+               held(society, "npc_cook", "meal") == 2 && society.realBalanced(),
            "An affordable one-meal delivery succeeds when a three-meal batch would fail");
 
     Society bumps;
@@ -346,11 +350,11 @@ void consignmentTransactions()
            "Hungry funded demand brings the cook to market but cannot buy remotely through the keeper");
     bodies["npc_cook"].x = 10.5;
     const auto cookCash = society.account("npc_cook")->cash;
-    const auto minted = society.state().minted;
+    const auto supply = totalCash(society);
     advance(society, 12, bodies);
     expect(held(society, "npc_scout", "meal") == 1 && held(society, "npc_cook", "meal") == 2 &&
                society.account("npc_scout")->cash == 74 && society.account("npc_cook")->cash == cookCash + 5 &&
-               society.account("npc_keeper")->cash == 1 && society.state().minted == minted && society.conserved(),
+               society.account("npc_keeper")->cash == 1 && totalCash(society) == supply && society.realBalanced(),
            "A co-located six-penny consignment pays five to cook and one to keeper without creating money or stock");
     const auto& ledger = society.state().ledger;
     expect(ledger.size() >= 2 && ledger[ledger.size() - 2].kind == "consigned meal sale" &&
@@ -365,49 +369,29 @@ void consignmentTransactions()
     expect(society.restore(state), "Underfunded consignment buyer fixture restores");
     advance(society, 12, bodies);
     expect(held(society, "npc_scout", "meal") == 0 && society.account("npc_scout")->cash == 5 &&
-               society.resident("npc_scout")->task == "paid work" && society.conserved(),
+               society.resident("npc_scout")->task == "paid work" && society.realBalanced(),
            "Five pennies cannot bypass the full retail price and an underfunded hungry worker seeks paid work");
 }
-void consignedExportLimits()
+void noConsignedExports()
 {
+    // A cook's surplus is never exported (the outside's orders went with doc 79's Phase 3): it cooks on and carries its
+    // meals to the counter, and no outside money comes in for them.
     Society society;
     auto state = isolated(society, "npc_cook");
     state.accounts["treasury"].cash += state.accounts["npc_keeper"].cash;
     state.accounts["npc_keeper"].cash = 0;
     state.accounts["npc_keeper"].stock = {{"herbs", 2}, {"meal", 0}};
-    state.accounts["npc_cook"].stock = {{"herbs", 2}, {"meal", 8}};
-    expect(society.restore(state), "Brokerage surplus-reserve fixture restores");
-    std::map<std::string, LifeBody> bodies = {{"npc_cook", {"tavern", 26.5, 6.5, false}},
+    state.accounts["npc_cook"].stock = {{"herbs", 2}, {"meal", 30}};
+    expect(society.restore(state), "A large real surplus fixture restores");
+    const auto supply = totalCash(society);
+    std::map<std::string, LifeBody> bodies = {{"npc_cook", {"tavern", 10.5, 6.5, false}},
                                               {"npc_keeper", {"tavern", 9.5, 6.5, false}}};
-    advance(society, 46, bodies);
-    expect(held(society, "npc_cook", "meal") == 9 && held(society, "npc_cook", "herbs") == 0 &&
-               society.resident("npc_cook")->task == "deliver meals" && society.state().exportsRemaining == 8,
-           "Cash-starved market keeps productive cooking until a real surplus exists, without exporting remotely");
-    bodies["npc_cook"].x = 10.5;
-    const auto cookCash = society.account("npc_cook")->cash;
-    advance(society, 12, bodies);
-    expect(held(society, "npc_cook", "meal") == 8 && society.account("npc_cook")->cash == cookCash + 5 &&
-               society.account("npc_keeper")->cash == 2 && society.state().minted == 1487 &&
-               society.state().exportsRemaining == 7 && society.conserved(),
-           "A co-located consigned surplus uses one existing seven-penny order split five/two");
-    const auto& ledger = society.state().ledger;
-    expect(ledger[ledger.size() - 2].kind == "outside consigned sale" && ledger[ledger.size() - 2].coins == 5 &&
-               ledger.back().kind == "export commission" && ledger.back().coins == 2,
-           "Consigned exports record both actual outside payments instead of hiding a second money source");
-    advance(society, 24, bodies);
-    expect(held(society, "npc_cook", "meal") + held(society, "npc_keeper", "meal") == 8 &&
-               society.state().minted == 1487,
-           "The combined eight-meal domestic reserve cannot be exported away");
-    state = isolated(society, "npc_cook");
-    state.accounts["npc_cook"].stock["meal"] = 30;
-    expect(society.restore(state), "Large real consignment stock fixture restores");
     advance(society, 240, bodies);
-    expect(society.state().exportsRemaining == 0 && society.state().minted == 1536 && society.conserved(),
-           "Normal and consigned exports share exactly eight orders, never eight each");
-    const auto supply = society.moneySupply();
-    advance(society, 120, bodies);
-    expect(society.moneySupply() == supply && society.state().minted == 1536,
-           "A wealthy producer with more goods cannot extend the exhausted daily source cap");
+    expect(totalCash(society) == supply && held(society, "npc_cook", "meal") + held(society, "npc_keeper", "meal") >= 30 &&
+               society.realBalanced(),
+           "A wealthy producer's surplus brings no outside money and leaves the realm with none of its meals");
+    for (const auto& e : society.state().ledger)
+        expect(e.kind == "initial funding" || (e.from != "outside" && e.to != "outside"), "no ledger entry to or from the outside");
 }
 void persistenceAndReplay()
 {
@@ -416,7 +400,7 @@ void persistenceAndReplay()
     society.tick(.4, .5, 0, {});
     const auto saved = society.state();
     Society replay(false);
-    expect(replay.restore(saved) && replay.conserved() && near(replay.state().decisionRemainder, .4),
+    expect(replay.restore(saved) && replay.realBalanced() && near(replay.state().decisionRemainder, .4),
            "Accounts, tasks, budgets, and partial decision interval restore atomically");
     {
         // An apprentice's task is "apprenticed: " and its master's title: a long title's save loads (DEV, 2026-10-31).
@@ -426,7 +410,7 @@ void persistenceAndReplay()
         expect(again.restore(apprenticed), "A resident apprenticed to a long title restores");
         apprenticed.residents.begin()->second.task = std::string(MaxTaskText + 1, 'x');
         Society refused(false);
-        expect(!refused.restore(apprenticed), "A task past the limit is still refused");
+        expect(!refused.restore(apprenticed), "A task past the limit is still refused (a broken life, not the economy's)");
     }
     std::map<std::string, LifeBody> bodies = {{"npc_keeper", {"tavern", 9.5, 6.5, false}},
                                               {"npc_cook", {"tavern", 26.5, 6.5, false}},
@@ -438,7 +422,7 @@ void persistenceAndReplay()
         replay.tick(1, date, 0, bodies);
     }
     bool equal = society.state().nextEntry == replay.state().nextEntry &&
-                 society.moneySupply() == replay.moneySupply() && society.conserved() && replay.conserved();
+                 totalCash(society) == totalCash(replay) && society.realBalanced() && replay.realBalanced();
     for (const auto& pair : society.state().accounts)
         equal &= replay.account(pair.first) && pair.second.cash == replay.account(pair.first)->cash &&
                  pair.second.stock == replay.account(pair.first)->stock;
@@ -447,44 +431,83 @@ void persistenceAndReplay()
                  near(pair.second.hunger, replay.resident(pair.first)->hunger) &&
                  near(pair.second.fatigue, replay.resident(pair.first)->fatigue);
     expect(equal, "Restarted resident/economy simulation replays deterministically without dialogue or wall clock");
+    // Restore is lenient (doc 79, 14): a real account is kept to the penny as saved (no sum gate), a broken one refused;
+    // the rest is reconciled, never a refusal.
     auto invalid = saved;
     invalid.accounts["player-one"].cash += 1;
-    expect(!society.restore(invalid), "Restore rejects unledgered money creation");
+    {
+        Society kept(false);
+        expect(kept.restore(invalid) && kept.account("player-one")->cash == saved.accounts.at("player-one").cash + 1 &&
+                   kept.realBalanced(),
+               "Restore keeps a player's purse to the penny as saved");
+    }
     invalid = saved;
     invalid.accounts["player-one"].cash = -1;
-    expect(!society.restore(invalid), "Restore rejects negative balances");
+    expect(!society.restore(invalid), "Restore rejects a negative real balance");
     invalid = saved;
-    invalid.accounts["player-one"].stock["junk"] = 1;
-    expect(!society.restore(invalid), "Restore rejects unsupported goods");
+    invalid.accounts["player-one"].cash = 1000000001;
+    expect(!society.restore(invalid), "Restore rejects an overflowing real balance");
+    invalid = saved;
+    invalid.accounts["player-one"].stock["junk"] = 3;
+    {
+        Society kept(false);
+        const auto* q = kept.restore(invalid) ? kept.quarantined("player-one") : nullptr;
+        expect(q && q->count("junk") && q->at("junk") == 3 && !kept.account("player-one")->stock.count("junk"),
+               "Unknown goods in a player's purse are quarantined, not lost and not refused");
+        expect(json::dump(wire::stagedValue(kept.state().staged)).find("junk") != std::string::npos,
+               "and the quarantine is saved");
+    }
+    invalid = saved;
+    invalid.accounts["npc_cook"].stock["junk"] = 3;
+    invalid.accounts["npc_cook"].cash = -5;
+    {
+        Society kept(false);
+        expect(kept.restore(invalid) && !kept.account("npc_cook")->stock.count("junk") && kept.cash("npc_cook") == 0 &&
+                   !kept.quarantined("npc_cook"),
+               "A resident's (staged) unknown goods are dropped and its money settled in range");
+    }
     invalid = saved;
     invalid.accounts["player-one"].stock["herbs"] = 10001;
-    expect(!society.restore(invalid), "Restore rejects excessive inventory");
+    expect(!society.restore(invalid), "Restore rejects excessive inventory in a real account");
     invalid = saved;
     invalid.residents["npc_cook"].hunger = std::numeric_limits<double>::quiet_NaN();
-    expect(!society.restore(invalid), "Restore rejects nonfinite needs");
+    expect(!society.restore(invalid), "Restore rejects nonfinite needs (a broken life)");
     invalid = saved;
     invalid.residents["npc_cook"].role = "generative oracle";
-    expect(!society.restore(invalid), "Restore rejects unknown planner roles");
-    invalid = saved;
-    invalid.exportsRemaining = 9;
-    expect(!society.restore(invalid), "Restore rejects expanded mint budgets");
+    {
+        Society kept(false);
+        expect(kept.restore(invalid) && kept.resident("npc_cook")->role == "cook", "A changed role takes the authored one");
+    }
     invalid = saved;
     invalid.accounts.erase("treasury");
-    expect(!society.restore(invalid), "Restore requires finite grant reserve account");
+    {
+        Society kept(false);
+        expect(kept.restore(invalid) && kept.account("treasury"), "A save without the treasury is given one");
+    }
+    invalid = saved;
+    invalid.accounts["fund:relief"] = {500, {{"meal", 4}}};
+    invalid.accounts["outside:wharf"] = {900, {}};
+    invalid.accounts["somebody-gone"] = {30, {}};
+    {
+        Society kept(false);
+        expect(kept.restore(invalid) && !kept.account("fund:relief") && !kept.account("outside:wharf") && !kept.account("somebody-gone") &&
+                   kept.account("player-one")->cash == saved.accounts.at("player-one").cash,
+               "The old economy's accounts and a departed resident's are dropped; the player's purse is kept");
+    }
     invalid = saved;
     invalid.ledger.front().sequence = invalid.nextEntry;
     expect(!society.restore(invalid), "Restore rejects invalid ledger sequencing");
-    expect(society.conserved() && society.moneySupply() == replay.moneySupply(),
+    expect(society.realBalanced() && totalCash(society) == totalCash(replay),
            "Rejected checkpoints never partly overwrite live balances");
     const auto before = society.state().nextEntry;
     for (double seconds : {-1., 61., std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::infinity()})
         society.tick(seconds, .5, 0, bodies);
     society.tick(1, -1, 0, bodies);
     society.tick(1, .5, 4, bodies);
-    expect(society.state().nextEntry == before && society.conserved(),
+    expect(society.state().nextEntry == before && society.realBalanced(),
            "Invalid simulation deltas, epochs, and seasons have no economic effects");
     Society disabled(false);
-    expect(!disabled.state().enabled && disabled.state().residents.empty() && disabled.conserved(),
+    expect(!disabled.state().enabled && disabled.state().residents.empty() && disabled.realBalanced(),
            "Non-demo world has no surprise seeded resident simulation");
 }
 } // namespace
@@ -494,12 +517,12 @@ int main()
     {
         balancesAndTrade();
         resourcesAndLocalWork();
-        cappedOutsideEconomy();
+        noOutsideMoney();
         residentWagesAndBodyValidation();
         sharedMerchantQueue();
         procurementRecovery();
         consignmentTransactions();
-        consignedExportLimits();
+        noConsignedExports();
         persistenceAndReplay();
         std::cout << "Passed " << checks << " deterministic resident and finite-economy checks.\n";
         return 0;

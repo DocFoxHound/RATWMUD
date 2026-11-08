@@ -68,7 +68,7 @@ void run(World& w, int seconds)
     for (int s = 0; s < seconds; ++s)
     {
         w.tick(1);
-        expect(w.society().conserved(), "Money stays conserved");
+        expect(w.society().realBalanced(), "Real money stays balanced");
     }
 }
 const ResidentLife& life(const World& w, const std::string& id) { return *w.society().resident(id); }
@@ -143,7 +143,7 @@ void restdayService()
     expect(there >= 1 && there < folk, "Some of the town is at church, not all (" + std::to_string(there) + " of " + std::to_string(folk) + ")");
     expect(w.setTimeOfDay(10.6).ok, "The service ends");
     run(w, 200);
-    expect(w.society().conserved(), "money conserved");
+    expect(w.society().realBalanced(), "real money balanced");
     expect(w.setTimeOfDay(12).ok, "Noon");
     run(w, 30);
     expect(life(w, "maple").task != "preaching", "The service is over by noon");

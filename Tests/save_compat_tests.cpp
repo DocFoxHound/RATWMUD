@@ -5,6 +5,7 @@
 //
 //   save_compat_tests                     the checks (ctest: save_compat)
 //   save_compat_tests --totals            prints each fixture's totals as the README records them
+//   save_compat_tests --day-turn [N]      times the staged day's turn on the real fixtures (N times, 20 by default)
 //   save_compat_tests --make-tail DIR     writes fixture (d) afresh into DIR (only for a new baseline: the fixture in
 //                                         the repo was written once, by the code at cab65ee, and is frozen)
 //   save_compat_tests --make-road DIR     the same for fixture (f), the road (and its save for fixture g's strip)
@@ -22,6 +23,7 @@
 #include "RatwWire.h"
 #include "RatwWorld.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -178,7 +180,7 @@ void roundTrips(const PersistedWorld& saved, const checkpoint::ServerState& serv
     const auto back = wire::readSociety(parse(once, name + "'s society"));
     expect(json::dump(wire::society(back)) == once, name + ": the society round-trips through wire");
     realAccountsExact(restored, back, name + " (through wire)");
-    expect(back.minted == restored.minted && back.sunk == restored.sunk && back.budgetDay == restored.budgetDay &&
+    expect(back.budgetDay == restored.budgetDay &&
                back.nextEntry == restored.nextEntry && back.ledger.size() == restored.ledger.size() &&
                back.residents.size() == restored.residents.size() && back.accounts.size() == restored.accounts.size(),
            name + ": its counters, ledger, residents and accounts come back");
@@ -309,7 +311,21 @@ Loaded loadSave(const World& world, const json::Value& document, const std::stri
     expect(society.restore(out.saved.society), name + ": its society restores against the world's authored roster");
     out.restored = society.state();
     realAccountsExact(out.saved.society, out.restored, name);
-    expect(society.conserved(), name + ": the restored society's money adds up");
+    expect(society.realBalanced(), name + ": the restored society's money adds up");
+    // Doc 79, 14 and 16.7: the old economy's accounts are gone with their goods; the staged ones sit within their ranges
+    // (the treasuries within status.json's floor and ceiling; a resident's purse at most what a band holds, twice over).
+    const auto& t = society.statusTable();
+    for (const auto& [id, a] : out.restored.accounts)
+    {
+        const auto kind = Society::classify(id);
+        expect(kind != Society::AccountKind::Dead, name + ": no account of the old economy left: " + id);
+        if (id == "treasury" || id.rfind("stores:", 0) == 0)
+            expect(a.cash >= t.treasuryFloor && a.cash <= t.treasuryCeiling, name + ": " + id + " settled within its range: " + std::to_string(a.cash));
+        if (out.restored.residents.count(id))
+            expect(a.cash >= 0 && a.cash <= 1000, name + ": " + id + "'s staged purse in range: " + std::to_string(a.cash));
+    }
+    for (const auto& [id, life] : out.saved.society.residents)
+        (void)life, expect(!out.restored.residents.count(id) || out.restored.accounts.count(id), name + ": " + id + " has its purse");
     return out;
 }
 
@@ -461,7 +477,7 @@ Totals checkTail(bool print)
         expect(loaded.playerCash + loaded.escrowCash == totals.playerCash + totals.escrowCash &&
                    loaded.playerGoods + loaded.escrowGoods == totals.playerGoods + totals.escrowGoods,
                "the server holds the replayed save's player and escrow money to the penny: " + loaded.text());
-        expect(society.conserved(), "its money adds up");
+        expect(society.realBalanced(), "its money adds up");
         expect(g.characters().size() == 2, "both characters are there");
         roundTrips(saved, server, society.state(), "the tail");
     }
@@ -734,7 +750,7 @@ int makeRoad(const fs::path& out)
             out_ = &c;
     expect(out_ && out_->escorts == std::vector<std::string>{"player-ada"}, "it counts Ada among its escorts");
     expect(out_->letters == std::vector<std::string>{letter}, "and carries Bo's letter");
-    expect(w.society().conserved(), "the money adds up");
+    expect(w.society().realBalanced(), "the money adds up");
     const auto saved = w.save();
     const auto document = checkpoint::encode(saved, {}, saved.npcs, saved.time);
     fs::create_directories(out);
@@ -783,20 +799,29 @@ Totals checkRoad(bool print)
                                (k.kind == "escort" && k.taker == "player-ada" && k.status == "taken");
         expect(playerContracts == 2, "Bo's letter and Ada's escort, both taken");
         // The loop's and the steering's state after an evening's pay and a night, and the dead prefixes' accounts
-        // (doc 79, 9.1), for Phase 3's drops and read-past to be checked on (fund:relief and farm: aren't here: README).
+        // (doc 79, 9.1): read past and dropped at the restore (fund:relief and farm: aren't here: README; society_tests'
+        // persistenceAndReplay drops them by hand).
         expect(document["society"]["loop"].isObject() && document["society"]["loop"]["steer"].isObject() &&
-                   document["society"]["loop"]["wages"].isObject(),
-               "the save holds the loop's state and the steering's");
-        expect(!loaded.restored.loop.steer.empty() && loaded.restored.loop.steer.on, "and the steering's state restores, on");
-        const auto prefixes = prefixesOf(loaded.restored);
-        for (const char* p : {"outside:", "estate:", "stores:", "caravan:", "till:", "bandits:", "contract:"})
-            expect(prefixes.count(p), std::string("an account with the prefix ") + p);
+                   document["society"]["loop"]["wages"].isObject() && document["society"].has("minted"),
+               "the save holds the loop's state, the steering's and the conserving economy's counters");
+        const auto before = prefixesOf(loaded.saved.society), after = prefixesOf(loaded.restored);
+        for (const char* p : {"outside:", "estate:", "caravan:"})
+            expect(before.count(p) && !after.count(p), std::string("the old economy's ") + p + " account read, then dropped");
+        for (const char* p : {"stores:", "till:", "bandits:", "contract:"})
+            expect(after.count(p), std::string("an account with the prefix ") + p + " kept");
     }
     roundTrips(loaded.saved, loaded.server, loaded.restored, "the road");
     auto whole = roadWorld(files);
     const auto restored = whole.restore(loaded.saved);
     expect(restored.ok, "the road: the whole save restores into the world: " + restored.message + " " + restored.targetId);
     realAccountsExact(loaded.saved.society, whole.society().state(), "the road (World::restore)");
+    // The caravan's account was the old economy's (dropped): the caravan goes, and Bo's letter it carried is open again,
+    // its 4p still in its escrow, for another courier (doc 79, 16.5: a clean drop on load, its letters reopened).
+    expect(whole.roads().caravans.empty(), "the road: the caravan, its account dropped, is dropped on load");
+    for (const auto& k : whole.roads().contracts)
+        if (k.kind == "courier" && k.poster == "player-bo")
+            expect(k.status == "open" && k.taker.empty() && whole.society().cash("contract:" + k.id) == 4,
+                   "the road: Bo's letter open again, its 4p in escrow: " + k.status);
     return totals;
 }
 
@@ -833,7 +858,7 @@ void theRoadsPackage()
            "the players' purses and their escrow poured into the treasury");
     Society society = roadWorld(parse(gunzip(RoadDir / "world.json.gz"), "the road's files")).society();
     society.reset(society.roster());
-    expect(society.restore(after.society) && society.conserved(), "the package's society restores, its money adding up");
+    expect(society.restore(after.society) && society.realBalanced(), "the package's society restores, its money adding up");
 }
 
 // --------------------------------------------------------------------------- Through Postgres (doc 79, 16.7)
@@ -894,7 +919,7 @@ int checkLoaded(const fs::path& dir)
 
 // Fixture (e): doc 78's "Reset economy rules" copy of live.economy from before doc 79, holding one rule, steerLean.
 // Today it becomes the world's rule lines as live.people_manifest() writes them (rule "<name>" N); the world loads with
-// it and the DEV save restores over it.
+// it (steerLean no rule now: skipped, never refused), opens at prosperity 0, and the DEV save restores over it.
 void theResetCopy()
 {
     const auto copy = parse(gunzip(Fixtures / "reset" / "economy.json.gz"), "the Reset economy rules copy");
@@ -905,7 +930,9 @@ void theResetCopy()
     expect(manifest.find("\nrule \"steerLean\"") == std::string::npos, "DEV's own manifest sets no steerLean");
     manifest += "rule \"steerLean\" " + std::to_string(lean) + "\n";
     const auto world = worldOf(Fixtures / "dev", manifest);
-    expect(world.society().rule("steerLean") == lean, "and steerLean is the copy's " + std::to_string(lean));
+    expect(world.society().rule("steerLean") == -1 && world.society().authored().economy.rules.empty(),
+           "steerLean (" + std::to_string(lean) + ") is no rule now: the record skipped");
+    expect(world.society().prosperity() == 0 && world.society().prosperitySetting() == 0, "and the world opens at prosperity 0");
     const auto document = parse(gunzip(Fixtures / "dev" / "checkpoint.json.gz"), "DEV's checkpoint");
     const auto save = loadSave(world, document, "dev under the Reset copy");
     expect(totalsOf(save.restored) == expected()[0].totals, "DEV's save restores over it, its totals unchanged");
@@ -969,7 +996,6 @@ int census()
         const auto world = worldOf(Fixtures / e.world);
         const auto loaded = loadSave(world, parse(gunzip(Fixtures / e.save), e.save), e.name);
         auto roster = world.society().authored();
-        roster.economy.rules["staged"] = 1;
         Society s(Roster::None);
         s.configure(roster);
         s.setDay(world.society().day());
@@ -1005,6 +1031,49 @@ int census()
     }
     return 0;
 }
+// The day's turn on each real fixture (doc 79, 15: the nightly set, the households and their bands, the Board's morning),
+// timed: each fixture restored, then the staged hours across midnight run again and again (save_compat_tests
+// --day-turn [N]). A read of the frozen copies, not a simulation: no clock runs, nothing is written.
+int dayTurn(int repeats)
+{
+    for (const auto& e : expected())
+    {
+        if (std::string(e.name) == "package")
+            continue;
+        const auto world = worldOf(Fixtures / e.world);
+        const auto loaded = loadSave(world, parse(gunzip(Fixtures / e.save), e.save), e.name);
+        std::vector<double> night, morning;
+        for (int r = 0; r < repeats; ++r)
+        {
+            Society s = world.society();
+            s.reset(world.society().roster());
+            expect(s.restore(loaded.saved.society), std::string(e.name) + ": restores for the day's turn");
+            const std::int64_t day = loaded.saved.society.budgetDay + 1;
+            s.stagedHourly(day * 24 - 1);           // (The hour before: the staged clock set, nothing run.)
+            const auto a = std::chrono::steady_clock::now();
+            s.stagedHourly(day * 24);               // 0:00: the night's set, today's households and their bands.
+            const auto b = std::chrono::steady_clock::now();
+            s.setMarketClock(double(day) + market::DawnHour / 24 + 1e-6);
+            s.marketMorning(day);                   // The Board's dawn: the ripples, the sweep, the slider's step.
+            const auto c = std::chrono::steady_clock::now();
+            night.push_back(std::chrono::duration<double, std::milli>(b - a).count());
+            morning.push_back(std::chrono::duration<double, std::milli>(c - b).count());
+        }
+        const auto stats = [](std::vector<double> v) {
+            std::sort(v.begin(), v.end());
+            double sum = 0;
+            for (double x : v)
+                sum += x;
+            std::ostringstream o;
+            o << "mean " << sum / double(v.size()) << " ms, median " << v[v.size() / 2] << " ms, worst " << v.back() << " ms";
+            return o.str();
+        };
+        std::cout << e.name << " (" << loaded.restored.residents.size() << " residents, " << loaded.restored.accounts.size()
+                  << " accounts), " << repeats << " times: the night's turn " << stats(night) << "; the Board's morning "
+                  << stats(morning) << "\n";
+    }
+    return 0;
+}
 } // namespace
 
 int main(int argc, char** argv)
@@ -1013,6 +1082,8 @@ int main(int argc, char** argv)
     {
         if (argc == 2 && std::string(argv[1]) == "--census")
             return census();
+        if ((argc == 2 || argc == 3) && std::string(argv[1]) == "--day-turn")
+            return dayTurn(argc == 3 ? std::max(1, std::atoi(argv[2])) : 20);
         if (argc == 3 && std::string(argv[1]) == "--make-tail")
             return makeTail(argv[2]);
         if (argc == 3 && std::string(argv[1]) == "--make-road")

@@ -301,7 +301,7 @@ void giving()
     expect(held(t.g, t.bo.entityId, "bread") == 1 && held(t.g, t.ash.entityId, "bread") == 2 && society.account(t.bo.entityId)->cash == boCash + 2,
            "accepted: the bread and the pennies are his: " + said);
     expect(contains(said, "It smells of"), "and it smells of her: " + said);
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     const auto* warmth = t.g.world().bonds().find(t.bo.entityId, t.ash.entityId);
     const double liked = warmth ? warmth->affinity : 0;
     expect(liked >= 5, "the gift warms him to her: " + std::to_string(liked));
@@ -347,7 +347,7 @@ void giving()
     t.g.command(&t.ash, json::dump(o));
     expect(contains(t.ash.said(), "The courier takes your letter"), "with an enclosure: " + t.ash.said());
     expect(society.account(t.ash.entityId)->cash == ashCash - 2 - 5 && held(t.g, t.ash.entityId, "beeswax") == ashWax - 2, "the 5p and 2 cakes of wax left her (and 2p postage): cash " + std::to_string(society.account(t.ash.entityId)->cash) + " from " + std::to_string(ashCash) + ", wax " + std::to_string(held(t.g, t.ash.entityId, "beeswax")));
-    expect(society.conserved(), "money conserved, held in the letter");
+    expect(society.realBalanced(), "real money balanced, held in the letter");
     enclose.set("item", "bread");
     enclose.set("quantity", 2);
     o.set("enclose", enclose);
@@ -380,7 +380,7 @@ void giving()
     t.g.world().advanceCalendar(57);
     t.run(2);
     expect(society.account(t.ash.entityId)->cash == ashBefore + 3 && held(t.g, t.ash.entityId, "herbs") == ashHerbs, "unread for 56 days: back to her");
-    expect(society.conserved(), "money conserved throughout");
+    expect(society.realBalanced(), "real money balanced throughout");
     fs::remove_all(root);
 }
 
@@ -552,7 +552,7 @@ void residentLetters()
     letters = t.caseOf(t.ash).array("letters");
     expect(contains(letters[0].string("text"), "tending me when I was down") && !letters[0].boolean("canReply"), "it thanks her for tending it; no reply by post");
     (void)start;
-    expect(society.conserved(), "money only moved");
+    expect(society.realBalanced(), "money only moved");
     if (!letters[0].string("enclosed").empty())
         expect(contains(letters[0].string("enclosed"), "p") && society.account("ui")->cash >= 0, "a few pennies from its own purse");
     // Three a week at most, one from any resident.
@@ -719,7 +719,7 @@ void favours()
     t.hours(25);
     const auto* after = w.bonds().find(t.ash.entityId, t.bo.entityId);
     expect(after && after->owed > 0 && after->trust < trusted - 8, "gone: he owes her for it, and she trusts him less: owed " + std::to_string(after ? after->owed : -1) + " trust " + std::to_string(after ? after->trust : -1) + " from " + std::to_string(trusted));
-    expect(society.conserved(), "money conserved");
+    expect(society.realBalanced(), "real money balanced");
     // A letter carried by a friend: Ash's to Cy, by Bo, who is paid when he hands it over.
     t.place(t.bo, 1, 2.5);
     t.place(t.cy, 0, 8.5);

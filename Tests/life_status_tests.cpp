@@ -62,7 +62,6 @@ AuthoredRoster docks()
                         person("wren", "civilian", "unloading ships at the piers", 30, {"ash_house", 3.5, 2.5}, {"piers", 6.5, 3.5}),
                         person("lady", "civilian", "at home in the Heights", 50, {"vance_house", 2.5, 2.5}, {"vance_house", 2.5, 2.5})};
     roster.kin = {{"ivar", "una", "spouse"}, {"ivar", "tam", "parent"}, {"una", "tam", "parent"}, {"birch", "wren", "spouse"}};
-    roster.economy.rules["staged"] = 1;
     return roster;
 }
 CareerWorld careers(const Society& s)
@@ -455,18 +454,15 @@ void theDoorAndRealMoney()
             s.shift(a, b, "", 0, std::int64_t(status::hash("c" + std::to_string(i)) % 9), "test move " + std::to_string(i % 7));
         expect(s.realBalanced(), "real money balanced after move " + std::to_string(i));
     }
-    // Off: the door counts nothing, and a staged payer is never topped up. (Not where RATW_STAGED_ECONOMY forces it on.)
-    if (Society::stagedForced())
-        return;
-    Society off(Roster::None);
-    auto roster = docks();
-    roster.economy.rules["staged"] = 0;
-    off.configure(roster);
-    off.addPlayer("player-ada");
-    const auto t = off.cash("treasury");
-    off.shift("treasury", "moss", "", 0, t, "test: emptied");
-    expect(!off.shift("treasury", "player-ada", "", 0, 50, "faction mission reward"), "off: an empty treasury can't pay");
-    expect(off.state().staged.empty(), "off: nothing staged");
+    // The gate's point (doc 79, 9.4): a penny made from nothing in a player's purse, or in escrow's real part, by any path
+    // the door doesn't see (a raw set here, as a duplication bug would), fails it; set back, it holds again.
+    const auto ada = s.cash("player-ada");
+    s.stagedSet("player-ada", ada + 1);
+    expect(!s.realBalanced(), "a penny made from nothing in a player's purse is caught");
+    s.stagedSet("player-ada", ada);
+    expect(s.realBalanced(), "and set back, balanced again");
+    s.stagedSet("contract:k1", s.cash("contract:k1") + 1);
+    expect(!s.realBalanced(), "a penny made from nothing in escrow is caught");
 }
 
 void theWelcomeOncePerHolderPerWeek()
@@ -617,7 +613,6 @@ void theClassesByPostKind()
     s.configure(docksAndCountry(true));
     Fates f;
     s.tendCareers(1.3, f.world(s));
-    expect(s.staged(), "the staged economy on");
     const auto kind = [&](const std::string& post) { return s.postKind(*s.position(post)).kind; };
     const auto cls = [&](const std::string& post) { return s.postClass(*s.position(post)); };
     expect(kind("job:moss") == "keeper" && cls("job:moss") == "middle", "the stall: a keeper's post, middle");
@@ -908,11 +903,6 @@ void build(Fixture& x)
     one("nessa", "at home in the Heights", 50);
     r.kin.push_back({"bo", "nessa", "spouse"});
     r.economy.treasury = 20000;
-    r.economy.storeRule = true;
-    r.economy.rules = {{"stockPrices", 0}, {"shelfFollow", 0}, {"wageDrift", 0}, {"treasuryDrift", 0}, {"surplus", 0}, {"patrons", 0},
-                       {"staged", 1}};
-    for (const auto& a : items::farms().areas)
-        r.economy.farms.areas[a.id].on = 1;
     x.s.configure(r);
     LifeDay day;
     day.communityOf = communityOf;
@@ -959,7 +949,6 @@ void farmPostsStillFill()
     Fixture x;
     build(x);
     auto& s = x.s;
-    expect(s.staged(), "the farms' world staged");
     run(s, 1 - .5 / 24, 1 + .5 / 24);
     s.tendCareers(2, x.world);
     int placed = 0;

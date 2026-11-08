@@ -24,6 +24,14 @@ void expect(bool condition, const std::string& message)
     if (!condition) throw std::runtime_error(message);
 }
 bool near(double a, double b) { return std::abs(a - b) < 1e-7; }
+// Every penny in every account (an operator's moves only move them: none made, none lost).
+std::int64_t totalCash(const Society& society)
+{
+    std::int64_t n = 0;
+    for (const auto& [id, a] : society.state().accounts)
+        n += a.cash;
+    return n;
+}
 double separation(Vec2 a, Vec2 b) { return std::hypot(a.x - b.x, a.y - b.y); }
 
 std::string societySignature(const Society& society)
@@ -31,9 +39,8 @@ std::string societySignature(const Society& society)
     std::ostringstream out;
     out << std::setprecision(17);
     const auto& state = society.state();
-    out << state.enabled << ' ' << state.minted << ' ' << state.sunk << ' ' << state.nextEntry << ' '
-        << state.budgetDay << ' ' << state.exportsRemaining << ' ' << state.importsRemaining << ' '
-        << state.herbPatch << ' ' << state.decisionRemainder;
+    out << state.enabled << ' ' << state.nextEntry << ' ' << state.budgetDay << ' ' << state.herbPatch << ' '
+        << state.decisionRemainder;
     for (const auto& account : state.accounts)
     {
         out << "|A " << account.first << ' ' << account.second.cash;
@@ -202,7 +209,7 @@ void finiteOperatorTransfers()
 {
     Society society;
     society.addPlayer("player-recipient");
-    const auto supply = society.moneySupply(), minted = society.state().minted, sunk = society.state().sunk;
+    const auto supply = totalCash(society);
     const auto treasury = *society.account("treasury"), recipient = *society.account("player-recipient");
     const auto sequence = society.state().nextEntry;
     expect(society.operatorTransfer("treasury", "player-recipient", "meal", 3, 17).ok, "Combined finite goods and money transfer succeeds.");
@@ -214,8 +221,7 @@ void finiteOperatorTransfers()
         entry.to == "player-recipient" && entry.item == "meal" && entry.quantity == 3 && entry.coins == 17, "Operator transfer emits an attributable ledger record.");
     expect(society.operatorTransfer("player-recipient", "npc_scout", "", 0, 4).ok, "Cash-only existing-account transfer succeeds.");
     expect(society.operatorTransfer("treasury", "npc_scout", "herbs", 2, 0).ok, "Goods-only transfer succeeds without requiring money.");
-    expect(society.moneySupply() == supply && society.state().minted == minted && society.state().sunk == sunk && society.conserved(),
-           "Operator movements never mint, sink, or replenish money.");
+    expect(totalCash(society) == supply && society.realBalanced(), "Operator movements never mint, sink, or replenish money.");
     const auto before = societySignature(society);
     using Request = std::tuple<std::string, std::string, std::string, int, std::int64_t>;
     for (const Request& request : std::vector<Request>{
@@ -244,13 +250,12 @@ void finiteOperatorTransfers()
     Society large(false);
     large.addPlayer("player-cap");
     auto capacity = large.state();
-    capacity.minted = 1000000000;
     capacity.accounts["treasury"].cash = 1000000;
     capacity.accounts["treasury"].stock["herbs"] = 99;
     capacity.accounts["player-cap"].cash = 999000000;
-    expect(large.restore(capacity), "Conserved billion-penny capacity fixture restores.");
+    expect(large.restore(capacity), "A billion-penny capacity fixture restores.");
     expect(large.operatorTransfer("treasury", "player-cap", "herbs", 99, 1000000).ok &&
-        large.account("player-cap")->cash == 1000000000 && large.account("treasury")->cash == 0 && large.conserved(),
+        large.account("player-cap")->cash == 1000000000 && large.account("treasury")->cash == 0 && large.realBalanced(),
         "Exact per-call quantity/coin and recipient cash limits remain safe.");
     const auto exact = societySignature(large);
     expect(!large.operatorTransfer("treasury", "player-cap", "meal", 1, 1).ok && societySignature(large) == exact,
@@ -298,12 +303,12 @@ void relocationJourneyAndPersistence()
     const Vec2 home{20.5, 14.5};
     const auto original = *world.entity(id);
     const auto originalLife = *world.society().resident(id);
-    const auto minted = world.society().state().minted;
+    const auto cash = totalCash(world.society());
     const auto nextEntry = world.society().state().nextEntry;
     expect(world.relocateResident(id, destination, home.x, home.y).ok, "Resident relocation accepted across an authored closed doorway.");
     expect(world.entity(id)->cellId == original.cellId && separation(world.entity(id)->position, original.position) == 0 &&
         world.society().resident(id)->homeCell == originalLife.homeCell, "Accepting relocation does not teleport or prematurely change the home.");
-    expect(world.society().state().minted == minted && world.society().state().nextEntry == nextEntry && world.society().conserved(),
+    expect(totalCash(world.society()) == cash && world.society().state().nextEntry == nextEntry && world.society().realBalanced(),
            "Accepting relocation cannot grant money or create an economic transfer.");
     const auto pending = worldSignature(world);
     expect(!world.relocateResident(id, "loft", 8.5, 6.5).ok && worldSignature(world) == pending, "A second intervention cannot silently overwrite an in-flight relocation.");
@@ -352,7 +357,7 @@ void relocationJourneyAndPersistence()
     expect(crossed && arrived && walkFrames > 30, "Restored resident physically crosses cells and reaches the chosen home.");
     expect(loaded.society().resident(id)->homeCell == destination && near(loaded.society().resident(id)->homeX, home.x) &&
         near(loaded.society().resident(id)->homeY, home.y), "Only physical arrival commits new home coordinates.");
-    expect(loaded.society().conserved(), "Physical relocation retains conserved accounting while independent settlement trades continue.");
+    expect(loaded.society().realBalanced(), "Physical relocation keeps real money balanced while independent settlement trades continue.");
     World arrivedReload;
     expect(arrivedReload.restore(loaded.save()).ok && arrivedReload.society().resident(id)->relocationCell.empty() &&
         arrivedReload.society().resident(id)->homeCell == destination, "Committed new home survives a second restart without replaying the relocation.");

@@ -200,8 +200,12 @@ int main()
         bad.set("weather", "rain");
         expect(!checkpoint::decode(bad, back, serverBack, error) && error.find("weather") != std::string::npos, "a weather record that isn't one");
         bad = parsed;
+        bad.find("society")->set("nextEntry", -5);
+        expect(checkpoint::decode(bad, back, serverBack, error) && !World().restore(back).ok, "a society whose counters are broken");
+        // (The conserving economy's counters are read past since doc 79, 14: a save's broken `minted` refuses nothing.)
+        bad = parsed;
         bad.find("society")->set("minted", -5);
-        expect(checkpoint::decode(bad, back, serverBack, error) && !World().restore(back).ok, "a society that doesn't add up");
+        expect(checkpoint::decode(bad, back, serverBack, error) && World().restore(back).ok, "a save's old `minted` read past");
         // A document from before the clock was saved starts from the noon epoch.
         auto older = parsed;
         older.erase("clockOffsetHours");

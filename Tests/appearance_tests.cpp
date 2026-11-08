@@ -206,18 +206,21 @@ int main()
         const auto reserveBefore = owned.society().account("treasury")->cash;
         auto& ownedWolf = owned.addPlayer(ownedId, "Owned wolf");
         ownedWolf.appearance = custom;
+        // (Doc 79, 9.2: the welcome is made, a faucet the door counts; the treasury untouched.)
         check(owned.society().account(ownedId) && owned.society().account(ownedId)->cash == 20 &&
-                  owned.society().account("treasury")->cash == reserveBefore - 20 && owned.society().conserved(),
-              "Authenticated wolf IDs receive exactly one finite welcome purse");
+                  owned.society().account("treasury")->cash == reserveBefore && owned.society().realFaucets() == 20 &&
+                  owned.society().realBalanced(),
+              "Authenticated wolf IDs receive exactly one welcome purse, a counted faucet");
         const auto* purse = owned.society().account(ownedId);
         check(Society::stock(*purse, "herbs") == 2 && Society::stock(*purse, "meal") == Society::StartingMeals,
-              "Authenticated wolf IDs receive real starter goods: herbs from the reserve, meals of their own (doc 36)");
+              "Authenticated wolf IDs receive real starter goods: herbs and meals of their own (doc 36)");
         owned.addPlayer(ownedId, "Repeated entry");
-        check(owned.society().account("treasury")->cash == reserveBefore - 20,
+        check(owned.society().account(ownedId)->cash == 20 && owned.society().realFaucets() == 20 &&
+                  owned.society().account("treasury")->cash == reserveBefore,
               "Re-entering same authenticated wolf does not repeat welcome grant");
         check(owned.society().quote(ownedId, "npc_keeper", "meal", 1, true).ok &&
-                  owned.society().trade(ownedId, "npc_keeper", "meal", 1, true).ok && owned.society().conserved(),
-              "Authenticated wolf can quote and complete ordinary conserved trade");
+                  owned.society().trade(ownedId, "npc_keeper", "meal", 1, true).ok && owned.society().realBalanced(),
+              "Authenticated wolf can quote and complete an ordinary trade, real money balanced");
         check(owned.society().gather(ownedId).ok && owned.society().eat(ownedId).ok,
               "Authenticated wolf IDs participate in gathering and eating");
         const auto ownedSave = owned.save();
@@ -243,8 +246,9 @@ int main()
                   "Malformed owned-wolf ID cannot open an economy account or debit reserve");
             auto forged = ownedSave;
             forged.society.accounts.emplace(badId, EconomyAccount{});
-            check(!ownedReload.restore(forged).ok && ownedReload.society().conserved(),
-                  "Malformed wolf account ID is rejected by checkpoint allowlist");
+            // (Doc 79, 14: not a player's id, so not real money: an unknown staged account, dropped at the restore.)
+            check(ownedReload.restore(forged).ok && !ownedReload.society().account(badId) && ownedReload.society().realBalanced(),
+                  "A malformed wolf account ID is no player's: dropped by the checkpoint's restore");
         }
         std::cout << checks << " appearance checks passed\n";
         return 0;

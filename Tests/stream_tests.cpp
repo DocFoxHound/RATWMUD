@@ -666,7 +666,7 @@ void anOffstageResidentCommutes()
         expect(count <= 1, "A cell is fetched at most once to learn its crossings: " + cell);
     for (int second = 0; second < 300; ++second) world.tick(1);
     expect(world.loadedCells() <= 1, "Nothing stays in memory for an offstage resident: " + std::to_string(world.loadedCells()));
-    expect(world.society().conserved(), "Money is conserved");
+    expect(world.society().realBalanced(), "Real money is balanced");
 }
 
 void aPlayerBringsResidentsOnstage()

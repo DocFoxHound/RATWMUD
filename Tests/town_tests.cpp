@@ -51,7 +51,7 @@ void run(World& world, int seconds)
         for (const auto& pair : world.entities())
             expect(pair.second.activity.find("route unavailable") == std::string::npos,
                    pair.first + " has no route: " + pair.second.activity);
-        expect(world.society().conserved(), "Town money stays conserved");
+        expect(world.society().realBalanced(), "Real money stays balanced in town");
     }
 }
 void layout()
@@ -103,7 +103,7 @@ void playerServices()
     player.position = {keeper->position.x, keeper->position.y + 1};
     const auto bought = world.trade("player-visitor", "wren", "meal", 1, true);
     expect(bought.ok, "Players buy from the shopkeeper: " + bought.message);
-    expect(held(world, "player-visitor", "meal") == Society::StartingMeals + 1 && world.society().conserved(), "Purchase moves real goods");
+    expect(held(world, "player-visitor", "meal") == Society::StartingMeals + 1 && world.society().realBalanced(), "Purchase moves real goods");
     expect(!world.trade("player-visitor", "npc_keeper", "meal", 1, true).ok, "Demo keeper is absent from town");
 }
 void dailyLife()
@@ -167,7 +167,7 @@ void needsPaused()
         expect(entry.kind != "resident food purchase" && entry.kind.find("wages") == std::string::npos, "nothing bought, nobody paid: " + entry.kind);
     expect(world.society().resident("linden")->hunger == 58, "hunger paused");
     expect(world.society().account("treasury")->cash == treasury && world.society().account("linden")->cash == purse, "the purses as they were");
-    expect(world.society().conserved(), "Money is conserved");
+    expect(world.society().realBalanced(), "Real money is balanced");
 }
 // Home storage (Docs/Design/36-home-storage.md): every home indoors has a larder, a chest, a wardrobe and a woodpile,
 // empty to begin with (what goes in them is the household's own: nothing stocks them since doc 66's Phase 5).
@@ -452,18 +452,18 @@ void residentsChangeLive()
     const auto loaded = candidate.loadWorldFiles(files, "candidate");
     expect(loaded.ok, "The candidate world loads: " + loaded.message);
 
-    const auto supply = world.society().moneySupply();
-    const auto fennelCash = world.society().account("fennel")->cash;
+    const auto real = world.society().realTotal();
     const auto treasury = world.society().account("treasury")->cash;
     expect(world.adoptResident(candidate, "newbie").ok, "A new NPC joins the running world");
     expect(world.entity("newbie") && world.entity("newbie")->npc && world.society().resident("newbie"), "With a body and a life");
-    expect(world.society().conserved(), "The newcomer's authored purse is recorded as new money");
-    expect(world.society().moneySupply() == supply + world.society().account("newbie")->cash, "Only the newcomer's purse is new");
+    expect(world.society().account("newbie") && world.society().realBalanced() && world.society().realTotal() == real,
+           "The newcomer's purse is staged: no real money made");
     expect(world.adoptResident(candidate, "sloe").ok && world.entity("sloe")->activity == "on the wall", "A changed NPC is updated in place");
     expect(world.society().spec("sloe")->workLabel == "on the wall", "Their definition follows the change");
     expect(world.adoptResident(candidate, "fennel").ok, "A removed NPC leaves");
     expect(!world.entity("fennel") && !world.society().resident("fennel") && !world.society().spec("fennel"), "Body, life and definition are gone");
-    expect(world.society().account("treasury")->cash == treasury + fennelCash && world.society().conserved(), "Their purse returns to the town");
+    expect(!world.society().account("fennel") && world.society().account("treasury")->cash == treasury && world.society().realBalanced(),
+           "Their (staged) purse goes with them (doc 79, 14)");
     expect(!world.adoptResident(candidate, "nobody").ok, "Unknown NPCs are refused");
     expect(!world.adoptResident(candidate, "player-visitor").ok || !world.entity("player-visitor"), "Players are never adopted as NPCs");
     run(world, 120);
@@ -547,7 +547,7 @@ void unplacedResidents()
     // Given a home live (a push): Rook arrives at home, not at work.
     World candidate;
     expect(candidate.loadWorldFiles(placed, "placed").ok, "The world with Rook placed loads");
-    const auto supply = world.society().moneySupply();
+    const auto real = world.society().realTotal();
     const auto adopted = world.adoptResident(candidate, "rook");
     expect(adopted.ok, "The unplaced NPC is placed live: " + adopted.message);
     const auto* rook = world.entity("rook");
@@ -555,8 +555,7 @@ void unplacedResidents()
            "And spawns at home");
     expect(world.society().resident("rook") && world.society().account("rook") && !world.society().unplaced("rook"),
            "With a life and a purse, out of the unplaced");
-    expect(world.society().conserved() && world.society().moneySupply() == supply + world.society().account("rook")->cash,
-           "Only their authored purse is new money");
+    expect(world.society().realBalanced() && world.society().realTotal() == real, "Their purse is staged: no real money made");
     run(world, 30);
     // And unplaced again: the body goes, the roster entry stays.
     World unplacedAgain;
@@ -564,7 +563,7 @@ void unplacedResidents()
     const auto left = world.adoptResident(unplacedAgain, "rook");
     expect(left.ok && !world.entity("rook") && !world.society().resident("rook") && world.society().unplaced("rook"),
            "An NPC unplaced live loses their body and keeps their place in the roster: " + left.message);
-    expect(world.society().conserved(), "Money stays conserved");
+    expect(world.society().realBalanced(), "Real money stays balanced");
 
     // Given a home by a new build: the old save restores into it, and Rook is there, at home.
     World rebuilt;
@@ -645,7 +644,7 @@ void factionClaims()
 }
 
 // A checkpoint restores into a world rebuilt since: residents who remain keep their lives and money, a newcomer
-// starts fresh with the authored purse, and a departed resident's coins return to the treasury.
+// starts fresh with the authored purse, and a departed resident's (staged) purse goes with it (doc 79, 14).
 void checkpointsSurviveAChangedPopulation()
 {
     auto before = town();
@@ -653,7 +652,6 @@ void checkpointsSurviveAChangedPopulation()
     run(before, 60);
     const auto saved = before.save();
     const auto sorrelCash = before.society().account("sorrel")->cash;
-    const auto fennelCash = before.society().account("fennel")->cash;
     const auto treasury = before.society().account("treasury")->cash;
     auto files = greyfenFiles();
     auto& manifest = files["world.ratw"];
@@ -673,9 +671,11 @@ void checkpointsSurviveAChangedPopulation()
     expect(after.society().resident("newbie") && after.entity("newbie"), "The newcomer is in the world");
     expect(!after.society().resident("fennel") && !after.society().account("fennel") && !after.entity("fennel"),
            "The departed resident is gone");
-    expect(after.society().account("treasury")->cash == treasury + fennelCash,
-           "The departed resident's coins return to the treasury");
-    expect(after.society().conserved(), "Money stays conserved across the rebuild");
+    const auto& t = after.society().statusTable();
+    expect(after.society().account("treasury")->cash == std::clamp(treasury, t.treasuryFloor, t.treasuryCeiling),
+           "The departed resident's coins don't go to the treasury: it is as saved, settled in its range");
+    expect(after.society().realBalanced() && after.society().realTotal() == before.society().realTotal(),
+           "Real money the same across the rebuild");
     run(after, 30);
 }
 

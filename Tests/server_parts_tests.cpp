@@ -542,7 +542,7 @@ void directorTests()
     const auto transfer = envelope(bridge, "transfer-1", "economy_transfer",
                                    R"({"from":"treasury","to":"player-ash","item":"meal","quantity":1,"coins":3})");
     expect(ok(bridge.execute(transfer, "transfer-1", hash, world, online, 1001, commit, notice)), "operator transfers existing resources");
-    expect(world.society().account("player-ash")->cash == 23 && world.society().conserved(), "exactly three pennies, money conserved");
+    expect(world.society().account("player-ash")->cash == 23 && world.society().realBalanced(), "exactly three pennies, real money balanced");
     expect(ok(bridge.execute(transfer, "transfer-1", hash, world, online, 1200, commit, notice)), "a retry replays its receipt after expiry");
     expect(commits == 1 && world.society().account("player-ash")->cash == 23, "a retry neither commits again nor pays twice");
 

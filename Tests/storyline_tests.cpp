@@ -226,7 +226,7 @@ void sources()
             if (k.poster == "u1" && k.id != firstId && k.status == "open")
                 next = k.id;
         expect(!next.empty() && s.account("u1")->cash < purse, "the next job posted from u1's own purse");
-        expect(s.conserved(), "money conserved");
+        expect(s.realBalanced(), "real money balanced");
         for (auto& k : w.roads().contracts)
             if (k.id == next)
                 k.status = "done", k.taker = ash;

@@ -94,7 +94,7 @@ void built()
         t.enter(t.bo, 2, "bo", "Bo", 1, 11.5);
         const auto ash = t.ash.entityId, bo = t.bo.entityId;
         s.shift("treasury", ash, "", 0, 500, "test purse");
-        expect(s.conserved(), "conserved at the start");
+        expect(s.realBalanced(), "real money balanced at the start");
 
         // A Dungeon Master posts a market cover in Ridgemere.
         auto posted = t.g.postProject("cover", "ridgemere", "", -1, -1, "", "dm");
@@ -115,7 +115,7 @@ void built()
         auto said = order(t, t.ash, give);
         expect(contains(said, "You give 300 pennies"), "she gives 300p: " + said);
         expect(s.account("project:" + id) && s.account("project:" + id)->cash == 300, "the coin in the project's purse");
-        expect(s.conserved(), "conserved after the gift");
+        expect(s.realBalanced(), "real money balanced after the gift");
         expect(!t.g.projects().find(id)->shown.at(ash).empty(), "shown on its plaque as Ash");
 
         // Two at work in two roles: 1.8 a minute's work-hour; one alone: 1.
@@ -144,7 +144,7 @@ void built()
         said = order(t, t.bo, cmd({{"type", "project"}, {"verb", "handin"}, {"project", id}, {"item", "cord"}, {"quantity", 6}}));
         expect(contains(said, "You hand in 6"), "Bo hands in 6 cord: " + said);
         expect(t.g.projects().find(id) && s.account("project:" + id) && Society::stockAll(*s.account("project:" + id), "cord") == 6, "the cord is the project's");
-        expect(s.conserved(), "conserved after the cord");
+        expect(s.realBalanced(), "real money balanced after the cord");
 
         // The rest by hand: the materials, and the hours.
         for (const auto& [item, n] : t.g.projects().find(id)->needs)
@@ -166,7 +166,7 @@ void built()
         for (const auto* d : t.g.deeds().byDoer(ash))
             deed |= d->kind == "built_project" && d->weight >= fame::Notable;
         expect(deed, "the chief giver's deed is notable");
-        expect(s.conserved(), "conserved at the finish");
+        expect(s.realBalanced(), "real money balanced at the finish");
         // Another, cancelled: its gifts go back.
         posted = t.g.postProject("mend", "larkfield", "", -1, -1, "", "dm");
         expect(posted.ok, "a mending at Larkfield: " + posted.message);
@@ -177,7 +177,7 @@ void built()
         expect(contains(said, "You give 40"), "Bo gives 40p as a friend of the town: " + said);
         expect(t.g.cancelProject(posted.targetId, "test").ok, "cancelled");
         expect(s.account(bo)->cash == boCash, "Bo's 40p came back whole");
-        expect(s.conserved(), "conserved after the cancel");
+        expect(s.realBalanced(), "real money balanced after the cancel");
         t.g.settle();
         t.run(2);
     }
@@ -309,7 +309,7 @@ void effects()
         expect(t.g.projects().find(made.targetId)->state == "built" && w.standingWorks().watchposts.count(t.g.projects().find(made.targetId)->cell) &&
                    w.standingWorks().watchposts.at(t.g.projects().find(made.targetId)->cell) == 1,
                "mended: its full effect back (" + std::to_string(t.g.projects().find(made.targetId)->condition) + ", " + t.g.projects().find(made.targetId)->state + ") " + t.ash.said());
-        expect(s.conserved(), "conserved throughout");
+        expect(s.realBalanced(), "real money balanced throughout");
     }
     fs::remove(save);
     fs::remove(save + ".journal");
@@ -385,7 +385,7 @@ void bounds()
         }
         expect(took > 0, "a theft from them succeeds now and then");
         expect(s.account("um")->cash == cash, "and never takes coin");
-        expect(s.conserved(), "conserved");
+        expect(s.realBalanced(), "real money balanced");
     }
     // A protected record for no such resident: the world refuses to load.
     {

@@ -218,7 +218,7 @@ void townsAndCaravans()
            "A caravan sets out for west along the road");
     const auto load = stock(w, w.roads().caravans[0].account, "meal");
     expect(load > 0, "carrying real goods");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
     w.roads().camps.clear();                     // No bandits this time.
     w.takeEvents();
     w.believe("em", "e1", "owes half the market", "overheard", .9);   // News in the capital's market.
@@ -237,7 +237,7 @@ void townsAndCaravans()
            "and the carters told the west market what they heard: " + w.rumoursAbout("wm", "e1", "East 1"));
     run(w, 7 * 150 + 20);
     expect(w.roads().caravans.empty(), "Back home empty, the caravan is done");
-    expect(w.society().conserved(), "Money is still conserved");
+    expect(w.society().realBalanced(), "Real money is still balanced");
     expect(stock(w, "treasury", "meal") + stock(w, "stores:west", "meal") == treasuryMeals, "The meals moved, none made");
 }
 
@@ -262,7 +262,7 @@ void banditsAndContracts()
     expect(w.rumoursAbout("wm", "camp_mid", "The bandits").find("raids the road") != std::string::npos,
            "The west market hears of it: " + w.rumoursAbout("wm", "camp_mid", "The bandits"));
     expect(w.roads().camps[0].hunger < 100 - load * 3, "The loot feeds the bandits");
-    expect(w.society().conserved(), "The reward was set aside, not made");
+    expect(w.society().realBalanced(), "The reward was set aside, not made");
 
     // Ada, in west, takes the escort. The camp is gone by the next caravan (the watch), but she has to be there.
     auto* ada = w.entity("player-ada");
@@ -295,7 +295,7 @@ void banditsAndContracts()
     const bool arrived = walkWith(w, "player-ada", trip, 900);
     expect(arrived, "It reaches west with her");
     expect(w.society().account("player-ada")->cash == purse + 12, "and she is paid for guarding it");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
     // The wagon is never saved as itself: a restart brings it back from the caravan.
     for (const auto& npc : w.save().npcs)
         expect(npc.id.rfind("road:", 0) != 0, "Road folk are not saved as characters");
@@ -365,7 +365,7 @@ void couriers()
     w.tick(.6);
     expect(w.society().account("player-ada")->cash == purse + 5, "Delivered in person: she is paid");
     expect(w.bonds().find("wm", "player-ada") && w.bonds().find("wm", "player-ada")->trust > 0, "and Wren trusts her a little");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
 }
 
 // Bandits of this camp standing in the world now.
@@ -420,7 +420,7 @@ void banditsInPerson()
     expect(!w.banditDemand("player-ada"), "They let her go");
     run(w, 30);
     expect(!w.banditDemand("player-ada"), "and leave her be for a while");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
     // She goes away; they are numbers again.
     ada->cellId = id(8);
     run(w, 2);
@@ -582,7 +582,7 @@ void aFight()
     for (const auto& e : w.takeEvents())
         recorded |= e.kind == "camp cleared" && e.actor == "player-ada";
     expect(recorded, "the camp's breaking is recorded, for the game's deed");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
 }
 
 void beatenAndRobbed()
@@ -616,7 +616,7 @@ void beatenAndRobbed()
     expect(now < purse && now >= purse / 2 - 1, "and take half her purse (" + std::to_string(purse) + " -> " + std::to_string(now) + ")");
     expect(!w.entity("player-ada")->dead && w.entity("player-ada")->downedLeft > 0, "but she lives, Downed");
     expect(!w.banditDemand("player-ada"), "They leave her be");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
 }
 
 void banditsCalled()
@@ -690,7 +690,7 @@ void residentsTakeWork()
     expect(delivered && w.society().account("ex")->cash >= bram + 5, "Bram hands Wren the letter and is paid");
     expect(arrived, "The caravan arrives");
     expect(w.society().account("eg")->cash >= holt + 12, "and Holt, who walked with it, is paid");
-    expect(w.society().conserved(), "Money is conserved");
+    expect(w.society().realBalanced(), "Real money is balanced");
 }
 
 void rumoursSpread()
@@ -895,8 +895,7 @@ void communitiesStayPlain()
            "the old map's town of the same name is a town as ever");
 }
 
-// NPC-posted courier contracts (the letters): with the staged economy on they are a faucet, at most courierADay posted a
-// day across the realm (doc 79, 9.3). With it off, as before. (The staged part runs where RATW_STAGED_ECONOMY forces it.)
+// NPC-posted courier contracts (the letters): a faucet, at most courierADay posted a day across the realm (doc 79, 9.3).
 void lettersCapped()
 {
     const auto letters = [](std::int64_t cap, std::map<std::int64_t, int>& byDay) {
@@ -929,22 +928,12 @@ void lettersCapped()
             if (k.kind == "courier" && w.entity(k.poster) && w.entity(k.poster)->npc)
                 ++byDay[std::int64_t(std::floor(k.created))], ++n;
         // The one gate every NPC courier posting asks (the letters here, the storyline parcels in the Game).
-        if (cap >= 0 && w.society().staged())
-        {
-            expect(w.npcCouriersToday() <= cap, "today's NPC courier contracts within the cap");
-            expect(w.npcCourierRoom() == (w.npcCouriersToday() < cap), "the gate says no once the day's cap is posted");
-        }
-        else
-            expect(w.npcCourierRoom(), "with the rule off, the gate always has room");
+        expect(w.npcCouriersToday() <= cap, "today's NPC courier contracts within the cap");
+        expect(w.npcCourierRoom() == (w.npcCouriersToday() < cap), "the gate says no once the day's cap is posted");
         return n;
     };
-    std::map<std::int64_t, int> off;
-    if (!Society::stagedForced())
-    {
-        expect(letters(-1, off) > 0, "with the rule off, the letters are posted as before");
-        return;
-    }
-    std::map<std::int64_t, int> none, one;
+    std::map<std::int64_t, int> none, one, many;
+    expect(letters(1000, many) > 0, "a cap well over the day's letters: the letters are posted as before");
     expect(letters(0, none) == 0, "staged, a cap of 0: no NPC-posted letters");
     expect(letters(1, one) > 0, "staged, a cap of 1: letters still posted");
     for (const auto& [day, n] : one)

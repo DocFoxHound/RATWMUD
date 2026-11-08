@@ -738,8 +738,9 @@ void theEconomyRefounds()
         std::string problem;
         expect(g.start(problem), "starts with a file save: " + problem);
         auto& society = g.world().society();
-        fresh = society.moneySupply();
-        expect(society.openAccount("fund:test:marker") && society.shift("treasury", "fund:test:marker", "", 0, 7, "a test's mark"),
+        fresh = society.realTotal();
+        // (Escrow, so a restore keeps it to the penny: a fund: account is the old economy's, dropped at load since doc 79.)
+        expect(society.openAccount("contract:test-marker") && society.shift("treasury", "contract:test-marker", "", 0, 7, "a test's mark"),
                "a mark is made in the economy");
         g.save();
     }
@@ -754,14 +755,14 @@ void theEconomyRefounds()
     };
     {
         const auto kept = start(false);
-        const auto* mark = kept->world().society().account("fund:test:marker");
+        const auto* mark = kept->world().society().account("contract:test-marker");
         expect(mark && mark->cash == 7, "without the option, the saved economy loads (the mark is there)");
     }
     {
         const auto refounded = start(true);
         const auto& society = refounded->world().society();
-        expect(!society.account("fund:test:marker"), "with it, the saved economy is set aside (no mark)");
-        expect(society.conserved() && society.moneySupply() == fresh, "and the realm's money stands afresh, as at the start");
+        expect(!society.account("contract:test-marker"), "with it, the saved economy is set aside (no mark)");
+        expect(society.realBalanced() && society.realTotal() == fresh, "and the realm's real money stands afresh, as at the start");
     }
     std::remove(path.c_str());
 }
@@ -1771,24 +1772,24 @@ void theStoreRoomConsole()
                    "/store is refused on a world that isn't a dev world: " + (reply ? reply->string("text") : ""));
             continue;
         }
-        expect(reply && reply->boolean("ok") && reply->string("text").find("iron_bar (making)") != std::string::npos &&
-                   reply->string("text").find("outside:wharf") != std::string::npos,
-               "/store brann lists the smith's goods and the Wharf's purse: " + (reply ? reply->string("text") : ""));
+        // (Doc 79, 17: the store room's draw is a raw add into the till; the list is the till's wares and shelves.)
+        expect(reply && reply->boolean("ok") && reply->string("text").find("sword:") != std::string::npos &&
+                   reply->string("text").find("shelf") != std::string::npos,
+               "/store brann lists the smith's wares and their shelves: " + (reply ? reply->string("text") : ""));
         const auto till = g.world().society().tillOf("brann");
         const auto cash = g.world().society().cash(till);
+        const auto bars = Society::stock(*g.world().society().account(till), "iron_bar");
+        const auto real = g.world().society().realTotal();
         g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann iron_bar 2"}}));
         reply = ada.last("devResult");
-        // (The cost to the Wharf, less the gate toll (30%), the treasury's: doc 68; iron bars are the iron area's, its
-        // works not on in this world, so the Wharf keeps the whole of it as the Country did, nothing paid beyond the realm:
-        // doc 73, after wharf7.)
-        const auto drawnCost = 2 * Society::catalogPrice("iron_bar");
-        expect(reply && reply->boolean("ok") && g.world().society().cash(Society::WharfFund) == drawnCost - drawnCost * 30 / 100 &&
-                   g.world().society().cash(till) == cash - 2 * Society::catalogPrice("iron_bar"),
-               "/store brann iron_bar 2 draws them: " + (reply ? reply->string("text") : ""));
-        g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann flour 1"}}));
-        expect(!ada.last("devResult")->boolean("ok"), "not what the smithy doesn't use");
+        expect(reply && reply->boolean("ok") && Society::stock(*g.world().society().account(till), "iron_bar") == bars + 2 &&
+                   g.world().society().cash(till) == cash && g.world().society().realTotal() == real &&
+                   g.world().society().realBalanced(),
+               "/store brann iron_bar 2 adds them to the till, no money moved: " + (reply ? reply->string("text") : ""));
+        g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann nothing_at_all 1"}}));
+        expect(!ada.last("devResult")->boolean("ok"), "not a good the catalogue doesn't know");
         g.command(&ada, cmd({{"type", "dev"}, {"command", "/store brann iron_bar"}}));
-        expect(!ada.last("devResult")->boolean("ok"), "a draw needs its count");
+        expect(!ada.last("devResult")->boolean("ok"), "an add needs its count");
     }
     fs::remove_all(dir);
 }

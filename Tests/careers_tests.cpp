@@ -89,7 +89,7 @@ void positionsAndFamilies()
     expect(s.family("hale", "tam") && s.family("tam", "ivy"), "One house and one name: family");
     expect(!s.family("hale", "rook") && !s.family("hale", "wren"), "A neighbour is not family");
     expect(s.household("hale", "ivy") && !s.household("hale", "rook"), "Household is the home");
-    expect(s.conserved(), "Money is conserved");
+    expect(s.realBalanced(), "Real money is balanced");
 }
 
 void apprenticeshipAndSuccession()
@@ -125,11 +125,11 @@ void apprenticeshipAndSuccession()
         for (auto& n : s.tendCareers(died + later, fates.world(s)))
             after.push_back(n);
     expect(noted(after, "estate settled", "hale"), "A day on, the estate is settled");
-    // (In the staged economy, doc 79, 6.5, an NPC's coins are staged and drop; its goods alone go to the family.)
-    const auto inherited = s.staged() ? 0 : haleCash;
-    expect(s.account("hale")->cash == 0 && s.account("tam")->cash + s.account("ivy")->cash == tamCash + ivyCash + inherited,
-           s.staged() ? "staged: the coins dropped, none to the family" : "shared among the family, nothing made or lost");
-    expect(s.conserved(), "Money is still conserved");
+    // (Doc 79, 6.5: an NPC's coins are staged and drop; its goods alone go to the family.)
+    (void)haleCash;
+    expect(s.account("hale")->cash == 0 && s.account("tam")->cash + s.account("ivy")->cash == tamCash + ivyCash,
+           "the coins dropped, none to the family (staged)");
+    expect(s.realBalanced(), "Real money is still balanced");
     expect(s.jobOf("tam") && s.jobOf("tam")->id == "job:hale", "The apprentice steps up to keep the stall");
     expect(noted(after, "succession", "tam") && noted(after, "vacancy", "tam"),
            "and his own errand-running job falls empty in turn");
@@ -179,7 +179,7 @@ void theBestTrainedInherits()
             expect(s.jobOf("rook") && s.jobOf("rook")->id == "job:smith" && took >= 6,
                    "With no apprentice and no master about, the best-trained takes the forge after five days (" + std::to_string(took) + ")");
         expect(noted(notes, "succession", master ? "wren" : "rook"), "and the succession is noted");
-        expect(s.conserved(), "Money is conserved");
+        expect(s.realBalanced(), "Real money is balanced");
     }
 }
 
@@ -211,7 +211,8 @@ void noFamilyGoesToTheTown()
     s.died("rook", 1.1);
     s.tendCareers(2.2, fates.world(s));
     // (In the staged economy, doc 79, 6.5, an NPC's coins are staged and drop, to the town as to anyone.)
-    expect(s.account("treasury")->cash == treasury + (s.staged() ? 0 : rook), "With no family, the estate goes to the town");
+    (void)rook;
+    expect(s.account("treasury")->cash == treasury, "With no family, the estate's (staged) coins drop: none to the town");
     // Nobody is out of work, so his odd jobs wait; then the weaver's loom falls empty and Ivy... stays at her loom.
     for (int later = 3; later <= 10; ++later)
         s.tendCareers(1.1 + later, fates.world(s));

@@ -486,18 +486,22 @@ void sensesAndMapTests()
 void societyTests()
 {
     World w;
+    w.addPlayer("player-ash", "Ash");
     const auto good = wire::society(w.save().society);
-    expect(wire::readSociety(good).minted >= 0, "the world's society reads back");
+    expect(wire::readSociety(good).nextEntry > 0, "the world's society reads back");
     expect(!good["residents"].fields().empty() && !good["accounts"].fields().empty(), "and it has residents and purses");
+    expect(!good.has("minted") && !good.has("sunk") && !good.has("loop"), "no conserving economy's counters are written (doc 79, 14)");
     const auto refused = [&](const Value& bad, const std::string& what) {
-        expect(wire::readSociety(bad).minted == -1, "the whole society is refused: " + what);
+        expect(wire::readSociety(bad).nextEntry == 0, "the whole society is refused: " + what);
     };
-    for (const char* key : {"minted", "sunk", "nextEntry", "budgetDay", "exportsRemaining", "importsRemaining", "herbPatch",
-                            "decisionRemainder"})
+    for (const char* key : {"nextEntry", "budgetDay", "herbPatch", "decisionRemainder"})
     {
         auto bad = good;
         bad.set(key, "1");
         refused(bad, std::string(key) + " as a string");
+        auto gone = good;
+        gone.erase(key);
+        refused(gone, std::string("no ") + key);
     }
     auto ledger = good;
     ledger.set("ledger", Value::object());
@@ -512,24 +516,31 @@ void societyTests()
         bad.find("residents")->find(firstResident)->set(key, 7);
         refused(bad, std::string("a resident's ") + key + " as a number");
     }
-    const auto firstAccount = good["accounts"].fields().front().first;
+    // A player's purse broken refuses the save (its money is real); a resident's (staged) is made again at restore.
     auto nullAccount = good;
-    nullAccount.find("accounts")->set(firstAccount, nullptr);
-    refused(nullAccount, "a null purse");
+    nullAccount.find("accounts")->set("player-ash", nullptr);
+    refused(nullAccount, "a player's null purse");
     auto stringAccount = good;
-    stringAccount.find("accounts")->set(firstAccount, "rich");
-    refused(stringAccount, "a purse as a string");
+    stringAccount.find("accounts")->set("player-ash", "rich");
+    refused(stringAccount, "a player's purse as a string");
     auto stringCash = good;
-    stringCash.find("accounts")->find(firstAccount)->set("cash", "10");
-    refused(stringCash, "cash as a string");
+    stringCash.find("accounts")->find("player-ash")->set("cash", "10");
+    refused(stringCash, "a player's cash as a string");
+    auto npcCash = good;
+    npcCash.find("accounts")->find("npc_cook")->set("cash", "10");
+    expect(wire::readSociety(npcCash).nextEntry > 0, "a resident's (staged) cash as a string is read past, not refused");
     refused(Value("society"), "a society that isn't an object");
     // A save from before doc 66's Phase 5 carries the economy's state (its books, houses, memory, monitor and crafting
-    // grant): read past, the society read all the same.
+    // grant), and one from before doc 79 the conserving economy's counters and the loop: all read past.
     auto older = good;
-    for (const char* gone : {"books", "houses", "memory", "orchestrator"})
+    for (const char* gone : {"books", "houses", "memory", "orchestrator", "loop"})
         older.add(gone, Value::object());
     older.add("craftingStocked", 3);
-    expect(wire::readSociety(older).minted >= 0, "an older save's economy is read past");
+    older.add("minted", "not a number");
+    older.add("sunk", -4);
+    older.add("exportsRemaining", 8);
+    older.add("importsRemaining", 4);
+    expect(wire::readSociety(older).nextEntry > 0, "an older save's economy is read past");
 }
 
 void commandTests()

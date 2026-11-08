@@ -131,7 +131,7 @@ void seen()
         expect(trouble.kind == "short" && trouble.days < 7 && trouble.coins > 0 && trouble.household.front() == "u1",
                "the household is short of coin: " + trouble.kind + " " + std::to_string(trouble.days));
         expect(t.g.troubleNow("um").kind == "work", "only the head carries the household's trouble");
-        expect(s.conserved(), "nothing minted or lost by looking");
+        expect(s.realBalanced(), "nothing minted or lost by looking");
 
         // Spoken of only to a wolf it trusts.
         expect(t.g.troubleBriefingFor("u1", ash).empty(), "a stranger isn't told");
@@ -352,7 +352,7 @@ void solved()
         t.g.command(&t.bo, cmd({{"type", "give"}, {"target", "u1"}, {"item", ""}, {"quantity", 0}, {"coins", double(again.coins + 5)}}));
         t.run(1);
         expect(deedFor(t, bo, "fed_household"), "Bo's gift kept the household fed: " + t.bo.said());
-        expect(s.conserved(), "money conserved throughout");
+        expect(s.realBalanced(), "real money balanced throughout");
         t.g.settle();
         t.run(2);
     }

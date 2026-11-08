@@ -188,7 +188,7 @@ void tales()
         said = order(t, t.ash, {{"type", "storyteller"}, {"verb", "prize"}, {"tale", tale}, {"to", cy}, {"coins", 5}});
         expect(contains(said, "participants"), "not to one outside the tale: " + said);
         said = order(t, t.ash, {{"type", "storyteller"}, {"verb", "prize"}, {"tale", tale}, {"to", bo}, {"coins", 5}});
-        expect(s.account(bo)->cash == before + 5 && s.conserved(), "5p to Bo, conserved: " + said);
+        expect(s.account(bo)->cash == before + 5 && s.realBalanced(), "5p to Bo, real money balanced: " + said);
         // The end card, and Bo's star for the storyteller.
         said = order(t, t.ash, {{"type", "storyteller"}, {"verb", "end"}, {"tale", tale}, {"how", "done"}});
         t.run(6);
