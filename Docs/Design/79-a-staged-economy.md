@@ -1804,8 +1804,8 @@ Each has a recommendation. "Go with the recommendations" takes them all.
   re-check, so that re-check never reported. Checked by hand at the pause: a clean Release build, ctest 79/79, and
   `test_world_package`, `test_studio` and `test_map_editor` OK. **To resume:** re-run that last check (both lenses)
   on `8450efe..e5605a0`; add the running pre-79 DEV save (made 2026-11-08 at `cab65ee` from DEV's world in file mode,
-  2 days 16 hours, holding `loop` and `outside:wharf`; kept outside the repo in the session's job folder,
-  `pre79-running/checkpoint.json.gz`, 295 KB) to `Tests/fixtures/pre79/` and `save_compat`; apply the user's price
+  2 days 16 hours, holding `loop` and `outside:wharf`; now in
+  `Tests/fixtures/pre79/running-pending/` with its README and log, 295 KB) to `Tests/fixtures/pre79/` and `save_compat`; apply the user's price
   decisions (narrow the season span; keep the region factors; the crafting cap strict); then Review A, which ends
   slice 1.
 - **2026-11-08: Phase 3 built** (the cut; `r2-staged` `d06abb7`, `487f9db`, `cd5de64`, `e61b833`, then a repair round after
