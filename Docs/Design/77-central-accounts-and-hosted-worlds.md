@@ -1351,6 +1351,52 @@ browser run 8/8. The real app's run wasn't repeated after the fixes.
 
 Left, on purpose: reports and delisting tools for the user (Phase 7); the official flag stays by hand.
 
+**2026-11-08: Phase 5's plan (the world package),** from four read-only maps of the code. Corrections to sections 2
+and 8 first:
+- **What waits on a DM.** Treaties and House requests already settle themselves after a game day; account unlocks are
+  not a queue. Only storyteller applications wait for ever, with artwork review and reports, which never resolve.
+- **"Out: areas" can't hold.** NPCs, profession slots, patrol posts, claims, NPC areas and the spawn point all have
+  keys into `world.areas`; the package carries `world.worlds` (one row) and `world.areas` (id and kind). The other
+  Atlas tables stay out. `world.worlds.id` keeps its value (NPC assignments name it); central's world id is separate.
+- **"Out: all `game.*`" and "a snapshot" clash:** NPC-side state lives in `game.*` too. The snapshot is exported as
+  one document (`game.load_checkpoint`, with the journal after it replayed), stripped, and imported with
+  `game.save_checkpoint`; no `game.*` table is dumped. `live.npc_state` stays out (newer rows would overwrite purses).
+- **The scan** looks for `wolf-…`, `player-…`, `acct-…` and `dev:` anywhere in a key or a string (they sit inside
+  compound keys: `a|b`, `person:`, `letter:…@`, `item@maker`), and for every username in the source's accounts. Then
+  it checks that cash sums to minted − sunk and that no account holds more than 64 kinds of goods. Character names in
+  free text (memories, nicknames, letters) are a warning, not a failure.
+- **The strip** (in Python, over the document): player sections emptied; every player's cash, and the escrow
+  accounts they own (`chapter:`, `contract:`, `letter:…@wolf-`, `let:`, `stall:`, `table:`), into the treasury;
+  maker marks `@wolf-…` taken off items; careers, crime, beliefs, bonds, promises, regard, talk memory, acquaintances,
+  companions, parties, camps, treaties, leases, loans, project gifts, road contracts and NPC entity fields cleaned of
+  players. The whole list is in the map (`p5-map-load-strip`), section by section. `Society::restore` lets a leftover
+  player account through, so only the scan catches an incomplete strip; the test then loads the result in a real
+  server.
+- **Format:** plain files, not `pg_dump` (that ties the package to one schema and Postgres version, and can't
+  filter): the build as `world_build.export` writes it (`world.ratw`, `cells/`, `seams/`; the same layout file mode
+  reads), the seed rows as `world_sync` writes them, the world row and areas, the stripped snapshot, a
+  `package.json` and checksums, gzip-compressed.
+- **The image** (two stages on Debian trixie): the server built Release with tcmalloc; at run time `python:3.14-slim`
+  with libpq5, libssl3, zlib, tcmalloc, CA certificates, tini and `psycopg[binary]`. The server, Mind and agent share
+  one container (loopback). The build id can't come from git inside Docker: CMake takes `RATW_BUILD_ID` when given.
+  The repository is about 90 GB, so the image is built from a staged context, never the root. Postgres 18 beside it,
+  with all five roles (the migrations grant to them) and one database.
+
+Three builders, side by side, on separate files:
+1. **Export and import** (`tools/world_package.py`, its test): `export`, `scan`, `import` (first start: the database,
+   migrations, rows, build, snapshot, all in one transaction; does nothing if already imported). Tested on a copy of
+   DEV's latest checkpoint read without writing, imported into a throwaway database and loaded by a real
+   `ratw_server` there.
+2. **The bundle** (`Package/`: Dockerfile, compose, entrypoint, `world.toml`, the roles script, the staging script;
+   the CMake build-id change): first start, the Mind from the host's own key (or off), the agent with the host token,
+   exit codes 75 (restart) and 76 (wait), `--workers` from `world.toml`.
+3. **Host commands** (the server, central's heartbeat reply and the agent): central sends a community world its
+   host's pairwise id; `/pending`, `/treaty`, `/house`, `/storyteller`, `/kick`, `/ban`, `/silence` for the host's
+   wolves only; portrait uploads off on community worlds; "the DM" in replies reads "the host" there.
+
+Then: the hosting guide and the UPnP attempt; an end-to-end run of the bundle on this laptop; the Windows PC (the
+user's) last.
+
 ## Review (2026-11-07)
 
 One adversarial review of the first draft, checked against the code at 0af9bc0. No database was queried and nothing
