@@ -1,7 +1,8 @@
 # 79. A staged economy: an RPG economy that looks live (2026-11-08)
 
 Drafted 2026-11-08 and revised the same day after four reviews (the Review section at the end lists what changed).
-**Plan only.** No code was changed, nothing was built or run, no server was started and no database was touched. The
+**Agreed by the user on 2026-11-08** ("Go with the recommendations": all 30 decisions in section 22 take their
+recommendation; doc 79 is built before doc 78). **Plan only so far.** No code was changed, nothing was built or run, no server was started and no database was touched. The
 code is `ridgemere2` at c8ac05c. Line numbers come from seven read-only code maps and from the reviews' checks the same
 day. Other sessions are working in `.claude/worktrees/`, so line numbers will drift.
 
@@ -1758,6 +1759,8 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     and a merge line. *Recommended: (a),* unless the user wants the calendar time back.
 
 ## Progress
+
+- **2026-11-08: the user's decisions.** "Go with the recommendations" (all 30, D1-D30), and doc 79 before doc 78.
 
 Nothing built yet.
 
