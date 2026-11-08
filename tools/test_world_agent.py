@@ -134,6 +134,7 @@ class Central:
         self.listed = False
         self.why = "Central could not reach this world at 203.0.113.5:7788: timed out. Open port 7788 to the internet (TCP)."
         self.bans = ['acct-' + 'b' * 32]
+        self.host = 'acct-' + 'h' * 32
         self.status = 200
         self.code = ''
         self.lock = threading.Lock()
@@ -147,7 +148,7 @@ class Central:
             return 200, {'ok': True, 'world': self.world, 'kind': 'community', 'listed': self.listed,
                          'reachable': self.listed, 'why': '' if self.listed else self.why,
                          'address': '203.0.113.5:7788', 'players': len(body.get('online', [])), 'bans': self.bans,
-                         'time': time.time(), 'every': 60}, {}
+                         'host': self.host, 'time': time.time(), 'every': 60}, {}
 
     def routes(self):
         return {('POST', '/worlds/heartbeat'): self.heartbeat,
@@ -196,6 +197,36 @@ class AgentTests(unittest.TestCase):
         self.assertLessEqual(abs(bans['at'] - time.time()), 5)
         self.assertFalse(list(self.dir.glob('.bans.json.*')), 'written atomically: no temporary file left')
         self.assertTrue(any('not listed on central' in line and 'Open port 7788' in line for line in self.lines))
+
+    def test_the_host_is_written_and_cleared_when_central_refuses(self):
+        a = self.make()
+        self.assertTrue(a.heartbeat())
+        host = json.loads((self.dir / 'host.json').read_text())
+        self.assertEqual(host['host'], 'acct-' + 'h' * 32)
+        self.assertLessEqual(abs(host['at'] - time.time()), 5)
+        self.assertFalse(list(self.dir.glob('.host.json.*')), 'written atomically: no temporary file left')
+        self.central.host = None                    # (An official world: no host.)
+        self.assertTrue(a.heartbeat())
+        self.assertIsNone(json.loads((self.dir / 'host.json').read_text())['host'])
+        self.central.host = 'x' * 65                # (Not an account's sub: left out.)
+        self.assertTrue(a.heartbeat())
+        self.assertIsNone(json.loads((self.dir / 'host.json').read_text())['host'])
+        for code in ('banned', 'delisted', 'bad_token'):
+            self.central.host = 'acct-' + 'h' * 32
+            self.central.status, self.central.code = 200, ''
+            self.assertTrue(a.heartbeat())
+            self.assertIsNotNone(json.loads((self.dir / 'host.json').read_text())['host'])
+            self.central.status, self.central.code = 403 if code != 'bad_token' else 401, code
+            self.assertFalse(a.heartbeat())
+            self.assertIsNone(json.loads((self.dir / 'host.json').read_text())['host'], f'{code}: no host powers')
+        self.central.status, self.central.code = 429, 'rate_limited'
+        self.central.host = 'acct-' + 'h' * 32
+        self.central.status = 200
+        a.heartbeat()
+        self.central.status = 429
+        a.heartbeat()
+        self.assertEqual(json.loads((self.dir / 'host.json').read_text())['host'], 'acct-' + 'h' * 32,
+                         'a rate limit is no reason to drop the host')
 
     def test_a_stale_or_foreign_online_file_counts_nobody(self):
         a = self.make()

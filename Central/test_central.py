@@ -1328,6 +1328,26 @@ class ServerList(Base):
         self.assertEqual(self.beat(official_token, official_stand_in.port)[1]['bans'], [account],
                          'an official world gets the account id')
 
+    def test_the_heartbeat_names_a_community_worlds_host_and_no_host_for_an_official_world(self):
+        community, community_token = self.make()
+        hazel = STORE.world(community)['host_account']
+        ticket = self.call('ticket', {'world': community, 'wolf': self.wolf(self.token, 'Hazel Brook')['id']},
+                           self.token)[1]['ticket']
+        sub = ct.verify(ticket, ct.public_keys(self.keys.jwks(self.clock())), community, self.clock(),
+                        self.clock() - 10, {})['sub']
+        stand_in = self.stand_in(community)
+        host = self.beat(community_token, stand_in.port)[1]['host']
+        self.assertEqual(host, sub, "the host is the host account's ticket sub on that world")
+        self.assertEqual(host, ct.pairwise_id(self.keys.pairwise_secret(), hazel, community))
+        self.assertNotEqual(host, hazel)
+        official = 'world-' + secrets.token_hex(16)
+        STORE.add_world(official, 'Ridgemere', 'official', self.clock(), host_account=hazel)
+        official_token = cs.new_host_token()
+        STORE.set_world_token(official, cs.token_hash(official_token), self.clock())
+        official_stand_in = self.stand_in(official)
+        self.assertIsNone(self.beat(official_token, official_stand_in.port, name='Run Against the World')[1]['host'],
+                          'an official world has no host, whoever made it')
+
     def test_names_and_fields(self):
         world, host_token = self.make()
         stand_in = self.stand_in(world)

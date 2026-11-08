@@ -14,6 +14,10 @@ two talk through files there, each written whole and atomically (a temporary fil
 - DIR/bans.json, written here from each heartbeat's reply: {"at", "accounts": [the ticket `sub` of every account
   central has banned, as this world sees it]}. The server refuses a banned account's hello, and sends out a banned
   wolf already in the world.
+- DIR/host.json, written here from each heartbeat's reply: {"at", "host": the ticket `sub` of the world's host account
+  here, or null}. The server gives that account's wolves the host commands (doc 77, 3.2). An official world has no
+  host; a heartbeat refused because the token is unknown, the world delisted or the host banned writes null, so the
+  host's wolves lose them.
 Every --every seconds it posts POST URL/worlds/heartbeat with the host token (Authorization: Bearer): the listing
 fields from the server's own http://127.0.0.1:PORT/status (name, protocol, build, clientData, limit, voices, cheats,
 private), this command's description, region, tags, host name and secure flag, the port, and the wolves in
@@ -306,6 +310,7 @@ class Agent:
         self.accepted = False                   # Central has answered a heartbeat (so a leave means something).
         self.state = None                       # What was last said about the listing, so each change is said once.
         self.bans_failing = False               # bans.json can't be written: said when it starts and when it mends.
+        self.host_failing = False               # Likewise host.json.
         self.trouble = None                     # The last unexpected error in the loop, said once.
         self.heartbeat_timeout = HEARTBEAT_TIMEOUT
         self.plain = urllib.parse.urlsplit(self.central).scheme != 'https'
@@ -360,6 +365,20 @@ class Agent:
         accounts = sorted({b for b in bans if isinstance(b, str) and 0 < len(b) <= 64}) if isinstance(bans, list) else []
         write_atomically(self.dir / 'bans.json', json.dumps({'at': int(time.time()), 'accounts': accounts}) + '\n')
 
+    def write_host(self, host) -> None:
+        """host.json: the host account's ticket sub here, or null (none, or no longer the host). Said once when it
+        can't be written, and once when it mends."""
+        host = host if isinstance(host, str) and 0 < len(host) <= 64 else None
+        try:
+            write_atomically(self.dir / 'host.json', json.dumps({'at': int(time.time()), 'host': host}) + '\n')
+            if self.host_failing:
+                self.host_failing = False
+                self.log('world agent: host.json is written again')
+        except OSError as error:
+            if not self.host_failing:
+                self.host_failing = True
+                self.log(f'world agent: could not write host.json: {error} (the world keeps its last host)')
+
     def heartbeat(self) -> bool:
         """One heartbeat: True if central answered it with this world's listing."""
         if self.halted:
@@ -398,6 +417,8 @@ class Agent:
                     'delisted': ' Central has taken this world off its list.',
                     'banned': ' The host account is banned.'}.get(what, '')
             self.say(('refused', what), f'central refused the heartbeat ({what}){": " + error if error else ""}.{hint}')
+            if what in ('bad_token', 'delisted', 'banned') and (self.dir / 'host.json').exists():
+                self.write_host(None)           # (A revoked token, a delisted world or a banned host: no host powers.)
             return False
         if reply.get('world') != status['id']:
             self.halted = True
@@ -419,6 +440,7 @@ class Agent:
             if not self.bans_failing:
                 self.bans_failing = True
                 self.log(f'world agent: could not write bans.json: {error} (the world keeps its last ban list)')
+        self.write_host(reply.get('host'))
         listed = reply.get('listed') is True
         why = reply.get('why') if isinstance(reply.get('why'), str) else ''
         address = reply.get('address') if isinstance(reply.get('address'), str) else '?'

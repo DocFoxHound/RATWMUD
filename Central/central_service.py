@@ -908,8 +908,12 @@ class Central:
         if world['kind'] != 'official' and banned:
             secret = self.keys.pairwise_secret()
             banned = [central_tickets.pairwise_id(secret, a, world['id']) for a in banned]
+        # The world's host (doc 77, 3.2): a community world is told its host account's ticket sub there, so the host's
+        # wolves get the host commands. An official world has no host (central's DM tool decides there): None.
+        host = central_tickets.pairwise_id(self.keys.pairwise_secret(), world['host_account'], world['id']) \
+            if world['kind'] != 'official' and world['host_account'] else None
         return ok(world=world['id'], kind=world['kind'], listed=not why, reachable=not why, why=why, address=seen,
-                  players=len(online), bans=banned, time=now, every=HEARTBEAT_EVERY)
+                  players=len(online), bans=banned, host=host, time=now, every=HEARTBEAT_EVERY)
 
     def leave(self, address: str, token, body: dict) -> tuple[int, dict]:
         """POST /worlds/leave: a world's clean shutdown takes it off the list at once."""
