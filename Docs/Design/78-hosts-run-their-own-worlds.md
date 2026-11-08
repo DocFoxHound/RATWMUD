@@ -2,7 +2,8 @@
 
 Drafted 2026-11-08 and revised the same day after four reviews; rewritten the same evening around the user's Editor
 design, then revised again that night after three reviews of the rewrite (security, the code, the host's side). See
-"Review" at the end. **Not yet agreed:** see section 17 for the decisions.
+"Review" at the end. **Agreed by the user on 2026-11-08** ("Go with the recommendations"): every decision in section 17
+takes its recommendation.
 
 The user, 2026-11-08 (verbatim):
 
@@ -1882,6 +1883,11 @@ answers out of the box, not whether managing from anywhere works.
 ## Progress
 
 Nothing built yet.
+
+- **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
+  recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
+  viewer, dm, builder and owner; the first account in a file with a reset script; Editor codes, the fingerprint as
+  the fallback; slice 1 first, the user tries it, then slice 2).
 
 - **2026-11-08: the user's Editor design.** The user, verbatim: "In the main menu before they connect to a server they
   have an "editor" button that prompts for an IP address (to a server) and then, if there is a connection, it prompts
