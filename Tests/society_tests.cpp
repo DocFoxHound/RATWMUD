@@ -457,6 +457,29 @@ void persistenceAndReplay()
         expect(json::dump(wire::stagedValue(kept.state().staged)).find("junk") != std::string::npos,
                "and the quarantine is saved");
     }
+    // An escrow's quarantine follows its goods when it is emptied and closed (doc 79, 14): a stall's unknown good to its
+    // keeper, still there after another restore, never left on a closed account for the next restore to drop.
+    invalid = saved;
+    invalid.accounts["stall:quarantine-test"].stock["junk"] = 3;
+    {
+        Society kept(false);
+        const bool restored = kept.restore(invalid);
+        const auto* q = restored ? kept.quarantined("stall:quarantine-test") : nullptr;
+        expect(q && q->count("junk") && q->at("junk") == 3 && kept.account("stall:quarantine-test") &&
+                   kept.account("stall:quarantine-test")->stock.empty(),
+               "An unknown good in a stall is quarantined at restore, the stall's own stock empty");
+        expect(!kept.closeAccount("stall:quarantine-test") && !kept.closeAccount("stall:quarantine-test", "player-nobody") &&
+                   kept.quarantined("stall:quarantine-test"),
+               "a stall with goods in quarantine and no heir with an account stays open, keeping them");
+        const auto* keeper = kept.closeAccount("stall:quarantine-test", "player-one") ? kept.quarantined("player-one") : nullptr;
+        expect(keeper && keeper->count("junk") && keeper->at("junk") == 3 && !kept.account("stall:quarantine-test") &&
+                   !kept.quarantined("stall:quarantine-test"),
+               "the stall cleared and closed, its quarantine goes to the keeper");
+        Society again(false);
+        const auto* still = again.restore(kept.state()) ? again.quarantined("player-one") : nullptr;
+        expect(still && still->count("junk") && still->at("junk") == 3 && again.realBalanced(),
+               "and after another restore the good is still quarantined for the keeper");
+    }
     invalid = saved;
     invalid.accounts["npc_cook"].stock["junk"] = 3;
     invalid.accounts["npc_cook"].cash = -5;

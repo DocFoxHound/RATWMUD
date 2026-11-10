@@ -1201,7 +1201,9 @@ In `tools/world_package.py`:
 - Accounts under dead prefixes (section 9.1) are dropped with their goods.
 - **Unknown items** (`itemValid`, :1032-1034): dropped from staged accounts. In real and escrow accounts they move to
   a `quarantine` list on the account, shown to the player as "goods the world no longer knows", and come back if the
-  item returns. No faucet, nothing lost.
+  item returns. No faucet, nothing lost. An escrow emptied and closed hands its quarantine on with its goods
+  (`Society::closeAccount`'s heir: a stall's to its keeper, a lodging chest's to its renter, a pot's to whoever takes
+  its coins); with goods in quarantine and no heir it stays open, keeping them.
 - Staged accounts that are missing or out of range are settled to target. Saved budgets, holds and lean days are
   kept. Real and escrow accounts are untouched.
 - Refusal stays only for real corruption: a negative or overflowing real or escrow account, or broken goods limits.

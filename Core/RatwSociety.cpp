@@ -859,6 +859,30 @@ void Society::decide(double absoluteDay, int season, const std::map<std::string,
         // money, went with doc 79's Phase 3.)
     }
 }
+bool Society::handOverQuarantine(const std::string& from, const std::string& to)
+{
+    // (The goods an escrow set aside follow its goods: a stall's to its keeper, a chest's to its renter. Kept at 256 kinds
+    // an account, the save's limit, or refused whole.)
+    auto& quarantine = state_.staged.quarantine;
+    const auto q = quarantine.find(from);
+    if (q == quarantine.end())
+        return true;
+    if (to.empty() || to == from || !state_.accounts.count(to))
+        return false;
+    const auto into = quarantine.find(to);
+    std::size_t kinds = into == quarantine.end() ? 0 : into->second.size();
+    for (const auto& [item, n] : q->second)
+        if (into == quarantine.end() || !into->second.count(item))
+            ++kinds;
+    if (kinds > 256)
+        return false;
+    auto& goods = quarantine[to];
+    for (const auto& [item, n] : q->second)
+        goods[item] = std::min(StockLimit, goods[item] + n);
+    quarantine.erase(from);
+    return true;
+}
+
 bool Society::restore(const SocietyState& saved)
 {
     // Lenient (Docs/Design/79-a-staged-economy.md, 14): a save is reconciled with the world it is loaded into, never

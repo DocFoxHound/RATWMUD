@@ -1,5 +1,8 @@
 # Deterministic resident life and a finite living economy
 
+> **Superseded by doc 79 (2026-11-08) except where doc 79 says it stays** (Docs/Design/79-a-staged-economy.md,
+> section 21). The text below is kept as history.
+
 September 21, 2026 first-version design. NPCs should have reasons to act, require
 real resources, and leave observable consequences. Dialogue generation remains
 an expression layer; it does not choose daily actions, mint money, invent stock,

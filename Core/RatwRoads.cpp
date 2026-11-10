@@ -274,7 +274,7 @@ Contract& World::postContract(const std::string& kind, const std::string& poster
     if (reward > 0 && society_.openAccount(escrow) && society_.shift(poster, escrow, "", 0, reward, "reward set aside"))
         c.reward = reward;
     else
-        society_.closeAccount(escrow);
+        society_.closeAccount(escrow, poster);
     roads_.contracts.push_back(c);
     recordEvent({"contract posted", poster, target, {}, 0, 0, {}, 0, c.reward, kind + ": " + detail});
     return roads_.contracts.back();
@@ -316,7 +316,7 @@ void World::settleContract(Contract& c, const std::string& status, const std::st
     if (reward > 0)
         society_.shift(escrow, paidTo.empty() ? c.poster : paidTo, "", 0, reward,
                        paidTo.empty() ? "reward returned" : "contract reward");
-    society_.closeAccount(escrow);
+    society_.closeAccount(escrow, paidTo.empty() ? c.poster : paidTo);
     if (const auto* who = entity(paidTo); who && !who->npc)
         practise(paidTo, "contract.done", {c.id});   // A contract fulfilled teaches commerce (by practice: doc 49).
     c.status = status;
@@ -649,7 +649,7 @@ void World::tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& bud
             for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
                 if (n > 0 && !(home && society_.shift(c.account, home->store, item, n, 0, "caravan turned back")))
                     society_.consume(c.account, item, n, "caravan lost");
-        society_.closeAccount(c.account);
+        society_.closeAccount(c.account, home ? home->store : std::string());
         c.status = "arrived";
         recordEvent({"caravan lost", c.id, c.to, wagon.cellId, 0, 0, {}, 0, 0, "no road on from here"});
     };
@@ -773,7 +773,7 @@ void World::caravanArrived(Caravan& c)
             for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
                 if (n > 0)
                     society_.shift(c.account, home->store, item, n, 0, "caravan unloaded");
-        society_.closeAccount(c.account);
+        society_.closeAccount(c.account, home ? home->store : std::string());
         c.status = "arrived";
         recordEvent({"caravan home", c.id, c.from, c.cell, 0, 0, {}, 0, 0, "back from " + c.to});
         return;
@@ -1504,7 +1504,7 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
         if (society_.shift(loot, by, "", 0, found, "bandits' takings"))
             words += " Among their things you find " + pennies(found) + ".";
     }
-    society_.closeAccount(loot);
+    society_.closeAccount(loot, by);
     for (auto& k : roads_.contracts)
         if (k.kind == "bounty" && k.target == camp.id && (k.status == "open" || k.status == "taken"))
         {

@@ -177,7 +177,7 @@ void Game::endContest(Fair& f, Contest& c, const std::vector<std::string>& ranke
     }
     if (const auto* left = society.account(account); left && left->cash > 0)
         society.shift(account, treasury, "", 0, left->cash, "festival pot remainder");
-    society.closeAccount(account);
+    society.closeAccount(account, treasury);
 }
 
 void Game::beginContest(Fair& f, Contest& c)

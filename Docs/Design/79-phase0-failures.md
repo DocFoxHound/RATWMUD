@@ -1,5 +1,7 @@
 # Doc 79, Phase 0: what breaks with the loop off, and the kept readers
 
+> **History:** the `staged` rule and `RATW_STAGED_ECONOMY` went with Phase 3; the staged economy is the only economy.
+
 Worktree `.claude/worktrees/r2-staged`, branch `r2-staged` (from ridgemere2 at cab65ee), uncommitted. Build:
 `build-p0` (Release). The switch is the rule `staged` (Rules[], default 0). `RATW_STAGED_ECONOMY=1` forces it on in
 every Society; that is the test switch used for the "on" run.

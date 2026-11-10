@@ -239,6 +239,9 @@ void Game::endLodging(std::size_t index, const std::string& why, std::int64_t re
         for (const auto& [item, n] : held.stock)
             if (n > 0 && !society.shift("let:" + l.id, l.holder, item, n, 0, "taken from a chest"))
                 left = society.shift("let:" + l.id, l.account, item, n, 0, "left with the landlord") || left;
+        // (What the chest holds in quarantine goes with its goods, to the renter, else the landlord: doc 79, 14.)
+        if (!society.handOverQuarantine("let:" + l.id, l.holder))
+            society.handOverQuarantine("let:" + l.id, l.account);
     }
     // (Staged: the landlord's purse topped up on demand, so the refund, at most the rent on record, is paid: doc 79, 9.3.
     // Rent goes into the landlord's till, which the door never tops up, so this capped refund tops it up itself.)

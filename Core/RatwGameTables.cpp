@@ -145,7 +145,7 @@ void Game::endTable(Table& t, int winner, const std::string& why)
         world_.unseatResident(who);
         record(Economy, who);
     }
-    society.closeAccount(account(t));
+    society.closeAccount(account(t), t.house);
     t.seats.clear();
     t.begun = false;
     t.lastMove = world_.time();                     // (Its last lines stay a minute.)

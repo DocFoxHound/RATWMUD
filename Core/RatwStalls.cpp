@@ -135,7 +135,7 @@ void Game::tendStalls()
         }
         if (empty || !world_.entity(it->keeper))
         {
-            society.closeAccount(account(*it));
+            society.closeAccount(account(*it), it->keeper);   // (Its quarantine to the keeper with its goods: doc 79, 14.)
             it = stalls_.erase(it);
             changed = true;
         }

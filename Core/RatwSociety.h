@@ -455,9 +455,14 @@ class Society
     }
     // Goods used up (eaten by bandits, say): gone from the world, recorded as `kind`.
     int consume(const std::string& account, const std::string& item, int quantity, const std::string& kind);
-    // A facility account (see facilityAccount), empty to begin with; closing one needs it empty.
+    // A facility account (see facilityAccount), empty to begin with; closing one needs it empty. Goods it holds in
+    // quarantine (doc 79, 14) go to `heir`, whoever took its goods (a stall's keeper, a pot's winner or town); with
+    // goods in quarantine and no heir (or one without an account), it stays open, keeping them.
     bool openAccount(const std::string& id);
-    bool closeAccount(const std::string& id);
+    bool closeAccount(const std::string& id, const std::string& heir = {});
+    // Moves the goods `from` holds in quarantine to `to` (an account), merged: true, or true with none to move; false,
+    // moving nothing, when `to` has no account or would hold more than 256 kinds.
+    bool handOverQuarantine(const std::string& from, const std::string& to);
     // Home storage (Docs/Design/36-home-storage.md): each household's larder (food), chest (goods), wardrobe (wear)
     // and woodpile (fuel), an account each ("home:<home cell>:<kind>"), owned by everyone who lives there.
     static constexpr const char* StoreKinds[] = {"larder", "chest", "wardrobe", "woodpile"};

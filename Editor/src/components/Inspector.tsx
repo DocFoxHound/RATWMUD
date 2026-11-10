@@ -155,9 +155,10 @@ function PeopleOverview({project}: {project: Project}) {
             <button onClick={newRoute}>+ New patrol route</button>
         </Section>
         <Section title="Economy">
-            <Hint>The economy's rules were erased (doc 66, Phase 5): nothing pays wages or restocks from the town stores any more.
-                The store room that shops draw their goods from, its switches and markups, and each business's own switch are on
-                Atlas's <a href="?suite=atlas&amp;page=economy">Economy</a> page (doc 67).</Hint>
+            <Hint>The economy is staged (doc 79): each morning shops set out their own wares, and goods their market doesn't
+                make come in by wagon, cart or ship; there is no store room. Residents' purses and food follow their household's
+                economic band, nightly. The world's economy settings are on
+                Atlas's <a href="?suite=atlas&amp;page=economy">Economy</a> page.</Hint>
         </Section>
     </>);
 }
@@ -371,7 +372,7 @@ function PersonInspector({project, person}: {project: Project; person: Person}) 
                 <NumberField label="Meals" value={person.meals} min={0} max={10000} onCommit={v => update({meals: v})} />
             </Row>
             <NumberField label="Herbs" value={person.herbs} min={0} max={10000} onCommit={v => update({herbs: v})} />
-            <Hint>{person.role === 'merchant' ? 'A merchant\'s goods are their shop stock.' : 'Starting money and food. Hungry residents buy meals at the nearest open shop.'}</Hint>
+            <Hint>{person.role === 'merchant' ? 'A merchant\'s goods are their shop stock.' : 'Starting money and food. Afterwards the purse follows the household\'s economic band, and its food comes each day from the nearest food keeper\'s shelf (doc 79).'}</Hint>
         </Section>
         <Section title="Danger zone" open={false}>
             <button className="danger wide" onClick={() => { if (commit(`Removed ${person.name}.`, p => M.removePerson(p, person.id))) setState({selection: null}); }}>Remove {person.name}</button>

@@ -185,7 +185,7 @@ bool Society::openAccount(const std::string& id)
     return true;
 }
 
-bool Society::closeAccount(const std::string& id)
+bool Society::closeAccount(const std::string& id, const std::string& heir)
 {
     const auto found = state_.accounts.find(id);
     if (!facilityAccount(id) || found == state_.accounts.end() || found->second.cash != 0)
@@ -193,6 +193,9 @@ bool Society::closeAccount(const std::string& id)
     for (const auto& [item, count] : found->second.stock)
         if (count != 0)
             return false;
+    // Goods it holds in quarantine (doc 79, 14) go to its heir; with no heir to take them, it stays open, keeping them.
+    if (!handOverQuarantine(id, heir))
+        return false;
     state_.accounts.erase(found);
     if (id.rfind("till:", 0) == 0)
         tills_.erase(id.substr(5));
@@ -1258,7 +1261,7 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         forgetCareers();
     }
 
-    staffFarms(world, notes);                      // (The farms' people, once their area is on: doc 71, Phase C.)
+    staffFarms(world, notes);                      // (The farms' people: doc 71, Phase C; every area is on since doc 79.)
 
     splitHouseholds(today, world, notes);
 
