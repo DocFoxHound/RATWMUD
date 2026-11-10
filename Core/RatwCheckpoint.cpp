@@ -1,4 +1,5 @@
 #include "RatwCheckpoint.h"
+#include "RatwItems.h"
 #include "RatwPractice.h"
 
 #include "RatwSystemLibs.h"
@@ -99,7 +100,29 @@ Value roads(const RoadsState& r)
     for (const auto& t : r.caravans)
     {
         auto j = Value::object();
-        j.add("id", t.id); j.add("from", t.from); j.add("to", t.to); j.add("account", t.account);
+        j.add("id", t.id); j.add("from", t.from); j.add("to", t.to);
+        if (!t.account.empty())
+            j.add("account", t.account);            // (An older save's, kept until it is read past: doc 79, Phase 4.)
+        // Staged trade (doc 79, Phase 4): its kind, manifest (in order), carter, departure, ends, due day and lateness.
+        j.add("kind", t.kind);
+        auto manifest = Value::array();
+        for (const auto& [good, n] : t.manifest)
+        {
+            auto g = Value::object();
+            g.add("good", good);
+            g.add("n", n);
+            manifest.push(g);
+        }
+        j.add("manifest", manifest);
+        auto sourceP = Value::object();
+        for (const auto& [good, P] : t.sourceP)
+            sourceP.add(good, P);
+        j.add("sourceP", sourceP);
+        j.add("driver", t.driver); j.add("departure", t.departure);
+        j.add("startCell", t.startCell); j.add("startX", t.startX); j.add("startY", t.startY);
+        j.add("endCell", t.endCell); j.add("endX", t.endX); j.add("endY", t.endY);
+        j.add("due", t.due); j.add("lateCause", t.lateCause); j.add("delayAt", double(t.delayAt)); j.add("delayUntil", t.delayUntil);
+        j.add("overdue", t.overdue); j.add("latePushed", t.latePushed);
         j.add("route", strings(t.route)); j.add("leg", double(t.leg));
         j.add("nextAt", t.nextAt); j.add("departed", t.departed);
         j.add("guards", t.guards); j.add("status", t.status);
@@ -655,6 +678,21 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             Caravan t;
             t.id = j.string("id"); t.from = j.string("from"); t.to = j.string("to");
             t.account = j.string("account"); t.route = readStrings(j, "route");
+            // Staged trade (doc 79, Phase 4), leniently: an unknown good dropped, numbers clamped, an older save's none.
+            t.kind = j.string("kind") == "cart" ? "cart" : "wagon";
+            for (const auto& g : j.array("manifest"))
+                if (const auto good = g.string("good"); g.isObject() && items::good(good) && t.manifest.size() < 5)
+                    if (const double n = g.number("n", 0); std::isfinite(n) && n >= 1)
+                        t.manifest.push_back({good, int(std::min(999.0, n))});
+            for (const auto& [good, P] : j.object("sourceP").fields())
+                if (const double p = P.asNumber(0); items::good(good) && std::isfinite(p))
+                    t.sourceP[good] = std::clamp(p, -.5, .5);
+            t.driver = j.string("driver"); t.departure = j.string("departure");
+            t.startCell = j.string("startCell"); t.startX = num(j, "startX"); t.startY = num(j, "startY");
+            t.endCell = j.string("endCell"); t.endX = num(j, "endX"); t.endY = num(j, "endY");
+            t.due = num(j, "due"); t.lateCause = json::utf8Prefix(j.string("lateCause"), 60);
+            t.delayAt = std::size_t(std::clamp(num(j, "delayAt"), 0.0, 400.0)); t.delayUntil = num(j, "delayUntil");
+            t.overdue = j.boolean("overdue"); t.latePushed = std::clamp(num(j, "latePushed"), 0.0, .2);
             t.leg = std::size_t(std::max(0.0, num(j, "leg"))); t.nextAt = num(j, "nextAt");
             t.departed = num(j, "departed"); t.guards = int(num(j, "guards", 1));
             t.status = j.string("status"); t.escorts = readStrings(j, "escorts"); t.letters = readStrings(j, "letters");

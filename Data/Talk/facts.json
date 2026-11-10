@@ -130,6 +130,8 @@
     "death": ["recent", "no"],
     "wedding": ["recent", "no"],
     "birth": ["recent", "no"],
+    "news": "text",
+    "news_from": "text",
     "figure_ruler": "text",
     "figure_lord": "text",
     "figure_captain": "text",

@@ -842,9 +842,14 @@ Totals checkRoad(bool print)
     const auto restored = whole.restore(loaded.saved);
     expect(restored.ok, "the road: the whole save restores into the world: " + restored.message + " " + restored.targetId);
     realAccountsExact(loaded.saved.society, whole.society().state(), "the road (World::restore)");
-    // The caravan's account was the old economy's (dropped): the caravan goes, and Bo's letter it carried is open again,
-    // its 4p still in its escrow, for another courier (doc 79, 16.5: a clean drop on load, its letters reopened).
-    expect(whole.roads().caravans.empty(), "the road: the caravan, its account dropped, is dropped on load");
+    // The caravan's account was the old economy's (dropped): since doc 79's Phase 4 (8.1) a wagon carries no account, so
+    // an older save's comes home empty, and Bo's letter it carried is open again, its 4p still in its escrow, for another
+    // courier, as is Ada's escort (16.5: its letters reopened).
+    expect(whole.roads().caravans.size() == 1 && whole.roads().caravans[0].status == "returning" &&
+               whole.roads().caravans[0].manifest.empty() && whole.roads().caravans[0].letters.empty() &&
+               whole.roads().caravans[0].escorts.empty() && whole.roads().caravans[0].account.empty(),
+           "the road: the older save's wagon, its account dropped, comes home empty");
+    expect(!whole.society().account("caravan:" + whole.roads().caravans[0].id), "with no account of its own");
     for (const auto& k : whole.roads().contracts)
         if (k.kind == "courier" && k.poster == "player-bo")
             expect(k.status == "open" && k.taker.empty() && whole.society().cash("contract:" + k.id) == 4,

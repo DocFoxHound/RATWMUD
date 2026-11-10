@@ -392,8 +392,9 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
         return;
     const auto townId = townIdOf(e->cellId);
     bool bandits = false;
+    const auto* hereMarket = roadMarketOf(e->cellId);
     for (const auto& c : roads_.caravans)
-        bandits |= c.status == "raided" && (c.from == townId || c.to == townId);
+        bandits |= c.status == "raided" && hereMarket && (c.from == hereMarket->id || c.to == hereMarket->id);
     for (const auto& camp : roads_.camps)
         bandits |= camp.active && calendarDays_ - camp.lastRaid <= 3;
     facts["world.bandits"] = bandits ? "near" : "no";
@@ -416,6 +417,13 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
     facts["world.death"] = lately.count("death") ? "recent" : "no";
     facts["world.wedding"] = lately.count("marriage") ? "recent" : "no";
     facts["world.birth"] = lately.count("birth") ? "recent" : "no";
+    // The news the last wagon in brought (doc 79, 8.1: `world.news`, the source market's top cause), a few days.
+    if (const auto* m = roadMarketOf(e->cellId))
+        if (const auto news = society_.board().news.find(m->id); news != society_.board().news.end() && calendarDays_ - news->second.day <= 4)
+        {
+            facts["world.news"] = news->second.words;
+            facts["world.news_from"] = marketWords(news->second.from);
+        }
     // The place itself: how many are about, and whether a traveller (a player) is near.
     int people = 0;
     bool traveller = false;
@@ -522,20 +530,33 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         return t;
     };
     // Caravans to and from this town, and the bandits on the roads.
+    // (The road layer's market here since doc 79's Phase 4: wagons run between markets; a wagon's first good and its
+    // carter go with the topic, topic.what and topic.who.)
+    const auto* hereMarket = roadMarketOf(ea->cellId);
+    const auto marketId = hereMarket ? hereMarket->id : townId;
     for (const auto& c : roads_.caravans)
     {
-        const bool ours = c.from == townId || c.to == townId;
+        if (c.kind == "cart")
+            continue;
+        const bool ours = c.from == marketId || c.to == marketId;
         if (!ours)
             continue;
-        const auto other = c.from == townId ? c.to : c.from;
-        std::string kind = c.status == "raided" ? "raided" : c.status == "arrived" && c.to == townId ? "arrived"
-                           : c.status == "travelling" && c.from == townId && c.leg > 0 ? "left" : "";
+        const auto other = c.from == marketId ? c.to : c.from;
+        std::string kind = c.status == "raided" ? "raided"
+                           : c.status == "returning" && c.to == marketId && c.leg <= 1 ? "arrived"
+                           : c.status == "travelling" && c.to == marketId && c.overdue ? "late"
+                           : c.status == "travelling" && c.from == marketId && c.leg > 0 ? "left" : "";
         if (kind.empty())
             continue;
-        auto t = topic(kind == "raided" ? "bandits" : "caravan", kind == "raided" ? 2.4 : 1.9);
+        auto t = topic(kind == "raided" ? "bandits" : "caravan", kind == "raided" ? 2.4 : kind == "late" ? 2.0 : 1.9);
         t.talk["topic.kind"] = kind;
         t.talk["topic.where"] = townWords(other);
-        t.facts.push_back("A caravan between here and " + townWords(other) + " " + kind + ".");
+        if (!c.manifest.empty())
+            t.talk["topic.what"] = Society::itemName(c.manifest.front().first);
+        if (const auto* driver = entity(c.driver))
+            t.talk["topic.who"] = driver->name;
+        t.facts.push_back("A wagon between here and " + townWords(other) + " " + kind +
+                          (kind == "late" && !c.lateCause.empty() ? ", held up by " + c.lateCause : std::string()) + ".");
         consider(std::move(t));
         if (kind == "raided")
         {

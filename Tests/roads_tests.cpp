@@ -1,7 +1,7 @@
-// The roads (RatwRoads.h): towns and their stores, caravans that carry real goods, bandits who take them, contracts,
-// and rumours. A strip of nine cells: the capital "east" at one end, "west" at the other, wild country between.
-// Nothing sends a caravan of itself since the economy's rules were erased (Docs/Design/66-worlds-atlas-and-dm.md,
-// Phase 5): the tests send them (World::sendCaravan, the hook for the rules to come).
+// The roads (RatwRoads.h): towns and their stores, wagons that carry staged goods (a manifest, for show: doc 79's Phase
+// 4), bandits who take them, contracts, and rumours. A strip of nine cells: the capital "east" at one end, "west" at the
+// other, wild country between. The strip has no carters, so no wagon sets out of itself (doc 79, D26: wagons are driven
+// by real carters; trade_show_tests has them): the tests send them (World::sendCaravan).
 #include "test_purse.h"
 #include "RatwCheckpoint.h"
 #include "RatwItems.h"
@@ -213,33 +213,42 @@ void townsAndCaravans()
     expect(w.towns()[0].store == "treasury" && w.towns()[1].store == "stores:west", "West has its own stores");
     expect(stock(w, "stores:west", "meal") == 0 && stock(w, "treasury", "meal") == treasuryMeals, "nothing sent of itself");
     expect(w.townOf(id(8)) && w.townOf(id(8))->id == "west" && !w.townOf(id(4)), "Wild country is no town");
-    expect(w.roads().caravans.empty(), "No caravan of itself");
+    // The road layer's markets (doc 79, 5.1): the same two, found from the Market Board's; wild country is no market.
+    expect(w.roadMarkets().size() == 2 && w.roadMarket("east") && w.roadMarket("west") && w.roadMarketOf(id(8)) &&
+               w.roadMarketOf(id(8))->id == "west" && !w.roadMarketOf(id(4)),
+           "Two markets on the roads, wild country none");
+    expect(w.roads().caravans.empty(), "No caravan of itself (no carters)");
     send(w);
     expect(w.roads().caravans.size() == 1 && w.roads().caravans[0].to == "west" && w.roads().caravans[0].route.size() == 8,
            "A caravan sets out for west along the road");
-    const auto load = stock(w, w.roads().caravans[0].account, "meal");
-    expect(load > 0, "carrying real goods");
+    const auto& sent = w.roads().caravans[0];
+    expect(sent.manifest == std::vector<std::pair<std::string, int>>{{"meal", 6}} && sent.account.empty() &&
+               !w.society().account("caravan:" + sent.id),
+           "carrying staged goods for show (a manifest), with no account");
+    expect(stock(w, "treasury", "meal") == treasuryMeals, "nothing taken from the stores for it");
     expect(w.society().realBalanced(), "Real money is balanced");
     w.roads().camps.clear();                     // No bandits this time.
     w.takeEvents();
     w.believe("em", "e1", "owes half the market", "overheard", .9);   // News in the capital's market.
+    // West's shelf of meals runs bare before it comes.
+    const auto till = w.society().tillOf("wm");
+    w.society().consume(till, "meal", stock(w, "wm", "meal"), "test: sold out");
+    expect(stock(w, "wm", "meal") == 0, "west's meals sold out");
     run(w, 7 * 150 + 20);
-    int delivered = 0;
     bool arrived = false;
     for (const auto& e : w.takeEvents())
-    {
-        if (e.kind == "economy" && e.detail == "caravan delivered" && e.item == "meal" && e.target == "stores:west")
-            delivered += e.quantity;
         arrived |= e.kind == "caravan arrives" && e.target == "west";
-    }
-    expect(arrived && delivered == load, "It arrives, and its whole load goes into west's stores (" +
-                                             std::to_string(delivered) + " of " + std::to_string(load) + ")");
+    const int shelf = w.society().shelfTarget(till, "meal");
+    expect(arrived && stock(w, "wm", "meal") >= shelf && shelf > 0,
+           "It arrives, and west's shelf of meals is set out again at once (" + std::to_string(stock(w, "wm", "meal")) + " of " +
+               std::to_string(shelf) + ")");
     expect(w.beliefsOf("wm") && w.rumoursAbout("wm", "e1", "East 1").find("owes half the market") != std::string::npos,
            "and the carters told the west market what they heard: " + w.rumoursAbout("wm", "e1", "East 1"));
     run(w, 7 * 150 + 20);
     expect(w.roads().caravans.empty(), "Back home empty, the caravan is done");
     expect(w.society().realBalanced(), "Real money is still balanced");
-    expect(stock(w, "treasury", "meal") + stock(w, "stores:west", "meal") == treasuryMeals, "The meals moved, none made");
+    expect(stock(w, "treasury", "meal") == treasuryMeals && stock(w, "stores:west", "meal") == 0,
+           "The stores neither gave nor took any of it (staged: the shelves, not the stores)");
 }
 
 void banditsAndContracts()
@@ -252,9 +261,14 @@ void banditsAndContracts()
     expect(!w.roads().caravans.empty(), "A caravan on the road");
     // A strong, starving camp in the middle of the road.
     w.roads().camps = {{"camp_mid", id(4), 20, 100, -100, true}};
-    const auto load = stock(w, w.roads().caravans[0].account, "meal");
+    const auto load = w.roads().caravans[0].manifest.empty() ? 0 : w.roads().caravans[0].manifest[0].second;
+    const double mealsDear = w.society().pressure("west", "meal");
     run(w, 4 * 150 + 20);
     expect(w.roads().caravans.empty() || w.roads().caravans[0].status == "raided", "The bandits rob it");
+    // Doc 79, 8.1: no coins into the camp; its load is goods at the camp for whoever clears it; meals dearer in west at once.
+    const auto* hoard = w.society().account("bandits:camp_mid");
+    expect(hoard && hoard->cash == 0 && Society::stock(*hoard, "meal") == load, "its meals are at the camp, and no coins");
+    expect(std::abs(w.society().pressure("west", "meal") - mealsDear - .15) < .01, "meals dearer in west at the raid");
     const auto* bounty = find(w, "bounty");
     const auto* escort = find(w, "escort");
     expect(bounty && bounty->target == "camp_mid" && bounty->reward > 0 && bounty->town == "west",
@@ -369,11 +383,11 @@ void couriers()
     expect(w.society().realBalanced(), "Real money is balanced");
 }
 
-// Doc 79, 9.1 and Phase 3: a caravan's account is the old economy's (a dead prefix), so until Phase 4's departures, which
-// carry no account, a caravan out on the road doesn't outlive a restart (only tests send one now: sendCaravan has no
-// caller in play). It is dropped cleanly: the letters it carried and the escorts taken for it open again with their
-// coins still in escrow, nothing is made or lost, and the road goes on.
-void aCaravanMidTripIsDroppedCleanlyOnRestore()
+// Doc 79, Phase 4 (8.1): a wagon carries no account, so it outlives a restart: out on the road with its manifest, the
+// letter it carries and the escort Ada took, it is the same wagon after the save restores (its wagon in the world again
+// where it was), their coins still in escrow, and it goes on to arrive. (A wagon whose market is gone is dropped on load:
+// trade_show_tests.)
+void aWagonOutlivesARestart()
 {
     auto f = strip();
     auto w = load(f);
@@ -398,22 +412,34 @@ void aCaravanMidTripIsDroppedCleanlyOnRestore()
     w.roads().camps.clear();                     // (No bandits this time.)
     run(w, 20);                                  // Out on the road (it reaches west in under a minute).
     expect(w.roads().caravans.size() == 1 && w.roads().caravans[0].status == "travelling", "Still on its way");
+    const auto before = w.roads().caravans[0];
     const auto escrow = [&](const std::string& k) { return w.society().cash("contract:" + k); };
     const auto letterPay = escrow(letterId), escortPay = escrow(escort);
     const auto purse = w.society().cash("player-ada");
     auto saved = w.save();
     expect(w.restore(saved).ok, "The save restores");
-    expect(w.roads().caravans.empty() && !w.entity("road:" + trip), "The caravan is dropped on load, its wagon with it");
-    int reopened = 0;
+    expect(w.roads().caravans.size() == 1, "The wagon outlives the restart");
+    const auto& after = w.roads().caravans[0];
+    expect(after.id == trip && after.status == "travelling" && after.manifest == before.manifest && after.letters == before.letters &&
+               after.escorts == before.escorts && after.cell == before.cell && after.leg == before.leg && after.endCell == before.endCell,
+           "the same wagon, where it was, with its manifest, its letter and its escort");
+    int taken = 0;
     for (const auto& k : w.roads().contracts)
         if (k.id == letterId || k.id == escort)
-            reopened += k.status == "open" && k.taker.empty();
-    expect(reopened == 2, "Its letter and its escort are open again");
+            taken += k.status == "taken";
+    expect(taken == 2, "Its letter and its escort still taken");
     expect(escrow(letterId) == letterPay && escrow(escort) == escortPay && w.society().cash("player-ada") == purse,
            "their coins still in escrow, Ada's purse as it was");
     expect(w.society().realBalanced(), "Real money is balanced after the restore");
-    run(w, 150);
-    expect(w.roads().caravans.empty() && w.society().realBalanced(), "and the road goes on without it");
+    bool arrived = false;
+    for (int t = 0; t < 600 && !arrived; ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            arrived |= e.kind == "caravan arrives" && e.actor == trip;
+    }
+    expect(arrived && w.entity("road:" + trip), "and it goes on to arrive in west");
+    expect(w.society().realBalanced(), "Real money is balanced");
 }
 
 // Bandits of this camp standing in the world now.
@@ -892,8 +918,8 @@ void travelKeepsToTheRoads()
 
 // The Country's communities are no towns yet (communities.json `town` false; the user, 2026-11-03: doc 71, Phase C
 // Progress): a world with Coldwater's places, its people at home there and its store kept, has one town, the city, when
-// it starts and again after a restart; no stores, roads, camps or caravans of Coldwater's own, its people, posts and
-// homes as they were. The old map's towns of the same names (without the communities' interiors) are towns as ever.
+// it starts and again after a restart; no stores of Coldwater's own, its people, posts and homes as they were. Since doc
+// 79's Phase 4 it is a market on the roads all the same (D7: trade, wagons and bandits; law stays plain). The old map's towns of the same names (without the communities' interiors) are towns as ever.
 void communitiesStayPlain()
 {
     named = {{7, "cn_coldwater_cottage_1"}, {8, "cn_coldwater_store"}};
@@ -905,7 +931,10 @@ void communitiesStayPlain()
                "Coldwater a plain place of its own " + when + " (" + w.lawTown(id(8)) + ")");
         expect(!w.society().account("stores:coldwater") && w.society().treasuryOf("coldwater") == "treasury",
                "no stores of its own " + when);
-        expect(w.roads().camps.empty() && w.roads().caravans.empty(), "no roads' camps or caravans " + when);
+        // (A market for trade, wagons and bandits all the same, plain for law: doc 79, 5.1 and D7. No carters, no wagons.)
+        expect(w.roadMarket("coldwater") && w.roadMarket("east") && w.roadMarketOf(id(8)) && w.roadMarketOf(id(8))->id == "coldwater" &&
+                   w.roads().caravans.empty(),
+               "a market on the roads all the same, " + when);
     };
     std::map<std::string, std::string> homes, works;
     const auto people = [](const World& w, std::map<std::string, std::string>& home, std::map<std::string, std::string>& work) {
@@ -996,7 +1025,7 @@ int main()
         banditsAndContracts();
         anEscortWhoIsntThere();
         couriers();
-        aCaravanMidTripIsDroppedCleanlyOnRestore();
+        aWagonOutlivesARestart();
         rumoursSpread();
         banditsInPerson();
         banditsCreepUp();

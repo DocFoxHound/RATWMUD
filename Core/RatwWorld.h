@@ -1007,10 +1007,37 @@ class World
     const RoadsState& roads() const { return roads_; }
     RoadsState& roads() { return roads_; }                 // For operators (clear a camp, say) and tests.
     const Town* townOf(const std::string& cellId) const;
-    // A caravan from one town's market to another's, loaded from `from`'s stores (what they hold of `load`), with the
-    // escorts who took the road's escort and the letters nobody took. Nothing sends one since the economy's rules were
-    // erased (doc 66, Phase 5): the hook for the rules to come. Null if there's no road.
+    // A wagon from one market to another's, carrying `load` (staged goods, for show), with the escorts who took the
+    // road's escort and the letters nobody took, driven by a free carter of `from`'s if it has one. The committed
+    // departures send theirs (RatwTradeShow.cpp); tests and the Dev Console send one at once. Null if there's no road.
     Caravan* sendCaravan(const Town& from, const Town& to, const std::map<std::string, int>& load);
+    // The road layer's markets (Docs/Design/79-a-staged-economy.md, 5.1 and Phase 4; RatwTradeShow.cpp): the Market
+    // Board's (ensureTradePoints) as the roads see them, each with where its wagons load and unload (its place and a
+    // merchant's spot there) and its treasury as its store; found again as the markets or the roster move. Law stays on
+    // the towns (towns(), lawTown). A cell's market: its community's, or the market serving its homes.
+    const std::vector<Town>& roadMarkets() const { return roadMarkets_; }
+    const Town* roadMarket(const std::string& id) const;
+    const Town* roadMarketOf(const std::string& cellId) const;
+    std::string marketWords(const std::string& id) const;   // "coldwater" -> "Coldwater".
+    // A market's carters (D26: residents holding a carter's post there), who drive its wagons.
+    std::vector<std::string> cartersOf(const std::string& market) const;
+    // A committed departure's notice (8.1), for its source's board, or its destination's (`atEnd`), with the calendar's
+    // weekday names.
+    std::string departureNotice(const market::Departure& d, bool atEnd) const;
+    // An area's harvest this season (8.2): 0 poor, 1 fair, 2 good; the DM's override (the Board's) while it holds.
+    int harvestOf(const std::string& area) const;
+    // The farm carts' ends (8.2): each farm or works with its work room in the world, the market its cart goes to.
+    struct CartEnd
+    {
+        std::size_t farm = 0;                       // In Society::farms().
+        std::string farmId, area, name, market, cell;
+    };
+    const std::vector<CartEnd>& cartEnds() const { return cartEnds_; }
+    // A road without a camp gathers one a week at these odds (D14: a little more in hard times and winter, never by
+    // players' wealth); a camp's strength is capped by the rule campStrengthMost, a bounty by bountyMost.
+    double campGatherOdds() const;
+    // The carter driving a caravan, by resident (a wagon's or a cart's while it is out).
+    const std::unordered_map<std::string, std::string>& drivers() const { return drivers_; }
     // Contracts a player could take where they stand, taking one, and marking one done (a bounty, by whoever ended
     // the camp; the Dungeon Master, for now). Couriers, escorts and supply runs are finished by doing them.
     std::vector<const Contract*> contractsNear(const std::string& player) const;
@@ -2081,7 +2108,30 @@ class World
 
   private:
     std::vector<std::pair<std::string, std::string>> notices_;
-    std::vector<std::vector<std::string>> roadRoutes_;   // Every road between two towns (cells), for bandits.
+    std::vector<std::vector<std::string>> roadRoutes_;   // Every road between two markets (cells), for wagons and bandits.
+    std::vector<std::pair<std::string, std::string>> roadPairs_;   // Its two markets, each road's.
+    // Staged trade (doc 79, Phase 4; RatwTradeShow.cpp).
+    std::vector<Town> roadMarkets_;
+    std::unordered_map<std::string, std::size_t> marketIndex_;     // Cell -> its market in roadMarkets_.
+    std::uint64_t tradePointsBuilt_ = 0;                           // (ensureTradePoints counts each time it finds them.)
+    std::uint64_t roadMarketsKey_ = ~0ULL, roadMarketsRoster_ = ~0ULL;
+    std::int64_t roadMarketsDay_ = -2;
+    bool campsSeeded_ = false;
+    std::map<std::string, std::vector<std::string>> carters_;     // Market -> its carters.
+    std::vector<CartEnd> cartEnds_;
+    std::unordered_map<std::string, std::string> drivers_;         // Resident -> the caravan it drives.
+    void ensureRoadMarkets();
+    std::vector<std::pair<std::string, int>> manifestFor(const std::string& from, const std::string& to, int size,
+                                                         const std::string& seed) const;
+    void postDepartures(std::int64_t today);
+    void rollCarts(std::int64_t today);
+    void setOut();
+    Caravan* launchCaravan(Caravan c, const Town& from, const Town& to);
+    void launchCart(const market::Departure& d);
+    void stagedArrival(Caravan& c);
+    void roadsMorning(std::int64_t today);
+    void raidCargo(Caravan& c, BanditCamp& camp);
+    void dropOrphanedRoads();
     struct RouteBudget;
     void tendRoadFolk();
     void tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& budget);
@@ -2089,6 +2139,8 @@ class World
     const Town* town(const std::string& id) const;
     void caravanEntered(Caravan& c, const Entity& wagon);
     void caravanArrived(Caravan& c);
+    std::string caravanName(const Caravan& c) const;   // "a wagon bound for Coldwater"...
+    std::string caravanLook(const Caravan& c) const;   // Its description: its carter, what it carries.
     Entity& addRoadFolk(const std::string& id, const std::string& name, const std::string& description,
                         const std::string& cellId, Vec2 at, const std::string& kind, const std::string& of);
     void removeRoadFolk(const std::string& id);

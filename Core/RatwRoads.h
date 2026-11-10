@@ -10,7 +10,9 @@
 namespace ratw
 {
 // A settlement: a region (cells' territory) with homes and a market. The capital's store is the treasury; each
-// other town has its own ("stores:<town>"), which is also its own treasury.
+// other town has its own ("stores:<town>"), which is also its own treasury. The law's towns (World::towns) and, since doc
+// 79's Phase 4, the road layer's markets (World::roadMarkets, from the Market Board's: every community with a merchant
+// post, its store its treasury) are both Towns.
 struct Town
 {
     std::string id, market, store;
@@ -18,22 +20,37 @@ struct Town
     int residents = 0, guards = 0;
 };
 
-// Goods on the road between two towns. The load is its own account ("caravan:<id>"). The wagon is a character
-// in the world ("road:<id>", never saved itself): it walks the road where someone is near to see it, and goes in
-// timed hops elsewhere, like anyone offstage. It may be raided where bandits camp.
+// A wagon on the road between two markets, or a farm's cart to its market (Docs/Design/79-a-staged-economy.md, 8.1-8.2):
+// staged goods, a manifest for show (no account since doc 79's Phase 4: the old `account`, read from an older save, is
+// ignored and the wagon comes home empty), driven by a real carter away from his post for the trip. The wagon is a
+// character in the world ("road:<id>", never saved itself): it walks the road where someone is near to see it, and goes
+// in timed hops elsewhere, like anyone offstage. It may be raided where bandits camp.
 struct Caravan
 {
-    std::string id, from, to, account;
-    std::vector<std::string> route;       // Cells, from the one town's market to the other's (as planned).
+    std::string id, from, to, account;    // from, to: markets (a cart's `from`, its farm's id); account: an older save's.
+    std::string kind = "wagon";           // "wagon" (between markets: comes home again) or "cart" (a farm's: one way).
+    std::vector<std::pair<std::string, int>> manifest;   // Base good -> pieces, the first first.
+    std::map<std::string, double> sourceP;   // Each good's pressure at its source as it set out (7.4's arrival nudge).
+    std::string driver;                   // The carter (a resident) driving it; "" none (a test's, an older save's).
+    std::string departure;                // The committed departure it was (its notices'), "" none.
+    std::string startCell, endCell;       // Where it loads (the yard, the farm) and unloads (the market's place).
+    double startX = 0, startY = 0, endX = 0, endY = 0;
+    std::vector<std::string> route;       // Cells, from the one market to the other's (as planned).
     std::size_t leg = 0;                  // Cells entered since it set out.
-    double nextAt = 0, departed = 0;      // (Unused since the wagon walks; kept for older saves); calendar days.
+    double nextAt = 0, departed = 0;      // (nextAt unused since the wagon walks; kept for older saves); calendar days.
+    double due = 0;                       // Calendar day it is due at the far end (0: never late).
+    std::string lateCause;                // Why it is late, in words ("a broken axle"), once it is.
+    std::size_t delayAt = 0;              // The leg a seeded mishap holds it at (0 none), and until when.
+    double delayUntil = 0;
+    bool overdue = false;                 // Posted overdue (a day past due), and the pressure that has added at its end.
+    double latePushed = 0;
     int guards = 1;                       // Carters and town guards; escorts with it add to these.
     std::string status = "travelling";    // "travelling", "returning", "raided" or "arrived".
     std::vector<std::string> escorts;     // Those who took an escort contract for it: players or town guards.
     std::vector<std::string> letters;     // Courier contracts it carries.
     std::string cell;                     // Where the wagon is (empty: at its first market, not yet out).
     double x = 0, y = 0;
-    double waitUntil = 0;                 // Calendar day: it waits at the market this long for its escorts.
+    double waitUntil = 0;                 // Calendar day: it waits at the market this long for its escorts and carter.
     std::map<std::string, int> with;      // Cells each escort entered alongside it: paid only for being there.
 };
 

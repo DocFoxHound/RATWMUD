@@ -292,6 +292,13 @@ void madeBy(const std::string& business, std::set<std::string>& made)
         made.insert(items::baseOf(good));
 }
 
+void craftedBy(const std::string& business, std::set<std::string>& crafted)
+{
+    for (const auto* craft : items::craftsFor(business))
+        for (const auto& [good, _] : craft->out)
+            crafted.insert(items::baseOf(good));
+}
+
 std::int64_t boughtLot(double sum, double each, int quantity, bool stall)
 {
     // A bought lot (7.1): the ladder's sum rounded, at least 1p; at a stall × 0.9 and rounded down. Never under the
@@ -424,6 +431,97 @@ json::Value encode(const Board& b)
         recent.push(j);
     }
     o.add("recent", recent);
+    // Staged trade (Phase 4): written only when there is any, so a Board from before it reads back the same.
+    if (!b.committed.empty())
+    {
+        auto list = Value::array();
+        for (const auto& d : b.committed)
+        {
+            auto j = Value::object();
+            j.add("id", d.id);
+            j.add("kind", d.kind);
+            j.add("from", d.from);
+            j.add("to", d.to);
+            j.add("driver", d.driver);
+            j.add("day", d.day);
+            j.add("hour", d.hour);
+            j.add("size", d.size);
+            auto goods = Value::object();
+            for (const auto& [good, n] : d.manifest)
+                goods.add(good, n);
+            j.add("manifest", goods);
+            auto order = Value::array();
+            for (const auto& [good, n] : d.manifest)
+                order.push(Value(good));
+            j.add("order", order);
+            if (!d.cause.empty())
+                j.add("cause", d.cause);
+            j.add("posted", d.posted);
+            list.push(j);
+        }
+        o.add("committed", list);
+    }
+    if (b.rolledThrough >= 0)
+        o.add("rolledThrough", b.rolledThrough);
+    if (b.nextDeparture != 1)
+        o.add("nextDeparture", b.nextDeparture);
+    if (!b.backRoom.empty())
+    {
+        auto rooms = Value::object();
+        for (const auto& [till, goods] : b.backRoom)
+        {
+            auto g = Value::object();
+            for (const auto& [good, n] : goods)
+                g.add(good, n);
+            rooms.add(till, g);
+        }
+        o.add("backRoom", rooms);
+    }
+    if (!b.harvestOverride.empty())
+    {
+        auto h = Value::object();
+        for (const auto& [area, ov] : b.harvestOverride)
+        {
+            auto j = Value::object();
+            j.add("word", ov.word);
+            j.add("until", ov.until);
+            h.add(area, j);
+        }
+        o.add("harvestOverride", h);
+    }
+    if (!b.troubles.empty())
+    {
+        auto list = Value::array();
+        for (const auto& t : b.troubles)
+        {
+            auto j = Value::object();
+            j.add("day", t.day);
+            j.add("market", t.market);
+            j.add("kind", t.kind);
+            list.push(j);
+        }
+        o.add("troubles", list);
+    }
+    if (!b.timesShift.empty())
+    {
+        auto t = Value::object();
+        for (const auto& [m, n] : b.timesShift)
+            t.add(m, n);
+        o.add("timesShift", t);
+    }
+    if (!b.news.empty())
+    {
+        auto n = Value::object();
+        for (const auto& [m, news] : b.news)
+        {
+            auto j = Value::object();
+            j.add("from", news.from);
+            j.add("words", news.words);
+            j.add("day", news.day);
+            n.add(m, j);
+        }
+        o.add("news", n);
+    }
     return o;
 }
 
@@ -496,6 +594,65 @@ Board decode(const json::Value& v)
             if (finite(one.day) && finite(one.delta) && name(one.market) && good(one.good))
                 b.recent.push_back(std::move(one));
         }
+    // Staged trade (Phase 4), leniently: a departure with no ends or a broken day is dropped, its unknown goods dropped,
+    // its numbers clamped (the world drops one whose markets are gone: World::ensureRoadMarkets).
+    for (const auto& j : v.array("committed"))
+    {
+        if (!j.isObject() || b.committed.size() >= CommittedMost)
+            continue;
+        Departure d;
+        d.id = j.string("id").substr(0, 40);
+        d.kind = j.string("kind") == "cart" ? "cart" : "wagon";
+        d.from = j.string("from").substr(0, 120);
+        d.to = j.string("to").substr(0, 120);
+        d.driver = j.string("driver").substr(0, 120);
+        d.day = std::int64_t(whole(j["day"], 0, 365000000, -1));
+        const double hour = j.number("hour", 8);
+        d.hour = finite(hour) ? std::clamp(hour, 0., 23.99) : 8;
+        d.size = int(whole(j["size"], 1, 3, 1));
+        d.cause = j.string("cause").substr(0, 60);
+        const double posted = j.number("posted", 0);
+        d.posted = finite(posted) ? std::max(0., posted) : 0;
+        const auto& goods = j.object("manifest");
+        std::vector<std::string> order;
+        for (const auto& g : j.array("order"))
+            if (g.isString())
+                order.push_back(g.asString());
+        for (const auto& [g, n] : goods.fields())
+            if (std::find(order.begin(), order.end(), g) == order.end())
+                order.push_back(g);
+        for (const auto& g : order)
+            if (const auto* n = goods.find(g); n && n->isNumber() && good(g) && d.manifest.size() < 5)
+                if (const int count = int(whole(*n, 0, 999, 0)); count > 0)
+                    d.manifest.push_back({g, count});
+        if (d.id.empty() || !name(d.from) || !name(d.to) || !j["day"].isNumber())
+            continue;
+        b.committed.push_back(std::move(d));
+    }
+    b.rolledThrough = std::int64_t(whole(v["rolledThrough"], -1, 365000000, -1));
+    b.nextDeparture = std::int64_t(whole(v["nextDeparture"], 1, 1e15, 1));
+    for (const auto& [till, goods] : v.object("backRoom").fields())
+        if (name(till))
+            for (const auto& [g, n] : goods.fields())
+                if (good(g) && n.isNumber())
+                    b.backRoom[till][g] = int(whole(n, 0, 999, 0));
+    for (const auto& [area, o] : v.object("harvestOverride").fields())
+        if (const double until = o.number("until", -1); name(area) && o.isObject() && finite(until) && until >= 0)
+            b.harvestOverride[area] = {int(whole(o["word"], 0, 2, 1)), until};
+    for (const auto& t : v.array("troubles"))
+        if (t.isObject() && b.troubles.size() < TroublesKept)
+        {
+            Trouble one{t.number("day", -1), t.string("market"), t.string("kind")};
+            if (finite(one.day) && one.day >= 0 && name(one.market) && (one.kind == "raid" || one.kind == "late"))
+                b.troubles.push_back(std::move(one));
+        }
+    for (const auto& [m, n] : v.object("timesShift").fields())
+        if (name(m) && n.isNumber())
+            if (const int shift = int(whole(n, -100, 100, 0)); shift != 0)
+                b.timesShift[m] = shift;
+    for (const auto& [m, n] : v.object("news").fields())
+        if (const double day = n.number("day", -1); name(m) && n.isObject() && finite(day) && day >= 0)
+            b.news[m] = {n.string("from").substr(0, 120), json::utf8Prefix(n.string("words"), 120), day};
     return b;
 }
 
@@ -848,8 +1005,103 @@ void Society::setProsperity(int target, bool now)
 
 int Society::marketTimes(const std::string& market) const
 {
-    (void)market;                                   // (Each market its own once harvests and wagons feed it: 5.3.)
-    return std::clamp(market::timesOf(state_.board.slider), 0, 4) - 2;
+    // 5.3: the slider, plus the market's own shift from its areas' harvests and the roads' troubles of the week (raids and
+    // late wagons to it), which the world sets each morning (Phase 4); staged events and the DM's nudge come in Phases 7
+    // and 9. Never any player-caused pressure.
+    int score = state_.board.slider;
+    if (const auto shift = state_.board.timesShift.find(market); shift != state_.board.timesShift.end())
+        score += shift->second;
+    return std::clamp(market::timesOf(score), 0, 4) - 2;
+}
+
+void Society::setTimesShift(std::map<std::string, int> shift)
+{
+    for (auto it = shift.begin(); it != shift.end();)
+        it = it->second == 0 ? shift.erase(it) : std::next(it);
+    for (auto& [m, n] : shift)
+        n = std::clamp(n, -100, 100);
+    state_.board.timesShift = std::move(shift);
+}
+
+bool Society::imported(const std::string& market, const std::string& base) const
+{
+    const auto found = imports_.find(market);
+    return found != imports_.end() && found->second.count(base) > 0;
+}
+
+int Society::marketShelf(const std::string& market, const std::string& base) const
+{
+    int total = 0;
+    if (const auto* m = tradePoints().find(market))
+        for (const auto& till : m->tills)
+            if (const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr)
+                for (const auto& ware : stagedShelfGoods(p->founder))
+                    if (items::baseOf(ware) == base)
+                        total += shelfTarget(till, ware);
+    return total;
+}
+
+int Society::arrivalRefill(const std::string& market, const std::string& base, double scale)
+{
+    // An arrival (8.6): the tills of the market's shops that set the good out jump to their targets (a Marketday cart's
+    // stalls a little over: `scale`), each back room filled to a shelf more, and the keeper seen "unloading" a while.
+    rollMarket();
+    int tills = 0;
+    const auto* m = tradePoints().find(market);
+    if (!m || !market::finite(scale))
+        return 0;
+    scale = std::clamp(scale, 1., 2.);
+    for (const auto& till : m->tills)
+    {
+        const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
+        auto found = state_.accounts.find(till);
+        if (!p || found == state_.accounts.end())
+            continue;
+        auto& a = found->second;
+        bool any = false;
+        for (const auto& ware : stagedShelfGoods(p->founder))
+        {
+            if (items::baseOf(ware) != base || !itemValid(ware))
+                continue;
+            const int target = shelfTarget(till, ware);
+            const int want = std::min(MarketStockLimit, int(std::ceil(target * scale - 1e-9)));
+            state_.board.backRoom[till][base] = std::max(state_.board.backRoom[till][base], target);
+            any = true;
+            if (stock(a, ware) >= want || (!a.stock.count(ware) && a.stock.size() >= MaxGoodsKinds))
+                continue;
+            a.stock[ware] = want;
+        }
+        if (any)
+        {
+            ++tills;
+            state_.board.settingOut[till] = marketClock() + market::SettingOutDays;
+        }
+    }
+    return tills;
+}
+
+int Society::sendOn(const std::string& market, const std::string& base)
+{
+    // Goods move on (7.5): what a market's tills hold of a good over its target leaves on the wagon or cart going out.
+    int pieces = 0;
+    const auto* m = tradePoints().find(market);
+    if (!m)
+        return 0;
+    for (const auto& till : m->tills)
+    {
+        const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
+        auto found = state_.accounts.find(till);
+        if (!p || found == state_.accounts.end())
+            continue;
+        for (const auto& ware : stagedShelfGoods(p->founder))
+            if (items::baseOf(ware) == base)
+                if (const int over = stock(found->second, ware) - shelfTarget(till, ware); over > 0)
+                {
+                    found->second.stock[ware] -= over;
+                    pieces += over;
+                }
+    }
+    return pieces;
 }
 
 Society::StagedHooks Society::boardHooks()
@@ -1724,6 +1976,19 @@ void Society::marketMorning(std::int64_t day)
     }
     for (auto it = b.restocked.begin(); it != b.restocked.end();)
         it = it->second < day - 1 ? b.restocked.erase(it) : std::next(it);
+    // The back rooms run down by a fifth a day (D27: what an arrival left goes, eaten, spoilt or sold on); a till the
+    // markets no longer know is dropped.
+    for (auto it = b.backRoom.begin(); it != b.backRoom.end();)
+    {
+        if (!account(it->first))
+        {
+            it = b.backRoom.erase(it);
+            continue;
+        }
+        for (auto& [good, n] : it->second)
+            n = n * 4 / 5;
+        ++it;
+    }
     for (auto it = b.settingOut.begin(); it != b.settingOut.end();)
         it = it->second < now ? b.settingOut.erase(it) : std::next(it);
     stepSlider(day);
@@ -1784,9 +2049,10 @@ bool Society::settingOut(const std::string& keeper) const
 bool Society::stagedRestock(const std::string& keeper)
 {
     // The morning restock (doc 79, 7.7): when its keeper is first at work in the market day, a shop sets out its wares up
-    // to their shelf targets: no inputs, no money, no store room; a raw stock change (no ledger entry). Goods the
-    // market doesn't make wait for wagons in Phase 4 (D27's back-room buffer); until wagons run, everything refills, as a
-    // market with no route does.
+    // to their shelf targets: no inputs, no money, no store room; a raw stock change (no ledger entry). A good its market
+    // gets only by wagon or cart (imported: D27) comes from the till's back room, never more than it holds (a back room
+    // never stocked yet is stocked now, as by an arrival: a world's first morning); every other good refills, as in a
+    // market no wagon reaches.
     rollMarket();
     const auto* job = jobOf(keeper);
     if (!job || job->role != "merchant")
@@ -1801,12 +2067,24 @@ bool Society::stagedRestock(const std::string& keeper)
     state_.board.restocked[till] = day;
     auto& a = found->second;
     bool set = false;
+    const auto market = marketOf(till);
     for (const auto& ware : stagedShelfGoods(job->founder))
     {
         const int target = shelfTarget(till, ware), have = stock(a, ware);
         if (target <= have || !itemValid(ware) || (!a.stock.count(ware) && a.stock.size() >= MaxGoodsKinds))
             continue;
-        a.stock[ware] = std::min(MarketStockLimit, target);
+        int next = std::min(MarketStockLimit, target);
+        if (const auto base = items::baseOf(ware); imported(market, base))
+        {
+            auto& rooms = state_.board.backRoom[till];
+            const auto room = rooms.try_emplace(base, target).first;   // (Never stocked yet: as by an arrival.)
+            const int take = std::min(room->second, next - have);
+            if (take <= 0)
+                continue;
+            room->second -= take;
+            next = have + take;
+        }
+        a.stock[ware] = next;
         set = true;
     }
     // The keeper is seen "setting out the wares" for a few minutes (7.7) when anything went out, or when the dawn rippled
@@ -1842,6 +2120,7 @@ void World::ensureTradePoints()
         return;
     tradePointsReady_ = true;
     tradePointsRevision_ = society_.rosterRevision();
+    ++tradePointsBuilt_;                            // (The roads find their markets again: ensureRoadMarkets.)
     const auto regionOf = [&](const std::string& cellId) -> std::string {
         const auto* c = cell(cellId);
         return c && !c->region.empty() && c->region != "unassigned" ? c->region : std::string();
@@ -1935,7 +2214,15 @@ void World::ensureTradePoints()
             m.sold.insert(items::baseOf(ware));
         if (const auto* r = society_.spec(s.post->founder))
             if (const auto* business = items::businessFor(r->workLabel))
+            {
                 market::madeBy(business->id, m.made);
+                market::craftedBy(business->id, m.crafted);
+                for (const auto& g : items::buysFor(business->id))   // (What its shops buy: a wagon may bring it too.)
+                    m.bought.insert(items::baseOf(g));
+                if (const auto extra = market::data().buys.find(business->id); extra != market::data().buys.end())
+                    for (const auto& g : extra->second)
+                        m.bought.insert(items::baseOf(g));
+            }
     }
     // Its areas' goods: the farms and works whose community it is (communities.json), where the world has them.
     for (const auto& f : items::farmPeople().farms)
@@ -1947,7 +2234,10 @@ void World::ensureTradePoints()
             for (const auto& def : area.farms)
                 if (def.id == f.farm)
                     for (const auto& good : def.yields)
+                    {
                         t.markets[std::size_t(at)].made.insert(good);
+                        t.markets[std::size_t(at)].crafted.insert(good);
+                    }
     }
     // Its farm and works crews (7.3).
     for (const auto& [community, n] : society_.farmCrews())

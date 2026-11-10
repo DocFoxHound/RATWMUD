@@ -116,7 +116,6 @@ void World::setupTowns()
     townOfCell_.clear();
     townIndex_.clear();
     society_.forgetPlaces();
-    roadRoutes_.clear();
     // A town is a region people live in with a market: residents counted by home, markets by merchants' work.
     std::map<std::string, int> living, guards;
     std::map<std::string, std::map<std::string, int>> markets;
@@ -242,18 +241,7 @@ void World::setupTowns()
                 townIndex_[cellId] = std::size_t(&t - towns_.data());
             }
     society_.setCapital(towns_.front().id);
-    // The roads between every two towns; bandits camp in wild country along them (one in six such cells, to begin
-    // with).
-    for (std::size_t i = 0; i < towns_.size(); ++i)
-        for (std::size_t j = i + 1; j < towns_.size(); ++j)
-            if (auto route = routeBetween(towns_[i].market, towns_[j].market); route.size() >= 2)
-                roadRoutes_.push_back(std::move(route));
-    if (roads_.camps.empty())
-        for (const auto& route : roadRoutes_)
-            for (const auto& cellId : route)
-                if (!townOfCell_.count(cellId) && roll(cellId, 0) % 6 == 0 &&
-                    std::none_of(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) { return b.cell == cellId; }))
-                    roads_.camps.push_back({"camp_" + cellId, cellId, 3.0 + double(roll(cellId, 1) % 4), 30, -100, true});
+    // (The roads between markets, and the bandits along them, are the road layer's since doc 79's Phase 4: ensureRoadMarkets.)
     absorbJournal();
 }
 
@@ -327,11 +315,11 @@ std::vector<const Contract*> World::contractsNear(const std::string& player) con
 {
     std::vector<const Contract*> out;
     const auto* p = entity(player);
-    const auto* here = p ? townOf(p->cellId) : nullptr;
+    const auto* here = p ? roadMarketOf(p->cellId) : nullptr;
     if (!here)
         return out;
     for (const auto& c : roads_.contracts)
-        if (c.status == "open" && (c.town == here->id || (c.kind == "courier" && townOf(entity(c.poster) ? entity(c.poster)->cellId : "") == here)))
+        if (c.status == "open" && (c.town == here->id || (c.kind == "courier" && roadMarketOf(entity(c.poster) ? entity(c.poster)->cellId : "") == here)))
             out.push_back(&c);
     return out;
 }
@@ -469,7 +457,10 @@ void World::tendRoads()
 {
     if (!townsReady_)
         setupTowns();
-    if (towns_.size() < 2)
+    // The road layer runs on the markets (doc 79, 5.1 and Phase 4), not the law's towns: one market still has its farm
+    // carts; two or more, wagons and bandits between them.
+    ensureRoadMarkets();
+    if (roadMarkets_.empty())
         return;
     // A courier is done when the one who took it stands before the recipient.
     for (auto& c : roads_.contracts)
@@ -493,7 +484,9 @@ void World::tendRoads()
     {
         roads_.day = today;
         roadsDaily();
+        roadsMorning(today);
     }
+    setOut();
     tendRoadFolk();
     absorbJournal();
 }
@@ -559,22 +552,20 @@ void World::tendRoadFolk()
         auto* wagon = entity(id);
         if (!wagon)
         {
-            const auto* from = town(homeward(c) ? c.to : c.from);
+            // Where it last was, else where it sets out from: its yard (or farm), or, homeward, the far market.
             std::string cellId = c.cell;
             Vec2 at{c.x, c.y};
             if (cellId.empty() || !cell(cellId))
             {
-                if (!from)
+                cellId = homeward(c) ? c.endCell : c.startCell;
+                at = homeward(c) ? Vec2{c.endX, c.endY} : Vec2{c.startX, c.startY};
+                if (cellId.empty() || !cell(cellId))
                     continue;
-                cellId = from->market;
-                at = {from->marketX, from->marketY};
                 c.cell = cellId;
                 c.x = at.x;
                 c.y = at.y;
             }
-            wagon = &addRoadFolk(id, "a caravan bound for " + (homeward(c) ? c.from : c.to),
-                                 "A laden cart hauled in harness, its carters trotting alongside.", cellId, at,
-                                 "caravan", c.id);
+            wagon = &addRoadFolk(id, caravanName(c), caravanLook(c), cellId, at, "caravan", c.id);
         }
         if (tiered())
             placeOnStage(*wagon, stage);
@@ -607,12 +598,32 @@ void World::tendRoadFolk()
 
 void World::tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& budget)
 {
-    // Set out only with its escorts alongside (or once it has waited long enough for them).
+    // Set out only with its escorts and its carter alongside (or once it has waited long enough for them).
     if (c.status == "travelling" && c.leg == 0 && calendarDays_ < c.waitUntil &&
-        !std::all_of(c.escorts.begin(), c.escorts.end(), [&](const std::string& who) { return withCaravan(who, wagon); }))
+        (!std::all_of(c.escorts.begin(), c.escorts.end(), [&](const std::string& who) { return withCaravan(who, wagon); }) ||
+         (!c.driver.empty() && entity(c.driver) && !withCaravan(c.driver, wagon))))
     {
-        wagon.activity = "waiting at the market for its escort";
+        wagon.activity = c.manifest.empty() ? "waiting at the market for its escort"
+                                            : c.kind == "cart" ? "being loaded" : "loading the wagon";
         return;
+    }
+    // A seeded mishap holds it where it happens (8.1: late, with a cause people talk about).
+    if (c.status == "travelling" && c.delayAt > 0 && c.leg >= c.delayAt)
+    {
+        if (c.delayUntil <= 0)
+        {
+            const char* const causes[] = {"a broken axle", "mud to the axles", "a wheel off in a rut", "a washed-out ford"};
+            c.lateCause = causes[roll(c.id, 9) % std::size(causes)];
+            c.delayUntil = calendarDays_ + 1.6 + chance(c.id, 10) * .8;
+            recordEvent({"wagon held up", c.id, c.to, wagon.cellId, 0, 0, c.departure, 0, 0, c.lateCause});
+        }
+        if (calendarDays_ < c.delayUntil)
+        {
+            wagon.activity = "held up by " + c.lateCause;
+            stop(wagon.id);
+            return;
+        }
+        c.delayAt = 0;
     }
     // Caravans wait out a storm (or a snowstorm, a sandstorm) where it finds them (Phase 9); within a cell of a waystation
     // they press on, sheltered on that stretch (doc 57, Phase 4). The days they wait are counted, for the town's proposals.
@@ -626,6 +637,8 @@ void World::tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& bud
     if (c.status != "arrived" && skyAt(wagon.cellId, wagon.position) == 2 && (works_.waystations.empty() || !stationed()))
     {
         stormWaits_[homeward(c) ? c.from : c.to][wagon.cellId].insert(std::int64_t(std::floor(calendarDays_)));
+        if (c.lateCause.empty() && !homeward(c))
+            c.lateCause = "the weather";
         wagon.activity = "waiting out the weather";
         stop(wagon.id);
         return;
@@ -641,30 +654,28 @@ void World::tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& bud
     }
     c.x = wagon.position.x;
     c.y = wagon.position.y;
-    const auto* dest = town(homeward(c) ? c.from : c.to);
+    // Where it is going: the far market's place, or, homeward, where it set out (staged goods: nothing to carry back).
+    const std::string destCell = homeward(c) ? c.startCell : c.endCell;
+    const Vec2 goal = homeward(c) ? Vec2{c.startX, c.startY} : Vec2{c.endX, c.endY};
     const auto lost = [&] {
-        // No way on: what it carries goes back to where it came from, and it is done.
-        const auto* home = town(c.from);
-        if (const auto* load = society_.account(c.account))
-            for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
-                if (n > 0 && !(home && society_.shift(c.account, home->store, item, n, 0, "caravan turned back")))
-                    society_.consume(c.account, item, n, "caravan lost");
-        society_.closeAccount(c.account, home ? home->store : std::string());
+        // No way on: its letters open again at home for another courier, and it is done.
+        for (auto& k : roads_.contracts)
+            if (k.kind == "courier" && k.status == "taken" && k.taker == "caravan:" + c.id)
+                k.status = "open", k.taker.clear();
         c.status = "arrived";
         recordEvent({"caravan lost", c.id, c.to, wagon.cellId, 0, 0, {}, 0, 0, "no road on from here"});
     };
-    if (!dest)
+    if (destCell.empty() || !cell(destCell))
         return lost();
-    const Vec2 goal{dest->marketX, dest->marketY};
-    if (wagon.cellId == dest->market && (between(wagon.position, goal) <= 2.0 || time_ - f.enteredAt > StuckSeconds))
+    if (wagon.cellId == destCell && (between(wagon.position, goal) <= 2.0 || time_ - f.enteredAt > StuckSeconds))
         return caravanArrived(c);
-    if (wagon.cellId != dest->market && !cachedSteps(wagon.cellId).count(dest->market))
+    if (wagon.cellId != destCell && !cachedSteps(wagon.cellId).count(destCell))
         return lost();
     if (!wagon.offstage && time_ - f.enteredAt > StuckSeconds)
     {
         // Stuck where it walks (a crowd, a bad corner): it goes on to the next cell as if offstage.
         // Copies: ensureLoaded may rebuild the fixture index, clearing stepsCache_ and doorsIn_ under them.
-        const std::string next = cachedSteps(wagon.cellId).at(dest->market);
+        const std::string next = cachedSteps(wagon.cellId).at(destCell);
         const auto ways = doorsIn(wagon.cellId);
         for (const Door* way : ways)
             if (way->portal && !way->locked && way->targetCell == next && ensureLoaded(next).ok)
@@ -678,13 +689,13 @@ void World::tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& bud
         f.enteredAt = time_;
         return;
     }
-    const std::string task = homeward(c) ? "going home to " + c.from : "on the road to " + c.to;
+    const std::string task = homeward(c) ? "going home to " + marketWords(c.from) : "on the road to " + marketWords(c.to);
     if (wagon.activity != task)
     {
         stop(wagon.id);
         wagon.activity = task;
     }
-    headFor(wagon, task, dest->market, goal, budget);
+    headFor(wagon, task, destCell, goal, budget);
 }
 
 void World::caravanEntered(Caravan& c, const Entity& wagon)
@@ -692,8 +703,8 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
     for (const auto& who : c.escorts)
         if (withCaravan(who, wagon))
             ++c.with[who];
-    if (homeward(c))
-        return;                                    // Empty on the way back: nothing worth robbing.
+    if (homeward(c) || c.kind == "cart")
+        return;                                    // Empty on the way back, or a farm's cart on its own track: not robbed.
     const auto& cellId = wagon.cellId;
     // Those travelling with it see what happens.
     std::vector<std::string> watching;
@@ -719,45 +730,45 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
                 notice(id, "Figures watch the caravan from cover here, weigh up its guards, and let it pass.");
             break;
         }
-        // Raided: the load is taken (and soon eaten), the guards give as good as they can, the town is short.
+        // Raided (doc 79, 8.1): the load is taken to the camp (staged goods, made there: recoverable), the guards give as
+        // good as they can, the market it was bound for short of its goods at once, its carter robbed or hurt.
         int taken = 0;
-        if (const auto* load = society_.account(c.account))
-            for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
-                if (n > 0)
-                    taken += society_.consume(c.account, item, n, "stolen by bandits");
-        // A trader's money too (doc 42, Phase 7): into the camp's hoard.
-        if (const auto* load = society_.account(c.account); load && load->cash > 0)
-        {
-            society_.openAccount("bandits:" + camp.id);
-            society_.shift(c.account, "bandits:" + camp.id, "", 0, load->cash, "robbed by bandits");
-        }
+        for (const auto& [g, n] : c.manifest)
+            taken += n;
+        raidCargo(c, camp);
+        c.manifest.clear();
         camp.hunger = std::max(0.0, camp.hunger - taken * 4.0);
-        camp.strength = std::clamp(camp.strength + .5 - .3 * guards, 0.0, 20.0);
+        // Its strength grows with each raid, within the world's cap (D14).
+        const double strongest = std::clamp(double(society_.rule("campStrengthMost")), 2.0, 20.0);
+        camp.strength = std::clamp(camp.strength + .5 - .3 * guards, 0.0, strongest);
         camp.lastRaid = calendarDays_;
         c.status = "raided";
         if (auto* w = entity(wagon.id))
-            w->name = "a robbed caravan limping home to " + c.from;
-        recordEvent({"raid", camp.id, c.to, cellId, 0, 0, {}, taken, 0, "the caravan to " + c.to + " was robbed"});
+            w->name = "a robbed wagon limping home to " + marketWords(c.from);
+        recordEvent({"raid", camp.id, c.to, cellId, 0, 0, c.departure, taken, 0, "the wagon to " + marketWords(c.to) + " was robbed"});
         for (const auto& id : watching)
-            notice(id, "Bandits burst from cover and fall on the caravan! In the struggle they make off with its load, "
-                       "and the carters turn back for " + c.from + ".");
-        // The town posts a bounty on the camp, and asks for guards for the next caravan (20p and 3p a point of the camp's
-        // strength, and 12p).
+            notice(id, "Bandits burst from cover and fall on the wagon! In the struggle they make off with its load, "
+                       "and the carters turn back for " + marketWords(c.from) + ".");
+        // The market posts a bounty on the camp (20p and 3p a point of the camp's strength, at most the world's bountyMost:
+        // D14), and asks for guards for the next wagon (12p); its treasury sets the rewards aside (staged-sourced).
         const bool bounty = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
             return k.kind == "bounty" && k.target == camp.id && (k.status == "open" || k.status == "taken");
         });
+        const auto payer = society_.treasuryOf(c.to);
         if (!bounty)
-            postContract("bounty", "treasury", c.to, camp.id, 20 + std::int64_t(camp.strength * 3), 20,
+            postContract("bounty", payer, c.to, camp.id,
+                         std::min<std::int64_t>(std::max(0, society_.rule("bountyMost")), 20 + std::int64_t(camp.strength * 3)), 20,
                          "the bandits robbing the road at " + cellId);
         const bool escort = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
             return k.kind == "escort" && k.town == c.to && (k.status == "open" || k.status == "taken");
         });
         if (!escort)
-            postContract("escort", "treasury", c.to, c.to, 12, 7, "guarding the next caravan to " + c.to);
+            postContract("escort", payer, c.to, c.to, 12, 7, "guarding the next wagon to " + marketWords(c.to));
         for (const auto& p : society_.positions())
-            if (p.role == "merchant" && townOf(p.work.cell) && townOf(p.work.cell)->id == c.to)
-                if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
-                    believe(holder, camp.id, "raids the road at " + cellId, "the carters", .9);
+            if (p.role == "merchant")
+                if (const auto* m = roadMarketOf(p.work.cell); m && m->id == c.to)
+                    if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
+                        believe(holder, camp.id, "raids the road at " + cellId, "the carters", .9);
         break;
     }
 }
@@ -767,30 +778,31 @@ void World::caravanArrived(Caravan& c)
     const auto* wagon = entity("road:" + c.id);
     if (homeward(c))
     {
-        // Back where it set out: anything it still carries goes back into the stores, and it is done.
-        const auto* home = town(c.from);
-        if (const auto* load = society_.account(c.account); load && home)
-            for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
-                if (n > 0)
-                    society_.shift(c.account, home->store, item, n, 0, "caravan unloaded");
-        society_.closeAccount(c.account, home ? home->store : std::string());
+        // Back where it set out: it is done, its carter back to his post.
         c.status = "arrived";
-        recordEvent({"caravan home", c.id, c.from, c.cell, 0, 0, {}, 0, 0, "back from " + c.to});
+        drivers_.erase(c.driver);
+        recordEvent({"caravan home", c.id, c.from, c.cell, 0, 0, c.departure, 0, 0, "back from " + c.to});
         return;
     }
-    const auto* from = town(c.from);
-    const auto* to = town(c.to);
+    if (c.kind == "cart")
+    {
+        // A farm's cart in at its market (8.2): its goods on the shelves, its harvest in the price; one way.
+        stagedArrival(c);
+        c.status = "arrived";
+        drivers_.erase(c.driver);
+        recordEvent({"cart arrives", c.id, c.to, c.cell, 0, 0, c.from, int(c.manifest.size()), 0, "from " + c.from});
+        return;
+    }
+    const auto* from = roadMarket(c.from);
+    const auto* to = roadMarket(c.to);
     if (!from || !to)
     {
         c.status = "returning";
         return;
     }
-    // The load into the town's stores (nothing is bought or sold on the road since doc 66's Phase 5: whoever sends a
-    // caravan says what its goods are for).
-    if (const auto* load = society_.account(c.account))
-        for (const auto& [item, n] : std::map<std::string, int>(load->stock.begin(), load->stock.end()))
-            for (int left = n; left > 0; left -= 99)
-                society_.shift(c.account, to->store, item, std::min(left, 99), 0, "caravan delivered");
+    // Its goods onto the far market's shelves and into its prices, at this moment (doc 79, 7.4 and 8.6; staged: nothing is
+    // bought or sold on the road).
+    stagedArrival(c);
     // Escorts are paid for having been there: at the end, and for at least half the road.
     for (const auto& who : c.escorts)
         for (auto& k : roads_.contracts)
@@ -799,11 +811,11 @@ void World::caravanArrived(Caravan& c)
                 const bool there = wagon && withCaravan(who, *wagon) && c.with[who] * 2 >= int(c.leg);
                 settleContract(k, there ? "done" : "expired", there ? who : std::string());
                 if (const auto* e = entity(who); e && !e->npc)
-                    notice(who, there ? "The caravan reaches " + c.to + " safely. You are paid " + pennies(k.reward) + " for guarding it."
-                                      : "The caravan reached " + c.to + " without you, and the escort's pay went back.");
+                    notice(who, there ? "The wagon reaches " + marketWords(c.to) + " safely. You are paid " + pennies(k.reward) + " for guarding it."
+                                      : "The wagon reached " + marketWords(c.to) + " without you, and the escort's pay went back.");
                 if (there)
                     for (const auto& p : society_.positions())
-                        if (p.role == "merchant" && townOf(p.work.cell) == to)
+                        if (p.role == "merchant" && roadMarketOf(p.work.cell) == to)
                             if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
                                 bonds_.change(holder, who, {2, 3, 1, 0, 2}, calendarDays_);
             }
@@ -814,6 +826,7 @@ void World::caravanArrived(Caravan& c)
                 settleContract(k, "done", std::string());   // Carried by the carters: the reward goes home.
                 bonds_.change(k.poster, k.target, {1, 0, 2, 0, 0}, calendarDays_);
             }
+    c.letters.clear();
     // The carters tell what they heard in the market they came from: more of it, and surer, when a player guarded the
     // road with them (doc 57, 5).
     bool guarded = false;
@@ -822,89 +835,87 @@ void World::caravanArrived(Caravan& c)
             guarded = true;
     std::vector<Belief> told;
     for (const auto& [holder, mine] : beliefs_)
-        if (const auto* job = society_.jobOf(holder); job && job->role == "merchant" && townOf(job->work.cell) == from)
+        if (const auto* job = society_.jobOf(holder); job && job->role == "merchant" && roadMarketOf(job->work.cell) == from)
             for (const auto& b : mine)
                 if (b.confidence >= .4)
                     told.push_back(b);
     for (const auto& p : society_.positions())
-        if (p.role == "merchant" && townOf(p.work.cell) == to)
+        if (p.role == "merchant" && roadMarketOf(p.work.cell) == to)
             if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
                 for (std::size_t i = 0; i < told.size() && i < (guarded ? 16u : 8u); ++i)
                     believe(holder, told[i].subject, told[i].claim, "a carter from " + from->id, told[i].confidence * (guarded ? .75 : .6), {},
                             told[i].as);
-    recordEvent({"caravan arrives", c.id, c.to, c.cell, 0, 0, {}, 0, 0, "from " + c.from + (guarded ? ", guarded" : "")});
+    recordEvent({"caravan arrives", c.id, c.to, c.cell, 0, 0, c.departure, int(c.manifest.size()), 0, "from " + c.from + (guarded ? ", guarded" : "")});
     // Home again, empty.
     c.status = "returning";
     c.leg = 0;
     c.with.clear();
     c.escorts.clear();
     if (auto* w = entity("road:" + c.id))
-        w->name = "an empty caravan going home to " + c.from;
+    {
+        w->name = "an empty wagon going home to " + marketWords(c.from);
+        w->description = caravanLook(c);
+    }
+}
+
+std::string World::caravanName(const Caravan& c) const
+{
+    if (c.kind == "cart")
+        return "a farm cart bound for " + marketWords(c.to);
+    if (c.status == "raided")
+        return "a robbed wagon limping home to " + marketWords(c.from);
+    if (homeward(c))
+        return "an empty wagon going home to " + marketWords(c.from);
+    return "a wagon bound for " + marketWords(c.to);
+}
+
+std::string World::caravanLook(const Caravan& c) const
+{
+    // What a player sees of it (T4): who drives it and what it carries.
+    std::string goods;
+    for (std::size_t i = 0; i < c.manifest.size(); ++i)
+    {
+        std::string name = Society::itemName(c.manifest[i].first);
+        for (auto& ch : name)
+            ch = char(std::tolower(static_cast<unsigned char>(ch)));
+        goods += (i == 0 ? "" : i + 1 == c.manifest.size() ? " and " : ", ") + name;
+    }
+    const auto* driver = entity(c.driver);
+    std::string out = c.kind == "cart" ? "A farm cart in harness" : goods.empty() ? "An empty wagon in harness" : "A laden wagon in harness";
+    out += driver ? ", " + driver->name + " at the traces." : ", its carters trotting alongside.";
+    if (!goods.empty())
+        out += " It carries " + goods + ".";
+    return out;
 }
 
 Caravan* World::sendCaravan(const Town& from, const Town& to, const std::map<std::string, int>& load)
 {
-    auto route = routeBetween(from.market, to.market);
-    if (route.size() < 2)
-        return nullptr;
+    // A wagon at once (tests, the Dev Console): between the road layer's markets of these ids where there are, else the
+    // towns given; a free carter of the source's drives it if it has one.
+    ensureRoadMarkets();
+    const auto* a = roadMarket(from.id);
+    const auto* b = roadMarket(to.id);
     Caravan c;
     c.id = "cv" + std::to_string(roads_.nextId++);
     c.from = from.id;
     c.to = to.id;
-    c.account = "caravan:" + c.id;
-    c.route = std::move(route);
-    c.departed = calendarDays_;
-    if (!society_.openAccount(c.account))
-        return nullptr;
     for (const auto& [item, n] : load)
-        if (n > 0)
-            society_.shift(from.store, c.account, item, n, 0, "caravan loaded");
-    c.guards = 1 + std::min(3, from.guards / 10);
-    for (auto& k : roads_.contracts)
-    {
-        if (k.kind == "escort" && k.town == to.id)
+        if (n > 0 && c.manifest.size() < 5)
+            c.manifest.push_back({items::baseOf(item), std::min(n, 999)});
+    for (const auto& who : cartersOf(from.id))
+        if (const auto* e = entity(who); e && !e->dead && !drivers_.count(who))
         {
-            // Nobody has taken the escort in a couple of days: one of the town guard goes.
-            if (k.status == "open" && calendarDays_ - k.created >= TakeWorkAfterDays)
-                for (const auto& p : society_.positions())
-                {
-                    const auto& holder = society_.state().careers.positions.at(p.id).holder;
-                    const auto* guard = holder.empty() ? nullptr : entity(holder);
-                    if (p.role != "guard" || !guard || guard->dead || townOf(p.work.cell) != &from)
-                        continue;
-                    k.status = "taken";
-                    k.taker = holder;
-                    recordEvent({"contract taken", holder, k.poster, guard->cellId, 0, 0, {}, 0, k.reward, k.kind + ": " + k.detail});
-                    break;
-                }
-            if (k.status == "taken" && std::find(c.escorts.begin(), c.escorts.end(), k.taker) == c.escorts.end())
-                c.escorts.push_back(k.taker);
+            c.driver = who;
+            break;
         }
-        // Letters nobody has taken in a week go with the carters.
-        if (k.kind == "courier" && k.status == "open" && calendarDays_ - k.created >= 7)
-            if (const auto* recipient = entity(k.target), *poster = entity(k.poster);
-                recipient && poster && townOf(recipient->cellId) == &to && townOf(poster->cellId) == &from)
-            {
-                k.status = "taken";
-                k.taker = c.account;
-                c.letters.push_back(k.id);
-            }
-    }
-    if (!c.escorts.empty())
-        c.waitUntil = calendarDays_ + EscortWaitDays;
-    for (const auto& who : c.escorts)
-        if (const auto* e = entity(who); e && !e->npc)
-            notice(who, "The caravan for " + to.id + " is making ready at the market in " + from.id + ". It will wait a little for you.");
-    recordEvent({"caravan departs", c.id, to.id, from.market, 0, 0, {}, 0, 0, std::to_string(c.guards) + " guards"});
-    roads_.caravans.push_back(std::move(c));
-    return &roads_.caravans.back();
+    return launchCaravan(std::move(c), a ? *a : from, b ? *b : to);
 }
 
 bool World::errand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
                    std::string& goalCell, Vec2& goal) const
 {
     // (Nobody seated, no occasion, no contract taken: no errand for anyone. Asked of every resident every pass.)
-    if (seated_.empty() && occasions_.empty() && errandContracts_.empty())
+    if (seated_.empty() && occasions_.empty() && errandContracts_.empty() && drivers_.empty())
         return false;
     // A hungry traveller eats first (its provisions where it stands, else food bought or fetched), then goes on: the
     // errand never starves it.
@@ -930,6 +941,31 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
             goal = {o.x + double(at % 3) - 1, o.y + 1 + double(at / 3)};
             return true;
         }
+    // A carter driving a wagon or a farm's cart (doc 79, 8.1-8.2; D26): with it, away from his post, until it is home
+    // (a cart: at its market).
+    if (const auto d = drivers_.find(resident); d != drivers_.end())
+        for (const auto& c : roads_.caravans)
+            if (c.id == d->second && c.status != "arrived")
+            {
+                const auto* wagon = entity("road:" + c.id);
+                task = c.kind == "cart" ? "taking the cart to " + marketWords(c.to)
+                       : homeward(c)    ? "driving the wagon home to " + marketWords(c.from)
+                                        : "on the " + marketWords(c.to) + " run";
+                reason = c.kind == "cart" ? "with the morning's load" : c.status == "raided" ? "robbed on the road" : "driving the wagon";
+                if (wagon)
+                {
+                    goalCell = wagon->cellId;
+                    goal = {wagon->position.x - 1, wagon->position.y};
+                    if (!standable(goalCell, goal))
+                        goal = wagon->position;
+                }
+                else
+                {
+                    goalCell = c.startCell;
+                    goal = {c.startX, c.startY};
+                }
+                return !goalCell.empty();
+            }
     static const std::vector<std::size_t> none;
     const auto contractsOf = errandContracts_.find(resident);
     for (const auto i : contractsOf != errandContracts_.end() ? contractsOf->second : none)
@@ -949,7 +985,7 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
             task = "carrying a letter";
             reason = "to " + to->name;
             // To the recipient's home until they're in the same town, then to wherever they are.
-            if (townOf(me->cellId) != townOf(to->cellId) && home && !home->homeCell.empty())
+            if (roadMarketOf(me->cellId) != roadMarketOf(to->cellId) && home && !home->homeCell.empty())
             {
                 goalCell = home->homeCell;
                 goal = {home->homeX, home->homeY};
@@ -966,21 +1002,20 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
                 if (c.status == "travelling" && std::find(c.escorts.begin(), c.escorts.end(), resident) != c.escorts.end())
                 {
                     const auto* wagon = entity("road:" + c.id);
-                    const auto* dest = town(c.to);
-                    if (!wagon || !dest)
+                    if (!wagon || c.endCell.empty())
                         return false;
                     task = "guarding a caravan";
-                    reason = "on the road to " + c.to;
+                    reason = "on the road to " + marketWords(c.to);
                     // Where the wagon is, while it waits; then the same road to the same market, alongside it.
-                    if (c.leg == 0 && wagon->cellId != dest->market)
+                    if (c.leg == 0 && wagon->cellId != c.endCell)
                     {
                         goalCell = wagon->cellId;
                         goal = wagon->position;
                     }
                     else
                     {
-                        goalCell = dest->market;
-                        goal = {dest->marketX, dest->marketY + 1};
+                        goalCell = c.endCell;
+                        goal = {c.endX, c.endY + 1};
                     }
                     return true;
                 }
@@ -990,6 +1025,10 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
 
 void World::indexErrands()
 {
+    drivers_.clear();
+    for (const auto& c : roads_.caravans)
+        if (!c.driver.empty() && c.status != "arrived")
+            drivers_[c.driver] = c.id;
     errandContracts_.clear();
     for (std::size_t i = 0; i < roads_.contracts.size(); ++i)
         if (roads_.contracts[i].status == "taken")
@@ -1010,7 +1049,7 @@ void World::residentsTakeWork()
         if (k.kind != "courier" || k.status != "open" || calendarDays_ - k.created < TakeWorkAfterDays)
             continue;
         const auto* poster = entity(k.poster);
-        const auto* here = poster ? townOf(poster->cellId) : nullptr;
+        const auto* here = poster ? roadMarketOf(poster->cellId) : nullptr;
         if (!here)
             continue;
         // Of those free to go, one (by lot).
@@ -1019,8 +1058,8 @@ void World::residentsTakeWork()
         for (const auto& [id, life] : society_.state().residents)
         {
             const auto* e = entity(id);
-            if (!e || e->dead || e->transient || e->age < 16 || id == k.poster || id == k.target || busy.count(id) ||
-                society_.jobOf(id) || society_.apprenticedTo(id) || townOf(life.homeCell) != here)
+            if (!e || e->dead || e->transient || e->age < 16 || id == k.poster || id == k.target || busy.count(id) || drivers_.count(id) ||
+                society_.jobOf(id) || society_.apprenticedTo(id) || roadMarketOf(life.homeCell) != here)
                 continue;
             if (const auto lot = roll(k.id + id, today); lot < best)
                 best = lot, chosen = id;
@@ -1037,8 +1076,7 @@ void World::residentsTakeWork()
 void World::roadsDaily()
 {
     const auto today = roads_.day;
-    // (No caravans set out of themselves since the economy's rules were erased, doc 66's Phase 5: the daily caravans
-    // with the capital's share and the towns' trade went with them. sendCaravan is there for the rules to come.)
+    // (The wagons and carts set out from the committed departures since doc 79's Phase 4: roadsMorning, setOut.)
     residentsTakeWork();
 
     // Bandits: hunger grows; starving camps dwindle and scatter; where a road has none, some gather now and then.
@@ -1053,21 +1091,29 @@ void World::roadsDaily()
         {
             camp.active = false;
             recordEvent({"bandits scattered", camp.id, {}, camp.cell, 0, 0, {}, 0, 0, "starved out"});
-            recoverHoard(camp, "treasury", "found in an abandoned camp");   // (Doc 42: not lost to the world.)
+            recoverHoard(camp, society_.treasuryOf(society_.capital()), "found in an abandoned camp");   // (Doc 42: not lost to the world.)
         }
     }
+    // (Camps gather a little more in hard times and in winter, a little less in a boom, never by players' wealth, and a
+    // camp's strength is capped by the world's rule: D14.)
+    const double slider = double(society_.board().slider) / 100.;
+    const double gather = campGatherOdds();
+    const double strongest = std::clamp(double(society_.rule("campStrengthMost")), 2.0, 20.0);
+    for (auto& camp : roads_.camps)
+        camp.strength = std::min(camp.strength, strongest);
     if (today % 7 == 0)
         for (std::size_t r = 0; r < roadRoutes_.size(); ++r)
         {
             std::vector<std::string> wild;
             for (const auto& cellId : roadRoutes_[r])
-                if (!townOfCell_.count(cellId))
+                if (!marketIndex_.count(cellId))
                     wild.push_back(cellId);
             const bool held = std::any_of(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) {
                 return b.active && std::find(wild.begin(), wild.end(), b.cell) != wild.end();
             });
-            const auto& far = townOfCell_[roadRoutes_[r].back()];
-            if (held || wild.empty() || chance(far + std::to_string(r), today) > .34)
+            const auto* farTown = roadMarketOf(roadRoutes_[r].back());
+            const std::string far = farTown ? farTown->id : std::string();
+            if (held || wild.empty() || chance(far + std::to_string(r), today) > gather)
                 continue;
             const auto& cellId = wild[roll(far + std::to_string(r), today) % wild.size()];
             if (std::any_of(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) { return b.cell == cellId && b.active; }))
@@ -1077,7 +1123,7 @@ void World::roadsDaily()
             roads_.camps.erase(std::remove_if(roads_.camps.begin(), roads_.camps.end(),
                                               [&](const BanditCamp& b) { return b.cell == cellId; }),
                                roads_.camps.end());
-            roads_.camps.push_back({"camp_" + cellId, cellId, 2, 50, -100, true});
+            roads_.camps.push_back({"camp_" + cellId, cellId, std::min(strongest, 2.0 + (slider <= -.5 ? 1 : 0)), 50, -100, true});
             recordEvent({"bandits gather", "camp_" + cellId, far, cellId, 0, 0, {}, 0, 0, "on the road to " + far});
         }
 
@@ -1087,13 +1133,13 @@ void World::roadsDaily()
         if (k.kind != "bounty" || (k.status != "open" && k.status != "taken"))
             continue;
         auto camp = std::find_if(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) { return b.id == k.target; });
-        const auto town = std::find_if(towns_.begin(), towns_.end(), [&](const Town& t) { return t.id == k.town; });
+        const auto* town = roadMarket(k.town);
         if (camp == roads_.camps.end() || !camp->active)
         {
             settleContract(k, "done", std::string());
             continue;
         }
-        const double watch = town == towns_.end() ? 0 : std::min(10.0, town->guards / 3.0);
+        const double watch = !town ? 0 : std::min(10.0, town->guards / 3.0);
         if (watch > 0 && chance(k.id, today) < watch / (watch + camp->strength * 2))
         {
             camp->strength -= watch * .5;
@@ -1102,8 +1148,8 @@ void World::roadsDaily()
             {
                 camp->active = false;
                 settleContract(k, "done", std::string());      // The watch did it: the reward goes back.
-                if (town != towns_.end())
-                    recoverHoard(*camp, town->store, "recovered from the bandits");
+                if (town)
+                    recoverHoard(*camp, society_.treasuryOf(town->id), "recovered from the bandits");
                 recordEvent({"camp cleared", k.town, camp->id, camp->cell, 0, 0, {}, 0, 0, "by the watch"});
             }
         }
@@ -1136,13 +1182,13 @@ void World::roadsDaily()
             break;
         const auto* mine = bonds_.of(id);
         const auto* purse = society_.account(id);
-        const auto* here = townOf(e.cellId);
+        const auto* here = roadMarketOf(e.cellId);
         if (!e.npc || e.dead || !mine || !purse || purse->cash < writes || writing.count(id) || !here)
             continue;
         for (const auto& [other, b] : *mine)
         {
             const auto* o = entity(other);
-            const auto* there = o ? townOf(o->cellId) : nullptr;
+            const auto* there = o ? roadMarketOf(o->cellId) : nullptr;
             if (!o || !o->npc || o->dead || b.affinity < 40 || !there || there == here || chance(id + other, today) > .025)
                 continue;
             postContract("courier", id, there->id, other, 3 + std::int64_t(roll(id, today) % 5), ContractDays,
@@ -1476,11 +1522,10 @@ void World::beaten(Entity& player, BanditCamp& camp)
     notice(player.id, "You are beaten to the ground." +
                           (taken > 0 ? " The bandits take " + pennies(taken) + " and leave you lying in the road." : std::string()));
     recordEvent({"robbed", camp.id, player.id, camp.cell, 0, 0, {}, 0, taken, "beaten and robbed on the road"});
-    for (const auto& t : towns_)
-        for (const auto& p : society_.positions())
-            if (p.role == "merchant" && townOf(p.work.cell) == &t)
-                if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
-                    believe(holder, camp.id, "robs travellers at " + camp.cell, "a traveller", .7);
+    for (const auto& p : society_.positions())
+        if (p.role == "merchant" && roadMarketOf(p.work.cell))
+            if (const auto& holder = society_.state().careers.positions.at(p.id).holder; !holder.empty())
+                believe(holder, camp.id, "robs travellers at " + camp.cell, "a traveller", .7);
     endEncounter(camp.id, (calendar::SecondsPerDay / 24));
 }
 
@@ -1490,6 +1535,11 @@ void World::recoverHoard(const BanditCamp& camp, const std::string& to, const st
     const auto loot = "bandits:" + camp.id;
     if (const auto* takings = society_.account(loot); takings && takings->cash > 0)
         society_.shift(loot, to, "", 0, takings->cash, kind);
+    // Raided cargo the watch or the weather finds (staged goods: back to the staged side, doc 79, 8.1).
+    if (const auto* takings = society_.account(loot))
+        for (const auto& [item, n] : std::map<std::string, int>(takings->stock.begin(), takings->stock.end()))
+            if (n > 0)
+                society_.consume(loot, item, n, "recovered cargo");
 }
 
 void World::clearCamp(BanditCamp& camp, const std::string& by)
@@ -1503,6 +1553,23 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
         const auto found = takings->cash;
         if (society_.shift(loot, by, "", 0, found, "bandits' takings"))
             words += " Among their things you find " + pennies(found) + ".";
+    }
+    // The cargo they took from the wagons (doc 79, 8.1: recoverable), for whoever breaks the camp.
+    if (const auto* takings = society_.account(loot))
+    {
+        std::vector<std::string> found;
+        for (const auto& [item, n] : std::map<std::string, int>(takings->stock.begin(), takings->stock.end()))
+            if (n > 0)
+                for (int left = n; left > 0; left -= 99)
+                    if (const int some = std::min(left, 99); society_.shift(loot, by, item, some, 0, "recovered goods"))
+                        found.push_back(std::to_string(some) + " " + Society::itemName(item));
+        if (!found.empty())
+        {
+            std::string list;
+            for (std::size_t i = 0; i < found.size(); ++i)
+                list += (i == 0 ? "" : i + 1 == found.size() ? " and " : ", ") + found[i];
+            words += " The cargo they took from the wagons is here too: " + list + ".";
+        }
     }
     society_.closeAccount(loot, by);
     for (auto& k : roads_.contracts)
@@ -1583,6 +1650,16 @@ Result World::payBandits(const std::string& player, const std::string& bandit)
     return {true, "You hand over " + pennies(amount) + ". The bandits step aside and let you go on your way.", bandit};
 }
 
+
+double World::campGatherOdds() const
+{
+    // A road with no camp gathers one a week at these odds (D14): mildly more in hard times (x1.25 at -100) and in winter
+    // (x1.1), mildly fewer in a boom (x0.8 at most), never by players' wealth.
+    const double slider = std::clamp(double(society_.board().slider) / 100., -1., 1.);
+    const double hard = std::clamp(1 - .25 * slider, .8, 1.25) *
+                        (calendar::calendarAt(calendarDays_).season == calendar::Season::Winter ? 1.1 : 1.);
+    return .34 * hard;
+}
 
 double World::raidOdds(double strength, double hunger, int guards, const std::string& cellId) const
 {

@@ -222,6 +222,13 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     for (const auto& [prefix, kind] : Errands)
         if (e.activity.rfind(prefix, 0) == 0)
             errand = kind;
+    // A carter driving a wagon or a farm's cart (doc 79, 8.1-8.2): "on the Coldwater run", "driving the wagon home to
+    // Ridgemere", "taking the cart to Larkfield".
+    if (e.activity.rfind("driving the wagon", 0) == 0 ||
+        (e.activity.rfind("on the ", 0) == 0 && e.activity.find(" run") != std::string::npos && e.activity.find(" run") < e.activity.find(" — ")))
+        errand = "caravan";
+    else if (e.activity.rfind("taking the cart", 0) == 0)
+        errand = "goods";
     f["errand"] = errand;
 
     // Who they are to others: married, widowed, a parent, learning a trade or teaching one, of a House.

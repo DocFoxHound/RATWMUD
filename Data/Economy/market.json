@@ -92,7 +92,7 @@
     {"id": "preserved", "name": "dried and preserved fruit", "goods": ["dried_apples", "fruit_preserves"], "price": [100, 100, 100, 90], "shelf": [100, 120, 250, 150]}
   ],
   "rules": {
-    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays) and the Board's pressure settings. A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
+    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays), the Board's pressure settings, and staged trade's (Phase 4): the wagons' frequency in percent (caravanRate), the most wagons and farm carts on the roads at once (wagonsOnRoad, cartsOnRoad), a bandit camp's most strength (campStrengthMost) and a bounty's most pennies (bountyMost). A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
     "neverHungry": 0,
     "neverBroke": 0,
     "buyAheadDays": 1,
@@ -105,7 +105,12 @@
     "playerSellMost": 400,
     "takeAllowance": 50,
     "shelfScale": 100,
-    "factionDiscountMost": 30
+    "factionDiscountMost": 30,
+    "caravanRate": 100,
+    "wagonsOnRoad": 16,
+    "cartsOnRoad": 48,
+    "campStrengthMost": 12,
+    "bountyMost": 60
   },
   "services": {
     "about": "The city's services (doc 79, 6.5 and 12: kept, at a frequency by band): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Nothing in Core reads them yet: Phase 6 (street life) makes them staged sales at `every` x band; until then a change here, or a world's `service` record (the Rules panel), has no effect in play.",

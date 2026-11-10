@@ -121,6 +121,12 @@ export const RULES: {key: string; label: string; low?: number; max: number; unit
     {key: 'takeAllowance', label: 'The take allowance', low: 5, max: 100, unit: '% of a market\'s depth its shops take of a good a day'},
     {key: 'shelfScale', label: 'Shelves', low: 10, max: 1000, unit: '% on every shelf\'s target'},
     {key: 'factionDiscountMost', label: 'The faction discount, at most', max: 1000, unit: 'p a Chapter a week'},
+    // Staged trade (doc 79, 8.1-8.2 and D14).
+    {key: 'caravanRate', label: 'Wagons', max: 300, unit: '% of the roads\' own wagons between markets'},
+    {key: 'wagonsOnRoad', label: 'Wagons on the roads, at most', max: 64, unit: 'at once'},
+    {key: 'cartsOnRoad', label: 'Farm carts, at most', max: 200, unit: 'on the farm tracks at once'},
+    {key: 'campStrengthMost', label: 'A bandit camp\'s strength, at most', low: 2, max: 20, unit: 'points'},
+    {key: 'bountyMost', label: 'A bounty, at most', max: 500, unit: 'p on a camp'},
 ];
 /** A rule as it stands: the world's own, else the data files' (market.json's and status.json's). */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;

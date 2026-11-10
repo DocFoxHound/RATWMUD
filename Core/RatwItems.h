@@ -161,6 +161,13 @@ inline constexpr RuleInfo Rules[] = {
     {"takeAllowance", 5, 100, 50},
     {"shelfScale", 10, 1000, 100},
     {"factionDiscountMost", 0, 1000, 30},
+    // Staged trade (doc 79, 8.1-8.2 and 12): the wagons' frequency (percent of the roads' own), the most wagons on the roads
+    // at once and the most farm carts; a bandit camp's most strength and a bounty's most reward (pennies; D14).
+    {"caravanRate", 0, 300, 100},
+    {"wagonsOnRoad", 0, 64, 16},
+    {"cartsOnRoad", 0, 200, 48},
+    {"campStrengthMost", 2, 20, 12},
+    {"bountyMost", 0, 500, 60},
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // Data/Items as the catalogue reads it (RATW_DATA_DIR, the working directory or above, the source tree): its parent's

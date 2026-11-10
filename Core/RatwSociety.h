@@ -642,6 +642,22 @@ class Society
     bool stagedRestock(const std::string& keeper);
     bool settingOut(const std::string& keeper) const;
     std::uint64_t rosterRevision() const { return rosterRevision_; }
+    // Staged trade (doc 79, Phase 4; 7.7 and D27). The goods each market gets only by wagon or cart (the world's, World::
+    // ensureRoadMarkets: what a route a carter can drive or a staffed farm's cart brings it that it doesn't make): such a
+    // good refills only on an arrival, and between from its till's back room, a fifth less each morning; any other good
+    // refills each morning (a market no wagon can reach refills everything). arrivalRefill: an arrival of a good at a
+    // market (`scale` over its target: a Marketday cart's 1.5 for the stalls), its shops' shelves of it to their targets
+    // and their back rooms filled, their keepers seen unloading; the tills refilled. sendOn: a departure's goods, each till's
+    // stock of the good over its target taken off (goods move on: 7.5); the pieces. marketShelf: the market's shelf
+    // targets of a good, summed (a manifest's count). The Times shift: points on each market's Times score from its
+    // harvests and the roads' troubles (5.3; the world's each morning, saved in the Board).
+    void setImports(std::map<std::string, std::set<std::string>> imports) { imports_ = std::move(imports); }
+    bool imported(const std::string& market, const std::string& base) const;
+    int arrivalRefill(const std::string& market, const std::string& base, double scale = 1);
+    int sendOn(const std::string& market, const std::string& base);
+    int marketShelf(const std::string& market, const std::string& base) const;
+    void setTimesShift(std::map<std::string, int> shift);
+    market::Board& stagedBoard() { return state_.board; }   // (The world's staged trade writes its part of the Board.)
     // What a shop sets out (7.7: its wares less what it only buys, unless it makes or supplies them): the restock's, and
     // a market's `sold` (I3's backstop: a good no shop sets out is priced at the clamp's floor).
     std::vector<std::string> stagedShelfGoods(const std::string& founder) const;
@@ -1120,6 +1136,7 @@ class Society
     // only what it sets out.
     std::map<std::string, std::set<std::string>> rippled_;
     std::int64_t rippledDay_ = -1;
+    std::map<std::string, std::set<std::string>> imports_;   // (setImports: the world's, found again with its roads.)
     mutable market::Topology ownTopology_;
     mutable std::uint64_t ownTopologyKey_ = 0;
     mutable std::unordered_map<std::string, double> districtLeast_;   // Market|group -> its least district factor,

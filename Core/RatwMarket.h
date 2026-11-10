@@ -95,6 +95,9 @@ double factor(double base, double P);
 // The base goods a business makes a market's own (7.1's region `made`): its crafts' outputs and its crafts.json
 // `supplies`, added to `made`.
 void madeBy(const std::string& business, std::set<std::string>& made);
+// Only its crafts' outputs (doc 79, 7.7's "goods made in the market": a workshop's; a shop that supplies a good doesn't
+// make it, so a wagon or cart brings it: Phase 4's imports).
+void craftedBy(const std::string& business, std::set<std::string>& crafted);
 // A bought lot of `quantity` pieces whose ladder summed to `sum` (catalogue `each` a piece): rounded (at a stall × 0.9
 // and rounded down), at least 1p, and never under the clamp floor's stall price, ceil(each × 0.80 × 0.9 × quantity)
 // (I3, 7.2). The cheapest way to buy a lot is at a stall.
@@ -120,6 +123,40 @@ struct Ripple
     double day = 0, delta = 0;
     std::string market, good, cause;                 // Cause words only, never a player's name.
 };
+// A committed departure (doc 79, 8.1 and 8.2): a wagon posted on both ends' boards two days ahead, with its hour, size,
+// driver and manifest (only an announced cause may change it after), or a farm's cart rolled at the morning's turn. Kept
+// until it sets out.
+struct Departure
+{
+    std::string id, kind = "wagon";                 // "wagon" (between markets, posted) or "cart" (a farm's or works').
+    std::string from, to;                           // Markets (a cart's `from` is its farm's id).
+    std::string driver;                             // The carter it names (a wagon's: another of the yard's, if he can't).
+    std::int64_t day = 0;
+    double hour = 8;
+    int size = 1;                                   // 1..3.
+    std::vector<std::pair<std::string, int>> manifest;   // Base good -> pieces (for show: staged goods).
+    std::string cause;                              // Why it sets out late ("" none): announced.
+    double posted = 0;
+};
+// Something on the roads that bears on a market's Times (5.3): a wagon to it raided ("raid") or late ("late").
+struct Trouble
+{
+    double day = 0;
+    std::string market, kind;
+};
+// What an arriving wagon brought (8.1: `world.news:<source>`): the source market and its top cause, in words.
+struct News
+{
+    std::string from, words;
+    double day = 0;
+};
+// The DM's override of an area's harvest (8.2): poor (0), fair (1) or good (2), until a game day.
+struct HarvestOverride
+{
+    int word = 1;
+    double until = 0;
+};
+inline constexpr std::size_t TroublesKept = 64, CommittedMost = 256;
 struct Board
 {
     // The DM's prosperity, the one slider of the staged economy (doc 79, 5.2): the smoothed value the Board's Times and
@@ -141,11 +178,25 @@ struct Board
     std::map<std::string, double> settingOut;        // Till -> the clock (game days) its keeper sets out the wares
                                                      // until, at the morning restock (7.7).
     std::deque<Ripple> recent;
+    // Staged trade (doc 79, Phase 4; 8.1-8.2, 7.7): the departures posted or rolled and not yet gone, the last day the
+    // routes were rolled for, the next departure's number; each till's back room of goods its market doesn't make (D27:
+    // filled on arrivals, a fifth less each morning; absent: never stocked yet, filled as by an arrival); the DM's harvest
+    // overrides; the roads' troubles of the last week; each market's Times shift from its harvests and troubles (set each
+    // morning by the world); and each market's last news from an arriving wagon.
+    std::vector<Departure> committed;
+    std::int64_t rolledThrough = -1, nextDeparture = 1;
+    std::map<std::string, std::map<std::string, int>> backRoom;   // Till -> base good -> pieces.
+    std::map<std::string, HarvestOverride> harvestOverride;       // Area -> override.
+    std::vector<Trouble> troubles;
+    std::map<std::string, int> timesShift;                        // Market -> points added to its Times score.
+    std::map<std::string, News> news;                             // Market -> the last wagon's news.
     bool empty() const
     {
         return slider == 0 && sliderTarget == 0 && sliderDay < 0 && cell.empty() && day < 0 && budgetLeft.empty() && takenToday.empty() &&
                pushed.empty() && netToday.empty() && soldToday.empty() && week < 0 && discountWeek.empty() &&
-               restocked.empty() && settingOut.empty() && recent.empty();
+               restocked.empty() && settingOut.empty() && recent.empty() && committed.empty() && rolledThrough < 0 &&
+               nextDeparture == 1 && backRoom.empty() && harvestOverride.empty() && troubles.empty() && timesShift.empty() &&
+               news.empty();
     }
 };
 json::Value encode(const Board& board);
@@ -165,6 +216,9 @@ struct TradePoint
     std::vector<std::string> routes;                 // Other markets, nearest first.
     std::set<std::string> made;                      // Base goods made here: its workshops' and its areas'.
     std::set<std::string> sold;                      // Base goods its shops set out (not those they only buy).
+    std::set<std::string> bought;                    // Base goods its shops buy from players (a wagon may bring those too).
+    std::set<std::string> crafted;                   // Base goods its workshops craft and its areas bring in (7.7: made here,
+                                                     // refilled each morning; not what its shops only supply).
 };
 struct Topology
 {

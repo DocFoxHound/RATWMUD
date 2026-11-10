@@ -343,6 +343,7 @@ class Game
     }
     bool storageReady() const { return storageReady_; }
     World& world() { return world_; }
+    const documents::Store& documents() const { return documents_; }   // (Letters and notices: for tests and tools.)
     // A character's social standing is its account's (doc 49): the social XP of all the account's characters together
     // (a development identity's wolf, with no account, its own), and the level that makes on standing.json's curve.
     long long socialXp(const std::string& characterId) const;
@@ -987,6 +988,7 @@ class Game
     double residentLettersHour_ = -1, letterCallsHour_ = -1;
     int letterCalls_ = 0;
     void watchEvent(const WorldEvent& e);
+    void roadNotices(const WorldEvent& e);          // (The carters' notices on the boards: doc 79, 8.1; RatwBoards.cpp.)
     void tendResidentLetters();
     bool residentLetterRoom(const std::string& resident, const std::string& player) const;
     documents::Document* residentLetter(const std::string& resident, const std::string& player, const std::string& kind, const std::string& text,

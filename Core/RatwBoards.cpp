@@ -353,6 +353,72 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
     return result = {true, "You pin your notice to the board (" + std::to_string(fee) + "p to the town). It stays up seven days.", {}}, true;
 }
 
+void Game::roadNotices(const WorldEvent& e)
+{
+    // The carters' notices (doc 79, 8.1 and 8.6): a wagon posted two days ahead is pinned on both ends' boards ("the
+    // carters", with the calendar's weekday names), changed when it is set back or overdue, and taken down when it comes
+    // in (or is cancelled). Seven days at most, as any notice.
+    const auto ids = [](const std::string& departure) {
+        return std::pair<std::string, std::string>{"wagon-" + departure + "-from", "wagon-" + departure + "-to"};
+    };
+    const auto pin = [&](const std::string& id, const std::string& community, const std::string& text, const std::string& departure) {
+        if (community.empty() || text.empty())
+            return;
+        documents::Document d;
+        d.id = id;
+        d.kind = "notice";
+        d.author = "the carters";
+        d.board = "board:" + community;
+        d.noticeKind = "event";
+        d.what = "wagon:" + departure;
+        d.text = json::utf8Prefix(text, TextMost);
+        d.sign = "the carters";
+        d.state = "delivered";
+        d.written = d.deliverAt = world_.calendarDays();
+        d.expires = d.written + NoticeDays;
+        d.fromTown = community;
+        documents_.add(d);
+    };
+    if (e.kind == "wagon posted" || e.kind == "wagon delayed")
+    {
+        // (actor: the departure; item: its source; target: its destination; detail: the two notices, a line each.)
+        const auto cut = e.detail.find('\n');
+        const auto [from, to] = ids(e.actor);
+        pin(from, e.item, e.detail.substr(0, cut), e.actor);
+        pin(to, e.target, cut == std::string::npos ? std::string() : e.detail.substr(cut + 1), e.actor);
+        saveSoon();
+    }
+    else if (e.kind == "wagon overdue" && !e.item.empty())
+    {
+        if (auto* d = documents_.find(ids(e.item).second))
+        {
+            d->text = json::utf8Prefix(e.detail, TextMost);
+            d->expires = std::max(d->expires, world_.calendarDays() + 2);
+        }
+        saveSoon();
+    }
+    else if ((e.kind == "caravan arrives" || e.kind == "raid") && !e.item.empty())
+    {
+        const auto [from, to] = ids(e.item);
+        documents_.erase(from);
+        if (e.kind == "caravan arrives")
+            documents_.erase(to);
+        else if (auto* d = documents_.find(to))
+        {
+            d->text = "Robbed on the road: " + d->text;
+            d->expires = std::min(d->expires, world_.calendarDays() + 2);
+        }
+        saveSoon();
+    }
+    else if (e.kind == "wagon cancelled")
+    {
+        const auto [from, to] = ids(e.actor);
+        documents_.erase(from);
+        documents_.erase(to);
+        saveSoon();
+    }
+}
+
 void Game::tendNotices()
 {
     // Once a game hour: notices past their seven days come down; once a game day, unanswered ones are looked at again.

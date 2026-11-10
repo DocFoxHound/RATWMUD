@@ -126,10 +126,17 @@ int Game::courierCells(const std::string& fromTown, const std::string& toTown) c
 {
     if (fromTown == toTown || fromTown.empty() || toTown.empty())
         return 0;
+    // (The road layer's markets since doc 79's Phase 4, else the law's towns of those ids.)
+    const auto* a = world_.roadMarket(fromTown);
+    const auto* b = world_.roadMarket(toTown);
     const auto& towns = world_.towns();
-    const auto a = std::find_if(towns.begin(), towns.end(), [&](const auto& t) { return t.id == fromTown; });
-    const auto b = std::find_if(towns.begin(), towns.end(), [&](const auto& t) { return t.id == toTown; });
-    if (a == towns.end() || b == towns.end())
+    if (!a)
+        if (const auto t = std::find_if(towns.begin(), towns.end(), [&](const auto& t) { return t.id == fromTown; }); t != towns.end())
+            a = &*t;
+    if (!b)
+        if (const auto t = std::find_if(towns.begin(), towns.end(), [&](const auto& t) { return t.id == toTown; }); t != towns.end())
+            b = &*t;
+    if (!a || !b)
         return 10;                                  // (A town the roads don't know: a middling way.)
     const auto route = world_.routeBetween(a->market, b->market);
     return route.empty() ? 30 : int(route.size());

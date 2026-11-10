@@ -4592,8 +4592,12 @@ bool World::continueSchedules(double budgetMs)
             // watch after someone, a thief after its mark.
             following_.clear();
             for (const auto& c : roads_.caravans)
+            {
                 if (c.status == "travelling"sv)
                     following_.insert(c.escorts.begin(), c.escorts.end());
+                if (!c.driver.empty() && c.status != "arrived"sv)
+                    following_.insert(c.driver);    // (Its carter keeps with it: doc 79, D26.)
+            }
             for (const auto& entry : pursuits_)
                 following_.insert(entry.first);
             for (const auto& entry : marks_)
@@ -6648,23 +6652,8 @@ Result World::restore(const PersistedWorld& saved)
     marks_.clear();
     fights_.clear();
     crimeHour_ = -1;
-    // (Doc 79, 9.1: a caravan's account is the old economy's, dropped at the society's restore. The caravan goes with it,
-    // and the letters it carried are open again for another courier, their coins still in their escrow: 16.5; so are the
-    // escorts its guards and players had taken, their pay still in theirs, for the next caravan to that town. Until
-    // Phase 4's departures, which carry no account, a caravan doesn't outlive a restart; only tests send one now.)
-    for (const auto& c : roads_.caravans)
-        if (!society_.account(c.account))
-            for (auto& k : roads_.contracts)
-                if (k.status == "taken" &&
-                    ((k.kind == "courier" && k.taker == c.account) ||
-                     (k.kind == "escort" && k.town == c.to && std::find(c.escorts.begin(), c.escorts.end(), k.taker) != c.escorts.end())))
-                {
-                    k.status = "open";
-                    k.taker.clear();
-                }
-    roads_.caravans.erase(std::remove_if(roads_.caravans.begin(), roads_.caravans.end(),
-                                         [&](const Caravan& c) { return !society_.account(c.account); }),
-                          roads_.caravans.end());
+    // (Doc 79, Phase 4: a wagon carries no account, so it outlives a restart; one whose ends are gone, or an older save's
+    // with the old economy's account, is settled once the markets are found again, below: dropOrphanedRoads.)
     beliefs_.clear();
     for (const auto& b : state.roads.beliefs)
         if (std::isfinite(b.confidence) && b.confidence > 0 && b.confidence <= 1)
@@ -6697,6 +6686,11 @@ Result World::restore(const PersistedWorld& saved)
     // The markets at once, while staged (doc 79, 5.1): Society's restore worked the households out before the world had
     // found them, so their markets, food shops and provisions are worked out again on the world's (setTradePoints).
     ensureTradePoints();
+    // The roads on those markets (doc 79, Phase 4): a caravan whose ends are gone dropped, its letters reopened or refunded,
+    // an older save's wagon home empty, contracts whose market is gone refunded.
+    campsSeeded_ = false;
+    roadMarketsKey_ = ~0ULL;
+    dropOrphanedRoads();
     return {true, "Saved world restored.", {}};
 }
 
