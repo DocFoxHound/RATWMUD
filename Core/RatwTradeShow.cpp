@@ -563,7 +563,7 @@ void World::postDepartures(std::int64_t today)
                         return escortOn(k, a, c) && (k.status == "open" || k.status == "taken");
                     }))
                     postContract("escort", society_.treasuryOf(c), c, c, 12, 7,
-                                 "guarding the next wagon from " + marketWords(a) + " to " + marketWords(c)).from = a;
+                                 "guarding the next wagon from " + marketWords(a) + " to " + marketWords(c), a);
                 b.committed.push_back(dep);
                 recordEvent({"wagon posted", dep.id, c, A->market, 0, 0, a, int(dep.manifest.size()), 0,
                              departureNotice(dep, false) + "\n" + departureNotice(dep, true)});
@@ -758,7 +758,20 @@ Caravan* World::launchCaravan(Caravan c, const Town& from, const Town& to)
     {
         // The escort of this road (from here to there: not another market's wagon to the same town), and not one already out
         // with an earlier wagon of it.
-        if (escortOn(k, from.id, to.id) &&
+        // (An older save's escort names no road. One a player holds while standing in another market waits for that
+        // market's wagon, never going with this one, which would reach the town without them and send their pay back;
+        // one held anywhere else goes with the first wagon to its town, as before, which tells them where it waits. And
+        // it is the road's of the first wagon it goes with. Third repair.)
+        const auto elsewhere = [&] {
+            if (!k.from.empty() || k.status != "taken")
+                return false;
+            const auto* holder = entity(k.taker);
+            if (!holder)
+                return true;                        // (Away from the world: kept for them.)
+            const auto* at = holder->npc ? nullptr : roadMarketOf(holder->cellId);
+            return at && at != &from && at != &to;
+        }();
+        if (escortOn(k, from.id, to.id) && !elsewhere &&
             std::none_of(roads_.caravans.begin(), roads_.caravans.end(), [&](const Caravan& out) {
                 return out.status == "travelling" && out.from == from.id && out.to == to.id &&
                        std::find(out.escorts.begin(), out.escorts.end(), k.taker) != out.escorts.end();
@@ -778,7 +791,11 @@ Caravan* World::launchCaravan(Caravan c, const Town& from, const Town& to)
                     break;
                 }
             if (k.status == "taken" && std::find(c.escorts.begin(), c.escorts.end(), k.taker) == c.escorts.end())
+            {
                 c.escorts.push_back(k.taker);
+                if (k.from.empty())
+                    k.from = from.id;
+            }
         }
         // Letters nobody has taken in a week go with the carters.
         if (k.kind == "courier" && k.status == "open" && calendarDays_ - k.created >= 7)

@@ -427,6 +427,44 @@ void Game::roadNotices(const WorldEvent& e)
         }
         saveSoon();
     }
+    else if (e.kind.rfind("contract ", 0) == 0 && e.detail.rfind("escort:", 0) == 0)
+    {
+        // An escort asked for, taken or settled (doc 79, Phase 4, third repair): the notices of the wagons still to set
+        // out say whether one is wanted as they would if pinned now, so none goes on asking for an escort it has, and
+        // one asked for after a raid is asked for on the board as well.
+        bool changed = false;
+        for (const auto& d : world_.society().board().committed)
+        {
+            if (d.kind != "wagon")
+                continue;
+            const auto [from, to] = ids(d.id);
+            for (const bool atEnd : {false, true})
+                if (auto* pinned = documents_.find(atEnd ? to : from))
+                    if (auto text = json::utf8Prefix(world_.departureNotice(d, atEnd), TextMost); text != pinned->text)
+                    {
+                        pinned->text = std::move(text);
+                        changed = true;
+                    }
+        }
+        if (changed)
+            saveSoon();
+    }
+    else if (e.kind == "caravan departs" && !e.item.empty())
+    {
+        // The wagon has set out: nobody can join it now, whatever its notices asked for.
+        const auto [from, to] = ids(e.item);
+        bool changed = false;
+        for (const auto& id : {from, to})
+            if (auto* pinned = documents_.find(id))
+                if (const auto at = pinned->text.find(" Escort wanted"); at != std::string::npos)
+                {
+                    const auto end = pinned->text.find('.', at);
+                    pinned->text.erase(at, end == std::string::npos ? std::string::npos : end + 1 - at);
+                    changed = true;
+                }
+        if (changed)
+            saveSoon();
+    }
     else if (e.kind == "wagon cancelled" || ((e.kind == "caravan lost" || e.kind == "caravan dropped") && !e.item.empty()))
     {
         // (A wagon that will never come: cancelled before it set out, or lost or dropped on the road. A lost or dropped

@@ -1919,13 +1919,15 @@ class Game
         std::string roads, crime, companions, signIns;
         std::string board;                          // The Market Board (doc 79, Phase 1), as last journalled.
         std::string committed;                      // (Its committed departures alone: with the roads, doc 79 Phase 4.)
-        std::string roadSteps;                      // (The roads less each wagon's place: RatwGameJournal.cpp, roadSteps.)
+        std::string roadSteps;                      // (The roads less each wagon's place: checkpoint::roadSteps.)
         StagedState staged;                         // (Doc 79: all but the tallies and welcomes, which go by holder.)
     };
     void prime(Shadow& shadow) const;
-    // At a checkpoint: the journal goes on from what it holds (the accounts; the Board, its committed departures and the
-    // roads, which world ticks move between records: doc 79, Phase 4), so the next record's changes are against it.
-    void shadowCheckpoint();
+    // As a checkpoint is taken: what world ticks moved since the last record (the accounts; the Board, its committed
+    // departures and the roads; the staged economy's escrow sources, holds and bands) is journalled, and the checkpoint
+    // covers the record. The store holds the checkpoint before until this one lands, and the journal is true over
+    // either (doc 79, Phase 4, third repair).
+    void journalCheckpoint();
     // After a restore: the accounts whose quarantined goods it moved (doc 79, 14), journalled whole with their quarantine.
     void journalRestored();
     std::uint64_t journalSeq_ = 0;

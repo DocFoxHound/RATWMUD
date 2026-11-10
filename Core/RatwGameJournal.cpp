@@ -70,18 +70,6 @@ Value companionsOf(const std::map<std::string, std::string>& owners)
     return out;
 }
 
-// The roads without each wagon's place along its way (its cell, spot and leg, and who walks beside it, move with every
-// tick): what is left moves in steps (a wagon out, held up, late, robbed, lost or in; a camp gathering or broken; a
-// contract posted, taken or settled; the roads' day), and those the journal follows (doc 79, Phase 4, second repair).
-std::string roadSteps(Value roads)
-{
-    if (auto* caravans = roads.find("caravans"))
-        for (auto& wagon : caravans->items())
-            for (const char* place : {"cell", "x", "y", "leg", "nextAt", "with"})
-                wagon.erase(place);
-    return json::dump(roads);
-}
-
 Value path(std::initializer_list<std::string> keys)
 {
     auto out = Value::array();
@@ -165,7 +153,7 @@ void Game::prime(Shadow& s) const
     s.positions = society.careers.positions;
     s.staged = stagedRest(society.staged);
     s.roads = json::dump(checkpoint::roads(world_.roads()));
-    s.roadSteps = roadSteps(checkpoint::roads(world_.roads()));
+    s.roadSteps = checkpoint::roadSteps(world_.roads());
     s.crime = json::dump(checkpoint::crime(world_.crime()));
     s.companions = json::dump(companionsOf(companionOwner_));
     s.signIns = json::dump(accounts_.state());
@@ -181,23 +169,19 @@ void Game::prime(Shadow& s) const
     s.primed = true;
 }
 
-void Game::shadowCheckpoint()
+void Game::journalCheckpoint()
 {
-    if (!shadow_.primed)
+    // A checkpoint is being taken, and the store still holds the last one until this one lands (a snapshot is written by
+    // a child or the store's worker, and may fail). What world ticks moved since the last record (the accounts, the
+    // Board and its committed departures, the roads, the staged economy's escrow sources, holds and bands) is journalled
+    // first, as any trade would journal it, and the checkpoint covers that record. The journal then holds true over
+    // either: over the checkpoint before, the record brings it here, and what follows is a change from here; over this
+    // one, it is covered and trimmed. (The shadow used to be moved here without a record: a trade after a snapshot that
+    // had not landed, or never did, was then journalled as a change from a state the store didn't hold, and a crash
+    // brought a wagon in twice, lost one, or left a contract without its pot: doc 79, Phase 4, third repair.)
+    if (!shadow_.primed || !store_ || !store_->journal())
         return;
-    const auto& society = world_.society().state();
-    shadow_.accounts = society.accounts;
-    shadow_.board.clear();
-    shadow_.committed.clear();
-    if (!society.board.empty())
-    {
-        const auto encoded = market::encode(society.board);
-        shadow_.board = json::dump(encoded);
-        const auto* committed = encoded.find("committed");
-        shadow_.committed = committed ? json::dump(*committed) : std::string();
-    }
-    shadow_.roads = json::dump(checkpoint::roads(world_.roads()));
-    shadow_.roadSteps = roadSteps(checkpoint::roads(world_.roads()));
+    record(Economy | Roads);
 }
 
 void Game::journalRestored()
@@ -366,12 +350,11 @@ void Game::record(unsigned what, const std::string& character)
     // place alone isn't a step: it goes with the next one, or with the checkpoint.
     if (what & (Economy | Roads))
     {
-        auto roads = checkpoint::roads(world_.roads());
-        auto steps = roadSteps(roads);
+        auto steps = checkpoint::roadSteps(world_.roads());
         if ((what & Roads) || departuresMoved || steps != shadow_.roadSteps)
         {
             shadow_.roadSteps = std::move(steps);
-            whole(true, shadow_.roads, std::move(roads), "roads");
+            whole(true, shadow_.roads, checkpoint::roads(world_.roads()), "roads");
         }
     }
     whole(what & Crime, shadow_.crime, checkpoint::crime(world_.crime()), "crime");
@@ -524,8 +507,8 @@ bool Game::forkSnapshot()
         document = target + ".snapshot";
     store_->queueEvents(world_.takeEvents());
     syncCharacters();
+    journalCheckpoint();                           // (Here, by the parent: the child only reads.)
     const auto seq = journalSeq_;
-    shadowCheckpoint();                             // (The journal goes on from this checkpoint's: see capture.)
     std::fflush(nullptr);                          // Nothing buffered is written twice by the child.
     const pid_t pid = ::fork();
     if (pid < 0)

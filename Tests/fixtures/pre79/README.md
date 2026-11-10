@@ -145,7 +145,7 @@ one by one (cash and every good).
   household the class `householdClass` gives it.
 - **Through Postgres** (`Tests/save_compat_pg.py`, ctest `save_compat_pg`; doc 79 16.7's "through the world_store
   Postgres tests"): each loaded state (dev, dev-old, package, running, road; `save_compat_tests --write-loaded`) is saved with
-  `game.save_checkpoint` into a throwaway database (`ratw_test_p3stage_<hex>`, migrated, dropped afterwards) and loaded
+  `game.save_checkpoint` into a throwaway database (`ratw_test_s2stage_<hex>`, migrated, dropped afterwards) and loaded
   back with `game.load_checkpoint`: the same JSON, and `--check-loaded` decodes it to the same society and accounts and
   re-encodes the same checkpoint (compared by value: jsonb keeps no key order). Skipped (ctest lists it as Skipped) without the PostgreSQL settings (`set -a; . Database/.env; set +a`
   in the main checkout). It opens only the maintenance database `postgres` and its own.

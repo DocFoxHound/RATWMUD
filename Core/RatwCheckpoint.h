@@ -46,6 +46,12 @@ json::Value encode(const PersistedWorld& world, const ServerState& server, const
 
 // Parts of the document, as encode() writes them: for the journal (RatwJournal.h), which records them as they change.
 json::Value roads(const RoadsState& roads);
+// The roads without each wagon's place along its way (its cell, spot and leg, and who walks beside it, move with every
+// tick): what is left moves in steps (a wagon out, held up, late, robbed, lost or in; a camp gathering or broken; a
+// contract posted, taken or settled; the roads' day). Bytes to compare, not a document: the journal looks at them with
+// every record of the economy, so they are cheap to make. A field added to roads() that isn't a wagon's place goes
+// here as well.
+std::string roadSteps(const RoadsState& roads);
 json::Value crime(const CrimeState& crime);
 
 // Each NPC's running state for live.npc_state (a JSON array): where it is, how it is, its purse.

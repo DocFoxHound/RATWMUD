@@ -1054,8 +1054,11 @@ class World
     // A poster's contract still open or taken, withdrawn (doc 57: a cancelled project's): the reward left in escrow goes
     // back to the poster. False if there is none.
     bool withdrawContract(const std::string& id);
+    // (`from`: an escort's road, the market its wagons set out from, known before its posting is told: the carters'
+    // notices are written from it.)
     Contract& postContract(const std::string& kind, const std::string& poster, const std::string& town,
-                           const std::string& target, std::int64_t reward, double days, const std::string& detail);
+                           const std::string& target, std::int64_t reward, double days, const std::string& detail,
+                           const std::string& from = {});
     // Staged (doc 79, 9.3): an NPC-posted courier contract is a faucet, at most the status table's courierADay posted a
     // day across the realm. Today's count, and whether another may be posted (always, with the staged economy off).
     // Every NPC courier posting asks first: the letters (tendRoads) and the storyline parcels.
@@ -1853,7 +1856,8 @@ class World
     void tendRoads();
     void roadsDaily();
     void rumoursFromEvent(const WorldEvent& event);
-    void settleContract(Contract& c, const std::string& status, const std::string& paidTo);
+    // (Returns what `paidTo` was paid: less than the reward, or nothing, where the day's rewards cap holds it. Doc 79, 9.3.)
+    std::int64_t settleContract(Contract& c, const std::string& status, const std::string& paidTo);
     // Road folk: each one's part, keyed by entity ID ("road:...").
     struct RoadFolk
     {

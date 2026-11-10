@@ -45,6 +45,8 @@ std::string pennies(std::int64_t n)
 {
     return std::to_string(n) + (n == 1 ? " penny" : " pennies");
 }
+// Why a reward paid less than was posted, or nothing (doc 79, 9.3: a staged-sourced reward within the day's rewards cap).
+const char* const DayPaid = "you have had all the rewards one day pays";
 bool homeward(const Caravan& c)
 {
     return c.status == "raided" || c.status == "returning";
@@ -246,7 +248,8 @@ void World::setupTowns()
 }
 
 Contract& World::postContract(const std::string& kind, const std::string& poster, const std::string& town,
-                              const std::string& target, std::int64_t reward, double days, const std::string& detail)
+                              const std::string& target, std::int64_t reward, double days, const std::string& detail,
+                              const std::string& from)
 {
     Contract c;
     c.id = "k" + std::to_string(roads_.nextId++);
@@ -257,6 +260,7 @@ Contract& World::postContract(const std::string& kind, const std::string& poster
     c.created = calendarDays_;
     c.due = calendarDays_ + days;
     c.detail = detail;
+    c.from = from;
     // The reward is set aside at once, from the poster's own purse (or the treasury): it exists, or there's no reward.
     const auto escrow = "contract:" + c.id;
     if (reward > 0 && society_.openAccount(escrow) && society_.shift(poster, escrow, "", 0, reward, "reward set aside"))
@@ -295,20 +299,23 @@ bool World::withdrawContract(const std::string& id)
     return false;
 }
 
-void World::settleContract(Contract& c, const std::string& status, const std::string& paidTo)
+std::int64_t World::settleContract(Contract& c, const std::string& status, const std::string& paidTo)
 {
     const auto escrow = "contract:" + c.id;
     // (Staged: a contract's, bounty's or escort's staged-sourced reward held to the taker's day's rewards cap, the rest back
     // to its poster: doc 79, 9.3.)
     const auto reward = paidTo.empty() ? c.reward : society_.cappedPayout(escrow, paidTo, c.reward, "rewardsADay", c.poster);
-    if (reward > 0)
-        society_.shift(escrow, paidTo.empty() ? c.poster : paidTo, "", 0, reward,
-                       paidTo.empty() ? "reward returned" : "contract reward");
+    const bool moved = reward > 0 && society_.shift(escrow, paidTo.empty() ? c.poster : paidTo, "", 0, reward,
+                                                    paidTo.empty() ? "reward returned" : "contract reward");
     society_.closeAccount(escrow, paidTo.empty() ? c.poster : paidTo);
     if (const auto* who = entity(paidTo); who && !who->npc)
         practise(paidTo, "contract.done", {c.id});   // A contract fulfilled teaches commerce (by practice: doc 49).
     c.status = status;
-    recordEvent({"contract " + status, paidTo.empty() ? c.poster : paidTo, c.target, {}, 0, 0, {}, 0, c.reward, c.kind + ": " + c.detail});
+    // (The event's coins: what was paid, which the day's cap may have made less than was posted; a reward gone home, whole.)
+    const std::int64_t paid = paidTo.empty() ? 0 : moved ? reward : 0;
+    recordEvent({"contract " + status, paidTo.empty() ? c.poster : paidTo, c.target, {}, 0, 0, {}, 0, paidTo.empty() ? c.reward : paid,
+                 c.kind + ": " + c.detail});
+    return paid;
 }
 
 std::vector<const Contract*> World::contractsNear(const std::string& player) const
@@ -349,6 +356,10 @@ Result World::takeContract(const std::string& player, const std::string& contrac
                         return {false, "That work has been offered to someone else for now.", c.id};
                     c.status = "taken";
                     c.taker = player;
+                    // (An older save's escort names no road: taken where a wagon to its town sets out, it is that road's
+                    // from now on, and no other market's wagon takes its escort along. Doc 79, Phase 4, third repair.)
+                    if (const auto* here = roadMarketOf(p->cellId); c.kind == "escort" && c.from.empty() && here && here->id != c.town)
+                        c.from = here->id;
                     recordEvent({"contract taken", player, c.poster, {}, 0, 0, {}, 0, c.reward, c.kind + ": " + c.detail});
                     return {true, "You take on: " + c.detail + (c.reward ? " (" + std::to_string(c.reward) + " pennies)" : "") + ".", c.id};
                 }
@@ -480,12 +491,15 @@ void World::tendRoads()
         const auto* to = entity(c.target);
         if (carrier && to && !to->dead && carrier->cellId == to->cellId && between(carrier->position, to->position) <= 3)
         {
-            settleContract(c, "done", c.taker);
+            const auto paid = settleContract(c, "done", c.taker);
             bonds_.change(c.target, c.taker, {2, 3, 2, 0, 0}, calendarDays_);
             bonds_.change(c.poster, c.target, {1, 0, 2, 0, 0}, calendarDays_);
             bonds_.change(c.poster, c.taker, {1, 3, 1, 0, 0}, calendarDays_);
             if (!carrier->npc)
-                notice(c.taker, "You hand " + to->name + " the letter" + (c.reward ? " and are paid " + pennies(c.reward) : "") + ".");
+                notice(c.taker, "You hand " + to->name + " the letter" +
+                                    (paid >= c.reward ? (paid ? " and are paid " + pennies(paid) : std::string()) + "."
+                                     : paid ? " and are paid " + pennies(paid) + " of the " + pennies(c.reward) + ": " + DayPaid + ", and the rest goes back."
+                                            : ". Its pay goes back: " + std::string(DayPaid) + "."));
         }
     }
     const auto today = std::int64_t(std::floor(calendarDays_));
@@ -786,7 +800,7 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
         });
         if (!escort)
             postContract("escort", payer, c.to, c.to, 12, 7,
-                         "guarding the next wagon from " + marketWords(c.from) + " to " + marketWords(c.to)).from = c.from;
+                         "guarding the next wagon from " + marketWords(c.from) + " to " + marketWords(c.to), c.from);
         for (const auto& p : society_.positions())
             if (p.role == "merchant")
                 if (const auto* m = roadMarketOf(p.work.cell); m && m->id == c.to)
@@ -832,10 +846,14 @@ void World::caravanArrived(Caravan& c)
             if (escortOn(k, c.from, c.to) && k.taker == who && k.status == "taken")
             {
                 const bool there = wagon && withCaravan(who, *wagon) && c.with[who] * 2 >= int(c.leg);
-                settleContract(k, there ? "done" : "expired", there ? who : std::string());
+                const auto paid = settleContract(k, there ? "done" : "expired", there ? who : std::string());
                 if (const auto* e = entity(who); e && !e->npc)
-                    notice(who, there ? "The wagon reaches " + marketWords(c.to) + " safely. You are paid " + pennies(k.reward) + " for guarding it."
-                                      : "The wagon reached " + marketWords(c.to) + " without you, and the escort's pay went back.");
+                    notice(who, !there ? "The wagon reached " + marketWords(c.to) + " without you, and the escort's pay went back."
+                                : "The wagon reaches " + marketWords(c.to) + " safely. " +
+                                      (paid >= k.reward ? "You are paid " + pennies(paid) + " for guarding it."
+                                       : paid ? "You are paid " + pennies(paid) + " of the " + pennies(k.reward) + " for guarding it: " + DayPaid +
+                                                    ", and the rest goes back."
+                                              : "The pay for guarding it goes back: " + std::string(DayPaid) + "."));
                 if (there)
                     for (const auto& p : society_.positions())
                         if (p.role == "merchant" && roadMarketOf(p.work.cell) == to)
@@ -1592,11 +1610,17 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
                 continue;
             const auto each = std::max<std::int64_t>(1, Society::catalogPrice(item));
             const int take = capped ? int(std::min<std::int64_t>(n, society_.faucetRoom(by, "rewardsADay") / each)) : n;
+            int got = 0;
             for (int left = take; left > 0; left -= 99)
                 if (const int some = std::min(left, 99); society_.shift(loot, by, item, some, 0, "reward: recovered cargo"))
+                {
                     found.push_back(std::to_string(some) + " " + Society::itemName(item));
-            if (take < n)
-                over |= society_.consume(loot, item, n - take, "recovered cargo") > 0;
+                    got += some;
+                }
+            // (What isn't taken, over the cap or more kinds of thing than its finder can hold, goes back: nothing is left at
+            // a camp that is gone, and its account closes.)
+            if (got < n)
+                over |= society_.consume(loot, item, n - got, "recovered cargo") > 0;
         }
         if (!found.empty())
         {
@@ -1613,9 +1637,12 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
     for (auto& k : roads_.contracts)
         if (k.kind == "bounty" && k.target == camp.id && (k.status == "open" || k.status == "taken"))
         {
-            settleContract(k, "done", by);
+            const auto paid = settleContract(k, "done", by);
             if (k.reward)
-                words += " The bounty on them, " + pennies(k.reward) + ", is yours.";
+                words += paid >= k.reward ? " The bounty on them, " + pennies(paid) + ", is yours."
+                         : paid ? " Of the bounty on them, " + pennies(k.reward) + ", you are paid " + pennies(paid) + ": " + DayPaid +
+                                      ", and the rest goes back."
+                                : " The bounty on them goes back to those who posted it: " + std::string(DayPaid) + ".";
         }
     const auto* who = entity(by);
     recordEvent({"camp cleared", by, camp.id, camp.cell, 0, 0, {}, 0, 0, "by " + (who ? who->name : by)});

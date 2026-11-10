@@ -5952,10 +5952,8 @@ void Game::saveSoon()
 DbStore::Build Game::capture()
 {
     // Copied here, on the game thread; the document is made from the copy on the store's worker.
-    // The journal's accounts now start from what this checkpoint holds: an account opened since the last record (a
-    // contract's escrow, say) and closed before the next is erased by that record, not left in the checkpoint beside the
-    // coins it paid out (which made a restart refuse the save: doc 57's tests found it).
-    shadowCheckpoint();
+    // (Its callers journal what moved since the last record first: journalCheckpoint. Never here: a snapshot's child
+    // captures too, and writes nothing but its file.)
     for (const auto& [id, e] : world_.entities())
         if (!e.npc)
             characters_[id] = e;
@@ -6060,6 +6058,7 @@ void Game::autosave()
     if (options_.forkSnapshots && forkFailures_ < 3 && forkSnapshot())
         return;
     store_->queueEvents(world_.takeEvents());
+    journalCheckpoint();
     const auto seq = journalSeq_;
     if (!store_->saveInBackground(capture(), revision_))
     {
@@ -6078,6 +6077,8 @@ void Game::save()
         return;
     reapSnapshot(true);                            // A snapshot under way is finished and handed over first.
     store_->queueEvents(world_.takeEvents());
+    if (storageReady_)
+        journalCheckpoint();
     const auto seq = journalSeq_;
     if (storageReady_ && !store_->save(capture(), revision_))
     {

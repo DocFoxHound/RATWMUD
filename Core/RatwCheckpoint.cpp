@@ -158,6 +158,62 @@ Value roads(const RoadsState& r)
     return roads;
 }
 
+std::string roadSteps(const RoadsState& r)
+{
+    std::string out;
+    out.reserve(256 + 512 * r.caravans.size() + 96 * r.camps.size() + 192 * r.contracts.size());
+    const auto raw = [&](const void* at, std::size_t n) { out.append(static_cast<const char*>(at), n); };
+    const auto count = [&](std::uint64_t n) { raw(&n, sizeof n); };
+    const auto number = [&](double n) { raw(&n, sizeof n); };
+    const auto text = [&](const std::string& s) { count(s.size()); out += s; };
+    const auto texts = [&](const std::vector<std::string>& all) {
+        count(all.size());
+        for (const auto& s : all)
+            text(s);
+    };
+    number(double(r.day)); number(double(r.nextId));
+    count(r.caravans.size());
+    for (const auto& t : r.caravans)
+    {
+        text(t.id); text(t.from); text(t.to); text(t.account); text(t.kind);
+        count(t.manifest.size());
+        for (const auto& [good, n] : t.manifest)
+        {
+            text(good);
+            number(n);
+        }
+        count(t.sourceP.size());
+        for (const auto& [good, P] : t.sourceP)
+        {
+            text(good);
+            number(P);
+        }
+        text(t.driver); text(t.departure);
+        text(t.startCell); number(t.startX); number(t.startY);
+        text(t.endCell); number(t.endX); number(t.endY);
+        number(t.due); text(t.lateCause); count(t.delayAt); number(t.delayUntil);
+        count(t.overdue); number(t.latePushed);
+        texts(t.route);
+        number(t.departed); number(t.guards); text(t.status);
+        texts(t.escorts); texts(t.letters);
+        number(t.waitUntil);
+    }
+    count(r.camps.size());
+    for (const auto& b : r.camps)
+    {
+        text(b.id); text(b.cell); number(b.strength); number(b.hunger); number(b.lastRaid); count(b.active);
+        number(b.x); number(b.y);
+    }
+    count(r.contracts.size());
+    for (const auto& k : r.contracts)
+    {
+        text(k.id); text(k.kind); text(k.poster); text(k.town); text(k.target); text(k.taker); text(k.status);
+        number(double(k.reward)); number(k.created); number(k.due); text(k.detail);
+        text(k.offeredTo); number(k.offeredUntil); text(k.from);
+    }
+    return out;
+}
+
 Value crime(const CrimeState& k)
 {
     // Crime and law (RatwCrime.h): incidents and who saw them, warrants, and who is held in a gaol.

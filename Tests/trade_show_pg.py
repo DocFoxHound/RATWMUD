@@ -4,8 +4,9 @@
     python3 Tests/trade_show_pg.py BUILD/trade_show_tests        (ctest: trade_show_pg)
 
 trade_show_tests --write-crashes plays each of its crash cases (a wagon sets out, comes in, is robbed, is posted
-overdue: each after a checkpoint, then a player's trade journalled, then the game gone without saving) and writes the
-checkpoint and the journal it left. Here each goes into a throwaway database (named ratw_test_s2stage_<hex>, dropped
+overdue, a camp scatters with its bounty: each after a checkpoint, then a player's trade journalled, then the game gone
+without saving; and each again with a snapshot that doesn't land, a purchase and a bounty taken before the crash: the
+third repair's window runs) and writes the checkpoint and the journal it left. Here each goes into a throwaway database (named ratw_test_s2stage_<hex>, dropped
 afterwards) as the game server stores them: the checkpoint with game.save_checkpoint, the journal's records as rows of
 game.journal. They are read back as the server reads them on start-up (game.load_checkpoint; the records after the
 checkpoint's, in order) and trade_show_tests --check-crashes restarts on them: each thing has happened once. Skipped
