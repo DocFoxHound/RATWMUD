@@ -3,7 +3,7 @@
 //
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic] [--events FILE]
 //                                                       [--threads N] [--day N] [--sample] [--no-profile] [--no-births]
-//                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks]]
+//                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
@@ -27,6 +27,9 @@
 // --fast (opt-in: it changes results) is --unseen-step 30 --straight --coarse-ticks: the unseen decide every N seconds,
 // each decision N seconds' worth (Society::setUnseenStep; the game's is 5); offstage legs are timed by their straight
 // line (World::setStraightOffstage); and while nobody is onstage the harness ticks half a second at a time, not 0.05 s.
+// --ship-day (doc 79, Phase 5's repair) brings each port's next ship in five seconds into the window (World::dockShip,
+// as the DM would), so a window that no ship's own hour falls in is measured with a ship in: its goods on the shelves,
+// the Wharf's hands at its cargo, the Wharf a crowd.
 #include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwJsonDoc.h"
@@ -215,6 +218,7 @@ int main(int argc, char** argv)
     unsigned threads = 8;                           // --threads N.
     int startDay = 0;                               // --day N: start on day N of the year (1-365; 0: the world's own).
     bool atSeams = false;                           // --at-seams: the players after the first by seams (doc 70).
+    bool shipDay = false;                           // --ship-day: each port's next ship in, early in the window.
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -223,6 +227,8 @@ int main(int argc, char** argv)
             playerCount = std::max(0, std::atoi(argv[++i]));
         else if (flag == "--at-seams")
             atSeams = true;
+        else if (flag == "--ship-day")
+            shipDay = true;
         else if (flag == "--sample")
             sample = true;
         else if (flag == "--no-profile")
@@ -262,7 +268,7 @@ int main(int argc, char** argv)
     {
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic]"
                      " [--events FILE] [--threads N] [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
-                     " [--unseen-step N] [--straight] [--coarse-ticks]]\n";
+                     " [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day]]\n";
         return 2;
     }
     if (fast)
@@ -527,6 +533,24 @@ int main(int argc, char** argv)
     {
         // Coarser ticks while nobody is onstage, on the half seconds, so the hours fall where they fall in 0.05 s ticks.
         const int stride = coarse && !server.anyoneOnstage() ? std::min(CoarseSteps - i % CoarseSteps, ticks - i) : 1;
+        if (shipDay && i <= 100 && i + stride > 100)
+        {
+            // Each port's ship of today, else its first still due, brought in now.
+            const auto today = std::int64_t(std::floor(server.calendarDays()));
+            for (const auto& port : server.ports())
+            {
+                const market::Ship* pick = nullptr;
+                for (const auto& s : server.society().board().ships)
+                    if (s.port == port.market && s.status == "due" && (!pick || (s.day == today && pick->day != today) || (pick->day != today && s.day < pick->day)))
+                        pick = &s;
+                const std::string id = pick ? pick->id : std::string(), name = pick ? pick->name : std::string();
+                const bool docked = pick && server.dockShip(id);
+                std::cout << "ship day: " << port.market << " (" << port.posts << " posts, " << port.imports.size() << " goods waiting for ships): "
+                          << (docked ? name + " brought in" : pick ? name + " not brought in" : std::string("no ship due")) << '\n';
+            }
+            if (server.ports().empty())
+                std::cout << "ship day: the world has no port\n";
+        }
         if (!sampling)
         {
             server.tick(0.05 * stride);

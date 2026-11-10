@@ -944,7 +944,7 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
                    std::string& goalCell, Vec2& goal) const
 {
     // (Nobody seated, no occasion, no contract taken: no errand for anyone. Asked of every resident every pass.)
-    if (seated_.empty() && occasions_.empty() && errandContracts_.empty() && drivers_.empty() && shipsIn_.empty())
+    if (seated_.empty() && occasions_.empty() && errandContracts_.empty() && drivers_.empty() && dockHands_.empty())
         return false;
     // A hungry traveller eats first (its provisions where it stands, else food bought or fetched), then goes on: the
     // errand never starves it.

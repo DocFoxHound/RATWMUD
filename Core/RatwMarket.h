@@ -54,6 +54,13 @@ struct Data
     // the ships' names. Without the file: none, and the names below.
     std::vector<std::string> shipBrings, shipTakes;
     std::vector<std::string> shipNames{"the Gull", "the Saltwife"};
+    // (The Phase 5 repair.) `wharf.never` (no ship brings these: they refill each morning as ever); `wharf.posts`, the
+    // words in a post's title that make its market a port (lower case; the sea trade's other posts, its carriers and
+    // store keepers, are a port's only where one of these is: a town with a "long store" and no wharf is no port); and
+    // `wharf.cargoWords`, a good's words in a ship's cargo where the catalogue's name won't do ("hide": "hides").
+    std::set<std::string> shipNever;
+    std::vector<std::string> wharfPosts{"unloading ships", "working the cranes", "harbourmaster", "wharf office"};
+    std::map<std::string, std::string> cargoWords;
     // The seven season groups (7.1, moved from city_loop.json): each group's goods and, by season (Spring, Summer, Autumn,
     // Winter: the value at each season's middle day, blended between), its price and its shelf in percent of normal.
     struct Season
@@ -66,6 +73,12 @@ struct Data
     std::map<std::string, std::size_t> seasonOf;    // Base good -> its group (the first that names it).
 };
 const Data& data();
+// The forbidden-word check for world text made from data (a ship's name, a cargo's words; the user's rule, as
+// tools/test_realm2.py's for the world's own): true if `text` has the whole word "dog" or "dogs", in any case.
+bool forbiddenWord(const std::string& text);
+// The ships' names a list gives (market.json's `wharf.ships`, a host's own), as the loader takes them: plain names
+// (letters, spaces, ' and -; 40 characters at most), each once, 64 at most, and none with the forbidden word.
+std::vector<std::string> shipNamesOf(const std::vector<json::Value>& list);
 // A base good's group: its explicit one, else its category's, else the fallback; `how` (if given) says which
 // ("good", "category", "fallback").
 std::string groupOf(const std::string& base, std::string* how = nullptr);
@@ -161,9 +174,9 @@ struct HarvestOverride
     double until = 0;
 };
 // A committed ship (doc 79, 8.3; Phase 5): one line of a port's timetable, rolled a week ahead and saved, so a restart
-// shows the same ships. Its goods are for show: what its notice names (`brings` from market.json's `wharf.imports`,
-// `takes` from its `takes`). "due" until its hour on its day, "in" until it sails that evening, then "sailed"; "storm"
-// if a storm kept it out. Kept a few days after, for the timetable and the talk.
+// shows the same ships. Its goods are for show: what its notice names (`brings` of the goods its port waits for ships
+// for, World::Port::imports; `takes` from market.json's `wharf.takes`). "due" until its hour on its day, "in" until it
+// sails that evening, then "sailed" (kept through its week's end); "storm" if a storm kept it out (kept three days).
 struct Ship
 {
     std::string id;                                 // "s<N>" (Board::nextShip).

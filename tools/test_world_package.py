@@ -312,6 +312,27 @@ class StripTest(unittest.TestCase):
         self.assertEqual(len(board['recent']), 1)
         self.assertNotIn('ashley', json.dumps(board))
 
+    def test_the_ports_timetable_is_packaged(self):
+        # Doc 79, 8.3 (Phase 5): the ships are the world's, never a player's: the timetable, the week each port is rolled
+        # through, the next ship's number and the back rooms go into the package as they are, while the pressure a ship
+        # left is reset with the rest (a shipped world starts at normal prices).
+        doc = save()
+        ships = [{'id': 's7', 'port': 'ridgemere', 'name': 'the Gull', 'day': 6, 'hour': 9.5, 'sails': 18.25,
+                  'brings': [['butter', 4], ['glass_beads', 2]], 'takes': [['hide', 3]], 'status': 'due', 'posted': 4.2},
+                 {'id': 's6', 'port': 'ridgemere', 'name': 'the Saltwife', 'day': 4, 'hour': 9, 'sails': 18,
+                  'brings': [['butter', 4]], 'takes': [], 'status': 'in', 'posted': 3.2}]
+        doc['society']['board'] = {
+            'slider': 10, 'cell': {'ridgemere': {'butter': {'P': -0.05, 'touched': 4, 'cause': 'ship'}}},
+            'ships': json.loads(json.dumps(ships)), 'shipsThrough': {'ridgemere': 1}, 'nextShip': 8,
+            'backRoom': {'till:job:wren': {'butter': 8}}}
+        P.strip(doc)
+        board = doc['society']['board']
+        self.assertEqual(board['ships'], ships)
+        self.assertEqual((board['shipsThrough'], board['nextShip']), ({'ridgemere': 1}, 8))
+        self.assertEqual(board['backRoom'], {'till:job:wren': {'butter': 8}})
+        self.assertEqual(board['cell'], {})
+        self.assertEqual(P.scan(doc, {}, usernames={'ashley'})[0], [])
+
     def test_ledger_keeps_order_without_players(self):
         self.assertEqual([e['sequence'] for e in self.doc['society']['ledger']], [4])
 
@@ -652,6 +673,18 @@ def plant(source):
     doc['crime']['incidents'].append({'id': 1, 'kind': 'theft', 'offender': b, 'victim': WOLF, 'cell': '', 'town': '',
                                       'time': 0, 'day': 0, 'item': '', 'quantity': 0, 'coins': 0, 'status': 'open',
                                       'witnesses': []})
+    # The port's timetable (doc 79, 8.3; Phase 5): a ship due in three days and one in six (a save that says it is in
+    # already, which the load puts right), and one for a port this world has not got.
+    today = int(doc['calendarDays'])
+    board = society.setdefault('board', {})
+    board['ships'] = [s for s in board.get('ships', []) if s.get('day') not in (today + 3, today + 6)] + [
+        {'id': 's-pkg-1', 'port': town, 'name': 'the Packet', 'day': today + 3, 'hour': 9.5, 'sails': 18.25,
+         'brings': [['butter', 4]], 'takes': [['hide', 3]], 'status': 'due', 'posted': 0},
+        {'id': 's-pkg-2', 'port': town, 'name': 'the Early Tide', 'day': today + 6, 'hour': 10, 'sails': 18,
+         'brings': [['butter', 4]], 'takes': [], 'status': 'in', 'posted': 0},
+        {'id': 's-pkg-3', 'port': 'nowhere_at_all', 'name': 'the Lost Hour', 'day': today + 3, 'hour': 9, 'sails': 18,
+         'brings': [['butter', 4]], 'takes': [], 'status': 'due', 'posted': 0}]
+    planted['ships'] = today
     assert P.money(doc) == [], P.money(doc)
     source['planted'] = planted
 
@@ -812,6 +845,21 @@ class EndToEndTest(unittest.TestCase):
             project = next(p for p in after['people']['projects'] if p['id'] == 'proj-1')
             self.assertEqual((project['site'], project['structure']), ('site-1', 'structure-1'))
             self.assertIn(self.planting['till'], after['society']['accounts'], 'its till made again at load')
+            # The ships came with the package and the server kept them: the first as it was posted, the one a save
+            # called in before its day due again, the one for no port of this world gone; and the port's weeks rolled.
+            today = self.planting['ships']
+            packed = {s['id']: s for s in before['society']['board']['ships']}
+            self.assertEqual({'s-pkg-1', 's-pkg-2', 's-pkg-3'} - set(packed), set(), 'the timetable is in the package')
+            ships = {s['id']: s for s in after['society']['board']['ships']}
+            first = ships.get('s-pkg-1', {})
+            self.assertEqual((first.get('port'), first.get('name'), first.get('day'), first.get('hour'), first.get('sails'),
+                              first.get('brings'), first.get('takes'), first.get('status')),
+                             ('ridgemere', 'the Packet', today + 3, 9.5, 18.25, [['butter', 4]], [['hide', 3]], 'due'))
+            self.assertEqual((ships.get('s-pkg-2', {}).get('status'), ships.get('s-pkg-2', {}).get('day')), ('due', today + 6))
+            self.assertNotIn('s-pkg-3', ships)
+            self.assertEqual({s['port'] for s in ships.values()}, {'ridgemere'})
+            self.assertEqual(len({(s['port'], s['day']) for s in ships.values()}), len(ships), 'one ship a port a day')
+            self.assertIn('ridgemere', after['society']['board'].get('shipsThrough', {}))
         return before, log
 
     def test_imported_and_loaded_by_a_real_server(self):

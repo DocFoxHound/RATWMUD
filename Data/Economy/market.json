@@ -317,7 +317,20 @@
     ]
   },
   "wharf": {
-    "about": "The port's goods (doc 79, 8.3 and Phase 5; from doc 73's lists): `never`, goods no ship brings (cheese: the user's); `imports`, what ships bring a port's market, of what its shops set out and its workshops don't make (those goods wait for a ship there: D27); `takes`, what ships take away, of what its shops sell or buy; `ships`, the ships' names (letters and spaces; each passes the forbidden-word check). Core reads them (market::Data's shipBrings, shipTakes, shipNames; World's RatwPort.cpp): a world with no port uses none of it. Atlas's Wharf panel shows the goods until Phase 9 retargets it.",
+    "about": "The port (doc 79, 8.3; Phase 5 and its repair; goods from doc 73's lists). `posts`: the words in a post's title that make its market a port (its harbourmaster and Wharf office, the hands unloading ships, the cranes; never the bare word wharf, which a tannery or a smokehouse by the water has in its name, so Ridgemere's overseer of the Grayrock wharf is listed by his own words; the sea trade's other posts there, its carriers and store keepers, are the port's too, but make no port alone). `never`: goods no ship brings (cheese: the user's). `imports`: the ships' own goods; at a port's market those its shops set out and its workshops don't make wait for a ship (D27), and so does whatever else its shops set out that nothing in the realm makes and no wagon or cart brings. `takes`: what ships take away, of what its shops sell, buy or make. `ships`: the ships' names (letters and spaces; each passes the forbidden-word check, in Core's loader too). `cargoWords`: a good's words in a cargo where the catalogue's name won't do (a thing counted by the piece is put in the plural by rule: World::cargoWords). Core reads them (market::Data's wharfPosts, shipNever, shipBrings, shipTakes, shipNames, cargoWords; World's RatwPort.cpp): a world with no port uses none of it. Atlas's Wharf panel shows the goods until Phase 9 retargets it.",
+    "posts": [
+      "wharf office",
+      "harbourmaster",
+      "unloading ships",
+      "working the cranes",
+      "grayrock wharf"
+    ],
+    "cargoWords": {
+      "sheep": "sheep",
+      "offal": "offal",
+      "resin": "pine resin",
+      "horse_tack": "horse harness"
+    },
     "ships": [
       "the Gull",
       "the Saltwife",
