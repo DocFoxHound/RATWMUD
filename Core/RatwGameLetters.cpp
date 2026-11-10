@@ -87,6 +87,14 @@ std::string Game::townFor(const std::string& cellId) const
     return world_.lawTown(cellId);
 }
 
+std::string Game::boardTownFor(const std::string& cellId) const
+{
+    if (auto town = townFor(cellId); !town.empty())
+        return town;
+    const auto* m = world_.roadMarketOf(cellId);
+    return m ? m->id : std::string();
+}
+
 std::string Game::townWords(const std::string& town) const
 {
     for (const auto& s : newcomers::rules().starts)

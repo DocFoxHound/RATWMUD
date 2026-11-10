@@ -17,8 +17,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <numeric>
 #include <set>
+#include <tuple>
 
 namespace ratw
 {
@@ -42,13 +44,6 @@ std::string lowered(std::string s)
         c = char(std::tolower(static_cast<unsigned char>(c)));
     return s;
 }
-std::string goodWords(const std::string& base)
-{
-    std::string name = Society::itemName(base);
-    if (name.empty())
-        name = base;
-    return lowered(name);
-}
 // "a", "a and b", "a, b and c".
 std::string listed(const std::vector<std::string>& words)
 {
@@ -68,9 +63,39 @@ bool carterTitle(const std::string& title)
 const char* const Mishaps[] = {"a broken axle", "mud to the axles", "a wheel off in a rut", "a washed-out ford"};
 constexpr double ArrivalNudge = .2, RaidNudge = .15, LateNudge = .05, LateMost = .2, MissedCartNudge = .05;
 constexpr double DueDays = .5, LateAfterDays = 1;    // A wagon is due half a day out, and late a day past that.
-constexpr int ManifestMost = 5, PostAhead = 2;
+constexpr int ManifestMost = 5, PostAhead = 2, GlutMost = 2;
+// A market's imports by wagon from one source (D27, T14): what its wagons bring in rotation, the thinnest first, so each
+// comes at least every few wagons; more of that source's goods than this refill each morning, as nothing would bring them.
+constexpr std::size_t ImportsPerSource = 2 * ManifestMost;
 constexpr double CampLootMost = 40;                  // Pennies of goods a raided camp holds at most (8.1).
 } // namespace
+
+std::string World::goodWords(const std::string& base)
+{
+    // A good in plain words for notices, news and talk (8.1: "salt and nails for the general store"): the catalogue's name
+    // without its pack ("Nails (bag of 50)" -> "nails"), lower case.
+    std::string name = items::good(base) || items::wearable(base) || base == "herbs" || base == "meal" ? Society::itemName(base) : "";
+    if (name.empty())
+    {
+        name = base;
+        std::replace(name.begin(), name.end(), '_', ' ');
+    }
+    if (const auto cut = name.find(" ("); cut != std::string::npos)
+        name.erase(cut);
+    return lowered(name);
+}
+
+bool World::pluralGood(const std::string& words)
+{
+    // "nails are", "cheese is": a plain good word ending in a lone s is a plural, but for the few that aren't ("citrus",
+    // "ground lens") and a thing named with what it has ("a leather cap with ear slits").
+    if (words.size() < 2 || words.back() != 's' || words[words.size() - 2] == 's' || words.find(" with ") != std::string::npos)
+        return false;
+    for (const char* one : {"canvas", "kermes", "molasses", "harness", "citrus", "lens"})
+        if (words.size() >= std::strlen(one) && words.compare(words.size() - std::strlen(one), std::string::npos, one) == 0)
+            return false;
+    return true;
+}
 
 std::string World::marketWords(const std::string& id) const
 {
@@ -116,11 +141,17 @@ void World::ensureRoadMarkets()
 {
     // The road layer's markets (5.1; Phase 4): the Board's, found again when they are, and the carters when the roster moves.
     ensureTradePoints();
-    if (roadMarketsKey_ == tradePointsBuilt_ && roadMarketsRoster_ == society_.rosterRevision() && roadMarketsDay_ == roads_.day)
+    // (The DM's rules that stop the wagons or the carts change what can bring a market its imports: D27, 5.1.)
+    const bool wagonsRun = society_.rule("caravanRate") > 0 && society_.rule("wagonsOnRoad") > 0;
+    const bool cartsRun = society_.rule("cartsOnRoad") > 0;
+    const int rules = int(wagonsRun) | int(cartsRun) << 1;
+    if (roadMarketsKey_ == tradePointsBuilt_ && roadMarketsRoster_ == society_.rosterRevision() && roadMarketsDay_ == roads_.day &&
+        roadMarketsRules_ == rules)
         return;
     roadMarketsKey_ = tradePointsBuilt_;
     roadMarketsRoster_ = society_.rosterRevision();
     roadMarketsDay_ = roads_.day;
+    roadMarketsRules_ = rules;
     const auto& tp = society_.tradePoints();
     roadMarkets_.clear();
     marketIndex_.clear();
@@ -234,7 +265,8 @@ void World::ensureRoadMarkets()
     }
     // Each market's imports (D27): what a wagon (a route a carter can drive to it) or a cart brings it that its workshops and
     // areas don't make (7.7: a shop that only supplies a good doesn't make it), of what its shops set out. With none,
-    // everything refills each morning.
+    // everything refills each morning: so too while the DM's rules stop the wagons (caravanRate or wagonsOnRoad 0) or the
+    // carts (cartsOnRoad 0), as nothing then comes to refill them.
     std::map<std::string, std::set<std::string>> imports;
     const auto bring = [&](const std::string& to, const std::set<std::string>& goods) {
         const auto* m = tp.find(to);
@@ -246,13 +278,25 @@ void World::ensureRoadMarkets()
     };
     for (const auto& [a, b] : roadPairs_)
         for (const auto& [from, to] : {std::pair{a, b}, std::pair{b, a}})
-            if (const auto* src = tp.find(from); src && carters_.count(from))
+            if (const auto* src = tp.find(from), *dst = tp.find(to); src && dst && carters_.count(from) && wagonsRun)
             {
-                bring(to, src->crafted);
-                bring(to, src->sold);
+                // What this source makes first (its nails: the plainest import), then the rest it sells, in an order seeded
+                // by the pair and the good (the same every day), up to what its wagons bring in rotation.
+                std::vector<std::tuple<bool, std::uint64_t, std::string>> goods;
+                for (const auto& g : src->sold)
+                    if (dst->sold.count(g) && !dst->crafted.count(g) && !src->crafted.count(g))
+                        goods.push_back({true, lot(from + ">" + to + ":" + g, 6), g});
+                for (const auto& g : src->crafted)
+                    if (dst->sold.count(g) && !dst->crafted.count(g))
+                        goods.push_back({false, lot(from + ">" + to + ":" + g, 6), g});
+                std::sort(goods.begin(), goods.end());
+                std::set<std::string> brought;
+                for (std::size_t i = 0; i < goods.size() && i < ImportsPerSource; ++i)
+                    brought.insert(std::get<2>(goods[i]));
+                bring(to, brought);
             }
     for (const auto& end : cartEnds_)
-        if (farms[end.farm].heldKeepers + farms[end.farm].heldHands > 0)   // (Only a staffed farm's cart comes.)
+        if (cartsRun && farms[end.farm].heldKeepers + farms[end.farm].heldHands > 0)   // (Only a staffed farm's cart comes.)
             bring(end.market, farms[end.farm].def->yields);
     society_.setImports(std::move(imports));
 }
@@ -265,7 +309,10 @@ int World::harvestOf(const std::string& area) const
         return std::clamp(o->second.word, 0, 2);
     const auto date = calendar::calendarAt(calendarDays_);
     const auto season = std::int64_t(date.year) * 4 + int(date.season);
-    const double score = unit("harvest:" + area, season) - .5 + double(b.slider) / 400.;
+    // (The season leans it a little: the autumn's gathering in the best, the winter's stores the leanest.)
+    const double lean = date.season == calendar::Season::Autumn ? .08 : date.season == calendar::Season::Summer ? .04
+                        : date.season == calendar::Season::Winter ? -.08 : 0;
+    const double score = unit("harvest:" + area, season) - .5 + double(b.slider) / 400. + lean;
     return score < -.22 ? 0 : score > .22 ? 2 : 1;
 }
 
@@ -273,8 +320,9 @@ std::vector<std::pair<std::string, int>> World::manifestFor(const std::string& f
                                                             const std::string& seed) const
 {
     // Up to 5 goods, each one some shop at the destination stocks or buys (8.1): first the source's player-sold surplus
-    // (its glut), then what the source makes that the destination doesn't, then the largest P gaps, then a luxury for a
-    // rich household's want.
+    // (its glut: T3's ore, sold to a smithy that only buys it, goes out on the next wagon), then the destination's imports
+    // it is thinnest of (T14), then what the source makes that the destination doesn't, then the largest P gaps, then a
+    // luxury for a rich household's want.
     const auto& tp = society_.tradePoints();
     const auto* src = tp.find(from);
     const auto* dst = tp.find(to);
@@ -284,8 +332,8 @@ std::vector<std::pair<std::string, int>> World::manifestFor(const std::string& f
     const auto wanted = [&](const std::string& g) { return dst->sold.count(g) || dst->bought.count(g); };
     const auto has = [&](const std::string& g) { return src->crafted.count(g) || src->made.count(g) || src->sold.count(g); };
     std::set<std::string> chosen;
-    const auto take = [&](const std::string& g) {
-        if (out.size() >= std::size_t(ManifestMost) || chosen.count(g) || !wanted(g) || !has(g))
+    const auto take = [&](const std::string& g, bool glut = false) {
+        if (out.size() >= std::size_t(ManifestMost) || chosen.count(g) || !wanted(g) || !(has(g) || (glut && src->bought.count(g))))
             return;
         chosen.insert(g);
         const int shelf = society_.marketShelf(to, g);
@@ -300,9 +348,37 @@ std::vector<std::pair<std::string, int>> World::manifestFor(const std::string& f
             if (const double P = society_.pressure(from, g); P < -.02)
                 glut.push_back({P, g});
     std::sort(glut.begin(), glut.end());
-    for (const auto& [P, g] : glut)
+    for (std::size_t i = 0; i < glut.size() && out.size() < std::size_t(GlutMost); ++i)
+        take(glut[i].second, true);             // (At most two: the rest of the wagon for the far end's thin imports.)
+    // 2. The destination's imports this source has, the thinnest first (shelves and back rooms), those not already on
+    // their way to it on another wagon before those that are: so every import comes in rotation, a wagon or two apart.
+    std::set<std::string> coming;
+    for (const auto& d : board.committed)
+        if (d.kind == "wagon" && d.to == to)
+            for (const auto& [g, n] : d.manifest)
+                coming.insert(g);
+    for (const auto& c : roads_.caravans)
+        if (c.to == to && c.status == "travelling")
+            for (const auto& [g, n] : c.manifest)
+                coming.insert(g);
+    // (Brought longest ago first, then the barest: a rotation, so each of this source's imports, at most ImportsPerSource,
+    // is on one of the next few wagons whenever it runs thin.)
+    const auto brought = board.broughtIn.find(to);
+    const auto broughtOn = [&](const std::string& g) -> std::int64_t {
+        if (brought == board.broughtIn.end())
+            return -1;
+        const auto at = brought->second.find(g);
+        return at == brought->second.end() ? -1 : at->second;
+    };
+    std::vector<std::tuple<bool, std::int64_t, double, std::uint64_t, std::string>> thin;
+    for (const auto& g : dst->sold)
+        if (society_.imported(to, g) && has(g))
+            if (const double full = society_.marketFullness(to, g); full < .999)
+                thin.push_back({coming.count(g) > 0, broughtOn(g), full, lot(seed + g, 2), g});
+    std::sort(thin.begin(), thin.end());
+    for (const auto& [on, when, full, l, g] : thin)
         take(g);
-    // 2. What the source makes that the destination doesn't, in a seeded order.
+    // 3. What the source makes that the destination doesn't, in a seeded order.
     std::vector<std::pair<std::uint64_t, std::string>> makes;
     for (const auto& g : src->crafted)
         if (!dst->crafted.count(g) && wanted(g))
@@ -310,7 +386,7 @@ std::vector<std::pair<std::string, int>> World::manifestFor(const std::string& f
     std::sort(makes.begin(), makes.end());
     for (std::size_t i = 0; i < makes.size() && out.size() < 3; ++i)
         take(makes[i].second);
-    // 3. The largest gaps (dearer there than here).
+    // 4. The largest gaps (dearer there than here).
     std::set<std::string> touched;
     for (const auto& id : {from, to})
         if (const auto m = board.cell.find(id); m != board.cell.end())
@@ -324,7 +400,7 @@ std::vector<std::pair<std::string, int>> World::manifestFor(const std::string& f
         take(g);
     for (const auto& [l, g] : makes)
         take(g);
-    // 4. A rich household's want: a luxury the source sells and the destination's shops set out.
+    // 5. A rich household's want: a luxury the source sells and the destination's shops set out.
     std::vector<std::pair<std::uint64_t, std::string>> luxuries;
     for (const auto& g : src->sold)
         if (market::groupOf(g) == "luxuries" && dst->sold.count(g))
@@ -362,9 +438,12 @@ std::string World::departureNotice(const market::Departure& d, bool atEnd) const
                     if (std::any_of(wares.begin(), wares.end(), [&](const std::string& w) { return items::baseOf(w) == d.manifest.front().first; }))
                         if (const auto* b = items::businessFor(p->title))
                         {
+                            // The shop in plain words: "the general store", "the food stall", "the village smithy".
                             shop = lowered(b->label);
-                            if (shop.size() > 5 && shop.compare(shop.size() - 5, 5, "goods") == 0)
-                                shop += " store";           // ("the general goods store")
+                            if (const auto cut = shop.find(" ("); cut != std::string::npos)
+                                shop.erase(cut);
+                            if (shop.size() > 6 && shop.compare(shop.size() - 6, 6, " goods") == 0)
+                                shop.replace(shop.size() - 6, 6, " store");   // ("General goods": the general store.)
                             break;
                         }
                 }
@@ -387,8 +466,8 @@ std::string World::departureNotice(const market::Departure& d, bool atEnd) const
     const bool escort = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
         return k.kind == "escort" && k.town == d.to && k.status == "open";
     });
-    if (escort)
-        words += " Escort wanted.";
+    if (escort)                                     // (Taken where the wagon sets out, which waits there for its escort.)
+        words += atEnd ? " Escort wanted: ask at the board in " + marketWords(d.from) + "." : std::string(" Escort wanted.");
     if (!d.cause.empty())
         words += " Set back: " + d.cause + ".";
     return words;
@@ -493,11 +572,31 @@ void World::postDepartures(std::int64_t today)
     }
 }
 
+int World::cartsCarrying(const std::string& market, const std::string& good) const
+{
+    // The staffed farms whose morning cart brings this good to this market (8.2): a missed cart's bump is shared out by them.
+    int n = 0;
+    const auto& farms = society_.farms();
+    for (const auto& end : cartEnds_)
+        if (end.market == market && end.farm < farms.size() && farms[end.farm].heldKeepers + farms[end.farm].heldHands > 0)
+            for (const auto& g : farms[end.farm].def->yields)
+                n += g == good;
+    return n;
+}
+
+void World::missedCart(const std::string& market, const std::vector<std::string>& goods, const std::string& cause)
+{
+    // A cart that didn't come (8.2, 8.6): its goods a little dearer at its market, and why. Its share of the bump only (the
+    // whole +0.05 when every cart of a good misses), so a market fed by many farms doesn't stack a step for each.
+    for (const auto& g : goods)
+        society_.setPressure(market, g, society_.pressure(market, g) + MissedCartNudge / std::max(1, cartsCarrying(market, g)), cause);
+}
+
 void World::rollCarts(std::int64_t today)
 {
     // Every morning each staffed farm or works sends a small cart to its nearest market, heavier on Marketday (8.2); its
-    // chance by its area's harvest (good 100%, fair 70%, poor 40%). A cart that doesn't come is a visible bump at its
-    // market for its goods.
+    // chance by its area's harvest (good 100%, fair 70%, poor 40%). A cart a poor harvest keeps home is a visible bump at its
+    // market for its goods ("harvest"); one the roads have no room for (cartsOnRoad) simply doesn't go, with no bump.
     auto& b = society_.stagedBoard();
     const auto& farms = society_.farms();
     const auto& tp = society_.tradePoints();
@@ -524,12 +623,13 @@ void World::rollCarts(std::int64_t today)
             continue;
         const int harvest = harvestOf(end.area);
         const double comes = harvest == 2 ? 1 : harvest == 1 ? .7 : .4;
-        if (unit("cart:" + end.farmId, today) >= comes || carts >= most || b.committed.size() >= market::CommittedMost)
+        if (unit("cart:" + end.farmId, today) >= comes)
         {
-            for (const auto& g : goods)             // (The cart that didn't come: a little dearer, and why.)
-                society_.setPressure(end.market, g, society_.pressure(end.market, g) + MissedCartNudge, "harvest");
+            missedCart(end.market, goods, "harvest");   // (The cart that didn't come: a little dearer, and why.)
             continue;
         }
+        if (carts >= most || b.committed.size() >= market::CommittedMost)
+            continue;                               // (No room on the roads: no cart, and nothing said of a harvest.)
         market::Departure dep;
         dep.id = "f" + std::to_string(b.nextDeparture++);
         dep.kind = "cart";
@@ -620,7 +720,8 @@ void World::setOut()
         c.manifest = d.manifest;
         c.driver = driver;
         c.departure = d.id;
-        launchCaravan(c, *from, *to);
+        if (!launchCaravan(c, *from, *to))           // (No road between them now, a host's edit: it can't go, and says so.)
+            recordEvent({"wagon cancelled", d.id, d.to, from->market, 0, 0, d.from, 0, 0, "the road is closed"});
     }
 }
 
@@ -705,6 +806,14 @@ void World::launchCart(const market::Departure& d)
     const auto* to = roadMarket(d.to);
     if (end == cartEnds_.end() || !to)
         return;
+    std::vector<std::string> goods;
+    for (const auto& [g, n] : d.manifest)
+        goods.push_back(g);
+    const auto missed = [&](const std::string& cause, const std::string& why) {
+        // (Rolled, but nobody at the farm to take it, or no way through: it doesn't come, and the market hears why.)
+        missedCart(d.to, goods, cause);
+        recordEvent({"cart missed", d.id, d.to, end->cell, 0, 0, d.from, int(goods.size()), 0, why});
+    };
     std::string driver;
     const Position* post = nullptr;
     std::uint64_t best = ~0ULL;
@@ -723,7 +832,7 @@ void World::launchCart(const market::Departure& d)
             best = l, driver = who, post = &p;
     }
     if (driver.empty() || !post)
-        return;
+        return missed("short-handed", "no hand to spare at " + end->name);
     Caravan c;
     c.id = "cv" + std::to_string(roads_.nextId++);
     c.kind = "cart";
@@ -738,7 +847,7 @@ void World::launchCart(const market::Departure& d)
     c.endCell = to->market, c.endX = to->marketX, c.endY = to->marketY;
     c.route = routeBetween(c.startCell, c.endCell);
     if (c.route.empty())
-        return;
+        return missed("road closed", "no way through to " + marketWords(d.to));
     c.departed = calendarDays_;
     c.due = calendarDays_ + DueDays;
     c.waitUntil = calendarDays_ + 1.0 / 24;
@@ -789,7 +898,8 @@ void World::stagedArrival(Caravan& c)
             if (const double P = society_.pressure(c.from, g); std::abs(P) > most)
             {
                 most = std::abs(P);
-                words = goodWords(g) + (P < 0 ? " is cheap in " : " is dear in ") + marketWords(c.from);
+                const auto good = goodWords(g);
+                words = good + (pluralGood(good) ? " are " : " is ") + (P < 0 ? "cheap in " : "dear in ") + marketWords(c.from);
             }
     if (words.empty())
         if (const int times = society_.marketTimes(c.from); times != 0)
@@ -812,11 +922,11 @@ void World::roadsMorning(std::int64_t today)
         if (!c.overdue)
         {
             c.overdue = true;
-            if (c.lateCause.empty())
-                c.lateCause = "no word of it";
             b.troubles.push_back({calendarDays_, c.to, "late"});
+            // (With its cause where it met one; "No word of it yet" where nobody knows why.)
             recordEvent({"wagon overdue", c.id, c.to, c.cell, 0, 0, c.departure, 0, 0,
-                         "Overdue: the wagon from " + marketWords(c.from) + ", held up by " + c.lateCause + "."});
+                         "Overdue: the wagon from " + marketWords(c.from) +
+                             (c.lateCause.empty() ? std::string(". No word of it yet.") : ", held up by " + c.lateCause + ".")});
         }
         if (c.latePushed + 1e-9 < LateMost)
         {
@@ -942,7 +1052,7 @@ void World::dropOrphanedRoads()
         {
             reopen(c, roadMarket(c.from) != nullptr);
             c.status = "arrived";                  // (Dropped below.)
-            recordEvent({"caravan dropped", c.id, c.to, c.cell, 0, 0, {}, 0, 0, "its market is gone"});
+            recordEvent({"caravan dropped", c.id, c.to, c.cell, 0, 0, c.departure, 0, 0, "its market is gone"});
             continue;
         }
         if (!c.account.empty())

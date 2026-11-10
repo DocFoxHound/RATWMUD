@@ -1019,6 +1019,10 @@ class World
     const Town* roadMarket(const std::string& id) const;
     const Town* roadMarketOf(const std::string& cellId) const;
     std::string marketWords(const std::string& id) const;   // "coldwater" -> "Coldwater".
+    // A good in plain words ("nails", "iron ore": the catalogue's name without its pack), and whether such words take
+    // "are" ("nails are cheap", "cheese is").
+    static std::string goodWords(const std::string& base);
+    static bool pluralGood(const std::string& words);
     // A market's carters (D26: residents holding a carter's post there), who drive its wagons.
     std::vector<std::string> cartersOf(const std::string& market) const;
     // A committed departure's notice (8.1), for its source's board, or its destination's (`atEnd`), with the calendar's
@@ -1035,7 +1039,9 @@ class World
     const std::vector<CartEnd>& cartEnds() const { return cartEnds_; }
     // A road without a camp gathers one a week at these odds (D14: a little more in hard times and winter, never by
     // players' wealth); a camp's strength is capped by the rule campStrengthMost, a bounty by bountyMost.
-    double campGatherOdds() const;
+    // `market`: the road's far market, whose own Times (5.3) count with the slider; "" the realm's.
+    double campGatherOdds(const std::string& market = {}) const;
+    double campHardness(const std::string& market) const;
     // The carter driving a caravan, by resident (a wagon's or a cart's while it is out).
     const std::unordered_map<std::string, std::string>& drivers() const { return drivers_; }
     // Contracts a player could take where they stand, taking one, and marking one done (a bounty, by whoever ended
@@ -2116,6 +2122,7 @@ class World
     std::uint64_t tradePointsBuilt_ = 0;                           // (ensureTradePoints counts each time it finds them.)
     std::uint64_t roadMarketsKey_ = ~0ULL, roadMarketsRoster_ = ~0ULL;
     std::int64_t roadMarketsDay_ = -2;
+    int roadMarketsRules_ = -1;                                    // (Whether the wagons and the carts run, by the rules.)
     bool campsSeeded_ = false;
     std::map<std::string, std::vector<std::string>> carters_;     // Market -> its carters.
     std::vector<CartEnd> cartEnds_;
@@ -2125,6 +2132,8 @@ class World
                                                          const std::string& seed) const;
     void postDepartures(std::int64_t today);
     void rollCarts(std::int64_t today);
+    int cartsCarrying(const std::string& market, const std::string& good) const;
+    void missedCart(const std::string& market, const std::vector<std::string>& goods, const std::string& cause);
     void setOut();
     Caravan* launchCaravan(Caravan c, const Town& from, const Town& to);
     void launchCart(const market::Departure& d);

@@ -7,7 +7,7 @@
 // deleted; every shop deleted; every carter deleted; zero households; a business label changed; an NPC deleted while it
 // holds an account; an item deleted while a player holds it (quarantined); an unknown good in pressure, a rule or an
 // override; a slider of 9999 or "abc"; a status.json override that sums to 140; a purse target of 10^9 (clamped); a
-// contract whose town is gone (refunded). The catalogue is the real Data (RATW_SOURCE_DIR).
+// road deleted with a wagon on it and one posted (lost and cancelled, said so); a contract whose town is gone (refunded). The catalogue is the real Data (RATW_SOURCE_DIR).
 #include "test_purse.h"
 #include "RatwCheckpoint.h"
 #include "RatwItems.h"
@@ -176,6 +176,33 @@ Fixture replaced(Fixture f, const std::string& from, const std::string& to)
 {
     if (const auto at = f.manifest.find(from); at != std::string::npos)
         f.manifest.replace(at, from.size(), to);
+    return f;
+}
+
+// The road between cells a and a + 1 closed (its seam's doors and the exits gone): east and west no longer joined.
+Fixture cut(Fixture f, int a)
+{
+    const auto drop = [](const std::string& text, const std::string& other) {
+        std::string kept;
+        std::istringstream lines(text);
+        for (std::string line; std::getline(lines, line);)
+            if (line.find("\"" + other + "\"") == std::string::npos)
+                kept += line + "\n";
+        return kept;
+    };
+    f.seams[id(a)] = drop(f.seams[id(a)], id(a + 1));
+    f.seams[id(a + 1)] = drop(f.seams[id(a + 1)], id(a));
+    std::string out;
+    std::istringstream lines(f.manifest);
+    for (std::string line; std::getline(lines, line);)
+    {
+        if (line.rfind("exits \"" + id(a) + "\"", 0) == 0)
+            line = "exits \"" + id(a) + "\" 1 \"" + id(a - 1) + "\"";
+        else if (line.rfind("exits \"" + id(a + 1) + "\"", 0) == 0)
+            line = "exits \"" + id(a + 1) + "\" 1 \"" + id(a + 2) + "\"";
+        out += line + "\n";
+    }
+    f.manifest = out;
     return f;
 }
 
@@ -473,6 +500,53 @@ void theEdits()
             w.society().setStatusOverride(&o);
         });
         expect(w.society().statusTable().rows[status::Rich].purseHigh <= 500, "a purse target of 10^9 clamped");
+    }
+    // A road deleted (between cells 4 and 5) with a wagon out on it and another posted: the one on the road lost, its
+    // escort open again for the next wagon (its pay still held), its letter open again at home, its carter free; the
+    // posted one cancelled, "the road is closed"; nothing refused.
+    {
+        const auto save = throughJson(b.saved, [&](json::Value& d) {
+            auto& board = *d.find("society")->find("board");
+            auto dep = json::Value::object(), goods = json::Value::object();
+            goods.add("nails", 5);
+            dep.add("id", "w998");
+            dep.add("kind", "wagon");
+            dep.add("from", "east");
+            dep.add("to", "west");
+            dep.add("driver", "c2");
+            dep.add("day", std::floor(b.saved.calendarDays) + 1);
+            dep.add("hour", 8.0);
+            dep.add("posted", b.saved.calendarDays);
+            dep.add("manifest", goods);
+            auto list = json::Value::array();
+            list.push(dep);
+            board.set("committed", list);
+        });
+        std::string onRoad;
+        for (const auto& c : save.roads.caravans)
+            if (c.status == "travelling")
+                onRoad = c.id;
+        expect(!onRoad.empty(), "a road deleted: the base's wagon is on the road");
+        auto w = edited(b, cut(b.fixture, 4), "a road deleted", [&](PersistedWorld& s) { s = save; });
+        bool lost = false, cancelled = false;
+        for (const auto& e : w.takeEvents())
+        {
+            lost = lost || (e.kind == "caravan lost" && e.actor == onRoad);
+            cancelled = cancelled || (e.kind == "wagon cancelled" && e.actor == "w998" && e.detail == "the road is closed");
+        }
+        expect(lost, "a road deleted: the wagon on it lost, no way on");
+        expect(cancelled, "a road deleted: the posted wagon cancelled, the road closed");
+        for (const auto& c : w.roads().caravans)
+            expect(c.id != onRoad && c.departure != "w998", "a road deleted: neither wagon on the roads");
+        for (const auto& k : w.roads().contracts)
+        {
+            if (k.id == b.escort)
+                expect(k.status == "open" && k.taker.empty() && w.society().cash("contract:" + k.id) > 0,
+                       "a road deleted: Ada's escort open again, its pay still held: " + k.status);
+            if (k.id == b.letter)
+                expect(k.status == "open", "a road deleted: Bo's letter open again at east: " + k.status);
+        }
+        expect(w.drivers().empty(), "a road deleted: its carter free");
     }
     // A contract whose town is gone: refunded to its poster (Ada's letter "to" a market that no longer exists).
     {

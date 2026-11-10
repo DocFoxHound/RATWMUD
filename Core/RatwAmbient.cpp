@@ -419,11 +419,25 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
     facts["world.birth"] = lately.count("birth") ? "recent" : "no";
     // The news the last wagon in brought (doc 79, 8.1: `world.news`, the source market's top cause), a few days.
     if (const auto* m = roadMarketOf(e->cellId))
+    {
         if (const auto news = society_.board().news.find(m->id); news != society_.board().news.end() && calendarDays_ - news->second.day <= 4)
         {
             facts["world.news"] = news->second.words;
             facts["world.news_from"] = marketWords(news->second.from);
         }
+        // The season's harvest of the farms whose carts come here (8.2, T11: the same word that loads the carts), where any
+        // staffed farm sends one.
+        int sum = 0, carts = 0;
+        const auto& farms = society_.farms();
+        for (const auto& end : cartEnds_)
+            if (end.market == m->id && end.farm < farms.size() && farms[end.farm].heldKeepers + farms[end.farm].heldHands > 0)
+                sum += harvestOf(end.area), ++carts;
+        if (carts > 0)
+        {
+            const int word = int(std::lround(double(sum) / carts));
+            facts["world.harvest"] = word <= 0 ? "poor" : word >= 2 ? "good" : "fair";
+        }
+    }
     // The place itself: how many are about, and whether a traveller (a player) is near.
     int people = 0;
     bool traveller = false;
@@ -552,7 +566,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         t.talk["topic.kind"] = kind;
         t.talk["topic.where"] = townWords(other);
         if (!c.manifest.empty())
-            t.talk["topic.what"] = Society::itemName(c.manifest.front().first);
+            t.talk["topic.what"] = goodWords(c.manifest.front().first);   // ("nails", as a line says it mid-sentence.)
         if (const auto* driver = entity(c.driver))
             t.talk["topic.who"] = driver->name;
         t.facts.push_back("A wagon between here and " + townWords(other) + " " + kind +

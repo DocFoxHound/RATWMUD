@@ -109,7 +109,7 @@ Fixture strip(const std::string& layout = "EE.....WW", const std::string& extra 
                 ++seam;
             }
     }
-    const auto region = [](char c) { return c == 'E' ? "east" : c == 'W' ? "west" : "wilds"; };
+    const auto region = [](char c) { return c == 'E' ? "east" : c == 'W' ? "west" : c == 'N' ? "north" : "wilds"; };
     for (int i = 0; i < cells; ++i)
     {
         m << "exits \"" << id(i) << "\" " << ((i > 0) + (i + 1 < cells));
@@ -139,6 +139,12 @@ Fixture strip(const std::string& layout = "EE.....WW", const std::string& extra 
         m << resident("wg", "Gil Moss", "merchant", "shopkeeper at The West Store", w, 3.5, w + 1, 10.5);
         for (int n = 1; n <= 5; ++n)
             m << resident("w" + std::to_string(n), "West " + std::to_string(n), "civilian", "working", w, 4.5 + n, w, 4.5 + n);
+    }
+    // 'N': a hamlet "north", a market (its stall) but too few homes to be a town for the law (D7: plain).
+    if (const int n = first('N'); n >= 0)
+    {
+        m << resident("nm", "Nell Ash", "merchant", "keeping the stall", n, 2.5, n + 1, 8.5);
+        m << resident("n1", "North 1", "civilian", "working", n, 4.5, n, 4.5);
     }
     m << extra;
     f.manifest = m.str();
@@ -244,6 +250,97 @@ std::string lowered(std::string s)
     return s;
 }
 
+// A player's connection to a game, for the boards (as town_fixture.h's).
+json::Value parsed(const std::string& text)
+{
+    json::Value v;
+    std::string error;
+    json::parse(text, v, error);
+    return v;
+}
+struct Client final : game::Connection
+{
+    std::vector<json::Value> events;
+    void event(const std::string& text) override { events.push_back(parsed(text)); }
+    void snapshot(const std::string&) override {}
+    void motion(const json::Value&) override {}
+    bool allowsLocalCredentials() const override { return true; }
+    const json::Value* last(const std::string& type) const
+    {
+        for (auto it = events.rbegin(); it != events.rend(); ++it)
+            if (it->string("type") == type)
+                return &*it;
+        return nullptr;
+    }
+    std::string said() const
+    {
+        std::string out;
+        for (const auto& e : events)
+            if (e.string("type") == "system")
+                out += e.string("text") + "\n";
+        return out;
+    }
+};
+std::string cmd(std::initializer_list<std::pair<const char*, json::Value>> fields)
+{
+    auto o = json::Value::object();
+    for (const auto& [k, v] : fields)
+        o.add(k, v);
+    return json::dump(o);
+}
+
+// The strip as a world on disk (cells, seams, the manifest), for a game to start from; and a game's options on it.
+std::filesystem::path onDisk(Fixture& f, const std::string& name)
+{
+    namespace fs = std::filesystem;
+    const auto root = fs::temp_directory_path() / ("ratw-s2stage-" + name + "-" + std::to_string(::getpid()));
+    fs::remove_all(root);
+    fs::create_directories(root / "cells");
+    fs::create_directories(root / "seams");
+    for (const auto& [cellId, text] : f.cells)
+    {
+        std::ofstream(root / "cells" / (cellId + ".cell")) << text;
+        std::ofstream(root / "seams" / cellId) << f.seams[cellId];
+    }
+    std::ofstream(root / "world.ratw") << f.manifest;
+    return root;
+}
+game::Options optionsOn(const std::filesystem::path& root, const std::string& save = {})
+{
+    game::Options o;
+    o.forkSnapshots = false;
+    o.tiesOptional = true;
+    o.hiddenNames = false;
+    o.devIdentity = true;
+    o.worldExport = root.string();
+    o.savePath = save;
+    return o;
+}
+// A player at a community's notice board, and what a board command tells them.
+void enterAt(game::Game& g, Client& c, int n, const char* who, const std::string& community)
+{
+    c.id = std::uint64_t(n);
+    g.connect(&c);
+    g.command(&c, cmd({{"type", "hello"}, {"id", who}, {"name", who}}));
+    testPurse(g.world().society(), c.entityId, 50);
+    const auto* spot = g.world().boardSpot(community);
+    expect(spot != nullptr, community + " has a board");
+    auto* e = g.world().entity(c.entityId);
+    expect(e != nullptr, std::string(who) + " is in the world");
+    e->cellId = spot->cell;
+    e->position = {spot->x + .5, spot->y};
+}
+std::string board(game::Game& g, Client& c, std::initializer_list<std::pair<const char*, json::Value>> more)
+{
+    auto o = json::Value::object();
+    o.add("type", "board");
+    for (const auto& [k, v] : more)
+        o.add(k, v);
+    c.events.clear();
+    g.command(&c, json::dump(o));
+    return c.said();
+}
+
 // ---------------------------------------------------------------------------------------------------------------- Tests
 
 // The roads run on the markets, with their carters (5.1; D26), and a wagon is committed when posted (8.1).
@@ -280,8 +377,8 @@ void wagonsCommittedWhenPosted()
             expect(atEnd.rfind("Wagon from East, due " + weekday + ": ", 0) == 0, "and the far end's: " + atEnd);
             const auto* driver = w.entity(d.driver);
             expect(driver && atSource.find(driver->name + " driving.") != std::string::npos, "and its carter: " + atSource);
-            expect(lowered(atSource).find(lowered(Society::itemName(d.manifest.front().first))) != std::string::npos,
-                   "and what it carries: " + atSource);
+            expect(atSource.find(World::goodWords(d.manifest.front().first)) != std::string::npos && atSource.find('(') == std::string::npos,
+                   "and what it carries, in plain words: " + atSource);
             expect(e.item == "east" && e.target == "west", "between its two markets");
         }
     expect(posted, "a notice is posted for it");
@@ -336,6 +433,8 @@ void aWagonsTrip()
     const auto* wagon = w.entity("road:" + trip);
     expect(wagon && wagon->description.find(carter->name) != std::string::npos, "the wagon shows who drives it: " +
                                                                                   (wagon ? wagon->description : ""));
+    expect(wagon->description.find("guard") != std::string::npos && wagon->description.find('(') == std::string::npos,
+           "and its guard (T4), its goods in plain words: " + wagon->description);
     // West's shelf of the good sold out before it comes.
     std::string shopKeeper;
     for (const auto& keeper : {"wg", "wm"})
@@ -363,6 +462,9 @@ void aWagonsTrip()
     const auto& news = w.society().board().news;
     expect(news.count("west") && news.at("west").from == "east" && news.at("west").words.find("cheap in East") != std::string::npos,
            "it brings the news of east: " + (news.count("west") ? news.at("west").words : std::string("none")));
+    const auto plain = World::goodWords(good);
+    expect(news.at("west").words == plain + (World::pluralGood(plain) ? " are" : " is") + " cheap in East",
+           "in plain words: " + news.at("west").words);
     // A wagon that brings a good never makes it dearer: a second arrival with west already cheaper than east moves nothing.
     // Home again, its carter back to his post.
     expect(until(w, "caravan home", trip, 1500), "it comes home");
@@ -596,6 +698,11 @@ void farmCarts()
         nextMorning(p);
     for (const auto& d : p.society().board().committed)
         expect(d.kind != "cart", "no staffed farm, no carts");
+    {
+        std::map<std::string, std::string> facts;
+        p.talkTown("e1", facts);
+        expect(!facts.count("world.harvest"), "and no harvest talk where no farm's cart comes");
+    }
     auto f = strip("EE.G...WW", resident("fk", "Bran Long", "civilian", label, 0, 9.5, 3, 9.5));
     auto w = load(f);
     w.tick(.6);
@@ -612,6 +719,13 @@ void farmCarts()
         if (d.kind == "cart" && d.from == "grain_farm_1")
             cart = &d;
     expect(cart && cart->to == "east" && !cart->manifest.empty(), "the morning's cart is rolled");
+    {
+        // The harvest people talk of is the one that loads the carts (T11: `world.harvest`).
+        std::map<std::string, std::string> facts;
+        w.talkTown("e1", facts);
+        expect(facts["world.harvest"] == "good" && cart->size == 3, "east hears of a good harvest, its cart a heavy one: " +
+                                                                        facts["world.harvest"]);
+    }
     for (const auto& [good, n] : cart->manifest)
         expect(w.society().tradePoints().find("east")->sold.count(good) || w.society().tradePoints().find("east")->bought.count(good),
                "carrying goods east's shops stock or buy: " + good);
@@ -825,6 +939,14 @@ void banditsScaleMildly()
     }
     expect(odds[0] > odds[1] && odds[1] > odds[2] && odds[0] <= .34 * 1.25 * 1.1 + 1e-9 && odds[2] >= .34 * .8 - 1e-9,
            "camps gather mildly more in hard times, fewer in a boom: " + std::to_string(odds[0]) + " " + std::to_string(odds[2]));
+    // A road's far market in hard times of its own (raids, late wagons: its Times, 5.3) gathers camps a little more, still
+    // within the cap.
+    w.society().setProsperity(0, true);
+    const double realm = w.campGatherOdds();
+    w.society().stagedBoard().timesShift["west"] = -30;
+    const double hard = w.campGatherOdds("west");
+    expect(hard > realm && hard <= .34 * 1.25 * 1.1 + 1e-9, "the far market's own hard times count, mildly: " + std::to_string(realm) +
+                                                             " to " + std::to_string(hard));
     w.roads().camps = {{"camp_big", id(4), 20, 50, -100, true}};
     nextMorning(w);
     expect(w.roads().camps[0].strength <= w.society().rule("campStrengthMost"), "a camp's strength capped by the world's rule");
@@ -874,7 +996,435 @@ void noticesPostAndComeDown()
     const auto trip = out->id;
     expect(until(w, "caravan arrives", trip, 1500), "it comes in");
     expect(!g.documents().find("wagon-" + d.id + "-from") && !g.documents().find("wagon-" + d.id + "-to"), "and its notices come down");
+    // A wagon that will never come (a host closed its road while it travelled): lost, its notices down too, its escort's
+    // work open again for the next wagon.
+    w.roads().caravans.clear();
+    w.society().stagedBoard().committed.clear();
+    w.roads().camps.clear();
+    const auto d2 = postedWagon(w);
+    const auto* out2 = setOut(w, d2);
+    expect(out2 && (g.documents().find("wagon-" + d2.id + "-from") || g.documents().find("wagon-" + d2.id + "-to")),
+           "a second wagon out, its notices up");
+    const auto trip2 = out2->id;
+    w.addPlayer("player-ada", "Ada");
+    const auto escort = w.postContract("escort", w.society().treasuryOf("west"), "west", "west", 12, 7, "guarding the next wagon to West").id;
+    for (auto& k : w.roads().contracts)
+        if (k.id == escort)
+            k.status = "taken", k.taker = "player-ada";
+    for (auto& c : w.roads().caravans)
+        if (c.departure == d2.id)
+        {
+            c.escorts = {"player-ada"};
+            c.endCell = "no_such_place";            // (Its road gone: no way on.)
+            c.waitUntil = 0;
+        }
+    bool lost = false;
+    for (int t = 0; t < 120 && !lost; ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            lost = lost || (e.kind == "caravan lost" && e.item == d2.id);
+    }
+    expect(lost, "lost on the road, naming its departure");
+    expect(!g.documents().find("wagon-" + d2.id + "-from") && !g.documents().find("wagon-" + d2.id + "-to"), "its notices come down");
+    for (const auto& k : w.roads().contracts)
+        if (k.id == escort)
+            expect(k.status == "open" && k.taker.empty(), "and Ada's escort open again for the next wagon: " + k.status);
+    expect(!w.drivers().count(d2.driver) || w.drivers().at(d2.driver) != trip2, "its carter free");
     fs::remove_all(root);
+}
+
+// The source's player-sold glut goes out first (8.1, T3): a good its shops only buy (ore at a smithy, berries at a stall),
+// dumped there by players, is on the next wagon to a market that sets it out or buys it, and halved as it loads.
+void aGlutRidesTheNextWagon()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    std::string good;
+    {
+        const auto* east = w.society().tradePoints().find("east");
+        const auto* west = w.society().tradePoints().find("west");
+        expect(east && west, "two markets");
+        for (const auto& g : east->bought)
+            if (good.empty() && !east->sold.count(g) && !east->made.count(g) && !east->crafted.count(g) &&
+                (west->sold.count(g) || west->bought.count(g)))
+                good = g;
+    }
+    expect(!good.empty(), "a good east's shops buy but don't make or sell, that west wants");
+    w.society().setPressure("east", good, -.4, "dump");
+    const auto d = postedWagon(w);
+    expect(std::any_of(d.manifest.begin(), d.manifest.end(), [&](const auto& m) { return m.first == good; }),
+           "the next wagon out carries the glut of " + good);
+    expect(d.manifest.size() <= 5, "still at most five goods");
+    const auto* out = setOut(w, d);
+    expect(out && out->sourceP.count(good) && out->sourceP.at(good) < -.1, "it sets out with the glut as it was");
+    expect(std::abs(w.society().pressure("east", good) - out->sourceP.at(good) / 2) < .02,
+           "the glut halved as it loads: " + std::to_string(w.society().pressure("east", good)));
+}
+
+// Every import comes in rotation (T14, D27): with all of west's imports bare (players buying out the shelves and back
+// rooms each day), each wagon takes those brought longest ago, so none waits more than a couple of wagons, and the
+// imports from one source are no more than its wagons bring in rotation.
+void everyImportComesInRotation()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    std::set<std::string> imports;
+    for (const auto* keeper : {"wg", "wm"})
+        for (const auto& ware : w.society().wares(keeper))
+            if (w.society().imported("west", items::baseOf(ware)))
+                imports.insert(items::baseOf(ware));
+    expect(!imports.empty() && imports.size() <= 10, "west's imports from east, at most a rotation's: " + std::to_string(imports.size()));
+    const auto drain = [&] {
+        for (const auto* keeper : {"wg", "wm"})
+        {
+            const auto till = w.society().tillOf(keeper);
+            for (const auto& ware : w.society().wares(keeper))
+                if (const auto base = items::baseOf(ware); w.society().imported("west", base))
+                {
+                    w.society().consume(till, ware, stock(w, keeper, ware), "test: bought out");
+                    w.society().stagedBoard().backRoom[till][base] = 0;
+                }
+        }
+    };
+    std::map<std::string, int> waited;
+    int longest = 0, wagons = 0;
+    for (; wagons < 10; ++wagons)
+    {
+        drain();
+        const auto d = postedWagon(w);
+        std::set<std::string> on;
+        for (const auto& [g, n] : d.manifest)
+            on.insert(g);
+        // (It comes in: the test's wagons never walk, their goods refill as an arrival's do.)
+        for (const auto& g : on)
+            w.society().arrivalRefill("west", g);
+        w.society().stagedBoard().committed.clear();
+        for (const auto& g : imports)
+        {
+            waited[g] = on.count(g) ? 0 : waited[g] + 1;
+            longest = std::max(longest, waited[g]);
+        }
+    }
+    expect(longest <= 2, "every import is on one of every three wagons at least: the longest wait " + std::to_string(longest) +
+                             " wagons, of " + std::to_string(imports.size()) + " imports");
+    // When each came is kept with the Board, and read back.
+    const auto again = market::decode(market::encode(w.society().board()));
+    expect(again.broughtIn.count("west") && again.broughtIn.at("west") == w.society().board().broughtIn.at("west"),
+           "when each import last came round-trips");
+}
+
+// The DM's rules that stop the wagons (caravanRate 0, wagonsOnRoad 0) or the carts (cartsOnRoad 0): nothing then
+// brings the imports, so they refill each morning (D27, 5.1), never bare for good.
+void rulesThatStopTheRoads()
+{
+    for (const auto* rule : {"caravanRate", "wagonsOnRoad"})
+    {
+        auto f = strip();
+        auto w = load(f);
+        w.tick(.6);
+        std::string ware;
+        for (const auto& x : w.society().wares("wg"))
+            if (w.society().imported("west", items::baseOf(x)))
+                ware = x;
+        expect(!ware.empty(), std::string(rule) + ": west waits for wagons for some goods");
+        auto spec = w.society().authored().economy;
+        spec.rules[rule] = 0;
+        w.society().adoptEconomy(spec);
+        const auto till = w.society().tillOf("wg");
+        for (int day = 0; day < 3; ++day)
+        {
+            w.society().consume(till, ware, stock(w, "wg", ware), "test: sold out");
+            w.society().stagedBoard().backRoom[till][items::baseOf(ware)] = 0;
+            nextMorning(w);
+            expect(w.setTimeOfDay(11).ok, "to the late morning");
+            run(w, 30);
+            expect(!w.society().imported("west", items::baseOf(ware)), std::string(rule) + " 0: nothing west waits for a wagon for");
+            expect(stock(w, "wg", ware) >= w.society().shelfTarget(till, ware),
+                   std::string(rule) + " 0: the shelf refills the next morning, day " + std::to_string(day));
+        }
+        spec.rules[rule] = rule == std::string("caravanRate") ? 100 : 16;
+        w.society().adoptEconomy(spec);
+        nextMorning(w);
+        expect(w.society().imported("west", items::baseOf(ware)), std::string(rule) + " back: the wagons bring it again");
+    }
+    // The carts: a good only a farm's cart brings east is east's own each morning while cartsOnRoad is 0.
+    named = {{3, "fs_grain_long_granary"}};
+    auto probe = strip("EE.G...WW");
+    auto p = load(probe);
+    std::string label;
+    for (const auto& farm : p.society().farms())
+        if (farm.def->id == "grain_farm_1")
+            label = p.society().farmLabel(farm, 0);
+    auto f = strip("EE.G...WW", resident("fk", "Bran Long", "civilian", label, 0, 9.5, 3, 9.5));
+    auto w = load(f);
+    w.tick(.6);
+    nextMorning(w);                                 // (Its keeper in his post.)
+    std::string carted;
+    for (const auto& farm : w.society().farms())
+        if (farm.def->id == "grain_farm_1")
+            for (const auto& g : farm.def->yields)
+                if (carted.empty() && w.society().imported("east", g))
+                    carted = g;
+    expect(!carted.empty(), "east waits for the grain farm's cart for some good");
+    auto spec = w.society().authored().economy;
+    spec.rules["cartsOnRoad"] = 0;
+    w.society().adoptEconomy(spec);
+    nextMorning(w);
+    expect(!w.society().imported("east", carted), "cartsOnRoad 0: " + carted + " refills each morning");
+    for (const auto& d : w.society().board().committed)
+        expect(d.kind != "cart", "and no cart comes");
+    named.clear();
+}
+
+// A market plain for law (D7) still has its board (a world of two law towns, east and west, and the hamlet north between):
+// a player at north's board reads the carters' notice of the wagon coming to it; the carters' pins never take one a
+// player needs; the escort is taken at the board where the wagon sets out, and the far end's notice says so.
+void aPlainMarketsBoard()
+{
+    auto f = strip("EE..NN..WW");
+    const auto root = onDisk(f, "plain");
+    game::Game g(optionsOn(root));
+    std::string problem;
+    expect(g.start(problem), "a game starts on the strip: " + problem);
+    auto& w = g.world();
+    w.tick(.6);
+    w.tick(.6);
+    expect(w.roadMarket("north") && w.lawTown(id(5)).empty() && w.lawTown(id(1)) == "east" && w.lawTown(id(8)) == "west",
+           "two law towns, and north a market plain for law");
+    w.roads().camps.clear();
+    market::Departure d;
+    bool found = false;
+    for (int day = 0; day < 40 && !found; ++day)
+    {
+        for (const auto& x : w.society().board().committed)
+            if (!found && x.kind == "wagon" && x.from == "east" && x.to == "north")
+                d = x, found = true;
+        if (!found)
+            nextMorning(w);
+    }
+    expect(found, "a wagon from east to north is posted");
+    const auto* pinned = g.documents().find("wagon-" + d.id + "-to");
+    expect(pinned && pinned->board == "board:north", "its notice pinned on north's board");
+    Client ash;
+    enterAt(g, ash, 71, "ash", "north");
+    board(g, ash, {{"verb", "read"}});
+    const auto* view = ash.last("board");
+    bool read = false;
+    for (const auto& n : view ? view->array("notices") : std::vector<json::Value>{})
+        read = read || n.string("text").rfind("Wagon from East, due ", 0) == 0;
+    expect(read, "a player at north's board reads it: " + (view ? json::dump(*view) : ash.said()));
+    // The carters' notices fill the board past its thirty pins; a player still pins hers.
+    for (int i = 0; i < 32; ++i)
+        w.recordEvent({"wagon posted", "wfill" + std::to_string(i), "north", id(1), 0, 0, "east", 1, 0,
+                       "Wagon to North, Dawnday: nails.\nWagon from East, due Dawnday: nails."});
+    expect(g.documents().onBoard("board:north").size() >= 32, "the carters' notices fill north's board");
+    const auto said = board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "Seeking company on the road west."}});
+    expect(said.find("You pin your notice") != std::string::npos, "and a player still pins hers: " + said);
+    // The escort: asked for by north, taken at east's board while a wagon from there is posted, and the far end's notice
+    // sends a reader there.
+    w.postContract("escort", w.society().treasuryOf("north"), "north", "north", 12, 7, "guarding the next wagon to North");
+    Client bo;
+    enterAt(g, bo, 72, "bo", "east");
+    bool atSource = false;
+    for (const auto* k : w.contractsNear(bo.entityId))
+        atSource = atSource || (k->kind == "escort" && k->town == "north");
+    bool committed = false;
+    for (const auto& x : w.society().board().committed)
+        committed = committed || (x.kind == "wagon" && x.from == "east" && x.to == "north");
+    expect(!committed || atSource, "the escort is taken at east's board, where the wagon sets out");
+    auto far = d;
+    const auto atEnd = w.departureNotice(far, true), atStart = w.departureNotice(far, false);
+    expect(atEnd.find("Escort wanted: ask at the board in East.") != std::string::npos && atStart.find("Escort wanted.") != std::string::npos,
+           "the far end's notice says where the escort is taken: " + atEnd);
+    std::filesystem::remove_all(root);
+}
+
+// The words on the notices, the news and the talk (8.1): plain goods ("nails", never "nails (bag of 50)"), "nails are" and
+// "cheese is", "the general store".
+void plainWords()
+{
+    expect(World::goodWords("nails") == "nails" && World::goodWords("cheese") == "cheese" && World::goodWords("herbs") == "cooking herbs",
+           "goods in plain words: " + World::goodWords("nails") + ", " + World::goodWords("cheese"));
+    expect(World::pluralGood("nails") && World::pluralGood("eggs") && !World::pluralGood("cheese") && !World::pluralGood("canvas") &&
+               !World::pluralGood("citrus") && !World::pluralGood("glass") && !World::pluralGood("leather cap with ear slits"),
+           "which take \"are\"");
+    auto f = strip();
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    for (int i = 0; i < 6; ++i)
+    {
+        const auto d = postedWagon(w);
+        for (const bool atEnd : {false, true})
+        {
+            const auto text = w.departureNotice(d, atEnd);
+            expect(text.find('(') == std::string::npos && text.find("goods store") == std::string::npos, "a notice in plain words: " + text);
+            for (const auto& [g, n] : d.manifest)
+                expect(text.find(World::goodWords(g)) != std::string::npos, "naming each good: " + text);
+        }
+        w.society().stagedBoard().committed.clear();
+        nextMorning(w);
+    }
+}
+
+// Overdue with no mishap and no storm on its way: nobody knows why ("No word of it yet"), never "held up by no word of it".
+void overdueWithNoWord()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    const auto* sent = w.sendCaravan(*w.roadMarket("east"), *w.roadMarket("west"), {{"nails", 10}});
+    expect(sent, "a wagon");
+    const auto trip = sent->id;
+    w.roads().caravans.back().due = w.calendarDays() + .01;   // (Due at once; nothing on the road holds it, nobody sees it.)
+    std::string words;
+    for (int day = 0; day < 3 && words.empty(); ++day)
+    {
+        nextMorning(w);
+        for (const auto& e : w.takeEvents())
+            if (e.kind == "wagon overdue" && e.actor == trip)
+                words = e.detail;
+    }
+    expect(words == "Overdue: the wagon from East. No word of it yet.", "posted overdue with no cause known: " + words);
+}
+
+// Farm carts that don't come (8.2): none for want of room on the roads (cartsOnRoad) is said of no harvest and bumps
+// nothing; one nobody at the farm is free to take is missed with its cause; and two farms' missed carts of a good share
+// one bump at their market, +0.05 in all, not +0.05 each.
+void cartsThatDontCome()
+{
+    named = {{3, "fs_grain_long_granary"}, {4, "fs_grain_lark_granary"}};
+    auto probe = strip("EE.GH...WW");
+    auto p = load(probe);
+    std::string one, two;
+    for (const auto& farm : p.society().farms())
+    {
+        if (farm.def->id == "grain_farm_1")
+            one = p.society().farmLabel(farm, 0);
+        if (farm.def->id == "grain_farm_2")
+            two = p.society().farmLabel(farm, 0);
+    }
+    expect(!one.empty() && !two.empty(), "the two grain farms' keepers' labels");
+    auto f = strip("EE.GH...WW", resident("fk", "Bran Long", "civilian", one, 0, 9.5, 3, 9.5) +
+                                     resident("fk2", "Ada Lark", "civilian", two, 0, 10.5, 4, 9.5));
+    auto w = load(f);
+    w.tick(.6);
+    std::set<std::string> areas;
+    int toEast = 0;
+    for (const auto& e : w.cartEnds())
+        if (e.market == "east")
+            ++toEast, areas.insert(e.area);
+    expect(toEast == 2, "both farms' carts go to east");
+    for (const auto& area : areas)
+        w.society().stagedBoard().harvestOverride[area] = {2, w.calendarDays() + 60};   // (Good: every cart rolled comes.)
+    std::set<std::string> goods;
+    for (const auto& farm : w.society().farms())
+        if (farm.def->id == "grain_farm_1")
+            for (const auto& g : farm.def->yields)
+                for (const auto& other : w.society().farms())
+                    if (other.def->id == "grain_farm_2" &&
+                        std::find(other.def->yields.begin(), other.def->yields.end(), g) != other.def->yields.end() &&
+                        (w.society().tradePoints().find("east")->sold.count(g) || w.society().tradePoints().find("east")->bought.count(g)))
+                        goods.insert(g);
+    expect(!goods.empty(), "goods both farms send east");
+    // No room on the roads: no cart, no bump, nothing said of the harvest.
+    auto spec = w.society().authored().economy;
+    spec.rules["cartsOnRoad"] = 0;
+    w.society().adoptEconomy(spec);
+    for (const auto& g : goods)
+        w.society().setPressure("east", g, 0, "players");
+    nextMorning(w);
+    for (const auto& d : w.society().board().committed)
+        expect(d.kind != "cart", "no room on the roads: no cart");
+    for (const auto& g : goods)
+        expect(w.society().pressure("east", g) < .01, "and no bump for " + g + ": " + std::to_string(w.society().pressure("east", g)));
+    // Room again, but nobody at either farm to take the cart: each missed, with its cause; one shared bump.
+    spec.rules["cartsOnRoad"] = 48;
+    w.society().adoptEconomy(spec);
+    w.entity("fk")->dead = true;
+    w.entity("fk2")->dead = true;
+    nextMorning(w);
+    int rolled = 0;
+    for (const auto& d : w.society().board().committed)
+        rolled += d.kind == "cart";
+    expect(rolled == 2, "both carts rolled: " + std::to_string(rolled));
+    std::map<std::string, double> before;
+    for (const auto& g : goods)
+        before[g] = w.society().pressure("east", g);
+    w.takeEvents();
+    expect(w.setTimeOfDay(8).ok, "to the morning, past the carts' hours");
+    for (int t = 0; t < 4; ++t)
+        w.tick(.5);
+    int missed = 0;
+    for (const auto& e : w.takeEvents())
+        missed += e.kind == "cart missed" && e.detail.rfind("no hand to spare at ", 0) == 0;
+    expect(missed == 2, "each cart missed, nobody free to take it: " + std::to_string(missed));
+    for (const auto& g : goods)
+    {
+        const double bump = w.society().pressure("east", g) - before[g];
+        expect(bump > .04 && bump < .056, "one shared bump of 0.05 for " + g + ", not one a farm: " + std::to_string(bump));
+    }
+    named.clear();
+}
+
+// A crash between checkpoints (the journal): a wagon set out after the last checkpoint, then a trade journalled, then the
+// crash. The Board (its committed departures) and the roads (its caravans) are journalled together, so the replay has
+// the wagon on the road exactly once, and its departure gone from the Board.
+void departuresSurviveACrash()
+{
+    auto f = strip();
+    const auto root = onDisk(f, "journal");
+    const std::string path = (std::filesystem::temp_directory_path() / ("ratw-s2stage-journal-" + std::to_string(::getpid()) + ".json")).string();
+    const auto clean = [&] {
+        for (const auto* end : {"", ".journal", ".art", ".lock", ".reports", ".snapshot"})
+            std::filesystem::remove_all(path + end);
+    };
+    clean();
+    market::Departure d;
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "a game starts on the strip with a file save: " + problem);
+        auto& w = g.world();
+        w.tick(.6);
+        w.tick(.6);
+        w.roads().camps.clear();
+        d = postedWagon(w);
+        while (std::floor(w.calendarDays()) < double(d.day))
+            nextMorning(w);
+        g.save();
+        g.settle();                                 // (The checkpoint, on its day: the wagon posted, not yet out.)
+        const auto* out = setOut(w, d);
+        expect(out, "it sets out after the checkpoint");
+        Client ash;
+        enterAt(g, ash, 81, "ash", "east");
+        board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "A trade, journalled."}});
+        g.settle();                                 // (Its reply waits for its journal record.)
+        const auto said = ash.said();
+        expect(said.find("You pin your notice") != std::string::npos, "a penny paid: an economy record: " + said);
+        // A crash: the game goes without saving.
+    }
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "starts again after the crash: " + problem);
+        int onRoad = 0;
+        for (const auto& c : g.world().roads().caravans)
+            onRoad += c.departure == d.id;
+        bool posted = false;
+        for (const auto& x : g.world().society().board().committed)
+            posted = posted || x.id == d.id;
+        expect(onRoad == 1 && !posted, "the wagon on the road once, its departure gone from the Board: " + std::to_string(onRoad) +
+                                           (posted ? ", still posted" : ""));
+    }
+    clean();
+    std::filesystem::remove_all(root);
 }
 } // namespace
 
@@ -894,6 +1444,14 @@ int main()
         noCarterSetsItBack();
         banditsScaleMildly();
         noticesPostAndComeDown();
+        aGlutRidesTheNextWagon();
+        everyImportComesInRotation();
+        rulesThatStopTheRoads();
+        aPlainMarketsBoard();
+        plainWords();
+        overdueWithNoWord();
+        cartsThatDontCome();
+        departuresSurviveACrash();
     }
     catch (const std::exception& error)
     {

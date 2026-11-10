@@ -157,6 +157,7 @@ struct HarvestOverride
     double until = 0;
 };
 inline constexpr std::size_t TroublesKept = 64, CommittedMost = 256;
+inline constexpr std::int64_t BroughtInDays = 60;
 struct Board
 {
     // The DM's prosperity, the one slider of the staged economy (doc 79, 5.2): the smoothed value the Board's Times and
@@ -190,13 +191,16 @@ struct Board
     std::vector<Trouble> troubles;
     std::map<std::string, int> timesShift;                        // Market -> points added to its Times score.
     std::map<std::string, News> news;                             // Market -> the last wagon's news.
+    // Market -> base good -> the market day a wagon or cart last brought it (T14: a wagon's manifest takes the far end's
+    // thin imports brought longest ago first, so each comes in rotation); kept BroughtInDays.
+    std::map<std::string, std::map<std::string, std::int64_t>> broughtIn;
     bool empty() const
     {
         return slider == 0 && sliderTarget == 0 && sliderDay < 0 && cell.empty() && day < 0 && budgetLeft.empty() && takenToday.empty() &&
                pushed.empty() && netToday.empty() && soldToday.empty() && week < 0 && discountWeek.empty() &&
                restocked.empty() && settingOut.empty() && recent.empty() && committed.empty() && rolledThrough < 0 &&
                nextDeparture == 1 && backRoom.empty() && harvestOverride.empty() && troubles.empty() && timesShift.empty() &&
-               news.empty();
+               news.empty() && broughtIn.empty();
     }
 };
 json::Value encode(const Board& board);

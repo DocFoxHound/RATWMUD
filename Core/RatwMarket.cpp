@@ -522,6 +522,18 @@ json::Value encode(const Board& b)
         }
         o.add("news", n);
     }
+    if (!b.broughtIn.empty())
+    {
+        auto in = Value::object();
+        for (const auto& [m, goods] : b.broughtIn)
+        {
+            auto g = Value::object();
+            for (const auto& [good, day] : goods)
+                g.add(good, day);
+            in.add(m, g);
+        }
+        o.add("broughtIn", in);
+    }
     return o;
 }
 
@@ -653,6 +665,11 @@ Board decode(const json::Value& v)
     for (const auto& [m, n] : v.object("news").fields())
         if (const double day = n.number("day", -1); name(m) && n.isObject() && finite(day) && day >= 0)
             b.news[m] = {n.string("from").substr(0, 120), json::utf8Prefix(n.string("words"), 120), day};
+    for (const auto& [m, goods] : v.object("broughtIn").fields())
+        if (name(m))
+            for (const auto& [g, day] : goods.fields())
+                if (good(g) && day.isNumber() && b.broughtIn[m].size() < 512)
+                    b.broughtIn[m][g] = std::int64_t(whole(day, 0, 365000000, 0));
     return b;
 }
 
@@ -1041,6 +1058,32 @@ int Society::marketShelf(const std::string& market, const std::string& base) con
     return total;
 }
 
+double Society::marketFullness(const std::string& market, const std::string& base) const
+{
+    // How full a market keeps a good it waits for wagons for (a manifest's want, 8.1 and T14): its shelves and back rooms
+    // (one never stocked yet counted as full, as its first restock would stock it) against a shelf and a back room's worth.
+    // 1 full, 0 bare; 1 for a good no shop there sets out.
+    double have = 0, full = 0;
+    if (const auto* m = tradePoints().find(market))
+        for (const auto& till : m->tills)
+            if (const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr)
+            {
+                const auto* a = account(till);
+                for (const auto& ware : stagedShelfGoods(p->founder))
+                    if (items::baseOf(ware) == base)
+                    {
+                        const int target = shelfTarget(till, ware);
+                        int room = target;
+                        if (const auto r = state_.board.backRoom.find(till); r != state_.board.backRoom.end())
+                            if (const auto g = r->second.find(base); g != r->second.end())
+                                room = g->second;
+                        have += std::min(target, a ? stock(*a, ware) : 0) + std::min(target, room);
+                        full += 2.0 * target;
+                    }
+            }
+    return full > 0 ? std::clamp(have / full, 0., 1.) : 1.;
+}
+
 int Society::arrivalRefill(const std::string& market, const std::string& base, double scale)
 {
     // An arrival (8.6): the tills of the market's shops that set the good out jump to their targets (a Marketday cart's
@@ -1051,6 +1094,8 @@ int Society::arrivalRefill(const std::string& market, const std::string& base, d
     if (!m || !market::finite(scale))
         return 0;
     scale = std::clamp(scale, 1., 2.);
+    if (imported(market, base) && state_.board.day >= 0)
+        state_.board.broughtIn[market][base] = state_.board.day;   // (When it came: the next wagons' rotation, T14.)
     for (const auto& till : m->tills)
     {
         const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
@@ -1995,6 +2040,13 @@ void Society::marketMorning(std::int64_t day)
     }
     for (auto it = b.settingOut.begin(); it != b.settingOut.end();)
         it = it->second < now ? b.settingOut.erase(it) : std::next(it);
+    // (When wagons last brought each import: two months' worth, a market the Board no longer knows dropped.)
+    for (auto mi = b.broughtIn.begin(); mi != b.broughtIn.end();)
+    {
+        for (auto gi = mi->second.begin(); gi != mi->second.end();)
+            gi = gi->second < day - market::BroughtInDays ? mi->second.erase(gi) : std::next(gi);
+        mi = mi->second.empty() || !tradePoints().find(mi->first) ? b.broughtIn.erase(mi) : std::next(mi);
+    }
     stepSlider(day);
     while (b.recent.size() > market::RecentKept)
         b.recent.pop_front();
