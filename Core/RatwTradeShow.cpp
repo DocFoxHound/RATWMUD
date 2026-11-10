@@ -252,7 +252,8 @@ void World::ensureRoadMarkets()
                 bring(to, src->sold);
             }
     for (const auto& end : cartEnds_)
-        bring(end.market, farms[end.farm].def->yields);
+        if (farms[end.farm].heldKeepers + farms[end.farm].heldHands > 0)   // (Only a staffed farm's cart comes.)
+            bring(end.market, farms[end.farm].def->yields);
     society_.setImports(std::move(imports));
 }
 
@@ -362,6 +363,8 @@ std::string World::departureNotice(const market::Departure& d, bool atEnd) const
                         if (const auto* b = items::businessFor(p->title))
                         {
                             shop = lowered(b->label);
+                            if (shop.size() > 5 && shop.compare(shop.size() - 5, 5, "goods") == 0)
+                                shop += " store";           // ("the general goods store")
                             break;
                         }
                 }
@@ -837,8 +840,11 @@ void World::roadsMorning(std::int64_t today)
     // each, at most -30) and late wagons (-5 each, at most -15) in the last 7 days.
     std::map<std::string, int> shift;
     std::map<std::string, std::pair<int, int>> harvests;   // Market -> sum of (word - 1), carts.
+    const auto& farms = society_.farms();
     for (const auto& end : cartEnds_)
     {
+        if (end.farm >= farms.size() || farms[end.farm].heldKeepers + farms[end.farm].heldHands <= 0)
+            continue;                               // (A farm nobody works sends no cart, and its harvest is nobody's talk.)
         auto& h = harvests[end.market];
         h.first += harvestOf(end.area) - 1;
         ++h.second;

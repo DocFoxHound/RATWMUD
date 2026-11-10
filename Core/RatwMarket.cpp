@@ -1065,7 +1065,11 @@ int Society::arrivalRefill(const std::string& market, const std::string& base, d
                 continue;
             const int target = shelfTarget(till, ware);
             const int want = std::min(MarketStockLimit, int(std::ceil(target * scale - 1e-9)));
-            state_.board.backRoom[till][base] = std::max(state_.board.backRoom[till][base], target);
+            if (imported(market, base))             // (Only a good it waits for wagons for keeps a back room.)
+            {
+                auto& room = state_.board.backRoom[till][base];
+                room = std::max(room, target);
+            }
             any = true;
             if (stock(a, ware) >= want || (!a.stock.count(ware) && a.stock.size() >= MaxGoodsKinds))
                 continue;
