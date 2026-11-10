@@ -144,7 +144,7 @@ void World::ensureRoadMarkets()
     // (The DM's rules that stop the wagons or the carts change what can bring a market its imports: D27, 5.1.)
     const bool wagonsRun = society_.rule("caravanRate") > 0 && society_.rule("wagonsOnRoad") > 0;
     const bool cartsRun = society_.rule("cartsOnRoad") > 0;
-    const int rules = int(wagonsRun) | int(cartsRun) << 1;
+    const int rules = int(wagonsRun) | int(cartsRun) << 1 | int(society_.rule("shipsPerWeek") > 0) << 2;   // (And the ships: Phase 5.)
     if (roadMarketsKey_ == tradePointsBuilt_ && roadMarketsRoster_ == society_.rosterRevision() && roadMarketsDay_ == roads_.day &&
         roadMarketsRules_ == rules)
         return;
@@ -298,6 +298,7 @@ void World::ensureRoadMarkets()
     for (const auto& end : cartEnds_)
         if (cartsRun && farms[end.farm].heldKeepers + farms[end.farm].heldHands > 0)   // (Only a staffed farm's cart comes.)
             bring(end.market, farms[end.farm].def->yields);
+    findPorts(imports);                             // (The ports, and what waits for their ships: Phase 5, RatwPort.cpp.)
     society_.setImports(std::move(imports));
 }
 

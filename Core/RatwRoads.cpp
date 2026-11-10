@@ -469,7 +469,10 @@ void World::tendRoads()
     // carts; two or more, wagons and bandits between them.
     ensureRoadMarkets();
     if (roadMarkets_.empty())
+    {
+        tendPort();                                 // (No market left: its port's ships go with it. Phase 5.)
         return;
+    }
     // A courier is done when the one who took it stands before the recipient.
     for (auto& c : roads_.contracts)
     {
@@ -493,8 +496,10 @@ void World::tendRoads()
         roads_.day = today;
         roadsDaily();
         roadsMorning(today);
+        portMorning(today);                         // (The ships' timetable: Phase 5, RatwPort.cpp.)
     }
     setOut();
+    tendPort();
     tendRoadFolk();
     absorbJournal();
 }
@@ -939,7 +944,7 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
                    std::string& goalCell, Vec2& goal) const
 {
     // (Nobody seated, no occasion, no contract taken: no errand for anyone. Asked of every resident every pass.)
-    if (seated_.empty() && occasions_.empty() && errandContracts_.empty() && drivers_.empty())
+    if (seated_.empty() && occasions_.empty() && errandContracts_.empty() && drivers_.empty() && shipsIn_.empty())
         return false;
     // A hungry traveller eats first (its provisions where it stands, else food bought or fetched), then goes on: the
     // errand never starves it.
@@ -990,6 +995,9 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
                 }
                 return !goalCell.empty();
             }
+    // A Wharf post while a ship is in (doc 79, 8.3; Phase 5): at its work as ever, seen at the ship's cargo.
+    if (portErrand(resident, life, task, reason, goalCell, goal))
+        return true;
     static const std::vector<std::size_t> none;
     const auto contractsOf = errandContracts_.find(resident);
     for (const auto i : contractsOf != errandContracts_.end() ? contractsOf->second : none)

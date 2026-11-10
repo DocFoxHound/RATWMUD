@@ -92,7 +92,7 @@
     {"id": "preserved", "name": "dried and preserved fruit", "goods": ["dried_apples", "fruit_preserves"], "price": [100, 100, 100, 90], "shelf": [100, 120, 250, 150]}
   ],
   "rules": {
-    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays), the Board's pressure settings, and staged trade's (Phase 4): the wagons' frequency in percent (caravanRate), the most wagons and farm carts on the roads at once (wagonsOnRoad, cartsOnRoad), a bandit camp's most strength (campStrengthMost) and a bounty's most pennies (bountyMost). A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
+    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays), the Board's pressure settings, and staged trade's (Phase 4): the wagons' frequency in percent (caravanRate), the most wagons and farm carts on the roads at once (wagonsOnRoad, cartsOnRoad), a bandit camp's most strength (campStrengthMost) and a bounty's most pennies (bountyMost); and the port's (Phase 5): the ships a week at a port (shipsPerWeek: 0 none, even with a port; its own 2 gives 1-3 a week by the slider and the season, a week running one either side of the rule and fewer in winter). A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
     "neverHungry": 0,
     "neverBroke": 0,
     "buyAheadDays": 1,
@@ -110,7 +110,8 @@
     "wagonsOnRoad": 16,
     "cartsOnRoad": 48,
     "campStrengthMost": 12,
-    "bountyMost": 60
+    "bountyMost": 60,
+    "shipsPerWeek": 2
   },
   "services": {
     "about": "The city's services (doc 79, 6.5 and 12: kept, at a frequency by band): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Nothing in Core reads them yet: Phase 6 (street life) makes them staged sales at `every` x band; until then a change here, or a world's `service` record (the Rules panel), has no effect in play.",
@@ -316,7 +317,25 @@
     ]
   },
   "wharf": {
-    "about": "The Wharf's goods (doc 73, 6; of its controls only these lists stay): `never`, goods the ships never bring (cheese: the user's); `imports` and `takes`, the goods its lists named (names only: the money and the most a day went with the Wharf's valve in doc 79's Phase 3). Nothing in Core reads them yet: Phase 5 (the port) draws its ships' manifests from them; Atlas's Wharf panel shows them until Phase 9 retargets it.",
+    "about": "The port's goods (doc 79, 8.3 and Phase 5; from doc 73's lists): `never`, goods no ship brings (cheese: the user's); `imports`, what ships bring a port's market, of what its shops set out and its workshops don't make (those goods wait for a ship there: D27); `takes`, what ships take away, of what its shops sell or buy; `ships`, the ships' names (letters and spaces; each passes the forbidden-word check). Core reads them (market::Data's shipBrings, shipTakes, shipNames; World's RatwPort.cpp): a world with no port uses none of it. Atlas's Wharf panel shows the goods until Phase 9 retargets it.",
+    "ships": [
+      "the Gull",
+      "the Saltwife",
+      "the Heron",
+      "the Kestrel",
+      "the Grey Tern",
+      "the Marigold",
+      "the Fair Wind",
+      "the Long Tide",
+      "the Cormorant",
+      "the Petrel",
+      "the Morning Star",
+      "the Lark",
+      "the Salt Rose",
+      "the Wavecutter",
+      "the North Star",
+      "the Sandpiper"
+    ],
     "never": [
       "cheese"
     ],

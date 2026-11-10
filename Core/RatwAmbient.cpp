@@ -437,6 +437,8 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
             const int word = int(std::lround(double(sum) / carts));
             facts["world.harvest"] = word <= 0 ? "poor" : word >= 2 ? "good" : "fair";
         }
+        // The port's ships (8.3; Phase 5: `world.ships`, `world.ship_name`), only where this market has a port.
+        shipFacts(m->id, facts);
     }
     // The place itself: how many are about, and whether a traveller (a player) is near.
     int people = 0;
@@ -447,7 +449,7 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
             people += o->npc;
             traveller |= !o->npc && apart(o->position, e->position) <= 12;
         }
-    facts["here.crowd"] = people >= 6 ? "crowd" : people >= 3 ? "busy" : "quiet";
+    facts["here.crowd"] = people >= 6 || wharfCrowd(e->cellId) ? "crowd" : people >= 3 ? "busy" : "quiet";   // (A ship in: 8.3.)
     facts["here.player_near"] = traveller ? "yes" : "no";
 }
 

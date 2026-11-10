@@ -107,6 +107,7 @@ void Game::watchEvent(const WorldEvent& e)
     projectsFromEvent(e);                           // (A town project's hired hands: doc 57, 4.)
     storylinesFromEvent(e);                         // (Contracts, kills, fights, Gifts, gifts: doc 58.)
     roadNotices(e);                                 // (The carters' notices: doc 79, 8.1.)
+    portNotices(e);                                 // (The ships' timetable: doc 79, 8.3.)
     // Occasions (doc 55, 6): a marriage's wedding, a death's funeral, hosted by residents; and their witnesses.
     if (e.kind == "marriage" || e.kind == "mourning")
     {

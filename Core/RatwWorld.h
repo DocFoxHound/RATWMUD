@@ -1044,6 +1044,33 @@ class World
     double campHardness(const std::string& market) const;
     // The carter driving a caravan, by resident (a wagon's or a cart's while it is out).
     const std::unordered_map<std::string, std::string>& drivers() const { return drivers_; }
+    // The port (doc 79, 8.3; Phase 5; RatwPort.cpp). A port is a market with posts of the Wharf's job words (the sea
+    // trade's and the harbour's heads': Society::postRules): found again with the road markets, so a world with none has
+    // no ships, no timetable and no ship talk, and one whose port a host deletes loses them at the next load or tick.
+    // Ships are never seen (D8): a ship is a line of its port's timetable (market::Board::ships, committed and saved a
+    // week ahead), a notice, a crowd at the Wharf and its goods on the Board.
+    struct Port
+    {
+        std::string market;                         // Its market.
+        std::string cell;                           // Where most of its posts work.
+        std::set<std::string> cells;                // Every cell a Wharf post works in: a crowd while a ship is in.
+        int posts = 0, held = 0;
+        std::vector<std::string> imports;           // What ships bring this market (market.json's `wharf.imports`, of what
+                                                    // its shops set out and its workshops don't make): they wait for a ship.
+    };
+    const std::vector<Port>& ports() const { return ports_; }
+    const Port* port(const std::string& market) const;
+    // The ships a port sees in a calendar week (the rule shipsPerWeek, one more or fewer by the slider and the season,
+    // seeded by the week and the port; 0 while the rule is 0), the ship at its pier now, and its timetable in words (the
+    // notice on its board; "" with no ship to tell of).
+    int shipsInWeek(const std::string& market, std::int64_t week) const;
+    const market::Ship* shipIn(const std::string& market) const;
+    std::string shipsNotice(const std::string& market) const;
+    // A ship still due kept out by a storm (an announced cause: the Dungeon Master's, Phase 9; and tests). False if
+    // there is none of that id still due.
+    bool stormShip(const std::string& id);
+    void shipFacts(const std::string& market, std::map<std::string, std::string>& facts) const;   // (Talk's world.ships.)
+    bool wharfCrowd(const std::string& cell) const; // A ship is in at the port this cell's posts are of.
     // Contracts a player could take where they stand, taking one, and marking one done (a bounty, by whoever ended
     // the camp; the Dungeon Master, for now). Couriers, escorts and supply runs are finished by doing them.
     std::vector<const Contract*> contractsNear(const std::string& player) const;
@@ -2141,6 +2168,29 @@ class World
     void roadsMorning(std::int64_t today);
     void raidCargo(Caravan& c, BanditCamp& camp);
     void dropOrphanedRoads();
+    // The port (Phase 5; RatwPort.cpp).
+    struct DockHand
+    {
+        std::string market, title;
+        bool hauls = false;                         // (Unloads, works a crane, carries: the rest tally and keep the stores.)
+    };
+    std::vector<Port> ports_;
+    std::unordered_map<std::string, DockHand> dockHands_;          // Resident -> its Wharf post.
+    std::map<std::string, std::string> shipsIn_;                   // Port -> the ship at its pier ("the Gull").
+    std::map<std::string, std::pair<std::int64_t, std::string>> shipsPosted_;   // Port -> the day and the words last posted.
+    std::set<std::string> stormsCalled_;                           // (stormShip's, until their morning.)
+    void findPorts(std::map<std::string, std::set<std::string>>& imports);
+    void portMorning(std::int64_t today);
+    void rollPorts(std::int64_t today);
+    void tendPort();
+    void rollShips(const Port& port, std::int64_t week, std::int64_t today);
+    void shipDocks(market::Ship& ship);
+    void shipSails(market::Ship& ship);
+    void shipStormbound(market::Ship& ship);
+    void postShips();
+    void dropOrphanedShips();
+    bool portErrand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
+                    std::string& goalCell, Vec2& goal) const;
     struct RouteBudget;
     void tendRoadFolk();
     void tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& budget);

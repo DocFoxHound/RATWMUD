@@ -133,6 +133,8 @@
     "news": "text",
     "news_from": "text",
     "harvest": ["poor", "fair", "good"],
+    "ships": ["in", "due", "late", "sailed", "no"],
+    "ship_name": "text",
     "figure_ruler": "text",
     "figure_lord": "text",
     "figure_captain": "text",

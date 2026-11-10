@@ -127,6 +127,8 @@ export const RULES: {key: string; label: string; low?: number; max: number; unit
     {key: 'cartsOnRoad', label: 'Farm carts, at most', max: 200, unit: 'on the farm tracks at once'},
     {key: 'campStrengthMost', label: 'A bandit camp\'s strength, at most', low: 2, max: 20, unit: 'points'},
     {key: 'bountyMost', label: 'A bounty, at most', max: 500, unit: 'p on a camp'},
+    // The port (doc 79, 8.3; Phase 5).
+    {key: 'shipsPerWeek', label: 'Ships a week', max: 6, unit: 'at a port, one more or fewer by the season and the times (0: no ships)'},
 ];
 /** A rule as it stands: the world's own, else the data files' (market.json's and status.json's). */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;

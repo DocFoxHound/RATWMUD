@@ -50,6 +50,10 @@ struct Data
     std::map<std::string, std::vector<std::string>> buys;   // Business -> goods it also buys (D5).
     std::map<std::string, int> shelves;              // Base good -> its shelf (else the starting stock: 4, swords 3).
     std::map<std::string, int> rules;                // The rules' defaults (items::Rules' names), over Rules' own.
+    // The port's goods (`wharf`; 8.3, Phase 5): what ships bring (less `never`: the goods no ship brings) and take, and
+    // the ships' names. Without the file: none, and the names below.
+    std::vector<std::string> shipBrings, shipTakes;
+    std::vector<std::string> shipNames{"the Gull", "the Saltwife"};
     // The seven season groups (7.1, moved from city_loop.json): each group's goods and, by season (Spring, Summer, Autumn,
     // Winter: the value at each season's middle day, blended between), its price and its shelf in percent of normal.
     struct Season
@@ -156,7 +160,24 @@ struct HarvestOverride
     int word = 1;
     double until = 0;
 };
+// A committed ship (doc 79, 8.3; Phase 5): one line of a port's timetable, rolled a week ahead and saved, so a restart
+// shows the same ships. Its goods are for show: what its notice names (`brings` from market.json's `wharf.imports`,
+// `takes` from its `takes`). "due" until its hour on its day, "in" until it sails that evening, then "sailed"; "storm"
+// if a storm kept it out. Kept a few days after, for the timetable and the talk.
+struct Ship
+{
+    std::string id;                                 // "s<N>" (Board::nextShip).
+    std::string port;                               // The port's market.
+    std::string name;                               // "the Gull".
+    std::int64_t day = 0;
+    double hour = 8, sails = 18;                    // When it docks and when it sails, that day.
+    std::vector<std::pair<std::string, int>> brings, takes;   // Base good -> pieces.
+    std::string status = "due";
+    double posted = 0;                              // The day it was posted (whole: the same world, the same timetable).
+};
 inline constexpr std::size_t TroublesKept = 64, CommittedMost = 256;
+// (A port's timetable: two weeks of at most a ship a day, and the few just sailed or stormbound. The Board's: 16 ports' worth.)
+inline constexpr std::size_t ShipsAPort = 16, ShipsMost = 256;
 inline constexpr std::int64_t BroughtInDays = 60;
 struct Board
 {
@@ -194,13 +215,18 @@ struct Board
     // Market -> base good -> the market day a wagon or cart last brought it (T14: a wagon's manifest takes the far end's
     // thin imports brought longest ago first, so each comes in rotation); kept BroughtInDays.
     std::map<std::string, std::map<std::string, std::int64_t>> broughtIn;
+    // The ports' timetables (8.3; Phase 5): the ships committed (this week's and the next's), each port's last week rolled
+    // and the next ship's number. A world with no port keeps none of it.
+    std::vector<Ship> ships;
+    std::map<std::string, std::int64_t> shipsThrough;
+    std::int64_t nextShip = 1;
     bool empty() const
     {
         return slider == 0 && sliderTarget == 0 && sliderDay < 0 && cell.empty() && day < 0 && budgetLeft.empty() && takenToday.empty() &&
                pushed.empty() && netToday.empty() && soldToday.empty() && week < 0 && discountWeek.empty() &&
                restocked.empty() && settingOut.empty() && recent.empty() && committed.empty() && rolledThrough < 0 &&
                nextDeparture == 1 && backRoom.empty() && harvestOverride.empty() && troubles.empty() && timesShift.empty() &&
-               news.empty() && broughtIn.empty();
+               news.empty() && broughtIn.empty() && ships.empty() && shipsThrough.empty() && nextShip == 1;
     }
 };
 json::Value encode(const Board& board);

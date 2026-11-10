@@ -992,6 +992,7 @@ class Game
     int letterCalls_ = 0;
     void watchEvent(const WorldEvent& e);
     void roadNotices(const WorldEvent& e);          // (The carters' notices on the boards: doc 79, 8.1; RatwBoards.cpp.)
+    void portNotices(const WorldEvent& e);          // (The ships' timetable on the port's board: doc 79, 8.3; RatwBoards.cpp.)
     void tendResidentLetters();
     bool residentLetterRoom(const std::string& resident, const std::string& player) const;
     documents::Document* residentLetter(const std::string& resident, const std::string& player, const std::string& kind, const std::string& text,
