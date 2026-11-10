@@ -1997,6 +1997,108 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     server (`test_world_package` 43, `test_world_sync` 52, `test_world_db` 49, `test_studio` 49, `test_world_store` 24),
     skipped only the `RATW_SLOW` world builds and `test_game_tables`' save under `Saved/`; the client 146.
 
+- **2026-11-10: Phase 4 (the roads) built** (`r2-staged` `a6bafd5` and the fixes after it; `Core/RatwTradeShow.cpp`
+  beside `RatwRoads.cpp`). Slice 2 begins.
+  - **Markets drive the road layer; law stays on `towns_`.** `World::roadMarkets()` are the Board's trade points (5.1)
+    with where wagons load and unload (the busiest merchants' place and a merchant's spot there) and their treasury as
+    their store; a cell's market is its community's or the one serving its homes (`roadMarketOf`). The road layer's uses
+    of `towns_` moved (by grep): `tendRoads`' two-towns gate (now: any market; carts need one, wagons and bandits two),
+    `roadRoutes_` (each market's nearest by path, both ways once) and the camps along them, `contractsNear`,
+    `residentsTakeWork`, the NPC courier letters' two ends, the courier errand, the bounty patrols' guards, the robbery
+    rumours, the escorts' and carters' rumours on arrival, and `Game::courierCells`. `lawTown`, `townOf`, `arrivalIn`,
+    the squares, the projects and the newcomers stay on `towns_`. Communities are markets on the roads while plain for
+    law (D7; `roads_tests`' `communitiesStayPlain` now says so).
+  - **Committed, saved departures.** The Board gains `committed` (wagons posted two days ahead, and the morning's carts),
+    `rolledThrough`, `nextDeparture`, `backRoom`, `harvestOverride`, `troubles`, `timesShift` and `news`, each written
+    only when it has something and read leniently (unknown goods dropped, numbers clamped; a departure to a market that is
+    gone dropped on load with its notices). Each ordered route rolls `hash(route, day) < frequency` once, at posting:
+    city to a community every 4 to 2 days by the community's size (catchment 30 or more: 2), between communities 10 to 6,
+    × 0.6..1.4 by the slider, × 0.8 in winter, × 1.5 when the route's biggest P gap is over 0.2, × the rule `caravanRate`
+    (percent). A posted wagon keeps its promise through a DM change (`trade_show_tests`: `caravanRate` 0 after posting).
+  - **Real carters (D26).** A carter is a held post of the carters' trade (`businesses.json` `carters`, or a title with
+    "carter", "wagoner" or "carrier"), the market's where the post is, else where its holder lives. Wagons go only from a
+    market with carters, at most one a carter a day and `wagonsOnRoad` (16) on the roads; the posted carter drives, else
+    another of the yard's free; with none (or the roads full) the wagon is set back a day with its cause on the notice
+    ("Set back: no carter to be had."), and given up after five days. The carter's errand is the wagon (`World::drivers()`;
+    "on the Coldwater run — driving the wagon", "driving the wagon home to Ridgemere"), followed every pass, so he is
+    away from his post for the trip; the wagon loads at his yard and waits two game hours for him and its escorts. The
+    `errand` talk fact reads it as `caravan`.
+  - **Manifests** (8.1): up to 5 goods, each one the destination's shops set out or buy (`TradePoint::bought` is new):
+    the source's glut first, then what its workshops craft that the destination's don't, the largest P gaps, a luxury for
+    a rich household, then the rest it sells; counts from the destination's shelf targets by the wagon's size (1-3). No
+    account: an older save's wagon (its `account` the old economy's) comes home empty, its letters and escorts open
+    again (`save_compat`'s road fixture now says so, to the penny).
+  - **Nudges at visible moments** (7.4, 8.6): as it loads, the source's glut on its goods halved toward 0 and its tills'
+    stock of them over target sent on (`Society::sendOn`); as it arrives, `ΔP = −0.2 × max(0, P_dest − P_source at
+    departure)` (never up), the destination's shelves of its goods refilled and their back rooms filled, the keepers
+    seen setting out the wares (`Society::arrivalRefill`), and `world.news` (and `world.news_from`, new facts) set to the
+    source's top cause ("iron ore is cheap in Ridgemere", or its Times) for four days.
+  - **Late with causes:** 8% of wagons meet a seeded mishap on the way (a broken axle, mud to the axles, a wheel off in
+    a rut, a washed-out ford) that holds them 1.6-2.4 days; a storm's wait is "the weather". Due half a day out, a wagon
+    a day past due is posted overdue with its cause (the far end's notice reads "Overdue: ...") and adds +0.05 a day on
+    its goods there, at most +0.2; a late wagon is a trouble for that market's Times.
+  - **Raids** (8.1, D14): no coins into the camp; the manifest becomes goods at `bandits:<camp>`, made there (a goods
+    faucet, at most 40p of them by catalogue price), which whoever breaks the camp finds ("recovered goods", a
+    registered faucet path); the watch's clearing or a starved camp's scattering returns them to the staged side. +0.15
+    on its goods at the destination at the raid, a trouble for its Times; the carter comes home robbed (his staged purse
+    emptied) or hurt (bruised ribs), never killed. The bounty and escort are posted by the destination's treasury, the
+    bounty at most `bountyMost` (60p); a camp's strength at most `campStrengthMost` (12, enforced each day); a road's camp
+    gathers at `campGatherOdds()`: 0.34 × 1.25 at −100 to × 0.8 at +100, × 1.1 in winter, never by players' wealth.
+  - **Dropped caravans and orphaned contracts** (`World::dropOrphanedRoads`, at every restore once the markets are
+    found): a caravan whose markets are gone is removed, its letters reopened at its origin (or refunded to the writer
+    with the origin gone too), its escorts reopened (or their pay back); open contracts whose town is no market, town or
+    region any more refund their posters.
+  - **Farm carts** (8.2): each staffed farm or works with its work room in the world sends a cart each morning to its
+    community's market (else the nearest by path), its carter the farm's keeper or a hand ("taking the cart to East"),
+    one way. Its area's harvest (poor, fair, good) is a seeded roll per area per season leaning with the slider, or the
+    DM's override in the Board; it sets the cart's chance (40/70/100%) and load (×0.6/1/1.5, ×1.5 on Marketday), and on
+    arrival pulls the cart's goods halfway toward its baseline (+0.15/0/−0.15), only down. A cart that doesn't come is a
+    visible bump (+0.05 on its goods at its market, cause "harvest"). At most `cartsOnRoad` (48) carts at once; a cart
+    from a day gone by (after a restart) never comes. Times (5.3) take each market's harvests (±15, averaged over its
+    staffed farms' carts), raids (−10 each, at most −30) and late wagons (−5 each, at most −15) of the last 7 days, as
+    `timesShift`, set each morning.
+  - **Marketday stalls from carts:** a Marketday cart stocks its goods over the everyday target (×1.5, the stalls'
+    stock; "cart stocks the stalls"), which the next wagon out sends on.
+  - **Regional restock and the back room (D27).** A market's imports are the goods its shops set out that its
+    workshops don't craft and its areas don't bring in (`TradePoint::crafted`, new: what a shop only supplies, a general
+    store's nails, is no market's own make here, though 7.1's region factor still counts it as made) and that a route a
+    carter can drive to it, or a staffed farm's cart, brings. Those refill only on arrivals, and between from the till's
+    back room (filled to a shelf's worth on an arrival, a fifth less each morning; a back room never stocked yet is
+    stocked at its first restock, so a world's first morning isn't bare). Every other good refills each morning, so a
+    market no wagon or cart reaches (one market, every carter deleted) never runs bare.
+  - **Notices with weekday names:** each wagon posted is pinned on both ends' boards by "the carters" (`Game::
+    roadNotices`): "Wagon to West, Marketday: nails for the general goods store, and flour. Tam Reed driving. Escort wanted."
+    and "Wagon from East, due Marketday: ..."; changed when set back or overdue, marked "Robbed on the road" at a raid,
+    taken down on arrival. The caravan topic gains `topic.what` (its first good), `topic.who` (its carter) and a `late`
+    kind.
+  - **New rules** (`Core/RatwItems.h` and its mirrors in `market.json`, `map_editor.py`, the Editor's `economy.ts` and
+    `model.mjs`): `caravanRate`, `wagonsOnRoad`, `cartsOnRoad`, `campStrengthMost`, `bountyMost`.
+  - **Checked on DEV's data, read only** (DEV build 70 exported on 2026-11-08 and the running pre-79 save, loaded and
+    ticked two seconds, nothing written): Ridgemere is the one market (its 7 carters; the Country's communities have no
+    households yet in that save, and no farm is staffed), so no wagons or carts run and nothing waits for one; the old
+    map's dev-old save gives six markets and its camps, with no carters. Both full worlds load in `save_compat` with
+    `RATW_PRE79_BUILDS`.
+  - **Left for later, by owner:** ships (Phase 5; until then a good only ships would bring refills each morning, as it
+    has no visible supplier); staged events (Phase 7, and 16.5's "staged events post with their cause"); the talk lines
+    for wagons due, late and their news, and `topic.kind` "due" (Phase 8: the facts are there); the DM's harvest
+    overrides, the week's wagons on the Prosperity tab and `caravanRate` in the Rules panel's copy (Phase 9; the rule is
+    already listed); the town projects' watchpost and waystation proposals still read the law's towns, of which Ridgemere
+    2.0 has none (they are Town Works, not the roads: for Phase 9 or a later plan); the perf gate's windows and the soak
+    with wagons and up to 48 carts (Phase 11, with the user's go-ahead: not run). The departures posted between two
+    checkpoints aren't journalled; after a crash the routes roll again, the same hash giving mostly the same wagons.
+  - Tests: `trade_show_tests` (new, 228 checks: committed and kept through a DM change, real carters away from their
+    posts and set back without one, manifests, notices and weekday names, the departure's and arrival's nudges and never
+    up, the shelves refilled, `world.news`, a raid's +0.15, cargo at the camp and found by the player who breaks it, the
+    carter robbed or hurt, the bounty and strength caps, late with its cause and +0.05 a day to 0.2, imports thin
+    between wagons and refilled on arrival, a market no wagon reaches refilling each morning, farm carts by harvest with
+    their baseline and Marketday's stalls, no staffed farm no carts, an endpoint deleted mid-trip, D14's mild odds, the
+    notices on the boards through the Game); `host_edit_tests` (new, 514 checks: the sixteen edits of 16.6, each
+    loading, staging and refusing nothing); `roads_tests` 407 (wagons with manifests outlive a restart; Coldwater a
+    market); `save_compat` 23,085 (23,101 with `RATW_PRE79_BUILDS`). ctest 81/81 with the database, none skipped (a
+    throwaway `ratw_test_s2stage_*` database, dropped after); all 34 `tools/test_*.py` with the database and this build's
+    server (throwaway names tagged `s2stage`), none failing, skipped only the `RATW_SLOW` world builds and
+    `test_game_tables`' save under `Saved/`; the Editor's 81 + 67 and its typecheck.
+
 - **2026-11-08: drafted.** From seven code maps, three designs and three judges' grafts. Plan only.
 - **2026-11-08: revised** after four reviews (see Review). Plan only.
 
