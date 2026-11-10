@@ -12,6 +12,7 @@
 #include "RatwMarket.h"
 #include "RatwSociety.h"
 #include "RatwStatus.h"
+#include "RatwTroubles.h"
 #include "RatwWire.h"
 
 #include <algorithm>
@@ -232,6 +233,85 @@ void foodFromTheShelf()
     const auto provisions = shop.takeProvisions();
     expect(std::any_of(provisions.begin(), provisions.end(), [](const auto& p) { return p.second == "moss"; }),
            "the provision's familiarity step between a member and the keeper (no WorldEvent)");
+}
+
+void poorShortDaysShow()
+{
+    // A short day gives half a day's food (6.5; Review A): the poor's two meals were more than a day's need, so half of them
+    // was still a full day and their short days never showed. A poor household on a run of short days goes hungry; the
+    // comfortable lady, at her band's own chance, never does.
+    auto s = docksSociety();
+    s.setStatusOverride(std::make_unique<json::Value>(parse(R"({"rows":{"poor":{"short":100}}})")).get());
+    s.stagedBands(2, true);
+    s.overrideBand(s.householdOf("ivar"), status::Poor, 100);
+    s.overrideBand(s.householdOf("lady"), status::Comfortable, 100);
+    for (const auto& id : {"ivar", "una", "tam", "lady"})
+        emptyLarder(s, id);
+    std::map<std::string, LifeBody> bodies;
+    for (const auto& r : s.authored().residents)
+    {
+        LifeBody b;
+        b.cell = r.home.cell;
+        b.x = r.home.x;
+        b.y = r.home.y;
+        b.age = r.age;
+        b.unseen = true;
+        bodies[r.id] = b;
+    }
+    double ladyMost = 0, ivarMost = 0;
+    for (int sec = 0; sec < 3 * 14400; sec += 10)
+    {
+        s.tick(10., 2 + 8. / 24 + sec / 14400., 0, bodies);
+        ladyMost = std::max(ladyMost, s.resident("lady")->hunger);
+        ivarMost = std::max(ivarMost, s.resident("ivar")->hunger);
+    }
+    expect(s.statusOf("ivar")->band == status::Poor && s.statusOf("lady")->band == status::Comfortable, "the bands held");
+    expect(ivarMost >= 70, "a poor household on a run of short days goes hungry: " + std::to_string(ivarMost));
+    // (Hunger as foodFromTheShelf reads it: everyone eats at 60, so past 70 is a household gone without.)
+    expect(ladyMost < 70, "a comfortable household never does: " + std::to_string(ladyMost));
+}
+
+void noShortTroubleAboveThePoor()
+{
+    // The "short" trouble is a poor or destitute household's (6.7, brought forward by Review A): with every purse and
+    // larder empty, the poor head is short of coin; a comfortable or a rich one, whose purses are its band's each night,
+    // is not, so no comfortable NPC says "Money's tight" and takes a player's help that the night's drift would undo.
+    auto s = docksSociety();
+    s.stagedBands(2, true);
+    for (const auto& r : s.authored().residents)
+        if (const auto* a = s.account(r.id))
+        {
+            if (a->cash > 0)
+                s.shift(r.id, "treasury", "", 0, a->cash, "test: spent");
+            emptyLarder(s, r.id);
+        }
+    troubles::Reads reads;
+    reads.society = &s;
+    reads.age = [&s](const std::string& id) { const auto* r = s.spec(id); return r ? r->age : 30; };
+    reads.alive = [](const std::string&) { return true; };
+    const auto shortOf = [&](const std::string& id) { return troubles::kindOf("short", id, reads).kind == "short"; };
+    const std::pair<const char*, int> heads[] = {{"ivar", status::Poor}, {"birch", status::Destitute}, {"lady", status::Comfortable}};
+    for (const auto& [head, band] : heads)
+        expect(s.overrideBand(s.householdOf(head), band, 100) && s.statusOf(head)->band == band, std::string("the band of ") + head);
+    expect(shortOf("ivar") && shortOf("birch"), "the poor and the destitute short of coin");
+    expect(!shortOf("lady"), "the comfortable lady isn't, her purse empty or not");
+    for (const int band : {int(status::Comfortable), int(status::Rich)})
+    {
+        s.overrideBand(s.householdOf("ivar"), band, 100);
+        expect(!shortOf("ivar"), std::string("ivar's household ") + status::bandName(band) + ": not short");
+    }
+    // Over a week of staged nights (purses drawn to their bands), no comfortable or rich head is ever short.
+    s.overrideBand(s.householdOf("ivar"), -1, 0);
+    s.overrideBand(s.householdOf("birch"), -1, 0);
+    s.overrideBand(s.householdOf("lady"), -1, 0);
+    for (int day = 3; day < 10; ++day)
+    {
+        for (int h = 0; h < 24; ++h)
+            s.tick(1., day + h / 24. + 1e-4, 0, {});
+        for (const auto& r : s.authored().residents)
+            if (const auto* st = s.statusOf(r.id); st && st->band >= status::Comfortable)
+                expect(!shortOf(r.id), "a " + std::string(status::bandName(st->band)) + " head short of coin: " + r.id);
+    }
 }
 
 void playersEmptyTheShelf()
@@ -1011,6 +1091,8 @@ int main()
             throw std::runtime_error("the catalogue didn't load");
         householdsShareABand();
         foodFromTheShelf();
+        poorShortDaysShow();
+        noShortTroubleAboveThePoor();
         playersEmptyTheShelf();
         foodShopsTheRestockFills();
         stakesAndTillsAtPayout();

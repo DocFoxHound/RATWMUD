@@ -307,6 +307,22 @@ std::int64_t boughtLot(double sum, double each, int quantity, bool stall)
     return std::max<std::int64_t>({1, lot, low});
 }
 
+std::array<std::int64_t, 100> leastSplits(double each, double factor, int upTo)
+{
+    std::array<std::int64_t, 100> least{}, lot{};
+    const int q = std::clamp(upTo, 1, 99);
+    for (int k = 1; k <= q; ++k)
+        lot[std::size_t(k)] = boughtLot(each * factor * double(k), each, k, true);
+    for (int n = 1; n <= q; ++n)
+    {
+        auto best = lot[std::size_t(n)];
+        for (int k = 1; k + k <= n; ++k)            // (A split and its mirror cost the same: half the pairs.)
+            best = std::min(best, least[std::size_t(k)] + least[std::size_t(n - k)]);
+        least[std::size_t(n)] = best;
+    }
+    return least;
+}
+
 // ------------------------------------------------------------------------------------------------- The Board saved
 
 json::Value encode(const Board& b)
@@ -684,6 +700,17 @@ market::Rules Society::readMarketRules() const
     r.shelfScale = std::clamp(read("shelfScale", .01, 1), .1, 10.);
     r.discountMost = std::clamp<std::int64_t>(std::int64_t(read("factionDiscountMost", 1, 30)), 0, 1000);
     return r;
+}
+
+void Society::resumeAt(double absoluteDay)
+{
+    if (!std::isfinite(absoluteDay) || absoluteDay < 0)
+        return;
+    decidingAt_ = absoluteDay;
+    if (roster_ != Roster::Authored)
+        return;                                     // (Only an authored roster's decide sets the Board's and the season's.)
+    marketAt_ = absoluteDay;
+    setYearDay(absoluteDay);
 }
 
 double Society::marketClock() const
@@ -1127,15 +1154,23 @@ std::int64_t Society::cheapestLot(const std::string& item, const SellBounds& b, 
     const int q = std::clamp(quantity, 1, 99);
     if (!std::isfinite(b.least))
         return std::int64_t(std::floor(each * market::FactorLow * market::StallShare * double(q) + 1e-9));
-    const auto lotOf = [&](int k) { return market::boughtLot(each * b.least * double(k), each, k, true); };
+    return cheapestLots(item, b, q)[std::size_t(q)];
+}
+
+std::array<std::int64_t, 100> Society::cheapestLots(const std::string& item, const SellBounds& b, int upTo) const
+{
+    // cheapestLot for every quantity 1..upTo at once (the rest 0; market::leastSplits), so stagedLeastLot's halving reads
+    // one table, not a table a step (Review A: it was the shop list's cost).
     std::array<std::int64_t, 100> least{};
-    for (int n = 1; n <= q; ++n)
+    const auto each = double(catalogPrice(item));
+    const int q = std::clamp(upTo, 1, 99);
+    if (!std::isfinite(b.least))
     {
-        least[std::size_t(n)] = lotOf(n);
-        for (int k = 1; k < n; ++k)
-            least[std::size_t(n)] = std::min(least[std::size_t(n)], lotOf(k) + least[std::size_t(n - k)]);
+        for (int n = 1; n <= q; ++n)
+            least[std::size_t(n)] = std::int64_t(std::floor(each * market::FactorLow * market::StallShare * double(n) + 1e-9));
+        return least;
     }
-    return least[std::size_t(q)];
+    return market::leastSplits(each, b.least, q);
 }
 
 Society::LadderStart Society::ladderStart(const std::string& till, const std::string& item, const std::string& holder,
@@ -1307,14 +1342,15 @@ void Society::discountPaid(const std::string& chapter, std::int64_t pennies)
 }
 
 std::int64_t Society::stagedSoldFor(const std::string& seller, const std::string& item, const LadderStart& start, const StagedLot& sold,
-                                    int quantity, const SellBounds& bounds) const
+                                    int quantity, const SellBounds& bounds, std::int64_t cheapest) const
 {
     // A sold lot (7.5, 7.6): the ladder's sum × 0.55 rounded down once; I2, at most 0.6 × the bought lot here now; I3,
     // at most 0.95 × the cheapest bought lot anywhere now; I5, the crafting cap. Each is non-decreasing in the quantity,
     // so their least is too (stagedLeastLot's search rests on it).
     const auto bought = ladder(start, quantity, true, atStall(seller)).lot;
+    const auto least = cheapest >= 0 ? cheapest : cheapestLot(item, bounds, quantity);
     return std::max<std::int64_t>(0, std::min({sold.lot, std::int64_t(std::floor(market::OneShopShare * double(bought) + 1e-9)),
-                                               std::int64_t(std::floor(market::BackstopShare * double(cheapestLot(item, bounds, quantity)) + 1e-9)),
+                                               std::int64_t(std::floor(market::BackstopShare * double(least) + 1e-9)),
                                                craftCap(bounds, quantity)}));
 }
 
@@ -1322,10 +1358,15 @@ int Society::stagedLeastLot(const std::string& seller, const std::string& item, 
                             const SellBounds& bounds) const
 {
     // The smallest lot from `from` to 99 whose sold lot is worth a penny (0: none), by halving: the sold lot never falls
-    // as the lot grows.
-    const auto worth = [&](int q) { return stagedSoldFor(seller, item, start, ladder(start, q, false, false), q, bounds) >= 1; };
+    // as the lot grows. I3's cheapest lots worked out once for the search.
     int lo = std::max(1, from), hi = 99;
-    if (lo > hi || !worth(hi))
+    if (lo > hi)
+        return 0;
+    const auto cheapest = cheapestLots(item, bounds, hi);
+    const auto worth = [&](int q) {
+        return stagedSoldFor(seller, item, start, ladder(start, q, false, false), q, bounds, cheapest[std::size_t(q)]) >= 1;
+    };
+    if (!worth(hi))
         return 0;
     while (lo < hi)
     {
@@ -1339,7 +1380,8 @@ int Society::stagedLeastLot(const std::string& seller, const std::string& item, 
 }
 
 EconomyResult Society::stagedQuote(const std::string& player, const std::string& seller, const std::string& item, int quantity,
-                                   bool buy, const std::string& holderIn, StagedLot* lotOut, const SellBounds* known) const
+                                   bool buy, const std::string& holderIn, StagedLot* lotOut, const SellBounds* known,
+                                   int* leastLot) const
 {
     // The staged price (doc 79, 7.1-7.6): the per-piece ladder at the Board's pressure, inside the clamp; I1-I5; the
     // shop's budget, its take allowance and the holder's sell total; the till topped up at trade (never "can't afford").
@@ -1363,12 +1405,15 @@ EconomyResult Society::stagedQuote(const std::string& player, const std::string&
     const auto bounds = buy ? SellBounds{} : known ? *known : sellBounds(item);
     const auto start = ladderStart(till, item, holder);
     const auto lot = ladder(start, quantity, buy, stall);
-    std::int64_t total = buy ? lot.lot : stagedSoldFor(seller, item, start, lot, quantity, bounds);
+    std::array<std::int64_t, 100> cheapest{};
+    if (!buy)
+        cheapest = cheapestLots(item, bounds, quantity);   // (I3's lots of this many and of one, worked out once.)
+    std::int64_t total = buy ? lot.lot : stagedSoldFor(seller, item, start, lot, quantity, bounds, cheapest[std::size_t(quantity)]);
     std::int64_t unit = total;
     if (quantity != 1)
     {
         const auto one = ladder(start, 1, buy, stall);
-        unit = buy ? one.lot : stagedSoldFor(seller, item, start, one, 1, bounds);
+        unit = buy ? one.lot : stagedSoldFor(seller, item, start, one, 1, bounds, cheapest[1]);
     }
     if (lotOut)
     {
@@ -1379,6 +1424,8 @@ EconomyResult Society::stagedQuote(const std::string& player, const std::string&
     {
         // A lot worth 0p is refused, and moves nothing (7.3, 7.5); the smallest lot worth a penny named.
         const int least = stagedLeastLot(seller, item, start, quantity + 1, bounds);
+        if (leastLot)
+            *leastLot = least;
         return {false, least ? "Not worth the counting. I buy those by " + lotWords(least) + "." : "Not worth the counting.", unit, 0};
     }
     if (stock(buy ? m : p, item) < quantity)
@@ -1389,6 +1436,10 @@ EconomyResult Society::stagedQuote(const std::string& player, const std::string&
     {
         if (takenToday(till, item) + quantity > takeAllowance(till, item))
             return {false, "I've no room for more today.", unit, total};
+        // (A lot past the whole day's budget is turned away in true words, at dawn as at dusk: "spent all" only once the
+        // shop has bought something. Review A.)
+        if (total > budgetOf(till))
+            return {false, "That's more than I lay out in a day.", unit, total};
         if (total > budgetLeft(till))
             return {false, "I've spent all I'll spend today.", unit, total};
         if (soldToday(holder) + total > marketRules().sellMost)
@@ -1525,15 +1576,17 @@ Society::Listing Society::listing(const std::string& player, const std::string& 
     l.buy = l.buyCount == 1 ? l.buyOne : stagedQuote(player, merchantId, item, l.buyCount, true, holder, nullptr);
     // The smallest sell lot worth a penny: one, or (one worth nothing) the least found by halving, quoted once. I3's and
     // I5's bounds worked out once for the row.
+    // (A piece worth nothing: its refusal found the least lot already, so the search runs once a row: Review A.)
     const auto bounds = sellBounds(item);
     l.sellLot = 0;
-    l.sellOne = stagedQuote(player, merchantId, item, 1, false, holder, nullptr, &bounds);
+    int least = 0;
+    l.sellOne = stagedQuote(player, merchantId, item, 1, false, holder, nullptr, &bounds, &least);
     if (l.sellOne.total >= 1 || l.sellOne.message.rfind("Not worth", 0) != 0)
     {
         l.sellLot = 1;                              // (Worth a penny, or refused for another reason: shown with it.)
         l.sell = l.sellOne;
     }
-    else if (const int least = stagedLeastLot(merchantId, item, ladderStart(till, item, holder), 2, bounds))
+    else if (least)
     {
         l.sellLot = least;
         l.sell = stagedQuote(player, merchantId, item, least, false, holder, nullptr, &bounds);
@@ -1553,11 +1606,14 @@ void Society::marketTick(double absoluteDay)
 void Society::marketMorning(std::int64_t day)
 {
     // The dawn's turn (doc 79, 7.3-7.5): yesterday's net positions ripple through the recipes into this morning's
-    // prices (at the restock, when the smith works the new ore); the day's counts reset; the Board swept; the slider a
-    // step toward the DM's.
+    // prices, at dawn before any keeper opens, the same moment for every market (P is a market's, shared by its shops);
+    // each shop's keeper is then seen working the new stock at the morning restock (stagedRestock, rippled_); the day's
+    // counts reset; the Board swept; the slider a step toward the DM's.
     auto& b = state_.board;
     const auto& rules = marketRules();
     const double now = marketClock();
+    rippled_.clear();
+    rippledDay_ = day;
     for (const auto& [m, goods] : b.netToday)
         for (const auto& [good, holders] : goods)
         {
@@ -1616,7 +1672,12 @@ void Society::marketMorning(std::int64_t day)
                 if (std::abs(next) > market::RippleMost && std::abs(next) > std::abs(P))
                     next = (next > 0 ? 1 : -1) * std::max(std::abs(P), market::RippleMost);
                 next = std::clamp(next, -market::PressureMost, market::PressureMost);
-                c = {next, now, "ripple"};
+                // The cause is the ripple's only where it leaves P on its own side (a want's dearer, a glut's cheaper): one
+                // that only eats into a move the other way leaves that move's cause, which still sets the arrow (7.3, 11:
+                // the cause is what actually moved the factor; Review A).
+                const bool itsOwn = (next > 0 && r > 0) || (next < 0 && r < 0);
+                c = {next, now, itsOwn ? std::string("ripple") : c.cause};
+                rippled_[m].insert(target);
                 // Each holder charged its share of what the ripple moved (none past the cap's truncation).
                 const double moved = next - P, scale = std::clamp(moved / r, 0., 1.);
                 for (const auto& [holder, one] : charged)
@@ -1748,7 +1809,16 @@ bool Society::stagedRestock(const std::string& keeper)
         a.stock[ware] = std::min(MarketStockLimit, target);
         set = true;
     }
-    // The keeper is seen "setting out the wares" for a few minutes (7.7) when anything went out.
+    // The keeper is seen "setting out the wares" for a few minutes (7.7) when anything went out, or when the dawn rippled
+    // a good the shop sets out (7.4: the smith works the new ore, though its shelf of bars was full).
+    if (!set && rippledDay_ == day)
+        if (const auto r = rippled_.find(marketOf(till)); r != rippled_.end())
+            for (const auto& ware : stagedShelfGoods(job->founder))
+                if (r->second.count(items::baseOf(ware)))
+                {
+                    set = true;
+                    break;
+                }
     if (set)
         state_.board.settingOut[till] = marketClock() + market::SettingOutDays;
     return set;

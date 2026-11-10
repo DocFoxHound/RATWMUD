@@ -127,6 +127,18 @@ void seen()
         if (const auto* larder = s.account(Society::homeStore(cellId(0), "larder")))
             for (const auto& [item, n] : std::map<std::string, int>(larder->stock.begin(), larder->stock.end()))
                 s.consume(Society::homeStore(cellId(0), "larder"), item, n, "test: eaten");
+        // Only a poor or destitute household is short (doc 79, 6.7): a comfortable or a rich one's purses are its band's
+        // each night, so an empty purse there is no want.
+        const auto household = s.householdOf("u1");
+        for (const int band : {int(status::Comfortable), int(status::Rich)})
+        {
+            expect(s.overrideBand(household, band, 100000) && s.statusOf("u1") && s.statusOf("u1")->band == band,
+                   "u1's household " + std::string(status::bandName(band)));
+            t.g.forgetTroubles();
+            expect(t.g.troubleNow("u1").kind != "short", std::string("a ") + status::bandName(band) +
+                                                             " household with empty purses isn't short of coin: " + t.g.troubleNow("u1").kind);
+        }
+        expect(s.overrideBand(household, status::Poor, 100000) && s.statusOf("u1")->band == status::Poor, "u1's household poor");
         t.g.forgetTroubles();
         trouble = t.g.troubleNow("u1");
         expect(trouble.kind == "short" && trouble.days < 7 && trouble.coins > 0 && trouble.household.front() == "u1",
@@ -317,6 +329,7 @@ void solved()
                     s.consume(Society::homeStore(cellId(0), "larder"), item, n, "test: eaten");
         };
         drain();
+        expect(s.overrideBand(s.householdOf("u1"), status::Poor, 100000), "u1's household poor (only the poor are short: 6.7)");
         trusts("u1", ash, 15);
         put("u1", 0, 11.5);
         t.place(t.ash, 0, 10.5);

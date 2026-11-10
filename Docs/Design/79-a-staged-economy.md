@@ -511,7 +511,8 @@ How each row is applied:
   nearest food keeper: the till's stock of the staple drops by the provision, and the same count of meals (fish at
   the Wharf, bread in the city, cheese for the rich) is added to each member's wallet, **up to** the band's two-day
   target, never beyond. It is a raw stock change: no ledger entry, no journal record, no WorldEvent.
-  - **A short day** gives half. The roll is `hash(household, day) < chance`, so a replay gives the same days on one
+  - **A short day** gives half a day's food: half the band's meals, and never more than half of what a wolf eats in a
+    day (Review A: the poor's two meals are more than a day's need, so half of them was still a full day). The roll is `hash(household, day) < chance`, so a replay gives the same days on one
     thread or four. The chance for poor and destitute households rises with the staple's P at their market (up to
     ×2 at +0.5), and with a raid or a poor harvest. A bad week shows as hungry poor people, not a starving city.
   - **An empty shelf:** if the keeper's staple is out at the household's hour (players bought it out), poor and
@@ -572,6 +573,8 @@ Household shopping fed keeper-customer familiarity through the ledger. Instead:
   instead of `foodDays`. Its coins are a fortnight of the band's food at the market's quoted price, at least 10p
   (`RatwTroubles.cpp:190-196`). The help and refill check in `RatwGameTroubles.cpp:463` reads the band too. Solving
   it lifts the household for its length.
+  (Review A brought the band's gate forward: since slice 1 only a poor or destitute head is "short"; the days, the
+  coins and the help check are still `foodDays`' until Phase 6 does the rest.)
 - Steady pay from players (companion wages, `RatwGameCompanions.cpp:135, 271`; Hold wages; lodging rent; repairs)
   holds the purse (section 6.5) and adds the "earning from players" score event. A guard a Chapter pays 10p a day
   doesn't drift back to poor and complain of thin wages.
@@ -706,8 +709,10 @@ safe and unknown goods skipped. Uncapped, iron ore would reach 35 goods and char
 - **A net glut ripples downstream:** ore −Δ, iron bars −Δ/2, nails and tools −Δ/4.
 - **A net want ripples upstream, weighted by value:** bread +Δ, flour +Δ/2 × min(1, catalog(bread)/catalog(flour)),
   wheat +Δ/4 × the same weight. A want for a cheap good can't lift a dear input more than its worth.
-- Ripples land at the next morning's restock, when the smith or the baker visibly works the new stock: `price_cause`
-  "cheap iron since the ore glut". They count against each holder's cap in proportion to their share of the net, and
+- Ripples land at the next dawn, the same moment for every market (P is the market's, shared by its shops), and the
+  smith or the baker is seen working the new stock at the morning restock ("Setting out the wares"), even where no
+  shelf needed filling (Review A): `price_cause` "cheap iron since the ore glut". A ripple names the cause only where
+  it leaves P on its own side; one that only eats into a move the other way leaves that move's cause. They count against each holder's cap in proportion to their share of the net, and
   ripple-caused |P| on any good is capped at 0.15.
 - At most 13 updates a good, once a morning. A host's new recipe joins the table at the next load. It is never a
   production chain (the X4 lesson).
@@ -732,7 +737,8 @@ safe and unknown goods skipped. Uncapped, iron ore would reach 35 goods and char
 - **The shop's buying budget.** `budget(shop) = 40p × keeper's band × slider (×0.8 to ×1.2)`. The keeper's band here
   is worked out without player pressure. It is set at dawn, drawn down only by what the shop buys from players, and
   saved as `budgetLeft`, so a restart doesn't refill it. **Player purchases never raise it,** so a second character
-  can't pump a till's buying power. Past it: "I've spent all I'll spend today." The client shows "BUYING TODAY · N p"
+  can't pump a till's buying power. Past it: "I've spent all I'll spend today." A lot worth more than the whole day's
+  budget: "That's more than I lay out in a day." (Review A: at dawn, "spent all" was untrue.) The client shows "BUYING TODAY · N p"
   (`Client/src/ui/hud/dialogs.ts:1320`; the heading at :1312 drops "REAL PURSES").
 - **The till always has the cash.** When a player sells within the budget, the till's cash is topped up to the lot
   first (a raw set). "The trader cannot afford that" stops happening.
@@ -1950,6 +1956,44 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     skipped only the `RATW_SLOW` world builds (`test_realm` 7, `test_realm2` 16) and `test_game_tables`' save under
     `Saved/`.
   - **To resume:** Review A, which ends slice 1.
+- **2026-11-10: Review A's kept findings fixed** (eight, each kept by at least two of three skeptics), each with a test:
+  - **The shop list's cost.** I3's backstop is worked out once a row (`market::leastSplits`: the lot of each k once,
+    then the least of two halves in whole pennies, not ~4,900 `boughtLot`s a call), the halving search reads that one
+    table, and a piece "Not worth the counting" hands the shop list the lot its refusal found, so the search runs once a
+    row, not twice. A general store's whole list: 1.18 ms to 0.41 ms a snapshot (Release, this laptop; provisioner 0.37
+    to 0.15, apothecary 0.34 to 0.18, herbalist 0.33 to 0.10), every row identical. `exploit_tests`' `theBackstopTable`
+    checks the table against the plain search for prices 1-250p across the clamp and that the list's smallest sell lot
+    is still the least worth a penny; `game_load --layout shops` keeps players beside the keepers so the perf run sees
+    the merchant block (`world_check` measures `World::snapshot`, which has none).
+  - **The clocks after a restart.** `World::restore` sets the society's clocks from the calendar
+    (`Society::resumeAt`: the Board's and the season's), so a trade before the first decide reads the saved day's
+    budget, take, sell total and P, and is stamped now, not at day 0. `market_tests`' Board-through-the-game check (c)
+    loads the save and trades before any tick.
+  - **The "short" trouble by band** (6.7's gate brought forward): only a poor or destitute head is short; a comfortable
+    one at the bottom of its purse range no longer says "Money's tight" and takes help the night's drift undoes.
+    `life_status_tests`' `noShortTroubleAboveThePoor` (with every purse empty, and over a week of staged nights);
+    `troubles_tests` and `storyline_tests` make their short household poor, and check a comfortable and a rich one
+    with empty purses aren't short.
+  - **A short day is half a day's food** (6.5): half the band's meals, at most half a day's need, so a run of the
+    poor's short days now shows as hunger (`poorShortDaysShow`); destitute days are as before (one loaf). The bands'
+    meal counts stay Phase 10's.
+  - **The ripple's cause** names the ripple only where it leaves P on its own side; one that eats into a players' move
+    keeps "travellers buying" (`market_tests`' `aRippleAgainstPlayers`).
+  - **"That's more than I lay out in a day."** for a lot past the whole day's budget (a theriac at the apothecary at
+    dawn); "spent all" only once something was bought.
+  - **The keeper's trade answer** names two of the shop's own wares on its shelf at the price its list shows (the
+    dozen for a good under 3p), meals and herbs first where it deals in them; "out of" only for those it deals in
+    (`theKeepersAnswer`: a smith's answer). Phase 8 still writes it whole (7.8).
+  - **Ripples and the restock:** the dawn pass stays (P is per market and shared by its shops; per-till ripples would
+    double-apply or need new saved bookkeeping), and a keeper whose wares the dawn rippled is seen setting out the
+    wares at the morning restock though no shelf needed filling (`rippled_`, not saved: after a restart the restock
+    shows only what it sets out). Between dawn and opening an awake keeper away from the counter still quotes the new
+    price: left as it is.
+  - Tests: a clean Release build (`build-x`); ctest 79/79 with the database (none skipped: `pg_client` on a throwaway
+    `s1stage` database, dropped after); `exploit_tests` 871,756 checks, `market_tests` 1,969, `life_status_tests` 2,244;
+    each new check seen failing with its fix taken out; all 34 `tools/test_*.py` with the database and the worktree's
+    server (`test_world_package` 43, `test_world_sync` 52, `test_world_db` 49, `test_studio` 49, `test_world_store` 24),
+    skipped only the `RATW_SLOW` world builds and `test_game_tables`' save under `Saved/`; the client 146.
 
 - **2026-11-08: drafted.** From seven code maps, three designs and three judges' grafts. Plan only.
 - **2026-11-08: revised** after four reviews (see Review). Plan only.

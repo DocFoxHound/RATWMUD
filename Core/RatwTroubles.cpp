@@ -186,6 +186,11 @@ Trouble kindOf(const std::string& kindId, const std::string& resident, const Rea
                 head = id;
         if (head != resident)
             return t;
+        // Only a poor or destitute household (doc 79, 6.7, brought forward by Review A): a comfortable or rich one's
+        // purses are drawn to its band's range each night, so its few days' food in hand isn't want, and help given it
+        // would drift away. (One not banded yet keeps the plain reckoning.) The days and coins are still foodDays'.
+        if (const auto* banded = s.statusOf(head); banded && banded->band >= status::Comfortable)
+            return t;
         double cost = 0;
         const double days = foodDays(home, life->homeCell, r, nullptr, &cost);
         if (days >= k->underDays)

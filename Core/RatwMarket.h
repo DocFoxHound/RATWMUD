@@ -99,6 +99,10 @@ void madeBy(const std::string& business, std::set<std::string>& made);
 // and rounded down), at least 1p, and never under the clamp floor's stall price, ceil(each × 0.80 × 0.9 × quantity)
 // (I3, 7.2). The cheapest way to buy a lot is at a stall.
 std::int64_t boughtLot(double sum, double each, int quantity, bool stall);
+// I3's backstop's lots (7.6), for 1..upTo pieces (the rest 0): the least that many cost bought at a stall at `factor`
+// in any split into lots (a lot rounded, so smaller lots may cost less than one). Each lot of k worked out once, then
+// the least of two halves' in whole pennies: O(upTo²) additions, upTo boughtLots.
+std::array<std::int64_t, 100> leastSplits(double each, double factor, int upTo);
 bool finite(double x);
 
 // The Board (5.2), saved with the society. Only non-zero cells are kept.

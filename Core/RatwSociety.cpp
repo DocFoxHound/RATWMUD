@@ -73,6 +73,8 @@ void Society::reset(Roster roster)
     status_.clear();                                // (Doc 79, Phase 2: nothing staged yet, and no real money.)
     stagedHomes_.clear();
     stagedHour_ = stagedDay_ = -1;
+    rippled_.clear();
+    rippledDay_ = -1;
     postedAtPass_.clear();
     provisions_.clear();
     realOpening_ = faucetTotal_ = sinkTotal_ = unregisteredMade_ = 0;
@@ -1415,8 +1417,9 @@ void Society::stagedFood(const std::string& home, const std::vector<std::string>
     // Food from the shelf by the household's band (doc 79, 6.5): its band's meals a head a day, of the first of its foods its
     // food shop sells, up to two days' on hand (more the day before a Restday or a festival: buying ahead), never beyond.
     // A short day (a fixed lot by the household and the day, against its band's chance at the slider, the poor's raised
-    // by their staple's pressure) gives half; a bare shelf gives the poor and destitute a short day, the others are fed
-    // from elsewhere. Never Hungry: no short days. A raw stock change: no ledger entry, no journal record, no WorldEvent.
+    // by their staple's pressure) gives half a day's food; a bare shelf gives the poor and destitute a short day, the
+    // others are fed from elsewhere. Never Hungry: no short days. A raw stock change: no ledger entry, no journal record,
+    // no WorldEvent.
     (void)cls;
     const auto found = stagedHomes_.find(home);
     if (found == stagedHomes_.end() || found->second.food.empty())
@@ -1455,7 +1458,11 @@ void Society::stagedFood(const std::string& home, const std::vector<std::string>
             continue;
         auto& wallet = acc->second;
         const double have = stagedOnHand(wallet);
-        const double provision = row.meals * mealWorth * (shortDay ? .5 : 1) + ahead * NourishADay;
+        // (A short day gives half a day's food: half of the band's meals, and never more than half of what a wolf eats in
+        // a day. Two meals a day are more than a day's need, so half of them alone was still a full day and the poor's
+        // short days never showed: Review A.)
+        const double ration = row.meals * mealWorth;
+        const double provision = (shortDay ? .5 * std::min(ration, NourishADay) : ration) + ahead * NourishADay;
         const double want = std::min(ceiling, have + provision);
         // (Whole pieces: up on a full day, down on a short one, so a short day of a big dish is short indeed.)
         int pieces = want <= have ? 0 : shortDay ? int(std::floor((want - have) / each + 1e-9)) : int(std::ceil((want - have) / each - 1e-9));

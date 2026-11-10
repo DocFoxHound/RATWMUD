@@ -16,6 +16,7 @@
 #include "RatwWire.h"
 #include "RatwWorld.h"
 
+#include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -290,6 +291,59 @@ void anOreDumpRipples()
             expect(market::rippleTargets(g.id, down).size() <= 12, "a ripple ends: " + g.id);
 }
 
+void aRippleAgainstPlayers()
+{
+    // A ripple that only eats into a move the other way leaves that move's cause (7.3, 11; Review A): players buy the
+    // smith's fittings up to the holder's cap (dearer: "travellers buying"); another sells a heap of ore the same day; at
+    // dawn the glut takes something off the fittings (ore, bars, fittings), which stay dearer, still for the travellers
+    // buying, never "the want of what it's made into". Where the ripple alone moved a good (nails), the cause is the
+    // ripple's. And the smith is seen working the new
+    // stock at the morning restock, though no shelf needed filling (7.4).
+    auto s = world({{"smith", "the smith at the forge", "coldwater"}}, {{"coldwater", 40}});
+    const auto till = s.tillOf("smith");
+    stock(s, "smith", "fittings", 300);
+    const auto ada = player(s, "player-ada", 50000), bo = player(s, "player-bo");
+    for (int i = 0; i < 40 && s.pressure("coldwater", "fittings") < s.marketRules().pushMost - 1e-9; ++i)
+    {
+        const auto bought = s.trade(ada, "smith", "fittings", 5, true);
+        expect(bought.ok, "fittings bought: " + bought.message);
+    }
+    expect(near(s.pressure("coldwater", "fittings"), s.marketRules().pushMost, 1e-9) &&
+               s.board().cell.at("coldwater").at("fittings").cause == "players",
+           "fittings at the holder's cap, by players: " + str(s.pressure("coldwater", "fittings")));
+    s.create(bo, "iron_ore", 30, "test: mined");
+    expect(s.trade(bo, "smith", "iron_ore", 30, false).ok, "thirty ore sold");
+    // Every shelf full before the dawn, so the restock sets nothing out.
+    const auto job = s.jobOf("smith");
+    expect(job != nullptr, "the smith's post");
+    const auto fill = [&] {
+        for (const auto& w : s.stagedShelfGoods(job->founder))
+            stock(s, "smith", w, std::max(s.shelfTarget(till, w), Society::stock(*s.account(till), w)));
+    };
+    s.stagedRestock("smith");
+    fill();
+    const double before = s.pressure("coldwater", "fittings");
+    s.setMarketClock(std::floor(s.marketClock()) + 1 + market::DawnHour / 24);
+    s.marketTick(s.marketClock());
+    const double after = s.pressure("coldwater", "fittings");
+    const auto& fittings = s.board().cell.at("coldwater").at("fittings");
+    expect(after > 0 && after < before - .03, "the glut took something off the fittings, which stay dearer: " + str(before) + " -> " + str(after));
+    expect(fittings.cause == "players", "still the players' doing: " + fittings.cause);
+    const auto row = s.listing(ada, "smith", "fittings", ada);
+    expect(row.trend >= 0 && (row.trend == 0 || row.cause == "travellers buying"), "the list says so: " + row.cause);
+    expect(s.pressure("coldwater", "nails") < 0 && s.board().cell.at("coldwater").at("nails").cause == "ripple",
+           "the nails the ripple alone moved: the ripple's");
+    // The restock: nothing to fill, but the smith works the new stock (the ore's glut rippled into his wares).
+    fill();
+    expect(s.stagedRestock("smith") && s.settingOut("smith"), "the smith seen working the new stock at opening");
+    // The next market day, no net yesterday and full shelves: nothing to show.
+    s.setMarketClock(std::floor(s.marketClock()) + 1 + market::DawnHour / 24);
+    s.marketTick(s.marketClock());
+    fill();
+    s.setMarketClock(s.marketClock() + market::SettingOutDays + 1. / 1440);
+    expect(!s.stagedRestock("smith") && !s.settingOut("smith"), "a quiet morning: no setting out");
+}
+
 void churnLeavesNoRipple()
 {
     // Buying and selling the same good the same day nets to nothing downstream.
@@ -403,6 +457,19 @@ void theShopsLimits()
     expect(t.budgetLeft(tanner) == s.budgetLeft(tanner) && t.takenToday(till, "stone") == 30 &&
                near(t.pressure("coldwater", "hide"), s.pressure("coldwater", "hide")),
            "the budget, the take and the pressure kept across a restart");
+    // A lot worth more than the whole day's budget is turned away in true words at opening, with nothing yet spent
+    // (Review A: "I've spent all I'll spend today" at dawn): a theriac at the apothecary.
+    auto apothecary = world({{"apothecary", "the apothecary at the corner", "coldwater"}}, {{"coldwater", 40}});
+    const auto ap = apothecary.tillOf("apothecary");
+    const auto ivy = player(apothecary, "player-ivy");
+    apothecary.create(ivy, "theriac", 2, "test: brewed");
+    const auto deals = apothecary.wares("apothecary");
+    expect(std::find(deals.begin(), deals.end(), "theriac") != deals.end(), "the apothecary deals in theriac");
+    const auto theriac = apothecary.quote(ivy, "apothecary", "theriac", 1, false);
+    expect(apothecary.budgetLeft(ap) == apothecary.budgetOf(ap) && theriac.total > apothecary.budgetOf(ap) && !theriac.ok &&
+               theriac.message == "That's more than I lay out in a day.",
+           "more than a day's budget, before any is spent: " + theriac.message + " (" + std::to_string(theriac.total) + "p of " +
+               std::to_string(apothecary.budgetOf(ap)) + "p)");
     // The holder's daily sell total (the rule playerSellMost).
     auto u = world({{"tanner", "tanner at The Hide Yard", "coldwater"}}, {{"coldwater", 40}}, {{"playerSellMost", 6}});
     const auto bo = player(u, "player-bo");
@@ -728,6 +795,63 @@ void theWorldsMarkets()
     fs::remove_all(root);
 }
 
+// The keeper's answer to "what do you sell?" (Review A; Phase 8 writes it whole, 7.8): a smith names his own wares at
+// the price his list shows, never "I'm out of meals. I'm out of herbs." beside a full list; the inn's keeper still
+// names his meals.
+void theKeepersAnswer()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-p12stage-keeper-" + std::to_string(::getpid()));
+    const auto worldPath = writeStrip(root / "world");
+    {
+        std::ofstream manifest(fs::path(worldPath) / "world.ratw", std::ios::app);
+        manifest << resident("uf", "Ferris", "merchant", "smith at the forge", 0, 9.5, 1, 6.5);
+    }
+    Town town(worldPath, (root / "save").string(), 120, true);
+    auto& w = town.g.world();
+    auto& s = w.society();
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 8.5);
+    w.setTimeOfDay(12);
+    town.run(2);
+    expect(s.merchant("uf"), "Ferris keeps a smithy");
+    const auto till = s.tillOf("uf");
+    for (const auto& [ware, n] : std::map<std::string, int>{{"sickle", 3}, {"nails", 40}})
+        if (Society::stock(*s.account(till), ware) < n)
+            s.create(till, ware, n - Society::stock(*s.account(till), ware), "test stock");
+    // (Names are hidden here: a resident is spoken of, and speaks, by its work.)
+    const auto ask = [&](const std::string& who, const std::string& name, const std::string& work, const char* id) {
+        const auto* npc = w.entity(who);
+        town.place(town.ash, 1, npc->position.x + 1, npc->position.y);
+        npc = w.entity(who);
+        auto* me = w.entity(town.ash.entityId);
+        me->cellId = npc->cellId;
+        me->position = {npc->position.x + 1, npc->position.y};
+        town.run(2);
+        town.ash.events.clear();
+        town.g.command(&town.ash, cmd({{"type", "chat"}, {"text", "\"" + name + ", what do you sell?\""}, {"commandId", id}}));
+        town.run(.5);
+        std::string reply;
+        for (const auto& e : town.ash.events)
+            if (e.string("type") == "roleplay" && contains(e.string("speaker"), work) && reply.empty())
+                reply = e.string("text");
+        return reply;
+    };
+    const auto smith = ask("uf", "Ferris", "smith at the forge", "k1");
+    expect(!smith.empty() && !contains(smith, "out of meals") && !contains(smith, "out of herbs"), "the smith doesn't speak of meals: " + smith);
+    bool named = false;
+    for (const auto& ware : s.wares("uf"))
+        if (Society::stock(*s.account(till), ware) > 0 && contains(smith, Society::itemName(ware)))
+        {
+            const auto row = s.listing(town.ash.entityId, "uf", ware, town.g.accountOf(town.ash.entityId));
+            named = contains(smith, std::to_string(row.listPrice) + (row.listPrice == 1 ? " penny" : " pennies") +
+                                        (row.listCount > 1 ? " the dozen" : ""));
+            expect(named, "a ware named at its listed price: " + smith + " (" + ware + " " + std::to_string(row.listPrice) + "p)");
+        }
+    expect(named, "the smith names a ware of his own: " + smith);
+    const auto inn = ask("ui", "Keeper u", "keeping the inn", "k2");
+    expect(contains(inn, "meal is") || contains(inn, "out of meals"), "the inn's keeper still speaks of meals: " + inn);
+    fs::remove_all(root);
+}
+
 // The bands name markets as the Board does (doc 79, 5.1 and 6.5): in a world of three towns, a household in each town
 // has its town's market, and one living out in the wilds between towns (lawTown "") the nearest market by path, so the
 // pressure players put on its staple reaches its short days.
@@ -828,6 +952,11 @@ json::Value parseText(const std::string& text, const std::string& what)
 struct BoardSave
 {
     std::string replayed, expected;   // The checkpoint with its journal replayed over it; the live Board's encoding.
+    // What the trades left that reads the market day (the budget, the take, the holder's sell total and P), and who.
+    std::int64_t budgetLeft = -1, soldToday = -1;
+    int taken = -1;
+    double berriesP = 0, mealP = 0;
+    std::string player, holder;
 };
 
 // A world saved; then players' trades on the Board (pressure, the budget and allowance drawn,
@@ -878,6 +1007,15 @@ BoardSave aBoardThroughTheGame()
             expect(live[k].isObject() && !live[k].fields().empty(), std::string("the trades moved the Board's ") + k + ": " + said +
                                                                          json::dump(live).substr(0, 600));
         out.expected = json::dump(live);
+        out.player = town.ash.entityId;
+        out.holder = town.g.accountOf(town.ash.entityId);
+        out.budgetLeft = s.budgetLeft(s.tillOf("ui"));
+        out.taken = s.takenToday(s.tillOf("ui"), "berries");
+        out.soldToday = s.soldToday(out.holder);
+        out.berriesP = s.pressure("ridgemere", "berries");
+        out.mealP = s.pressure("ridgemere", "meal");
+        expect(out.taken == 12 && out.budgetLeft < s.budgetOf(s.tillOf("ui")) && out.soldToday > 0 && out.mealP > 0,
+               "the trades drew the budget, the take and the sell total: " + std::to_string(out.budgetLeft) + " " + std::to_string(out.taken));
         expect(slurpText(save) == savedText, "no save was taken after the trades (the journal is the tail)");
         // (a) The journal replayed over the checkpoint, as the package tool and the server read it.
         std::vector<journal::Record> records;
@@ -904,6 +1042,41 @@ BoardSave aBoardThroughTheGame()
         const auto live = parseText(out.expected, "the live Board");
         for (const char* k : TradeFields)
             expect(json::dump(loaded[k]) == json::dump(live[k]), std::string("a server from the save and journal has the Board's ") + k);
+    }
+    {
+        // (c) The same server before its first tick (Review A): the restored society has decided nothing yet, but its
+        // clocks are the saved moment's, so the budget, the take, the sell total and P read the saved market day's, and a
+        // sale at once is stamped now, never at day 0 (which would wipe P and the holder's push as decayed from day 0).
+        game::Options o;
+        o.hiddenNames = true;
+        o.devIdentity = true;
+        o.forkSnapshots = false;
+        o.tiesOptional = true;
+        o.worldExport = worldPath;
+        o.savePath = save;
+        game::Game g(o);
+        std::string problem;
+        expect(g.start(problem), "starts: " + problem);
+        auto& w = g.world();
+        auto& s = w.society();
+        const auto till = s.tillOf("ui");
+        expect(near(s.marketClock(), w.calendarDays()) && s.marketDay() == s.board().day &&
+                   near(s.yearDay(), std::fmod(w.calendarDays(), double(calendar::DaysPerYear))),
+               "the Board's clock and the season's at the saved moment: " + str(s.marketClock()) + " (the calendar " +
+                   str(w.calendarDays()) + "), market day " + std::to_string(s.marketDay()) + " (saved " + std::to_string(s.board().day) +
+                   "), year day " + str(s.yearDay()));
+        expect(s.budgetLeft(till) == out.budgetLeft && s.takenToday(till, "berries") == out.taken && s.soldToday(out.holder) == out.soldToday,
+               "the saved day's budget, take and sell total before any tick: " + std::to_string(s.budgetLeft(till)) + " vs " +
+                   std::to_string(out.budgetLeft) + ", " + std::to_string(s.takenToday(till, "berries")) + ", " +
+                   std::to_string(s.soldToday(out.holder)));
+        expect(near(s.pressure("ridgemere", "berries"), out.berriesP, 1e-6) && near(s.pressure("ridgemere", "meal"), out.mealP, 1e-6),
+               "P as saved: " + str(s.pressure("ridgemere", "berries")) + " vs " + str(out.berriesP));
+        const auto sold = s.trade(out.player, "ui", "berries", 4, false, out.holder);
+        expect(sold.ok && s.budgetLeft(till) == out.budgetLeft - sold.total && s.takenToday(till, "berries") == out.taken + 4,
+               "a sale at once draws on the saved day's budget and take: " + sold.message + " " + std::to_string(s.budgetLeft(till)));
+        const auto& cell = s.board().cell.at("ridgemere").at("berries");
+        expect(near(cell.touched, w.calendarDays()) && near(s.pressure("ridgemere", "meal"), out.mealP, 1e-6),
+               "stamped now, and the other goods' P untouched: " + str(cell.touched));
     }
     fs::remove_all(root);
     return out;
@@ -1064,6 +1237,7 @@ int main(int argc, char** argv)
         aLonePlayersDayInColdwater();
         hidesAtColdwater();
         anOreDumpRipples();
+        aRippleAgainstPlayers();
         churnLeavesNoRipple();
         churnAcrossHolders();
         theShopsLimits();
@@ -1076,6 +1250,7 @@ int main(int argc, char** argv)
         theOnePath();
         theWorldsMarkets();
         householdsInTheBoardsMarkets();
+        theKeepersAnswer();
         theBoardThroughTheGame();
         theHolderBeforeTheWelcome();
     }

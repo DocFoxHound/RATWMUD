@@ -6624,6 +6624,7 @@ Result World::restore(const PersistedWorld& saved)
     calendarDays_ = restoredDays;
     society_ = std::move(restoredSociety);
     society_.setParallel(parallel_);
+    society_.resumeAt(calendarDays_);               // (Its clocks at the saved moment before any tick: Review A.)
     climateSlot_ = std::int64_t(std::floor(calendarDays_ * 4));
     fronts_ = state.fronts;
     for (const auto& f : fronts_)

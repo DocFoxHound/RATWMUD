@@ -182,6 +182,8 @@ void sources()
                 if (n > 0 && Society::edible(item))
                     s.consume(Society::homeStore(home, "larder"), item, n, "test: eaten");
         expect(!head.empty(), "the inn's household has a head");
+        // (Only a poor or destitute household is short of coin: doc 79, 6.7. The inn's is poor here.)
+        expect(s.overrideBand(s.householdOf(head), status::Poor, 100000), "the inn's household poor");
         t.g.forgetTroubles();
         expect(t.g.troubleNow(head).kind == "short", "and it is short of coin: " + t.g.troubleNow(head).kind);
         t.g.hearTroubleFor(ash, head);

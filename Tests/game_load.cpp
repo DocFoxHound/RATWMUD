@@ -1,6 +1,6 @@
 // The load test (Docs/Design/31-responsiveness.md, Phase 1): the whole game, as the server runs it, with N players.
 //
-//   game_load EXPORT_DIR [--players N] [--layout cities|spread] [--seconds S] [--warmup S] [--walking server|client]
+//   game_load EXPORT_DIR [--players N] [--layout cities|spread|shops] [--seconds S] [--warmup S] [--walking server|client]
 //             [--workers N]
 //
 // EXPORT_DIR is a world build written out as files (python3 tools/world_build.py export DIR). Each player is a fake
@@ -11,6 +11,9 @@
 //
 //   --layout cities   (the default, and the gate) players packed beside residents in the three most peopled regions
 //   --layout spread   players beside residents taken evenly through the whole population
+//   --layout shops    players standing beside the keepers, kept beside them (no walking), so every snapshot carries the
+//                     shop list (Game::sendSnapshot's merchant block: each ware's listing, five times a second a player;
+//                     doc 79's Review A found a general store's list at 1.2 ms a snapshot)
 //   --workers N       threads finishing snapshots in parallel, as the server has (default: the cores less two; 0: none)
 //   --walking client  each player walks its own wolf (doc 31, Phase 3), sending poses twenty times a second as the page
 //                     does, and taking the server's correction when one is refused; "server" (the default) sends keys
@@ -122,7 +125,7 @@ std::string command(std::initializer_list<std::pair<const char*, json::Value>> f
 
 int usage()
 {
-    std::cerr << "usage: game_load EXPORT_DIR [--players N] [--layout cities|spread] [--seconds S] [--warmup S] [--walking server|client]\n";
+    std::cerr << "usage: game_load EXPORT_DIR [--players N] [--layout cities|spread|shops] [--seconds S] [--warmup S] [--walking server|client]\n";
     return 2;
 }
 } // namespace
@@ -155,7 +158,7 @@ int main(int argc, char** argv)
         else
             return usage();
     }
-    if ((layout != "cities" && layout != "spread") || (walking != "server" && walking != "client"))
+    if ((layout != "cities" && layout != "spread" && layout != "shops") || (walking != "server" && walking != "client"))
         return usage();
     std::string problem;
     if (!sys::zlibAvailable(problem))
@@ -207,6 +210,13 @@ int main(int argc, char** argv)
         std::vector<std::string> beside;
         if (layout == "spread")
             beside = residents;
+        else if (layout == "shops")
+        {
+            for (const auto& id : residents)
+                if (g.world().society().merchant(id))
+                    beside.push_back(id);
+            std::cout << "shops: " << beside.size() << " keepers\n";
+        }
         else
         {
             std::vector<std::pair<std::size_t, std::string>> regions;
@@ -231,6 +241,15 @@ int main(int argc, char** argv)
         }
 
         std::vector<std::unique_ptr<Player>> clients;
+        std::vector<std::string> keeperOf;          // (--layout shops: the keeper each player stands beside.)
+        const auto standBeside = [&](Player& c, const std::string& npcId) {
+            if (const auto* npc = g.world().entity(npcId))
+                if (auto* me = g.world().entity(c.entityId))
+                {
+                    me->cellId = npc->cellId;
+                    me->position = {npc->position.x + (layout == "shops" ? 1 : 0), npc->position.y};
+                }
+        };
         for (int p = 0; p < players; ++p)
         {
             auto c = std::make_unique<Player>();
@@ -245,12 +264,8 @@ int main(int argc, char** argv)
                 return 1;
             }
             const auto& near = beside[std::size_t(p) * beside.size() / std::size_t(players)];
-            if (const auto* npc = g.world().entity(near))
-                if (auto* me = g.world().entity(c->entityId))
-                {
-                    me->cellId = npc->cellId;
-                    me->position = npc->position;
-                }
+            standBeside(*c, near);
+            keeperOf.push_back(near);
             clients.push_back(std::move(c));
         }
         std::vector<std::uint32_t> poseSeq(clients.size(), 0);
@@ -265,7 +280,10 @@ int main(int argc, char** argv)
                 const auto begin = Clock::now();
                 {
                     perf::Scope timed(&meter, perf::Commands);
-                    for (std::size_t p = 0; p < clients.size(); ++p)
+                    for (std::size_t p = 0; p < clients.size() && layout == "shops"; ++p)
+                        if (i % 20 == 0)
+                            standBeside(*clients[p], keeperOf[p]);   // (Each second: the keeper walks to the counter.)
+                    for (std::size_t p = 0; p < clients.size() && layout != "shops"; ++p)
                     {
                         // Each player turns every two seconds at a moment of its own: real players don't all turn,
                         // and cross tile edges, on the same tick.

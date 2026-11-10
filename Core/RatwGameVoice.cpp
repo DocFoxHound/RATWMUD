@@ -139,21 +139,41 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     {
         if (society.merchant(npcId))
         {
+            // Two of the shop's own wares on its shelf, at the price its list shows (the dozen for a good under 3p),
+            // meals and herbs first where it deals in them; only the wares it deals in are ever said to be out (Review A:
+            // a smith once said "I'm out of meals. I'm out of herbs." beside a full list). Phase 8 (7.8) writes the
+            // keeper's answer whole.
             const auto* stock = society.account(society.tillOf(npcId));
+            auto wares = society.wares(npcId);
+            std::stable_partition(wares.begin(), wares.end(), [](const std::string& w) { return w == "meal" || w == "herbs"; });
+            const auto pennies = [](std::int64_t n) { return std::to_string(n) + (n == 1 ? " penny" : " pennies"); };
             std::vector<std::string> goods;
-            for (const auto* item : {"meal", "herbs"})
+            for (const auto& item : wares)
             {
+                if (goods.size() >= 2)
+                    break;
                 const int held = stock ? Society::stock(*stock, item) : 0;
+                const bool named = item == "meal" || item == "herbs";
                 // (Quoted for the shop list's account holder, so the price named is the one shown: doc 79, 16.9.)
-                const auto quote = society.quote(playerId, npcId, item, 1, true, accountOf(playerId));
-                const std::string what = std::string(item) == "meal" ? "A meal" : "A bundle of herbs";
-                if (held > 0 && quote.unitPrice > 0)
-                    goods.push_back(what + " is " + std::to_string(quote.unitPrice) + (quote.unitPrice == 1 ? " penny" : " pennies") +
-                                    " (" + std::to_string(held) + " left)");
+                const auto row = society.listing(playerId, npcId, item, accountOf(playerId));
+                if (held <= 0 || row.buyOne.unitPrice < 1 || row.listPrice < 1)   // (A purse too thin still hears the price.)
+                {
+                    if (named)
+                        goods.push_back(item == "meal" ? "I'm out of meals" : "I'm out of herbs");
+                    continue;
+                }
+                const std::string price = row.listCount > 1 ? pennies(row.listPrice) + " the dozen" : pennies(row.listPrice);
+                if (named && row.listCount == 1)
+                    goods.push_back(std::string(item == "meal" ? "A meal" : "A bundle of herbs") + " is " + price + " (" +
+                                    std::to_string(held) + " left)");
                 else
-                    goods.push_back(std::string(item) == "meal" ? "I'm out of meals" : "I'm out of herbs");
+                    goods.push_back(std::string(Society::itemName(item)) + ", " + price + " (" + std::to_string(held) + " left)");
             }
-            answer = goods[0] + ". " + goods[1] + ".";
+            answer.clear();
+            for (const auto& g : goods)
+                answer += (answer.empty() ? "" : " ") + g + ".";
+            if (answer.empty())
+                answer = "My shelves are bare just now.";
         }
         else
         {

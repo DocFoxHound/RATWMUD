@@ -585,6 +585,10 @@ class Society
     const market::Rules& marketRules() const { return marketRules_; }
     // The Board's clock (game days): decide()'s, or a test's.
     void setMarketClock(double absoluteDay) { marketAt_ = absoluteDay; }
+    // The clocks a restore leaves unset (none is saved), set from the world's calendar at once (World::restore): the
+    // Board's and the season's, so a trade before the first decide reads the saved day's budget, allowance and P, never
+    // a fresh day 0 (Review A).
+    void resumeAt(double absoluteDay);
     double marketClock() const;
     std::int64_t marketDay() const;               // The market day (it turns at dawn: market::DawnHour).
     double pressure(const std::string& market, const std::string& base) const;   // P now (decayed).
@@ -627,7 +631,8 @@ class Society
     void marketTick(double absoluteDay);
     void marketMorning(std::int64_t day);
     // A ware's shelf target (7.7) and the morning restock (a keeper's first time at work in the market day; true when
-    // anything was set out), and whether its keeper is still seen setting out the wares (a few minutes after).
+    // anything was set out or the dawn rippled one of its wares), and whether its keeper is still seen setting out the
+    // wares (a few minutes after).
     int shelfTarget(const std::string& till, const std::string& ware) const;
     bool stagedRestock(const std::string& keeper);
     bool settingOut(const std::string& keeper) const;
@@ -1069,8 +1074,10 @@ class Society
     LadderStart ladderStart(const std::string& till, const std::string& item, const std::string& holder, bool atRest = false) const;
     StagedLot ladder(const LadderStart& start, int quantity, bool buy, bool stall) const;
     struct SellBounds;
+    // (leastLot: on a sale refused as "Not worth the counting", the smallest lot worth a penny it names, 0 for none.)
     EconomyResult stagedQuote(const std::string& player, const std::string& seller, const std::string& item, int quantity,
-                              bool buy, const std::string& holder, StagedLot* lot, const SellBounds* bounds = nullptr) const;
+                              bool buy, const std::string& holder, StagedLot* lot, const SellBounds* bounds = nullptr,
+                              int* leastLot = nullptr) const;
     EconomyResult stagedTrade(const std::string& player, const std::string& trader, const std::string& item, int quantity,
                               bool buy, const std::string& holder);
     // I3's and I5's bases for a good, worked out once a quote (sellBounds): the least factor any shop setting it out could
@@ -1082,9 +1089,11 @@ class Society
     };
     SellBounds sellBounds(const std::string& item) const;
     std::int64_t cheapestLot(const std::string& item, const SellBounds& bounds, int quantity) const;
+    std::array<std::int64_t, 100> cheapestLots(const std::string& item, const SellBounds& bounds, int upTo) const;
     std::int64_t craftCap(const SellBounds& bounds, int quantity) const;
+    // (cheapest: I3's cheapest bought lot of `quantity` when the caller has it, from cheapestLots; -1 works it out.)
     std::int64_t stagedSoldFor(const std::string& seller, const std::string& item, const LadderStart& start, const StagedLot& sold,
-                               int quantity, const SellBounds& bounds) const;
+                               int quantity, const SellBounds& bounds, std::int64_t cheapest = -1) const;
     int stagedLeastLot(const std::string& seller, const std::string& item, const LadderStart& start, int from, const SellBounds& bounds) const;
     market::Rules readMarketRules() const;
     market::Rules marketRules_;                     // (readMarketRules, as buildRules last read the world's rules.)
@@ -1101,6 +1110,11 @@ class Society
     double marketBase(const std::string& market, const std::string& base, double district) const;
     double leastDistrict(const std::string& market, const std::string& base) const;
     market::Topology worldTopology_;
+    // The goods each market's dawn rippled (the market day in rippledDay_), so a keeper is seen working the new stock at
+    // the morning restock even when no shelf needed filling (7.4; Review A). Not saved: after a restart the restock shows
+    // only what it sets out.
+    std::map<std::string, std::set<std::string>> rippled_;
+    std::int64_t rippledDay_ = -1;
     mutable market::Topology ownTopology_;
     mutable std::uint64_t ownTopologyKey_ = 0;
     mutable std::unordered_map<std::string, double> districtLeast_;   // Market|group -> its least district factor,

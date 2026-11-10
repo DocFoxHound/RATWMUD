@@ -640,7 +640,7 @@ test('the staged list: dozens, sell lots, a 0 unit price (doc 79, 7.1)', () => {
     assert.deepEqual(commands, [{type: 'trade', target: 'baker', item: 'bread', quantity: 3, buy: false}], 'the smallest lot sold');
     // The keeper's refusals (doc 79, 7.5) turn the button off and are shown in its words.
     for (const reason of ['Not worth the counting. I buy those by the half-dozen.', "I've no room for more today.",
-        "I've spent all I'll spend today.", 'No one here is buying more from you today.']) {
+        "I've spent all I'll spend today.", "That's more than I lay out in a day.", 'No one here is buying more from you today.']) {
         bread.canSellLot = false;
         bread.sellLotReason = reason;
         assert.ok(!s.canTradeItem('bread', false), `refused: ${reason}`);
