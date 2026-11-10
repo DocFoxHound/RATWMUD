@@ -11,6 +11,7 @@
 #include "RatwWorld.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -128,6 +129,47 @@ Data load()
     for (const auto& [name, n] : v.object("rules").fields())
         if (const auto* info = items::ruleInfo(name); info && n.isNumber())
             d.rules[name] = std::clamp(int(std::lround(n.asNumber())), info->low, info->high);
+    // The port's goods and the ships' names (8.3; Phase 5): the `wharf` block's `imports` less its `never`, its `takes`,
+    // and `ships` (names of letters and spaces only, each once; none good keeps the defaults).
+    {
+        const auto& wharf = v.object("wharf");
+        std::set<std::string> never;
+        for (const auto& g : wharf.array("never"))
+            if (g.isString())
+                never.insert(g.asString());
+        d.shipNever = never;
+        const auto goods = [&](const char* key, std::vector<std::string>& into, bool imports) {
+            for (const auto& g : wharf.array(key))
+                if (g.isString() && items::good(g.asString()) && !(imports && never.count(g.asString())) &&
+                    std::find(into.begin(), into.end(), g.asString()) == into.end() && into.size() < 64)
+                    into.push_back(g.asString());
+        };
+        goods("imports", d.shipBrings, true);
+        goods("takes", d.shipTakes, false);
+        if (auto names = shipNamesOf(wharf.array("ships")); !names.empty())
+            d.shipNames = std::move(names);
+        // The words that make a market a port, and the cargo's own words (the Phase 5 repair): plain words only.
+        const auto words = [](const std::string& text) {
+            return !text.empty() && text.size() <= 40 && !forbiddenWord(text) && std::all_of(text.begin(), text.end(), [](unsigned char c) {
+                return std::isalpha(c) || c == ' ' || c == '\'' || c == '-';
+            });
+        };
+        std::vector<std::string> posts;
+        for (const auto& p : wharf.array("posts"))
+        {
+            auto word = p.asString({});
+            for (auto& c : word)
+                c = char(std::tolower(static_cast<unsigned char>(c)));
+            if (words(word) && word.size() >= 4 && std::find(posts.begin(), posts.end(), word) == posts.end() && posts.size() < 16)
+                posts.push_back(word);
+        }
+        if (!posts.empty())
+            d.wharfPosts = std::move(posts);
+        if (const auto& cargo = wharf.object("cargoWords"); cargo.isObject())
+            for (const auto& [good, text] : cargo.fields())
+                if (text.isString() && items::good(good) && words(text.asString()) && d.cargoWords.size() < 128)
+                    d.cargoWords[good] = text.asString();
+    }
     // The season groups (7.1, moved from city_loop.json): a good in the first group naming it; a
     // group without an id or goods dropped, its numbers clamped (never a refusal).
     for (const auto& g : v.array("seasons"))
@@ -167,6 +209,33 @@ const Data& data()
 {
     static const Data d = load();
     return d;
+}
+
+std::vector<std::string> shipNamesOf(const std::vector<json::Value>& list)
+{
+    std::vector<std::string> names;
+    for (const auto& n : list)
+    {
+        const auto name = n.asString({});
+        const bool plain = !name.empty() && name.size() <= 40 && std::all_of(name.begin(), name.end(), [](unsigned char c) {
+            return std::isalpha(c) || c == ' ' || c == '\'' || c == '-';
+        });
+        // (And never the forbidden word: a host's list is checked as the game's own is.)
+        if (plain && !forbiddenWord(name) && std::find(names.begin(), names.end(), name) == names.end() && names.size() < 64)
+            names.push_back(name);
+    }
+    return names;
+}
+
+bool forbiddenWord(const std::string& text)
+{
+    const auto letter = [&](std::size_t i) { return i < text.size() && std::isalpha(static_cast<unsigned char>(text[i])) != 0; };
+    const auto is = [&](std::size_t i, char c) { return i < text.size() && std::tolower(static_cast<unsigned char>(text[i])) == c; };
+    for (std::size_t i = 0; i + 2 < text.size(); ++i)
+        if (is(i, 'd') && is(i + 1, 'o') && is(i + 2, 'g') && (i == 0 || !letter(i - 1)))
+            if (const auto end = is(i + 3, 's') ? i + 4 : i + 3; !letter(end))
+                return true;
+    return false;
 }
 
 std::string groupOf(const std::string& base, std::string* how)
@@ -461,6 +530,48 @@ json::Value encode(const Board& b)
         }
         o.add("committed", list);
     }
+    // The ports' timetables (Phase 5): written only where there are ships.
+    if (!b.ships.empty())
+    {
+        auto list = Value::array();
+        for (const auto& s : b.ships)
+        {
+            auto j = Value::object();
+            j.add("id", s.id);
+            j.add("port", s.port);
+            j.add("name", s.name);
+            j.add("day", s.day);
+            j.add("hour", s.hour);
+            j.add("sails", s.sails);
+            const auto goods = [&](const char* key, const std::vector<std::pair<std::string, int>>& of) {
+                // (A list of pairs: the order is the notice's, and Postgres's jsonb keeps no key order.)
+                auto pairs = Value::array();
+                for (const auto& [good, n] : of)
+                {
+                    auto pair = Value::array();
+                    pair.push(Value(good));
+                    pair.push(Value(n));
+                    pairs.push(pair);
+                }
+                j.add(key, pairs);
+            };
+            goods("brings", s.brings);
+            goods("takes", s.takes);
+            j.add("status", s.status);
+            j.add("posted", s.posted);
+            list.push(j);
+        }
+        o.add("ships", list);
+    }
+    if (!b.shipsThrough.empty())
+    {
+        auto through = Value::object();
+        for (const auto& [port, week] : b.shipsThrough)
+            through.add(port, week);
+        o.add("shipsThrough", through);
+    }
+    if (b.nextShip != 1)
+        o.add("nextShip", b.nextShip);
     if (b.rolledThrough >= 0)
         o.add("rolledThrough", b.rolledThrough);
     if (b.nextDeparture != 1)
@@ -641,6 +752,44 @@ Board decode(const json::Value& v)
             continue;
         b.committed.push_back(std::move(d));
     }
+    // The ports' timetables (Phase 5), leniently: a ship with no port, name or day is dropped, its unknown goods dropped,
+    // its numbers clamped (the world drops one whose port is gone: World::dropOrphanedShips).
+    for (const auto& j : v.array("ships"))
+    {
+        if (!j.isObject() || b.ships.size() >= ShipsMost)
+            continue;
+        Ship s;
+        s.id = j.string("id").substr(0, 40);
+        s.port = j.string("port").substr(0, 120);
+        s.name = json::utf8Prefix(j.string("name"), 40);
+        s.day = std::int64_t(whole(j["day"], 0, 365000000, -1));
+        const double hour = j.number("hour", 8), sails = j.number("sails", 18);
+        s.hour = finite(hour) ? std::clamp(hour, 0., 23.99) : 8;
+        s.sails = finite(sails) ? std::clamp(sails, s.hour, 23.99) : std::max(s.hour, 18.);
+        const auto goods = [&](const char* key, std::vector<std::pair<std::string, int>>& into) {
+            for (const auto& pair : j.array(key))
+                if (const auto& of = pair.items(); of.size() == 2 && of[0].isString() && of[1].isNumber() && good(of[0].asString()) &&
+                                                   into.size() < 5)
+                    if (const int count = int(whole(of[1], 0, 999, 0)); count > 0)
+                        into.push_back({of[0].asString(), count});
+        };
+        goods("brings", s.brings);
+        goods("takes", s.takes);
+        const auto status = j.string("status");
+        s.status = status == "in" || status == "sailed" || status == "storm" ? status : "due";
+        const double posted = j.number("posted", 0);
+        s.posted = finite(posted) ? std::max(0., posted) : 0;
+        if (s.id.empty() || !name(s.port) || s.name.empty() || !j["day"].isNumber())
+            continue;
+        // (One ship of an id, and one a port a day, as they are rolled: a save edited to say otherwise keeps the first.)
+        if (std::any_of(b.ships.begin(), b.ships.end(), [&](const Ship& o) { return o.id == s.id || (o.port == s.port && o.day == s.day); }))
+            continue;
+        b.ships.push_back(std::move(s));
+    }
+    for (const auto& [port, week] : v.object("shipsThrough").fields())
+        if (name(port) && week.isNumber() && b.shipsThrough.size() < 64)
+            b.shipsThrough[port] = std::int64_t(whole(week, -1, 365000000, -1));
+    b.nextShip = std::int64_t(whole(v["nextShip"], 1, 1e15, 1));
     b.rolledThrough = std::int64_t(whole(v["rolledThrough"], -1, 365000000, -1));
     b.nextDeparture = std::int64_t(whole(v["nextDeparture"], 1, 1e15, 1));
     for (const auto& [till, goods] : v.object("backRoom").fields())
@@ -804,6 +953,29 @@ namespace ratw
 {
 namespace
 {
+// A price's cause where a ship moved it (doc 79, 8.6 and Section 11: "the Gull came in"; the Phase 5 repair): the Board's
+// word for it ("ship": its cargo, cheaper; "ship takes": what it buys, dearer; "ship late": a stormbound ship's cargo,
+// dearer) said of the ship it was, by name, while the timetable still has it; and never a cause the price belies.
+std::string shipCause(const market::Board& b, const std::string& market, const std::string& base, const std::string& cause, int trend)
+{
+    const bool takes = cause == "ship takes", late = cause == "ship late";
+    const market::Ship* ship = nullptr;
+    for (const auto& s : b.ships)
+    {
+        if (s.port != market || (late ? s.status != "storm" : s.status != "in" && s.status != "sailed"))
+            continue;
+        const auto& goods = takes ? s.takes : s.brings;
+        if (std::any_of(goods.begin(), goods.end(), [&](const auto& g) { return g.first == base; }) && (!ship || s.day > ship->day))
+            ship = &s;
+    }
+    const std::string name = ship ? ship->name : "a ship";
+    if (late)
+        return trend > 0 ? name + " is stormbound" : "cheap still, though " + name + " is stormbound";
+    if (takes)
+        return trend > 0 ? name + (ship && ship->status == "in" ? " is in, buying" : " bought a load")
+                         : "cheap still, though " + name + (ship && ship->status == "in" ? " is buying" : " bought a load");
+    return trend < 0 ? name + " came in" : "dear still, though " + name + " came in";
+}
 constexpr std::int64_t MarketMoneyLimit = 1000000000;   // (RatwSociety.cpp's MoneyLimit and StockLimit.)
 constexpr int MarketStockLimit = 10000;
 
@@ -1084,16 +1256,17 @@ double Society::marketFullness(const std::string& market, const std::string& bas
     return full > 0 ? std::clamp(have / full, 0., 1.) : 1.;
 }
 
-int Society::arrivalRefill(const std::string& market, const std::string& base, double scale)
+int Society::arrivalRefill(const std::string& market, const std::string& base, double scale, double rooms)
 {
     // An arrival (8.6): the tills of the market's shops that set the good out jump to their targets (a Marketday cart's
     // stalls a little over: `scale`), each back room filled to a shelf more, and the keeper seen "unloading" a while.
     rollMarket();
     int tills = 0;
     const auto* m = tradePoints().find(market);
-    if (!m || !market::finite(scale))
+    if (!m || !market::finite(scale) || !market::finite(rooms))
         return 0;
     scale = std::clamp(scale, 1., 2.);
+    rooms = std::clamp(rooms, 1., 3.);              // (A ship's back rooms hold more than a wagon's: Phase 5, 8.3.)
     if (imported(market, base) && state_.board.day >= 0)
         state_.board.broughtIn[market][base] = state_.board.day;   // (When it came: the next wagons' rotation, T14.)
     for (const auto& till : m->tills)
@@ -1113,7 +1286,7 @@ int Society::arrivalRefill(const std::string& market, const std::string& base, d
             if (imported(market, base))             // (Only a good it waits for wagons for keeps a back room.)
             {
                 auto& room = state_.board.backRoom[till][base];
-                room = std::max(room, target);
+                room = std::max(room, int(std::ceil(target * rooms - 1e-9)));
             }
             any = true;
             if (stock(a, ware) >= want || (!a.stock.count(ware) && a.stock.size() >= MaxGoodsKinds))
@@ -1870,6 +2043,7 @@ Society::Listing Society::listing(const std::string& player, const std::string& 
         l.cause = cause == "dump" ? "a glut sold in"
                   : cause == "ripple" ? (l.trend > 0 ? "dear since the want of what it's made into" : "cheap since the glut of what it's made from")
                   : cause == "players" ? (l.trend > 0 ? "travellers buying" : "travellers selling")
+                  : cause.rfind("ship", 0) == 0 ? shipCause(state_.board, marketOf(till), base, cause, l.trend)
                                        : cause;
     }
     l.buyCount = std::max(1, std::min(l.listCount, shelf ? stock(*shelf, item) : 0));
@@ -2093,6 +2267,39 @@ std::vector<std::string> Society::stagedShelfGoods(const std::string& founder) c
         if (!buys.count(ware) || makes.count(ware))
             out.push_back(ware);
     return out;
+}
+
+int Society::setOutFromBackRoom(const std::string& market, const std::string& base)
+{
+    int pieces = 0;
+    const auto* m = tradePoints().find(market);
+    if (!m)
+        return 0;
+    for (const auto& till : m->tills)
+    {
+        const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
+        auto found = state_.accounts.find(till);
+        const auto rooms = state_.board.backRoom.find(till);
+        if (!p || found == state_.accounts.end() || rooms == state_.board.backRoom.end())
+            continue;
+        const auto room = rooms->second.find(base);
+        if (room == rooms->second.end())
+            continue;
+        auto& a = found->second;
+        for (const auto& ware : stagedShelfGoods(p->founder))
+        {
+            if (items::baseOf(ware) != base || !itemValid(ware) || (!a.stock.count(ware) && a.stock.size() >= MaxGoodsKinds))
+                continue;
+            const int have = stock(a, ware);
+            const int take = std::min(room->second, std::min(MarketStockLimit, shelfTarget(till, ware)) - have);
+            if (take <= 0)
+                continue;
+            room->second -= take;
+            a.stock[ware] = have + take;
+            pieces += take;
+        }
+    }
+    return pieces;
 }
 
 bool Society::settingOut(const std::string& keeper) const

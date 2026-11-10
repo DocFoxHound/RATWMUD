@@ -331,7 +331,10 @@ Today the road layer needs two or more towns, and Ridgemere 2.0 has one. Instead
 - **Endpoints that are not markets:**
   - each staffed farm or works place (the 31 farm places and 11 works in `communities.json`, matched to
     `farm_people.json` posts);
-  - the port: any place whose posts carry the Wharf job words (today Grayrock's 58 posts).
+  - the port: any place whose posts carry the Wharf job words (today Grayrock's 58 posts). *(As built, Phase 5 and
+    its repair: a port is its market, not an endpoint with a route, since nothing travels to it: D8. It is a market
+    with a post of the Wharf's own words, `wharf.posts` in `market.json`; the sea trade's other posts there are the
+    port's too. A post is of the market its work room is in, else the nearest by path.)*
 - **The road layer moves to markets; law doesn't.** `Contract`, `Caravan` and `BanditCamp` keep their `town`
   fields, now holding market ids. The road-layer uses of `towns_` and `townOfCell_` move to the market list: camps'
   wild cells, `roadRoutes_`, bounty patrols' guards, `believe` and the courier letters' two ends. `lawTown` and the
@@ -358,7 +361,8 @@ struct Board {
   map<till, map<baseGood, int>> takenToday;      // the take allowance, reset at dawn
   map<market, map<holder, map<baseGood, Push>>> pushed;  // per account holder, decaying like P; never packaged
   map<market, map<baseGood, int>> netToday;      // the day's net player position, for the morning's ripples
-  vector<Departure> committed;                   // wagons and ships posted on boards, with their causes
+  vector<Departure> committed;                   // wagons posted on boards, with their causes
+  vector<Ship> ships;                            // the ports' timetables (Phase 5): each port's ships a week ahead
   vector<StagedEvent> events;                    // live staged events (8.4)
   deque<Ripple> recent;                          // the last ~50 notable moves, for price_cause and the DM's log
 };
@@ -369,7 +373,9 @@ struct Cell { float P; double touched; std::string cause; };  // cause: players,
 - P is derived state. "Reset prices" eases every P to 0 over a game day, logged as "fresh stock everywhere", which is
   safe after any edit.
 - `recent` holds cause words, never player names, so the world package can ship it (section 13).
-- `committed` holds only what a notice has promised: the next two days of wagons and the next week of ships.
+- `committed` holds only what a notice has promised: the next two days of wagons. The next week of ships is beside
+  it in `ships` (as built, Phase 5): a ship has no route, wagon or carter to commit, and a day, an hour and a cargo
+  that a departure has not, so the two are saved, journalled and restored together and kept as two lists.
 
 ### 5.3 Times (per market)
 
@@ -780,7 +786,9 @@ The clamp's ends (0.80, 1.28), `SellBackShare`, `minShare` and I1-I5 are constan
     out the wares" for a few minutes, visibly. No inputs, no money, no store room.
   - **Goods the market doesn't make** refill only when a wagon, cart or ship brings them. Between arrivals they come
     from a small back-room buffer that runs down by a fifth a day. "The wagon's late", thin shelves and dearer prices
-    then agree (T4, T5, T14).
+    then agree (T4, T5, T14). *(As built, Phase 5's repair: at a port, a ship brings `market.json`'s `wharf.imports`
+    that its shops set out and its workshops don't make, and whatever else its shops set out that nothing in the realm
+    makes and no wagon or cart brings; `wharf.never` goods never. What a Country farm makes stays the carts'.)*
   - A market with no route and no port refills everything each morning, so a host's lonely town never runs bare.
 - **When a wagon with that good arrives:** the till jumps toward the target, and the porters and keeper are
   "unloading" (T4).
@@ -878,6 +886,11 @@ raid (`RatwRoads.cpp:715`).
   `shipsPerWeek` set by the DM (0 means none). Committed and saved a week ahead, when the timetable is pinned to the
   Wharf office's board. A name from a Tracery list (the *Gull*, the *Saltwife*). Imports drawn from the 12 `wharf`
   imports and exports from the 13 takes, kept as a short flavour list in `market.json`.
+  *(As built, Phase 5 and its repair; each the user's to overrule. The rule is the middle of the week's count, not the
+  count: one more or fewer by the seeded score, so 1-3 at the default 2 and 5-6 at 6, never more than a week's six
+  working days, and none on Restday. The names are a list in `market.json` a host edits, checked by the loader for
+  the forbidden word, not a Tracery grammar: a ship's name is saved with the ship, never made up by a speaker. The
+  notice is on the port's town board, signed "the Wharf office": this game has one board a community.)*
 - **Ship day:** the Wharf posts' task becomes "unloading the *Gull*" and the cell is a crowd (`here.crowd`). The
   imports' P is pulled toward a ship baseline (−0.1) in the city; the exports' P rises ("the *Gull* took all the
   hides"). The shops that sell the imports refill.
@@ -2231,6 +2244,213 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `roads_tests` 407, `save_compat` 23,085.
   - For Phase 5's merge: ships are journalled by adding them to `record()`'s comparison (and a new flag, if they get
     one, to `journalCheckpoint`'s); there is no per-field shadow reset to extend.
+- **2026-11-10: Phase 5 (the port) built** (branch `r2-staged-p5`, cut from `r2-staged` at `dfdd566`, commit `49f3f3d`;
+  `Core/RatwPort.cpp`, new). Ships are a committed timetable, never seen (D8: notices, crowds and talk, no ship at the
+  pier). Phase 4's stopgap (a good only ships bring refilling each morning) is gone wherever a port's ships run.
+  - **A port** (8.3) is a market with posts whose titles carry the Wharf's job words (the sea trade's words in
+    `Society::postRules`, and the harbour's heads), found again whenever the road markets are (`World::findPorts`):
+    by the market the post works in, else its holder's home's, else the nearest by path. The posts make the port,
+    held or not; the residents who hold them are its dock hands. No such posts, no port, and nothing below exists.
+  - **The timetable** is on the Market Board (`market::Board::ships`, with `shipsThrough`, the week each port is
+    rolled through, and `nextShip`), so it is saved, restored and journalled with the Board like the roads' committed
+    departures. Each morning every port's weeks are rolled through the next, so the next seven days are always
+    committed; a week is rolled once and a posted ship never changes its day, hour, name or cargo. A week has the
+    rule's count (`shipsPerWeek`, new: 0 to 6, default 2), one more or fewer by a score seeded by week and port that
+    the slider and the season lean (winter −0.3, autumn −0.05, summer +0.1), so 1 to 3 at the default and fewer in
+    winter; 0 is none, even with a port. Days are seeded (never Restday while another day is free), docking between
+    7:00 and 10:00 and sailing 8.5 to 10 hours later (by 19:30). Names come from `market.json`'s new `wharf.ships`
+    (16; no two of a name on a port's timetable at once). A port's timetable holds at most 16 ships (`ShipsAPort`),
+    the Board's 256.
+  - **Manifests** come from `market.json`'s `wharf` block: a ship brings up to 4 of the port's ship goods and takes up
+    to 3 of the `takes` the port's shops sell, buy or make, both in rotation by the ship's number, a shelf's worth each.
+  - **Ship day** (8.3, 8.6): at its hour the ship docks ("ship docks"). Each good it brings is pulled halfway toward
+    the ship baseline (P −0.1) at the port's market, only down (cause "ship"); each good it takes halfway toward +0.1,
+    only up. Every good the port waits for ships for refills, shelf and two shelves' worth in the back room. The Wharf's
+    posts stay at their work with the ship's name on it ("unloading the Gull", "tallying the Gull's cargo", "seeing to
+    the Gull's cargo"; reason "A ship is in."), and every cell holding a Wharf post reads `here.crowd` "crowd" while a
+    ship is in. That evening it sails ("ship sails"): what the port's shops hold over their shelves of the goods it
+    takes goes with it (`sendOn`, 7.5). A restart at any hour catches up from the saved timetable.
+  - **A stormbound ship** (seeded by ship and day: 15% in winter, 6% in autumn, 3% otherwise; or called through
+    `World::stormShip`) never comes: +0.1 on each good it was bringing (cause "ship late"), a "late" trouble for the
+    market's Times, and "is stormbound and will not come", with "No ship this week." where no other came or is due
+    that week. Kept on the timetable three days, a sailed ship one.
+  - **Imports (D27):** a port's ship goods are the `wharf.imports` (less `never`) that its market's shops set out and
+    its workshops don't craft. While ships run they refill only when a ship docks, with the back room between, exactly
+    as wagons' and carts' imports do. With the rule at 0, or no port, they refill each morning as before.
+  - **The notice** (`Game::portNotices`): one notice a port, signed "the Wharf office", on the board a player at the
+    port's market reads (`boardTownFor`, as the carters' notices): "Ships at Ridgemere. The Gull is in, unloading
+    butter, and sails this evening with handbell and hide. Due: the Heron on Marketday with butter, taking tallow."
+    (goods in Phase 4's plain words, `goodWords`, which are singular for some: Phase 8's wording). Posted again
+    whenever its words change and each morning, inside a notice's 280 characters (a full week falls back to names and
+    days), not counted in a board's 30 pins, taken down when there is nothing to tell or the port is gone.
+  - **Talk:** `world.ships` (in, due, late, sailed, no) and `world.ship_name` for speakers at a port's market, listed
+    in `facts.json`; nothing is set where there is no port. The lines themselves are Phase 8's.
+  - **A port deleted** (5.1: "Delete the Wharf and there are no ships"): at the next load (`World::dropOrphanedShips`)
+    or pass of the roads its ships and its week's roll are dropped, its notice comes down, its goods refill each
+    morning again, and nothing else of the save is touched. The rule set to 0 drops the ships still due (one already
+    in still sails); set back, the timetable is rolled again from that day.
+  - **Money:** ships have no account and pay no coin. A player selling what a ship takes is paid by the port's shops
+    as on any day, under the day's sell cap and each shop's budget, every coin a registered faucet; `realBalanced()`
+    holds through ship days, storms and a deleted port.
+  - **Saves:** a Board from before the ships reads as no ships, and a port found at load gets its timetable from that
+    day (the pre-79 fixtures and both full worlds load: `save_compat`). The mirrors of the new rule: `RatwItems.h`,
+    `market.json`, `map_editor.py`, the Editor's `economy.ts` and `model.mjs`.
+  - **Checked on DEV's data, read only** (DEV build 70 exported, loaded and run two game hours by `world_check`,
+    nothing written): Ridgemere is a port (its Wharf posts in `w_ridgemere_0_1`); two ships are posted on the first
+    pass ("Ships at Ridgemere. Due: the Long Tide on Riverday with butter, taking handbell and hide."); real money
+    balanced. Of the 12 imports only **butter** waits for ships there: it is the only one Ridgemere's shops set out
+    and its workshops don't craft.
+  - **Perf, the three windows** (Release, 8 threads, DEV build 70 exported read only, `--players 20`; this build
+    against its base `dfdd566` on the same export, runs alternating, two each and four each for 23-25; ms):
+
+    | Window | build | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|---|
+    | 6-8 | base | 2.66 | 6.06 | 5.72 | 22.8 | 386 |
+    | 6-8 | Phase 5 | 2.66 | 6.15 | 5.75 | 23.0 | 381 |
+    | 17-19 | base | 2.22 | 5.57 | 5.26 | 35.3 | 385 |
+    | 17-19 | Phase 5 | 2.18 | 5.45 | 5.27 | 36.1 | 383 |
+    | 23-25 | base | 1.68 | 4.82 | 4.23 | 54.0 | 388 |
+    | 23-25 | Phase 5 | 1.70 | 4.90 | 4.32 | 53.7 | 385 |
+
+    The port adds nothing measurable (runs of one build differ from each other by more: 1.66 to 1.74 in 23-25). **But
+    the branch as it stood before this phase is past Phase 0's table,** and that is not the port's: the run now has 765
+    residents (206 arrive from the Country during it; Phase 0's had 559); every window's first minute has one tick of
+    about 385 ms (tick 10, in the schedules; Phase 0's worst was 28 to 45 ms); the day's turn in 23-25 has a 54 ms
+    tick (9.64 then); and 17-19's worst after the first minute is 35 ms (a place streaming in; 27.95 then). Means
+    are within 0.1 ms of Phase 0's and p99s within 0.4 ms. These came in with Phases 1-4 or the world's arrivals and want
+    looking at before Phase 11's gate.
+  - **Not built, by owner:** the talk lines for ships due, in, late and sailed (Phase 8: the facts are there); the
+    DM's side (Phase 9): the week's ships on the Prosperity tab, calling a storm on a ship (`World::stormShip` has no
+    command yet), `neverImported` as a DM goods list (the `never` list in `market.json` stands in) and `shipsPerWeek`
+    in the Rules panel's copy (the rule is already listed); tuning the baselines, storm odds and ship goods against
+    hunger (Phase 10's scratch play); the soak with ships (Phase 11, with the user's go-ahead: not run, and no economy
+    simulation was run for this phase). 8.3's map-edge "outside" endpoint for a world with no port is not built and
+    is in no phase's row: such a market refills each morning (8.3's "otherwise"). A ship at the pier is D8's "no".
+  - **For the user to decide:** (1) On DEV only butter waits for ships, and butter is a food households eat, so a
+    winter week with a stormbound ship thins it; whether that is wanted, or the ship goods should be a hand-picked
+    list, is Phase 10's to settle with play. (2) Every docking refills all of the port's ship goods, while the price
+    nudges go only to the goods named on that ship's manifest. (3) The notice is on the town's board signed "the
+    Wharf office", not on a board of the Wharf's own. (4) "Ships paying players" was read as players selling a ship's
+    `takes` to the port's shops on ship day; a ship itself never pays.
+  - Tests: `port_tests` (new, 3,356 checks: a port found and its timetable, each ship as first posted through three
+    weeks, never on Restday, fewer in winter, the rule at 5, at 0 and at its most; the same world the same ships; the
+    Board's round trip and a Board from before the ships; save and restore mid-timetable and with a ship in, in file
+    mode, and through a crash between checkpoints by the journal; ship day's nudges inside the clamp and never the
+    wrong way, the refill, the dock hands' tasks, the crowd, the facts, the sailing; imports thin between ships and
+    refilled on ship day, each morning with the rule at 0; storms seeded over 400 mornings and called; a world with no
+    port; a port deleted in the world and under the Game with its notice; a player selling to the port's shops on ship
+    day at the day's cap and the shop's budget, no unregistered faucet, `realBalanced()`; the notice's words and the
+    world-text rule on them) and `port_pg` (the timetable saved to PostgreSQL by `game.save_checkpoint`, loaded back the same and
+    restored by a second process: 12 checks). ctest 83/83 with the database, none skipped (a throwaway
+    `ratw_test_s2stage_p5`, dropped after; `port_pg`'s own `ratw_test_s2stage_*`); `trade_show_tests` 475,
+    `host_edit_tests` 550, `roads_tests` 407, `market_tests` 1,969, `save_compat` 23,085 (23,101 with
+    `RATW_PRE79_BUILDS`: DEV and dev-old exported read only, both full worlds loaded). All 34 `tools/test_*.py` with the
+    database and this build's server (666 tests, none failing; throwaway names tagged `s2stage`; skipped only the 23
+    `RATW_SLOW` world builds and `test_game_tables`' save under `Saved/`); the Editor's 81 + 67 and its typecheck.
+- **2026-11-10: Phase 5 repaired** (branch `r2-staged-p5`, on `76e1699`). Three independent checks of the port left
+  30 problems and a list of what the plan asked for and the phase had not built. Each was looked into against the
+  code; each one fixed has a test that fails on `76e1699` and passes now (run against a copy of that commit), unless
+  it says otherwise below. No economy simulation was run.
+  - **What the notice and the talk say is now true** (1, 2, 5, 6, 9, 10, 11, 12, 16):
+    - "No ship this week" is said only of a week in which none came, is in or is still due (it was said with a ship
+      due that day). A sailed ship stays on the timetable through its week's end for that.
+    - A ship is "in, unloading" and the Wharf a crowd only while a dock hand is at that work: a ship brought in at a
+      quiet pier (the DM's, or a restart at night) reads "is in" and no crowd. No ship comes on Restday; ships dock
+      8:30 to 11:00 and sail 17:00 to 19:30, and "this evening" follows the hour (it was said at 15:30).
+    - `world.ship_name` names the ship `world.ships` speaks of: the one in, else today's, else the first due, else the
+      one stormbound, else the one that sailed today (it named yesterday's).
+    - A full week no longer drops ships silently: every ship due in seven days is named or counted ("and 2 more by
+      Marketday"), all inside a notice's 280 characters at any rule and with several storms; a due line lists all a
+      ship takes or none of it.
+    - There is a notice whenever there is a ship to tell of (between ships: "The next is the Gull, on Marketday of
+      next week."), and the board's scent line for it is "It smells of tar and salt, and of many paws." (it read "It
+      carries no scent at all. Someone took care.").
+    - A price's cause reads "the Gull came in", "the Gull bought a load" or "the Saltwife is stormbound" (the raw
+      words "ship" and "ship late" showed). Cargo is in the plural where a thing is counted by the piece ("hides",
+      "small pelts", "handbells"), by rule, with `market.json`'s new `wharf.cargoWords` for the rest.
+  - **What makes a port** (4, 15, 26): a market with a post of the Wharf's own words, now data (`wharf.posts` in
+    `market.json`: its office, its harbourmaster, the hands unloading ships, the cranes, Ridgemere's overseer by his
+    own title; Core holds no Ridgemere title any more), with the sea trade's other posts there (carriers, store
+    keepers, talliers) the port's too. A town with a long store and no wharf is no port. A post is of the market its
+    work room is in, else the nearest by path, never its holder's home's: one Wharf was two ports. A tannery or
+    smokehouse with "Wharf" in its name, and the Watch's round of the wharf, are no dock posts. Between ships a hand
+    whose title is "unloading ships at the piers" is shown "minding the cargo at the piers" (reason "No ship is in.").
+    On DEV: 38 posts (15 unloading, 4 at the cranes, 7 carrying from Sump Stairs, 3 at the Wharf Office, 8 keeping and
+    tallying the stores and the books, the overseer).
+  - **The timetable holds up** (3, 17, 18, 19, 20, 21, 28):
+    - The rule set to 0 takes the last notice down (it stayed up).
+    - A port's 16 slots full: the oldest ship sailed or stormbound makes room, so a week to come is always rolled
+      (a week's ships were skipped).
+    - A crash on ship day: the save says the ship is in, the shelves are set out again from the back rooms at the
+      restore, piece for piece (they came back empty with the ship in).
+    - A calendar jump: ships more than a day gone are dropped quietly, none docks late, real money stays balanced
+      (eight docked at once).
+    - A ship's cargo follows its port and day, not the Board's ship counter, so the same world shows the same cargo
+      whatever else was rolled.
+    - A save that lies is put right at load: a ship "in" or "sailed" on a day to come is due again; two ships of an
+      id, or two a port a day, keep the first.
+    - A week has at most six ships (it could have seven at rule 6, one on Restday).
+  - **Imports** (13, 25): a port's ship goods are `market.json`'s `wharf.imports` its shops set out and its workshops
+    don't make, and now also whatever else its shops set out that nothing in the realm makes and no wagon or cart
+    brings. On DEV that is 16 goods waiting for ships (butter and 15 that had kept the old morning refill: chamomile,
+    charm, cord, fine soap, glass beads, lavender, linen cloth, mint, pamphlet, cedar perfume, planks, plaster,
+    valerian, whitewash, yarrow). A ship carries up to four, half of `market.json`'s own where there are others, and
+    leads with a different good from day to day, so a notice no longer reads "with butter" every time. What a Country
+    farm makes stays the carts'.
+  - **The forbidden word** (14, 29): one check in Core (`market::forbiddenWord`), used by the loader for a host's ship
+    names (`market::shipNamesOf`: a bad name is left out, the rest kept) and by the tests on every notice and event
+    line. The check over all new talk lists is Phase 8's, with the lists.
+  - **Cleaned up** (22, 27): the unused `stormsCalled_` is gone (`World::stormShip` acts at once); the roads' and the
+    port's copies of the seeded lot and the word list are one header (`Core/RatwSeeded.h`), with `RatwTradeShow.cpp`'s
+    own copy left for the Phase 4 merge.
+  - **Perf** (23, 24): `world_check --ship-day` brings a due ship in at the window's start, so the gate has a ship
+    in. 6:00-8:00, DEV build 70 exported read only, 20 players, 24,000 ticks, Release, 8 threads, one run each:
+
+    | Window 6-8 | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|
+    | no ship in | 2.72 | 6.14 | 5.74 | 23.1 | 395 |
+    | a ship in (`--ship-day`) | 2.63 | 6.15 | 5.77 | 23.1 | 399 |
+
+    A ship in costs nothing measurable; the slowest tick after the first minute is 7:00's schedules in both (21 ms),
+    under the 25 ms the check saw on a ship day, since no ship docks before 8:30 now. Real money balanced in both.
+  - **Rejected, and why:**
+    - 26, in part: Sump Stairs' seven porters stay dock hands. `Society::postRules` puts "carrying from" in the sea
+      trade, and on DEV those posts work in `w_ridgemere_0_1`, the piers' own cell.
+    - 27, in part: ships stay a list of their own beside `committed` (5.2 amended above): a ship has no route, wagon
+      or carter, and has a day, an hour and a cargo a departure has not. One save, one journal, two lists.
+    - 28, in part: the rule stays the middle of the week's count (rule ± 1, so 1-3 at the default), and weeks are
+      rolled through the next so seven days are always committed. 8.3's note above says so; exact counts are the
+      user's call.
+    - 30: an 80-160 ms tick in `RatwAuthoring` and `ensureTradePoints` is not the port's (it is there with no port).
+      Noted for Phase 11's gate, with the 395 ms tick 10 already listed above.
+  - **Left for later, by owner:**
+    - Phase 6: import shelves thinning between ships as households buy (8): shelves fall only when someone buys, and
+      the staged buyers are Phase 6's.
+    - Phase 7 (staged events, 8.4): a ship lost as a story of its own (8.6's row is built as "stormbound"), and "a
+      ship's rich cargo".
+    - Phase 8: the talk lines for ships and the Wharf's crowd, and the forbidden-word check over every new list.
+    - Phase 9: the DM's storm command and the week's ships on the Prosperity tab (`World::stormShip` and
+      `World::dockShip` are there for them), Atlas's Wharf panel, `neverImported` as a DM list (`wharf.never`
+      stands in), and a map-edge "outside" endpoint for a world with no port.
+    - Phase 10: how far a ship moves a price (7: about a penny on most goods at ±0.1), the storm odds and the list of
+      ship goods, with play.
+    - Phase 11: the soak with ships, with the user's go-ahead.
+  - **Seen and not fixed** (Phase 4's helper, the other check's to merge): `Society::sendOn` moves only wares a shop
+    sets out, so a ship does not take what players sold to a shop that only buys that good.
+  - **For the user to decide** (each built one way, cheap to change): (1) the wider imports rule above, which puts 16
+    goods on DEV at a ship's mercy instead of one, or a hand-picked list; (2) the week's count as rule ± 1 with at
+    most six, or exact; (3) ship names as a checked list in `market.json`, or a Tracery grammar; (4) the notice on the
+    town's board signed "the Wharf office", or a board of the Wharf's own, which this game has no kind of yet;
+    (5) Sump Stairs' porters as dock hands.
+  - Tests: `port_tests` 8,142 checks (3,356 before; 13 new tests, and `--only NAME` and `--each` to run them one by
+    one); `port_pg` 12; ctest 83/83 with the database, none skipped (a throwaway `ratw_test_s2stage_p5r`, dropped
+    after); `trade_show_tests` 475, `host_edit_tests` 550, `roads_tests` 407, `market_tests` 1,969, `save_compat`
+    23,085, `game_tests` 3,631. All 34 `tools/test_*.py` with the database and this build's server: 668 tests, none
+    failing, 25 skipped (the 23 `RATW_SLOW` world builds, one that needs a save under `Saved/`, one the built client).
+    `test_world_package` has two new ones: the strip keeps a timetable, and a package with ships planted in DEV's
+    save (exported read only) is imported and loaded by a real server, which keeps the ship as posted, puts a ship
+    "in" before its day back to due and drops one for a port the world has not got. The Editor's files are
+    untouched. Release build clean (no error, no warning in the phase's files).
 
 ## Review (2026-11-08)
 

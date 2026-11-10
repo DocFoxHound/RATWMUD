@@ -6691,6 +6691,7 @@ Result World::restore(const PersistedWorld& saved)
     campsSeeded_ = false;
     roadMarketsKey_ = ~0ULL;
     dropOrphanedRoads();
+    dropOrphanedShips();                            // (Phase 5: a port deleted, its ships with it.)
     return {true, "Saved world restored.", {}};
 }
 

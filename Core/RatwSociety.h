@@ -653,8 +653,12 @@ class Society
     // harvests and the roads' troubles (5.3; the world's each morning, saved in the Board).
     void setImports(std::map<std::string, std::set<std::string>> imports) { imports_ = std::move(imports); }
     bool imported(const std::string& market, const std::string& base) const;
-    int arrivalRefill(const std::string& market, const std::string& base, double scale = 1);
+    int arrivalRefill(const std::string& market, const std::string& base, double scale = 1, double rooms = 1);
     int sendOn(const std::string& market, const std::string& base);
+    // A good's shelves at a market set out again from their back rooms, up to their targets and never more than the back
+    // rooms hold (a move, never a making); the pieces. For a ship found in at a load (doc 79, Phase 5's repair: a crash
+    // after it docked brings back the Board, which says it is in and its back rooms full, but not the shelves it filled).
+    int setOutFromBackRoom(const std::string& market, const std::string& base);
     int marketShelf(const std::string& market, const std::string& base) const;
     double marketFullness(const std::string& market, const std::string& base) const;   // (1 full, 0 bare: shelves and back rooms.)
     void setTimesShift(std::map<std::string, int> shift);

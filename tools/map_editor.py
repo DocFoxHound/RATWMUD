@@ -99,7 +99,7 @@ RULES = {  # name: (low, high, fallback), as Core/RatwItems.h's Rules[].
     'ripple': (0, 70, 50), 'depthScale': (10, 1000, 100), 'playerPushMost': (0, 50, 15), 'playerSellMost': (0, 5000, 400),
     'takeAllowance': (5, 100, 50), 'shelfScale': (10, 1000, 100), 'factionDiscountMost': (0, 1000, 30),
     'caravanRate': (0, 300, 100), 'wagonsOnRoad': (0, 64, 16), 'cartsOnRoad': (0, 200, 48), 'campStrengthMost': (2, 20, 12),
-    'bountyMost': (0, 500, 60)}
+    'bountyMost': (0, 500, 60), 'shipsPerWeek': (0, 6, 2)}
 RULE_LIMITS = {name: high for name, (_, high, _) in RULES.items()}
 RULE_SWITCHES = ('neverHungry', 'neverBroke')     # 0 or 1: off or on.
 # The Country's economy keys and rule before doc 73 (Docs/Design/73-the-wharf.md, 2.3), read as the Wharf's (the new name

@@ -168,6 +168,9 @@ inline constexpr RuleInfo Rules[] = {
     {"cartsOnRoad", 0, 200, 48},
     {"campStrengthMost", 2, 20, 12},
     {"bountyMost", 0, 500, 60},
+    // The port (doc 79, 8.3 and 12; Phase 5): the ships a week at a port. 0: none, even with a port. Its own 2 gives the
+    // plan's 1-3 by the slider and the season (a week runs one either side of the rule, fewer in winter).
+    {"shipsPerWeek", 0, 6, 2},
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // Data/Items as the catalogue reads it (RATW_DATA_DIR, the working directory or above, the source tree): its parent's

@@ -64,6 +64,7 @@ namespace
 constexpr double BoardReach = 2, NoticeDays = 7;
 constexpr int NoticeFee = 1, PerWriter = 3, PerBoard = 30, TextMost = 280;
 constexpr const char* CartersSign = "the carters";   // (The wagons' notices: doc 79, 8.1.)
+constexpr const char* WharfSign = "the Wharf office";   // (The ships' timetable: doc 79, 8.3.)
 const char* const Kinds[] = {"seeking", "offering", "event", "lost", "other"};
 
 std::string lowered(std::string s)
@@ -336,7 +337,7 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
     }
     const auto onBoard = documents_.onBoard(board);
     // (The carters' wagon notices have pins of their own: they never take one a player needs.)
-    if (std::count_if(onBoard.begin(), onBoard.end(), [](const auto* d) { return d->author != CartersSign; }) >= PerBoard)
+    if (std::count_if(onBoard.begin(), onBoard.end(), [](const auto* d) { return d->author != CartersSign && d->author != WharfSign; }) >= PerBoard)
         return result = {false, "Every pin is taken. Try tomorrow.", {}}, true;
     if (std::count_if(onBoard.begin(), onBoard.end(), [&](const auto* d) { return d->author == me; }) >= PerWriter)
         return result = {false, "You have three notices up here already.", {}}, true;
@@ -476,12 +477,50 @@ void Game::roadNotices(const WorldEvent& e)
     }
 }
 
+void Game::portNotices(const WorldEvent& e)
+{
+    // The ships' timetable (doc 79, 8.3 and D8; Phase 5): one notice a port, "the Wharf office"'s, on the board a player
+    // at the port's market reads; posted afresh whenever its words change and each morning, taken down with nothing to
+    // tell or the port gone. (actor: the port's market; detail: the words.)
+    if (e.kind != "ships posted" && e.kind != "ships cleared")
+        return;
+    const auto id = "ships-" + e.actor;
+    if (e.kind == "ships cleared" || e.detail.empty())
+    {
+        documents_.erase(id);
+        saveSoon();
+        return;
+    }
+    const auto* m = world_.roadMarket(e.actor);
+    auto community = m ? boardTownFor(m->market) : std::string();
+    if (community.empty())
+        community = e.actor;
+    if (community.empty())
+        return;
+    documents::Document d;
+    d.id = id;
+    d.kind = "notice";
+    d.author = WharfSign;
+    d.board = "board:" + community;
+    d.noticeKind = "event";
+    d.what = "ships:" + e.actor;
+    d.text = json::utf8Prefix(e.detail, TextMost);
+    d.sign = WharfSign;
+    d.state = "delivered";
+    d.written = d.deliverAt = world_.calendarDays();
+    d.expires = d.written + NoticeDays;
+    d.fromTown = community;
+    documents_.add(d);
+    saveSoon();
+}
+
 void Game::tendNotices()
 {
-    // Once a game hour: notices past their seven days come down; once a game day, unanswered ones are looked at again.
+    // Once a game hour: notices past their seven days come down (and a ships' notice whose port is gone: Phase 5); once a
+    // game day, unanswered ones are looked at again.
     std::vector<std::string> gone;
     for (const auto& [id, d] : documents_.all())
-        if (d.kind == "notice" && d.expires <= world_.calendarDays())
+        if (d.kind == "notice" && (d.expires <= world_.calendarDays() || (d.what.rfind("ships:", 0) == 0 && !world_.port(d.what.substr(6)))))
             gone.push_back(id);
     for (const auto& id : gone)
         documents_.erase(id);

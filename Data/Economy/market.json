@@ -92,7 +92,7 @@
     {"id": "preserved", "name": "dried and preserved fruit", "goods": ["dried_apples", "fruit_preserves"], "price": [100, 100, 100, 90], "shelf": [100, 120, 250, 150]}
   ],
   "rules": {
-    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays), the Board's pressure settings, and staged trade's (Phase 4): the wagons' frequency in percent (caravanRate), the most wagons and farm carts on the roads at once (wagonsOnRoad, cartsOnRoad), a bandit camp's most strength (campStrengthMost) and a bounty's most pennies (bountyMost). A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
+    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays), the Board's pressure settings, and staged trade's (Phase 4): the wagons' frequency in percent (caravanRate), the most wagons and farm carts on the roads at once (wagonsOnRoad, cartsOnRoad), a bandit camp's most strength (campStrengthMost) and a bounty's most pennies (bountyMost); and the port's (Phase 5): the ships a week at a port (shipsPerWeek: 0 none, even with a port; its own 2 gives 1-3 a week by the slider and the season, a week running one either side of the rule and fewer in winter). A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
     "neverHungry": 0,
     "neverBroke": 0,
     "buyAheadDays": 1,
@@ -110,7 +110,8 @@
     "wagonsOnRoad": 16,
     "cartsOnRoad": 48,
     "campStrengthMost": 12,
-    "bountyMost": 60
+    "bountyMost": 60,
+    "shipsPerWeek": 2
   },
   "services": {
     "about": "The city's services (doc 79, 6.5 and 12: kept, at a frequency by band): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Nothing in Core reads them yet: Phase 6 (street life) makes them staged sales at `every` x band; until then a change here, or a world's `service` record (the Rules panel), has no effect in play.",
@@ -316,7 +317,38 @@
     ]
   },
   "wharf": {
-    "about": "The Wharf's goods (doc 73, 6; of its controls only these lists stay): `never`, goods the ships never bring (cheese: the user's); `imports` and `takes`, the goods its lists named (names only: the money and the most a day went with the Wharf's valve in doc 79's Phase 3). Nothing in Core reads them yet: Phase 5 (the port) draws its ships' manifests from them; Atlas's Wharf panel shows them until Phase 9 retargets it.",
+    "about": "The port (doc 79, 8.3; Phase 5 and its repair; goods from doc 73's lists). `posts`: the words in a post's title that make its market a port (its harbourmaster and Wharf office, the hands unloading ships, the cranes; never the bare word wharf, which a tannery or a smokehouse by the water has in its name, so Ridgemere's overseer of the Grayrock wharf is listed by his own words; the sea trade's other posts there, its carriers and store keepers, are the port's too, but make no port alone). `never`: goods no ship brings (cheese: the user's). `imports`: the ships' own goods; at a port's market those its shops set out and its workshops don't make wait for a ship (D27), and so does whatever else its shops set out that nothing in the realm makes and no wagon or cart brings. `takes`: what ships take away, of what its shops sell, buy or make. `ships`: the ships' names (letters and spaces; each passes the forbidden-word check, in Core's loader too). `cargoWords`: a good's words in a cargo where the catalogue's name won't do (a thing counted by the piece is put in the plural by rule: World::cargoWords). Core reads them (market::Data's wharfPosts, shipNever, shipBrings, shipTakes, shipNames, cargoWords; World's RatwPort.cpp): a world with no port uses none of it. Atlas's Wharf panel shows the goods until Phase 9 retargets it.",
+    "posts": [
+      "wharf office",
+      "harbourmaster",
+      "unloading ships",
+      "working the cranes",
+      "grayrock wharf"
+    ],
+    "cargoWords": {
+      "sheep": "sheep",
+      "offal": "offal",
+      "resin": "pine resin",
+      "horse_tack": "horse harness"
+    },
+    "ships": [
+      "the Gull",
+      "the Saltwife",
+      "the Heron",
+      "the Kestrel",
+      "the Grey Tern",
+      "the Marigold",
+      "the Fair Wind",
+      "the Long Tide",
+      "the Cormorant",
+      "the Petrel",
+      "the Morning Star",
+      "the Lark",
+      "the Salt Rose",
+      "the Wavecutter",
+      "the North Star",
+      "the Sandpiper"
+    ],
     "never": [
       "cheese"
     ],

@@ -187,6 +187,9 @@ std::string Game::scentLine(const std::string& reader, const documents::Document
     const auto* me = world_.entity(reader);
     if (me && World::noseAcuity(*me) < .2)
         return {};
+    // (The ships' timetable, the Wharf office's: handled by a whole pier, masked by nobody. Doc 79, Phase 5's repair.)
+    if (d.scent.empty() && d.what.rfind("ships:", 0) == 0)
+        return "It smells of tar and salt, and of many paws.";
     if (d.scent.empty())
         return "It carries no scent at all. Someone took care.";
     if (world_.calendarDays() - d.written > r.scentDays)
