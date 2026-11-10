@@ -76,9 +76,14 @@ const Data& data();
 // The forbidden-word check for world text made from data (a ship's name, a cargo's words; the user's rule, as
 // tools/test_realm2.py's for the world's own): true if `text` has the whole word "dog" or "dogs", in any case.
 bool forbiddenWord(const std::string& text);
+// A name is held to more (a ship's: Phases 4 and 5 merged): true if `text` has those letters anywhere in it, in any
+// case, so a compound made with the word is out too, and some honest names with it.
+bool forbiddenInName(const std::string& text);
 // The ships' names a list gives (market.json's `wharf.ships`, a host's own), as the loader takes them: plain names
-// (letters, spaces, ' and -; 40 characters at most), each once, 64 at most, and none with the forbidden word.
+// (letters, spaces, ' and -; 40 characters at most), each once, 64 at most, and none with the forbidden word in it.
 std::vector<std::string> shipNamesOf(const std::vector<json::Value>& list);
+// A ship's name as the loader would take it (shipNamesOf's rule, for one name: a saved ship's is held to it too).
+bool shipNameFits(const std::string& name);
 // A base good's group: its explicit one, else its category's, else the fallback; `how` (if given) says which
 // ("good", "category", "fallback").
 std::string groupOf(const std::string& base, std::string* how = nullptr);
@@ -245,6 +250,13 @@ struct Board
 json::Value encode(const Board& board);
 // Lenient (doc 79, 5.2 and 14): anything malformed is dropped, numbers clamped, never a refusal.
 Board decode(const json::Value& value);
+// A saved timetable made one the game could have rolled (Phases 4 and 5 merged; decode's, and a restored state's:
+// World::dropOrphanedShips), whatever a save says: one ship of an id and one a port a day (the first kept); a status the
+// game knows, else due; hours inside the day; a name the loader would take (shipNameFits: else another of
+// market.json's not at that port, else "a ship"); a cargo of goods, each once, 1 to 999 pieces, 5 at most, and none
+// brought that no ship brings (`wharf.never`); ShipsAPort a port (the oldest sailed or stormbound go first, then the
+// last still due), ShipsMost in all; and the next ship's id above every "s<N>" there, so none is given twice.
+void mendShips(Board& board);
 
 // Markets, found at load (5.1): a trade point for each community with a merchant post (its id the community's), lone
 // merchants joined to the nearest by path or to "outside", and the k nearest other markets by path.

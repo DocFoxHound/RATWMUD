@@ -655,10 +655,6 @@ class Society
     bool imported(const std::string& market, const std::string& base) const;
     int arrivalRefill(const std::string& market, const std::string& base, double scale = 1, double rooms = 1);
     int sendOn(const std::string& market, const std::string& base);
-    // A good's shelves at a market set out again from their back rooms, up to their targets and never more than the back
-    // rooms hold (a move, never a making); the pieces. For a ship found in at a load (doc 79, Phase 5's repair: a crash
-    // after it docked brings back the Board, which says it is in and its back rooms full, but not the shelves it filled).
-    int setOutFromBackRoom(const std::string& market, const std::string& base);
     int marketShelf(const std::string& market, const std::string& base) const;
     double marketFullness(const std::string& market, const std::string& base) const;   // (1 full, 0 bare: shelves and back rooms.)
     void setTimesShift(std::map<std::string, int> shift);
@@ -875,6 +871,12 @@ class Society
     // The accounts whose quarantined goods the last restore moved (set aside or given back: doc 79, 14), since last taken:
     // the Game journals them at once, so a crash before the next checkpoint replays them as moved (Game::journalRestored).
     std::set<std::string> takeQuarantineMoved() { return std::exchange(quarantineMoved_, {}); }
+    // The shops' tills whose shelves an arrival filled or a departure took from since last taken (a ship docked or sailed,
+    // a wagon or cart came in or set out: arrivalRefill, sendOn). A till is staged and not journalled; but these moves go
+    // with the Board's (the ship in, the back rooms full, the wagon home), which is, so the Game journals each such till
+    // whole with the Board in its next record: after a crash the delivery is on the shelves once and what left has left
+    // (doc 79, Phases 4 and 5 merged).
+    std::set<std::string> takeTillsMoved() { return std::exchange(tillsMoved_, {}); }
     bool leanNow(const std::string& account) const;   // Robbed in its lean days: not refilled, and a second theft finds nothing.
     bool heldNow(const std::string& account) const;   // Keeping a change (a theft, a gift, a prize, players' pay) for now.
     // A status event for a resident (6.3: bereaved, lostPost, robbed, failing, helped, earning), today, read by the score
@@ -1125,6 +1127,7 @@ class Society
     market::Rules marketRules_;                     // (readMarketRules, as buildRules last read the world's rules.)
     bool exchange(const std::string& seller, const std::string& buyer, const std::string& item, int quantity,
                   std::int64_t total, const std::string& kind);
+    bool boardsDayIsToday() const;
     void rollMarket();
     void stepSlider(std::int64_t day, bool now = false);   // (The one slider's day's step: the Board's and the bands'.)
     double stagedSeason(const std::string& item) const;
@@ -1166,6 +1169,7 @@ class Society
     std::set<std::string> doorNoted_;               // (Those noted today: "day|reason".)
     std::set<std::pair<std::int64_t, std::string>> stagedChanged_;   // (Holders whose tallies or welcome changed: the journal's.)
     std::set<std::string> quarantineMoved_;         // (Accounts whose quarantine the last restore changed: the journal's.)
+    std::set<std::string> tillsMoved_;              // (Tills an arrival or a departure moved the shelves of: the journal's.)
     bool stagedRecount_ = false;                    // (A new household member alone: the bands again at the next hour.)
     // The door (9.3), from record: a move between accounts sorted and counted.
     void stagedDoor(const std::string& kind, const std::string& from, const std::string& to, const std::string& item, int quantity,

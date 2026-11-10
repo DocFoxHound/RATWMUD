@@ -2193,6 +2193,10 @@ class World
     std::set<std::string> shipsWorked_;                            // The ports whose hands are at work on a ship in.
     std::map<std::string, std::pair<std::int64_t, std::string>> shipsPosted_;   // Port -> the day and the words last posted.
     bool shipsChanged_ = true;                                     // (The timetable moved since the notices were posted.)
+    // The ships the rule stopped today (shipsPerWeek 0: those still due, dropped), kept the day: the rule set back the
+    // same day brings back those whose hour is still to come, as they were (tendPort). Not saved: a restart forgets them.
+    std::vector<market::Ship> shipsStopped_;
+    std::int64_t shipsStoppedDay_ = -1;
     void findPorts(std::map<std::string, std::set<std::string>>& imports);
     void portMorning(std::int64_t today);
     void rollPorts(std::int64_t today);

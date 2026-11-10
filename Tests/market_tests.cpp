@@ -659,6 +659,81 @@ void theBoardRoundTrips()
     expect(s.board().slider == 60, "now");
 }
 
+void aClockBehindTheBoard()
+{
+    // The Board's day ahead of the clock (a crash that kept the Board's morning and an hour before dawn; a host's /time
+    // set back before dawn): still the Board's day. The budget, the take, the sell total, the week's discount and the
+    // morning's restock all count as they stood, never as a fresh day's (a probe sold 554p past shops' 40p budgets and
+    // the 400p sell total: Phases 4 and 5 merged, leftover A); the new day comes when the clock passes the Board's.
+    auto s = world({{"tanner", "tanner at The Hide Yard", "coldwater"}, {"keeper", "shopkeeper of general goods", "coldwater"}, {"baker", "baker at The Loaf", "coldwater"}},
+                   {{"coldwater", 40}}, {{"playerSellMost", 60}});
+    const auto ada = player(s, "player-ada");
+    s.create(ada, "stone", 80, "test: quarried");
+    s.create(ada, "hide", 60, "test: hunted");
+    const auto till = s.tillOf("keeper"), tanner = s.tillOf("tanner"), loaf = s.tillOf("baker");
+    for (int i = 0; i < 6; ++i)
+        s.trade(ada, "keeper", "stone", 5, false, "acct:ada");
+    std::string why;
+    for (int i = 0; i < 30 && why.empty(); ++i)
+        if (const auto r = s.trade(ada, "tanner", "hide", 1, false, "acct:ada"); !r.ok)
+            why = r.message;
+    expect(s.stagedRestock("baker"), "the baker's morning restock");
+    const int bread = Society::stock(*s.account(loaf), "bread");
+    expect(bread >= 1 && s.trade(ada, "baker", "bread", bread, true, "acct:ada").ok, "its bread bought out");
+    s.discountPaid("c1", 25);
+    const auto left = s.budgetLeft(tanner), sold = s.soldToday("acct:ada");
+    const auto day = s.board().day;
+    expect(s.takenToday(till, "stone") == 30 && left < s.budgetOf(tanner) && sold > 0 && !why.empty() && s.discountRoom("c1") == 5,
+           "a day's trade: the take full, the budget drawn, a sell total, a discount paid: " + why);
+    const double morning = s.marketClock();
+    const auto asItStood = [&](Society& x, const std::string& when) {
+        expect(x.board().day == day && x.marketDay() < day, when + ": the Board's day ahead of the clock's");
+        expect(x.budgetLeft(tanner) == left, when + ": the budget as it stood: " + std::to_string(x.budgetLeft(tanner)) + " of " + std::to_string(left));
+        expect(x.takenToday(till, "stone") == 30 && x.soldToday("acct:ada") == sold, when + ": the take and the sell total as they stood");
+        const auto more = x.quote(ada, "keeper", "stone", 5, false, "acct:ada");
+        expect(!more.ok && more.message == "I've no room for more today.", when + ": no room for more: " + more.message);
+        const auto hide = x.trade(ada, "tanner", "hide", 1, false, "acct:ada");
+        expect(!hide.ok && hide.message == why, when + ": the tanner's answer of the morning: " + hide.message);
+        expect(x.budgetLeft(tanner) == left && x.soldToday("acct:ada") == sold && x.board().day == day, when + ": and nothing sold past them");
+        expect(x.discountRoom("c1") == 5, when + ": the week's discount as paid: " + std::to_string(x.discountRoom("c1")));
+        expect(!x.stagedRestock("baker") && Society::stock(*x.account(loaf), "bread") == 0, when + ": no second restock of the day");
+    };
+    // A host's /time set back before dawn, and back a week.
+    s.setMarketClock(std::floor(morning) + 3. / 24);
+    asItStood(s, "before dawn");
+    s.setMarketClock(std::floor(morning) - 7 + 3. / 24);
+    asItStood(s, "a week back");
+    s.discountPaid("c1", 3);
+    expect(s.discountRoom("c1") == 2 && s.board().week == day / 7, "a discount paid then counts in the Board's week: " + std::to_string(s.discountRoom("c1")));
+    // A crash: the Board of the day, a clock restored before its dawn.
+    auto saved = wire::readSociety(wire::society(s.state()));
+    auto t = world({{"tanner", "tanner at The Hide Yard", "coldwater"}, {"keeper", "shopkeeper of general goods", "coldwater"}, {"baker", "baker at The Loaf", "coldwater"}},
+                   {{"coldwater", 40}}, {{"playerSellMost", 60}});
+    expect(t.restore(saved), "restored");
+    t.setMarketClock(std::floor(morning) + 3. / 24);
+    t.marketTick(t.marketClock());
+    expect(t.discountRoom("c1") == 2, "the restored week's discount");
+    {
+        expect(t.board().day == day && t.marketDay() < day, "after a crash: the Board's day ahead of the clock's");
+        expect(t.budgetLeft(tanner) == left && t.takenToday(till, "stone") == 30 && t.soldToday("acct:ada") == sold,
+               "after a crash: the budget, the take and the sell total as they stood");
+        const auto hide = t.trade(ada, "tanner", "hide", 1, false, "acct:ada");
+        expect(!hide.ok && hide.message == why, "after a crash: the tanner's answer of the morning: " + hide.message);
+        expect(!t.quote(ada, "keeper", "stone", 5, false, "acct:ada").ok, "after a crash: no room for more stone");
+        expect(!t.stagedRestock("baker"), "after a crash: no second restock of the day");
+    }
+    // The clock comes back to the Board's day: the same day still; and passes it: a new one.
+    t.setMarketClock(morning);
+    t.marketTick(t.marketClock());
+    expect(t.board().day == day && t.budgetLeft(tanner) == left && t.takenToday(till, "stone") == 30, "the same day when the clock is back on it");
+    t.setMarketClock(std::floor(morning) + 1 + 9. / 24);
+    t.marketTick(t.marketClock());
+    expect(t.board().day == day + 1 && t.budgetLeft(tanner) == t.budgetOf(tanner) && t.takenToday(till, "stone") == 0 && t.soldToday("acct:ada") == 0,
+           "a new day when the clock passes it: every count fresh");
+    expect(t.stagedRestock("baker") && Society::stock(*t.account(loaf), "bread") >= 1, "and the baker's restock");
+    expect(s.realBalanced() && t.realBalanced(), "real money balanced");
+}
+
 void theFactionDiscountCap()
 {
     auto s = world({{"baker", "baker at The Loaf", "ridgemere"}}, {{"ridgemere", 620}});
@@ -1247,6 +1322,7 @@ int main(int argc, char** argv)
         theMorningRestock();
         theBoardRoundTrips();
         theFactionDiscountCap();
+        aClockBehindTheBoard();
         theOnePath();
         theWorldsMarkets();
         householdsInTheBoardsMarkets();

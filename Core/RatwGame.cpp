@@ -513,6 +513,7 @@ bool Game::start(std::string& problem)
     }
     mind_.configure(options_.dialogueEndpoint);
     consolidate();
+    world_.society().takeTillsMoved();              // (The journal starts from here: nothing moved before it is its to tell.)
     prime(shadow_);
     journalRestored();
     note("info", "RATW authoritative world ready; 20Hz; save=" +

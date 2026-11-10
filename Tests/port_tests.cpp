@@ -22,6 +22,7 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <unistd.h>
 #include <vector>
 #include <iostream>
@@ -1952,10 +1953,15 @@ void cargoInWords()
         expect(market::forbiddenWord(bad), std::string("forbidden: ") + bad);
     for (const auto* fine : {"the Dogfish", "dogged", "the Bulldog", "endogamy", "the Gull", ""})
         expect(!market::forbiddenWord(fine), std::string("fine: ") + fine);
+    // A name is held to more (Phases 4 and 5 merged): the word anywhere in it, so a compound made with it is out too.
+    for (const auto* bad : {"the Seadog", "the Sea Dog", "the Dogfish", "the Bulldog", "SEADOGS", "the Old dOg"})
+        expect(market::forbiddenInName(bad) && !market::shipNameFits(bad), std::string("no name for a ship: ") + bad);
+    for (const auto* fine : {"the Gull", "the Good Tide", "the Dragon", "do", ""})
+        expect(!market::forbiddenInName(fine), std::string("a name: ") + fine);
     // A host's own list of ships (market.json's `wharf.ships`) is held to it by the loader, as the game's list is.
-    const auto names = market::shipNamesOf(
-        parsed(R"(["the Gull", "the Sea Dog", "the Old Dogs", "the Gull", "the Dogfish", "the 9th Wave", "", 7, "the Salt-Rose"])").items());
-    expect(names == std::vector<std::string>{"the Gull", "the Dogfish", "the Salt-Rose"}, "a host's ships, checked: " + seeded::listed(names));
+    const auto names = market::shipNamesOf(parsed(
+        R"(["the Gull", "the Sea Dog", "the Old Dogs", "the Gull", "the Dogfish", "the Seadog", "the 9th Wave", "", 7, "the Salt-Rose"])").items());
+    expect(names == std::vector<std::string>{"the Gull", "the Salt-Rose"}, "a host's ships, checked: " + seeded::listed(names));
     for (const auto& name : market::data().shipNames)
         expect(market::shipNamesOf({json::Value(name)}).size() == 1, "the game's own pass: " + name);
 }
@@ -2002,9 +2008,10 @@ void aFullTimetable()
                                                                                        std::to_string(w.society().board().ships.size()));
 }
 
-// A crash on ship day: the Board says the ship is in (its back rooms full), the shelves are the checkpoint's from before
-// it docked. The load sets them out again: a move from the back rooms, nothing made.
-void aCrashOnShipDay()
+// A restart on ship day: a load leaves the shelves and the back rooms as they were saved (a shelf players bought bare
+// stays bare till its morning: nothing is set out again at a load, as Phase 5's repair did to mend a crash; the tills a
+// ship fills are journalled with the Board now, shipDayThroughACrash), and the ship in docks once.
+void aRestartOnShipDay()
 {
     auto f = harbour();
     auto w = load(f);
@@ -2013,9 +2020,6 @@ void aCrashOnShipDay()
     const auto s = toShipDay(w);
     dock(w, s);
     const auto port = *w.port("east");
-    auto saved = w.save();
-    std::map<std::pair<std::string, std::string>, int> had;
-    int emptied = 0;
     const auto rooms = [&](const market::Board& b) {
         int n = 0;
         for (const auto& [till, goods] : b.backRoom)
@@ -2024,34 +2028,30 @@ void aCrashOnShipDay()
                     n += pieces;
         return n;
     };
+    // (Players buy a shelf of what it brought bare.)
+    std::vector<std::pair<std::string, std::string>> bare;
     for (const auto* k : {"em", "es", "ek", "eg", "et"})
-    {
-        const auto till = soc.tillOf(k);
         for (const auto& ware : soc.stagedShelfGoods(k))
-        {
-            if (std::find(port.imports.begin(), port.imports.end(), items::baseOf(ware)) == port.imports.end())
-                continue;
-            const int n = stock(w, k, ware);
-            if (n <= 0)
-                continue;
-            had[{k, ware}] = n;
-            emptied += n;
-            saved.society.accounts[till].stock.erase(ware);
-        }
-    }
-    const int before = rooms(saved.society.board);
-    expect(emptied > 0 && before >= emptied, "the ship's goods on the shelves and behind: " + std::to_string(emptied) + " out, " + std::to_string(before) + " behind");
+            if (std::find(port.imports.begin(), port.imports.end(), items::baseOf(ware)) != port.imports.end() && stock(w, k, ware) > 0 && bare.size() < 3)
+            {
+                soc.consume(soc.tillOf(k), ware, stock(w, k, ware), "test: sold out");
+                bare.push_back({k, ware});
+            }
+    const int before = rooms(soc.board());
+    expect(!bare.empty() && before > 0, "the ship's goods behind, a shelf of them sold bare: " + std::to_string(before) + " behind");
+    const auto stood = shipsOf(w);
+    auto saved = w.save();
     w.takeEvents();
-    expect(w.restore(saved).ok, "the crash: the Board of the ship in, the shelves of the morning");
+    expect(w.restore(saved).ok, "the restart, the ship in");
     expect(w.shipIn("east") && w.shipIn("east")->id == s.id, "the ship is in");
-    for (const auto& [slot, n] : had)
-        expect(stock(w, slot.first, slot.second) == n, slot.first + "'s " + slot.second + " set out again: " + std::to_string(stock(w, slot.first, slot.second)) +
-                                                           " of " + std::to_string(n));
-    expect(rooms(soc.board()) == before - emptied, "from the back rooms, piece for piece: " + std::to_string(rooms(soc.board())) + " behind of " +
-                                                       std::to_string(before));
+    for (const auto& [k, ware] : bare)
+        expect(stock(w, k, ware) == 0, k + "'s " + ware + " as saved, not set out again: " + std::to_string(stock(w, k, ware)));
+    expect(rooms(soc.board()) == before, "the back rooms as saved: " + std::to_string(rooms(soc.board())) + " behind of " + std::to_string(before));
     w.tick(.6);
     const auto events = w.takeEvents();
     expect(count(events, "ship docks", s.id) == 0, "docked once: " + std::to_string(count(events, "ship docks", s.id)));
+    expect(shipsOf(w) == stood, "the timetable as saved");
+    expect(rooms(soc.board()) == before, "and the back rooms a pass of the roads on");
     expect(soc.realBalanced(), "real money balanced");
     expect(soc.unregisteredFaucets() == 0, "no unregistered faucet: " + std::to_string(soc.unregisteredFaucets()));
 }
@@ -2188,6 +2188,833 @@ void aSaveThatLies()
     expect(back.ships.size() == real && back.ships.front().name == board.ships.front().name, "the first kept: " + std::to_string(back.ships.size()));
 }
 
+// A timetable a save lies about (Phases 4 and 5 merged: leftovers B and C of Phase 5's last check). Whatever a save says,
+// the game keeps a timetable it could have rolled: the next ship's id above every id there; a name the loader would
+// take; a cargo of goods a ship may bring, in sane numbers; sixteen ships a port; none of a day past the weeks rolled.
+void aTimetableThatLies()
+{
+    auto f = harbour();
+    auto w = load(f);
+    w.tick(.6);
+    nextMorning(w);
+    const auto t = today(w), week = t / 7;
+    const auto idsOnce = [](const market::Board& b, const std::string& what) {
+        std::set<std::string> ids;
+        std::set<std::pair<std::string, std::int64_t>> days;
+        for (const auto& s : b.ships)
+            expect(ids.insert(s.id).second && days.insert({s.port, s.day}).second, what + ": one ship of an id, one a port a day: " + s.id);
+    };
+    const auto number = [](const std::string& shipId) { return std::int64_t(std::stoll(shipId.substr(1))); };
+    // B. The next id below those there: raised at the load (the state's, and a decoded save's), so the week rolled next
+    // gives no id twice.
+    {
+        auto saved = w.save();
+        auto& b = saved.society.board;
+        expect(b.ships.size() >= 2 && b.nextShip > 2, "a timetable to lie about");
+        std::int64_t highest = 0;
+        for (const auto& s : b.ships)
+            highest = std::max(highest, number(s.id));
+        b.nextShip = 1;
+        expect(market::decode(market::encode(b)).nextShip == highest + 1, "a decoded save's next id is above its ships': " +
+                                                                              std::to_string(market::decode(market::encode(b)).nextShip));
+        auto v = load(f);
+        expect(v.restore(saved).ok && v.society().board().nextShip == highest + 1, "and a restored state's: " +
+                                                                                       std::to_string(v.society().board().nextShip));
+        const auto had = v.society().board().ships.size();
+        for (int day = 0; day < 8; ++day)
+            nextMorning(v);
+        idsOnce(v.society().board(), "a week on");
+        std::int64_t newest = 0;
+        for (const auto& s : v.society().board().ships)
+            newest = std::max(newest, number(s.id));
+        expect(newest > highest && had > 0, "new ships posted, each with an id of its own: s" + std::to_string(newest));
+    }
+    // C. A ship's name, its cargo, its day.
+    {
+        auto saved = w.save();
+        auto& b = saved.society.board;
+        std::vector<std::string> due;
+        for (const auto& s : b.ships)
+            if (s.status == "due" && s.day > t)
+                due.push_back(s.id);
+        expect(due.size() >= 3, "three ships to come: " + std::to_string(due.size()));
+        const auto of = [&](const std::string& shipId) -> market::Ship& {
+            return *std::find_if(b.ships.begin(), b.ships.end(), [&](const market::Ship& s) { return s.id == shipId; });
+        };
+        of(due[0]).name = "the Seadog";
+        of(due[0]).brings = {{"cheese", 5}, {"butter", 1000000}, {"butter", 3}, {"no_such_good", 2}, {"wheat", -4}, {"eggs", 0}, {"cider", 7}};
+        of(due[0]).takes = {{"hide", 2000000000}, {"hide", 1}, {"cheese", 2}};
+        of(due[0]).hour = 99;
+        of(due[0]).sails = -3;
+        of(due[1]).name = "<b>the 9th Wave</b>";
+        of(due[2]).status = "storm";                // (Inside the weeks rolled: a storm called ahead reads the same. Kept.)
+        b.ships.push_back(aShip("s900", "the Far Storm", (week + 2) * 7 + 30, "storm"));
+        b.ships.push_back(aShip("s901", "the Far Ship", (week + 2) * 7, "due"));
+        b.ships.push_back(aShip("s902", "the Edge", (week + 2) * 7 - 1, "due"));
+        b.shipsThrough["east"] = week + 9;
+        const auto dayOfEdge = (week + 2) * 7 - 1;
+        const bool edgeTaken = std::any_of(b.ships.begin(), b.ships.end() - 1, [&](const market::Ship& s) { return s.port == "east" && s.day == dayOfEdge; });
+        auto v = load(f);
+        expect(v.restore(saved).ok, "a save that lies of its ships is restored");
+        const auto& now = v.society().board();
+        const auto* first = shipById(v, due[0]);
+        expect(first && market::shipNameFits(first->name) && first->name != "the Seadog", "a name with the word in it: another: " +
+                                                                                                (first ? first->name : std::string("gone")));
+        const auto& listed = market::data().shipNames;
+        expect(first && std::find(listed.begin(), listed.end(), first->name) != listed.end(), "one of the list's");
+        expect(first && first->brings == std::vector<std::pair<std::string, int>>{{"butter", 999}, {"cider", 7}},
+               "its cargo: no cheese, no good twice, none unknown, none of no pieces, 999 at most: " + std::to_string(first ? first->brings.size() : 0));
+        expect(first && first->takes == std::vector<std::pair<std::string, int>>{{"hide", 999}, {"cheese", 2}}, "what it takes, the same (cheese may leave)");
+        expect(first && first->hour >= 0 && first->hour <= 23.99 && first->sails >= first->hour && first->sails <= 23.99, "its hours inside the day");
+        const auto* second = shipById(v, due[1]);
+        expect(second && market::shipNameFits(second->name) && second->name != (first ? first->name : std::string()), "a name no list would take: another, its own");
+        for (const auto& s : now.ships)
+            expect(market::shipNameFits(s.name) && std::count_if(now.ships.begin(), now.ships.end(), [&](const market::Ship& o) {
+                       return o.port == s.port && o.name == s.name;
+                   }) == 1, "each ship a fit name, once at its port: " + s.name);
+        expect(shipById(v, due[2]) && shipById(v, due[2])->status == "storm", "a storm on a day to come, inside the weeks rolled: kept (one called ahead)");
+        expect(!shipById(v, "s900") && !shipById(v, "s901"), "no ship of a day past the weeks rolled");
+        expect(edgeTaken || shipById(v, "s902"), "the last day of next week is inside them");
+        expect(now.shipsThrough.at("east") == week + 1, "and no week rolled further than the next: " + std::to_string(now.shipsThrough.at("east")));
+        expect(!market::forbiddenInName(v.shipsNotice("east")), "the notice: " + v.shipsNotice("east"));
+        idsOnce(now, "restored");
+        v.tick(.6);
+        for (int day = 0; day < 8; ++day)
+            nextMorning(v);
+        int next = 0;
+        for (const auto& s : v.society().board().ships)
+            next += s.day / 7 == today(v) / 7 + 1;
+        expect(next == v.shipsInWeek("east", today(v) / 7 + 1) && next >= 1, "and the weeks roll on from the calendar: " + std::to_string(next));
+        idsOnce(v.society().board(), "a week on");
+    }
+    // Sixteen a port, whatever a save holds (decode's bound, and a restored state's): the oldest sailed or stormbound go
+    // first, then the last still due; the ship in stays.
+    {
+        market::Board b;
+        const auto d = t + 20;                      // (A day with days before it: a save keeps none before the first.)
+        b.ships.push_back(aShip("s1", "the Gull", d, "in"));
+        for (int n = 0; n < 6; ++n)
+            b.ships.push_back(aShip("s" + std::to_string(10 + n), "the Old " + std::string(1, char('A' + n)), d - 1 - n, n % 2 ? "storm" : "sailed"));
+        for (int n = 0; n < 13; ++n)
+            b.ships.push_back(aShip("s" + std::to_string(30 + n), "the New " + std::string(1, char('A' + n)), d + 1 + n, "due"));
+        auto other = aShip("s77", "the Gull", d, "due");
+        other.port = "west";
+        b.ships.push_back(other);
+        b.nextShip = 5;
+        const auto back = market::decode(market::encode(b));
+        const auto count = [&](const std::string& status) {
+            return std::count_if(back.ships.begin(), back.ships.end(), [&](const market::Ship& s) { return s.port == "east" && s.status == status; });
+        };
+        expect(back.ships.size() == market::ShipsAPort + 1 && count("in") == 1 && count("due") == 13 && count("sailed") + count("storm") == 2,
+               "sixteen at east: " + std::to_string(back.ships.size()) + ", " + std::to_string(count("due")) + " due");
+        for (const auto& s : back.ships)
+            expect(s.status == "in" || s.status == "due" || s.day >= d - 2, "the newest of those gone kept: " + s.name);
+        expect(back.nextShip == 78, "the next id above them all: " + std::to_string(back.nextShip));
+        for (int n = 0; n < 6; ++n)
+            b.ships.push_back(aShip("s" + std::to_string(50 + n), "the Late " + std::string(1, char('A' + n)), d + 20 + n, "due"));
+        const auto fewer = market::decode(market::encode(b));
+        long due = 0, far = 0;
+        for (const auto& s : fewer.ships)
+            due += s.port == "east" && s.status == "due", far += s.port == "east" && s.day >= d + 22;
+        expect(fewer.ships.size() == market::ShipsAPort + 1 && due == 15 && far == 0, "with only ships to come over the bound, the last due go: " +
+                                                                                         std::to_string(due) + " due, " + std::to_string(far) + " far");
+        // (And through a state restored, not decoded.)
+        auto saved = w.save();
+        saved.society.board.ships.clear();
+        for (int n = 0; n < 30; ++n)
+            saved.society.board.ships.push_back(aShip("s" + std::to_string(100 + n), "the Pad " + std::string(1, char('A' + n % 26)) + (n >= 26 ? "a" : ""),
+                                                      t - 2 + n % 3, n % 3 == 2 ? "due" : "storm"));
+        auto v = load(f);
+        expect(v.restore(saved).ok && v.society().board().ships.size() <= market::ShipsAPort, "a restored state's timetable bounded: " +
+                                                                                                std::to_string(v.society().board().ships.size()));
+    }
+}
+
+// The rule off and on the same morning (leftover D): the DM stops the ships and sets them going again before the day's
+// ship is in. It comes as it was posted, the same ship under the same id, with the rest of the timetable; one whose hour
+// passed while the rule was off did not come.
+void theRuleOffAndOnTheSameMorning()
+{
+    auto f = harbour();
+    auto w = load(f);
+    w.tick(.6);
+    const int rule = int(w.society().rule("shipsPerWeek"));
+    const auto s = toShipDay(w);
+    expect(w.setTimeOfDay(s.hour - 1).ok, "an hour before it is due");
+    w.tick(.6);
+    const auto before = shipsOf(w);
+    std::vector<std::string> due;
+    for (const auto& x : w.society().board().ships)
+        if (x.status == "due")
+            due.push_back(x.id);
+    expect(shipById(w, s.id) && shipById(w, s.id)->status == "due" && due.size() >= 2, "today's ship still due, and others");
+    w.takeEvents();
+    shipsAWeek(w, 0);
+    w.tick(.6);
+    w.tick(.6);
+    expect(!shipById(w, s.id) && w.shipsNotice("east").empty(), "the rule at 0: no ship due, the notice down");
+    shipsAWeek(w, rule);
+    w.tick(.6);
+    w.tick(.6);
+    auto events = w.takeEvents();
+    const auto* back = shipById(w, s.id);
+    expect(back && back->status == "due" && back->day == s.day && back->name == s.name && back->brings == s.brings && back->takes == s.takes,
+           "the rule back the same morning: today's ship is due again, as it was posted");
+    for (const auto& shipId : due)
+        expect(shipById(w, shipId) && shipById(w, shipId)->status == "due", "and the others, under their ids: " + shipId);
+    expect(shipsOf(w) == before, "the timetable as it was");
+    expect(count(events, "ship posted") == 0 && count(events, "ships cleared", "east") == 1 && count(events, "ships posted", "east") >= 1,
+           "no ship posted anew; the notice down and up again: " + std::to_string(count(events, "ship posted")));
+    expect(hasWord(w.shipsNotice("east"), s.name), "its name on the notice again: " + w.shipsNotice("east"));
+    expect(w.setTimeOfDay(s.hour + .1).ok, "its hour");
+    run(w, 5);
+    events = w.takeEvents();
+    expect(count(events, "ship docks", s.id) == 1 && w.shipIn("east"), "and it docks at its hour, once");
+    // Past its hour while the rule was off: it did not come; the ships to come are back.
+    auto v = load(f);
+    v.tick(.6);
+    const auto s2 = toShipDay(v);
+    expect(v.setTimeOfDay(s2.hour - 1).ok, "an hour before");
+    v.tick(.6);
+    std::vector<std::string> later;
+    for (const auto& x : v.society().board().ships)
+        if (x.status == "due" && x.day > today(v))
+            later.push_back(x.id);
+    shipsAWeek(v, 0);
+    v.tick(.6);
+    expect(v.setTimeOfDay(s2.hour + .5).ok, "its hour passes with the rule off");
+    v.tick(.6);
+    v.takeEvents();
+    shipsAWeek(v, rule);
+    v.tick(.6);
+    v.tick(.6);
+    events = v.takeEvents();
+    expect(!shipById(v, s2.id) && !v.shipIn("east") && count(events, "ship docks") == 0, "a ship whose hour passed with the rule off did not come");
+    for (const auto& shipId : later)
+        expect(shipById(v, shipId) && shipById(v, shipId)->status == "due", "those to come are back: " + shipId);
+    // Off through a night: the day's ships are forgotten, and the timetable is rolled anew from the day the rule is back.
+    auto u = load(f);
+    u.tick(.6);
+    const auto s3 = toShipDay(u);
+    shipsAWeek(u, 0);
+    u.tick(.6);
+    nextMorning(u);
+    shipsAWeek(u, rule);
+    u.tick(.6);
+    u.tick(.6);
+    expect(!shipById(u, s3.id), "yesterday's ship is not back a day late");
+    for (const auto& x : u.society().board().ships)
+        expect(x.status == "due" && x.day > today(u), "a new timetable, from tomorrow: " + x.name);
+    expect(!u.society().board().ships.empty(), "and there is one");
+}
+
+// What players sold to a shop that only buys the good goes with the ship too (leftover G): goods move on (7.5) from every
+// till of the port that holds more than its shelf of a good the ship takes, set out or not.
+void aShipTakesWhatAShopOnlyBuys()
+{
+    auto f = harbour();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    market::Ship s;
+    std::string keeper, good;
+    for (int tries = 0; tries < 20 && good.empty(); ++tries)
+    {
+        if (tries)
+            nextMorning(w);
+        s = toShipDay(w);
+        for (const auto& [g, n] : s.takes)
+            for (const auto* k : {"et", "eg", "em", "ek", "es"})
+            {
+                const auto set = soc.stagedShelfGoods(k);
+                if (!good.empty() || std::any_of(set.begin(), set.end(), [&](const std::string& ware) { return items::baseOf(ware) == g; }))
+                    continue;
+                soc.create("player-ada", g, 1, "test: gathered");
+                if (soc.quote("player-ada", k, g, 1, false).ok)
+                    keeper = k, good = g;
+                soc.consume("player-ada", g, 1, "test: put back");
+            }
+    }
+    expect(!good.empty(), "a ship takes a good an east shop buys and never sets out");
+    const auto till = soc.tillOf(keeper);
+    const int target = soc.shelfTarget(till, good);
+    soc.create("player-ada", good, 60, "test: gathered");
+    int sold = 0;
+    for (int i = 0; i < 60; ++i)
+        sold += soc.trade("player-ada", keeper, good, 1, false).ok;
+    const int held = stock(w, keeper, good);
+    expect(sold > 0 && held > target, "the shop holds more than its shelf of " + good + ": " + std::to_string(held) + " over " + std::to_string(target));
+    dock(w, s);
+    expect(stock(w, keeper, good) == held, "the ship in: it is there still");
+    w.takeEvents();
+    expect(w.setTimeOfDay(std::min(23.5, s.sails + .1)).ok, "its evening");
+    run(w, 5);
+    const auto events = w.takeEvents();
+    int pieces = 0;
+    for (const auto& e : events)
+        if (e.kind == "ship sails" && e.actor == s.id)
+            pieces = e.quantity;
+    expect(count(events, "ship sails", s.id) == 1 && stock(w, keeper, good) == std::min(held, soc.shelfTarget(till, good)),
+           "it sails with what the shop held over its shelf: " + std::to_string(stock(w, keeper, good)) + " left of " + std::to_string(held));
+    expect(pieces >= held - stock(w, keeper, good) && soc.realBalanced(), "counted in its load: " + std::to_string(pieces) + "; real money balanced");
+}
+
+// ---- Ship day through a crash (Phases 4 and 5 merged). The ships live on the Market Board, which the journal writes
+// whole with any record of the economy and as each checkpoint is taken (journalCheckpoint: Phase 4's third repair); the
+// tills a ship filled or took from go with it (Society::takeTillsMoved). Each case plays to its crash on a file save: a
+// checkpoint, then a ship's step on a world tick (it docks, it sails, a storm keeps it out, a morning rolls a new week),
+// then a player's trade journalled, then the game gone without saving; and is checked after the restart: the step has
+// happened once (not again, not lost), with its prices, its shelves and its back rooms. Each case twice: plain, and
+// ("<case>_window") with a snapshot between the step and the trade that is taken and does not land, so the store still
+// holds the checkpoint before the step when the game goes. The same cases go through Postgres (Tests/port_pg.py:
+// --write-crashes, --check-crashes).
+struct ShipCrash
+{
+    const char* name;
+    std::function<json::Value(game::Game&)> before;                 // The checkpoint, then the step: what was so then.
+    std::function<void(game::Game&, const json::Value&)> after;     // After the restart (and what was so at the crash).
+};
+
+const char* const EastKeepers[] = {"em", "es", "ek", "eg", "et"};
+
+// The port as it stands, in words a file keeps: the timetable, each ship good's price, east's shelves and back rooms of
+// what ships bring and take, its troubles, its notice.
+json::Value portAsItStands(const World& w)
+{
+    const auto& soc = w.society();
+    const auto& b = soc.board();
+    std::set<std::string> goods;
+    if (const auto* p = w.port("east"))
+        goods.insert(p->imports.begin(), p->imports.end());
+    for (const auto& s : b.ships)
+    {
+        for (const auto& [g, n] : s.brings)
+            goods.insert(g);
+        for (const auto& [g, n] : s.takes)
+            goods.insert(g);
+    }
+    auto out = json::Value::object();
+    out.add("ships", shipsOf(w));
+    std::ostringstream prices, shelves, rooms;
+    prices.precision(6);
+    prices << std::fixed;
+    for (const auto& g : goods)
+        prices << g << ' ' << soc.pressure("east", g) << ' ';
+    for (const auto* k : EastKeepers)
+    {
+        const auto till = soc.tillOf(k);
+        for (const auto& ware : soc.wares(k))
+            if (goods.count(items::baseOf(ware)))
+                shelves << k << ' ' << ware << ' ' << stock(w, k, ware) << ' ';
+        if (const auto r = b.backRoom.find(till); r != b.backRoom.end())
+            for (const auto& [g, n] : r->second)
+                if (goods.count(g))
+                    rooms << k << ' ' << g << ' ' << n << ' ';
+    }
+    out.add("prices", prices.str());
+    out.add("shelves", shelves.str());
+    out.add("rooms", rooms.str());
+    out.add("troubles", int(b.troubles.size()));
+    out.add("notice", w.shipsNotice("east"));
+    return out;
+}
+
+// Two lists of prices ("good pressure good pressure ..."), the same to the fourth place (a save keeps a pressure to six).
+bool samePrices(const std::string& one, const std::string& other)
+{
+    std::istringstream a(one), b(other);
+    std::string ga, gb;
+    double pa = 0, pb = 0;
+    while (a >> ga >> pa)
+        if (!(b >> gb >> pb) || ga != gb || std::abs(pa - pb) > 1e-4)
+            return false;
+    return !(b >> gb);
+}
+
+// The step happened once: the port after the restart is the port of the crash, and the roads' next passes do none of
+// the ship's steps again.
+void thePortOfTheCrash(game::Game& g, const json::Value& was, const std::string& name)
+{
+    auto& w = g.world();
+    const auto& stood = was["atCrash"];
+    const auto check = [&](const std::string& when) {
+        const auto now = portAsItStands(w);
+        expect(samePrices(now.string("prices"), stood.string("prices")), name + ": " + when + ", the prices of the crash:\n  " + now.string("prices") + "\n  for\n  " + stood.string("prices"));
+        for (const char* key : {"ships", "shelves", "rooms", "notice"})
+            expect(now.string(key) == stood.string(key), name + ": " + when + ", the " + key + " of the crash:\n  " + now.string(key) + "\n  for\n  " + stood.string(key));
+        expect(now.number("troubles") == stood.number("troubles"), name + ": " + when + ", the troubles of the crash: " +
+                                                                    std::to_string(now.number("troubles")) + " for " + std::to_string(stood.number("troubles")));
+    };
+    check("after the restart");
+    w.takeEvents();
+    w.tick(.6);
+    w.tick(.6);
+    const auto events = w.takeEvents();
+    for (const char* kind : {"ship docks", "ship sails", "ship stormbound", "ship posted"})
+        expect(count(events, kind) == 0, name + ": no \"" + kind + "\" a second time: " + std::to_string(count(events, kind)));
+    check("two passes of the roads on");
+    const auto* n = g.documents().find("ships-east");
+    expect(n && n->text == stood.string("notice"), name + ": the Wharf office's notice up, with the words of the crash: " + (n ? n->text : std::string("none")));
+    std::set<std::string> ids;
+    std::set<std::int64_t> days;
+    for (const auto& s : w.society().board().ships)
+        expect(ids.insert(s.id).second && days.insert(s.day).second, name + ": one ship of an id, one a day: " + s.id);
+    expect(w.society().realBalanced(), name + ": real money is balanced");
+}
+
+// The market's own morning done (it comes with the society's next pass after dawn): a case's crash is not left between
+// a day's turn on the roads and the Board's, for the restart to finish and be told from a step done twice.
+void theMarketsMorningDone(World& w, const std::string& name)
+{
+    for (int t = 0; t < 400 && w.society().board().day < w.society().marketDay(); ++t)
+        w.tick(.6);
+    expect(w.society().board().day == w.society().marketDay(), name + ": the Board on the market's day");
+}
+
+const std::vector<ShipCrash>& shipCrashes()
+{
+    static const std::vector<ShipCrash> cases{
+        // A ship docked after the checkpoint (its cargo cheaper, the shelves it fills and two more behind): in, once.
+        {"ship_docks",
+         [](game::Game& g) {
+             auto& w = g.world();
+             auto& soc = w.society();
+             w.tick(.6);
+             w.tick(.6);
+             w.roads().camps.clear();
+             const auto s = toShipDay(w);
+             expect(w.setTimeOfDay(s.hour - .3).ok, "ship_docks: a little before its hour");
+             // (The shelves of what ships bring sold out, its cargo dear: what its docking moves is there to see.)
+             const auto imports = w.port("east")->imports;
+             int shelves = 0;
+             for (const auto* k : EastKeepers)
+                 for (const auto& ware : soc.wares(k))
+                     if (std::find(imports.begin(), imports.end(), items::baseOf(ware)) != imports.end() && stock(w, k, ware) > 0)
+                     {
+                         soc.consume(soc.tillOf(k), ware, stock(w, k, ware), "test: sold out");
+                         ++shelves;
+                     }
+             expect(shelves > 0, "ship_docks: east's shops set out what ships bring");
+             soc.setPressure("east", s.brings.front().first, .3, "players");
+             g.save();
+             g.settle();                            // (The checkpoint, on its day: the ship due, the shelves bare.)
+             const auto bare = portAsItStands(w);
+             w.takeEvents();
+             dock(w, s);
+             expect(count(w.takeEvents(), "ship docks", s.id) == 1, "ship_docks: it docks after the checkpoint");
+             const auto full = portAsItStands(w);
+             expect(full.string("shelves") != bare.string("shelves") && full.string("rooms") != bare.string("rooms") &&
+                        full.string("prices") != bare.string("prices"),
+                    "ship_docks: its docking filled shelves and back rooms and moved a price");
+             auto was = json::Value::object();
+             was.add("ship", s.id);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto* s = shipById(g.world(), was.string("ship"));
+             expect(s && s->status == "in" && g.world().shipIn("east") && g.world().shipIn("east")->id == s->id, "ship_docks: in after the crash");
+         }},
+        // A ship sailed after the checkpoint with a glut of what it takes: sailed, once, and the glut not back on the shelf.
+        {"ship_sails",
+         [](game::Game& g) {
+             auto& w = g.world();
+             auto& soc = w.society();
+             w.tick(.6);
+             w.tick(.6);
+             w.roads().camps.clear();
+             const auto s = toShipDay(w);
+             dock(w, s);
+             std::string keeper, ware;
+             for (const auto* k : EastKeepers)
+                 for (const auto& x : soc.stagedShelfGoods(k))
+                     for (const auto& [good, n] : s.takes)
+                         if (ware.empty() && x == good)
+                             keeper = k, ware = x;
+             expect(!ware.empty(), "ship_sails: a shop sets out something it takes");
+             const auto till = soc.tillOf(keeper);
+             const int target = soc.shelfTarget(till, ware);
+             soc.create(till, ware, target + 25 - stock(w, keeper, ware), "test: a glut sold in");
+             expect(w.setTimeOfDay(std::min(23.4, s.sails - .1)).ok, "ship_sails: a little before it sails");
+             g.save();
+             g.settle();                            // (The checkpoint: the ship in, the glut on the shelf.)
+             expect(stock(w, keeper, ware) == target + 25, "ship_sails: the glut on the shelf at the checkpoint");
+             w.takeEvents();
+             expect(w.setTimeOfDay(std::min(23.5, s.sails + .1)).ok, "ship_sails: its evening hour");
+             run(w, 5);
+             expect(count(w.takeEvents(), "ship sails", s.id) == 1, "ship_sails: it sails after the checkpoint");
+             expect(stock(w, keeper, ware) <= target, "ship_sails: with the glut");
+             auto was = json::Value::object();
+             was.add("ship", s.id);
+             was.add("keeper", keeper);
+             was.add("ware", ware);
+             was.add("target", target);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             auto& w = g.world();
+             const auto* s = shipById(w, was.string("ship"));
+             expect(s && s->status == "sailed" && !w.shipIn("east"), "ship_sails: sailed after the crash");
+             const int have = stock(w, was.string("keeper"), was.string("ware"));
+             expect(have <= int(was.number("target")), "ship_sails: the load that sailed is not back on the shelf: " + std::to_string(have) + " of a shelf of " +
+                                                           std::to_string(int(was.number("target"))));
+         }},
+        // A storm kept a ship out at its day's turn after the checkpoint (+0.1 on its cargo, a trouble): once.
+        {"ship_storm",
+         [](game::Game& g) {
+             auto& w = g.world();
+             w.tick(.6);
+             w.tick(.6);
+             w.roads().camps.clear();
+             std::string ship;
+             for (int day = 0; day < 500 && ship.empty(); ++day)
+             {
+                 g.save();
+                 g.settle();                        // (The checkpoint, the day before: the ship still due.)
+                 w.takeEvents();
+                 nextMorning(w);
+                 for (const auto& e : w.takeEvents())
+                     if (e.kind == "ship stormbound")
+                         ship = e.actor;
+             }
+             theMarketsMorningDone(w, "ship_storm");
+             expect(!ship.empty() && shipById(w, ship) && shipById(w, ship)->status == "storm", "ship_storm: a storm keeps a ship out at its day's turn");
+             auto was = json::Value::object();
+             was.add("ship", ship);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto* s = shipById(g.world(), was.string("ship"));
+             expect(s && s->status == "storm" && !g.world().shipIn("east"), "ship_storm: stormbound after the crash");
+         }},
+        // A morning rolled a new week of ships after the checkpoint: the same timetable, the same ids, none twice.
+        {"ship_morning",
+         [](game::Game& g) {
+             auto& w = g.world();
+             w.tick(.6);
+             w.tick(.6);
+             w.roads().camps.clear();
+             std::string before, after;
+             for (int day = 0; day < 30 && before == after; ++day)
+             {
+                 g.save();
+                 g.settle();                        // (The checkpoint, the day before.)
+                 before = shipsOf(w);
+                 w.takeEvents();
+                 nextMorning(w);
+                 const auto events = w.takeEvents();
+                 after = count(events, "ship posted") > 0 && count(events, "ship stormbound") == 0 ? shipsOf(w) : before;
+             }
+             expect(before != after, "ship_morning: a morning posts new ships");
+             theMarketsMorningDone(w, "ship_morning");
+             auto was = json::Value::object();
+             was.add("next", double(w.society().board().nextShip));
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             expect(double(g.world().society().board().nextShip) == was.number("next"), "ship_morning: the next ship's number as it was");
+         }},
+    };
+    return cases;
+}
+
+struct ShipRun
+{
+    const ShipCrash* c;
+    bool window;
+    std::string name;
+};
+const std::vector<ShipRun>& shipRuns()
+{
+    static const std::vector<ShipRun> runs = [] {
+        std::vector<ShipRun> all;
+        for (const bool window : {false, true})
+            for (const auto& c : shipCrashes())
+                all.push_back({&c, window, std::string(c.name) + (window ? "_window" : "")});
+        return all;
+    }();
+    return runs;
+}
+
+std::string slurp(const std::filesystem::path& file)
+{
+    std::ifstream in(file, std::ios::binary);
+    expect(bool(in), "reads " + file.string());
+    std::ostringstream text;
+    text << in.rdbuf();
+    return text.str();
+}
+std::string crashSave(const std::string& name)
+{
+    return (std::filesystem::temp_directory_path() / ("ratw-s2stage-shipcrash-" + name + "-" + std::to_string(::getpid()) + ".json")).string();
+}
+void cleanSave(const std::string& path)
+{
+    for (const auto* end : {"", ".journal", ".art", ".lock", ".reports", ".snapshot"})
+        std::filesystem::remove_all(path + end);
+}
+
+// The window between a snapshot's capture and its landing, held open (trade_show_tests' own): the tick's snapshot is
+// really forked, and its child cannot write its file, so the save stays the checkpoint before it.
+void aSnapshotDoesNotLand(game::Game& g, const std::string& path, const std::string& log, const std::string& name)
+{
+    g.settle();
+    const auto held = slurp(path);
+    std::filesystem::create_directory(path + ".snapshot");   // (Where the child writes: it cannot now.)
+    const auto failed = [&] { return log.find("the snapshot could not be written") != std::string::npos; };
+    for (int t = 0; t < 45 && !failed(); ++t)
+        g.tick(1);                                  // (The snapshot is forked in here, after its thirty seconds.)
+    for (int t = 0; t < 500 && !failed(); ++t)
+    {
+        ::usleep(10000);
+        g.tick(.01);
+    }
+    std::filesystem::remove_all(path + ".snapshot");
+    expect(failed(), name + ": a snapshot is taken and cannot be written");
+    expect(slurp(path) == held, name + ": the save is still the checkpoint before it");
+}
+
+// A purchase at one of west's shops (an economy record that moves the Board; never east's shelves, which the case
+// compares). Before the shops open the Board is moved as a purchase moves it, for the next trade's record to carry.
+void buysInWest(game::Game& g, Client& c, const std::string& name)
+{
+    auto& w = g.world();
+    const auto cash = [&] {
+        const auto* a = w.society().account(c.entityId);
+        return a ? a->cash : 0;
+    };
+    const auto before = cash();
+    std::string said;
+    for (const char* keeper : {"wg", "wm"})
+        for (const char* item : {"meal", "nails", "flour", "herbs", "oats"})
+        {
+            const auto* k = w.entity(keeper);
+            auto* me = w.entity(c.entityId);
+            if (!k || !me || cash() < before)
+                continue;
+            me->cellId = k->cellId;
+            me->position = {k->position.x + .5, k->position.y};
+            c.events.clear();
+            g.command(&c, cmd({{"type", "trade"}, {"target", keeper}, {"item", item}, {"quantity", 1}, {"buy", true}}));
+            g.settle();
+            said += c.said();
+        }
+    if (cash() == before)
+    {
+        const double p = w.society().pressure("west", "meal");
+        w.society().setPressure("west", "meal", p + .02, "players");
+        expect(std::abs(w.society().pressure("west", "meal") - p - .02) < 1e-6, name + ": no shop open (" + said + "), the Board moved as a purchase moves it");
+        return;
+    }
+    expect(cash() < before, name + ": a purchase at a shop in west: " + said);
+}
+
+// To the crash: the case's own play, then (a window run) a snapshot that doesn't land and a purchase, then a player's
+// trade (a penny for a notice: an economy record), then the game goes without saving.
+json::Value toTheShipCrash(const ShipRun& r, const std::filesystem::path& root, const std::string& path)
+{
+    std::string log;
+    auto o = optionsOn(root, path);
+    o.forkSnapshots = r.window;
+    game::Game g(o);
+    g.log = [&log](const char*, const std::string& text) { log += text + "\n"; };
+    std::string problem;
+    expect(g.start(problem), r.name + ": a game starts on the harbour with a file save: " + problem);
+    // (A window run's player is in before the case's checkpoint: nothing is journalled between the ship's step and the
+    // snapshot that doesn't land, so that snapshot's own record is the one that must carry it.)
+    Client ash;
+    if (r.window)
+        enterAt(g, ash, 84, "ash", "east");
+    auto was = r.c->before(g);
+    const auto saved = slurp(path);
+    if (!r.window)
+        enterAt(g, ash, 84, "ash", "east");
+    if (r.window)
+    {
+        aSnapshotDoesNotLand(g, path, log, r.name);
+        buysInWest(g, ash, r.name);
+        const auto* spot = g.world().boardSpot("east");
+        auto* me = g.world().entity(ash.entityId);
+        expect(spot && me, r.name + ": back to east's board");
+        me->cellId = spot->cell;
+        me->position = {spot->x + .5, spot->y};
+    }
+    board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "A trade, journalled."}});
+    g.settle();                                     // (Its reply waits for its journal record.)
+    const auto said = ash.said();
+    expect(said.find("You pin your notice") != std::string::npos, r.name + ": a penny paid: an economy record: " + said);
+    g.disconnect(&ash);
+    expect(slurp(path) == saved, r.name + ": the save is the checkpoint from before the ship's step (the journal is the tail)");
+    was.add("atCrash", portAsItStands(g.world()));
+    return was;
+}
+
+void afterTheShipCrash(const ShipRun& r, const std::filesystem::path& root, const std::string& path, const json::Value& was)
+{
+    game::Game g(optionsOn(root, path));
+    std::string problem;
+    expect(g.start(problem), r.name + ": starts again after the crash: " + problem);
+    r.c->after(g, was);
+    thePortOfTheCrash(g, was, r.name);
+    r.c->after(g, was);
+}
+
+void shipDayThroughACrash()
+{
+    for (const auto& r : shipRuns())
+    {
+        auto f = harbour();
+        const auto root = onDisk(f, "shipcrash-" + r.name);
+        const auto path = crashSave(r.name);
+        cleanSave(path);
+        const auto was = toTheShipCrash(r, root, path);
+        afterTheShipCrash(r, root, path, was);
+        cleanSave(path);
+        std::filesystem::remove_all(root);
+    }
+}
+
+// A port deleted, through a crash. Its ships are dropped when the save loads into the world without its Wharf, and the
+// Board without them goes whole into the journal with the next record of the economy: a crash after it never brings the
+// old timetable back, not even into a world whose Wharf is built again (new ships are posted there, none found in).
+void aPortDeletedThroughACrash()
+{
+    auto f = harbour();
+    auto root = onDisk(f, "port-gone-crash");
+    const auto path = crashSave("port_gone");
+    cleanSave(path);
+    const auto trades = [&](game::Game& g, Client& c, int n, const char* who, const std::string& name) {
+        enterAt(g, c, n, who, "east");
+        buysInWest(g, c, name);
+        const auto* spot = g.world().boardSpot("east");
+        auto* me = g.world().entity(c.entityId);
+        expect(spot && me, name + ": at east's board");
+        me->cellId = spot->cell;
+        me->position = {spot->x + .5, spot->y};
+        board(g, c, {{"verb", "post"}, {"kind", "other"}, {"text", "A trade, journalled."}});
+        g.settle();
+        expect(c.said().find("You pin your notice") != std::string::npos, name + ": a penny paid: an economy record: " + c.said());
+        g.disconnect(&c);
+    };
+    std::set<std::string> old;
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "a game starts on the harbour: " + problem);
+        auto& w = g.world();
+        w.tick(.6);
+        w.tick(.6);
+        const auto s = toShipDay(w);
+        g.save();
+        g.settle();                                 // (The checkpoint: its ships due.)
+        dock(w, s);
+        Client ash;
+        trades(g, ash, 84, "ash", "the port's last day");
+        for (const auto& x : w.society().board().ships)
+            old.insert(x.id);
+        expect(w.shipIn("east") && old.size() >= 2, "the journal holds a timetable, a ship in");
+    }                                               // (The game gone without saving.)
+    std::filesystem::remove_all(root);
+    auto edited = harbour(true, false);
+    root = onDisk(edited, "port-gone-crash");
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "the crash's save starts on the world with no Wharf: " + problem);
+        auto& w = g.world();
+        expect(w.ports().empty() && w.society().board().ships.empty() && w.society().board().shipsThrough.empty(), "its ships dropped at the load");
+        Client bryn;
+        trades(g, bryn, 85, "bryn", "the day after the Wharf went");
+        expect(w.society().board().ships.empty(), "none since");
+    }                                               // (Gone again without saving: the drop is the journal's to keep.)
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "starts again with no Wharf: " + problem);
+        auto& w = g.world();
+        expect(w.society().board().ships.empty() && w.society().board().shipsThrough.empty(), "no ships after the second crash");
+        w.tick(.6);
+        for (int t = 0; t < 30; ++t)
+            g.tick(.05);
+        expect(!g.documents().find("ships-east"), "the Wharf office's notice down");
+        expect(w.society().realBalanced(), "real money is balanced");
+    }
+    std::filesystem::remove_all(root);
+    root = onDisk(f, "port-gone-crash");
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "and on the world with its Wharf built again: " + problem);
+        auto& w = g.world();
+        expect(!w.ports().empty() && !w.shipIn("east"), "the old timetable is not back: no ship found in");
+        for (const auto& x : w.society().board().ships)
+            expect(x.status == "due", "nor one of it docked or sailed: " + x.id + " " + x.status);
+        w.takeEvents();
+        w.tick(.6);
+        w.tick(.6);
+        const auto events = w.takeEvents();
+        expect(count(events, "ship docks") == 0 && count(events, "ship sails") == 0, "nothing docks or sails a second time");
+        std::set<std::string> ids;
+        std::set<std::int64_t> days;
+        for (const auto& x : w.society().board().ships)
+            expect(x.status == "due" && x.day > today(w) && ids.insert(x.id).second && days.insert(x.day).second,
+                   "new ships posted, each still to come, one of an id, one a day: " + x.id);
+        expect(!ids.empty(), "the port has ships again");
+        expect(w.society().realBalanced(), "real money is balanced");
+    }
+    cleanSave(path);
+    std::filesystem::remove_all(root);
+}
+
+// --write-crashes DIR: each case played to its crash; its checkpoint (DIR/<case>.json), its journal (DIR/<case>.journal,
+// a record a line: its number, a tab, its text) and what was so at the crash (DIR/<case>.was.json), for Tests/port_pg.py
+// to put through game.save_checkpoint and game.journal in a throwaway database and read back.
+int writeCrashes(const std::filesystem::path& dir)
+{
+    namespace fs = std::filesystem;
+    fs::create_directories(dir);
+    for (const auto& r : shipRuns())
+    {
+        auto f = harbour();
+        const auto root = onDisk(f, "shipcrash-" + r.name);
+        const auto path = crashSave(r.name);
+        cleanSave(path);
+        const auto was = toTheShipCrash(r, root, path);
+        expect(fs::exists(path) && fs::exists(path + ".journal"), r.name + ": a checkpoint and a journal written");
+        fs::copy_file(path, dir / (r.name + ".json"), fs::copy_options::overwrite_existing);
+        fs::copy_file(path + ".journal", dir / (r.name + ".journal"), fs::copy_options::overwrite_existing);
+        std::ofstream(dir / (r.name + ".was.json"), std::ios::binary) << json::dump(was);
+        cleanSave(path);
+        fs::remove_all(root);
+    }
+    return 0;
+}
+
+// --check-crashes BACK DIR: each case's checkpoint and journal as Postgres gave them back (BACK/<case>.json and
+// .journal), restarted on and checked as the file save's are.
+int checkCrashes(const std::filesystem::path& back, const std::filesystem::path& dir)
+{
+    namespace fs = std::filesystem;
+    for (const auto& r : shipRuns())
+    {
+        auto f = harbour();
+        const auto root = onDisk(f, "shipcrash-" + r.name);
+        const auto path = crashSave(r.name);
+        cleanSave(path);
+        fs::copy_file(back / (r.name + ".json"), path);
+        fs::copy_file(back / (r.name + ".journal"), path + ".journal");
+        json::Value was;
+        std::string error;
+        expect(json::parse(slurp(dir / (r.name + ".was.json")), was, error), r.name + ": what was so reads: " + error);
+        afterTheShipCrash(r, root, path, was);
+        cleanSave(path);
+        fs::remove_all(root);
+    }
+    std::cout << "port_tests --check-crashes: " << shipRuns().size() << " ship crashes replayed the same through Postgres (" << checks << " checks)\n";
+    return 0;
+}
+
 int writeTimetable(const std::filesystem::path& dir)
 {
     const auto saved = theTimetableThroughACrash(false);
@@ -2249,6 +3076,10 @@ int main(int argc, char** argv)
             return writeTimetable(argv[2]);
         if (argc == 4 && std::string(argv[1]) == "--check-timetable")
             return checkTimetable(argv[2], argv[3]);
+        if (argc == 3 && std::string(argv[1]) == "--write-crashes")
+            return writeCrashes(argv[2]);
+        if (argc == 4 && std::string(argv[1]) == "--check-crashes")
+            return checkCrashes(argv[2], argv[3]);
         const std::vector<std::pair<std::string, void (*)()>> tests{
             {"aPortAndItsTimetable", aPortAndItsTimetable},
             {"theTimetableSurvivesARestart", theTimetableSurvivesARestart},
@@ -2271,11 +3102,17 @@ int main(int argc, char** argv)
             {"theNoticeAtEveryRule", theNoticeAtEveryRule},
             {"cargoInWords", cargoInWords},
             {"aFullTimetable", aFullTimetable},
-            {"aCrashOnShipDay", aCrashOnShipDay},
+            {"aRestartOnShipDay", aRestartOnShipDay},
             {"aCalendarJump", aCalendarJump},
             {"aDayTurnedByTicks", aDayTurnedByTicks},
             {"cargoByTheDay", cargoByTheDay},
-            {"aSaveThatLies", aSaveThatLies}};
+            {"aSaveThatLies", aSaveThatLies},
+            // Phases 4 and 5 merged.
+            {"shipDayThroughACrash", shipDayThroughACrash},
+            {"aPortDeletedThroughACrash", aPortDeletedThroughACrash},
+            {"aTimetableThatLies", aTimetableThatLies},
+            {"theRuleOffAndOnTheSameMorning", theRuleOffAndOnTheSameMorning},
+            {"aShipTakesWhatAShopOnlyBuys", aShipTakesWhatAShopOnlyBuys}};
         // `--only NAME`: one test (to see it fail on the code before a repair); `--each`: every test, each to its end.
         if (argc == 3 && std::string(argv[1]) == "--only")
         {

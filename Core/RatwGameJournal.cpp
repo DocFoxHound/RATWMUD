@@ -322,6 +322,14 @@ void Game::record(unsigned what, const std::string& character)
             shadow_.committed = std::move(departures);
         }
     }
+    // The tills an arrival or a departure moved the shelves of since the last record (a ship docked or sailed, a wagon
+    // came in or set out): staged, so not followed above, but their move is one with the Board's (the ship "in" and the
+    // back rooms full, the ship "sailed", the departure gone), journalled just above. Each goes whole with it, so a crash
+    // has the delivery on the shelves once, with the back rooms it filled, and never the load that sailed back on them.
+    if (what & (Economy | Roads))
+        for (const auto& id : world_.society().takeTillsMoved())
+            if (const auto a = society.accounts.find(id); a != society.accounts.end() && !journalled(id))
+                set(path({"society", "accounts", id}), wire::economyAccount(a->second));
     if (what & Careers)
     {
         for (const auto& [id, p] : society.careers.positions)

@@ -2357,8 +2357,9 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     - A ship is "in, unloading" and the Wharf a crowd only while a dock hand is at that work: a ship brought in at a
       quiet pier (the DM's, or a restart at night) reads "is in" and no crowd. No ship comes on Restday; ships dock
       8:30 to 11:00 and sail 17:00 to 19:30, and "this evening" follows the hour (it was said at 15:30).
-    - `world.ship_name` names the ship `world.ships` speaks of: the one in, else today's, else the first due, else the
-      one stormbound, else the one that sailed today (it named yesterday's).
+    - `world.ship_name` names the ship `world.ships` speaks of, in the code's order (`World::shipFacts`): the one in,
+      else one a storm kept out these two days, else one due today, else one that sailed since yesterday, else one due
+      within two days (it named yesterday's). (Corrected at the merge: this line had the order wrong.)
     - A full week no longer drops ships silently: every ship due in seven days is named or counted ("and 2 more by
       Marketday"), all inside a notice's 280 characters at any rule and with several storms; a due line lists all a
       ship takes or none of it.
@@ -2392,9 +2393,10 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     - A week has at most six ships (it could have seven at rule 6, one on Restday).
   - **Imports** (13, 25): a port's ship goods are `market.json`'s `wharf.imports` its shops set out and its workshops
     don't make, and now also whatever else its shops set out that nothing in the realm makes and no wagon or cart
-    brings. On DEV that is 16 goods waiting for ships (butter and 15 that had kept the old morning refill: chamomile,
-    charm, cord, fine soap, glass beads, lavender, linen cloth, mint, pamphlet, cedar perfume, planks, plaster,
-    valerian, whitewash, yarrow). A ship carries up to four, half of `market.json`'s own where there are others, and
+    brings. On DEV that is 16 goods waiting for ships (butter and 15 that had kept the old morning refill: blanket,
+    chamomile, crate, cushion, wooden floor bowl, hay, horse tack, lavender, mead, mint, oil lamp, theriac, tick comb,
+    valerian, yarrow; `world_check --ship-day` prints them as `ship goods:`. Corrected at the merge: the list here
+    was the test fixture's, not DEV's). A ship carries up to four, half of `market.json`'s own where there are others, and
     leads with a different good from day to day, so a notice no longer reads "with butter" every time. What a Country
     farm makes stays the carts'.
   - **The forbidden word** (14, 29): one check in Core (`market::forbiddenWord`), used by the loader for a host's ship
@@ -2411,7 +2413,7 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     | no ship in | 2.72 | 6.14 | 5.74 | 23.1 | 395 |
     | a ship in (`--ship-day`) | 2.63 | 6.15 | 5.77 | 23.1 | 399 |
 
-    A ship in costs nothing measurable; the slowest tick after the first minute is 7:00's schedules in both (21 ms),
+    A ship in costs nothing measurable; the slowest tick after the first minute is 7:00's schedules in both (23 ms),
     under the 25 ms the check saw on a ship day, since no ship docks before 8:30 now. Real money balanced in both.
   - **Rejected, and why:**
     - 26, in part: Sump Stairs' seven porters stay dock hands. `Society::postRules` puts "carrying from" in the sea
@@ -2451,6 +2453,87 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     save (exported read only) is imported and loaded by a real server, which keeps the ship as posted, puts a ship
     "in" before its day back to due and drops one for a port the world has not got. The Editor's files are
     untouched. Release build clean (no error, no warning in the phase's files).
+- **2026-11-10: Phases 4 and 5 merged** (`r2-staged-p5` at `5e6ccaa` into `r2-staged` at `c126934`: merge `de5e918`,
+  then the work below in one commit). The only conflict was this section; `CMakeLists.txt`, `Core/RatwGame.h`,
+  `RatwRoads.cpp`, `RatwTradeShow.cpp`, `RatwGameJournal.cpp` and `RatwCheckpoint.cpp` merged as text.
+  - **Ships in the journal.** Phase 5 was built on the journal before Phase 4's third repair. Under that repair's
+    scheme nothing new is followed field by field: the ships are part of the Market Board (`ships`, `shipsThrough`,
+    `nextShip`, with `backRoom` and `restocked`), and `Game::record` writes the Board whole (`set society.board`)
+    with any record of the economy or the roads whenever it differs from the shadow. So every ship step on a world
+    tick (a ship docks, sails, is kept out by a storm, a morning rolls a week, a port is deleted and its ships
+    dropped) rides the next record, and `journalCheckpoint()` writes it as each checkpoint is taken (before a fork,
+    before `saveInBackground`, in `save()`): a snapshot captured and not landed loses nothing, and one that lands
+    has the same in the journal up to its number. A replay sets the Board, it does not add to it, so a step is never
+    applied twice; the roads' first pass after a restart finds the ship as the record left it and catches up only
+    what the clock passed while the world was down (`tendPort`).
+  - **The tills a ship touched go with it** (leftover F). The Board said "in" and the back rooms full while the
+    shelves were the checkpoint's, so after a crash a delivery was part lost and a sailed load was back on the
+    shelves. Now `Society::arrivalRefill`, `sendOn` and `stagedRestock` note each till whose shelves they moved
+    (`takeTillsMoved`), and the same record that carries the Board writes those tills whole
+    (`set society.accounts.<till>`). This is wider than ships on purpose: a wagon or cart in or out and the
+    morning's restock move shelves with the Board in the same way. Phase 5's repair set shelves out again from the
+    back rooms at every load to mend this; that is gone (`Society::setOutFromBackRoom` removed), so a restart moves
+    nothing and a shelf players bought bare stays bare till its morning (`aCrashOnShipDay` is `aRestartOnShipDay`).
+    **Still not journalled:** what a player's trade or a resident's buying moves on a staged till's shelves (Phase
+    1's design: the player's side is journalled, the till's is the next checkpoint's), so a crash can still put back
+    a shop's stock as of the last ship step or checkpoint, whichever is later.
+  - **Crash cases** (`port_tests`, `shipDayThroughACrash`): a ship docks, sails, is kept out by a storm, and a
+    morning rolls a new week (`ship_docks`, `ship_sails`, `ship_storm`, `ship_morning`), each after a checkpoint,
+    then a player's trade journalled, then the game gone without saving; and each again as a `_window` case (a
+    snapshot captured that doesn't land, a purchase, then the crash). After the restart the port is the port of the
+    crash: the same ships and statuses, prices, shelves and back rooms, the step done once, the next passes doing
+    none of it again, `realBalanced()`. All eight go through Postgres (`port_pg`: the checkpoint by
+    `game.save_checkpoint`, the records as rows of `game.journal`, read back as the server reads them; 216 checks
+    beside the timetable's 12; its database is `ratw_test_s2stage_<hex>`, dropped after). A port deleted is
+    `aPortDeletedThroughACrash` (file mode: the save loaded into a world without its Wharf, the Board without the
+    ships in the next record, a crash never bringing them back) beside Phase 5's `aPortDeletedUnderTheGame`; the
+    drop on a tick of a running game has no staged crash of its own (the Board goes whole either way).
+  - **Leftovers of Phase 5's last check:**
+    - **A, fixed** (`market_tests`, `aClockBehindTheBoard`): after a crash the Board (journalled) can be on the new
+      day while the restored clock is before dawn; the day's budgets and caps then read as a fresh day and counted
+      sales against nothing (a probe paid 554p past shop budgets of 40p and the 400p `playerSellMost`). A Board day
+      at or ahead of the market's day is today (`Society::boardsDayIsToday`, in `budgetLeft`, `takenToday` and
+      `soldToday`); the faction discount's week and the restock's day read the same way. `rewardsADay`, `theftADay`
+      and `stakesADay` needed nothing: their day (`budgetDay`) only moves forward, so a clock behind it keeps counting
+      against the same day's tallies.
+    - **B, fixed** (`aTimetableThatLies`): `nextShip` is raised above the highest ship id at decode and at restore
+      (`market::mendShips`).
+    - **C, fixed, with one thing kept on purpose** (`aTimetableThatLies`): `mendShips` holds a saved timetable to
+      what the game could have rolled: a name that doesn't fit `shipNameFits` is replaced from the world's list (or
+      "a ship"); cargo keeps known goods once each, counts 1 to 999, at most five, nothing of `wharf.never` brought;
+      hours inside the day; an unknown status is due; sixteen ships a port (the oldest sailed or stormbound go
+      first) as well as 256 in all. At restore a ship of a day past next week's end is dropped and `shipsThrough` is
+      held to next week. Names are checked for the forbidden word as letters anywhere, any case
+      (`market::forbiddenInName`: "Seadog" is refused; so is any honest name that holds those three letters);
+      `forbiddenWord` stays whole-word for cargo words and notices. **Kept:** a "storm" on a day still to come inside
+      the rolled weeks. `World::stormShip` called ahead (the DM's storm, Phase 9) makes exactly that and has already
+      moved the price, so undoing it at load would un-call a real storm; only one past next week goes.
+    - **D, fixed in memory** (`theRuleOffAndOnTheSameMorning`): the ships the rule stops are kept the day
+      (`World::shipsStopped_`); the rule back the same day brings back those whose hour is still ahead, the same
+      ship, id, name and cargo, posted once. Not saved: a restart or a crash between the two loses today's ship as
+      before, and a ship whose hour passed with the rule off does not come.
+    - **E, corrected** in "Phase 5 repaired" above: DEV's 16 ship goods (re-derived on DEV build 70 exported read
+      only; `world_check --ship-day` now prints them as `ship goods:`), `world.ship_name`'s order, and 23 ms.
+    - **F, fixed:** the tills above.
+    - **G, fixed** (`aShipTakesWhatAShopOnlyBuys`): `Society::sendOn` takes whatever a till holds of the good over
+      its shelf target, set out or only bought from players. It is the roads' helper too, so a wagon or cart setting
+      out takes such stock as well (7.5 says a departure takes what a market has over).
+  - Each new test fails with its fix taken out (B: the next id 1 under its ships; D: today's ship gone; G: 24 left
+    of 24; A, F and the crash cases as their entries say).
+  - Tests: a clean Release build (`build-m45c`; no warning in the files touched); ctest 84/84 with the database, none
+    skipped, run twice (`pg_client` on a throwaway `ratw_test_s2stage_m45`, dropped after; no `s2stage` database
+    left); `port_tests` 9,064 checks (8,142), `port_pg` 12 + 216, `market_tests` 2,001 (1,969), `trade_show_tests`
+    830, `shops_tests` 132, `roads_tests` 407, `host_edit_tests` 550, `game_tests` 3,631, `exploit_tests` 871,756,
+    `save_compat` 23,085. All 34 `tools/test_*.py` with the database and this build's server (throwaway names tagged
+    `s2stage`, none left): 668 tests, none failing, 24 skipped (the 23 `RATW_SLOW` world builds and
+    `test_game_tables`' save under `Saved/`; `test_live_map`'s fourth test sits below its `unittest.main()` and runs
+    only through `python3 -m unittest`, as it was run here). The client's 146 tests and its typecheck; the Editor's
+    81 + 67 and its typecheck (the client's browser tests start a server and were not run). No perf run: `world_check` has no journal, and
+    the port's tick is as Phase 5 measured it.
+  - **Unsure, for the next check:** whether a storm called ahead should survive a load (C); whether the name rule
+    should refuse honest names holding the letters; that a till journalled whole at a ship step carries its money
+    as of that step (balanced in every crash case here, but only ship steps and trades were staged); D across a
+    restart; and the trade-moved shelves above, which stay Phase 6's or a later repair's.
 
 ## Review (2026-11-08)
 

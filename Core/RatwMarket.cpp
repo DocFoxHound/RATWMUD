@@ -217,14 +217,27 @@ std::vector<std::string> shipNamesOf(const std::vector<json::Value>& list)
     for (const auto& n : list)
     {
         const auto name = n.asString({});
-        const bool plain = !name.empty() && name.size() <= 40 && std::all_of(name.begin(), name.end(), [](unsigned char c) {
-            return std::isalpha(c) || c == ' ' || c == '\'' || c == '-';
-        });
         // (And never the forbidden word: a host's list is checked as the game's own is.)
-        if (plain && !forbiddenWord(name) && std::find(names.begin(), names.end(), name) == names.end() && names.size() < 64)
+        if (shipNameFits(name) && std::find(names.begin(), names.end(), name) == names.end() && names.size() < 64)
             names.push_back(name);
     }
     return names;
+}
+
+bool shipNameFits(const std::string& name)
+{
+    return !name.empty() && name.size() <= 40 && !forbiddenInName(name) && std::all_of(name.begin(), name.end(), [](unsigned char c) {
+        return std::isalpha(c) || c == ' ' || c == '\'' || c == '-';
+    });
+}
+
+bool forbiddenInName(const std::string& text)
+{
+    const auto is = [&](std::size_t i, char c) { return std::tolower(static_cast<unsigned char>(text[i])) == c; };
+    for (std::size_t i = 0; i + 2 < text.size(); ++i)
+        if (is(i, 'd') && is(i + 1, 'o') && is(i + 2, 'g'))
+            return true;
+    return false;
 }
 
 bool forbiddenWord(const std::string& text)
@@ -648,6 +661,78 @@ json::Value encode(const Board& b)
     return o;
 }
 
+void mendShips(Board& b)
+{
+    const auto& d = data();
+    std::vector<Ship> kept;
+    for (auto& s : b.ships)
+    {
+        if (s.id.empty() || s.port.empty() ||
+            std::any_of(kept.begin(), kept.end(), [&](const Ship& o) { return o.id == s.id || (o.port == s.port && o.day == s.day); }))
+            continue;
+        if (s.status != "in" && s.status != "sailed" && s.status != "storm")
+            s.status = "due";
+        s.hour = finite(s.hour) ? std::clamp(s.hour, 0., 23.99) : 8;
+        s.sails = finite(s.sails) ? std::clamp(s.sails, s.hour, 23.99) : std::max(s.hour, 18.);
+        s.posted = finite(s.posted) ? std::max(0., s.posted) : 0;
+        const auto cargo = [&](std::vector<std::pair<std::string, int>>& goods, bool brought) {
+            std::vector<std::pair<std::string, int>> fit;
+            for (const auto& [g, n] : goods)
+                if (n > 0 && fit.size() < 5 && items::good(g) && !(brought && d.shipNever.count(g)) &&
+                    std::none_of(fit.begin(), fit.end(), [&](const auto& have) { return have.first == g; }))
+                    fit.push_back({g, std::min(n, 999)});
+            goods = std::move(fit);
+        };
+        cargo(s.brings, true);
+        cargo(s.takes, false);
+        kept.push_back(std::move(s));
+    }
+    for (auto& s : kept)
+    {
+        if (shipNameFits(s.name))
+            continue;
+        const auto taken = [&](const std::string& name) {
+            return std::any_of(kept.begin(), kept.end(), [&](const Ship& o) { return &o != &s && o.port == s.port && o.name == name; });
+        };
+        s.name = "a ship";
+        const auto& names = d.shipNames;
+        for (std::size_t i = 0; i < names.size(); ++i)
+            if (const auto& name = names[(std::size_t(std::max<std::int64_t>(0, s.day)) + i) % names.size()]; !taken(name))
+            {
+                s.name = name;
+                break;
+            }
+    }
+    std::map<std::string, std::size_t> ofPort;
+    for (const auto& s : kept)
+        ++ofPort[s.port];
+    for (auto& [port, count] : ofPort)
+        for (; count > ShipsAPort; --count)
+        {
+            auto out = kept.end();
+            for (auto it = kept.begin(); it != kept.end(); ++it)
+                if (it->port == port && (it->status == "sailed" || it->status == "storm") && (out == kept.end() || it->day < out->day))
+                    out = it;
+            if (out == kept.end())
+                for (auto it = kept.begin(); it != kept.end(); ++it)
+                    if (it->port == port && it->status == "due" && (out == kept.end() || it->day > out->day))
+                        out = it;
+            if (out == kept.end())
+                for (auto it = kept.begin(); it != kept.end(); ++it)
+                    if (it->port == port)
+                        out = it;
+            kept.erase(out);
+        }
+    if (kept.size() > ShipsMost)
+        kept.resize(ShipsMost);
+    b.ships = std::move(kept);
+    b.nextShip = std::max<std::int64_t>(1, b.nextShip);
+    for (const auto& s : b.ships)
+        if (s.id.size() > 1 && s.id.size() <= 16 && s.id[0] == 's' &&
+            std::all_of(s.id.begin() + 1, s.id.end(), [](unsigned char c) { return std::isdigit(c) != 0; }))
+            b.nextShip = std::max<std::int64_t>(b.nextShip, std::stoll(s.id.substr(1)) + 1);
+}
+
 Board decode(const json::Value& v)
 {
     Board b;
@@ -790,6 +875,7 @@ Board decode(const json::Value& v)
         if (name(port) && week.isNumber() && b.shipsThrough.size() < 64)
             b.shipsThrough[port] = std::int64_t(whole(week, -1, 365000000, -1));
     b.nextShip = std::int64_t(whole(v["nextShip"], 1, 1e15, 1));
+    mendShips(b);                                   // (Its bounds a port, its names and cargoes, its next id.)
     b.rolledThrough = std::int64_t(whole(v["rolledThrough"], -1, 365000000, -1));
     b.nextDeparture = std::int64_t(whole(v["nextDeparture"], 1, 1e15, 1));
     for (const auto& [till, goods] : v.object("backRoom").fields())
@@ -1292,6 +1378,7 @@ int Society::arrivalRefill(const std::string& market, const std::string& base, d
             if (stock(a, ware) >= want || (!a.stock.count(ware) && a.stock.size() >= MaxGoodsKinds))
                 continue;
             a.stock[ware] = want;
+            tillsMoved_.insert(till);               // (Journalled with the Board's side of the arrival.)
         }
         if (any)
         {
@@ -1315,12 +1402,14 @@ int Society::sendOn(const std::string& market, const std::string& base)
         auto found = state_.accounts.find(till);
         if (!p || found == state_.accounts.end())
             continue;
-        for (const auto& ware : stagedShelfGoods(p->founder))
+        // (Whatever it holds of the good: what it sets out, and what it only buys from players and so never sets out.)
+        for (auto& [ware, have] : found->second.stock)
             if (items::baseOf(ware) == base)
-                if (const int over = stock(found->second, ware) - shelfTarget(till, ware); over > 0)
+                if (const int over = have - shelfTarget(till, ware); over > 0)
                 {
-                    found->second.stock[ware] -= over;
+                    have -= over;
                     pieces += over;
+                    tillsMoved_.insert(till);
                 }
     }
     return pieces;
@@ -1713,10 +1802,20 @@ std::int64_t Society::budgetOf(const std::string& till) const
     return std::max<std::int64_t>(0, std::llround(market::data().budget * band * slider));
 }
 
+bool Society::boardsDayIsToday() const
+{
+    // The day's counts on the Board (budgets left, pieces taken, pennies sold) are today's while its day is the market's,
+    // and also while it is ahead of it: a clock behind the Board (a crash that kept the Board's morning but an hour
+    // before dawn, a host's /time set back before dawn) is still the Board's day, never a fresh one with every cap
+    // open; the morning comes when the clock passes the Board's day (rollMarket). Only a Board behind the clock (its
+    // morning not run yet) reads as a new day.
+    return state_.board.day >= marketDay();
+}
+
 std::int64_t Society::budgetLeft(const std::string& till) const
 {
     const auto& b = state_.board;
-    if (b.day == marketDay())
+    if (boardsDayIsToday())
         if (const auto left = b.budgetLeft.find(till); left != b.budgetLeft.end())
             return left->second;
     return budgetOf(till);
@@ -1762,7 +1861,7 @@ int Society::takeAllowance(const std::string& till, const std::string& item) con
 int Society::takenToday(const std::string& till, const std::string& item) const
 {
     const auto& b = state_.board;
-    if (b.day != marketDay())
+    if (!boardsDayIsToday())
         return 0;
     const auto t = b.takenToday.find(till);
     if (t == b.takenToday.end())
@@ -1774,7 +1873,7 @@ int Society::takenToday(const std::string& till, const std::string& item) const
 std::int64_t Society::soldToday(const std::string& holder) const
 {
     const auto& b = state_.board;
-    if (b.day != marketDay())
+    if (!boardsDayIsToday())
         return 0;
     const auto s = b.soldToday.find(holder);
     return s == b.soldToday.end() ? 0 : s->second;
@@ -1785,7 +1884,7 @@ std::int64_t Society::discountRoom(const std::string& chapter) const
     const auto& b = state_.board;
     const auto week = marketDay() / 7;
     const auto most = marketRules().discountMost;
-    if (b.week != week)
+    if (b.week < week)                              // (A week ahead of a clock set back is still the Board's week.)
         return most;
     const auto paid = b.discountWeek.find(chapter);
     return std::max<std::int64_t>(0, most - (paid == b.discountWeek.end() ? 0 : paid->second));
@@ -1807,7 +1906,7 @@ void Society::discountPaid(const std::string& chapter, std::int64_t pennies)
 {
     auto& b = state_.board;
     const auto week = marketDay() / 7;
-    if (b.week != week)
+    if (b.week < week)
     {
         b.week = week;
         b.discountWeek.clear();
@@ -2269,39 +2368,6 @@ std::vector<std::string> Society::stagedShelfGoods(const std::string& founder) c
     return out;
 }
 
-int Society::setOutFromBackRoom(const std::string& market, const std::string& base)
-{
-    int pieces = 0;
-    const auto* m = tradePoints().find(market);
-    if (!m)
-        return 0;
-    for (const auto& till : m->tills)
-    {
-        const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr;
-        auto found = state_.accounts.find(till);
-        const auto rooms = state_.board.backRoom.find(till);
-        if (!p || found == state_.accounts.end() || rooms == state_.board.backRoom.end())
-            continue;
-        const auto room = rooms->second.find(base);
-        if (room == rooms->second.end())
-            continue;
-        auto& a = found->second;
-        for (const auto& ware : stagedShelfGoods(p->founder))
-        {
-            if (items::baseOf(ware) != base || !itemValid(ware) || (!a.stock.count(ware) && a.stock.size() >= MaxGoodsKinds))
-                continue;
-            const int have = stock(a, ware);
-            const int take = std::min(room->second, std::min(MarketStockLimit, shelfTarget(till, ware)) - have);
-            if (take <= 0)
-                continue;
-            room->second -= take;
-            a.stock[ware] = have + take;
-            pieces += take;
-        }
-    }
-    return pieces;
-}
-
 bool Society::settingOut(const std::string& keeper) const
 {
     // Still setting out the wares from this morning's restock (7.7): what the keeper's activity reads.
@@ -2325,7 +2391,8 @@ bool Society::stagedRestock(const std::string& keeper)
     if (found == state_.accounts.end() || till == keeper)
         return false;
     const auto day = marketDay();
-    if (const auto last = state_.board.restocked.find(till); last != state_.board.restocked.end() && last->second == day)
+    // (Once a market day; a restock on a day ahead of a clock set back is not done again for the day before.)
+    if (const auto last = state_.board.restocked.find(till); last != state_.board.restocked.end() && last->second >= day)
         return false;
     state_.board.restocked[till] = day;
     auto& a = found->second;
@@ -2349,6 +2416,7 @@ bool Society::stagedRestock(const std::string& keeper)
         }
         a.stock[ware] = next;
         set = true;
+        tillsMoved_.insert(till);                   // (Journalled with the Board's side of it: its day, its back room.)
     }
     // The keeper is seen "setting out the wares" for a few minutes (7.7) when anything went out, or when the dawn rippled
     // a good the shop sets out (7.4: the smith works the new ore, though its shelf of bars was full).

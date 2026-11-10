@@ -547,6 +547,11 @@ int main(int argc, char** argv)
                 const bool docked = pick && server.dockShip(id);
                 std::cout << "ship day: " << port.market << " (" << port.posts << " posts, " << port.imports.size() << " goods waiting for ships): "
                           << (docked ? name + " brought in" : pick ? name + " not brought in" : std::string("no ship due")) << '\n';
+                // (Which goods: the list a Progress entry quotes is this line's, of the world it was run on.)
+                std::cout << "ship goods: " << port.market << ":";
+                for (const auto& g : port.imports)
+                    std::cout << ' ' << g;
+                std::cout << '\n';
             }
             if (server.ports().empty())
                 std::cout << "ship day: the world has no port\n";

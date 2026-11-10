@@ -477,12 +477,34 @@ void World::tendPort()
     const bool shipsRun = society_.rule("shipsPerWeek") > 0;
     const auto today = std::int64_t(std::floor(calendarDays_));
     const auto week = today / Week;
+    if (shipsStoppedDay_ != today)
+        shipsStopped_.clear();
+    // (The rule set back the day it stopped them: the ships it dropped that are still to come are back as they were,
+    // the same ships under the same ids, and the weeks are rolled over them, which adds only what is missing. One whose
+    // hour passed while the rule was off did not come.)
+    if (shipsRun && !shipsStopped_.empty())
+    {
+        for (auto& s : shipsStopped_)
+            if (port(s.port) && calendarDays_ < double(s.day) + s.hour / 24 && b.ships.size() < market::ShipsMost &&
+                std::none_of(b.ships.begin(), b.ships.end(), [&](const market::Ship& o) { return o.id == s.id || (o.port == s.port && o.day == s.day); }) &&
+                std::size_t(std::count_if(b.ships.begin(), b.ships.end(), [&](const market::Ship& o) { return o.port == s.port; })) < market::ShipsAPort)
+            {
+                b.ships.push_back(std::move(s));
+                shipsChanged_ = true;
+            }
+        shipsStopped_.clear();
+    }
     std::set<std::string> refilled;
     for (auto& s : b.ships)
     {
         const auto* p = port(s.port);
         if (!p || (!shipsRun && s.status == "due"))
         {
+            if (p)
+            {
+                shipsStopped_.push_back(s);
+                shipsStoppedDay_ = today;
+            }
             s.status = "gone";
             continue;
         }
@@ -828,11 +850,10 @@ void World::dropOrphanedShips()
 {
     // After a load (5.1: "Delete the Wharf and there are no ships"): a port's ships whose port is gone are dropped with
     // its week's roll and its notice; nothing else of the save is touched. A ship said to be in or sailed on a day still
-    // to come (a save edited, or made past a calendar since set back) is due again. A ship in has its goods on the
-    // shelves: a crash after it docked brings back the Board (the ship in, the back rooms full) and the shelves of the
-    // checkpoint before, so they are set out again from the back rooms (a move, never a making; what it takes is not
-    // sent on again, which would take what players sold since). What happened while the world was down (a ship's hour
-    // passed) is caught up at the first pass of the roads (tendPort).
+    // to come (a save edited, or made past a calendar since set back) is due again. The shelves are left as saved: the
+    // tills a ship filled or took from are journalled with the Board (Society::takeTillsMoved), so a crash brings back
+    // both or neither, and a restart moves nothing. What happened while the world was down (a ship's hour passed) is
+    // caught up at the first pass of the roads (tendPort).
     ensureRoadMarkets();
     auto& b = society_.stagedBoard();
     std::set<std::string> gone;
@@ -848,9 +869,20 @@ void World::dropOrphanedShips()
         b.shipsThrough.erase(market);
         recordEvent({"ships cleared", market, market, {}, 0, 0, {}, 0, 0, "its port is gone"});
     }
+    // The timetable held to what the game could have rolled (market::mendShips: a ship's name, its cargo, its hours, a
+    // port's bound, the next id), and to its calendar: no ship of a day past the weeks ever rolled (this week and the
+    // next), whatever it says of itself, and no week rolled further than that, so a save from a calendar since set back
+    // gets its timetable from today. A storm on a day still to come, inside those weeks, stays: one called ahead
+    // (stormShip) reads the same, its price already moved.
     const auto today = std::int64_t(std::floor(calendarDays_));
+    const auto week = today / Week;
+    market::mendShips(b);
+    b.ships.erase(std::remove_if(b.ships.begin(), b.ships.end(), [&](const market::Ship& s) { return s.day > (week + 2) * Week - 1; }), b.ships.end());
+    for (auto& [market, through] : b.shipsThrough)
+        through = std::min(through, week + 1);
     shipsIn_.clear();
     shipsPosted_.clear();
+    shipsStopped_.clear();
     shipsChanged_ = true;
     for (auto& s : b.ships)
     {
@@ -859,9 +891,6 @@ void World::dropOrphanedShips()
         if (s.status != "in" || shipsIn_.count(s.port))
             continue;
         shipsIn_[s.port] = s.name;
-        if (const auto* p = port(s.port))
-            for (const auto& g : p->imports)
-                society_.setOutFromBackRoom(s.port, g);
     }
     shipsAtWork();
 }
