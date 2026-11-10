@@ -2159,6 +2159,33 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     (47, it reads `facts.json`), `test_npc_mind` (31), `test_ambient_library`, `test_world_store` (24) and
     `test_world_package` (its 12 server cases skipped: they export DEV, not run here) pass.
 
+- **2026-11-10: Phase 4, second repair** (three problems an independent check of the repair found, each with a test
+  that failed before).
+  - **A crash replayed a wagon's arrival, raid or lateness twice.** The roads were journalled only with a roads record
+    or when the departures moved, but the world's tick moves the Board and the accounts beside them (a wagon in, robbed
+    or overdue, a camp gathered, a bounty posted, the roads' day), and the next trade journalled those alone. Now the
+    roads go with any economy record once they have moved a step since they were last written (everything but a
+    wagon's place along its way, which goes with the next step or the checkpoint); a roads record carries the economy
+    (a contract never without its pot); and every record carries the calendar, so a replayed morning isn't turned
+    again (and a day turn, a trade and a crash no longer leave a save refused as "budget in the future"). Not
+    covered, none of it a double effect: the carters' notices are documents kept by checkpoints (stale after a crash
+    until their week is out); a record written by an older build carries no calendar.
+  - **An escort went with whichever wagon to its town set out first.** An escort now names the market its wagon sets
+    out from (`from` on the contract, saved; an older save's has none and keeps the old rule): the wagon's launch, the
+    town guard's taking it after two days, the board where it is offered, the notices, a lost wagon's reopening and
+    the arrival's pay all match the road, one escort a road. Still taken at its town's own board as well. One taken
+    isn't put on a second wagon of its road while out with the first; one whose source market a host deletes is
+    refunded at load.
+  - **Cargo found at a broken camp was in no tally or cap.** It is a reward at the door now ("reward: recovered
+    cargo", by its catalogue worth, to the player's holder), found only within the day's rewards cap, before the
+    bounty, which is held to the room left; what is over the cap goes back to the staged side ("goes back to its
+    carters").
+  - Tests: `trade_show_tests` 566 checks (was 475: four crashes, each after a trade (set out, arrived, robbed, late),
+    restarted from the file and the same again through Postgres by the new `trade_show_pg`, 29 checks, in a throwaway
+    `ratw_test_s2stage_*` database; East's escort beside North's wagon to the same town; found cargo counted and
+    capped). A clean Release build (`build-4r2`); ctest 82/82 with the database, none skipped (`pg_client` on a
+    throwaway `ratw_test_s2stage_4r2`, dropped after); `host_edit_tests` 550, `roads_tests` 407, `save_compat` 23,085.
+
 ## Review (2026-11-08)
 
 Four reviews of the first draft, all read-only against `ridgemere2` at c8ac05c: one checking the code claims, one on
