@@ -1915,9 +1915,13 @@ class Game
         std::map<std::string, PositionState> positions;
         std::string roads, crime, companions, signIns;
         std::string board;                          // The Market Board (doc 79, Phase 1), as last journalled.
+        std::string committed;                      // (Its committed departures alone: with the roads, doc 79 Phase 4.)
         StagedState staged;                         // (Doc 79: all but the tallies and welcomes, which go by holder.)
     };
     void prime(Shadow& shadow) const;
+    // At a checkpoint: the journal goes on from what it holds (the accounts; the Board, its committed departures and the
+    // roads, which world ticks move between records: doc 79, Phase 4), so the next record's changes are against it.
+    void shadowCheckpoint();
     // After a restore: the accounts whose quarantined goods it moved (doc 79, 14), journalled whole with their quarantine.
     void journalRestored();
     std::uint64_t journalSeq_ = 0;

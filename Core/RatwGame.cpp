@@ -5955,8 +5955,7 @@ DbStore::Build Game::capture()
     // The journal's accounts now start from what this checkpoint holds: an account opened since the last record (a
     // contract's escrow, say) and closed before the next is erased by that record, not left in the checkpoint beside the
     // coins it paid out (which made a restart refuse the save: doc 57's tests found it).
-    if (shadow_.primed)
-        shadow_.accounts = world_.society().state().accounts;
+    shadowCheckpoint();
     for (const auto& [id, e] : world_.entities())
         if (!e.npc)
             characters_[id] = e;
