@@ -1886,6 +1886,32 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `tools/test_*.py` with the database and the worktree's server, none skipped but the `RATW_SLOW` world builds and
     `test_game_tables`' saves under `Saved/` (`test_world_package` 43, `test_world_sync` 52, `test_world_db` 49,
     `test_studio` 49, `test_world_store` 24); the Editor's 81 + 64 and its typecheck.
+  - **Fourth repair round** (2026-11-10, after the paused re-check of both lenses was run again on `5dd5d51`: no money
+    exploit, no weakened test, eight low problems). The running pre-79 DEV save is fixture (h),
+    `Tests/fixtures/pre79/running/` (its log kept beside it), in `save_compat`'s list: decoded, restored against DEV's
+    roster, round-tripped, the whole save into the world, the one pass's classes, through Postgres and on the full
+    world; `theRunningSave` checks it holds the loop's state, `outside:wharf`, the estates and tills, and that the Wharf's
+    and estates' accounts are dropped and the tills kept. A file-mode server wrote it, so `--check-loaded` compares the
+    checkpoint by value, not as text (jsonb keeps no key order; the dev and dev-old fixtures came from Postgres already
+    in its order). `save_compat_pg`, `market_pg` and `pg_client` exit 77 when skipped and ctest lists them as Skipped
+    (`SKIP_RETURN_CODE`), so a "79/79" no longer counts a skipped Postgres test as passed. `facilityPrefixes()` no
+    longer holds the old economy's `fund:`, `bank:`, `outside:`, `farm:`, `crew:`, `estate:` and `house:`, so
+    `openAccount` refuses them (classify still calls them Dead, so a save's are dropped); `caravan:` stays until
+    Phase 4; `status_tests` checks every Dead row of its table can't be opened. `newcomer_behaviors`' flake (an empty
+    innkeeper reply when the machine is loaded) was the test's game clock following the wall clock: a reply landing in
+    the first tick sent the next post within the chat's half-second limit ("Please leave a moment between posts"), and
+    fewer ticks left the master stepping in unseen ("in sight: u1"). Each answer now gets the same two game seconds,
+    then waits for a late reply with the clock all but still, and the test's worlds run by counts
+    (`World::setDeterministic`); 30 runs out of 30 passed beside 40 busy loops on 20 cores (before, several of every ten such runs failed).
+    Stale comments reworded (`farm_people_tests`' header, `test_studio`'s dead rule, the DAIRIES note,
+    `economy.sync`'s and the manifest's economy records). Tests: ctest 79/79 three times (once without the database,
+    three Skipped; twice with it and a throwaway `pg_client` database, none skipped); `save_compat` 23,084 checks, and
+    23,100 with `RATW_PRE79_BUILDS` (dev, dev-old, package and running loaded whole); `save_compat_pg` 5 saves through
+    Postgres; all 34 `tools/test_*.py` with the database and the worktree's server, none skipped but the `RATW_SLOW`
+    world builds (`test_realm` 7, `test_realm2` 16) and `test_game_tables`' save under `Saved/` (`test_world_package`
+    43, `test_world_sync` 52, `test_world_db` 49, `test_studio` 49, `test_world_store` 24, `test_dm_live` 1 with
+    `RATW_SERVER`). **To resume:** the user's price decisions (narrow the season span; keep the region factors; the
+    crafting cap strict), then Review A, which ends slice 1.
   - The client keeps its trade view for servers from before doc 79 (PROD is one), commented as such.
   - **Open for the user:** marking the memory pointers to the conserving economy as history (section 19's Phase 3
     row; it needs the user's say-so, so nothing was changed); `artifacts/economy` (D18).

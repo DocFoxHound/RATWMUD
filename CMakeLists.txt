@@ -108,8 +108,9 @@ add_executable(save_compat_tests Tests/save_compat_tests.cpp)
 target_link_libraries(save_compat_tests PRIVATE ratw_core)
 target_compile_definitions(save_compat_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME save_compat COMMAND save_compat_tests)
-# The same saves through Postgres (game.save_checkpoint/load_checkpoint, a throwaway database): skipped without Database/.env's settings.
+# The same saves through Postgres (game.save_checkpoint/load_checkpoint, a throwaway database): Skipped without Database/.env's settings.
 add_test(NAME save_compat_pg COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/save_compat_pg.py $<TARGET_FILE:save_compat_tests>)
+set_tests_properties(save_compat_pg PROPERTIES SKIP_RETURN_CODE 77)   # (Skipped, not Passed, without the settings.)
 add_executable(server_parts_tests Tests/server_parts_tests.cpp)
 target_link_libraries(server_parts_tests PRIVATE ratw_core)
 target_compile_definitions(server_parts_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
@@ -265,6 +266,7 @@ target_link_libraries(market_tests PRIVATE ratw_core)
 target_compile_definitions(market_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_test(NAME market_behaviors COMMAND market_tests)
 add_test(NAME market_pg COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/market_pg.py $<TARGET_FILE:market_tests>)
+set_tests_properties(market_pg PROPERTIES SKIP_RETURN_CODE 77)
 add_executable(exploit_tests Tests/exploit_tests.cpp)
 target_link_libraries(exploit_tests PRIVATE ratw_core)
 target_compile_definitions(exploit_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
@@ -355,10 +357,11 @@ add_executable(appearance_tests Tests/appearance_tests.cpp)
 target_link_libraries(appearance_tests PRIVATE ratw_core)
 add_test(NAME appearance_behaviors COMMAND appearance_tests)
 
-# Needs RATW_TEST_DATABASE_URL (a libpq connection string); skips without it.
+# Needs RATW_TEST_DATABASE_URL (a libpq connection string); without it, listed as Skipped.
 add_executable(pg_tests Tests/pg_tests.cpp)
 target_link_libraries(pg_tests PRIVATE ratw_core)
 add_test(NAME pg_client COMMAND pg_tests)
+set_tests_properties(pg_client PROPERTIES SKIP_RETURN_CODE 77)
 
 add_executable(town_tests Tests/town_tests.cpp)
 target_link_libraries(town_tests PRIVATE ratw_core)

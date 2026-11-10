@@ -150,7 +150,14 @@ std::string birthSex(const std::string& couple, std::int64_t day)
 
 const std::vector<std::string>& facilityPrefixes()
 {
-    static const std::vector<std::string> prefixes{"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:", "house:", "till:", "fund:", "bank:", "letter:", "let:", "stall:", "table:", "fest:", "project:", "outside:", "farm:", "crew:", "estate:"};   // (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works, watch, church; bank: doc 46's; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and festival pots; project: doc 57's town projects; outside: doc 68's markets outside the city, the Country; farm: and crew: doc 71's farms' tills and their crews' households; estate: doc 72's Houses' estates, Phase 6)
+    // The accounts a society may open (openAccount). The old economy's (fund:, bank:, outside:, farm:, crew:, estate:,
+    // house:) are not among them: no code opens one now, and Society::classify calls them Dead, so a save's are dropped
+    // at restore (doc 79, 14). caravan: is dead too but still opened by the roads until Phase 4's account-free
+    // departures, and dropped at a restart. (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works,
+    // watch, church; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and
+    // festival pots; project: doc 57's town projects; stores: the towns' treasuries; till: a business's.)
+    static const std::vector<std::string> prefixes{"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:",
+                                                   "till:", "letter:", "let:", "stall:", "table:", "fest:", "project:"};
     return prefixes;
 }
 

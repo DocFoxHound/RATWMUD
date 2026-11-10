@@ -7,8 +7,8 @@ market_tests --write-board writes a checkpoint whose Board players' trades moved
 the budget and allowance drawn, the holder's push, the day's net and sell total, a Chapter's weekly discount), the
 journal after the save replayed over it. It is saved with game.save_checkpoint into a throwaway database (named
 ratw_test_p3stage_<hex>, dropped afterwards), loaded back with game.load_checkpoint, and checked by
-market_tests --check-board: the same Board and the same checkpoint. Skipped (passing) when the local PostgreSQL isn't
-reachable: `set -a; . Database/.env; set +a` in the main checkout. It never opens a world's database: only the
+market_tests --check-board: the same Board and the same checkpoint. Skipped (exit 77, which ctest lists as Skipped)
+when the local PostgreSQL isn't reachable: `set -a; . Database/.env; set +a` in the main checkout. It never opens a world's database: only the
 maintenance database `postgres`, to create and drop its own.
 """
 import json
@@ -20,6 +20,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'tools'))
 
+SKIPPED = 77                                        # (ctest's SKIP_RETURN_CODE: listed as Skipped, never Passed.)
+
 
 def main(binary: str) -> int:
     try:
@@ -27,11 +29,11 @@ def main(binary: str) -> int:
         import world_db as W
     except ImportError as error:
         print(f'market_pg skipped: {error}')
-        return 0
+        return SKIPPED
     s = W.settings()
     if not s.get('POSTGRES_PASSWORD') or not s.get('RATW_OWNER_PASSWORD') or not s.get('RATW_GAME_PASSWORD'):
         print('market_pg skipped: no PostgreSQL settings (set -a; . Database/.env; set +a)')
-        return 0
+        return SKIPPED
 
     def superuser():
         return psycopg.connect(host=s.get('RATW_DB_HOST', '127.0.0.1'), port=s.get('RATW_DB_PORT', '5433'), dbname='postgres',
@@ -41,7 +43,7 @@ def main(binary: str) -> int:
         superuser().close()
     except psycopg.Error as error:
         print(f'market_pg skipped: local PostgreSQL not reachable ({str(error).strip()})')
-        return 0
+        return SKIPPED
 
     name = f'ratw_test_p3stage_{secrets.token_hex(4)}'
     assert 'p3stage' in name and name.startswith('ratw_test_')

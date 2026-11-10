@@ -3,10 +3,9 @@
 // NPCs (never making one): each farm's keeper by old trade (the oldest of its trades, with family among the unplaced
 // where one has), the keeper's family with them at the farmhouse and nobody else; the hands of the farm's trades (the
 // fallback trades for what they can't fill), housed in the farm's community at most six to a home, or near the city as
-// doc 68's arrivals are; each community's market from the towns' trades and shops. Each real post replaces one virtual
-// post and is paid as it was; the crew's founding purse goes to those who take its posts (no money made but a market
-// shop's float, counted as the farms' founding); a post left empty is a hand short and the farm yields in proportion;
-// the community's store sells to its households. Doc 72's works (the woods' and the peat's): their crews by the same rule,
+// doc 68's arrivals are; each community's market from the towns' trades and shops. Since doc 79 (Phase 3) a farm is a
+// place of work only: no till, crew or founding purse, no wages or yields of its own; its posts are filled by rule, a
+// post left empty is a hand short, and the placements make no real money (realBalanced). Doc 72's works (the woods' and the peat's): their crews by the same rule,
 // the woods' old trade first, keepers of those with no family among the unplaced first and alone (no farmhouse), living
 // with the hands in their community or the city, their posts out of doors at the works; Oakhaven's market staffed with
 // its works. Phase 3: the stone's works of the mines, stone and clay (a clay pit's one hand, no keeper), and a works'
@@ -483,7 +482,7 @@ void thePlacement()
     const auto again = s.takeRequests();
     expect(std::none_of(again.begin(), again.end(), [](const ResidentRequest& r) { return r.kind == "farm"; }),
            "nobody more asked for once the posts are real");
-    // A hand gone (died): its post stands empty, the farm a hand short, and it yields in proportion.
+    // A hand gone (died): its post stands empty, the farm a hand short.
     const auto& pigs = farm(s, "pig_farm_1");
     std::string gone;
     for (const auto& p : s.positions())

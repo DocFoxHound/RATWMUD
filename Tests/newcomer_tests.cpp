@@ -270,6 +270,15 @@ game::Options options(const std::string& exportDir = {}, const std::string& save
     return o;
 }
 
+// Starts a game server whose world works by counts, never by the clock (World::setDeterministic): its residents'
+// schedules finish in the step that begins them, so a run here goes the same way however busy the machine is.
+bool start(game::Game& g, std::string& problem)
+{
+    const bool ok = g.start(problem);
+    g.world().setDeterministic(true);
+    return ok;
+}
+
 // Registers (or signs in) an account on a fresh connection; the lobby it got.
 json::Value signIn(game::Game& g, Client& c, const char* user, bool fresh = true)
 {
@@ -367,7 +376,7 @@ void oneTown()
     // The demo world has one settlement: no start towns, everyone at the spawn, a named one refused.
     game::Game g(options());
     std::string problem;
-    expect(g.start(problem), "starts: " + problem);
+    expect(start(g, problem), "starts: " + problem);
     Client c;
     c.id = 1;
     const auto lobby = signIn(g, c, "una");
@@ -400,7 +409,7 @@ void threeTowns()
     {
         game::Game g(options(writeStrip(root), save));
         std::string problem;
-        expect(g.start(problem), "starts: " + problem);
+        expect(start(g, problem), "starts: " + problem);
         tick(g, {}, 1);
         expect(g.world().towns().size() == 3, "three towns: " + std::to_string(g.world().towns().size()));
         capital = g.world().society().capital();
@@ -489,7 +498,7 @@ void threeTowns()
         // Kept across a restart: graduated stays.
         game::Game g(options(root.string(), save));
         std::string problem;
-        expect(g.start(problem), "starts again: " + problem);
+        expect(start(g, problem), "starts again: " + problem);
         expect(!g.isNewcomer("nina") && g.isNewcomer("omar"), "graduated survives a restart");
     }
     fs::remove_all(root);
@@ -523,7 +532,7 @@ void mentors()
     {
         game::Game g(options({}, save));
         std::string problem;
-        expect(g.start(problem), "starts: " + problem);
+        expect(start(g, problem), "starts: " + problem);
         Client mia, nell, vic;
         mia.id = 1, nell.id = 2, vic.id = 3;
         std::map<Client*, std::string> ids;
@@ -597,7 +606,7 @@ void mentors()
     {
         game::Game g(options({}, save));
         std::string problem;
-        expect(g.start(problem), "starts again: " + problem);
+        expect(start(g, problem), "starts again: " + problem);
         std::string why;
         expect(!g.mayMentor("mia", why) && contains(why, "Dungeon Master"), "the revoke survives a restart: " + why);
         expect(g.revokeMentor("mia", false, "dm:test").ok, "restored");
@@ -649,7 +658,7 @@ void ties()
         o.tieOfferSeconds = 2;
         game::Game g(o);
         std::string problem;
-        expect(g.start(problem), "starts: " + problem);
+        expect(start(g, problem), "starts: " + problem);
         tick(g, {}, 1);
         Client mara, milo, far, ooc, nell, oona, pia, quin, uma, sam, ria, tess;
         int n = 1;
@@ -839,7 +848,7 @@ void ties()
         // Ties survive a restart.
         game::Game g(options(root.string(), save, false));
         std::string problem;
-        expect(g.start(problem), "starts again: " + problem);
+        expect(start(g, problem), "starts again: " + problem);
         expect(g.ties().size() == kept, "every tie kept");
         bool tess = false, quin = false;
         for (const auto& [id, t] : g.ties())
@@ -887,7 +896,7 @@ void matchmaking()
     o.dialogueEndpoint = mind.endpoint();
     game::Game g(o);
     std::string problem;
-    expect(g.start(problem), "starts: " + problem);
+    expect(start(g, problem), "starts: " + problem);
     tick(g, {}, 1);
     Client nell, mo, otto, opal, bea, vic, pip, pru, pax;
     std::vector<Client*> all{&nell, &mo, &otto, &opal, &bea, &vic, &pip, &pru, &pax};
@@ -937,18 +946,36 @@ void matchmaking()
         g.command(&c, json::dump(command));
         g.settle();
     };
-    // The innkeeper's next words to this wolf (waiting for the reply).
+    // The innkeeper's next words to this wolf (waiting for the reply). The reply comes back from the FakeMind's thread
+    // over a socket, so when it arrives depends on how busy the machine is; the game's clock must not (the chat refuses
+    // a post within half a second of the last; the master stepping in is seen after a moment; the "once a game hour"
+    // counts). So each answer is given the same two game seconds of half-second ticks, wherever in them the reply comes;
+    // one still on its way after them is waited for with ticks of a thousandth of a second, the clock all but still.
+    // The bound is only against a hang (about ten minutes, under ctest's timeout).
     const auto answer = [&](Client& c, const std::string& text) {
         const auto before = c.events.size();
         say(c, text, true);
-        for (int i = 0; i < 80; ++i)
-        {
-            run(0.5);
+        const auto heard = [&]() {
             const auto* inn = c.seen("ui");
             for (auto k = before; inn && k < c.events.size(); ++k)
                 if (c.events[k].string("speaker") == inn->string("name") && !c.events[k].string("text").empty())
                     return c.events[k].string("text");
+            return std::string();
+        };
+        for (int i = 0; i < 4; ++i)
+        {
+            run(0.5);
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+        for (int i = 0; i < 30000; ++i)
+        {
+            if (auto said = heard(); !said.empty())
+                return said;
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            g.tick(0.001);
+            for (auto* other : all)
+                if (!other->snapshots.empty())
+                    g.acknowledge(other, other->snapshots.back().number("revision"), false);
         }
         return std::string();
     };
@@ -1054,7 +1081,7 @@ struct Inn
                                            g(options(writeStrip(root)))
     {
         std::string problem;
-        expect(g.start(problem), "starts: " + problem);
+        expect(start(g, problem), "starts: " + problem);
         for (int i = 0; i < 9; ++i)                  // A clear evening: rain or fog would hide the far end of the room.
             g.world().setWeather(cellId(i), Weather::Clear);
         g.tick(1);

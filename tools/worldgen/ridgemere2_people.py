@@ -277,9 +277,8 @@ GATHERING = {
 # Dairies: none for now. DAIRIES = True puts the four back as they were (two shops, a Market Square stall and a Market
 # Hall counter: the dairy's own posts, labels and the shops' names and text in worldgen.ridgemere2.DAIRY_SHOPS); False
 # gives each place its stand-in: the two shops are provisioners (their presses stand idle; the rooms are not refitted, so
-# the map stays the same), the stall a butcher's and the counter a baker's. Nobody's food depends on them: residents buy
-# among the foods the city sells, so cheese drops out and its share goes to the rest (tools/city_capacity.py), and the
-# Country's basket has no dairy good.
+# the map stays the same), the stall a butcher's and the counter a baker's. Nobody's food depends on them: residents are
+# fed by their band from the food shops' shelves (doc 79), whichever foods those hold.
 DAIRIES = False
 DAIRY = {      # place: (the dairy, its stand-in)
     'r2_cheesemonger': ([k('cheesemaker in the Commons', 'dairy'), ('help', None, 2)],

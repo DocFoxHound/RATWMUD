@@ -691,7 +691,7 @@ std::string Game::withoutPeople(const std::string& manifest)
                  line.rfind("comforts ", 0) == 0 || line.rfind("season ", 0) == 0 || line.rfind("rule ", 0) == 0 ||
                  line.rfind("service ", 0) == 0 || line.rfind("farms ", 0) == 0 || line.rfind("farmarea ", 0) == 0 ||
                  line.rfind("farm ", 0) == 0)
-            continue;                              // (The store room's and the loop's records come with the people's: docs 67, 68.)
+            continue;                              // (The economy's records come with the people's; the old economy's are read past: doc 79, 14.)
         else if (line.rfind("territory ", 0) == 0)
         {
             std::istringstream fields(line.substr(10));
@@ -944,8 +944,9 @@ void Game::applyDmActions(double dt)
         }
         else if (kind == "economy.sync")
         {
-            // The economy's rules (doc 68, Progress, "Seasons and the DM's rules"): the world's live.economy read again
-            // after the DM or Atlas changed it, and applied at once (the loop, the store room, wages, the seasons...).
+            // The economy's settings (doc 79): the world's live.economy read again after the DM or Atlas changed it,
+            // and applied at once (needs paused, the rules, the services and the seasons; the old economy's records
+            // read past).
             World candidate;
             std::string problem;
             if (loadWithLivePeople(candidate, problem))

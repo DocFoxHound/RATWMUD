@@ -257,7 +257,7 @@ void everyAccountSorted()
     for (const auto& [id, kind] : table)
         expect(Society::classify(id) == kind, "classified as doc 79's 9.1: " + id);
     // Every prefix facilityAccount knows (read from it: facilityPrefixes) is in the table, and classify sorts it so.
-    expect(facilityPrefixes().size() >= 22, "facilityAccount's prefixes");
+    expect(facilityPrefixes().size() >= 15, "facilityAccount's prefixes");
     for (const auto& prefix : facilityPrefixes())
     {
         expect(facilityAccount(prefix + "x"), "a facility prefix: " + prefix);
@@ -267,6 +267,16 @@ void everyAccountSorted()
                 listed = true, expect(Society::classify(prefix + "x") == kind, "classify sorts the prefix as 9.1 does: " + prefix);
         expect(listed, "every facility prefix sorted in doc 79's 9.1 table: " + prefix);
     }
+    // The old economy's accounts (Dead, from the table) can't be opened again, so none is made only to be dropped, coins
+    // and all, at the next restore; caravan: alone, which the roads still open until Phase 4, is one.
+    Society s(Roster::None);
+    for (const auto& [id, kind] : table)
+        if (kind == K::Dead)
+        {
+            const bool roads = id.rfind("caravan:", 0) == 0;
+            expect(facilityAccount(id) == roads, "a dead account is no facility (but the roads' caravan:): " + id);
+            expect(s.openAccount(id) == roads, "and can't be opened (but caravan:): " + id);
+        }
 }
 
 // A street of households, a House's head living in the Sump, a Heights family and a sleeper in the street.

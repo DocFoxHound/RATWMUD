@@ -345,6 +345,7 @@ const std::vector<Expected>& expected()
         {"dev", "dev", "dev/checkpoint.json.gz", {0, 0, 0, 0, 0, 0}},
         {"dev-old", "dev-old", "dev-old/checkpoint.json.gz", {1, 86, 20, 3, 1771, 0}},
         {"package", "dev", "package/snapshot.json.gz", {0, 0, 0, 0, 0, 0}},
+        {"running", "dev", "running/checkpoint.json.gz", {0, 0, 0, 0, 0, 0}},
     };
     return e;
 }
@@ -394,6 +395,31 @@ void thePackage()
         expect(!playerAccountId(id), "and no player's account: " + id);
     const auto manifest = parse(slurp(Fixtures / "package" / "package.json"), "package.json");
     expect(manifest.number("format") == 1 && manifest.boolean("snapshot"), "the package's manifest is format 1 with a snapshot");
+}
+
+// The running save (fixture h): DEV's world run by the code at cab65ee past its evenings and nights, so it holds what
+// the fresh boot doesn't: the city loop's state, the Wharf's and the estates' accounts and the tills' takings. Each
+// comes in: the loop read past, the old economy's accounts dropped, the tills settled; nothing refused.
+void theRunningSave()
+{
+    const auto world = worldOf(Fixtures / "dev");
+    const auto document = parse(gunzip(Fixtures / "running" / "checkpoint.json.gz"), "the running save");
+    const auto& society = document["society"];
+    const auto& accounts = society["accounts"];
+    expect(society.has("loop") && society["loop"].isObject(), "the running save holds the city loop's state");
+    expect(accounts.has("outside:wharf") && accounts.has("estate:fell"), "and the Wharf's and the estates' accounts");
+    expect(society.number("budgetDay") >= 2, "and is days in, not a fresh boot");
+    int tills = 0;
+    for (const auto& [id, a] : accounts.fields())
+        (void)a, tills += id.rfind("till:", 0) == 0;
+    expect(tills > 0, "and its tills");
+    const auto loaded = loadSave(world, document, "running");
+    for (const char* gone : {"outside:wharf", "estate:fell", "estate:crown"})
+        expect(!loaded.restored.accounts.count(gone), std::string("the running save's ") + gone + " is dropped");
+    int kept = 0;
+    for (const auto& [id, a] : loaded.restored.accounts)
+        (void)a, kept += id.rfind("till:", 0) == 0;
+    expect(kept > 0, "its tills come in, settled");
 }
 
 // --------------------------------------------------------------------------- Fixture (d): a journal tail
@@ -896,7 +922,9 @@ int writeLoaded(const fs::path& dir)
 }
 
 // --check-loaded DIR: each document as Postgres gave it back decodes to the same state: the society the same through
-// wire, every player and escrow account to the penny, and the whole checkpoint the same once re-encoded.
+// wire, every player and escrow account to the penny, and the whole checkpoint the same once re-encoded. (The same
+// JSON, compared by value: jsonb gives an object's keys back in its own order, and a save a file-mode server wrote,
+// as the running one, keeps the file's order in the sections the checkpoint passes through. The game reads by key.)
 int checkLoaded(const fs::path& dir)
 {
     int n = 0;
@@ -913,7 +941,7 @@ int checkLoaded(const fs::path& dir)
         realAccountsExact(before.society, after.society, name + " (through Postgres)");
         expect(json::dump(wire::society(after.society)) == json::dump(wire::society(before.society)),
                name + ": the society is the same through Postgres");
-        expect(json::dump(checkpoint::encode(after, s2, after.npcs, after.time)) == text,
+        expect(checkpoint::encode(after, s2, after.npcs, after.time) == parse(text, name),
                name + ": the whole checkpoint is the same through Postgres");
         ++n;
     }
@@ -1114,6 +1142,7 @@ int main(int argc, char** argv)
             return 0;
         }
         thePackage();
+        theRunningSave();
         theRoadsPackage();
         theResetCopy();
         onTheFullWorlds();

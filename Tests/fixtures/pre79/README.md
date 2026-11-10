@@ -20,8 +20,9 @@ never a player's coin or escrow.
 | `tail/` | (d) a save and the journal written after it, by the code at `cab65ee` | `save_compat_tests --make-tail` | 10 KB |
 | `reset/` | (e) a doc 78 "Reset economy rules" copy of `live.economy`, holding only `steerLean` | DEV's `live.economy` row | 0.3 KB |
 | `road/` | (f) a synthetic save of roads_tests' strip, and (g) its package snapshot | `save_compat_tests --make-road` and `world_package.strip`, both at `cab65ee` | 12 KB |
+| `running/` | (h) DEV's world run by the code at `cab65ee` for 2 days 16 hours, in file mode: its save, and the run's log | `ratw_server --world-export` (DEV build 70, exported read only) | 303 KB |
 
-All are gzip; 989 KB in all. (a)-(e) are copies of real worlds' saves; (f) and (g) are made by the old code, because no
+All are gzip but (h)'s log; 1.3 MB in all. (a)-(e) are copies of real worlds' saves; (f) and (g) are made by the old code, because no
 real world has what they hold (below).
 
 **(a) `dev/`:** `checkpoint.json.gz` is `game.load_checkpoint('upper_accord')` with the journal after it replayed as
@@ -91,6 +92,16 @@ and the caravan's escorts emptied; not a penny lost (20,560p before and after). 
 `letters` naming `k1`, the contract it removed (a pre-79 quirk Phase 3's reconcile meets: "its letters reopen or
 refund"), and the bandits' 20p of Ada's coin in their hoard.
 
+**(h) `running/`:** "A richer DEV save" below, made on 2026-11-08 at `cab65ee` (before doc 79):
+`ratw_server --world-export <DEV build 70, exported read only> --save <a copy of dev/checkpoint.json.gz> --bind
+127.0.0.1 --port 0 --speed 80 --for 1500`, file mode, no database, no AI. It ran from day 0 12:06 to day 3 04:04
+(past 18:00 and midnight three times); `server.log` is the run's log (added with `git add -f`: `*.log` is ignored). It holds `society.loop` (prices, sales, wages,
+level, the Wharf's figures), `outside:wharf` 707p, the treasury 2,015p, 130 `till:` accounts (17,343p), 4 `estate:`
+accounts, 559 resident purses (33,080p); minted 54,755, sunk 1,265 (conserved). No players and no escrow. No
+`loop.steer`, `fund:relief` or `farm:` accounts: DEV's settings never switch them on. It is restored against `dev/`'s
+roster. A file-mode server wrote it, so the sections the checkpoint passes through unchanged keep the file's key order
+(the fixtures from Postgres have jsonb's); the round trip through Postgres compares the checkpoint by value.
+
 ## Totals
 
 Players' purses (`player-...`, `wolf-...`) and escrow (`contract:`, `letter:`, `let:`, `stall:`, `table:`, `fest:`,
@@ -103,6 +114,7 @@ Players' purses (`player-...`, `wolf-...`) and escrow (`contract:`, `letter:`, `
 | package | 0 | 0p | 0 | 0 | 0p | 0 |
 | tail (replayed) | 2 | 125p | 11 | 1 | 5p | 0 |
 | road | 2 | 16p | 10 | 3 | 36p | 0 |
+| running | 0 | 0p | 0 | 0 | 0p | 0 |
 
 The tail's accounts: `player-ash` 58p (2 herbs, 4 meals), `player-bo` 67p (2 herbs, 3 meals), `letter:doc-1@player-ash`
 5p. dev-old's: `player-tester` 20p (1 meal, 2 herbs). The road's: `player-ada` 0p, `player-bo` 16p (10 goods between them),
@@ -111,12 +123,14 @@ one by one (cash and every good).
 
 ## What the test checks
 
-- **dev, dev-old, package:** the checkpoint decodes; its society restores against the world's authored roster
+- **dev, dev-old, package, running:** the checkpoint decodes; its society restores against the world's authored roster
   (`Society::restore`, as `World::restore` does it); every player and escrow account is the save's exactly and none
   appears; the totals are the table's; the restored society round-trips through `wire::society`/`readSociety` and the
   whole document through `checkpoint::encode`/`decode` (a fixed point); the whole save restores into the world
   (`World::restore`) on the open-ground cells with the same accounts.
 - **package:** no player and no player's account in it; the manifest is format 1 with a snapshot.
+- **running:** it holds the loop's state, `outside:wharf`, the `estate:` accounts and tills, days in; restored, the
+  Wharf's and the estates' accounts are dropped (doc 79, 14) and the tills come in, settled.
 - **tail:** the journal has records after the save, one sets the society's counters; replayed and decoded, the totals
   are the table's; a game server starts from the files (`Game::start`, the journal replayed, decoded and restored)
   and takes the save, holding the same player and escrow money to the penny; both characters are there.
@@ -127,18 +141,18 @@ one by one (cash and every good).
   accounts with the prefixes `outside:`, `estate:`, `stores:`, `caravan:`, `till:`, `bandits:` and `contract:` are there.
 - **road's package:** no player and no player's account; the players' purses and removed escrow are in the treasury;
   the money the same to the penny; the snapshot's society restores and adds up.
-- **dev, dev-old, package:** the staged day's turn's one pass over the classes (`Society::householdClasses`) gives each
+- **dev, dev-old, package, running:** the staged day's turn's one pass over the classes (`Society::householdClasses`) gives each
   household the class `householdClass` gives it.
 - **Through Postgres** (`Tests/save_compat_pg.py`, ctest `save_compat_pg`; doc 79 16.7's "through the world_store
-  Postgres tests"): each loaded state (dev, dev-old, package, road; `save_compat_tests --write-loaded`) is saved with
-  `game.save_checkpoint` into a throwaway database (`ratw_test_p0stage_<hex>`, migrated, dropped afterwards) and loaded
+  Postgres tests"): each loaded state (dev, dev-old, package, running, road; `save_compat_tests --write-loaded`) is saved with
+  `game.save_checkpoint` into a throwaway database (`ratw_test_p3stage_<hex>`, migrated, dropped afterwards) and loaded
   back with `game.load_checkpoint`: the same JSON, and `--check-loaded` decodes it to the same society and accounts and
-  re-encodes the same checkpoint. Skipped (passing) without the PostgreSQL settings (`set -a; . Database/.env; set +a`
+  re-encodes the same checkpoint (compared by value: jsonb keeps no key order). Skipped (ctest lists it as Skipped) without the PostgreSQL settings (`set -a; . Database/.env; set +a`
   in the main checkout). It opens only the maintenance database `postgres` and its own.
 - **With `RATW_PRE79_BUILDS=DIR`** (DIR/dev and DIR/dev-old holding the builds as `tools/world_build.py export DIR
   --world KEY` writes them, read only): a game server starts from each real save on its full world, every tile
   checked, takes it, and holds the table's totals on the save's clock. On 2026-11-08 at `cab65ee` all three (dev,
-  dev-old, package) loaded whole this way.
+  dev-old, package) loaded whole this way; the running save (on DEV's build) since doc 79's Phase 3.
 
 ## Running it
 
@@ -149,7 +163,7 @@ one by one (cash and every good).
 ## A richer DEV save
 
 Section 16 item 7 asks for a pre-79 DEV checkpoint holding `loop`, `steer`, `fund:relief`, `outside:wharf` and `farm:`
-accounts. None exists: DEV's only save is the fresh boot above. One can be made without touching DEV by running the
-code at `cab65ee` on DEV's world from files (`ratw_server --world-export` the exported build, `--save` a copy of
-`dev/checkpoint.json.gz`, in `/tmp`) past an evening's pay and a night, then copying its save here. That is an economy
-run, so it waits for the user's go-ahead.
+accounts. DEV's only save was the fresh boot above, so one was made without touching DEV: the code at `cab65ee` ran on
+DEV's world from files past its evenings' pay and its nights (fixture (h)). It holds `loop`
+and `outside:wharf`; `steer`, `fund:relief` and `farm:` accounts DEV's settings never open, so those drops rest on the
+road's save (`steer`) and hand-made states (`society_tests`).

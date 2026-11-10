@@ -1207,7 +1207,7 @@ class RuleListTests(unittest.TestCase):
 
     def test_a_rule_the_game_no_longer_has_is_kept_and_ignored(self):
         # Doc 79, 14 and 17: an old world's rule (the steering's, the loop's) refuses nothing, warns, and never reaches
-        # the world file (Core would refuse it); a known rule out of its range is still refused.
+        # the world file (Core would skip it: doc 79, 14); a known rule out of its range is still refused.
         rules = {'steer': 1, 'almsADay': 12, 'neverBroke': 1}
         self.assertEqual(map_editor.check_rules(rules, {}), [])
         self.assertEqual(map_editor.unknown_rules(rules), ['almsADay', 'steer'])

@@ -30,7 +30,7 @@ int main()
     if (!url || !*url || !PgClient::available(error))
     {
         std::cout << "PostgreSQL client tests skipped: " << (error.empty() ? "RATW_TEST_DATABASE_URL is not set." : error) << '\n';
-        return 0;
+        return 77;                                  // (ctest's SKIP_RETURN_CODE: listed as Skipped, never Passed.)
     }
     try
     {
