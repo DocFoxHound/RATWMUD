@@ -73,6 +73,7 @@ struct Contract
     std::string id, kind, poster, town;   // kind: "bounty", "escort", "courier"...
     std::string target;                   // Bounty: the camp; courier: the recipient; escort/supply: the town.
     std::string taker, status = "open";   // "open", "taken", "done", "expired".
+    std::string from;                     // Escort: the market its wagon sets out from ("" an older save's: any wagon to its town).
     std::int64_t reward = 0;
     double created = 0, due = 0;          // Calendar days.
     std::string detail;
@@ -80,6 +81,13 @@ struct Contract
     std::string offeredTo;
     double offeredUntil = 0;
 };
+
+// An escort is one road's (doc 79, Phase 4, second repair): the next wagon from one market to its town, and no other
+// market's wagon to the same town.
+inline bool escortOn(const Contract& k, const std::string& from, const std::string& to)
+{
+    return k.kind == "escort" && k.town == to && (k.from.empty() || k.from == from);
+}
 
 // Something one character has heard about another (or a place): a claim, how sure they are, and who told them.
 struct Belief

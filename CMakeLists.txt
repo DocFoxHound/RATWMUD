@@ -273,6 +273,8 @@ target_compile_definitions(market_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT
 add_test(NAME market_behaviors COMMAND market_tests)
 add_test(NAME market_pg COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/market_pg.py $<TARGET_FILE:market_tests>)
 set_tests_properties(market_pg PROPERTIES SKIP_RETURN_CODE 77)
+add_test(NAME trade_show_pg COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/trade_show_pg.py $<TARGET_FILE:trade_show_tests>)
+set_tests_properties(trade_show_pg PROPERTIES SKIP_RETURN_CODE 77)
 add_executable(exploit_tests Tests/exploit_tests.cpp)
 target_link_libraries(exploit_tests PRIVATE ratw_core)
 target_compile_definitions(exploit_tests PRIVATE RATW_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

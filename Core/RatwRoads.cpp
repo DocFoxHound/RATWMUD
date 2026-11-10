@@ -318,8 +318,9 @@ std::vector<const Contract*> World::contractsNear(const std::string& player) con
     const auto* here = p ? roadMarketOf(p->cellId) : nullptr;
     if (!here)
         return out;
-    // (An escort is asked for by the market the wagons go to, and taken there or where they set out: at the board of a
-    // market a committed wagon to it leaves from, where the wagon will wait for its escort. Doc 79, 8.1.)
+    // (An escort is asked for by the market the wagons go to, and taken there or where they set out: at the board of the
+    // market its road starts from, while a wagon to it is committed there, where the wagon will wait for its escort. Doc
+    // 79, 8.1. An older save's escort names no start: any market a committed wagon to its town leaves from.)
     const auto& committed = society_.board().committed;
     const auto leavesHere = [&](const std::string& to) {
         return std::any_of(committed.begin(), committed.end(),
@@ -327,7 +328,7 @@ std::vector<const Contract*> World::contractsNear(const std::string& player) con
     };
     for (const auto& c : roads_.contracts)
         if (c.status == "open" && (c.town == here->id || (c.kind == "courier" && roadMarketOf(entity(c.poster) ? entity(c.poster)->cellId : "") == here) ||
-                                   (c.kind == "escort" && leavesHere(c.town))))
+                                   (c.kind == "escort" && (c.from.empty() || c.from == here->id) && leavesHere(c.town))))
             out.push_back(&c);
     return out;
 }
@@ -672,7 +673,7 @@ void World::tendCaravan(Caravan& c, Entity& wagon, RoadFolk& f, RouteBudget& bud
         {
             if (k.kind == "courier" && k.status == "taken" && k.taker == "caravan:" + c.id)
                 k.status = "open", k.taker.clear();
-            else if (k.kind == "escort" && k.status == "taken" && k.town == c.to &&
+            else if (escortOn(k, c.from, c.to) && k.status == "taken" &&
                      std::find(c.escorts.begin(), c.escorts.end(), k.taker) != c.escorts.end())
             {
                 if (roadMarket(k.town))
@@ -781,10 +782,11 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
                          std::min<std::int64_t>(std::max(0, society_.rule("bountyMost")), 20 + std::int64_t(camp.strength * 3)), 20,
                          "the bandits robbing the road at " + cellId);
         const bool escort = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
-            return k.kind == "escort" && k.town == c.to && (k.status == "open" || k.status == "taken");
+            return escortOn(k, c.from, c.to) && (k.status == "open" || k.status == "taken");
         });
         if (!escort)
-            postContract("escort", payer, c.to, c.to, 12, 7, "guarding the next wagon to " + marketWords(c.to));
+            postContract("escort", payer, c.to, c.to, 12, 7,
+                         "guarding the next wagon from " + marketWords(c.from) + " to " + marketWords(c.to)).from = c.from;
         for (const auto& p : society_.positions())
             if (p.role == "merchant")
                 if (const auto* m = roadMarketOf(p.work.cell); m && m->id == c.to)
@@ -827,7 +829,7 @@ void World::caravanArrived(Caravan& c)
     // Escorts are paid for having been there: at the end, and for at least half the road.
     for (const auto& who : c.escorts)
         for (auto& k : roads_.contracts)
-            if (k.kind == "escort" && k.taker == who && k.status == "taken" && k.town == c.to)
+            if (escortOn(k, c.from, c.to) && k.taker == who && k.status == "taken")
             {
                 const bool there = wagon && withCaravan(who, *wagon) && c.with[who] * 2 >= int(c.leg);
                 settleContract(k, there ? "done" : "expired", there ? who : std::string());
@@ -1576,15 +1578,26 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
         if (society_.shift(loot, by, "", 0, found, "bandits' takings"))
             words += " Among their things you find " + pennies(found) + ".";
     }
-    // The cargo they took from the wagons (doc 79, 8.1: recoverable), for whoever breaks the camp.
+    // The cargo they took from the wagons (doc 79, 8.1: recoverable), for whoever breaks the camp. Staged goods to a
+    // player: a reward at the door (9.3, counted there by their catalogue worth), so only what the day's rewards cap has
+    // room for; the rest goes back to the staged side. Before the bounty, which is held to the room that is left.
     if (const auto* takings = society_.account(loot))
     {
+        const bool capped = Society::classify(by) == Society::AccountKind::Real;
         std::vector<std::string> found;
+        bool over = false;
         for (const auto& [item, n] : std::map<std::string, int>(takings->stock.begin(), takings->stock.end()))
-            if (n > 0)
-                for (int left = n; left > 0; left -= 99)
-                    if (const int some = std::min(left, 99); society_.shift(loot, by, item, some, 0, "recovered goods"))
-                        found.push_back(std::to_string(some) + " " + Society::itemName(item));
+        {
+            if (n <= 0)
+                continue;
+            const auto each = std::max<std::int64_t>(1, Society::catalogPrice(item));
+            const int take = capped ? int(std::min<std::int64_t>(n, society_.faucetRoom(by, "rewardsADay") / each)) : n;
+            for (int left = take; left > 0; left -= 99)
+                if (const int some = std::min(left, 99); society_.shift(loot, by, item, some, 0, "reward: recovered cargo"))
+                    found.push_back(std::to_string(some) + " " + Society::itemName(item));
+            if (take < n)
+                over |= society_.consume(loot, item, n - take, "recovered cargo") > 0;
+        }
         if (!found.empty())
         {
             std::string list;
@@ -1592,6 +1605,9 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
                 list += (i == 0 ? "" : i + 1 == found.size() ? " and " : ", ") + found[i];
             words += " The cargo they took from the wagons is here too: " + list + ".";
         }
+        if (over)
+            words += found.empty() ? " The cargo they took from the wagons is here too, and goes back to its carters."
+                                   : " The rest of it goes back to its carters.";
     }
     society_.closeAccount(loot, by);
     for (auto& k : roads_.contracts)

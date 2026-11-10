@@ -70,6 +70,18 @@ Value companionsOf(const std::map<std::string, std::string>& owners)
     return out;
 }
 
+// The roads without each wagon's place along its way (its cell, spot and leg, and who walks beside it, move with every
+// tick): what is left moves in steps (a wagon out, held up, late, robbed, lost or in; a camp gathering or broken; a
+// contract posted, taken or settled; the roads' day), and those the journal follows (doc 79, Phase 4, second repair).
+std::string roadSteps(Value roads)
+{
+    if (auto* caravans = roads.find("caravans"))
+        for (auto& wagon : caravans->items())
+            for (const char* place : {"cell", "x", "y", "leg", "nextAt", "with"})
+                wagon.erase(place);
+    return json::dump(roads);
+}
+
 Value path(std::initializer_list<std::string> keys)
 {
     auto out = Value::array();
@@ -153,6 +165,7 @@ void Game::prime(Shadow& s) const
     s.positions = society.careers.positions;
     s.staged = stagedRest(society.staged);
     s.roads = json::dump(checkpoint::roads(world_.roads()));
+    s.roadSteps = roadSteps(checkpoint::roads(world_.roads()));
     s.crime = json::dump(checkpoint::crime(world_.crime()));
     s.companions = json::dump(companionsOf(companionOwner_));
     s.signIns = json::dump(accounts_.state());
@@ -184,6 +197,7 @@ void Game::shadowCheckpoint()
         shadow_.committed = committed ? json::dump(*committed) : std::string();
     }
     shadow_.roads = json::dump(checkpoint::roads(world_.roads()));
+    shadow_.roadSteps = roadSteps(checkpoint::roads(world_.roads()));
 }
 
 void Game::journalRestored()
@@ -234,6 +248,10 @@ void Game::record(unsigned what, const std::string& character)
     }
     if (!shadow_.primed)
         prime(shadow_);
+    // The roads' contracts, camps and wagons keep their coins and goods in accounts (a contract's pot, a camp's cargo),
+    // so a record of the roads carries the economy with it: never a contract replayed without its pot.
+    if (what & Roads)
+        what |= Economy;
     auto changes = Value::array();
     const auto set = [&](Value at, Value value) {
         auto change = Value::object();
@@ -341,7 +359,21 @@ void Game::record(unsigned what, const std::string& character)
         set(path({key}), std::move(now));
         before = std::move(text);
     };
-    whole((what & Roads) || departuresMoved, shadow_.roads, checkpoint::roads(world_.roads()), "roads");
+    // And the roads go with any record of the economy once they have moved a step since they were last written (second
+    // repair): the world's tick brings a wagon in, robs it or posts it overdue, gathers a camp, posts a bounty, turns the
+    // roads' day, and each of those moves the Board or an account as well, which the next trade journals. Written
+    // together, a crash replays each once (not a wagon in twice, a second raid, a second morning's rise). A wagon's
+    // place alone isn't a step: it goes with the next one, or with the checkpoint.
+    if (what & (Economy | Roads))
+    {
+        auto roads = checkpoint::roads(world_.roads());
+        auto steps = roadSteps(roads);
+        if ((what & Roads) || departuresMoved || steps != shadow_.roadSteps)
+        {
+            shadow_.roadSteps = std::move(steps);
+            whole(true, shadow_.roads, std::move(roads), "roads");
+        }
+    }
     whole(what & Crime, shadow_.crime, checkpoint::crime(world_.crime()), "crime");
     whole(what & Companions, shadow_.companions, companionsOf(companionOwner_), "companions");
     whole(what & Accounts, shadow_.signIns, accounts_.state(), "accounts");
@@ -362,6 +394,10 @@ void Game::record(unsigned what, const std::string& character)
     }
     if (changes.size() == 0)
         return;
+    // The calendar as of this record: the days the economy, the Board and the roads have turned since the checkpoint are
+    // in the record, so the replayed clock is never behind them (a save whose budget day was ahead of its clock was
+    // refused whole, and a morning already journalled came again).
+    set(path({"calendarDays"}), world_.calendarDays());
     const auto seq = ++journalSeq_;
     writer->append({seq, json::dump(changes)});
     if (holding_)

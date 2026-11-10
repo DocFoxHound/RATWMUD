@@ -464,7 +464,7 @@ std::string World::departureNotice(const market::Departure& d, bool atEnd) const
     if (const auto* driver = entity(d.driver))
         words += " " + driver->name + " driving.";
     const bool escort = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
-        return k.kind == "escort" && k.town == d.to && k.status == "open";
+        return escortOn(k, d.from, d.to) && k.status == "open";
     });
     if (escort)                                     // (Taken where the wagon sets out, which waits there for its escort.)
         words += atEnd ? " Escort wanted: ask at the board in " + marketWords(d.from) + "." : std::string(" Escort wanted.");
@@ -560,9 +560,10 @@ void World::postDepartures(std::int64_t today)
                         camp = camp || std::any_of(roads_.camps.begin(), roads_.camps.end(),
                                                    [&](const BanditCamp& k) { return k.active && k.cell == cellId; });
                 if (camp && std::none_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
-                        return k.kind == "escort" && k.town == c && (k.status == "open" || k.status == "taken");
+                        return escortOn(k, a, c) && (k.status == "open" || k.status == "taken");
                     }))
-                    postContract("escort", society_.treasuryOf(c), c, c, 12, 7, "guarding the next wagon to " + marketWords(c));
+                    postContract("escort", society_.treasuryOf(c), c, c, 12, 7,
+                                 "guarding the next wagon from " + marketWords(a) + " to " + marketWords(c)).from = a;
                 b.committed.push_back(dep);
                 recordEvent({"wagon posted", dep.id, c, A->market, 0, 0, a, int(dep.manifest.size()), 0,
                              departureNotice(dep, false) + "\n" + departureNotice(dep, true)});
@@ -755,7 +756,13 @@ Caravan* World::launchCaravan(Caravan c, const Town& from, const Town& to)
     const std::string carrier = "caravan:" + c.id;
     for (auto& k : roads_.contracts)
     {
-        if (k.kind == "escort" && k.town == to.id)
+        // The escort of this road (from here to there: not another market's wagon to the same town), and not one already out
+        // with an earlier wagon of it.
+        if (escortOn(k, from.id, to.id) &&
+            std::none_of(roads_.caravans.begin(), roads_.caravans.end(), [&](const Caravan& out) {
+                return out.status == "travelling" && out.from == from.id && out.to == to.id &&
+                       std::find(out.escorts.begin(), out.escorts.end(), k.taker) != out.escorts.end();
+            }))
         {
             // Nobody has taken the escort in a couple of days: one of the town guard goes.
             if (k.status == "open" && calendarDays_ - k.created >= 2)
@@ -1036,9 +1043,9 @@ void World::dropOrphanedRoads()
                 else
                     settleContract(k, "expired", {});
             }
-            else if (k.kind == "escort" && k.town == c.to && std::find(c.escorts.begin(), c.escorts.end(), k.taker) != c.escorts.end())
+            else if (escortOn(k, c.from, c.to) && std::find(c.escorts.begin(), c.escorts.end(), k.taker) != c.escorts.end())
             {
-                if (roadMarket(k.town))
+                if (roadMarket(k.town) && (k.from.empty() || roadMarket(k.from)))
                     k.status = "open", k.taker.clear();
                 else
                     settleContract(k, "expired", {});
@@ -1077,6 +1084,10 @@ void World::dropOrphanedRoads()
     roads_.caravans.erase(std::remove_if(roads_.caravans.begin(), roads_.caravans.end(),
                                          [](const Caravan& c) { return c.status == "arrived"; }),
                           roads_.caravans.end());
+    // An escort whose road starts at a market that is gone has no wagon to go with: its pay back to its poster.
+    for (auto& k : roads_.contracts)
+        if ((k.status == "open" || k.status == "taken") && k.kind == "escort" && !k.from.empty() && !roadMarket(k.from))
+            settleContract(k, "expired", {});
     for (auto& k : roads_.contracts)
         if ((k.status == "open" || k.status == "taken") && (k.kind == "courier" || k.kind == "escort" || k.kind == "bounty") &&
             !k.town.empty() && !roadMarket(k.town) && !town(k.town) && k.taker.rfind("caravan:", 0) != 0)

@@ -278,6 +278,8 @@ void Society::stagedDoor(const std::string& kind, const std::string& from, const
             tally(holderOf(gTo), kind, 0, 0, worth, 0);
         else if (gf == AccountKind::Real && gtStaged)
             tally(holderOf(gFrom), kind, 0, 0, 0, worth);
+        else if (startsWith(gFrom, "bandits:") && gt == AccountKind::Real)
+            tally(holderOf(gTo), kind, 0, 0, worth, 0);   // (A camp's hoard holds only staged goods: the cargo of the wagons it raided, 8.1.)
     }
     // What the bands and purses read of it: a theft (the victim robbed, lean, held), a player's gift or pay (help, earning,
     // a hold), a prize or a return from escrow (a hold).

@@ -1919,6 +1919,7 @@ class Game
         std::string roads, crime, companions, signIns;
         std::string board;                          // The Market Board (doc 79, Phase 1), as last journalled.
         std::string committed;                      // (Its committed departures alone: with the roads, doc 79 Phase 4.)
+        std::string roadSteps;                      // (The roads less each wagon's place: RatwGameJournal.cpp, roadSteps.)
         StagedState staged;                         // (Doc 79: all but the tallies and welcomes, which go by holder.)
     };
     void prime(Shadow& shadow) const;

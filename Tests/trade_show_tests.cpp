@@ -18,6 +18,7 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <unistd.h>
 #include <iostream>
 #include <map>
@@ -490,6 +491,34 @@ void anArrivalNeverRaises()
     expect(w.society().pressure("west", "nails") <= -.19, "west's cheap nails not made dearer by the wagon");
 }
 
+// Ada goes out to the camp in the middle of the road and fights it to the end: true when she breaks it.
+bool adaBreaksTheCamp(World& w)
+{
+    auto* ada = w.entity("player-ada");
+    ada->strength = 90;
+    ada->dexterity = 90;
+    w.roads().camps[0].strength = 6;
+    ada->cellId = id(3);
+    ada->position = {8.5, 8.5};
+    run(w, 2);
+    ada->cellId = id(4);
+    const auto* leader = w.entity("road:camp_mid:0");
+    expect(leader, "the camp's leader is on the road");
+    ada->position = {std::max(.6, leader->position.x - 1), leader->position.y};
+    expect(w.attack("player-ada", leader->id).ok, "a fight begins");
+    bool cleared = false;
+    for (int t = 0; t < 6000 && !cleared; ++t)
+    {
+        auto* me = w.entity("player-ada");
+        me->stamina = std::max(me->stamina, 60.0);
+        me->hurt = 0;
+        test::playTurn(w, "player-ada");
+        w.tick(.25);
+        cleared = !w.roads().camps[0].active;
+    }
+    return cleared;
+}
+
 // A raid (8.1, 8.6): the price rises at the raid at the destination, its goods are at the camp for whoever clears it,
 // a bounty within the cap, the carter home robbed or hurt and never dead; then a player breaks the camp and finds the
 // cargo.
@@ -556,29 +585,7 @@ void aRaid()
     nextMorning(w);
     expect(w.society().board().timesShift.count("west") && w.society().board().timesShift.at("west") <= -10, "west's Times shaken by the raid");
     // Ada breaks the camp and finds the cargo.
-    auto* ada = w.entity("player-ada");
-    ada->strength = 90;
-    ada->dexterity = 90;
-    w.roads().camps[0].strength = 6;
-    ada->cellId = id(3);
-    ada->position = {8.5, 8.5};
-    run(w, 2);
-    ada->cellId = id(4);
-    const auto* leader = w.entity("road:camp_mid:0");
-    expect(leader, "the camp's leader is on the road");
-    ada->position = {std::max(.6, leader->position.x - 1), leader->position.y};
-    expect(w.attack("player-ada", leader->id).ok, "a fight begins");
-    bool cleared = false;
-    for (int t = 0; t < 6000 && !cleared; ++t)
-    {
-        auto* me = w.entity("player-ada");
-        me->stamina = std::max(me->stamina, 60.0);
-        me->hurt = 0;
-        test::playTurn(w, "player-ada");
-        w.tick(.25);
-        cleared = !w.roads().camps[0].active;
-    }
-    expect(cleared, "she breaks the camp");
+    expect(adaBreaksTheCamp(w), "she breaks the camp");
     int found = 0;
     if (const auto* mine = w.society().account("player-ada"))
         for (const auto& [item, n] : mine->stock)
@@ -586,6 +593,65 @@ void aRaid()
                 found += n;
     expect(found > 0, "and finds the wagon's cargo among their things");
     expect(w.society().realBalanced(), "real money is balanced");
+}
+
+// The cargo found at a broken camp is a reward at the door (9.3): staged goods to a player, tallied to her holder by their
+// catalogue worth with the bounty, and held to the day's rewards cap with it; what is over the cap goes back.
+void foundCargoIsAReward()
+{
+    const std::string good = "nails";
+    const auto each = Society::catalogPrice(good);
+    for (const bool nearTheCap : {false, true})
+    {
+        const std::string when = nearTheCap ? " (near the cap)" : "";
+        auto f = strip();
+        auto w = load(f);
+        w.addPlayer("player-ada", "Ada");
+        w.tick(.6);
+        auto& s = w.society();
+        const auto holder = s.holderOf("player-ada");
+        w.roads().caravans.clear();
+        w.roads().camps = {{"camp_mid", id(4), 6, 100, -100, true}};
+        // What a raid leaves: its cargo at the camp, and west's price on the camp from its treasury.
+        const int pieces = int(std::min<std::int64_t>(10, 40 / std::max<std::int64_t>(1, each)));
+        expect(each > 0 && pieces >= 4 && s.openAccount("bandits:camp_mid") && s.create("bandits:camp_mid", good, pieces, "raided cargo"),
+               "a raided wagon's cargo at the camp" + when);
+        const auto reward = w.postContract("bounty", s.treasuryOf("west"), "west", "camp_mid", 20, 20, "the bandits robbing the road").reward;
+        expect(reward == 20, "a price on the camp" + when);
+        // Near the cap: the day's other rewards leave her room for three pieces, and none for the bounty after them.
+        const auto cap = s.statusTable().cap("rewardsADay");
+        if (nearTheCap)
+            expect(s.shift("treasury", "player-ada", "", 0, cap - 3 * each, "faction mission reward") &&
+                       s.faucetRoom("player-ada", "rewardsADay") == 3 * each,
+                   "her day's rewards three pieces short of the cap");
+        const auto had = s.faucetToday(holder, "reward");
+        const auto purse = s.cash("player-ada");
+        const auto held = [&] {
+            const auto* mine = s.account("player-ada");
+            return mine ? Society::stock(*mine, good) : 0;
+        };
+        const int before = held();
+        expect(adaBreaksTheCamp(w), "she breaks the camp" + when);
+        const int found = held() - before;
+        const auto got = s.faucetToday(holder, "reward") - had;
+        const auto paid = s.cash("player-ada") - purse;
+        if (!nearTheCap)
+        {
+            expect(found == pieces && paid == reward, "she finds all the cargo, and the bounty is hers: " + std::to_string(found) + ", " + std::to_string(paid));
+            expect(got == reward + pieces * each,
+                   "the cargo counted with the bounty in her day's rewards, by its catalogue worth: " + std::to_string(got) + " of " +
+                       std::to_string(reward + pieces * each));
+        }
+        else
+        {
+            expect(found == 3 && paid == 0, "she finds only what the day's cap has room for, and no bounty past it: " + std::to_string(found) +
+                                                ", " + std::to_string(paid));
+            expect(got == 3 * each && s.faucetToday(holder, "reward") == cap && s.faucetRoom("player-ada", "rewardsADay") == 0,
+                   "her day's rewards at the cap, the cargo in them: " + std::to_string(s.faucetToday(holder, "reward")));
+        }
+        expect(!s.account("bandits:camp_mid"), "nothing left at the camp" + when);
+        expect(s.realBalanced(), "real money is balanced" + when);
+    }
 }
 
 // Late, with a cause (8.1, 8.6): a seeded mishap holds the wagon; a day past due it is posted overdue, and its goods grow
@@ -1373,69 +1439,453 @@ void cartsThatDontCome()
     named.clear();
 }
 
-// A crash between checkpoints (the journal): a wagon set out after the last checkpoint, then a trade journalled, then the
-// crash. The Board (its committed departures) and the roads (its caravans) are journalled together, so the replay has
-// the wagon on the road exactly once, and its departure gone from the Board.
+// ---- Crashes between checkpoints (the journal). Each case plays to its crash on a file save (a checkpoint, then
+// something the world's tick does on the roads, then a player's trade journalled, then the game gone without saving),
+// and is checked after the restart: the Board, the accounts and the roads are journalled together, so the replay has
+// each thing once. The same cases go through Postgres (Tests/trade_show_pg.py: --write-crashes, --check-crashes).
+struct CrashCase
+{
+    const char* name;
+    std::function<json::Value(game::Game&)> before;                 // To the crash: what was so then.
+    std::function<void(game::Game&, const json::Value&)> after;     // After the restart.
+};
+
+int bountiesOn(const World& w, const std::string& camp)
+{
+    int n = 0;
+    for (const auto& k : w.roads().contracts)
+        n += k.kind == "bounty" && k.target == camp && (k.status == "open" || k.status == "taken");
+    return n;
+}
+int lootAt(const World& w, const std::string& camp)
+{
+    int n = 0;
+    if (const auto* hoard = w.society().account("bandits:" + camp))
+        for (const auto& [item, pieces] : hoard->stock)
+            n += pieces;
+    return n;
+}
+void strongCamps(World& w)
+{
+    auto spec = w.society().authored().economy;
+    spec.rules["campStrengthMost"] = 20;
+    w.society().adoptEconomy(spec);
+}
+bool near(double a, double b) { return std::abs(a - b) < 1e-9; }
+// A price's pressure either side of a crash: it eases by the clock (market::decayed), and the clock restarts on the last
+// record's moment, a few ticks short of the crash's.
+bool samePrice(double a, double b) { return std::abs(a - b) < 1e-4; }
+
+const std::vector<CrashCase>& crashCases()
+{
+    static const std::vector<CrashCase> cases{
+        // A wagon set out after the checkpoint: on the road exactly once, its departure gone from the Board.
+        {"setsout",
+         [](game::Game& g) {
+             auto& w = g.world();
+             w.tick(.6);
+             w.tick(.6);
+             w.roads().camps.clear();
+             const auto d = postedWagon(w);
+             while (std::floor(w.calendarDays()) < double(d.day))
+                 nextMorning(w);
+             g.save();
+             g.settle();                            // (The checkpoint, on its day: the wagon posted, not yet out.)
+             expect(setOut(w, d), "it sets out after the checkpoint");
+             auto was = json::Value::object();
+             was.add("departure", d.id);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto departure = was.string("departure");
+             int onRoad = 0;
+             for (const auto& c : g.world().roads().caravans)
+                 onRoad += c.departure == departure;
+             bool posted = false;
+             for (const auto& x : g.world().society().board().committed)
+                 posted = posted || x.id == departure;
+             expect(onRoad == 1 && !posted, "the wagon on the road once, its departure gone from the Board: " + std::to_string(onRoad) +
+                                                (posted ? ", still posted" : ""));
+         }},
+        // A wagon came in after the checkpoint (its goods cheaper at its end, 8.6): it doesn't come in twice.
+        {"arrive",
+         [](game::Game& g) {
+             auto& w = g.world();
+             w.tick(.6);
+             w.tick(.6);
+             w.roads().camps.clear();
+             const auto* sent = w.sendCaravan(*w.roadMarket("east"), *w.roadMarket("west"), {{"nails", 10}});
+             expect(sent, "a wagon with nails");
+             const auto trip = sent->id;
+             w.society().setPressure("west", "nails", .25, "players");
+             const double dear = w.society().pressure("west", "nails");
+             g.save();
+             g.settle();                            // (The checkpoint: the wagon on the road.)
+             expect(until(w, "caravan arrives", trip, 1500), "it arrives after the checkpoint");
+             const double p = w.society().pressure("west", "nails");
+             expect(p < dear - .03, "its nails cheaper in west as it comes in: " + std::to_string(dear) + " to " + std::to_string(p));
+             auto was = json::Value::object();
+             was.add("trip", trip);
+             was.add("p", p);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             auto& w = g.world();
+             const auto trip = was.string("trip");
+             const auto* c = caravan(w, trip);
+             expect(!c || c->status != "travelling", "after the crash the wagon that came in isn't on its way again");
+             expect(samePrice(w.society().pressure("west", "nails"), was.number("atCrash")),
+                    "west's price as the arrival left it: " + std::to_string(w.society().pressure("west", "nails")) + " for " +
+                        std::to_string(was.number("atCrash")));
+             expect(!until(w, "caravan arrives", trip, 1500), "and it doesn't come in a second time");
+         }},
+        // A wagon robbed after the checkpoint (+0.15 at its end, its cargo at the camp, a bounty): robbed once.
+        {"raid",
+         [](game::Game& g) {
+             auto& w = g.world();
+             w.tick(.6);
+             w.tick(.6);
+             strongCamps(w);
+             std::string trip;
+             double before = 0;
+             for (int attempt = 0; attempt < 10 && trip.empty(); ++attempt)
+             {
+                 w.roads().caravans.clear();
+                 w.roads().camps = {{"camp_mid", id(4), 20, 100, -100, true}};
+                 const auto* out = w.sendCaravan(*w.roadMarket("east"), *w.roadMarket("west"), {{"nails", 10}});
+                 expect(out, "a wagon sets out");
+                 const auto mine = out->id;
+                 w.roads().caravans.back().guards = 0;
+                 before = w.society().pressure("west", "nails");
+                 g.save();
+                 g.settle();                        // (The checkpoint: the wagon on the road, the camp ahead of it.)
+                 bool passed = false;
+                 for (int t = 0; t < 1500 && trip.empty() && !passed; ++t)
+                 {
+                     w.tick(1);
+                     for (const auto& e : w.takeEvents())
+                     {
+                         if (e.kind == "raid" && e.actor == "camp_mid")
+                             trip = mine;
+                         passed |= e.kind == "caravan passes" && e.actor == mine;
+                     }
+                 }
+             }
+             const auto* c = trip.empty() ? nullptr : caravan(w, trip);
+             expect(c && c->status == "raided", "the bandits fall on a wagon after the checkpoint");
+             const double p = w.society().pressure("west", "nails");
+             expect(std::abs(p - before - .15) < .02, "its nails dearer in west at the raid");
+             expect(bountiesOn(w, "camp_mid") == 1 && lootAt(w, "camp_mid") > 0, "one bounty on the camp, the cargo in it");
+             auto was = json::Value::object();
+             was.add("trip", trip);
+             was.add("p", p);
+             was.add("strength", w.roads().camps[0].strength);
+             was.add("loot", lootAt(w, "camp_mid"));
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             auto& w = g.world();
+             strongCamps(w);
+             const auto trip = was.string("trip");
+             const auto* c = caravan(w, trip);
+             expect(c && c->status == "raided" && c->manifest.empty(),
+                    "after the crash the robbed wagon is still robbed, not on its way again" + (c ? ": " + c->status : std::string()));
+             expect(w.roads().camps.size() == 1 && near(w.roads().camps[0].strength, was.number("strength")),
+                    "the camp as strong as the raid left it");
+             expect(bountiesOn(w, "camp_mid") == 1, "one bounty on the camp: " + std::to_string(bountiesOn(w, "camp_mid")));
+             expect(samePrice(w.society().pressure("west", "nails"), was.number("atCrash")),
+                    "west's price as the raid left it: " + std::to_string(w.society().pressure("west", "nails")) + " for " +
+                        std::to_string(was.number("atCrash")));
+             expect(lootAt(w, "camp_mid") == int(was.number("loot")), "the cargo at the camp, once");
+             // On home: nothing falls on it again.
+             bool again = false;
+             for (int t = 0; t < 1500 && caravan(w, trip); ++t)
+             {
+                 w.tick(1);
+                 for (const auto& e : w.takeEvents())
+                     again |= e.kind == "raid" && e.actor == "camp_mid";
+             }
+             expect(!again && w.society().pressure("west", "nails") <= was.number("atCrash") + 1e-4 && bountiesOn(w, "camp_mid") == 1 &&
+                        lootAt(w, "camp_mid") == int(was.number("loot")),
+                    "and it is robbed once: no second raid, rise, bounty or cargo");
+         }},
+        // A wagon posted overdue the morning after the checkpoint (+0.05 at its end): that morning's rise comes once.
+        {"late",
+         [](game::Game& g) {
+             auto& w = g.world();
+             w.tick(.6);
+             w.tick(.6);
+             w.roads().camps.clear();
+             const auto* sent = w.sendCaravan(*w.roadMarket("east"), *w.roadMarket("west"), {{"nails", 10}});
+             expect(sent, "a wagon with nails");
+             const auto trip = sent->id;
+             w.roads().caravans.back().due = w.calendarDays() + .01;   // (Due at once, as overdueWithNoWord's.)
+             g.save();
+             g.settle();                            // (The checkpoint, the day before it is overdue.)
+             bool overdue = false;
+             for (int day = 0; day < 3 && !overdue; ++day)
+             {
+                 nextMorning(w);
+                 for (const auto& e : w.takeEvents())
+                     overdue |= e.kind == "wagon overdue" && e.actor == trip;
+             }
+             const auto* c = caravan(w, trip);
+             expect(overdue && c && near(c->latePushed, .05), "posted overdue a morning after the checkpoint, its nails 0.05 dearer");
+             auto was = json::Value::object();
+             was.add("trip", trip);
+             was.add("day", std::floor(w.calendarDays()));
+             was.add("p", w.society().pressure("west", "nails"));
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             auto& w = g.world();
+             const auto trip = was.string("trip");
+             const auto late = [&](double pushed, double p, const std::string& what) {
+                 const auto* c = caravan(w, trip);
+                 expect(c && c->overdue && near(c->latePushed, pushed), what + ": the wagon " +
+                                                                            (c ? std::to_string(c->latePushed) : std::string("gone")));
+                 if (p >= 0)
+                     expect(samePrice(w.society().pressure("west", "nails"), p), what + ": west's price " +
+                                                                              std::to_string(w.society().pressure("west", "nails")) +
+                                                                              " for " + std::to_string(p));
+             };
+             late(.05, was.number("atCrash"), "after the crash it is as late as it was");
+             // The clock is the record's, not the checkpoint's of a day or two before: that morning doesn't come again.
+             expect(std::floor(w.calendarDays()) == was.number("day"), "the clock restarts on the trade's day, not the checkpoint's");
+             run(w, 5);
+             late(.05, was.number("p"), "the same morning brings no second rise");
+             nextMorning(w);
+             late(.1, -1, "the day after brings the next one");
+         }},
+    };
+    return cases;
+}
+
+std::string crashSave(const std::string& name)
+{
+    return (std::filesystem::temp_directory_path() / ("ratw-s2stage-crash-" + name + "-" + std::to_string(::getpid()) + ".json")).string();
+}
+void cleanSave(const std::string& path)
+{
+    for (const auto* end : {"", ".journal", ".art", ".lock", ".reports", ".snapshot"})
+        std::filesystem::remove_all(path + end);
+}
+
+// To the crash: the case's own play, then a player's trade (a penny for a notice: an economy record), then the game
+// goes without saving.
+json::Value toTheCrash(const CrashCase& c, const std::filesystem::path& root, const std::string& path)
+{
+    game::Game g(optionsOn(root, path));
+    std::string problem;
+    expect(g.start(problem), std::string(c.name) + ": a game starts on the strip with a file save: " + problem);
+    auto was = c.before(g);
+    Client ash;
+    enterAt(g, ash, 81, "ash", "east");
+    board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "A trade, journalled."}});
+    g.settle();                                     // (Its reply waits for its journal record.)
+    const auto said = ash.said();
+    expect(said.find("You pin your notice") != std::string::npos, std::string(c.name) + ": a penny paid: an economy record: " + said);
+    g.disconnect(&ash);
+    was.add("atCrash", g.world().society().pressure("west", "nails"));   // (West's nails as the last record has them.)
+    return was;
+}
+
+void afterTheCrash(const CrashCase& c, const std::filesystem::path& root, const std::string& path, const json::Value& was)
+{
+    game::Game g(optionsOn(root, path));
+    std::string problem;
+    expect(g.start(problem), std::string(c.name) + ": starts again after the crash: " + problem);
+    c.after(g, was);
+}
+
 void departuresSurviveACrash()
 {
-    auto f = strip();
-    const auto root = onDisk(f, "journal");
-    const std::string path = (std::filesystem::temp_directory_path() / ("ratw-s2stage-journal-" + std::to_string(::getpid()) + ".json")).string();
-    const auto clean = [&] {
-        for (const auto* end : {"", ".journal", ".art", ".lock", ".reports", ".snapshot"})
-            std::filesystem::remove_all(path + end);
+    for (const auto& c : crashCases())
+    {
+        auto f = strip();
+        const auto root = onDisk(f, std::string("crash-") + c.name);
+        const auto path = crashSave(c.name);
+        cleanSave(path);
+        const auto was = toTheCrash(c, root, path);
+        afterTheCrash(c, root, path, was);
+        cleanSave(path);
+        std::filesystem::remove_all(root);
+    }
+}
+
+// An escort is one road's (second repair): west asks for guards for the wagon from east, a camp on its road. A wagon from
+// north to west is no business of theirs: its notices don't ask, north's board doesn't offer the work, north's guard
+// doesn't go for it, and when north's wagon is out first it leaves without the one who took the work at east's board,
+// who goes with east's (once: not with the wagon after it as well). The road is kept through a save.
+void anEscortIsItsRoads()
+{
+    auto f = strip("EE..WW..NN", resident("ng", "Hale Ward", "guard", "keeping the watch", 8, 5.5, 9, 6.5));   // (West between.)
+    const auto root = onDisk(f, "escort");
+    const auto path = crashSave("escort");
+    cleanSave(path);
+    std::string escort, ash;
+    const auto status = [&](const World& w) {
+        for (const auto& k : w.roads().contracts)
+            if (k.id == escort)
+                return k.status + (k.taker.empty() ? "" : " by " + k.taker);
+        return std::string("gone");
     };
-    clean();
-    market::Departure d;
+    const auto offered = [&](const World& w, const std::string& who) {
+        bool listed = false;
+        for (const auto* k : w.contractsNear(who))
+            listed = listed || k->id == escort;
+        return listed;
+    };
     {
         game::Game g(optionsOn(root, path));
         std::string problem;
-        expect(g.start(problem), "a game starts on the strip with a file save: " + problem);
+        expect(g.start(problem), "a game starts on the strip, west between east and north: " + problem);
         auto& w = g.world();
         w.tick(.6);
         w.tick(.6);
+        market::Departure d;
+        bool found = false;
+        for (int day = 0; day < 60 && !found; ++day)
+        {
+            w.roads().camps = {{"camp_mid", id(2), 3, 0, -100, true}};   // (On the road from east to west.)
+            w.roads().caravans.clear();             // (East's two carters kept free for it: no wagon out to north.)
+            for (const auto& x : w.society().board().committed)
+                if (!found && x.kind == "wagon" && x.from == "east" && x.to == "west")
+                    d = x, found = true;
+            if (!found)
+                nextMorning(w);
+        }
+        expect(found, "a wagon from east to west is posted, a camp on its road");
         w.roads().camps.clear();
-        d = postedWagon(w);
-        while (std::floor(w.calendarDays()) < double(d.day))
-            nextMorning(w);
+        for (const auto& k : w.roads().contracts)
+            if (k.kind == "escort" && k.town == "west" && k.status == "open")
+                escort = k.id;
+        expect(!escort.empty(), "and west asks for an escort for it");
+        // A wagon from north to west posted as well (by hand: north has no carter of its own).
+        auto n = d;
+        n.id = "wnorth";
+        n.from = "north";
+        n.driver.clear();
+        w.society().stagedBoard().committed.push_back(n);
+        expect(w.departureNotice(d, false).find("Escort wanted.") != std::string::npos &&
+                   w.departureNotice(d, true).find("Escort wanted: ask at the board in East.") != std::string::npos,
+               "the notices of east's wagon ask for it: " + w.departureNotice(d, false));
+        expect(w.departureNotice(n, false).find("Escort wanted") == std::string::npos &&
+                   w.departureNotice(n, true).find("Escort wanted") == std::string::npos,
+               "the notices of north's wagon don't: " + w.departureNotice(n, false));
+        Client bo, ashes;
+        enterAt(g, bo, 91, "bo", "north");
+        enterAt(g, ashes, 92, "ash", "east");
+        ash = ashes.entityId;
+        expect(!offered(w, bo.entityId), "north's board doesn't offer the work");
+        expect(offered(w, ash), "east's board does");
+        // Nobody has taken it in three days: north's guard doesn't go with north's wagon for it.
+        for (auto& k : w.roads().contracts)
+            if (k.id == escort)
+                k.created -= 3;
+        const auto* early = w.sendCaravan(*w.roadMarket("north"), *w.roadMarket("west"), {{"nails", 5}});
+        expect(early && early->escorts.empty() && status(w) == "open", "north's guard doesn't take the escort of east's road: " + status(w));
+        w.roads().caravans.clear();
+        for (auto& k : w.roads().contracts)
+            if (k.id == escort)
+                k.created += 3;
+        expect(w.takeContract(ash, escort).ok, "taken at east's board");
         g.save();
-        g.settle();                                 // (The checkpoint, on its day: the wagon posted, not yet out.)
-        const auto* out = setOut(w, d);
-        expect(out, "it sets out after the checkpoint");
-        Client ash;
-        enterAt(g, ash, 81, "ash", "east");
-        board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "A trade, journalled."}});
-        g.settle();                                 // (Its reply waits for its journal record.)
-        const auto said = ash.said();
-        expect(said.find("You pin your notice") != std::string::npos, "a penny paid: an economy record: " + said);
-        // A crash: the game goes without saving.
+        g.settle();
+        g.disconnect(&bo);
+        g.disconnect(&ashes);
     }
     {
         game::Game g(optionsOn(root, path));
         std::string problem;
-        expect(g.start(problem), "starts again after the crash: " + problem);
-        int onRoad = 0;
-        for (const auto& c : g.world().roads().caravans)
-            onRoad += c.departure == d.id;
-        bool posted = false;
-        for (const auto& x : g.world().society().board().committed)
-            posted = posted || x.id == d.id;
-        expect(onRoad == 1 && !posted, "the wagon on the road once, its departure gone from the Board: " + std::to_string(onRoad) +
-                                           (posted ? ", still posted" : ""));
+        expect(g.start(problem), "and after a save and a restart: " + problem);
+        auto& w = g.world();
+        w.roads().camps.clear();
+        expect(status(w) == "taken by " + ash, "the work is still hers: " + status(w));
+        const auto* north = w.sendCaravan(*w.roadMarket("north"), *w.roadMarket("west"), {{"nails", 5}});
+        expect(north && north->escorts.empty(), "north's wagon, out first, leaves without her");
+        const auto* east = w.sendCaravan(*w.roadMarket("east"), *w.roadMarket("west"), {{"nails", 5}});
+        expect(east && east->escorts == std::vector<std::string>{ash}, "east's wagon waits for her");
+        expect(status(w) == "taken by " + ash, "her work as it was: " + status(w));
+        const auto* next = w.sendCaravan(*w.roadMarket("east"), *w.roadMarket("west"), {{"nails", 5}});
+        expect(next && next->escorts.empty(), "and the wagon after it doesn't wait for her as well");
     }
-    clean();
+    cleanSave(path);
     std::filesystem::remove_all(root);
+}
+
+std::string slurp(const std::filesystem::path& file)
+{
+    std::ifstream in(file, std::ios::binary);
+    expect(bool(in), "reads " + file.string());
+    std::ostringstream text;
+    text << in.rdbuf();
+    return text.str();
+}
+
+// --write-crashes DIR: each case played to its crash; its checkpoint (DIR/<case>.json), its journal (DIR/<case>.journal,
+// a record a line: its number, a tab, its text) and what was so at the crash (DIR/<case>.was.json), for
+// Tests/trade_show_pg.py to put through game.save_checkpoint and game.journal in a throwaway database and read back.
+int writeCrashes(const std::filesystem::path& dir)
+{
+    namespace fs = std::filesystem;
+    fs::create_directories(dir);
+    for (const auto& c : crashCases())
+    {
+        auto f = strip();
+        const auto root = onDisk(f, std::string("crash-") + c.name);
+        const auto path = crashSave(c.name);
+        cleanSave(path);
+        const auto was = toTheCrash(c, root, path);
+        expect(fs::exists(path) && fs::exists(path + ".journal"), std::string(c.name) + ": a checkpoint and a journal written");
+        fs::copy_file(path, dir / (std::string(c.name) + ".json"), fs::copy_options::overwrite_existing);
+        fs::copy_file(path + ".journal", dir / (std::string(c.name) + ".journal"), fs::copy_options::overwrite_existing);
+        std::ofstream(dir / (std::string(c.name) + ".was.json"), std::ios::binary) << json::dump(was);
+        cleanSave(path);
+        fs::remove_all(root);
+    }
+    return 0;
+}
+
+// --check-crashes BACK DIR: each case's checkpoint and journal as Postgres gave them back (BACK/<case>.json and
+// .journal), restarted on and checked as the file save's are.
+int checkCrashes(const std::filesystem::path& back, const std::filesystem::path& dir)
+{
+    namespace fs = std::filesystem;
+    for (const auto& c : crashCases())
+    {
+        auto f = strip();
+        const auto root = onDisk(f, std::string("crash-") + c.name);
+        const auto path = crashSave(c.name);
+        cleanSave(path);
+        fs::copy_file(back / (std::string(c.name) + ".json"), path);
+        fs::copy_file(back / (std::string(c.name) + ".journal"), path + ".journal");
+        json::Value was;
+        std::string error;
+        expect(json::parse(slurp(dir / (std::string(c.name) + ".was.json")), was, error), std::string(c.name) + ": what was so reads: " + error);
+        afterTheCrash(c, root, path, was);
+        cleanSave(path);
+        fs::remove_all(root);
+    }
+    std::cout << "trade_show_tests --check-crashes: " << crashCases().size() << " crashes replayed the same through Postgres (" << checks
+              << " checks)\n";
+    return 0;
 }
 } // namespace
 
-int main()
+int main(int argc, char** argv)
 {
     try
     {
+        if (argc == 3 && std::string(argv[1]) == "--write-crashes")
+            return writeCrashes(argv[2]);
+        if (argc == 4 && std::string(argv[1]) == "--check-crashes")
+            return checkCrashes(argv[2], argv[3]);
         wagonsCommittedWhenPosted();
         aWagonsTrip();
         anArrivalNeverRaises();
         aRaid();
+        foundCargoIsAReward();
         aLateWagon();
         importsThinBetweenWagons();
         farmCarts();
@@ -1452,6 +1902,7 @@ int main()
         overdueWithNoWord();
         cartsThatDontCome();
         departuresSurviveACrash();
+        anEscortIsItsRoads();
     }
     catch (const std::exception& error)
     {
