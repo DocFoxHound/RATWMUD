@@ -2038,8 +2038,9 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     a day past due is posted overdue with its cause (the far end's notice reads "Overdue: ...") and adds +0.05 a day on
     its goods there, at most +0.2; a late wagon is a trouble for that market's Times.
   - **Raids** (8.1, D14): no coins into the camp; the manifest becomes goods at `bandits:<camp>`, made there (a goods
-    faucet, at most 40p of them by catalogue price), which whoever breaks the camp finds ("recovered goods", a
-    registered faucet path); the watch's clearing or a starved camp's scattering returns them to the staged side. +0.15
+    faucet, at most 40p of them by catalogue price), which whoever breaks the camp finds as a reward ("reward: recovered
+    cargo", within the day's rewards cap; what the cap or a full pack leaves goes back to its carters, consumed as
+    "recovered cargo"); the watch's clearing or a starved camp's scattering returns them to the staged side. +0.15
     on its goods at the destination at the raid, a trouble for its Times; the carter comes home robbed (his staged purse
     emptied) or hurt (bruised ribs), never killed. The bounty and escort are posted by the destination's treasury, the
     bounty at most `bountyMost` (60p); a camp's strength at most `campStrengthMost` (12, enforced each day); a road's camp
@@ -2185,6 +2186,51 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `ratw_test_s2stage_*` database; East's escort beside North's wagon to the same town; found cargo counted and
     capped). A clean Release build (`build-4r2`); ctest 82/82 with the database, none skipped (`pg_client` on a
     throwaway `ratw_test_s2stage_4r2`, dropped after); `host_edit_tests` 550, `roads_tests` 407, `save_compat` 23,085.
+- **2026-11-10: Phase 4, third repair** (what two checks of the second repair found still open, each fixed with a test
+  unless said otherwise).
+  - **A crash while a snapshot was taken and not yet stored (or after one failed) replayed a wagon twice, lost one, or
+    left a contract without its pot.** The journal's shadow was moved to the world's state when a snapshot was
+    captured, without a record, but the store holds the checkpoint before until the new one lands (a forked child or
+    a database's worker writes it, and may fail): a trade in between was journalled as a change from a state the
+    store didn't have. Now what the world's tick moved since the last record (the accounts, the Board and its
+    departures, the roads, the staged escrow sources, holds and bands) is journalled as a record of its own as the
+    checkpoint is taken (`journalCheckpoint`, by the parent before the fork, before the store is handed a snapshot,
+    and in `save()`), and the checkpoint covers that record. The journal is then true over either checkpoint; no
+    shadow is reset without a record any more. The same record erases a staged escrow source added on a tick before
+    a checkpoint and removed on a tick after it, which the journal used to leave behind (an older fault).
+  - **An economy record cost about three times as much with wagons on the road.** The roads' steps were found by
+    encoding the roads as a document, copying it, erasing each wagon's place and dumping it, with every record. They
+    are compared as bytes now (`checkpoint::roadSteps`), and the document is made only when a step has moved. A
+    notice pinned with 60 wagons out: 0.08 ms (0.97 after the second repair, 0.32 before it); with 200: 0.11 ms
+    (2.99, 0.87). Measured, not a test.
+  - **Words and events told the posted reward where the day's cap paid less.** `settleContract` returns what was paid;
+    a bounty, an escort's pay and a letter's say so ("you are paid 7 pennies of the 20 ...: you have had all the
+    rewards one day pays, and the rest goes back", or that all of it goes back), and a "contract done" event carries
+    the coins paid.
+  - **An older save's escort (no road named) kept the any-market rule.** It takes its road where it is taken (the
+    market a wagon to its town sets out from) or from the first wagon it goes with; one a player holds while standing
+    in another market waits for that market's wagon, and one whose holder is away from the world is kept. Still as
+    before, by intent: an older escort taken at its town's own board, or held out on the road, goes with the first
+    wagon to its town, which tells its holder where it waits.
+  - **The carters' pinned notices went on asking for an escort that was taken, and never asked for one posted after
+    a raid.** They are written again from the Board when an escort is posted, taken or settled (an escort's road is
+    given to `postContract`, so it is known when its posting is told), and a wagon that has set out stops asking.
+  - **A finder with a full pack (64 kinds) left cargo at a broken camp, its account open.** What cannot be taken goes
+    back to its carters like what is over the cap, and the account closes.
+  - Small: Phase 4's entry above (Raids) names found cargo as the code does; `save_compat_pg` and `market_pg` name
+    their throwaway databases `ratw_test_s2stage_*`.
+  - Tests: `trade_show_tests` 830 checks (was 566). Its crashes are ten now: the four, a camp scattering with its
+    bounty, and each again with a player in before the checkpoint, a real forked snapshot that cannot be written, a
+    purchase (the shops shut, the Board moved as one moves it) and a bounty taken where one is open, then the crash; one
+    more on a store that is handed a snapshot and doesn't store it. With the old silent reset put back, the scatter
+    case, four of the five window runs and the held snapshot fail (the wagon in twice, a taken bounty without its pot, a
+    late wagon's push lost, a source without its pot); the fifth window run (a wagon setting out) passes either way: its
+    road takes another step inside the window, which journals the roads whole. All ten go through Postgres
+    (`trade_show_pg`, 100 checks, was 29). A clean Release build (`build-4s`); ctest 82/82 with the database, none
+    skipped, run twice (`pg_client` on a throwaway `ratw_test_s2stage_4s`, dropped after); `host_edit_tests` 550,
+    `roads_tests` 407, `save_compat` 23,085.
+  - For Phase 5's merge: ships are journalled by adding them to `record()`'s comparison (and a new flag, if they get
+    one, to `journalCheckpoint`'s); there is no per-field shadow reset to extend.
 
 ## Review (2026-11-08)
 
