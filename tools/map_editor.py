@@ -82,7 +82,7 @@ SUBSIDISED = ('carriage',)                           # Society::Subsidised
 # The seasons in the Country's supply and the residents' comforts (doc 68, Progress, "Seasons and the DM's rules";
 # migration 0057): optional economy keys. comfortsAbove/comfortsShare: None for city_loop.json's (40p a head, 20% since
 # doc 68's first fixes); seasons: {group: {supply: [4], price: [4], shelf: [4], normal: N}}, the groups this world has changed (a group not
-# listed is as city_loop.json says), percent by season (Spring, Summer, Autumn, Winter), normal pieces a day.
+# listed is as market.json says; Core reads its price and shelf, not supply or normal, since doc 79), percent by season (Spring, Summer, Autumn, Winter), normal pieces a day.
 SEASON_DEFAULTS = {'comfortsAbove': None, 'comfortsShare': None, 'seasons': {}}
 SEASON_LIMITS = {'supply': (0, 1000), 'price': (10, 1000), 'shelf': (0, 1000)}
 SEASON_NAMES = ('Spring', 'Summer', 'Autumn', 'Winter')
@@ -177,7 +177,7 @@ def unknown_rules(rules) -> list[str]:
 
 
 def service_list() -> list[dict]:
-    """city_loop.json's services, each with its item's name and catalogue price (items.json): {id, name, business, price,
+    """market.json's services (doc 79, 17: moved from city_loop.json), each with its item's name and catalogue price (items.json): {id, name, business, price,
     every, for} (`for`: "households", or "patrons" for a patron's work, done for each of its patrons' units: doc 68,
     "Trades")."""
     try:
@@ -213,7 +213,7 @@ def check_rules(rules, services) -> list[str]:
     known = {s['id'] for s in service_list()}
     for sid, s in services.items():
         if sid not in known:
-            errors.append(f'economy.services names no service of city_loop.json: {sid}.')
+            errors.append(f'economy.services names no service of market.json: {sid}.')
         elif not isinstance(s, dict) or set(s) != {'on', 'price', 'every'} or type(s['on']) is not bool:
             errors.append(f'economy.services.{sid} must be {{on: true or false, price: pennies, every: days}}.')
         else:

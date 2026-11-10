@@ -11,7 +11,8 @@ const title = (id: string) => id.replace(/^(house|stores|town):/, '').replace(/_
 /** (`me` is taken for the tabs' sake; the money view is the same for every role.) */
 // The funds' names (docs 67, 68, 73): the Wharf's purse (the Country's before doc 73), carriage where a world has no
 // carters' yard, the old store fund; the Houses' estates (doc 72, Phase 6: estate:<id>; Grayrock's is the Wharf's purse
-// while they are split: with the rule off there is no estate:<id> purse and it is the one purse again).
+// while they are split; a world from before doc 72's split has no estate:<id> purse and it is the one purse). Since doc 79
+// (Phase 3) these are a pre-79 world's names: Phase 9 makes this tab the Prosperity tab.
 const ESTATES: Record<string, string> = {greatly: 'House Greatly', timberland: 'House Timberland', fell: 'House Fell', crown: 'The Crown'};
 function fundName(id: string, split = false) {
     if (id === 'outside:wharf' || id === 'outside:country') return split ? 'The Wharf\'s purse (House Grayrock\'s estate)' : 'The Wharf\'s purse';

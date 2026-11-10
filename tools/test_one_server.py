@@ -18,7 +18,8 @@ from test_world_db import database_available, superuser
 from test_world_store import greyfen
 
 ROOT = Path(__file__).resolve().parent.parent
-SERVER = ROOT / 'build-core' / 'ratw_server'
+# (RATW_TEST_SERVER: another build's, such as a worktree's, as test_world_package takes it.)
+SERVER = Path(os.environ.get('RATW_TEST_SERVER') or ROOT / 'build-core' / 'ratw_server')
 
 
 def free_port():

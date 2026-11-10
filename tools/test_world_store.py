@@ -239,11 +239,20 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(again['economy']['businesses'], {})
         lines = E.export_files(again, R.load())['world.ratw'].split('\n')
         self.assertFalse(any(l.startswith(('store ', 'nostore ')) for l in lines), 'at the defaults: no store records')
-        # A business key must name an NPC, a markup must be 0 to 1000.
+        # A business key must name an NPC, a markup must be 0 to 1000; since doc 79 (14, 17) these settings are dead, so
+        # a project holding a bad one loads, warned of, and a change to one is still refused (check_economy).
         for bad in ({'businesses': {'nobody': {'internalStore': False}}}, {'storeMarkup': 1001}, {'resaleMarkup': -1},
                     {'storeRule': 'yes'}, {'businesses': {'brann': {'internalStore': 0}}}):
-            with self.assertRaises(E.ValidationError, msg=str(bad)):
-                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+            self.assertDeadSettingWarned(again, bad)
+
+    def assertDeadSettingWarned(self, world, bad):
+        """A bad dead setting (map_editor.DEAD_ECONOMY; doc 79, 14 and 17): the project loads with a warning naming it,
+        and a change to it is refused."""
+        economy = {**world['economy'], **bad}
+        _, warnings = E.check_project({**world, 'economy': economy}, for_game=False, playable=False)
+        key = next(iter(bad))
+        self.assertTrue(any(w.startswith(f'economy.{key}') and 'no longer reads' in w for w in warnings), (bad, warnings))
+        self.assertTrue(E.check_economy(economy, {q['id'] for q in world.get('people', [])}), f'a change to it is refused: {bad}')
 
     def test_city_loop_settings_round_trip(self):
         # Doc 68, 9: the loop's settings in live.economy and in the export's records ("loop", "countryoff", "subsidy"
@@ -269,10 +278,12 @@ class StoreTests(unittest.TestCase):
         again, _ = S.load_world(self.conn, 'greyfen')
         lines = E.export_files(again, R.load())['world.ratw'].split('\n')
         self.assertFalse(any(l.startswith(('loop ', 'countryoff ', 'subsidy ')) for l in lines), 'at the defaults: no loop records')
-        for bad in ({'gateToll': 91}, {'carriage': -1}, {'needsPaused': 'no'}, {'wharfOff': ['fish', 'fish']},
+        # The loop's settings are dead since doc 79 (17) but needsPaused, which is kept: a bad one is refused.
+        for bad in ({'gateToll': 91}, {'carriage': -1}, {'wharfOff': ['fish', 'fish']},
                     {'subsidies': {'roads': 10}}, {'subsidies': {'carriage': 101}}, {'wageKeeper': 1001}):
-            with self.assertRaises(E.ValidationError, msg=str(bad)):
-                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+            self.assertDeadSettingWarned(again, bad)
+        with self.assertRaises(E.ValidationError):
+            E.check_project({**again, 'economy': {**again['economy'], 'needsPaused': 'no'}}, for_game=False, playable=False)
 
     def test_seasons_and_comforts_round_trip(self):
         # Doc 68, Progress, "Seasons and the DM's rules" (migration 0057): the seasons and the comforts in live.economy
@@ -297,7 +308,10 @@ class StoreTests(unittest.TestCase):
         again, _ = S.load_world(self.conn, 'greyfen')
         lines = E.export_files(again, R.load())['world.ratw'].split('\n')
         self.assertFalse(any(l.startswith(('comforts ', 'season ')) for l in lines), 'as city_loop.json has them: no records')
-        for bad in ({'comfortsAbove': -1}, {'comfortsShare': 101}, {'seasons': {'grain': {**grain, 'supply': [1, 2, 3]}}},
+        # The comforts are dead since doc 79 (17): warned of. The seasons are kept: a bad one is refused.
+        for bad in ({'comfortsAbove': -1}, {'comfortsShare': 101}):
+            self.assertDeadSettingWarned(again, bad)
+        for bad in ({'seasons': {'grain': {**grain, 'supply': [1, 2, 3]}}},
                     {'seasons': {'grain': {**grain, 'price': [9, 100, 100, 100]}}}, {'seasons': {'Grain!': grain}},
                     {'seasons': {'grain': {**grain, 'colour': 1}}}, {'seasons': []}):
             with self.assertRaises(E.ValidationError, msg=str(bad)):
@@ -305,15 +319,16 @@ class StoreTests(unittest.TestCase):
 
     def test_rules_and_services_round_trip(self):
         # Doc 68, Progress, "First fixes" (migration 0058): the rules and the services in live.economy and in the
-        # export's records ("rule", "service" after the comforts' and seasons'); back at city_loop.json's, no records.
+        # export's records ("rule", "service" after the comforts' and seasons'); back at the data files', no records.
+        # (Since doc 79, 17, the rules are the staged economy's: Core's items::Rules, map_editor.RULES.)
         p = greyfen()
-        p['economy'] = {**p['economy'], 'comfortsAbove': 50, 'rules': {'almsADay': 12, 'treasuryCap': 3000, 'fairFood': 0},
+        p['economy'] = {**p['economy'], 'comfortsAbove': 50, 'rules': {'buyAheadDays': 2, 'ripple': 40, 'neverHungry': 1},
                         'services': {'groom_and_trim': {'on': False, 'price': 2, 'every': 5}}}
         self.create(p)
         loaded, revision = S.load_world(self.conn, 'greyfen')
         self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
         lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
-        wanted = ['rule "almsADay" 12', 'rule "fairFood" 0', 'rule "treasuryCap" 3000',
+        wanted = ['rule "buyAheadDays" 2', 'rule "neverHungry" 1', 'rule "ripple" 40',
                   'service "groom_and_trim" off price 2 every 5']
         at = lines.index(wanted[0])
         self.assertEqual(lines[at - 1], 'comforts 50 -', 'after the comforts')
@@ -329,10 +344,17 @@ class StoreTests(unittest.TestCase):
         again, _ = S.load_world(self.conn, 'greyfen')
         self.assertEqual((again['economy']['rules'], again['economy']['services']), ({}, {}))
         lines = E.export_files(again, R.load())['world.ratw'].split('\n')
-        self.assertFalse(any(l.startswith(('rule ', 'service ')) for l in lines), 'as city_loop.json has them: no records')
+        self.assertFalse(any(l.startswith(('rule ', 'service ')) for l in lines), 'as the data files have them: no records')
         trim = {'on': True, 'price': 1, 'every': 4}
-        for bad in ({'rules': {'almsADay': 1001}}, {'rules': {'fairFood': 2}}, {'rules': {'luck': 1}}, {'rules': {'treasuryCap': -1}},
-                    {'rules': {'servicesCityShare': 101}}, {'rules': []}, {'services': {'haircut': trim}},
+        # A rule the game no longer has (the city loop's) is kept with a warning and never written (doc 79, 14 and 17).
+        for gone in ({'almsADay': 1001}, {'fairFood': 2}, {'luck': 1}, {'treasuryCap': -1}, {'servicesCityShare': 101}):
+            kept = {**again, 'economy': {**again['economy'], 'rules': gone}}
+            _, warnings = E.check_project(kept, for_game=False, playable=False)
+            self.assertTrue(any(w.startswith(f'economy.rules.{next(iter(gone))}') and 'no longer has' in w for w in warnings),
+                            (gone, warnings))
+            self.assertFalse(any(l.startswith('rule ') for l in E.export_files(kept, R.load())['world.ratw'].split('\n')), gone)
+        for bad in ({'rules': {'ripple': 71}}, {'rules': {'neverHungry': 2}}, {'rules': {'depthScale': 9}},
+                    {'rules': {'buyAheadDays': -1}}, {'rules': []}, {'services': {'haircut': trim}},
                     {'services': {'groom_and_trim': {**trim, 'price': 0}}}, {'services': {'groom_and_trim': {**trim, 'every': 3651}}},
                     {'services': {'groom_and_trim': {'on': 1, 'price': 1, 'every': 4}}}, {'services': {'groom_and_trim': {'on': True}}}):
             with self.assertRaises(E.ValidationError, msg=str(bad)):
@@ -346,7 +368,7 @@ class StoreTests(unittest.TestCase):
                  'areas': {'grain': {'on': True, 'yieldScale': 120, 'crewScale': 150, 'hand': 11, 'priceFactor': 105},
                            'salt': {'on': False}},
                  'farms': {'grain_farm_1': {'yieldScale': 90, 'keeper': 18}}}
-        p['economy'] = {**p['economy'], 'rules': {'almsADay': 12}, 'farms': farms}
+        p['economy'] = {**p['economy'], 'rules': {'buyAheadDays': 2}, 'farms': farms}
         self.create(p)
         loaded, revision = S.load_world(self.conn, 'greyfen')
         self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
@@ -356,10 +378,10 @@ class StoreTests(unittest.TestCase):
                   'farmarea "salt" on off yield - crew - wages - - factor -',
                   'farm "grain_farm_1" yield 90 crew - wages 18 -']
         at = lines.index(wanted[0])
-        self.assertEqual(lines[at - 1], 'rule "almsADay" 12', 'after the rules')
+        self.assertEqual(lines[at - 1], 'rule "buyAheadDays" 2', 'after the rules')
         self.assertEqual(lines[at:at + 4], wanted)
         manifest = self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
-        self.assertEqual(manifest[manifest.index(wanted[0]) - 1:manifest.index(wanted[0]) + 4], ['rule "almsADay" 12', *wanted],
+        self.assertEqual(manifest[manifest.index(wanted[0]) - 1:manifest.index(wanted[0]) + 4], ['rule "buyAheadDays" 2', *wanted],
                          'the database writes the same')
         with self.conn.transaction():
             self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
@@ -374,8 +396,7 @@ class StoreTests(unittest.TestCase):
                     {'farms': {'keeper': 1001}}, {'farms': {'areas': {'grain': {'on': 1}}}},
                     {'farms': {'areas': {'grain': {'priceFactor': 5}}}}, {'farms': {'farms': {'grain_farm_1': {'on': True}}}},
                     {'farms': {'farms': {'Grain farm': {'yieldScale': 90}}}}, {'farms': {'luck': 1}}, {'farms': []}):
-            with self.assertRaises(E.ValidationError, msg=str(bad)):
-                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+            self.assertDeadSettingWarned(again, bad)       # (The farms' settings are dead since doc 79, 17.)
         # What country_farms.json no longer has (written again with fewer farms) is kept, as Core keeps it, with a warning.
         for kept in ({'farms': {'order': ['orchards']}}, {'farms': {'areas': {'gardens': {'on': True}}}},
                      {'farms': {'farms': {'grain_farm_9': {'yieldScale': 90}}}}):

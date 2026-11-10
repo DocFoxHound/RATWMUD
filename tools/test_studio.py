@@ -925,7 +925,9 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(status, 200, data)
         self.assertTrue(data['loopSupported'])
         self.assertEqual(data['loop'], {k: v for k, v in ST.map_editor.LOOP_DEFAULTS.items() if k != 'wharfOff'})
-        self.assertTrue(data['basket'] and all({'item', 'share', 'percent', 'makers'} <= set(b) for b in data['basket']))
+        # The Country's basket went with Data/Items/city_loop.json (doc 79, 17): the view shows none, and Phase 9
+        # removes the view.
+        self.assertEqual(data['basket'], [])
         self.assertIn('restocking rule', data['ruleWarning'], 'the rule is off in this world')
         goods = {g['item']: g for g in data['goods']}
         self.assertTrue(goods['iron_bar']['supplied'])

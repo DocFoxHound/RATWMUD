@@ -71,12 +71,12 @@ export function RulesPanel({data, locked, setRules, setServices}: {data: RuleCon
                 return <tr key={s.id} className={changed ? 'changed' : ''}>
                     <td title={serviceText(data, s)}><b>{s.name}</b><br /><small className="hint">{s.business}
                         {s.for === 'patrons' && ', for its patrons: every day count is per unit (an armed wolf, a hull, a building)'}
-                        {changed && ` (city_loop.json: ${s.price}p, every ${s.every} days)`}</small></td>
+                        {changed && ` (market.json: ${s.price}p, every ${s.every} days)`}</small></td>
                     <td><input type="checkbox" checked={v.on} disabled={off} aria-label={`${s.name}: on`}
                         onChange={e => { const body = serviceChange(data, s, 'on', e.target.checked); if (body) setServices(body); }} /></td>
                     <td>{field(`${s.id}.price`, 5, `${s.name}: price`, () => commitService(s, 'price'))}</td>
                     <td>{field(`${s.id}.every`, 5, `${s.name}: every`, () => commitService(s, 'every'))}</td>
-                    <td>{changed && <button disabled={off} onClick={() => setServices({set: {[s.id]: null}})}>As city_loop.json</button>}</td>
+                    <td>{changed && <button disabled={off} onClick={() => setServices({set: {[s.id]: null}})}>As market.json</button>}</td>
                 </tr>;
             })}</tbody>
         </table></div>

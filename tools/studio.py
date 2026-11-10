@@ -25,11 +25,11 @@ One host on one port (default 8765, on this computer and the local network: --ho
                                  wageKeeper?, wageHand?, wagePublic?, wageWharf?, subsidies?}, POST economy/goods
                                  {set: {item: bool}} or {all: bool}; the seasons and the comforts (doc 68, Progress,
                                  "Seasons and the DM's rules"; migration 0057): POST economy/seasons {set: {group:
-                                 {supply?, price?, shelf?, normal?} or null (back to city_loop.json's)}}, POST
+                                 {supply?, price?, shelf?, normal?} or null (back to market.json's)}}, POST
                                  economy/comforts {comfortsAbove?, comfortsShare?} (null: city_loop.json's); the loop's
                                  rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): POST
                                  economy/rules {set: {rule: N or null}}, POST economy/services {set: {service: {on?,
-                                 price?, every?} or null}} (null: city_loop.json's); the Country's food farms
+                                 price?, every?} or null}} (null: market.json's); the Country's food farms
                                  (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): POST economy/farms
                                  {set: {start?, every?, order?, keeper?, hand?, areas?: {area: {on?, yieldScale?,
                                  crewScale?, keeper?, hand?, priceFactor?} or null}, farms?: {farm: {yieldScale?,
@@ -129,11 +129,11 @@ COMFORT_KEYS = ('comfortsAbove', 'comfortsShare')
 NO_RULE = 'The loop needs the restocking rule on, or shops sell out and stay empty.'
 ECONOMY_NOTE = 'Per world; not carried by Update from live or Import from dev (each world\'s own lever).'
 TAKES_EFFECT = ('Applied to the world\'s running game server within a few seconds (economy.sync), and read by any server '
-                'started on it later. A business\'s own switch, and Data/Items/city_loop.json itself, take effect when a '
+                'started on it later. A business\'s own switch, and Data/Economy/market.json itself, take effect when a '
                 'server next starts.')
-NO_SEASONS_HERE = ('This world lacks migration 0057: its seasons and comforts are as Data/Items/city_loop.json has them and '
+NO_SEASONS_HERE = ('This world lacks migration 0057: its seasons are as Data/Economy/market.json has them and '
                    'can\'t be changed here.')
-NO_RULES_HERE = ('This world lacks migration 0058: its rules and services are as Data/Items/city_loop.json has them and '
+NO_RULES_HERE = ('This world lacks migration 0058: its rules and services are as Data/Economy/market.json and status.json have them and '
                  'can\'t be changed here.')
 NO_FARMS_HERE = ('This world lacks migration 0060: its farms are as Data/Economy/country_farms.json has them and can\'t be '
                  'changed here.')
@@ -299,7 +299,7 @@ class Economy:
     @staticmethod
     def rules_view(economy, supported) -> dict:
         """The loop's rules and the city's services (doc 68, Progress, "First fixes"): this world's changes ({} for none),
-        city_loop.json's rules beside them, and each city_loop.json service with its name, catalogue price and business."""
+        the data files' rules beside them (market.json's and status.json's), and each market.json service with its name, catalogue price and business."""
         return {'rulesSupported': supported, 'rulesProblem': '' if supported else NO_RULES_HERE,
                 'rules': dict(economy.get('rules') or {}), 'services': copy.deepcopy(dict(economy.get('services') or {})),
                 'ruleDefaults': map_editor.rule_defaults(), 'serviceList': map_editor.service_list()}
@@ -322,8 +322,9 @@ class Economy:
 
     @staticmethod
     def seasons_view(country, economy, supported) -> dict:
-        """The seasons and the comforts (doc 68, Progress): city_loop.json's groups with this world's changes, each
-        with city_loop.json's own numbers beside it, and the comforts (null: city_loop.json's)."""
+        """The seasons and the comforts (doc 68, Progress): market.json's groups with this world's changes, each
+        with market.json's own numbers beside it (price and shelf; supply and normal, which Core no longer reads since
+        doc 79, as 100s and 0 until Phase 9 reshapes the record), and the comforts (null: the old defaults)."""
         own = economy.get('seasons') or {}
         groups = []
         for g in map_editor.season_groups():
@@ -444,7 +445,7 @@ class Economy:
 
     def set_seasons(self, key, data, editor) -> dict:
         """Season groups as this world has them (doc 68, Progress): {set: {group: {supply?, price?, shelf?, normal?}}}, any
-        of a group's four numbers at a time (the rest as it is now), or a group null: back to city_loop.json's."""
+        of a group's four numbers at a time (the rest as it is now), or a group null: back to market.json's."""
         wanted = data.get('set') if isinstance(data, dict) else None
         if not isinstance(wanted, dict) or not wanted:
             raise D.DMError('Send {"set": {group: {supply?, price?, shelf?: [Spring, Summer, Autumn, Winter] percents, '
@@ -452,7 +453,7 @@ class Economy:
         groups = {g['id']: g for g in map_editor.season_groups()}
         unknown = sorted(set(wanted) - set(groups))
         if unknown:
-            raise D.DMError(f'No such season group in Data/Items/city_loop.json: {", ".join(unknown[:8])} (there are '
+            raise D.DMError(f'No such season group in Data/Economy/market.json: {", ".join(unknown[:8])} (there are '
                             f'{", ".join(groups) or "none"}).', 400)
         for group, change in wanted.items():
             if change is not None and (not isinstance(change, dict) or not change or set(change) - {'supply', 'price', 'shelf', 'normal'}):
@@ -471,7 +472,7 @@ class Economy:
                 merged = {**(seasons.get(group) or base(group)), **values}
                 seasons[group] = merged if merged != base(group) else None
                 if seasons[group] is None:
-                    del seasons[group]            # (Back at city_loop.json's: no row kept for it.)
+                    del seasons[group]            # (Back at market.json's: no row kept for it.)
             problems = map_editor.check_economy({**S.default_economy(), 'seasons': seasons})
             if problems:
                 raise D.DMError(' '.join(problems), 400)
@@ -479,7 +480,7 @@ class Economy:
 
         def told(group, values):
             if values is None:
-                return f'{group} as city_loop.json has it'
+                return f'{group} as market.json has it'
             return f'{group} ' + ', '.join(f'{k} {"/".join(map(str, v)) if isinstance(v, list) else v}' for k, v in values.items())
         said = '; '.join(told(g, v) for g, v in wanted.items())
         result = self._edit(key, editor, f'The seasons: {said}', change, seasons=True)
@@ -498,7 +499,7 @@ class Economy:
         return {**result, 'detail': f'The comforts: {said}.'}
 
     def set_rules(self, key, data, editor) -> dict:
-        """The loop's rules (doc 68, Progress, "First fixes"): {set: {rule: whole number, or null for city_loop.json's}}."""
+        """The loop's rules (doc 68, Progress, "First fixes"): {set: {rule: whole number, or null for the data files'}}."""
         wanted = data.get('set') if isinstance(data, dict) else None
         names = map_editor.RULE_LIMITS
         if not isinstance(wanted, dict) or not wanted:
@@ -518,20 +519,20 @@ class Economy:
                 else:
                     rules[name] = value
             return {**e, 'rules': rules}
-        said = ', '.join(f'{k} {"as city_loop.json has it" if v is None else v}' for k, v in wanted.items())
+        said = ', '.join(f'{k} {"as the data files have it" if v is None else v}' for k, v in wanted.items())
         result = self._edit(key, editor, f'The rules: {said}', change, rules=True)
         return {**result, 'detail': f'The rules: {said}.'}
 
     def set_services(self, key, data, editor) -> dict:
         """The city's services (doc 68, Progress, "First fixes"): {set: {service: {on?, price?, every?} or null}}, any of a
-        service's three at a time (the rest as it is now), or null: back to city_loop.json's (and items.json's price)."""
+        service's three at a time (the rest as it is now), or null: back to market.json's (and items.json's price)."""
         wanted = data.get('set') if isinstance(data, dict) else None
         if not isinstance(wanted, dict) or not wanted:
             raise D.DMError('Send {"set": {service: {on?: true|false, price?: pennies, every?: days} or null}}.', 400)
         listed = {s['id']: s for s in map_editor.service_list()}
         unknown = sorted(set(wanted) - set(listed))
         if unknown:
-            raise D.DMError(f'No such service in Data/Items/city_loop.json: {", ".join(unknown[:8])} (there are '
+            raise D.DMError(f'No such service in Data/Economy/market.json: {", ".join(unknown[:8])} (there are '
                             f'{", ".join(listed) or "none"}).', 400)
         for sid, values in wanted.items():
             if values is not None and (not isinstance(values, dict) or not values or set(values) - {'on', 'price', 'every'}):
@@ -549,7 +550,7 @@ class Economy:
                     continue
                 merged = {**(services.get(sid) or base(sid)), **values}
                 if merged == base(sid):
-                    services.pop(sid, None)       # (Back at city_loop.json's: no entry kept for it.)
+                    services.pop(sid, None)       # (Back at market.json's: no entry kept for it.)
                 else:
                     services[sid] = merged
             problems = map_editor.check_rules({}, services)
@@ -559,7 +560,7 @@ class Economy:
 
         def told(sid, values):
             if values is None:
-                return f'{sid} as city_loop.json has it'
+                return f'{sid} as market.json has it'
             return f'{sid} ' + ', '.join(f'{k} {("on" if v else "off") if isinstance(v, bool) else v}' for k, v in values.items())
         said = '; '.join(told(s, v) for s, v in wanted.items())
         result = self._edit(key, editor, f'The services: {said}', change, rules=True)

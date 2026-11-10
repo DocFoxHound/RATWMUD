@@ -101,9 +101,6 @@ struct Craft
     std::string id;
     std::vector<std::string> makers;                // Business ids whose keepers make it.
     double seconds = 60;                            // Game seconds of work for one batch.
-    // Hours of residents' work for one batch (Docs/Design/64-economy-migration.md, Phase 3; calibrated from the worth
-    // ladder by tools/econ_model/apply_ladder.py). Without it, `seconds`' worth of hours.
-    double hours = 60. / 3600;
     int skill = 0;                                  // The trade skill it needs (Data/Items/recipes.json, by its id).
     std::vector<std::pair<std::string, int>> in, out;
 };
@@ -113,7 +110,6 @@ struct Producer
     std::string id;
     std::vector<std::string> match;                 // Words in a resident's work label.
     double seconds = 1800;                          // Game seconds of work for one yield.
-    double hours = .5;                              // Hours of residents' work for one yield (as Craft::hours).
     std::vector<int> seasons;                       // 0 spring .. 3 winter; empty: all year.
     std::vector<std::pair<std::string, int>> out;
     // Out of its seasons, what the work brings in instead (a farm threshing the barn's grain in winter), or nothing.
@@ -216,8 +212,8 @@ struct MarketPlace
 };
 // A country workshop (Data/Economy/workshops.json; doc 72, Phase 5): a business of a community's (`area` the map's fixed
 // building id; its keeper's flat `<area>_flat`, or the flat `for` its name), its posts staffed as the community's market's
-// are (farm_people.json `market`), owned by `house`, whose estate takes what its till holds over its float and its wages
-// each night (doc 42, Phase 5b: a workshop is a House's; into the Country's purse, the Houses' estates). Merged into its
+// are (farm_people.json `market`), owned by `house` (doc 42, Phase 5b: a workshop is a House's; since doc 79 its till is
+// a staged account, topped up and trimmed like every staged shop's, with no nightly sweep into an estate). Merged into its
 // community's `market` (the map's entry for its building, where there is one, gives the work spots and stations); a
 // world without the building has none of it.
 struct Workshop

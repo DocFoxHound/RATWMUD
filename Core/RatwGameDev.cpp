@@ -230,7 +230,7 @@ void Game::devCommand(Connection* c, const json::Value& j)
         }
     }
     else if (command == "store" || command.rfind("store ", 0) == 0)
-        result = options_.worldKind != "dev" ? Result{false, "The store room's console is for dev worlds only (this world's kind: " +
+        result = options_.worldKind != "dev" ? Result{false, "/store (adding goods to a till) is for dev worlds only (this world's kind: " +
                                                                  (options_.worldKind.empty() ? std::string("unknown") : options_.worldKind) + ").", {}}
                                              : storeCommand(world_.society(), command.size() > 6 ? command.substr(6) : std::string());
     else

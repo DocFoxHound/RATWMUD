@@ -157,7 +157,9 @@ def superuser():
 
 
 def database_available():
-    if psycopg is None or not W.ENV_FILE.exists():
+    # The settings come from Database/.env or the environment (W.settings() reads both): a worktree has no .env of
+    # its own, and its tests reach the database from the environment's settings.
+    if psycopg is None or not (W.ENV_FILE.exists() or W.settings().get('POSTGRES_PASSWORD')):
         return False
     try:
         superuser().close()

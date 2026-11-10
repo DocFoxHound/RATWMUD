@@ -19,7 +19,8 @@ from test_world_db import database_available, superuser
 from test_world_store import greyfen
 
 ROOT = Path(__file__).resolve().parent.parent
-SERVER = ROOT / 'build-core' / 'ratw_server'
+# (RATW_TEST_SERVER: another build's, such as a worktree's, as test_world_package takes it.)
+SERVER = Path(os.environ.get('RATW_TEST_SERVER') or ROOT / 'build-core' / 'ratw_server')
 
 
 def free_port():
@@ -135,7 +136,8 @@ if __name__ == '__main__':
     unittest.main()
 
 
-@unittest.skipUnless(database_available() and SERVER.exists(), 'local PostgreSQL not running, or ratw_server not built')
+@unittest.skipUnless(database_available() and SERVER.exists() and (ROOT / 'Client' / 'dist' / 'index.html').exists(),
+                     'local PostgreSQL not running, ratw_server not built, or the client not built (Client: npm run build)')
 class DungeonMasterMark(unittest.TestCase):
     """A player marked Dungeon Master stays one: saved to game.characters (its dungeon_master column, migration 0033),
     through a restart of the game server and its saves after."""
@@ -234,8 +236,10 @@ class DungeonMasterMark(unittest.TestCase):
             self.assertTrue(seen['dungeonMaster'], "Ash's page is told: the console is theirs again")
             self.assertTrue(seen['button'], 'a DEV CONSOLE button in the top bar')
             self.assertTrue(seen['console'], 'the ` key opens the Dev Console on screen, ready to type in')
-            self.assertEqual(seen['all'], ['/fight-end-myself', '/fight-test-1', '/help'], 'every command, alphabetically')
-            self.assertEqual(seen['fits'], ['/fight-end-myself', '/fight-test-1'], 'those that fit what is typed')
+            # (Every command of Core/RatwGameDev.cpp's DevCommands, as it has grown since this test was written.)
+            self.assertEqual(seen['all'], ['/fight-end-myself', '/fight-test-1', '/fight-test-team-1', '/give', '/help', '/hunt',
+                                           '/reckon', '/speed', '/store', '/wearables'], 'every command, alphabetically')
+            self.assertEqual(seen['fits'], ['/fight-end-myself', '/fight-test-1', '/fight-test-team-1'], 'those that fit what is typed')
             self.assertEqual(seen['completed'], '/fight-test-1', 'Tab completes')
             self.assertTrue(seen['fight'], '/fight-test-1 typed into it starts a fight: ' + str(seen['log']))
             self.assertTrue(seen['ended'], 'and /fight-end-myself ends it: ' + str(seen['log']))

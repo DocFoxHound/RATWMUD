@@ -139,7 +139,8 @@ struct Options
     // file (RATW_WORLD manifest, absolute path), else the built-in demo world.
     std::string database, conninfo, worldFile;
     // The registry's kind for `database` ("dev" or "live"; the launcher passes it: --world-kind), "" when unknown or a
-    // world from files. A dev world's Dungeon Masters may draw from the store room by hand (/store: doc 67, 6).
+    // world from files. A dev world's Dungeon Masters may add goods to a shop's till by hand (/store: doc 67, 6;
+    // since doc 79 a plain add, the store room being gone).
     std::string worldKind;
     // The port and address its players connect to (ratw_server's --port, --bind), named in its claim on a database
     // world, so the studio's Play can open the running server's game (0, "": not said).

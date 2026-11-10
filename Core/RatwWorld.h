@@ -1104,11 +1104,12 @@ class World
     // The simulator's: a family's Trance depths (at 2:1 .. 5:1; below 0 for the default between), how much deeper a grown
     // Quickened wolf's runs, and how deep among friends.
     // The road ways a world keeps, by cell, start tile and targets, before it lets them all go and finds them afresh
-    // (8192 unless asked): a harness's economy run (econ_watch --fast) keeps more, its thousand walkers' ways found once.
+    // (8192 unless asked): a harness may keep more, its thousand walkers' ways found once (no caller since econ_watch
+    // went: doc 79, 17).
     // A way kept is one found from another spot of the same tile, so how many are kept moves a walker a little.
     static void setRoadWaysKept(std::size_t ways) { roadWaysKept_ = std::max<std::size_t>(1, ways); }
     // The unseen walk straight, a leg's time by its line and the detour a walk takes (no road way looked for, nor a road's
-    // crossing weighed against the nearest): a harness's economy run (econ_watch --fast), where nobody sees them walk and
+    // crossing weighed against the nearest): a harness's long run (world_check --fast), where nobody sees them walk and
     // half its time went in finding their ways. The game walks them by the roads.
     static void setStraightOffstage(bool straight) { straightOffstage_ = straight; }
     static void setTranceDepth(const std::string& family, double at2, double at3, double at4, double at5, double grown, double party);

@@ -3,7 +3,7 @@
 
     python3 Tests/market_pg.py BUILD/market_tests        (ctest: market_pg)
 
-market_tests --write-board writes a checkpoint whose Board players' trades under the rule `staged` moved (pressure,
+market_tests --write-board writes a checkpoint whose Board players' trades moved (pressure,
 the budget and allowance drawn, the holder's push, the day's net and sell total, a Chapter's weekly discount), the
 journal after the save replayed over it. It is saved with game.save_checkpoint into a throwaway database (named
 ratw_test_p3stage_<hex>, dropped afterwards), loaded back with game.load_checkpoint, and checked by

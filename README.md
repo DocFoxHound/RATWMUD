@@ -201,8 +201,9 @@ interior is its own small map joined to the world by doors, passages or stairs.
   2½ real minutes); several guards on one route are spread out. Guards without a
   route hold their work post. Click posts in walking order, then choose the route
   in a guard's or guard slot's inspector.
-- **Town economy:** treasury, stores and daily deliveries that pay wages and
-  stock the shops.
+- **Town economy:** the staged economy (Docs/Design/79-a-staged-economy.md):
+  the Market Board's prices, households' bands, and staged accounts that pay
+  the wages and stock the shops.
 
 **⇪ Push to live** (top bar, or File → Push to live) publishes the DEV world to
 PROD, which the live game reads. The dialog shows what will change (or the

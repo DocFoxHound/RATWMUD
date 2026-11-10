@@ -29,10 +29,11 @@ export interface EconomyControls extends StoreSwitches, SeasonControls, RuleCont
 }
 
 // The seasons in the Country's supply and the residents' comforts (Docs/Design/68-the-country-and-the-city-loop.md,
-// Progress, "Seasons and the DM's rules"; migration 0057): city_loop.json's season groups with this world's changes.
-/** A group's numbers: percent of normal by season (Spring, Summer, Autumn, Winter), and its normal pieces a day. */
+// Progress, "Seasons and the DM's rules"; migration 0057): market.json's season groups (doc 79, 7.1) with this world's changes.
+/** A group's numbers: percent by season (Spring, Summer, Autumn, Winter), and its normal pieces a day. Core reads price
+ *  and shelf; supply and normal, the city loop's, are kept in the record unread until doc 79's Phase 9. */
 export interface SeasonValues { supply: number[]; price: number[]; shelf: number[]; normal: number }
-/** A season group as the world has it (`changed`: away from city_loop.json's, which `file` holds). */
+/** A season group as the world has it (`changed`: away from market.json's, which `file` holds). */
 export interface SeasonGroup extends SeasonValues { id: string; name: string; about: string; goods: string[]; changed: boolean; file: SeasonValues }
 /** The comforts (null: city_loop.json's, `fileAbove` pennies a head and `fileShare` percent). */
 export interface Comforts { comfortsAbove: number | null; comfortsShare: number | null; fileAbove: number; fileShare: number }
@@ -44,8 +45,8 @@ export type ComfortsBody = Partial<Pick<Comforts, 'comfortsAbove' | 'comfortsSha
 export type SeasonRow = 'supply' | 'price' | 'shelf';
 /** The three rows of a group, their limits and what the page calls them. */
 export const SEASON_ROWS: {key: SeasonRow; label: string; low: number; high: number; hint: string}[] = [
-    {key: 'supply', label: 'Supply', low: 0, high: 1000, hint: '% of its normal pieces a day the Country can send (0: none)'},
-    {key: 'price', label: 'Price', low: 10, high: 1000, hint: '% of the catalogue price: store draws and the shops\' prices to residents'},
+    {key: 'supply', label: 'Supply', low: 0, high: 1000, hint: 'Not read since the staged economy (doc 79): kept in the world\'s record until Phase 9 reshapes it'},
+    {key: 'price', label: 'Price', low: 10, high: 1000, hint: '% on the Market Board\'s prices of these goods (doc 79, 7.1)'},
     {key: 'shelf', label: 'Shelf', low: 0, high: 1000, hint: '% of their usual shelf the shops keep of these goods (stocking up)'},
 ];
 /** Four percents typed in ("50 100 150 40", "50/100/150/40", "50, 100, ..."), each within low..high, or null. */
@@ -93,7 +94,7 @@ export type GoodsBody = {set: Record<string, boolean>} | {all: boolean};
 // migration 0058): this world's changes ({} for none) beside Data/Items/city_loop.json's.
 /** A service as a world has it (stored whole once changed). */
 export interface ServiceValues { on: boolean; price: number; every: number }
-/** A city_loop.json service: its item's name and catalogue price (items.json), its business and how often it is bought. */
+/** A market.json service: its item's name and catalogue price (items.json), its business and how often it is bought. */
 export interface ServiceListed { id: string; name: string; business: string; price: number; every: number; for?: string }
 export interface RuleControls {
     rulesSupported: boolean; rulesProblem: string; rules: Record<string, number>; services: Record<string, ServiceValues>;
@@ -121,17 +122,17 @@ export const RULES: {key: string; label: string; low?: number; max: number; unit
     {key: 'shelfScale', label: 'Shelves', low: 10, max: 1000, unit: '% on every shelf\'s target'},
     {key: 'factionDiscountMost', label: 'The faction discount, at most', max: 1000, unit: 'p a Chapter a week'},
 ];
-/** A rule as it stands: the world's own, else city_loop.json's. */
+/** A rule as it stands: the world's own, else the data files' (market.json's and status.json's). */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;
-/** The body that sets a rule (null: back to city_loop.json's); null when it changes nothing. */
+/** The body that sets a rule (null: back to the data files'); null when it changes nothing. */
 export function ruleChange(c: RuleControls, key: string, value: number | null): RulesBody | null {
     const own = c.rules[key];
     if (value === null) return own === undefined ? null : {set: {[key]: null}};
     return (own ?? c.ruleDefaults[key]) === value ? null : {set: {[key]: value}};
 }
-/** A rule typed in: "" (back to city_loop.json's) is null, else a whole number within 0..max; undefined if neither. */
+/** A rule typed in: "" (back to the data files') is null, else a whole number within 0..max; undefined if neither. */
 export const ruleOf = (text: string, max: number): number | null | undefined => comfortOf(text, max);
-/** A service as it stands: the world's own, else city_loop.json's (on, at its catalogue price and frequency). */
+/** A service as it stands: the world's own, else market.json's (on, at its catalogue price and frequency). */
 export function serviceValue(c: RuleControls, s: ServiceListed): ServiceValues {
     return c.services[s.id] ?? {on: true, price: s.price, every: s.every};
 }
@@ -143,7 +144,7 @@ export function serviceChange(c: RuleControls, s: ServiceListed, key: keyof Serv
 export function serviceText(c: RuleControls, s: ServiceListed): string {
     const v = serviceValue(c, s);
     return `${s.business}, ${v.price}p, about once every ${v.every} day${v.every === 1 ? '' : 's'} a household with money to spare`
-        + (v.on ? '' : ' (off)') + (c.services[s.id] ? '' : ' (city_loop.json\'s)');
+        + (v.on ? '' : ' (off)') + (c.services[s.id] ? '' : ' (market.json\'s)');
 }
 
 // The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): this world's changes ({} for

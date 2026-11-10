@@ -1832,6 +1832,16 @@ Each has a recommendation. "Go with the recommendations" takes them all.
       reads; and `/api/economy/steer`, which comes back carrying `prosperity` (Core reads no `prosperity` rule
       before Phase 9: `Society::setProsperity` has no caller outside tests). Until then the validators warn of a bad
       dead setting and write it at its default, and a change to one is still checked.
+      Also Phase 9's, named here so the cut's accounting is whole (section 17's DM and Editor rows): the season
+      record's shape (`economy.seasons` keeps `{supply, price, shelf, normal}` and the people manifest's `season` lines
+      carry all four; Core reads only `price` and `shelf`, so `SeasonsPanel.tsx` shows supply and normal disabled
+      until migration 0061 reshapes the record; its text, `RulesPanel.tsx`'s and the studio's, `map_editor`'s and
+      `world_store`'s messages for the seasons, rules and services name `market.json` since the third repair round);
+      `RulesPanel.tsx`'s held rules; `sync.ts`'s `economy` conflict block (:67-70); the "the economy is never
+      touched/written" copy in `UpdateFromLive.tsx:82` and `ServerTab.tsx:192` (checked: still true, as
+      `live.economy` is never synced; reworded when the economy's settings move into `live.economy.rules`); the
+      comforts' strings, which still name `city_loop.json`'s defaults (the comforts control nothing); and
+      `MoneyTab.tsx` with `dungeon_master.money()`, which become the Prosperity tab.
     - **Phase 4** (the roads): `RatwRoads.cpp`'s `stores:` loads, the two-towns gate and `sendCaravan`, which has no
       caller in play now (only tests send caravans). Its `caravan:` account is a dead prefix, so until Phase 4's
       account-free departures a caravan out on the road doesn't outlive a restart: it is dropped cleanly, its letters
@@ -1858,6 +1868,24 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     it to the penny after a real server played it. `crafts.json`'s dead `tools`, `upkeep`, `farmUpkeep` and
     `institutions`, `pendingJournal()` and `items::kindsOf` removed; the data files' `about`s and the tests'
     comments reworded.
+  - **Third repair round** (after the re-check of both lenses on `8450efe..e5605a0`): `test_studio`'s city loop test
+    asserts the empty basket the Economy view gives without `city_loop.json` (the earlier "OK" had skipped every
+    database test); `test_world_db.database_available()` takes the database's settings from the environment as well
+    as `Database/.env` (a worktree has no `.env`), and `test_world_sync`, `test_live_map` and `test_one_server` take
+    `RATW_TEST_SERVER` as `test_world_package` does, so a worktree's run reaches the database instead of skipping;
+    that showed five more of `test_world_store`'s database tests failing since the cut, which now state the lenient
+    economy (a bad dead setting loads, warned of, and a change to it is refused; a rule the game no longer has is kept,
+    warned of and never written; the round trips use the staged economy's rules), and `test_live_map`'s Dev Console
+    check, stale since commands were added before doc 79, lists every command (it now skips without a built client);
+    the Editor's and the client's typechecks pass;
+    `Craft::hours` and `Producer::hours`, their gate and `crafts.json`'s 149 `hours` keys removed (nothing has read
+    them since the city loop went), with `item_catalog`'s checks of them and `ladder.json`'s calibration settings
+    (`markup`, `skillWage`, `carryPerWeight`, `foundingDay`, `costAtPace`; only `catalogueDay` and the rungs are read);
+    the seasons', rules' and services' messages retargeted at `market.json`; stale comments, the README's economy
+    bullet, `country_farms.json`'s dead `listedIn` entries and UI hints reworded. Tests: ctest 79/79 (twice); all 34
+    `tools/test_*.py` with the database and the worktree's server, none skipped but the `RATW_SLOW` world builds and
+    `test_game_tables`' saves under `Saved/` (`test_world_package` 43, `test_world_sync` 52, `test_world_db` 49,
+    `test_studio` 49, `test_world_store` 24); the Editor's 81 + 64 and its typecheck.
   - The client keeps its trade view for servers from before doc 79 (PROD is one), commented as such.
   - **Open for the user:** marking the memory pointers to the conserving economy as history (section 19's Phase 3
     row; it needs the user's say-so, so nothing was changed); `artifacts/economy` (D18).

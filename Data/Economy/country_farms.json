@@ -83,7 +83,7 @@
  "switchTrades": ["apothecary", "armory", "brewery", "brickworks", "carpenter", "cartographer", "cartwright", "charcoal", "cooperage", "distillery", "foundry", "glassworks", "ironworks", "mason", "paintworks", "papermill", "plasterworks", "press", "printing_house", "ropewalk", "sawmill", "scriptorium", "smithy", "tannery"],
  "dropped": {
   "goods": ["vegetables", "mushrooms"],
-  "listedIn": ["Data/Items/crafts.json crafts: stew (inn: raw_meat + vegetables -> meal)", "Data/Items/crafts.json buys: inn (vegetables)", "Data/Items/crafts.json supplies: stall, provisioner (vegetables)", "Data/Items/city_loop.json seasons: the vegetables group (vegetables, mushrooms)", "Data/Items/recipes.json: meal_stew, mushroom_stew (players' recipes)", "Data/Items/regions.json: the old map's places (brings_in)", "Data/Economy/ladder.json: vegetables (staple)"]
+  "listedIn": ["Data/Items/crafts.json crafts: stew (inn: raw_meat + vegetables -> meal)", "Data/Items/crafts.json buys: inn (vegetables)", "Data/Items/crafts.json supplies: stall, provisioner (vegetables)", "Data/Items/recipes.json: meal_stew, mushroom_stew (players' recipes)", "Data/Economy/ladder.json: vegetables (staple)"]
  },
  "areas": [
   {

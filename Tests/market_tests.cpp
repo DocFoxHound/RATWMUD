@@ -2,7 +2,8 @@
 // world: pressure from players' trade at the tills, its decay, the
 // per-piece ladder and the per-holder cap, the morning's ripples through recipes, the shown dozen, the budget, take
 // allowance and sell total with their reasons, the morning restock, the Board saved and restored, the markets the world
-// finds, the faction discount's weekly cap. And with the rule off: the old price path, untouched, and nothing saved.
+// finds, the faction discount's weekly cap. And the one path: since Phase 3 the Board is the only price path, with no
+// switch to turn it off.
 #include "test_purse.h"
 #include "RatwCheckpoint.h"
 #include "RatwGame.h"
@@ -781,7 +782,7 @@ struct BoardSave
     std::string replayed, expected;   // The checkpoint with its journal replayed over it; the live Board's encoding.
 };
 
-// A world with the rule on, saved; then players' trades under the rule (pressure, the budget and allowance drawn,
+// A world saved; then players' trades on the Board (pressure, the budget and allowance drawn,
 // the holder's push, the day's net and sell total, a Chapter's weekly discount), journalled after the save and never
 // saved whole. The journal replayed over the checkpoint gives the live Board back, and so does a server started from
 // the save and its journal.

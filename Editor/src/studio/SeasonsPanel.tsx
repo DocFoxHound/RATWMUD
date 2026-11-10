@@ -1,7 +1,8 @@
-// The seasons in the Country's supply and the residents' comforts (Docs/Design/68-the-country-and-the-city-loop.md,
-// Progress, "Seasons and the DM's rules"): each season group of Data/Items/city_loop.json (grain, fresh fruit, fresh fish,
-// ...) with this world's own numbers: by season, how much the Country can send a day, what its goods cost, how full the
-// shops keep their shelves of them, and its normal pieces a day; and the comforts' threshold and share. On Atlas's
+// The seasons and the residents' comforts (Docs/Design/68-the-country-and-the-city-loop.md, Progress, "Seasons and the
+// DM's rules"): each season group of Data/Economy/market.json (grain, fresh fruit, fresh fish, ...; doc 79, 7.1) with
+// this world's own numbers: by season, what its goods cost and how full the shops keep their shelves of them; and the
+// comforts' threshold and share. Supply and normal pieces a day were the city loop's: Core reads neither since doc 79,
+// so they are shown and kept in the world's record but can't be changed here until Phase 9 reshapes it. On Atlas's
 // Economy page and the DM's Economy tab alike.
 import {useEffect, useState} from 'react';
 import {comfortOf, comfortsText, percentsOf, percentsText, SEASON_ROWS, seasonChange, wholeOf, type ComfortsBody,
@@ -52,32 +53,33 @@ export function SeasonsPanel({data, locked, setSeasons, setComforts}: {data: Sea
 
     return <section className="economy-switches seasons-panel">
         <h3>The seasons</h3>
-        <p className="hint">The Country's supply follows the year: each group's numbers stand at the middle of each season
-            ({names.join(', ')}), the days between blending in a straight line. Supply caps what the shops may draw of the group
-            a day ({'normal × supply'}; a normal of 0 is no cap); price sets both what the shops pay the store room and what
-            residents pay the shops, and residents weigh nourishment for the price, so they buy what is in season; shelf is
-            how full the shops keep their shelves of the group's goods (the preserver stocks up in autumn for the winter).
-            The groups and their goods are Data/Items/city_loop.json's.</p>
+        <p className="hint">Prices and shelves follow the year: each group's numbers stand at the middle of each season
+            ({names.join(', ')}), the days between blending in a straight line. Price moves the Market Board's prices of the
+            group's goods, so what is in season is cheap; shelf is how full the shops keep their shelves of them (the
+            preserver stocks up in autumn for the winter). Supply and normal were the city loop's: nothing reads them since
+            the staged economy (Docs/Design/79-a-staged-economy.md), so they can't be changed here. The groups and their
+            goods are Data/Economy/market.json's.</p>
         {!data.seasonsSupported && <p className="publish-error">{data.seasonsProblem}</p>}
         <div className="dm-table-wrap"><table className="dm-table seasons-table">
             <thead><tr><th>Group</th><th></th><th>{names.join(' / ')} (%)</th><th>Normal a day</th><th></th></tr></thead>
             <tbody>{data.seasons.map(g => SEASON_ROWS.map((r, i) => <tr key={`${g.id}.${r.key}`} className={g.changed ? 'changed' : ''}>
                 {i === 0 && <td rowSpan={SEASON_ROWS.length} title={g.about}>
                     <b>{g.name}</b><br /><small className="hint">{g.goods.join(', ')}</small>
-                    {g.changed && <><br /><small className="hint">changed here (city_loop.json: supply {percentsText(g.file.supply)},
-                        price {percentsText(g.file.price)}, shelf {percentsText(g.file.shelf)}, normal {g.file.normal})</small></>}</td>}
+                    {g.changed && <><br /><small className="hint">changed here (market.json: price {percentsText(g.file.price)},
+                        shelf {percentsText(g.file.shelf)})</small></>}</td>}
                 <td title={r.hint}>{r.label}</td>
-                <td><input value={typed[cellKey(g.id, r.key)] ?? ''} disabled={off} size={18} aria-label={`${g.name}: ${r.label}`}
+                <td><input value={typed[cellKey(g.id, r.key)] ?? ''} disabled={off || r.key === 'supply'} size={18} aria-label={`${g.name}: ${r.label}`}
                     onChange={e => setTyped(t => ({...t, [cellKey(g.id, r.key)]: e.target.value}))}
                     onBlur={() => commitRow(g, r.key, r.low, r.high)}
                     onKeyDown={e => e.key === 'Enter' && commitRow(g, r.key, r.low, r.high)} /></td>
-                {i === 0 && <td rowSpan={SEASON_ROWS.length}><input value={typed[cellKey(g.id, 'normal')] ?? ''} disabled={off} size={7}
+                {i === 0 && <td rowSpan={SEASON_ROWS.length}><input value={typed[cellKey(g.id, 'normal')] ?? ''} disabled size={7}
+                    title="Not read since the staged economy (doc 79)"
                     inputMode="numeric" aria-label={`${g.name}: normal pieces a day`}
                     onChange={e => setTyped(t => ({...t, [cellKey(g.id, 'normal')]: e.target.value}))}
                     onBlur={() => commitNormal(g)} onKeyDown={e => e.key === 'Enter' && commitNormal(g)} />
                     <br /><small className="hint">{g.normal ? 'pieces' : 'no cap'}</small></td>}
                 {i === 0 && <td rowSpan={SEASON_ROWS.length}>{g.changed &&
-                    <button disabled={off} onClick={() => setSeasons({set: {[g.id]: null}})}>As city_loop.json</button>}</td>}
+                    <button disabled={off} onClick={() => setSeasons({set: {[g.id]: null}})}>As market.json</button>}</td>}
             </tr>))}</tbody>
         </table></div>
         <h3>Comforts</h3>

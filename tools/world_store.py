@@ -38,7 +38,7 @@ LOOP_COLUMNS = {'needsPaused': 'needs_paused', 'wharf': 'country', 'wharfReserve
 SEASON_DEFAULTS = map_editor.SEASON_DEFAULTS
 SEASON_COLUMNS = {'comfortsAbove': 'comforts_above', 'comfortsShare': 'comforts_share', 'seasons': 'seasons'}
 # The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): {name: N} and
-# {service: {on, price, every}}, only what this world has changed ({}: all as Data/Items/city_loop.json has them).
+# {service: {on, price, every}}, only what this world has changed ({}: all as the data files have them: Data/Economy/market.json and status.json).
 RULE_DEFAULTS = map_editor.RULE_DEFAULTS
 RULE_COLUMNS = {'rules': 'rules', 'services': 'services'}
 # The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): what this world has changed of
@@ -49,10 +49,10 @@ DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'daily
                    **STORE_DEFAULTS, 'businesses': {}, **LOOP_DEFAULTS, **SEASON_DEFAULTS, **RULE_DEFAULTS, **FARM_DEFAULTS}
 NO_STORE = 'this world lacks migration 0055 (python3 tools/world_db.py migrate --db KEY): its store room stays at its defaults'
 NO_LOOP = 'this world lacks migration 0056 (python3 tools/world_db.py migrate --db KEY): its city loop stays at its defaults'
-NO_SEASONS = ('this world lacks migration 0057 (python3 tools/world_db.py migrate --db KEY): its seasons and comforts stay '
-              'as Data/Items/city_loop.json has them')
+NO_SEASONS = ('this world lacks migration 0057 (python3 tools/world_db.py migrate --db KEY): its seasons stay '
+              'as Data/Economy/market.json has them')
 NO_RULES = ('this world lacks migration 0058 (python3 tools/world_db.py migrate --db KEY): its rules and services stay '
-            'as Data/Items/city_loop.json has them')
+            'as Data/Economy/market.json and status.json have them')
 NO_FARMS = ('this world lacks migration 0060 (python3 tools/world_db.py migrate --db KEY): its farms stay as '
             'Data/Economy/country_farms.json has them')
 HERB_PATCH = 'herb_patch'

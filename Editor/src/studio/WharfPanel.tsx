@@ -66,8 +66,8 @@ export function WharfPanel({data, locked, setLoop, setGoods}: {data: EconomyCont
 
         <details className="country-basket">
             <summary>{data.market.name}'s basket: {rows.length} goods{unmade ? `, ${unmade} with no maker here` : ''}</summary>
-            <p className="hint">What its people buy in the city, as shares of its day's spending (Data/Items/city_loop.json;
-                tools/city_loop.py --suggest spreads it over the trades with time to spare). {data.market.people}</p>
+            <p className="hint">What its people buy in the city, as shares of its day's spending (the old Data/Items/city_loop.json's,
+                gone since doc 79: nothing reads it now, and Phase 9 removes this panel). {data.market.people}</p>
             <div className="dm-table-wrap"><table className="dm-table">
                 <thead><tr><th>Good</th><th>Share</th><th>Price</th><th>Made here by</th></tr></thead>
                 <tbody>{rows.map(b => <tr key={b.item} className={b.makers.length ? '' : 'muted'}>
