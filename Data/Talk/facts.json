@@ -132,6 +132,7 @@
     "birth": ["recent", "no"],
     "news": "text",
     "news_from": "text",
+    "harvest": ["poor", "fair", "good"],
     "figure_ruler": "text",
     "figure_lord": "text",
     "figure_captain": "text",

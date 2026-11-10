@@ -656,6 +656,7 @@ class Society
     int arrivalRefill(const std::string& market, const std::string& base, double scale = 1);
     int sendOn(const std::string& market, const std::string& base);
     int marketShelf(const std::string& market, const std::string& base) const;
+    double marketFullness(const std::string& market, const std::string& base) const;   // (1 full, 0 bare: shelves and back rooms.)
     void setTimesShift(std::map<std::string, int> shift);
     market::Board& stagedBoard() { return state_.board; }   // (The world's staged trade writes its part of the Board.)
     // What a shop sets out (7.7: its wares less what it only buys, unless it makes or supplies them): the restock's, and

@@ -1041,6 +1041,32 @@ int Society::marketShelf(const std::string& market, const std::string& base) con
     return total;
 }
 
+double Society::marketFullness(const std::string& market, const std::string& base) const
+{
+    // How full a market keeps a good it waits for wagons for (a manifest's want, 8.1 and T14): its shelves and back rooms
+    // (one never stocked yet counted as full, as its first restock would stock it) against a shelf and a back room's worth.
+    // 1 full, 0 bare; 1 for a good no shop there sets out.
+    double have = 0, full = 0;
+    if (const auto* m = tradePoints().find(market))
+        for (const auto& till : m->tills)
+            if (const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr)
+            {
+                const auto* a = account(till);
+                for (const auto& ware : stagedShelfGoods(p->founder))
+                    if (items::baseOf(ware) == base)
+                    {
+                        const int target = shelfTarget(till, ware);
+                        int room = target;
+                        if (const auto r = state_.board.backRoom.find(till); r != state_.board.backRoom.end())
+                            if (const auto g = r->second.find(base); g != r->second.end())
+                                room = g->second;
+                        have += std::min(target, a ? stock(*a, ware) : 0) + std::min(target, room);
+                        full += 2.0 * target;
+                    }
+            }
+    return full > 0 ? std::clamp(have / full, 0., 1.) : 1.;
+}
+
 int Society::arrivalRefill(const std::string& market, const std::string& base, double scale)
 {
     // An arrival (8.6): the tills of the market's shops that set the good out jump to their targets (a Marketday cart's

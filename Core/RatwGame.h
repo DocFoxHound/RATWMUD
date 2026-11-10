@@ -878,6 +878,9 @@ class Game
     bool writingPlace(const std::string& id) const;
     bool atInn(const std::string& id) const;
     std::string townFor(const std::string& cellId) const;
+    // The community whose notice board serves a cell: its law town's, else its market's on the roads (doc 79, D7: a
+    // community stays plain for law, but its board carries its wagons' notices and its contracts).
+    std::string boardTownFor(const std::string& cellId) const;
     std::string townWords(const std::string& town) const;
     std::string postTownOf(const std::string& id) const;
     int courierCells(const std::string& fromTown, const std::string& toTown) const;
@@ -1915,6 +1918,7 @@ class Game
         std::map<std::string, PositionState> positions;
         std::string roads, crime, companions, signIns;
         std::string board;                          // The Market Board (doc 79, Phase 1), as last journalled.
+        std::string committed;                      // (Its committed departures alone: with the roads, doc 79 Phase 4.)
         StagedState staged;                         // (Doc 79: all but the tallies and welcomes, which go by holder.)
     };
     void prime(Shadow& shadow) const;

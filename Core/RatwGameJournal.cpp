@@ -157,6 +157,12 @@ void Game::prime(Shadow& s) const
     s.companions = json::dump(companionsOf(companionOwner_));
     s.signIns = json::dump(accounts_.state());
     s.board = society.board.empty() ? std::string() : json::dump(market::encode(society.board));
+    if (!society.board.empty())
+    {
+        const auto encoded = market::encode(society.board);
+        const auto* committed = encoded.find("committed");
+        s.committed = committed ? json::dump(*committed) : std::string();
+    }
     s.primed = true;
 }
 
@@ -273,14 +279,26 @@ void Game::record(unsigned what, const std::string& character)
             shadow_.ledgerSize = society.ledger.size();
             shadow_.ledgerLast = last;
         }
-        // The Market Board (doc 79, Phase 1): a trade's pressure, budget and caps, so a crash replays them (only once
-        // the staged economy has moved it: a world without it journals nothing new).
-        if (!society.board.empty())
-            if (auto now = json::dump(market::encode(society.board)); now != shadow_.board)
-            {
-                set(path({"society", "board"}), market::encode(society.board));
-                shadow_.board = std::move(now);
-            }
+    }
+    // The Market Board (doc 79, Phase 1): a trade's pressure, budget and caps, so a crash replays them (only once the
+    // staged economy has moved it: a world without it journals nothing new). Its committed departures and the roads'
+    // caravans are one promise (Phase 4: a departure leaves `committed` as its wagon joins the roads), so they are
+    // journalled together: the roads with any record whose departures moved, the Board with any record of the roads. A
+    // crash between checkpoints then never replays a Board without a departure over roads without its wagon (a wagon
+    // lost), nor the reverse (a wagon twice).
+    bool departuresMoved = false;
+    if ((what & (Economy | Roads)) && !society.board.empty())
+    {
+        auto encoded = market::encode(society.board);
+        if (auto now = json::dump(encoded); now != shadow_.board)
+        {
+            const auto* committed = encoded.find("committed");
+            auto departures = committed ? json::dump(*committed) : std::string();
+            departuresMoved = departures != shadow_.committed;
+            set(path({"society", "board"}), std::move(encoded));
+            shadow_.board = std::move(now);
+            shadow_.committed = std::move(departures);
+        }
     }
     if (what & Careers)
     {
@@ -303,7 +321,7 @@ void Game::record(unsigned what, const std::string& character)
         set(path({key}), std::move(now));
         before = std::move(text);
     };
-    whole(what & Roads, shadow_.roads, checkpoint::roads(world_.roads()), "roads");
+    whole((what & Roads) || departuresMoved, shadow_.roads, checkpoint::roads(world_.roads()), "roads");
     whole(what & Crime, shadow_.crime, checkpoint::crime(world_.crime()), "crime");
     whole(what & Companions, shadow_.companions, companionsOf(companionOwner_), "companions");
     whole(what & Accounts, shadow_.signIns, accounts_.state(), "accounts");

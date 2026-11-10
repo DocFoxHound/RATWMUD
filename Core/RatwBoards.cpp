@@ -21,7 +21,17 @@ const Spot* World::boardSpot(const std::string& community)
     if (const auto found = boards_.find(community); found != boards_.end())
         return found->second.cell.empty() ? nullptr : &found->second;
     auto& spot = boards_[community];
-    const auto& sq = square(community);
+    // A law town's square; else, for a community that is a market on the roads but plain for law (doc 79, D7), the square
+    // around its market's place, so its wagons' notices and contracts have a board.
+    const MarketSquare* found = &square(community);
+    MarketSquare own;
+    if (!found->found)
+        if (const auto* m = roadMarket(community); m && !m->market.empty())
+        {
+            fillSquare(own, m->market, {m->marketX, m->marketY});
+            found = &own;
+        }
+    const auto& sq = *found;
     const auto* c = sq.found ? cell(sq.at.cell) : nullptr;
     if (!c)
         return nullptr;
@@ -53,6 +63,7 @@ namespace
 {
 constexpr double BoardReach = 2, NoticeDays = 7;
 constexpr int NoticeFee = 1, PerWriter = 3, PerBoard = 30, TextMost = 280;
+constexpr const char* CartersSign = "the carters";   // (The wagons' notices: doc 79, 8.1.)
 const char* const Kinds[] = {"seeking", "offering", "event", "lost", "other"};
 
 std::string lowered(std::string s)
@@ -76,7 +87,7 @@ std::string Game::boardNear(const std::string& player)
     const auto* e = world_.entity(player);
     if (!e)
         return {};
-    const auto community = townFor(e->cellId);
+    const auto community = boardTownFor(e->cellId);
     if (community.empty())
         return {};
     const auto* spot = world_.boardSpot(community);
@@ -86,7 +97,7 @@ std::string Game::boardNear(const std::string& player)
 json::Value Game::boardsView(const std::string& cellId)
 {
     auto list = Value::array();
-    const auto community = townFor(cellId);
+    const auto community = boardTownFor(cellId);
     if (community.empty())
         return list;
     if (const auto* spot = world_.boardSpot(community); spot && spot->cell == cellId)
@@ -147,7 +158,7 @@ void Game::answerNotice(documents::Document& d)
     auto& society = world_.society();
     const auto inTown = [&](const std::string& id) {
         const auto* e = world_.entity(id);
-        return e && !e->dead && townFor(e->cellId) == community;
+        return e && !e->dead && boardTownFor(e->cellId) == community;
     };
     if (d.what.rfind("item:", 0) == 0)
     {
@@ -324,7 +335,8 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
             return result = {false, "Sign with one of your own names, or leave it unsigned.", {}}, true;
     }
     const auto onBoard = documents_.onBoard(board);
-    if (int(onBoard.size()) >= PerBoard)
+    // (The carters' wagon notices have pins of their own: they never take one a player needs.)
+    if (std::count_if(onBoard.begin(), onBoard.end(), [](const auto* d) { return d->author != CartersSign; }) >= PerBoard)
         return result = {false, "Every pin is taken. Try tomorrow.", {}}, true;
     if (std::count_if(onBoard.begin(), onBoard.end(), [&](const auto* d) { return d->author == me; }) >= PerWriter)
         return result = {false, "You have three notices up here already.", {}}, true;
@@ -367,12 +379,12 @@ void Game::roadNotices(const WorldEvent& e)
         documents::Document d;
         d.id = id;
         d.kind = "notice";
-        d.author = "the carters";
+        d.author = CartersSign;
         d.board = "board:" + community;
         d.noticeKind = "event";
         d.what = "wagon:" + departure;
         d.text = json::utf8Prefix(text, TextMost);
-        d.sign = "the carters";
+        d.sign = CartersSign;
         d.state = "delivered";
         d.written = d.deliverAt = world_.calendarDays();
         d.expires = d.written + NoticeDays;
@@ -410,9 +422,11 @@ void Game::roadNotices(const WorldEvent& e)
         }
         saveSoon();
     }
-    else if (e.kind == "wagon cancelled")
+    else if (e.kind == "wagon cancelled" || ((e.kind == "caravan lost" || e.kind == "caravan dropped") && !e.item.empty()))
     {
-        const auto [from, to] = ids(e.actor);
+        // (A wagon that will never come: cancelled before it set out, or lost or dropped on the road. A lost or dropped
+        // one names its departure as the event's item.)
+        const auto [from, to] = ids(e.kind == "wagon cancelled" ? e.actor : e.item);
         documents_.erase(from);
         documents_.erase(to);
         saveSoon();
