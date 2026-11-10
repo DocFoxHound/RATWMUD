@@ -43,7 +43,7 @@ struct Data
     std::map<std::string, std::map<std::string, double>> district;   // Quarter -> group (or "all") -> factor.
     std::map<std::string, std::array<double, 5>> times;               // Group -> factor at hard..boom.
     std::array<int, 4> timesCuts{-60, -20, 20, 60};
-    double seasonSpanMost = 1.4;
+    double seasonSpanMost = 1.06;
     double regionMade = .95, regionNear = 1, regionFar = 1.08;
     double budget = 40;
     int routes = 3;
@@ -72,6 +72,10 @@ const char* timesName(int times);
 // A season group's value (percent of normal by season) on `yearDay` as a factor (100 = 1): each season's at its middle
 // day, a straight line between, Winter's running on into Spring's; before the date is known (yearDay < 0), 1.
 double seasonal(const std::array<int, 4>& by, double yearDay);
+// The season's price factor the Board uses (7.1): `seasonal`, its swing (the dearest season over the cheapest) rescaled
+// to at most data().seasonSpanMost, so that at a season's ends, with the region factors, players' pressure keeps room
+// inside the clamp (the user, 2026-11-08: at least x1.10 up and x0.90 down; market_tests pins it).
+double seasonFactor(const std::array<int, 4>& by, double yearDay);
 const Data::Season* seasonOf(const std::string& base);
 
 // The Board's rules as this world has them (Society::marketRules, from the rules of the same names).

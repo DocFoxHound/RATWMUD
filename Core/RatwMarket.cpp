@@ -105,7 +105,7 @@ Data load()
         if (std::is_sorted(c.begin(), c.end()))
             d.timesCuts = c;
     }
-    d.seasonSpanMost = clampNumber(v.number("seasonSpanMost", 1.4), 1, 1.55, 1.4);
+    d.seasonSpanMost = clampNumber(v.number("seasonSpanMost", 1.06), 1, 1.55, 1.06);
     const auto& region = v.object("region");
     d.regionMade = clampNumber(region.number("made", .95), .85, 1, .95);
     d.regionNear = clampNumber(region.number("near", 1), .9, 1.1, 1);
@@ -235,6 +235,18 @@ double seasonal(const std::array<int, 4>& by, double yearDay)
     const double at = d < from ? d + calendar::DaysPerYear : d;
     const double t = std::clamp((at - from) / (to - from), 0., 1.);
     return (by[std::size_t(a)] + (by[std::size_t(b)] - by[std::size_t(a)]) * t) / 100.;
+}
+
+double seasonFactor(const std::array<int, 4>& by, double yearDay)
+{
+    const double s = seasonal(by, yearDay);
+    const auto [lo, hi] = std::minmax_element(by.begin(), by.end());
+    if (*lo <= 0 || !finite(s) || s <= 0)
+        return 1;
+    const double span = double(*hi) / double(*lo), most = data().seasonSpanMost;
+    if (span <= most)
+        return s;
+    return std::exp(std::log(s) * std::log(most) / std::log(span));
 }
 
 const Data::Season* seasonOf(const std::string& base)
@@ -907,18 +919,11 @@ const market::Data::Season* Society::stagedSeasonGroup(const std::string& base, 
 double Society::stagedSeason(const std::string& item) const
 {
     // The season's price (market.json's groups, as this world has them), its swing rescaled to fit the clamp with room
-    // for pressure (doc 79, 7.1: fruit's 80-140 is wider than the clamp).
+    // for pressure (doc 79, 7.1: fruit's 80-140 is wider than the clamp; market::seasonFactor).
     std::array<int, 4> price{};
     if (yearDay_ < 0 || !stagedSeasonGroup(items::baseOf(item), &price, nullptr))
         return 1;
-    const double s = market::seasonal(price, yearDay_);
-    const auto [lo, hi] = std::minmax_element(price.begin(), price.end());
-    if (*lo <= 0 || !market::finite(s) || s <= 0)
-        return 1;
-    const double span = double(*hi) / double(*lo), most = market::data().seasonSpanMost;
-    if (span <= most)
-        return s;
-    return std::exp(std::log(s) * std::log(most) / std::log(span));
+    return market::seasonFactor(price, yearDay_);
 }
 
 double Society::districtFactor(const std::string& till, const std::string& base) const

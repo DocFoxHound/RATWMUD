@@ -595,7 +595,9 @@ sell lot     = floor( Σ over the q pieces of  catalog(g) × factor(P stepped do
 - `catalogPrice` and the quality multipliers (`RatwItems.cpp:955-975`) don't change.
 - `season` is the seven season groups (grain, fruit, fish, meat, dairy, honey, preserved), moved from `city_loop.json`
   to `Data/Economy/market.json`. **Fruit's 80-140 (×1.75) is wider than the clamp (×1.60) and is rescaled in Phase 1;**
-  grain's 85-115 fits. If seasons become per climate, the market's climate picks the row.
+  grain's 85-115 fits. If seasons become per climate, the market's climate picks the row. (The user, 2026-11-08: each
+  group's swing is rescaled to at most `seasonSpanMost` ×1.06, so that at a season's ends, with each region factor,
+  players' pressure keeps at least ×1.10 of room up and ×0.90 down inside the clamp; see Progress.)
 - `region` is cheaper where a good is made (×0.85 to 1) and dearer far from it (1 to ×1.15). It comes from which
   endpoints make the good: `workshops.json`, the communities' farm and works areas in `communities.json`, and
   `crafts.json` `supplies`, with a harvest bias.
@@ -1915,6 +1917,39 @@ Each has a recommendation. "Go with the recommendations" takes them all.
   - The client keeps its trade view for servers from before doc 79 (PROD is one), commented as such.
   - **Open for the user:** marking the memory pointers to the conserving economy as history (section 19's Phase 3
     row; it needs the user's say-so, so nothing was changed); `artifacts/economy` (D18).
+- **2026-11-10: the user's price decisions applied** ("go with your suggestions", 2026-11-08, on Phase 2's three
+  open questions), and the running pre-79 DEV save confirmed in place.
+  - **The season span narrowed** (`market.json` `seasonSpanMost` ×1.4 to ×1.06; Core's default too). The rule the
+    user took: at a season's ends, with each region factor, players' pressure always keeps at least ×1.10 of room up
+    and ×0.90 down inside the fixed 0.80-1.28 clamp, for every season good. At ×1.4 it held for none of the swinging
+    groups: fruit's winter far from its orchards (1.22 × 1.08 = 1.32) sat past the clamp, so players' buying moved
+    nothing, and grain's cheap autumn where it is made had under 1% of room down. The binding group is `preserved`
+    (90-100, all its swing on the cheap side). At ×1.06: room up at least ×1.136 (honey's winter, far) and down to
+    ×0.893 (preserved's winter, made here). The swings are now small: grain 0.969-1.027, fruit 0.977-1.036, fish
+    0.964-1.022, dairy 0.980-1.039, honey 0.985-1.044, preserved 0.943-1.0 (the shelves' abundance, `shelf`, is
+    unchanged). The rescale moved into `market::seasonFactor` (the Board's `stagedSeason` calls it), and
+    `market_tests`' new `seasonsLeavePressureRoom` pins the rule over every season group's goods, every half day and
+    each season's middle day, at made 0.95, near 1.0 and far 1.08; with ×1.4 it fails (checked). `seasonsFitTheClamp`
+    also checks the Board's fruit price follows `seasonFactor` day by day.
+  - **Not inside the rule**, left as they are (each a narrow move of its own on top): the Sump's ×0.95 (with made
+    here, preserved's winter reaches 0.851, room down ×0.94) and the Times' ×1.08 (a far staple in hard times is
+    1.166 before the season, room up ×1.098). Bringing them in would leave the seasons no swing at all (×1.025); it is
+    a question for Phase 10's look and feel, with the bands' Times shift. A world's own season records (the DM's
+    Economy tab) are rescaled the same way, but an off-centre record (all 130, say) isn't held to the rule: Phase 9's
+    validation.
+  - **The region factors kept** (made here 0.95, a neighbour's 1.0, far 1.08; now pinned by the same test).
+  - **The crafting cap kept strict** (I5, 1.6 × the inputs' cheapest buy price; `exploit_tests`' `theCraftingCap`),
+    until the Craft panel.
+  - **The running pre-79 DEV save** is fixture (h), `Tests/fixtures/pre79/running/`, in `save_compat` since the fourth
+    repair round (`38c8118`): no players and no escrow (its row in the fixtures README, all 0, checked exactly), restored
+    against DEV's roster without refusing, the loop's state read past, `outside:wharf` and the estates dropped, the
+    tills settled, round-tripped through wire, the checkpoint and Postgres. Nothing more was needed.
+  - Tests: a clean Release build (`build-f`); ctest 79/79 with the database (none skipped: `pg_client` run with a throwaway
+    `s1stage` database, dropped after); `market_tests` 1,940 checks, `exploit_tests` 782,489, `save_compat` 23,084; all 34
+    `tools/test_*.py` with the database and the worktree's server (`RATW_TEST_SERVER`, `RATW_SERVER`), none failing,
+    skipped only the `RATW_SLOW` world builds (`test_realm` 7, `test_realm2` 16) and `test_game_tables`' save under
+    `Saved/`.
+  - **To resume:** Review A, which ends slice 1.
 
 - **2026-11-08: drafted.** From seven code maps, three designs and three judges' grafts. Plan only.
 - **2026-11-08: revised** after four reviews (see Review). Plan only.

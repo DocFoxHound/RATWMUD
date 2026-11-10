@@ -436,16 +436,19 @@ void worthlessLotsAndTheDozen()
 
 void seasonsFitTheClamp()
 {
-    // Fruit's 80-140 (×1.75) rescaled under the span (×1.4), grain's 85-115 kept (7.1).
+    // Fruit's 80-140 (×1.75) rescaled under the span (7.1), the Board's price following market::seasonFactor.
     auto s = world({{"keeper", "shopkeeper of general goods", "realm"}}, {{"realm", 100}});
+    const auto* fruit = market::seasonOf("apples");
+    expect(fruit != nullptr, "apples are a season good");
     double lo = 9, hi = 0;
     for (int d = 0; d < 365; d += 3)
     {
         s.setYearDay(d);
         const double f = s.baseFactor(s.tillOf("keeper"), "apples") / s.baseFactor(s.tillOf("keeper"), "stone");
+        expect(near(f, market::seasonFactor(fruit->price, d), 1e-9), "the Board's fruit on day " + std::to_string(d) + ": " + str(f));
         lo = std::min(lo, f), hi = std::max(hi, f);
     }
-    expect(hi / lo <= market::data().seasonSpanMost + 1e-6 && hi / lo > 1.2, "fruit's swing rescaled: " + str(hi / lo));
+    expect(hi / lo <= market::data().seasonSpanMost + 1e-6 && hi / lo > 1.02, "fruit's swing rescaled, still a swing: " + str(hi / lo));
     // The seven groups and the shelves are market.json's (7.1, 7.7: moved from city_loop.json, gone since Phase 3).
     const auto& d = market::data();
     expect(d.seasons.size() == 7 && market::seasonOf("bread") && market::seasonOf("bread")->id == "grain" &&
@@ -482,6 +485,51 @@ void seasonsFitTheClamp()
     expect(near(t.baseFactor(t.tillOf("keeper"), "apples"), t.baseFactor(t.tillOf("keeper"), "stone")) &&
                s.baseFactor(s.tillOf("keeper"), "apples") > s.baseFactor(s.tillOf("keeper"), "stone"),
            "the world's own fruit season (flat) over market.json's (dear in winter)");
+}
+
+void seasonsLeavePressureRoom()
+{
+    // The user's price decisions (2026-11-08, doc 79's Progress): at a season's ends, with each region factor (made here,
+    // a neighbour's, far), players' pressure always keeps at least x1.10 of room up and x0.90 down inside the fixed
+    // 0.80-1.28 clamp, for every season good; the region factors stay 0.95, 1.0 and 1.08. (The season's ends are its
+    // groups' dearest and cheapest seasons' middle days; every day is checked too.)
+    constexpr double Up = 1.10, Down = .90;
+    const auto& d = market::data();
+    expect(near(d.regionMade, .95) && near(d.regionNear, 1) && near(d.regionFar, 1.08),
+           "the region factors kept: " + str(d.regionMade) + ", " + str(d.regionNear) + ", " + str(d.regionFar));
+    expect(near(market::FactorLow, .80) && near(market::FactorHigh, 1.28), "the clamp fixed at 0.80-1.28");
+    double leastUp = 9, leastDown = 9;
+    std::string tightestUp, tightestDown;
+    for (const auto& g : d.seasons)
+    {
+        std::vector<double> days;
+        for (double day = 0; day < 365; day += .5)
+            days.push_back(day);
+        for (const double middle : {46., 138., 229.5, 320.})
+            days.push_back(middle);
+        double lo = 9, hi = 0;
+        for (const double day : days)
+        {
+            const double f = market::seasonFactor(g.price, day);
+            lo = std::min(lo, f), hi = std::max(hi, f);
+        }
+        for (const double region : {d.regionMade, d.regionNear, d.regionFar})
+        {
+            const double up = market::FactorHigh / (hi * region), down = market::FactorLow / (lo * region);
+            expect(up >= Up - 1e-12, g.id + " at its dearest (x" + str(hi) + ", region " + str(region) + "): room up x" + str(up));
+            expect(down <= Down + 1e-12, g.id + " at its cheapest (x" + str(lo) + ", region " + str(region) + "): room down x" + str(down));
+            if (up < leastUp)
+                tightestUp = g.id;
+            if (1 / down < leastDown)
+                tightestDown = g.id;
+            leastUp = std::min(leastUp, up), leastDown = std::min(leastDown, 1 / down);
+        }
+        // Each good of the group is priced by that group (and so by these numbers).
+        for (const auto& good : g.goods)
+            expect(market::seasonOf(good) == &g, good + " priced by " + g.id + "'s season");
+    }
+    std::cout << "  room for pressure at the seasons' ends: up x" << leastUp << " (" << tightestUp << "), down x"
+              << 1 / leastDown << " (" << tightestDown << ")\n";
 }
 
 void theMorningRestock()
@@ -1021,6 +1069,7 @@ int main(int argc, char** argv)
         theShopsLimits();
         worthlessLotsAndTheDozen();
         seasonsFitTheClamp();
+        seasonsLeavePressureRoom();
         theMorningRestock();
         theBoardRoundTrips();
         theFactionDiscountCap();
