@@ -2102,6 +2102,12 @@ Each has a recommendation. "Go with the recommendations" takes them all.
 - **2026-11-08: drafted.** From seven code maps, three designs and three judges' grafts. Plan only.
 - **2026-11-08: revised** after four reviews (see Review). Plan only.
 
+- **2026-11-10: paused during Phase 4's first repair round** (the user). Phase 4 (the roads) is built and committed
+  (`a6bafd5`..`6d5e188`); its two independent checks found 16 problems and 11 missing items, saved in
+  `79-phase4-checks.json`. The repair round's partial work is on branch `r2-staged-wip-repair4` (may not build).
+  **To resume:** repair Phase 4 from those checks (starting from the WIP branch or afresh), re-check with both lenses,
+  then Phase 5 (the port), then Phases 6-8 in sequence.
+
 ## Review (2026-11-08)
 
 Four reviews of the first draft, all read-only against `ridgemere2` at c8ac05c: one checking the code claims, one on

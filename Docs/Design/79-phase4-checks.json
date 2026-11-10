@@ -1,0 +1,160 @@
+{
+ "note": "Phase 4 (the roads): the two independent checks after the build (look; robustness). Repair round 1 was paused mid-way; its partial work is on branch r2-staged-wip-repair4.",
+ "checks": [
+  {
+   "problems": [
+    {
+     "severity": "high",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 285,
+     "problem": "Wagons never carry the source's player-sold surplus. Section 8.1 puts it first in the manifest, and T3 says 'the next wagon out carries ore'. But manifestFor's `has` check only accepts goods the source crafts, makes or sells. Goods players sell to a shop that only buys them (ore at a smithy, forage and meat at a stall) are left out. So a glut players make is never loaded, never halved at loading, and only fades on its own.",
+     "evidence": "A probe built from trade_show_tests' strip, compiled in /tmp/s2stage_probe4c0 with no repo edits. East's stall buys berries, mushrooms, raw_meat and shellfish (`has=0`), and West's shops stock them (`westWants=1`). With P(east, g) set to -0.4, the good was on 0 of 50 manifests (seeds w1..w50) for each of berries, mushrooms and raw_meat.",
+     "fix": "In the glut step, accept any good with P < 0 at the source that the source's shops buy (src->bought) as well as those it crafts, makes or sells. Add a trade_show check: players dump a good at the source's buyer, the next wagon to a market that stocks or buys it carries it, and the glut is halved as it loads."
+    },
+    {
+     "severity": "medium",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 252,
+     "problem": "At real size, most imports will rarely be on a wagon. A market's imports are every good its shops sell that the source sells (`bring(to, src->sold)`), and a stall's or general store's wares are whole categories. A wagon carries at most 5 goods, chosen with no regard to which of the destination's goods are thin. Goods the source crafts take the early slots every time, and the rest share what is left. So an imported good can sit on its decaying back room for weeks while wagons come and go. Players would see 'the wagon came in, the shelf is still bare' (T14).",
+     "evidence": "Probe over 200 manifests East to West in the fixture. West has 10 imports. Nails (crafted at East) were on 200 of 200 wagons; apples, butter, cheese, eggs, flour, herbs, meal, milk and oats were each on 80-97. Real communities' stall ('food', 43 catalogue foods) and general store (14 categories) would give dozens of imports for the same 5 slots.",
+     "fix": "After the glut, give manifest slots to the destination's imports with the lowest shelf plus back room. Or limit a market's imports to what its routes' wagons can bring in rotation. Add a check that over N wagons every import is refilled within a bounded number of days."
+    },
+    {
+     "severity": "medium",
+     "file": "Core/RatwBoards.cpp",
+     "line": 371,
+     "problem": "Wagon notices are pinned to `board:<market id>`, which is the community's region. But the board a player can open is found by Game::townFor. That returns the law town, and returns empty for a cell outside every law town whenever towns_ is not empty (World::lawTown, RatwCrime.cpp:85). In a world with two or more law towns, a market that stays plain for law (D7) has no board at all. Its carters' notices and its escort and bounty contracts would never show. Today this is latent: Ridgemere 2.0 has one law town, so towns_ is cleared and boards fall back to regions.",
+     "evidence": "Game::townFor (RatwGameLetters.cpp:83) calls townOf, then lawTown. lawTown returns {} when towns_ is not empty. boardNear and boardsView both use townFor. communities.json marks every community `town: false`, so setting one to true (giving two law towns) hides every other community's board. trade_show_tests' board test uses two law towns, so it never covers a plain market.",
+     "fix": "Find a board's community with the road layer's market id (townIdOf or roadMarketOf) rather than the law town. Or pin notices to the id boardNear would find. Add a test with two law towns and a plain community market, in which a player at that community's board reads the wagon notice."
+    },
+    {
+     "severity": "medium",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 391,
+     "problem": "The source's notice says 'Escort wanted.', but players at the source can't take that escort there. The escort contract is posted with town = the destination (line 486, and the raid path), and contractsNear lists only contracts whose town is the board's market. So the escort shows on the far board only, while the wagon waits for its escort at the source.",
+     "evidence": "postContract(\"escort\", treasuryOf(c), c, c, ...) at line 486. departureNotice adds 'Escort wanted.' to both notices when an open escort has k.town == d.to. contractsNear (RatwRoads.cpp:322) matches c.town == here->id. launchCaravan only pairs escorts at the source.",
+     "fix": "Post the escort at the source market, with the departure named in it (town = from, matched by the departure). Or word each end's notice for where the escort is taken ('Escort wanted: ask at the board in East')."
+    },
+    {
+     "severity": "medium",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 47,
+     "problem": "Notices, news and topics use catalogue names with pack sizes, which reads badly on every notice. Examples: 'nails (bag of 50) and cheese (wheel quarter) for the general goods store, and butter (crock)'; world.news 'nails (bag of 50) is cheap in East' (wrong verb for a plural too); topic.what is the capitalised 'Nails (bag of 50)'. Section 8.1's model is 'salt and nails for the general store, cloth.'",
+     "evidence": "Probe event detail: 'Wagon to West, Emberday: nails (bag of 50) and cheese (wheel quarter) for the general goods store, a...'. goodWords lowercases Society::itemName. Line 792 builds the news with ' is cheap in '. RatwAmbient.cpp:555 sets topic.what = Society::itemName(...). The 'general goods store' wording comes from line 372.",
+     "fix": "Use a plain good word for notices, news and topic.what: drop the parenthetical pack, use plural agreement ('nails are cheap'), and say 'the general store'. Add a check on the notice text."
+    },
+    {
+     "severity": "low",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 945,
+     "problem": "Some wagons that will never come keep their notices up for up to 7 days. 'caravan dropped' and 'caravan lost' events carry no departure id and roadNotices doesn't handle them. setOut also ignores launchCaravan returning nullptr (a route under 2 cells) after it has erased the departure. The board then keeps 'Wagon from X, due <day>' for a wagon that is gone.",
+     "evidence": "recordEvent({\"caravan dropped\", ..., {} /*item*/...}) at line 945 and {\"caravan lost\", ..., {}} at RatwRoads.cpp:666. Game::roadNotices handles only posted, delayed, overdue, arrives, raid and cancelled. setOut line 623 drops launchCaravan's result.",
+     "fix": "Carry c.departure in these events and take the notices down for them, and record 'wagon cancelled' when launchCaravan fails."
+    },
+    {
+     "severity": "low",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 816,
+     "problem": "A wagon overdue with no mishap or storm is posted as 'Overdue: the wagon from East, held up by no word of it.' The same phrase reaches the late topic's fact.",
+     "evidence": "lateCause defaults to \"no word of it\", and the notice is built as \"Overdue: the wagon from \" + ... + \", held up by \" + c.lateCause + \".\". The probe produced exactly this line.",
+     "fix": "Use a separate wording when there is no cause, for example 'Overdue: the wagon from East. No word of it yet.'"
+    },
+    {
+     "severity": "low",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 725,
+     "problem": "Two cases where a farm cart's visible cause is wrong. A committed cart whose keepers and hands are all busy just vanishes in launchCart: no cart, no missed-cart bump, no cause. A cart refused only by the cartsOnRoad or CommittedMost cap gets the missed-cart +0.05, recorded as 'harvest', even in a good harvest.",
+     "evidence": "launchCart returns silently at `if (driver.empty() || !post) return;`. rollCarts' miss branch also catches `carts >= most || committed.size() >= CommittedMost` and calls setPressure(..., \"harvest\").",
+     "fix": "Only bump for a harvest miss. When nobody at the farm is free, treat it as a missed cart with its own cause, or keep the farm's carter free for the morning."
+    },
+    {
+     "severity": "low",
+     "file": "Core/RatwRoads.cpp",
+     "line": 1654,
+     "problem": "D14 and 8.1 say camps' gathering and strength take a mild slider and Times factor. campGatherOdds and a new camp's strength read only the realm slider and winter, never the market's Times, which Phase 4 now feeds from raids, late wagons and harvests.",
+     "evidence": "campGatherOdds: .34 * clamp(1 - .25*slider, .8, 1.25) * (winter ? 1.1 : 1). New camps get min(strongest, 2 + (slider <= -.5)). No marketTimes call.",
+     "fix": "Fold in the Times of the route's far market (mild, capped), as 5.3 lists."
+    },
+    {
+     "severity": "low",
+     "file": "Core/RatwAmbient.cpp",
+     "line": 420,
+     "problem": "The harvest Phase 4 rolls has no talk fact a player could hear. 8.2 lists `world.harvest:<area>` and T11 requires it to agree with cart loads. Phase 4 added world.news but not world.harvest, and the Progress entry doesn't list it as deferred. harvestOf also has no seasonal lean: the season only reseeds the hash.",
+     "evidence": "grep for 'harvest' in RatwAmbient.cpp, RatwGameTalk.cpp, RatwGameVoice.cpp and Data/Talk/facts.json finds nothing. RatwTradeShow.cpp:268 computes score = unit(hash) - .5 + slider/400.",
+     "fix": "Set world.harvest (poor/fair/good) for the speaker's market's areas in talkTown, add it to facts.json, and list its lines under Phase 8. Or record it as deferred in the Progress entry."
+    }
+   ],
+   "missing": [
+    "DEV shows none of it. On the world the user will play, Ridgemere is the only market and no farm is staffed. So there are no wagons, no carts, no notices and no imports, and everything refills each morning. T4, T5, T11 and T14 can only be seen in the test fixtures until communities have merchants or staffed farms. The Phase 10 look test will find the roads empty.",
+    "T4 'with a guard': a wagon's guards are only a count (c.guards). No guard walks with the wagon unless an escort contract was taken, and the wagon's description doesn't mention one.",
+    "world.harvest talk fact (8.2, T11): not built and not listed as deferred.",
+    "Ships, the Wharf's crowd and world.ships (T6): Phase 5, deferred as the row says.",
+    "Staged events with causes (T13, 16.5): Phase 7, deferred.",
+    "Talk lines for 'caravan due', late and news, and a 'due' topic kind: Phase 8. The facts and kinds exist, but nothing speaks them yet.",
+    "Notices for DM harvest overrides, and the week's wagons on the Prosperity tab: Phase 9."
+   ],
+   "all_green": false,
+   "tests": "Rebuilt from scratch in build-4c0 (Release); the build succeeded. ctest: 81/81 passed, 0 failed, 0 skipped, with Postgres. pg_client, save_compat_pg, market_pg, save_compat, trade_show, host_edit and roads_behaviors all passed. I created a throwaway database, ratw_test_s2stage_4c0, for RATW_TEST_DATABASE_URL and dropped it afterwards. Rule breach: ctest's save_compat_pg.py and market_pg.py also made their own throwaway databases with hard-coded names ratw_test_p3stage_<hex>, so those names lacked the s2stage tag. They dropped them themselves, and none are left. Another session's ratw_test_s2stage_4c1pg was left untouched. No DEV, dev-old or PROD access, no server, no simulations, no AI calls. The evidence probes are throwaway programs in /tmp/s2stage_probe4c0, built from Tests/trade_show_tests.cpp's fixture and linked against build-4c0/libratw_core.a; no repo files were edited."
+  },
+  {
+   "problems": [
+    {
+     "severity": "high",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 235,
+     "problem": "If the DM turns wagons off with legal rule values (caravanRate 0 or wagonsOnRoad 0; cartsOnRoad 0 does the same for goods only carts bring), the imported goods at the receiving market run bare and stay bare. ensureRoadMarkets still marks the goods as imports from carters_ and roadPairs_ (and from staffed farms' carts) without reading those rules. stagedRestock then refills them only from the back room, which empties after one day. D27 and 5.1 promise that a market nothing reaches refills each morning. In the strip, West's food stall's meal, flour, oats, milk, cheese and eggs are all imports. Since households eat from the shelf, this lever can starve a community.",
+     "fix": "Count a source as able to bring goods only while caravanRate > 0 and wagonsOnRoad > 0, and count carts only while cartsOnRoad > 0. Also rebuild the imports when the economy rules change: put a rules revision in ensureRoadMarkets' key or reset roadMarketsKey_ in adoptEconomy. Add a trade_show or host_edit case: caravanRate 0, then the imports refill the next morning.",
+     "evidence": "A scratch probe built on trade_show_tests' strip set rule caravanRate=0 (then, separately, wagonsOnRoad=0) through adoptEconomy, emptied West's general store's imported 'herbs' each day and ran 12 mornings. The shelf read 4/4 on day 0, then 0/4 on every day from 1 to 11, still flagged as imported, with 0 wagons departed. The import set is built at RatwTradeShow.cpp:235-256 with no rule check; the back-room-only refill is at RatwMarket.cpp:2081. The food stall's wares in the strip: flour[I] oats[I] milk[I] butter[I] cheese[I] apples[I] eggs[I] meal[I] herbs[I]."
+    },
+    {
+     "severity": "medium",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 638,
+     "problem": "When a host deletes a road, a posted wagon disappears without a word. In setOut, launchCaravan returns nullptr when routeBetween is shorter than 2, and no 'wagon cancelled' event is recorded. Game::roadNotices never takes down the departure's two notices ('Wagon to West, <weekday> ... Tam Reed driving' and 'Wagon from East, due ...'), so both boards promise a wagon for up to 7 days that never comes (T4). The same happens for a wagon in transit: lost() in RatwRoads.cpp:660 records 'caravan lost' without its departure id, and dropOrphanedRoads records 'caravan dropped' with an empty item. roadNotices handles neither. lost() also leaves the escorts' contracts 'taken', with their pay in escrow, until the contract expires.",
+     "fix": "In setOut, when launchCaravan returns null, record {\"wagon cancelled\", d.id, ...} with the cause 'the road is closed'. Make lost() and dropOrphanedRoads carry c.departure, and have roadNotices take down the notices on 'caravan lost' and 'caravan dropped'. In lost(), reopen or expire the escorts as dropOrphanedRoads' reopen() does. Add 'a road deleted' to host_edit_tests (the lens names it; 16.6 doesn't).",
+     "evidence": "Probe posted_cut (trade_show strip): w1 was posted east>west for day 11. The seam and exits between cells 4 and 5 were removed, and the save restored (ok=1, committed 1). After 4 mornings: committed 0, caravans 0, and not one wagon or caravan event (no 'wagon cancelled', no 'caravan departs'). Probe road_cut (host_edit base, road cut between cells 5 and 6): restore ok; 'caravan lost ... no road on from here'. Ada's escort k2 stayed 'taken' with 12p in escrow for days, until its 7-day expiry."
+    },
+    {
+     "severity": "low",
+     "file": "Core/RatwGameJournal.cpp",
+     "line": 281,
+     "problem": "The journal can restore a Board and roads that disagree after a crash. The whole Board, now including `committed`, is journalled on every Economy record (every trade). The roads, which hold the caravans, are journalled only on Roads records. Suppose a wagon sets out (its departure leaves `committed`, a caravan joins roads) and a player then trades before the next snapshot (30 s). A crash then replays a Board without the departure over a checkpoint without the caravan, and the wagon vanishes; its notices, saved through saveSoon, stay up. The reverse order (a Roads-only record) gives a second wagon for the same departure, with a second arrival nudge and refill. The Progress entry says departures 'aren't journalled', but they are, through the Board.",
+     "fix": "Journal the roads whenever the Board's `committed` changes, or include Roads on the record that follows setOut, launchCart and arrivals (or mark the roads dirty there). At minimum, correct the Progress note. Add a journal-replay test: a departure set out, a trade journalled, a crash replayed, and the wagon still on the road exactly once.",
+     "evidence": "RatwGameJournal.cpp:278-283 sets society.board whole under `what & Economy`; :306 journals roads only under `what & Roads`. Roads records are made only at RatwBoards.cpp:265, RatwGameLetters.cpp:613/718 and RatwGame.cpp:5480/5527; trades record Economy only. RatwGame.h:458 sets SnapshotSeconds = 30."
+    },
+    {
+     "severity": "low",
+     "file": "Core/RatwTradeShow.cpp",
+     "line": 530,
+     "problem": "The missed-cart bump stacks with the number of farms. Every staffed farm whose cart doesn't come adds a fixed +0.05 to each of its goods at its market, each morning, so the bump grows with how many farms supply the same good to one market. This is the 'stacking fixed steps' pattern that the review replaced with pulls toward a baseline. On DEV, Ridgemere is the cart end for 8 farms of tallow and bones, 7 of fish, and 6 of raw meat, meal and hides. In a poor harvest (60% miss), fish gains about +0.2 every morning before the carts that do come pull it halfway back each.",
+     "fix": "Bump once per market and good per morning, scaled by the share of that good's carts that missed (for example +0.05 \u00d7 missed/expected), or pull toward the poor baseline instead of adding a step.",
+     "evidence": "A probe on the DEV export (/tmp/p3chk1_builds/dev with the pre79 dev checkpoint) counted cart ends per good at ridgemere: tallow 8, bones 8, fish 7, raw_meat 6, meal 6, hide 6, cider 5, berries 5, apples 5. The loop at RatwTradeShow.cpp:527-531 adds MissedCartNudge per farm with no per-good cap."
+    },
+    {
+     "severity": "low",
+     "file": "Core/RatwBoards.cpp",
+     "line": 356,
+     "problem": "The carters' notices take the same pins players need, with no cap of their own. pin() calls documents_.add directly, but boardCommand refuses players once onBoard(board).size() >= PerBoard (30). The number of carters' notices on a board is bounded only by its carters (7 at Ridgemere on DEV) \u00d7 2 days ahead, plus wagons in transit, plus incoming wagons (up to wagonsOnRoad 16 a day realm-wide). A hub's board can fill, and players then get 'Every pin is taken'.",
+     "fix": "Keep the carters' notices out of the PerBoard count (or give them a separate small quota), or post one combined 'wagons this week' notice per board instead of one per departure.",
+     "evidence": "RatwBoards.cpp:327 counts every document on the board; roadNotices' pin (:363-379) adds two documents per posted wagon without checking the count. The count is reasoned from the caps, not measured: no world with carters in several markets exists to measure."
+    },
+    {
+     "severity": "low",
+     "file": "Core/RatwRoads.cpp",
+     "line": 891,
+     "problem": "sendCaravan can read freed memory. It takes `const Town& from, const Town& to`, which callers pass as `*w.roadMarket(...)`, references into roadMarkets_. It then calls ensureRoadMarkets(), which clears and rebuilds roadMarkets_ whenever the day or roster revision has moved, before it reads from.id and to.id. Only tests and the Dev Console call it.",
+     "fix": "Copy the ids (std::string a = from.id, b = to.id) before ensureRoadMarkets(), or take ids instead of Town references.",
+     "evidence": "RatwRoads.cpp:891-905: ensureRoadMarkets(), then roadMarket(from.id). The callers are trade_show_tests.cpp:381/412/497/561/693 and host_edit_tests.cpp:227. The rebuild key in RatwTradeShow.cpp:119 includes roads_.day and rosterRevision."
+    }
+   ],
+   "missing": [
+    "No host-edit test for deleting a road (seam or cells between markets) while a wagon travels and while wagons are posted. The lens names it; probes show a silent drop and stale notices.",
+    "No test that DM rule values of 0 (caravanRate, wagonsOnRoad, cartsOnRoad) fall back to refilling every morning (D27 and 5.1).",
+    "No journal-replay test that the Board's committed departures and the roads' caravans stay consistent across a crash between snapshots.",
+    "Deleting a port: Phase 5, not covered yet (ships deferred)."
+   ],
+   "all_green": false,
+   "tests": "Rebuilt /home/martinb/Documents/GitHub/MUDProject/.claude/worktrees/r2-staged/build-4c1 (Release) at HEAD 6d5e188. Ran the whole ctest with Postgres: 81/81 passed, none skipped (pg_client, market_pg and save_compat_pg included). pg_client used a throwaway ratw_test_s2stage_4c1pg database, dropped afterwards. The Python pg tests' names were tagged s2stage through a temporary sitecustomize (/tmp/s2stage-4c1-site). Afterwards no s2stage database remains. No files in the repo were edited.\n\nScratch probes in /tmp/s2stage-4c1-probe, linked against build-4c1/libratw_core.a:\n- rate0: imports stay bare under caravanRate 0 or wagonsOnRoad 0.\n- posted_cut and road_cut: a host deletes the road.\n- farms: carts per good per market on the DEV export.\n- perf: a micro-benchmark on the full DEV and dev-old exports, run read-only on copies of the pre79 fixtures. Rebuilding the road layer after a roster change costs 0.20-0.22 ms, against 1.1-1.9 ms for ensureTradePoints. Per tick: mean 0.32 ms (dev-old) and 0.58 ms (DEV); the first-tick worsts (68-99 ms) are load warm-up. This shows no perf problem from Phase 4 on today's worlds; neither world runs wagons yet.\n\nAlso checked:\n- Save and restore round trips of the new Board and Caravan fields: lenient and clamped.\n- Old saves' wagons come home empty, with letters and escrow exact (save_compat green).\n- No new thread touches Phase 4 state: snapshots are forked and errand() runs on the main pass.\n- Recovered cargo is a registered faucet ('goods'); escort and bounty pay is capped by rewardsADay.\n- Neither the word \"dog\" nor \"dogs\" appears in the new text.\n\nNo simulations, no real server, no AI calls, no writes to DEV, dev-old or PROD."
+  }
+ ]
+}
