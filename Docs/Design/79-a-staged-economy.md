@@ -1502,7 +1502,7 @@ Phases 1 and 2 can run in parallel after Phase 0. Both touch `RatwSociety.cpp`: 
 | 5. The port | The committed ship timetable, the Wharf's crowd and tasks, import and export nudges toward baselines, the board timetable, `world.ships`. (A ship at the pier: +4 plan, +1.5 expected, if D8 says so) | 6-9 | 2-3 |
 | 6. Street life | The expected theft count and targets, the till-food path in `steal()`, band-scaled takes, `worth()` from the Board; begging, the Restday dole, rough sleeping; errand-runners near players with per-cell caps; the standing-still rule for staged sales; `business` from sales, `on_dole`; the "short" trouble by band; the lifted state and its cap; `street_tests` | 14-19 | 6.5-8.5 |
 | 7. Staged events and causes | The seeded event scheduler and its list in `market.json`; the slider's cause (DM text or the seeded list), `world.times_cause`, criers and notices; override notices; the harvest lean | 4-6 | 2-3 |
-| 8. Talk | Price topics back with shown prices, the shown-price gate, cause attribution, `topic.item` widened, the keeper's trade answer, class-gated tags, the failing salience rule, 450-650 new lines, the forbidden-word check | 14-20 | 4-6 |
+| 8. Talk | Price topics back with shown prices, the shown-price gate, cause attribution, `topic.item` widened, the keeper's trade answer, class-gated tags, the failing salience rule, 450-650 new lines (with the roads' facts Phase 4 sets: `caravan due`, late and its cause, `world.news`, `world.harvest`), the forbidden-word check | 14-20 | 4-6 |
 | **Slice 2** | | **58-82** | **23.5-33** |
 
 Phases 4-8 all edit `Data/Talk/facts.json`, `RatwAmbient.cpp` `sceneTopics`, `RatwGameTalk.cpp` and `RatwRoads.cpp`.
@@ -2084,8 +2084,8 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     overrides, the week's wagons on the Prosperity tab and `caravanRate` in the Rules panel's copy (Phase 9; the rule is
     already listed); the town projects' watchpost and waystation proposals still read the law's towns, of which Ridgemere
     2.0 has none (they are Town Works, not the roads: for Phase 9 or a later plan); the perf gate's windows and the soak
-    with wagons and up to 48 carts (Phase 11, with the user's go-ahead: not run). The departures posted between two
-    checkpoints aren't journalled; after a crash the routes roll again, the same hash giving mostly the same wagons.
+    with wagons and up to 48 carts (Phase 11, with the user's go-ahead: not run). (Corrected by the repair below: the
+    departures are journalled, with the whole Board on every economy record; it was the roads beside them that weren't.)
   - Tests: `trade_show_tests` (new, 228 checks: committed and kept through a DM change, real carters away from their
     posts and set back without one, manifests, notices and weekday names, the departure's and arrival's nudges and never
     up, the shelves refilled, `world.news`, a raid's +0.15, cargo at the camp and found by the player who breaks it, the
@@ -2107,6 +2107,57 @@ Each has a recommendation. "Go with the recommendations" takes them all.
   `79-phase4-checks.json`. The repair round's partial work is on branch `r2-staged-wip-repair4` (may not build).
   **To resume:** repair Phase 4 from those checks (starting from the WIP branch or afresh), re-check with both lenses,
   then Phase 5 (the port), then Phases 6-8 in sequence.
+
+- **2026-11-10: Phase 4 repaired** (from `79-phase4-checks.json`, starting from the WIP branch's work). All 16 problems
+  fixed, each with a test; of the 11 missing items, 4 built, 6 deferred to their phases as planned, 1 not code (below).
+  - **Wagons:** the source's player-sold glut (a good its shops only buy: T3's ore, a stall's berries) goes out first,
+    at most two goods of it. A market's imports by wagon from one source are at most 10 (its own makes first, then a
+    seeded, stable choice); the rest refill each morning. Each manifest then takes the far end's thin imports, those
+    not already on their way first and those brought longest ago next (the Board's new `broughtIn`, saved, kept 60
+    days), so each import is on one of every three wagons at worst. While the DM's `caravanRate` or `wagonsOnRoad` is
+    0 nothing counts as imported by wagon, and while `cartsOnRoad` is 0 nothing by cart, so those goods refill each
+    morning (D27); the import list is found again when the rules change.
+  - **Boards and notices:** a market plain for law (D7) has its board at its market's place
+    (`Game::boardTownFor`: the law town's, else the road market's), and the carters pin each notice on the board a
+    player at that market reads. The carters' notices don't count toward a board's 30 pins. The escort is taken at
+    the board where the wagon sets out; the far end's notice says "Escort wanted: ask at the board in East." Goods
+    are in plain words on notices, news and `topic.what` ("nails", never "nails (bag of 50)"; "nails are cheap", "cheese
+    is"; "the general store"). Overdue with no known cause reads "Overdue: the wagon from East. No word of it yet." A
+    wagon lost on a closed road or dropped records its departure and its notices come down; a posted wagon whose road
+    a host closed is cancelled ("the road is closed"). A lost wagon's escorts reopen (or are refunded if the market is
+    gone) and its carter is freed. A wagon's look names its guard (T4: a guard rides with it; no guard walks beside
+    it unless an escort is taken).
+  - **Carts:** a cart the roads have no room for (`cartsOnRoad`) doesn't go and bumps nothing. A rolled cart nobody at
+    the farm is free to drive, or with no way through, is missed with its own cause ("short-handed", "road closed")
+    and a "cart missed" event. A missed cart's bump is its share of +0.05 (+0.05 for a good only when all of its carts
+    to that market miss), so many farms don't stack. The harvest leans a little with the season (autumn +0.08, summer
+    +0.04, winter −0.08 on the roll). `world.harvest` (poor, fair or good: the mean harvest of the staffed farms whose
+    carts come to the speaker's market, the same word that loads them; T11) is set in talk and listed in
+    `facts.json`; its lines are Phase 8's. Camps gather with the far market's own Times shift as well as the slider
+    (D14, 5.3), still within ×0.8 to ×1.25.
+  - **The journal:** the Phase 4 entry above was wrong to say departures aren't journalled. The Board, with its
+    `committed`, is journalled on every economy record, but the roads beside it weren't, so a crash between
+    checkpoints could lose a wagon that set out (or run it twice). Now the roads go with any record whose departures
+    moved, the Board with any roads record, and at each checkpoint the journal's shadow of the Board, its departures
+    and the roads is reset to what the checkpoint holds (it held only the accounts before). `sendCaravan` copies its
+    two markets before `ensureRoadMarkets` can rebuild them (a dangling reference in tests and the Dev Console).
+  - **Not built, by owner:** ships, the Wharf's crowd and `world.ships` (Phase 5), and deleting a port with them; staged
+    events with causes (Phase 7); the talk lines for wagons due, late, news and the harvest, and a "due" topic kind
+    (Phase 8); notices for the DM's harvest overrides and the week's wagons on the Prosperity tab (Phase 9). **Not
+    code:** on DEV as it stands, Ridgemere is the only market and no farm is staffed, so no wagons, carts, notices or
+    imports run there, and everything refills each morning. T4, T5, T11 and T14 show only once the Country's
+    communities have households with merchants and carters, or staffed farms. That is world data (or Phase 10's
+    scratch play), not this phase's code, and NPCs are never generated to fill it.
+  - Tests: `trade_show_tests` 475 checks (was 228: the glut on the next wagon and halved; every import in rotation;
+    the rules at 0 refilling each morning and back; a plain market's board read by a player, with 32 carters' notices
+    and a player's still pinned; the escort at the source; plain words; overdue with no word; carts not rolled for want
+    of room, missed with their cause, two farms' bump shared; the harvest fact; the far market's Times on camps; a lost
+    wagon's notices down and its escort reopened; a journal replay with the wagon on the road exactly once).
+    `host_edit_tests` 550 (was 514: a road deleted with a wagon on it and one posted). ctest 81/81 with the database, none skipped
+    (`save_compat_pg`, `market_pg` and `pg_client` run; a throwaway `ratw_test_s2stage_4r` database, dropped after; the
+    Python pg tests' own names tagged `s2stage`); `roads_tests` 407, `save_compat` 23,085. Python: `test_dungeon_master`
+    (47, it reads `facts.json`), `test_npc_mind` (31), `test_ambient_library`, `test_world_store` (24) and
+    `test_world_package` (its 12 server cases skipped: they export DEV, not run here) pass.
 
 ## Review (2026-11-08)
 
