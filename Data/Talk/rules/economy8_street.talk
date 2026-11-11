@@ -1,0 +1,357 @@
+# Street life in the staged economy (Docs/Design/79-a-staged-economy.md, section 10 and Phase 8): beggars, the Restday
+# dole, rough sleepers and the hungry, and a keeper's business as the shop's day has gone. Built on Phase 6's facts:
+# job=beggar while begging (Marketday and Restday, 8:00-18:00, at the chapel steps, the notice board and before the
+# shops), on_dole (the priest's Restday bread this week), homeless, hungry, business (thriving, steady, failing), with
+# the band (wealth) and class beside them, and the market's Times (world.times). Never a price figure.
+# Chains: an opener remembers what it spoke of (`jk`: beg, dole, trade_up, trade_same, trade_down) and street.answer
+# replies keyed on it; street.close ends it.
+
+## ================================================================ Beggars' barks (concept=bark, job=beggar)
+
+rule e8s_bk_beg_traveller
+when concept=bark self.job=beggar here.player_near=yes
+cooldown 2h
+say You there, traveller! A penny for a hungry wolf? | Kind face, that. Kind enough for a penny? | Travellers have the fattest purses. Spare a little of yours? | Bless you before you've given. Saves time.
+
+rule e8s_bk_beg_hard
+when concept=bark self.job=beggar world.times=hard|lean
+cooldown 3h
+say There's more of us on these steps every week. | Nobody's giving. Nobody's got it to give. | Hard times for all, and harder down here.
+
+rule e8s_bk_beg_good
+when concept=bark self.job=beggar world.times=good|boom
+cooldown 3h
+say Fat times, they say. Not on these steps. | Everyone's flush but me. Share it round? | The town's doing well. Let a little of it fall this way.
+
+rule e8s_bk_beg_hungry
+when concept=bark self.job=beggar hungry=yes
+priority 1
+cooldown 2h
+say Not a bite since yesterday. A crust, anyone? | I'd take bread over coin. Truly. | My belly's louder than I am. | Anything to eat. Anything.
+
+rule e8s_bk_beg_winter
+when concept=bark self.job=beggar here.season=winter
+cooldown 3h
+say Paws like ice. A penny for a hot cup? | Winter on the steps. The stone takes the warmth right out of you. | Spare a coin before the frost spares me nothing.
+
+rule e8s_bk_beg_dole
+when concept=bark self.job=beggar here.day=rest here.time=day
+cooldown 6h
+say Bread after the service. A penny until then? | The priest's loaf after the service, if I last that long. | I'll queue for the parish bread. But a penny now'd not go amiss.
+
+rule e8s_bk_beg_old
+when concept=bark self.job=beggar stage=old
+cooldown 4h
+say I worked forty years, and here I sit. | Spare a penny for an old wolf. The knees won't carry me to work. | I had a trade once. Hands won't hold it now.
+
+rule e8s_bk_beg_upper
+when concept=bark self.job=beggar self.class=upper
+cooldown 6h
+say I dined in the Heights once. Don't laugh. | I'll not beg. I'll ask. Would you spare a penny? | My father kept a carriage. I keep a bowl.
+
+## A beggar a traveller helped (doc 79, 6.7: the one lifted owes its helper, so pair.owed=a is the speaker in debt)
+
+rule e8s_greet_helped
+when concept=player.greet pair.owed=a self.wealth=destitute|poor topic.meeting=known|returning
+priority 1
+say You. You fed my household. I've not forgotten. | It's you! We ate for a week on what you gave. | Bright One keep you. You'll not know how much that helped. | There's the one who helped us. I'll pay it back one day.
+
+## ================================================================ Passers-by, of the beggars (talk.day, market or Restday)
+
+rule e8s_beg_seen_rich
+when concept=talk.day self.wealth=rich here.day=market|rest here.place=market|street
+cooldown 2d
+say The steps were thick with beggars this morning. One hardly knows where to look. | Someone ought to do something about the chapel steps. The Council, perhaps. | I gave a penny to one by the board. One feels one should.
+remember pair: jk=beg 2m
+then other: street.answer
+
+rule e8s_beg_seen_comfortable
+when concept=talk.day self.wealth=comfortable here.day=market|rest here.place=market|street
+cooldown 2d
+say Did you see them by the chapel? Poor souls. | I keep a penny in my pocket for the steps. | There's a wolf on the steps I used to buy fish from.
+remember pair: jk=beg 2m
+then other: street.answer
+
+rule e8s_beg_seen_poor
+when concept=talk.day self.wealth=poor here.day=market|rest here.place=market|street
+cooldown 2d
+say There but for the Bright One, eh? | One bad month and that's me on the steps. | I nod to them. It's all I can spare.
+remember pair: jk=beg 2m
+then other: street.answer
+
+rule e8s_beg_seen_hard
+when concept=talk.day here.day=market|rest here.place=market|street world.times=hard|lean
+cooldown 2d
+say More beggars than stalls, some days. | They've started sitting before the shops too, not just the steps. | Hard times fill the chapel steps.
+remember pair: jk=beg 2m
+then other: street.answer
+
+## ================================================================ The dole (on_dole=yes)
+
+rule e8s_bk_dole_upper
+when concept=bark on_dole=yes self.class=upper
+cooldown 1d
+say I keep my hood up in the queue. | My mother gave to the dole. Now look at me. | Nobody from the old days saw me. I hope.
+
+rule e8s_bk_dole_middle
+when concept=bark on_dole=yes self.class=middle
+cooldown 1d
+say I had a shop once. Now I have a loaf on Restday. | It's only till things turn. Only till then. | I stand at the back of the line. Less of a show.
+
+rule e8s_bk_dole_lower
+when concept=bark on_dole=yes self.class=lower
+cooldown 1d
+say Bread's bread. I'll queue for it. | Priest's loaf feeds us two days, if we go careful. | No shame in the line. Shame's for them that let it come to this.
+
+rule e8s_bk_priest_dole
+when concept=bark self.job=priest here.day=rest here.time=day
+cooldown 4h
+say Bread for any household in want, after the service! | Come, all who are hungry. There's enough for each. | No one goes home empty from this door today.
+
+rule e8s_bk_priest_dole_hard
+when concept=bark self.job=priest here.day=rest world.times=hard|lean
+priority 1
+cooldown 6h
+say The line grows every Restday, and the Bright One sees it. | Give what you can to the chapel. The queue is long this season. | We'll bake more if we must. No one will be turned away.
+
+rule e8s_dole_tell_upper
+when concept=talk.smalltalk|talk.day on_dole=yes self.class=upper
+cooldown 2d
+say I took the parish bread on Restday. Don't tell a soul. | I never thought I'd stand in that line. My family built that chapel's window. | The priest was kind. That was the worst of it.
+remember pair: jk=dole 2m
+then other: street.answer
+
+rule e8s_dole_tell_lower
+when concept=talk.smalltalk|talk.day on_dole=yes self.class=lower
+cooldown 2d
+say Got our loaf on Restday. Kept us going. | The priest gave the little ones an extra crust. | We'll be in the line again come Restday, and glad of it.
+remember pair: jk=dole 2m
+then other: street.answer
+
+rule e8s_dole_tell_middle
+when concept=talk.smalltalk|talk.day on_dole=yes self.class=middle
+cooldown 2d
+say We've been taking the Restday bread. Just for now. | I queued behind my old apprentice. Neither of us said a word. | The dole's kept us fed. The pride's another matter.
+remember pair: jk=dole 2m
+then other: street.answer
+
+rule e8s_dole_seen
+when concept=talk.day here.day=rest world.times=hard|lean self.on_dole=no
+cooldown 2d
+say The dole line went right round the chapel today. | The priest handed out loaves till the last in line had one. | I saw families in the bread line I'd never have thought.
+remember pair: jk=dole 2m
+then other: street.answer
+
+## ================================================================ Business at the counter (barks)
+
+rule e8s_bk_thriving_rich
+when concept=bark business=thriving working=yes self.wealth=rich
+cooldown 6h
+say Another good day. I'll need more hands at this rate. | Keep them coming! The shelves can take it. | Steady custom and a full till. That's a year made.
+
+rule e8s_bk_thriving_poor
+when concept=bark business=thriving working=yes self.wealth=poor|destitute
+cooldown 6h
+say Folk are buying! From me! | A good day. A real one. I'd almost forgot the feel. | If this keeps up I'll put a little by before Restday.
+
+rule e8s_bk_thriving_market
+when concept=bark business=thriving working=yes here.day=market
+cooldown 6h
+say Step up, there's a line! | Market day, and they can't get enough. | Patience, friends, patience, I've two paws only!
+
+rule e8s_bk_steady
+when concept=bark business=steady working=yes
+cooldown 6h
+weight 0.7
+say Same as ever. Same faces, same orders. | Steady trade. No more, no less. | A quiet day, but an honest one.
+
+rule e8s_bk_steady_poor
+when concept=bark business=steady working=yes self.wealth=poor|destitute
+cooldown 8h
+say Enough to keep the doors open. Just. | Steady's good. Steady's bread on the table. | Nobody's rich at this counter, but nobody starves.
+
+rule e8s_bk_failing_rich
+when concept=bark business=failing working=yes self.wealth=rich
+cooldown 6h
+say One poor week. The house will weather it. | Where has the custom gone? It was here last month. | I shall have words with my buyer. This stock won't move.
+
+rule e8s_bk_failing_poor
+when concept=bark business=failing working=yes self.wealth=poor|destitute
+priority 1
+cooldown 6h
+say Please. Anyone. Come and look, at least. | If nothing sells today, I'm done. Done. | I've not taken a penny since morning. | I'll be on the steps myself, at this rate.
+
+rule e8s_bk_failing_upper
+when concept=bark business=failing working=yes self.class=upper
+cooldown 8h
+say My grandfather's shop, and I'm letting it fail. | The name over the door used to bring them in. | Not a single customer of quality all week.
+
+rule e8s_bk_failing_hard
+when concept=bark business=failing working=yes world.times=hard|lean
+cooldown 8h
+say Nobody's buying. Nobody's got it to spend. | Hard times empty every till, mine first. | I'll keep the shutters up and pray.
+
+## ================================================================ Business in talk (talk.work, talk.smalltalk)
+
+rule e8s_trade_up_rich
+when concept=talk.work|talk.smalltalk business=thriving self.wealth=rich
+cooldown 2d
+say A fine season for the shop. I'm thinking of a second. | I may need another pair of paws at the counter. | The books have never looked better. My steward is unbearable about it.
+remember pair: jk=trade_up 2m
+then other: street.answer
+
+rule e8s_trade_up_small
+when concept=talk.work|talk.smalltalk business=thriving self.wealth=poor|comfortable
+cooldown 2d
+say The stall's doing well. I keep waiting for it to stop. | Custom's good. I put a penny by every night now. | Busier than I've ever been. My paws ache with it.
+remember pair: jk=trade_up 2m
+then other: street.answer
+
+rule e8s_trade_same
+when concept=talk.work|talk.smalltalk business=steady
+cooldown 2d
+weight 0.7
+say The shop's steady. Nothing to boast of, nothing to fear. | Same customers, same orders, same as last year. | It ticks over. That'll do me.
+remember pair: jk=trade_same 2m
+then other: street.answer
+
+rule e8s_trade_down_rich
+when concept=talk.work|talk.smalltalk business=failing self.wealth=rich
+cooldown 2d
+say The shop's had a wretched week. One can absorb it, but still. | My stock sits there. I may have bought too much. | Custom has fallen off. I can't think why.
+remember pair: jk=trade_down 2m
+then other: street.answer
+
+rule e8s_trade_down_poor
+when concept=talk.work|talk.smalltalk business=failing self.wealth=poor|destitute
+priority 1
+cooldown 2d
+say The shop's dying on its feet. So am I. | I've stock I can't shift and a till I can't fill. | If it doesn't turn this week I'll shut the door for good.
+remember pair: jk=trade_down 2m
+then other: street.answer
+
+rule e8s_trade_down_comfortable
+when concept=talk.work|talk.smalltalk business=failing self.wealth=comfortable
+cooldown 2d
+say Trade's been thin. We're eating into what we'd put by. | Three slow days. Starting to worry. | Nobody's coming in. I keep sweeping the same clean floor.
+remember pair: jk=trade_down 2m
+then other: street.answer
+
+## ================================================================ Rough sleepers and the hungry poor
+
+rule e8s_bk_warm_wall
+when concept=bark homeless=yes here.season=winter here.time=night|dusk|dawn
+priority 1
+cooldown 6h
+say The baker's wall stays warm till dawn. That's my bed tonight. | The forge doesn't go cold all night. Thank the Bright One for smiths. | Back to the warm wall. Shift up, there's room for one more.
+
+rule e8s_bk_homeless_hungry
+when concept=bark homeless=yes hungry=yes
+cooldown 6h
+say No roof and no supper. Some days are like that. Most days. | I'd sell my last coat for a hot bowl. If I had a coat. | Nowhere to go and nothing to eat. Spare anything?
+
+rule e8s_bk_hungry_poor
+when concept=bark hungry=yes self.wealth=poor self.homeless=no
+cooldown 6h
+say Short again this week. The pups ate first. | There's bread enough for tomorrow, if I don't eat today. | Belly's empty, and the purse is lighter still.
+
+rule e8s_bk_hungry_hard
+when concept=bark hungry=yes self.wealth=destitute world.times=hard|lean self.job!=beggar
+cooldown 6h
+say Nothing in the house. Nothing. | I've walked past the bakery three times. Smelling's free. | Hard times. Hardest for them with nothing.
+
+## ================================================================ Answers (street.answer), keyed on what was said
+
+# Of the beggars
+rule e8s_ans_beg
+when concept=street.answer pair.mem.jk=beg
+say Hard to see. | I know. I try not to look and then I feel worse. | It's a shame on the town, that.
+then other: street.close
+
+rule e8s_ans_beg_rich
+when concept=street.answer pair.mem.jk=beg self.wealth=rich
+say The chapel should keep them off the steps. | One gives at the service. That should be enough. | Dreadful. Somebody should do something.
+then other: street.close
+
+rule e8s_ans_beg_poor
+when concept=street.answer pair.mem.jk=beg self.wealth=poor|destitute
+say Don't. That's me if this month goes wrong. | I gave one my crust last week. Couldn't help it. | Half of them worked the same posts as us.
+then other: street.close
+
+rule e8s_ans_beg_warm
+when concept=street.answer pair.mem.jk=beg warmth=warm
+say I'll take them some soup tonight. | We should go together on Restday and help hand out the bread. | Poor souls. Every one of them was someone's pup.
+then other: street.close
+
+# Of the dole
+rule e8s_ans_dole
+when concept=street.answer pair.mem.jk=dole
+say No shame in bread. | Better the line than an empty belly. | It'll turn. It always turns.
+then other: street.close
+
+rule e8s_ans_dole_rich
+when concept=street.answer pair.mem.jk=dole self.wealth=rich
+say We give to the chapel every season. I'm glad it goes somewhere. | Mm. The parish does good work. | I hadn't realised. I'm sorry.
+then other: street.close
+
+rule e8s_ans_dole_poor
+when concept=street.answer pair.mem.jk=dole self.wealth=poor|destitute
+say I've stood in that line. I'll stand in it again, likely. | The priest's a good one. Never makes you feel it. | Did they have enough to go round?
+then other: street.close
+
+rule e8s_ans_dole_devout
+when concept=street.answer pair.mem.jk=dole piety=devout
+say The Bright One feeds the hungry through the chapel's hands. | That's what the chapel's for. | Give thanks and take the bread. Both are holy.
+then other: street.close
+
+# Of a shop doing well
+rule e8s_ans_trade_up
+when concept=street.answer pair.mem.jk=trade_up
+say Good for you! | Don't spend it all at once. | Well done. You've earned it.
+then other: street.close
+
+rule e8s_ans_trade_up_poor
+when concept=street.answer pair.mem.jk=trade_up self.wealth=poor|destitute
+say Must be nice. | Glad somebody's doing well. | Need anyone to sweep up? I'm cheap.
+then other: street.close
+
+rule e8s_ans_trade_up_rich
+when concept=street.answer pair.mem.jk=trade_up self.wealth=rich
+say Splendid. Do let me know if you want a partner. | Good. Trade is the town's blood. | Then you'll be wanting a bigger place soon.
+then other: street.close
+
+# Of a steady shop
+rule e8s_ans_trade_same
+when concept=street.answer pair.mem.jk=trade_same
+say Steady's no bad thing. | Better than most, then. | That's all any of us wants.
+then other: street.close
+
+# Of a shop failing
+rule e8s_ans_trade_down
+when concept=street.answer pair.mem.jk=trade_down
+say It'll turn. It has to. | I'll come by and buy something. | That's hard. I'm sorry.
+then other: street.close
+
+rule e8s_ans_trade_down_warm
+when concept=street.answer pair.mem.jk=trade_down warmth=warm
+say I'll send my neighbours your way. | Come and eat with us till it picks up. | Don't you shut that door yet. We'll think of something.
+then other: street.close
+
+rule e8s_ans_trade_down_rich
+when concept=street.answer pair.mem.jk=trade_down self.wealth=rich
+say Perhaps it's the stock. Have you thought of something finer? | If you need a loan to see you through, ask. | Every trade has its lean weeks.
+then other: street.close
+
+rule e8s_ans_trade_down_cold
+when concept=street.answer pair.mem.jk=trade_down warmth=cold
+say That's trade. | Then sell something people want. | Mm.
+then other: street.close
+
+# Closes
+rule e8s_close
+when concept=street.close
+say Aye. Well. | So it goes. | We'll see.
+
+rule e8s_close_warm
+when concept=street.close warmth=warm
+say Look after yourself. | Come by any time. | Bright One keep you.

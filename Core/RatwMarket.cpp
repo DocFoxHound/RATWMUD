@@ -1576,6 +1576,7 @@ void Society::setTradePoints(market::Topology topology)
     for (const auto& m : worldTopology_.markets)
         tillsWere[m.id] = m.tills;
     worldTopology_ = std::move(topology);
+    setOutCache_.clear();
     districtLeast_.clear();
     districtWarm_ = false;
     // (On load, unknown markets are dropped from the Board: doc 79, 5.2. A host's deleted community leaves nothing.)
@@ -2704,6 +2705,210 @@ Society::Listing Society::listing(const std::string& player, const std::string& 
         l.sell = {false, "Not worth the counting."};
     l.buyingToday = budgetLeft(till);
     return l;
+}
+
+std::string Society::priceWords(std::int64_t pennies, int listCount)
+{
+    // The shown price as it is said (doc 79, 11: "twelve for fourteen pence"; said "fourteen pence the dozen", which
+    // fits any sentence a price fits): the list's lot, in words to a hundred.
+    static const char* const Ones[] = {"no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+                                       "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+                                       "eighteen", "nineteen"};
+    static const char* const Tens[] = {"", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"};
+    const auto n = std::max<std::int64_t>(0, pennies);
+    std::string words;
+    if (n == 1)
+        words = "a penny";
+    else
+    {
+        if (n < 20)
+            words = Ones[n];
+        else if (n < 100)
+            words = std::string(Tens[n / 10]) + (n % 10 ? std::string("-") + Ones[n % 10] : std::string());
+        else if (n == 100)
+            words = "a hundred";
+        else
+            words = std::to_string(n);
+        words += " pence";
+    }
+    return listCount == 12 ? words + " the dozen" : listCount > 1 ? words + " for " + std::to_string(listCount) : words;
+}
+
+namespace
+{
+// A move's cause as talk says it (11): the Board's word turned the move's way, in the words section 11 gives ("travellers
+// buying", "someone sold a heap", "the wagon's late", "the Gull came in", "a good harvest", the event's own words); a
+// cause the move belies is "still" ("though the wagon came in"), so no line blames it.
+void talkCause(const market::Board& b, const std::string& market, const std::string& base, const std::string& cause, int trend,
+               std::string& kind, std::string& words)
+{
+    const bool up = trend > 0;
+    const auto still = [&](const std::string& w) {
+        kind = "still";
+        words = "though " + w;
+    };
+    const auto set = [&](const char* k, const std::string& w) {
+        kind = k;
+        words = w;
+    };
+    if (cause.empty() || cause == "players")
+        set("players", up ? "travellers buying" : "travellers selling");
+    else if (cause == "dump")
+        up ? still("someone sold a heap") : set("dump", "someone sold a heap");
+    else if (cause == "ripple")
+        set("ripple", up ? "the makers wanting more of it" : "plenty of what goes into it");
+    else if (cause == "caravan")
+        up ? still("the wagon came in") : set("caravan", "the wagon came in");
+    else if (cause == "late")
+        up ? set("late", "the wagon's late") : still("the wagon's late");
+    else if (cause == "raid")
+        up ? set("raid", "the wagon was robbed on the road") : still("the wagon was robbed on the road");
+    else if (cause == "harvest")
+        set("harvest", up ? "a short harvest" : "a good harvest");
+    else if (cause.rfind("ship", 0) == 0)
+    {
+        // (The ship by name while the timetable has it, as the price list's shipCause.)
+        const bool takes = cause == "ship takes", late = cause == "ship late";
+        const market::Ship* ship = nullptr;
+        for (const auto& s : b.ships)
+        {
+            if (s.port != market || (late ? s.status != "storm" : s.status != "in" && s.status != "sailed"))
+                continue;
+            const auto& goods = takes ? s.takes : s.brings;
+            if (std::any_of(goods.begin(), goods.end(), [&](const auto& g) { return g.first == base; }) && (!ship || s.day > ship->day))
+                ship = &s;
+        }
+        const std::string name = ship ? ship->name : "a ship";
+        if (late && ship && ship->lost)
+            up ? set("ship_lost", name + " lost at sea") : still(name + " was lost at sea");
+        else if (late)
+            up ? set("ship_late", name + " stormbound") : still(name + " is stormbound");
+        else if (takes)
+            up ? set("ship_takes", name + " buying") : still(name + " bought a load");
+        else
+            up ? still(name + " came in") : set("ship", name + " came in");
+    }
+    else if (cause == "event")
+    {
+        const market::StagedEvent* event = nullptr;
+        for (const auto& e : b.events)
+            if (e.market == market && (e.status == "on" || e.status == "over"))
+                for (const auto& [g, target] : e.goods)
+                    if (g == base && (!event || (e.status == "on") > (event->status == "on") ||
+                                      ((e.status == "on") == (event->status == "on") && e.day >= event->day)))
+                        event = &e;
+        double target = 0;
+        if (event)
+            for (const auto& [g, t] : event->goods)
+                if (g == base)
+                    target = t;
+        if (!event)
+            set("players", up ? "travellers buying" : "travellers selling");   // (Its event is gone: P is the rest.)
+        else if ((target > 0) == up)
+            set("event", event->words);
+        else
+            still(event->words);
+    }
+    else
+        set("players", up ? "travellers buying" : "travellers selling");
+}
+} // namespace
+
+Society::PriceMove Society::priceMove(const std::string& till, const std::string& item, const std::string& holder) const
+{
+    PriceMove m;
+    m.base = items::baseOf(item);
+    m.till = till;
+    m.item = item;
+    m.listCount = catalogPrice(item) < 3 ? 12 : 1;
+    std::string keeper;
+    if (till.rfind("till:", 0) == 0)
+        if (const auto post = state_.careers.positions.find(till.substr(5)); post != state_.careers.positions.end())
+            keeper = post->second.holder;
+    const bool stall = !keeper.empty() && atStall(keeper);
+    // (The same ladders as the shop list's row, so the price said is the price shown: listing above.)
+    m.shown = stagedLadder(till, item, m.listCount, true, holder, stall).lot;
+    auto still = ladderStart(till, item, holder);
+    still.P = still.push = 0;
+    m.rest = ladder(still, m.listCount, true, stall).lot;
+    m.trend = m.shown - m.rest >= 1 ? 1 : m.rest - m.shown >= 1 ? -1 : 0;
+    if (m.trend == 0)
+        return m;
+    const auto market = marketOf(till);
+    std::string cause;
+    if (const auto c = state_.board.cell.find(market); c != state_.board.cell.end())
+        if (const auto g = c->second.find(m.base); g != c->second.end())
+            cause = g->second.cause;
+    talkCause(state_.board, market, m.base, cause, m.trend, m.cause, m.causeWords);
+    // Who pushed it most the move's way (a players' move: talk's price_cause names them as the speaker knows them).
+    if (m.cause == "players" || m.cause == "dump")
+        if (const auto pm = state_.board.pushed.find(market); pm != state_.board.pushed.end())
+        {
+            double most = .05;
+            for (const auto& [who, goods] : pm->second)
+                if (goods.count(m.base))
+                    if (const double p = pushedBy(market, who, m.base) * m.trend; p > most)
+                        most = p, m.pusher = who;
+        }
+    return m;
+}
+
+std::vector<Society::PriceMove> Society::priceMoves(const std::string& market, const std::string& holder, std::size_t most,
+                                                    const std::function<int(const std::string& till)>& nearer) const
+{
+    std::vector<PriceMove> out;
+    const auto cells = state_.board.cell.find(market);
+    const auto* m = tradePoints().find(market);
+    if (cells == state_.board.cell.end() || !m || most == 0)
+        return out;
+    // Each good's shops in the market (those that set it out, by id), found once while the places and markets stand.
+    if (setOutRevision_ != placesRevision())
+    {
+        setOutCache_.clear();
+        setOutRevision_ = placesRevision();
+    }
+    auto cached = setOutCache_.find(market);
+    if (cached == setOutCache_.end())
+    {
+        cached = setOutCache_.emplace(market, std::map<std::string, std::vector<std::pair<std::string, std::string>>>{}).first;
+        auto tills = m->tills;
+        std::sort(tills.begin(), tills.end());
+        for (const auto& till : tills)
+            if (const auto* p = till.rfind("till:", 0) == 0 ? position(till.substr(5)) : nullptr)
+                for (const auto& ware : stagedShelfGoods(p->founder))
+                {
+                    auto& list = cached->second[items::baseOf(ware)];
+                    // (A shop's plain ware before its fine one: the price said is the plain one's where it sells both.)
+                    if (list.empty() || list.back().first != till)
+                        list.push_back({till, ware});
+                    else if (ware == items::baseOf(ware))
+                        list.back().second = ware;
+                }
+    }
+    for (const auto& [base, cell] : cells->second)
+    {
+        if (std::abs(pressure(market, base)) < 1e-3)
+            continue;
+        const auto shops = cached->second.find(base);
+        if (shops == cached->second.end() || shops->second.empty())
+            continue;
+        // The one shop the speaker would quote, moved or not: the nearest (its own, its cell's), else the first by id.
+        const auto* shop = &shops->second.front();
+        int best = nearer ? nearer(shop->first) : 0;
+        if (nearer)
+            for (const auto& t : shops->second)
+                if (const int r = nearer(t.first); r < best)
+                    best = r, shop = &t;
+        if (auto move = priceMove(shop->first, shop->second, holder); move.trend != 0)
+            out.push_back(std::move(move));
+    }
+    // (The largest in shown pennies first; the map's order, by good, between equals.)
+    std::stable_sort(out.begin(), out.end(), [](const PriceMove& x, const PriceMove& y) {
+        return std::abs(x.shown - x.rest) > std::abs(y.shown - y.rest);
+    });
+    if (out.size() > most)
+        out.resize(most);
+    return out;
 }
 
 void Society::marketTick(double absoluteDay)

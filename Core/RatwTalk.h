@@ -164,6 +164,15 @@ struct Settings
     std::set<std::string> concepts, repeat, alone;
     std::set<std::string> bestOnly;             // Concepts that always take their best tier (answers to players).
     std::set<std::string> ends;                 // Lines that end a chain when said ("Mm.": a shrug is the end of it).
+    // Salience (doc 79, 10.3): words a speaker never says while its facts hold (a failing shop never "can't complain"):
+    // a line holding any of them, filled in, is passed over for another alternative, and a turn with none left can't be
+    // spoken. `when` is the speaker's (self.), `never` lower case.
+    struct Salience
+    {
+        std::vector<Criterion> when;
+        std::vector<std::string> never;
+    };
+    std::vector<Salience> salience;
 };
 
 // The facts there are, and the values each may take.
@@ -253,6 +262,7 @@ private:
     bool criterion(const std::string& token, Where where, int speaker, Criterion& c, std::string& error) const;
     bool bareWord(const std::string& word, int speaker, Where where, Criterion& c) const;
     bool holds(const Criterion& c, const Query& q, int speaker) const;
+    bool muted(const std::string& said, const Query& q, int speaker) const;   // (Settings::salience.)
     const std::string* fact(Ns ns, const std::string& name, const std::string& full, const Query& q, int speaker) const;
     // Checks a template at load: every fact known, every symbol in plain; `longest` is its longest expansion (facts
     // counted as nothing).

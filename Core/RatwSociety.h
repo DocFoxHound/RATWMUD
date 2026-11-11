@@ -696,6 +696,26 @@ class Society
         std::string cause;
     };
     Listing listing(const std::string& player, const std::string& merchant, const std::string& item, const std::string& holder = {}) const;
+    // A price as talk speaks of it (doc 79, 11; Phase 8): the price a till's list shows now (the lot of `listCount`, a
+    // dozen for a good under 3p, for `holder`'s own ladder; "" is a traveller who has pushed nothing) and at rest (P = 0),
+    // the move's direction only where they differ by a penny or more (the shown-price gate, T1 and T17), and its cause as
+    // talk says it (topic.cause and topic.cause_words: the Board's cause turned the move's way, "still" where the latest
+    // cause runs against it). `pusher`: the holder whose own push on it is largest the move's way (a players' move).
+    struct PriceMove
+    {
+        std::string base, till, item;               // (item: the ware the list shows, its plain quality where it has one.)
+        int listCount = 1, trend = 0;
+        std::int64_t shown = 0, rest = 0;
+        std::string cause, causeWords, pusher;
+    };
+    PriceMove priceMove(const std::string& till, const std::string& item, const std::string& holder = {}) const;
+    // A market's largest moves in shown price (at most `most`, the largest first; only those whose shown price moved),
+    // each read off a till of the market that sets the good out, the one `nearer` ranks lowest first (the speaker's own
+    // shop and cell; the first by id else).
+    std::vector<PriceMove> priceMoves(const std::string& market, const std::string& holder, std::size_t most,
+                                      const std::function<int(const std::string& till)>& nearer = {}) const;
+    // The shown price in words, as talk and the Mind say it: "seven pence", "a penny", "fourteen pence the dozen".
+    static std::string priceWords(std::int64_t pennies, int listCount);
     // The Board's hour (decide() calls it while staged): the market day's turn at dawn (marketMorning: yesterday's net
     // positions ripple through the recipes, the day's counts reset, the sweep, the slider's step).
     void marketTick(double absoluteDay);
@@ -1233,6 +1253,10 @@ class Society
     };
     std::vector<Shopkeeping> shopkeeping_;
     mutable std::uint64_t rosterRevision_ = 1;      // Moved on whenever something the records rest on changes.
+    // Talk's prices (priceMoves): each market's goods and the tills that set them out, by id; found again when the places
+    // or the markets move (placesRevision, setTradePoints).
+    mutable std::map<std::string, std::map<std::string, std::vector<std::pair<std::string, std::string>>>> setOutCache_;   // (Till, ware.)
+    mutable std::uint64_t setOutRevision_ = 0;
     std::uint64_t bedsRevision_ = 0;                // (Of those moves, setBeds': placesRevision.)
     std::uint64_t recordsRevision_ = 0;             // The revision records_ were made at,
     const Society* recordsOf_ = nullptr;            // and by which society (a copy makes its own).

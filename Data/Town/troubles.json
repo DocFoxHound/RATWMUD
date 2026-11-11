@@ -1,6 +1,6 @@
 {
   "format": "ratw-troubles",
-  "about": "Residents' troubles (Docs/Design/57-changing-the-world.md, 3): what may weigh on a resident, read only from the simulation's real state, never invented. A resident carries one at a time: the first kind in `order` that holds. Each kind can be switched off (`on`). `briefing` is what the NPC Mind is told (in the second person, to the resident); `said` are the game's own answers to 'is something troubling you?' (one chosen by hash); `unfinished` is the line in the hearer's unfinished business ({who}: the resident as the hearer knows them). Blanks: {coins}, {days}, {need}, {other} (a resident as the troubled one knows them), {shop}, {age}, {them} and {their} (the child's pronouns, by sex). `limits`: a solved kind rests that many days for that resident; one of a resident's troubles solved by the same wolf a season; making peace needs trust 30 from both and the three within 4 tiles; speaking for a resident needs the employer's trust 30; sponsoring an apprenticeship, the master's trust 20. Pennies (an apprenticeship's `fee`) are as written, as the catalogue's prices are. Every number is a placeholder.",
+  "about": "Residents' troubles (Docs/Design/57-changing-the-world.md, 3): what may weigh on a resident, read only from the simulation's real state, never invented. A resident carries one at a time: the first kind in `order` that holds. Each kind can be switched off (`on`). `briefing` is what the NPC Mind is told (in the second person, to the resident); `said` are the game's own answers to 'is something troubling you?' (one chosen by hash), and `saidBy` the same as a household's band says them (doc 79, Phase 8: \"destitute\", \"poor\"), where it has one; `unfinished` is the line in the hearer's unfinished business ({who}: the resident as the hearer knows them). Blanks: {coins}, {days}, {need}, {other} (a resident as the troubled one knows them), {shop}, {age}, {them} and {their} (the child's pronouns, by sex). `limits`: a solved kind rests that many days for that resident; one of a resident's troubles solved by the same wolf a season; making peace needs trust 30 from both and the three within 4 tiles; speaking for a resident needs the employer's trust 30; sponsoring an apprenticeship, the master's trust 20. Pennies (an apprenticeship's `fee`) are as written, as the catalogue's prices are. Every number is a placeholder.",
   "order": ["short", "child", "work", "feud"],
   "speak": {"trust": 10, "familiarity": 20},
   "limits": {"restDays": 14, "perWolfDays": 92, "peaceTrust": 30, "peaceTiles": 4, "employerTrust": 30, "masterTrust": 20},
@@ -12,6 +12,10 @@
       "refillDays": 14,
       "briefing": "Your trouble (true): your household has money and food for only about {days} days. Speak of it if the talk turns that way or they ask how you are. Never ask outright for money.",
       "said": ["Money's tight. There's barely {days} days' food in the house, and that's if nobody falls ill.", "We're getting by. Just. The larder and the purse together might see us through {days} days."],
+      "saidBy": {
+        "destitute": ["There's nothing in the house. What's there won't see out {days} days, and then it's the chapel steps.", "We've no earner and next to no bread. {days} days, maybe, if we're careful. Then I don't know."],
+        "poor": ["Money's tight. There's barely {days} days' food in the house, and that's if nobody falls ill.", "We scrape by, week to week, and this week the scraping's thin. {days} days' food, and the rest is hope."]
+      },
       "unfinished": "{who}'s household is short of coin"
     },
     "child": {

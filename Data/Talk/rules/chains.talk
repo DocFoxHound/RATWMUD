@@ -17,7 +17,7 @@ then other: prices.answer_complaint
 
 rule prices_answer_merchant
 when concept=prices.answer_complaint self.role=merchant
-say Roads are bad, #address#. I pay more, you pay more. | Blame the carters, not me.
+say I pay more, you pay more, #address#. | Don't blame me. I only sell it.
 remember pair: talked_money 7d
 
 rule prices_answer_poor
@@ -30,7 +30,7 @@ say Is it? I hadn't noticed. | Surely not so very much.
 
 rule prices_answer
 when concept=prices.answer_complaint
-say #agree#. It's the caravans, they say. | #agree#. Nothing to be done.
+say #agree#. Hard on everyone. | #agree#. Nothing to be done.
 
 # Two friends passing: a greeting, and the answer as the answerer is today.
 rule greet_friend

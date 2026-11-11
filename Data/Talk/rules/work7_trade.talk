@@ -47,7 +47,7 @@ then other: prices.answer_complaint
 rule w7_pr_up_cook
 when concept=talk.prices topic.item=meal topic.dir=up job=cook|innkeeper
 cooldown 1d
-say Folk blame me for #topic.price#. I'm paying more for everything I put in it. | They'll say I'm greedy. I'm not. Flour's up, onions are up. | I'll lose custom over #topic.price#. You watch.
+say Folk blame me for #topic.price#. As if I set it for sport. | They'll say I'm greedy. I'm not. I'd charge less if I could. | I'll lose custom over #topic.price#. You watch.
 then other: prices.answer_complaint
 
 rule w7_pr_up_healer
@@ -64,15 +64,15 @@ say #topic.price#. I've not seen #topic.price# all week. | I'll go without, then
 then other: prices.answer_complaint
 
 rule w7_pr_up_market
-when concept=talk.prices topic.dir=up here.day=market
+when concept=talk.prices topic.dir=up here.day=market topic.cause=players
 cooldown 1d
-say Market day and they've all put their prices up. Every stall. | They see a crowd and smell #money#. | #topic.price# today. It was less yesterday.
+say Market day, and everyone buying. Every stall's dearer for it. | They see a crowd and smell #money#. | #topic.price# today. I'd hoped for less.
 then other: prices.answer_complaint
 
 rule w7_pr_up_winter
-when concept=talk.prices topic.dir=up here.season=winter
+when concept=talk.prices topic.dir=up here.season=winter topic.cause=late|raid
 cooldown 1d
-say Winter prices. Everything's dearer when the roads freeze. | Snow on the passes, coin out of our purses. | Cold months, dear months.
+say Winter roads. The wagon's held up and we pay for it. | Snow on the roads, coin out of our purses. | Cold months, slow wagons, dear #topic.what#.
 then other: prices.answer_complaint
 
 ## A rise, by one it doesn't hurt
@@ -93,12 +93,12 @@ then other: prices.answer_easy
 
 rule w7_prans_cook
 when concept=prices.answer_complaint job=cook|innkeeper topic.item=meal
-say Don't look at me. Everything I buy's dearer. | You think I'm getting rich? Look at my apron. | Flour, onions, firewood. All up.
+say Don't look at me. I don't set the world's prices. | You think I'm getting rich? Look at my apron. | I'd cook it for less if I could, believe me.
 then other: work.end
 
 rule w7_prans_healer
 when concept=prices.answer_complaint job=healer topic.item=herbs
-say I'm paying it too. And I need ten times what you do. | The gatherers came down off the hills with half-empty baskets. | Come to me if it's bad. We'll sort something.
+say I'm paying it too. And I need more of it than you do. | Herbs don't grow faster for the asking. | Come to me if it's bad. We'll sort something.
 then other: work.end
 
 rule w7_prans_farmer_up
@@ -107,7 +107,7 @@ say Good. Maybe somebody'll pay me fair, for once. | It's not the farmer getting
 then other: work.end
 
 rule w7_prans_carter
-when concept=prices.answer_complaint job=carter
+when concept=prices.answer_complaint job=carter topic.cause=late|raid
 say Roads are bad and bandits worse. Somebody pays for that. | I'm charging more because I'm risking more. | Every cart that doesn't come puts a penny on.
 then other: work.end
 
@@ -141,7 +141,7 @@ say Don't ask me. The House sets what it sets. | My House says it's the roads. M
 
 rule w7_prans_old
 when concept=prices.answer_complaint stage=old
-say I remember a meal for a penny. A penny! | It was worse the year of the long snow. | Up and down, all my life. Mostly up.
+say I remember when a meal cost next to nothing. | It was worse the year of the long snow. | Up and down, all my life. Mostly up.
 
 rule w7_prans_young
 when concept=prices.answer_complaint stage=young
@@ -195,13 +195,13 @@ then other: prices.answer_cheap
 rule w7_pr_down_healer
 when concept=talk.prices topic.item=herbs topic.dir=down job=healer
 cooldown 1d
-say Herbs at #topic.price#. I'll stock up the whole shelf. | Cheap herbs. I can treat the poor for nothing again. | Good gathering on the hills, I hear. Down to #topic.price#.
+say Herbs at #topic.price#. I'll stock up the whole shelf. | Cheap herbs. I can treat the poor for nothing again. | Down to #topic.price#. I'll not ask why.
 then other: prices.answer_cheap
 
 rule w7_pr_down_cook
 when concept=talk.prices topic.item=meal topic.dir=down job=cook|innkeeper
 cooldown 1d
-say Meals are down to #topic.price#. My takings'll be thin. | Somebody's undercutting me. #topic.price#! | Cheaper meals. Good for them, bad for me.
+say Meals are down to #topic.price#. My takings'll be thin. | #topic.price#! My takings won't like it. | Cheaper meals. Good for them, bad for me.
 then other: prices.answer_undercut
 
 rule w7_pr_down_merchant
@@ -232,12 +232,12 @@ say Is it? I leave all that to the cook. | My steward will be pleased, I suppose
 
 rule w7_cheap_merchant
 when concept=prices.answer_cheap role=merchant
-say Good for you. Bad for my till. | Means someone's flooding the market. | I'll hold mine back till it rises.
+say Good for you. Bad for my till. | I'll be selling at a loss, then. | I'll hold mine back till it rises.
 then other: work.end
 
 rule w7_cheap_cook
 when concept=prices.answer_cheap job=cook|innkeeper topic.item=meal
-say Cheaper for you, thinner for me. | Somebody's selling at a loss. They'll not last. | I'll match it. I'll have to.
+say Cheaper for you, thinner for me. | Thin suppers for the cook, then. | I'll match it. I'll have to.
 then other: work.end
 
 rule w7_cheap_healer
@@ -319,7 +319,7 @@ when concept=prices.answer_doubt honesty=sly
 say Ask no questions, pay less. | Who cares where it's from? | Shh. Don't spoil it.
 
 rule w7_doubt_merchant
-when concept=prices.answer_doubt role=merchant
+when concept=prices.answer_doubt role=merchant topic.cause=dump|players
 say Someone's dumping it. Mark my words. | It's somebody who needs coin fast. | Old stock, I'd bet. Sold off cheap.
 
 rule w7_doubt_nervy
@@ -329,31 +329,31 @@ say Oh, don't. Now I'll not eat it. | You've put me right off. | What if it's ba
 ## ---------------------------------------------------------------- Why a price fell (talk.price_cause)
 
 rule w7_pc_named
-when concept=talk.price_cause topic.known=yes
+when concept=talk.price_cause topic.known=yes topic.dir=down
 cooldown 1d
 say #topic.who# brought #topic.what# into town. Prices fell the next day. | Cheaper #topic.what#, and it's #topic.who# we've to thank. | #topic.who# came in with a load of #topic.what#. Shops were short.
 then other: prices.answer_cheap
 
 rule w7_pc_look
-when concept=talk.price_cause topic.known=no
+when concept=talk.price_cause topic.known=no topic.dir=down
 cooldown 1d
 say A stranger brought #topic.what# in. #topic.who#. Prices dropped like a stone. | #topic.who# sold the shops #topic.what#. Cheap, too. | Some traveller, #topic.who#, came with #topic.what#. Cheaper now.
 then other: prices.answer_cheap
 
 rule w7_pc_merchant
-when concept=talk.price_cause role=merchant
+when concept=talk.price_cause role=merchant topic.dir=down
 cooldown 1d
 say #topic.who# came in with #topic.what# and undercut the lot of us. | I'd stocked up on #topic.what#. Then #topic.who# turned up. | Can't sell #topic.what# at my price now. Thanks to #topic.who#.
 then other: prices.answer_undercut
 
 rule w7_pc_poor
-when concept=talk.price_cause wealth=poor|destitute
+when concept=talk.price_cause wealth=poor|destitute topic.dir=down
 cooldown 1d
 say Bless #topic.who#. I could afford #topic.what# again. | #topic.who# brought #topic.what#. I could kiss them. | Cheap #topic.what#, thanks to #topic.who#. I hope they come back.
 then other: prices.answer_cheap
 
 rule w7_pc_suspicious
-when concept=talk.price_cause topic.known=no honesty=guarded|sly
+when concept=talk.price_cause topic.known=no honesty=guarded|sly topic.dir=down
 cooldown 2d
 say #topic.who# sold #topic.what# cheap. Where'd they get it, I'd like to know. | Cheap #topic.what# from a stranger. Stolen, I'd bet. | Who sells #topic.what# under price? #topic.who#, that's who.
 then other: prices.answer_doubt
@@ -418,7 +418,7 @@ say Another caravan. We need more blades on that road. | The captain wants volun
 then other: caravan.answer
 
 rule w7_cv_errand
-when concept=talk.caravan errand=caravan
+when concept=talk.caravan errand=caravan topic.kind!=news
 priority 1
 cooldown 1d
 say I'm riding guard on the next one out. | They've paid me to walk with the wagons. Pray for me. | I'm off with the carts. Don't wait up.

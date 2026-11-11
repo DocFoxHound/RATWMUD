@@ -698,7 +698,7 @@ then other: town.answer
 rule n7_ro_shopkeeper_short
 when concept=talk.smalltalk|talk.prices self.shopkeeper pair.customer=no
 cooldown 3d
-say #self.shopkeeper# gave me short weight again. I'm sure of it. | Went to #self.shopkeeper#'s for candles. The price had grown legs. | #self.shopkeeper# never smiles. Not once in ten years.
+say #self.shopkeeper# gave me short weight again. I'm sure of it. | Went to #self.shopkeeper#'s for candles. Came out with soap. Don't ask. | #self.shopkeeper# never smiles. Not once in ten years.
 remember pair: on=answer 1h
 remember pair: ans=shop 1h
 then other: town.answer

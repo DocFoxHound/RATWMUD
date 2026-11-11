@@ -4,22 +4,22 @@
 # ---------------------------------------------------------------- Prices
 
 scene re_prices_rain_coast
-when topic=prices here.region=rain_coast
-a : The Fish Hall's raised the price of everything that swims. | #topic.what# at #topic.price#. The Houses must be laughing. | Even the rain will cost money soon.
+when topic=prices topic.dir=up here.region=rain_coast
+a : Dear as ever in this city, and wetter. | #topic.what# at #topic.price#. The Houses must be laughing. | Even the rain will cost money soon.
 b[noble] : Prices follow the market.
 b[fisher] : I get none of it. The Fish Hall takes it all.
 b : The Houses always win. | Ha. Don't give them ideas. | Typical Ridgemere.
 a : Always. | They'll think of it. | Typical.
 
 scene re_prices_marches
-when topic=prices here.region=ridgemere
+when topic=prices topic.dir=up here.region=ridgemere
 a : #topic.what# at #topic.price#. The wharf's at it again. | Prices at the Sump Market are a scandal. | The Heights don't even notice prices.
 b[merchant] : The Harbourmaster sets the dues. We just pay them.
 b : The wharf always is. | Always. | They never do.
 a : Always. | A scandal. | Never.
 
 scene re_prices_accord
-when topic=prices here.region=mountains
+when topic=prices topic.dir=up here.region=mountains
 a : Mountain prices again: #topic.what# at #topic.price#. | Everything climbs up here, prices too. | The lowland carts charge what they like.
 b[carter] : You try hauling it up.
 b : Always the way. | Ha. | They do.
@@ -35,14 +35,14 @@ a : Everywhere. | No. | Very.
 # ---------------------------------------------------------------- Caravans and bandits
 
 scene re_caravan_crossing
-when topic=caravan here.region=larkfield
+when topic=caravan here.region=larkfield topic.kind!=news
 a : The #topic.where# caravan always stops here. Always. | Carters from #topic.where# filled the yard. | Wagons to and from #topic.where# all week.
 b[innkeeper] : And every one of them hungry.
 b : That's Larkfield. | Busy. | Good for trade.
 a : That it is. | Very. | Very.
 
 scene re_caravan_coast
-when topic=caravan here.region=rain_coast
+when topic=caravan here.region=rain_coast topic.kind=arrived
 a : The #topic.where# wagons came in soaked. | The road's mud to the axles; the #topic.where# carts were late. | Wagons from #topic.where# brought dry goods. Rare thing.
 b[carter] : The rain eats wheels.
 b : Of course they did. | Always is. | Very rare.

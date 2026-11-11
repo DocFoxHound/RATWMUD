@@ -441,7 +441,7 @@ std::string World::departureNotice(const market::Departure& d, bool atEnd) const
     const auto weekday = calendar::weekdayName(calendar::weekdayOf(double(d.day) + d.hour / 24));
     std::vector<std::string> goods;
     for (const auto& [g, n] : d.manifest)
-        goods.push_back(goodWords(g));
+        goods.push_back(cargoWords(g));             // (A thing counted by the piece in the plural: Phase 8's wording.)
     // The shop at the far end that sets out the first good.
     std::string shop;
     if (!d.manifest.empty())
@@ -963,7 +963,7 @@ void World::stagedArrival(Caravan& c)
             if (const double P = society_.pressure(c.from, g); std::abs(P) > most)
             {
                 most = std::abs(P);
-                const auto good = goodWords(g);
+                const auto good = cargoWords(g);
                 words = good + (pluralGood(good) ? " are " : " is ") + (P < 0 ? "cheap in " : "dear in ") + marketWords(c.from);
             }
     if (words.empty())

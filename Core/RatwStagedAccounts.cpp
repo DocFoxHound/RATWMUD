@@ -990,6 +990,20 @@ std::string Society::meansNote(const std::string& id) const
             note += " Times here: " + std::string(Times[times + 2]) + (cause.empty() ? std::string() : ", since " + cause) + ".";
         }
     }
+    // The market's largest move in shown price, with that price and its cause (11, Phase 8: "Salt dear, four pence the
+    // dozen: the wagon was robbed on the road."), so the Mind never invents a figure or a reason.
+    if (!s->market.empty())
+        if (const auto moves = priceMoves(s->market, {}, 1); !moves.empty())
+        {
+            const auto& m = moves.front();
+            std::string name = itemName(m.base);
+            if (const auto cut = name.find(" ("); cut != std::string::npos)
+                name.erase(cut);
+            if (!name.empty())
+                name[0] = char(std::toupper(static_cast<unsigned char>(name[0])));
+            note += " " + name + (m.cause == "still" ? " still " : " ") + (m.trend > 0 ? "dear" : "cheap") + ", " +
+                    priceWords(m.shown, m.listCount) + (m.cause == "still" ? ", " : ": ") + m.causeWords + ".";
+        }
     if (note.size() > 300)
         note.resize(300);
     return note;

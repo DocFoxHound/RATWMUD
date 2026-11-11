@@ -8,14 +8,14 @@ a : You're a good soul. | Clever. | Can't be helped.
 
 scene pr2_herbs_up_gather
 when topic=prices topic.item=herbs topic.dir=up
-a : Herbs are dear. I'm going gathering this Restday. | At #topic.price# a bundle, the hedges are gold. | I know a patch nobody else knows.
+a : Herbs are dear. I'm going gathering this Restday. | At #topic.price#, the hedges are gold. | I know a patch nobody else knows.
 b[old] : I know every herb patch from here to the hills. Not telling.
 b[child] : Can I come? I know which ones are poison!
 b : Take me with you. | Ha, true. | Tell me where.
 a : Maybe. | They are. | Not a chance.
 
 scene pr2_herbs_down_glut
-when topic=prices topic.item=herbs topic.dir=down
+when topic=prices topic.item=herbs topic.dir=down topic.cause=dump|players|harvest|caravan
 a : Everyone's selling herbs this week. | Herbs going for #topic.price#, cheap as dirt. | The stalls are drowning in herbs.
 b[merchant] : Too many sellers. Nobody makes a living.
 b[cook] : Cheap herbs, tasty stew.
@@ -31,14 +31,14 @@ a : Why? | I'm still hungry. | Promise?
 
 scene pr2_meal_up_innkeeper
 when topic=prices topic.item=meal topic.dir=up b.job=innkeeper|cook
-a : Your soup's gone up a penny. | #topic.price# for a bowl of stew? | Are you trying to starve us?
-b : My suppliers raised theirs. | Grain's dear. Everything's dear. | I'm trying not to starve myself.
-a : Everyone's suppliers did. | Hm. | Fair enough.
+a : Your soup's gone up. | #topic.price# for a bowl of stew? | Are you trying to starve us?
+b : I've costs too. | It's dear everywhere. | I'm trying not to starve myself.
+a : Everyone's got costs. | Hm. | Fair enough.
 
 scene pr2_meal_down_feast
 when topic=prices topic.item=meal topic.dir=down
 a : Food's cheap, let's have a feast! | With meals at #topic.price#, I ate twice yesterday. | The granary must be bursting.
-b[farmer] : Good harvest, low prices. We work twice as hard for less.
+b[farmer topic.cause=harvest] : Good harvest, low prices. We work twice as hard for less.
 b : Count me in. | Lucky you. | Must be.
 a : Tonight, then. | Very. | Good.
 

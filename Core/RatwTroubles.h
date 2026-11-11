@@ -24,6 +24,9 @@ struct Kind
     bool on = true;
     std::string briefing, unfinished;
     std::vector<std::string> said;
+    // The same answer as a band says it (doc 79, 6.7 and 11; Phase 8: the destitute and the poor aren't short alike):
+    // "destitute", "poor" -> lines, used where the troubled one's household has that band; `said` otherwise.
+    std::map<std::string, std::vector<std::string>> saidBy;
     double underDays = 7, refillDays = 14;          // short
     int youngest = 0, oldest = 200;                 // child (the youth's age), work (the wolf's)
     std::int64_t fee = 20;                          // child: an apprenticeship's sponsorship

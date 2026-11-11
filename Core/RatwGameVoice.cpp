@@ -112,8 +112,10 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
         }
         return std::string();
     };
-    // The same thing asked again, soon after: "as I said".
-    if (!asked.empty() && last.asked == asked && world_.time() - last.at < RepeatWithin && !last.answer.empty())
+    // The same thing asked again, soon after: "as I said". Never a keeper's prices (doc 79, 11, T17: the list may have
+    // moved since; the answer is worked out again).
+    if (!asked.empty() && last.asked == asked && world_.time() - last.at < RepeatWithin && !last.answer.empty() &&
+        voices_.intent(heard, npc->name).id != "trade")
         if (const auto line = say("repeat", band, {{"answer", last.answer}}); !line.empty())
             return remember(last.answer, line);
     const auto intent = voices_.intent(heard, npc->name);
@@ -139,10 +141,11 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
     {
         if (society.merchant(npcId))
         {
-            // Two of the shop's own wares on its shelf, at the price its list shows (the dozen for a good under 3p),
-            // meals and herbs first where it deals in them; only the wares it deals in are ever said to be out (Review A:
-            // a smith once said "I'm out of meals. I'm out of herbs." beside a full list). Phase 8 (7.8) writes the
-            // keeper's answer whole.
+            // The keeper's answer (doc 79, 7.8; Phase 8): two of the shop's own wares on its shelf, at the price its list
+            // shows this wolf (the dozen for a good under 3p), meals and herbs first where it deals in them; only the
+            // wares it deals in are ever said to be out (Review A: a smith once said "I'm out of meals. I'm out of
+            // herbs." beside a full list); then the ware whose shown price has moved most, dearer or cheaper, with what
+            // moved it, as talk says it ("Salt's dear just now: the wagon's late.").
             const auto* stock = society.account(society.tillOf(npcId));
             auto wares = society.wares(npcId);
             std::stable_partition(wares.begin(), wares.end(), [](const std::string& w) { return w == "meal" || w == "herbs"; });
@@ -174,6 +177,23 @@ std::string Game::gameAnswer(const std::string& npcId, const std::string& player
                 answer += (answer.empty() ? "" : " ") + g + ".";
             if (answer.empty())
                 answer = "My shelves are bare just now.";
+            const auto holder = accountOf(playerId);
+            Society::PriceMove moved;
+            for (const auto& item : wares)
+                if (stock && Society::stock(*stock, item) > 0)
+                    if (auto m = society.priceMove(society.tillOf(npcId), item, holder);
+                        m.trend != 0 && std::abs(m.shown - m.rest) > std::abs(moved.shown - moved.rest))
+                        moved = std::move(m);
+            if (moved.trend != 0)
+            {
+                auto what = World::cargoWords(moved.base);
+                const auto is = World::pluralGood(what) ? " are " : " is ";
+                if (!what.empty())
+                    what[0] = char(std::toupper(static_cast<unsigned char>(what[0])));
+                const auto dear = moved.trend > 0 ? "dear" : "cheap";
+                answer += " " + what + is + (moved.cause == "still" ? std::string("still ") + dear + ", " + moved.causeWords
+                                                                    : dear + std::string(" just now: ") + moved.causeWords) + ".";
+            }
         }
         else
         {

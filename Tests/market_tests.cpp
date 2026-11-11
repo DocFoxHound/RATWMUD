@@ -161,6 +161,47 @@ void thePieces()
     expect(market::timesOf(-100) == 0 && market::timesOf(0) == 2 && market::timesOf(100) == 4, "Times from the slider");
 }
 
+// Talk names a price only once the list's price moved, and names the list's price (doc 79, 11, T1 and T17; Phase 8): a
+// loaf bought moves nothing a player sees, so nothing is said of it; ten loaves move the dozen by a penny, and talk's price
+// is the dozen each traveller's own list shows, with its cause and the traveller whose buying moved it.
+void talkSaysTheShownPrice()
+{
+    expect(Society::priceWords(1, 1) == "a penny" && Society::priceWords(7, 1) == "seven pence" &&
+               Society::priceWords(14, 12) == "fourteen pence the dozen" && Society::priceWords(23, 1) == "twenty-three pence" &&
+               Society::priceWords(40, 1) == "forty pence" && Society::priceWords(250, 1) == "250 pence",
+           "a price in words: " + Society::priceWords(14, 12) + ", " + Society::priceWords(23, 1));
+    auto s = world({{"baker", "baker at The Loaf", "ridgemere"}}, {{"ridgemere", 620}});
+    stock(s, "baker", "bread", 2000);
+    const auto till = s.tillOf("baker");
+    const auto ada = player(s, "player-ada");
+    const auto bo = player(s, "player-bo");
+    expect(s.priceMoves("ridgemere", bo, 3).empty(), "at rest, no price to talk of");
+    expect(s.trade(ada, "baker", "bread", 1, true).ok, "a loaf bought");
+    expect(s.pressure("ridgemere", "bread") > 0 && s.listing(bo, "baker", "bread").trend == 0 && s.priceMoves("ridgemere", bo, 3).empty(),
+           "a loaf moves P, not the list's dozen: nothing to talk of (the shown-price gate)");
+    expect(s.trade(ada, "baker", "bread", 9, true).ok, "nine more");
+    const auto row = s.listing(bo, "baker", "bread");
+    const auto moves = s.priceMoves("ridgemere", bo, 3);
+    expect(row.trend == 1 && moves.size() == 1 && moves.front().base == "bread" && moves.front().till == till,
+           "ten loaves: the dozen moved, and talk has it");
+    const auto& m = moves.front();
+    expect(m.shown == row.listPrice && m.listCount == 12 && m.trend == 1 && m.cause == "players" && m.causeWords == "travellers buying",
+           "the price said is the dozen on Bo's list: " + std::to_string(m.shown) + " against " + std::to_string(row.listPrice));
+    expect(m.pusher == ada, "and the traveller whose buying moved it: " + m.pusher);
+    const auto mine = s.listing(ada, "baker", "bread");
+    expect(s.priceMove(till, "bread", ada).shown == mine.listPrice, "and Ada hears the dozen on her own list");
+    // A wagon in pulls it back below rest: cheaper, put down to the wagon; a cause against the move is "still", never blamed.
+    s.setPressure("ridgemere", "bread", -.3, "caravan");
+    auto down = s.priceMove(till, "bread", bo);
+    expect(down.trend == -1 && down.cause == "caravan" && down.causeWords == "the wagon came in" &&
+               down.shown == s.listing(bo, "baker", "bread").listPrice,
+           "cheaper since the wagon came in: " + down.causeWords);
+    s.setPressure("ridgemere", "bread", .3, "caravan");
+    const auto still = s.priceMove(till, "bread", bo);
+    expect(still.trend == 1 && still.cause == "still" && still.causeWords == "though the wagon came in",
+           "dear still, though the wagon came in: " + still.cause);
+}
+
 void breadInRidgemere()
 {
     auto s = world({{"baker", "baker at The Loaf", "ridgemere"}}, {{"ridgemere", 620}});
@@ -922,6 +963,23 @@ void theKeepersAnswer()
             expect(named, "a ware named at its listed price: " + smith + " (" + ware + " " + std::to_string(row.listPrice) + "p)");
         }
     expect(named, "the smith names a ware of his own: " + smith);
+    // The ware whose shown price moved, with what moved it (7.8, Phase 8), and never one that didn't move.
+    expect(!contains(smith, "just now"), "nothing moved, nothing said of it: " + smith);
+    s.setPressure(s.marketOf(till), "nails", .3, "late");
+    const auto nailsRow = s.listing(town.ash.entityId, "uf", "nails", town.g.accountOf(town.ash.entityId));
+    expect(nailsRow.trend == 1, "nails listed dearer: " + std::to_string(nailsRow.listPrice) + " P " +
+                                    std::to_string(s.pressure(s.marketOf(till), "nails")) + " at " + s.marketOf(till));
+    const auto dear = ask("uf", "Ferris", "smith at the forge", "k3");
+    expect(contains(dear, "Nails are dear just now: the wagon's late."), "nails dear, as the wagon's late: " + dear);
+    // And the town talks of it at the list's price (11): world.nails_price, and the price topic's words.
+    const auto moves = w.talkPrices("uf");
+    expect(!moves.empty() && moves.front().base == "nails" && moves.front().shown == nailsRow.listPrice && moves.front().cause == "late",
+           "the town's talk has the nails at the list's price");
+    expect(Society::priceWords(moves.front().shown, moves.front().listCount) == "four pence" || moves.front().shown != 4,
+           "said in words: " + Society::priceWords(moves.front().shown, moves.front().listCount));
+    const auto q = town.g.talkQuery("uf", "ui", "talk.smalltalk");
+    expect(q.facts.count("world.nails_price") && q.facts.at("world.nails_price") == "up", "world.nails_price=up");
+    expect(!q.facts.count("world.sword_price"), "and only goods the library lists");
     const auto inn = ask("ui", "Keeper u", "keeping the inn", "k2");
     expect(contains(inn, "meal is") || contains(inn, "out of meals"), "the inn's keeper still speaks of meals: " + inn);
     fs::remove_all(root);
@@ -1309,6 +1367,7 @@ int main(int argc, char** argv)
         everyGoodHasADepthGroup();
         thePieces();
         breadInRidgemere();
+        talkSaysTheShownPrice();
         aLonePlayersDayInColdwater();
         hidesAtColdwater();
         anOreDumpRipples();

@@ -5,10 +5,10 @@
 
 scene pr_herbs_up
 when topic=prices topic.item=herbs topic.dir=up
-a[healer] : Herbs at #topic.price# a bundle. How am I to treat anyone? | I can't afford my own remedies at #topic.price#.
-a[cook] : #topic.price# for a bundle of herbs. My stew will taste of nothing.
+a[healer] : Herbs at #topic.price#. How am I to treat anyone? | I can't afford my own remedies at #topic.price#.
+a[cook] : #topic.price# for herbs. My stew will taste of nothing.
 a : Have you seen what herbs cost now? #topic.price#! | Herbs at #topic.price#. Robbery. | Who can afford herbs at #topic.price#?
-b[merchant] : The store's near empty. I pay more, you pay more.
+b[merchant] : I pay more, you pay more.
 b[farmer] : Then gather your own. The hedges are full of them.
 b[old] : In my day you picked them free by the road.
 b : I saw. It's a scandal. | Everything's dearer this year. | I'll do without.
@@ -26,7 +26,7 @@ scene pr_meal_up
 when topic=prices topic.item=meal topic.dir=up
 a[child] : Why is supper so small? | Mama says bread costs too much now.
 a : A hot meal costs #topic.price# now. #topic.price#! | Have you priced a meal lately? | I paid #topic.price# for a bowl of soup.
-b[innkeeper] : Grain's dear, so food's dear. I don't set the price of grain.
+b[innkeeper] : Don't look at me. I only cook it.
 b[farmer] : Don't look at me. I see none of that coin.
 b[old] : I remember famine years. This isn't one. Yet.
 b : Everything's going up. | We'll be eating grass soon. | Cook at home, then.
@@ -36,15 +36,15 @@ scene pr_meal_down
 when topic=prices topic.item=meal topic.dir=down
 a : Food's cheaper this week. | A meal for #topic.price#. I nearly fell over. | The stores must be full.
 b[innkeeper] : Cheaper for you. My margins are thin as broth.
-b[farmer] : Good harvest. Somebody should thank us.
+b[farmer topic.cause=harvest] : Good harvest. Somebody should thank us.
 b : Thank the stars. | Eat while you can. | Long may it last.
 a : Ha. | I intend to. | It won't.
 
 scene pr_general_grumble
 when topic=prices
 weight 0.6
-a : Prices, prices. That's all anyone talks about now. | My purse gets lighter every market. | Everything's #topic.price# this week, or near enough.
-b[merchant] : Blame the roads. Every cart that's robbed is a price that rises.
+a : Prices, prices. That's all anyone talks about now. | My purse gets lighter every market. | Everything costs the earth this week, or near enough.
+b[merchant] : Don't blame me. I pay what you pay.
 b[official] : The council is aware of the matter.
 b : Times are hard. | Mine too. | It'll settle.
 a : The council's always aware. Never does anything. | They are. | It had better.

@@ -1,0 +1,510 @@
+# Prices as the Market Board moves them (Docs/Design/79-a-staged-economy.md, section 11; Phase 8): the market's three
+# largest moves in SHOWN price, any good, with the cause of the move as the Board has it. Facts in hand:
+#   topic.item   the good as a match key ("herbs", "meal", else plain words: "salt", "hides", "iron ore")
+#   topic.what   the good mid-sentence ("salt", "hides"; "a meal": the lines that need a mass noun leave meal to the
+#                older lines with topic.item!=meal), topic.is ("is"/"are", agreeing with it)
+#   topic.dir    up | down;  topic.price  the list's price in words ("seven pence", "fourteen pence the dozen")
+#   topic.cause  players, dump, ripple, caravan, late, raid, harvest, ship, ship_takes, ship_late, ship_lost, event,
+#                still (the latest cause runs against the move);  topic.cause_words  the same in words
+# The shown-price gate: no figure is ever written here; the only price said is #topic.price#. A line that says why a
+# price moved tests its topic.cause. Openers hand on to answers keyed on what was said (pair.mem.jk).
+#   prices.answer_cause  a rise put down to its cause (jk: trav, late, raid, harvest, ship)
+#   prices.answer_glut   a fall from someone selling a heap
+#   prices.close         a keeper's bad week, answered
+
+## ---------------------------------------------------------------- A rise, by band and class
+
+rule e8p_up_rich_upper
+when concept=talk.prices topic.dir=up topic.item!=meal self.wealth=rich self.class=upper
+cooldown 1d
+say #topic.what.capitalize# dearer? The steward will mention it at dinner, I expect. | One hears #topic.what# #topic.is# dear. The Council will hear of it, no doubt. | Dear #topic.what#. Mother says the Houses ought to set an example.
+then other: prices.answer_easy
+
+rule e8p_up_rich_trade
+when concept=talk.prices topic.dir=up topic.item!=meal self.wealth=rich self.class=middle|lower
+cooldown 1d
+say #topic.what.capitalize# at #topic.price#. I'll pay it, but I'll not like it. | Dear #topic.what#. I'll pass it on in my own prices, that's all. | I didn't build my trade paying #topic.price# for #topic.what#.
+then other: prices.answer_easy
+
+rule e8p_up_comfortable
+when concept=talk.prices topic.dir=up topic.item!=meal self.wealth=comfortable
+cooldown 1d
+say #topic.what.capitalize# at #topic.price#. We'll manage, but I noticed. | That's #topic.what# off the list for a week or two. | #topic.price# for #topic.what#. Still, there's worse off than us.
+then other: prices.answer_complaint
+
+rule e8p_up_comfortable_upper
+when concept=talk.prices topic.dir=up topic.item!=meal self.wealth=comfortable|poor self.class=upper
+cooldown 1d
+say #topic.price# for #topic.what#. One economises. Quietly. | Mother would never have paid #topic.price# for #topic.what#. Nor shall I. | We keep up appearances. #topic.what.capitalize# at #topic.price# makes it harder.
+then other: prices.answer_complaint
+
+rule e8p_up_poor_lower
+when concept=talk.prices topic.dir=up topic.item!=meal self.wealth=poor self.class=lower
+cooldown 1d
+say #topic.price# for #topic.what#. That's my supper gone. | I counted my pennies twice. Still no #topic.what#. | #topic.what.capitalize# at #topic.price#. Who are they selling it to? Not us.
+then other: prices.answer_complaint
+
+rule e8p_up_poor_fallen
+when concept=talk.prices topic.dir=up topic.item!=meal self.wealth=poor self.class=middle|upper
+cooldown 1d
+say We used to buy #topic.what# without thinking. Not at #topic.price#. | #topic.price# for #topic.what#. I'll not tell the family. | There was a time I'd not have looked twice at #topic.what#. Now I look and walk on.
+then other: prices.answer_complaint
+
+rule e8p_up_destitute
+when concept=talk.prices topic.dir=up topic.item!=meal self.wealth=destitute
+cooldown 1d
+say #topic.what.capitalize#? I'd not know. I've no pennies to look with. | Dear, is it? Everything's dear when you've nothing. | #topic.price#. Might as well be the moon.
+then other: prices.answer_complaint
+
+rule e8p_up_hungry
+when concept=talk.prices topic.dir=up topic.item!=meal self.hungry=yes
+cooldown 1d
+say My belly says buy and my purse says no. #topic.price#. | Hungry, and #topic.what# at #topic.price#. | I'd eat #topic.what# off the stall if they'd let me.
+then other: prices.answer_complaint
+
+rule e8p_up_any
+when concept=talk.prices topic.dir=up topic.item!=meal
+cooldown 1d
+say #topic.what.capitalize# #topic.is# dear just now. #topic.price#. | Have you priced #topic.what#? #topic.price#, now. | #topic.price# for #topic.what#. I stood and looked at it.
+then other: prices.answer_complaint
+
+rule e8p_up_tavern
+when concept=talk.prices topic.dir=up topic.item!=meal here.place=tavern
+cooldown 1d
+say Here's to #topic.what# at #topic.price#. May it choke the seller. | Talk of anything but #topic.what#. I'm drinking to forget it.
+then other: prices.answer_complaint
+
+## ---------------------------------------------------------------- A fall, by band and class
+
+rule e8p_down_rich_upper
+when concept=talk.prices topic.dir=down topic.item!=meal self.wealth=rich self.class=upper
+cooldown 1d
+say #topic.what.capitalize# cheaper? I'd not noticed. The household sees to that. | One hears #topic.what# #topic.is# cheap. How nice for the town.
+then other: prices.answer_cheap
+
+rule e8p_down_rich_trade
+when concept=talk.prices topic.dir=down topic.item!=meal self.wealth=rich self.class=middle|lower
+cooldown 1d
+say Cheap #topic.what#. I'll lay in a cartload while it lasts. | #topic.price#! Money's made buying, not selling. I'll have some. | Cheap #topic.what#. My storeroom's hungry.
+then other: prices.answer_cheap
+
+rule e8p_down_comfortable
+when concept=talk.prices topic.dir=down topic.item!=meal self.wealth=comfortable
+cooldown 1d
+say #topic.what.capitalize# at #topic.price#. I'll get a little extra in. | A bit cheaper. That'll ease the week. | Cheap #topic.what#. Mind, I'll believe it when I've paid it.
+then other: prices.answer_cheap
+
+rule e8p_down_poor
+when concept=talk.prices topic.dir=down topic.item!=meal self.wealth=poor
+cooldown 1d
+say #topic.price#! I can have #topic.what# this week. | Cheaper #topic.what#. The pups'll eat. | #topic.what.capitalize# down. First good word all month.
+then other: prices.answer_cheap
+
+rule e8p_down_destitute
+when concept=talk.prices topic.dir=down topic.item!=meal self.wealth=destitute
+cooldown 1d
+say Cheap or dear, I've not a penny for #topic.what#. | Cheaper's no good to an empty purse. | Down, is it? Still too dear for me.
+then other: prices.answer_cheap
+
+rule e8p_down_any
+when concept=talk.prices topic.dir=down topic.item!=meal
+cooldown 1d
+say #topic.what.capitalize# #topic.is# cheap just now. #topic.price#. | Have you seen #topic.what#? Down to #topic.price#. | #topic.price# for #topic.what#. I'll take that.
+then other: prices.answer_cheap
+
+## ---------------------------------------------------------------- Why it moved: the Board's cause, said right
+
+rule e8p_c_players_up
+when concept=talk.prices topic.dir=up topic.cause=players topic.item!=meal
+priority 1
+cooldown 1d
+say Travellers buying it up. #topic.what.capitalize# at #topic.price# now. | Every stranger in town wants #topic.what#. Up it goes. | The travellers are buying #topic.what# like there's no tomorrow.
+then other: prices.answer_cause
+remember pair: jk=trav 2m
+
+rule e8p_c_players_down
+when concept=talk.prices topic.dir=down topic.cause=players topic.item!=meal
+priority 1
+cooldown 1d
+say Travellers selling #topic.what# to the shops. Down to #topic.price#. | The strangers keep bringing #topic.what# in. Cheap now. | Some traveller's been selling the shops #topic.what#.
+then other: prices.answer_cheap
+
+rule e8p_c_dump
+when concept=talk.prices topic.dir=down topic.cause=dump topic.item!=meal
+priority 1
+cooldown 1d
+say Someone sold the shops a heap of #topic.what#. #topic.price# now. | A whole heap of #topic.what# came over the counter. Cheap as you like. | Someone emptied a pack of #topic.what# at the shops. Down it went.
+then other: prices.answer_glut
+
+rule e8p_c_ripple_up
+when concept=talk.prices topic.dir=up topic.cause=ripple topic.item!=meal
+priority 1
+cooldown 1d
+say #topic.what.capitalize# #topic.is# dear. The makers want more of it, they say. | All the workshops want #topic.what# at once. #topic.price#.
+then other: prices.answer_complaint
+
+rule e8p_c_ripple_down
+when concept=talk.prices topic.dir=down topic.cause=ripple topic.item!=meal
+priority 1
+cooldown 1d
+say #topic.what.capitalize# cheaper. Plenty of what goes into it, I hear. | #topic.price#. Whatever they make it from, there's a glut of it.
+then other: prices.answer_cheap
+
+rule e8p_c_caravan
+when concept=talk.prices topic.dir=down topic.cause=caravan topic.item!=meal
+priority 1
+cooldown 1d
+say The wagon came in. #topic.what.capitalize# at #topic.price# again. | Wagon's in, and #topic.what# with it. Cheaper. | The carters brought #topic.what#. About time.
+then other: prices.answer_cheap
+
+rule e8p_c_late
+when concept=talk.prices topic.dir=up topic.cause=late topic.item!=meal
+priority 1
+cooldown 1d
+say The wagon's late, and #topic.what# with it. #topic.price#. | No wagon, no #topic.what#. #topic.price# till it comes. | Waiting on the wagon, and paying #topic.price# meanwhile.
+then other: prices.answer_cause
+remember pair: jk=late 2m
+
+rule e8p_c_raid
+when concept=talk.prices topic.dir=up topic.cause=raid topic.item!=meal
+priority 1
+cooldown 1d
+say The wagon was robbed on the road. #topic.what.capitalize# #topic.is# dear for it. | #bandits.capitalize# took the #topic.what#. Now it's #topic.price#. | #topic.price# for #topic.what#. Thank the road for that.
+then other: prices.answer_cause
+remember pair: jk=raid 2m
+
+rule e8p_c_harvest_down
+when concept=talk.prices topic.dir=down topic.cause=harvest topic.item!=meal
+priority 1
+cooldown 1d
+say A good harvest. #topic.what.capitalize# at #topic.price#. | The farm carts came in heavy. Cheap #topic.what#. | Full carts from the farms. Down it comes.
+then other: prices.answer_cheap
+
+rule e8p_c_harvest_up
+when concept=talk.prices topic.dir=up topic.cause=harvest topic.item!=meal
+priority 1
+cooldown 1d
+say A short harvest. #topic.what.capitalize# #topic.is# dear. | The farm carts came in light. #topic.price# now. | The cart didn't come, and #topic.what# went up.
+then other: prices.answer_cause
+remember pair: jk=harvest 2m
+
+rule e8p_c_ship
+when concept=talk.prices topic.dir=down topic.cause=ship topic.item!=meal
+priority 1
+cooldown 1d
+say #world.ship_name.capitalize# came in. #topic.what.capitalize# at #topic.price#. | A ship in, and #topic.what# cheaper for it. | The Wharf's full of #topic.what#. Down to #topic.price#.
+then other: prices.answer_cheap
+
+rule e8p_c_ship_takes
+when concept=talk.prices topic.dir=up topic.cause=ship_takes topic.item!=meal
+priority 1
+cooldown 1d
+say #world.ship_name.capitalize#'s buying #topic.what#. Dear here now. | The ship's taking all the #topic.what# it can get. #topic.price#. | Everything goes down to the Wharf. #topic.price# for what's left.
+then other: prices.answer_cause
+remember pair: jk=ship 2m
+
+rule e8p_c_ship_late
+when concept=talk.prices topic.dir=up topic.cause=ship_late topic.item!=meal
+priority 1
+cooldown 1d
+say #world.ship_name.capitalize#'s stormbound. #topic.what.capitalize# at #topic.price#. | No ship, no #topic.what#. Storms. | The ship's kept out by weather, and #topic.what# with it.
+then other: prices.answer_cause
+remember pair: jk=ship 2m
+
+rule e8p_c_ship_lost
+when concept=talk.prices topic.dir=up topic.cause=ship_lost topic.item!=meal
+priority 1
+cooldown 1d
+say #world.ship_name.capitalize# was lost at sea. And #topic.what# #topic.is# dear for it. | A ship lost, and folk grumbling about #topic.what#. Shame on us. | Lost, and all its #topic.what# with it. #topic.price# now.
+then other: prices.answer_cause
+remember pair: jk=ship 2m
+
+rule e8p_c_event
+when concept=talk.prices topic.cause=event topic.item!=meal
+priority 1
+cooldown 1d
+say #topic.cause_words.capitalize#. That's why #topic.what# #topic.is# #topic.price#. | It's #topic.cause_words#, they say. #topic.what.capitalize# at #topic.price#. | #topic.what.capitalize# at #topic.price#. Ask anyone: #topic.cause_words#.
+then other: prices.answer_cause
+
+rule e8p_c_still_up
+when concept=talk.prices topic.dir=up topic.cause=still topic.item!=meal
+priority 1
+cooldown 1d
+say #topic.what.capitalize# still dear, #topic.cause_words#. | Dear still. #topic.cause_words.capitalize#, and no better for it. | #topic.price#, still. You'd think it'd have come down by now.
+then other: prices.answer_complaint
+
+rule e8p_c_still_down
+when concept=talk.prices topic.dir=down topic.cause=still topic.item!=meal
+priority 1
+cooldown 1d
+say #topic.what.capitalize# cheap still, #topic.cause_words#. | Cheap yet, #topic.cause_words#. Make the most of it. | Still #topic.price#. I keep waiting for it to turn.
+then other: prices.answer_cheap
+
+rule e8p_c_heard
+when concept=talk.prices topic.cause!=still topic.item!=meal
+cooldown 2d
+say #topic.what.capitalize# at #topic.price#. #topic.cause_words.capitalize#, they say. | #topic.cause_words.capitalize#. That's the talk at the stalls, anyway. | Ask anyone why #topic.what# #topic.is# #topic.price#: #topic.cause_words#.
+then other: prices.answer_cause
+
+## ---------------------------------------------------------------- Keepers of the goods
+
+rule e8p_keep_up_thriving
+when concept=talk.prices topic.dir=up role=merchant business=thriving topic.item!=meal
+cooldown 1d
+say #topic.what.capitalize# at #topic.price#, and still they buy. I'll not grumble. | Dear and selling. The best kind of week. | My #topic.what# goes out the door at #topic.price#. Ask me how I feel.
+then other: prices.answer_easy
+
+rule e8p_keep_up_failing
+when concept=talk.prices topic.dir=up role=merchant business=failing topic.item!=meal
+cooldown 1d
+say Dearer #topic.what#, and still nobody comes in. | #topic.price#, they say, and walk on. My shelves know it. | Dear means nobody buys. Nobody buying means I starve.
+then other: prices.close
+
+rule e8p_keep_down
+when concept=talk.prices topic.dir=down role=merchant topic.item!=meal
+cooldown 1d
+say #topic.what.capitalize# down to #topic.price#. My shelf's worth less than this morning. | I bought #topic.what# dear and sell it cheap. That's trade, they tell me. | #topic.price#. I'll be selling at a loss by Restday.
+then other: prices.answer_undercut
+
+rule e8p_keep_down_thriving
+when concept=talk.prices topic.dir=down role=merchant business=thriving topic.item!=meal
+cooldown 1d
+say Cheaper #topic.what#, and they're queuing for it. I'll take that. | Down to #topic.price#, and selling twice as fast. Swings and roundabouts.
+then other: prices.answer_cheap
+
+## ---------------------------------------------------------------- Answers: a rise and its cause
+
+rule e8p_ans_cause_plain
+when concept=prices.answer_cause
+say That'll be it. | Is that so. | Makes sense, I suppose.
+
+rule e8p_ans_cause_rich
+when concept=prices.answer_cause wealth=rich
+say Is that the reason? How tiresome. | Then it'll pass. These things do.
+
+rule e8p_ans_cause_poor
+when concept=prices.answer_cause wealth=poor|destitute
+say Whatever the reason, my purse pays it. | Reasons don't fill a bowl. | Knowing why doesn't make it cheaper.
+
+rule e8p_ans_cause_trav
+when concept=prices.answer_cause pair.mem.jk=trav
+say Travellers. Coin in their purses and none in ours. | Let them buy. They'll be gone by Restday. | They'll move on. The price'll follow them out.
+
+rule e8p_ans_cause_trav_merchant
+when concept=prices.answer_cause pair.mem.jk=trav role=merchant
+say And I'm glad of them. Travellers pay. | Don't drive them off. They keep my door open.
+
+rule e8p_ans_cause_late
+when concept=prices.answer_cause pair.mem.jk=late
+say It'll come. Wagons always come, in the end. | Late's better than robbed. | Then we wait, like always.
+
+rule e8p_ans_cause_late_carter
+when concept=prices.answer_cause pair.mem.jk=late job=carter
+say Roads are roads. You try driving them. | The wagon comes when the road lets it.
+
+rule e8p_ans_cause_raid
+when concept=prices.answer_cause pair.mem.jk=raid
+say #bandits.capitalize# get bolder every season. | Somebody should clear that road. | I hope the carter came home whole, at least.
+
+rule e8p_ans_cause_raid_guard
+when concept=prices.answer_cause pair.mem.jk=raid role=guard
+say The Watch knows. There's a bounty on the board. | We'll have them. Give it time.
+
+rule e8p_ans_cause_harvest
+when concept=prices.answer_cause pair.mem.jk=harvest
+say Light carts, dear bread. Old story. | Pray the next one's better. | The farmers feel it worse than us.
+
+rule e8p_ans_cause_harvest_farmer
+when concept=prices.answer_cause pair.mem.jk=harvest job=farmer|herder
+say Don't blame the farm. We sent what the field gave. | You should see the fields. I've seen better years.
+
+rule e8p_ans_cause_ship
+when concept=prices.answer_cause pair.mem.jk=ship
+say The sea gives and the sea keeps. | Ships come in their own time. | Pity the crews more than the price.
+
+rule e8p_ans_cause_ship_sailor
+when concept=prices.answer_cause pair.mem.jk=ship job=sailor
+say You've not been out in that weather. I have. | The sea doesn't care what #topic.what# costs.
+
+## ---------------------------------------------------------------- Answers: a glut sold in, a keeper's bad week
+
+rule e8p_glut_plain
+when concept=prices.answer_glut
+say Somebody wanted coin fast. | Buy now, then. | It'll go back up once it's sold through.
+
+rule e8p_glut_merchant
+when concept=prices.answer_glut role=merchant
+say And I'm the one holding a shelf of it. | I'll not buy any more of it for a week. | I paid the old price. Now look.
+
+rule e8p_glut_poor
+when concept=prices.answer_glut wealth=poor|destitute
+say Good. I'll have some, then. | One wolf's glut, another wolf's supper.
+
+rule e8p_glut_guard
+when concept=prices.answer_glut role=guard
+say A heap, all at once? I'll ask where it came from. | Sold in a heap. The Watch likes to know who by.
+
+rule e8p_glut_sly
+when concept=prices.answer_glut honesty=sly
+say If it's going cheap, I know who'll buy it. | Buy it up and sit on it. That's how it's done.
+
+rule e8p_close_plain
+when concept=prices.close
+say It'll turn. | Chin up. | Hm. I'm sorry.
+
+rule e8p_close_warm
+when concept=prices.close warmth=warm
+say I'll come by your shop this week. | Keep your door open. Folk come back.
+
+rule e8p_close_merchant
+when concept=prices.close role=merchant
+say Same here. Same everywhere. | Hold on. The good weeks come round again.
+
+## ---------------------------------------------------------------- A traveller bought it up (price_cause, up)
+
+rule e8p_pc_up_named
+when concept=talk.price_cause topic.dir=up topic.known=yes topic.item!=meal
+cooldown 1d
+say #topic.who# bought up the #topic.what#. #topic.price# now. | Ask #topic.who# why #topic.what# #topic.is# dear. They bought the shelf bare. | #topic.who# came through and cleared out the #topic.what#.
+then other: prices.answer_cause
+remember pair: jk=trav 2m
+
+rule e8p_pc_up_look
+when concept=talk.price_cause topic.dir=up topic.known=no topic.item!=meal
+cooldown 1d
+say A stranger bought up all the #topic.what#. #topic.who#, it was. | #topic.who# went shop to shop buying #topic.what#. Dear now. | Some traveller, #topic.who#, emptied the shelves of #topic.what#.
+then other: prices.answer_cause
+remember pair: jk=trav 2m
+
+rule e8p_pc_up_merchant
+when concept=talk.price_cause topic.dir=up role=merchant topic.item!=meal
+cooldown 1d
+say #topic.who# bought my #topic.what# to the last. Good custom. | Sold out of #topic.what# to #topic.who#. I'll take that kind of morning.
+then other: prices.answer_cause
+remember pair: jk=trav 2m
+
+rule e8p_pc_up_poor
+when concept=talk.price_cause topic.dir=up wealth=poor|destitute topic.item!=meal
+cooldown 1d
+say #topic.who# bought up the #topic.what# and left us the price. | Lovely for #topic.who#. The rest of us pay #topic.price#.
+then other: prices.answer_cause
+remember pair: jk=trav 2m
+
+rule e8p_pc_up_rich
+when concept=talk.price_cause topic.dir=up wealth=rich topic.item!=meal
+cooldown 1d
+say That #topic.who# has a taste for #topic.what#, it seems. | One admires a buyer who knows their mind. #topic.who#, wasn't it?
+then other: prices.answer_cause
+remember pair: jk=trav 2m
+
+scene e8p_pc_up_who
+when topic=price_cause topic.dir=up topic.item!=meal
+cooldown 1d
+a : Who's buying all the #topic.what#? | #topic.what.capitalize# #topic.is# #topic.price# now. Do you know why? | Somebody's emptied the shops of #topic.what#.
+b : #topic.who#. I watched them at it. | #topic.who#, that's why. | #topic.who#, from what I hear.
+a : I hope they enjoy it. | I'll have a word with them. | Then I'll wait them out.
+
+## ---------------------------------------------------------------- Two of different means
+
+scene e8p_sc_rich_poor_up
+when topic=prices topic.dir=up topic.item!=meal a.wealth=rich b.wealth=poor|destitute
+cooldown 1d
+a : #topic.what.capitalize# #topic.is# dearer, my steward says. | I suppose #topic.price# for #topic.what# is a great deal? | One hears #topic.what# #topic.is# up.
+b : It is, for some of us. | It's a week's worry. | Up, and staying up.
+a[warmth=warm] : I'd no idea. I'm sorry. Truly.
+a : How trying for you.
+
+scene e8p_sc_poor_keeper_up
+when topic=prices topic.dir=up topic.item!=meal a.wealth=poor|destitute b.role=merchant
+cooldown 1d
+a : #topic.price# for #topic.what#? You've a nerve. | Can't you do #topic.what# any cheaper? | I'll give you less and a smile.
+b[business=failing] : I'd sell it cheaper if I could. Look at my shelves. Nobody's buying.
+b : It's the price on the list. Same for everyone. | Not a penny less, I'm afraid. | Smiles don't pay my rent.
+a : Then I'll go without. | Worth asking. | Worth a try.
+
+scene e8p_sc_comfortable_down
+when topic=prices topic.dir=down topic.item!=meal a.wealth=comfortable
+cooldown 1d
+a : #topic.what.capitalize# at #topic.price#. I'll lay some by. | Cheap #topic.what#. We'll have a little extra. | Did you see #topic.what#? Down.
+b[wealth=poor|destitute] : Lay some by for me too, while you're at it.
+b[wealth=rich] : Is it? I leave all that to the household.
+b : Good thinking. | Lucky you. | I saw.
+
+scene e8p_sc_upper_trade_up
+when topic=prices topic.dir=up topic.item!=meal a.wealth=rich a.class=upper b.wealth=rich b.class=middle|lower
+cooldown 1d
+a : #topic.what.capitalize# #topic.is# dear, I'm told. Is it hurting trade? | One hears you deal in #topic.what#. Are you making a fortune? | The Council talked of #topic.what# yesterday. Over the wine.
+b : Trade takes its knocks. It'll mend. | A fortune? I'm paying #topic.price# like the rest. | Over the wine. Of course.
+a : Do let me know if the Houses can help. | Like the rest of us, then. | Where else?
+
+## ---------------------------------------------------------------- Barks: the list's price, by those who live by it
+
+rule e8p_bk_baker_up
+when concept=bark job=baker world.bread_price=up
+cooldown 6h
+say Bread's dear, I know. Don't look at me like that. | Fresh loaves! Dearer, but fresh! | I bake it. I don't price the world.
+
+rule e8p_bk_baker_down
+when concept=bark job=baker world.bread_price=down
+cooldown 6h
+say Cheap loaves today! Come and get them! | Bread's down! Buy two!
+
+rule e8p_bk_fish_down
+when concept=bark job=fisher world.fish_price=down
+cooldown 6h
+say Fish going cheap! Can't give it away! | Cheap fish, and my nets full. Lovely for you.
+
+rule e8p_bk_fish_up
+when concept=bark job=fisher world.fish_price=up
+cooldown 6h
+say Fish is dear, and I'm the one getting wet for it. | Fresh fish! Dear, and worth it!
+
+rule e8p_bk_ale_up
+when concept=bark job=brewer|innkeeper world.ale_price=up
+cooldown 6h
+say Ale's dear this week. Drink it slower. | Dear ale, same mugs. Don't start.
+
+rule e8p_bk_ale_down
+when concept=bark job=brewer|innkeeper world.ale_price=down
+cooldown 6h
+say Cheap ale! Bring your friends! | Ale's cheap. A good week to be thirsty.
+
+rule e8p_bk_salt_up
+when concept=bark world.salt_price=up
+cooldown 1d
+say Dear salt. The fish won't keep, and nor will I. | Salt's dear. Everything'll taste of nothing.
+
+rule e8p_bk_cheese_up
+when concept=bark world.cheese_price=up wealth=rich
+cooldown 1d
+say Cheese, dear? One shall have to have it anyway. | They want what for cheese now? Never mind. Wrap it.
+
+rule e8p_bk_cheese_down
+when concept=bark world.cheese_price=down wealth=rich|comfortable
+cooldown 1d
+say Cheese is cheap! Fetch the good knife. | A cheese week. Bless it.
+
+rule e8p_bk_smith_ore
+when concept=bark job=smith world.iron_ore_price=down
+cooldown 6h
+say Cheap ore. I'm working the new ore today. | Plenty of ore in. I'll be at the forge till dark.
+
+rule e8p_bk_smith_nails
+when concept=bark job=smith world.nails_price=up
+cooldown 6h
+say Nails dear? Then the forge stays hot. | Dear nails. Good for the anvil, bad for the roofers.
+
+rule e8p_bk_cook_up
+when concept=bark job=cook|innkeeper world.meal_price=up
+cooldown 6h
+say Hot meals! Dearer, I know, but hot! | Stew's up. Still the best in town.
+
+rule e8p_bk_poor_bread
+when concept=bark wealth=poor|destitute world.bread_price=up
+cooldown 1d
+say Bread's dear again. #oath#. | Dear bread. Thin soup tonight.
+
+rule e8p_bk_healer_herbs
+when concept=bark job=healer world.herbs_price=down
+cooldown 6h
+say Herbs cheap this week. Come now, while I can treat you cheap. | Cheap herbs! Bring me your coughs!

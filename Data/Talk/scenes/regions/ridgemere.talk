@@ -76,7 +76,7 @@ b : Always misty. | So they say. | Fishermen's lanterns.
 a : Always. | So they say. | Maybe.
 
 scene rm_ev_prices
-when topic=prices here.region=ridgemere
+when topic=prices topic.dir=up here.region=ridgemere
 a : The Houses put the price up. They always put the price up. | The Fish Hall sets the fish price and we pay it. | Whatever the Houses don't own, they tax.
 b[noble] : The Houses keep this city fed.
 b[laborer] : And keep the Sump hungry.

@@ -926,7 +926,7 @@ std::string World::caravanLook(const Caravan& c) const
     // What a player sees of it (T4): who drives it, its guard, and what it carries.
     std::string goods;
     for (std::size_t i = 0; i < c.manifest.size(); ++i)
-        goods += (i == 0 ? "" : i + 1 == c.manifest.size() ? " and " : ", ") + goodWords(c.manifest[i].first);
+        goods += (i == 0 ? "" : i + 1 == c.manifest.size() ? " and " : ", ") + cargoWords(c.manifest[i].first);
     const auto* driver = entity(c.driver);
     std::string out = c.kind == "cart" ? "A farm cart in harness" : goods.empty() ? "An empty wagon in harness" : "A laden wagon in harness";
     out += driver ? ", " + driver->name + " at the traces." : ", its carters trotting alongside.";
