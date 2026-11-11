@@ -1396,6 +1396,8 @@ void Society::stagedHourly(std::int64_t hour)
             stagedNight(day);                       // (The night's set by yesterday's households, then today's.)
         if (day != stagedDay_)
             stagedHouseholds(day);
+        if (hod == 0)
+            stagedLarders();                        // (The morning's purses and larders: who is in want of food, 10.2.)
         if (hod >= ShopOpen && hod < ShopShut)
         {
             for (const auto& [home, h0] : stagedHomes_)

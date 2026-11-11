@@ -70,14 +70,27 @@ struct Table
     // of its households' theft weights times the market's Times (theftTimes, hard .. boom), capped by the rule theftCap;
     // a thief is picked by its band's weight (a rich one with a sly honesty `slyRich`), times its honesty's (theftHonesty)
     // and twice if hungry. The dole (10.2): a day's food a head, in bread, for destitute and poor households at Restday's
-    // chapel. Beggars: at most beggarsACell at one place (the chapel steps, the notice board, a shop's door or a stall),
-    // places World::BeggarApart (8) tiles or more apart (so a city cell holds several); rough sleepers: at most
-    // beggarsACell by one warm wall. (The name is kept from "the most in a cell".)
+    // chapel. Beggars (10.2, the user's decision of 2026-11-11): at most beggarsACell at one place (the chapel steps, the
+    // notice board, a shop's door or a stall), places World::BeggarApart (8) tiles or more apart, and at most
+    // beggarsInACell in a whole cell, by the slider (straight lines between the points, the market's Times moving it by
+    // timesShift as it moves the bands' column; a fraction is one more on that share of the cells, by a lot of the cell
+    // and the day): 5 only at the worst, about 0-1 in a boom. Who begs is drawn by need (the household's food want,
+    // Society::foodWant) times its class's weight (beggarsClass), each group's next beggar (elder or of working age, by
+    // home kind) keeping beggarsSpread of its weight for each one drawn from that group already, and the elders at most
+    // beggarsElders of a market's beggars while others are in need. Rough sleepers: at most beggarsACell by one warm
+    // wall. (The name beggarsACell is kept from "the most in a cell".)
     double theftBase = .03;
     std::array<double, 5> theftTimes{1.5, 1.2, 1, .85, .7};
     std::map<std::string, double> theftHonesty{{"frank", .2}, {"plain", 1}, {"guarded", 1.5}, {"sly", 3}};
     double slyRich = .02, doleDays = 1;
     int beggarsACell = 2;
+    struct CellPoint
+    {
+        double at = 0, most = 0;                    // The slider, -100..100; the most beggars in a cell there.
+    };
+    std::vector<CellPoint> beggarsInACell{{-100, 5}, {-50, 3.5}, {0, 2}, {50, 1}, {100, .5}};
+    std::map<std::string, double> beggarsClass{{"lower", 1}, {"middle", .5}, {"upper", .25}};
+    double beggarsSpread = .5, beggarsElders = .5;
     std::int64_t cap(const std::string& name) const;   // 0 for one not set.
     double event(const std::string& name) const;       // 0 for one not set.
 };
@@ -101,6 +114,9 @@ std::array<int, Bands> cut(const std::array<double, Bands>& shares, int n);
 // A band's chance of a short day (0..1) at a slider: its row's, times shortHard at -100 and shortBoom at +100 (straight
 // lines between).
 double shortChance(const Table& t, int band, double slider);
+// The most beggars in a cell (10.2) at a slider, the market's Times (-2 hard .. 2 boom) moving it by timesShift as the
+// bands' column moves: beggarsInACell's straight lines, clamped to -100..100; a fraction is left for the caller's lot.
+double beggarsInACellAt(const Table& t, double slider, int times = 0);
 // What kind of home a cell is (6.3): "house", "flat" or "room" by the words of its id, else "cottage"; "" for none.
 std::string homeKind(const Table& t, const std::string& homeCell);
 // The cut (6.3), without a society: each household as the society scored it, and the bands it takes.

@@ -1138,12 +1138,34 @@ Instead, once a day per market:
 
 ### 10.2 Begging, rough sleeping, the dole
 
-- **Begging (a new task):** destitute adults without a post and not lifted, on Marketday and Restday by day, at the
-  market or the chapel steps (a spot finder like `boardSpot`, `RatwBoards.cpp:19`), at most 2 at one place, each place
-  8 tiles or more from the next (**changed, for the user's nod:** the draft said "at most 2 a cell"; a DEV city cell is
-  a quarter of the city, so 2 a cell held the city to a handful of beggars at any slider). A bark when a
-  player is near. Players give through `RatwGameGive`. Comfortable and rich NPCs passing sometimes give 1p: a visible
-  `shift`, and the beggar's purse moves.
+- **Begging (a new task):** residents of a household in want of food, adults without a post or a master and not
+  lifted, on Marketday and Restday by day, at the market or the chapel steps (a spot finder like `boardSpot`,
+  `RatwBoards.cpp:19`), at most 2 at one place, each place 8 tiles or more from the next, and at most a number a cell
+  that follows the conditions (below). A bark when a player is near. Players give through `RatwGameGive`. Comfortable
+  and rich NPCs passing sometimes give 1p: a visible `shift`, and the beggar's purse moves.
+- **The user's decision (2026-11-11), verbatim:** "I think up to 5 beggars per cell is good, but only in the worst
+  conditions. Beggars should be in the NPC list, typically someone from the lower caste that doesn't have money for
+  food. Old people living with family can be an option but not the only choice." As built:
+  - **The most in a cell** (`status.json` `street.beggarsInACell`, straight lines between the points): **5 at −100,
+    3.5 at −50, 2 at 0, 1 at +50, 0.5 at +100**, never rising as the slider rises; a market's Times moves its slider by
+    `timesShift` (25) as it moves the bands' column (hard −1, lean −0.5, good +0.5, boom +1 of it), and a fraction is one
+    more on that share of the cells, by a lot of the cell and the day. Since a market's Times follow the slider, an
+    ordinary market gives **5, 3.9, 2, 0.9 and 0.5** at −100, −50, 0, +50, +100: 5 only at the worst (−100, or near it
+    in a hard market), about 0-1 in a boom. The rule of 2 at one place, 8 tiles apart, stands under it
+    (`beggarsACell`).
+  - **Who begs:** a resident of the NPC list in a household in want of food (`Society::foodWant`): the destitute always;
+    the poor when its purses and the food its members carry beyond today's would not buy a day's food a head
+    (`Society::NourishADay`, in its own food) at its market's price, judged on the morning's purses and larders at the
+    staged day's turn (today's food is in hand: the staged ration keeps every household near two days' of it, 6.5). An
+    adult (16 or over) with no post and no master; never one of the Watch, never a lifted household, never one with the
+    money for food.
+  - **The draw:** each market's beggars are drawn each day by a seeded lot weighted by want (destitute 1 to 2, poor 0 to
+    1: the share of a day's food it can't pay for) times its class's weight (`beggarsClass`: lower 1, middle 0.5, upper
+    0.25: typically the lower class); each group (an elder past its retiring age or of working age, by home kind: house,
+    cottage, flat, room, communal lodging or none) keeps `beggarsSpread` (0.5) of its weight for each one drawn from it
+    already; and while anyone else in want waits the elders are at most `beggarsElders` (half) of a market's beggars, at
+    least one: an elder living with family begs only when the household is in want, an option and never the only
+    choice.
 - **Rough sleeping:** `homeless=yes` stays authored. Destitute residents in communal lodging are "sleeping by the warm
   wall" in a sheltered cell some winter nights (D12).
 - **The dole:** on Restday the chapel's priest, a real post, hands bread to destitute and poor households near the
@@ -3376,6 +3398,64 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     Times score's walk over a market's events is a few entries. The worst ticks are the first minute's tick 19, 17-19's
     place streaming in and 23-25's day turn, as before. `world_check` has no Game: the notices, the crier and the journal's
     records are not in the gate.
+- **2026-11-11: Phase 6's beggars to the user's decision** (branch `r2-staged-beg`, cut from `r2-staged` at `5afe23c`;
+  `8915fd8`). The user's words (10.2): "I think up to 5 beggars per cell is good, but only in the worst conditions. Beggars should be
+  in the NPC list, typically someone from the lower caste that doesn't have money for food. Old people living with
+  family can be an option but not the only choice." No economy simulation was run; no server was started; DEV was only
+  exported read only (build 70) for a scratch probe outside the repository.
+  - **The most in a cell, built** (`beggarsACellByConditions`): `status.json` `street.beggarsInACell`, 5 at −100, 3.5 at
+    −50, 2 at 0, 1 at +50, 0.5 at +100 (straight lines; never rising, 2 to 21 points from −100 to 100, each 0 to 8, or
+    the default whole with a warning), the market's Times moving its slider by `timesShift` as the bands' column moves,
+    a fraction one more on that share of the cells by a lot of the cell and the day (`status::beggarsInACellAt`). An
+    ordinary market, whose Times follow the slider: 5, 3.9, 2, 0.9, 0.5. `beggarsACell` (2 at one place, places
+    `World::BeggarApart` apart) stands under it; `World::placeBeggars` gathers places until the cells' room holds the day's
+    list and fills each place only while its cell has room.
+  - **Who begs, built** (`beggarsByWant`, and `beggarsAndAlms` reworded to it): `Society::foodWant`, a household's want of
+    food: the destitute always (1 + its shortfall), the poor when its purses and the food its members carry beyond
+    today's would not buy a day's food a head (`NourishADay`, in its own food) at its market's price (its shortfall, a
+    share of the day's cost); none for the comfortable and rich, a lifted household or the Watch's. Judged on the
+    morning's purses and larders at the staged day's turn (`Society::stagedLarders`, not saved: worked out from the
+    restored ones after a restart, and now for a household made since). Today's food counts as in hand because the staged
+    ration keeps every household near two days' (6.5): judged on the larder alone, no poor household is ever short (on
+    DEV none was, at any slider). Adults (16 or over) with no post and no master, never the Watch, never lifted, as
+    before. The draw: a seeded lot of the day weighted by want times `beggarsClass` (lower 1, middle 0.5, upper 0.25);
+    each group (an elder past its own retiring age, `Society::retireAge`, or of working age; by home kind: house,
+    cottage, flat, room, communal or none) keeps `beggarsSpread` (0.5) of its weight for each one drawn from it already;
+    and while anyone else in want waits the elders are at most `beggarsElders` (half) of a market's beggars, at least one.
+    In the test town at slider 0 (two a cell, four of ten in want a day, over eight begging days): two elders and two
+    others each day, nine of the ten seen, from cottages, the lodging and the flat; with `beggarsSpread` and
+    `beggarsElders` at 1 it fails (three elders of four on the first day).
+  - **Through a crash** (`streetThroughACrash`'s new `begs` case, file and PostgreSQL through `street_pg`; Greyfen with its
+    lane, `StreetCrash::lane`): Idle 1 destitute at the checkpoint begs on the Marketday after it, a checkpoint there;
+    after the restart she begs again, every beggar is in want and may beg, no cell over its most.
+  - **On DEV (build 70, exported read only; a scratch probe outside the repository):** each slider on a fresh load, seven
+    night turns jumped through (seconds of ticks each; a day's eating taken from each wallet before each, which the jumped
+    hours skip), then a Marketday at 10:00. Beggars by cell, and who:
+
+    | Slider (Times) | Most a cell | Beggars | By cell | Who |
+    |---|---|---|---|---|
+    | −100 (hard) | 5 | 8 | 5, 2, 1 | all 8 destitute, no earner: Hilde Dripby 61 and Piet Muddale 58 (lower class, the barracks, alone), Aud Kemp 80, Ivar Netherworth 65, Piet Lumley 60 (middle, cottages, alone), Sigrun Wickham 80 (middle, a flat), Ingrid Kendrick 68 and Una Thackeray 62 (middle, cottages, each with a child of 10-12 at home) |
+    | −50 (lean) | 3.9 | 7 | 4, 2, 1 | the same but Ivar Netherworth |
+    | 0 | 2 | 4 | 2, 2 | Hilde, Piet Muddale, Aud Kemp, Sigrun Wickham |
+    | +50 (good) | 0.9 | 4 | 1, 1, 1, 1 | the same four, one in each of four cells |
+    | +100 (boom) | 0.5 | 1 | 1 | Piet Muddale |
+
+    Purses 0-6p against a day's food of 4p a head; no poor household short of a day's food at any slider (one at −50,
+    with no adult free to beg). Every beggar is past its own retiring age (Piet Muddale's is 58): of DEV's adults with no
+    post and no master in a household in want there are no others (the rest of its 24 destitute households at −100 are
+    children of 8-15 with a post, each a household of one), so the elders'
+    share has nobody to give way to and the class weight puts the two lower-class hands first. **For the user:** DEV's
+    beggars stay elders until the world has lower-class adults with no post (the filling out to come), or a rule lets the
+    working poor beg on Restday (not built: never one at a post, as the task set). DEV's children living alone as
+    destitute households look like a data slip, left as found.
+  - **Tests:** a clean Release build (`build-begc`; 125 warnings, as before, none in the files touched); ctest 86/86 with
+    the database, none skipped, twice (`pg_client` on a throwaway `ratw_test_s2stage_beg`, dropped after);
+    `street_tests` 27,010 and 27,274 checks (the crash cases vary run to run, as before; eight crash cases now),
+    `street_pg` eight crashes through PostgreSQL (83 checks), `save_compat` 23,107, `status_tests` 21,962,
+    `life_status_tests` 2,244, `market_tests` 2,001, `game_tests` 3,631, `crime_tests` 85, `trade_show_tests` 919,
+    `port_tests` 9,111, `journal_tests` 39, `troubles_tests` 66, `fame_tests` 80. Perf not measured again: the larders are
+    judged once a day (two quotes a household), the draw is a sort of a market's few in want each hour.
+  - **Not changed:** 16.8's test list still says "at most 2 a cell" (outside this change's sections).
 
 ## Review (2026-11-08)
 

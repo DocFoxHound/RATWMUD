@@ -1039,6 +1039,16 @@ class Society
     // A household's band food for `days` (each head's band meals, in the food it eats) at its market's quoted price: the
     // short trouble's coins (6.7, a fortnight, at least 10p) and the measure of a player's help.
     std::int64_t bandFoodCost(const std::string& id, double days) const;
+    // A household's want of food (10.2, the user's decision of 2026-11-11: beggars are residents who haven't the money for
+    // food): how far its purses and the food in its hands fall short of a day's food a head (NourishADay each, in its own
+    // food) at its market's price, a share of that day's cost, 0 (a day's or more) .. 1 (nothing at all), judged on the
+    // morning's purses and larders (the staged day's turn), or now for a household not judged then (after a restore, a
+    // new one). foodWant: a destitute household's 1 + that (always in want, and first), a poor one's that, and 0 for the
+    // comfortable and rich, a lifted household, the Watch's, and none.
+    double foodShort(const std::string& household) const;
+    double foodWant(const std::string& household) const;
+    // The morning's judgment of every household's want (the staged day's turn makes it; public for tests).
+    void stagedLarders();
     // A player's help to a poor or destitute household (6.7): worth a week's food or more lifts it a week, a month's a month
     // (`days` > 0: that long, the short trouble's); while at most half its market's destitute share is lifted at once. The
     // days lifted, 0 for none.
@@ -1261,6 +1271,11 @@ class Society
     };
     std::map<std::string, StagedHome> stagedHomes_;
     void stagedHouseholds(std::int64_t day);
+    // The morning's food shortfall of every household (foodShort; not saved: worked out again from the restored purses
+    // and larders where a restart missed the day's turn).
+    std::map<std::string, double> foodShort_;
+    std::int64_t foodShortDay_ = -1;
+    double foodShortNow(const std::string& household) const;
     // The Market Board's (doc 79, Phase 1; RatwMarket.cpp). None of these is saved but the Board (state_.board).
     struct StagedLot
     {
