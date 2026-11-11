@@ -34,13 +34,13 @@ a : Let them. | Badly, I hope. | No anything.
 
 scene em_x_baker_flour
 when topic=prices topic.dir=up topic.item=meal a.job=baker
-a : Flour's up. My loaves are shrinking and so's my temper. | I'm up before dawn and still can't make bread cheap enough. | Folk curse my bread prices. They should curse the miller.
-b : Your temper was always small. | You do your best. | Millers are easy to curse.
-a : Smaller now. | It's not enough. | Easy and fair.
+a : My loaves are shrinking and so's my temper. | I'm up before dawn and still can't make bread cheap enough. | Folk curse my prices. As if I chose them.
+b : Your temper was always small. | You do your best. | Nobody thinks you did.
+a : Smaller now. | It's not enough. | Some do.
 
 scene em_x_baker_cheap
 when topic=prices topic.item=meal topic.dir=down a.job=baker
-a : Cheap flour. Buns for everyone. | I baked twice as much today. Sold it all. | The queue at my door went round the corner this morning.
+a : A cheap week. Buns for everyone. | I baked twice as much today. Sold it all. | The queue at my door went round the corner this morning.
 b : Save me a bun. | Twice! | Round the corner?
 a : One bun. Just one. | And I'm half dead. | Round two corners.
 
@@ -89,7 +89,7 @@ a : They're huge already. | A very big boar. | Probably.
 
 scene em_x_rain_prices
 when topic=prices topic.dir=up here.weather=rain|storm
-a : Rain on the stalls and nobody buying. | Wet market, soggy bread, dear as ever. | Rain keeps the carts away and the prices up.
+a : Rain on the stalls and nobody buying. | Wet market, soggy bread, dear as ever. | Rain on the stalls, and the prices no kinder.
 b : Nobody selling either. | Soggy and dear. | It always does.
 a : Everyone's home. | The worst kind. | Always.
 

@@ -12,7 +12,7 @@
 rule qk_wheat_price
 when concept=talk.prices quirk=always_knows_the_price_of_wheat
 cooldown 2d
-say Wheat's up a penny the bushel, if you're asking. And you should be. | Watch the wheat. Everything else follows the wheat. | Bread's dear because wheat's dear. Wheat's dear because the Sunfields had a wet spring. There.
+say Never mind #topic.what#. Ask me about wheat. You should. | Watch the wheat. Everything else follows the wheat. | Wheat. Always look at the wheat first. There.
 then other: quirk.reply
 remember pair: qk=wheat 1m
 

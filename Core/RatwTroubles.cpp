@@ -105,6 +105,9 @@ Rules parse(const std::string& text)
         kind.briefing = k->string("briefing");
         kind.unfinished = k->string("unfinished");
         kind.said = strings((*k)["said"]);
+        for (const auto& [band, lines] : k->object("saidBy").fields())
+            if (auto words = strings(lines); !words.empty())
+                kind.saidBy[band] = std::move(words);
         kind.underDays = k->number("underDays", kind.underDays);
         kind.refillDays = std::max(kind.underDays, k->number("refillDays", kind.refillDays));
         kind.youngest = int(k->number("youngest", kind.youngest));

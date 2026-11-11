@@ -57,10 +57,10 @@ b : Good thinking. | Clever. | Smart wolves have coin.
 a : Winter remembers. | Winter's long. | True. Borrow some.
 
 scene em_more_cheap_why
-when topic=prices topic.dir=down
-a : Why's everything cheap? Did I miss news? | Cheap #topic.what#. Somebody must have lost a bet. | A good harvest somewhere far away, I suppose.
-b : A good harvest, they say. | Or found a cellar. | Bless far away.
-a : Bless the harvest. | Bless the cellar. | Bless it twice.
+when topic=prices topic.dir=down topic.cause!=still
+a : Why's everything cheap? Did I miss news? | Cheap #topic.what#. Somebody must have lost a bet. | Somebody, somewhere, did something right.
+b : #topic.cause_words.capitalize#, they say. | Or found a cellar. | Bless them, whoever they are.
+a : Bless that, then. | Bless the cellar. | Bless them twice.
 
 # ---------------------------------------------------------------- Caravans
 
@@ -175,7 +175,7 @@ a : So would I. | Hilarious. | Now I've noticed.
 b?[merchant] : We didn't fix anything. We read the same slate.
 
 scene em_more_caravan_guard_job
-when topic=caravan b.job=guard|soldier
+when topic=caravan b.job=guard|soldier topic.kind!=news
 a : The caravan needs guards. Would you sign on? | Good coin guarding the wagons to #topic.where#. | I heard they're hiring swords for the next caravan.
 b : For the right coin. | Good coin, cold nights. | I've a post here.
 a : How right? | Bring a blanket. | Shame.

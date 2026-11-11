@@ -44,6 +44,13 @@ std::vector<std::string> words(const std::string& s)
     return out;
 }
 
+std::string lower(std::string s)
+{
+    for (auto& c : s)
+        c = char(std::tolower(static_cast<unsigned char>(c)));
+    return s;
+}
+
 // SplitMix64: the same seed picks the same alternative.
 std::uint64_t mix(std::uint64_t x)
 {
@@ -330,7 +337,48 @@ bool Library::readSettings(const std::string& text, std::string& problem)
         problem = "settings.json: no concepts";
         return false;
     }
+    // Salience (doc 79, 10.3): {"when": "business=failing", "never": ["can't complain", ...]}, the speaker's facts.
+    settings_.salience.clear();
+    for (const auto& rule : doc.array("salience"))
+    {
+        Settings::Salience one;
+        for (const auto& token : words(rule.string("when")))
+        {
+            Criterion c;
+            std::string error;
+            if (!criterion(token, Where::When, 0, c, error))
+            {
+                problem = "settings.json: salience: " + error;
+                return false;
+            }
+            one.when.push_back(std::move(c));
+        }
+        for (const auto& v : rule.array("never"))
+            if (auto phrase = lower(v.asString("")); !phrase.empty())
+                one.never.push_back(std::move(phrase));
+        if (one.when.empty() || one.never.empty())
+        {
+            problem = "settings.json: a salience rule needs its `when` and its `never` words";
+            return false;
+        }
+        settings_.salience.push_back(std::move(one));
+    }
     return true;
+}
+
+bool Library::muted(const std::string& said, const Query& q, int speaker) const
+{
+    std::string low;
+    for (const auto& rule : settings_.salience)
+        if (std::all_of(rule.when.begin(), rule.when.end(), [&](const Criterion& c) { return holds(c, q, speaker); }))
+        {
+            if (low.empty())
+                low = lower(said);
+            for (const auto& phrase : rule.never)
+                if (low.find(phrase) != std::string::npos)
+                    return true;
+        }
+    return false;
 }
 
 bool Library::bareWord(const std::string& word, int speaker, Where where, Criterion& c) const
@@ -1542,7 +1590,7 @@ Said Library::render(const Entry& e, const Query& q, std::uint64_t seed, Trace* 
         {
             auto kept = binds;
             Expansion x{q, who, mix(r ^ 0x7A1CULL ^ k), binds, trace};
-            done = expandInto(chosen->texts[(start + k) % n], x, 0, said);
+            done = expandInto(chosen->texts[(start + k) % n], x, 0, said) && !muted(said, q, who);   // (Salience: 10.3.)
             if (!done)
                 binds = std::move(kept);
         }

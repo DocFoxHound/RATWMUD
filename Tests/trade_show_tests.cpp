@@ -385,7 +385,7 @@ void wagonsCommittedWhenPosted()
             expect(atEnd.rfind("Wagon from East, due " + weekday + ": ", 0) == 0, "and the far end's: " + atEnd);
             const auto* driver = w.entity(d.driver);
             expect(driver && atSource.find(driver->name + " driving.") != std::string::npos, "and its carter: " + atSource);
-            expect(atSource.find(World::goodWords(d.manifest.front().first)) != std::string::npos && atSource.find('(') == std::string::npos,
+            expect(atSource.find(World::cargoWords(d.manifest.front().first)) != std::string::npos && atSource.find('(') == std::string::npos,
                    "and what it carries, in plain words: " + atSource);
             expect(e.item == "east" && e.target == "west", "between its two markets");
         }
@@ -470,7 +470,7 @@ void aWagonsTrip()
     const auto& news = w.society().board().news;
     expect(news.count("west") && news.at("west").from == "east" && news.at("west").words.find("cheap in East") != std::string::npos,
            "it brings the news of east: " + (news.count("west") ? news.at("west").words : std::string("none")));
-    const auto plain = World::goodWords(good);
+    const auto plain = World::cargoWords(good);
     expect(news.at("west").words == plain + (World::pluralGood(plain) ? " are" : " is") + " cheap in East",
            "in plain words: " + news.at("west").words);
     // A wagon that brings a good never makes it dearer: a second arrival with west already cheaper than east moves nothing.
@@ -1562,7 +1562,7 @@ void plainWords()
             const auto text = w.departureNotice(d, atEnd);
             expect(text.find('(') == std::string::npos && text.find("goods store") == std::string::npos, "a notice in plain words: " + text);
             for (const auto& [g, n] : d.manifest)
-                expect(text.find(World::goodWords(g)) != std::string::npos, "naming each good: " + text);
+                expect(text.find(World::cargoWords(g)) != std::string::npos, "naming each good: " + text);
         }
         w.society().stagedBoard().committed.clear();
         nextMorning(w);

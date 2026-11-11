@@ -1,0 +1,588 @@
+# The Times and the staged events (Docs/Design/79-a-staged-economy.md, sections 5.3, 8.4, 8.5 and 11; Phase 8): how each
+# band and class speaks of hard and good times and their cause, and of the week's happenings at the market.
+#
+# talk.times: world.times (hard, lean, ordinary, good, boom) and world.times_cause (any plain words, maybe missing: the
+# slider's cause, a harvest, the robbed wagons, an event's words, the DM's own). Openers remember what kind of thing was
+# said, two minutes, so every reply fits what it answers:
+#   tm=moan   times are hard on me (or good times that haven't reached me)
+#   tm=cause  why, in the cause's words
+#   tm=state  a rich upper-class wolf on the Houses, the Council, the Crown (class-gated: never a carter's talk)
+#   tm=land   a rich wolf of the middle or lower class, or of the towns: land, mills, the harvest, their own trade
+#   tm=boast  times are good to me
+# then times.answer (moan, cause, and the rich's worries in hard times), times.boast_answer (a boast, the rich's talk in
+# good times), and times.close after a sour answer (ta=sour).
+#
+# talk.event: world.event (the kind's id), world.event_words, world.event_when (now, soon, past). Never a price figure;
+# only the event's own goods are said to be dear or cheap. Openers remember ev=bad or ev=good for event.answer.
+
+## ================================================================ The Times: hard and lean, by band and class
+
+rule e8t_hard_destitute
+when concept=talk.times world.times=hard|lean self.wealth=destitute
+cooldown 1d
+say Times like these, it's #dole# or nothing. | Nobody gives a penny when everyone's #skint#. | I've not had a hot meal since the turn of the month.
+remember pair: tm=moan 2m
+then other: times.answer
+
+rule e8t_hard_poor_lower
+when concept=talk.times world.times=hard|lean self.wealth=poor self.class=lower|middle
+cooldown 1d
+say My #wages# don't stretch to Emberday any more. | Bread and onion, bread and onion. That's our table. | They've cut the hours at my place. Same work, less of it, less pay.
+remember pair: tm=moan 2m
+then other: times.answer
+
+rule e8t_hard_poor_upper
+when concept=talk.times world.times=hard|lean self.wealth=poor self.class=upper
+cooldown 2d
+say One sold the good silver last month. Not a word to anyone. | We keep up appearances. Appearances are cheaper than dinners. | My grandmother kept six servants. I keep a candle, and I don't light it.
+remember pair: tm=moan 2m
+then other: times.answer
+
+rule e8t_hard_comfortable
+when concept=talk.times world.times=hard|lean self.wealth=comfortable
+cooldown 1d
+say We're tightening our belts. Another notch and I'll be through it. | We manage. We put a little by and we don't touch it. | Folk are buying less. You feel it at every counter.
+remember pair: tm=moan 2m
+then other: times.answer
+
+rule e8t_hard_rich_state
+when concept=talk.times world.times=hard|lean self.wealth=rich self.class=upper here.region=ridgemere
+cooldown 1d
+say The Council will have to answer for this. In the chamber, not the street. | The Houses will be asked to stand behind the Crown. They always are. | Father says the Houses must close ranks until it passes.
+remember pair: tm=state 2m
+then other: times.answer
+
+rule e8t_hard_rich_house
+when concept=talk.times world.times=hard|lean self.wealth=rich self.house
+cooldown 2d
+priority 1
+say Our House will see its people through. It always has. | Our House has put off the summer ball. Imagine the talk. | The House's steward wants every account looked at twice.
+remember pair: tm=state 2m
+then other: times.answer
+
+rule e8t_hard_rich_land
+when concept=talk.times world.times=hard|lean self.wealth=rich self.class=middle|lower
+cooldown 1d
+say The mill's turning half days. Nobody's buying flour by the sack. | My tenants are behind with the rent. I can't turn them all out. | I've land enough, but land doesn't pay when nobody buys.
+remember pair: tm=land 2m
+then other: times.answer
+
+rule e8t_hard_rich_town
+when concept=talk.times world.times=hard|lean self.wealth=rich here.region!=ridgemere
+cooldown 1d
+say The fields don't care about the times. The market does. | I'll hold my grain back till it turns. Let the barns wait. | Two of my hands have gone to the city looking for better. They'll not find it.
+remember pair: tm=land 2m
+then other: times.answer
+
+## The cause, in its own words
+
+rule e8t_cause_hard
+when concept=talk.times world.times=hard|lean world.times_cause
+cooldown 1d
+say It's all #world.times_cause#, they say. | Ever since word of #world.times_cause#, nothing's been right. | Everyone blames #world.times_cause#. I suppose they're right.
+remember pair: tm=cause 2m
+then other: times.answer
+
+rule e8t_cause_hard_poor
+when concept=talk.times world.times=hard|lean world.times_cause self.wealth=poor|destitute
+cooldown 1d
+say #world.times_cause.capitalize#. And who pays for it? Us, same as ever. | #world.times_cause.capitalize#, they say. My purse says lighter every week. | They talk of #world.times_cause#. I talk of my supper.
+remember pair: tm=cause 2m
+then other: times.answer
+
+rule e8t_cause_hard_upper
+when concept=talk.times world.times=hard|lean world.times_cause self.wealth=rich|comfortable self.class=upper here.region=ridgemere
+cooldown 1d
+say #world.times_cause.capitalize#. It will be discussed at the Council, one assumes. | The Heights talk of nothing but #world.times_cause#. | #world.times_cause.capitalize#. A matter of state, and the city pays for it.
+remember pair: tm=cause 2m
+then other: times.answer
+
+rule e8t_good_destitute
+when concept=talk.times world.times=good|boom self.wealth=destitute
+cooldown 1d
+say Good times, they say. Not on the chapel steps. | Everyone's got coin but me. | Boom for some. I'm still counting crumbs.
+remember pair: tm=moan 2m
+then other: times.answer
+
+rule e8t_good_poor
+when concept=talk.times world.times=good|boom self.wealth=poor
+cooldown 1d
+say Good times, they say. Not on my street. | Everyone's flush but nobody's flush with me. | The #toffs# are spending. Spending past me.
+remember pair: tm=moan 2m
+then other: times.answer
+
+rule e8t_good_comfortable
+when concept=talk.times world.times=good|boom self.wealth=comfortable
+cooldown 1d
+say Good times. We had meat twice this week. | The pups have new boots, and I didn't have to think about it. | Work's steady and the #wages# keep coming. I'll take it.
+remember pair: tm=boast 2m
+then other: times.boast_answer
+
+rule e8t_good_comfortable_keeper
+when concept=talk.times world.times=good|boom self.wealth=comfortable self.role=merchant
+cooldown 1d
+say A queue at my counter yesterday. A queue! | Folk aren't counting their pennies so close. Long may it last. | I've taken on a lad to help. First time in years.
+remember pair: tm=boast 2m
+then other: times.boast_answer
+
+rule e8t_good_rich_state
+when concept=talk.times world.times=good|boom self.wealth=rich self.class=upper here.region=ridgemere
+cooldown 1d
+say The Houses haven't had a season like it. The Council's all smiles. | Father's giving a dinner for the whole Council. One can afford to be generous. | The Crown's pleased with the city, one hears. That's worth more than coin.
+remember pair: tm=state 2m
+then other: times.boast_answer
+
+rule e8t_good_rich_cheese
+when concept=talk.times world.times=good|boom self.wealth=rich
+cooldown 2d
+say We've a whole wheel of the good cheese in the larder. A whole wheel. | Cheese at every supper this week. One gets used to it terribly fast. | I sent the servant out for cheese. The fine sort. Twice.
+remember pair: tm=boast 2m
+then other: times.boast_answer
+
+rule e8t_good_rich_land
+when concept=talk.times world.times=good|boom self.wealth=rich self.class=middle|lower
+cooldown 1d
+say Mill's never been busier. I've bought the meadow by the river. | I've taken on four more hands and I could use six. | My barns are full and my buyers are fuller. Good years, these.
+remember pair: tm=land 2m
+then other: times.boast_answer
+
+rule e8t_cause_good
+when concept=talk.times world.times=good|boom world.times_cause
+cooldown 1d
+say #world.times_cause.capitalize#, and suddenly everyone's got coin. | All this talk of #world.times_cause#, and the whole city's different. | It's #world.times_cause#, they say. Long may it last.
+remember pair: tm=cause 2m
+then other: times.answer
+
+## ---------------------------------------------------------------- Answers: a moan or a cause, in hard times
+
+rule e8t_ans_hard_destitute
+when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=destitute
+say Try the chapel steps. Then tell me about hard. | At least you've a roof. | We're all hungry now. Some of us were hungry first.
+
+rule e8t_ans_hard_poor
+when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=poor
+say Don't I know it. I'm #skint# till Marketday. | #agree#. My pups are eating porridge for supper. | Same here. Every penny's counted twice.
+
+rule e8t_ans_hard_comfortable
+when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=comfortable
+say We're all pinching. #agree#. | It'll turn. It always does, in the end. | Keep your head down and your purse shut, that's my way.
+
+rule e8t_ans_hard_rich_upper
+when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=rich self.class=upper
+say It is being seen to, I'm told. At the Council. | Dreadful. Someone really ought to do something. | One must trust the Houses to steady things.
+
+rule e8t_ans_hard_rich
+when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean self.wealth=rich self.class=middle|lower
+say I've cut my hands to four days. It's that or shut the gate. | It hits us all. Some of us have further to fall. | It'll pass. Buy cheap now, I say.
+
+rule e8t_ans_hard_any
+when concept=times.answer pair.mem.tm=moan|cause world.times=hard|lean
+say #agree#. It'll turn. It always does. | Hard times. Nothing to be done but get through them. | #oath#. I don't know anyone who isn't feeling it.
+
+## The rich's worries, answered
+
+rule e8t_ans_worry_poor
+when concept=times.answer pair.mem.tm=state|land world.times=hard|lean self.wealth=poor|destitute
+say You'll manage, I'm sure. | Your half days are my no days. | I'd trade worries with you. Gladly.
+remember pair: ta=sour 2m
+then other: times.close
+
+rule e8t_ans_worry_comfortable
+when concept=times.answer pair.mem.tm=state|land world.times=hard|lean self.wealth=comfortable
+say If it's hard for you, it's harder for the rest of us. | Let's hope it turns before the winter. | I hadn't thought of it from your side.
+
+rule e8t_ans_worry_rich
+when concept=times.answer pair.mem.tm=state|land world.times=hard|lean self.wealth=rich
+say Quite. We've put off the new wing ourselves. | One rides it out. One always has. | Dreadful for business. Dreadful.
+
+rule e8t_ans_worry_any
+when concept=times.answer pair.mem.tm=state|land world.times=hard|lean
+say So I hear. | Hard for everyone, then. | Mm. Times are what they are.
+
+## A moan in good times (the poor not feeling it), and a cause in good or ordinary times
+
+rule e8t_ans_good_moan_rich
+when concept=times.answer pair.mem.tm=moan world.times=good|boom self.wealth=rich
+say Nonsense. There's work for anyone who wants it. | It'll trickle down. It always does, eventually. | Have you tried asking for more #wages#? It's the season for it.
+remember pair: ta=sour 2m
+then other: times.close
+
+rule e8t_ans_good_moan_poor
+when concept=times.answer pair.mem.tm=moan world.times=good|boom self.wealth=poor|destitute
+say Not my street either. | Good times never get down the hill. | They're good for the #toffs#. #agree#.
+
+rule e8t_ans_good_moan_any
+when concept=times.answer pair.mem.tm=moan world.times=good|boom
+say Hm. Good times aren't good for everyone. | Chin up. It may come your way yet. | That's the way of it.
+
+rule e8t_ans_cause_good
+when concept=times.answer pair.mem.tm=cause world.times=good|boom
+say Long may it last. | And about time too. | I'll believe it when it's in my purse.
+
+rule e8t_ans_cause_ordinary
+when concept=times.answer pair.mem.tm=cause world.times=ordinary
+say So I heard. We'll see what comes of it. | Hm. Talk's cheap. | We'll see. Things change, and then they change back.
+
+## ---------------------------------------------------------------- Answers to a boast, and the close
+
+rule e8t_boast_ans_poor
+when concept=times.boast_answer self.wealth=poor|destitute
+say Must be nice. | Spare a thought for the rest of us. | Good for you. Some of us are still counting crusts.
+remember pair: ta=sour 2m
+then other: times.close
+
+rule e8t_boast_ans_comfortable
+when concept=times.boast_answer self.wealth=comfortable
+say Good for you. Mind it doesn't turn. | Glad to hear it. We're doing all right too. | Make hay while the sun shines, eh?
+
+rule e8t_boast_ans_rich
+when concept=times.boast_answer self.wealth=rich
+say We've done well too, touch wood. | One can't complain this season. | Yes, everyone's flush. It makes servants so hard to keep.
+
+rule e8t_boast_ans_upper_land
+when concept=times.boast_answer pair.mem.tm=land self.wealth=rich self.class=upper
+priority 1
+say Land. How very solid of you. | A mill. How enterprising. | One leaves such things to one's steward.
+
+rule e8t_boast_ans_land_state
+when concept=times.boast_answer pair.mem.tm=state self.wealth=rich self.class=middle|lower
+priority 1
+say I leave the Council to the Houses. I've a mill to run. | Politics. I'd rather a good harvest. | Smiles at the Council don't fill my barns.
+
+rule e8t_boast_ans_any
+when concept=times.boast_answer
+say Well, that's good to hear. | Glad someone's doing well. | Good. Good for you.
+
+rule e8t_close_rich_good
+when concept=times.close pair.mem.ta=sour self.wealth=rich world.times=good|boom
+say There's no need to take that tone. | I only meant times are good. | Well. I was only making conversation.
+
+rule e8t_close_rich_hard
+when concept=times.close pair.mem.ta=sour self.wealth=rich world.times=hard|lean
+say We all feel it. Some of us more than you'd think. | There's no need to take that tone. | Well. I was only saying.
+
+rule e8t_close_any
+when concept=times.close pair.mem.ta=sour
+say I didn't mean anything by it. | Fair enough. | Sorry. I didn't think.
+
+## ================================================================ Barks: hard and lean times, boom for the rich
+
+rule e8t_bk_hard_destitute
+when concept=bark world.times=hard|lean self.wealth=destitute
+cooldown 4h
+say A penny, anyone? Times are hard for all of us. | Nobody's giving. Nobody's got it to give. | Hard times. Hard ground to sleep on.
+
+rule e8t_bk_hard_poor
+when concept=bark world.times=hard|lean self.wealth=poor
+cooldown 4h
+say Another week, another hole in the purse. | #oath#, these times. | Can't remember the last good week.
+
+rule e8t_bk_boom_rich
+when concept=bark world.times=good|boom self.wealth=rich
+cooldown 6h
+say What a season. What a season! | Cheese tonight, I think. The good sort. | Splendid times. Simply splendid.
+
+## ================================================================ The week's events
+
+## A House wedding (the city's): wine, mead, brandy, fine bread, cheese and ale dearer while the stewards buy.
+
+rule e8t_ev_wedding_soon
+when concept=talk.event world.event=house_wedding world.event_when=soon
+cooldown 1d
+say There's a House wedding on the way. Every cook in the Heights is hiring. | The stewards are buying up all the wine for the House wedding. | A House wedding this week. The whole city will turn out to gawp.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_wedding_now
+when concept=talk.event world.event=house_wedding world.event_when=now
+cooldown 1d
+say The House wedding's on. Wine's dear as anything while the stewards buy. | Carriages up and down the hill all day. For the wedding. | They've hung ribbons from every lamp on the way up to the Heights.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_wedding_rich_upper
+when concept=talk.event world.event=house_wedding world.event_when=soon|now self.wealth=rich self.class=upper
+cooldown 1d
+priority 1
+say We're invited, of course. Mother has had three gowns made and likes none of them. | The seating alone has caused two feuds. | One goes to be seen. The bride is an afterthought.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_wedding_poor
+when concept=talk.event world.event=house_wedding world.event_when=soon|now self.wealth=poor|destitute
+cooldown 1d
+say A House wedding. They'll spend more on one night than I'll see in my life. | I'll stand at the bottom of the hill and watch the carriages. That's my wedding. | Maybe they'll throw the leftovers to the gate.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_wedding_cook
+when concept=talk.event world.event=house_wedding world.event_when=soon|now self.job=cook|baker|brewer|innkeeper
+cooldown 1d
+priority 1
+say Every kitchen in the city's working for the House wedding. | I've not stopped since Dawnday, and the House wants more. | The stewards want it all by morning. All of it.
+remember pair: ev=good 2m
+then other: event.answer
+
+## A fire at the works: timber, planks, bricks, charcoal and nails dearer till it is put to rights.
+
+rule e8t_ev_fire_now
+when concept=talk.event world.event=works_fire world.event_when=now
+cooldown 1d
+say There's a fire at the works. You can see the smoke from the square. | They're saying the works caught fire in the night. | Fire at the works. Anyone building had better wait, or pay for it.
+remember pair: ev=bad 2m
+then other: event.answer
+
+rule e8t_ev_fire_worker
+when concept=talk.event world.event=works_fire world.event_when=now self.quarter=works
+cooldown 1d
+priority 1
+say I was there when it went up. The heat took the fur off my arm. | Half the yard's ash. Nobody knows what we'll do for work. | We passed buckets till dawn. It's still smouldering.
+remember pair: ev=bad 2m
+then other: event.answer
+
+rule e8t_ev_fire_builder
+when concept=talk.event world.event=works_fire world.event_when=now self.job=crafter|laborer
+cooldown 1d
+say With the works burnt, timber and nails are dear as silver. | I can't get planks for love nor money since the fire. | Every builder in town is scrabbling for bricks.
+remember pair: ev=bad 2m
+then other: event.answer
+
+rule e8t_ev_fire_past
+when concept=talk.event world.event=works_fire world.event_when=past
+cooldown 1d
+say They're still clearing the burnt beams at the works. | The works is back at it, after the fire. Smells of smoke still. | Nobody hurt in the fire, thank the Bright One.
+remember pair: ev=bad 2m
+then other: event.answer
+
+## A good catch: fish and shellfish cheaper.
+
+rule e8t_ev_catch_now
+when concept=talk.event world.event=good_catch world.event_when=now
+cooldown 1d
+say A good catch is in. Fish is cheap for a day or two. | The boats came in low in the water this morning. | Fish for supper tonight. Everyone's having fish.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_catch_fisher
+when concept=talk.event world.event=good_catch world.event_when=now self.job=fisher|sailor
+cooldown 1d
+priority 1
+say Best haul of the season. The nets near split. | Good catch, poor price. That's a fisher's luck for you. | We'll be salting fish till midnight.
+remember pair: ev=good 2m
+then other: event.answer
+
+## Blight in the orchards: apples, cider, berries and grapes dearer.
+
+rule e8t_ev_blight
+when concept=talk.event world.event=orchard_blight world.event_when=now|past
+cooldown 1d
+say Blight in the orchards, they say. Apples will be dear. | Black spots on every apple. Not one fit to eat. | No cider this year, if the blight keeps on.
+remember pair: ev=bad 2m
+then other: event.answer
+
+## The festival's buying ahead: ale, mead, bread, cheese and meat dearer.
+
+rule e8t_ev_festival_buying
+when concept=talk.event world.event=festival_buying world.event_when=soon|now
+cooldown 1d
+say The inns are buying ahead for the festival. Ale's dear already. | Every kitchen's stocking up for the festival. Bread's gone up. | You can't get a cheese for love nor money, with the festival coming.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_festival_keeper
+when concept=talk.event world.event=festival_buying world.event_when=soon|now self.job=innkeeper|cook|brewer
+cooldown 1d
+priority 1
+say I've ordered more ale than I've room for. Festival's worth it. | I'm buying ahead like everyone else. Paying for it, too. | My cellar's full to the stairs.
+remember pair: ev=good 2m
+then other: event.answer
+
+## A lame ox holding a farm's cart.
+
+rule e8t_ev_lame_ox
+when concept=talk.event world.event=lame_ox world.event_when=now|past
+cooldown 1d
+say The cart didn't come in today. #world.event_words.capitalize#, they say. | No farm cart this morning. Some business with an ox. | #world.event_words.capitalize#. Small thing, but the stalls feel it.
+remember pair: ev=bad 2m
+then other: event.answer
+
+rule e8t_ev_lame_ox_carter
+when concept=talk.event world.event=lame_ox world.event_when=now|past self.job=carter|farmer|herder
+cooldown 1d
+priority 1
+say Poor beast. You don't drive an ox on a bad leg, whatever the market wants. | It happens. An ox goes lame, the cart waits. | Better a day late than an ox lost.
+remember pair: ev=bad 2m
+then other: event.answer
+
+## A ship's rich cargo: silk, spices, brandy and wine cheaper when she is in.
+
+rule e8t_ev_cargo_soon
+when concept=talk.event world.event=rich_cargo world.event_when=soon
+cooldown 1d
+say #world.event_words.capitalize# is due. Silk and spices at the Wharf, they say. | The Wharf's all talk of #world.event_words#. | They're saying #world.event_words# will make brandy cheap for once.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_cargo_now
+when concept=talk.event world.event=rich_cargo world.event_when=now
+cooldown 1d
+say #world.event_words.capitalize# is in. The Heights are all down at the Wharf. | Spices cheap at the Wharf. #world.event_words.capitalize#. | I've never seen so much silk in one place.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_cargo_rich
+when concept=talk.event world.event=rich_cargo world.event_when=soon|now self.wealth=rich
+cooldown 1d
+priority 1
+say I've sent the steward down for silk. Before the Heights take it all. | One waits for a ship like that all year. | The spices alone. One could weep.
+remember pair: ev=good 2m
+then other: event.answer
+
+## A ship lost.
+
+rule e8t_ev_lost
+when concept=talk.event world.event=lost_ship
+cooldown 1d
+priority 1
+say #world.event_words.capitalize#. All her cargo, gone. | They're saying it's #world.event_words#. The Wharf's gone quiet. | #world.event_words.capitalize#. The Bright One keep them.
+remember pair: ev=loss 2m
+then other: event.answer
+
+rule e8t_ev_lost_wharf
+when concept=talk.event world.event=lost_ship self.quarter=wharf|docks
+cooldown 1d
+priority 2
+say I knew her crew. Some of them, anyway. | We stood on the pier all morning. Nothing came. | The sea takes what it likes. It took her.
+remember pair: ev=loss 2m
+then other: event.answer
+
+## The mill wheel stopped: flour, bread and porridge dearer.
+
+rule e8t_ev_mill
+when concept=talk.event world.event=mill_stopped world.event_when=now|past
+cooldown 1d
+say The mill wheel's stopped for mending. Flour's dear till it turns. | No flour from the mill this week. The bakers are scraping. | They're mending the mill wheel. Bread's dearer for it.
+remember pair: ev=bad 2m
+then other: event.answer
+
+rule e8t_ev_mill_baker
+when concept=talk.event world.event=mill_stopped world.event_when=now|past self.job=baker
+cooldown 1d
+priority 1
+say No flour, no bread. I'm baking what I had put by. | Every baker in town's fighting for the last sacks. | I'll be glad to hear that wheel turn again.
+remember pair: ev=bad 2m
+then other: event.answer
+
+rule e8t_ev_mill_poor
+when concept=talk.event world.event=mill_stopped world.event_when=now self.wealth=poor|destitute
+cooldown 1d
+say Bread's dear with the mill stopped. My pups don't care why. | Mill stopped, bread dear. It's always the poor who notice first.
+remember pair: ev=bad 2m
+then other: event.answer
+
+## The drovers in: meat, mutton, hides and sheepskins cheaper.
+
+rule e8t_ev_drovers
+when concept=talk.event world.event=drovers_in world.event_when=now|past
+cooldown 1d
+say The drovers are in. Meat's cheap a day or two. | You can hear the herds from the square. | Mutton tonight. The drovers are in and it's cheap.
+remember pair: ev=good 2m
+then other: event.answer
+
+## The salt pans flooded: salt and salted fish dearer.
+
+rule e8t_ev_salt
+when concept=talk.event world.event=salt_short world.event_when=now|past
+cooldown 1d
+say The salt pans are flooded. Salt's dear this week. | No salt to be had, with the pans under water. | What's a winter without salt? Ask me in a month.
+remember pair: ev=bad 2m
+then other: event.answer
+
+rule e8t_ev_salt_fisher
+when concept=talk.event world.event=salt_short world.event_when=now|past self.job=fisher|cook
+cooldown 1d
+priority 1
+say How am I to cure fish with no salt? | Salt fish dear and getting dearer, with the pans flooded. | I'll smoke what I can't salt.
+remember pair: ev=bad 2m
+then other: event.answer
+
+## A brewing too many: ale, cider and mead cheaper.
+
+rule e8t_ev_brew
+when concept=talk.event world.event=brewers_glut world.event_when=now|past
+cooldown 1d
+say The brewers have brewed too much. Ale's cheap! | Cheap ale this week. The brewers can't shift it. | A brewing too many. I'll do my bit to help.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_brew_brewer
+when concept=talk.event world.event=brewers_glut world.event_when=now|past self.job=brewer
+cooldown 1d
+priority 1
+say I'm giving it away, near enough. Barrels everywhere. | Never brew in a hurry. I've learnt that twice now. | If you've a thirst, come and see me.
+remember pair: ev=good 2m
+then other: event.answer
+
+## Any other (a host's kinds), in its own words.
+
+rule e8t_ev_any_now
+when concept=talk.event world.event_when=now
+cooldown 1d
+priority -1
+say Have you heard? #world.event_words.capitalize#. | It's all #world.event_words# at the market today. | #world.event_words.capitalize#. That's all anyone's talking of.
+remember pair: ev=news 2m
+then other: event.answer
+
+rule e8t_ev_any_soon
+when concept=talk.event world.event_when=soon
+cooldown 1d
+priority -1
+say There's a notice up: #world.event_words#, in a day or two. | They're crying #world.event_words# in the square.
+remember pair: ev=news 2m
+then other: event.answer
+
+## Answers and the close
+
+rule e8t_ev_ans_good
+when concept=event.answer pair.mem.ev=good
+say So I heard. Good for someone. | Is that so? I'll go and look. | Well, that's something.
+
+rule e8t_ev_ans_good_poor
+when concept=event.answer pair.mem.ev=good self.wealth=poor|destitute
+say Not that it'll reach me. | Good for those who can buy. | I'll watch from the back, as ever.
+
+rule e8t_ev_ans_good_rich
+when concept=event.answer pair.mem.ev=good self.wealth=rich
+say How lovely. I'll have the steward see to it. | Yes, we heard. One must take advantage. | Splendid. Simply splendid.
+
+rule e8t_ev_ans_bad
+when concept=event.answer pair.mem.ev=bad
+say #oath#. That's hard news. | I'd heard. Bad business. | Let's hope it's put right soon.
+then other: event.close
+
+rule e8t_ev_ans_bad_poor
+when concept=event.answer pair.mem.ev=bad self.wealth=poor|destitute
+say And it's always us who feel it first. | Just what we needed. | Another thing to pay for.
+then other: event.close
+
+rule e8t_ev_ans_bad_rich
+when concept=event.answer pair.mem.ev=bad self.wealth=rich
+say How inconvenient. | Somebody will have to see to that. | Dreadful. Was anyone hurt?
+then other: event.close
+
+rule e8t_ev_ans_loss
+when concept=event.answer pair.mem.ev=loss
+say The Bright One keep them. | Terrible news. Terrible. | Were there families waiting for her?
+
+rule e8t_ev_ans_loss_rich
+when concept=event.answer pair.mem.ev=loss self.wealth=rich
+say Dreadful. Whose cargo was she carrying? | One hears the Wharf has gone quite silent. | Dreadful. The families must be seen to.
+
+rule e8t_ev_ans_news
+when concept=event.answer pair.mem.ev=news
+say So they say. | Is it now? Well. | I saw the notice.
+
+rule e8t_ev_close
+when concept=event.close pair.mem.ev=bad
+say It'll mend. These things do. | Aye. We'll get by. | Let's hope so.
+

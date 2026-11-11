@@ -383,6 +383,32 @@ std::string World::pairBand(const std::string& a, const std::string& b) const
     return "strangers";
 }
 
+std::vector<Society::PriceMove> World::talkPrices(const std::string& who) const
+{
+    const auto* e = entity(who);
+    const auto* m = e ? roadMarketOf(e->cellId) : nullptr;
+    if (!m)
+        return {};
+    // (The speaker's own shop first, then a shop in the cell they stand in: the price they'd name is the one beside them.)
+    const auto own = society_.tillOf(who);
+    return society_.priceMoves(m->id, talkHolder_, 3, [&](const std::string& till) {
+        if (till == own)
+            return 0;
+        const auto* post = till.size() > 5 ? society_.position(till.substr(5)) : nullptr;
+        return post && post->work.cell == e->cellId ? 1 : 2;
+    });
+}
+
+void World::talkGood(const std::string& base, std::map<std::string, std::string>& facts)
+{
+    // The two goods the old lines test by name keep their words ("herbs", "a meal"); every other its plain words, a
+    // thing counted by the piece in the plural ("hides", "nails", "salt", "iron ore": the ships' cargo words).
+    const auto words = base == "meal" ? std::string("meal") : base == "herbs" ? std::string("herbs") : cargoWords(base);
+    facts["topic.item"] = words;
+    facts["topic.what"] = base == "meal" ? "a meal" : words;
+    facts["topic.is"] = base == "meal" || !pluralGood(words) ? "is" : "are";
+}
+
 void World::talkTown(const std::string& who, std::map<std::string, std::string>& facts)
 {
     // What the town has been talking of (doc 62's world.* facts): the same news the topics are made of, as facts any
@@ -442,6 +468,25 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
         // The market's Times and their cause, and its staged event (8.4, 8.5; Phase 7: world.times, world.times_cause,
         // world.event, world.event_words, world.event_when).
         eventFacts(m->id, facts);
+        // The market's three largest moves in shown price (doc 79, 11; Phase 8): world.<good>_price up or down only where
+        // the price on the list moved by a penny or more from its price at rest; meals and herbs steady where their list
+        // is (the Game keeps only the goods the library lists).
+        std::set<std::string> told;
+        for (const auto& move : talkPrices(who))
+        {
+            facts["world." + move.base + "_price"] = move.trend > 0 ? "up" : "down";
+            told.insert(move.base);
+        }
+        for (const char* base : {"meal", "herbs"})
+            if (!told.count(base) && std::abs(society_.pressure(m->id, base)) > 1e-3)
+                if (const auto* tp = society_.tradePoints().find(m->id))
+                    for (const auto& till : tp->tills)
+                        if (const auto* s = society_.account(till); s && s->stock.count(base))
+                        {
+                            const auto move = society_.priceMove(till, base, talkHolder_);
+                            facts[std::string("world.") + base + "_price"] = move.trend > 0 ? "up" : move.trend < 0 ? "down" : "steady";
+                            break;
+                        }
     }
     // The place itself: how many are about, and whether a traveller (a player) is near.
     int people = 0;
@@ -564,16 +609,21 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         std::string kind = c.status == "raided" ? "raided"
                            : c.status == "returning" && c.to == marketId && c.leg <= 1 ? "arrived"
                            : c.status == "travelling" && c.to == marketId && c.overdue ? "late"
-                           : c.status == "travelling" && c.from == marketId && c.leg > 0 ? "left" : "";
+                           : c.status == "travelling" && c.from == marketId && c.leg > 0 ? "left"
+                           : c.status == "travelling" && c.to == marketId ? "due" : "";   // (On its way here: Phase 8.)
         if (kind.empty())
             continue;
-        auto t = topic(kind == "raided" ? "bandits" : "caravan", kind == "raided" ? 2.4 : kind == "late" ? 2.0 : 1.9);
+        auto t = topic(kind == "raided" ? "bandits" : "caravan", kind == "raided" ? 2.4 : kind == "late" ? 2.0 : kind == "due" ? 1.7 : 1.9);
         t.talk["topic.kind"] = kind;
         t.talk["topic.where"] = townWords(other);
         if (!c.manifest.empty())
-            t.talk["topic.what"] = goodWords(c.manifest.front().first);   // ("nails", as a line says it mid-sentence.)
+            t.talk["topic.what"] = cargoWords(c.manifest.front().first);   // ("nails", "hides", as a line says it mid-sentence.)
         if (const auto* driver = entity(c.driver))
             t.talk["topic.who"] = driver->name;
+        if (kind == "late" && !c.lateCause.empty())
+            t.talk["topic.why"] = c.lateCause;                            // ("a broken axle", "the weather": Phase 8.)
+        if (kind == "due")
+            t.talk["topic.when"] = c.due > 0 && c.due - calendarDays_ <= 1 ? "today" : "soon";
         t.facts.push_back("A wagon between here and " + townWords(other) + " " + kind +
                           (kind == "late" && !c.lateCause.empty() ? ", held up by " + c.lateCause : std::string()) + ".");
         consider(std::move(t));
@@ -583,6 +633,129 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
             road.talk["topic.kind"] = "raided";
             road.talk["topic.where"] = townWords(other);
             consider(std::move(road));
+        }
+    }
+    // A wagon posted to come here, not yet set out (8.6: "caravan due"; Phase 8), and the news the last one brought
+    // (`world.news`, 8.1): what the carters' notices and the market already know.
+    for (const auto& d : society_.board().committed)
+        if (d.kind == "wagon" && d.to == marketId)
+        {
+            auto t = topic("caravan", 1.6);
+            t.talk["topic.kind"] = "due";
+            t.talk["topic.when"] = "soon";
+            t.talk["topic.where"] = townWords(d.from);
+            if (!d.manifest.empty())
+                t.talk["topic.what"] = cargoWords(d.manifest.front().first);
+            if (const auto* driver = entity(d.driver))
+                t.talk["topic.who"] = driver->name;
+            t.facts.push_back("A wagon from " + townWords(d.from) + " is posted to come here.");
+            consider(std::move(t));
+            break;
+        }
+    if (hereMarket)
+        if (const auto news = society_.board().news.find(hereMarket->id);
+            news != society_.board().news.end() && calendarDays_ - news->second.day <= 4 && !news->second.words.empty())
+        {
+            auto t = topic("caravan", 1.5);
+            t.talk["topic.kind"] = "news";
+            t.talk["topic.news"] = news->second.words;
+            t.talk["topic.where"] = marketWords(news->second.from);
+            t.facts.push_back("The last wagon in brought word: " + news->second.words + ".");
+            consider(std::move(t));
+        }
+    // Prices that moved (doc 79, 11; Phase 8, the price topics back): the market's three largest moves in shown price,
+    // said at the price the list shows the traveller listening (the shown-price gate: T1, T17), with the cause that moved
+    // it; and where a traveller's own trade moved it, that traveller, as the teller knows them (a name given, or a look).
+    {
+        double score = 2.2;
+        for (const auto& move : talkPrices(a))
+        {
+            auto t = topic("prices", score);
+            score -= .05;
+            talkGood(move.base, t.talk);
+            t.talk["topic.dir"] = move.trend > 0 ? "up" : "down";
+            t.talk["topic.price"] = Society::priceWords(move.shown, move.listCount);
+            t.talk["topic.cause"] = move.cause;
+            t.talk["topic.cause_words"] = move.causeWords;
+            t.facts.push_back(cargoWords(move.base) + ": " + (move.trend > 0 ? "dearer" : "cheaper") + " here lately, " +
+                              Society::priceWords(move.shown, move.listCount) + " (" + move.causeWords + ").");
+            const auto price = t.talk;
+            consider(std::move(t));
+            if (move.pusher.empty() || !knower_)
+                continue;
+            for (const auto& [id, pe] : entities_)
+                if (!pe.npc && !pe.dead && society_.holderOf(id) == move.pusher)
+                {
+                    const auto known = knower_(a, id);
+                    if (known.words.empty())
+                        break;
+                    auto c = topic("price_cause", 2.6);
+                    c.subject = id;
+                    c.talk = price;
+                    c.talk.erase("topic.cause");
+                    c.talk.erase("topic.cause_words");
+                    c.talk["topic.known"] = known.byName ? "yes" : "no";
+                    c.talk["topic.who"] = known.words;
+                    c.facts.push_back(name(a) + " says " + cargoWords(move.base) + " got " + (move.trend > 0 ? "dearer" : "cheaper") +
+                                      " since " + known.words + (move.trend > 0 ? " bought it up." : " sold a load in."));
+                    consider(std::move(c));
+                    break;
+                }
+        }
+    }
+    // The port's ships (8.3, 8.6; Phase 5's facts, Phase 8's topic): one in, due, kept out by a storm, lost, or sailed.
+    if (hereMarket)
+    {
+        std::map<std::string, std::string> ship;
+        shipFacts(hereMarket->id, ship);
+        if (const auto said = ship.find("world.ships"); said != ship.end() && said->second != "no" && ship.count("world.ship_name"))
+        {
+            const auto& kind = said->second;
+            auto t = topic("ships", kind == "lost" ? 2.4 : kind == "late" ? 2.1 : kind == "in" ? 2.0 : kind == "due" ? 1.7 : 1.5);
+            t.talk["topic.kind"] = kind;
+            for (const auto& s : society_.board().ships)
+                if (s.port == hereMarket->id && s.name == ship["world.ship_name"] && !s.brings.empty())
+                {
+                    t.talk["topic.what"] = cargoWords(s.brings.front().first);
+                    if (kind == "due")
+                        t.talk["topic.when"] = s.day <= std::int64_t(std::floor(calendarDays_)) ? "today" : "soon";
+                    break;
+                }
+            t.facts.push_back(ship["world.ship_name"] + (kind == "in" ? " is in at the Wharf." : kind == "due" ? " is due at the Wharf."
+                                                         : kind == "late" ? " is stormbound." : kind == "lost" ? " was lost at sea." : " has sailed."));
+            consider(std::move(t));
+        }
+    }
+    // The market's staged event, its Times and the harvest of the farms that send it carts (8.2-8.5; Phase 7's facts,
+    // Phase 8's topics): what the notices, the criers and the carts already tell.
+    if (hereMarket)
+    {
+        std::map<std::string, std::string> f;
+        eventFacts(hereMarket->id, f);
+        if (f.count("world.event"))
+        {
+            const auto& when = f["world.event_when"];
+            auto t = topic("event", when == "now" ? 2.1 : when == "soon" ? 1.9 : 1.5);
+            t.facts.push_back("At the market: " + f["world.event_words"] + " (" + when + ").");
+            consider(std::move(t));
+        }
+        if (f["world.times"] != "ordinary")         // (A cause is talked of only with Times it made: never in ordinary ones.)
+        {
+            auto t = topic("times", (f["world.times"] == "hard" || f["world.times"] == "boom" ? 1.5 : 1.2) + jitter(11) * .5);
+            t.facts.push_back("Times here are " + f["world.times"] + (f.count("world.times_cause") ? ", since " + f["world.times_cause"] : std::string()) + ".");
+            consider(std::move(t));
+        }
+        int sum = 0, carts = 0;
+        const auto& farms = society_.farms();
+        for (const auto& end : cartEnds_)
+            if (end.market == hereMarket->id && end.farm < farms.size() && farms[end.farm].heldKeepers + farms[end.farm].heldHands > 0)
+                sum += harvestOf(end.area), ++carts;
+        if (carts > 0)
+        {
+            const int word = int(std::lround(double(sum) / carts));
+            const int season = int(calendar::calendarAt(calendarDays_).season);
+            // (Talked of most at harvest time, and when it's poor or good.)
+            consider(topic("harvest", (word == 1 ? .8 : 1.2) + (season == 1 || season == 2 ? .3 : 0) + jitter(12) * .5));
         }
     }
     for (const auto& camp : roads_.camps)

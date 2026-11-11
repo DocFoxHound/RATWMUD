@@ -1,0 +1,396 @@
+# The roads, the port and the harvest as townsfolk see them (Docs/Design/79-a-staged-economy.md, section 11 and the
+# arrival table, 8.6; Phase 8): wagons due, late and why, the news a wagon brings, the carters by name; ships in, due,
+# stormbound, lost and sailed at the Wharf, and its crowd; the harvest of the farms whose carts come in. Facts in hand
+# (Data/Talk/facts.json): topic.kind, topic.when, topic.where, topic.what (a cargo in the plural: "nails", "hides"),
+# topic.who (a carter by name), topic.why (why a wagon is late), topic.news; world.ship_name ("the Gull"),
+# world.ships; world.harvest. No price is ever named here, and no cause the facts don't give.
+#
+# Chains: an opener hands to caravan.due_answer (a wagon due), caravan.answer (late, news, arrived, left: the existing
+# answers and these), ships.answer, harvest.answer; some answers hand back for a close (caravan.close, ships.close,
+# harvest.close). An opener that names the late wagon's cause remembers it for its reply (`rd=why`).
+
+## ================================================================ A wagon due
+
+rule e8r_cv_due_today
+when concept=talk.caravan topic.kind=due topic.when=today
+cooldown 1d
+say The #topic.where# wagon's due in today. | Wagon from #topic.where# today, if the road's kind. | They're expecting the #topic.where# wagon before dark.
+then other: caravan.due_answer
+
+rule e8r_cv_due_soon
+when concept=talk.caravan topic.kind=due topic.when=soon
+cooldown 1d
+say There's a wagon posted from #topic.where#. A day or two yet. | The board says a wagon's coming from #topic.where#. | #topic.where# is sending a wagon. Not long now.
+then other: caravan.due_answer
+
+rule e8r_cv_due_what
+when concept=talk.caravan topic.kind=due topic.what
+cooldown 1d
+say There's #topic.what# on the wagon from #topic.where#. | The #topic.where# wagon's bringing #topic.what#, the notice says. | #topic.what.capitalize# coming from #topic.where#. About time.
+then other: caravan.due_answer
+
+rule e8r_cv_due_who
+when concept=talk.caravan topic.kind=due topic.who
+cooldown 1d
+say #topic.who#'s on the #topic.where# run. Back with the wagon soon. | #topic.who# is driving the #topic.where# wagon this time. | It's #topic.who# bringing the wagon from #topic.where#.
+then other: caravan.due_answer
+
+rule e8r_cv_due_merchant
+when concept=talk.caravan topic.kind=due role=merchant topic.what
+priority 1
+cooldown 1d
+say My shelf of #topic.what# is half bare till the #topic.where# wagon's in. | I've been telling customers to wait for the wagon. #topic.what.capitalize#, they want. | Nothing but the back room's #topic.what# till #topic.where#'s wagon comes.
+then other: caravan.due_answer
+
+rule e8r_cv_due_poor
+when concept=talk.caravan topic.kind=due wealth=poor|destitute
+cooldown 1d
+say Wagon from #topic.where# coming. There's always unloading. | When the #topic.where# wagon's in I'll be at the yard for work. | A wagon due. A penny for a strong back, maybe.
+then other: caravan.due_answer
+
+rule e8r_cvd_plain
+when concept=caravan.due_answer
+say I'll believe it when it's in the yard. | Let's hope the road's kind to them. | Good. The town could do with it. | Is it? I hadn't seen the board.
+
+rule e8r_cvd_merchant
+when concept=caravan.due_answer role=merchant
+say Good. I've had empty pegs all week. | Then I'd best clear the back room. | About time. Folk keep asking.
+then other: caravan.close
+
+rule e8r_cvd_poor
+when concept=caravan.due_answer wealth=poor|destitute
+say There'll be unloading, then. I'll be there. | A wagon's work for somebody. Might be me. | Nothing on it for the likes of me.
+
+rule e8r_cvd_rich
+when concept=caravan.due_answer wealth=rich
+say How diverting. One does like a wagon day. | I'll send someone to see what's worth having. | I hope they've packed things properly this time.
+
+rule e8r_cvd_carter
+when concept=caravan.due_answer job=carter
+say I'll give them a hand with the team. | Long road, that. They'll be glad of a rest. | I'll be out on the next one myself.
+then other: caravan.close
+
+rule e8r_cv_close
+when concept=caravan.close
+say We'll see. | Aye, well. | Here's hoping. | Mm. Soon enough.
+
+## ================================================================ A wagon late
+
+rule e8r_cv_late_why
+when concept=talk.caravan topic.kind=late topic.why
+priority 1
+cooldown 1d
+say The #topic.where# wagon's late. #topic.why.capitalize#, they say. | Held up on the #topic.where# road. #topic.why.capitalize#. | Word is it's #topic.why# on the #topic.where# road. It'll be late.
+remember pair: rd=why 2m
+then other: caravan.answer
+
+rule e8r_cv_late_plain
+when concept=talk.caravan topic.kind=late
+cooldown 1d
+say The #topic.where# wagon's overdue. | Still no wagon from #topic.where#. A day past due. | Have you seen the board? Overdue, the #topic.where# wagon.
+then other: caravan.answer
+
+rule e8r_cv_late_who
+when concept=talk.caravan topic.kind=late topic.who
+cooldown 1d
+say #topic.who#'s late with the #topic.where# wagon. Not like #topic.who#. | Nobody's seen #topic.who# or the wagon since it left #topic.where#. | #topic.who# knows that road blind. If #topic.who#'s late, something's wrong.
+then other: caravan.answer
+
+rule e8r_cv_late_merchant
+when concept=talk.caravan topic.kind=late role=merchant topic.what
+priority 1
+cooldown 1d
+say I've folk asking for #topic.what# and the wagon's not in. | My #topic.what# is down to the back room. Where's that wagon? | Every day it's late my shelf of #topic.what# gets thinner.
+then other: caravan.answer
+
+rule e8r_cv_late_carter
+when concept=talk.caravan topic.kind=late job=carter
+priority 1
+cooldown 1d
+say I keep looking down the #topic.where# road. Nothing. | A day late's nothing. Two days and I start to worry. | I know that road. Every mile of it.
+then other: caravan.answer
+
+rule e8r_cva_late
+when concept=caravan.answer topic.kind=late
+say Late's better than robbed. | Give it a day. They'll come. | Let's hope that's all it is. | It'll turn up. They mostly do.
+
+rule e8r_cva_late_why
+when concept=caravan.answer topic.kind=late pair.mem.rd=why topic.why
+say #topic.why.capitalize#? That'd hold anyone up. | Poor beasts, with #topic.why#. | Well, #topic.why# mends. They'll be in.
+
+rule e8r_cva_late_carter
+when concept=caravan.answer topic.kind=late job=carter
+say Axles break, fords rise. They'll come. | I've been held up on that road myself. Twice. | If they're not in by tomorrow I'll ride out.
+then other: caravan.close
+
+rule e8r_cva_late_merchant
+when concept=caravan.answer topic.kind=late role=merchant
+say And my customers asking after it all day. | My back room's near bare as well. | Every day late costs me custom.
+
+rule e8r_cv_news
+when concept=talk.caravan topic.kind=news topic.news
+cooldown 1d
+say Word off the #topic.where# wagon: #topic.news#. | The carters say #topic.news#. | #topic.news.capitalize#, so the #topic.where# wagon says.
+then other: caravan.answer
+
+rule e8r_cva_news
+when concept=caravan.answer topic.kind=news
+say Is it now. | Good for #topic.where#. | Doesn't help us here. | Carters will say anything over a cup.
+
+rule e8r_cva_news_merchant
+when concept=caravan.answer topic.kind=news role=merchant
+say Then I'll ask what's on the next wagon from #topic.where#. | Worth knowing. Thank you. | Hm. I'll keep that in mind.
+
+rule e8r_cv_arrived_what
+when concept=talk.caravan topic.kind=arrived topic.what
+cooldown 1d
+say The #topic.where# wagon's in. #topic.what.capitalize# on top of the load. | #topic.what.capitalize# off the #topic.where# wagon this morning. | Wagon from #topic.where#, all #topic.what# and canvas.
+then other: caravan.answer
+
+rule e8r_cv_arrived_merchant_what
+when concept=talk.caravan topic.kind=arrived role=merchant topic.what
+priority 1
+cooldown 1d
+say The #topic.where# wagon's in. I'll have #topic.what# on the shelf by noon. | #topic.what.capitalize# at last. My shelf was a disgrace. | Wagon's in. #topic.what.capitalize# set out, and the back room filled.
+then other: caravan.answer
+
+rule e8r_cv_left_who
+when concept=talk.caravan topic.kind=left topic.who
+cooldown 1d
+say #topic.who#'s on the #topic.where# run. | #topic.who# took the wagon out for #topic.where# at first light. | That's #topic.who# off to #topic.where# again.
+then other: caravan.answer
+
+rule e8r_sh_in
+when concept=talk.ships topic.kind=in
+cooldown 1d
+say #world.ship_name.capitalize#'s in. The Wharf's a madhouse. | Did you see? #world.ship_name.capitalize# came in this morning. | Ship in. #world.ship_name.capitalize#, tied up at the piers.
+then other: ships.answer
+
+rule e8r_sh_in_what
+when concept=talk.ships topic.kind=in topic.what
+cooldown 1d
+say #world.ship_name.capitalize#'s in with #topic.what#. | #topic.what.capitalize# coming off #world.ship_name# by the cartload. | They're swinging #topic.what# out of #world.ship_name#'s hold.
+then other: ships.answer
+
+rule e8r_sh_in_dock
+when concept=talk.ships topic.kind=in quarter=wharf|docks
+priority 1
+cooldown 1d
+say Every back on the Wharf is under #world.ship_name#'s cargo. | Unloading since dawn. #world.ship_name.capitalize# has a deep hold. | The cranes haven't stopped since #world.ship_name# tied up.
+then other: ships.answer
+
+rule e8r_sh_in_merchant
+when concept=talk.ships topic.kind=in role=merchant topic.what
+priority 1
+cooldown 1d
+say #world.ship_name.capitalize#'s in. I'll have #topic.what# set out by evening. | I've been waiting on #world.ship_name# for #topic.what#. | My #topic.what# comes by sea. Now it's come.
+then other: ships.answer
+
+rule e8r_sh_in_poor
+when concept=talk.ships topic.kind=in wealth=poor|destitute
+cooldown 1d
+say Ship's in. They'll want porters. | #world.ship_name.capitalize# in. A day's carrying, if they'll take me. | I stood at the piers since dawn for a turn at the crates.
+then other: ships.answer
+
+rule e8r_sh_due
+when concept=talk.ships topic.kind=due
+cooldown 1d
+say #world.ship_name.capitalize#'s due #topic.when#. | They've posted #world.ship_name#, due #topic.when#. | Ship due #topic.when#. #world.ship_name.capitalize#, the board says.
+then other: ships.answer
+
+rule e8r_sh_due_merchant
+when concept=talk.ships topic.kind=due role=merchant topic.what
+cooldown 1d
+say I'm low on #topic.what# till #world.ship_name# comes. | #topic.what.capitalize# comes on #world.ship_name#, due #topic.when#. | My back room's waiting on #world.ship_name#.
+then other: ships.answer
+
+rule e8r_sh_late
+when concept=talk.ships topic.kind=late
+priority 1
+cooldown 1d
+say #world.ship_name.capitalize#'s stormbound. Won't come this week. | No ship. #world.ship_name.capitalize# is held by the weather. | The Wharf office says #world.ship_name# won't come. Storms.
+then other: ships.answer
+
+rule e8r_sh_late_dock
+when concept=talk.ships topic.kind=late quarter=wharf|docks
+priority 1
+cooldown 1d
+say No ship, no work. Stormbound, they say. | We stood on the pier for nothing. #world.ship_name.capitalize#'s not coming. | Stormbound. The overseer sent us all home.
+then other: ships.answer
+
+rule e8r_sh_late_merchant
+when concept=talk.ships topic.kind=late role=merchant topic.what
+priority 1
+cooldown 1d
+say No #topic.what# off #world.ship_name# this week. I'll make do. | #world.ship_name.capitalize#'s stormbound, and my #topic.what# with it. | I'd counted on #world.ship_name#. Now it's the back room or nothing.
+then other: ships.answer
+
+rule e8r_sh_lost
+when concept=talk.ships topic.kind=lost
+priority 3
+cooldown 1d
+say #world.ship_name.capitalize#'s lost. Lost at sea. | Have you heard? #world.ship_name.capitalize# went down. | The Wharf office put the notice up. #world.ship_name.capitalize#, lost.
+then other: ships.answer
+
+rule e8r_sh_lost_dock
+when concept=talk.ships topic.kind=lost quarter=wharf|docks
+priority 3
+cooldown 1d
+say I tied #world.ship_name# up with my own paws, last time. | Half the Wharf's in the chapel. #world.ship_name.capitalize#'s gone. | Nobody's working. Nobody can. #world.ship_name.capitalize#'s lost.
+then other: ships.answer
+
+rule e8r_sh_sailed
+when concept=talk.ships topic.kind=sailed
+cooldown 1d
+say #world.ship_name.capitalize# sailed on the evening tide. | Wharf's quiet now #world.ship_name#'s gone. | Saw #world.ship_name# go out past the point.
+then other: ships.answer
+
+rule e8r_sha_in
+when concept=ships.answer topic.kind=in
+say Then the Wharf'll be loud till dark. | I could smell the tar from the Commons. | Good. The town needs a ship.
+
+rule e8r_sha_in_dock
+when concept=ships.answer topic.kind=in quarter=wharf|docks
+say I'd best get down there. | My shoulders know it already. | Ship day pay. I'll take it.
+then other: ships.close
+
+rule e8r_sha_in_merchant
+when concept=ships.answer topic.kind=in role=merchant
+say I'll send my apprentice for the first of it. | Then there'll be new stock by evening. | About time the sea brought us something.
+
+rule e8r_sha_due
+when concept=ships.answer topic.kind=due
+say If the weather lets her. | We'll see her when we see her. | The sea keeps its own hours.
+
+rule e8r_sha_late
+when concept=ships.answer topic.kind=late
+say Better in port than on the bottom. | The sea doesn't care who's waiting. | Next week, then. | Storms. Nothing to be done.
+
+rule e8r_sha_lost
+when concept=ships.answer topic.kind=lost
+priority 3
+say The Bright One keep them. | ... Gods. The poor souls. | I can't think of it. I can't. | Their families. Bright One, their families.
+then other: ships.close
+
+rule e8r_sha_sailed
+when concept=ships.answer topic.kind=sailed
+say Fair winds to her. | Quiet streets tonight, then. | Till the next one.
+
+rule e8r_sh_close
+when concept=ships.close
+say Aye. | That's the sea. | So it goes.
+
+rule e8r_sh_close_lost
+when concept=ships.close topic.kind=lost
+priority 3
+say ... | Bright One keep them. | Aye. Bright One keep them.
+
+## Barks at the Wharf
+
+rule e8r_bk_wharf_crowd
+when concept=bark here.crowd=crowd world.ships=in quarter=wharf|docks
+cooldown 30m
+say Mind your backs! Crate coming! | Heave! And heave! | Another off #world.ship_name#! Who's got the tally? | Clear the pier! Cart coming through!
+
+rule e8r_bk_wharf_storm
+when concept=bark world.ships=late quarter=wharf|docks
+cooldown 2h
+say No ship today. Go home. | Stormbound. Not a crate to lift. | Empty pier. Empty purse.
+
+rule e8r_bk_wharf_lost
+when concept=bark world.ships=lost quarter=wharf|docks
+priority 2
+cooldown 2h
+say #world.ship_name.capitalize#. Gone. | ... | Bright One keep them. Bright One keep them all.
+
+## ================================================================ The harvest
+
+rule e8r_hv_good
+when concept=talk.harvest world.harvest=good
+cooldown 2d
+say Good harvest out there this year. | The farm carts come in heavy every morning. | They say the fields have never looked better.
+then other: harvest.answer
+
+rule e8r_hv_good_farmer
+when concept=talk.harvest world.harvest=good job=farmer|herder
+priority 1
+cooldown 2d
+say Heavy cart every morning. A good year, for once. | The ground's been kind. I won't say it twice in case it hears. | Good year. Ask me again next year.
+then other: harvest.answer
+
+rule e8r_hv_good_rich_land
+when concept=talk.harvest world.harvest=good wealth=rich class=middle|lower
+priority 1
+cooldown 2d
+say A good harvest is good for every mill and every ledger. | Our fields came in well. The mill will grind till spring. | Good year on the land. I'll be buying more of it.
+then other: harvest.answer
+
+rule e8r_hv_good_rich_upper
+when concept=talk.harvest world.harvest=good wealth=rich class=upper
+priority 1
+cooldown 2d
+say The stewards are pleased, I'm told. | A good harvest keeps the Council in a good temper. | The estates write that the year is very fine.
+then other: harvest.answer
+
+rule e8r_hv_fair
+when concept=talk.harvest world.harvest=fair
+cooldown 2d
+say Fair harvest, they say. Not good, not bad. | The farm carts are coming in. Middling loads. | An ordinary year out on the farms.
+then other: harvest.answer
+
+rule e8r_hv_poor
+when concept=talk.harvest world.harvest=poor
+priority 1
+cooldown 2d
+say Poor harvest out there. The farm carts come in light. | Some mornings there's no farm cart at all. | Thin year on the farms, they're saying.
+then other: harvest.answer
+
+rule e8r_hv_poor_farmer
+when concept=talk.harvest world.harvest=poor job=farmer|herder
+priority 2
+cooldown 2d
+say Thin year. Some mornings there's not enough to send a cart. | Half a cart, and I'm ashamed to drive it in. | The ground's sulking. Nothing to be done.
+then other: harvest.answer
+
+rule e8r_hv_poor_poor
+when concept=talk.harvest world.harvest=poor wealth=poor|destitute
+priority 1
+cooldown 2d
+say Poor harvest. It's us that'll feel it, come winter. | Light carts. I'll be counting crusts. | Thin harvest. The poor always pay for a thin harvest.
+then other: harvest.answer
+
+rule e8r_hv_poor_rich
+when concept=talk.harvest world.harvest=poor wealth=rich class=middle|lower
+priority 1
+cooldown 2d
+say Poor year. The mill's half idle. | My tenants are behind. Well, it's a thin year. | Light harvest. I'll be patient with the rents.
+then other: harvest.answer
+
+rule e8r_hva_good
+when concept=harvest.answer world.harvest=good
+say Good. Let's hope it lasts. | Bread for everyone, then. | About time the ground was kind.
+
+rule e8r_hva_poor
+when concept=harvest.answer world.harvest=poor
+say Bright One help the farms. | Lean winter, then. | We'll tighten our belts.
+then other: harvest.close
+
+rule e8r_hva_farmer
+when concept=harvest.answer job=farmer|herder
+say You should see it from the furrow. | Town folk only see the cart. | It's the weather that decides, not us.
+
+rule e8r_hv_close
+when concept=harvest.close
+say Aye. | Bright One send a better one. | Next year. There's always next year.
+
+## Barks
+
+rule e8r_bk_harvest_good
+when concept=bark world.harvest=good job=farmer|herder
+cooldown 4h
+say Heavy cart this morning! | Look at that load. Look at it. | The ground's been good to us.
+
+rule e8r_bk_harvest_poor
+when concept=bark world.harvest=poor job=farmer|herder
+cooldown 4h
+say Light load again. | Not worth the axle grease, this cart. | Thin. Thin as gruel.

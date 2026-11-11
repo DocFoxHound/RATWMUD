@@ -20,35 +20,6 @@ bool within(double start, double end, double hour)
 }
 } // namespace
 
-double Game::talkRichLine()
-{
-    const auto today = std::int64_t(std::floor(world_.calendarDays()));
-    if (today == richLineDay_)
-        return richLine_;
-    richLineDay_ = today;
-    const auto& society = world_.society();
-    // (Households as talkSpeaker counts them: those sharing a home, or one alone in a communal one.)
-    std::map<std::string, std::pair<std::string, std::vector<std::string>>> homes;
-    for (const auto& [id, life] : society.state().residents)
-        if (const auto* who = world_.entity(id); who && !who->dead)
-        {
-            auto& home = homes[Society::communalHome(life.homeCell) || life.homeCell.empty() ? "alone:" + id : life.homeCell];
-            home.first = life.homeCell;
-            home.second.push_back(id);
-        }
-    const auto reads = troubleReads();
-    std::vector<double> days;
-    for (const auto& [key, home] : homes)
-        days.push_back(troubles::foodDays(home.second, home.first, reads));
-    if (days.size() >= 20)
-    {
-        std::sort(days.begin(), days.end());
-        richLine_ = std::max(42.0, days[days.size() * 19 / 20]);
-        poorLine_ = std::max(7.0, days[days.size() / 5]);
-    }
-    return richLine_;
-}
-
 talk::Speaker Game::talkSpeaker(const Entity& e)
 {
     talk::Speaker p;
@@ -113,28 +84,31 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
         f[axis] = set && set->count(axis) ? set->at(axis) : middle;
     }
 
-    // Means: the household's money and food in days of plain food for everyone in it (troubles::foodDays: wealth_days,
-    // and the measure for a resident in no band, until Phase 8), and debts.
-    std::vector<std::string> household;
-    if (Society::communalHome(life->homeCell) || life->homeCell.empty())
-        household.push_back(e.id);
-    else
-        for (const auto& [id, other] : society.state().residents)
-            if (other.homeCell == life->homeCell)
-                if (const auto* o = world_.entity(id); o && !o->dead)
-                    household.push_back(id);
-    std::int64_t held = 0;
-    const double days = troubles::foodDays(household, life->homeCell, troubleReads(), &held);
-    f["wealth_days"] = std::to_string(int(std::floor(days)));
-    // In the staged economy (doc 79, 11) wealth is the household's band, worked out once a day with its guarantees, and
-    // class a fact beside it: no scan of every household for the lines.
+    // Means (doc 79, 11; Phase 8): the household's band, worked out once a day with its guarantees (6.3), and class a
+    // fact beside it: no scan of every household for the lines. A resident in no band (a world without the staged
+    // households: a demo roster) falls back on its household's food and money in days (troubles::foodDays,
+    // `wealth_days`) against the society's lines: under three days destitute, under a week poor, six weeks rich.
     const auto* standing = society.statusOf(e.id);
-    // (Lines: under three days destitute; poor, the bottom fifth of the world's households (never under a week's
-    // food); rich, the top twentieth (never under six weeks' food). Standing is added below.)
-    const double richLine = standing ? 0. : talkRichLine();
-    int wealth = standing ? std::clamp(standing->band, 0, 3) : days < 3 ? 0 : days < poorLine_ ? 1 : days < richLine ? 2 : 3;
+    int wealth = 2;
     if (standing)
+    {
+        wealth = std::clamp(standing->band, 0, 3);
         f["class"] = standing->cls == "homeless" ? std::string("lower") : standing->cls;
+    }
+    else
+    {
+        std::vector<std::string> household;
+        if (Society::communalHome(life->homeCell) || life->homeCell.empty())
+            household.push_back(e.id);
+        else
+            for (const auto& [id, other] : society.state().residents)
+                if (other.homeCell == life->homeCell)
+                    if (const auto* o = world_.entity(id); o && !o->dead)
+                        household.push_back(id);
+        const double days = troubles::foodDays(household, life->homeCell, troubleReads());
+        f["wealth_days"] = std::to_string(int(std::floor(days)));
+        wealth = days < 3 ? 0 : days < 7 ? 1 : days < 42 ? 2 : 3;
+    }
     // The Restday dole and the shop's business (doc 79, 10.2-10.3; Phase 6): from the society's street life.
     f["on_dole"] = yes(society.onDole(e.id));
     bool owes = false;
@@ -144,13 +118,13 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     const std::string business = society.businessOf(e.id);
     f["owes"] = yes(owes);
     f["business"] = business;
-    // Standing (doc 62, phase 7; the user, 2026-10-13): food in hand doesn't measure a fortune. A great House's head
-    // and the head's family are rich, whatever their own purse; those who live in the Heights or on an estate (not
-    // their servants), are comfortable at least; the Sump's are poor at most; the homeless are destitute.
+    // Standing for one in no band (doc 62, phase 7; the user, 2026-10-13): a great House's head and the head's family are
+    // rich; those who live in the Heights or on an estate (not their servants) comfortable at least; the Sump's poor at
+    // most; the homeless destitute. (A band has these as its guarantees: doc 79, 6.3.)
     for (const auto& h : society.houses())
     {
         if (standing)
-            break;                                  // (The band's guarantees have it: doc 79, 6.3.)
+            break;
         const auto head = society.state().careers.positions.find(h.head);
         const auto& holder = head != society.state().careers.positions.end() ? head->second.holder : std::string();
         if ((post && post->id == h.head) || (!holder.empty() && (holder == e.id || society.family(e.id, holder))))
@@ -371,6 +345,12 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
     q.alone = b.empty();
     world_.talkMoment(a, q.facts);
     world_.talkTown(a, q.facts);
+    // (A price fact only for the goods the library lists: world.<good>_price, doc 79, 11. The rest are the topic's.)
+    for (auto it = q.facts.begin(); it != q.facts.end();)
+        it = it->first.rfind("world.", 0) == 0 && it->first.size() > 12 && it->first.compare(it->first.size() - 6, 6, "_price") == 0 &&
+                     !talk_.sharedFacts().count(it->first)
+                 ? q.facts.erase(it)
+                 : std::next(it);
     if (const auto* e = world_.entity(a))
         q.a = talkSpeaker(*e);
     if (const auto* e = q.alone ? nullptr : world_.entity(b))
@@ -379,20 +359,29 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
         talkPair(a, b, q.facts);
         if (q.a.facts.count("from") && q.b.facts.count("from"))
             q.facts["pair.same_from"] = q.a.facts["from"] == q.b.facts["from"] ? "yes" : "no";
+        // Who is the better off: the band first (a House's lord is the richer of the two whatever is in the larder; doc 62,
+        // phase 7), then within a band the household's score (doc 79, 6.3: half a point apart), or for those in no band
+        // their food in days (half again more).
+        static const std::map<std::string, int> Rank{{"destitute", 0}, {"poor", 1}, {"comfortable", 2}, {"rich", 3}};
+        const auto rank = [&](const talk::Speaker& p) {
+            const auto w = p.facts.find("wealth");
+            const auto r = w == p.facts.end() ? Rank.end() : Rank.find(w->second);
+            return r == Rank.end() ? 1 : r->second;
+        };
+        const int ra = rank(q.a), rb = rank(q.b);
+        const auto* sa = world_.society().statusOf(a);
+        const auto* sb = world_.society().statusOf(b);
         const auto wa = q.a.facts.find("wealth_days"), wb = q.b.facts.find("wealth_days");
-        if (wa != q.a.facts.end() && wb != q.b.facts.end())
+        std::string richer = ra != rb ? (ra > rb ? "a" : "b") : "same";
+        if (ra == rb && sa && sb)
+            richer = sa->score >= sb->score + .5 ? "a" : sb->score >= sa->score + .5 ? "b" : "same";
+        else if (ra == rb && wa != q.a.facts.end() && wb != q.b.facts.end())
         {
-            // (Standing first: a House's lord is the richer of the two whatever is in the larder; doc 62, phase 7.)
-            static const std::map<std::string, int> Rank{{"destitute", 0}, {"poor", 1}, {"comfortable", 2}, {"rich", 3}};
-            const auto rank = [&](const talk::Speaker& p) {
-                const auto w = p.facts.find("wealth");
-                const auto r = w == p.facts.end() ? Rank.end() : Rank.find(w->second);
-                return r == Rank.end() ? 1 : r->second;
-            };
             const double x = std::stod(wa->second), y = std::stod(wb->second);
-            const int ra = rank(q.a), rb = rank(q.b);
-            q.facts["pair.richer"] = ra != rb ? (ra > rb ? "a" : "b") : x > y * 1.5 + 1 ? "a" : y > x * 1.5 + 1 ? "b" : "same";
+            richer = x > y * 1.5 + 1 ? "a" : y > x * 1.5 + 1 ? "b" : "same";
         }
+        if (q.b.facts.count("wealth") && q.a.facts.count("wealth"))
+            q.facts["pair.richer"] = richer;
     }
     if (!q.alone)
         talkRecall("pair:" + std::min(a, b) + "|" + std::max(a, b), "pair.", q.facts);

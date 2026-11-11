@@ -1,11 +1,17 @@
 // Talk (RatwTalk.h; Docs/Design/62-talk.md): the file formats and their checks, who says what in a scene, rules and
 // how one is chosen (tiers with chance, strict priority, filler, not heard first), the grammar (layers, conditions,
 // habits, modifiers, pronouns, binding), and the real library loading whole.
+#include "RatwMarket.h"
 #include "RatwTalk.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <set>
+#include <sstream>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -687,6 +693,212 @@ void jobs()
     expect(job("rakes the salt at the Salt Pans") == "farmer", "salters");
 }
 
+// Doc 79, 10.3 (Phase 8): the salience rule. A failing shop's keeper never says it can't complain: the words are passed
+// over for another of the line's alternatives, and a line with none left isn't said; the same keeper thriving may.
+void salience()
+{
+    auto lib = foundation();
+    std::string problem;
+    expect(lib.settings().salience.size() >= 1, "settings.json has its salience rules");
+    expect(lib.parse(R"(
+rule sal_fine
+when concept=talk.work
+say Can't complain. | Slow, slow.
+rule sal_only
+when concept=talk.day
+say Oh, can't complain, truly.
+)", "sal.talk", problem), "salience test rules load: " + problem);
+    std::set<std::string> failing, thriving;
+    bool onlySaid = false;
+    for (std::uint64_t seed = 0; seed < 40; ++seed)
+    {
+        auto q = moment("talk.work");
+        q.a.facts["business"] = "failing";
+        q.a.facts["wealth"] = "comfortable";
+        if (const auto said = lib.pick(q, seed, None, {}); !said.lines.empty())
+            failing.insert(said.lines.front().second);
+        q.a.facts["business"] = "thriving";
+        if (const auto said = lib.pick(q, seed, None, {}); !said.lines.empty())
+            thriving.insert(said.lines.front().second);
+        auto d = moment("talk.day");
+        d.a.facts["business"] = "failing";
+        onlySaid |= !lib.pick(d, seed, None, {}).lines.empty();
+    }
+    expect(failing == std::set<std::string>{"Slow, slow."}, "a failing keeper never says it can't complain (" + std::to_string(failing.size()) + ")");
+    expect(thriving.count("Can't complain."), "a thriving one may");
+    expect(!onlySaid, "and a line with nothing else to say isn't said");
+}
+
+// Doc 79, 11 (Phase 8): the staged economy's talk. Each new topic has something to say; a price is never named but the
+// list's (no figure in any price line: the shown-price gate), and a line never blames a cause the move doesn't have.
+void theStagedEconomysTalk()
+{
+    Library lib;
+    std::string problem;
+    expect(lib.load(Dir, problem), "the library loads whole:\n" + problem);
+    const auto price = [](const std::string& cause, const std::string& words, const std::string& dir) {
+        auto q = moment("talk.prices");
+        q.facts["topic.item"] = "salt";
+        q.facts["topic.what"] = "salt";
+        q.facts["topic.is"] = "is";
+        q.facts["topic.dir"] = dir;
+        q.facts["topic.price"] = "fourteen pence the dozen";
+        q.facts["topic.cause"] = cause;
+        q.facts["topic.cause_words"] = words;
+        return q;
+    };
+    // No figure in any line that may speak of a price (only #topic.price#: the list's price, in words).
+    for (const auto& e : lib.entries())
+    {
+        bool money = false;
+        for (const auto& c : e.concepts)
+            money |= c == "talk.prices" || c == "talk.price_cause" || c.rfind("prices.", 0) == 0 || c == "talk.times" ||
+                     c == "talk.event" || c == "talk.ships" || c == "talk.harvest";
+        const bool ours = e.file.find("economy8") != std::string::npos;
+        if (!money && !ours)
+            continue;
+        for (const auto& t : e.turns)
+            for (const auto& v : t.variants)
+                for (const auto& text : v.texts)
+                {
+                    const bool figure = std::any_of(text.begin(), text.end(), [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; });
+                    expect(!figure, e.id + " names no figure (the shown-price gate): " + text);
+                    if (money)
+                        for (const char* unit : {"#topic.price# a bundle", "#topic.price# a loaf", "#topic.price# each", "#topic.price# the "})
+                            expect(text.find(unit) == std::string::npos, e.id + ": nothing after the price, which may end \"the dozen\": " + text);
+                }
+    }
+    // A move travellers made is never blamed on the roads, the sea, the harvest or the season; a late wagon's may be.
+    const auto heard = [&](const Query& base, int seeds) {
+        std::vector<std::string> out;
+        for (const auto& wealth : {"destitute", "poor", "comfortable", "rich"})
+            for (const auto& job : {"merchant", "laborer", "baker", "healer", "noble"})
+                for (int seed = 0; seed < seeds; ++seed)
+                {
+                    auto q = base;
+                    q.a.facts["wealth"] = wealth;
+                    q.a.facts["job"] = job;
+                    q.a.facts["role"] = std::string(job) == "merchant" ? "merchant" : "civilian";
+                    q.a.facts["class"] = std::string(wealth) == "rich" ? "upper" : "lower";
+                    q.b.facts["wealth"] = "poor";
+                    for (const auto& [who, line] : lib.converse(q, std::uint64_t(seed), None, {}).lines)
+                        out.push_back(line);
+                }
+        return out;
+    };
+    const auto lowered = [](std::string s) {
+        for (auto& c : s)
+            c = char(std::tolower(static_cast<unsigned char>(c)));
+        return s;
+    };
+    for (const auto& dir : {"up", "down"})
+    {
+        const auto lines = heard(price("players", dir == std::string("up") ? "travellers buying" : "travellers selling", dir), 6);
+        expect(lines.size() >= 40, std::string("prices ") + dir + " are talked of");
+        std::string blamed;
+        for (const auto& line : lines)
+        {
+            const auto low = lowered(line);
+            for (const char* cause : {"wagon", "caravan", "carter", "ship", "harvest", "winter price", "the frost", "the snow",
+                                      "drover", "good catch", "blight", "wedding", "bandit", "the roads", "the pass"})
+                if (low.find(cause) != std::string::npos)
+                    blamed += "\n  " + std::string(cause) + ": " + line;
+        }
+        expect(blamed.empty(), std::string("a move travellers made (") + dir + ") isn't blamed on the roads, the sea or the season:" + blamed);
+    }
+    bool blamed = false;
+    for (const auto& line : heard(price("late", "the wagon's late", "up"), 6))
+        blamed |= lowered(line).find("wagon") != std::string::npos || lowered(line).find("carter") != std::string::npos;
+    expect(blamed, "a late wagon's move is put down to it");
+    for (const auto& line : heard(price("players", "travellers buying", "up"), 2))
+        expect(line.find("fourteen pence the dozen") != std::string::npos || line.find("pence") == std::string::npos,
+               "the only price said is the list's: " + line);
+    // Every new topic speaks: wagons due and their news, ships, the harvest, a staged event, the Times; and a traveller's
+    // buying up by name.
+    const std::vector<std::pair<std::string, Facts>> topics{
+        {"talk.caravan", {{"topic.kind", "due"}, {"topic.when", "soon"}, {"topic.where", "Coldwater"}, {"topic.what", "nails"}, {"topic.who", "Tam Reed"}}},
+        {"talk.caravan", {{"topic.kind", "late"}, {"topic.where", "Coldwater"}, {"topic.what", "nails"}, {"topic.why", "a broken axle"}}},
+        {"talk.caravan", {{"topic.kind", "news"}, {"topic.where", "Coldwater"}, {"topic.news", "iron ore is cheap in Coldwater"}}},
+        {"talk.ships", {{"topic.kind", "in"}, {"world.ships", "in"}, {"world.ship_name", "the Gull"}, {"topic.what", "butter"}}},
+        {"talk.ships", {{"topic.kind", "lost"}, {"world.ships", "lost"}, {"world.ship_name", "the Gull"}}},
+        {"talk.harvest", {{"world.harvest", "poor"}}},
+        {"talk.event", {{"world.event", "house_wedding"}, {"world.event_words", "the House wedding"}, {"world.event_when", "now"}}},
+        {"talk.event", {{"world.event", "seal_hunt"}, {"world.event_words", "the seal hunt"}, {"world.event_when", "soon"}}},
+        {"talk.times", {{"world.times", "hard"}, {"world.times_cause", "the Crown's war levy"}}},
+        {"talk.times", {{"world.times", "boom"}}},
+        {"talk.price_cause", {{"topic.dir", "up"}, {"topic.known", "yes"}, {"topic.who", "Ada"}, {"topic.what", "salt"}, {"topic.is", "is"},
+                              {"topic.item", "salt"}, {"topic.price", "fourteen pence the dozen"}}},
+    };
+    for (const auto& [concept, facts] : topics)
+    {
+        int said = 0;
+        for (const auto& wealth : {"destitute", "poor", "comfortable", "rich"})
+            for (std::uint64_t seed = 0; seed < 4; ++seed)
+            {
+                auto q = moment(concept);
+                q.a.facts["wealth"] = wealth;
+                q.a.facts["class"] = std::string(wealth) == "rich" ? "upper" : "middle";
+                for (const auto& [k, v] : facts)
+                    q.facts[k] = v;
+                const auto lines = lib.converse(q, seed, None, {}).lines;
+                said += !lines.empty();
+                for (const auto& [who, line] : lines)
+                    expect(line.find('#') == std::string::npos, concept + ": every symbol filled: " + line);
+            }
+        expect(said >= 12, concept + " (" + facts.begin()->second + ") is talked of: " + std::to_string(said) + " of 16");
+    }
+    // A failing keeper, asked how it is, never says it can't complain.
+    for (std::uint64_t seed = 0; seed < 60; ++seed)
+    {
+        auto q = moment("keeping.answer");
+        q.a.facts["business"] = "failing";
+        q.a.facts["wealth"] = "comfortable";
+        for (const auto& [who, line] : lib.converse(q, seed, None, {}).lines)
+            if (who == 0)
+                expect(lowered(line).find("can't complain") == std::string::npos, "a failing keeper complains: " + line);
+    }
+}
+
+// Never the word for the domestic animal anywhere a player reads talk (the user, 2026-10-14; doc 79's standing rules):
+// every file of the library, the troubles' words and the market's lists (ship names, events, causes), by the same check
+// the loaders use (market::forbiddenWord: whole words), and no hounds either.
+void theForbiddenWord()
+{
+    namespace fs = std::filesystem;
+    std::vector<fs::path> files;
+    for (const auto& entry : fs::recursive_directory_iterator(Dir))
+        if (entry.is_regular_file())
+            files.push_back(entry.path());
+    files.push_back(fs::path(RATW_SOURCE_DIR) / "Data/Town/troubles.json");
+    files.push_back(fs::path(RATW_SOURCE_DIR) / "Data/Economy/market.json");
+    int lines = 0;
+    for (const auto& f : files)
+    {
+        std::ifstream in(f);
+        expect(bool(in), "read " + f.string());
+        int n = 0;
+        for (std::string line; std::getline(in, line);)
+        {
+            ++n, ++lines;
+            // (A rule's or scene's id is never read by a player, and players' heard lists keep them: three older ones
+            // named for the animal before the user's rule stay as they are.)
+            if (line.rfind("scene ", 0) == 0 || line.rfind("rule ", 0) == 0)
+                continue;
+            std::string low = line;
+            for (auto& c : low)
+                c = char(std::tolower(static_cast<unsigned char>(c)));
+            // ("Hound" as a whole word: horehound is a herb.)
+            bool hound = false;
+            for (std::size_t at = low.find("hound"); at != std::string::npos && !hound; at = low.find("hound", at + 1))
+                hound = (at == 0 || !std::isalpha(static_cast<unsigned char>(low[at - 1]))) &&
+                        (at + 5 >= low.size() || !std::isalpha(static_cast<unsigned char>(low[at + 5])) || low[at + 5] == 's');
+            expect(!ratw::market::forbiddenWord(line) && !hound,
+                   "the forbidden word in " + f.filename().string() + ":" + std::to_string(n) + ": " + line);
+        }
+    }
+    expect(lines > 20000, "every line read (" + std::to_string(lines) + ")");
+}
+
 void theRealLibrary()
 {
     Library lib;
@@ -726,6 +938,9 @@ int main()
         playerAnswers();
         jobs();
         theRealLibrary();
+        salience();
+        theStagedEconomysTalk();
+        theForbiddenWord();
     }
     catch (const std::exception& error)
     {

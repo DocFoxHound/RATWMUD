@@ -125,7 +125,7 @@ b : Deer, probably. | Nor me. | Leave the plough? It's my plough.
 a : Probably isn't certainly. | Let's go now. | It's your life too.
 
 scene em_place_shore_caravan
-when topic=caravan here.place=shore
+when topic=caravan here.place=shore topic.kind!=news
 a : The wagons from #topic.where# could be boats, for all the time they take. | Ship's faster than any caravan. | The road's longer than the sea. And worse.
 b : Boats can't climb hills. | And sinks quicker. | Nothing's worse than the sea.
 a : Nor can carters. | Not always. | You've not driven a wagon.
@@ -160,8 +160,8 @@ a : He likes quiet. | Grumbling. | Nothing does.
 b?[priest] : The road is no excuse. But I'll bless them anyway.
 
 scene em_day_festival_prices
-when topic=prices here.day=festival
-a : Festival prices. They double everything. | A cup of cider for #topic.price# at the festival. Robbery. | Everyone sells dear on a feast day.
+when topic=prices here.day=festival topic.dir=up topic.cause=event|players
+a : Festival prices, and everyone buying. | A cup of cider for #topic.price# at the festival. Robbery. | Everyone sells dear on a feast day.
 b : It's a festival. Pay up and smile. | You'll drink it anyway. | And everyone buys.
 a : I'll pay and grumble. | Twice. | That's the feast.
 

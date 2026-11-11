@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------- Ridgemere
 
 scene em_rm2_quay_smell
-when topic=prices topic.dir=down here.region=ridgemere here.place=market|street|shore
+when topic=prices topic.dir=down here.region=ridgemere here.place=market|street|shore topic.item=fish|shellfish topic.cause=event|harvest
 a : Fish so cheap at the wharf the gulls are getting choosy. | The smokehouses are giving away the broken pieces. | #topic.what# for #topic.price#. The Sump will eat tonight.
 b : Choosy gulls. That's a first. | Broken fish tastes the same. | Good.
 a : A good week. | Better, even. | About time.
@@ -31,7 +31,7 @@ a : Doesn't matter. | Nobody. | Always.
 b?[beggar] : They came through last night. Took my blanket as evidence.
 
 scene em_rm2_winter_quay
-when topic=prices topic.dir=up here.region=ridgemere here.season=winter
+when topic=prices topic.dir=up here.region=ridgemere here.season=winter topic.cause=ship_late|ship_lost
 a : Winter gales on the Sound. No boats, no fish. | Winter storms keep the ships out. The Sump's hungry. | Gales on the wharf and nothing on the stalls.
 b : Every winter. | And the Houses' cellars full. | Like every winter.
 a : Every winter. | Always full. | Every one.
@@ -91,7 +91,7 @@ a : Muddy ghosts. | Bells and curses. | Less than nothing.
 # ---------------------------------------------------------------- Frosthollow
 
 scene em_ua2_snow_closed
-when topic=prices topic.dir=up here.region=frosthollow here.season=winter
+when topic=prices topic.dir=up here.region=frosthollow here.season=winter topic.cause=late|raid
 a : The High Road's snowed shut and every stall knows it. | No carts up the valley for a week. #topic.what# at #topic.price#. | When the snow comes, the prices climb faster than the road.
 b : They'll dig it out soon. | A week? It'll be two. | Everything climbs here.
 a : Not soon enough. | Don't say that. | Except wages.
@@ -147,9 +147,9 @@ b?[fisher] : The lake feeds this town in winter. Don't forget it.
 
 scene em_lk2_boatwright
 when topic=prices topic.dir=up here.region=coldwater a.job=crafter|fisher
-a : Pitch costs more. Boats cost more. Fish cost more. | A new hull costs three times what it did. | The boatwrights are pricing out the fishers.
-b : One thing leads to another. | Three times! | Then nobody fishes.
-a : Round and round. | Three. | Nobody eats.
+a : Pitch costs more. Boats cost more. Fish cost more. | A new hull costs a fortune now. | The boatwrights are pricing out the fishers.
+b : One thing leads to another. | A fortune! | Then nobody fishes.
+a : Round and round. | A fortune. | Nobody eats.
 
 scene em_lk2_mist_raid
 when topic=bandits here.region=coldwater here.weather=fog

@@ -19,7 +19,7 @@ a@merch : Someone's passing it on to me. | Somebody always is. | Costs. Aye.
 a : It's not right. | Wept, and paid. | A cruel one.
 
 scene w7c_up_blame
-when topic=prices topic.dir=up
+when topic=prices topic.dir=up topic.cause=late|raid
 a : Whose fault is it, then? #topic.price# for #topic.what#. | Somebody's getting rich off this, and it isn't me. | They say it's the roads. They always say it's the roads.
 b[temper=short] : The Houses. It's always the Houses. | Find them and I'll tell them. | Then fix the roads!
 b[honesty=sly] : Me. I've been buying it all up. Ha. | Not me. Well. A little me. | It's the roads. Mostly.
@@ -63,10 +63,10 @@ a : I intend to. | #toast#. | Every week.
 scene w7c_up_meal
 when topic=prices topic.item=meal topic.dir=up
 a : #topic.price# for a bowl of stew. A bowl! | The pie-wife wants #topic.price# a pie now. | Last week a meal was cheaper. I counted.
-b[job=cook|innkeeper] #cook : And the onions cost me double. Someone has to pay. | Flour's dear. Pies are flour. | Not my doing. I'm losing on it.
+b[job=cook|innkeeper] #cook : And who pays the cook? Someone has to. | Pies don't make themselves. | Not my doing. I'm losing on it.
 b[stage=young] #pup : Can we still have pie? | Is pie a lot of money? | Can I have half a pie?
 b : Cook at home, then. | Bake your own. | You counted?
-a@cook : Then it's the onions I'll curse. | Pies are pennies, now. | Somebody's not losing.
+a@cook : Not me, this week. | Nor do pennies. | Somebody's not losing.
 a@pup : Not this week, little one. | A lot, yes. | We'll see.
 a : On what fire? | With what flour? | Every penny.
 
@@ -74,7 +74,7 @@ scene w7c_up_herbs
 when topic=prices topic.item=herbs topic.dir=up
 a : Herbs at #topic.price#. A cough's a luxury now. | I'll not be ill this month. Can't afford it. | They want #topic.price# for a twist of willow bark.
 b[job=healer] #heal : I know. I'm paying it too. Come to me if it's bad. | Don't wait till it's bad. Bad's dearer. | Bark grows by the river, free. Take a knife.
-b[stage=old] #old : My knees cost #topic.price# a week now. | Neither will I. I'll lie about it. | I remember it growing on every bank.
+b[stage=old] #old : My knees eat herbs, and at #topic.price#. | Neither will I. I'll lie about it. | I remember it growing on every bank.
 b : Gather your own. | Wise. | It's robbery.
 a@heal : Bless you. I might. | I'll try not to wait. | Which river? Which bark?
 a@old : Mine too, near enough. | Lie well, then. | So do I. Now look.
@@ -93,11 +93,11 @@ a@merch : Sorry. Not very. | Ha. Sorry. | No. Not for you.
 a : Hurry, then. | It's a rare day. | Very good.
 
 scene w7c_down_why
-when topic=prices topic.dir=down
-a : Why's #topic.what# cheaper? What's wrong with it? | Down to #topic.price#. Somebody's flooding the market. | Cheap. I don't trust cheap.
-b[honesty=guarded] #worm : There's a worm in it somewhere. Look. | Somebody's dumping. Wait and see who. | Nor me.
-b[humour=merry] : Maybe someone was nice. It happens! Rarely. | Floods are lovely if you've a bucket. | Trust it long enough to buy some.
-b : A good harvest, I heard. | Carts came in, I think. | Cheap's cheap.
+when topic=prices topic.dir=down topic.cause!=still
+a : Why's #topic.what# cheaper? What's wrong with it? | Down to #topic.price#. I wonder why. | Cheap. I don't trust cheap.
+b[honesty=guarded] #worm : There's a worm in it somewhere. Look. | There's a reason. Wait and see what. | Nor me.
+b[humour=merry] : Maybe someone was nice. It happens! Rarely. | Wonder all you like. I'm buying. | Trust it long enough to buy some.
+b : #topic.cause_words.capitalize#, I heard. | Something came in, I think. | Cheap's cheap.
 a@worm : I'll look. | I'll watch. | See? Nobody does.
 a : I hope you're right. | Maybe. | Hm. I'll buy a little.
 
@@ -131,7 +131,7 @@ a : Isn't it. | Clever? Thrifty. | My chest agrees.
 ## ---------------------------------------------------------------- Why it fell
 
 scene w7c_cause_grateful
-when topic=price_cause
+when topic=price_cause topic.dir=down
 a : We've #topic.who# to thank for cheaper #topic.what#. | #topic.who# brought #topic.what# in, and down it came. | You know why it's all so cheap? #topic.who#.
 b[role=merchant] #merch : Thank them? They've cut my margin to the bone. | And down came my profits. | I know. I'm not pleased.
 b[wealth=poor|destitute] : Bless them. Truly. | And I could buy some. First time this month. | Then bless #topic.who#.
@@ -142,7 +142,7 @@ a@doubt : I didn't ask. | Who cares where? | Ask away. I'm buying.
 a : It was. | Very lucky. | It is.
 
 scene w7c_cause_who
-when topic=price_cause topic.known=no
+when topic=price_cause topic.known=no topic.dir=down
 a : A stranger, #topic.who#, came with #topic.what#. | Some traveller sold the shops #topic.what#. #topic.who#, it was. | Did you see #topic.who#? Brought a load of #topic.what#.
 b[stage=young] : Are they still here? Can I see? | Was it a pirate? | I saw them! I think.
 b[temper=nervy] : Strangers. I don't like strangers. | What else did they bring? | I'll keep my door locked.
@@ -150,14 +150,14 @@ b : Never seen them. | Who's that, then? | I missed them.
 a : Passing through, I think. | Nobody knows. | Everyone's talking of them.
 
 scene w7c_cause_named
-when topic=price_cause topic.known=yes
+when topic=price_cause topic.known=yes topic.dir=down
 a : #topic.who# did the town a good turn. #topic.what.capitalize#, cheap. | That #topic.who#'s been bringing #topic.what# in. | Prices fell, and it's #topic.who# did it.
 b[pair.band=friends|family] : I always liked them. | Good. They need the trade. | Did they? Good for them.
 b : Good of them. | Have they, now? | So I heard.
 a : Good sort. | Loads of it. | It's all over town.
 
 scene w7c_cause_more
-when topic=price_cause
+when topic=price_cause topic.dir=down
 a : Let's hope they bring more #topic.what#. | I'd pay #topic.who# to come again. | If #topic.who# comes back, prices'll fall again.
 b[role=merchant] #merch : Let's hope they don't. | I'd pay them to stay away. | Then I'll shut my stall.
 b : I'll drink to that. | Me too. | Here's hoping.

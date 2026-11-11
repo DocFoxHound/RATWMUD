@@ -188,7 +188,7 @@ bool World::makeEvent(const std::string& marketId, const market::Data::EventKind
         return problem = "its shops deal in none of its goods", false;
     std::vector<std::string> goods;
     for (const auto& [g, target] : e.goods)
-        goods.push_back(goodWords(g));
+        goods.push_back(cargoWords(g));   // ("hides", "handbells": Phase 8's wording.)
     words["goods"] = listed(goods);
     e.words = json::utf8Prefix(fill(kind.words, words), 80);
     e.notice = json::utf8Prefix(fill(kind.notice, words), 280);

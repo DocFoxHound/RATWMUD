@@ -123,7 +123,11 @@ std::string Game::troubleSaid(const std::string& npc, const std::string& wolf, s
     if (!kind || kind->said.empty())
         return nothing();
     heardTrouble(wolf, npc, t.kind);
-    return troubles::fill(kind->said[seed % kind->said.size()], troubleBlanks(npc, t));
+    const auto* said = &kind->said;
+    if (const auto* s = world_.society().statusOf(npc))
+        if (const auto by = kind->saidBy.find(status::bandName(s->band)); by != kind->saidBy.end())
+            said = &by->second;                     // (As its band says it: Phase 8.)
+    return troubles::fill((*said)[seed % said->size()], troubleBlanks(npc, t));
 }
 
 void Game::heardTrouble(const std::string& wolf, const std::string& npc, const std::string& kind)
