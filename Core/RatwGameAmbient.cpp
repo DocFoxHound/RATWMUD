@@ -90,7 +90,9 @@ void Game::ambient(double dt)
                 voiced("exchange", route, t.pick.teller);
             }
     };
+    world_.talkFor(pick.hearer);                    // (Its prices at the list of the player it was picked for: doc 79, 11.)
     const auto q = exchangeQuery(pick, context);
+    world_.talkFor({});
     const auto cell = pick.cell;
     const auto seed = id * 2654435761u + std::uint64_t(now * 7);
     const auto fromTalk = [this, q, cell, seed, teller = a->id](const char*& route) {
@@ -190,24 +192,26 @@ talk::Query Game::exchangeQuery(const AmbientPick& pick, const mind::ExchangeCon
         facts.emplace("topic.subject", context.subjectName);
     if (pick.topic.kind == "gossip" && !context.claim.empty())
         facts["topic.claim"] = context.claim;
-    if (!context.news.empty())
-        facts["topic.news"] = mind::firstPerson(context.news, context.a.name);
+    if (!context.news.empty())                      // (A topic's own news, a wagon's, is kept: Phase 8 repair.)
+        facts.emplace("topic.news", mind::firstPerson(context.news, context.a.name));
     if (!context.day.empty())
         facts["topic.remark"] = context.day;
     return talkQuery(pick.teller, pick.listener, "talk." + pick.topic.kind, facts);
 }
 
-talk::Query Game::talkTopicQuery(const std::string& a, const std::string& b)
+talk::Query Game::talkTopicQuery(const std::string& a, const std::string& b, const std::string& hearer)
 {
     AmbientPick pick;
     pick.teller = a;
     pick.listener = b;
+    pick.hearer = hearer;
     if (const auto* e = world_.entity(a))
         pick.cell = e->cellId;
+    world_.talkFor(hearer);
     pick.topic = world_.ambientTopic(a, b);
-    if (pick.topic.kind.empty())
-        return talkQuery(a, b, "talk.day");
-    return exchangeQuery(pick, exchangeContext(pick));
+    auto q = pick.topic.kind.empty() ? talkQuery(a, b, "talk.day") : exchangeQuery(pick, exchangeContext(pick));
+    world_.talkFor({});
+    return q;
 }
 
 std::vector<std::string> Game::hearersOf(const std::string& speaker) const
@@ -282,7 +286,9 @@ void Game::barks(double dt)
                     who = e;
                     break;
                 }
+        world_.talkFor(player->id);                 // (A price fact at the list of the player it's called to.)
         const auto q = talkQuery(who->id, {}, "bark");
+        world_.talkFor({});
         const auto chosen = talkPick(q, who->id, "bark:" + player->cellId, 12,
                                      std::uint64_t(now * 1000) ^ std::hash<std::string>{}(who->id), false);
         if (chosen.id.empty() || chosen.lines.empty())

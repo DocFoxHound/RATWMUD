@@ -287,7 +287,7 @@ a : That's the plan. | I'll bring the basket. | You're the only one who knows.
 
 scene em_prices_ledger
 when topic=prices a.job=official|scholar|merchant
-a : I've been writing down prices every week. You'd be surprised. | My ledger says this happens every year about now. | Prices follow the caravans. I can show you.
+a : I've been writing down prices every week. You'd be surprised. | My ledger says this happens every year about now. | Prices have a pattern. I can show you.
 b : Surprise me. | Every year? | Show me, then.
 a : Some other time. It's a long ledger. | Every year. Nobody listens. | Bring a lamp. It's a thick book.
 

@@ -2620,15 +2620,28 @@ EconomyResult Society::stagedTrade(const std::string& player, const std::string&
     cell.P = lot.P;
     cell.touched = now;
     const double moved = lot.P - before;
-    if (std::abs(moved) > 1e-9)
-        cell.cause = !buy && std::abs(moved) >= .1 ? "dump" : "players";
-    const std::string cause = cell.cause.empty() ? std::string("players") : cell.cause;
-    if (std::abs(cell.P) < 1e-6)
-        b.cell[lot.market].erase(lot.base);         // (`cell` is gone from here.)
     auto& push = b.pushed[lot.market][holder][lot.base];
     push = {lot.push, now};
     if (std::abs(push.amount) < 1e-6)
         b.pushed[lot.market][holder].erase(lot.base);
+    // The cause is what moved the factor (11; the Phase 8 repair): the travellers' only where their pushes, together, are
+    // most of P on its side, or where P was at rest or crossed over; a piece or two bought never takes over the move a
+    // wagon, a ship or an event made. (Where it stays, a later read says "still" if the travellers turned it.)
+    if (std::abs(moved) > 1e-9)
+    {
+        const bool theirs = cell.cause.empty() || cell.cause == "players" || cell.cause == "dump";
+        double players = 0;
+        if (!theirs)
+            if (const auto pm = b.pushed.find(lot.market); pm != b.pushed.end())
+                for (const auto& [who, goods] : pm->second)
+                    if (goods.count(lot.base))
+                        players += pushedBy(lot.market, who, lot.base);
+        if (theirs || before * lot.P <= 0 || players * lot.P >= .5 * lot.P * lot.P)
+            cell.cause = !buy && std::abs(moved) >= .1 ? "dump" : "players";
+    }
+    const std::string cause = !buy && std::abs(moved) >= .1 ? "dump" : "players";   // (This trade's own move, for the recent list.)
+    if (std::abs(cell.P) < 1e-6)
+        b.cell[lot.market].erase(lot.base);         // (`cell` is gone from here.)
     b.netToday[lot.market][lot.base][holder] += buy ? -quantity : quantity;
     if (!buy)
     {
@@ -2740,7 +2753,7 @@ namespace
 // buying", "someone sold a heap", "the wagon's late", "the Gull came in", "a good harvest", the event's own words); a
 // cause the move belies is "still" ("though the wagon came in"), so no line blames it.
 void talkCause(const market::Board& b, const std::string& market, const std::string& base, const std::string& cause, int trend,
-               std::string& kind, std::string& words)
+               std::string& kind, std::string& words, std::string& shipName)
 {
     const bool up = trend > 0;
     const auto still = [&](const std::string& w) {
@@ -2779,6 +2792,7 @@ void talkCause(const market::Board& b, const std::string& market, const std::str
                 ship = &s;
         }
         const std::string name = ship ? ship->name : "a ship";
+        shipName = ship ? ship->name : std::string();
         if (late && ship && ship->lost)
             up ? set("ship_lost", name + " lost at sea") : still(name + " was lost at sea");
         else if (late)
@@ -2839,7 +2853,7 @@ Society::PriceMove Society::priceMove(const std::string& till, const std::string
     if (const auto c = state_.board.cell.find(market); c != state_.board.cell.end())
         if (const auto g = c->second.find(m.base); g != c->second.end())
             cause = g->second.cause;
-    talkCause(state_.board, market, m.base, cause, m.trend, m.cause, m.causeWords);
+    talkCause(state_.board, market, m.base, cause, m.trend, m.cause, m.causeWords, m.ship);
     // Who pushed it most the move's way (a players' move: talk's price_cause names them as the speaker knows them).
     if (m.cause == "players" || m.cause == "dump")
         if (const auto pm = state_.board.pushed.find(market); pm != state_.board.pushed.end())
@@ -2989,7 +3003,10 @@ void Society::marketMorning(std::int64_t day)
                 // The cause is the ripple's only where it leaves P on its own side (a want's dearer, a glut's cheaper): one
                 // that only eats into a move the other way leaves that move's cause, which still sets the arrow (7.3, 11:
                 // the cause is what actually moved the factor; Review A).
-                const bool itsOwn = (next > 0 && r > 0) || (next < 0 && r < 0);
+                // (And, as a player's trade, only where the ripple is most of P or P was at rest: a little ripple never
+                // takes over a wagon's move. Phase 8 repair.)
+                const bool itsOwn = ((next > 0 && r > 0) || (next < 0 && r < 0)) &&
+                                    (c.cause.empty() || c.cause == "ripple" || P * next <= 0 || std::abs(next - P) >= .5 * std::abs(next));
                 c = {next, now, itsOwn ? std::string("ripple") : c.cause};
                 rippled_[m].insert(target);
                 // Each holder charged its share of what the ripple moved (none past the cap's truncation).

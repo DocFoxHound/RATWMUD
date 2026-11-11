@@ -200,6 +200,16 @@ void talkSaysTheShownPrice()
     const auto still = s.priceMove(till, "bread", bo);
     expect(still.trend == 1 && still.cause == "still" && still.causeWords == "though the wagon came in",
            "dear still, though the wagon came in: " + still.cause);
+    // A ship's move names the ship that made it (topic.ship), not the ship in at the time (Phase 8 repair).
+    market::Ship heron, tide;
+    heron.id = "s1", heron.port = "ridgemere", heron.name = "the Heron", heron.status = "storm", heron.brings = {{"bread", 100}};
+    tide.id = "s2", tide.port = "ridgemere", tide.name = "the Long Tide", tide.status = "in", tide.brings = {{"salt", 50}};
+    s.stagedBoard().ships = {tide, heron};
+    s.setPressure("ridgemere", "bread", .3, "ship late");
+    const auto storm = s.priceMove(till, "bread", bo);
+    expect(storm.trend == 1 && storm.cause == "ship_late" && storm.ship == "the Heron" && storm.causeWords == "the Heron stormbound",
+           "dearer since the Heron is stormbound: " + storm.ship + ", " + storm.causeWords);
+    s.stagedBoard().ships.clear();
 }
 
 void breadInRidgemere()
@@ -985,6 +995,199 @@ void theKeepersAnswer()
     fs::remove_all(root);
 }
 
+// Talk through the game's own path (doc 79, 11, T17; the Phase 8 repair): the ambient director's picks for each listening
+// player, the topic written as the game writes it (ambientTopic, exchangeQuery) and spoken (converse). Each player hears
+// the price on their own list; a wagon's news reads as it was brought; a nail bought never takes over the late wagon's
+// cause until the travellers' buying is most of the move; nails are never eaten; only the smith who sells them speaks of
+// his shelf of them.
+void talkThroughTheRealPath()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-p12stage-talkpath-" + std::to_string(::getpid()));
+    const auto worldPath = writeStrip(root / "world");
+    {
+        std::ofstream manifest(fs::path(worldPath) / "world.ratw", std::ios::app);
+        manifest << resident("uf", "Ferris", "merchant", "smith at the forge", 0, 9.5, 1, 6.5);
+        manifest << resident("ub", "Bryn", "merchant", "baker at The Loaf", 0, 10.5, 1, 4.5);
+    }
+    Town town(worldPath, (root / "save").string(), 120, true);
+    auto& w = town.g.world();
+    auto& s = w.society();
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 7.5);
+    town.enter(town.bo, 2, "player-bo", "Bo", 1, 7.5);
+    w.setTimeOfDay(12);
+    town.run(2);
+    const auto till = s.tillOf("uf");
+    const auto market = s.marketOf(till);
+    if (Society::stock(*s.account(till), "nails") < 400)
+        s.create(till, "nails", 400 - Society::stock(*s.account(till), "nails"), "test stock");
+    const auto bakery = s.tillOf("ub");
+    expect(s.merchant("ub") && !bakery.empty(), "Bryn keeps a bakery");
+    if (Society::stock(*s.account(bakery), "bread") < 2000)
+        s.create(bakery, "bread", 2000 - Society::stock(*s.account(bakery), "bread"), "test stock");
+    const auto ashHolder = town.g.accountOf(town.ash.entityId), boHolder = town.g.accountOf(town.bo.entityId);
+    const auto none = [](const std::string&) { return false; };
+    // Two residents standing still beside the players, free to talk (the director's own test of who may).
+    const auto ready = [&] {
+        for (const char* id : {"uf", "um"})
+            if (auto* e = w.entity(id))
+            {
+                e->cellId = cellId(1);
+                e->position = {std::string(id) == "uf" ? 7.5 : 9.0, 8.5};
+                e->path.clear();
+                e->velocity = {0, 0};
+                e->speakingUntil = 0;
+            }
+        for (auto* c : {&town.ash, &town.bo})
+            town.place(*c, 1, 8.25, 9.5);
+    };
+    // A topic the director would pick now for these two, said for `hearer`, as the game writes it; `want` its kind.
+    const auto topicFor = [&](const std::string& hearer, const std::string& want, talk::Query& out, const std::string& good = {}) {
+        for (int hour = 0; hour < 72; ++hour)
+        {
+            ready();
+            out = town.g.talkTopicQuery("uf", "um", hearer);
+            if (out.concept == "talk." + want && (good.empty() || (out.facts.count("topic.good") && out.facts.at("topic.good") == good)))
+                return true;
+            w.advanceCalendar(1.0 / 24);
+        }
+        return false;
+    };
+    // (1) The news a wagon brought, as it was brought: never the topic's first fact spliced in over it.
+    s.stagedBoard().news[market] = {"larkfield", "hides are cheap in Larkfield", w.calendarDays()};
+    talk::Query q;
+    expect(topicFor(town.ash.entityId, "caravan", q) && q.facts.count("topic.news"), "a wagon's news is talked of");
+    expect(q.facts.at("topic.news") == "hides are cheap in Larkfield", "and its words are the wagon's: " + q.facts.at("topic.news"));
+    for (std::uint64_t seed = 0; seed < 12; ++seed)
+        for (const auto& [who, line] : town.g.talkLibrary().converse(q, seed, none, {}).lines)
+            expect(!contains(line, "brought word") && !contains(line, "The last wagon"), "the news said once, as brought: " + line);
+    s.stagedBoard().news.erase(market);
+    // (2) Ash buys bread up: the dozen on her list and on Bo's differ (her own push is her own: 7.1), and each hears the
+    // price on their own list, from the director's pick and in the topic as the game writes it.
+    testPurse(s, town.ash.entityId, 2000);
+    testPurse(s, town.bo.entityId, 2000);
+    if (auto* baker = w.entity("ub"))
+    {
+        baker->cellId = cellId(1);
+        baker->position = {5.5, 8.5};
+        baker->path.clear();
+        town.place(town.ash, 1, 6.25, 8.5);
+    }
+    for (int i = 0; i < 20 && s.pushedBy(market, ashHolder, "bread") < s.marketRules().pushMost - 1e-3; ++i)
+    {
+        const auto bought = w.trade(town.ash.entityId, "ub", "bread", 12, true, ashHolder);
+        expect(bought.ok, "Ash buys bread: " + bought.message);
+    }
+    const auto ashRow = s.listing(town.ash.entityId, "ub", "bread", ashHolder);
+    const auto boRow = s.listing(town.bo.entityId, "ub", "bread", boHolder);
+    const auto ashWords = Society::priceWords(ashRow.listPrice, ashRow.listCount);
+    const auto boWords = Society::priceWords(boRow.listPrice, boRow.listCount);
+    expect(ashRow.trend == 1 && boRow.trend == 1 && ashWords != boWords, "two lists, two prices: Ash's " + ashWords + ", Bo's " + boWords);
+    for (auto* listener : {&town.ash, &town.bo})
+    {
+        const auto& mine = listener == &town.ash ? ashWords : boWords;
+        ready();
+        for (const auto& pick : w.ambientPicks({listener->entityId}))
+            if (pick.topic.talk.count("topic.good") && pick.topic.talk.at("topic.good") == "bread")
+                expect(pick.hearer == listener->entityId && pick.topic.talk.at("topic.price") == mine,
+                       "the director's pick names the listener's own list's price: " + pick.topic.talk.at("topic.price") + " (" + mine + ")");
+        talk::Query p;
+        expect(topicFor(listener->entityId, "prices", p, "bread") || topicFor(listener->entityId, "price_cause", p, "bread"), "bread is talked of");
+        expect(p.facts.at("topic.price") == mine && p.facts.at("topic.sort") == "food",
+               "the written topic has the listener's own price: " + p.facts.at("topic.price") + " (" + mine + ")");
+        bool said = false;
+        for (std::uint64_t seed = 0; seed < 12; ++seed)
+            for (const auto& [who, line] : town.g.talkLibrary().converse(p, seed, none, {}).lines)
+            {
+                said |= contains(line, mine);
+                for (const auto& other : {ashWords, boWords})
+                    expect(other == mine || !contains(line, other), "never the other's price: " + line);
+            }
+        expect(said, "and it's said: " + mine);
+    }
+    s.setPressure(market, "bread", 0, "players");
+    // (3) The late wagon's nails: one bought by a traveller doesn't take over the cause; the keeper and the town still
+    // put it down to the wagon.
+    s.setPressure(market, "nails", .25, "late");
+    expect(w.trade(town.bo.entityId, "uf", "nails", 1, true, boHolder).ok, "Bo buys a bag of nails");
+    auto move = s.priceMove(till, "nails", boHolder);
+    expect(move.trend == 1 && move.cause == "late", "one bag bought: still the wagon's move (" + move.cause + ")");
+    // Ash buys them up to her cap, then Bo: past the wagon's share the travellers' buying is the cause.
+    const auto buyUp = [&](Client& c, const std::string& holder) {
+        for (int i = 0; i < 12 && s.pushedBy(market, holder, "nails") < s.marketRules().pushMost - 1e-3; ++i)
+        {
+            const auto bought = w.trade(c.entityId, "uf", "nails", 4, true, holder);
+            expect(bought.ok, "nails bought: " + bought.message);
+        }
+    };
+    buyUp(town.ash, ashHolder);
+    move = s.priceMove(till, "nails", ashHolder);
+    expect(move.trend == 1 && move.cause == "late", "one traveller's buying, to her cap, is less than the wagon's: " + move.cause +
+                                                        " (P " + str(s.pressure(market, "nails")) + ")");
+    buyUp(town.bo, boHolder);
+    move = s.priceMove(till, "nails", ashHolder);
+    expect(move.trend == 1 && move.cause == "players", "two travellers' buying is most of it: " + move.cause + " (P " +
+                                                           str(s.pressure(market, "nails")) + ")");
+    // (4) Nails are never eaten, and only the smith who sells them speaks of his shelf of them: the topic's sort and each
+    // speaker's `deals`, through the conversations the game would have.
+    talk::Query p;
+    expect(topicFor(town.bo.entityId, "prices", p, "nails") || topicFor(town.bo.entityId, "price_cause", p, "nails"), "the nails' price topic");
+    expect(p.a.facts.at("deals") == "yes" && p.b.facts.at("deals") == "no", "the smith deals in nails; the stall's keeper doesn't");
+    const auto lowered = [](std::string t) {
+        for (auto& c : t)
+            c = char(std::tolower(static_cast<unsigned char>(c)));
+        return t;
+    };
+    int heard = 0;
+    for (const auto& [a, b] : {std::pair<const char*, const char*>{"uf", "um"}, {"um", "uf"}, {"ui", "um"}})
+        for (int hour = 0; hour < 40; ++hour)
+        {
+            ready();
+            auto t = town.g.talkTopicQuery(a, b, town.bo.entityId);
+            w.advanceCalendar(1.0 / 24);
+            if (t.concept != "talk.prices" && t.concept != "talk.price_cause")
+                continue;
+            for (std::uint64_t seed = 0; seed < 6; ++seed)
+                for (const auto& [who, line] : town.g.talkLibrary().converse(t, seed, none, {}).lines)
+                {
+                    ++heard;
+                    const auto low = lowered(line);
+                    for (const char* food : {" eat", "supper", "hungry", "bowl", "belly", "the cook", "pups'll", "larder"})
+                        expect(low.find(food) == std::string::npos, std::string("nails aren't eaten (") + food + "): " + line);
+                    const bool smith = (who == 0 ? std::string(a) : std::string(b)) == "uf";
+                    if (!smith)
+                        for (const char* shelf : {"my nails", "my shelf", "my shelves", "holding a shelf", "my stock", "i only sell it"})
+                            expect(low.find(shelf) == std::string::npos, std::string("only the smith has a shelf of nails (") + shelf + "): " + line);
+                }
+        }
+    expect(heard >= 20, "the nails were talked of: " + std::to_string(heard) + " lines");
+    // (5) The market's news shares the talk while it lasts (Phase 8 repair: prices no longer drown the rest): a staged
+    // event on, hard Times, the nails dear and a wagon's news, over five days of hours.
+    market::StagedEvent glut;
+    glut.id = "e900", glut.market = market, glut.kind = "brewers_glut", glut.status = "on", glut.announced = true;
+    glut.day = std::int64_t(std::floor(w.calendarDays())), glut.days = 9, glut.words = "a brewing too many";
+    glut.goods = {{"ale", -.1}};
+    s.stagedBoard().events.push_back(glut);
+    s.stagedBoard().slider = s.stagedBoard().sliderTarget = -100;
+    std::map<std::string, int> kinds;
+    int hours = 0;
+    for (; hours < 120; ++hours)
+    {
+        s.stagedBoard().news[market] = {"larkfield", "hides are cheap in Larkfield", w.calendarDays()};
+        ready();
+        ++kinds[town.g.talkTopicQuery("uf", "um", town.bo.entityId).concept];
+        w.advanceCalendar(1.0 / 24);
+    }
+    std::string spread;
+    for (const auto& [k, n] : kinds)
+        spread += " " + k + " " + std::to_string(n);
+    std::cout << "  the talk of five days' hours:" << spread << "\n";
+    const int prices = kinds["talk.prices"] + kinds["talk.price_cause"];
+    expect(kinds["talk.event"] >= hours / 12 && kinds["talk.times"] >= hours / 12 && kinds["talk.caravan"] >= hours / 12 &&
+               prices >= hours / 12 && prices <= hours * 6 / 10,
+           "each is heard while it lasts:" + spread);
+    fs::remove_all(root);
+}
+
 // The bands name markets as the Board does (doc 79, 5.1 and 6.5): in a world of three towns, a household in each town
 // has its town's market, and one living out in the wilds between towns (lawTown "") the nearest market by path, so the
 // pressure players put on its staple reaches its short days.
@@ -1386,6 +1589,7 @@ int main(int argc, char** argv)
         theWorldsMarkets();
         householdsInTheBoardsMarkets();
         theKeepersAnswer();
+        talkThroughTheRealPath();
         theBoardThroughTheGame();
         theHolderBeforeTheWelcome();
     }

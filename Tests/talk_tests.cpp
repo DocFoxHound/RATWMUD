@@ -819,11 +819,13 @@ void theStagedEconomysTalk()
         {"talk.caravan", {{"topic.kind", "due"}, {"topic.when", "soon"}, {"topic.where", "Coldwater"}, {"topic.what", "nails"}, {"topic.who", "Tam Reed"}}},
         {"talk.caravan", {{"topic.kind", "late"}, {"topic.where", "Coldwater"}, {"topic.what", "nails"}, {"topic.why", "a broken axle"}}},
         {"talk.caravan", {{"topic.kind", "news"}, {"topic.where", "Coldwater"}, {"topic.news", "iron ore is cheap in Coldwater"}}},
-        {"talk.ships", {{"topic.kind", "in"}, {"world.ships", "in"}, {"world.ship_name", "the Gull"}, {"topic.what", "butter"}}},
-        {"talk.ships", {{"topic.kind", "lost"}, {"world.ships", "lost"}, {"world.ship_name", "the Gull"}}},
+        {"talk.ships", {{"topic.kind", "in"}, {"topic.ship", "the Gull"}, {"topic.what", "butter"}, {"topic.is", "is"}}},
+        {"talk.ships", {{"topic.kind", "lost"}, {"topic.ship", "the Gull"}}},
         {"talk.harvest", {{"world.harvest", "poor"}}},
         {"talk.event", {{"world.event", "house_wedding"}, {"world.event_words", "the House wedding"}, {"world.event_when", "now"}}},
         {"talk.event", {{"world.event", "seal_hunt"}, {"world.event_words", "the seal hunt"}, {"world.event_when", "soon"}}},
+        {"talk.event", {{"world.event", "brewers_glut"}, {"world.event_words", "the brewers' glut"}, {"world.event_when", "past"}}},
+        {"talk.event", {{"world.event", "seal_hunt"}, {"world.event_words", "the seal hunt"}, {"world.event_when", "past"}}},
         {"talk.times", {{"world.times", "hard"}, {"world.times_cause", "the Crown's war levy"}}},
         {"talk.times", {{"world.times", "boom"}}},
         {"talk.price_cause", {{"topic.dir", "up"}, {"topic.known", "yes"}, {"topic.who", "Ada"}, {"topic.what", "salt"}, {"topic.is", "is"},
@@ -846,6 +848,65 @@ void theStagedEconomysTalk()
                     expect(line.find('#') == std::string::npos, concept + ": every symbol filled: " + line);
             }
         expect(said >= 12, concept + " (" + facts.begin()->second + ") is talked of: " + std::to_string(said) + " of 16");
+    }
+    // A ship's move names the ship that made it (topic.ship), never the port's ship of the moment (Phase 8 repair).
+    {
+        auto q = price("ship_late", "the Heron stormbound", "up");
+        q.facts["topic.ship"] = "the Heron";
+        q.facts["world.ship_name"] = "the Long Tide";
+        for (const auto& line : heard(q, 4))
+            expect(line.find("Long Tide") == std::string::npos, "a stormbound ship's move names her: " + line);
+    }
+    // Nails are never eaten, and no keeper who doesn't sell them speaks of a shelf of them (topic.sort, deals).
+    {
+        auto q = price("players", "travellers selling", "down");
+        q.facts["topic.item"] = q.facts["topic.what"] = "nails";
+        q.facts["topic.is"] = "are";
+        q.facts["topic.good"] = "nails";
+        q.facts["topic.sort"] = "goods";
+        q.a.facts["deals"] = q.b.facts["deals"] = "no";
+        for (const auto& dir : {"up", "down"})
+        {
+            q.facts["topic.dir"] = dir;
+            for (const auto& line : heard(q, 4))
+            {
+                const auto low = lowered(line);
+                for (const char* food : {" eat", "supper", "hungry", "bowl", "belly", "the cook", "pups", "larder", "on the table"})
+                    expect(low.find(food) == std::string::npos, std::string("nails aren't food (") + food + "): " + line);
+                for (const char* shelf : {"my nails", "my shelf", "my shelves", "holding a shelf", "i only sell it", "my till"})
+                    expect(low.find(shelf) == std::string::npos, std::string("nor a shelf of them (") + shelf + "): " + line);
+            }
+        }
+    }
+    // An event's lines: a good dear or cheap only where its price fact says so, and an event over in the past.
+    for (const char* kind : {"house_wedding", "works_fire", "good_catch", "orchard_blight", "festival_buying", "lame_ox", "rich_cargo",
+                             "mill_stopped", "drovers_in", "salt_short", "brewers_glut"})
+        for (const char* when : {"now", "soon", "past"})
+        {
+            auto q = moment("talk.event");
+            q.facts["world.event"] = kind;
+            q.facts["world.event_words"] = "the business";
+            q.facts["world.event_when"] = when;
+            for (const auto& line : heard(q, 3))
+            {
+                const auto low = lowered(line);
+                for (const char* claim : {"'s dear", "s cheap", "dear as", "cheap!", "cheap for", "cheap, too", "dearer", "going for nothing", "cheap mutton", "cheap ale"})
+                    expect(low.find(claim) == std::string::npos, std::string(kind) + " " + when + ": no price the list doesn't show (" + claim + "): " + line);
+                if (std::string(when) == "past")
+                    for (const char* now : {"is on", "'s on", "this week", "till it turns", "today", "on the way", "is due", "coming"})
+                        expect(low.find(now) == std::string::npos, std::string(kind) + " over: said in the past (" + now + "): " + line);
+            }
+        }
+    {
+        auto q = moment("talk.event");
+        q.facts["world.event"] = "brewers_glut";
+        q.facts["world.event_words"] = "a brewing too many";
+        q.facts["world.event_when"] = "now";
+        q.facts["world.ale_price"] = "down";
+        bool cheap = false;
+        for (const auto& line : heard(q, 4))
+            cheap |= lowered(line).find("cheap") != std::string::npos;
+        expect(cheap, "and where the list shows ale cheap, it's said");
     }
     // A failing keeper, asked how it is, never says it can't complain.
     for (std::uint64_t seed = 0; seed < 60; ++seed)

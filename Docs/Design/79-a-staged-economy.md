@@ -1298,6 +1298,25 @@ ware whose shown price moved most with its cause ("Nails are dear just now: the 
 The "short" trouble says itself by band (`troubles.json`'s `saidBy`). `market.json`'s `houseBusinesses` and `estates`
 are not read: the `house` fact and the bands' guarantees cover a House's people, so Phase 9 may drop them.)*
 
+*(Phase 8 repaired; each the user's to overrule. **The listener's own list:** each ambient pick is made for one player
+(`AmbientPick::hearer`), and `World::talkFor` sets whose list talk's prices are read at (the trade menu's holder, the
+Game's `accountOf`) while the director picks, while the Game writes the pick (`exchangeQuery`) and for a bark near a
+player; `talkPrices` is worked out once a look for a shop and a cell. **The cause is what moved P:** a traveller's trade
+takes the Board cell's cause only where P was at rest or crossed over, or the travellers' pushes together are half of P
+or more on its side (one traveller's cap, 0.15, never takes over a late wagon's 0.25; two do); a ripple likewise only
+where it is half of P. **The topic's good:** `topic.good` (its id), `topic.sort` (food, drink, goods: a line about
+eating is gated on food), and each speaker's `deals` (their shop sells it: a line of "my shelf" is gated on it);
+`topic.ship` names the ship a ship's cause or ship topic is of, and each ship at the port is its own topic (one lost is
+talked of while another is in). `world.trade` is called `world.wagons` (in, late, raided, no): `trade` is a person's
+fact. `lifted` (a speaker living on a player's help) gates the helped beggar's greeting. **Scores:** the market's news
+(prices, events, ships, wagons, Times, harvest, the town's lives) is drawn once an hour for a place, not a pair, within
+about 1.35-2.1, so whichever is live takes its turn (five days of hours with an event, hard Times, nails dear and a
+wagon's news: prices about 30%, the event 24%, the Times 16%, the wagon 15%); the harvest is talked of in summer and
+autumn, and a poor one into the winter. **Words:** talk says "bread", "fish", "porridge", "white bread", "meat",
+"candles" for the catalogue's stiffer names; an event's lines say a good is dear or cheap only beside its
+`world.<good>_price`, and every kind has lines for when it's over. The Means names the speaker's own shop's price at the
+player's list and is cut at a sentence.)*
+
 ## 12. DM levers: keep, change or cut
 
 All of them stay per world in `live.economy` (the `rules` jsonb) and reach a running server through `economy.sync`
@@ -3556,6 +3575,37 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     read badly mid-sentence in `market.json` (Phase 7's data, left as it is): "the drovers in with their herds", "a
     brewing too many", "the buying ahead for the festival", "a lame ox on the cart from East"; the new lines frame them
     after a colon or "talk of", never after "since".
+- **2026-11-11: Phase 8 repaired** (branch `r2-staged-rtalk`, cut from `r2-staged` at `aba9f4b`; the Phase 8 checker's
+  findings and the builder's open items). No economy simulation, no paid model call, no server; DEV and PROD untouched.
+  The as-built note is in section 11 ("Phase 8 repaired").
+  - **Fixed (HIGH):** (1) talk quotes the listening player's own list (`talkFor`, `AmbientPick::hearer`; before, the
+    holder was never set); (2) a wagon's news is no longer overwritten by the topic's first fact; (3) a ship's price lines
+    and ship topics name their own ship (`topic.ship`); (4) a piece bought never takes over a wagon's, ship's or event's
+    cause; (5) food lines only of food (`topic.sort`; 12 older entries gated or reworded, and
+    `tr_bake_flour_dear`'s "another penny a sack" out of price talk); (6) keeper lines only from a keeper who sells the
+    good (`deals`; 5 older entries gated).
+  - **Fixed (MEDIUM, LOW, missing):** the topic scores (above); the cause rules lose their priority and the harvest's,
+    news's and ships' openers share their niches; event lines claim no price the list doesn't show, and say the past
+    when over (11 kinds and the generic); a failing keeper never boasts ("can't grumble" and two more in salience, the
+    keeper's boast gated on business); `talkPrices` once a look; plurals by `topic.is`; the catalogue's stiff words;
+    pups and the little ones only from a parent, "Mother says"/"Father says" only with one; the destitute short
+    trouble's "no earner"; the salt line's winter by season; the soonest posted wagon; the Means at the speaker's own
+    shop and the player's list, cut at a sentence; the helped greeting only while lifted; `world.wagons`; the Mind's
+    rules sentence says the Means carries a price and its cause.
+  - **Rejected, and why:** the keeper's trade answer keeps its figures ("14 pennies"): it reads off the list a player
+    is buying from, which shows figures. `e8p_sc_upper_trade_up` still takes most of its narrow niche (a rich upper
+    wolf to a rich trader about a rise): left for Phase 10's ear.
+  - **Lines:** 648 spoken lines in 298 entries (was 894: prices 189, roads 144, street 116, times 199), within the
+    plan's 450-650.
+  - **Tests (through the game's path for the HIGH items):** `market_tests`' `talkThroughTheRealPath` (the director's
+    picks for each listening player and the topic as the game writes it, `talkTopicQuery` with its hearer, then
+    `converse`: Ash's and Bo's lists differ and each hears their own, never the other's; a wagon's news as brought; one
+    bag of nails never takes the late wagon's cause, one traveller's cap doesn't, two do; nails never eaten and no shelf
+    of them but the smith's; five days of hours share the talk) and the Heron in `talkSaysTheShownPrice`; `talk_tests`
+    (the ship's name, nails neither food nor a non-keeper's shelf, every event kind's lines claiming no price without its
+    fact and past when over). A clean Release build (`build-rtalk`); ctest 88/88 with the database, the six `*_pg`
+    tests run again with `Database/.env` after they skipped (7/7; `pg_client` on a throwaway `ratw_test_s2stage_rtalk`,
+    dropped after; no `s2stage` database left). Not run (the merge verify's): `tools/test_*.py`, the client's.
 
 ## Review (2026-11-08)
 

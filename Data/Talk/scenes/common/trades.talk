@@ -19,7 +19,7 @@ b : Sell them cheap at the back door. | Who was it? | Sell them to the masons. T
 a : Cheap's still a loss. | I know who it was. | Very funny.
 
 scene tr_bake_flour_dear
-when topic=work|prices a.job=baker
+when topic=work a.job=baker
 a : The miller wants another penny a sack. | This flour's half chaff. | I had to sieve weevils out of the last sack.
 b[farmer] : Grain's grain. The miller's the thief, not us.
 b[merchant] : Everyone's raising, friend. Raise yours.

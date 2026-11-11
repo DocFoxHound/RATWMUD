@@ -160,7 +160,7 @@ say Easy for you to say. | Some of us notice, believe me. | Must be nice, not mi
 
 rule w7_easy_poor
 when concept=prices.answer_easy wealth=poor|destitute
-say Glad it suits somebody. | I notice. My belly notices. | Try it on my purse and see.
+say Glad it suits somebody. | I notice. My purse notices. | Try it on my purse and see.
 
 rule w7_easy_merchant
 when concept=prices.answer_easy role=merchant
@@ -172,7 +172,7 @@ say You would say that. | And you wonder why folk grumble. | Lucky you.
 
 rule w7_easy_dry
 when concept=prices.answer_easy humour=dry
-say How nice for you. | Lovely. I'll tell my stomach. | I'm so glad. Truly. Look at my face.
+say How nice for you. | Lovely. I'll tell my purse. | I'm so glad. Truly. Look at my face.
 
 rule w7_easy_rich
 when concept=prices.answer_easy wealth=rich
@@ -189,7 +189,7 @@ then other: prices.answer_cheap
 rule w7_pr_down_poor
 when concept=talk.prices topic.dir=down wealth=poor|destitute
 cooldown 1d
-say #topic.price#! I can eat this week. | Down to #topic.price#. Thank the Bright One. | Cheaper! I'll buy two, while it lasts.
+say #topic.price#! I can afford it this week. | Down to #topic.price#. Thank the Bright One. | Cheaper! I'll buy two, while it lasts.
 then other: prices.answer_cheap
 
 rule w7_pr_down_healer
@@ -205,7 +205,7 @@ say Meals are down to #topic.price#. My takings'll be thin. | #topic.price#! My 
 then other: prices.answer_undercut
 
 rule w7_pr_down_merchant
-when concept=talk.prices topic.dir=down role=merchant
+when concept=talk.prices topic.dir=down role=merchant deals=yes
 cooldown 1d
 say Prices falling. Good for buyers, death for sellers. | I bought at the old price. Now look. | Down again. I'll be selling at a loss.
 then other: prices.answer_undercut
@@ -224,14 +224,14 @@ say About time. | Good. Long may it last. | Won't last. Never does. | I'll belie
 
 rule w7_cheap_poor
 when concept=prices.answer_cheap wealth=poor|destitute
-say Thank the gods. I'll eat. | Cheaper's the best word I've heard all week. | Good. Now I can nearly afford it.
+say Thank the gods. Something's gone my way. | Cheaper's the best word I've heard all week. | Good. Now I can nearly afford it.
 
 rule w7_cheap_rich
 when concept=prices.answer_cheap wealth=rich
-say Is it? I leave all that to the cook. | My steward will be pleased, I suppose. | Lovely for everyone.
+say Is it? The steward sees to all that. | My steward will be pleased, I suppose. | Lovely for everyone.
 
 rule w7_cheap_merchant
-when concept=prices.answer_cheap role=merchant
+when concept=prices.answer_cheap role=merchant deals=yes
 say Good for you. Bad for my till. | I'll be selling at a loss, then. | I'll hold mine back till it rises.
 then other: work.end
 
@@ -269,10 +269,10 @@ say It'll climb again. It always does. | Good for the rest of us, mind. | Hard l
 
 rule w7_under_poor
 when concept=prices.answer_undercut wealth=poor|destitute
-say Sorry, but I can eat this week. | Your loss, my supper. | I'll not pretend I'm sad.
+say Sorry, but I can afford it this week. | Your loss, my gain. | I'll not pretend I'm sad.
 
 rule w7_under_merchant
-when concept=prices.answer_undercut role=merchant
+when concept=prices.answer_undercut role=merchant deals=yes
 say Same here. I'm holding mine back. | Don't. I'm selling at a loss as well. | We should all agree a price. Quietly.
 
 rule w7_under_cook
@@ -289,7 +289,7 @@ when concept=prices.answer_undercut drive=ambitious
 say Then sell something they can't. | Undercut them back. See who blinks. | Buy theirs cheap and sell it on. Why not?
 
 rule w7_under_dry
-when concept=prices.answer_undercut humour=dry
+when concept=prices.answer_undercut humour=dry topic.sort=food
 say Tragic. Cheap food. Whatever next. | I'll weep into my cheap supper. | The world's cruel to sellers.
 
 rule w7_under_rich

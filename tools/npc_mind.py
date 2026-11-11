@@ -71,8 +71,9 @@ has heard of the speaker's deeds, how and how sure: speak of it when it fits, at
 never every time; if it says the NPC only thinks it might be them, ask rather than claim; never invent deeds. "away"
 says the speaker is back after a long while: greet them so, once. "trouble" is the NPC's own trouble, true: speak of it
 only if the talk turns that way or they ask how the NPC is, never ask outright for money or help, and never invent one.
-"means" is how the NPC gets by (their means, their pay, the times where they live), true: use its figures when money
-comes up and never invent others.
+"means" is how the NPC gets by (their means, their pay, the times where they live and why, and the price that has
+moved most at their market, as the speaker's own list shows it, with what moved it), true: use its figures and its
+reasons when money or prices come up and never invent others.
 
 Besides the words, report honestly how this exchange leaves the NPC:
 - emotion: one word for how the NPC feels now.

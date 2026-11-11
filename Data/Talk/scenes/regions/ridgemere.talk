@@ -84,7 +84,7 @@ b : Same as ever. | Can't fight the Houses. | True.
 a : Same. | No. | Too true.
 
 scene rm_ev_bandits
-when topic=bandits|caravan here.region=rain_coast
+when topic=bandits|caravan topic.kind=raided|camp here.region=rain_coast
 a : The Southway's not safe since the raids. | Grayrock's sending armed guards with their carts on the High Road now. | The Watch won't go past the third milestone.
 b[guard] : Not without more spears. The Council won't pay for them.
 b : Nothing's safe outside the walls. | Smart. | Cowards.
