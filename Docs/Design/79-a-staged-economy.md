@@ -3098,6 +3098,76 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     skipped. Perf not measured again: the placements are hourly and the queue's places a few dozen tile checks an hour.
   - **Not done:** other suites' leftover files in `/tmp` (`ratw-books-*`, `ratw-fame-*`, `ratw-troubles-*` and others,
     not street life's) were left; removing them was not allowed from this session.
+- **2026-11-11: Phase 6 merged** (`r2-staged-p6` at `aa4c4de` into `r2-staged` at `60293db`: merge `b8de188`, then
+  `603a46f`). No economy simulation was run; no server was started; DEV was only exported read only (build 70) for the
+  perf windows.
+  - **The merge.** One conflict, in `World::ensureTradePoints`: Phase 6's street hooks (a watched till, a runner, a
+    buyer: `setStreetHooks`, set again when the world has moved) come first, then the markets are found again only when
+    the roster's places or the dead ends' revision moved (`tradePointsDeadEnds_`, the repair's), as both sides meant; the
+    print check (`tradePointsPrint_`) and `++tradePointsBuilt_` stay after it. Everything else merged by itself: the
+    tills a staged sale, a till theft or a restitution moves (`noteSale`, `noteTillMoved`) and those an arrival or a
+    departure moves share `takeTillsMoved`, written whole with the Board in any record of the economy or the roads;
+    `stagedRest` carries `business` beside the Phases 4-5 rest (the dole's mark and fed fame still go by the
+    checkpoint, as Phase 6's repair has it); the boards' notices and the residents made at a checkpoint are as the
+    repair left them.
+  - **Checked under the merged rules, two changes, each with a test seen failing without it:**
+    - *A till theft seen is a move* (`street_tests` `aTillTheftSeenIsMoved`). Phase 6 adds no notice of its own, but a
+      player who sees a hungry thief take food from a till is told of goods the tick moved (the till's shelves, journalled
+      with the next record). That witness notice now says so (`World::notice`'s `moved`), so the host journals the economy
+      before telling it and holds it in order, as a raid's; a crash no longer leaves a player having seen food taken that
+      is back on the shelf. A pocket theft's notice moves nothing journalled (staged purses, as the journal rules have
+      it) and is told as it comes; every tick notice goes through `beginHolding`/`endHolding` either way. (The incident
+      itself still goes with the next Crime record, as before.)
+    - *The street off the doorways* (`beggarsOffTheDoors`, and door checks added to `beggarsAndAlms`, `doleQueue` and
+      `roughSleepers`). `World::freeBeside`, which places the beggars, the dole's queue and the rough sleepers, asked only
+      whether a tile could be stood on, so a door standing open when the hour's places were found was a place: with
+      Greyfen's Long House door open and four a place, the third beggar at the chapel steps stood in its doorway (where
+      the door shut on it, and a player closing it is told someone is crossing the threshold). It now keeps off every
+      door's tile, open or shut (`World::inDoorway`), as a square's stalls and crowd do since the repair.
+  - **Checked, nothing to change:** the arrivals' given tiles (`takeResidentRequests`, `freeSpotNear`'s `given`) are
+    homes to sleep at and Phase 6 places nobody through them: beggars, the queue and the sleepers stand by `freeBeside`,
+    the runners and buyers at a counter, the priest at the steps (a door's arrival, never its tile); an arrival given no
+    home is one of the homeless Phase 6 lets beg or sleep by a warm wall, as built. The squares checked at each day's turn
+    are what `boardSpot` reads for the beggars' "at the market". The errand-runners and the standing-still rule are as
+    built (`runnersToTheNearest`, `standingStillInTheShop` pass on the merge).
+  - **Perf** (DEV build 70 exported read only, `world_check EXPORT --simulate A B --players 20`, Release, 8 threads, one
+    run each on the clean build, the machine quiet (load 0.3 at the start); ms; the rows before from the entries above):
+
+    | Window | build | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|---|
+    | 6-8 | Phases 4-5 checked | 2.85 | 6.23 | 5.90 | 12.3 | 41.6 (tick 19) |
+    | 6-8 | Phase 6 repaired | 2.63-2.67 | 5.77-5.78 | 5.40-5.42 | 12.0-12.1 | 38.0 |
+    | 6-8 | merged | 2.59 | 5.77 | 5.52 | 11.4 | 36.8 (tick 19) |
+    | 6-8 `--ship-day` | Phases 4-5 checked | 2.64 | 5.88 | 5.50 | 11.9 | 38.7 (tick 19) |
+    | 6-8 `--ship-day` | merged | 2.54 | 5.72 | 5.45 | 10.9 | 37.0 (tick 19) |
+    | 17-19 | Phases 4-5 checked | 2.13 | 5.09 | 4.94 | 22.1 | 36.9 (tick 19) |
+    | 17-19 | Phase 6 repaired | 2.15-2.16 | 5.10-5.15 | 4.94-4.95 | 22.7-23.0 | 39.4-40.0 |
+    | 17-19 | merged | 2.16 | 5.16 | 4.96 | 22.7 | 39.6 (tick 19) |
+    | 23-25 | Phases 4-5 checked | 1.61 | 4.67 | 4.11 | 13.4 | 38.6 (tick 19) |
+    | 23-25 | Phase 6 repaired | 1.60-1.72 | 4.50-4.70 | 4.03-4.22 | 12.8-13.3 | 35.9-37.5 |
+    | 23-25 | merged | 1.69 | 4.69 | 4.18 | 13.1 | 36.7 (tick 19) |
+
+    Every window is within the two sides' own runs. 17-19's worst after the first minute is a place loaded (14.1 ms of
+    streaming), 23-25's the day's careers pass at midnight (12.3 ms of schedules), as before. `world_check` has no Game
+    and no journal: the record before a till theft's notice is not in the gate (it comes only on a tick with a till
+    theft a player saw).
+  - **Tests:** a clean Release build (`build-p6mc`; 125 warnings, as before, none in the lines touched); ctest 86/86 with
+    the database, none skipped, twice on it (and once without the database on the merge alone, `build-p6m`, before the
+    two changes; `pg_client` on a throwaway `ratw_test_s2stage_p6m`, dropped after; no `s2stage` database left);
+    `street_tests` 25,752 (the crash cases vary run to run, as before), `street_pg` five crashes through PostgreSQL (49
+    checks), `save_compat` 23,107, `trade_show_tests` 919, `port_tests` 9,111, `journal_tests` 39, `stream_tests` 285,
+    `gathering_tests` 128, `market_tests` 2,001, `game_tests` 3,631, `crime_tests` 85, `troubles_tests` 66,
+    `fame_tests` 80, `life_status_tests` 2,244, `status_tests` 21,962, `farm_people_tests` 4,879, `roads_tests` 407,
+    `host_edit_tests` 550, `shops_tests` 132, `exploit_tests` 871,756. All 34 `tools/test_*.py` with the database and
+    this build's server (keys tagged `s2stage`, none left; `test_live_map` through `unittest`, `test_dm_live` with
+    `RATW_SERVER` set): 668 tests, none failing, 24 skipped (the 23 `RATW_SLOW` world builds and `test_game_tables`'
+    save under `Saved/`); `artifacts/screenshots/dev-console-fight.png`, rewritten by a tools test, restored. The
+    client's 146 and its typecheck; the Editor's 81 + 67 and its typecheck (`node_modules` linked from the main checkout,
+    removed after).
+  - **Not done:** other suites' leftover files in `/tmp` (`ratw-projects-*`, `ratw-troubles-*`, `ratw-fame-*`,
+    `ratw-game-test-*` and others; none of street life's) were left, as before. A player carried to the gaol on a tick
+    (`takeIntoCustody`) is told so as it comes though the fine and restitution moved their coins: older than Phase 6 and
+    not a street notice, so left for whoever next looks at the journal rules.
 
 ## Review (2026-11-08)
 
