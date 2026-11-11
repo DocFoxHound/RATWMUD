@@ -188,7 +188,7 @@ function ProfessionCatalog({roster}: {roster: Roster}) {
                 <TextField label="Activity label" value={value.workLabel} max={40} onCommit={v => change({workLabel: v})} />
                 <Row><NumberField label="Starts" value={value.hours.start} min={0} max={23.75} step={0.25} onCommit={v => change({hours: {...value.hours, start: v}})} />
                     <NumberField label="Ends" value={value.hours.end} min={0} max={23.75} step={0.25} onCommit={v => change({hours: {...value.hours, end: v}})} /></Row>
-                <Toggle label="Paid by the treasury" checked={value.paid} onChange={v => change({paid: v})} />
+                <Toggle label="A paid post (for succession)" hint="Ranks this resident for succession; nothing pays them" checked={value.paid} onChange={v => change({paid: v})} />
                 <TextField label="Description" multiline value={value.description} max={1000} onCommit={v => change({description: v})} />
                 {current ? <button className="danger" disabled={inUse(current.id)} title={inUse(current.id) ? 'Characters hold this profession for life' : ''}
                     onClick={() => { editRoster(r => { r.professions = r.professions.filter(p => p.id !== current.id); r.characters.forEach(c => { delete c.preferences[current.id]; }); }); setEditing(null); }}>Delete profession</button>

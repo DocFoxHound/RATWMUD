@@ -312,44 +312,6 @@ def wares(label, keeper, role='merchant'):
     return out
 
 
-def store_goods(business, keeper=None, label=None):
-    """What a business draws from the store room (Docs/Design/67-ridgemere2-city.md, 6), as the game reckons it
-    (Society::storeGoods): `making`, every input of its own crafts (the sorted union of their `in`, intermediates too),
-    and `resale`, its supply list (crafts.json `supplies`) in file order, then (given its founding keeper's id and label)
-    the kinds of wares that keeper started with that its crafts don't make; a good both ways is a making good."""
-    crafts = crafts_for(business) if business else []
-    making = sorted({k for c in crafts for k in c['in']})
-    made = {k for c in crafts for k in c['out']}
-    resale = []
-    for k in (SUPPLIES.get(business, []) if business else []):
-        if k not in making and k not in resale:
-            resale.append(k)
-    if keeper is not None:
-        for k in wares(label if label is not None else '', keeper):
-            if k not in made and k not in making and k not in resale:
-                resale.append(k)
-    return {'making': making, 'resale': resale}
-
-
-def store_price(item):
-    """A good's catalogue price a piece (Society::catalogPrice): a meal 6p, herbs 2p, anything else its own (at least 1)."""
-    if item == 'meal':
-        return 6
-    if item == 'herbs':
-        return 2
-    if item == 'sword':
-        return ITEMS['sword']['price'] if ITEMS.get('sword', {}).get('price', 0) > 0 else 30
-    price = ITEMS.get(item, {}).get('price', 0)
-    return price if price > 0 else 1
-
-
-def store_cost(item, quantity, markup):
-    """What a draw costs (Society::storeCost): ceil(price × quantity × markup / 100); 0 at a markup of 0, else at least 1."""
-    if markup <= 0 or quantity < 1:
-        return 0
-    return max(1, -(-store_price(item) * quantity * markup // 100))
-
-
 def unsupplied():
     """Ingredients of the starter crafts that nothing in the game supplies, makes or produces (only a maker's
     starting stock)."""

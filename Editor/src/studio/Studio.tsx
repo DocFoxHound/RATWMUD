@@ -3,7 +3,7 @@
 //   Atlas  builds worlds, on dev worlds (its picker switches Atlas's world): the Workshop (the map, interiors, people,
 //          characters: App.tsx), its NPC pages (NPCs with their routes, areas, spawn rules and talk; factions), and
 //          Update from live (doc 66, section 4: a copy of a live world takes live's changes, conflicts chosen), and the
-//          Economy controls (doc 67, 6: the store room's switches, for the world and each business).
+//          Economy page (doc 79, 12: the slider, the rules, the seasons, and the host's overrides of the data files).
 //   DM     runs the live world (the live server's; its Server & import tab switches it, in maintenance): DmSuite.
 // Each suite and page is its own page load (?suite=atlas&page=npcs): their maps share one lazy-ground list
 // (lib/lazyGround.ts), and Atlas's live session runs for as long as the page does.
@@ -23,7 +23,7 @@ const ATLAS_PAGES: {id: AtlasPage; label: string; title: string}[] = [
     {id: 'workshop', label: 'Workshop', title: 'The map, interiors, people and characters'},
     {id: 'npcs', label: 'NPCs & areas', title: 'NPCs with their patrol routes, painted areas, spawn rules, voices, dialects and figures'},
     {id: 'factions', label: 'Factions', title: 'Factions, their territory, members and relations'},
-    {id: 'economy', label: 'Economy', title: 'The store room and other economy controls'},
+    {id: 'economy', label: 'Economy', title: 'Economy: the slider and its cause, the rules, the seasons, the ships, the bands and the street'},
     {id: 'sync', label: '⇩ Update from live', title: 'Take the live world\'s changes into this copy of it, choosing where both changed'},
 ];
 

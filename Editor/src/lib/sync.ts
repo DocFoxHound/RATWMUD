@@ -65,7 +65,8 @@ export interface SyncPlan {
     /** The two maps (always on a plan from the engine); `replacesMap` on an import's plan between two maps. */
     maps?: MapPair; replacesMap?: boolean; letGo?: LetGo;
     /** The conflicts' defaults, by id; the new map's places (when some NPC's place is gone); live's economy settings
-     *  that differ from dev's (kept: never imported). */
+     *  (live.economy's kept columns: the treasury and stores, needsPaused, the seasons, services and rules with the
+     *  host's overrides; doc 79, 14) that differ from dev's: each world's own, never synced or imported. */
     defaults?: Record<string, Choice>; areas?: AreaRef[];
     economy?: {fields: string[]; dev: Record<string, unknown>; live: Record<string, unknown>};
 }

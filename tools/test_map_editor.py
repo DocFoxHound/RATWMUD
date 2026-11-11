@@ -462,72 +462,73 @@ class ContentTests(unittest.TestCase):
         mutate(lambda p: p['economy'].update(treasury=-1))
         mutate(lambda p: p.update(herbPatch={'cell': 'town', 'x': 0, 'y': 0}))
 
-    def test_farms_country_farms_json_no_longer_has_are_kept(self):
-        # Doc 71, 4: a world's settings for an area or a farm the file no longer has (regenerated with fewer farms: their
-        # ids are numbered by count) are kept, as Core keeps them, with a warning, and still exported; a malformed one is
-        # refused.
+    def test_a_dead_setting_is_read_past_warned_of_never_refused(self):
+        # Doc 79, 12, 14 and 17 (Phase 9): the store room's, the city loop's, the comforts' and the farms' settings went
+        # with the staged economy. A project holding any of them, sound or not, loads with a warning naming it; nothing
+        # checks or writes it, and the world file has none of their records.
         p = self.greyfen()
-        p['economy']['farms'] = {'order': ['grain', 'gardens'], 'areas': {'gardens': {'on': True}},
-                                 'farms': {'orchard_9': {'hand': 11}, 'grain_farm_1': {'hand': 12}}}
+        p['economy'].update(storeMarkup=5000, gateToll=999, comfortsShare=-1, businesses={'brann': 'off'}, wharf='yes',
+                            country=False, wharfOff=['fish'], farms={'orchard_9': {'hand': 1001}}, dailyHerbs=10)
         self.assertEqual(editor.check_economy(p['economy']), [])
         _, warnings = editor.check_project(p)
-        for name in ('order names nothing country_farms.json has: gardens', 'areas names nothing country_farms.json has: gardens',
-                     'farms names nothing country_farms.json has: orchard_9'):
-            self.assertTrue(any(name in w and 'kept' in w for w in warnings), (name, warnings))
-        self.assertEqual(len(editor.unknown_farms(p['economy']['farms'])), 3)
-        self.assertEqual(editor.unknown_farms({'farms': {'grain_farm_1': {'hand': 12}}, 'order': ['grain']}), [])
+        for key in ('storeMarkup', 'gateToll', 'comfortsShare', 'businesses', 'wharf', 'country', 'wharfOff', 'farms'):
+            self.assertTrue(any(w.startswith(f'economy.{key}:') and 'no longer reads' in w for w in warnings), (key, warnings))
+        self.assertFalse([w for w in warnings if w.startswith('economy.dailyHerbs')], 'dailyHerbs: accepted, read past, no warning')
         manifest = editor.export_files(p)['world.ratw'].splitlines()
-        self.assertFalse([l for l in manifest if l.startswith('farm')], 'the farms\' money records are no longer written (doc 79, 14)')
-
-    def test_the_countrys_keys_read_as_the_wharfs(self):
-        # Doc 73, 2.3: an older project's Country keys and rule read as the Wharf's (the new name wins), written under
-        # the records' old words (the world file's loop record keeps "country"), and the Wharf's rules checked.
-        old = {**self.greyfen()['economy'], 'country': False, 'countryReserve': 50, 'wageCountry': 6, 'countryOff': ['fish'],
-               'rules': {'countryPostsDays': 3, 'wharfFee': 20}}
-        self.assertEqual(editor.check_economy(old), [])
-        new = editor.legacy_economy(old)
-        self.assertEqual((new['wharf'], new['wharfReserve'], new['wageWharf'], new['wharfOff'], new['rules']),
-                         (False, 50, 6, ['fish'], {'estatePostsDays': 3, 'wharfFee': 20}))
-        self.assertFalse(set(new) & set(editor.ECONOMY_ALIASES))
-        self.assertEqual(editor.legacy_economy({'wharfOff': ['salt'], 'countryOff': ['fish']})['wharfOff'], ['salt'])
-        lines = editor.loop_lines(old)
-        self.assertIn('loop needs on country off reserve 50 toll 30 carriage 6 wages 14 8 8 6', lines)
-        self.assertIn('countryoff "fish"', lines)
-        # (Doc 79, 17: wharfFee is a rule the game no longer has: kept and ignored. A kept rule out of range is refused.)
-        self.assertEqual(editor.check_economy({**self.greyfen()['economy'], 'rules': {'wharfFee': 51}}), [])
-        self.assertTrue(editor.check_economy({**self.greyfen()['economy'], 'rules': {'halfLifeDurable': 301}}), 'at most 300')
-        for bad in ({'farms': {'orchard_9': {'hand': 1001}}}, {'farms': {'Orchard 9': {'hand': 1}}}, {'farms': {'orchard_9': 1}},
-                    {'areas': {'gardens': {'on': 'yes'}}}, {'areas': {'gardens': {'luck': 1}}}, {'order': ['grain', 'grain']},
-                    {'order': ['grain', 7]}, {'order': []}):
-            self.assertTrue(editor.check_farms(bad), bad)
-            self.assertTrue(editor.check_economy({**self.greyfen()['economy'], 'farms': bad}), 'a change to it is refused')
-            # (Doc 79, 14 and 17: the farms' settings are dead, so a project holding a bad one loads, warned of.)
-            q = self.greyfen()
-            q['economy']['farms'] = bad
-            _, warnings = editor.check_project(q)
-            self.assertTrue(any(w.startswith('economy.farms') and 'no longer reads' in w for w in warnings), warnings)
-
-    def test_a_bad_dead_setting_loads_warned_of_and_is_written_at_its_default(self):
-        # Doc 79, 14: the economy is lenient. The store room's, the loop's, the comforts' and the farms' settings are no
-        # longer read: a project holding a bad one loads with a warning; a change to one is still refused; the world's
-        # row takes the default (the columns' checks stay until migration 0061). A kept setting out of range still fails.
-        import world_store
-        p = self.greyfen()
-        p['economy'].update(storeMarkup=5000, gateToll=999, comfortsShare=-1, businesses={'brann': 'off'}, wharf='yes')
-        _, warnings = editor.check_project(p)
-        for key in ('storeMarkup', 'gateToll', 'comfortsShare', 'businesses', 'wharf'):
-            self.assertTrue(any(w.startswith(f'economy.{key}') and 'kept, it does nothing' in w for w in warnings), (key, warnings))
-        self.assertEqual(len(editor.check_economy(p['economy'])), 5)
-        row = world_store.economy_row('w', p['economy'])
-        self.assertEqual(row, world_store.economy_row('w', {k: v for k, v in p['economy'].items()
-                                                            if k not in ('storeMarkup', 'gateToll', 'comfortsShare', 'wharf')}))
-        self.assertNotIn('internal_store', world_store.TABLES['live.economy'][1], 'only the kept columns are written (doc 79, 14)')
+        for kind in ('store ', 'nostore ', 'loop ', 'countryoff ', 'subsidy ', 'comforts ', 'farms ', 'farmarea ', 'farm '):
+            self.assertFalse([l for l in manifest if l.startswith(kind)], kind)
+        for gone in ('DEAD_ECONOMY', 'ECONOMY_ALIASES', 'RULE_ALIASES', 'check_farms',
+                     'farms_file', 'unknown_farms', 'city_loop_file', 'store_line', 'loop_lines', 'farm_lines', 'loop_defaults'):
+            self.assertFalse(hasattr(editor, gone), gone)
+        # A kept setting out of range still fails; a rule the game no longer has is kept, warned of.
         q = self.greyfen()
-        q['economy'].update(needsPaused='yes', treasury=-1, rules={'ripple': 900})
+        q['economy'].update(needsPaused='yes', treasury=-1, rules={'ripple': 900, 'wharfFee': 51})
         with self.assertRaises(editor.ValidationError) as refused:
             editor.check_project(q)
         for key in ('needsPaused', 'treasury', 'rules.ripple'):
             self.assertIn(f'economy.{key}', str(refused.exception))
+        self.assertNotIn('wharfFee', str(refused.exception))
+        self.assertEqual(editor.check_economy({**self.greyfen()['economy'], 'rules': {'prosperity': -35, 'harvestBias': -20}}), [])
+        self.assertTrue(editor.check_economy({**self.greyfen()['economy'], 'rules': {'harvestBias': -21}}))
+
+    def test_the_seasons_take_both_shapes_within_the_season_room(self):
+        # Doc 79, 7.1 and 14: {price, shelf} since migration 0061, {supply, price, shelf, normal} before it (supply and
+        # normal read past); each group's prices within the season room (the user's rule: with each region factor, at least
+        # x1.10 of room up and x0.90 down inside the 0.80-1.28 clamp, after Core's seasonSpanMost rescale).
+        e = self.greyfen()['economy']
+        for g in editor.season_groups():
+            self.assertTrue(editor.season_room(g['price']), g['id'])     # market.json's own groups hold to it.
+        slim = {'grain': {'price': [110, 95, 85, 115], 'shelf': [100, 100, 120, 100]}}
+        old = {'grain': {'supply': [100] * 4, 'price': [110, 95, 85, 115], 'shelf': [100] * 4, 'normal': 0}}
+        self.assertEqual(editor.check_economy({**e, 'seasons': slim}), [])
+        self.assertEqual(editor.check_economy({**e, 'seasons': old}), [])
+        self.assertEqual(editor.check_economy({**e, 'seasons': {'grain': {'price': [50, 100, 200, 100], 'shelf': [100] * 4}}}), [],
+                         'a wide swing is rescaled by Core: it holds')
+        for bad in ({'grain': {'price': [130] * 4, 'shelf': [100] * 4}}, {'grain': {'price': [90] * 4, 'shelf': [100] * 4}},
+                    {'grain': {'price': [100, 100, 100], 'shelf': [100] * 4}}, {'grain': {'price': [5, 100, 100, 100], 'shelf': [100] * 4}},
+                    {'grain': {'price': [100] * 4}}, {'grain': {'price': [100] * 4, 'shelf': [100] * 4, 'normal': 1}},
+                    {'Grain!': slim['grain']}):
+            self.assertTrue(editor.check_economy({**e, 'seasons': bad}), bad)
+        self.assertIn('season room', ' '.join(editor.check_economy({**e, 'seasons': {'grain': {'price': [130] * 4, 'shelf': [100] * 4}}})))
+
+    def test_the_overrides_and_the_band(self):
+        # Doc 79, 12 and 14: the host's overrides checked as Core reads them (tools/economy_contract.py); a resident's
+        # authored band one of four, or none (from rank).
+        e = self.greyfen()['economy']
+        self.assertEqual(editor.check_economy({**e, 'overrides': {'prosperityCause': 'the war levy', 'neverImported': ['salt']}}), [])
+        for bad in ({'neverImported': ['moonbeams']}, {'prosperityCause': 'the dog tax'}, {'steer': 1},
+                    {'status': {'caps': {'theftADay': 10 ** 6}}}):
+            problems = editor.check_economy({**e, 'overrides': bad})
+            self.assertTrue(problems and all(x.startswith('economy.overrides: ') for x in problems), (bad, problems))
+        p = self.greyfen()
+        p['people'][0]['band'] = 'poor'
+        editor.check_project(p)
+        self.assertIn(f'band "{p["people"][0]["id"]}" poor', editor.export_files(p)['world.ratw'].splitlines())
+        p['people'][0]['band'] = None
+        editor.check_project(p)
+        p['people'][0]['band'] = 'noble'
+        with self.assertRaises(editor.ValidationError):
+            editor.check_project(p)
 
     def test_worlds_without_people_still_export_version_1(self):
         p = self.greyfen()

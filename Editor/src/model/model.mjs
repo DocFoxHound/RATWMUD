@@ -90,38 +90,17 @@ export const STATURES = ['short', 'average', 'tall'];
 export const PATTERNS = ['solid', 'saddle', 'mantle', 'piebald'];
 export const COATS = [['ivory', '#E1D9C6'], ['silver', '#ADB3B2'], ['ash', '#777D7B'], ['stone', '#8E8271'],
     ['sable', '#65513F'], ['charcoal', '#303534'], ['rust', '#A26843'], ['sand', '#BEAA84']];
-const ECONOMY_LIMITS = {treasury: 1000000, storeHerbs: 10000, storeMeals: 10000, dailyHerbs: 1000, dailyMeals: 1000};
+const ECONOMY_LIMITS = {treasury: 1000000, storeHerbs: 10000, storeMeals: 10000};
+// dailyHerbs and dailyMeals: accepted and read past since doc 79 (kept as they are when present).
+const ECONOMY_READ_PAST = {dailyHerbs: 1000, dailyMeals: 1000};
 export const defaultEconomy = () => ({treasury: 1000, storeHerbs: 100, storeMeals: 50, dailyHerbs: 10, dailyMeals: 12});
-// The store room (Docs/Design/67-ridgemere2-city.md, 6): optional economy keys, at these defaults when absent, and
-// `businesses` ({npc id: {internalStore: false}}, the businesses switched off). tools/map_editor.py checks the same.
-export const STORE_DEFAULTS = {internalStore: true, storeMarkup: 100, storeResale: true, resaleMarkup: 75, storeRule: false};
-// The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9): optional economy keys at these defaults, as
-// tools/map_editor.py's LOOP_DEFAULTS.
-export const LOOP_DEFAULTS = {needsPaused: false, wharf: true, wharfReserve: 200, gateToll: 30, carriage: 6,
-    wageKeeper: 14, wageHand: 8, wagePublic: 8, wageWharf: 8, wharfOff: [], subsidies: {carriage: 25}};
-const LOOP_LIMITS = {wharfReserve: 100000, gateToll: 90, carriage: 1000, wageKeeper: 1000, wageHand: 1000, wagePublic: 1000, wageWharf: 1000};
-export const SUBSIDISED = ['carriage'];
-const loopSettingsOk = e => ['needsPaused', 'wharf'].every(k => !own(e, k) || typeof e[k] === 'boolean')
-    && Object.entries(LOOP_LIMITS).every(([k, max]) => !own(e, k) || integer(e[k], 0, max))
-    && (!own(e, 'wharfOff') || (Array.isArray(e.wharfOff) && new Set(e.wharfOff).size === e.wharfOff.length
-        && e.wharfOff.every(g => typeof g === 'string' && /^[a-z0-9_]{1,48}$/.test(g))))
-    && (!own(e, 'subsidies') || (object(e.subsidies) && Object.entries(e.subsidies).every(([k, v]) => SUBSIDISED.includes(k) && integer(v, 0, 100))));
-// The seasons in the Country's supply and the comforts (doc 68, Progress, "Seasons and the DM's rules"; migration 0057):
-// optional economy keys, as tools/map_editor.py's SEASON_DEFAULTS (null comforts: city_loop.json's; seasons: the groups
-// this world has changed, {group: {supply, price, shelf: four percents, normal: pieces a day}}).
-export const SEASON_DEFAULTS = {comfortsAbove: null, comfortsShare: null, seasons: {}};
-const four = (v, low, high) => Array.isArray(v) && v.length === 4 && v.every(x => integer(x, low, high));
-const seasonSettingsOk = e => (!own(e, 'comfortsAbove') || e.comfortsAbove === null || integer(e.comfortsAbove, 0, 1000000))
-    && (!own(e, 'comfortsShare') || e.comfortsShare === null || integer(e.comfortsShare, 0, 100))
-    && (!own(e, 'seasons') || (object(e.seasons) && Object.entries(e.seasons).every(([g, s]) => /^[a-z0-9_]{1,40}$/.test(g)
-        && object(s) && Object.keys(s).length === 4 && four(s.supply, 0, 1000) && four(s.price, 10, 1000) && four(s.shelf, 0, 1000)
-        && integer(s.normal, 0, 1000000))));
-// The rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys, as
-// tools/map_editor.py's RULE_DEFAULTS (rules: {name: N}, the rules this world has changed; services: {id: {on, price,
-// every}}, the services it has changed; {}: all as the data files have them). The rules are Core's items::Rules, low,
-// high and fallback (since doc 79, 17 only the clamps and the Market Board's); a rule Core no longer has is kept and
-// ignored (doc 79, 14), never refused.
-export const RULE_DEFAULTS = {rules: {}, services: {}};
+// The economy entity (Docs/Design/79-a-staged-economy.md, 14; tools/map_editor.py's ECONOMY_SETTINGS, world_store's):
+// optional needsPaused, seasons ({group: {price, shelf}}; a world before migration 0061 keeps {supply, price, shelf,
+// normal}), rules ({name: N}, the rules this world has changed; a rule Core no longer has is kept and ignored, never
+// refused: doc 79, 14), services ({id: {on, price, every}}) and the host's overrides (tools/economy_contract.py; the
+// studio checks them). A key the staged economy no longer reads (the store room's, the city loop's, the comforts', the
+// farms': doc 79, 12 and 17) is dropped with a warning (deadSettings), never refused.
+export const ECONOMY_SETTINGS = ['needsPaused', 'seasons', 'rules', 'services', 'overrides'];
 export const RULES = {neverHungry: [0, 1, 0], neverBroke: [0, 1, 0], buyAheadDays: [0, 5, 1],
     halfLifePerishable: [5, 300, 20], halfLifeKeeping: [5, 300, 50], halfLifeDurable: [5, 300, 80], ripple: [0, 70, 50],
     depthScale: [10, 1000, 100], playerPushMost: [0, 50, 15], playerSellMost: [0, 5000, 400], takeAllowance: [5, 100, 50],
@@ -130,37 +109,29 @@ export const RULES = {neverHungry: [0, 1, 0], neverBroke: [0, 1, 0], buyAheadDay
     theftCap: [0, 20, 4], errandRunners: [0, 1, 1], eventRate: [0, 300, 100], overrideNotices: [0, 1, 1],
     prosperity: [-100, 100, 0], harvestBias: [-20, 20, 0]};
 export const RULE_LIMITS = Object.fromEntries(Object.entries(RULES).map(([k, [, high]]) => [k, high]));
-const ruleSettingsOk = e => (!own(e, 'rules') || (object(e.rules) && Object.entries(e.rules).every(([k, v]) =>
+export const BANDS = ['destitute', 'poor', 'comfortable', 'rich'];
+const four = (v, low, high) => Array.isArray(v) && v.length === 4 && v.every(x => integer(x, low, high));
+const seasonOk = s => object(s) && four(s.price, 10, 1000) && four(s.shelf, 0, 1000) && (Object.keys(s).length === 2
+    || (Object.keys(s).length === 4 && four(s.supply, 0, 1000) && integer(s.normal, 0, 1000000)));
+const economySettingsOk = e => (!own(e, 'needsPaused') || typeof e.needsPaused === 'boolean')
+    && Object.entries(ECONOMY_READ_PAST).every(([k, max]) => !own(e, k) || integer(e[k], 0, max))
+    && (!own(e, 'seasons') || (object(e.seasons) && Object.entries(e.seasons).every(([g, s]) => /^[a-z0-9_]{1,40}$/.test(g) && seasonOk(s))))
+    && (!own(e, 'rules') || (object(e.rules) && Object.entries(e.rules).every(([k, v]) =>
         !own(RULES, k) || integer(v, RULES[k][0], RULES[k][1]))))
     && (!own(e, 'services') || (object(e.services) && Object.entries(e.services).every(([k, s]) => /^[a-z0-9_]{1,48}$/.test(k)
-        && object(s) && Object.keys(s).length === 3 && typeof s.on === 'boolean' && integer(s.price, 1, 100000) && integer(s.every, 1, 3650))));
-// The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): an optional economy key, as
-// tools/map_editor.py's FARM_DEFAULTS (what this world has changed of Data/Economy/country_farms.json's, every key
-// optional: start, every, order, keeper, hand; areas {area: {on, yieldScale, crewScale, keeper, hand, priceFactor}}; farms
-// {farm: {yieldScale, crewScale, keeper, hand}}; {}: all as the file has them).
-export const FARM_DEFAULTS = {farms: {}};
-const FARM_TOP = {start: [-1, 365000000], every: [1, 3650], keeper: [0, 1000], hand: [0, 1000]};
-const FARM_AREA = {yieldScale: [0, 1000], crewScale: [0, 1000], keeper: [0, 1000], hand: [0, 1000], priceFactor: [10, 1000]};
-const FARM_FARM = {yieldScale: [0, 1000], crewScale: [0, 1000], keeper: [0, 1000], hand: [0, 1000]};
-const within = (o, limits, extra = []) => object(o) && Object.entries(o).every(([k, v]) =>
-    extra.includes(k) ? typeof v === 'boolean' : own(limits, k) && integer(v, limits[k][0], limits[k][1]));
-const farmSettingsOk = e => !own(e, 'farms') || (object(e.farms)
-    && Object.keys(e.farms).every(k => own(FARM_TOP, k) || ['order', 'areas', 'farms'].includes(k))
-    && Object.entries(FARM_TOP).every(([k, [low, high]]) => !own(e.farms, k) || integer(e.farms[k], low, high))
-    && (!own(e.farms, 'order') || (Array.isArray(e.farms.order) && e.farms.order.length > 0
-        && new Set(e.farms.order).size === e.farms.order.length && e.farms.order.every(a => typeof a === 'string' && /^[a-z0-9_]{1,48}$/.test(a))))
-    && (!own(e.farms, 'areas') || (object(e.farms.areas) && Object.entries(e.farms.areas).every(([k, a]) =>
-        /^[a-z0-9_]{1,48}$/.test(k) && within(a, FARM_AREA, ['on']))))
-    && (!own(e.farms, 'farms') || (object(e.farms.farms) && Object.entries(e.farms.farms).every(([k, f]) =>
-        /^[a-z0-9_]{1,48}$/.test(k) && within(f, FARM_FARM)))));
-const STORE_KEYS = [...Object.keys(STORE_DEFAULTS), 'businesses', ...Object.keys(LOOP_DEFAULTS), ...Object.keys(SEASON_DEFAULTS),
-    ...Object.keys(RULE_DEFAULTS), ...Object.keys(FARM_DEFAULTS)];
-const storeSettingsOk = e => ['internalStore', 'storeResale', 'storeRule'].every(k => !own(e, k) || typeof e[k] === 'boolean')
-    && ['storeMarkup', 'resaleMarkup'].every(k => !own(e, k) || integer(e[k], 0, 1000))
-    && (!own(e, 'businesses') || (object(e.businesses) && Object.values(e.businesses).every(b =>
-        object(b) && Object.keys(b).length === 1 && typeof b.internalStore === 'boolean')));
+        && object(s) && Object.keys(s).length === 3 && typeof s.on === 'boolean' && integer(s.price, 1, 100000) && integer(s.every, 1, 3650))))
+    && (!own(e, 'overrides') || object(e.overrides));
+/** The economy keys a project holds that the staged economy no longer reads (doc 79, 12 and 17): dropped on
+ *  normalizing, warned of by validate. */
+export function deadSettings(value) {
+    const e = value?.economy;
+    if (!object(e)) return [];
+    return Object.keys(e).filter(k => !own(ECONOMY_LIMITS, k) && !own(ECONOMY_READ_PAST, k) && !ECONOMY_SETTINGS.includes(k)).sort();
+}
 const PERSON_KEYS = ['id', 'name', 'role', 'description', 'greeting', 'workLabel', 'age', 'appearance', 'voice',
-    'hours', 'route', 'paid', 'purse', 'herbs', 'meals', 'home', 'work', 'evening', 'personality', 'backstory'];
+    'hours', 'route', 'paid', 'purse', 'herbs', 'meals', 'home', 'work', 'evening', 'personality', 'backstory', 'band'];
+// What a person may leave out: band (null: from rank), as joinable and protected (false).
+const PERSON_OPTIONAL = ['band'];
 const SLOT_KEYS = ['id', 'name', 'profession', 'workLabel', 'hours', 'route', 'paid', 'purse', 'herbs', 'meals', 'home', 'work', 'evening'];
 export const worldIdFor = name => { const s = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'world'; return /^[a-z]/.test(s) ? s : `w_${s}`; };
 const reservedPersonId = id => id === 'treasury' || id.startsWith('wolf-') || id.startsWith('player-');
@@ -351,22 +322,12 @@ function checkShape(value) {
     if (own(value, 'herbPatch') && value.herbPatch !== null) anchor(value.herbPatch, 'Herb patch');
     if (own(value, 'economy')) {
         const e = value.economy;
-        check(object(e) && Object.keys(e).every(k => k in ECONOMY_LIMITS || STORE_KEYS.includes(k))
-            && Object.entries(ECONOMY_LIMITS).every(([k, max]) => integer(e[k], 0, max)),
-            'Economy requires whole-number treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals within their limits '
-            + '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule, businesses and the loop\'s settings).');
-        check(!object(e) || storeSettingsOk(e), "The store room's switches are true or false, its markups whole numbers from 0 to 1000, "
-            + 'and each business {internalStore: true or false}.');
-        check(!object(e) || loopSettingsOk(e), "The city's loop: its switches true or false, its numbers whole and within their limits "
-            + '(the toll 0-90%, carriage and wages 0-1000, the reserve 0-100000), wharfOff distinct item ids, subsidies {carriage: 0-100}.');
-        check(!object(e) || seasonSettingsOk(e), 'The seasons and comforts: comfortsAbove 0-1000000 and comfortsShare 0-100 (or null '
-            + "for city_loop.json's), each season group {supply, shelf: four percents 0-1000, price: four 10-1000, normal: pieces a day}.");
-        check(!object(e) || ruleSettingsOk(e), 'The rules and services: each rule a whole number within its limit ('
-            + Object.entries(RULES).map(([k, [low, max]]) => `${k} ${low}-${max}`).join(', ')
-            + '), each service {on: true or false, price: 1-100000 pennies, every: 1-3650 days}.');
-        check(!object(e) || farmSettingsOk(e), 'The farms: start -1 to 365000000, every 1-3650 days, order distinct area ids, '
-            + 'wages 0-1000; an area {on: true or false, yieldScale, crewScale 0-1000, keeper, hand 0-1000, priceFactor 10-1000}; '
-            + 'a farm {yieldScale, crewScale 0-1000, keeper, hand 0-1000}.');
+        check(object(e) && Object.entries(ECONOMY_LIMITS).every(([k, max]) => integer(e[k], 0, max)),
+            'Economy requires whole-number treasury, storeHerbs and storeMeals within their limits.');
+        check(!object(e) || economySettingsOk(e), 'The economy: needsPaused true or false, each rule a whole number within its '
+            + 'limit (' + Object.entries(RULES).map(([k, [low, max]]) => `${k} ${low}-${max}`).join(', ')
+            + '), each season group {price: four percents 10-1000, shelf: four 0-1000}, each service {on: true or false, '
+            + 'price: 1-100000 pennies, every: 1-3650 days}, the overrides an object.');
     }
     if (own(value, 'routes')) {
         check(Array.isArray(value.routes) && value.routes.length <= 128, 'routes must be an array of at most 128 patrol routes.');
@@ -395,6 +356,7 @@ function checkShape(value) {
             if (p.joinable !== undefined) check(typeof p.joinable === 'boolean', `${label} joinable must be true or false.`);
             if (p.protected !== undefined) check(typeof p.protected === 'boolean', `${label} protected must be true or false.`);
             check(typeof p.paid === 'boolean', `${label} paid must be true or false.`);
+            if (p.band !== undefined) check(p.band === null || BANDS.includes(p.band), `${label} band must be destitute, poor, comfortable, rich or null (from rank).`);
             check(typeof p.route === 'string' && (p.route === '' || ID.test(p.route)), `${label} route must be a route ID or empty.`);
             for (const [k, max] of [['purse', 100000], ['herbs', 10000], ['meals', 10000]])
                 check(integer(p[k], 0, max), `${label} ${k} must be a whole number from 0 to ${max}.`);
@@ -442,7 +404,7 @@ function canonical(value) {
             markingColor: p.appearance.markingColor},
         home: npcPlace(p.home), work: npcPlace(p.work), evening: npcPlace(p.evening),
         personality: p.personality ?? '', backstory: p.backstory ?? '', ...(p.joinable ? {joinable: true} : {}),
-        ...(p.protected ? {protected: true} : {})});
+        ...(p.protected ? {protected: true} : {}), ...(p.band ? {band: p.band} : {})});
     const slot = s => ({id: s.id, name: s.name, profession: s.profession, workLabel: s.workLabel, route: s.route, paid: s.paid,
         purse: s.purse, herbs: s.herbs, meals: s.meals, hours: {start: s.hours.start, end: s.hours.end},
         home: npcPlace(s.home), work: npcPlace(s.work), evening: npcPlace(s.evening)});
@@ -467,7 +429,8 @@ function canonical(value) {
         slots: (value.slots ?? []).map(slot),
         routes: (value.routes ?? []).map(r => ({id: r.id, name: r.name, posts: r.posts.map(anchor)})),
         economy: {...Object.fromEntries(Object.keys(ECONOMY_LIMITS).map(k => [k, economy[k]])),
-            ...Object.fromEntries(STORE_KEYS.filter(k => own(economy, k)).map(k => [k, clone(economy[k])]))},   // (Doc 67's, kept.)
+            ...Object.fromEntries([...Object.keys(ECONOMY_READ_PAST), ...ECONOMY_SETTINGS].filter(k => own(economy, k))
+                .map(k => [k, clone(economy[k])]))},   // (The dead settings dropped: doc 79, 14.)
         herbPatch: value.herbPatch ? anchor(value.herbPatch) : null};
 }
 
@@ -630,29 +593,15 @@ function relationships(project, requireExport = false) {
  * Checks and canonicalizes a project. `tolerate` is a set of problems that already existed (or true for
  * any): several people edit the world at once, so one edit is refused only for problems it introduces.
  */
-// The Country's economy keys before doc 73 (Docs/Design/73-the-wharf.md, 2.3), read as the Wharf's: an older project's
-// country, countryReserve, wageCountry and countryOff, and its rule countryPostsDays (the new name wins where both are).
-export const ECONOMY_ALIASES = {country: 'wharf', countryReserve: 'wharfReserve', wageCountry: 'wageWharf', countryOff: 'wharfOff'};
-export function legacyEconomy(value) {
-    const e = value?.economy;
-    if (!e || typeof e !== 'object' || Array.isArray(e)) return value;
-    const old = Object.keys(ECONOMY_ALIASES).filter(k => own(e, k));
-    const rules = e.rules && typeof e.rules === 'object' && !Array.isArray(e.rules) && own(e.rules, 'countryPostsDays') ? e.rules : null;
-    if (!old.length && !rules) return value;
-    const next = {...e};
-    for (const k of old) {
-        if (!own(next, ECONOMY_ALIASES[k])) next[ECONOMY_ALIASES[k]] = next[k];
-        delete next[k];
-    }
-    if (rules) {
-        const {countryPostsDays, ...rest} = rules;
-        next.rules = own(rest, 'estatePostsDays') ? rest : {...rest, estatePostsDays: countryPostsDays};
-    }
-    return {...value, economy: next};
+/** The project with the economy's dead settings (deadSettings) taken out: a copy, or as given when it has none. */
+function withoutDeadSettings(value) {
+    const dead = deadSettings(value);
+    if (!dead.length) return value;
+    return {...value, economy: Object.fromEntries(Object.entries(value.economy).filter(([k]) => !dead.includes(k)))};
 }
 
 export function normalizeProject(value, tolerate = null) {
-    value = legacyEconomy(roundLegacyHeights(value));
+    value = withoutDeadSettings(roundLegacyHeights(value));
     const errors = checkShape(value);
     if (errors.length) fail(errors.join('\n'));
     const safe = canonical(value), checks = relationships(safe);
@@ -663,10 +612,13 @@ export function normalizeProject(value, tolerate = null) {
 
 export function validate(value) {
     try {
-        value = legacyEconomy(value);
+        const dead = deadSettings(value);
+        value = withoutDeadSettings(value);
         const errors = checkShape(value);
         if (errors.length) return {errors, warnings: []};
-        return relationships(canonical(value), true);
+        const checked = relationships(canonical(value), true);
+        if (dead.length) checked.warnings.push(`Economy settings the staged economy no longer reads were dropped (doc 79): ${dead.join(', ')}.`);
+        return checked;
     } catch { return {errors: ['Project could not be validated; malformed authoring data.'], warnings: []}; }
 }
 
@@ -1187,7 +1139,7 @@ export function upsertPerson(project, person) {
         if (!object(person)) fail('Person must be an object.');
         const at = next.people.findIndex(p => p.id === person.id);
         const value = {...clone(person), id: person.id ?? freshIn(next.people, slug(person.name))};
-        for (const k of PERSON_KEYS) if (!own(value, k)) fail(`Person is missing ${k}.`);
+        for (const k of PERSON_KEYS) if (!own(value, k) && !PERSON_OPTIONAL.includes(k)) fail(`Person is missing ${k}.`);
         if (at < 0) next.people.push(value); else next.people[at] = value;
     });
     return project.people.find(p => p.id === (person.id ?? project.people.at(-1).id));

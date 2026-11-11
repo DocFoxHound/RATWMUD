@@ -3837,6 +3837,40 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     test_map_editor 51, test_world_db 49; the Editor's 81 + 67 and its typecheck. No s2stage or ratw_test_ database
     left. Left for the other lanes (their own rewrites): test_studio's economy flow (11) and test_dungeon_master's
     store-room parity (1) fail on the slim economy until they merge.
+- **2026-11-11: Phase 9, editor lane** (`r2-p9-editor`, on K0 `0752a58`; the merge step writes the phase's entry).
+  - **The studio slimmed** (`tools/studio.py`): `ECONOMY_ROUTES` = `DM_ECONOMY_ROUTES` = GET `economy` and POST `steer`,
+    `needs`, `rules`, `services`, `seasons`, `imports`, `status`, `market` (the last three 409 "This world needs migration
+    0061." before it); `Economy.read` is the EconomyView; `set_steer` (clamped, never refused: 9999 is 100, "abc" 0, 37
+    35; its cause plain words of at most 80 bytes, on a 0058-0060 world too, through `patch_economy_rules`) queues
+    economy.sync `{now}`; `set_rules` refuses `prosperity` ("use the slider"); a pre-0061 world's seasons keep their four
+    parts so 0060's line still reads; only the problems a change brings are refused; every POST audited as
+    `economy.<x>` with its before and after. Cut: the store, businesses, loop, goods, comforts and farms routes, setters
+    and views, `wharf_lists` and the store room's districts.
+  - **`economy_contract.check_overrides`**: status (the allowlist; shares as Core's `sharesValid`; caps at most 5x the
+    default, `grantsADay` 2,500; each part the file's shape), market (kinds as `eventKindsOf` takes them, causes as
+    `causesOf`, ships as `shipNameFits`, `perWeek` 0-3), `neverImported` (catalogue goods), the cause; each override at
+    most 12,000 bytes. A market kind given by its id is stored whole.
+  - **`map_editor`**: the dead validators, aliases and record writers cut; `check_economy` reads a dead setting past with
+    a warning (never refused); `check_season` takes both shapes and holds the season room (each season's price, after
+    `seasonSpanMost`, from 94% to 107%: x1.10 of room up and x0.90 down with each region factor). Left for world_store's
+    pre-slim chain until the core lane's C8: `STORE_DEFAULTS`, `LOOP_DEFAULTS`, `SEASON_DEFAULTS`, `FARM_DEFAULTS`, and
+    `legacy_economy`/`dead_settings_sound` as identity shims (delete them once nothing calls them).
+  - **Data**: `country_farms.json` version 5 without its money fields (each grepped: no reader in Core, worldgen or
+    Tests); `item_catalog`'s store helpers and `business_labels.json`'s `keepers` cut.
+  - **Editor**: SteerPanel, ImportsPanel (the Atlas Wharf panel retargeted), StatusPanel and MarketPanel new; RulesPanel
+    with needsPaused, the held rules counted, prosperity hidden; SeasonsPanel price and shelf only; WharfPanel and
+    FarmsPanel deleted; `economy.ts` trimmed; the Band picker in the Inspector; "A paid post (for succession)"; the
+    model drops dead settings with a warning and takes a person's `band`.
+  - **For the integration**: the DM lane's `EconomyTab.tsx` and `dm/api.ts` still import the cut types (the Editor's
+    typecheck is clean but for those two files until the DM lane merges); `test_studio.EconomyFlowTests` (the database
+    flow) skips until world_store's slim economy is merged, then must run; studio calls `live_edit.apply_edit` with
+    `queue_sync=False` when it has the parameter.
+  - **Tests** (the one run): a fresh Release build (`build-p9editor`); ctest 88/88 with the database (`pg_client` on a
+    throwaway `ratw_test_s2stage_p9ed`, dropped after); `test_economy_contract` 13, `test_map_editor` 51,
+    `test_item_catalog` 4, `test_studio` 48 (6 skipped: the flow above), `test_realm2` 31 (16 `RATW_SLOW`); the other
+    tools' tests with the database all pass but the core lane's own tests of the store room and business_settings
+    (`test_world_store` 10, `test_world_sync` 5, `test_dungeon_master`'s parity test 1), which its C8 and C11 rewrite;
+    the Editor's 78 + 61.
 
 ## Review (2026-11-08)
 
