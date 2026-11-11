@@ -388,6 +388,13 @@ struct Cell { float P; double touched; std::string cause; };  // cause: players,
   wagon frequency, the talk facts `world.times` and `world.times_cause`, and the DM's Prosperity tab.
 - Each market keeps its own: the realm can be in ordinary times while one community is lean because its salt wagon
   was robbed twice.
+- *(As built, Phase 7: `Society::timesScore` is the slider, the roads' and harvests' shift of the morning, the market's
+  staged events on (their `times` points, at most ±20 together) and the DM's nudge while it holds (±100, with its words
+  and expiry: `World::nudgeTimes`, Phase 9's lever). `Society::timesCause` is the largest part on the score's side in
+  words: the slider's cause, "a good harvest" or "a poor harvest" (the Board's new `harvestShift`), "the wagons robbed on
+  the road", an event's words, the nudge's; "" when the score is 0. Because the bands read the Times at their weekly cut,
+  an event's few points can tip a market's band mix in the week it is on: 5.3's formula was kept over 8.4's "never touch
+  bands", for the user to overrule.)*
 
 ## 6. NPC economic status (bands)
 
@@ -936,6 +943,23 @@ On a small world player trade rarely moves anything, so the world needs its own 
   for a few days, inside the clamp, with its own cause word.
 - The DM sees the week's events on the Prosperity tab and can cancel or add one.
 - Events never touch money, bands or posts.
+- *(As built, Phase 7, `Core/RatwEvents.cpp`; each the user's to overrule. The list is `market.json`'s `events`: twelve
+  kinds (a House wedding, a fire at the works, a good catch, blight in the orchards, the festival's buying ahead, a lame
+  ox, a ship's rich cargo, a ship lost, the mill wheel stopped, the drovers in, the salt pans flooded, a brewing too
+  many), each with its words, notice, crier's line and sign, its goods' targets (within ±0.3), its days (1-7), Times
+  points, days posted ahead, hour, weight and needs: "city" (the realm's largest market), "port", "cart" (a staffed
+  farm's cart, held home that day by the lame ox), "festival" (the day before one), a ship it comes in with or loses. A
+  week has `perWeek` (2) one more or fewer by a seeded score, × the rule `eventRate` (percent, 0-300; new), so 1-3 at the
+  default; a kind once a week at a market, one event a day, only goods its shops sell or buy, the days a festival or a
+  ship needs kept clear. Rolled a week ahead and kept on the Board (`events`, `eventsThrough`, `nextEvent`), as the ships
+  are, so saved, journalled whole and restored with it; its words filled as it is rolled. As it begins its goods are
+  pressed halfway toward their targets (the Board's `setPressure`, cause "event"), again each morning while on, a good
+  catch's set out where a shop sets them out; its notice is pinned ahead (`ahead` days) or as it begins, its crier's line
+  cried at the square in the daytime (the festival criers' machinery; the market's official, innkeeper or priest), a
+  crowd at its place where it says, and talk's `world.event`, `world.event_words` and `world.event_when` (now, soon,
+  past). A ship lost is a timetable line of its own (`Ship::lost`: "is lost at sea", `world.ships` "lost", its cargo a
+  storm's +0.1 dearer and the event's more); a rich cargo begins as its ship docks and is called off if a storm keeps it
+  out. The DM's hooks for Phase 9: `World::addStagedEvent`, `cancelStagedEvent`, `stagedEvent`, the Board's `events`.)*
 
 ### 8.5 A cause for every slider move
 
@@ -946,6 +970,14 @@ On a small world player trade rarely moves anything, so the world needs its own 
   Means line.
 - The realm-wide harvest roll leans the same way while the slider is moving, so the cause and its effects agree.
 - Times nudges and harvest overrides post a visible notice too, by default (a DM rule can turn it off).
+- *(As built, Phase 7: `Society::setProsperity(target, now, cause)` takes the DM's words (plain, 80 at most, never the
+  forbidden word; else the seeded cause stands in, and it returns false); with none, a move a new way takes one of
+  `market.json`'s `events.causes` for its direction (three each way), seeded by the day, and a move on the same way keeps
+  the cause it has. The Board keeps it (`sliderCause`: words, notice, cry, way, day, number, told). The world tells every
+  market once (a notice "the crier"'s on its board, the cry at its square); the DM's words take the list's templates
+  ("Hard times ahead: the Crown's war levy."). The Means line ends "Times here: lean, since the Crown's war levy.". The
+  harvest roll leans ±0.08 its way while the slider moves. The rule `overrideNotices` (1, new) posts the DM's nudges and
+  harvest overrides (`World::overrideHarvest`, with its words); the levers themselves are Phase 9's.)*
 
 ### 8.6 The arrival table
 
@@ -3216,6 +3248,134 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `artifacts/screenshots/dev-console-fight.png`, rewritten by a tools test, restored. Perf not measured again: the beggars' and sleepers' places are hourly (a market's crowd and stall spots, a
     hundred tiles, added to a set), a counter is found as a runner is sent, and the crime's record comes only on a tick
     whose notices tell of a crime, which `world_check` (no Game, no journal) never has.
+- **2026-11-11: Phase 7 (staged events and causes) built** (`r2-staged`, on `5afe23c`; `Core/RatwEvents.cpp`, new, beside
+  the roads' and the port's files, whose machinery it reuses). No economy simulation was run; no real or scratch server was started (the tools' tests
+  start their own); DEV
+  and dev-old were only exported read only (builds 70 and 34) for the perf windows and `save_compat`'s full worlds.
+  - **The scheduler and its list** (8.4, D25): `market.json`'s new `events` block, twelve kinds (8.4's seven: a House
+    wedding, a fire at the works, a good catch, blight in the orchards, the festival's buying ahead, a lame ox holding a
+    farm's cart, a ship's rich cargo; and a ship lost, the mill wheel stopped, the drovers in, the salt pans flooded, a
+    brewing too many), each with its words, notice, crier's line, sign, goods' targets (within ±0.3), days (1-7), Times
+    points (within ±20), days posted ahead, hour, weight and needs. Each market's week is `perWeek` (2) one more or fewer by
+    a seeded score, × the new rule `eventRate` (percent, 0-300): 1-3 at the default, about six at 300, none at 0. A kind
+    once a week at a market, one event a day, only goods its shops sell or buy, the days a festival's or a ship's event
+    needs kept clear. Committed a week ahead on the Board (`events`, `eventsThrough`, `nextEvent`), as the ships are: the
+    same world rolls the same events, and an event's words are filled as it is rolled, so a host's later edit of the list
+    changes none already committed. A world with no port, no wagon and no farm (one market, no carters) has its events
+    of the goods its shops deal in, never a ship's or a cart's.
+  - **Each with its cause** (8.4, 8.6's row, T13): as it begins its goods are pressed halfway toward their targets
+    (`setPressure`, cause "event": P stays in its range, the factor in the clamp, a player's own push capped as ever) and
+    again each morning while on; a good catch is set out where a shop sets fish out (`arrivalRefill`, its tills journalled
+    with the Board). Its notice is pinned ahead (`ahead` days) or as it begins, signed by its kind's sign, on the board a
+    player at its market reads (as the carters' notices: never one of a board's 30 pins; its scent "of ink and of the
+    market's many paws"), and comes down when it is over or cancelled. Its crier's line is cried at the market's square in
+    the daytime, where a player in the square's cell hears it (the festival criers' `CrierCall`; the crier is the town's
+    official, innkeeper or priest, or the same of those who work at the market; none, the notice alone). A crowd where it
+    says (`here.crowd`), and talk's `world.event` (its kind), `world.event_words` and `world.event_when` (now, soon, past),
+    in `facts.json`. Over after its days, talked of two days, then dropped; one whose days passed while the world was down
+    is over quietly and makes room for the weeks to come (found by a festival's week after a calendar jump: fixed with a
+    test).
+  - **Ships** (Phase 5's leftovers): a ship lost is a story of its own (`Ship::lost`, saved: "is lost at sea" on the
+    Wharf office's notice, `world.ships` "lost", its cargo a storm's +0.1 dearer and the event's more, the price list's
+    "the Gull was lost at sea"); a rich cargo rides a ship on the timetable, begins as it docks and is called off if a
+    storm keeps it out.
+  - **The slider's cause** (8.5, T16): `Society::setProsperity(target, now, cause)` takes the DM's words (plain, 80 at
+    most, never the forbidden word; else the seeded cause stands in and it returns false), and with none a move a new way
+    takes one of `events.causes` for its way (three each way: the Crown's war levy, rot in the granaries, the hard
+    winter; the silver strike in the hills, the peace with the north, the rich harvest), seeded by the day; a move on the
+    same way, or the same words sent again (a sync), keep the cause. The Board keeps it (`sliderCause`); every market is
+    told once (a notice by "the crier", its cry). `Society::timesScore` (5.3) adds the events on and the DM's nudge to the
+    slider and the roads' shift, and `timesCause` names the largest part on the score's side; `world.times`,
+    `world.times_cause` and the Mind's Means ("Times here: hard, since the Crown's war levy.") say it. The harvest roll
+    leans ±0.08 the slider's way while it moves.
+  - **Override notices and the DM's hooks** (12, Phase 9): `World::nudgeTimes(market, points, days, words)` and
+    `overrideHarvest(area, word, days, words)` post their notices unless the new rule `overrideNotices` (1) is 0;
+    `addStagedEvent(market, kind, day, hour)` (this week or the next, needs as its kind must have them) and
+    `cancelStagedEvent(id)` for the Prosperity tab; `setProsperity`'s cause for the slider. No command, route or panel yet:
+    Phase 9's. The two rules are mirrored in `RatwItems.h`, `market.json`, `map_editor.py` (`overrideNotices` a switch),
+    the Editor's `economy.ts` (and its test's fixture) and `model.mjs`.
+  - **The price list's cause words** (7.1's tooltip): "a good catch", "dear still, though a good catch", and the roads'
+    and farms' causes in words where the raw word showed ("the wagon came in", "the wagon was robbed on the road", "the
+    wagon's late", "a good harvest", "a short harvest, or the cart didn't come").
+  - **Saves and the journal:** everything an event, a cause or a nudge moves is on the Market Board, which every record of
+    the economy or the roads writes whole when it differs and `journalCheckpoint` writes as a checkpoint is taken; the
+    tills a catch sets out go with it (`takeTillsMoved`); the boards' notices go whole with the same records. No tick
+    notice: nothing waits on `takeNotices`; the crier's lines are voices, not saved (a cry not yet cried when the server
+    stops is not cried after it). At a start `mendRoadNotices` puts an event's notice up or down by the Board. Every new
+    Board field is written only when it has something and read leniently (`mendEvents`: a lying event's words with the
+    forbidden word drop it, statuses and numbers mended, one of an id, 16 a market, 256 in all, the next id above every
+    one); at a restore events of a market gone or past the weeks rolled are dropped. A Board from before Phase 7 reads as
+    none, and its events are rolled from that day.
+  - **Money:** events never touch money, bands' targets or posts; no faucet in them; `realBalanced()` holds through three
+    weeks of events at 300% with a player trading, and buying a good where an event made it cheap and selling it back
+    anywhere never pays.
+  - **The forbidden word:** every host list (events, causes, the cause templates) as the loader takes it: an id by the name
+    rule (`forbiddenInName`, the letters anywhere: "seadog_feast" is out), words, notices, cries and signs by whole words
+    (`forbiddenWord`); a filled event whose words fail is not made; the DM's cause by the same.
+  - **Changed for the phase:** `trade_show_tests` and `port_tests` run with `eventRate` 0 (they pin the roads' and the
+    port's own steps, which an event's pressure, refill or lost ship would move; a good catch at West filled its shellfish,
+    so the wagon's manifest changed); `gathering_tests`' "the board is bare" means bare of the players' own notices.
+  - **Left, by owner:** Phase 8: the talk lines for events, the slider's causes, the Times and lost ships (the facts are
+    there), and the price topics' cause words. Phase 9: the DM's side (commands and the Prosperity tab over the hooks
+    above, the slider re-meant with its cause through `economy.sync`, `eventRate` and `overrideNotices` in the Rules
+    panel's copy, events and causes in `live.economy.rules` and the world package's scan). Phase 10: every number (the
+    kinds' targets, days, Times points and weights, `perWeek`, the harvest lean). Phase 11: the soak with events (not run).
+  - **For the user to decide** (each built one way, cheap to change): (1) an event's Times points count in its market's
+    score (5.3), so in the week it is on it can tip the bands' cut, though 8.4 says events never touch bands; (2) "city"
+    kinds (the House wedding) only at the realm's largest market; (3) a move of the slider back toward 0 takes a cause of
+    its own way ("up"), even while the times are still lean; (4) a market with no official, innkeeper or priest has no
+    crier, only the notice; (5) a good catch sets out fish only where a shop sets them out (a stall that only buys them
+    from players has none to set out); (6) the DM adds events only this week or the next (the weeks a restore keeps).
+  - **Tests:** `events_tests` (new, 3,342 checks: the list and its checks, the host's bad entries left out; 1-3 a week,
+    the same world the same events, the rule at 0 and 300; an event begun, pressed, refilled, in the Times and the talk,
+    the crowd, the list's cause, inside the clamp, the player's push capped, pressed again, over, dropped, called off; the
+    slider's cause, the DM's words and the forbidden ones, told once, `times_cause`, the Means, the harvest's lean; the
+    nudge and harvest override with the rule on and off; a rich cargo and a lost ship, a storm calling one off; a lame ox;
+    a world with nothing but a market; a festival's buying ahead; money real; the wire, a save, a Phase 6 save, a lying
+    save; the notices, signs, scent and the crier through a game; five crashes, each after a checkpoint and again with a
+    snapshot that doesn't land (an event begins, one is over, a morning rolls the week, a ship lost, the cause told),
+    restarted the same in file mode, each seen failing with the Board's events kept out of the journal) and `events_pg`
+    (the ten through PostgreSQL by `game.save_checkpoint` and `game.journal`, 280 checks, a throwaway
+    `ratw_test_s2stage_*`, dropped after). A clean Release build (`build-p7f`; 125 warnings, as before, none in the lines touched); ctest
+    88/88 with the database, none skipped, twice on it (once more on the working build; `pg_client` on throwaway
+    `ratw_test_s2stage_p7*` databases, dropped after; no `s2stage` database left); `port_tests` 9,111, `trade_show_tests`
+    919, `street_tests` 27,796, `market_tests` 2,001, `host_edit_tests` 614 (550: the fixtures' markets now have events),
+    `roads_tests` 407, `exploit_tests` 871,756, `game_tests` 3,631, `journal_tests` 39, `gathering_tests` 128,
+    `save_compat` 23,107 (23,123 with `RATW_PRE79_BUILDS`: DEV build 70 and dev-old build 34 exported read only, every
+    fixture loaded whole). `events_tests`' count varies a little with what the seeded weeks roll (3,331-3,342). All 34
+    `tools/test_*.py` with the database and this build's server (keys tagged `s2stagep7`), twice (once on the working
+    build before the last two small changes in `RatwEvents.cpp`): 668 tests, none failing, 24
+    skipped (the 23 `RATW_SLOW` world builds and `test_game_tables`' save under `Saved/`; `test_live_map` through
+    `unittest`, `test_dm_live` with `RATW_SERVER`); `artifacts/screenshots/dev-console-fight.png`, rewritten by a tools
+    test, restored. The client's 146 and its typecheck; the Editor's 81 + 67 and its typecheck (`node_modules` linked from
+    the main checkout, removed after).
+  - **Checked on DEV's data, read only** (DEV build 70 exported, loaded and run 21 mornings by a probe outside the
+    repository, seconds of ticks each, nothing written): Ridgemere is the one market and a port; its weeks rolled a House
+    wedding, a brewing too many, the drovers in, the mill wheel stopped, blight in the orchards, a fire at the works and a
+    ship's rich cargo (11 events in three weeks); real money balanced.
+  - **Perf** (DEV build 70 exported read only, `world_check EXPORT --simulate A B --players 20`, Release, 8 threads; Phase 7
+    (`build-p7c`, the same code but for the rolling of a ship's event over its whole week, a weekly step) against its base
+    `5afe23c` built from the same tree, runs alternating, two each; the machine quiet (load 1.0-1.4, but 7.7 and 3.1 at the
+    first two, right after a build); ms, ranges over the runs; 765 residents):
+
+    | Window | build | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|---|
+    | 6-8 | Phase 6 merged (its table) | 2.59 | 5.77 | 5.52 | 11.4 | 36.8 |
+    | 6-8 | base today | 2.60-2.61 | 5.74-5.79 | 5.40-5.44 | 12.0-12.6 | 38.4-39.2 |
+    | 6-8 | Phase 7 | 2.61-2.62 | 5.73-5.86 | 5.32-5.49 | 12.2-12.5 | 39.1-39.6 |
+    | 6-8 `--ship-day` | base today | 2.63 | 5.79 | 5.48 | 12.2 | 37.0 |
+    | 6-8 `--ship-day` | Phase 7 | 2.67 | 5.78 | 5.39 | 12.1 | 38.9 |
+    | 17-19 | Phase 6 merged | 2.16 | 5.16 | 4.96 | 22.7 | 39.6 |
+    | 17-19 | base today | 2.11-2.16 | 5.20-5.21 | 4.98-5.03 | 21.8-22.4 | 38.3-39.3 |
+    | 17-19 | Phase 7 | 2.14-2.18 | 5.18-5.18 | 4.97-4.98 | 21.9-22.1 | 39.3-39.7 |
+    | 23-25 | Phase 6 merged | 1.69 | 4.69 | 4.18 | 13.1 | 36.7 |
+    | 23-25 | base today | 1.64-1.64 | 4.45-4.69 | 4.00-4.22 | 13.0-13.0 | 36.4-40.5 |
+    | 23-25 | Phase 7 | 1.58-1.66 | 4.38-4.76 | 3.92-4.26 | 12.7-12.7 | 36.0-38.9 |
+
+    Phase 7 sits inside the base's own spread in every window: an event's steps are a few dozen Board writes a day, and the
+    Times score's walk over a market's events is a few entries. The worst ticks are the first minute's tick 19, 17-19's
+    place streaming in and 23-25's day turn, as before. `world_check` has no Game: the notices, the crier and the journal's
+    records are not in the gate.
 
 ## Review (2026-11-08)
 
