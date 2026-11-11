@@ -11,6 +11,7 @@
 #include "test_purse.h"
 #include "RatwCheckpoint.h"
 #include "RatwItems.h"
+#include "RatwGame.h"
 #include "RatwWorld.h"
 
 #include <algorithm>
@@ -564,6 +565,123 @@ void theEdits()
         expect(refunded && w.society().cash("player-ada") >= adaBefore + 3, "its 3p back to its poster");
     }
 }
+// Doc 79, 14 and 16.6 (Phase 9): the economy's records lenient, each one that won't do skipped with a warning and the
+// world loaded; the host's overrides line; the band records; and the game's strip of a build's own records.
+void lenientEconomyRecords()
+{
+    const auto base = strip("");
+    const auto withLines = [&](const std::string& lines, const std::string& what) {
+        auto f = base;
+        f.manifest += lines;
+        World w;
+        w.setCellSource(f.source());
+        const auto loaded = w.loadWorldFiles({{"world.ratw", f.manifest}}, "strip");
+        expect(loaded.ok, what + ": loads: " + loaded.message);
+        return w;
+    };
+    const auto warned = [](const World& w, const std::string& part) {
+        const auto& list = w.society().authored().warnings;
+        return std::any_of(list.begin(), list.end(), [&](const std::string& x) { return x.find(part) != std::string::npos; });
+    };
+    {
+        // The slider's rule: 9999 opens at 100, a word skipped (0), 37 rounded to 35; its cause as 0060 printed it.
+        auto w = withLines("rule \"prosperity\" 9999\nrule \"prosperityCause\" the long hard winter\n", "a slider of 9999");
+        expect(w.society().rule("prosperity") == 100, "9999 is 100: " + std::to_string(w.society().rule("prosperity")));
+        expect(w.society().authored().economy.overrides.cause == "the long hard winter", "the bare cause read");
+        auto w2 = withLines("rule \"prosperity\" abc\n", "a slider of abc");
+        expect(w2.society().rule("prosperity") == 0 && warned(w2, "not a whole number"), "abc skipped: 0");
+        auto w3 = withLines("rule \"prosperity\" 37\nrule \"prosperityCause\" \"a fair\"\nrule \"prosperity\" 50\nrule \"harvestBias\" -99\n", "37");
+        expect(w3.society().rule("prosperity") == 35 && w3.society().rule("harvestBias") == -20 && warned(w3, "a second rule prosperity"),
+               "37 is 35, the second ignored, the bias clamped");
+        expect(w3.society().authored().economy.overrides.cause == "a fair", "a quoted cause");
+    }
+    {
+        // A second economy line, a malformed loop, an unknown rule, a 40 KB rule line, a bad season and service: skipped.
+        const std::string big(40000, '9');
+        auto w = withLines("economy 1 2 3\nloop needs maybe\nrule \"notARule\" 5\nrule \"ripple\" " + big + "\n"
+                           "season \"bread\" price 1 2 3\nseason \"fish\" price 5 2000 100 100 shelf 100 100 100 100\n"
+                           "season \"fish\" price 100 100 100 100 shelf 100 100 100 100\nservice \"barber\" maybe price 1 every 2\n",
+                           "the bad records");
+        expect(w.society().authored().economy.treasury == 20000, "the second economy line skipped");
+        for (const char* part : {"a second economy record", "a malformed loop", "no such rule", "too long", "the season bread skipped",
+                                 "a second season fish", "the service barber skipped"})
+            expect(warned(w, part), std::string("warned: ") + part);
+        const auto& fish = w.society().authored().economy.seasons.at("fish");
+        expect(fish.price[0] == 10 && fish.price[1] == 1000, "a season's numbers clamped, the first kept");
+    }
+    {
+        // 0060's whole manifest: the old records read past, its seasons (with supply and normal, or printed empty), its
+        // rules' JSON values, a 5-number economy line.
+        auto f = base;
+        const auto at = f.manifest.find("economy 20000 100 50 10 12\n");
+        expect(at != std::string::npos, "the strip's economy line");
+        f.manifest.replace(at, std::string("economy 20000 100 50 10 12\n").size(),
+                           "economy 1234 40 30 7 9\nstore off 120 resale off 60 rule on\n"
+                           "loop needs off country off reserve 300 toll 20 carriage 9 wages 15 9 9 9\ncountryoff \"ale\"\n"
+                           "subsidy \"carriage\" 30\ncomforts 50 20\n"
+                           "season \"bread\" supply 100 120 90 80 price 100 95 105 120 shelf 100 110 100 90 normal 12\n"
+                           "season \"fish\" supply price 90 90 100 110 shelf 100 100 100 100 normal\n"
+                           "rule \"market\" {\"events\": {\"perWeek\": 2}}\nrule \"steer\" 1\nrule \"steerLean\" 150\nservice \"groom_and_trim\" off price 6 every 20\n"
+                           "farms start 3 every - order - wages - -\nfarmarea \"orchards\" on off yield 80 crew - wages - - factor -\n");
+        f.manifest += "nostore \"em\"\n";
+        World w;
+        w.setCellSource(f.source());
+        const auto loaded = w.loadWorldFiles({{"world.ratw", f.manifest}}, "strip");
+        expect(loaded.ok, "0060's manifest loads: " + loaded.message);
+        const auto& e = w.society().authored().economy;
+        expect(e.treasury == 1234 && e.needsPaused && e.seasons.count("bread") && e.seasons.at("fish").price[0] == 90 && e.services.count("groom_and_trim"),
+               "its economy read");
+        expect(warned(w, "the rule market skipped") && warned(w, "the rule steer skipped"), "its words and old rules skipped with a warning");
+        expect(w.society().rule("prosperity") == 0, "an old world's steerLean isn't mapped across: it opens at 0 (16.7 e)");
+    }
+    {
+        // The overrides line: bad JSON skipped, unknown keys skipped, a second ignored; its cause over a rule's; 70 KB skipped.
+        auto w = withLines("rule \"prosperityCause\" \"a rule's cause\"\noverrides {\"prosperityCause\": \"the host's cause\", \"bogus\": 1, "
+                           "\"neverImported\": [\"salt\", \"not_a_good\"], \"status\": {\"caps\": {\"grantsADay\": 100}}, "
+                           "\"market\": {\"events\": {\"perWeek\": 1}}}\noverrides {\"prosperityCause\": \"second\"}\n",
+                           "an overrides line");
+        const auto& o = w.society().authored().economy.overrides;
+        expect(o.cause == "the host's cause", "the overrides' cause wins over a rule's, whatever their order");
+        expect(o.neverSet && o.neverImported.size() == 2 && o.status.isObject() && o.market.isObject(), "the overrides read");
+        expect(warned(w, "overrides: bogus skipped") && warned(w, "a second overrides record"), "unknown keys and a second line warned");
+        auto bad = withLines("overrides {not json\n", "bad JSON");
+        expect(warned(bad, "the overrides record skipped"), "bad JSON skipped");
+        auto big = withLines("overrides {\"market\": {\"x\": \"" + std::string(70000, 'a') + "\"}}\n", "a 70 KB overrides line");
+        expect(warned(big, "too long"), "a 70 KB line skipped");
+        auto first = withLines("overrides {\"prosperityCause\": \"the host's cause\"}\nrule \"prosperityCause\" \"a rule's cause\"\n", "the overrides first");
+        expect(first.society().authored().economy.overrides.cause == "the host's cause", "the overrides' cause wins over a rule's after it");
+        auto dog = withLines("rule \"prosperityCause\" \"a dog show\"\n", "a forbidden cause");
+        expect(dog.society().authored().economy.overrides.cause.empty() && warned(dog, "prosperityCause skipped"), "the forbidden word skipped");
+    }
+    {
+        // Band records: after the resident; an unknown word or resident skipped.
+        auto w = withLines("band \"e1\" poor\nband \"e2\" wealthy\nband \"nobody\" rich\n", "bands");
+        expect(w.society().spec("e1") && w.society().spec("e1")->band == status::Poor && w.society().spec("e2")->band == -1, "e1's band read");
+        expect(warned(w, "no band wealthy") && warned(w, "the band of nobody skipped"), "an unknown word or resident warned");
+        auto none = withLines("", "no bands");
+        expect(none.society().authored().warningCount == 0, "a clean world warns of nothing");
+    }
+    {
+        // The game's strip of a build's own records (the live manifest brings them): protected, wander, band, overrides too.
+        const std::string build = "RATW_WORLD 2\ncell \"a\" \"cells/a.cell\"\neconomy 1 2 3\nresident \"x\"\nprotected \"x\"\nwander \"x\" 1 \"a\" 1 1\n"
+                                  "band \"x\" poor\noverrides {}\nseason \"s\" price 1 1 1 1 shelf 1 1 1 1\nspawn \"a\" 1 1\n";
+        const auto kept = game::Game::withoutPeople(build);
+        expect(kept == "RATW_WORLD 2\ncell \"a\" \"cells/a.cell\"\nspawn \"a\" 1 1\n", "only the build's own: " + kept);
+    }
+    // A status override's purse target of 10^9 clamped (status::read), and a status override summing to 140 falls back.
+    {
+        json::Value v;
+        std::string problem;
+        expect(json::parse(R"({"rows": {"poor": {"purse": [1000000000, 1000000000]}},
+                               "shares": [{"at": -100, "shares": [40, 40, 40, 20]}, {"at": 100, "shares": [2, 12, 70, 16]}]})", v, problem), problem);
+        std::vector<std::string> warnings;
+        const auto checked = status::hostOverride(v, &warnings);
+        const auto t = status::read(checked, status::defaults(), &warnings);
+        expect(t.rows[status::Poor].purseHigh <= 500 && t.shares.front().shares[0] == status::defaults().shares.front().shares[0],
+               "a purse of 10^9 clamped; shares summing to 140 fall back");
+    }
+}
+
 } // namespace
 
 int main()
@@ -571,6 +689,7 @@ int main()
     try
     {
         theEdits();
+        lenientEconomyRecords();
     }
     catch (const std::exception& error)
     {

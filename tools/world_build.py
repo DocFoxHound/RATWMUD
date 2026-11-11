@@ -37,10 +37,11 @@ ANNOUNCE = 'ratw_release'   # The game server listens here for a newer build (a 
 
 
 # Everything a build is made from besides the world's own tables (whose revision rises with every edit): the live
-# layers, which the game server and the Dungeon Master change directly.
+# layers, which the game server and the Dungeon Master change directly. Not live.economy (doc 79, Phase 9's U8): the game
+# reads the economy from live.people_manifest at load and economy.sync, never from a build (Game::withoutPeople strips a
+# build's economy records), so a DM's lever never makes a new build or restarts a dev server.
 LIVE_LAYERS = ('live.npcs', 'live.profession_slots', 'live.patrol_routes', 'live.patrol_posts', 'live.factions',
-               'live.faction_claims', 'live.economy', 'live.npc_relations',   # (Families: doc 62.)
-               'live.business_settings')   # (The store room's switches: doc 67, 6; skipped where migration 0055 is missing.)
+               'live.faction_claims', 'live.npc_relations')   # (Families: doc 62.)
 
 
 def fingerprint(conn, world_id, roster) -> str:

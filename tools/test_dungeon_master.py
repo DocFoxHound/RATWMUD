@@ -10,6 +10,10 @@ import world_db as W
 import world_store as S
 from test_world_db import database_available, superuser
 from test_world_store import greyfen
+import os
+
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 
 class TargetTests(unittest.TestCase):
@@ -52,7 +56,7 @@ class Fixture(unittest.TestCase):
     def setUpClass(cls):
         W.ensure_roles()
         tag = secrets.token_hex(4)
-        cls.names = {'prod': f'ratw_test_dmp_{tag}', 'dev': f'ratw_test_dmd_{tag}'}
+        cls.names = {'prod': f'ratw_test_{DB_TAG}dmp_{tag}', 'dev': f'ratw_test_{DB_TAG}dmd_{tag}'}
         with superuser() as su:
             for name in cls.names.values():
                 su.execute(f'CREATE DATABASE {name} OWNER ratw_owner')

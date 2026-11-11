@@ -480,6 +480,7 @@ void World::tendRoads()
     // The road layer runs on the markets (doc 79, 5.1 and Phase 4), not the law's towns: one market still has its farm
     // carts; two or more, wagons and bandits between them.
     ensureRoadMarkets();
+    society_.tendResets();                          // (The DM's price resets easing: doc 79, 12; Phase 9.)
     if (roadMarkets_.empty())
     {
         tendPort();                                 // (No market left: its port's ships go with it. Phase 5.)
@@ -515,6 +516,7 @@ void World::tendRoads()
         roadsMorning(today);
         portMorning(today);                         // (The ships' timetable: Phase 5, RatwPort.cpp.)
         eventsMorning(today);                       // (The staged events: Phase 7, RatwEvents.cpp; after the ships they ride.)
+        society_.setReport(prosperityReport());     // (The DM's Prosperity report, once a day: Phase 9, RatwProsperity.cpp.)
     }
     setOut();
     tendPort();

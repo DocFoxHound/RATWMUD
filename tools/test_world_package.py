@@ -517,6 +517,30 @@ class ScanTest(unittest.TestCase):
         errors, _ = P.scan(None, {'game.accounts': [], 'live.npcs': []}, allowed_tables=P.allowed_tables())
         self.assertEqual(errors, ['game.accounts: not a table a package may hold.'])
 
+    def test_the_hosts_overrides_are_scanned(self):
+        # Doc 79, 13 and Phase 9: live.economy's words (the slider's cause, an event's words and notices, the ships'
+        # names) hold no player id and never the forbidden word; each refused by its path.
+        clean = {'world_id': 'w', 'rules': {'ripple': 40, 'prosperityCause': 'the silver strike',
+                                             'market': {'events': {'list': [{'id': 'fair', 'words': 'the fair'}]},
+                                                        'wharf': {'ships': ['the Heron']}}}}
+        self.assertEqual(P.scan(None, {'live.economy': [clean]})[0], [])
+        for bad, where in ((('prosperityCause',), 'a dog show'), (('market', 'events', 'list', 0, 'words'), 'the dogs'),
+                           (('market', 'wharf', 'ships', 0), 'the Dogfish'), (('prosperityCause',), WOLF)):
+            row = copy.deepcopy(clean)
+            at = row['rules']
+            for k in bad[:-1]:
+                at = at[k]
+            at[bad[-1]] = where
+            errors, _ = P.scan(None, {'live.economy': [row]})
+            self.assertTrue(errors, (bad, where))
+            self.assertTrue(any('rules' in e for e in errors), errors)
+
+    def test_the_prosperity_report_is_never_packaged(self):
+        doc = save()
+        doc['society']['report'] = {'v': 1, 'markets': [{'id': 'town', 'households': {'poor': 3}}]}
+        P.strip(doc)
+        self.assertNotIn('report', doc['society'])
+
     def test_a_table_a_package_made_before_doc_79_holds_is_a_warning(self):
         # (Every pre-79 package holds live.business_settings, if only with no rows: doc 79, 16.7.)
         errors, warnings = P.scan(None, {'live.business_settings': [], 'live.npcs': []}, allowed_tables=P.allowed_tables())
@@ -543,6 +567,10 @@ class JournalTest(unittest.TestCase):
                 P.journal_replay({'journal': 0}, [(1, bad)])
 
 
+PLANTED_OVERRIDES = {'prosperityCause': 'the silver strike', 'neverImported': ['salt'],
+                     'market': {'wharf': {'ships': ['the Heron']}}}
+
+
 def plant(source):
     """Players in DEV's save before the strip (doc 77's test: the strip's result must still load), in every part of the
     save the strip has a path for: a wolf with a purse and an account; a Chapter with its treasury, a camp (staffed,
@@ -556,6 +584,10 @@ def plant(source):
     doc = source['snapshot']
     society = doc['society']
     accounts = society['accounts']
+    # Doc 79, Phase 9: the host's overrides in the world's rules (carried), and a Prosperity report in the save (dropped).
+    for row in source['live'].get('live.economy', []):
+        row['rules'] = {**(row.get('rules') or {}), **PLANTED_OVERRIDES}
+    society['report'] = {'v': 1, 'markets': []}
     residents = [e['id'] for e in doc['npcs'] if e['id'] in accounts]
     a, b, c = residents[0], residents[1], residents[2]
     cell = doc['npcs'][0]['cell']
@@ -763,6 +795,11 @@ class EndToEndTest(unittest.TestCase):
             self.assertIn(section, strip['removed'], section)
         self.assertEqual(P.scan_directory(self.planted)[0], [])
         snapshot = P.read_json_gz(self.planted / 'snapshot.json.gz')
+        self.assertNotIn('report', snapshot['society'], 'the Prosperity report is never packaged')
+        economy = P.read_json_gz(self.planted / 'live.json.gz')['tables']['live.economy']
+        self.assertEqual(len(economy), 1)
+        self.assertEqual({k: economy[0]['rules'].get(k) for k in PLANTED_OVERRIDES}, PLANTED_OVERRIDES, 'the overrides carried')
+        self.assertEqual(set(economy[0]), set(P.ECONOMY_SHIPPED), 'only the kept columns')
         self.assertNotIn(WOLF, json.dumps(snapshot))
         self.assertNotIn('chapter-1', json.dumps(snapshot))
         self.assertNotIn('accounts', snapshot)
@@ -837,7 +874,11 @@ class EndToEndTest(unittest.TestCase):
         self.assertTrue([k for k in society['accounts'] if P.account_kind(k) == 'staged' and k != 'treasury'],
                         'the server made the staged accounts again')
         self.assertEqual(P.scan(after, {})[0], [])
+        self.assertEqual(society.get('report', {}).get('v'), 1, 'the importing server worked the Prosperity report out again')
         if planted:
+            with W.connect(key, 'owner') as conn:
+                rules = conn.execute('SELECT rules FROM live.economy').fetchone()[0]
+            self.assertEqual({k: rules.get(k) for k in PLANTED_OVERRIDES}, PLANTED_OVERRIDES, 'the overrides imported')
             # The town's site and the granary its project built are still on the ground after the server played it.
             sites = {s['id']: s for s in after['camps']['sites']}
             self.assertEqual(sites.get('site-1', {}).get('chapter'), 'town:ridgemere', after['camps'])

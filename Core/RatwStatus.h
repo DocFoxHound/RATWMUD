@@ -104,6 +104,16 @@ const Table& defaults();
 // never rising, rich never falling as the slider rises) or doesn't run from -100 to 100 falls back to the base's whole,
 // never half-applied. Each fallback or clamp adds a line to `warnings`.
 Table read(const json::Value& v, const Table& base, std::vector<std::string>* warnings = nullptr);
+// A host's override of status.json (doc 79, 12; Phase 9: live.economy.rules' `status`) made one the game takes: only the
+// keys a host may change (HostKeys); a share table whose rows don't each sum to 100, aren't monotone or have a share
+// under MinShare dropped (the default's stands, never normalised); each faucet cap held to CapCeiling times the shipped
+// default (grantsADay to GrantsMost), an unknown cap dropped. Each change adds a line to `warnings`. read() takes the rest.
+inline constexpr const char* HostKeys[] = {"shares", "rows", "caps", "pay", "street", "score", "hold", "leanDays", "timesShift",
+                                           "smoothing", "hysteresis", "shortHard", "shortBoom", "shortPressureMost",
+                                           "shortPressureAt"};
+inline constexpr double CapCeiling = 5;
+inline constexpr std::int64_t GrantsMost = 2500, GrantsADay = 500;
+json::Value hostOverride(const json::Value& v, std::vector<std::string>* warnings = nullptr);
 // Whether a share table passes the loader's checks (after normalising): why not in `why`.
 bool sharesValid(const std::vector<SharePoint>& shares, std::string* why = nullptr);
 // The shares at a slider (straight lines between the rows, clamped to -100..100); with Never Broke, destitute's share is

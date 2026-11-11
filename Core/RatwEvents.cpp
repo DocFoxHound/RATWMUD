@@ -97,7 +97,7 @@ int World::eventsInWeek(const std::string& market, std::int64_t week) const
     // 1 to 3 at the default (8.4: the list's perWeek 2, one more or fewer by a seeded score), times the rule eventRate
     // (percent, 0 to 300: the DM's 0-3x); none while it is 0. Never more than one a day.
     const int rate = society_.rule("eventRate");
-    const double mid = market::data().eventsPerWeek * double(std::max(0, rate)) / 100.;
+    const double mid = society_.market().eventsPerWeek * double(std::max(0, rate)) / 100.;
     if (mid <= 0 || !roadMarket(market))
         return 0;
     int n = int(std::floor(mid)) + (unit("events:" + market, week) < mid - std::floor(mid) ? 1 : 0);
@@ -226,7 +226,7 @@ bool World::rollEvents(const Town& m, std::int64_t week, std::int64_t today)
     const int count = eventsInWeek(m.id, week);
     if (count <= 0)
         return true;
-    const auto& d = market::data();
+    const auto& d = society_.market();
     std::set<std::int64_t> taken;
     std::set<std::string> used;
     for (const auto& e : b.events)
@@ -398,7 +398,7 @@ void World::eventBegins(market::StagedEvent& e)
         e.noticeOn.clear();
     }
     pressEvent(e);
-    if (const auto* kind = market::data().eventKind(e.kind); kind && kind->refill)
+    if (const auto* kind = society_.market().eventKind(e.kind); kind && kind->refill)
         for (const auto& [g, target] : e.goods)
             if (target < 0)
                 society_.arrivalRefill(e.market, g);
@@ -561,21 +561,21 @@ bool World::cartHeld(const std::string& farmId, const std::string& market, std::
     // A staged event holding a farm's cart that day (a lame ox: 8.4's "delaying the Coldwater cart").
     for (const auto& e : society_.board().events)
         if (e.market == market && e.day == day && (e.status == "due" || e.status == "on") && subjectId(e.subject, "farm") == farmId)
-            if (const auto* kind = market::data().eventKind(e.kind); !kind || kind->holdsCart)
+            if (const auto* kind = society_.market().eventKind(e.kind); !kind || kind->holdsCart)
                 return true;
     return false;
 }
 
 // The Dungeon Master's hooks (Phase 9's commands and the Prosperity tab call them): addStagedEvent, cancelStagedEvent,
 // nudgeTimes and overrideHarvest change the Market Board and record their step, but write no journal record of their
-// own. PHASE 9: every command that calls one must journal the Board after it (as the economy's records do: the Board
-// whole when it differs), or a crash before the next checkpoint loses the DM's change.
+// own: every command that calls one journals the Board after it, before anyone is told (Game::applyEconomyCommand,
+// RatwGameEconomy.cpp).
 std::string World::addStagedEvent(const std::string& market, const std::string& kindId, std::int64_t day, double hour, std::string& problem)
 {
     // (Its kind's needs and seasons held as the scheduler's are, makeEvent's: a House wedding only at the realm's largest
     // market, a festival's buying only the day before one, a ship's only at a port.)
     auto& b = society_.stagedBoard();
-    const auto* kind = market::data().eventKind(kindId);
+    const auto* kind = society_.market().eventKind(kindId);
     const auto today = std::int64_t(std::floor(calendarDays_));
     if (!kind)
         return problem = "No such event in the list: \"" + kindId + "\".", std::string();

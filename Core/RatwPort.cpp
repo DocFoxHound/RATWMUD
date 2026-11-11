@@ -237,7 +237,7 @@ void World::findPorts(std::map<std::string, std::set<std::string>>& imports)
                 port.cell = m->market;
         if (const auto* tp = society_.tradePoints().find(id); tp && shipsRun)
         {
-            const auto& d = market::data();
+            const auto& d = society_.market();        // (The host's never-imported goods over wharf.never: Phase 9.)
             const auto waits = [&](const std::string& g) {
                 return tp->sold.count(g) && !tp->crafted.count(g) && items::good(g) && !d.shipNever.count(g);
             };
@@ -292,7 +292,7 @@ void World::rollShips(const Port& port, std::int64_t week, std::int64_t today)
         days.push_back(week * Week + order[std::size_t(i)].second);
     std::sort(days.begin(), days.end());
     const auto* tp = society_.tradePoints().find(port.market);
-    const auto& d = market::data();
+    const auto& d = society_.market();            // (The host's ships' names: Phase 9.)
     std::vector<std::string> listedImports, otherImports, takes;
     for (const auto& g : port.imports)
         (std::find(d.shipBrings.begin(), d.shipBrings.end(), g) != d.shipBrings.end() ? listedImports : otherImports).push_back(g);

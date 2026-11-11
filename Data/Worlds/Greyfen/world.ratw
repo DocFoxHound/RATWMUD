@@ -22,7 +22,7 @@ door "link_cottage_door_a" "Cottage door" "town" 18.5 26.5 "cottage" 6.5 1.5 "li
 door "link_cottage_door_b" "Cottage door" "cottage" 6.5 0.5 "town" 18.5 25.5 "link_cottage_door_a" 0 0 0 0 "-"
 door "link_longhouse_door_a" "Long House door" "town" 50.5 25.5 "longhouse" 12.5 1.5 "link_longhouse_door_b" 0 0 0 0 "-"
 door "link_longhouse_door_b" "Long House door" "longhouse" 12.5 0.5 "town" 50.5 24.5 "link_longhouse_door_a" 0 0 0 0 "-"
-economy 1000 100 50 10 12
+economy 1000 100 50
 herbs "town" 4.5 14.5
 route "town_watch" 9 "town" 30.5 37.5 "town" 22.5 19.5 "town" 13.5 14.5 "town" 13.5 21.5 "town" 31.5 3.5 "town" 51.5 14.5 "town" 51.5 22.5 "town" 41.5 18.5 "town" 33.5 37.5
 resident "wren" "Wren" "merchant" "keeping shop" "A quick-eyed rust-red wolf with a ledger cord braided into her harness, who remembers every debt and every kindness." "If it is rope, tallow, herbs or a hot meal, I have it or know who does. Tell me what you need and I will tell you what it costs." 44 "red" "female" "average" "saddle" 6 7 0 5 0 7 19 "-" 120 10 16 "wren_house" 10.5 6.5 "shop" 15.5 4.5 "wren_house" 6.5 4.5
