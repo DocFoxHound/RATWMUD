@@ -498,7 +498,7 @@ void Game::mendRoadNotices()
             pinned->text = json::utf8Prefix(e->notice, TextMost);
         else
         {
-            const auto* kind = market::data().eventKind(e->kind);
+            const auto* kind = world_.society().market().eventKind(e->kind);
             pinStagedNotice(id, e->market, "event:" + e->id, e->notice, kind ? kind->sign : std::string("the crier"));
         }
     // The DM's Times nudges and harvest overrides that lapsed: their notices down.
@@ -551,7 +551,7 @@ void Game::stagedNotices(const WorldEvent& e)
         const auto* ev = world_.stagedEvent(e.actor);
         if (!ev)
             return;
-        const auto* kind = market::data().eventKind(ev->kind);
+        const auto* kind = world_.society().market().eventKind(ev->kind);
         auto* pinned = documents_.find("event-" + ev->id);
         if (!ev->notice.empty() && pinned && e.kind == "event begins")
             pinned->text = json::utf8Prefix(ev->notice, TextMost);   // (Its notice once begun: a rich cargo's ship is in.)
@@ -584,6 +584,29 @@ void Game::stagedNotices(const WorldEvent& e)
     else if (e.kind == "nudge over")
     {
         documents_.erase("nudge-" + e.target);
+        saveSoon();
+    }
+    else if (e.kind == "harvest over")
+    {
+        // (The DM's harvest override lifted: its notices down at once. Phase 9's World::clearHarvest.)
+        std::vector<std::string> down;
+        for (const auto& [id, d] : documents_.all())
+            if (d.kind == "notice" && d.author == StagedAuthor && d.what == "harvest:" + e.actor)
+                down.push_back(id);
+        for (const auto& id : down)
+            documents_.erase(id);
+        saveSoon();
+    }
+    else if (e.kind == "prices reset")
+    {
+        // (The DM's "reset prices" at a market: its board says so, unless the rule overrideNotices is 0. Phase 9.)
+        if (world_.society().rule("overrideNotices") > 0 && !e.detail.empty())
+        {
+            auto words = e.detail;
+            words[0] = char(std::toupper(static_cast<unsigned char>(words[0])));
+            pinStagedNotice("reset-" + e.target, e.target, "reset:" + e.target, words + ": prices are back to their usual.", "the crier",
+                            world_.calendarDays() + 1);
+        }
         saveSoon();
     }
     else if (e.kind == "harvest called")

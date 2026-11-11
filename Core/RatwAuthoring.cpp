@@ -17,6 +17,17 @@ namespace
 {
 namespace fs = std::filesystem;
 constexpr std::size_t MaxCells = 256, MaxDoors = 65536, MaxTiles = 262144;
+// A manifest line at most; the overrides line's JSON may be longer (doc 79, 14; migration 0061's own bound).
+constexpr std::size_t LineMost = 16384, OverridesMost = 65536 + 10;
+// The economy's records, which are skipped with a warning rather than refused (doc 79, 14), the old economy's too.
+bool economyRecord(std::string_view kind)
+{
+    for (const char* k : {"economy", "loop", "season", "service", "rule", "overrides", "band", "store", "nostore", "subsidy",
+                          "comforts", "countryoff", "farms", "farmarea", "farm"})
+        if (kind == k)
+            return true;
+    return false;
+}
 // A streamed world (RATW_WORLD 3) names its cells with "area" records and loads their tiles on demand.
 constexpr std::size_t MaxAreas = 4000000;
 bool identifier(const std::string& text, std::size_t limit)
@@ -306,7 +317,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     candidate.herbCell_.clear();
     AuthoredRoster roster;
     std::set<std::string> residentIds;             // roster.residents by ID, to refuse a duplicate at once.
-    bool economy = false, herbs = false, loop = false;
+    bool economy = false, herbs = false, loop = false, overrides = false, causeOverridden = false;
     std::vector<std::pair<std::string, Spot>> places;
     std::size_t cellFiles = 0;
     std::map<std::string, std::tuple<std::string, std::string, std::vector<std::string>>> territories;
@@ -317,18 +328,33 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
     auto reject = [&](const std::string& reason) -> Result {
         return {false, "World manifest line " + std::to_string(lineNumber) + ": " + reason, path};
     };
+    // The economy's records are lenient (doc 79, 14; Phase 9): one that won't do is skipped with a warning (the roster's,
+    // logged at load and counted in economy.sync's outcome), never a refusal, so a host's half-finished edit never stops
+    // the world loading. The rest of the file keeps its refusals.
+    const auto warn = [&](const std::string& why) { roster.warn("line " + std::to_string(lineNumber) + ": " + why); };
     while (std::getline(input, line))
     {
         ++lineNumber;
-        if (line.size() > 16384)
-            return reject("Line is too long.");
+        const std::string_view head(line.data(), std::min(line.find(' '), line.size()));
+        const bool economyKind = economyRecord(head);
+        if (line.size() > (head == "overrides" ? OverridesMost : LineMost))
+        {
+            if (!economyKind)
+                return reject("Line is too long.");
+            warn(std::string(head) + " record skipped: the line is too long");
+            continue;
+        }
         if (!line.empty() && line.back() == '\r')
             line.pop_back();
         if (line.empty())
             continue;
-        for (unsigned char ch : line)
-            if ((ch < 32 && ch != '\t') || ch == 127)
+        if (std::any_of(line.begin(), line.end(), [](unsigned char ch) { return (ch < 32 && ch != '\t') || ch == 127; }))
+        {
+            if (!economyKind)
                 return reject("Control character in manifest.");
+            warn(std::string(head) + " record skipped: a control character");
+            continue;
+        }
         std::istringstream fields(line);
         std::string command;
         fields >> command;
@@ -491,33 +517,45 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         }
         else if (command == "economy")
         {
-            auto& e = roster.economy;
-            // (The daily herbs and meals the capital's caravans once carried are read and set aside: doc 66, Phase 5.)
-            // (Since migration 0061 the line has three numbers; an older one's five are read, the last two set aside.)
-            int dailyHerbs = 0, dailyMeals = 0;
-            fields >> e.treasury >> e.storeHerbs >> e.storeMeals;
+            // The treasury and its stores to begin with: "economy T SH SM" once (since migration 0061; an older line's two
+            // more numbers, the daily herbs and meals the capital's caravans once carried, are read past: doc 66, Phase 5).
+            // Clamped; a malformed or second line skipped.
+            long long n[5] = {-1, -1, -1, 0, 0};
+            fields >> n[0] >> n[1] >> n[2];
             bool done = end(fields);
             if (!done && fields)
             {
-                fields >> dailyHerbs >> dailyMeals;
+                fields >> n[3] >> n[4];
                 done = end(fields);
             }
-            if (economy || !done || e.treasury < 0 || e.treasury > 1000000 || e.storeHerbs < 0 ||
-                e.storeHerbs > 10000 || e.storeMeals < 0 || e.storeMeals > 10000 || dailyHerbs < 0 ||
-                dailyHerbs > 1000 || dailyMeals < 0 || dailyMeals > 1000)
-                return reject("Invalid or duplicate economy record.");
-            economy = true;
+            if (economy)
+                warn("a second economy record skipped");
+            else if (!done)
+                warn("a malformed economy record skipped");
+            else
+            {
+                auto& e = roster.economy;
+                e.treasury = std::clamp<long long>(n[0], 0, 1000000);
+                e.storeHerbs = int(std::clamp<long long>(n[1], 0, 10000));
+                e.storeMeals = int(std::clamp<long long>(n[2], 0, 10000));
+                economy = true;
+            }
         }
         else if (command == "loop")
         {
             // The city's loop's record (doc 68, 9): "loop needs on|off ..." once. Of it only the needs stay (doc 79, 14); the
-            // rest (the Country, reserve, toll, carriage, wages) is read past.
+            // rest (the Country, reserve, toll, carriage, wages) is read past. A malformed or second line skipped.
             std::string word, needs;
             fields >> word >> needs;
-            if (loop || word != "needs" || (needs != "on" && needs != "off"))
-                return reject("Invalid or duplicate loop record.");
-            roster.economy.needsPaused = needs == "off";
-            loop = true;
+            if (loop)
+                warn("a second loop record skipped");
+            else if (word != "needs" || (needs != "on" && needs != "off"))
+                warn("a malformed loop record skipped");
+            else
+            {
+                roster.economy.needsPaused = needs == "off";
+                loop = true;
+            }
         }
         else if (command == "store" || command == "subsidy" || command == "comforts" || command == "farms" || command == "farmarea" ||
                  command == "farm" || command == "countryoff" || command == "nostore")
@@ -528,60 +566,189 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
         else if (command == "rule")
         {
             // A rule as this world has it (migration 0058): rule "<name>" N. Lenient (doc 79, 14): a name items::Rules no
-            // longer has (the old economy's) or a malformed value is skipped, a value out of range clamped, a second record
-            // of a name ignored; never a refusal.
+            // longer has (the old economy's) or a malformed value is skipped, a value out of range clamped (the slider's
+            // target to its step of 5), a second record of a name ignored. And the slider's cause (Phase 9), the one rule
+            // that is words: rule "prosperityCause" "<words>" (or its bare words, as 0060's manifest prints them); the
+            // overrides line's wins over it.
             std::string name;
-            long long value = -1;
-            if (quoted(fields, name))
+            if (!quoted(fields, name))
+                warn("a malformed rule record skipped");
+            else if (name == "prosperityCause")
             {
+                std::string words;
+                fields >> std::ws;
+                if (fields.peek() == '"')
+                {
+                    if (!quoted(fields, words) || !end(fields))
+                        words.clear();
+                }
+                else
+                    std::getline(fields, words);
+                while (!words.empty() && words.back() == ' ')
+                    words.pop_back();
+                if (!market::plainWords(words, 80))
+                    warn("the rule prosperityCause skipped: not plain words of 80 bytes at most");
+                else if (!causeOverridden && !roster.economy.overrides.causeSet)
+                {
+                    roster.economy.overrides.cause = words;
+                    roster.economy.overrides.causeSet = true;
+                }
+            }
+            else
+            {
+                long long value = 0;
                 fields >> value;
-                if (const auto* info = items::ruleInfo(name); info && fields && end(fields))
-                    roster.economy.rules.emplace(name, int(std::clamp<long long>(value, info->low, info->high)));
+                const auto* info = items::ruleInfo(name);
+                if (!info)
+                    warn("the rule " + name + " skipped: the game has no such rule");
+                else if (!fields || !end(fields))
+                    warn("the rule " + name + " skipped: not a whole number");
+                else
+                {
+                    int v = int(std::clamp<long long>(value, info->low, info->high));
+                    if (name == "prosperity")
+                        v = int(std::lround(double(v) / 5.)) * 5;
+                    if (!roster.economy.rules.emplace(name, v).second)
+                        warn("a second rule " + name + " ignored");
+                }
             }
         }
         else if (command == "service")
         {
             // A city service as this world has it (doc 68, Progress, "First fixes"; migration 0058), once a service:
-            // service "<id>" on|off price N every DAYS. One Data/Economy/market.json no longer lists is kept and does nothing.
+            // service "<id>" on|off price N every DAYS, clamped. One Data/Economy/market.json no longer lists is kept and
+            // does nothing; a malformed line is skipped, a second of an id ignored.
             std::string id, onOff, w[2];
             long long price = -1, every = -1;
             if (!quoted(fields, id) || !identifier(id, 48))
-                return reject("Malformed service record.");
-            fields >> onOff >> w[0] >> price >> w[1] >> every;
-            if (!fields || !end(fields) || (onOff != "on" && onOff != "off") || w[0] != "price" || w[1] != "every" || price < 1 ||
-                price > 100000 || every < 1 || every > 3650)
-                return reject("Invalid service record: " + id);
-            if (!roster.economy.services.emplace(id, EconomySpec::Service{onOff == "on", int(price), int(every)}).second)
-                return reject("Duplicate service record: " + id);
+                warn("a malformed service record skipped");
+            else if (fields >> onOff >> w[0] >> price >> w[1] >> every;
+                     !fields || !end(fields) || (onOff != "on" && onOff != "off") || w[0] != "price" || w[1] != "every")
+                warn("the service " + id + " skipped: malformed");
+            else if (!roster.economy.services
+                          .emplace(id, EconomySpec::Service{onOff == "on", int(std::clamp<long long>(price, 1, 100000)),
+                                                            int(std::clamp<long long>(every, 1, 3650))})
+                          .second)
+                warn("a second service " + id + " ignored");
         }
         else if (command == "season")
         {
-            // A season group as this world has it (doc 68, Progress, "Seasons"; migration 0057), once a group:
-            // season "<group>" supply SP SU AU WI price SP SU AU WI shelf SP SU AU WI normal N (percent by season; N
-            // pieces a day). A group Data/Economy/market.json no longer has is kept and does nothing.
-            std::string group, w[4];
-            EconomySpec::Season season;
+            // A season group as this world has it (doc 68, Progress, "Seasons"; migration 0057), once a group: since 0061
+            // season "<group>" price SP SU AU WI shelf SP SU AU WI (percent by season); an older line's supply and normal
+            // (even printed empty, as 0060's manifest printed a group without them) are read past. Clamped: price 10-1000,
+            // shelf 0-1000. A group Data/Economy/market.json no longer has is kept and does nothing; a malformed line is
+            // skipped, a second of a group ignored.
+            std::string group;
             if (!quoted(fields, group) || !identifier(group, 40))
-                return reject("Malformed season record.");
-            fields >> w[0];
-            for (auto& v : season.supply)
-                fields >> v;
-            fields >> w[1];
-            for (auto& v : season.price)
-                fields >> v;
-            fields >> w[2];
-            for (auto& v : season.shelf)
-                fields >> v;
-            fields >> w[3] >> season.normal;
-            const auto within = [](const std::array<int, 4>& a, int low, int high) {
-                return std::all_of(a.begin(), a.end(), [&](int v) { return v >= low && v <= high; });
-            };
-            if (!fields || !end(fields) || w[0] != "supply" || w[1] != "price" || w[2] != "shelf" || w[3] != "normal" ||
-                !within(season.supply, 0, 1000) || !within(season.price, 10, 1000) || !within(season.shelf, 0, 1000) ||
-                season.normal < 0 || season.normal > 1000000)
-                return reject("Invalid season record.");
-            if (!roster.economy.seasons.emplace(group, season).second)
-                return reject("Duplicate season record: " + group);
+                warn("a malformed season record skipped");
+            else
+            {
+                std::map<std::string, std::vector<double>> parts;
+                std::string word, key;
+                bool bad = false;
+                while (fields >> word)
+                {
+                    if (word == "supply" || word == "price" || word == "shelf" || word == "normal")
+                    {
+                        if (parts.count(word))
+                            bad = true;
+                        key = word;
+                        parts[key];
+                        continue;
+                    }
+                    char* stop = nullptr;
+                    const double v = std::strtod(word.c_str(), &stop);
+                    if (key.empty() || *stop || !std::isfinite(v))
+                    {
+                        bad = true;
+                        break;
+                    }
+                    parts[key].push_back(v);
+                }
+                EconomySpec::Season season;
+                const auto four = [&](const char* k, std::array<int, 4>& into, int low, int high) {
+                    const auto found = parts.find(k);
+                    if (found == parts.end() || found->second.size() != 4)
+                        return false;
+                    for (std::size_t i = 0; i < 4; ++i)
+                        into[i] = int(std::clamp(std::lround(found->second[i]), long(low), long(high)));
+                    return true;
+                };
+                if (bad || !four("price", season.price, 10, 1000) || !four("shelf", season.shelf, 0, 1000))
+                    warn("the season " + group + " skipped: malformed");
+                else if (!roster.economy.seasons.emplace(group, season).second)
+                    warn("a second season " + group + " ignored");
+            }
+        }
+        else if (command == "overrides")
+        {
+            // A host's overrides (doc 79, 12; Phase 9; migration 0061): one JSON object of live.economy.rules' words and
+            // tables (prosperityCause, neverImported, status, market), 65536 bytes at most. Bad JSON skipped, unknown keys
+            // skipped, a second line ignored; its cause wins over a rule record's. Society::adoptOverrides checks the rest.
+            std::string text;
+            std::getline(fields >> std::ws, text);
+            json::Value v;
+            std::string problem;
+            if (overrides)
+                warn("a second overrides record ignored");
+            else if (!json::parse(text, v, problem) || !v.isObject())
+                warn("the overrides record skipped: not a JSON object" + (problem.empty() ? std::string() : " (" + problem + ")"));
+            else
+            {
+                overrides = true;
+                auto& o = roster.economy.overrides;
+                for (const auto& [key, value] : v.fields())
+                {
+                    if (key == "prosperityCause")
+                    {
+                        if (const auto words = value.asString({}); value.isString() && (words.empty() || market::plainWords(words, 80)))
+                            o.cause = words, o.causeSet = true, causeOverridden = true;
+                        else
+                            warn("overrides: prosperityCause skipped: not plain words of 80 bytes at most");
+                    }
+                    else if (key == "neverImported")
+                    {
+                        if (!value.isArray())
+                        {
+                            warn("overrides: neverImported skipped: not a list");
+                            continue;
+                        }
+                        o.neverImported.clear();
+                        for (const auto& g : value.items())
+                            if (g.isString())
+                                o.neverImported.push_back(g.asString());
+                        o.neverSet = true;
+                    }
+                    else if (key == "status" || key == "market")
+                    {
+                        if (!value.isObject())
+                            warn("overrides: " + key + " skipped: not an object");
+                        else
+                            (key == "status" ? o.status : o.market) = value;
+                    }
+                    else
+                        warn("overrides: " + key + " skipped: unknown");
+                }
+            }
+        }
+        else if (command == "band")
+        {
+            // A resident's authored band for its household (doc 79, 14: the Band picker; migration 0061): band "<npc>"
+            // destitute|poor|comfortable|rich, after its resident. An unknown resident or word skipped.
+            std::string id, word;
+            const bool read = quoted(fields, id) && (fields >> word) && end(fields);
+            const int band = word == "destitute" ? status::Destitute : word == "poor" ? status::Poor
+                             : word == "comfortable" ? status::Comfortable : word == "rich" ? status::Rich : -1;
+            const auto owner = std::find_if(roster.residents.begin(), roster.residents.end(),
+                                            [&](const ResidentSpec& r) { return r.id == id; });
+            if (!read)
+                warn("a malformed band record skipped");
+            else if (owner == roster.residents.end())
+                warn("the band of " + id + " skipped: it must follow its resident");
+            else if (band < 0)
+                warn("the band of " + id + " skipped: no band " + word);
+            else
+                owner->band = band;
         }
         else if (command == "herbs")
         {

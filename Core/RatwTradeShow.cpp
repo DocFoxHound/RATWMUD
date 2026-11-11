@@ -327,7 +327,8 @@ int World::harvestOf(const std::string& area) const
     // (While the slider moves, the harvest leans its way too, so a cause and its effects agree: 8.5, Phase 7.)
     if (b.sliderTarget != b.slider)
         lean += b.sliderTarget > b.slider ? .08 : -.08;
-    const double score = unit("harvest:" + area, season) - .5 + double(b.slider) / 400. + lean;
+    // (And the DM's harvest bias, the rule harvestBias: a realm-wide lean, -20..20 hundredths: 12's "harvest bias".)
+    const double score = unit("harvest:" + area, season) - .5 + double(b.slider) / 400. + lean + double(society_.rule("harvestBias")) / 100.;
     return score < -.22 ? 0 : score > .22 ? 2 : 1;
 }
 

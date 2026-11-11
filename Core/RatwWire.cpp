@@ -968,6 +968,9 @@ Value society(const SocietyState& s)
     // The staged economy's state (doc 79, Phase 2), when there is any: a save without it reads as nothing staged yet.
     if (!s.staged.empty())
         o.add("staged", stagedValue(s.staged));
+    // The Prosperity report (doc 79, 12; Phase 9: World::prosperityReport), for the DM's tab: opaque, as it was set.
+    if (s.report.isObject())
+        o.add("report", s.report);
     return o;
 }
 
@@ -1428,6 +1431,8 @@ SocietyState readSociety(const Value& o)
     s.careers = readCareers(o["careers"]);
     s.board = market::decode(o["board"]);           // (Doc 79, Phase 1: lenient, never a refusal; none in an older save.)
     s.staged = readStaged(o["staged"]);             // (Doc 79, Phase 2; none in an older save.)
+    if (const auto& report = o["report"]; report.isObject())
+        s.report = report;                          // (Phase 9: kept opaque; never read back by the game.)
     if (!valid)
         s.nextEntry = 0;
     return s;

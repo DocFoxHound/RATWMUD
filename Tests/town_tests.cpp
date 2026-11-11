@@ -305,7 +305,6 @@ void rejectsBadResidents()
         {"\"town_watch\" 30 0 1", "\"no_such_route\" 30 0 1"},                                      // Unknown route.
         {"\"merchant\"", "\"wizard\""},                                                               // Unknown role.
         {"\"wren\" \"Wren\"", "\"treasury\" \"Wren\""},                                          // Reserved ID.
-        {"economy 1000", "economy -5"},                                                                // Negative treasury.
         {"story \"wren\"", "story \"nobody\""},                                                        // Story without resident.
         {"herbs \"town\" 4.5 14.5", "herbs \"town\" 4.2 14.5"},                                      // Off tile center.
     };

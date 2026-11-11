@@ -447,6 +447,56 @@ void boundsAndCollisionValidation()
            "Fixture records are capped at 65536 before topology validation");
     expect(world.entity("tester") && world.cells().size() == 4, "Fixture-count rejection preserves prior large world");
 }
+// Tests/economy_manifest_pg.py (doc 79, Phase 9): a world whose NPC records came from live.people_manifest at migration
+// 0061 (and 0060's records migrated over), loaded; what its economy is, as one line of JSON.
+int economyProbe(const std::string& path)
+{
+    World world;
+    const auto result = world.loadWorldFile(path);
+    if (!result.ok)
+    {
+        std::cerr << result.message << '\n';
+        return 2;
+    }
+    const auto& a = world.society().authored();
+    const auto& e = a.economy;
+    auto out = json::Value::object();
+    out.add("treasury", double(e.treasury));
+    out.add("storeHerbs", e.storeHerbs);
+    out.add("storeMeals", e.storeMeals);
+    out.add("needsPaused", e.needsPaused);
+    auto rules = json::Value::object();
+    for (const auto& [k, v] : e.rules)
+        rules.add(k, v);
+    out.add("rules", rules);
+    auto seasons = json::Value::object();
+    for (const auto& [k, v] : e.seasons)
+    {
+        auto price = json::Value::array(), shelf = json::Value::array();
+        for (int i = 0; i < 4; ++i)
+            price.push(v.price[std::size_t(i)]), shelf.push(v.shelf[std::size_t(i)]);
+        auto g = json::Value::object();
+        g.add("price", price);
+        g.add("shelf", shelf);
+        seasons.add(k, g);
+    }
+    out.add("seasons", seasons);
+    out.add("services", double(e.services.size()));
+    out.add("cause", e.overrides.cause);
+    out.add("neverImported", double(e.overrides.neverImported.size()));
+    out.add("status", e.overrides.status.isObject());
+    out.add("market", e.overrides.market.isObject());
+    auto bands = json::Value::object();
+    for (const auto* list : {&a.residents, &a.unplaced})
+        for (const auto& r : *list)
+            if (r.band >= 0)
+                bands.add(r.id, status::bandName(r.band));
+    out.add("bands", bands);
+    out.add("warnings", double(a.warningCount));
+    std::cout << json::dump(out) << '\n';
+    return 0;
+}
+
 int probe(const std::string& path)
 {
     World world;
@@ -517,6 +567,8 @@ int main(int argc, char** argv)
     {
         if (argc == 3 && std::string(argv[1]) == "--probe")
             return probe(argv[2]);
+        if (argc == 3 && std::string(argv[1]) == "--economy")
+            return economyProbe(argv[2]);
         validImportAndMovement();
         invalidManifests();
         cellValidation();

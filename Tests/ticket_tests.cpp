@@ -603,7 +603,8 @@ void wolvesJoinArriveAndComeStraightBack()
     for (const auto& entry : accounts.array("entries"))
         expect(tickets::accountId(entry.string("username")) && !entry.has("salt") && !entry.has("verifier") && !entry.has("iterations"),
                "each by central's id, with no password: " + json::dump(entry));
-    expect(text.str().find("\"salt\"") == std::string::npos && text.str().find("\"verifier\"") == std::string::npos,
+    // (As keys: a good called salt may be on the Prosperity report's price board.)
+    expect(text.str().find("\"salt\":") == std::string::npos && text.str().find("\"verifier\":") == std::string::npos,
            "nothing of a password anywhere in the save");
     {
         game::Game g(o);

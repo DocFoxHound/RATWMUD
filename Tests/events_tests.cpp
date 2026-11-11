@@ -798,6 +798,197 @@ void theDMsNudgeAndHarvest()
     expect(count(w.takeEvents(), "harvest called") == 0, "once");
 }
 
+// Doc 79, Phase 9: the DM's live acts through the game (Game::applyEconomyCommand), each with its clamps, refusals and
+// outcome; the authored band against the DM's timed one; grants and fines through the faucet door; "reset prices" eased
+// over a day; the harvest called and cleared; the Prosperity report; the host's market and status overrides.
+Result dmAct(game::Game& g, const std::string& kind, const std::string& target,
+             std::initializer_list<std::pair<const char*, json::Value>> fields);
+void theDMsLevers()
+{
+    named = {{3, "fs_grain_long_granary"}};
+    rules = "rule \"eventRate\" 0\n";
+    auto probe = strip("EE.G...WW");
+    auto p = load(probe);
+    std::string label;
+    for (const auto& farm : p.society().farms())
+        if (farm.def->id == "grain_farm_1")
+            label = p.society().farmLabel(farm, 0);
+    auto f = strip("EE.G...WW", resident("fk", "Bran Long", "civilian", label, 0, 9.5, 3, 9.5) + "band \"e2\" rich\n");
+    rules.clear();
+    named.clear();
+    const auto root = onDisk(f, "events-dmlevers");
+    game::Game g(optionsOn(root));
+    std::string problem;
+    expect(g.start(problem), "a game on the strip: " + problem);
+    auto& w = g.world();
+    auto& soc = w.society();
+    w.tick(.6);
+    w.roads().camps.clear();
+    const auto act = [&](const std::string& kind, const std::string& target, std::initializer_list<std::pair<const char*, json::Value>> fields) {
+        return dmAct(g, kind, target, fields);
+    };
+    // The report, from the start.
+    const auto& report = soc.report();
+    expect(report.number("v") == 1 && report.array("markets").size() >= 2 && report.object("prosperity").number("target") == 0,
+           "the report at start: " + json::dump(report).substr(0, 200));
+    // times.nudge: clamped, never refused for a number; an unknown market refused; 0 lifts it.
+    auto r = act("times.nudge", "east", {{"points", 9999}, {"days", 9999}, {"words", "boom at the port"}});
+    expect(r.ok && soc.board().nudges.at("east").points == 100 && soc.board().nudges.at("east").until <= w.calendarDays() + 366.01,
+           "a nudge clamped: " + r.message);
+    expect(r.message.find("+100 for 366 days: boom at the port.") != std::string::npos, "its outcome: " + r.message);
+    expect(json::dump(soc.report()).find("\"nudge\":{\"points\":100") != std::string::npos, "the report has it");
+    expect(!act("times.nudge", "nowhere", {{"points", 10}}).ok, "an unknown market refused");
+    expect(!act("times.nudge", "east", {{"points", 10}, {"words", "a dog show"}}).ok, "the forbidden word refused");
+    expect(act("times.nudge", "east", {{"points", 0}}).ok && !soc.board().nudges.count("east"), "points 0 lifts it");
+    // harvest.override and its clearing.
+    const auto end = std::find_if(w.cartEnds().begin(), w.cartEnds().end(), [](const auto& e) { return e.farmId == "grain_farm_1"; });
+    expect(end != w.cartEnds().end(), "the farm's cart end");
+    expect(!act("harvest.override", end->area, {{"word", "splendid"}}).ok, "an unknown word refused");
+    expect(!act("harvest.override", "no_such_area", {{"word", "poor"}}).ok, "an unknown area refused");
+    r = act("harvest.override", end->area, {{"word", "poor"}, {"words", "blight in the fields"}});
+    expect(r.ok && w.harvestOf(end->area) == 0, "a poor harvest called: " + r.message);
+    const double until = soc.board().harvestOverride.at(end->area).until;
+    expect(until > w.calendarDays() && until <= w.calendarDays() + 92, "its days the season's left by default");
+    w.tick(.6);
+    for (int t = 0; t < 4; ++t)
+        g.tick(.05);
+    bool posted = false;
+    for (const auto& [id, d] : g.documents().all())
+        posted |= d.what == "harvest:" + end->area;
+    expect(posted, "its notice up");
+    w.takeEvents();
+    r = act("harvest.override", end->area, {{"word", "clear"}});
+    expect(r.ok && !soc.board().harvestOverride.count(end->area) && count(w.takeEvents(), "harvest over", end->area) == 1, "cleared: " + r.message);
+    posted = false;
+    for (const auto& [id, d] : g.documents().all())
+        posted |= d.what == "harvest:" + end->area;
+    expect(!posted, "its notice down at once");
+    expect(!act("harvest.override", end->area, {{"word", "clear"}}).ok, "nothing to clear");
+    // The harvest bias (12: a realm-wide lean): the score moved by bias/100.
+    {
+        int good = 0, goodBiased = 0;
+        auto spec = soc.authored().economy;
+        for (int i = 0; i < 60; ++i)
+        {
+            nextMorning(w);
+            good += w.harvestOf(end->area) == 2;
+        }
+        spec.rules["harvestBias"] = 20;
+        soc.adoptEconomy(spec);
+        for (int i = 0; i < 60; ++i)
+        {
+            nextMorning(w);
+            goodBiased += w.harvestOf(end->area) == 2;
+        }
+        spec.rules.erase("harvestBias");
+        soc.adoptEconomy(spec);
+        expect(goodBiased >= good, "the harvest bias leans the harvests good: " + std::to_string(good) + " to " + std::to_string(goodBiased));
+    }
+    // event.add and event.cancel.
+    r = act("event.add", "east", {{"kind", "house_wedding"}, {"day", double(today(w) + 2)}, {"hour", 99}});
+    expect(r.ok && r.message.rfind(r.targetId + ": ", 0) == 0 && w.stagedEvent(r.targetId)->hour == 23, "an event, its hour clamped: " + r.message);
+    expect(act("event.cancel", r.targetId, {}).ok && w.stagedEvent(r.targetId)->status == "cancelled", "cancelled");
+    expect(!act("event.cancel", "e999", {}).ok, "an unknown event refused");
+    expect(!act("event.add", "east", {{"kind", "no_such_kind"}}).ok, "an unknown kind refused");
+    r = act("event.add", "east", {{"kind", "house_wedding"}, {"day", 1e9}});
+    expect(!r.ok || w.stagedEvent(r.targetId)->day < (today(w) / 7 + 2) * 7, "a day past next week clamped into it");
+    // ship.storm with no ship (no port here).
+    expect(!act("ship.storm", "s1", {}).ok, "no such ship");
+    // prices.reset: half at half a day, none at a day; a touched cell eases from its touch.
+    soc.setPressure("east", "meal", .4, "players");
+    soc.setPressure("east", "nails", .2, "players");
+    expect(!act("prices.reset", "nowhere", {}).ok, "an unknown market refused");
+    r = act("prices.reset", "east", {});
+    expect(r.ok && soc.board().resets.at("east").words == "fresh stock everywhere", "reset, with the default words: " + r.message);
+    const double start = soc.marketClock(), meal = soc.pressure("east", "meal");
+    {
+        auto saved = w.save();
+        saved.calendarDays += .25;
+        expect(w.restore(saved).ok, "a quarter day on");
+        w.tick(.6);
+        soc.setPressure("east", "nails", .2, "players");   // (Touched mid-reset: it eases from now.)
+        saved = w.save();
+        saved.calendarDays += .25;
+        expect(w.restore(saved).ok, "half a day on");
+        w.tick(.6);
+        const double at = soc.marketClock();
+        const double free = market::decayed(meal, start, at, market::halfLife("meal", soc.marketRules()));
+        const double share = (start + 1 - at) / 1.;
+        expect(std::abs(soc.pressure("east", "meal") - free * share) < .01,
+               "meal halfway eased: " + std::to_string(soc.pressure("east", "meal")) + " for " + std::to_string(free * share) + " start " +
+                   std::to_string(start) + " at " + std::to_string(at) + " cal " + std::to_string(w.calendarDays()) + " last " +
+                   std::to_string(soc.board().resets.count("east") ? soc.board().resets.at("east").last : -1) + " free " + std::to_string(free));
+        expect(soc.pressure("east", "nails") > .2 * share, "a cell touched since eases from its touch: " + std::to_string(soc.pressure("east", "nails")));
+        saved = w.save();
+        saved.calendarDays += .6;
+        expect(w.restore(saved).ok, "a day on");
+        w.tick(.6);
+        expect(soc.pressure("east", "meal") == 0 && soc.pressure("east", "nails") == 0 && !soc.board().resets.count("east"),
+               "at a day: all at 0, the reset over");
+    }
+    expect(act("prices.reset", "all", {{"words", "a dog fair"}}).ok && soc.board().resets.at("west").words == "fresh stock everywhere",
+           "all markets; words that won't do are the default");
+    // band.override over the authored band (e2's household authored rich).
+    const auto h2 = soc.householdOf("e2");
+    expect(!h2.empty() && soc.statusOf("e2") && soc.statusOf("e2")->band == status::Rich && soc.statusOf("e2")->overridden,
+           "the authored band holds the whole household: " + std::to_string(soc.statusOf("e2") ? soc.statusOf("e2")->band : -1));
+    r = act("band.override", "e2", {{"band", "poor"}, {"days", 500}});
+    expect(r.ok && soc.statusOf("e2")->band == status::Poor && soc.state().staged.overrides.at(h2).until == soc.state().budgetDay + 112,
+           "the DM's timed band wins, its days clamped: " + r.message);
+    expect(act("band.override", "e2", {{"band", "clear"}}).ok && soc.statusOf("e2")->band == status::Rich, "cleared: the authored band again");
+    expect(!act("band.override", "e2", {{"band", "wealthy"}}).ok && !act("band.override", "nobody", {{"band", "poor"}}).ok, "a bad word or resident refused");
+    // character.grant: a faucet capped a day, a fine never past the cash; the door balanced; nothing unregistered.
+    w.addPlayer("player-ada", "Ada");
+    testPurse(soc, "player-ada", 30);
+    soc.openRealBalance();
+    const auto base = soc.account("player-ada")->cash;
+    r = act("character.grant", "player-ada", {{"coins", 300}, {"reason", "for the bridge"}});
+    expect(r.ok && soc.account("player-ada")->cash == base + 300 && r.message == "Granted 300p: for the bridge.", "a grant: " + r.message);
+    expect(!act("character.grant", "player-ada", {{"coins", 9999}, {"reason", "more"}}).ok && soc.account("player-ada")->cash == base + 300,
+           "over the day's cap (500): refused");
+    expect(act("character.grant", "player-ada", {{"coins", 200}, {"reason", "the rest"}}).ok && soc.account("player-ada")->cash == base + 500, "to the cap");
+    expect(!act("character.grant", "player-ada", {{"coins", 1}, {"reason", "one more"}}).ok, "and no further today");
+    expect(act("character.grant", "player-ada", {{"coins", -9999}, {"reason", "for the broken cart"}}).ok && soc.account("player-ada")->cash == 0,
+           "a fine of no more than the purse");
+    expect(!act("character.grant", "player-ada", {{"coins", -5}, {"reason", "again"}}).ok, "nothing left to fine");
+    expect(!act("character.grant", "e1", {{"coins", 5}, {"reason", "x"}}).ok, "a resident isn't granted");
+    expect(!act("character.grant", "player-ada", {{"coins", 5}, {"reason", ""}}).ok, "a reason is needed");
+    expect(!act("character.grant", "player-ada", {{"coins", 0}, {"reason", "nothing"}}).ok, "nothing to grant");
+    expect(soc.realBalanced() && soc.unregisteredFaucets() == 0 && soc.faucetToday("player-ada", "grant") == 500, "balanced; registered; tallied");
+    // The host's overrides: a cap held to 5x, a status override that sums wrong falling back, the market's events and ships.
+    {
+        auto spec = soc.authored().economy;
+        json::Value v;
+        expect(json::parse(R"({"caps": {"grantsADay": 99999, "rewardsADay": 99999, "nope": 1},
+                               "shares": [{"at": -100, "shares": [40, 40, 40, 20]}, {"at": 100, "shares": [2, 12, 70, 16]}],
+                               "bands": {"x": 1}})", v, problem), problem);
+        spec.overrides.status = v;
+        expect(json::parse(R"({"events": {"perWeek": 9, "list": ["house_wedding", {"id": "dog_show", "words": "the show"}]},
+                               "wharf": {"ships": ["the Heron", "the Dogfish"], "never": ["salt"]}, "rules": 1})", v, problem), problem);
+        spec.overrides.market = v;
+        spec.overrides.neverImported = {"salt", "no_such_good"};
+        spec.overrides.neverSet = true;
+        std::vector<std::string> warnings;
+        soc.adoptOverrides(spec.overrides, &warnings);
+        expect(soc.statusTable().cap("grantsADay") == 2500 && soc.statusTable().cap("rewardsADay") == 1000, "caps held to their ceilings");
+        expect(soc.statusTable().shares.front().shares[0] == status::defaults().shares.front().shares[0], "shares summing to 140 fall back");
+        const auto& m = soc.market();
+        expect(m.eventsPerWeek == 3 && m.events.size() == 1 && m.events[0].id == "house_wedding", "perWeek clamped, the list taken, the forbidden kind out");
+        expect(m.shipNames == std::vector<std::string>{"the Heron"} && m.shipNever.count("salt") && !m.shipNever.count("no_such_good"),
+               "ships' names held to the name rule; never-imported known goods only");
+        const auto said = [&](const std::string& part) {
+            return std::any_of(warnings.begin(), warnings.end(), [&](const std::string& x) { return x.find(part) != std::string::npos; });
+        };
+        expect(said("caps.nope") && said("sums to 140") && said("bands skipped") && said("rules skipped") && said("wharf.never") &&
+                   said("no_such_good"),
+               "each skipped with a warning");
+        soc.adoptOverrides({}, nullptr);
+        expect(&soc.market() == &market::data() && soc.statusTable().cap("grantsADay") == 500, "none: the shipped defaults again");
+    }
+    expect(soc.realBalanced(), "money still balanced");
+    std::filesystem::remove_all(root);
+}
+
 // A ship's rich cargo and a ship lost (8.4, 8.6: Phase 5 left both to this phase): an event riding a ship on the port's
 // timetable, its words naming the ship; the cargo's comes in with it (cancelled if a storm keeps it out); the lost one
 // never comes, is "lost at sea" on the timetable, world.ships "lost", its cargo dearer and the price list saying why.
@@ -1935,6 +2126,30 @@ std::string dueToday(World& w, const std::string& kind, double hour)
     return id;
 }
 
+// The checkpoint before a DM's act (the crashes of doc 79's Phase 9), and the act as dm.actions would apply it.
+void dmCheckpoint(game::Game& g)
+{
+    auto& w = g.world();
+    w.tick(.6);
+    w.roads().camps.clear();
+    g.save();
+    g.settle();
+}
+Result dmAct(game::Game& g, const std::string& kind, const std::string& target,
+             std::initializer_list<std::pair<const char*, json::Value>> fields)
+{
+    auto payload = json::Value::object();
+    for (const auto& [k, v] : fields)
+        payload.add(k, v);
+    return g.applyEconomyCommand(kind, target, payload);
+}
+// (The game's passes after an act, until what it posts is told: the crash comes after.)
+void dmTold(game::Game& g)
+{
+    for (int t = 0; t < 30; ++t)
+        g.tick(.1);
+}
+
 const std::vector<EventCrash>& eventCrashes()
 {
     static const std::vector<EventCrash> cases{
@@ -2061,18 +2276,158 @@ const std::vector<EventCrash>& eventCrashes()
              w.roads().camps.clear();
              g.save();
              g.settle();                            // (The checkpoint: no cause.)
-             w.society().setProsperity(-50, false, "the Crown's war levy");
+             // (The DM's slider: the world's rules edited, then economy.sync, so a restart reads the same: doc 79, Phase 9.)
+             const std::string edit = "rule \"prosperity\" -50\nrule \"prosperityCause\" \"the Crown's war levy\"\n";
+             std::ofstream(std::filesystem::path(g.options().worldExport) / "world.ratw", std::ios::app) << edit;
+             expect(g.applyEconomyCommand("economy.sync", "economy", json::Value::object()).ok, "times_cause: the slider moved");
              expect(w.nudgeTimes("east", 15, 4, "talk of a fair"), "times_cause: a nudge besides");
              for (int t = 0; t < 30; ++t)
                  g.tick(.1);
              expect(w.society().board().sliderCause.told && g.documents().find("times-east") && g.documents().find("times-west") &&
                         g.documents().find("nudge-east"),
                     "times_cause: told, on every board");
-             return json::Value::object();
+             auto was = json::Value::object();
+             was.add("manifest", edit);                 // (The host's edit, there again at the restart.)
+             return was;
          },
          [](game::Game& g, const json::Value&) {
              const auto& c = g.world().society().board().sliderCause;
              expect(c.told && c.words == "the Crown's war levy" && g.documents().find("times-east"), "times_cause: told after the crash");
+         }},
+        // Doc 79, Phase 9: each of the DM's live acts after the checkpoint (Game::applyEconomyCommand journals it), then the
+        // crash: there once after the restart.
+        {"dm_nudge",
+         [](game::Game& g) {
+             dmCheckpoint(g);
+             expect(dmAct(g, "times.nudge", "east", {{"points", 37}, {"days", 3}, {"words", "boom at the port"}}).ok, "dm_nudge: applied");
+             dmTold(g);
+             return json::Value::object();
+         },
+         [](game::Game& g, const json::Value&) {
+             const auto& n = g.world().society().board().nudges;
+             expect(n.count("east") && n.at("east").points == 37 && n.at("east").cause == "boom at the port", "dm_nudge: there after the crash");
+         }},
+        {"dm_event_add",
+         [](game::Game& g) {
+             dmCheckpoint(g);
+             const auto r = dmAct(g, "event.add", "east", {{"kind", "house_wedding"}, {"day", double(today(g.world()) + 2)}, {"hour", 10}});
+             expect(r.ok && r.message.rfind(r.targetId + ": ", 0) == 0, "dm_event_add: " + r.message);
+             dmTold(g);
+             auto was = json::Value::object();
+             was.add("event", r.targetId);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto* e = g.world().stagedEvent(was.string("event"));
+             expect(e && e->by == "dm" && e->kind == "house_wedding", "dm_event_add: the event, once, after the crash");
+         }},
+        {"dm_event_cancel",
+         [](game::Game& g) {
+             std::string problem;
+             g.world().tick(.6);
+             const auto id = g.world().addStagedEvent("east", "house_wedding", today(g.world()) + 2, 10, problem);
+             expect(!id.empty(), "dm_event_cancel: an event to cancel: " + problem);
+             dmTold(g);
+             dmCheckpoint(g);
+             expect(dmAct(g, "event.cancel", id, {}).ok, "dm_event_cancel: applied");
+             dmTold(g);
+             auto was = json::Value::object();
+             was.add("event", id);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto* e = g.world().stagedEvent(was.string("event"));
+             expect(e && e->status == "cancelled", "dm_event_cancel: cancelled after the crash");
+         }},
+        {"dm_storm",
+         [](game::Game& g) {
+             g.world().tick(.6);
+             std::string ship;
+             for (const auto& s : g.world().society().board().ships)
+                 if (s.status == "due" && ship.empty())
+                     ship = s.id;
+             expect(!ship.empty(), "dm_storm: a ship due");
+             dmCheckpoint(g);
+             expect(dmAct(g, "ship.storm", ship, {}).ok, "dm_storm: applied");
+             dmTold(g);
+             auto was = json::Value::object();
+             was.add("ship", ship);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto* s = shipById(g.world(), was.string("ship"));
+             expect(s && s->status == "storm", "dm_storm: stormbound after the crash");
+         }},
+        {"dm_reset",
+         [](game::Game& g) {
+             g.world().tick(.6);
+             g.world().society().setPressure("east", "meal", .3, "players");
+             dmCheckpoint(g);
+             expect(dmAct(g, "prices.reset", "east", {{"words", "a new fair"}}).ok, "dm_reset: applied");
+             dmTold(g);
+             return json::Value::object();
+         },
+         [](game::Game& g, const json::Value&) {
+             const auto& r = g.world().society().board().resets;
+             expect(r.size() == 1 && r.count("east") && r.at("east").words == "a new fair", "dm_reset: the reset, once, after the crash");
+         }},
+        {"dm_band",
+         [](game::Game& g) {
+             g.world().tick(.6);
+             nextMorning(g.world());                // (Households made at the day's turn.)
+             for (int h = 6; h < 10; ++h)
+             {
+                 expect(g.world().setTimeOfDay(double(h) + .3).ok, "dm_band: the morning");
+                 g.world().tick(.6);
+             }
+             expect(!g.world().society().householdOf("e1").empty(), "dm_band: e1 in a household");
+             dmCheckpoint(g);
+             const auto r = dmAct(g, "band.override", "e1", {{"band", "poor"}, {"days", 9}});
+             expect(r.ok, "dm_band: " + r.message);
+             auto was = json::Value::object();
+             was.add("household", g.world().society().householdOf("e1"));
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto& o = g.world().society().state().staged.overrides;
+             const auto found = o.find(was.string("household"));
+             expect(found != o.end() && found->second.band == status::Poor, "dm_band: held poor after the crash");
+         }},
+        {"dm_grant",
+         [](game::Game& g) {
+             Client bea;
+             enterAt(g, bea, 85, "bea", "east");
+             const auto id = bea.entityId;
+             g.disconnect(&bea);
+             dmCheckpoint(g);
+             const auto before = g.world().society().account(id)->cash;
+             expect(dmAct(g, "character.grant", id, {{"coins", 40}, {"reason", "for the bridge"}}).ok, "dm_grant: applied");
+             auto was = json::Value::object();
+             was.add("player", id);
+             was.add("cash", double(before + 40));
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto* a = g.world().society().account(was.string("player"));
+             expect(a && double(a->cash) == was.number("cash"), "dm_grant: paid once after the crash");
+         }},
+        {"dm_slider",
+         [](game::Game& g) {
+             dmCheckpoint(g);
+             const std::string edit = "rule \"prosperity\" 40\nrule \"prosperityCause\" \"the silver strike\"\n";
+             std::ofstream(std::filesystem::path(g.options().worldExport) / "world.ratw", std::ios::app) << edit;
+             auto now = json::Value::object();
+             now.add("now", true);
+             expect(g.applyEconomyCommand("economy.sync", "economy", now).ok, "dm_slider: applied");
+             expect(g.world().society().board().slider == 40, "dm_slider: at once");
+             dmTold(g);
+             auto was = json::Value::object();
+             was.add("manifest", edit);
+             return was;
+         },
+         [](game::Game& g, const json::Value&) {
+             const auto& b = g.world().society().board();
+             expect(b.slider == 40 && b.sliderTarget == 40 && b.sliderCause.words == "the silver strike", "dm_slider: as moved, after the crash");
          }},
     };
     return cases;
@@ -2200,6 +2555,10 @@ json::Value toTheEventCrash(const EventRun& r, const std::filesystem::path& root
 
 void afterTheEventCrash(const EventRun& r, const std::filesystem::path& root, const std::string& path, const json::Value& was)
 {
+    // (A host's edit of the world's records made before the crash is there at the restart: a fresh copy of the world gets it.)
+    if (const auto edit = was.string("manifest"); !edit.empty())
+        if (const auto text = slurp(root / "world.ratw"); text.size() < edit.size() || text.compare(text.size() - edit.size(), edit.size(), edit) != 0)
+            std::ofstream(root / "world.ratw", std::ios::app) << edit;
     game::Game g(optionsOn(root, path));
     std::string problem;
     expect(g.start(problem), r.name + ": starts again after the crash: " + problem);
@@ -2324,7 +2683,9 @@ int main(int argc, char** argv)
             {"phase7Repaired", phase7Repaired},
             {"theRepairOnTheBoards", theRepairOnTheBoards},
             // Phases 7 and 8 repaired, together.
-            {"theRepairsTogether", theRepairsTogether}};
+            {"theRepairsTogether", theRepairsTogether},
+            // Doc 79, Phase 9: the DM's levers.
+            {"theDMsLevers", theDMsLevers}};
         if (argc == 3 && std::string(argv[1]) == "--only")
         {
             for (const auto& [name, test] : tests)

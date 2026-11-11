@@ -464,6 +464,9 @@ class Game
     // calls it.
     Result applyEconomyCommand(const std::string& kind, const std::string& target, const json::Value& payload);
     static bool economyCommand(const std::string& kind);
+    // What economy.sync reads (tests; else the live tables, or the world export read again).
+    std::function<bool(EconomySpec&, std::string&)> economyReader;
+    const Options& options() const { return options_; }
 
     // A snapshot of the world every SnapshotSeconds (and SaveSoonSeconds after a change worth keeping); its memory
     // consolidated every AutosaveSeconds.
@@ -1742,6 +1745,12 @@ class Game
     void readNotifications();
     void watchReleases(double dt);
     void applyDmActions(double dt);
+    // The staged economy's settings (RatwGameEconomy.cpp): read again for economy.sync (the records Authoring skipped
+    // counted), put in force (the rules, the host's overrides, the slider's target and cause), and at start.
+    bool readEconomy(EconomySpec& spec, std::size_t& skipped, std::string& problem);
+    void applyEconomySpec(const EconomySpec& spec, bool now);
+    void logEconomyWarnings(const AuthoredRoster& roster);
+    void startEconomy();
     void feedWatch(double dt);              // A frame for the LIVE map while a Dungeon Master watches (RatwGameWatch.cpp).
     std::string watchFrame() const;
     void makeResidents(std::size_t most = World::ResidentsAPass);

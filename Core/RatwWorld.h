@@ -1078,7 +1078,7 @@ class World
     int shipsInWeek(const std::string& market, std::int64_t week) const;
     const market::Ship* shipIn(const std::string& market) const;
     std::string shipsNotice(const std::string& market) const;
-    // A ship still due kept out by a storm, or brought in now (announced causes: the Dungeon Master's, Phase 9; tests;
+    // A ship still due kept out by a storm, or brought in now (announced causes: the Dungeon Master's ship.storm; tests;
     // world_check's --ship-day). False if there is none of that id still due.
     bool stormShip(const std::string& id);
     bool dockShip(const std::string& id);
@@ -1094,7 +1094,7 @@ class World
     // are small. A world with no port, no wagon and no farm still has them, of the goods its shops deal in.
     // The events a market sees in a calendar week (0 while the rule is 0).
     int eventsInWeek(const std::string& market, std::int64_t week) const;
-    // The Dungeon Master's (Phase 9's Prosperity tab; tests): an event of market.json's list added at a market, on a day
+    // The Dungeon Master's (event.add from the Prosperity tab; tests): an event of market.json's list added at a market, on a day
     // of this calendar week or the next (the weeks committed) and an hour still to come (or now: it begins at the next
     // pass), whatever the seeded scheduler rolled; its needs only
     // as its kind must have them (a ship's: the first of the port's due from that day; a cart's: a staffed farm's cart to
@@ -1112,6 +1112,8 @@ class World
     // hungry, short, would-be thieves, beggars and dole, nudges and resets, the largest pressures, the areas' harvests and
     // the event kinds in force. Worked out at start, each staged morning and after each DM command (Society::setReport).
     json::Value prosperityReport();
+    // The road markets, ports and imports found again at the next roads pass (a host's never-imported goods changed).
+    void refreshRoadMarkets() { roadMarketsRules_ = -1; }
     // An event's notice in words, and the facts talk reads (world.event, world.event_words, world.event_when: now, soon,
     // past; world.times and world.times_cause) at a market; and whether an event has a crowd in this cell.
     void eventFacts(const std::string& market, std::map<std::string, std::string>& facts) const;

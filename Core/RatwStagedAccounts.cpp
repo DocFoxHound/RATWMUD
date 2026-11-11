@@ -68,6 +68,9 @@ std::string Society::holderOf(const std::string& account) const
 
 std::string Society::faucetGroup(const std::string& reason)
 {
+    // (The DM's grants and fines first, whatever their reason's words: doc 79, 12; Phase 9's grantPlayer.)
+    if (startsWith(reason, "dm grant: ") || startsWith(reason, "dm fine: "))
+        return "grant";
     if (has(reason, "stolen"))
         return "theft";
     if (has(reason, "welcome") || has(reason, "provisions to start with"))
@@ -160,7 +163,8 @@ std::int64_t Society::faucetToday(const std::string& holder, const std::string& 
 std::int64_t Society::faucetRoom(const std::string& player, const std::string& cap) const
 {
     const std::int64_t most = statusTable().cap(cap);
-    const std::string group = cap == "theftADay" ? "theft" : cap == "stakesADay" ? "stakes" : cap == "rewardsADay" ? "reward" : cap;
+    const std::string group = cap == "theftADay" ? "theft" : cap == "stakesADay" ? "stakes" : cap == "rewardsADay" ? "reward"
+                              : cap == "grantsADay" ? "grant" : cap;
     return std::max<std::int64_t>(0, most - faucetToday(holderOf(player), group));
 }
 
@@ -582,15 +586,20 @@ void Society::stagedBands(std::int64_t day, bool now)
             c.implied = status::Destitute;
         // The guarantees, in their order (6.3).
         bool beggar = false, house = false, watch = false;
+        int authored = -1;                          // (A member's authored band, the highest of them: doc 79, 14; Phase 9.)
         for (const auto& m : members)
         {
             beggar |= category(m) == "beggar";
             house |= houseKin.count(m) > 0;
             if (const auto* s = spec(m))
-                watch |= s->ofTheWatch();
+                watch |= s->ofTheWatch(), authored = std::max(authored, s->band);
         }
+        // The DM's timed override first, then the band the host authored for a member (the Band picker: standing, for the
+        // whole household), then the guarantees and the score.
         if (const auto o = st.overrides.find(key); o != st.overrides.end() && o->second.until >= day)
             c.fixed = std::clamp(o->second.band, 0, status::Bands - 1), c.overridden = true;
+        else if (authored >= 0)
+            c.fixed = std::min(authored, status::Bands - 1), c.overridden = true, c.reason = c.reason || authored == status::Destitute;
         else if (homeless || beggar)
             c.fixed = status::Destitute, c.reason = true;
         else if (house)

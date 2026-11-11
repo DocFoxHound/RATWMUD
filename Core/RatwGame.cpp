@@ -548,6 +548,7 @@ bool Game::start(std::string& problem)
     }
     if (live)
         applyExternalNpcStates();
+    startEconomy();                                 // (The staged economy's settings, overrides and slider: doc 79, Phase 9.)
     if (!options_.directorDirectory.empty())
     {
         director_.log = [this](const std::string& text) { note("error", text); };
@@ -745,7 +746,8 @@ std::string Game::withoutPeople(const std::string& manifest)
                  line.rfind("loop ", 0) == 0 || line.rfind("countryoff ", 0) == 0 || line.rfind("subsidy ", 0) == 0 ||
                  line.rfind("comforts ", 0) == 0 || line.rfind("season ", 0) == 0 || line.rfind("rule ", 0) == 0 ||
                  line.rfind("service ", 0) == 0 || line.rfind("farms ", 0) == 0 || line.rfind("farmarea ", 0) == 0 ||
-                 line.rfind("farm ", 0) == 0)
+                 line.rfind("farm ", 0) == 0 || line.rfind("overrides ", 0) == 0 || line.rfind("band ", 0) == 0 ||
+                 line.rfind("protected ", 0) == 0 || line.rfind("wander ", 0) == 0)
             continue;                              // (The economy's records come with the people's; the old economy's are read past: doc 79, 14.)
         else if (line.rfind("territory ", 0) == 0)
         {
@@ -971,6 +973,15 @@ void Game::applyDmActions(double dt)
     }
     const auto queued = worldDb_.exec("SELECT id, kind, target_id, requested_by, payload::text FROM dm.actions WHERE status = 'queued' ORDER BY id LIMIT 50");
     bool changed = false;
+    std::optional<Result> synced;                   // (economy.sync's outcome, once this poll.)
+    bool syncNow = false;
+    for (const auto& row : queued.rows)
+        if (row.size() > 4 && row[1] && *row[1] == "economy.sync" && row[4])
+        {
+            json::Value p;
+            std::string problem;
+            syncNow |= json::parse(*row[4], p, problem) && p.boolean("now", false);
+        }
     for (const auto& row : queued.rows)
     {
         if (!row[0] || !row[1] || !row[2])
@@ -995,22 +1006,37 @@ void Game::applyDmActions(double dt)
                                  : Result{false, "The factions could not be applied: " + problem, {}};
             }
             else
-                outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
-        }
-        else if (kind == "economy.sync")
-        {
-            // The economy's settings (doc 79): the world's live.economy read again after the DM or Atlas changed it,
-            // and applied at once (needs paused, the rules, the services and the seasons; the old economy's records
-            // read past).
-            World candidate;
-            std::string problem;
-            if (loadWithLivePeople(candidate, problem))
             {
-                world_.society().adoptEconomy(candidate.society().authored().economy);
-                outcome = {true, "The economy's rules are read again and in force.", target};
+                const auto* was = world_.society().spec(target);
+                const int bandBefore = was ? was->band : -1;
+                outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
+                // (Its authored band, the Band picker's, in force at once for its household: doc 79, 14; Phase 9.)
+                if (const auto* now = world_.society().spec(target); outcome.ok && now && now->band != bandBefore)
+                {
+                    world_.society().bandsChanged();
+                    record(Economy);
+                    world_.society().setReport(world_.prosperityReport());
+                }
             }
+        }
+        else if (economyCommand(kind))
+        {
+            // The staged economy's live acts (doc 79, 12; Phase 9; RatwGameEconomy.cpp), each journalled before anyone is
+            // told. Several economy.sync rows in one poll are applied once (with "now" if any asked it), each answered.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            if (kind == "economy.sync" && synced)
+                outcome = *synced;
             else
-                outcome = {false, "The economy's rules could not be read: " + problem, target};
+            {
+                if (kind == "economy.sync" && syncNow && !payload.boolean("now", false))
+                    payload.set("now", true);
+                outcome = applyEconomyCommand(kind, target, payload.isObject() ? payload : json::Value::object());
+                if (kind == "economy.sync")
+                    synced = outcome;
+            }
         }
         else if (kind == "voice.sync")
         {

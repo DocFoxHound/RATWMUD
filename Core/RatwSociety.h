@@ -399,12 +399,11 @@ struct EconomySpec
         int price = 1, every = 30;
     };
     std::map<std::string, Service> services;
-    // The season groups as this world has changed them ("season" records; market.json `seasons`): supply, price and shelf
-    // by season in percent, and the group's normal pieces a day. The Board reads `price` and `shelf` (doc 79, 7.1).
+    // The season groups as this world has changed them ("season" records; market.json `seasons`): price and shelf by
+    // season in percent, as the Board reads them (doc 79, 7.1; an older record's supply and normal are read past).
     struct Season
     {
-        std::array<int, 4> supply{100, 100, 100, 100}, price{100, 100, 100, 100}, shelf{100, 100, 100, 100};
-        int normal = 0;
+        std::array<int, 4> price{100, 100, 100, 100}, shelf{100, 100, 100, 100};
     };
     std::map<std::string, Season> seasons;
     // A host's overrides (doc 79, 12; Phase 9; live.economy.rules' non-integer keys, the manifest's `overrides` line, and
@@ -785,7 +784,7 @@ class Society
     void prepareMarket() const;
     // The farm and works crews by community (a market's catchment counts its own: 7.3): every post at a farm or works.
     std::map<std::string, int> farmCrews() const;
-    // A good's pressure set outright, within its range (the DM's "reset prices" to come, Phase 9; and tests), with its
+    // A good's pressure set outright, within its range (tests; the DM's "reset prices" eases it instead: resetPrices), with its
     // cause; and a merchant put at a stall or back in its shop (decide() sets them each second; for tests).
     void setPressure(const std::string& market, const std::string& base, double P, const std::string& cause = "event");
     void setAtStall(const std::string& merchant, bool at)
@@ -806,8 +805,8 @@ class Society
                                   const std::string& item, int quantity, std::int64_t coins);
     bool relocate(const std::string& npc, const std::string& cell, double x, double y);
     // Live changes (Dungeon Master): takes resident `id` as `from` (a validated candidate society) defines them.
-    // A new resident arrives with their authored purse; a changed one keeps purse and needs but re-plans; one
-    // `from` no longer has leaves, their purse and goods returning to the treasury. Routes follow `from`.
+    // A new resident arrives (its staged purse set by its band); a changed one keeps its needs but re-plans, and takes its
+    // authored band (doc 79, 14) at the next band pass; one `from` no longer has leaves. Routes follow `from`.
     bool adoptResident(const Society& from, const std::string& id);
     // A resident made in the running world (a birth, a newcomer), with its purse (new money).
     bool addResident(const ResidentSpec& resident, std::int64_t purse);
@@ -917,8 +916,9 @@ class Society
     std::string householdOf(const std::string& id) const;   // "" for none.
     // The status table this world runs (status.json's, with this world's override over it: setStatusOverride).
     const status::Table& statusTable() const;
-    // A host's or a test's changes to status.json (doc 79, 12; Phase 9 reads them from live.economy.rules): read over the
-    // defaults by status::read, lenient; null clears them. Takes effect at the next day's turn.
+    // A host's or a test's changes to status.json (doc 79, 12; live.economy.rules' `status`, through adoptOverrides and
+    // status::hostOverride): read over the defaults by status::read, lenient; null clears them. Takes effect at the next
+    // day's turn.
     void setStatusOverride(const json::Value* v, std::vector<std::string>* warnings = nullptr);
     // The day's pass (public for tests): households scored, ranked and cut into bands. `now` (the DM's "now") skips the
     // slider's smoothing and the bands' hysteresis.
@@ -928,7 +928,7 @@ class Society
     bool overrideBand(const std::string& household, int band, std::int64_t until);
     bool liftHousehold(const std::string& household, std::int64_t until);
     // The smoothed slider the bands read, and the DM's setting it heads to (-100 hard times .. 100 boom): the Board's one
-    // slider (setProsperity, above; Phase 9 sets it from live.economy's `prosperity` rule).
+    // slider (setProsperity, above; the game sets it from live.economy's `prosperity` rule: Game::applyEconomySpec).
     double prosperity() const { return double(state_.board.slider); }
     int prosperitySetting() const { return state_.board.sliderTarget; }
     // The kind of an account (9.1), by its prefix: real (a player, a Chapter), escrow (holding real coins in trust, with
@@ -1019,7 +1019,7 @@ class Society
     static StagedHooks boardHooks();
     bool stagedHooked() const { return bool(hooks_.shelf); }
     // A market's Times, -2 hard .. 2 boom (5.3: the slider for now; harvests, raids, events and the DM's nudge come in
-    // Phases 4, 5, 7 and 9). Never any player-caused pressure. The Board's prices and the bands both read it.
+    // Phases 4, 5 and 7; the DM's nudge). Never any player-caused pressure. The Board's prices and the bands both read it.
     int marketTimes(const std::string& market) const;
     // The pieces of a good the households whose food shop is this till take from it in a day (6.5; at most two days' food a
     // head, a Restday's buying ahead too), worked out with the bands: what the shelf target covers besides players (7.7).
@@ -1200,6 +1200,19 @@ class Society
     // market.json as this world runs it: market::data() with the host's events, causes, ship names and never-imported
     // goods over it (adoptOverrides). A layer replaced stays alive, so a reader holding the old one is never left dangling.
     const market::Data& market() const;
+    // The price resets' step (each roads pass: World::tendRoads): every P in a market under reset scaled toward 0 by its
+    // end (a cell touched since the last pass eased from its touch), and the reset erased once over. True if any moved.
+    bool tendResets();
+    // The bands worked out again now (today's pass), as an override or an authored band changed: nothing else moves.
+    void bandsChanged();
+    // A market's households for the Prosperity report (RatwProsperity.cpp): by band, overridden (the DM's or authored),
+    // hungry (a member's hunger 60 or more), short of food today, and given the Restday dole this week.
+    struct MarketCount
+    {
+        std::array<int, status::Bands> bands{};
+        int overridden = 0, hungry = 0, shortToday = 0, dole = 0;
+    };
+    std::map<std::string, MarketCount> marketCounts() const;
     // The Prosperity report as last worked out (World::prosperityReport; SocietyState::report).
     const json::Value& report() const { return state_.report; }
     void setReport(json::Value report) { state_.report = std::move(report); }
