@@ -502,7 +502,8 @@ void World::tendRoads()
                 notice(c.taker, "You hand " + to->name + " the letter" +
                                     (paid >= c.reward ? (paid ? " and are paid " + pennies(paid) : std::string()) + "."
                                      : paid ? " and are paid " + pennies(paid) + " of the " + pennies(c.reward) + ": " + DayPaid + ", and the rest goes back."
-                                            : ". Its pay goes back: " + std::string(DayPaid) + "."));
+                                            : ". Its pay goes back: " + std::string(DayPaid) + "."),
+                       true);
         }
     }
     const auto today = std::int64_t(std::floor(calendarDays_));
@@ -789,7 +790,8 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
         recordEvent({"raid", camp.id, c.to, cellId, 0, 0, c.departure, taken, 0, "the wagon to " + marketWords(c.to) + " was robbed"});
         for (const auto& id : watching)
             notice(id, "Bandits burst from cover and fall on the wagon! In the struggle they make off with its load, "
-                       "and the carters turn back for " + marketWords(c.from) + ".");
+                       "and the carters turn back for " + marketWords(c.from) + ".",
+                   true);
         // The market posts a bounty on the camp (20p and 3p a point of the camp's strength, at most the world's bountyMost:
         // D14), and asks for guards for the next wagon (12p); its treasury sets the rewards aside (staged-sourced).
         const bool bounty = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
@@ -858,7 +860,8 @@ void World::caravanArrived(Caravan& c)
                                       (paid >= k.reward ? "You are paid " + pennies(paid) + " for guarding it."
                                        : paid ? "You are paid " + pennies(paid) + " of the " + pennies(k.reward) + " for guarding it: " + DayPaid +
                                                     ", and the rest goes back."
-                                              : "The pay for guarding it goes back: " + std::string(DayPaid) + "."));
+                                              : "The pay for guarding it goes back: " + std::string(DayPaid) + "."),
+                           true);
                 if (there)
                     for (const auto& p : society_.positions())
                         if (p.role == "merchant" && roadMarketOf(p.work.cell) == to)
@@ -1328,10 +1331,13 @@ std::int64_t World::banditDemand(const std::string& player) const
     return 0;
 }
 
-std::vector<std::pair<std::string, std::string>> World::takeNotices()
+std::vector<std::pair<std::string, std::string>> World::takeNotices(bool* moved)
 {
     std::vector<std::pair<std::string, std::string>> out;
     out.swap(notices_);
+    if (moved)
+        *moved = noticesMoved_;
+    noticesMoved_ = false;
     return out;
 }
 
@@ -1570,7 +1576,8 @@ void World::beaten(Entity& player, BanditCamp& camp)
     camp.hunger = std::max(0.0, camp.hunger - taken * 2.0);
     setPosture(player.id, "lying");
     notice(player.id, "You are beaten to the ground." +
-                          (taken > 0 ? " The bandits take " + pennies(taken) + " and leave you lying in the road." : std::string()));
+                          (taken > 0 ? " The bandits take " + pennies(taken) + " and leave you lying in the road." : std::string()),
+           taken > 0);
     recordEvent({"robbed", camp.id, player.id, camp.cell, 0, 0, {}, 0, taken, "beaten and robbed on the road"});
     for (const auto& p : society_.positions())
         if (p.role == "merchant" && roadMarketOf(p.work.cell))
@@ -1656,7 +1663,7 @@ void World::clearCamp(BanditCamp& camp, const std::string& by)
     recordEvent({"camp cleared", by, camp.id, camp.cell, 0, 0, {}, 0, 0, "by " + (who ? who->name : by)});
     // (Word of it travels as a notable deed, from its witnesses and the town's talk: doc 56. Every merchant no longer
     // hears of it at once.)
-    notice(by, words);
+    notice(by, words, true);                        // (A bounty paid, cargo found: journalled before it is told.)
     endEncounter(camp.id, 0);
 }
 

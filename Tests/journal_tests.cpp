@@ -13,6 +13,8 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <fcntl.h>
+#include <sys/file.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -161,31 +163,49 @@ void aTornTailThenMoreRecords()
 
 // The snapshot folders a crashed database server left (the repair after doc 79's Phases 4 and 5 merged): a gone server's
 // is removed, a running one's (this process's, and pid 1's) kept, and a file of that name or another name left alone.
+// And (its check) a folder whose pid is gone here but whose lock is held is kept: a server in another pid namespace
+// sharing the folder, or one that has the pid now.
 void deadServersSnapshotFoldersSwept()
 {
     namespace fs = std::filesystem;
     const auto temp = fs::temp_directory_path() / ("ratw-s2stage-sweep-" + std::to_string(::getpid()));
     fs::remove_all(temp);
     fs::create_directories(temp);
-    const pid_t child = ::fork();
-    if (child == 0)
-        ::_exit(0);
-    int status = 0;
-    ::waitpid(child, &status, 0);                   // (A pid now gone.)
-    const auto dead = temp / ("ratw-snapshots-" + std::to_string(child));
+    const auto gonePid = [] {
+        const pid_t child = ::fork();
+        if (child == 0)
+            ::_exit(0);
+        int status = 0;
+        ::waitpid(child, &status, 0);               // (A pid now gone.)
+        return std::to_string(child);
+    };
+    const auto child = gonePid(), other = gonePid();
+    const auto dead = temp / ("ratw-snapshots-" + child);
     const auto alive = temp / ("ratw-snapshots-" + std::to_string(::getpid()));
     const auto init = temp / "ratw-snapshots-1";
-    const auto other = temp / "ratw-snapshot-notes";
-    for (const auto& d : {dead, alive, init, other})
+    const auto notes = temp / "ratw-snapshot-notes";
+    const auto elsewhere = temp / ("ratw-snapshots-" + other);              // (Its server in another namespace.)
+    const auto deadNamed = temp / ("ratw-snapshots-" + child + "-a1B2c3");   // (A server of this build, gone.)
+    const auto makingNamed = temp / ("ratw-snapshots-" + other + "-d4E5f6");  // (Made a moment ago, its lock to come.)
+    for (const auto& d : {dead, alive, init, notes, elsewhere, deadNamed, makingNamed})
     {
         fs::create_directories(d);
         std::ofstream(d / "snapshot-1.json") << "{}";
     }
-    std::ofstream(temp / ("ratw-snapshots-" + std::to_string(child) + "0")) << "a file";
+    std::ofstream(elsewhere / ".lock");
+    std::ofstream(deadNamed / ".lock");
+    const int held = ::open((elsewhere / ".lock").c_str(), O_RDWR | O_CLOEXEC);
+    expect(held >= 0 && ::flock(held, LOCK_EX | LOCK_NB) == 0, "the other namespace's server holds its folder's lock");
+    std::ofstream(temp / ("ratw-snapshots-" + child + "0")) << "a file";
     const auto removed = game::sweepSnapshotFolders(temp.string());
-    expect(removed == 1 && !fs::exists(dead), "a gone server's snapshot folder is removed: " + std::to_string(removed));
-    expect(fs::exists(alive / "snapshot-1.json") && fs::exists(init / "snapshot-1.json") && fs::exists(other / "snapshot-1.json"),
+    expect(!fs::exists(dead) && !fs::exists(deadNamed), "a gone server's snapshot folders are removed: " + std::to_string(removed));
+    expect(removed == 2, "two removed: " + std::to_string(removed));
+    expect(fs::exists(alive / "snapshot-1.json") && fs::exists(init / "snapshot-1.json") && fs::exists(notes / "snapshot-1.json"),
            "a running server's folders, and others, are kept");
+    expect(fs::exists(elsewhere / "snapshot-1.json"), "a folder whose lock is held is kept, its pid gone here or not");
+    expect(fs::exists(makingNamed / "snapshot-1.json"), "a folder being made, not yet locked, is kept");
+    ::close(held);
+    expect(game::sweepSnapshotFolders(temp.string()) == 1 && !fs::exists(elsewhere), "its lock let go, it is swept");
     fs::remove_all(temp);
 }
 

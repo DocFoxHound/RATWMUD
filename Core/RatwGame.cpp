@@ -1545,19 +1545,19 @@ std::string Game::priceWords(std::int64_t pennies)
     return pennies == 1 ? std::string("a penny") : std::to_string(pennies) + "p";
 }
 
-void Game::makeResidents()
+void Game::makeResidents(std::size_t most)
 {
     if (options_.database.empty())
     {
         // A world from files makes them itself, like their templates (doc 64, Phase 8).
-        if (const int made = world_.makeRequestedResidents(); made > 0)
+        if (const int made = world_.makeRequestedResidents(nullptr, most); made > 0)
         {
             note("info", "RATW_RESIDENT " + std::to_string(made) + " made from files");
             ++revision_;
         }
         return;
     }
-    for (const auto& request : world_.takeResidentRequests(World::ResidentsAPass))   // (The rest on the next ticks.)
+    for (const auto& request : world_.takeResidentRequests(most))   // (The rest on the next ticks.)
     {
         if (request.kind == "farm")
         {
@@ -2793,25 +2793,24 @@ void Game::tick(double dt)
     sermons(real);
     // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...). A notice can
     // tell of coins the tick moved (an escort's pay as its wagon comes in, a courier's at the letter's hand-over, a
-    // camp's bounty and found cargo): the economy and the roads are journalled first and each notice waits for that
-    // record, as a command's reply does, so a player is told only what a crash can't take back.
-    if (auto notices = world_.takeNotices(); !notices.empty())
+    // camp's bounty and found cargo, a purse robbed): then the economy and the roads are journalled first and each notice
+    // waits for that record, as a command's reply does, so a player is told only what a crash can't take back. Only
+    // then: a fight's lines and the like move nothing, and the record costs about half a millisecond on DEV (the
+    // repair's check). Either way a notice waits behind anything of its player's still waiting for the journal, so a
+    // later tick's line never overtakes an earlier one's.
+    bool moved = false;
+    if (auto notices = world_.takeNotices(&moved); !notices.empty())
     {
         const bool journal = store_ && store_->journal() && storageReady_;
         const auto before = journalSeq_;
-        if (journal)
+        if (journal && moved)
             record(Economy | Roads);                // (One record for every notice of this tick; nothing if nothing moved.)
         const auto covered = journalSeq_ != before ? journalSeq_ : 0;
         for (const auto& [who, words] : notices)
             if (auto* c = clientOf(who))
             {
-                if (!covered)
-                {
-                    system(c, words);
-                    continue;
-                }
                 beginHolding(c);
-                heldFor_ = covered;
+                heldFor_ = covered;                 // (0: behind what of theirs is waiting, else at once: endHolding.)
                 system(c, words);
                 endHolding();
             }

@@ -722,6 +722,12 @@ bool World::blockedByDoor(const std::string& cellId, Vec2 point) const
     return false;
 }
 
+bool World::inDoorway(const std::string& cellId, Vec2 point) const
+{
+    const auto blockers = blockingDoors_.find(cellId);
+    return blockers != blockingDoors_.end() && blockers->second.count({int(std::floor(point.x)), int(std::floor(point.y))}) > 0;
+}
+
 Entity& World::addPlayer(const std::string& id, const std::string& name)
 {
     return addPlayer(id, name, spawnCell_, spawnPosition_);
@@ -1273,7 +1279,10 @@ const std::vector<int>* World::regionMap(const Cell& c) const
             else
                 ++it;
         if (forgot)
+        {
             stepsCache_.clear();
+            ++deadEndsRevision_;
+        }
         r.checksum = checksum;
         r.region.assign(c.tiles.size(), -1);
         int next = 0;
@@ -3296,7 +3305,8 @@ void World::tendMarriages()
     }
 }
 
-bool World::freeSpotNear(const std::string& cellId, double& x, double& y)
+bool World::freeSpotNear(const std::string& cellId, double& x, double& y,
+                         const std::set<std::pair<std::string, std::pair<int, int>>>* given)
 {
     if (!ensureLoaded(cellId).ok)
         return false;
@@ -3316,7 +3326,8 @@ bool World::freeSpotNear(const std::string& cellId, double& x, double& y)
                     continue;
                 const int tx = cx + dx, ty = cy + dy;
                 const auto* t = c->tile(tx, ty);
-                if (!t || t->solid || homes.count({tx, ty}) || blockedByDoor(cellId, {tx + .5, ty + .5}))
+                if (!t || t->solid || homes.count({tx, ty}) || blockedByDoor(cellId, {tx + .5, ty + .5}) ||
+                    (given && given->count({cellId, {tx, ty}})))
                     continue;
                 x = tx + .5;
                 y = ty + .5;
@@ -3328,18 +3339,21 @@ bool World::freeSpotNear(const std::string& cellId, double& x, double& y)
 std::vector<ResidentRequest> World::takeResidentRequests(std::size_t most)
 {
     auto requests = society_.takeRequests(most);
+    std::set<std::pair<std::string, std::pair<int, int>>> given;
     for (auto& r : requests)
-        if (!freeSpotNear(r.home.cell, r.home.x, r.home.y))
+        if (!freeSpotNear(r.home.cell, r.home.x, r.home.y, &given))
             r.home = {};                             // The host will find them somewhere to stay.
+        else
+            given.insert({r.home.cell, {int(std::floor(r.home.x)), int(std::floor(r.home.y))}});
     return requests;
 }
 
-int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
+int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes, std::size_t most)
 {
     int made = 0;
     // (A pass's worth: a fresh world's 206 farm folk made in one tick took about 135 ms; the repair after doc 79's Phases 4
     // and 5 merged. The rest are made on the next calls, in the order asked for.)
-    for (const auto& request : takeResidentRequests(ResidentsAPass))
+    for (const auto& request : takeResidentRequests(most))
     {
         if (request.kind == "arrival" || request.kind == "farm")
         {
@@ -5318,7 +5332,8 @@ void World::headFor(Entity& e, const std::string& task, const std::string& goalC
                         for (const Door* on : doorsIn(next))
                             if (on->portal && !on->locked && on->targetCell != e.cellId && regionAt(*there, on->position) == part)
                                 end.beyond.insert(on->targetCell);
-        deadEnds_.insert({e.cellId, next});
+        if (deadEnds_.insert({e.cellId, next}).second)
+            ++deadEndsRevision_;
         auto& kept = deadEndPockets_[{e.cellId, next}];
         kept.parts.insert(end.parts.begin(), end.parts.end());
         kept.beyond.insert(end.beyond.begin(), end.beyond.end());

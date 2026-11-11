@@ -287,6 +287,7 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
         if (!d || d->board != board || d->author != me)
             return result = {false, "That isn't your notice.", {}}, true;
         documents_.erase(d->id);
+        record(Economy, me);                        // (Down for good: the journal has the boards whole, Game::record.)
         sendBoard(c, community);
         return result = {true, "You take your notice down.", {}}, true;
     }
@@ -375,6 +376,8 @@ std::pair<std::string, std::string> wagonNoticeIds(const std::string& departure)
     return {"wagon-" + departure + "-from", "wagon-" + departure + "-to"};
 }
 
+const std::string RobbedWords = "Robbed on the road: ";   // (Before a robbed wagon's far-end notice.)
+
 // A wagon's notice with its "Escort wanted" taken out (it has set out: nobody can join it now). False if it had none.
 bool noEscortWanted(std::string& text)
 {
@@ -418,7 +421,11 @@ void Game::mendRoadNotices()
     // the roads may be further on by the journal (a wagon posted, an escort taken, a wagon in or set out after it). The
     // carters' notices are made to say what the Board and the roads say now, as their events would have: a wagon still
     // to set out has both, written afresh; one on the road keeps them, without asking for an escort once it is out; one
-    // robbed keeps its far end's; one come in, gone home or gone keeps none.
+    // robbed keeps its far end's, saying so (the raid may be the journal's alone); one come in, gone home or gone keeps
+    // none. And a port's timetable with nothing to tell comes down (its words gone since: the ships' rule stopped them),
+    // as postShips would have taken it down.
+    // (The boards themselves are journalled, Game::record; but a world tick's step and the notice it changes are told
+    // apart, the step in that tick's record and the notice after it, so a crash between the two leaves them out of step.)
     std::set<std::string> committed;
     for (const auto& d : world_.society().board().committed)
     {
@@ -454,8 +461,18 @@ void Game::mendRoadNotices()
             continue;
         gone.push_back(id);
     }
+    for (const auto& [id, d] : documents_.all())
+        if (d.kind == "notice" && d.author == WharfSign && d.what.rfind("ships:", 0) == 0 && world_.shipsNotice(d.what.substr(6)).empty())
+            gone.push_back(id);
     for (const auto& id : gone)
         documents_.erase(id);
+    for (const auto& [departure, c] : onRoad)
+        if (c->status == "raided")
+            if (auto* pinned = documents_.find(wagonNoticeIds(departure).second); pinned && pinned->text.rfind(RobbedWords, 0) != 0)
+            {
+                pinned->text = RobbedWords + pinned->text;          // (As roadNotices' raid has it.)
+                pinned->expires = std::min(pinned->expires, world_.calendarDays() + 2);
+            }
     for (const auto& [departure, c] : onRoad)
         if (c->status == "travelling" && !c->cell.empty())
             for (const auto& id : {wagonNoticeIds(departure).first, wagonNoticeIds(departure).second})
@@ -498,7 +515,7 @@ void Game::roadNotices(const WorldEvent& e)
             documents_.erase(to);
         else if (auto* d = documents_.find(to))
         {
-            d->text = "Robbed on the road: " + d->text;
+            d->text = RobbedWords + d->text;
             d->expires = std::min(d->expires, world_.calendarDays() + 2);
         }
         saveSoon();

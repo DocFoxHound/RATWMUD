@@ -3142,6 +3142,53 @@ void aBoardAheadOfTheCalendar()
     expect(soc.realBalanced(), "real money balanced with the Board held to the calendar");
 }
 
+// The Wharf office's notice taken down after the checkpoint (the DM's rule stops the ships), then the game gone after a
+// journalled trade: at the start the notice stays down (the repair's check: the checkpoint's came back and stayed up its
+// seven days, the port having nothing to tell and no rolled week to clear it by).
+void aShipsNoticeTakenDownStaysDown()
+{
+    auto f = harbour();
+    const auto root = onDisk(f, "ship-notice-down");
+    const auto path = crashSave("ship-notice-down");
+    cleanSave(path);
+    Client ash;
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "a game starts at the harbour: " + problem);
+        auto& w = g.world();
+        w.tick(.6);
+        w.tick(.6);
+        w.roads().camps.clear();
+        g.tick(.05);
+        expect(g.documents().find("ships-east") != nullptr, "the Wharf office's notice is up");
+        g.save();
+        g.settle();                                 // (The checkpoint: the notice up.)
+        { std::ofstream m(root / "world.ratw", std::ios::app); m << "rule \"shipsPerWeek\" 0\n"; }   // The DM's edit,
+        shipsAWeek(w, 0);                                                                             // and the economy's sync.
+        w.tick(.6);
+        w.tick(.6);
+        g.tick(.05);
+        expect(!g.documents().find("ships-east"), "the rule at 0: the notice comes down");
+        enterAt(g, ash, 84, "ash", "west");
+        board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "A trade, journalled."}});
+        g.settle();
+    }                                               // (Gone without saving.)
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "starts again after the notice's crash: " + problem);
+        auto& w = g.world();
+        expect(w.shipsNotice("east").empty(), "the port has nothing to tell");
+        for (int i = 0; i < 40; ++i)
+            w.tick(.6);
+        g.tick(.05);
+        expect(!g.documents().find("ships-east"), "and its notice stays down");
+    }
+    cleanSave(path);
+    std::filesystem::remove_all(root);
+}
+
 int main(int argc, char** argv)
 {
     try
@@ -3188,7 +3235,8 @@ int main(int argc, char** argv)
             {"theRuleOffAndOnTheSameMorning", theRuleOffAndOnTheSameMorning},
             {"aShipTakesWhatAShopOnlyBuys", aShipTakesWhatAShopOnlyBuys},
             // The repair after the merge.
-            {"aBoardAheadOfTheCalendar", aBoardAheadOfTheCalendar}};
+            {"aBoardAheadOfTheCalendar", aBoardAheadOfTheCalendar},
+            {"aShipsNoticeTakenDownStaysDown", aShipsNoticeTakenDownStaysDown}};
         // `--only NAME`: one test (to see it fail on the code before a repair); `--each`: every test, each to its end.
         if (argc == 3 && std::string(argv[1]) == "--only")
         {

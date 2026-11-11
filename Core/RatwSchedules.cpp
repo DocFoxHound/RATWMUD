@@ -36,7 +36,9 @@ std::string World::festivalName(const std::string& community, int season) const
 
 std::uint64_t World::squarePrint(const std::string& cellId) const
 {
-    // What a square's stalls and crowd rest on besides its cell's ground: the posts worked in its cell and the homes in it.
+    // What a square's stalls and crowd rest on besides its cell's tiles: the posts worked in its cell, the homes in it, and
+    // what stands on its ground (a Chapter's camp: obstacles, which part its regions). (Its doors count by where they are,
+    // never by whether they stand open: fillSquare.)
     std::uint64_t h = 1469598103934665603ULL;
     const auto mix = [&](double v) { h = (h ^ std::uint64_t(std::int64_t(std::floor(v * 4)))) * 1099511628211ULL; };
     for (const auto& p : society_.positions())
@@ -46,14 +48,19 @@ std::uint64_t World::squarePrint(const std::string& cellId) const
     for (const auto& [id, life] : society_.state().residents)
         if (life.homeCell == cellId)
             mix(life.homeX), mix(life.homeY);
+    h = (h ^ 0x9e3779b97f4a7c15ULL) * 1099511628211ULL;
+    if (const auto o = obstacles.find(cellId); o != obstacles.end())
+        for (const auto& [x, y] : o->second)
+            mix(x), mix(y);
     return h;
 }
 
 const World::MarketSquare& World::square(const std::string& community)
 {
-    // Worked out again when what it rests on moves: when the roster's places do (positions, residents, the towns), each
-    // square is checked against its market's cell and spot, its keepers and its homes, and only one that differs is
-    // worked out afresh (its cells loaded). A restore works them all out afresh. (Once a day, it was: the Country's seven
+    // Worked out again when what it rests on moves: when the roster's places do (positions, residents, the towns), and at
+    // each day's turn (a camp gone up on the square), each square is checked against its market's cell and spot, its
+    // keepers, its homes and what stands on its ground (squarePrint), and only one that differs is worked out afresh (its
+    // cells loaded). A restore works them all out afresh. (Worked out afresh once a day, it was: the Country's seven
     // market squares then loaded two cells each, about 50 ms of the day's turn; the repair after doc 79's Phases 4 and 5
     // merged.)
     if (squaresDay_ < 0)
@@ -61,9 +68,11 @@ const World::MarketSquare& World::square(const std::string& community)
         squares_.clear();
         squaresDay_ = 0;
     }
-    if (const auto key = society_.placesRevision(); key != squaresKey_)
+    const auto today = std::int64_t(std::floor(calendarDays_));
+    if (const auto key = society_.placesRevision(); key != squaresKey_ || today != squaresToday_)
     {
         squaresKey_ = key;
+        squaresToday_ = today;
         ++squaresCheck_;
     }
     auto found = squares_.find(community);
@@ -159,7 +168,7 @@ void World::fillSquare(MarketSquare& sq, std::string at, Vec2 where)
                 const auto* t = c->tile(sx, sy);
                 const Vec2 p{sx + .5, sy + .5};
                 if (t && !t->solid && !keepers.count({sx, sy}) && !stallSpots.count({sx, sy}) && int(sq.stalls.size()) < Stalls &&
-                    !blockedByDoor(at, p) && (region < 0 || regionAt(*c, p) == region))
+                    !inDoorway(at, p) && (region < 0 || regionAt(*c, p) == region))
                 {
                     stallSpots.insert({sx, sy});
                     sq.stalls.push_back({at, p.x, p.y});
@@ -175,7 +184,7 @@ void World::fillSquare(MarketSquare& sq, std::string at, Vec2 where)
                 const int tx = cx + dx, ty = cy + dy;
                 const auto* t = c->tile(tx, ty);
                 const Vec2 p{tx + .5, ty + .5};
-                if (!t || t->solid || homes.count({tx, ty}) || blockedByDoor(at, p) || nearPortal(at, p, 1.2) ||
+                if (!t || t->solid || homes.count({tx, ty}) || inDoorway(at, p) || nearPortal(at, p, 1.2) ||
                     (region >= 0 && regionAt(*c, p) != region) || stallSpots.count({tx, ty}) || keepers.count({tx, ty}))
                     continue;
                 if (int(sq.crowd.size()) < Crowd)

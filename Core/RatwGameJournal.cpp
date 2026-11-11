@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include <sstream>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -72,6 +73,19 @@ Value companionsOf(const std::map<std::string, std::string>& owners)
     return out;
 }
 
+// The boards' notices (doc 54, 2; the carters' and the Wharf office's too), whole, for the journal: a notice pinned or
+// taken down rides the record of its penny, or the next record of the economy, so a crash neither loses one whose fee
+// stays paid nor brings back one taken down (the repair after doc 79's Phases 4 and 5 merged, its check). Read back by
+// lettersLoad over the checkpoint's own.
+Value boardNotices(const documents::Store& store)
+{
+    auto out = Value::array();
+    for (const auto& [id, d] : store.all())
+        if (d.kind == "notice" && !d.board.empty())
+            out.push(documents::save(d));
+    return out;
+}
+
 Value path(std::initializer_list<std::string> keys)
 {
     auto out = Value::array();
@@ -114,18 +128,23 @@ bool readText(const std::string& file, std::string& out)
     return true;
 }
 
-// A private folder for the snapshots a database world hands its store, emptied when made. The folders of servers that
-// died without cleaning up (a crash) are removed first.
+// A private folder for the snapshots a database world hands its store, new and named for this server alone
+// ("ratw-snapshots-<pid>-<six letters>": never one a server before it had, whatever pid it had). The server holds a lock on
+// its ".lock" for as long as it runs, which shows a sweeping server that it still runs, in any pid namespace that
+// shares the folder. The folders of servers that died without cleaning up (a crash) are removed first.
 std::string snapshotFolder()
 {
     namespace fs = std::filesystem;
     std::error_code error;
-    sweepSnapshotFolders(fs::temp_directory_path(error).string());
-    const auto folder = fs::temp_directory_path(error) / ("ratw-snapshots-" + std::to_string(::getpid()));
-    fs::remove_all(folder, error);
-    fs::create_directories(folder, error);
-    ::chmod(folder.c_str(), 0700);                 // Account verifiers are in a snapshot: the owner's alone.
-    return folder.string();
+    const auto temp = fs::temp_directory_path(error);
+    sweepSnapshotFolders(temp.string());
+    auto pattern = (temp / ("ratw-snapshots-" + std::to_string(::getpid()) + "-XXXXXX")).string();
+    if (!::mkdtemp(pattern.data()))                 // (0700: account verifiers are in a snapshot, the owner's alone.)
+        return std::string();
+    const int lock = ::open((pattern + "/.lock").c_str(), O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    if (lock >= 0)
+        ::flock(lock, LOCK_EX | LOCK_NB);           // (Held till the server ends: never closed. A fork shares it.)
+    return pattern;
 }
 
 // Removes a snapshot's files when the last copy of the save that reads them goes, whether it ran or a newer one
@@ -146,28 +165,49 @@ std::size_t sweepSnapshotFolders(const std::string& temp)
 {
     // A crashed database server leaves its last snapshot (a whole world, account verifiers inside) in its folder; no later
     // start cleaned another pid's (the repair after doc 79's Phases 4 and 5 merged). A folder of this user's whose server
-    // is gone goes; one whose server still runs, or that is another user's, is left alone.
+    // is gone goes; one whose server still runs, or that is another user's, is left alone. A server is gone when its pid
+    // answers that there is no such process and nothing holds its folder's lock (a server in another pid namespace
+    // sharing this folder, or one that has the pid now, holds its own): the repair's check. A folder with no lock is
+    // an older build's (named for its pid alone), or one being made this moment (left a minute).
     namespace fs = std::filesystem;
     std::error_code error;
     std::size_t removed = 0;
     const std::string prefix = "ratw-snapshots-";
+    const auto now = fs::file_time_type::clock::now();
     for (fs::directory_iterator it(temp, error), end; !error && it != end; it.increment(error))
     {
         const auto name = it->path().filename().string();
         if (name.rfind(prefix, 0) != 0 || name.size() == prefix.size())
             continue;
-        const auto digits = name.substr(prefix.size());
-        if (!std::all_of(digits.begin(), digits.end(), [](unsigned char ch) { return std::isdigit(ch); }) || digits.size() > 9)
+        const auto rest = name.substr(prefix.size());
+        const auto dash = rest.find('-');
+        const auto digits = rest.substr(0, dash);
+        const bool named = dash != std::string::npos;   // (This build's: "<pid>-<six letters>".)
+        if (digits.empty() || !std::all_of(digits.begin(), digits.end(), [](unsigned char ch) { return std::isdigit(ch); }) ||
+            digits.size() > 9 ||
+            (named && (rest.size() != dash + 7 ||
+                       !std::all_of(rest.begin() + std::ptrdiff_t(dash) + 1, rest.end(), [](unsigned char ch) { return std::isalnum(ch); }))))
             continue;
         const auto pid = pid_t(std::stol(digits));
         struct stat st{};
-        if (pid <= 0 || pid == ::getpid() || ::lstat(it->path().c_str(), &st) != 0 || !S_ISDIR(st.st_mode) || st.st_uid != ::getuid())
+        if (pid <= 0 || ::lstat(it->path().c_str(), &st) != 0 || !S_ISDIR(st.st_mode) || st.st_uid != ::getuid())
             continue;
         if (::kill(pid, 0) == 0 || errno != ESRCH)
             continue;                               // (Still running, or not ours to ask about.)
+        const int lock = ::open((it->path() / ".lock").c_str(), O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+        if (lock >= 0 && ::flock(lock, LOCK_EX | LOCK_NB) != 0)
+        {
+            ::close(lock);
+            continue;                               // (Its server runs: a pid of another namespace's.)
+        }
+        if (lock < 0 && named)
+            if (std::error_code age; now - fs::last_write_time(it->path(), age) < std::chrono::minutes(1) || age)
+                continue;                           // (Being made: its lock comes next.)
         std::error_code gone;
         if (fs::remove_all(it->path(), gone) > 0 && !gone)
             ++removed;
+        if (lock >= 0)
+            ::close(lock);
     }
     return removed;
 }
@@ -191,6 +231,7 @@ void Game::prime(Shadow& s) const
     s.crime = json::dump(checkpoint::crime(world_.crime()));
     s.companions = json::dump(companionsOf(companionOwner_));
     s.signIns = json::dump(accounts_.state());
+    s.notices = json::dump(boardNotices(documents_));
     s.board.clear();
     s.committed.clear();
     if (!society.board.empty())
@@ -213,6 +254,11 @@ void Game::journalCheckpoint()
     // one, it is covered and trimmed. (The shadow used to be moved here without a record: a trade after a snapshot that
     // had not landed, or never did, was then journalled as a change from a state the store didn't hold, and a crash
     // brought a wagon in twice, lost one, or left a contract without its pot: doc 79, Phase 4, third repair.)
+    // Residents asked for and not made yet (a fresh world's first staffing, made ResidentsAPass a tick) are made first:
+    // the society's requests are in no checkpoint, so a crash after this one would lose them till the next day's careers
+    // pass (the repair's check).
+    if (world_.society().requestsWaiting() > 0 && storageReady_)
+        makeResidents(std::size_t(-1));
     if (!shadow_.primed || !store_ || !store_->journal())
         return;
     record(Economy | Roads);
@@ -399,6 +445,15 @@ void Game::record(unsigned what, const std::string& character)
             whole(true, shadow_.roads, checkpoint::roads(world_.roads()), "roads");
         }
     }
+    if (what & (Economy | Roads))
+    {
+        auto now = boardNotices(documents_);
+        if (auto text = json::dump(now); text != shadow_.notices)
+        {
+            set(path({"people", "boardNotices"}), std::move(now));
+            shadow_.notices = std::move(text);
+        }
+    }
     whole(what & Crime, shadow_.crime, checkpoint::crime(world_.crime()), "crime");
     whole(what & Companions, shadow_.companions, companionsOf(companionOwner_), "companions");
     whole(what & Accounts, shadow_.signIns, accounts_.state(), "accounts");
@@ -541,6 +596,8 @@ bool Game::forkSnapshot()
     {
         if (folder.empty())
             folder = snapshotFolder();
+        if (folder.empty())
+            return false;                          // (No folder to be had: a failed snapshot, tried again.)
         const auto name = folder + "/snapshot-" + std::to_string(++taken);
         document = name + ".json";
         states = name + ".npc";

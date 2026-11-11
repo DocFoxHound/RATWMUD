@@ -431,6 +431,32 @@ void stalls()
 // Phase 5, tavern games: a table in the common room; Knucklebones between two wolves to a winner, with practice;
 // Liar's Bones for 3p against a resident (residents with little money refused), the pot paid less the house's penny,
 // real money balanced, the resident kept in its seat; a wolf leaving Wolves and Deer hands the game to the other.
+// A camp gone up on the square (the repair after doc 79's Phases 4 and 5 merged, its check): by the next day its crowd
+// stands clear of it, as when the squares were worked out afresh each day. (They were kept as first found until the
+// roster moved.)
+void aCampOnTheSquare()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-s2stage-square-" + std::to_string(::getpid()));
+    const auto world = writeStrip(root, false, true);
+    Town t(world, {});
+    auto& w = t.g.world();
+    const auto community = w.lawTown(cellId(1));
+    const auto crowd = w.crowdSpots(community);
+    expect(!crowd.empty(), "the square has a crowd's places");
+    const auto spot = crowd.front();
+    const std::pair<int, int> tile{int(std::floor(spot.x)), int(std::floor(spot.y))};
+    w.obstacles[spot.cell].insert(tile);                // (A Chapter's camp: Game puts its tents here.)
+    w.advanceCalendar(1);
+    t.run(1.5);
+    const auto& now = w.crowdSpots(community);
+    expect(std::none_of(now.begin(), now.end(), [&](const Spot& s) { return s.cell == spot.cell && int(std::floor(s.x)) == tile.first &&
+                                                                          int(std::floor(s.y)) == tile.second; }),
+           "the next day nobody stands where the camp is");
+    expect(!now.empty(), "and the crowd still has its places");
+    w.obstacles[spot.cell].erase(tile);
+    fs::remove_all(root);
+}
+
 void tables()
 {
     const auto root = fs::temp_directory_path() / ("ratw-tables-" + std::to_string(::getpid()));
@@ -808,6 +834,7 @@ int main()
         boards();
         lodgings();
         stalls();
+        aCampOnTheSquare();
         tables();
         festivals();
         archive();

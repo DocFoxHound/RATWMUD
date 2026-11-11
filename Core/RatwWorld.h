@@ -745,6 +745,7 @@ class World
     // The markets for the Market Board (doc 79, 5.1; RatwMarket.cpp): found while staged, again after a load or when the
     // roster moves, and handed to the society.
     void ensureTradePoints();
+    std::uint64_t tradePointsBuilt() const { return tradePointsBuilt_; }   // (How often it has found them.)
     Result gather(const std::string& player);
     // Hunting and foraging (Docs/Design/41-hunting-and-foraging.md; RatwHunt.cpp). Out in the wild a wolf may forage
     // the ground beside it, or set out to hunt: a fight in an arena whose other side is animals, found by the ground
@@ -989,7 +990,9 @@ class World
     // each with a free place to sleep found near the home it asked for. The host makes the child or places the arrival
     // (arriveResident) and then calls welcomeResident with their ID.
     // At most `most` a call (the first asked for; the rest wait in order): a fresh world's first staffing asks for some
-    // two hundred at once, and its host makes them over a few ticks (ResidentsAPass, makeRequestedResidents).
+    // two hundred at once, and its host makes them over a few ticks (ResidentsAPass, makeRequestedResidents). Each place
+    // found is kept from the next ones of the call, so two never share a tile and the places don't hang on how many a
+    // call takes (the repair's check: 206 found in one call gave some the same tile; 12 at a time, not).
     std::vector<ResidentRequest> takeResidentRequests(std::size_t most = std::size_t(-1));
     static constexpr std::size_t ResidentsAPass = 12;
     Result welcomeResident(const ResidentRequest& request, const std::string& id);
@@ -1003,7 +1006,7 @@ class World
     // mother, with nothing; an arrival as arriveResident places it. Returns how many it made, and adds each request it
     // fulfilled to `made` when given. The game server calls it every tick for a world from files (Game::makeResidents),
     // and world_check after each of its ticks (doc 69), so a harness run has the server's births and arrivals.
-    int makeRequestedResidents(std::vector<ResidentRequest>* made = nullptr);   // (ResidentsAPass at most a call.)
+    int makeRequestedResidents(std::vector<ResidentRequest>* made = nullptr, std::size_t most = ResidentsAPass);
     // The roads (RatwRoads.h): towns, caravans, bandit camps, contracts and rumours. Active when the world has two
     // or more towns; a single settlement keeps its one store (the treasury) as before.
     const std::vector<Town>& towns() const { return towns_; }
@@ -1369,8 +1372,12 @@ class World
     Result callBandits(const std::string& near, int count);
     std::int64_t banditDemand(const std::string& player) const; // What bandits are asking of them now (0: nothing).
     // Things that happened to a player that no action of theirs answered (a bandit's blow, say), since the last
-    // call: (player, words), oldest first. The host shows them to the player.
-    std::vector<std::pair<std::string, std::string>> takeNotices();
+    // call: (player, words), oldest first. The host shows them to the player. `moved`: whether any of them speaks of coins
+    // or goods the tick moved in accounts or on the roads (an escort's pay, a courier's, a bounty, a purse robbed), which
+    // the host journals before telling (the repair after doc 79's Phases 4 and 5 merged, its check).
+    std::vector<std::pair<std::string, std::string>> takeNotices(bool* moved = nullptr);
+    // A notice for a player as a tick gives one (`moved` as above): the world's own, and tests'.
+    void noticeFor(const std::string& player, std::string words, bool moved = false) { notice(player, std::move(words), moved); }
     std::vector<WorldEvent> takeEvents();
     std::size_t droppedEvents() const { return droppedEvents_; }
     // Each home's stores (doc 36) placed so far: home cell -> kind -> where it stands.
@@ -1682,6 +1689,7 @@ class World
     // Connections known to lead nowhere: every way from the body of one cell into the next lands in a pocket of it
     // (found by residents, when both are in memory). Routes leave them out until either cell's ground changes.
     mutable std::set<std::pair<std::string, std::string>> deadEnds_;
+    mutable std::uint64_t deadEndsRevision_ = 0;    // (Each found or forgotten: the markets' routes are found again.)
     // What lies in or beyond the pocket of each dead end: its parts of the next cell, and the cells its doors open on
     // (a cottage on the strip). A walker bound there goes in by it all the same (doc 64, Phase 13, the roads' review).
     struct PocketEnd
@@ -1756,7 +1764,7 @@ class World
     std::unordered_set<std::string> following_;     // Residents keeping up with something that moves, this pass.
     bool townsReady_ = false;
     bool tradePointsReady_ = false;                 // (ensureTradePoints: doc 79, Phase 1.)
-    std::uint64_t tradePointsRevision_ = 0;
+    std::uint64_t tradePointsRevision_ = 0, tradePointsDeadEnds_ = 0, tradePointsPrint_ = 0;
     // Home storage (Docs/Design/36-home-storage.md): every household's stores opened and stocked once (homesReady_),
     // and where each home's stand, placed when its interior is first in memory.
     bool homesReady_ = false;
@@ -1806,6 +1814,7 @@ class World
     std::map<std::string, MarketSquare> squares_;                 // By community.
     std::int64_t squaresDay_ = -1, plannedAt_ = -1;   // (squaresDay_ < 0: the squares to work out afresh.)
     std::uint64_t squaresKey_ = ~0ULL, squaresCheck_ = 0;   // The roster's places they were checked at, and that check.
+    std::int64_t squaresToday_ = -1;                // (And the day: each is checked again at the day's turn.)
     std::uint64_t squarePrint(const std::string& cellId) const;
     std::uint64_t festivalsChanged_ = 0, plannedFor_ = 0;
     std::set<std::string> festivalsBegun_;                  // "community|day": the festival's event was recorded.
@@ -2183,6 +2192,7 @@ class World
 
   private:
     std::vector<std::pair<std::string, std::string>> notices_;
+    bool noticesMoved_ = false;                     // (Any of notices_ told of something moved: takeNotices.)
     std::vector<std::vector<std::string>> roadRoutes_;   // Every road between two markets (cells), for wagons and bandits.
     std::vector<std::pair<std::string, std::string>> roadPairs_;   // Its two markets, each road's.
     // Staged trade (doc 79, Phase 4; RatwTradeShow.cpp).
@@ -2259,7 +2269,11 @@ class World
     void clearCamp(BanditCamp& camp, const std::string& by);
     void beaten(Entity& player, BanditCamp& camp);
     BanditCamp* campOf(const std::string& banditId);
-    void notice(const std::string& player, std::string words) { notices_.push_back({player, std::move(words)}); }
+    void notice(const std::string& player, std::string words, bool moved = false)
+    {
+        notices_.push_back({player, std::move(words)});
+        noticesMoved_ = noticesMoved_ || moved;
+    }
     // Injuries (doc 38): who went down in a fight, and who has had their one lasting injury from it.
     struct FightMarks
     {
@@ -2312,7 +2326,9 @@ class World
     // over: children are born to take their place (Society::tendCareers). Not those the DM has protected.
     void tendOldAge();
     // An open, walkable tile near (x, y) in a cell that no resident calls home, for someone new to sleep.
-    bool freeSpotNear(const std::string& cellId, double& x, double& y);
+    // `given`: tiles handed out already and not yet anyone's home (a pass's arrivals: takeResidentRequests), left out too.
+    bool freeSpotNear(const std::string& cellId, double& x, double& y,
+                      const std::set<std::pair<std::string, std::pair<int, int>>>* given = nullptr);
     std::int64_t bondHour_ = -1, bondDay_ = -1;     // The last game hour and day bonds were tended.
     void bondsFromEvent(const WorldEvent& event);
     // The society's ledger entries since last time, as events (and so as bonds) now rather than at the next save.
@@ -2659,6 +2675,7 @@ class World
     void createDemo();
     void rebuildFixtureIndex();
     bool blockedByDoor(const std::string& cellId, Vec2 point) const;
+    bool inDoorway(const std::string& cellId, Vec2 point) const;   // (A door's tile, open or shut.)
     class WalkingGrid;                                      // A cell as walking (RatwStep.h) sees it.
 };
 

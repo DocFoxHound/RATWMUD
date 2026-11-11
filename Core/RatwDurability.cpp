@@ -71,7 +71,7 @@ void World::wearGear(Entity& e, const std::string& item, double amount)
                           e.jewellery.end());
     }
     if (!e.npc)
-        notice(e.id, "Your " + name + " is worn out and falls apart." + (spare ? " You take up another." : ""));
+        notice(e.id, "Your " + name + " is worn out and falls apart." + (spare ? " You take up another." : ""), true);
 }
 
 void World::wearArmourAt(Entity& e, const std::string& zone, double taken)

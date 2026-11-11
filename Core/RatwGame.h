@@ -1716,7 +1716,7 @@ class Game
     void applyDmActions(double dt);
     void feedWatch(double dt);              // A frame for the LIVE map while a Dungeon Master watches (RatwGameWatch.cpp).
     std::string watchFrame() const;
-    void makeResidents();
+    void makeResidents(std::size_t most = World::ResidentsAPass);
     void runSpawns(double dt);
     bool spawnTile(const std::string& area, const std::string& tilesJson, int& x, int& y);
     void applyExternalNpcStates();
@@ -1927,6 +1927,7 @@ class Game
         std::string board;                          // The Market Board (doc 79, Phase 1), as last journalled.
         std::string committed;                      // (Its committed departures alone: with the roads, doc 79 Phase 4.)
         std::string roadSteps;                      // (The roads less each wagon's place: checkpoint::roadSteps.)
+        std::string notices;                        // The boards' notices (boardNotices), as last journalled.
         StagedState staged;                         // (Doc 79: all but the tallies and welcomes, which go by holder.)
     };
     void prime(Shadow& shadow) const;

@@ -509,6 +509,8 @@ class Society
     // Residents wanted since the last call (see ResidentRequest), and a made one taking their place in the society.
     // (At most `most`, the first asked for: the rest wait in order for the next call.)
     std::vector<ResidentRequest> takeRequests(std::size_t most = std::size_t(-1));
+    std::size_t requestsWaiting() const { return requests_.size(); }
+    void askFor(ResidentRequest r) { requests_.push_back(std::move(r)); }   // (One asked for, as careers would: tests'.)
     CareerNote welcome(const ResidentRequest& request, const std::string& id);
     // A child the host could not make: owed again, due now.
     void birthFailed(const ResidentRequest& request);

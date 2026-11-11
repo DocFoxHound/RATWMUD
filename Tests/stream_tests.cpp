@@ -488,6 +488,46 @@ void theGroundChangesMidWalk()
     }
 }
 
+// A dead end found or forgotten (the repair after doc 79's Phases 4 and 5 merged, its check): the markets' routes and the
+// homes they serve are found with dead ends left out, so the markets are found again when one is, as when the roster
+// moves (they stayed as they were until the roster really moved). Here a tent goes up in c_1_0 and Pip, going home by it,
+// finds the ground changed: the dead end by it is forgotten, and nobody's place has moved. And a move of the roster that
+// changes nothing they are found from (a post changing hands) doesn't find them again: with cold routes it cost up to 25 ms
+// (6:16 on DEV).
+void aDeadEndFindsTheMarketsAgain()
+{
+    auto f = cottage();
+    auto world = load(f);
+    world.ensureTradePoints();
+    const auto first = world.tradePointsBuilt();
+    world.society().forgetPlaces();                             // (The roster moved; nothing the markets rest on did.)
+    world.ensureTradePoints();
+    expect(world.tradePointsBuilt() == first, "a move of the roster that changes nothing of theirs finds them as they were: " +
+                                                  std::to_string(world.tradePointsBuilt() - first));
+    world.setTimeOfDay(18.5);                                   // Pip, passing through, finds the dead end.
+    for (int second = 0; second < 3000 && world.entity("pip")->cellId != "c_2_0"; ++second)
+        world.tick(1);
+    expect(world.entity("pip")->cellId == "c_2_0", "Pip gets home round the strip, finding the dead end");
+    world.ensureTradePoints();
+    const auto built = world.tradePointsBuilt();
+    const auto places = world.society().placesRevision();
+    auto* pip = world.entity("pip");
+    world.ensureLoaded("c_1_1");
+    pip->cellId = "c_1_1";
+    pip->position = {8.5, 8.5};
+    pip->path.clear();
+    world.ensureLoaded("c_1_0");
+    world.obstacles["c_1_0"].insert({10, 10});                  // A tent goes up in the body of c_1_0.
+    for (int second = 0; second < 1200 && pip->cellId != "c_2_0"; ++second)
+        world.tick(1);
+    expect(pip->cellId == "c_2_0", "Pip gets home by c_1_0 after the tent goes up");
+    expect(world.society().placesRevision() == places, "nobody's place moved");
+    world.ensureTradePoints();
+    expect(world.tradePointsBuilt() == built + 1, "the markets are found again: " + std::to_string(world.tradePointsBuilt() - built));
+    world.ensureTradePoints();
+    expect(world.tradePointsBuilt() == built + 1, "and not again with nothing new");
+}
+
 // The ground changes while an offstage walker plans its leg (round 6's review, doc 64, Phase 13): Pip has found the
 // dead end by c_1_0, and tents go up in c_1_0's body as Sal, offstage in c_0_0, heads for her work on the strip.
 // moveOffstage's pocket() then forgets the dead end (regionMap), clearing the steps it was reading the next cell from.
@@ -1315,6 +1355,7 @@ int main()
         everyWayBackIsThroughTheBody();
         theGroundChangesMidWalk();
         anOffstageLegWhileTheGroundChanges();
+        aDeadEndFindsTheMarketsAgain();
         aCellCutInTwo();
         theBestWayOn();
         aSpotNoWayReaches();

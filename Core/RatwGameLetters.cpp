@@ -981,7 +981,19 @@ void Game::lettersSave(json::Value& root) const
 void Game::lettersLoad(const json::Value& saved)
 {
     documents_.clear();
+    // The boards' notices as the journal last wrote them, when it has since the checkpoint (Game::record): those, not the
+    // checkpoint's own.
+    const auto* journalled = saved.find("boardNotices");
+    const bool fromJournal = journalled && journalled->isArray();
+    std::vector<json::Value> all;
     for (const auto& e : saved.array("documents"))
+        if (!fromJournal || e.string("kind") != "notice")
+            all.push_back(e);
+    if (fromJournal)
+        for (const auto& e : journalled->items())
+            if (e.string("kind") == "notice")
+                all.push_back(e);
+    for (const auto& e : all)
     {
         auto d = documents::load(e);
         // (A letter has someone it is to; a notice has a board instead: notices were all dropped at every load.)

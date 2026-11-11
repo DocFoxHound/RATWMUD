@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 #include <fcntl.h>
 #include <fstream>
 #include <sstream>
@@ -309,6 +310,22 @@ bool cutTornTail(int fd)
     return ::ftruncate(fd, 0) == 0;
 }
 
+// The folder holding `path` synced, so a file made or renamed in it stays made or renamed through a power cut (POSIX asks
+// for it; ext4 and btrfs mostly do it with the file's own sync). The repair after doc 79's Phases 4 and 5 merged, its
+// check: the trim's rename, and the journal's first creation, were not.
+bool syncFolderOf(const std::string& path)
+{
+    auto folder = std::filesystem::path(path).parent_path();
+    if (folder.empty())
+        folder = ".";
+    const int fd = ::open(folder.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    if (fd < 0)
+        return false;
+    const bool ok = ::fsync(fd) == 0;
+    ::close(fd);
+    return ok;
+}
+
 bool readLines(const std::string& path, std::vector<Record>& out, std::string& problem)
 {
     std::ifstream in(path, std::ios::binary);
@@ -351,7 +368,9 @@ std::unique_ptr<Writer> fileWriter(const std::string& path)
         std::string text;
         for (const auto& r : batch)
             text += std::to_string(r.seq) + '\t' + r.text + '\n';
-        const bool ok = cutTornTail(fd) && writeAll(fd, text) && ::fdatasync(fd) == 0;
+        struct stat st{};
+        const bool fresh = ::fstat(fd, &st) == 0 && st.st_size == 0;   // (Made just now, or emptied by a trim: its name synced.)
+        const bool ok = cutTornTail(fd) && writeAll(fd, text) && ::fdatasync(fd) == 0 && (!fresh || syncFolderOf(path));
         if (!ok)
             error = "Cannot write " + path + ": " + std::strerror(errno);
         ::close(fd);
@@ -371,7 +390,7 @@ std::unique_ptr<Writer> fileWriter(const std::string& path)
             return false;
         const bool ok = writeAll(fd, text) && ::fdatasync(fd) == 0;
         ::close(fd);
-        return ok && std::rename(temp.c_str(), path.c_str()) == 0;
+        return ok && std::rename(temp.c_str(), path.c_str()) == 0 && syncFolderOf(path);
     };
     return std::make_unique<Writer>(commit, trim);
 }

@@ -2440,25 +2440,65 @@ namespace ratw
 {
 void World::ensureTradePoints()
 {
-    // The markets (doc 79, 5.1), found again at each load and whenever the roster moves: a trade point for each
+    // The markets (doc 79, 5.1), found again at each load, whenever the roster moves, and whenever a dead end is found or
+    // forgotten (the routes between them and to their homes leave dead ends out): a trade point for each
     // community (a region with homes) that has a merchant post, its id the region's; a merchant outside every community
     // joins the nearest market by path, or one "outside" market; each market's k nearest by path.
     // The Board feeds the bands (doc 79, 5 and 6.5): its Times, its pressure and its shelves, in play and in sims, so the
     // poor go short when players empty a shelf. Once; a test's own hooks are kept.
     if (!society_.stagedHooked())
         society_.setStagedHooks(Society::boardHooks());
-    if (tradePointsReady_ && tradePointsRevision_ == society_.placesRevision())
+    if (tradePointsReady_ && tradePointsRevision_ == society_.placesRevision() && tradePointsDeadEnds_ == deadEndsRevision_)
         return;
-    tradePointsReady_ = true;
+    const bool wasReady = tradePointsReady_;
+    tradePointsReady_ = true;                       // (Before the households are asked for, as before.)
     tradePointsRevision_ = society_.placesRevision();
-    ++tradePointsBuilt_;                            // (The roads find their markets again: ensureRoadMarkets.)
+    tradePointsDeadEnds_ = deadEndsRevision_;
     const auto regionOf = [&](const std::string& cellId) -> std::string {
         const auto* c = cell(cellId);
         return c && !c->region.empty() && c->region != "unassigned" ? c->region : std::string();
     };
+    // What they are found from (the repair's check): the households and the regions of their homes, the merchants' posts,
+    // their tills and trades, the farm crews and the map's regions. A move of the roster that changes none of it (a post
+    // changing hands, an account closed: most of them) finds them as they were, and a rebuild with cold routes cost up to
+    // 25 ms (6:16 on DEV, the market-to-market routes); so only a change of these, or of the dead ends, finds them again.
+    const auto households = society_.households(true);
+    std::uint64_t print = 1469598103934665603ULL;
+    const auto mix = [&](const std::string& text) {
+        for (const unsigned char ch : text)
+            print = (print ^ ch) * 1099511628211ULL;
+        print = (print ^ 0xff) * 1099511628211ULL;
+    };
+    for (const auto& [key, members] : households)
+        if (!members.empty())
+            if (const auto* life = society_.resident(members.front()))
+                mix(life->homeCell), mix(regionOf(life->homeCell));
+    for (const auto& p : society_.positions())
+        if (p.role == "merchant")
+        {
+            mix(p.id), mix(p.work.cell), mix(p.founder);
+            mix(society_.account("till:" + p.id) ? "1" : "0");
+            if (const auto* r = society_.spec(p.founder))
+                mix(r->workLabel);
+            for (const auto& ware : society_.stagedShelfGoods(p.founder))
+                mix(ware);
+        }
+    for (const auto& [community, n] : society_.farmCrews())
+        mix(community), mix(std::to_string(n));
+    for (const auto& [id, c] : cells_)
+        mix(id), mix(c.region);
+    mix(regionOf(spawnCell_)), mix(std::to_string(deadEndsRevision_));
+    const bool same = wasReady && print == tradePointsPrint_;
+    tradePointsPrint_ = print;
+    if (same)
+    {
+        tradePointsRevision_ = society_.placesRevision();   // (As it stands after the households were asked for.)
+        return;
+    }
+    ++tradePointsBuilt_;                            // (The roads find their markets again: ensureRoadMarkets.)
     std::map<std::string, int> homes;
     std::map<std::string, std::string> homeCellIn;  // Region -> a home cell in it (the first household's).
-    for (const auto& [key, members] : society_.households(true))
+    for (const auto& [key, members] : households)
     {
         if (members.empty())
             continue;

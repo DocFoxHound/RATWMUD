@@ -1387,7 +1387,7 @@ bool Society::arrivalFor(const Position& p, const PositionState& ps, const Caree
     {
         if (r.protectedNpc || r.age < 16 || r.age >= retireAge(r.id) || classApart(wanted, classOf(r.id)) != classStep ||
             std::any_of(requests_.begin(), requests_.end(),
-                        [&](const ResidentRequest& q) { return q.kind == "arrival" && q.templateId == r.id; }))
+                        [&](const ResidentRequest& q) { return (q.kind == "arrival" || q.kind == "farm") && q.templateId == r.id; }))
             continue;
         const bool kind = family != "general" && family == skillFamily(r.workLabel);
         const auto theirs = lower(r.workLabel + " " + r.description);

@@ -15,6 +15,9 @@
 #include "battle_play.h"
 
 #include <algorithm>
+#include <thread>
+#include <chrono>
+#include <atomic>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -2584,6 +2587,304 @@ void noticesSurviveARestart()
     std::filesystem::remove_all(root);
 }
 
+// ------------------------------------------------------------------ The repair's check (after doc 79's Phases 4 and 5)
+
+// A notice pinned after the checkpoint and the penny it cost go through a crash together, and one taken down stays down
+// (the boards are journalled whole with the economy: Game::record). Before, the notice was lost and its penny kept, and
+// the one taken down came back.
+void aNoticeAndItsPennyThroughACrash()
+{
+    auto f = strip();
+    const auto root = onDisk(f, "notice-penny");
+    const auto path = crashSave("notice-penny");
+    cleanSave(path);
+    std::string early, late;
+    std::int64_t cash = 0;
+    Client ash;                                     // (In the game at the crash: the client outlives it.)
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "a game starts for the notice's penny: " + problem);
+        enterAt(g, ash, 81, "ash", "east");
+        board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "Wanted: a lantern, before the checkpoint."}});
+        g.settle();
+        for (const auto& [id, d] : g.documents().all())
+            if (d.kind == "notice" && d.author == ash.entityId)
+                early = id;
+        g.save();
+        g.settle();                                 // (The checkpoint: the first notice up.)
+        board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "Found: a blue scarf, after the checkpoint."}});
+        g.settle();
+        for (const auto& [id, d] : g.documents().all())
+            if (d.kind == "notice" && d.author == ash.entityId && id != early)
+                late = id;
+        board(g, ash, {{"verb", "unpost"}, {"id", early}});
+        g.settle();                                 // (Its reply waits for its record.)
+        const auto down = ash.said();
+        expect(!early.empty() && !late.empty() && !g.documents().find(early) && down.find("take your notice down") != std::string::npos,
+               "one notice pinned and one taken down after the checkpoint: " + down);
+        cash = g.world().society().cash(ash.entityId);
+    }                                               // (Gone without saving.)
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "starts again after the notice's crash: " + problem);
+        const auto* d = g.documents().find(late);
+        expect(d && d->text == "Found: a blue scarf, after the checkpoint." && d->board == "board:east",
+               "the notice pinned after the checkpoint is up after the crash");
+        expect(!g.documents().find(early), "the one taken down after the checkpoint stays down");
+        expect(g.world().society().cash(ash.entityId) == cash, "the penny it cost paid once: " +
+                                                                   std::to_string(g.world().society().cash(ash.entityId)) + " for " +
+                                                                   std::to_string(cash));
+        expect(g.world().society().realBalanced(), "real money balanced after the notice's crash");
+    }
+    cleanSave(path);
+    std::filesystem::remove_all(root);
+}
+
+// A wagon robbed after the checkpoint, the raid in the journal alone: at the start its far end's notice says it was
+// robbed, as the raid's event would have made it, and comes down within two days (it went on promising the wagon).
+void aRobbedWagonsNoticeAfterACrash()
+{
+    auto f = strip();
+    const auto root = onDisk(f, "robbed-notice");
+    const auto path = crashSave("robbed-notice");
+    cleanSave(path);
+    market::Departure d;
+    std::string far;
+    Client ash;
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "a game starts for the robbed wagon's notice: " + problem);
+        enterAt(g, ash, 83, "ash", "east");
+        g.settle();
+        auto& w = g.world();
+        const auto quiet = [&] { w.roads().camps = {{"camp_mid", id(4), 0, 0, -100, false}}; };
+        quiet();
+        w.tick(.6);
+        w.tick(.6);
+        for (int day = 0; day < 14 && d.id.empty(); ++day)
+        {
+            quiet();
+            if (const auto* posted = firstWagon(w))
+                d = *posted;
+            else
+                nextMorning(w);
+        }
+        quiet();
+        expect(!d.id.empty(), "a wagon is posted for the robbed notice");
+        expect(setOut(w, d) != nullptr, "it sets out");
+        g.tick(.05);
+        g.save();
+        g.settle();                                 // (The checkpoint: the wagon on the road, its notices up.)
+        far = "wagon-" + d.id + "-to";
+        expect(g.documents().find(far) != nullptr, "its far end's notice is up");
+        for (auto& c : w.roads().caravans)
+            if (c.departure == d.id)
+            {
+                c.status = "raided";               // (The raid, its notice's change not yet made.)
+                c.manifest.clear();
+            }
+        board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "A trade, journalled with the roads."}});
+        g.settle();
+    }                                               // (Gone without saving.)
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "starts again after the raid's crash: " + problem);
+        bool raided = false;
+        for (const auto& c : g.world().roads().caravans)
+            raided = raided || (c.departure == d.id && c.status == "raided");
+        expect(raided, "the wagon is robbed by the journal");
+        const auto* n = g.documents().find(far);
+        expect(n && n->text.rfind("Robbed on the road: ", 0) == 0, "its far end's notice says it was robbed: " + (n ? n->text : std::string("none")));
+        expect(n && n->expires <= g.world().calendarDays() + 2 + 1e-9, "and comes down within two days");
+        expect(!g.documents().find("wagon-" + d.id + "-from"), "its near end's is down");
+    }
+    cleanSave(path);
+    std::filesystem::remove_all(root);
+}
+
+// A store whose journal commits only when let (a slow database): a notice held for its record, then a later tick's
+// notice with nothing moved, reach the player in their order, never the later first (the repair's check: it went out at
+// once, ahead of the one still waiting).
+struct GatedStore final : game::Store
+{
+    std::string saved;
+    std::shared_ptr<std::atomic<bool>> open = std::make_shared<std::atomic<bool>>(true);
+    std::shared_ptr<std::vector<journal::Record>> records = std::make_shared<std::vector<journal::Record>>();
+    std::unique_ptr<journal::Writer> writer;
+    GatedStore()
+    {
+        auto gate = open;
+        auto into = records;
+        writer = std::make_unique<journal::Writer>(
+            [gate, into](const std::vector<journal::Record>& batch, std::string& error) {
+                if (!*gate)
+                {
+                    error = "held";
+                    return false;                   // (Tried again after a moment, as a database away is.)
+                }
+                into->insert(into->end(), batch.begin(), batch.end());
+                return true;
+            },
+            nullptr, true);
+    }
+    bool database() const override { return false; }
+    std::string load() override { return saved; }
+    bool save(DbStore::Build build, std::uint64_t) override
+    {
+        json::Value document;
+        std::string states;
+        build(document, states);
+        saved = json::dump(document);
+        return true;
+    }
+    bool saveInBackground(DbStore::Build build, std::uint64_t revision) override { return save(std::move(build), revision); }
+    bool flush() override { return true; }
+    void queueEvents(std::vector<WorldEvent>) override {}
+    std::vector<std::pair<std::string, std::string>> externalNpcStates() override { return {}; }
+    std::string error() const override { return {}; }
+    journal::Writer* journal() override { return writer.get(); }
+    bool journalAfter(std::uint64_t after, std::vector<journal::Record>& out, std::string&) override
+    {
+        for (const auto& r : *records)
+            if (r.seq > after)
+                out.push_back(r);
+        return true;
+    }
+};
+
+void aLaterNoticeWaitsItsTurn()
+{
+    auto f = strip();
+    const auto root = onDisk(f, "notice-order");
+    game::Game g(optionsOn(root));
+    auto store = std::make_unique<GatedStore>();
+    auto gate = store->open;
+    g.useStore(std::move(store));
+    std::string problem;
+    expect(g.start(problem), "a game starts on a store that is slow to commit: " + problem);
+    Client ash;
+    enterAt(g, ash, 84, "ash", "west");
+    g.settle();
+    auto& w = g.world();
+    const auto order = [&] {
+        std::string out;
+        for (const auto& e : ash.events)
+            if (e.string("type") == "system")
+                out += e.string("text").rfind("FIRST", 0) == 0 ? "F" : e.string("text").rfind("SECOND", 0) == 0 ? "S" : "";
+        return out;
+    };
+    ash.events.clear();
+    *gate = false;                                  // (The database slow from here.)
+    w.society().shift(w.society().treasuryOf("west"), ash.entityId, "", 0, 1, "an escort's pay");
+    w.noticeFor(ash.entityId, "FIRST: paid on the tick.", true);
+    g.tick(.05);
+    w.noticeFor(ash.entityId, "SECOND: a later tick's line, nothing moved.");
+    g.tick(.05);
+    expect(order().empty(), "while the first waits for its record, the later one waits behind it: " + order());
+    *gate = true;
+    for (int i = 0; i < 200 && order().size() < 2; ++i)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));   // (The writer tries again every half second.)
+        g.settle();
+    }
+    expect(order() == "FS", "then both, in their order: " + order());
+    std::filesystem::remove_all(root);
+}
+
+// A tick's notice journals the economy first only when it speaks of something moved (an escort's pay, a bounty): a fight's
+// line and the like are told as they come, with no record (about half a millisecond each on DEV: the repair's check).
+void aFightLineIsNotJournalled()
+{
+    auto f = strip();
+    const auto root = onDisk(f, "notice-cost");
+    auto held = std::make_shared<Held>();
+    game::Game g(optionsOn(root));
+    g.useStore(std::make_unique<HeldStore>(held));
+    std::string problem;
+    expect(g.start(problem), "a game starts for the notices' records: " + problem);
+    Client ash;
+    enterAt(g, ash, 85, "ash", "west");
+    g.settle();
+    auto& w = g.world();
+    for (int t = 0; t < 4; ++t)
+        g.tick(.05);
+    g.settle();
+    const auto records = [&] { return held->records->size(); };
+    auto before = records();
+    w.society().shift(w.society().treasuryOf("west"), ash.entityId, "", 0, 1, "a coin found");
+    w.noticeFor(ash.entityId, "A blow lands.");
+    g.tick(.05);
+    g.settle();
+    expect(records() == before, "a line that moved nothing writes no record: " + std::to_string(records() - before));
+    expect(ash.said().find("A blow lands.") != std::string::npos, "and is told");
+    before = records();
+    w.noticeFor(ash.entityId, "You are paid 1p for guarding it.", true);
+    g.tick(.05);
+    g.settle();
+    expect(records() == before + 1, "one that speaks of coins moved writes one first: " + std::to_string(records() - before));
+    std::filesystem::remove_all(root);
+}
+
+// Residents asked for and not yet made (a fresh world's first staffing, made ResidentsAPass a tick) are made before a
+// checkpoint: the requests are in none, so a crash after it lost them till the next day's careers pass (a database
+// world's arrivals: their rows are placed as they are made). And each is given a tile of its own, the same however many
+// a pass makes (206 found in one pass gave some the same tile).
+void residentsWaitingAtACheckpoint()
+{
+    const int asked = int(World::ResidentsAPass) + 4;
+    const auto ask = [&](World& w) {
+        for (int n = 0; n < asked; ++n)
+        {
+            ResidentRequest r;
+            r.kind = "birth";
+            r.templateId = "e1";
+            r.name = "Pup " + std::to_string(n);
+            r.home = {id(0), 9.5, 4.5};
+            r.sex = n % 2 ? "male" : "female";
+            w.society().askFor(r);
+        }
+    };
+    const auto tiles = [&](const World& w) {
+        std::vector<std::pair<int, int>> out;
+        for (const auto& [id, life] : w.society().state().residents)
+            if (id.rfind("born_", 0) == 0)
+                out.push_back({int(std::floor(life.homeX)), int(std::floor(life.homeY))});
+        std::sort(out.begin(), out.end());
+        return out;
+    };
+    auto f = strip();
+    auto all = load(f);
+    ask(all);
+    all.makeRequestedResidents(nullptr, std::size_t(-1));
+    auto byOne = load(f);
+    ask(byOne);
+    while (byOne.society().requestsWaiting() > 0)
+        byOne.makeRequestedResidents(nullptr, 1);
+    const auto mine = tiles(all);
+    expect(int(mine.size()) == asked, "all of them made: " + std::to_string(mine.size()));
+    expect(std::adjacent_find(mine.begin(), mine.end()) == mine.end(), "each on a tile of its own");
+    expect(mine == tiles(byOne), "the same tiles made one a pass as all at once");
+    const auto root = onDisk(f, "waiting-residents");
+    const auto path = crashSave("waiting-residents");
+    cleanSave(path);
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "a game starts for the waiting residents: " + problem);
+        ask(g.world());
+        g.save();
+        g.settle();
+        expect(g.world().society().requestsWaiting() == 0 && int(tiles(g.world()).size()) == asked,
+               "a checkpoint makes those still waiting first: " + std::to_string(g.world().society().requestsWaiting()) + " waiting");
+    }
+    cleanSave(path);
+    std::filesystem::remove_all(root);
+}
+
 int writeCrashes(const std::filesystem::path& dir)
 {
     namespace fs = std::filesystem;
@@ -2668,6 +2969,11 @@ int main(int argc, char** argv)
         pinnedNoticesFollowTheEscort();
         anEscortsArrivalPayThroughACrash();
         noticesSurviveARestart();
+        aNoticeAndItsPennyThroughACrash();
+        aRobbedWagonsNoticeAfterACrash();
+        aLaterNoticeWaitsItsTurn();
+        aFightLineIsNotJournalled();
+        residentsWaitingAtACheckpoint();
     }
     catch (const std::exception& error)
     {
