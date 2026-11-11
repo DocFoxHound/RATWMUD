@@ -1164,7 +1164,7 @@ void talkThroughTheRealPath()
     // event on, hard Times, the nails dear and a wagon's news, over five days of hours.
     market::StagedEvent glut;
     glut.id = "e900", glut.market = market, glut.kind = "brewers_glut", glut.status = "on", glut.announced = true;
-    glut.day = std::int64_t(std::floor(w.calendarDays())), glut.days = 9, glut.words = "a brewing too many";
+    glut.day = std::int64_t(std::floor(w.calendarDays())), glut.days = 9, glut.words = "the brewers' glut";
     glut.goods = {{"ale", -.1}};
     s.stagedBoard().events.push_back(glut);
     s.stagedBoard().slider = s.stagedBoard().sliderTarget = -100;

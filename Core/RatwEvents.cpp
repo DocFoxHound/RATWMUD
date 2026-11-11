@@ -682,6 +682,13 @@ void World::eventFacts(const std::string& market, std::map<std::string, std::str
         return;
     facts["world.event"] = best->kind;
     facts["world.event_words"] = best->words;
+    // (Its goods as a line says them, "brandy, wine and chamomile": a rich cargo is of what its market deals in, never
+    // silk where none is sold.)
+    std::vector<std::string> goods;
+    for (const auto& [g, target] : best->goods)
+        goods.push_back(cargoWords(g));
+    if (!goods.empty())
+        facts["world.event_goods"] = listed(goods);
     facts["world.event_when"] = rank == 0 ? "now" : rank == 1 ? "soon" : "past";
 }
 

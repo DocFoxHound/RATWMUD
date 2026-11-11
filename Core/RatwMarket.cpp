@@ -1509,7 +1509,8 @@ std::string eventCause(const market::Board& b, const std::string& market, const 
     for (const auto& [g, t] : event->goods)
         if (g == base)
             target = t;
-    return (target > 0) == (trend > 0) ? event->words : (trend > 0 ? "dear still, though " : "cheap still, though ") + event->words;
+    // (An event's words are a noun phrase, Phase 7's repair: "despite the brewers' glut", never "though the brewers' glut".)
+    return (target > 0) == (trend > 0) ? event->words : (trend > 0 ? "dear still, despite " : "cheap still, despite ") + event->words;
 }
 std::string roadCause(const std::string& cause, int trend)
 {
@@ -2806,7 +2807,7 @@ namespace
 {
 // A move's cause as talk says it (11): the Board's word turned the move's way, in the words section 11 gives ("travellers
 // buying", "someone sold a heap", "the wagon's late", "the Gull came in", "a good harvest", the event's own words); a
-// cause the move belies is "still" ("though the wagon came in"), so no line blames it.
+// cause the move belies is "still" ("though the wagon came in", an event's "despite the brewers' glut"), so no line blames it.
 void talkCause(const market::Board& b, const std::string& market, const std::string& base, const std::string& cause, int trend,
                std::string& kind, std::string& words, std::string& shipName)
 {
@@ -2876,7 +2877,10 @@ void talkCause(const market::Board& b, const std::string& market, const std::str
         else if ((target > 0) == up)
             set("event", event->words);
         else
-            still(event->words);
+        {
+            kind = "still";                         // (A noun phrase: "despite the brewers' glut", not "though".)
+            words = "despite " + event->words;
+        }
     }
     else
         set("players", up ? "travellers buying" : "travellers selling");

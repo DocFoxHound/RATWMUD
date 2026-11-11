@@ -790,7 +790,18 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                                     : kind == "due" ? 1.5 + hourly(18) : 1.3 + hourly(18));
             t.talk["topic.kind"] = kind;
             t.talk["topic.ship"] = s->name;
-            if (!s->brings.empty())
+            // (Her rich cargo's goods first, while it is on: the brandy she brought in, not her everyday cargo. The merge
+            // of Phase 7's and Phase 8's repairs.)
+            std::string rich;
+            if (kind == "in")
+                for (const auto& e : society_.board().events)
+                    if (e.status == "on" && e.subject == "ship:" + s->id)
+                        for (const auto& [g, target] : e.goods)
+                            if (rich.empty() && target < 0)
+                                rich = g;
+            if (!rich.empty())
+                talkGood(rich, t.talk);
+            else if (!s->brings.empty())
                 talkGood(s->brings.front().first, t.talk);
             if (kind == "due")
                 t.talk["topic.when"] = s->day <= today ? "today" : "soon";

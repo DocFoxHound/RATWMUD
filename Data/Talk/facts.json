@@ -181,6 +181,7 @@
     "times_cause": "text",
     "event": "text",
     "event_words": "text",
+    "event_goods": "text",
     "event_when": ["now", "soon", "past"],
     "figure_ruler": "text",
     "figure_lord": "text",

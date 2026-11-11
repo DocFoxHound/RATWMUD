@@ -886,6 +886,7 @@ void theStagedEconomysTalk()
             auto q = moment("talk.event");
             q.facts["world.event"] = kind;
             q.facts["world.event_words"] = "the business";
+            q.facts["world.event_goods"] = "brandy and wine";   // (Its goods, as World::eventFacts gives them.)
             q.facts["world.event_when"] = when;
             for (const auto& line : heard(q, 3))
             {
@@ -900,7 +901,7 @@ void theStagedEconomysTalk()
     {
         auto q = moment("talk.event");
         q.facts["world.event"] = "brewers_glut";
-        q.facts["world.event_words"] = "a brewing too many";
+        q.facts["world.event_words"] = "the brewers' glut";
         q.facts["world.event_when"] = "now";
         q.facts["world.ale_price"] = "down";
         bool cheap = false;

@@ -1583,6 +1583,267 @@ void theRepairOnTheBoards()
     std::filesystem::remove_all(root);
 }
 
+// The two repairs together (the merge of r2-staged-rev and r2-staged-rtalk): the events' new words (noun phrases), the
+// ships' troubles' words and the rich cargo's goods, through the real path of talk (the director's picks for a listening
+// player, Game::talkTopicQuery, the library's converse) and the Mind's Means. RATW_TALK_SAMPLES=1 prints what is said.
+void theRepairsTogether()
+{
+    rules = "rule \"eventRate\" 0\n";
+    auto f = harbour(true, true, resident("ef", "Fen Gill", "merchant", "fishmonger at the Fish Hall", 0, 4.5, 1, 6.5) +
+                                     resident("ev", "Vera Lees", "merchant", "vintner at the Wine Vault", 0, 5.5, 1, 7.5));
+    rules.clear();
+    const bool print = std::getenv("RATW_TALK_SAMPLES") != nullptr;
+    const auto root = onDisk(f, "events-together");
+    {
+        auto options = optionsOn(root);
+        options.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";   // (The written lines: Data/Talk beside it.)
+        game::Game g(options);
+        std::string problem;
+        expect(g.start(problem), "a game starts: " + problem);
+        expect(g.talkLibrarySize() > 1000, "the talk library loaded: " + std::to_string(g.talkLibrarySize()));
+        auto& w = g.world();
+        auto& soc = w.society();
+        w.tick(.6);
+        w.roads().camps.clear();
+        Client ash;
+        enterAt(g, ash, 86, "ash", "east");
+        const auto none = [](const std::string&) { return false; };
+        const std::vector<std::pair<std::string, std::string>> pairs{{"e1", "e2"}, {"em", "e3"}, {"d1", "e4"}, {"ev", "ef"}};
+        const auto ready = [&] {
+            double x = 3.5;
+            for (const auto& [a, b] : pairs)
+                for (const auto* who : {&a, &b})
+                    if (auto* e = w.entity(*who))
+                    {
+                        e->cellId = id(1);
+                        e->position = {x += 1, 8.5};
+                        e->path.clear();
+                        e->velocity = {0, 0};
+                        e->speakingUntil = 0;
+                    }
+            if (auto* me = w.entity(ash.entityId))
+                me->cellId = id(1), me->position = {6.0, 9.5};
+        };
+        // Every line the talk of `concept` says (topics that fit), from the pairs, over the hours (the hourly draw).
+        const auto lowered = [](std::string t) {
+            for (auto& c : t)
+                c = char(std::tolower(static_cast<unsigned char>(c)));
+            return t;
+        };
+        std::set<std::string> everything;
+        talk::Query timesQuery;                     // (The last Times topic the director gave: for the troubles below.)
+        const auto heard = [&](const std::string& concept, const std::function<bool(const talk::Query&)>& fits, int hours = 96) {
+            std::set<std::string> out;
+            for (int h = 0; h < hours; ++h)
+            {
+                ready();
+                for (const auto& pick : w.ambientPicks({ash.entityId}))
+                    expect(pick.hearer == ash.entityId, "the director picks for the listening player");
+                for (const auto& [a, b] : pairs)
+                {
+                    const auto q = g.talkTopicQuery(a, b, ash.entityId);
+                    if (q.concept == "talk.times")
+                        timesQuery = q;
+                    if (q.concept != concept || (fits && !fits(q)))
+                        continue;
+                    for (std::uint64_t seed = 0; seed < 16; ++seed)
+                        for (const auto& [who, line] : g.talkLibrary().converse(q, seed, none, {}).lines)
+                        {
+                            out.insert(line);
+                            everything.insert(line);
+                            const auto low = lowered(line);
+                            expect(line.find('#') == std::string::npos && line.find('{') == std::string::npos, "every blank filled: " + line);
+                            expect(low.find("though the ") == std::string::npos || low.find("though the wagon") != std::string::npos,
+                                   "never \"though\" before an event's noun phrase: " + line);
+                            expect(low.find("wagons late on the road") == std::string::npos, "never a wagon's words for a ship: " + line);
+                        }
+                }
+                w.advanceCalendar(1.0 / 24);
+            }
+            if (print)
+                for (const auto& line : out)
+                    std::cout << "    [" << concept << "] " << line << "\n";
+            return out;
+        };
+        const auto said = [](const std::set<std::string>& lines, const std::string& words) {
+            return std::any_of(lines.begin(), lines.end(), [&](const std::string& l) { return l.find(words) != std::string::npos; });
+        };
+        const auto capital = [](std::string t) {
+            if (!t.empty())
+                t[0] = char(std::toupper(static_cast<unsigned char>(t[0])));
+            return t;
+        };
+        const auto find = [&](const std::string& eventId) -> market::StagedEvent& {
+            for (auto& e : soc.stagedBoard().events)
+                if (e.id == eventId)
+                    return e;
+            throw std::runtime_error("no event " + eventId);
+        };
+        // (1) Each kind of the catalogue east can show, on: its talk, its Times' cause (the market's own shift taking the
+        // band past ordinary, so the event is the largest part on its side), the Means; then soon, then over.
+        int kinds = 0, timesHeard = 0, causeSaid = 0;
+        for (const auto& kind : market::data().events)
+        {
+            if (!kind.ship.empty())
+                continue;
+            const auto eventId = w.addStagedEvent("east", kind.id, today(w), std::min(23.5, (w.calendarDays() - std::floor(w.calendarDays())) * 24 + .05), problem);
+            if (eventId.empty())
+            {
+                if (print)
+                    std::cout << "  (" << kind.id << " not here: " << problem << ")\n";
+                continue;
+            }
+            ++kinds;
+            for (int t = 0; t < 400 && w.stagedEvent(eventId)->status != "on"; ++t)
+                w.tick(.6);
+            expect(w.stagedEvent(eventId)->status == "on", kind.id + " begins");
+            find(eventId).days = 9;
+            const auto words = w.stagedEvent(eventId)->words;
+            if (print)
+                std::cout << "  " << kind.id << ": \"" << words << "\"\n";
+            soc.setTimesShift({{"east", kind.times < 0 ? -18 : 18}});
+            expect(soc.marketTimes("east") != 0 && soc.timesCause("east") == words, kind.id + ": the Times' cause is the event: " + soc.timesCause("east"));
+            const auto means = soc.meansNote("e1");
+            expect(means.find(", since " + words + ".") != std::string::npos, "the Means: " + means);
+            if (print)
+                std::cout << "    [means] " << means << "\n";
+            const auto evNow = heard("talk.event", {});
+            expect(!evNow.empty(), kind.id + " is talked of");
+            const auto times = heard("talk.times", {});
+            timesHeard += !times.empty();           // (The hourly draw: most kinds' Times are heard in four days.)
+            causeSaid += said(times, words) || said(times, capital(words));
+            // (Its goods' prices, pressed its way: the cause said as the event.)
+            heard("talk.prices", [&](const talk::Query& q) { return q.facts.count("topic.cause") && (q.facts.at("topic.cause") == "event" || q.facts.at("topic.cause") == "still"); }, 48);
+            // A good it presses, pushed the other way: "still", in a noun phrase's words.
+            for (const auto& [good, target] : w.stagedEvent(eventId)->goods)
+            {
+                soc.setPressure("east", good, target > 0 ? -.2 : .2, "event");
+                for (const auto* k : {"em", "es", "ek", "eg", "et", "ef", "ev"})
+                    for (const auto& ware : soc.wares(k))
+                        if (items::baseOf(ware) == good)
+                        {
+                            const auto row = soc.listing(ash.entityId, k, ware, g.accountOf(ash.entityId));
+                            if (row.trend != 0)
+                                expect(row.cause.find("though " + words) == std::string::npos &&
+                                           (row.cause == words || row.cause == (row.trend > 0 ? "dear still, despite " : "cheap still, despite ") + words ||
+                                            row.cause.find(words) == std::string::npos),
+                                       "the list's still: " + row.cause);
+                            if (print && row.trend != 0)
+                                std::cout << "    [list] " << ware << ": " << row.cause << "\n";
+                        }
+                heard("talk.prices", [&](const talk::Query& q) { return q.facts.count("topic.cause") && q.facts.at("topic.cause") == "still"; }, 48);
+                soc.setPressure("east", good, target / 2, "event");
+                break;
+            }
+            soc.setTimesShift({});
+            // Soon (posted, due tomorrow: a kind posted ahead), then over.
+            if (kind.ahead > 0)
+            {
+                auto& e = find(eventId);
+                e.status = "due", e.announced = true, e.day = today(w) + 1, e.hour = 9;
+                heard("talk.event", {}, 24);
+            }
+            auto& o = find(eventId);
+            o.status = "over", o.day = today(w) - 1, o.days = 1;
+            heard("talk.event", {}, 30);
+            expect(w.cancelStagedEvent(eventId) || find(eventId).status != "on", kind.id + " done");
+            for (auto& x : soc.stagedBoard().events)
+                if (x.id == eventId)
+                    x.status = "cancelled", x.day = today(w) - 3;
+        }
+        expect(kinds >= 6 && timesHeard >= kinds / 2 && causeSaid >= kinds / 2,
+               "most kinds talked of: " + std::to_string(kinds) + ", their Times " + std::to_string(timesHeard) + ", by their words " +
+                   std::to_string(causeSaid));
+        // (2) The ships: a rich cargo's ship in, a lost one, a stormbound one.
+        std::vector<market::Ship> due;
+        for (int day = 0; day < 30 && due.size() < 2; ++day)
+        {
+            nextMorning(w);
+            due.clear();
+            for (const auto& s : soc.board().ships)
+                if (s.status == "due" && s.day > today(w))
+                    due.push_back(s);
+            std::sort(due.begin(), due.end(), [](const auto& a, const auto& b) { return a.day < b.day; });
+            if (due.size() >= 2 && due[0].day / 7 != due[1].day / 7)
+                due.resize(1);
+        }
+        expect(due.size() >= 2, "two ships due in a week");
+        const auto rich = w.addStagedEvent("east", "rich_cargo", due[0].day, 0, problem);
+        expect(!rich.empty(), "a rich cargo: " + problem);
+        const auto lost = w.addStagedEvent("east", "lost_ship", due[0].day, 0, problem);
+        expect(!lost.empty(), "a lost ship: " + problem);
+        while (today(w) < due[0].day)
+            nextMorning(w);
+        dock(w, due[0]);
+        w.tick(.6);
+        expect(w.stagedEvent(rich)->status == "on", "the rich cargo is in");
+        find(rich).days = 9;
+        std::vector<std::string> richGoods;
+        for (const auto& [gd, t] : w.stagedEvent(rich)->goods)
+            richGoods.push_back(gd);
+        if (print)
+            std::cout << "  rich_cargo: \"" << w.stagedEvent(rich)->words << "\" " << w.stagedEvent(rich)->notice << "\n";
+        // (A few hours only: the lost ship's day is still to come.)
+        const auto shipsIn = heard("talk.ships", [](const talk::Query& q) { return q.facts.count("topic.kind") && q.facts.at("topic.kind") == "in"; }, 6);
+        const auto cargoNow = heard("talk.event", {}, 6);
+        expect(!shipsIn.empty() && !cargoNow.empty(), "the ship and her cargo talked of");
+        // (Her rich cargo's goods in the ship's talk, "is in" with them; never silk where east sells none.)
+        const auto firstRich = World::cargoWords(richGoods.front());
+        expect(said(shipsIn, "in with " + firstRich) || said(shipsIn, "swinging " + firstRich), "the ship's talk names her rich cargo: " + firstRich);
+        const bool silk = std::find(richGoods.begin(), richGoods.end(), "silk") != richGoods.end();
+        for (const auto* lines : {&shipsIn, &cargoNow})
+            for (const auto& line : *lines)
+                expect(silk || lowered(line).find("silk") == std::string::npos, "no silk in a cargo without it: " + line);
+        while (today(w) < due[1].day)
+            nextMorning(w);
+        w.tick(.6);
+        expect(w.stagedEvent(lost) && w.stagedEvent(lost)->status == "on", "the lost ship's story on");
+        find(lost).days = 9;
+        if (print)
+            std::cout << "  lost_ship: \"" << w.stagedEvent(lost)->words << "\"\n";
+        heard("talk.ships", [](const talk::Query& q) { return q.facts.count("topic.kind") && q.facts.at("topic.kind") == "lost"; });
+        heard("talk.event", {});
+        soc.setTimesShift({{"east", -18}});
+        if (print)
+            std::cout << "    [means] " << soc.meansNote("e1") << "\n";
+        heard("talk.times", {});
+        // Only the troubles of the sea (the events called off): their own words in the Times, through the facts talk is
+        // given (World::eventFacts) into the last Times topic the director gave, and the Means. (While a ship's loss or an
+        // event is the port's news it outscores the Times: the draw is Phase 10's weight.)
+        find(lost).status = "cancelled";
+        find(rich).status = "cancelled";
+        expect(timesQuery.concept == "talk.times", "the director gave a Times topic");
+        const auto timesSaid = [&](const std::string& words) {
+            soc.setTimesShift({{"east", -25}});     // (The morning's shift, troubles in it, as the world sets it: lean.)
+            std::map<std::string, std::string> facts;
+            w.eventFacts("east", facts);
+            expect(facts["world.times"] == "lean" && facts["world.times_cause"] == words, "talk's Times: " + facts["world.times"] + ", " + facts["world.times_cause"]);
+            auto q = timesQuery;
+            q.facts["world.times"] = facts["world.times"];
+            q.facts["world.times_cause"] = facts["world.times_cause"];
+            std::set<std::string> lines;
+            for (std::uint64_t seed = 0; seed < 32; ++seed)
+                for (const auto& [who, line] : g.talkLibrary().converse(q, seed, none, {}).lines)
+                    lines.insert(line);
+            if (print)
+                for (const auto& line : lines)
+                    std::cout << "    [talk.times] " << line << "\n";
+            expect(said(lines, words) || said(lines, capital(words)), "and talk says it: " + words);
+            const auto means = soc.meansNote("e1");
+            expect(means.find("since " + words + ".") != std::string::npos, "the Means: " + means);
+            if (print)
+                std::cout << "    [means] " << means << "\n";
+        };
+        timesSaid("the ship lost at sea");
+        soc.stagedBoard().troubles.clear();
+        soc.stagedBoard().troubles.push_back({w.calendarDays(), "east", "storm"});
+        timesSaid("the storms keeping the ships out");
+        soc.setTimesShift({});
+        g.disconnect(&ash);
+    }
+    std::filesystem::remove_all(root);
+}
+
 // ------------------------------------------------------------------------------------------------- Through a crash
 
 // Each case: the checkpoint, then a step a world tick takes (an event begins, one ends, a morning rolls the week's, a ship
@@ -2061,7 +2322,9 @@ int main(int argc, char** argv)
             {"eventsThroughACrash", eventsThroughACrash},
             // Phase 7 repaired.
             {"phase7Repaired", phase7Repaired},
-            {"theRepairOnTheBoards", theRepairOnTheBoards}};
+            {"theRepairOnTheBoards", theRepairOnTheBoards},
+            // Phases 7 and 8 repaired, together.
+            {"theRepairsTogether", theRepairsTogether}};
         if (argc == 3 && std::string(argv[1]) == "--only")
         {
             for (const auto& [name, test] : tests)

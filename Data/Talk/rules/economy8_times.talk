@@ -12,7 +12,8 @@
 # then times.answer (moan, cause, and the rich's worries in hard times), times.boast_answer (a boast, the rich's talk in
 # good times), and times.close after a sour answer (ta=sour).
 #
-# talk.event: world.event (the kind's id), world.event_words (a noun phrase), world.event_when (now, soon, past). Never
+# talk.event: world.event (the kind's id), world.event_words (a noun phrase), world.event_goods (its goods, "brandy, wine
+# and chamomile": what its market deals in), world.event_when (now, soon, past). Never
 # a price figure, and a good is said to be dear or cheap only where its world.<good>_price says so (the list shows it);
 # an event over is spoken of in the past. Openers remember ev=bad, ev=good, ev=loss or ev=news for event.answer.
 
@@ -442,16 +443,23 @@ then other: event.answer
 ## A ship's rich cargo.
 
 rule e8t_ev_cargo_soon
-when concept=talk.event world.event=rich_cargo world.event_when=soon
+when concept=talk.event world.event=rich_cargo world.event_when=soon world.event_goods
 cooldown 1d
-say The Wharf's all talk of #world.event_words#. | They say silk and spices are coming. #world.event_words.capitalize#.
+say The Wharf's all talk of #world.event_words#. | She's bringing #world.event_goods#, they say. #world.event_words.capitalize#.
 remember pair: ev=good 2m
 then other: event.answer
 
 rule e8t_ev_cargo_now
-when concept=talk.event world.event=rich_cargo world.event_when=now
+when concept=talk.event world.event=rich_cargo world.event_when=now world.event_goods
 cooldown 1d
-say The Heights are all down at the Wharf. #world.event_words.capitalize#. | I've never seen so much silk in one place.
+say The Heights are all down at the Wharf. #world.event_words.capitalize#. | #world.event_goods.capitalize#, and all of it off the one ship.
+remember pair: ev=good 2m
+then other: event.answer
+
+rule e8t_ev_cargo_silk
+when concept=talk.event world.event=rich_cargo world.event_when=now world.silk_price=down
+cooldown 1d
+say I've never seen so much silk in one place.
 remember pair: ev=good 2m
 then other: event.answer
 
@@ -465,14 +473,14 @@ then other: event.answer
 rule e8t_ev_cargo_rich
 when concept=talk.event world.event=rich_cargo world.event_when=soon|now self.wealth=rich
 cooldown 1d
-say I've sent the steward down for silk. Before the Heights take it all. | One waits for a ship like that all year.
+say I've sent the steward down to the Wharf. Before the Heights take it all. | One waits for a ship like that all year.
 remember pair: ev=good 2m
 then other: event.answer
 
 rule e8t_ev_cargo_past
 when concept=talk.event world.event=rich_cargo world.event_when=past
 cooldown 1d
-say The silk's all gone up the hill, after that cargo. | Half the Heights are wearing that cargo now.
+say That cargo's all gone up the hill. | The Heights had the best of that cargo, as ever.
 remember pair: ev=good 2m
 then other: event.answer
 
@@ -482,7 +490,7 @@ rule e8t_ev_lost
 when concept=talk.event world.event=lost_ship
 cooldown 1d
 priority 1
-say #world.event_words.capitalize#. All her cargo, gone. | They're saying it was #world.event_words#. The Wharf's gone quiet. | #world.event_words.capitalize#. The Bright One keep them.
+say #world.event_words.capitalize#. All her cargo, gone. | Everyone's talking of #world.event_words#. The Wharf's gone quiet. | #world.event_words.capitalize#. The Bright One keep them.
 remember pair: ev=loss 2m
 then other: event.answer
 
