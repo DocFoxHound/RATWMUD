@@ -19,7 +19,7 @@ a : Generous of you. | Turnip is turnip. | Sly and clever.
 b?[innkeeper] : Full measure, same as always. Your tongue's gone sour.
 
 scene em_more_trade_favours
-when topic=prices topic.dir=up
+when topic=prices topic.dir=up topic.sort=food
 a : I mended her roof for a week of suppers. Better than coin. | Coin's scarce. Folk are trading work for food. | I'll sweep your floor for a bowl of soup. I'm not proud.
 b : Fair trade. | Like the old days. | Pride doesn't fill a belly.
 a : Better than fair. | The old days were hungry too. | No, it doesn't.
@@ -45,13 +45,13 @@ a : It's what there is. | It's the way I'm living. | Then we're both thin.
 # ---------------------------------------------------------------- Cheap times
 
 scene em_more_cheap_party
-when topic=prices topic.dir=down
+when topic=prices topic.dir=down topic.sort=food
 a : Food's cheap. Let's have everyone round. | A cheap week. I'm throwing a supper. | I bought enough for the whole lane.
 b : Everyone? Your floor's too small. | I'll bring the cider. | The whole lane will come.
 a : We'll stand. | Bring two. | Let them.
 
 scene em_more_cheap_save
-when topic=prices topic.dir=down
+when topic=prices topic.dir=down topic.sort=food
 a : Cheap week. I'm drying and salting all I can. | Buying grain now for winter while it's #topic.price#. | Smart wolves buy when it's cheap.
 b : Good thinking. | Clever. | Smart wolves have coin.
 a : Winter remembers. | Winter's long. | True. Borrow some.

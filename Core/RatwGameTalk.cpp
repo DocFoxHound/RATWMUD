@@ -3,6 +3,7 @@
 // Data/Talk/facts.json; the appendix of doc 62 says where each comes from.
 #include "RatwGame.h"
 #include "RatwCalendar.h"
+#include "RatwItems.h"
 #include "RatwTroubles.h"
 
 #include <algorithm>
@@ -111,6 +112,7 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     }
     // The Restday dole and the shop's business (doc 79, 10.2-10.3; Phase 6): from the society's street life.
     f["on_dole"] = yes(society.onDole(e.id));
+    f["lifted"] = yes(society.liftedNow(e.id));    // (Living on a player's help: 6.7, T15. Phase 8 repair.)
     bool owes = false;
     if (const auto* bonds = world_.bonds().of(e.id))
         for (const auto& [other, b] : *bonds)
@@ -403,6 +405,22 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
     for (const auto& [k, v] : facts)
         if (!v.empty())
             q.facts[k] = v;
+    // Whether each speaker deals in the topic's good (doc 79, 11; Phase 8 repair: "my shelf of nails" only from a keeper
+    // who sells them).
+    if (const auto good = q.facts.find("topic.good"); good != q.facts.end())
+    {
+        const auto deals = [&](const std::string& id) {
+            if (!world_.society().merchant(id))
+                return std::string("no");
+            for (const auto& w : world_.society().wares(id))
+                if (items::baseOf(w) == good->second)
+                    return std::string("yes");
+            return std::string("no");
+        };
+        q.a.facts["deals"] = deals(a);
+        if (!q.alone)
+            q.b.facts["deals"] = deals(b);
+    }
     return q;
 }
 

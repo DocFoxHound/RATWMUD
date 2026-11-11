@@ -478,6 +478,7 @@ bool Game::start(std::string& problem)
         return knowsName(knower, subject) ? labelFor(knower, subject) : std::string();
     });
     world_.setProtected([this](const std::string& id) { return isProtected(id); });   // (Doc 57, 6.)
+    world_.setHolderOf([this](const std::string& player) { return accountOf(player); });   // (Talk's prices: doc 79, 11.)
     world_.setKnower([this](const std::string& knower, const std::string& subject) {   // (As the town knows them: doc 57, 5.)
         const bool named = knowsName(knower, subject);
         return World::Known{named ? labelFor(knower, subject) : strangerLabel(subject), named};
@@ -4576,9 +4577,9 @@ mind::Context Game::dialogueContext(const std::string& npcId, const std::string&
     // companion's own wage where a player pays one) and the Times.
     if (world_.society().statusOf(npcId))
     {
-        context.means = world_.society().meansNote(npcId);
+        context.means = world_.society().meansNote(npcId, accountOf(playerId));   // (The price on this player's list.)
         if (const auto* c = parties_.companion(npcId); c && c->wage > 0)
-            context.means = context.means.substr(0, 240) + " A player pays you " + std::to_string(c->wage) + "p a day.";
+            context.means = Society::cutAtSentence(context.means, 260) + " A player pays you " + std::to_string(c->wage) + "p a day.";
         context.activity += " Trade only occurs through the explicit trade menu; never claim to transfer money or goods through dialogue.";
     }
     else if (const auto* account = world_.society().account(npcId))

@@ -47,7 +47,7 @@ a : I laughed too. Then I left. | I nearly did the same. | They saved a penny. L
 scene w7c_up_market_talk
 when topic=prices topic.dir=up here.place=market
 a : #topic.price#. Look at the board. #topic.price#! | Every stall's put it up the same. Funny, that. | Shall we buy now, or wait for worse?
-b[role=merchant] #merch : Don't shout it. You'll scare the buyers. | Not mine. Mine's honest. Slightly. | Buy now. Tomorrow's dearer.
+b[role=merchant deals=yes] #merch : Don't shout it. You'll scare the buyers. | Not mine. Mine's honest. Slightly. | Buy now. Tomorrow's dearer.
 b : I see it. I wish I didn't. | Not so funny. | Wait. It can't get worse.
 a@merch : I'll shout it all I like. | Slightly. | Dearer still? Now, then.
 a : I'll see it in my dreams. | Somebody's talking to somebody. | It can. It always can.

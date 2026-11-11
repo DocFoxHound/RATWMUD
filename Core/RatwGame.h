@@ -417,7 +417,8 @@ class Game
     // speakers, the place and moment, and `facts` (the topic's own) over them.
     talk::Query talkQuery(const std::string& a, const std::string& b, const std::string& concept, const talk::Facts& facts = {});
     // The same for `a` talking to `b` of the best topic the world has for them now (as the ambient director would).
-    talk::Query talkTopicQuery(const std::string& a, const std::string& b);
+    // `hearer`: the player it's said for, whose list's prices it names (doc 79, 11), "" for none.
+    talk::Query talkTopicQuery(const std::string& a, const std::string& b, const std::string& hearer = {});
     // A resident reacting now (doc 62, phase 4: react.fight, react.customer...), to `to` or to no one; false if they're
     // busy or the library has nothing. The game cues these itself (RatwGameTalk.cpp, reactions); tests and the Dungeon
     // Master may too.

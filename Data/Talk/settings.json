@@ -15,7 +15,7 @@
     "player.greet", "player.thanks", "player.bye", "player.trade", "player.hours", "player.job", "player.where", "player.wanted", "player.day", "player.repeat", "player.trouble"
   ],
   "salience": [
-    {"about": "A shop failing (doc 79, 10.3: business=failing) never says it can't complain, in the same breath or any other: those words are dropped from every line its keeper might say, and a line left with none is not said.", "when": "business=failing", "never": ["can't complain", "mustn't grumble", "couldn't be better", "never better", "doing well", "business is good", "trade is good", "run off my feet", "sold out"]},
+    {"about": "A shop failing (doc 79, 10.3: business=failing) never says it can't complain, in the same breath or any other: those words are dropped from every line its keeper might say, and a line left with none is not said.", "when": "business=failing", "never": ["can't complain", "mustn't grumble", "can't grumble", "mustn't complain", "not complaining", "couldn't be better", "never better", "doing well", "business is good", "trade is good", "run off my feet", "sold out"]},
     {"about": "The destitute and the hungry never boast of plenty (doc 79, T7 and T10).", "when": "wealth=destitute", "never": ["can't complain", "couldn't be better", "never better", "wants for nothing", "well fed"]}
   ],
   "ends": ["Mm.", "Hm.", "Hmph.", "...", "Aye.", "Mm. Well.", "Whatever.", "Hm. Well.", "Mm-hm.", "Mm. Good.", "Fine.", "Hm?"],

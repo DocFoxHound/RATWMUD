@@ -13,7 +13,7 @@
       "briefing": "Your trouble (true): your household has money and food for only about {days} days. Speak of it if the talk turns that way or they ask how you are. Never ask outright for money.",
       "said": ["Money's tight. There's barely {days} days' food in the house, and that's if nobody falls ill.", "We're getting by. Just. The larder and the purse together might see us through {days} days."],
       "saidBy": {
-        "destitute": ["There's nothing in the house. What's there won't see out {days} days, and then it's the chapel steps.", "We've no earner and next to no bread. {days} days, maybe, if we're careful. Then I don't know."],
+        "destitute": ["There's nothing in the house. What's there won't see out {days} days, and then it's the chapel steps.", "What we earn doesn't buy enough bread. {days} days, maybe, if we're careful. Then I don't know."],
         "poor": ["Money's tight. There's barely {days} days' food in the house, and that's if nobody falls ill.", "We scrape by, week to week, and this week the scraping's thin. {days} days' food, and the rest is hope."]
       },
       "unfinished": "{who}'s household is short of coin"

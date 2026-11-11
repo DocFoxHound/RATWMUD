@@ -5,7 +5,7 @@
 # Prices: the poor complain, and each answers as they are.
 rule prices_complain_poor
 when concept=talk.prices self.wealth=poor|destitute topic.dir=up
-say #oath#. I'll not eat this week at #topic.price#. | #topic.price#? For #topic.what#? #robbery#.
+say #oath#. I'll go without this week at #topic.price#. | #topic.price#? For #topic.what#? #robbery#.
 then other: prices.answer_complaint
 remember self: complained_prices 1d
 
@@ -16,13 +16,13 @@ say Still #topic.price#. I said it yesterday and I'll say it again. | Dearer eve
 then other: prices.answer_complaint
 
 rule prices_answer_merchant
-when concept=prices.answer_complaint self.role=merchant
+when concept=prices.answer_complaint self.role=merchant self.deals=yes
 say I pay more, you pay more, #address#. | Don't blame me. I only sell it.
 remember pair: talked_money 7d
 
 rule prices_answer_poor
 when concept=prices.answer_complaint self.wealth=poor|destitute
-say #agree#. We'll all go hungry together. | Don't I know it.
+say #agree#. We'll all go short together. | Don't I know it.
 
 rule prices_answer_rich
 when concept=prices.answer_complaint self.wealth=rich

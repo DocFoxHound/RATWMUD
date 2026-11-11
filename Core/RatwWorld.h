@@ -1829,14 +1829,23 @@ class World
     // ("none", "light", "broad"): the talk library's `from` and `accent` (doc 62, phase 3).
     void talkOrigin(const std::string& id, std::string& from, std::string& accent) const;
     // The market's largest moves in shown price where `who` stands (doc 79, 11; Phase 8), as the list shows them to the
-    // traveller overhearing (talkHolder_: the listening player's account holder while the ambient picks are made; else
-    // one who has pushed nothing), each read off the nearest shop that sets the good out. At most three.
+    // traveller overhearing (talkHolder_: the listening player's account holder, set by ambientPicks for each listener
+    // and by talkFor; else one who has pushed nothing), each read off the nearest shop that sets the good out. At most
+    // three. (Worked out once a look for a speaker's shop and cell: talkPricesMemo_.)
     std::vector<Society::PriceMove> talkPrices(const std::string& who) const;
-    // A good as talk says it (topic.item, topic.what, topic.is: "herbs", "a meal", "salt is", "hides are").
+    // The player whose list talk's prices are said at from now (doc 79, 11, T17: the one an exchange was picked for, or
+    // a bark heard by), "" for none: the Game sets it around writing what it picked. holderOf: the player's account
+    // holder, as the trade menu pushes the Board by it (the Game's).
+    void talkFor(const std::string& player) { talkHolder_ = player.empty() ? std::string() : holderOf_ ? holderOf_(player) : player; }
+    void setHolderOf(std::function<std::string(const std::string& player)> holderOf) { holderOf_ = std::move(holderOf); }
+    // A good as talk says it (topic.item, topic.what, topic.is: "herbs", "a meal", "salt is", "hides are"), its id
+    // (topic.good) and its sort (topic.sort: food, drink or goods).
     static void talkGood(const std::string& base, std::map<std::string, std::string>& facts);
   private:
     void sceneTopics(const std::string& a, const std::string& b, const std::function<void(AmbientTopic)>& consider);
-    std::string talkHolder_;                        // (The listening player's holder while ambientPicks runs.)
+    std::string talkHolder_;                        // (See talkFor.)
+    std::function<std::string(const std::string&)> holderOf_;
+    mutable std::map<std::string, std::vector<Society::PriceMove>>* talkPricesMemo_ = nullptr;   // (While ambientPicks runs.)
     // Schedules (RatwSchedules.cpp).
     std::vector<CalledFestival> festivals_;
     struct MarketSquare

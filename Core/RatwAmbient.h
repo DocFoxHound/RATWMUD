@@ -25,6 +25,7 @@ struct AmbientTopic
 struct AmbientPick
 {
     std::string teller, listener, cell;  // `teller` opens (and, for gossip, is the one who knows).
+    std::string hearer;                  // The player it was picked for (doc 79, 11: the prices are that player's list's).
     AmbientTopic topic;
 };
 // Something that happened in a resident's life lately, as they would tell it.

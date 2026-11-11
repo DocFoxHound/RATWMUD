@@ -707,6 +707,7 @@ class Society
         int listCount = 1, trend = 0;
         std::int64_t shown = 0, rest = 0;
         std::string cause, causeWords, pusher;
+        std::string ship;                           // The ship a ship's cause names ("the Gull"; topic.ship), "" else.
     };
     PriceMove priceMove(const std::string& till, const std::string& item, const std::string& holder = {}) const;
     // A market's largest moves in shown price (at most `most`, the largest first; only those whose shown price moved),
@@ -1002,7 +1003,11 @@ class Society
     // The pay word for a resident's post (11): pennies a day at the slider, by its kind; 0 for no post that pays.
     std::int64_t payWord(const std::string& id) const;
     // The Mind's "Means" note (11, at most 300 characters): the band, how it gets by, the pay word, the market's Times.
-    std::string meansNote(const std::string& id) const;
+    // `holder`: the player it's told for, whose list's price it names (doc 79, 11), "" for none. At most 300 characters,
+    // cut at a sentence's end.
+    std::string meansNote(const std::string& id, const std::string& holder = {}) const;
+    // Words cut to at most `most` characters at the last sentence's end that fits (else the last word's), never mid-word.
+    static std::string cutAtSentence(const std::string& words, std::size_t most);
 
     // ---- Doc 79, Phase 6: street life (RatwStreet.cpp; sections 6.5-6.7, 7.7 and 10) ----
     // What the World tells the society of the street (it installs them with the Board's hooks): whether a player is in a

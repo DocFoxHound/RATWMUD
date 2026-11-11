@@ -968,7 +968,7 @@ std::int64_t Society::payWord(const std::string& id) const
     return std::max<std::int64_t>(1, std::llround(double(base) * (1 + prosperity() / 400)));
 }
 
-std::string Society::meansNote(const std::string& id) const
+std::string Society::meansNote(const std::string& id, const std::string& holder) const
 {
     const auto* s = statusOf(id);
     if (!s)
@@ -992,8 +992,18 @@ std::string Society::meansNote(const std::string& id) const
     }
     // The market's largest move in shown price, with that price and its cause (11, Phase 8: "Salt dear, four pence the
     // dozen: the wagon was robbed on the road."), so the Mind never invents a figure or a reason.
+    // (Read off the speaker's own shop where it sets the good out, then a shop in its cell, at the player's list: Phase 8
+    // repair.)
+    const auto own = tillOf(id);
+    const auto* post = jobOf(id);
+    const auto nearer = [&](const std::string& till) {
+        if (till == own)
+            return 0;
+        const auto* p = till.size() > 5 ? position(till.substr(5)) : nullptr;
+        return p && post && p->work.cell == post->work.cell ? 1 : 2;
+    };
     if (!s->market.empty())
-        if (const auto moves = priceMoves(s->market, {}, 1); !moves.empty())
+        if (const auto moves = priceMoves(s->market, holder, 1, nearer); !moves.empty())
         {
             const auto& m = moves.front();
             std::string name = itemName(m.base);
@@ -1004,8 +1014,17 @@ std::string Society::meansNote(const std::string& id) const
             note += " " + name + (m.cause == "still" ? " still " : " ") + (m.trend > 0 ? "dear" : "cheap") + ", " +
                     priceWords(m.shown, m.listCount) + (m.cause == "still" ? ", " : ": ") + m.causeWords + ".";
         }
-    if (note.size() > 300)
-        note.resize(300);
-    return note;
+    return cutAtSentence(note, 300);
+}
+
+std::string Society::cutAtSentence(const std::string& words, std::size_t most)
+{
+    if (words.size() <= most)
+        return words;
+    const auto end = words.rfind(". ", most - 1);
+    if (end != std::string::npos && end > 0)
+        return words.substr(0, end + 1);
+    const auto space = words.rfind(' ', most);
+    return words.substr(0, space == std::string::npos ? most : space);
 }
 } // namespace ratw
