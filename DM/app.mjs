@@ -1,4 +1,4 @@
-import {EXECUTABLE, EVENT_LABELS, array, string, finite, recordId, recordName, cellOf, terrainLookup, terrainDraw, uniqueIds, utcLabel, utcDate, inputUtc, parseUtcInput, integer, numeric, bridgeFresh, normalizeCells, characters, mergedRecords, statusClass, eventPayload, auditStatus, commandMessage} from './model.mjs';
+import {EXECUTABLE, EVENT_LABELS, BANDS, movable, array, string, finite, recordId, recordName, cellOf, terrainLookup, terrainDraw, uniqueIds, utcLabel, utcDate, inputUtc, parseUtcInput, integer, numeric, bridgeFresh, normalizeCells, characters, mergedRecords, statusClass, eventPayload, auditStatus, commandMessage} from './model.mjs';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -260,7 +260,7 @@ function selectOptions(select, values, optional = false) {
 }
 function optionSources() {
   const actors = characters(state);
-  return {cells:cells(),chapters:chapters(),factions:factions(),campaigns:array(state.campaigns),beats:array(state.beats),players:actors.filter(actor=>!actor.npc),npcs:actors.filter(actor=>actor.npc),accounts:mergedRecords(state.snapshot?.accounts, actors)};
+  return {cells:cells(),chapters:chapters(),factions:factions(),campaigns:array(state.campaigns),beats:array(state.beats),players:actors.filter(actor=>!actor.npc),npcs:actors.filter(actor=>actor.npc),accounts:mergedRecords(state.snapshot?.accounts, actors).filter(movable)};
 }
 function renderOptions() {
   const sources = optionSources();
@@ -550,7 +550,13 @@ function renderEventFields(){
     const pair=node('div','form-grid');pair.append(field('Local X','x','number',{min:0,max:256,step:.1,value:.5}),field('Local Y','y','number',{min:0,max:256,step:.1,value:.5}));container.append(pair,node('p','form-note','Starts real navigation; it does not teleport or create a resident. Recruited wolves and protected essential jobs cannot be reassigned. Arrival must be verified.'));
   } else if(kind==='economy_transfer'){
     container.append(field('From existing account','from','select',{source:'accounts'}),field('To existing account','to','select',{source:'accounts'}),field('Optional goods','item','select',{options:[['','No goods — coins only'],['herbs','Herbs'],['meal','Meals']]}));
-    const pair=node('div','form-grid');pair.append(field('Item quantity','quantity','number',{min:0,max:99,step:1,value:0}),field('Whole coins','coins','number',{min:0,max:1000000,step:1,value:0}));container.append(pair,node('p','form-note','Transfers existing money and stock in one direction. The source must have enough. No minting, debt, negative amounts, or arbitrary items.'));
+    const pair=node('div','form-grid');pair.append(field('Item quantity','quantity','number',{min:0,max:99,step:1,value:0}),field('Whole coins','coins','number',{min:0,max:1000000,step:1,value:0}));container.append(pair,node('p','form-note','Transfers existing money and stock in one direction, between players\' and Chapters\' accounts (and escrow). The source must have enough. A resident\'s purse, a till or a treasury is set by its band and is never moved by hand: grant or fine a player, or set a household\'s band, instead.'));
+  } else if(kind==='player_grant'){
+    const pair=node('div','form-grid');pair.append(field('Player','player','select',{source:'players'}),field('Coins (a fine below 0)','coins','number',{min:-2500,max:2500,step:1,value:0}));
+    container.append(pair,field('Reason','reason','text',{maxLength:80,placeholder:'for ringing the bell'}),node('p','form-note','A grant is new money for a player, capped a day by the world (caps.grantsADay); a fine is never more than they carry. The reason is kept with it.'));
+  } else if(kind==='npc_band'){
+    const pair=node('div','form-grid');pair.append(field('Resident','npc','select',{source:'npcs'}),field('Band','band','select',{options:[...BANDS.map(b=>[b,b[0].toUpperCase()+b.slice(1)]),['clear','Clear the DM\'s band']]}));
+    container.append(pair,field('Days (1 to 112)','days','number',{min:1,max:112,step:1,value:28,required:false}),node('p','form-note','The whole household takes the band until it lapses; it wins over the score and an authored band.'));
   }
   renderOptions();updateGuards();
 }

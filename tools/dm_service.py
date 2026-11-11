@@ -27,6 +27,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit, unquote
 import uuid
 
+import economy_contract as EC
 import http_body
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -84,8 +85,27 @@ REQUEST_TTL = 120
 PREVIEW_TTL = 300
 ARRIVAL_TIMEOUT = 600
 MIGRATION_COOLDOWN = 86400
-ID = re.compile(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}\Z')
-NATIVE = {'notice', 'weather', 'npc_relocate', 'economy_transfer'}
+# Every id the authority names: cells, characters, factions and the society's accounts, whose ids carry ':' and '@'
+# ("till:job:<npc>", "home:<cell>@<x>,<y>" style) and '.' (doc 79, Phase 9: R10).
+ID = re.compile(r'[A-Za-z0-9][A-Za-z0-9_:@.-]{0,159}\Z')
+# The native effects. economy_transfer moves existing coins and goods between real or escrow accounts (never a staged
+# one: "staged accounts are set by their bands"); player_grant is a player's grant or fine, a capped faucet or a sink
+# with its reason (doc 79, 12); npc_band is a resident's household's band for a while.
+NATIVE = {'notice', 'weather', 'npc_relocate', 'economy_transfer', 'player_grant', 'npc_band'}
+ACCOUNT_KINDS = ('real', 'escrow', 'staged', 'dead')
+STAGED_REFUSAL = 'Staged accounts are set by their bands; grant or fine a player, or set a household\'s band, instead.'
+
+
+def catalogue_items():
+    """The goods an operator transfer may move (Society::itemValid: the item catalogue, herbs, meal, sword)."""
+    try:
+        items = json.loads((ROOT / 'Data' / 'Items' / 'items.json').read_text(encoding='utf-8'))['items']
+        return frozenset(i['id'] for i in items if isinstance(i, dict) and isinstance(i.get('id'), str)) | {'herbs', 'meal', 'sword'}
+    except (OSError, ValueError, KeyError, TypeError):
+        return frozenset({'herbs', 'meal', 'sword'})
+
+
+ITEMS = catalogue_items()
 STORY_ONLY = {'brigands', 'assassins', 'war', 'faction-collapse', 'combat', 'route-robbery'}
 TERMINAL = {'applied', 'failed', 'cancelled', 'blocked'}
 
@@ -273,8 +293,18 @@ def normalize_snapshot(raw, now):
             if key in ('characters', 'accounts'):
                 item['cash'] = number(entry.get('cash'), 0, 1e12, integer=True)
                 stock = entry.get('stock')
-                checked(isinstance(stock, dict), 'Invalid inventory stock.')
-                item['stock'] = {good: number(stock.get(good, 0), 0, 1e9, integer=True) for good in ('herbs', 'meal')}
+                checked(isinstance(stock, dict) and len(stock) <= 512, 'Invalid inventory stock.')
+                item['stock'] = {good: 0 for good in ('herbs', 'meal')} | {
+                    ident(good): number(n, 0, 1e9, integer=True) for good, n in stock.items()}
+                # (Doc 79, 9.1: real, escrow, staged or dead; an older bridge's are taken as real. A staged account is
+                # shown read only: its cash is set nightly by its band.)
+                kind = entry.get('kind', 'real')
+                checked(kind in ACCOUNT_KINDS, 'Invalid account kind.')
+                item['kind'] = kind
+            if key == 'characters':
+                band = entry.get('band', '')
+                checked(band == '' or band in EC.BANDS, 'Invalid band.')
+                item['band'] = band
             if key == 'factions':
                 checked(isinstance(entry.get('color'), str) and re.fullmatch(r'#[0-9a-fA-F]{6}', entry['color']),
                         'Invalid faction color.')
@@ -576,10 +606,27 @@ class DMService:
             shape(payload, ('from', 'to', 'item', 'quantity', 'coins'))
             ident(payload['from']); ident(payload['to'])
             checked(payload['from'] != payload['to'], 'Transfer requires distinct accounts.')
-            checked(payload['item'] in ('', 'herbs', 'meal'), 'Unsupported good.')
+            checked(payload['item'] == '' or payload['item'] in ITEMS, 'Unsupported good.')
             quantity = number(payload['quantity'], 0, 99, integer=True)
             coins = number(payload['coins'], 0, 1000000, integer=True)
             checked((quantity > 0 or coins > 0) and bool(payload['item']) == (quantity > 0), 'Empty or inconsistent transfer.')
+        elif kind == 'player_grant':
+            # A grant (coins > 0) or a fine (coins < 0) with its reason: no funded source (doc 79, 12; D16).
+            shape(payload, ('player', 'coins', 'reason'))
+            checked(ident(payload['player']).startswith(('wolf-', 'player-')), 'Only a player is granted or fined.')
+            coins = number(payload['coins'], -EC.GRANT_MOST, EC.GRANT_MOST, integer=True)
+            checked(coins != 0, 'A grant or a fine is at least a penny.')
+            checked(EC.plain_words(payload['reason'], EC.CAUSE_MOST) not in (None, ''),
+                    'A reason is plain words, at most 80 characters.')
+        elif kind == 'npc_band':
+            # A resident's household's band until it lapses (Society::overrideBand), or the DM's band cleared.
+            shape(payload, ('npc', 'band'), ('days',))
+            ident(payload['npc'])
+            checked(payload['band'] in EC.BANDS + ('clear',), 'Invalid band.')
+            if payload['band'] == 'clear':
+                checked('days' not in payload, 'A cleared band has no days.')
+            else:
+                number(payload.get('days', 28), 1, 112, integer=True)
         else:
             checked(kind in STORY_ONLY and isinstance(payload, dict) and len(encode(payload)) <= 16000,
                     'Unsupported event kind or overlong story-only payload.')
@@ -640,9 +687,18 @@ class DMService:
                 account['id']: account for account in self.snapshot['accounts']}
             source, destination = accounts.get(payload['from']), accounts.get(payload['to'])
             checked(source and destination, 'Transfer account is unknown.')
+            checked(source.get('kind', 'real') in ('real', 'escrow') and destination.get('kind', 'real') in ('real', 'escrow'),
+                    STAGED_REFUSAL, 409)
+            # (The funded check is the transfer's alone: a grant or a band needs no source.)
             checked(source['cash'] >= payload['coins'] and
-                    (not payload['quantity'] or source['stock'][payload['item']] >= payload['quantity']),
+                    (not payload['quantity'] or source['stock'].get(payload['item'], 0) >= payload['quantity']),
                     'Source lacks the existing money or goods.', 409)
+        elif kind == 'player_grant':
+            player = actors.get(payload['player'])
+            checked(player and not player['npc'], 'Grant player is unknown.')
+        elif kind == 'npc_band':
+            npc = actors.get(payload['npc'])
+            checked(npc and npc['npc'], 'Band resident is unknown.')
 
     @staticmethod
     def _walkable(cell, x, y):
@@ -811,7 +867,8 @@ class DMService:
                 continue
             if prior and self.clock() - prior['at'] < MIGRATION_COOLDOWN:
                 continue
-            need = (10 if npc['cash'] < 12 else 0) + (8 if npc['stock']['meal'] == 0 else 0)
+            # (Doc 79: a resident's need is their household's band, not their purse, which the band sets.)
+            need = {'destitute': 14, 'poor': 10}.get(npc.get('band', ''), 0) + (8 if npc['stock'].get('meal', 0) == 0 else 0)
             score = min(100, chapter['attraction'] + min(active * 3, 12) + need)
             loss = min(10, 2 + need // 6)
             resentment = max(0, round(loss * (1 - chapter['treatyModifier'])))
@@ -819,7 +876,7 @@ class DMService:
                 'destinationCell': destination['id'], 'x': points[0][0], 'y': points[0][1], 'score': score,
                 'reasons': [f'Declared attraction {chapter["attraction"]}/100.',
                             f'{active} Chapter members currently active.',
-                            f'Observed purse {npc["cash"]}; carried meals {npc["stock"]["meal"]}.'],
+                            f'Observed band {npc.get("band") or "unknown"}; carried meals {npc["stock"].get("meal", 0)}.'],
                 'sourceFactions': home['territory']['claims'], 'resentment': resentment})
         preview['candidates'].sort(key=lambda candidate: (-candidate['score'], candidate['npcId']))
         preview['candidates'] = preview['candidates'][:min(available, 32)]

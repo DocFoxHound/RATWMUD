@@ -3766,6 +3766,35 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     in every window, as are 17-19's and 23-25's p99s; 6-8's p99 (5.77, 5.86 with a ship) and the first minute's tick 19
     are over it, as on `5afe23c`. From now on the gate is: no window slower than this table beyond noise (a run's spread,
     about 0.05 ms of mean and 0.1 of p99 here). `world_check` has no Game and no journal: those stay outside the gate.
+- **2026-11-11: Phase 9, dm lane** (branch `r2-p9-dm`, on K0 `0752a58`; the lane note, for the merge step's entry). **The
+  Prosperity tab** replaces the Money tab: `dungeon_master.prosperity()` and `GET /api/prosperity` (viewer) read the
+  checkpoint's `society.report` (Core's, passed through opaque), the towns' `stores:` treasuries, the week's wagons (the
+  Board's committed departures, the checkpoint's roads, 7 days of arrivals, losses and cancellations), ships (the
+  timetable and `lostShips`) and events, player coin made against sunk (`staged.faucets`, 7 days, the top 20 holders),
+  today's thefts, the word on the street (at most 20) and a 28-day log (`dm.audit` levers and acts, `game.events`
+  causes and calls, Board ripples over 0.2), with `writtenAt` and `stale` (over 3 minutes). `money()`, `/api/money`
+  and `MoneyTab.tsx` are gone. **The acts:** `POST /api/prosperity/act` and `POST /api/players/grant` (dm) queue
+  `times.nudge`, `harvest.override`, `event.add`, `event.cancel`, `ship.storm`, `prices.reset`, `band.override` and
+  `character.grant` (in `ACTIONS` and `LIVE_KINDS`; no `economy.` kind), each clamped by `LIVE_ACTS` as Core clamps
+  (refused only for an unknown target or a malformed payload) and audited with the checkpoint's state before and the act
+  after. **The Storykeeper:** the Director's `player_grant` (calls `grantPlayer`) and `npc_band` (`overrideBand` of
+  the NPC's household, from `budgetDay`); `economy_transfer` refuses a staged end; the snapshot names each account's and
+  character's `kind` and each resident's `band`; `dm_service` takes ids with `:@.` up to 160, any catalogue good, the
+  two new shapes, a band-based migration need, and no minted or sunk; `DM/` composes both; `dm_smoke` grants 23 and
+  fines 20 (Ash ends at 23 as before). **The Editor's DM side:** `ProsperityTab.tsx` (bands, the hungry and short,
+  thieves, beggars, the dole, Times and causes, the price board, harvests, the week, players' coin, the word, the log,
+  treasuries; buttons for every act); `EconomyTab.tsx` over the editor lane's `SteerPanel`, `RulesPanel`,
+  `SeasonsPanel`, `ImportsPanel`, `StatusPanel` and `MarketPanel` (slim-only three behind `data.slim`); `api.ts`'s
+  `economy.{get,steer,needs,rules,services,seasons,imports,status,market}`, `prosperity`, `liveAct` and `grant` (the
+  plan's `dmApi.act` name is the character actions' already: `liveAct` instead); NpcTab's Band picker ("From rank" and
+  the four), "A paid post (for succession)" and "Band for a while" (the household); ServerTab's live.economy line.
+  **Tests (this lane's one run, on K0):** a fresh Release build (`build-p9dm`, 127 warnings, none in the files
+  touched); ctest 87/88 with the database (`pg_client` on a throwaway `ratw_test_s2stage_p9dm`, dropped): the one
+  failure is `server_parts_behaviors` at "a grant of 23 is a faucet: not built", K0's `grantPlayer` stub; with a
+  stand-in `grantPlayer` (not committed) all 249 of its checks passed. `test_dungeon_master` 49, `test_dm_service` 39,
+  `test_dm_live` 2 (the new slider-and-act test skips until the core lane's `world_store` is in), `DM/model.test.mjs`
+  16, the Editor's 81 + 66 of 67 (`economy.test.ts`'s rule list fails on K0's two new rules: the editor lane's) and a
+  typecheck clean in `src/dm` against the contract's panel props (the six panels are the editor lane's).
 
 ## Review (2026-11-08)
 
