@@ -455,6 +455,13 @@ today's overrides at `RatwGameTalk.cpp:147-162`, made the rule):
 4. the Sump is at most poor;
 5. the Heights and estate residents (not servants) are at least comfortable.
 
+*(Repaired, doc 79 Phase 6, **for the user's nod**: one of the Watch, a guard by its post or by what it was written as
+(DEV's patrol guards placed with no work spot load with no post; `ResidentSpec::watch`), is an earner, paid by its town,
+and a household with one of the Watch in it is at least comfortable, under any guarantee but the DM's override. Before,
+DEV build 70's 16 postless guards, each a household of one at the Watch House, scored as households without an earner
+(slider 0: 5 destitute, 8 poor; −100: 9 destitute, 4 poor), and at −100 four posted ones were poor too; now all 30 are
+comfortable at −100 and 0 (two rich at +100).)*
+
 **Hysteresis.** A household changes at most one band a week, and only when its rank is more than 2 percentiles past
 a band's edge. The slider the bands read is smoothed: it moves toward the DM's setting by at most 10 points a game
 day, so a full swing takes about 20 days (D17). The DM's "now" skips both the smoothing and the hysteresis.
@@ -1100,7 +1107,9 @@ Instead, once a day per market:
 ### 10.2 Begging, rough sleeping, the dole
 
 - **Begging (a new task):** destitute adults without a post and not lifted, on Marketday and Restday by day, at the
-  market or the chapel steps (a spot finder like `boardSpot`, `RatwBoards.cpp:19`), at most 2 a cell. A bark when a
+  market or the chapel steps (a spot finder like `boardSpot`, `RatwBoards.cpp:19`), at most 2 at one place, each place
+  8 tiles or more from the next (**changed, for the user's nod:** the draft said "at most 2 a cell"; a DEV city cell is
+  a quarter of the city, so 2 a cell held the city to a handful of beggars at any slider). A bark when a
   player is near. Players give through `RatwGameGive`. Comfortable and rich NPCs passing sometimes give 1p: a visible
   `shift`, and the beggar's purse moves.
 - **Rough sleeping:** `homeless=yes` stays authored. Destitute residents in communal lodging are "sleeping by the warm
@@ -1125,6 +1134,13 @@ Instead, once a day per market:
   `World::DoleQueue`, 6, at once), handed its bread at the front (`World::DoleSeconds`, 4); out of sight it is given at
   once; whoever is left at the dole's end is given it then. A passer-by's penny is a staged move between two purses (no
   ledger, no journal).)*
+  *(Repaired again: the beggars at a place, the sleepers by a wall and the dole's queue stand side by side, each on a
+  tile of its own (`World::freeBeside`: ground someone could stand on, stepped to from the place's own, so DEV's raised
+  streets at 1.5-2.5 work as level ones do), none on the priest's tile (the chapel door's mouth) or a beggar's; at most
+  `beggarsACell` at one place (status.json says so now; the key keeps its name). Never one of the Watch, posted or not:
+  its household is comfortable or better in the bands (6.3's repaired note), and it never begs, sleeps by a warm wall,
+  takes or queues for the dole, even under the DM's override. After a restart past the dole's hours on its Restday (a
+  crash before the next checkpoint took the bread given), the households unserved are given it then, once.)*
 
 ### 10.3 Business
 
@@ -2906,7 +2922,8 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     (a data question for the user: they are kept from begging and theft, not from the bands).
   - **Tests:** a clean Release build (`build-p6rc`; no new warning in the files touched); ctest 86/86 with the database,
     none skipped, twice on the working build and once on the clean one (`pg_client` on a throwaway
-    `ratw_test_s2stage_p6r`, dropped after; no `s2stage` database left); `street_tests` 12,997 (7,834),
+    `ratw_test_s2stage_p6r`, dropped after; no `s2stage` database left); `street_tests` 12,997 (7,834; the final check counted 13,331: the crash cases' loops run until the shelves move, so the
+    count varies a little run to run),
     `street_pg` (four crashes through PostgreSQL), `save_compat` 23,107, `life_status_tests` 2,244, `status_tests` 21,962,
     `market_tests` 2,001, `port_tests` 9,103, `trade_show_tests` 869, `game_tests` 3,631, `crime_tests` 85,
     `troubles_tests` 66, `fame_tests` 80, `shops_tests` 132, `host_edit_tests` 550, `roads_tests` 407, `journal_tests` 34,
@@ -2929,6 +2946,62 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     (their target search and the till path) and a city's households buying wares each hour. The worst first-minute tick
     is tick 19's, as before. `world_check` has no Game and no journal: the tills a record carries are still not in the
     gate.
+- **2026-11-11: Phase 6 repaired again** (`r2-staged-p6`, the final check's seven findings and two notes). Each one
+  fixed has a test that fails with its fix taken out and passes with it (each seen failing so); the two DEV-only ones
+  were also confirmed on DEV build 70 exported read only, by a scratch probe outside the repository (seconds of ticks
+  on a Marketday morning, six winter nights and a Restday's dole at −100, 0 and +100; before and after). No economy
+  simulation was run; no server was started.
+  - **The Watch off the street and out of the poor bands, fixed** (`theWatchInTheBands`, `theWatchOffTheStreet`). One of
+    the Watch, posted or not (`ResidentSpec::ofTheWatch`), is an earner in the bands (its town pays it), and a household
+    with one of the Watch in it is at least comfortable under any guarantee but the DM's override (6.3's repaired note,
+    **for the user's nod**: posted guards are kept comfortable too, so a postless one is never better off). Besides the
+    beggars, thieves and marks: never a rough sleeper (`placeSleepers`), never in a community's dole list or queue,
+    `giveDole` refuses a Watch household (`Society::watchHousehold`), so even the DM's override gives it none; a postless
+    guard at its rounds is never sent as a runner. On DEV: the 16 postless guards were destitute or poor (0: 5 and 8;
+    −100: 9 and 4; four posted ones poor at −100 too), one slept by a warm wall at −100, and 5 (0) and 17 (−100) of the
+    Watch were on the dole; now all 30 are comfortable at −100 and 0 (two rich at +100), none sleeps out, none is on the
+    dole. Every street and band path was looked through: the bands, beggars, thieves, marks, sleepers, the dole's list,
+    queue and gift, runners and buyers (`freeMember`), the short trouble and the lifts (by band, so they follow).
+  - **Rows on one tile on raised ground, fixed** (`streetOnRaisedGround`, Greyfen's streets raised to 2.5). The tiles
+    beside a place are found by `World::freeBeside`: ground someone could stand on (`standable`) and step to from the
+    place's own (`passable` from its tile), not taken already, the place first and then ring by ring (a queue along the
+    steps first); in a cell not loaded, by the order alone. Beggars, sleepers and the dole's queue use it, the queue's
+    places worked out each hour round the priest's tile and the beggars'; the chapel door's mouth is left to the priest.
+    On DEV, Marketday: at 0, 6 beggars on 6 tiles (before 5 on 3), at −100 9 on 9 (10 on 5); the Restday dole with a
+    player at the steps, the queue, the priest and the beggars on 13 tiles for 13 at 0 (before 14 on 4) and 16 for 16 at
+    −100 (17 on 5).
+  - **The beggar cap's words** (for the user's nod): kept as at most `beggarsACell` (2) at one place, places 8 tiles
+    apart; `status.json`'s `about`, `RatwStatus.h` and 10.2 say so now (10.2's "2 a cell" marked as changed).
+  - **A crash after the dole's hours, fixed** (`streetThroughACrash`'s new `dolelate` case, file and PostgreSQL through
+    `street_pg`): on a Restday past the dole's hours, a community whose dole this run never closed (a restart) gives its
+    unserved households their bread then, once (the priests' helpers' round, as at the hours' end).
+  - **The runner's fallback shop, fixed** (`runnersToTheNearest`): `World::runnerShop` (split out of `sendRunner`) takes
+    the open shop of the market with the household's food nearest its door by the street (a shop's door, a stall's spot,
+    in world tiles), not a hash's pick.
+  - **`roughSleepers`' bound, fixed:** it counts each sleeper's winter nights and bounds the four's sum to a third
+    within three spreads (24-56 of 120; 38 now), each some nights and not all; it fails with every night slept out.
+  - **The beggars on DEV, a data question for the user (no code change: the bands' rules work as 6.1-6.3 say).** With
+    the Watch gone from them, DEV's beggars are (at 0) two postless "hands" at the barracks, `rm_hilde_dripby` (61, no
+    work label) and `rm_piet_muddale` (58, "working at Cinder Wheelwrights"), authored as workers but holding no post, so
+    each a household of one with no earner; and four elders, 60-80, living alone or as a pair with no earner
+    (`rmx_ingrid_kendrick` and `rmx_una_thackeray` in their `_house` homes, which read as cottages: "house" is not one of
+    the house words). "No earner in the home" is a reason for destitute (6.3), and a lower-class cottage or flat implies
+    poor, one band from destitute. To change it: give the two hands their posts (a data fix), or count those past
+    retirement age as not needing an earner (a pension or kin's keep: a rule change for the user to decide).
+  - **Noted, not changed:** an NPC's till theft journals the till's shelves with the next record; its incident goes with
+    the next Crime record and the thief's staged wallet is not journalled (as the journal rules have it for a theft of an
+    NPC by an NPC on a tick).
+  - **Tests:** a clean Release build (`build-p6vc`; no warning in the files touched, 125 in all as before); ctest 86/86
+    with the database, none skipped, twice on it and once on the working build (`pg_client` on a throwaway
+    `ratw_test_s2stage_p6v`, dropped after; no `s2stage` database left); `street_tests` about 24,600 checks (24,489-24,668:
+    the crash cases vary as above), `street_pg` five crashes through PostgreSQL (49 checks), `save_compat` 23,107,
+    `life_status_tests` 2,244, `status_tests` 21,962, `market_tests` 2,001, `game_tests` 3,631, `crime_tests` 85,
+    `troubles_tests` 66, `fame_tests` 80. Changed for the repair: `aFreshWorldsFirstDay` (Greyfen's barracks guards weigh
+    as comfortable among the thieves now: its comfortable theft weight made high, `theftBase` being clamped at 1). All 34
+    `tools/test_*.py` with the database and this build's server (keys tagged `s2stage`): 668 tests, none failing, 25
+    skipped. Perf not measured again: the placements are hourly and the queue's places a few dozen tile checks an hour.
+  - **Not done:** other suites' leftover files in `/tmp` (`ratw-books-*`, `ratw-fame-*`, `ratw-troubles-*` and others,
+    not street life's) were left; removing them was not allowed from this session.
 
 ## Review (2026-11-08)
 
