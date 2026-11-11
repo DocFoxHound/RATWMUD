@@ -2638,6 +2638,102 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `shops_tests` 132, `save_compat` 23,085, `trade_show_pg` 100, `pg_client` 24. All 34 `tools/test_*.py` with the
     database and this build's server (throwaway names tagged `s2stage`, none left): 668 tests, none failing,
     24 skipped.
+- **2026-11-10: Phases 4 and 5 merged, repaired, checked** (`r2-staged`, on `8399ecc`). Two independent checks of the
+  repair left twelve findings. Each was looked into against the code; each fixed has a test that fails with its fix
+  taken out and passes with it (checked one by one on this build). No economy simulation was run.
+  - **The arrivals' places, corrected** (finding 1; `trade_show_tests`, `residentsWaitingAtACheckpoint`). The repair's
+    "the same 206 placements, to the same homes" held for home cells only, and results after the 6-8, 17-19 and 23-25
+    windows are not `15b85a3`'s. The cause was older than the cap: `takeResidentRequests` found every place of a pass
+    before any arrival was made, so two arrivals for one home could be given one tile (the 206 of a fresh world's first
+    pass); with twelve a pass, the later batches saw the earlier ones' homes, and eight of the 206 moved. Now each tile
+    found is kept from the rest of its pass, so no two share one and the places don't hang on how many a pass makes
+    (made one a pass and all at once: the same tiles). Results still differ from `15b85a3`'s: its shared tiles are gone,
+    and the arrivals come over ticks 9-26, not at tick 9, as the cap means. The cap stays: the 206 at once are 135-144 ms
+    (measured again here: `Society::addResident` builds the posts and reconciles the careers once for each, about 85 ms
+    of it), and making that cheaper is Phase 11's if anyone's.
+  - **Residents asked for and not made at a checkpoint, fixed** (finding 5; the same test). A checkpoint now makes those
+    still waiting first (`Game::journalCheckpoint`, `makeResidents(all)`): the society's requests are in no save, and a
+    database world's arrivals have their rows placed as they are made. `arrivalFor`'s "already sent for" now counts a
+    farm placement too. (Seen, not looked into: on the strip, a world from files, a child born before a save is not
+    there after a restart.)
+  - **A later tick's notice overtaking one held for its record, fixed** (finding 6; `aLaterNoticeWaitsItsTurn`, a store
+    whose journal commits only when let). Every tick notice now goes through `beginHolding`/`endHolding`, so one with
+    nothing to wait for still waits behind anything of that player's still waiting.
+  - **The journal-before-tell record on every tick with a notice, fixed** (finding 8; `aFightLineIsNotJournalled`). Its
+    cost was about ten times the repair's "0.05-0.1 ms": 0.4-0.9 ms on DEV for a record with nothing to write. A notice
+    now says whether it speaks of something the tick moved (`World::notice(..., moved)`: an escort's pay, a courier's, a
+    raid, a purse robbed, a camp's bounty and found cargo, a thing worn out), and only such a tick records first; a
+    fight's lines and the like are told as they come. The ordering above holds either way.
+  - **Board notices journalled** (findings 7 and 12; `aNoticeAndItsPennyThroughACrash`, `port_tests`
+    `aShipsNoticeTakenDownStaysDown`). Every record of the economy or the roads now carries the boards' notices whole
+    when they differ from the last record's (`set people.boardNotices`; `Game::lettersLoad` takes those over the
+    checkpoint's own). A player's notice and its penny go through a crash together (the doc 54 loss the repair left);
+    one taken down stays down (`unpost` records); the Wharf office's notice taken down after the checkpoint no longer
+    comes back for its seven days. And at a start (`mendRoadNotices`) a ships' notice whose port has nothing to tell
+    comes down: a tick's step is journalled in the tick's record and the notice it changes after it, so a crash between
+    the two leaves them apart. Either fix alone passes the ship test; with neither it fails. No save format change: the
+    checkpoint keeps its notices in `documents` as before, and `boardNotices` is only ever a journal record's.
+  - **A robbed wagon's far notice after a crash, fixed** (finding 9; `aRobbedWagonsNoticeAfterACrash`). At a start a
+    raided wagon's far-end notice says "Robbed on the road: " and comes down within two days, as the raid's event makes
+    it, when the raid is the journal's alone.
+  - **The markets found again when a dead end is found or forgotten, fixed** (finding 3; `stream_tests`,
+    `aDeadEndFindsTheMarketsAgain`: a tent in c_1_0, Pip home by it, the dead end forgotten, nobody's place moved).
+    `ensureTradePoints` is keyed on the dead ends' revision too (`World::deadEndsRevision_`), and the roads' markets
+    with it.
+  - **Market squares checked each day again, fixed** (finding 4; `gathering_tests`, `aCampOnTheSquare`). A square is
+    checked at each day's turn as well as when the roster's places move; `squarePrint` covers what stands on its
+    ground (a Chapter's camp: `obstacles`); and its stalls and crowd keep off every door's tile, open or shut
+    (`World::inDoorway`), so what a door was doing when the square was found no longer decides it. Only a square whose
+    print differs is worked out afresh, so the day's turn loads nothing new.
+  - **The journal's folder synced, fixed, no test** (finding 10; a power cut cannot be staged here). The trim's rename,
+    and the journal file's first line (made, or emptied by a trim), are followed by an `fsync` of its folder.
+  - **The snapshot folders, fixed** (finding 11; `journal_tests`, `deadServersSnapshotFoldersSwept`). A server's
+    folder is now its own (`ratw-snapshots-<pid>-<six letters>`, `mkdtemp`), so no later server takes over a dead one's
+    by its pid; and the server holds an `flock` on its `.lock` for as long as it runs, which the sweep tries before it
+    removes anything, so a live server in another pid namespace sharing `/tmp` is left alone. A folder with no lock is
+    an older build's (removed as before) or one being made (left a minute).
+  - **The 25 ms tick after the first minute, found and fixed** (finding 2; `stream_tests`,
+    `aDeadEndFindsTheMarketsAgain`'s first check). Not the port's: it comes in any 6-8 window, in some runs and not
+    others (three quiet runs of `8399ecc` with `--ship-day` had none, worst after the first minute 12.7-13.0; a plain
+    6-8 run of this build before the fix had a 30 ms one, and so did one probe in three). It is tick 3279-3289 (6:16):
+    the roster's revision moves with nothing the markets rest on changed (after the fix no rebuild comes then), the
+    markets are found again, and their market-to-market routes, cold, cost 22 ms of the 24.7 (timed inside
+    `ensureTradePoints`).
+    Now a move of the roster finds them again only when something they are found from has changed: the households and
+    the regions of their homes, the merchants' posts, tills, trades and shelf goods, the farm crews, the map's regions
+    and the dead ends (a print of them; `World::tradePointsPrint_`). DEV's 6-8, deterministic, one thread: the same
+    people, society and map digests with the skip and without it. Four short runs after it (6:00-6:24, with the place
+    check) had no such tick.
+  - **Perf table** (ms; DEV build 70 exported read only, `world_check --simulate A B --players 20`, Release, 8 threads,
+    one run each on this build, load 1.2-2.6 with another session's `world_check` on one core; Phase 0 and "repaired"
+    from the entries above):
+
+    | Window | build | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|---|
+    | 6-8 | Phase 0 | 2.58 | 5.79 | 5.55 | 20.97 | 31.66 |
+    | 6-8 | repaired | 2.64 | 5.84 | 5.45 | 12.2 | 39.9 (tick 19) |
+    | 6-8 | checked | 2.85 | 6.23 | 5.90 | 12.3 | 41.6 (tick 19) |
+    | 6-8 `--ship-day` | repaired | 2.68 | 5.77 | 5.42 | 11.9 | 39.6 (tick 19) |
+    | 6-8 `--ship-day` | checked | 2.64 | 5.88 | 5.50 | 11.9 | 38.7 (tick 19) |
+    | 17-19 | Phase 0 | 2.21 | 5.56 | 5.28 | 27.95 | 27.95 |
+    | 17-19 | repaired | 2.19 | 5.15 | 4.95 | 23.2 | 40.4 (tick 19) |
+    | 17-19 | checked | 2.13 | 5.09 | 4.94 | 22.1 | 36.9 (tick 19) |
+    | 23-25 | Phase 0 | 1.61 | 4.71 | 4.02 | 9.64 | 45.21 (first minute) |
+    | 23-25 | repaired | 1.63 | 4.85 | 4.28 | 12.6 | 40.3 (tick 19) |
+    | 23-25 | checked | 1.61 | 4.67 | 4.11 | 13.4 | 38.6 (tick 19) |
+
+    Each window is within a run's noise of the repair's. 6-8's mean and p99s are higher, run beside the other session's
+    `world_check` (the ship-day run after it, as busy, is at the repair's). 23-25's worst after the first minute is the
+    day's careers pass at midnight (12.6 ms of schedules), as before: the squares' check at the day's turn costs nothing
+    measurable there.
+  - Tests: a clean Release build (`build-s2fix-clean`; no warning in the lines touched); ctest 84/84 with the
+    database, none skipped, run twice on the working build of the same code (`pg_client` on a throwaway `ratw_test_s2stage_fix`, dropped after; the `_pg` tests' own
+    `ratw_test_s2stage_*`; no `s2stage` database left); `trade_show_tests` 919 (869), `port_tests` 9,111 (9,103),
+    `journal_tests` 39 (34), `stream_tests` 285, `gathering_tests` 128, `market_tests` 2,001, `game_tests` 3,631,
+    `farm_people_tests` 4,879, `roads_tests` 407, `host_edit_tests` 550, `shops_tests` 132, `exploit_tests` 871,756,
+    `save_compat` 23,085. All 34 `tools/test_*.py` with the database and this build's server (throwaway names
+    tagged `s2stage`, none left; `test_live_map` through `unittest`, `test_dm_live` with `RATW_SERVER` set): 668
+    tests, none failing, 24 skipped (the 23 `RATW_SLOW` world builds and `test_game_tables`' save under `Saved/`).
 
 ## Review (2026-11-08)
 
