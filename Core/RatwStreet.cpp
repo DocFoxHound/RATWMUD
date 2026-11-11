@@ -739,7 +739,9 @@ const std::vector<std::pair<int, int>>& besideOrder(bool line)
 Spot World::freeBeside(const Spot& at, std::set<std::string>& taken, bool line) const
 {
     // (A row on one tile was the old fallback: passable() with no `from` asks about a step up from height 0, so on DEV's
-    // raised streets every tile beside a place looked blocked. Here each is asked from the place's own ground.)
+    // raised streets every tile beside a place looked blocked. Here each is asked from the place's own ground.) Never a
+    // door's tile, open or shut (inDoorway, as a square's stalls and crowd since the repair after doc 79's Phases 4 and 5
+    // merged): a door open when the hour's places are found would shut on whoever stands in it.
     const auto* c = cell(at.cell);
     const bool loaded = c && c->loaded && c->tiles.size() == std::size_t(c->width) * std::size_t(c->height);
     const Tile* ground = loaded ? c->tile(int(std::floor(at.x)), int(std::floor(at.y))) : nullptr;
@@ -749,7 +751,7 @@ Spot World::freeBeside(const Spot& at, std::set<std::string>& taken, bool line) 
         here.x += dx;
         here.y += dy;
         const auto key = tileOf(here);
-        if (taken.count(key))
+        if (taken.count(key) || inDoorway(here.cell, {here.x, here.y}))
             continue;
         if (loaded && (!standable(here.cell, {here.x, here.y}) || (ground && !passable(here.cell, {here.x, here.y}, ground))))
             continue;

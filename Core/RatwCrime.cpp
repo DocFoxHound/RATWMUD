@@ -201,8 +201,12 @@ void World::witness(Incident& inc, double sleight)
         inc.witnesses.push_back({id, identified, clarity, guardOnDuty(id)});
         if (!e.npc)
         {
+            // (Food taken from a till moved its shelves, journalled whole with the next record: so the notice is a move, and
+            // the host journals before it tells it, as for a raid; doc 79, Phase 6 merged. A pocket's coins are staged
+            // purses, not journalled on a tick.)
             notice(id, identified ? "You see " + off->name + " " + claim + "."
-                                  : inc.kind == "assault" ? "You hear a struggle nearby." : "You glimpse someone robbing " + victimName + ".");
+                                  : inc.kind == "assault" ? "You hear a struggle nearby." : "You glimpse someone robbing " + victimName + ".",
+                   inc.kind == "theft" && !inc.from.empty());
             continue;
         }
         if (identified)

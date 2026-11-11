@@ -873,6 +873,18 @@ std::int64_t cash(const World& w, const std::string& id)
     const auto* a = w.society().account(id);
     return a ? a->cash : 0;
 }
+// Whether a place is a door's tile (a door that opens and shuts, open or shut now: World::inDoorway's), which a row of
+// beggars, the dole's queue and the rough sleepers keep off as a square's stalls and crowd do (the merge of Phase 6 with
+// the repair after doc 79's Phases 4 and 5 merged: a door open when the hour's places are found shuts on whoever stands
+// in it, and a player coming out walks into them).
+bool onADoor(const World& w, const Spot& at)
+{
+    for (const auto& [id, d] : w.doors())
+        if (d.cellId == at.cell && !d.passage && id.rfind("stairs_", 0) != 0 && int(std::floor(d.position.x)) == int(std::floor(at.x)) &&
+            int(std::floor(d.position.y)) == int(std::floor(at.y)))
+            return true;
+    return false;
+}
 
 void hungryThievesAtTheTill()
 {
@@ -980,6 +992,107 @@ void hungryThievesAtTheTill()
            "the food back on the till's shelf, not the keeper's wallet: shelf " + std::to_string(Society::stock(*w.society().account(till), item)) +
                " from " + std::to_string(onShelf));
     // Never a player (D11): a player beside every thief all day is never robbed.
+    expect(w.society().realBalanced(), "real money balanced");
+    fs::remove_all(root);
+}
+
+void aTillTheftSeenIsMoved()
+{
+    // A player who sees a hungry thief take food from a till (10.1) is told of goods the tick moved: the till's shelves,
+    // journalled whole with the next record (noteTillMoved). So the notice says so (World::notice's `moved`), and the
+    // host journals the economy before it tells it, as for an escort's pay or a raid (the repair after doc 79's Phases 4
+    // and 5 merged): a crash never leaves a player having seen food taken that is back on the shelf. A theft from a
+    // pocket moves only staged purses, not journalled on a tick, and its notice moves nothing.
+    const auto root = greyfen("seen");
+    auto w = town(root);
+    auto often = parse(R"({"street": {"theftBase": 5}})");
+    w.society().setStatusOverride(&often);
+    w.advanceCalendar(1);
+    w.setTimeOfDay(9);
+    const auto starve = [&] {
+        auto st = w.society().state();
+        for (auto& [id, life] : st.residents)
+            if (life.role != "guard" && !w.society().merchant(id))
+            {
+                life.hunger = 90;
+                for (const auto& [item, n] : std::map<std::string, int>(st.accounts[id].stock))
+                    if (Society::edible(item))
+                        st.accounts[id].stock.erase(item);
+                st.accounts[id].stock["bread"] = 1;
+            }
+        expect(w.society().restore(st), "the town starves");
+    };
+    starve();
+    std::vector<std::string> keepers;
+    for (const auto& [id, life] : w.society().state().residents)
+        if (w.society().merchant(id))
+            keepers.push_back(id);
+    expect(!keepers.empty(), "shopkeepers to watch");
+    for (std::size_t k = 0; k < keepers.size(); ++k)
+        w.addPlayer("player-eye" + std::to_string(k), "Eye " + std::to_string(k));
+    bool seenAtTill = false;
+    std::size_t seen = 0;
+    w.takeNotices();
+    // (Deft paws, so the thefts come off; a deft one is seen now and then, so day after day till one at a till is.)
+    for (int day = 0; day < 40 && !seenAtTill; ++day)
+    {
+        if (day > 0)
+        {
+            w.advanceCalendar(1);
+            w.setTimeOfDay(9);
+            for (int i = 0; i < 30; ++i)
+                w.tick(1);
+            starve();
+        }
+        if (std::getenv("STREET_DEBUG"))
+            std::cerr << "day " << day << " thieves " << w.theftPlan().thieves.size() << "\n";
+        expect(day > 0 || !w.theftPlan().thieves.empty(), "the day has thieves");
+        for (const auto& t : w.theftPlan().thieves)
+            w.entity(t.id)->sneakSkill = 300;
+        for (int i = 0; i < 7200 && !seenAtTill; ++i)
+        {
+            for (std::size_t k = 0; k < keepers.size(); ++k)
+            {
+                // (Each player stood beside a keeper, where a thief at its till is seen.)
+                const auto* keeper = w.entity(keepers[k]);
+                auto* me = w.entity("player-eye" + std::to_string(k));
+                me->cellId = keeper->cellId;
+                me->position = {keeper->position.x + 1, keeper->position.y};
+                me->path.clear();
+                me->velocity = {};
+            }
+            w.tick(1);
+            if (i % 600 == 0)
+                starve();
+            bool tillSeen = false, pocketSeen = false;
+            for (; seen < w.crime().incidents.size(); ++seen)
+            {
+                const auto& inc = w.crime().incidents[seen];
+                const bool byPlayer = std::any_of(inc.witnesses.begin(), inc.witnesses.end(),
+                                                  [&](const Witness& x) { return x.id.rfind("player-eye", 0) == 0; });
+                if (inc.kind == "theft" && byPlayer)
+                    (inc.from.empty() ? pocketSeen : tillSeen) = true;
+            }
+            bool moved = false;
+            const auto notices = w.takeNotices(&moved);
+            if (tillSeen)
+            {
+                seenAtTill = true;
+                expect(!notices.empty() && moved, "a till theft seen by a player is told as a move, journalled first");
+            }
+            else if (pocketSeen && !notices.empty())
+                expect(!moved, "a pocket theft seen moves nothing journalled");
+        }
+    }
+    if (std::getenv("STREET_DEBUG"))
+        for (const auto& inc : w.crime().incidents)
+        {
+            std::cerr << "inc " << inc.kind << " " << inc.offender << " " << inc.victim << " " << inc.item << " from " << inc.from << " seen by";
+            for (const auto& x : inc.witnesses)
+                std::cerr << " " << x.id;
+            std::cerr << "\n";
+        }
+    expect(seenAtTill, "a player saw a hungry thief take food from a till");
     expect(w.society().realBalanced(), "real money balanced");
     fs::remove_all(root);
 }
@@ -1119,6 +1232,9 @@ void beggarsAndAlms()
            "more destitute, more beggars (the old two spots held four): " + std::to_string(beggars.size()) + " of " + std::to_string(eligible()));
     expect(!beggars.count("gorse") && !beggars.count("heath") && !beggars.count("harrow"), "never a guard");
     for (const auto& [id, at] : beggars)
+        expect(!onADoor(w, at), "a beggar never in a doorway, open or shut: " + id + " at " + at.cell + " " + std::to_string(at.x) + "," +
+                                    std::to_string(at.y));
+    for (const auto& [id, at] : beggars)
     {
         const auto* st = w.society().statusOf(id);
         expect(st && st->band == status::Destitute && !w.society().jobOf(id) && w.society().spec(id)->age >= 16 &&
@@ -1193,6 +1309,47 @@ void beggarsAndAlms()
     fs::remove_all(root);
 }
 
+void beggarsOffTheDoors()
+{
+    // A row of beggars keeps off every door's tile, open or shut (World::inDoorway), as a square's stalls and crowd do since
+    // the repair after doc 79's Phases 4 and 5 merged: the hour's places found while a door stood open put the third at the
+    // chapel steps in the Long House's doorway (the tile below its steps here), where the door shut on it and a player
+    // closing it was told someone is crossing the threshold. (The Long House's doors made open; four a place.)
+    const auto root = greyfen("doors", true);
+    {
+        auto world = slurp(root / "world.ratw");
+        for (const char* id : {"\"link_longhouse_door_a\"", "\"link_longhouse_door_b\""})
+        {
+            const auto line = world.find(std::string("door ") + id);
+            expect(line != std::string::npos, std::string("the Long House's door: ") + id);
+            const auto flags = world.find("\" 0 0 0 0 ", line);
+            expect(flags != std::string::npos && flags < world.find('\n', line), "its flags");
+            world.replace(flags, 10, "\" 1 0 0 0 ");
+        }
+        std::ofstream(root / "world.ratw", std::ios::binary) << world;
+    }
+    auto w = town(root);
+    auto many = parse(R"({"street": {"beggarsACell": 4}})");
+    w.society().setStatusOverride(&many);
+    for (const auto* id : {"idle1", "idle2", "idle3", "idle4"})
+        destitute(w, id);
+    onTo(w, calendar::Marketday, 10.2);
+    Spot steps;
+    for (const auto& [id, d] : w.doors())
+        if (d.cellId == "longhouse" && w.cell(d.targetCell) && w.cell(d.targetCell)->outdoors)
+            steps = {d.targetCell, d.arrival.x, d.arrival.y};
+    expect(!steps.cell.empty() && w.doors().at("link_longhouse_door_a").open, "the chapel's steps, its door open");
+    int atSteps = 0;
+    for (const auto& [id, at] : w.beggars())
+    {
+        atSteps += at.cell == steps.cell && std::hypot(at.x - steps.x, at.y - steps.y) < 3;
+        expect(!onADoor(w, at), "a beggar never in a doorway, open or shut: " + id + " at " + at.cell + " " + std::to_string(at.x) + "," +
+                                    std::to_string(at.y));
+    }
+    expect(atSteps >= 3, "three or more at the chapel steps: " + std::to_string(atSteps));
+    fs::remove_all(root);
+}
+
 void restdayDole()
 {
     // 10.2: on Restday after the service the chapel's priest hands bread to the destitute and poor households of its
@@ -1256,8 +1413,11 @@ void doleQueue()
     {
         stand();
         for (const auto& [id, t] : w.doleTakers())
+        {
             if (t.place == 0 && t.atFront >= 0)
                 atFront[t.household] = true;
+            expect(!onADoor(w, t.at), "the dole's queue never in a doorway: " + id);
+        }
         mostInLine = std::max(mostInLine, w.doleTakers().size());
         w.tick(1);
         for (const auto& h : homes)
@@ -1318,6 +1478,7 @@ void roughSleepers()
                 expect(w.cell(at.cell) && w.cell(at.cell)->outdoors, "a sleeper by the wall outside, not within: " + id + " in " + at.cell);
                 expect(tiles.insert(at.cell + " " + std::to_string(int(at.x)) + "," + std::to_string(int(at.y))).second,
                        "never two sleepers on one tile: " + id);
+                expect(!onADoor(w, at), "a sleeper never in a doorway: " + id);
             }
         }
     }
@@ -2089,10 +2250,12 @@ int main(int argc, char** argv)
             {"liftsAndTheirCap", liftsAndTheirCap},
             {"shortByBand", shortByBand},
             {"hungryThievesAtTheTill", hungryThievesAtTheTill},
+            {"aTillTheftSeenIsMoved", aTillTheftSeenIsMoved},
             {"liftedThievesStop", liftedThievesStop},
             {"aFreshWorldsFirstDay", aFreshWorldsFirstDay},
             {"takesByBand", takesByBand},
             {"beggarsAndAlms", beggarsAndAlms},
+            {"beggarsOffTheDoors", beggarsOffTheDoors},
             {"helpABeggar", helpABeggar},
             {"helpWhenTheCapIsFull", helpWhenTheCapIsFull},
             {"restdayDole", restdayDole},
