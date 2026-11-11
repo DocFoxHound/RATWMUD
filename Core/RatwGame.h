@@ -1005,7 +1005,7 @@ class Game
     // square's cell hears: tendCriers). Voices only: a cry not yet cried when the server stops is not cried after it.
     void stagedNotices(const WorldEvent& e);
     void pinStagedNotice(const std::string& id, const std::string& market, const std::string& what, const std::string& text,
-                         const std::string& sign);
+                         const std::string& sign, double until = 0);   // (until: down by then too, where it is sooner.)
     void stagedCry(const std::string& market, const std::string& line);
     struct PendingCry
     {
@@ -1014,6 +1014,7 @@ class Game
     };
     std::vector<PendingCry> pendingCries_;
     void tendStagedCries();
+    void yieldStagedCry(const std::string& community);   // (A staged cry gives the crier up to a festival's or a legend's.)
     void tendResidentLetters();
     bool residentLetterRoom(const std::string& resident, const std::string& player) const;
     documents::Document* residentLetter(const std::string& resident, const std::string& player, const std::string& kind, const std::string& text,
@@ -1266,6 +1267,7 @@ class Game
         std::vector<std::string> lines;
         std::size_t next = 0;
         double nextAt = 0;
+        std::string market;                         // A staged cry's market ("" a festival's or a legend's).
     };
     // The chronicle (doc 56, 8): asked for by the social verb `chronicle` (once in 30 s a character), read from
     // game.events on its own thread where there is a database, else from what is in memory (and said to be partial).
@@ -1290,7 +1292,9 @@ class Game
     void festivalCrier(const std::string& community, const std::string& festival);
     void cryLegends();
     void tendCriers();
-    std::string crierOf(const std::string& community);
+    // The town's crier (its official, else the innkeeper nearest the square, else its priest); with `market`, the same
+    // of those who work at that market (a market plain for law: a staged cry's).
+    std::string crierOf(const std::string& community, const std::string& market = {});
     // Residents' troubles (doc 57, 3; RatwGameTroubles.cpp): worked out when a player talks to a resident and kept a game
     // day (nothing scans the population); spoken of only to a wolf the resident trusts (troubles.json's `speak`). A wolf
     // who has heard one keeps it in its unfinished business until it is solved or gone.

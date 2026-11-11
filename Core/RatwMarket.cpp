@@ -6,6 +6,7 @@
 
 #include "RatwCalendar.h"
 #include "RatwItems.h"
+#include "RatwSeeded.h"
 #include "RatwSociety.h"
 #include "RatwWild.h"
 #include "RatwWorld.h"
@@ -51,14 +52,14 @@ void defaultEvents(Data& d)
 {
     Data::EventKind mill;
     mill.id = "mill_stopped";
-    mill.words = "the mill wheel stopped";
+    mill.words = "the broken mill wheel";
     mill.notice = "The mill wheel is stopped for mending: {goods} dear in {market} till it turns again.";
     mill.goods = {{"flour", .15}, {"bread", .1}, {"fine_bread", .1}};
     mill.days = 2;
     mill.times = -3;
     Data::EventKind drovers;
     drovers.id = "drovers_in";
-    drovers.words = "the drovers in with their herds";
+    drovers.words = "the drovers and their herds";
     drovers.notice = "The drovers are in at {market} with their herds: {goods} cheap a day or two.";
     drovers.goods = {{"raw_meat", -.15}, {"mutton", -.15}, {"hide", -.1}};
     drovers.days = 2;
@@ -298,6 +299,36 @@ bool shipNameFits(const std::string& name)
     });
 }
 
+int seasonBit(double calendarDays)
+{
+    const auto c = calendar::calendarAt(finite(calendarDays) ? std::max(0., calendarDays) : 0.);
+    return 1 << int(c.season);
+}
+
+int seasonsOf(const json::Value& list)
+{
+    int seasons = 0;
+    for (const auto& one : list.items())
+        for (int i = 0; i < 4; ++i)
+            if (one.isString() && one.asString() == calendar::seasonName(calendar::Season(i)))
+                seasons |= 1 << i;
+    return seasons ? seasons : SeasonsAll;
+}
+
+std::string fillWords(std::string text, const std::map<std::string, std::string>& with)
+{
+    const auto capital = [](std::string s) {
+        if (!s.empty())
+            s[0] = char(std::toupper(static_cast<unsigned char>(s[0])));
+        return s;
+    };
+    for (const auto& [key, value] : with)
+        for (const auto& [k, v] : {std::pair<std::string, std::string>{"{" + key + "}", value}, {"{" + capital(key) + "}", capital(value)}})
+            for (auto at = text.find(k); at != std::string::npos; at = text.find(k, at + v.size()))
+                text.replace(at, k.size(), v);
+    return text;
+}
+
 bool plainWords(const std::string& text, std::size_t most)
 {
     return text.size() <= most && !forbiddenWord(text) &&
@@ -329,9 +360,11 @@ std::vector<Data::EventKind> eventKindsOf(const std::vector<json::Value>& list)
         k.notice = j.string("notice");
         k.cry = j.string("cry");
         k.sign = j.string("sign", "the crier");
+        k.noticeOn = j.string("noticeOn");
+        k.seasons = seasonsOf(j["seasons"]);
         if (!idFits(k.id) || std::any_of(kinds.begin(), kinds.end(), [&](const Data::EventKind& o) { return o.id == k.id; }) ||
             k.words.empty() || !plainWords(k.words, 80) || !plainWords(k.notice, 280) || !plainWords(k.cry, 200) ||
-            k.sign.empty() || !plainWords(k.sign, 40))
+            !plainWords(k.noticeOn, 280) || k.sign.empty() || !plainWords(k.sign, 40))
             continue;
         if (const auto& goods = j.object("goods"); goods.isObject())
             for (const auto& [g, P] : goods.fields())
@@ -371,7 +404,7 @@ std::vector<Data::Cause> causesOf(const std::vector<json::Value>& list)
     {
         if (!j.isObject() || causes.size() >= 32)
             continue;
-        Data::Cause c{j.string("id"), j.string("words"), j.string("notice"), j.string("cry")};
+        Data::Cause c{j.string("id"), j.string("words"), j.string("notice"), j.string("cry"), seasonsOf(j["seasons"])};
         if (c.id.empty() || c.id.size() > 32 || forbiddenInName(c.id) || c.words.empty() || !plainWords(c.words, 80) ||
             !plainWords(c.notice, 280) || !plainWords(c.cry, 200) ||
             std::any_of(causes.begin(), causes.end(), [&](const Data::Cause& o) { return o.id == c.id; }))
@@ -760,6 +793,8 @@ json::Value encode(const Board& b)
                 j.add("notice", e.notice);
             if (!e.cry.empty())
                 j.add("cry", e.cry);
+            if (!e.noticeOn.empty())
+                j.add("noticeOn", e.noticeOn);
             if (!e.subject.empty())
                 j.add("subject", e.subject);
             j.add("status", e.status);
@@ -814,6 +849,13 @@ json::Value encode(const Board& b)
         for (const auto& [m, n] : b.harvestShift)
             t.add(m, n);
         o.add("harvestShift", t);
+    }
+    if (!b.lostShips.empty())
+    {
+        auto t = Value::object();
+        for (const auto& [name, day] : b.lostShips)
+            t.add(name, day);
+        o.add("lostShips", t);
     }
     if (!b.shipsThrough.empty())
     {
@@ -1140,7 +1182,7 @@ Board decode(const json::Value& v)
         if (t.isObject() && b.troubles.size() < TroublesKept)
         {
             Trouble one{t.number("day", -1), t.string("market"), t.string("kind")};
-            if (finite(one.day) && one.day >= 0 && name(one.market) && (one.kind == "raid" || one.kind == "late"))
+            if (finite(one.day) && one.day >= 0 && name(one.market) && (one.kind == "raid" || one.kind == "late" || one.kind == "storm" || one.kind == "lost"))
                 b.troubles.push_back(std::move(one));
         }
     for (const auto& [m, n] : v.object("timesShift").fields())
@@ -1178,6 +1220,7 @@ Board decode(const json::Value& v)
         e.words = json::utf8Prefix(j.string("words"), 80);
         e.notice = json::utf8Prefix(j.string("notice"), 280);
         e.cry = json::utf8Prefix(j.string("cry"), 200);
+        e.noticeOn = json::utf8Prefix(j.string("noticeOn"), 280);
         e.subject = j.string("subject").substr(0, 120);
         e.status = j.string("status");
         e.by = j.string("by") == "dm" ? "dm" : "seeded";
@@ -1220,6 +1263,9 @@ Board decode(const json::Value& v)
         if (name(m) && n.isNumber())
             if (const int shift = int(whole(n, -100, 100, 0)); shift != 0)
                 b.harvestShift[m] = shift;
+    for (const auto& [ship, day] : v.object("lostShips").fields())
+        if (shipNameFits(ship) && day.isNumber() && finite(day.asNumber()) && b.lostShips.size() < LostShipsKept)
+            b.lostShips[ship] = std::clamp(day.asNumber(), 0., 365000000.);
     return b;
 }
 
@@ -1228,11 +1274,17 @@ void mendEvents(Board& b)
     std::vector<StagedEvent> kept;
     for (auto& e : b.events)
     {
-        if (e.id.empty() || e.market.empty() || e.kind.empty() || e.day < 0 ||
+        // (An id the game gives: "e" and its number, no leading zero, 16 digits at most, so the next id is above it.)
+        const bool idFits = e.id.size() > 1 && e.id.size() <= 17 && e.id[0] == 'e' && e.id[1] != '0' &&
+                            std::all_of(e.id.begin() + 1, e.id.end(), [](unsigned char c) { return std::isdigit(c) != 0; });
+        if (!idFits || e.market.empty() || e.kind.empty() || e.day < 0 ||
             std::any_of(kept.begin(), kept.end(), [&](const StagedEvent& o) { return o.id == e.id; }))
             continue;
-        if (e.words.empty() || !plainWords(e.words, 80) || !plainWords(e.notice, 280) || !plainWords(e.cry, 200))
+        if (e.words.empty() || !plainWords(e.words, 80) || !plainWords(e.notice, 280) || !plainWords(e.cry, 200) ||
+            !plainWords(e.noticeOn, 280))
             continue;                               // (Words the loader would not take: never pinned on a board.)
+        if (e.status != "due")
+            e.noticeOn.clear();
         if (e.status != "on" && e.status != "over" && e.status != "cancelled")
             e.status = "due";
         e.hour = finite(e.hour) ? std::clamp(e.hour, 0., 23.99) : 9;
@@ -1241,7 +1293,7 @@ void mendEvents(Board& b)
         e.posted = finite(e.posted) ? std::max(0., e.posted) : 0;
         std::vector<std::pair<std::string, double>> fit;
         for (const auto& [g, P] : e.goods)
-            if (finite(P) && fit.size() < 6 && (items::good(g) || itemValid(g)) &&
+            if (finite(P) && fit.size() < EventGoodsMost && (items::good(g) || itemValid(g)) &&
                 std::none_of(fit.begin(), fit.end(), [&](const auto& have) { return have.first == g; }))
                 fit.push_back({g, std::clamp(P, -EventTargetMost, EventTargetMost)});
         e.goods = std::move(fit);
@@ -1272,9 +1324,7 @@ void mendEvents(Board& b)
     b.events = std::move(kept);
     b.nextEvent = std::max<std::int64_t>(1, b.nextEvent);
     for (const auto& e : b.events)
-        if (e.id.size() > 1 && e.id.size() <= 16 && e.id[0] == 'e' &&
-            std::all_of(e.id.begin() + 1, e.id.end(), [](unsigned char c) { return std::isdigit(c) != 0; }))
-            b.nextEvent = std::max<std::int64_t>(b.nextEvent, std::stoll(e.id.substr(1)) + 1);
+        b.nextEvent = std::max<std::int64_t>(b.nextEvent, std::stoll(e.id.substr(1)) + 1);
 }
 
 int eventTimes(const Board& b, const std::string& market)
@@ -1696,15 +1746,7 @@ bool Society::setProsperity(int target, bool now, const std::string& cause)
     if (dir == 0 && !cause.empty())
         dir = target > 0 ? 1 : target < 0 ? -1 : b.sliderCause.dir;
     const auto& d = market::data();
-    const auto fill = [](std::string text, const std::string& words) {
-        auto capital = words;
-        if (!capital.empty())
-            capital[0] = char(std::toupper(static_cast<unsigned char>(capital[0])));
-        for (const auto& [key, with] : {std::pair<std::string, std::string>{"{cause}", words}, {"{Cause}", capital}})
-            for (auto at = text.find(key); at != std::string::npos; at = text.find(key, at + with.size()))
-                text.replace(at, key.size(), with);
-        return text;
-    };
+    const auto fill = [](const std::string& text, const std::string& words) { return market::fillWords(text, {{"cause", words}}); };
     auto words = json::utf8Prefix(cause, 80);
     while (!words.empty() && (words.back() == ' ' || words.back() == '.'))
         words.pop_back();
@@ -1729,14 +1771,21 @@ bool Society::setProsperity(int target, bool now, const std::string& cause)
     }
     else
     {
-        const auto& list = dir < 0 ? d.causesDown : d.causesUp;
+        // (Those of its way the season allows: "the hard winter" never in summer; none, all of its way.)
+        std::vector<const market::Data::Cause*> list;
+        for (const auto& c : dir < 0 ? d.causesDown : d.causesUp)
+            if (c.seasons & market::seasonBit(marketClock()))
+                list.push_back(&c);
+        if (list.empty())
+            for (const auto& c : dir < 0 ? d.causesDown : d.causesUp)
+                list.push_back(&c);
         if (list.empty())
             return cause.empty();
         // (Seeded by the day and the cause's number: the same world, the same cause; never the one it had just now.)
-        auto at = std::size_t(std::hash<std::string>{}("cause:" + std::to_string(marketDay()) + ":" + std::to_string(next.n)) % list.size());
-        if (list.size() > 1 && list[at].words == b.sliderCause.words)
+        auto at = std::size_t(seeded::lot("cause:" + std::to_string(marketDay()), next.n) % list.size());
+        if (list.size() > 1 && list[at]->words == b.sliderCause.words)
             at = (at + 1) % list.size();
-        const auto& c = list[at];
+        const auto& c = *list[at];
         next.words = c.words;
         next.notice = c.notice.empty() ? json::utf8Prefix(fill(dir < 0 ? d.causeNoticeDown : d.causeNoticeUp, c.words), 280) : c.notice;
         next.cry = c.cry.empty() ? json::utf8Prefix(fill(dir < 0 ? d.causeCryDown : d.causeCryUp, c.words), 200) : c.cry;
@@ -1782,14 +1831,20 @@ std::string Society::timesCause(const std::string& market) const
     }
     if (const auto h = b.harvestShift.find(market); h != b.harvestShift.end() && h->second != 0)
         parts.push_back({h->second, h->second > 0 ? "a good harvest" : "a poor harvest"});
-    int raids = 0, lates = 0;
+    // (A stormbound or lost ship counts as a late wagon does, World::roadsMorning's; said as what it is.)
+    int raids = 0, lates = 0, storms = 0, lost = 0;
     for (const auto& t : b.troubles)
         if (t.market == market)
-            ++(t.kind == "raid" ? raids : lates);
+            ++(t.kind == "raid" ? raids : t.kind == "storm" ? storms : t.kind == "lost" ? lost : lates);
     if (raids > 0)
         parts.push_back({-std::min(30, 10 * raids), "the wagons robbed on the road"});
+    const int late = std::min(15, 5 * (lates + storms + lost));
     if (lates > 0)
-        parts.push_back({-std::min(15, 5 * lates), "the wagons late on the road"});
+        parts.push_back({-std::min(late, 5 * lates), "the wagons late on the road"});
+    if (storms > 0)
+        parts.push_back({-std::min(late, 5 * storms), "the storms keeping the ships out"});
+    if (lost > 0)
+        parts.push_back({-std::min(late, 5 * lost), "the ship lost at sea"});
     for (const auto& e : b.events)
         if (e.status == "on" && e.market == market && e.times != 0)
             parts.push_back({e.times, e.words});

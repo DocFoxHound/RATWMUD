@@ -394,7 +394,11 @@ struct Cell { float P; double touched; std::string cause; };  // cause: players,
   words: the slider's cause, "a good harvest" or "a poor harvest" (the Board's new `harvestShift`), "the wagons robbed on
   the road", an event's words, the nudge's; "" when the score is 0. Because the bands read the Times at their weekly cut,
   an event's few points can tip a market's band mix in the week it is on: 5.3's formula was kept over 8.4's "never touch
-  bands", for the user to overrule.)*
+  bands", for the user to overrule.)* *(Open, the user's decision (the Phase 7 check, its item 4): through the score an
+  event's Times points move everything the market's Times band moves, not only the bands' weekly cut: the staples' price
+  factor (`marketBase`), the day's expected thefts and the shops' buying budgets. Left as built by the repair; the choice
+  is between keeping it (events are part of the Times, as 5.3 has it) and counting events only in the talk and the cause,
+  never in the score.)*
 
 ## 6. NPC economic status (bands)
 
@@ -960,6 +964,12 @@ On a small world player trade rarely moves anything, so the world needs its own 
   past). A ship lost is a timetable line of its own (`Ship::lost`: "is lost at sea", `world.ships` "lost", its cargo a
   storm's +0.1 dearer and the event's more); a rich cargo begins as its ship docks and is called off if a storm keeps it
   out. The DM's hooks for Phase 9: `World::addStagedEvent`, `cancelStagedEvent`, `stagedEvent`, the Board's `events`.)*
+  *(Repaired: each kind's words are a noun phrase that reads after "since", after a colon and after "talk of" ("the
+  drovers and their herds", "the brewers' glut", "the festival trade", "the lame ox that held up the Longmead Farm
+  cart"); a kind and a cause may name the `seasons` they happen in (no good catch or orchard blight in winter, "the hard
+  winter" only in autumn and winter, "the rich harvest" only in summer and autumn); a kind's needs and seasons hold for the
+  DM's events too; no kind twice at a market within a week; a rich cargo is of its own goods first and its notice says
+  "is in" once she is (`noticeOn`); a lost ship's name stays off every timetable a year (the Board's `lostShips`).)*
 
 ### 8.5 A cause for every slider move
 
@@ -977,7 +987,10 @@ On a small world player trade rarely moves anything, so the world needs its own 
   market once (a notice "the crier"'s on its board, the cry at its square); the DM's words take the list's templates
   ("Hard times ahead: the Crown's war levy."). The Means line ends "Times here: lean, since the Crown's war levy.". The
   harvest roll leans ±0.08 its way while the slider moves. The rule `overrideNotices` (1, new) posts the DM's nudges and
-  harvest overrides (`World::overrideHarvest`, with its words); the levers themselves are Phase 9's.)*
+  harvest overrides (`World::overrideHarvest`, with its words); the levers themselves are Phase 9's.)* *(Repaired: the
+  seeded cause is of those its way the season allows, picked by `seeded::lot`; `world.times_cause` is said only where the
+  times are other than ordinary; a harvest override's notice reads "A poor season for wheat and oats." (what its farms
+  grow, never the area's id) and comes down when it lapses.)*
 
 ### 8.6 The arrival table
 
@@ -3556,6 +3569,59 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     read badly mid-sentence in `market.json` (Phase 7's data, left as it is): "the drovers in with their herds", "a
     brewing too many", "the buying ahead for the festival", "a lame ox on the cart from East"; the new lines frame them
     after a colon or "talk of", never after "since".
+- **2026-11-11: Phase 7 repaired** (branch `r2-staged-rev`, cut from `r2-staged` at `aba9f4b`, beside the Phase 8 talk
+  repair in `r2-staged-rtalk`). The Phase 7 check's ten findings and its missing items, and the Phase 8 builder's notes on
+  the event words and the season, each fixed with a test where it is code (`events_tests`' `phase7Repaired` and
+  `theRepairOnTheBoards`, more checks in `shipsInTheEvents`, `port_tests`' `eventsPostWithTheirCause`; the festival
+  crier's check seen failing without its fix). No economy simulation, no real or scratch server; DEV and PROD untouched.
+  - **(1) A ship's rich cargo** is of the kind's own goods first (silk, spices, brandy, wine where its market deals in
+    them), then the ship's; its notice reads "The Gull is in with a rich cargo: ..." once she is (a kind's new
+    `noticeOn`, filled as it is rolled and saved on the event while it is due; the board's pinned notice changes with it).
+    The goods are in cargo words (Phase 8's `cargoWords`: "crates", "hides").
+  - **(2) A lost ship never sails again soon:** her name goes on the Board's new `lostShips` (name and day, a year,
+    64 at most, written only when there are any, read leniently) and the timetable names other ships first; with every
+    name lost within the year, the one lost longest ago. How often ships are lost (three in 95 days at Ridgemere) is
+    Phase 10's weight.
+  - **(3) A harvest override's notice** says what the area's farms grow ("A good season for flax, flour and hemp.", the
+    DM's words before it), never the area's id (on DEV, a good's name: "the fish"), and comes down when the override
+    lapses (its notice expires then, and a start takes down one whose override is gone). A nudge's notice expires with it too.
+  - **(4) Left, the user's decision:** an event's Times points move the whole Times band (the staples' factor, thefts,
+    budgets, the band cut). Noted open in 5.3.
+  - **(5) The ships' troubles in their own words:** a stormbound ship is a trouble "storm" and a lost one "lost" (each
+    counted in the Times as a late wagon is, as before), said as "the storms keeping the ships out" and "the ship lost at
+    sea", never "the wagons late on the road". A save's troubles of either kind are kept.
+  - **(6) `world.times_cause` only where the times are not ordinary;** the event words rewritten as noun phrases (8.4's
+    note): "the broken mill wheel", "the drovers and their herds", "the flooded salt pans", "the brewers' glut", "the
+    festival trade", "the lame ox that held up the {from} cart", so the Means' "Times here: lean, since the brewers' glut."
+    reads.
+  - **(7) The wedding's cry** is "Hear ye! A House wedding today, and the stewards buying wine, mead and brandy!" (its
+    own goods, the day it begins); the season (`seasons` on kinds and causes, market.json); no kind twice at a market
+    within seven days (across a week's end too). A wedding three weeks running at the city is Phase 10's weight. One line
+    of talk (the talk session's file, `economy8_times.talk`'s `e8t_ev_salt`): "What's a winter without salt?" became
+    "Every cook in town is after salt, and the pans give none.", so salt's line never speaks of winter in summer.
+  - **(8) Phase 9's hooks:** `addStagedEvent` holds a kind's needs (the realm's largest market for a House wedding, the
+    day before a festival for its buying, a port) and seasons, as the scheduler does (`makeEvent`); a restore holds a
+    nudge's and a harvest override's `until` to a year from the calendar (a damaged save's 10^12 lapses); a comment on the
+    hooks says Phase 9's commands must journal the Board after them. The commands are not built.
+  - **(9) Robustness:** an event posted ahead whose days pass in a calendar jump is over with its record, so its notice
+    comes down; an id the game never gives ("e05", one of 17 digits) is dropped at decode, so the next id is above every
+    one kept; at a market's bound the oldest over or cancelled make room, and a week the bound cuts short is not marked
+    rolled (rolled again the next morning); the rule `eventRate` at 0 calls off the seeded events still due (the DM's
+    stay); a staged cry holding the crier gives way to the festival's crier and a legend's, its lines waiting again. A
+    cry not cried when the server stops is still not cried after it (voices are not saved; as documented).
+  - **(10) Fit:** the staged cry's crier is `crierOf`'s (a second form of it for a market plain for law, so "preach"
+    counts as a priest's word there too); one `market::fillWords` for the events' and the causes' blanks; the seeded cause
+    by `seeded::lot`; a saved event holds four goods at most, as one is made.
+  - **Missing items:** 16.5's "staged events post with their cause" in `port_tests` (with events on, at the port);
+    16.9's forbidden-word check of the shipped events, causes and ship names stays in `events_tests` and `port_tests`
+    (the lists' own tests) rather than `talk_tests`/`voice_tests`; `Society::setProsperity` from production is Phase 9's.
+  - **Journal:** `lostShips` and an event's `noticeOn` are on the Market Board, written whole with it as every Board
+    change is; nothing new waits on a tick notice.
+  - **Tests:** a clean Release build (`build-rev`, `--clean-first`; no new warning in the lines touched), then ctest once
+    with the database: 88/88, none skipped (`pg_client` on a throwaway `ratw_test_s2stage_rev`, dropped after; no
+    `s2stage` database left). While building: `events_tests`' new `phase7Repaired` and `theRepairOnTheBoards`,
+    `shipsInTheEvents` 877 checks, `port_tests`' `eventsPostWithTheirCause` 554 and `aStormboundShip` 849. No perf
+    timings and no `tools/` or client tests (the merge's verify runs them).
 
 ## Review (2026-11-08)
 

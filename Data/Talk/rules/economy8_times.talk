@@ -494,7 +494,7 @@ then other: event.answer
 rule e8t_ev_salt
 when concept=talk.event world.event=salt_short world.event_when=now|past
 cooldown 1d
-say The salt pans are flooded. Salt's dear this week. | No salt to be had, with the pans under water. | What's a winter without salt? Ask me in a month.
+say The salt pans are flooded. Salt's dear this week. | No salt to be had, with the pans under water. | Every cook in town is after salt, and the pans give none.
 remember pair: ev=bad 2m
 then other: event.answer
 

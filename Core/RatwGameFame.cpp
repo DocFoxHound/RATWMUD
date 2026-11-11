@@ -412,9 +412,9 @@ std::string pickLine(const std::string& list, const std::string& seed, const std
 }
 } // namespace
 
-std::string Game::crierOf(const std::string& community)
+std::string Game::crierOf(const std::string& community, const std::string& market)
 {
-    // The town's official, else the innkeeper nearest the square, else its priest.
+    // The town's official, else the innkeeper nearest the square, else its priest (with a market: of those who work there).
     const auto* square = world_.marketSpot(community);
     std::string official, inn, priest;
     double nearest = 1e18;
@@ -422,7 +422,10 @@ std::string Game::crierOf(const std::string& community)
     {
         const auto* job = world_.society().jobOf(id);
         const auto* e = world_.entity(id);
-        if (!job || !e || e->dead || world_.lawTown(job->work.cell) != community)
+        if (!job || !e || e->dead)
+            continue;
+        if (market.empty() ? world_.lawTown(job->work.cell) != community
+                           : [&] { const auto* at = world_.roadMarketOf(job->work.cell); return !at || at->id != market; }())
             continue;
         if (official.empty() && jobCategoryOf(id) == "official")
             official = id;
@@ -448,6 +451,7 @@ void Game::festivalCrier(const std::string& community, const std::string& festiv
     // the square believe them under the name they heard.
     const auto* square = world_.marketSpot(community);
     const auto crier = crierOf(community);
+    yieldStagedCry(community);                      // (A staged event's cry waits for the festival's.)
     if (!square || crier.empty() || criers_.count(community))
         return;
     const double now = world_.calendarDays(), season = crierLines().number("seasonDays", 92);
@@ -466,7 +470,7 @@ void Game::festivalCrier(const std::string& community, const std::string& festiv
     });
     if (int(called.size()) > int(crierLines().number("deedsMost", 6)))
         called.resize(std::size_t(crierLines().number("deedsMost", 6)));
-    CrierCall call{community, crier, square->cell, {}, 0, world_.time()};
+    CrierCall call{community, crier, square->cell, {}, 0, world_.time(), {}};
     call.lines.push_back(pickLine("opening", community + festival, base));
     for (auto* d : called)
     {
@@ -517,11 +521,12 @@ void Game::cryLegends()
         {
             const auto crier = crierOf(w.town);
             const auto* square = world_.marketSpot(w.town);
+            yieldStagedCry(w.town);                 // (A staged event's cry waits for the legend's.)
             if (crier.empty() || !square || criers_.count(w.town))
                 continue;
             const std::map<std::string, std::string> blanks{{"town", townWords(w.town)}, {"festival", "this day"}, {"name", name},
                                                             {"deed", deedPhrase({}, *d)}};
-            CrierCall call{w.town, crier, square->cell, {pickLine("legendary", d->id + w.town, blanks)}, 0, world_.time()};
+            CrierCall call{w.town, crier, square->cell, {pickLine("legendary", d->id + w.town, blanks)}, 0, world_.time(), {}};
             call.lines.erase(std::remove(call.lines.begin(), call.lines.end(), std::string()), call.lines.end());
             world_.seatResident(crier, {square->cell, square->x, square->y + 1, "Crying news at the square."});
             criers_[w.town] = std::move(call);

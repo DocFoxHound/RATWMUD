@@ -501,18 +501,21 @@ void Game::mendRoadNotices()
             const auto* kind = market::data().eventKind(e->kind);
             pinStagedNotice(id, e->market, "event:" + e->id, e->notice, kind ? kind->sign : std::string("the crier"));
         }
-    // The DM's Times nudges that lapsed: their notices down.
+    // The DM's Times nudges and harvest overrides that lapsed: their notices down.
     std::vector<std::string> lapsed;
+    const auto& board = world_.society().board();
     for (const auto& [id, d] : documents_.all())
-        if (d.kind == "notice" && d.author == StagedAuthor && d.what.rfind("nudge:", 0) == 0 &&
-            !world_.society().board().nudges.count(d.what.substr(6)))
+        if (d.kind == "notice" && d.author == StagedAuthor &&
+            ((d.what.rfind("nudge:", 0) == 0 && !board.nudges.count(d.what.substr(6))) ||
+             (d.what.rfind("harvest:", 0) == 0 &&
+              (!board.harvestOverride.count(d.what.substr(8)) || world_.calendarDays() >= board.harvestOverride.at(d.what.substr(8)).until))))
             lapsed.push_back(id);
     for (const auto& id : lapsed)
         documents_.erase(id);
 }
 
 void Game::pinStagedNotice(const std::string& id, const std::string& market, const std::string& what, const std::string& text,
-                           const std::string& sign)
+                           const std::string& sign, double until)
 {
     // (On the board a player at the market's place reads, as the carters' notices are.)
     const auto* m = world_.roadMarket(market);
@@ -533,6 +536,8 @@ void Game::pinStagedNotice(const std::string& id, const std::string& market, con
     d.state = "delivered";
     d.written = d.deliverAt = world_.calendarDays();
     d.expires = d.written + NoticeDays;
+    if (until > d.written)
+        d.expires = std::min(d.expires, until);   // (A nudge's or a harvest override's: down when it lapses, tendNotices.)
     d.fromTown = community;
     documents_.add(d);
 }
@@ -547,7 +552,10 @@ void Game::stagedNotices(const WorldEvent& e)
         if (!ev)
             return;
         const auto* kind = market::data().eventKind(ev->kind);
-        if (!ev->notice.empty() && (e.kind == "event posted" || !documents_.find("event-" + ev->id)))
+        auto* pinned = documents_.find("event-" + ev->id);
+        if (!ev->notice.empty() && pinned && e.kind == "event begins")
+            pinned->text = json::utf8Prefix(ev->notice, TextMost);   // (Its notice once begun: a rich cargo's ship is in.)
+        else if (!ev->notice.empty() && (e.kind == "event posted" || !pinned))
             pinStagedNotice("event-" + ev->id, ev->market, "event:" + ev->id, ev->notice, kind ? kind->sign : std::string("the crier"));
         if (e.kind == "event begins" && !ev->cry.empty())
             stagedCry(ev->market, ev->cry);
@@ -568,7 +576,9 @@ void Game::stagedNotices(const WorldEvent& e)
     }
     else if (e.kind == "times nudged")
     {
-        pinStagedNotice("nudge-" + e.target, e.target, "nudge:" + e.target, e.detail, "the crier");
+        const auto& nudges = world_.society().board().nudges;
+        pinStagedNotice("nudge-" + e.target, e.target, "nudge:" + e.target, e.detail, "the crier",
+                        nudges.count(e.target) ? nudges.at(e.target).until : 0);
         saveSoon();
     }
     else if (e.kind == "nudge over")
@@ -578,7 +588,9 @@ void Game::stagedNotices(const WorldEvent& e)
     }
     else if (e.kind == "harvest called")
     {
-        pinStagedNotice("harvest-" + e.actor + "-" + e.target, e.target, "harvest:" + e.actor, e.detail, "the crier");
+        const auto& overrides = world_.society().board().harvestOverride;
+        pinStagedNotice("harvest-" + e.actor + "-" + e.target, e.target, "harvest:" + e.actor, e.detail, "the crier",
+                        overrides.count(e.actor) ? overrides.at(e.actor).until : 0);
         saveSoon();
     }
 }
@@ -626,42 +638,32 @@ void Game::tendStagedCries()
         // plain for law, the same of those who work at the market.)
         auto crier = crierOf(community);
         if (crier.empty())
-        {
-            std::string inn, priest;
-            for (const auto& [id, life] : world_.society().state().residents)
-            {
-                const auto* job = world_.society().jobOf(id);
-                const auto* e = world_.entity(id);
-                const auto* at = job ? world_.roadMarketOf(job->work.cell) : nullptr;
-                if (!job || !e || e->dead || !at || at->id != it->market)
-                    continue;
-                if (jobCategoryOf(id) == "official")
-                {
-                    crier = id;
-                    break;
-                }
-                if (const auto* b = items::businessFor(job->title); b && b->id == "inn" && inn.empty())
-                    inn = id;
-                auto title = job->title;
-                for (auto& ch : title)
-                    ch = char(std::tolower(static_cast<unsigned char>(ch)));
-                if (priest.empty() && (title.find("priest") != std::string::npos || title.find("chaplain") != std::string::npos))
-                    priest = id;
-            }
-            if (crier.empty())
-                crier = !inn.empty() ? inn : priest;
-        }
+            crier = crierOf(community, it->market);
         if (crier.empty())
         {
             it = pendingCries_.erase(it);
             continue;
         }
-        CrierCall call{community, crier, square->cell, {it->line}, 0, world_.time()};
+        CrierCall call{community, crier, square->cell, {it->line}, 0, world_.time(), it->market};
         world_.seatResident(crier, {square->cell, square->x, square->y + 1, "Crying the news at the square."});
         criers_[community] = std::move(call);
         world_.recordEvent({"crier", crier, {}, square->cell, 0, 0, {}, 1, 0, it->line});
         it = pendingCries_.erase(it);
     }
+}
+
+void Game::yieldStagedCry(const std::string& community)
+{
+    // A festival's crier or a legend's comes first: a staged cry holding the crier gives way, its lines not yet called
+    // waiting again (a day) for the crier to be free.
+    const auto found = criers_.find(community);
+    if (found == criers_.end() || found->second.market.empty())
+        return;
+    const auto call = found->second;
+    criers_.erase(found);
+    for (auto i = call.next; i < call.lines.size(); ++i)
+        stagedCry(call.market, call.lines[i]);
+    world_.unseatResident(call.crier);
 }
 
 void Game::roadNotices(const WorldEvent& e)

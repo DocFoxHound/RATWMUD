@@ -2383,7 +2383,7 @@ class World
     bool shipToBeLost(const market::Ship& ship) const;
     // Staged events and causes (Phase 7; RatwEvents.cpp).
     void eventsMorning(std::int64_t today);
-    void rollEvents(const Town& market, std::int64_t week, std::int64_t today);
+    bool rollEvents(const Town& market, std::int64_t week, std::int64_t today);
     bool makeEvent(const std::string& market, const market::Data::EventKind& kind, std::int64_t day, const std::string& seed,
                    market::StagedEvent& out, std::string& problem) const;
     void tendEvents();
