@@ -183,6 +183,7 @@ Data load()
         service.business = s.string("business");
         service.every = int(clampNumber(s["every"].asNumber(30), 1, 3650, 30));
         service.patrons = s.string("for") == "patrons";
+        service.poor = s.boolean("poor", false) && !service.patrons;
         if (!service.id.empty() && service.id.size() <= 80 && !service.business.empty() && service.business.size() <= 80 &&
             d.services.size() < 128)
             d.services.push_back(std::move(service));
@@ -1757,11 +1758,17 @@ Society::LadderStart Society::ladderStart(const std::string& till, const std::st
                                          bool atRest) const
 {
     // What a ladder starts from (once a quote: the factor before pressure, the depth, P and the holder's push now).
+    return ladderStartIn(marketOf(till), item, baseFactor(till, item), holder, atRest);
+}
+
+Society::LadderStart Society::ladderStartIn(const std::string& market, const std::string& item, double factor, const std::string& holder,
+                                           bool atRest) const
+{
     LadderStart s;
-    s.market = marketOf(till);
+    s.market = market;
     s.base = items::baseOf(item);
     s.depth = depthOf(s.market, s.base);
-    s.factor = baseFactor(till, item);
+    s.factor = factor;
     s.each = double(catalogPrice(item));
     s.P = atRest ? 0 : pressure(s.market, s.base);
     s.push = atRest ? 0 : pushedBy(s.market, holder, s.base);
@@ -2056,7 +2063,7 @@ bool Society::exchange(const std::string& seller, const std::string& buyer, cons
     auto& s = state_.accounts.at(seller);
     auto& b = state_.accounts.at(buyer);
     const int left = s.stock[item] -= quantity;
-    if (left == 0 && item != "herbs" && item != "meal" && item != "sword")
+    if (left == 0 && !keptAtZero(item))
         s.stock.erase(item);
     b.stock[item] += quantity;
     b.cash -= total;
@@ -2476,7 +2483,10 @@ void World::ensureTradePoints()
     {
         streetHooked_ = this;
         society_.setStreetHooks({[this](const Society&, const std::string& till) { return tillWatched(till); },
-                                 [this](Society&, const std::string& household, const std::string& till) { return sendRunner(household, till); }});
+                                 [this](Society&, const std::string& household, std::string& till) { return sendRunner(household, till); },
+                                 [this](Society&, const std::string& household, const std::string& till, const std::string& ware) {
+                                     return sendBuyer(household, till, ware);
+                                 }});
     }
     if (tradePointsReady_ && tradePointsRevision_ == society_.placesRevision())
         return;

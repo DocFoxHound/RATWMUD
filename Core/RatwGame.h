@@ -1316,7 +1316,7 @@ class Game
                        std::int64_t coins, const std::string& words);
     troubles::Trouble shortHousehold(const std::string& member);
     // (worth: the gift's, its coins and its goods at the receiver's market's price: doc 79, 6.7.)
-    void troubleGiven(const std::string& giver, const troubles::Trouble& before, std::int64_t worth);
+    void troubleGiven(const std::string& giver, const troubles::Trouble& before, std::int64_t worth, bool lifted);
     std::string vacancyFor(const std::string& employer, const std::string& resident) const;
     const Position* mastersTrade(const std::string& master) const;
     // Town projects (doc 57, Phase 3; RatwGameProjects.cpp): the ledger, who is working at which (and in what role), the

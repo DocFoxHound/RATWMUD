@@ -251,7 +251,7 @@ void World::weigh(Incident& inc)
     }
     w->incidents.push_back(inc.id);
     if (inc.kind == "theft" && (inc.coins > 0 || inc.quantity > 0))
-        w->restitution.push_back({inc.victim, inc.item, inc.quantity, inc.coins});
+        w->restitution.push_back({inc.victim, inc.item, inc.quantity, inc.coins, inc.from});
     // (The fine: 8p for an assault, 3p for a theft or an attempt; and, for a theft, what was taken.)
     w->fine += (inc.kind == "assault" ? 8 : 3) +
                (inc.kind == "assault" || inc.kind == "attempted theft" ? 0 : inc.coins + worth(society_, inc.victim, inc.item, inc.quantity));
@@ -322,6 +322,7 @@ Result World::steal(const std::string& thief, const std::string& victimId)
     std::string item;
     int quantity = 0;
     std::int64_t coins = 0;
+    std::string tookFrom;                   // (A till the goods came from: its shop's, not the keeper's own.)
     if (success)
     {
         // Now and then a masterwork, marked with its maker's scent (doc 35): a prize that can give a thief away.
@@ -340,7 +341,9 @@ Result World::steal(const std::string& thief, const std::string& victimId)
         }
         // A hungry thief at a food shop takes food from its till's stock (doc 79, 10.1), not the keeper's own purse.
         std::string till;
-        if (t->npc && v->npc && !shielded)
+        // (Only from a shop being kept: its keeper trading there, not one gone home with its till's goods behind it.)
+        const auto* keeping = v->npc ? society_.resident(victimId) : nullptr;
+        if (t->npc && v->npc && !shielded && keeping && keeping->task == "trade")
             if (const auto motive = markMotive_.find(thief); motive != markMotive_.end() && motive->second == "food")
                 if (const auto own = society_.tillOf(victimId); own != victimId)
                     if (const auto* shelf = society_.account(own))
@@ -381,8 +384,10 @@ Result World::steal(const std::string& thief, const std::string& victimId)
             return {false, "Your paw comes away empty.", victimId};
         if (!till.empty())
             society_.noteTillMoved(till);       // (Its shelves moved: journalled with the next record.)
+        tookFrom = till;
     }
     auto& inc = openIncident(success ? "theft" : "attempted theft", thief, victimId);
+    inc.from = tookFrom;
     inc.item = item;
     inc.quantity = quantity;
     inc.coins = coins;
@@ -457,7 +462,13 @@ void World::settleWarrant(const Warrant& w, const std::string& guard)
     {
         const auto* purse = society_.account(w.person);
         if (!r.item.empty() && purse && Society::stock(*purse, r.item) >= r.quantity)
-            society_.shift(w.person, r.to, r.item, r.quantity, 0, "restitution");
+        {
+            // (Goods taken from a shop's till go back on its shelf, not into its keeper's own wallet: doc 79, 10.1.)
+            const bool shelf = !r.till.empty() && society_.account(r.till);
+            society_.shift(w.person, shelf ? r.till : r.to, r.item, r.quantity, 0, "restitution");
+            if (shelf)
+                society_.noteTillMoved(r.till);
+        }
         else if (const auto value = worth(society_, r.to, r.item, r.quantity); value > 0)
             paid += society_.shift(w.person, r.to, "", 0, value, "restitution") ? value : 0;
         if (r.coins > 0)
@@ -819,28 +830,45 @@ void World::chooseMarks()
             const auto* e = entity(t.id);
             const auto* life = society_.resident(t.id);
             const auto* mine = society_.statusOf(t.id);
-            if (t.hour > hourOfDay || !e || e->dead || !life || !mine || custodyOf(t.id) || tried(t.id))
+            // (A household lifted by a player's help since the day's thieves were drawn steals no more: 6.7.)
+            if (t.hour > hourOfDay || !e || e->dead || !life || !mine || custodyOf(t.id) || tried(t.id) || society_.liftedNow(t.id))
                 continue;
+            // Hungry (10.1): hunger 55 or more, and less than a day's food in hand (the two days a household keeps run
+            // down by a short day, and nothing on a bare one): it goes for a food stall's till.
             const auto* wallet = society_.account(t.id);
-            const bool hungry = life->hunger >= 55 && !(wallet && Society::hasFood(*wallet));
-            // Still on a good mark: kept.
+            double inHand = 0;
+            if (wallet)
+                for (const auto& [item, n] : wallet->stock)
+                    if (n > 0 && Society::edible(item))
+                        inHand += double(std::max(0, Society::nourishment(item))) * n;
+            const bool hungry = life->hunger >= 55 && inHand < Society::NourishADay;
+            // A keeper at its open shop, the till's food on the shelf before it: never one gone home or to the tavern.
+            const auto trading = [&](const std::string& holder) {
+                const auto* m = entity(holder);
+                const auto* keeping = society_.resident(holder);
+                const auto* job = society_.jobOf(holder);
+                if (!m || m->dead || !m->npc || !keeping || keeping->task != "trade" || !job)
+                    return false;
+                return m->cellId == job->work.cell || (!job->serve.cell.empty() && m->cellId == job->serve.cell) || society_.atStall(holder);
+            };
+            // Still on a good mark: kept (a till's keeper only while it keeps its shop).
             if (const auto had = marks_.find(t.id); had != marks_.end())
-                if (const auto* m = entity(had->second); m && !m->dead && markMotive_.count(t.id))
+                if (const auto* m = entity(had->second); m && !m->dead && markMotive_.count(t.id) &&
+                                                         (markMotive_.at(t.id) != "food" || trading(had->second)))
                 {
                     kept[t.id] = had->second;
                     motives[t.id] = markMotive_.at(t.id);
                     continue;
                 }
             std::vector<std::string> marks;
-            if (hungry)
+            if (hungry && hourOfDay >= Society::ShopOpen && hourOfDay < Society::ShopShut)
                 for (const auto& p : society_.positions())
                 {
                     if (p.role != "merchant")
                         continue;
                     const auto& holder = society_.state().careers.positions.at(p.id).holder;
-                    const auto* m = entity(holder);
                     const auto* stock = society_.account("till:" + p.id);
-                    if (!m || m->dead || !m->npc || holder == t.id || !stock || society_.marketOf("till:" + p.id) != t.market)
+                    if (holder == t.id || !stock || society_.marketOf("till:" + p.id) != t.market || !trading(holder))
                         continue;
                     if (std::any_of(stock->stock.begin(), stock->stock.end(), [](const auto& g) { return g.second > 0 && Society::edible(g.first); }))
                         marks.push_back(holder);
@@ -860,8 +888,9 @@ void World::chooseMarks()
                 const auto* o = society_.statusOf(id);
                 const auto* oe = entity(id);
                 const auto* job = society_.jobOf(id);
+                const auto* spec = society_.spec(id);
                 if (!o || o->band <= mine->band || o->market != t.market || o->household == mine->household || !oe || oe->dead ||
-                    oe->transient || (job && job->role == "guard") || custodyOf(id))
+                    oe->transient || (job && job->role == "guard") || (spec && spec->ofTheWatch()) || custodyOf(id))
                     continue;
                 const int n = crowd[oe->cellId];
                 const auto r = roll(t.id + "|" + id, today);

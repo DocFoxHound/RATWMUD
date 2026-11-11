@@ -294,12 +294,13 @@ struct StagedState
         std::array<int, 2> soldBefore{}, playersBefore{};
         bool outEarly = false, outEarlyBefore = false;
         int failing = 0;
+        int judged = 0;                             // Whole days judged running (two before "barely moves" can be said).
         std::string word;
         bool operator==(const Business& o) const
         {
             return day == o.day && sold == o.sold && players == o.players && soldBefore == o.soldBefore &&
                    playersBefore == o.playersBefore && outEarly == o.outEarly && outEarlyBefore == o.outEarlyBefore &&
-                   failing == o.failing && word == o.word;
+                   failing == o.failing && judged == o.judged && word == o.word;
         }
     };
     std::map<std::string, Business> business;
@@ -362,6 +363,10 @@ struct ResidentSpec
     bool joinable = false;
     // Can't be attacked by players, nor robbed of coin (Atlas; Docs/Design/57-changing-the-world.md, 6).
     bool protectedNpc = false;
+    // Authored one of the Watch (role "guard"), though placed with no post (no work spot: made a civilian at load). Never
+    // a beggar, a thief or a pickpocket's mark (doc 79, 10.1-10.2).
+    bool watch = false;
+    bool ofTheWatch() const { return watch || role == "guard"; }
 };
 struct PatrolRoute
 {
@@ -970,30 +975,46 @@ class Society
     // till's cell or the next one (the standing-still rule, 7.7: nothing visible changes there without a visible buyer),
     // and asking a household's errand-runner to walk to a till for its food (6.6; true if one set out). Without them no
     // till is watched.
+    // The runner hook may send the runner to another open shop of the market selling the household's food when its own
+    // is shut (6.6: "the nearest open shop that sells the good"): it sets `till` to the one it went to. The buyer hook
+    // sends a member to a till's counter for a buy besides food (7.7: "a rich buyer, a servant": the household's own
+    // member); the World then calls runnerBuy at the counter.
     struct StreetHooks
     {
         std::function<bool(const Society&, const std::string& till)> watched;
-        std::function<bool(Society&, const std::string& household, const std::string& till)> runner;
+        std::function<bool(Society&, const std::string& household, std::string& till)> runner;
+        std::function<bool(Society&, const std::string& household, const std::string& till, const std::string& ware)> buyer;
     };
     void setStreetHooks(StreetHooks hooks) { street_ = std::move(hooks); }
     // A household's errand-runner at the counter (the World, after the runner's seconds there): its food from that till now,
     // the shelf's stock dropping by the real pieces; false if the shelf was bare or it had nothing waiting (a poor or
-    // destitute household then has a short day). One that never got there (runnerFailed) waits for the next hour.
+    // destitute household then has a short day). One that never got there (runnerFailed) waits for the next hour; after
+    // the shops' last hour it is fed from elsewhere at once, the shelf left as it stands.
     bool runnerBought(const std::string& household);
     void runnerFailed(const std::string& household);
+    // A buy besides food made by a household's member at a till's counter (the buyer hook's): one piece from the shelf
+    // into a member's wallet; false if the shelf was bare.
+    bool runnerBuy(const std::string& household, const std::string& till, const std::string& ware);
     bool runnerWaiting(const std::string& household) const { return runnerWaiting_.count(household) > 0; }
-    // The staged buying besides food (6.5, 7.7), at the household's hour: an everyday ware by its band's `shops` chance, a
-    // luxury by its `luxury` chance a week, and each service at `every` times its `services` (a sale for the business,
-    // no stock). A buy at a watched till waits for the till to be unwatched, and goes undone at the shops' shutting.
+    // The staged buying besides food (6.5, 7.7), at the household's hour: its band's `shops` pieces a day (a mean) of its
+    // market's everyday wares (the foods besides the bands' staples, and the goods that aren't food) that its band can
+    // afford (at most the top of its purse), each picked by its shelf's target, so a shop's custom goes with what it sets
+    // out; a luxury by its `luxury` chance a week; and each service at `every` times its `services` (a sale for the
+    // business, no stock; the poor only a barber's). A buy at a watched till waits for a member to walk to the counter
+    // (the buyer hook), or for the till to be unwatched, and goes undone at the shops' shutting.
     void stagedShopping(const std::string& household);
-    // A shop's business (10.3): "thriving", "steady" or "failing" for a keeper, by its shelves' sales against their
-    // targets, its players' buying, the pressure on its wares and its market's Times, from its first day's end; "none"
-    // before that, and for anyone else.
+    // A shop's business (10.3): "thriving", "steady" or "failing" for a keeper, by its sales against its ordinary trade
+    // (ordinaryTrade) and its shelves' targets, its players' buying, the pressure on its wares and its market's Times,
+    // from its first day's end; "none" before that, and for anyone else.
     std::string businessOf(const std::string& keeper) const;
-    // Pieces gone from a till's shelves to a staged buyer or to a player (the business's count). Every move of a till's
-    // shelves by a sale, a theft or a player's trade notes the till for the journal (written whole with the Board's next
-    // record: the trade-moved shelves).
-    void noteSale(const std::string& till, const std::string& ware, int pieces, bool player);
+    // What each shop sells in an ordinary day (pieces a day, by till): its households' staple food, the everyday wares,
+    // luxuries and services its market's households would buy from it at the slider's middle (status.json's shares at 0),
+    // by the same rates and picks as stagedShopping. The business word's yardstick (10.3: "the shelf barely moves").
+    std::map<std::string, double> ordinaryTrade() const;
+    // Pieces gone from a till's shelves to a staged buyer or to a player, or services done (`ware` empty: nothing on a
+    // shelf), the business's count; a household's staple food (`staple`) moves the shelf but isn't counted. Every move of a till's shelves by a sale, a theft or a player's trade notes the till
+    // for the journal (written whole with the Board's next record: the trade-moved shelves); a service moves none.
+    void noteSale(const std::string& till, const std::string& ware, int pieces, bool player, bool staple = false);
     void noteTillMoved(const std::string& till) { tillsMoved_.insert(till); }
     // The day's turn of the business (10.3): yesterday's word for every shop, three days failing a status event.
     void businessDay(std::int64_t day);
@@ -1007,7 +1028,17 @@ class Society
     // A player's help to a poor or destitute household (6.7): worth a week's food or more lifts it a week, a month's a month
     // (`days` > 0: that long, the short trouble's); while at most half its market's destitute share is lifted at once. The
     // days lifted, 0 for none.
+    // (`days` 0: by the help's worth, a week's food or more a week, a fortnight's a fortnight, a month's a month.)
     int liftByHelp(const std::string& id, std::int64_t worth, int days = 0);
+    // Whether the household of `id` could be lifted now (poor or destitute, its market's cap not full): asked before help
+    // is taken, so a player's coins never go for a lift that can't be.
+    bool liftRoom(const std::string& id) const;
+    // Goods an account keeps an entry for at none (herbs, meals, swords: the starter goods), where any other is dropped
+    // from its stock: the one rule for every shelf and wallet.
+    static bool keptAtZero(const std::string& item) { return item == "herbs" || item == "meal" || item == "sword"; }
+    // Whether the staged households are made (the day's bands worked out): until then nobody has a band to steal, beg or
+    // be given the dole by, and what the World plans from them waits.
+    bool stagedReady() const { return stagedDay_ >= 0 && !stagedHomes_.empty(); }
     bool liftedNow(const std::string& id) const;
     // fed_household fame at most once a week per account holder and household (6.7): true, and noted, if it counts now.
     bool fedFameRoom(const std::string& player, const std::string& household);
@@ -1035,6 +1066,14 @@ class Society
     std::string honestyOf(const std::string& id) const;
     // A household's members (the day's), its band and its market; null for none.
     const std::vector<std::string>* membersOf(const std::string& household) const;
+    // A household's staple food today ("" for none): what its errand-runner goes to a shop for.
+    std::string foodOf(const std::string& household) const;
+    // Whether a household was given the Restday dole on `day` (10.2).
+    bool doleGiven(const std::string& household, std::int64_t day) const
+    {
+        const auto found = state_.staged.dole.find(household);
+        return found != state_.staged.dole.end() && found->second >= day;
+    }
     // Where in the year the society is (0 at Spring's first day, up to 365; -1 until it first decides, when no season
     // applies): the Board's season factors read it (doc 79, 7.1).
     double yearDay() const { return yearDay_; }
@@ -1222,6 +1261,10 @@ class Society
         double depth = market::DepthLeast, factor = 1, each = 1, P = 0, push = 0, cap = .15;
     };
     LadderStart ladderStart(const std::string& till, const std::string& item, const std::string& holder, bool atRest = false) const;
+    // (The same at a market, with the price factor given: a till's, or the market's own, marketBase, for a quote where no
+    // till is named: what a stolen thing or a household's food is worth there.)
+    LadderStart ladderStartIn(const std::string& market, const std::string& item, double factor, const std::string& holder,
+                              bool atRest = false) const;
     StagedLot ladder(const LadderStart& start, int quantity, bool buy, bool stall) const;
     struct SellBounds;
     // (leastLot: on a sale refused as "Not worth the counting", the smallest lot worth a penny it names, 0 for none.)
@@ -1304,8 +1347,22 @@ class Society
         std::string household, till, ware;
     };
     std::vector<StreetBuy> buysDeferred_;           // Buys besides food waiting for their till to be unwatched.
-    std::map<std::string, std::vector<std::pair<std::string, std::string>>> marketWares_;   // Market -> (till, ware) sold.
-    std::map<std::string, std::vector<std::pair<std::string, std::string>>> marketLuxuries_;
+    // A market's wares (or its luxuries) on its shops' shelves: each till and ware with its price and its shelf's target
+    // (its weight in a pick), and by band the running sum of the weights of those the band can afford (its pick: 6.5).
+    struct StreetWare
+    {
+        std::string till, ware;
+        std::int64_t price = 0;
+        double weight = 0;
+    };
+    struct StreetShelves
+    {
+        std::vector<StreetWare> list;
+        std::array<std::vector<double>, status::Bands> picks;
+    };
+    std::map<std::string, StreetShelves> marketWares_, marketLuxuries_;
+    const StreetWare* streetPick(const std::string& market, bool luxury, int band, double lot) const;
+    int serviceEvery(const market::Data::Service& s) const;   // (0: turned off by the world.)
     std::map<std::string, std::map<std::string, std::vector<std::string>>> businessTills_;   // Market -> business -> tills.
     std::map<std::string, std::string> honesty_;
     enum class FoodBy
@@ -1314,7 +1371,7 @@ class Society
         Runner,                                     // Its runner at the counter.
         Unseen                                      // The shops shutting with its till still watched: fed with no stock moved.
     };
-    void stagedFoodBy(const std::string& home, const std::vector<std::string>& members, FoodBy by);
+    void stagedFoodBy(const std::string& home, const std::vector<std::string>& members, FoodBy by, const std::string* runnerTill = nullptr);
     void streetKeepers();                           // (The day's wares, luxuries and services by market, with stagedKeepers.)
     bool streetBuy(const StreetBuy& buy);           // (A buy besides food done now: false if its shelf is bare.)
     void streetHour(int hod);                       // (The hour's waiting buys tried again; at the shutting, given up.)

@@ -227,6 +227,8 @@ Value crime(const CrimeState& k)
         j.add("id", i.id); j.add("kind", i.kind); j.add("offender", i.offender); j.add("victim", i.victim);
         j.add("cell", i.cell); j.add("town", i.town); j.add("time", i.time); j.add("day", i.day);
         j.add("item", i.item); j.add("quantity", i.quantity); j.add("coins", i.coins); j.add("status", i.status);
+        if (!i.from.empty())
+            j.add("from", i.from);
         auto witnesses = Value::array();
         for (const auto& w : i.witnesses)
         {
@@ -252,6 +254,8 @@ Value crime(const CrimeState& k)
         {
             auto k = Value::object();
             k.add("to", r.to); k.add("item", r.item); k.add("quantity", r.quantity); k.add("coins", r.coins);
+            if (!r.till.empty())
+                k.add("till", r.till);
             owed.push(k);
         }
         j.add("restitution", owed);
@@ -793,6 +797,9 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             i.cell = j.string("cell"); i.town = j.string("town"); i.time = num(j, "time"); i.day = num(j, "day");
             i.item = j.string("item"); i.quantity = int(num(j, "quantity")); i.coins = std::int64_t(num(j, "coins"));
             i.status = j.string("status", "open");
+            i.from = j.string("from");
+            if (i.from.rfind("till:", 0) != 0 || i.from.size() > 200)
+                i.from.clear();                     // (Only a shop's till; anything else read as the victim's own.)
             for (const auto& k : j.array("witnesses"))
                 i.witnesses.push_back({k.string("id"), k.boolean("identified"), num(k, "clarity"), k.boolean("reported")});
             saved.crime.incidents.push_back(std::move(i));
@@ -804,7 +811,12 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
             for (const auto& id : j.array("incidents"))
                 w.incidents.push_back(id.asString(""));
             for (const auto& k : j.array("restitution"))
-                w.restitution.push_back({k.string("to"), k.string("item"), int(num(k, "quantity")), std::int64_t(num(k, "coins"))});
+            {
+                Restitution r{k.string("to"), k.string("item"), int(num(k, "quantity")), std::int64_t(num(k, "coins")), k.string("till")};
+                if (r.till.rfind("till:", 0) != 0 || r.till.size() > 200)
+                    r.till.clear();
+                w.restitution.push_back(std::move(r));
+            }
             saved.crime.warrants.push_back(std::move(w));
         }
         for (const auto& j : crime.array("custody"))

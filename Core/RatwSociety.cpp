@@ -1460,7 +1460,7 @@ void Society::stagedFood(const std::string& home, const std::vector<std::string>
     stagedFoodBy(home, members, FoodBy::Hour);
 }
 
-void Society::stagedFoodBy(const std::string& home, const std::vector<std::string>& members, FoodBy by)
+void Society::stagedFoodBy(const std::string& home, const std::vector<std::string>& members, FoodBy by, const std::string* runnerTill)
 {
     // Food from the shelf by the household's band (doc 79, 6.5): its band's meals a head a day, of the first of its foods its
     // food shop sells, up to two days' on hand (more the day before a Restday or a festival: buying ahead), never beyond.
@@ -1482,9 +1482,11 @@ void Society::stagedFoodBy(const std::string& home, const std::vector<std::strin
     {
         if (runnerWaiting_.count(home))
             return;
-        if (ownRule("errandRunners") > 0 && street_.runner && street_.runner(*this, home, h.till))
+        // (The runner goes to the household's own food shop, or, that shut, to another open one selling its food: 6.6.)
+        std::string to = h.till;
+        if (ownRule("errandRunners") > 0 && street_.runner && street_.runner(*this, home, to) && !to.empty())
         {
-            runnerWaiting_[home] = h.till;
+            runnerWaiting_[home] = to;
             foodDeferred_.erase(home);
         }
         else
@@ -1494,6 +1496,8 @@ void Society::stagedFoodBy(const std::string& home, const std::vector<std::strin
     fedOn_[home] = stagedDay_;
     foodDeferred_.erase(home);
     runnerWaiting_.erase(home);
+    // (The shelf it comes from: its runner's, or its own food shop's.)
+    const std::string from = runnerTill && !runnerTill->empty() ? *runnerTill : h.till;
     const auto& t = statusTable();
     const int band = std::clamp(h.band, 0, status::Bands - 1);
     const auto& row = t.rows[std::size_t(band)];
@@ -1549,11 +1553,11 @@ void Society::stagedFoodBy(const std::string& home, const std::vector<std::strin
         const auto* shelf = account(h.till);
         got = std::clamp(shelf ? stock(*shelf, h.food) : 0, 0, total);
     }
-    else if (!h.till.empty() && hooks_.shelf)
+    else if (!from.empty() && hooks_.shelf)
     {
-        got = std::clamp(hooks_.shelf(*this, h.till, h.food, total), 0, total);
+        got = std::clamp(hooks_.shelf(*this, from, h.food, total), 0, total);
         if (got > 0)
-            noteSale(h.till, h.food, got, false);
+            noteSale(from, h.food, got, false, true);
     }
     if (got < total && poor && !shortDay)
     {
@@ -1564,10 +1568,10 @@ void Society::stagedFoodBy(const std::string& home, const std::vector<std::strin
         if (got > halfTotal)
         {
             // (More came than half: the rest goes back on the shelf it came from.)
-            if (const auto till = state_.accounts.find(h.till); till != state_.accounts.end() && by != FoodBy::Unseen)
+            if (const auto till = state_.accounts.find(from); till != state_.accounts.end() && by != FoodBy::Unseen)
             {
                 till->second.stock[h.food] += got - halfTotal;
-                noteSale(h.till, h.food, -(got - halfTotal), false);
+                noteSale(from, h.food, -(got - halfTotal), false, true);
             }
             got = halfTotal;
         }
@@ -1582,8 +1586,8 @@ void Society::stagedFoodBy(const std::string& home, const std::vector<std::strin
         left -= n;
     }
     // The familiarity step between one member and the keeper (6.6): no WorldEvent, so nothing remembered as a gift.
-    if (!h.till.empty() && !members.empty() && provisions_.size() < 8192)
-        if (const auto held = state_.careers.positions.find(h.till.substr(5)); held != state_.careers.positions.end() &&
+    if (from.rfind("till:", 0) == 0 && !members.empty() && provisions_.size() < 8192)
+        if (const auto held = state_.careers.positions.find(from.substr(5)); held != state_.careers.positions.end() &&
                                                                                !held->second.holder.empty() &&
                                                                                held->second.holder != members.front())
             provisions_.push_back({members.front(), held->second.holder});

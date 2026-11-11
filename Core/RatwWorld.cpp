@@ -3374,7 +3374,7 @@ int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
         r.paid = false;
         r.herbs = 0;
         r.meals = 1;
-        r.joinable = r.protectedNpc = false;
+        r.joinable = r.protectedNpc = r.watch = false;
         r.description = "A young wolf, born here to " + model->name + "'s family.";
         r.backstory = "Born in the world, not written.";
         if (!request.sex.empty())
@@ -6767,6 +6767,11 @@ Result World::restore(const PersistedWorld& saved)
     runners_.clear();
     warmWall_.clear();
     dolePriests_.clear();
+    doleTakers_.clear();                            // (The dole's queue isn't saved: a household not yet served is served again.)
+    doleHomes_.clear();
+    doleSteps_.clear();
+    doleListHour_ = -1;
+    streetReady_ = false;
     streetHour_ = streetMinute_ = -1;
     watchedAt_ = -1;
     fights_.clear();

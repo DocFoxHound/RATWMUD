@@ -167,9 +167,9 @@ Table builtIn()
     t.caps = {{"rewardsADay", 200}, {"theftADay", 20}, {"stakesADay", 30}, {"courierADay", 3},
               {"welcomeDays", 7},   {"welcomeCoins", 20}, {"welcomeHerbs", 2}, {"welcomeMeals", 3}};
     t.pay = {{"keeper", 14}, {"hand", 8}, {"public", 8}, {"watch", 10}, {"farm", 8}, {"estate", 10}};
-    // Street life (Phase 6): everyday wares a day, a luxury a week (6.5: 10% comfortable, 40% rich), services (a barber
-    // rarely for the poor), alms from a passer-by.
-    const double shops[Bands] = {0, .15, .35, .6}, luxury[Bands] = {0, 0, .1, .4}, services[Bands] = {0, .25, 1, 1.5},
+    // Street life (Phase 6): everyday wares' pieces a day, a luxury a week (6.5: 10% comfortable, 40% rich), services (a
+    // barber rarely for the poor), alms from a passer-by.
+    const double shops[Bands] = {0, .3, 1, 2}, luxury[Bands] = {0, 0, .1, .4}, services[Bands] = {0, .25, 1, 1.5},
                  alms[Bands] = {0, 0, .15, .3};
     for (int b = 0; b < Bands; ++b)
         t.rows[std::size_t(b)].shops = shops[b], t.rows[std::size_t(b)].luxury = luxury[b],
@@ -288,7 +288,7 @@ Table read(const json::Value& v, const Table& base, std::vector<std::string>* wa
         row.theft = clampNumber(r, "theft", row.theft, 0, 5, where, warnings);
         pair(r, "pocket", row.pocketLow, row.pocketHigh, 500, where, warnings);
         row.goodsMost = int(clampNumber(r, "goodsMost", row.goodsMost, 0, 99, where, warnings));
-        row.shops = clampNumber(r, "shops", row.shops, 0, 1, where, warnings);
+        row.shops = clampNumber(r, "shops", row.shops, 0, 10, where, warnings);
         row.luxury = clampNumber(r, "luxury", row.luxury, 0, 1, where, warnings);
         row.services = clampNumber(r, "services", row.services, 0, 5, where, warnings);
         row.alms = clampNumber(r, "alms", row.alms, 0, 1, where, warnings);

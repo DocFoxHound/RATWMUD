@@ -79,6 +79,7 @@ struct Data
         std::string id, business;
         int every = 30;
         bool patrons = false;
+        bool poor = false;                          // Done for the poor too (6.5: "a barber rarely"): `poor: true`.
     };
     std::vector<Service> services;
 };

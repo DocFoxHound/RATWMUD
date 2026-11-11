@@ -995,6 +995,8 @@ Value stagedBusiness(const StagedState::Business& b)
     j.add("soldBefore", sold); j.add("playersBefore", players);
     j.add("outEarly", b.outEarly); j.add("outEarlyBefore", b.outEarlyBefore);
     j.add("failing", b.failing); j.add("word", b.word);
+    if (b.judged > 0)
+        j.add("judged", b.judged);
     return j;
 }
 
@@ -1092,9 +1094,9 @@ Value stagedDiff(const StagedState& was, const StagedState& now)
              }
              return a;
          });
-    // Street life (Phase 6): the dole, the shops' business, the fed households' fame.
-    diff("dole", was.dole, now.dole, equal, number);
-    diff("fed", was.fed, now.fed, equal, number);
+    // Street life (Phase 6): the shops' business. (The dole and the fed households' fame are not journalled: the dole's
+    // bread is a raw add to staged wallets and a fame deed is kept only by the checkpoint, so each goes with what it marks.
+    // After a crash a household not yet given its bread is given it again, and a deed lost can be earned again.)
     diff("business", was.business, now.business, equal, [](const StagedState::Business& b) { return stagedBusiness(b); });
     for (const auto& [name, a, b] : {std::tuple{"hour", was.hour, now.hour},
                                      std::tuple{"day", was.day, now.day}})
@@ -1286,6 +1288,7 @@ StagedState readStaged(const Value& o)
         x.outEarly = b.boolean("outEarly", false);
         x.outEarlyBefore = b.boolean("outEarlyBefore", false);
         x.failing = whole(b["failing"], 0, 365000000, n) ? int(std::min<std::int64_t>(n, 1000)) : 0;
+        x.judged = whole(b["judged"], 0, 365000000, n) ? int(std::min<std::int64_t>(n, 1000)) : 0;
         const auto word = b.string("word");
         x.word = word == "thriving" || word == "steady" || word == "failing" ? word : std::string();
         st.business[till] = x;

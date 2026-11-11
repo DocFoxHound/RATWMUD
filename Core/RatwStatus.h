@@ -37,9 +37,10 @@ struct Row
     double budget = 1, theft = 0;                   // A keeper's buying budget times; the weight among thieves.
     std::int64_t pocketLow = 0, pocketHigh = 0;     // What a pickpocket finds.
     int goodsMost = 8;                              // Pieces of one good (not food) a wallet keeps overnight.
-    // Street life (doc 79, 6.5 and 10; Phase 6): the chance a day a household buys one of its market's everyday wares; the
-    // chance a week it buys a luxury; its services' frequency times (by each service's `every`); and the chance a passing
-    // resident of the band gives a beggar a penny.
+    // Street life (doc 79, 6.5 and 10; Phase 6): the pieces a day (a mean) a household buys of its market's everyday wares
+    // (those its band can afford: at most its purse's top); the chance a week it buys a luxury; its services' frequency
+    // times (by each service's `every`; the poor's only the barber's); and the chance a passing resident of the band
+    // gives a beggar a penny.
     double shops = 0, luxury = 0, services = 0, alms = 0;
 };
 struct SharePoint

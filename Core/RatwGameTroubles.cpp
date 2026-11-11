@@ -309,9 +309,14 @@ Result Game::troubleAction(const std::string& wolf, const std::string& target, c
     {
         if (cash < t.coins)
             return {false, "You haven't " + std::to_string(t.coins) + " pennies.", {}};
+        // A fortnight's food: the household is lifted for its length (doc 79, 6.7), while its market has room for it. With
+        // its market's lifts full (half its destitute share), the help isn't taken: no coin moves, no fame, no word of a
+        // fortnight's food that wouldn't be.
+        const bool banded = society.statusOf(resident) != nullptr && society.stagedReady();
+        if (banded && !society.liftRoom(resident))
+            return {false, name(resident) + " thanks you, but won't take it: too many households here are living on help already.", {}};
         if (!society.shift(wolf, resident, "", 0, t.coins, "help for a household"))
             return {false, "It can't be given just now.", {}};
-        // A fortnight's food: the household is lifted for its length (doc 79, 6.7), while its market has room for it.
         if (society.liftByHelp(resident, t.coins, int(std::lround(kind->refillDays))) > 0)
         {
             world_.bonds().addOwed(resident, wolf, -t.coins, world_.calendarDays());   // (T15: the pair.owed lines.)
@@ -458,7 +463,7 @@ troubles::Trouble Game::shortHousehold(const std::string& member)
     return {};
 }
 
-void Game::troubleGiven(const std::string& giver, const troubles::Trouble& before, std::int64_t worth)
+void Game::troubleGiven(const std::string& giver, const troubles::Trouble& before, std::int64_t worth, bool lifted)
 {
     // A gift that brings a short household to its refill (doc 57, 3) solves its trouble, once a season by this wolf. By
     // the band (doc 79, 6.7; Phase 6): a gift worth the trouble's coins (its fortnight of band food at the market's
@@ -470,7 +475,8 @@ void Game::troubleGiven(const std::string& giver, const troubles::Trouble& befor
     if (const auto by = troubleSolvedBy_.find(before.resident + "|" + giver);
         by != troubleSolvedBy_.end() && world_.calendarDays() - by->second < troubles::rules().perWolfDays)
         return;
-    if (world_.society().statusOf(before.resident) ? worth < before.coins
+    // (A household in a band is helped only if the gift lifted it: with its market's lifts full it is still short.)
+    if (world_.society().statusOf(before.resident) ? worth < before.coins || !lifted
                                                    : troubles::foodDays(before.household, life->homeCell, troubleReads()) < kind->refillDays)
         return;
     troubleSolved(giver, before, "fed_household", -1, 0,

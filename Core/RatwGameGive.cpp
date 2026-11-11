@@ -108,14 +108,15 @@ void Game::gifted(const std::string& giver, const std::string& receiver, const s
         const auto* s = society.statusOf(receiver);
         worth += society.marketLot(s ? s->market : std::string(), item, quantity);
     }
-    if (playerAccountId(giver) && society.liftByHelp(receiver, worth) > 0)
+    const bool lifted = playerAccountId(giver) && society.liftByHelp(receiver, worth) > 0;
+    if (lifted)
     {
         // The one lifted owes the helper (6.7, T15: "thanks them later", the pair.owed lines), both ways round.
         world_.bonds().addOwed(receiver, giver, -worth, world_.calendarDays());
         world_.bonds().addOwed(giver, receiver, worth, world_.calendarDays());
     }
     record(Economy | Character, giver);
-    troubleGiven(giver, shortBefore, worth);
+    troubleGiven(giver, shortBefore, worth, lifted);
 }
 
 bool Game::giveCommand(Connection* c, const json::Value& j, Result& result)

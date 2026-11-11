@@ -16,24 +16,42 @@ namespace ratw
 {
 namespace
 {
-// A shop's business word from its counts (10.3): the day ended (sold, players), the day before it, whether a ware went
-// out before noon, the players' three days against its market's middle, the mean pressure on its wares, its market's
-// Times, and whether it deals in luxuries.
-std::string businessWord(const StagedState::Business& b, int target, double meanP, int times, bool luxuries, double playersMedian)
+// How far from an ordinary count a count must be before a shop's trade is said to have moved (10.3): a normal tail of
+// about one day in twenty by chance alone, so an ordinary day reads steady.
+constexpr double Tail = 1.645;
+
+// A shop's business word from its counts (10.3): the day ended and the day before it (pieces to staged buyers and
+// services done; a household's staple food is counted only by its shelf running out), whether a ware went out before
+// noon, the players' three days against its market's middle, its ordinary trade (ordinaryTrade: pieces a day), its
+// shelves' targets, the mean pressure on its wares, its market's Times, and whether it is a luxury shop.
+std::string businessWord(const StagedState::Business& b, double ordinary, int target, double meanP, int times, bool luxuries,
+                         double playersMedian)
 {
     const int players3 = b.playersBefore[0] + b.playersBefore[1] + b.players;
-    const int sold2 = b.soldBefore[0] + b.soldBefore[1];
+    const int yesterday = b.soldBefore[0], two = b.soldBefore[0] + b.soldBefore[1];
     if (meanP < -.15)
         return "failing";                           // A glut on its wares: the smith whose ore was dumped.
-    if (b.outEarlyBefore || (target > 0 && b.soldBefore[0] * 2 >= target) || (players3 > 0 && players3 > playersMedian) || times >= 1)
+    // Faster than its shelf: a ware sold out before noon (a queue, an empty shelf by noon), a day's sales of its whole
+    // shelves over its ordinary trade, a day well above its ordinary one (past chance, and half as much again); or players
+    // buying more there than at its market's middle shop.
+    const bool brisk = ordinary > 0 && yesterday >= std::max(ordinary + Tail * std::sqrt(ordinary) + 1, 1.5 * ordinary);
+    if (b.outEarlyBefore || (target > 0 && yesterday >= target + ordinary) || brisk || (players3 > 0 && players3 > playersMedian))
         return "thriving";
-    if ((target > 0 && sold2 * 20 < target) || (times <= -2 && luxuries))
-        return "failing";                           // The shelf barely moves, or hard times for a luxury.
+    // The shelf barely moves: two whole days' sales well under two ordinary days' (past chance, and under half of them),
+    // once two whole days are known, and only where an ordinary two days is enough to tell (a cartographer selling no map
+    // in two days is no news).
+    const double two0 = 2 * ordinary;
+    const bool barely = b.judged >= 2 && two0 >= 3 && two < std::min(two0 - Tail * std::sqrt(two0), .5 * two0);
+    if (barely || (times <= -2 && luxuries))
+        return "failing";                           // Or hard times for a luxury shop.
+    if (times >= 1 && ordinary > 0 && yesterday >= ordinary + std::sqrt(ordinary))
+        return "thriving";                          // (Times the tie-break: good or boom, and a day better than ordinary.)
     return "steady";
 }
 void rollBusiness(StagedState::Business& b, std::int64_t day)
 {
-    if (b.day == day)
+    // (A sale counted between the day's turn at midnight and the market's dawn is today's, never a step back.)
+    if (b.day >= day)
         return;
     if (b.day == day - 1)
     {
@@ -41,15 +59,29 @@ void rollBusiness(StagedState::Business& b, std::int64_t day)
         b.playersBefore = {b.players, b.playersBefore[0]};
         b.outEarlyBefore = b.outEarly;
     }
-    else if (b.day < day)
+    else
     {
         b.soldBefore = {0, 0};
         b.playersBefore = {0, 0};
         b.outEarlyBefore = false;
+        b.judged = 0;                               // (Days missed: two whole days to see again before "barely moves".)
     }
     b.sold = b.players = 0;
     b.outEarly = false;
     b.day = day;
+}
+// The bands' staple foods (status.json rows' `food`): a household's food from its food shop, not an everyday ware.
+bool staple(const status::Table& t, const std::string& ware)
+{
+    for (const auto& row : t.rows)
+        if (std::find(row.food.begin(), row.food.end(), ware) != row.food.end())
+            return true;
+    return false;
+}
+bool luxury(const std::string& ware)
+{
+    const auto& lux = market::data().luxuries;
+    return std::find(lux.begin(), lux.end(), ware) != lux.end() || std::find(lux.begin(), lux.end(), items::baseOf(ware)) != lux.end();
 }
 } // namespace
 
@@ -57,16 +89,15 @@ void rollBusiness(StagedState::Business& b, std::int64_t day)
 
 void Society::streetKeepers()
 {
-    // What a household of each market may buy besides its food: each keeper's wares it sets out (not the bands' foods,
-    // not a luxury), the luxuries some keeper there sets out, and the tills of each kind of business (for its services).
+    // What a household of each market may buy besides its food: each keeper's wares it sets out (not the bands' staples;
+    // the other foods, a butcher's meat, the greens, the preserves, are wares), the luxuries some keeper there sets out
+    // (cheese: a luxury first, though the rich eat it), and the tills of each kind of business (for its services). Each
+    // with its price and its shelf's target, its weight in a household's pick; and by band, the running sum of the weights
+    // of those it can afford (a piece at most the top of its purse: no poor wolf takes a steel sword off the shelf).
     marketWares_.clear();
     marketLuxuries_.clear();
     businessTills_.clear();
-    std::set<std::string> foods;
-    for (const auto& row : statusTable().rows)
-        foods.insert(row.food.begin(), row.food.end());
-    const auto& lux = market::data().luxuries;
-    const std::set<std::string> luxuries(lux.begin(), lux.end());
+    const auto& t = statusTable();
     for (const auto& p : positions_)
     {
         if (p.role != "merchant")
@@ -83,14 +114,47 @@ void Society::streetKeepers()
             continue;
         for (const auto& ware : stagedShelfGoods(p.founder))
         {
-            if (!itemValid(ware) || (nourishment(ware) > 0 && foods.count(ware)))
+            if (!itemValid(ware))
                 continue;
-            if (luxuries.count(ware) || luxuries.count(items::baseOf(ware)))
-                marketLuxuries_[market].push_back({till, ware});
-            else if (nourishment(ware) <= 0)
-                marketWares_[market].push_back({till, ware});
+            const bool lux = luxury(ware);
+            if (!lux && nourishment(ware) > 0 && staple(t, ware))
+                continue;
+            const int target = shelfTarget(till, ware);
+            if (target > 0)
+                (lux ? marketLuxuries_ : marketWares_)[market].list.push_back({till, ware, catalogPrice(ware), double(target)});
         }
     }
+    for (auto* by : {&marketWares_, &marketLuxuries_})
+        for (auto& [market, shelves] : *by)
+            for (int b = 0; b < status::Bands; ++b)
+            {
+                const auto most = std::min<std::int64_t>(500, t.rows[std::size_t(b)].purseHigh);
+                auto& picks = shelves.picks[std::size_t(b)];
+                picks.clear();
+                double sum = 0;
+                for (const auto& w : shelves.list)
+                    picks.push_back(sum += w.price <= most ? w.weight : 0);
+            }
+}
+
+const Society::StreetWare* Society::streetPick(const std::string& market, bool luxuryWare, int band, double lot) const
+{
+    const auto& by = luxuryWare ? marketLuxuries_ : marketWares_;
+    const auto found = by.find(market);
+    if (found == by.end())
+        return nullptr;
+    const auto& picks = found->second.picks[std::size_t(std::clamp(band, 0, status::Bands - 1))];
+    if (picks.empty() || picks.back() <= 0)
+        return nullptr;
+    const auto at = std::upper_bound(picks.begin(), picks.end(), std::clamp(lot, 0., .999999) * picks.back());
+    return at == picks.end() ? nullptr : &found->second.list[std::size_t(at - picks.begin())];
+}
+
+int Society::serviceEvery(const market::Data::Service& s) const
+{
+    if (const auto own = authored_.economy.services.find(s.id); own != authored_.economy.services.end())
+        return own->second.on ? std::max(1, own->second.every) : 0;
+    return std::max(1, s.every);
 }
 
 bool Society::streetBuy(const StreetBuy& buy)
@@ -107,7 +171,7 @@ bool Society::streetBuy(const StreetBuy& buy)
         if (wallet == state_.accounts.end() || dead_.count(id) || stock(wallet->second, buy.ware) >= StockCap ||
             (!wallet->second.stock.count(buy.ware) && wallet->second.stock.size() >= MaxGoodsKinds))
             continue;
-        if ((till->second.stock[buy.ware] -= 1) == 0 && buy.ware != "herbs" && buy.ware != "meal" && buy.ware != "sword")
+        if ((till->second.stock[buy.ware] -= 1) == 0 && !keptAtZero(buy.ware))
             till->second.stock.erase(buy.ware);
         wallet->second.stock[buy.ware] += 1;
         noteSale(buy.till, buy.ware, 1, false);
@@ -116,62 +180,64 @@ bool Society::streetBuy(const StreetBuy& buy)
     return false;
 }
 
+bool Society::runnerBuy(const std::string& household, const std::string& till, const std::string& ware)
+{
+    return streetBuy({household, till, ware});
+}
+
 void Society::stagedShopping(const std::string& household)
 {
     const auto found = stagedHomes_.find(household);
     if (found == stagedHomes_.end() || found->second.members.empty())
         return;
     const auto& h = found->second;
-    const auto& row = statusTable().rows[std::size_t(std::clamp(h.band, 0, status::Bands - 1))];
+    const int band = std::clamp(h.band, 0, status::Bands - 1);
+    const auto& row = statusTable().rows[std::size_t(band)];
     const auto day = std::to_string(stagedDay_);
     std::vector<StreetBuy> buys;
-    // An everyday ware (its band's chance a day), a luxury (its chance a week), each seeded by the household and the day.
-    const auto pick = [&](const std::map<std::string, std::vector<std::pair<std::string, std::string>>>& by, const char* what) {
-        const auto list = by.find(h.market);
-        if (list == by.end() || list->second.empty())
-            return;
-        const auto& [till, ware] = list->second[status::hash(household + "|" + what + "|" + day) % list->second.size()];
-        buys.push_back({household, till, ware});
-    };
-    if (status::lot(household + "|shops|" + day) < row.shops)
-        pick(marketWares_, "ware");
+    // Everyday wares: its band's pieces a day (a mean: the whole part, and one more by a seeded lot for the rest), each
+    // picked by its shelf's target among those its band can afford; a luxury by its chance a week.
+    const double rate = std::max(0., row.shops);
+    const int pieces = int(std::floor(rate)) + (status::lot(household + "|shops|" + day) < rate - std::floor(rate) ? 1 : 0);
+    for (int k = 0; k < pieces && k < 16; ++k)
+        if (const auto* w = streetPick(h.market, false, band, status::lot(household + "|ware|" + day + "|" + std::to_string(k))))
+            buys.push_back({household, w->till, w->ware});
     if (status::lot(household + "|luxury|" + day) < row.luxury / 7)
-        pick(marketLuxuries_, "luxury");
+        if (const auto* w = streetPick(h.market, true, band, status::lot(household + "|luxury pick|" + day)))
+            buys.push_back({household, w->till, w->ware});
     for (const auto& b : buys)
         if (street_.watched && street_.watched(*this, b.till))
         {
-            if (buysDeferred_.size() < 4096)
-                buysDeferred_.push_back(b);     // (Waits for the player to go: 7.7.)
+            // (7.7: a buyer at the counter, one of the household's own; with none to send, it waits for the player to go.)
+            const bool sent = ownRule("errandRunners") > 0 && street_.buyer && street_.buyer(*this, b.household, b.till, b.ware);
+            if (!sent && buysDeferred_.size() < 4096)
+                buysDeferred_.push_back(b);
         }
         else
             streetBuy(b);
-    // The services (6.5: `every` x band; a patron's only for the rich): a sale for the business, nothing on a shelf.
+    // The services (6.5: `every` x band; a patron's only for the rich, the poor's only a barber's): a sale for the
+    // business, nothing on a shelf.
     const auto kinds = businessTills_.find(h.market);
     if (kinds == businessTills_.end() || row.services <= 0)
         return;
     for (const auto& s : market::data().services)
     {
-        int every = s.every;
-        if (const auto own = authored_.economy.services.find(s.id); own != authored_.economy.services.end())
-        {
-            if (!own->second.on)
-                continue;
-            every = std::max(1, own->second.every);
-        }
-        if (s.patrons && h.band < status::Rich)
+        const int every = serviceEvery(s);
+        if (every <= 0 || (s.patrons && band < status::Rich) || (band <= status::Poor && !s.poor))
             continue;
         const auto tills = kinds->second.find(s.business);
         if (tills == kinds->second.end() || tills->second.empty())
             continue;
         if (status::lot(household + "|service|" + s.id + "|" + day) < row.services / double(every))
-            noteSale(tills->second[status::hash(household + "|" + s.id) % tills->second.size()], s.id, 1, false);
+            noteSale(tills->second[status::hash(household + "|" + s.id) % tills->second.size()], "", 1, false);
     }
 }
 
 void Society::streetHour(int hod)
 {
-    // The food and buys that waited for a player to leave a till's cell (7.7), tried again; at the shops' last hour, the
-    // food still watched is fed from elsewhere with no stock moved, and the buys go undone.
+    // The food and buys that waited for a player to leave a till's cell (7.7), tried again (a buyer sent to the counter
+    // where one can be); at the shops' last hour, the food still watched is fed from elsewhere with no stock moved, and
+    // the buys go undone.
     const bool last = hod >= ShopShut - 1;
     for (const auto& home : std::vector<std::string>(foodDeferred_.begin(), foodDeferred_.end()))
         if (const auto h = stagedHomes_.find(home); h != stagedHomes_.end())
@@ -186,7 +252,7 @@ void Society::streetHour(int hod)
     for (const auto& b : buysDeferred_)
         if (street_.watched && street_.watched(*this, b.till))
         {
-            if (!last)
+            if (!last && !(ownRule("errandRunners") > 0 && street_.buyer && street_.buyer(*this, b.household, b.till, b.ware)))
                 still.push_back(b);
         }
         else
@@ -203,38 +269,97 @@ bool Society::runnerBought(const std::string& household)
     const auto till = waiting->second;
     const auto* shelf = account(till);
     const bool had = shelf && stock(*shelf, h->second.food) > 0;
-    stagedFoodBy(household, h->second.members, FoodBy::Runner);
+    stagedFoodBy(household, h->second.members, FoodBy::Runner, &till);
     runnerWaiting_.erase(household);
     return had;
 }
 
 void Society::runnerFailed(const std::string& household)
 {
-    if (runnerWaiting_.erase(household) && stagedHomes_.count(household))
+    if (!runnerWaiting_.erase(household))
+        return;
+    const auto h = stagedHomes_.find(household);
+    if (h == stagedHomes_.end())
+        return;
+    // (Past the shops' last hour there is no hour left to try again: fed from elsewhere now, the shelf left as it stands,
+    // a bare one still a short day for the poor. The comfortable are always fed: 6.5.)
+    const double hour = (marketClock() - std::floor(marketClock())) * 24;
+    if (hour >= ShopShut - 1 || hour < ShopOpen)
+        stagedFoodBy(household, h->second.members, FoodBy::Unseen);
+    else
         foodDeferred_.insert(household);
 }
 
 // ---- Business (10.3) ----
 
-void Society::noteSale(const std::string& till, const std::string& ware, int pieces, bool player)
+void Society::noteSale(const std::string& till, const std::string& ware, int pieces, bool player, bool staple)
 {
-    tillsMoved_.insert(till);                       // (Its shelves moved: journalled whole with the next record.)
+    if (!ware.empty() && pieces != 0)
+        tillsMoved_.insert(till);                   // (Its shelves moved: journalled whole with the next record.)
     if (pieces == 0 || till.rfind("till:", 0) != 0)
         return;
     auto& b = state_.staged.business[till];
-    const auto day = marketDay();
-    rollBusiness(b, day);
-    (player ? b.players : b.sold) = std::max(0, (player ? b.players : b.sold) + pieces);
-    if (pieces > 0)
-        if (const auto* shelf = account(till); shelf && !ware.empty() && stock(*shelf, ware) <= 0)
+    rollBusiness(b, marketDay());
+    // (A household's staple from its food shop is what it eats, not trade: counted only by its shelf running out.)
+    if (!staple)
+        (player ? b.players : b.sold) = std::max(0, (player ? b.players : b.sold) + pieces);
+    if (pieces > 0 && !ware.empty())
+        if (const auto* shelf = account(till); shelf && stock(*shelf, ware) <= 0)
             if (const double hour = (marketClock() - std::floor(marketClock())) * 24; hour < 12)
                 b.outEarly = true;                  // (Out before noon: a queue, an empty shelf by noon.)
 }
 
+std::map<std::string, double> Society::ordinaryTrade() const
+{
+    // Each market's households as they would be at the slider's middle (status.json's shares at 0), each band buying its
+    // pieces a day of everyday wares, its luxuries and its services as stagedShopping picks them: each till's share.
+    std::map<std::string, double> out;
+    const auto& t = statusTable();
+    const auto shares = status::sharesAt(t, 0, ownRule("neverBroke") > 0);
+    std::map<std::string, int> households;
+    for (const auto& [key, h] : stagedHomes_)
+        ++households[h.market];
+    const auto spread = [&](const std::map<std::string, StreetShelves>& by, const std::string& market, int band, double pieces) {
+        const auto found = by.find(market);
+        if (found == by.end() || pieces <= 0)
+            return;
+        const auto& picks = found->second.picks[std::size_t(band)];
+        if (picks.empty() || picks.back() <= 0)
+            return;
+        for (std::size_t i = 0; i < picks.size(); ++i)
+            if (const double w = picks[i] - (i ? picks[i - 1] : 0); w > 0)
+                out[found->second.list[i].till] += pieces * w / picks.back();
+    };
+    for (const auto& [market, n] : households)
+        for (int b = 0; b < status::Bands; ++b)
+        {
+            const double many = n * shares[std::size_t(b)] / 100.;
+            const auto& row = t.rows[std::size_t(b)];
+            spread(marketWares_, market, b, many * std::max(0., row.shops));
+            spread(marketLuxuries_, market, b, many * std::max(0., row.luxury) / 7);
+            const auto kinds = businessTills_.find(market);
+            if (kinds == businessTills_.end() || row.services <= 0)
+                continue;
+            for (const auto& s : market::data().services)
+            {
+                const int every = serviceEvery(s);
+                if (every <= 0 || (s.patrons && b < status::Rich) || (b <= status::Poor && !s.poor))
+                    continue;
+                const auto tills = kinds->second.find(s.business);
+                if (tills == kinds->second.end() || tills->second.empty())
+                    continue;
+                for (const auto& till : tills->second)
+                    out[till] += many * row.services / every / double(tills->second.size());
+            }
+        }
+    return out;
+}
+
 void Society::businessDay(std::int64_t day)
 {
-    // Yesterday's word for every shop with a keeper (10.3), against its market's middle of players' buying; three days
-    // failing running is a status event for the keeper's household (-0.3, 6.3).
+    // Yesterday's word for every shop with a keeper (10.3), against its ordinary trade and its market's middle of players'
+    // buying; three days failing running is a status event for the keeper's household (-0.3, 6.3), once for the run (and
+    // again each eventDays it lasts, as the first fades), never each night.
     auto& all = state_.staged.business;
     std::map<std::string, std::vector<int>> playersBy;
     std::vector<std::pair<std::string, std::string>> shops;   // (Till, keeper.)
@@ -260,32 +385,43 @@ void Society::businessDay(std::int64_t day)
     std::map<std::string, double> medians;
     for (const auto& [m, v] : playersBy)
         medians[m] = median(v);
-    const auto& lux = market::data().luxuries;
+    const auto ordinary = ordinaryTrade();
+    const auto& table = statusTable();
+    const int eventDays = std::max(1, table.eventDays);
     for (const auto& [till, keeper] : shops)
     {
         auto& b = all[till];
         const auto market = marketOf(till);
         const auto* job = jobOf(keeper);
-        int target = 0, wares = 0;
+        int target = 0, wares = 0, luxTarget = 0, allTarget = 0;
         double P = 0;
-        bool luxuries = false;
         if (job)
             for (const auto& ware : stagedShelfGoods(job->founder))
             {
-                target += shelfTarget(till, ware);
+                const int shelf = shelfTarget(till, ware);
+                const bool lux = luxury(ware);
+                allTarget += shelf;
+                luxTarget += lux ? shelf : 0;
+                if (lux || nourishment(ware) <= 0 || !staple(table, ware))
+                    target += shelf;                // (Its shelves' targets but the staples, as its count.)
                 P += pressure(market, items::baseOf(ware));
                 ++wares;
-                luxuries |= std::find(lux.begin(), lux.end(), items::baseOf(ware)) != lux.end();
             }
-        // (Rolled to today: the word reads the days gone, yesterday first.)
-        b.word = businessWord(b, target, wares ? P / wares : 0, marketTimes(market), luxuries, medians[market]);
+        // (Rolled to today: the word reads the days gone, yesterday first. A luxury shop: luxuries half its shelves.)
+        const auto e0 = ordinary.find(till);
+        b.word = businessWord(b, e0 == ordinary.end() ? 0. : e0->second, target, wares ? P / wares : 0, marketTimes(market),
+                              allTarget > 0 && luxTarget * 2 >= allTarget, medians[market]);
+        b.judged = std::min(1000, b.judged + 1);
         b.failing = b.word == "failing" ? std::min(1000, b.failing + 1) : 0;
-        if (b.failing >= 3)
+        if (b.failing == 3 || (b.failing > 3 && (b.failing - 3) % eventDays == 0))
             noteStatusEvent(keeper, "failing");
     }
     // (A till no keeper holds any more, or gone, is forgotten.)
+    std::set<std::string> kept;
+    for (const auto& s : shops)
+        kept.insert(s.first);
     for (auto it = all.begin(); it != all.end();)
-        it = std::none_of(shops.begin(), shops.end(), [&](const auto& s) { return s.first == it->first; }) ? all.erase(it) : std::next(it);
+        it = kept.count(it->first) ? std::next(it) : all.erase(it);
 }
 
 std::string Society::businessOf(const std::string& keeper) const
@@ -344,14 +480,8 @@ std::int64_t Society::marketLot(const std::string& market, const std::string& it
     const auto& t = tradePoints();
     if (market.empty() || !t.find(market))
         return catalogPrice(item) * quantity;
-    LadderStart s;
-    s.market = market;
-    s.base = items::baseOf(item);
-    s.depth = depthOf(market, s.base);
-    s.factor = marketBase(market, s.base, 1);
-    s.each = double(catalogPrice(item));
-    s.P = pressure(market, s.base);
-    s.cap = marketRules().pushMost;
+    // (The market's own quote, no till's district factor and no holder's push: Board::ladderStartIn, as a shop's starts.)
+    const auto s = ladderStartIn(market, item, marketBase(market, items::baseOf(item), 1), {});
     const int q = std::min(quantity, 99);
     const auto lot = std::max<std::int64_t>(1, ladder(s, q, true, false).lot);
     return quantity <= 99 ? lot : std::int64_t(std::llround(double(lot) * quantity / q));
@@ -384,22 +514,15 @@ bool Society::liftedNow(const std::string& id) const
     return s && s->liftedUntil >= stagedDay_ && stagedDay_ >= 0;
 }
 
-int Society::liftByHelp(const std::string& id, std::int64_t worth, int days)
+bool Society::liftRoom(const std::string& id) const
 {
+    // At most half the market's destitute share lifted at once (never fewer than one), so one rich player can't empty a
+    // city of its beggars overnight. (A household lifted already has its place.)
     const auto* s = statusOf(id);
     if (!s || s->band > status::Poor || stagedDay_ < 0)
-        return 0;
-    const auto household = s->household;
-    const auto market = s->market;
-    if (days <= 0)
-    {
-        const auto week = bandFoodCost(id, 7), month = bandFoodCost(id, 30);
-        days = month > 0 && worth >= month ? 30 : week > 0 && worth >= week ? 7 : 0;
-        if (days <= 0)
-            return 0;
-    }
-    // At most half the market's destitute share lifted at once (never fewer than one), so one rich player can't empty a
-    // city of its beggars overnight.
+        return false;
+    const auto& household = s->household;
+    const auto& market = s->market;
     int households = 0, lifted = 0;
     for (const auto& [key, h] : stagedHomes_)
         if (h.market == market)
@@ -411,8 +534,23 @@ int Society::liftByHelp(const std::string& id, std::int64_t worth, int days)
         }
     const double share = status::sharesAt(statusTable(), prosperity(), ownRule("neverBroke") > 0)[status::Destitute];
     const int room = std::max(1, int(std::ceil(.5 * share / 100. * households - 1e-9)));
-    if (lifted >= room)
+    return lifted < room;
+}
+
+int Society::liftByHelp(const std::string& id, std::int64_t worth, int days)
+{
+    // By its worth in the household's band food (6.7): a week's or more lifts it a week, a fortnight's (the short trouble's
+    // coins) a fortnight, a month's a month; a gift and the trouble's help alike.
+    if (!liftRoom(id))
         return 0;
+    if (days <= 0)
+    {
+        const auto week = bandFoodCost(id, 7), fortnight = bandFoodCost(id, 14), month = bandFoodCost(id, 30);
+        days = month > 0 && worth >= month ? 30 : fortnight > 0 && worth >= fortnight ? 14 : week > 0 && worth >= week ? 7 : 0;
+        if (days <= 0)
+            return 0;
+    }
+    const std::string household = statusOf(id)->household;
     return liftHousehold(household, stagedDay_ + days) ? days : 0;
 }
 
@@ -446,6 +584,12 @@ const std::vector<std::string>* Society::membersOf(const std::string& household)
     return found == stagedHomes_.end() ? nullptr : &found->second.members;
 }
 
+std::string Society::foodOf(const std::string& household) const
+{
+    const auto found = stagedHomes_.find(household);
+    return found == stagedHomes_.end() ? std::string() : found->second.food;
+}
+
 Society::TheftDay Society::theftDay(std::int64_t day, const std::function<double(const std::string& id)>& eligible) const
 {
     TheftDay out;
@@ -466,7 +610,8 @@ Society::TheftDay Society::theftDay(std::int64_t day, const std::function<double
         {
             const auto* r = spec(id);
             const auto life = state_.residents.find(id);
-            if (!r || r->age < 16 || dead_.count(id) || life == state_.residents.end())
+            // (Never a guard: one of the Watch by its roster's role, posted or not, 10.1.)
+            if (!r || r->age < 16 || dead_.count(id) || life == state_.residents.end() || r->ofTheWatch())
                 continue;
             const auto honesty = honestyOf(id);
             double w = row.theft;
@@ -543,6 +688,11 @@ bool warmTrade(const std::string& title)
 
 const Society::TheftDay& World::theftPlan()
 {
+    // (Worked out once the society has made its staged households: before that, on a fresh world's first passes, nobody
+    // has a band to steal by, and an empty plan kept for the day would leave the whole first day without a thief.)
+    static const Society::TheftDay none;
+    if (!society_.stagedReady())
+        return none;
     const auto today = std::int64_t(std::floor(calendarDays_));
     if (theftPlanDay_ != today)
     {
@@ -550,8 +700,9 @@ const Society::TheftDay& World::theftPlan()
         theftPlan_ = society_.theftDay(today, [this](const std::string& id) {
             const auto* e = entity(id);
             const auto* job = society_.jobOf(id);
-            if (!e || e->dead || !e->npc || custodyOf(id) || (job && job->role == "guard") || !e->leaderId.empty() ||
-                e->state == "following")
+            const auto* r = society_.spec(id);
+            if (!e || e->dead || !e->npc || custodyOf(id) || (job && job->role == "guard") || (r && r->ofTheWatch()) ||
+                !e->leaderId.empty() || e->state == "following")
                 return 0.;
             return 1.;
         });
@@ -559,48 +710,158 @@ const Society::TheftDay& World::theftPlan()
     return theftPlan_;
 }
 
-bool World::tillWatched(const std::string& till) const
+bool World::cellWatched(const std::string& cell) const
 {
-    if (till.rfind("till:", 0) != 0)
-        return false;
     if (watchedAt_ != time_)
     {
         watchedCells_ = stageCells();
         watchedAt_ = time_;
     }
-    if (watchedCells_.empty())
+    return !cell.empty() && watchedCells_.count(cell) > 0;
+}
+
+bool World::tillWatched(const std::string& till) const
+{
+    if (till.rfind("till:", 0) != 0)
         return false;
     const auto* p = society_.position(till.substr(5));
     if (!p)
         return false;
-    if (watchedCells_.count(p->work.cell))
+    if (cellWatched(p->work.cell))
         return true;
     // (A keeper at a stall on the square sells from it: its cell is the shop's then.)
     const auto held = society_.state().careers.positions.find(p->id);
     if (held != society_.state().careers.positions.end())
-        if (const auto* keeper = entity(held->second.holder); keeper && watchedCells_.count(keeper->cellId))
+        if (const auto* keeper = entity(held->second.holder); keeper && cellWatched(keeper->cellId))
             return true;
     return false;
 }
 
-bool World::sendRunner(const std::string& household, const std::string& till)
+const Spot* World::doorOut(const std::string& cellId)
 {
-    // A household's errand-runner (6.6): a member free to go (no post at its hours first), to the counter of the shop while
-    // it is open, while that cell has fewer than RunnersACell and its market fewer than RunnersAMarket.
+    // Where a cell's first door to the open air comes out (a chapel's steps, a bakehouse's doorway); null for none. Kept
+    // for the day (the doors move only with a host's edit).
+    const auto today = std::int64_t(std::floor(calendarDays_));
+    if (chapelStepsDay_ != today)
+    {
+        chapelSteps_.clear();
+        doorsOut_.clear();
+        chapelStepsDay_ = today;
+    }
+    if (const auto found = doorsOut_.find(cellId); found != doorsOut_.end())
+        return found->second.cell.empty() ? nullptr : &found->second;
+    auto& out = doorsOut_[cellId];
+    for (const auto& [id, d] : doors_)
+        if (d.cellId == cellId && !d.targetCell.empty())
+            if (const auto* to = cell(d.targetCell); to && to->outdoors)
+            {
+                out = {d.targetCell, d.arrival.x, d.arrival.y};
+                break;
+            }
+    return out.cell.empty() ? nullptr : &out;
+}
+
+std::string World::freeMember(const std::string& household) const
+{
     const auto* members = society_.membersOf(household);
-    const auto* p = till.rfind("till:", 0) == 0 ? society_.position(till.substr(5)) : nullptr;
-    if (!members || !p || !tillWatched(till))
+    if (!members)
+        return {};
+    for (const bool posted : {false, true})
+        for (const auto& id : *members)
+        {
+            const auto* e = entity(id);
+            const auto* life = society_.resident(id);
+            const auto* job = society_.jobOf(id);
+            if (!e || !life || e->dead || !e->npc || e->age < 10 || !e->leaderId.empty() || e->state == "following" || custodyOf(id) ||
+                drivers_.count(id) || seated_.count(id) || runners_.count(id) || doleTakers_.count(id) || beggars_.count(id) ||
+                inBattle(id) || bool(job) != posted)
+                continue;
+            if (life->task == "sleep" || life->task == "eat" || life->task == "companion" ||
+                (job && (life->task == job->title || life->task == "trade" || life->task == "patrol" || life->task == "watch" ||
+                         life->task == "preaching")))
+                continue;
+            return id;
+        }
+    return {};
+}
+
+namespace
+{
+// (An open shop: its keeper keeping it. Its counter: the serving spot, or the keeper's side of the stall it keeps.)
+bool openShop(const Society& society, const Position& p)
+{
+    const auto held = society.state().careers.positions.find(p.id);
+    const auto* keeping = held == society.state().careers.positions.end() ? nullptr : society.resident(held->second.holder);
+    return keeping && keeping->task == "trade";
+}
+} // namespace
+
+bool World::sendRunner(const std::string& household, std::string& till)
+{
+    // A household's errand-runner (6.6): a member free to go (no post at its hours first), to the counter of an open shop
+    // that sells its food (its own food shop, or, that one shut, another open one of its market with the food on its
+    // shelf: the nearest, the same cell's first), while that cell has fewer than RunnersACell and its market fewer than
+    // RunnersAMarket. `till` is set to the one it goes to.
+    const auto* own = till.rfind("till:", 0) == 0 ? society_.position(till.substr(5)) : nullptr;
+    if (!own || !tillWatched(till))
         return false;
+    const Position* p = openShop(society_, *own) ? own : nullptr;
+    if (!p)
+    {
+        const auto food = society_.foodOf(household);
+        const auto market = society_.marketOf(till);
+        std::uint64_t best = 0;
+        for (const auto& other : society_.positions())
+        {
+            if (other.role != "merchant" || other.id == own->id || !openShop(society_, other))
+                continue;
+            const auto* shelf = society_.account("till:" + other.id);
+            if (!shelf || food.empty() || Society::stock(*shelf, food) <= 0 || society_.marketOf("till:" + other.id) != market)
+                continue;
+            const std::uint64_t rank = (other.work.cell == own->work.cell ? 0 : 1ull << 62) + (status::hash(household + "|" + other.id) >> 2);
+            if (!p || rank < best)
+                p = &other, best = rank;
+        }
+        if (!p)
+            return false;
+    }
     Spot at = p->serve.cell.empty() ? p->work : p->serve;
     const auto held = society_.state().careers.positions.find(p->id);
-    // (Only to an open shop: its keeper keeping it. A shut one's shelf waits, as its food does, for the player to go.)
-    const auto* keeping = held == society_.state().careers.positions.end() ? nullptr : society_.resident(held->second.holder);
-    if (!keeping || keeping->task != "trade")
-        return false;
     if (held != society_.state().careers.positions.end())
         if (const auto* keeper = entity(held->second.holder); keeper && !keeper->dead && keeper->cellId != p->work.cell &&
                                                             society_.atStall(held->second.holder))
             at = {keeper->cellId, keeper->position.x + 1, keeper->position.y};   // (Its stall: the keeper's side of it.)
+    const auto to = "till:" + p->id;
+    const auto market = society_.marketOf(to);
+    int inCell = 0, inMarket = 0;
+    for (const auto& [id, r] : runners_)
+    {
+        inCell += r.at.cell == at.cell;
+        inMarket += society_.marketOf(r.till) == market;
+    }
+    if (inCell >= RunnersACell || inMarket >= RunnersAMarket)
+        return false;
+    const auto id = freeMember(household);
+    if (id.empty())
+        return false;
+    runners_[id] = {household, to, at, time_, -1, {}};
+    till = to;
+    return true;
+}
+
+bool World::sendBuyer(const std::string& household, const std::string& till, const std::string& ware)
+{
+    // A buy besides food at a watched till (7.7): one of the household's own walks to the counter of the open shop (a rich
+    // buyer is a rich household's member), within the runners' caps; at the counter the piece leaves the shelf.
+    const auto* p = till.rfind("till:", 0) == 0 ? society_.position(till.substr(5)) : nullptr;
+    if (!p || ware.empty() || !tillWatched(till) || !openShop(society_, *p))
+        return false;
+    Spot at = p->serve.cell.empty() ? p->work : p->serve;
+    const auto held = society_.state().careers.positions.find(p->id);
+    if (held != society_.state().careers.positions.end())
+        if (const auto* keeper = entity(held->second.holder); keeper && !keeper->dead && keeper->cellId != p->work.cell &&
+                                                            society_.atStall(held->second.holder))
+            at = {keeper->cellId, keeper->position.x + 1, keeper->position.y};
     const auto market = society_.marketOf(till);
     int inCell = 0, inMarket = 0;
     for (const auto& [id, r] : runners_)
@@ -610,24 +871,11 @@ bool World::sendRunner(const std::string& household, const std::string& till)
     }
     if (inCell >= RunnersACell || inMarket >= RunnersAMarket)
         return false;
-    for (const bool posted : {false, true})
-        for (const auto& id : *members)
-        {
-            const auto* e = entity(id);
-            const auto* life = society_.resident(id);
-            const auto* job = society_.jobOf(id);
-            if (!e || !life || e->dead || !e->npc || e->age < 10 || !e->leaderId.empty() || e->state == "following" || custodyOf(id) ||
-                drivers_.count(id) || seated_.count(id) || runners_.count(id) || beggars_.count(id) || inBattle(id) ||
-                bool(job) != posted)
-                continue;
-            if (life->task == "sleep" || life->task == "eat" || life->task == "companion" ||
-                (job && (life->task == job->title || life->task == "trade" || life->task == "patrol" || life->task == "watch" ||
-                         life->task == "preaching")))
-                continue;
-            runners_[id] = {household, till, at, time_, -1};
-            return true;
-        }
-    return false;
+    const auto id = freeMember(household);
+    if (id.empty())
+        return false;
+    runners_[id] = {household, till, at, time_, -1, ware};
+    return true;
 }
 
 const Spot* World::chapelSteps(const std::string& community)
@@ -637,6 +885,7 @@ const Spot* World::chapelSteps(const std::string& community)
     if (chapelStepsDay_ != today)
     {
         chapelSteps_.clear();
+        doorsOut_.clear();
         chapelStepsDay_ = today;
     }
     if (const auto found = chapelSteps_.find(community); found != chapelSteps_.end())
@@ -645,65 +894,86 @@ const Spot* World::chapelSteps(const std::string& community)
     const auto& ch = chapel(community);
     if (!ch.found)
         return nullptr;
-    for (const auto& [id, d] : doors_)
-        if (d.cellId == ch.pulpit.cell && !d.targetCell.empty())
-            if (const auto* out = cell(d.targetCell); out && out->outdoors)
-            {
-                steps = {d.targetCell, d.arrival.x, d.arrival.y};
-                break;
-            }
-    if (steps.cell.empty())
-        steps = ch.pews.empty() ? ch.pulpit : ch.pews.back();
+    const auto* out = doorOut(ch.pulpit.cell);
+    steps = out ? *out : ch.pews.empty() ? ch.pulpit : ch.pews.back();
     return &steps;
 }
 
 void World::placeBeggars()
 {
-    // Marketday and Restday, 8:00 to 18:00 (10.2): destitute adults without a post, not lifted, at their market's square
-    // (by its board) and its chapel's steps, at most beggarsACell a cell, in the order of their ids.
+    // Marketday and Restday, 8:00 to 18:00 (10.2): destitute adults without a post (never one of the Watch, posted or
+    // not), not lifted, at their market's chapel steps, by its notice board, and before its shops' doors and stalls ("at
+    // the market"), at most beggarsACell at one place (10.2's "2 a cell": a place, BeggarApart tiles or more from the next
+    // in its cell, since a city cell is a quarter of a city); in a seeded order of the day, so who begs where changes, and
+    // as many as the band mix makes (T7: more in hard times, few in a boom).
     beggars_.clear();
     beggarWhere_.clear();
+    streetReady_ = society_.stagedReady();
     const int weekday = calendar::weekdayOf(calendarDays_);
     const double hour = (calendarDays_ - std::floor(calendarDays_)) * 24;
     if ((weekday != calendar::Marketday && weekday != calendar::Restday) || hour < 8 || hour >= 18)
         return;
-    const auto& table = society_.statusTable();
-    std::map<std::string, std::vector<std::string>> byMarket;
+    const auto day = std::to_string(std::int64_t(std::floor(calendarDays_)));
+    const int most = std::max(0, society_.statusTable().beggarsACell);
+    std::map<std::string, std::vector<std::pair<std::uint64_t, std::string>>> byMarket;
     for (const auto& [id, life] : society_.state().residents)
     {
         const auto* s = society_.statusOf(id);
         const auto* e = entity(id);
         const auto* r = society_.spec(id);
         if (!s || s->band != status::Destitute || society_.liftedNow(id) || !e || e->dead || !e->npc || !r || r->age < 16 ||
-            society_.jobOf(id) || society_.apprenticedTo(id) || !e->leaderId.empty() || e->state == "following" || custodyOf(id) ||
-            drivers_.count(id) || seated_.count(id))
+            r->ofTheWatch() || society_.jobOf(id) || society_.apprenticedTo(id) || !e->leaderId.empty() || e->state == "following" ||
+            custodyOf(id) || drivers_.count(id) || seated_.count(id))
             continue;
-        byMarket[s->market].push_back(id);
+        byMarket[s->market].push_back({status::hash(id + "|begs|" + day), id});
     }
-    for (const auto& [market, list] : byMarket)
+    for (auto& [market, list] : byMarket)
     {
+        if (most <= 0)
+            break;
+        std::sort(list.begin(), list.end());
         const auto* t = roadMarket(market);
         const auto community = t && !t->market.empty() ? lawTown(t->market) : market;
         std::vector<std::pair<Spot, std::string>> spots;
+        const auto add = [&](const Spot& at, const char* where) {
+            if (at.cell.empty())
+                return;
+            for (const auto& [other, w] : spots)
+                if (other.cell == at.cell && apart({other.x, other.y}, {at.x, at.y}) < BeggarApart)
+                    return;
+            spots.push_back({at, where});
+        };
+        const auto room = [&] { return spots.size() * std::size_t(most) >= list.size(); };
         if (const auto* steps = chapelSteps(community))
-            spots.push_back({*steps, "at the chapel steps"});
+            add(*steps, "at the chapel steps");
         if (const auto* board = boardSpot(community))
-            spots.push_back({*board, "at the market"});
+            add(*board, "at the market");
         else if (t && !t->market.empty())
-            spots.push_back({{t->market, t->marketX + 2, t->marketY + 1}, "at the market"});
-        std::map<std::string, int> inCell;
+            add({t->market, t->marketX + 2, t->marketY + 1}, "at the market");
+        // Before the market's shops: a stall's side in the open, a shop's doorway on the street.
+        for (const auto& p : society_.positions())
+        {
+            if (room())
+                break;
+            if (p.role != "merchant" || p.work.cell.empty() || society_.marketOf("till:" + p.id) != market)
+                continue;
+            const auto* c = cell(p.work.cell);
+            if (c && c->outdoors)
+                add({p.work.cell, p.work.x + 2, p.work.y + 1}, "at the market");
+            else if (const auto* out = c ? doorOut(p.work.cell) : nullptr)
+                add({out->cell, out->x + 1, out->y}, "at the market");
+        }
         std::size_t next = 0;
         for (const auto& [spot, where] : spots)
-            for (int k = 0; next < list.size() && inCell[spot.cell] < table.beggarsACell; ++k)
+            for (int k = 0; next < list.size() && k < most; ++k)
             {
                 Spot at = spot;
                 at.x += k % 2 ? 1 : 0;
                 at.y += k / 2;
                 if (!passable(at.cell, {at.x, at.y}))
                     at = spot;
-                beggars_[list[next]] = at;
-                beggarWhere_[list[next]] = where;
-                ++inCell[spot.cell];
+                beggars_[list[next].second] = at;
+                beggarWhere_[list[next].second] = where;
                 ++next;
             }
     }
@@ -712,23 +982,31 @@ void World::placeBeggars()
 void World::placeSleepers()
 {
     // Some winter nights (D12: a third of them, by a seeded lot), the destitute with nowhere of their own (no home, or a
-    // communal one) sleep by a warm wall in their market: a bakehouse's or a forge's.
+    // communal one) sleep by a warm wall in their market: in the shelter of a bakehouse's, a forge's or a kiln's doorway
+    // on the street (by its fire, where it works in the open), at most beggarsACell to a wall, never inside; with every
+    // warm wall taken, or none, by the chapel's.
     warmWall_.clear();
     const double hour = (calendarDays_ - std::floor(calendarDays_)) * 24;
     if (calendar::calendarAt(calendarDays_).season != calendar::Season::Winter || (hour >= 6 && hour < 22))
         return;
     const auto night = std::int64_t(std::floor(calendarDays_ - .25));
     warmPlaces_.clear();
-    // (A bakehouse's or a forge's wall, indoors or by its fire in the open; a market with none has its chapel's walls.)
+    std::map<std::string, std::set<std::string>> seen;
     for (const auto& p : society_.positions())
-        if (!p.work.cell.empty() && (warmTrade(p.title) || Society::clergy(p.title)) && cell(p.work.cell))
-            if (const auto* m = roadMarketOf(p.work.cell); m && warmPlaces_[m->id].size() < 16)
-            {
-                auto& places = warmPlaces_[m->id];
-                if (Society::clergy(p.title) && !places.empty())
-                    continue;
-                places.push_back({p.work.cell, p.work.x + 1, p.work.y + 1});
-            }
+        if (!p.work.cell.empty() && warmTrade(p.title))
+            if (const auto* c = cell(p.work.cell))
+                if (const auto* m = roadMarketOf(p.work.cell); m && warmPlaces_[m->id].size() < 16)
+                {
+                    Spot at;
+                    if (c->outdoors)
+                        at = {p.work.cell, p.work.x + 1, p.work.y + 1};
+                    else if (const auto* out = doorOut(p.work.cell))
+                        at = *out;
+                    if (!at.cell.empty() && seen[m->id].insert(at.cell + "|" + std::to_string(int(at.x)) + "," + std::to_string(int(at.y))).second)
+                        warmPlaces_[m->id].push_back(at);
+                }
+    const int most = std::max(1, society_.statusTable().beggarsACell);
+    std::map<std::string, int> taken;
     for (const auto& [id, life] : society_.state().residents)
     {
         const auto* s = society_.statusOf(id);
@@ -738,13 +1016,37 @@ void World::placeSleepers()
             continue;
         if (status::lot(id + "|warm wall|" + std::to_string(night)) >= 1. / 3)
             continue;
-        const auto places = warmPlaces_.find(s->market);
-        if (places == warmPlaces_.end() || places->second.empty())
-            continue;
-        auto at = places->second[status::hash(id + "|warm") % places->second.size()];
-        if (!passable(at.cell, {at.x, at.y}))
-            at.x -= 1, at.y -= 1;
-        warmWall_[id] = at;
+        std::vector<Spot> places;
+        if (const auto found = warmPlaces_.find(s->market); found != warmPlaces_.end())
+            places = found->second;
+        const auto start = places.empty() ? std::size_t(0) : std::size_t(status::hash(id + "|warm") % places.size());
+        Spot at;
+        int k = 0;
+        for (std::size_t i = 0; i < places.size() && at.cell.empty(); ++i)
+        {
+            const auto& place = places[(start + i) % places.size()];
+            auto& n = taken[place.cell + "|" + std::to_string(int(place.x)) + "," + std::to_string(int(place.y))];
+            if (n < most)
+                at = place, k = n++;
+        }
+        if (at.cell.empty())
+        {
+            // (No warm wall left: the chapel's, in its doorway's shelter.)
+            const auto* t = roadMarket(s->market);
+            const auto* steps = chapelSteps(t && !t->market.empty() ? lawTown(t->market) : s->market);
+            if (!steps)
+                continue;
+            auto& n = taken[steps->cell + "|chapel"];
+            at = *steps, k = n++;
+        }
+        // (Side by side, never on one tile: the k-th along the wall.)
+        Spot here = at;
+        here.x += k % 2 ? -(1 + k / 2) : k / 2;
+        if (!passable(here.cell, {here.x, here.y}))
+            here.y += 1;
+        if (!passable(here.cell, {here.x, here.y}))
+            here = at;
+        warmWall_[id] = here;
     }
 }
 
@@ -757,6 +1059,14 @@ bool World::streetErrand(const std::string& resident, const ResidentLife& life, 
         reason = "for the household";
         goalCell = r->second.at.cell;
         goal = {r->second.at.x, r->second.at.y};
+        return true;
+    }
+    if (const auto t = doleTakers_.find(resident); t != doleTakers_.end())
+    {
+        task = "waiting for the dole";
+        reason = "Restday bread for the household, at the chapel steps.";
+        goalCell = t->second.at.cell;
+        goal = {t->second.at.x, t->second.at.y};
         return true;
     }
     if (const auto p = dolePriests_.find(resident); p != dolePriests_.end() && life.task != "sleep")
@@ -787,24 +1097,166 @@ bool World::streetErrand(const std::string& resident, const ResidentLife& life, 
     return false;
 }
 
+void World::tendDole(std::int64_t today, double hod)
+{
+    // The Restday dole (10.2): the hour after the service, the first clergy post held in each community hands bread to
+    // its destitute and poor households at the chapel steps. With a player near the steps it is seen: one of each
+    // household comes and waits in a queue (at most DoleQueue at once), and is handed it at the front; out of sight it is
+    // given as it would be, raw into their wallets. Whoever is still unserved when the dole's hours end is given it then
+    // (the priest's helpers take the rest round). Once a Restday a household; never to a player.
+    const bool open = calendar::weekdayOf(calendarDays_) == calendar::Restday && hod >= Society::ServiceEnd && hod < Society::ServiceEnd + 2;
+    // Each hour: the priests at their chapels' steps, and the households of each community that opened its dole today.
+    const auto hourKey = std::int64_t(std::floor(calendarDays_ * 24));
+    if (doleListHour_ != hourKey)
+    {
+        doleListHour_ = hourKey;
+        dolePriests_.clear();
+        doleSteps_.clear();
+        doleHomes_.clear();
+        for (const auto& p : society_.positions())
+        {
+            if (!open)
+                break;
+            if (!Society::clergy(p.title))
+                continue;
+            const auto community = lawTown(p.work.cell);
+            const auto held = society_.state().careers.positions.find(p.id);
+            const auto* priest = held == society_.state().careers.positions.end() ? nullptr : entity(held->second.holder);
+            if (community.empty() || doleSteps_.count(community) || !priest || priest->dead || !chapel(community).found)
+                continue;
+            const auto* at = chapelSteps(community);
+            doleSteps_[community] = at ? *at : p.work;
+            dolePriests_[held->second.holder] = doleSteps_[community];
+            dolesGiven_.insert(community + "|" + std::to_string(today));
+        }
+        for (const auto& [id, life] : society_.state().residents)
+            if (const auto* s = society_.statusOf(id); s && s->band <= status::Poor)
+            {
+                const auto* e = entity(id);
+                const auto home = !life.homeCell.empty() ? life.homeCell : e ? e->cellId : std::string();
+                if (home.empty())
+                    continue;
+                const auto community = lawTown(home);
+                if (dolesGiven_.count(community + "|" + std::to_string(today)))
+                    doleHomes_[community].insert(s->household);
+            }
+    }
+    // Out of the dole's hours: what is left is given, once, and the queue goes home.
+    if (!open)
+    {
+        doleTakers_.clear();
+        for (const auto& [community, homes] : doleHomes_)
+            if (doleClosed_.insert(community + "|" + std::to_string(today)).second)
+                for (const auto& h : homes)
+                    society_.giveDole(h, today);
+        if (dolesGiven_.size() > 1024)
+            dolesGiven_.clear(), doleClosed_.clear();
+        return;
+    }
+    // The queue: at the front, served after its seconds, the rest moving up; one an hour on its way goes home.
+    for (auto it = doleTakers_.begin(); it != doleTakers_.end();)
+    {
+        auto& t = it->second;
+        const auto* e = entity(it->first);
+        if (!e || e->dead || society_.doleGiven(t.household, today) || time_ - t.since > calendar::SecondsPerDay / 24 ||
+            !e->leaderId.empty() || custodyOf(it->first))
+        {
+            it = doleTakers_.erase(it);
+            continue;
+        }
+        if (t.place == 0 && e->cellId == t.at.cell && apart(e->position, {t.at.x, t.at.y}) <= 1.6)
+        {
+            if (t.atFront < 0)
+                t.atFront = time_;
+            else if (time_ - t.atFront >= DoleSeconds)
+            {
+                society_.giveDole(t.household, today);
+                it = doleTakers_.erase(it);
+                continue;
+            }
+        }
+        ++it;
+    }
+    for (const auto& [community, at] : doleSteps_)
+    {
+        const auto homes = doleHomes_.find(community);
+        if (homes == doleHomes_.end())
+            continue;
+        if (!cellWatched(at.cell))
+        {
+            // (Nobody near to see it: given as it would be.)
+            for (const auto& h : homes->second)
+                society_.giveDole(h, today);
+            for (auto it = doleTakers_.begin(); it != doleTakers_.end();)
+                it = it->second.community == community ? doleTakers_.erase(it) : std::next(it);
+            continue;
+        }
+        // In line by the priest: places 0.. along the steps; the queue moved up as the front is served.
+        std::vector<std::string> line;
+        std::set<std::string> coming;
+        for (const auto& [id, t] : doleTakers_)
+            if (t.community == community)
+                line.push_back(id), coming.insert(t.household);
+        std::sort(line.begin(), line.end(), [&](const std::string& a, const std::string& b) {
+            return std::pair(doleTakers_.at(a).place, a) < std::pair(doleTakers_.at(b).place, b);
+        });
+        const auto spotAt = [&](int place) {
+            Spot s = at;
+            s.x += 1 + place;
+            if (!passable(s.cell, {s.x, s.y}))
+                s.y += 1;
+            if (!passable(s.cell, {s.x, s.y}))
+                s = at;
+            return s;
+        };
+        int place = 0;
+        for (const auto& id : line)
+        {
+            auto& t = doleTakers_.at(id);
+            if (t.place != place)
+                t.place = place, t.at = spotAt(place), t.atFront = -1;
+            ++place;
+        }
+        std::vector<std::pair<std::uint64_t, std::string>> waiting;
+        for (const auto& h : homes->second)
+            if (!coming.count(h) && !society_.doleGiven(h, today))
+                waiting.push_back({status::hash(h + "|dole|" + std::to_string(today)), h});
+        std::sort(waiting.begin(), waiting.end());
+        for (const auto& [rank, h] : waiting)
+        {
+            if (place >= DoleQueue)
+                break;
+            const auto id = freeMember(h);
+            if (id.empty())
+                continue;
+            doleTakers_[id] = {h, community, spotAt(place), place, time_, -1};
+            ++place;
+        }
+    }
+}
+
 void World::tendStreet()
 {
     const auto today = std::int64_t(std::floor(calendarDays_));
-    // Runners (6.6): at the counter for its seconds, then the household's food from the shelf; one an hour on the way
-    // gives up (its food waits for the next hour).
+    // Runners (6.6, 7.7): at the counter for its seconds, then the household's food (or its buy) from the shelf; one an
+    // hour on the way gives up (its food waits for the next hour, or past the shops' last hour is fed from elsewhere; a
+    // buy is let go).
     for (auto it = runners_.begin(); it != runners_.end();)
     {
         auto& r = it->second;
         const auto* e = entity(it->first);
-        if (!e || e->dead || !society_.runnerWaiting(r.household))
+        const bool food = r.ware.empty();
+        if (!e || e->dead || (food && !society_.runnerWaiting(r.household)))
         {
             it = runners_.erase(it);
             continue;
         }
         if (time_ - r.since > calendar::SecondsPerDay / 24 || !e->leaderId.empty() || custodyOf(it->first))
         {
-            society_.runnerFailed(r.household);
+            const auto household = r.household;
             it = runners_.erase(it);
+            if (food)
+                society_.runnerFailed(household);
             continue;
         }
         if (e->cellId == r.at.cell && apart(e->position, {r.at.x, r.at.y}) <= 1.6)
@@ -813,58 +1265,28 @@ void World::tendStreet()
                 r.atCounter = time_;
             else if (time_ - r.atCounter >= RunnerSeconds)
             {
-                society_.runnerBought(r.household);
+                if (food)
+                    society_.runnerBought(r.household);
+                else
+                    society_.runnerBuy(r.household, r.till, r.ware);
                 it = runners_.erase(it);
                 continue;
             }
         }
         ++it;
     }
-    // Each hour: the beggars' and the sleepers' places, and the Restday dole after the service.
-    if (const auto hour = std::int64_t(std::floor(calendarDays_ * 24)); hour != streetHour_)
+    // Each hour (and once the society's staged households are first made): the beggars' and the sleepers' places.
+    if (const auto hour = std::int64_t(std::floor(calendarDays_ * 24)); hour != streetHour_ || (!streetReady_ && society_.stagedReady()))
     {
         streetHour_ = hour;
         placeBeggars();
         placeSleepers();
-        dolePriests_.clear();
-        const double hod = double(hour % 24);
-        if (calendar::weekdayOf(calendarDays_) == calendar::Restday && hod >= Society::ServiceEnd && hod < Society::ServiceEnd + 2)
-        {
-            // The dole (10.2): the chapel's priest, a real post held, hands bread to the destitute and poor households of
-            // its community: a raw add into their wallets, once a Restday, never to a player.
-            std::set<std::string> served;
-            for (const auto& p : society_.positions())
-            {
-                if (!Society::clergy(p.title))
-                    continue;
-                const auto community = lawTown(p.work.cell);
-                const auto held = society_.state().careers.positions.find(p.id);
-                const auto* priest = held == society_.state().careers.positions.end() ? nullptr : entity(held->second.holder);
-                if (community.empty() || served.count(community) || !priest || priest->dead || !chapel(community).found)
-                    continue;
-                served.insert(community);
-                const auto* steps = chapelSteps(community);
-                dolePriests_[held->second.holder] = steps ? *steps : p.work;
-                if (!dolesGiven_.insert(community + "|" + std::to_string(today)).second)
-                    continue;
-                std::set<std::string> households;
-                for (const auto& [id, life] : society_.state().residents)
-                    if (const auto* s = society_.statusOf(id); s && s->band <= status::Poor)
-                    {
-                        const auto* e = entity(id);
-                        const auto home = !life.homeCell.empty() ? life.homeCell : e ? e->cellId : std::string();
-                        if (!home.empty() && lawTown(home) == community)
-                            households.insert(s->household);
-                    }
-                for (const auto& h : households)
-                    society_.giveDole(h, today);
-            }
-            if (dolesGiven_.size() > 1024)
-                dolesGiven_.clear();
-        }
     }
+    // The Restday dole, each pass (its queue moves).
+    if (calendar::weekdayOf(calendarDays_) == calendar::Restday || !doleTakers_.empty() || !dolePriests_.empty() || !doleSteps_.empty())
+        tendDole(today, (calendarDays_ - std::floor(calendarDays_)) * 24);
     // Alms (10.2), each game minute: a comfortable or rich resident close by a beggar gives a penny, by its band's chance,
-    // once a day a pair (a staged move, between residents only).
+    // once a day a pair: a staged move between two residents' purses (no ledger, no journal: never a player's).
     if (const auto minute = std::int64_t(std::floor(calendarDays_ * 1440)); minute != streetMinute_ && !beggars_.empty())
     {
         streetMinute_ = minute;
@@ -878,20 +1300,25 @@ void World::tendStreet()
         {
             const auto* b = entity(beggar);
             const auto* bs = society_.statusOf(beggar);
-            if (!b || !bs || b->cellId != spot.cell || apart(b->position, {spot.x, spot.y}) > 2)
+            if (!b || !bs || b->cellId != spot.cell || apart(b->position, {spot.x, spot.y}) > 2 ||
+                Society::classify(beggar) != Society::AccountKind::Staged)
                 continue;
             for (const auto& [id, e] : entities_)
             {
                 if (!e.npc || e.dead || id == beggar || e.cellId != b->cellId || apart(e.position, b->position) > 3)
                     continue;
                 const auto* gs = society_.statusOf(id);
-                if (!gs || gs->band < status::Comfortable || gs->household == bs->household || almsGiven_.size() > 65536)
+                if (!gs || gs->band < status::Comfortable || gs->household == bs->household || almsGiven_.size() > 65536 ||
+                    Society::classify(id) != Society::AccountKind::Staged)
                     continue;
                 const auto key = id + "|" + beggar;
                 if (!almsGiven_.insert(key).second)
                     continue;
                 if (status::lot(key + "|alms|" + std::to_string(today)) < rows[std::size_t(gs->band)].alms && society_.cash(id) >= 1)
-                    society_.shift(id, beggar, "", 0, 1, "alms");
+                {
+                    society_.stagedSet(id, society_.cash(id) - 1);
+                    society_.stagedSet(beggar, society_.cash(beggar) + 1);
+                }
             }
         }
     }

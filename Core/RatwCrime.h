@@ -31,6 +31,7 @@ struct Incident
     std::int64_t coins = 0;
     std::string status = "open";        // "open"; "charged" (in a warrant); "cold" (closed unsolved).
     std::vector<Witness> witnesses;
+    std::string from;                   // Where the goods were taken from when not the victim's own: a shop's till (doc 79, 10.1).
 };
 
 // What the Watch of a town holds against someone: what they must give back, to whom, and the fine.
@@ -39,6 +40,7 @@ struct Restitution
     std::string to, item;
     int quantity = 0;
     std::int64_t coins = 0;
+    std::string till;                   // Goods still in hand go back to this shop's till (taken from it), their worth to `to`.
 };
 struct Warrant
 {

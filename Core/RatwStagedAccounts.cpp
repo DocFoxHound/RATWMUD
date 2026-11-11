@@ -714,7 +714,7 @@ int Society::tillShelf(Society& s, const std::string& till, const std::string& g
     if (found == s.state_.accounts.end() || want <= 0)
         return 0;
     const int got = std::min(want, stock(found->second, good));
-    if (got > 0 && (found->second.stock[good] -= got) == 0 && good != "herbs" && good != "meal" && good != "sword")
+    if (got > 0 && (found->second.stock[good] -= got) == 0 && !keptAtZero(good))
         found->second.stock.erase(good);
     return std::max(0, got);
 }
@@ -837,7 +837,7 @@ void Society::stagedTrim(const std::string& id, int band)
         const int drop = std::min(stock(wallet, item), int(std::floor((have - most) / each + 1e-9)));
         if (drop <= 0)
             continue;
-        if ((wallet.stock[item] -= drop) == 0 && item != "herbs" && item != "meal" && item != "sword")
+        if ((wallet.stock[item] -= drop) == 0 && !keptAtZero(item))
             wallet.stock.erase(item);
         have -= double(drop) * each;
     }
@@ -849,7 +849,7 @@ void Society::stagedTrim(const std::string& id, int band)
         if (!keep && n > row.goodsMost)
         {
             it->second = row.goodsMost;
-            if (it->second == 0 && item != "herbs" && item != "meal" && item != "sword")
+            if (it->second == 0 && !keptAtZero(item))
             {
                 it = wallet.stock.erase(it);
                 continue;
