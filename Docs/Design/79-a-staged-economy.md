@@ -1328,7 +1328,11 @@ wagon's news: prices about 30%, the event 24%, the Times 16%, the wagon 15%); th
 autumn, and a poor one into the winter. **Words:** talk says "bread", "fish", "porridge", "white bread", "meat",
 "candles" for the catalogue's stiffer names; an event's lines say a good is dear or cheap only beside its
 `world.<good>_price`, and every kind has lines for when it's over. The Means names the speaker's own shop's price at the
-player's list and is cut at a sentence.)*
+player's list and is cut at a sentence. **At the merge with Phase 7's repair:** an event's words are a noun phrase, so a
+price that runs against its event is "cheap still, despite the brewers' glut" (the list, talk's `topic.cause_words`, the
+Means), never "though"; `world.event_goods` is the event's goods as a line says them ("brandy, wine and chamomile"), so a
+rich cargo is spoken of by what its market deals in (silk only beside `world.silk_price`), and a ship in with a rich
+cargo is talked of with its first good.)*
 
 ## 12. DM levers: keep, change or cut
 
@@ -1472,7 +1476,11 @@ the morning ripples (at most 13 updates per good with a net position); posting c
 steps and I3's minimum over about 10-30 markets; no ripples at trade time. Errand-runners only near players, at most
 2 a cell.
 
-**The gate (Phase 11):**
+**The gate (Phase 11):** *(The baseline it is measured against is the merged Phases 7 and 8's table in Progress,
+2026-11-11, "Phases 7 and 8 repaired and merged; the new baseline": 765 residents, two runs each, 6-8 mean 2.60 ms, p99
+5.77, after the first minute 5.44 and worst 12.2; 17-19 2.14, 5.21, 4.99, 21.9; 23-25 1.62, 4.52, 4.04, 12.8; 6-8
+`--ship-day` 2.65, 5.86, 5.49, 12.7. It replaces Phase 0's table from now on, for Phases 9-11: no window slower than it
+beyond noise.)*
 - `world_check --simulate 6 8`, `--simulate 17 19` (the old peak and shop hours) and `--simulate 23 25` (the nightly
   set and the day's turn), all at `--players 20`;
 - p99 at most 5.3 ms and worst at most 25 ms in every window; 17-19 and 23-25 no slower than 6-8 beyond noise;
@@ -3672,6 +3680,92 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     fact and past when over). A clean Release build (`build-rtalk`); ctest 88/88 with the database, the six `*_pg`
     tests run again with `Database/.env` after they skipped (7/7; `pg_client` on a throwaway `ratw_test_s2stage_rtalk`,
     dropped after; no `s2stage` database left). Not run (the merge verify's): `tools/test_*.py`, the client's.
+- **2026-11-11: Phases 7 and 8 repaired and merged; the new baseline** (on `r2-staged`: `18b1b70` merges
+  `r2-staged-rev` at `262dbaf`, `ae7739b` merges `r2-staged-rtalk` at `24948ce`, `4aa5f20` the clashes between them). No
+  economy simulation, no paid model call, no real or scratch server; DEV and PROD untouched (DEV only exported, read only).
+  - **Conflicts (two):** `economy8_times.talk`'s `e8t_ev_salt`: the events repair had replaced "What's a winter without
+    salt? Ask me in a month." with "Every cook in town is after salt, and the pans give none."; the talk repair had moved
+    the winter line to its own rule gated on the season (`e8t_ev_salt_winter`). The talk repair's season-gated rule kept,
+    and the events repair's line added to the ungated `e8t_ev_salt` as its alternative the rest of the year. This
+    Progress section: both repairs' entries kept, in the order merged (Phase 7 repaired, Phase 8 repaired). Everything
+    else (`RatwMarket.cpp`, `RatwGame.h`, `RatwWorld.h`) merged on its own.
+  - **The two together, through the real path** (`events_tests`' new `theRepairsTogether`; `RATW_TALK_SAMPLES=1` prints
+    every line said): a game on the harbour strip with the talk library, each event kind east can show on (eight; the
+    festival's buying and the lame ox need a festival and a farm's cart, and are in their own tests), posted ahead (the
+    kinds posted ahead) and over; the Times past ordinary with the event as their cause; its goods pushed against it; a
+    rich cargo's ship in, a lost ship, a storm; sampled through the director's picks for a listening player
+    (`ambientPicks`, `AmbientPick::hearer`), `Game::talkTopicQuery` (the pick as `exchangeQuery` writes it) and
+    `converse`, and the Means. The new event words read right after "talk of", "word of", "blames", "since" and alone
+    ("Everyone blames the broken mill wheel.", "The brewers' glut, and suddenly everyone's got coin.", "Times here: lean,
+    since the flooded salt pans."); the lost and storm troubles' words reach talk and the Means ("It's all the talk of
+    the storms keeping the ships out, they say."; "since the ship lost at sea."), never a wagon's. **Three clashes,
+    fixed in `4aa5f20`:**
+    (1) a price running against its event said "though" before a noun phrase ("cheap still, though the House wedding"
+    on the list; "Planks cheap still, though the fire at the works." in talk and the Means): an event's still is now
+    "despite <its words>" in both (`eventCause`, `talkCause`); a wagon's or a ship's stays "though" (a clause).
+    (2) A rich cargo's goods are the kind's own where its market deals in them, then the ship's (Phase 7's repair), but
+    the ship's talk named her everyday cargo ("The Wavecutter's in with chamomile.") and the event's lines said silk at
+    a market that sells none ("I've never seen so much silk in one place."). The ship topic now takes the rich cargo's
+    first good while it is on ("The Wavecutter's in with brandy."); `World::eventFacts` gives `world.event_goods` (the
+    event's goods in cargo words, `facts.json`); the cargo lines say those goods ("Brandy, wine, chamomile and dangling
+    charm, and all of it off the one ship.") and silk only in the new `e8t_ev_cargo_silk`, gated on
+    `world.silk_price=down`; the rich and the past lines no longer name silk. The notice reads "is in" once she is
+    (Phase 7's `noticeOn`) and the event's talk is "now" from the same moment.
+    (3) `e8t_ev_lost`'s "They're saying it was the loss of the Morning Star." is "Everyone's talking of the loss of
+    ...". The stale "a brewing too many" in `market_tests`' and `talk_tests`' fixtures is "the brewers' glut".
+    Lines: 650 in 299 entries by the Phase 8 repair's count (the salt alternative and the silk line), the plan's
+    450-650.
+  - **Seen, not changed (Phase 10's ear and weights):** at the port a lost ship's topic (2.3) outscores the Times
+    (1.45-2.05) for its four days, and an event on (1.7-2.1) outscores lean Times most hours, so lean Times are seldom
+    talked of while either lasts; the generic "posted ahead" lines ("They're crying <words> in the square") serve only a
+    host's own kinds now (every shipped kind posted ahead has its own); "dangling charm" in a list of cargo is the
+    catalogue's singular (`cargoWords`).
+  - **Tests (the one full run):** a fresh Release build (`build-m78`, from empty; 126 warnings, as before the merge,
+    none in the lines touched); ctest 88/88 with the database, none skipped (`pg_client` on a throwaway
+    `ratw_test_s2stage_m78`, dropped after; the `_pg` tests' own `ratw_test_s2stage_*`); `events_tests` 269,425 checks,
+    `talk_tests` 128,447, `market_tests` 13,864, `port_tests` 9,665, `trade_show_tests` 919, `voice_tests` 75. All 34
+    `tools/test_*.py` with the database and this build's server (`RATW_TEST_SERVER`, `RATW_SERVER`, keys tagged
+    `s2stagem78`; each through `python3 -m unittest` in `tools/`): 668 tests, none failing, 24 skipped (the 23
+    `RATW_SLOW` world builds, `test_game_tables`' save under `Saved/`); no `s2stage` or `pkg` database left;
+    `artifacts/screenshots/dev-console-fight.png`, rewritten by `test_live_map`, restored. The client's 146 and its
+    typecheck; the Editor's 81 + 67 and its typecheck (`node_modules` linked from the main checkout, removed after).
+  - **The new baseline** (the user's decision, 2026-11-11: "find a new baseline. After all this work we're going to
+    continue to fill the world out anyway"). **It replaces Phase 0's table from now on: the gate for Phases 9-11.**
+    DEV build 70 exported read only, `world_check EXPORT --simulate A B --players 20`, Release, 8 threads, the merged
+    HEAD against `5afe23c` (the code before Phase 7, built in its own `git worktree`, removed after; each run from its
+    own tree, so with its own `Data`), alternating, two runs each; the machine quiet (load 0.25 before the first run,
+    0.9-1.5 during them from the runs themselves; no other heavy work). ms, the mean of the two runs:
+
+    | Window | mean | p99 | p99 after the first minute | worst after the first minute | worst | residents |
+    |---|---|---|---|---|---|---|
+    | 6-8 | 2.60 | 5.77 | 5.44 | 12.2 | 38.5 (tick 19) | 765 |
+    | 17-19 | 2.14 | 5.21 | 4.99 | 21.9 | 39.3 (tick 19) | 765 |
+    | 23-25 | 1.62 | 4.52 | 4.04 | 12.8 | 36.8 (tick 19) | 765 |
+    | 6-8 `--ship-day` | 2.65 | 5.86 | 5.49 | 12.7 | 37.6 (tick 19) | 765 |
+
+    Beside `5afe23c` (ranges over the two runs of each):
+
+    | Window | build | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|---|
+    | 6-8 | merged (the baseline) | 2.59-2.60 | 5.75-5.78 | 5.42-5.45 | 12.1-12.3 | 38.3-38.7 |
+    | 6-8 | `5afe23c` | 2.60-2.61 | 5.77-5.82 | 5.54-5.55 | 11.3-11.9 | 36.6-36.7 |
+    | 17-19 | merged | 2.13-2.16 | 5.15-5.28 | 4.94-5.04 | 21.8-22.0 | 39.0-39.5 |
+    | 17-19 | `5afe23c` | 2.10-2.13 | 5.12-5.18 | 4.88-4.95 | 21.9-22.1 | 37.5-39.5 |
+    | 23-25 | merged | 1.62-1.63 | 4.44-4.60 | 4.04-4.05 | 12.8-12.9 | 36.7-36.9 |
+    | 23-25 | `5afe23c` | 1.68-1.71 | 4.79-4.79 | 4.29-4.30 | 12.7-12.7 | 37.9-38.3 |
+    | 6-8 `--ship-day` | merged | 2.64-2.66 | 5.80-5.92 | 5.45-5.52 | 12.5-12.9 | 36.7-38.5 |
+    | 6-8 `--ship-day` | `5afe23c` | 2.59-2.61 | 5.74-5.80 | 5.41-5.45 | 12.1-14.3 | 37.8-38.7 |
+
+    **What the merged code costs over `5afe23c`:** with a ship in (`--ship-day`) about 0.05 ms of mean (2%), 0.09 of
+    p99 and 0.06 of p99 after the first minute, both runs above both of the base's: the port's events, ships and their
+    talk (Phases 7 and 8). 17-19 about 0.02-0.03 ms of mean and 0.06-0.08 of the p99s, at the edge of the runs' spread;
+    6-8's worst after the first minute 0.6 ms more (12.2 against 11.6), its p99s the same or lower. 23-25 is faster on
+    the merged code (0.07 ms of mean, 0.27 of p99, 0.26 after the first minute; not looked into). The worst tick of every
+    run is tick 19 in the first minute (a fresh world's trade points and bands, as the Phase 5 repair's entry says).
+    Against section 15's bar (p99 at most 5.3 ms, worst at most 25 ms): the worst after the first minute is under 25 ms
+    in every window, as are 17-19's and 23-25's p99s; 6-8's p99 (5.77, 5.86 with a ship) and the first minute's tick 19
+    are over it, as on `5afe23c`. From now on the gate is: no window slower than this table beyond noise (a run's spread,
+    about 0.05 ms of mean and 0.1 of p99 here). `world_check` has no Game and no journal: those stay outside the gate.
 
 ## Review (2026-11-08)
 
