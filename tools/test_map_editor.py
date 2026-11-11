@@ -521,7 +521,7 @@ class ContentTests(unittest.TestCase):
         row = world_store.economy_row('w', p['economy'])
         self.assertEqual(row, world_store.economy_row('w', {k: v for k, v in p['economy'].items()
                                                             if k not in ('storeMarkup', 'gateToll', 'comfortsShare', 'wharf')}))
-        self.assertEqual(world_store.business_rows('w', p['economy']), [])
+        self.assertNotIn('internal_store', world_store.TABLES['live.economy'][1], 'only the kept columns are written (doc 79, 14)')
         q = self.greyfen()
         q['economy'].update(needsPaused='yes', treasury=-1, rules={'ripple': 900})
         with self.assertRaises(editor.ValidationError) as refused:

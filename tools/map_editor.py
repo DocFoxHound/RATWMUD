@@ -26,6 +26,7 @@ import threading
 import time
 import zipfile
 
+import economy_contract
 import http_body
 import manifest_lines
 import roster as roster_lib
@@ -306,15 +307,17 @@ def season_groups() -> list[dict]:
 
 def check_season(group, setting) -> list[str]:
     """One season group's setting's problems."""
-    if not isinstance(setting, dict) or set(setting) != {'supply', 'price', 'shelf', 'normal'}:
-        return [f'economy.seasons.{group} must be {{supply, price, shelf: four percents each (Spring, Summer, Autumn, '
-                'Winter), normal: pieces a day}}.']
+    # (Since doc 79, 14 a group is {price, shelf}; an older one's supply and normal are still taken, and ignored.)
+    if not isinstance(setting, dict) or set(setting) not in ({'price', 'shelf'}, {'supply', 'price', 'shelf', 'normal'}):
+        return [f'economy.seasons.{group} must be {{price, shelf: four percents each (Spring, Summer, Autumn, Winter)}}.']
     errors = []
     for key, (low, high) in SEASON_LIMITS.items():
+        if key not in setting:
+            continue
         v = setting[key]
         if not isinstance(v, list) or len(v) != 4 or any(not number(x, low, high, integer=True) for x in v):
             errors.append(f'economy.seasons.{group}.{key} must be four whole percents from {low} to {high}.')
-    if not number(setting['normal'], 0, 1000000, integer=True):
+    if 'normal' in setting and not number(setting['normal'], 0, 1000000, integer=True):
         errors.append(f'economy.seasons.{group}.normal must be a whole number of pieces a day from 0 to 1000000.')
     return errors
 
@@ -356,12 +359,17 @@ def economy_problems(economy, person_ids=None) -> tuple[list[str], list[str]]:
     economy = legacy_economy(economy)
     errors = []
     keys = set(economy)
-    if not set(ECONOMY_KEYS) <= keys <= (set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'} | set(LOOP_DEFAULTS)
-                                         | set(SEASON_DEFAULTS) | set(RULE_DEFAULTS) | set(FARM_DEFAULTS)):
-        errors.append('economy requires treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals '
-                      '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule, businesses, '
-                      'the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ', ' + ', '.join(SEASON_DEFAULTS) + ', '
+    # (Doc 79, 14: the daily herbs and meals are dead, optional; the host's overrides, economy_contract's, may come.)
+    if not {'treasury', 'storeHerbs', 'storeMeals'} <= keys <= (set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses', 'overrides'}
+                                                               | set(LOOP_DEFAULTS) | set(SEASON_DEFAULTS) | set(RULE_DEFAULTS)
+                                                               | set(FARM_DEFAULTS)):
+        errors.append('economy requires treasury, storeHerbs and storeMeals '
+                      '(and may have dailyHerbs, dailyMeals, overrides, internalStore, storeMarkup, storeResale, resaleMarkup, '
+                      'storeRule, businesses, the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ', ' + ', '.join(SEASON_DEFAULTS) + ', '
                       + ', '.join(RULE_DEFAULTS) + ' and ' + ', '.join(FARM_DEFAULTS) + ').')
+    overrides = economy.get('overrides', {})
+    if not isinstance(overrides, dict) or set(overrides) - set(economy_contract.OVERRIDE_KEYS):
+        errors.append('economy.overrides may have ' + ', '.join(economy_contract.OVERRIDE_KEYS) + '.')
     errors += check_rules(economy.get('rules', {}), economy.get('services', {}))
     errors += check_farms(economy.get('farms', {}))
     for key, high in (('comfortsAbove', 1000000), ('comfortsShare', 100)):
@@ -392,7 +400,7 @@ def economy_problems(economy, person_ids=None) -> tuple[list[str], list[str]]:
             any(not number(v, 0, 100, integer=True) for v in subsidies.values())):
         errors.append('economy.subsidies must be {service: percent 0 to 100} for ' + ', '.join(SUBSIDISED) + '.')
     for key, limit in ECONOMY_KEYS.items():
-        if not number(economy.get(key), 0, limit, integer=True):
+        if not number(economy.get(key, DEFAULT_ECONOMY[key]), 0, limit, integer=True):
             errors.append(f'economy.{key} must be a whole number from 0 to {limit}.')
     for key in STORE_SWITCHES:
         if type(economy.get(key, STORE_DEFAULTS[key])) is not bool:

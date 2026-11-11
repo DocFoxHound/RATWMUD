@@ -179,6 +179,12 @@ def shape(conn, table):
     return _shapes[known]
 
 
+# Columns a later migration added that a world may lack (doc 79, Phase 9: live.npcs.band_override, migration 0061): a
+# row read with one NULL leaves it out, so it compares equal to the same row from a world without the column, and a
+# write leaves out any column its target hasn't got.
+OPTIONAL_COLUMNS = {'live.npcs': ('band_override',)}
+
+
 def world_column(table):
     if table in GLOBAL_TABLES:
         return None
@@ -197,12 +203,21 @@ def read(conn, table, world_id, skip=(), where=''):
     if where:
         sql += (' AND ' if column else ' WHERE ') + where
     cur = conn.execute(sql, params)
-    return {tuple(r[columns.index(k)] for k in keys): dict(zip(columns, r)) for r in cur.fetchall()}
+    optional = OPTIONAL_COLUMNS.get(table, ())
+    rows = {}
+    for r in cur.fetchall():
+        row = dict(zip(columns, r))
+        for c in optional:                         # (Unset, as a world without the column has it.)
+            if c in row and row[c] is None:
+                del row[c]
+        rows[tuple(row[k] for k in keys)] = row
+    return rows
 
 
 def write(conn, table, row, touch=False):
     _, keys, types = shape(conn, table)
-    columns = list(row)
+    # (A column the target lacks, a later migration's, is left out: a world without 0061 takes an NPC without its band.)
+    columns = [c for c in row if c in types]
     values = [S.Jsonb(row[c]) if types[c] == 'jsonb' and row[c] is not None else row[c] for c in columns]
     rest = [f'{c} = excluded.{c}' for c in columns if c not in keys]
     if touch and 'updated_at' in types and 'updated_at' not in row:
@@ -428,8 +443,8 @@ SYNCED = [Spec(*s) for s in (
     ('live.faction_relations', 'faction relations', 'live'),
     ('live.npc_voice', 'NPC voices', 'live'),
     ('live.npc_relations', 'families', 'live'),
-    # (live.business_settings, the store room's per-business switch (doc 67, 6; 0055), is no longer synced: the store
-    # room went with the city's loop, Docs/Design/79-a-staged-economy.md, 17. Migration 0061 drops the table.)
+    # (The store room's per-business switches went with the city's loop: Docs/Design/79-a-staged-economy.md, 17;
+    # migration 0061 dropped their table.)
     ('live.dialects', 'dialects', 'live'),
     ('live.figures', 'figures', 'live'),
     ('live.story_visitors', 'story visitors', 'live'),
@@ -1428,17 +1443,23 @@ def plan(dev, live, dev_key, live_key, replace=False):
     return info, items, (base, snap_dev, snap_live, world_id, release, header)
 
 
+# The columns of live.economy the game reads (doc 79, 14; every other is dead, D20): the ones economy_kept compares.
+ECONOMY_KEPT = ('treasury', 'store_herbs', 'store_meals', 'needs_paused', 'seasons', 'rules', 'services')
+
+
 def economy_kept(dev, live, dev_id, live_id):
-    """The live world's economy settings (live.economy: its rules, wages, toll, treasury's start, the store room's
-    switches) where they differ from the dev world's: never synced, each world's own, so live keeps them whatever dev
-    has (the live game's truth, doc 66, Progress). {'fields': [column], 'dev': {column: value}, 'live': {...}}."""
+    """The live world's economy settings (live.economy's kept columns: the treasury's start and its stores, needs paused,
+    the seasons, the rules with the host's overrides, the services) where they differ from the dev world's: never
+    synced, each world's own, so live keeps them whatever dev has (the live game's truth, doc 66, Progress).
+    {'fields': [column], 'dev': {column: value}, 'live': {...}}."""
     try:
         d = read(dev, 'live.economy', dev_id, skip=NOT_CONTENT) if dev_id else {}
         l = read(live, 'live.economy', live_id, skip=NOT_CONTENT) if live_id else {}
     except psycopg.Error:
         return {'fields': [], 'dev': {}, 'live': {}}
     d, l = next(iter(d.values()), {}), next(iter(l.values()), {})
-    fields = [c for c in sorted(set(d) & set(l)) if c != 'world_id' and canonical(normalized({c: d[c]})) != canonical(normalized({c: l[c]}))]
+    fields = [c for c in sorted(set(d) & set(l) & set(ECONOMY_KEPT))
+              if canonical(normalized({c: d[c]})) != canonical(normalized({c: l[c]}))]
     return {'fields': fields, 'dev': {c: shown(normalized({c: d[c]})[c]) for c in fields},
             'live': {c: shown(normalized({c: l[c]})[c]) for c in fields}}
 

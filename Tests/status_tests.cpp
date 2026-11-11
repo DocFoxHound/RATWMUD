@@ -471,6 +471,42 @@ void neverHungryAndShortDays()
     expect(days(false) >= 5, "the destitute short most days at a 100% chance");
     expect(days(true) == 0, "Never Hungry: no short days");
 }
+// Doc 79, 12 and 16.1 (Phase 9): a host's status override, as status::hostOverride takes it before status::read: only a
+// host's keys; the share table whole only when every row sums to 100, is monotone and has every share at 2% or more;
+// each faucet cap held to five times the shipped one (grants to 2500); an unknown cap dropped.
+void aHostsOverride()
+{
+    const auto parse = [](const std::string& text) {
+        json::Value v;
+        std::string problem;
+        expect(json::parse(text, v, problem), "parses: " + problem);
+        return v;
+    };
+    const auto shipped = status::defaults();
+    const auto taken = [&](const std::string& text, std::vector<std::string>* warnings = nullptr) {
+        return status::read(status::hostOverride(parse(text), warnings), shipped, warnings);
+    };
+    const std::string good = R"({"shares": [{"at": -100, "shares": [20, 40, 30, 10]}, {"at": 100, "shares": [2, 10, 70, 18]}]})";
+    expect(taken(good).shares.front().shares[0] == 20, "a sound share table is taken");
+    for (const auto* bad : {R"({"shares": [{"at": -100, "shares": [40, 40, 40, 20]}, {"at": 100, "shares": [2, 12, 70, 16]}]})",
+                            R"({"shares": [{"at": -100, "shares": [2, 40, 40, 18]}, {"at": 100, "shares": [5, 12, 70, 13]}]})",
+                            R"({"shares": [{"at": -100, "shares": [1, 49, 40, 10]}, {"at": 100, "shares": [1, 12, 70, 17]}]})"})
+    {
+        std::vector<std::string> warnings;
+        const auto t = taken(bad, &warnings);
+        expect(t.shares.front().shares[0] == shipped.shares.front().shares[0] && !warnings.empty(),
+               std::string("a sum off 100, a destitute share rising or one under 2% falls back, warned: ") + bad);
+    }
+    std::vector<std::string> warnings;
+    const auto t = taken(R"({"caps": {"rewardsADay": 99999, "theftADay": 50, "grantsADay": 9999, "nope": 5}, "treasury": [0, 1], "bands": 1})", &warnings);
+    expect(t.cap("rewardsADay") == shipped.cap("rewardsADay") * 5 && t.cap("theftADay") == 50 && t.cap("grantsADay") == 2500 && t.cap("nope") == 0,
+           "the caps held to their ceilings, an unknown one dropped");
+    expect(t.treasuryFloor == shipped.treasuryFloor && t.treasuryCeiling == shipped.treasuryCeiling, "the treasury's range isn't a host's");
+    expect(std::count_if(warnings.begin(), warnings.end(), [](const std::string& w) { return w.find("skipped") != std::string::npos; }) >= 3,
+           "each skipped key warned");
+    expect(shipped.cap("grantsADay") == 500, "the shipped grants a day: 500");
+}
+
 } // namespace
 
 int main()
@@ -490,6 +526,7 @@ int main()
         theSliderSmoothed();
         threadsAndSaves();
         neverHungryAndShortDays();
+        aHostsOverride();
     }
     catch (const std::exception& e)
     {
