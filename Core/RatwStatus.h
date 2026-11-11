@@ -37,6 +37,11 @@ struct Row
     double budget = 1, theft = 0;                   // A keeper's buying budget times; the weight among thieves.
     std::int64_t pocketLow = 0, pocketHigh = 0;     // What a pickpocket finds.
     int goodsMost = 8;                              // Pieces of one good (not food) a wallet keeps overnight.
+    // Street life (doc 79, 6.5 and 10; Phase 6): the pieces a day (a mean) a household buys of its market's everyday wares
+    // (those its band can afford: at most its purse's top); the chance a week it buys a luxury; its services' frequency
+    // times (by each service's `every`; the poor's only the barber's); and the chance a passing resident of the band
+    // gives a beggar a penny.
+    double shops = 0, luxury = 0, services = 0, alms = 0;
 };
 struct SharePoint
 {
@@ -61,6 +66,18 @@ struct Table
     std::int64_t treasuryFloor = 200, treasuryCeiling = 2000;
     std::map<std::string, std::int64_t> caps;       // The faucets' caps (rewardsADay, theftADay, ...).
     std::map<std::string, std::int64_t> pay;        // A kind of post's pay word, pennies a day at slider 0.
+    // Street life (doc 79, 10; Phase 6). Theft (10.1): the expected thefts a day in a market are theftBase times the sum
+    // of its households' theft weights times the market's Times (theftTimes, hard .. boom), capped by the rule theftCap;
+    // a thief is picked by its band's weight (a rich one with a sly honesty `slyRich`), times its honesty's (theftHonesty)
+    // and twice if hungry. The dole (10.2): a day's food a head, in bread, for destitute and poor households at Restday's
+    // chapel. Beggars: at most beggarsACell at one place (the chapel steps, the notice board, a shop's door or a stall),
+    // places World::BeggarApart (8) tiles or more apart (so a city cell holds several); rough sleepers: at most
+    // beggarsACell by one warm wall. (The name is kept from "the most in a cell".)
+    double theftBase = .03;
+    std::array<double, 5> theftTimes{1.5, 1.2, 1, .85, .7};
+    std::map<std::string, double> theftHonesty{{"frank", .2}, {"plain", 1}, {"guarded", 1.5}, {"sly", 3}};
+    double slyRich = .02, doleDays = 1;
+    int beggarsACell = 2;
     std::int64_t cap(const std::string& name) const;   // 0 for one not set.
     double event(const std::string& name) const;       // 0 for one not set.
 };

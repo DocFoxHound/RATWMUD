@@ -61,6 +61,7 @@ StagedState stagedRest(const StagedState& st)
     out.bands = st.bands; out.overrides = st.overrides; out.holds = st.holds; out.lean = st.lean;
     out.escrowSource = st.escrowSource; out.events = st.events; out.quarantine = st.quarantine;
     out.hour = st.hour; out.day = st.day;
+    out.business = st.business;                     // (Street life: doc 79, Phase 6; the dole and fed fame go by the checkpoint.)
     return out;
 }
 

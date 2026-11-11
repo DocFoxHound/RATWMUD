@@ -170,6 +170,24 @@ Data load()
                 if (text.isString() && items::good(good) && words(text.asString()) && d.cargoWords.size() < 128)
                     d.cargoWords[good] = text.asString();
     }
+    // Street life (Phase 6): the luxuries (known goods, each once) and the services (a catalogue item, a business, every
+    // 1 to 3650 days; a bad one skipped).
+    for (const auto& g : v.object("luxuries").array("goods"))
+        if (const auto id = g.asString({}); items::good(id) && std::find(d.luxuries.begin(), d.luxuries.end(), id) == d.luxuries.end() &&
+                                            d.luxuries.size() < 64)
+            d.luxuries.push_back(id);
+    for (const auto& s : v.object("services").array("list"))
+    {
+        Data::Service service;
+        service.id = s.string("id");
+        service.business = s.string("business");
+        service.every = int(clampNumber(s["every"].asNumber(30), 1, 3650, 30));
+        service.patrons = s.string("for") == "patrons";
+        service.poor = s.boolean("poor", false) && !service.patrons;
+        if (!service.id.empty() && service.id.size() <= 80 && !service.business.empty() && service.business.size() <= 80 &&
+            d.services.size() < 128)
+            d.services.push_back(std::move(service));
+    }
     // The season groups (7.1, moved from city_loop.json): a good in the first group naming it; a
     // group without an id or goods dropped, its numbers clamped (never a refusal).
     for (const auto& g : v.array("seasons"))
@@ -1740,11 +1758,17 @@ Society::LadderStart Society::ladderStart(const std::string& till, const std::st
                                          bool atRest) const
 {
     // What a ladder starts from (once a quote: the factor before pressure, the depth, P and the holder's push now).
+    return ladderStartIn(marketOf(till), item, baseFactor(till, item), holder, atRest);
+}
+
+Society::LadderStart Society::ladderStartIn(const std::string& market, const std::string& item, double factor, const std::string& holder,
+                                           bool atRest) const
+{
     LadderStart s;
-    s.market = marketOf(till);
+    s.market = market;
     s.base = items::baseOf(item);
     s.depth = depthOf(s.market, s.base);
-    s.factor = baseFactor(till, item);
+    s.factor = factor;
     s.each = double(catalogPrice(item));
     s.P = atRest ? 0 : pressure(s.market, s.base);
     s.push = atRest ? 0 : pushedBy(s.market, holder, s.base);
@@ -2039,7 +2063,7 @@ bool Society::exchange(const std::string& seller, const std::string& buyer, cons
     auto& s = state_.accounts.at(seller);
     auto& b = state_.accounts.at(buyer);
     const int left = s.stock[item] -= quantity;
-    if (left == 0 && item != "herbs" && item != "meal" && item != "sword")
+    if (left == 0 && !keptAtZero(item))
         s.stock.erase(item);
     b.stock[item] += quantity;
     b.cash -= total;
@@ -2077,6 +2101,12 @@ EconomyResult Society::stagedTrade(const std::string& player, const std::string&
         result.message = "The trade could not be completed.";
         return result;
     }
+    // The shop's shelves moved (doc 79, Phase 6): its business counts a player's buying, and the till goes whole with the
+    // Board in the same record, so a crash never puts back what a player bought, or loses what one sold.
+    if (buy)
+        noteSale(till, item, quantity, true);
+    else
+        noteTillMoved(till);
     // The Board (7.3): P after the lot's pieces, the holder's push, the day's net, the shop's budget and allowance.
     auto& b = state_.board;
     const double now = marketClock();
@@ -2448,6 +2478,17 @@ void World::ensureTradePoints()
     // poor go short when players empty a shelf. Once; a test's own hooks are kept.
     if (!society_.stagedHooked())
         society_.setStagedHooks(Society::boardHooks());
+    // The street's (doc 79, Phase 6): whether a player watches a till (7.7), and a household's errand-runner sent to one
+    // (6.6). They point at this world, so they are set again if it has moved.
+    if (streetHooked_ != this)
+    {
+        streetHooked_ = this;
+        society_.setStreetHooks({[this](const Society&, const std::string& till) { return tillWatched(till); },
+                                 [this](Society&, const std::string& household, std::string& till) { return sendRunner(household, till); },
+                                 [this](Society&, const std::string& household, const std::string& till, const std::string& ware) {
+                                     return sendBuyer(household, till, ware);
+                                 }});
+    }
     if (tradePointsReady_ && tradePointsRevision_ == society_.placesRevision() && tradePointsDeadEnds_ == deadEndsRevision_)
         return;
     const bool wasReady = tradePointsReady_;

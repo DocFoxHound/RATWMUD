@@ -100,8 +100,23 @@ void Game::gifted(const std::string& giver, const std::string& receiver, const s
     if (warms)
         giftBondDay_[key] = today;
     world_.recordEvent({warms ? "gift" : "gift again", giver, receiver, g ? g->cellId : std::string(), 0, 0, item, quantity, coins, {}});
+    // A player's gift to a poor or destitute household (doc 79, 6.7; Phase 6): worth a week's band food or more lifts it a
+    // week, a month's a month (no begging, no short days, no hunger tags), within its market's cap.
+    std::int64_t worth = coins;
+    if (!item.empty() && quantity > 0)
+    {
+        const auto* s = society.statusOf(receiver);
+        worth += society.marketLot(s ? s->market : std::string(), item, quantity);
+    }
+    const bool lifted = playerAccountId(giver) && society.liftByHelp(receiver, worth) > 0;
+    if (lifted)
+    {
+        // The one lifted owes the helper (6.7, T15: "thanks them later", the pair.owed lines), both ways round.
+        world_.bonds().addOwed(receiver, giver, -worth, world_.calendarDays());
+        world_.bonds().addOwed(giver, receiver, worth, world_.calendarDays());
+    }
     record(Economy | Character, giver);
-    troubleGiven(giver, shortBefore);
+    troubleGiven(giver, shortBefore, worth, lifted);
 }
 
 bool Game::giveCommand(Connection* c, const json::Value& j, Result& result)

@@ -126,7 +126,8 @@ export const RULES = {neverHungry: [0, 1, 0], neverBroke: [0, 1, 0], buyAheadDay
     halfLifePerishable: [5, 300, 20], halfLifeKeeping: [5, 300, 50], halfLifeDurable: [5, 300, 80], ripple: [0, 70, 50],
     depthScale: [10, 1000, 100], playerPushMost: [0, 50, 15], playerSellMost: [0, 5000, 400], takeAllowance: [5, 100, 50],
     shelfScale: [10, 1000, 100], factionDiscountMost: [0, 1000, 30], caravanRate: [0, 300, 100], wagonsOnRoad: [0, 64, 16],
-    cartsOnRoad: [0, 200, 48], campStrengthMost: [2, 20, 12], bountyMost: [0, 500, 60], shipsPerWeek: [0, 6, 2]};
+    cartsOnRoad: [0, 200, 48], campStrengthMost: [2, 20, 12], bountyMost: [0, 500, 60], shipsPerWeek: [0, 6, 2],
+    theftCap: [0, 20, 4], errandRunners: [0, 1, 1]};
 export const RULE_LIMITS = Object.fromEntries(Object.entries(RULES).map(([k, [, high]]) => [k, high]));
 const ruleSettingsOk = e => (!own(e, 'rules') || (object(e.rules) && Object.entries(e.rules).every(([k, v]) =>
         !own(RULES, k) || integer(v, RULES[k][0], RULES[k][1]))))

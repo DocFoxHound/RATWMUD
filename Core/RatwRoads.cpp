@@ -967,7 +967,8 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
                    std::string& goalCell, Vec2& goal) const
 {
     // (Nobody seated, no occasion, no contract taken: no errand for anyone. Asked of every resident every pass.)
-    if (seated_.empty() && occasions_.empty() && errandContracts_.empty() && drivers_.empty() && dockHands_.empty())
+    if (seated_.empty() && occasions_.empty() && errandContracts_.empty() && drivers_.empty() && dockHands_.empty() &&
+        beggars_.empty() && runners_.empty() && warmWall_.empty() && dolePriests_.empty())
         return false;
     // A hungry traveller eats first (its provisions where it stands, else food bought or fetched), then goes on: the
     // errand never starves it.
@@ -1020,6 +1021,9 @@ bool World::errand(const std::string& resident, const ResidentLife& life, std::s
             }
     // A Wharf post while a ship is in (doc 79, 8.3; Phase 5): at its work as ever, seen at the ship's cargo.
     if (portErrand(resident, life, task, reason, goalCell, goal))
+        return true;
+    // Street life (doc 79, Phase 6): fetching the household's goods, begging, the dole, a warm wall on a winter night.
+    if (streetErrand(resident, life, task, reason, goalCell, goal))
         return true;
     static const std::vector<std::size_t> none;
     const auto contractsOf = errandContracts_.find(resident);

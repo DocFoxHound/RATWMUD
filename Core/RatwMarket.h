@@ -71,6 +71,17 @@ struct Data
     };
     std::vector<Season> seasons;
     std::map<std::string, std::size_t> seasonOf;    // Base good -> its group (the first that names it).
+    // Street life (doc 79, 6.5; Phase 6): the goods the rich buy (`luxuries`), and the services a household has done about
+    // once every `every` days at a business of their kind (`services`; `for: patrons`: a patron's only, the rich here).
+    std::vector<std::string> luxuries;
+    struct Service
+    {
+        std::string id, business;
+        int every = 30;
+        bool patrons = false;
+        bool poor = false;                          // Done for the poor too (6.5: "a barber rarely"): `poor: true`.
+    };
+    std::vector<Service> services;
 };
 const Data& data();
 // The forbidden-word check for world text made from data (a ship's name, a cargo's words; the user's rule, as

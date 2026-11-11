@@ -171,6 +171,10 @@ inline constexpr RuleInfo Rules[] = {
     // The port (doc 79, 8.3 and 12; Phase 5): the ships a week at a port. 0: none, even with a port. Its own 2 gives the
     // plan's 1-3 by the slider and the season (a week runs one either side of the rule, fewer in winter).
     {"shipsPerWeek", 0, 6, 2},
+    // Street life (doc 79, 10 and 12; Phase 6): the most thefts a market sees in a day, and whether households' shopping
+    // trips are shown near players, a member walking to the counter (D21: on).
+    {"theftCap", 0, 20, 4},
+    {"errandRunners", 0, 1, 1},
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // Data/Items as the catalogue reads it (RATW_DATA_DIR, the working directory or above, the source tree): its parent's

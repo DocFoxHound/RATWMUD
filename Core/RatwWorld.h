@@ -1925,6 +1925,90 @@ class World
     void tendCrime();
     void crimeDaily();
     void chooseMarks();
+  public:
+    // ---- Street life (Docs/Design/79-a-staged-economy.md, section 10 and 6.6; Phase 6; RatwStreet.cpp) ----
+    // The day's thieves by market (10.1: Society::theftDay with the world's say of who may: an adult, never a guard, never
+    // one held, not one who tried today), each going, from its hour, for a target that fits its want: a hungry one for a
+    // food shop's keeper (steal() then takes food from the till's stock), any other for the pocket of a richer resident
+    // where people crowd. Never a player (D11). Worked out at the day's first hour; the same lots give the same day after
+    // a restart.
+    const Society::TheftDay& theftPlan();
+    // Who is out on the street, and where: beggars at the market and the chapel steps (Marketday and Restday by day, at
+    // most beggarsACell at one place, places BeggarApart tiles apart), errand-runners walking to a counter for their household (6.6, near players only), rough
+    // sleepers by a warm wall (some winter nights) and the priest handing out the Restday dole.
+    struct Runner
+    {
+        std::string household, till;
+        Spot at;                                    // The counter.
+        double since = 0, atCounter = -1;           // (World time it set out; reached the counter, -1 not yet.)
+        std::string ware;                           // A buy besides food (7.7: a buyer at the counter); "" for its food.
+    };
+    // One come for its household's Restday dole at the chapel steps while a player is near (10.2: "near the chapel ...
+    // visible"), in the queue at its place in line, served at the front.
+    struct DoleTaker
+    {
+        std::string household, community;
+        Spot at;                                    // Its place in the queue (the front: beside the priest).
+        int place = 0;
+        double since = 0, atFront = -1;
+    };
+    const std::map<std::string, Spot>& beggars() const { return beggars_; }
+    const std::map<std::string, Runner>& runners() const { return runners_; }
+    const std::map<std::string, Spot>& roughSleepers() const { return warmWall_; }
+    const std::map<std::string, Spot>& dolePriests() const { return dolePriests_; }
+    const std::map<std::string, DoleTaker>& doleTakers() const { return doleTakers_; }
+    // Whether a player is in a till's cell (its keeper's shop, or the stall the keeper keeps) or the next one: the
+    // standing-still rule's (7.7).
+    bool tillWatched(const std::string& till) const;
+    // The shop a household's errand-runner goes to for its food (6.6): its own food shop (`till`) while open, else the
+    // open one of its market with the food on its shelf nearest the household's door by the street; null for none.
+    const Position* runnerShop(const std::string& household, const std::string& till);
+    // The street's step (each schedule pass, after the crime's): the beggars' and sleepers' places each hour, alms, the
+    // runners at their counters, the Restday dole.
+    void tendStreet();
+    // (Seconds a runner stands at the counter: the bites' eight. Most runners at once: in a player's cell, in a market.)
+    static constexpr double RunnerSeconds = 8;
+    static constexpr int RunnersACell = 2, RunnersAMarket = 12;
+    // (The dole's queue: at most DoleQueue on their way or in line at a chapel at once, each DoleSeconds at the front.)
+    static constexpr double DoleSeconds = 4;
+    static constexpr int DoleQueue = 6;
+    // (Beggars' places: at most beggarsACell at one, each this many tiles or more from the next in its cell.)
+    static constexpr double BeggarApart = 8;
+  private:
+    bool streetErrand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
+                      std::string& goalCell, Vec2& goal) const;
+    bool sendRunner(const std::string& household, std::string& till);
+    bool sendBuyer(const std::string& household, const std::string& till, const std::string& ware);
+    // (A member of the household free to walk to a counter or the chapel now: one without a post at its hours first.)
+    std::string freeMember(const std::string& household) const;
+    // (Where a cell's first door to the open air comes out, or null; kept for the day.)
+    const Spot* doorOut(const std::string& cell);
+    bool cellWatched(const std::string& cell) const;
+    void tendDole(std::int64_t today, double hod);
+    void placeBeggars();
+    void placeSleepers();
+    const Spot* chapelSteps(const std::string& community);
+    // (A free tile beside `at` for one of a row side by side, `at` itself first: ground someone could stand on and step
+    // to from `at`'s, on raised streets as on level ones, not in `taken` (cell|x,y); marked taken. In a cell not loaded,
+    // by the order alone. `line`: along the row first, as a queue stands.)
+    Spot freeBeside(const Spot& at, std::set<std::string>& taken, bool line = false) const;
+    std::map<std::string, Spot> beggars_, warmWall_, dolePriests_, chapelSteps_, doorsOut_;
+    std::map<std::string, DoleTaker> doleTakers_;
+    bool streetReady_ = false;                      // (The society's staged households made when the street was placed.)
+    std::map<std::string, std::string> beggarWhere_;   // A beggar's place in words: "at the market", "at the chapel steps".
+    std::map<std::string, std::vector<Spot>> warmPlaces_;   // A market's warm walls (a bakehouse's, a forge's), today's.
+    std::map<std::string, Runner> runners_;
+    std::int64_t streetHour_ = -1, streetMinute_ = -1, theftPlanDay_ = -1, almsDay_ = -1, chapelStepsDay_ = -1;
+    Society::TheftDay theftPlan_;
+    std::set<std::string> almsGiven_, dolesGiven_, doleClosed_;
+    std::map<std::string, std::set<std::string>> doleHomes_;   // Community -> its households on the dole today (the hour's).
+    std::map<std::string, Spot> doleSteps_;         // Community -> where its dole is handed out now (the hour's).
+    std::map<std::string, std::vector<Spot>> doleLine_;   // Community -> its queue's places, the front first (the hour's).
+    std::int64_t doleListHour_ = -1;
+    std::map<std::string, std::string> markMotive_;  // A planned thief going for its mark: "food" or "pocket".
+    mutable std::set<std::string> watchedCells_;
+    mutable double watchedAt_ = -1;
+    const World* streetHooked_ = nullptr;           // (The society's street hooks point at this world: set again after a move.)
     void gossip();
     void setupTowns();
     void tendRoads();

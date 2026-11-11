@@ -92,7 +92,7 @@
     {"id": "preserved", "name": "dried and preserved fruit", "goods": ["dried_apples", "fruit_preserves"], "price": [100, 100, 100, 90], "shelf": [100, 120, 250, 150]}
   ],
   "rules": {
-    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays), the Board's pressure settings, and staged trade's (Phase 4): the wagons' frequency in percent (caravanRate), the most wagons and farm carts on the roads at once (wagonsOnRoad, cartsOnRoad), a bandit camp's most strength (campStrengthMost) and a bounty's most pennies (bountyMost); and the port's (Phase 5): the ships a week at a port (shipsPerWeek: 0 none, even with a port; its own 2 gives 1-3 a week by the slider and the season, a week running one either side of the rule and fewer in winter). A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
+    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays), the Board's pressure settings, and staged trade's (Phase 4): the wagons' frequency in percent (caravanRate), the most wagons and farm carts on the roads at once (wagonsOnRoad, cartsOnRoad), a bandit camp's most strength (campStrengthMost) and a bounty's most pennies (bountyMost); and the port's (Phase 5): the ships a week at a port (shipsPerWeek: 0 none, even with a port; its own 2 gives 1-3 a week by the slider and the season, a week running one either side of the rule and fewer in winter); and street life's (Phase 6): the most thefts a market sees in a day (theftCap) and whether a household's shopping is a member walking to the counter where a player is near (errandRunners: 1 on, D21; off, the household's food waits for the player to leave). A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
     "neverHungry": 0,
     "neverBroke": 0,
     "buyAheadDays": 1,
@@ -111,20 +111,24 @@
     "cartsOnRoad": 48,
     "campStrengthMost": 12,
     "bountyMost": 60,
-    "shipsPerWeek": 2
+    "shipsPerWeek": 2,
+    "theftCap": 4,
+    "errandRunners": 1
   },
   "services": {
-    "about": "The city's services (doc 79, 6.5 and 12: kept, at a frequency by band): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Nothing in Core reads them yet: Phase 6 (street life) makes them staged sales at `every` x band; until then a change here, or a world's `service` record (the Rules panel), has no effect in play.",
+    "about": "The city's services (doc 79, 6.5 and 12: kept, at a frequency by band): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Since Phase 6 (street life) they are staged sales: each household has each done about once every `every` days times its band's `services` (status.json; a patron's only for the rich, and for the poor only those marked `poor: true`, the barber's: 6.5's \"a barber rarely\"), at a business of its kind in its market; nothing is paid or kept, and each counts toward that business's trade against its ordinary trade (the `business` fact). A world's `service` record (the Rules panel) turns one off or changes its every.",
     "list": [
       {
         "id": "groom_and_trim",
         "business": "barber",
-        "every": 4
+        "every": 4,
+        "poor": true
       },
       {
         "id": "tooth_drawn",
         "business": "barber",
-        "every": 60
+        "every": 60,
+        "poor": true
       },
       {
         "id": "coin_changed",
@@ -239,7 +243,7 @@
     ]
   },
   "luxuries": {
-    "about": "The luxuries (doc 72, Phase 5: cheese, a comic luxury for wolves): the goods the rich buy. Nothing in Core reads this list yet: the Board's `times` swings their depth group (luxury, by `goods` and `categories` above); Phase 6 (street life) reads it for the rich's staged buying, Phase 8 (talk) for their boasts and complaints.",
+    "about": "The luxuries (doc 72, Phase 5: cheese, a comic luxury for wolves): the goods the rich buy. The Board's `times` swings their depth group (luxury, by `goods` and `categories` above); since Phase 6 (street life) the rich and the comfortable buy them from the shelves of the shops that set them out (status.json's `luxury`, a chance a week), and Phase 8 (talk) reads it for their boasts and complaints.",
     "goods": [
       "cheese"
     ]

@@ -402,7 +402,7 @@ remember pair: e4d=faith 2m
 rule e4_rd_ans_beggar
 when concept=dreams.answer job=beggar
 priority 3
-say Shoes. Then a roof. In that order. | One winter indoors. | A bowl of something hot, and nobody moving me on.
+say Shoes. Then a coat. In that order. | One winter with the larder full. | A bowl of something hot, and nobody moving me on.
 then other: keeping.sorry
 remember pair: k=want 2m
 

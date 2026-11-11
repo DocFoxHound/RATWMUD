@@ -186,11 +186,32 @@ Trouble kindOf(const std::string& kindId, const std::string& resident, const Rea
                 head = id;
         if (head != resident)
             return t;
-        // Only a poor or destitute household (doc 79, 6.7, brought forward by Review A): a comfortable or rich one's
-        // purses are drawn to its band's range each night, so its few days' food in hand isn't want, and help given it
-        // would drift away. (One not banded yet keeps the plain reckoning.) The days and coins are still foodDays'.
-        if (const auto* banded = s.statusOf(head); banded && banded->band >= status::Comfortable)
-            return t;
+        // By the band (doc 79, 6.7; Phase 6): the head of a poor or destitute household is short, unless a player's help
+        // lifts it; a comfortable or rich one never is (its purses are drawn to its band's range each night, so a few days'
+        // food in hand isn't want). Its coins are a fortnight (refillDays) of its band's food at its market's quoted price,
+        // at least 10p; its days, what it holds against a day of that food. (One not banded yet keeps the plain reckoning.)
+        if (const auto* banded = s.statusOf(head))
+        {
+            if (banded->band >= status::Comfortable || s.liftedNow(head))
+                return t;
+            const double day = double(std::max<std::int64_t>(1, s.bandFoodCost(head, 1)));
+            double held = 0;
+            for (const auto& id : home)
+                if (const auto* a = s.account(id))
+                {
+                    held += double(a->cash);
+                    for (const auto& [item, n] : a->stock)
+                        if (n > 0 && Society::edible(item))
+                            held += double(Society::nourishment(item)) * n / std::max(1., Society::NourishADay) * day /
+                                    double(std::max<std::size_t>(1, home.size()));
+                }
+            Trouble found;
+            found.days = std::min(k->underDays - 1, held / day);
+            found.coins = std::max<std::int64_t>(10, s.bandFoodCost(head, k->refillDays));
+            std::stable_partition(home.begin(), home.end(), [&](const std::string& id) { return id == head; });
+            found.household = std::move(home);
+            return give(found);
+        }
         double cost = 0;
         const double days = foodDays(home, life->homeCell, r, nullptr, &cost);
         if (days >= k->underDays)

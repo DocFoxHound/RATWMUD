@@ -372,7 +372,7 @@ rule m7_wx_re_beggar
 when concept=moment.reply_weather self.job=beggar here.weather=rain|snow|storm
 cooldown 1d
 priority 1
-say Easy for some to talk about it. | Spare a copper for a dry crust? | I'll be under the bridge again tonight.
+say Easy for some to talk about it. | Spare a copper for a dry crust? | Wet through, and the day not half done.
 then other: moment.close
 remember pair: m7=poor 2m
 

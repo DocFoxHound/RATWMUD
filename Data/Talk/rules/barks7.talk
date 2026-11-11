@@ -259,7 +259,7 @@ say Alms! Alms on market day! | Spare a penny from your change, friend! | A copp
 rule x7_bk_beggar_rest
 when concept=bark self.job=beggar here.day=rest
 cooldown 6h
-say A penny for Restday, for the Bright One's sake. | A penny given on Restday blesses twice. | The chapel's feeding at dusk. Until then, a penny?
+say A penny for Restday, for the Bright One's sake. | A penny given on Restday blesses twice. | The chapel hands out bread after the service. Until then, a penny?
 
 rule x7_bk_beggar_night
 when concept=bark self.job=beggar here.time=night|dusk

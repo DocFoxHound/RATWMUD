@@ -167,6 +167,13 @@ Table builtIn()
     t.caps = {{"rewardsADay", 200}, {"theftADay", 20}, {"stakesADay", 30}, {"courierADay", 3},
               {"welcomeDays", 7},   {"welcomeCoins", 20}, {"welcomeHerbs", 2}, {"welcomeMeals", 3}};
     t.pay = {{"keeper", 14}, {"hand", 8}, {"public", 8}, {"watch", 10}, {"farm", 8}, {"estate", 10}};
+    // Street life (Phase 6): everyday wares' pieces a day, a luxury a week (6.5: 10% comfortable, 40% rich), services (a
+    // barber rarely for the poor), alms from a passer-by.
+    const double shops[Bands] = {0, .3, 1, 2}, luxury[Bands] = {0, 0, .1, .4}, services[Bands] = {0, .25, 1, 1.5},
+                 alms[Bands] = {0, 0, .15, .3};
+    for (int b = 0; b < Bands; ++b)
+        t.rows[std::size_t(b)].shops = shops[b], t.rows[std::size_t(b)].luxury = luxury[b],
+        t.rows[std::size_t(b)].services = services[b], t.rows[std::size_t(b)].alms = alms[b];
     return t;
 }
 
@@ -281,6 +288,10 @@ Table read(const json::Value& v, const Table& base, std::vector<std::string>* wa
         row.theft = clampNumber(r, "theft", row.theft, 0, 5, where, warnings);
         pair(r, "pocket", row.pocketLow, row.pocketHigh, 500, where, warnings);
         row.goodsMost = int(clampNumber(r, "goodsMost", row.goodsMost, 0, 99, where, warnings));
+        row.shops = clampNumber(r, "shops", row.shops, 0, 10, where, warnings);
+        row.luxury = clampNumber(r, "luxury", row.luxury, 0, 1, where, warnings);
+        row.services = clampNumber(r, "services", row.services, 0, 5, where, warnings);
+        row.alms = clampNumber(r, "alms", row.alms, 0, 1, where, warnings);
     }
     const auto& score = v.object("score");
     if (score.isObject())
@@ -314,6 +325,20 @@ Table read(const json::Value& v, const Table& base, std::vector<std::string>* wa
     for (const auto& [key, n] : v.object("pay").fields())
         if (key.size() <= 40 && n.isNumber() && std::isfinite(n.asNumber()))
             t.pay[key] = std::int64_t(std::clamp(n.asNumber(), 0., 1000.));
+    // Street life (Phase 6).
+    const auto& street = v.object("street");
+    if (street.isObject())
+    {
+        t.theftBase = clampNumber(street, "theftBase", t.theftBase, 0, 1, "status: street.", warnings);
+        if (const auto* times = street.find("theftTimes"); times && times->isArray() && times->size() == 5)
+            for (std::size_t i = 0; i < 5; ++i)
+                if (const auto& n = times->items()[i]; n.isNumber() && std::isfinite(n.asNumber()))
+                    t.theftTimes[i] = std::clamp(n.asNumber(), 0., 5.);
+        numbers(street.object("theftHonesty"), t.theftHonesty, 0, 10, "status: street.theftHonesty.", warnings);
+        t.slyRich = clampNumber(street, "slyRich", t.slyRich, 0, 1, "status: street.", warnings);
+        t.doleDays = clampNumber(street, "doleDays", t.doleDays, 0, 2, "status: street.", warnings);
+        t.beggarsACell = int(clampNumber(street, "beggarsACell", t.beggarsACell, 0, 8, "status: street.", warnings));
+    }
     return t;
 }
 

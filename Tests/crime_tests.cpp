@@ -357,8 +357,17 @@ void downedAndUp()
 
 void needMakesThieves()
 {
+    // (Doc 79, 10.1: a market's thefts a day are an expected count, by its households' bands, so a town as small as
+    // Greyfen sees a theft every few weeks. Here its theft base is made high, so the day's thieves, all of them hungry,
+    // go for a food shop or a purse within the hours run.)
     auto w = town();
+    json::Value often;
+    std::string problem;
+    expect(json::parse(R"({"street": {"theftBase": 1}})", often, problem), "the override parses");
+    w.society().setStatusOverride(&often);
+    w.advanceCalendar(1);
     starve(w);
+    w.tick(1);
     std::vector<WorldEvent> seen;
     bool tried = false;
     for (int i = 0; i < 3 * 600 && !tried; ++i)

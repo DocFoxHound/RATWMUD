@@ -762,6 +762,7 @@ Result World::loadWorld(std::istream& input, const CellReader& readCell, const s
             r.workLabel = "-";
             r.paid = false;
             r.route.clear();
+            r.watch = r.watch || r.role == "guard";  // (Still one of the Watch, by what it was written as: doc 79, 10.)
             r.role = "civilian";                    // No counter to keep, no post to hold.
         }
         if (r.evening.cell.empty())

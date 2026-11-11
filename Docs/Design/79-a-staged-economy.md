@@ -455,6 +455,13 @@ today's overrides at `RatwGameTalk.cpp:147-162`, made the rule):
 4. the Sump is at most poor;
 5. the Heights and estate residents (not servants) are at least comfortable.
 
+*(Repaired, doc 79 Phase 6, **for the user's nod**: one of the Watch, a guard by its post or by what it was written as
+(DEV's patrol guards placed with no work spot load with no post; `ResidentSpec::watch`), is an earner, paid by its town,
+and a household with one of the Watch in it is at least comfortable, under any guarantee but the DM's override. Before,
+DEV build 70's 16 postless guards, each a household of one at the Watch House, scored as households without an earner
+(slider 0: 5 destitute, 8 poor; −100: 9 destitute, 4 poor), and at −100 four posted ones were poor too; now all 30 are
+comfortable at −100 and 0 (two rich at +100).)*
+
 **Hysteresis.** A household changes at most one band a week, and only when its rank is more than 2 percentiles past
 a band's edge. The slider the bands read is smoothed: it moves toward the DM's setting by at most 10 points a game
 day, so a full swing takes about 20 days (D17). The DM's "now" skips both the smoothing and the hysteresis.
@@ -544,6 +551,12 @@ How each row is applied:
   so the jeweller's stock moves and `business` can read it. Only where a luxury shop exists; in a community, the rich
   household's wants become a wagon's manifest line instead (section 8.1). Services keep the 22-entry `services`
   list, at its frequency × band.
+  *(As built, Phase 6 and its repair: besides its food a household buys its band's `shops` pieces a day, a mean
+  (destitute 0, poor 0.3, comfortable 1, rich 2), of its market's everyday wares: the foods besides the bands' staples
+  (meat, greens, fruit, preserves) and the goods that aren't food, those its band can afford (a piece at most the top of
+  its purse: the poor's 12p, never a steel sword), each picked by its shelf's target, so a shop's custom goes with what it
+  sets out. The luxuries (`market.json`'s, cheese) are luxuries first, though the rich also eat cheese: the comfortable
+  10% a week, the rich 40%. The poor's services are only those `market.json` marks `poor` (the barber's).)*
 - **Jobs.** The band never changes posts. Posts are authored, NPCs are never made, births stay one for one with
   deaths. A born child takes the household's band at once. An arrival placed in a post joins that household. An
   apprentice is scored with their household. An adult who loses a post takes the −1 event and may slip a band in a
@@ -566,6 +579,16 @@ Household shopping fed keeper-customer familiarity through the ledger. Instead:
   the cell or the next one; at most 2 errand-runners in a player-occupied cell and 12 in a market.
 - An errand-runner who finds the shelf empty goes home without, and that household has a short day if it is poor or
   destitute.
+- *(As built, Phase 6: only to an open shop, its keeper keeping it; a member free to go, one without a post first; one
+  that hasn't reached the counter in a game hour gives up. With no runner to send (the caps, nobody free, the shop shut,
+  the rule off), the household's food waits for the next hour; still watched at 17:00, it is fed from elsewhere and the
+  shelf is left as it stands, a bare one still a short day for the poor. Buys besides food at a watched shop wait the
+  same way and go undone at the shutting: no rich buyer or servant is shown yet.)*
+  *(Repaired: with its own food shop shut, the runner goes to another open one of its market with the food on its
+  shelf, the same cell's first; one that gives up past the shops' last hour leaves its household fed from elsewhere at
+  once (the comfortable always fed). A buy besides food at a watched shop sends one of the household's own to the
+  counter (7.7's "rich buyer, servant": a rich household's member), under the same caps; with nobody free it waits, and
+  goes undone at the shutting.)*
 
 ### 6.7 Players and bands
 
@@ -581,6 +604,10 @@ Household shopping fed keeper-customer familiarity through the ledger. Instead:
   it lifts the household for its length.
   (Review A brought the band's gate forward: since slice 1 only a poor or destitute head is "short"; the days, the
   coins and the help check are still `foodDays`' until Phase 6 does the rest.)
+  *(As built, Phase 6: the coins are `refillDays` (a fortnight) of the band's food a head at the market's quoted price,
+  each head's day never more than a day's need (the poor's two meals are more, Review A), at least 10p; a gift solves it
+  when worth those coins; a lifted household isn't short. A week's food is `bandFoodCost(7)`. The one lifted owes the
+  helper the help's worth both ways round in their bonds, so the `pair.owed` lines can fire.)*
 - Steady pay from players (companion wages, `RatwGameCompanions.cpp:135, 271`; Hold wages; lodging rent; repairs)
   holds the purse (section 6.5) and adds the "earning from players" score event. A guard a Chapter pays 10p a day
   doesn't drift back to poor and complain of thin wages.
@@ -1063,11 +1090,26 @@ Instead, once a day per market:
   daily cap.
 - **Fines and restitution** use `worth()` from the quoted price. Restitution to an NPC is a plain purse change; a fine
   to the treasury is a sink.
+- *(As built, Phase 6: `base` is `status.json`'s `street.theftBase`, 0.03, and the Times factor `street.theftTimes`,
+  ×1.5 hard to ×0.7 boom; a thief's hour is seeded between 8:00 and 20:00, and one not on its mark by 21:00 lets the day
+  go; a hungry thief (hunger 55 or more, nothing to eat) goes for a keeper of its market whose till holds food and takes
+  one or two of its cheapest food; any other for someone of a higher band in its market, not of its household, where
+  most people stand. A lifted household has no thief. Residents in no band, a world without
+  the staged households, keep the old rule.)*
+  *(Repaired: "hungry" is hunger 55 or more and less than a day's food in hand (a household's two days run down by a
+  short day; a crust is no meal); a food till is a mark only while its keeper keeps the shop, between the shops' hours,
+  and steal() takes from it only then. A household lifted after the day's draw steals no more that day. Never one of the
+  Watch: a guard by its post or by what it was written as (DEV's guards placed with no work spot load as civilians with
+  no post; `ResidentSpec::watch`). The day's plan waits for the society's staged households, so a fresh world's first day
+  has its thieves. Restitution of a till's food still in the thief's paws goes back on the till's shelf (the incident
+  keeps the till, `Incident::from`); its worth in coin, as before, to the keeper.)*
 
 ### 10.2 Begging, rough sleeping, the dole
 
 - **Begging (a new task):** destitute adults without a post and not lifted, on Marketday and Restday by day, at the
-  market or the chapel steps (a spot finder like `boardSpot`, `RatwBoards.cpp:19`), at most 2 a cell. A bark when a
+  market or the chapel steps (a spot finder like `boardSpot`, `RatwBoards.cpp:19`), at most 2 at one place, each place
+  8 tiles or more from the next (**changed, for the user's nod:** the draft said "at most 2 a cell"; a DEV city cell is
+  a quarter of the city, so 2 a cell held the city to a handful of beggars at any slider). A bark when a
   player is near. Players give through `RatwGameGive`. Comfortable and rich NPCs passing sometimes give 1p: a visible
   `shift`, and the beggar's purse moves.
 - **Rough sleeping:** `homeless=yes` stays authored. Destitute residents in communal lodging are "sleeping by the warm
@@ -1075,6 +1117,30 @@ Instead, once a day per market:
 - **The dole:** on Restday the chapel's priest, a real post, hands bread to destitute and poor households near the
   chapel: a raw stock add into their wallets, visible, with no church account, trimmed with the rest. It sets
   `on_dole` and wakes the `on_dole=yes` lines.
+- *(As built, Phase 6: the chapel steps are where the chapel's first door to the open air comes out, the market's spot
+  its notice board's; begging is shown as the existing `job=beggar` barks, a beggar near a player calling first every
+  other look; a passer-by's alms are a penny by its band's `alms` chance, once a day a pair. Rough sleepers: a third of
+  winter nights, by a seeded lot, the destitute with no home or a communal one, by a bakehouse's or a forge's wall in
+  their market (indoors or by its fire), else its chapel's. The dole: the hour after the service, by the first clergy
+  post held in a community, to the destitute and poor households of that community, `street.doleDays` (a day) of bread
+  a head, once a Restday a household.)*
+  *(Repaired: beggars also stand before the market's shops (a stall's side in the open, a shop's doorway on the street),
+  at most `beggarsACell` at one place, each place `World::BeggarApart` (8) tiles or more from the next in its cell (a
+  DEV city cell is a quarter of the city: two a whole cell held the city's beggars to four), in a seeded order of the day,
+  never one of the Watch; so they go with the band mix (on DEV build 70, Marketday: 9 at −100, 6 at 0, 2 at +100). A
+  rough sleeper lies in the shelter of the warm building's doorway on the street (by its fire where it works in the open),
+  never inside, at most `beggarsACell` to a wall and side by side, the chapel's doorway when every wall is taken. The
+  dole is seen: with a player near the chapel steps one of each household comes and waits in a queue (at most
+  `World::DoleQueue`, 6, at once), handed its bread at the front (`World::DoleSeconds`, 4); out of sight it is given at
+  once; whoever is left at the dole's end is given it then. A passer-by's penny is a staged move between two purses (no
+  ledger, no journal).)*
+  *(Repaired again: the beggars at a place, the sleepers by a wall and the dole's queue stand side by side, each on a
+  tile of its own (`World::freeBeside`: ground someone could stand on, stepped to from the place's own, so DEV's raised
+  streets at 1.5-2.5 work as level ones do), none on the priest's tile (the chapel door's mouth) or a beggar's; at most
+  `beggarsACell` at one place (status.json says so now; the key keeps its name). Never one of the Watch, posted or not:
+  its household is comfortable or better in the bands (6.3's repaired note), and it never begs, sleeps by a warm wall,
+  takes or queues for the dole, even under the DM's override. After a restart past the dole's hours on its Restday (a
+  crash before the next checkpoint took the bread given), the households unserved are given it then, once.)*
 
 ### 10.3 Business
 
@@ -1089,6 +1155,23 @@ shelf, with P and Times as tie-breaks:
 - A salience rule: `business=failing` suppresses the comfortable band's "can't complain" tags.
 
 It wakes about 108 lines. The keeper whose ore players dumped says business is slow, which agrees with T3.
+
+*(As built, Phase 6: worked out at the day's turn from the day before. "Faster than its target" is a day's sales of
+half its shelves' targets or more, or a ware sold out before noon; "barely moves" is two days' sales under a twentieth
+of its targets. Its three days of players' buying are against the middle of its market's shops'. "none" until its
+first day's end. Sales count the staged buyers' pieces (food, wares, luxuries), services done, and players' purchases.)*
+
+*(Repaired: the yardstick is each shop's ordinary trade (`Society::ordinaryTrade`): the pieces a day its market's
+households would buy from it at the slider's middle (`status.json`'s shares at 0) by the same rates and picks, services
+included. Thriving: a ware sold out before noon, a day's sales of its whole shelves over its ordinary trade, a day past
+chance above its ordinary one and half as much again (E + 1.645√E + 1 and 1.5E), or players' three days over its
+market's middle; failing: a glut on its wares, or, once two whole days are known and where two ordinary days are 3
+pieces or more, two days' sales past chance below two ordinary days and under half of them; or hard Times for a luxury
+shop (luxuries half its shelves); Times good or boom makes a day above its ordinary one (E + √E) thriving; else steady.
+A household's staple food from its food shop moves the shelf but isn't counted (it is what it eats, not trade), and a
+service moves no shelf and never "sells out before noon". The failing event is added once for a run (and again each
+`eventDays` it lasts), not each night. In tests of a market of eleven shops and 120 households: at 0, 2% failing, 4%
+thriving; at −100, 15% failing; at +100, 42% thriving.)*
 
 ## 11. Talk and the Mind
 
@@ -2734,6 +2817,287 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `save_compat` 23,085. All 34 `tools/test_*.py` with the database and this build's server (throwaway names
     tagged `s2stage`, none left; `test_live_map` through `unittest`, `test_dm_live` with `RATW_SERVER` set): 668
     tests, none failing, 24 skipped (the 23 `RATW_SLOW` world builds and `test_game_tables`' save under `Saved/`).
+
+- **2026-11-11: Phase 6 (street life) built** (branch `r2-staged-p6`, cut from `r2-staged` at `8399ecc`; the society's
+  half and the world's in `Core/RatwStreet.cpp`, new). No economy simulation was run; no server was started; DEV was
+  only exported read only (build 70) for the perf windows.
+  - **Theft, an expected count a market** (10.1): each day `Society::theftDay` sums each market's households' band theft
+    weights (`status.json` rows' `theft`), times `street.theftBase` (0.03) and its Times (`street.theftTimes`, ×1.5 hard to
+    ×0.7 boom): `floor(E)` thefts and one more by a seeded lot for the rest, at most the new rule `theftCap` (4). The
+    thieves are drawn by a seeded, weighted lot from the market's adults (16 or more; never a guard, one held, one
+    following a leader, nor a lifted household's), by band (a rich one only when sly, `street.slyRich`), by honesty
+    (`street.theftHonesty`: frank 0.2, plain 1, guarded 1.5, sly 3; the voice table's trait, which the Game hands the
+    society with the quarters) and twice if hungry; each with a seeded hour, 8:00 to 20:00. From its hour a thief
+    (`World::chooseMarks`) goes for a target that fits its want: hungry (55 or more, nothing to eat), a keeper of its
+    market whose till holds food; else someone of a higher band in its market, not of its household, where most people
+    stand. The approach, the guards' eyes, witnesses, warrants, gaol and pursuit are unchanged; one not on its mark by
+    21:00 lets the day go; one that tried today (its incident, after a restart) doesn't try again. Never a player (D11).
+    Residents in no band (a world without the staged households: Greyfen's demo roster in `crime_tests`) keep the old
+    rule. In 160 households: 2.5 a day at −100, 0.8 at 0, 0.3 at +100 (`street_tests`); a hamlet of four: a theft on 8
+    days of 365.
+  - **The till-food path, the takes, `worth()`** (10.1, 6.5, 7.8): a hungry thief at a food shop takes one or two of the
+    cheapest food on its till's shelves (`steal()`'s new path: the till pays, the keeper is the one robbed, the till's
+    shelves are journalled with the next record). A pocket's coins go by the victim's band (`pocket`: destitute 0-1p
+    to rich 5-25p; one in no band 1-5p as before), a player's within `theftADay` and the lean days as before. The Watch
+    counts stolen goods at their quoted price where the one robbed buys (`Society::marketLot`, the Board's pressure in it;
+    the catalogue's where its market is unknown), not the old meal 6p, herbs 2p, sword 40p and everything else 0.
+  - **Begging, the dole, rough sleeping** (10.2, D12): on Marketday and Restday, 8:00 to 18:00, the destitute adults
+    without a post or a master, not lifted, beg at their market's chapel steps (where the chapel's first door to the
+    open air comes out) and by its notice board (the square), at most `street.beggarsACell` (2) a cell, by id; the task
+    "begging" and the talk fact `job=beggar` while at it, so the existing beggar barks are theirs, and a beggar near a
+    player barks first every other look. Each game minute a comfortable or rich resident within 3 tiles gives a penny by
+    its band's `alms` chance (0.15, 0.3), once a day a pair, resident to resident (a staged move): never to a player.
+    On Restday the hour after the service, the first clergy post held in each community hands its destitute and poor
+    households `street.doleDays` (a day's food a head) in bread, a raw add into their wallets, trimmed with the rest, once a
+    Restday a household; the priest is seen "handing out the dole" at the chapel steps; `on_dole` is true a week. Some
+    winter nights (a third, by a seeded lot) the destitute with no home or a communal one sleep "by the warm wall" of a
+    bakehouse, forge or kiln in their market (indoors or by its fire in the open; else its chapel), lying down there.
+  - **Errand-runners and the standing-still rule** (6.6, 7.7, D21): a household's food at its hour from a till a player
+    is in the cell of, or the next (the stage's cells, `World::tillWatched`), never moves the stock unseen: a member free
+    to go (no post at its hours first) walks to the counter (task "fetching goods", so `errand=goods`), stands
+    `World::RunnerSeconds` (8), and the shelf drops by the real pieces (`Society::runnerBought`); an empty shelf sends it
+    home without, a short day for the poor. Only to an open shop (its keeper keeping it), at most 2 runners in a cell and
+    12 in a market, behind the new rule `errandRunners` (1). With no runner to send, the food waits for the next hour; still
+    watched at 17:00, the household is fed from elsewhere and the shelf left as it stands (a bare one still a short day for
+    the poor). A runner not at the counter within a game hour gives up. Once a day a household.
+  - **Staged buying besides food** (6.5, and Phase 5's leftover, import shelves thinning between ships): at its hour a
+    household buys one of its market's everyday wares (non-food, set out by some shop there) by its band's new `shops`
+    chance a day (0, 0.15, 0.35, 0.6), and one of `market.json`'s `luxuries` (cheese) by its `luxury` chance a week (the
+    comfortable 10%, the rich 40%), raw moves from the shelf into a member's wallet, trimmed at night. So shelves fall only
+    when someone buys, and an import's thins between its wagons or ships. At a watched till such a buy waits for the
+    player to go, and goes undone at the shutting (no rich buyer or servant is shown). The `services` (`market.json`, a
+    world's `service` records turning one off or changing its `every`) are done at `every` times the band's `services`
+    (0, 0.25, 1, 1.5; a patron's only for the rich) at a business of their kind in the market: a sale for its business,
+    nothing on a shelf. The Rules panel's "not in play yet" note is gone.
+  - **Business** (10.3): each shop's pieces sold a day (staged buyers' and services) and players' purchases apart, saved;
+    at the day's turn its word for the day gone: failing with a glut on its wares (mean P under −0.15); else thriving
+    with a ware sold out before noon, a day's sales of half its shelves' targets or more, players' three days over its
+    market's middle, or good or boom Times; else failing when two days' sales are under a twentieth of its targets, or
+    hard Times for a luxury shop; else steady. "none" for a non-keeper and before a shop's first day's end (so a fresh
+    world's talk is as it was). Three days failing running: the keeper's household's `failing` event (−0.3). The talk
+    fact `business` reads it (the salience rule against "can't complain" is Phase 8's).
+  - **The short trouble by band, the lifted state** (6.7): a poor or destitute head not lifted is short (no `foodDays`);
+    its coins are a fortnight (`refillDays`) of its band's food a head at its market's price, each head's day never more
+    than a day's need (`Society::bandFoodCost`), at least 10p; its days what it holds against that day's cost. A gift
+    solves it when worth its coins (`troubleGiven` takes the gift's worth; the plain reckoning stays for a household in no
+    band). A player's gift to a poor or destitute household worth a week's band food lifts it a week, a month's a month;
+    the trouble's help lifts it its fortnight; at most half its market's destitute share at once (never fewer than one;
+    `Society::liftByHelp`). Lifted: no begging, no short days (as before), no thieving, `hungry=no`; the one lifted owes
+    the helper the help's worth both ways in their bonds, so the `pair.owed` lines can fire (T15). `fed_household` fame
+    once a week per account holder and household (`Society::fedFameRoom`, saved).
+  - **Saves and the journal:** `StagedState` gains `dole`, `business` and `fed`, each written only when it has
+    something and read leniently (bad entries dropped or clamped, never refused); journalled with the staged rest
+    (`wire::stagedDiff`, `stagedRest`), pruned nightly. Every move of a till's shelves by a staged sale, a till theft or a
+    player's trade notes the till (`Society::noteSale`, `noteTillMoved`), written whole with the Board in the next record:
+    the trade-moved shelves that Phases 1 and 4-5 left ("Still not journalled" in the merge's entry) are journalled now. A
+    tick tells no player anything new, so nothing waits on `takeNotices`. Not journalled, as the rules have it: the
+    staged wallets the dole, the alms and the buys move (a crash can lose a household's bread, never a player's
+    anything), an NPC's theft of an NPC on a tick (its incident goes with the next Crime record, as before), and what
+    waits in memory (a runner on the way, a buy waiting: the household's two days on hand cover it).
+  - **Fair to players, money real:** no NPC targets a player (D11); alms and the dole are residents' only; a player's
+    theft from a staged pocket is a registered faucet within `theftADay`. No new faucet: `realBalanced()` holds in every
+    new test.
+  - **New rules and data:** `theftCap` (0-20, 4) and `errandRunners` (0-1, 1) in `RatwItems.h`, `market.json`,
+    `map_editor.py` (a switch), the Editor's `economy.ts` (and its test's fixture) and `model.mjs`; `status.json`'s rows
+    gain `shops`, `luxury`, `services`, `alms`, and a `street` block (`theftBase`, `theftTimes`, `theftHonesty`, `slyRich`,
+    `doleDays`, `beggarsACell`), all read by `status::read` with clamps; `market::Data` reads `luxuries` and `services`.
+  - **Tests:** `street_tests` (new, 7,834 checks: the day's thieves within the cap and by the slider, a hamlet's, the
+    same lots each time; a hungry thief's food from a till; a rich pocket's take within the cap and goods worth their
+    quoted price; beggars only destitute adults without a post, two a cell, alms to residents only and never to a player
+    beside them, none on a working day; help lifting a beggar (no begging the next Marketday, the debt of thanks); the
+    Restday dole and `on_dole`, nothing for a player; rough sleepers some winter nights only; a staple bought out leaves
+    the poor fed less and the comfortable the same; the standing-still rule in the society (a watched till untouched
+    without a runner, a runner's real pieces) and in Greyfen (a player in Wren's shop all day: every drop with a runner at
+    the counter, two at most in the cell); households buying everyday wares; business words and the failing event; the
+    dole once a Restday and a week of `on_dole`; lifts by a week's and a month's food, the cap, never a comfortable
+    household; fame once a week by holder; the short trouble by band; the new state through the wire, an older one read as
+    none, a bad entry dropped; four crashes (the dole, a lift, a day's business and a player's purchase, the households'
+    buying on ticks), each after a checkpoint, then a player's record, then the game gone, restarted the same in file
+    mode) and `street_pg` (the four through PostgreSQL by `game.save_checkpoint` and `game.journal`, 27 checks, a
+    throwaway `ratw_test_s2stage_*` database, dropped after); each crash case seen failing with its journalling taken out
+    (the dole's diff, the trade-moved till). `save_compat` 23,107 (23,085: every pre-79 fixture has no street state, and a
+    Phase 5-shaped save, the street's keys taken out of a checkpoint with them, reads as none and plays on; one with them
+    comes back the same through the checkpoint and the world). Changed for the phase: `crime_tests` 85 (its hungry
+    thieves are the day's planned ones now: Greyfen's theft base made high), `fame_tests` 80 (runners only to an open
+    shop kept its talk check quiet; no change to the test), `troubles_tests` 66 (the short trouble's coins by band), the
+    Editor's rule fixture (the two new rules). A clean Release build (`build-p6c`; no new warning); ctest 86/86 with the
+    database, none skipped (`pg_client` on a throwaway `ratw_test_s2stage_p6`, dropped after), twice (once on the working
+    build); `life_status_tests` 2,244, `status_tests` 21,962, `market_tests` 2,001, `port_tests` 9,103,
+    `trade_show_tests` 869, `exploit_tests` 871,756, `game_tests` 3,631, `shops_tests` 132, `host_edit_tests` 550,
+    `roads_tests` 407, `journal_tests` 34. All 34 `tools/test_*.py` with the database and this build's server (throwaway
+    names tagged `s2stage`, none left): 668 tests, none failing, 25 skipped (the 23 `RATW_SLOW` world builds,
+    `test_game_tables`' save under `Saved/`, `test_live_map`'s built client; `test_live_map` through `python3 -m
+    unittest` in `tools/`). The client's 146 and its typecheck; the Editor's 81 + 67 and its typecheck.
+  - **Perf** (DEV build 70 exported read only, `world_check EXPORT --simulate A B --players 20`, Release, 8 threads;
+    Phase 6 against its base `8399ecc` built from the same tree, runs alternating; the machine at load 1.4-3.7 from other
+    sessions; the runs at load 4.8-12 left out; ms, ranges over the runs):
+
+    | Window | build | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|---|
+    | 6-8 | repaired (its table) | 2.64 | 5.84 | 5.45 | 12.2 | 39.9 |
+    | 6-8 | base today (4) | 2.71-2.96 | 5.95-6.95 | 5.57-5.98 | 11.7-29.8 | 38.8-79.0 |
+    | 6-8 | Phase 6 (4) | 2.69-2.85 | 5.90-6.36 | 5.55-6.01 | 10.9-13.0 | 37.1-39.7 |
+    | 17-19 | repaired | 2.19 | 5.15 | 4.95 | 23.2 | 40.4 |
+    | 17-19 | base today (6) | 2.15-2.31 | 5.09-5.68 | 4.92-5.34 | 22.1-24.3 | 36.8-40.9 |
+    | 17-19 | Phase 6 (6) | 2.14-2.35 | 5.14-6.38 | 4.96-6.23 | 22.5-24.5 | 36.8-41.7 |
+    | 23-25 | repaired | 1.63 | 4.85 | 4.28 | 12.6 | 40.3 |
+    | 23-25 | base today (4) | 1.69-1.90 | 4.74-5.84 | 4.11-5.17 | 12.8-13.2 | 35.7-41.9 |
+    | 23-25 | Phase 6 (3) | 1.72-1.87 | 4.75-5.17 | 4.19-4.49 | 12.4-13.2 | 38.9-40.3 |
+
+    Phase 6 sits inside the base's own spread in every window but one run's p99 in 17-19 (6.38, after the first minute
+    6.23, at load 2.2; its pair's base 5.48 and 5.22; the five other runs 5.14-5.62), and the base itself measures up to
+    0.1-0.3 ms over the repaired table today (the machine, not the code: the base is the repaired code). One more 17-19 pair, with the
+    errand-runners switched off by a temporary build, measured the same as with them (2.22 both times, against 2.14 and 2.20 with them): the
+    runners near the 20 walking players cost nothing measurable. The worst first-minute tick is tick 19's, as the repaired
+    entry says. `world_check` has no Game and no journal: the trade-moved tills a record now carries are not in the gate.
+  - **Left, by owner:** Phase 7: none of this phase's. Phase 8: the talk lines for begging beyond the existing
+    `job=beggar` barks, the dole, the business words (the `business=failing` salience rule against "can't complain"), and
+    `wealth_days` (still `foodDays`, the talk's fallback for one in no band). Phase 9: the DM's side (the street's
+    `status.json` block and rows and the two rules through `live.economy.rules`; thefts, beggars and the dole on the
+    Prosperity tab). Phase 10: every number here (the theft base and Times, the shops, luxury, services and alms chances,
+    the dole's days, the business thresholds, the runners' caps), with play. Phase 11: the soak with street life (not
+    run).
+  - **Not built, and why:** a rich buyer or a servant shown buying near players (a buy besides food waits for the player
+    to go instead: no visible change without a buyer, as the rule asks); alms as a visible gesture (a purse's penny);
+    NPCs picking players' pockets (D11: out).
+  - **For the user to decide** (each built one way, cheap to change): (1) the short trouble's coins on a day's need, not
+    the band's two meals (a fortnight of those was 925p for a household of five in `troubles_tests`); (2) the business
+    thresholds above; (3) a market's thefts go no further than 21:00 and begin at 8:00; (4) a beggar's places: the chapel
+    steps and the notice board (on DEV, Ridgemere's cathedral or chapel door and its square).
+- **2026-11-11: Phase 6 repaired** (`r2-staged-p6`). Three independent checks left 26 findings (some the same one found
+  twice) and a list of what was missing. Each was looked into against the code; each one fixed has a test that fails
+  with its fix taken out and passes with it (each was seen failing so). No economy simulation was run; no server was
+  started; DEV was only exported read only (build 70) for a probe of a Marketday morning (seconds of ticks) and the perf
+  windows.
+  - **The beggars, the same few at any slider and most of them Watch guards, fixed** (`beggarsAndAlms`). Two places a
+    market at two a cell held DEV's city to four beggars (a DEV city cell is a quarter of the city), in id order. Beggars
+    now also stand before the market's shops, at most `beggarsACell` at one place, places `World::BeggarApart` (8) tiles
+    apart, in a seeded order of the day. DEV's patrol guards written with no work spot load as civilians with no post (the
+    loader's rule), so nothing knew them as the Watch: `ResidentSpec::watch` keeps what they were written as, and they
+    never beg, steal, or are a pickpocket's mark (`guardsNeverThieve`). On DEV build 70, a Marketday morning: 9 beggars at
+    −100, 6 at 0, 2 at +100, none of the Watch (before: 4 at each). Three beggar lines that put a housed beggar under a
+    bridge, and the dole "at dusk", reworded.
+  - **Luxuries never bought, a third of shops failing in ordinary times, the failing event every night, services always
+    thriving, poor wolves taking steel swords, the record stepping back a day: fixed** (`businessInOrdinaryTimes`,
+    `wareBuyingByBand`, `failingOnceARun`, `businessRecordNeverStepsBack`, `businessFromSales`). Cheese is a luxury before
+    it is the rich's food. The foods besides the staples (meat, greens, preserves) are everyday wares; a household buys
+    its band's `shops` pieces a day (0, 0.3, 1, 2), each of those its band can afford, picked by its shelf's target; the
+    poor's services are the barber's only (`market.json`'s `poor`, so the Rules panel's hint is now true). The business
+    word is judged against each shop's ordinary trade (10.3's repaired note): in a market of eleven shops, 2% failing at 0,
+    15% at −100, 42% thriving at +100 (before: every butcher and greengrocer failing, every service shop thriving, and
+    every shop thriving at +100). The failing event once a run; a sale between midnight and dawn counts in today's.
+  - **The Restday dole, an instant city-wide add, fixed** (`doleQueue`, `restdayDole`): a queue at the steps with a player
+    near, given at once out of sight, the rest at its end (10.2's note).
+  - **Thefts** (`hungryThievesAtTheTill`, `liftedThievesStop`, `aFreshWorldsFirstDay`): a hungry thief robs a till only
+    while its keeper keeps the shop; "hungry" is less than a day's food in hand (two days held made it never so); a
+    household lifted after the draw steals no more that day; restitution of a till's food goes back on its shelf; a fresh
+    world's first day has its thieves (the empty plan was kept for the day, so no perf window had a thief; on DEV the
+    plan is now made on the first day: 4 thieves at −100, 1 at 0 and +100). **Rejected:** that the planned thefts mostly
+    fail: the odds are the old ones, as 10.1 asks ("unchanged: everything after the target is chosen").
+  - **Rough sleepers inside bakeries and on one tile, fixed** (`roughSleepers`): outside, in the warm building's doorway's
+    shelter, side by side, at most `beggarsACell` to a wall.
+  - **Errand-runners:** one giving up past the shops' last hour left its household unfed, the comfortable too: fed from
+    elsewhere at once now (`runnerGivingUpLate`). Built (6.6, 7.7, missing): a runner goes to another open shop selling
+    its household's food when its own is shut; a buy besides food at a watched shop sends a household member to the
+    counter (`buyersAtAWatchedShop`; in Greyfen's working hours nobody is free, so its buys wait for the player to go).
+  - **Help with the lift cap full, fixed** (`helpWhenTheCapIsFull`): the help isn't taken ("too many households here are
+    living on help already"), and a gift lifts nobody and solves no trouble; a gift lifts by its worth as the help does (a
+    fortnight's food a fortnight: `liftsAndTheirCap`).
+  - **The dole's mark and fed fame through a crash, fixed** (`streetThroughACrash`, `streetStateRoundTrips`): neither is
+    journalled any more, so each goes with what it marks (the dole's raw bread, a deed kept only by the checkpoint); a
+    household whose bread a crash took is given it again within the dole's hours, once.
+  - **Alms in the ledger and the journal, fixed:** a staged move between two purses. **Cleanups:** `marketLot` starts its
+    ladder by `Society::ladderStartIn` (what `ladderStart` uses); the shelf-key rule is `Society::keptAtZero`, used
+    everywhere it was copied. `street_tests` removes every copy and save it made (the `.lock`, `.art`, `.reports` too),
+    passed or failed. **Not done:** the 360 older `ratw-street-*` entries already in `/tmp` were left (removing them was
+    not allowed from this session).
+  - **Left, by owner (unchanged):** Phase 8: the begging, dole and business talk lines, the `business=failing` rule against
+    "can't complain", `wealth_days`. Phase 9: the DM's side. Phase 10: every number. Not built: alms as a visible gesture
+    (a client gesture, not the server's to show), NPCs picking players' pockets (D11). The dole goes to lifted households
+    too (the plan says neither way). DEV's patrol guards written with no work spot (the check counted 28) still score as households without an earner
+    (a data question for the user: they are kept from begging and theft, not from the bands).
+  - **Tests:** a clean Release build (`build-p6rc`; no new warning in the files touched); ctest 86/86 with the database,
+    none skipped, twice on the working build and once on the clean one (`pg_client` on a throwaway
+    `ratw_test_s2stage_p6r`, dropped after; no `s2stage` database left); `street_tests` 12,997 (7,834; the final check counted 13,331: the crash cases' loops run until the shelves move, so the
+    count varies a little run to run),
+    `street_pg` (four crashes through PostgreSQL), `save_compat` 23,107, `life_status_tests` 2,244, `status_tests` 21,962,
+    `market_tests` 2,001, `port_tests` 9,103, `trade_show_tests` 869, `game_tests` 3,631, `crime_tests` 85,
+    `troubles_tests` 66, `fame_tests` 80, `shops_tests` 132, `host_edit_tests` 550, `roads_tests` 407, `journal_tests` 34,
+    `exploit_tests` 871,756. All 34 `tools/test_*.py` with the database and this build's server (keys tagged `s2stage`):
+    667 tests, none failing, 25 skipped. The client's 146 and its typecheck; the Editor's 81 + 67 and its typecheck.
+  - **Perf** (DEV build 70 exported read only, `world_check EXPORT --simulate A B --players 20`, Release, 8 threads; the
+    as-built Phase 6 (`build-p6c`) against the repaired (`build-p6rc`), runs alternating, two each, the machine at load
+    1.1-1.7; ms, ranges over the runs):
+
+    | Window | build | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|---|
+    | 6-8 | as built | 2.67-2.67 | 5.76-5.87 | 5.38-5.45 | 10.8-21.2 | 36.3-37.5 |
+    | 6-8 | repaired | 2.63-2.67 | 5.77-5.78 | 5.40-5.42 | 12.0-12.1 | 38.0-38.0 |
+    | 17-19 | as built | 2.15-2.18 | 5.15-5.20 | 4.94-4.96 | 22.0-22.2 | 39.4-39.5 |
+    | 17-19 | repaired | 2.15-2.16 | 5.10-5.15 | 4.94-4.95 | 22.7-23.0 | 39.4-40.0 |
+    | 23-25 | as built | 1.67-1.69 | 4.64-4.79 | 4.14-4.17 | 12.4-12.7 | 37.5-37.6 |
+    | 23-25 | repaired | 1.60-1.72 | 4.50-4.70 | 4.03-4.22 | 12.8-13.3 | 35.9-37.5 |
+
+    The repaired build sits inside the as-built one's spread in every window, now with the day's planned thieves in it
+    (their target search and the till path) and a city's households buying wares each hour. The worst first-minute tick
+    is tick 19's, as before. `world_check` has no Game and no journal: the tills a record carries are still not in the
+    gate.
+- **2026-11-11: Phase 6 repaired again** (`r2-staged-p6`, the final check's seven findings and two notes). Each one
+  fixed has a test that fails with its fix taken out and passes with it (each seen failing so); the two DEV-only ones
+  were also confirmed on DEV build 70 exported read only, by a scratch probe outside the repository (seconds of ticks
+  on a Marketday morning, six winter nights and a Restday's dole at −100, 0 and +100; before and after). No economy
+  simulation was run; no server was started.
+  - **The Watch off the street and out of the poor bands, fixed** (`theWatchInTheBands`, `theWatchOffTheStreet`). One of
+    the Watch, posted or not (`ResidentSpec::ofTheWatch`), is an earner in the bands (its town pays it), and a household
+    with one of the Watch in it is at least comfortable under any guarantee but the DM's override (6.3's repaired note,
+    **for the user's nod**: posted guards are kept comfortable too, so a postless one is never better off). Besides the
+    beggars, thieves and marks: never a rough sleeper (`placeSleepers`), never in a community's dole list or queue,
+    `giveDole` refuses a Watch household (`Society::watchHousehold`), so even the DM's override gives it none; a postless
+    guard at its rounds is never sent as a runner. On DEV: the 16 postless guards were destitute or poor (0: 5 and 8;
+    −100: 9 and 4; four posted ones poor at −100 too), one slept by a warm wall at −100, and 5 (0) and 17 (−100) of the
+    Watch were on the dole; now all 30 are comfortable at −100 and 0 (two rich at +100), none sleeps out, none is on the
+    dole. Every street and band path was looked through: the bands, beggars, thieves, marks, sleepers, the dole's list,
+    queue and gift, runners and buyers (`freeMember`), the short trouble and the lifts (by band, so they follow).
+  - **Rows on one tile on raised ground, fixed** (`streetOnRaisedGround`, Greyfen's streets raised to 2.5). The tiles
+    beside a place are found by `World::freeBeside`: ground someone could stand on (`standable`) and step to from the
+    place's own (`passable` from its tile), not taken already, the place first and then ring by ring (a queue along the
+    steps first); in a cell not loaded, by the order alone. Beggars, sleepers and the dole's queue use it, the queue's
+    places worked out each hour round the priest's tile and the beggars'; the chapel door's mouth is left to the priest.
+    On DEV, Marketday: at 0, 6 beggars on 6 tiles (before 5 on 3), at −100 9 on 9 (10 on 5); the Restday dole with a
+    player at the steps, the queue, the priest and the beggars on 13 tiles for 13 at 0 (before 14 on 4) and 16 for 16 at
+    −100 (17 on 5).
+  - **The beggar cap's words** (for the user's nod): kept as at most `beggarsACell` (2) at one place, places 8 tiles
+    apart; `status.json`'s `about`, `RatwStatus.h` and 10.2 say so now (10.2's "2 a cell" marked as changed).
+  - **A crash after the dole's hours, fixed** (`streetThroughACrash`'s new `dolelate` case, file and PostgreSQL through
+    `street_pg`): on a Restday past the dole's hours, a community whose dole this run never closed (a restart) gives its
+    unserved households their bread then, once (the priests' helpers' round, as at the hours' end).
+  - **The runner's fallback shop, fixed** (`runnersToTheNearest`): `World::runnerShop` (split out of `sendRunner`) takes
+    the open shop of the market with the household's food nearest its door by the street (a shop's door, a stall's spot,
+    in world tiles), not a hash's pick.
+  - **`roughSleepers`' bound, fixed:** it counts each sleeper's winter nights and bounds the four's sum to a third
+    within three spreads (24-56 of 120; 38 now), each some nights and not all; it fails with every night slept out.
+  - **The beggars on DEV, a data question for the user (no code change: the bands' rules work as 6.1-6.3 say).** With
+    the Watch gone from them, DEV's beggars are (at 0) two postless "hands" at the barracks, `rm_hilde_dripby` (61, no
+    work label) and `rm_piet_muddale` (58, "working at Cinder Wheelwrights"), authored as workers but holding no post, so
+    each a household of one with no earner; and four elders, 60-80, living alone or as a pair with no earner
+    (`rmx_ingrid_kendrick` and `rmx_una_thackeray` in their `_house` homes, which read as cottages: "house" is not one of
+    the house words). "No earner in the home" is a reason for destitute (6.3), and a lower-class cottage or flat implies
+    poor, one band from destitute. To change it: give the two hands their posts (a data fix), or count those past
+    retirement age as not needing an earner (a pension or kin's keep: a rule change for the user to decide).
+  - **Noted, not changed:** an NPC's till theft journals the till's shelves with the next record; its incident goes with
+    the next Crime record and the thief's staged wallet is not journalled (as the journal rules have it for a theft of an
+    NPC by an NPC on a tick).
+  - **Tests:** a clean Release build (`build-p6vc`; no warning in the files touched, 125 in all as before); ctest 86/86
+    with the database, none skipped, twice on it and once on the working build (`pg_client` on a throwaway
+    `ratw_test_s2stage_p6v`, dropped after; no `s2stage` database left); `street_tests` about 24,600 checks (24,489-24,668:
+    the crash cases vary as above), `street_pg` five crashes through PostgreSQL (49 checks), `save_compat` 23,107,
+    `life_status_tests` 2,244, `status_tests` 21,962, `market_tests` 2,001, `game_tests` 3,631, `crime_tests` 85,
+    `troubles_tests` 66, `fame_tests` 80. Changed for the repair: `aFreshWorldsFirstDay` (Greyfen's barracks guards weigh
+    as comfortable among the thieves now: its comfortable theft weight made high, `theftBase` being clamped at 1). All 34
+    `tools/test_*.py` with the database and this build's server (keys tagged `s2stage`): 668 tests, none failing, 25
+    skipped. Perf not measured again: the placements are hourly and the queue's places a few dozen tile checks an hour.
+  - **Not done:** other suites' leftover files in `/tmp` (`ratw-books-*`, `ratw-fame-*`, `ratw-troubles-*` and others,
+    not street life's) were left; removing them was not allowed from this session.
 
 ## Review (2026-11-08)
 

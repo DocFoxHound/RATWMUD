@@ -473,9 +473,14 @@ void Society::stagedBands(std::int64_t day, bool now)
     };
     ClassPass pass;
     std::set<std::string> posted;
+    // An earner: a post that pays, or one of the Watch (a guard by its post or by what it was written as: DEV's patrol
+    // guards placed with no work spot load with no post), whom its town pays, not the market (doc 79, 10).
     const auto earner = [&](const std::string& id) {
         const auto* post = jobOf(id);
-        return post && !postClass(*post, &pass).empty();
+        if (post && !postClass(*post, &pass).empty())
+            return true;
+        const auto* s = spec(id);
+        return s && s->ofTheWatch();
     };
     for (const auto& [id, life] : state_.residents)
         if (!dead_.count(id) && earner(id))
@@ -576,11 +581,13 @@ void Society::stagedBands(std::int64_t day, bool now)
         if (homeless)
             c.implied = status::Destitute;
         // The guarantees, in their order (6.3).
-        bool beggar = false, house = false;
+        bool beggar = false, house = false, watch = false;
         for (const auto& m : members)
         {
             beggar |= category(m) == "beggar";
             house |= houseKin.count(m) > 0;
+            if (const auto* s = spec(m))
+                watch |= s->ofTheWatch();
         }
         if (const auto o = st.overrides.find(key); o != st.overrides.end() && o->second.until >= day)
             c.fixed = std::clamp(o->second.band, 0, status::Bands - 1), c.overridden = true;
@@ -592,6 +599,15 @@ void Society::stagedBands(std::int64_t day, bool now)
             c.atMost = status::Poor;
         else if ((district == "heights" || district == "estate") && !servantsOnly)
             c.atLeast = status::Comfortable;
+        // A household with one of the Watch in it is paid by its town (doc 79, 10: the Watch stays as it is): never poor
+        // or destitute; only the DM's override sets it lower (and even then it never begs, sleeps rough or takes the dole).
+        if (watch && !c.overridden)
+        {
+            if (c.fixed >= 0 && c.fixed < status::Comfortable)
+                c.fixed = -1;
+            if (c.fixed < 0)
+                c.atLeast = std::max(c.atLeast, int(status::Comfortable)), c.atMost = std::max(c.atMost, int(status::Comfortable));
+        }
         if (const auto b = st.bands.find(key); b != st.bands.end())
         {
             c.previous = b->second.band;
@@ -714,7 +730,7 @@ int Society::tillShelf(Society& s, const std::string& till, const std::string& g
     if (found == s.state_.accounts.end() || want <= 0)
         return 0;
     const int got = std::min(want, stock(found->second, good));
-    if (got > 0 && (found->second.stock[good] -= got) == 0 && good != "herbs" && good != "meal" && good != "sword")
+    if (got > 0 && (found->second.stock[good] -= got) == 0 && !keptAtZero(good))
         found->second.stock.erase(good);
     return std::max(0, got);
 }
@@ -788,6 +804,7 @@ void Society::stagedKeepers()
         if (pieces > 0)
             provisionDemand_[home.till][home.food] = std::min(ShelfMost, provisionDemand_[home.till][home.food] + pieces);
     }
+    streetKeepers();                                // (Doc 79, Phase 6: the day's wares, luxuries and services by market.)
 }
 
 int Society::provisionFor(const std::string& till, const std::string& ware) const
@@ -836,7 +853,7 @@ void Society::stagedTrim(const std::string& id, int band)
         const int drop = std::min(stock(wallet, item), int(std::floor((have - most) / each + 1e-9)));
         if (drop <= 0)
             continue;
-        if ((wallet.stock[item] -= drop) == 0 && item != "herbs" && item != "meal" && item != "sword")
+        if ((wallet.stock[item] -= drop) == 0 && !keptAtZero(item))
             wallet.stock.erase(item);
         have -= double(drop) * each;
     }
@@ -848,7 +865,7 @@ void Society::stagedTrim(const std::string& id, int band)
         if (!keep && n > row.goodsMost)
         {
             it->second = row.goodsMost;
-            if (it->second == 0 && item != "herbs" && item != "meal" && item != "sword")
+            if (it->second == 0 && !keptAtZero(item))
             {
                 it = wallet.stock.erase(it);
                 continue;
@@ -876,6 +893,11 @@ void Society::stagedPrune(std::int64_t day)
         it = day - it->first >= 28 ? st.faucets.erase(it) : std::next(it);
     for (auto it = st.overrides.begin(); it != st.overrides.end();)
         it = it->second.until < day ? st.overrides.erase(it) : std::next(it);
+    // (Street life, Phase 6: a dole more than a week old, and fed fame's weeks gone by.)
+    for (auto it = st.dole.begin(); it != st.dole.end();)
+        it = day - it->second >= 7 ? st.dole.erase(it) : std::next(it);
+    for (auto it = st.fed.begin(); it != st.fed.end();)
+        it = day - it->second >= 7 ? st.fed.erase(it) : std::next(it);
     for (auto it = st.welcomed.begin(); it != st.welcomed.end();)
         it = day / std::max<std::int64_t>(1, t.cap("welcomeDays")) - it->second > 1 ? st.welcomed.erase(it) : std::next(it);
     for (auto it = st.escrowSource.begin(); it != st.escrowSource.end();)
@@ -900,6 +922,10 @@ void Society::stagedRestored()
     stagedDay_ = -1;
     stagedHour_ = -1;
     postedAtPass_.clear();
+    runnerWaiting_.clear();                         // (Doc 79, Phase 6: a buy waiting or a runner walking isn't saved.)
+    foodDeferred_.clear();
+    fedOn_.clear();
+    buysDeferred_.clear();
     openRealBalance();
     if (roster_ != Roster::Authored)
         return;

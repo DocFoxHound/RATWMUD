@@ -214,7 +214,7 @@ int Society::consume(const std::string& account, const std::string& item, int qu
         return 0;
     // (The last of a good gone, its entry goes too, as in a sale: an account holds only what it has, and every look for food
     // scans fewer. The old three keep their place.)
-    if ((found->second.stock[item] -= used) == 0 && item != "herbs" && item != "meal" && item != "sword")
+    if ((found->second.stock[item] -= used) == 0 && !keptAtZero(item))
         found->second.stock.erase(item);
     record(kind, account, "consumed", item, std::min(used, 99), 0);
     return used;
@@ -243,7 +243,7 @@ bool Society::shift(const std::string& from, const std::string& to, const std::s
     b->second.cash += std::max<std::int64_t>(0, coins);
     if (!item.empty() && quantity > 0)
     {
-        if ((a->second.stock[item] -= quantity) == 0 && item != "herbs" && item != "meal" && item != "sword")
+        if ((a->second.stock[item] -= quantity) == 0 && !keptAtZero(item))
             a->second.stock.erase(item);           // (As in consume.)
         b->second.stock[item] += quantity;
     }
@@ -425,6 +425,7 @@ bool Society::arrive(const ResidentRequest& request)
     ResidentSpec r = *away;
     r.home = r.work = r.evening = request.home;
     r.workLabel = "-";
+    r.watch = r.watch || r.role == "guard";         // (One of the Watch come with no post: doc 79, 10.)
     r.role = "civilian";
     r.paid = false;
     r.route.clear();
