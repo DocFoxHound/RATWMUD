@@ -1,6 +1,7 @@
 import * as M from '../model/model.mjs';
 import type {AnyCell, Person, Place, PlaceRef, Project, Role, Room} from '../model/model.mjs';
 import {COATS, PATTERNS, ROLES, SEXES, SPECIES, STATURES} from '../model/model.mjs';
+import {BANDS, type Band} from '../lib/economyContract';
 import {commit, focusPlace, getState, openView, setState, useStore} from '../lib/store';
 import {formatHour, ROLE_INFO, VOICE_COLORS} from '../lib/glyphs';
 import {isRoom, placeLabel} from '../lib/surface';
@@ -114,7 +115,7 @@ function WorldInspector({project}: {project: Project}) {
             <button onClick={() => setWorkspace('interiors')}>Open Interiors (Alt+2)</button>
         </Section>
         <Section title="People" open={false}>
-            <Hint>{counts.merchant + counts.guard + counts.civilian} named NPCs and {project.slots.length} profession slots. Residents, jobs and patrols are edited in the People workspace; the store room on Atlas's Economy page.</Hint>
+            <Hint>{counts.merchant + counts.guard + counts.civilian} named NPCs and {project.slots.length} profession slots. Residents, jobs and patrols are edited in the People workspace; the economy's settings on Atlas's Economy page.</Hint>
             <button onClick={() => setWorkspace('people')}>Open People (Alt+3)</button>
         </Section>
     </>);
@@ -156,8 +157,8 @@ function PeopleOverview({project}: {project: Project}) {
         </Section>
         <Section title="Economy">
             <Hint>The economy is staged (doc 79): each morning shops set out their own wares, and goods their market doesn't
-                make come in by wagon, cart or ship; there is no store room. Residents' purses and food follow their household's
-                economic band, nightly. The world's economy settings are on
+                make come in by wagon, cart or ship. Residents are fed by their household's economic band, set nightly from rank
+                (a resident's own band on its Band picker). The world's economy settings are on
                 Atlas's <a href="?suite=atlas&amp;page=economy">Economy</a> page.</Hint>
         </Section>
     </>);
@@ -330,7 +331,7 @@ function PersonInspector({project, person}: {project: Project; person: Person}) 
             {person.role === 'civilian' && <SelectField label="Travel route" value={person.route} onChange={v => update({route: v})}
                 hint={person.route ? 'A traveller: walks these posts in order through working hours, and rests on the road wherever the day ends.' : 'Works at the work place.'}
                 options={[{value: '', label: 'Work at the work place'}, ...project.routes.map(r => ({value: r.id, label: `${r.name} (${r.posts.length} posts)`}))]} />}
-            <Toggle label="Paid by the treasury" hint="Earns small wages for time spent working" checked={person.paid} onChange={v => update({paid: v})} />
+            <Toggle label="A paid post (for succession)" hint="Ranks this resident for succession; nothing pays them" checked={person.paid} onChange={v => update({paid: v})} />
             <Toggle label="Travels with parties" hint="May be asked along or hired by a player's party at any hour (doc 32)" checked={!!person.joinable}
                 onChange={v => update({joinable: v || undefined})} />
             <Toggle label="Protected" hint="Players can't attack them or rob them of coin; only a Dungeon Master can end them (doc 57)" checked={!!person.protected}
@@ -366,13 +367,11 @@ function PersonInspector({project, person}: {project: Project; person: Person}) 
                 <div className="swatches small">{VOICE_COLORS.map((hex, i) => <button key={i} title={`Voice ${i}`} aria-label={`Voice color ${i}`} className={person.voice === i ? 'on' : ''} style={{background: hex}} onClick={() => update({voice: i})} />)}</div>
             </div>
         </Section>
-        <Section title="Purse & goods" open={false}>
-            <Row>
-                <NumberField label="Silver" value={person.purse} min={0} max={100000} onCommit={v => update({purse: v})} />
-                <NumberField label="Meals" value={person.meals} min={0} max={10000} onCommit={v => update({meals: v})} />
-            </Row>
-            <NumberField label="Herbs" value={person.herbs} min={0} max={10000} onCommit={v => update({herbs: v})} />
-            <Hint>{person.role === 'merchant' ? 'A merchant\'s goods are their shop stock.' : 'Starting money and food. Afterwards the purse follows the household\'s economic band, and its food comes each day from the nearest food keeper\'s shelf (doc 79).'}</Hint>
+        <Section title="Band" open={false}>
+            <SelectField label="Economic band" value={person.band ?? ''} onChange={v => update({band: v === '' ? null : v as Band})}
+                hint="For the resident's whole household; the highest band among its members wins, and a DM's band for a while comes first."
+                options={[{value: '', label: 'From rank'}, ...BANDS.map(b => ({value: b, label: b[0].toUpperCase() + b.slice(1)}))]} />
+            <Hint>Residents are fed by their band; the poor go short when the nearest food shop is bare.</Hint>
         </Section>
         <Section title="Danger zone" open={false}>
             <button className="danger wide" onClick={() => { if (commit(`Removed ${person.name}.`, p => M.removePerson(p, person.id))) setState({selection: null}); }}>Remove {person.name}</button>
@@ -448,7 +447,7 @@ function SlotInspector({project, slot}: {project: Project; slot: M.Slot}) {
             </Row>
             {behavior === 'guard' && <SelectField label="Patrol route" value={slot.route} onChange={v => update({route: v})}
                 options={[{value: '', label: 'Hold work post'}, ...project.routes.map(r => ({value: r.id, label: `${r.name} (${r.posts.length} posts)`}))]} />}
-            <Toggle label="Paid by the treasury" checked={slot.paid} onChange={v => update({paid: v})} />
+            <Toggle label="A paid post (for succession)" hint="Ranks this resident for succession; nothing pays them" checked={slot.paid} onChange={v => update({paid: v})} />
         </Section>
         <Section title="Places">
             <PlacementHint who={slot} />
@@ -456,10 +455,8 @@ function SlotInspector({project, slot}: {project: Project; slot: M.Slot}) {
             <PickButton refTo={{kind: 'slot', id: slot.id, slot: 'work'}} label={behavior === 'merchant' ? 'Counter' : behavior === 'guard' ? 'Post' : 'Work place'} place={slot.work} clearable none="no work" />
             <PickButton refTo={{kind: 'slot', id: slot.id, slot: 'evening'}} label="Evening place" place={slot.evening} clearable none="at home" />
         </Section>
-        <Section title="Starting purse" open={false}>
-            <Row><NumberField label="Silver" value={slot.purse} min={0} max={100000} onCommit={v => update({purse: v})} />
-                <NumberField label="Meals" value={slot.meals} min={0} max={10000} onCommit={v => update({meals: v})} /></Row>
-            <NumberField label="Herbs" value={slot.herbs} min={0} max={10000} onCommit={v => update({herbs: v})} />
+        <Section title="Band" open={false}>
+            <Hint>From rank: a profession slot's resident takes its household's band as the game ranks it (a named NPC may have its own).</Hint>
         </Section>
         <Section title="Danger zone" open={false}>
             <button className="danger wide" onClick={() => { if (commit('Removed profession slot; its character is released at the next export.', p => M.removeSlot(p, slot.id))) close(); }}>Remove slot</button>

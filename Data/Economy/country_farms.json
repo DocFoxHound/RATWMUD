@@ -1,86 +1,7 @@
 {
  "format": "ratw-country-farms",
- "version": 4,
- "about": "The Country's food farms and other works as they would be placed (Docs/Design/71-the-country-s-industries.md). Written by tools/country_industry.py (deleted with doc 79's Phase 3) from the 12-year run (settled years 4-12). Since doc 79 Core reads only the list: each area's id, name and `works`, and each farm's id, kind, `crew` (keepers and hands) and `yield` goods (items::farms; staffFarms, the farms' posts), which tools/worldgen/realm2_places.py and tools/test_realm2.py read too. The money fields below (`defaults`, `basket`, `wharfBasket`, `switchTrades`, an area's `on`, `yieldScale`, `crewScale`, `wages`, `price`, `priceFactor`, and the revenue figures) are no longer read by the game; only Atlas's and the DM's farms panel shows them, and they go with it in doc 79's Phase 9. What follows is their meaning before doc 79. An area: `on` (null: as `defaults.schedule` says; true or false: so, whatever the schedule; on, its goods go into country_off and only its farms sell them), `yieldScale` (percent, on all its farms' yields), `crewScale` (percent, on all its farms' hands, rounded half up), `wages` (pennies a day for its farms' keepers and hands; null: the defaults'), `price` ('year': the farms sell from store at `priceFactor` percent of the catalogue all year; 'season': at the season's price, as the store room does). A farm: `crew` (keepers and hands; `minHands` is the smallest sensible crew), `wages` (null: the area's, then the defaults'; fixed, not drifting: the basket takes what is over them), `basketADay` (the design's mean: what the till spends a day on the city's goods, their carriage out included, from what it holds over its wages and `reserve`), `reserve` (pennies its till keeps before its basket: two days of its wages, and a lean season's shortfall if it has one; its float, created when its area first goes on), `purse` (its crew's household's settled purse, created with it), `yield` (pieces a day of each good, the value at each season's middle day for Spring, Summer, Autumn and Winter, blended between them by Society::seasonal as city_loop.json's seasons are; their blend's season means are the doc's 2.4 table), `makes` (doc 72, the user's decision after country3b: what it makes of a yield past keeping, before it spoils, each morning: the dairies' spare milk, most the morning after a Restday, half to cheese at 4 milk a piece, crafts.json's dairy craft, the rest to butter at 2, recipes.json's; while its store holds under `store` pieces of each, about its keeping days of a mean day's making; nothing sold, no money; the rest spoils; and since doc 72's Phase 4 each make's own `aDay`, pieces of the yield's good a day at each season's middle milked for that making alone, never offered to the shops (the shops wanted some 60 butter and 80 cheese a day, the spare made 2 and 0.5); since country5b's carry-overs cheese is scarce, the user's comic luxury of the rich and the noble: a `share` of 0 gives the cheese none of the spare, its own milk 7 a day, and the butter the 13 the cheese no longer takes, made each morning while its store has room), `table` (what the Country's own people, `defaults.estatePeople` and `otherWorkers`, eat of it a day, the same way: no dependants until families are placed). Precedence: a farm's own setting, then its area's, then the defaults. The yields are the city's draws after the switch (the crews' own food among them), what the Country's own people eat, and `slack`. `schedule`: the areas go on one at a time in `order`, `every` days apart, the first on day `start` (the world's calendar day; -1: none). `basket`: the farms' basket's goods and shares; `wharfBasket` (doc 73; `countryBasket` before, still read): the estates' and the Wharf's basket once the farms take the food (the goods the farms don't buy and no food or drink, in its shares now; since country3b the farms' building goods too, at 0.53 of the farms' shares: the land rent moved ~340p a day from the farms' baskets to the Country's, and the Houses keep up their farms' buildings with it, doc 72), blended in as the areas go on. `switchTrades`: the trades whose orders the switch takes (the economy file's unpaid support, the switch's). `footprint`: own_tiles are the farm's own ground (fields, orchard, vines, meadow, steading, pans); shared_range_tiles is open grazing, heath or woodland its herds share with the wild. `distance` is from Ridgemere, the realm's north-west corner (near: within 2 cells, middle: 3-8, far: 9 or more). An area with `works` true (Docs/Design/72-pulling-the-country-into-the-world.md, Phases 0 and 2: the fuel area, the woods and the peat) holds works, not food farms: the same settings and the same till, crew and founding, but no basket: after its wages each night what its till holds over its `reserve` is its rent, sent to the House whose land it is on (`house`, the area's or a works' own; at first all into the Country's purse, \"the Houses' estates and the sea trade\", booked by House). Its yields are sized on the Country's sales to the shops of their goods (the country1 run, years 2-3) + 5%; firewood and peat together the fuel the Country sold, the households taking either. Phase 3's stone area (stone, clay and sand, House Greatly's): the granite quarry (1 + 1 since country3, whose year 3 took it 30-36p a day against a 1 + 2 crew's 36p; its stone since country3b to the mason's 24.9 a day before the land rent + 5%, the Country's basket buying the builders' goods back) and the two clay pits (one hand each, no keeper; the game's pit gives clay and sand), flat across the year at country2's sales (years 2-3) + 5%; limestone and lime stay the Country's. A food area's `house` (doc 72, open question 2): the House whose land its farms are on, for their land rent (city_loop.json's rule landRent, an area's own landRent<Area> over it, a farm's own `landRent` over both, landRent<Its>: the dairies' landRentDairy, doc 72, Phase 4: a percent of a farm's takings each night, after its wages and from what is over its `reserve`, the share its basket would spend; into the same purse, booked by House): Fell the orchards, vines and hives (fine wines, liquors and fruit goods: doc 67, R27), Grayrock the fishing (the wharf, R28), the Crown the grain, the herds and the salt (no House's trade). The iron and the lime (doc 72, 4.7, Progress, \"Iron and lime out of the Country\"; the user's go-ahead, 2026-11-04): the iron area (House Timberland's, the forges' House) holds the Frosthollow iron mine (1 + 1) and the Upper hearths by the upper woods (1 + 2), its goods iron ore and wrought iron: the city's Timberland Ironworks and foundry draw the ore and the hearths' charcoal from the store room (the hearths' beside the woods' own: a farm of an area on sells a good another area names when its yields grow it) and smelt the bars, which the city's iron makers buy from them first (city_loop.json `suppliers`), so while it is on the store room sends no wrought iron; the lime area (House Greatly's) the lime quarry and its kiln, one hand and no keeper. Sized on country6b's year 2 (the Country's sales of iron bars, ore, limestone and lime, by season) + 5%: two ore and a sack of charcoal a bar; the mine's ore x1.08 in spring, summer and winter since Docs/Design/73-the-wharf.md's round 10 (stable10's mine sold all it grew, its stock nil on 68% of days, and the ironworks' bars sold out on 62%; a try at x1.3 sold only ~3 a day more ore, the ironworks ~2.5 more bars, its shelf then never out, and the rest piled at the mine). Copper and tin stay the Country's.",
- "defaults": {
-  "wages": {
-   "keeper": 16,
-   "hand": 10
-  },
-  "basketShare": 50,
-  "floatDays": 2,
-  "slack": 10,
-  "estatePeople": 24,
-  "otherWorkers": 68,
-  "openingStockDays": 7,
-  "schedule": {
-   "start": -1,
-   "every": 28,
-   "order": ["grain", "fruit", "meat", "fish", "honey", "salt", "fuel", "stone", "iron", "lime"]
-  }
- },
- "basket": {
-  "cart_wheel": 194,
-  "axle": 35,
-  "barrel": 50,
-  "iron_hoops": 40,
-  "sickle": 19,
-  "farm_gear": 14,
-  "draw_saw": 25,
-  "nails": 40,
-  "fittings": 32,
-  "lock": 29,
-  "chain": 23,
-  "buckles": 25,
-  "cookpot": 31,
-  "leather": 66,
-  "rope": 25,
-  "canvas": 25,
-  "fishing_net": 14,
-  "planks": 55,
-  "beam": 42,
-  "cut_stone": 80,
-  "bricks": 52,
-  "roof_tiles": 39,
-  "mortar": 55,
-  "lime": 50,
-  "whitewash": 20,
-  "plaster": 20,
-  "glass_pane": 37
- },
- "wharfBasket": {
-  "paper": 76,
-  "steel_bar": 70,
-  "iron_bar": 70,
-  "charcoal": 61,
-  "bandages": 39,
-  "handbell": 36,
-  "cut_stone": 42,
-  "map": 32,
-  "rivets": 30,
-  "ink": 29,
-  "glass_beads": 29,
-  "mortar": 29,
-  "leather_bindings": 28,
-  "bricks": 28,
-  "lime": 26,
-  "fang_charm": 22,
-  "roof_tiles": 21,
-  "ledger": 20,
-  "copper_bar": 20,
-  "mining_pick": 20,
-  "masking_oil": 18,
-  "charm": 17,
-  "tin_bar": 17,
-  "bronze_bar": 15,
-  "linseed_oil": 14,
-  "rope": 13,
-  "paint": 12,
-  "ear_ring": 11,
-  "whitewash": 11,
-  "plaster": 11
- },
- "switchTrades": ["apothecary", "armory", "brewery", "brickworks", "carpenter", "cartographer", "cartwright", "charcoal", "cooperage", "distillery", "foundry", "glassworks", "ironworks", "mason", "paintworks", "papermill", "plasterworks", "press", "printing_house", "ropewalk", "sawmill", "scriptorium", "smithy", "tannery"],
+ "version": 5,
+ "about": "The Country's food farms and other works as they are placed (Docs/Design/71-the-country-s-industries.md; doc 72 for the works). Written by tools/country_industry.py (deleted with doc 79's Phase 3); its money fields (the schedule, the baskets, the switch's trades, the wages, scales, prices, floats, purses, land rents and revenue figures) went with doc 79's Phase 9, as nothing pays a farm now (doc 79, 12 and 17). Core reads only the list (items::farms; staffFarms, the farms' posts): each area's id, name and `works`, and each farm's id, kind, `crew` (keepers and hands) and `yield` goods; tools/worldgen/realm2_places.py and tools/test_realm2.py read the same, and Atlas's realm builder the placement keys (`region`, `distance` from Ridgemere: near within 2 cells, middle 3-8, far 9 or more; `terrain`, `near`, `footprint`: own_tiles the farm's own ground, shared_range_tiles open grazing, heath or woodland its herds share with the wild). The rest describes the farm and is not read: an area's `goods` and `house` (the House whose land it is on), a farm's `minHands` (the smallest sensible crew), `yield` (pieces a day of each good at each season's middle day, Spring to Winter: what the farm's posts produce, staged since doc 79), `table`, `sells`, `store` and `makes` (what the Country's own people ate and the dairies made of spare milk in the old run). An area with `works` true holds works (the woods, the peat, the stone, the iron and the lime), not food farms. `dropped`: goods the run left out, and where they are listed; `others`: the Country's other industries as the run sized them, for reference.",
  "dropped": {
   "goods": ["vegetables", "mushrooms"],
   "listedIn": ["Data/Items/crafts.json crafts: stew (inn: raw_meat + vegetables -> meal)", "Data/Items/crafts.json buys: inn (vegetables)", "Data/Items/crafts.json supplies: stall, provisioner (vegetables)", "Data/Items/recipes.json: meal_stew, mushroom_stew (players' recipes)", "Data/Economy/ladder.json: vegetables (staple)"]
@@ -91,17 +12,6 @@
    "name": "grain and flour",
    "house": "the Crown",
    "goods": ["flour", "oats", "wheat", "straw", "hemp", "flax"],
-   "on": null,
-   "yieldScale": 92,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "year",
-   "priceFactor": 101,
-   "revenueADay": [249.0, 237.9, 265.2, 241.6],
-   "wolvesItCanPay": 24,
    "farms": [
     {
      "id": "grain_farm_1",
@@ -119,13 +29,6 @@
       "hands": 5
      },
      "minHands": 4,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 48.3,
-     "reserve": 132,
-     "purse": 352,
      "yield": {
       "flour": [52.01, 55.56, 55.62, 50.86],
       "oats": [60.38, 69.22, 70.87, 64.81],
@@ -163,13 +66,6 @@
       "hands": 5
      },
      "minHands": 4,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 48.3,
-     "reserve": 132,
-     "purse": 352,
      "yield": {
       "flour": [52.01, 55.56, 55.62, 50.86],
       "oats": [60.38, 69.22, 70.87, 64.81],
@@ -198,17 +94,6 @@
    "name": "orchards and vines",
    "house": "Fell",
    "goods": ["apples", "berries", "cider", "apple_brandy", "dried_apples", "fruit_preserves", "grapes", "wine", "brandy", "aqua_vitae"],
-   "on": null,
-   "yieldScale": 100,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "season",
-   "priceFactor": null,
-   "revenueADay": [534.2, 405.9, 440.7, 570.2],
-   "wolvesItCanPay": 53,
    "farms": [
     {
      "id": "orchard_1",
@@ -226,13 +111,6 @@
       "hands": 3
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 41.0,
-     "reserve": 92,
-     "purse": 238,
      "yield": {
       "apples": [51.91, 54.6, 54.57, 48.73],
       "berries": [0.23, 0.03, 0.01, 0.01],
@@ -271,13 +149,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 15.1,
-     "reserve": 72,
-     "purse": 181,
      "yield": {
       "apples": [51.89, 54.6, 54.57, 48.7],
       "berries": [0.23, 0.03, 0.01, 0.01],
@@ -292,8 +163,7 @@
       "cider": 0.6,
       "apple_brandy": 0.6
      },
-     "store": "a fruit store and cider press: picked late summer to autumn, kept into spring",
-     "landRent": "thin"
+     "store": "a fruit store and cider press: picked late summer to autumn, kept into spring"
     },
     {
      "id": "orchard_3",
@@ -311,13 +181,6 @@
       "hands": 3
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 41.0,
-     "reserve": 92,
-     "purse": 238,
      "yield": {
       "apples": [51.86, 54.6, 54.59, 48.73],
       "berries": [0.23, 0.03, 0.01, 0.01],
@@ -356,13 +219,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 15.1,
-     "reserve": 72,
-     "purse": 181,
      "yield": {
       "apples": [51.86, 54.6, 54.57, 48.13],
       "berries": [0.29, 0.08, 0.01, 0.01],
@@ -377,8 +233,7 @@
       "cider": 0.6,
       "apple_brandy": 0.6
      },
-     "store": "a fruit store and cider press: picked late summer to autumn, kept into spring",
-     "landRent": "thin"
+     "store": "a fruit store and cider press: picked late summer to autumn, kept into spring"
     },
     {
      "id": "orchard_5",
@@ -396,13 +251,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 15.1,
-     "reserve": 72,
-     "purse": 181,
      "yield": {
       "apples": [51.86, 54.6, 54.57, 48.73],
       "berries": [0.23, 0.03, 0.01, 0.01],
@@ -417,8 +265,7 @@
       "cider": 0.6,
       "apple_brandy": 0.6
      },
-     "store": "a fruit store and cider press: picked late summer to autumn, kept into spring",
-     "landRent": "thin"
+     "store": "a fruit store and cider press: picked late summer to autumn, kept into spring"
     },
     {
      "id": "vineyard_1",
@@ -436,13 +283,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 8.5,
-     "reserve": 72,
-     "purse": 178,
      "yield": {
       "grapes": [14.5, 14.6, 14.43, 12.94],
       "wine": [3.63, 4.17, 4.28, 3.58]
@@ -472,13 +312,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 8.5,
-     "reserve": 72,
-     "purse": 178,
      "yield": {
       "grapes": [14.5, 14.6, 14.43, 12.94],
       "wine": [3.41, 4.02, 4.14, 3.46]
@@ -499,17 +332,6 @@
    "name": "meat, milk and the herds",
    "house": "the Crown",
    "goods": ["raw_meat", "pig", "mutton", "rabbit", "meal", "sheep", "offal", "eggs", "milk", "butter", "cheese", "tallow", "hide", "bones", "wool", "sheepskin", "small_pelt"],
-   "on": null,
-   "yieldScale": 100,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "season",
-   "priceFactor": null,
-   "revenueADay": [980.3, 983.3, 948.2, 992.8],
-   "wolvesItCanPay": 110,
    "farms": [
     {
      "id": "cattle_and_dairy_farm_1",
@@ -527,13 +349,6 @@
       "hands": 4
      },
      "minHands": 3,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 53.5,
-     "reserve": 112,
-     "purse": 295,
      "yield": {
       "raw_meat": [37.95, 36.94, 35.27, 37.84],
       "meal": [24.22, 23.53, 24.21, 25.28],
@@ -577,8 +392,7 @@
       "bones": 0.5,
       "eggs": 1
      },
-     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year",
-     "landRent": "dairy"
+     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year"
     },
     {
      "id": "cattle_and_dairy_farm_2",
@@ -596,13 +410,6 @@
       "hands": 4
      },
      "minHands": 3,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 53.5,
-     "reserve": 112,
-     "purse": 295,
      "yield": {
       "raw_meat": [37.95, 36.81, 35.28, 37.84],
       "meal": [24.22, 23.49, 24.25, 25.28],
@@ -646,8 +453,7 @@
       "bones": 0.5,
       "eggs": 1
      },
-     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year",
-     "landRent": "dairy"
+     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year"
     },
     {
      "id": "cattle_and_dairy_farm_3",
@@ -665,13 +471,6 @@
       "hands": 4
      },
      "minHands": 3,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 53.5,
-     "reserve": 112,
-     "purse": 295,
      "yield": {
       "raw_meat": [37.95, 36.94, 35.28, 37.84],
       "meal": [24.22, 23.53, 24.21, 25.28],
@@ -715,8 +514,7 @@
       "bones": 0.5,
       "eggs": 1
      },
-     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year",
-     "landRent": "dairy"
+     "store": "milk daily (it keeps a day: near the city); what is left past keeping, most the morning after a Restday, made into cheese and butter in its dairy; beef killed through the year"
     },
     {
      "id": "pig_farm_1",
@@ -734,13 +532,6 @@
       "hands": 4
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 58.6,
-     "reserve": 112,
-     "purse": 295,
      "yield": {
       "raw_meat": [17.37, 16.64, 15.57, 17.57],
       "meal": [9.31, 9.67, 10.04, 9.58],
@@ -782,13 +573,6 @@
       "hands": 4
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 58.6,
-     "reserve": 112,
-     "purse": 295,
      "yield": {
       "raw_meat": [17.34, 16.52, 15.49, 17.48],
       "meal": [9.13, 9.5, 9.87, 9.38],
@@ -830,13 +614,6 @@
       "hands": 4
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 58.6,
-     "reserve": 112,
-     "purse": 295,
      "yield": {
       "raw_meat": [17.27, 16.46, 15.39, 17.38],
       "meal": [8.98, 9.33, 9.71, 9.18],
@@ -878,13 +655,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 29.1,
-     "reserve": 52,
-     "purse": 124,
      "yield": {
       "rabbit": [81.83, 79.37, 78.78, 83.07],
       "small_pelt": [0.83, 0.7, 0.69, 0.75]
@@ -915,13 +685,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 29.1,
-     "reserve": 52,
-     "purse": 124,
      "yield": {
       "rabbit": [81.83, 79.37, 78.78, 83.07],
       "small_pelt": [0.83, 0.71, 0.69, 0.74]
@@ -952,13 +715,6 @@
       "hands": 3
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 50.9,
-     "reserve": 92,
-     "purse": 238,
      "yield": {
       "mutton": [20.56, 20.54, 19.2, 20.88],
       "wool": [18.43, 19.35, 20.15, 17.13],
@@ -997,13 +753,6 @@
       "hands": 3
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 50.9,
-     "reserve": 92,
-     "purse": 238,
      "yield": {
       "mutton": [20.52, 20.54, 19.2, 20.88],
       "wool": [18.34, 19.29, 20.15, 17.15],
@@ -1033,17 +782,6 @@
    "name": "fish and shellfish",
    "house": "Grayrock",
    "goods": ["fish", "shellfish", "herbs", "wormwood", "willow_bark", "thyme", "garlic", "comfrey"],
-   "on": null,
-   "yieldScale": 100,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "season",
-   "priceFactor": null,
-   "revenueADay": [391.1, 385.6, 387.3, 440.0],
-   "wolvesItCanPay": 42,
    "farms": [
     {
      "id": "eel_and_fowl_marsh_1",
@@ -1061,13 +799,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 22.1,
-     "reserve": 52,
-     "purse": 124,
      "yield": {
       "fish": [34.36, 33.84, 33.77, 35.47],
       "herbs": [10.21, 10.48, 10.76, 10.03],
@@ -1107,13 +838,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 10.1,
-     "reserve": 52,
-     "purse": 124,
      "yield": {
       "fish": [26.45, 25.36, 25.23, 26.5]
      },
@@ -1123,8 +847,7 @@
      "sells": {
       "fish": 0.3
      },
-     "store": "steady, smaller",
-     "landRent": "thin"
+     "store": "steady, smaller"
     },
     {
      "id": "lake_and_river_boat_2",
@@ -1142,13 +865,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 10.1,
-     "reserve": 52,
-     "purse": 124,
      "yield": {
       "fish": [26.45, 25.34, 25.23, 26.5]
      },
@@ -1158,8 +874,7 @@
      "sells": {
       "fish": 0.3
      },
-     "store": "steady, smaller",
-     "landRent": "thin"
+     "store": "steady, smaller"
     },
     {
      "id": "sea_fishing_boat_1",
@@ -1177,13 +892,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 31.4,
-     "reserve": 72,
-     "purse": 181,
      "yield": {
       "fish": [20.11, 18.39, 18.18, 19.4],
       "shellfish": [37.06, 32.26, 35.12, 41.62]
@@ -1214,13 +922,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 31.4,
-     "reserve": 72,
-     "purse": 181,
      "yield": {
       "fish": [19.73, 18.38, 18.11, 19.15],
       "shellfish": [36.38, 32.23, 34.84, 41.11]
@@ -1251,13 +952,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 31.4,
-     "reserve": 72,
-     "purse": 181,
      "yield": {
       "fish": [19.97, 18.27, 18.01, 19.22],
       "shellfish": [36.62, 32.09, 34.67, 41.23]
@@ -1288,13 +982,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 31.4,
-     "reserve": 72,
-     "purse": 181,
      "yield": {
       "fish": [19.87, 18.2, 17.93, 19.15],
       "shellfish": [36.48, 31.95, 34.55, 41.08]
@@ -1316,17 +1003,6 @@
    "name": "honey",
    "house": "Fell",
    "goods": ["honey", "beeswax"],
-   "on": null,
-   "yieldScale": 88,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "season",
-   "priceFactor": null,
-   "revenueADay": [151.0, 142.9, 141.2, 131.2],
-   "wolvesItCanPay": 15,
    "farms": [
     {
      "id": "beekeeper_1",
@@ -1344,13 +1020,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 21.2,
-     "reserve": 52,
-     "purse": 124,
      "yield": {
       "honey": [20.36, 20.87, 20, 20.61],
       "beeswax": [0.28, 0.3, 0.29, 0.44]
@@ -1380,13 +1049,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 21.2,
-     "reserve": 52,
-     "purse": 124,
      "yield": {
       "honey": [20.36, 20.87, 20, 20.61],
       "beeswax": [0.28, 0.3, 0.29, 0.44]
@@ -1416,13 +1078,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 21.2,
-     "reserve": 52,
-     "purse": 124,
      "yield": {
       "honey": [20.36, 20.87, 20, 20.61],
       "beeswax": [0.27, 0.28, 0.29, 0.43]
@@ -1443,17 +1098,6 @@
    "name": "salt",
    "house": "the Crown",
    "goods": ["salt"],
-   "on": null,
-   "yieldScale": 88,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "season",
-   "priceFactor": null,
-   "revenueADay": [116.5, 107.1, 106.1, 114.6],
-   "wolvesItCanPay": 12,
    "farms": [
     {
      "id": "salt_works_1",
@@ -1471,13 +1115,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 19.5,
-     "reserve": 72,
-     "purse": 181,
      "yield": {
       "salt": [40.05, 37.87, 37.53, 39.99]
      },
@@ -1487,8 +1124,7 @@
      "sells": {
       "salt": 1
      },
-     "store": "made all year, most in summer; kept dry in sheds",
-     "landRent": "thin"
+     "store": "made all year, most in summer; kept dry in sheds"
     },
     {
      "id": "salt_works_2",
@@ -1506,13 +1142,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 19.5,
-     "reserve": 72,
-     "purse": 181,
      "yield": {
       "salt": [40.05, 37.85, 37.56, 39.99]
      },
@@ -1522,8 +1151,7 @@
      "sells": {
       "salt": 1
      },
-     "store": "made all year, most in summer; kept dry in sheds",
-     "landRent": "thin"
+     "store": "made all year, most in summer; kept dry in sheds"
     }
    ]
   },
@@ -1533,17 +1161,6 @@
    "works": true,
    "house": "Timberland",
    "goods": ["timber", "firewood", "oak_bark", "resin", "charcoal", "peat"],
-   "on": null,
-   "yieldScale": 100,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "season",
-   "priceFactor": null,
-   "revenueADay": [233.6, 258.2, 228.7, 408.9],
-   "wolvesItCanPay": 23,
    "farms": [
     {
      "id": "logging_rainwood",
@@ -1555,13 +1172,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 72,
-     "purse": 171,
      "yield": {
       "timber": [12.85, 11.1, 11.71, 13.29],
       "firewood": [54.96, 56.26, 56.06, 74.32],
@@ -1587,13 +1197,6 @@
       "hands": 3
      },
      "minHands": 3,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 92,
-     "purse": 228,
      "yield": {
       "timber": [12.85, 11.1, 11.71, 13.29],
       "firewood": [54.96, 56.26, 56.06, 74.32],
@@ -1617,13 +1220,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 72,
-     "purse": 171,
      "yield": {
       "firewood": [93.43, 95.64, 95.31, 126.31]
      },
@@ -1643,13 +1239,6 @@
       "hands": 2
      },
      "minHands": 2,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 72,
-     "purse": 171,
      "yield": {
       "firewood": [71.47, 73.15, 72.86, 96.59],
       "charcoal": [9.81, 9.73, 9.9, 10.11]
@@ -1671,13 +1260,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 52,
-     "purse": 114,
      "yield": {
       "peat": [96.19, 101.36, 102.11, 191.62]
      },
@@ -1695,17 +1277,6 @@
    "works": true,
    "house": "Greatly",
    "goods": ["stone", "clay", "sand"],
-   "on": null,
-   "yieldScale": 100,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "season",
-   "priceFactor": null,
-   "revenueADay": [99.3, 99.3, 99.3, 99.3],
-   "wolvesItCanPay": 6,
    "farms": [
     {
      "id": "quarry_granite",
@@ -1717,13 +1288,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 52,
-     "purse": 114,
      "yield": {
       "stone": [24.81, 20.43, 22.25, 25.94]
      },
@@ -1743,13 +1307,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 20,
-     "purse": 57,
      "yield": {
       "clay": [30.08, 27.98, 29.86, 29.41],
       "sand": [8.62, 7.2, 7.75, 8.75]
@@ -1771,13 +1328,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 20,
-     "purse": 57,
      "yield": {
       "clay": [30.08, 27.98, 29.86, 29.41],
       "sand": [8.62, 7.2, 7.75, 8.75]
@@ -1797,17 +1347,6 @@
    "works": true,
    "house": "Timberland",
    "goods": ["iron_ore", "iron_bar", "copper_ore", "tin_ore"],
-   "on": null,
-   "yieldScale": 100,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "season",
-   "priceFactor": null,
-   "revenueADay": [143.2, 119.9, 116.0, 125.1],
-   "wolvesItCanPay": 7,
    "farms": [
     {
      "id": "mine_frost_iron",
@@ -1819,13 +1358,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 52,
-     "purse": 114,
      "yield": {
       "iron_ore": [56.22, 47.38, 45.36, 55.38],
       "copper_ore": [0.8, 0.8, 0.8, 0.8],
@@ -1849,13 +1381,6 @@
       "hands": 2
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 72,
-     "purse": 171,
      "yield": {
       "charcoal": [33.27, 27.77, 26.88, 28.93]
      },
@@ -1873,17 +1398,6 @@
    "works": true,
    "house": "Greatly",
    "goods": ["limestone", "lime"],
-   "on": null,
-   "yieldScale": 100,
-   "crewScale": 100,
-   "wages": {
-    "keeper": null,
-    "hand": null
-   },
-   "price": "season",
-   "priceFactor": null,
-   "revenueADay": [20.9, 16.7, 15.7, 18.1],
-   "wolvesItCanPay": 1,
    "farms": [
     {
      "id": "quarry_lime",
@@ -1895,13 +1409,6 @@
       "hands": 1
      },
      "minHands": 1,
-     "wages": {
-      "keeper": null,
-      "hand": null
-     },
-     "basketADay": 0,
-     "reserve": 20,
-     "purse": 57,
      "yield": {
       "limestone": [22.73, 18.26, 17.84, 21.87],
       "lime": [2.24, 1.54, 1.48, 1.39]
@@ -1919,8 +1426,6 @@
  "others": [
   {
    "industry": "woods: timber, firewood, bark, charcoal",
-   "revenueADay": 354,
-   "workersItCanPay": 30,
    "workersPlausible": 11,
    "workersCounted": 11,
    "works": [
@@ -1968,8 +1473,6 @@
   },
   {
    "industry": "mining and metals",
-   "revenueADay": 185,
-   "workersItCanPay": 14,
    "workersPlausible": 38,
    "workersCounted": 14,
    "works": [
@@ -2017,8 +1520,6 @@
   },
   {
    "industry": "stone, lime, clay, sand",
-   "revenueADay": 101,
-   "workersItCanPay": 7,
    "workersPlausible": 18,
    "workersCounted": 7,
    "works": [
@@ -2046,8 +1547,6 @@
   },
   {
    "industry": "fibre: hemp, flax, linen",
-   "revenueADay": 87,
-   "workersItCanPay": 7,
    "workersPlausible": 18,
    "workersCounted": 7,
    "works": [
@@ -2066,8 +1565,6 @@
   },
   {
    "industry": "herbs",
-   "revenueADay": 8,
-   "workersItCanPay": 0,
    "workersPlausible": 1,
    "workersCounted": 0,
    "works": [],
@@ -2075,8 +1572,6 @@
   },
   {
    "industry": "country workshops' goods",
-   "revenueADay": 425,
-   "workersItCanPay": 37,
    "workersPlausible": 29,
    "workersCounted": 29,
    "works": [
