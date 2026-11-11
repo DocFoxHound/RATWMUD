@@ -3168,6 +3168,54 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `ratw-game-test-*` and others; none of street life's) were left, as before. A player carried to the gaol on a tick
     (`takeIntoCustody`) is told so as it comes though the fine and restitution moved their coins: older than Phase 6 and
     not a street notice, so left for whoever next looks at the journal rules.
+- **2026-11-11: Phase 6 merged, checked** (`r2-staged`, on `9c41d61`). Two independent checks of the merge left ten
+  findings; eight fixed, each with a test seen failing with its fix taken out and passing with it, one rejected and one
+  partly a data question. No economy simulation was run; no server was started; DEV was not opened.
+  - **A crime a player is told of is journalled first, fixed** (`street_tests`' crash cases `tilltheft` and `custody`, file
+    and PostgreSQL through `street_pg`; `aTillTheftSeenIsMoved` now checks the flag). `World::notice` takes a second flag,
+    `crime`, beside `moved`, and `Game::tick` journals `Crime` with the economy and the roads (or alone) before telling a
+    tick's notices, as for a move. Set by every witness notice (a till's theft, a pocket's, an attempt, a blow or a
+    struggle heard), by a player carried to the gaol (`takeIntoCustody`, which is also a move: the fine and what is made
+    good leave their own coins; the finding older than Phase 6), by "You are wanted" and by the release. Before: a player
+    beside a till told "You see ... steal from ..." lost the incident in a crash right after (the record before the notice
+    carried the shelves, not the crime), so had nothing to report; a player told they were dragged to the gaol came back
+    with their coins, the warrant open and out of the gaol.
+  - **The witness's words, fixed** (in `tilltheft`): "You see Piet steal from Imogen.", "You see Piet try to steal from
+    Imogen.", "You see Piet attack Imogen." (a `sight` beside the residents' `claim`, which beliefs and rumours keep).
+  - **Runners at a stall's counter, fixed** (`runnersAtTheStall`, a strip city with built stalls, the keeper's shop in the
+    next cell). `World::counterSpot` (one for `sendRunner` and `sendBuyer`): at a stall the keeper keeps, the ground across
+    the stall from the keeper (not the keeper's x + 1, the stall's own solid tile, where a runner stood still its hour and
+    gave up), else the shop's serving spot; then each runner a tile of its own (`freeBeside`, the keeper's tile and the
+    other runners' in that cell taken), so two to one shop never share one; a keeper at a stall in its shop's own cell is
+    at its stall too now (the old rule asked for another cell).
+  - **Beggars off the square's crowd and stalls, fixed** (`beggarsAndAlms`): the square's crowd and stall spots are taken
+    before the beggars are placed, so the board's beggars stand beside the crowd, never on its spots (where the crowd
+    pushed one onto another's tile). Students at their lessons were not looked at (no spot list to keep off).
+  - **The dole queue's front beside the priest, fixed** (`doleFrontBesideThePriest`): the beggars at the chapel steps keep
+    off the queue's first place (the tile beside the door's mouth, as `tendDole` finds it), so the front stands beside the
+    priest and the beggars beyond it.
+  - **Rough sleepers off a door's mouth, fixed** (`roughSleepers`: never on a door's arrival tile, some beside one): a
+    warm wall's door mouth and the chapel's are taken before the sleepers lie down, as the chapel's is for the beggars.
+  - **The Watch never an errand-runner, fixed** (`theWatchRunsNoErrands`): `freeMember` turns away every one of the Watch,
+    posted or not, at its rounds or resting; its household sends another or waits for the next hour, as one with nobody
+    free does. **For the user (Phase 10's data):** two households at −100 bought beams from the builders' yard as
+    everyday wares; the catalogue's everyday wares are a data question, not changed.
+  - **Rejected: a thief's till food vanishes in a crash.** The till's shelves are journalled, the NPC thief's purse is
+    staged and comes back from the checkpoint: goods, not money (`realBalanced()` holds), and the same as a staged sale's
+    (the buyer's staged purse is never journalled either, 9.2). Journalling staged purses on a tick is what 9.2 rules
+    out; the incident now survives (above), and the Watch's restitution then makes good what the thief still has, in
+    goods or worth.
+  - **Tests:** a clean Release build (`build-p6fc`; 125 warnings, as before, none in the lines touched); ctest 86/86 with
+    the database, none skipped, twice (`pg_client` on throwaway `ratw_test_s2stage_p6f` and `_p6f2`, dropped after; no
+    `s2stage` database left); `street_tests` 27,029 checks (the crash cases vary run to run, as before; seven crash cases
+    now), `street_pg` seven crashes through PostgreSQL (71 checks), `save_compat` 23,107, `journal_tests` 39,
+    `game_tests` 3,631, `crime_tests` 85, `trade_show_tests` 919, `roads_tests` 407, `port_tests` 9,111, `market_tests`
+    2,001, `status_tests` 21,962, `life_status_tests` 2,244, `troubles_tests` 66, `fame_tests` 80, `battle_tests` 558.
+    All 34 `tools/test_*.py` with the database and this build's server (keys tagged `s2stagep6f`, none left): 668 tests,
+    none failing, 24 skipped (the 23 `RATW_SLOW` world builds and `test_game_tables`' save under `Saved/`);
+    `artifacts/screenshots/dev-console-fight.png`, rewritten by a tools test, restored. Perf not measured again: the beggars' and sleepers' places are hourly (a market's crowd and stall spots, a
+    hundred tiles, added to a set), a counter is found as a runner is sent, and the crime's record comes only on a tick
+    whose notices tell of a crime, which `world_check` (no Game, no journal) never has.
 
 ## Review (2026-11-08)
 
