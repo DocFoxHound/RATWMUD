@@ -338,8 +338,56 @@ Table read(const json::Value& v, const Table& base, std::vector<std::string>* wa
         t.slyRich = clampNumber(street, "slyRich", t.slyRich, 0, 1, "status: street.", warnings);
         t.doleDays = clampNumber(street, "doleDays", t.doleDays, 0, 2, "status: street.", warnings);
         t.beggarsACell = int(clampNumber(street, "beggarsACell", t.beggarsACell, 0, 8, "status: street.", warnings));
+        // The most in a cell by the slider (the user's decision, 2026-11-11): 2 to 21 points from -100 to 100, each most
+        // 0..8, never rising as the slider rises; a curve that fails falls back to the base's whole, with a warning.
+        if (const auto* cells = street.find("beggarsInACell"))
+        {
+            std::vector<Table::CellPoint> read;
+            bool shaped = cells->isArray() && cells->size() >= 2 && cells->size() <= 21;
+            for (const auto& row : cells->items())
+            {
+                const auto* at = row.find("at");
+                const auto* most = row.find("most");
+                if (!row.isObject() || !at || !at->isNumber() || !std::isfinite(at->asNumber()) || !most || !most->isNumber() ||
+                    !std::isfinite(most->asNumber()) || most->asNumber() < 0 || most->asNumber() > 8)
+                {
+                    shaped = false;
+                    break;
+                }
+                read.push_back({at->asNumber(), most->asNumber()});
+            }
+            std::sort(read.begin(), read.end(), [](const Table::CellPoint& a, const Table::CellPoint& b) { return a.at < b.at; });
+            for (std::size_t i = 0; shaped && i < read.size(); ++i)
+                shaped = (i == 0 || (read[i].at > read[i - 1].at && read[i].most <= read[i - 1].most + 1e-9));
+            shaped = shaped && !read.empty() && std::abs(read.front().at + 100) < 1e-9 && std::abs(read.back().at - 100) < 1e-9;
+            if (shaped)
+                t.beggarsInACell = std::move(read);
+            else if (warnings)
+                warnings->push_back("status: street.beggarsInACell falls back to the default (2 to 21 points from -100 to 100, "
+                                    "each most 0 to 8, never rising)");
+        }
+        numbers(street.object("beggarsClass"), t.beggarsClass, 0, 10, "status: street.beggarsClass.", warnings);
+        t.beggarsSpread = clampNumber(street, "beggarsSpread", t.beggarsSpread, .05, 1, "status: street.", warnings);
+        t.beggarsElders = clampNumber(street, "beggarsElders", t.beggarsElders, 0, 1, "status: street.", warnings);
     }
     return t;
+}
+
+double beggarsInACellAt(const Table& t, double slider, int times)
+{
+    const auto& c = t.beggarsInACell;
+    if (c.empty())
+        return 0;
+    slider = std::clamp((std::isfinite(slider) ? slider : 0.) + t.timesShift * std::clamp(times, -2, 2) / 2., -100., 100.);
+    if (slider <= c.front().at)
+        return c.front().most;
+    for (std::size_t i = 1; i < c.size(); ++i)
+        if (slider <= c[i].at)
+        {
+            const double f = (slider - c[i - 1].at) / std::max(1e-9, c[i].at - c[i - 1].at);
+            return c[i - 1].most + (c[i].most - c[i - 1].most) * f;
+        }
+    return c.back().most;
 }
 
 const Table& defaults()

@@ -1,7 +1,8 @@
 // Street life (Docs/Design/79-a-staged-economy.md, sections 6.5-6.7, 7.7, 10 and 16.8; Phase 6): the day's thieves by
 // market (within the cap, more as the slider falls, a hamlet's every few weeks), the hungry taking food from a till, the
-// takes by band and what the Watch counts them worth; beggars (only destitute adults without a post, at most two a cell),
-// alms only to residents, the Restday dole and on_dole, rough sleepers by a warm wall; a market whose staple players
+// takes by band and what the Watch counts them worth; beggars (residents of a household in want of food, adults without a
+// post, at most beggarsACell at a place and beggarsInACell in a cell by the conditions, elders never all of them: the
+// user's decision of 2026-11-11), alms only to residents, the Restday dole and on_dole, rough sleepers by a warm wall; a market whose staple players
 // empty leaves its poor hungrier and its comfortable fed; help lifts a beggar (no begging the next day, a debt of thanks),
 // within its market's cap, fed_household fame once a week; the shops' business; the short trouble by band; the
 // standing-still rule (no stock moves in a watched shop without a buyer at its counter: an errand-runner); and the new
@@ -1194,8 +1195,9 @@ void takesByBand()
 void beggarsAndAlms()
 {
     // 10.2 / 16.8: on Marketday by day, the destitute adults without a post beg at the market (no chapel steps here: the
-    // Long House is a lodging, its priest added for the dole), at most two a cell; nobody else does. Alms from the
-    // comfortable and rich only to residents: a player standing among the beggars gets none.
+    // Long House is a lodging, its priest added for the dole), at most two at a place and two a cell at slider 0; Idle 3 and
+    // 4, poor with money for food, do not (beggarsByWant has the poor in want); nobody else does. Alms from the comfortable
+    // and rich only to residents: a player standing among the beggars gets none.
     const auto root = greyfen("beg", true);
     auto w = town(root);
     for (const auto* id : {"idle1", "idle2"})
@@ -1204,13 +1206,19 @@ void beggarsAndAlms()
         expect(w.society().overrideBand(w.society().householdOf(id), status::Poor, 100000), "poor, not yet destitute: " + std::string(id));
     w.addPlayer("player-ada", "Ada");
     onTo(w, calendar::Marketday, 10);
-    // Who may beg: destitute adults without a post or a master, never one of the Watch.
+    for (const auto* id : {"idle3", "idle4"})
+        w.society().stagedSet(id, 60);
+    w.society().stagedLarders();                    // (The morning's want, judged again: Idle 3 and 4 have money for food.)
+    w.setTimeOfDay(11.05);                          // (The next hour's places.)
+    for (int i = 0; i < 30; ++i)
+        w.tick(1);
+    // Who may beg: adults of a household in want of food without a post or a master, never one of the Watch.
     const auto eligible = [&] {
         int n = 0;
         for (const auto& [id, life] : w.society().state().residents)
-            if (const auto* st = w.society().statusOf(id); st && st->band == status::Destitute && !w.society().jobOf(id) &&
+            if (const auto* st = w.society().statusOf(id); st && w.society().foodWant(st->household) > 0 && !w.society().jobOf(id) &&
                                                             !w.society().apprenticedTo(id) && w.society().spec(id)->age >= 16 &&
-                                                            !w.society().spec(id)->ofTheWatch())
+                                                            !w.society().spec(id)->ofTheWatch() && !w.society().liftedNow(id))
                 ++n;
         return n;
     };
@@ -1224,19 +1232,20 @@ void beggarsAndAlms()
                       << (w.calendarDays() - std::floor(w.calendarDays())) * 24 << "\n";
         }
     const auto some = w.beggars().size();
+    const bool meansBeg = w.beggars().count("idle3") || w.beggars().count("idle4");
     // T7: more destitute, more beggars (not the same few at any slider: the market's shops' doors and stalls are its
     // spots too, two a cell); a guard of the Watch without a post, destitute, never begs.
     expect(!w.society().jobOf("gorse") && w.society().spec("gorse")->role == "guard", "a guard without a post");
     expect(!w.society().jobOf("heath") && w.society().spec("heath")->ofTheWatch(), "a guard placed with no work spot: no post, still of the Watch");
     for (const auto* id : {"idle3", "idle4", "gorse"})
         destitute(w, id);
-    w.setTimeOfDay(11.2);                           // (The next hour's places.)
+    w.setTimeOfDay(12.2);                           // (The next hour's places.)
     for (int i = 0; i < 30; ++i)
         w.tick(1);
     const auto beggars = w.beggars();
     if (std::getenv("STREET_EACH"))
         std::cout << "  beggars: " << some << " of " << few << " who may, then " << beggars.size() << " of " << eligible() << "\n";
-    expect(int(some) == few, "every destitute adult who may beg has a place to: " + std::to_string(some) + " of " + std::to_string(few));
+    expect(int(some) == few && !meansBeg, "every adult in want who may beg has a place to: " + std::to_string(some) + " of " + std::to_string(few));
     expect(eligible() > few && int(beggars.size()) == eligible() && beggars.size() > some,
            "more destitute, more beggars (the old two spots held four): " + std::to_string(beggars.size()) + " of " + std::to_string(eligible()));
     expect(!beggars.count("gorse") && !beggars.count("heath") && !beggars.count("harrow"), "never a guard");
@@ -1262,9 +1271,9 @@ void beggarsAndAlms()
     for (const auto& [id, at] : beggars)
     {
         const auto* st = w.society().statusOf(id);
-        expect(st && st->band == status::Destitute && !w.society().jobOf(id) && w.society().spec(id)->age >= 16 &&
-                   !w.society().spec(id)->ofTheWatch(),
-               "a beggar is a destitute adult without a post, not of the Watch: " + id);
+        expect(st && st->band == status::Destitute && w.society().foodWant(st->household) >= 1 && !w.society().jobOf(id) &&
+                   w.society().spec(id)->age >= 16 && !w.society().spec(id)->ofTheWatch(),
+               "a beggar is a destitute adult without a post (in want), not of the Watch: " + id);
     }
     // At most two at one place (a place, BeggarApart tiles from the next: 10.2's "two a cell").
     for (const auto& [id, at] : beggars)
@@ -1276,10 +1285,10 @@ void beggarsAndAlms()
     }
     for (const auto& [id, life] : w.society().state().residents)
         if (!beggars.count(id))
-            if (const auto* st = w.society().statusOf(id); st && st->band == status::Destitute && !w.society().jobOf(id) &&
+            if (const auto* st = w.society().statusOf(id); st && w.society().foodWant(st->household) > 0 && !w.society().jobOf(id) &&
                                                             !w.society().apprenticedTo(id) && w.society().spec(id)->age >= 16 &&
-                                                            !w.society().spec(id)->ofTheWatch())
-                expect(false, "a destitute adult who may beg left without a place: " + id);
+                                                            !w.society().spec(id)->ofTheWatch() && !w.society().liftedNow(id))
+                expect(false, "an adult in want who may beg left without a place: " + id);
     // They go there, and say they are begging.
     for (int i = 0; i < 400; ++i)
         w.tick(1);
@@ -1287,8 +1296,12 @@ void beggarsAndAlms()
     for (const auto& [id, at] : beggars)
         seen |= w.entity(id)->activity.rfind("begging", 0) == 0;
     expect(seen, "a beggar at it: " + w.entity(beggars.begin()->first)->activity);
-    // Alms: the comfortable and the rich standing by give; a player stood among them is never given anything.
-    const auto beggar = beggars.begin()->first;
+    // Alms: the comfortable and the rich standing by give; a player stood among them is never given anything. (On a day of
+    // their own, the Restday after: a pair's chance is once a day, and passers-by had theirs this morning.)
+    onTo(w, calendar::Restday, 12);
+    const auto almsBeggars = w.beggars();
+    expect(!almsBeggars.empty(), "beggars on the Restday too");
+    const auto beggar = almsBeggars.begin()->first;
     const auto beggarBefore = cash(w, beggar);
     const auto adaBefore = cash(w, "player-ada");
     int givers = 0;
@@ -1304,7 +1317,7 @@ void beggarsAndAlms()
         {
             // (The beggar at its place: a hovel of this test's has no door to walk out of.)
             auto* b = w.entity(beggar);
-            const auto& at = beggars.at(beggar);
+            const auto& at = almsBeggars.at(beggar);
             b->cellId = at.cell;
             b->position = {at.x, at.y};
             b->path.clear();
@@ -1334,6 +1347,306 @@ void beggarsAndAlms()
     fs::remove_all(root);
 }
 
+// ------------------------------------------------------------------ Beggars by want and by the conditions (10.2)
+// The user's decision of 2026-11-11: up to 5 beggars a cell, only in the worst conditions; beggars are residents,
+// typically of the lower class, without the money for food; elders living with family an option, not the only choice.
+
+// Greyfen with its lane and hovels (greyfen(name, true)), and more wolves with no post: four elders living alone, an elder
+// with kin, an elder with kin of means, one in a lodging (a communal home) and one in a flat.
+fs::path wantingTown(const std::string& name)
+{
+    const auto root = greyfen(name, true);
+    const auto cottage = slurp(root / "cells" / "cottage.cell");
+    std::ofstream world(root / "world.ratw", std::ios::app);
+    for (const char* id : {"hovel6", "hovel7", "hovel8", "hovel9", "hovel10", "hovel11", "dock_lodging", "brine_flat"})
+    {
+        auto home = cottage;
+        home.replace(home.find("id: cottage"), 11, std::string("id: ") + id);
+        std::ofstream(root / "cells" / (std::string(id) + ".cell"), std::ios::binary) << home;
+        world << "cell \"" << id << "\" \"cells/" << id << ".cell\"\nterritory \"" << id << "\" \"greyfen\" \"-\" 0\n";
+    }
+    int n = 0;
+    const auto wolf = [&](const std::string& id, int age, const std::string& home, double x) {
+        ++n;
+        world << "resident \"" << id << "\" \"" << id << "\" \"civilian\" \"-\" \"A thin wolf.\" \"Spare a penny?\" " << age
+              << " \"timber\" \"" << (n % 2 ? "female" : "male") << "\" \"average\" \"saddle\" 5 2 5 14 1 8 18 \"-\" 5 0 1 \"" << home
+              << "\" " << x << " 7.5 \"town\" " << 31.5 + n % 5 << " 17.5 \"town\" " << 31.5 + n % 5 << " 20.5\n";
+    };
+    for (int i = 1; i <= 4; ++i)
+        wolf("elder" + std::to_string(i), 69 + i, "hovel" + std::to_string(5 + i), 2.5);
+    wolf("gran", 76, "hovel10", 2.5);
+    wolf("kin", 30, "hovel10", 3.5);
+    wolf("dame", 77, "hovel11", 2.5);
+    wolf("heir", 36, "hovel11", 3.5);
+    wolf("lodger", 28, "dock_lodging", 2.5);
+    wolf("flatwolf", 29, "brine_flat", 2.5);
+    return root;
+}
+std::vector<std::string> householdMembers(const Society& s, const std::string& id)
+{
+    std::vector<std::string> out;
+    const auto household = s.householdOf(id);
+    for (const auto& [other, life] : s.state().residents)
+        if (s.householdOf(other) == household)
+            out.push_back(other);
+    return out;
+}
+// A household in a band (the DM's override) with nothing in its purses or its hands (in want of food), or with money.
+void inWant(World& w, const std::string& id, int band)
+{
+    auto& s = w.society();
+    expect(s.overrideBand(s.householdOf(id), band, 100000), "a band set: " + id);
+    for (const auto& m : householdMembers(s, id))
+    {
+        s.stagedSet(m, 0);
+        emptyLarder(s, m);
+    }
+}
+void withMeans(World& w, const std::string& id, int band)
+{
+    auto& s = w.society();
+    expect(s.overrideBand(s.householdOf(id), band, 100000), "a band set: " + id);
+    for (const auto& m : householdMembers(s, id))
+        s.stagedSet(m, 60);
+}
+// The hour's places found again (they are found as each hour turns).
+void placedAgain(World& w)
+{
+    w.society().stagedLarders();                    // (The morning's judgment of want, after this test's changes.)
+    const double hod = (w.calendarDays() - std::floor(w.calendarDays())) * 24;
+    w.setTimeOfDay(std::floor(hod) + 1.1);
+    for (int i = 0; i < 30; ++i)
+        w.tick(1);
+}
+std::string homeKindOf(const Society& s, const std::string& id)
+{
+    const auto* life = s.resident(id);
+    const auto home = life ? life->homeCell : std::string();
+    return home.empty() ? "none" : Society::communalHome(home) ? "communal" : status::homeKind(s.statusTable(), home);
+}
+std::map<std::string, int> beggarsByCell(const World& w)
+{
+    std::map<std::string, int> n;
+    for (const auto& [id, at] : w.beggars())
+        ++n[at.cell];
+    return n;
+}
+
+void beggarsACellByConditions()
+{
+    // The most beggars in a cell follows the slider and the market's Times: 5 only at the worst, falling as times improve,
+    // about 0-1 in a boom (status.json street.beggarsInACell; a fraction one more on that share of the cells by a lot of
+    // the cell and the day). The table first; then Greyfen's two cells with twelve households in want and room enough at
+    // each place (beggarsACell 8), so the cell's most is what holds them.
+    const auto& d = status::defaults();
+    const auto at = [&](double slider, int times = 0) { return status::beggarsInACellAt(d, slider, times); };
+    expect(at(-100) == 5 && at(-50) == 3.5 && at(0) == 2 && at(50) == 1 && at(100) == .5 && at(-75) == 4.25,
+           "the most in a cell by the slider: 5, 3.5, 2, 1, 0.5");
+    expect(at(0, -2) == 2.75 && at(0, -1) == 2.375 && at(0, 1) == 1.75 && at(0, 2) == 1.5, "the Times move it as the bands' column");
+    expect(at(-75, -2) == 5 && at(-100, 2) == 4.25 && at(100, -2) == .75 && at(100, 2) == .5 && at(-100, -2) == 5,
+           "5 only at the worst (the slider at -100, or near it in a hard market)");
+    for (int slider = -100; slider <= 100; slider += 5)
+        for (int times = -2; times <= 2; ++times)
+            expect(at(slider, times) <= 5 && (at(slider, times) < 5 || slider + 12.5 * times <= -100 + 1e-9) &&
+                       (slider < 50 || at(slider, times) <= 1.5),
+                   "5 only at the worst, at most 1.5 from +50 up: " + std::to_string(slider) + " " + std::to_string(times));
+    // A curve that rises, or doesn't run from -100 to 100, falls back to the default whole, with a warning.
+    for (const char* bad : {R"({"street": {"beggarsInACell": [{"at": -100, "most": 1}, {"at": 100, "most": 3}]}})",
+                            R"({"street": {"beggarsInACell": [{"at": -50, "most": 4}, {"at": 100, "most": 1}]}})",
+                            R"({"street": {"beggarsInACell": [{"at": -100, "most": 9}, {"at": 100, "most": 1}]}})"})
+    {
+        std::vector<std::string> warnings;
+        const auto t = status::read(parse(bad), d, &warnings);
+        expect(!warnings.empty() && status::beggarsInACellAt(t, -100) == 5 && status::beggarsInACellAt(t, 100) == .5,
+               std::string("a bad curve falls back to the default: ") + bad);
+    }
+    const auto root = wantingTown("cells");
+    auto w = town(root);
+    auto& s = w.society();
+    auto wide = parse(R"({"street": {"beggarsACell": 8}})");
+    s.setStatusOverride(&wide);
+    const auto market = [&] { return s.statusOf("idle1")->market; };
+    const auto wanting = {"idle1", "idle2", "idle3", "idle4", "elder1", "elder2", "elder3", "elder4", "gran", "dame", "lodger", "flatwolf"};
+    const auto check = [&](const std::string& what, double mostIn, int busiest) {
+        const auto cells = beggarsByCell(w);
+        int most = 0;
+        for (const auto& [c, k] : cells)
+        {
+            expect(k <= int(std::ceil(mostIn - 1e-9)), what + ": " + c + " holds " + std::to_string(k) + " for at most " + std::to_string(mostIn));
+            most = std::max(most, k);
+        }
+        expect(busiest < 0 || most == busiest, what + ": the busiest cell holds " + std::to_string(most) + ", not " + std::to_string(busiest));
+        expect(most >= int(std::floor(mostIn + 1e-9)), what + ": a cell short of its most: " + std::to_string(most));
+        if (std::getenv("STREET_EACH"))
+        {
+            std::cout << "  " << what << ": at most " << mostIn << " a cell:";
+            for (const auto& [c, k] : cells)
+                std::cout << " " << c << " " << k;
+            std::cout << "\n";
+        }
+    };
+    int weekday = calendar::Marketday;
+    for (int slider : {-100, 0, 100})
+    {
+        s.setProsperity(slider, true);
+        onTo(w, weekday, 10);
+        weekday = weekday == calendar::Marketday ? calendar::Restday : calendar::Marketday;
+        s.stagedBands(std::int64_t(std::floor(w.calendarDays())), true);
+        for (const auto* id : wanting)
+            inWant(w, id, status::Destitute);
+        placedAgain(w);
+        const double mostIn = status::beggarsInACellAt(s.statusTable(), s.prosperity(), s.marketTimes(market()));
+        check("slider " + std::to_string(slider), mostIn, slider == -100 ? 5 : slider == 0 ? 2 : -1);
+        expect(slider != 100 || mostIn <= 1, "about 0-1 in a boom");
+    }
+    // Each Times at slider 0 (the market's own shift: hard .. boom).
+    s.setProsperity(0, true);
+    onTo(w, weekday, 8.2);                          // (Seven hours' places, from 9:00.)
+    s.stagedBands(std::int64_t(std::floor(w.calendarDays())), true);
+    for (const auto* id : wanting)
+        inWant(w, id, status::Destitute);
+    std::set<int> seen;
+    for (int shift : {-100, -60, -30, 0, 30, 60, 100})
+    {
+        s.setTimesShift({{market(), shift}});
+        placedAgain(w);
+        const int times = s.marketTimes(market());
+        seen.insert(times);
+        check("Times " + std::to_string(times), status::beggarsInACellAt(s.statusTable(), s.prosperity(), times), -1);
+    }
+    expect(seen.size() == 5, "every Times seen: " + std::to_string(seen.size()));
+    s.setTimesShift({});
+    fs::remove_all(root);
+}
+
+void beggarsByWant()
+{
+    // Who begs (the user's decision of 2026-11-11): residents of a household in want of food (the destitute always, the
+    // poor whose purses and the food in their hands beyond today's would not buy a day's food a head), adults with no post
+    // or master; never one of the Watch, never one at a post, never a lifted household, never one with the means. Elders
+    // beg only from a household in want, and never all of them while others in want wait; drawn across ages and kinds of
+    // home over the days.
+    const auto root = wantingTown("want");
+    auto w = town(root);
+    auto& s = w.society();
+    const std::vector<std::string> wanting{"idle1", "idle2", "elder1", "elder2", "elder3", "elder4", "gran", "kin", "lodger", "flatwolf"};
+    const std::vector<std::string> never{"idle3", "idle4", "dame", "heir", "gorse", "heath", "rook"};
+    expect(s.jobOf("rook") != nullptr, "Rook holds a post");
+    const auto setUp = [&] {
+        s.stagedBands(std::int64_t(std::floor(w.calendarDays())), true);
+        inWant(w, "idle1", status::Destitute);
+        inWant(w, "idle2", status::Poor);       // (Poor, and nothing for tomorrow's food.)
+        for (const auto* id : {"elder1", "elder2", "elder3", "elder4", "lodger"})
+            inWant(w, id, status::Destitute);
+        inWant(w, "gran", status::Poor);        // (An elder with family, the household in want.)
+        inWant(w, "flatwolf", status::Poor);
+        withMeans(w, "idle3", status::Poor);    // (Poor, with money for food.)
+        withMeans(w, "dame", status::Poor);     // (An elder with family of means.)
+        inWant(w, "idle4", status::Poor);
+        expect(s.liftHousehold(s.householdOf("idle4"), std::int64_t(w.calendarDays()) + 60) || s.liftedNow("idle4"), "Idle 4 lifted");
+        inWant(w, "gorse", status::Destitute);  // (The Watch.)
+        inWant(w, "heath", status::Destitute);
+        inWant(w, "rook", status::Destitute);   // (At a post.)
+        placedAgain(w);
+    };
+    const auto elder = [&](const std::string& id) { return s.spec(id)->age >= Society::retireAge(id); };
+    const auto mayBeg = [&](const std::string& id) {
+        const auto* r = s.spec(id);
+        return r && r->age >= 16 && !s.jobOf(id) && !s.apprenticedTo(id) && !r->ofTheWatch() && !s.liftedNow(id) &&
+               s.foodWant(s.householdOf(id)) > 0;
+    };
+    // The wants as judged.
+    s.setProsperity(-100, true);
+    onTo(w, calendar::Marketday, 10);
+    setUp();
+    expect(s.foodWant(s.householdOf("idle1")) >= 1 && s.foodWant(s.householdOf("elder1")) >= 1, "the destitute in want, first");
+    expect(s.foodWant(s.householdOf("idle2")) > 0 && s.foodWant(s.householdOf("idle2")) <= 1 && s.foodShort(s.householdOf("idle2")) == 1,
+           "the poor with nothing in want: " + std::to_string(s.foodWant(s.householdOf("idle2"))));
+    expect(s.foodWant(s.householdOf("idle3")) == 0 && s.foodWant(s.householdOf("dame")) == 0, "the poor with money for food not in want");
+    expect(s.foodWant(s.householdOf("idle4")) == 0, "a lifted household not in want");
+    expect(s.foodWant(s.householdOf("gorse")) == 0, "the Watch's household never in want");
+    expect(s.householdOf("gran") == s.householdOf("kin") && s.householdOf("dame") == s.householdOf("heir"), "the elders live with kin");
+    // A poor household with a day's food beyond today's in hand is not in want either; nor one whose purse buys it.
+    {
+        const auto hh = s.householdOf("idle2");
+        expect(s.create("idle2", "bread", 8, "test: two days of bread"), "bread given");
+        s.stagedLarders();
+        expect(s.foodWant(hh) == 0, "two days' bread in hand: no want");
+        emptyLarder(s, "idle2");
+        s.stagedSet("idle2", 50);
+        s.stagedLarders();
+        expect(s.foodWant(hh) == 0, "a purse that buys a day's food: no want");
+        s.stagedSet("idle2", 1);
+        s.stagedLarders();
+        expect(s.foodWant(hh) > 0 && s.foodWant(hh) < 1, "a purse short of it: some want: " + std::to_string(s.foodWant(hh)));
+    }
+    // At the worst (room for all ten in want: five a cell, and three at a place, as Greyfen has five places), every one of
+    // them begs, the elder with kin and the kin too; nobody else.
+    auto three = parse(R"({"street": {"beggarsACell": 3}})");
+    s.setStatusOverride(&three);
+    setUp();
+    {
+        const auto b = w.beggars();
+        if (std::getenv("STREET_EACH"))
+        {
+            std::cout << "  at the worst:";
+            for (const auto& [id, at] : b)
+                std::cout << " " << id << " " << tileOf(at);
+            std::cout << "\n";
+        }
+        for (const auto& id : wanting)
+            expect(b.count(id), "one in want at the worst without a place: " + id);
+        for (const auto& id : never)
+            expect(!b.count(id), "a beggar who may not beg: " + id);
+        expect(b.size() == wanting.size(), "only those in want: " + std::to_string(b.size()));
+    }
+    s.setStatusOverride(nullptr);
+    // In ordinary times (two a cell, four in all for ten in want), over a fortnight's begging days: never one who may not,
+    // never more elders than half while others wait, never all of them elders; and across the days elders and the working
+    // aged, from cottages, the lodging and the flat.
+    s.setProsperity(0, true);
+    std::set<std::string> kinds, who;
+    int days = 0, withElders = 0;
+    for (int k = 0; k < 8; ++k)
+    {
+        onTo(w, k % 2 ? calendar::Restday : calendar::Marketday, 10);
+        setUp();
+        const auto b = w.beggars();
+        int elders = 0, others = 0;
+        for (const auto& [id, at] : b)
+        {
+            expect(mayBeg(id), "a beggar not in want, or who may not beg: " + id);
+            (elder(id) ? elders : others)++;
+            kinds.insert(homeKindOf(s, id));
+            who.insert(id);
+        }
+        bool othersWait = false;
+        for (const auto& id : wanting)
+            othersWait |= !elder(id) && mayBeg(id) && !b.count(id);
+        if (std::getenv("STREET_EACH"))
+        {
+            std::cout << "  day " << k << ":";
+            for (const auto& [id, at] : b)
+                std::cout << " " << id << (elder(id) ? "(elder)" : "") << " " << at.cell;
+            std::cout << "\n";
+        }
+        expect(b.size() >= 2 && b.size() <= 4, "two a cell in ordinary times: " + std::to_string(b.size()));
+        expect(others >= 1, "never all of them elders while others are in want");
+        expect(!othersWait || elders <= std::max(1, int(b.size()) / 2), "elders at most half while others wait: " + std::to_string(elders) +
+                                                                            " of " + std::to_string(b.size()));
+        for (const auto& id : never)
+            expect(!b.count(id), "a beggar who may not beg: " + id);
+        ++days;
+        withElders += elders > 0;
+    }
+    expect(days == 8 && withElders > 0 && kinds.count("cottage") && kinds.count("communal") && kinds.count("flat"),
+           "across the days, elders and others, from cottages, a lodging and a flat: " + std::to_string(kinds.size()));
+    expect(who.size() >= 6, "not the same few every day: " + std::to_string(who.size()));
+    // An elder whose household has the means never begs, whoever else does: Dame, with Heir's purse, above. And an elder of
+    // a household in want who lives alone begs as one with family does: both above at the worst.
+    fs::remove_all(root);
+}
+
 void beggarsOffTheDoors()
 {
     // A row of beggars keeps off every door's tile, open or shut (World::inDoorway), as a square's stalls and crowd do since
@@ -1354,7 +1667,7 @@ void beggarsOffTheDoors()
         std::ofstream(root / "world.ratw", std::ios::binary) << world;
     }
     auto w = town(root);
-    auto many = parse(R"({"street": {"beggarsACell": 4}})");
+    auto many = parse(R"({"street": {"beggarsACell": 4, "beggarsInACell": [{"at": -100, "most": 8}, {"at": 100, "most": 8}]}})");
     w.society().setStatusOverride(&many);
     for (const auto* id : {"idle1", "idle2", "idle3", "idle4"})
         destitute(w, id);
@@ -2110,6 +2423,7 @@ struct StreetCrash
     std::function<void(game::Game&, Client&)> step;   // After the checkpoint: the street's step, and a player's record.
     std::function<void(game::Game&, const json::Value&)> check;   // After the restart (what was so at the crash given).
     bool days = false;                              // (Days pass in its step, checkpointed: no dole of the first checkpoint.)
+    bool lane = false;                              // (Greyfen with its lane and hovels, Idle 1 destitute at the checkpoint.)
 };
 void enter(game::Game& g, Client& c, int n, const char* who)
 {
@@ -2282,6 +2596,48 @@ std::vector<StreetCrash> streetRuns()
                         expect(w.society().liftedNow("linden"), "lift: lifted");
                     },
                     [](game::Game& g, const json::Value&) { expect(g.world().society().liftedNow("linden"), "lift: still lifted after the crash"); }});
+    // Beggars through a crash (never saved: found again each hour from the bands and the morning's want, the user's
+    // decision of 2026-11-11): in Greyfen with its lane, Idle 1 (no trade) destitute at the checkpoint (the DM's
+    // override), she begs on the Marketday after it, a checkpoint taken there; after the restart, that Marketday, she begs
+    // again, everyone begging is in want and may beg, and no cell holds more than its most. (Linden's post is filled again
+    // by then: he works.)
+    runs.push_back({"begs",
+                    [](game::Game& g, Client& c) {
+                        auto& w = g.world();
+                        onTo(w, calendar::Marketday, 10.2);
+                        expect(w.beggars().count("idle1"), "begs: Idle 1 begs before the crash");
+                        g.save();
+                        g.settle();                 // (A checkpoint on the Marketday: the beggars are not in it.)
+                        for (int i = 0; i < 20; ++i)
+                            g.tick(.5);
+                        aPenny(g, c);               // (And a player's record after it.)
+                    },
+                    [](game::Game& g, const json::Value&) {
+                        auto& w = g.world();
+                        auto& s = w.society();
+                        const double hod = (w.calendarDays() - std::floor(w.calendarDays())) * 24;
+                        if (calendar::weekdayOf(w.calendarDays()) != calendar::Marketday || hod < 8 || hod >= 16)
+                            onTo(w, calendar::Marketday, 10.2);
+                        else
+                        {
+                            w.setTimeOfDay(std::floor(hod) + 1.1);
+                            for (int i = 0; i < 30; ++i)
+                                w.tick(1);
+                        }
+                        expect(w.beggars().count("idle1"), "begs: Idle 1 begs after the restart");
+                        for (const auto& [id, at] : w.beggars())
+                        {
+                            const auto* r = s.spec(id);
+                            expect(r && r->age >= 16 && !s.jobOf(id) && !r->ofTheWatch() && !s.liftedNow(id) &&
+                                       s.foodWant(s.householdOf(id)) > 0,
+                                   "begs: a beggar after the restart not in want, or who may not beg: " + id);
+                        }
+                        const double most = status::beggarsInACellAt(s.statusTable(), s.prosperity(), s.marketTimes(s.statusOf("idle1")->market));
+                        for (const auto& [c, n] : beggarsByCell(w))
+                            expect(n <= int(std::ceil(most - 1e-9)), "begs: a cell over its most after the restart: " + c);
+                    },
+                    true,
+                    true});
     // A day's business turned on a tick and a player's purchase counted: both as at the crash.
     runs.push_back({"business",
                     [](game::Game& g, Client& c) {
@@ -2468,6 +2824,8 @@ json::Value toTheStreetCrash(const StreetCrash& r, const fs::path& root, const s
     for (int i = 0; i < 30; ++i)
         w.tick(1);
     destitute(w, "linden");
+    if (r.lane)
+        expect(w.society().overrideBand(w.society().householdOf("idle1"), status::Destitute, 100000), r.name + ": Idle 1 destitute");
     Client ash;
     enter(g, ash, 71, "ash");
     g.save();
@@ -2502,7 +2860,7 @@ void streetThroughACrash()
     {
         if (const char* only = std::getenv("STREET_CRASH"); only && r.name != only)
             continue;                               // (STREET_CRASH=name: that case alone.)
-        const auto root = greyfen("crash-" + r.name);
+        const auto root = greyfen("crash-" + r.name, r.lane);
         const auto path = crashSave(r.name);
         cleanSave(path);
         const auto was = toTheStreetCrash(r, root, path);
@@ -2524,7 +2882,7 @@ int writeCrashes(const fs::path& dir)
     fs::create_directories(dir);
     for (const auto& r : streetRuns())
     {
-        const auto root = greyfen("crash-" + r.name);
+        const auto root = greyfen("crash-" + r.name, r.lane);
         const auto path = crashSave(r.name);
         cleanSave(path);
         const auto was = toTheStreetCrash(r, root, path);
@@ -2541,7 +2899,7 @@ int checkCrashes(const fs::path& back, const fs::path& dir)
 {
     for (const auto& r : streetRuns())
     {
-        const auto root = greyfen("crash-" + r.name);
+        const auto root = greyfen("crash-" + r.name, r.lane);
         const auto path = crashSave(r.name);
         cleanSave(path);
         fs::copy_file(back / (r.name + ".json"), path);
@@ -2619,6 +2977,8 @@ int main(int argc, char** argv)
             {"takesByBand", takesByBand},
             {"beggarsAndAlms", beggarsAndAlms},
             {"beggarsOffTheDoors", beggarsOffTheDoors},
+            {"beggarsACellByConditions", beggarsACellByConditions},
+            {"beggarsByWant", beggarsByWant},
             {"helpABeggar", helpABeggar},
             {"helpWhenTheCapIsFull", helpWhenTheCapIsFull},
             {"restdayDole", restdayDole},
@@ -2649,7 +3009,7 @@ int main(int argc, char** argv)
         std::cerr << "FAILED after " << checks << " checks: " << e.what() << "\n";
         for (const auto& root : madeRoots())
             fs::remove_all(root);
-        for (const auto* name : {"dole", "dolelate", "lift", "business", "sales", "tilltheft", "custody"})
+        for (const auto* name : {"dole", "dolelate", "lift", "begs", "business", "sales", "tilltheft", "custody"})
             cleanSave(crashSave(name));
         return 1;
     }

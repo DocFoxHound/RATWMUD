@@ -10,6 +10,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <deque>
+#include <map>
 #include <set>
 #include <string>
 #include <tuple>
@@ -508,6 +510,67 @@ std::int64_t Society::bandFoodCost(const std::string& id, double days) const
     const int whole = int(std::clamp(std::ceil(pieces - 1e-9), 1., 99. * 99));
     const auto lot = marketLot(h->second.market, food, std::min(whole, 99));
     return whole <= 99 ? lot : std::int64_t(std::llround(double(lot) * whole / 99));
+}
+
+// ---- Want of food (10.2, the user's decision of 2026-11-11) ----
+
+double Society::foodShortNow(const std::string& household) const
+{
+    // The money for food: today's food is in hand (the staged ration keeps every household near two days' of it, 6.5),
+    // so the want is the next day's: a day's food a head, in the household's own food at its market's price, against its
+    // purses and whatever food its members carry beyond today's; what is missing, a share of the whole day's cost.
+    const auto h = stagedHomes_.find(household);
+    if (h == stagedHomes_.end())
+        return 0;
+    const auto food = !h->second.food.empty() && itemValid(h->second.food) ? h->second.food : std::string("bread");
+    const double each = std::max(1, nourishment(food));
+    int heads = 0;
+    double larder = 0;
+    std::int64_t purse = 0;
+    for (const auto& id : h->second.members)
+    {
+        const auto wallet = state_.accounts.find(id);
+        if (wallet == state_.accounts.end() || dead_.count(id) || !spec(id))
+            continue;
+        ++heads;
+        for (const auto& [item, n] : wallet->second.stock)
+            larder += n > 0 ? double(nourishment(item)) * n : 0.;
+        purse += std::max<std::int64_t>(0, wallet->second.cash);
+    }
+    const double need = heads * NourishADay, spare = std::max(0., larder - need);
+    if (heads == 0 || spare >= need)
+        return 0;
+    const auto pieces = [&](double n) { return std::clamp(int(std::ceil(n / each - 1e-9)), 1, 99); };
+    const auto missing = marketLot(h->second.market, food, pieces(need - spare));
+    const auto whole = std::max<std::int64_t>(1, marketLot(h->second.market, food, pieces(need)));
+    return missing <= purse ? 0 : std::clamp(double(missing - purse) / double(whole), 0., 1.);
+}
+
+void Society::stagedLarders()
+{
+    foodShort_.clear();
+    for (const auto& [key, h] : stagedHomes_)
+        foodShort_[key] = foodShortNow(key);
+    foodShortDay_ = stagedDay_;
+}
+
+double Society::foodShort(const std::string& household) const
+{
+    if (foodShortDay_ != stagedDay_ || stagedDay_ < 0)
+        return foodShortNow(household);
+    const auto found = foodShort_.find(household);
+    return found == foodShort_.end() ? foodShortNow(household) : found->second;   // (One made since the turn: now.)
+}
+
+double Society::foodWant(const std::string& household) const
+{
+    const auto h = stagedHomes_.find(household);
+    if (h == stagedHomes_.end() || h->second.band > status::Poor || h->second.lifted || watchHousehold(household))
+        return 0;
+    if (const auto b = state_.staged.bands.find(household); b != state_.staged.bands.end() && b->second.liftedUntil >= stagedDay_)
+        return 0;
+    const double s = foodShort(household);
+    return h->second.band == status::Destitute ? 1 + s : s;
 }
 
 // ---- The lifted state (6.7) ----
@@ -1041,12 +1104,17 @@ const Spot* World::chapelSteps(const std::string& community)
 
 void World::placeBeggars()
 {
-    // Marketday and Restday, 8:00 to 18:00 (10.2): destitute adults without a post (never one of the Watch, posted or
-    // not), not lifted, at their market's chapel steps, by its notice board, and before its shops' doors and stalls ("at
-    // the market"), at most beggarsACell at one place, each place BeggarApart tiles or more from the next in its cell (10.2's
-    // "2 a cell" made per place, since a DEV city cell is a quarter of the city: a change for the user's nod), side by
-    // side on tiles of their own; in a seeded order of the day, so who begs where changes, and
-    // as many as the band mix makes (T7: more in hard times, few in a boom).
+    // Marketday and Restday, 8:00 to 18:00 (10.2): residents of a household in want of food (the user's decision of
+    // 2026-11-11: Society::foodWant, the destitute always, the poor whose purses and larders fall short of a day's food at
+    // their market's price), adults without a post or a master, never one of the Watch (posted or not), never a lifted
+    // household; at their market's chapel steps, by its notice board, and before its shops' doors and stalls ("at the
+    // market"), at most beggarsACell at one place, each place BeggarApart tiles or more from the next in its cell, and at
+    // most beggarsInACell in a cell by the slider and the market's Times (5 only at the worst, about 0-1 in a boom; a
+    // fraction one more on that share of the cells, by a lot of the cell and the day), side by side on tiles of their own.
+    // Who comes first is a seeded draw of the day, weighted by want times the class's beggarsClass weight; each group
+    // (elder or of working age, by home kind) keeps beggarsSpread of its weight for each beggar drawn from it already, and
+    // while others are in want the elders are at most beggarsElders of a market's beggars (never all of them): elders
+    // living with their families are an option, never the only choice.
     beggars_.clear();
     beggarWhere_.clear();
     streetReady_ = society_.stagedReady();
@@ -1055,25 +1123,98 @@ void World::placeBeggars()
     if ((weekday != calendar::Marketday && weekday != calendar::Restday) || hour < 8 || hour >= 18)
         return;
     const auto day = std::to_string(std::int64_t(std::floor(calendarDays_)));
-    const int most = std::max(0, society_.statusTable().beggarsACell);
-    std::map<std::string, std::vector<std::pair<std::uint64_t, std::string>>> byMarket;
+    const auto& table = society_.statusTable();
+    const int most = std::max(0, table.beggarsACell);
+    struct Want
+    {
+        std::string id, group;
+        double key = 0;                             // (Log of a seeded lot over the weight: the higher, the sooner.)
+        bool elder = false;
+    };
+    std::map<std::string, std::vector<Want>> byMarket;
     std::set<std::string> taken;                    // (The tiles the beggars stand on.)
+    std::map<std::string, double> wants;            // (Each household's want, asked once.)
     for (const auto& [id, life] : society_.state().residents)
     {
         const auto* s = society_.statusOf(id);
         const auto* e = entity(id);
         const auto* r = society_.spec(id);
-        if (!s || s->band != status::Destitute || society_.liftedNow(id) || !e || e->dead || !e->npc || !r || r->age < 16 ||
+        if (!s || s->band > status::Poor || society_.liftedNow(id) || !e || e->dead || !e->npc || !r || r->age < 16 ||
             r->ofTheWatch() || society_.jobOf(id) || society_.apprenticedTo(id) || !e->leaderId.empty() || e->state == "following" ||
             custodyOf(id) || drivers_.count(id) || seated_.count(id))
             continue;
-        byMarket[s->market].push_back({status::hash(id + "|begs|" + day), id});
+        auto want = wants.find(s->household);
+        if (want == wants.end())
+            want = wants.emplace(s->household, society_.foodWant(s->household)).first;
+        if (want->second <= 0)
+            continue;
+        const auto cw = table.beggarsClass.find(s->cls);
+        const double weight = want->second * (cw != table.beggarsClass.end() ? cw->second : 1.);
+        if (!(weight > 0))
+            continue;
+        Want w;
+        w.id = id;
+        w.elder = r->age >= Society::retireAge(id);
+        const auto kind = life.homeCell.empty() ? std::string("none")
+                          : Society::communalHome(life.homeCell) ? std::string("communal")
+                                                                 : status::homeKind(table, life.homeCell);
+        w.group = std::string(w.elder ? "elder" : "adult") + "|" + kind;
+        w.key = std::log(std::clamp(status::lot(id + "|begs|" + day), 1e-9, 1 - 1e-9)) / weight;
+        byMarket[s->market].push_back(std::move(w));
     }
-    for (auto& [market, list] : byMarket)
+    // The most in each cell (the slider and the Times of the market whose place it is, the first to ask).
+    std::map<std::string, int> cellMost, inCell;
+    const auto cellRoom = [&](const std::string& cellId, const std::string& market) {
+        auto found = cellMost.find(cellId);
+        if (found == cellMost.end())
+        {
+            const double n = std::max(0., status::beggarsInACellAt(table, society_.prosperity(), society_.marketTimes(market)));
+            const double whole = std::floor(n + 1e-9);
+            const int cap = int(whole) + (status::lot(cellId + "|beggars|" + day) < n - whole ? 1 : 0);
+            found = cellMost.emplace(cellId, cap).first;
+        }
+        return std::max(0, found->second - inCell[cellId]);
+    };
+    for (auto& [market, wanting] : byMarket)
     {
         if (most <= 0)
             break;
-        std::sort(list.begin(), list.end());
+        // Who comes first: by group, each group by its draw; then the best group's next by its draw over the spread, the
+        // elders held to their share while anyone else waits.
+        std::map<std::string, std::deque<const Want*>> groups;
+        for (const auto& w : wanting)
+            groups[w.group].push_back(&w);
+        for (auto& [g, q] : groups)
+            std::sort(q.begin(), q.end(), [](const Want* a, const Want* b) { return a->key != b->key ? a->key > b->key : a->id < b->id; });
+        std::map<std::string, int> drawn;
+        std::vector<std::string> list;
+        int elders = 0, othersLeft = 0;
+        for (const auto& w : wanting)
+            othersLeft += !w.elder;
+        while (list.size() < wanting.size())
+        {
+            const int n = int(list.size()) + 1;
+            const bool elderRoom = othersLeft == 0 || elders + 1 <= std::max(1, int(std::floor(table.beggarsElders * n + 1e-9)));
+            std::deque<const Want*>* best = nullptr;
+            double bestKey = 0;
+            std::string bestGroup;
+            for (auto& [g, q] : groups)
+            {
+                if (q.empty() || (q.front()->elder && !elderRoom))
+                    continue;
+                const double k = q.front()->key / std::pow(table.beggarsSpread, drawn[g]);
+                if (!best || k > bestKey)
+                    best = &q, bestKey = k, bestGroup = g;
+            }
+            if (!best)
+                break;
+            const auto* w = best->front();
+            best->pop_front();
+            ++drawn[bestGroup];
+            elders += w->elder;
+            othersLeft -= !w->elder;
+            list.push_back(w->id);
+        }
         const auto* t = roadMarket(market);
         const auto community = t && !t->market.empty() ? lawTown(t->market) : market;
         std::vector<std::pair<Spot, std::string>> spots;
@@ -1085,7 +1226,16 @@ void World::placeBeggars()
                     return;
             spots.push_back({at, where});
         };
-        const auto room = [&] { return spots.size() * std::size_t(most) >= list.size(); };
+        // (Room enough: the places' beggars, each cell's held to its most.)
+        const auto room = [&] {
+            std::map<std::string, std::size_t> per;
+            for (const auto& [at, w] : spots)
+                per[at.cell] += std::size_t(most);
+            std::size_t n = 0;
+            for (const auto& [c, k] : per)
+                n += std::min(k, std::size_t(cellRoom(c, market)));
+            return n >= list.size();
+        };
         if (const auto* steps = chapelSteps(community))
         {
             add(*steps, "at the chapel steps");
@@ -1123,11 +1273,12 @@ void World::placeBeggars()
         }
         std::size_t next = 0;
         for (const auto& [spot, where] : spots)
-            for (int k = 0; next < list.size() && k < most; ++k)
+            for (int k = 0; next < list.size() && k < most && cellRoom(spot.cell, market) > 0; ++k)
             {
                 const Spot at = freeBeside(spot, taken);   // (Side by side, never two on one tile.)
-                beggars_[list[next].second] = at;
-                beggarWhere_[list[next].second] = where;
+                beggars_[list[next]] = at;
+                beggarWhere_[list[next]] = where;
+                ++inCell[spot.cell];
                 ++next;
             }
     }
