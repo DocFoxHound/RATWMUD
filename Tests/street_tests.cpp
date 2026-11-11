@@ -486,6 +486,54 @@ void guardsNeverThieve()
     expect(thieves > 0, "the day's thieves drawn, from those not of the Watch");
 }
 
+void theWatchInTheBands()
+{
+    // 6.3 / 10: one of the Watch with no post (a guard written with none, and DEV's patrol guards placed with no work spot,
+    // each a household of one at the Watch House) is paid by its town: an earner, and its household never poor or
+    // destitute at any slider, so never on the dole; even the DM's override never gives it the dole.
+    AuthoredRoster roster;
+    roster.residents.push_back(person("moss", "merchant", "keeping the stall", 45, {"stall_up", 2.5, 2.5}, {"stall", 2.5, 4.5}));
+    std::vector<std::string> watch;
+    for (int i = 0; i < 6; ++i)
+    {
+        roster.residents.push_back(person("g" + std::to_string(i), "guard", "", 30, {"watch_house", 2.5 + i, 2.5}, {"watch_house", 3.5, 3.5}));
+        watch.push_back("g" + std::to_string(i));
+        auto placed = person("p" + std::to_string(i), "civilian", "-", 30, {"watch_house", 10.5 + i, 2.5}, {"watch_house", 10.5 + i, 2.5});
+        placed.watch = true;                        // (Authored a guard, placed with no work spot: DEV's.)
+        roster.residents.push_back(placed);
+        watch.push_back("p" + std::to_string(i));
+    }
+    for (int i = 0; i < 12; ++i)
+        roster.residents.push_back(person("c" + std::to_string(i), "civilian", "", 40 + i, {"row_" + std::to_string(i), 2.5, 2.5}, {"yard", 3.5, 3.5}));
+    Society s(Roster::None);
+    s.configure(roster);
+    s.tendCareers(1.3, careers(s));
+    int destituteOthers = 0;
+    for (const int slider : {-100, 0, 100})
+    {
+        s.setProsperity(slider, true);
+        s.stagedBands(10, true);
+        for (const auto& id : watch)
+        {
+            const auto* st = s.statusOf(id);
+            expect(s.spec(id)->ofTheWatch() && (id[0] != 'p' || !s.jobOf(id)), "of the Watch (the placed with no post): " + id);
+            expect(st && st->band >= status::Comfortable,
+                   "one of the Watch never poor or destitute, at " + std::to_string(slider) + ": " + id + " " + std::to_string(st ? st->band : -1));
+            expect(s.watchHousehold(st->household) && s.giveDole(st->household, 10) == 0, "no dole for the Watch: " + id);
+        }
+        for (int i = 0; i < 12; ++i)
+            if (const auto* st = s.statusOf("c" + std::to_string(i)); st && st->band == status::Destitute)
+                ++destituteOthers;
+    }
+    expect(destituteOthers > 0, "the destitute are others: the households without an earner");
+    for (const auto& id : watch)
+    {
+        expect(s.overrideBand(s.householdOf(id), status::Destitute, 1000), "the DM's override: " + id);
+        expect(s.statusOf(id)->band == status::Destitute && s.giveDole(s.householdOf(id), 10) == 0,
+               "the DM's override holds, and still no dole for the Watch: " + id);
+    }
+}
+
 void playersEmptyTheStaple()
 {
     // 16.8: players empty a market's staple; that market's poor show more hunger the next day, the comfortable never do.
@@ -972,7 +1020,8 @@ void aFreshWorldsFirstDay()
     World w;
     const auto loaded = w.loadWorldFile((root / "world.ratw").string());
     expect(loaded.ok, "the town loads: " + loaded.message);
-    auto often = parse(R"({"street": {"theftBase": 5}})");
+    // (Greyfen's households comfortable, the Watch's barracks too: their theft weight made high.)
+    auto often = parse(R"({"street": {"theftBase": 1}, "rows": {"comfortable": {"theft": 1}}})");
     w.society().setStatusOverride(&often);
     w.setTimeOfDay(9);
     expect(w.theftPlan().thieves.empty(), "before the households are made: no thieves yet");
@@ -1245,6 +1294,7 @@ void roughSleepers()
         expect(w.society().restore(st), "homeless");
     }
     int nights = 0, wintry = 0;
+    std::map<std::string, int> slept;               // (Each of the four: the winter nights it slept by a warm wall.)
     for (int d = 0; d < 400 && wintry < 30; ++d)
     {
         w.advanceCalendar(1);
@@ -1258,6 +1308,8 @@ void roughSleepers()
         {
             ++wintry;
             nights += !w.roughSleepers().empty();
+            for (const auto* id : {"linden", "rook", "maple", "sorrel"})
+                slept[id] += w.roughSleepers().count(id) ? 1 : 0;
             std::set<std::string> tiles;
             for (const auto& [id, at] : w.roughSleepers())
             {
@@ -1269,8 +1321,259 @@ void roughSleepers()
             }
         }
     }
-    expect(wintry > 0 && nights > 0 && nights < wintry * 4, "by the warm wall some winter nights: " + std::to_string(nights) + " of " +
-                                                                std::to_string(wintry));
+    // D12's "a third of winter nights": each one's nights by its own seeded lot, so the four together sleep out about a
+    // third of theirs (120 lots: 40 expected, 24-56 within three spreads), and none every night or never.
+    int all = 0;
+    for (const auto& [id, n] : slept)
+    {
+        all += n;
+        expect(n > 0 && n < wintry, "by the warm wall some winter nights, not every one: " + id + " " + std::to_string(n) + " of " +
+                                        std::to_string(wintry));
+    }
+    expect(wintry >= 30 && nights > 0, "winter nights seen: " + std::to_string(wintry));
+    expect(all >= wintry * 4 / 5 && all <= wintry * 4 * 7 / 15,
+           "about a third of winter nights: " + std::to_string(all) + " of " + std::to_string(wintry * 4));
+    if (std::getenv("STREET_EACH"))
+        std::cout << "  rough sleepers: " << all << " sleeper-nights of " << wintry * 4 << "\n";
+    fs::remove_all(root);
+}
+
+// A cell's every tile raised to `height` (a `height:` override each), as DEV's city streets stand at 1.5-2.5.
+void raise(const fs::path& cellFile, double height)
+{
+    auto text = slurp(cellFile);
+    const auto size = text.find("size: ");
+    int w = 0, h = 0;
+    std::istringstream(text.substr(size + 6)) >> w >> h;
+    std::ostringstream lines;
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x)
+            lines << "height: " << x << ' ' << y << ' ' << height << '\n';
+    text.insert(text.find("grid:"), lines.str());
+    std::ofstream(cellFile, std::ios::binary) << text;
+}
+std::string tileOf(const Spot& at)
+{
+    return at.cell + " " + std::to_string(int(std::floor(at.x))) + "," + std::to_string(int(std::floor(at.y)));
+}
+// A tile someone could stand on, at the raised street's height (outdoors) or the floor's (indoors).
+bool groundAt(const World& w, const Spot& at, double height)
+{
+    const auto* c = w.cell(at.cell);
+    const auto* t = c ? c->tile(int(std::floor(at.x)), int(std::floor(at.y))) : nullptr;
+    return t && !t->solid && (!c->outdoors || std::abs(t->height - height) < 1e-9);
+}
+
+void streetOnRaisedGround()
+{
+    // 10.2: on raised streets (DEV's city: 1.5 at the chapel steps, 2.5 in its streets) the beggars at a place, the rough
+    // sleepers by a wall and the dole's queue still stand side by side, each on a tile of its own, none on the priest's
+    // or a beggar's. (The tiles beside a place were asked about a step up from height 0, so above half a step every one
+    // looked blocked and a whole row stood on the place's one tile.)
+    const auto root = greyfen("raised", true);
+    for (const char* c : {"town", "lane"})
+        raise(root / "cells" / (std::string(c) + ".cell"), 2.5);
+    auto w = town(root);
+    expect(w.cell("town")->tile(20, 17)->height == 2.5 && w.cell("lane")->tile(20, 17)->height == 2.5, "the streets raised");
+    for (const auto* id : {"idle1", "idle2", "idle3", "idle4", "linden", "rook", "maple", "sorrel"})
+        destitute(w, id);
+    w.addPlayer("player-ada", "Ada");
+    const auto apartAll = [&](const std::map<std::string, Spot>& at, const std::string& what, std::set<std::string>& tiles) {
+        for (const auto& [id, spot] : at)
+        {
+            expect(groundAt(w, spot, 2.5), what + " on ground to stand on: " + id + " " + tileOf(spot));
+            expect(tiles.insert(tileOf(spot)).second, what + ": two on one tile, " + id + " at " + tileOf(spot));
+        }
+    };
+    onTo(w, calendar::Marketday, 10);
+    {
+        std::set<std::string> tiles;
+        apartAll(w.beggars(), "beggars", tiles);
+        int paired = 0;                             // (Places holding two: the row was beside a place, not on it.)
+        for (const auto& [id, at] : w.beggars())
+            for (const auto& [other, there] : w.beggars())
+                paired += id < other && at.cell == there.cell && std::hypot(at.x - there.x, at.y - there.y) < 3;
+        expect(w.beggars().size() >= 4 && paired > 0, "beggars side by side at their places: " + std::to_string(w.beggars().size()) +
+                                                          ", pairs " + std::to_string(paired));
+    }
+    // The Restday dole with Ada at the steps: the queue beside the priest, never on his tile or a beggar's.
+    onTo(w, calendar::Restday, Society::ServiceEnd - .05);
+    Spot steps;
+    for (const auto& [id, d] : w.doors())
+        if (d.cellId == "longhouse" && w.cell(d.targetCell) && w.cell(d.targetCell)->outdoors)
+            steps = {d.targetCell, d.arrival.x, d.arrival.y};
+    std::size_t most = 0;
+    for (int i = 0; i < 900; ++i)
+    {
+        auto* me = w.entity("player-ada");
+        me->cellId = steps.cell;
+        me->position = {steps.x - 2, steps.y + 2};
+        me->velocity = {};
+        w.tick(1);
+        std::set<std::string> tiles;
+        apartAll(w.beggars(), "beggars on Restday", tiles);
+        std::map<std::string, Spot> line;
+        for (const auto& [id, t] : w.doleTakers())
+            line[id] = t.at;
+        for (const auto& [id, at] : w.dolePriests())
+            line["priest " + id] = at;
+        apartAll(line, "the dole's queue, the priest and the beggars", tiles);
+        most = std::max(most, w.doleTakers().size());
+    }
+    expect(most >= 2, "a queue at the steps: " + std::to_string(most));
+    // Winter nights: the homeless destitute two to a warm wall, side by side.
+    {
+        auto st = w.society().state();
+        for (const auto* id : {"linden", "rook", "maple", "sorrel"})
+            st.residents[id].homeCell.clear();
+        expect(w.society().restore(st), "homeless");
+    }
+    int seen = 0, wintry = 0;
+    for (int d = 0; d < 400 && wintry < 20; ++d)
+    {
+        w.advanceCalendar(1);
+        w.setTimeOfDay(23);
+        w.tick(1);
+        w.tick(1);
+        if (calendar::calendarAt(w.calendarDays()).season != calendar::Season::Winter)
+            continue;
+        ++wintry;
+        std::set<std::string> tiles;
+        apartAll(w.roughSleepers(), "rough sleepers", tiles);
+        seen = std::max(seen, int(w.roughSleepers().size()));
+    }
+    expect(seen >= 2, "nights with two or more by the walls: " + std::to_string(seen));
+    fs::remove_all(root);
+}
+
+void theWatchOffTheStreet()
+{
+    // 10.2: one of the Watch with no post (Gorse, a guard written with none; Heath, written on patrol with no work spot,
+    // her bunk at the barracks, a communal home, as DEV's Watch House) never takes or queues for the dole and never sleeps
+    // by a warm wall, even with the DM's override making it destitute and homeless.
+    const auto root = greyfen("watch", true);
+    auto w = town(root);
+    auto& s = w.society();
+    {
+        auto st = s.state();
+        st.residents["heath"].homeCell = "barracks";
+        st.residents["linden"].homeCell.clear();    // (Someone to sleep out and be given the dole.)
+        expect(s.restore(st), "Heath bunks at the barracks");
+    }
+    destitute(w, "linden");
+    s.setProsperity(-100, true);
+    w.advanceCalendar(1);
+    w.setTimeOfDay(9);
+    for (int i = 0; i < 10; ++i)
+        w.tick(1);
+    if (std::getenv("STREET_DEBUG"))
+        for (const auto& [id, life] : s.state().residents)
+            std::cerr << id << " home " << life.homeCell << " status " << (s.statusOf(id) ? s.statusOf(id)->household : "-") << "\n";
+    for (const auto* id : {"gorse", "heath"})
+    {
+        const auto* st = s.statusOf(id);
+        expect(st && st->band >= status::Comfortable, std::string("of the Watch: comfortable or better at -100: ") + id + " " +
+                                                          (st ? st->household + " " + std::to_string(st->band) + (st->overridden ? " overridden" : "") : ""));
+    }
+    for (const auto* id : {"gorse", "heath"})
+        expect(s.overrideBand(s.householdOf(id), status::Destitute, 100000), std::string("the DM's override: ") + id);
+    {
+        auto st = s.state();
+        st.residents["gorse"].homeCell.clear();
+        expect(s.restore(st), "Gorse homeless");
+    }
+    w.addPlayer("player-ada", "Ada");
+    onTo(w, calendar::Restday, Society::ServiceEnd - .05);
+    Spot steps;
+    for (const auto& [id, d] : w.doors())
+        if (d.cellId == "longhouse" && w.cell(d.targetCell) && w.cell(d.targetCell)->outdoors)
+            steps = {d.targetCell, d.arrival.x, d.arrival.y};
+    bool queued = false;
+    for (int i = 0; i < 9000; ++i)
+    {
+        auto* me = w.entity("player-ada");
+        me->cellId = steps.cell;
+        me->position = {steps.x - 2, steps.y + 2};
+        me->velocity = {};
+        w.tick(1);
+        for (const auto& [id, t] : w.doleTakers())
+        {
+            queued = true;
+            expect(!s.spec(id)->ofTheWatch() && !s.watchHousehold(t.household), "one of the Watch in the dole's queue: " + id);
+        }
+    }
+    expect(queued && s.onDole("linden"), "the dole given, by a queue");
+    expect(!s.onDole("gorse") && !s.onDole("heath"), "never the Watch's");
+    int nights = 0;
+    for (int d = 0; d < 400 && nights < 20; ++d)
+    {
+        w.advanceCalendar(1);
+        w.setTimeOfDay(23);
+        w.tick(1);
+        w.tick(1);
+        if (calendar::calendarAt(w.calendarDays()).season != calendar::Season::Winter)
+            continue;
+        ++nights;
+        expect(!w.roughSleepers().count("gorse") && !w.roughSleepers().count("heath"), "one of the Watch by a warm wall");
+    }
+    expect(nights >= 20, "winter nights seen");
+    fs::remove_all(root);
+}
+
+void runnersToTheNearest()
+{
+    // 6.6: with its own food shop shut, a household's runner goes to the open shop of its market with its food on the
+    // shelf nearest the household's door (World::runnerShop): Cole's barrow at the lane's near end, never Dulse's at its
+    // far one (once picked by a hash of the household and the shop, anywhere in the market).
+    const auto root = greyfen("nearest", true);
+    {
+        auto text = slurp(root / "world.ratw");
+        const auto move = [&](const std::string& from, const std::string& to) {
+            const auto at = text.find(from);
+            expect(at != std::string::npos, "the stall found: " + from);
+            text.replace(at, from.size(), to);
+        };
+        move("\"lane\" 20.5 17.5 \"lane\" 22.5 20.5", "\"lane\" 10.5 2.5 \"lane\" 12.5 3.5");
+        move("\"lane\" 40.5 17.5 \"lane\" 42.5 20.5", "\"lane\" 60.5 36.5 \"lane\" 61.5 37.5");
+        std::ofstream(root / "world.ratw", std::ios::binary) << text;
+    }
+    auto w = town(root);
+    auto& s = w.society();
+    w.addPlayer("player-ada", "Ada");
+    w.advanceCalendar(1);
+    w.setTimeOfDay(8.2);
+    for (int i = 0; i < 30; ++i)
+        w.tick(1);
+    const auto wrenTill = s.tillOf("wren");
+    const auto coleTill = s.tillOf("cole"), dulseTill = s.tillOf("dulse");
+    expect(wrenTill != "wren" && coleTill != "cole" && dulseTill != "dulse", "three shops with tills");
+    for (const auto& till : {coleTill, dulseTill})
+        for (const auto* food : {"bread", "fish", "meal"})
+            expect(s.create(till, food, 40, "test: a barrow of food"), "food on the barrows");
+    {
+        auto st = s.state();                        // (Wren's shop shut: nobody keeping it.)
+        for (auto& [pid, p] : st.careers.positions)
+            if (p.holder == "wren")
+                p.holder.clear();
+        expect(s.restore(st), "Wren's shop shut");
+    }
+    for (int i = 0; i < 5; ++i)
+        w.tick(1);
+    expect(s.resident("cole")->task == "trade" && s.resident("dulse")->task == "trade", "the barrows kept");
+    // Every household's runner, sent for Wren's food with her shop shut: to the nearest barrow with it.
+    std::set<std::string> households;
+    for (const auto& [id, life] : s.state().residents)
+        if (const auto* st = s.statusOf(id))
+            households.insert(st->household);
+    int sent = 0;
+    for (const auto& h : households)
+    {
+        const auto* to = w.runnerShop(h, wrenTill);
+        expect(to && "till:" + to->id == coleTill, "a runner to the nearest open shop with its food, not " +
+                                                       (to ? "till:" + to->id : std::string("none")) + ": " + h);
+        ++sent;
+    }
+    expect(sent >= 8, "households' runners: " + std::to_string(sent));
     fs::remove_all(root);
 }
 
@@ -1549,6 +1852,37 @@ std::vector<StreetCrash> streetRuns()
                             w.tick(1);
                         expect(Society::stock(*w.society().account("linden"), "bread") <= bread + given, "dole: no second dole that Restday");
                     }});
+    // The dole given, its hours over, then the crash before the next checkpoint: the bread and the mark are lost with it,
+    // and on the restart (still that Restday, past the dole's hours) the household is given it then, once.
+    runs.push_back({"dolelate",
+                    [](game::Game& g, Client& c) {
+                        auto& w = g.world();
+                        auto* me = w.entity(c.entityId);
+                        me->cellId = "barracks";
+                        me->position = {5.5, 5.5};
+                        onTo(w, calendar::Restday, Society::ServiceEnd + .2);
+                        expect(w.society().onDole("linden"), "dolelate: given");
+                        w.setTimeOfDay(Society::ServiceEnd + 2.5);
+                        for (int i = 0; i < 30; ++i)
+                            w.tick(1);
+                        aPenny(g, c);
+                    },
+                    [](game::Game& g, const json::Value&) {
+                        auto& w = g.world();
+                        const double hod = (w.calendarDays() - std::floor(w.calendarDays())) * 24;
+                        expect(calendar::weekdayOf(w.calendarDays()) == calendar::Restday && hod >= Society::ServiceEnd + 2,
+                               "dolelate: restarted that Restday, past the dole's hours");
+                        expect(!w.society().onDole("linden"), "dolelate: the crash took the dole");
+                        const auto bread = Society::stock(*w.society().account("linden"), "bread");
+                        for (int i = 0; i < 40; ++i)
+                            w.tick(1);
+                        expect(w.society().onDole("linden"), "dolelate: given the dole again that Restday");
+                        const auto given = Society::stock(*w.society().account("linden"), "bread") - bread;
+                        expect(given > 0, "dolelate: its bread: " + std::to_string(given));
+                        for (int i = 0; i < 40; ++i)
+                            w.tick(1);
+                        expect(Society::stock(*w.society().account("linden"), "bread") <= bread + given, "dolelate: no second dole");
+                    }});
     // A player's help lifts a beggar's household (its band's lift and the fame's week journalled with the gift).
     runs.push_back({"lift",
                     [](game::Game& g, Client& c) {
@@ -1750,6 +2084,7 @@ int main(int argc, char** argv)
             {"failingOnceARun", failingOnceARun},
             {"runnerGivingUpLate", runnerGivingUpLate},
             {"guardsNeverThieve", guardsNeverThieve},
+            {"theWatchInTheBands", theWatchInTheBands},
             {"theDole", theDole},
             {"liftsAndTheirCap", liftsAndTheirCap},
             {"shortByBand", shortByBand},
@@ -1763,6 +2098,9 @@ int main(int argc, char** argv)
             {"restdayDole", restdayDole},
             {"doleQueue", doleQueue},
             {"roughSleepers", roughSleepers},
+            {"streetOnRaisedGround", streetOnRaisedGround},
+            {"theWatchOffTheStreet", theWatchOffTheStreet},
+            {"runnersToTheNearest", runnersToTheNearest},
             {"householdsBuyTheirWares", householdsBuyTheirWares},
             {"standingStillInTheShop", standingStillInTheShop},
             {"streetThroughACrash", streetThroughACrash},
@@ -1782,7 +2120,7 @@ int main(int argc, char** argv)
         std::cerr << "FAILED after " << checks << " checks: " << e.what() << "\n";
         for (const auto& root : madeRoots())
             fs::remove_all(root);
-        for (const auto* name : {"dole", "lift", "business", "sales"})
+        for (const auto* name : {"dole", "dolelate", "lift", "business", "sales"})
             cleanSave(crashSave(name));
         return 1;
     }

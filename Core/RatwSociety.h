@@ -1066,6 +1066,9 @@ class Society
     std::string honestyOf(const std::string& id) const;
     // A household's members (the day's), its band and its market; null for none.
     const std::vector<std::string>* membersOf(const std::string& household) const;
+    // Whether one of a household's members is of the Watch (ResidentSpec::ofTheWatch): such a household never takes the
+    // dole, and the bands keep it comfortable or better (doc 79, 10).
+    bool watchHousehold(const std::string& household) const;
     // A household's staple food today ("" for none): what its errand-runner goes to a shop for.
     std::string foodOf(const std::string& household) const;
     // Whether a household was given the Restday dole on `day` (10.2).

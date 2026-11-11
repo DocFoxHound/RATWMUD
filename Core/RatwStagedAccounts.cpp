@@ -473,9 +473,14 @@ void Society::stagedBands(std::int64_t day, bool now)
     };
     ClassPass pass;
     std::set<std::string> posted;
+    // An earner: a post that pays, or one of the Watch (a guard by its post or by what it was written as: DEV's patrol
+    // guards placed with no work spot load with no post), whom its town pays, not the market (doc 79, 10).
     const auto earner = [&](const std::string& id) {
         const auto* post = jobOf(id);
-        return post && !postClass(*post, &pass).empty();
+        if (post && !postClass(*post, &pass).empty())
+            return true;
+        const auto* s = spec(id);
+        return s && s->ofTheWatch();
     };
     for (const auto& [id, life] : state_.residents)
         if (!dead_.count(id) && earner(id))
@@ -576,11 +581,13 @@ void Society::stagedBands(std::int64_t day, bool now)
         if (homeless)
             c.implied = status::Destitute;
         // The guarantees, in their order (6.3).
-        bool beggar = false, house = false;
+        bool beggar = false, house = false, watch = false;
         for (const auto& m : members)
         {
             beggar |= category(m) == "beggar";
             house |= houseKin.count(m) > 0;
+            if (const auto* s = spec(m))
+                watch |= s->ofTheWatch();
         }
         if (const auto o = st.overrides.find(key); o != st.overrides.end() && o->second.until >= day)
             c.fixed = std::clamp(o->second.band, 0, status::Bands - 1), c.overridden = true;
@@ -592,6 +599,15 @@ void Society::stagedBands(std::int64_t day, bool now)
             c.atMost = status::Poor;
         else if ((district == "heights" || district == "estate") && !servantsOnly)
             c.atLeast = status::Comfortable;
+        // A household with one of the Watch in it is paid by its town (doc 79, 10: the Watch stays as it is): never poor
+        // or destitute; only the DM's override sets it lower (and even then it never begs, sleeps rough or takes the dole).
+        if (watch && !c.overridden)
+        {
+            if (c.fixed >= 0 && c.fixed < status::Comfortable)
+                c.fixed = -1;
+            if (c.fixed < 0)
+                c.atLeast = std::max(c.atLeast, int(status::Comfortable)), c.atMost = std::max(c.atMost, int(status::Comfortable));
+        }
         if (const auto b = st.bands.find(key); b != st.bands.end())
         {
             c.previous = b->second.band;

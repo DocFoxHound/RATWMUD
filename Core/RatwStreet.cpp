@@ -11,6 +11,10 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 namespace ratw
 {
@@ -440,7 +444,7 @@ std::string Society::businessOf(const std::string& keeper) const
 int Society::giveDole(const std::string& household, std::int64_t day)
 {
     const auto h = stagedHomes_.find(household);
-    if (h == stagedHomes_.end() || h->second.band > status::Poor)
+    if (h == stagedHomes_.end() || h->second.band > status::Poor || watchHousehold(household))
         return 0;
     if (const auto had = state_.staged.dole.find(household); had != state_.staged.dole.end() && had->second >= day)
         return 0;
@@ -584,6 +588,17 @@ const std::vector<std::string>* Society::membersOf(const std::string& household)
     return found == stagedHomes_.end() ? nullptr : &found->second.members;
 }
 
+bool Society::watchHousehold(const std::string& household) const
+{
+    const auto* members = membersOf(household);
+    if (!members)
+        return false;
+    for (const auto& id : *members)
+        if (const auto* r = spec(id); r && r->ofTheWatch())
+            return true;
+    return false;
+}
+
 std::string Society::foodOf(const std::string& household) const
 {
     const auto found = stagedHomes_.find(household);
@@ -684,7 +699,65 @@ bool warmTrade(const std::string& title)
             return true;
     return false;
 }
+std::string tileOf(const Spot& at)
+{
+    return at.cell + "|" + std::to_string(int(std::floor(at.x))) + "," + std::to_string(int(std::floor(at.y)));
+}
+// The tiles round a place, in the order a row fills them: the place, then outward ring by ring, along the row (x)
+// before across it; or, for a queue, along the row first (beside the front, then on).
+const std::vector<std::pair<int, int>>& besideOrder(bool line)
+{
+    static const auto row = [] {
+        std::vector<std::pair<int, int>> out;
+        for (int dy = -2; dy <= 2; ++dy)
+            for (int dx = -3; dx <= 3; ++dx)
+                out.push_back({dx, dy});
+        std::stable_sort(out.begin(), out.end(), [](const auto& a, const auto& b) {
+            const auto key = [](const std::pair<int, int>& o) {
+                const int ax = std::abs(o.first), ay = std::abs(o.second);
+                return std::make_tuple(std::max(ax, ay), ay, ax, o.first < 0, o.second < 0);
+            };
+            return key(a) < key(b);
+        });
+        return out;
+    }();
+    static const auto queue = [] {
+        std::vector<std::pair<int, int>> out{{0, 0}};
+        for (const int dy : {0, 1, -1, 2, -2})
+            for (int dx = 1; dx <= 6; ++dx)
+                out.push_back({dx, dy});
+        for (const int dy : {0, 1, -1, 2, -2})
+            for (int dx = 0; dx >= -3; --dx)
+                if (dx || dy)
+                    out.push_back({dx, dy});
+        return out;
+    }();
+    return line ? queue : row;
+}
 } // namespace
+
+Spot World::freeBeside(const Spot& at, std::set<std::string>& taken, bool line) const
+{
+    // (A row on one tile was the old fallback: passable() with no `from` asks about a step up from height 0, so on DEV's
+    // raised streets every tile beside a place looked blocked. Here each is asked from the place's own ground.)
+    const auto* c = cell(at.cell);
+    const bool loaded = c && c->loaded && c->tiles.size() == std::size_t(c->width) * std::size_t(c->height);
+    const Tile* ground = loaded ? c->tile(int(std::floor(at.x)), int(std::floor(at.y))) : nullptr;
+    for (const auto& [dx, dy] : besideOrder(line))
+    {
+        Spot here = at;
+        here.x += dx;
+        here.y += dy;
+        const auto key = tileOf(here);
+        if (taken.count(key))
+            continue;
+        if (loaded && (!standable(here.cell, {here.x, here.y}) || (ground && !passable(here.cell, {here.x, here.y}, ground))))
+            continue;
+        taken.insert(key);
+        return here;
+    }
+    return at;
+}
 
 const Society::TheftDay& World::theftPlan()
 {
@@ -772,13 +845,15 @@ std::string World::freeMember(const std::string& household) const
             const auto* e = entity(id);
             const auto* life = society_.resident(id);
             const auto* job = society_.jobOf(id);
+            const auto* r = society_.spec(id);
+            const bool watch = r && r->ofTheWatch();   // (One of the Watch with no post: still at its rounds.)
             if (!e || !life || e->dead || !e->npc || e->age < 10 || !e->leaderId.empty() || e->state == "following" || custodyOf(id) ||
                 drivers_.count(id) || seated_.count(id) || runners_.count(id) || doleTakers_.count(id) || beggars_.count(id) ||
-                inBattle(id) || bool(job) != posted)
+                inBattle(id) || (job || watch) != posted)
                 continue;
             if (life->task == "sleep" || life->task == "eat" || life->task == "companion" ||
-                (job && (life->task == job->title || life->task == "trade" || life->task == "patrol" || life->task == "watch" ||
-                         life->task == "preaching")))
+                ((job || watch) && ((job && life->task == job->title) || life->task == "trade" || life->task == "patrol" ||
+                                    life->task == "watch" || life->task == "preaching")))
                 continue;
             return id;
         }
@@ -796,35 +871,65 @@ bool openShop(const Society& society, const Position& p)
 }
 } // namespace
 
+const Position* World::runnerShop(const std::string& household, const std::string& till)
+{
+    // The household's own food shop while open (its keeper keeping it); that one shut, the open one of its market with
+    // the food on its shelf nearest the household's door, by the street (a shop's door on it, a stall's spot); null for
+    // none.
+    const auto* own = till.rfind("till:", 0) == 0 ? society_.position(till.substr(5)) : nullptr;
+    if (!own)
+        return nullptr;
+    if (openShop(society_, *own))
+        return own;
+    const auto food = society_.foodOf(household);
+    const auto market = society_.marketOf(till);
+    // (Where a place is in the world: an outdoor spot's own, an indoor one's door on the street.)
+    const auto onStreet = [&](const Spot& at, Vec2& out) {
+        const Spot* street = &at;
+        const auto* c = cell(at.cell);
+        if (c && !c->outdoors)
+            street = doorOut(at.cell), c = street ? cell(street->cell) : nullptr;
+        if (!c || !street)
+            return false;
+        out = {c->worldX + street->x, c->worldY + street->y};
+        return true;
+    };
+    Vec2 from;
+    bool known = false;
+    if (const auto* members = society_.membersOf(household))
+        for (const auto& id : *members)
+            if (const auto* life = society_.resident(id); life && !life->homeCell.empty() && !known)
+                if (const auto* home = cell(life->homeCell))
+                    known = onStreet({home->id, home->width / 2., home->height / 2.}, from);
+    if (!known)
+        known = onStreet(own->work, from);
+    const Position* p = nullptr;
+    double best = 0;
+    for (const auto& other : society_.positions())
+    {
+        if (other.role != "merchant" || other.id == own->id || !openShop(society_, other))
+            continue;
+        const auto* shelf = society_.account("till:" + other.id);
+        if (!shelf || food.empty() || Society::stock(*shelf, food) <= 0 || society_.marketOf("till:" + other.id) != market)
+            continue;
+        Vec2 there;
+        const double far = known && onStreet(other.work, there) ? apart(from, there) : 1e12;
+        if (!p || far < best || (far == best && other.id < p->id))
+            p = &other, best = far;
+    }
+    return p;
+}
+
 bool World::sendRunner(const std::string& household, std::string& till)
 {
-    // A household's errand-runner (6.6): a member free to go (no post at its hours first), to the counter of an open shop
-    // that sells its food (its own food shop, or, that one shut, another open one of its market with the food on its
-    // shelf: the nearest, the same cell's first), while that cell has fewer than RunnersACell and its market fewer than
-    // RunnersAMarket. `till` is set to the one it goes to.
-    const auto* own = till.rfind("till:", 0) == 0 ? society_.position(till.substr(5)) : nullptr;
-    if (!own || !tillWatched(till))
+    // A household's errand-runner (6.6): a member free to go (no post at its hours first), to the counter of the shop
+    // runnerShop names (its own food shop, or, that one shut, the nearest open one with its food), while that cell has
+    // fewer than RunnersACell and its market fewer than RunnersAMarket. `till` is set to the one it goes to.
+    if (till.rfind("till:", 0) != 0 || !tillWatched(till))
         return false;
-    const Position* p = openShop(society_, *own) ? own : nullptr;
+    const Position* p = runnerShop(household, till);
     if (!p)
-    {
-        const auto food = society_.foodOf(household);
-        const auto market = society_.marketOf(till);
-        std::uint64_t best = 0;
-        for (const auto& other : society_.positions())
-        {
-            if (other.role != "merchant" || other.id == own->id || !openShop(society_, other))
-                continue;
-            const auto* shelf = society_.account("till:" + other.id);
-            if (!shelf || food.empty() || Society::stock(*shelf, food) <= 0 || society_.marketOf("till:" + other.id) != market)
-                continue;
-            const std::uint64_t rank = (other.work.cell == own->work.cell ? 0 : 1ull << 62) + (status::hash(household + "|" + other.id) >> 2);
-            if (!p || rank < best)
-                p = &other, best = rank;
-        }
-        if (!p)
-            return false;
-    }
+        return false;
     Spot at = p->serve.cell.empty() ? p->work : p->serve;
     const auto held = society_.state().careers.positions.find(p->id);
     if (held != society_.state().careers.positions.end())
@@ -903,8 +1008,9 @@ void World::placeBeggars()
 {
     // Marketday and Restday, 8:00 to 18:00 (10.2): destitute adults without a post (never one of the Watch, posted or
     // not), not lifted, at their market's chapel steps, by its notice board, and before its shops' doors and stalls ("at
-    // the market"), at most beggarsACell at one place (10.2's "2 a cell": a place, BeggarApart tiles or more from the next
-    // in its cell, since a city cell is a quarter of a city); in a seeded order of the day, so who begs where changes, and
+    // the market"), at most beggarsACell at one place, each place BeggarApart tiles or more from the next in its cell (10.2's
+    // "2 a cell" made per place, since a DEV city cell is a quarter of the city: a change for the user's nod), side by
+    // side on tiles of their own; in a seeded order of the day, so who begs where changes, and
     // as many as the band mix makes (T7: more in hard times, few in a boom).
     beggars_.clear();
     beggarWhere_.clear();
@@ -916,6 +1022,7 @@ void World::placeBeggars()
     const auto day = std::to_string(std::int64_t(std::floor(calendarDays_)));
     const int most = std::max(0, society_.statusTable().beggarsACell);
     std::map<std::string, std::vector<std::pair<std::uint64_t, std::string>>> byMarket;
+    std::set<std::string> taken;                    // (The tiles the beggars stand on.)
     for (const auto& [id, life] : society_.state().residents)
     {
         const auto* s = society_.statusOf(id);
@@ -945,7 +1052,10 @@ void World::placeBeggars()
         };
         const auto room = [&] { return spots.size() * std::size_t(most) >= list.size(); };
         if (const auto* steps = chapelSteps(community))
+        {
             add(*steps, "at the chapel steps");
+            taken.insert(tileOf(*steps));           // (The door's mouth, where the priest hands out the dole: beside it.)
+        }
         if (const auto* board = boardSpot(community))
             add(*board, "at the market");
         else if (t && !t->market.empty())
@@ -967,11 +1077,7 @@ void World::placeBeggars()
         for (const auto& [spot, where] : spots)
             for (int k = 0; next < list.size() && k < most; ++k)
             {
-                Spot at = spot;
-                at.x += k % 2 ? 1 : 0;
-                at.y += k / 2;
-                if (!passable(at.cell, {at.x, at.y}))
-                    at = spot;
+                const Spot at = freeBeside(spot, taken);   // (Side by side, never two on one tile.)
                 beggars_[list[next].second] = at;
                 beggarWhere_[list[next].second] = where;
                 ++next;
@@ -1007,12 +1113,15 @@ void World::placeSleepers()
                 }
     const int most = std::max(1, society_.statusTable().beggarsACell);
     std::map<std::string, int> taken;
+    std::set<std::string> tiles;                    // (The tiles the sleepers lie on.)
     for (const auto& [id, life] : society_.state().residents)
     {
         const auto* s = society_.statusOf(id);
         const auto* e = entity(id);
+        const auto* r = society_.spec(id);
+        // (Never one of the Watch: its bunk at the Watch House is a communal home, but its town keeps it.)
         if (!s || s->band != status::Destitute || society_.liftedNow(id) || !e || e->dead || !e->npc || !e->leaderId.empty() ||
-            custodyOf(id) || (!life.homeCell.empty() && !Society::communalHome(life.homeCell)))
+            custodyOf(id) || (r && r->ofTheWatch()) || (!life.homeCell.empty() && !Society::communalHome(life.homeCell)))
             continue;
         if (status::lot(id + "|warm wall|" + std::to_string(night)) >= 1. / 3)
             continue;
@@ -1021,13 +1130,12 @@ void World::placeSleepers()
             places = found->second;
         const auto start = places.empty() ? std::size_t(0) : std::size_t(status::hash(id + "|warm") % places.size());
         Spot at;
-        int k = 0;
         for (std::size_t i = 0; i < places.size() && at.cell.empty(); ++i)
         {
             const auto& place = places[(start + i) % places.size()];
             auto& n = taken[place.cell + "|" + std::to_string(int(place.x)) + "," + std::to_string(int(place.y))];
             if (n < most)
-                at = place, k = n++;
+                at = place, ++n;
         }
         if (at.cell.empty())
         {
@@ -1036,17 +1144,9 @@ void World::placeSleepers()
             const auto* steps = chapelSteps(t && !t->market.empty() ? lawTown(t->market) : s->market);
             if (!steps)
                 continue;
-            auto& n = taken[steps->cell + "|chapel"];
-            at = *steps, k = n++;
+            at = *steps;
         }
-        // (Side by side, never on one tile: the k-th along the wall.)
-        Spot here = at;
-        here.x += k % 2 ? -(1 + k / 2) : k / 2;
-        if (!passable(here.cell, {here.x, here.y}))
-            here.y += 1;
-        if (!passable(here.cell, {here.x, here.y}))
-            here = at;
-        warmWall_[id] = here;
+        warmWall_[id] = freeBeside(at, tiles);       // (Side by side along the wall, never two on one tile.)
     }
 }
 
@@ -1103,9 +1203,15 @@ void World::tendDole(std::int64_t today, double hod)
     // its destitute and poor households at the chapel steps. With a player near the steps it is seen: one of each
     // household comes and waits in a queue (at most DoleQueue at once), and is handed it at the front; out of sight it is
     // given as it would be, raw into their wallets. Whoever is still unserved when the dole's hours end is given it then
-    // (the priest's helpers take the rest round). Once a Restday a household; never to a player.
-    const bool open = calendar::weekdayOf(calendarDays_) == calendar::Restday && hod >= Society::ServiceEnd && hod < Society::ServiceEnd + 2;
-    // Each hour: the priests at their chapels' steps, and the households of each community that opened its dole today.
+    // (the priest's helpers take the rest round); after a restart past the dole's hours on a Restday (a crash before the
+    // checkpoint took the bread given), the households unserved are given it then, once. Once a Restday a household;
+    // never to a player, nor to a household with one of the Watch in it.
+    const bool restday = calendar::weekdayOf(calendarDays_) == calendar::Restday;
+    const bool open = restday && hod >= Society::ServiceEnd && hod < Society::ServiceEnd + 2;
+    const bool after = restday && hod >= Society::ServiceEnd + 2;
+    const auto dayText = std::to_string(today);
+    // Each hour: the priests at their chapels' steps, and the households of each community that opened its dole today
+    // (after its hours, of each that this run never closed: its first hour after a restart).
     const auto hourKey = std::int64_t(std::floor(calendarDays_ * 24));
     if (doleListHour_ != hourKey)
     {
@@ -1113,21 +1219,30 @@ void World::tendDole(std::int64_t today, double hod)
         dolePriests_.clear();
         doleSteps_.clear();
         doleHomes_.clear();
+        doleLine_.clear();
+        std::set<std::string> late;                 // (Communities whose dole this run never closed, its hours gone.)
         for (const auto& p : society_.positions())
         {
-            if (!open)
+            if (!open && !after)
                 break;
             if (!Society::clergy(p.title))
                 continue;
             const auto community = lawTown(p.work.cell);
             const auto held = society_.state().careers.positions.find(p.id);
             const auto* priest = held == society_.state().careers.positions.end() ? nullptr : entity(held->second.holder);
-            if (community.empty() || doleSteps_.count(community) || !priest || priest->dead || !chapel(community).found)
+            if (community.empty() || doleSteps_.count(community) || late.count(community) || !priest || priest->dead ||
+                !chapel(community).found)
                 continue;
+            if (after)
+            {
+                if (!doleClosed_.count(community + "|" + dayText))
+                    late.insert(community), dolesGiven_.insert(community + "|" + dayText);
+                continue;
+            }
             const auto* at = chapelSteps(community);
             doleSteps_[community] = at ? *at : p.work;
             dolePriests_[held->second.holder] = doleSteps_[community];
-            dolesGiven_.insert(community + "|" + std::to_string(today));
+            dolesGiven_.insert(community + "|" + dayText);
         }
         for (const auto& [id, life] : society_.state().residents)
             if (const auto* s = society_.statusOf(id); s && s->band <= status::Poor)
@@ -1137,16 +1252,32 @@ void World::tendDole(std::int64_t today, double hod)
                 if (home.empty())
                     continue;
                 const auto community = lawTown(home);
-                if (dolesGiven_.count(community + "|" + std::to_string(today)))
+                if (dolesGiven_.count(community + "|" + dayText) && (open || late.count(community)) &&
+                    !society_.watchHousehold(s->household))
                     doleHomes_[community].insert(s->household);
             }
+        // The queue's places at each chapel: beside the priest along the steps, each a tile of its own (raised ground
+        // too), none where a beggar stands.
+        if (open)
+        {
+            std::set<std::string> taken;
+            for (const auto& [id, at] : beggars_)
+                taken.insert(tileOf(at));
+            for (const auto& [community, at] : doleSteps_)
+            {
+                taken.insert(tileOf(at));
+                auto& line = doleLine_[community];
+                for (int place = 0; place < DoleQueue; ++place)
+                    line.push_back(freeBeside(at, taken, true));
+            }
+        }
     }
     // Out of the dole's hours: what is left is given, once, and the queue goes home.
     if (!open)
     {
         doleTakers_.clear();
         for (const auto& [community, homes] : doleHomes_)
-            if (doleClosed_.insert(community + "|" + std::to_string(today)).second)
+            if (doleClosed_.insert(community + "|" + dayText).second)
                 for (const auto& h : homes)
                     society_.giveDole(h, today);
         if (dolesGiven_.size() > 1024)
@@ -1200,27 +1331,21 @@ void World::tendDole(std::int64_t today, double hod)
         std::sort(line.begin(), line.end(), [&](const std::string& a, const std::string& b) {
             return std::pair(doleTakers_.at(a).place, a) < std::pair(doleTakers_.at(b).place, b);
         });
-        const auto spotAt = [&](int place) {
-            Spot s = at;
-            s.x += 1 + place;
-            if (!passable(s.cell, {s.x, s.y}))
-                s.y += 1;
-            if (!passable(s.cell, {s.x, s.y}))
-                s = at;
-            return s;
-        };
+        const auto& places = doleLine_[community];
+        const auto spotAt = [&](int place) { return place >= 0 && std::size_t(place) < places.size() ? places[std::size_t(place)] : at; };
         int place = 0;
         for (const auto& id : line)
         {
             auto& t = doleTakers_.at(id);
             if (t.place != place)
-                t.place = place, t.at = spotAt(place), t.atFront = -1;
+                t.place = place, t.atFront = -1;
+            t.at = spotAt(place);                   // (The hour's places: a beggar may have come to stand where it was.)
             ++place;
         }
         std::vector<std::pair<std::uint64_t, std::string>> waiting;
         for (const auto& h : homes->second)
             if (!coming.count(h) && !society_.doleGiven(h, today))
-                waiting.push_back({status::hash(h + "|dole|" + std::to_string(today)), h});
+                waiting.push_back({status::hash(h + "|dole|" + dayText), h});
         std::sort(waiting.begin(), waiting.end());
         for (const auto& [rank, h] : waiting)
         {

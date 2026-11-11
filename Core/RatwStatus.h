@@ -70,7 +70,9 @@ struct Table
     // of its households' theft weights times the market's Times (theftTimes, hard .. boom), capped by the rule theftCap;
     // a thief is picked by its band's weight (a rich one with a sly honesty `slyRich`), times its honesty's (theftHonesty)
     // and twice if hungry. The dole (10.2): a day's food a head, in bread, for destitute and poor households at Restday's
-    // chapel. Beggars: at most beggarsACell in a cell.
+    // chapel. Beggars: at most beggarsACell at one place (the chapel steps, the notice board, a shop's door or a stall),
+    // places World::BeggarApart (8) tiles or more apart (so a city cell holds several); rough sleepers: at most
+    // beggarsACell by one warm wall. (The name is kept from "the most in a cell".)
     double theftBase = .03;
     std::array<double, 5> theftTimes{1.5, 1.2, 1, .85, .7};
     std::map<std::string, double> theftHonesty{{"frank", .2}, {"plain", 1}, {"guarded", 1.5}, {"sly", 3}};
