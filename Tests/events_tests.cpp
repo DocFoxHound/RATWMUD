@@ -607,7 +607,9 @@ void anEventPressesItsGoods()
     w.talkTown("e1", facts);
     expect(facts["world.event"] == "good_catch" && facts["world.event_words"] == "a good catch" && facts["world.event_when"] == "now",
            "talk knows it: " + facts["world.event"] + " " + facts["world.event_when"]);
-    expect(facts["world.times"] == "ordinary" && facts["world.times_cause"] == "a good catch", "and the times: " + facts["world.times_cause"]);
+    // (Ordinary times: no cause said for them, though the catch is the largest part of the score.)
+    const bool noCause = facts.count("world.times_cause") == 0;
+    expect(facts["world.times"] == "ordinary" && noCause, "and the times, with no cause");
     const auto* place = w.roadMarket("east");
     expect(place && w.eventCrowd(place->market), "a crowd at east's market place");
     std::map<std::string, std::string> west;
@@ -789,7 +791,9 @@ void theDMsNudgeAndHarvest()
     expect(count(events, "harvest called") == 1, "posted where its carts go");
     for (const auto& e : events)
         if (e.kind == "harvest called")
-            expect(e.target == "east" && e.detail.rfind("Blight in the fields: a poor harvest in the ", 0) == 0, "at east, in words: " + e.detail);
+            expect(e.target == "east" && e.detail.rfind("Blight in the fields: a poor season for ", 0) == 0 && e.detail.find(end->area) == std::string::npos &&
+                       e.detail.find('_') == std::string::npos,
+                   "at east, in the words of what its farms grow, never the area's id: " + e.detail);
     w.tick(.6);
     expect(count(w.takeEvents(), "harvest called") == 0, "once");
 }
@@ -800,7 +804,8 @@ void theDMsNudgeAndHarvest()
 void shipsInTheEvents()
 {
     rules = "rule \"eventRate\" 0\n";
-    auto f = harbour(true, true, resident("ef", "Fen Gill", "merchant", "fishmonger at the Fish Hall", 0, 4.5, 1, 6.5));
+    auto f = harbour(true, true, resident("ef", "Fen Gill", "merchant", "fishmonger at the Fish Hall", 0, 4.5, 1, 6.5) +
+                                     resident("ev", "Vera Lees", "merchant", "vintner at the Wine Vault", 0, 5.5, 1, 7.5));
     auto w = load(f);
     rules.clear();
     w.addPlayer("player-ada", "Ada");
@@ -854,6 +859,18 @@ void shipsInTheEvents()
     expect(e->subject == "ship:" + due[0].id && e->day == due[0].day && e->words == due[0].name + "'s rich cargo" &&
                e->notice.rfind("The " + due[0].name.substr(4) + " is due on ", 0) == 0,
            "it rides " + due[0].name + ": " + e->words + " / " + e->notice);
+    // (The repair: the kind's own rich goods first, where east deals in them, then the ship's everyday cargo.)
+    {
+        const auto* tp = soc.tradePoints().find("east");
+        std::vector<std::string> dealt;
+        for (const auto& [g, P] : market::data().eventKind("rich_cargo")->goods)
+            if (tp->sold.count(g) || tp->bought.count(g))
+                dealt.push_back(g);
+        expect(!dealt.empty(), "east deals in some of a rich cargo's goods");
+        for (std::size_t i = 0; i < dealt.size() && i < e->goods.size(); ++i)
+            expect(e->goods[i].first == dealt[i], "a rich cargo of its own rich goods first: " + e->goods[i].first);
+        expect(e->noticeOn.rfind("The " + due[0].name.substr(4) + " is in with a rich cargo: ", 0) == 0, "and its notice once she is in: " + e->noticeOn);
+    }
     const auto lost = w.addStagedEvent("east", "lost_ship", due[0].day, 0, problem);
     expect(!lost.empty() && w.stagedEvent(lost)->subject == "lost:" + due[1].id, "a lost ship: the next ship no event has yet: " + problem);
     // The rich cargo's ship docks: the event begins with it.
@@ -864,6 +881,8 @@ void shipsInTheEvents()
     dock(w, due[0]);
     w.tick(.6);
     expect(w.stagedEvent(rich)->status == "on" && count(w.takeEvents(), "event begins", rich) == 1, "it begins as its ship is in");
+    expect(w.stagedEvent(rich)->notice.rfind("The " + due[0].name.substr(4) + " is in with a rich cargo: ", 0) == 0 && w.stagedEvent(rich)->noticeOn.empty(),
+           "its notice says she is in, never still due: " + w.stagedEvent(rich)->notice);
     for (const auto& [g, target] : w.stagedEvent(rich)->goods)
         expect(target < 0 && soc.pressure("east", g) < 0, "its goods cheaper: " + g);
     // The lost ship's day.
@@ -873,6 +892,9 @@ void shipsInTheEvents()
     const auto* ship = shipById(w, due[1].id);
     expect(ship && ship->status == "storm" && ship->lost, "lost at sea, never in");
     expect(w.stagedEvent(lost)->status == "on", "its story on");
+    // (The repair: her loss a trouble of the sea, never a late wagon, and her name kept off the timetable.)
+    expect(!soc.board().troubles.empty() && soc.board().troubles.back().kind == "lost" && soc.board().lostShips.count(due[1].name),
+           "a lost ship's trouble, and her name remembered");
     expect(w.shipsNotice("east").find(due[1].name.substr(4) + " is lost at sea.") != std::string::npos, "the timetable says so: " + w.shipsNotice("east"));
     std::map<std::string, std::string> facts;
     w.talkTown("d1", facts);
@@ -902,7 +924,25 @@ void shipsInTheEvents()
     w.takeEvents();
     w.tick(.6);
     expect(w.stagedEvent(stormed)->status == "cancelled" && count(w.takeEvents(), "event cancelled", stormed) == 1, "called off: its ship never came");
+    expect(soc.board().troubles.back().kind == "storm", "a storm's trouble, its own");
     expect(soc.realBalanced(), "real money balanced");
+    // A lost ship never sails again (the repair: her name was only kept while she was on the timetable): ninety days of
+    // mornings at a ship most days, and none of her name is posted; through a save, too.
+    setRule(w, "shipsPerWeek", 6);
+    std::set<std::string> names;
+    for (int day = 0; day < 90; ++day)
+    {
+        nextMorning(w);
+        for (const auto& s : soc.board().ships)
+            if (s.port == "east" && s.status == "due")
+            {
+                names.insert(s.name);
+                expect(s.name != due[1].name, "never of the lost ship's name: " + s.name);
+            }
+    }
+    expect(names.size() >= 6 && soc.board().lostShips.count(due[1].name), "other ships sail: " + std::to_string(names.size()));
+    const auto back = market::decode(parsed(json::dump(market::encode(soc.board()))));
+    expect(back.lostShips.size() == soc.board().lostShips.size() && back.lostShips.count(due[1].name), "the lost ships' names through the wire");
 }
 
 // A lame ox delaying a farm's cart (8.4): the cart kept home that day, its goods a little dearer, its words naming the farm.
@@ -939,7 +979,8 @@ void aLameOx()
     const auto id = w.addStagedEvent("east", "lame_ox", today(w) + 1, 5, problem);
     expect(!id.empty(), "a lame ox: " + problem);
     const auto* e = w.stagedEvent(id);
-    expect(e->subject == "farm:grain_farm_1" && e->words.rfind("a lame ox on the cart from ", 0) == 0 && e->words.size() > 26,
+    expect(e->subject == "farm:grain_farm_1" && e->words.rfind("the lame ox that held up the ", 0) == 0 && e->words.size() > 34 &&
+               e->words.size() > 5 && e->words.compare(e->words.size() - 5, 5, " cart") == 0,
            "its farm's cart: " + e->words);
     std::map<std::string, double> before;
     for (const auto& [g, target] : e->goods)
@@ -1243,7 +1284,7 @@ void noticesAndTheCrier()
     {
         g.tick(1);
         for (const auto& ev : ash.events)
-            heard = heard || json::dump(ev).find("A House wedding on ") != std::string::npos;
+            heard = heard || json::dump(ev).find("A House wedding today, and the stewards buying ") != std::string::npos;
     }
     expect(w.stagedEvent(id)->status == "on", "it began");
     expect(heard, "the crier called it at the square");
@@ -1254,6 +1295,291 @@ void noticesAndTheCrier()
     expect(w.stagedEvent(id)->status == "over" && !g.documents().find("event-" + id), "over, its notice down");
     expect(!g.documents().find("nudge-east"), "the lapsed nudge's notice down");
     g.disconnect(&ash);
+    std::filesystem::remove_all(root);
+}
+
+// ---------------------------------------------------------------------------------------------------- Phase 7 repaired
+
+// To a day of the calendar (its morning), as a restart there would find it.
+void toDay(World& w, std::int64_t day)
+{
+    auto saved = w.save();
+    saved.calendarDays = double(day) + .2;
+    expect(w.restore(saved).ok, "to day " + std::to_string(day));
+    w.tick(.6);
+}
+
+// The first day on or after `from` in a season (0 spring .. 3 winter).
+std::int64_t dayIn(std::int64_t from, int season)
+{
+    for (auto day = from; day < from + 400; ++day)
+        if (market::seasonBit(double(day) + .5) == 1 << season)
+            return day + 3;
+    expect(false, "a day of that season");
+    return from;
+}
+
+// The Phase 7 check's findings, each fixed: the season (events and causes), the needs the Dungeon Master's events are held
+// to, the ships' troubles in their own words, an event over unseen taking its notice down, the rule at 0 calling off the
+// seeded events still to come, a market at the Board's bound, ids a damaged save can't make twice, a nudge's expiry held
+// to the calendar, and the event words read in a sentence.
+void phase7Repaired()
+{
+    rules = "rule \"eventRate\" 0\n";
+    auto f = strip();
+    auto w = load(f);
+    rules.clear();
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    const auto& d = market::data();
+    std::string problem;
+    // Every event's and cause's words read as a noun phrase: after "since", after a colon, after "talk of" (no verb
+    // standing alone: "the drovers in", "a brewing too many", "the buying ahead").
+    for (const auto& k : d.events)
+        for (const char* bad : {"the drovers in ", "a brewing too many", "buying ahead", "a lame ox on the cart", "mill wheel stopped", "salt pans flooded"})
+            expect(k.words.find(bad) == std::string::npos, "a noun phrase: " + k.words);
+    expect(d.eventKind("house_wedding")->cry.find("wine for the stewards") == std::string::npos &&
+               d.eventKind("house_wedding")->cry.find("{goods}") != std::string::npos && d.eventKind("house_wedding")->cry.find("{day}") == std::string::npos,
+           "the wedding's cry: its own goods, today: " + d.eventKind("house_wedding")->cry);
+    // The seasons: no good catch or orchard blight in winter, by the scheduler or the DM; the rest go on.
+    expect(!(d.eventKind("good_catch")->seasons & 8) && !(d.eventKind("orchard_blight")->seasons & 8) && d.eventKind("mill_stopped")->seasons == 15,
+           "the list's seasons");
+    toDay(w, dayIn(today(w), 3));
+    expect(market::seasonBit(w.calendarDays()) == 8, "winter");
+    expect(w.addStagedEvent("east", "good_catch", today(w) + 1, 9, problem).empty() && problem.find("season") != std::string::npos,
+           "no good catch in winter: " + problem);
+    expect(w.addStagedEvent("east", "orchard_blight", today(w) + 1, 9, problem).empty(), "nor blight in the orchards");
+    expect(!w.addStagedEvent("east", "mill_stopped", today(w) + 1, 9, problem).empty(), "a mill wheel breaks in any season: " + problem);
+    setRule(w, "eventRate", 300);
+    std::set<std::string> kinds;
+    for (int day = 0; day < 28 && market::seasonBit(w.calendarDays() + 7) == 8; ++day)
+    {
+        nextMorning(w);
+        for (const auto& e : soc.board().events)
+            if (market::seasonBit(double(e.day) + .5) == 8)
+                kinds.insert(e.kind);
+    }
+    expect(!kinds.empty() && !kinds.count("good_catch") && !kinds.count("orchard_blight"), "the winter's weeks roll neither: " + std::to_string(kinds.size()));
+    setRule(w, "eventRate", 0);
+    // The causes: "the hard winter" never in summer, "the rich harvest" never in spring; the hard winter in winter.
+    const auto causesIn = [&](int season) {
+        toDay(w, dayIn(today(w), season));
+        std::set<std::string> seen;
+        for (int i = 0; i < 40; ++i)
+        {
+            soc.setProsperity(i % 2 ? 60 : -60);
+            seen.insert(soc.board().sliderCause.words);
+            if (i % 8 == 7)
+                nextMorning(w);
+        }
+        soc.setProsperity(0, true);
+        return seen;
+    };
+    const auto summer = causesIn(1);
+    expect(!summer.count("the hard winter") && summer.count("the rich harvest") && summer.size() >= 4, "summer's causes: no hard winter");
+    const auto winter = causesIn(3);
+    expect(winter.count("the hard winter") && !winter.count("the rich harvest"), "winter's: the hard winter, no rich harvest");
+    // The needs, for the DM as for the scheduler: a House wedding at the realm's largest market only; the festival's
+    // buying only the day before a festival.
+    const std::string city = "east", other = "west";   // (The strip's city: east, its largest market.)
+    expect(w.addStagedEvent(other, "house_wedding", today(w) + 1, 10, problem).empty() && !problem.empty(), "no House wedding but in the city: " + problem);
+    std::int64_t festival = -1;
+    for (auto day = today(w) + 1; day < today(w) + 14 && festival < 0; ++day)
+        if (calendar::festivalDay(double(day) + .5))
+            festival = day;
+    for (auto day = today(w); day <= (today(w) / 7 + 2) * 7 - 1; ++day)
+        if (day + 1 != festival)
+            expect(w.addStagedEvent(city, "festival_buying", day, 9, problem).empty(), "no festival's buying the day before none: " + std::to_string(day));
+    // The ships' troubles in their own words, never the wagons'.
+    {
+        auto& b = soc.stagedBoard();
+        b.troubles = {{w.calendarDays(), "east", "storm"}};
+        soc.setTimesShift({{"east", -5}});
+        expect(soc.timesCause("east") == "the storms keeping the ships out", "a storm's: " + soc.timesCause("east"));
+        b.troubles = {{w.calendarDays(), "east", "lost"}};
+        expect(soc.timesCause("east") == "the ship lost at sea", "a lost ship's: " + soc.timesCause("east"));
+        const auto back = market::decode(parsed(json::dump(market::encode(soc.board()))));
+        expect(back.troubles.size() == 1 && back.troubles[0].kind == "lost", "kept through the wire");
+        b.troubles.clear();
+        soc.setTimesShift({});
+    }
+    // An event posted ahead whose days pass in a jump of the calendar: over, and its notice taken down (a record).
+    {
+        const auto id = w.addStagedEvent(city, "house_wedding", today(w) + 2, 10, problem);
+        expect(!id.empty() && w.stagedEvent(id)->announced, "a wedding posted ahead: " + problem);
+        w.takeEvents();
+        expect(w.advanceCalendar(6).ok, "six days on at once");
+        w.tick(.6);
+        expect(w.stagedEvent(id) == nullptr || w.stagedEvent(id)->status == "over", "over unseen");
+        expect(count(w.takeEvents(), "event over", id) == 1, "and its notice taken down");
+    }
+    // The rule at 0: the seeded events still to come called off (their notices down), the DM's kept.
+    {
+        setRule(w, "eventRate", 300);
+        nextMorning(w);
+        const auto dm = w.addStagedEvent("west", "mill_stopped", today(w) + 3, 9, problem);
+        const auto seeded = std::count_if(soc.board().events.begin(), soc.board().events.end(),
+                                          [](const auto& e) { return e.by == "seeded" && e.status == "due"; });
+        expect(!dm.empty() && seeded > 0, "seeded events due, and the DM's");
+        setRule(w, "eventRate", 0);
+        w.takeEvents();
+        w.tick(.6);
+        for (const auto& e : soc.board().events)
+            expect(e.status != "due" || e.by == "dm", "the seeded ones called off: " + e.id);
+        expect(w.stagedEvent(dm)->status == "due" && count(w.takeEvents(), "event cancelled") >= int(seeded), "the DM's kept");
+        w.cancelStagedEvent(dm);
+    }
+    // A market at the Board's bound: the oldest over make room; with none over, the week is not marked rolled, and it is
+    // rolled the morning after room is made.
+    {
+        setRule(w, "eventRate", 300);
+        nextMorning(w);
+        auto& b = soc.stagedBoard();
+        b.events.erase(std::remove_if(b.events.begin(), b.events.end(), [](const auto& e) { return e.market == "east"; }), b.events.end());
+        b.eventsThrough.erase("east");
+        const auto fake = [&](const std::string& status, std::int64_t day) {
+            market::StagedEvent e;
+            e.id = "e" + std::to_string(b.nextEvent++);
+            e.market = "east";
+            e.kind = "mill_stopped";
+            e.day = day;
+            e.days = 1;
+            e.words = "the broken mill wheel";
+            e.status = status;
+            e.by = "dm";
+            return e;
+        };
+        for (std::size_t i = 0; i < market::EventsAMarket; ++i)
+            b.events.push_back(fake("over", today(w)));
+        nextMorning(w);
+        const auto rolled = std::count_if(b.events.begin(), b.events.end(), [&](const auto& e) { return e.market == "east" && e.by == "seeded"; });
+        expect(rolled > 0 && eventsAt(w, "east").size() <= market::EventsAMarket, "the oldest over made room: " + std::to_string(rolled));
+        b.events.erase(std::remove_if(b.events.begin(), b.events.end(), [](const auto& e) { return e.market == "east"; }), b.events.end());
+        b.eventsThrough.erase("east");
+        for (std::size_t i = 0; i < market::EventsAMarket; ++i)
+            b.events.push_back(fake("due", today(w) + 9));
+        nextMorning(w);
+        const auto week = today(w) / 7;
+        expect(!b.eventsThrough.count("east") || b.eventsThrough.at("east") < week, "a week cut short is not marked rolled");
+        for (auto& e : b.events)
+            if (e.market == "east" && e.by == "dm")
+                e.status = "cancelled";
+        nextMorning(w);
+        expect(b.eventsThrough.count("east") && b.eventsThrough.at("east") == today(w) / 7 + 1 &&
+                   std::any_of(b.events.begin(), b.events.end(), [&](const auto& e) { return e.market == "east" && e.by == "seeded" && e.status == "due"; }),
+               "rolled once there is room");
+        setRule(w, "eventRate", 0);
+    }
+    // Ids a damaged save can't make twice: one the game never gives is dropped, and the next id is above every one.
+    {
+        auto j = market::encode(soc.board());
+        auto board = json::Value::object();
+        for (const auto& [k, v] : j.fields())
+            if (k != "events" && k != "nextEvent" && k != "nudges")
+                board.add(k, v);
+        board.add("events", parsed(R"([
+            {"id": "e1000000000000000", "market": "east", "kind": "good_catch", "day": 1, "words": "a good catch"},
+            {"id": "e12345678901234567", "market": "east", "kind": "good_catch", "day": 1, "words": "a good catch"},
+            {"id": "e05", "market": "east", "kind": "good_catch", "day": 1, "words": "a good catch"},
+            {"id": "x7", "market": "east", "kind": "good_catch", "day": 1, "words": "a good catch"},
+            {"id": "e8", "market": "east", "kind": "good_catch", "day": 1, "words": "a good catch",
+             "goods": [["fish", -0.1], ["shellfish", -0.1], ["salt_fish", -0.1], ["smoked_fish", -0.1], ["ale", 0.1], ["mead", 0.1]]}])"));
+        board.add("nextEvent", 1e15);
+        auto nudges = json::Value::object();
+        auto n = json::Value::object();
+        n.add("points", 100);
+        n.add("until", 1e12);
+        nudges.add("east", n);
+        board.add("nudges", nudges);
+        const auto b = market::decode(board);
+        expect(b.events.size() == 2 && b.nextEvent == 1000000000000001LL, "only the game's ids kept, the next above them: " + std::to_string(b.nextEvent));
+        for (const auto& e : b.events)
+            expect(e.goods.size() <= market::EventGoodsMost, "four goods at most, as made: " + e.id);
+        // A nudge's "until" of 10^12 held to a year from now at the restore: it lapses.
+        auto saved = w.save();
+        saved.society.board = b;
+        auto again = strip();
+        auto w2 = load(again);
+        expect(w2.restore(saved).ok, "a damaged save loads");
+        const auto& nudge = w2.society().board().nudges;
+        expect(nudge.count("east") && nudge.at("east").until <= w2.calendarDays() + 366.5, "its nudge held to the calendar");
+        expect(w2.advanceCalendar(370).ok, "a year on");
+        w2.tick(.6);
+        expect(!w2.society().board().nudges.count("east") && w2.society().timesScore("east") < 100, "and the nudge lapsed");
+    }
+    expect(soc.realBalanced(), "real money balanced");
+}
+
+// The repair on the boards (through a game): a harvest override's notice down when it lapses; a rich cargo's notice says
+// she is in once she is; a festival's crier never kept from the festival by a staged cry.
+void theRepairOnTheBoards()
+{
+    named = {{3, "fs_grain_long_granary"}};
+    rules = "rule \"eventRate\" 0\n";
+    auto probe = strip("EE.G...WW");
+    auto p = load(probe);
+    std::string label;
+    for (const auto& farm : p.society().farms())
+        if (farm.def->id == "grain_farm_1")
+            label = p.society().farmLabel(farm, 0);
+    auto f = strip("EE.G...WW", resident("fk", "Bran Long", "civilian", label, 0, 9.5, 3, 9.5) +
+                                    resident("ik", "Ida Kell", "merchant", "keeping the inn at The Lantern", 0, 5.5, 1, 3.5));
+    rules.clear();
+    named.clear();
+    const auto root = onDisk(f, "events-repair");
+    {
+        game::Game g(optionsOn(root));
+        std::string problem;
+        expect(g.start(problem), "a game starts: " + problem);
+        auto& w = g.world();
+        w.tick(.6);
+        w.roads().camps.clear();
+        const auto end = std::find_if(w.cartEnds().begin(), w.cartEnds().end(), [](const auto& e) { return e.farmId == "grain_farm_1"; });
+        expect(end != w.cartEnds().end(), "the farm's cart end");
+        expect(w.overrideHarvest(end->area, 2, 1.5, ""), "a good harvest called, a day and a half");
+        for (int t = 0; t < 20; ++t)
+            g.tick(.1);
+        const auto noticeId = "harvest-" + end->area + "-east";
+        const auto* n = g.documents().find(noticeId);
+        expect(n && n->text.rfind("A good season for ", 0) == 0 && n->expires <= w.society().board().harvestOverride.at(end->area).until + 1e-9,
+               "its notice, down when it lapses: " + (n ? n->text : std::string("none")));
+        expect(w.advanceCalendar(2).ok, "two days on");
+        for (int t = 0; t < 40; ++t)
+            g.tick(.2);
+        expect(!g.documents().find(noticeId), "the lapsed harvest's notice down");
+        // A festival's crier comes first: a staged cry holding the crier at the square gives way at 20:00.
+        Client ash;
+        enterAt(g, ash, 85, "ash", "east");
+        std::int64_t festival = -1;
+        for (auto day = std::int64_t(std::floor(w.calendarDays())) + 1; festival < 0 && day < 500; ++day)
+            if (calendar::festivalDay(double(day) + .5) && (market::seasonBit(double(day) + .5) & 7))
+                festival = day;
+        expect(festival > 0, "a festival in spring, summer or autumn");
+        expect(w.advanceCalendar(double(festival) - std::floor(w.calendarDays())).ok && w.setTimeOfDay(19.8).ok, "the festival's evening");
+        const auto* square = w.marketSpot("east");
+        expect(square != nullptr, "east has a square");
+        auto* me = w.entity(ash.entityId);
+        me->cellId = square->cell;
+        me->position = {square->x + 6.5, square->y + 6.5};
+        const auto id = w.addStagedEvent("east", "good_catch", std::int64_t(std::floor(w.calendarDays())), 19.85, problem);
+        expect(!id.empty(), "a good catch at dusk: " + problem);
+        for (int t = 0; t < 120 && w.stagedEvent(id)->status != "on"; ++t)
+            g.tick(1);
+        for (int t = 0; t < 5; ++t)
+            g.tick(1);
+        expect(w.stagedEvent(id)->status == "on", "its cry waiting for the crier");
+        expect(w.setTimeOfDay(20.05).ok, "the festival crier's hour");
+        ash.events.clear();
+        for (int t = 0; t < 600; ++t)
+            g.tick(1);
+        bool festive = false;
+        for (const auto& ev : ash.events)
+            for (const char* opening : {"the town remembers its own", "and the deeds of the season", "would have you know who did it proud"})
+                festive = festive || json::dump(ev).find(opening) != std::string::npos;
+        expect(festive, "the festival's crier called at the square");
+        g.disconnect(&ash);
+    }
     std::filesystem::remove_all(root);
 }
 
@@ -1732,7 +2058,10 @@ int main(int argc, char** argv)
             {"moneyStaysReal", moneyStaysReal},
             {"savesAndOlderSaves", savesAndOlderSaves},
             {"noticesAndTheCrier", noticesAndTheCrier},
-            {"eventsThroughACrash", eventsThroughACrash}};
+            {"eventsThroughACrash", eventsThroughACrash},
+            // Phase 7 repaired.
+            {"phase7Repaired", phase7Repaired},
+            {"theRepairOnTheBoards", theRepairOnTheBoards}};
         if (argc == 3 && std::string(argv[1]) == "--only")
         {
             for (const auto& [name, test] : tests)

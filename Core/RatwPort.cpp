@@ -335,12 +335,23 @@ void World::rollShips(const Port& port, std::int64_t week, std::int64_t today)
         s.sails = 17 + double(pick / 7 % 6) * .5;               // 17:00 to 19:30: "this evening".
         if (!names.empty())
         {
+            // (The seeded name, else the next not on the port's timetable and never lost at sea; with every name lost
+            // within the year, the one lost longest ago: a lost ship never sails again while she is remembered.)
             const auto taken = [&](const std::string& name) {
                 return std::any_of(b.ships.begin(), b.ships.end(), [&](const market::Ship& o) { return o.port == port.market && o.name == name; });
             };
-            auto at = std::size_t(pick / 31 % names.size());
-            for (std::size_t tries = 0; tries < names.size() && taken(names[at]); ++tries)
-                at = (at + 1) % names.size();
+            const auto lostOn = [&](const std::string& name) {
+                const auto found = b.lostShips.find(name);
+                return found == b.lostShips.end() ? -1. : found->second;
+            };
+            const auto first = std::size_t(pick / 31 % names.size());
+            auto at = first;
+            for (std::size_t k = 0; k < names.size(); ++k)
+            {
+                const auto i = (first + k) % names.size();
+                if (std::make_pair(taken(names[i]), lostOn(names[i])) < std::make_pair(taken(names[at]), lostOn(names[at])))
+                    at = i;
+            }
             s.name = names[at];
         }
         if (s.name.empty())
@@ -386,6 +397,8 @@ void World::portMorning(std::int64_t today)
     // next (so the next seven days are always committed); the notice posted again.
     auto& b = society_.stagedBoard();
     b.ships.erase(std::remove_if(b.ships.begin(), b.ships.end(), [&](const market::Ship& s) { return stale(s, today); }), b.ships.end());
+    for (auto it = b.lostShips.begin(); it != b.lostShips.end();)
+        it = double(today) - it->second > market::LostShipDays ? b.lostShips.erase(it) : std::next(it);
     rollPorts(today);
     shipsPosted_.clear();                           // (Each morning's timetable is posted afresh: tendPort's.)
     shipsChanged_ = true;
@@ -414,7 +427,7 @@ void World::shipStormbound(market::Ship& s)
     shipsChanged_ = true;
     for (const auto& [g, n] : s.brings)
         society_.setPressure(s.port, g, society_.pressure(s.port, g) + StormNudge, "ship late");
-    society_.stagedBoard().troubles.push_back({calendarDays_, s.port, "late"});
+    society_.stagedBoard().troubles.push_back({calendarDays_, s.port, "storm"});   // (Its Times words: "the storms keeping the ships out".)
     const auto* p = port(s.port);
     recordEvent({"ship stormbound", s.id, s.port, p ? p->cell : std::string(), 0, 0, s.name, int(s.brings.size()), 0,
                  capital(s.name) + " is stormbound and will not come."});
@@ -438,7 +451,16 @@ void World::shipLost(market::Ship& s)
     shipsChanged_ = true;
     for (const auto& [g, n] : s.brings)
         society_.setPressure(s.port, g, society_.pressure(s.port, g) + StormNudge, "ship late");
-    society_.stagedBoard().troubles.push_back({calendarDays_, s.port, "late"});
+    auto& b = society_.stagedBoard();
+    b.troubles.push_back({calendarDays_, s.port, "lost"});   // (Its Times words: "the ship lost at sea", never a wagon's.)
+    // (Her name kept off the timetables a year: rollShips. At the bound, the one lost longest ago is forgotten.)
+    if (market::shipNameFits(s.name))
+    {
+        if (!b.lostShips.count(s.name) && b.lostShips.size() >= market::LostShipsKept)
+            b.lostShips.erase(std::min_element(b.lostShips.begin(), b.lostShips.end(),
+                                               [](const auto& x, const auto& y) { return x.second < y.second; }));
+        b.lostShips[s.name] = calendarDays_;
+    }
     const auto* p = port(s.port);
     recordEvent({"ship lost", s.id, s.port, p ? p->cell : std::string(), 0, 0, s.name, int(s.brings.size()), 0,
                  capital(s.name) + " is lost at sea with all her cargo."});

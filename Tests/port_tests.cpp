@@ -934,8 +934,8 @@ void aStormboundShip()
     if (!second.empty())
         expect(soc.pressure("east", second) <= market::PressureMost + 1e-9 && soc.pressure("east", second) > .47,
                second + " dearer but inside P's range: " + std::to_string(soc.pressure("east", second)));
-    expect(soc.board().troubles.size() == troubles + 1 && soc.board().troubles.back().market == "east" && soc.board().troubles.back().kind == "late",
-           "a trouble for the market's Times");
+    expect(soc.board().troubles.size() == troubles + 1 && soc.board().troubles.back().market == "east" && soc.board().troubles.back().kind == "storm",
+           "a trouble for the market's Times (a storm's: Phase 7 repaired, never a late wagon's words)");
     const auto text = w.shipsNotice("east");
     // ("No ship this week" where the week it leaves bare is this one: noShipThisWeek has the rest.)
     expect(hasWord(text, s.name + " is stormbound and will not come.") && hasWord(text, "no ship this week.") == (s.day / 7 == today(w) / 7) &&
@@ -3192,6 +3192,50 @@ void aShipsNoticeTakenDownStaysDown()
     std::filesystem::remove_all(root);
 }
 
+// 16.5 (Phase 7 repaired): with staged events on (the rule's own 100; this suite runs at 0 to pin the port's own steps),
+// a port's events post with their cause: each one begun has its notice or words, presses its goods with the cause
+// "event", says its words as the Times' cause where they are the largest part, and the timetable still runs.
+void eventsPostWithTheirCause()
+{
+    auto f = harbour();
+    auto w = load(f);
+    auto spec = w.society().authored().economy;
+    spec.rules["eventRate"] = 100;
+    w.society().adoptEconomy(spec);
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    int begun = 0, docks = 0;
+    for (int day = 0; day < 21; ++day)
+    {
+        nextMorning(w);
+        for (int hour = 0; hour < 24; ++hour)
+        {
+            expect(w.setTimeOfDay(double(hour) + .5).ok, "through the day");
+            w.tick(.6);
+            for (const auto& e : w.takeEvents())
+            {
+                docks += e.kind == "ship docks";
+                if (e.kind != "event begins")
+                    continue;
+                ++begun;
+                const auto* ev = w.stagedEvent(e.actor);
+                expect(ev && ev->status == "on" && !e.detail.empty() && (e.detail == ev->notice || e.detail == ev->words),
+                       "an event begins with its notice: " + e.detail);
+                bool pressed = false;
+                for (const auto& [g, target] : ev->goods)
+                    if (soc.board().cell.count(ev->market) && soc.board().cell.at(ev->market).count(g))
+                        pressed = pressed || soc.board().cell.at(ev->market).at(g).cause == "event";
+                expect(pressed, "its goods pressed, the cause the event's: " + ev->kind);
+                if (soc.marketTimes(ev->market) != 0 && std::abs(ev->times) >= std::abs(soc.timesScore(ev->market)))
+                    expect(soc.timesCause(ev->market) == ev->words, "its words the Times' cause: " + soc.timesCause(ev->market));
+            }
+        }
+    }
+    expect(begun >= 6 && docks >= 3, "events begun and ships in: " + std::to_string(begun) + " events, " + std::to_string(docks) + " ships");
+    expect(soc.realBalanced(), "real money balanced");
+}
+
 int main(int argc, char** argv)
 {
     try
@@ -3239,7 +3283,9 @@ int main(int argc, char** argv)
             {"aShipTakesWhatAShopOnlyBuys", aShipTakesWhatAShopOnlyBuys},
             // The repair after the merge.
             {"aBoardAheadOfTheCalendar", aBoardAheadOfTheCalendar},
-            {"aShipsNoticeTakenDownStaysDown", aShipsNoticeTakenDownStaysDown}};
+            {"aShipsNoticeTakenDownStaysDown", aShipsNoticeTakenDownStaysDown},
+            // Phase 7 repaired.
+            {"eventsPostWithTheirCause", eventsPostWithTheirCause}};
         // `--only NAME`: one test (to see it fail on the code before a repair); `--each`: every test, each to its end.
         if (argc == 3 && std::string(argv[1]) == "--only")
         {

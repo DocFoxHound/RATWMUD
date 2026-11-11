@@ -38,7 +38,7 @@ using seeded::lot;
 using seeded::unit;
 constexpr std::int64_t Week = calendar::DaysPerWeek;
 constexpr double OverKeptDays = 2, CancelledKeptDays = 1;   // (An event over is talked of two days; one cancelled, gone.)
-constexpr std::size_t GoodsMost = 4;                        // An event's goods, at most.
+constexpr std::size_t GoodsMost = market::EventGoodsMost;   // An event's goods, at most.
 
 std::string capital(std::string s)
 {
@@ -47,14 +47,9 @@ std::string capital(std::string s)
     return s;
 }
 // "{market}" and "{Market}" (capitalised) and the rest, filled.
-std::string fill(std::string text, const std::map<std::string, std::string>& with)
+std::string fill(const std::string& text, const std::map<std::string, std::string>& with)
 {
-    for (const auto& [key, value] : with)
-        for (const auto& [k, v] : {std::pair<std::string, std::string>{"{" + key + "}", value},
-                                   {"{" + capital(key) + "}", capital(value)}})
-            for (auto at = text.find(k); at != std::string::npos; at = text.find(k, at + v.size()))
-                text.replace(at, k.size(), v);
-    return text;
+    return market::fillWords(text, with);
 }
 double startsAt(const market::StagedEvent& e)
 {
@@ -114,12 +109,26 @@ int World::eventsInWeek(const std::string& market, std::int64_t week) const
 bool World::makeEvent(const std::string& marketId, const market::Data::EventKind& kind, std::int64_t day, const std::string& seed,
                       market::StagedEvent& e, std::string& problem) const
 {
-    // One event of `kind` at a market on a day, its words filled, its goods those the market's shops deal in, its subject
-    // (a ship, a farm) found as its kind needs; false and why where the market can't show it.
+    // One event of `kind` at a market on a day, its words filled, its goods those the market's shops deal in (the kind's
+    // own first, then its ship's or its cart's), its subject (a ship, a farm) found as its kind needs; false and why where
+    // the market can't show it: its needs (the realm's largest market, a port, a staffed farm's cart, a festival the next
+    // day) and its seasons, for the scheduler and the Dungeon Master alike.
     const auto* tp = society_.tradePoints().find(marketId);
     const auto* m = roadMarket(marketId);
     if (!tp || !m)
         return problem = "no such market", false;
+    if (kind.needs == "city" && cityMarket() != marketId)
+        return problem = "only at the realm's largest market", false;
+    if (kind.needs == "festival")
+    {
+        bool called = calendar::festivalDay(double(day + 1) + .5);
+        for (const auto& f : festivals_)
+            called |= f.day == day + 1 && f.community == marketId;
+        if (!called)
+            return problem = "no festival there the next day", false;
+    }
+    if (kind.needs == "port" && !port(marketId))
+        return problem = "no port", false;
     const auto& b = society_.board();
     const auto deals = [&](const std::string& g) { return tp->sold.count(g) > 0 || tp->bought.count(g) > 0; };
     e = {};
@@ -138,12 +147,13 @@ bool World::makeEvent(const std::string& marketId, const market::Data::EventKind
             std::none_of(e.goods.begin(), e.goods.end(), [&](const auto& have) { return have.first == g; }))
             e.goods.push_back({g, std::clamp(target, -market::EventTargetMost, market::EventTargetMost)});
     };
+    const market::Ship* ship = nullptr;
+    const std::set<std::string>* yields = nullptr;
     if (!kind.ship.empty())
     {
         // (The first of the port's ships still due on or after the day, that no other event has already.)
         if (!port(marketId))
             return problem = "no port", false;
-        const market::Ship* ship = nullptr;
         for (const auto& s : b.ships)
             if (s.port == marketId && s.status == "due" && s.day >= day && (!ship || s.day < ship->day) &&
                 std::none_of(b.events.begin(), b.events.end(), [&](const market::StagedEvent& o) {
@@ -157,9 +167,6 @@ bool World::makeEvent(const std::string& marketId, const market::Data::EventKind
         e.subject = (kind.ship == "lost" ? "lost:" : "ship:") + ship->id;
         words["ship"] = ship->name;
         words["day"] = calendar::weekdayName(calendar::weekdayOf(double(ship->day) + .5));
-        for (const auto& [g, n] : ship->brings)
-            if (std::abs(kind.brings) >= .01)
-                add(g, kind.brings);
     }
     if (kind.needs == "cart")
     {
@@ -176,14 +183,20 @@ bool World::makeEvent(const std::string& marketId, const market::Data::EventKind
         e.subject = "farm:" + end->farmId;
         e.hour = std::min(e.hour, 5.);              // (Before the carts roll: World::rollCarts.)
         words["from"] = end->name.empty() ? marketWords(end->farmId) : end->name;
-        if (std::abs(kind.yields) >= .01)
-            for (const auto& g : farms[end->farm].def->yields)
-                add(g, kind.yields);
+        yields = &farms[end->farm].def->yields;
     }
-    else if (kind.needs == "port" && !port(marketId))
-        return problem = "no port", false;
+    if (!(kind.seasons & market::seasonBit(double(e.day) + .5)))
+        return problem = "not in this season", false;
+    // (The kind's own goods first, so a rich cargo is of silk and spices where its market deals in them, not only the
+    // ship's everyday cargo; then its ship's, then its cart's.)
     for (const auto& [g, target] : kind.goods)
         add(g, target);
+    if (ship && std::abs(kind.brings) >= .01)
+        for (const auto& [g, n] : ship->brings)
+            add(g, kind.brings);
+    if (yields && std::abs(kind.yields) >= .01)
+        for (const auto& g : *yields)
+            add(g, kind.yields);
     if (e.goods.empty())
         return problem = "its shops deal in none of its goods", false;
     std::vector<std::string> goods;
@@ -193,21 +206,26 @@ bool World::makeEvent(const std::string& marketId, const market::Data::EventKind
     e.words = json::utf8Prefix(fill(kind.words, words), 80);
     e.notice = json::utf8Prefix(fill(kind.notice, words), 280);
     e.cry = json::utf8Prefix(fill(kind.cry, words), 200);
-    if (e.words.empty() || !market::plainWords(e.words, 80) || !market::plainWords(e.notice, 280) || !market::plainWords(e.cry, 200))
+    if (!kind.noticeOn.empty())
+        e.noticeOn = json::utf8Prefix(fill(kind.noticeOn, words), 280);
+    if (e.words.empty() || !market::plainWords(e.words, 80) || !market::plainWords(e.notice, 280) || !market::plainWords(e.cry, 200) ||
+        !market::plainWords(e.noticeOn, 280))
         return problem = "its words are not plain", false;
     e.posted = std::floor(calendarDays_);
     return true;
 }
 
-void World::rollEvents(const Town& m, std::int64_t week, std::int64_t today)
+bool World::rollEvents(const Town& m, std::int64_t week, std::int64_t today)
 {
     // A week of a market's events, committed (8.4): how many (eventsInWeek), which (market.json's kinds it can show, by
-    // weight, none twice in the week), and when (a ship's day, the day before a festival, else a seeded day of the week, one
-    // event a day): only days still to come (a week rolled again adds what is missing on days still free).
+    // weight, none twice in the week nor within a week of another of its kind there), and when (a ship's day, the day
+    // before a festival, else a seeded day of the week, one event a day): only days still to come (a week rolled again
+    // adds what is missing on days still free). False where the Board's bound stopped it short (the week is rolled
+    // again the next morning, when those over have made room).
     auto& b = society_.stagedBoard();
     const int count = eventsInWeek(m.id, week);
     if (count <= 0)
-        return;
+        return true;
     const auto& d = market::data();
     std::set<std::int64_t> taken;
     std::set<std::string> used;
@@ -271,7 +289,10 @@ void World::rollEvents(const Town& m, std::int64_t week, std::int64_t today)
             market::StagedEvent trial;
             std::string why;
             if (day / Week != week || !makeEvent(m.id, kind, day, seed, trial, why) || trial.day <= today ||
-                (trial.day != day && taken.count(trial.day)) || (!kind.ship.empty() && taken.count(trial.day)))
+                (trial.day != day && taken.count(trial.day)) || (!kind.ship.empty() && taken.count(trial.day)) ||
+                std::any_of(b.events.begin(), b.events.end(), [&](const market::StagedEvent& o) {
+                    return o.market == m.id && o.kind == kind.id && o.status != "cancelled" && std::abs(o.day - trial.day) < Week;
+                }))
                 continue;
             candidates.push_back({&kind, trial.day});
             total += kind.weight;
@@ -290,9 +311,23 @@ void World::rollEvents(const Town& m, std::int64_t week, std::int64_t today)
         std::string why;
         if (!makeEvent(m.id, *chosen.first, chosen.second, seed, e, why))
             break;
-        const auto ofMarket = std::size_t(std::count_if(b.events.begin(), b.events.end(), [&](const market::StagedEvent& o) { return o.market == m.id; }));
-        if (ofMarket >= market::EventsAMarket || b.events.size() >= market::EventsMost)
-            break;
+        // (At the Board's bound the oldest over or cancelled go first, the market's own, then any; none to go, the week
+        // is short and rolled again tomorrow.)
+        const auto makeRoom = [&](bool own) {
+            auto out = b.events.end();
+            for (auto it = b.events.begin(); it != b.events.end(); ++it)
+                if ((!own || it->market == m.id) && (it->status == "over" || it->status == "cancelled") && (out == b.events.end() || it->day < out->day))
+                    out = it;
+            if (out == b.events.end())
+                return false;
+            b.events.erase(out);
+            return true;
+        };
+        const auto ofMarket = [&] {
+            return std::size_t(std::count_if(b.events.begin(), b.events.end(), [&](const market::StagedEvent& o) { return o.market == m.id; }));
+        };
+        if ((ofMarket() >= market::EventsAMarket && !makeRoom(true)) || (b.events.size() >= market::EventsMost && !makeRoom(false)))
+            return false;
         e.id = "e" + std::to_string(b.nextEvent++);
         used.insert(e.kind);
         taken.insert(e.day);
@@ -300,6 +335,7 @@ void World::rollEvents(const Town& m, std::int64_t week, std::int64_t today)
         recordEvent({"event rolled", e.id, m.id, m.market, 0, 0, e.kind, int(e.goods.size()), 0, e.words});
         b.events.push_back(std::move(e));
     }
+    return true;
 }
 
 void World::eventsMorning(std::int64_t today)
@@ -315,10 +351,14 @@ void World::eventsMorning(std::int64_t today)
         const auto week = today / Week;
         for (const auto& m : roadMarkets_)
         {
+            // (A week is marked rolled only when it was rolled whole: one the Board's bound cut short is rolled again.)
             const auto through = b.eventsThrough.find(m.id);
             for (auto w = std::max(week, through == b.eventsThrough.end() ? week : through->second + 1); w <= week + 1; ++w)
-                rollEvents(m, w, today);
-            b.eventsThrough[m.id] = week + 1;
+            {
+                if (!rollEvents(m, w, today))
+                    break;
+                b.eventsThrough[m.id] = w;
+            }
         }
     }
     for (auto& e : b.events)
@@ -352,6 +392,11 @@ void World::eventBegins(market::StagedEvent& e)
     // It begins (8.6's row): its goods pressed, its shelves as it says (a good catch's fish set out: the kind's `refill`),
     // its notice up if it was not posted ahead, its crier's line, its crowd.
     e.status = "on";
+    if (!e.noticeOn.empty())
+    {
+        e.notice = std::move(e.noticeOn);           // (A rich cargo's "is due on Riverday" becomes "is in".)
+        e.noticeOn.clear();
+    }
     pressEvent(e);
     if (const auto* kind = market::data().eventKind(e.kind); kind && kind->refill)
         for (const auto& [g, target] : e.goods)
@@ -382,10 +427,24 @@ void World::tendEvents()
     if (b.events.empty())
         return;
     const double now = calendarDays_;
+    const bool seededOff = society_.rule("eventRate") <= 0;
+    // (Over without its days pressed, its notice down if it was up: one whose days passed while the world was down, or in
+    // a jump of the calendar.)
+    const auto overUnseen = [&](market::StagedEvent& e) {
+        if (e.announced)
+            eventEnds(e, "over");
+        else
+            e.status = "over";
+    };
     for (auto& e : b.events)
     {
         if (e.status != "due" && e.status != "on")
             continue;
+        if (seededOff && e.status == "due" && e.by == "seeded")
+        {
+            eventEnds(e, "no events now");      // (The rule at 0: the seeded ones still to come are called off; the DM's stay.)
+            continue;
+        }
         if (!roadMarket(e.market))
         {
             eventEnds(e, "its market is gone");
@@ -410,14 +469,14 @@ void World::tendEvents()
                 if ((!docks.empty() && in) || (!lost.empty() && gone && ship->lost))
                 {
                     if (now >= endsAt(e))
-                        e.status = "over";         // (Came and went while the world was down: nothing pressed now.)
+                        overUnseen(e);             // (Came and went while the world was down: nothing pressed now.)
                     else
                         eventBegins(e);
                 }
                 continue;
             }
             if (now >= endsAt(e))
-                e.status = "over";
+                overUnseen(e);
             else if (now >= startsAt(e))
                 eventBegins(e);
             continue;
@@ -472,11 +531,17 @@ void World::tendCauses()
         o.told = true;
         if (!notices || calendarDays_ >= o.until)
             continue;
-        std::string place = area;
-        std::replace(place.begin(), place.end(), '_', ' ');
+        // (In the words of what its farms grow, at most three: an area's id is no place's name, and on some maps it is a
+        // good's: "a good season for wheat and oats".)
+        std::vector<std::string> grown;
+        for (const auto& farm : society_.farms())
+            if (farm.def && farm.def->area == area)
+                for (const auto& g : farm.def->yields)
+                    if (grown.size() < 3 && std::find(grown.begin(), grown.end(), cargoWords(g)) == grown.end())
+                        grown.push_back(cargoWords(g));
         const char* const Words[] = {"poor", "fair", "good"};
         const auto words = (o.cause.empty() ? std::string() : capital(o.cause) + ": ") + std::string(o.cause.empty() ? "A " : "a ") +
-                           Words[std::clamp(o.word, 0, 2)] + " harvest in the " + place + " this season.";
+                           Words[std::clamp(o.word, 0, 2)] + " season for " + (grown.empty() ? std::string("the farms") : listed(grown)) + ".";
         // (On the boards of the markets its farms' carts come to; with none staffed, every market's.)
         std::set<std::string> markets;
         for (const auto& end : cartEnds_)
@@ -501,8 +566,14 @@ bool World::cartHeld(const std::string& farmId, const std::string& market, std::
     return false;
 }
 
+// The Dungeon Master's hooks (Phase 9's commands and the Prosperity tab call them): addStagedEvent, cancelStagedEvent,
+// nudgeTimes and overrideHarvest change the Market Board and record their step, but write no journal record of their
+// own. PHASE 9: every command that calls one must journal the Board after it (as the economy's records do: the Board
+// whole when it differs), or a crash before the next checkpoint loses the DM's change.
 std::string World::addStagedEvent(const std::string& market, const std::string& kindId, std::int64_t day, double hour, std::string& problem)
 {
+    // (Its kind's needs and seasons held as the scheduler's are, makeEvent's: a House wedding only at the realm's largest
+    // market, a festival's buying only the day before one, a ship's only at a port.)
     auto& b = society_.stagedBoard();
     const auto* kind = market::data().eventKind(kindId);
     const auto today = std::int64_t(std::floor(calendarDays_));
@@ -589,8 +660,10 @@ void World::eventFacts(const std::string& market, std::map<std::string, std::str
 {
     // Talk's world.times and world.times_cause (5.3, 8.5, T16), and its world.event (8.4, T13): the event on (the latest
     // begun), else one posted and due within two days, else one over these two days; its words, and when.
-    facts["world.times"] = market::timesName(society_.marketTimes(market) + 2);
-    if (auto cause = society_.timesCause(market); !cause.empty())
+    // (A cause only where the times are other than ordinary: nobody says why things are as they always are.)
+    const int times = society_.marketTimes(market);
+    facts["world.times"] = market::timesName(times + 2);
+    if (auto cause = times != 0 ? society_.timesCause(market) : std::string(); !cause.empty())
         facts["world.times_cause"] = std::move(cause);
     const double now = calendarDays_;
     const market::StagedEvent* best = nullptr;
@@ -648,5 +721,13 @@ void World::dropOrphanedEvents()
         }
     for (auto it = b.nudges.begin(); it != b.nudges.end();)
         it = !roadMarket(it->first) ? b.nudges.erase(it) : std::next(it);
+    // (A nudge's or a harvest override's expiry held to this calendar, as the levers set it: a year at most from now, so a
+    // damaged save's "until" of 10^12 pins no market's Times for ever; and no ship lost on a day still to come.)
+    for (auto& [m, nudge] : b.nudges)
+        nudge.until = std::min(nudge.until, calendarDays_ + 366);
+    for (auto& [area, o] : b.harvestOverride)
+        o.until = std::min(o.until, calendarDays_ + 366);
+    for (auto& [ship, day] : b.lostShips)
+        day = std::min(day, calendarDays_);
 }
 } // namespace ratw

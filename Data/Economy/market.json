@@ -389,14 +389,14 @@
     ]
   },
   "events": {
-    "about": "Staged events and the slider's causes (doc 79, 8.4, 8.5 and D25; Phase 7; Core/RatwEvents.cpp). Each market sees `perWeek` events a week, one more or fewer by a seeded score (1-3 at 2), times the rule eventRate, each of `list` it can show, rolled a week ahead and kept on the Market Board (a restart shows the same; a host's edit here changes none already rolled). An entry: `id` (a-z, 0-9 and _; never the forbidden word, as letters anywhere), `words` (its cause, said in talk, the price list's tooltip and the Times' cause), `notice` (on its market's board, signed `sign`), `cry` (the crier's line at the square), with {market}, {day}, {goods}, {ship} and {from} filled ({Market}: capitalised); `goods`: each good's pressure the event presses toward (within 0.3 either way: inside the clamp), only those its market's shops sell or buy, four at most; `days` it presses (1-7), `times` its points on its market's Times while it does (within 20), `ahead` the days its notice is up before it (0: it is posted as it begins), `hour`, `weight` (how often it is picked), `needs` (city: the realm's largest market; port; cart: a staffed farm's cart to the market, `yields` the pressure on what that cart brings, `holdsCart` the cart kept home that day; festival: the day before a festival), `ship` (docks: it comes in with a ship of the port's timetable, `brings` the pressure on that ship's cargo, cancelled if the ship never comes; lost: the ship is lost at sea), `refill` (its cheap goods set out as it begins), `crowd` (a crowd at its market's place or the Wharf while on). A bad entry is left out, the rest kept; every text is checked for the forbidden word (whole words), and so is a Dungeon Master's cause. `causes`: the words a move of the prosperity slider comes with when the DM writes none (`down`, `up`: `words`, `notice`, `cry`), and the notice and cry for one the DM writes ({cause}, {Cause}). Events never touch money, bands or posts.",
+    "about": "Staged events and the slider's causes (doc 79, 8.4, 8.5 and D25; Phase 7; Core/RatwEvents.cpp). Each market sees `perWeek` events a week, one more or fewer by a seeded score (1-3 at 2), times the rule eventRate, each of `list` it can show, rolled a week ahead and kept on the Market Board (a restart shows the same; a host's edit here changes none already rolled). An entry: `id` (a-z, 0-9 and _; never the forbidden word, as letters anywhere), `words` (its cause, said in talk, the price list's tooltip and the Times' cause: a noun phrase, read after \"since\", after a colon and after \"talk of\"), `notice` (on its market's board, signed `sign`), `cry` (the crier's line at the square, as it begins), `noticeOn` (its notice once begun, where the one posted ahead would read wrong after: a rich cargo's ship \"is in\"), with {market}, {day}, {goods}, {ship} and {from} filled ({Market}: capitalised); `goods`: each good's pressure the event presses toward (within 0.3 either way: inside the clamp), only those its market's shops sell or buy, four at most; `days` it presses (1-7), `times` its points on its market's Times while it does (within 20), `ahead` the days its notice is up before it (0: it is posted as it begins), `hour`, `weight` (how often it is picked), `needs` (city: the realm's largest market; port; cart: a staffed farm's cart to the market, `yields` the pressure on what that cart brings, `holdsCart` the cart kept home that day; festival: the day before a festival), `ship` (docks: it comes in with a ship of the port's timetable, `brings` the pressure on that ship's cargo, cancelled if the ship never comes; lost: the ship is lost at sea), `refill` (its cheap goods set out as it begins), `crowd` (a crowd at its market's place or the Wharf while on), `seasons` (those it can happen in, of spring, summer, autumn and winter; none: all four; the DM's too). A bad entry is left out, the rest kept; every text is checked for the forbidden word (whole words), and so is a Dungeon Master's cause. `causes`: the words a move of the prosperity slider comes with when the DM writes none (`down`, `up`: `words`, `notice`, `cry`, and `seasons` as an event's: \"the hard winter\" never in summer), and the notice and cry for one the DM writes ({cause}, {Cause}). Events never touch money, bands or posts.",
     "perWeek": 2,
     "list": [
       {
         "id": "house_wedding",
         "words": "the House wedding",
         "notice": "A House wedding in {market} on {day}. The stewards are buying {goods}.",
-        "cry": "Hear ye! A House wedding on {day}, and wine for the stewards!",
+        "cry": "Hear ye! A House wedding today, and the stewards buying {goods}!",
         "sign": "the stewards of the Houses",
         "goods": {
           "wine": 0.2,
@@ -444,7 +444,8 @@
         "times": 3,
         "hour": 7,
         "refill": true,
-        "crowd": true
+        "crowd": true,
+        "seasons": ["spring", "summer", "autumn"]
       },
       {
         "id": "orchard_blight",
@@ -458,11 +459,12 @@
         },
         "days": 4,
         "times": -5,
-        "hour": 8
+        "hour": 8,
+        "seasons": ["spring", "summer", "autumn"]
       },
       {
         "id": "festival_buying",
-        "words": "the buying ahead for the festival",
+        "words": "the festival trade",
         "notice": "The festival is near: the inns and kitchens of {market} are buying {goods}.",
         "cry": "The festival is near! Inns and kitchens buying!",
         "goods": {
@@ -480,7 +482,7 @@
       },
       {
         "id": "lame_ox",
-        "words": "a lame ox on the cart from {from}",
+        "words": "the lame ox that held up the {from} cart",
         "notice": "The cart from {from} is not coming today: a lame ox. {Goods} short at {market} till it does.",
         "yields": 0.1,
         "days": 1,
@@ -493,6 +495,7 @@
         "id": "rich_cargo",
         "words": "{ship}'s rich cargo",
         "notice": "{Ship} is due on {day} with a rich cargo: {goods} cheap at the Wharf when she is in.",
+        "noticeOn": "{Ship} is in with a rich cargo: {goods} cheap at the Wharf.",
         "cry": "{Ship} is in, and a rich cargo with her!",
         "sign": "the Wharf office",
         "goods": {
@@ -522,7 +525,7 @@
       },
       {
         "id": "mill_stopped",
-        "words": "the mill wheel stopped",
+        "words": "the broken mill wheel",
         "notice": "The mill wheel is stopped for mending: {goods} dear in {market} till it turns again.",
         "goods": {
           "flour": 0.15,
@@ -536,7 +539,7 @@
       },
       {
         "id": "drovers_in",
-        "words": "the drovers in with their herds",
+        "words": "the drovers and their herds",
         "notice": "The drovers are in at {market} with their herds: {goods} cheap a day or two.",
         "goods": {
           "raw_meat": -0.15,
@@ -551,7 +554,7 @@
       },
       {
         "id": "salt_short",
-        "words": "the salt pans flooded",
+        "words": "the flooded salt pans",
         "notice": "The salt pans are flooded: {goods} dear in {market} this week.",
         "goods": {
           "salt": 0.2,
@@ -564,7 +567,7 @@
       },
       {
         "id": "brewers_glut",
-        "words": "a brewing too many",
+        "words": "the brewers' glut",
         "notice": "The brewers have brewed too much: {goods} cheap at {market}.",
         "goods": {
           "ale": -0.15,
@@ -598,7 +601,8 @@
           "id": "bad_winter",
           "words": "the hard winter",
           "notice": "A hard winter coming: the roads slow, the stores thin.",
-          "cry": "Hear ye! A hard winter is on us!"
+          "cry": "Hear ye! A hard winter is on us!",
+          "seasons": ["autumn", "winter"]
         }
       ],
       "up": [
@@ -618,7 +622,8 @@
           "id": "rich_harvest",
           "words": "the rich harvest",
           "notice": "The richest harvest in years is coming in: full barns and full purses.",
-          "cry": "Hear ye! A rich harvest!"
+          "cry": "Hear ye! A rich harvest!",
+          "seasons": ["summer", "autumn"]
         }
       ]
     }

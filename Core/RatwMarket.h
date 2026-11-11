@@ -32,6 +32,12 @@ inline constexpr double DawnHour = 6;                 // The market day turns at
 inline constexpr int SliderStepADay = 10;             // The slider the Board reads moves at most this a day (D17).
 inline constexpr double SettingOutDays = 15. / 1440;   // A keeper "setting out the wares" at the restock: 15 game minutes.
 
+// The seasons an event or a cause can happen in (market.json's `seasons`: "spring", "summer", "autumn", "winter"), a bit
+// each; seasonBit(days) is the one the calendar is in; seasonsOf a list's (none, or none known: all four).
+inline constexpr int SeasonsAll = 15;
+int seasonBit(double calendarDays);
+int seasonsOf(const json::Value& list);
+
 // Data/Economy/market.json (missing or broken: these defaults, with a warning on stderr).
 struct Data
 {
@@ -89,6 +95,8 @@ struct Data
     {
         std::string id;                              // [a-z0-9_], 32 at most.
         std::string words, notice, cry, sign = "the crier";   // Its cause words; its notice and crier's line ("" none).
+        std::string noticeOn;                        // Its notice once begun, where `notice` is posted ahead ("" the same).
+        int seasons = SeasonsAll;                    // The seasons it can happen in (a bit each: seasonBit).
         std::vector<std::pair<std::string, double>> goods;    // Base good -> the pressure it pushes toward (±0.3).
         double yields = 0, brings = 0;               // The pressure for its cart's goods (a farm's), or its ship's.
         int days = 2, times = 0, ahead = 0;          // Days it presses; Times points while it does; days posted ahead.
@@ -102,6 +110,7 @@ struct Data
     struct Cause
     {
         std::string id, words, notice, cry;
+        int seasons = SeasonsAll;                    // The seasons it can be picked in ("the hard winter": autumn, winter).
     };
     std::vector<Cause> causesDown, causesUp;
     // The words for a cause the Dungeon Master writes ({cause}, {Cause}: the words, the second capitalised).
@@ -116,6 +125,9 @@ const Data& data();
 // (forbiddenInName: the letters anywhere), its words to the whole-word rule (forbiddenWord). 64 kinds at most.
 std::vector<Data::EventKind> eventKindsOf(const std::vector<json::Value>& list);
 std::vector<Data::Cause> causesOf(const std::vector<json::Value>& list);
+// "{key}" in `text` filled with its value, and "{Key}" with it capitalised (an event's {market}, {Market}; a cause's
+// {cause}, {Cause}).
+std::string fillWords(std::string text, const std::map<std::string, std::string>& with);
 // Plain words a host or the Dungeon Master wrote (an event's or a cause's): no control character, `most` bytes at most,
 // and never the forbidden word (whole word).
 bool plainWords(const std::string& text, std::size_t most);
@@ -206,7 +218,8 @@ struct Departure
     std::string cause;                              // Why it sets out late ("" none): announced.
     double posted = 0;
 };
-// Something on the roads that bears on a market's Times (5.3): a wagon to it raided ("raid") or late ("late").
+// Something on the roads or the sea that bears on a market's Times (5.3): a wagon to it raided ("raid") or late ("late"),
+// a ship of its port stormbound ("storm") or lost at sea ("lost"); each but a raid counts as a late wagon does.
 struct Trouble
 {
     double day = 0;
@@ -257,6 +270,7 @@ struct StagedEvent
     bool crowd = false;                             // A crowd at its market's place (or its port's Wharf) while on.
     std::vector<std::pair<std::string, double>> goods;   // Base good -> the pressure it pushes toward.
     std::string words, notice, cry;                 // Its cause words ("the wedding up at the Heights"), notice, cry.
+    std::string noticeOn;                           // Its notice once begun (a rich cargo's "is in"), while it is due.
     std::string subject;                            // "ship:<id>" (it comes in with it), "lost:<id>" (the ship it loses),
                                                     // "farm:<id>" (the farm whose cart it holds); "" none.
     std::string status = "due";
@@ -289,6 +303,10 @@ inline constexpr std::size_t ShipsAPort = 16, ShipsMost = 256;
 inline constexpr std::int64_t BroughtInDays = 60;
 // (A market's events: two weeks of at most one a day, and those just over. The Board's: 16 markets' worth.)
 inline constexpr std::size_t EventsAMarket = 16, EventsMost = 256;
+inline constexpr std::size_t EventGoodsMost = 4;     // An event's goods, at most.
+// (A ship lost at sea keeps her name off the timetables a year: none of that name sails again soon. 64 kept at most.)
+inline constexpr double LostShipDays = 365;
+inline constexpr std::size_t LostShipsKept = 64;
 inline constexpr double EventTargetMost = .3;        // An event's pressure, either way (inside the clamp, 7.6).
 inline constexpr int EventTimesMost = 20;            // The Times points a market's events add, either way (5.3).
 struct Board
@@ -341,6 +359,8 @@ struct Board
     SliderCause sliderCause;
     std::map<std::string, TimesNudge> nudges;
     std::map<std::string, int> harvestShift;
+    // Ships lost at sea (Phase 7's repair): name -> the day she was lost; kept LostShipDays, so no ship of hers sails.
+    std::map<std::string, double> lostShips;
     bool empty() const
     {
         return slider == 0 && sliderTarget == 0 && sliderDay < 0 && cell.empty() && day < 0 && budgetLeft.empty() && takenToday.empty() &&
@@ -349,7 +369,7 @@ struct Board
                nextDeparture == 1 && backRoom.empty() && harvestOverride.empty() && troubles.empty() && timesShift.empty() &&
                news.empty() && broughtIn.empty() && ships.empty() && shipsThrough.empty() && nextShip == 1 && events.empty() &&
                eventsThrough.empty() && nextEvent == 1 && sliderCause.n == 0 && sliderCause.words.empty() && nudges.empty() &&
-               harvestShift.empty();
+               harvestShift.empty() && lostShips.empty();
     }
 };
 json::Value encode(const Board& board);
