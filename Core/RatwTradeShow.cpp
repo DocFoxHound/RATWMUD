@@ -145,11 +145,11 @@ void World::ensureRoadMarkets()
     const bool wagonsRun = society_.rule("caravanRate") > 0 && society_.rule("wagonsOnRoad") > 0;
     const bool cartsRun = society_.rule("cartsOnRoad") > 0;
     const int rules = int(wagonsRun) | int(cartsRun) << 1 | int(society_.rule("shipsPerWeek") > 0) << 2;   // (And the ships: Phase 5.)
-    if (roadMarketsKey_ == tradePointsBuilt_ && roadMarketsRoster_ == society_.rosterRevision() && roadMarketsDay_ == roads_.day &&
+    if (roadMarketsKey_ == tradePointsBuilt_ && roadMarketsRoster_ == society_.placesRevision() && roadMarketsDay_ == roads_.day &&
         roadMarketsRules_ == rules)
         return;
     roadMarketsKey_ = tradePointsBuilt_;
-    roadMarketsRoster_ = society_.rosterRevision();
+    roadMarketsRoster_ = society_.placesRevision();
     roadMarketsDay_ = roads_.day;
     roadMarketsRules_ = rules;
     const auto& tp = society_.tradePoints();
@@ -238,6 +238,12 @@ void World::ensureRoadMarkets()
     // nearest by path.
     cartEnds_.clear();
     const auto& farms = society_.farms();
+    std::set<int> worked;                           // (The farms with a post held now: the counts are a day's.)
+    for (const auto& p : society_.positions())
+        if (const int farm = society_.farmOfPost(p); farm >= 0)
+            if (const auto held = society_.state().careers.positions.find(p.id);
+                held != society_.state().careers.positions.end() && !held->second.holder.empty() && society_.resident(held->second.holder))
+                worked.insert(farm);
     for (std::size_t i = 0; i < farms.size(); ++i)
     {
         const auto& f = farms[i];
@@ -251,6 +257,11 @@ void World::ensureRoadMarkets()
         end.name = place->steading.empty() ? marketWords(f.def->id) : place->steading;
         end.cell = place->workplaces.front().area;
         const auto* m = roadMarket(place->community);
+        if (!m && !worked.count(int(i)) && f.heldKeepers + f.heldHands <= 0)
+            continue;                               // (No cart from a farm nobody works: not looked for by path. Its posts
+                                                    // taken move the roster, and it is found then: at a fresh world's start
+                                                    // that search ran over every road market for 30 farms not yet staffed,
+                                                    // about 156 ms. The repair after doc 79's Phases 4 and 5 merged.)
         if (!m)
         {
             std::size_t best = std::numeric_limits<std::size_t>::max();
@@ -472,6 +483,30 @@ std::string World::departureNotice(const market::Departure& d, bool atEnd) const
     if (!d.cause.empty())
         words += " Set back: " + d.cause + ".";
     return words;
+}
+
+void World::holdBoardToCalendar()
+{
+    // A Board saved on a calendar since set back, or edited, or damaged (the repair after Phases 4 and 5 merged): its
+    // days held to what this calendar could have made, as the ships' weeks are (dropOrphanedShips). A Board day may be
+    // one ahead of the market's (a crash that kept the Board's morning with the clock before dawn: boardsDayIsToday);
+    // further ahead, its counts are of a day that never came here, so the next pass runs that day's morning (it used to
+    // hold every cap shut and the morning back until the clock caught up: no decay, no rundown, no slider step). The
+    // same for the slider's day, the faction discounts' week, each till's restock and the roads' rolled days.
+    auto& b = society_.stagedBoard();
+    const auto marketDay = std::int64_t(std::floor(calendarDays_ - market::DawnHour / 24));
+    const auto today = std::int64_t(std::floor(calendarDays_));
+    const auto lead = marketDay + 1;
+    if (b.day > lead)
+        b.day = std::max<std::int64_t>(-1, marketDay - 1);
+    if (b.sliderDay > lead)
+        b.sliderDay = std::max<std::int64_t>(-1, marketDay - 1);
+    if (b.week > lead / 7)
+        b.week = std::max<std::int64_t>(-1, marketDay / 7 - 1);
+    for (auto it = b.restocked.begin(); it != b.restocked.end();)
+        it = it->second > lead ? b.restocked.erase(it) : std::next(it);
+    if (b.rolledThrough > today + PostAhead)
+        b.rolledThrough = today + PostAhead;
 }
 
 void World::postDepartures(std::int64_t today)

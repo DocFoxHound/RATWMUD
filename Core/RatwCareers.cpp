@@ -4,6 +4,7 @@
 #include "RatwItems.h"
 
 #include <algorithm>
+#include <iterator>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -315,10 +316,16 @@ const std::string* Society::spouse(const std::string& resident) const
     return found == state_.careers.spouses.end() ? nullptr : &found->second;
 }
 
-std::vector<ResidentRequest> Society::takeRequests()
+std::vector<ResidentRequest> Society::takeRequests(std::size_t most)
 {
     std::vector<ResidentRequest> out;
-    out.swap(requests_);
+    if (most >= requests_.size())
+    {
+        out.swap(requests_);
+        return out;
+    }
+    out.assign(std::make_move_iterator(requests_.begin()), std::make_move_iterator(requests_.begin() + std::ptrdiff_t(most)));
+    requests_.erase(requests_.begin(), requests_.begin() + std::ptrdiff_t(most));
     return out;
 }
 

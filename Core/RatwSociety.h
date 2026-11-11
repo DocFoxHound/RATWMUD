@@ -481,12 +481,34 @@ class Society
     {
         beds_ = std::move(beds);
         ++rosterRevision_;                          // (The residents' records keep their beds.)
+        ++bedsRevision_;
+    }
+    // The same for one home whose interior came into memory: its stores' spots and the beds of these residents only (the
+    // whole maps copied for each of the 61 homes that stream in at six in the evening were about 8 ms of one tick; the
+    // repair after doc 79's Phases 4 and 5 merged).
+    void setHomeStoresOf(const std::string& home, const std::map<std::string, std::map<std::string, Spot>>& spots)
+    {
+        if (const auto found = spots.find(home); found != spots.end())
+            homeStores_[home] = found->second;
+        else
+            homeStores_.erase(home);
+    }
+    void setBedsOf(const std::vector<std::string>& residents, const std::map<std::string, Spot>& beds)
+    {
+        for (const auto& id : residents)
+            if (const auto found = beds.find(id); found != beds.end())
+                beds_[id] = found->second;
+            else
+                beds_.erase(id);
+        ++rosterRevision_;
+        ++bedsRevision_;
     }
     // Marriage: both must be unmarried; from now on they are family.
     bool marry(const std::string& a, const std::string& b);
     const std::string* spouse(const std::string& resident) const;
     // Residents wanted since the last call (see ResidentRequest), and a made one taking their place in the society.
-    std::vector<ResidentRequest> takeRequests();
+    // (At most `most`, the first asked for: the rest wait in order for the next call.)
+    std::vector<ResidentRequest> takeRequests(std::size_t most = std::size_t(-1));
     CareerNote welcome(const ResidentRequest& request, const std::string& id);
     // A child the host could not make: owed again, due now.
     void birthFailed(const ResidentRequest& request);
@@ -642,6 +664,10 @@ class Society
     bool stagedRestock(const std::string& keeper);
     bool settingOut(const std::string& keeper) const;
     std::uint64_t rosterRevision() const { return rosterRevision_; }
+    // The roster's revision less its beds' moves (a home's interior streaming in places its beds: about 120 times in a
+    // morning's two hours): what the markets and the roads are found from (World::ensureTradePoints, ensureRoadMarkets)
+    // moves with this, never with a bed.
+    std::uint64_t placesRevision() const { return rosterRevision_ - bedsRevision_; }
     // Staged trade (doc 79, Phase 4; 7.7 and D27). The goods each market gets only by wagon or cart (the world's, World::
     // ensureRoadMarkets: what a route a carter can drive or a staffed farm's cart brings it that it doesn't make): such a
     // good refills only on an arrival, and between from its till's back room, a fifth less each morning; any other good
@@ -1046,6 +1072,7 @@ class Society
     };
     std::vector<Shopkeeping> shopkeeping_;
     mutable std::uint64_t rosterRevision_ = 1;      // Moved on whenever something the records rest on changes.
+    std::uint64_t bedsRevision_ = 0;                // (Of those moves, setBeds': placesRevision.)
     std::uint64_t recordsRevision_ = 0;             // The revision records_ were made at,
     const Society* recordsOf_ = nullptr;            // and by which society (a copy makes its own).
     void refreshRecords();

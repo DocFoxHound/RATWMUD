@@ -988,7 +988,10 @@ class World
     // Residents the society wants (a child in place of one who died, an unplaced NPC from the Country for an empty post),
     // each with a free place to sleep found near the home it asked for. The host makes the child or places the arrival
     // (arriveResident) and then calls welcomeResident with their ID.
-    std::vector<ResidentRequest> takeResidentRequests();
+    // At most `most` a call (the first asked for; the rest wait in order): a fresh world's first staffing asks for some
+    // two hundred at once, and its host makes them over a few ticks (ResidentsAPass, makeRequestedResidents).
+    std::vector<ResidentRequest> takeResidentRequests(std::size_t most = std::size_t(-1));
+    static constexpr std::size_t ResidentsAPass = 12;
     Result welcomeResident(const ResidentRequest& request, const std::string& id);
     // An unplaced NPC come in from the Country (a request "arrival"): a resident at the home found for it, with a body
     // there, its purse from the Country's account (Society::arrive), and the post it came for (welcomeResident). The
@@ -1000,7 +1003,7 @@ class World
     // mother, with nothing; an arrival as arriveResident places it. Returns how many it made, and adds each request it
     // fulfilled to `made` when given. The game server calls it every tick for a world from files (Game::makeResidents),
     // and world_check after each of its ticks (doc 69), so a harness run has the server's births and arrivals.
-    int makeRequestedResidents(std::vector<ResidentRequest>* made = nullptr);
+    int makeRequestedResidents(std::vector<ResidentRequest>* made = nullptr);   // (ResidentsAPass at most a call.)
     // The roads (RatwRoads.h): towns, caravans, bandit camps, contracts and rumours. Active when the world has two
     // or more towns; a single settlement keeps its one store (the treasury) as before.
     const std::vector<Town>& towns() const { return towns_; }
@@ -1656,6 +1659,26 @@ class World
     // firstSteps() for each starting cell, kept until doors change: residents ask it every half second. (Those never
     // through a cell, by "from\navoid".)
     mutable std::map<std::string, std::map<std::string, std::string>> stepsCache_;
+    // What a route search reads of each cell (firstSteps, routeNode), by its place in id order (routeRank): its doors
+    // that aren't one of its seams (by id, with where each leads, whether it is a seam's passage and a road goes that
+    // way) and its seams, each with whether a road goes that way; until the doors change (rebuildFixtureIndex) or the
+    // roads (indexRoads).
+    struct RouteWay
+    {
+        std::string id, to;                         // (id: a door's; "" for a seam.)
+        int rank = -1;                              // (Of `to`: -1 for a name that is no cell.)
+        bool seam = false, road = false;
+    };
+    struct RouteNode
+    {
+        std::vector<RouteWay> doors, seams;
+    };
+    mutable std::unordered_map<int, RouteNode> routeNodes_;
+    mutable std::unordered_map<std::string, int> routeRanks_;
+    mutable std::vector<std::string> routeNames_;
+    mutable std::size_t routeRanksOf_ = 0;
+    int routeRank(const std::string& cellId) const;
+    const RouteNode& routeNode(int rank) const;
     // Connections known to lead nowhere: every way from the body of one cell into the next lands in a pocket of it
     // (found by residents, when both are in memory). Routes leave them out until either cell's ground changes.
     mutable std::set<std::pair<std::string, std::string>> deadEnds_;
@@ -1739,7 +1762,7 @@ class World
     bool homesReady_ = false;
     std::map<std::string, std::map<std::string, Spot>> homeStoreSpots_;
     std::map<std::string, Spot> beds_;              // Each resident's place on a bed at home: up to four to a bed.
-    void placeBeds(const std::string& cellId);
+    std::vector<std::string> placeBeds(const std::string& cellId);   // (Whose beds it set.)
     void furnishHomes();
     void placeHomeStores(const std::string& cellId);
     std::map<std::string, std::vector<Belief>> beliefs_;   // By holder.
@@ -1774,9 +1797,16 @@ class World
         bool found = false;
         Spot at;
         std::vector<Spot> stalls, crowd;
+        // What it was worked out from (square): the market's cell and spot as asked, and the keepers' posts and the homes
+        // in the square's cell; and the roster's check it was last found the same at.
+        std::string fromCell;
+        Vec2 fromSpot;
+        std::uint64_t print = 0, checked = 0;
     };
-    std::map<std::string, MarketSquare> squares_;                 // By community, worked out once a day.
-    std::int64_t squaresDay_ = -1, plannedAt_ = -1;
+    std::map<std::string, MarketSquare> squares_;                 // By community.
+    std::int64_t squaresDay_ = -1, plannedAt_ = -1;   // (squaresDay_ < 0: the squares to work out afresh.)
+    std::uint64_t squaresKey_ = ~0ULL, squaresCheck_ = 0;   // The roster's places they were checked at, and that check.
+    std::uint64_t squarePrint(const std::string& cellId) const;
     std::uint64_t festivalsChanged_ = 0, plannedFor_ = 0;
     std::set<std::string> festivalsBegun_;                  // "community|day": the festival's event was recorded.
     const MarketSquare& square(const std::string& community);
@@ -2208,6 +2238,7 @@ class World
     void shipsAtWork();
     void postShips();
     void dropOrphanedShips();
+    void holdBoardToCalendar();                     // (At a restore: the Board's days no further ahead than this calendar allows.)
     bool portErrand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
                     std::string& goalCell, Vec2& goal) const;
     struct RouteBudget;

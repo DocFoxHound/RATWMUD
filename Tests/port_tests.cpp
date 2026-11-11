@@ -3068,6 +3068,80 @@ int checkTimetable(const std::filesystem::path& back, const std::filesystem::pat
 }
 } // namespace
 
+// A Board far ahead of the clock in a save (the repair after Phases 4 and 5 merged: an edited or damaged save, or a
+// calendar set back): its days are held to the restored calendar's, so each market day after it has its morning, a fresh
+// budget, a restock and the roads' rolls, instead of every cap shut and the morning held back until the clock caught up.
+void aBoardAheadOfTheCalendar()
+{
+    auto f = harbour();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    w.roads().camps.clear();
+    auto& soc = w.society();
+    expect(w.setTimeOfDay(9).ok, "a morning for the Board ahead");
+    for (int t = 0; t < 10; ++t)
+        w.tick(.6);
+    std::string keeper, good;
+    for (const auto* g : {"hide", "stone", "timber", "herbs", "wool", "nails"})
+        for (const auto* k : EastKeepers)
+            if (good.empty())
+            {
+                soc.create("player-ada", g, 1, "test: gathered");
+                if (soc.quote("player-ada", k, g, 1, false).ok)
+                    keeper = k, good = g;
+                soc.consume("player-ada", g, 1, "test: put back");
+            }
+    expect(!good.empty(), "a good east's shops buy");
+    for (int i = 0; i < 9; ++i)
+        soc.create("player-ada", good, 99, "test: gathered");
+    const auto till = soc.tillOf(keeper);
+    const auto sellAll = [&] {
+        std::int64_t n = 0;
+        for (int i = 0; i < 400; ++i)
+            if (const auto r = soc.trade("player-ada", keeper, good, 1, false); r.ok)
+                n += r.total;
+            else
+                break;
+        return n;
+    };
+    expect(sellAll() > 0, "sold to east's shop on the day of the save");
+    auto saved = w.save();
+    auto& b = saved.society.board;
+    b.day += 30;
+    b.sliderDay += 30;
+    b.week += 5;
+    b.rolledThrough += 30;
+    for (auto& [t, day] : b.restocked)
+        day += 30;
+    expect(!b.restocked.empty(), "the save has restocks to put ahead");
+    expect(w.restore(saved).ok, "a save with the Board 30 days ahead loads");
+    const auto lead = soc.marketDay() + 1;
+    expect(soc.board().day <= lead && soc.board().sliderDay <= lead && soc.board().week <= lead / 7 &&
+               soc.board().rolledThrough <= std::int64_t(std::floor(w.calendarDays())) + 2,
+           "the Board's days held to the calendar: day " + std::to_string(soc.board().day) + ", market day " + std::to_string(soc.marketDay()));
+    for (const auto& [t, day] : soc.board().restocked)
+        expect(day <= lead, "no restock ahead of the calendar: " + t);
+    int restocks = 0;
+    for (int d = 0; d < 5; ++d)
+    {
+        nextMorning(w);
+        expect(w.setTimeOfDay(9).ok, "a morning after the Board ahead");
+        for (int t = 0; t < 10; ++t)
+            w.tick(.6);
+        const auto got = sellAll();
+        const std::string day = " (day +" + std::to_string(d + 1) + ")";
+        expect(soc.board().day == soc.marketDay(), "the Board's day is the market's" + day + ": " + std::to_string(soc.board().day));
+        expect(got > 0, "a fresh budget to sell into" + day);
+        const auto r = soc.board().restocked.find(till);
+        expect(r == soc.board().restocked.end() || r->second <= soc.marketDay(), "no restock ahead of the calendar" + day);
+        restocks += r != soc.board().restocked.end() && r->second == soc.marketDay();   // (On its keeper's working mornings.)
+        expect(soc.board().sliderDay == soc.marketDay(), "the slider's day is today" + day);
+    }
+    expect(restocks >= 3, "the shop restocks again on its mornings: " + std::to_string(restocks) + " of 5");
+    expect(soc.realBalanced(), "real money balanced with the Board held to the calendar");
+}
+
 int main(int argc, char** argv)
 {
     try
@@ -3112,7 +3186,9 @@ int main(int argc, char** argv)
             {"aPortDeletedThroughACrash", aPortDeletedThroughACrash},
             {"aTimetableThatLies", aTimetableThatLies},
             {"theRuleOffAndOnTheSameMorning", theRuleOffAndOnTheSameMorning},
-            {"aShipTakesWhatAShopOnlyBuys", aShipTakesWhatAShopOnlyBuys}};
+            {"aShipTakesWhatAShopOnlyBuys", aShipTakesWhatAShopOnlyBuys},
+            // The repair after the merge.
+            {"aBoardAheadOfTheCalendar", aBoardAheadOfTheCalendar}};
         // `--only NAME`: one test (to see it fail on the code before a repair); `--each`: every test, each to its end.
         if (argc == 3 && std::string(argv[1]) == "--only")
         {

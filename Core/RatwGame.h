@@ -220,6 +220,10 @@ struct Options
     } central;
 };
 
+// Removes the snapshot folders ("ratw-snapshots-<pid>") in `temp` of this user's database servers that are gone (a crash
+// left them, a whole world inside); returns how many. Run as a server makes its own (RatwGameJournal.cpp).
+std::size_t sweepSnapshotFolders(const std::string& temp);
+
 class Game
 {
   public:
@@ -992,6 +996,8 @@ class Game
     int letterCalls_ = 0;
     void watchEvent(const WorldEvent& e);
     void roadNotices(const WorldEvent& e);          // (The carters' notices on the boards: doc 79, 8.1; RatwBoards.cpp.)
+    void pinCartersNotice(const std::string& id, const std::string& market, const std::string& text, const std::string& departure);
+    void mendRoadNotices();                         // (At a start: the carters' notices as the Board and roads now are.)
     void portNotices(const WorldEvent& e);          // (The ships' timetable on the port's board: doc 79, 8.3; RatwBoards.cpp.)
     void tendResidentLetters();
     bool residentLetterRoom(const std::string& resident, const std::string& player) const;

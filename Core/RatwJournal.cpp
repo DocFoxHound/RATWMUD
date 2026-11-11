@@ -276,6 +276,39 @@ bool writeAll(int fd, const std::string& text)
     return true;
 }
 
+// A torn last line (a power cut mid-append: readLines never counts it) is cut off before anything is appended after it,
+// so the next record starts a line of its own and is never glued onto the torn bytes (the repair after doc 79's Phases 4
+// and 5 merged: a second crash before the next trim then left a journal the world refused to start on).
+bool cutTornTail(int fd)
+{
+    struct stat st{};
+    if (::fstat(fd, &st) != 0)
+        return false;
+    off_t size = st.st_size;
+    if (size == 0)
+        return true;
+    char last = 0;
+    if (::pread(fd, &last, 1, size - 1) != 1)
+        return false;
+    if (last == '\n')
+        return true;
+    // Back to the last whole line (rare: read in blocks from the end).
+    char block[4096];
+    off_t end = size - 1;
+    while (end > 0)
+    {
+        const off_t from = std::max<off_t>(0, end - off_t(sizeof block));
+        const auto n = ::pread(fd, block, std::size_t(end - from), from);
+        if (n != end - from)
+            return false;
+        for (off_t i = n - 1; i >= 0; --i)
+            if (block[i] == '\n')
+                return ::ftruncate(fd, from + i + 1) == 0;
+        end = from;
+    }
+    return ::ftruncate(fd, 0) == 0;
+}
+
 bool readLines(const std::string& path, std::vector<Record>& out, std::string& problem)
 {
     std::ifstream in(path, std::ios::binary);
@@ -309,7 +342,7 @@ bool readLines(const std::string& path, std::vector<Record>& out, std::string& p
 std::unique_ptr<Writer> fileWriter(const std::string& path)
 {
     auto commit = [path](const std::vector<Record>& batch, std::string& error) {
-        const int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0600);
+        const int fd = ::open(path.c_str(), O_RDWR | O_CREAT | O_APPEND | O_CLOEXEC, 0600);   // (Read: its last byte, for a torn tail.)
         if (fd < 0)
         {
             error = "Cannot write " + path + ": " + std::strerror(errno);
@@ -318,7 +351,7 @@ std::unique_ptr<Writer> fileWriter(const std::string& path)
         std::string text;
         for (const auto& r : batch)
             text += std::to_string(r.seq) + '\t' + r.text + '\n';
-        const bool ok = writeAll(fd, text) && ::fdatasync(fd) == 0;
+        const bool ok = cutTornTail(fd) && writeAll(fd, text) && ::fdatasync(fd) == 0;
         if (!ok)
             error = "Cannot write " + path + ": " + std::strerror(errno);
         ::close(fd);

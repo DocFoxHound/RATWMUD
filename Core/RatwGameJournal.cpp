@@ -15,6 +15,8 @@
 #include "RatwCheckpoint.h"
 #include "RatwWire.h"
 
+#include <algorithm>
+#include <cctype>
 #include <cerrno>
 #include <csignal>
 #include <cstdio>
@@ -112,11 +114,13 @@ bool readText(const std::string& file, std::string& out)
     return true;
 }
 
-// A private folder for the snapshots a database world hands its store, emptied when made.
+// A private folder for the snapshots a database world hands its store, emptied when made. The folders of servers that
+// died without cleaning up (a crash) are removed first.
 std::string snapshotFolder()
 {
     namespace fs = std::filesystem;
     std::error_code error;
+    sweepSnapshotFolders(fs::temp_directory_path(error).string());
     const auto folder = fs::temp_directory_path(error) / ("ratw-snapshots-" + std::to_string(::getpid()));
     fs::remove_all(folder, error);
     fs::create_directories(folder, error);
@@ -137,6 +141,36 @@ struct Leftovers
     }
 };
 } // namespace
+
+std::size_t sweepSnapshotFolders(const std::string& temp)
+{
+    // A crashed database server leaves its last snapshot (a whole world, account verifiers inside) in its folder; no later
+    // start cleaned another pid's (the repair after doc 79's Phases 4 and 5 merged). A folder of this user's whose server
+    // is gone goes; one whose server still runs, or that is another user's, is left alone.
+    namespace fs = std::filesystem;
+    std::error_code error;
+    std::size_t removed = 0;
+    const std::string prefix = "ratw-snapshots-";
+    for (fs::directory_iterator it(temp, error), end; !error && it != end; it.increment(error))
+    {
+        const auto name = it->path().filename().string();
+        if (name.rfind(prefix, 0) != 0 || name.size() == prefix.size())
+            continue;
+        const auto digits = name.substr(prefix.size());
+        if (!std::all_of(digits.begin(), digits.end(), [](unsigned char ch) { return std::isdigit(ch); }) || digits.size() > 9)
+            continue;
+        const auto pid = pid_t(std::stol(digits));
+        struct stat st{};
+        if (pid <= 0 || pid == ::getpid() || ::lstat(it->path().c_str(), &st) != 0 || !S_ISDIR(st.st_mode) || st.st_uid != ::getuid())
+            continue;
+        if (::kill(pid, 0) == 0 || errno != ESRCH)
+            continue;                               // (Still running, or not ours to ask about.)
+        std::error_code gone;
+        if (fs::remove_all(it->path(), gone) > 0 && !gone)
+            ++removed;
+    }
+    return removed;
+}
 
 // --------------------------------------------------------------------------- The journal
 
@@ -518,6 +552,9 @@ bool Game::forkSnapshot()
     journalCheckpoint();                           // (Here, by the parent: the child only reads.)
     const auto seq = journalSeq_;
     std::fflush(nullptr);                          // Nothing buffered is written twice by the child.
+    // (A file world's save is renamed into place by the child: its folder is synced after, so the rename is on the disk
+    // before the journal is trimmed of what it covers.)
+    const std::string folderOfSave = database ? std::string() : std::filesystem::path(target).parent_path().string();
     const pid_t pid = ::fork();
     if (pid < 0)
     {
@@ -538,7 +575,15 @@ bool Game::forkSnapshot()
             capture()(doc, npcStates);
             if (writeFile(document, json::dump(doc), !database) && (!database || writeFile(states, npcStates.empty() ? "[]" : npcStates, false)) &&
                 (database || std::rename(document.c_str(), target.c_str()) == 0))
+            {
+                if (!database)
+                    if (const int dir = ::open(folderOfSave.empty() ? "." : folderOfSave.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC); dir >= 0)
+                    {
+                        ::fsync(dir);
+                        ::close(dir);
+                    }
                 status = 0;
+            }
         }
         catch (...)
         {

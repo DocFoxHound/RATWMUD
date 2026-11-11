@@ -2447,10 +2447,10 @@ void World::ensureTradePoints()
     // poor go short when players empty a shelf. Once; a test's own hooks are kept.
     if (!society_.stagedHooked())
         society_.setStagedHooks(Society::boardHooks());
-    if (tradePointsReady_ && tradePointsRevision_ == society_.rosterRevision())
+    if (tradePointsReady_ && tradePointsRevision_ == society_.placesRevision())
         return;
     tradePointsReady_ = true;
-    tradePointsRevision_ = society_.rosterRevision();
+    tradePointsRevision_ = society_.placesRevision();
     ++tradePointsBuilt_;                            // (The roads find their markets again: ensureRoadMarkets.)
     const auto regionOf = [&](const std::string& cellId) -> std::string {
         const auto* c = cell(cellId);
@@ -2610,6 +2610,6 @@ void World::ensureTradePoints()
             m.routes.push_back(near[i].second);
     }
     society_.setTradePoints(std::move(t));
-    tradePointsRevision_ = society_.rosterRevision();   // (As it stands after the households were asked for.)
+    tradePointsRevision_ = society_.placesRevision();   // (As it stands after the households were asked for.)
 }
 } // namespace ratw

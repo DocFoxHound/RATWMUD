@@ -25,6 +25,7 @@
 #include <set>
 #include <sstream>
 #include <string_view>
+#include <unordered_map>
 #include <thread>
 
 // A small lambda called from several places in a hot loop, made part of the loop (roadWay's relax).
@@ -616,6 +617,8 @@ void World::rebuildFixtureIndex()
     doorsAtTile_.clear();
     neighborCache_.clear();
     stepsCache_.clear();
+    routeNodes_.clear();
+    routeRanks_.clear();
     for (auto& entry : doors_)
         doorsIn_[entry.second.cellId].push_back(&entry.second);
     for (const auto& entry : doors_)
@@ -908,43 +911,138 @@ const std::map<std::string, std::string>& World::cachedSteps(const std::string& 
     return found->second;
 }
 
+int World::routeRank(const std::string& cellId) const
+{
+    // Each cell's place among the world's cells in id order (cells_ is kept sorted), for a route search's ties; -1 for a
+    // name that is no cell. Made again when the cells or the doors change.
+    if (routeRanks_.empty() || routeRanksOf_ != cells_.size())
+    {
+        routeRanks_.clear();
+        routeRanks_.reserve(cells_.size() * 2 + 16);
+        routeNames_.clear();
+        routeNames_.reserve(cells_.size());
+        for (const auto& [id, c] : cells_)
+        {
+            routeRanks_.emplace(id, int(routeNames_.size()));
+            routeNames_.push_back(id);
+        }
+        routeRanksOf_ = cells_.size();
+        routeNodes_.clear();                        // (They hold ranks.)
+    }
+    const auto found = routeRanks_.find(cellId);
+    return found == routeRanks_.end() ? -1 : found->second;
+}
+
+const World::RouteNode& World::routeNode(int rank) const
+{
+    // What a route search reads of a cell, kept until the doors or the roads change: its doors that lead anywhere its
+    // seams don't (a city cell has well over a thousand seam records when loaded, each a way its exits already give), in
+    // their order, and its seams, each with whether a road goes that way. A seam streaming in or out is never one of
+    // the doors, and changes nothing here.
+    if (const auto found = routeNodes_.find(rank); found != routeNodes_.end())
+        return found->second;
+    const std::string cellId = routeNames_[std::size_t(rank)];   // (A copy: routeRank below may make the ranks again.)
+    RouteNode node;
+    const auto seams = exits_.find(cellId);
+    for (const auto* d : doorsIn(cellId))
+        if (d->portal && !(d->passage && d->boundary && seams != exits_.end() && seams->second.count(d->targetCell)))
+            node.doors.push_back({d->id, d->targetCell, routeRank(d->targetCell), d->passage && d->boundary, roadLink(cellId, d->targetCell)});
+    if (seams != exits_.end())
+        for (const auto& next : seams->second)
+            node.seams.push_back({std::string(), next, routeRank(next), true, roadLink(cellId, next)});
+    return routeNodes_.emplace(rank, std::move(node)).first->second;
+}
+
 std::map<std::string, std::string> World::firstSteps(const std::string& from, const std::string& avoid) const
 {
     // The cheapest way (indexRoads): a step through a door or along a road counts 1, one overland OverlandCost, so
-    // travellers keep to the roads unless one is blocked or none goes their way. Ties go the same way every time.
-    std::map<std::string, std::string> first{{from, ""}};
-    std::map<std::string, int> cost{{from, 0}};
-    std::set<std::string> done;
-    using Pending = std::pair<int, std::string>;
-    std::priority_queue<Pending, std::vector<Pending>, std::greater<Pending>> pending;
-    pending.push({0, from});
+    // travellers keep to the roads unless one is blocked or none goes their way. Ties go the same way every time: the
+    // cheaper first, then the cell whose id sorts first.
+    // (Over each cell's place in id order and each cell's ways kept (routeNode), not over maps of names and every door
+    // record: the same steps, in a fraction of the time. A cold search of the whole map was about 1.5 ms, and a fresh
+    // world's first passes, or a market's routes found again, ran a hundred of them in one tick. The repair after doc
+    // 79's Phases 4 and 5 merged.)
+    const int fromRank = routeRank(from);           // (The ranks made first, if they are to be.)
+    const int known = int(routeNames_.size());
+    std::vector<const std::string*> names;          // (The cells in id order, then any name that is no cell.)
+    names.reserve(routeNames_.size() + 4);
+    for (const auto& name : routeNames_)
+        names.push_back(&name);
+    std::unordered_map<std::string, int> others;
+    const auto numberOf = [&](const std::string& name, int rank) {
+        if (rank >= 0)
+            return rank;
+        const auto [at, added] = others.try_emplace(name, int(names.size()));
+        if (added)
+            names.push_back(&at->first);
+        return at->second;
+    };
+    std::vector<int> cost(names.size(), std::numeric_limits<int>::max()), firstOf(names.size(), -1);
+    std::vector<char> done(names.size(), 0);
+    const auto grow = [&] {
+        if (cost.size() < names.size())
+        {
+            cost.resize(names.size(), std::numeric_limits<int>::max());
+            firstOf.resize(names.size(), -1);
+            done.resize(names.size(), 0);
+        }
+    };
+    const int origin = numberOf(from, fromRank);
+    grow();
+    cost[std::size_t(origin)] = 0;
+    using Pending = std::pair<int, int>;            // (Cost, place.)
+    const auto later = [&](const Pending& a, const Pending& b) {
+        if (a.first != b.first)
+            return a.first > b.first;
+        if (a.second < known && b.second < known)
+            return a.second > b.second;             // (Places in id order: as their names compare.)
+        return *names[std::size_t(a.second)] > *names[std::size_t(b.second)];
+    };
+    std::priority_queue<Pending, std::vector<Pending>, decltype(later)> pending(later);
+    pending.push({0, origin});
+    static const RouteNode Nowhere;
     while (!pending.empty())
     {
-        const auto [spent, current] = pending.top();
+        const auto [spent, at] = pending.top();
         pending.pop();
-        if (!done.insert(current).second)
+        if (done[std::size_t(at)])
             continue;
-        const auto visit = [&](const std::string& next, bool seam) {
-            if (done.count(next) || deadEnds_.count({current, next}) || (!avoid.empty() && next == avoid))
+        done[std::size_t(at)] = 1;
+        const std::string& current = *names[std::size_t(at)];
+        // (Dead ends are few: only a place one leaves from is asked about them.)
+        bool deadFrom = false;
+        if (!deadEnds_.empty())
+            if (const auto d = deadEnds_.lower_bound({current, std::string()}); d != deadEnds_.end() && d->first == current)
+                deadFrom = true;
+        const auto visit = [&](const RouteWay& way, bool road) {
+            if ((!avoid.empty() && way.to == avoid) || (deadFrom && deadEnds_.count({current, way.to})))
                 return;
-            const int total = spent + (!seam || roadLink(current, next) ? 1 : OverlandCost);
-            if (const auto known = cost.find(next); known != cost.end() && known->second <= total)
+            const int n = numberOf(way.to, way.rank);
+            grow();
+            if (done[std::size_t(n)])
                 return;
-            cost[next] = total;
-            first[next] = current == from ? next : first[current];
-            pending.push({total, next});
+            const int total = spent + (road ? 1 : OverlandCost);
+            if (cost[std::size_t(n)] <= total)
+                return;
+            cost[std::size_t(n)] = total;
+            firstOf[std::size_t(n)] = at == origin ? n : firstOf[std::size_t(at)];
+            pending.push({total, n});
         };
         // A streamed cell's seams are in its exits whether or not it is loaded; its loaded seam records are left
         // to them, so a route never depends on which cells happen to be in memory (and loading one changes none).
-        const auto seams = exits_.find(current);          // Seams (always open).
-        for (const auto* d : doorsIn(current))
-            if (d->portal && !d->locked &&
-                !(d->passage && d->boundary && seams != exits_.end() && seams->second.count(d->targetCell)))
-                visit(d->targetCell, d->passage && d->boundary);
-        if (seams != exits_.end())
-            for (const auto& next : seams->second)
-                visit(next, true);
+        // (A name that is no cell has no doors or seams of its own: nothing leads on from it.)
+        const auto& node = at < known ? routeNode(at) : Nowhere;
+        for (const auto& way : node.doors)
+            if (const auto* d = door(way.id); d && d->portal && !d->locked)   // (Locked or not, as it is now.)
+                visit(way, !way.seam || way.road);
+        for (const auto& way : node.seams)
+            visit(way, way.road);
     }
+    std::map<std::string, std::string> first;
+    for (std::size_t i = 0; i < names.size(); ++i)   // (Cells in id order first: each goes in at the end.)
+        if (cost[i] != std::numeric_limits<int>::max())
+            first.emplace_hint(i < std::size_t(known) ? first.end() : first.lower_bound(*names[i]), *names[i],
+                               firstOf[i] < 0 ? std::string() : *names[std::size_t(firstOf[i])]);
     return first;
 }
 
@@ -3227,9 +3325,9 @@ bool World::freeSpotNear(const std::string& cellId, double& x, double& y)
     return false;
 }
 
-std::vector<ResidentRequest> World::takeResidentRequests()
+std::vector<ResidentRequest> World::takeResidentRequests(std::size_t most)
 {
-    auto requests = society_.takeRequests();
+    auto requests = society_.takeRequests(most);
     for (auto& r : requests)
         if (!freeSpotNear(r.home.cell, r.home.x, r.home.y))
             r.home = {};                             // The host will find them somewhere to stay.
@@ -3239,7 +3337,9 @@ std::vector<ResidentRequest> World::takeResidentRequests()
 int World::makeRequestedResidents(std::vector<ResidentRequest>* madeOnes)
 {
     int made = 0;
-    for (const auto& request : takeResidentRequests())
+    // (A pass's worth: a fresh world's 206 farm folk made in one tick took about 135 ms; the repair after doc 79's Phases 4
+    // and 5 merged. The rest are made on the next calls, in the order asked for.)
+    for (const auto& request : takeResidentRequests(ResidentsAPass))
     {
         if (request.kind == "arrival" || request.kind == "farm")
         {
@@ -4613,7 +4713,9 @@ bool World::continueSchedules(double budgetMs)
             auto lifeAt = lives.upper_bound(errandCursor_);
             for (auto it = entities_.upper_bound(errandCursor_); it != entities_.end(); ++it)
             {
-                if (++sinceCheck >= 32)
+                // (The clock looked at every 4: a Country keeper's or hand's errand is about a millisecond, and 32 of them
+                // ran a shift change's tick 10 ms past its budget. Never in a deterministic run: spent() is then false.)
+                if (++sinceCheck >= 4)
                 {
                     sinceCheck = 0;
                     if (spent())
@@ -4751,14 +4853,15 @@ std::vector<std::pair<int, int>> World::spareBeds(const std::string& cellId) con
     return out;
 }
 
-void World::placeBeds(const std::string& cellId)
+std::vector<std::string> World::placeBeds(const std::string& cellId)
 {
     // Up to four to a bed (doc 36). Each sleeps on the bed their home spot is on while it has room, else on the
     // nearest bed in the home with room, else where they were (the floor). One alone on a bed has its middle; two to
     // four have its quarters, half a tile apart, so their bodies don't press.
     const auto* c = cell(cellId);
+    std::vector<std::string> set;
     if (!c || !c->loaded || c->outdoors)
-        return;
+        return set;
     const auto isBed = [](const Tile* t) { return t && !t->solid && (t->glyph == 'b' || t->glyph == 'z'); };
     std::vector<std::pair<int, int>> beds;
     for (int y = 0; y < c->height; ++y)
@@ -4766,7 +4869,7 @@ void World::placeBeds(const std::string& cellId)
             if (isBed(c->tile(x, y)))
                 beds.push_back({x, y});
     if (beds.empty())
-        return;
+        return set;
     std::map<std::pair<int, int>, std::vector<std::string>> sleepers;
     std::vector<std::pair<std::string, Vec2>> members;
     for (const auto& [id, life] : society_.state().residents)
@@ -4798,7 +4901,9 @@ void World::placeBeds(const std::string& cellId)
             if (ids.size() > 1)
                 at = {tile.first + (k % 2 ? .75 : .25), tile.second + (k / 2 ? .75 : .25)};
             beds_[ids[k]] = {cellId, at.x, at.y};
+            set.push_back(ids[k]);
         }
+    return set;
 }
 
 void World::placeHomeStores(const std::string& cellId)
@@ -6692,6 +6797,7 @@ Result World::restore(const PersistedWorld& saved)
     roadMarketsKey_ = ~0ULL;
     dropOrphanedRoads();
     dropOrphanedShips();                            // (Phase 5: a port deleted, its ships with it.)
+    holdBoardToCalendar();
     return {true, "Saved world restored.", {}};
 }
 

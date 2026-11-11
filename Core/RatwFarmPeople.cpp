@@ -143,6 +143,12 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
             pool[r.id] = &r;
             tradeOf[r.id] = people.tradeOf(r.workLabel);
         }
+    // The pool by trade, each in id order as the pool is (choose looks only at a trade's own: a fresh world's first
+    // staffing looked over the whole pool for each of 206 placements, about 90 ms in one tick; the repair after doc 79's
+    // Phases 4 and 5 merged). Kept with the pool: placing someone takes them out of both.
+    std::map<std::string, std::map<std::string, const ResidentSpec*>> poolOf;
+    for (const auto& [id, r] : pool)
+        poolOf[tradeOf[id]].emplace_hint(poolOf[tradeOf[id]].end(), id, r);
     // Their families among the unplaced (doc 62's kin): spouses, children, parents.
     std::map<std::string, std::vector<std::string>> spouses, children, parents;
     for (const auto& k : authored_.kin)
@@ -156,16 +162,30 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
     }
     // The Heights' own (a House's family: its class upper, its trade the Heights', or a spouse, parent or child of one)
     // keep to the Heights: no farm or market post is theirs.
-    const auto heights = [&](const std::string& id) { return classOf(id) == "upper" || tradeOf[id] == "the Heights"; };
+    // (Each one's worked out once: their classes and kin don't move while the farms are staffed, and a fresh world's
+    // first staffing asked it of the whole pool for each placement.)
+    std::map<std::string, bool> heightsOf, upperOf;
+    const auto heights = [&](const std::string& id) {
+        if (const auto found = heightsOf.find(id); found != heightsOf.end())
+            return found->second;
+        const bool is = classOf(id) == "upper" || tradeOf[id] == "the Heights";
+        heightsOf.emplace(id, is);
+        return is;
+    };
     const auto upper = [&](const std::string& id) {
-        if (heights(id))
-            return true;
+        if (const auto found = upperOf.find(id); found != upperOf.end())
+            return found->second;
+        bool is = heights(id);
         for (const auto* kin : {&spouses, &children, &parents})
-            if (const auto found = kin->find(id); found != kin->end())
+            if (const auto found = kin->find(id); !is && found != kin->end())
                 for (const auto& other : found->second)
                     if (heights(other))
-                        return true;
-        return false;
+                    {
+                        is = true;
+                        break;
+                    }
+        upperOf.emplace(id, is);
+        return is;
     };
     const auto working = [&](const ResidentSpec& r) { return r.age >= 16 && r.age < retireAge(r.id); };
     // Who among the pool is free, the best of a list of trades by a score (highest wins; the lot of the farm last).
@@ -176,9 +196,12 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         {
             const ResidentSpec* best = nullptr;
             std::tuple<int, int, int, double> top{};
-            for (const auto& [id, r] : pool)
+            const auto ofTrade = poolOf.find(trade);
+            if (ofTrade == poolOf.end())
+                continue;
+            for (const auto& [id, r] : ofTrade->second)
             {
-                if (tradeOf[id] != trade || !working(*r) || upper(id) || !fits(*r))
+                if (!working(*r) || upper(id) || !fits(*r))
                     continue;
                 const auto [a, b, c] = score(*r);
                 const std::tuple<int, int, int, double> s{a, b, c, lot(id + "|" + key)};
@@ -242,6 +265,9 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         q.purse = std::max<std::int64_t>(0, purse);
         q.farm = farm;
         requests_.push_back(q);
+        if (const auto t = tradeOf.find(r.id); t != tradeOf.end())
+            if (const auto list = poolOf.find(t->second); list != poolOf.end())
+                list->second.erase(r.id);
         pool.erase(r.id);
         ++living[home.cell];
         ++farmPlaced_[what];
@@ -267,6 +293,22 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
     };
     // A home near the city (doc 68's arrivals): with a household of its class within reach of the work that has room,
     // the smallest first; else the communal lodgings within reach. Nowhere: none.
+    // A household's class, by most of its members (each home's worked out once, and again when someone is placed there:
+    // a fresh world's first staffing worked out every home's for each of its city hands, about 65 ms in one tick; the
+    // repair after doc 79's Phases 4 and 5 merged).
+    std::map<std::string, std::string> topOf;
+    const auto topClassOf = [&](const std::string& cell, const std::vector<std::string>& ids) -> const std::string& {
+        if (const auto found = topOf.find(cell); found != topOf.end())
+            return found->second;
+        std::map<std::string, int> count;
+        for (const auto& m : ids)
+            ++count[classOf(m)];
+        std::string top;
+        for (const auto& [c, n] : count)
+            if (top.empty() || n > count[top])
+                top = c;
+        return topOf.emplace(cell, std::move(top)).first->second;
+    };
     const auto cityHome = [&](const std::string& cls, const std::string& workCell, const std::string& who) -> Spot {
         Spot best;
         std::pair<int, double> roomiest{0, 0};
@@ -275,14 +317,7 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
             if (communalHome(cell) || living[cell] >= most || (world.near && !world.near(workCell, cell)) ||
                 cell.rfind("fs_", 0) == 0)
                 continue;                           // (A farmhouse is its keeper's family's alone.)
-            std::map<std::string, int> count;
-            for (const auto& m : ids)
-                ++count[classOf(m)];
-            std::string top;
-            for (const auto& [c, n] : count)
-                if (top.empty() || n > count[top])
-                    top = c;
-            if (top != cls)
+            if (topClassOf(cell, ids) != cls)
                 continue;
             const std::pair<int, double> score{-living[cell], lot(cell + "|" + who)};
             if (best.cell.empty() || score > roomiest)
@@ -393,7 +428,10 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                           "keeper");
                     --needKeepers;
                     if (!community)
+                    {
                         members[home.cell].push_back(ownerSpec.id);
+                        topOf.erase(home.cell);
+                    }
                 }
             }
         }
@@ -453,7 +491,10 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
                 break;                              // (No room for them: not today.)
             hire(spec, second, home, std::string("hand ") + (community ? community->id : "ridgemere"));
             if (!community)
+            {
                 members[home.cell].push_back(spec.id);   // (Counted with that household for the next.)
+                topOf.erase(home.cell);
+            }
         }
     }
     // The communities' markets (communities.json `market`): a post at each of their businesses not yet there, its keeper

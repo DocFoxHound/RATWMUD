@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <map>
+#include <set>
 
 namespace ratw
 {
@@ -366,36 +368,109 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
     return result = {true, "You pin your notice to the board (" + std::to_string(fee) + "p to the town). It stays up seven days.", {}}, true;
 }
 
+namespace
+{
+std::pair<std::string, std::string> wagonNoticeIds(const std::string& departure)
+{
+    return {"wagon-" + departure + "-from", "wagon-" + departure + "-to"};
+}
+
+// A wagon's notice with its "Escort wanted" taken out (it has set out: nobody can join it now). False if it had none.
+bool noEscortWanted(std::string& text)
+{
+    const auto at = text.find(" Escort wanted");
+    if (at == std::string::npos)
+        return false;
+    const auto end = text.find('.', at);
+    text.erase(at, end == std::string::npos ? std::string::npos : end + 1 - at);
+    return true;
+}
+} // namespace
+
+void Game::pinCartersNotice(const std::string& id, const std::string& market, const std::string& text, const std::string& departure)
+{
+    // (On the board a player at the market's place reads, boardNear's: its law town's where it is in one, else its own.)
+    const auto* m = world_.roadMarket(market);
+    auto community = m ? boardTownFor(m->market) : std::string();
+    if (community.empty())
+        community = market;
+    if (community.empty() || text.empty())
+        return;
+    documents::Document d;
+    d.id = id;
+    d.kind = "notice";
+    d.author = CartersSign;
+    d.board = "board:" + community;
+    d.noticeKind = "event";
+    d.what = "wagon:" + departure;
+    d.text = json::utf8Prefix(text, TextMost);
+    d.sign = CartersSign;
+    d.state = "delivered";
+    d.written = d.deliverAt = world_.calendarDays();
+    d.expires = d.written + NoticeDays;
+    d.fromTown = community;
+    documents_.add(d);
+}
+
+void Game::mendRoadNotices()
+{
+    // At a start (the repair after Phases 4 and 5 merged): the boards' notices come from the checkpoint, but the Board and
+    // the roads may be further on by the journal (a wagon posted, an escort taken, a wagon in or set out after it). The
+    // carters' notices are made to say what the Board and the roads say now, as their events would have: a wagon still
+    // to set out has both, written afresh; one on the road keeps them, without asking for an escort once it is out; one
+    // robbed keeps its far end's; one come in, gone home or gone keeps none.
+    std::set<std::string> committed;
+    for (const auto& d : world_.society().board().committed)
+    {
+        if (d.kind != "wagon")
+            continue;
+        committed.insert(d.id);
+        const auto [from, to] = wagonNoticeIds(d.id);
+        for (const bool atEnd : {false, true})
+        {
+            auto text = json::utf8Prefix(world_.departureNotice(d, atEnd), TextMost);
+            if (auto* pinned = documents_.find(atEnd ? to : from))
+                pinned->text = std::move(text);
+            else
+                pinCartersNotice(atEnd ? to : from, atEnd ? d.to : d.from, text, d.id);
+        }
+    }
+    std::map<std::string, const Caravan*> onRoad;
+    for (const auto& c : world_.roads().caravans)
+        if (!c.departure.empty())
+            onRoad[c.departure] = &c;
+    std::vector<std::string> gone;
+    for (const auto& [id, d] : documents_.all())
+    {
+        if (d.kind != "notice" || d.author != CartersSign || d.what.rfind("wagon:", 0) != 0)
+            continue;
+        const auto departure = d.what.substr(6);
+        if (committed.count(departure))
+            continue;
+        const auto c = onRoad.find(departure);
+        const auto status = c == onRoad.end() ? std::string() : c->second->status;
+        const bool far = id == wagonNoticeIds(departure).second;
+        if (status == "travelling" || (status == "raided" && far))
+            continue;
+        gone.push_back(id);
+    }
+    for (const auto& id : gone)
+        documents_.erase(id);
+    for (const auto& [departure, c] : onRoad)
+        if (c->status == "travelling" && !c->cell.empty())
+            for (const auto& id : {wagonNoticeIds(departure).first, wagonNoticeIds(departure).second})
+                if (auto* pinned = documents_.find(id))
+                    noEscortWanted(pinned->text);
+}
+
 void Game::roadNotices(const WorldEvent& e)
 {
     // The carters' notices (doc 79, 8.1 and 8.6): a wagon posted two days ahead is pinned on both ends' boards ("the
     // carters", with the calendar's weekday names), changed when it is set back or overdue, and taken down when it comes
     // in (or is cancelled). Seven days at most, as any notice.
-    const auto ids = [](const std::string& departure) {
-        return std::pair<std::string, std::string>{"wagon-" + departure + "-from", "wagon-" + departure + "-to"};
-    };
+    const auto ids = wagonNoticeIds;
     const auto pin = [&](const std::string& id, const std::string& market, const std::string& text, const std::string& departure) {
-        // (On the board a player at the market's place reads, boardNear's: its law town's where it is in one, else its own.)
-        const auto* m = world_.roadMarket(market);
-        auto community = m ? boardTownFor(m->market) : std::string();
-        if (community.empty())
-            community = market;
-        if (community.empty() || text.empty())
-            return;
-        documents::Document d;
-        d.id = id;
-        d.kind = "notice";
-        d.author = CartersSign;
-        d.board = "board:" + community;
-        d.noticeKind = "event";
-        d.what = "wagon:" + departure;
-        d.text = json::utf8Prefix(text, TextMost);
-        d.sign = CartersSign;
-        d.state = "delivered";
-        d.written = d.deliverAt = world_.calendarDays();
-        d.expires = d.written + NoticeDays;
-        d.fromTown = community;
-        documents_.add(d);
+        pinCartersNotice(id, market, text, departure);
     };
     if (e.kind == "wagon posted" || e.kind == "wagon delayed")
     {
@@ -457,12 +532,7 @@ void Game::roadNotices(const WorldEvent& e)
         bool changed = false;
         for (const auto& id : {from, to})
             if (auto* pinned = documents_.find(id))
-                if (const auto at = pinned->text.find(" Escort wanted"); at != std::string::npos)
-                {
-                    const auto end = pinned->text.find('.', at);
-                    pinned->text.erase(at, end == std::string::npos ? std::string::npos : end + 1 - at);
-                    changed = true;
-                }
+                changed = noEscortWanted(pinned->text) || changed;
         if (changed)
             saveSoon();
     }

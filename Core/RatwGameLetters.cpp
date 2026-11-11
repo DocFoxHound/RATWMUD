@@ -984,7 +984,8 @@ void Game::lettersLoad(const json::Value& saved)
     for (const auto& e : saved.array("documents"))
     {
         auto d = documents::load(e);
-        if (d.id.empty() || d.to.empty())
+        // (A letter has someone it is to; a notice has a board instead: notices were all dropped at every load.)
+        if (d.id.empty() || (d.kind == "notice" ? d.board.empty() : d.to.empty()))
             continue;
         const auto& added = documents_.add(std::move(d));
         if (added.state == "carried")

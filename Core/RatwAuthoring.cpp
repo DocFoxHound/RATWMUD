@@ -226,9 +226,9 @@ Result World::ensureLoaded(const std::string& cellId)
     if (homesReady_ && !area.outdoors && !homeStoreSpots_.count(cellId))
     {
         placeHomeStores(cellId);                    // A home's stores and beds once its interior is in memory (doc 36).
-        placeBeds(cellId);
-        society_.setHomeStores(homeStoreSpots_);
-        society_.setBeds(beds_);
+        const auto slept = placeBeds(cellId);
+        society_.setHomeStoresOf(cellId, homeStoreSpots_);   // (This home's alone: the rest are the society's already.)
+        society_.setBedsOf(slept, beds_);
     }
     return {true, "Cell loaded.", cellId};
 }
@@ -971,6 +971,8 @@ void World::indexRoads()
     roadSeams_.clear();
     roadExits_.clear();
     stepsCache_.clear();
+    routeNodes_.clear();
+    routeRanks_.clear();
     roadMaps_.clear();
     roadWays_.clear();
     crossings_.clear();

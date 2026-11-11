@@ -22,6 +22,8 @@
 #include <sstream>
 
 #if defined(__unix__) || defined(__APPLE__)
+#include <cerrno>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
@@ -34,6 +36,21 @@ using json::Value;
 
 namespace
 {
+#if defined(__unix__) || defined(__APPLE__)
+// A rename on the disk: the folder holding `file` synced (best effort: a folder that can't be opened is left).
+void syncFolderOf(const std::string& file)
+{
+    auto folder = std::filesystem::path(file).parent_path();
+    if (folder.empty())
+        folder = ".";
+    if (const int fd = ::open(folder.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC); fd >= 0)
+    {
+        ::fsync(fd);
+        ::close(fd);
+    }
+}
+#endif
+
 class DatabaseStore final : public Store
 {
   public:
@@ -113,6 +130,43 @@ class FileStore final : public Store
         std::string states;
         build(document, states);
         const std::string temp = path + ".tmp";
+#if defined(__unix__) || defined(__APPLE__)
+        // On the disk before it replaces the save, and the rename on the disk before the journal is trimmed of what it
+        // covers (Game::save trims next): a power cut never leaves an old or empty save with its journal records gone.
+        {
+            const std::string text = json::dump(document);
+            const int fd = ::open(temp.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0600);   // (Account verifiers: the owner's.)
+            if (fd < 0)
+            {
+                problem = "Cannot write " + temp + ".";
+                return false;
+            }
+            std::size_t done = 0;
+            bool ok = true;
+            while (ok && done < text.size())
+            {
+                const auto n = ::write(fd, text.data() + done, text.size() - done);
+                if (n < 0 && errno == EINTR)
+                    continue;
+                ok = n > 0;
+                if (ok)
+                    done += std::size_t(n);
+            }
+            ok = ok && ::fsync(fd) == 0;
+            ok = ::close(fd) == 0 && ok;
+            if (!ok)
+            {
+                problem = "Cannot write " + temp + ".";
+                return false;
+            }
+        }
+        if (std::rename(temp.c_str(), path.c_str()) != 0)
+        {
+            problem = "Cannot replace " + path + ".";
+            return false;
+        }
+        syncFolderOf(path);
+#else
         {
             std::ofstream out(temp, std::ios::binary | std::ios::trunc);
             if (!out)
@@ -120,9 +174,6 @@ class FileStore final : public Store
                 problem = "Cannot write " + temp + ".";
                 return false;
             }
-#if defined(__unix__) || defined(__APPLE__)
-            ::chmod(temp.c_str(), 0600);           // Account verifiers are in it: the owner's alone.
-#endif
             out << json::dump(document);
             if (!out.flush())
             {
@@ -135,6 +186,7 @@ class FileStore final : public Store
             problem = "Cannot replace " + path + ".";
             return false;
         }
+#endif
         return true;
     }
     bool saveInBackground(DbStore::Build build, std::uint64_t revision) override { return save(std::move(build), revision); }
@@ -512,6 +564,7 @@ bool Game::start(std::string& problem)
         note("info", "RATW private operator bridge enabled; no character credentials are accepted.");
     }
     mind_.configure(options_.dialogueEndpoint);
+    mendRoadNotices();                              // (The boards from the checkpoint, the Board and roads by the journal.)
     consolidate();
     world_.society().takeTillsMoved();              // (The journal starts from here: nothing moved before it is its to tell.)
     prime(shadow_);
@@ -1504,7 +1557,7 @@ void Game::makeResidents()
         }
         return;
     }
-    for (const auto& request : world_.takeResidentRequests())
+    for (const auto& request : world_.takeResidentRequests(World::ResidentsAPass))   // (The rest on the next ticks.)
     {
         if (request.kind == "farm")
         {
@@ -2738,10 +2791,31 @@ void Game::tick(double dt)
     barks(real);
     reactions(real);
     sermons(real);
-    // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...).
-    for (const auto& [who, words] : world_.takeNotices())
-        if (auto* c = clientOf(who))
-            system(c, words);
+    // What happened to players that no action of theirs answered (a bandit's blow, a caravan arriving...). A notice can
+    // tell of coins the tick moved (an escort's pay as its wagon comes in, a courier's at the letter's hand-over, a
+    // camp's bounty and found cargo): the economy and the roads are journalled first and each notice waits for that
+    // record, as a command's reply does, so a player is told only what a crash can't take back.
+    if (auto notices = world_.takeNotices(); !notices.empty())
+    {
+        const bool journal = store_ && store_->journal() && storageReady_;
+        const auto before = journalSeq_;
+        if (journal)
+            record(Economy | Roads);                // (One record for every notice of this tick; nothing if nothing moved.)
+        const auto covered = journalSeq_ != before ? journalSeq_ : 0;
+        for (const auto& [who, words] : notices)
+            if (auto* c = clientOf(who))
+            {
+                if (!covered)
+                {
+                    system(c, words);
+                    continue;
+                }
+                beginHolding(c);
+                heldFor_ = covered;
+                system(c, words);
+                endHolding();
+            }
+    }
     // The faucet door's log (doc 79, D16: logged, never refused): a reason no faucet group knows, once a day each.
     for (const auto& line : world_.society().takeDoorNotes())
         note("warn", "RATW_FAUCET " + line + " (staged payers topped up by " + std::to_string(world_.society().stagedTopUps()) +

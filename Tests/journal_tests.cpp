@@ -2,15 +2,18 @@
 // document, records replayed in order, the file journal written, read back after a crash and trimmed, and the writer
 // keeping a batch it could not write until it can.
 #include "RatwJournal.h"
+#include "RatwGame.h"
 
 #include <atomic>
 #include <chrono>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <sys/wait.h>
 #include <unistd.h>
 
 using namespace ratw;
@@ -125,6 +128,67 @@ void theFileJournal()
     expect(journal::readFile(path, 0, read, problem) && read.empty(), "no journal yet is an empty one");
 }
 
+// A torn tail, then a restart's records, then a second crash before any trim (the repair after doc 79's Phases 4 and 5
+// merged): the torn bytes are cut before the next record is appended, so it is never glued onto them (a world that then
+// crashed again refused to start: "journal record 6: Expected , or } in an object").
+void aTornTailThenMoreRecords()
+{
+    const std::string path = "/tmp/ratw-journal-test-torn-" + std::to_string(::getpid()) + ".journal";
+    std::remove(path.c_str());
+    {
+        auto writer = journal::fileWriter(path);
+        for (std::uint64_t seq = 1; seq <= 5; ++seq)
+            writer->append({seq, "[{\"set\":[\"n\"],\"value\":" + std::to_string(seq) + "}]"});
+        expect(writer->flush(), "five records written before the tear");
+    }
+    {
+        std::ofstream torn(path, std::ios::app);
+        torn << "6\t[{\"set\":[\"n\"],\"va";   // A power cut mid-append.
+    }
+    {
+        auto writer = journal::fileWriter(path);   // (The restart: its next record is numbered as the torn one was.)
+        writer->append({6, "[{\"set\":[\"n\"],\"value\":6}]"});
+        writer->append({7, "[{\"set\":[\"n\"],\"value\":7}]"});
+        expect(writer->flush(), "written after the tear");
+    }                                               // (And a second crash: nothing trimmed.)
+    std::vector<journal::Record> read;
+    std::string problem;
+    expect(journal::readFile(path, 0, read, problem) && read.size() == 7, "seven whole records after a torn tail: " + problem);
+    expect(read.size() == 7 && read[5].seq == 6 && read[5].text == "[{\"set\":[\"n\"],\"value\":6}]" && read[6].seq == 7,
+           "the record after the tear is its own line, not glued onto the torn bytes: " + (read.size() > 5 ? read[5].text : std::string()));
+    std::remove(path.c_str());
+}
+
+// The snapshot folders a crashed database server left (the repair after doc 79's Phases 4 and 5 merged): a gone server's
+// is removed, a running one's (this process's, and pid 1's) kept, and a file of that name or another name left alone.
+void deadServersSnapshotFoldersSwept()
+{
+    namespace fs = std::filesystem;
+    const auto temp = fs::temp_directory_path() / ("ratw-s2stage-sweep-" + std::to_string(::getpid()));
+    fs::remove_all(temp);
+    fs::create_directories(temp);
+    const pid_t child = ::fork();
+    if (child == 0)
+        ::_exit(0);
+    int status = 0;
+    ::waitpid(child, &status, 0);                   // (A pid now gone.)
+    const auto dead = temp / ("ratw-snapshots-" + std::to_string(child));
+    const auto alive = temp / ("ratw-snapshots-" + std::to_string(::getpid()));
+    const auto init = temp / "ratw-snapshots-1";
+    const auto other = temp / "ratw-snapshot-notes";
+    for (const auto& d : {dead, alive, init, other})
+    {
+        fs::create_directories(d);
+        std::ofstream(d / "snapshot-1.json") << "{}";
+    }
+    std::ofstream(temp / ("ratw-snapshots-" + std::to_string(child) + "0")) << "a file";
+    const auto removed = game::sweepSnapshotFolders(temp.string());
+    expect(removed == 1 && !fs::exists(dead), "a gone server's snapshot folder is removed: " + std::to_string(removed));
+    expect(fs::exists(alive / "snapshot-1.json") && fs::exists(init / "snapshot-1.json") && fs::exists(other / "snapshot-1.json"),
+           "a running server's folders, and others, are kept");
+    fs::remove_all(temp);
+}
+
 void aFailedBatchIsKeptUntilWritten()
 {
     std::atomic<int> attempts{0};
@@ -167,6 +231,8 @@ int main()
         changesApply();
         recordsReplayInOrder();
         theFileJournal();
+        aTornTailThenMoreRecords();
+        deadServersSnapshotFoldersSwept();
         aFailedBatchIsKeptUntilWritten();
     }
     catch (const std::exception& e)

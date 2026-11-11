@@ -34,19 +34,47 @@ std::string World::festivalName(const std::string& community, int season) const
     return FestivalNames[season][fnv(community) % 3];
 }
 
+std::uint64_t World::squarePrint(const std::string& cellId) const
+{
+    // What a square's stalls and crowd rest on besides its cell's ground: the posts worked in its cell and the homes in it.
+    std::uint64_t h = 1469598103934665603ULL;
+    const auto mix = [&](double v) { h = (h ^ std::uint64_t(std::int64_t(std::floor(v * 4)))) * 1099511628211ULL; };
+    for (const auto& p : society_.positions())
+        if (p.work.cell == cellId)
+            mix(p.work.x), mix(p.work.y);
+    h = (h ^ 0x9e3779b97f4a7c15ULL) * 1099511628211ULL;
+    for (const auto& [id, life] : society_.state().residents)
+        if (life.homeCell == cellId)
+            mix(life.homeX), mix(life.homeY);
+    return h;
+}
+
 const World::MarketSquare& World::square(const std::string& community)
 {
-    const auto today = std::int64_t(std::floor(calendarDays_));
-    if (today != squaresDay_)
+    // Worked out again when what it rests on moves: when the roster's places do (positions, residents, the towns), each
+    // square is checked against its market's cell and spot, its keepers and its homes, and only one that differs is
+    // worked out afresh (its cells loaded). A restore works them all out afresh. (Once a day, it was: the Country's seven
+    // market squares then loaded two cells each, about 50 ms of the day's turn; the repair after doc 79's Phases 4 and 5
+    // merged.)
+    if (squaresDay_ < 0)
     {
-        squares_.clear();                           // Worked out afresh each day: markets move with their merchants.
-        squaresDay_ = today;
+        squares_.clear();
+        squaresDay_ = 0;
     }
-    if (const auto found = squares_.find(community); found != squares_.end())
+    if (const auto key = society_.placesRevision(); key != squaresKey_)
+    {
+        squaresKey_ = key;
+        ++squaresCheck_;
+    }
+    auto found = squares_.find(community);
+    if (found != squares_.end() && found->second.checked == squaresCheck_)
         return found->second;
-    auto& sq = squares_[community];
     if (community.empty())
-        return sq;                                  // Those who live outside any town have no market to go to.
+    {
+        auto& none = squares_[community];
+        none.checked = squaresCheck_;
+        return none;                                // Those who live outside any town have no market to go to.
+    }
     // The market: a town's (where caravans load), or, without town records, where most of its merchants work.
     std::string at;
     Vec2 where;
@@ -69,7 +97,19 @@ const World::MarketSquare& World::square(const std::string& community)
                 break;
             }
     }
+    if (found != squares_.end() && found->second.found && found->second.fromCell == at && found->second.fromSpot.x == where.x &&
+        found->second.fromSpot.y == where.y && found->second.print == squarePrint(found->second.at.cell))
+    {
+        found->second.checked = squaresCheck_;      // (The same: kept.)
+        return found->second;
+    }
+    auto& sq = squares_[community];
+    sq = MarketSquare{};
     fillSquare(sq, at, where);
+    sq.fromCell = at;
+    sq.fromSpot = where;
+    sq.print = squarePrint(sq.at.cell);
+    sq.checked = squaresCheck_;
     return sq;
 }
 

@@ -2412,6 +2412,178 @@ void anEscortIsItsRoads()
 // --write-crashes DIR: each case played to its crash; its checkpoint (DIR/<case>.json), its journal (DIR/<case>.journal,
 // a record a line: its number, a tab, its text) and what was so at the crash (DIR/<case>.was.json), for
 // Tests/trade_show_pg.py to put through game.save_checkpoint and game.journal in a throwaway database and read back.
+// An escort paid on a world tick as its wagon comes in, told so, and then the game gone without saving (the repair after
+// Phases 4 and 5 merged): what a world tick told a player is journalled before they are told, so the restart, with her
+// away from the world, has her paid and the escort done (it used to put the wagon back on the road, find her gone at its
+// arrival and send the pay back).
+void anEscortsArrivalPayThroughACrash()
+{
+    auto f = strip();
+    const auto root = onDisk(f, "arrival-pay");
+    const auto path = crashSave("arrival-pay");
+    cleanSave(path);
+    std::string escort, player;
+    std::int64_t crashed = -1;
+    {
+        Client ash;                                 // (Still in the game at the crash: the client outlives it.)
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "a game starts for the arrival's pay: " + problem);
+        enterAt(g, ash, 81, "ash", "west");
+        g.settle();
+        auto& w = g.world();
+        auto& s = w.society();
+        player = ash.entityId;
+        w.tick(.6);
+        expect(w.setTimeOfDay(8).ok, "a morning for the arrival's pay");
+        w.roads().camps.clear();
+        w.roads().caravans.clear();
+        escort = w.postContract("escort", s.treasuryOf("west"), "west", "west", 12, 7, "guarding the next wagon from East to West", "east").id;
+        expect(w.takeContract(player, escort).ok, "ash takes the escort");
+        auto* me = w.entity(player);
+        me->cellId = id(1);
+        me->position = {8.5, 10.5};
+        const auto* sent = w.sendCaravan(*w.roadMarket("east"), *w.roadMarket("west"), {{"nails", 5}});
+        expect(sent && sent->escorts == std::vector<std::string>{player}, "the wagon counts ash among its escorts");
+        const auto trip = sent->id;
+        g.save();
+        g.settle();                                 // (The checkpoint: the escort taken, its pot full, the wagon out.)
+        const auto purse = s.cash(player);
+        bool arrived = false;
+        for (int t = 0; t < 1500 && !arrived; ++t)
+        {
+            if (const auto* wagon = w.entity("road:" + trip))
+            {
+                auto* p = w.entity(player);
+                p->cellId = wagon->cellId;
+                p->position = {std::max(.6, wagon->position.x - 1), wagon->position.y};
+            }
+            w.tick(1);
+            for (const auto& e : w.takeEvents())
+                arrived = arrived || (e.kind == "caravan arrives" && e.actor == trip);
+        }
+        expect(arrived, "the wagon reaches west with ash");
+        ash.events.clear();
+        g.tick(.05);                                // (The game's tick tells her what the world's did.)
+        g.settle();
+        expect(ash.said().find("You are paid 12 pennies for guarding it.") != std::string::npos, "ash is told she is paid: " + ash.said());
+        crashed = s.cash(player);
+        expect(crashed == purse + 12, "and she is: " + std::to_string(crashed - purse));
+    }                                               // (Gone without saving.)
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "starts again after the arrival's crash: " + problem);
+        auto& w = g.world();
+        for (int t = 0; t < 1800; ++t)
+            w.tick(1);
+        std::string status = "settled";
+        for (const auto& k : w.roads().contracts)
+            if (k.id == escort)
+                status = k.status;
+        expect(w.society().cash(player) == crashed,
+               "the pay she was told of is hers after the crash: " + std::to_string(w.society().cash(player)) + " of " + std::to_string(crashed) +
+                   " (the escort " + status + ")");
+        expect(status == "done" || status == "settled", "the escort is done, not expired: " + status);
+        expect(w.society().realBalanced(), "real money is balanced after the arrival's crash");
+    }
+    cleanSave(path);
+    std::filesystem::remove_all(root);
+}
+
+// The boards' notices through a restart and a crash (the repair after Phases 4 and 5 merged; every notice was dropped at
+// every load, since a notice is to no one). A player's paid notice is there after a clean restart. A wagon's carters'
+// notices, pinned before the checkpoint, are there after a crash too, and say what the Board says by the journal: the
+// escort taken after the checkpoint is not asked for again.
+void noticesSurviveARestart()
+{
+    auto f = strip();
+    const auto root = onDisk(f, "notices-restart");
+    const auto path = crashSave("notices-restart");
+    cleanSave(path);
+    std::string mine;
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "a game starts for the notices: " + problem);
+        Client ash;
+        enterAt(g, ash, 81, "ash", "east");
+        board(g, ash, {{"verb", "post"}, {"kind", "other"}, {"text", "Lost: a blue scarf, near the well."}});
+        g.settle();
+        for (const auto& [id, d] : g.documents().all())
+            if (d.kind == "notice" && d.author == ash.entityId)
+                mine = id;
+        expect(!mine.empty(), "ash's notice is up: " + ash.said());
+        g.save();
+        g.settle();
+        g.disconnect(&ash);
+    }
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "starts again for the notices: " + problem);
+        const auto* d = g.documents().find(mine);
+        expect(d && d->text == "Lost: a blue scarf, near the well." && d->board == "board:east", "a player's notice is up after a restart");
+    }
+    cleanSave(path);
+    market::Departure d;
+    std::string escort;
+    {
+        Client ash;                                 // (Still in the game at the crash: the client outlives it.)
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "a game starts for the wagon's notices: " + problem);
+        enterAt(g, ash, 82, "ash", "east");
+        g.settle();
+        auto& w = g.world();
+        const auto quiet = [&] { w.roads().camps = {{"camp_mid", id(4), 0, 0, -100, false}}; };
+        quiet();
+        w.tick(.6);
+        w.tick(.6);
+        for (int day = 0; day < 14 && d.id.empty(); ++day)
+        {
+            quiet();
+            if (const auto* posted = firstWagon(w))
+                d = *posted;
+            else
+                nextMorning(w);
+        }
+        quiet();
+        expect(!d.id.empty(), "a wagon is posted for the notices");
+        escort = w.postContract("escort", w.society().treasuryOf(d.to), d.to, d.to, 12, 7, "guarding the next wagon from East to West", d.from).id;
+        const auto* asking = g.documents().find("wagon-" + d.id + "-from");
+        expect(asking && asking->text.find("Escort wanted") != std::string::npos, "its notice asks for an escort");
+        g.save();
+        g.settle();                                 // (The checkpoint: the escort open, the notices asking.)
+        const auto* spot = w.boardSpot(d.from);
+        auto* me = w.entity(ash.entityId);
+        me->cellId = spot->cell;
+        me->position = {spot->x + .5, spot->y};
+        ash.events.clear();
+        g.command(&ash, cmd({{"type", "action"}, {"action", "take " + escort}}));
+        g.settle();
+        expect(ash.said().find("You take on") != std::string::npos, "ash takes the escort: " + ash.said());
+    }                                               // (Gone without saving.)
+    {
+        game::Game g(optionsOn(root, path));
+        std::string problem;
+        expect(g.start(problem), "starts again after the notices' crash: " + problem);
+        auto& w = g.world();
+        bool taken = false;
+        for (const auto& k : w.roads().contracts)
+            taken = taken || (k.id == escort && k.status == "taken");
+        expect(taken, "the escort is still taken after the crash");
+        const auto* from = g.documents().find("wagon-" + d.id + "-from");
+        const auto* to = g.documents().find("wagon-" + d.id + "-to");
+        expect(from && to, "the wagon's notices are up after the crash");
+        expect(from->text.find("Escort wanted") == std::string::npos && to->text.find("Escort wanted") == std::string::npos,
+               "and do not ask for the escort that is taken: " + from->text + " / " + to->text);
+        expect(from->text == w.departureNotice(*firstWagon(w), false), "the notice says what the Board says: " + from->text);
+    }
+    cleanSave(path);
+    std::filesystem::remove_all(root);
+}
+
 int writeCrashes(const std::filesystem::path& dir)
 {
     namespace fs = std::filesystem;
@@ -2494,6 +2666,8 @@ int main(int argc, char** argv)
         aSnapshotStillInTheStoresHands();
         anEscortIsItsRoads();
         pinnedNoticesFollowTheEscort();
+        anEscortsArrivalPayThroughACrash();
+        noticesSurviveARestart();
     }
     catch (const std::exception& error)
     {
