@@ -210,7 +210,9 @@ void boards()
     w.advanceCalendar(7.1);
     t.run(2);
     board(t.ash, {{"verb", "read"}});
-    expect(t.ash.last("board")->array("notices").empty(), "seven days on, the board is bare");
+    // (Bare of the players' own: a staged event's or cause's notice may be up since, the crier's: doc 79, Phase 7.)
+    for (const auto& n : t.ash.last("board")->array("notices"))
+        expect(contains(n.string("scent"), "the market's many paws"), "seven days on, the board is bare of theirs: " + n.string("text"));
     expect(society.realBalanced(), "real money balanced");
     fs::remove_all(root);
 }

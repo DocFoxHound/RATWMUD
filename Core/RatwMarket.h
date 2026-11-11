@@ -82,8 +82,43 @@ struct Data
         bool poor = false;                          // Done for the poor too (6.5: "a barber rarely"): `poor: true`.
     };
     std::vector<Service> services;
+    // Staged events (doc 79, 8.4; Phase 7): market.json's `events` list, each kind a market may see, and the slider's
+    // causes (8.5) by direction. Without the file: the few below. A host's entry is checked as the loader takes it
+    // (eventKindsOf, causesOf): a bad one is left out, the rest kept.
+    struct EventKind
+    {
+        std::string id;                              // [a-z0-9_], 32 at most.
+        std::string words, notice, cry, sign = "the crier";   // Its cause words; its notice and crier's line ("" none).
+        std::vector<std::pair<std::string, double>> goods;    // Base good -> the pressure it pushes toward (±0.3).
+        double yields = 0, brings = 0;               // The pressure for its cart's goods (a farm's), or its ship's.
+        int days = 2, times = 0, ahead = 0;          // Days it presses; Times points while it does; days posted ahead.
+        double hour = 9, weight = 1;
+        std::string needs;                           // "" any market; "city"; "port"; "cart"; "festival".
+        std::string ship;                            // "" none; "docks" (it comes in with a ship); "lost" (a ship lost).
+        bool refill = false, crowd = false, holdsCart = false;
+    };
+    std::vector<EventKind> events;
+    double eventsPerWeek = 2;                        // A market's in a week (1 to 3 at 2), x the rule eventRate.
+    struct Cause
+    {
+        std::string id, words, notice, cry;
+    };
+    std::vector<Cause> causesDown, causesUp;
+    // The words for a cause the Dungeon Master writes ({cause}, {Cause}: the words, the second capitalised).
+    std::string causeNoticeDown = "Hard times ahead: {cause}.", causeNoticeUp = "Better times ahead: {cause}.";
+    std::string causeCryDown = "Hear ye! {Cause}! Hard times ahead!", causeCryUp = "Hear ye! {Cause}! Better times ahead!";
+    const EventKind* eventKind(const std::string& id) const;
 };
 const Data& data();
+// A host's staged events and causes as the loader takes them (8.4, 8.5): a kind with an id of [a-z0-9_] (32 at most,
+// once), plain words (no line breaks; words 80, a notice 280, a cry 200 at most), at least one known good (its pressure
+// within ±0.3) or a cart's or ship's goods, known needs; none with the forbidden word: its id held to the name rule
+// (forbiddenInName: the letters anywhere), its words to the whole-word rule (forbiddenWord). 64 kinds at most.
+std::vector<Data::EventKind> eventKindsOf(const std::vector<json::Value>& list);
+std::vector<Data::Cause> causesOf(const std::vector<json::Value>& list);
+// Plain words a host or the Dungeon Master wrote (an event's or a cause's): no control character, `most` bytes at most,
+// and never the forbidden word (whole word).
+bool plainWords(const std::string& text, std::size_t most);
 // The forbidden-word check for world text made from data (a ship's name, a cargo's words; the user's rule, as
 // tools/test_realm2.py's for the world's own): true if `text` has the whole word "dog" or "dogs", in any case.
 bool forbiddenWord(const std::string& text);
@@ -188,6 +223,8 @@ struct HarvestOverride
 {
     int word = 1;
     double until = 0;
+    std::string cause;                               // Its words, the DM's ("blight at the orchards"; Phase 7).
+    bool told = true;                                // Its notice posted (Phase 7: World::overrideHarvest's is not yet).
 };
 // A committed ship (doc 79, 8.3; Phase 5): one line of a port's timetable, rolled a week ahead and saved, so a restart
 // shows the same ships. Its goods are for show: what its notice names (`brings` of the goods its port waits for ships
@@ -203,11 +240,57 @@ struct Ship
     std::vector<std::pair<std::string, int>> brings, takes;   // Base good -> pieces.
     std::string status = "due";
     double posted = 0;                              // The day it was posted (whole: the same world, the same timetable).
+    bool lost = false;                              // "storm" and lost at sea: a staged event's story (Phase 7, 8.4).
+};
+// A staged event (doc 79, 8.4; Phase 7): one of market.json's `events` at a market, rolled a week ahead by a seeded
+// scheduler (or added by the Dungeon Master) and saved on the Board, so a restart shows the same events. "due" until its
+// day and hour (a ship's: until its ship docks, or is lost), "on" while it presses its goods toward their targets (its
+// days), then "over" (kept two days for talk), or "cancelled" (the DM's, or its ship never came). Its words are filled
+// when it is rolled, so a host's later edit of the list changes no event already committed.
+struct StagedEvent
+{
+    std::string id;                                 // "e<N>" (Board::nextEvent).
+    std::string market, kind;
+    std::int64_t day = 0;
+    double hour = 9;
+    int days = 2, times = 0, ahead = 0;             // Days it presses; Times points while on; days its notice is up before.
+    bool crowd = false;                             // A crowd at its market's place (or its port's Wharf) while on.
+    std::vector<std::pair<std::string, double>> goods;   // Base good -> the pressure it pushes toward.
+    std::string words, notice, cry;                 // Its cause words ("the wedding up at the Heights"), notice, cry.
+    std::string subject;                            // "ship:<id>" (it comes in with it), "lost:<id>" (the ship it loses),
+                                                    // "farm:<id>" (the farm whose cart it holds); "" none.
+    std::string status = "due";
+    std::string by = "seeded";                      // "seeded" or "dm".
+    bool announced = false;                         // Its notice is up (posted ahead, or as it began).
+    double posted = 0;
+};
+// The slider's cause (8.5): the words a move of the slider came with (the DM's, else the seeded list's for its
+// direction), its notice and crier's line, its direction, the day it was given and its number, and whether the markets
+// have been told (their notices pinned).
+struct SliderCause
+{
+    std::string words, notice, cry;
+    int dir = 0;
+    double day = -1;
+    std::int64_t n = 0;
+    bool told = true, dm = false;
+};
+// The DM's Times nudge for a market (12: "boom at the port"), with its words and expiry, and whether it was posted.
+struct TimesNudge
+{
+    int points = 0;
+    double until = 0;
+    std::string cause;
+    bool told = true;
 };
 inline constexpr std::size_t TroublesKept = 64, CommittedMost = 256;
 // (A port's timetable: two weeks of at most a ship a day, and the few just sailed or stormbound. The Board's: 16 ports' worth.)
 inline constexpr std::size_t ShipsAPort = 16, ShipsMost = 256;
 inline constexpr std::int64_t BroughtInDays = 60;
+// (A market's events: two weeks of at most one a day, and those just over. The Board's: 16 markets' worth.)
+inline constexpr std::size_t EventsAMarket = 16, EventsMost = 256;
+inline constexpr double EventTargetMost = .3;        // An event's pressure, either way (inside the clamp, 7.6).
+inline constexpr int EventTimesMost = 20;            // The Times points a market's events add, either way (5.3).
 struct Board
 {
     // The DM's prosperity, the one slider of the staged economy (doc 79, 5.2): the smoothed value the Board's Times and
@@ -249,13 +332,24 @@ struct Board
     std::vector<Ship> ships;
     std::map<std::string, std::int64_t> shipsThrough;
     std::int64_t nextShip = 1;
+    // Staged events and causes (8.4, 8.5; Phase 7): the events committed (this week's and the next's, and those just
+    // over), each market's last week rolled and the next event's number; the slider's cause; the DM's Times nudges; and
+    // each market's harvest part of its Times shift (the roads' morning sets both), for the cause's words.
+    std::vector<StagedEvent> events;
+    std::map<std::string, std::int64_t> eventsThrough;
+    std::int64_t nextEvent = 1;
+    SliderCause sliderCause;
+    std::map<std::string, TimesNudge> nudges;
+    std::map<std::string, int> harvestShift;
     bool empty() const
     {
         return slider == 0 && sliderTarget == 0 && sliderDay < 0 && cell.empty() && day < 0 && budgetLeft.empty() && takenToday.empty() &&
                pushed.empty() && netToday.empty() && soldToday.empty() && week < 0 && discountWeek.empty() &&
                restocked.empty() && settingOut.empty() && recent.empty() && committed.empty() && rolledThrough < 0 &&
                nextDeparture == 1 && backRoom.empty() && harvestOverride.empty() && troubles.empty() && timesShift.empty() &&
-               news.empty() && broughtIn.empty() && ships.empty() && shipsThrough.empty() && nextShip == 1;
+               news.empty() && broughtIn.empty() && ships.empty() && shipsThrough.empty() && nextShip == 1 && events.empty() &&
+               eventsThrough.empty() && nextEvent == 1 && sliderCause.n == 0 && sliderCause.words.empty() && nudges.empty() &&
+               harvestShift.empty();
     }
 };
 json::Value encode(const Board& board);
@@ -268,6 +362,14 @@ Board decode(const json::Value& value);
 // brought that no ship brings (`wharf.never`); ShipsAPort a port (the oldest sailed or stormbound go first, then the
 // last still due), ShipsMost in all; and the next ship's id above every "s<N>" there, so none is given twice.
 void mendShips(Board& board);
+// A saved list of events made one the game could have rolled (decode's, and a restored state's): one event of an id; a
+// status the game knows, else due; numbers in their ranges (hour, days 1 to 7, Times points, each good's pressure within
+// EventTargetMost, six goods at most, known goods once each); words, notice and cry plain words (else the event is
+// dropped: a lying save's forbidden word never reaches a board); EventsAMarket a market (the oldest over or cancelled go
+// first), EventsMost in all; and the next event's id above every "e<N>" there.
+void mendEvents(Board& board);
+// The Times points a market's events add now (5.3): the sum of those on, within ±EventTimesMost.
+int eventTimes(const Board& board, const std::string& market);
 
 // Markets, found at load (5.1): a trade point for each community with a merchant post (its id the community's), lone
 // merchants joined to the nearest by path or to "outside", and the k nearest other markets by path.

@@ -125,6 +125,9 @@ Fixture strip(const std::string& layout = "EE.....WW", const std::string& extra 
     }
     m << "spawn \"" << id(0) << "\" 8.5 8.5\n";
     m << "economy 20000 100 50 10 12\n";
+    // (No staged events here: this suite pins the roads' and the port's own steps, which an event's pressure, refill or
+    // lost ship would move; events_tests runs them all together.)
+    m << "rule \"eventRate\" 0\n";
     const auto first = [&](char c) { return int(layout.find(c)); };
     if (const int e = first('E'); e >= 0)
     {

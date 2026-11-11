@@ -1085,6 +1085,32 @@ class World
     void shipFacts(const std::string& market, std::map<std::string, std::string>& facts) const;   // (Talk's world.ships.)
     // A ship is in at the port this cell's posts are of, and its hands are at work on it.
     bool wharfCrowd(const std::string& cell) const;
+    // Staged events and causes (doc 79, 8.4-8.6; Phase 7; RatwEvents.cpp). Each market sees 1 to 3 events a week (the
+    // rule eventRate in percent, seeded by the week and the market) of market.json's `events` list it can show (its
+    // shops sell or buy the goods; a city's, a port's, a farm cart's, a festival's), committed and saved on the Market
+    // Board a week ahead, so a restart shows the same; each with its notice (posted ahead, or as it begins), a crier's
+    // line, a crowd where it says, the talk facts world.event, and its goods pressed toward their targets for its days,
+    // inside the clamp, with "event" as their cause. Events never touch money, bands or posts; their Times points (5.3)
+    // are small. A world with no port, no wagon and no farm still has them, of the goods its shops deal in.
+    // The events a market sees in a calendar week (0 while the rule is 0).
+    int eventsInWeek(const std::string& market, std::int64_t week) const;
+    // The Dungeon Master's (Phase 9's Prosperity tab; tests): an event of market.json's list added at a market, on a day
+    // of this calendar week or the next (the weeks committed) and an hour still to come (or now: it begins at the next
+    // pass), whatever the seeded scheduler rolled; its needs only
+    // as its kind must have them (a ship's: the first of the port's due from that day; a cart's: a staffed farm's cart to
+    // it). Its id, or "" and why not. An event due or on cancelled (its notice down, its goods left to ease back).
+    std::string addStagedEvent(const std::string& market, const std::string& kind, std::int64_t day, double hour, std::string& problem);
+    bool cancelStagedEvent(const std::string& id);
+    // The DM's Times nudge for a market (points, ±100, for `days`; 0 lifts it) and harvest override for an area (0 poor,
+    // 1 fair, 2 good, for `days`), each with its words: posted on the boards where it bears unless the rule
+    // overrideNotices is 0 (8.5). False for a market or area the world hasn't got, or words that aren't plain.
+    bool nudgeTimes(const std::string& market, int points, double days, const std::string& cause);
+    bool overrideHarvest(const std::string& area, int word, double days, const std::string& cause);
+    // An event's notice in words, and the facts talk reads (world.event, world.event_words, world.event_when: now, soon,
+    // past; world.times and world.times_cause) at a market; and whether an event has a crowd in this cell.
+    void eventFacts(const std::string& market, std::map<std::string, std::string>& facts) const;
+    bool eventCrowd(const std::string& cell) const;
+    const market::StagedEvent* stagedEvent(const std::string& id) const;
     // Contracts a player could take where they stand, taking one, and marking one done (a bounty, by whoever ended
     // the camp; the Dungeon Master, for now). Couriers, escorts and supply runs are finished by doing them.
     std::vector<const Contract*> contractsNear(const std::string& player) const;
@@ -2346,6 +2372,21 @@ class World
     void shipsAtWork();
     void postShips();
     void dropOrphanedShips();
+    void shipLost(market::Ship& ship);              // (A staged event's lost ship: Phase 7.)
+    bool shipToBeLost(const market::Ship& ship) const;
+    // Staged events and causes (Phase 7; RatwEvents.cpp).
+    void eventsMorning(std::int64_t today);
+    void rollEvents(const Town& market, std::int64_t week, std::int64_t today);
+    bool makeEvent(const std::string& market, const market::Data::EventKind& kind, std::int64_t day, const std::string& seed,
+                   market::StagedEvent& out, std::string& problem) const;
+    void tendEvents();
+    void tendCauses();
+    void eventBegins(market::StagedEvent& e);
+    void eventEnds(market::StagedEvent& e, const char* why);
+    void pressEvent(const market::StagedEvent& e);
+    bool cartHeld(const std::string& farmId, const std::string& market, std::int64_t day) const;
+    std::string cityMarket() const;
+    void dropOrphanedEvents();
     void holdBoardToCalendar();                     // (At a restore: the Board's days no further ahead than this calendar allows.)
     bool portErrand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
                     std::string& goalCell, Vec2& goal) const;

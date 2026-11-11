@@ -6831,6 +6831,7 @@ Result World::restore(const PersistedWorld& saved)
     roadMarketsKey_ = ~0ULL;
     dropOrphanedRoads();
     dropOrphanedShips();                            // (Phase 5: a port deleted, its ships with it.)
+    dropOrphanedEvents();                           // (Phase 7: a market deleted, its staged events with it.)
     holdBoardToCalendar();
     return {true, "Saved world restored.", {}};
 }

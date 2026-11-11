@@ -175,6 +175,10 @@ inline constexpr RuleInfo Rules[] = {
     // trips are shown near players, a member walking to the counter (D21: on).
     {"theftCap", 0, 20, 4},
     {"errandRunners", 0, 1, 1},
+    // Staged events and causes (doc 79, 8.4, 8.5 and 12; Phase 7): the events a market sees, in percent of market.json's
+    // own (0 none; 300 three times as many), and whether the DM's Times nudges and harvest overrides post a notice (1 on).
+    {"eventRate", 0, 300, 100},
+    {"overrideNotices", 0, 1, 1},
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // Data/Items as the catalogue reads it (RATW_DATA_DIR, the working directory or above, the source tree): its parent's

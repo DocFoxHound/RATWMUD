@@ -190,6 +190,10 @@ std::string Game::scentLine(const std::string& reader, const documents::Document
     // (The ships' timetable, the Wharf office's: handled by a whole pier, masked by nobody. Doc 79, Phase 5's repair.)
     if (d.scent.empty() && d.what.rfind("ships:", 0) == 0)
         return "It smells of tar and salt, and of many paws.";
+    // (A staged event's or a cause's, the crier's: the market's many paws. Doc 79, Phase 7.)
+    if (d.scent.empty() && (d.what.rfind("event:", 0) == 0 || d.what.rfind("times:", 0) == 0 || d.what.rfind("nudge:", 0) == 0 ||
+                            d.what.rfind("harvest:", 0) == 0))
+        return "It smells of ink and of the market's many paws.";
     if (d.scent.empty())
         return "It carries no scent at all. Someone took care.";
     if (world_.calendarDays() - d.written > r.scentDays)

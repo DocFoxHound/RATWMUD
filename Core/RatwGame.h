@@ -999,6 +999,21 @@ class Game
     void pinCartersNotice(const std::string& id, const std::string& market, const std::string& text, const std::string& departure);
     void mendRoadNotices();                         // (At a start: the carters' notices as the Board and roads now are.)
     void portNotices(const WorldEvent& e);          // (The ships' timetable on the port's board: doc 79, 8.3; RatwBoards.cpp.)
+    // Staged events and causes on the boards (doc 79, 8.4, 8.5; Phase 7; RatwBoards.cpp): an event's notice (posted ahead
+    // or as it begins, taken down when it is over or cancelled), the slider's cause in every market, the DM's Times nudges
+    // and harvest overrides; and their crier's lines, cried at the market's square in the daytime (a line a player in the
+    // square's cell hears: tendCriers). Voices only: a cry not yet cried when the server stops is not cried after it.
+    void stagedNotices(const WorldEvent& e);
+    void pinStagedNotice(const std::string& id, const std::string& market, const std::string& what, const std::string& text,
+                         const std::string& sign);
+    void stagedCry(const std::string& market, const std::string& line);
+    struct PendingCry
+    {
+        std::string market, line;
+        double until = 0;                           // (Calendar days: a cry not cried by then is dropped.)
+    };
+    std::vector<PendingCry> pendingCries_;
+    void tendStagedCries();
     void tendResidentLetters();
     bool residentLetterRoom(const std::string& resident, const std::string& player) const;
     documents::Document* residentLetter(const std::string& resident, const std::string& player, const std::string& kind, const std::string& text,

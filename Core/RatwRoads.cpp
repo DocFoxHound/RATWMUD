@@ -483,6 +483,7 @@ void World::tendRoads()
     if (roadMarkets_.empty())
     {
         tendPort();                                 // (No market left: its port's ships go with it. Phase 5.)
+        tendEvents();                               // (And its staged events: Phase 7.)
         return;
     }
     // A courier is done when the one who took it stands before the recipient.
@@ -513,9 +514,11 @@ void World::tendRoads()
         roadsDaily();
         roadsMorning(today);
         portMorning(today);                         // (The ships' timetable: Phase 5, RatwPort.cpp.)
+        eventsMorning(today);                       // (The staged events: Phase 7, RatwEvents.cpp; after the ships they ride.)
     }
     setOut();
     tendPort();
+    tendEvents();
     tendRoadFolk();
     absorbJournal();
 }

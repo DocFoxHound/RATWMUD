@@ -92,7 +92,7 @@
     {"id": "preserved", "name": "dried and preserved fruit", "goods": ["dried_apples", "fruit_preserves"], "price": [100, 100, 100, 90], "shelf": [100, 120, 250, 150]}
   ],
   "rules": {
-    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays), the Board's pressure settings, and staged trade's (Phase 4): the wagons' frequency in percent (caravanRate), the most wagons and farm carts on the roads at once (wagonsOnRoad, cartsOnRoad), a bandit camp's most strength (campStrengthMost) and a bounty's most pennies (bountyMost); and the port's (Phase 5): the ships a week at a port (shipsPerWeek: 0 none, even with a port; its own 2 gives 1-3 a week by the slider and the season, a week running one either side of the rule and fewer in winter); and street life's (Phase 6): the most thefts a market sees in a day (theftCap) and whether a household's shopping is a member walking to the counter where a player is near (errandRunners: 1 on, D21; off, the household's food waits for the player to leave). A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
+    "about": "The rules' defaults (doc 79, 12; Core/RatwItems.h Rules[] names them, with their ranges): the clamps (neverHungry, neverBroke), the days of food more before a Restday or festival (buyAheadDays), the Board's pressure settings, and staged trade's (Phase 4): the wagons' frequency in percent (caravanRate), the most wagons and farm carts on the roads at once (wagonsOnRoad, cartsOnRoad), a bandit camp's most strength (campStrengthMost) and a bounty's most pennies (bountyMost); and the port's (Phase 5): the ships a week at a port (shipsPerWeek: 0 none, even with a port; its own 2 gives 1-3 a week by the slider and the season, a week running one either side of the rule and fewer in winter); and street life's (Phase 6): the most thefts a market sees in a day (theftCap) and whether a household's shopping is a member walking to the counter where a player is near (errandRunners: 1 on, D21; off, the household's food waits for the player to leave); and staged events' (Phase 7): the events a market sees in percent of the `events` block's own (eventRate: 0 none, 100 the list's 1-3 a week, 300 three times as many) and whether the DM's Times nudges and harvest overrides post a notice on the boards (overrideNotices: 1 on). A world's own `rule` records (live.economy.rules) are over these; a name not here or in Rules[] is skipped.",
     "neverHungry": 0,
     "neverBroke": 0,
     "buyAheadDays": 1,
@@ -113,7 +113,9 @@
     "bountyMost": 60,
     "shipsPerWeek": 2,
     "theftCap": 4,
-    "errandRunners": 1
+    "errandRunners": 1,
+    "eventRate": 100,
+    "overrideNotices": 1
   },
   "services": {
     "about": "The city's services (doc 79, 6.5 and 12: kept, at a frequency by band): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Since Phase 6 (street life) they are staged sales: each household has each done about once every `every` days times its band's `services` (status.json; a patron's only for the rich, and for the poor only those marked `poor: true`, the barber's: 6.5's \"a barber rarely\"), at a business of its kind in its market; nothing is paid or kept, and each counts toward that business's trade against its ordinary trade (the `business` fact). A world's `service` record (the Rules panel) turns one off or changes its every.",
@@ -385,5 +387,240 @@
       "straw",
       "tallow"
     ]
+  },
+  "events": {
+    "about": "Staged events and the slider's causes (doc 79, 8.4, 8.5 and D25; Phase 7; Core/RatwEvents.cpp). Each market sees `perWeek` events a week, one more or fewer by a seeded score (1-3 at 2), times the rule eventRate, each of `list` it can show, rolled a week ahead and kept on the Market Board (a restart shows the same; a host's edit here changes none already rolled). An entry: `id` (a-z, 0-9 and _; never the forbidden word, as letters anywhere), `words` (its cause, said in talk, the price list's tooltip and the Times' cause), `notice` (on its market's board, signed `sign`), `cry` (the crier's line at the square), with {market}, {day}, {goods}, {ship} and {from} filled ({Market}: capitalised); `goods`: each good's pressure the event presses toward (within 0.3 either way: inside the clamp), only those its market's shops sell or buy, four at most; `days` it presses (1-7), `times` its points on its market's Times while it does (within 20), `ahead` the days its notice is up before it (0: it is posted as it begins), `hour`, `weight` (how often it is picked), `needs` (city: the realm's largest market; port; cart: a staffed farm's cart to the market, `yields` the pressure on what that cart brings, `holdsCart` the cart kept home that day; festival: the day before a festival), `ship` (docks: it comes in with a ship of the port's timetable, `brings` the pressure on that ship's cargo, cancelled if the ship never comes; lost: the ship is lost at sea), `refill` (its cheap goods set out as it begins), `crowd` (a crowd at its market's place or the Wharf while on). A bad entry is left out, the rest kept; every text is checked for the forbidden word (whole words), and so is a Dungeon Master's cause. `causes`: the words a move of the prosperity slider comes with when the DM writes none (`down`, `up`: `words`, `notice`, `cry`), and the notice and cry for one the DM writes ({cause}, {Cause}). Events never touch money, bands or posts.",
+    "perWeek": 2,
+    "list": [
+      {
+        "id": "house_wedding",
+        "words": "the House wedding",
+        "notice": "A House wedding in {market} on {day}. The stewards are buying {goods}.",
+        "cry": "Hear ye! A House wedding on {day}, and wine for the stewards!",
+        "sign": "the stewards of the Houses",
+        "goods": {
+          "wine": 0.2,
+          "mead": 0.15,
+          "brandy": 0.15,
+          "fine_bread": 0.1,
+          "cheese": 0.1,
+          "ale": 0.1
+        },
+        "days": 3,
+        "times": 5,
+        "ahead": 2,
+        "hour": 10,
+        "needs": "city",
+        "crowd": true
+      },
+      {
+        "id": "works_fire",
+        "words": "the fire at the works",
+        "notice": "Fire at the works in {market}! {Goods} dear till it is put to rights.",
+        "cry": "Fire at the works! Hands wanted with buckets!",
+        "goods": {
+          "timber": 0.15,
+          "planks": 0.2,
+          "bricks": 0.15,
+          "charcoal": 0.15,
+          "nails": 0.1
+        },
+        "days": 3,
+        "times": -8,
+        "hour": 11
+      },
+      {
+        "id": "good_catch",
+        "words": "a good catch",
+        "notice": "A good catch is in at {market}: {goods} cheap a day or two.",
+        "cry": "Fresh fish! A good catch in!",
+        "goods": {
+          "fish": -0.2,
+          "shellfish": -0.15,
+          "salt_fish": -0.1,
+          "smoked_fish": -0.1
+        },
+        "days": 2,
+        "times": 3,
+        "hour": 7,
+        "refill": true,
+        "crowd": true
+      },
+      {
+        "id": "orchard_blight",
+        "words": "blight in the orchards",
+        "notice": "Blight in the orchards: {goods} dear at {market} this week.",
+        "goods": {
+          "apples": 0.2,
+          "cider": 0.15,
+          "berries": 0.1,
+          "grapes": 0.15
+        },
+        "days": 4,
+        "times": -5,
+        "hour": 8
+      },
+      {
+        "id": "festival_buying",
+        "words": "the buying ahead for the festival",
+        "notice": "The festival is near: the inns and kitchens of {market} are buying {goods}.",
+        "cry": "The festival is near! Inns and kitchens buying!",
+        "goods": {
+          "ale": 0.15,
+          "mead": 0.15,
+          "bread": 0.1,
+          "cheese": 0.1,
+          "raw_meat": 0.1
+        },
+        "days": 2,
+        "times": 4,
+        "ahead": 1,
+        "hour": 9,
+        "needs": "festival"
+      },
+      {
+        "id": "lame_ox",
+        "words": "a lame ox on the cart from {from}",
+        "notice": "The cart from {from} is not coming today: a lame ox. {Goods} short at {market} till it does.",
+        "yields": 0.1,
+        "days": 1,
+        "times": -2,
+        "hour": 5,
+        "needs": "cart",
+        "holdsCart": true
+      },
+      {
+        "id": "rich_cargo",
+        "words": "{ship}'s rich cargo",
+        "notice": "{Ship} is due on {day} with a rich cargo: {goods} cheap at the Wharf when she is in.",
+        "cry": "{Ship} is in, and a rich cargo with her!",
+        "sign": "the Wharf office",
+        "goods": {
+          "silk": -0.2,
+          "spices": -0.2,
+          "brandy": -0.15,
+          "wine": -0.15
+        },
+        "brings": -0.15,
+        "days": 2,
+        "times": 5,
+        "ahead": 2,
+        "ship": "docks",
+        "crowd": true
+      },
+      {
+        "id": "lost_ship",
+        "words": "the loss of {ship}",
+        "notice": "{Ship} is lost at sea with all her cargo. {Goods} dear at {market} till another comes.",
+        "cry": "{Ship} is lost! Prayers at the chapel for her crew!",
+        "sign": "the Wharf office",
+        "brings": 0.2,
+        "days": 4,
+        "times": -8,
+        "ship": "lost",
+        "crowd": true
+      },
+      {
+        "id": "mill_stopped",
+        "words": "the mill wheel stopped",
+        "notice": "The mill wheel is stopped for mending: {goods} dear in {market} till it turns again.",
+        "goods": {
+          "flour": 0.15,
+          "bread": 0.1,
+          "fine_bread": 0.1,
+          "porridge": 0.1
+        },
+        "days": 2,
+        "times": -3,
+        "hour": 8
+      },
+      {
+        "id": "drovers_in",
+        "words": "the drovers in with their herds",
+        "notice": "The drovers are in at {market} with their herds: {goods} cheap a day or two.",
+        "goods": {
+          "raw_meat": -0.15,
+          "mutton": -0.15,
+          "hide": -0.1,
+          "sheepskin": -0.1
+        },
+        "days": 2,
+        "times": 3,
+        "hour": 9,
+        "crowd": true
+      },
+      {
+        "id": "salt_short",
+        "words": "the salt pans flooded",
+        "notice": "The salt pans are flooded: {goods} dear in {market} this week.",
+        "goods": {
+          "salt": 0.2,
+          "salt_fish": 0.1,
+          "smoked_fish": 0.1
+        },
+        "days": 3,
+        "times": -3,
+        "hour": 9
+      },
+      {
+        "id": "brewers_glut",
+        "words": "a brewing too many",
+        "notice": "The brewers have brewed too much: {goods} cheap at {market}.",
+        "goods": {
+          "ale": -0.15,
+          "cider": -0.1,
+          "mead": -0.1
+        },
+        "days": 2,
+        "times": 2,
+        "hour": 12
+      }
+    ],
+    "causes": {
+      "noticeDown": "Hard times ahead: {cause}.",
+      "noticeUp": "Better times ahead: {cause}.",
+      "cryDown": "Hear ye! {Cause}! Hard times ahead!",
+      "cryUp": "Hear ye! {Cause}! Better times ahead!",
+      "down": [
+        {
+          "id": "war_levy",
+          "words": "the Crown's war levy",
+          "notice": "By order of the Crown: a levy for the war, on every household and trade.",
+          "cry": "Hear ye! The Crown levies for the war!"
+        },
+        {
+          "id": "granary_rot",
+          "words": "rot in the granaries",
+          "notice": "Rot in the realm's granaries: bread and grain will be dear this season.",
+          "cry": "Hear ye! Rot in the granaries!"
+        },
+        {
+          "id": "bad_winter",
+          "words": "the hard winter",
+          "notice": "A hard winter coming: the roads slow, the stores thin.",
+          "cry": "Hear ye! A hard winter is on us!"
+        }
+      ],
+      "up": [
+        {
+          "id": "silver_strike",
+          "words": "the silver strike in the hills",
+          "notice": "Silver struck in the hills: coin and work for all who want it.",
+          "cry": "Hear ye! Silver in the hills!"
+        },
+        {
+          "id": "peace",
+          "words": "the peace with the north",
+          "notice": "Peace is sealed with the north: the roads are open and trade comes back.",
+          "cry": "Hear ye! Peace with the north!"
+        },
+        {
+          "id": "rich_harvest",
+          "words": "the rich harvest",
+          "notice": "The richest harvest in years is coming in: full barns and full purses.",
+          "cry": "Hear ye! A rich harvest!"
+        }
+      ]
+    }
   }
 }

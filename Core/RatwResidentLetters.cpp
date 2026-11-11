@@ -108,6 +108,7 @@ void Game::watchEvent(const WorldEvent& e)
     storylinesFromEvent(e);                         // (Contracts, kills, fights, Gifts, gifts: doc 58.)
     roadNotices(e);                                 // (The carters' notices: doc 79, 8.1.)
     portNotices(e);                                 // (The ships' timetable: doc 79, 8.3.)
+    stagedNotices(e);                               // (Staged events and causes: doc 79, 8.4-8.5.)
     // Occasions (doc 55, 6): a marriage's wedding, a death's funeral, hosted by residents; and their witnesses.
     if (e.kind == "marriage" || e.kind == "mourning")
     {

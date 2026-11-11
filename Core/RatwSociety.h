@@ -639,7 +639,19 @@ class Society
     // region, or the region of homes it serves), else a member's shop's or workplace's, else the first market's.
     std::string marketOfHome(const std::string& homeCell, const std::vector<std::string>& members) const;
     void setQuarters(std::map<std::string, std::string> quarters);
-    void setProsperity(int target, bool now = false);
+    // The DM's prosperity (5.2, 8.5): where the slider heads, at once with `now`, and why. A move comes with its cause:
+    // the DM's words (`cause`: plain words, 80 at most, never the forbidden word; else the seeded list's), or, with none,
+    // one of market.json's causes for its direction, seeded by the day (a move on the same way keeps the cause it has).
+    // The world posts the cause in every market and has it cried (World::tendCauses). False if the DM's words were not
+    // taken (the seeded cause stands in).
+    bool setProsperity(int target, bool now = false, const std::string& cause = {});
+    // A market's Times score (5.3): the slider, its roads' and harvests' shift (the world's each morning), its staged
+    // events on (8.4) and the DM's nudge while it holds. Never any player-caused pressure. And its cause in words: the
+    // largest part on the score's side ("" in ordinary times with nothing either way): the slider's cause, "a good
+    // harvest", "the wagons robbed on the road", an event's words, the DM's nudge's.
+    int timesScore(const std::string& market) const;
+    std::string timesCause(const std::string& market) const;
+    void setHarvestShift(std::map<std::string, int> shift);
     const market::Rules& marketRules() const { return marketRules_; }
     // The Board's clock (game days): decide()'s, or a test's.
     void setMarketClock(double absoluteDay) { marketAt_ = absoluteDay; }

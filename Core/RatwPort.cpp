@@ -420,6 +420,30 @@ void World::shipStormbound(market::Ship& s)
                  capital(s.name) + " is stormbound and will not come."});
 }
 
+bool World::shipToBeLost(const market::Ship& s) const
+{
+    for (const auto& e : society_.board().events)
+        if (e.status == "due" && e.subject == "lost:" + s.id)
+            return true;
+    return false;
+}
+
+void World::shipLost(market::Ship& s)
+{
+    // A ship lost at sea (8.4, 8.6: "a lost ship as its own story"; Phase 7): stormbound, and more: never coming, its
+    // cargo dearer than a storm's (the staged event that loses it presses its goods further as it begins), a trouble for
+    // the market's Times, and word of it on the timetable's notice.
+    s.status = "storm";
+    s.lost = true;
+    shipsChanged_ = true;
+    for (const auto& [g, n] : s.brings)
+        society_.setPressure(s.port, g, society_.pressure(s.port, g) + StormNudge, "ship late");
+    society_.stagedBoard().troubles.push_back({calendarDays_, s.port, "late"});
+    const auto* p = port(s.port);
+    recordEvent({"ship lost", s.id, s.port, p ? p->cell : std::string(), 0, 0, s.name, int(s.brings.size()), 0,
+                 capital(s.name) + " is lost at sea with all her cargo."});
+}
+
 void World::shipDocks(market::Ship& s)
 {
     // Ship day (8.3, 8.6): its cargo pulled halfway toward the ship baseline at the port's market (never up; the cause
@@ -510,7 +534,7 @@ void World::tendPort()
         }
         if ((s.status != "due" && s.status != "in") || today <= s.day + SailedKeptDays)
             continue;
-        if (s.status == "in" || !stormSeeded(s))
+        if (s.status == "in" || (!stormSeeded(s) && !shipToBeLost(s)))
         {
             if (s.status == "due" && refilled.insert(s.port).second)
                 for (const auto& g : p->imports)
@@ -549,7 +573,9 @@ void World::tendPort()
     {
         if (s.status == "due" && calendarDays_ >= double(s.day))
         {
-            if (stormSeeded(s))
+            if (shipToBeLost(s))
+                shipLost(s);                        // (A staged event's story: Phase 7, 8.4.)
+            else if (stormSeeded(s))
                 shipStormbound(s);
             else if (calendarDays_ >= double(s.day) + s.hour / 24)
                 shipDocks(s);
@@ -677,7 +703,7 @@ void World::shipFacts(const std::string& market, std::map<std::string, std::stri
         if (r < rank || (r == rank && r < 9 && best && (s.status == "due" ? s.day < best->day : s.day > best->day)))
             rank = r, best = &s;
     }
-    facts["world.ships"] = rank == 0 ? "in" : rank == 1 ? "late" : rank == 3 ? "sailed" : rank < 9 ? "due" : "no";
+    facts["world.ships"] = rank == 0 ? "in" : rank == 1 ? (best && best->lost ? "lost" : "late") : rank == 3 ? "sailed" : rank < 9 ? "due" : "no";
     if (best)
         facts["world.ship_name"] = best->name;
 }
@@ -764,15 +790,23 @@ std::string World::shipsNotice(const std::string& market) const
             text += ".";
         if (!storms.empty())
         {
+            std::vector<std::string> names, lost;
+            for (const auto* s : storms)
+                (s->lost ? lost : names).push_back(s->name);
             if (level < 2)
             {
-                std::vector<std::string> names;
-                for (const auto* s : storms)
-                    names.push_back(s->name);
-                text += " " + capital(listed(names)) + (names.size() == 1 ? " is" : " are") + " stormbound and will not come.";
+                if (!names.empty())
+                    text += " " + capital(listed(names)) + (names.size() == 1 ? " is" : " are") + " stormbound and will not come.";
+                if (!lost.empty())
+                    text += " " + capital(listed(lost)) + (lost.size() == 1 ? " is" : " are") + " lost at sea.";
             }
             else
-                text += " " + std::to_string(storms.size()) + (storms.size() == 1 ? " ship is" : " ships are") + " stormbound and will not come.";
+            {
+                if (!names.empty())
+                    text += " " + std::to_string(names.size()) + (names.size() == 1 ? " ship is" : " ships are") + " stormbound and will not come.";
+                if (!lost.empty())
+                    text += " " + std::to_string(lost.size()) + (lost.size() == 1 ? " ship is" : " ships are") + " lost at sea.";
+            }
             // ("No ship this week": only of this week, and only where no ship of it came in, is in or is still due.)
             const bool thisWeek = std::any_of(storms.begin(), storms.end(), [&](const market::Ship* s) { return s->day / Week == today / Week; });
             const bool another = std::any_of(ships.begin(), ships.end(), [&](const market::Ship* o) {

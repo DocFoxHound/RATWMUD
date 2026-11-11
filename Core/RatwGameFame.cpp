@@ -533,6 +533,7 @@ void Game::cryLegends()
 void Game::tendCriers()
 {
     cryLegends();
+    tendStagedCries();                              // (A staged event's or a cause's: doc 79, Phase 7.)
     // A line a minute once the crier is at the square, spoken only where a player is in the square's cell (the reach was
     // set either way); no one there, the lines pass unheard.
     for (auto it = criers_.begin(); it != criers_.end();)

@@ -322,8 +322,11 @@ int World::harvestOf(const std::string& area) const
     const auto date = calendar::calendarAt(calendarDays_);
     const auto season = std::int64_t(date.year) * 4 + int(date.season);
     // (The season leans it a little: the autumn's gathering in the best, the winter's stores the leanest.)
-    const double lean = date.season == calendar::Season::Autumn ? .08 : date.season == calendar::Season::Summer ? .04
-                        : date.season == calendar::Season::Winter ? -.08 : 0;
+    double lean = date.season == calendar::Season::Autumn ? .08 : date.season == calendar::Season::Summer ? .04
+                  : date.season == calendar::Season::Winter ? -.08 : 0;
+    // (While the slider moves, the harvest leans its way too, so a cause and its effects agree: 8.5, Phase 7.)
+    if (b.sliderTarget != b.slider)
+        lean += b.sliderTarget > b.slider ? .08 : -.08;
     const double score = unit("harvest:" + area, season) - .5 + double(b.slider) / 400. + lean;
     return score < -.22 ? 0 : score > .22 ? 2 : 1;
 }
@@ -658,6 +661,8 @@ void World::rollCarts(std::int64_t today)
                 goods.push_back(g);
         if (goods.empty())
             continue;
+        if (cartHeld(end.farmId, end.market, today))
+            continue;                               // (A staged event holds it today, a lame ox: its own notice and push.)
         const int harvest = harvestOf(end.area);
         const double comes = harvest == 2 ? 1 : harvest == 1 ? .7 : .4;
         if (unit("cart:" + end.farmId, today) >= comes)
@@ -1019,9 +1024,11 @@ void World::roadsMorning(std::int64_t today)
         h.first += harvestOf(end.area) - 1;
         ++h.second;
     }
+    std::map<std::string, int> harvestShift;       // (The harvest's part, for the Times' cause in words: Phase 7.)
     for (const auto& [m, h] : harvests)
         if (h.second > 0)
-            shift[m] += int(std::lround(15.0 * h.first / h.second));
+            shift[m] += harvestShift[m] = int(std::lround(15.0 * h.first / h.second));
+    society_.setHarvestShift(std::move(harvestShift));
     std::map<std::string, int> raids, lates;
     for (const auto& t : b.troubles)
         ++(t.kind == "raid" ? raids : lates)[t.market];

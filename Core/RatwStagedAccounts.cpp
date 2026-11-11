@@ -984,7 +984,11 @@ std::string Society::meansNote(const std::string& id) const
         static const char* const Times[] = {"hard", "lean", "ordinary", "good", "boom"};
         const int times = std::clamp(hooks_.times(*this, s->market), -2, 2);
         if (times != 0)
-            note += " Times here: " + std::string(Times[times + 2]) + ".";
+        {
+            // (And why, in the words people use for it: the slider's cause, a harvest, an event: 8.5, Phase 7.)
+            const auto cause = timesCause(s->market);
+            note += " Times here: " + std::string(Times[times + 2]) + (cause.empty() ? std::string() : ", since " + cause) + ".";
+        }
     }
     if (note.size() > 300)
         note.resize(300);

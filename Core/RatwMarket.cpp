@@ -45,6 +45,32 @@ double clampNumber(double x, double low, double high, double fallback)
     return finite(x) ? std::clamp(x, low, high) : fallback;
 }
 
+// The staged events and causes a world has without market.json's (doc 79, 8.4, 8.5): a few any market with food can
+// see, and a cause each way.
+void defaultEvents(Data& d)
+{
+    Data::EventKind mill;
+    mill.id = "mill_stopped";
+    mill.words = "the mill wheel stopped";
+    mill.notice = "The mill wheel is stopped for mending: {goods} dear in {market} till it turns again.";
+    mill.goods = {{"flour", .15}, {"bread", .1}, {"fine_bread", .1}};
+    mill.days = 2;
+    mill.times = -3;
+    Data::EventKind drovers;
+    drovers.id = "drovers_in";
+    drovers.words = "the drovers in with their herds";
+    drovers.notice = "The drovers are in at {market} with their herds: {goods} cheap a day or two.";
+    drovers.goods = {{"raw_meat", -.15}, {"mutton", -.15}, {"hide", -.1}};
+    drovers.days = 2;
+    drovers.times = 3;
+    drovers.crowd = true;
+    d.events = {mill, drovers};
+    d.causesDown = {{"war_levy", "the Crown's war levy", "By order of the Crown: a levy for the war, on every household and trade.",
+                     "Hear ye! The Crown levies for the war!"}};
+    d.causesUp = {{"silver_strike", "the silver strike in the hills", "Silver struck in the hills: coin and work for all who want it.",
+                   "Hear ye! Silver in the hills!"}};
+}
+
 Data load()
 {
     Data d;
@@ -55,6 +81,7 @@ Data load()
     d.district["heights"]["luxury"] = 1.08;
     d.district["sump"]["all"] = .95;
     d.buys = {{"smithy", {"iron_ore"}}, {"ironworks", {"iron_ore"}}, {"foundry", {"iron_ore"}}};
+    defaultEvents(d);
     const auto file = items::dataDirectory().parent_path() / "Economy" / "market.json";
     json::Value v;
     std::string error;
@@ -188,6 +215,28 @@ Data load()
             d.services.size() < 128)
             d.services.push_back(std::move(service));
     }
+    // Staged events and the slider's causes (8.4, 8.5; Phase 7): the host's lists as the loader takes them; an empty or
+    // broken list keeps the defaults.
+    if (const auto& events = v.object("events"); events.isObject())
+    {
+        if (auto kinds = eventKindsOf(events.array("list")); !kinds.empty())
+            d.events = std::move(kinds);
+        d.eventsPerWeek = clampNumber(events["perWeek"].asNumber(d.eventsPerWeek), 0, 6, 2);
+        const auto& causes = events.object("causes");
+        if (auto down = causesOf(causes.array("down")); !down.empty())
+            d.causesDown = std::move(down);
+        if (auto up = causesOf(causes.array("up")); !up.empty())
+            d.causesUp = std::move(up);
+        const auto words = [&](const char* key, std::string& into) {
+            if (const auto text = causes.string(key);
+                plainWords(text, 200) && (text.find("{cause}") != std::string::npos || text.find("{Cause}") != std::string::npos))
+                into = text;
+        };
+        words("noticeDown", d.causeNoticeDown);
+        words("noticeUp", d.causeNoticeUp);
+        words("cryDown", d.causeCryDown);
+        words("cryUp", d.causeCryUp);
+    }
     // The season groups (7.1, moved from city_loop.json): a good in the first group naming it; a
     // group without an id or goods dropped, its numbers clamped (never a refusal).
     for (const auto& g : v.array("seasons"))
@@ -247,6 +296,89 @@ bool shipNameFits(const std::string& name)
     return !name.empty() && name.size() <= 40 && !forbiddenInName(name) && std::all_of(name.begin(), name.end(), [](unsigned char c) {
         return std::isalpha(c) || c == ' ' || c == '\'' || c == '-';
     });
+}
+
+bool plainWords(const std::string& text, std::size_t most)
+{
+    return text.size() <= most && !forbiddenWord(text) &&
+           std::none_of(text.begin(), text.end(), [](unsigned char c) { return c < 32 || c == 127; });
+}
+
+const Data::EventKind* Data::eventKind(const std::string& id) const
+{
+    for (const auto& k : events)
+        if (k.id == id)
+            return &k;
+    return nullptr;
+}
+
+std::vector<Data::EventKind> eventKindsOf(const std::vector<json::Value>& list)
+{
+    std::vector<Data::EventKind> kinds;
+    const auto idFits = [](const std::string& id) {
+        return !id.empty() && id.size() <= 32 && !forbiddenInName(id) &&
+               std::all_of(id.begin(), id.end(), [](unsigned char c) { return std::islower(c) || std::isdigit(c) || c == '_'; });
+    };
+    for (const auto& j : list)
+    {
+        if (!j.isObject() || kinds.size() >= 64)
+            continue;
+        Data::EventKind k;
+        k.id = j.string("id");
+        k.words = j.string("words");
+        k.notice = j.string("notice");
+        k.cry = j.string("cry");
+        k.sign = j.string("sign", "the crier");
+        if (!idFits(k.id) || std::any_of(kinds.begin(), kinds.end(), [&](const Data::EventKind& o) { return o.id == k.id; }) ||
+            k.words.empty() || !plainWords(k.words, 80) || !plainWords(k.notice, 280) || !plainWords(k.cry, 200) ||
+            k.sign.empty() || !plainWords(k.sign, 40))
+            continue;
+        if (const auto& goods = j.object("goods"); goods.isObject())
+            for (const auto& [g, P] : goods.fields())
+                if (items::good(g) && P.isNumber() && finite(P.asNumber()) && std::abs(P.asNumber()) >= .01 && k.goods.size() < 6)
+                    k.goods.push_back({g, std::clamp(P.asNumber(), -EventTargetMost, EventTargetMost)});
+        k.yields = clampNumber(j["yields"].asNumber(0), -EventTargetMost, EventTargetMost, 0);
+        k.brings = clampNumber(j["brings"].asNumber(0), -EventTargetMost, EventTargetMost, 0);
+        k.days = int(clampNumber(j["days"].asNumber(2), 1, 7, 2));
+        k.times = int(clampNumber(j["times"].asNumber(0), -EventTimesMost, EventTimesMost, 0));
+        k.ahead = int(clampNumber(j["ahead"].asNumber(0), 0, 6, 0));
+        k.hour = clampNumber(j["hour"].asNumber(9), 0, 23.5, 9);
+        k.weight = clampNumber(j["weight"].asNumber(1), 0, 10, 1);
+        k.needs = j.string("needs");
+        k.ship = j.string("ship");
+        k.refill = j.boolean("refill", false);
+        k.crowd = j.boolean("crowd", false);
+        k.holdsCart = j.boolean("holdsCart", false);
+        if (k.needs != "" && k.needs != "city" && k.needs != "port" && k.needs != "cart" && k.needs != "festival")
+            continue;
+        if (k.ship != "" && k.ship != "docks" && k.ship != "lost")
+            continue;
+        if (!k.ship.empty())
+            k.needs = "port";
+        if (k.holdsCart || std::abs(k.yields) > 0)
+            k.needs = "cart";
+        if (k.goods.empty() && std::abs(k.yields) < .01 && std::abs(k.brings) < .01)
+            continue;                                // (Nothing it would press: no event.)
+        kinds.push_back(std::move(k));
+    }
+    return kinds;
+}
+
+std::vector<Data::Cause> causesOf(const std::vector<json::Value>& list)
+{
+    std::vector<Data::Cause> causes;
+    for (const auto& j : list)
+    {
+        if (!j.isObject() || causes.size() >= 32)
+            continue;
+        Data::Cause c{j.string("id"), j.string("words"), j.string("notice"), j.string("cry")};
+        if (c.id.empty() || c.id.size() > 32 || forbiddenInName(c.id) || c.words.empty() || !plainWords(c.words, 80) ||
+            !plainWords(c.notice, 280) || !plainWords(c.cry, 200) ||
+            std::any_of(causes.begin(), causes.end(), [&](const Data::Cause& o) { return o.id == c.id; }))
+            continue;
+        causes.push_back(std::move(c));
+    }
+    return causes;
 }
 
 bool forbiddenInName(const std::string& text)
@@ -590,9 +722,98 @@ json::Value encode(const Board& b)
             goods("takes", s.takes);
             j.add("status", s.status);
             j.add("posted", s.posted);
+            if (s.lost)
+                j.add("lost", true);
             list.push(j);
         }
         o.add("ships", list);
+    }
+    // Staged events and causes (Phase 7): written only where there are any.
+    if (!b.events.empty())
+    {
+        auto list = Value::array();
+        for (const auto& e : b.events)
+        {
+            auto j = Value::object();
+            j.add("id", e.id);
+            j.add("market", e.market);
+            j.add("kind", e.kind);
+            j.add("day", e.day);
+            j.add("hour", e.hour);
+            j.add("days", e.days);
+            j.add("times", e.times);
+            if (e.ahead)
+                j.add("ahead", e.ahead);
+            if (e.crowd)
+                j.add("crowd", true);
+            auto pairs = Value::array();            // (A list of pairs, as a ship's cargo: jsonb keeps no key order.)
+            for (const auto& [good, P] : e.goods)
+            {
+                auto pair = Value::array();
+                pair.push(Value(good));
+                pair.push(Value(P));
+                pairs.push(pair);
+            }
+            j.add("goods", pairs);
+            j.add("words", e.words);
+            if (!e.notice.empty())
+                j.add("notice", e.notice);
+            if (!e.cry.empty())
+                j.add("cry", e.cry);
+            if (!e.subject.empty())
+                j.add("subject", e.subject);
+            j.add("status", e.status);
+            j.add("by", e.by);
+            if (e.announced)
+                j.add("announced", true);
+            j.add("posted", e.posted);
+            list.push(j);
+        }
+        o.add("events", list);
+    }
+    if (!b.eventsThrough.empty())
+    {
+        auto through = Value::object();
+        for (const auto& [m, week] : b.eventsThrough)
+            through.add(m, week);
+        o.add("eventsThrough", through);
+    }
+    if (b.nextEvent != 1)
+        o.add("nextEvent", b.nextEvent);
+    if (b.sliderCause.n != 0 || !b.sliderCause.words.empty())
+    {
+        auto j = Value::object();
+        j.add("words", b.sliderCause.words);
+        j.add("notice", b.sliderCause.notice);
+        j.add("cry", b.sliderCause.cry);
+        j.add("dir", b.sliderCause.dir);
+        j.add("day", b.sliderCause.day);
+        j.add("n", b.sliderCause.n);
+        j.add("told", b.sliderCause.told);
+        if (b.sliderCause.dm)
+            j.add("dm", true);
+        o.add("sliderCause", j);
+    }
+    if (!b.nudges.empty())
+    {
+        auto n = Value::object();
+        for (const auto& [m, nudge] : b.nudges)
+        {
+            auto j = Value::object();
+            j.add("points", nudge.points);
+            j.add("until", nudge.until);
+            j.add("cause", nudge.cause);
+            j.add("told", nudge.told);
+            n.add(m, j);
+        }
+        o.add("nudges", n);
+    }
+    if (!b.harvestShift.empty())
+    {
+        auto t = Value::object();
+        for (const auto& [m, n] : b.harvestShift)
+            t.add(m, n);
+        o.add("harvestShift", t);
     }
     if (!b.shipsThrough.empty())
     {
@@ -627,6 +848,10 @@ json::Value encode(const Board& b)
             auto j = Value::object();
             j.add("word", ov.word);
             j.add("until", ov.until);
+            if (!ov.cause.empty())
+                j.add("cause", ov.cause);
+            if (!ov.told)
+                j.add("told", false);
             h.add(area, j);
         }
         o.add("harvestOverride", h);
@@ -690,6 +915,7 @@ void mendShips(Board& b)
             continue;
         if (s.status != "in" && s.status != "sailed" && s.status != "storm")
             s.status = "due";
+        s.lost = s.lost && s.status == "storm";
         s.hour = finite(s.hour) ? std::clamp(s.hour, 0., 23.99) : 8;
         s.sails = finite(s.sails) ? std::clamp(s.sails, s.hour, 23.99) : std::max(s.hour, 18.);
         s.posted = finite(s.posted) ? std::max(0., s.posted) : 0;
@@ -882,6 +1108,7 @@ Board decode(const json::Value& v)
         s.status = status == "in" || status == "sailed" || status == "storm" ? status : "due";
         const double posted = j.number("posted", 0);
         s.posted = finite(posted) ? std::max(0., posted) : 0;
+        s.lost = s.status == "storm" && j.boolean("lost", false);
         if (s.id.empty() || !name(s.port) || s.name.empty() || !j["day"].isNumber())
             continue;
         // (One ship of an id, and one a port a day, as they are rolled: a save edited to say otherwise keeps the first.)
@@ -903,7 +1130,12 @@ Board decode(const json::Value& v)
                     b.backRoom[till][g] = int(whole(n, 0, 999, 0));
     for (const auto& [area, o] : v.object("harvestOverride").fields())
         if (const double until = o.number("until", -1); name(area) && o.isObject() && finite(until) && until >= 0)
-            b.harvestOverride[area] = {int(whole(o["word"], 0, 2, 1)), until};
+        {
+            auto cause = json::utf8Prefix(o.string("cause"), 80);
+            if (!plainWords(cause, 80))
+                cause.clear();
+            b.harvestOverride[area] = {int(whole(o["word"], 0, 2, 1)), until, cause, o.boolean("told", true)};
+        }
     for (const auto& t : v.array("troubles"))
         if (t.isObject() && b.troubles.size() < TroublesKept)
         {
@@ -923,7 +1155,135 @@ Board decode(const json::Value& v)
             for (const auto& [g, day] : goods.fields())
                 if (good(g) && day.isNumber() && b.broughtIn[m].size() < 512)
                     b.broughtIn[m][g] = std::int64_t(whole(day, 0, 365000000, 0));
+    // Staged events and causes (Phase 7), leniently: an event with no market, kind or day is dropped, its unknown goods
+    // dropped, its numbers clamped, its words held to the loader's rule (mendEvents); the world drops one whose market is
+    // gone (World::dropOrphanedEvents).
+    for (const auto& j : v.array("events"))
+    {
+        if (!j.isObject() || b.events.size() >= EventsMost)
+            continue;
+        StagedEvent e;
+        e.id = j.string("id").substr(0, 40);
+        e.market = j.string("market").substr(0, 120);
+        e.kind = j.string("kind").substr(0, 32);
+        e.day = std::int64_t(whole(j["day"], 0, 365000000, -1));
+        e.hour = j.number("hour", 9);
+        e.days = int(whole(j["days"], 1, 7, 2));
+        e.times = int(whole(j["times"], -EventTimesMost, EventTimesMost, 0));
+        e.ahead = int(whole(j["ahead"], 0, 6, 0));
+        e.crowd = j.boolean("crowd", false);
+        for (const auto& pair : j.array("goods"))
+            if (const auto& of = pair.items(); of.size() == 2 && of[0].isString() && of[1].isNumber() && good(of[0].asString()))
+                e.goods.push_back({of[0].asString(), of[1].asNumber()});
+        e.words = json::utf8Prefix(j.string("words"), 80);
+        e.notice = json::utf8Prefix(j.string("notice"), 280);
+        e.cry = json::utf8Prefix(j.string("cry"), 200);
+        e.subject = j.string("subject").substr(0, 120);
+        e.status = j.string("status");
+        e.by = j.string("by") == "dm" ? "dm" : "seeded";
+        e.announced = j.boolean("announced", false);
+        e.posted = j.number("posted", 0);
+        if (e.id.empty() || !name(e.market) || e.kind.empty() || !j["day"].isNumber())
+            continue;
+        b.events.push_back(std::move(e));
+    }
+    for (const auto& [m, week] : v.object("eventsThrough").fields())
+        if (name(m) && week.isNumber() && b.eventsThrough.size() < 256)
+            b.eventsThrough[m] = std::int64_t(whole(week, -1, 365000000, -1));
+    b.nextEvent = std::int64_t(whole(v["nextEvent"], 1, 1e15, 1));
+    mendEvents(b);
+    if (const auto& c = v.object("sliderCause"); c.isObject())
+    {
+        auto& sc = b.sliderCause;
+        sc.words = json::utf8Prefix(c.string("words"), 80);
+        sc.notice = json::utf8Prefix(c.string("notice"), 280);
+        sc.cry = json::utf8Prefix(c.string("cry"), 200);
+        if (!plainWords(sc.words, 80) || !plainWords(sc.notice, 280) || !plainWords(sc.cry, 200))
+            sc.words.clear(), sc.notice.clear(), sc.cry.clear();
+        sc.dir = int(whole(c["dir"], -1, 1, 0));
+        const double day = c.number("day", -1);
+        sc.day = finite(day) ? std::max(-1., day) : -1;
+        sc.n = std::int64_t(whole(c["n"], 0, 1e15, 0));
+        sc.told = c.boolean("told", true) || sc.words.empty();
+        sc.dm = c.boolean("dm", false);
+    }
+    for (const auto& [m, n] : v.object("nudges").fields())
+        if (const double until = n.number("until", -1); name(m) && n.isObject() && finite(until) && until >= 0 && b.nudges.size() < 64)
+        {
+            auto cause = json::utf8Prefix(n.string("cause"), 80);
+            if (!plainWords(cause, 80))
+                cause.clear();
+            if (const int points = int(whole(n["points"], -100, 100, 0)); points != 0)
+                b.nudges[m] = {points, until, cause, n.boolean("told", true)};
+        }
+    for (const auto& [m, n] : v.object("harvestShift").fields())
+        if (name(m) && n.isNumber())
+            if (const int shift = int(whole(n, -100, 100, 0)); shift != 0)
+                b.harvestShift[m] = shift;
     return b;
+}
+
+void mendEvents(Board& b)
+{
+    std::vector<StagedEvent> kept;
+    for (auto& e : b.events)
+    {
+        if (e.id.empty() || e.market.empty() || e.kind.empty() || e.day < 0 ||
+            std::any_of(kept.begin(), kept.end(), [&](const StagedEvent& o) { return o.id == e.id; }))
+            continue;
+        if (e.words.empty() || !plainWords(e.words, 80) || !plainWords(e.notice, 280) || !plainWords(e.cry, 200))
+            continue;                               // (Words the loader would not take: never pinned on a board.)
+        if (e.status != "on" && e.status != "over" && e.status != "cancelled")
+            e.status = "due";
+        e.hour = finite(e.hour) ? std::clamp(e.hour, 0., 23.99) : 9;
+        e.days = std::clamp(e.days, 1, 7);
+        e.times = std::clamp(e.times, -EventTimesMost, EventTimesMost);
+        e.posted = finite(e.posted) ? std::max(0., e.posted) : 0;
+        std::vector<std::pair<std::string, double>> fit;
+        for (const auto& [g, P] : e.goods)
+            if (finite(P) && fit.size() < 6 && (items::good(g) || itemValid(g)) &&
+                std::none_of(fit.begin(), fit.end(), [&](const auto& have) { return have.first == g; }))
+                fit.push_back({g, std::clamp(P, -EventTargetMost, EventTargetMost)});
+        e.goods = std::move(fit);
+        kept.push_back(std::move(e));
+    }
+    std::map<std::string, std::size_t> ofMarket;
+    for (const auto& e : kept)
+        ++ofMarket[e.market];
+    for (auto& [m, count] : ofMarket)
+        for (; count > EventsAMarket; --count)
+        {
+            auto out = kept.end();
+            for (auto it = kept.begin(); it != kept.end(); ++it)
+                if (it->market == m && (it->status == "over" || it->status == "cancelled") && (out == kept.end() || it->day < out->day))
+                    out = it;
+            if (out == kept.end())
+                for (auto it = kept.begin(); it != kept.end(); ++it)
+                    if (it->market == m && it->status == "due" && (out == kept.end() || it->day > out->day))
+                        out = it;
+            if (out == kept.end())
+                for (auto it = kept.begin(); it != kept.end(); ++it)
+                    if (it->market == m)
+                        out = it;
+            kept.erase(out);
+        }
+    if (kept.size() > EventsMost)
+        kept.resize(EventsMost);
+    b.events = std::move(kept);
+    b.nextEvent = std::max<std::int64_t>(1, b.nextEvent);
+    for (const auto& e : b.events)
+        if (e.id.size() > 1 && e.id.size() <= 16 && e.id[0] == 'e' &&
+            std::all_of(e.id.begin() + 1, e.id.end(), [](unsigned char c) { return std::isdigit(c) != 0; }))
+            b.nextEvent = std::max<std::int64_t>(b.nextEvent, std::stoll(e.id.substr(1)) + 1);
+}
+
+int eventTimes(const Board& b, const std::string& market)
+{
+    int sum = 0;
+    for (const auto& e : b.events)
+        if (e.status == "on" && e.market == market)
+            sum += e.times;
+    return std::clamp(sum, -EventTimesMost, EventTimesMost);
 }
 
 // ---------------------------------------------------------------------------------------------------- The markets
@@ -1073,12 +1433,45 @@ std::string shipCause(const market::Board& b, const std::string& market, const s
             ship = &s;
     }
     const std::string name = ship ? ship->name : "a ship";
+    if (late && ship && ship->lost)
+        return trend > 0 ? name + " was lost at sea" : "cheap still, though " + name + " was lost at sea";
     if (late)
         return trend > 0 ? name + " is stormbound" : "cheap still, though " + name + " is stormbound";
     if (takes)
         return trend > 0 ? name + (ship && ship->status == "in" ? " is in, buying" : " bought a load")
                          : "cheap still, though " + name + (ship && ship->status == "in" ? " is buying" : " bought a load");
     return trend < 0 ? name + " came in" : "dear still, though " + name + " came in";
+}
+// A price's cause where a staged event moved it (doc 79, 8.4; Phase 7): the words of the latest event at that market
+// pressing the good (on, else over), never a cause the price belies; and the roads' and the farms' causes in words.
+std::string eventCause(const market::Board& b, const std::string& market, const std::string& base, int trend)
+{
+    const market::StagedEvent* event = nullptr;
+    for (const auto& e : b.events)
+        if (e.market == market && (e.status == "on" || e.status == "over"))
+            for (const auto& [g, target] : e.goods)
+                if (g == base && (!event || (e.status == "on") > (event->status == "on") ||
+                                  ((e.status == "on") == (event->status == "on") && e.day >= event->day)))
+                    event = &e;
+    if (!event)
+        return trend > 0 ? "talk of trouble at the market" : "talk of plenty at the market";
+    double target = 0;
+    for (const auto& [g, t] : event->goods)
+        if (g == base)
+            target = t;
+    return (target > 0) == (trend > 0) ? event->words : (trend > 0 ? "dear still, though " : "cheap still, though ") + event->words;
+}
+std::string roadCause(const std::string& cause, int trend)
+{
+    if (cause == "caravan")
+        return trend < 0 ? "the wagon came in" : "dear still, though the wagon came in";
+    if (cause == "raid")
+        return trend > 0 ? "the wagon was robbed on the road" : "cheap still, though the wagon was robbed";
+    if (cause == "late")
+        return trend > 0 ? "the wagon's late" : "cheap still, though the wagon's late";
+    if (cause == "harvest")
+        return trend < 0 ? "a good harvest" : "a short harvest, or the cart didn't come";
+    return cause;
 }
 constexpr std::int64_t MarketMoneyLimit = 1000000000;   // (RatwSociety.cpp's MoneyLimit and StockLimit.)
 constexpr int MarketStockLimit = 10000;
@@ -1288,23 +1681,134 @@ void Society::setQuarters(std::map<std::string, std::string> quarters)
     districtWarm_ = false;
 }
 
-void Society::setProsperity(int target, bool now)
+bool Society::setProsperity(int target, bool now, const std::string& cause)
 {
     auto& b = state_.board;
-    b.sliderTarget = std::clamp(target, -100, 100);
+    target = std::clamp(target, -100, 100);
+    const int from = b.slider;
+    const bool moved = target != b.sliderTarget;
+    b.sliderTarget = target;
     if (now)
         b.slider = b.sliderTarget;                 // (The DM's "now": no smoothing, doc 79, 6.3.)
+    // Its cause (8.5): the way it moves now, else (a cause written for a slider already there) the way it stands.
+    int dir = target > from ? 1 : target < from ? -1 : 0;
+    if (dir == 0 && !cause.empty())
+        dir = target > 0 ? 1 : target < 0 ? -1 : b.sliderCause.dir;
+    const auto& d = market::data();
+    const auto fill = [](std::string text, const std::string& words) {
+        auto capital = words;
+        if (!capital.empty())
+            capital[0] = char(std::toupper(static_cast<unsigned char>(capital[0])));
+        for (const auto& [key, with] : {std::pair<std::string, std::string>{"{cause}", words}, {"{Cause}", capital}})
+            for (auto at = text.find(key); at != std::string::npos; at = text.find(key, at + with.size()))
+                text.replace(at, key.size(), with);
+        return text;
+    };
+    auto words = json::utf8Prefix(cause, 80);
+    while (!words.empty() && (words.back() == ' ' || words.back() == '.'))
+        words.pop_back();
+    while (!words.empty() && words.front() == ' ')
+        words.erase(words.begin());
+    const bool taken = !words.empty() && market::plainWords(words, 80);
+    if (dir == 0 || (!taken && (!moved || (b.sliderCause.dir == dir && !b.sliderCause.words.empty()))))
+        return taken || cause.empty();
+    if (taken && b.sliderCause.dm && b.sliderCause.words == words && b.sliderCause.dir == dir)
+        return true;                               // (The same words again, the same way: a sync says what it said.)
+    market::SliderCause next;
+    next.dir = dir;
+    next.day = marketClock();
+    next.n = b.sliderCause.n + 1;
+    next.told = false;
+    if (taken)
+    {
+        next.words = words;
+        next.dm = true;
+        next.notice = json::utf8Prefix(fill(dir < 0 ? d.causeNoticeDown : d.causeNoticeUp, words), 280);
+        next.cry = json::utf8Prefix(fill(dir < 0 ? d.causeCryDown : d.causeCryUp, words), 200);
+    }
+    else
+    {
+        const auto& list = dir < 0 ? d.causesDown : d.causesUp;
+        if (list.empty())
+            return cause.empty();
+        // (Seeded by the day and the cause's number: the same world, the same cause; never the one it had just now.)
+        auto at = std::size_t(std::hash<std::string>{}("cause:" + std::to_string(marketDay()) + ":" + std::to_string(next.n)) % list.size());
+        if (list.size() > 1 && list[at].words == b.sliderCause.words)
+            at = (at + 1) % list.size();
+        const auto& c = list[at];
+        next.words = c.words;
+        next.notice = c.notice.empty() ? json::utf8Prefix(fill(dir < 0 ? d.causeNoticeDown : d.causeNoticeUp, c.words), 280) : c.notice;
+        next.cry = c.cry.empty() ? json::utf8Prefix(fill(dir < 0 ? d.causeCryDown : d.causeCryUp, c.words), 200) : c.cry;
+    }
+    b.sliderCause = std::move(next);
+    return taken || cause.empty();
+}
+
+int Society::timesScore(const std::string& market) const
+{
+    // 5.3: the slider, plus the market's own shift from its areas' harvests and the roads' troubles of the week (raids and
+    // late wagons to it), which the world sets each morning (Phase 4), its staged events on (Phase 7) and the DM's nudge
+    // while it holds (Phase 7's, set by the DM's side in Phase 9). Never any player-caused pressure.
+    const auto& b = state_.board;
+    int score = b.slider;
+    if (const auto shift = b.timesShift.find(market); shift != b.timesShift.end())
+        score += shift->second;
+    if (!b.events.empty())
+        score += market::eventTimes(b, market);
+    if (const auto nudge = b.nudges.find(market); nudge != b.nudges.end() && marketClock() < nudge->second.until)
+        score += nudge->second.points;
+    return std::clamp(score, -300, 300);
 }
 
 int Society::marketTimes(const std::string& market) const
 {
-    // 5.3: the slider, plus the market's own shift from its areas' harvests and the roads' troubles of the week (raids and
-    // late wagons to it), which the world sets each morning (Phase 4); staged events and the DM's nudge come in Phases 7
-    // and 9. Never any player-caused pressure.
-    int score = state_.board.slider;
-    if (const auto shift = state_.board.timesShift.find(market); shift != state_.board.timesShift.end())
-        score += shift->second;
-    return std::clamp(market::timesOf(score), 0, 4) - 2;
+    return std::clamp(market::timesOf(timesScore(market)), 0, 4) - 2;
+}
+
+std::string Society::timesCause(const std::string& market) const
+{
+    // The largest part of the score on its side (T16, 8.5: what people say the times are down to).
+    const auto& b = state_.board;
+    const int score = timesScore(market);
+    if (score == 0)
+        return {};
+    std::vector<std::pair<int, std::string>> parts;
+    if (b.slider != 0)
+    {
+        const int dir = b.slider > 0 ? 1 : -1;
+        parts.push_back({b.slider, !b.sliderCause.words.empty() && b.sliderCause.dir == dir ? b.sliderCause.words
+                                   : dir < 0 ? std::string("hard times across the realm") : std::string("the realm's good fortune")});
+    }
+    if (const auto h = b.harvestShift.find(market); h != b.harvestShift.end() && h->second != 0)
+        parts.push_back({h->second, h->second > 0 ? "a good harvest" : "a poor harvest"});
+    int raids = 0, lates = 0;
+    for (const auto& t : b.troubles)
+        if (t.market == market)
+            ++(t.kind == "raid" ? raids : lates);
+    if (raids > 0)
+        parts.push_back({-std::min(30, 10 * raids), "the wagons robbed on the road"});
+    if (lates > 0)
+        parts.push_back({-std::min(15, 5 * lates), "the wagons late on the road"});
+    for (const auto& e : b.events)
+        if (e.status == "on" && e.market == market && e.times != 0)
+            parts.push_back({e.times, e.words});
+    if (const auto nudge = b.nudges.find(market); nudge != b.nudges.end() && marketClock() < nudge->second.until)
+        parts.push_back({nudge->second.points, !nudge->second.cause.empty() ? nudge->second.cause
+                                               : nudge->second.points > 0 ? std::string("trade picking up") : std::string("trade falling off")});
+    const std::pair<int, std::string>* best = nullptr;
+    for (const auto& p : parts)
+        if ((p.first > 0) == (score > 0) && (!best || std::abs(p.first) > std::abs(best->first)))
+            best = &p;
+    return best ? best->second : std::string();
+}
+
+void Society::setHarvestShift(std::map<std::string, int> shift)
+{
+    for (auto it = shift.begin(); it != shift.end();)
+        it = it->second == 0 ? shift.erase(it) : std::next(it);
+    for (auto& [m, n] : shift)
+        n = std::clamp(n, -100, 100);
+    state_.board.harvestShift = std::move(shift);
 }
 
 void Society::setTimesShift(std::map<std::string, int> shift)
@@ -2173,7 +2677,8 @@ Society::Listing Society::listing(const std::string& player, const std::string& 
                   : cause == "ripple" ? (l.trend > 0 ? "dear since the want of what it's made into" : "cheap since the glut of what it's made from")
                   : cause == "players" ? (l.trend > 0 ? "travellers buying" : "travellers selling")
                   : cause.rfind("ship", 0) == 0 ? shipCause(state_.board, marketOf(till), base, cause, l.trend)
-                                       : cause;
+                  : cause == "event" ? eventCause(state_.board, marketOf(till), base, l.trend)
+                                       : roadCause(cause, l.trend);
     }
     l.buyCount = std::max(1, std::min(l.listCount, shelf ? stock(*shelf, item) : 0));
     l.buyOne = stagedQuote(player, merchantId, item, 1, true, holder, nullptr);

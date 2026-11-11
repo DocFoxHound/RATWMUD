@@ -67,6 +67,7 @@ constexpr double BoardReach = 2, NoticeDays = 7;
 constexpr int NoticeFee = 1, PerWriter = 3, PerBoard = 30, TextMost = 280;
 constexpr const char* CartersSign = "the carters";   // (The wagons' notices: doc 79, 8.1.)
 constexpr const char* WharfSign = "the Wharf office";   // (The ships' timetable: doc 79, 8.3.)
+constexpr const char* StagedAuthor = "staged";        // (Staged events' and causes' notices, signed by their own: Phase 7.)
 const char* const Kinds[] = {"seeking", "offering", "event", "lost", "other"};
 
 std::string lowered(std::string s)
@@ -340,7 +341,9 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
     }
     const auto onBoard = documents_.onBoard(board);
     // (The carters' wagon notices have pins of their own: they never take one a player needs.)
-    if (std::count_if(onBoard.begin(), onBoard.end(), [](const auto* d) { return d->author != CartersSign && d->author != WharfSign; }) >= PerBoard)
+    if (std::count_if(onBoard.begin(), onBoard.end(), [](const auto* d) {
+            return d->author != CartersSign && d->author != WharfSign && d->author != StagedAuthor;
+        }) >= PerBoard)
         return result = {false, "Every pin is taken. Try tomorrow.", {}}, true;
     if (std::count_if(onBoard.begin(), onBoard.end(), [&](const auto* d) { return d->author == me; }) >= PerWriter)
         return result = {false, "You have three notices up here already.", {}}, true;
@@ -478,6 +481,187 @@ void Game::mendRoadNotices()
             for (const auto& id : {wagonNoticeIds(departure).first, wagonNoticeIds(departure).second})
                 if (auto* pinned = documents_.find(id))
                     noEscortWanted(pinned->text);
+    // Staged events (Phase 7): a notice up for each event posted or on, with its words, and none for one over, cancelled
+    // or gone (an event's step is the tick's record, its notice the next: a crash between leaves them apart).
+    std::map<std::string, const market::StagedEvent*> live;
+    for (const auto& e : world_.society().board().events)
+        if ((e.status == "due" || e.status == "on") && e.announced && !e.notice.empty())
+            live["event-" + e.id] = &e;
+    std::vector<std::string> over;
+    for (const auto& [id, d] : documents_.all())
+        if (d.kind == "notice" && d.author == StagedAuthor && d.what.rfind("event:", 0) == 0 && !live.count(id))
+            over.push_back(id);
+    for (const auto& id : over)
+        documents_.erase(id);
+    for (const auto& [id, e] : live)
+        if (auto* pinned = documents_.find(id))
+            pinned->text = json::utf8Prefix(e->notice, TextMost);
+        else
+        {
+            const auto* kind = market::data().eventKind(e->kind);
+            pinStagedNotice(id, e->market, "event:" + e->id, e->notice, kind ? kind->sign : std::string("the crier"));
+        }
+    // The DM's Times nudges that lapsed: their notices down.
+    std::vector<std::string> lapsed;
+    for (const auto& [id, d] : documents_.all())
+        if (d.kind == "notice" && d.author == StagedAuthor && d.what.rfind("nudge:", 0) == 0 &&
+            !world_.society().board().nudges.count(d.what.substr(6)))
+            lapsed.push_back(id);
+    for (const auto& id : lapsed)
+        documents_.erase(id);
+}
+
+void Game::pinStagedNotice(const std::string& id, const std::string& market, const std::string& what, const std::string& text,
+                           const std::string& sign)
+{
+    // (On the board a player at the market's place reads, as the carters' notices are.)
+    const auto* m = world_.roadMarket(market);
+    auto community = m ? boardTownFor(m->market) : std::string();
+    if (community.empty())
+        community = market;
+    if (community.empty() || text.empty())
+        return;
+    documents::Document d;
+    d.id = id;
+    d.kind = "notice";
+    d.author = StagedAuthor;
+    d.board = "board:" + community;
+    d.noticeKind = "event";
+    d.what = what;
+    d.text = json::utf8Prefix(text, TextMost);
+    d.sign = sign.empty() ? std::string("the crier") : sign;
+    d.state = "delivered";
+    d.written = d.deliverAt = world_.calendarDays();
+    d.expires = d.written + NoticeDays;
+    d.fromTown = community;
+    documents_.add(d);
+}
+
+void Game::stagedNotices(const WorldEvent& e)
+{
+    // Staged events and causes (doc 79, 8.4-8.6; Phase 7). (actor: the event's id, or the market or area; target: its
+    // market; item: the event's kind; detail: the words.)
+    if (e.kind == "event posted" || e.kind == "event begins")
+    {
+        const auto* ev = world_.stagedEvent(e.actor);
+        if (!ev)
+            return;
+        const auto* kind = market::data().eventKind(ev->kind);
+        if (!ev->notice.empty() && (e.kind == "event posted" || !documents_.find("event-" + ev->id)))
+            pinStagedNotice("event-" + ev->id, ev->market, "event:" + ev->id, ev->notice, kind ? kind->sign : std::string("the crier"));
+        if (e.kind == "event begins" && !ev->cry.empty())
+            stagedCry(ev->market, ev->cry);
+        saveSoon();
+    }
+    else if (e.kind == "event over" || e.kind == "event cancelled")
+    {
+        documents_.erase("event-" + e.actor);
+        saveSoon();
+    }
+    else if (e.kind == "times cause")
+    {
+        // (Every market's board, and its crier; the cause's number names the notice, so a new cause is a new notice.)
+        pinStagedNotice("times-" + e.target, e.target, "times:" + e.target, e.detail, "the crier");
+        if (const auto& cause = world_.society().board().sliderCause; !cause.cry.empty())
+            stagedCry(e.target, cause.cry);
+        saveSoon();
+    }
+    else if (e.kind == "times nudged")
+    {
+        pinStagedNotice("nudge-" + e.target, e.target, "nudge:" + e.target, e.detail, "the crier");
+        saveSoon();
+    }
+    else if (e.kind == "nudge over")
+    {
+        documents_.erase("nudge-" + e.target);
+        saveSoon();
+    }
+    else if (e.kind == "harvest called")
+    {
+        pinStagedNotice("harvest-" + e.actor + "-" + e.target, e.target, "harvest:" + e.actor, e.detail, "the crier");
+        saveSoon();
+    }
+}
+
+void Game::stagedCry(const std::string& market, const std::string& line)
+{
+    if (line.empty() || pendingCries_.size() >= 64)
+        return;
+    for (const auto& c : pendingCries_)
+        if (c.market == market && c.line == line)
+            return;
+    pendingCries_.push_back({market, line, world_.calendarDays() + 1});
+}
+
+void Game::tendStagedCries()
+{
+    // A cry waits for the daytime (8:00 to 20:00) and for the market's crier to be free of another call; then the crier goes
+    // to the square and calls it, where a player in the square's cell can hear (tendCriers). Not cried in a day: dropped.
+    if (pendingCries_.empty())
+        return;
+    const double now = world_.calendarDays(), hour = (now - std::floor(now)) * 24;
+    for (auto it = pendingCries_.begin(); it != pendingCries_.end();)
+    {
+        if (now > it->until)
+        {
+            it = pendingCries_.erase(it);
+            continue;
+        }
+        const auto* m = world_.roadMarket(it->market);
+        auto community = m ? boardTownFor(m->market) : std::string();
+        if (community.empty())
+            community = it->market;
+        const auto* square = world_.marketSpot(community);
+        if (!square)
+        {
+            it = pendingCries_.erase(it);           // (No square to cry it at: the notice says it.)
+            continue;
+        }
+        if (hour < 8 || hour >= 20 || criers_.count(community))
+        {
+            ++it;
+            continue;
+        }
+        // (The town's crier, crierOf's: its official, else the innkeeper nearest the square, else its priest; for a market
+        // plain for law, the same of those who work at the market.)
+        auto crier = crierOf(community);
+        if (crier.empty())
+        {
+            std::string inn, priest;
+            for (const auto& [id, life] : world_.society().state().residents)
+            {
+                const auto* job = world_.society().jobOf(id);
+                const auto* e = world_.entity(id);
+                const auto* at = job ? world_.roadMarketOf(job->work.cell) : nullptr;
+                if (!job || !e || e->dead || !at || at->id != it->market)
+                    continue;
+                if (jobCategoryOf(id) == "official")
+                {
+                    crier = id;
+                    break;
+                }
+                if (const auto* b = items::businessFor(job->title); b && b->id == "inn" && inn.empty())
+                    inn = id;
+                auto title = job->title;
+                for (auto& ch : title)
+                    ch = char(std::tolower(static_cast<unsigned char>(ch)));
+                if (priest.empty() && (title.find("priest") != std::string::npos || title.find("chaplain") != std::string::npos))
+                    priest = id;
+            }
+            if (crier.empty())
+                crier = !inn.empty() ? inn : priest;
+        }
+        if (crier.empty())
+        {
+            it = pendingCries_.erase(it);
+            continue;
+        }
+        CrierCall call{community, crier, square->cell, {it->line}, 0, world_.time()};
+        world_.seatResident(crier, {square->cell, square->x, square->y + 1, "Crying the news at the square."});
+        criers_[community] = std::move(call);
+        world_.recordEvent({"crier", crier, {}, square->cell, 0, 0, {}, 1, 0, it->line});
+        it = pendingCries_.erase(it);
+    }
 }
 
 void Game::roadNotices(const WorldEvent& e)
