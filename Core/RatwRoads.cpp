@@ -1335,13 +1335,15 @@ std::int64_t World::banditDemand(const std::string& player) const
     return 0;
 }
 
-std::vector<std::pair<std::string, std::string>> World::takeNotices(bool* moved)
+std::vector<std::pair<std::string, std::string>> World::takeNotices(bool* moved, bool* crime)
 {
     std::vector<std::pair<std::string, std::string>> out;
     out.swap(notices_);
     if (moved)
         *moved = noticesMoved_;
-    noticesMoved_ = false;
+    if (crime)
+        *crime = noticesCrime_;
+    noticesMoved_ = noticesCrime_ = false;
     return out;
 }
 

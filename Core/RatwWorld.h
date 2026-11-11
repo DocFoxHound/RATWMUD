@@ -1374,10 +1374,16 @@ class World
     // Things that happened to a player that no action of theirs answered (a bandit's blow, say), since the last
     // call: (player, words), oldest first. The host shows them to the player. `moved`: whether any of them speaks of coins
     // or goods the tick moved in accounts or on the roads (an escort's pay, a courier's, a bounty, a purse robbed), which
-    // the host journals before telling (the repair after doc 79's Phases 4 and 5 merged, its check).
-    std::vector<std::pair<std::string, std::string>> takeNotices(bool* moved = nullptr);
-    // A notice for a player as a tick gives one (`moved` as above): the world's own, and tests'.
-    void noticeFor(const std::string& player, std::string words, bool moved = false) { notice(player, std::move(words), moved); }
+    // the host journals before telling (the repair after doc 79's Phases 4 and 5 merged, its check). `crime`: whether any
+    // speaks of an incident, warrant or custody the tick made or settled (a crime seen, a player carried to the gaol), which
+    // the host journals with them (doc 79, Phase 6 merged, checked): a crash never takes back a theft the player was told
+    // they saw, nor the gaol they were told they are held in.
+    std::vector<std::pair<std::string, std::string>> takeNotices(bool* moved = nullptr, bool* crime = nullptr);
+    // A notice for a player as a tick gives one (`moved` and `crime` as above): the world's own, and tests'.
+    void noticeFor(const std::string& player, std::string words, bool moved = false, bool crime = false)
+    {
+        notice(player, std::move(words), moved, crime);
+    }
     std::vector<WorldEvent> takeEvents();
     std::size_t droppedEvents() const { return droppedEvents_; }
     // Each home's stores (doc 36) placed so far: home cell -> kind -> where it stands.
@@ -1963,6 +1969,17 @@ class World
     // The shop a household's errand-runner goes to for its food (6.6): its own food shop (`till`) while open, else the
     // open one of its market with the food on its shelf nearest the household's door by the street; null for none.
     const Position* runnerShop(const std::string& household, const std::string& till);
+    // A household's errand-runner sent to a shop's counter (6.6: its food, `till` set to the shop it goes to), and a buyer
+    // for a ware besides food (7.7), each within the runners' caps: the street's hooks, and tests'. False if none goes.
+    bool sendRunner(const std::string& household, std::string& till);
+    bool sendBuyer(const std::string& household, const std::string& till, const std::string& ware);
+    // Where the next errand-runner to a shop stands (6.6, 7.7): its serving spot, or, at a stall the keeper keeps, across
+    // the stall from the keeper; ground someone can stand on, never the keeper's own tile nor one another runner to the
+    // same cell was given (each a tile of its own: Phase 6 merged, checked).
+    Spot counterSpot(const Position& shop) const;
+    // A member of the household free to walk to a counter or the chapel now: one without a post at its hours first; never
+    // one of the Watch. Empty for none.
+    std::string freeMember(const std::string& household) const;
     // The street's step (each schedule pass, after the crime's): the beggars' and sleepers' places each hour, alms, the
     // runners at their counters, the Restday dole.
     void tendStreet();
@@ -1977,10 +1994,6 @@ class World
   private:
     bool streetErrand(const std::string& resident, const ResidentLife& life, std::string& task, std::string& reason,
                       std::string& goalCell, Vec2& goal) const;
-    bool sendRunner(const std::string& household, std::string& till);
-    bool sendBuyer(const std::string& household, const std::string& till, const std::string& ware);
-    // (A member of the household free to walk to a counter or the chapel now: one without a post at its hours first.)
-    std::string freeMember(const std::string& household) const;
     // (Where a cell's first door to the open air comes out, or null; kept for the day.)
     const Spot* doorOut(const std::string& cell);
     bool cellWatched(const std::string& cell) const;
@@ -2277,6 +2290,7 @@ class World
   private:
     std::vector<std::pair<std::string, std::string>> notices_;
     bool noticesMoved_ = false;                     // (Any of notices_ told of something moved: takeNotices.)
+    bool noticesCrime_ = false;                     // (Any told of an incident, a warrant or custody: takeNotices.)
     std::vector<std::vector<std::string>> roadRoutes_;   // Every road between two markets (cells), for wagons and bandits.
     std::vector<std::pair<std::string, std::string>> roadPairs_;   // Its two markets, each road's.
     // Staged trade (doc 79, Phase 4; RatwTradeShow.cpp).
@@ -2353,10 +2367,11 @@ class World
     void clearCamp(BanditCamp& camp, const std::string& by);
     void beaten(Entity& player, BanditCamp& camp);
     BanditCamp* campOf(const std::string& banditId);
-    void notice(const std::string& player, std::string words, bool moved = false)
+    void notice(const std::string& player, std::string words, bool moved = false, bool crime = false)
     {
         notices_.push_back({player, std::move(words)});
         noticesMoved_ = noticesMoved_ || moved;
+        noticesCrime_ = noticesCrime_ || crime;
     }
     // Injuries (doc 38): who went down in a fight, and who has had their one lasting injury from it.
     struct FightMarks

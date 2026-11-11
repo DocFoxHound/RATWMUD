@@ -848,14 +848,16 @@ std::string World::freeMember(const std::string& household) const
             const auto* life = society_.resident(id);
             const auto* job = society_.jobOf(id);
             const auto* r = society_.spec(id);
-            const bool watch = r && r->ofTheWatch();   // (One of the Watch with no post: still at its rounds.)
+            // (Never one of the Watch, posted or not, at its rounds or off them: the Watch is kept off the street's errands
+            // as off its begging, sleeping out and dole, and a guard resting is still the town's to call on; Phase 6
+            // merged, checked. Its household sends another, or waits for the hour after, as one with nobody free does.)
             if (!e || !life || e->dead || !e->npc || e->age < 10 || !e->leaderId.empty() || e->state == "following" || custodyOf(id) ||
-                drivers_.count(id) || seated_.count(id) || runners_.count(id) || doleTakers_.count(id) || beggars_.count(id) ||
-                inBattle(id) || (job || watch) != posted)
+                (r && r->ofTheWatch()) || (job && job->role == "guard") || drivers_.count(id) || seated_.count(id) ||
+                runners_.count(id) || doleTakers_.count(id) || beggars_.count(id) || inBattle(id) || (job != nullptr) != posted)
                 continue;
             if (life->task == "sleep" || life->task == "eat" || life->task == "companion" ||
-                ((job || watch) && ((job && life->task == job->title) || life->task == "trade" || life->task == "patrol" ||
-                                    life->task == "watch" || life->task == "preaching")))
+                (job && (life->task == job->title || life->task == "trade" || life->task == "patrol" || life->task == "watch" ||
+                         life->task == "preaching")))
                 continue;
             return id;
         }
@@ -922,6 +924,47 @@ const Position* World::runnerShop(const std::string& household, const std::strin
     return p;
 }
 
+Spot World::counterSpot(const Position& p) const
+{
+    // The shop's serving spot (its keeper's own spot where it has none); at a stall the keeper keeps (Marketday's, on the
+    // square), the ground across the stall from the keeper. Each runner then a tile of its own beside it (freeBeside),
+    // never the keeper's: the stall's own tile is solid, and a runner sent to it once stood still for its hour and gave up,
+    // and two sent to one shop were given one tile (Phase 6 merged, checked).
+    Spot at = p.serve.cell.empty() ? p.work : p.serve;
+    std::set<std::string> taken;
+    if (p.serve.cell.empty())
+        taken.insert(tileOf(p.work));               // (The keeper's own place: beside it.)
+    const auto held = society_.state().careers.positions.find(p.id);
+    const auto* keeper = held == society_.state().careers.positions.end() ? nullptr : entity(held->second.holder);
+    if (keeper && !keeper->dead)
+    {
+        const Spot stands{keeper->cellId, std::floor(keeper->position.x) + .5, std::floor(keeper->position.y) + .5};
+        taken.insert(tileOf(stands));
+        if (society_.atStall(held->second.holder))
+        {
+            at = stands;
+            if (const auto* c = cell(stands.cell); c && c->loaded)
+            {
+                const int kx = int(std::floor(stands.x)), ky = int(std::floor(stands.y));
+                for (const auto [dx, dy] : {std::pair{1, 0}, std::pair{-1, 0}, std::pair{0, 1}, std::pair{0, -1}})
+                    if (const auto* stall = c->tile(kx + dx, ky + dy); stall && stall->glyph == 'u')
+                    {
+                        const Spot across{stands.cell, kx + 2 * dx + .5, ky + 2 * dy + .5};
+                        if (standable(across.cell, {across.x, across.y}) && !inDoorway(across.cell, {across.x, across.y}))
+                        {
+                            at = across;
+                            break;
+                        }
+                    }
+            }
+        }
+    }
+    for (const auto& [id, r] : runners_)
+        if (r.at.cell == at.cell)
+            taken.insert(tileOf(r.at));
+    return freeBeside(at, taken);
+}
+
 bool World::sendRunner(const std::string& household, std::string& till)
 {
     // A household's errand-runner (6.6): a member free to go (no post at its hours first), to the counter of the shop
@@ -932,12 +975,7 @@ bool World::sendRunner(const std::string& household, std::string& till)
     const Position* p = runnerShop(household, till);
     if (!p)
         return false;
-    Spot at = p->serve.cell.empty() ? p->work : p->serve;
-    const auto held = society_.state().careers.positions.find(p->id);
-    if (held != society_.state().careers.positions.end())
-        if (const auto* keeper = entity(held->second.holder); keeper && !keeper->dead && keeper->cellId != p->work.cell &&
-                                                            society_.atStall(held->second.holder))
-            at = {keeper->cellId, keeper->position.x + 1, keeper->position.y};   // (Its stall: the keeper's side of it.)
+    const Spot at = counterSpot(*p);
     const auto to = "till:" + p->id;
     const auto market = society_.marketOf(to);
     int inCell = 0, inMarket = 0;
@@ -963,12 +1001,7 @@ bool World::sendBuyer(const std::string& household, const std::string& till, con
     const auto* p = till.rfind("till:", 0) == 0 ? society_.position(till.substr(5)) : nullptr;
     if (!p || ware.empty() || !tillWatched(till) || !openShop(society_, *p))
         return false;
-    Spot at = p->serve.cell.empty() ? p->work : p->serve;
-    const auto held = society_.state().careers.positions.find(p->id);
-    if (held != society_.state().careers.positions.end())
-        if (const auto* keeper = entity(held->second.holder); keeper && !keeper->dead && keeper->cellId != p->work.cell &&
-                                                            society_.atStall(held->second.holder))
-            at = {keeper->cellId, keeper->position.x + 1, keeper->position.y};
+    const Spot at = counterSpot(*p);
     const auto market = society_.marketOf(till);
     int inCell = 0, inMarket = 0;
     for (const auto& [id, r] : runners_)
@@ -1057,6 +1090,19 @@ void World::placeBeggars()
         {
             add(*steps, "at the chapel steps");
             taken.insert(tileOf(*steps));           // (The door's mouth, where the priest hands out the dole: beside it.)
+            // And the dole queue's front, beside the priest (tendDole's first place were no beggar there), so the bread
+            // passes hand to hand, never over a beggar to someone two tiles off (Phase 6 merged, checked).
+            std::set<std::string> priest{tileOf(*steps)};
+            taken.insert(tileOf(freeBeside(*steps, priest, true)));
+        }
+        // Where the square's crowd and its stallholders stand (doc 54): never a beggar's place, so none is pushed off it by
+        // the crowd onto another's tile (Phase 6 merged, checked).
+        if (const auto& sq = square(community); sq.found)
+        {
+            for (const auto& at : sq.crowd)
+                taken.insert(tileOf(at));
+            for (const auto& at : sq.stalls)
+                taken.insert(tileOf(at));
         }
         if (const auto* board = boardSpot(community))
             add(*board, "at the market");
@@ -1100,6 +1146,7 @@ void World::placeSleepers()
     const auto night = std::int64_t(std::floor(calendarDays_ - .25));
     warmPlaces_.clear();
     std::map<std::string, std::set<std::string>> seen;
+    std::set<std::string> tiles;                    // (The tiles the sleepers lie on; first, the doors' mouths.)
     for (const auto& p : society_.positions())
         if (!p.work.cell.empty() && warmTrade(p.title))
             if (const auto* c = cell(p.work.cell))
@@ -1109,13 +1156,17 @@ void World::placeSleepers()
                     if (c->outdoors)
                         at = {p.work.cell, p.work.x + 1, p.work.y + 1};
                     else if (const auto* out = doorOut(p.work.cell))
+                    {
+                        // (In the doorway's shelter, beside its mouth: never on the tile whoever comes out arrives on;
+                        // Phase 6 merged, checked.)
                         at = *out;
+                        tiles.insert(tileOf(at));
+                    }
                     if (!at.cell.empty() && seen[m->id].insert(at.cell + "|" + std::to_string(int(at.x)) + "," + std::to_string(int(at.y))).second)
                         warmPlaces_[m->id].push_back(at);
                 }
     const int most = std::max(1, society_.statusTable().beggarsACell);
     std::map<std::string, int> taken;
-    std::set<std::string> tiles;                    // (The tiles the sleepers lie on.)
     for (const auto& [id, life] : society_.state().residents)
     {
         const auto* s = society_.statusOf(id);
@@ -1147,6 +1198,7 @@ void World::placeSleepers()
             if (!steps)
                 continue;
             at = *steps;
+            tiles.insert(tileOf(at));               // (Its door's mouth, as a warm wall's.)
         }
         warmWall_[id] = freeBeside(at, tiles);       // (Side by side along the wall, never two on one tile.)
     }

@@ -160,6 +160,9 @@ void World::witness(Incident& inc, double sleight)
     const std::string victimName = victim ? victim->name : "someone";
     const std::string claim = inc.kind == "assault" ? "attacked " + victimName
                             : inc.kind == "attempted theft" ? "tried to steal from " + victimName : "stole from " + victimName;
+    // (What a player is told they see happen: "You see Piet steal from Imogen.", never "You see Piet stole from".)
+    const std::string sight = inc.kind == "assault" ? "attack " + victimName
+                            : inc.kind == "attempted theft" ? "try to steal from " + victimName : "steal from " + victimName;
     const std::string unseen = inc.kind == "assault" ? "was attacked by someone they couldn't make out"
                                                      : "was robbed by someone they couldn't make out";
     for (const auto& [id, e] : entities_)
@@ -203,10 +206,12 @@ void World::witness(Incident& inc, double sleight)
         {
             // (Food taken from a till moved its shelves, journalled whole with the next record: so the notice is a move, and
             // the host journals before it tells it, as for a raid; doc 79, Phase 6 merged. A pocket's coins are staged
-            // purses, not journalled on a tick.)
-            notice(id, identified ? "You see " + off->name + " " + claim + "."
+            // purses, not journalled on a tick. Either way the incident, with this player among its witnesses, is a crime
+            // the host journals before telling: a crash never takes back what a player was told they saw, which they may
+            // go and report to the Watch; Phase 6 merged, checked.)
+            notice(id, identified ? "You see " + off->name + " " + sight + "."
                                   : inc.kind == "assault" ? "You hear a struggle nearby." : "You glimpse someone robbing " + victimName + ".",
-                   inc.kind == "theft" && !inc.from.empty());
+                   inc.kind == "theft" && !inc.from.empty(), true);
             continue;
         }
         if (identified)
@@ -265,7 +270,7 @@ void World::weigh(Incident& inc)
     for (const auto& g : guards)
         believe(g, inc.offender, "is wanted for " + charge(inc.kind), "the watch", 1, inc.id);
     if (off && !off->npc)
-        notice(inc.offender, "Word has reached the watch. You are wanted for " + charge(inc.kind) + ".");
+        notice(inc.offender, "Word has reached the watch. You are wanted for " + charge(inc.kind) + ".", false, true);   // (A crime's.)
 }
 
 void World::reportTo(Incident& inc, Witness& w, const std::string& guard)
@@ -567,11 +572,15 @@ void World::takeIntoCustody(const std::string& person, const std::string& townId
             observe(person);
     }
     recordEvent({"arrest", guard, person, c.cell, 0, 0, {}, 0, 0, "held by the watch of " + townId});
+    crime_.custody.push_back(std::move(c));
+    // (The fine and what is made good came out of a player's own coins, and the warrant became custody: so the notice is a
+    // move and a crime, journalled before it is told. Taken on a tick, a crash before the next record once left the player
+    // their coins and the warrant open, out of the gaol they had been told they were held in; Phase 6 merged, checked.)
     if (!p->npc)
         notice(person, std::string(bound ? "The watch binds your wounds and carries you to the gaol."
                                          : "The watch drags you to the gaol.") +
-                           " You will be held there for " + std::to_string(int(PlayerHours)) + " game hours.");
-    crime_.custody.push_back(std::move(c));
+                           " You will be held there for " + std::to_string(int(PlayerHours)) + " game hours.",
+               true, true);
 }
 
 void World::confront(const std::string& guard, const std::string& person)
@@ -692,7 +701,7 @@ void World::tendCrime()
         }
         recordEvent({"released", it->person, {}, it->cell, 0, 0, {}, 0, 0, "by the watch of " + it->town});
         if (const auto* p = entity(it->person); p && !p->npc)
-            notice(it->person, "The watch lets you go. You're free to leave the gaol.");
+            notice(it->person, "The watch lets you go. You're free to leave the gaol.", false, true);
         it = crime_.custody.erase(it);
     }
     // Witnesses tell a guard on duty they meet.

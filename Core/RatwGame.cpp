@@ -2797,14 +2797,16 @@ void Game::tick(double dt)
     // waits for that record, as a command's reply does, so a player is told only what a crash can't take back. Only
     // then: a fight's lines and the like move nothing, and the record costs about half a millisecond on DEV (the
     // repair's check). Either way a notice waits behind anything of its player's still waiting for the journal, so a
-    // later tick's line never overtakes an earlier one's.
-    bool moved = false;
-    if (auto notices = world_.takeNotices(&moved); !notices.empty())
+    // later tick's line never overtakes an earlier one's. A notice of a crime (a theft or a blow seen, a player carried to
+    // the gaol) waits the same way for the crime's record, so a crash never takes back an incident a player was told they
+    // saw (and could report) nor a custody they were told of (doc 79, Phase 6 merged, checked).
+    bool moved = false, crime = false;
+    if (auto notices = world_.takeNotices(&moved, &crime); !notices.empty())
     {
         const bool journal = store_ && store_->journal() && storageReady_;
         const auto before = journalSeq_;
-        if (journal && moved)
-            record(Economy | Roads);                // (One record for every notice of this tick; nothing if nothing moved.)
+        if (journal && (moved || crime))
+            record((moved ? Economy | Roads : 0u) | (crime ? Crime : 0u));   // (One record for this tick's notices.)
         const auto covered = journalSeq_ != before ? journalSeq_ : 0;
         for (const auto& [who, words] : notices)
             if (auto* c = clientOf(who))
