@@ -130,16 +130,29 @@ Supported event payloads are:
 notice: {scope:"world"|"cell"|"player"|"chapter",target?,text}
 weather: {cell,preset:"clear"|"rain"|"snow"|"fog"|"seasonal"}
 npc_relocate: {npc,cell,x,y}
-economy_transfer: {from,to,item:""|"herbs"|"meal",quantity,coins}
+economy_transfer: {from,to,item:""|<catalogue good>,quantity,coins}
+player_grant: {player,coins,reason}
+npc_band: {npc,band,days?}
 ```
 
 The service validates existing IDs, advertised native capabilities, resident
 role/recruitment state, known traversable destinations, and real balances/stock
 before dispatch. The native authority independently revalidates all effects.
 Transfers move money and optional goods in the same direction between two
-existing accounts. Quantity is 0–99, coins 0–1,000,000, both whole numbers;
-empty transfers, unknown goods, invented accounts, negative values, or missing
-funds are rejected. No minting or price override is possible through this API.
+existing real or escrow accounts. Quantity is 0–99, coins 0–1,000,000, both whole
+numbers; empty transfers, unknown goods, invented accounts, negative values, or
+missing funds are rejected, and so is a staged end (a resident's purse, a till, a
+treasury: Docs/Design/79-a-staged-economy.md, 9.1), which the snapshot shows read
+only. Only a transfer is checked against a funded source. No minting or price
+override is possible through this API.
+
+A grant or fine (`player_grant`) names a known player, whole coins from -2,500 to
+2,500 but not 0, and a reason of plain words (1–80 characters, never the world's
+forbidden word); the game caps grants per player a day and a fine at the player's
+cash. A band (`npc_band`) names a known resident and a band, with days 1–112
+(default 28) or `clear`; the resident's whole household takes it. Identifiers
+are `[A-Za-z0-9][A-Za-z0-9_:@.-]{0,159}`, so a real society's account ids
+(`till:job:<npc>`, `home:<cell>:<kind>`) are accepted.
 
 A Chapter notice resolves known member IDs into one native
 `{scope:"players",targets:[...],text}` request. This avoids partially dispatched
@@ -249,8 +262,9 @@ left to the authority. Housing and jobs must both have remaining declared
 capacity, minus observed homes and pending approved migration reservations.
 
 Initial deterministic ranking is declared attraction plus up to 12 points for
-currently active Chapter members, plus a small need term for an observed purse
-below 12 pennies and an empty carried-meal stock. Ties use stable NPC IDs. This
+currently active Chapter members, plus a small need term for the resident's
+household band (destitute or poor; doc 79: the band sets the purse, so the purse is
+not read) and an empty carried-meal stock. Ties use stable NPC IDs. This
 does not claim to measure happiness, employment history, or an actual wage
 contract. A new preview with unchanged observations has the same candidate
 ordering and terms. Approval rechecks origin, eligibility, capacity, claims,

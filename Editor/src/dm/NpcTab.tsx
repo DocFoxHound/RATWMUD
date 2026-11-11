@@ -13,6 +13,7 @@ import {ROLE_INFO, formatHour} from '../lib/glyphs';
 import {surfaceFor} from '../lib/surface';
 import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../components/fields';
 import {useWorld} from './world';
+import {BANDS, type Band} from '../lib/economyContract';
 import {isLive, worldName, dmApi, type Action, type Me, type NpcArea, type Npcs, type Target} from './api';
 import {CalendarPanel} from './CalendarPanel';
 import {LifePanel} from './LifePanel';
@@ -191,6 +192,11 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
         finish(() => dmApi.deleteNpc(target, draft.id).then(() => setSelected(null)), `Deleted ${draft.name}.`);
     const life = (id: string, name: string, kill: boolean) => sure(`${kill ? 'Kill' : 'Revive'} ${name}`) &&
         finish(() => dmApi.npcLife(target, id, kill), `${kill ? 'Killed' : 'Revived'} ${name}.`);
+    // A household's band for a while (doc 79, 12: band.override): the game puts the NPC's whole household in it.
+    const bandFor = (id: string, name: string, band: Band | 'clear', days: number) =>
+        sure(band === 'clear' ? `Clear the band set for ${name}'s household` : `Make ${name}'s household ${band} for ${days} days`) &&
+        finish(() => dmApi.liveAct(target, 'band.override', id, band === 'clear' ? {band} : {band, days}),
+               band === 'clear' ? `${name}'s household is back to its own band.` : `${name}'s household is ${band} for ${days} days.`);
     const wander = (id: string, name: string, area: string) => sure(area ? `Have ${name} wander ${data?.areas.find(a => a.id === area)?.name}` : `Stop ${name} wandering`) &&
         finish(() => dmApi.setWander(target, id, area || null), area ? `${name} now wanders there.` : `${name} keeps to their schedule.`);
 
@@ -313,7 +319,7 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
             {layer === 'npcs' && (draft ? <><NpcInspector draft={draft} setDraft={setDraft} routes={data?.routes ?? []} world={world!} canEdit={canEdit} canLive={canLive} busy={busy}
                 dirty={dirty} isNew={isNew} dead={dead.has(draft.id)} target={target} actions={actions} areas={data?.areas ?? []}
                 wander={data?.wanders[draft.id] ?? ''} spawnedBy={data?.spawns.find(r => r.id === data.spawned[draft.id])?.name ?? (data?.spawned[draft.id] ? 'a deleted rule' : '')}
-                onWander={area => wander(draft.id, draft.name, area)}
+                onWander={area => wander(draft.id, draft.name, area)} onBandFor={(band, days) => bandFor(draft.id, draft.name, band, days)}
                 onPick={p => setPick(p)} onSave={save} onRevert={revert} onDelete={remove} onLife={kill => life(draft.id, draft.name, kill)} />
                 {!isNew && building && <VoicePanel me={me} target={target} npc={draft.id} name={draft.name} />}
                 {!isNew && !building && <LifePanel me={me} target={target} id={draft.id} name={draft.name} />}</>
@@ -356,12 +362,19 @@ function Overview({title, target, children}: {title: string; target: Target; chi
     return <div className="dm-panel"><header><div><small>{title}</small><h2>{isLive(target) ? `${worldName(target)}: the players’ world` : `${worldName(target)}: a rehearsal world`}</h2></div></header>{children}</div>;
 }
 
-function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, onWander, onPick, onSave, onRevert, onDelete, onLife}: {
+/** A resident as the Band picker sees them (doc 79, 14: person.band, live.npcs.band_override; null: from rank). */
+type Banded = Person & {band?: Band | null};
+const BAND_OPTIONS: {value: '' | Band; label: string}[] = [{value: '', label: 'From rank'},
+    ...BANDS.map(b => ({value: b, label: b[0].toUpperCase() + b.slice(1)}))];
+
+function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, onWander, onBandFor, onPick, onSave, onRevert, onDelete, onLife}: {
     draft: Person; setDraft: (p: Person) => void; routes: {id: string; name: string}[]; world: Project; canEdit: boolean; canLive: boolean; busy: boolean;
     dirty: boolean; isNew: boolean; dead: boolean; target: Target; actions: Action[]; areas: NpcArea[]; wander: string; spawnedBy: string;
-    onWander: (area: string) => void; onPick: (p: Pick) => void; onSave: () => void; onRevert: () => void; onDelete: () => void; onLife: (kill: boolean) => void;
+    onWander: (area: string) => void; onBandFor: (band: Band | 'clear', days: number) => void; onPick: (p: Pick) => void; onSave: () => void;
+    onRevert: () => void; onDelete: () => void; onLife: (kill: boolean) => void;
 }) {
-    const set = (fields: Partial<Person>) => setDraft({...draft, ...fields});
+    const set = (fields: Partial<Banded>) => setDraft({...draft, ...fields} as Person);
+    const [timed, setTimed] = useState<{band: Band | 'clear'; days: number}>({band: 'poor', days: 28});
     const look = draft.appearance;
     const info = ROLE_INFO[draft.role];
     const placeName = (p: Place | null, none = 'unplaced') => p ? `${M.getCell(world, p.cell)?.name ?? p.cell} · ${p.x}, ${p.y}` : none;
@@ -388,10 +401,10 @@ function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, d
                 hint={dirty ? 'Save or revert the other changes first.' : 'Roams this area during work hours and evenings instead of standing at one spot. Applies at once.'}
                 options={[{value: '', label: 'Keeps to their spots'}, ...wanderAreas.map(a => ({value: a.id, label: a.name}))]}
                 onChange={v => { if (canEdit && !dirty && !busy) onWander(v); }} />}
-            <Row><NumberField label="Purse" value={draft.purse} min={0} max={100000} onCommit={v => set({purse: v})} />
-                <NumberField label="Meals" value={draft.meals} min={0} max={10000} onCommit={v => set({meals: v})} />
-                <NumberField label="Herbs" value={draft.herbs} min={0} max={10000} onCommit={v => set({herbs: v})} /></Row>
-            <Toggle label="Paid by the town treasury" checked={draft.paid} onChange={v => set({paid: v})} />
+            <SelectField label="Band" value={(draft as Banded).band ?? ''} options={BAND_OPTIONS}
+                hint="Residents are fed by their band; the poor go short when the nearest food shop is bare. It covers their whole household (the highest band of its people wins), until the DM sets one for a while."
+                onChange={v => set({band: v || null})} />
+            <Toggle label="A paid post (for succession)" hint="Ranks this resident for succession; nothing pays them" checked={draft.paid} onChange={v => set({paid: v})} />
             <TextField label="Description" multiline value={draft.description} max={4000} onCommit={v => set({description: v})} />
             <TextField label="Greeting" value={draft.greeting} max={1024} onCommit={v => set({greeting: v})} />
             <TextField label="Personality" multiline value={draft.personality} max={2000} onCommit={v => set({personality: v})} />
@@ -410,6 +423,15 @@ function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, d
                 <button className="danger" disabled={busy} onClick={onDelete}>Delete</button>
             </div>}
         </>}
+        {canLive && !isNew && <div className="dm-band-for">
+            <Row><SelectField label="Band for a while (their household)" value={timed.band}
+                    options={[...BANDS.map(b => ({value: b as Band | 'clear', label: b[0].toUpperCase() + b.slice(1)})), {value: 'clear', label: 'Clear the DM\'s band'}]}
+                    onChange={v => setTimed(t => ({...t, band: v}))} />
+                {timed.band !== 'clear' && <NumberField label="Days" value={timed.days} min={1} max={112} onCommit={v => setTimed(t => ({...t, days: Math.max(1, Math.min(112, Math.round(v)))}))} />}</Row>
+            <Hint>The whole household takes it at once, over their score and their authored band, until it lapses (at most 112 days).</Hint>
+            <div className="button-grid"><button disabled={busy || dead} onClick={() => onBandFor(timed.band, timed.days)}>
+                {timed.band === 'clear' ? 'Clear the band' : `Make the household ${timed.band}`}</button></div>
+        </div>}
         {canLive && !isNew && <div className="button-grid">
             <button className="danger" disabled={busy || dead} onClick={() => onLife(true)}>✝ Kill</button>
             <button disabled={busy || !dead} onClick={() => onLife(false)}>Revive</button>

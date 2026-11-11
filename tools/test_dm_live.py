@@ -148,6 +148,47 @@ class DungeonMasterLive(unittest.TestCase):
         kept = [i['type'] for i in (row[0].get('injuries') or [])]
         self.assertEqual(kept, ['bent_tail'], 'saved with the bent tail only: ' + json.dumps(row[0].get('injuries')))
 
+    def test_the_slider_and_an_act_end_to_end(self):
+        """Doc 79, 12 (Phase 9): the slider written into live.economy's rules with its cause, economy.sync {now} applied by
+        the running server, and a DM act (prices reset everywhere) queued through the DM tool; once the server has saved,
+        the Prosperity view's report holds both."""
+        import dungeon_master as D
+        try:                                            # (The core lane's world_store, C8: the studio's steer writes through it.)
+            with W.connect('dev', 'editor', dbname=self.name) as conn:
+                S.patch_economy_rules(conn, 'greyfen', {}, ())
+        except NotImplementedError as missing:
+            self.skipTest(f'Phase 9\'s core lane is not merged yet: {missing}')
+        dm = D.DungeonMaster(lambda target: W.connect('dev', 'dm', dbname=self.name), clock=time.time)
+        who = {'username': 'test', 'role': 'dm'}
+        port = free_port()
+        server = subprocess.Popen([str(SERVER), '--database', 'dev', '--port', str(port), '--for', '120', '--dev-identity'],
+                                  env={**os.environ, 'RATW_DATABASE_URL': self.url, 'RATW_AI': 'off'},
+                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        try:
+            for line in server.stdout:
+                if 'listening on port' in line:
+                    break
+            # The slider, as the studio's steer writes it (one statement over the rules), then its economy.sync.
+            with W.connect('dev', 'editor', dbname=self.name) as conn:
+                S.patch_economy_rules(conn, 'greyfen', {'prosperity': -40, 'prosperityCause': 'the long frost'}, ())
+            synced = self.queue('economy.sync', 'economy', {'now': True})
+            status, result = self.outcome(synced)
+            self.assertEqual(status, 'applied', result)
+            reset = dm.act(who, 'dev', 'prices.reset', 'all', {'words': 'fresh stock at last'})
+            self.assertEqual(reset['payload'], {'words': 'fresh stock at last'})
+            status, result = self.outcome(reset['id'])
+            self.assertEqual(status, 'applied', result)
+        finally:
+            server.send_signal(signal.SIGTERM)          # (It saves as it stops: the checkpoint carries the report.)
+            server.communicate(timeout=60)
+        view = dm.prosperity('dev')
+        self.assertIsNotNone(view['report'], 'the server wrote its report with the checkpoint')
+        prosperity = view['report']['prosperity']
+        self.assertEqual((prosperity['target'], prosperity['slider']), (-40, -40), 'now: the slider at its target at once')
+        self.assertEqual((prosperity['cause'], prosperity['by']), ('the long frost', 'dm'))
+        self.assertTrue(all(m['resetting'] for m in view['report']['markets']), 'every market resetting its prices')
+        self.assertIn('prices.reset', [e['kind'] for e in view['log']], 'the act in the log')
+
 
 if __name__ == '__main__':
     unittest.main()

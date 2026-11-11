@@ -17,7 +17,7 @@ The authority atomically replaces `snapshot.json` every two seconds:
   "sequence": 123,
   "generatedAtUnix": 1790000000,
   "calendarDays": 0.5,
-  "capabilities": ["notice", "weather", "npc_relocate", "economy_transfer"],
+  "capabilities": ["notice", "weather", "weather_front", "npc_relocate", "economy_transfer", "player_grant", "npc_band"],
   "cells": [{"id":"tavern","name":"Tavern","x":0,"y":0,"z":0,
     "width":32,"height":24,"outdoors":false,"terrain":["..."],
     "territory":{"region":"unassigned","claims":[],"chapter":""}}],
@@ -28,13 +28,20 @@ The authority atomically replaces `snapshot.json` every two seconds:
     "age":18,"activity":"resting","role":"resident","cash":80,
     "stock":{"herbs":0,"meal":1},"homeCell":"tavern",
     "homeX":19.5,"homeY":15.5,"relocating":false,
-    "relocationTarget":"","lastActiveAtUnix":0}],
-  "accounts": [{"id":"treasury","cash":1000,"stock":{"herbs":100,"meal":50}}],
+    "relocationTarget":"","lastActiveAtUnix":0,"kind":"staged","band":"poor"}],
+  "accounts": [{"id":"treasury","cash":1000,"stock":{"herbs":100,"meal":50},"kind":"staged"},
+               {"id":"till:job:npc_cook","cash":40,"stock":{"bread":6},"kind":"staged"}],
   "economy": {"ledger":[]}
 }
 ```
 
 (Since Docs/Design/79-a-staged-economy.md, 13, `economy` holds no `minted` or `sunk`: an older game's are read past.)
+
+Each account and character carries its `kind` (doc 79, 9.1: `real` for players and Chapters, `escrow` for coins held in
+trust, `staged` for residents' purses, tills, treasuries and homes, which their bands set each night, `dead` for an old
+economy's), and each resident its household's `band` (`destitute`, `poor`, `comfortable`, `rich`; `""` before the bands
+are first worked out, and for players). An older game names neither: its accounts are taken as `real`. Account ids carry
+`:`, `@` and `.` (`till:job:npc_cook`, `home:<cell>:larder`); every stock good is listed, not only herbs and meals.
 
 Lists above are illustrative shapes, not fabricated live content. Offline saved
 characters are included with `online:false`, last-known location, and
@@ -82,10 +89,21 @@ Supported payloads:
   Only non-recruited resident-role NPCs are supported in this first slice;
   essential cook/keeper/forager jobs are protected. New home controls rest/social
   time; existing jobs and food procurement remain the demonstration commute.
-- `economy_transfer`: `{from,to,item:""|"herbs"|"meal",quantity,coins}`.
+- `economy_transfer`: `{from,to,item:""|<a catalogue good>,quantity,coins}`.
   Transfer existing money and optional goods in the same direction from one
-  existing account to another. No minting, negative values, hidden stock,
-  arbitrary recipes, or player-provided prices. Whole coins/quantities only.
+  existing real or escrow account to another. A staged end (a resident's purse,
+  a till, a treasury) is refused: "staged accounts are set by their bands". No
+  minting, negative values, hidden stock, arbitrary recipes, or player-provided
+  prices. Whole coins/quantities only.
+- `player_grant`: `{player,coins,reason}`. A grant (coins 1 to 2,500: a
+  registered faucet "dm grant: <reason>", capped per player a day by
+  `status.json` `caps.grantsADay`) or a fine (coins -1 to -2,500: a sink "dm
+  fine: <reason>", at most the player's cash) on a player's account; the reason
+  is plain words, at most 80 bytes. No funded source (doc 79, 12; D16).
+- `npc_band`: `{npc,band,days?}`. The resident's household takes `band`
+  (`destitute`, `poor`, `comfortable`, `rich`) for `days` (1 to 112, default 28)
+  over its score and its authored band; `band:"clear"` (no `days`) ends the DM's
+  band.
 
 Assassinations, brigands, armies, route robbery, faction destruction and combat
 are supported as campaign plans, not executable native effects in this slice.

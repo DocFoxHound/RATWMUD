@@ -188,8 +188,9 @@ function ImportPanel({live, maintenance, stopped, canAct, onImported}: {live: Se
     return <section className="sync-card wide">
         <h3>⇪ Import from dev</h3>
         <p className="hint">Brings a dev world's changes (the map, buildings, NPCs, factions...) into {live.name}, keeps what changed only on live,
-            and asks where both changed the same thing. One transaction; a numbered release you can roll back. Players' data, the save and
-            the economy are never written. Atlas's Update from live first makes this smaller.</p>
+            and asks where both changed the same thing. One transaction; a numbered release you can roll back. Players' data and the save are
+            never written, and the economy's settings (live.economy) are this world's own: an update never overwrites them. Atlas's Update
+            from live first makes this smaller.</p>
         {!data ? <p className="hint">{loading ? 'Comparing…' : ''}</p> : !data.candidates.length
             ? <p className="meta">No dev world is a copy of {live.name} (a dev world whose upstream is {live.key}): nothing to import. Make one with
                 <code> python3 tools/world_db.py new KEY --upstream {live.key} --from {live.key}</code>.</p>

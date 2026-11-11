@@ -27,7 +27,9 @@ def fixture(now):
         return {'id': identifier, 'name': identifier.title(), 'npc': npc, 'online': online, 'active': active,
                 'cell': 'source', 'x': .5, 'y': .5, 'age': 18, 'activity': 'resting', 'role': role,
                 'cash': 10 if npc else 20, 'stock': {'herbs': 2, 'meal': 0}, 'homeCell': 'source',
-                'homeX': .5, 'homeY': .5, 'relocating': False, 'relocationTarget': '', 'lastActiveAtUnix': 0}
+                'homeX': .5, 'homeY': .5, 'relocating': False, 'relocationTarget': '', 'lastActiveAtUnix': 0,
+                # (Doc 79: a resident's purse is staged, set by their household's band; a player's is real.)
+                'kind': 'staged' if npc else 'real', 'band': 'poor' if npc else ''}
 
     actors = [actor('npc_scout', True, 'resident'), actor('npc_cook', True, 'cook'),
               actor('player-ash', False), actor('player-birch', False, online=False)]
@@ -36,9 +38,10 @@ def fixture(now):
             'cells': [cell('source', claims=['faction_one']), cell('destination')],
             'factions': [{'id': 'faction_one', 'name': 'Claimants', 'color': '#abcdef'}], 'chapters': [],
             'characters': actors,
-            'accounts': [{'id': 'treasury', 'cash': 1000, 'stock': {'herbs': 100, 'meal': 50}}] +
-                        [{key: actor[key] for key in ('id', 'cash', 'stock')} for actor in actors],
-            'economy': {'minted': 1060, 'sunk': 0, 'ledger': []}}     # (minted and sunk: a pre-79 Director's, read past.)
+            'accounts': [{'id': 'treasury', 'cash': 1000, 'stock': {'herbs': 100, 'meal': 50}, 'kind': 'staged'},
+                         {'id': 'contract:c1', 'cash': 30, 'stock': {}, 'kind': 'escrow'}] +
+                        [{key: actor[key] for key in ('id', 'cash', 'stock', 'kind')} for actor in actors],
+            'economy': {'ledger': []}}
 
 
 # The Storykeeper keeps its state in PostgreSQL: every test gets an empty dm schema in a scratch database.
@@ -327,14 +330,77 @@ class ServiceTests(ServiceFixture):
         self.assertEqual(len(list(self.service.outbox.iterdir())), 1)
 
     def test_finite_economy_transfers_revalidate_accounts_and_balances(self):
-        good = {'from': 'treasury', 'to': 'player-ash', 'item': 'meal', 'quantity': 2, 'coins': 5}
+        # Between real (and escrow) accounts only (doc 79, 12): a player's to a player's, an escrow's to a player's.
+        good = {'from': 'player-birch', 'to': 'player-ash', 'item': 'herbs', 'quantity': 2, 'coins': 5}
         self.assertEqual(self.approve(self.event('economy_transfer', good))['status'], 'queued')
-        for change in ({'coins': 1001}, {'quantity': 51}, {'from': 'invented_account'}):
-            with self.assertRaises(dm.DMError):
+        self.assertEqual(self.approve(self.event('economy_transfer', {'from': 'contract:c1', 'to': 'player-ash', 'item': '',
+                                                                      'quantity': 0, 'coins': 30}))['status'], 'queued')
+        for change in ({'coins': 21}, {'quantity': 3}, {'from': 'invented_account'}, {'item': 'iron_ore', 'quantity': 1}):
+            with self.assertRaises(dm.DMError, msg=change):
                 self.approve(self.event('economy_transfer', good | change))
         for change in ({'coins': -1}, {'quantity': .5}, {'item': 'magic_sword'}, {'coins': True}):
             with self.assertRaises(dm.DMError):
                 self.event('economy_transfer', good | change)
+        # Any catalogue good may be named (the source must hold it), not only herbs and meals.
+        self.event('economy_transfer', good | {'item': 'iron_ore', 'quantity': 1})
+        # A staged end (the treasury, a resident's purse) is set by its band: refused, however funded.
+        for change in ({'from': 'treasury'}, {'to': 'npc_scout'}):
+            with self.assertRaises(dm.DMError) as raised:
+                self.approve(self.event('economy_transfer', good | change))
+            self.assertIn('set by their bands', str(raised.exception))
+
+    def test_a_grant_or_a_fine_needs_no_funded_source(self):
+        # Doc 79, 12: a player's grant (a capped faucet) or fine (a sink), with its reason; the game caps it.
+        event = self.approve(self.event('player_grant', {'player': 'player-ash', 'coins': 23, 'reason': 'for ringing the bell'}))
+        self.assertEqual(event['status'], 'queued')
+        envelope = self.service._get('event', event['id'])['envelope']
+        self.assertEqual((envelope['kind'], envelope['payload']), ('player_grant', {'player': 'player-ash', 'coins': 23,
+                                                                                    'reason': 'for ringing the bell'}))
+        self.assertEqual(self.approve(self.event('player_grant', {'player': 'player-birch', 'coins': -2500, 'reason': 'a fine'}))['status'],
+                         'queued', 'an offline player too; a fine is at most their cash, the game says')
+        for bad in ({'player': 'player-ash', 'coins': 0, 'reason': 'x'}, {'player': 'player-ash', 'coins': 2501, 'reason': 'x'},
+                    {'player': 'player-ash', 'coins': 5, 'reason': ''}, {'player': 'player-ash', 'coins': 5, 'reason': 'x' * 81},
+                    {'player': 'player-ash', 'coins': 5, 'reason': 'the ' + 'd' + 'og days'},
+                    {'player': 'npc_scout', 'coins': 5, 'reason': 'x'}, {'player': 'player-ash', 'coins': 5},
+                    {'player': 'player-ash', 'coins': 1.5, 'reason': 'x'}):
+            with self.assertRaises(dm.DMError, msg=bad):
+                self.event('player_grant', bad)
+        with self.assertRaises(dm.DMError):
+            self.approve(self.event('player_grant', {'player': 'player-nobody', 'coins': 5, 'reason': 'x'}))
+
+    def test_a_households_band_for_a_while(self):
+        event = self.approve(self.event('npc_band', {'npc': 'npc_scout', 'band': 'destitute', 'days': 14}))
+        self.assertEqual(event['status'], 'queued')
+        self.assertEqual(self.approve(self.event('npc_band', {'npc': 'npc_scout', 'band': 'clear'}))['status'], 'queued')
+        self.assertEqual(self.approve(self.event('npc_band', {'npc': 'npc_cook', 'band': 'rich'}))['status'], 'queued',
+                         'the game takes 28 days when none are given')
+        for bad in ({'npc': 'npc_scout', 'band': 'royal'}, {'npc': 'npc_scout', 'band': 'poor', 'days': 113},
+                    {'npc': 'npc_scout', 'band': 'clear', 'days': 3}, {'npc': 'npc_scout'}):
+            with self.assertRaises(dm.DMError, msg=bad):
+                self.event('npc_band', bad)
+        with self.assertRaises(dm.DMError):
+            self.approve(self.event('npc_band', {'npc': 'player-ash', 'band': 'poor'}))
+
+    def test_a_large_society_with_its_own_account_ids(self):
+        # Doc 79 (R10): a real society's accounts, 1500 of them, with ':' '@' and '.' in their ids, shown read only.
+        self.snapshot['accounts'] += [{'id': f'home:cell_{i}:larder', 'cash': i, 'stock': {}, 'kind': 'staged'}
+                                      for i in range(749)] + [{'id': 'stall:ash@market.1', 'cash': 4, 'stock': {}, 'kind': 'escrow'}]
+        self.snapshot['accounts'] += [{'id': f'till:job:npc_{i}', 'cash': i, 'stock': {'bread': 2}, 'kind': 'staged'}
+                                      for i in range(750)]
+        self.write_snapshot(1)
+        state = self.service.state()
+        self.assertTrue(state['bridge']['live'], state['bridge'])
+        accounts = {a['id']: a for a in state['snapshot']['accounts']}
+        self.assertEqual(len(accounts), 1500 + 6)
+        self.assertEqual((accounts['till:job:npc_3']['kind'], accounts['till:job:npc_3']['stock']['bread']), ('staged', 2))
+        self.assertIn('home:cell_41:larder', accounts)
+        self.assertEqual(accounts['stall:ash@market.1']['kind'], 'escrow')
+        with self.assertRaises(dm.DMError):
+            self.approve(self.event('economy_transfer', {'from': 'till:job:npc_3', 'to': 'player-ash', 'item': '', 'quantity': 0,
+                                                         'coins': 1}))
+        self.snapshot['accounts'][-1]['kind'] = 'mint'
+        self.write_snapshot(1)
+        self.assertFalse(self.service.state()['bridge']['live'], 'an unknown account kind is refused')
 
     def test_chapter_sites_are_explicit_nonoverlapping_operator_overlays(self):
         chapter = self.chapter()

@@ -25,7 +25,6 @@ import argparse
 import getpass
 import hashlib
 import json
-from collections import Counter, defaultdict
 import os
 from pathlib import Path
 import re
@@ -33,10 +32,12 @@ import secrets
 import sys
 import threading
 import time
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 
 import chronicle as C
+import economy_contract as EC
 import http_body
 import live_edit as L
 import map_editor
@@ -180,6 +181,11 @@ ACTIONS = {'character.kill': 'dm', 'character.resurrect': 'dm', 'character.gift'
            'milestone.credit': 'dm', 'visitors.sync': 'dm',
            # Talk (Docs/Design/62-talk.md, phase 6): a resident's voice, their family, a dialect or a figure saved; read again.
            'voice.sync': 'dm',
+           # The staged economy (Docs/Design/79-a-staged-economy.md, 12; Phase 9): a market's Times nudged for a while, an
+           # area's harvest called, a staged event added or cancelled, a ship stormed, a market's prices reset (or all), a
+           # household's band for a while (target an NPC of it), a player's grant or fine (LIVE_ACTS clamps each).
+           'times.nudge': 'dm', 'harvest.override': 'dm', 'event.add': 'dm', 'event.cancel': 'dm', 'ship.storm': 'dm',
+           'prices.reset': 'dm', 'band.override': 'dm', 'character.grant': 'dm',
            # Marking a player a Dungeon Master in the game (the Dev Console) is for admins.
            'character.dm': 'admin'}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
@@ -452,6 +458,8 @@ class DungeonMaster:
         needed = ACTIONS.get(kind)
         if not needed:
             raise DMError(f'Unknown action: {kind}.')
+        if kind in LIVE_ACTS:
+            return self.act(who, target, kind, character_id, payload, reason)
         detail = ''
         if kind == 'character.gift':
             gift = payload.get('gift', '') if isinstance(payload, dict) else None
@@ -531,6 +539,8 @@ class DungeonMaster:
         queued for the game server with its payload checked, and audited."""
         if kind not in LIVE_KINDS:
             raise DMError('No such action.')
+        if kind in LIVE_ACTS:
+            return self.act(who, target, kind, target_id, payload, reason)
         self.allowed(who, kind)
         target_id = str(target_id or '').strip()
         if not target_id or len(target_id) > 80 or not PLAIN_ID.match(target_id):
@@ -946,68 +956,122 @@ class DungeonMaster:
         return {'target': target, 'today': today, 'communities': communities, 'actions': actions,
                 'weekdays': list(C.WEEKDAYS)}
 
-    # -- where the money is -------------------------------------------------------------
-    def money(self, target):
-        """The money as last saved: each town's treasury, church and buyers; the great houses, the shops' tills and the funds;
-        residents' purses by kind of work, the poorest and richest tenth and how many are short of a day's food money;
-        money on the road. (Nothing moves it of itself since the economy's rules were erased: doc 66, Phase 5.)"""
+    # -- the Prosperity tab (Docs/Design/79-a-staged-economy.md, 12) -----------------------------------------------
+    def prosperity(self, target):
+        """The staged economy as the game server last saved it (ProsperityView, doc 79 Phase 9, 1.7): Core's report from
+        the checkpoint (bands, the hungry and short, would-be thieves, beggars and the dole by market; Times and causes;
+        the largest pressures; harvests; the event kinds), with what this reads beside it from the same row and the
+        database: the towns' treasuries, the week's wagons, ships and events, player coin made against sunk, today's
+        thefts, the word on the street and 28 days of the economy's log. It lags the game by up to one checkpoint
+        (`writtenAt`, `stale`)."""
         with self.connect(target) as conn:
             world = C.world_of(conn)
             if not world:
                 raise DMError(f'The {target.upper()} database has no world yet.', 404)
-            project, _ = S.load_world(conn, world)
+            row = conn.execute("SELECT payload::jsonb->'society', payload::jsonb->'roads', "
+                               "(payload::jsonb->>'calendarDays')::double precision, saved_at, now() "
+                               'FROM game.checkpoints WHERE world_id = %s', (world,)).fetchone()
+            names = dict(conn.execute('SELECT key, name FROM game.characters WHERE world_id = %s', (world,)).fetchall())
+            day = row[2] if row and row[2] is not None and row[2] >= 0 else None
+            kinds = list(PROSPERITY_LOG_EVENTS + WAGON_EVENTS + THEFT_EVENTS)
+            if day is not None:
+                events = conn.execute('''SELECT kind, actor, target, cell, item, quantity, game_day, detail, recorded_at
+                                         FROM game.events WHERE world_id = %s AND kind = ANY(%s) AND game_day >= %s
+                                         ORDER BY id DESC LIMIT 2000''', (world, kinds, day - 28)).fetchall()
+            else:
+                events = []
+            acts = list(ECONOMY_ACTS)
+            audit = conn.execute('''SELECT at, action, target, detail, who FROM dm.audit
+                                    WHERE (action LIKE 'economy.%%' OR action = ANY(%s)) AND at >= %s
+                                    ORDER BY at DESC, sequence DESC LIMIT 400''', (acts, self.clock() - 28 * 86400)).fetchall()
+        society = _json_value(row[0]) if row else {}
+        roads = _json_value(row[1]) if row else {}
+        society = society if isinstance(society, dict) else {}
+        roads = roads if isinstance(roads, dict) else {}
+        report = society.get('report') if isinstance(society.get('report'), dict) else None
+        board = society.get('board') if isinstance(society.get('board'), dict) else {}
+        staged = society.get('staged') if isinstance(society.get('staged'), dict) else {}
+        accounts = society.get('accounts') if isinstance(society.get('accounts'), dict) else {}
+        market_names = {m.get('id'): m.get('name') or m.get('id') for m in (report or {}).get('markets', []) if isinstance(m, dict)}
+        written = row[3] if row else None
+        stale = written is None or (row[4] - written).total_seconds() > STALE_AFTER
+        today = int(day) if day is not None else None
+        towns = sorted(({'community': k[len('stores:'):], 'treasury': _whole_or_zero(v.get('cash') if isinstance(v, dict) else 0)}
+                        for k, v in accounts.items() if k.startswith('stores:')), key=lambda t: t['community'])
+        week = {'wagons': week_wagons(board, roads, events, today), 'ships': week_ships(board, today),
+                'events': week_events(board, today)}
+        players = player_money(staged, names, today)
+        thefts = sum(1 for e in events if e[0] in THEFT_EVENTS and today is not None and int(e[6]) == today)
+        return {'target': target, 'writtenAt': written.isoformat() if written else None, 'gameDay': day, 'stale': stale,
+                'report': report, 'towns': towns, 'week': week, 'players': players, 'thefts': thefts,
+                'word': street_word(report, week, market_names),
+                'log': economy_log(audit, events, board, market_names, today)}
+
+    def act(self, who, target, kind, target_id, payload=None, reason=''):
+        """A live act on the staged economy (doc 79, 12; Phase 9 plan 1.5): a Times nudge, a harvest called, an event added
+        or cancelled, a ship stormed, prices reset, a household's band for a while, a player's grant or fine. The payload
+        clamped here as Core clamps it (so the reply shows what will be applied; nothing is refused for being out of
+        range), queued for the game server (which applies it, journals it and writes back the outcome), and audited with
+        the state before and the act after. Refused only for an unknown target or a malformed payload."""
+        if kind not in ECONOMY_ACTS:
+            raise DMError('No such action.')
+        self.allowed(who, kind)
+        target_id = str(target_id or '').strip()
+        if not target_id or len(target_id) > 80 or not PLAIN_ID.match(target_id):
+            raise DMError('Say what it is for.')
+        what, normalise = LIVE_ACTS[kind]
+        with self.connect(target) as conn:
+            world = C.world_of(conn)
+            if not world:
+                raise DMError(f'The {target.upper()} database has no world yet.', 404)
             row = conn.execute("SELECT payload::jsonb->'society', (payload::jsonb->>'calendarDays')::double precision "
                                'FROM game.checkpoints WHERE world_id = %s', (world,)).fetchone()
-        society = row[0] if row and row[0] else {}
-        if isinstance(society, str):
-            society = json.loads(society)
-        accounts = {k: int(v.get('cash', 0)) for k, v in (society.get('accounts') or {}).items()}
-        region = {a['id']: a.get('territory', {}).get('region', '') for a in project['cells'] + project['rooms']}
-        people = {p['id']: p for p in project.get('people', [])}
-        living = Counter(region.get(p['home']['cell'], '') for p in people.values() if p['home'])   # (Not the unplaced: doc 66, 2.)
-        towns = {}
-        for town, n in sorted(living.items(), key=lambda kv: -kv[1]):
-            if not town or n < 5:
-                continue
-            buyers = {k.split(':')[-1]: v for k, v in accounts.items()
-                      if k.startswith(f'town:{town}:') and not k.endswith((':church', ':granary'))}
-            # Every town's church keeps one purse, the land's (doc 42, "One church"): 'church' is that purse, the same for all.
-            towns[town] = {'residents': n, 'treasury': accounts.get(f'stores:{town}'), 'church': accounts.get('town:all:church', accounts.get(f'town:{town}:church')),
-                           'buyers': buyers}
-        houses = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith('house:')]
-        tills = {k: v for k, v in accounts.items() if k.startswith('till:')}
-        # Facility funds (fund:...) and the markets outside the city (outside:..., the Country's purse: doc 68, 2): what the
-        # store room's draws paid; the Houses' estates (estate:..., doc 72, Phase 6); and the carters' takings (doc 68, 6), their
-        # yards' tills.
-        # (Doc 73: the Country's purse, outside:country, is the Wharf's, outside:wharf; an older save's shown as it.)
-        if 'outside:country' in accounts:
-            accounts['outside:wharf'] = accounts.get('outside:wharf', 0) + accounts.pop('outside:country')
-        funds = [{'id': k, 'cash': v} for k, v in sorted(accounts.items()) if k.startswith(('fund:', 'outside:', 'estate:'))]
-        import item_catalog
-        carters = [{'id': f'till:job:{n["id"]}', 'name': n['name'], 'label': n['workLabel'], 'cash': accounts[f'till:job:{n["id"]}']}
-                   for n in project.get('people', []) if n.get('role') == 'merchant' and f'till:job:{n["id"]}' in accounts
-                   and item_catalog.business_for(n.get('workLabel', '')) == 'carters']
-        purses = sorted(v for k, v in accounts.items() if k in people)
-        by_role = defaultdict(list)
-        for k, v in accounts.items():
-            if k in people:
-                by_role[people[k]['role']].append(v)
-        tenth = max(1, len(purses) // 10)
+            society = _json_value(row[0]) if row else {}
+            society = society if isinstance(society, dict) else {}
+            day = row[1] if row and row[1] is not None and row[1] >= 0 else None
+            known = self._act_targets(conn, world, what, society)
+            if known is not None and target_id not in known:
+                raise DMError(f'No such {what.replace("_", " ")}: {target_id}.', 404)
+            clean = normalise(payload if isinstance(payload, dict) else {}, {'day': day, 'society': society})
+            before = act_before(kind, target_id, society)
+            with conn.transaction():
+                action_id = conn.execute('''INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s)
+                                            RETURNING id''', (kind, target_id, who['username'], json.dumps(clean))).fetchone()[0]
+                conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action_id}),))
+                self.audit(conn, who['username'], kind, target_id,
+                           f'{target.upper()}: {kind} {target_id} — before: {_brief(before)}; after: {_brief(clean)}'
+                           + (f' — {reason[:500]}' if reason else ''))
+        return {'id': action_id, 'status': 'queued', 'payload': clean}
 
-        def mean(xs):
-            return round(sum(xs) / len(xs), 1) if xs else None
-        residents = {'count': len(purses), 'total': sum(purses), 'median': purses[len(purses) // 2] if purses else None,
-                     'poorestTenth': mean(purses[:tenth]), 'richestTenth': mean(purses[-tenth:]),
-                     'shortOfFood': sum(1 for v in purses if v < 6),
-                     'byRole': {r: {'count': len(v), 'total': sum(v), 'median': sorted(v)[len(v) // 2]} for r, v in by_role.items()}}
-        road = {'caravans': sum(v for k, v in accounts.items() if k.startswith('caravan:')),
-                'contracts': sum(v for k, v in accounts.items() if k.startswith('contract:')),
-                'bandits': sum(v for k, v in accounts.items() if k.startswith('bandits:'))}
-        return {'target': target, 'day': row[1] if row else None, 'total': sum(accounts.values()),
-                'capital': accounts.get('treasury'), 'towns': towns, 'houses': houses,
-                'tills': {'count': len(tills), 'total': sum(tills.values())}, 'funds': funds, 'carters': carters,
-                'residents': residents, 'road': road,
-                'players': sum(v for k, v in accounts.items() if k.startswith(('wolf-', 'player-')))}
+    def grant(self, who, target, character, coins, reason):
+        """A player's grant (coins > 0, a faucet) or fine (coins < 0, a sink), with its reason (doc 79, 12; D16): queued as
+        character.grant, which Core caps (status.json caps.grantsADay a player a day; a fine at most their cash)."""
+        return self.act(who, target, 'character.grant', character, {'coins': coins, 'reason': reason})
+
+    @staticmethod
+    def _act_targets(conn, world, what, society):
+        """The ids an act may name, where this can know them (None: let the game server judge)."""
+        report = society.get('report') if isinstance(society.get('report'), dict) else {}
+        board = society.get('board') if isinstance(society.get('board'), dict) else {}
+        if what == 'character':
+            return {k for (k,) in conn.execute('SELECT key FROM game.characters WHERE world_id = %s', (world,)).fetchall()}
+        if what == 'npc':
+            ids = {k for (k,) in conn.execute('SELECT id FROM live.npcs WHERE world_id = %s', (world,)).fetchall()}
+            ids |= {k for (k,) in conn.execute("SELECT id FROM live.characters WHERE status = 'active'").fetchall()}
+            return ids
+        if what in ('market', 'markets'):
+            markets = {m.get('id') for m in report.get('markets', []) if isinstance(m, dict)} or set(board.get('cell') or {})
+            if not markets:
+                return None
+            return markets | {'all'} if what == 'markets' else markets
+        if what == 'area':
+            areas = {a.get('id') for a in report.get('areas', []) if isinstance(a, dict)}
+            return areas or None
+        if what == 'event':
+            return {e.get('id') for e in board.get('events', []) if isinstance(e, dict)} or None
+        if what == 'ship':
+            return {s.get('id') for s in board.get('ships', []) if isinstance(s, dict)} or None
+        return None
 
     def call_festival(self, who, target, community, name='', in_days=0):
         """Asks the game server to hold a festival in a community today (from noon) or some days ahead."""
@@ -1939,13 +2003,326 @@ class DungeonMaster:
         return {'id': int(action_id), 'status': row[0], 'result': row[1], 'doneAt': row[2].isoformat() if row[2] else None}
 
 
+# --------------------------------------------------------------------------- The staged economy (doc 79, 12)
+
+# The DM's live acts on the staged economy (Docs/Design/79-a-staged-economy.md, 12; the Phase 9 plan, 1.5): what each
+# names, and its payload clamped as Core clamps it. None is an `economy.` kind (economy.sync is the studio's: its
+# levers' writes queue it).
+PROSPERITY_LOG_EVENTS = ('times cause', 'times nudged', 'nudge over', 'harvest called', 'harvest over', 'prices reset',
+                         'ship stormbound', 'ship lost', 'event added', 'event cancelled')
+WAGON_EVENTS = ('caravan departs', 'caravan arrives', 'caravan lost', 'wagon cancelled', 'cart departs', 'cart arrives')
+THEFT_EVENTS = ('theft', 'attempted theft')
+STALE_AFTER = 180                     # Seconds: a checkpoint older than this is shown as stale (the server may be down).
+RIPPLE_LOGGED = 0.2                   # A pressure move this big is in the year log (12: "big ripples").
+EVENT_ID = re.compile(r'^[a-z0-9_]{1,32}$')
+
+
+class _Words:
+    """Plain words a DM wrote (market::plainWords): stripped, `most` bytes at most, no control character, never the
+    forbidden word."""
+
+    @staticmethod
+    def of(value, what, most=EC.CAUSE_MOST, required=False):
+        if value is None or (isinstance(value, str) and not value.strip()):
+            if required:
+                raise DMError(f'Give the {what} (plain words, at most {most} characters).')
+            return ''
+        clean = EC.plain_words(value, most)
+        if clean is None:
+            raise DMError(f'The {what} must be plain words, at most {most} characters, with no word the world never uses.')
+        return clean
+
+
+def _whole(value, low, high, what):
+    """A number clamped into low..high and rounded (never refused for its size); refused only if it isn't one."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value != value or value in (float('inf'), float('-inf')):
+        raise DMError(f'Give {what} as a number.')
+    return max(low, min(high, int(round(value))))
+
+
+def _nudge(p, _):
+    clean = {'points': _whole(p.get('points'), -100, 100, 'the points'), 'days': _whole(p.get('days', 7), 0, 366, 'the days'),
+             'words': _Words.of(p.get('words'), 'words')}
+    return clean
+
+
+def _harvest(p, _):
+    word = p.get('word')
+    if word not in EC.HARVEST_WORDS + ('clear',):
+        raise DMError('Call the harvest poor, fair or good, or clear the call.')
+    if word == 'clear':
+        return {'word': 'clear'}
+    clean = {'word': word, 'words': _Words.of(p.get('words'), 'words')}
+    if p.get('days') is not None:
+        clean['days'] = _whole(p['days'], 1, 366, 'the days')
+    return clean
+
+
+def _event_add(p, context):
+    kind = p.get('kind')
+    if not isinstance(kind, str) or not EVENT_ID.match(kind):
+        raise DMError('Say which kind of event.')
+    kinds = event_kinds(context['society'])
+    if kinds and kind not in kinds:
+        raise DMError(f'No such kind of event: {kind}.')
+    day = context['day']
+    if p.get('day') is None:
+        when = int(day) if day is not None else None
+    else:
+        when = _whole(p['day'], 0, 4_000_000, 'the day')
+        if day is not None:
+            start = int(day) - int(day) % 7                     # This game week's first day; the next week's last.
+            when = max(int(day), min(start + 13, when))
+    clean = {'kind': kind, 'hour': _whole(p.get('hour', 9), 0, 23, 'the hour')}
+    if when is not None:
+        clean['day'] = when
+    return clean
+
+
+def _nothing(p, _):
+    return {}
+
+
+def _reset(p, _):
+    words = _Words.of(p.get('words'), 'words')
+    return {'words': words} if words else {}
+
+
+def _band(p, _):
+    band = p.get('band')
+    if band not in EC.BANDS + ('clear',):
+        raise DMError('Say a band: ' + ', '.join(EC.BANDS) + ', or clear.')
+    if band == 'clear':
+        return {'band': 'clear'}
+    return {'band': band, 'days': _whole(p.get('days', 28), 1, 112, 'the days')}
+
+
+def _grant(p, _):
+    coins = _whole(p.get('coins'), -EC.GRANT_MOST, EC.GRANT_MOST, 'the coins')
+    if coins == 0:
+        raise DMError('A grant or a fine is at least a penny.')
+    return {'coins': coins, 'reason': _Words.of(p.get('reason'), 'reason', required=True)}
+
+
+LIVE_ACTS = {'times.nudge': ('market', _nudge), 'harvest.override': ('area', _harvest), 'event.add': ('market', _event_add),
+             'event.cancel': ('event', _nothing), 'ship.storm': ('ship', _nothing), 'prices.reset': ('markets', _reset),
+             'band.override': ('npc', _band), 'character.grant': ('character', _grant)}
+ECONOMY_ACTS = tuple(LIVE_ACTS)
+
+
+def _json_value(value):
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except ValueError:
+            return {}
+    return value if value is not None else {}
+
+
+def _whole_or_zero(value):
+    return int(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else 0
+
+
+def _number(value):
+    return float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else 0.0
+
+
+def _brief(value):
+    return '—' if value in (None, {}, '') else json.dumps(value, ensure_ascii=False, sort_keys=True)[:400]
+
+
+def event_kinds(society):
+    """The event kinds this world runs: the report's (overrides applied), else market.json's."""
+    report = society.get('report') if isinstance(society.get('report'), dict) else {}
+    kinds = [k.get('id') for k in report.get('eventKinds', []) if isinstance(k, dict)]
+    if kinds:
+        return set(kinds)
+    return {k.get('id') for k in market_events().get('list', []) if isinstance(k, dict)}
+
+
+def market_events():
+    try:
+        return json.loads((ROOT / 'Data/Economy/market.json').read_text(encoding='utf-8')).get('events', {})
+    except (OSError, ValueError):
+        return {}
+
+
+def act_before(kind, target_id, society):
+    """What an act changes, as the last checkpoint has it (for the audit's "before")."""
+    board = society.get('board') if isinstance(society.get('board'), dict) else {}
+    accounts = society.get('accounts') if isinstance(society.get('accounts'), dict) else {}
+    if kind == 'times.nudge':
+        return (board.get('nudges') or {}).get(target_id)
+    if kind == 'harvest.override':
+        return (board.get('harvestOverride') or {}).get(target_id)
+    if kind == 'prices.reset':
+        return (board.get('resets') or {}).get(target_id) if target_id != 'all' else board.get('resets') or None
+    if kind in ('event.cancel', 'ship.storm'):
+        listed = board.get('events' if kind == 'event.cancel' else 'ships') or []
+        found = next((e for e in listed if isinstance(e, dict) and e.get('id') == target_id), None)
+        return {k: found.get(k) for k in ('market', 'port', 'kind', 'name', 'day', 'status') if k in found} if found else None
+    if kind == 'character.grant':
+        account = accounts.get(target_id)
+        return {'cash': _whole_or_zero(account.get('cash'))} if isinstance(account, dict) else None
+    return None
+
+
+def _goods(listed):
+    """A manifest's goods: {good: n}, [[good, n]...] or [{good, n}...]."""
+    if isinstance(listed, dict):
+        return list(listed)
+    out = []
+    for g in listed or []:
+        if isinstance(g, list) and g:
+            out.append(str(g[0]))
+        elif isinstance(g, dict) and g.get('good'):
+            out.append(str(g['good']))
+    return out
+
+
+def week_wagons(board, roads, events, today):
+    """This week's wagons and carts: those posted and not yet gone (the Board's committed departures), those on the roads
+    (the checkpoint's roads), and those that arrived, were lost or were cancelled (game.events, 7 days)."""
+    out, seen = [], set()
+    for c in roads.get('caravans', []) or []:
+        if not isinstance(c, dict):
+            continue
+        key = c.get('departure') or c.get('id')
+        seen.add(key)
+        out.append({'id': c.get('id', ''), 'from': c.get('from', ''), 'to': c.get('to', ''),
+                    'day': int(c.get('departed') or 0), 'state': c.get('status', 'travelling'), 'goods': _goods(c.get('manifest'))})
+    for d in board.get('committed', []) or []:
+        if isinstance(d, dict) and d.get('id') not in seen:
+            seen.add(d.get('id'))
+            out.append({'id': d.get('id', ''), 'from': d.get('from', ''), 'to': d.get('to', ''), 'day': _whole_or_zero(d.get('day')),
+                        'state': 'posted', 'goods': _goods(d.get('manifest'))})
+    states = {'caravan arrives': 'arrived', 'cart arrives': 'arrived', 'caravan lost': 'lost', 'wagon cancelled': 'cancelled'}
+    for kind, actor, target, _cell, item, _q, day, detail, _at in events:
+        if kind not in states or today is None or day < today - 7 or actor in seen or \
+                (kind in ('caravan arrives', 'caravan lost') and item and item in seen):
+            continue
+        seen.add(actor)
+        source = item if kind in ('wagon cancelled', 'cart arrives') else (detail[5:].split(',')[0] if detail.startswith('from ') else '')
+        out.append({'id': actor, 'from': source, 'to': target, 'day': int(day), 'state': states[kind], 'goods': []})
+    return sorted(out, key=lambda w: (w['day'], w['id']))[:200]
+
+
+def week_ships(board, today):
+    """This week's ships (the ports' timetables), and the ships lost at sea lately."""
+    out = []
+    for s in board.get('ships', []) or []:
+        if not isinstance(s, dict):
+            continue
+        state = 'lost' if s.get('lost') else s.get('status', 'due')
+        out.append({'id': s.get('id', ''), 'port': s.get('port', ''), 'name': s.get('name', ''), 'day': _whole_or_zero(s.get('day')),
+                    'state': state if state in ('due', 'in', 'sailed', 'storm', 'lost') else 'due', 'goods': _goods(s.get('brings'))})
+    named = {s['name'] for s in out}
+    for name, day in (board.get('lostShips') or {}).items():
+        if name not in named and (today is None or _whole_or_zero(day) >= today - 7):
+            out.append({'id': '', 'port': '', 'name': name, 'day': _whole_or_zero(day), 'state': 'lost', 'goods': []})
+    return sorted(out, key=lambda s: (s['day'], s['id']))
+
+
+def week_events(board, today):
+    """The staged events on the Board: seeded and the DM's, due, on, over or cancelled."""
+    return sorted(({'id': e.get('id', ''), 'market': e.get('market', ''), 'kind': e.get('kind', ''), 'day': _whole_or_zero(e.get('day')),
+                    'hour': e.get('hour', 9), 'state': e.get('status', 'due'), 'by': e.get('by', 'seeded'), 'words': e.get('words', '')}
+                   for e in board.get('events', []) or [] if isinstance(e, dict)), key=lambda e: (e['day'], e['hour'], e['id']))
+
+
+def player_money(staged, names, today):
+    """Player coin made against sunk (doc 79, 9.3: the faucet door's tallies), the last 7 days, and the top 20 holders."""
+    faucets = staged.get('faucets') if isinstance(staged.get('faucets'), dict) else {}
+    days = []
+    holders = {}
+    for key in sorted(faucets, key=lambda k: int(k) if str(k).lstrip('-').isdigit() else -1)[-7:]:
+        if not str(key).lstrip('-').isdigit():
+            continue
+        tally = [0, 0, 0, 0]
+        for holder, reasons in (faucets[key] or {}).items():
+            h = holders.setdefault(holder, {'holder': holder, 'name': names.get(holder, holder), 'made': 0, 'sunk': 0, 'byReason': {}})
+            for reason, t in (reasons or {}).items():
+                t = [_whole_or_zero(x) for x in (t if isinstance(t, list) else [])][:4] + [0, 0, 0, 0]
+                for i in range(4):
+                    tally[i] += t[i]
+                h['made'] += t[0]
+                h['sunk'] += t[1]
+                was = h['byReason'].setdefault(reason, [0, 0])
+                was[0] += t[0]
+                was[1] += t[1]
+        days.append({'day': int(key), 'made': tally[0], 'sunk': tally[1], 'goodsMade': tally[2], 'goodsSunk': tally[3]})
+    top = sorted(holders.values(), key=lambda h: (-(h['made'] + h['sunk']), h['holder']))[:20]
+    return {'days': days, 'holders': top}
+
+
+def street_word(report, week, names):
+    """The word on the street (12: the edicts' successor, read only): the slider's cause, Times, harvests, ships and
+    events, the Board's top causes. At most 20."""
+    out = []
+    report = report or {}
+    p = report.get('prosperity') if isinstance(report.get('prosperity'), dict) else {}
+    if p.get('cause'):
+        out.append({'kind': 'slider', 'text': str(p['cause'])})
+    for m in report.get('markets', []) or []:
+        times = m.get('times') if isinstance(m, dict) and isinstance(m.get('times'), dict) else {}
+        if times.get('word') and times['word'] != 'ordinary':
+            out.append({'kind': 'times', 'text': f"{m.get('name') or m.get('id')}: {times['word']} times"
+                        + (f" ({times['cause']})" if times.get('cause') else '')})
+    for a in report.get('areas', []) or []:
+        if isinstance(a, dict) and (a.get('override') or a.get('harvest') in ('poor', 'good')):
+            words = (a.get('override') or {}).get('words') if isinstance(a.get('override'), dict) else ''
+            out.append({'kind': 'harvest', 'text': f"{a.get('name') or a.get('id')}: a {a.get('harvest', 'fair')} harvest"
+                        + (f' ({words})' if words else '')})
+    told = {'due': 'due in', 'in': 'in at', 'storm': 'kept out by storms from', 'lost': 'lost at sea, bound for'}
+    for s in week['ships']:
+        if s['state'] in told:
+            out.append({'kind': 'ship', 'text': f"{s['name']} {told[s['state']]} {names.get(s['port'], s['port']) or 'port'}".strip()})
+    for e in week['events']:
+        if e['state'] in ('due', 'on') and e['words']:
+            out.append({'kind': 'event', 'text': e['words'] + (' (now)' if e['state'] == 'on' else '')})
+    causes = set()
+    for pr in report.get('pressures', []) or []:
+        if isinstance(pr, dict) and pr.get('cause') and pr['cause'] not in causes:
+            causes.add(pr['cause'])
+            out.append({'kind': 'cause', 'text': f"{pr.get('good')} at {names.get(pr.get('market'), pr.get('market'))}: {pr['cause']}"})
+    return out[:20]
+
+
+def economy_log(audit, events, board, names, today):
+    """The economy's log for 28 days (12: the year log): the DM's lever writes and acts (dm.audit), what the game made
+    of them and the causes it told (game.events), and the Board's big ripples (a pressure move over 0.2)."""
+    out = []
+    for at, action, target, detail, who in audit:
+        out.append({'at': datetime.fromtimestamp(float(at), timezone.utc).isoformat(), 'kind': action,
+                    'text': f'{who}: {detail}'[:400]})
+    for kind, actor, target, _cell, item, quantity, day, detail, recorded in events:
+        if kind not in PROSPERITY_LOG_EVENTS:
+            continue
+        place = names.get(target, target) or names.get(actor, actor)
+        words = detail or item
+        out.append({'at': recorded.astimezone(timezone.utc).isoformat() if hasattr(recorded, 'astimezone') else str(recorded), 'kind': kind,
+                    'text': f'{kind}: {place}' + (f' ({words})' if words else '') + (f' {quantity:+d}' if kind == 'times nudged' and quantity else '')})
+    out.sort(key=lambda e: e['at'], reverse=True)
+    ripples = sorted((r for r in board.get('recent', []) or [] if isinstance(r, dict)
+                      and abs(_number(r.get('delta'))) > RIPPLE_LOGGED and (today is None or _number(r.get('day')) >= today - 28)),
+                     key=lambda r: -_number(r.get('day')))
+    ripples = [{'at': f"game day {int(_number(r.get('day')))}", 'kind': 'ripple',
+                'text': f"{r.get('good')} at {names.get(r.get('market'), r.get('market'))} "
+                        f"{'dearer' if _number(r.get('delta')) > 0 else 'cheaper'} by {abs(_number(r.get('delta'))):.2f}"
+                        + (f" ({r['cause']})" if r.get('cause') else '')} for r in ripples]
+    return out[:300] + ripples[:100]
+
+
 # --------------------------------------------------------------------------- Town projects (doc 57)
 
 # Live actions on things other than characters, sent through /api/live/action.
 LIVE_KINDS = ('project.post', 'project.cancel', 'project.complete', 'project.remove', 'npc.protect', 'npc.unprotect',
               'storyline.give', 'storyline.tick', 'storyteller.decide', 'storyteller.revoke', 'tale.pause', 'tale.resume',
               'tale.stop', 'visitors.sync',
-              'deed.award', 'deed.revoke', 'nickname.drop', 'nickname.restore', 'board.remove', 'estate.clear', 'estate.release')
+              'deed.award', 'deed.revoke', 'nickname.drop', 'nickname.restore', 'board.remove', 'estate.clear', 'estate.release',
+              # The staged economy's acts (doc 79, 12): normalised by LIVE_ACTS (DungeonMaster.act).
+              'times.nudge', 'harvest.override', 'event.add', 'event.cancel', 'ship.storm', 'prices.reset', 'band.override',
+              'character.grant')
 
 
 def storyline_templates() -> list:
@@ -2180,8 +2557,16 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
             if method == 'POST' and path == '/api/live/leave':
                 data = self.body()
                 return self.reply(200, dm.leave(who, self.posted(data), str(data.get('id', ''))))
-            if method == 'GET' and path == '/api/money':
-                return self.reply(200, dm.money(self.target(query)))
+            if method == 'GET' and path == '/api/prosperity':
+                return self.reply(200, dm.prosperity(self.target(query)))
+            if method == 'POST' and path == '/api/prosperity/act':
+                data = self.body()
+                return self.reply(200, dm.act(who, self.posted(data), str(data.get('kind', '')), data.get('id', ''),
+                                              data.get('payload'), str(data.get('reason', ''))))
+            if method == 'POST' and path == '/api/players/grant':
+                data = self.body()
+                return self.reply(200, dm.grant(who, self.posted(data), data.get('character', ''), data.get('coins'),
+                                                data.get('reason')))
             if method == 'GET' and path == '/api/calendar':
                 return self.reply(200, dm.calendar(self.target(query)))
             if method == 'POST' and path == '/api/festivals/call':

@@ -182,15 +182,17 @@ interface Tick {
 scenarios['dm-observer'] = async t => {
     if (t.s.director || t.s.characters || t.s.accounts) return finish(false, 'Private operator data leaked into a player snapshot');
     if (step === 0 && t.elapsed > 1) {
+        // (A player can't send the operator's effects: neither a transfer nor a grant, doc 79, 12.)
         await t.send({type: 'economy_transfer', from: 'treasury', to: 'player-ash', coins: 500, commandId: 'public-dm-probe'});
+        await t.send({type: 'player_grant', player: 'player-ash', coins: 500, reason: 'forged', commandId: 'public-dm-grant'});
         await t.send({type: 'action', action: 'look', target: '', commandId: 'dm-observer-active'});
         t.next();
     }
     if (mentions(t.events, 'DM_SMOKE_DONE')) {
         const good = num(t.self, 'cash') === 23;
         if (!good && t.elapsed - stepAt < 110) return;
-        await finish(good, good ? 'Separate operator notice reaches the real client; private finite transfer applies once; public command cannot mint money; player snapshot excludes operator records'
-            : 'Operator transfer or public command boundary mismatch');
+        await finish(good, good ? 'Separate operator notice reaches the real client; the private grant and fine apply once (20 + 23 - 20); public commands cannot mint money; player snapshot excludes operator records'
+            : 'Operator grant, fine or public command boundary mismatch');
     }
 };
 

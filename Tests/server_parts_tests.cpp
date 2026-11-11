@@ -522,6 +522,7 @@ void directorTests()
     director::Bridge bridge;
     World world;
     world.addPlayer("player-ash", "Ash");
+    world.addPlayer("player-bo", "Bo");
     const std::set<std::string> online{"player-ash"};
     int commits = 0, notices = 0;
     const auto commit = [&]() { ++commits; return true; };
@@ -539,12 +540,73 @@ void directorTests()
     };
     const auto ok = [](const json::Value& result) { return result.boolean("ok"); };
     const std::string hash = "0123456789012345678901234567890123456789";
+    // An operator transfer moves existing coins between real (or escrow) accounts: a player's to a player's (doc 79, 12).
+    const auto ashCash = world.society().account("player-ash")->cash, boCash = world.society().account("player-bo")->cash;
+    world.society().openRealBalance();
     const auto transfer = envelope(bridge, "transfer-1", "economy_transfer",
-                                   R"({"from":"treasury","to":"player-ash","item":"meal","quantity":1,"coins":3})");
+                                   R"({"from":"player-bo","to":"player-ash","item":"","quantity":0,"coins":3})");
     expect(ok(bridge.execute(transfer, "transfer-1", hash, world, online, 1001, commit, notice)), "operator transfers existing resources");
-    expect(world.society().account("player-ash")->cash == 23 && world.society().realBalanced(), "exactly three pennies, real money balanced");
+    expect(world.society().account("player-ash")->cash == ashCash + 3 && world.society().account("player-bo")->cash == boCash - 3 &&
+               world.society().realBalanced(), "exactly three pennies, real money balanced");
     expect(ok(bridge.execute(transfer, "transfer-1", hash, world, online, 1200, commit, notice)), "a retry replays its receipt after expiry");
-    expect(commits == 1 && world.society().account("player-ash")->cash == 23, "a retry neither commits again nor pays twice");
+    expect(commits == 1 && world.society().account("player-ash")->cash == ashCash + 3, "a retry neither commits again nor pays twice");
+    // A staged account (the treasury, a till, a resident's purse) is set by its band: never moved by hand.
+    const auto staged = envelope(bridge, "staged-1", "economy_transfer", R"({"from":"treasury","to":"player-ash","item":"","quantity":0,"coins":3})");
+    const auto refused = bridge.execute(staged, "staged-1", hash, world, online, 1001, commit, notice);
+    expect(!ok(refused) && refused.string("detail").find("set by their bands") != std::string::npos &&
+               world.society().account("player-ash")->cash == ashCash + 3, "a staged end is refused: " + refused.string("detail"));
+    // A grant or a fine (doc 79, 12; D16): a registered, capped faucet or a sink with its reason; real money balanced.
+    const auto grant = envelope(bridge, "grant-1", "player_grant", R"({"player":"player-ash","coins":23,"reason":"for ringing the bell"})");
+    const auto granted = bridge.execute(grant, "grant-1", hash, world, online, 1001, commit, notice);
+    expect(ok(granted) && world.society().account("player-ash")->cash == ashCash + 26 && world.society().realBalanced(),
+           "a grant of 23 is a faucet: " + granted.string("detail"));
+    const auto fine = envelope(bridge, "fine-1", "player_grant", R"({"player":"player-ash","coins":-5,"reason":"a broken window"})");
+    expect(ok(bridge.execute(fine, "fine-1", hash, world, online, 1001, commit, notice)) &&
+               world.society().account("player-ash")->cash == ashCash + 21 && world.society().realBalanced(), "a fine of 5 is a sink");
+    for (const auto& [id, payload] : std::vector<std::pair<std::string, std::string>>{
+             {"grant-big", R"({"player":"player-ash","coins":2501,"reason":"too much"})"},
+             {"grant-zero", R"({"player":"player-ash","coins":0,"reason":"nothing"})"},
+             {"grant-npc", R"({"player":"npc_scout","coins":5,"reason":"not a player"})"},
+             {"grant-extra", R"({"player":"player-ash","coins":5,"reason":"x","from":"treasury"})"}})
+        expect(!ok(bridge.execute(envelope(bridge, id, "player_grant", payload), id, hash, world, online, 1001, commit, notice)) &&
+                   world.society().account("player-ash")->cash == ashCash + 21, "a bad grant is refused: " + id);
+    // A household's band for a while (Society::overrideBand), and cleared: on a world of authored residents (a couple at
+    // home together), their bands worked out.
+    World banded;
+    {
+        AuthoredRoster roster;
+        for (const auto& [id, x] : std::vector<std::pair<std::string, double>>{{"npc_ivar", 2.5}, {"npc_una", 3.5}})
+        {
+            ResidentSpec r;
+            r.id = r.name = id;
+            r.role = "civilian";
+            r.workLabel = "unloading ships at the piers";
+            r.age = 40;
+            r.appearance.sex = id == "npc_una" ? "female" : "male";
+            r.home = r.evening = {"sump_rents", x, 2.5};
+            r.work = r.serve = {"piers", x + 1, 3.5};
+            r.purse = 40;
+            roster.residents.push_back(r);
+        }
+        roster.kin = {{"npc_ivar", "npc_una", "spouse"}};
+        banded.society().configure(roster);
+        banded.society().stagedBands(2, true);
+    }
+    const std::string household = banded.society().householdOf("npc_ivar");
+    const auto band = envelope(bridge, "band-1", "npc_band", R"({"npc":"npc_ivar","band":"rich","days":5})");
+    const auto banding = bridge.execute(band, "band-1", hash, banded, online, 1001, commit, notice);
+    expect(!household.empty() && ok(banding) && banded.society().statusOf("npc_ivar")->band == status::Rich &&
+               banded.society().statusOf("npc_una")->band == status::Rich && banded.society().state().staged.overrides.count(household) &&
+               banded.society().state().staged.overrides.at(household).until == banded.society().state().budgetDay + 5,
+           "a resident's household is rich for five days: " + banding.string("detail"));
+    const auto clear = envelope(bridge, "band-2", "npc_band", R"({"npc":"npc_una","band":"clear"})");
+    expect(ok(bridge.execute(clear, "band-2", hash, banded, online, 1001, commit, notice)) &&
+               !banded.society().state().staged.overrides.count(household), "and the DM's band cleared");
+    for (const auto& [id, payload] : std::vector<std::pair<std::string, std::string>>{
+             {"band-bad", R"({"npc":"npc_ivar","band":"royal"})"}, {"band-days", R"({"npc":"npc_ivar","band":"poor","days":113})"},
+             {"band-nobody", R"({"npc":"npc_nobody","band":"poor"})"}})
+        expect(!ok(bridge.execute(envelope(bridge, id, "npc_band", payload), id, hash, banded, online, 1001, commit, notice)),
+               "a bad band is refused: " + id);
 
     director::Bridge restart;
     expect(restart.restore(parsed(json::dump(bridge.state()))), "receipts survive a restore");
@@ -588,11 +650,33 @@ void directorTests()
     world.removePlayer("player-offline");
     const auto view = bridge.snapshot(world, {{"player-offline", hidden}}, online, {{"player-ash", 1000}}, 42, 1002);
     expect(view.array("cells").size() == 3, "the operator sees every cell, whatever players have seen");
-    expect(view.array("characters").size() == 8, "six NPCs plus online and saved offline players");
+    expect(view.array("characters").size() == 9, "six NPCs plus online and saved offline players");
+    bool kinds = true;
+    for (const auto& a : view.array("accounts"))
+        kinds &= a.string("kind") == (a.string("id").rfind("player-", 0) == 0 ? "real" : "staged") || a.string("kind") == "escrow" ||
+                 a.string("kind") == "dead";
+    expect(kinds, "each account's kind (a player's real, the treasury and residents' staged)");
+    Entity ivar;
+    ivar.id = "npc_ivar";
+    ivar.name = "Ivar";
+    ivar.npc = true;
+    ivar.cellId = "sump_rents";
+    std::string ivarBand = "?";
+    const auto bandedView = bridge.snapshot(banded, {{"npc_ivar", ivar}}, online, {}, 43, 1002);
+    for (const auto& c : bandedView.array("characters"))
+        if (c.string("id") == "npc_ivar")
+            ivarBand = c.string("band") + "/" + c.string("kind");
+    expect(ivarBand == std::string(status::bandName(banded.society().statusOf("npc_ivar")->band)) + "/staged",
+           "each resident's household band in the snapshot: " + ivarBand);
+    std::set<std::string> capabilities;
+    for (const auto& c : view.array("capabilities"))
+        capabilities.insert(c.asString());
+    expect(capabilities.count("player_grant") && capabilities.count("npc_band") && capabilities.count("economy_transfer"),
+           "the grant and the band are native capabilities");
     expect(!view.has("activeMemory"), "no conversation memory in the operator's view");
 
     director::Bridge failing;
-    const auto rollback = envelope(failing, "rollback-1", "economy_transfer", R"({"from":"treasury","to":"player-ash","item":"","quantity":0,"coins":4})");
+    const auto rollback = envelope(failing, "rollback-1", "economy_transfer", R"({"from":"player-bo","to":"player-ash","item":"","quantity":0,"coins":4})");
     const auto cash = world.society().account("player-ash")->cash;
     world.entity("player-ash")->path = {{17.5, 12.5}};
     world.entity("player-ash")->typing = true;
