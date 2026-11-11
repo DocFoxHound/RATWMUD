@@ -1249,6 +1249,33 @@ dole. Ship names and every new list pass the check for the forbidden word.
 (`RatwGameTalk.cpp:121-127`). `talkRichLine`, `richLine_`/`poorLine_` and `troubles::foodDays` as a measure of wealth
 go.
 
+*(As built, Phase 8; each the user's to overrule. **The shown price:** `Society::priceMove(till, item, holder)` reads the
+same two ladders as the shop list's row (the lot of a dozen for a good under 3p, the holder's own push, a stall's 0.9), so
+`topic.price` is the list's price, in words: "seven pence", "a penny", "fourteen pence the dozen" (said that way, not
+"twelve for fourteen pence", because it fits every sentence the older lines put a price in). A move exists only where
+the shown price differs from the price at rest by a penny; `Society::priceMoves(market, holder, 3, nearer)` gives a
+market's three largest, each read off the shop the speaker would quote (its own, its cell's, else the first by id), for
+the overhearing traveller's holder (`World::talkHolder_`, set while the ambient picks are made). `world.<good>_price`
+(up, down, steady) is set for those three and for meals and herbs; `facts.json` lists 34 goods, and the Game drops a
+price fact for any other. **Cause:** `topic.cause` (players, dump, ripple, caravan, late, raid, harvest, ship,
+ship_takes, ship_late, ship_lost, event, still) and `topic.cause_words` ("travellers buying", "someone sold a heap",
+"the wagon's late", "the Gull came in", an event's words); a Board cause that runs against the move is "still" ("though
+the wagon came in"), so no line blames it. Season is never a cause: it isn't P. The older price lines that named a cause
+are gated on it. **`topic.item`** is text: "herbs" and "meal" keep their old lines; every other good is its plain
+words, plural where counted by the piece (`World::cargoWords`), with `topic.what` and `topic.is` ("hides are").
+**`price_cause`** comes back for a traveller's own buying or selling (the holder with the largest push the move's way,
+named as the teller knows them); its older scenes are the "down" ones. **New topics:** `talk.ships`, `talk.times` (only
+in Times that aren't ordinary), `talk.event`, `talk.harvest`, and the caravan topic's `due` (posted or on the road here,
+`topic.when`) and `news` kinds, with `topic.why` for a late wagon's mishap. **Salience:** `settings.json`'s `salience`
+(engine: `Library::muted`): words a speaker never says while its facts hold; a failing shop never "can't complain" (nor
+"couldn't be better", "run off my feet", "sold out"...), the destitute never boast of plenty. **The Means** ends with the
+market's largest move: "Salt dear, fourteen pence the dozen: the wagon's late." **The keeper's answer** (7.8) adds the
+ware whose shown price moved most with its cause ("Nails are dear just now: the wagon's late."), and is never replayed
+"as I said" (the list may have moved). **Bands:** a resident in a band reads only its band; the food-days scan and
+`wealth_days` remain for one in no band (a demo roster), and `pair.richer` within a band compares the households' scores.
+The "short" trouble says itself by band (`troubles.json`'s `saidBy`). `market.json`'s `houseBusinesses` and `estates`
+are not read: the `house` fact and the bands' guarantees cover a House's people, so Phase 9 may drop them.)*
+
 ## 12. DM levers: keep, change or cut
 
 All of them stay per world in `live.economy` (the `rules` jsonb) and reach a running server through `economy.sync`
@@ -3376,6 +3403,79 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     Times score's walk over a market's events is a few entries. The worst ticks are the first minute's tick 19, 17-19's
     place streaming in and 23-25's day turn, as before. `world_check` has no Game: the notices, the crier and the journal's
     records are not in the gate.
+
+- **2026-11-11: Phase 8 (talk) built** (branch `r2-staged-p8`, cut from `r2-staged` at `12ee59d`). No economy simulation,
+  no paid model call, no real or scratch server (the tools' tests start their own); DEV and PROD untouched. The as-built
+  note is in section 11.
+  - **Price topics back, at the shown price** (11, T1, T17): `Society::priceMove`/`priceMoves` read the shop list's own
+    two ladders, so a move exists only where the list's price differs from its price at rest by a penny, and
+    `topic.price` is that list's price in words ("fourteen pence the dozen", "seven pence", "a penny") for the
+    overhearing traveller's own ladder. The market's three largest moves are `talk.prices` topics and set
+    `world.<good>_price` (34 goods in `facts.json`, the Game drops others); `price_cause` comes back for a traveller's own
+    buying or selling, named as the teller knows them. `topic.item` is text (herbs and meal keep their lines), with
+    `topic.what` and `topic.is` in the plural where a good is counted by the piece.
+  - **Cause attribution:** `topic.cause` and `topic.cause_words` from the Board's cause, turned the move's way; a cause
+    the move belies is `still` ("though the wagon came in"). Writer P's audit changed 101 of the older price entries
+    (55 by criteria): every line that named a cause (winter, hoarders, the caravans, the roads, the drovers, the catch) is
+    gated on it or reworded; no figure, "twice" or "double" is left; "#topic.price# a bundle" and the like fixed (herbs are
+    listed by the dozen); the price_cause scenes are the "down" ones. Seven older caravan scenes with no kind no longer
+    speak for the news kind (one is the arrived kind only).
+  - **The keeper's trade answer** (7.8) adds the ware whose shown price moved most, with its cause ("Nails are dear just
+    now: the wagon's late."), and a keeper's prices are never replayed "as I said". **The Means** ends with the market's
+    largest move and its shown price ("Salt dear, fourteen pence the dozen: the wagon's late.").
+  - **New topics** in `sceneTopics`: the caravan's `due` (posted, or on the road here: `topic.when`, `topic.what`,
+    `topic.who`) and `news` (the last wagon's) kinds and `topic.why` for a late wagon's mishap; `talk.ships` (in, due,
+    late, lost, sailed); `talk.event`; `talk.times` (only in Times that aren't ordinary, as the Phase 7 checker asked);
+    `talk.harvest`.
+  - **Salience** (10.3): `settings.json`'s `salience` and the engine's `Library::muted`: words a speaker never says while
+    its facts hold, any line holding them passed over for another alternative, a rule with none left not said. A failing
+    shop never "can't complain" (nor "couldn't be better", "run off my feet", "sold out"...); the destitute never boast.
+  - **Bands in talk:** `talkRichLine`, `richLine_`/`poorLine_` and the per-speaker food-days scan are gone for anyone in a
+    band; the scan and `wealth_days` stay only for one in no band (a demo roster). `pair.richer` within a band compares
+    the households' scores (half a point). The "short" trouble says itself by band (`troubles.json`'s `saidBy`).
+  - **The wording** (Phases 4, 5, 7's singular goods): the carters' notices, a wagon's look, the events' `{goods}`, the
+    wagons' news and `topic.what` say goods by `World::cargoWords` ("hides", "handbells", "nails"), as the ships' notices
+    already did.
+  - **New lines: 894 spoken lines in 296 entries** in four files (`Data/Talk/rules/economy8_*.talk`), over the plan's
+    450-650 (the drafts were trimmed; the user may want them trimmed further by ear):
+
+    | File | Entries | Lines | By concept (entries/lines) |
+    |---|---|---|---|
+    | `economy8_prices.talk` | 83 | 246 | talk.prices 42/144, talk.price_cause 6/21, barks on `world.<good>_price` 14/29, answers 21/52 |
+    | `economy8_roads.talk` | 67 | 208 | talk.caravan 15/45 (due, late with its why, news, arrived, left), talk.ships 13/39, talk.harvest 9/27, Wharf and harvest barks 5/16, answers 25/81 |
+    | `economy8_times.talk` | 87 | 259 | talk.times 19/57 (band x Times x class: Houses and the Council for the rich upper class, land and mills for the rich middle and lower and the towns'), talk.event 31/91 (all twelve kinds, now/soon/past, and generic), barks 3/9, answers 34/102 |
+    | `economy8_street.talk` | 59 | 181 | beggars' barks and passers-by, the dole by class and the priest, business barks and talk, rough sleepers and the hungry (barks 26/81, talk 14/42, a helped beggar's greeting 1/4, answers 18/54) |
+
+    The library: 3,759 scenes and 4,730 rules; `talk_report.py` still estimates about 117 hours before an everyday
+    conversation repeats (the new lines are events, not everyday talk).
+  - **The forbidden word:** `talk_tests`' `theForbiddenWord` reads every line of `Data/Talk`, `troubles.json` and
+    `market.json` with `market::forbiddenWord`, and no "hound" as a word (horehound is a herb). Three older scene ids carry
+    the animal's name (`ev_beast_dog`, `st2_cat_dog`, `m7_wx_wet_dog`); ids are never read by players and players' heard
+    lists keep them, so they stay.
+  - **Tests:** `talk_tests` 65,757 checks (new: `salience`; `theStagedEconomysTalk`: no figure in any price, Times, event,
+    ship or harvest line, nothing after a price, a travellers' move never put down to the roads, the sea or the season
+    over 240 conversations each way, a late wagon's move put down to it, every new topic spoken with every symbol filled,
+    a failing keeper never "can't complain"; `theForbiddenWord`); `market_tests` 2,022 (new `talkSaysTheShownPrice`: a
+    loaf moves P but not the dozen and nothing is said, ten loaves move the dozen and talk names the list's price for
+    each traveller's own ladder, the cause and the traveller who pushed it, a wagon's fall, "still"; `theKeepersAnswer`:
+    the moved ware with its cause, `world.nails_price=up`, no price fact the library doesn't list); `trade_show_tests` 919
+    (the notices' and news's goods now in cargo words); `voice_tests` 75. A clean Release build (`build-p8`); ctest 88/88
+    with the database, none skipped (`pg_client` on a throwaway `ratw_test_s2stage_p8`, dropped after); all 34 `tools/test_*.py` with the database and this build's server (keys tagged `s2stagep8`, no `s2stage` database left): 668 tests, none failing, 25 skipped (the 23 `RATW_SLOW` world builds, `test_game_tables`' save under `Saved/`, `test_live_map`'s built client); `talk_report.py` run (the counts above); the
+    client's 146 and its typecheck; the Editor's 81 + 67 and its typecheck (`node_modules` linked from the main checkout,
+    removed after).
+  - **Not built, and why:** `market.json`'s `houseBusinesses` and `estates` are not read (the `house` fact and the
+    bands' guarantees cover a House's people): Phase 9 may drop them. A glut as a failing shop's cause in words (talk has
+    no fact for which test made a shop fail or thrive). Season as a cause (it isn't P; the span is ×1.06).
+  - **Left, by owner:** Phase 7's repair: a lost ship's `world.times_cause` reads "the wagons late on the road" at the
+    port (the checker's finding; not changed here); the Means' "Times here: lean, since <cause>" still splices an event's
+    words after "since". Phase 10: the lines by ear (the 894, and whether the cause and price rules take too much of their
+    tier: `e8p_sc_upper_trade_up` takes most of its niche), the 34 goods with price facts.
+  - **For the user to decide:** (1) the shown price said "fourteen pence the dozen" rather than "twelve for fourteen
+    pence"; (2) talk names the price of the nearest shop that sets a good out (the speaker's own, then its cell's), so in
+    Ridgemere a Sump speaker may name a Heights shop's district price where the Sump has none; (3) the event words that
+    read badly mid-sentence in `market.json` (Phase 7's data, left as it is): "the drovers in with their herds", "a
+    brewing too many", "the buying ahead for the festival", "a lame ox on the cart from East"; the new lines frame them
+    after a colon or "talk of", never after "since".
 
 ## Review (2026-11-08)
 
