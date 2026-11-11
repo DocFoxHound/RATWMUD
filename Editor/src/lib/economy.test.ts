@@ -51,7 +51,8 @@ const trim = {id: 'groom_and_trim', name: 'A groom and trim', business: 'barber'
 const rules: RuleControls = {rulesSupported: true, rulesProblem: '', rules: {playerSellMost: 300}, services: {},
     ruleDefaults: {neverHungry: 0, neverBroke: 0, buyAheadDays: 1, halfLifePerishable: 20, halfLifeKeeping: 50, halfLifeDurable: 80,
         ripple: 50, depthScale: 100, playerPushMost: 15, playerSellMost: 400, takeAllowance: 50, shelfScale: 100, factionDiscountMost: 30,
-        caravanRate: 100, wagonsOnRoad: 16, cartsOnRoad: 48, campStrengthMost: 12, bountyMost: 60, shipsPerWeek: 2},
+        caravanRate: 100, wagonsOnRoad: 16, cartsOnRoad: 48, campStrengthMost: 12, bountyMost: 60, shipsPerWeek: 2,
+        theftCap: 4, errandRunners: 1},
     serviceList: [trim]};
 
 test('a rule is the world\'s own or the default, and a change is sent only when it changes something', () => {

@@ -37,6 +37,10 @@ struct Row
     double budget = 1, theft = 0;                   // A keeper's buying budget times; the weight among thieves.
     std::int64_t pocketLow = 0, pocketHigh = 0;     // What a pickpocket finds.
     int goodsMost = 8;                              // Pieces of one good (not food) a wallet keeps overnight.
+    // Street life (doc 79, 6.5 and 10; Phase 6): the chance a day a household buys one of its market's everyday wares; the
+    // chance a week it buys a luxury; its services' frequency times (by each service's `every`); and the chance a passing
+    // resident of the band gives a beggar a penny.
+    double shops = 0, luxury = 0, services = 0, alms = 0;
 };
 struct SharePoint
 {
@@ -61,6 +65,16 @@ struct Table
     std::int64_t treasuryFloor = 200, treasuryCeiling = 2000;
     std::map<std::string, std::int64_t> caps;       // The faucets' caps (rewardsADay, theftADay, ...).
     std::map<std::string, std::int64_t> pay;        // A kind of post's pay word, pennies a day at slider 0.
+    // Street life (doc 79, 10; Phase 6). Theft (10.1): the expected thefts a day in a market are theftBase times the sum
+    // of its households' theft weights times the market's Times (theftTimes, hard .. boom), capped by the rule theftCap;
+    // a thief is picked by its band's weight (a rich one with a sly honesty `slyRich`), times its honesty's (theftHonesty)
+    // and twice if hungry. The dole (10.2): a day's food a head, in bread, for destitute and poor households at Restday's
+    // chapel. Beggars: at most beggarsACell in a cell.
+    double theftBase = .03;
+    std::array<double, 5> theftTimes{1.5, 1.2, 1, .85, .7};
+    std::map<std::string, double> theftHonesty{{"frank", .2}, {"plain", 1}, {"guarded", 1.5}, {"sly", 3}};
+    double slyRich = .02, doleDays = 1;
+    int beggarsACell = 2;
     std::int64_t cap(const std::string& name) const;   // 0 for one not set.
     double event(const std::string& name) const;       // 0 for one not set.
 };

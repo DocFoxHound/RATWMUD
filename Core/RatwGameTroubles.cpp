@@ -311,6 +311,12 @@ Result Game::troubleAction(const std::string& wolf, const std::string& target, c
             return {false, "You haven't " + std::to_string(t.coins) + " pennies.", {}};
         if (!society.shift(wolf, resident, "", 0, t.coins, "help for a household"))
             return {false, "It can't be given just now.", {}};
+        // A fortnight's food: the household is lifted for its length (doc 79, 6.7), while its market has room for it.
+        if (society.liftByHelp(resident, t.coins, int(std::lround(kind->refillDays))) > 0)
+        {
+            world_.bonds().addOwed(resident, wolf, -t.coins, world_.calendarDays());   // (T15: the pair.owed lines.)
+            world_.bonds().addOwed(wolf, resident, t.coins, world_.calendarDays());
+        }
         record(Economy | Character, wolf);
         troubleSolved(wolf, t, "fed_household", -1, t.coins,
                       "You give " + std::to_string(t.coins) + " pennies. " + name(resident) + "'s household has food enough for a fortnight now.");
@@ -406,7 +412,9 @@ void Game::troubleSolved(const std::string& wolf, const troubles::Trouble& t, co
     const auto* w = world_.entity(wolf);
     world_.recordEvent({"trouble solved", wolf, t.resident, w ? w->cellId : std::string(), 0, 0, t.kind, 0, coins, {}});
     memories_.record(t.resident, wolf, {sequence_++, now(), "(what they did)", words});
-    recordDeed(deedKind, {wolf}, t.resident, w ? w->cellId : std::string(), "trouble", t.kind, weight);
+    // (fed_household fame at most once a week per account holder and household: doc 79, 6.7.)
+    if (deedKind != "fed_household" || world_.society().fedFameRoom(wolf, world_.society().householdOf(t.resident)))
+        recordDeed(deedKind, {wolf}, t.resident, w ? w->cellId : std::string(), "trouble", t.kind, weight);
     troubleSolvedBy_[t.resident + "|" + wolf] = today;
     troubleRests_[t.resident + "|" + t.kind] = today;
     // The trouble's storylines (doc 58, 3): the solver's done; anyone else's ends, someone else having seen to it.
@@ -450,9 +458,11 @@ troubles::Trouble Game::shortHousehold(const std::string& member)
     return {};
 }
 
-void Game::troubleGiven(const std::string& giver, const troubles::Trouble& before)
+void Game::troubleGiven(const std::string& giver, const troubles::Trouble& before, std::int64_t worth)
 {
-    // A gift that brings a short household to its refill (doc 57, 3) solves its trouble, once a season by this wolf.
+    // A gift that brings a short household to its refill (doc 57, 3) solves its trouble, once a season by this wolf. By
+    // the band (doc 79, 6.7; Phase 6): a gift worth the trouble's coins (its fortnight of band food at the market's
+    // price) or more; for a household in no band, the plain reckoning.
     const auto* kind = troubles::rules().kind("short");
     const auto* life = before ? world_.society().resident(before.resident) : nullptr;
     if (!kind || !life || !playerAccountId(giver))
@@ -460,7 +470,8 @@ void Game::troubleGiven(const std::string& giver, const troubles::Trouble& befor
     if (const auto by = troubleSolvedBy_.find(before.resident + "|" + giver);
         by != troubleSolvedBy_.end() && world_.calendarDays() - by->second < troubles::rules().perWolfDays)
         return;
-    if (troubles::foodDays(before.household, life->homeCell, troubleReads()) < kind->refillDays)
+    if (world_.society().statusOf(before.resident) ? worth < before.coins
+                                                   : troubles::foodDays(before.household, life->homeCell, troubleReads()) < kind->refillDays)
         return;
     troubleSolved(giver, before, "fed_household", -1, 0,
                   names::capitalised(labelFor(giver, before.resident)) + "'s household has food enough for a fortnight now.");

@@ -788,6 +788,7 @@ void Society::stagedKeepers()
         if (pieces > 0)
             provisionDemand_[home.till][home.food] = std::min(ShelfMost, provisionDemand_[home.till][home.food] + pieces);
     }
+    streetKeepers();                                // (Doc 79, Phase 6: the day's wares, luxuries and services by market.)
 }
 
 int Society::provisionFor(const std::string& till, const std::string& ware) const
@@ -876,6 +877,11 @@ void Society::stagedPrune(std::int64_t day)
         it = day - it->first >= 28 ? st.faucets.erase(it) : std::next(it);
     for (auto it = st.overrides.begin(); it != st.overrides.end();)
         it = it->second.until < day ? st.overrides.erase(it) : std::next(it);
+    // (Street life, Phase 6: a dole more than a week old, and fed fame's weeks gone by.)
+    for (auto it = st.dole.begin(); it != st.dole.end();)
+        it = day - it->second >= 7 ? st.dole.erase(it) : std::next(it);
+    for (auto it = st.fed.begin(); it != st.fed.end();)
+        it = day - it->second >= 7 ? st.fed.erase(it) : std::next(it);
     for (auto it = st.welcomed.begin(); it != st.welcomed.end();)
         it = day / std::max<std::int64_t>(1, t.cap("welcomeDays")) - it->second > 1 ? st.welcomed.erase(it) : std::next(it);
     for (auto it = st.escrowSource.begin(); it != st.escrowSource.end();)
@@ -900,6 +906,10 @@ void Society::stagedRestored()
     stagedDay_ = -1;
     stagedHour_ = -1;
     postedAtPass_.clear();
+    runnerWaiting_.clear();                         // (Doc 79, Phase 6: a buy waiting or a runner walking isn't saved.)
+    foodDeferred_.clear();
+    fedOn_.clear();
+    buysDeferred_.clear();
     openRealBalance();
     if (roster_ != Roster::Authored)
         return;

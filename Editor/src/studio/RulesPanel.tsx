@@ -61,9 +61,10 @@ export function RulesPanel({data, locked, setRules, setServices}: {data: RuleCon
         <h3>The city's services</h3>
         <p className="hint">Things the barber, the moneychanger, the pawnbroker, the stables, the shipwright and the builders'
             yard do for a household or a patron, about once every so many days; done at once, nothing kept.</p>
-        <p className="publish-error">Not in play yet: since the staged economy (Docs/Design/79-a-staged-economy.md, Phase 3)
-            nothing buys these. They are kept, and a change here is saved, for street life (doc 79's Phase 6), which makes
-            them staged sales at their frequency by band.</p>
+        <p className="hint">Staged sales (Docs/Design/79-a-staged-economy.md, 6.5; street life, Phase 6): a household has
+            each done about once every so many days, times its band's (none for the destitute, a barber's now and then for
+            the poor, a patron's only for the rich), at a business of its kind in its market. Nothing is paid: each counts
+            toward that business's trade (thriving, steady or failing). Off: never done. The price is kept for the player's side.</p>
         <div className="dm-table-wrap"><table className="dm-table services-table">
             <thead><tr><th>Service</th><th>On</th><th>Price (p)</th><th>Every (days)</th><th></th></tr></thead>
             <tbody>{data.serviceList.map(s => {

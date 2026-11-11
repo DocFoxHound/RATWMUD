@@ -4651,6 +4651,7 @@ bool World::continueSchedules(double budgetMs)
             break;
         case 3:
             tendCrime();
+            tendStreet();                           // (Doc 79, Phase 6: beggars, alms, runners, the dole, sleepers.)
             errandCursor_.clear();
             errandStage_ = tiered() ? stageCells() : std::set<std::string>{};
             ++scheduleStage_;
@@ -4730,7 +4731,9 @@ bool World::continueSchedules(double budgetMs)
                 while (lifeAt != lives.end() && lifeAt->first < it->first)
                     ++lifeAt;
                 const auto* life = lifeAt != lives.end() && lifeAt->first == it->first ? &lifeAt->second : nullptr;
-                if (!e.npc || !life || life->goalCell.empty() || !e.leaderId.empty() || e.state == "following"sv) continue;
+                // (One with no home has no goal of its own, but may beg or sleep by a warm wall: doc 79, Phase 6.)
+                if (!e.npc || !life || (life->goalCell.empty() && !beggars_.count(it->first) && !warmWall_.count(it->first)) ||
+                    !e.leaderId.empty() || e.state == "following"sv) continue;
                 if (e.state == "beaten down"sv || e.downedLeft > 0 || inBattle(it->first)) continue;   // Lying where they fell, or fighting.
                 // The watch and the gaol, then work on the road, come before the day's plan. (The plan's own words are
                 // read where they are; an errand's are its own.)
@@ -4741,6 +4744,8 @@ bool World::continueSchedules(double budgetMs)
                 const std::string& task = onErrand ? errandTask : life->task;
                 const std::string& reason = onErrand ? errandReason : life->reason;
                 const std::string& goalCell = onErrand ? errandCell : life->goalCell;
+                if (goalCell.empty())
+                    continue;                       // (One with no home and no errand: it stays where it is.)
                 // "task — reason" (built only when it has changed).
                 static const std::string Dash = " — ";
                 if (e.activity.size() != task.size() + Dash.size() + reason.size() || e.activity.compare(0, task.size(), task) != 0 ||
@@ -4770,7 +4775,7 @@ bool World::continueSchedules(double budgetMs)
                     stop(e.id);
                 if (arrived)
                 {
-                    if (task == "sleep"sv && e.posture != "lying"sv)
+                    if ((task == "sleep"sv || task == "sleeping by the warm wall"sv) && e.posture != "lying"sv)
                     {
                         if (e.offstage)
                             settle(e, "lying");
@@ -6755,6 +6760,15 @@ Result World::restore(const PersistedWorld& saved)
     lookings_.clear();
     confrontations_.clear();
     marks_.clear();
+    markMotive_.clear();                            // (Street life, doc 79, Phase 6: found again from the day's lots.)
+    theftPlanDay_ = -1;
+    beggars_.clear();
+    beggarWhere_.clear();
+    runners_.clear();
+    warmWall_.clear();
+    dolePriests_.clear();
+    streetHour_ = streetMinute_ = -1;
+    watchedAt_ = -1;
     fights_.clear();
     crimeHour_ = -1;
     // (Doc 79, Phase 4: a wagon carries no account, so it outlives a restart; one whose ends are gone, or an older save's

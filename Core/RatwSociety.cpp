@@ -77,6 +77,10 @@ void Society::reset(Roster roster)
     rippledDay_ = -1;
     postedAtPass_.clear();
     provisions_.clear();
+    runnerWaiting_.clear();                         // (Doc 79, Phase 6: no buy waits, no runner walks.)
+    foodDeferred_.clear();
+    fedOn_.clear();
+    buysDeferred_.clear();
     realOpening_ = faucetTotal_ = sinkTotal_ = unregisteredMade_ = 0;
     tills_.clear();
     friendGroups_.clear();
@@ -1393,9 +1397,15 @@ void Society::stagedHourly(std::int64_t hour)
         if (day != stagedDay_)
             stagedHouseholds(day);
         if (hod >= ShopOpen && hod < ShopShut)
+        {
             for (const auto& [home, h0] : stagedHomes_)
                 if (h0.hour == hod)
+                {
                     stagedFood(home, h0.members, h0.cls);
+                    stagedShopping(home);
+                }
+            streetHour(hod);                        // (Doc 79, Phase 6: what waited for a player to leave, tried again.)
+        }
     }
     if (stagedRecount_ && stagedDay_ >= 0)
         stagedHouseholds(stagedDay_);               // (A new resident in a household of its own: the bands again.)
@@ -1421,6 +1431,13 @@ void Society::stagedHouseholds(std::int64_t day)
 
 void Society::stagedHomesFor(std::int64_t day)
 {
+    if (day != stagedDay_)
+    {
+        // (A new day: yesterday's waiting food and buys, and runners on the way, are let go: doc 79, Phase 6.)
+        runnerWaiting_.clear();
+        foodDeferred_.clear();
+        buysDeferred_.clear();
+    }
     stagedDay_ = day;
     stagedRecount_ = false;
     countFarmPosts();                               // (The farms' posts held, counted each day.)
@@ -1439,17 +1456,44 @@ void Society::stagedHomesFor(std::int64_t day)
 
 void Society::stagedFood(const std::string& home, const std::vector<std::string>& members, const std::string& cls)
 {
+    (void)cls;
+    stagedFoodBy(home, members, FoodBy::Hour);
+}
+
+void Society::stagedFoodBy(const std::string& home, const std::vector<std::string>& members, FoodBy by)
+{
     // Food from the shelf by the household's band (doc 79, 6.5): its band's meals a head a day, of the first of its foods its
     // food shop sells, up to two days' on hand (more the day before a Restday or a festival: buying ahead), never beyond.
     // A short day (a fixed lot by the household and the day, against its band's chance at the slider, the poor's raised
     // by their staple's pressure) gives half a day's food; a bare shelf gives the poor and destitute a short day, the
     // others are fed from elsewhere. Never Hungry: no short days. A raw stock change: no ledger entry, no journal record,
     // no WorldEvent.
-    (void)cls;
+    // The standing-still rule (doc 79, 7.7 and 6.6; Phase 6): where a player is in the food shop's cell or the next, the
+    // stock moves only with a visible buyer: the household's errand-runner walks to the counter (runnerBought), or, with
+    // none to send, the food waits for the next hour; still watched at the shutting, the household is fed from elsewhere
+    // and the shelf is left as it stands (a bare one still gives the poor their short day). Once a day a household.
     const auto found = stagedHomes_.find(home);
     if (found == stagedHomes_.end() || found->second.food.empty())
         return;
     const auto& h = found->second;
+    if (const auto fed = fedOn_.find(home); fed != fedOn_.end() && fed->second == stagedDay_)
+        return;
+    if (by == FoodBy::Hour && !h.till.empty() && street_.watched && street_.watched(*this, h.till))
+    {
+        if (runnerWaiting_.count(home))
+            return;
+        if (ownRule("errandRunners") > 0 && street_.runner && street_.runner(*this, home, h.till))
+        {
+            runnerWaiting_[home] = h.till;
+            foodDeferred_.erase(home);
+        }
+        else
+            foodDeferred_.insert(home);
+        return;
+    }
+    fedOn_[home] = stagedDay_;
+    foodDeferred_.erase(home);
+    runnerWaiting_.erase(home);
     const auto& t = statusTable();
     const int band = std::clamp(h.band, 0, status::Bands - 1);
     const auto& row = t.rows[std::size_t(band)];
@@ -1499,8 +1543,18 @@ void Society::stagedFood(const std::string& home, const std::vector<std::string>
     if (total <= 0)
         return;
     int got = total;
-    if (!h.till.empty() && hooks_.shelf)
+    if (!h.till.empty() && by == FoodBy::Unseen)
+    {
+        // (Watched to the last: what the shelf holds says whether the poor go short; nothing leaves it.)
+        const auto* shelf = account(h.till);
+        got = std::clamp(shelf ? stock(*shelf, h.food) : 0, 0, total);
+    }
+    else if (!h.till.empty() && hooks_.shelf)
+    {
         got = std::clamp(hooks_.shelf(*this, h.till, h.food, total), 0, total);
+        if (got > 0)
+            noteSale(h.till, h.food, got, false);
+    }
     if (got < total && poor && !shortDay)
     {
         // A bare shelf: the poor and destitute it serves go short today (half of what they'd have had, at most what came).
@@ -1510,8 +1564,11 @@ void Society::stagedFood(const std::string& home, const std::vector<std::string>
         if (got > halfTotal)
         {
             // (More came than half: the rest goes back on the shelf it came from.)
-            if (const auto till = state_.accounts.find(h.till); till != state_.accounts.end())
+            if (const auto till = state_.accounts.find(h.till); till != state_.accounts.end() && by != FoodBy::Unseen)
+            {
                 till->second.stock[h.food] += got - halfTotal;
+                noteSale(h.till, h.food, -(got - halfTotal), false);
+            }
             got = halfTotal;
         }
         total = halfTotal;
@@ -1547,6 +1604,7 @@ std::int64_t Society::stagedPurse(const std::string& id, const std::string& home
 
 void Society::stagedNight(std::int64_t day)
 {
+    businessDay(day);                               // (Doc 79, Phase 6: yesterday's business for every shop, 10.3.)
     // Each resident's purse halfway toward its band's target (down as well as up), except while held (a theft, a gift, a
     // prize, players' pay: 6.5) and never up in its lean days; staged wallets' goods trimmed to the band's; the treasury and
     // each town treasury set within status.json's floor and ceiling (doc 79, 9.2); the old tallies, events and holds pruned.

@@ -983,6 +983,21 @@ Value stagedTallies(const std::map<std::string, StagedState::Tally>& reasons)
     return h;
 }
 
+Value stagedBusiness(const StagedState::Business& b)
+{
+    auto j = Value::object(), sold = Value::array(), players = Value::array();
+    for (std::size_t i = 0; i < 2; ++i)
+    {
+        sold.push(b.soldBefore[i]);
+        players.push(b.playersBefore[i]);
+    }
+    j.add("day", double(b.day)); j.add("sold", b.sold); j.add("players", b.players);
+    j.add("soldBefore", sold); j.add("playersBefore", players);
+    j.add("outEarly", b.outEarly); j.add("outEarlyBefore", b.outEarlyBefore);
+    j.add("failing", b.failing); j.add("word", b.word);
+    return j;
+}
+
 Value stagedChanges(const StagedState& st, const std::vector<std::pair<std::int64_t, std::string>>& changed)
 {
     auto out = Value::array();
@@ -1077,6 +1092,10 @@ Value stagedDiff(const StagedState& was, const StagedState& now)
              }
              return a;
          });
+    // Street life (Phase 6): the dole, the shops' business, the fed households' fame.
+    diff("dole", was.dole, now.dole, equal, number);
+    diff("fed", was.fed, now.fed, equal, number);
+    diff("business", was.business, now.business, equal, [](const StagedState::Business& b) { return stagedBusiness(b); });
     for (const auto& [name, a, b] : {std::tuple{"hour", was.hour, now.hour},
                                      std::tuple{"day", was.day, now.day}})
         if (a != b)
@@ -1125,6 +1144,24 @@ Value stagedValue(const StagedState& st)
     }
     o.add("bands", bands); o.add("overrides", overrides); o.add("holds", holds); o.add("lean", lean);
     o.add("escrowSource", source); o.add("events", events); o.add("faucets", faucets); o.add("welcomed", welcomed);
+    // Street life (Phase 6), each only while it has something: an older build reads past them.
+    if (!st.dole.empty() || !st.fed.empty())
+    {
+        auto dole = Value::object(), fed = Value::object();
+        for (const auto& [key, day] : st.dole)
+            dole.add(key, double(day));
+        for (const auto& [key, day] : st.fed)
+            fed.add(key, double(day));
+        o.add("dole", dole);
+        o.add("fed", fed);
+    }
+    if (!st.business.empty())
+    {
+        auto business = Value::object();
+        for (const auto& [till, b] : st.business)
+            business.add(till, stagedBusiness(b));
+        o.add("business", business);
+    }
     if (!st.quarantine.empty())
     {
         // Goods the world no longer knows, set aside in real and escrow accounts (doc 79, 14).
@@ -1222,6 +1259,37 @@ StagedState readStaged(const Value& o)
                 if (!item.empty() && item.size() <= 80 && whole(n, 1, 10000, count) && st.quarantine[id].size() < 256)
                     st.quarantine[id][item] = int(count);
             }
+    // Street life (Phase 6; none in an older save): the dole, the fed households' fame, the shops' business.
+    for (const auto& [key, into] : {std::pair{"dole", &st.dole}, std::pair{"fed", &st.fed}})
+        for (const auto& [id, v] : o.object(key).fields())
+        {
+            std::int64_t n = 0;
+            if (keyOk(id) && into->size() < MaxResidents && whole(v, 0, 365000000, n))
+                (*into)[id] = n;
+        }
+    for (const auto& [till, b] : o.object("business").fields())
+    {
+        StagedState::Business x;
+        std::int64_t n = 0;
+        if (!keyOk(till) || !b.isObject() || st.business.size() >= MaxAccounts || !whole(b["day"], -1, 365000000, x.day))
+            continue;
+        const auto count = [&](const Value& v) { return whole(v, 0, 1000000, n) ? int(n) : 0; };
+        x.sold = count(b["sold"]);
+        x.players = count(b["players"]);
+        const auto& sb = b.array("soldBefore");
+        const auto& pb = b.array("playersBefore");
+        for (std::size_t i = 0; i < 2; ++i)
+        {
+            x.soldBefore[i] = i < sb.size() ? count(sb[i]) : 0;
+            x.playersBefore[i] = i < pb.size() ? count(pb[i]) : 0;
+        }
+        x.outEarly = b.boolean("outEarly", false);
+        x.outEarlyBefore = b.boolean("outEarlyBefore", false);
+        x.failing = whole(b["failing"], 0, 365000000, n) ? int(std::min<std::int64_t>(n, 1000)) : 0;
+        const auto word = b.string("word");
+        x.word = word == "thriving" || word == "steady" || word == "failing" ? word : std::string();
+        st.business[till] = x;
+    }
     // (A "slider" here, from before the Board held the one slider, is ignored: lenient.)
     whole(o["hour"], -1, 24. * 365000000, st.hour);
     whole(o["day"], -1, 365000000, st.day);

@@ -378,7 +378,79 @@ Totals checkWorldSave(const Expected& e, bool print)
     const auto restored = whole.restore(loaded.saved);
     expect(restored.ok, std::string(e.name) + ": the whole save restores into the world: " + restored.message + " " + restored.targetId);
     realAccountsExact(loaded.saved.society, whole.society().state(), std::string(e.name) + " (World::restore)");
+    // (Street life, doc 79, Phase 6: a save from before it holds none of its state, and reads as none.)
+    const auto& street = whole.society().state().staged;
+    expect(street.dole.empty() && street.business.empty() && street.fed.empty(), std::string(e.name) + ": no street state from before Phase 6");
     return totals;
+}
+
+// --------------------------------------------------------------------------- Street life (doc 79, Phase 6)
+
+// The street's new state in a save (the dole, the shops' business, fed_household fame's week). A save made before it
+// (pre-79's, above; Phase 4's and 5's, which had the Board, its departures and its ships but none of this: the same
+// checkpoint with the street's keys taken out) reads as none, its households' bands and its Board as they were, and plays
+// on; one with it comes back the same through the checkpoint, and again through the world.
+void theStreetAcrossSaves()
+{
+    const auto greyfen = [] {
+        World w;
+        const auto loaded = w.loadWorldFile(RATW_SOURCE_DIR "/Data/Worlds/Greyfen/world.ratw");
+        expect(loaded.ok, "Greyfen loads: " + loaded.message);
+        w.setTimeOfDay(11);
+        for (int i = 0; i < 120; ++i)
+            w.tick(1);
+        return w;
+    };
+    auto w = greyfen();
+    auto& s = w.society();
+    const auto day = std::int64_t(std::floor(w.calendarDays()));
+    s.stagedBands(day, true);
+    const auto household = s.householdOf("linden");
+    expect(s.overrideBand(household, status::Destitute, 100000), "Linden's household destitute");
+    expect(s.giveDole(household, day) > 0, "the dole given");
+    s.noteSale(s.tillOf("wren"), "meal", 3, true);
+    s.businessDay(day + 1);
+    expect(s.fedFameRoom("player-ada", household), "fame's week noted");
+    auto saved = w.save();
+    const auto& st = saved.society.staged;
+    expect(!st.dole.empty() && !st.business.empty() && !st.fed.empty(), "the street's state is in the save");
+    checkpoint::ServerState server;
+    std::vector<Entity> npcs(saved.npcs.begin(), saved.npcs.end());
+    auto doc = checkpoint::encode(saved, server, npcs, w.time());
+    json::Value parsed = parse(json::dump(doc), "the street's checkpoint");
+    PersistedWorld back;
+    checkpoint::ServerState serverBack;
+    std::string problem;
+    expect(checkpoint::decode(parsed, back, serverBack, problem), "the checkpoint decodes: " + problem);
+    expect(back.society.staged.dole == st.dole && back.society.staged.business == st.business && back.society.staged.fed == st.fed,
+           "the dole, the business and the fame's week come back the same");
+    auto again = greyfen();
+    expect(again.restore(back).ok, "and restore into the world");
+    expect(again.society().onDole("linden") && again.society().state().staged.business == st.business, "where they hold");
+    // As Phase 5 wrote it: no street keys.
+    auto* society = parsed.find("society");
+    auto* staged = society ? society->find("staged") : nullptr;
+    expect(staged != nullptr, "the checkpoint has its staged state");
+    for (const char* key : {"dole", "business", "fed"})
+        staged->erase(key);
+    PersistedWorld older;
+    expect(checkpoint::decode(parsed, older, serverBack, problem), "a Phase 5 checkpoint decodes: " + problem);
+    expect(older.society.staged.dole.empty() && older.society.staged.business.empty() && older.society.staged.fed.empty(),
+           "and reads as no street state");
+    expect(older.society.staged.bands.size() == back.society.staged.bands.size() &&
+               std::equal(older.society.staged.bands.begin(), older.society.staged.bands.end(), back.society.staged.bands.begin(),
+                          [](const auto& a, const auto& b) {
+                              return a.first == b.first && a.second.band == b.second.band && a.second.liftedUntil == b.second.liftedUntil;
+                          }),
+           "its bands as they were");
+    auto old = greyfen();
+    const auto realBefore = older.society.accounts;
+    expect(old.restore(older).ok, "a Phase 5 save restores");
+    expect(!old.society().onDole("linden") && old.society().businessOf("wren") == "none", "with no dole and no business word yet");
+    for (int i = 0; i < 600; ++i)
+        old.tick(1);
+    expect(old.society().realBalanced(), "it plays on, real money balanced");
+    (void)realBefore;
 }
 
 // The package (fixture c): the source's save with every player poured into the treasury, so none is left, and the
@@ -1150,6 +1222,7 @@ int main(int argc, char** argv)
         theRunningSave();
         theRoadsPackage();
         theResetCopy();
+        theStreetAcrossSaves();
         onTheFullWorlds();
     }
     catch (const std::exception& error)

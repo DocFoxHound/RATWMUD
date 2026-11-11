@@ -274,6 +274,14 @@ void Game::barks(double dt)
         if (near.empty())
             continue;
         const auto* who = near[std::size_t(std::uint64_t(now * 13) % near.size())];
+        // A beggar near a player calls out first, every other look (doc 79, 10.2: a bark when a player is near).
+        if (std::uint64_t(now * 7) % 2 == 0)
+            for (const auto* e : near)
+                if (e->activity.rfind("begging", 0) == 0)
+                {
+                    who = e;
+                    break;
+                }
         const auto q = talkQuery(who->id, {}, "bark");
         const auto chosen = talkPick(q, who->id, "bark:" + player->cellId, 12,
                                      std::uint64_t(now * 1000) ^ std::hash<std::string>{}(who->id), false);

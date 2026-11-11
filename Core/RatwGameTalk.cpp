@@ -113,9 +113,8 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
         f[axis] = set && set->count(axis) ? set->at(axis) : middle;
     }
 
-    // Means: the household's money and food in days of plain food for everyone in it (troubles::foodDays, as the
-    // troubles read it), and debts. (Nobody is on a dole and no business thrives or fails since the economy's rules were
-    // erased, doc 66's Phase 5: those facts stay "no" and "none" until rules say otherwise.)
+    // Means: the household's money and food in days of plain food for everyone in it (troubles::foodDays: wealth_days,
+    // and the measure for a resident in no band, until Phase 8), and debts.
     std::vector<std::string> household;
     if (Society::communalHome(life->homeCell) || life->homeCell.empty())
         household.push_back(e.id);
@@ -136,12 +135,13 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
     int wealth = standing ? std::clamp(standing->band, 0, 3) : days < 3 ? 0 : days < poorLine_ ? 1 : days < richLine ? 2 : 3;
     if (standing)
         f["class"] = standing->cls == "homeless" ? std::string("lower") : standing->cls;
-    f["on_dole"] = "no";
+    // The Restday dole and the shop's business (doc 79, 10.2-10.3; Phase 6): from the society's street life.
+    f["on_dole"] = yes(society.onDole(e.id));
     bool owes = false;
     if (const auto* bonds = world_.bonds().of(e.id))
         for (const auto& [other, b] : *bonds)
             owes |= b.owed < 0;
-    const std::string business = "none";
+    const std::string business = society.businessOf(e.id);
     f["owes"] = yes(owes);
     f["business"] = business;
     // Standing (doc 62, phase 7; the user, 2026-10-13): food in hand doesn't measure a fortune. A great House's head
@@ -165,8 +165,12 @@ talk::Speaker Game::talkSpeaker(const Entity& e)
         wealth = 0;
     static const char* const Wealth[] = {"destitute", "poor", "comfortable", "rich"};
     f["wealth"] = Wealth[wealth];
-    f["hungry"] = yes(life->hunger >= 55);
+    // (A household a player lifted has no hunger tags while lifted: doc 79, 6.7.)
+    f["hungry"] = yes(life->hunger >= 55 && !society.liftedNow(e.id));
     f["homeless"] = yes(life->homeCell.empty() || job == "beggar");
+    // A destitute wolf out begging (doc 79, 10.2) speaks as a beggar does (the `job=beggar` barks), whatever its home.
+    if (e.activity.rfind("begging", 0) == 0)
+        f["job"] = "beggar";
 
     // Body and mood.
     f["injured"] = e.hurt >= 50 || e.downedLeft > 0 ? "bad" : e.hurt >= 1 ? "light" : "none";
@@ -896,6 +900,12 @@ void Game::loadVoices()
             if (!v.quarter.empty())
                 quarters[id] = v.quarter;
         world_.society().setQuarters(std::move(quarters));
+        // Their honesty (frank, plain, guarded, sly): who turns thief among the day's thieves (doc 79, 10.1).
+        std::map<std::string, std::string> honesty;
+        for (const auto& [id, v] : npcVoice_)
+            if (const auto trait = v.traits.find("honesty"); trait != v.traits.end() && !trait->second.empty())
+                honesty[id] = trait->second;
+        world_.society().setHonesty(std::move(honesty));
     }
     voiceLayers_ = std::move(layers);
     voiceRules_ = std::move(rules);
