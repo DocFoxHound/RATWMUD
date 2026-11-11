@@ -3767,6 +3767,48 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     are over it, as on `5afe23c`. From now on the gate is: no window slower than this table beyond noise (a run's spread,
     about 0.05 ms of mean and 0.1 of p99 here). `world_check` has no Game and no journal: those stay outside the gate.
 
+- **2026-11-11: Phase 9, core lane** (branch `r2-p9-core`, cut from `r2-staged` at `5fa92a4`; one of three lanes,
+  merged by the integration step; the plan's sections are the judged Phase 9 plan's).
+  - **K0, the contract** (`0752a58`, `4781f4c`): migration 0061 (schema only: `live.npcs.band_override`;
+    `live.people_manifest` redefined with the slim economy lines, an `overrides` line and `band` lines;
+    `live.business_settings` dropped, nothing else naming it); `tools/manifest_lines.py` (the exporter's economy and
+    band lines, the same as the SQL's); `tools/economy_contract.py` (constants; `check_overrides` left to the editor
+    lane); `Editor/src/lib/economyContract.ts`; the rules `prosperity` (-100..100, 0) and `harvestBias` (-20..20, 0)
+    in Core and their mirrors; `caps.grantsADay` 500; `RATW_TEST_DB_TAG` in the hard-coded test databases' names.
+  - **Core** (`f18a443`): Authoring lenient for every economy record (skipped with a warning, `AuthoredRoster::warnings`,
+    64 kept and a count; economy.sync's outcome ends "(N records skipped)"; the game logs 20 at load): the economy
+    line of 3 or 5 numbers, seasons with or without supply and normal (0060's empty prints too), rules clamped
+    (`prosperity` to its step of 5), `rule "prosperityCause"` quoted or bare, the `overrides` line (65536 bytes; its
+    cause wins), `band` records; an over-long economy line skipped; `withoutPeople` strips overrides, band, protected
+    and wander. `Society::adoptOverrides` (`status::hostOverride`: a host's keys only, a share table whole only when
+    each row sums to 100, monotone, every share 2% or more; caps held to 5x, grants to 2500; `market::layered`:
+    events per week 0-3, the list by shipped id or a host's own object, causes, ships' names, never-imported known
+    goods) at every start and economy.sync; the events', causes', ships' and never-imported readers use
+    `society.market()`. The slider is the rule `prosperity` with the host's cause (absent: 0). `Game::applyEconomyCommand`
+    (RatwGameEconomy.cpp) with the nine kinds, clamped not refused, each journalled (`record`) before anyone is told,
+    the report worked out again; several economy.sync rows in one poll applied once. `World::clearHarvest` (its
+    notices down at once), `Society::resetPrices` (the Board's `resets`, saved, journalled, eased each roads pass;
+    a "prices reset" notice), `grantPlayer` (the door's group `grant`), authored bands (the DM's timed band, then the
+    authored, then the guarantees; the highest in a household; npc.sync applies a changed one at once), the harvest
+    bias, `World::prosperityReport` (in the checkpoint, opaque; at start, each morning, after each act).
+  - **Tools** (`c680d1e`): world_store on the kept columns for every world (0061 slim, 0058-0060 pre-slim, older their
+    subset), the overrides split from the rules and merged back, `save_economy`, `patch_economy_rules` (one statement),
+    the band; live_edit's `economy` key through `save_economy`, `person:` with its band, economy.sync queued
+    (`queue_sync`); world_build without live.economy in its fingerprint; world_sync tolerating a target without
+    `band_override`, `economy_kept` on the kept columns; world_package shipping the kept columns with the overrides,
+    their words scanned, `society.report` never packaged; market.json without `houseBusinesses` and `estates`.
+  - **Deviations:** the DM acts' tests are in `events_tests` (`theDMsLevers`, and eight crash cases in its crash list,
+    so `events_pg` runs them through Postgres) rather than a new `dm_economy_tests`/`dm_economy_pg`; a minimal
+    map_editor change (overrides and band allowed, daily herbs and meals optional, 2-part seasons) for the entity.
+  - **Tests:** a fresh Release build (`build-p9core`; no warning in the lines touched); ctest 89/89 with the database,
+    none skipped (`pg_client` on a throwaway `ratw_test_s2stage_p9core`, dropped); `events_tests` 270,170 checks,
+    `host_edit_tests` 657, `status_tests` 21,975, `wire_tests` 428; the tools' tests with the database and this build's
+    server (keys and databases tagged s2stage): test_world_store 21, test_live_edit 19, test_world_build 2,
+    test_world_package 46, test_world_sync 52 (none skipped), test_migration_0061 4, test_manifest_lines 7,
+    test_map_editor 51, test_world_db 49; the Editor's 81 + 67 and its typecheck. No s2stage or ratw_test_ database
+    left. Left for the other lanes (their own rewrites): test_studio's economy flow (11) and test_dungeon_master's
+    store-room parity (1) fail on the slim economy until they merge.
+
 ## Review (2026-11-08)
 
 Four reviews of the first draft, all read-only against `ridgemere2` at c8ac05c: one checking the code claims, one on
