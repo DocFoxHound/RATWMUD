@@ -324,6 +324,9 @@ struct SocietyState
     CareerState careers;
     market::Board board;                            // The Market Board (doc 79, Phase 1): saved only while not empty.
     StagedState staged;                             // (Doc 79, Phase 2.)
+    // The Prosperity report (doc 79, 12; Phase 9: World::prosperityReport), as last worked out: saved with the checkpoint
+    // for the DM's Prosperity tab, kept opaque (whatever object a save has is kept, never read back by the game).
+    json::Value report;
 };
 struct EconomyResult
 {
@@ -357,6 +360,9 @@ struct ResidentSpec
     bool paid = true;
     std::int64_t purse = 30;
     int herbs = 0, meals = 1;
+    // An authored band for its household (doc 79, 14: the Band picker; a `band` record; live.npcs.band_override):
+    // status::Destitute..Rich, or -1 from rank. Standing; a DM's timed override (overrideBand) is over it.
+    int band = -1;
     // A painted wander area (Dungeon Master): open tiles a civilian roams in work hours and evenings.
     std::vector<Spot> wander;
     // May travel with a player's party (Atlas; Docs/Design/32, 2.3), at any hour.
@@ -401,6 +407,17 @@ struct EconomySpec
         int normal = 0;
     };
     std::map<std::string, Season> seasons;
+    // A host's overrides (doc 79, 12; Phase 9; live.economy.rules' non-integer keys, the manifest's `overrides` line, and
+    // a 0060 world's `rule "prosperityCause"`): the slider's cause, the goods no ship brings (over market.json's
+    // wharf.never when set), and status.json's and market.json's values (Society::adoptOverrides checks them).
+    struct Overrides
+    {
+        std::string cause;
+        bool causeSet = false;
+        std::vector<std::string> neverImported;
+        bool neverSet = false;
+        json::Value status, market;
+    } overrides;
 };
 // A family as authored (doc 62, decision 8): `a` is `b`'s spouse, or `a` is `b`'s parent.
 struct Kin
@@ -417,6 +434,17 @@ struct AuthoredRoster
     std::vector<Kin> kin;
     std::map<std::string, PatrolRoute> routes;
     EconomySpec economy;
+    // The economy records Authoring skipped, each with why (doc 79, 14: lenient): the first WarningsKept, and how many in
+    // all. (The Game logs the first 20 at load; economy.sync's outcome says how many.)
+    static constexpr std::size_t WarningsKept = 64;
+    std::vector<std::string> warnings;
+    std::size_t warningCount = 0;
+    void warn(std::string why)
+    {
+        if (warnings.size() < WarningsKept)
+            warnings.push_back(std::move(why));
+        ++warningCount;
+    }
 };
 
 // Deterministic needs + finite stock/cash. No dialogue model, wall clock, or
@@ -1156,6 +1184,25 @@ class Society
     // The world's economy settings replaced while it runs (the DM's economy.sync): its rules and seasons at once; the
     // treasury's and stores' starting amounts are kept (they were spent long ago).
     void adoptEconomy(const EconomySpec& economy);
+    // ---- Doc 79, Phase 9: the DM's side (RatwProsperity.cpp; section 12) ----
+    // A grant (coins > 0: a faucet "dm grant: <reason>", group `grant`, at most caps.grantsADay a holder a day) or a fine
+    // (coins < 0: a sink "dm fine: <reason>", at most the player's cash) on a player's account; the reason plain words, 80
+    // at most. False, and why, for an account that isn't a player's, a reason that won't do, or a grant over the cap.
+    bool grantPlayer(const std::string& player, std::int64_t coins, const std::string& reason, std::string& problem);
+    // "Reset prices" (12): every pressure in a market ("" all) eased linearly to 0 over a game day from `now` (the
+    // Board's resets), with the event "prices reset" carrying the words ("fresh stock everywhere" by default). False for
+    // a market the Board hasn't got.
+    bool resetPrices(const std::string& market, double now, const std::string& words);
+    // A host's overrides of status.json and market.json, the goods no ship brings and the slider's cause (EconomySpec::
+    // Overrides), checked as the loaders take them: anything unknown or out of bounds skipped with a warning, the rest
+    // in force at once (runtime state: applied again at every load and economy.sync).
+    void adoptOverrides(const EconomySpec::Overrides& overrides, std::vector<std::string>* warnings = nullptr);
+    // market.json as this world runs it: market::data() with the host's events, causes, ship names and never-imported
+    // goods over it (adoptOverrides). A layer replaced stays alive, so a reader holding the old one is never left dangling.
+    const market::Data& market() const;
+    // The Prosperity report as last worked out (World::prosperityReport; SocietyState::report).
+    const json::Value& report() const { return state_.report; }
+    void setReport(json::Value report) { state_.report = std::move(report); }
     // A rule as this world has it: EconomySpec::rules, else market.json `rules`, else items::Rules' own, within its range;
     // -1 for a name that isn't a rule.
     int rule(const std::string& name) const;
@@ -1279,6 +1326,9 @@ class Society
     std::int64_t groupsDay_ = -1;
     void groupChildren(const std::map<std::string, LifeBody>& bodies);
     SocietyState state_;
+    // The per-world market layer (adoptOverrides): null for market::data() itself; each replaced one kept in `retired`.
+    std::shared_ptr<const market::Data> marketLayer_;
+    std::vector<std::shared_ptr<const market::Data>> marketRetired_;
     Roster roster_ = Roster::Demo;
     AuthoredRoster authored_;
     std::vector<EconomyEntry> journal_;

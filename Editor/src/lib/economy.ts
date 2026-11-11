@@ -135,6 +135,9 @@ export const RULES: {key: string; label: string; low?: number; max: number; unit
     // Staged events and causes (doc 79, 8.4-8.5; Phase 7).
     {key: 'eventRate', label: 'Staged events', max: 300, unit: '% of the markets\' own (a wedding, a fire, a good catch: 1-3 a market a week at 100)'},
     {key: 'overrideNotices', label: 'Override notices', max: 1, unit: 'a Times nudge or a harvest override is posted on the boards', onOff: true},
+    // The DM's levers (doc 79, 12; Phase 9): the slider's target (set with the steer, not here) and the harvest bias.
+    {key: 'prosperity', label: 'Prosperity', low: -100, max: 100, unit: 'hard times (-100) to boom (100), in steps of 5'},
+    {key: 'harvestBias', label: 'Harvest bias', low: -20, max: 20, unit: 'hundredths on every area\'s harvest roll (+ better)'},
 ];
 /** A rule as it stands: the world's own, else the data files' (market.json's and status.json's). */
 export const ruleValue = (c: RuleControls, key: string): number => c.rules[key] ?? c.ruleDefaults[key] ?? 0;

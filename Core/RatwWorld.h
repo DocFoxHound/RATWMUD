@@ -1106,6 +1106,12 @@ class World
     // overrideNotices is 0 (8.5). False for a market or area the world hasn't got, or words that aren't plain.
     bool nudgeTimes(const std::string& market, int points, double days, const std::string& cause);
     bool overrideHarvest(const std::string& area, int word, double days, const std::string& cause);
+    // The DM's harvest override lifted (Phase 9): the event "harvest over", its notice down. False if none was held.
+    bool clearHarvest(const std::string& area);
+    // The Prosperity report (doc 79, 12; Phase 9; RatwProsperity.cpp): the slider and its cause, each market's Times, bands,
+    // hungry, short, would-be thieves, beggars and dole, nudges and resets, the largest pressures, the areas' harvests and
+    // the event kinds in force. Worked out at start, each staged morning and after each DM command (Society::setReport).
+    json::Value prosperityReport();
     // An event's notice in words, and the facts talk reads (world.event, world.event_words, world.event_when: now, soon,
     // past; world.times and world.times_cause) at a market; and whether an event has a crowd in this cell.
     void eventFacts(const std::string& market, std::map<std::string, std::string>& facts) const;

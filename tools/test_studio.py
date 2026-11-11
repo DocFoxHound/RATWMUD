@@ -1198,7 +1198,7 @@ class RuleListTests(unittest.TestCase):
     def test_every_rule_listed_with_core(self):
         core = (Path(__file__).resolve().parent.parent / 'Core/RatwItems.h').read_text(encoding='utf-8')
         start = core.index('inline constexpr RuleInfo Rules[]')
-        names = re.findall(r'\{"([A-Za-z]+)", (\d+), (\d+), (-?\d+)\}', core[start:core.index('};', start)])
+        names = re.findall(r'\{"([A-Za-z]+)", (-?\d+), (\d+), (-?\d+)\}', core[start:core.index('};', start)])
         self.assertEqual({n for n, *_ in names}, set(map_editor.RULE_LIMITS), 'Core\'s rules and the studio\'s alike')
         for name, low, high, fallback in names:
             self.assertEqual(int(high), map_editor.RULE_LIMITS[name], name)

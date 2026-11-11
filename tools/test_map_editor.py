@@ -416,7 +416,7 @@ class ContentTests(unittest.TestCase):
         self.assertEqual(sum(line.startswith('resident ') for line in manifest), 11)    # (Brann the smith since doc 33.)
         self.assertIn('herbs "town" 4.5 14.5', manifest)
         self.assertTrue(any(line.startswith('route "town_watch" 9 ') for line in manifest))
-        self.assertIn('economy 1000 100 50 10 12', manifest)
+        self.assertIn('economy 1000 100 50', manifest)     # (Three numbers since migration 0061: doc 79, 14.)
 
     def test_protected_residents_export_after_their_resident(self):
         # Doc 57, 6: a resident players can't ruin, authored in Atlas, follows its resident in the world file.
@@ -477,7 +477,7 @@ class ContentTests(unittest.TestCase):
         self.assertEqual(len(editor.unknown_farms(p['economy']['farms'])), 3)
         self.assertEqual(editor.unknown_farms({'farms': {'grain_farm_1': {'hand': 12}}, 'order': ['grain']}), [])
         manifest = editor.export_files(p)['world.ratw'].splitlines()
-        self.assertIn('farm "orchard_9" yield - crew - wages - 11', manifest)
+        self.assertFalse([l for l in manifest if l.startswith('farm')], 'the farms\' money records are no longer written (doc 79, 14)')
 
     def test_the_countrys_keys_read_as_the_wharfs(self):
         # Doc 73, 2.3: an older project's Country keys and rule read as the Wharf's (the new name wins), written under

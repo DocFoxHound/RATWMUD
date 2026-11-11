@@ -115,7 +115,9 @@
     "theftCap": 4,
     "errandRunners": 1,
     "eventRate": 100,
-    "overrideNotices": 1
+    "overrideNotices": 1,
+    "prosperity": 0,
+    "harvestBias": 0
   },
   "services": {
     "about": "The city's services (doc 79, 6.5 and 12: kept, at a frequency by band): each a catalogue item (category service) a business does, about once every `every` days a household, `for: patrons` a patron's. Since Phase 6 (street life) they are staged sales: each household has each done about once every `every` days times its band's `services` (status.json; a patron's only for the rich, and for the poor only those marked `poor: true`, the barber's: 6.5's \"a barber rarely\"), at a business of its kind in its market; nothing is paid or kept, and each counts toward that business's trade against its ordinary trade (the `business` fact). A world's `service` record (the Rules panel) turns one off or changes its every.",

@@ -11,6 +11,10 @@ from unittest.mock import patch
 import uuid
 
 import dm_service as dm
+import os
+
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 
 def fixture(now):
@@ -48,7 +52,7 @@ def setUpModule():
     from test_world_db import database_available, superuser
     if not database_available():
         raise unittest.SkipTest('local PostgreSQL not running (python3 tools/world_db.py up)')
-    SCRATCH = f'ratw_test_dm_{secrets.token_hex(4)}'
+    SCRATCH = f'ratw_test_{DB_TAG}dm_{secrets.token_hex(4)}'
     with superuser() as su:
         su.execute(f'CREATE DATABASE {SCRATCH} OWNER ratw_owner')
         su.execute(f'GRANT CONNECT ON DATABASE {SCRATCH} TO ratw_game')

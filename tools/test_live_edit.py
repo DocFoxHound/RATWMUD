@@ -11,6 +11,10 @@ import world_db as W
 import world_store as S
 from test_world_db import database_available, superuser
 from test_world_store import greyfen
+import os
+
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 
 def meta(cell):
@@ -30,7 +34,7 @@ def glyph(project, x, y):
 class LiveTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        cls.name = f'ratw_test_{DB_TAG}{secrets.token_hex(4)}'
         with superuser() as su:
             su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
             su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')

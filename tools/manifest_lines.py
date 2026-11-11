@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""The NPC records' economy lines and a resident's band line, as live.people_manifest writes them since migration 0061
+(Docs/Design/79-a-staged-economy.md, 14; Phase 9). One owner for both halves of the grammar: the SQL function and the
+exporter (tools/map_editor.py's export_files) write the same lines from the same entity, and Core's Authoring reads
+both (leniently: RatwAuthoring.cpp).
+
+    economy T SH SM                                  once
+    loop needs off                                   when needs are paused
+    season "<group>" price P P P P shelf S S S S      a group the world changed (by text)
+    rule "<name>" N                                  an integer rule the world changed (by text)
+    service "<id>" on|off price N every D            a service the world changed (by text)
+    overrides {json}                                 prosperityCause, neverImported, status, market (when any)
+    band "<npc>" destitute|poor|comfortable|rich     after its resident's records (person_lines)
+
+The economy entity is world_store's: {treasury, storeHerbs, storeMeals, needsPaused, seasons: {g: {price, shelf}},
+rules: {name: int}, services: {id: {on, price, every}}, overrides: {...}}.
+"""
+from __future__ import annotations
+
+import json
+
+from economy_contract import BANDS, OVERRIDE_KEYS
+
+OVERRIDES_MOST = 65536                          # The overrides line's JSON at most (the SQL's octet_length check).
+ECONOMY_KINDS = ('economy', 'loop', 'season', 'rule', 'service', 'overrides')
+
+
+def quote(value) -> str:
+    """live.q (std::quoted's escaping): UTF-8 literal, no JSON escapes."""
+    return '"' + str(value).replace('\\', '\\\\').replace('"', '\\"') + '"'
+
+
+def _whole(v) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _four(v) -> bool:
+    return isinstance(v, list) and len(v) == 4
+
+
+def economy_lines(entity) -> list[str]:
+    """The economy's lines for an entity, in live.people_manifest's order (economy, loop, then seasons, rules and services
+    each sorted by text, then the overrides)."""
+    e = entity or {}
+    out = [f'economy {e.get("treasury", 1000)} {e.get("storeHerbs", 100)} {e.get("storeMeals", 50)}']
+    if e.get('needsPaused'):
+        out.append('loop needs off')
+    seasons = []
+    for group, g in (e.get('seasons') or {}).items():
+        if isinstance(g, dict) and _four(g.get('price')) and _four(g.get('shelf')):
+            seasons.append(f'season {quote(group)} price {" ".join(map(str, g["price"]))} '
+                           f'shelf {" ".join(map(str, g["shelf"]))}')
+    out += sorted(seasons)
+    out += sorted(f'rule {quote(name)} {value}' for name, value in (e.get('rules') or {}).items() if _whole(value))
+    word = lambda on: 'on' if on else 'off'
+    out += sorted(f'service {quote(sid)} {word(s.get("on"))} price {s.get("price")} every {s.get("every")}'
+                  for sid, s in (e.get('services') or {}).items() if isinstance(s, dict))
+    overrides = {k: v for k, v in (e.get('overrides') or {}).items() if k in OVERRIDE_KEYS}
+    if overrides:
+        text = json.dumps(overrides, ensure_ascii=False)
+        if len(text.encode('utf-8')) <= OVERRIDES_MOST:
+            out.append('overrides ' + text)
+    return out
+
+
+def person_lines(person) -> list[str]:
+    """A resident's economy follow-lines, after its protected record: its authored band (none: from rank)."""
+    band = (person or {}).get('band')
+    return [f'band {quote(person["id"])} {band}'] if band in BANDS else []
+
+
+def comparable(lines) -> list:
+    """Lines as a parity test compares them: sorted, the overrides line as parsed JSON (key order aside)."""
+    out = []
+    for line in lines:
+        if line.startswith('overrides '):
+            out.append(('overrides', json.dumps(json.loads(line[len('overrides '):]), sort_keys=True)))
+        else:
+            out.append((line, ''))
+    return sorted(out)

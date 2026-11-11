@@ -191,6 +191,26 @@ def tables_for(conn) -> dict:
     return TABLES if farms_supported(conn) else RULE_TABLES
 
 
+class EconomyRefused(StoreError):
+    """An economy write a world's migrations can't hold (the host's overrides before migration 0061)."""
+    status = 409
+
+
+def slim_supported(conn) -> bool:
+    """Whether this world has migration 0061 (doc 79, 14): live.npcs.band_override, and no live.business_settings."""
+    raise NotImplementedError('doc 79 Phase 9, core lane (C8)')
+
+
+def save_economy(conn, world_id, economy) -> dict:
+    """Writes the kept columns of an economy entity (and its overrides into rules, on a slim world); the entity stored."""
+    raise NotImplementedError('doc 79 Phase 9, core lane (C8)')
+
+
+def patch_economy_rules(conn, world_id, set_=None, drop=()) -> dict:
+    """One statement: rules = (rules - drop) || set_; the rules as stored after."""
+    raise NotImplementedError('doc 79 Phase 9, core lane (C8)')
+
+
 def loop_differs(economy) -> bool:
     """Whether an economy entity sets anything of the city's loop away from its default (which needs migration 0056)."""
     e = economy or {}

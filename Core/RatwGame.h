@@ -457,6 +457,13 @@ class Game
     }
     std::size_t clients() const { return clients_.size(); }
     std::uint64_t revision() const { return revision_; }
+    // The staged economy's live acts (doc 79, 12; Phase 9; RatwGameEconomy.cpp), as dm.actions kinds: economy.sync,
+    // times.nudge, harvest.override, event.add, event.cancel, ship.storm, prices.reset, band.override and character.grant.
+    // Each clamps its payload (never refused for a number out of range), applies its hook, journals what it changed
+    // (record) before anyone is told, and works out the Prosperity report again. Public for the tests; applyDmActions
+    // calls it.
+    Result applyEconomyCommand(const std::string& kind, const std::string& target, const json::Value& payload);
+    static bool economyCommand(const std::string& kind);
 
     // A snapshot of the world every SnapshotSeconds (and SaveSoonSeconds after a change worth keeping); its memory
     // consolidated every AutosaveSeconds.
