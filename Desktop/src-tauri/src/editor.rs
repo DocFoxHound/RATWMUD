@@ -376,7 +376,7 @@ impl Editor {
             self.devices.save(&known.world, &username, d);
         }
         self.pins.change(|f| f.signed_in(&pin, &username));
-        let mut old = None;
+        let old;
         let (view, close_window) = {
             let mut inner = self.inner.lock().unwrap();
             if with_code {
