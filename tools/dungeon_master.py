@@ -261,7 +261,13 @@ class DungeonMaster:
     """Everything the UI does, over connections to the worlds: PROD (accounts), the live worlds, the dev worlds
     (rehearsal)."""
 
-    def __init__(self, connect=None, clock=time.time, writer=None):
+    def __init__(self, connect=None, clock=time.time, writer=None, worlds=None, ai_config=None):
+        # `worlds`: the worlds it may work on (default: the registry's, targets()); a host's Editor gives its one world
+        # (Docs/Design/78, 7). `ai_config`: the story writer's model config (default: RATW_AI_CONFIG, else this
+        # computer's Saved/Config); a host's Editor gives the helper's own copy.
+        self.worlds = worlds or targets
+        self.ai_config = ai_config
+        self.ai_audit = None                   # Called with each model call's usage (no words): the Editor's AI count.
         if connect is None:
             pools, made = {}, threading.Lock()      # Reused, not one per request; a world registered later gets one too.
 
@@ -277,7 +283,7 @@ class DungeonMaster:
     def connect(self, target):
         try:
             target = world_db.canonical(target) if isinstance(target, str) else target    # (An alias names its world.)
-            known = targets()
+            known = self.worlds()
         except world_db.DatabaseError as error:
             raise DMError(str(error), 503) from error
         if target not in known:
@@ -1347,12 +1353,13 @@ class DungeonMaster:
                     provider, model = npc_mind.FixtureProvider(), 'fixture'
                 else:
                     try:
-                        config = npc_bridge.load_config(Path(os.environ.get('RATW_AI_CONFIG') or AI_CONFIG))
+                        config = npc_bridge.load_config(Path(self.ai_config or os.environ.get('RATW_AI_CONFIG') or AI_CONFIG))
                     except npc_bridge.BridgeError as error:
                         raise DMError(f'No story writer: the NPC model is not configured ({error.code}).', 503) from None
                     provider, model = npc_mind.OpenAIProvider(config), config.model
                 budget = npc_mind.Budget(STORIES_PER_HOUR, STORIES_PER_HOUR)
-                self._writer = (npc_mind.Mind(provider, budget=budget, concurrency=2, timeout=40, wait=5), model)
+                audit = (lambda entry: self.ai_audit(entry)) if self.ai_audit else None
+                self._writer = (npc_mind.Mind(provider, budget=budget, concurrency=2, timeout=40, wait=5, audit=audit), model)
             return self._writer
 
     def write_story(self, who, target, subject):
@@ -2520,19 +2527,24 @@ def make_server(port=8766, dm=None):
     return server
 
 
-def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, default=None):
+def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, default=None, hosted=False, worlds=None):
     """The DM's request handler. `offers(method, path)`: whether it offers a route (404 otherwise; every route without
     it). `world()`: the one world it works on (the studio's Atlas suite: Atlas's world), a request naming another
     refused. `kinds`: the kinds of world a request may name. `allowed()`: the worlds a request may name (the studio's DM
     suite: every world). `default()`: the world a request naming none works on (default: the live server's; the
-    studio's DM suite: the DM's chosen world)."""
+    studio's DM suite: the DM's chosen world). `worlds()`: the worlds there are (default: the registry's).
+    `hosted` (a host's Editor, Docs/Design/78, 7): no Host check and no DM sign-in; the Editor session the helper checked
+    (`editor_session`, attached by tools/studio.py's HostedStudio) is who asks, and the world map is only sent lean."""
     dm = dm or DungeonMaster()
+    targets_ = worlds or targets
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
             pass     # Never log bodies, passwords or tokens.
 
         def trusted(self):
+            if hosted:
+                return map_editor.hosted_trusted(self)
             hosts = ((f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}')
                      + served_hosts(self.server.server_port))
             dev =('127.0.0.1:5173', 'localhost:5173')                        # Vite dev server.
@@ -2557,6 +2569,11 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
             return value[7:] if value.startswith('Bearer ') else ''
 
         def who(self):
+            if hosted:
+                session = getattr(self, 'editor_session', None)
+                if not isinstance(session, dict) or not session.get('username'):
+                    raise DMError('Your Editor session ended: sign in again.', 401)
+                return session
             return dm.session(self.token())
 
         def pick(self, asked):
@@ -2567,10 +2584,12 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                     raise DMError(f'This works on Atlas\'s world, {key}, not {asked}.', 409)
                 return key
             key = world_db.canonical(asked) if asked else (default or default_target)()
-            if kinds is not None and key in targets() and world_db.kind(key) not in kinds:
+            if hosted and key not in targets_():
+                raise DMError('This Editor works on its own world only.', 400)
+            if kinds is not None and key in targets_() and world_db.kind(key) not in kinds:
                 raise DMError(f'{key} is a {world_db.kind(key)} world; this works on {" and ".join(kinds)} worlds '
-                              f'({", ".join(k for k in targets() if world_db.kind(k) in kinds) or "none registered"}).', 400)
-            if allowed is not None and key in targets() and key not in (worlds := allowed()):
+                              f'({", ".join(k for k in targets_() if world_db.kind(k) in kinds) or "none registered"}).', 400)
+            if allowed is not None and key in targets_() and key not in (worlds := allowed()):
                 raise DMError(f'{key} is a {world_db.kind(key)} world the live server doesn\'t run; the DM works on '
                               f'{", ".join(worlds) or "no world"} (Atlas edits dev worlds).', 400)
             return key
@@ -2615,7 +2634,7 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
             if method == 'GET' and path == '/api/worlds':
                 # The registry (doc 66): which worlds there are, which the live server runs (the default target).
                 return self.reply(200, {'worlds': [{k: v for k, v in world_db.world(key).items() if k != 'database'}
-                                                   for key in targets()], 'live': default_target()})
+                                                   for key in targets_()], 'live': (default if hosted and default else default_target)()})
             if method == 'POST' and path == '/api/logout':
                 dm.logout(self.token())
                 return self.reply(200, {'ok': True})
@@ -2628,7 +2647,8 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                     hours = 24
                 return self.reply(200, dm.health(self.target(query), hours))
             if method == 'GET' and path == '/api/world':
-                return self.reply(200, dm.world_map(self.target(query), lean=query.get('lean') == ['1']))
+                # (Hosted: always lean. The whole world is 235 MB on DEV, over the Editor's 32 MB reply cap: doc 78, M0a.)
+                return self.reply(200, dm.world_map(self.target(query), lean=hosted or query.get('lean') == ['1']))
             if method == 'GET' and path == '/api/ground':
                 return self.reply(200, dm.ground(self.target(query), [i for i in ','.join(query.get('cells', [])).split(',') if i]))
             if method == 'POST' and path == '/api/actions':

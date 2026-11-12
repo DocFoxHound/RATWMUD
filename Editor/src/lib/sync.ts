@@ -96,6 +96,8 @@ export interface ServerStatus {
      *  is starting one. */
     play?: {port: number; host: string | null; local: boolean} | null;
     starting?: boolean;
+    /** A host's Editor (Docs/Design/78, 7): one world; Close and Open only, by its owner. */
+    hosted?: boolean;
 }
 /** A running game server's game, for a browser on this page's computer: at the host the page came from (the studio
  *  may be reached over the local network), unless the server runs on another computer; the game is plain http. */

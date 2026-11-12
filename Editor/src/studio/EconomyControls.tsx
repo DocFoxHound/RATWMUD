@@ -6,7 +6,7 @@
 // panels on the DM's world.
 import {useCallback, useEffect, useState} from 'react';
 import {api} from '../lib/api';
-import type {Me} from '../dm/api';
+import {atLeast, type Me} from '../dm/api';
 import type {EconomyData, EconomyReply} from '../lib/economy';
 import {awaitSync} from '../lib/acts';
 import {syncWords} from '../lib/economyContract';
@@ -23,7 +23,7 @@ export function EconomyControls({me}: {me: Me}) {
     const [data, setData] = useState<EconomyData | null>(null);
     const [problem, setProblem] = useState(''), [said, setSaid] = useState('');
     const [busy, setBusy] = useState(false);
-    const canChange = me.role === 'dm' || me.role === 'admin';
+    const canChange = atLeast(me, 'dm');
     const load = useCallback(async () => {
         try { setData(await api.economy.read()); setProblem(''); } catch (error) { setProblem((error as Error).message); }
     }, []);
@@ -59,7 +59,7 @@ export function EconomyControls({me}: {me: Me}) {
                 goods their market doesn't make come in by wagon, cart or ship, and each household's band says how it lives.
                 {' '}{data.note}</p>
             {!data.supported && <p className="publish-error">{data.problem}</p>}
-            {!canChange && <p className="hint">Your account ({me.role}) can look; changing these needs a dm or admin account.</p>}
+            {!canChange && <p className="hint">Your account ({me.role}) can look; changing these needs a dm account or above.</p>}
             {said && <p className="publish-done">{said}</p>}
             {problem && <p className="publish-error">{problem}</p>}
             {data.lastSync && <p className={data.lastSync.status === 'applied' && !/skipped|held/.test(data.lastSync.result) ? 'hint' : 'publish-error'}>

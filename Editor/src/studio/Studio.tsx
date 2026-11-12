@@ -86,12 +86,15 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
             <div className="brand"><span className="mark">R<i>›</i></span><div><b>RATW STUDIO</b><small>Runs Against the World</small></div></div>
             <div className="segmented studio-suites" role="radiogroup" aria-label="Suite">
                 <button role="radio" aria-checked={suite === 'atlas'} className={suite === 'atlas' ? 'on' : ''} disabled={!session.atlas.available}
-                    title={session.atlas.available ? 'Atlas: building worlds (dev worlds)' : 'Atlas is for dm and admin accounts'}
+                    title={session.atlas.available ? 'Atlas: building worlds (dev worlds)' : session.atlas.reason || 'Atlas is for dm and admin accounts'}
                     onClick={() => suite !== 'atlas' && go('atlas')}>Atlas</button>
                 <button role="radio" aria-checked={suite === 'dm'} className={suite === 'dm' ? 'on' : ''} title="Dungeon Master: running the live world"
                     onClick={() => suite !== 'dm' && go('dm')}>DM</button>
             </div>
-            {suite === 'atlas' ? <>
+            {session.hosted ? <span className="studio-world" title="This Editor works on its own world only (Docs/Design/78, 7)">
+                <span>World</span><b>{session.dm.worlds[0]?.name ?? dmKey}</b>
+                {!session.atlas.available && session.atlas.reason && <small>{session.atlas.reason}</small>}
+            </span> : suite === 'atlas' ? <>
                 <label className="studio-world" title="Atlas's world: the dev world Atlas edits, and local and scratch servers play">
                     <span>Dev world</span>
                     <select value={atlasKey} disabled={busy} onChange={e => void switchAtlas(e.target.value)}>
@@ -111,7 +114,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
             </label>}
             {problem && <span className="hint error-text">{problem}</span>}
             <div className="top-actions">
-                <span className="dm-me" title={`Signed in as ${me.username}`}>{me.username}<small>{me.role}</small></span>
+                <span className="dm-me" title={`Signed in as ${me.username}`}>{me.hosted ? me.account ?? me.username : me.username}<small>{me.role}</small></span>
                 <button onClick={() => { void dmApi.logout().finally(onSignOut); }}>Sign out</button>
             </div>
         </header>
