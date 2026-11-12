@@ -869,6 +869,7 @@ class Studio:
             world = shown(one)
         except world_db.DatabaseError:
             dev, world = False, {'key': one, 'name': one, 'kind': 'live'}
+        world = {**world, 'name': self.hosted.display_name() or world.get('name') or one}   # (world.toml's name: the hosts')
         reason = (ATLAS_LATER if not dev else '' if rank >= D.RANK['builder'] else 'Your account is for the DM tool only.')
         return {'me': who, 'suite': 'dm', 'hosted': True,
                 'atlas': {'available': not reason, 'reason': reason, 'world': world, 'worlds': [world]},
@@ -886,11 +887,11 @@ class Studio:
             entry = {'key': one, 'name': one, 'kind': 'live'}
         with self.dm.connect(one) as conn:
             state, running, holder = WS.server_state(conn), WS.server_running(conn), WS.server_holder(conn)
-        return {'key': one, 'name': entry.get('name', one), 'kind': entry.get('kind', 'live'), 'upstream': None,
+        return {'key': one, 'name': self.hosted.display_name() or entry.get('name', one), 'kind': entry.get('kind', 'live'), 'upstream': None,
                 'server': state, 'serverRunning': running,
                 'serverHolder': {k: holder[k] for k in ('port', 'local')} if holder else None,
                 'release': None, 'live': one, 'warning': '', 'switchTo': [], 'starting': False, 'play': None,
-                'hosted': True}
+                'hosted': True, 'hostServer': self.hosted.server()}
 
     def copies_of(self, live: str) -> list[str]:
         """The dev worlds whose upstream is this live world: what can be imported into it. Atlas's world first."""
@@ -1424,6 +1425,12 @@ class Hosted:
     def settings(self) -> dict:
         return self._json('settings.json')
 
+    def display_name(self) -> str:
+        """The world's name as world.toml gives it (the entrypoint's settings copy): what players and the host see, which
+        the Editor's headings use. '' when there is none."""
+        name = self.settings().get('name')
+        return ''.join(c for c in name if c.isprintable())[:48].strip() if isinstance(name, str) else ''
+
     def _setting(self, name, table='world'):
         values = self.settings()
         if name in values:
@@ -1480,8 +1487,37 @@ class Hosted:
         return out
 
     def folder_path(self) -> str:
+        """The world folder's path, for the owner alone: their own path, shown whole (never scrubbed: a long folder name
+        isn't a token), control characters dropped."""
         folder = self.settings().get('folder')
-        return scrub(folder)[:400] if isinstance(folder, str) else ''
+        return re.sub(r'[\x00-\x1f\x7f]', '', folder)[:400] if isinstance(folder, str) else ''
+
+    @staticmethod
+    def local_addresses() -> set:
+        """The addresses the world's own computer arrives from under Docker (its gateway, and RATW_EDITOR_UNIDENTIFIED's),
+        and loopback: a sign-in from one of them is "from this computer" (R1)."""
+        try:
+            import world_admin
+            found = set(world_admin.Peers().unidentified)
+        except Exception:  # noqa: BLE001 - only loopback, then.
+            found = set()
+        return found | {'127.0.0.1', '::1'}
+
+    @staticmethod
+    def this_computer(detail, local: set):
+        """An audit row's "from ADDRESS" as "from this computer" when the address is one of `local`."""
+        if not isinstance(detail, str):
+            return detail
+        return re.sub(r'\bfrom ([0-9A-Fa-f.:]*[0-9A-Fa-f])',
+                      lambda m: 'from this computer' if m.group(1) in local else m.group(0), detail)
+
+    def server(self) -> dict | None:
+        """The game server's state as the entrypoint wrote it (server.json): the hello's "server", for the Server tab."""
+        try:
+            import world_admin
+            return world_admin.read_server_state(self.folder, time.time())
+        except Exception:  # noqa: BLE001 - no state to show.
+            return None
 
     def fingerprint(self) -> str:
         try:
@@ -1752,7 +1788,8 @@ class HostedStudio:
                 """SELECT at, action, detail, who FROM dm.audit WHERE action LIKE 'server.%%'
                    ORDER BY sequence DESC LIMIT 50""").fetchall()]
             if owner:
-                sign_ins = [{'at': r[0], 'account': r[1], 'detail': r[2]} for r in conn.execute(
+                local = self.hosted.local_addresses()
+                sign_ins = [{'at': r[0], 'account': r[1], 'detail': self.hosted.this_computer(r[2], local)} for r in conn.execute(
                     """SELECT at, target, detail FROM dm.audit WHERE action IN ('login', 'login.failed', 'login.failed.folded')
                        ORDER BY sequence DESC LIMIT 50""").fetchall()]
             else:

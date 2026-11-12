@@ -197,17 +197,19 @@ Use any plain-text editor: Notepad on Windows, or gedit, nano or Kate on Linux.
   In Notepad's "Save as" window, choose **Save as type: All files**, and type the whole name. To see files' real names
   in File Explorer: **View**, **Show**, **File name extensions**.
 
-Each setting is read when its part of the world starts: `world.toml` whenever the world's server starts, which a
-Restart in the Editor (section 15) does too. After a change:
+Each setting is read when its part of the world starts: `world.toml` whenever the world's server starts, which
+the **Restart** button on the Editor window's **Server** tab (section 15) does too. After a change:
 
 | You changed | Then type |
 |---|---|
-| `world.toml`, or a token or key file it names | `docker compose restart world upnp` (both read `world.toml`), or Restart in the Editor (the `upnp` helper then keeps the old `[network]` setting) |
+| `world.toml`, or a token or key file it names | `docker compose restart world upnp` (both read `world.toml`), or the **Restart** button on the Editor window's **Server** tab (the `upnp` helper then keeps the old `[network]` setting) |
 | `.env` | `docker compose up -d` (a restart doesn't read `.env` again) |
 
-If something in `world.toml` is wrong, the world doesn't start. The log says what is wrong (section 7). Put it right,
-then `docker compose restart world upnp`. (If it goes wrong on a later restart, the world waits, saying so, and the
-Editor stays up, so you can put it right and restart again.)
+If something in `world.toml` is wrong, the world doesn't start. The log says what is wrong (section 7), and the world
+waits: it reads `world.toml` again after 5 seconds, 30 seconds, 2 minutes and then every 2 minutes, and the log says
+when it tries next. Put it right and the world starts at its next try, or at once with `docker compose restart world
+upnp`. If the world has started before, the Editor stays up meanwhile, and its status says "world.toml has a
+mistake".
 
 ### `[world]`: your world
 
@@ -660,7 +662,7 @@ world you replaced: it no longer works.
 |---|---|
 | Stop the world (it saves first, and leaves the list at once) | `docker compose stop` |
 | Start it again | `docker compose start` |
-| Restart it (after changing `world.toml`, or a token or key file) | `docker compose restart world upnp`, or Restart in the Editor |
+| Restart it (after changing `world.toml`, or a token or key file) | `docker compose restart world upnp`, or the **Restart** button on the Editor window's **Server** tab |
 | Use a changed `.env` | `docker compose up -d` |
 | Take the containers away, but keep the world | `docker compose down` |
 | Bring them back | `docker compose up -d` |
@@ -670,7 +672,7 @@ Stopping can take up to a minute and a half while the world saves. Let it finish
 
 **If the world's server stops on its own** (a crash), the world starts it again: after 5 seconds, then 30 seconds, 2
 minutes, and every 10 minutes after that while it keeps stopping. The Editor stays up throughout, so you can still
-reach your world's tools.
+reach your world's tools: its status says "Keeps stopping", with the exit code and when it starts again.
 
 **After the computer restarts,** the world starts again by itself once Docker does (section 3), unless you stopped it
 with `docker compose stop`. Then it stays stopped until you start it. On Windows, Docker Desktop starts only once
@@ -821,9 +823,10 @@ First look at the log: `docker compose logs world`. Find the message below (the 
 
 ### The world doesn't start (`RATW_PACKAGE error: ...`)
 
-The world stops at an error, and Docker tries again every few seconds, so `docker compose ps` shows **Restarting**
-and the log repeats the line. Put it right, then `docker compose restart world upnp` (or `docker compose up -d`, if
-what you changed is `.env`).
+A mistake in `world.toml` keeps the world waiting: it reads the file again after 5 seconds, 30 seconds, 2 minutes and
+then every 2 minutes (the log says `next try at ...`), and starts once it is right. Any other error stops the world,
+and Docker tries again every few seconds, so `docker compose ps` shows **Restarting** and the log repeats the line.
+Put it right, then `docker compose restart world upnp` (or `docker compose up -d`, if what you changed is `.env`).
 
 | Message | What it means, and what to do |
 |---|---|
@@ -909,7 +912,7 @@ Read the `world agent:` lines in the log, or the reason on the Host page.
 | `RATW_PACKAGE warning: the NPC Mind did not start (see logs/npc-mind.log) ...` | Something is wrong with the AI key or OpenAI. Read the Mind's log: `docker compose exec world cat logs/npc-mind.log`. The residents use their written lines meanwhile. |
 | `RATW_PACKAGE the world is closed for maintenance: it starts again once it is opened ...` | The world was closed for maintenance (in the Editor, or by the DM). It checks every 5 seconds, and starts as soon as it is opened again. |
 | `RATW_PACKAGE the world server stopped (exit N); starting it again in ...` | The world server stopped by itself. The lines above say why. The world starts it again, waiting longer each time it stops (section 13); the Editor stays up. If it keeps stopping, ask for help, with the log. |
-| `RATW_PACKAGE the world waits until world.toml is put right ...` | `world.toml` was changed and has a mistake: the line above says what. Put it right, then Restart in the Editor, or `docker compose restart world`. |
+| `RATW_PACKAGE the world waits until world.toml is put right ...` | `world.toml` has a mistake: the line above says what. The world reads it again on its own (`RATW_PACKAGE world.toml still has a mistake; next try at ...`). Put it right, then wait for that try, or use the **Restart** button on the Editor window's **Server** tab, or `docker compose restart world`. |
 | `RATW_PACKAGE warning: this compose.yaml has no admin volume ...`, or `... has no manage folder ...` | Your `compose.yaml` is from before the Editor. Copy the new one from the package over it (keep `world.toml` and `.env`), make an empty folder called `manage` beside it, then `docker compose up -d`. |
 | `UPnP: no router answered the search from inside this container: expected under Docker Desktop and rootless Docker ...` (in `docker compose logs upnp`) | Normal on Windows (Docker Desktop) and with rootless Docker: forward the port by hand (section 8). On Linux with Docker Engine, it means UPnP is off on the router: turn it on in the router's settings, or forward the port by hand. |
 | `UPnP: port 7788 is already forwarded on the router to another computer ...` | Another computer has that port. Change the forward on the router, or give this world another port. |

@@ -1542,6 +1542,11 @@ class HostedAllowlistTests(HostedBase):
                          (True, 'world', ['world'], False, ST.ATLAS_LATER, False))
         self.assertTrue(self.call('GET', '/api/studio/session', role='owner')[1]['myWorld'])
         self.assertEqual(self.call('GET', '/api/dm/worlds')[1]['worlds'], [{'key': 'world', 'name': 'Ashfall Vale', 'kind': 'live'}])
+        # The world's name in the Editor's headings is world.toml's (the settings copy), as players and the host see it,
+        # whatever the registry says (R1: "Ridgemere 2.0" beside "Ridgemere").
+        self.settings(name='Ashfall')
+        session = self.call('GET', '/api/studio/session', role='dm')[1]
+        self.assertEqual((session['dm']['worlds'][0]['name'], session['atlas']['world']['name']), ('Ashfall', 'Ashfall'))
         # The DM's acts are audited as the account and its session.
         self.assertEqual(self.call('POST', '/api/dm/actions', {'kind': 'bandits.call', 'characterId': 'c1'})[0], 200)
         self.assertEqual(self.dm.calls[-1][1][0]['username'], 'pell#a1b2c3')
@@ -1749,6 +1754,23 @@ class HostedPrivacyTests(HostedBase):
         self.assertIn('10:00:01', clean, 'times are kept')
         (self.folder / 'exits.json').write_text(json.dumps({'exits': [{'at': 1, 'code': 139, 'lines': [line, 7]}]}))
         self.assertEqual(ST.Hosted('world', self.folder).exits(), [{'at': 1, 'code': 139, 'lines': [clean]}])
+
+
+    def test_the_owner_s_folder_whole_this_computer_and_the_server_s_state(self):
+        """R1: the owner's own folder path is never scrubbed (M-d); a sign-in from the world's own computer reads "from
+        this computer"; the Server tab's `hostServer` is server.json, checked (H2)."""
+        long_path = '/home/pell/Documents/' + 'worlds-of-the-long-valley-and-its-wolves-2026' + '/ashfall'
+        self.settings(folder=long_path + '\x07')
+        hosted = ST.Hosted('world', self.folder)
+        self.assertEqual(hosted.folder_path(), long_path)
+        local = {'172.20.0.1', '127.0.0.1'}
+        self.assertEqual(hosted.this_computer('Signed in from 172.20.0.1.', local), 'Signed in from this computer.')
+        self.assertEqual(hosted.this_computer('Signed in from 203.0.113.9 with an Editor code.', local),
+                         'Signed in from 203.0.113.9 with an Editor code.')
+        self.assertIsNone(hosted.server())
+        (self.folder / 'server.json').write_text(json.dumps({'up': False, 'reason': 'world.toml', 'code': None,
+                                                              'failures': 0, 'retryAt': None, 'at': 1}))
+        self.assertEqual(hosted.server(), {'up': False, 'reason': 'world.toml', 'code': None, 'failures': 0, 'retryIn': None})
 
 
 class SqlTextTests(unittest.TestCase):

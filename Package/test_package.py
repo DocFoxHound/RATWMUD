@@ -467,7 +467,10 @@ class Editor(Folders):
         world = E.Supervisor(7788, 17789, self.dir, self.dir)
         for kind in self.quiet(E.take_requests):
             self.quiet(world.act, kind)
-        self.assertTrue((E.MANAGE / 'first-editor.txt').read_text().startswith('Used. Lost your password?'))
+        used = (E.MANAGE / 'first-editor.txt').read_text()
+        self.assertTrue(used.startswith('Used. Lost your password?'))
+        self.assertIn('docker compose exec world ratw-editor reset NAME', used)
+        self.assertNotIn('reset-editor-password', used, 'that script is M5\'s: until then, the command')
         self.assertNotIn('p' * 20, (E.MANAGE / 'first-editor.txt').read_text())
 
     def test_the_first_owner_is_logged_by_its_file_never_its_password(self):
@@ -669,6 +672,9 @@ class Loop(Folders):
             waits.append(round(self.now - stopped - 0.5))
             self.assertGreater(len(self.checks) - checks, 4, 'the helpers are checked while the server is down')
         self.assertEqual(waits, [5, 30, 120, 600, 600])
+        state = json.loads((E.ADMIN / 'server.json').read_text())    # (Started again: the fake start writes nothing.)
+        self.assertEqual((state['up'], state['reason'], state['code'], state['failures']), (False, 'exit', -11, 5))
+        self.assertAlmostEqual(state['retryAt'] - state['at'], 600, delta=1)
         exits = json.loads((E.ADMIN / 'exits.json').read_text())['exits']
         self.assertEqual([e['code'] for e in exits], [-11] * 5, 'each exit kept for the owner (exits.json)')
         self.assertTrue(all(isinstance(e['at'], float) and e['lines'] == [] for e in exits))
@@ -724,6 +730,37 @@ class Loop(Folders):
         self.run_until(31)
         self.assertEqual(len(self.servers), 1)
 
+    def test_a_broken_world_toml_has_its_own_schedule_apart_from_the_crash_backoff(self):
+        """R1: tried again after 5 s, 30 s, 2 minutes, then every 2 minutes; a crash afterwards waits 5 s, not 2 minutes."""
+        self.settings = None
+        tries = []
+        with mock.patch.object(E, 'reread_settings', side_effect=lambda: tries.append(self.now) or self.settings):
+            self.run_until(600)
+        self.assertEqual([round(b - a) for a, b in zip(tries, tries[1:])][:5], [5, 30, 120, 120, 120])
+        self.assertEqual(self.world.failures, 0, 'world.toml never adds to the crash backoff')
+        state = json.loads((E.ADMIN / 'server.json').read_text())
+        self.assertEqual((state['up'], state['reason']), (False, 'world.toml'))
+        self.assertAlmostEqual(state['retryAt'] - state['at'], 120, delta=1)
+        self.settings = {'name': 'Wolf Hollow'}
+        self.run_until(121)
+        self.assertEqual(len(self.servers), 1)
+        self.servers[-1].code = 1
+        self.quiet(self.world.step)
+        self.assertEqual(self.world.next_start - self.now, 5)
+
+    def test_the_server_s_state_for_the_editor(self):
+        """server.json (R1, H2): closed, restarting, as the Editor's pill shows them."""
+        self.run_until(1)
+        self.servers[-1].code = E.MAINTENANCE_EXIT
+        self.run_until(1)
+        self.assertEqual(json.loads((E.ADMIN / 'server.json').read_text())['reason'], 'closed')
+        self.state = 'running'
+        self.run_until(6)
+        (E.ADMIN / 'requests' / 'restart.0123456789ab').write_text('restart\n')
+        self.run_until(1)
+        state = json.loads((E.ADMIN / 'server.json').read_text())
+        self.assertEqual((state['up'], state['reason']), (False, 'restarting'))
+
     def test_a_stop_ends_the_loop_once_the_server_has_saved(self):
         self.run_until(1)
         try:
@@ -734,6 +771,80 @@ class Loop(Folders):
             self.assertFalse(self.quiet(self.world.step))
         finally:
             E.stopping, E.forwarded = False, False
+
+
+class FirstStart(Folders):
+    """R1, M-f: a broken world.toml when the container starts doesn't end it: the world waits, reading it again, with
+    the Editor's helper up from its last good copy when there is one."""
+
+    def setUp(self):
+        super().setUp()
+        self.saved_settings = E.SETTINGS
+        E.SETTINGS = self.dir / 'world.toml'
+        E.SETTINGS.write_text(SETTINGS.replace('id = ', 'id = 1 #'))
+        self.now, self.sleeps = 0.0, 0
+        E.TOML_SAID.update(text=None, at=float('-inf'), fresh=False)
+
+    def tearDown(self):
+        E.SETTINGS = self.saved_settings
+        E.stopping = False
+        super().tearDown()
+
+    def sleep(self, seconds):
+        self.now += seconds
+        self.sleeps += 1
+        if self.now >= 40:                                  # (The host puts it right after 40 s.)
+            E.SETTINGS.write_text(SETTINGS)
+
+    def start(self):
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            s = self.quiet(E.first_settings, 17789, lambda: self.now, self.sleep)
+        return s, err.getvalue()
+
+    def test_a_first_start_waits_and_reads_world_toml_again(self):
+        started = []
+        with mock.patch.object(E, 'start_editor', side_effect=lambda port: started.append(port)):
+            s, err = self.start()
+        self.assertEqual(s['name'], 'Wolf Hollow')
+        self.assertEqual(started, [], 'never started before: no copy to run the Editor from')
+        self.assertEqual(err.count('RATW_PACKAGE error:'), 1, 'the same mistake said once')
+        self.assertIn('next try at', self.output)
+        self.assertIn('world.toml is right now', self.output)
+        self.assertNotIn('the Editor stays up', self.output)
+        self.assertEqual(json.loads((E.ADMIN / 'server.json').read_text())['reason'], 'world.toml')
+        self.assertAlmostEqual(self.now, 155, delta=1, msg='tried at 5 s and 35 s, then right at 155 s (5 + 30 + 120)')
+
+    def test_the_editor_stays_up_from_the_last_good_copy(self):
+        (E.ADMIN / 'settings.json').write_text(json.dumps({'name': 'Wolf Hollow', 'editor': {'enabled': True}}))
+        (E.ADMIN / 'editor-cert.pem').write_text('certificate')
+
+        class Process:
+            def __init__(inner):
+                inner.signals = []
+
+            def poll(inner):
+                return None
+
+            def send_signal(inner, number):
+                inner.signals.append(number)
+
+            def wait(inner, timeout=None):
+                return 0
+        made = []
+        with mock.patch.object(E, 'start_editor', side_effect=lambda port: made.append(Process()) or made[-1]), \
+                mock.patch.object(E, 'official', return_value=False):
+            s, _ = self.start()
+        self.assertEqual(s['name'], 'Wolf Hollow')
+        self.assertEqual(len(made), 1)
+        self.assertEqual(made[0].signals, [signal.SIGTERM], 'stopped: the start proper starts it with the new settings')
+        self.assertIn('the Editor stays up', self.output)
+
+    def test_a_stop_while_waiting_ends_the_start(self):
+        def stop(seconds):
+            E.stopping = True
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertIsNone(self.quiet(E.first_settings, 17789, lambda: self.now, stop))
 
 
 class HostFolder(unittest.TestCase):

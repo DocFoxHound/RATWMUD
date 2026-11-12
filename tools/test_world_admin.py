@@ -132,6 +132,12 @@ class PasswordRules(unittest.TestCase):
         for password in (GOOD, 'correct horse battery staple', 'Grey wolves sing at 3am!'):
             self.assertIsNone(A.password_problem(password, 'pell', WORLD_NAME), password)
 
+    def test_each_word_of_the_world_s_name_of_four_letters_or_more(self):
+        """R1: the whole name squashed wasn't enough ("ashfall1234567" passed for "Ashfall Test")."""
+        for password in ('ashfall1234567', 'my-TEST-orchard-91', 'kettle.Ashfall.91'):
+            self.assertEqual(A.password_problem(password, 'pell', 'Ashfall Test'), 'world', password)
+        self.assertIsNone(A.password_problem('ox-tallow-kettle-91', 'pell', 'Ox and Elm'), 'words under 4 letters are no rule')
+
     def test_a_short_world_name_is_not_a_rule(self):
         self.assertIsNone(A.password_problem('ox-tallow-kettle-91', 'pell', 'Ox'))
 
@@ -532,6 +538,59 @@ class SigningIn(SignInBase):
         self.assertEqual(self.core.hello_now()['kind'], 'official')
 
 
+class HelloServer(SignInBase):
+    """R1, H2 and M-a: the game server's state from the entrypoint's server.json, and a database that doesn't answer."""
+
+    def write(self, **state):
+        (self.folder.path / 'server.json').write_text(json.dumps(state))
+        self.core._hello = (0.0, None)
+
+    def test_the_server_s_state_checked_from_server_json(self):
+        self.assertNotIn('server', self.core.hello_now(), 'none written: none said')
+        now = time.time()
+        self.write(up=False, reason='exit', code=-11, failures=3, retryAt=now + 120, at=now)
+        self.assertEqual(self.core.hello_now()['server'],
+                         {'up': False, 'reason': 'exit', 'code': 139, 'failures': 3, 'retryIn': 120})
+        self.write(up=True, reason='running', code=None, failures=0, retryAt=None)
+        self.assertEqual(self.core.hello_now()['server'],
+                         {'up': True, 'reason': 'running', 'code': None, 'failures': 0, 'retryIn': None})
+        self.write(up='yes', reason='world.toml', code='x', failures=500, retryAt=now + 10 ** 9)
+        self.assertEqual(self.core.hello_now()['server'],
+                         {'up': False, 'reason': 'world.toml', 'code': None, 'failures': 99, 'retryIn': 86400})
+        self.write(up=True, reason='<b>exploded</b>')
+        self.assertNotIn('server', self.core.hello_now())
+        self.write(up=False, reason='closed', code=76, failures=0, retryAt=None)
+        self.assertLessEqual(len(json.dumps(self.core.hello_now())), A.HELLO_MOST)
+
+    def test_a_database_that_doesnt_answer_gets_a_hello_in_two_seconds(self):
+        def stalled():
+            time.sleep(3)
+            raise W.DatabaseError('stalled')
+        for progress, expected in ((None, {'code': 'database', 'percent': 0}),       # (Never set up: still its database.)
+                                   ({'code': 'ready'}, {'code': 'slow', 'percent': 100})):
+            if progress:
+                (self.folder.path / 'progress.json').write_text(json.dumps(progress))
+            slow = A.Core(connect=stalled, folder=self.folder.path, peers=A.Peers('real', unidentified=[]))
+            try:
+                started = time.monotonic()
+                hello = run(slow.hello())
+                self.assertLess(time.monotonic() - started, A.HELLO_WAIT + 0.8)
+                self.assertEqual((hello['progress'], hello['serverState']), (expected, 'unknown'))
+            finally:
+                slow.close()
+
+    def test_the_helper_s_connections_time_out(self):
+        self.assertEqual(A.DB_OPTIONS['options'], '-c statement_timeout=5000')
+        self.assertEqual(A.DB_OPTIONS['keepalives'], '1')
+        with mock.patch.object(W, 'connect', side_effect=lambda *a, **k: k) as made:
+            core = A.Core(folder=self.folder.path, peers=A.Peers('real', unidentified=[]))
+            try:
+                self.assertEqual(core.pool._open(), A.DB_OPTIONS)
+            finally:
+                core.close()
+        self.assertEqual(made.call_args.args, (A.WORLD_KEY, 'dm'))
+
+
 class OneTimePasswords(SignInBase):
     def test_the_first_owner_its_one_time_password_its_change_and_first_editor_used(self):
         with connect() as conn:
@@ -603,7 +662,7 @@ class Lanes(SignInBase):
         super().setUp()
         self.core.world = A.Bucket(1000, 1000, time.time)          # (Only the world-wide test keeps the real one.)
 
-    def fail(self, username, address, times=1, **extra):
+    def fail_sign_in(self, username, address, times=1, **extra):
         for _ in range(times):
             with self.assertRaises(A.EditorError) as caught:
                 self.login(username, 'wrong-password-123', address, **extra)
@@ -614,12 +673,12 @@ class Lanes(SignInBase):
     def test_five_failures_slow_that_address_only_ipv6_by_64(self):
         self.account('pell')
         for i in range(5):
-            self.fail(f'nobody-{i}', '203.0.113.5')
+            self.fail_sign_in(f'nobody-{i}', '203.0.113.5')
         error = self.refused('wait', 'pell', address='203.0.113.5')
         self.assertEqual(error.extra, {'minutes': 15})
         self.login('pell', address='203.0.113.99')
         for i in range(5):
-            self.fail(f'someone-{i}', f'2001:db8:5:5::{i + 1}')
+            self.fail_sign_in(f'someone-{i}', f'2001:db8:5:5::{i + 1}')
         self.refused('wait', 'pell', address='2001:db8:5:5:abcd::9')
         self.login('pell', address='2001:db8:5:6::1')
 
@@ -627,7 +686,7 @@ class Lanes(SignInBase):
         self.account('pell')
         device = self.login('pell', address='192.0.2.1')['device']
         for i in range(5):
-            self.fail('pell', f'198.51.100.{i}')
+            self.fail_sign_in('pell', f'198.51.100.{i}')
         error = self.refused('wait', 'pell', address='198.51.100.77')
         self.assertEqual(error.extra, {'minutes': 15})
         self.login('pell', address='198.51.100.78', device=device)
@@ -645,7 +704,7 @@ class Lanes(SignInBase):
 
     def test_unknown_names_lock_the_same_way(self):
         for i in range(5):
-            self.fail('nobody-here', f'198.51.100.{i}')
+            self.fail_sign_in('nobody-here', f'198.51.100.{i}')
         self.refused('wait', 'nobody-here', address='198.51.100.50')
         self.assertEqual(owner_sql("SELECT count(*) FROM dm.audit")[0][0], 0, 'no row for an unknown name')
 
@@ -654,10 +713,10 @@ class Lanes(SignInBase):
             password, _ = A.add_account(conn, 'newbie', 'dm', 'test')
         before = self.core.world.tokens
         for i in range(12):
-            self.fail('newbie', f'198.51.100.{i}')
+            self.fail_sign_in('newbie', f'198.51.100.{i}')
         self.assertAlmostEqual(self.core.world.tokens, before, delta=0.5)
         self.assertTrue(self.login('newbie', password, address='198.51.100.200')['mustChange'])
-        self.fail('newbie', '203.0.113.33', 5)
+        self.fail_sign_in('newbie', '203.0.113.33', 5)
         self.refused('wait', 'newbie', password, address='203.0.113.33')
 
     def test_a_device_token_counts_only_for_its_own_account(self):
@@ -673,7 +732,7 @@ class Lanes(SignInBase):
         devices = [self.login('pell', address=f'192.0.2.{i}')['device'] for i in range(6)]
         stored = {r[0] for r in owner_sql("SELECT token_hash FROM dm.devices WHERE username = 'pell'")}
         self.assertEqual(stored, {A.token_hash(d) for d in devices[1:]})
-        self.fail('pell', '192.0.2.50', 5, device=devices[5])
+        self.fail_sign_in('pell', '192.0.2.50', 5, device=devices[5])
         error = self.refused('wait', 'pell', address='192.0.2.50', device=devices[5])
         self.assertEqual(error.extra, {'minutes': 15})
         self.login('pell', address='192.0.2.50', device=devices[4])
@@ -683,13 +742,14 @@ class Lanes(SignInBase):
     def test_only_failures_count_world_wide_and_the_bucket_starts_half_full(self):
         self.core.close()
         self.core = self.make_core()
+        self.core.world.rate = 0        # (It refills on the real clock: under load a slow run would get one back.)
         self.account('pell')
         for i in range(30):
             self.login('pell', address=f'192.0.2.{i}')
         self.assertGreaterEqual(self.core.world.tokens, 9)
         exhausted = None
         for i in range(12):
-            exhausted = self.fail(f'nobody-{i:02d}', f'198.51.100.{i}')
+            exhausted = self.fail_sign_in(f'nobody-{i:02d}', f'198.51.100.{i}')
             if exhausted:
                 break
         self.assertIsNotNone(exhausted, 'refused once the world-wide count is spent')
@@ -708,8 +768,8 @@ class Lanes(SignInBase):
         self.core.world = A.Bucket(1000, 0.0001, time.time)
         with connect() as conn:
             password, _ = A.add_account(conn, 'newbie', 'dm', 'test')
-        self.fail('nobody-a', '198.51.100.1')
-        self.fail('nobody-b', '198.51.100.2')
+        self.fail_sign_in('nobody-a', '198.51.100.1')
+        self.fail_sign_in('nobody-b', '198.51.100.2')
         self.core.world.tokens = 0
         self.refused('wait', 'newbie', password, address='198.51.100.3')
         self.assertTrue(self.login('newbie', password, address='198.51.100.1')['mustChange'])
@@ -727,7 +787,7 @@ class Lanes(SignInBase):
         with connect() as conn:
             invite = A.invite_account(conn, 'pell', 'test')
         for _ in range(5):
-            self.fail('pell', '203.0.113.42', invite=invite)
+            self.fail_sign_in('pell', '203.0.113.42', invite=invite)
         self.refused('wrong', 'pell', invite=invite, address='203.0.113.43')
 
     def test_an_invite_skips_every_count(self):
@@ -735,7 +795,7 @@ class Lanes(SignInBase):
         self.account('pell')
         with connect() as conn:
             invite = A.invite_account(conn, 'pell', 'test')
-        self.fail('pell', '203.0.113.50', 5)
+        self.fail_sign_in('pell', '203.0.113.50', 5)
         self.core.world.tokens = 0
         self.login('pell', address='203.0.113.50', invite=invite)
 
@@ -751,7 +811,7 @@ class Lanes(SignInBase):
     def test_an_account_change_or_reset_unlocks_by_ratw_editor(self):
         self.account('pell')
         for i in range(5):
-            self.fail('pell', f'198.51.100.{i}')
+            self.fail_sign_in('pell', f'198.51.100.{i}')
         with connect() as conn:
             password, invite = A.reset_account(conn, 'pell', 'ratw-editor')
         self.assertTrue(self.login('pell', password, address='198.51.100.9', invite=invite)['mustChange'])
@@ -913,6 +973,33 @@ class Accounts(SignInBase):
         self.call('end-sessions')
         self.assertEqual(owner_sql('SELECT count(*) FROM dm.sessions')[0][0] + owner_sql('SELECT count(*) FROM dm.devices')[0][0], 0)
         self.assertIsNone(self.owner())
+
+    def test_the_owner_s_sign_in_carries_counts_only(self):
+        """R1, M-i: failed sign-ins today and account changes by others since the owner's last sign-in, before any
+        step-up; nothing for anyone else."""
+        first = self.login('ferro', address='192.168.1.21')
+        self.assertEqual(first['notices'], {'failedToday': 0, 'changes': 0})
+        self.call('add', username='pell', role='dm')                  # (The owner's own change: not counted.)
+        with connect() as conn:
+            A.add_account(conn, 'mira', 'dm', 'ratw-editor')
+        with self.assertRaises(A.EditorError):
+            self.login('ferro', 'not-the-one-1', address='198.51.100.7')
+        again = self.login('ferro', address='192.168.1.22')
+        self.assertEqual(again['notices'], {'failedToday': 1, 'changes': 1})
+        self.assertEqual(set(again['notices']), {'failedToday', 'changes'}, 'counts only')
+        self.account('kit', 'builder')
+        self.assertNotIn('notices', self.login('kit'))
+
+    def test_this_computer_s_addresses_read_local(self):
+        self.core.peers.unidentified = {'172.20.0.1'}
+        self.account('pell')
+        self.account('mira')
+        self.login('pell', address='172.20.0.1')
+        self.login('mira', address='127.0.0.1')
+        listed = {a['username']: a for a in self.call('list')['accounts']}
+        self.assertEqual((listed['pell']['lastFrom'], listed['pell']['claimedFrom']), ('local', 'local'))
+        self.assertEqual(listed['mira']['lastFrom'], 'local')
+        self.assertEqual(listed['ferro']['claimedFrom'], '192.168.1.20', 'a real address stays')
 
     def test_failed_sign_ins_today_and_one_audit_row_per_account_and_address_an_hour(self):
         for _ in range(3):
@@ -1366,6 +1453,13 @@ class HostedStudioPort(PortBase):
         self.assertEqual((status, opened['server']['state']), (200, 'running'))
         status, _, server = call(self.port, 'GET', '/api/dm/server/status', token=owner)
         self.assertEqual((status, server['key'], server['switchTo'], server['play']), (200, 'world', [], None))
+        self.assertIsNone(server['hostServer'], 'no server.json: nothing said')
+        (self.folder.path / 'server.json').write_text(json.dumps(
+            {'up': False, 'reason': 'exit', 'code': 11, 'failures': 2, 'retryAt': time.time() + 30, 'at': time.time()}))
+        server = call(self.port, 'GET', '/api/dm/server/status', token=owner)[2]
+        self.assertEqual({k: server['hostServer'][k] for k in ('up', 'reason', 'code', 'failures')},
+                         {'up': False, 'reason': 'exit', 'code': 11, 'failures': 2})
+        self.assertAlmostEqual(server['hostServer']['retryIn'], 30, delta=2)
         status, _, restart = call(self.port, 'POST', '/api/world/restart', {}, token=owner)
         self.assertEqual(status, 200, restart)
         self.assertEqual([p.read_text() for p in (self.folder.path / 'requests').glob('restart.*')], ['restart\n'])
@@ -1381,6 +1475,11 @@ class HostedStudioPort(PortBase):
                          (True, 'C:\\Users\\pell\\worlds\\ashfall', ['from [address] died']))
         self.assertEqual(mine['fingerprint'], A.fingerprint(A.cert_spki(self.folder.path / 'editor-cert.pem')))
         self.assertEqual({s['account'] for s in mine['signIns'] if s['detail'].startswith('Signed in')}, {'pell', 'fern'})
+        self.assertIn('Signed in from this computer.', {s['detail'] for s in mine['signIns']}, 'loopback reads "this computer"')
+        long_path = '/home/pell/Documents/' + 'worlds-of-the-long-valley-and-its-wolves-2026' + '/ashfall'
+        self.write_settings(folder=long_path)
+        self.assertEqual(call(self.port, 'GET', '/api/world', token=owner)[2]['folder'], long_path,
+                         'the owner\'s own path is never scrubbed (R1, M-d)')
         status, _, theirs = call(self.port, 'GET', '/api/world', token=fern)
         self.assertEqual(status, 200, theirs)
         self.assertFalse(theirs['owner'])
@@ -1481,6 +1580,7 @@ class Process(unittest.TestCase):
             self.assertEqual(process.wait(15), 0)
             output = process.stdout.read()
             self.assertIn('RATW_EDITOR listening', output)
+            self.assertIn(f'port={port}', output)
             self.assertIn('RATW_EDITOR certificate.reloaded', output)
             self.assertFalse((self.folder.path / 'helper.pid').exists())
         finally:
@@ -1533,7 +1633,12 @@ class Process(unittest.TestCase):
         self.assertRegex(made['username'], r'^host-[a-z0-9]{4}$')
         record = A.read_code(made['code'])
         self.assertEqual((record['p'], record['i'], made['days']), (made['password'], made['invite'], 7))
+        self.assertEqual(record['a'], '127.0.0.1:17789', 'the code carries this computer\'s address (R1, M-c)')
         self.assertIsNone(json.loads(self.cli('first-owner').stdout))
+        empty_accounts()
+        self.env['RATW_EDITOR_PORT'] = '17811'                         # (A second world's port, from .env.)
+        self.assertEqual(A.read_code(json.loads(self.cli('first-owner').stdout)['code'])['a'], '127.0.0.1:17811')
+        del self.env['RATW_EDITOR_PORT']
         empty_accounts()
         (self.folder.path / 'central.json').write_text(json.dumps({'kind': 'official'}))
         self.assertIsNone(json.loads(self.cli('first-owner').stdout))

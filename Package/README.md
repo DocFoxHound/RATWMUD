@@ -45,7 +45,8 @@ central's address. The folder holds `compose.yaml`, `world.toml`, this file, `Ho
    listening and the world agent says `listed on central at ...`, players can see it.
 
 If something in `world.toml` is wrong, the log says what (a line starting `RATW_PACKAGE error:`), and the world doesn't
-start until it is put right. Then `docker compose restart world upnp`.
+start until it is put right: it reads `world.toml` again by itself (the log says when it tries next), or at once with
+`docker compose restart world upnp`.
 
 If `docker compose up -d` says **"ports are not available"** (or "address already in use", or "forbidden by its access
 permissions"), another program, or Windows itself, holds one of the world's ports. If the message names 17789 (the
@@ -109,11 +110,11 @@ a public IPv4 address, run the world on a rented server, or use a tunnel with po
 ## Every day
 
 - Stop: `docker compose stop` (the world saves first, and leaves the list). Start again: `docker compose start`.
-- After editing `world.toml` (or a token or key file it names): `docker compose restart world upnp`, or Restart in
-  the Editor (the world reads `world.toml` before each start). After editing `.env`: `docker compose up -d` (a restart
+- After editing `world.toml` (or a token or key file it names): `docker compose restart world upnp`, or
+  the **Restart** button on the Editor window's **Server** tab (the world reads `world.toml` before each start). After editing `.env`: `docker compose up -d` (a restart
   doesn't read `.env` again).
 - If the world's server stops on its own, the world starts it again (after 5 seconds, then waiting longer each time),
-  and the Editor stays up throughout.
+  and the Editor stays up throughout: its status says "Keeps stopping" and when it starts again.
 - Logs: `docker compose logs world`. The NPC Mind's and the agent's: `docker compose exec world ls logs`.
 - The host's commands in the game: press the ` key for the host's console, then `/help` (`/kick`, `/ban`,
   `/silence`, `/pending` and the rest). They need the host token: central tells the world who its host is.
