@@ -87,6 +87,12 @@ export class EditorDoor {
             this.screen = 'address';
         } else if (this.session?.live && !this.session.mustChange) {
             this.screen = 'menu';
+        } else if (this.session && !this.session.live) {
+            // The session ended (the window may still be open): sign in again as the same account to carry on.
+            this.address = this.session.address;
+            this.username = this.session.username;
+            this.notice = 'Your Editor session ended: sign in again from the Editor menu.';
+            this.screen = 'sign-in';
         } else {
             this.screen = 'address';
             this.address = '';

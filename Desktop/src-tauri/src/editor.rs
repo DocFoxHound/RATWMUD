@@ -388,11 +388,8 @@ impl Editor {
             let session = Session { generation, address, place, base, pin, world: known.world.clone(), name: known.name.clone(), username: username.clone(),
                 role, must_change, token: Some(token), one_time, agent, manifest: None };
             let view = Self::session_view(&session);
-            if let Some(previous) = inner.session.take() {
-                if previous.world != session.world || previous.username != session.username {
-                    old = Some(previous);
-                }
-            }
+            // The session before this one is ended on its world too (another world's, or this account's own).
+            old = inner.session.take();
             let close = match &mut inner.window {
                 Some(w) if w.world == session.world && w.username == session.username => {
                     w.generation = generation;               // The same account on the same world: the window keeps going.
@@ -524,7 +521,8 @@ impl Editor {
         out
     }
 
-    /// Sign out: the world forgets the session, the shell its token, and the window goes with it.
+    /// Sign out: the world forgets the session, the shell its token, and the window goes with it. At exit (`app` None)
+    /// the world gets 3 seconds to answer, so a world that is down never holds the client open.
     pub fn sign_out(&self, app: Option<&AppHandle>) -> Value {
         let session = {
             let mut inner = self.inner.lock().unwrap();
@@ -534,7 +532,8 @@ impl Editor {
         };
         if let Some(s) = session {
             if let Some(t) = &s.token {
-                call(&s.agent, &s.base, "POST", "/editor/logout", Some(t), None);
+                let agent = if app.is_some() { s.agent.clone() } else { tls::agent(Mode::Exact(s.pin), Duration::from_secs(3)).0 };
+                call(&agent, &s.base, "POST", "/editor/logout", Some(t), None);
             }
         }
         if let Some(app) = app {
