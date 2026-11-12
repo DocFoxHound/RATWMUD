@@ -41,6 +41,11 @@ class Bridge
               const std::map<std::string, double>& activity, std::uint64_t revision, const Commit& commit,
               const Notice& notice);
     std::function<void(const std::string&)> log;
+    // The game's guards on a grant to a player (Docs/Design/78, 8: Game::dmActRefused, on a community world): why it is
+    // refused, or "" to let it through; and, once a grant or fine is committed, the player told (Game::tellActedOn; the
+    // signed pennies moved, negative for a fine). Unset: neither.
+    std::function<std::string(const std::string& player, std::int64_t coins)> grantRefused;
+    std::function<void(const std::string& player, std::int64_t moved, const std::string& reason)> granted;
     // While a commit runs: whether its request is a grant, fine, band or transfer (the journal's kinds), whose receipt the
     // commit's journal record carries (Game: the bridge's state), so a Pending one is answered from it after a restart.
     bool committingEconomy() const { return committingEconomy_; }

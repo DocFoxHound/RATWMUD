@@ -5,7 +5,7 @@ keeps the world on central's list, and central's ban list. Standard library only
 as is.
 
   RATW_HOST_TOKEN=rh_... python3 tools/world_agent.py run --central URL --dir DIR --world-port PORT
-        [--token-file FILE] [--description TEXT] [--region TEXT] [--tags a,b] [--host NAME] [--secure] [--every 60]
+        [--central-dir CDIR] [--token-file FILE] [--description TEXT] [--region TEXT] [--tags a,b] [--host NAME] [--secure] [--every 60]
         [--upnp-port PORT [--upnp-name NAME]]
 
 The world's own agent. DIR is the agent directory: the server runs with --central-keys DIR/central-keys.json, and the
@@ -19,6 +19,12 @@ two talk through files there, each written whole and atomically (a temporary fil
   here, or null}. The server gives that account's wolves the host commands (doc 77, 3.2). An official world has no
   host; a heartbeat refused because the token is unknown, the world delisted or the host banned writes null, so the
   host's wolves lose them.
+- CDIR/central.json, with --central-dir: {"at", "kind": central's kind for the world ("community", "official", or null
+  until central has said), "host": as host.json's}, written from each heartbeat's reply as host.json is (a refused
+  token, a delisted world or a banned host: the host null, the kind kept). CDIR is a directory only the agent's own
+  user may write (Docs/Design/78-hosts-run-their-own-worlds.md, 6.7): the agent directory is the game server's to
+  write too, so central's word that the world is official, which locks the host's Editor for good, is never taken
+  from there. The server never reads it.
 Every --every seconds it posts POST URL/worlds/heartbeat with the host token (Authorization: Bearer): the listing
 fields from the server's own http://127.0.0.1:PORT/status (name, protocol, build, clientData, limit, voices, cheats,
 private), this command's description, region, tags, host name and secure flag, the port, and the wolves in
@@ -330,9 +336,19 @@ class Agent:
     def __init__(self, central: str, directory: Path, world_port: int, token: str, *, description: str | None = None,
                  region: str | None = None, tags: list[str] | None = None, host: str | None = None,
                  secure: bool = False, every: float = 60, keys_every: float = 86400, log=print,
-                 upnp_port: int | None = None, upnp_name: str = ''):
+                 upnp_port: int | None = None, upnp_name: str = '', central_dir: Path | None = None):
         self.central = central.rstrip('/')
         self.dir = directory
+        self.central_dir = central_dir          # (central.json: the world's kind and host, where only this user writes.)
+        self.kind = None                        # Central's kind for the world, as last said (kept across restarts).
+        if central_dir is not None:
+            try:
+                kept = json.loads((central_dir / 'central.json').read_text(encoding='utf-8'))
+                if isinstance(kept, dict) and kept.get('kind') in ('community', 'official'):
+                    self.kind = kept['kind']
+            except (OSError, UnicodeDecodeError, ValueError):
+                pass
+        self.central_failing = False            # central.json can't be written: said when it starts and when it mends.
         self.world_port = world_port
         self.token = token
         self.extra: dict = {'secure': bool(secure)}
@@ -412,6 +428,7 @@ class Agent:
         """host.json: the host account's ticket sub here, or null (none, or no longer the host). Said once when it
         can't be written, and once when it mends."""
         host = host if isinstance(host, str) and 0 < len(host) <= 64 else None
+        self.write_central(host)
         try:
             write_atomically(self.dir / 'host.json', json.dumps({'at': int(time.time()), 'host': host}) + '\n')
             if self.host_failing:
@@ -421,6 +438,22 @@ class Agent:
             if not self.host_failing:
                 self.host_failing = True
                 self.log(f'world agent: could not write host.json: {error} (the world keeps its last host)')
+
+    def write_central(self, host) -> None:
+        """central.json in the agent's own directory (--central-dir): central's kind for the world and its host, as the
+        last heartbeat's reply said them (doc 78, 6.7). Said once when it can't be written, and once when it mends."""
+        if self.central_dir is None:
+            return
+        try:
+            write_atomically(self.central_dir / 'central.json',
+                             json.dumps({'at': int(time.time()), 'kind': self.kind, 'host': host}) + '\n')
+            if self.central_failing:
+                self.central_failing = False
+                self.log('world agent: central.json is written again')
+        except OSError as error:
+            if not self.central_failing:
+                self.central_failing = True
+                self.log(f'world agent: could not write central.json: {error}')
 
     def heartbeat(self) -> bool:
         """One heartbeat: True if central answered it with this world's listing."""
@@ -478,6 +511,8 @@ class Agent:
                 self.log(f'world agent: {line}')
             return False
         self.accepted = True
+        if reply.get('kind') in ('community', 'official'):
+            self.kind = reply['kind']
         try:
             self.write_bans(reply.get('bans'))
             if self.bans_failing:
@@ -555,6 +590,8 @@ def main(argv=None) -> int:
     run.add_argument('--dir', required=True, type=Path,
                      help='the agent directory (the server runs with --central-keys DIR/central-keys.json)')
     run.add_argument('--world-port', required=True, type=int, help='the world server\'s port on this machine')
+    run.add_argument('--central-dir', type=Path,
+                     help='a directory only this user writes, for central.json (the world\'s kind and host)')
     run.add_argument('--token-file', type=Path, help='a file holding the host token (or set RATW_HOST_TOKEN)')
     run.add_argument('--description', help='the listing\'s description (300 characters at most)')
     run.add_argument('--region', help='the listing\'s region (32 characters at most)')
@@ -599,7 +636,7 @@ def main(argv=None) -> int:
         tags = [t.strip() for t in args.tags.split(',') if t.strip()] if args.tags else None
         agent = Agent(args.central, args.dir, args.world_port, token, description=args.description, region=args.region,
                       tags=tags, host=args.host, secure=args.secure, every=args.every, log=log,
-                      upnp_port=args.upnp_port, upnp_name=args.upnp_name)
+                      upnp_port=args.upnp_port, upnp_name=args.upnp_name, central_dir=args.central_dir)
         for sig in (signal.SIGTERM, signal.SIGINT):
             signal.signal(sig, lambda *_: agent.stop.set())
         return agent.run()

@@ -69,6 +69,10 @@ SECRET_ENV = PASSWORDS + ('RATW_HOST_TOKEN', 'RATW_AI_KEY', 'RATW_DATABASE_URL')
 DEFAULT_MODELS = {'model': 'gpt-5.4-mini', 'light_model': 'gpt-5.4-nano', 'fallback_model': 'gpt-5.4-mini',
                   'story_model': 'gpt-5.6-luna'}   # (Doc 28: the main voice, the light one, the fallback, stories.)
 HELPER, SERVER_USER = 'ratw', 'ratw-server'     # (The image's users, Package/Dockerfile: uids 10001 and 10002.)
+# world.toml's cheats (Docs/Design/78, 8), each but "off" listed "cheats on": the server's flag for each. "host": the
+# host's tools may give Gifts and tiers and reward the host's own wolves; "everyone": --dev-tools, every player's
+# socket cheats (Gifts and goods from nothing) and the Dev Console.
+CHEATS = {'off': [], 'host': ['--host-cheats'], 'everyone': ['--dev-tools']}
 
 stopping = False
 server: subprocess.Popen | None = None
@@ -170,6 +174,7 @@ def read_settings() -> dict:
         'player_limit': number(world, 'player_limit', 40, 1, 10000),
         'arrivals_per_hour': number(world, 'arrivals_per_hour', None, 1, 100000),
         'private': flag(world, 'private'),
+        'cheats': text(world, 'cheats', 'off', 16),
         'world_id': text(world, 'id', most=64),
         'central': text(central, 'url', most=512).rstrip('/'),
         'token_file': text(central, 'token_file', most=1024),
@@ -191,6 +196,8 @@ def read_settings() -> dict:
         fail('world.toml: the name has a control character in it.')
     if len(s['tags']) > 5 or any(len(t) > 16 for t in s['tags']):
         fail('world.toml: up to 5 tags, 16 characters each at most.')
+    if s['cheats'] not in CHEATS:
+        fail('world.toml: cheats is "off", "host" or "everyone".')
     if s['private']:
         say('warning: private worlds (a password kept on central) aren\'t built yet; the world is listed as public.')
     if not s['central']:
@@ -307,7 +314,7 @@ def write_private(path: Path, body: str, user: str | None = HELPER) -> None:
 
 def prepare_state() -> None:
     """The container's own state, each part its user's: the logs (a volume) and the agent's directory shared by the
-    helpers and the server, the server's voice log and DM directory its own."""
+    helpers and the server, the server's voice log its own."""
     private_dir(STATE, None, mode=0o755)
     private_dir(LOGS, HELPER, SERVER_USER, 0o770)
     voices = LOGS / 'npc-voices.jsonl'
@@ -452,7 +459,7 @@ def tee(stream, log_path: Path) -> None:
                 say(line.rstrip('\n'))
 
 
-def agent_starter(s: dict, port: int, agent_dir: Path):
+def agent_starter(s: dict, port: int, agent_dir: Path, central_dir: Path | None = None):
     log_path = LOGS / 'world-agent.log'
     env = {'RATW_HOST_TOKEN': s['token']} if s['token'] else {}
     if not s['token']:
@@ -461,9 +468,13 @@ def agent_starter(s: dict, port: int, agent_dir: Path):
             '(/kick, /ban, /silence, /pending...), and central\'s ban list doesn\'t reach it.')
         for stale in ('host.json', 'bans.json'):   # (A token's last host and bans: none without one.)
             (agent_dir / stale).unlink(missing_ok=True)
+        if central_dir is not None:
+            (central_dir / 'central.json').unlink(missing_ok=True)
         command = ['keys', '--central', s['central'], '--out', str(agent_dir / 'central-keys.json')]
     else:
         command = ['run', '--central', s['central'], '--dir', str(agent_dir), '--world-port', str(port)]
+        if central_dir is not None:
+            command += ['--central-dir', str(central_dir)]
         for name in ('description', 'region', 'host'):
             if s[name]:
                 command += [f'--{name}', s[name]]
@@ -488,10 +499,12 @@ def server_command(s: dict, port: int, agent_dir: Path, dialogue: bool, workers:
     command = [str(SERVER), '--database', KEY, '--world-kind', 'live', '--port', str(port), '--bind', '0.0.0.0',
                '--workers', str(workers), '--talk-data', str(DATA / 'Talk'), '--voice-data', str(DATA / 'Voice'),
                '--voice-log', str(LOGS / 'npc-voices.jsonl'),
-               '--dm-directory', str(private_dir(STATE / 'dm', SERVER_USER)),
                '--central', s['central'], '--world-id', s['world_id'], '--central-keys',
                str(agent_dir / 'central-keys.json'), '--world-name', s['name'],
                '--player-limit', str(s['player_limit'])]
+    # (No --dm-directory: nothing in the container reads what the server would write there, and the legacy
+    # Storykeeper stays unstarted: Docs/Design/78, Q18.)
+    command += CHEATS[s.get('cheats', 'off')]
     if s['arrivals_per_hour']:
         command += ['--arrivals-per-hour', str(s['arrivals_per_hour'])]
     if dialogue:
@@ -532,6 +545,10 @@ def main() -> int:
     prepare_state()
     workers = s['workers'] if s['workers'] is not None else default_workers()
     say(f'"{s["name"]}": on central {s["central"]} as {s["world_id"]}, port {port}, {workers} worker thread(s)')
+    if s['cheats'] != 'off':
+        say(f'cheats = "{s["cheats"]}": the world is listed "cheats on"' +
+            (' (every player may give themselves Gifts and goods)' if s['cheats'] == 'everyone' else
+             ' (the host\'s tools may give Gifts and tiers, and reward the host\'s own wolves)'))
     say(upnp_note(s, port))
 
     write_registry(s['name'])
@@ -558,7 +575,10 @@ def main() -> int:
         say('no AI key: NPCs use their authored lines')
     # (The agent and the server talk through files here: both write, each reads the other's.)
     agent_dir = private_dir(STATE / 'agent', HELPER, SERVER_USER, 0o770)
-    agent = Helper('world agent', agent_starter(s, port, agent_dir))
+    # (Central's word on this world, its kind and host, where only the agent's user writes: the server's user can write
+    # the shared directory, so it could otherwise mark the world official and lock the Editor: Docs/Design/78, 6.7.)
+    central_dir = private_dir(STATE / 'central', HELPER)
+    agent = Helper('world agent', agent_starter(s, port, agent_dir, central_dir))
     agent.run()
     helpers.append(agent)
 

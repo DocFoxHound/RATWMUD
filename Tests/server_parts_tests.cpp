@@ -572,6 +572,36 @@ void directorTests()
              {"grant-extra", R"({"player":"player-ash","coins":5,"reason":"x","from":"treasury"})"}})
         expect(!ok(bridge.execute(envelope(bridge, id, "player_grant", payload), id, hash, world, online, 1001, commit, notice)) &&
                    world.society().account("player-ash")->cash == ashCash + 21, "a bad grant is refused: " + id);
+    {
+        // Doc 78, 8 (Phase M1): the game's guards on a grant (a community world's host's own wolf with cheats off,
+        // Game::dmActRefused) refuse it before any penny moves; a grant or fine that goes through is told to the player
+        // once committed, with the signed pennies moved (Game::tellActedOn).
+        std::vector<std::string> told;
+        bridge.grantRefused = [](const std::string& player, std::int64_t coins) {
+            return player == "player-ash" && coins > 0 ? std::string("That is one of the host's own wolves.") : std::string();
+        };
+        bridge.granted = [&told](const std::string& player, std::int64_t moved, const std::string& reason) {
+            told.push_back(player + " " + std::to_string(moved) + " " + reason);
+        };
+        const auto hostOwn = bridge.execute(envelope(bridge, "grant-host", "player_grant", R"({"player":"player-ash","coins":9,"reason":"for me"})"),
+                                            "grant-host", hash, world, online, 1001, commit, notice);
+        expect(!ok(hostOwn) && hostOwn.string("detail").find("host's own wolves") != std::string::npos &&
+                   world.society().account("player-ash")->cash == ashCash + 21 && told.empty(),
+               "the game's guard refuses a grant before it is paid: " + hostOwn.string("detail"));
+        expect(ok(bridge.execute(envelope(bridge, "fine-host", "player_grant", R"({"player":"player-ash","coins":-1,"reason":"a puddle"})"),
+                                 "fine-host", hash, world, online, 1001, commit, notice)) &&
+                   world.society().account("player-ash")->cash == ashCash + 20 && told.size() == 1 && told[0] == "player-ash -1 a puddle",
+               "a fine still goes through, and the player is told: " + (told.empty() ? std::string() : told[0]));
+        expect(ok(bridge.execute(envelope(bridge, "grant-bo", "player_grant", R"({"player":"player-bo","coins":2,"reason":"for the gate"})"),
+                                 "grant-bo", hash, world, online, 1001, commit, notice)) &&
+                   told.size() == 2 && told[1] == "player-bo 2 for the gate",
+               "another player's grant goes through, told");
+        std::string problem;                        // (The two moved back: what follows counts from before.)
+        expect(world.society().grantPlayer("player-ash", 1, "back", problem, nullptr) &&
+                   world.society().grantPlayer("player-bo", -2, "back", problem, nullptr), "moved back: " + problem);
+        bridge.grantRefused = nullptr;
+        bridge.granted = nullptr;
+    }
     // A household's band for a while (Society::overrideBand), and cleared: on a world of authored residents (a couple at
     // home together), their bands worked out.
     World banded;

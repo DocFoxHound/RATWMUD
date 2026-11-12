@@ -16,6 +16,10 @@ player_limit = 40
 # arrivals_per_hour = 30
 # Private worlds (a password kept on central) aren't built yet: leave this false.
 private = false
+# Cheats (Docs/Design/78, 8). "off" (the default): nobody has any. "host": your Editor's DM tool may give Gifts and
+# Gift tiers by hand, and reward your own wolves; players get no cheats. "everyone": EVERY PLAYER can give themselves
+# Gifts and goods from nothing, as on a test world. Either of the last two lists the world "cheats on".
+cheats = "off"
 # This world's id on central, shown on the Host page beside its host token ("world-" and 32 letters and digits).
 # Needed when the world is on central (below).
 id = ""

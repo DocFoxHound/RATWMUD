@@ -5,8 +5,9 @@
   python3 tools/studio.py serve [--port N] [--suite atlas|dm] [--world KEY]
   bash tools/editor.sh / bash tools/dungeon-master.sh   the same, opening on the Atlas / DM suite
 
-One host on one port (default 8765, on this computer and the local network: --host 0.0.0.0, the default; --host
-127.0.0.1 for this computer only) serves one app (Editor/index.html) with a switch between:
+One host on one port (default 8765, on this computer only: --host 127.0.0.1, the default since Docs/Design/78, Q25,
+since it is plain HTTP guarded by a header check; --host 0.0.0.0 for the local network too, as tools/studio.sh passes
+unless told otherwise) serves one app (Editor/index.html) with a switch between:
 
   Atlas  builds worlds, on dev worlds (its world picker switches Atlas's world, as `world_db.py use KEY` does): the
          map and terrain, cells, interiors, doors, places, the roster and NPCs, their homes and jobs, and (moved from
@@ -1169,10 +1170,10 @@ def main(argv=None) -> int:
     parser.add_argument('--port', type=int, default=PORT)
     parser.add_argument('--suite', choices=SUITES, default='atlas', help='the suite the app opens on')
     parser.add_argument('--world', help="Atlas's world for this run (default: Atlas's, python3 tools/world_db.py use KEY)")
-    parser.add_argument('--host', default='0.0.0.0',
-                        help='the address to serve on: 0.0.0.0 (this computer and the local network, the default; '
-                             'sign-in is still required, but the connection is not encrypted) or 127.0.0.1 (this '
-                             'computer only)')
+    parser.add_argument('--host', default='127.0.0.1',
+                        help='the address to serve on: 127.0.0.1 (this computer only, the default: Docs/Design/78, '
+                             'Q25) or 0.0.0.0 (this computer and the local network; sign-in is still required, but the '
+                             'connection is not encrypted)')
     args = parser.parse_args(argv)
     shared = args.host not in ('127.0.0.1', 'localhost')
     if shared:

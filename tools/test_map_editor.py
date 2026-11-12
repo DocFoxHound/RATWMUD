@@ -786,6 +786,17 @@ class LiveHostTests(unittest.TestCase):
         self.assertEqual(self.launched, [])
         self.assertIn('dev database', data['manifest'])
 
+    def test_a_playtest_id_never_leaves_the_playtests_folder(self):
+        """Doc 78, 7 (Phase M1): the big world's path made its folder from an unchecked project id."""
+        before = len(self.streamed)
+        for bad in ('../../escaped', '/tmp/escaped', 'a/b', 'UPPER', 42):
+            status, data = self.post('/api/playtest', {'project': {**self.big(), 'id': bad}, 'quickStart': True})
+            self.assertEqual(status, 422, (bad, data))
+            self.assertIn('World ID', json.dumps(data))
+        self.assertEqual(len(self.streamed), before, 'nothing launched')
+        self.assertFalse((editor.PLAYTESTS.parent.parent / 'escaped').exists())
+        self.assertFalse(Path('/tmp/escaped').exists())
+
     def test_the_session_says_which_world_atlas_is_on(self):
         conn = http.client.HTTPConnection('127.0.0.1', self.server.server_port, timeout=30)
         conn.request('GET', '/api/session')

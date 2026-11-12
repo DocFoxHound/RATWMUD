@@ -171,6 +171,10 @@ struct Options
     double awayBreakSeconds = 3 * 86400;   // A break, for welcome back (doc 56, 10): three real days.
     std::string directorDirectory;                            // The operator bridge's private directory (RatwDirector.h).
     bool devTools = false, devIdentity = false;               // Development-only commands and "hello" logins.
+    // A community world's narrow cheats (world.toml's cheats = "host": Docs/Design/78, 8): the host's tools may give
+    // Gifts and tiers (character.gift, account.unlock) and reward the host's own wolves; players get no socket cheats,
+    // nobody the Dev Console. Listed "cheats on". Refused on an official world, as --dev-tools is.
+    bool hostCheats = false;
     bool fullSnapshots = false;                               // Send every snapshot whole (see RatwSections.h).
     // A scratch server (Docs/Design/20-world-database.md, "Scratch servers"): the world and its save are read as usual,
     // but nothing is ever written back: no saves, journal, DM actions taken, spawns recorded, artwork, LIVE map or
@@ -465,6 +469,29 @@ class Game
     // record committed is answered from the record, never applied twice.
     Result applyEconomyCommand(const std::string& kind, const std::string& target, const json::Value& payload,
                                const std::string& actionId = {});
+    // Every other dm.actions act, as applyDmActions applies a row {id, kind, target_id, requested_by, payload}: public
+    // for the tests, which have no dm.actions table.
+    Result applyDmAct(std::vector<PgValue> row);
+    // The community world's guards on the host's tools (Docs/Design/78-hosts-run-their-own-worlds.md, 8; Phase M1),
+    // enforced here, at the point of use, whatever the tool asked: with cheats off (neither --dev-tools nor
+    // --host-cheats), character.gift and account.unlock are refused, character.dm too without --dev-tools, and the
+    // host's own wolves (the wolves of host.json's account) get none of the rewards (character.resurrect, deed.award,
+    // milestone.credit, estate.set on a place they hold, storyline.give, mentor.restore, a grant: character.grant and
+    // the Storykeeper's player_grant). Why the act is refused, or "" (always "" off community worlds: the user's own
+    // worlds keep their Dungeon Masters as they were).
+    std::string dmActRefused(const std::string& kind, const std::string& target, const std::string& payload) const;
+    // Cheats on (listed so): --dev-tools (every player's socket cheats) or --host-cheats (the host's tools only).
+    bool cheatsOn() const { return options_.devTools || options_.hostCheats; }
+    // The Dev Console (Entity::dungeonMaster) counts: never on a community world without --dev-tools, whatever was
+    // saved (the flag is cleared as the wolf comes in, and at the restore).
+    bool devConsoleAllowed() const { return !communityWorld() || options_.devTools; }
+    // A wolf of the host's account (host.json), on a community world.
+    bool hostsOwnWolf(const std::string& characterId) const;
+    // Who acts, in a player's words: "The host" on a community world, else "A Dungeon Master" (capital first).
+    std::string actorWords(bool capital = true) const;
+    // A player told that the host's tools acted on their wolf (doc 78, 8: "The host moved you"): at once if it is in
+    // the world; else, on a community world, kept with the wolf (Entity::hostNotes) and told when it next comes in.
+    void tellActedOn(const std::string& characterId, const std::string& words);
     // The DM's acts the journal holds, by dm.actions id ({ok, text, target}; the last DmActsKept), and the rows whose
     // status waits for their record to commit (tests).
     const json::Value& dmActs() const { return dmActs_; }

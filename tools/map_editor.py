@@ -1463,9 +1463,16 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
                 if path == '/api/playtest':
                     if not isinstance(data, dict) or not isinstance(data.get('project'), dict):
                         raise ValueError('Bad request.')
+                    # (The id names the folder: checked before anything is made, on the big world's path too, which
+                    # skips check_project: an id of "../.." was a path out of Saved/Playtests. Doc 78, Phase M1.)
+                    project_id = data['project'].get('id')
+                    if project_id is not None and not (isinstance(project_id, str) and ID.fullmatch(project_id)):
+                        raise ValidationError(['World ID must be lowercase letters, digits, _ or -.'])
                     stamp = time.strftime('%Y%m%d-%H%M%S')
                     name = world_id(data['project']) + '-' + stamp
                     folder = PLAYTESTS / name
+                    if folder.resolve().parent != PLAYTESTS.resolve():
+                        raise ValidationError(['World ID must be lowercase letters, digits, _ or -.'])
                     if world is not None and tile_count(data['project']) > MAX_TILES:
                         # Too big for a single-file playtest: the world being edited is Atlas's world, so play its build.
                         folder.mkdir(parents=True, exist_ok=True)

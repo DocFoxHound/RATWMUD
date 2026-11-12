@@ -371,6 +371,13 @@ Value persistEntity(const Entity& e, double time)
         o.add("fightingSkill", e.fightingSkill);
     if (e.dungeonMaster)
         o.add("dungeonMaster", true);
+    if (!e.hostNotes.empty())
+    {
+        auto notes = Value::array();
+        for (const auto& n : e.hostNotes)
+            notes.push(n);
+        o.add("hostNotes", notes);
+    }
     // Practice (doc 49): grades, specialty, trade skills, stamina the attribute, migrations had, and the day's practice.
     if (!e.grades.empty())
     {
@@ -561,6 +568,9 @@ Entity readEntity(const Value& o)
             e.scents.push_back({json::utf8Prefix(s.string("item"), 128), json::utf8Prefix(s.string("maker"), 128), json::utf8Prefix(s.string("giver"), 128),
                                 std::clamp(int(s.number("count")), 1, 9999), s.number("madeDay", -1), s.number("givenDay", -1)});
     e.dungeonMaster = !e.npc && o.boolean("dungeonMaster");
+    for (const auto& n : o.array("hostNotes"))
+        if (n.isString() && !e.npc && e.hostNotes.size() < 6)
+            e.hostNotes.push_back(json::utf8Prefix(n.asString(), 300));
     e.mana = std::clamp(strictNumber(o, "mana", 0.0), 0.0, 100.0);
     e.fightingSkill = std::clamp(strictNumber(o, "fightingSkill", 50.0), 0.0, 100.0);
     // Practice (doc 49): only known attributes and trade skills, within bounds; what doesn't fit is dropped rather than

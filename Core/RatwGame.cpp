@@ -556,6 +556,17 @@ bool Game::start(std::string& problem)
     if (!options_.directorDirectory.empty())
     {
         director_.log = [this](const std::string& text) { note("error", text); };
+        // (The Storykeeper's grants keep the community world's guards, as the DM tool's do: doc 78, 8.)
+        director_.grantRefused = [this](const std::string& player, std::int64_t coins) {
+            auto asked = json::Value::object();
+            asked.add("coins", double(coins));
+            return dmActRefused("character.grant", player, json::dump(asked));
+        };
+        director_.granted = [this](const std::string& player, std::int64_t moved, const std::string& reason) {
+            if (communityWorld())
+                tellActedOn(player, actorWords() + (moved > 0 ? " grants you " : " fines you ") + std::to_string(moved > 0 ? moved : -moved) +
+                                        " pennies: " + reason + ".");
+        };
         if (!director_.configure(options_.directorDirectory))
         {
             problem = "the operator bridge needs a healthy checkpoint and an absolute owner-private directory.";
@@ -1061,38 +1072,7 @@ void Game::applyDmActions(double dt)
             dmActs_.set(*row[0], std::move(act));
             actingFor_ = *row[0];
         }
-        if (kind == "layers.sync" || kind == "factions.sync" || kind == "npc.sync")
-        {
-            World candidate;
-            std::string problem;
-            const bool loaded = loadWithLivePeople(candidate, problem);
-            if (kind == "layers.sync")
-            {
-                if (loaded) world_.adoptLayers(candidate);
-                outcome = loaded ? Result{true, "Routes and areas are updated.", {}}
-                                 : Result{false, "The routes and areas could not be applied: " + problem, {}};
-            }
-            else if (kind == "factions.sync")
-            {
-                if (loaded) world_.adoptFactions(candidate);
-                outcome = loaded ? Result{true, "Factions and territory are updated.", {}}
-                                 : Result{false, "The factions could not be applied: " + problem, {}};
-            }
-            else
-            {
-                const auto* was = world_.society().spec(target);
-                const int bandBefore = was ? was->band : -1;
-                outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
-                // (Its authored band, the Band picker's, in force at once for its household: doc 79, 14; Phase 9.)
-                if (const auto* now = world_.society().spec(target); outcome.ok && now && now->band != bandBefore)
-                {
-                    world_.society().bandsChanged();
-                    record(Economy);
-                    world_.society().setReport(world_.prosperityReport());
-                }
-            }
-        }
-        else if (economyCommand(kind))
+        if (economyCommand(kind))
         {
             // The staged economy's live acts (doc 79, 12; Phase 9; RatwGameEconomy.cpp), each journalled before anyone is
             // told. Several economy.sync rows in one poll are applied once (with "now" if any asked it), each answered.
@@ -1114,512 +1094,8 @@ void Game::applyDmActions(double dt)
                 }
             }
         }
-        else if (kind == "voice.sync")
-        {
-            // Talk (doc 62, phase 6): residents' voices, the dialects and the figures read again, after an edit; and
-            // families (taken in by the society at the next day's turn).
-            loadVoices();
-            World candidate;
-            std::string problem;
-            if (loadWithLivePeople(candidate, problem))
-                world_.society().setKin(candidate.society().kin());
-            outcome = {true, "Voices, dialects, families and figures are read again.", target};
-        }
-        else if (kind == "deed.award" || kind == "deed.revoke")
-        {
-            // Fame (doc 56): a deed awarded (target the doer; payload {kind, weight, cell, beneficiary, detail}), or one
-            // revoked (target the deed's id).
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            if (kind == "deed.revoke")
-                outcome = revokeDeed(target) ? Result{true, "Revoked.", target} : Result{false, "No such deed.", target};
-            else if (const auto* doer = world_.entity(target); !doer || doer->npc)
-                outcome = {false, "Award deeds to player characters.", target};
-            else
-            {
-                const auto weight = fame::weightOf(payload.string("weight", "great"));
-                const auto id = recordDeed(payload.string("kind", "award"), {target}, payload.string("beneficiary"),
-                                           payload.string("cell", doer->cellId), "dm", json::utf8Prefix(payload.string("detail"), 160), weight);
-                outcome = id.empty() ? Result{false, "No such kind of deed.", target} : Result{true, "Awarded " + id + ".", target};
-            }
-            saveSoon();
-        }
-        else if (kind == "storyteller.decide" || kind == "storyteller.revoke" || kind == "tale.pause" || kind == "tale.resume" ||
-                 kind == "tale.stop" || kind == "milestone.credit" || kind == "visitors.sync")
-        {
-            // Storytellers (doc 58, 11): an application decided (target the account; payload {approve, reason}) or the
-            // standing revoked; a tale paused, resumed or stopped (target its id); a milestone credited (payload as
-            // creditMilestone); the visitors' list read again.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const auto by = row[3] ? *row[3] : std::string("dm");
-            if (kind == "storyteller.decide" || kind == "storyteller.revoke")
-            {
-                const auto s = storytellers_.find(target);
-                if (kind == "storyteller.decide" && (s == storytellers_.end() || s->second.state != "applied"))
-                    outcome = {false, "No application from that account.", target};
-                else if (kind == "storyteller.revoke" && (s == storytellers_.end() || s->second.state != "approved"))
-                    outcome = {false, "That account isn't a storyteller.", target};
-                else
-                {
-                    if (kind == "storyteller.decide")
-                        decideStoryteller(target, payload.boolean("approve"), by, payload.string("reason"));
-                    else
-                        revokeStoryteller(target, by, payload.string("reason"));
-                    outcome = {true, kind == "storyteller.revoke" ? "Revoked." : payload.boolean("approve") ? "Approved." : "Refused.", target};
-                }
-            }
-            else if (kind == "milestone.credit")
-                outcome = creditMilestone(payload);
-            else if (kind == "visitors.sync")
-            {
-                loadStoryVisitors();
-                outcome = {true, std::to_string(storyVisitorDefs_.size()) + " story visitors.", target};
-            }
-            else if (auto* tale = storylines_.find(target); !tale || tale->kind != "tale")
-                outcome = {false, "No such tale.", target};
-            else
-            {
-                if (kind == "tale.stop")
-                    endTale(*tale, "abandoned");
-                else
-                    tale->state = kind == "tale.pause" ? "paused" : "running";
-                storylines_.touch();
-                for (const auto& [who, p] : tale->participants)
-                    if (auto* c = clientOf(who); c && p.active())
-                        storylineToast(c, "\"" + tale->title + "\" is " + (kind == "tale.pause" ? "paused" : kind == "tale.stop" ? "stopped" : "running again") +
-                                              " by the Dungeon Masters.");
-                outcome = {true, "Done.", target};
-            }
-            saveSoon();
-        }
-        else if (kind == "storyline.give" || kind == "storyline.tick")
-        {
-            // Storylines (doc 58): one given to a character (payload {template, cast}), or an objective ticked by hand
-            // (target the storyline; payload {step, objective}).
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            if (kind == "storyline.give")
-                outcome = giveStoryline(target, payload.string("template"), payload.object("cast"), "dm", "");
-            else
-            {
-                const auto ticked = storylines_.tick(target, std::size_t(payload.number("step")), std::size_t(payload.number("objective")), "dm",
-                                                     now(), true);
-                storylineProgress(ticked);
-                outcome = ticked.empty() ? Result{false, "Nothing to tick there.", target} : Result{true, "Ticked.", target};
-            }
-            saveSoon();
-        }
-        else if (kind == "npc.protect" || kind == "npc.unprotect")
-        {
-            // Protected residents (doc 57, 6): marked, or unmarked (even one Atlas or the game's rule protects).
-            if (!world_.society().resident(target))
-                outcome = {false, "No such resident.", target};
-            else
-            {
-                (kind == "npc.protect" ? unprotectedMarks_ : protectedMarks_).erase(target);
-                (kind == "npc.protect" ? protectedMarks_ : unprotectedMarks_).insert(target);
-                outcome = {true, kind == "npc.protect" ? "Protected." : "No longer protected.", target};
-                saveSoon();
-            }
-        }
-        else if (kind == "project.post" || kind == "project.cancel" || kind == "project.complete" || kind == "project.remove")
-        {
-            // Town projects (doc 57, 7): one posted (target the town; payload {kind, cell, x, y, title}), or one cancelled
-            // with its gifts returned, completed by hand, or taken down (target its id).
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            outcome = kind == "project.post" ? postProject(payload.string("kind"), target, payload.string("cell"), int(payload.number("x", -1)),
-                                                           int(payload.number("y", -1)), payload.string("title"), "dm")
-                      : kind == "project.cancel"   ? cancelProject(target, "cancelled by the Dungeon Master")
-                      : kind == "project.complete" ? completeProject(target)
-                                                   : removeProject(target);
-        }
-        else if (kind == "nickname.drop" || kind == "nickname.restore")
-        {
-            // Doc 56, 4: a nickname out of use, or back in it (target its id).
-            auto* n = fame_.nickname(target);
-            if (!n)
-                outcome = {false, "No such nickname.", target};
-            else
-            {
-                n->dropped = kind == "nickname.drop";
-                if (auto* d = fame_.find(n->deed))
-                    d->noNickname = n->dropped;
-                record(Character, n->wolf);
-                outcome = {true, n->dropped ? "Dropped." : "Restored.", target};
-            }
-            saveSoon();
-        }
-        else if (kind == "estate.hold" || kind == "estate.release")
-        {
-            // Held for a story (doc 54, 4): the target a cell; payload {"days", "reason"}.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            if (!world_.cell(target))
-                outcome = {false, "No such place.", target};
-            else if (kind == "estate.release")
-            {
-                holds_.erase(target);
-                outcome = {true, "No longer held.", target};
-            }
-            else
-                outcome = holdPlace(target, wire::number(payload, "days", 7), payload.string("reason"));
-            saveSoon();
-        }
-        else if (kind == "board.remove")
-        {
-            // A notice taken down by a Dungeon Master (doc 54, 2): the target its id. Audited, as every DM action is.
-            const auto* d = documents_.find(target);
-            if (!d || d->kind != "notice")
-                outcome = {false, "No such notice.", target};
-            else
-            {
-                world_.recordEvent({"notice removed", d->author, {}, {}, 0, 0, {}, 0, 0, target});
-                documents_.erase(target);
-                saveSoon();
-                outcome = {true, "The notice is taken down.", target};
-            }
-        }
-        else if (kind == "artwork.review")
-        {
-            // A Dungeon Master's decision on an uploaded portrait: payload {"decision": "approve"|"reject", "reason"}.
-            Value payload;
-            std::string problem;
-            json::parse(row[4] ? *row[4] : "{}", payload, problem);
-            outcome = reviewArtwork(target, payload.string("decision"), payload.string("reason"));
-        }
-        else if (kind == "treaty.decide" || kind == "house.decide")
-        {
-            // A Dungeon Master's word (Phase 9): the target a treaty's ID, or a Chapter's for a House (with its "faction").
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const bool approve = payload.isObject() && payload.boolean("approve");
-            outcome = kind == "treaty.decide" ? decideTreaty(target, approve, "by a Dungeon Master")
-                                              : decideHouse(target, payload.string("faction"), approve, "by a Dungeon Master");
-        }
-        else if (kind == "estate.set" || kind == "estate.clear")
-        {
-            // A place to let (doc 32, 5.2), the target its cell. Payload: {"name", "kind": "hall"|"warehouse",
-            // "landlord": a resident or "treasury", "faction", "rent" (pennies a week), "level" (2..5)}.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const auto* cell = world_.cell(target);
-            if (!cell)
-                outcome = {false, "No such place.", target};
-            else if (kind == "estate.clear")
-            {
-                estates_.unmark(target);
-                saveSoon();
-                outcome = {true, "It is no longer to let once its lease (if any) ends.", target};
-            }
-            else
-            {
-                const auto rent = std::int64_t(wire::number(payload, "rent", 30));
-                const int level = std::clamp(int(wire::number(payload, "level", 2)), 2, 5);
-                estates_.define({target, payload.string("name", cell->name), payload.string("kind", "hall"), payload.string("landlord", "treasury"),
-                                 payload.string("faction", cell->factionClaims.empty() ? std::string() : cell->factionClaims.front()),
-                                 std::clamp<std::int64_t>(rent, 1, 100000), level, payload.boolean("individuals"),
-                                 std::clamp<std::int64_t>(std::int64_t(wire::number(payload, "night", 0)), 0, 100000)});   // (Individuals too: doc 54, 4.)
-                estates_.markAuthored(target);
-                saveSoon();
-                outcome = {true, cell->name + " is to let.", target};
-            }
-        }
-        else if (kind == "festival.call")
-        {
-            // Payload: {"name": "...", "inDays": 0..30}; the target is the community (a town, or a region).
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const std::string name = payload.isObject() ? payload.string("name") : std::string();
-            const int inDays = payload.isObject() ? int(wire::number(payload, "inDays", 0)) : 0;
-            outcome = world_.callFestival(target, name, inDays);
-            if (outcome.ok)
-                for (auto* c : clients_)
-                    if (const auto* e = world_.entity(c->entityId); e && world_.communityOf(e->cellId) == target)
-                        system(c, "Word goes round: " + outcome.message);
-        }
-        else if (kind == "npc.kill" || kind == "npc.revive")
-        {
-            const auto* npc = world_.entity(target);
-            outcome = npc && npc->npc ? world_.setDead(target, kind == "npc.kill") : Result{false, "No such NPC.", {}};
-        }
-        else if (kind == "bandits.call")
-        {
-            // Bandits called up near a character (doc 33): payload {"count": 1..6}.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const int count = payload.isObject() ? int(wire::number(payload, "count", 1)) : 1;
-            outcome = world_.entity(target) ? world_.callBandits(target, count)
-                                            : Result{false, "They aren't in the world: bandits come only where someone is.", {}};
-        }
-        else if (kind == "book.storyline")
-        {
-            // A Dungeon Master ties a Story book to a world storyline (doc 51, Phase 7: the World shelf): payload
-            // {"book": id, "storyline": "…"} ("" unties it).
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            outcome = tieBookToStoryline(payload.string("book"), payload.string("storyline"), "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
-            outcome.targetId = target;
-        }
-        else if (kind == "tie.end")
-        {
-            // A Dungeon Master ends a character's tie (doc 52, Phase 3), as the newcomer or the mentor.
-            outcome = endTieOf(target, "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
-            outcome.targetId = target;
-        }
-        else if (kind == "mentor.revoke" || kind == "mentor.restore")
-        {
-            // A Dungeon Master turns a character's account's mentoring off, or lets it mentor again (doc 52, Phase 2).
-            outcome = revokeMentor(accountKey(target), kind == "mentor.revoke", "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
-            outcome.targetId = target;
-        }
-        else if (kind == "report.decide")
-        {
-            // A Dungeon Master's decision on a report (doc 50, Phase 2): payload {"report": id, "decision": "uphold" |
-            // "dismiss", "outcome": "note" | "warning" | "silence", "hours": 1 | 6 | 24 | 72}.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            outcome = decideReport(payload.string("report"), payload.string("decision"), payload.string("outcome"), int(payload.number("hours", 0)),
-                                   "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
-            outcome.targetId = target;
-        }
-        else if (kind == "account.unlock")
-        {
-            // An account's earned Gift tiers, by a Dungeon Master (doc 49, Phase 5), against one of its characters.
-            // Payload: {"tier": "gifted" | "quickened", "op": "grant" | "revoke" | "hold" | "release"}.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const auto tier = payload.isObject() ? payload.string("tier") : std::string();
-            const auto op = payload.isObject() ? payload.string("op") : std::string();
-            outcome = unlockTier(accounts_.ownerOf(target), tier, op, "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
-            outcome.targetId = target;
-        }
-        else if (kind == "character.gift")
-        {
-            // A Gift given or taken away (docs 33, 43), through the Dungeon Master.
-            // Payload: {"gift": a playable family | "", "quickened": bool}.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const std::string gift = payload.isObject() ? payload.string("gift") : std::string();
-            const bool quickened = payload.isObject() && payload.boolean("quickened");
-            const std::string family = gifts::name(gift);
-            const auto told = [&](const Entity& e) {
-                return gift.empty() ? e.name + " no longer has a Gift."
-                                    : e.name + (quickened ? " is Quickened: " + family + ", enormous." : " has the Gift: " + family + ".");
-            };
-            if (!gift.empty() && !gifts::playable(gift))
-                outcome = {false, "No such Gift for a player.", {}};
-            else if (auto* online = world_.entity(target); online && !online->npc)
-            {
-                outcome = world_.giveGift(target, gift, quickened);
-                if (outcome.ok)
-                {
-                    if (auto* c = clientOf(target))
-                        system(c, gift.empty() ? "Your Gift has gone quiet." : quickened
-                                                                                ? "Your Gift wakes, vast and frightening: you are Quickened (" + family + ")."
-                                                                                : "A Gift wakes in you: " + family + ".");
-                    characters_[target] = *online;
-                    outcome.message = told(*online);
-                }
-            }
-            else if (auto saved = characters_.find(target); saved != characters_.end())
-            {
-                auto& e = saved->second;
-                e.gift = gift;
-                e.quickened = !gift.empty() && quickened;
-                e.mana = battle::manaMax(e.wisdom, !gift.empty());
-                outcome = {true, told(e) + " (offline)", {}};
-            }
-            else
-                outcome = {false, "No such character.", {}};
-        }
-        else if (kind == "character.injury")
-        {
-            // A Dungeon Master's correction or storyline (doc 38, phase 5): payload {"add": type, "severity": 1..3, "side":
-            // "left" | "right" | ""} or {"remove": injury id}; online or offline.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const std::string add = payload.isObject() ? payload.string("add") : std::string();
-            const std::string remove = payload.isObject() ? payload.string("remove") : std::string();
-            const int severity = payload.isObject() ? int(wire::number(payload, "severity", 2)) : 2;
-            const std::string side = payload.isObject() ? payload.string("side") : std::string();
-            if (auto* online = world_.entity(target); online && !online->npc)
-            {
-                outcome = !add.empty() ? world_.addInjury(target, add, severity, side, "a Dungeon Master")
-                          : !remove.empty() ? world_.removeInjury(target, remove) : Result{false, "Add or remove an injury.", {}};
-                if (outcome.ok)
-                {
-                    if (auto* c = clientOf(target))
-                        system(c, !add.empty() ? "You find you have an injury: " + outcome.message + "." : "Your " + outcome.message + " is gone.");
-                    characters_[target] = *online;
-                    outcome.message = online->name + (!add.empty() ? ": " + outcome.message + " given." : ": " + outcome.message + " taken away.");
-                }
-            }
-            else if (auto saved = characters_.find(target); saved != characters_.end())
-            {
-                auto& e = saved->second;
-                if (!add.empty())
-                {
-                    auto i = injury::given(add, severity, side, "a Dungeon Master");
-                    i.id = "injury-dm-" + std::to_string(std::int64_t(world_.calendarDays() * 14400)) + "-" + e.id;
-                    i.gotDay = world_.calendarDays();
-                    outcome = injury::give(e.injuries, i) ? Result{true, e.name + ": " + injury::name(i) + " given (offline).", {}}
-                                                          : Result{false, i.type.empty() ? "No such injury." : "No room for another injury.", {}};
-                }
-                else if (const auto n = injury::takeAway(e.injuries, remove); !n.empty())
-                    outcome = {true, e.name + ": " + n + " taken away (offline).", {}};
-                else
-                    outcome = {false, "No such injury.", {}};
-            }
-            else
-                outcome = {false, "No such character.", {}};
-        }
-        else if (kind == "character.kill" || kind == "character.resurrect")
-        {
-            const bool kill = kind == "character.kill";
-            if (auto* online = world_.entity(target); online && !online->npc)
-            {
-                outcome = world_.setDead(target, kill);
-                if (outcome.ok)
-                {
-                    if (auto* c = clientOf(target))
-                        system(c, kill ? "You have died." : "You have been brought back to life.");
-                    characters_[target] = *online;
-                }
-            }
-            else if (auto saved = characters_.find(target); saved != characters_.end())
-            {
-                auto& e = saved->second;
-                if (e.dead == kill)
-                    outcome = {false, e.name + (kill ? " is already dead." : " is not dead."), {}};
-                else
-                {
-                    e.dead = kill;
-                    e.posture = kill ? "lying" : "standing";
-                    e.state = e.activity = kill ? "dead" : "";
-                    outcome = {true, e.name + (kill ? " is dead (offline)." : " lives again (offline)."), {}};
-                }
-            }
-            else
-                outcome = {false, "No such character.", {}};
-        }
-        else if (kind == "npc.move" || kind == "character.move")
-        {
-            // Put someone on a tile from the LIVE map (doc 34): payload {"cell", "x", "y"}. A character not in the world
-            // wakes there.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const std::string cell = payload.isObject() ? payload.string("cell") : std::string();
-            const double x = payload.isObject() ? wire::number(payload, "x", -1) : -1, y = payload.isObject() ? wire::number(payload, "y", -1) : -1;
-            const auto* someone = world_.entity(target);
-            if (someone && someone->npc != (kind == "npc.move"))
-                outcome = {false, kind == "npc.move" ? "That is a player character." : "That is an NPC.", {}};
-            else if (someone)
-            {
-                outcome = world_.teleport(target, cell, x, y);
-                if (outcome.ok && !someone->npc)
-                {
-                    if (auto* c = clientOf(target))
-                        system(c, "You find yourself somewhere else.");
-                    characters_[target] = *world_.entity(target);
-                }
-            }
-            else if (auto saved = characters_.find(target); kind == "character.move" && saved != characters_.end())
-            {
-                const auto* place = world_.ensureLoaded(cell).ok ? world_.cell(cell) : nullptr;
-                const auto* tile = place && x >= 0 && y >= 0 ? place->tile(int(x), int(y)) : nullptr;
-                if (!tile || tile->solid)
-                    outcome = {false, "No one can stand there.", {}};
-                else
-                {
-                    saved->second.cellId = cell;
-                    saved->second.position = {std::floor(x) + .5, std::floor(y) + .5};
-                    outcome = {true, saved->second.name + " will wake in " + place->name + " (offline).", {}};
-                }
-            }
-            else
-                outcome = {false, kind == "npc.move" ? "No such NPC in the world." : "No such character.", {}};
-        }
-        else if (kind == "character.dm")
-        {
-            // A player marked a Dungeon Master in the game, or no longer: payload {"dungeonMaster": bool}. They have the
-            // Dev Console while they are one.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            const bool on = payload.isObject() && payload.boolean("dungeonMaster");
-            const auto told = [&](const Entity& e) {
-                return e.name + (on ? " is a Dungeon Master in the game." : " is no longer a Dungeon Master in the game.");
-            };
-            if (auto* online = world_.entity(target); online && !online->npc)
-            {
-                online->dungeonMaster = on;
-                characters_[target] = *online;
-                if (auto* c = clientOf(target))
-                    system(c, on ? "You are a Dungeon Master: the Dev Console is yours (the ` key)." : "You are no longer a Dungeon Master.");
-                outcome = {true, told(*online), {}};
-            }
-            else if (auto saved = characters_.find(target); saved != characters_.end())
-            {
-                saved->second.dungeonMaster = on;
-                outcome = {true, told(saved->second) + " (offline)", {}};
-            }
-            else
-                outcome = {false, "No such character.", {}};
-        }
-        else if (kind == "visitor.add" || kind == "visitor.leave")
-        {
-            // Temporary folk from the LIVE map (doc 34), the target their new ID. Payload {"name", "description",
-            // "like": a resident whose looks (and, with no description, words) they take, "cell", "x", "y", "minutes"}.
-            json::Value payload;
-            std::string problem;
-            if (row.size() > 4 && row[4])
-                json::parse(*row[4], payload, problem);
-            if (kind == "visitor.leave")
-                outcome = world_.sendVisitorAway(target);
-            else if (!payload.isObject())
-                outcome = {false, "Say who and where.", {}};
-            else
-            {
-                const auto* like = world_.entity(payload.string("like"));
-                const auto description = payload.string("description", like ? like->description : std::string());
-                outcome = world_.addVisitor(target, payload.string("name"), description, like ? like->appearance : Appearance{},
-                                            payload.string("cell"), wire::number(payload, "x", -1), wire::number(payload, "y", -1),
-                                            wire::number(payload, "minutes", 0));
-            }
-        }
+        else
+            outcome = applyDmAct(row);
         if (receipted)
         {
             // (Nothing journalled: no receipt, the act is applied again if the row is still queued after a crash. Else
@@ -1656,6 +1132,569 @@ void Game::applyDmActions(double dt)
         ++revision_;
         saveSoon();
     }
+}
+
+Result Game::applyDmAct(std::vector<PgValue> row)
+{
+    // One of dm.actions' acts but the economy's (applyEconomyCommand): the row as applyDmActions reads it, {id, kind,
+    // target_id, requested_by, payload}. First the community world's guards (doc 78, 8: dmActRefused), then the act.
+    row.resize(5);
+    const std::string kind = row[1] ? *row[1] : std::string(), target = row[2] ? *row[2] : std::string();
+    if (const auto refused = dmActRefused(kind, target, row[4] ? *row[4] : std::string()); !refused.empty())
+        return {false, refused, target};
+    Result outcome{false, "Unknown action.", {}};
+    if (kind == "layers.sync" || kind == "factions.sync" || kind == "npc.sync")
+    {
+        World candidate;
+        std::string problem;
+        const bool loaded = loadWithLivePeople(candidate, problem);
+        if (kind == "layers.sync")
+        {
+            if (loaded) world_.adoptLayers(candidate);
+            outcome = loaded ? Result{true, "Routes and areas are updated.", {}}
+                             : Result{false, "The routes and areas could not be applied: " + problem, {}};
+        }
+        else if (kind == "factions.sync")
+        {
+            if (loaded) world_.adoptFactions(candidate);
+            outcome = loaded ? Result{true, "Factions and territory are updated.", {}}
+                             : Result{false, "The factions could not be applied: " + problem, {}};
+        }
+        else
+        {
+            const auto* was = world_.society().spec(target);
+            const int bandBefore = was ? was->band : -1;
+            outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
+            // (Its authored band, the Band picker's, in force at once for its household: doc 79, 14; Phase 9.)
+            if (const auto* now = world_.society().spec(target); outcome.ok && now && now->band != bandBefore)
+            {
+                world_.society().bandsChanged();
+                record(Economy);
+                world_.society().setReport(world_.prosperityReport());
+            }
+        }
+    }
+    else if (kind == "voice.sync")
+    {
+        // Talk (doc 62, phase 6): residents' voices, the dialects and the figures read again, after an edit; and
+        // families (taken in by the society at the next day's turn).
+        loadVoices();
+        World candidate;
+        std::string problem;
+        if (loadWithLivePeople(candidate, problem))
+            world_.society().setKin(candidate.society().kin());
+        outcome = {true, "Voices, dialects, families and figures are read again.", target};
+    }
+    else if (kind == "deed.award" || kind == "deed.revoke")
+    {
+        // Fame (doc 56): a deed awarded (target the doer; payload {kind, weight, cell, beneficiary, detail}), or one
+        // revoked (target the deed's id).
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        if (kind == "deed.revoke")
+            outcome = revokeDeed(target) ? Result{true, "Revoked.", target} : Result{false, "No such deed.", target};
+        else if (const auto* doer = world_.entity(target); !doer || doer->npc)
+            outcome = {false, "Award deeds to player characters.", target};
+        else
+        {
+            const auto weight = fame::weightOf(payload.string("weight", "great"));
+            const auto id = recordDeed(payload.string("kind", "award"), {target}, payload.string("beneficiary"),
+                                       payload.string("cell", doer->cellId), "dm", json::utf8Prefix(payload.string("detail"), 160), weight);
+            outcome = id.empty() ? Result{false, "No such kind of deed.", target} : Result{true, "Awarded " + id + ".", target};
+        }
+        saveSoon();
+    }
+    else if (kind == "storyteller.decide" || kind == "storyteller.revoke" || kind == "tale.pause" || kind == "tale.resume" ||
+             kind == "tale.stop" || kind == "milestone.credit" || kind == "visitors.sync")
+    {
+        // Storytellers (doc 58, 11): an application decided (target the account; payload {approve, reason}) or the
+        // standing revoked; a tale paused, resumed or stopped (target its id); a milestone credited (payload as
+        // creditMilestone); the visitors' list read again.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const auto by = row[3] ? *row[3] : std::string("dm");
+        if (kind == "storyteller.decide" || kind == "storyteller.revoke")
+        {
+            const auto s = storytellers_.find(target);
+            if (kind == "storyteller.decide" && (s == storytellers_.end() || s->second.state != "applied"))
+                outcome = {false, "No application from that account.", target};
+            else if (kind == "storyteller.revoke" && (s == storytellers_.end() || s->second.state != "approved"))
+                outcome = {false, "That account isn't a storyteller.", target};
+            else
+            {
+                if (kind == "storyteller.decide")
+                    decideStoryteller(target, payload.boolean("approve"), by, payload.string("reason"));
+                else
+                    revokeStoryteller(target, by, payload.string("reason"));
+                outcome = {true, kind == "storyteller.revoke" ? "Revoked." : payload.boolean("approve") ? "Approved." : "Refused.", target};
+            }
+        }
+        else if (kind == "milestone.credit")
+            outcome = creditMilestone(payload);
+        else if (kind == "visitors.sync")
+        {
+            loadStoryVisitors();
+            outcome = {true, std::to_string(storyVisitorDefs_.size()) + " story visitors.", target};
+        }
+        else if (auto* tale = storylines_.find(target); !tale || tale->kind != "tale")
+            outcome = {false, "No such tale.", target};
+        else
+        {
+            if (kind == "tale.stop")
+                endTale(*tale, "abandoned");
+            else
+                tale->state = kind == "tale.pause" ? "paused" : "running";
+            storylines_.touch();
+            for (const auto& [who, p] : tale->participants)
+                if (auto* c = clientOf(who); c && p.active())
+                    storylineToast(c, "\"" + tale->title + "\" is " + (kind == "tale.pause" ? "paused" : kind == "tale.stop" ? "stopped" : "running again") +
+                                          " by the Dungeon Masters.");
+            outcome = {true, "Done.", target};
+        }
+        saveSoon();
+    }
+    else if (kind == "storyline.give" || kind == "storyline.tick")
+    {
+        // Storylines (doc 58): one given to a character (payload {template, cast}), or an objective ticked by hand
+        // (target the storyline; payload {step, objective}).
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        if (kind == "storyline.give")
+            outcome = giveStoryline(target, payload.string("template"), payload.object("cast"), "dm", "");
+        else
+        {
+            const auto ticked = storylines_.tick(target, std::size_t(payload.number("step")), std::size_t(payload.number("objective")), "dm",
+                                                 now(), true);
+            storylineProgress(ticked);
+            outcome = ticked.empty() ? Result{false, "Nothing to tick there.", target} : Result{true, "Ticked.", target};
+        }
+        saveSoon();
+    }
+    else if (kind == "npc.protect" || kind == "npc.unprotect")
+    {
+        // Protected residents (doc 57, 6): marked, or unmarked (even one Atlas or the game's rule protects).
+        if (!world_.society().resident(target))
+            outcome = {false, "No such resident.", target};
+        else
+        {
+            (kind == "npc.protect" ? unprotectedMarks_ : protectedMarks_).erase(target);
+            (kind == "npc.protect" ? protectedMarks_ : unprotectedMarks_).insert(target);
+            outcome = {true, kind == "npc.protect" ? "Protected." : "No longer protected.", target};
+            saveSoon();
+        }
+    }
+    else if (kind == "project.post" || kind == "project.cancel" || kind == "project.complete" || kind == "project.remove")
+    {
+        // Town projects (doc 57, 7): one posted (target the town; payload {kind, cell, x, y, title}), or one cancelled
+        // with its gifts returned, completed by hand, or taken down (target its id).
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        outcome = kind == "project.post" ? postProject(payload.string("kind"), target, payload.string("cell"), int(payload.number("x", -1)),
+                                                       int(payload.number("y", -1)), payload.string("title"), "dm")
+                  : kind == "project.cancel"   ? cancelProject(target, "cancelled by the Dungeon Master")
+                  : kind == "project.complete" ? completeProject(target)
+                                               : removeProject(target);
+    }
+    else if (kind == "nickname.drop" || kind == "nickname.restore")
+    {
+        // Doc 56, 4: a nickname out of use, or back in it (target its id).
+        auto* n = fame_.nickname(target);
+        if (!n)
+            outcome = {false, "No such nickname.", target};
+        else
+        {
+            n->dropped = kind == "nickname.drop";
+            if (auto* d = fame_.find(n->deed))
+                d->noNickname = n->dropped;
+            record(Character, n->wolf);
+            outcome = {true, n->dropped ? "Dropped." : "Restored.", target};
+        }
+        saveSoon();
+    }
+    else if (kind == "estate.hold" || kind == "estate.release")
+    {
+        // Held for a story (doc 54, 4): the target a cell; payload {"days", "reason"}.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        if (!world_.cell(target))
+            outcome = {false, "No such place.", target};
+        else if (kind == "estate.release")
+        {
+            holds_.erase(target);
+            outcome = {true, "No longer held.", target};
+        }
+        else
+            outcome = holdPlace(target, wire::number(payload, "days", 7), payload.string("reason"));
+        saveSoon();
+    }
+    else if (kind == "board.remove")
+    {
+        // A notice taken down by a Dungeon Master (doc 54, 2): the target its id. Audited, as every DM action is.
+        const auto* d = documents_.find(target);
+        if (!d || d->kind != "notice")
+            outcome = {false, "No such notice.", target};
+        else
+        {
+            world_.recordEvent({"notice removed", d->author, {}, {}, 0, 0, {}, 0, 0, target});
+            documents_.erase(target);
+            saveSoon();
+            outcome = {true, "The notice is taken down.", target};
+        }
+    }
+    else if (kind == "artwork.review")
+    {
+        // A Dungeon Master's decision on an uploaded portrait: payload {"decision": "approve"|"reject", "reason"}.
+        Value payload;
+        std::string problem;
+        json::parse(row[4] ? *row[4] : "{}", payload, problem);
+        outcome = reviewArtwork(target, payload.string("decision"), payload.string("reason"));
+    }
+    else if (kind == "treaty.decide" || kind == "house.decide")
+    {
+        // A Dungeon Master's word (Phase 9): the target a treaty's ID, or a Chapter's for a House (with its "faction").
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const bool approve = payload.isObject() && payload.boolean("approve");
+        outcome = kind == "treaty.decide" ? decideTreaty(target, approve, "by a Dungeon Master")
+                                          : decideHouse(target, payload.string("faction"), approve, "by a Dungeon Master");
+    }
+    else if (kind == "estate.set" || kind == "estate.clear")
+    {
+        // A place to let (doc 32, 5.2), the target its cell. Payload: {"name", "kind": "hall"|"warehouse",
+        // "landlord": a resident or "treasury", "faction", "rent" (pennies a week), "level" (2..5)}.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const auto* cell = world_.cell(target);
+        if (!cell)
+            outcome = {false, "No such place.", target};
+        else if (kind == "estate.clear")
+        {
+            estates_.unmark(target);
+            saveSoon();
+            outcome = {true, "It is no longer to let once its lease (if any) ends.", target};
+        }
+        else
+        {
+            const auto rent = std::int64_t(wire::number(payload, "rent", 30));
+            const int level = std::clamp(int(wire::number(payload, "level", 2)), 2, 5);
+            estates_.define({target, payload.string("name", cell->name), payload.string("kind", "hall"), payload.string("landlord", "treasury"),
+                             payload.string("faction", cell->factionClaims.empty() ? std::string() : cell->factionClaims.front()),
+                             std::clamp<std::int64_t>(rent, 1, 100000), level, payload.boolean("individuals"),
+                             std::clamp<std::int64_t>(std::int64_t(wire::number(payload, "night", 0)), 0, 100000)});   // (Individuals too: doc 54, 4.)
+            estates_.markAuthored(target);
+            saveSoon();
+            outcome = {true, cell->name + " is to let.", target};
+        }
+    }
+    else if (kind == "festival.call")
+    {
+        // Payload: {"name": "...", "inDays": 0..30}; the target is the community (a town, or a region).
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const std::string name = payload.isObject() ? payload.string("name") : std::string();
+        const int inDays = payload.isObject() ? int(wire::number(payload, "inDays", 0)) : 0;
+        outcome = world_.callFestival(target, name, inDays);
+        if (outcome.ok)
+            for (auto* c : clients_)
+                if (const auto* e = world_.entity(c->entityId); e && world_.communityOf(e->cellId) == target)
+                    system(c, "Word goes round: " + outcome.message);
+    }
+    else if (kind == "npc.kill" || kind == "npc.revive")
+    {
+        const auto* npc = world_.entity(target);
+        outcome = npc && npc->npc ? world_.setDead(target, kind == "npc.kill") : Result{false, "No such NPC.", {}};
+    }
+    else if (kind == "bandits.call")
+    {
+        // Bandits called up near a character (doc 33): payload {"count": 1..6}.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const int count = payload.isObject() ? int(wire::number(payload, "count", 1)) : 1;
+        outcome = world_.entity(target) ? world_.callBandits(target, count)
+                                        : Result{false, "They aren't in the world: bandits come only where someone is.", {}};
+    }
+    else if (kind == "book.storyline")
+    {
+        // A Dungeon Master ties a Story book to a world storyline (doc 51, Phase 7: the World shelf): payload
+        // {"book": id, "storyline": "…"} ("" unties it).
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        outcome = tieBookToStoryline(payload.string("book"), payload.string("storyline"), "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
+        outcome.targetId = target;
+    }
+    else if (kind == "tie.end")
+    {
+        // A Dungeon Master ends a character's tie (doc 52, Phase 3), as the newcomer or the mentor.
+        outcome = endTieOf(target, "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
+        outcome.targetId = target;
+        if (outcome.ok && communityWorld())
+            tellActedOn(target, "The host has ended your tie.");
+    }
+    else if (kind == "mentor.revoke" || kind == "mentor.restore")
+    {
+        // A Dungeon Master turns a character's account's mentoring off, or lets it mentor again (doc 52, Phase 2).
+        outcome = revokeMentor(accountKey(target), kind == "mentor.revoke", "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
+        outcome.targetId = target;
+        if (outcome.ok && communityWorld() && !clientOf(target))
+            tellActedOn(target, kind == "mentor.revoke" ? "The host turned your mentoring off for now."
+                                                         : "The host restored your mentoring: you may opt in again.");
+    }
+    else if (kind == "report.decide")
+    {
+        // A Dungeon Master's decision on a report (doc 50, Phase 2): payload {"report": id, "decision": "uphold" |
+        // "dismiss", "outcome": "note" | "warning" | "silence", "hours": 1 | 6 | 24 | 72}.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        outcome = decideReport(payload.string("report"), payload.string("decision"), payload.string("outcome"), int(payload.number("hours", 0)),
+                               "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
+        outcome.targetId = target;
+    }
+    else if (kind == "account.unlock")
+    {
+        // An account's earned Gift tiers, by a Dungeon Master (doc 49, Phase 5), against one of its characters.
+        // Payload: {"tier": "gifted" | "quickened", "op": "grant" | "revoke" | "hold" | "release"}.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const auto tier = payload.isObject() ? payload.string("tier") : std::string();
+        const auto op = payload.isObject() ? payload.string("op") : std::string();
+        outcome = unlockTier(accounts_.ownerOf(target), tier, op, "dm:" + (row.size() > 3 && row[3] ? *row[3] : std::string("?")));
+        outcome.targetId = target;
+    }
+    else if (kind == "character.gift")
+    {
+        // A Gift given or taken away (docs 33, 43), through the Dungeon Master.
+        // Payload: {"gift": a playable family | "", "quickened": bool}.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const std::string gift = payload.isObject() ? payload.string("gift") : std::string();
+        const bool quickened = payload.isObject() && payload.boolean("quickened");
+        const std::string family = gifts::name(gift);
+        const auto told = [&](const Entity& e) {
+            return gift.empty() ? e.name + " no longer has a Gift."
+                                : e.name + (quickened ? " is Quickened: " + family + ", enormous." : " has the Gift: " + family + ".");
+        };
+        if (!gift.empty() && !gifts::playable(gift))
+            outcome = {false, "No such Gift for a player.", {}};
+        else if (auto* online = world_.entity(target); online && !online->npc)
+        {
+            outcome = world_.giveGift(target, gift, quickened);
+            if (outcome.ok)
+            {
+                const std::string words = gift.empty() ? "Your Gift has gone quiet." : quickened
+                                                            ? "Your Gift wakes, vast and frightening: you are Quickened (" + family + ")."
+                                                            : "A Gift wakes in you: " + family + ".";
+                tellActedOn(target, communityWorld() ? "The host's doing: " + words : words);
+                characters_[target] = *online;
+                outcome.message = told(*online);
+            }
+        }
+        else if (auto saved = characters_.find(target); saved != characters_.end())
+        {
+            auto& e = saved->second;
+            e.gift = gift;
+            e.quickened = !gift.empty() && quickened;
+            e.mana = battle::manaMax(e.wisdom, !gift.empty());
+            outcome = {true, told(e) + " (offline)", {}};
+            tellActedOn(target, gift.empty() ? "The host has quieted your Gift." : "The host gave you a Gift: " + family + (quickened ? ", Quickened." : "."));
+        }
+        else
+            outcome = {false, "No such character.", {}};
+    }
+    else if (kind == "character.injury")
+    {
+        // A Dungeon Master's correction or storyline (doc 38, phase 5): payload {"add": type, "severity": 1..3, "side":
+        // "left" | "right" | ""} or {"remove": injury id}; online or offline.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const std::string add = payload.isObject() ? payload.string("add") : std::string();
+        const std::string remove = payload.isObject() ? payload.string("remove") : std::string();
+        const int severity = payload.isObject() ? int(wire::number(payload, "severity", 2)) : 2;
+        const std::string side = payload.isObject() ? payload.string("side") : std::string();
+        if (auto* online = world_.entity(target); online && !online->npc)
+        {
+            outcome = !add.empty() ? world_.addInjury(target, add, severity, side, "a Dungeon Master")
+                      : !remove.empty() ? world_.removeInjury(target, remove) : Result{false, "Add or remove an injury.", {}};
+            if (outcome.ok)
+            {
+                tellActedOn(target, communityWorld() ? (!add.empty() ? "The host gives you an injury: " + outcome.message + "."
+                                                                       : "The host has taken away your " + outcome.message + ".")
+                                                     : (!add.empty() ? "You find you have an injury: " + outcome.message + "."
+                                                                     : "Your " + outcome.message + " is gone."));
+                characters_[target] = *online;
+                outcome.message = online->name + (!add.empty() ? ": " + outcome.message + " given." : ": " + outcome.message + " taken away.");
+            }
+        }
+        else if (auto saved = characters_.find(target); saved != characters_.end())
+        {
+            auto& e = saved->second;
+            if (!add.empty())
+            {
+                auto i = injury::given(add, severity, side, "a Dungeon Master");
+                i.id = "injury-dm-" + std::to_string(std::int64_t(world_.calendarDays() * 14400)) + "-" + e.id;
+                i.gotDay = world_.calendarDays();
+                outcome = injury::give(e.injuries, i) ? Result{true, e.name + ": " + injury::name(i) + " given (offline).", {}}
+                                                      : Result{false, i.type.empty() ? "No such injury." : "No room for another injury.", {}};
+                if (outcome.ok)
+                    tellActedOn(target, "The host gave you an injury: " + injury::name(i) + ".");
+            }
+            else if (const auto n = injury::takeAway(e.injuries, remove); !n.empty())
+            {
+                outcome = {true, e.name + ": " + n + " taken away (offline).", {}};
+                tellActedOn(target, "The host took away your " + n + ".");
+            }
+            else
+                outcome = {false, "No such injury.", {}};
+        }
+        else
+            outcome = {false, "No such character.", {}};
+    }
+    else if (kind == "character.kill" || kind == "character.resurrect")
+    {
+        const bool kill = kind == "character.kill";
+        if (auto* online = world_.entity(target); online && !online->npc)
+        {
+            outcome = world_.setDead(target, kill);
+            if (outcome.ok)
+            {
+                tellActedOn(target, communityWorld() ? (kill ? "The host has ended your life." : "The host has brought you back to life.")
+                                                     : (kill ? "You have died." : "You have been brought back to life."));
+                characters_[target] = *online;
+            }
+        }
+        else if (auto saved = characters_.find(target); saved != characters_.end())
+        {
+            auto& e = saved->second;
+            if (e.dead == kill)
+                outcome = {false, e.name + (kill ? " is already dead." : " is not dead."), {}};
+            else
+            {
+                e.dead = kill;
+                e.posture = kill ? "lying" : "standing";
+                e.state = e.activity = kill ? "dead" : "";
+                outcome = {true, e.name + (kill ? " is dead (offline)." : " lives again (offline)."), {}};
+                tellActedOn(target, kill ? "The host ended your life." : "The host brought you back to life.");
+            }
+        }
+        else
+            outcome = {false, "No such character.", {}};
+    }
+    else if (kind == "npc.move" || kind == "character.move")
+    {
+        // Put someone on a tile from the LIVE map (doc 34): payload {"cell", "x", "y"}. A character not in the world
+        // wakes there.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const std::string cell = payload.isObject() ? payload.string("cell") : std::string();
+        const double x = payload.isObject() ? wire::number(payload, "x", -1) : -1, y = payload.isObject() ? wire::number(payload, "y", -1) : -1;
+        const auto* someone = world_.entity(target);
+        if (someone && someone->npc != (kind == "npc.move"))
+            outcome = {false, kind == "npc.move" ? "That is a player character." : "That is an NPC.", {}};
+        else if (someone)
+        {
+            outcome = world_.teleport(target, cell, x, y);
+            if (outcome.ok && !someone->npc)
+            {
+                tellActedOn(target, communityWorld() ? "The host moved you: you find yourself somewhere else." : "You find yourself somewhere else.");
+                characters_[target] = *world_.entity(target);
+            }
+        }
+        else if (auto saved = characters_.find(target); kind == "character.move" && saved != characters_.end())
+        {
+            const auto* place = world_.ensureLoaded(cell).ok ? world_.cell(cell) : nullptr;
+            const auto* tile = place && x >= 0 && y >= 0 ? place->tile(int(x), int(y)) : nullptr;
+            if (!tile || tile->solid)
+                outcome = {false, "No one can stand there.", {}};
+            else
+            {
+                saved->second.cellId = cell;
+                saved->second.position = {std::floor(x) + .5, std::floor(y) + .5};
+                outcome = {true, saved->second.name + " will wake in " + place->name + " (offline).", {}};
+                tellActedOn(target, "The host moved you to " + place->name + ".");
+            }
+        }
+        else
+            outcome = {false, kind == "npc.move" ? "No such NPC in the world." : "No such character.", {}};
+    }
+    else if (kind == "character.dm")
+    {
+        // A player marked a Dungeon Master in the game, or no longer: payload {"dungeonMaster": bool}. They have the
+        // Dev Console while they are one.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        const bool on = payload.isObject() && payload.boolean("dungeonMaster");
+        const auto told = [&](const Entity& e) {
+            return e.name + (on ? " is a Dungeon Master in the game." : " is no longer a Dungeon Master in the game.");
+        };
+        if (auto* online = world_.entity(target); online && !online->npc)
+        {
+            online->dungeonMaster = on;
+            characters_[target] = *online;
+            if (auto* c = clientOf(target))
+                system(c, on ? "You are a Dungeon Master: the Dev Console is yours (the ` key)." : "You are no longer a Dungeon Master.");
+            outcome = {true, told(*online), {}};
+        }
+        else if (auto saved = characters_.find(target); saved != characters_.end())
+        {
+            saved->second.dungeonMaster = on;
+            outcome = {true, told(saved->second) + " (offline)", {}};
+        }
+        else
+            outcome = {false, "No such character.", {}};
+    }
+    else if (kind == "visitor.add" || kind == "visitor.leave")
+    {
+        // Temporary folk from the LIVE map (doc 34), the target their new ID. Payload {"name", "description",
+        // "like": a resident whose looks (and, with no description, words) they take, "cell", "x", "y", "minutes"}.
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        if (kind == "visitor.leave")
+            outcome = world_.sendVisitorAway(target);
+        else if (!payload.isObject())
+            outcome = {false, "Say who and where.", {}};
+        else
+        {
+            const auto* like = world_.entity(payload.string("like"));
+            const auto description = payload.string("description", like ? like->description : std::string());
+            outcome = world_.addVisitor(target, payload.string("name"), description, like ? like->appearance : Appearance{},
+                                        payload.string("cell"), wire::number(payload, "x", -1), wire::number(payload, "y", -1),
+                                        wire::number(payload, "minutes", 0));
+        }
+    }
+    return outcome;
 }
 
 void Game::keepDmAct(const std::string& id, json::Value act)
@@ -2383,6 +2422,15 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
         }
         world_.returnFromAway(player);             // Down or resting while away (doc 38).
     }
+    // What the host's tools did while it was away, told once it is in (doc 78, 8); and a Dev Console a community world
+    // without --dev-tools doesn't give, whatever was saved, dropped for good (doc 78, Phase M1).
+    std::vector<std::string> hostNotes;
+    hostNotes.swap(player.hostNotes);
+    if (player.dungeonMaster && !devConsoleAllowed())
+    {
+        player.dungeonMaster = false;
+        note("info", "RATW_CHEATS " + actor + "'s Dungeon Master mark is cleared: a community world without --dev-tools has no Dev Console.");
+    }
     else
     {
         player.description = "A road-worn quadrupedal wolf with a small shoulder satchel. Their coat and history are yours to imagine.";
@@ -2430,6 +2478,8 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     sendSnapshot(c);
     sendProfile(c);                                // Their profile and account as a person (doc 50).
     tiesOnEnter(actor);                            // A tie made while they were away (doc 52, 4).
+    for (const auto& words : hostNotes)
+        system(c, "While you were away: " + words);
     sendSafety(c);                                 // And their mutes and blocks.
     cameOrWent(c, true);                           // Their friends, and private messages kept for them (doc 50, 4).
     if (const auto away = absences_.find(actor); away != absences_.end())
@@ -3437,7 +3487,7 @@ void Game::sendSnapshot(Connection* c)
             }
             self.set("jewellery", std::move(jewellery));
         }
-        if (me->dungeonMaster)
+        if (me->dungeonMaster && devConsoleAllowed())
             self.set("dungeonMaster", true);       // The Dev Console is theirs (RatwGameDev.cpp).
         if (isHost(c))
             self.set("host", true);                // A community world's host: the host's console (doc 77, 3.2).
@@ -6411,6 +6461,14 @@ void Game::load(const std::string& payload)
             characters_[player.id] = *e;
         world_.removePlayer(player.id);
     }
+    if (!devConsoleAllowed())
+        for (auto& [id, e] : characters_)
+            if (e.dungeonMaster)
+            {
+                // (Doc 78, Phase M1: a community world without --dev-tools has no Dev Console; a mark from before is cleared.)
+                e.dungeonMaster = false;
+                note("info", "RATW_CHEATS " + id + "'s Dungeon Master mark is cleared: a community world without --dev-tools has no Dev Console.");
+            }
     parties_.load(state.parties);
     aliases_.clear();
     for (const auto& [who, list] : state.aliases.fields())

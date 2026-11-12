@@ -378,6 +378,8 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
     Result applied{false, "Unsupported or malformed operator action.", {}};
     std::set<std::string> recipients;
     std::string announcement;
+    std::string grantedTo;                          // (A player_grant's player and the pennies moved, told once committed.)
+    std::int64_t grantedCoins = 0;
     if (kind == "weather" && keys(p, {"cell", "preset"}) && p.size() == 2)
         applied = wire::environmentCommand(world, text(p, "cell"), "weather", text(p, "preset"), true);
     else if (kind == "weather_front" && keys(p, {"kind", "x", "y", "radius", "heading", "hours"}) && p.size() == 6)
@@ -418,10 +420,16 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
         std::int64_t moved = 0;
         if (coins == 0 || coins != std::floor(coins) || std::abs(coins) > double(status::GrantsMost))
             applied = {false, "A grant or a fine is a whole number of pennies, at most " + std::to_string(status::GrantsMost) + " either way.", {}};
+        else if (const auto refused = grantRefused ? grantRefused(text(p, "player"), std::int64_t(coins)) : std::string(); !refused.empty())
+            applied = {false, refused, {}};
         else if (world.society().grantPlayer(text(p, "player"), std::int64_t(coins), text(p, "reason"), problem, &moved))
+        {
+            grantedTo = text(p, "player");
+            grantedCoins = coins > 0 ? moved : -moved;
             applied = {true, std::string(coins > 0 ? "Granted " : "Fined ") + std::to_string(moved) + "p" +
                                  (coins < 0 && double(moved) < -coins ? " (all the player had; " + std::to_string(std::int64_t(-coins)) + "p asked)" : "") +
                                  ": " + text(p, "reason") + ".", {}};
+        }
         else
             applied = {false, problem.empty() ? std::string("The grant or fine was refused.") : problem, {}};
     }
@@ -525,6 +533,8 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
     }
     if (applied.ok && !announcement.empty())
         notice(recipients, announcement);
+    if (applied.ok && !grantedTo.empty() && granted)
+        granted(grantedTo, grantedCoins, text(p, "reason"));
     return reply;
 }
 

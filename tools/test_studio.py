@@ -1330,5 +1330,39 @@ class ImportsTests(unittest.TestCase):
         self.assertTrue(set(market.get('never') or []) <= goods)
         self.assertTrue(set(market.get('imports') or []) <= goods)
 
+
+class BindTests(unittest.TestCase):
+    def test_the_studio_serves_this_computer_only_unless_told(self):
+        """Docs/Design/78, Q25 (Phase M1): plain HTTP guarded by a header check binds 127.0.0.1 by default; --host 0.0.0.0
+        is asked for (tools/studio.sh asks for it unless its arguments name a --host; editor.sh and dungeon-master.sh
+        ask for 127.0.0.1)."""
+        from unittest import mock
+
+        class Bound(Exception):
+            pass
+
+        def bound(port, studio, host):
+            raise Bound(host)
+
+        saved = os.environ.get('RATW_SERVE_HOSTS')
+        try:
+            with mock.patch.object(ST, 'make_server', bound), mock.patch.object(ST, 'Studio', lambda **_: None), \
+                    mock.patch.object(ST.world_db, 'resolve', lambda *_: 'atlas'), \
+                    mock.patch.object(ST, 'lan_names', lambda: ['192.0.2.7']):
+                for argv, host in ((['serve'], '127.0.0.1'), (['serve', '--host', '0.0.0.0'], '0.0.0.0')):
+                    with self.assertRaises(Bound) as raised:
+                        ST.main(argv)
+                    self.assertEqual(raised.exception.args[0], host, argv)
+        finally:
+            os.environ.pop('RATW_SERVE_HOSTS', None)
+            if saved is not None:
+                os.environ['RATW_SERVE_HOSTS'] = saved
+        here = Path(__file__).resolve().parent
+        launcher = (here / 'studio.sh').read_text()
+        self.assertIn('lan=(--host 0.0.0.0)', launcher)
+        for name in ('editor.sh', 'dungeon-master.sh'):
+            self.assertIn('--host 127.0.0.1 "$@"', (here / name).read_text(), name)
+
+
 if __name__ == '__main__':
     unittest.main()

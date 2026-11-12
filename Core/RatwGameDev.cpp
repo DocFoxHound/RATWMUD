@@ -111,7 +111,7 @@ std::string trimmed(std::string text)
 void Game::devCommand(Connection* c, const json::Value& j)
 {
     const auto& id = c->entityId;
-    if (const auto* who = world_.entity(id); isHost(c) && !(who && who->dungeonMaster))
+    if (const auto* who = world_.entity(id); isHost(c) && !(who && who->dungeonMaster && devConsoleAllowed()))
     {
         hostCommand(c, j);                          // (A community world's host: the host's table, never the cheats.)
         return;
@@ -130,7 +130,7 @@ void Game::devCommand(Connection* c, const json::Value& j)
     if (j.string("type") == "devCommands")
     {
         auto list = json::Value::array();
-        if (me && !me->npc && me->dungeonMaster)
+        if (me && !me->npc && me->dungeonMaster && devConsoleAllowed())
             for (const auto& d : DevCommands)
             {
                 auto row = json::Value::array();
@@ -145,7 +145,7 @@ void Game::devCommand(Connection* c, const json::Value& j)
         return;
     }
     Result result;
-    if (!me || me->npc || !me->dungeonMaster)
+    if (!me || me->npc || !me->dungeonMaster || !devConsoleAllowed())
         result = {false, "Only a Dungeon Master has the Dev Console.", {}};
     else if (command == "help" || command.empty())
     {

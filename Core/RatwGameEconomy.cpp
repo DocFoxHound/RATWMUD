@@ -172,6 +172,9 @@ void Game::startEconomy()
 
 Result Game::applyEconomyCommand(const std::string& kind, const std::string& target, const Value& payload, const std::string& actionId)
 {
+    // (The community world's guards first: a grant to the host's own wolf with cheats off, doc 78, 8.)
+    if (const auto refused = dmActRefused(kind, target, json::dump(payload)); !refused.empty())
+        return {false, refused, target};
     auto& society = world_.society();
     Result outcome{false, "Unknown action.", target};
     unsigned journal = Economy;
@@ -345,8 +348,9 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
                                  (coins < 0 && moved < -coins ? " (all " + who + " had; " + std::to_string(-coins) + "p asked)" : "") +
                                  ": " + reason + ".", target};
             told = clientOf(target);
-            tell = coins > 0 ? "A Dungeon Master grants you " + std::to_string(moved) + " pennies: " + reason + "."
-                             : "A Dungeon Master fines you " + std::to_string(moved) + " pennies: " + reason + ".";
+            tell = actorWords() + (coins > 0 ? " grants you " : " fines you ") + std::to_string(moved) + " pennies: " + reason + ".";
+            if (!told)
+                tellActedOn(target, tell);          // (Away: told when it next comes in, on a community world; doc 78, 8.)
         }
         else
             outcome = {false, problem, target};

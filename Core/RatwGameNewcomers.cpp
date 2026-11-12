@@ -295,8 +295,8 @@ Result Game::revokeMentor(const std::string& account, bool revoke, const std::st
     person.mentor.revoked = revoke;
     if (revoke)
         person.mentor.on = false;
-    tellAccount(account, revoke ? "A Dungeon Master has turned your mentoring off for now."
-                                : "A Dungeon Master has restored your mentoring: you may opt in again.");
+    tellAccount(account, revoke ? actorWords() + " has turned your mentoring off for now."
+                                : actorWords() + " has restored your mentoring: you may opt in again.");
     logEvent(revoke ? "mentor revoked" : "mentor restored", account, {}, "by " + by);
     saveSoon();
     return {true, std::string(revoke ? "Mentoring revoked" : "Mentoring restored") + " for " + account + ".", account};

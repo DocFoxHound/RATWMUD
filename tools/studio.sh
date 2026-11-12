@@ -3,8 +3,9 @@
 # builds the UI when its sources changed, then serves it on http://127.0.0.1:8765 and the local network (another
 # computer opens http://THIS-COMPUTER:8765/; the addresses are printed). Extra arguments go to studio.py: --port N,
 # --suite atlas|dm (the suite it opens on), --world KEY (Atlas's world for this run), --host 127.0.0.1 (this computer
-# only). Sign in with a DM account (python3 tools/dungeon_master.py accounts ...). For UI development with hot reload,
-# run the studio and `npm --prefix Editor run dev` side by side instead.
+# only; studio.py's own default, Docs/Design/78, Q25). Sign in with a DM account (python3 tools/dungeon_master.py
+# accounts ...). For UI development with hot reload, run the studio and `npm --prefix Editor run dev` side by side
+# instead.
 set -euo pipefail
 ratw_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 editor="$ratw_root/Editor"
@@ -16,4 +17,10 @@ if [ ! -f "$editor/dist/index.html" ] || [ -n "$(find "$editor/src" "$editor/ind
   echo "Building the studio UI…"
   npm --prefix "$editor" run build --silent
 fi
-exec python3 "$ratw_root/tools/studio.py" serve "$@"
+# (studio.py serves this computer only unless told otherwise, Docs/Design/78, Q25; this launcher keeps the local
+# network, unless the arguments name a --host.)
+lan=(--host 0.0.0.0)
+for argument in "$@"; do
+  case "$argument" in --host|--host=*) lan=() ;; esac
+done
+exec python3 "$ratw_root/tools/studio.py" serve "${lan[@]}" "$@"

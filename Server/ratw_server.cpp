@@ -9,6 +9,8 @@
 //                                            residents as built: for tests and trying a build offline
 //   options: --port 7788, --bind 127.0.0.1, --web DIR (the built browser client), --dialogue URL (the NPC Mind),
 //            --dm-directory DIR (the operator bridge), --dev-tools, --dev-identity,
+//            --host-cheats (a community world's cheats = "host": the host's tools may give Gifts and tiers and reward
+//            the host's own wolves; no socket cheats, no Dev Console; listed "cheats on": Docs/Design/78, 8),
 //            --open-tiers (every Gift tier open to every account: doc 49),
 //            --full-snapshots, --for SECONDS (stop after, saving: for tests),
 //            --perf-log SECONDS (where the game thread's time went, logged this often; 60 by default, 0 for never),
@@ -22,8 +24,10 @@
 //            --central-keys FILE [--official] [--world-name NAME] [--player-limit N] [--arrivals-per-hour N]. Wolves
 //            join with tickets from central, checked with central's keys (FILE, kept by tools/world_agent.py keys);
 //            no passwords, from loopback or anywhere; any Origin; no page (--web is refused) and GET /status answers
-//            (doc 5.1's fields, 2 KB at most, Access-Control-Allow-Origin: *). Refuses --dev-identity, and --dev-tools
-//            or --open-tiers on an official world. In the directory holding FILE (the world agent's: tools/world_agent.py
+//            (doc 5.1's fields, 2 KB at most, Access-Control-Allow-Origin: *). Refuses --dev-identity, and --dev-tools,
+//            --host-cheats or --open-tiers on an official world. On a community world without --dev-tools nobody has the
+//            Dev Console (a saved Dungeon Master mark is cleared), and without either cheat flag the host's tools give no
+//            Gifts or tiers and no rewards to the host's own wolves (Docs/Design/78, 8; Game::dmActRefused). In the directory holding FILE (the world agent's: tools/world_agent.py
 //            run --dir DIR), it writes online.json (the wolves in the world, about every 15 s, for the heartbeat) and
 //            reads bans.json (central's banned accounts, from the heartbeat's reply): a banned account's hello is refused
 //            and its wolf here sent out (doc 77, 7); and, on a community world, host.json (the host account's ticket
@@ -649,7 +653,7 @@ bool readFile(const std::string& path, std::string& out)
 void usage()
 {
     std::cerr << "usage: ratw_server (--database KEY [--world-kind dev|live] | [--world MANIFEST | --world-export DIR] --save FILE) [--port N] [--bind ADDR]\n"
-                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--talk-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
+                 "                   [--web DIR] [--dialogue URL] [--voice-data DIR] [--talk-data DIR] [--voice-log FILE] [--ambient-model-calls N] [--dm-directory DIR] [--dev-tools] [--host-cheats] [--away-break SECONDS] [--dev-identity] [--open-tiers] [--full-snapshots]\n"
                  "                   [--for SECONDS] [--perf-log SECONDS] [--workers N] [--speed N|max] [--scratch [--idle-exit SECONDS]]\n"
                  "                   [--central URL --world-id ID --central-keys FILE [--official] [--world-name NAME] [--player-limit N]\n"
                  "                    [--arrivals-per-hour N]]   (ticket mode: Docs/Design/77)\n";
@@ -695,6 +699,7 @@ int main(int argc, char** argv)
         else if (a == "--voice-log") options.voiceLog = next();
         else if (a == "--dm-directory") options.directorDirectory = next();
         else if (a == "--dev-tools") options.devTools = true;
+        else if (a == "--host-cheats") options.hostCheats = true;
         else if (a == "--away-break") options.awayBreakSeconds = std::max(1.0, std::atof(next().c_str()));   // (Doc 56: for trying welcome back.)
         else if (a == "--open-tiers") options.openTiers = true;   // Every Gift tier open to every account (doc 49).
         else if (a == "--dev-identity") options.devIdentity = true;

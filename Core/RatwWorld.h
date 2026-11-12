@@ -347,6 +347,9 @@ struct Entity
     std::vector<std::pair<std::string, std::string>> jewellery;     // (spot, item)
     bool quickened = false;
     bool dungeonMaster = false;                   // A player a Dungeon Master marked as one: they have the Dev Console.
+    // What the host's tools did to this wolf while it was away (Docs/Design/78, 8: Game::tellActedOn), told when it
+    // next comes in, then cleared. At most a few lines. Saved.
+    std::vector<std::string> hostNotes;
     double mana = 0.0, fightingSkill = 50.0;
     bool typing = false;
     double speakingUntil = 0.0;

@@ -1885,7 +1885,7 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-Nothing built yet.
+M1 built (2026-11-12, below); the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -1899,6 +1899,67 @@ Nothing built yet.
 - **2026-11-08, night: three reviews of the rewrite.** Security (24 findings), the code at 029d050 and the built image
   (26), and a non-technical Windows host's side with scope and hours (22). Most were taken; the Review's first part
   lists what changed and what was rejected. Plan only; nothing built.
+
+- **2026-11-12: M1 built (Guards in the server),** on `r2-editor` (cut from ridgemere2 at 65a9f0e, with doc 79's staged
+  economy and migration 0061). Every item of section 14's M1 row:
+  - **The three `cheats` settings.** `world.toml`'s `[world] cheats = "off" | "host" | "everyone"` (default `off`; any
+    other value stops the start). The entrypoint passes nothing, the new narrow `--host-cheats`
+    (`Options::hostCheats`) or `--dev-tools`. `/status` says `cheats: true` for either; an official world refuses
+    `--host-cheats` as it refuses `--dev-tools`. `--host-cheats` gives players no socket cheats (those still check
+    `--dev-tools` alone) and nobody the Dev Console.
+  - **The server's guards, at the point of use** (`Game::dmActRefused`; community worlds only, so the user's own
+    worlds and their DMs are as they were). With cheats off: `character.gift` and `account.unlock` refused, saying
+    which setting allows them; `character.dm` refused without `--dev-tools`. The host's own wolves (the account in
+    `host.json`, whichever Editor account asks) get no rewards with cheats off: `character.resurrect`, `deed.award`,
+    `storyline.give`, `mentor.restore`, `milestone.credit` naming one of them, `estate.set` on a place their Chapter
+    leases or they lodge in whole, a grant (`character.grant` with coins above 0, doc 79's DM economy act, guarded in
+    `applyEconomyCommand`) and the Storykeeper's `player_grant` (a new `director::Bridge::grantRefused` hook, so the
+    guard holds even if a host runs the legacy bridge). Fines are not rewards and pass. `wharf.credit` (section 8's
+    table) no longer exists since doc 79 (Core answers "Unknown action"); `character.grant` is its successor.
+    `band.override` and the Storykeeper's `npc_band` act on residents' households only, never a wolf: nothing to guard.
+  - **`dungeonMaster` ignored and cleared.** `Game::devConsoleAllowed()` (not a community world, or `--dev-tools`)
+    gates the console, its command list and `snapshot.self.dungeonMaster`; a saved mark is cleared at the restore and
+    as the wolf comes in, each logged `RATW_CHEATS`.
+  - **The in-game notice.** On a community world a player is told when the host's tools act on their wolf, in the
+    host's name: killed, brought back, injured or healed, moved ("The host moved you: you find yourself somewhere
+    else."), given a Gift, granted or fined (the Storykeeper's too, through `Bridge::granted`), their tie ended, their
+    mentoring turned off or on. A wolf away is told when it next comes in ("While you were away: ..."), from
+    `Entity::hostNotes` (saved with the character, at most six, then cleared). The user's own worlds keep their words
+    ("A Dungeon Master grants you ...") and tell only a wolf in the world, as before.
+  - The per-kind body of `applyDmActions` moved, unchanged, into `Game::applyDmAct(row)` (public: the C++ tests have
+    no `dm.actions` table); the guards are its first step.
+  - **Migration 0062** (`0062_dm_server_state.sql`): `GRANT UPDATE (state, changed_by, changed_at, note) ON
+    admin.server_state TO ratw_dm`; no INSERT, DELETE or `singleton`. M3 moves Close and Open onto it.
+  - **`--dm-directory` off the package** (`server_command`; no `STATE/dm` made). The legacy Storykeeper stays
+    unstarted (Q18).
+  - **The agent's `kind` and host id** go to `central.json` (`{at, kind, host}`) in `--central-dir`, which the
+    entrypoint makes as `STATE/central`, owned by `ratw`, mode 0700 (the shared agent directory stays as it was for
+    `host.json`, which the server reads). Written from each heartbeat; a refused token, a delisted world or a banned
+    host clears the host and keeps the kind; a restarted agent keeps the kind it last wrote; the keys-only mode (no
+    token) removes it. Root's copy into the `admin` volume and the "ever official" record are M2b's.
+  - **The playtest path fix** (`map_editor.py`, `/api/playtest`): the project's id is checked against Atlas's id
+    pattern before the folder is named, on the big world's path too, and the folder must sit directly in
+    `Saved/Playtests`; otherwise 422.
+  - **The studio's 127.0.0.1 default** (Q25, recommendation taken): `studio.py serve` binds 127.0.0.1 unless given
+    `--host`; `tools/studio.sh` passes `--host 0.0.0.0` unless its arguments name a `--host`, so the user's usual
+    launcher keeps the local network; `editor.sh` and `dungeon-master.sh` pass `--host 127.0.0.1`, as their headers
+    always said ("local only"). **Changed for the user:** those two used to answer on the local network as well;
+    `--host 0.0.0.0` brings that back.
+  - **Tests** (one run): a fresh Release build (`build-m1`, from empty; 128 warnings, one of them a shadowed name in
+    the new Storykeeper hook, renamed after the run and rebuilt: 127 as before) and the full ctest once with the
+    database (`RATW_TEST_DB_TAG=s2stage_`, `RATW_TEST_KEY_PREFIX=s2stage`; `pg_client` on a throwaway
+    `ratw_test_s2stage_m1`, dropped after): **89 of 89 passed**, none skipped. `ticket_tests` 1,012 checks (new:
+    `theHostsToolsKeepTheCommunityGuards`: everyone, off and host on one save, the mark cleared, every guarded kind,
+    the notices online and away, an official world refusing `--host-cheats`); `server_parts_tests` 267 (the
+    Storykeeper's hooks). Tools: `Package/test_package.py` 20, `test_world_agent` 20, `test_map_editor` 52,
+    `test_studio` 54, `test_world_package` 48 (1 skipped: the pre-79 package check, DEV's build has moved on),
+    `test_dm_live` 10 (new: the DM role closes and opens its world, refused INSERT, DELETE and `singleton`), and
+    `test_dungeon_master` 54: all OK. No `s2stage` database or `/tmp` file left;
+    `artifacts/screenshots/dev-console-fight.png` untouched.
+  - **DEV migrated:** `pg_dump -Fc` first (`Saved/Backups/ratw_ridgemere2-before-0062.dump`, 303 MB), then
+    `world_db.py migrate --db dev`: 0062 applied to `ratw_ridgemere2`. PROD and old DEV untouched.
+  - Not in M1: the "ticket's `gift` claim against a world-set Gift" question (M0a); Disabled-with-reason states in the
+    DM tool (M3/M5); the I11 revokes and `dm.audit` (M2a).
 
 ## Review (2026-11-08)
 

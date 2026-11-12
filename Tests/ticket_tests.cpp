@@ -10,6 +10,7 @@
 #include "RatwTickets.h"
 #include "RatwWire.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -1212,6 +1213,162 @@ void theHostDecidesKicksBansAndSilences()
     }
 }
 
+// One of the DM tool's acts as the server applies a dm.actions row (Game::applyDmAct), by an Editor account.
+Result act(game::Game& g, const std::string& kind, const std::string& target, const std::string& payload = "{}")
+{
+    const auto done = g.applyDmAct({std::string("1"), kind, target, std::string("host-ab12"), payload});
+    g.settle();
+    return done;
+}
+
+void theHostsToolsKeepTheCommunityGuards()
+{
+    // Doc 78, 8 (Phase M1): a community world's cheats come from world.toml's cheats alone (off, "host": --host-cheats,
+    // "everyone": --dev-tools), enforced here at the point of use; the host's own wolves get no rewards with cheats off;
+    // nobody has the Dev Console without --dev-tools, whatever was saved; and a player is told when the host acts on
+    // their wolf, at once or when they next come in.
+    Fixture f;
+    const auto save = (f.dir / "guards.json").string();
+    writeHost(f.dir, "{\"at\": 1, \"host\": \"" + Acct1 + "\"}");
+    auto o = f.options(false, save);
+    o.oneWolfPerAccount = false;
+    const auto join = [&](game::Game& g, Client& c, const std::string& wolf, const std::string& account, const std::string& name, bool first) {
+        g.connect(&c);
+        say(g, &c, hello(f.ticket(wolf, account, name)));
+        if (first)
+            say(g, &c, cmd({{"type", "character_arrive"}, {"commandId", "a-" + wolf.substr(5, 4)}, {"tier", "gifted"}}));
+        expect(c.entityId == wolf, name + " is in the world: " + c.message());
+    };
+    const std::string refusedOwn = "host's own wolves";
+    {
+        // cheats = "everyone" (--dev-tools): the Dev Console may be given, as on DEV.
+        auto everyone = o;
+        everyone.devTools = true;
+        game::Game g(everyone);
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "a community world with every cheat starts: " + problem);
+        Client a, b;
+        a.id = 1;
+        b.id = 2;
+        join(g, a, Wolf1, Acct1, "Wren Reed", true);
+        join(g, b, Wolf2, Acct2, "Moss Hollow", true);
+        expect(act(g, "character.dm", Wolf2, R"({"dungeonMaster": true})").ok && g.characters().at(Wolf2).dungeonMaster,
+               "with --dev-tools a player may be marked a Dungeon Master");
+        expect(console(g, &b, "/help")->boolean("ok"), "and has the Dev Console");
+        expect(g.worldStatus().boolean("cheats"), "listed cheats on");
+        g.save();
+        g.disconnect(&a);
+        g.disconnect(&b);
+        g.save();
+    }
+    {
+        // cheats = "off": the same save, the mark cleared; no Gifts, tiers or Dev Console from the host's tools; no
+        // rewards to the host's own wolves; the host's acts on a player's wolf told to them.
+        std::vector<std::string> notes;
+        game::Game g(o);
+        f.wire(g);
+        g.log = [&notes](const char*, const std::string& text) { notes.push_back(text); };
+        std::string problem;
+        expect(g.start(problem), "starts with cheats off: " + problem);
+        expect(!g.worldStatus().boolean("cheats"), "listed cheats off");
+        expect(!g.characters().at(Wolf2).dungeonMaster, "a Dungeon Master mark saved earlier is cleared on load");
+        expect(std::any_of(notes.begin(), notes.end(), [](const std::string& n) { return n.find("RATW_CHEATS") != std::string::npos; }),
+               "and the log says so");
+        Client a, b;
+        a.id = 3;
+        b.id = 4;
+        join(g, a, Wolf1, Acct1, "Wren Reed", false);
+        join(g, b, Wolf2, Acct2, "Moss Hollow", false);
+        expect(!console(g, &b, "/help")->boolean("ok") && !g.world().entity(Wolf2)->dungeonMaster, "so the Dev Console is gone");
+        const auto dm = act(g, "character.dm", Wolf2, R"({"dungeonMaster": true})");
+        expect(!dm.ok && dm.message.find("Dev Console is off on community worlds") != std::string::npos && !g.characters().at(Wolf2).dungeonMaster,
+               "and can't be given again: " + dm.message);
+        for (const auto* kind : {"character.gift", "account.unlock"})
+        {
+            const auto r = act(g, kind, Wolf2, std::string(kind) == "character.gift" ? R"({"gift": "water"})" : R"({"tier": "quickened", "op": "grant"})");
+            expect(!r.ok && r.message.find("cheats = \"host\"") != std::string::npos, std::string(kind) + " is a cheat: " + r.message);
+        }
+        expect(g.world().entity(Wolf2)->gift == "fire", "the Gift unchanged");
+        // The host's own wolf: rewards refused, whichever Editor account asks; the same acts on another wolf go through.
+        expect(act(g, "character.kill", Wolf1).ok, "the host may still kill its own wolf (no reward)");
+        for (const auto& [kind, payload] : std::vector<std::pair<std::string, std::string>>{
+                 {"character.resurrect", "{}"},
+                 {"deed.award", R"({"kind": "award", "weight": "great"})"},
+                 {"storyline.give", R"({"template": "any"})"},
+                 {"mentor.restore", "{}"},
+                 {"milestone.credit", "{\"milestone\": \"The bell\", \"people\": [{\"id\": \"" + Wolf2 + "\"}, {\"id\": \"" + Wolf1 + "\"}]}"}})
+        {
+            const auto r = act(g, kind, kind == "milestone.credit" ? std::string("story") : Wolf1, payload);
+            expect(!r.ok && r.message.find(kind == "milestone.credit" ? std::string("host's own wolves") : refusedOwn) != std::string::npos,
+                   kind + " to the host's own wolf is refused: " + r.message);
+        }
+        expect(g.world().entity(Wolf1)->dead, "the host's wolf stays dead");
+        auto grant = Value::object();
+        grant.add("coins", 40);
+        grant.add("reason", "for the bell");
+        const auto own = g.applyEconomyCommand("character.grant", Wolf1, grant);
+        expect(!own.ok && own.message.find(refusedOwn) != std::string::npos, "a grant to the host's own wolf is refused: " + own.message);
+        const auto cash = g.world().society().account(Wolf2)->cash;
+        const auto theirs = g.applyEconomyCommand("character.grant", Wolf2, grant);
+        g.settle();
+        expect(theirs.ok && g.world().society().account(Wolf2)->cash == cash + 40 && saidSomething(b, "The host grants you 40 pennies: for the bell."),
+               "a grant to another player's wolf is paid, and they are told the host did it: " + theirs.message);
+        // The host acts on a player's wolf: told so in game.
+        expect(act(g, "character.kill", Wolf2).ok && saidSomething(b, "The host has ended your life."), "a kill, told");
+        expect(act(g, "character.resurrect", Wolf2).ok && saidSomething(b, "The host has brought you back to life."), "a resurrection, told");
+        const auto* moss = g.world().entity(Wolf2);
+        const auto to = "{\"cell\": \"" + moss->cellId + "\", \"x\": " + std::to_string(int(moss->position.x)) + ", \"y\": " +
+                        std::to_string(int(moss->position.y)) + "}";
+        expect(act(g, "character.move", Wolf2, to).ok && saidSomething(b, "The host moved you"), "a move, told");
+        expect(act(g, "mentor.revoke", Wolf2).ok && saidSomething(b, "The host has turned your mentoring off"), "mentoring off, told");
+        // Away: told when the wolf next comes in, once.
+        g.disconnect(&b);
+        const auto away = act(g, "character.kill", Wolf2);
+        expect(away.ok, "a kill while the player is away: " + away.message);
+        Client b2;
+        b2.id = 5;
+        join(g, b2, Wolf2, Acct2, "Moss Hollow", false);
+        expect(saidSomething(b2, "While you were away: The host"), "told as it comes back in");
+        expect(g.characters().at(Wolf2).hostNotes.empty() && g.world().entity(Wolf2)->hostNotes.empty(), "and only once");
+        g.disconnect(&a);
+        g.disconnect(&b2);
+    }
+    {
+        // cheats = "host" (--host-cheats): the host's tools may give Gifts and reward the host's own wolves; players get
+        // no socket cheats, and nobody the Dev Console.
+        auto host = o;
+        host.hostCheats = true;
+        game::Game g(host);
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "starts with the host's cheats: " + problem);
+        expect(g.worldStatus().boolean("cheats"), "listed cheats on");
+        Client a, b;
+        a.id = 6;
+        b.id = 7;
+        join(g, a, Wolf1, Acct1, "Wren Reed", false);
+        join(g, b, Wolf2, Acct2, "Moss Hollow", false);
+        expect(act(g, "character.gift", Wolf2, R"({"gift": "water"})").ok && g.world().entity(Wolf2)->gift == "water" &&
+                   saidSomething(b, "The host's doing: A Gift wakes in you"),
+               "a Gift given by the host's tools, the player told");
+        expect(act(g, "character.resurrect", Wolf1).ok && !g.world().entity(Wolf1)->dead, "the host's own wolf may be rewarded");
+        expect(!act(g, "character.dm", Wolf2, R"({"dungeonMaster": true})").ok, "still no Dev Console");
+        say(g, &b, cmd({{"type", "gift"}, {"gift", "fire"}}));
+        expect(g.world().entity(Wolf2)->gift == "water", "and no socket cheats for players");
+        g.disconnect(&a);
+        g.disconnect(&b);
+    }
+    {
+        auto official = f.options(true);
+        official.hostCheats = true;
+        game::Game g(official);
+        f.wire(g);
+        std::string problem;
+        expect(!g.start(problem) && problem.find("--host-cheats") != std::string::npos, "an official world refuses --host-cheats: " + problem);
+    }
+}
+
 void portraitUploadsAreOffOnCommunityWorlds()
 {
     Fixture f;
@@ -1251,6 +1408,7 @@ int main()
         theAgentsFilesCountTheWolvesAndCarryCentralsBans();
         aScratchServerWritesNoOnlineFile();
         theHostDecidesKicksBansAndSilences();
+        theHostsToolsKeepTheCommunityGuards();
         portraitUploadsAreOffOnCommunityWorlds();
     }
     catch (const std::exception& error)

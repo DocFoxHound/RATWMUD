@@ -76,6 +76,28 @@ class DungeonMasterLive(unittest.TestCase):
             time.sleep(.25)
         self.fail(f'action {action} was never applied')
 
+    def test_the_dm_role_closes_and_opens_its_world(self):
+        """Migration 0062 (Docs/Design/78, 7; Phase M1): ratw_dm may update admin.server_state's four columns (Close and
+        Open without the publisher's password), the server told as before; never insert, delete or touch `singleton`."""
+        import psycopg
+        import world_sync as WS
+        with W.connect('dev', 'game', dbname=self.name) as listener:
+            listener.execute('LISTEN ratw_maintenance')
+            try:
+                with W.connect('dev', 'dm', dbname=self.name) as dm:
+                    self.assertEqual(WS.set_state(dm, 'maintenance', 'host-ab12', 'Closed for the festival.')['state'], 'maintenance')
+                    for refused in ("INSERT INTO admin.server_state (singleton) VALUES (true)", 'DELETE FROM admin.server_state',
+                                    'UPDATE admin.server_state SET singleton = true'):
+                        with self.assertRaises(psycopg.errors.InsufficientPrivilege, msg=refused):
+                            with dm.transaction():
+                                dm.execute(refused)
+                    self.assertEqual(WS.set_state(dm, 'running', 'host-ab12')['state'], 'running')
+                said = [json.loads(n.payload) for n in listener.notifies(timeout=2, stop_after=2)]
+                self.assertEqual([(n['state'], n['by']) for n in said], [('maintenance', 'host-ab12'), ('running', 'host-ab12')])
+            finally:
+                with W.connect('dev', 'owner', dbname=self.name) as owner:
+                    WS.set_state(owner, 'running')
+
     def test_an_injury_given_online_and_offline(self):
         port = free_port()
         server = subprocess.Popen([str(SERVER), '--database', 'dev', '--port', str(port), '--for', '120', '--dev-identity'],

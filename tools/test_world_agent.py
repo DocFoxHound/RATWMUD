@@ -135,6 +135,7 @@ class Central:
         self.why = "Central could not reach this world at 203.0.113.5:7788: timed out. Open port 7788 to the internet (TCP)."
         self.bans = ['acct-' + 'b' * 32]
         self.host = 'acct-' + 'h' * 32
+        self.kind = 'community'
         self.status = 200
         self.code = ''
         self.lock = threading.Lock()
@@ -145,7 +146,7 @@ class Central:
                 return 401, {'ok': False, 'code': 'bad_token', 'error': 'That host token is not known.'}, {}
             if self.status != 200:
                 return self.status, {'ok': False, 'code': self.code, 'error': 'Refused.'}, {}
-            return 200, {'ok': True, 'world': self.world, 'kind': 'community', 'listed': self.listed,
+            return 200, {'ok': True, 'world': self.world, 'kind': self.kind, 'listed': self.listed,
                          'reachable': self.listed, 'why': '' if self.listed else self.why,
                          'address': '203.0.113.5:7788', 'players': len(body.get('online', [])), 'bans': self.bans,
                          'host': self.host, 'time': time.time(), 'every': 60}, {}
@@ -227,6 +228,41 @@ class AgentTests(unittest.TestCase):
         a.heartbeat()
         self.assertEqual(json.loads((self.dir / 'host.json').read_text())['host'], 'acct-' + 'h' * 32,
                          'a rate limit is no reason to drop the host')
+
+    def test_the_kind_and_the_host_go_where_only_the_agent_writes(self):
+        """Doc 78, 6.7 (Phase M1): central.json, in --central-dir (not the agent directory, which the game server's user
+        can write), carries central's kind for the world and its host, from each heartbeat; a refusal clears the host
+        and keeps the kind; a restarted agent keeps the kind it last wrote; without --central-dir nothing is written."""
+        own = self.dir / 'central'
+        own.mkdir()
+        a = self.make(central_dir=own)
+        self.assertTrue(a.heartbeat())
+        said = json.loads((own / 'central.json').read_text())
+        self.assertEqual((said['kind'], said['host']), ('community', 'acct-' + 'h' * 32))
+        self.assertLessEqual(abs(said['at'] - time.time()), 5)
+        self.assertFalse(list(own.glob('.central.json.*')), 'written atomically: no temporary file left')
+        self.assertFalse((self.dir / 'central.json').exists(), 'never in the shared agent directory')
+        self.central.kind, self.central.host = 'official', None
+        self.assertTrue(a.heartbeat())
+        said = json.loads((own / 'central.json').read_text())
+        self.assertEqual((said['kind'], said['host']), ('official', None))
+        self.central.kind = 'nonsense'              # (Not a kind: the last one is kept.)
+        self.assertTrue(a.heartbeat())
+        self.assertEqual(json.loads((own / 'central.json').read_text())['kind'], 'official')
+        self.central.status, self.central.code = 403, 'delisted'
+        self.assertFalse(a.heartbeat())
+        said = json.loads((own / 'central.json').read_text())
+        self.assertEqual((said['kind'], said['host']), ('official', None), 'a refusal clears the host, keeps the kind')
+        self.central.status, self.central.code, self.central.kind = 401, 'bad_token', 'community'
+        again = self.make(central_dir=own)          # (A restarted agent, before any heartbeat is answered.)
+        self.assertFalse(again.heartbeat())
+        self.assertEqual(json.loads((own / 'central.json').read_text())['kind'], 'official', 'kept across a restart')
+        plain = Path(self.temp.name) / 'plain'
+        plain.mkdir()
+        self.central.status, self.central.code = 200, ''
+        b = agent.Agent(self.fake.url, plain, self.world.port, TOKEN, log=self.lines.append)
+        self.assertTrue(b.heartbeat())
+        self.assertFalse((plain / 'central.json').exists(), 'no --central-dir: no central.json')
 
     def test_a_stale_or_foreign_online_file_counts_nobody(self):
         a = self.make()

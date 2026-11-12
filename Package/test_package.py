@@ -74,7 +74,20 @@ class Settings(unittest.TestCase):
         self.refused('needs its id')
         self.write(body.replace('id = ""', f'id = "{WORLD}"'))
         s = self.settings()
-        self.assertEqual((s['name'], s['central'], s['token']), ('My Ridgemere', 'https://central.example.org', ''))
+        self.assertEqual((s['name'], s['central'], s['token'], s['cheats']),
+                         ('My Ridgemere', 'https://central.example.org', '', 'off'))
+
+    def test_cheats_are_off_host_or_everyone(self):
+        """Doc 78, 8 (Phase M1): world.toml's cheats alone, default off; anything else stops the start."""
+        self.write(SETTINGS)
+        self.assertEqual(self.settings()['cheats'], 'off')
+        for value in ('off', 'host', 'everyone'):
+            self.write(SETTINGS.replace('[central]', f'cheats = "{value}"\n[central]'))
+            self.assertEqual(self.settings()['cheats'], value)
+        self.write(SETTINGS.replace('[central]', 'cheats = "on"\n[central]'))
+        self.refused('cheats is "off", "host" or "everyone"')
+        self.write(SETTINGS.replace('[central]', 'cheats = true\n[central]'))
+        self.refused('cheats must be text')
 
     def test_a_world_without_central_is_refused(self):
         """No LAN mode (doc 77, Q9): password mode signs in only from loopback, which a container never sees."""
@@ -159,16 +172,30 @@ class Children(unittest.TestCase):
         self.assertEqual(command[command.index('--world-name') + 1], 'Wolf Hollow')
         self.assertNotIn('--web', command)
 
+    def test_the_server_takes_its_cheats_from_world_toml_and_no_dm_directory(self):
+        """Doc 78, 8 and Q18 (Phase M1): off gives no cheat flag, host --host-cheats, everyone --dev-tools; never
+        --dm-directory (nothing in the container reads it; the legacy Storykeeper stays unstarted)."""
+        for cheats, flags in (('off', []), ('host', ['--host-cheats']), ('everyone', ['--dev-tools'])):
+            command = E.server_command({**self.s, 'cheats': cheats}, 7788, self.dir / 'agent', False, 2)
+            self.assertEqual([c for c in command if c in ('--host-cheats', '--dev-tools')], flags, cheats)
+            self.assertNotIn('--dm-directory', command)
+            self.assertNotIn('--official', command)
+        self.assertFalse((self.dir / 'dm').exists(), 'and no DM directory is made')
+
     def test_no_token_keeps_only_the_keys_and_drops_a_tokens_host_and_bans(self):
         agent = self.dir / 'agent'
         agent.mkdir()
         for stale in ('host.json', 'bans.json', 'central-keys.json'):
             (agent / stale).write_text('{}')
+        own = self.dir / 'central'
+        own.mkdir()
+        (own / 'central.json').write_text('{"kind": "community", "host": "acct-x"}')
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
-            E.agent_starter(self.s, 7788, agent)
+            E.agent_starter(self.s, 7788, agent, own)
         self.assertIn('host\'s commands', out.getvalue())
         self.assertEqual(sorted(p.name for p in agent.iterdir()), ['central-keys.json'])
+        self.assertFalse((own / 'central.json').exists(), 'nor its central.json (doc 78, 6.7)')
 
     def test_the_agents_lines_reach_the_container_log(self):
         """`docker compose logs world` shows why the agent stopped, or that the world is listed."""

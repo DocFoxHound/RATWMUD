@@ -53,8 +53,8 @@ bool Game::startTickets(std::string& problem)
     else if (options_.devIdentity)
         problem = "Ticket mode refuses --dev-identity: anyone reaching this world through a tunnel or a proxy on this "
                   "machine arrives from loopback (doc 77, 5).";
-    else if (o.official && (options_.devTools || options_.openTiers))
-        problem = "An official world runs without --dev-tools and --open-tiers (doc 77, 5).";
+    else if (o.official && (options_.devTools || options_.hostCheats || options_.openTiers))
+        problem = "An official world runs without --dev-tools, --host-cheats and --open-tiers (doc 77, 5; doc 78, 8).";
     else if (o.playerLimit < 1 || o.arrivalsPerHour < 1 || o.accountArrivalsPerHour < 1)
         problem = "Ticket mode needs a player limit and arrival limits of at least 1.";
     else if (o.worldName.empty() || o.worldName.size() > 48 ||
@@ -149,7 +149,7 @@ Value Game::worldStatus() const
     o.add("limit", options_.central.playerLimit);
     o.add("voices", !options_.dialogueEndpoint.empty());
     o.add("private", false);                        // (Private worlds, Q9: a password kept on central, later.)
-    o.add("cheats", options_.devTools);             // (A community world with dev tools: listed "cheats on", doc 77, 5.)
+    o.add("cheats", cheatsOn());                    // (Dev tools, or the host's: listed "cheats on", doc 77, 5; doc 78, 8.)
     return o;
 }
 
@@ -688,6 +688,89 @@ std::string Game::deciders(bool capital) const
     if (communityWorld())
         return capital ? "The host" : "the host";
     return capital ? "The Dungeon Masters" : "the Dungeon Masters";
+}
+
+bool Game::hostsOwnWolf(const std::string& characterId) const
+{
+    return communityWorld() && !hostSub_.empty() && !characterId.empty() && accounts_.ownerOf(characterId) == hostSub_;
+}
+
+std::string Game::actorWords(bool capital) const
+{
+    if (communityWorld())
+        return capital ? "The host" : "the host";
+    return capital ? "A Dungeon Master" : "a Dungeon Master";
+}
+
+void Game::tellActedOn(const std::string& characterId, const std::string& words)
+{
+    if (auto* c = clientOf(characterId))
+    {
+        system(c, words);
+        return;
+    }
+    if (!communityWorld())
+        return;                                     // (The user's own worlds: as they were, told only while in.)
+    // Kept with the wolf: on the world's copy while it lingers there, else on its saved one; the oldest dropped past six.
+    Entity* e = world_.entity(characterId);
+    if (!e || e->npc)
+    {
+        const auto saved = characters_.find(characterId);
+        e = saved == characters_.end() ? nullptr : &saved->second;
+    }
+    if (!e)
+        return;
+    if (e->hostNotes.size() >= 6)
+        e->hostNotes.erase(e->hostNotes.begin());
+    e->hostNotes.push_back(json::utf8Prefix(words, 300));
+    saveSoon();
+}
+
+std::string Game::dmActRefused(const std::string& kind, const std::string& target, const std::string& payloadText) const
+{
+    // Doc 78, 8 (Phase M1): what the host's tools may do on a community world, enforced here whatever the tool sent.
+    if (!communityWorld())
+        return {};
+    if (kind == "character.dm" && !options_.devTools)
+        return "The Dev Console is off on community worlds: only cheats = \"everyone\" in world.toml gives it (the world is then listed "
+               "\"cheats on\").";
+    if ((kind == "character.gift" || kind == "account.unlock") && !cheatsOn())
+        return "Gifts and Gift tiers by hand are cheats on a community world: set cheats = \"host\" in world.toml (the world is then "
+               "listed \"cheats on\").";
+    if (cheatsOn() || hostSub_.empty())
+        return {};
+    const std::string refused = "That is one of the host's own wolves: the host's tools reward them only with cheats on (cheats = "
+                                "\"host\" in world.toml; the world is then listed \"cheats on\").";
+    json::Value payload;
+    std::string problem;
+    if (!payloadText.empty())
+        json::parse(payloadText, payload, problem);
+    if (!payload.isObject())
+        payload = json::Value::object();
+    if ((kind == "character.resurrect" || kind == "deed.award" || kind == "storyline.give" || kind == "mentor.restore") &&
+        hostsOwnWolf(target))
+        return refused;
+    if (kind == "character.grant" && payload.number("coins", 0) > 0 && hostsOwnWolf(target))
+        return refused;
+    if (kind == "milestone.credit")
+        for (const auto& p : payload.array("people"))
+            if (p.isObject() && hostsOwnWolf(p.string("id")))
+                return "Credit names " + p.string("id") + ", one of the host's own wolves: the host's tools reward them only with cheats on "
+                       "(cheats = \"host\" in world.toml).";
+    if (kind == "estate.set")
+    {
+        // (A place the host's wolf holds, by its Chapter's lease or as a lodger of the whole place: its rent is theirs.)
+        if (const auto* lease = estates_.lease(target))
+            if (const auto* chapter = chapters_.byId(lease->chapter))
+                for (const auto& [member, rank] : chapter->members)
+                    if (hostsOwnWolf(member))
+                        return "That place is let to a Chapter of the host's own wolves: the host's tools set its terms only with cheats on "
+                               "(cheats = \"host\" in world.toml).";
+        if (const auto* lodging = wholeLodgingAt(target); lodging && hostsOwnWolf(lodging->holder))
+            return "That place is let to one of the host's own wolves: the host's tools set its terms only with cheats on (cheats = "
+                   "\"host\" in world.toml).";
+    }
+    return {};
 }
 
 bool Game::reloadHost(std::string& problem)
