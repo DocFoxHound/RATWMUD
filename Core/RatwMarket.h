@@ -101,10 +101,12 @@ struct Data
         std::string id;                              // [a-z0-9_], 32 at most.
         std::string words, notice, cry, sign = "the crier";   // Its cause words; its notice and crier's line ("" none).
         std::string noticeOn;                        // Its notice once begun, where `notice` is posted ahead ("" the same).
+        std::string noticeAfter;                     // Its notice once its ship has sailed, while it is still on ("": kept).
         int seasons = SeasonsAll;                    // The seasons it can happen in (a bit each: seasonBit).
         std::vector<std::pair<std::string, double>> goods;    // Base good -> the pressure it pushes toward (±0.3).
         double yields = 0, brings = 0;               // The pressure for its cart's goods (a farm's), or its ship's.
-        int days = 2, times = 0, ahead = 0;          // Days it presses; Times points while it does; days posted ahead.
+        int days = 2, ahead = 0;                     // Days it presses; days posted ahead. (No Times points: an event
+                                                     // moves only its goods' prices and what people say; decided 2026-11-12.)
         double hour = 9, weight = 1;
         std::string needs;                           // "" any market; "city"; "port"; "cart"; "festival".
         std::string ship;                            // "" none; "docks" (it comes in with a ship); "lost" (a ship lost).
@@ -277,11 +279,12 @@ struct StagedEvent
     std::string market, kind;
     std::int64_t day = 0;
     double hour = 9;
-    int days = 2, times = 0, ahead = 0;             // Days it presses; Times points while on; days its notice is up before.
+    int days = 2, ahead = 0;                        // Days it presses; days its notice is up before.
     bool crowd = false;                             // A crowd at its market's place (or its port's Wharf) while on.
     std::vector<std::pair<std::string, double>> goods;   // Base good -> the pressure it pushes toward.
     std::string words, notice, cry;                 // Its cause words ("the wedding up at the Heights"), notice, cry.
     std::string noticeOn;                           // Its notice once begun (a rich cargo's "is in"), while it is due.
+    std::string noticeAfter;                        // Its notice once its ship has sailed ("has sailed"), till she has.
     std::string subject;                            // "ship:<id>" (it comes in with it), "lost:<id>" (the ship it loses),
                                                     // "farm:<id>" (the farm whose cart it holds); "" none.
     std::string status = "due";
@@ -327,7 +330,6 @@ inline constexpr std::size_t EventGoodsMost = 4;     // An event's goods, at mos
 inline constexpr double LostShipDays = 365;
 inline constexpr std::size_t LostShipsKept = 64;
 inline constexpr double EventTargetMost = .3;        // An event's pressure, either way (inside the clamp, 7.6).
-inline constexpr int EventTimesMost = 20;            // The Times points a market's events add, either way (5.3).
 struct Board
 {
     // The DM's prosperity, the one slider of the staged economy (doc 79, 5.2): the smoothed value the Board's Times and
@@ -405,13 +407,11 @@ Board decode(const json::Value& value);
 // last still due), ShipsMost in all; and the next ship's id above every "s<N>" there, so none is given twice.
 void mendShips(Board& board);
 // A saved list of events made one the game could have rolled (decode's, and a restored state's): one event of an id; a
-// status the game knows, else due; numbers in their ranges (hour, days 1 to 7, Times points, each good's pressure within
+// status the game knows, else due; numbers in their ranges (hour, days 1 to 7, each good's pressure within
 // EventTargetMost, six goods at most, known goods once each); words, notice and cry plain words (else the event is
 // dropped: a lying save's forbidden word never reaches a board); EventsAMarket a market (the oldest over or cancelled go
 // first), EventsMost in all; and the next event's id above every "e<N>" there.
 void mendEvents(Board& board);
-// The Times points a market's events add now (5.3): the sum of those on, within ±EventTimesMost.
-int eventTimes(const Board& board, const std::string& market);
 
 // Markets, found at load (5.1): a trade point for each community with a merchant post (its id the community's), lone
 // merchants joined to the nearest by path or to "outside", and the k nearest other markets by path.

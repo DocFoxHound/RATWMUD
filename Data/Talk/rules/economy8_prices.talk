@@ -5,6 +5,7 @@
 #                older lines with topic.item!=meal), topic.is ("is"/"are", agreeing with it)
 #   topic.good   the good's id;  topic.sort  food, drink or goods: a line about eating is said of food only
 #   deals        (a speaker's) yes where the speaker's own shop sells the good: a line of "my shelf" needs it
+#   sold_out     (a speaker's) yes where that shop has none of the good left: a line of a shelf bought bare needs it
 #   topic.dir    up | down;  topic.price  the list's price in words ("seven pence", "fourteen pence the dozen")
 #   topic.cause  players, dump, ripple, caravan, late, raid, harvest, ship, ship_takes, ship_late, ship_lost, event,
 #                still (the latest cause runs against the move);  topic.cause_words  the same in words;  topic.ship
@@ -348,8 +349,17 @@ say A stranger bought up all the #topic.what#. #topic.who#, it was. | #topic.who
 then other: prices.answer_cause
 remember pair: jk=trav 2m
 
+# (A keeper says its shelf was cleared only where it was: `sold_out`, none of the good left in its own shop. A dozen
+# loaves bought off a full shelf is good custom, never "cleared out".)
 rule e8p_pc_up_merchant
 when concept=talk.price_cause topic.dir=up role=merchant deals=yes topic.item!=meal
+cooldown 1d
+say #topic.who# has been buying my #topic.what#. Good custom. | #topic.who# came for #topic.what# and paid what I asked. I'll take that kind of morning.
+then other: prices.answer_cause
+remember pair: jk=trav 2m
+
+rule e8p_pc_up_merchant_bare
+when concept=talk.price_cause topic.dir=up role=merchant deals=yes sold_out=yes topic.item!=meal
 cooldown 1d
 say #topic.who# bought my #topic.what# to the last. Good custom. | Cleared out of #topic.what# by #topic.who#. I'll take that kind of morning.
 then other: prices.answer_cause

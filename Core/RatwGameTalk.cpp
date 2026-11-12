@@ -406,20 +406,29 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
         if (!v.empty())
             q.facts[k] = v;
     // Whether each speaker deals in the topic's good (doc 79, 11; Phase 8 repair: "my shelf of nails" only from a keeper
-    // who sells them).
+    // who sells them), and whether its shop has none of it left (`sold_out`: "cleared out of bread" only from a keeper
+    // whose bread is gone, never after a dozen loaves off a full shelf).
     if (const auto good = q.facts.find("topic.good"); good != q.facts.end())
     {
-        const auto deals = [&](const std::string& id) {
-            if (!world_.society().merchant(id))
-                return std::string("no");
-            for (const auto& w : world_.society().wares(id))
+        const auto deals = [&](const std::string& id, talk::Facts& of) {
+            of["deals"] = of["sold_out"] = "no";
+            const auto& s = world_.society();
+            if (!s.merchant(id))
+                return;
+            const auto* till = s.account(s.tillOf(id));
+            int left = 0;
+            for (const auto& w : s.wares(id))
                 if (items::baseOf(w) == good->second)
-                    return std::string("yes");
-            return std::string("no");
+                {
+                    of["deals"] = "yes";
+                    left += till ? Society::stock(*till, w) : 0;
+                }
+            if (of["deals"] == "yes" && left <= 0)
+                of["sold_out"] = "yes";
         };
-        q.a.facts["deals"] = deals(a);
+        deals(a, q.a.facts);
         if (!q.alone)
-            q.b.facts["deals"] = deals(b);
+            deals(b, q.b.facts);
     }
     return q;
 }

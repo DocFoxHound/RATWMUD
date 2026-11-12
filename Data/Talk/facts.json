@@ -17,6 +17,7 @@
     "owes": ["yes", "no"],
     "business": ["thriving", "steady", "failing", "none"],
     "deals": ["yes", "no"],
+    "sold_out": ["yes", "no"],
     "hungry": ["yes", "no"],
     "homeless": ["yes", "no"],
     "injured": ["none", "light", "bad"],

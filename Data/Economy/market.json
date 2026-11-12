@@ -319,7 +319,7 @@
     ]
   },
   "events": {
-    "about": "Staged events and the slider's causes (doc 79, 8.4, 8.5 and D25; Phase 7; Core/RatwEvents.cpp). Each market sees `perWeek` events a week, one more or fewer by a seeded score (1-3 at 2), times the rule eventRate, each of `list` it can show, rolled a week ahead and kept on the Market Board (a restart shows the same; a host's edit here changes none already rolled). An entry: `id` (a-z, 0-9 and _; never the forbidden word, as letters anywhere), `words` (its cause, said in talk, the price list's tooltip and the Times' cause: a noun phrase, read after \"since\", after a colon and after \"talk of\"), `notice` (on its market's board, signed `sign`), `cry` (the crier's line at the square, as it begins), `noticeOn` (its notice once begun, where the one posted ahead would read wrong after: a rich cargo's ship \"is in\"), with {market}, {day}, {goods}, {ship} and {from} filled ({Market}: capitalised); `goods`: each good's pressure the event presses toward (within 0.3 either way: inside the clamp), only those its market's shops sell or buy, four at most; `days` it presses (1-7), `times` its points on its market's Times while it does (within 20), `ahead` the days its notice is up before it (0: it is posted as it begins), `hour`, `weight` (how often it is picked), `needs` (city: the realm's largest market; port; cart: a staffed farm's cart to the market, `yields` the pressure on what that cart brings, `holdsCart` the cart kept home that day; festival: the day before a festival), `ship` (docks: it comes in with a ship of the port's timetable, `brings` the pressure on that ship's cargo, cancelled if the ship never comes; lost: the ship is lost at sea), `refill` (its cheap goods set out as it begins), `crowd` (a crowd at its market's place or the Wharf while on), `seasons` (those it can happen in, of spring, summer, autumn and winter; none: all four; the DM's too). A bad entry is left out, the rest kept; every text is checked for the forbidden word (whole words), and so is a Dungeon Master's cause. `causes`: the words a move of the prosperity slider comes with when the DM writes none (`down`, `up`: `words`, `notice`, `cry`, and `seasons` as an event's: \"the hard winter\" never in summer), and the notice and cry for one the DM writes ({cause}, {Cause}). A host changes `perWeek` (0 to 3), `list` (a shipped kind by its id, or its own as an object) and `causes` in its own world (doc 79, 12; Phase 9: live.economy.rules' market override, checked as this file is). Events never touch money, bands or posts.",
+    "about": "Staged events and the slider's causes (doc 79, 8.4, 8.5 and D25; Phase 7; Core/RatwEvents.cpp). Each market sees `perWeek` events a week, one more or fewer by a seeded score (1-3 at 2), times the rule eventRate, each of `list` it can show, rolled a week ahead and kept on the Market Board (a restart shows the same; a host's edit here changes none already rolled). An entry: `id` (a-z, 0-9 and _; never the forbidden word, as letters anywhere), `words` (its cause, said in talk and the price list's tooltip: a noun phrase, read after a colon and after \"talk of\"), `notice` (on its market's board, signed `sign`), `cry` (the crier's line at the square, as it begins), `noticeOn` (its notice once begun, where the one posted ahead would read wrong after: a rich cargo's ship \"is in\"), `noticeAfter` (its notice once its ship has sailed with the event still on, for one that comes in with a ship: she \"has sailed\", never \"is in\"), with {market}, {day}, {goods}, {ship} and {from} filled ({Market}: capitalised); `goods`: each good's pressure the event presses toward (within 0.3 either way: inside the clamp), only those its market's shops sell or buy, four at most; `days` it presses (1-7), `ahead` the days its notice is up before it (0: it is posted as it begins), `hour`, `weight` (how often it is picked), `needs` (city: the realm's largest market; port; cart: a staffed farm's cart to the market, `yields` the pressure on what that cart brings, `holdsCart` the cart kept home that day; festival: the day before a festival), `ship` (docks: it comes in with a ship of the port's timetable, `brings` the pressure on that ship's cargo, cancelled if the ship never comes; lost: the ship is lost at sea), `refill` (its cheap goods set out as it begins), `crowd` (a crowd at its market's place or the Wharf while on), `seasons` (those it can happen in, of spring, summer, autumn and winter; none: all four; the DM's too). A bad entry is left out, the rest kept; every text is checked for the forbidden word (whole words), and so is a Dungeon Master's cause. `causes`: the words a move of the prosperity slider comes with when the DM writes none (`down`, `up`: `words`, `notice`, `cry`, and `seasons` as an event's: \"the hard winter\" never in summer), and the notice and cry for one the DM writes ({cause}, {Cause}). A host changes `perWeek` (0 to 3), `list` (a shipped kind by its id, or its own as an object) and `causes` in its own world (doc 79, 12; Phase 9: live.economy.rules' market override, checked as this file is). Events never touch money, bands or posts, and no event is part of its market's Times (5.3; decided 2026-11-12: an event moves only its own goods' prices and what people say; a kind's old `times` points are read past).",
     "perWeek": 2,
     "list": [
       {
@@ -337,7 +337,6 @@
           "ale": 0.1
         },
         "days": 3,
-        "times": 5,
         "ahead": 2,
         "hour": 10,
         "needs": "city",
@@ -356,7 +355,6 @@
           "nails": 0.1
         },
         "days": 3,
-        "times": -8,
         "hour": 11
       },
       {
@@ -371,7 +369,6 @@
           "smoked_fish": -0.1
         },
         "days": 2,
-        "times": 3,
         "hour": 7,
         "refill": true,
         "crowd": true,
@@ -388,7 +385,6 @@
           "grapes": 0.15
         },
         "days": 4,
-        "times": -5,
         "hour": 8,
         "seasons": ["spring", "summer", "autumn"]
       },
@@ -405,7 +401,6 @@
           "raw_meat": 0.1
         },
         "days": 2,
-        "times": 4,
         "ahead": 1,
         "hour": 9,
         "needs": "festival"
@@ -416,7 +411,6 @@
         "notice": "The cart from {from} is not coming today: a lame ox. {Goods} short at {market} till it does.",
         "yields": 0.1,
         "days": 1,
-        "times": -2,
         "hour": 5,
         "needs": "cart",
         "holdsCart": true
@@ -426,6 +420,7 @@
         "words": "{ship}'s rich cargo",
         "notice": "{Ship} is due on {day} with a rich cargo: {goods} cheap at the Wharf when she is in.",
         "noticeOn": "{Ship} is in with a rich cargo: {goods} cheap at the Wharf.",
+        "noticeAfter": "{Ship} has sailed, and left a rich cargo at the Wharf: {goods} cheap while it lasts.",
         "cry": "{Ship} is in, and a rich cargo with her!",
         "sign": "the Wharf office",
         "goods": {
@@ -436,7 +431,6 @@
         },
         "brings": -0.15,
         "days": 2,
-        "times": 5,
         "ahead": 2,
         "ship": "docks",
         "crowd": true
@@ -449,7 +443,6 @@
         "sign": "the Wharf office",
         "brings": 0.2,
         "days": 4,
-        "times": -8,
         "ship": "lost",
         "crowd": true
       },
@@ -464,7 +457,6 @@
           "porridge": 0.1
         },
         "days": 2,
-        "times": -3,
         "hour": 8
       },
       {
@@ -478,7 +470,6 @@
           "sheepskin": -0.1
         },
         "days": 2,
-        "times": 3,
         "hour": 9,
         "crowd": true
       },
@@ -492,7 +483,6 @@
           "smoked_fish": 0.1
         },
         "days": 3,
-        "times": -3,
         "hour": 9
       },
       {
@@ -505,7 +495,6 @@
           "mead": -0.1
         },
         "days": 2,
-        "times": 2,
         "hour": 12
       }
     ],

@@ -438,8 +438,9 @@ void theListAndItsChecks()
         {"id": "fine", "words": "a second of an id", "goods": {"fish": 0.1}}])");
     const auto kinds = market::eventKindsOf(host.items());
     expect(kinds.size() == 1 && kinds[0].id == "fine", "only the plain one kept: " + std::to_string(kinds.size()));
-    expect(kinds[0].days == 7 && kinds[0].times == market::EventTimesMost && std::abs(kinds[0].goods[0].second - market::EventTargetMost) < 1e-9,
-           "its numbers held to their ranges");
+    // (Its old `times`, the points an event once put on its market's Times, is read past: the kind is kept, 5.3.)
+    expect(kinds[0].days == 7 && std::abs(kinds[0].goods[0].second - market::EventTargetMost) < 1e-9,
+           "its numbers held to their ranges, its old Times points read past");
     const auto causes = market::causesOf(parsed(R"([{"id": "hotdog_tax", "words": "a tax"}, {"id": "a", "words": "the dog tax"},
                                                      {"id": "b", "words": "the salt tax"}])").items());
     expect(causes.size() == 1 && causes[0].id == "b", "a host's causes held to the same rules");
@@ -616,12 +617,29 @@ void anEventPressesItsGoods()
             for (const auto& ware : soc.stagedShelfGoods(k))
                 if (items::baseOf(ware) == g && t < 0)
                     expect(stock(w, k, ware) >= soc.shelfTarget(soc.tillOf(k), ware), "the catch set out (refill): " + ware);
-    expect(soc.timesScore("east") == before + e->times && soc.timesCause("east") == "a good catch", "its Times points, and the Times' cause");
+    // (Decided 2026-11-12: an event moves its goods' prices and the talk, never its market's Times.)
+    expect(soc.timesScore("east") == before && soc.marketTimes("east") == 0 && soc.timesCause("east") != "a good catch",
+           "no Times points: the score as it was, the cause never the event's: " + std::to_string(soc.timesScore("east")));
+    // (At a band's edge, 18 of the 20 that make good times or lean ones, the event on tips nothing: the Times' band is what
+    // the bands' weekly cut, the staples' price factor, the day's thefts and the shops' budgets read. The catch's old five
+    // points made 23 of it.)
+    {
+        auto& board = soc.stagedBoard();
+        const int slider = board.slider, target = board.sliderTarget;
+        for (const int edge : {18, -18})
+        {
+            board.slider = board.sliderTarget = edge;
+            expect(soc.timesScore("east") == before - slider + edge && soc.marketTimes("east") == soc.marketTimes("west"),
+                   "at the edge the event's market is in the Times of one with none: " + std::to_string(soc.timesScore("east")));
+            expect(before - slider != 0 || soc.marketTimes("east") == 0, "ordinary still, at " + std::to_string(edge));
+        }
+        board.slider = slider, board.sliderTarget = target;
+    }
     std::map<std::string, std::string> facts;
     w.talkTown("e1", facts);
     expect(facts["world.event"] == "good_catch" && facts["world.event_words"] == "a good catch" && facts["world.event_when"] == "now",
            "talk knows it: " + facts["world.event"] + " " + facts["world.event_when"]);
-    // (Ordinary times: no cause said for them, though the catch is the largest part of the score.)
+    // (Ordinary times: no cause said for them.)
     const bool noCause = facts.count("world.times_cause") == 0;
     expect(facts["world.times"] == "ordinary" && noCause, "and the times, with no cause");
     const auto* place = w.roadMarket("east");
@@ -666,7 +684,7 @@ void anEventPressesItsGoods()
         nextMorning(w);
     e = w.stagedEvent(id);
     expect(e && e->status == "over" && count(w.takeEvents(), "event over", id) == 1, "over after its two days, once");
-    expect(soc.timesScore("east") == before, "its Times points gone");
+    expect(soc.timesScore("east") == before, "the Times as they were, on and over");
     facts.clear();
     w.talkTown("e1", facts);
     expect(facts["world.event_when"] == "past", "talked of as past: " + facts["world.event_when"]);
@@ -1175,6 +1193,39 @@ void shipsInTheEvents()
            "its notice says she is in, never still due: " + w.stagedEvent(rich)->notice);
     for (const auto& [g, target] : w.stagedEvent(rich)->goods)
         expect(target < 0 && soc.pressure("east", g) < 0, "its goods cheaper: " + g);
+    // She sails that evening with her cargo's two days still running: the notice says she has sailed, told once, never
+    // "is in" of a ship gone (the slice 2 verify's leftover); the event stays on.
+    {
+        expect(!w.stagedEvent(rich)->noticeAfter.empty(), "a notice kept for when she has sailed");
+        w.takeEvents();
+        expect(w.setTimeOfDay(due[0].sails + .1).ok, "to her sailing hour");
+        for (int t = 0; t < 4; ++t)
+            w.tick(.5);
+        const auto* gone = shipById(w, due[0].id);
+        const auto* ev = w.stagedEvent(rich);
+        expect(gone && gone->status == "sailed" && ev->status == "on", "she has sailed, her cargo's event still on");
+        expect(ev->notice.rfind("The " + due[0].name.substr(4) + " has sailed, ", 0) == 0 && ev->notice.find(" is in") == std::string::npos &&
+                   ev->noticeAfter.empty(),
+               "its notice says she has sailed, never still in: " + ev->notice);
+        expect(count(w.takeEvents(), "event notice", rich) == 1, "the new notice told once");
+        for (int t = 0; t < 4; ++t)
+            w.tick(.5);
+        expect(count(w.takeEvents(), "event notice", rich) == 0, "and never again");
+        // (Saved with the Board, so a restart between her docking and her sailing keeps it; an event over has none.)
+        auto rolled = market::decode(market::encode(soc.board()));
+        for (auto& e : rolled.events)
+            if (e.id == rich)
+                e.status = "due", e.noticeAfter = "The Gull has sailed.";
+        const auto kept = market::decode(market::encode(rolled));
+        const auto same = std::find_if(kept.events.begin(), kept.events.end(), [&](const auto& e) { return e.id == rich; });
+        expect(same != kept.events.end() && same->noticeAfter == "The Gull has sailed.", "kept through a save while it waits");
+        for (auto& e : rolled.events)
+            if (e.id == rich)
+                e.status = "over";
+        market::mendEvents(rolled);
+        expect(std::all_of(rolled.events.begin(), rolled.events.end(), [](const auto& e) { return e.status != "over" || e.noticeAfter.empty(); }),
+               "none kept once it is over");
+    }
     // The lost ship's day.
     while (today(w) < due[1].day)
         nextMorning(w);
@@ -1498,10 +1549,17 @@ void savesAndOlderSaves()
         const auto b = market::decode(board);
         const auto e901 = std::find_if(b.events.begin(), b.events.end(), [](const auto& e) { return e.id == "e901"; });
         expect(std::none_of(b.events.begin(), b.events.end(), [](const auto& e) { return e.id == "e900"; }), "the forbidden word never reaches a board");
+        // (Its `times`, as an older save carries them, read past: the event loads.)
         expect(e901 != b.events.end() && e901->status == "due" && e901->hour <= 23.99 && e901->days == 7 &&
-                   e901->times == market::EventTimesMost && e901->goods.size() == 1 && e901->goods[0].second == market::EventTargetMost &&
-                   e901->words == "a catch",
+                   e901->goods.size() == 1 && e901->goods[0].second == market::EventTargetMost && e901->words == "a catch",
                "a lying event put right");
+        {
+            const auto again = market::encode(b);
+            bool points = false;
+            for (const auto& row : again.array("events"))
+                points |= row.find("times") != nullptr;
+            expect(!again.array("events").empty() && !points, "and no event is saved with Times points again");
+        }
         expect(b.nextEvent == 904, "the next id above every one: " + std::to_string(b.nextEvent));
         auto lying = saved;
         lying.society.board = b;
@@ -1969,8 +2027,9 @@ void theRepairsTogether()
                     return e;
             throw std::runtime_error("no event " + eventId);
         };
-        // (1) Each kind of the catalogue east can show, on: its talk, its Times' cause (the market's own shift taking the
-        // band past ordinary, so the event is the largest part on its side), the Means; then soon, then over.
+        // (1) Each kind of the catalogue east can show, on: its talk; the Times' cause never the event's (decided
+        // 2026-11-12: the market's own harvest takes the band past ordinary, and that is the cause, in talk and in the
+        // Means, whatever is on at the market); then soon, then over.
         int kinds = 0, timesHeard = 0, causeSaid = 0;
         for (const auto& kind : market::data().events)
         {
@@ -1991,17 +2050,29 @@ void theRepairsTogether()
             const auto words = w.stagedEvent(eventId)->words;
             if (print)
                 std::cout << "  " << kind.id << ": \"" << words << "\"\n";
-            soc.setTimesShift({{"east", kind.times < 0 ? -18 : 18}});
-            expect(soc.marketTimes("east") != 0 && soc.timesCause("east") == words, kind.id + ": the Times' cause is the event: " + soc.timesCause("east"));
+            const int way = kinds % 2 ? -30 : 30;
+            const std::string harvest = way < 0 ? "a poor harvest" : "a good harvest";
+            expect(soc.timesScore("east") == 0, kind.id + " on: the Times' score unmoved: " + std::to_string(soc.timesScore("east")));
+            soc.setHarvestShift({{"east", way}});
+            soc.setTimesShift({{"east", way}});
+            expect(soc.timesScore("east") == way && soc.marketTimes("east") == (way < 0 ? -1 : 1) && soc.timesCause("east") == harvest,
+                   kind.id + ": the Times' cause is the harvest, never the event: " + soc.timesCause("east"));
+            {
+                std::map<std::string, std::string> facts;
+                w.eventFacts("east", facts);
+                expect(facts["world.times_cause"] == harvest && facts["world.event_words"] == words,
+                       kind.id + ": talk's facts keep them apart: " + facts["world.times_cause"] + "; " + facts["world.event_words"]);
+            }
             const auto means = soc.meansNote("e1");
-            expect(means.find(", since " + words + ".") != std::string::npos, "the Means: " + means);
+            expect(means.find(", since " + harvest + ".") != std::string::npos && means.find("since " + words) == std::string::npos, "the Means: " + means);
             if (print)
                 std::cout << "    [means] " << means << "\n";
             const auto evNow = heard("talk.event", {});
             expect(!evNow.empty(), kind.id + " is talked of");
             const auto times = heard("talk.times", {});
             timesHeard += !times.empty();           // (The hourly draw: most kinds' Times are heard in four days.)
-            causeSaid += said(times, words) || said(times, capital(words));
+            causeSaid += said(times, harvest) || said(times, capital(harvest));
+            expect(!said(times, words) && !said(times, capital(words)), kind.id + ": the Times are never put down to the event");
             // (Its goods' prices, pressed its way: the cause said as the event.)
             heard("talk.prices", [&](const talk::Query& q) { return q.facts.count("topic.cause") && (q.facts.at("topic.cause") == "event" || q.facts.at("topic.cause") == "still"); }, 48);
             // A good it presses, pushed the other way: "still", in a noun phrase's words.
@@ -2026,6 +2097,7 @@ void theRepairsTogether()
                 break;
             }
             soc.setTimesShift({});
+            soc.setHarvestShift({});
             // Soon (posted, due tomorrow: a kind posted ahead), then over.
             if (kind.ahead > 0)
             {
@@ -2042,8 +2114,8 @@ void theRepairsTogether()
                     x.status = "cancelled", x.day = today(w) - 3;
         }
         expect(kinds >= 6 && timesHeard >= kinds / 2 && causeSaid >= kinds / 2,
-               "most kinds talked of: " + std::to_string(kinds) + ", their Times " + std::to_string(timesHeard) + ", by their words " +
-                   std::to_string(causeSaid));
+               "most kinds talked of: " + std::to_string(kinds) + ", the Times beside them " + std::to_string(timesHeard) +
+                   ", by the harvest's words " + std::to_string(causeSaid));
         // (2) The ships: a rich cargo's ship in, a lost one, a stormbound one.
         std::vector<market::Ship> due;
         for (int day = 0; day < 30 && due.size() < 2; ++day)
@@ -2084,6 +2156,21 @@ void theRepairsTogether()
         for (const auto* lines : {&shipsIn, &cargoNow})
             for (const auto& line : *lines)
                 expect(silk || lowered(line).find("silk") == std::string::npos, "no silk in a cargo without it: " + line);
+        // The board's notice once she has sailed, her cargo's days still running (the hours above took the day past her
+        // sailing): "has sailed", never "is in" of a ship gone (the slice 2 verify's leftover).
+        {
+            for (int t = 0; t < 50 && shipById(w, due[0].id)->status != "sailed"; ++t)
+                g.tick(.2);
+            for (int t = 0; t < 5; ++t)
+                g.tick(.2);
+            const auto* pinned = g.documents().find("event-" + rich);
+            expect(shipById(w, due[0].id)->status == "sailed" && w.stagedEvent(rich)->status == "on", "she has sailed, the event still on");
+            expect(pinned && pinned->text == w.stagedEvent(rich)->notice && pinned->text.find(" has sailed, ") != std::string::npos &&
+                       pinned->text.find(" is in") == std::string::npos,
+                   "the board says she has sailed: " + (pinned ? pinned->text : std::string("no notice")));
+            if (print)
+                std::cout << "  rich_cargo, sailed: " << (pinned ? pinned->text : std::string()) << "\n";
+        }
         while (today(w) < due[1].day)
             nextMorning(w);
         w.tick(.6);

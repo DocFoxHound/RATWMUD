@@ -56,14 +56,12 @@ void defaultEvents(Data& d)
     mill.notice = "The mill wheel is stopped for mending: {goods} dear in {market} till it turns again.";
     mill.goods = {{"flour", .15}, {"bread", .1}, {"fine_bread", .1}};
     mill.days = 2;
-    mill.times = -3;
     Data::EventKind drovers;
     drovers.id = "drovers_in";
     drovers.words = "the drovers and their herds";
     drovers.notice = "The drovers are in at {market} with their herds: {goods} cheap a day or two.";
     drovers.goods = {{"raw_meat", -.15}, {"mutton", -.15}, {"hide", -.1}};
     drovers.days = 2;
-    drovers.times = 3;
     drovers.crowd = true;
     d.events = {mill, drovers};
     d.causesDown = {{"war_levy", "the Crown's war levy", "By order of the Crown: a levy for the war, on every household and trade.",
@@ -489,10 +487,11 @@ std::vector<Data::EventKind> eventKindsOf(const std::vector<json::Value>& list)
         k.cry = j.string("cry");
         k.sign = j.string("sign", "the crier");
         k.noticeOn = j.string("noticeOn");
+        k.noticeAfter = j.string("noticeAfter");
         k.seasons = seasonsOf(j["seasons"]);
         if (!idFits(k.id) || std::any_of(kinds.begin(), kinds.end(), [&](const Data::EventKind& o) { return o.id == k.id; }) ||
             k.words.empty() || !plainWords(k.words, 80) || !plainWords(k.notice, 280) || !plainWords(k.cry, 200) ||
-            !plainWords(k.noticeOn, 280) || k.sign.empty() || !plainWords(k.sign, 40))
+            !plainWords(k.noticeOn, 280) || !plainWords(k.noticeAfter, 280) || k.sign.empty() || !plainWords(k.sign, 40))
             continue;
         if (const auto& goods = j.object("goods"); goods.isObject())
             for (const auto& [g, P] : goods.fields())
@@ -501,7 +500,7 @@ std::vector<Data::EventKind> eventKindsOf(const std::vector<json::Value>& list)
         k.yields = clampNumber(j["yields"].asNumber(0), -EventTargetMost, EventTargetMost, 0);
         k.brings = clampNumber(j["brings"].asNumber(0), -EventTargetMost, EventTargetMost, 0);
         k.days = int(clampNumber(j["days"].asNumber(2), 1, 7, 2));
-        k.times = int(clampNumber(j["times"].asNumber(0), -EventTimesMost, EventTimesMost, 0));
+        // (A kind's old `times`, its points on the market's Times, is read past: events move no Times since 2026-11-12.)
         k.ahead = int(clampNumber(j["ahead"].asNumber(0), 0, 6, 0));
         k.hour = clampNumber(j["hour"].asNumber(9), 0, 23.5, 9);
         k.weight = clampNumber(j["weight"].asNumber(1), 0, 10, 1);
@@ -917,7 +916,6 @@ json::Value encode(const Board& b)
             j.add("day", e.day);
             j.add("hour", e.hour);
             j.add("days", e.days);
-            j.add("times", e.times);
             if (e.ahead)
                 j.add("ahead", e.ahead);
             if (e.crowd)
@@ -938,6 +936,8 @@ json::Value encode(const Board& b)
                 j.add("cry", e.cry);
             if (!e.noticeOn.empty())
                 j.add("noticeOn", e.noticeOn);
+            if (!e.noticeAfter.empty())
+                j.add("noticeAfter", e.noticeAfter);
             if (!e.subject.empty())
                 j.add("subject", e.subject);
             j.add("status", e.status);
@@ -1375,7 +1375,7 @@ Board decode(const json::Value& v)
         e.day = std::int64_t(whole(j["day"], 0, 365000000, -1));
         e.hour = j.number("hour", 9);
         e.days = int(whole(j["days"], 1, 7, 2));
-        e.times = int(whole(j["times"], -EventTimesMost, EventTimesMost, 0));
+        // (An older save's `times`, the event's Times points, is read past: 5.3, decided 2026-11-12.)
         e.ahead = int(whole(j["ahead"], 0, 6, 0));
         e.crowd = j.boolean("crowd", false);
         for (const auto& pair : j.array("goods"))
@@ -1385,6 +1385,7 @@ Board decode(const json::Value& v)
         e.notice = json::utf8Prefix(j.string("notice"), 280);
         e.cry = json::utf8Prefix(j.string("cry"), 200);
         e.noticeOn = json::utf8Prefix(j.string("noticeOn"), 280);
+        e.noticeAfter = json::utf8Prefix(j.string("noticeAfter"), 280);
         e.subject = j.string("subject").substr(0, 120);
         e.status = j.string("status");
         e.by = j.string("by") == "dm" ? "dm" : "seeded";
@@ -1457,15 +1458,16 @@ void mendEvents(Board& b)
             std::any_of(kept.begin(), kept.end(), [&](const StagedEvent& o) { return o.id == e.id; }))
             continue;
         if (e.words.empty() || !plainWords(e.words, 80) || !plainWords(e.notice, 280) || !plainWords(e.cry, 200) ||
-            !plainWords(e.noticeOn, 280))
+            !plainWords(e.noticeOn, 280) || !plainWords(e.noticeAfter, 280))
             continue;                               // (Words the loader would not take: never pinned on a board.)
         if (e.status != "due")
             e.noticeOn.clear();
         if (e.status != "on" && e.status != "over" && e.status != "cancelled")
             e.status = "due";
+        if (e.status != "due" && e.status != "on")
+            e.noticeAfter.clear();
         e.hour = finite(e.hour) ? std::clamp(e.hour, 0., 23.99) : 9;
         e.days = std::clamp(e.days, 1, 7);
-        e.times = std::clamp(e.times, -EventTimesMost, EventTimesMost);
         e.posted = finite(e.posted) ? std::max(0., e.posted) : 0;
         std::vector<std::pair<std::string, double>> fit;
         for (const auto& [g, P] : e.goods)
@@ -1501,15 +1503,6 @@ void mendEvents(Board& b)
     b.nextEvent = std::max<std::int64_t>(1, b.nextEvent);
     for (const auto& e : b.events)
         b.nextEvent = std::max<std::int64_t>(b.nextEvent, std::stoll(e.id.substr(1)) + 1);
-}
-
-int eventTimes(const Board& b, const std::string& market)
-{
-    int sum = 0;
-    for (const auto& e : b.events)
-        if (e.status == "on" && e.market == market)
-            sum += e.times;
-    return std::clamp(sum, -EventTimesMost, EventTimesMost);
 }
 
 // ---------------------------------------------------------------------------------------------------- The markets
@@ -1980,15 +1973,15 @@ bool Society::setProsperity(int target, bool now, const std::string& cause)
 
 int Society::timesScore(const std::string& market) const
 {
-    // 5.3: the slider, plus the market's own shift from its areas' harvests and the roads' troubles of the week (raids and
-    // late wagons to it), which the world sets each morning (Phase 4), its staged events on (Phase 7) and the DM's nudge
-    // while it holds (Phase 7's, set by the DM's times.nudge: RatwGameEconomy.cpp). Never any player-caused pressure.
+    // 5.3: the slider, plus the market's own shift from its areas' harvests and the roads' troubles of the week (raids,
+    // late wagons and ships kept out or lost), which the world sets each morning (Phase 4), and the DM's nudge while it
+    // holds (Phase 7's, set by the DM's times.nudge: RatwGameEconomy.cpp). Never any player-caused pressure, and never a
+    // staged event (8.4; decided 2026-11-12): an event moves its own goods' prices and what people say, not the Times, so
+    // not the bands' cut, the staples' price factor, the theft count or the shops' budgets either.
     const auto& b = state_.board;
     int score = b.slider;
     if (const auto shift = b.timesShift.find(market); shift != b.timesShift.end())
         score += shift->second;
-    if (!b.events.empty())
-        score += market::eventTimes(b, market);
     if (const auto nudge = b.nudges.find(market); nudge != b.nudges.end() && marketClock() < nudge->second.until)
         score += nudge->second.points;
     return std::clamp(score, -300, 300);
@@ -2001,7 +1994,8 @@ int Society::marketTimes(const std::string& market) const
 
 std::string Society::timesCause(const std::string& market) const
 {
-    // The largest part of the score on its side (T16, 8.5: what people say the times are down to).
+    // The largest part of the score on its side (T16, 8.5: what people say the times are down to): the slider's cause, a
+    // harvest, the roads' and ships' troubles, the DM's nudge. Never a staged event: it is no part of the score.
     const auto& b = state_.board;
     const int score = timesScore(market);
     if (score == 0)
@@ -2029,9 +2023,6 @@ std::string Society::timesCause(const std::string& market) const
         parts.push_back({-std::min(late, 5 * storms), "the storms keeping the ships out"});
     if (lost > 0)
         parts.push_back({-std::min(late, 5 * lost), "the ship lost at sea"});
-    for (const auto& e : b.events)
-        if (e.status == "on" && e.market == market && e.times != 0)
-            parts.push_back({e.times, e.words});
     if (const auto nudge = b.nudges.find(market); nudge != b.nudges.end() && marketClock() < nudge->second.until)
         parts.push_back({nudge->second.points, !nudge->second.cause.empty() ? nudge->second.cause
                                                : nudge->second.points > 0 ? std::string("trade picking up") : std::string("trade falling off")});

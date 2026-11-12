@@ -672,10 +672,10 @@ class Society
     // The world posts the cause in every market and has it cried (World::tendCauses). False if the DM's words were not
     // taken (the seeded cause stands in).
     bool setProsperity(int target, bool now = false, const std::string& cause = {});
-    // A market's Times score (5.3): the slider, its roads' and harvests' shift (the world's each morning), its staged
-    // events on (8.4) and the DM's nudge while it holds. Never any player-caused pressure. And its cause in words: the
-    // largest part on the score's side ("" in ordinary times with nothing either way): the slider's cause, "a good
-    // harvest", "the wagons robbed on the road", an event's words, the DM's nudge's.
+    // A market's Times score (5.3): the slider, its roads' and harvests' shift (the world's each morning) and the DM's
+    // nudge while it holds. Never any player-caused pressure, never a staged event (8.4: an event moves its goods' prices
+    // and the talk, not the Times). And its cause in words: the largest part on the score's side ("" in ordinary times
+    // with nothing either way): the slider's cause, "a good harvest", "the wagons robbed on the road", the DM's nudge's.
     int timesScore(const std::string& market) const;
     std::string timesCause(const std::string& market) const;
     void setHarvestShift(std::map<std::string, int> shift);
@@ -1100,6 +1100,12 @@ class Society
     // comfortable and rich, a lifted household, the Watch's, and none.
     double foodShort(const std::string& household) const;
     double foodWant(const std::string& household) const;
+    // The same want on a day off, for the working poor who may beg then (10.2, decided 2026-11-12): the staged ration buys
+    // a Restday's or a festival's food the day before (the rule buyAheadDays), so that morning every fed household holds a
+    // day more than on a working morning and by the plain test none is ever short; here the food bought ahead for the day
+    // is counted as in hand with today's, and the purses are asked for a day's food as on any morning. On any other day,
+    // foodWant.
+    double foodWantOnDayOff(const std::string& household) const;
     // The morning's judgment of every household's want (the staged day's turn makes it; public for tests).
     void stagedLarders();
     // A player's help to a poor or destitute household (6.7): worth a week's food or more lifts it a week, a month's a month
@@ -1373,7 +1379,11 @@ class Society
     // and larders where a restart missed the day's turn).
     std::map<std::string, double> foodShort_;
     std::int64_t foodShortDay_ = -1;
-    double foodShortNow(const std::string& household) const;
+    // (`inHand`: the days of food a head counted as in hand before any is spare: today's, and on a day whose food was
+    // bought ahead that day's too.)
+    double foodShortNow(const std::string& household, double inHand = 1) const;
+    std::map<std::string, double> foodShortOff_;    // (The same on a day whose food was bought ahead; empty on any other.)
+    int boughtAheadFor(std::int64_t day) const;     // The rule buyAheadDays on a Restday or a festival, else 0.
     // The Market Board's (doc 79, Phase 1; RatwMarket.cpp). None of these is saved but the Board (state_.board).
     struct StagedLot
     {

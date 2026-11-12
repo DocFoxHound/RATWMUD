@@ -878,6 +878,106 @@ void theStagedEconomysTalk()
             }
         }
     }
+    // The slice 2 verify's leftovers. A keeper who doesn't sell the good is never glad of its rise as a seller, nor
+    // undercut on it (deals): a butcher makes no living off dear planks.
+    {
+        auto q = price("players", "travellers buying", "up");
+        q.facts["topic.item"] = q.facts["topic.what"] = "planks";
+        q.facts["topic.is"] = "are";
+        q.facts["topic.good"] = "planks";
+        q.facts["topic.sort"] = "goods";
+        bool glad = false;
+        for (const auto& business : {"failing", "steady", "thriving"})
+            for (const auto& deals : {"no", "yes"})
+            {
+                q.a.facts["business"] = q.b.facts["business"] = business;
+                q.a.facts["deals"] = q.b.facts["deals"] = deals;
+                q.a.facts["sold_out"] = q.b.facts["sold_out"] = "no";
+                for (const auto& line : heard(q, 16))
+                    for (const char* seller : {"better margin", "if you're selling", "i might make a living"})
+                    {
+                        const bool said = lowered(line).find(seller) != std::string::npos;
+                        glad |= said;
+                        expect(!said || std::string(deals) == "yes", std::string("only a keeper of the good is glad of its rise (") + seller + "): " + line);
+                    }
+            }
+        expect(glad, "and one who sells it is");
+        auto c = moment("talk.price_cause");
+        for (const auto& [k, v] : Facts{{"topic.dir", "down"}, {"topic.known", "yes"}, {"topic.who", "Ada"}, {"topic.what", "planks"}, {"topic.is", "are"},
+                                        {"topic.item", "planks"}, {"topic.good", "planks"}, {"topic.sort", "goods"},
+                                        {"topic.price", "thirty-one pence the dozen"}})
+            c.facts[k] = v;
+        for (const auto& deals : {"no", "yes"})
+        {
+            c.a.facts["deals"] = c.b.facts["deals"] = deals;
+            bool undercut = false;
+            for (const auto& line : heard(c, 8))
+                for (const char* mine : {"undercut the lot of us", "i'd stocked up", "at my price"})
+                {
+                    const bool said = lowered(line).find(mine) != std::string::npos;
+                    undercut |= said;
+                    expect(!said || std::string(deals) == "yes", std::string("only a keeper of the good is undercut on it (") + mine + "): " + line);
+                }
+            expect(std::string(deals) != "yes" || undercut, "and one who sells it is");
+        }
+        // A keeper says its shelf was cleared only where it was (sold_out): never after a dozen off a full shelf.
+        c.facts["topic.dir"] = "up";
+        c.a.facts["deals"] = c.b.facts["deals"] = "yes";
+        for (const auto& bare : {"no", "yes"})
+        {
+            c.a.facts["sold_out"] = c.b.facts["sold_out"] = bare;
+            bool cleared = false, custom = false;
+            for (const auto& line : heard(c, 8))
+            {
+                const auto low = lowered(line);
+                const bool said = low.find("to the last") != std::string::npos || low.find("cleared out") != std::string::npos;
+                cleared |= said;
+                custom |= low.find("good custom") != std::string::npos || low.find("that kind of morning") != std::string::npos;
+                expect(!said || std::string(bare) == "yes", "a shelf is cleared only where none is left: " + line);
+            }
+            expect(custom && (std::string(bare) != "yes" || cleared), std::string("the keeper speaks of the custom; of a bare shelf where it is: ") + bare);
+        }
+    }
+    // A complaint about a price is answered with a line about eating only where the good is food (topic.sort).
+    for (const auto& humour : {"dry", "merry"})
+        for (const auto& sort : {"goods", "drink", "food"})
+        {
+            auto q = moment("prices.answer_complaint");
+            q.facts["topic.item"] = q.facts["topic.what"] = std::string(sort) == "food" ? "bread" : std::string(sort) == "drink" ? "ale" : "nails";
+            q.facts["topic.sort"] = sort;
+            q.a.facts["humour"] = humour;
+            q.a.facts["wealth"] = "comfortable";
+            bool eating = false;
+            int said = 0;
+            for (std::uint64_t seed = 0; seed < 80; ++seed)
+                for (const auto& [who, line] : lib.converse(q, seed, None, {}).lines)
+                    if (who == 0)
+                    {
+                        ++said;
+                        const auto low = lowered(line);
+                        const bool eats = low.find("eat") != std::string::npos || low.find("thin and") != std::string::npos;
+                        eating |= eats;
+                        expect(!eats || std::string(sort) == "food", std::string("only food is eaten (") + humour + ", " + sort + "): " + line);
+                    }
+            expect(said >= 40 && (std::string(sort) != "food" || eating), std::string("a ") + humour + " answer to dear " + sort + ": " + std::to_string(said));
+        }
+    // The glut over names no drink its market may not sell (its goods are those its shops deal in).
+    {
+        auto q = moment("talk.event");
+        q.facts["world.event"] = "brewers_glut";
+        q.facts["world.event_words"] = "the brewers' glut";
+        q.facts["world.event_goods"] = "cider and mead";
+        q.facts["world.event_when"] = "past";
+        int said = 0;
+        for (const auto& line : heard(q, 6))
+        {
+            ++said;
+            const auto low = " " + lowered(line) + " ";
+            for (const char* drink : {" ale ", " ale,", " ale.", " ale!", " ale?"})
+                expect(low.find(drink) == std::string::npos, "the glut over names no ale where none was sold: " + line);
+        }
+        expect(said >= 20, "the glut over is talked of: " + std::to_string(said));
+    }
     // An event's lines: a good dear or cheap only where its price fact says so, and an event over in the past.
     for (const char* kind : {"house_wedding", "works_fire", "good_catch", "orchard_blight", "festival_buying", "lame_ox", "rich_cargo",
                              "mill_stopped", "drovers_in", "salt_short", "brewers_glut"})

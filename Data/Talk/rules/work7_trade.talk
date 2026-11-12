@@ -77,8 +77,9 @@ then other: prices.answer_complaint
 
 ## A rise, by one it doesn't hurt
 
+# (A keeper of the good itself: `deals`, its own shop sells it. A butcher makes no living off dear planks.)
 rule w7_pr_up_merchant_glad
-when concept=talk.prices topic.dir=up role=merchant business=failing|steady
+when concept=talk.prices topic.dir=up role=merchant deals=yes business=failing|steady
 cooldown 1d
 say Up again. Mind, I'll not complain. Better margin. | Dear's good, if you're selling. | At #topic.price# I might make a living, at last.
 then other: prices.answer_easy
@@ -119,12 +120,21 @@ rule w7_prans_devout
 when concept=prices.answer_complaint piety=devout
 say The Bright One provides. Slowly, some weeks. | We'll get by. We always have. | Pray for a good harvest. It's all that helps.
 
+# (A line about eating answers a complaint about food only: topic.sort. Nobody eats nails slowly.)
 rule w7_prans_dry
 when concept=prices.answer_complaint humour=dry
+say Cheer up. Next week it'll be worse. | At least the rain's still free. | Dear today, dearer tomorrow. Something to look forward to.
+
+rule w7_prans_dry_food
+when concept=prices.answer_complaint humour=dry topic.sort=food
 say Cheer up. Next week it'll be worse. | I've started eating air. Very cheap. | At least the rain's still free.
 
 rule w7_prans_merry
 when concept=prices.answer_complaint humour=merry
+say I'll sell you my shadow. Half price. | Laugh at it. Laughing's still free. | We'll all be poor and merry.
+
+rule w7_prans_merry_food
+when concept=prices.answer_complaint humour=merry topic.sort=food
 say I'll sell you my shadow. Half price. | Eat slowly. Makes it last. | We'll all be thin and beautiful.
 
 rule w7_prans_short
@@ -341,7 +351,7 @@ say A stranger brought #topic.what# in. #topic.who#. Prices dropped like a stone
 then other: prices.answer_cheap
 
 rule w7_pc_merchant
-when concept=talk.price_cause role=merchant topic.dir=down
+when concept=talk.price_cause role=merchant deals=yes topic.dir=down
 cooldown 1d
 say #topic.who# came in with #topic.what# and undercut the lot of us. | I'd stocked up on #topic.what#. Then #topic.who# turned up. | Can't sell #topic.what# at my price now. Thanks to #topic.who#.
 then other: prices.answer_undercut

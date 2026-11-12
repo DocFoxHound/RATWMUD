@@ -1006,7 +1006,8 @@ std::string Society::meansNote(const std::string& id, const std::string& holder)
         const int times = std::clamp(hooks_.times(*this, s->market), -2, 2);
         if (times != 0)
         {
-            // (And why, in the words people use for it: the slider's cause, a harvest, an event: 8.5, Phase 7.)
+            // (And why, in the words people use for it: the slider's cause, a harvest, the roads' troubles, the DM's
+            // nudge: 8.5, Phase 7. Never a staged event's words: an event is no part of the Times, 5.3.)
             const auto cause = timesCause(s->market);
             note += " Times here: " + std::string(Times[times + 2]) + (cause.empty() ? std::string() : ", since " + cause) + ".";
         }

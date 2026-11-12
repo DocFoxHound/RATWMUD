@@ -2,8 +2,10 @@
 # band and class speaks of hard and good times and their cause, and of the week's happenings at the market.
 #
 # talk.times: world.times (hard, lean, ordinary, good, boom) and world.times_cause (a noun phrase, maybe missing: the
-# slider's cause, a harvest, the robbed wagons, an event's words, the DM's own; said after "talk of", "word of", "blames"
-# or alone). Openers remember what kind of thing was said, two minutes, so every reply fits what it answers:
+# slider's cause, a harvest, the robbed wagons, a ship kept out or lost, the DM's own; never a staged event's words: an
+# event moves its goods' prices and the talk of it below, not the Times (5.3, decided 2026-11-12); said after "talk of",
+# "word of", "blames" or alone). Openers remember what kind of thing was said, two minutes, so every reply fits what it
+# answers:
 #   tm=moan   times are hard on me (or good times that haven't reached me)
 #   tm=cause  why, in the cause's words
 #   tm=state  a rich upper-class wolf on the Houses, the Council, the Crown (class-gated: never a carter's talk)
@@ -611,7 +613,7 @@ then other: event.answer
 rule e8t_ev_brew_past
 when concept=talk.event world.event=brewers_glut world.event_when=past
 cooldown 1d
-say The brewers sold the last of their glut. Shame. | That was a week for ale, the brewers' glut.
+say The brewers sold the last of their glut. Shame. | That was a week for a thirst, the brewers' glut.
 remember pair: ev=good 2m
 then other: event.answer
 
