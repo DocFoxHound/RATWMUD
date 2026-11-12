@@ -26,7 +26,9 @@
 // N of the year (1-365: Spring 1-92, Summer 93-184, Autumn 185-275, Winter 276-365). (The economy's reports, --economy
 // and the rest, went with the city's loop: Docs/Design/79-a-staged-economy.md, 17.)
 // --stage FILE (doc 79, 16.13; Phase 11) writes one JSON line a run day, for reading a soak (never for balancing): the
-// slider; per band its share of the households, the share of them hungry and the thefts its people did; per market its
+// slider; per band its share of the households, the share of them hungry at the line's hour (a snapshot), the most of
+// them hungry at any game hour of the run day and the hours' mean, and the thefts its people did; the planned thieves
+// (World::thiefTally: considered, hungry, hungry with the shops shut or none kept, gone for a till or a pocket); per market its
 // households by band, hungry and short, its thefts, its price index (World::priceIndex: the goods its shops set out) and
 // how many goods sit at the clamp's ends, its Times and cause; the wagons, carts, ships and staged events seen that day
 // (the world's events by kind) and those committed; the faucets and sinks of the day (coins to and from players, by
@@ -225,6 +227,27 @@ struct StageWatch
     std::set<std::string> incidents;                // Incident ids at the last line.
     std::map<std::pair<std::int64_t, std::string>, std::pair<std::int64_t, std::int64_t>> tallied;   // (day, reason) -> made, sunk.
     bool first = true;
+    // Hunger over the run day, not only at the line's hour: the households hungry by band at each game hour (sample), the
+    // most at any hour and the hours' sum (household-hours).
+    std::int64_t sampledHour = std::numeric_limits<std::int64_t>::min();
+    std::array<int, status::Bands> hungryMost{}, hungryHours{};
+    int hoursSampled = 0;
+    World::ThiefTally thievesBefore;                 // (The world's tally at the last line.)
+
+    void sample(const World& w)
+    {
+        const auto hour = std::int64_t(std::floor(w.calendarDays() * 24 + 1e-9));
+        if (hour == sampledHour)
+            return;
+        sampledHour = hour;
+        ++hoursSampled;
+        std::array<int, status::Bands> now{};
+        for (const auto& [m, c] : w.society().marketCounts())
+            for (int band = 0; band < status::Bands; ++band)
+                now[std::size_t(band)] += c.hungryBy[std::size_t(band)];
+        for (std::size_t k = 0; k < now.size(); ++k)
+            hungryMost[k] = std::max(hungryMost[k], now[k]), hungryHours[k] += now[k];
+    }
 
     void take(const std::vector<WorldEvent>& events)
     {
@@ -290,10 +313,28 @@ struct StageWatch
                 o.add("households", households[k]);
                 o.add("share", all ? std::round(1000.0 * households[k] / all) / 1000 : 0.);
                 o.add("hungry", households[k] ? std::round(1000.0 * hungry[k] / households[k]) / 1000 : 0.);
+                // (The day's: the most households hungry at any game hour, and the mean over the day's hours.)
+                o.add("hungryMost", hungryMost[k]);
+                o.add("hungryMean", hoursSampled ? std::round(1000.0 * hungryHours[k] / hoursSampled) / 1000 : 0.);
                 o.add("thefts", theftsBy[k]);
                 bands.add(status::bandName(band), std::move(o));
             }
             j.add("bands", std::move(bands));
+            hungryMost = {}, hungryHours = {}, hoursSampled = 0;
+        }
+        {
+            // How the day's planned thieves went (World::thiefTally): why a till theft did or didn't happen.
+            const auto& now = w.thiefTally();
+            auto o = Value::object();
+            o.add("considered", double(now.considered - thievesBefore.considered));
+            o.add("hungerHigh", double(now.hungerHigh - thievesBefore.hungerHigh));
+            o.add("hungry", double(now.hungry - thievesBefore.hungry));
+            o.add("hungryShut", double(now.hungryShut - thievesBefore.hungryShut));
+            o.add("hungryNoShop", double(now.hungryNoShop - thievesBefore.hungryNoShop));
+            o.add("foodMarks", double(now.foodMarks - thievesBefore.foodMarks));
+            o.add("pocketMarks", double(now.pocketMarks - thievesBefore.pocketMarks));
+            j.add("thieves", std::move(o));
+            thievesBefore = now;
         }
         {
             auto t = Value::object();
@@ -1138,6 +1179,8 @@ int main(int argc, char** argv)
             mostLoaded = std::max(mostLoaded, server.loadedCells());
         }
         i += stride;
+        if (stage)
+            stage->sample(server);
         if (const int now = dayOf(i); now != day || i >= ticks)
         {
             // A game day done (or the run): its wall time, and its stages where the profile is kept.

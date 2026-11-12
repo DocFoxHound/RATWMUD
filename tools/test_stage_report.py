@@ -43,6 +43,21 @@ class StageReport(unittest.TestCase):
         self.assertTrue(any('NOT BALANCED on 5' in l for l in R.report(lines)))
         self.assertLess(len(R.report(lines, days=False)), len(R.report(lines)))
 
+    def test_hunger_over_the_day_and_the_thieves(self):
+        lines = [line(d, 1000, 100) for d in range(1, 4)]
+        out = R.report(lines)
+        self.assertFalse(any(l.startswith('thieves over') for l in out), 'older lines have none')
+        for d, l in enumerate(lines):
+            for k, b in l['bands'].items():
+                b['hungryMost'] = d if k == 'destitute' else 0
+                b['hungryMean'] = .5 if k == 'destitute' else 0
+            l['thieves'] = {'considered': 2, 'hungerHigh': 1, 'hungry': 1, 'hungryShut': 1, 'hungryNoShop': 0, 'foodMarks': 0,
+                            'pocketMarks': 2}
+        out = R.report(lines)
+        self.assertTrue(any(l.startswith('hungry households over the day') and 'most at any hour 2/0/0/0' in l for l in out))
+        self.assertIn('thieves over the run: considered 6, hungerHigh 3, hungry 3, hungryShut 3, hungryNoShop 0, foodMarks 0, '
+                      'pocketMarks 6; thefts from tills 0', out)
+
     def test_the_command(self):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, 'stage.jsonl')

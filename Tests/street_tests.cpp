@@ -1002,6 +1002,54 @@ void hungryThievesAtTheTill()
     fs::remove_all(root);
 }
 
+// What a resident must keep through the nightly trim (doc 79, Phase 11's repair): the World tells the society what it
+// wields and wears and what a warrant may have it give back, and the trim leaves them, so a resident is never disarmed
+// overnight nor a thief's stolen herbs paid back in coin for want of them. The rest of its goods still keep the band's
+// kinds.
+void whatAResidentMustKeep()
+{
+    const auto root = greyfen("keep");
+    auto w = town(root);
+    std::string who;
+    for (const auto& [id, life] : w.society().state().residents)
+        if (const auto* s = w.society().statusOf(id); s && life.role != "guard" && !w.society().merchant(id) && w.entity(id) && who.empty())
+            who = id;
+    expect(!who.empty(), "a resident with a band");
+    auto& society = w.society();
+    expect(society.create(who, "steel_sword", 1, "test: its blade"), "a blade");
+    expect(society.create(who, "herbs", 1, "test: stolen herbs"), "herbs");
+    expect(society.create(who, "cushion", 1, "test: a cushion owed back"), "a cushion");
+    auto* e = w.entity(who);
+    e->mouth = "sword";
+    e->swordKind = "steel_sword";
+    w.crime().warrants.push_back({who, "greyfen", {}, {{"someone", "cushion", 1, 0, {}}, {"someone", "herbs", 1, 0, {}}}, 0, w.calendarDays()});
+    std::map<std::string, int> keep;
+    w.keptGoods(who, keep);
+    expect(keep["steel_sword"] == 1 && keep["cushion"] == 1 && keep["herbs"] == 1, "the World's list: the blade it wields, what it owes back");
+    const std::vector<std::string> buys = {"nails", "planks", "cord", "rivets", "buckles", "tallow", "iron_hoops", "clay", "mortar",
+                                           "plaster", "whitewash", "barrel", "sickle", "draw_saw", "lock", "fittings", "leather",
+                                           "hide", "bones", "sack", "cookpot", "pamphlet", "glass_beads", "steel_bar", "linen_cloth"};
+    for (const auto& item : buys)
+        if (items::good(item))
+            society.create(who, item, 3, "test: the everyday buys");
+    // Over a night.
+    w.setTimeOfDay(23.5);
+    for (int i = 0; i < 1200; ++i)
+        w.tick(1);
+    const auto& a = *society.account(who);
+    expect(Society::stock(a, "steel_sword") == 1 && w.entity(who)->mouth == "sword" && World::swordHeld(*w.entity(who)) == "steel_sword",
+           "still wielding its steel sword in the morning: " + std::to_string(Society::stock(a, "steel_sword")));
+    expect(Society::stock(a, "cushion") == 1, "the cushion a warrant would give back kept");
+    expect(Society::stock(a, "herbs") >= 1, "the herbs a warrant would give back kept");
+    const auto& row = society.statusTable().rows[std::size_t(society.statusOf(who)->band)];
+    int kinds = 0;
+    for (const auto& item : buys)
+        if (const auto* good = items::good(item); good && good->category != "weapon" && !items::wearable(item))
+            kinds += Society::stock(a, item) > 0;   // (A thing worn, glass beads say, or a weapon is no kind of it.)
+    expect(kinds <= row.kindsMost, "the rest still held to the band's kinds: " + std::to_string(kinds));
+    fs::remove_all(root);
+}
+
 void aTillTheftSeenIsMoved()
 {
     // A player who sees a hungry thief take food from a till (10.1) is told of goods the tick moved: the till's shelves,
@@ -3291,6 +3339,7 @@ int main(int argc, char** argv)
             {"liftsAndTheirCap", liftsAndTheirCap},
             {"shortByBand", shortByBand},
             {"hungryThievesAtTheTill", hungryThievesAtTheTill},
+            {"whatAResidentMustKeep", whatAResidentMustKeep},
             {"aTillTheftSeenIsMoved", aTillTheftSeenIsMoved},
             {"liftedThievesStop", liftedThievesStop},
             {"aFreshWorldsFirstDay", aFreshWorldsFirstDay},

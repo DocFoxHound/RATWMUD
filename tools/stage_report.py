@@ -5,7 +5,7 @@
 
 Prints the run's days at a glance (not with --brief) (wall time, the slider, the bands' shares and hunger, thefts, wagons, carts, ships
 and events seen, faucets), each market over the run (households, price index first and last and its range, goods at the
-clamp's ends, Times), and every watched size with its first, largest and last value. A size is "growing" when its last
+clamp's ends, Times), hunger over the days' hours and the planned thieves (lines that have them), and every watched size with its first, largest and last value. A size is "growing" when its last
 quarter's least is above its first quarter's largest and it rose by more than a tenth and by more than two: a long run
 must keep those bounded (doc 79, 15). For reading a soak, never for balancing.
 """
@@ -72,6 +72,17 @@ def report(lines: list, days: bool = True) -> list:
                    f"{min(prices):.3f} {max(prices):.3f}  high {max(r['atHigh'] for r in rows)} low {max(r['atLow'] for r in rows)} "
                    f"of {rows[-1]['goods']}  hungry most {max(r['hungry'] for r in rows)}  thefts {sum(r['thefts'] for r in rows)}  "
                    f"{', '.join(times)}")
+    # Hunger over each day (not only the line's hour) and the planned thieves, where the lines have them.
+    if all('hungryMost' in l['bands'].get('destitute', {}) for l in lines):
+        out.append('hungry households over the day, by band (dest/poor/comf/rich): most at any hour '
+                   + '/'.join(str(max(l['bands'][k]['hungryMost'] for l in lines)) for k in ('destitute', 'poor', 'comfortable', 'rich'))
+                   + '; mean of the days\' hourly means '
+                   + '/'.join(f"{sum(l['bands'][k]['hungryMean'] for l in lines) / len(lines):.2f}"
+                              for k in ('destitute', 'poor', 'comfortable', 'rich')))
+    if all('thieves' in l for l in lines):
+        keys = ('considered', 'hungerHigh', 'hungry', 'hungryShut', 'hungryNoShop', 'foodMarks', 'pocketMarks')
+        out.append('thieves over the run: ' + ', '.join(f"{k} {sum(l['thieves'].get(k, 0) for l in lines):.0f}" for k in keys)
+                   + f"; thefts from tills {sum(l['thefts'].get('fromTills', 0) for l in lines)}")
     out.append('sizes: first, most, last')
     series: dict = {}
     for l in lines:

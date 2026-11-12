@@ -3472,6 +3472,9 @@ void World::ensureTradePoints()
                                  [this](Society&, const std::string& household, std::string& till) { return sendRunner(household, till); },
                                  [this](Society&, const std::string& household, const std::string& till, const std::string& ware) {
                                      return sendBuyer(household, till, ware);
+                                 },
+                                 [this](const Society&, const std::string& resident, std::map<std::string, int>& keep) {
+                                     keptGoods(resident, keep);
                                  }});
     }
     if (tradePointsReady_ && tradePointsRevision_ == society_.placesRevision() && tradePointsDeadEnds_ == deadEndsRevision_)

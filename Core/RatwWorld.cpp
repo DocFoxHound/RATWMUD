@@ -7216,21 +7216,43 @@ void World::stream(double idle)
         }
     std::size_t ahead = 0, tiles = 0;
     streamBehind_ = false;
+    // A place that won't load (its file unreadable) is tried again only after a wait, doubling each time; a failed try
+    // takes nothing from the tick's places and tiles, so the next place in line still loads (Phase 11's repair: one bad
+    // cell was tried every tick, kept stream() running in full and held back the place after it).
+    const auto load = [&](const std::string& id, const Cell* c) {
+        ensureLoaded(id);
+        if (!c)
+            return false;
+        if (c->loaded)
+        {
+            streamFailed_.erase(id);
+            return true;
+        }
+        auto& retry = streamFailed_[id];
+        retry.wait = retry.wait <= 0 ? StreamRetryFirst : std::min(StreamRetryMost, 2 * retry.wait);
+        retry.at = time_ + retry.wait;
+        return false;
+    };
     for (const auto& id : wanted)
     {
         needed_[id] = time_;
         const auto* c = cell(id);
+        if (c && !c->loaded)
+            if (const auto failed = streamFailed_.find(id); failed != streamFailed_.end() && time_ < failed->second.at)
+                continue;                           // (Waiting to be tried again.)
         if (!c || c->loaded || now.count(id))
         {
-            ensureLoaded(id);
+            load(id, c);
             continue;
         }
         const auto size = std::size_t(std::max(0, c->width)) * std::size_t(std::max(0, c->height));
         if (ahead == 0 || (ahead < StreamLoadsATick && tiles + size <= StreamTilesATick))
         {
-            ensureLoaded(id);
-            ++ahead;
-            tiles += size;
+            if (load(id, c))
+            {
+                ++ahead;
+                tiles += size;
+            }
         }
         else
             streamBehind_ = true;                   // (The rest next tick.)

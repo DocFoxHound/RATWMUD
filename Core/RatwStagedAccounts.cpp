@@ -285,6 +285,10 @@ void Society::stagedDoor(const std::string& kind, const std::string& from, const
             tally(holderOf(gFrom), kind, 0, 0, 0, worth);
         else if (startsWith(gFrom, "bandits:") && gt == AccountKind::Real)
             tally(holderOf(gTo), kind, 0, 0, worth, 0);   // (A camp's hoard holds only staged goods: the cargo of the wagons it raided, 8.1.)
+        // A player's goods into a resident's wallet are its to keep: the nightly trim never takes them (stagedTrim).
+        if (gf == AccountKind::Real && state_.residents.count(gTo))
+            if (auto& mine = st.given[gTo]; mine.count(item) || mine.size() < MaxGoodsKinds)
+                mine[item] = int(std::min<std::int64_t>(10000, std::int64_t(mine[item]) + quantity));
     }
     // What the bands and purses read of it: a theft (the victim robbed, lean, held), a player's gift or pay (help, earning,
     // a hold), a prize or a return from escrow (a hold).
@@ -854,6 +858,35 @@ void Society::stagedTrim(const std::string& id, int band)
         return;
     auto& wallet = found->second;
     const auto& row = statusTable().rows[std::size_t(std::clamp(band, 0, status::Bands - 1))];
+    // What it must keep, whatever the band holds (doc 79, Phase 11's repair): a player's goods it still has (held to what
+    // the wallet holds now: eaten, sold or given on, they go from the mark too), and the World's: what it wears and wields,
+    // and what the Watch may have it give back.
+    std::map<std::string, int> floor;
+    if (const auto given = state_.staged.given.find(id); given != state_.staged.given.end())
+    {
+        for (auto it = given->second.begin(); it != given->second.end();)
+            if (const int held = stock(wallet, it->first); held <= 0)
+                it = given->second.erase(it);
+            else
+            {
+                it->second = std::min(it->second, held);
+                floor[it->first] = it->second;
+                ++it;
+            }
+        if (given->second.empty())
+            state_.staged.given.erase(given);
+    }
+    if (street_.kept)
+    {
+        std::map<std::string, int> kept;
+        street_.kept(*this, id, kept);
+        for (const auto& [item, n] : kept)
+            floor[item] = std::max(floor[item], n);
+    }
+    const auto least = [&](const std::string& item) {
+        const auto f = floor.find(item);
+        return f == floor.end() ? 0 : std::max(0, f->second);
+    };
     // Food above two days' (more the night before a Restday or a festival) goes, the most-held kinds first.
     const double today = double(state_.budgetDay) + .5;
     const int ahead = calendar::weekdayOf(today) == calendar::Restday || calendar::festivalDay(today) ? std::max(0, ownRule("buyAheadDays")) : 0;
@@ -872,22 +905,26 @@ void Society::stagedTrim(const std::string& id, int band)
     {
         if (have <= most + 1e-9)
             break;
-        const int drop = std::min(stock(wallet, item), int(std::floor((have - most) / each + 1e-9)));
+        const int drop = std::min(stock(wallet, item) - least(item), int(std::floor((have - most) / each + 1e-9)));
         if (drop <= 0)
             continue;
         if ((wallet.stock[item] -= drop) == 0 && !keptAtZero(item))
             wallet.stock.erase(item);
         have -= double(drop) * each;
     }
-    // Other goods above what the band holds (never a maker's marked piece: its own). Something worn is kept, one at
-    // least, above the band's count only no more of it (the everyday buys brought straw hats a day: Phase 11's soak).
+    // Other goods above what the band holds (never a maker's marked piece: its own). Something worn, and a blade or any
+    // weapon (the fang knife is no fighting blade yet), is kept,
+    // one at least, above the band's count only no more of it (the everyday buys brought straw hats a day: Phase 11's
+    // soak); neither is a kind the band's count of kinds holds, nor is anything it must keep.
     std::vector<std::tuple<int, std::string>> kinds;   // (Pieces, item): the kinds the band's count of kinds holds.
     for (auto it = wallet.stock.begin(); it != wallet.stock.end();)
     {
         const auto& [item, n] = *it;
-        const bool worn = items::wearable(item) != nullptr;
+        const auto* good = items::good(item);
+        const bool worn = items::wearable(item) != nullptr || items::blade(item) != nullptr || (good && good->category == "weapon");
         const bool keep = nourishment(item) > 0 || !items::makerOf(item).empty() || item == "sword";
-        const int cap = worn ? std::max(1, row.goodsMost) : row.goodsMost;
+        const int must = least(item);
+        const int cap = std::max(must, worn ? std::max(1, row.goodsMost) : row.goodsMost);
         if (!keep && n > cap)
         {
             it->second = cap;
@@ -897,7 +934,7 @@ void Society::stagedTrim(const std::string& id, int band)
                 continue;
             }
         }
-        if (!keep && !worn && it->second > 0)
+        if (!keep && !worn && must == 0 && it->second > 0)
             kinds.push_back({it->second, item});
         ++it;
     }
@@ -935,6 +972,8 @@ void Society::stagedPrune(std::int64_t day)
         it = day - it->first >= 28 ? st.faucets.erase(it) : std::next(it);
     for (auto it = st.overrides.begin(); it != st.overrides.end();)
         it = it->second.until <= day ? st.overrides.erase(it) : std::next(it);
+    for (auto it = st.given.begin(); it != st.given.end();)
+        it = it->second.empty() || !state_.residents.count(it->first) || dead_.count(it->first) ? st.given.erase(it) : std::next(it);
     // (Street life, Phase 6: a dole more than a week old, and fed fame's weeks gone by.)
     for (auto it = st.dole.begin(); it != st.dole.end();)
         it = day - it->second >= 7 ? st.dole.erase(it) : std::next(it);

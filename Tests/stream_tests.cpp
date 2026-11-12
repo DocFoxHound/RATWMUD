@@ -33,6 +33,7 @@ struct Fixture
     std::map<std::string, std::string> cells, seams;
     std::map<std::string, int> loads;           // How often each cell's tiles were fetched.
     std::set<std::string> unreadable;           // Cells whose headers read but whose ground can't be.
+    std::map<std::string, int> attempts;        // How often each cell's ground was asked for, read or not.
     World::CellSource source()
     {
         return {
@@ -44,6 +45,7 @@ struct Fixture
             },
             [this](const std::string& cell, std::string& text, std::string& sides) {
                 const auto found = cells.find(cell);
+                ++attempts[cell];
                 if (found == cells.end() || unreadable.count(cell)) return std::string("no such cell");
                 ++loads[cell];
                 text = found->second;
@@ -1487,6 +1489,40 @@ void theRealmsCellsComeInOneATick()
     }
 }
 
+// A place whose ground won't load (Phase 11's repair): it took the tick's one place and its 65,536 tiles, so the place
+// after it never came in, and stream() ran in full every tick to try it again (179 tries in 200 ticks). Now a failed try
+// takes nothing from the tick, and the place waits World::StreamRetryFirst game seconds before it is tried again, the
+// wait doubling; once it reads, it comes in.
+void aPlaceThatWontLoadWaits()
+{
+    constexpr int Big = 256;
+    auto f = bigRow(5, Big);                        // r_0 (the spawn), r_1 (unreadable), r_2 (where Ada stands), r_3, r_4.
+    f.unreadable.insert("r_1");
+    auto world = load(f, true);
+    for (int t = 0; t < 150; ++t)
+        world.tick(1);
+    expect(!world.cell("r_1")->loaded && !world.cell("r_3")->loaded, "the far cells not loaded");
+    f.attempts.clear();
+    world.addPlayer("player-ada", "Ada", "r_2", {Big / 2 + .5, Big / 2 + .5});
+    int r3At = -1;
+    for (int t = 0; t < 200; ++t)
+    {
+        world.tick(.05);
+        if (r3At < 0 && world.cell("r_3")->loaded)
+            r3At = t;
+    }
+    expect(r3At >= 0 && r3At < 40, "the place beside the bad one comes in as before: tick " + std::to_string(r3At));
+    expect(!world.cell("r_1")->loaded && f.attempts["r_1"] >= 1 && f.attempts["r_1"] <= 2,
+           "the bad place tried, then waiting: " + std::to_string(f.attempts["r_1"]) + " tries in 200 ticks");
+    for (int t = 0; t < 600; ++t)                   // (30 s more: tried again once or twice.)
+        world.tick(.05);
+    expect(f.attempts["r_1"] >= 2 && f.attempts["r_1"] <= 4, "tried again after its wait: " + std::to_string(f.attempts["r_1"]));
+    f.unreadable.clear();
+    for (int t = 0; t < 200 && !world.cell("r_1")->loaded; ++t)
+        world.tick(1);
+    expect(world.cell("r_1")->loaded, "once it reads, it comes in");
+}
+
 int main()
 {
     try
@@ -1518,6 +1554,7 @@ int main()
         aWalkKeepsToTheRoad();
         aVillageComesInAFewATick();
         theRealmsCellsComeInOneATick();
+        aPlaceThatWontLoadWaits();
     }
     catch (const std::exception& error)
     {

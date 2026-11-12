@@ -524,6 +524,57 @@ void holdsLeanAndTheTrim()
         expect(Society::stock(*s.account("birch"), "straw_hat") == std::max(1, now.goodsMost), "a thing worn kept, no more than the band's count");
         expect(Society::stock(*s.account("birch"), "sword") == 1, "the sword kept");
     }
+    {
+        // Phase 11's repair: the kinds' trim took a resident's blades (one piece: among the first to go) and what a player
+        // gave it. A player gives a steel sword, a rapier, a fang knife and a key; the resident has an iron sword of its
+        // own, and the World says it must keep what it wears (a comb, say) and the herbs a warrant may have it give back. More kinds than
+        // the band keeps, each held more than the lock, so the key would go first.
+        for (const auto* item : {"steel_sword", "rapier", "fang_knife", "key"})
+        {
+            expect(s.create("player-thief", item, 1, "test: a player's own"), std::string("a player's ") + item);
+            expect(s.shift("player-thief", "birch", item, 1, 0, "a gift"), std::string("given: ") + item);
+        }
+        expect(s.state().staged.given.count("birch") && s.state().staged.given.at("birch").count("rapier"),
+               "a player's goods marked as given");
+        s.create("birch", "iron_sword", 1, "test: its own blade");
+        s.create("birch", "herbs", 1, "test: stolen herbs a warrant would give back");
+        s.create("birch", "tick_comb", 1, "test: what the World says it must keep");
+        const std::vector<std::string> more = {"nails", "planks", "cord", "rivets", "buckles", "tallow", "iron_hoops", "clay",
+                                               "mortar", "plaster", "whitewash", "barrel", "sickle", "draw_saw", "fittings"};
+        for (const auto& item : more)
+            if (items::good(item))
+                s.create("birch", item, 2, "test: the everyday buys");
+        int asked = 0;
+        Society::StreetHooks hooks;
+        hooks.kept = [&](const Society&, const std::string& id, std::map<std::string, int>& keep) {
+            ++asked;
+            if (id == "birch")
+                keep["herbs"] += 1, keep["tick_comb"] = 1;
+        };
+        s.setStreetHooks(hooks);
+        // The marks go into a save and come out of it whole.
+        const auto back = wire::readStaged(wire::stagedValue(s.state().staged));
+        expect(back.given == s.state().staged.given, "the given marks saved and read again");
+        for (int h = 50; h <= 74; ++h)
+            s.tick(1., 2 + h / 24. + 1e-4, 0, {});
+        const auto& a = *s.account("birch");
+        expect(asked > 0, "the World asked what each resident must keep");
+        for (const auto* item : {"steel_sword", "rapier", "fang_knife", "key", "iron_sword", "herbs", "tick_comb"})
+            expect(Society::stock(a, item) == 1, std::string("kept overnight: ") + item + " " + std::to_string(Society::stock(a, item)));
+        const auto& now = s.statusTable().rows[std::size_t(s.statusOf("birch")->band)];
+        int kinds = 0;
+        for (const auto& [item, n] : a.stock)
+            if (n > 0 && Society::nourishment(item) == 0 && !items::wearable(item) && item != "sword" && items::makerOf(item).empty() &&
+                !items::blade(item) && item != "fang_knife" && item != "key" && item != "herbs" && item != "tick_comb")
+                ++kinds;
+        expect(kinds == now.kindsMost, "the band's kinds still bound the rest: " + std::to_string(kinds));
+        // Given away again (or sold, or eaten), its mark goes with it: then it is an ordinary kind.
+        expect(s.shift("birch", "player-thief", "key", 1, 0, "a gift"), "the key given back");
+        for (int h = 74; h <= 98; ++h)
+            s.tick(1., 2 + h / 24. + 1e-4, 0, {});
+        expect(!s.state().staged.given.at("birch").count("key"), "a mark goes with the goods");
+        s.setStreetHooks({});
+    }
     // The event weighs on the score while it lasts.
     expect(s.statusOf("una")->score < s.statusOf("ivar")->score + 1e-9 || s.householdOf("una") == s.householdOf("ivar"),
            "a theft weighs on the household");

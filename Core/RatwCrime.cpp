@@ -855,6 +855,21 @@ void World::chooseMarks()
                     if (n > 0 && Society::edible(item))
                         inHand += double(std::max(0, Society::nourishment(item))) * n;
             const bool hungry = life->hunger >= 55 && inHand < Society::NourishADay;
+            const bool shopHours = hourOfDay >= Society::ShopOpen && hourOfDay < Society::ShopShut;
+            // (Counted for world_check --stage: each thief once a day for each.)
+            if (thiefFlagsDay_ != today)
+                thiefFlagsDay_ = today, thiefFlags_.clear();
+            const auto counted = [&](int bit, long& total) {
+                if (auto& f = thiefFlags_[t.id]; !(f & bit))
+                    f |= bit, ++total;
+            };
+            counted(1, thiefTally_.considered);
+            if (life->hunger >= 55)
+                counted(2, thiefTally_.hungerHigh);
+            if (hungry)
+                counted(4, thiefTally_.hungry);
+            if (hungry && !shopHours)
+                counted(8, thiefTally_.hungryShut);
             // A keeper at its open shop, the till's food on the shelf before it: never one gone home or to the tavern.
             const auto trading = [&](const std::string& holder) {
                 const auto* m = entity(holder);
@@ -874,7 +889,7 @@ void World::chooseMarks()
                     continue;
                 }
             std::vector<std::string> marks;
-            if (hungry && hourOfDay >= Society::ShopOpen && hourOfDay < Society::ShopShut)
+            if (hungry && shopHours)
                 for (const auto& p : society_.positions())
                 {
                     if (p.role != "merchant")
@@ -886,10 +901,13 @@ void World::chooseMarks()
                     if (std::any_of(stock->stock.begin(), stock->stock.end(), [](const auto& g) { return g.second > 0 && Society::edible(g.first); }))
                         marks.push_back(holder);
                 }
+            if (hungry && shopHours && marks.empty())
+                counted(16, thiefTally_.hungryNoShop);
             if (!marks.empty())
             {
                 kept[t.id] = marks[std::size_t(roll(t.id + "|food mark", today) % marks.size())];
                 motives[t.id] = "food";
+                counted(32, thiefTally_.foodMarks);
                 continue;
             }
             // Not hungry (or no food shop): the pocket of someone richer, where people crowd, never a guard, never kin.
@@ -914,6 +932,7 @@ void World::chooseMarks()
             {
                 kept[t.id] = best;
                 motives[t.id] = "pocket";
+                counted(64, thiefTally_.pocketMarks);
             }
         }
     }

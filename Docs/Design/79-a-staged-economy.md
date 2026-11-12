@@ -5175,6 +5175,76 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `life_status_tests` 2,248, `sim_fast_tests` 137 (95 before). `tools/test_stage_report.py` 3, `test_economy_contract.py`
     14 (`status.json` changed), `test_migration_0061.py` 11 with the copies (above). No `s2stage` database or `/tmp` file
     left; `artifacts/screenshots/dev-console-fight.png` untouched.
+  - **Repaired** (2026-11-12, the checker's findings on this entry; on `r2-staged` from `7574d6c`):
+    - *The wallet trim took blades and players' gifts* (medium): only the literal `sword` was exempt from `kindsMost`,
+      so a held blade (one piece, the fewest held) was among the first kinds to go and `World::fitWorn` then disarmed
+      its owner; a steel sword, a rapier and a fang knife a player gave a poor resident were all gone after one night.
+      Now every blade (`items::blade`) and every other weapon (`category` "weapon": the fang knife is no fighting blade
+      yet) is held like a thing worn (to the band's count of it, one at least, never one of the band's kinds); the
+      goods that came to a resident from a player (any shift from a real account into a resident's wallet: a gift, a
+      sale to it, a theft from a player) are marked in a new staged map, `StagedState::given` (resident -> good ->
+      pieces; saved, journalled and read like the quarantine, held each night to what the wallet still has, so a good
+      eaten, sold or given on loses its mark; at most 64 kinds a resident), and never trimmed while held; and the World
+      tells the trim (`StreetHooks::kept`, `World::keptGoods`) what a resident wears and wields and the goods an open
+      theft or a warrant of its may have it give back, so a thief's stolen herbs are returned in kind, not in coin.
+      The bound stays: everything exempt is bounded by the catalogue's weapons and worn things, the 64 kinds a wallet
+      may hold and the crime records. Tests: `life_status_tests` `holdsLeanAndTheTrim` (a player's steel sword, rapier,
+      fang knife and key, the resident's own iron sword, and what the World says it must keep: all kept overnight among
+      more kinds than the band keeps, the rest still held to `kindsMost`, the marks saved and read whole, a key given
+      back losing its mark; it failed on the old code: "kept overnight: steel_sword 0") and `street_tests`
+      `whatAResidentMustKeep` (a resident wielding a steel sword and owing a warrant's cushion and herbs: the World's
+      list, and after a night still armed, the cushion and herbs kept, the rest to the band's kinds).
+    - *A place that wouldn't load held the stream* (medium): a deferred load that failed still took the tick's one
+      place and its 65,536 tiles, `streamBehind_` stayed true, `World::stream` ran in full every tick and tried the bad
+      cell again each time (179 tries in 200 ticks, the cell after it never loaded). Now a failed try takes nothing from
+      the tick's budget, and the place waits `StreamRetryFirst` (10) game seconds before it is tried again, the wait
+      doubling to `StreamRetryMost` (640); a place that loads (a crossing's `transition` loads it at once anyway) is
+      forgotten. Test: `stream_tests` `aPlaceThatWontLoadWaits` (`bigRow(5, 256)` with `r_1` unreadable: `r_3` comes
+      in as before, `r_1` tried once or twice in 200 ticks and again after its wait, and loaded once it reads; on the
+      old code `r_3` never came in).
+    - *The PROD plan* (medium and low): step 7 couldn't work as written (`serve-world` is refused while the live world,
+      DEV, is running, and it puts the world it switches to back into maintenance). Checked by reading
+      `tools/world_sync.py` (`switch_live`, `maintenance`) and `tools/world_db.py` (`serve-world`), and run on two
+      throwaway worlds (`s2stage_dv`, `s2stage_pd`) in a scratch registry and local choice, dropped after: as written it
+      is refused; with DEV closed, PROD opened first goes back into maintenance at the switch; the right order is
+      `maintenance dev on`, `serve-world prod --yes`, `maintenance prod off`, then the server (or a waiting launcher).
+      The plan now has it so, builds the code (in `build-core`, the launchers' directory) before the rehearsal and runs
+      the rehearsal with `RATW_TEST_SERVER=build-core/ratw_server`, gives the import's scale (`plan-import dev`, read
+      only: 1,068 conflicts, all NPCs, with no sync base; 750 by their defaults, 318 let go whose work place is on the old
+      map only, each needing a choice, a file made from the plan suggested) and a step for PROD's own `live.economy`
+      values (`store_herbs` 1500, `store_meals` 900, `treasury` 20000 against DEV's 100, 50, 1000: kept by the import,
+      the treasury's start on PROD's first boot; recommended set to DEV's before it, the user's decision).
+    - *`--stage`'s hunger was the line's hour's* (low): each band's `hungry` is a snapshot at the line's hour (the run
+      day's end, 6:00 for a run from 6). Now each band also has `hungryMost` (the most households hungry at any game
+      hour of the run day) and `hungryMean` (the hours' mean), sampled hourly by the harness; `tools/stage_report.py`
+      prints them over the run (`test_stage_report.py` 4).
+    - *`--at-seams` and one tile* (low, noted): with `--at-seams`, a corner cell loading a tick later (the streaming
+      change above) re-casts one player's sight by one tile, so the map-memory digest differs by one tile while the
+      people and society digests are identical: the order of the loads, not a defect.
+    - *No till theft all month: by design at slider 0, not a bug.* The hungry thief's till path needs hunger 55 or more
+      **and** less than a day's food in hand at the thief's hour, in the shops' hours, with a keeper keeping a food shop
+      in its market. To see which part never held, `--stage` now has the planned thieves (`World::thiefTally`, reading
+      only: considered, hunger 55 or more, hungry by the rule, hungry with the shops shut, hungry with no food shop kept,
+      gone for a till, gone for a pocket). In the 30-day soak below: 38 thieves considered (each of them tried: 6 thefts,
+      32 tried), 7 with hunger 55 or more, **none of them short of a day's food in hand**, so none hungry by the rule;
+      none hungry with the shops shut or with no shop kept; 38 went for a pocket. The bands at slider 0 keep their food
+      (destitute households hungry at any hour: at most 2 on a day, a mean of 0.33 over the days' hours; poor and
+      comfortable at most 1); a thief goes for a till only after a bare or short day empties its hands, which the middle
+      of the slider makes rare. (`street_tests` `hungryThievesAtTheTill` shows the path works when the town is starving.)
+    - **The test run:** a fresh Release build (`build-p11r`, from empty; 127 warnings, as before, none in this work's
+      code), the full ctest once with the database (`RATW_TEST_DB_TAG=s2stage_`, `RATW_TEST_KEY_PREFIX=s2stage`;
+      `pg_client` on a throwaway `ratw_test_s2stage_p11r`, dropped after): **89 of 89 passed**, none skipped.
+      `stream_tests` 307 checks, `life_status_tests` 2,269, `street_tests` 27,850, `sim_fast_tests` 137;
+      `tools/test_stage_report.py` 4. Then on a fresh read-only DEV export (build 73, 2,425 files), alone on the machine:
+      **the 30-day coarse soak** (`--simulate 6 726 --players 0 --no-check --coarse-ticks --stage`): 2.63 s a game day
+      (first 2.90, least 2.19, most 3.27, last 2.55); the residents' wallet kinds **1,401 at the start, 3,437 at day 10,
+      5,063 at day 20, 5,524 at day 30** (+314 in days 21-25, +147 in days 26-30: levelling, as before the repair's 5,468
+      at day 30, the weapons now held besides), the staged kinds 2,734, 4,769, 6,394, 6,843, the society's saved bytes
+      **622 KB, 670 KB, 692 KB, 708 KB** (as before the repair); real money balanced every day. And **the 6-8 window
+      once** (`--simulate 6 8 --players 20 --no-check`): mean 1.44 ms, p99 4.49, p99 after the first minute 4.26, worst
+      after the first minute **16.2 ms** (tick 15310, 13.5 ms of streaming: two cells near someone at an edge, as
+      measured before the repair), the first minute's worst 62.2 ms (tick 10, the warm-up): the hitch stays away. No
+      `s2stage` database or `/tmp` file left.
   - **Where doc 79 stands.** Slices 1 and 2 are built, merged and checked (Phases 0-8 with Review A); Phase 9 (the DM,
     Atlas and the database, migration 0061) is complete and on DEV; Phase 10 was prepared (the play guide, a first
     tuning pass) and then skipped by the user, so its tuning list stands unplayed; DEV has wagons and farms with the
@@ -5188,8 +5258,9 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     - raids at about one wagon in seven to twelve (a community's carter drives alone: no Watch in the Country;
       `campStrengthMost`, or guards there);
     - carters waiting on the green (no carters' yard in the communities: a generator step and a realm write);
-    - the soak's findings above: no till theft in a month, the slider never moving without the DM, the "economy" events'
-      volume; a 90-day run's slow rise of the wallets' kinds toward their bound;
+    - the soak's findings above: no till theft in a month (by design at slider 0: "Repaired", above), the slider never
+      moving without the DM, the "economy" events' volume; a 90-day run's slow rise of the wallets' kinds toward their
+      bound;
     - the first minute's worst tick (62-81 ms as twenty players arrive at once: the warm-up, outside the bar) and the
       cost of one of the realm's cells to load (6.5 ms: 65,536 tiles, 1.27 MB of text, 1,024 seams; not profiled further),
       both untouched.

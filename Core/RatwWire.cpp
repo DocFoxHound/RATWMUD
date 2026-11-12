@@ -1081,6 +1081,12 @@ Value stagedDiff(const StagedState& was, const StagedState& now)
             j.add(item, n);
         return j;
     });
+    diff("given", was.given, now.given, equal, [](const std::map<std::string, int>& goods) {
+        auto j = Value::object();
+        for (const auto& [item, n] : goods)
+            j.add(item, n);
+        return j;
+    });
     diff("events", was.events, now.events,
          [](const std::vector<StagedState::Event>& a, const std::vector<StagedState::Event>& b) {
              return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](const StagedState::Event& x, const StagedState::Event& y) {
@@ -1180,6 +1186,19 @@ Value stagedValue(const StagedState& st)
         }
         o.add("quarantine", quarantine);
     }
+    if (!st.given.empty())
+    {
+        // A player's goods a resident still holds, which the nightly trim never takes (doc 79, Phase 11's repair).
+        auto given = Value::object();
+        for (const auto& [id, goods] : st.given)
+        {
+            auto j = Value::object();
+            for (const auto& [item, n] : goods)
+                j.add(item, n);
+            given.add(id, j);
+        }
+        o.add("given", given);
+    }
     o.add("hour", double(st.hour)); o.add("day", double(st.day));
     return o;
 }
@@ -1263,6 +1282,14 @@ StagedState readStaged(const Value& o)
                 std::int64_t count = 0;
                 if (!item.empty() && item.size() <= 80 && whole(n, 1, 10000, count) && st.quarantine[id].size() < 256)
                     st.quarantine[id][item] = int(count);
+            }
+    for (const auto& [id, goods] : o.object("given").fields())
+        if (keyOk(id) && st.given.size() < MaxResidents)
+            for (const auto& [item, n] : goods.fields())
+            {
+                std::int64_t count = 0;
+                if (!item.empty() && item.size() <= 80 && whole(n, 1, 10000, count) && st.given[id].size() < MaxGoodsKinds)
+                    st.given[id][item] = int(count);
             }
     // Street life (Phase 6; none in an older save): the dole, the fed households' fame, the shops' business.
     for (const auto& [key, into] : {std::pair{"dole", &st.dole}, std::pair{"fed", &st.fed}})

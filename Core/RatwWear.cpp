@@ -200,6 +200,31 @@ void World::fitWorn(const std::string& id)
     }
 }
 
+void World::keptGoods(const std::string& id, std::map<std::string, int>& keep) const
+{
+    if (const auto* e = entity(id))
+    {
+        // (wornCount: what is on it of a good, the jaws' too.)
+        std::vector<std::string> on{e->mouth == "sword" ? swordHeld(*e) : e->mouth};
+        for (const auto& [slot, item] : e->worn)
+            on.push_back(item);
+        for (const auto& [spot, item] : e->jewellery)
+            on.push_back(item);
+        for (const auto& item : on)
+            if (!item.empty())
+                keep[item] = std::max(keep[item], wornCount(*e, item));
+    }
+    // (An open theft's goods, which a warrant would ask back; a warrant's, which settling it gives back in kind.)
+    for (const auto& inc : crime_.incidents)
+        if (inc.offender == id && inc.status == "open" && inc.kind == "theft" && !inc.item.empty() && inc.quantity > 0)
+            keep[inc.item] += inc.quantity;
+    for (const auto& w : crime_.warrants)
+        if (w.person == id)
+            for (const auto& r : w.restitution)
+                if (!r.item.empty() && r.quantity > 0)
+                    keep[r.item] += r.quantity;
+}
+
 World::Load World::loadOf(const Entity& e) const
 {
     Load l;

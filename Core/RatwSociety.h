@@ -301,6 +301,10 @@ struct StagedState
     // Goods the world no longer knows (doc 79, 14), set aside at restore from a real or escrow account: account -> good ->
     // pieces. Nothing made, nothing lost: they go back into the account when the catalogue knows the good again.
     std::map<std::string, std::map<std::string, int>> quarantine;
+    // Goods that came to a resident from a player (a gift, a sale to it, goods stolen from one): resident -> good ->
+    // pieces, held each night to what its wallet still has. The nightly trim never takes them (doc 79, Phase 11's
+    // repair: a player's steel sword, rapier and knife given to a poor resident were gone by morning).
+    std::map<std::string, std::map<std::string, int>> given;
     // (The slider the bands read is the Board's: SocietyState::board, doc 79, 5.2.)
     std::int64_t hour = -1, day = -1;               // The last staged hour run and day turned (-1: not yet).
     // Street life (doc 79, 10; Phase 6). Each household's last Restday dole (on_dole for a week after it, 10.2); each
@@ -330,7 +334,7 @@ struct StagedState
     bool empty() const
     {
         return bands.empty() && overrides.empty() && holds.empty() && lean.empty() && escrowSource.empty() && events.empty() &&
-               faucets.empty() && welcomed.empty() && quarantine.empty() && hour < 0 && day < 0 && dole.empty() &&
+               faucets.empty() && welcomed.empty() && quarantine.empty() && given.empty() && hour < 0 && day < 0 && dole.empty() &&
                business.empty() && fed.empty();
     }
 };
@@ -1074,6 +1078,9 @@ class Society
         std::function<bool(const Society&, const std::string& till)> watched;
         std::function<bool(Society&, const std::string& household, std::string& till)> runner;
         std::function<bool(Society&, const std::string& household, const std::string& till, const std::string& ware)> buyer;
+        // The goods a resident must keep through the nightly trim (stagedTrim), the World's to know: what it wears and
+        // wields, and what the Watch may have it give back (an open theft's or a warrant's goods). Pieces by good, added.
+        std::function<void(const Society&, const std::string& resident, std::map<std::string, int>& keep)> kept;
     };
     void setStreetHooks(StreetHooks hooks) { street_ = std::move(hooks); }
     // A household's errand-runner at the counter (the World, after the runner's seconds there): its food from that till now,

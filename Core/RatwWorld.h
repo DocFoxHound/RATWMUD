@@ -1363,6 +1363,9 @@ class World
     // What others see one wearing, in a sentence or two ("" for nothing).
     static std::string wornWords(const Entity& e);
     void fitWorn(const std::string& id);
+    // What a resident must keep through the staged economy's nightly trim (Society::StreetHooks::kept, doc 79, Phase 11's
+    // repair): what it wears and wields, and the goods an open theft or a warrant of its may have it give back.
+    void keptGoods(const std::string& id, std::map<std::string, int>& keep) const;
     const std::vector<GroundItem>& groundItems() const { return ground_; }
     // A Gift, given (the Dungeon Master or a developer: who has one is the setting's to decide).
     Result giveGift(const std::string& id, const std::string& gift, bool quickened);
@@ -1378,6 +1381,16 @@ class World
     Result payFine(const std::string& person, const std::string& guard);  // What the watch asks, to a guard.
     const CrimeState& crime() const { return crime_; }
     CrimeState& crime() { return crime_; }                  // For operators and tests.
+    // How the day's planned thieves went, counted from the start (world_check --stage; doc 79, Phase 11's repair: no till
+    // theft in a month's soak): each thief once a day for each of these, at or after its hour: considered; hunger 55 or
+    // more; hungry by the rule (that, and less than a day's food in hand); hungry while the shops were shut (before
+    // ShopOpen, from ShopShut); hungry in the shops' hours with no food shop being kept in its market; gone for a food
+    // shop's keeper; gone for a pocket. Reading only.
+    struct ThiefTally
+    {
+        long considered = 0, hungerHigh = 0, hungry = 0, hungryShut = 0, hungryNoShop = 0, foodMarks = 0, pocketMarks = 0;
+    };
+    const ThiefTally& thiefTally() const { return thiefTally_; }
     const Warrant* warrantFor(const std::string& person) const;
     const Custody* custodyOf(const std::string& person) const;
     std::int64_t owedBy(const Warrant& w) const;             // Restitution and the fine, in pennies.
@@ -1601,6 +1614,8 @@ class World
     // someone onstage stands for the cell over it to load at once (doc 79, Phase 11).
     static constexpr std::size_t StreamLoadsATick = 8, StreamTilesATick = 256 * 256;
     static constexpr double SeamNear = 16;
+    // A place stream() couldn't load is tried again after this many game seconds, the wait doubling to the most.
+    static constexpr double StreamRetryFirst = 10, StreamRetryMost = 640;
     std::size_t loadedCells() const;
     const std::string& herbPatchCell() const { return herbCell_; }
     Vec2 herbPatchPosition() const { return herbPatch_; }
@@ -1713,6 +1728,13 @@ class World
     std::set<std::string> streamOccupied_;          // The cells characters stood in when stream() last looked,
     std::set<std::string> streamOverlooked_;        // and the cells players stood near enough to see into.
     bool streamBehind_ = false;                     // (Surroundings still to load: stream(), StreamLoadsATick a tick.)
+    // A place that wouldn't load in stream() (its file unreadable): when to try it again and the wait after that, doubling
+    // from StreamRetry to StreamRetryMost, so a bad cell neither takes the tick's budget nor runs stream() in full each tick.
+    struct StreamRetry
+    {
+        double at = 0, wait = 0;
+    };
+    std::map<std::string, StreamRetry> streamFailed_;
     // Each cell's neighbours (through portals and seams), built on first use and dropped when doors change: a
     // city cell has well over a thousand seam and door records, far too many to walk every tick.
     mutable std::map<std::string, std::vector<std::string>> neighborCache_;
@@ -2090,6 +2112,9 @@ class World
     std::map<std::string, std::vector<Spot>> doleLine_;   // Community -> its queue's places, the front first (the hour's).
     std::int64_t doleListHour_ = -1;
     std::map<std::string, std::string> markMotive_;  // A planned thief going for its mark: "food" or "pocket".
+    ThiefTally thiefTally_;
+    std::int64_t thiefFlagsDay_ = -1;
+    std::map<std::string, int> thiefFlags_;         // (Today's: which of thiefTally_'s each thief has been counted for.)
     mutable std::set<std::string> watchedCells_;
     mutable double watchedAt_ = -1;
     const World* streetHooked_ = nullptr;           // (The society's street hooks point at this world: set again after a move.)
