@@ -75,7 +75,7 @@ export const RULE_WORDS: Record<string, {label: string; unit: string}> = {
     shelfScale: {label: 'Shelves', unit: '% on every shelf\'s target'},
     factionDiscountMost: {label: 'The faction discount, at most', unit: 'p a Chapter a week'},
     caravanRate: {label: 'Wagons', unit: 'wagons on the roads, 0-300% of normal'},
-    wagonsOnRoad: {label: 'Wagons on the roads, at most', unit: 'at once (doc 79\'s wagonsMost)'},
+    wagonsOnRoad: {label: 'Wagons on the roads, at most', unit: 'at once'},
     cartsOnRoad: {label: 'Farm carts, at most', unit: 'on the farm tracks at once'},
     campStrengthMost: {label: 'A bandit camp\'s strength, at most', unit: 'points'},
     bountyMost: {label: 'A bounty, at most', unit: 'p on a camp'},
@@ -116,10 +116,10 @@ export function serviceChange(d: EconomyData, s: ServiceListed, key: keyof Servi
     return serviceValue(d, s)[key] === value ? null : {set: {[s.id]: {[key]: value}}};
 }
 /** How a service reads: "barber, 1p, about once every 4 days a household with money to spare (off)". */
-export function serviceText(d: EconomyData, s: ServiceListed): string {
+export function serviceText(d: EconomyData, s: ServiceListed, shipped = 'market.json\'s'): string {
     const v = serviceValue(d, s);
     return `${s.business ?? ''}, ${v.price}p, about once every ${v.every} day${v.every === 1 ? '' : 's'} a household with money to spare`
-        + (v.on ? '' : ' (off)') + (d.economy.services[s.id] ? '' : ' (market.json\'s)');
+        + (v.on ? '' : ' (off)') + (d.economy.services[s.id] ? '' : ` (${shipped})`);
 }
 
 // -- the seasons (doc 79, 7.1: price and abundance by group, market.json's with the world's changes) -----------------

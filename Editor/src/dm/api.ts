@@ -5,7 +5,7 @@ import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
 import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
 import type {EconomyActKind, EconomyReply, EconomyView, ProsperityReport} from '../lib/economyContract';
-import {hosted, setEnded} from '../lib/hosted';
+import {ENDED_TEXT, headingFor, hosted, mayCall, RESTARTING_ACT, restartingReply, setEnded, setRestarting} from '../lib/hosted';
 export type {EconomyActKind} from '../lib/economyContract';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
@@ -26,6 +26,9 @@ export const setSuite = (which: 'atlas' | 'dm', live: Target | null) => { suite 
 export const isLive = (target: Target) => known.find(w => w.key === target)?.kind === 'live' || (suite === 'dm' && target === served);
 /** A world's name, for headings. */
 export const worldName = (target: Target) => known.find(w => w.key === target)?.name ?? target.toUpperCase();
+/** A world for a heading or a line: in a host's Editor its own name (never its key, "WORLD"); in the dev studio its key
+ *  in capitals, as the DM's pages always named it. */
+export const worldLabel = (target: Target) => headingFor(target, known.find(w => w.key === target)?.name);
 export type Role = 'viewer' | 'dm' | 'builder' | 'owner' | 'admin';
 /** Who is signed in. In a host's Editor (Docs/Design/78, 7: `hosted`) the role is the Editor account's (viewer, dm,
  *  builder or owner, never admin), `username` is the account and its session ("pell#3f2a1c"), `mayActOnWolves` says
@@ -128,12 +131,27 @@ export class DmError extends Error {
 }
 
 async function call<T>(path: string, body?: unknown, headers: Record<string, string> = {}): Promise<T> {
-    const response = await fetch(path, {
-        method: body === undefined ? 'GET' : 'POST',
-        headers: {...authHeaders(), ...(body === undefined ? {} : {'Content-Type': 'application/json'}), ...headers},
-        body: body === undefined ? undefined : JSON.stringify(body),
-    });
+    // Hosted, once the session ended: a poll would only be refused again (and logged by the shell, all night), so reads
+    // go out once a half minute until one finds the session live again (the host signed in again from the menu).
+    if (hosted && body === undefined && !mayCall()) throw new DmError(ENDED_TEXT, 401);
+    let response: Response;
+    try {
+        response = await fetch(path, {
+            method: body === undefined ? 'GET' : 'POST',
+            headers: {...authHeaders(), ...(body === undefined ? {} : {'Content-Type': 'application/json'}), ...headers},
+            body: body === undefined ? undefined : JSON.stringify(body),
+        });
+    } catch (error) {
+        // Hosted: nothing answered at all, the world (or its container) restarting.
+        if (hosted) { setRestarting(true); throw new DmError(RESTARTING_ACT, 503); }
+        throw error;
+    }
     const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
+    if (hosted && restartingReply(response.status, data)) {
+        setRestarting(true);
+        throw new DmError(RESTARTING_ACT, 503);
+    }
+    setRestarting(false);
     // Hosted: a 401 is the Editor session's end (the shell's word, or the world's); any other answer means it is live.
     setEnded(response.status === 401 && /signed-out|session/i.test(String(data.error ?? '')));
     if (!response.ok) {
@@ -358,6 +376,10 @@ export const dmApi = {
     chronicle: (target: Target, id: string) => call<Chronicle>(`${at(target)}chronicle?target=${target}&id=${encodeURIComponent(id)}`),
     /** Has their life story written from the chronicle (one call to the NPC model) and kept. */
     writeStory: (target: Target, id: string) => call<Chronicle>(`${at(target)}chronicle/story`, {target, id}),
+    /** A host's Editor: asks the package to restart the world (doc 78, 6.5: the world saves, stops and starts again). */
+    restart: () => call<{ok: boolean; restarting: boolean}>('api/world/restart', {}),
+    /** Whether the studio answers (a host's Editor, while its world restarts). */
+    ping: () => call<unknown>('api/studio/ping'),
     /** A host's Editor: the AI's state (doc 78, 7). */
     ai: () => call<AiState>('api/studio/ai'),
     calendar: (target: Target) => call<WorldCalendar>(`${at(target)}calendar?target=${target}`),

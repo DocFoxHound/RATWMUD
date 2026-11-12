@@ -2,6 +2,7 @@
 // fresh fruit, fresh fish, ...) with this world's own numbers: by season, what its goods cost (on the Market Board's
 // prices) and how full the shops keep their shelves of them. A world's own prices are held to the season room (players'
 // pressure keeps its room inside the price clamp). On Atlas's Economy page and the DM's Economy tab alike.
+import {asShipped, hosted, shipped, shippedOwn} from '../lib/hosted';
 import {useEffect, useState} from 'react';
 import {percentsOf, percentsText, SEASON_ROWS, seasonChange, seasonNow, type EconomyData, type SeasonRow,
     type SeasonsBody, type SeasonGroupView} from '../lib/economy';
@@ -33,10 +34,10 @@ export function SeasonsPanel({data, locked, setSeasons}: {data: EconomyData; loc
         <h3>The seasons</h3>
         <p className="hint">Prices and shelves follow the year: each group's numbers stand at the middle of each season
             ({names.join(', ')}), the days between blending in a straight line. Price moves the Market Board's prices of the
-            group's goods, so what is in season is cheap (a wide swing is narrowed to market.json's season span, and the
+            group's goods, so what is in season is cheap (a wide swing is narrowed to {shippedOwn('market')} season span, and the
             prices must leave players' buying and selling room inside the price clamp); shelf is how full the shops keep
             their shelves of them (the preserver stocks up in autumn for the winter). The groups and their goods are
-            Data/Economy/market.json's.</p>
+            {hosted ? ' the game\'s own.' : ' Data/Economy/market.json\'s.'}</p>
         {!data.supported && <p className="publish-error">{data.problem}</p>}
         <div className="dm-table-wrap"><table className="dm-table seasons-table">
             <thead><tr><th>Group</th><th></th><th>{names.join(' / ')} (%)</th><th></th></tr></thead>
@@ -45,7 +46,7 @@ export function SeasonsPanel({data, locked, setSeasons}: {data: EconomyData; loc
                 return SEASON_ROWS.map((r, i) => <tr key={`${g.id}.${r.key}`} className={now.changed ? 'changed' : ''}>
                     {i === 0 && <td rowSpan={SEASON_ROWS.length} title={g.about}>
                         <b>{g.name}</b><br /><small className="hint">{g.goods.join(', ')}</small>
-                        {now.changed && <><br /><small className="hint">changed here (market.json: price {percentsText(g.price)},
+                        {now.changed && <><br /><small className="hint">changed here ({shipped('market')}: price {percentsText(g.price)},
                             shelf {percentsText(g.shelf)})</small></>}</td>}
                     <td title={r.hint}>{r.label}</td>
                     <td><input value={typed[cellKey(g.id, r.key)] ?? ''} disabled={off} size={18} aria-label={`${g.name}: ${r.label}`}
@@ -53,7 +54,7 @@ export function SeasonsPanel({data, locked, setSeasons}: {data: EconomyData; loc
                         onBlur={() => commitRow(g, r.key, r.low, r.high)}
                         onKeyDown={e => e.key === 'Enter' && commitRow(g, r.key, r.low, r.high)} /></td>
                     {i === 0 && <td rowSpan={SEASON_ROWS.length}>{now.changed &&
-                        <button disabled={off} onClick={() => setSeasons({set: {[g.id]: null}})}>As market.json</button>}</td>}
+                        <button disabled={off} onClick={() => setSeasons({set: {[g.id]: null}})}>{asShipped('market')}</button>}</td>}
                 </tr>);
             })}</tbody>
         </table></div>

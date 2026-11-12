@@ -6,7 +6,7 @@ import type {Place} from '../model/model.mjs';
 import {surfaceFor} from '../lib/surface';
 import {Row, SelectField, Slider, TextField, Hint} from '../components/fields';
 import {useWorld} from './world';
-import {isLive, worldName, dmApi, type Action, type Claim, type Faction, type FactionKind, type Factions, type Me, type RelationChange, type Stance, type Target} from './api';
+import {isLive, worldName, dmApi, type Action, type Claim, type Faction, type FactionKind, type Factions, type Me, type RelationChange, type Stance, type Target, worldLabel} from './api';
 import {MapView, type Overlay} from './MapView';
 import {idFrom, type Brush} from './LayerPanels';
 
@@ -296,5 +296,5 @@ function ActionList({actions, target}: {actions: Action[]; target: Target}) {
     if (!actions.length) return null;
     return <ol className="dm-actions">{actions.slice(0, 6).map(a => <li key={a.id} className={a.status}>
         <b>sync</b> by {a.by} · {new Date(a.at).toLocaleTimeString()}
-        <span>{a.status === 'queued' ? `waiting for a ${target.toUpperCase()} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>;
+        <span>{a.status === 'queued' ? `waiting for a ${worldLabel(target)} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>;
 }

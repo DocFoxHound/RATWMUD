@@ -10,6 +10,7 @@ import {useGlyphRender} from '../lib/glyphFont';
 import {NpcTab} from './NpcTab';
 import {LiveTab} from './LiveTab';
 import {useWorld} from './world';
+import {hosted} from '../lib/hosted';
 import {ChaptersTab} from './ChaptersTab';
 import {HealthTab} from './HealthTab';
 import {ServerTab} from './ServerTab';
@@ -19,7 +20,7 @@ import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
 import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
-import {isLive, worldName, dmApi, cheatsOff, wolvesOff, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
+import {isLive, worldName, dmApi, cheatsOff, wolvesOff, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie, worldLabel} from './api';
 
 type Tab = 'npcs' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'prosperity' | 'economy' | 'server';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
@@ -74,6 +75,7 @@ export function DmSuite({me, target}: {me: Me; target: Target}) {
                     title={t.ready ? t.label : `${t.label}: not built yet`} onClick={() => setTab(t.id)}>{t.icon} {t.label}{!t.ready && <em>soon</em>}</button>)}
             </div>
         </header>
+        {me.hosted && me.role === 'viewer' && <p className="hint dm-viewer-hint">Your account can watch only. Ask the world's owner to change its role.</p>}
         {tab === 'live' ? <LiveTab me={me} target={target} key={target} />
             : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} suite="dm" />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
@@ -150,7 +152,7 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
                 <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search characters or places…" aria-label="Search characters" />
                 <div className="segmented">{(['all', 'alive', 'dead'] as const).map(s =>
                     <button key={s} className={status === s ? 'on' : ''} onClick={() => setStatus(s)}>{s}</button>)}</div>
-                <span className="meta">{data ? `${rows.length} of ${data.characters.length} characters · ${data.world?.name ?? 'no world'}` : 'Loading…'}</span>
+                <span className="meta">{data ? `${rows.length} of ${data.characters.length} characters · ${hosted ? worldName(target) : data.world?.name ?? 'no world'}` : 'Loading…'}</span>
                 <button onClick={() => void load()} title="Reload from the database">Refresh</button>
             </div>
             {problem && <p className="hint error-text">{problem}</p>}
@@ -167,7 +169,7 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
                             return <td key={col.key} className={typeof v === 'number' ? 'num' : ''}>{text}</td>;
                         })}</tr>)}</tbody>
                 </table>
-                {data && !data.characters.length && <p className="hint dm-empty">No player characters in {target.toUpperCase()} yet. They appear here once the game server has saved them.</p>}
+                {data && !data.characters.length && <p className="hint dm-empty">No player characters in {worldLabel(target)} yet. They appear here once the game server has saved them.</p>}
             </div>
         </section>
         <aside className="dm-side">
@@ -360,7 +362,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
                 <button disabled={busy || pending || character.dead} onClick={() => void callBandits(1)}>Call a bandit near them</button>
                 <button disabled={busy || pending || character.dead} onClick={() => void callBandits(3)}>Call three bandits</button>
             </div>
-            <p className="hint">The game server applies it within a second, online or offline. Nothing happens until a {target.toUpperCase()} server is running; unapplied actions expire after ten minutes.</p>
+            <p className="hint">The game server applies it within a second, online or offline. Nothing happens until a {worldLabel(target)} server is running; unapplied actions expire after ten minutes.</p>
         </> : <p className="hint">Your account can view but not change the world.</p>}
         {problem && <p className="hint error-text">{problem}</p>}
         {actions.length > 0 && <ol className="dm-actions">{actions.slice(0, 6).map(a =>

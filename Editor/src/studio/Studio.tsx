@@ -15,7 +15,7 @@ import {FactionsTab} from '../dm/FactionsTab';
 import {dmApi, setSuite, setWorlds, signedIn, type Me, type StudioSession, type Target} from '../dm/api';
 import {colorFor, saveIdentity, savedIdentity} from '../lib/live';
 import {UpdateFromLive} from './UpdateFromLive';
-import {ENDED_TEXT, goTo, hosted, reloadApp, sessionEnded, watchSession} from '../lib/hosted';
+import {ENDED_TEXT, goTo, hosted, reloadApp, RESTARTING_TEXT, sessionEnded, watchRestarting, watchSession, worldRestarting} from '../lib/hosted';
 import {EconomyControls} from './EconomyControls';
 
 type Suite = 'atlas' | 'dm';
@@ -33,17 +33,27 @@ export function Studio() {
     const [checking, setChecking] = useState(signedIn());
     const [ended, setEnded] = useState(sessionEnded());
     useEffect(() => watchSession(setEnded), []);
+    // Hosted: while the world restarts, one quiet ping every few seconds, so the banner goes once it is back even on a
+    // tab that doesn't poll.
+    const [restarting, setRestarting] = useState(worldRestarting());
+    useEffect(() => watchRestarting(setRestarting), []);
+    useEffect(() => {
+        if (!restarting) return;
+        const t = setInterval(() => void dmApi.ping().catch(() => undefined), 5000);
+        return () => clearInterval(t);
+    }, [restarting]);
     useEffect(() => {
         if (!signedIn()) return;
         // Hosted (doc 78): who is signed in is the Editor session the shell holds; the page never signs in.
         (hosted ? dmApi.studio().then(s => s.me) : dmApi.me()).then(setMe).catch(() => undefined).finally(() => setChecking(false));
-    }, [ended]);
+    }, [ended, restarting]);
     if (checking) return <div className="dm-center"><p className="hint">Checking your session…</p></div>;
     if (hosted) {
         return <>
-            {ended && <div className="hosted-ended" role="alert">{ENDED_TEXT}</div>}
+            {ended ? <div className="hosted-ended" role="alert">{ENDED_TEXT}</div>
+                : restarting && <div className="hosted-ended hosted-restarting" role="status">{RESTARTING_TEXT}</div>}
             {me ? <Shell me={me} onSignOut={() => undefined} />
-                : <div className="dm-center"><p className="hint">{ENDED_TEXT}</p></div>}
+                : <div className="dm-center"><p className="hint">{restarting ? RESTARTING_TEXT : ENDED_TEXT}</p></div>}
         </>;
     }
     return me ? <Shell me={me} onSignOut={() => setMe(null)} /> : <SignIn onSignedIn={setMe} />;
@@ -61,8 +71,12 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
     const [problem, setProblem] = useState('');
     const [busy, setBusy] = useState(false);
     useEffect(() => {
-        dmApi.studio().then(s => { setWorlds([...s.dm.worlds, ...s.atlas.worlds]); setSession(s); })
-            .catch(e => setProblem((e as Error).message));
+        let on = true, timer = 0;
+        // (Hosted, a world restarting: asked again until it answers.)
+        const read = () => dmApi.studio().then(s => { if (on) { setWorlds([...s.dm.worlds, ...s.atlas.worlds]); setSession(s); } })
+            .catch(e => { if (!on) return; setProblem((e as Error).message); if (hosted && worldRestarting()) timer = window.setTimeout(read, 5000); });
+        void read();
+        return () => { on = false; clearTimeout(timer); };
     }, []);
     if (!session) return <div className="dm-center"><p className="hint">{problem || 'Loading the studio…'}</p></div>;
 

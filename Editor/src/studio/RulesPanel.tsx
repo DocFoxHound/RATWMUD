@@ -3,6 +3,7 @@
 // the data files' default; residents' needs paused (maintenance and testing); and the city's services, each on or off with
 // its price and how often a household with money to spare has it done. The slider's rule `prosperity` is its own panel's
 // (SteerPanel). On Atlas's Economy page and the DM's Economy tab alike.
+import {asShipped, shipped, shippedOwn} from '../lib/hosted';
 import {useEffect, useState} from 'react';
 import {heldRules, ruleChange, ruleOf, ruleValue, ruleWords, serviceChange, serviceText, serviceValue, wholeOf,
     type EconomyData, type NeedsBody, type RuleListed, type RulesBody, type ServiceListed, type ServicesBody} from '../lib/economy';
@@ -75,14 +76,14 @@ export function RulesPanel({data, locked, setRules, setServices, setNeeds}: {dat
             <tbody>{data.serviceList.map(s => {
                 const v = serviceValue(data, s), changed = data.economy.services[s.id] !== undefined;
                 return <tr key={s.id} className={changed ? 'changed' : ''}>
-                    <td title={serviceText(data, s)}><b>{s.name}</b><br /><small className="hint">{s.business}
+                    <td title={serviceText(data, s, shippedOwn('market'))}><b>{s.name}</b><br /><small className="hint">{s.business}
                         {s.for === 'patrons' && ', for its patrons: every day count is per unit (an armed wolf, a hull, a building)'}
-                        {changed && ` (market.json: ${s.price}p, every ${s.every} days)`}</small></td>
+                        {changed && ` (${shipped('market')}: ${s.price}p, every ${s.every} days)`}</small></td>
                     <td><input type="checkbox" checked={v.on} disabled={off} aria-label={`${s.name}: on`}
                         onChange={e => { const body = serviceChange(data, s, 'on', e.target.checked); if (body) setServices(body); }} /></td>
                     <td>{field(`${s.id}.price`, 5, `${s.name}: price`, () => commitService(s, 'price'))}</td>
                     <td>{field(`${s.id}.every`, 5, `${s.name}: every`, () => commitService(s, 'every'))}</td>
-                    <td>{changed && <button disabled={off} onClick={() => setServices({set: {[s.id]: null}})}>As market.json</button>}</td>
+                    <td>{changed && <button disabled={off} onClick={() => setServices({set: {[s.id]: null}})}>{asShipped('market')}</button>}</td>
                 </tr>;
             })}</tbody>
         </table></div>

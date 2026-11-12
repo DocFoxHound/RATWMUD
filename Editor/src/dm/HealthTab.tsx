@@ -2,7 +2,8 @@
 // the records it keeps each minute (dm.health). Tick times against the 50 ms budget, players online, their ping as
 // their pages report it, the slowest ticks and where their time went, and the players with the worst ping.
 import {useCallback, useEffect, useState} from 'react';
-import {dmApi, type Health, type HealthWindow, type Target} from './api';
+import {niceTicks} from '../lib/chart';
+import {dmApi, type Health, type HealthWindow, type Target, worldLabel} from './api';
 
 const SPANS: {hours: number; label: string}[] = [{hours: 1, label: 'Hour'}, {hours: 6, label: '6 hours'}, {hours: 24, label: 'Day'}, {hours: 168, label: 'Week'}];
 const Budget = 50;                                      // ms: a tick at 20 a second.
@@ -20,7 +21,7 @@ export function HealthTab({target}: {target: Target}) {
     const over = windows.reduce((n, w) => n + w.over50, 0);
     return <div className="dm-health">
         <div className="dm-sheet-bar">
-            <strong>Server Health · {target.toUpperCase()}</strong>
+            <strong>Server Health · {worldLabel(target)}</strong>
             <span className="meta hint">{latest ? `Last minute: ${latest.clients} players, ticks ${latest.mean.toFixed(1)} ms (p99 ${latest.p99.toFixed(0)}), ` +
                 (latest.ping !== null ? `ping ${latest.ping.toFixed(0)} ms` : 'no ping reports') : 'No records yet.'}</span>
             {SPANS.map(s => <button key={s.hours} className={hours === s.hours ? 'on' : ''} onClick={() => setHours(s.hours)}>{s.label}</button>)}
@@ -32,8 +33,8 @@ export function HealthTab({target}: {target: Target}) {
         {windows.length > 0 && <div className="dm-health-charts">
             <Chart title={`Tick time (ms) · ${over} ticks over the ${Budget} ms budget`} windows={windows} budget={Budget}
                 lines={[{label: 'p99', color: '#e0a35c', get: w => w.p99}, {label: 'mean', color: '#8fc7a0', get: w => w.mean}]} />
-            <Chart title="Players online" windows={windows} lines={[{label: 'players', color: '#8fb3e0', get: w => w.clients}]} />
-            <Chart title="Ping (ms), as players' pages report it" windows={windows}
+            <Chart title="Players online" windows={windows} least={4} lines={[{label: 'players', color: '#8fb3e0', get: w => w.clients}]} />
+            <Chart title="Ping (ms), as players' pages report it" windows={windows} least={50}
                 lines={[{label: '95th', color: '#e0a35c', get: w => w.ping95}, {label: 'middle', color: '#8fc7a0', get: w => w.ping}]} />
         </div>}
         {data && (data.spikes.length > 0 || data.players.length > 0) && <div className="dm-health-tables">
@@ -61,12 +62,14 @@ function when(at: string): string {
 type Line = {label: string; color: string; get: (w: HealthWindow) => number | null};
 
 /** A line chart over the span, drawn in SVG: one line per series, an optional budget line, time along the bottom. */
-function Chart({title, windows, lines, budget}: {title: string; windows: HealthWindow[]; lines: Line[]; budget?: number}) {
+function Chart({title, windows, lines, budget, least = 1}: {title: string; windows: HealthWindow[]; lines: Line[]; budget?: number; least?: number}) {
     const W = 900, H = 160, L = 44, R = 8, T = 10, B = 22;
     const times = windows.map(w => new Date(w.at).getTime());
     const t0 = times[0], t1 = Math.max(times.at(-1)!, t0 + 1);
     const values = windows.flatMap(w => lines.map(l => l.get(w)).filter((v): v is number => v !== null));
-    const top = Math.max(1, budget ?? 0, ...values) * 1.1;
+    // Whole-number ticks, never the same label twice, over a range never too small to read (lib/chart.ts).
+    const marks = niceTicks(Math.max(budget ?? 0, ...values), Math.max(least, budget ?? 0));
+    const top = marks.at(-1)!;
     const x = (t: number) => L + (t - t0) / (t1 - t0) * (W - L - R);
     const y = (v: number) => T + (1 - v / top) * (H - T - B);
     const path = (l: Line) => {
@@ -83,9 +86,9 @@ function Chart({title, windows, lines, budget}: {title: string; windows: HealthW
     return <figure className="dm-chart">
         <figcaption>{title} <span className="legend">{lines.map(l => <span key={l.label} style={{color: l.color}}>■ {l.label} </span>)}</span></figcaption>
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label={title}>
-            {[0, 0.5, 1].map(f => <g key={f}>
-                <line x1={L} x2={W - R} y1={y(top / 1.1 * f)} y2={y(top / 1.1 * f)} stroke="#1f2a26" />
-                <text x={L - 6} y={y(top / 1.1 * f) + 4} textAnchor="end" fontSize="10" fill="#7d8c86">{Math.round(top / 1.1 * f)}</text>
+            {marks.map(v => <g key={v}>
+                <line x1={L} x2={W - R} y1={y(v)} y2={y(v)} stroke="#1f2a26" />
+                <text x={L - 6} y={y(v) + 4} textAnchor="end" fontSize="10" fill="#7d8c86">{v}</text>
             </g>)}
             {budget !== undefined && <line x1={L} x2={W - R} y1={y(budget)} y2={y(budget)} stroke="#a8473f" strokeDasharray="4 4" />}
             {lines.map(l => <path key={l.label} d={path(l)} fill="none" stroke={l.color} strokeWidth="1.6" />)}

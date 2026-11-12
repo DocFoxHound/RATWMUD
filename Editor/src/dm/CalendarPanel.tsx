@@ -1,7 +1,7 @@
 // The world's week and its festivals, for the Dungeon Master (Docs/Design/26-living-npcs.md, Phase 9): today as the
 // game last saved it, when the next market, rest day and festival fall, and calling a festival for a town.
 import {useCallback, useEffect, useState} from 'react';
-import {isLive, worldName, dmApi, type Me, type Target, type WorldCalendar} from './api';
+import {isLive, worldName, dmApi, type Me, type Target, type WorldCalendar, worldLabel} from './api';
 
 const days = (n: number) => n === 0 ? 'today' : n === 1 ? 'tomorrow' : `in ${n} days`;
 
@@ -47,7 +47,7 @@ export function CalendarPanel({me, target}: {me: Me; target: Target}) {
             </div>}
             {cal.actions.length > 0 && <ol className="dm-actions">{cal.actions.slice(0, 5).map(a => <li key={a.id} className={a.status}>
                 <b>{a.payload.name || 'festival'}</b> in {a.target}, {days(a.payload.inDays ?? 0)} · by {a.by}
-                <span>{a.status === 'queued' ? `waiting for a ${target.toUpperCase()} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>}
+                <span>{a.status === 'queued' ? `waiting for a ${worldLabel(target)} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>}
         </>}
     </section>;
 }

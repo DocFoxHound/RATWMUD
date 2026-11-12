@@ -49,3 +49,108 @@ export function goTo(query: string) {
         reloadApp();
     } else window.location.assign(`?${query}`);
 }
+
+// ---------------------------------------------------------------------------------------------------- restarting
+// The shell's `editor` scheme answers 503 {"error": "restarting"} when the world doesn't answer (its container
+// restarting: doc 78, 2, screen 6). The page keeps what it holds, says so once, and goes on asking; the first answer
+// clears it.
+
+let restarting = false;
+const restartWatchers = new Set<(restarting: boolean) => void>();
+
+export const RESTARTING_TEXT = 'Your world is restarting: the Editor reconnects by itself.';
+export const RESTARTING_ACT = 'Your world is restarting: try again in a moment.';
+
+/** Whether the world is restarting (the last call found nobody there). */
+export const worldRestarting = () => restarting;
+
+export function setRestarting(value: boolean) {
+    if (!hosted || value === restarting) return;
+    restarting = value;
+    for (const w of restartWatchers) w(restarting);
+}
+
+export function watchRestarting(watcher: (restarting: boolean) => void): () => void {
+    restartWatchers.add(watcher);
+    return () => { restartWatchers.delete(watcher); };
+}
+
+/** Whether a reply (its status and body) says the world isn't there: the shell's 503 "restarting", or a 502 from an
+ *  older shell ("The world didn't answer."). */
+export const restartingReply = (status: number, data: {error?: unknown}) =>
+    (status === 503 && data.error === 'restarting') || (status === 502 && /didn't answer/i.test(String(data.error ?? '')));
+
+// ---------------------------------------------------------------------------------------------------- after the end
+// Once the session has ended, a poll every couple of seconds would only be refused again (and logged by the shell each
+// time, all night): the page asks at most once a half minute until it hears the session is live again.
+
+export const ENDED_PROBE_MS = 30_000;
+let lastProbe = 0;
+
+/** Whether a call may go out now (always, unless the session ended; then one every ENDED_PROBE_MS). */
+export function mayCall(now = Date.now(), isEnded = ended): boolean {
+    if (!isEnded) return true;
+    if (now - lastProbe < ENDED_PROBE_MS) return false;
+    lastProbe = now;
+    return true;
+}
+
+// ---------------------------------------------------------------------------------------------------- the server
+// The package's own word on its game server (Package/entrypoint.py's server.json, through the hosted status): whether
+// it is up, and if not why, with the exit code, how many stops in a row and when it starts again.
+
+export type HostServerReason = 'starting' | 'running' | 'restarting' | 'exit' | 'world.toml' | 'closed';
+export interface HostServer { up: boolean; reason: HostServerReason; code: number | null; failures: number; retryIn: number | null }
+
+/** "5 s", "2 min", "1 h". */
+export function inTime(seconds: number): string {
+    const s = Math.max(0, Math.round(seconds));
+    if (s < 60) return `${s} s`;
+    if (s < 3600) return `${Math.round(s / 60)} min`;
+    return `${Math.round(s / 3600)} h`;
+}
+
+/** The Server tab's line when the package says its game server isn't up (never "Running"), or '' when it is (or when
+ *  the package says nothing: an older one). */
+export function hostServerDown(h: HostServer | null | undefined): string {
+    if (!h) return '';
+    if (h.reason === 'restarting') return 'Restarting…';
+    if (h.up) return '';
+    switch (h.reason) {
+        case 'exit': {
+            const what = `${h.failures >= 2 ? 'Keeps stopping' : 'Stopped'}${h.code !== null ? ` (exit ${h.code})` : ''}`;
+            return `${what}: ${h.retryIn !== null ? `starts again in ${inTime(h.retryIn)}` : 'starting again'}`;
+        }
+        case 'world.toml': return 'Stopped: world.toml has a mistake (see the log: docker compose logs world)';
+        case 'starting': return 'Starting…';
+        case 'closed': return CLOSED_TEXT;
+        default: return 'Starting…';
+    }
+}
+
+export const RUNNING_TEXT = 'Running: players can join.';
+export const CLOSED_TEXT = 'Closed: players can\'t join until you open it again.';
+
+// ---------------------------------------------------------------------------------------------------- words
+/** The world's name for a heading: hosted, its own display name (`name`, as the session gives it); in the dev studio,
+ *  its key in capitals, as before. */
+export const headingFor = (key: string, name: string | undefined) => (hosted ? name || key : key.toUpperCase());
+
+/** Who did something, from an audit actor: an Editor account's session ("pell#3f2a1c") is its account's name; anything
+ *  else (the DM tool's own accounts, the game) is "the DM" in a host's Editor. */
+export function actorName(by: string | null | undefined, isHosted = hosted): string {
+    const who = String(by ?? '');
+    if (!isHosted) return who;
+    if (/^[a-z][a-z0-9_-]{2,31}#[0-9a-f]{4,}$/.test(who)) return who.split('#')[0];
+    return who ? 'the DM' : '';
+}
+
+/** The economy's shipped files, as a page names them: in a host's Editor "the default" (a host has no Data/ folder to
+ *  open); in the dev studio, the file. */
+export const shipped = (file: 'market' | 'status', isHosted = hosted) => (isHosted ? 'the default' : `${file}.json`);
+export const shippedOwn = (file: 'market' | 'status', isHosted = hosted) => (isHosted ? 'the default\'s' : `${file}.json's`);
+export const asShipped = (file: 'market' | 'status', isHosted = hosted) => (isHosted ? 'Back to the default' : `As ${file}.json`);
+/** A world before migration 0061: the dev studio's command; a host's package update. */
+export const needsMigration = (what: string, isHosted = hosted) => (isHosted
+    ? `This world needs a newer package for ${what}: update it (keep world.toml, .env and backups).`
+    : `This world needs migration 0061 for ${what} (python3 tools/world_db.py migrate).`);

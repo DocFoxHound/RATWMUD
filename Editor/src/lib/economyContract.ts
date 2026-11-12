@@ -32,14 +32,16 @@ export type EconomyView = {
 /** What every POST under /api/economy replies. */
 export type EconomyReply = EconomyView & {changed: boolean; detail: string; sync: number | null; warnings: string[]};
 /** How a host is told of the last economy.sync (Phase 9's last repair: no screen showed it). */
-export function syncWords(last: LastSync | null | undefined): string {
+export function syncWords(last: LastSync | null | undefined, who: (by: string) => string = by => by, numbered = true): string {
     if (!last) return '';
     const what = {queued: 'waiting for the game server (none has taken it yet)', applied: 'applied',
                   refused: 'refused by the game server', expired: 'never applied: no game server took it (one started later reads the world\'s row)'}[last.status]
                  ?? last.status;
     // (Core's result names what was skipped; an expiry's is the same words as `what`.)
     const more = last.result && last.status !== 'expired' ? ` ${last.result}` : '';
-    return `The last change sent to the game server (#${last.id}${last.by ? `, by ${last.by}` : ''}): ${what}.${more}`;
+    const by = last.by ? who(last.by) : '';
+    const said = [numbered ? `#${last.id}` : '', by ? `by ${by}` : ''].filter(Boolean).join(', ');
+    return `The last change sent to the game server${said ? ` (${said})` : ''}: ${what}.${more}`;
 }
 
 /** The Prosperity report the game writes with its checkpoint (World::prosperityReport). */

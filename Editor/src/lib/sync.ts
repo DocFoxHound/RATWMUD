@@ -7,6 +7,8 @@
 // carry; a row it made, whole). A conflict over such a field starts on live's (the plan's `default`), and the user can
 // choose dev's. A map-replacing import lists the NPCs whose places the new map hasn't (`gone`): a decision each.
 
+import type {HostServer} from './hosted';
+
 export type Side = 'dev' | 'live';
 export type RowChange = 'added' | 'changed' | 'removed' | 'unchanged' | 'absent';
 /** A value too long to show (terrain glyphs, heights): its size and a digest. */
@@ -98,6 +100,8 @@ export interface ServerStatus {
     starting?: boolean;
     /** A host's Editor (Docs/Design/78, 7): one world; Close and Open only, by its owner. */
     hosted?: boolean;
+    /** A host's Editor: the package's own word on its game server (Package/entrypoint.py's server.json), or null. */
+    hostServer?: HostServer | null;
 }
 /** A running game server's game, for a browser on this page's computer: at the host the page came from (the studio
  *  may be reached over the local network), unless the server runs on another computer; the game is plain http. */

@@ -132,6 +132,15 @@
 /* Prosperity (doc 79, 12): the acts' small forms, the word on the street and the log. */
 .dm-prosperity .dm-sheet-bar + .error, .dm-prosperity > .publish-done { margin: 6px 12px; }
 .dm-prosperity h3 button { margin-left: 8px; font-size: 11px; }
+/* The markets table and the side column never overlap (R1, shot 29): the table's cells wrap and its acts stack in a narrow
+   cell; each column scrolls on its own if it must; below 1400 px the side column drops under the tables. */
+.dm-prosperity .dm-health-tables > div { min-width: 0; overflow-x: auto; }
+.dm-prosperity .dm-table td.dm-wrap { white-space: normal; min-width: 140px; }
+.dm-prosperity .dm-table td.dm-acts { white-space: normal; }
+.dm-prosperity .dm-acts > div { display: flex; flex-wrap: wrap; gap: 4px; max-width: 200px; }
+.dm-prosperity .dm-acts button { padding: 3px 8px; font-size: 12px; }
+@media (max-width: 1400px) { .dm-prosperity .dm-health-tables { grid-template-columns: minmax(0, 1fr); } }
+.dm-viewer-hint { margin: 6px 12px; }
 .dm-act-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; padding: 6px 0; }
 .dm-act-form .field { min-width: 120px; }
 .dm-word, .dm-log { margin: 0; padding-left: 18px; font-size: 12px; }

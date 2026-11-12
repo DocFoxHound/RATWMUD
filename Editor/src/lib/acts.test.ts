@@ -37,6 +37,10 @@ test('the levers\' economy.sync is waited for and told as the server answered it
     const none = await awaitSync(9, async () => ({lastSync: {id: 9, status: 'queued', result: ''}}), 3, 0, quick);
     assert.equal(none?.status, 'queued');
     assert.match(syncWords({id: 9, status: 'queued', result: '', by: '', at: ''}), /waiting for the game server/);
+    // A host's Editor: no row number, and a dev identity is "the DM" (R1, shot 30's "#32, by dm-devtest").
+    assert.match(syncWords({id: 32, status: 'applied', result: '', by: 'dm-devtest', at: ''}, () => 'the DM', false),
+        /^The last change sent to the game server \(by the DM\): applied\.$/);
+    assert.match(syncWords({id: 32, status: 'applied', result: '', by: '', at: ''}, () => 'x', false), /server: applied\.$/);
     assert.match(syncWords({id: 9, status: 'expired', result: 'Not applied within ten minutes.', by: '', at: ''}), /never applied: no game server took it/);
     assert.match(syncWords({id: 9, status: 'refused', result: 'The economy\'s rules could not be read: x', by: '', at: ''}), /refused by the game server\. The economy/);
     assert.equal(syncWords(null), '');

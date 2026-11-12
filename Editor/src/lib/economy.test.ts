@@ -66,7 +66,8 @@ test('a rule is the world\'s own or the default; negative lows; prosperity is th
     for (const name of ['caravanRate', 'shipsPerWeek', 'eventRate', 'overrideNotices', 'wagonsOnRoad', 'harvestBias'])
         assert.ok(RULE_WORDS[name]?.unit, name);
     assert.match(RULE_WORDS.shipsPerWeek.unit, /0 means no ships even with a port/);
-    assert.match(RULE_WORDS.wagonsOnRoad.unit, /wagonsMost/);
+    assert.match(RULE_WORDS.wagonsOnRoad.unit, /at once/);
+    assert.doesNotMatch(RULE_WORDS.wagonsOnRoad.unit, /doc 79/, 'no design-doc words on a host\'s page (R1)');
     assert.deepEqual(heldRules(view({rules: {steerLean: 150, ripple: 40, prosperity: 20}})), ['steerLean'], 'kept, not shown');
 });
 

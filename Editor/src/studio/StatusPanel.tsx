@@ -4,6 +4,7 @@
 // uses, and the street's numbers. Each part back to the file's on its own. Core checks them as it reads the file (a share
 // table that fails its checks falls back to the file's). Migration 0061 only. On Atlas's Economy page and the DM's
 // Economy tab alike.
+import {hosted, needsMigration} from '../lib/hosted';
 import {useEffect, useState} from 'react';
 import {sharesOf, sharesText, statusChange, statusOverride, statusPart, wholeOf, type EconomyData, type ShareRow,
     type StatusBody} from '../lib/economy';
@@ -65,9 +66,11 @@ export function StatusPanel({data, locked, setStatus}: {data: EconomyData; locke
     const ownShares = statusOverride(data).shares !== undefined;
     return <section className="economy-switches status-panel">
         <h3>The bands and the street</h3>
-        <p className="hint">Data/Economy/status.json's parts this world sets for itself; the rest stays the file's. A share table
-            that fails Core's checks is the file's again; each cap at most five times the file's.</p>
-        {!data.slim && <p className="publish-error">This world needs migration 0061 for its own parts (python3 tools/world_db.py migrate).</p>}
+        <p className="hint">{hosted ? 'The parts this world sets for itself; the rest stays the game\'s default. A share table that ' +
+            'fails the game\'s checks is the default\'s again; each cap at most five times the default\'s.'
+            : 'Data/Economy/status.json\'s parts this world sets for itself; the rest stays the file\'s. A share table that fails ' +
+            'Core\'s checks is the file\'s again; each cap at most five times the file\'s.'}</p>
+        {!data.slim && <p className="publish-error">{needsMigration('its own parts')}</p>}
         <h4>The bands' shares{ownShares ? ' (this world\'s own)' : ''}</h4>
         <p className="hint">How a market's households split into destitute, poor, comfortable and rich at points along the slider
             (−100 to 100), one line a point: "at: destitute poor comfortable rich" in percents summing to 100, each at least 2;
@@ -84,8 +87,8 @@ export function StatusPanel({data, locked, setStatus}: {data: EconomyData; locke
         <p className="hint">What talk says a post pays a day, in pennies, times the slider ("eight pennies a day"): nothing pays them.</p>
         <Numbers data={data} name="pay" words={{}} unit="p a day, for talk" off={off} setStatus={setStatus} />
         <JsonPart data={data} name="rows" label="What each band does" off={off} setStatus={setStatus}
-            hint="Each band's row: its meals, food, short days, purse and pocket, budget, theft, goods, shops, luxuries, services and alms. An object merged over the file's, band by band." />
+            hint={`Each band's row: its meals, food, short days, purse and pocket, budget, theft, goods, shops, luxuries, services and alms. An object merged over ${hosted ? 'the default' : 'the file'}'s, band by band.`} />
         <JsonPart data={data} name="street" label="The street" off={off} setStatus={setStatus}
-            hint="Thefts, begging, rough sleeping and the dole: an object merged over the file's." />
+            hint={`Thefts, begging, rough sleeping and the dole: an object merged over ${hosted ? 'the default' : 'the file'}'s.`} />
     </section>;
 }
