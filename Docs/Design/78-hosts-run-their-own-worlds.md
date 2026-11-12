@@ -2272,6 +2272,12 @@ M0a measured, M1, M2a and M4 built (2026-11-12, below); the rest not yet.
     quietly with the notice; `--leaked`: the red screen with both fingerprints and no sign-in (the shell refuses too),
     a wrong name refused, the right one forgets, the first-connection screen, trusted, signed in; no page error, no token
     in any reply the page got, no data directory left. No `s2stage` database, `/tmp` file or process left.
+  - **Windows** (`desktop-windows.yml` on `r2-editor-m4`): run 43305720830 failed before any test
+    (`STATUS_ENTRYPOINT_NOT_FOUND`: the test harness had no Common Controls v6 manifest, which only the app got, and the
+    Editor's code links an entry point only v6 has); `build.rs` now embeds `windows-app-manifest.xml` into every
+    binary through the linker (`WindowsAttributes::new_without_app_manifest`). Run 43306703409: 56 of 57, the keep-alive
+    test set an `Instant` before the runner's boot; fixed. **Run 43307200798: success**, `cargo test` 57 of 57, the
+    release build and its NSIS installer.
   - **Not done here:** "closing the window with saves pending asks first" and queued saves retrying (the page's own
     queue: Atlas, slice 2); the menu's "Open · N wolves" count and "Last backup" (the hello has neither: My world, M5);
     the owner's banners and failed sign-ins appear once the accounts panel is opened (the helper gives them only behind
