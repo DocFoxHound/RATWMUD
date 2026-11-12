@@ -8,12 +8,15 @@
 // name and age), the world list, the first arrival in a world (the tier, strengths, arrival town and tie, which
 // are the world's), and for a host's account the Host page (3.2: its worlds, their tokens, why each is or isn't
 // listed). In central mode its commands go to the client (client.ts), which answers with lobby events of the
-// same shape.
+// same shape. In the desktop client (not on a Mac, not in a browser) EDITOR on the sign-in, roster and Host pages opens
+// the Editor's screens (editorDoor.ts, Docs/Design/78): a host's way into their own world's tools.
 import {CoatNames} from './theme.ts';
 import {drawPortrait, lifeStage, Portraits, readAppearance, shoulderHeightCm} from './portrait.ts';
 import {MaskNames, Masks} from './wolfArt.ts';
 import {artCache, sendPortrait, squarePixels} from './artwork.ts';
 import {ask, askText} from './dialog.ts';
+import {EditorDoor} from './editorDoor.ts';
+import {hostOf, type EditorBridge} from '../net/editor.ts';
 
 
 // Natural coats, pale to dark (doc 29, phase 9); any colour is also allowed.
@@ -44,7 +47,7 @@ import {arr, bool, isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
 import {agentCommand, agoText, serverCommand} from '../net/central.ts';
 
-type Page = 'login' | 'register' | 'roster' | 'creator' | 'review' | 'worlds' | 'arrive' | 'host';
+type Page = 'login' | 'register' | 'roster' | 'creator' | 'review' | 'worlds' | 'arrive' | 'host' | 'editor';
 
 /** A world in the client's list, as the door shows it (client.ts makes these). */
 export interface DoorWorld {
@@ -81,6 +84,7 @@ export interface DoorOptions {
     edition?: string;        // The header's corner.
     footnote?: string;       // The line under everything.
     canRemember?: boolean;   // "Remember me" (central mode, the client only).
+    editor?: EditorBridge | null;   // The shell's Editor (the desktop client, not on a Mac): EDITOR on the main menu.
 }
 
 const Choices: Record<string, string[]> = {
@@ -162,6 +166,8 @@ export class FrontDoor {
     hostToken = '';                          // A token just made, shown this once (gone when the page is left).
     hostTokenWorld = '';
     private typedUsername = '';
+    /** The Editor's screens (doc 78, section 2), when the shell has the Editor. */
+    readonly editorDoor: EditorDoor | null = null;
 
     private showGiftDetails = false;
     private worldLines = new Map<string, {status: HTMLElement; join: HTMLButtonElement; note: HTMLElement}>();
@@ -180,6 +186,16 @@ export class FrontDoor {
         this.send = send;
         this.mode = options.mode ?? 'world';
         this.canRemember = options.canRemember === true;
+        if (options.editor) {
+            this.editorDoor = new EditorDoor(options.editor, {
+                redraw: () => this.show('editor'),
+                message: (text, error) => this.setMessage(text, error === true),
+                leave: () => this.show(this.stage === 'characters' ? 'roster' : 'login'),
+                hostAWorld: () => this.hostAWorld(),
+                officialHosts: () => [...this.worlds, ...this.hostWorlds].filter(w => w.kind === 'official' && w.address).map(w => hostOf(w.address)),
+                setBusy: busy => this.root.classList.toggle('busy', busy),
+            });
+        }
         this.body = el('div', {className: 'door-body'});
         this.status = el('p', {className: 'door-status'});
         const central = this.mode === 'central';
@@ -218,6 +234,11 @@ export class FrontDoor {
 
     private onKey = (e: KeyboardEvent) => {
         if (e.code !== 'Escape' || this.busy) return;
+        if (this.page === 'editor' && !document.querySelector('.ratw-dialog')) {
+            e.preventDefault();
+            this.editorDoor?.leave();
+            return;
+        }
         const back: Partial<Record<Page, Page>> = {review: 'creator', creator: 'roster', register: 'login', worlds: 'roster', host: 'roster'};
 
         const to = back[this.page];
@@ -367,9 +388,12 @@ export class FrontDoor {
         this.portraitCanvas = null;
         this.password = null;
         this.worldLines.clear();
+        // The Editor's password boxes are emptied whenever its screen is left or drawn again.
+        this.editorDoor?.wipe();
+        if (page === 'editor' && !this.editorDoor) page = this.page = 'login';
         this.body.replaceChildren(page === 'login' || page === 'register' ? this.loginPage()
             : page === 'roster' ? this.rosterPage() : page === 'worlds' ? this.worldsPage() : page === 'arrive' ? this.arrivePage()
-            : page === 'host' ? this.hostPage()
+            : page === 'host' ? this.hostPage() : page === 'editor' ? this.editorDoor!.render()
             : this.creatorPage(page === 'review'));
 
         this.root.dataset.page = page;
@@ -422,7 +446,8 @@ export class FrontDoor {
             el('p', {className: 'muted large'}, 'Explore through simple glyphs. Express yourself through words. The character sheet holds the ' +
                 'portrait; the world leaves room for your imagination.'),
             el('p', {className: 'sage glyphs'}, 'W >   ·   ·   ·   #   +   #', el('br'), el('br'), 'ROLEPLAY  /  EXPLORATION  /  BELONGING'),
-            el('p', {className: 'muted'}, 'Your account holds up to six characters. Characters are persistent; choosing another does not erase their story.'));
+            el('p', {className: 'muted'}, 'Your account holds up to six characters. Characters are persistent; choosing another does not erase their story.'),
+            ...this.editorEntry());
         return el('div', {className: 'door-row'}, pitch, form);
     }
 
@@ -494,8 +519,33 @@ export class FrontDoor {
             el('p', {className: 'muted large'}, 'Your wolf is yours in every world: their name and their look go with them. ' +
                 'What they do in a world stays in that world.'),
             el('p', {className: 'sage glyphs'}, 'W >   ·   ·   ·   #   +   #', el('br'), el('br'), 'ROLEPLAY  /  EXPLORATION  /  BELONGING'),
-            el('p', {className: 'muted'}, 'Your account holds up to six wolves.'));
+            el('p', {className: 'muted'}, 'Your account holds up to six wolves.'),
+            ...this.editorEntry());
         return el('div', {className: 'door-row'}, pitch, form);
+    }
+
+    /** EDITOR under the pitch card (doc 78, screen 1): no central sign-in needed, so it works when central is down. */
+    private editorEntry(): HTMLElement[] {
+        if (!this.editorDoor) return [];
+        return [el('div', {className: 'door-editor'}, el('p', {className: 'muted'}, 'Run or build your own world.'), this.editorButton())];
+    }
+
+    private editorButton(): HTMLButtonElement {
+        const b = this.button('EDITOR', () => { this.setMessage(''); void this.editorDoor?.open(); });
+        b.dataset.action = 'editor';
+        return b;
+    }
+
+    /** The Editor's "Don't have a world yet? HOST A WORLD.": the Host page, for a host's account once signed in. */
+    private hostAWorld() {
+        if (this.stage === 'characters' && this.canHost) {
+            this.setMessage('Asking central for your worlds…');
+            this.submit({type: 'host_show'});
+            return;
+        }
+        this.show(this.stage === 'characters' ? 'roster' : 'login');
+        this.setMessage(this.stage === 'characters' ? 'Hosting a world needs a host\'s account: the hosting guide says how to ask for one.'
+            : 'Sign in first: HOST A WORLD is on your wolves\' page, for a host\'s account.');
     }
 
     // ------------------------------------------------------------------ The roster
@@ -558,14 +608,16 @@ export class FrontDoor {
                 'Your wolf\'s name and look go with them to every world; what they do in a world stays there.'), remove));
         }
         let go: HTMLElement = enter;
+        const beside: HTMLElement[] = this.editorDoor ? [this.editorButton()] : [];
         if (this.mode === 'central' && this.canHost) {
             const host = this.button('HOST A WORLD', () => {
                 this.setMessage('Asking central for your worlds…');
                 this.submit({type: 'host_show'});
             });
             host.dataset.action = 'host';
-            go = el('div', {className: 'door-actions roster-actions'}, host, enter);
+            beside.push(host);
         }
+        if (beside.length) go = el('div', {className: 'door-actions roster-actions'}, ...beside, enter);
         const detail = el('section', {className: 'door-card door-detail'},
             el('h2', {className: 'name'}, str(c, 'name', 'An unwritten story')),
             el('p', {className: 'muted large'}, c ? `${stageName(age)} · age ${age.toFixed(0)} · ${title(str(obj(c, 'appearance'), 'species', 'timber'))} wolf` +
@@ -773,6 +825,14 @@ export class FrontDoor {
             remove.dataset.action = 'host-remove';
             remove.dataset.world = w.id;
             remove.classList.add('danger');
+            // EDITOR on a community world (never an official one): this computer first, if that world is here.
+            const edit: HTMLElement[] = [];
+            if (this.editorDoor && w.kind !== 'official') {
+                const b = this.button('EDITOR', () => { this.setMessage(''); void this.editorDoor?.openFor(w.id, w.address); });
+                b.dataset.action = 'host-editor';
+                b.dataset.world = w.id;
+                edit.push(b);
+            }
             const facts = [w.address || 'Not heard from yet', `${w.players} ${w.players === 1 ? 'wolf' : 'wolves'} in it`,
                 `last heartbeat ${agoText(w.lastHeartbeat)}`, ...(w.tokenCreated ? [`token made ${agoText(w.tokenCreated)}`] : ['no token'])];
             const row = el('div', {className: `world-row host-row${w.listed ? ' listed' : ''}`},
@@ -782,7 +842,7 @@ export class FrontDoor {
                         el('span', {className: `world-kind ${w.listed ? 'listed' : 'unlisted'}`}, w.listed ? 'LISTED' : 'NOT LISTED')),
                     el('p', {className: 'muted small'}, facts.join('  ·  ')),
                     el('p', {className: 'world-note gold'}, w.listed ? '' : w.why || 'Not listed yet: start the world and its agent.')),
-                el('div', {className: 'host-buttons'}, renew, remove));
+                el('div', {className: 'host-buttons'}, ...edit, renew, remove));
             row.dataset.world = w.id;
             list.append(row);
         }
@@ -863,8 +923,9 @@ export class FrontDoor {
     }
 
     private async renewToken(w: DoorHostWorld) {
-        if (!await ask(`Make a new token for ${w.name}? The old one stops working at once: the world leaves the list until its agent ` +
-            'runs with the new one.', {ok: 'Make a new token', danger: true})) return;
+        if (!await ask(`Make a new token for ${w.name}? The old one stops working at once, and the world leaves the list until it ` +
+            'restarts with the new one: put it in the world folder\'s .env (RATW_HOST_TOKEN=...), then run docker compose up -d there. ' +
+            'Your world\'s Editor and its accounts are unchanged.', {ok: 'Make a new token', danger: true})) return;
         this.setMessage(`Making a new token for ${w.name}…`);
         this.submit({type: 'host_token', world: w.id});
     }

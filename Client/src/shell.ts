@@ -9,6 +9,8 @@
 export interface TauriApi {
     core: {invoke<T = unknown>(command: string, args?: Record<string, unknown>): Promise<T>};
     window: {getCurrentWindow(): TauriWindow};
+    /** The shell's events (the Editor's "your session ended", doc 78). */
+    event?: {listen(event: string, handler: (e: {payload: unknown}) => void): Promise<() => void>};
 }
 export interface TauriWindow {
     setFullscreen(on: boolean): Promise<void>;
@@ -83,6 +85,11 @@ export class Shell {
     invoke<T>(command: string, args?: Record<string, unknown>): Promise<T> {
         if (!this.api) return Promise.reject(new Error('Not in the desktop client.'));
         return this.api.core.invoke<T>(command, args);
+    }
+
+    /** An event from the shell; nothing in a browser. */
+    listen(event: string, handler: (e: {payload: unknown}) => void): Promise<unknown> {
+        return this.api?.event ? this.api.event.listen(event, handler) : Promise.resolve(null);
     }
 
     /** The guard, the context menu, and the close question; once. */

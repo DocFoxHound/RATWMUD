@@ -5,6 +5,7 @@ import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
 import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
 import type {EconomyActKind, EconomyReply, EconomyView, ProsperityReport} from '../lib/economyContract';
+import {hosted, setEnded} from '../lib/hosted';
 export type {EconomyActKind} from '../lib/economyContract';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
@@ -99,10 +100,11 @@ export interface Tie { id: string; state: string; starter: string; town: string;
 export interface Players { target: Target; world: {id: string; name: string} | null; characters: Character[]; actions: Action[]; ties?: Tie[] }
 
 const KEY = 'ratw-dm-session';
-let token = (() => { try { return sessionStorage.getItem(KEY) ?? ''; } catch { return ''; } })();
-export const signedIn = () => !!token;
-/** The DM account's sign-in, for every call to the studio (doc 66, 3: one sign-in for both suites). */
-export const authHeaders = (): Record<string, string> => (token ? {Authorization: `Bearer ${token}`} : {});
+// (Hosted, doc 78: the page holds no token at all; the client's shell adds the Editor session to every request.)
+let token = hosted ? '' : (() => { try { return sessionStorage.getItem(KEY) ?? ''; } catch { return ''; } })();
+export const signedIn = () => hosted || !!token;
+/** The DM account's sign-in, for every call to the studio (doc 66, 3: one sign-in for both suites). Nothing, hosted. */
+export const authHeaders = (): Record<string, string> => (!hosted && token ? {Authorization: `Bearer ${token}`} : {});
 /** Which suite's routes a world's calls go to (tools/studio.py): the DM suite's to the DM's (a live world, or the dev
  *  world the live server runs), Atlas's NPC pages' to Atlas's (the same methods, on Atlas's world only). Without a
  *  suite set: by the world's kind. */
@@ -132,6 +134,8 @@ async function call<T>(path: string, body?: unknown, headers: Record<string, str
         body: body === undefined ? undefined : JSON.stringify(body),
     });
     const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
+    // Hosted: a 401 is the Editor session's end (the shell's word, or the world's); any other answer means it is live.
+    setEnded(response.status === 401 && /signed-out|session/i.test(String(data.error ?? '')));
     if (!response.ok) {
         // (A wrong publish password is a 401 too, but not the end of the sign-in: the studio says which.)
         if (response.status === 401 && /sign in|session/i.test(String(data.error ?? ''))) setToken('');
@@ -142,6 +146,7 @@ async function call<T>(path: string, body?: unknown, headers: Record<string, str
 /** The studio's calls, for other modules' routes (Atlas's Update from live, which also carries Atlas's token). */
 export const studioCall = call;
 function setToken(value: string) {
+    if (hosted) return;
     token = value;
     try { if (value) sessionStorage.setItem(KEY, value); else sessionStorage.removeItem(KEY); } catch { /* private window */ }
 }

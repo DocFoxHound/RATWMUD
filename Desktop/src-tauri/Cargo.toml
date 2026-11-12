@@ -27,8 +27,18 @@ tokio = { version = "1", features = ["net", "sync", "macros", "rt-multi-thread",
 # The loopback relay (--relay) to ws:// and wss:// worlds; webpki's roots.
 tokio-tungstenite = { version = "0.29", features = ["rustls-tls-webpki-roots"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
-# Central's calls and worlds' /status, made by the shell (blocking, on Tauri's blocking pool).
-ureq = { version = "3.5", default-features = false, features = ["rustls", "json"] }
+# Central's calls and worlds' /status, made by the shell (blocking, on Tauri's blocking pool). Pinned exactly: the
+# Editor's pinned TLS client (src/editor/tls.rs) builds on `ureq::unversioned`, which may change in any release
+# (Docs/Design/78, 6.4; M0a).
+ureq = { version = "=3.5.1", default-features = false, features = ["rustls", "json"] }
+# The Editor (Docs/Design/78, 6.4-6.6): the pinned verifier's SPKI (webpki), its hashes and the signatures it checks
+# (ring: ECDSA P-256 for a signed key rotation, Ed25519 for the signed Editor bundle), gzip replies through the proxy.
+ring = "0.17"
+webpki = { package = "rustls-webpki", version = "0.103", default-features = false, features = ["alloc", "ring", "std"] }
+flate2 = "1"
+base64 = "0.22"
+# The Editor window's downloads go through a save dialog the shell opens (never a dialog plugin the page could call).
+rfd = { version = "0.15", default-features = false, features = ["gtk3"] }
 # "Remember me": the OS's keychain.
 keyring = { version = "3.6", features = ["apple-native", "windows-native", "sync-secret-service", "crypto-rust"] }
 getrandom = "0.3"

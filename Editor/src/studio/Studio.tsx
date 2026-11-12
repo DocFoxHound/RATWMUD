@@ -15,6 +15,7 @@ import {FactionsTab} from '../dm/FactionsTab';
 import {dmApi, setSuite, setWorlds, signedIn, type Me, type StudioSession, type Target} from '../dm/api';
 import {colorFor, saveIdentity, savedIdentity} from '../lib/live';
 import {UpdateFromLive} from './UpdateFromLive';
+import {ENDED_TEXT, goTo, hosted, reloadApp, sessionEnded, watchSession} from '../lib/hosted';
 import {EconomyControls} from './EconomyControls';
 
 type Suite = 'atlas' | 'dm';
@@ -30,19 +31,29 @@ const ATLAS_PAGES: {id: AtlasPage; label: string; title: string}[] = [
 export function Studio() {
     const [me, setMe] = useState<Me | null>(null);
     const [checking, setChecking] = useState(signedIn());
+    const [ended, setEnded] = useState(sessionEnded());
+    useEffect(() => watchSession(setEnded), []);
     useEffect(() => {
         if (!signedIn()) return;
-        dmApi.me().then(setMe).catch(() => undefined).finally(() => setChecking(false));
-    }, []);
+        // Hosted (doc 78): who is signed in is the Editor session the shell holds; the page never signs in.
+        (hosted ? dmApi.studio().then(s => s.me) : dmApi.me()).then(setMe).catch(() => undefined).finally(() => setChecking(false));
+    }, [ended]);
     if (checking) return <div className="dm-center"><p className="hint">Checking your session…</p></div>;
+    if (hosted) {
+        return <>
+            {ended && <div className="hosted-ended" role="alert">{ENDED_TEXT}</div>}
+            {me ? <Shell me={me} onSignOut={() => undefined} />
+                : <div className="dm-center"><p className="hint">{ENDED_TEXT}</p></div>}
+        </>;
+    }
     return me ? <Shell me={me} onSignOut={() => setMe(null)} /> : <SignIn onSignedIn={setMe} />;
 }
 
-/** Opens a suite (and an Atlas page) as its own page load. */
+/** Opens a suite (and an Atlas page): as its own page load, or inside the page when hosted. */
 function go(suite: Suite, page: AtlasPage = 'workshop') {
     const query = new URLSearchParams({suite});
     if (suite === 'atlas' && page !== 'workshop') query.set('page', page);
-    window.location.assign(`?${query}`);
+    goTo(String(query));
 }
 
 function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
@@ -70,14 +81,14 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
         const name = session.dm.worlds.find(w => w.key === key)?.name ?? key;
         if (key === dmKey || !window.confirm(`Point the DM at ${name}? Every DM page then works on it: players, NPC life, storylines and its server. (This computer's choice: other browsers take it up when they reload.)`)) return;
         setBusy(true);
-        try { await dmApi.useDmWorld(key); window.location.reload(); }
+        try { await dmApi.useDmWorld(key); reloadApp(); }
         catch (error) { setProblem((error as Error).message); setBusy(false); }
     };
     const switchAtlas = async (key: Target) => {
         const name = session.atlas.worlds.find(w => w.key === key)?.name ?? key;
         if (key === atlasKey || !window.confirm(`Switch Atlas to ${name}? Atlas's world changes for everyone using this studio (and for local and scratch servers, as world_db.py use does).`)) return;
         setBusy(true);
-        try { await dmApi.useAtlasWorld(key); window.location.reload(); }
+        try { await dmApi.useAtlasWorld(key); reloadApp(); }
         catch (error) { setProblem((error as Error).message); setBusy(false); }
     };
 
@@ -97,7 +108,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
             </span> : suite === 'atlas' ? <>
                 <label className="studio-world" title="Atlas's world: the dev world Atlas edits, and local and scratch servers play">
                     <span>Dev world</span>
-                    <select value={atlasKey} disabled={busy} onChange={e => void switchAtlas(e.target.value)}>
+                    <select value={atlasKey} disabled={busy || hosted} onChange={e => void switchAtlas(e.target.value)}>
                         {session.atlas.worlds.map(w => <option key={w.key} value={w.key}>{w.name} · {w.key}{w.upstream ? ` (copy of ${w.upstream})` : ''}</option>)}
                     </select>
                 </label>
@@ -107,7 +118,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
                         onClick={() => page !== p.id && go('atlas', p.id)}>{p.label}</button>)}</div>
             </> : <label className="studio-world" title="The DM's world: every DM page (players, NPC life, storylines, the server) works on it. Chosen apart from Atlas's world.">
                 <span>DM world</span>
-                <select value={dmKey ?? ''} disabled={busy || me.role === 'viewer'} onChange={e => void switchDm(e.target.value)}>
+                <select value={dmKey ?? ''} disabled={busy || hosted || me.role === 'viewer'} onChange={e => void switchDm(e.target.value)}>
                     {session.dm.worlds.map(w => <option key={w.key} value={w.key}>{w.name} · {w.key} ({w.kind}){w.key === live ? ' · the live server\'s' : ''}</option>)}
                 </select>
                 <small>{dmKey === atlasKey ? 'Atlas edits this world too' : `Atlas: ${session.atlas.world.name}`}</small>
@@ -115,7 +126,7 @@ function Shell({me, onSignOut}: {me: Me; onSignOut: () => void}) {
             {problem && <span className="hint error-text">{problem}</span>}
             <div className="top-actions">
                 <span className="dm-me" title={`Signed in as ${me.username}`}>{me.hosted ? me.account ?? me.username : me.username}<small>{me.role}</small></span>
-                <button onClick={() => { void dmApi.logout().finally(onSignOut); }}>Sign out</button>
+                {!hosted && <button onClick={() => { void dmApi.logout().finally(onSignOut); }}>Sign out</button>}
             </div>
         </header>
         {suite === 'dm' ? (dmKey ? <DmSuite me={me} target={dmKey} />

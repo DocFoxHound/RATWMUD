@@ -1057,7 +1057,14 @@ class Core:
             if device is not None:
                 found = conn.execute('SELECT wait_until FROM dm.devices WHERE token_hash = %s AND username = %s',
                                      (token_hash(device), username)).fetchone() if known else None
-                if not found:
+                # A token the world forgot (a reset, a password change, End all sessions, the five-device cap) is no
+                # device at all: that client is a new device again (doc 78, 6.5; M4). A token issued to another account
+                # is unknown and a failure.
+                elsewhere = not found and conn.execute('SELECT 1 FROM dm.devices WHERE token_hash = %s',
+                                                       (token_hash(device),)).fetchone()
+                if not found and not elsewhere and known:
+                    device = None
+                elif not found:
                     out['device'] = 'other'
                 elif found[0] and found[0].timestamp() > now:
                     out['device'], out['device_wait'] = 'waiting', found[0].timestamp()

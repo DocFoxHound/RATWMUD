@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "The bundled game page, and only what it uses: central through the shell, worlds' /status, the relay's address; the window's fullscreen, its close question (listen) and closing it. No core:default: a script slipped into the page gets no menus, paths or events.",
+  "description": "The bundled game page, and only what it uses: central through the shell, worlds' /status, the relay's address, the Editor's commands (doc 78: the main window's screens 2-5; the Editor window is named by no capability, ever); the window's fullscreen, its close question and the Editor's session events (listen) and closing it. No core:default: a script slipped into the page gets no menus, paths or events.",
   "windows": ["main"],
   "permissions": [
     "core:event:allow-listen",
@@ -13,6 +13,18 @@
     "allow-central-call",
     "allow-central-resume",
     "allow-world-status",
-    "allow-relay-address"
+    "allow-relay-address",
+    "allow-editor-state",
+    "allow-editor-connect",
+    "allow-editor-use-code",
+    "allow-editor-trust",
+    "allow-editor-forget",
+    "allow-editor-sign-in",
+    "allow-editor-change-password",
+    "allow-editor-step-up",
+    "allow-editor-accounts",
+    "allow-editor-sign-out",
+    "allow-editor-status",
+    "allow-editor-open"
   ]
 }

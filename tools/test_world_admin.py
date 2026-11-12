@@ -591,7 +591,11 @@ class OneTimePasswords(SignInBase):
         self.assertIsNone(self.session(first['token']))
         self.assertIsNotNone(self.session(second['token']))
         self.assertEqual(owner_sql('SELECT token_hash FROM dm.devices'), [(A.token_hash(changed['device']),)])
-        self.refused('wrong', 'pell', 'a-whole-new-one-77', device=first['device'], address='203.0.113.21')
+        # The forgotten device is a new device again: its old token buys nothing, and blocks nothing (M4: the client
+        # would otherwise be refused for good with the right password).
+        again = self.login('pell', 'a-whole-new-one-77', device=first['device'], address='203.0.113.21')
+        self.assertNotEqual(again['device'], first['device'])
+        self.refused('wrong', 'pell', GOOD, device=first['device'], address='203.0.113.22')
 
 
 class Lanes(SignInBase):

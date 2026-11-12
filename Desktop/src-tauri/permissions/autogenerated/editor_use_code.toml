@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-editor-use-code"
+description = "Enables the editor_use_code command without any pre-configured scope."
+commands.allow = ["editor_use_code"]
+
+[[permission]]
+identifier = "deny-editor-use-code"
+description = "Denies the editor_use_code command without any pre-configured scope."
+commands.deny = ["editor_use_code"]

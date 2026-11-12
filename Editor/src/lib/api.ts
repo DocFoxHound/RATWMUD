@@ -7,6 +7,7 @@ import * as M from '../model/model.mjs';
 import {forHost, groundPending, want, type SentGround} from './lazyGround';
 import {stable} from './live';
 import {authHeaders, studioCall} from '../dm/api';
+import {hosted} from './hosted';
 import type {Choice, PullPlan, PullResult} from './sync';
 import type {EconomyData, EconomyReply, ImportsBody, MarketBody, NeedsBody, RulesBody, SeasonsBody, ServicesBody, StatusBody,
     SteerBody} from './economy';
@@ -16,17 +17,25 @@ export interface AtlasWorld { key: string; name: string; kind: 'dev' | 'live'; u
 let info: Promise<{token: string; world?: AtlasWorld | null}> | null = null;
 const ATLAS = 'api/atlas/';
 const get = (path: string) => fetch(ATLAS + path, {headers: authHeaders()});
-const sessionInfo = () => (info ??= get('session').then(async r => {
-    if (!r.ok) { info = null; throw new Error((await r.json().catch(() => ({}))).error ?? `Host replied ${r.status}.`); }
-    return r.json();
-}));
+// Hosted (doc 78): no Atlas session token; the world is /api/studio/session's, and the shell's session covers writes.
+const sessionInfo = () => (info ??= (hosted
+    ? studioCall<{atlas: {world: AtlasWorld}}>('api/studio/session').then(s => ({token: '', world: s.atlas.world}))
+    : get('session').then(async r => {
+        if (!r.ok) { info = null; throw new Error((await r.json().catch(() => ({}))).error ?? `Host replied ${r.status}.`); }
+        return r.json();
+    })).catch(error => { info = null; throw error; }));
+/** Atlas's own write header: never in hosted mode. */
+const editorHeader = async (): Promise<Record<string, string>> => {
+    const t = await session();
+    return t ? {'X-RATW-Editor': t} : {};
+};
 const session = () => sessionInfo().then(j => j.token);
 export const atlasWorld = () => sessionInfo().then(j => j.world ?? null);
 
 async function post(path: string, body: unknown): Promise<Response> {
     return fetch(ATLAS + path, {
         method: 'POST',
-        headers: {...authHeaders(), 'Content-Type': 'application/json', 'X-RATW-Editor': await session()},
+        headers: {...authHeaders(), 'Content-Type': 'application/json', ...await editorHeader()},
         body: JSON.stringify(body),
     });
 }
@@ -37,7 +46,7 @@ async function json<T>(response: Response): Promise<T> {
 }
 
 async function economyPost(kind: string, body: unknown): Promise<EconomyReply & EconomyData> {
-    return studioCall<EconomyReply & EconomyData>(ATLAS + `economy/${kind}`, body, {'X-RATW-Editor': await session()});
+    return studioCall<EconomyReply & EconomyData>(ATLAS + `economy/${kind}`, body, await editorHeader());
 }
 
 export interface HostValidation { valid: boolean; errors: string[]; warnings: string[] }
@@ -127,7 +136,7 @@ export const api = {
     sync: {
         diff: () => studioCall<PullPlan>(ATLAS + 'sync/diff'),
         pull: async (choices: Record<string, Choice>, expect: string) =>
-            studioCall<PullResult>(ATLAS + 'sync/pull', {choices, expect}, {'X-RATW-Editor': await session()}),
+            studioCall<PullResult>(ATLAS + 'sync/pull', {choices, expect}, await editorHeader()),
     },
     /** The Economy page (doc 79, 12 and 14; tools/studio.py): the EconomyView of Atlas's world. Reading is anyone's;
      *  each change needs a dm or admin account and Atlas's token, and replies the view with {changed, detail, sync,
