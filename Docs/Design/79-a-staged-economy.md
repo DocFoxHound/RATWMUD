@@ -379,26 +379,36 @@ struct Cell { float P; double touched; std::string cause; };  // cause: players,
 
 ### 5.3 Times (per market)
 
-`timesScore(m) = slider + harvest of m's areas + raids and late wagons in 7 days + staged events + DM nudge`
+`timesScore(m) = slider + harvest of m's areas + raids, late wagons and ships kept out or lost in 7 days + DM nudge`
 
 - **No player-caused pressure goes in.** Times sets band shares and shop budgets, so players must not be able to push
   a market toward boom by dumping staples, or toward hard times by buying them.
+- **No staged event goes in** (decided 2026-11-12; section 8.4's rule): an event moves only the prices of its own goods
+  (through pressure) and what people say (the `world.event` facts, talk, the notice, the crier). So an event never moves
+  a market's Times band, and with it never the bands' weekly cut, the staples' price factor, the theft count or the
+  shops' budgets. Those follow the slider, the harvest, the roads' and ships' troubles and the DM's nudge. (A ship lost
+  at sea is told by a staged event, and her loss is also a trouble of the sea, counted as a late wagon is: that part
+  stays, as the wagons' does.)
 - The score is cut into five words: hard, lean, ordinary, good, boom.
 - Times feeds the band mix at that market (section 6.3), the staples' price factor (section 7.1, if D2 says so),
   wagon frequency, the talk facts `world.times` and `world.times_cause`, and the DM's Prosperity tab.
 - Each market keeps its own: the realm can be in ordinary times while one community is lean because its salt wagon
   was robbed twice.
-- *(As built, Phase 7: `Society::timesScore` is the slider, the roads' and harvests' shift of the morning, the market's
-  staged events on (their `times` points, at most ±20 together) and the DM's nudge while it holds (±100, with its words
-  and expiry: `World::nudgeTimes`, Phase 9's lever). `Society::timesCause` is the largest part on the score's side in
-  words: the slider's cause, "a good harvest" or "a poor harvest" (the Board's new `harvestShift`), "the wagons robbed on
-  the road", an event's words, the nudge's; "" when the score is 0. Because the bands read the Times at their weekly cut,
-  an event's few points can tip a market's band mix in the week it is on: 5.3's formula was kept over 8.4's "never touch
-  bands", for the user to overrule.)* *(Open, the user's decision (the Phase 7 check, its item 4): through the score an
-  event's Times points move everything the market's Times band moves, not only the bands' weekly cut: the staples' price
-  factor (`marketBase`), the day's expected thefts and the shops' buying budgets. Left as built by the repair; the choice
-  is between keeping it (events are part of the Times, as 5.3 has it) and counting events only in the talk and the cause,
-  never in the score.)*
+- *(As built, Phase 7, and as decided 2026-11-12: `Society::timesScore` is the slider, the roads' and harvests' shift of
+  the morning and the DM's nudge while it holds (±100, with its words and expiry: `World::nudgeTimes`, Phase 9's lever).
+  `Society::timesCause` is the largest part on the score's side in words: the slider's cause, "a good harvest" or "a poor
+  harvest" (the Board's `harvestShift`), "the wagons robbed on the road", "the wagons late on the road", "the storms
+  keeping the ships out", "the ship lost at sea", the nudge's; "" when the score is 0. Never an event's words.)*
+  *(Closed 2026-11-12, the orchestrator's call on the user's behalf ("go with your best judgement with the questions";
+  the Phase 7 check's item 4). As first built an event kind carried `times` points (within ±20 together) that counted in
+  its market's score while it was on, so through the score an event moved everything the Times band moves: the bands'
+  weekly cut, the staples' price factor (`marketBase`), the day's expected thefts and the shops' buying budgets; and
+  `timesCause` could name the event. Now 8.4's rule stands: the events' part is gone from `timesScore` and `timesCause`;
+  a kind's `times` field is dropped from `market.json` (twelve kinds) with its about text, from `market::Data::EventKind`
+  and from `market::StagedEvent` (`EventTimesMost` and `market::eventTimes` with them); a host's kind or an older save
+  that still carries `times` is read past, and no event is saved with it again. `world.times_cause` and the Mind's Means
+  ("Times here: lean, since ...") never name an event, so no talk line puts the Times down to one; an event is still
+  talked of as itself (`world.event`, `world.event_words`) and still the cause of its own goods' prices on the list.)*
 
 ## 6. NPC economic status (bands)
 
@@ -946,12 +956,13 @@ On a small world player trade rarely moves anything, so the world needs its own 
 - **Each has a visible cause:** a notice, a crier, a crowd, a talk fact (`world.event`). Each pushes P toward a target
   for a few days, inside the clamp, with its own cause word.
 - The DM sees the week's events on the Prosperity tab and can cancel or add one.
-- Events never touch money, bands or posts.
+- Events never touch money, bands or posts. **Nor the Times** (decided 2026-11-12, section 5.3): an event moves only the
+  prices of its own goods and what people say; it is no part of its market's Times score or of the Times' cause.
 - *(As built, Phase 7, `Core/RatwEvents.cpp`; each the user's to overrule. The list is `market.json`'s `events`: twelve
   kinds (a House wedding, a fire at the works, a good catch, blight in the orchards, the festival's buying ahead, a lame
   ox, a ship's rich cargo, a ship lost, the mill wheel stopped, the drovers in, the salt pans flooded, a brewing too
-  many), each with its words, notice, crier's line and sign, its goods' targets (within ±0.3), its days (1-7), Times
-  points, days posted ahead, hour, weight and needs: "city" (the realm's largest market), "port", "cart" (a staffed
+  many), each with its words, notice, crier's line and sign, its goods' targets (within ±0.3), its days (1-7), days
+  posted ahead, hour, weight and needs (and, until 2026-11-12, Times points: gone, 5.3): "city" (the realm's largest market), "port", "cart" (a staffed
   farm's cart, held home that day by the lame ox), "festival" (the day before one), a ship it comes in with or loses. A
   week has `perWeek` (2) one more or fewer by a seeded score, × the rule `eventRate` (percent, 0-300; new), so 1-3 at the
   default; a kind once a week at a market, one event a day, only goods its shops sell or buy, the days a festival or a
@@ -970,6 +981,11 @@ On a small world player trade rarely moves anything, so the world needs its own 
   winter" only in autumn and winter, "the rich harvest" only in summer and autumn); a kind's needs and seasons hold for the
   DM's events too; no kind twice at a market within a week; a rich cargo is of its own goods first and its notice says
   "is in" once she is (`noticeOn`); a lost ship's name stays off every timetable a year (the Board's `lostShips`).)*
+  *(2026-11-12: a kind's words are no longer read after "since": the Times are never put down to an event. And a rich
+  cargo's notice once her ship has sailed with the cargo's two days still running says so (the kind's new `noticeAfter`:
+  "The Gull has sailed, and left a rich cargo at the Wharf: ... cheap while it lasts."), never "is in" of a ship gone:
+  filled as the event is rolled and kept on the Board till she sails (`StagedEvent::noticeAfter`), told once (the record
+  "event notice"), the board's pinned notice following it.)*
 
 ### 8.5 A cause for every slider move
 
@@ -1179,6 +1195,30 @@ Instead, once a day per market:
     already; and while anyone else in want waits the elders are at most `beggarsElders` (half) of a market's beggars, at
     least one: an elder living with family begs only when the household is in want, an option and never the only
     choice.
+- **Decided 2026-11-12** (the orchestrator's calls on the user's behalf: "go with your best judgement with the
+  questions"), keeping faith with the user's words above. As built:
+  - **The working poor may beg on Restday**, their day off: a resident with a post, 16 or over, of a destitute or poor
+    household in want of food by the same test, drawn with the others at `street.beggarsPosted` (0.5) of its weight, so
+    below the postless in want (a group of its own in the spread: "posted", by home kind). Never on a working day
+    (Marketday, or a Restday a festival takes: the day's plan must be one of rest); never one whose post works on
+    Restday (the Watch, a shop's keeper, whose shop opens after the service, the clergy at the service and the dole);
+    never one with a master; never at its own place of work (a place within 8 tiles of where it works, or before the
+    door of the building it works in: it takes the next place); still never the Watch, never a lifted household. `0`
+    turns it off.
+  - **The want on a day off** (`Society::foodWantOnDayOff`; the builder's call, needed for the rule to do anything): the
+    staged ration buys a Restday's or a festival's food the day before (the rule `buyAheadDays`), so on that morning
+    every fed household holds a day more than on a working morning, and by the plain test (food beyond today's against a
+    day's cost) no fed poor household is ever short on a Restday. For one out on its day off the food bought ahead for
+    the day is counted as in hand, as today's is, and the purses are asked for a day's food as on any morning. The
+    postless are judged as before (`foodWant`, unchanged), and the Prosperity report's "short today" too.
+  - **A boom means few beggars in the whole city:** over the cell's most, a market's whole count is held to
+    `street.beggarsInAMarket` by the slider, the same way (straight lines, the market's Times moving its slider by
+    `timesShift`, never rising): **12 at −100, 8 at −50, 5 at 0, 2 at +50, 1 at +100** for the realm's largest market (by
+    households); a smaller market's is its share of that by its households, never under the cell's own most there; a
+    fraction is one more by a lot of the market and the day. Since a market's Times follow the slider, an ordinary
+    market gives **12, 9, 5, 1.75 and 1**. The day's draw fills it in order (so the elders' share and the spread hold in
+    it, and whoever begs in better times begs in worse); the cell's most (5, 3.5, 2, 1, 0.5) and the rule of 2 at one
+    place, 8 tiles apart, stand under it.
 - **Rough sleeping:** `homeless=yes` stays authored. Destitute residents in communal lodging are "sleeping by the warm
   wall" in a sheltered cell some winter nights (D12).
 - **The dole:** on Restday the chapel's priest, a real post, hands bread to destitute and poor households near the
@@ -3413,7 +3453,8 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     panel's copy, events and causes in `live.economy.rules` and the world package's scan). Phase 10: every number (the
     kinds' targets, days, Times points and weights, `perWeek`, the harvest lean). Phase 11: the soak with events (not run).
   - **For the user to decide** (each built one way, cheap to change): (1) an event's Times points count in its market's
-    score (5.3), so in the week it is on it can tip the bands' cut, though 8.4 says events never touch bands; (2) "city"
+    score (5.3), so in the week it is on it can tip the bands' cut, though 8.4 says events never touch bands *(closed
+    2026-11-12: they no longer count; "Decisions of 2026-11-12")*; (2) "city"
     kinds (the House wedding) only at the realm's largest market; (3) a move of the slider back toward 0 takes a cause of
     its own way ("up"), even while the times are still lean; (4) a market with no official, innkeeper or priest has no
     crier, only the notice; (5) a good catch sets out fish only where a shop sets them out (a stall that only buys them
@@ -3517,7 +3558,8 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     share has nobody to give way to and the class weight puts the two lower-class hands first. **For the user:** DEV's
     beggars stay elders until the world has lower-class adults with no post (the filling out to come), or a rule lets the
     working poor beg on Restday (not built: never one at a post, as the task set). DEV's children living alone as
-    destitute households look like a data slip, left as found.
+    destitute households look like a data slip, left as found. *(2026-11-12: the Restday rule is built; "Decisions of
+    2026-11-12".)*
   - **Tests:** a clean Release build (`build-begc`; 125 warnings, as before, none in the files touched); ctest 86/86 with
     the database, none skipped, twice (`pg_client` on a throwaway `ratw_test_s2stage_beg`, dropped after);
     `street_tests` 27,010 and 27,274 checks (the crash cases vary run to run, as before; eight crash cases now),
@@ -3616,7 +3658,8 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     DM's words before it), never the area's id (on DEV, a good's name: "the fish"), and comes down when the override
     lapses (its notice expires then, and a start takes down one whose override is gone). A nudge's notice expires with it too.
   - **(4) Left, the user's decision:** an event's Times points move the whole Times band (the staples' factor, thefts,
-    budgets, the band cut). Noted open in 5.3.
+    budgets, the band cut). Noted open in 5.3. *(Closed 2026-11-12: events are out of the Times; see "Decisions of
+    2026-11-12" below and 5.3.)*
   - **(5) The ships' troubles in their own words:** a stormbound ship is a trouble "storm" and a lost one "lost" (each
     counted in the Times as a late wagon is, as before), said as "the storms keeping the ships out" and "the ship lost at
     sea", never "the wagons late on the road". A save's troubles of either kind are kept.
@@ -4160,6 +4203,117 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     Within the gate's noise (0.05 ms of mean, 0.1 of p99) in every window; 23-25 is the closest (0.04 of mean, 0.09 of
     p99). The worst tick of each run is tick 19 in the first minute, as before. (`world_check` has no Game: the repair's
     poll and Director changes are outside it, as the gate says.)
+
+- **2026-11-12: Decisions of 2026-11-12** (branch `r2-staged-dec`, cut from `r2-staged-p9` at `1468208`, beside the lane
+  finishing Phase 9's leftovers on `r2-staged-p9`; both merged afterwards). The user said "go with your best judgement
+  with the questions": these are the orchestrator's calls on the user's behalf, recorded as such, built as written (A, B
+  and C here; D, Phase 9's builder decisions confirmed, is the other lane's). No economy simulation, no real or scratch
+  server, no paid model call; DEV only exported read only (build 70) for a scratch probe outside the repository; PROD
+  untouched.
+  - **A. Events and the Times band** (5.3, 8.4; closes the Phase 7 check's item 4). An event moves only the prices of
+    its own goods (through pressure) and what people say (`world.event` facts, talk, the notice, the crier). The events'
+    part is gone from `Society::timesScore` and `Society::timesCause`: the score is the slider, the harvest, the roads'
+    and ships' troubles and the DM's nudge, so no event moves a market's Times band, the staples' price factor, the
+    theft count, the shops' budgets or the bands' weekly cut, and `world.times_cause` and the Mind's Means never name
+    one. A kind's `times` points are dropped from `market.json` (twelve kinds, and the about text), from
+    `market::Data::EventKind` and `market::StagedEvent` (`EventTimesMost` and `market::eventTimes` gone); a host's kind
+    or an older save that still carries `times` is read past and loads, and no event is saved with it again. Tests
+    (`events_tests`): an event on leaves the score and the band as they were, at the band's edge too (18 of the 20 that
+    make good or lean times: the catch's old five points made 23); with every kind east can show on and the market's own
+    harvest taking the Times past ordinary, the cause is "a good harvest" or "a poor harvest" in `timesCause`, in talk's
+    facts, in every Times line said through the director's picks and in the Means, never the event's words; a host's
+    kind with `times: 99` is kept; a lying save's event with `times: 900` loads and is saved without it. `port_tests`:
+    an event's words are never the Times' cause.
+  - **B. The working poor may beg on Restday** (10.2). `World::placeBeggars`: one with a post, 16 or over, of a
+    destitute or poor household in want, on Restday only (the day's plan one of rest: never Marketday, never a
+    festival's Restday), at `street.beggarsPosted` (0.5) of its weight, a group of its own in the spread; never the
+    Watch, a shop's keeper or the clergy (their posts work on Restday), never one with a master, never a lifted
+    household, never at its own place of work (within 8 tiles of where it works, or before the door of the building it
+    works in). **One thing the decision did not foresee, built as the builder's call:** the staged ration buys Restday's
+    food on Marketday (`buyAheadDays`), so on a Restday morning every fed household holds two days' food and by the
+    plain `foodWant` test no fed poor household is ever short: the rule as written would have let nobody out but the
+    destitute's posted adults (DEV has none of 16 or over). `Society::foodWantOnDayOff` judges one out on its day off
+    with the food bought ahead for the day counted as in hand, as today's is, and asks the purses for a day's food as on
+    any morning; `foodWant` and the Prosperity report's "short today" are unchanged, and the postless are judged as
+    before. Tests (`street_tests`' `theWorkingPoorOnRestday`): in Greyfen at the worst, the cottage's two hands in want
+    beg on Restday and never on Marketday, each 8 tiles or more from its work, seen begging; the Long House's hands beg
+    when its household is in want and never when it has the money; the keepers, the priest and the Watch never; two
+    days' bread and no coin on Restday is no want by the plain test and want on the day off, three days' bread or a
+    purse that buys a day's food none; at weight 0 none of them begs, at 0.01 the postless come first (four Restdays,
+    none posted among the four a day), at 1 they are drawn as the postless are; on a Restday a festival takes nobody at
+    a post begs. `beggarsByWant` keeps "never one at a post" for working days. And one with a post out begging is still
+    its household's hand for the dole's queue and the counter (`World::freeMember`: only a postless beggar is taken; it
+    leaves its place and comes back): without it a household whose hands all beg on Restday had nobody to send for the
+    dole while a player watched, and went without till the dole's end (`restdayDole` and the `dole` crash case failed on
+    it, and pin it now).
+  - **C. A boom means few beggars in the whole city** (10.2). `status.json` `street.beggarsInAMarket`: 12 at −100, 8 at
+    −50, 5 at 0, 2 at +50, 1 at +100 for the realm's largest market by households (`status::beggarsInAMarketAt`: the
+    cell's curve's shape and checks, each most 0 to 60, the market's Times moving its slider by `timesShift`; a smaller
+    market's its share by households, never under the cell's own most; a fraction one more by a lot of the market and
+    the day); the day's draw is cut to it before the places are filled, so the elders' share and the spread hold in it.
+    An ordinary market, whose Times follow the slider: 12, 9, 5, 1.75, 1. The cell's most and the rule of 2 at one place
+    stand under it. Tests (`beggarsInAMarketByConditions`): the table at every slider, Times and share, the fallbacks
+    with a warning, a host's own curve; Greyfen with fourteen in want and room for all: 12, 9, 5, 1 or 2, and 1 beggars
+    at −100, −50, 0, +50, +100 on one Marketday, each better time's beggars among the worse time's, the elders at most
+    half.
+  - **On DEV (build 70, exported read only; a scratch probe outside the repository).** Each slider on a fresh load, set
+    at once; 42 nights jumped through, so the bands' hysteresis and the purses' halving toward their bands settle (at 7
+    nights, as the earlier probe ran, the households newly cut poor still carry their old purses and nobody posted is in
+    want); each night's missed hours run once each (the rations at their hours, the night's set, the cut); before each
+    night a day's eating taken from each wallet, and each morning every shop set out (`stagedRestock`: the jumped hours
+    skip the eating and the keepers' walk to work); then a Marketday at 10:00 and the Restday after it at 10:00. One
+    market, Ridgemere (243 households); its cells are quarters of the city. Seconds of ticks a run.
+
+    | Slider (Times) | Most a cell, a market | Marketday: beggars (most in a cell) | Who, Marketday | Restday: beggars (most in a cell) | Who, Restday |
+    |---|---|---|---|---|---|
+    | −100 (hard) | 5, 12 | 9 (5; cells 5, 2, 2) | nine elders with no post, all destitute: Hilde Dripby 61 and Piet Muddale 58 (lower class, the barracks); Aud Kemp 80, Ingrid Kendrick 68, Ivar Netherworth 65, Orm Blackwood 81, Piet Lumley 60, Una Thackeray 62 (middle, cottages); Sigrun Wickham 80 (middle, a flat) | 10 (5; cells 5, 3, 2) | the same nine, and **Ottilie Dripdale, 25, poor, lower class, posted** (helping at Commons Sundries; a flat; 3p against a day's bread) |
+    | −50 (lean) | 3.9, 9 | 8 (4; cells 4, 2, 2) | the same but Orm Blackwood | 9 (4; cells 4, 3, 2) | the same eight, and **Ottilie Dripdale** |
+    | 0 | 2, 5 | 5 (2; cells 2, 2, 1) | Hilde Dripby, Piet Muddale, Piet Lumley, Sigrun Wickham, Una Thackeray: elders, destitute, no post | 5 (2; cells 2, 2, 1) | Hilde Dripby, Piet Muddale, Aud Kemp, Piet Lumley, Sigrun Wickham: elders, destitute, no post |
+    | +50 (good) | 0.9, 1.75 | 1 (1) | Piet Muddale 58, destitute, lower class, no post | 1 (1) | Piet Muddale |
+    | +100 (boom) | 0.5, 1 | 1 (1) | Piet Muddale | 1 (1) | Piet Muddale |
+
+    **C holds:** one beggar in the whole city in a boom and in good times (the probe of 2026-11-11 had four at +50),
+    five in ordinary times. **B gives DEV one working-age beggar, on Restday in hard and lean times, and none from
+    ordinary times up.** The rule lets them out; DEV has almost nobody for it to let out. At −100 on that Restday 26
+    destitute and 108 poor households, 26 in want; of their adults (16 or over, not of the Watch) nine with no post and
+    one with a post. A poor purse is 3-12p a head and a day's bread about 4p, so a poor household is short only at the
+    very bottom of its range; the destitute are the elders above and children of 8-15 living alone with a post (the data
+    slip noted before), who are under 16.
+  - **The talk leftovers of the slice 2 verify**, each with a test (`talk_tests`' `theStagedEconomysTalk`,
+    `market_tests`' talk part, `events_tests`):
+    - **Keepers of the good only:** `w7_pr_up_merchant_glad` ("At thirty-one pence the dozen I might make a living") and
+      `w7_pc_merchant` ("undercut the lot of us") need `deals=yes` now: a butcher is never glad of dear planks.
+    - **Eating lines answer food only:** `w7_prans_dry` and `w7_prans_merry` keep their plain lines for any price
+      complaint; "I've started eating air", "Eat slowly. Makes it last." and "We'll all be thin and beautiful" moved to
+      `w7_prans_dry_food` and `w7_prans_merry_food` (`topic.sort=food`).
+    - **The glut over** says "That was a week for a thirst", never "for ale" where its market sells none.
+    - **"Cleared out" only off a bare shelf:** a speaker's new fact `sold_out` (`Game::talkTopicQuery`: yes where its
+      own shop sells the good and has none left); `e8p_pc_up_merchant` now speaks of the custom ("has been buying my
+      bread. Good custom."), and "bought my bread to the last" and "Cleared out of bread by Ash" are
+      `e8p_pc_up_merchant_bare` (`sold_out=yes`). Not changed: the townsfolk's own "Bought the shelf bare"
+      (`e8p_pc_up_named`, `e8p_pc_up_look`), which no fact of a speaker's can gate; a fact of the topic would.
+    - **The rich cargo's notice once she has sailed** (`Core/RatwEvents.cpp`): the event lasts two days and her ship is
+      at the pier one, so the board said "is in" a day after she sailed. A kind's new `noticeAfter` (the rich cargo's:
+      "{Ship} has sailed, and left a rich cargo at the Wharf: {goods} cheap while it lasts."), filled as the event is
+      rolled, kept on the Board (`StagedEvent::noticeAfter`, saved; none once the event is over) and put up when her
+      ship sails with the event still on, told once (the record "event notice"; `Game::stagedNotices` rewrites the
+      pinned notice). `tools/economy_contract.py` does not yet check a host's `noticeAfter` for plain words as it does
+      `noticeOn` (Core does; the file is the other lane's).
+  - **For the user** (each built one way, cheap to change): (1) B lets the working poor out, but on DEV almost none is
+    in want (the table): the poor's purse (`status.json` `rows.poor.purse`, 3-12p a head) starts just under a day's
+    bread, so only the very lowest are short. A lower floor, or households on DEV with more mouths than earners, would
+    put more of them out; neither is touched here. (2) On a Restday the postless of a poor household are still judged by
+    the plain test (fed ahead, so not in want), while its posted are judged for their day off: one test for both would
+    put the same people out on Restday as on Marketday, a one-line change in `placeBeggars`. (3) The market's most takes
+    the Times shift as the cell's does, so an ordinary market at −50 has 9, not 8, and at +50 one or two (1.75).
+  - **Tests:** a fresh Release build (`build-dec`; 127 warnings, none in the code changed here; the dole's fix above and
+    a renamed variable compiled into it before the run) and the full ctest once with the database (the main checkout's
+    `Database/.env` sourced; `pg_client` on a throwaway `ratw_test_s2stage_dec`, dropped after; the Python pg tests' own
+    `ratw_test_s2stage_*`, none left): 89/89 passed, none skipped. `street_tests` 21,834 checks (the crash cases vary
+    run to run), `street_pg` 8 crashes (83), `events_tests` 270,244, `events_pg` 26 crashes (692), `talk_tests` 146,476,
+    `market_tests` 13,625, `port_tests` 9,678, `status_tests` 21,975, `life_status_tests` 2,244, `save_compat` 23,108
+    (Postgres 14,453), `game_tests` 3,633, `exploit_tests` 871,756, `pg_client` 24. Not run, as the task set: perf
+    timings, the `tools/test_*.py` suite, the client's and the Editor's tests (the merge runs those).
 
 ## Review (2026-11-08)
 
