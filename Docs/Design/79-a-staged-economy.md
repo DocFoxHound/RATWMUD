@@ -3871,6 +3871,88 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     tools' tests with the database all pass but the core lane's own tests of the store room and business_settings
     (`test_world_store` 10, `test_world_sync` 5, `test_dungeon_master`'s parity test 1), which its C8 and C11 rewrite;
     the Editor's 78 + 61.
+- **2026-11-11: Phase 9 integrated** (`r2-staged-p9`, cut from `r2-staged` at `5fa92a4`: merges `f9099e9` of
+  `r2-p9-core` at `49f7933`, `43eb55b` of `r2-p9-dm` at `6385821`, `6aad9c1` of `r2-p9-editor` at `11da86a`, then the
+  integration commit). No economy simulation over days, no paid model call; DEV and PROD never migrated or written (each
+  only read: `pg_dump` copies into throwaway databases, a scratch server, a build export).
+  - **Conflicts:** this Progress section (all three lane notes kept, in the order merged); `tools/map_editor.py`,
+    `tools/test_map_editor.py` and `Editor/src/lib/economy.test.ts` take the editor lane's rewrite (the core lane's
+    edits there were its stop-gaps, all covered by it), and map_editor's transitional dead defaults and identity shims
+    (`STORE_DEFAULTS`, `LOOP_DEFAULTS`, `SEASON_DEFAULTS`, `FARM_DEFAULTS`, `legacy_economy`, `dead_settings_sound`) go,
+    as the core lane's world_store keeps its own copies and calls neither. Everything else merged on its own; the
+    Editor's typecheck is clean once the dm lane's `EconomyTab.tsx` and `dm/api.ts` meet the editor lane's panels.
+  - **Wired end to end** (each against a real game server on a throwaway `ratw_test_s2stage_*` database, killed after):
+    - `test_dm_live.test_the_acts_survive_a_crash`: the studio's steer (-43 clamped to -45, "the long frost",
+      economy.sync `{now}`), the Band picker (`save_npc` with `band: rich`: `band_override`, npc.sync), and the DM tool's
+      acts through `DungeonMaster.act`/`grant` (a Times nudge, a harvest called good, two events added and one of them
+      cancelled by the id its outcome gave, a household held poor, prices reset everywhere, a grant of 23, a fine of 20,
+      a grant over the cap refused), all queued just after a checkpoint, each applied and journalled; then SIGKILL
+      before the next checkpoint, and the next server, restored from the checkpoint and the journal, holds every one
+      exactly once (the report's slider, nudge, resetting, harvest, the week's events, the overridden household, the
+      player's `byReason`, the Prosperity log's seven kinds).
+    - `test_dm_live.test_the_hosts_overrides_reach_the_server`: the studio's Market, Imports, Status and Rules panels'
+      setters write `live.economy.rules`; economy.sync has the running server read the manifest's `overrides` line (the
+      report's event kinds are the host's two, Never Hungry in force); a hand-made status override summing to 140 and an
+      unknown never-imported good are skipped with a `RATW_ECONOMY override` warning, never refused.
+    - `test_dm_live.test_the_slider_and_an_act_end_to_end` (the dm lane's, skipped there) runs.
+    - `tools/dm_smoke.py`: the Storykeeper's `player_grant` (23 to Ash) and a fine of 20 through the Director, the
+      treasury transfer refused (a staged end), the restart and replay checks: all pass.
+    - **Migration 0061 on copies of the real worlds** (`test_migration_0061.CopiesOfRealWorlds`, opt in with
+      `RATW_MIGRATE_COPIES=ratw_ridgemere2,ratw_prod`): each copied read only (`pg_dump`) into a throwaway
+      `ratw_test_s2stage_copy_*`; DEV's copy (at 0060) takes 0061 alone, PROD's (at 0054) 0055-0060 then 0061 alone;
+      `live.economy` byte for byte across 0061, `business_settings` gone, the manifest read; a scratch server opens each
+      (DEV's build 70, 559 residents; PROD's build 3, 1,083) with no manifest refusal and "economy staged (doc 79)" said.
+      On DEV's copy a live server then rolls Ridgemere's ships, the DM tool storms a due one (`ship.storm`), the server
+      is killed before its next checkpoint, and the next one holds the storm. (PROD's copy keeps PROD's own maintenance
+      flag, so a live server refuses it there: its storm is not tried.)
+    - **The 0060 compatibility check:** a scratch server of this build (`--scratch`, as `tools/scratch.sh dev` starts
+      it, with the build's binary) on DEV itself: loaded (build 70), listening, killed; nothing written.
+  - **Fixed in the integration:** the "economy staged (doc 79)" line was never said for DEV: `startEconomy` asked the
+    society's state after the restore, which rebuilds bands, so an old save always looked staged. `World::restore` now
+    remembers whether the save itself had a Board or staged state (`World::restoredStaged`); `save_compat_tests` checks
+    the line is said exactly when the save never ran staged. `test_world_sync`'s economy-rules test sent a season's
+    `normal` (gone with the slim studio): it sends a shelf now. The earlier, cut-off integrator's wiring kept as it was:
+    `RATW_TEST_DB_TAG` in the remaining hard-coded test database names (`test_chronicle`, `test_game_tables`,
+    `test_live_map`, `test_npc_mind`, `test_one_server`, `test_world_db`, `dm_smoke`), `test_studio`'s own
+    `unmigrate_store` for its pre-0055 world, and the DM tool knowing an event the DM added since the last checkpoint by
+    its outcome ("e<N>: ...") so `event.cancel` is not refused as unknown.
+  - **Not end to end yet:** the map-edge "outside" endpoint for a world with no port (deferred, U3); a storm on a world
+    whose port is not Ridgemere's (none other exists); the Storykeeper's `npc_band` only through `director_tests` and
+    dm_service's shapes, not a live server; the Editor's and DM tool's panels by their typecheck and unit tests, not a
+    browser. DEV's 0061 apply and a live DEV check are the user's.
+  - **Doc 78 M5-M7 (D22):** 0061 is schema only (`live.npcs.band_override`, the manifest redefined, `business_settings`
+    dropped; nothing rewritten), so M7's "Reset economy rules" copies one slim `live.economy` row (its eight kept
+    columns); `world_store.slim_supported` gives the migration level; the route names (`ECONOMY_ROUTES`, the same in both
+    suites) and their lowest roles are M3's allowlist; steer then economy.sync is M6's "economy lever" end to end; the
+    economy write path on dev is live_edit's `economy` key, unchanged. Doc 78 (not edited here) is stale where it names
+    `business_settings` (Q17's seed list must drop it), and in its studio line numbers (:445) and its section 8 notes
+    (:1132, :1135, :1449, :1650).
+  - **Tests (the one run):** a fresh Release build (`build-int`, from empty; 127 warnings, as each lane's, none in the
+    lines touched); ctest 89/89 with the database, none skipped (`pg_client` on a throwaway
+    `ratw_test_s2stage_p9int`, dropped; the `_pg` tests' own `ratw_test_s2stage_*`): `events_tests` 270,170 checks,
+    `exploit_tests` 871,756, `host_edit_tests` 657, `status_tests` 21,975, `market_tests` 13,864, `port_tests` 9,665,
+    `talk_tests` 128,377, `save_compat_tests` 23,108, `server_parts` 249, `wire_tests` 428, `authoring` 200,
+    `economy_manifest_pg` 8, director core 158. All 37 `tools/test_*.py` with the database and this build's server
+    (`RATW_TEST_SERVER`, `RATW_SERVER`, `RATW_SERVER_BINARY`; `RATW_TEST_DB_TAG=s2stage_`, `RATW_TEST_KEY_PREFIX=s2stage`,
+    `RATW_MIGRATE_COPIES`): 701 tests, none failing, 24 skipped (the 23 `RATW_SLOW` world builds, `test_game_tables`'
+    save under `Saved/`); `test_studio`'s economy flow none skipped. (`test_world_sync` and `test_migration_0061` were run
+    again after their fixes above: 52 and 5, OK.) The client's 146 and its typecheck; the Editor's 78 + 61 and its
+    typecheck; `DM/model.test.mjs` 16. No `s2stage` or `ratw_test_` database left;
+    `artifacts/screenshots/dev-console-fight.png`, rewritten by `test_live_map`, restored.
+  - **The perf gate** (DEV build 70 exported read only, `world_check EXPORT --simulate A B --players 20`, Release, 8
+    threads, 765 residents, two runs each, the machine quiet but for the runs; ms, the two runs' mean, the baseline's in
+    brackets):
+
+    | Window | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|
+    | 6-8 | 2.65 (2.60) | 5.79 (5.77) | 5.41 (5.44) | 12.3 (12.2) | 37.5 (38.5) |
+    | 17-19 | 2.18 (2.14) | 5.23 (5.21) | 5.01 (4.99) | 22.6 (21.9) | 38.9 (39.3) |
+    | 23-25 | 1.65 (1.62) | 4.53 (4.52) | 4.08 (4.04) | 13.0 (12.8) | 37.1 (36.8) |
+    | 6-8 `--ship-day` | 2.66 (2.65) | 5.90 (5.86) | 5.50 (5.49) | 12.6 (12.7) | 38.7 (37.6) |
+
+    Within the gate's noise (0.05 ms of mean, 0.1 of p99) in every window, though the mean is up 0.01-0.05 ms in all
+    four (6-8's at the edge: its runs 2.62 and 2.68): the daily Prosperity report and the per-world market layer, likely.
+    The p99s are within 0.04 ms.
 
 ## Review (2026-11-08)
 

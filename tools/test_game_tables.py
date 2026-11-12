@@ -3,6 +3,7 @@
 saves, one row per thing, only changed rows written, logins kept private.
 Runs in a scratch database dropped afterwards; skipped without the local PostgreSQL."""
 import copy
+import os
 import json
 from pathlib import Path
 import secrets
@@ -13,6 +14,9 @@ import psycopg
 
 import world_db as W
 from test_world_db import database_available, superuser
+
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 ROOT = Path(__file__).resolve().parent.parent
 REAL_SAVES = sorted(p for p in (ROOT / 'Saved').rglob('*.sqlite') if p.is_file())
@@ -73,7 +77,7 @@ def rich_payload():
 class GameTableTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        cls.name = f'ratw_test_{DB_TAG}{secrets.token_hex(4)}'
         with superuser() as su:
             su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
             su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor, ratw_publisher, ratw_game')

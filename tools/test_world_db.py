@@ -15,6 +15,9 @@ import unittest
 
 import world_db as W
 
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
+
 try:
     import psycopg
 except ImportError:  # pragma: no cover
@@ -172,7 +175,7 @@ def database_available():
 class DatabaseTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        cls.name = f'ratw_test_{DB_TAG}{secrets.token_hex(4)}'
         with superuser() as su:
             su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
             su.execute(f'REVOKE ALL ON DATABASE {cls.name} FROM PUBLIC')

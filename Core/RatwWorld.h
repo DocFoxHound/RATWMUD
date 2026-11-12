@@ -715,6 +715,7 @@ class World
     double calendarDays() const { return calendarDays_; }
     Society& society() { return society_; }
     const Society& society() const { return society_; }
+    bool restoredStaged() const { return restoredStaged_; }   // The restored save had a Board or staged state.
     const std::map<std::string, FactionDefinition>& factions() const { return factions_; }
     const std::map<std::string, ChapterDefinition>& chapters() const { return chapters_; }
     const std::map<std::string, Letting>& lettings() const { return lettings_; }
@@ -2687,6 +2688,7 @@ class World
     std::size_t climatesFor_ = std::size_t(-1);     // How many cells the climates were worked out for.
     void mapClimates();
     Society society_;
+    bool restoredStaged_ = false;
     double scheduleAccumulator_ = 0.0;
     std::string spawnCell_ = "tavern";
     Vec2 spawnPosition_{16.5, 12.5};

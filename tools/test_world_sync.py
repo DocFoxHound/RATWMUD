@@ -1353,7 +1353,8 @@ class ServerMaintenanceTests(ScratchWorlds, unittest.TestCase):
                 if 'listening on port' in line:
                     break
             economy = studio.Economy()
-            result = economy.set_seasons(self.dev, {'set': {'grain': {'normal': 40}}}, 'Ada')
+            # (Doc 79, Phase 9: a season is its price and shelf; supply and normal went.)
+            result = economy.set_seasons(self.dev, {'set': {'grain': {'shelf': [100, 110, 120, 90]}}}, 'Ada')
             self.assertTrue(result['changed'], result)
             # (Doc 68, Progress, "First fixes", migration 0058: the rules' and the services' records are read live too.)
             # (Doc 79, 12: the rules are the staged economy's, the Market Board's and the clamps'.)

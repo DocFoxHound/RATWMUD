@@ -7,10 +7,19 @@ live.economy row byte-identical, business_settings gone, people_manifest working
 lines what tools/manifest_lines.py writes for the same entity.
 
 Each case in its own throwaway database, `ratw_test_s2stage_mig_<hex>`, dropped after; skipped without PostgreSQL.
+
+(d) Opt in: RATW_MIGRATE_COPIES names real world databases (e.g. "ratw_ridgemere2,ratw_prod": DEV at 0060, PROD at
+0054). Each is copied read only (pg_dump) into a throwaway `ratw_test_s2stage_copy_<hex>`, migrated to 0061 there, its
+live.economy rows checked byte-identical and its manifest read; then, with RATW_TEST_SERVER, a scratch game server (it
+writes nothing) is started on the copy and must load the world and listen. The real databases are only read.
 """
 import json
+import os
 import secrets
+import signal
+import subprocess
 import unittest
+from pathlib import Path
 
 import manifest_lines as M
 import world_db as W
@@ -172,6 +181,152 @@ class Migration0061Tests(unittest.TestCase):
             seed_people(db.owner, world, settings=False)
             with W.connect('dev', 'game', dbname=db.name) as game:
                 self.assertTrue(game.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0])
+
+
+COPIES = [d for d in os.environ.get('RATW_MIGRATE_COPIES', '').split(',') if d]
+SERVER = os.environ.get('RATW_TEST_SERVER')
+
+
+@unittest.skipUnless(database_available() and COPIES, 'RATW_MIGRATE_COPIES names no database to copy')
+class CopiesOfRealWorlds(unittest.TestCase):
+    """0061 on copies of the real worlds (DEV at 0060, PROD at 0054 as their migrations stand), never on them."""
+
+    def copy(self, source):
+        s = W.settings()
+        env = {**os.environ, 'PGPASSWORD': s.get('POSTGRES_PASSWORD', '')}
+        where = ['-h', s.get('RATW_DB_HOST', '127.0.0.1'), '-p', str(s.get('RATW_DB_PORT', '5433')), '-U', s.get('POSTGRES_USER', 'postgres')]
+        db = Scratch()
+        db.name = f'ratw_test_s2stage_copy_{secrets.token_hex(4)}'
+        self.assertIn('s2stage', db.name)          # (Only ever restored into a throwaway database.)
+        dump = subprocess.Popen(['pg_dump', *where, '-d', source, '-Fc'], stdout=subprocess.PIPE, env=env)
+        db.__enter__()
+        try:
+            # (Into the empty copy; "schema public already exists" is its only expected complaint.)
+            subprocess.run(['pg_restore', *where, '-d', db.name], stdin=dump.stdout, env=env, check=False, stderr=subprocess.PIPE)
+            dump.stdout.close()
+            self.assertEqual(dump.wait(), 0, f'pg_dump {source}')
+            with superuser() as su:                 # (A database's own CONNECT grants are not in its dump.)
+                su.execute(f'GRANT CONNECT ON DATABASE {db.name} TO ratw_editor, ratw_publisher, ratw_game, ratw_dm')
+        except BaseException:
+            db.__exit__()
+            raise
+        return db
+
+    def test_each_copy_migrates_and_a_server_opens_it(self):
+        for source in COPIES:
+            with self.subTest(source=source):
+                db = self.copy(source)
+                try:
+                    before_version = max(W.applied_migrations(db.owner))
+                    W.migrate(db.owner, files_upto(60))    # (PROD's 0055-0060 add columns; 0061 rewrites nothing.)
+                    before = economy_rows(db.owner)
+                    worlds = [r[0] for r in db.owner.execute('SELECT id FROM world.worlds ORDER BY id')]
+                    self.assertEqual(len(W.migrate(db.owner)), 1, f'{source}: 0061 alone after 0060')
+                    self.assertIn('0061', W.applied_migrations(db.owner), f'{source} at {before_version} migrated')
+                    self.assertNotIn('business_settings', tables(db.owner))
+                    self.assertEqual(economy_rows(db.owner), before, f'{source}: live.economy byte for byte')
+                    for world in worlds:
+                        text = db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0]
+                        self.assertTrue(text.startswith('economy ') or not before, f'{source} {world}: ' + text[:80])
+                    staged = db.owner.execute("SELECT coalesce(bool_or(payload::jsonb->'society' ?| array['board', 'staged']), false) "
+                                              "FROM game.checkpoints").fetchone()[0]
+                    if SERVER and Path(SERVER).exists():
+                        self.open_with_a_server(db.name, source, staged)
+                        self.storm_a_ship(db.name, source)
+                finally:
+                    db.__exit__()
+
+    def open_with_a_server(self, name, source, staged):
+        info = {**W.conninfo('dev', 'game'), 'dbname': name}
+        url = ' '.join(f'{k}={v}' for k, v in info.items())
+        server = subprocess.Popen([SERVER, '--database', 'dev', '--port', '0', '--scratch', '--for', '240'],
+                                  env={**os.environ, 'RATW_DATABASE_URL': url, 'RATW_AI': 'off'},
+                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        seen = []
+        try:
+            for line in server.stdout:
+                seen.append(line.rstrip())
+                if 'listening on port' in line:
+                    break
+        finally:
+            server.send_signal(signal.SIGTERM)
+            out, _ = server.communicate(timeout=120)
+            seen += out.splitlines()
+        text = '\n'.join(seen)
+        self.assertTrue(any('listening on port' in l for l in seen), f'{source}: the server never listened:\n' + text[-3000:])
+        self.assertNotIn('Unknown manifest record', text, source)
+        # A save that never ran staged (both, today) says so once (doc 79, 14).
+        self.assertEqual('economy staged (doc 79)' in text, not staged, f'{source}: the first-staged line')
+        loaded = [l for l in seen if 'RATW_ECONOMY' in l or 'economy' in l.lower() or 'loaded' in l.lower()]
+        print(f'\n[{source}] ' + f'\n[{source}] '.join(loaded[:20]))
+
+    def storm_a_ship(self, name, source):
+        """The DM tool's storm on a world with a port, end to end on the copy: a real server (it saves to the copy), the
+        Board's ships in its checkpoint, a due ship stormed through DungeonMaster.act (ship.storm), applied and journalled,
+        the server killed before its next checkpoint (SIGKILL: nothing saved), and the next one holding the storm."""
+        import time
+        import dungeon_master as D
+        info = {**W.conninfo('dev', 'game'), 'dbname': name}
+        env = {**os.environ, 'RATW_DATABASE_URL': ' '.join(f'{k}={v}' for k, v in info.items()), 'RATW_AI': 'off'}
+        dm = D.DungeonMaster(lambda target: W.connect('dev', 'dm', dbname=name), clock=time.time)
+
+        def start():
+            server = subprocess.Popen([SERVER, '--database', 'dev', '--port', '0', '--for', '240'], env=env,
+                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            seen = []
+            for line in server.stdout:
+                if 'listening on port' in line:
+                    return server
+                seen.append(line)
+            server.wait(timeout=60)
+            if any('closed for maintenance' in l for l in seen):
+                return None                             # (The copy keeps the real world's flag: PROD's is closed.)
+            self.fail(f'{source}: the server never listened: ' + ''.join(seen[-5:]))
+
+        def checkpoint():
+            with W.connect('dev', 'owner', dbname=name) as conn:
+                return conn.execute("SELECT max(saved_at) FROM game.checkpoints").fetchone()[0]
+
+        server = start()
+        if server is None:
+            print(f'\n[{source}] closed for maintenance (its own flag, copied): a live server refuses it, the storm not tried')
+            return
+        was, deadline = checkpoint(), time.time() + 45  # (A save after a roads pass: the ports' weeks rolled, the Board's
+        while checkpoint() == was and time.time() < deadline:   # ships in the checkpoint.)
+            time.sleep(.2)
+        server.send_signal(signal.SIGTERM)
+        server.communicate(timeout=120)
+        due = [s for s in dm.prosperity('dev')['week']['ships'] if s['state'] == 'due' and s['id']]
+        if not due:
+            print(f'\n[{source}] no ship due this week (no port): the storm not tried')
+            return
+        ship = due[0]['id']
+        server = start()
+        try:
+            was, deadline = checkpoint(), time.time() + 45
+            while checkpoint() == was and time.time() < deadline:
+                time.sleep(.2)
+            taken = checkpoint()
+            action = dm.act({'username': 'test', 'role': 'dm'}, 'dev', 'ship.storm', ship, {})['id']
+            deadline = time.time() + 15
+            while time.time() < deadline:
+                with W.connect('dev', 'owner', dbname=name) as conn:
+                    status, result = conn.execute('SELECT status, result FROM dm.actions WHERE id = %s', (action,)).fetchone()
+                if status != 'queued':
+                    break
+                time.sleep(.25)
+            self.assertEqual(status, 'applied', f'{source}: {result}')
+            self.assertEqual(checkpoint(), taken, f'{source}: no checkpoint since the storm (the crash needs the journal alone)')
+        finally:
+            server.kill()                               # (SIGKILL: no save.)
+            server.communicate(timeout=60)
+        server = start()
+        time.sleep(1)
+        server.send_signal(signal.SIGTERM)
+        server.communicate(timeout=120)
+        states = {s['id']: s['state'] for s in dm.prosperity('dev')['week']['ships']}
+        self.assertEqual(states.get(ship), 'storm', f'{source}: the storm kept across the crash: {states}')
+        print(f'\n[{source}] {ship} stormed, kept across a crash ({result})')
 
 
 if __name__ == '__main__':

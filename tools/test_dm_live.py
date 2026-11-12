@@ -148,6 +148,187 @@ class DungeonMasterLive(unittest.TestCase):
         kept = [i['type'] for i in (row[0].get('injuries') or [])]
         self.assertEqual(kept, ['bent_tail'], 'saved with the bent tail only: ' + json.dumps(row[0].get('injuries')))
 
+    def start(self, seconds=120):
+        """A game server on this database (the class's), once it is listening."""
+        server = subprocess.Popen([str(SERVER), '--database', 'dev', '--port', str(free_port()), '--for', str(seconds), '--dev-identity'],
+                                  env={**os.environ, 'RATW_DATABASE_URL': self.url, 'RATW_AI': 'off'},
+                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for line in server.stdout:
+            if 'listening on port' in line:
+                return server, int(line.split('listening on port')[1].split()[0])
+        server.wait(timeout=30)
+        self.fail('the server never listened')
+
+    def checkpoint(self):
+        """(saved_at, the journal seq it covers) of the world's checkpoint."""
+        with W.connect('dev', 'owner', dbname=self.name) as conn:
+            row = conn.execute("SELECT saved_at, coalesce((payload::jsonb->>'journal')::bigint, 0) FROM game.checkpoints").fetchone()
+        return row if row else (None, 0)
+
+    def test_the_acts_survive_a_crash(self):
+        """Doc 79, Phase 9, integrated: every path from the studio and the DM tool to the running server, then a crash.
+        The studio's steer (the slider with its cause, economy.sync {now}), the Band picker (save_npc: band_override,
+        npc.sync), and the DM tool's live acts (a Times nudge, a harvest called, an event added and another cancelled,
+        a household's band for a while, prices reset everywhere, a player's grant and fine), each applied by the server
+        and journalled; the server is then killed before any checkpoint (SIGKILL: nothing saved), and the next one,
+        restored from the checkpoint and the journal, holds every change exactly once."""
+        import dungeon_master as D
+        import studio
+        dm = D.DungeonMaster(lambda target: W.connect('dev', 'dm', dbname=self.name), clock=time.time)
+        who = {'username': 'test', 'role': 'dm'}
+        economy = studio.Economy(connect=lambda key: W.connect('dev', 'editor', dbname=self.name),
+                                 connect_dm=lambda key: W.connect('dev', 'dm', dbname=self.name))
+        # A first server's save: the checkpoint the crash goes back to, with the report naming the targets.
+        server, _ = self.start()
+        server.send_signal(signal.SIGTERM)
+        server.communicate(timeout=60)
+        report = dm.prosperity('dev')['report']
+        market = report['markets'][0]['id']
+        area = next(a['id'] for a in report['areas'] if not a['override'])
+        kind = next(k['id'] for k in report['eventKinds'] if not k['needs'])
+        with W.connect('dev', 'owner', dbname=self.name) as conn:
+            npcs = [r[0] for r in conn.execute('SELECT id FROM live.npcs ORDER BY id').fetchall()]
+        server, port = self.start()
+        player = None
+        try:
+            player = subprocess.Popen([NODE, '--experimental-strip-types', '--no-warnings', str(ROOT / 'tools' / 'client' / 'hold.ts'),
+                                       '--port', str(port), '--identity', 'bea', '--seconds', '60'],
+                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=ROOT)
+            pc = None
+            for line in player.stdout:
+                try:
+                    pc = json.loads(line).get('in') or pc
+                except ValueError:
+                    continue
+                if pc:
+                    break
+            self.assertTrue(pc, 'the player came in')
+            # The server takes a checkpoint every 30 s: the acts go in just after one, so the crash comes before the next.
+            snapshot = lambda: self.checkpoint()[0]
+            was, deadline = snapshot(), time.time() + 45
+            while snapshot() == was and time.time() < deadline:
+                time.sleep(.2)
+            taken = snapshot()
+            self.assertNotEqual(taken, was, 'the server took a checkpoint')
+            started = time.time()
+            # Everything queued at once (the server applies a poll's rows in order), so the crash comes well before the
+            # next checkpoint. The studio's slider: clamped (-43 is -45), its cause, and the times at once.
+            steered = economy.set_steer('dev', {'prosperity': -43, 'cause': 'the long frost', 'now': True}, 'test')
+            self.assertEqual(steered['after'], {'prosperity': -45, 'cause': 'the long frost'})
+            queued = {'steer': economy.queue_sync('dev', 'test', {'now': True})}
+            # The Band picker (Atlas's Inspector and the DM's NPC tab save person.band): band_override, then npc.sync.
+            with W.connect('dev', 'editor', dbname=self.name) as conn:
+                person = next(p for p in S.load_world(conn, 'greyfen')[0]['people'] if p['id'] == npcs[0])
+            queued['band picker'] = dm.save_npc(who, 'dev', {**person, 'band': 'rich'})['action']
+            acts = {'nudge': ('times.nudge', market, {'points': -60, 'days': 9, 'words': 'the bridge is out'}),
+                    'harvest': ('harvest.override', area, {'word': 'good', 'days': 20, 'words': 'a kind summer'}),
+                    'event 1': ('event.add', market, {'kind': kind, 'day': 3, 'hour': 10}),
+                    'event 2': ('event.add', market, {'kind': kind, 'day': 5, 'hour': 12}),
+                    'band': ('band.override', npcs[1], {'band': 'poor', 'days': 14}),
+                    'reset': ('prices.reset', 'all', {'words': 'fresh stock at last'})}
+            for what, (kind_, target, payload) in acts.items():
+                queued[what] = dm.act(who, 'dev', kind_, target, payload)['id']
+            queued['grant'] = dm.grant(who, 'dev', pc, 23, 'for finding the lost ewe')['id']
+            queued['fine'] = dm.grant(who, 'dev', pc, -20, 'for the broken fence')['id']
+            queued['over the cap'] = dm.grant(who, 'dev', pc, 2000, 'too much at once')['id']
+            applied = {what: self.outcome(action) for what, action in queued.items()}
+            first = applied['event 1'][1].split(':')[0]
+            applied['event.cancel'] = self.outcome(dm.act(who, 'dev', 'event.cancel', first, {})['id'])
+            for what, (status, result) in applied.items():
+                self.assertEqual(status, 'refused' if what == 'over the cap' else 'applied', f'{what}: {result}')
+            # Every act journalled after the checkpoint, then the crash: nothing saved.
+            deadline = time.time() + 10
+            while time.time() < deadline:
+                at, seq = self.checkpoint()
+                with W.connect('dev', 'owner', dbname=self.name) as conn:
+                    journalled = conn.execute('SELECT count(*) FROM game.journal WHERE seq > %s', (seq,)).fetchone()[0]
+                if journalled >= 10:
+                    break
+                time.sleep(.25)
+            self.assertEqual(at, taken, f'no checkpoint since the acts began ({time.time() - started:.1f} s ago): the crash '
+                                        'test needs them in the journal alone')
+            self.assertGreaterEqual(journalled, 10, 'each act journalled')
+        finally:
+            if player and player.poll() is None:
+                player.kill()
+            if player:
+                player.wait(timeout=10)
+                player.stdout.close()
+            server.kill()                                # (SIGKILL: no save, the journal is all there is.)
+            server.communicate(timeout=60)
+        with W.connect('dev', 'owner', dbname=self.name) as conn:
+            saved = conn.execute('SELECT saved_at, payload::jsonb->\'society\'->\'report\'->\'prosperity\' FROM game.checkpoints').fetchone()
+        self.assertEqual((saved[0], saved[1]['target']), (taken, 0), 'the checkpoint is from before the acts: nothing was saved')
+        # The next server: restored from the checkpoint and the journal, then saved as it stops.
+        server, _ = self.start()
+        time.sleep(2)
+        server.send_signal(signal.SIGTERM)
+        out, _ = server.communicate(timeout=60)
+        view = dm.prosperity('dev')
+        report = view['report']
+        self.assertEqual((report['prosperity']['slider'], report['prosperity']['target'], report['prosperity']['cause'],
+                          report['prosperity']['by']), (-45, -45, 'the long frost', 'dm'), 'the slider kept across the crash')
+        m = next(x for x in report['markets'] if x['id'] == market)
+        self.assertEqual((m['nudge']['points'], m['nudge']['words']), (-60, 'the bridge is out'), 'the nudge kept')
+        self.assertTrue(m['resetting'], 'the prices still easing back')
+        a = next(x for x in report['areas'] if x['id'] == area)
+        self.assertEqual((a['harvest'], a['override']['word'], a['override']['words']), ('good', 'good', 'a kind summer'))
+        events = [e for e in view['week']['events'] if e['by'] != 'seeded']
+        self.assertEqual(sorted((e['day'], e['state']) for e in events), [(3, 'cancelled'), (5, 'due')],
+                         'one event added and kept, one cancelled: each once: ' + json.dumps(events))
+        self.assertGreaterEqual(sum(x['overridden'] for x in report['markets']), 1, 'the household held poor')
+        holder = next((h for h in view['players']['holders'] if pc in (h['holder'], h['name']) or h['holder'].endswith(pc)), None)
+        self.assertIsNotNone(holder, json.dumps(view['players']))
+        self.assertEqual((holder['byReason'].get('dm grant: for finding the lost ewe'), holder['byReason'].get('dm fine: for the broken fence')),
+                         ([23, 0], [0, 20]), 'granted 23 and fined 20, once each (the one over the cap refused): ' + json.dumps(holder))
+        with W.connect('dev', 'owner', dbname=self.name) as conn:
+            band = conn.execute('SELECT band_override FROM live.npcs WHERE id = %s', (npcs[0],)).fetchone()[0]
+        self.assertEqual(band, 'rich', 'the Band picker\'s band stored')
+        logged = [e['kind'] for e in view['log']]
+        for kind_ in ('times.nudge', 'harvest.override', 'event.add', 'event.cancel', 'band.override', 'prices.reset',
+                      'character.grant'):
+            self.assertIn(kind_, logged, f'{kind_} in the Prosperity log')
+
+    def test_the_hosts_overrides_reach_the_server(self):
+        """Doc 79, 12 and 14 (Phase 9), integrated: the studio's Market, Status and Imports panels write the host's
+        overrides into live.economy.rules; economy.sync has the running server read them through the manifest's
+        `overrides` line and layer them over market.json and status.json (the report's event kinds are the host's); a
+        hand-made status override that fails the loader's checks (shares summing to 140) and an unknown never-imported
+        good are skipped with a warning, never refused, and the rest stays in force."""
+        import dungeon_master as D
+        import studio
+        dm = D.DungeonMaster(lambda target: W.connect('dev', 'dm', dbname=self.name), clock=time.time)
+        economy = studio.Economy(connect=lambda key: W.connect('dev', 'editor', dbname=self.name),
+                                 connect_dm=lambda key: W.connect('dev', 'dm', dbname=self.name))
+        self.assertTrue(economy.read('dev')['slim'], 'the throwaway world is at 0061')
+        server, _ = self.start()
+        try:
+            economy.set_market('dev', {'market': {'events': {'perWeek': 1, 'list': ['works_fire', 'good_catch']}}}, 'test')
+            economy.set_imports('dev', {'neverImported': ['salt']}, 'test')
+            economy.set_status('dev', {'status': {'leanDays': 4}}, 'test')
+            economy.set_rules('dev', {'set': {'neverHungry': 1}}, 'test')          # (The Rules panel's, a clamp rule.)
+            status, result = self.outcome(economy.queue_sync('dev', 'test'))
+            self.assertEqual(status, 'applied', result)
+            # A host's hand edit past the studio: shares that sum to 140 and a good that is no good.
+            with W.connect('dev', 'editor', dbname=self.name) as conn:
+                S.patch_economy_rules(conn, 'greyfen', {'status': {'leanDays': 4, 'shares': [
+                    {'at': -100, 'shares': [40, 40, 40, 20]}, {'at': 100, 'shares': [10, 30, 60, 40]}]},
+                    'neverImported': ['salt', 'unobtainium']}, ())
+            status, result = self.outcome(economy.queue_sync('dev', 'test'))
+            self.assertEqual(status, 'applied', 'skipped, never refused: ' + result)
+        finally:
+            server.send_signal(signal.SIGTERM)
+            out, _ = server.communicate(timeout=60)
+        warned = [l for l in out.splitlines() if 'RATW_ECONOMY override' in l]
+        self.assertTrue(any('shares' in l for l in warned), 'the bad shares warned of: ' + '\n'.join(warned))
+        self.assertTrue(any('unobtainium' in l for l in warned), 'the unknown good warned of: ' + '\n'.join(warned))
+        report = dm.prosperity('dev')['report']
+        self.assertEqual(sorted(k['id'] for k in report['eventKinds']), ['good_catch', 'works_fire'],
+                         'the host\'s event kinds in force, in place of market.json\'s twelve')
+        self.assertTrue(report['prosperity']['neverHungry'], 'the Rules panel\'s Never Hungry in force')
+        with W.connect('dev', 'editor', dbname=self.name) as conn:      # (Back to the files', for the other tests.)
+            S.patch_economy_rules(conn, 'greyfen', {}, ['status', 'market', 'neverImported', 'neverHungry'])
+
     def test_the_slider_and_an_act_end_to_end(self):
         """Doc 79, 12 (Phase 9): the slider written into live.economy's rules with its cause, economy.sync {now} applied by
         the running server, and a DM act (prices reset everywhere) queued through the DM tool; once the server has saved,

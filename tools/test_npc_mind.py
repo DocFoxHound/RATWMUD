@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import http.client
+import os
 import json
 import secrets
 import threading
@@ -10,6 +11,9 @@ import unittest
 
 import npc_mind as mind
 from npc_bridge import BridgeError
+
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 CONTEXT = {"npc": "Wren", "player": "Ash", "heard": "Thank you for the bread.", "description": "A baker wolf.",
            "activity": "Baking.", "memory": "", "scene": "A warm bakery.", "personality": "Kind and wry.",
@@ -450,7 +454,7 @@ class HistoryTests(unittest.TestCase):
         import world_db as W
         if not T.database_available():
             self.skipTest("local PostgreSQL not running")
-        self.name = f"ratw_test_{secrets.token_hex(4)}"
+        self.name = f"ratw_test_{DB_TAG}{secrets.token_hex(4)}"
         with T.superuser() as su:
             su.execute(f"CREATE DATABASE {self.name} OWNER ratw_owner")
             su.execute(f"GRANT CONNECT ON DATABASE {self.name} TO ratw_game")

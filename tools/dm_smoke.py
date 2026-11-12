@@ -74,7 +74,7 @@ class Smoke:
         """The Storykeeper keeps its state in PostgreSQL; this run gets its own database, dropped afterwards."""
         import world_db
         from test_world_db import superuser
-        self.database = f'ratw_dm_smoke_{os.getpid()}'
+        self.database = f'ratw_dm_smoke_{os.environ.get("RATW_TEST_DB_TAG", "")}{os.getpid()}'   # (Tagged as the tests' are.)
         with superuser() as su:
             su.execute(f'DROP DATABASE IF EXISTS {self.database} WITH (FORCE)')
             su.execute(f'CREATE DATABASE {self.database} OWNER ratw_owner')

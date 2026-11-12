@@ -137,8 +137,7 @@ void Game::startEconomy()
 {
     // At start, after the restore: the world's settings and overrides in force, the slider's target from the rules (its
     // smoothed value as saved), and the report worked out. A world never staged before says so, once.
-    const auto& state = world_.society().state();
-    if (state.board.empty() && state.staged.empty())
+    if (!world_.restoredStaged())
         note("info", "RATW_ECONOMY economy staged (doc 79)");
     logEconomyWarnings(world_.society().authored());
     applyEconomySpec(world_.society().authored().economy, false);

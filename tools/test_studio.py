@@ -716,6 +716,19 @@ def unmigrate_seasons(key):
             conn.execute("DELETE FROM public.schema_migrations WHERE version = '0057'")
 
 
+def unmigrate_store(key):
+    """Takes migration 0055 back off a throwaway world already without 0061 to 0057 (unmigrate_seasons): no store room's
+    table or columns, 0053's people_manifest."""
+    sql = (W.MIGRATIONS / '0053_postless_routes.sql').read_text(encoding='utf-8')
+    with W.connect(key, 'owner') as conn:
+        with conn.transaction():
+            conn.execute('DROP TABLE live.business_settings')
+            conn.execute('ALTER TABLE live.economy DROP COLUMN internal_store, DROP COLUMN store_markup, DROP COLUMN store_resale, '
+                         'DROP COLUMN resale_markup, DROP COLUMN store_rule')
+            conn.execute(sql)
+            conn.execute("DELETE FROM public.schema_migrations WHERE version = '0055'")
+
+
 def core_store_ready() -> bool:
     """Whether world_store has the slim economy (doc 79 Phase 9, the core lane's C8): until it is merged, its K0 names
     raise NotImplementedError and the database flow below can't run."""
@@ -1137,11 +1150,10 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
             self.assertEqual(status, 409, data)
 
     def test_a_world_without_migration_0057_or_0055(self):
-        from test_world_sync import unmigrate
         unmigrate_seasons(self.dev)
         status, data = self.call('GET', '/api/atlas/economy', token='dm-token')
         self.assertEqual((status, data['supported']), (200, False), data)
-        unmigrate(self.dev)
+        unmigrate_store(self.dev)
         status, data = self.call('GET', '/api/dm/economy?world=' + self.dev, token='viewer-token')
         self.assertEqual((status, data['supported']), (200, False), data)
         status, data = self.call('POST', '/api/dm/economy/seasons', {'world': self.dev, 'set': {'grain': None}}, token='dm-token')

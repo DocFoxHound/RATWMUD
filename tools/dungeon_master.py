@@ -1068,7 +1068,12 @@ class DungeonMaster:
             areas = {a.get('id') for a in report.get('areas', []) if isinstance(a, dict)}
             return areas or None
         if what == 'event':
-            return {e.get('id') for e in board.get('events', []) if isinstance(e, dict)} or None
+            # (The checkpoint lags the game by up to a snapshot: an event the DM added since is named by its outcome,
+            # "e<N>: ...", in dm.actions.)
+            added = {r.split(':', 1)[0] for (r,) in conn.execute(
+                "SELECT result FROM dm.actions WHERE kind = 'event.add' AND status = 'applied' AND result ~ '^e[0-9]+:' "
+                "AND done_at > now() - interval '28 days'").fetchall()}
+            return {e.get('id') for e in board.get('events', []) if isinstance(e, dict)} | added or None
         if what == 'ship':
             return {s.get('id') for s in board.get('ships', []) if isinstance(s, dict)} or None
         return None

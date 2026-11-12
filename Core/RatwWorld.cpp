@@ -6752,6 +6752,9 @@ Result World::restore(const PersistedWorld& saved)
     clockOffsetHours_ = state.clockOffsetHours;
     calendarDays_ = restoredDays;
     society_ = std::move(restoredSociety);
+    // (Whether the save had run staged before, read off the save itself: restoring rebuilds bands, so the state after it
+    // can't tell. Doc 79, 14: a world staged for the first time says so once, at start.)
+    restoredStaged_ = state.hasSociety && !(state.society.board.empty() && state.society.staged.empty());
     society_.setParallel(parallel_);
     society_.resumeAt(calendarDays_);               // (Its clocks at the saved moment before any tick: Review A.)
     climateSlot_ = std::int64_t(std::floor(calendarDays_ * 4));

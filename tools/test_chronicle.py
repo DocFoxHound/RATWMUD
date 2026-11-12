@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import json
+import os
 import secrets
 import unittest
 
 import chronicle as C
+
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 NAMES = {'fennel': 'Fennel', 'wren': 'Wren', 'sorrel': 'Sorrel', 'sloe': 'Sloe', 'player-ada': 'Ada'}
 
@@ -155,7 +159,7 @@ class DatabaseTests(unittest.TestCase):
         import world_db as W
         if not T.database_available():
             self.skipTest('local PostgreSQL not running')
-        self.name = f'ratw_test_{secrets.token_hex(4)}'
+        self.name = f'ratw_test_{DB_TAG}{secrets.token_hex(4)}'
         with T.superuser() as su:
             su.execute(f'CREATE DATABASE {self.name} OWNER ratw_owner')
             su.execute(f'GRANT CONNECT ON DATABASE {self.name} TO ratw_game, ratw_dm')
