@@ -477,16 +477,23 @@ class Game
     // --host-cheats), character.gift and account.unlock are refused, character.dm too without --dev-tools, and the
     // host's own wolves (the wolves of host.json's account) get none of the rewards (character.resurrect, deed.award,
     // milestone.credit, estate.set on a place they hold, storyline.give, mentor.restore, a grant: character.grant and
-    // the Storykeeper's player_grant). Why the act is refused, or "" (always "" off community worlds: the user's own
-    // worlds keep their Dungeon Masters as they were).
+    // the Storykeeper's player_grant; and, since doc 78's R1 review, a heal (character.injury remove) or a move of
+    // their wolf, estate.set naming one landlord or on a vacant place a Chapter they lead could take, the host's own
+    // storyteller application approved, a House or treaty approved for a Chapter of theirs, and book.storyline tying
+    // a book of theirs). The host guarded is host.json's, or while it names none (a broken token, a delisting, a ban:
+    // the agent writes null) the last one it named, kept in the checkpoint (lastHost). Why the act is refused, or ""
+    // (always "" off community worlds: the user's own worlds keep their Dungeon Masters as they were).
     std::string dmActRefused(const std::string& kind, const std::string& target, const std::string& payload) const;
     // Cheats on (listed so): --dev-tools (every player's socket cheats) or --host-cheats (the host's tools only).
     bool cheatsOn() const { return options_.devTools || options_.hostCheats; }
     // The Dev Console (Entity::dungeonMaster) counts: never on a community world without --dev-tools, whatever was
     // saved (the flag is cleared as the wolf comes in, and at the restore).
     bool devConsoleAllowed() const { return !communityWorld() || options_.devTools; }
-    // A wolf of the host's account (host.json), on a community world.
+    // A wolf of the host's account (host.json, or the last host it named while it names none: guardedHost), on a
+    // community world.
     bool hostsOwnWolf(const std::string& characterId) const;
+    const std::string& guardedHost() const { return hostSub_.empty() ? lastHostSub_ : hostSub_; }
+    bool hostsOwnChapter(const std::string& chapterId) const;   // A Chapter with one of the host's own wolves in it.
     // Who acts, in a player's words: "The host" on a community world, else "A Dungeon Master" (capital first).
     std::string actorWords(bool capital = true) const;
     // A player told that the host's tools acted on their wolf (doc 78, 8: "The host moved you"): at once if it is in
@@ -526,6 +533,7 @@ class Game
     std::set<std::string> centralBans_;
     std::string bansStamp_;
     std::string hostSub_, hostStamp_;                // The host's account here (host.json as last read).
+    std::string lastHostSub_;                        // The last host host.json named (the checkpoint's lastHost): guarded only.
     double onlineWrittenAt_ = -1e9, bansCheckedAt_ = -1e9;
     bool onlineFailing_ = false;
     std::filesystem::path agentFile(const std::string& name) const;

@@ -158,8 +158,12 @@ pub fn world_id(text: &str) -> bool {
 
 /// Control, bidirectional and invisible characters, which could make a world's name look like the client's own words.
 fn hidden(c: char) -> bool {
+    // (And, since doc 78's R1 review, the soft hyphen, the combining grapheme joiner, the Mongolian vowel separator, the
+    // Hangul fillers and the tag characters: each shows as nothing, or as a blank that isn't a space.)
     c.is_control()
-        || matches!(c, '\u{061c}' | '\u{200b}'..='\u{200f}' | '\u{2028}'..='\u{202e}' | '\u{2060}'..='\u{2069}' | '\u{feff}' | '\u{fff9}'..='\u{fffb}')
+        || matches!(c, '\u{00ad}' | '\u{034f}' | '\u{061c}' | '\u{115f}' | '\u{1160}' | '\u{180e}' | '\u{200b}'..='\u{200f}'
+            | '\u{2028}'..='\u{202e}' | '\u{2060}'..='\u{2069}' | '\u{3164}' | '\u{feff}' | '\u{ffa0}' | '\u{fff9}'..='\u{fffb}'
+            | '\u{e0000}'..='\u{e007f}')
 }
 
 /// A world's name as the screens may show it: no hidden characters, spaces collapsed, at most 40 characters.
@@ -353,6 +357,8 @@ mod tests {
         assert_eq!(h.name.chars().count(), 40);
         assert!(h.name.starts_with("Evil x"), "{}", h.name);
         assert!(!h.name.chars().any(hidden));
+        let plain = read(hello(json!({"name": "A\u{00ad}sh\u{034f}f\u{180e}a\u{3164}l\u{e0041}l \u{115f}Vale"}))).unwrap();
+        assert_eq!(plain.name, "Ashfall Vale", "the R1 review's invisible characters go too");
         assert_eq!(h.progress, Progress { code: "starting".into(), percent: 100 });
         assert_eq!(h.server_state, "unknown");
         assert_eq!(h.package, "1.0script");

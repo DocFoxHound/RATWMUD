@@ -58,12 +58,26 @@ key_id() {   # The key's id: "ratw-" and the first 16 hex characters of the SHA-
 key_public() {   # The raw 32-byte public key, base64.
   openssl pkey -in "$1" -pubout -outform DER | tail -c 32 | base64 -w0
 }
+# A release key inside the repository is refused wherever it is used, not only where it is made (doc 78's R1 review): a
+# key there is one `git add` from being published.
+key_outside() {
+  case "$(realpath -m -- "$1")/" in "$(realpath -- "$root")"/*) echo "stage.sh: the release key never goes in the repository ($1)" >&2; return 2 ;; esac
+}
+# A folder copied into the image may hold no symbolic link (cp -r keeps them, and the bundle's list would hash what one
+# points at on this computer: R1 review).
+no_links() {
+  local found
+  found="$(find "$1" -type l -print -quit)"
+  [[ -z "$found" ]] || { echo "stage.sh: $found is a symbolic link: $1 may hold none" >&2; return 2; }
+}
 # Signs the built Editor in $1: every file under it (bundle.json aside) with its SHA-256, the version (the commit's time,
 # never older than the client's OLDEST) and the Editor API, signed with the key in $2; writes $1/bundle.json.
 sign_bundle() {
   local dist="$1" key="$2" version scratch
   [[ -f "$dist/index.html" ]] || { echo "stage.sh: $dist has no index.html: not a built Editor" >&2; return 2; }
   [[ -f "$key" ]] || { echo "stage.sh: no Editor release key at $key (--release-key, or --make-release-key to make one; --no-editor to stage without the Editor)" >&2; return 2; }
+  key_outside "$key" || return 2
+  no_links "$dist" || return 2
   openssl pkey -in "$key" -noout -text 2>/dev/null | grep -q ED25519 || { echo "stage.sh: $key isn't an Ed25519 private key" >&2; return 2; }
   version="${RATW_BUNDLE_VERSION:-$(git -C "$root" log -1 --format=%ct HEAD)}"
   scratch="$(mktemp -d)"
@@ -94,7 +108,7 @@ PY
 if [[ -n "$make_key" ]]; then
   [[ "$make_key" != default ]] || make_key="$release_key"
   if [[ -e "$make_key" ]]; then echo "stage.sh: $make_key exists: not replacing a release key" >&2; exit 2; fi
-  case "$(realpath -m -- "$make_key")/" in "$root"/*) echo "stage.sh: the release key never goes in the repository" >&2; exit 2 ;; esac
+  key_outside "$make_key" || exit 2
   mkdir -p "$(dirname "$make_key")"
   (umask 077 && openssl genpkey -algorithm ed25519 -out "$make_key")
   chmod 600 "$make_key"
@@ -133,11 +147,14 @@ fi
 if [[ -n "$world" && ! -f "$world/package.json" ]]; then
   echo "stage.sh: $world has no package.json: not a world export" >&2; exit 2
 fi
+if [[ -n "$world" ]]; then no_links "$world" || exit 2; fi
 if ((editor)); then
   [[ -f "$release_key" ]] || { echo "stage.sh: no Editor release key at $release_key (--release-key, or --make-release-key to make one; --no-editor to stage without the Editor)" >&2; exit 2; }
+  key_outside "$release_key" || exit 2
   if [[ -n "$editor_dist" && ! -f "$editor_dist/index.html" ]]; then
     echo "stage.sh: $editor_dist has no index.html: not a built Editor" >&2; exit 2
   fi
+  if [[ -n "$editor_dist" ]]; then no_links "$editor_dist" || exit 2; fi
   editor_dist="${editor_dist:+$(realpath -- "$editor_dist")}"
 fi
 if [[ -n "$build_id" && ! "$build_id" =~ ^[A-Za-z0-9._+-]+$ ]]; then

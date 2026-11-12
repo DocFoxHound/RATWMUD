@@ -1369,6 +1369,102 @@ void theHostsToolsKeepTheCommunityGuards()
     }
 }
 
+void theHostsGuardKeepsToTheLastHostAndCoversItsOtherRewards()
+{
+    // Doc 78's R1 review (security 8, and the own-wolf lows): with cheats off the host's own wolf gets no heal or move
+    // from the host's tools, nor its Chapter a House, a treaty or a vacant place on terms the host just chose, nor the
+    // host's own storyteller application; and host.json naming none (a broken token, a delisting, a ban: the agent
+    // writes null) keeps the last host guarded, across a restart (the checkpoint's lastHost), until another is named.
+    Fixture f;
+    const auto save = (f.dir / "lasthost.json").string();
+    writeHost(f.dir, "{\"at\": 1, \"host\": \"" + Acct1 + "\"}");
+    auto o = f.options(false, save);
+    o.oneWolfPerAccount = false;
+    const auto join = [&](game::Game& g, Client& c, const std::string& wolf, const std::string& account, const std::string& name, bool first) {
+        g.connect(&c);
+        say(g, &c, hello(f.ticket(wolf, account, name)));
+        if (first)
+            say(g, &c, cmd({{"type", "character_arrive"}, {"commandId", "a-" + wolf.substr(5, 4)}, {"tier", "gifted"}}));
+        expect(c.entityId == wolf, name + " is in the world: " + c.message());
+    };
+    const auto guarded = [](const Result& r) { return !r.ok && r.message.find("host's own") != std::string::npos; };
+    {
+        game::Game g(o);
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "starts: " + problem);
+        Client a, b;
+        a.id = 1;
+        b.id = 2;
+        join(g, a, Wolf1, Acct1, "Wren Reed", true);
+        join(g, b, Wolf2, Acct2, "Moss Hollow", true);
+        const auto* wren = g.world().entity(Wolf1);
+        const auto to = "{\"cell\": \"" + wren->cellId + "\", \"x\": " + std::to_string(int(wren->position.x)) + ", \"y\": " +
+                        std::to_string(int(wren->position.y)) + "}";
+        const auto here = wren->cellId;
+        const auto move = act(g, "character.move", Wolf1, to);
+        expect(guarded(move), "a move of the host's own wolf is refused: " + move.message);
+        expect(act(g, "character.move", Wolf2, to).ok, "another wolf's goes through");
+        const auto heal = act(g, "character.injury", Wolf1, R"({"remove": "injury-1"})");
+        expect(guarded(heal), "a heal of the host's own wolf is refused: " + heal.message);
+        expect(!guarded(act(g, "character.injury", Wolf2, R"({"remove": "injury-1"})")), "another wolf's is not the guard's");
+        const auto own = act(g, "storyteller.decide", Acct1, R"({"approve": true})");
+        expect(guarded(own), "the host's own storyteller application is not approved by the host's tools: " + own.message);
+        expect(!guarded(act(g, "storyteller.decide", Acct1, R"({"approve": false})")), "refusing it is no reward");
+        expect(!guarded(act(g, "storyteller.decide", Acct2, R"({"approve": true})")), "another account's is not the guard's");
+        Value chapters;
+        std::string bad;
+        expect(json::parse("{\"next\": 3, \"chapters\": [{\"id\": \"chapter-1\", \"name\": \"Reeds\", \"level\": 3, \"members\": [{\"id\": \"" + Wolf1 +
+                               "\", \"rank\": 0}]}, {\"id\": \"chapter-2\", \"name\": \"Moss\", \"level\": 3, \"members\": [{\"id\": \"" + Wolf2 +
+                               "\", \"rank\": 0}]}]}",
+                           chapters, bad),
+               "chapters: " + bad);
+        g.chapters().load(chapters);
+        g.factions().houseRequests().push_back({"chapter-1", "crown", "pending", 0});
+        g.factions().houseRequests().push_back({"chapter-2", "crown", "pending", 0});
+        const auto house = act(g, "house.decide", "chapter-1", R"({"approve": true, "faction": "crown"})");
+        expect(guarded(house), "a House for the host's own Chapter is refused: " + house.message);
+        expect(act(g, "house.decide", "chapter-2", R"({"approve": true, "faction": "crown"})").ok, "another Chapter's goes through");
+        faction::Treaty t;
+        t.id = g.factions().nextTreatyId();
+        t.faction = "crown";
+        t.chapter = "chapter-1";
+        g.factions().treaties().push_back(t);
+        const auto treaty = act(g, "treaty.decide", t.id, R"({"approve": true})");
+        expect(guarded(treaty), "a treaty for the host's own Chapter is refused: " + treaty.message);
+        expect(act(g, "treaty.decide", t.id, R"({"approve": false})").ok, "turning it down is no reward");
+        const auto vacant = act(g, "estate.set", here, R"({"rent": 1, "level": 2})");
+        expect(guarded(vacant), "a vacant place a Chapter the host leads could take at once is refused: " + vacant.message);
+        expect(act(g, "estate.set", here, R"({"rent": 1, "level": 4})").ok, "above that Chapter's level it goes through");
+        const auto landlord = act(g, "estate.set", here, "{\"rent\": 90, \"level\": 4, \"landlord\": \"" + Wolf1 + "\"}");
+        expect(guarded(landlord), "its rent paid to the host's own wolf is refused: " + landlord.message);
+        // host.json names none: the last host is still guarded.
+        writeHost(f.dir, "{\"at\": 2, \"host\": null}");
+        expect(g.reloadHost(problem) && g.hostAccount().empty(), "host.json names no host now: " + problem);
+        expect(guarded(act(g, "character.resurrect", Wolf1)), "the last host's wolf is still guarded");
+        expect(guarded(act(g, "character.move", Wolf1, to)), "a move too");
+        g.save();
+        g.disconnect(&a);
+        g.disconnect(&b);
+        g.save();
+    }
+    {
+        // A restart with host.json still naming none: the checkpoint's lastHost keeps the guard; another host named
+        // moves it.
+        game::Game g(o);
+        f.wire(g);
+        std::string problem;
+        expect(g.start(problem), "starts again: " + problem);
+        expect(g.hostAccount().empty(), "still no host");
+        const auto again = act(g, "character.resurrect", Wolf1);
+        expect(guarded(again), "the last host's wolf is guarded after a restart: " + again.message);
+        writeHost(f.dir, "{\"at\": 3, \"host\": \"" + Acct2 + "\"}");
+        expect(g.reloadHost(problem) && g.hostAccount() == Acct2, "a new host: " + problem);
+        expect(!guarded(act(g, "character.resurrect", Wolf1)), "the old host's wolf is no longer the guard's");
+        expect(guarded(act(g, "character.resurrect", Wolf2)), "the new host's is");
+    }
+}
+
 void portraitUploadsAreOffOnCommunityWorlds()
 {
     Fixture f;
@@ -1409,6 +1505,7 @@ int main()
         aScratchServerWritesNoOnlineFile();
         theHostDecidesKicksBansAndSilences();
         theHostsToolsKeepTheCommunityGuards();
+        theHostsGuardKeepsToTheLastHostAndCoversItsOtherRewards();
         portraitUploadsAreOffOnCommunityWorlds();
     }
     catch (const std::exception& error)

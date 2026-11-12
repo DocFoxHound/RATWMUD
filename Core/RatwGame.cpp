@@ -6348,6 +6348,7 @@ DbStore::Build Game::capture()
     c->server.commandReceipts = commandReceipts_;
     c->server.responseReceipts = responseReceipts_;
     c->server.dmActs = dmActs_;
+    c->server.lastHost = lastHostSub_;
     c->time = world_.time();
     c->saved = world_.save();
     for (const auto& [id, e] : world_.entities())
@@ -6529,6 +6530,7 @@ void Game::load(const std::string& payload)
         for (const auto& [key, value] : entries)
             responseReceipts_[actor][key] = value;
     dmActs_ = state.dmActs.isObject() ? state.dmActs : json::Value::object();
+    lastHostSub_ = !hostSub_.empty() ? hostSub_ : state.lastHost;   // (host.json may have been read first.)
     for (const auto& [id, saved] : characters_)
         world_.bonds().setAway(id, !world_.entity(id));   // (Nobody's regard fades for a wolf who is away: doc 56, 10.)
     note("info", "RATW_RESTORE characters=" + std::to_string(characters_.size()) + " summaries=" + std::to_string(memories_.summaries.size()) +

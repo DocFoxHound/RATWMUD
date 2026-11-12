@@ -8,7 +8,12 @@
 //   rotated   a new key, signed by the old one (`ratw-editor new-certificate`): the pin moves over;
 //   new       a key and a world this client has never met (trust on first use, or an Editor code first);
 //   changed   any other new key at an address this client trusts, whatever world id or name the hello claims, or a known
-//             world id under a new key: the red screen, with no way to sign in from it.
+//             world id under a new key, or a key this client trusts for one world at an address it knew another world's
+//             key at: the red screen, with no way to sign in from it.
+//
+// An Editor code pins its key only where that changes no trust this client has (doc 78's R1 review, security 4): never
+// over a key a connection has shown for its world, never over another world's key, never taking an address another
+// met key holds. Where it would, the code waits, and the connection shows the red screen as it would without it.
 use std::path::PathBuf;
 use std::sync::Mutex;
 
@@ -101,7 +106,11 @@ pub fn classify(file: &PinFile, address: &str, spki: &[u8], hello: &Hello) -> Ve
         if known.world != hello.world {
             return Verdict::Changed { old: known.clone() };
         }
-        return if at.is_some_and(|k| k.pin == pin) { Verdict::Trusted } else { Verdict::Moved };
+        // Another trusted key's address: that world's key was expected there, not this one (R1 review, security 9).
+        if let Some(other) = at.filter(|k| k.pin != pin) {
+            return Verdict::Changed { old: other.clone() };
+        }
+        return if at.is_some() { Verdict::Trusted } else { Verdict::Moved };
     }
     if let Some(old) = at.or_else(|| file.keys.iter().find(|k| k.world == hello.world)) {
         return if rotation_ok(old, spki, hello) { Verdict::Rotated { old: old.clone() } } else { Verdict::Changed { old: old.clone() } };
@@ -177,16 +186,19 @@ impl PinFile {
         self.cap();
     }
 
-    /// An Editor code pins its world's key ahead of the first connection. A code is the owner's word: it replaces any
-    /// other key this client kept for that world (which also clears a red screen, doc 78 screen 3).
-    pub fn pin_code(&mut self, world: &str, pin: &Pin, username: &str, address: Option<&str>) {
+    /// An Editor code pins its world's key ahead of the first connection, and replaces another key for that world only
+    /// while no connection has shown that one (an earlier code's). Anything else a code would change is refused (false),
+    /// and the connection's own verdict stands: a key a connection has shown for the world, the same key kept for
+    /// another world, or an address another met key holds (R1 review, security 4: a hostile code took another world's
+    /// pin). The red screen's FORGET, by the world's name, then lets the code pin (editor.rs, connect).
+    pub fn pin_code(&mut self, world: &str, pin: &Pin, username: &str, address: Option<&str>) -> bool {
         let text = pin_text(pin);
+        let met = |k: &Known| !k.spki.is_empty() || !k.addresses.is_empty();
+        if self.keys.iter().any(|k| (k.pin == text && k.world != world) || (k.pin != text && k.world == world && met(k))) {
+            return false;
+        }
         self.keys.retain(|k| k.world != world || k.pin == text);
         if let Some(k) = self.keys.iter_mut().find(|k| k.pin == text) {
-            if k.world != world {
-                // (The same key under another world id: the code's word wins; its addresses go with the old claim.)
-                *k = Known { pin: text.clone(), spki: String::new(), world: world.into(), name: String::new(), addresses: vec![], username: String::new(), used: 0 };
-            }
             k.username = username.into();
             k.used = now();
         } else {
@@ -194,9 +206,12 @@ impl PinFile {
                 username: username.into(), used: now() });
         }
         if let Some(a) = address {
-            self.alias(&text, a);
+            if !self.keys.iter().any(|k| k.pin != text && met(k) && k.addresses.iter().any(|x| x == a)) {
+                self.alias(&text, a);
+            }
         }
         self.cap();
+        true
     }
 
     /// Forgetting a changed key: only when the name typed is the one this client knew the world by (or its id, for a
@@ -400,7 +415,7 @@ mod tests {
     }
 
     #[test]
-    fn an_editor_code_pins_without_a_prompt_and_clears_a_changed_key() {
+    fn an_editor_code_pins_without_a_prompt_and_waits_on_a_changed_key() {
         let (a, b, mut f) = (spki(CERT_A), spki(CERT_B), PinFile::default());
         f.pin_code(W1, &sha256(&a), "pell", None);
         // The first connection, at whatever address: the code's key, so no screen; the key and the address are kept.
@@ -409,11 +424,50 @@ mod tests {
         f.apply(&v, "203.0.113.7:17789", &a, &hello(W1, "Ashfall"));
         assert_eq!(f.keys[0].spki, b64(&a));
         assert_eq!(f.keys[0].username, "pell");
-        // A new key for that world: red, until the owner's new code.
+        // A new key for that world: red, and a code for it changes nothing a connection showed (R1 review, security 4);
+        // once the old key is forgotten by the world's name, the code pins it.
         assert!(matches!(classify(&f, "203.0.113.7:17789", &b, &hello(W1, "Ashfall")), Verdict::Changed { .. }));
-        f.pin_code(W1, &sha256(&b), "pell", Some("203.0.113.7:17789"));
+        assert!(!f.pin_code(W1, &sha256(&b), "pell", Some("203.0.113.7:17789")));
+        assert!(matches!(classify(&f, "203.0.113.7:17789", &b, &hello(W1, "Ashfall")), Verdict::Changed { .. }));
+        let pin = f.keys[0].pin.clone();
+        assert!(f.forget(&pin, "Ashfall"));
+        assert!(f.pin_code(W1, &sha256(&b), "pell", Some("203.0.113.7:17789")));
         assert_eq!(f.keys.len(), 1);
         assert_eq!(classify(&f, "203.0.113.7:17789", &b, &hello(W1, "Ashfall")), Verdict::Trusted);
+        // A code not yet used is replaced by the next one for that world.
+        let mut g = PinFile::default();
+        assert!(g.pin_code(W2, &sha256(&a), "pell", None));
+        assert!(g.pin_code(W2, &sha256(&b), "pell", None));
+        assert_eq!((g.keys.len(), g.keys[0].pin.clone()), (1, pin_text(&sha256(&b))));
+    }
+
+    #[test]
+    fn a_hostile_code_takes_no_other_worlds_pin_key_or_address() {
+        // R1 review, security 4: host H's code naming world X's id with H's key replaced X's pin.
+        let (x, h, mut f) = (spki(CERT_A), spki(CERT_B), PinFile::default());
+        f.trust("192.168.1.20:17789", &x, &hello(W1, "Ashfall"));
+        let before = f.keys.clone();
+        assert!(!f.pin_code(W1, &sha256(&h), "pell", Some("203.0.113.9:17789")), "X's world id under H's key");
+        assert_eq!(f.keys, before, "nothing changed");
+        assert!(!f.pin_code(W2, &sha256(&x), "pell", None), "X's key under another world id");
+        assert_eq!(f.keys, before);
+        // H's own world, naming X's address: H's key is pinned, X keeps its address.
+        assert!(f.pin_code(W2, &sha256(&h), "pell", Some("192.168.1.20:17789")));
+        assert_eq!(f.by_address("192.168.1.20:17789").unwrap().pin, before[0].pin);
+        assert!(f.by_pin(&sha256(&h)).unwrap().addresses.is_empty());
+        // And H's key at X's address is red, though this client trusts it (for its own world).
+        assert!(matches!(classify(&f, "192.168.1.20:17789", &h, &hello(W2, "Harrow")), Verdict::Changed { .. }));
+    }
+
+    #[test]
+    fn a_trusted_worlds_key_at_another_trusted_worlds_address_is_red() {
+        // R1 review, security 9: it was only "moved".
+        let (a, b, mut f) = (spki(CERT_A), spki(CERT_B), PinFile::default());
+        f.trust("192.168.1.20:17789", &a, &hello(W1, "Ashfall"));
+        f.trust("192.168.1.30:17789", &b, &hello(W2, "Harrow"));
+        let v = classify(&f, "192.168.1.20:17789", &b, &hello(W2, "Harrow"));
+        assert!(matches!(&v, Verdict::Changed { old } if old.world == W1), "{v:?}");
+        assert_eq!(classify(&f, "192.168.1.40:17789", &b, &hello(W2, "Harrow")), Verdict::Moved, "a new address is still a move");
     }
 
     #[test]

@@ -7,6 +7,7 @@ are skipped without the local PostgreSQL; the certificate parts need `openssl`."
 import asyncio
 import base64
 import contextlib
+import io
 import json
 import os
 from pathlib import Path
@@ -253,6 +254,43 @@ class Gate(unittest.TestCase):
         asyncio.run(scenario())
 
 
+class ConnectionLimits(unittest.TestCase):
+    """Doc 78's R1 review, security 2 and 3: the limits before the handshake, on a clock of the test's own."""
+
+    def setUp(self):
+        self.now = [1000.0]
+        self.connections = A.Connections(A.Peers('real', unidentified=[]), clock=lambda: self.now[0])
+
+    def test_one_address_s_refused_connections_take_nothing_world_wide(self):
+        admitted = [self.connections.admit('198.51.100.7') for _ in range(200)]
+        self.assertEqual(sum(1 for a in admitted if a), 4, 'four at once from one address')
+        others = [self.connections.admit(f'203.0.113.{i}') for i in range(1, 10)]
+        self.assertTrue(all(others), 'nobody else is locked out by them')
+
+    def test_at_the_cap_the_oldest_idle_connection_without_a_session_gives_way(self):
+        aborted = []
+        slots = []
+        for i in range(8):
+            for _ in range(4):
+                slot = self.connections.admit(f'198.51.100.{i}')
+                slot.abort = (lambda s: lambda: aborted.append(s))(slot)
+                slots.append(slot)
+                self.now[0] += 1
+        self.assertEqual(self.connections.open_total, 32)
+        slots[0].signed = True                # A session's connection never gives way;
+        slots[1].busy = True                  # nor one with a request in hand.
+        newcomer = self.connections.admit('203.0.113.50')
+        self.assertTrue(newcomer, 'the owner gets in past 32 connections held without a session')
+        self.assertEqual(aborted, [slots[2]], 'the oldest idle one without a session was closed')
+        self.assertEqual(self.connections.open_total, 32)
+        self.connections.release(slots[2])    # (Its own close, later: counted once.)
+        self.assertEqual(self.connections.open_total, 32)
+        for slot in slots + [newcomer]:
+            slot.signed = True
+        self.assertFalse(self.connections.admit('203.0.113.51'), 'all signed in: refused')
+        self.assertEqual(self.connections.open_total, 32)
+
+
 @unittest.skipUnless(OPENSSL, 'openssl missing')
 class Certificates(unittest.TestCase):
     def setUp(self):
@@ -360,6 +398,17 @@ class Requests(unittest.TestCase):
 
 # ------------------------------------------------------------------------------------------- migration 0063 and I11
 
+class Dropping(unittest.TestCase):
+    def test_as_root_ratw_editor_always_drops_to_the_helpers_user(self):
+        # R1 review: RATW_EDITOR_DROPPED=1 in the environment skipped the drop, so `exec -e` ran it as root.
+        with mock.patch.object(A.os, 'geteuid', return_value=0), mock.patch.dict(os.environ, {'RATW_EDITOR_DROPPED': '1'}), \
+                mock.patch('pwd.getpwnam', side_effect=KeyError('ratw-admin')), contextlib.redirect_stderr(io.StringIO()) as said:
+            self.assertEqual(A._as_admin(['list']), 2, 'refused as root, never run as it')
+        self.assertIn('refusing to run as root', said.getvalue())
+        with mock.patch.object(A.os, 'geteuid', return_value=10003):
+            self.assertIsNone(A._as_admin(['list']), 'already the helper: runs here')
+
+
 @unittest.skipUnless(DB, 'local PostgreSQL not running')
 class Migration(unittest.TestCase):
     def test_the_game_role_holds_only_what_the_server_uses(self):
@@ -391,6 +440,24 @@ class Migration(unittest.TestCase):
                 game.execute("INSERT INTO dm.audit (at, action, target, detail) VALUES (0, 'forged', '', '')")
             game.execute("INSERT INTO dm.storykeeper_audit (at, action, target, detail) VALUES (0, 'event.x', '', '')")
             game.execute('SELECT 1 FROM dm.actions LIMIT 1')
+        # Migration 0064 (R1 review): the game answers an act (status, result, done_at), never makes or rewrites one.
+        with connect('owner') as owner:
+            act = owner.execute("INSERT INTO dm.actions (kind, target_id, requested_by) VALUES ('npc.kill', 'sloe', 'pell#1a2b3c4d') "
+                                'RETURNING id').fetchone()[0]
+        try:
+            with connect('game') as game:
+                game.execute("UPDATE dm.actions SET status = 'applied', result = 'Done.', done_at = now() WHERE id = %s", (act,))
+                for sql in ("INSERT INTO dm.actions (kind, target_id, requested_by) VALUES ('npc.kill', 'x', 'forged')",
+                            "UPDATE dm.actions SET requested_by = 'someone-else' WHERE id = %s",
+                            "UPDATE dm.actions SET kind = 'npc.revive', payload = '{}' WHERE id = %s",
+                            'DELETE FROM dm.actions WHERE id = %s'):
+                    with self.assertRaises(psycopg.errors.InsufficientPrivilege, msg=sql):
+                        with game.transaction():
+                            game.execute(sql, (act,) if '%s' in sql else None)
+            self.assertEqual(owner_sql('SELECT status, requested_by FROM dm.actions WHERE id = %s', (act,)),
+                             [('applied', 'pell#1a2b3c4d')])
+        finally:
+            owner_sql('DELETE FROM dm.actions WHERE id = %s', (act,))
 
     def test_roles_widened_and_the_new_columns(self):
         empty_accounts()
@@ -649,16 +716,66 @@ class Lanes(SignInBase):
         self.refused('wait', 'nobody-here', address='198.51.100.50')
         self.assertEqual(owner_sql("SELECT count(*) FROM dm.audit")[0][0], 0, 'no row for an unknown name')
 
-    def test_an_account_on_a_one_time_password_is_never_locked_or_counted_world_wide(self):
+    def test_an_account_on_a_one_time_password_waits_by_name_like_any_other_never_world_wide_and_its_code_passes(self):
+        # R1 review, security 5: five failures, then a wait, the same as an unknown name's (so a pending account can't
+        # be told from one), kept in memory (no dm.locks row); never on the strangers' world-wide count.
+        with connect() as conn:
+            password, invite = A.add_account(conn, 'newbie', 'dm', 'test')
+        before = self.core.world.tokens
+        seen = {}
+        for name in ('newbie', 'nobody-at-all'):
+            codes = []
+            for i in range(7):
+                with self.assertRaises(A.EditorError) as caught:
+                    self.login(name, 'wrong-password-123', f'198.51.100.{i}')
+                codes.append((caught.exception.status, caught.exception.code, caught.exception.extra))
+            seen[name] = codes
+        self.assertEqual(seen['newbie'], seen['nobody-at-all'], 'a pending account answers as an unknown name does')
+        self.assertEqual(seen['newbie'][:5], [(401, 'wrong', {})] * 5)
+        self.assertEqual(seen['newbie'][5], (429, 'wait', {'minutes': 15}))
+        self.assertAlmostEqual(self.core.world.tokens, before, delta=0.5)
+        self.refused('wait', 'newbie', password, address='198.51.100.200')
+        self.assertEqual(owner_sql("SELECT count(*) FROM dm.locks"), [(0,)])
+        self.assertTrue(self.login('newbie', password, address='198.51.100.201', invite=invite)['mustChange'],
+                        'its Editor code still passes')
+
+    def test_an_address_waits_by_itself_in_the_one_time_lane(self):
         with connect() as conn:
             password, _ = A.add_account(conn, 'newbie', 'dm', 'test')
-        before = self.core.world.tokens
-        for i in range(12):
-            self.fail('newbie', f'198.51.100.{i}')
-        self.assertAlmostEqual(self.core.world.tokens, before, delta=0.5)
-        self.assertTrue(self.login('newbie', password, address='198.51.100.200')['mustChange'])
-        self.fail('newbie', '203.0.113.33', 5)
+        for i in range(5):
+            self.fail(f'nobody-{i}', '203.0.113.33')
         self.refused('wait', 'newbie', password, address='203.0.113.33')
+        self.assertTrue(self.login('newbie', password, address='203.0.113.34')['mustChange'])
+
+    def test_one_time_failures_from_an_unidentified_peer_count_world_wide_on_their_own(self):
+        # R1 review, security 6: from the gateway (all peers, under Docker Desktop) they counted nowhere.
+        self.core.close()
+        self.core = A.Core(connect=lambda: connect(), folder=self.folder.path, peers=A.Peers('folded'))
+        self.core.world = A.Bucket(1000, 1000, time.time)
+        self.core.one_time_world = A.Bucket(5, 0.0001, time.time)
+        names = []
+        with connect() as conn:
+            for i in range(3):
+                A.add_account(conn, f'pending-{i}', 'dm', 'test')
+                names.append(f'pending-{i}')
+        codes = [self.fail(name, None, 2) for name in names]
+        self.assertEqual(codes[:2], [None, None], 'two a name (no name waits yet)')
+        self.assertIsNotNone(codes[2], 'the sixth: the world-wide count of their own is spent')
+        error = self.refused('wait', 'pending-0', 'another-wrong-one-1', address=None)
+        self.assertEqual(error.extra, {'minutes': 1})
+
+    def test_a_waiting_address_without_a_code_or_device_is_told_before_any_query(self):
+        self.account('pell')
+        device = self.login('pell', address='192.0.2.1')['device']
+        for i in range(5):
+            self.fail(f'nobody-{i}', '203.0.113.60')
+        prepared = []
+        real = self.core._prepare
+        self.core._prepare = lambda *args: prepared.append(args) or real(*args)
+        self.refused('wait', 'pell', address='203.0.113.60')
+        self.assertEqual(prepared, [], 'no query for it')
+        self.login('pell', address='203.0.113.60', device=device)
+        self.assertEqual(len(prepared), 1, 'a known device still signs in from there')
 
     def test_a_device_token_counts_only_for_its_own_account(self):
         self.account('pell')
@@ -768,10 +885,13 @@ class Sessions(SignInBase):
         for name in ('ana-x', 'bo-x'):
             for i in range(3):
                 self.login(name, address=f'192.0.3.{i}')
-        self.login('cy-x', address='192.0.4.1')                  # 3 + 3 + 3 + 1 = 10.
-        self.account('dee-x')
-        error = self.refused('full', 'dee-x', address='192.0.4.2')
+        # 3 + 3 + 3 = 9: the tenth is kept for an owner (R1 review), so co-builders can't shut the owner out.
+        error = self.refused('full', 'cy-x', address='192.0.4.1')
         self.assertEqual(error.status, 503)
+        self.account('olga', 'owner')
+        self.login('olga', address='192.0.4.9')                  # 10.
+        self.account('dee-x', 'owner')
+        self.refused('full', 'dee-x', address='192.0.4.2')
         self.assertEqual(owner_sql('SELECT count(*) FROM dm.sessions')[0][0], 10, 'nobody evicted')
         self.login('pell', address='192.0.4.3')                  # Its own oldest goes: still 10.
         self.assertEqual(owner_sql('SELECT count(*) FROM dm.sessions')[0][0], 10)
@@ -855,6 +975,51 @@ class Accounts(SignInBase):
             run(self.core.step_up(self.owner(), {'password': 'not-mine-5'}))
         self.assertEqual(caught.exception.code, 'ended')
         self.assertIsNone(self.owner())
+
+    def test_a_step_up_waits_behind_sign_ins_one_at_a_time_a_session_and_counts_before_scrypt(self):
+        # R1 review, security 7: a viewer's wrong step-ups made the owner's known-device sign-in "busy".
+        self.account('vic', 'viewer')
+        viewer = self.session(self.login('vic', address='192.0.2.70')['token'])
+        priorities = []
+        release = threading.Event()
+        real = self.core.gate.run
+
+        async def gate(priority, work):
+            priorities.append(priority)
+            await asyncio.get_running_loop().run_in_executor(None, release.wait, 5)
+            return await real(priority, work)
+        self.core.gate.run = gate
+
+        async def both():
+            first = asyncio.create_task(self.core.step_up(viewer, {'password': 'not-mine-1'}))
+            await asyncio.sleep(0.05)
+            with self.assertRaises(A.EditorError) as caught:
+                await self.core.step_up(viewer, {'password': 'not-mine-2'})
+            self.assertEqual((caught.exception.status, caught.exception.code), (429, 'slow-down'))
+            self.assertEqual(self.core.session_failures.get(viewer['hash'])['count'], 1, 'counted before scrypt')
+            release.set()
+            with self.assertRaises(A.EditorError) as caught:
+                await first
+            self.assertEqual(caught.exception.code, 'wrong-password')
+        run(both())
+        self.assertEqual(priorities, [1], 'behind known devices and codes (0), with strangers')
+        run(self.core.step_up(viewer, {'password': GOOD}))
+        self.assertIsNone(self.core.session_failures.get(viewer['hash']), 'a right one forgets them')
+
+    def test_wrong_step_ups_are_forgotten_once_their_session_can_t_be_alive(self):
+        # R1 review: the table never pruned, so once full every wrong step-up ended its session.
+        self.core.close()
+        self.core = self.make_core(table_size=2)
+        self.token = self.login('ferro', address='192.168.1.20')['token']
+        for i in range(2):
+            other = self.session(self.login('ferro', address=f'192.168.1.{30 + i}')['token'])
+            with self.assertRaises(A.EditorError):
+                run(self.core.step_up(other, {'password': 'not-mine'}))
+        for entry in self.core.session_failures.items.values():
+            entry['at'] -= A.SESSION_HOURS * 3600 + 1
+        with self.assertRaises(A.EditorError) as caught:
+            run(self.core.step_up(self.owner(), {'password': 'not-mine'}))
+        self.assertEqual(caught.exception.code, 'wrong-password', 'not ended: the stale entries made room')
 
     def test_add_gives_a_code_that_pins_the_key_and_signs_in_once(self):
         result = self.call('add', username='pell', role='dm')
@@ -1283,16 +1448,51 @@ class PortLimits(PortBase):
 
 
 class PortWorldWide(PortBase):
+    def start(self):
+        return Server(self.core, connections=A.Connections(A.Peers('folded')), anonymous_idle_seconds=1.0)
 
-    def test_the_33rd_connection_is_refused_and_unidentified_peers_share_the_world_wide_limits(self):
-        held = [socket.create_connection(('127.0.0.1', self.port), timeout=10) for _ in range(32)]
+    def test_32_at_once_the_oldest_without_a_session_giving_way_and_never_a_signed_in_one(self):
+        # R1 review, security 3: 32 connections held without a session (8 addresses, a hello every 55 s) kept the
+        # owner out for good.
+        token = self.signed()['token']
+        signed = tls_socket(self.port)
+        self.assertEqual(call(self.port, 'GET', '/api/x', token=token, sock=signed)[0], 404)
+        held = [socket.create_connection(('127.0.0.1', self.port), timeout=10) for _ in range(31)]
         time.sleep(0.3)
         try:
-            with socket.create_connection(('127.0.0.1', self.port), timeout=10) as extra:
-                self.assertTrue(closed_without_reply(extra, 2))
+            self.assertEqual(call(self.port, 'GET', '/editor/hello')[0], 200, 'the 33rd gets in')
+            self.assertTrue(closed_without_reply(held[0], 2), 'the oldest without a session gave way')
+            self.assertEqual(call(self.port, 'GET', '/api/x', token=token, sock=signed)[0], 404, 'the signed-in one stays')
         finally:
+            signed.close()
             for sock in held:
                 sock.close()
+
+    def test_a_connection_without_a_session_waits_a_short_while_between_requests(self):
+        token = self.signed()['token']
+        with tls_socket(self.port) as anonymous, tls_socket(self.port) as signed:
+            self.assertEqual(call(self.port, 'GET', '/editor/hello', sock=anonymous)[0], 200)
+            self.assertEqual(call(self.port, 'GET', '/api/x', token=token, sock=signed)[0], 404)
+            time.sleep(1.6)
+            self.assertTrue(closed_without_reply(anonymous, 2), 'closed after its short wait')
+            self.assertEqual(call(self.port, 'GET', '/api/x', token=token, sock=signed)[0], 404, 'a session\'s stays open')
+
+    def test_bearer_tokens_that_are_no_session_are_slowed_before_the_lookup(self):
+        # R1 review: each one was a database lookup in the signed-in pool, unlimited.
+        token = self.signed()['token']
+        looked = []
+        real = self.core.session_now
+        self.core.session_now = lambda t: looked.append(t) or real(t)
+        statuses = []
+        for i in range(30):
+            try:
+                statuses.append(call(self.port, 'GET', '/api/x', token=f'bogus-token-{i:04d}-xxxxxxxxxxxx')[0])
+            except (ConnectionError, ssl.SSLError, OSError):
+                statuses.append('closed')
+        self.assertEqual(statuses[:20], [401] * 20)
+        self.assertIn(429, statuses)
+        self.assertLessEqual(len(looked), 21)
+        self.assertEqual(call(self.port, 'GET', '/api/x', token=token)[0], 404, "a session's own token isn't slowed")
 
 
 class HostedStudioPort(PortBase):

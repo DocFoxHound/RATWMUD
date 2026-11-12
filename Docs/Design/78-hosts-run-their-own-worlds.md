@@ -366,7 +366,10 @@ groups of 4 hex characters, always all eight, in the same layout everywhere: no 
 and 8 groups is short enough that people really compare it. The client pins the full SHA-256 and keeps the public key
 itself, for signed rotation (section 6.4). The host finds it:
 - in `manage/editor-certificate.txt` in the world folder;
-- in the world's log at every start ("Editor certificate: 3F2A 9C10 5B7E 0D41 A6C3 22F9 8E05 77D1");
+- in the world's log at every start ("RATW_PACKAGE Editor certificate: 3F2A 9C10 5B7E 0D41 A6C3 22F9 8E05 77D1": only
+  root's lines carry `RATW_PACKAGE`; the server's carry `RATW_SERVER` and the agent's `RATW_AGENT`, with their control
+  characters dropped, so a child can't print a line that passes for it. The file and `ratw-editor fingerprint` are
+  still the ones to compare with: R1 review);
 - with `docker compose exec world ratw-editor fingerprint`;
 - in My world and on screen 5, once signed in.
 
@@ -902,8 +905,11 @@ nosniff`.
   (hello, login) and one for signed-in work, so a big `/api/live/world` reply or the 11 s validator can't starve
   sign-in.
 - Per address (IPv6 counted per /64): at most 4 open connections and a few new handshakes a second. World-wide: a
-  token bucket on new connections, and at most 32 open. The TLS handshake within 10 s; idle connections closed after
-  60 s.
+  token bucket on new connections, and at most 32 open. The per-address checks come first, and only an admitted
+  connection takes a world-wide token (R1 review: one address's refused flood once emptied it for everyone). The TLS
+  handshake within 10 s; idle connections closed after 60 s, or 10 s for one that has carried no session; with all 32
+  open, the oldest idle one without a session is closed for a newcomer (a signed-in one never is).
+- Requests whose bearer token is no session: 20, then 5 a second, per address, before the session lookup.
 - At most 2 large bodies (over 1 MB) at once; a cap on the helper's database connections.
 - Every handler catches every exception, so no request can crash the helper.
 
@@ -921,10 +927,11 @@ nosniff`.
   - **invites:** a sign-in carrying a valid invite from an Editor code is looked up cheaply before any scrypt and
     skips every failure count (only the connection limits and the scrypt queue apply). An invalid invite is a
     failure like any other;
-  - **accounts still on a one-time password:** 120 random bits can't be guessed, so failures against them never lock
-    the account and don't count world-wide. They still count per address and wait for the scrypt cap, so they can't
-    be used to burn the world's CPU. Under Docker Desktop, where addresses fold, the Editor code is the way that
-    always gets through, which is why `first-editor.txt` leads with it.
+  - **accounts still on a one-time password:** 120 random bits can't be guessed, so failures against them don't count
+    on strangers' world-wide bucket. They count per address, wait for the scrypt cap, and, like any name, wait 15
+    minutes after 5 failures (in memory: so a pending account answers exactly as an unknown name does, R1 review);
+    from a peer the per-address limits can't tell apart they count on a world-wide bucket of their own (60 a minute).
+    The Editor code always gets through, which is why `first-editor.txt` leads with it.
 - **Everything else** (a typed password from a new device) is counted three ways:
   - per address: 5 failures in 15 minutes, then waits that double up to an hour;
   - per account: after 5 failures from unknown devices, that account refuses unknown devices without an invite for 15
@@ -943,7 +950,9 @@ nosniff`.
   count. Unknown usernames get no row. Above a threshold, failures without a session fold into one log line and one
   audit row a minute, world-wide. The owner sees "N failed sign-ins today" on screen 5.
 
-**Limits once signed in:** 20 requests a second a session; bodies up to 16 MB (Atlas only; the DM suite's own limit is
+**Limits once signed in:** a password typed in a session (step-up, password change) is checked one at a time a
+session, behind known devices' and codes' sign-ins, and counted before scrypt runs (R1 review); of the 10 sessions a
+world, one is kept for an owner; 20 requests a second a session; bodies up to 16 MB (Atlas only; the DM suite's own limit is
 64 KB); one build at a time; Publish at most 6 an hour an account, so a hostile builder can't loop the fallback. Each
 signed-in request writes one `RATW_EDITOR` log line (account, route, status; never a body, query string or token).
 Every service in compose gets `logging: {driver: json-file, options: {max-size: 10m, max-file: "5"}}`, so logs can't
@@ -1147,7 +1156,7 @@ nothing in the container reads what the server writes there (Q18).
 | Editor accounts and sessions | Yes (owner, on screen 5, with the password again); owners only through `ratw-editor` | helper |
 | `character.kill`, `character.injury`, `character.move`, `character.resurrect` on players' wolves | The owner, and accounts the owner marks "may act on players' wolves" (Q24): storytelling and moderation, world-local. A confirmation names the wolf (kill needs the name typed), and the player is told in game ("The host moved you"). | allowlist and the account's flag; the server's notice |
 | Mentor and tie actions on players' wolves | Yes (dm and up), with the same confirmation and notice | allowlist; the server's notice |
-| Rewards on the host's **own** wolves (`character.resurrect`, `deed.award`, `milestone.credit`, `estate.set`, `wharf.credit`, `storyline.give`, `mentor.restore`) | Only with cheats on | **the server:** refused when the target's account is `host.json`'s host and cheats are off |
+| Rewards on the host's **own** wolves (`character.resurrect`, `deed.award`, `milestone.credit`, `estate.set`, `wharf.credit`, `storyline.give`, `mentor.restore`; since the R1 review also a heal (`character.injury` with `remove`), `character.move`, `estate.set` naming the host's wolf as landlord or on a vacant place a Chapter the host's wolf leads could take, `storyteller.decide` approving the host's own application, `house.decide` and `treaty.decide` approving for a Chapter of the host's wolves, `book.storyline` tying a book of theirs) | Only with cheats on | **the server:** refused when the target's account is `host.json`'s host (or, while `host.json` names none, the last host it named, kept in the checkpoint) and cheats are off |
 | `character.gift`, `account.unlock` | Only with `cheats = "host"` or `"everyone"` | **the server** |
 | `character.dm` (the full Dev Console) | **Never.** It needs rank admin, and no hosted account can be admin. | the DM tool's ranks; the server ignores the flag on community worlds without `--dev-tools` |
 | A username lookup from central | **Never.** It would tie wolves to accounts. | central |
@@ -1157,6 +1166,14 @@ nothing in the container reads what the server writes there (Q18).
 Rewards to "the host's own wolves" mean the wolves of the central account in `host.json`, whichever Editor account
 acts. A co-builder's own wolves aren't known to the world as theirs (Editor accounts aren't central accounts), which
 the guide states: on a world with cheats off, the owner trusts co-builders not to reward their own wolves.
+
+What the guard can't see (R1 review, stated here): **a second central account.** A host who plays a wolf on another
+central account than the one central names as the world's host is, to the world, just another player, and every
+reward reaches that wolf; nothing on the world can tie the two accounts (that is the point of pairwise ids, doc 77).
+Nor does it see **a place let to individuals** (`estate.set` with `individuals`): the host's wolf may take it by the
+week at the terms the host set, as any wolf may; and a vacant place set at a level above the host's Chapter's is let to
+it once the Chapter rises. Everything else in the table's last rows stays a cheat. As above: "cheats on" keeps honest
+hosts honest; it isn't a wall against a host with a modified image or a second account.
 
 **Cheats, three settings** in `world.toml` (Q7), each listed "cheats on" except `off`:
 - `cheats = "off"` (the default): no cheat kinds; the `dungeonMaster` flag is ignored and cleared on load, so a flag
@@ -1885,7 +1902,7 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-M1, M2a, M2b, M3 and M4 built (2026-11-12, below); the rest not yet.
+M1, M2a, M2b, M3 and M4 built, and the R1 review's security findings fixed (2026-11-12, below); the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -2520,6 +2537,62 @@ M1, M2a, M2b, M3 and M4 built (2026-11-12, below); the rest not yet.
     times alone); `test_studio` 72, `test_dungeon_master` 54, `test_dm_live` 10, `test_map_editor` 52,
     `test_world_package` 48 (1 skipped, as before); `npm run test:editor` 1 of 1; ctest 89 of 89 (`pg_client` on a
     throwaway database's URL).
+
+- **2026-11-12: R1: security findings fixed,** on `r2-editor-rsec` (cut from `r2-editor` at 1002e6f; the R1
+  review's correctness and host's-experience findings are fixed beside it on `r2-editor-rux`). Each with a test that
+  fails before and passes after.
+  - **Critical. Players' typed words in the chronicle:** Core keeps a quiet conversation word for word ("Conversation
+    record. Ada said: ...") until the Mind rewrites it, which it never does without an AI key. The hosted studio's
+    chronicle (`hosted_chronicle`) now drops those memories (any case, leading spaces) and keeps the Mind's
+    "Summary." ones, with a `recordsHidden` count; the conversations' turns stay the NPC's side only.
+  - **High.** (2) `Connections.admit` takes the per-address checks first and a world-wide token only for a connection it
+    admits (a refused per-address token is given back when the world says no). (3) A connection that has carried no
+    session waits 10 s, not 60, between requests; with all 32 open, the oldest idle one without a session is closed for
+    a newcomer (never a signed-in one, never one with a request in hand). (4) Device tokens are kept by the key's pin,
+    not the world id a hello or code claims, and carried over on a signed rotation; `pin_code` never replaces a key a
+    connection has shown for its world, never takes another world's key, never takes an address another met key holds
+    (it waits, and the connection shows the red screen; after FORGET by the world's name the code pins); the Editor
+    window is bound by pin as well as world id and account (I10).
+  - **Medium.** (5) A one-time-password account waits after 5 failures by name like any other (in memory), so it
+    answers as an unknown name does; its code still passes. (6) Its failures from a peer the per-address limits can't
+    tell apart count on a world-wide bucket of their own (60 a minute). (7) Step-up and password change check one
+    password at a time a session, at priority 1 (behind known devices and codes), counted before scrypt. (8) The
+    own-wolf guard keeps to the last host `host.json` named while it names none (`lastHost` in the checkpoint, so a
+    restart keeps it), guard only: a new host moves it. (9) A trusted world's key at another trusted world's address is
+    red. (10) Root's lines alone carry `RATW_PACKAGE`: the server's go out as `RATW_SERVER` and the agent's as
+    `RATW_AGENT`, control characters and invisible marks dropped, read in lines of at most 4,096 characters (section
+    3.4 says to compare with the file or `ratw-editor fingerprint`; `Docs/Hosting.md` should say so too: the other
+    lane's file). (11) The accounts panel's list is rebuilt field by field in the shell (names, the four roles,
+    addresses, numbers, at most 200 accounts and 50 banners; an audit row's own words never pass).
+  - **Lows fixed:** the own-wolf guard extended (a heal and a move of the host's wolf, `estate.set` naming it landlord
+    or on a vacant place a Chapter it leads could take, the host's own storyteller application, House and treaty
+    approvals for its Chapter, `book.storyline` for its books; section 8 states what stays outside: a second central
+    account, places let to individuals); requests with a bearer token that is no session slowed per address before the
+    lookup (a new session's own token never); a waiting address without a code or device told before any query;
+    `session_failures` aged out after 12 hours; one of the world's 10 sessions kept for an owner; **migration 0064**:
+    `ratw_game` keeps only SELECT and UPDATE (status, result, done_at) on `dm.actions` (Core only answers acts; it can
+    no longer forge `requested_by`); the I14 test reads nine files (the helper, `live_edit`, `world_store`,
+    `world_sync`, `world_db`, `chronicle` too), whole statements in any case, `+=` and keyword-less fragments, each
+    name joined into SQL listed with why it is fixed; the entrypoint's line cap, a FIFO or a link raced into `logs/`
+    moved aside (opened without blocking, one plain link checked), a directory where root writes a file moved aside,
+    root's own `ever-official` (a dot file in the `requests` volume, root's alone; the admin volume's copy made again),
+    the helper's dot files no longer taking the tick's share of requests; `ratw-editor` as root always drops to
+    ratw-admin, whatever `RATW_EDITOR_DROPPED` says; `stage.sh` refuses a release key inside the repository wherever it
+    is used and any symbolic link in the Editor or the world it copies; the shell's proxy refuses mixed encoded dots
+    (`.%2e`), world names lose the soft hyphen, U+034F, U+180E, the Hangul fillers and the tag characters, the
+    keep-alive's input counts only trusted events, and `..json` is no download name.
+  - **Lows left, as follow-ups:** the Mind runs as `ratw`, the agent's user, so it can write `central.json` (locking
+    the Editor as "official", or naming another host): it needs a user of its own (a Dockerfile change). Rotations
+    don't expire and are matched by world id: an expiry needs a time in the signed message (the helper and the shell
+    together). Data-derived `style` in the Editor page, and up to 64 MB a hostile reply in flight in the shell's proxy
+    (a cap on replies in flight): both the page's and the proxy's, for a later round. The game server's own lines
+    other than the certificate's (the helper prints its own `RATW_EDITOR` lines straight to the log; a compromised
+    helper holds the key anyway).
+  - **Tests** (one run; Release `ratw_server` in `build-rsec`, `RATW_TEST_DB_TAG=s2stage_`, `RATW_TEST_KEY_PREFIX=s2stage`):
+    ctest 89 of 89 (`pg_client` on a throwaway database with all 64 migrations); `test_world_admin` 95, `test_studio`
+    74, `test_dungeon_master` 54, `test_dm_live` 10; `Package/test_package.py` 52; `cargo test` 61; `npm run
+    test:editor` 1 of 1. Migration 0064 applied to DEV (`ratw_ridgemere2`, backed up first to
+    `Saved/Backups/ratw_ridgemere2-before-0064.dump`).
 
 ## Review (2026-11-08)
 
