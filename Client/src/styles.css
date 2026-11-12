@@ -905,3 +905,23 @@ button.given { opacity: .6; }
 .editor-add label { display: flex; flex-direction: column; gap: 6px; }
 .door .editor-add button { margin: 0; }
 .door .editor-menu .door-actions button { margin: 0; }
+/* The setting-up screen's progress (the hello's percent), and the menu with Editor accounts open: the card scrolls as one,
+   the list is never a box of its own, and the tools take less room (R1's screenshots 19, 25, 26). */
+.editor-progress { appearance: none; -webkit-appearance: none; width: 100%; max-width: 720px; height: 14px; border: 1px solid rgba(232, 225, 211, .18);
+    background: var(--ink); color: var(--sage); }
+.editor-progress::-webkit-progress-bar { background: var(--ink); }
+.editor-progress::-webkit-progress-value { background: var(--sage); transition: width .4s ease; }
+.editor-progress::-moz-progress-bar { background: var(--sage); }
+.door .editor-menu { overflow-y: auto; padding-right: 18px; }
+.door .editor-menu > * { flex-shrink: 0; }
+.editor-menu .editor-accounts { flex: none; }
+.door .editor-menu.with-accounts .editor-tool button { font-size: 22px; padding: 14px; }
+.editor-menu.with-accounts .editor-tools { margin: 0; }
+.door .editor-accounts .editor-account .world-text { min-width: 0; }
+.editor-add { flex-wrap: wrap; }
+/* The creator's tab row stays in view while its panel scrolls (R1: the Gift tab scrolled it away, screenshot 04). */
+.door-form .scroll .creator-tabs { position: sticky; top: 0; z-index: 2; background: var(--panel); padding-bottom: 8px; }
+/* The map's title: on its own line when it doesn't fit beside the map's tabs, never cut mid-word (R1: "Ridgemere, the Com"). */
+.map-head { flex-wrap: wrap; row-gap: 6px; }
+.map-titles { flex: 1 1 auto; }
+.map-place { overflow: hidden; text-overflow: ellipsis; min-width: 0; }

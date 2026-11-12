@@ -2,7 +2,7 @@
 // page's calls (Docs/Design/77-central-accounts-and-hosted-worlds.md, 3.2 and 7).
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {agentCommand, agoText, allowedCall, baseUrl, Central, CentralError, readHostWorld, readListedWorld, serverCommand, shellWord,
+import {agoText, allowedCall, baseUrl, Central, CentralError, envLine, readHostWorld, readListedWorld, shellWord, worldTomlLines,
     ShellCentral, type CentralReply, type CentralTransport} from './central.ts';
 import {parseAddress, shownAddress, statusLine} from './worlds.ts';
 import type {Json} from '../game/json.ts';
@@ -147,18 +147,13 @@ test('central\'s URL comes from the shell, scheme and all, never guessed from th
     for (const bad of ['127.0.0.1:7790', 'ftp://a.net', 'https://a.net/x', 'https://a.net; rm -rf ~', 'https://a.net:7790 --x', 7]) assert.equal(baseUrl(bad), '', String(bad));
 });
 
-test('the Host page\'s two commands: the world server in ticket mode and the agent beside it', () => {
-    const server = serverCommand(World, 'The Long Valley', 'https://127.0.0.1:7790');
-    assert.equal(server, `ratw_server --save Saved/World/save.json --port 7788 --bind 0.0.0.0 --central https://127.0.0.1:7790 --world-id ${World} ` +
-        '--central-keys Saved/World/central-keys.json --world-name \'The Long Valley\'');
-    // The agent's folder is the server's: its keys file, and the same port.
-    const agent = agentCommand('rh_abc', 'https://127.0.0.1:7790');
-    assert.equal(agent, 'RATW_HOST_TOKEN=rh_abc python3 tools/world_agent.py run --central https://127.0.0.1:7790 --dir Saved/World --world-port 7788');
-    assert.ok(server.includes('--port 7788') && agent.includes('--world-port 7788'));
+test('the Host page\'s lines for the package: the token in .env, the id and central in world.toml', () => {
+    assert.equal(envLine('rh_abc'), 'RATW_HOST_TOKEN=rh_abc');
+    assert.equal(worldTomlLines(World, 'https://127.0.0.1:7790'), `[world]\nid = "${World}"\n\n[central]\nurl = "https://127.0.0.1:7790"`);
+    assert.equal(worldTomlLines('a"b\\c\n', 'URL'), '[world]\nid = "a\\"b\\\\c"\n\n[central]\nurl = "URL"', 'quoted, whatever it holds');
     // A name is one word to the shell, whatever is in it.
     assert.equal(shellWord("Ash's $(rm -rf ~) `x`"), `'Ash'\\''s $(rm -rf ~) \`x\`'`);
     assert.equal(shellWord(''), "''");
-    assert.ok(serverCommand(World, "O'Neil", 'URL').endsWith(`--world-name 'O'\\''Neil'`));
 });
 
 test('how long since a heartbeat', () => {

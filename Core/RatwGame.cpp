@@ -2473,8 +2473,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     entered.add("motionSession", c->motionSession);
     send(c, entered);
     system(c, "Connected to " + world_.cell(world_.entity(actor)->cellId)->name +
-                  ". Enter to write; Shift+Enter for a new line; Escape preserves your draft. "
-                  "Dialogue is authored offline unless a local provider is configured.");
+                  ". Enter to write; Shift+Enter for a new line; Escape keeps your draft.");
     sendSnapshot(c);
     sendProfile(c);                                // Their profile and account as a person (doc 50).
     tiesOnEnter(actor);                            // A tie made while they were away (doc 52, 4).

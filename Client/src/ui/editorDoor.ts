@@ -10,9 +10,9 @@
 // Everything is drawn as text (textContent, never markup): a world's name, its errors and its account names are a
 // world's words. The password goes to the shell once and its box is cleared at once; the shell keeps the session.
 import {ask, askText} from './dialog.ts';
-import {ago, bannerText, connectRefusal, hostOf, isCode, newPasswordProblem, ROLE_LINES, settingUp, signInRefusal, statusPill,
-    type AuditBanner, type Connected, type EditorAccount, type EditorBridge, type EditorHello, type EditorSession, type RecentWorld}
-    from '../net/editor.ts';
+import {ago, bannerText, coBuilderNote, connectRefusal, EDITOR_PORT, firstTimeNote, fromWhere, hostOf, isCode, newPasswordProblem,
+    resetCommand, ROLE_LINES, settingUp, signInRefusal, signsInWithCode, statusPill, type AuditBanner, type Connected, type EditorAccount,
+    type EditorBridge, type EditorHello, type EditorSession, type RecentWorld} from '../net/editor.ts';
 
 type Screen = 'address' | 'key' | 'sign-in' | 'password' | 'menu';
 
@@ -47,6 +47,7 @@ export class EditorDoor {
     hello: EditorHello | null = null;
     accounts: EditorAccount[] | null = null;
     failedToday = 0;
+    changes = 0;                        // Account changes since the owner's last visit (the sign-in's count).
     banners: AuditBanner[] = [];
     newCode = '';                       // A co-builder's code, shown this once.
     newCodeFor = '';
@@ -54,6 +55,8 @@ export class EditorDoor {
     busy = false;
     private waitTimer = 0;
     private statusTimer = 0;
+    private shown: Screen | null = null;    // The screen last drawn: the status line is cleared when it changes...
+    private carry = false;                  // ...unless the message was meant for the next screen.
     private password: HTMLInputElement[] = [];
     private readonly bridge: EditorBridge;
     private readonly host: EditorHost;
@@ -71,6 +74,12 @@ export class EditorDoor {
         });
     }
 
+    /** The status line under the card. `carry`: the message is for the screen about to be drawn (it survives the change). */
+    private say(text: string, error = false, carry = false) {
+        this.host.message(text, error);
+        this.carry = carry;
+    }
+
     // ------------------------------------------------------------------ Moving between screens
 
     /** EDITOR on the main menu: the menu if a session is open, otherwise screen 2. */
@@ -79,6 +88,7 @@ export class EditorDoor {
         this.refusal = [];
         this.notice = '';
         this.newCode = '';
+        if (!this.carry) this.host.message('');
         const state = await this.bridge.state().catch(() => null);
         this.recent = state?.recent ?? [];
         this.session = state?.session ?? null;
@@ -104,13 +114,21 @@ export class EditorDoor {
      *  at home often can't reach their own public address); otherwise screen 2 with the listed host and the Editor port. */
     async openFor(worldId: string, listedAddress: string) {
         await this.open();
-        this.setBusy(true, 'Looking for the world on this computer…');
-        const here = await this.bridge.connect('127.0.0.1');
-        this.setBusy(false);
-        if (here.ok && here.hello.world === worldId) return this.connectedTo(here);
-        this.address = listedAddress ? `${hostOf(listedAddress)}:17789` : '';
+        // A world this computer has signed in to before is tried at its own address first (a second world on this
+        // computer has its own Editor port); then this computer's usual Editor port.
+        const known = this.recent.find(w => w.world === worldId);
+        for (const at of [...(known ? [known.address] : []), '127.0.0.1']) {
+            this.setBusy(true, 'Looking for the world on this computer…');
+            const here = await this.bridge.connect(at);
+            this.setBusy(false);
+            if (here.ok && here.hello.world === worldId) {
+                this.host.message('');
+                return this.connectedTo(here);
+            }
+        }
+        this.address = listedAddress ? `${hostOf(listedAddress)}:${EDITOR_PORT}` : '';
         this.screen = 'address';
-        this.host.message('');
+        this.say(listedAddress ? `If your world's .env sets another RATW_EDITOR_PORT, use that port instead of ${EDITOR_PORT}.` : '');
         this.redraw();
     }
 
@@ -118,6 +136,7 @@ export class EditorDoor {
         this.stopTimers();
         this.wipe();
         this.host.message('');
+        this.shown = null;
         this.host.leave();
     }
 
@@ -141,7 +160,7 @@ export class EditorDoor {
     private setBusy(busy: boolean, text = '') {
         this.busy = busy;
         this.host.setBusy(busy);
-        if (text) this.host.message(text);
+        if (text) this.say(text);
     }
 
     private button(text: string, action: () => void, kind: 'primary' | 'secondary' | 'danger' = 'secondary'): HTMLButtonElement {
@@ -158,6 +177,10 @@ export class EditorDoor {
 
     render(): HTMLElement {
         this.password = [];
+        // A message from the screen before doesn't hang on under the next one (R1: the stale status line).
+        if (this.screen !== this.shown && !this.carry) this.host.message('');
+        this.shown = this.screen;
+        this.carry = false;
         const page = this.screen === 'address' ? this.addressScreen() : this.screen === 'key' ? this.keyScreen()
             : this.screen === 'sign-in' ? this.signInScreen() : this.screen === 'password' ? this.passwordScreen() : this.menuScreen();
         page.dataset.editor = this.screen;
@@ -233,7 +256,7 @@ export class EditorDoor {
 
     private async useCode(text: string) {
         if (this.busy) return;
-        if (!text.trim()) return this.host.message('Paste the whole Editor code, from ratw-editor: to its end.', true);
+        if (!text.trim()) return this.say('Paste the whole Editor code, from ratw-editor: to its end.', true);
         const r = await this.bridge.useCode(text.trim());
         if (!r.ok) {
             this.refusal = connectRefusal({...r, error: 'code'});
@@ -245,7 +268,8 @@ export class EditorDoor {
         if (r.address) return this.connect(r.address);
         this.refusal = [];
         this.address = '';
-        this.host.message('The code is ready: now type your world\'s address (127.0.0.1 on the computer that runs it).');
+        this.say('The code is ready: now type your world\'s address (the owner tells you it; 127.0.0.1 on the computer that runs it, with the ' +
+            'port if it isn\'t 17789).');
         this.redraw();
     }
 
@@ -258,10 +282,12 @@ export class EditorDoor {
     async connect(given: string) {
         if (this.busy) return;
         const address = given.trim();
-        if (!address) return this.host.message('Type your world\'s address.', true);
+        if (!address) return this.say('Type your world\'s address.', true);
         // An address central lists as an official world: refused before connecting at all.
         if (this.host.officialHosts().includes(hostOf(address))) {
+            this.stopTimers();
             this.refusal = ['Official worlds can\'t be edited.'];
+            this.screen = 'address';                   // (Also from the setting-up screen's recheck: the refusal is shown there.)
             return this.redraw();
         }
         this.address = address;
@@ -328,8 +354,12 @@ export class EditorDoor {
             return el('div', {className: 'door-row'}, card);
         }
         if (c.hello.progress.code !== 'ready') {
+            const slow = c.hello.progress.code === 'slow';
+            const bar = el('progress', {className: 'editor-progress', max: 100, value: Math.max(2, Math.min(100, Math.round(c.hello.progress.percent)))});
             card.append(this.where(), el('p', {className: 'large'}, settingUp(c.hello)),
-                el('p', {className: 'muted'}, 'On a first start the world imports its map and sets up its database: that takes a few minutes.'),
+                ...(slow ? [el('p', {className: 'muted'}, 'This page asks again every few seconds.')] : [bar,
+                    el('p', {className: 'muted'}, 'On a first start the world imports its map and sets up its database: that takes a few minutes. ' +
+                        'This page asks again every few seconds and goes on by itself.')]),
                 el('div', {className: 'grow'}), el('div', {className: 'door-actions'}, back));
             return el('div', {className: 'door-row'}, card);
         }
@@ -359,10 +389,10 @@ export class EditorDoor {
 
     private async forget(typed: string) {
         const c = this.connected!;
-        if (!typed.trim()) return this.host.message('Type the world\'s name to forget its old certificate.', true);
+        if (!typed.trim()) return this.say('Type the world\'s name to forget its old certificate.', true);
         const r = await this.bridge.forget(c.address, typed);
-        if (!r.ok) return this.host.message(r.error === 'name' ? 'That isn\'t the name this computer knew the world by.' : signInRefusal(r), true);
-        this.host.message('The old certificate is forgotten. Compare the new one before you trust it.');
+        if (!r.ok) return this.say(r.error === 'name' ? 'That isn\'t the name this computer knew the world by.' : signInRefusal(r), true);
+        this.say('The old certificate is forgotten. Compare the new one before you trust it.', false, true);
         await this.connect(c.address);
     }
 
@@ -371,7 +401,7 @@ export class EditorDoor {
     private signInScreen(): HTMLElement {
         const user = el('input', {type: 'text', autocomplete: 'username', maxLength: 32, value: this.username, spellcheck: false});
         user.name = 'editorUsername';
-        const fromCode = this.viaCode && this.codePassword && !this.session;
+        const fromCode = signsInWithCode(this.viaCode, this.codePassword, this.session);
         const pass = this.passwordBox(fromCode ? 'From your Editor code' : 'Your Editor password', 'current-password');
         pass.name = 'editorPassword';
         const form = el('form', {className: 'door-login editor-sign-in'},
@@ -390,11 +420,11 @@ export class EditorDoor {
             ...(this.notice ? [el('p', {className: 'sage editor-notice'}, this.notice)] : []),
             el('p', {className: 'muted'}, 'This is your world\'s Editor account, not your RATW account. Use a password only for this world. RATW ' +
                 'never asks for your RATW password here or in the Editor window.'),
-            ...(pending ? [el('p', {className: 'gold'}, 'First time? Your username and one-time password are in manage/first-editor.txt in your ' +
-                'world folder. Pasting the Editor code from that file is easiest.')] : []),
+            ...(firstTimeNote(!!pending, fromCode, this.username) ? [el('p', {className: 'gold'}, 'First time? Your username and one-time ' +
+                'password are in manage/first-editor.txt in your world folder. Pasting the Editor code from that file is easiest.')] : []),
             ...(fromCode ? [el('p', {className: 'sage'}, 'Your Editor code carries the one-time password: just sign in.')] : []),
             form,
-            el('p', {className: 'muted small'}, 'Lost your password? On the world\'s computer, run reset-editor-password in the world folder.'),
+            el('p', {className: 'muted small'}, `Lost your password? On the world's computer, in the world folder, type: ${resetCommand(this.username)}`),
             el('div', {className: 'grow'}),
             el('div', {className: 'door-actions'}, this.button('Back', () => { this.screen = 'address'; this.notice = ''; this.redraw(); })));
         return el('div', {className: 'door-row'}, card);
@@ -403,8 +433,8 @@ export class EditorDoor {
     private async signIn(username: string, password: string, fromCode: boolean) {
         if (this.busy) return;
         const name = username.trim().toLowerCase();
-        if (!name) return this.host.message('Type your Editor account\'s name.', true);
-        if (!password && !fromCode) return this.host.message('Type your password.', true);
+        if (!name) return this.say('Type your Editor account\'s name.', true);
+        if (!password && !fromCode) return this.say('Type your password.', true);
         this.username = name;
         this.setBusy(true, 'Signing in…');
         const r = await this.bridge.signIn(this.address, name, password, this.viaCode);
@@ -412,11 +442,14 @@ export class EditorDoor {
         if (!r.ok) {
             // A code that didn't fit this account: sign in by typing instead.
             if (r.error === 'code') this.viaCode = false;
-            this.host.message(signInRefusal(r), true);
+            this.say(signInRefusal(r), true);
             return this.redraw();
         }
         this.viaCode = false;
+        this.codePassword = false;
         this.session = r.session;
+        this.failedToday = r.notices?.failedToday ?? 0;
+        this.changes = r.notices?.changes ?? 0;
         this.notice = '';
         this.host.message('');
         this.screen = r.session.mustChange ? 'password' : 'menu';
@@ -457,18 +490,20 @@ export class EditorDoor {
     private async choose(old: string, fresh: string, again: string) {
         if (this.busy || !this.session) return;
         const problem = newPasswordProblem(fresh, again, this.session.username, this.session.name);
-        if (problem) return this.host.message(problem, true);
-        if (!this.session.mustChange && !old) return this.host.message('Type your password now, then the new one twice.', true);
+        if (problem) return this.say(problem, true);
+        if (!this.session.mustChange && !old) return this.say('Type your password now, then the new one twice.', true);
         this.setBusy(true, 'Saving your password…');
         const r = await this.bridge.changePassword(old, fresh);
         this.setBusy(false);
         if (!r.ok) {
-            this.host.message(signInRefusal(r), true);
-            if (r.error === 'ended' || r.error === 'signed-out') this.screen = 'sign-in';
+            const ended = r.error === 'ended' || r.error === 'signed-out';
+            this.say(signInRefusal(r), true, ended);
+            if (ended) this.screen = 'sign-in';
             return this.redraw();
         }
+        const first = this.session.mustChange;
         this.session = r.session;
-        this.host.message('Your password is saved. Other sessions of this account have ended.');
+        this.say(first ? 'Your password is saved.' : 'Your password is saved. Your other sessions of this account have ended.', false, true);
         this.screen = 'menu';
         this.redraw();
     }
@@ -503,12 +538,14 @@ export class EditorDoor {
             link('Change my password', 'editor-change-password', () => { this.screen = 'password'; this.redraw(); }),
             link('Sign out', 'editor-sign-out', () => void this.signOut()),
             link('Back to the main menu', 'editor-back', () => this.leave()));
-        const card = el('section', {className: 'door-card door-form editor-card editor-menu'},
+        const card = el('section', {className: `door-card door-form editor-card editor-menu${this.accounts ? ' with-accounts' : ''}`},
             el('div', {className: 'world-title'}, el('strong', {}, s.name || 'Your world'), pill),
             el('p', {className: 'muted'}, s.address),
             facts,
             ...(this.notice ? [el('p', {className: 'gold editor-notice'}, this.notice)] : []),
             ...(owner && this.failedToday ? [el('p', {className: 'gold'}, `${this.failedToday} failed sign-in${this.failedToday === 1 ? '' : 's'} today`)] : []),
+            ...(owner && this.changes && !this.accounts ? [el('p', {className: 'sage editor-banner'},
+                `${this.changes} Editor account change${this.changes === 1 ? '' : 's'} since your last visit: EDITOR ACCOUNTS shows ${this.changes === 1 ? 'it' : 'them'}.`)] : []),
             ...(owner ? this.banners.slice(0, 8).map(b => el('p', {className: 'sage editor-banner'}, `${bannerText(b)} · ${ago(b.at)}`)) : []),
             tools,
             ...(this.accounts ? [this.accountsPanel()] : [el('div', {className: 'grow'})]),
@@ -527,8 +564,8 @@ export class EditorDoor {
         this.setBusy(true, 'Opening the Editor window…');
         const r = await this.bridge.open(suite);
         this.setBusy(false);
-        if (r.ok) return this.host.message('The Editor window is open. It keeps working while you play.');
-        this.host.message(signInRefusal(r), true);
+        if (r.ok) return this.say('The Editor window is open. It keeps working while you play.');
+        this.say(signInRefusal(r), true, r.error === 'ended');
         if (r.error === 'ended') {
             this.screen = 'sign-in';
             this.redraw();
@@ -541,8 +578,8 @@ export class EditorDoor {
         this.session = null;
         this.accounts = null;
         this.banners = [];
-        this.failedToday = 0;
-        this.host.message('Signed out of the Editor.');
+        this.failedToday = this.changes = 0;
+        this.say('Signed out of the Editor.', false, true);
         await this.open();
     }
 
@@ -557,7 +594,7 @@ export class EditorDoor {
         const r = await this.bridge.stepUp(password);
         this.setBusy(false);
         if (!r.ok) {
-            this.host.message(signInRefusal(r), true);
+            this.say(signInRefusal(r), true, r.error === 'ended');
             if (r.error === 'ended') { this.screen = 'sign-in'; this.redraw(); }
             return false;
         }
@@ -572,13 +609,13 @@ export class EditorDoor {
     private async loadAccounts() {
         const r = await this.bridge.accounts('list');
         if (!r.ok) {
-            this.host.message(signInRefusal(r), true);
+            this.say(signInRefusal(r), true);
             return;
         }
         this.accounts = r.accounts ?? [];
         this.failedToday = r.failedToday ?? 0;
         this.banners = r.banners ?? [];
-        this.host.message('');
+        this.changes = 0;
         this.redraw();
     }
 
@@ -588,22 +625,23 @@ export class EditorDoor {
         const r = await this.bridge.accounts(verb, body);
         this.setBusy(false);
         if (!r.ok) {
-            this.host.message(signInRefusal(r), true);
+            this.say(signInRefusal(r), true);
             return this.loadAccounts();
         }
         if (r.code) {
             this.newCode = r.code;
             this.newCodeFor = String(body.username ?? '');
         }
-        this.host.message('Done.');
+        this.say('Done.');
         await this.loadAccounts();
     }
 
     private accountsPanel(): HTMLElement {
         const list = el('div', {className: 'world-list'});
+        const owners = (this.accounts ?? []).filter(a => a.role === 'owner' && !a.disabled).length;
         for (const a of this.accounts ?? []) {
             const state = a.disabled ? 'turned off' : a.unclaimed ? 'not yet claimed' : a.mustChange ? 'on a one-time password'
-                : `last sign-in ${ago(a.lastLogin)}${a.lastFrom ? ` from ${a.lastFrom}` : ''}`;
+                : `last sign-in ${ago(a.lastLogin)}${a.lastFrom ? ` from ${fromWhere(a.lastFrom)}` : ''}`;
             const buttons: HTMLElement[] = [];
             if (a.role !== 'owner') {
                 const role = el('select', {});
@@ -616,14 +654,19 @@ export class EditorDoor {
                     this.button('NEW CODE', () => void this.change('reset', {username: a.username},
                         `Give ${a.username} a new Editor code? Their password, sessions and devices stop working.`)));
             }
-            buttons.push(this.button(a.disabled ? 'TURN ON' : 'TURN OFF', () => void this.change(a.disabled ? 'enable' : 'disable', {username: a.username},
-                a.disabled ? `Turn ${a.username} on again?` : `Turn ${a.username} off? Their sessions end at once.`)),
-            this.button('REMOVE', () => void this.change('remove', {username: a.username}, `Remove ${a.username} for good?`), 'danger'));
+            if (a.role === 'owner' && !a.disabled && owners <= 1) {
+                // The last owner can't be turned off or removed: no buttons that would only be refused after the password.
+                buttons.push(el('span', {className: 'muted small'}, 'The world\'s only owner: it can\'t be turned off or removed.'));
+            } else {
+                buttons.push(this.button(a.disabled ? 'TURN ON' : 'TURN OFF', () => void this.change(a.disabled ? 'enable' : 'disable', {username: a.username},
+                    a.disabled ? `Turn ${a.username} on again?` : `Turn ${a.username} off? Their sessions end at once.`)),
+                this.button('REMOVE', () => void this.change('remove', {username: a.username}, `Remove ${a.username} for good?`), 'danger'));
+            }
             const row = el('div', {className: 'world-row editor-account'},
                 el('div', {className: 'world-text'},
                     el('div', {className: 'world-title'}, el('strong', {}, a.username), el('span', {className: 'world-kind'}, a.role.toUpperCase())),
                     el('p', {className: 'muted small'}, `${state}  ·  ${a.devices.length} device${a.devices.length === 1 ? '' : 's'}` +
-                        (a.claimedFrom ? `  ·  claimed from ${a.claimedFrom}` : ''))),
+                        (a.claimedFrom ? `  ·  claimed from ${fromWhere(a.claimedFrom)}` : ''))),
                 el('div', {className: 'host-buttons'}, ...buttons));
             row.dataset.account = a.username;
             list.append(row);
@@ -642,7 +685,7 @@ export class EditorDoor {
         add.addEventListener('submit', e => {
             e.preventDefault();
             const who = name.value.trim().toLowerCase();
-            if (!who) return this.host.message('Give the co-builder an account name.', true);
+            if (!who) return this.say('Give the co-builder an account name.', true);
             void this.change('add', {username: who, role: role.value, mayActOnWolves: wolves.checked},
                 `Add ${who} as a ${role.value}? They need the RATW desktop client, and your Editor port open to them (RATW_EDITOR_BIND=0.0.0.0 in .env, ` +
                 'and from outside your home a forwarded port).');
@@ -654,24 +697,25 @@ export class EditorDoor {
             codeBox.push(el('div', {className: 'host-token-box'},
                 el('p', {className: 'gold small'}, `THE EDITOR CODE FOR ${this.newCodeFor.toUpperCase()} · SHOWN THIS ONCE`),
                 el('div', {className: 'host-token-row'}, code, this.button('COPY', () => void this.copy(this.newCode, code))),
-                el('p', {className: 'muted small'}, 'Pass it on privately: it works once, for 72 hours. They paste it into EDITOR and choose their own password.')));
+                el('p', {className: 'muted small'}, 'Pass it on privately: it works once, for 72 hours. They paste it into EDITOR and choose their own password.'),
+                ...(this.session ? [el('p', {className: 'gold small'}, coBuilderNote(this.session.place, this.session.address))] : [])));
         }
         const end = this.button('END ALL EDITOR SESSIONS', () => void this.change('end-sessions', {},
             'End every Editor session, yours too, and forget every device?'), 'danger');
         return el('div', {className: 'editor-accounts'},
             el('p', {className: 'gold small'}, 'EDITOR ACCOUNTS'), ...codeBox,
-            el('div', {className: 'scroll'}, list), line, add,
+            list, line, add,
             el('div', {className: 'door-actions'}, end, this.button('Close', () => { this.accounts = null; this.newCode = ''; this.redraw(); })));
     }
 
     private async copy(text: string, box: HTMLInputElement) {
         try {
             await navigator.clipboard.writeText(text);
-            this.host.message('The code is copied.');
+            this.say('The code is copied.');
         } catch {
             box.focus();
             box.select();
-            this.host.message('Select the code and press Ctrl+C.', true);
+            this.say('Select the code and press Ctrl+C.', true);
         }
     }
 }

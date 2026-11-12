@@ -2,8 +2,9 @@
 // Mac, every message worded here from the world's codes and numbers, and the checks made before sending.
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {ago, bannerText, cantConnect, connectRefusal, hostOf, isCode, newPasswordProblem, onMac, passwordProblem, settingUp, shellEditor,
-    signInRefusal, statusPill, type EditorHello} from './editor.ts';
+import {ago, bannerText, cantConnect, coBuilderNote, connectRefusal, firstTimeNote, fromWhere, hostOf, inTime, isCode, newPasswordProblem, onMac,
+    passwordProblem, portOf, resetCommand, serverDown, settingUp, shellEditor, signInRefusal, signsInWithCode, statusPill, type EditorHello,
+    type ServerUp} from './editor.ts';
 
 const hello = (over: Partial<EditorHello> = {}): EditorHello => ({world: 'world-' + 'a'.repeat(32), name: 'Ashfall', package: '1', editorApi: 1,
     kind: 'community', serverState: 'running', progress: {code: 'ready', percent: 100}, setupPending: false, ...over});
@@ -55,17 +56,20 @@ test('codes and addresses are told apart; hosts are matched without their ports'
 });
 
 test('"can\'t connect" depends on where the address is', () => {
-    const loop = cantConnect('loopback');
+    const loop = cantConnect('loopback', false, false);
     assert.match(loop[0], /Docker Desktop running/);
+    assert.match(loop[0], /docker compose logs world says what's wrong \(a line starting RATW_PACKAGE error:\)/);
+    assert.match(cantConnect('loopback', false, true)[0], /^Is Docker running/, 'on Linux, Docker itself');
     assert.match(loop[1], /17789 unless your \.env sets RATW_EDITOR_PORT/);
     assert.ok(!loop.join(' ').includes('RATW_EDITOR_BIND'), 'this computer needs no bind');
-    const home = cantConnect('home');
+    const home = cantConnect('home', false, false);
     assert.deepEqual([home[0], home[2]], [loop[0], loop[1]]);
     assert.match(home[1], /RATW_EDITOR_BIND=0\.0\.0\.0/);
     const out = cantConnect('public');
     assert.match(out.at(-1)!, /forward TCP 17789/);
     assert.match(cantConnect('home', true)[0], /package is older than the Editor/);
-    assert.deepEqual(connectRefusal({ok: false, error: 'game-port'}), ['That\'s your world\'s game port. The Editor uses port 17789.']);
+    assert.deepEqual(connectRefusal({ok: false, error: 'game-port'}),
+        ['That\'s your world\'s game port. The Editor uses port 17789 (or your .env\'s RATW_EDITOR_PORT).']);
     assert.deepEqual(connectRefusal({ok: false, error: 'official'}), ['Official worlds can\'t be edited.']);
     assert.deepEqual(connectRefusal({ok: false, error: 'not-editor'}), ['This address isn\'t a RATW world\'s Editor.']);
     assert.match(connectRefusal({ok: false, error: 'package-old'})[0], /older than the Editor/);
@@ -77,7 +81,13 @@ test('signing in: every refusal is the client\'s own words', () => {
     assert.equal(signInRefusal({ok: false, error: 'wait', minutes: 15}), 'Too many tries from here: wait 15 minutes.');
     assert.equal(signInRefusal({ok: false, error: 'wait', minutes: 1}), 'Too many tries from here: wait 1 minute.');
     assert.match(signInRefusal({ok: false, error: 'disabled'}), /turned off: ask the world's owner/);
-    assert.match(signInRefusal({ok: false, error: 'expired'}), /reset-editor-password/);
+    // (The reset-editor-password script is M5's: until then the screens name the compose command.)
+    for (const error of ['expired', 'owner-account']) {
+        assert.ok(signInRefusal({ok: false, error}).endsWith('docker compose exec world ratw-editor reset NAME'), error);
+        assert.ok(!signInRefusal({ok: false, error}).includes('reset-editor-password'), error);
+    }
+    assert.equal(resetCommand('pell'), 'docker compose exec world ratw-editor reset pell');
+    assert.equal(signInRefusal({ok: false, error: 'database'}), 'Your world answered, but its database is slow: try again in a minute.');
     assert.match(signInRefusal({ok: false, error: 'full'}), /Too many people signed in/);
     assert.match(signInRefusal({ok: false, error: 'unsigned'}), /isn't an official RATW build/);
     assert.equal(signInRefusal({ok: false, error: 'weak', reason: 'common'}), passwordProblem('common'));
@@ -91,6 +101,10 @@ test('a new password is checked before it is sent', () => {
     assert.equal(newPasswordProblem('pell-likes-orchards', 'pell-likes-orchards', 'pell', 'Ashfall'), passwordProblem('username'));
     assert.equal(newPasswordProblem('my ashfall rocks!!', 'my ashfall rocks!!', 'pell', 'Ash Fall'), passwordProblem('world'));
     assert.equal(newPasswordProblem('tallow-kettle-91', 'tallow-kettle-91', 'pell', 'Ashfall'), '');
+    // Each word of the world's name of 4 letters or more counts, not only the whole name.
+    assert.equal(newPasswordProblem('ashfall1234567', 'ashfall1234567', 'pell', 'Ashfall Test'), passwordProblem('world'));
+    assert.equal(newPasswordProblem('my-test-of-kettles', 'my-test-of-kettles', 'pell', 'Ashfall Test'), passwordProblem('world'));
+    assert.equal(newPasswordProblem('of-the-kettles-91', 'of-the-kettles-91', 'pell', 'Vale of the Ash'), '', 'short words don\'t count');
 });
 
 test('the status pill and "still setting up"', () => {
@@ -98,9 +112,45 @@ test('the status pill and "still setting up"', () => {
     assert.equal(statusPill(hello({serverState: 'maintenance'})), 'Closed for changes');
     assert.equal(statusPill(hello({serverState: 'host_only'})), 'Open only to you');
     assert.equal(statusPill(hello({progress: {code: 'importing', percent: 40}})), 'Setting up 40%');
-    assert.equal(statusPill(null), 'Restarting…');
+    assert.equal(statusPill(null), 'Not answering', 'a failed status call isn\'t a restart');
+    assert.equal(statusPill(hello({progress: {code: 'slow', percent: 100}})), 'Database slow');
+    assert.equal(settingUp(hello({progress: {code: 'slow', percent: 100}})), 'Your world answered, but its database is slow: try again in a minute.');
+    // The game server's own state beats the database's word (R1 H2): never "Open" while it is down.
+    const down = (over: Partial<ServerUp>): ServerUp => ({up: false, reason: 'exit', code: 11, failures: 1, retryIn: 5, ...over});
+    assert.equal(statusPill(hello({server: down({})})), 'Stopped (exit 11): starts again in 5 s');
+    assert.equal(statusPill(hello({server: down({failures: 3, retryIn: 120})})), 'Keeps stopping (exit 11): starts again in 2 min');
+    assert.equal(statusPill(hello({server: down({reason: 'world.toml', code: null})})), 'Stopped: world.toml has a mistake (see the log)');
+    assert.equal(statusPill(hello({server: down({reason: 'restarting'})})), 'Restarting…');
+    assert.equal(statusPill(hello({server: down({reason: 'closed'}), serverState: 'maintenance'})), 'Closed for changes');
+    assert.equal(statusPill(hello({server: {up: true, reason: 'running', code: null, failures: 0, retryIn: null}})), 'Open');
+    assert.equal(statusPill(hello({serverState: 'unknown', server: {up: true, reason: 'running', code: null, failures: 0, retryIn: null}})), 'Open');
+    assert.equal(statusPill(hello({serverState: 'unknown'})), 'Starting…');
+    assert.equal(serverDown(null), null);
+    assert.deepEqual([inTime(5), inTime(120), inTime(600), inTime(7200)], ['5 s', '2 min', '10 min', '2 h']);
     assert.equal(settingUp(hello()), '');
     assert.equal(settingUp(hello({progress: {code: 'migrating', percent: 40}})), 'Your world is still setting up (updating its database, 40%). This page waits for it.');
+});
+
+test('signing in with a pasted code after a session ended (R1 H1), and screen 4\'s notes', () => {
+    assert.ok(signsInWithCode(true, true, null));
+    assert.ok(signsInWithCode(true, true, {live: false}), 'an ended session doesn\'t hide the code\'s password');
+    assert.ok(!signsInWithCode(true, true, {live: true}));
+    assert.ok(!signsInWithCode(true, false, null), 'a code without a password: type it');
+    assert.ok(!signsInWithCode(false, true, null));
+    assert.ok(firstTimeNote(true, false, ''));
+    assert.ok(!firstTimeNote(true, true, ''), 'one note at a time: the code\'s');
+    assert.ok(!firstTimeNote(true, false, 'pell'), 'not to an account this computer knows');
+    assert.ok(!firstTimeNote(false, false, ''));
+});
+
+test('addresses in the owner\'s words, and what a co-builder\'s code carries', () => {
+    assert.equal(fromWhere('local'), 'this computer');
+    assert.equal(fromWhere('192.168.1.20'), '192.168.1.20');
+    assert.equal(fromWhere(null), '');
+    assert.deepEqual(['127.0.0.1:35889', '127.0.0.1', '[::1]:17790', '::1', 'myworld.example.net:443'].map(portOf), [35889, 17789, 17790, 17789, 443]);
+    assert.equal(coBuilderNote('loopback', '127.0.0.1:17811'),
+        'It doesn\'t include your world\'s address: tell them that too (your home or public address, port 17811).');
+    assert.match(coBuilderNote('home', '192.168.1.20'), /includes this world's address as you use it \(192\.168\.1\.20\)/);
 });
 
 test('banners are worded by the client, never from the world\'s detail', () => {

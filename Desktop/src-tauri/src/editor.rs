@@ -44,6 +44,8 @@ const KEEPALIVE_EVERY: Duration = Duration::from_secs(5 * 60);
 const INPUT_COUNTS_FOR: Duration = Duration::from_secs(30 * 60);
 const DOWNLOADS: [&str; 3] = ["json", "png", "csv"];
 const CALL_MOST: u64 = 256 * 1024;
+/// How long screen 3 waits for a hello (shorter in the tests, which wait it out).
+const HELLO_WAIT: Duration = Duration::from_secs(if cfg!(test) { 2 } else { 15 });
 
 /// What the last connection to an address found (until the host trusts it, forgets an old key, or connects again).
 struct Connected {
@@ -95,6 +97,20 @@ pub struct Editor {
     devices: devices::Devices,
     inner: Mutex<Inner>,
     last_input: Mutex<Option<Instant>>,
+}
+
+/// The owner's notices from the sign-in reply (R1 M-i): two counts, bounded, nothing else; null for other roles.
+fn owner_notices(view: &Value, reply: &Value) -> Value {
+    if view["role"] != "owner" {
+        return Value::Null;
+    }
+    let count = |k: &str| reply["notices"][k].as_u64().unwrap_or(0).min(9999);
+    json!({"failedToday": count("failedToday"), "changes": count("changes")})
+}
+
+/// Whether a connection failed by timing out (the game's port holds a TLS hello without a word).
+fn timed_out(error: &ureq::Error) -> bool {
+    matches!(error, ureq::Error::Timeout(_)) || matches!(error, ureq::Error::Io(e) if matches!(e.kind(), std::io::ErrorKind::TimedOut | std::io::ErrorKind::WouldBlock))
 }
 
 fn refused(error: &str) -> Value {
@@ -209,16 +225,17 @@ impl Editor {
         let place = wire::place(sockets[0].ip());
         let base = wire::base_url(&sockets[0]);
         // Record mode: any key, recorded; only /editor/hello, nothing secret (no username, device token or code).
-        let (agent, verifier) = tls::agent(Mode::Record, Duration::from_secs(15));
+        let (agent, verifier) = tls::agent(Mode::Record, HELLO_WAIT);
         let reply = agent.get(&format!("{base}/editor/hello")).call();
         let response = match reply {
             Ok(r) => r,
             Err(e) => {
                 let nothing = tls::unreachable(&e);
                 eprintln!("ratw-desktop: the Editor at {}: {}", address.shown, tls::error_text(&e));
-                // Something answered, not as an Editor: perhaps the game's port (that check stores nothing).
+                // Something answered, not as an Editor: perhaps the game's port (that check stores nothing). The game's
+                // port holds a TLS hello silently until the hello times out, so a timeout is asked about too (R1 M-b).
                 let ip = sockets[0].ip().to_string();
-                if !nothing && crate::central::world_status(&ip, address.port, false)["status"].as_u64().unwrap_or(0) != 0 {
+                if (!nothing || timed_out(&e)) && crate::central::world_status(&ip, address.port, false)["status"].as_u64().unwrap_or(0) != 0 {
                     return json!({"ok": false, "error": "game-port", "address": address.shown, "place": place});
                 }
                 if nothing {
@@ -261,7 +278,7 @@ impl Editor {
             }
         };
         let out = json!({"ok": true, "state": if first_met { "trusted" } else { verdict.word() }, "address": address.shown, "place": place, "fingerprint": fingerprint(&pin),
-            "previous": previous, "hello": hello.page(), "username": username,
+            "previous": previous, "hello": wire::hello_page(&hello, &body), "username": username,
             "code": self.inner.lock().unwrap().code.as_ref().is_some_and(|c| c.world == hello.world && c.pin == pin)});
         self.inner.lock().unwrap().connects.insert(address.shown.clone(), Connected { spki, hello, verdict });
         out
@@ -415,7 +432,7 @@ impl Editor {
                 close_editor_window(app);
             }
         }
-        json!({"ok": true, "session": view})
+        json!({"ok": true, "session": view, "notices": owner_notices(&view, &reply)})
     }
 
     /// The current session's agent, base and token, or the page's refusal.
@@ -556,7 +573,7 @@ impl Editor {
             Ok(mut r) if r.status().as_u16() == 200 => {
                 let body = r.body_mut().with_config().limit(wire::HELLO_MOST as u64 + 1).read_to_vec().unwrap_or_default();
                 match wire::read_hello(&body) {
-                    Ok(h) => json!({"ok": true, "hello": h.page()}),
+                    Ok(h) => json!({"ok": true, "hello": wire::hello_page(&h, &body)}),
                     Err(_) => refused("not-editor"),
                 }
             }
@@ -923,7 +940,8 @@ mod tests {
             match (seen.method.as_str(), seen.path.as_str()) {
                 ("GET", "/editor/hello") => (200, vec![], hello_body(world).into_bytes()),
                 ("POST", "/editor/login") if body["password"] == "right-password-123" =>
-                    json(200, json!({"token": "SESSION-TOKEN-0123456789", "username": body["username"], "role": "owner", "mustChange": false, "device": "DEVICE-1"})),
+                    json(200, json!({"token": "SESSION-TOKEN-0123456789", "username": body["username"], "role": "owner", "mustChange": false, "device": "DEVICE-1",
+                        "notices": {"failedToday": 12, "changes": 2, "addresses": ["203.0.113.9"]}})),
                 ("POST", "/editor/login") => json(401, json!({"error": "wrong", "message": "Wrong name or password."})),
                 ("POST", "/editor/step-up") if bearer.as_deref() == Some("Bearer SESSION-TOKEN-0123456789") => json(200, json!({"minutes": 5})),
                 ("GET", "/editor/accounts") if bearer.is_some() => json(200, json!({"accounts": [], "failedToday": 3, "banners": []})),
@@ -961,6 +979,7 @@ mod tests {
         assert!(wrong.get("message").is_none(), "the world's own words never reach the page");
         let ok = e.sign_in(None, &at, "Host-K7Q2", "right-password-123", false);
         assert_eq!(ok["session"]["role"], "owner", "{ok}");
+        assert_eq!(ok["notices"], json!({"failedToday": 12, "changes": 2}), "the owner's two counts, nothing more");
         assert_eq!(e.devices.load(W1, "host-k7q2").as_deref(), Some("DEVICE-1"), "the device token is kept (here: in memory)");
         // The next sign-in shows it; the token never reaches the page or the pin store.
         e.sign_in(None, &at, "host-k7q2", "right-password-123", false);
@@ -1031,6 +1050,28 @@ mod tests {
         let game = TestWorld::start(None, Box::new(move |_| (200, vec![], json!({"ratw": "world", "id": id, "protocol": 3}).to_string().into_bytes())));
         assert_eq!(e.connect(&format!("127.0.0.1:{}", game.port))["error"], "game-port");
         assert!(e.pins.read(|f| f.keys.is_empty()), "that check stores nothing");
+        // A game port that holds the TLS hello without a word (as the game server does) and answers /status in plain
+        // HTTP: the hello times out, and the port is still named the game's.
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let held = listener.local_addr().unwrap().port();
+        std::thread::spawn(move || {
+            use std::io::{Read, Write};
+            for stream in listener.incoming().flatten() {
+                std::thread::spawn(move || {
+                    let mut stream = stream;
+                    let mut first = [0u8; 1];
+                    if stream.read_exact(&mut first).is_err() || first[0] == 0x16 {
+                        std::thread::sleep(Duration::from_secs(5));          // (A TLS hello: held, unanswered.)
+                        return;
+                    }
+                    let mut rest = [0u8; 1024];
+                    let _ = stream.read(&mut rest);
+                    let body = json!({"ratw": "world", "id": format!("world-{}", "b".repeat(32)), "protocol": 3}).to_string();
+                    let _ = write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len());
+                });
+            }
+        });
+        assert_eq!(e.connect(&format!("127.0.0.1:{held}"))["error"], "game-port", "a held hello at the game's port");
         assert_eq!(e.connect("not an address")["error"], "address");
         assert_eq!(e.connect("169.254.169.254")["error"], "address");
     }

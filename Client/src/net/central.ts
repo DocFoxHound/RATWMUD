@@ -226,17 +226,19 @@ export function shellWord(word: string): string {
     return /^[A-Za-z0-9_@%+=:,./-]+$/.test(word) ? word : `'${word.replace(/'/g, `'\\''`)}'`;
 }
 
-/** The world server's command in ticket mode, for a host to run (doc 77, 5.1): on every address (--bind 0.0.0.0), or
- *  central's call-back can't reach it; central's keys from the agent's file. Phase 5's package makes both commands one. */
-export function serverCommand(world: string, name: string, central: string): string {
-    return `ratw_server --save Saved/World/save.json --port 7788 --bind 0.0.0.0 --central ${shellWord(central)} ` +
-        `--world-id ${shellWord(world)} --central-keys Saved/World/central-keys.json --world-name ${shellWord(name)}`;
+/** A TOML basic string (world.toml's values: a world id and central's address, both checked, but quoted all the same). */
+function tomlString(value: string): string {
+    return `"${value.replace(/[\\"]/g, c => `\\${c}`).replace(/[\u0000-\u001f\u007f]/g, '')}"`;
 }
 
-/** The world agent's command, for a host to run beside their world (tools/world_agent.py run, doc 77 Phase 4): the token
- *  goes in by the environment, never as an argument, so it stays out of the process list. */
-export function agentCommand(token: string, central: string): string {
-    return `RATW_HOST_TOKEN=${shellWord(token)} python3 tools/world_agent.py run --central ${shellWord(central)} --dir Saved/World --world-port 7788`;
+/** The package's .env line for a world's host token (Package/README.md, "Start"; the NEW TOKEN dialog says the same). */
+export function envLine(token: string): string {
+    return `RATW_HOST_TOKEN=${token}`;
+}
+
+/** The lines world.toml needs for a world on central: its id under [world], central's address under [central]. */
+export function worldTomlLines(world: string, central: string): string {
+    return `[world]\nid = ${tomlString(world)}\n\n[central]\nurl = ${tomlString(central)}`;
 }
 
 const WorldId = /^world-[0-9a-f]{32}$/;
