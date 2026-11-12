@@ -21,10 +21,15 @@ The package (format 1), every part gzip-compressed:
                         hash, made_at, what is in it (counts only: never an id or a name)
   world.json.gz         the world row (world.worlds) and its areas (id and kind): NPCs, slots, posts, claims and the
                         spawn point have keys into world.areas
-  live.json.gz          the seed rows: world_sync's live tables (spawned NPCs left out, patrol posts in their routes)
-                        and live.economy, as world_sync writes rows (bytes and timestamps tagged)
+  live.json.gz          the seed rows: world_sync's live tables (spawned NPCs left out, patrol posts in their routes;
+                        an NPC's authored band with it) and live.economy's kept columns (Docs/Design/79-a-staged-
+                        economy.md, 13 and 14: the starting amounts, needs, seasons, services, and the rules with the
+                        host's overrides: the slider's cause, the goods no ship brings, status.json's and market.json's
+                        values; their words scanned for player ids and the forbidden word), as world_sync writes rows
+                        (bytes and timestamps tagged)
   build.tar.gz          the newest build as world_build.export writes it: world.ratw, cells/<id>.cell, seams/<id>
-  snapshot.json.gz      the save (game.load_checkpoint, the journal after it replayed), stripped of players
+  snapshot.json.gz      the save (game.load_checkpoint, the journal after it replayed), stripped of players; without
+                        its Prosperity report (society.report: the importing server works it out again)
   SHA256SUMS            sha256 of every file above
 
 Out: every game.* table (the snapshot is one document, imported with game.save_checkpoint), dm.*, admin.*, Atlas's
@@ -59,6 +64,7 @@ import tempfile
 import uuid
 from pathlib import Path
 
+import economy_contract
 import world_db as W
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -558,8 +564,9 @@ def account_kind(name: str) -> str:
 
 # The staged state's parts keyed by account holders (usernames, which the player pattern can't see): never packaged.
 STAGED_HOLDERS = ('faucets', 'welcomed')
-# The society's state of the conserving economy (doc 79, 14: read past at restore): never packaged.
-DEAD_SOCIETY = ('loop', 'orchestrator')
+# The society's state of the conserving economy (doc 79, 14: read past at restore): never packaged. Nor its Prosperity
+# report (doc 79, Phase 9: the DM's tab's, worked out again by the importing server; it counts households by market).
+DEAD_SOCIETY = ('loop', 'orchestrator', 'report')
 
 
 def strip_staged(staged: dict, accounts: dict, st: Strip, section: str):
@@ -668,6 +675,7 @@ SECTIONS = {
     'scenesHeard': clear_section,
     'commandReceipts': clear_section,
     'responseReceipts': clear_section,
+    'dmActs': drop_section,         # (The DM's acts by this database's dm.actions ids: a new world's ids start again.)
     'companions': clear_section,
     'socialStars': empty_section,
     'socialStories': empty_section,
@@ -872,6 +880,8 @@ def scan(snapshot: dict | None, rows: dict, usernames=(), names=(), allowed_tabl
                 errors.append(f'{table}: not a table a package may hold.')
     for table, table_rows in rows.items():
         check(table, table_rows)
+    errors.extend(economy_words(rows.get('live.economy')))
+    errors.extend(economy_rows_problems(rows.get('live.economy')))
     if len(errors) > limit:
         errors = errors[:limit] + [f'... and {len(errors) - limit} more']
     return errors, warnings
@@ -993,7 +1003,9 @@ def read_source(conn, with_snapshot=True, log=print) -> dict:
                 row['posts'] = posts.get(row['id'], [])
         live[spec.table] = [without_provenance(spec.table, world_sync.normalized(r))
                             for _, r in sorted(found.items(), key=lambda kv: repr(kv[0]))]
-    live['live.economy'] = [world_sync.normalized(r) for r in world_sync.read(conn, 'live.economy', world_id).values()]
+    # (live.economy's kept columns only, doc 79, 14: the dead ones stay behind, D20.)
+    live['live.economy'] = [{k: v for k, v in world_sync.normalized(r).items() if k in economy_shipped()}
+                            for r in world_sync.read(conn, 'live.economy', world_id).values()]
     out = {'world_id': world_id, 'world': world_row, 'areas': areas, 'live': live,
            'build': {'id': build[0], 'fingerprint': build[1], 'created_at': build[2].isoformat(), 'manifest': build[3],
                      'cells': cells},
@@ -1102,6 +1114,63 @@ def client_data() -> str | None:
         return client_data_hash.client_data_hash()
     except Exception:
         return None
+
+
+def economy_shipped():
+    """live.economy's kept columns: world_sync.ECONOMY_KEPT's (doc 79, 14), with its world_id."""
+    import world_sync
+    return ('world_id', *world_sync.ECONOMY_KEPT)
+
+
+def economy_words(rows) -> list[str]:
+    """The forbidden word in a shipped live.economy row's words (doc 79, 13 and Phase 9: the host's overrides, the
+    slider's cause, an event's words, notices and cries, the ships' names), each by its path: refused."""
+    errors = []
+
+    def walk(value, path):
+        if isinstance(value, str):
+            # (A ship's name is held to more: the letters anywhere in it, as Core's forbiddenInName.)
+            if economy_contract.forbidden_word(value) or ('.ships[' in path and 'dog' in value.lower()):
+                errors.append(f'{path}: has the word no world text has')
+        elif isinstance(value, dict):
+            for k, v in value.items():
+                walk(v, f'{path}.{k}')
+        elif isinstance(value, list):
+            for i, v in enumerate(value):
+                walk(v, f'{path}[{i}]')
+    for i, row in enumerate(rows or []):
+        if isinstance(row, dict):
+            walk(row.get('rules'), f'live.economy[{i}].rules')
+    return errors
+
+
+def economy_rows_problems(rows) -> list[str]:
+    """What in a shipped live.economy row would leave the world it makes without its economy (doc 79, Phase 9's second
+    repair: imports are untrusted, doc 78): its settings as a save checks them (map_editor.check_economy; a bad override
+    is Core's to skip with a warning, so not refused), and its overrides no longer than the one manifest line Core reads
+    (manifest_lines.OVERRIDES_MOST: a longer one is skipped whole, the slider's cause with it). Each by its path."""
+    import manifest_lines
+    import map_editor
+    import world_store
+    errors = []
+    defaults = world_store.default_economy()
+    for i, row in enumerate(rows or []):
+        where = f'live.economy[{i}]'
+        if not isinstance(row, dict):
+            errors.append(f'{where}: not a row')
+            continue
+        shapes = [c for c in ('seasons', 'services', 'rules') if c in row and not isinstance(row[c], dict)]
+        if shapes:
+            errors += [f'{where}.{c}: must be an object' for c in shapes]
+            continue
+        full = {'treasury': defaults['treasury'], 'store_herbs': defaults['storeHerbs'], 'store_meals': defaults['storeMeals'], **row}
+        entity = world_store.economy_entity(full)
+        errors += [f'{where}: {p}' for p in map_editor.check_economy(entity)]
+        overrides = json.dumps(entity['overrides'], ensure_ascii=False) if entity['overrides'] else ''
+        if len(overrides.encode()) > manifest_lines.OVERRIDES_MOST:
+            errors.append(f'{where}.rules: the host\'s overrides are {len(overrides.encode())} bytes: Core reads at most '
+                          f'{manifest_lines.OVERRIDES_MOST}')
+    return errors
 
 
 def allowed_tables() -> set:
@@ -1320,6 +1389,9 @@ def _import(directory: Path, key: str, name: str, manifest: dict, world: dict, l
         snapshot_path = directory / 'snapshot.json.gz'
         snapshot = read_json_gz(snapshot_path) if snapshot_path.exists() else None
         world_id = world['world']['id']
+        # (Its economy row checked before anything is written: an untrusted package's bad one refused with its path.)
+        if problems := economy_rows_problems(live.get('live.economy')) + economy_words(live.get('live.economy')):
+            raise PackageError('The package\'s economy won\'t do:\n' + '\n'.join(f'  {p}' for p in problems[:20]))
         counts = {}
         with conn.transaction():
             conn.execute('SET CONSTRAINTS ALL DEFERRED')

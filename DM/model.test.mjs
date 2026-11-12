@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {bridgeFresh, normalizeCells, mergedRecords, uniqueIds, parseUtcInput, inputUtc, utcLabel, integer, numeric, eventPayload, EXECUTABLE, statusClass, auditStatus, commandMessage} from './model.mjs';
+import {bridgeFresh, normalizeCells, mergedRecords, uniqueIds, parseUtcInput, inputUtc, utcLabel, integer, numeric, eventPayload, EXECUTABLE, statusClass, auditStatus, commandMessage, movable} from './model.mjs';
 
 test('freshness expires locally even when no further request completes', () => {
   const state = {bridge:{live:true,stale:false,ageSeconds:2}};
@@ -32,8 +32,8 @@ test('numeric form guards reject fractions, missing and nonfinite values', () =>
   assert.equal(numeric('3.5','Value',0,100),3.5);
   assert.throws(() => numeric('NaN','Value',0,100));
 });
-test('only four executable effect families can be composed', () => {
-  assert.equal(EXECUTABLE.size,4);
+test('only six executable effect families can be composed', () => {
+  assert.equal(EXECUTABLE.size,6);
   for (const kind of ['brigands','assassins','war','faction-collapse']) assert.throws(() => eventPayload(kind,{}));
 });
 test('narrative notices require real text and targeted scopes require targets', () => {
@@ -50,6 +50,25 @@ test('relocation requires an existing selection and finite coordinates', () => {
 test('economy composer does not offer minting, self transfers or negative stock', () => {
   assert.deepEqual(eventPayload('economy_transfer',{from:'treasury',to:'p',coins:5,quantity:0,item:''}),{from:'treasury',to:'p',coins:5,quantity:0,item:''});
   for (const values of [{from:'a',to:'a',coins:1,quantity:0},{from:'a',to:'b',coins:-1,quantity:0},{from:'a',to:'b',coins:0,quantity:0},{from:'a',to:'b',coins:0,quantity:1,item:''}]) assert.throws(() => eventPayload('economy_transfer',values));
+});
+test('staged accounts are shown, never offered for a transfer (doc 79, 12)', () => {
+  assert.equal(movable({id:'player-ash',kind:'real'}),true);
+  assert.equal(movable({id:'contract:c1',kind:'escrow'}),true);
+  assert.equal(movable({id:'till:job:npc_cook',kind:'staged'}),false);
+  assert.equal(movable({id:'house:fell',kind:'dead'}),false);
+  assert.equal(movable({id:'older-bridge'}),true,'an older bridge names no kind');
+});
+test('a grant or a fine needs a player, a nonzero capped sum and a reason', () => {
+  assert.deepEqual(eventPayload('player_grant',{player:'player-ash',coins:'23',reason:' for the bell '}),{player:'player-ash',coins:23,reason:'for the bell'});
+  assert.deepEqual(eventPayload('player_grant',{player:'player-ash',coins:'-5',reason:'a window'}),{player:'player-ash',coins:-5,reason:'a window'});
+  for (const values of [{player:'',coins:1,reason:'x'},{player:'p',coins:0,reason:'x'},{player:'p',coins:2501,reason:'x'},{player:'p',coins:1,reason:''},{player:'p',coins:1,reason:'x'.repeat(81)},{player:'p',coins:'1.5',reason:'x'}])
+    assert.throws(() => eventPayload('player_grant',values),JSON.stringify(values));
+});
+test('a household band for a while, or cleared', () => {
+  assert.deepEqual(eventPayload('npc_band',{npc:'npc_scout',band:'destitute',days:'14'}),{npc:'npc_scout',band:'destitute',days:14});
+  assert.deepEqual(eventPayload('npc_band',{npc:'npc_scout',band:'clear',days:'14'}),{npc:'npc_scout',band:'clear'});
+  for (const values of [{npc:'',band:'poor',days:5},{npc:'n',band:'royal',days:5},{npc:'n',band:'poor',days:0},{npc:'n',band:'poor',days:113}])
+    assert.throws(() => eventPayload('npc_band',values),JSON.stringify(values));
 });
 test('queue and failure presentation are distinct from applied', () => {
   assert.equal(statusClass('queued'),'warn');

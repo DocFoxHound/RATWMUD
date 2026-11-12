@@ -129,3 +129,12 @@
 .dm-health-tables { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 14px; padding: 0 12px 16px; }
 .dm-health-tables h3 { font-size: 13px; color: var(--muted); margin: 6px 0; }
 .dm-health-tables .dm-table tr { cursor: default; }
+/* Prosperity (doc 79, 12): the acts' small forms, the word on the street and the log. */
+.dm-prosperity .dm-sheet-bar + .error, .dm-prosperity > .publish-done { margin: 6px 12px; }
+.dm-prosperity h3 button { margin-left: 8px; font-size: 11px; }
+.dm-act-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; padding: 6px 0; }
+.dm-act-form .field { min-width: 120px; }
+.dm-word, .dm-log { margin: 0; padding-left: 18px; font-size: 12px; }
+.dm-word li, .dm-log li { margin: 2px 0; }
+.dm-log small { color: var(--muted); margin-right: 4px; }
+.dm-band-for { border-top: 1px solid var(--line, #333); margin-top: 8px; padding-top: 6px; }

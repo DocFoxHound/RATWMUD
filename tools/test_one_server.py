@@ -17,6 +17,9 @@ import world_store as S
 from test_world_db import database_available, superuser
 from test_world_store import greyfen
 
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
+
 ROOT = Path(__file__).resolve().parent.parent
 # (RATW_TEST_SERVER: another build's, such as a worktree's, as test_world_package takes it.)
 SERVER = Path(os.environ.get('RATW_TEST_SERVER') or ROOT / 'build-core' / 'ratw_server')
@@ -33,7 +36,7 @@ class OneServerPerWorld(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         W.ensure_roles()
-        cls.name = f'ratw_test_one_{secrets.token_hex(4)}'
+        cls.name = f'ratw_test_{DB_TAG}one_{secrets.token_hex(4)}'
         with superuser() as su:
             su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
             su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor, ratw_publisher, ratw_game, ratw_dm')

@@ -43,15 +43,21 @@ def npc(name='Wren', greeting='Hello.', purse=0):
 
 
 def unmigrate(key):
-    """Takes migration 0055 back off a throwaway world: as DEV and PROD are until the user migrates them."""
-    sql = (W.MIGRATIONS / '0053_postless_routes.sql').read_text(encoding='utf-8')
+    """Takes migration 0061 back off a throwaway world (doc 79, Phase 9): as DEV is (at 0060) until the user migrates it.
+    Its NPCs' band column goes, the store room's table comes back, and 0060's manifest with it."""
+    sql = (W.MIGRATIONS / '0055_store_room.sql').read_text(encoding='utf-8')
+    table = sql[sql.index('CREATE TABLE live.business_settings'):sql.index('-- Atlas (the editor)')]
+    grants = [l for l in sql.splitlines() if l.startswith(('GRANT', 'REVOKE')) and 'business_settings' in l]
+    farms = (W.MIGRATIONS / '0060_farms.sql').read_text(encoding='utf-8')
+    manifest = farms[farms.index('CREATE OR REPLACE FUNCTION live.people_manifest'):]
     with W.connect(key, 'owner') as conn:
         with conn.transaction():
-            conn.execute('DROP TABLE live.business_settings')
-            conn.execute('ALTER TABLE live.economy DROP COLUMN internal_store, DROP COLUMN store_markup, DROP COLUMN store_resale, '
-                         'DROP COLUMN resale_markup, DROP COLUMN store_rule')
-            conn.execute(sql)
-            conn.execute("DELETE FROM public.schema_migrations WHERE version = '0055'")
+            conn.execute(table)
+            for line in grants:
+                conn.execute(line)
+            conn.execute(manifest)
+            conn.execute('ALTER TABLE live.npcs DROP COLUMN band_override')
+            conn.execute("DELETE FROM public.schema_migrations WHERE version = '0061'")
 
 
 class ThreeWayTests(unittest.TestCase):
@@ -392,36 +398,41 @@ class PullTests(ScratchWorlds, unittest.TestCase):
         after = WS.diff(self.dev)
         self.assertEqual((after['counts'], after['base']['how']), ({'live': 0, 'dev': 1, 'conflicts': 0}, 'pull'))
 
-    def test_business_settings_and_the_store_switches_are_not_pulled(self):
-        # Doc 79, 17: the store room went with the city's loop, so a business's store room switch no longer travels; the
-        # world's switches and markups (live.economy) were always each world's own.
-        self.sql(self.live, "INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES ('greyfen', 'brann', false)")
-        self.sql(self.live, 'UPDATE live.economy SET store_markup = 10, store_rule = true')
+    def test_the_store_switches_and_the_economy_are_not_pulled(self):
+        # Doc 79, 17: the store room went with the city's loop (0061 dropped its per-business table); live.economy, with
+        # its dead columns and its kept ones, was always each world's own.
         self.assertNotIn('live.business_settings', WS.SPECS)
+        self.sql(self.live, """UPDATE live.economy SET store_markup = 10, store_rule = true, rules = '{"prosperity": 40}'""")
         plan = WS.diff(self.dev)
         self.assertEqual(self.ids(plan['liveChanges']), [])
+        self.assertEqual(plan['economy']['fields'], ['rules'], 'only the kept columns are told apart')
         WS.pull(self.dev, editor='Ada')
-        self.assertEqual(self.sql(self.dev, 'SELECT npc_id, internal_store FROM live.business_settings'), [])
-        self.assertEqual(self.sql(self.dev, 'SELECT store_markup, store_rule FROM live.economy'), [(100, False)], 'not the economy')
+        self.assertEqual(self.sql(self.dev, 'SELECT store_markup, store_rule, rules FROM live.economy'), [(100, False, {})], 'not the economy')
 
-    def test_a_world_without_the_business_settings_counts_as_having_none(self):
-        # A live world not yet migrated to 0055 (as PROD is): the table missing on one side is no rows on both, and
-        # pulls and imports go on as before; the other side's rows are left as they are.
-        self.sql(self.dev, "INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES ('greyfen', 'wren', false)")
+    def test_a_world_without_migration_0061_takes_npcs_without_their_band(self):
+        # A live world not yet migrated to 0061 (DEV is at 0060): an unset band is no band on both sides; pulls and
+        # imports go on, an NPC with a band reaching it without one (the column it hasn't got left out).
         unmigrate(self.live)
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0}, 'an unset band is no difference')
         self.sql(self.live, "UPDATE live.npcs SET purse = 66 WHERE id = 'wren'")
         plan = WS.diff(self.dev)
         self.assertEqual(self.ids(plan['liveChanges']), ['live.npcs/wren'])
-        self.assertEqual(plan['devChanges'], [], 'the dev world\'s business settings are not compared')
         WS.pull(self.dev, editor='Ada')
         self.assertEqual(self.one(self.dev, "SELECT purse FROM live.npcs WHERE id = 'wren'"), 66)
-        self.assertEqual(self.sql(self.dev, 'SELECT npc_id FROM live.business_settings'), [('wren',)], 'kept')
-        self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Hi from dev.' WHERE id = 'sloe'")
+        self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Hi from dev.', band_override = 'poor' WHERE id = 'sloe'")
         WS.maintenance(self.live, True, 'Ada', 'Import')
+        # (A band live can't hold is refused, never dropped unsaid: the plan says so, and the import goes no further.
+        # Doc 79, Phase 9's first repair.)
+        plan = WS.plan_import(self.dev)
+        self.assertTrue(any('lacks migration 0061' in b and 'sloe' in b for b in plan['blocked']), plan['blocked'])
+        with self.assertRaisesRegex(WS.PublishError, 'band_override'):
+            WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertNotEqual(self.one(self.live, "SELECT greeting FROM live.npcs WHERE id = 'sloe'"), 'Hi from dev.', 'nothing imported')
+        # From rank again: it goes.
+        self.sql(self.dev, "UPDATE live.npcs SET band_override = NULL WHERE id = 'sloe'")
         result = WS.import_(self.dev, {}, 'password', 'Ada')
         self.assertEqual(result['summary']['live'], {'NPCs': {'added': 0, 'changed': 1, 'removed': 0}})
-        self.assertEqual(self.sql(self.dev, 'SELECT npc_id FROM live.business_settings'), [('wren',)], 'still kept after the import')
-        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+        self.assertEqual(self.one(self.live, "SELECT greeting FROM live.npcs WHERE id = 'sloe'"), 'Hi from dev.')
 
     def test_conflicts_field_by_field(self):
         self.sql(self.dev, "UPDATE live.npcs SET name = 'Wrenna', greeting = 'Dev greeting.' WHERE id = 'wren'")
@@ -535,17 +546,48 @@ class ImportTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(self.one(self.live, "SELECT name FROM world.interiors WHERE id = 'shop'"), 'The Old Shop')
         self.assertEqual(self.one(self.live, 'SELECT kind FROM admin.releases WHERE number = 3'), 'rollback')
 
-    def test_business_settings_are_not_imported(self):
-        # Doc 79, 17: the store room's per-business switch went with the store room; an import carries the rest.
-        self.sql(self.dev, "INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES ('greyfen', 'wren', false)")
+    def test_the_economy_is_not_imported_but_a_band_is(self):
+        # Doc 79, 14 and 17: live.economy is each world's own (never synced); an NPC's authored band travels with it.
         self.sql(self.dev, 'UPDATE live.economy SET resale_markup = 50')
+        self.sql(self.dev, "UPDATE live.npcs SET band_override = 'rich' WHERE id = 'wren'")
         self.sql(self.dev, "UPDATE world.interiors SET name = 'The Old Shop' WHERE id = 'shop'")
         WS.maintenance(self.live, True, 'Ada', 'Import')
         result = WS.import_(self.dev, {}, 'password', 'Ada')
-        self.assertNotIn('business settings', result['summary']['live'])
-        self.assertEqual(self.sql(self.live, 'SELECT npc_id, internal_store FROM live.business_settings'), [])
-        self.assertEqual(self.one(self.live, 'SELECT resale_markup FROM live.economy'), 75, 'the world\'s markups stay its own')
+        self.assertEqual(self.one(self.live, "SELECT band_override FROM live.npcs WHERE id = 'wren'"), 'rich', 'the band travels')
+        self.assertEqual(self.one(self.live, 'SELECT resale_markup FROM live.economy'), 75, 'the world\'s economy stays its own')
         self.assertEqual(self.one(self.live, "SELECT name FROM world.interiors WHERE id = 'shop'"), 'The Old Shop')
+
+    def test_a_band_cleared_reaches_the_other_world(self):
+        # Doc 79, Phase 9's first repair: a band set back to From rank (NULL) is written as NULL, both ways; the plan
+        # after says the worlds agree because they do.
+        self.sql(self.dev, "UPDATE live.npcs SET band_override = 'rich' WHERE id = 'wren'")
+        WS.maintenance(self.live, True, 'Ada', 'Import')
+        WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertEqual(self.one(self.live, "SELECT band_override FROM live.npcs WHERE id = 'wren'"), 'rich')
+        self.sql(self.dev, "UPDATE live.npcs SET band_override = NULL WHERE id = 'wren'")
+        self.assertEqual(self.ids(WS.diff(self.dev)['devChanges']), ['live.npcs/wren'])
+        WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertIsNone(self.one(self.live, "SELECT band_override FROM live.npcs WHERE id = 'wren'"), 'cleared on live too')
+        self.assertIsNone(self.one(self.dev, "SELECT band_override FROM live.npcs WHERE id = 'wren'"), 'and dev stays cleared')
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+        # Update from live: a band the DM set there and then cleared there.
+        WS.maintenance(self.live, False, 'Ada')
+        self.sql(self.live, "UPDATE live.npcs SET band_override = 'poor' WHERE id = 'sloe'")
+        WS.pull(self.dev, editor='Ada')
+        self.assertEqual(self.one(self.dev, "SELECT band_override FROM live.npcs WHERE id = 'sloe'"), 'poor')
+        self.sql(self.live, "UPDATE live.npcs SET band_override = NULL WHERE id = 'sloe'")
+        WS.pull(self.dev, editor='Ada')
+        self.assertIsNone(self.one(self.dev, "SELECT band_override FROM live.npcs WHERE id = 'sloe'"), 'cleared in dev by the pull')
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+
+    def test_a_write_names_a_column_the_target_lacks(self):
+        # Only the optional band column is left out of a world without it, and only when unset; any other column the
+        # target hasn't got fails loudly, as before Phase 9.
+        with W.connect(self.live, 'owner') as conn:
+            row = next(iter(WS.read(conn, 'live.npcs', 'greyfen').values()))
+            with self.assertRaises(Exception):
+                with conn.transaction():
+                    WS.write(conn, 'live.npcs', {**row, 'a_column_from_the_future': 1})
 
     def test_conflicts_are_resolved_at_import_and_dev_ends_level_with_live(self):
         self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev greeting.' WHERE id = 'sloe'")
@@ -748,10 +790,10 @@ class MapTests(ScratchWorlds, unittest.TestCase):
         unmigrate(self.live)                         # (As PROD is: behind DEV.)
         WS.maintenance(self.live, True, 'Ada')
         plan = WS.plan_import(self.dev)
-        self.assertTrue(any('lacks migrations' in b and 'live.business_settings' in b for b in plan['blocked']), plan['blocked'])
+        self.assertTrue(any('lacks migrations' in b and 'band_override' in b for b in plan['blocked']), plan['blocked'])
         with self.assertRaisesRegex(WS.PublishError, 'lacks migrations') as refused:
             WS.import_(self.dev, {}, 'password', 'Ada', replace_map=True)
-        self.assertTrue(any('live.business_settings' in e for e in refused.exception.errors))
+        self.assertTrue(any('band_override' in e for e in refused.exception.errors))
         self.assertEqual(self.one(self.live, 'SELECT count(*) FROM admin.releases'), 0)
 
     def test_the_identity_of_a_live_world_follows_its_releases(self):
@@ -1000,13 +1042,13 @@ class LiveTruthTests(ScratchWorlds, unittest.TestCase):
         # DEV's authored changes: a building renamed, an NPC's words, its own economy settings.
         self.sql(self.dev, "UPDATE world.interiors SET name = 'The Corner Shop' WHERE id = 'shop'")
         self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev words.' WHERE id = 'sloe'")
-        self.sql(self.dev, 'UPDATE live.economy SET gate_toll = 10')
+        self.sql(self.dev, 'UPDATE live.economy SET gate_toll = 10, needs_paused = true')
         WS.maintenance(self.live, True, 'Ada', 'Import')
         plan = WS.plan_import(self.dev)
         self.assertEqual(self.ids(plan['liveChanges']), ['live.npcs/born_t', 'live.npcs/maple'])
         self.assertEqual([c['live'] for c in plan['liveChanges']], ['added', 'changed'], 'the birth an addition live')
         self.assertEqual(plan['conflicts'], [])
-        self.assertIn('gate_toll', plan['economy']['fields'])
+        self.assertEqual(plan['economy']['fields'], ['needs_paused', 'rules', 'treasury'], 'the kept columns only (doc 79, 14)')
         self.assertTrue(any('keeps its own' in w for w in plan['warnings']))
         result = WS.import_(self.dev, {}, 'password', 'Ada', 'A corner shop')
         self.assertEqual(result['summary']['live'], {'NPCs': {'added': 0, 'changed': 1, 'removed': 0}})
@@ -1351,7 +1393,8 @@ class ServerMaintenanceTests(ScratchWorlds, unittest.TestCase):
                 if 'listening on port' in line:
                     break
             economy = studio.Economy()
-            result = economy.set_seasons(self.dev, {'set': {'grain': {'normal': 40}}}, 'Ada')
+            # (Doc 79, Phase 9: a season is its price and shelf; supply and normal went.)
+            result = economy.set_seasons(self.dev, {'set': {'grain': {'shelf': [100, 110, 120, 90]}}}, 'Ada')
             self.assertTrue(result['changed'], result)
             # (Doc 68, Progress, "First fixes", migration 0058: the rules' and the services' records are read live too.)
             # (Doc 79, 12: the rules are the staged economy's, the Market Board's and the clamps'.)

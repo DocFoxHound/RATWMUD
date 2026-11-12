@@ -53,6 +53,8 @@ export interface Person {
     joinable?: boolean;
     /** Can't be attacked by players, nor robbed of coin (Docs/Design/57, 6). */
     protected?: boolean;
+    /** The household's authored band (Docs/Design/79, 14: the Band picker); null or absent: from rank. */
+    band?: Band | null;
 }
 /** A job placed in the world; the shared roster fills it at export. */
 export interface Slot {
@@ -62,22 +64,26 @@ export interface Slot {
 }
 export interface Route { id: string; name: string; posts: Place[] }
 export interface Economy {
-    treasury: number; storeHerbs: number; storeMeals: number; dailyHerbs: number; dailyMeals: number;
-    // The store room (doc 67, 6): optional, at STORE_DEFAULTS when absent; businesses switched off by founder.
-    internalStore?: boolean; storeMarkup?: number; storeResale?: boolean; resaleMarkup?: number; storeRule?: boolean;
-    businesses?: Record<string, {internalStore: boolean}>;
-    // The seasons and the comforts (doc 68, Progress; migration 0057): optional, null comforts country.json's.
-    comfortsAbove?: number | null; comfortsShare?: number | null;
-    seasons?: Record<string, {supply: number[]; price: number[]; shelf: number[]; normal: number}>;
-    // The rules and the services (doc 68, Progress, "First fixes"; migration 0058): optional, only what this world changed.
+    treasury: number; storeHerbs: number; storeMeals: number;
+    /** Accepted and read past since doc 79. */
+    dailyHerbs?: number; dailyMeals?: number;
+    /** Residents' needs paused (maintenance and testing). */
+    needsPaused?: boolean;
+    /** The season groups this world has changed: price and shelf (a world before migration 0061: supply and normal too). */
+    seasons?: Record<string, {price: number[]; shelf: number[]; supply?: number[]; normal?: number}>;
+    /** The rules this world has changed (Core's Rules[]; prosperity is the slider's). */
     rules?: Record<string, number>;
     services?: Record<string, {on: boolean; price: number; every: number}>;
+    /** The host's overrides (tools/economy_contract.py): the slider's cause, neverImported, status.json's and market.json's parts. */
+    overrides?: {prosperityCause?: string; neverImported?: string[]; status?: object; market?: object};
 }
-export const SEASON_DEFAULTS: {comfortsAbove: null; comfortsShare: null; seasons: Record<string, never>};
-export const RULE_DEFAULTS: {rules: Record<string, never>; services: Record<string, never>};
+export const ECONOMY_SETTINGS: string[];
 export const RULES: Record<string, [number, number, number]>;
 export const RULE_LIMITS: Record<string, number>;
-export const STORE_DEFAULTS: {internalStore: boolean; storeMarkup: number; storeResale: boolean; resaleMarkup: number; storeRule: boolean};
+export const BANDS: Band[];
+export type Band = 'destitute' | 'poor' | 'comfortable' | 'rich';
+/** The economy keys a project holds that the staged economy no longer reads: dropped on normalizing, warned of. */
+export function deadSettings(value: unknown): string[];
 export interface Faction { id: string; name: string; color: string }
 export interface Chapter { id: string; name: string }
 

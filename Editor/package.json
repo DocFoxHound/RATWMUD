@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "test": "node --test src/model/*.test.mjs && node --experimental-strip-types --no-warnings --test src/lib/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/render-smoke.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",

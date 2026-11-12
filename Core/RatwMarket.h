@@ -28,6 +28,11 @@ inline constexpr double DepthLeast = 20, PassingTrade = 20;
 inline constexpr double RippleMost = .15;             // Ripple-caused |P| on any good (7.4).
 inline constexpr std::size_t RippleKeep = 6;          // Goods kept at each of the two steps (7.4).
 inline constexpr std::size_t RecentKept = 50;
+// The Board's big moves (doc 79, 12: the year log's "big ripples"; Phase 9's last repair): a staged move of a good's
+// pressure (an event, a ship, a storm, a wagon, a harvest, a raid: Society::setPressure) by more than BigMove is kept
+// BigMoveDays with its cause, MovesKept at most. A single trade or ripple never moves that far (0.15 at most).
+inline constexpr double BigMove = .2, BigMoveDays = 28;
+inline constexpr std::size_t MovesKept = 200;
 inline constexpr double DawnHour = 6;                 // The market day turns at dawn (budgets, allowances, ripples).
 inline constexpr int SliderStepADay = 10;             // The slider the Board reads moves at most this a day (D17).
 inline constexpr double SettingOutDays = 15. / 1440;   // A keeper "setting out the wares" at the restock: 15 game minutes.
@@ -119,6 +124,12 @@ struct Data
     const EventKind* eventKind(const std::string& id) const;
 };
 const Data& data();
+// A world's market.json (doc 79, 12; Phase 9: Society::market): `base` with a host's override over it, only its events
+// (perWeek 0 to 3, the list, the causes) and the ships' names (wharf.ships), each checked as the loader takes them (a
+// listed id a string names one of the base's own kinds; an object is a host's own, eventKindsOf's); and, when `never` is
+// given, the goods no ship brings (known base goods only) in place of wharf.never. Anything else, or a part that won't do,
+// is skipped with a line in `warnings`.
+Data layered(const Data& base, const json::Value& over, const std::vector<std::string>* never, std::vector<std::string>* warnings);
 // A host's staged events and causes as the loader takes them (8.4, 8.5): a kind with an id of [a-z0-9_] (32 at most,
 // once), plain words (no line breaks; words 80, a notice 280, a cry 200 at most), at least one known good (its pressure
 // within ±0.3) or a cart's or ship's goods, known needs; none with the forbidden word: its id held to the name rule
@@ -237,7 +248,7 @@ struct HarvestOverride
     int word = 1;
     double until = 0;
     std::string cause;                               // Its words, the DM's ("blight at the orchards"; Phase 7).
-    bool told = true;                                // Its notice posted (Phase 7: World::overrideHarvest's is not yet).
+    bool told = true;                                // Its notice posted (World::overrideHarvest's is not yet: tendCauses posts it).
 };
 // A committed ship (doc 79, 8.3; Phase 5): one line of a port's timetable, rolled a week ahead and saved, so a restart
 // shows the same ships. Its goods are for show: what its notice names (`brings` of the goods its port waits for ships
@@ -297,6 +308,14 @@ struct TimesNudge
     std::string cause;
     bool told = true;
 };
+// The DM's "reset prices" at a market (doc 79, 12; Phase 9: Society::resetPrices): every pressure there eased linearly to
+// 0 from `from` to `until` (a game day), the roads' pass by the roads' pass (`last`: the clock at the last one), with its
+// words; erased once it is over.
+struct PriceReset
+{
+    double from = 0, until = 0, last = 0;
+    std::string words;
+};
 inline constexpr std::size_t TroublesKept = 64, CommittedMost = 256;
 // (A port's timetable: two weeks of at most a ship a day, and the few just sailed or stormbound. The Board's: 16 ports' worth.)
 inline constexpr std::size_t ShipsAPort = 16, ShipsMost = 256;
@@ -330,6 +349,7 @@ struct Board
     std::map<std::string, double> settingOut;        // Till -> the clock (game days) its keeper sets out the wares
                                                      // until, at the morning restock (7.7).
     std::deque<Ripple> recent;
+    std::deque<Ripple> moves;                        // The big staged moves of the last BigMoveDays (BigMove; setPressure).
     // Staged trade (doc 79, Phase 4; 8.1-8.2, 7.7): the departures posted or rolled and not yet gone, the last day the
     // routes were rolled for, the next departure's number; each till's back room of goods its market doesn't make (D27:
     // filled on arrivals, a fifth less each morning; absent: never stocked yet, filled as by an arrival); the DM's harvest
@@ -361,15 +381,17 @@ struct Board
     std::map<std::string, int> harvestShift;
     // Ships lost at sea (Phase 7's repair): name -> the day she was lost; kept LostShipDays, so no ship of hers sails.
     std::map<std::string, double> lostShips;
+    // The DM's price resets under way (Phase 9): market -> its reset.
+    std::map<std::string, PriceReset> resets;
     bool empty() const
     {
         return slider == 0 && sliderTarget == 0 && sliderDay < 0 && cell.empty() && day < 0 && budgetLeft.empty() && takenToday.empty() &&
                pushed.empty() && netToday.empty() && soldToday.empty() && week < 0 && discountWeek.empty() &&
-               restocked.empty() && settingOut.empty() && recent.empty() && committed.empty() && rolledThrough < 0 &&
+               restocked.empty() && settingOut.empty() && recent.empty() && moves.empty() && committed.empty() && rolledThrough < 0 &&
                nextDeparture == 1 && backRoom.empty() && harvestOverride.empty() && troubles.empty() && timesShift.empty() &&
                news.empty() && broughtIn.empty() && ships.empty() && shipsThrough.empty() && nextShip == 1 && events.empty() &&
                eventsThrough.empty() && nextEvent == 1 && sliderCause.n == 0 && sliderCause.words.empty() && nudges.empty() &&
-               harvestShift.empty() && lostShips.empty();
+               harvestShift.empty() && lostShips.empty() && resets.empty();
     }
 };
 json::Value encode(const Board& board);

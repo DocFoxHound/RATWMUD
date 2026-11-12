@@ -1,6 +1,7 @@
 #include "RatwDirector.h"
 
 #include "RatwMind.h"
+#include "RatwStatus.h"
 #include "RatwSystemLibs.h"
 #include "RatwWire.h"
 
@@ -39,6 +40,17 @@ bool keys(const Value& o, std::initializer_list<const char*> allowed)
 }
 bool stringField(const Value& o, const char* key) { const auto* v = o.find(key); return v && v->isString(); }
 std::string text(const Value& o, const char* key) { const auto* v = o.find(key); return v && v->isString() ? v->asString() : std::string(); }
+// An account's kind for the snapshot (doc 79, 9.1): what the Storykeeper may move (real, escrow) and what it shows read only.
+const char* accountKind(const std::string& id)
+{
+    switch (Society::classify(id))
+    {
+    case Society::AccountKind::Real: return "real";
+    case Society::AccountKind::Escrow: return "escrow";
+    case Society::AccountKind::Staged: return "staged";
+    default: return "dead";
+    }
+}
 bool safeId(const std::string& id)
 {
     if (id.empty() || id.size() > 80)
@@ -219,7 +231,8 @@ Value Bridge::snapshot(const World& world, const std::map<std::string, Entity>& 
     o.add("calendarDays", world.calendarDays());
     auto capabilities = Value::array(), cells = Value::array(), factions = Value::array(), chapters = Value::array(),
          actors = Value::array(), accounts = Value::array();
-    for (const char* capability : {"notice", "weather", "weather_front", "npc_relocate", "economy_transfer"})
+    // (player_grant and npc_band: the staged economy's grant or fine and a household's band for a while, doc 79, 12.)
+    for (const char* capability : {"notice", "weather", "weather_front", "npc_relocate", "economy_transfer", "player_grant", "npc_band"})
         capabilities.push(capability);
     o.add("capabilities", capabilities);
     for (const auto& [id, c] : world.cells())
@@ -317,6 +330,10 @@ Value Bridge::snapshot(const World& world, const std::map<std::string, Entity>& 
             for (const auto& [item, n] : account->stock)
                 stock.add(item, n);
         j.add("stock", stock);
+        j.add("kind", std::string(accountKind(e.id)));
+        // A resident's household band (doc 79, 6: their purse is set by it, so a story reads the band, not the purse).
+        const auto* status = e.npc ? world.society().statusOf(e.id) : nullptr;
+        j.add("band", status ? std::string(status::bandName(status->band)) : std::string());
         actors.push(j);
     }
     for (const auto& [id, a] : world.society().state().accounts)
@@ -327,6 +344,7 @@ Value Bridge::snapshot(const World& world, const std::map<std::string, Entity>& 
         for (const auto& [item, n] : a.stock)
             stock.add(item, n);
         j.add("stock", stock);
+        j.add("kind", std::string(accountKind(id)));   // (A staged account is shown read only: its band sets it.)
         accounts.push(j);
     }
     auto economy = Value::object();
@@ -342,7 +360,7 @@ Value Bridge::snapshot(const World& world, const std::map<std::string, Entity>& 
 }
 
 Value Bridge::execute(const Value& request, const std::string& expectedId, const std::string& fingerprint, World& world,
-                      const std::set<std::string>& online, double now, const std::function<bool()>& commit, const Notice& notice)
+                      const std::set<std::string>& online, double now, const Commit& commit, const Notice& notice)
 {
     if (!safeId(expectedId) || !keys(request, {"version", "id", "worldId", "createdAtUnix", "expiresAtUnix", "kind", "payload"}) ||
         wire::strictNumber(request, "version", -1) != 1 || text(request, "id") != expectedId || text(request, "worldId") != worldId_)
@@ -379,10 +397,56 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
     else if (kind == "economy_transfer" && keys(p, {"from", "to", "item", "quantity", "coins"}) && p.size() == 5)
     {
         const double qty = wire::strictNumber(p, "quantity", -1), coins = wire::strictNumber(p, "coins", -1);
-        if (stringField(p, "item") && qty >= 0 && qty <= 99 && coins >= 0 && coins <= 1000000 && qty == std::floor(qty) && coins == std::floor(coins))
+        const auto movable = [](const std::string& id) {
+            const auto k = Society::classify(id);
+            return k == Society::AccountKind::Real || k == Society::AccountKind::Escrow;
+        };
+        if (!movable(text(p, "from")) || !movable(text(p, "to")))
+            applied = {false, "Staged accounts are set by their bands; grant or fine a player, or set a household's band, instead.", {}};
+        else if (stringField(p, "item") && qty >= 0 && qty <= 99 && coins >= 0 && coins <= 1000000 && qty == std::floor(qty) && coins == std::floor(coins))
         {
             const auto a = world.society().operatorTransfer(text(p, "from"), text(p, "to"), text(p, "item"), int(qty), std::int64_t(coins));
             applied = {a.ok, a.message, {}};
+        }
+    }
+    else if (kind == "player_grant" && keys(p, {"player", "coins", "reason"}) && p.size() == 3 && stringField(p, "player") &&
+             stringField(p, "reason"))
+    {
+        // A grant or a fine (doc 79, 12; D16): a capped faucet or a sink with its reason, never from a funded account.
+        const double coins = wire::strictNumber(p, "coins", 0);
+        std::string problem;
+        std::int64_t moved = 0;
+        if (coins == 0 || coins != std::floor(coins) || std::abs(coins) > double(status::GrantsMost))
+            applied = {false, "A grant or a fine is a whole number of pennies, at most " + std::to_string(status::GrantsMost) + " either way.", {}};
+        else if (world.society().grantPlayer(text(p, "player"), std::int64_t(coins), text(p, "reason"), problem, &moved))
+            applied = {true, std::string(coins > 0 ? "Granted " : "Fined ") + std::to_string(moved) + "p" +
+                                 (coins < 0 && double(moved) < -coins ? " (all the player had; " + std::to_string(std::int64_t(-coins)) + "p asked)" : "") +
+                                 ": " + text(p, "reason") + ".", {}};
+        else
+            applied = {false, problem.empty() ? std::string("The grant or fine was refused.") : problem, {}};
+    }
+    else if (kind == "npc_band" && keys(p, {"npc", "band", "days"}) && (p.size() == 2 || p.size() == 3) && stringField(p, "npc") &&
+             stringField(p, "band"))
+    {
+        // A resident's household's band for a while (Society::overrideBand: the DM's band wins over the score and the
+        // authored band until it lapses), or the DM's band cleared.
+        const std::string word = text(p, "band"), household = world.society().householdOf(text(p, "npc"));
+        int band = word == "clear" ? -1 : -2;
+        for (int b = 0; b < status::Bands; ++b)
+            if (word == status::bandName(b))
+                band = b;
+        const double days = p.has("days") ? wire::strictNumber(p, "days", -1) : 28;
+        if (band == -2 || (band >= 0 && (days < 1 || days > 112 || days != std::floor(days))) || (band < 0 && p.has("days")))
+            applied = {false, "Invalid band or days.", {}};
+        else if (household.empty())
+            applied = {false, "That resident has no household the bands know yet.", {}};
+        else if (world.society().overrideBand(household, band, world.society().state().budgetDay + std::int64_t(days)))
+        {
+            // (The household by its resident's name in what the Storykeeper and the host read, never its id.)
+            const auto* who = world.society().spec(text(p, "npc"));
+            const std::string of = (who && !who->name.empty() ? who->name : text(p, "npc")) + "'s household";
+            applied = {true, band < 0 ? "The DM's band cleared for " + of + "."
+                                      : "Band " + word + " for " + of + " for " + std::to_string(std::int64_t(days)) + " days.", {}};
         }
     }
     else if (kind == "notice" && keys(p, {"scope", "target", "targets", "text"}))
@@ -438,12 +502,25 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
     receipts_.push(receipt);
     if (receipts_.size() > 512)
         receipts_.items().erase(receipts_.items().begin());
-    if (!commit())
+    const bool economy = kind == "player_grant" || kind == "npc_band" || kind == "economy_transfer";
+    committingEconomy_ = economy && applied.ok;
+    const int committed = commit();
+    committingEconomy_ = false;
+    if (committed != Committed)
     {
+        healthy_ = false;
+        // A grant, a fine, a band or a transfer the journal took before the checkpoint failed stands (the journal is
+        // replayed over the last checkpoint at the restart): kept, its receipt too, and said so, never "not committed".
+        if (committed == Journalled && applied.ok && economy)
+            return result(expectedId, true, applied.message + " (Journalled, but the checkpoint failed: it stands, and the operator channel is halted.)", now);
+        if (committed == Pending && applied.ok && economy)
+        {
+            held_ = true;                           // (Answered by the next server: from its receipt, or applied then.)
+            return result(expectedId, false, "Held: the journal is not writing; answered after the restart.", now);
+        }
         if (applied.ok)
             world = before;
         receipts_ = previous;
-        healthy_ = false;
         return result(expectedId, false, "Checkpoint failed; operator channel halted without committing the requested effect.", now);
     }
     if (applied.ok && !announcement.empty())
@@ -452,7 +529,7 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
 }
 
 void Bridge::tick(double dt, World& world, const std::map<std::string, Entity>& characters, const std::set<std::string>& online,
-                  const std::map<std::string, double>& activity, std::uint64_t revision, const std::function<bool()>& commit,
+                  const std::map<std::string, double>& activity, std::uint64_t revision, const Commit& commit,
                   const Notice& notice)
 {
     if (!enabled())
@@ -494,7 +571,11 @@ void Bridge::tick(double dt, World& world, const std::map<std::string, Entity>& 
             Value request;
             std::string problem;
             json::parse(raw.str(), request, problem);
+            held_ = false;
             reply = execute(request, id, digest(raw.str()), world, online, now, commit, notice);
+            if (held_)
+                return halt("RATW operator request held: its journal record is not written yet; channel halted, the request "
+                            "left for the next server to answer.");
         }
         if (!writeFile((fs::path(directory_) / "inbox" / (id + ".json")).string(), reply))
             return halt("RATW operator receipt cannot be published; channel halted.");

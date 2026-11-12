@@ -335,6 +335,134 @@ bool plainWords(const std::string& text, std::size_t most)
            std::none_of(text.begin(), text.end(), [](unsigned char c) { return c < 32 || c == 127; });
 }
 
+Data layered(const Data& base, const json::Value& over, const std::vector<std::string>* never, std::vector<std::string>* warnings)
+{
+    Data d = base;
+    const auto note = [&](const std::string& w) {
+        if (warnings)
+            warnings->push_back("market: " + w);
+    };
+    if (never)
+    {
+        d.shipNever.clear();
+        for (const auto& g : *never)
+            if (items::good(g) && g.find('~') == std::string::npos)
+                d.shipNever.insert(g);
+            else
+                note("neverImported: " + g + " skipped: no such good");
+        // (What ships bring is market.json's imports less these.)
+        d.shipBrings.erase(std::remove_if(d.shipBrings.begin(), d.shipBrings.end(), [&](const std::string& g) { return d.shipNever.count(g) > 0; }),
+                           d.shipBrings.end());
+        for (const auto& g : base.shipBrings)
+            if (!d.shipNever.count(g) && std::find(d.shipBrings.begin(), d.shipBrings.end(), g) == d.shipBrings.end())
+                d.shipBrings.push_back(g);
+    }
+    if (!over.isObject())
+    {
+        if (!over.isNull())
+            note("not an object: the defaults kept");
+        return d;
+    }
+    for (const auto& [key, value] : over.fields())
+    {
+        if (key == "events" && value.isObject())
+        {
+            for (const auto& [part, v] : value.fields())
+            {
+                if (part == "perWeek")
+                {
+                    if (!v.isNumber() || !std::isfinite(v.asNumber()))
+                        note("events.perWeek skipped: not a number");
+                    else
+                        d.eventsPerWeek = std::clamp(v.asNumber(), 0., 3.);
+                }
+                else if (part == "list")
+                {
+                    std::vector<json::Value> own;
+                    std::vector<Data::EventKind> kinds;
+                    for (const auto& k : v.items())
+                    {
+                        if (k.isString())
+                        {
+                            if (const auto* shipped = base.eventKind(k.asString()))
+                                kinds.push_back(*shipped);
+                            else
+                                note("events.list: " + k.asString() + " skipped: no such kind");
+                        }
+                        else
+                            own.push_back(k);
+                    }
+                    const auto checked = eventKindsOf(own);
+                    if (checked.size() < own.size())
+                        note("events.list: " + std::to_string(own.size() - checked.size()) + " of the host's own kinds skipped");
+                    for (const auto& k : checked)
+                        if (std::none_of(kinds.begin(), kinds.end(), [&](const Data::EventKind& o) { return o.id == k.id; }) && kinds.size() < 64)
+                            kinds.push_back(k);
+                    if (!v.isArray())
+                        note("events.list skipped: not a list");
+                    else if (kinds.empty() && !v.items().empty())
+                        // (Last repair: as the causes and the ships' names fall back. A list none of whose kinds would do
+                        // left the world with no staged events at all; an empty list still says "none".)
+                        note("events.list skipped: no kind would do");
+                    else
+                        d.events = std::move(kinds);
+                }
+                else if (part == "causes" && v.isObject())
+                {
+                    for (const auto& [which, c] : v.fields())
+                    {
+                        if (which == "down" || which == "up")
+                        {
+                            auto list = causesOf(c.items());
+                            if (list.size() < c.items().size())
+                                note("events.causes." + which + ": " + std::to_string(c.items().size() - list.size()) + " skipped");
+                            if (list.empty())
+                                note("events.causes." + which + " skipped: none would do");
+                            else
+                                (which == "down" ? d.causesDown : d.causesUp) = std::move(list);
+                        }
+                        else if (which == "noticeDown" || which == "noticeUp" || which == "cryDown" || which == "cryUp")
+                        {
+                            const auto text = c.asString({});
+                            const std::size_t most = which.rfind("notice", 0) == 0 ? 280 : 200;
+                            if (plainWords(text, most) && (text.find("{cause}") != std::string::npos || text.find("{Cause}") != std::string::npos))
+                                (which == "noticeDown" ? d.causeNoticeDown : which == "noticeUp" ? d.causeNoticeUp
+                                                     : which == "cryDown"  ? d.causeCryDown : d.causeCryUp) = text;
+                            else
+                                note("events.causes." + which + " skipped: plain words with {cause}, " + std::to_string(most) + " at most");
+                        }
+                        else
+                            note("events.causes." + which + " skipped: unknown");
+                    }
+                }
+                else
+                    note("events." + part + " skipped: " + (part == "causes" ? "not an object" : "not a host's to change"));
+            }
+        }
+        else if (key == "wharf" && value.isObject())
+        {
+            for (const auto& [part, v] : value.fields())
+            {
+                if (part != "ships")
+                {
+                    note("wharf." + part + " skipped: not a host's to change (neverImported is the goods no ship brings)");
+                    continue;
+                }
+                auto names = shipNamesOf(v.items());
+                if (names.size() < v.items().size())
+                    note("wharf.ships: " + std::to_string(v.items().size() - names.size()) + " skipped");
+                if (names.empty())
+                    note("wharf.ships skipped: no name would do");
+                else
+                    d.shipNames = std::move(names);
+            }
+        }
+        else
+            note(key + " skipped: " + (key == "events" || key == "wharf" ? "not an object" : "not a host's to change"));
+    }
+    return d;
+}
+
 const Data::EventKind* Data::eventKind(const std::string& id) const
 {
     for (const auto& k : events)
@@ -696,6 +824,21 @@ json::Value encode(const Board& b)
         recent.push(j);
     }
     o.add("recent", recent);
+    if (!b.moves.empty())                            // (Only when there is any: a Board from before it reads back the same.)
+    {
+        auto moves = Value::array();
+        for (const auto& r : b.moves)
+        {
+            auto j = Value::object();
+            j.add("day", r.day);
+            j.add("delta", r.delta);
+            j.add("market", r.market);
+            j.add("good", r.good);
+            j.add("cause", r.cause);
+            moves.push(j);
+        }
+        o.add("moves", moves);
+    }
     // Staged trade (Phase 4): written only when there is any, so a Board from before it reads back the same.
     if (!b.committed.empty())
     {
@@ -856,6 +999,20 @@ json::Value encode(const Board& b)
         for (const auto& [name, day] : b.lostShips)
             t.add(name, day);
         o.add("lostShips", t);
+    }
+    if (!b.resets.empty())
+    {
+        auto t = Value::object();
+        for (const auto& [m, r] : b.resets)
+        {
+            auto j = Value::object();
+            j.add("from", r.from);
+            j.add("until", r.until);
+            j.add("last", r.last);
+            j.add("words", r.words);
+            t.add(m, j);
+        }
+        o.add("resets", t);
     }
     if (!b.shipsThrough.empty())
     {
@@ -1088,6 +1245,13 @@ Board decode(const json::Value& v)
             if (finite(one.day) && finite(one.delta) && name(one.market) && good(one.good))
                 b.recent.push_back(std::move(one));
         }
+    for (const auto& r : v.array("moves"))
+        if (r.isObject() && b.moves.size() < MovesKept)
+        {
+            Ripple one{r.number("day", 0), r.number("delta", 0), r.string("market"), r.string("good"), r.string("cause").substr(0, 16)};
+            if (finite(one.day) && finite(one.delta) && name(one.market) && good(one.good))
+                b.moves.push_back(std::move(one));
+        }
     // Staged trade (Phase 4), leniently: a departure with no ends or a broken day is dropped, its unknown goods dropped,
     // its numbers clamped (the world drops one whose markets are gone: World::ensureRoadMarkets).
     for (const auto& j : v.array("committed"))
@@ -1266,6 +1430,18 @@ Board decode(const json::Value& v)
     for (const auto& [ship, day] : v.object("lostShips").fields())
         if (shipNameFits(ship) && day.isNumber() && finite(day.asNumber()) && b.lostShips.size() < LostShipsKept)
             b.lostShips[ship] = std::clamp(day.asNumber(), 0., 365000000.);
+    // The DM's price resets (Phase 9): a day at most from its start, its last pass inside it, plain words; else dropped.
+    for (const auto& [m, r] : v.object("resets").fields())
+    {
+        const double from = r.number("from", -1), until = r.number("until", -1);
+        if (!name(m) || !r.isObject() || !finite(from) || !finite(until) || from < 0 || until <= from || until - from > 1.0001 ||
+            b.resets.size() >= 64)
+            continue;
+        PriceReset reset{from, until, std::clamp(r.number("last", from), from, until), json::utf8Prefix(r.string("words"), 80)};
+        if (!plainWords(reset.words, 80))
+            reset.words.clear();
+        b.resets[m] = std::move(reset);
+    }
     return b;
 }
 
@@ -1746,7 +1922,7 @@ bool Society::setProsperity(int target, bool now, const std::string& cause)
     int dir = target > from ? 1 : target < from ? -1 : 0;
     if (dir == 0 && !cause.empty())
         dir = target > 0 ? 1 : target < 0 ? -1 : b.sliderCause.dir;
-    const auto& d = market::data();
+    const auto& d = market();                      // (The host's causes over market.json's: Phase 9.)
     const auto fill = [](const std::string& text, const std::string& words) { return market::fillWords(text, {{"cause", words}}); };
     auto words = json::utf8Prefix(cause, 80);
     while (!words.empty() && (words.back() == ' ' || words.back() == '.'))
@@ -1754,7 +1930,14 @@ bool Society::setProsperity(int target, bool now, const std::string& cause)
     while (!words.empty() && words.front() == ' ')
         words.erase(words.begin());
     const bool taken = !words.empty() && market::plainWords(words, 80);
-    if (dir == 0 || (!taken && (!moved || (b.sliderCause.dir == dir && !b.sliderCause.words.empty()))))
+    // (The host's words taken away, the DM's cause in force: the world's own words of its way take over: Phase 9's second
+    // repair. A cleared cause is the host's say, as economy.sync reads the stored one. They are told in their turn (the
+    // last repair: taken over "quietly", the DM's words stayed on every market's board for a week, against the crier and
+    // talk): the new notice replaces the DM's.)
+    const bool cleared = cause.empty() && b.sliderCause.dm && b.sliderCause.dir != 0;
+    if (cleared && dir == 0)
+        dir = b.sliderCause.dir;
+    if (dir == 0 || (!taken && !cleared && (!moved || (b.sliderCause.dir == dir && !b.sliderCause.words.empty()))))
         return taken || cause.empty();
     if (taken && b.sliderCause.dm && b.sliderCause.words == words && b.sliderCause.dir == dir)
         return true;                               // (The same words again, the same way: a sync says what it said.)
@@ -1799,7 +1982,7 @@ int Society::timesScore(const std::string& market) const
 {
     // 5.3: the slider, plus the market's own shift from its areas' harvests and the roads' troubles of the week (raids and
     // late wagons to it), which the world sets each morning (Phase 4), its staged events on (Phase 7) and the DM's nudge
-    // while it holds (Phase 7's, set by the DM's side in Phase 9). Never any player-caused pressure.
+    // while it holds (Phase 7's, set by the DM's times.nudge: RatwGameEconomy.cpp). Never any player-caused pressure.
     const auto& b = state_.board;
     int score = b.slider;
     if (const auto shift = b.timesShift.find(market); shift != b.timesShift.end())
@@ -2027,6 +2210,14 @@ void Society::setPressure(const std::string& market, const std::string& base, do
     if (!market::finite(P) || market.empty() || base.empty())
         return;
     P = std::clamp(P, -market::PressureMost, market::PressureMost);
+    // A big staged move, for the year log (12; Phase 9's last repair): what it moved from, with its real cause.
+    if (const double moved = P - pressure(market, base); std::abs(moved) > market::BigMove)
+    {
+        auto& moves = state_.board.moves;
+        moves.push_back({marketClock(), moved, market, base, cause.substr(0, 16)});
+        while (moves.size() > market::MovesKept)
+            moves.pop_front();
+    }
     if (std::abs(P) < 1e-9)
     {
         if (const auto m = state_.board.cell.find(market); m != state_.board.cell.end())
@@ -2072,8 +2263,8 @@ double Society::pushedBy(const std::string& market, const std::string& holder, c
 const market::Data::Season* Society::stagedSeasonGroup(const std::string& base, std::array<int, 4>* price,
                                                       std::array<int, 4>* shelf) const
 {
-    // market.json's group (7.1), with this world's own "season" record for that group over it (the DM's Economy tab,
-    // until Phase 9's market.json overrides).
+    // market.json's group (7.1), with this world's own "season" record for that group over it (the studio's Seasons
+    // panel, live.economy.seasons: doc 79, 12 and Phase 9).
     const auto* g = market::seasonOf(base);
     if (!g)
         return nullptr;
@@ -3139,6 +3330,8 @@ void Society::marketMorning(std::int64_t day)
     stepSlider(day);
     while (b.recent.size() > market::RecentKept)
         b.recent.pop_front();
+    while (!b.moves.empty() && b.moves.front().day < now - market::BigMoveDays)
+        b.moves.pop_front();
     b.day = day;
 }
 

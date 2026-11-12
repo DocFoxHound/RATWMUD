@@ -715,6 +715,7 @@ class World
     double calendarDays() const { return calendarDays_; }
     Society& society() { return society_; }
     const Society& society() const { return society_; }
+    bool restoredStaged() const { return restoredStaged_; }   // The restored save had a Board or staged state.
     const std::map<std::string, FactionDefinition>& factions() const { return factions_; }
     const std::map<std::string, ChapterDefinition>& chapters() const { return chapters_; }
     const std::map<std::string, Letting>& lettings() const { return lettings_; }
@@ -1078,7 +1079,7 @@ class World
     int shipsInWeek(const std::string& market, std::int64_t week) const;
     const market::Ship* shipIn(const std::string& market) const;
     std::string shipsNotice(const std::string& market) const;
-    // A ship still due kept out by a storm, or brought in now (announced causes: the Dungeon Master's, Phase 9; tests;
+    // A ship still due kept out by a storm, or brought in now (announced causes: the Dungeon Master's ship.storm; tests;
     // world_check's --ship-day). False if there is none of that id still due.
     bool stormShip(const std::string& id);
     bool dockShip(const std::string& id);
@@ -1094,7 +1095,7 @@ class World
     // are small. A world with no port, no wagon and no farm still has them, of the goods its shops deal in.
     // The events a market sees in a calendar week (0 while the rule is 0).
     int eventsInWeek(const std::string& market, std::int64_t week) const;
-    // The Dungeon Master's (Phase 9's Prosperity tab; tests): an event of market.json's list added at a market, on a day
+    // The Dungeon Master's (event.add from the Prosperity tab; tests): an event of market.json's list added at a market, on a day
     // of this calendar week or the next (the weeks committed) and an hour still to come (or now: it begins at the next
     // pass), whatever the seeded scheduler rolled; its needs only
     // as its kind must have them (a ship's: the first of the port's due from that day; a cart's: a staffed farm's cart to
@@ -1106,6 +1107,14 @@ class World
     // overrideNotices is 0 (8.5). False for a market or area the world hasn't got, or words that aren't plain.
     bool nudgeTimes(const std::string& market, int points, double days, const std::string& cause);
     bool overrideHarvest(const std::string& area, int word, double days, const std::string& cause);
+    // The DM's harvest override lifted (Phase 9): the event "harvest over", its notice down. False if none was held.
+    bool clearHarvest(const std::string& area);
+    // The Prosperity report (doc 79, 12; Phase 9; RatwProsperity.cpp): the slider and its cause, each market's Times, bands,
+    // hungry, short, would-be thieves, beggars and dole, nudges and resets, the largest pressures, the areas' harvests and
+    // the event kinds in force. Worked out at start, each staged morning and after each DM command (Society::setReport).
+    json::Value prosperityReport();
+    // The road markets, ports and imports found again at the next roads pass (a host's never-imported goods changed).
+    void refreshRoadMarkets() { roadMarketsRules_ = -1; }
     // An event's notice in words, and the facts talk reads (world.event, world.event_words, world.event_when: now, soon,
     // past; world.times and world.times_cause) at a market; and whether an event has a crowd in this cell.
     void eventFacts(const std::string& market, std::map<std::string, std::string>& facts) const;
@@ -1559,6 +1568,10 @@ class World
     // The same from a build held in memory (e.g. read from the world database):
     // "world.ratw" plus the cell files it names, by relative path.
     Result loadWorldFiles(const std::map<std::string, std::string>& files, const std::string& label);
+    // The economy's records alone, read from manifest text as loadWorld reads them (leniently, with its warnings), every
+    // other record passed over: what economy.sync needs, without reading the world again (doc 79, Phase 9's second
+    // repair: a full read stopped the game for seconds on each lever). Into `into.economy` and `into.warnings`.
+    static void readEconomyRecords(const std::string& manifest, AuthoredRoster& into);
     // --- Streamed worlds ---------------------------------------------------------------------------------
     // A world too large to hold at once keeps every cell's header (name, size, position, weather...) but a
     // cell's tiles and seams only while someone is in it or next to it. The source gives them by cell ID.
@@ -2051,6 +2064,13 @@ class World
     std::map<std::string, DoleTaker> doleTakers_;
     bool streetReady_ = false;                      // (The society's staged households made when the street was placed.)
     std::map<std::string, std::string> beggarWhere_;   // A beggar's place in words: "at the market", "at the chapel steps".
+    // "Beggars today" for the Prosperity report (Phase 9's last repair): the most beggars out at once in each market on
+    // the last day anyone could beg (Marketday or Restday, 8:00 to 18:00), and that day. The report is worked out at
+    // midnight, when no one begs: it reads this, never beggars_. Not saved: a server that hasn't seen a begging day yet
+    // keeps the last report's count (prosperityReport).
+    std::map<std::string, int> beggarsSeen_;
+    std::int64_t beggarsSeenDay_ = -1;
+    void noteBeggars();
     std::map<std::string, std::vector<Spot>> warmPlaces_;   // A market's warm walls (a bakehouse's, a forge's), today's.
     std::map<std::string, Runner> runners_;
     std::int64_t streetHour_ = -1, streetMinute_ = -1, theftPlanDay_ = -1, almsDay_ = -1, chapelStepsDay_ = -1;
@@ -2679,6 +2699,7 @@ class World
     std::size_t climatesFor_ = std::size_t(-1);     // How many cells the climates were worked out for.
     void mapClimates();
     Society society_;
+    bool restoredStaged_ = false;
     double scheduleAccumulator_ = 0.0;
     std::string spawnCell_ = "tavern";
     Vec2 spawnPosition_{16.5, 12.5};

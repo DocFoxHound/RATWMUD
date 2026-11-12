@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createProject, cutGrid, splitCell, mergeCells, normalizeProject, validate, newPerson, upsertPerson,
-    removePerson, upsertRoute, removeRoute, setEconomy, setHerbPatch, movePlace, addBuilding, paintTiles, stamp,
+    removePerson, upsertRoute, removeRoute, setEconomy, setHerbPatch, movePlace, addBuilding, paintTiles, stamp, deadSettings, BANDS,
     resizeRoom, removeRoom, updateCell, addRoom, addLink, updateLink, getCell, cellTerrain, placement} from './model.mjs';
 import {BUILDINGS, buildingById} from './templates.mjs';
 
@@ -79,87 +79,59 @@ test('removing a route frees its guards; removing a person is atomic', () => {
     assert.throws(() => removePerson(p, 'gus'), /Unknown person/);
 });
 
-test('the store room\'s economy keys are optional, checked and kept (doc 67, 6)', () => {
-    const p = world();
-    assert.deepEqual(validate(p).errors, [], 'without them');
-    const store = {internalStore: false, storeMarkup: 120, storeResale: true, resaleMarkup: 0, storeRule: true,
-        businesses: {rm_smith: {internalStore: false}}};
-    setEconomy(p, store);
-    assert.deepEqual(validate(p).errors, []);
-    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
-    for (const bad of [{storeMarkup: 1001}, {resaleMarkup: -1}, {storeMarkup: 7.5}, {storeRule: 'yes'},
-                       {businesses: {rm_smith: {internalStore: 0}}}, {businesses: {rm_smith: {internalStore: false, x: 1}}}, {shopping: true}])
-        assert.throws(() => setEconomy(p, bad), /Economy requires|store room/, JSON.stringify(bad));
-    assert.equal(p.economy.storeMarkup, 120, 'unchanged after a rejected edit');
-});
-
-test('the city loop\'s economy keys are optional, checked and kept (doc 68, 9)', () => {
-    const p = world();
-    const loop = {needsPaused: true, wharf: false, wharfReserve: 50, gateToll: 30, carriage: 9, wageKeeper: 20, wageHand: 9,
-        wagePublic: 7, wageWharf: 6, wharfOff: ['fish'], subsidies: {carriage: 40}};
-    setEconomy(p, loop);
-    assert.deepEqual(validate(p).errors, []);
-    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
-    for (const bad of [{gateToll: 91}, {carriage: -1}, {needsPaused: 'no'}, {wharfOff: ['fish', 'fish']}, {wharfOff: 'fish'},
-                       {subsidies: {roads: 5}}, {subsidies: {carriage: 101}}, {wageKeeper: 2.5}])
-        assert.throws(() => setEconomy(p, bad), /Economy requires|loop/, JSON.stringify(bad));
-    assert.equal(p.economy.gateToll, 30, 'unchanged after a rejected edit');
-});
-
-test('an older project\'s Country keys read as the Wharf\'s (doc 73, 2.3)', () => {
+test('the dead economy settings are dropped with a warning, never refused (doc 79, 12, 14 and 17)', () => {
+    // The store room's, the city loop's (but needsPaused), the comforts', the farms' and the Country's keys went with the
+    // staged economy: a project holding any of them, sound or not, opens; they are dropped, and validate says which.
     const p = world();
     const old = JSON.parse(JSON.stringify(p));
-    old.economy = {...old.economy, country: false, countryReserve: 50, wageCountry: 6, countryOff: ['fish'],
-        rules: {countryPostsDays: 3, wharfFee: 20}};
-    assert.deepEqual(validate(old).errors, []);
+    old.economy = {...old.economy, internalStore: false, storeMarkup: 5000, businesses: {rm_smith: {internalStore: 0}},
+        gateToll: 999, wharfOff: ['fish'], subsidies: {roads: 5}, comfortsAbove: -1, farms: {luck: 1}, country: false,
+        countryOff: ['fish'], needsPaused: true, dailyHerbs: 10};
+    assert.deepEqual(deadSettings(old), ['businesses', 'comfortsAbove', 'country', 'countryOff', 'farms', 'gateToll',
+        'internalStore', 'storeMarkup', 'subsidies', 'wharfOff']);
+    const v = validate(old);
+    assert.deepEqual(v.errors, []);
+    assert.ok(v.warnings.some(w => /no longer reads were dropped .*storeMarkup/.test(w)), v.warnings.join('\n'));
     const e = normalizeProject(old).economy;
-    assert.deepEqual([e.wharf, e.wharfReserve, e.wageWharf, e.wharfOff, e.rules], [false, 50, 6, ['fish'], {estatePostsDays: 3, wharfFee: 20}]);
-    assert.ok(!('country' in e) && !('countryOff' in e), 'only the new names kept');
-    assert.throws(() => setEconomy(p, {rules: {halfLifeDurable: 301}}), /Economy requires|rules/, 'a half-life at most 300');
+    assert.deepEqual(Object.keys(e).sort(), ['dailyHerbs', 'needsPaused', 'storeHerbs', 'storeMeals', 'treasury'],
+        'needsPaused and the read-past dailyHerbs kept');
+    assert.deepEqual(deadSettings(p), []);
+    // (A new project carries no dead field: no daily herbs or meals. Doc 79, Phase 9's first repair.)
+    assert.deepEqual(Object.keys(p.economy).sort(), ['storeHerbs', 'storeMeals', 'treasury']);
 });
 
-test('the seasons\' and comforts\' economy keys are optional, checked and kept (doc 68, Progress; migration 0057)', () => {
-    const p = world();
-    const grain = {supply: [50, 100, 150, 40], price: [120, 100, 80, 130], shelf: [100, 100, 100, 100], normal: 90};
-    setEconomy(p, {comfortsAbove: 40, comfortsShare: null, seasons: {grain}});
-    assert.deepEqual(validate(p).errors, []);
-    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
-    for (const bad of [{comfortsAbove: -1}, {comfortsShare: 101}, {seasons: []}, {seasons: {grain: {...grain, supply: [1, 2, 3]}}},
-                       {seasons: {grain: {...grain, price: [5, 100, 100, 100]}}}, {seasons: {'Grain!': grain}},
-                       {seasons: {grain: {...grain, colour: 1}}}])
-        assert.throws(() => setEconomy(p, bad), /seasons|Economy requires/, JSON.stringify(bad));
-    assert.equal(p.economy.comfortsAbove, 40, 'unchanged after a rejected edit');
-});
-
-test('the rules\' and services\' economy keys are optional, checked and kept (doc 68, Progress, "First fixes"; migration 0058)', () => {
+test('the economy entity\'s keys are optional, checked and kept (doc 79, 14)', () => {
     const p = world();
     const trim = {on: false, price: 2, every: 5};
+    const grain = {price: [110, 95, 85, 115], shelf: [100, 100, 130, 100]};
+    const old = {supply: [50, 100, 150, 40], price: [120, 100, 80, 130], shelf: [100, 100, 100, 100], normal: 90};
     // (almsADay: a rule the game no longer has, doc 79, 17: kept and ignored, never refused.)
-    setEconomy(p, {rules: {almsADay: 12, neverBroke: 1, playerSellMost: 300}, services: {groom_and_trim: trim}});
+    setEconomy(p, {needsPaused: true, seasons: {grain, fish: old}, rules: {almsADay: 12, neverBroke: 1, prosperity: -35, harvestBias: -20},
+        services: {groom_and_trim: trim}, overrides: {prosperityCause: 'the war levy', neverImported: ['salt']}});
     assert.deepEqual(validate(p).errors, []);
     assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
-    for (const bad of [{rules: []}, {rules: {playerSellMost: 5001}}, {rules: {neverBroke: 2}}, {rules: {depthScale: 9}},
-                       {rules: {ripple: -1}},
-                       {services: {groom_and_trim: {...trim, price: 0}}}, {services: {groom_and_trim: {...trim, every: 3651}}},
-                       {services: {groom_and_trim: {...trim, on: 1}}}, {services: {groom_and_trim: {on: true}}},
-                       {services: {'Trim!': trim}}])
-        assert.throws(() => setEconomy(p, bad), /rules|Economy requires/, JSON.stringify(bad));
+    for (const bad of [{needsPaused: 'no'}, {seasons: []}, {seasons: {grain: {...grain, price: [1, 2, 3]}}},
+                       {seasons: {grain: {...grain, price: [5, 100, 100, 100]}}}, {seasons: {'Grain!': grain}},
+                       {seasons: {grain: {...grain, colour: 1}}}, {seasons: {grain: {price: grain.price}}},
+                       {seasons: {grain: {...old, normal: -1}}}, {rules: []}, {rules: {playerSellMost: 5001}}, {rules: {neverBroke: 2}},
+                       {rules: {prosperity: 101}}, {rules: {harvestBias: -21}}, {rules: {ripple: -1}},
+                       {services: {groom_and_trim: {...trim, price: 0}}}, {services: {groom_and_trim: {on: true}}},
+                       {services: {'Trim!': trim}}, {overrides: []}, {dailyHerbs: -1}])
+        assert.throws(() => setEconomy(p, bad), /economy|Economy requires/i, JSON.stringify(bad));
     assert.equal(p.economy.rules.almsADay, 12, 'unchanged after a rejected edit');
 });
 
-test('the farms\' economy key is optional, checked and kept (doc 71, 4; migration 0060)', () => {
-    const p = world();
-    const farms = {start: 0, every: 30, order: ['salt', 'grain'], keeper: 17,
-        areas: {grain: {on: true, yieldScale: 120, crewScale: 150, hand: 11, priceFactor: 105}}, farms: {grain_farm_1: {yieldScale: 90}}};
-    setEconomy(p, {farms});
-    assert.deepEqual(validate(p).errors, []);
-    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).economy, {...p.economy}, 'normalizing keeps them');
-    for (const bad of [{farms: []}, {farms: {luck: 1}}, {farms: {start: -2}}, {farms: {every: 0}}, {farms: {order: ['grain', 'grain']}},
-                       {farms: {order: []}}, {farms: {keeper: 1001}}, {farms: {areas: {grain: {on: 1}}}},
-                       {farms: {areas: {grain: {yieldScale: 1001}}}}, {farms: {areas: {grain: {priceFactor: 5}}}},
-                       {farms: {areas: {grain: {colour: 1}}}}, {farms: {farms: {grain_farm_1: {on: true}}}}, {farms: {farms: {'Farm!': {}}}}])
-        assert.throws(() => setEconomy(p, bad), /farms|Economy requires/, JSON.stringify(bad));
-    assert.equal(p.economy.farms.keeper, 17, 'unchanged after a rejected edit');
+test('a resident\'s band: one of four, or from rank (doc 79, 14: the Band picker)', () => {
+    const p = world(), spot = {cell: p.cells[0].id, x: 3, y: 3};
+    const ann = upsertPerson(p, {...newPerson(p, 'civilian', spot), id: 'ann'});
+    assert.ok(!('band' in ann), 'from rank: no band kept');
+    upsertPerson(p, {...ann, band: 'poor'});
+    assert.equal(p.people[0].band, 'poor');
+    assert.deepEqual(normalizeProject(JSON.parse(JSON.stringify(p))).people[0].band, 'poor');
+    upsertPerson(p, {...p.people[0], band: null});
+    assert.ok(!('band' in p.people[0]), 'back to rank');
+    assert.throws(() => upsertPerson(p, {...p.people[0], band: 'noble'}), /band must be/);
+    assert.deepEqual(BANDS, ['destitute', 'poor', 'comfortable', 'rich']);
 });
 
 test('economy, herb patch and movePlace validate atomically', () => {

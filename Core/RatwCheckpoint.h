@@ -38,6 +38,9 @@ struct ServerState
     SocialLedger social;
     std::map<std::string, std::vector<std::string>> commandReceipts;
     std::map<std::string, std::map<std::string, std::string>> responseReceipts;
+    // The DM's economy acts applied, by dm.actions id ({ok, text, target}): set by each act's journal record, so a row a
+    // crash left queued is answered, not applied twice (doc 79, Phase 9's first repair).
+    json::Value dmActs;
 };
 
 // The document for a save: `world` as World::save() gives it (its players are ignored: `characters` are saved), the

@@ -18,43 +18,32 @@ import pickle
 import sys
 import threading
 
+import economy_contract
 import map_editor
 import roster as roster_lib
 import world_db
 
 DEFAULT_LIGHTING = {'artificial': 1, 'daylightAccess': 1, 'tone': 'warm'}
 DEFAULT_TERRITORY = {'region': 'unassigned', 'claims': [], 'chapter': ''}
-# The store room's settings (Docs/Design/67-ridgemere2-city.md, 6; migration 0055): the world's switches and markups
-# (live.economy) and each business's own switch (live.business_settings, by its founder), all optional, at these defaults.
-STORE_DEFAULTS = map_editor.STORE_DEFAULTS
-STORE_COLUMNS = {'internalStore': 'internal_store', 'storeMarkup': 'store_markup', 'storeResale': 'store_resale',
-                 'resaleMarkup': 'resale_markup', 'storeRule': 'store_rule'}
-# The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9; migration 0056): live.economy's columns.
-LOOP_DEFAULTS = map_editor.LOOP_DEFAULTS
-LOOP_COLUMNS = {'needsPaused': 'needs_paused', 'wharf': 'country', 'wharfReserve': 'country_reserve', 'gateToll': 'gate_toll',
-                'carriage': 'carriage', 'wageKeeper': 'wage_keeper', 'wageHand': 'wage_hand', 'wagePublic': 'wage_public',
-                'wageWharf': 'wage_country', 'wharfOff': 'country_off', 'subsidies': 'subsidies'}
-# The seasons and the comforts (doc 68, Progress, "Seasons and the DM's rules"; migration 0057).
-SEASON_DEFAULTS = map_editor.SEASON_DEFAULTS
-SEASON_COLUMNS = {'comfortsAbove': 'comforts_above', 'comfortsShare': 'comforts_share', 'seasons': 'seasons'}
-# The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): {name: N} and
-# {service: {on, price, every}}, only what this world has changed ({}: all as the data files have them: Data/Economy/market.json and status.json).
-RULE_DEFAULTS = map_editor.RULE_DEFAULTS
-RULE_COLUMNS = {'rules': 'rules', 'services': 'services'}
-# The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): what this world has changed of
-# Data/Economy/country_farms.json's ({}: all as the file has them).
-FARM_DEFAULTS = map_editor.FARM_DEFAULTS
-FARM_COLUMNS = {'farms': 'farms'}
-DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'dailyHerbs': 10, 'dailyMeals': 12,
-                   **STORE_DEFAULTS, 'businesses': {}, **LOOP_DEFAULTS, **SEASON_DEFAULTS, **RULE_DEFAULTS, **FARM_DEFAULTS}
-NO_STORE = 'this world lacks migration 0055 (python3 tools/world_db.py migrate --db KEY): its store room stays at its defaults'
-NO_LOOP = 'this world lacks migration 0056 (python3 tools/world_db.py migrate --db KEY): its city loop stays at its defaults'
+# The economy's settings (Docs/Design/79-a-staged-economy.md, 12 and 14; Phase 9). Of live.economy only these columns are
+# read by the game (D20: every other is dead and kept as it is, never written by a save): the treasury's and its stores'
+# starting amounts, needs paused (0056), the season groups (0057), the rules and the services (0058). The rules' jsonb
+# also holds the host's overrides (economy_contract.OVERRIDE_KEYS: the slider's cause, the goods no ship brings,
+# status.json's and market.json's values), which the entity carries apart as `overrides`. Migration 0061 is the slim
+# world: live.business_settings gone, live.npcs.band_override added; 0058-0060 are pre-slim (the overrides but the
+# cause refused there: NO_SLIM).
+ECONOMY_KEPT = {'treasury': 'treasury', 'storeHerbs': 'store_herbs', 'storeMeals': 'store_meals', 'needsPaused': 'needs_paused',
+                'seasons': 'seasons', 'rules': 'rules', 'services': 'services'}
+OVERRIDE_KEYS = economy_contract.OVERRIDE_KEYS
+DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'needsPaused': False, 'seasons': {}, 'rules': {},
+                   'services': {}, 'overrides': {}}
+NO_LOOP = 'this world lacks migration 0056 (python3 tools/world_db.py migrate --db KEY): its needs can\'t be paused'
 NO_SEASONS = ('this world lacks migration 0057 (python3 tools/world_db.py migrate --db KEY): its seasons stay '
               'as Data/Economy/market.json has them')
 NO_RULES = ('this world lacks migration 0058 (python3 tools/world_db.py migrate --db KEY): its rules and services stay '
             'as Data/Economy/market.json and status.json have them')
-NO_FARMS = ('this world lacks migration 0060 (python3 tools/world_db.py migrate --db KEY): its farms stay as '
-            'Data/Economy/country_farms.json has them')
+NO_SLIM = 'This world needs migration 0061.'
+NO_BAND = 'This world needs migration 0061 to hold an NPC\'s band (the Band picker): set it to From rank, or migrate it.'
 HERB_PATCH = 'herb_patch'
 
 
@@ -115,126 +104,100 @@ TABLES = {
                                                    'paid', 'purse', 'herbs', 'meals', 'hours_start', 'hours_end',
                                                    'home_area', 'home_x', 'home_y', 'work_area', 'work_x', 'work_y',
                                                    'evening_area', 'evening_x', 'evening_y')),
-    'live.economy': (('world_id',), ('world_id', 'treasury', 'store_herbs', 'store_meals', 'daily_herbs', 'daily_meals',
-                                     *STORE_COLUMNS.values(), *LOOP_COLUMNS.values(), *SEASON_COLUMNS.values(),
-                                     *RULE_COLUMNS.values(), *FARM_COLUMNS.values())),
-    # A business kept out of the store room (doc 67, 6): a row only while it is off.
-    'live.business_settings': (('world_id', 'npc_id'), ('world_id', 'npc_id', 'internal_store')),
+    # The kept columns (ECONOMY_KEPT; doc 79, 14), on a slim world or one with 0058-0060.
+    'live.economy': (('world_id',), ('world_id', *ECONOMY_KEPT.values())),
 }
-# A world with migration 0058 but not 0060: the rules' columns, not the farms'.
-RULE_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][
-    :6 + len(STORE_COLUMNS) + len(LOOP_COLUMNS) + len(SEASON_COLUMNS) + len(RULE_COLUMNS)])}
-# A world with migration 0057 but not 0058: the seasons' columns, not the rules'.
-SEASON_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][
-    :6 + len(STORE_COLUMNS) + len(LOOP_COLUMNS) + len(SEASON_COLUMNS)])}
-# A world with migration 0056 but not 0057: the loop's columns, not the seasons'.
-LOOP_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][:6 + len(STORE_COLUMNS) + len(LOOP_COLUMNS)])}
-# A world with migration 0055 but not 0056: the store room's columns, not the loop's.
-STORE_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][:6 + len(STORE_COLUMNS)])}
-# A world without migration 0055 (DEV and PROD until the user migrates them): no store columns, no business settings.
-LEGACY_TABLES = {**{t: v for t, v in TABLES.items() if t != 'live.business_settings'},
-                 'live.economy': (('world_id',), TABLES['live.economy'][1][:6])}
+# A slim world (migration 0061): an NPC's authored band too.
+SLIM_TABLES = {**TABLES, 'live.npcs': (('world_id', 'id'), (*TABLES['live.npcs'][1], 'band_override'))}
+# Before 0058 the kept columns a world has: 0057's (no rules or services), 0056's (no seasons), older (no needs).
+SEASON_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][:6])}
+LOOP_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][:5])}
+LEGACY_TABLES = {**TABLES, 'live.economy': (('world_id',), TABLES['live.economy'][1][:4])}
 # Children are deleted before parents and written after them; deferred foreign keys settle the rest at commit.
 WRITE_ORDER = ['world.areas', 'world.terrain_chunks', 'world.cells', 'world.interiors', 'world.links', 'world.resources',
                'live.factions', 'world.chapters', 'live.patrol_routes', 'live.patrol_posts', 'live.npcs',
-               'live.profession_slots', 'live.economy', 'live.business_settings']
+               'live.profession_slots', 'live.economy']
 
 
-def store_supported(conn) -> bool:
-    """Whether this world has migration 0055 (the store room's columns and table), as world_build checks fingerprints."""
+class EconomyRefused(StoreError):
+    """An economy write a world's migrations can't hold (the host's overrides before migration 0061)."""
+    status = 409
+
+
+def _has_columns(conn, table, columns) -> bool:
     return bool(conn.execute("""
-        SELECT (SELECT count(*) FROM information_schema.columns WHERE table_schema = 'live' AND table_name = 'economy'
-                AND column_name IN ('internal_store', 'store_markup', 'store_resale', 'resale_markup', 'store_rule')) = 5
-           AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'live' AND table_name = 'business_settings')
+        SELECT count(*) = %s FROM information_schema.columns WHERE table_schema = 'live' AND table_name = %s
+               AND column_name = ANY(%s)""", (len(columns), table, list(columns))).fetchone()[0])
+
+
+def slim_supported(conn) -> bool:
+    """Whether this world has migration 0061 (doc 79, 14): live.npcs.band_override, and no live.business_settings."""
+    return bool(conn.execute("""
+        SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'live' AND table_name = 'npcs'
+                       AND column_name = 'band_override')
+           AND NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'live' AND table_name = 'business_settings')
     """).fetchone()[0])
 
 
 def loop_supported(conn) -> bool:
-    """Whether this world has migration 0056 (the city loop's columns)."""
-    return bool(conn.execute("""
-        SELECT count(*) = %s FROM information_schema.columns WHERE table_schema = 'live' AND table_name = 'economy'
-               AND column_name = ANY(%s)""", (len(LOOP_COLUMNS), list(LOOP_COLUMNS.values()))).fetchone()[0])
+    """Whether this world has migration 0056 (needs_paused, the one kept column of the city loop's)."""
+    return _has_columns(conn, 'economy', ('needs_paused',))
 
 
 def seasons_supported(conn) -> bool:
-    """Whether this world has migration 0057 (the seasons' and comforts' columns)."""
-    return bool(conn.execute("""
-        SELECT count(*) = %s FROM information_schema.columns WHERE table_schema = 'live' AND table_name = 'economy'
-               AND column_name = ANY(%s)""", (len(SEASON_COLUMNS), list(SEASON_COLUMNS.values()))).fetchone()[0])
+    """Whether this world has migration 0057 (the seasons' column)."""
+    return _has_columns(conn, 'economy', ('seasons',))
 
 
 def rules_supported(conn) -> bool:
     """Whether this world has migration 0058 (the rules' and services' columns)."""
-    return bool(conn.execute("""
-        SELECT count(*) = %s FROM information_schema.columns WHERE table_schema = 'live' AND table_name = 'economy'
-               AND column_name = ANY(%s)""", (len(RULE_COLUMNS), list(RULE_COLUMNS.values()))).fetchone()[0])
-
-
-def farms_supported(conn) -> bool:
-    """Whether this world has migration 0060 (the farms' column)."""
-    return bool(conn.execute("""
-        SELECT count(*) = %s FROM information_schema.columns WHERE table_schema = 'live' AND table_name = 'economy'
-               AND column_name = ANY(%s)""", (len(FARM_COLUMNS), list(FARM_COLUMNS.values()))).fetchone()[0])
+    return _has_columns(conn, 'economy', ('rules', 'services'))
 
 
 def tables_for(conn) -> dict:
-    """The tables (and columns) this world's database has: TABLES, RULE_TABLES without migration 0060, SEASON_TABLES
-    without 0058, LOOP_TABLES without 0057, STORE_TABLES without 0056, or LEGACY_TABLES without 0055."""
-    if not store_supported(conn):
-        return LEGACY_TABLES
-    if not loop_supported(conn):
-        return STORE_TABLES
-    if not seasons_supported(conn):
-        return LOOP_TABLES
-    if not rules_supported(conn):
+    """The tables (and columns) this world's database has: SLIM_TABLES at 0061, TABLES at 0058-0060, SEASON_TABLES at
+    0057, LOOP_TABLES at 0056, LEGACY_TABLES before."""
+    if slim_supported(conn):
+        return SLIM_TABLES
+    if rules_supported(conn):
+        return TABLES
+    if seasons_supported(conn):
         return SEASON_TABLES
-    return TABLES if farms_supported(conn) else RULE_TABLES
+    return LOOP_TABLES if loop_supported(conn) else LEGACY_TABLES
 
 
-def loop_differs(economy) -> bool:
-    """Whether an economy entity sets anything of the city's loop away from its default (which needs migration 0056)."""
+def economy_refused(tables, economy) -> str | None:
+    """Why an economy entity can't be stored in a world with these tables, or None. Dead settings are ignored, never
+    refused (doc 79, 14)."""
     e = economy or {}
-    return any(comparable(e.get(k, v)) != comparable(v) for k, v in LOOP_DEFAULTS.items())
-
-
-def seasons_differ(economy) -> bool:
-    """Whether an economy entity sets the seasons or the comforts (which need migration 0057)."""
-    e = economy or {}
-    return any(comparable(e.get(k, v)) != comparable(v) for k, v in SEASON_DEFAULTS.items())
-
-
-def rules_differ(economy) -> bool:
-    """Whether an economy entity sets the rules or the services (which need migration 0058)."""
-    e = economy or {}
-    return any(comparable(e.get(k, v)) != comparable(v) for k, v in RULE_DEFAULTS.items())
-
-
-def farms_differ(economy) -> bool:
-    """Whether an economy entity sets the farms (which need migration 0060)."""
-    e = economy or {}
-    return any(comparable(e.get(k, v)) != comparable(v) for k, v in FARM_DEFAULTS.items())
-
-
-def loop_refused(tables, economy) -> str | None:
-    """Why these settings can't be stored in a world with these tables, or None."""
-    if tables is LEGACY_TABLES and store_differs(economy):
-        return NO_STORE
-    if tables in (LEGACY_TABLES, STORE_TABLES) and loop_differs(economy):
+    overrides = e.get('overrides') or {}
+    columns = tables['live.economy'][1]
+    if e.get('needsPaused') and 'needs_paused' not in columns:
         return NO_LOOP
-    if tables not in (TABLES, RULE_TABLES, SEASON_TABLES) and seasons_differ(economy):
+    if e.get('seasons') and 'seasons' not in columns:
         return NO_SEASONS
-    if tables not in (TABLES, RULE_TABLES) and rules_differ(economy):
+    if (e.get('rules') or e.get('services') or overrides.get('prosperityCause')) and 'rules' not in columns:
         return NO_RULES
-    if tables is not TABLES and farms_differ(economy):
-        return NO_FARMS
+    if tables is not SLIM_TABLES and any(said(k, overrides.get(k)) for k in OVERRIDE_KEYS if k != 'prosperityCause'):
+        return NO_SLIM
     return None
 
 
-def store_differs(economy) -> bool:
-    """Whether an economy entity sets anything of the store room away from its default (which needs migration 0055)."""
-    e = economy or {}
-    return (any(e.get(k, v) != v for k, v in STORE_DEFAULTS.items())
-            or any(isinstance(s, dict) and s.get('internalStore') is False for s in (e.get('businesses') or {}).values()))
+def said(key, value) -> bool:
+    """Whether an override says anything: an empty never-imported list does (ships carry every good, in place of
+    market.json's wharf.never), any other empty value is none (the defaults)."""
+    return value is not None if key == 'neverImported' else value not in (None, '', [], {})
+
+
+def bands_refused(tables, people) -> str | None:
+    """Why these NPCs' authored bands can't be stored in a world with these tables (before 0061: no band_override), or
+    None. Refused, never dropped unsaid."""
+    if tables is SLIM_TABLES:
+        return None
+    banded = [n['id'] for n in people or [] if isinstance(n, dict) and n.get('band') is not None]
+    return f'{NO_BAND} ({", ".join(banded[:6])}{"..." if len(banded) > 6 else ""})' if banded else None
+
+
 JSON_COLUMNS = {'heights', 'appearance', 'letting', 'subsidies', 'seasons', 'rules', 'services', 'farms'}
 
 
@@ -330,11 +293,17 @@ def post_rows(w, route):
     return [(w, route['id'], seq, *place(post)) for seq, post in enumerate(route['posts'])]
 
 
-def npc_row(w, n, position):
-    return (w, n['id'], position, n['name'], n['role'], n['description'], n['greeting'], n.get('personality', ''),
-            n.get('backstory', ''), n['workLabel'], n['age'], n['voice'], dict(n['appearance']), n['route'] or None,
-            n['paid'], n['purse'], n['herbs'], n['meals'], n['hours']['start'], n['hours']['end'],
-            *npc_place(n['home']), *npc_place(n['work']), *npc_place(n['evening']), bool(n.get('joinable', False)), bool(n.get('protected', False)))
+def npc_row(w, n, position, band=False):
+    """A live.npcs row; with `band` (a slim world, 0061), its authored band (band_override: None from rank)."""
+    row = (w, n['id'], position, n['name'], n['role'], n['description'], n['greeting'], n.get('personality', ''),
+           n.get('backstory', ''), n['workLabel'], n['age'], n['voice'], dict(n['appearance']), n['route'] or None,
+           n['paid'], n['purse'], n['herbs'], n['meals'], n['hours']['start'], n['hours']['end'],
+           *npc_place(n['home']), *npc_place(n['work']), *npc_place(n['evening']), bool(n.get('joinable', False)), bool(n.get('protected', False)))
+    if not band:
+        return row
+    if n.get('band') is not None and economy_contract.check_band(n.get('band')) is None:
+        raise ValueError(f'Person {n["id"]}: band must be destitute, poor, comfortable, rich or none (from rank).')
+    return row + (n.get('band'),)
 
 
 def slot_row(w, s, position):
@@ -343,44 +312,49 @@ def slot_row(w, s, position):
             *npc_place(s['home']), *npc_place(s['work']), *npc_place(s['evening']))
 
 
-def economy_row(w, economy, store=True, loop=None, seasons=None, rules=None, farms=None):
-    """A live.economy row; with `store` (a world with migration 0055), the store room's switches and markups too; with
-    `loop` (0056; as `store` unless said), the city loop's settings; with `seasons` (0057; as `loop` unless said), the
-    seasons' and the comforts'; with `rules` (0058; as `seasons` unless said), the rules' and the services'; with `farms`
-    (0060; as `rules` unless said), the farms'."""
-    # (Doc 73: an older entity's Country keys. Doc 79: a dead setting a project holds unsound, at its default.)
-    e = {**DEFAULT_ECONOMY, **(map_editor.dead_settings_sound(map_editor.legacy_economy(economy)) or {})}
-    row = (w, e['treasury'], e['storeHerbs'], e['storeMeals'], e['dailyHerbs'], e['dailyMeals'])
-    if not store:
-        return row
-    row += tuple(e[k] for k in STORE_COLUMNS)
-    loop = True if loop is None else loop
-    if loop:
-        row += tuple(sorted(e[k]) if k == 'wharfOff' else dict(e[k]) if k == 'subsidies' else e[k] for k in LOOP_COLUMNS)
-    seasons = loop if seasons is None else loop and seasons
-    if seasons:
-        row += tuple(copy.deepcopy(dict(e[k] or {})) if k == 'seasons' else e[k] for k in SEASON_COLUMNS)
-    rules = seasons and (rules is None or rules)
-    if rules:
-        row += tuple(copy.deepcopy(dict(e[k] or {})) for k in RULE_COLUMNS)
-    if rules and (farms is None or farms):
-        row += tuple(copy.deepcopy(dict(e[k] or {})) for k in FARM_COLUMNS)
-    return row
+def split_rules(stored) -> tuple[dict, dict, dict]:
+    """live.economy.rules as stored: (the integer rules, the host's overrides, anything else kept as it is)."""
+    rules, overrides, other = {}, {}, {}
+    for k, v in (stored or {}).items():
+        if k in OVERRIDE_KEYS:
+            overrides[k] = copy.deepcopy(v)
+        elif isinstance(v, int) and not isinstance(v, bool):
+            rules[k] = v
+        elif isinstance(v, float) and v.is_integer():
+            rules[k] = int(v)
+        else:
+            other[k] = copy.deepcopy(v)
+    return rules, overrides, other
 
 
-def economy_row_for(w, economy, tables):
+def merged_rules(economy, other=None) -> dict:
+    """The rules' jsonb for an economy entity: its integer rules, its overrides (an empty one left out, but an empty
+    never-imported list kept: it says ships carry everything) and, kept as they were, anything else the stored rules
+    held (`other`)."""
+    e = economy or {}
+    out = copy.deepcopy(other or {})
+    out.update({k: v for k, v in (e.get('rules') or {}).items() if isinstance(v, int) and not isinstance(v, bool)})
+    for k, v in (e.get('overrides') or {}).items():
+        if k in OVERRIDE_KEYS and said(k, v):
+            out[k] = copy.deepcopy(v)
+    return out
+
+
+def economy_row(w, economy, columns=None, other=None):
+    """A live.economy row of the kept columns this world has (`columns`, TABLES' unless said); the rules with the
+    overrides merged in. Anything dead an older entity carries (the store room, the loop, the comforts, the farms,
+    the daily herbs and meals) is left out: its column keeps what it holds (D20)."""
+    e = {**DEFAULT_ECONOMY, **(economy or {})}
+    columns = columns or TABLES['live.economy'][1]
+    value = {'world_id': w, 'treasury': e['treasury'], 'store_herbs': e['storeHerbs'], 'store_meals': e['storeMeals'],
+             'needs_paused': bool(e['needsPaused']), 'seasons': copy.deepcopy(dict(e['seasons'] or {})),
+             'rules': merged_rules(e, other), 'services': copy.deepcopy(dict(e['services'] or {}))}
+    return tuple(value[c] for c in columns)
+
+
+def economy_row_for(w, economy, tables, other=None):
     """economy_row for a world with these tables."""
-    return economy_row(w, economy, store=tables is not LEGACY_TABLES, loop=tables in (TABLES, RULE_TABLES, SEASON_TABLES, LOOP_TABLES),
-                       seasons=tables in (TABLES, RULE_TABLES, SEASON_TABLES), rules=tables in (TABLES, RULE_TABLES),
-                       farms=tables is TABLES)
-
-
-def business_rows(w, economy):
-    """live.business_settings rows: one per business switched off (a row back at its default is not kept)."""
-    businesses = (economy or {}).get('businesses') or {}
-    if not isinstance(businesses, dict):
-        return []
-    return [(w, npc, False) for npc, s in sorted(businesses.items()) if isinstance(s, dict) and s.get('internalStore') is False]
+    return economy_row(w, economy, tables['live.economy'][1], other)
 
 
 def _details(r):
@@ -430,36 +404,77 @@ def person_entity(r):
     return {'id': r['id'], 'name': r['name'], 'role': r['role'], 'description': r['description'], 'greeting': r['greeting'],
             'age': r['age'], 'appearance': r['appearance'], 'voice': r['voice'], **_resident(r),
             'personality': r['personality'], 'backstory': r['backstory'],
-            **({'joinable': True} if r.get('joinable') else {}), **({'protected': True} if r.get('protected') else {})}
+            **({'joinable': True} if r.get('joinable') else {}), **({'protected': True} if r.get('protected') else {}),
+            **({'band': r['band_override']} if r.get('band_override') else {})}
 
 
 def slot_entity(r):
     return {'id': r['id'], 'name': r['name'], 'profession': r['profession'], **_resident(r)}
 
 
-def economy_entity(r, businesses=None):
-    """A live.economy row as the editor's economy: a world without migration 0055 reads the store room's defaults.
-    `businesses`: live.business_settings rows ({npc_id, internal_store}) for the businesses switched off."""
-    return map_editor.legacy_economy({'treasury': r['treasury'], 'storeHerbs': r['store_herbs'], 'storeMeals': r['store_meals'],
-            'dailyHerbs': r['daily_herbs'], 'dailyMeals': r['daily_meals'],
-            **{k: r.get(c, STORE_DEFAULTS[k]) for k, c in STORE_COLUMNS.items()},
-            'businesses': {b['npc_id']: {'internalStore': False} for b in businesses or [] if b['internal_store'] is False},
-            **{k: (sorted(r[c]) if k == 'wharfOff' else dict(r[c]) if k == 'subsidies' else r[c]) if c in r
-               else copy.deepcopy(LOOP_DEFAULTS[k]) for k, c in LOOP_COLUMNS.items()},
-            **{k: ((dict(r[c] or {}) if k == 'seasons' else r[c]) if c in r else copy.deepcopy(SEASON_DEFAULTS[k]))
-               for k, c in SEASON_COLUMNS.items()},
-            **{k: copy.deepcopy(dict(r[c] or {})) if c in r else copy.deepcopy(RULE_DEFAULTS[k]) for k, c in RULE_COLUMNS.items()},
-            **{k: copy.deepcopy(dict(r[c] or {})) if c in r else copy.deepcopy(FARM_DEFAULTS[k]) for k, c in FARM_COLUMNS.items()}})   # (Doc 73: a rule's old name as its new.)
+def economy_entity(r):
+    """A live.economy row as the economy entity (doc 79, 14; economy_contract): the kept columns, the rules' integers apart
+    from the host's overrides. A column the world hasn't got reads its default."""
+    rules, overrides, _ = split_rules(r.get('rules') or {})
+    return {'treasury': r['treasury'], 'storeHerbs': r['store_herbs'], 'storeMeals': r['store_meals'],
+            'needsPaused': bool(r.get('needs_paused', False)), 'seasons': copy.deepcopy(dict(r.get('seasons') or {})),
+            'rules': rules, 'services': copy.deepcopy(dict(r.get('services') or {})), 'overrides': overrides}
 
 
 def economy_value(conn, world_id):
     """The economy entity as stored (Atlas's keyed edit `economy`), or None while the world has no live.economy row."""
     found = dict_rows(conn, 'SELECT * FROM live.economy WHERE world_id = %s', (world_id,))
-    if not found:
-        return None
-    businesses = (dict_rows(conn, 'SELECT npc_id, internal_store FROM live.business_settings WHERE world_id = %s ORDER BY npc_id',
-                            (world_id,)) if store_supported(conn) else [])
-    return economy_entity(found[0], businesses)
+    return economy_entity(found[0]) if found else None
+
+
+def stored_other_rules(conn, world_id) -> dict:
+    """What the stored rules hold that is neither an integer rule nor an override (kept as it is by a save)."""
+    if not rules_supported(conn):
+        return {}
+    row = conn.execute('SELECT rules FROM live.economy WHERE world_id = %s', (world_id,)).fetchone()
+    return split_rules(row[0] if row else {})[2]
+
+
+def save_economy(conn, world_id, economy) -> dict:
+    """Writes the kept columns of an economy entity (doc 79, 14), its overrides into the rules (only the slider's cause
+    before migration 0061: EconomyRefused otherwise); the entity as stored. `dailyHerbs` and `dailyMeals` are ignored."""
+    tables = tables_for(conn)
+    if refused := economy_refused(tables, economy):
+        raise EconomyRefused(refused)
+    columns = tables['live.economy'][1]
+    with conn.transaction():
+        # A rule's name that is no plain word would split the manifest's line (Phase 9's last repair): refused here too,
+        # whoever calls; one the row already holds is let by (the manifest never prints it), so the row can still be saved.
+        if 'rules' in columns and (wanted := [n for n in (economy or {}).get('rules') or {} if not economy_contract.name_fits(n)]):
+            row = conn.execute('SELECT rules FROM live.economy WHERE world_id = %s', (world_id,)).fetchone()
+            held = row[0] if row and isinstance(row[0], dict) else {}
+            if problems := economy_contract.rule_name_problems(n for n in wanted if n not in held):
+                raise EconomyRefused(' '.join(problems[:4]))
+        other = stored_other_rules(conn, world_id)
+        row = economy_row(world_id, economy, columns, other)
+        rest = [c for c in columns if c != 'world_id']
+        conn.execute(f'INSERT INTO live.economy ({", ".join(columns)}) VALUES ({", ".join(["%s"] * len(columns))}) '
+                     f'ON CONFLICT (world_id) DO UPDATE SET {", ".join(f"{c} = excluded.{c}" for c in rest)}',
+                     [Jsonb(v) if c in JSON_COLUMNS else v for c, v in zip(columns, row)])
+    return economy_value(conn, world_id)
+
+
+def patch_economy_rules(conn, world_id, set_=None, drop=()) -> dict:
+    """One statement (two writers never lose each other's keys): rules = (rules - drop) || set_. The rules as stored
+    after. A world without its live.economy row gets one at the defaults first."""
+    if not rules_supported(conn):
+        raise EconomyRefused(NO_RULES)
+    set_ = dict(set_ or {})
+    if problems := economy_contract.rule_name_problems(k for k in set_ if k not in OVERRIDE_KEYS):
+        raise EconomyRefused(' '.join(problems[:4]))    # (Never a name that would split the manifest's line.)
+    if any(k in OVERRIDE_KEYS and k != 'prosperityCause' for k in set_) and not slim_supported(conn):
+        raise EconomyRefused(NO_SLIM)
+    conn.execute('INSERT INTO live.economy (world_id, treasury, store_herbs, store_meals) VALUES (%s, %s, %s, %s) '
+                 'ON CONFLICT (world_id) DO NOTHING',
+                 (world_id, DEFAULT_ECONOMY['treasury'], DEFAULT_ECONOMY['storeHerbs'], DEFAULT_ECONOMY['storeMeals']))
+    row = conn.execute('UPDATE live.economy SET rules = (rules - %s::text[]) || %s::jsonb WHERE world_id = %s RETURNING rules',
+                       (list(drop), Jsonb(set_), world_id)).fetchone()
+    return dict(row[0]) if row else {}
 
 
 def dict_rows(conn, sql, params):
@@ -468,10 +483,10 @@ def dict_rows(conn, sql, params):
     return [dict(zip(names, r)) for r in cur.fetchall()]
 
 
-def project_rows(p: dict, chunk_size: int, tables=None) -> dict[str, list[tuple]]:
+def project_rows(p: dict, chunk_size: int, tables=None, other_rules=None) -> dict[str, list[tuple]]:
     """Every row a validated (atlas v3) project stores, per table. Cells and terrain are stored in world coordinates.
-    `tables`: the database's (tables_for), TABLES unless said; without migration 0055 the store room's are left out."""
-    tables = TABLES if tables is None else tables
+    `tables`: the database's (tables_for), SLIM_TABLES (the newest: migration 0061) unless said."""
+    tables = SLIM_TABLES if tables is None else tables
     w = p['id']
     rows = {table: [] for table in tables}
     for c in p['cells']:
@@ -515,13 +530,11 @@ def project_rows(p: dict, chunk_size: int, tables=None) -> dict[str, list[tuple]
         rows['live.patrol_routes'].append((w, r['id'], i, r['name']))
         rows['live.patrol_posts'] += post_rows(w, r)
     for i, n in enumerate(p.get('people', [])):
-        rows['live.npcs'].append(npc_row(w, n, i))
+        rows['live.npcs'].append(npc_row(w, n, i, band=tables is SLIM_TABLES))
     for i, slot in enumerate(p.get('slots', [])):
         rows['live.profession_slots'].append(slot_row(w, slot, i))
     # (A world without a live.economy row gets one at DEFAULT_ECONOMY's values, never the table's column defaults.)
-    rows['live.economy'].append(economy_row_for(w, p.get('economy', {}), tables))
-    if 'live.business_settings' in tables:
-        rows['live.business_settings'] = business_rows(w, p.get('economy', {}))
+    rows['live.economy'].append(economy_row_for(w, p.get('economy', {}), tables, other_rules))
     return rows
 
 
@@ -539,12 +552,13 @@ def write_rows(conn, desired: dict[str, list[tuple]], current: dict[str, list[tu
     """Deletes, updates and inserts only what differs. Returns the number of rows changed. `tables`: as project_rows
     made `desired` (TABLES, or LEGACY_TABLES without the store room's)."""
     if not tables:
+        # (Guessed from the rows: a slim world's by its NPCs' band column, then the economy row's kept columns.)
         economy = (desired.get('live.economy') or [()])[0]
-        tables = (LEGACY_TABLES if 'live.business_settings' not in desired
-                  else STORE_TABLES if economy and len(economy) == len(STORE_TABLES['live.economy'][1])
-                  else LOOP_TABLES if economy and len(economy) == len(LOOP_TABLES['live.economy'][1])
-                  else SEASON_TABLES if economy and len(economy) == len(SEASON_TABLES['live.economy'][1])
-                  else RULE_TABLES if economy and len(economy) == len(RULE_TABLES['live.economy'][1]) else TABLES)
+        npcs = desired.get('live.npcs') or []
+        tables = (SLIM_TABLES if (not npcs or len(npcs[0]) == len(SLIM_TABLES['live.npcs'][1])) and
+                  (not economy or len(economy) == len(SLIM_TABLES['live.economy'][1]))
+                  else next((t for t in (TABLES, SEASON_TABLES, LOOP_TABLES, LEGACY_TABLES)
+                             if economy and len(economy) == len(t['live.economy'][1])), TABLES))
     order = [t for t in WRITE_ORDER if t in tables]
     changed = 0
     plans = {}
@@ -719,7 +733,7 @@ def keep_the_games_truth(conn, p, desired: dict, current: dict, tables=None, rev
         want = {r[1]: i for i, r in enumerate(desired[table])}
         listed = p.get('people' if kind == 'person' else 'slots', [])
         at = {e['id']: i for i, e in enumerate(listed)}
-        build = npc_row if kind == 'person' else slot_row
+        build = (lambda w, n, position: npc_row(w, n, position, band=tables is SLIM_TABLES)) if kind == 'person' else slot_row
         for rid, change in changed.items():
             cid = f'{table}/{rid}'
             if rid not in want or rid not in at:
@@ -818,9 +832,11 @@ def save_world(conn, project: dict, revision: int | None, create: bool = False, 
         if missing:
             raise StoreError(f'Profession slots use professions the roster does not have: {", ".join(missing)}.')
         tables = tables_for(conn)
-        if refused := loop_refused(tables, p.get('economy')):
-            raise StoreError(f'The economy\'s settings can\'t be saved: {refused}.')
-        desired = project_rows(p, chunk_size, tables)
+        if refused := economy_refused(tables, p.get('economy')):
+            raise EconomyRefused(f'The economy\'s settings can\'t be saved: {refused}')
+        if refused := bands_refused(tables, p.get('people')):
+            raise EconomyRefused(refused)
+        desired = project_rows(p, chunk_size, tables, stored_other_rules(conn, p['id']))
         # (The NPCs and slots locked as read, the game's log read after: the two agree, and nothing the game writes
         # meanwhile is overwritten. Doc 66, Progress, "The live world's truth".)
         current = stored_rows(conn, p['id'], tables, lock=GAME_TABLE_OF.values())

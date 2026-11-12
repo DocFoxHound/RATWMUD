@@ -8,8 +8,8 @@ import {forHost, groundPending, want, type SentGround} from './lazyGround';
 import {stable} from './live';
 import {authHeaders, studioCall} from '../dm/api';
 import type {Choice, PullPlan, PullResult} from './sync';
-import type {BusinessesBody, ComfortsBody, EconomyChange, EconomyControls, FarmsBody, GoodsBody, LoopSettings, RulesBody,
-    SeasonsBody, ServicesBody, StoreSwitches} from './economy';
+import type {EconomyData, EconomyReply, ImportsBody, MarketBody, NeedsBody, RulesBody, SeasonsBody, ServicesBody, StatusBody,
+    SteerBody} from './economy';
 
 /** The world Atlas is editing (Database/worlds.json, doc 66), as the host says; null for a host without a database. */
 export interface AtlasWorld { key: string; name: string; kind: 'dev' | 'live'; upstream?: string }
@@ -34,6 +34,10 @@ async function json<T>(response: Response): Promise<T> {
     const data = await response.json().catch(() => ({error: `Host replied ${response.status}.`}));
     if (!response.ok && !('errors' in data)) throw new Error(data.error ?? `Host replied ${response.status}.`);
     return data as T;
+}
+
+async function economyPost(kind: string, body: unknown): Promise<EconomyReply & EconomyData> {
+    return studioCall<EconomyReply & EconomyData>(ATLAS + `economy/${kind}`, body, {'X-RATW-Editor': await session()});
 }
 
 export interface HostValidation { valid: boolean; errors: string[]; warnings: string[] }
@@ -87,7 +91,7 @@ export const api = {
     /** The one world, edited live (tools/live_edit.py). */
     live: {
         /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view. */
-        load: async () => json<{project: Project; seq: number; gameSeq?: number}>(await get('live/world?lean=1')),
+        load: async () => json<{project: Project; seq: number; gameSeq?: number; bands?: boolean}>(await get('live/world?lean=1')),
         ground: async (ids: string[]) => json<{seq: number; cells: Record<string, SentGround>}>(
             await get(`live/ground?cells=${ids.map(encodeURIComponent).join(',')}`)),
         edit: (body: unknown) => post('live/edit', body),
@@ -125,33 +129,20 @@ export const api = {
         pull: async (choices: Record<string, Choice>, expect: string) =>
             studioCall<PullResult>(ATLAS + 'sync/pull', {choices, expect}, {'X-RATW-Editor': await session()}),
     },
-    /** The Economy controls (doc 67, 6; tools/studio.py): the store room's switches and every placed merchant's
-     *  business on Atlas's world. Reading is anyone's; changing needs a dm or admin account and Atlas's token. */
+    /** The Economy page (doc 79, 12 and 14; tools/studio.py): the EconomyView of Atlas's world. Reading is anyone's;
+     *  each change needs a dm or admin account and Atlas's token, and replies the view with {changed, detail, sync,
+     *  warnings}. imports, status and market need migration 0061 (409 before it). */
     economy: {
-        read: () => studioCall<EconomyControls>(ATLAS + 'economy'),
-        setStore: async (changes: Partial<StoreSwitches>) =>
-            studioCall<EconomyChange>(ATLAS + 'economy/store', changes, {'X-RATW-Editor': await session()}),
-        setBusinesses: async (body: BusinessesBody) =>
-            studioCall<EconomyChange>(ATLAS + 'economy/businesses', body, {'X-RATW-Editor': await session()}),
-        /** The city's loop (doc 68, 9): wages, the Country, the gate toll, carriage, subsidies, needs paused. */
-        setLoop: async (changes: Partial<LoopSettings>) =>
-            studioCall<EconomyChange>(ATLAS + 'economy/loop', changes, {'X-RATW-Editor': await session()}),
-        /** Which goods the Country supplies (off: their real producers'). */
-        setGoods: async (body: GoodsBody) =>
-            studioCall<EconomyChange>(ATLAS + 'economy/goods', body, {'X-RATW-Editor': await session()}),
-        /** The seasons in the Country's supply, a group at a time, and the comforts (doc 68, Progress; migration 0057). */
-        setSeasons: async (body: SeasonsBody) =>
-            studioCall<EconomyChange>(ATLAS + 'economy/seasons', body, {'X-RATW-Editor': await session()}),
-        setComforts: async (body: ComfortsBody) =>
-            studioCall<EconomyChange>(ATLAS + 'economy/comforts', body, {'X-RATW-Editor': await session()}),
-        /** The loop's rules and the city's services (doc 68, Progress, "First fixes"; migration 0058). */
-        setRules: async (body: RulesBody) =>
-            studioCall<EconomyChange>(ATLAS + 'economy/rules', body, {'X-RATW-Editor': await session()}),
-        setServices: async (body: ServicesBody) =>
-            studioCall<EconomyChange>(ATLAS + 'economy/services', body, {'X-RATW-Editor': await session()}),
-        /** The Country's food farms (doc 71, 4; migration 0060): the switch, the wages, an area's or a farm's scales. */
-        setFarms: async (body: FarmsBody) =>
-            studioCall<EconomyChange>(ATLAS + 'economy/farms', body, {'X-RATW-Editor': await session()}),
+        read: () => studioCall<EconomyData>(ATLAS + 'economy'),
+        /** The slider: {prosperity (clamped, never refused), cause?, now?}. */
+        steer: async (body: SteerBody) => economyPost('steer', body),
+        needs: async (body: NeedsBody) => economyPost('needs', body),
+        rules: async (body: RulesBody) => economyPost('rules', body),
+        services: async (body: ServicesBody) => economyPost('services', body),
+        seasons: async (body: SeasonsBody) => economyPost('seasons', body),
+        imports: async (body: ImportsBody) => economyPost('imports', body),
+        status: async (body: StatusBody) => economyPost('status', body),
+        market: async (body: MarketBody) => economyPost('market', body),
     },
     ai: async () => json<{available: boolean; model: string; error: string}>(await get('ai')),
     generate: async (count: number, favor: string[], theme: string) => {

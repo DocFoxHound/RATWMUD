@@ -179,6 +179,13 @@ def shape(conn, table):
     return _shapes[known]
 
 
+# Columns a later migration added that a world may lack (doc 79, Phase 9: live.npcs.band_override, migration 0061): a
+# row read with one NULL leaves it out, so it compares equal to the same row from a world without the column; a write
+# to a world with the column sets one the row leaves out to NULL (a band cleared to From rank is cleared there too), and
+# one the target hasn't got is refused when the row holds a value (never dropped unsaid), left out when it is unset.
+OPTIONAL_COLUMNS = {'live.npcs': ('band_override',)}
+
+
 def world_column(table):
     if table in GLOBAL_TABLES:
         return None
@@ -197,13 +204,31 @@ def read(conn, table, world_id, skip=(), where=''):
     if where:
         sql += (' AND ' if column else ' WHERE ') + where
     cur = conn.execute(sql, params)
-    return {tuple(r[columns.index(k)] for k in keys): dict(zip(columns, r)) for r in cur.fetchall()}
+    optional = OPTIONAL_COLUMNS.get(table, ())
+    rows = {}
+    for r in cur.fetchall():
+        row = dict(zip(columns, r))
+        for c in optional:                         # (Unset, as a world without the column has it.)
+            if c in row and row[c] is None:
+                del row[c]
+        rows[tuple(row[k] for k in keys)] = row
+    return rows
 
 
 def write(conn, table, row, touch=False):
     _, keys, types = shape(conn, table)
-    columns = list(row)
-    values = [S.Jsonb(row[c]) if types[c] == 'jsonb' and row[c] is not None else row[c] for c in columns]
+    optional = OPTIONAL_COLUMNS.get(table, ())
+    row = dict(row)
+    for c in optional:
+        if c in types and c not in row:
+            row[c] = None                         # (Unset, as read() leaves it out: written as unset.)
+        elif c not in types and row.get(c) is not None:
+            raise PublishError(f'{table} {row.get("id", "")}: this world lacks the column {c} (migration 0061) to hold it. '
+                               'Migrating it is the user\'s decision (python3 tools/world_db.py migrate); or set it back '
+                               'to none (the Band picker\'s From rank) where it was set.', [row.get('id', '')])
+    # (Only an optional column the target lacks is left out; any other unknown column fails, as it always has.)
+    columns = [c for c in row if c in types or c not in optional]
+    values = [S.Jsonb(row[c]) if types.get(c) == 'jsonb' and row[c] is not None else row[c] for c in columns]
     rest = [f'{c} = excluded.{c}' for c in columns if c not in keys]
     if touch and 'updated_at' in types and 'updated_at' not in row:
         rest.append('updated_at = now()')
@@ -428,8 +453,8 @@ SYNCED = [Spec(*s) for s in (
     ('live.faction_relations', 'faction relations', 'live'),
     ('live.npc_voice', 'NPC voices', 'live'),
     ('live.npc_relations', 'families', 'live'),
-    # (live.business_settings, the store room's per-business switch (doc 67, 6; 0055), is no longer synced: the store
-    # room went with the city's loop, Docs/Design/79-a-staged-economy.md, 17. Migration 0061 drops the table.)
+    # (The store room's per-business switches went with the city's loop: Docs/Design/79-a-staged-economy.md, 17;
+    # migration 0061 dropped their table.)
     ('live.dialects', 'dialects', 'live'),
     ('live.figures', 'figures', 'live'),
     ('live.story_visitors', 'story visitors', 'live'),
@@ -481,6 +506,14 @@ class Snapshot(dict):
 
     def count(self):
         return sum(len(rows) for rows in self.values())
+
+
+def bands_unheld(source, target) -> list[str]:
+    """The NPCs of `source` with an authored band (live.npcs.band_override) when `target` lacks the column: what a sync
+    there would have to refuse (write())."""
+    if 'band_override' in shape(target, 'live.npcs')[2] or 'band_override' not in shape(source, 'live.npcs')[2]:
+        return []
+    return [r[0] for r in source.execute('SELECT id FROM live.npcs WHERE band_override IS NOT NULL ORDER BY id').fetchall()]
 
 
 def snapshot(conn, world_id) -> Snapshot:
@@ -1428,17 +1461,23 @@ def plan(dev, live, dev_key, live_key, replace=False):
     return info, items, (base, snap_dev, snap_live, world_id, release, header)
 
 
+# The columns of live.economy the game reads (doc 79, 14; every other is dead, D20): the ones economy_kept compares.
+ECONOMY_KEPT = ('treasury', 'store_herbs', 'store_meals', 'needs_paused', 'seasons', 'rules', 'services')
+
+
 def economy_kept(dev, live, dev_id, live_id):
-    """The live world's economy settings (live.economy: its rules, wages, toll, treasury's start, the store room's
-    switches) where they differ from the dev world's: never synced, each world's own, so live keeps them whatever dev
-    has (the live game's truth, doc 66, Progress). {'fields': [column], 'dev': {column: value}, 'live': {...}}."""
+    """The live world's economy settings (live.economy's kept columns: the treasury's start and its stores, needs paused,
+    the seasons, the rules with the host's overrides, the services) where they differ from the dev world's: never
+    synced, each world's own, so live keeps them whatever dev has (the live game's truth, doc 66, Progress).
+    {'fields': [column], 'dev': {column: value}, 'live': {...}}."""
     try:
         d = read(dev, 'live.economy', dev_id, skip=NOT_CONTENT) if dev_id else {}
         l = read(live, 'live.economy', live_id, skip=NOT_CONTENT) if live_id else {}
     except psycopg.Error:
         return {'fields': [], 'dev': {}, 'live': {}}
     d, l = next(iter(d.values()), {}), next(iter(l.values()), {})
-    fields = [c for c in sorted(set(d) & set(l)) if c != 'world_id' and canonical(normalized({c: d[c]})) != canonical(normalized({c: l[c]}))]
+    fields = [c for c in sorted(set(d) & set(l) & set(ECONOMY_KEPT))
+              if canonical(normalized({c: d[c]})) != canonical(normalized({c: l[c]}))]
     return {'fields': fields, 'dev': {c: shown(normalized({c: d[c]})[c]) for c in fields},
             'live': {c: shown(normalized({c: l[c]})[c]) for c in fields}}
 
@@ -1508,6 +1547,7 @@ class Sync:
             state, running = server_state(live), server_running(live)
             history = releases(live) if info['world'] else []
             lacking = behind(dev, live) if info['replacesMap'] else []
+            unheld = bands_unheld(dev, live)
         blocked = []
         if info['replacesMap']:
             warnings = [maps_differ_text(info['maps'], dev_key, live_key) + ': importing replaces '
@@ -1520,6 +1560,11 @@ class Sync:
             blocked.append(f'{live_key} is not in maintenance: close it first (the DM, or python3 tools/world_sync.py maintenance {live_key} on).')
         elif running:
             blocked.append(f'{live_key}\'s game server has not stopped yet (it closes within a minute of maintenance).')
+        if unheld:
+            blocked.append(f'{live_key.upper()} lacks migration 0061, and {len(unheld)} NPC{"s" if len(unheld) != 1 else ""} '
+                           f'in {dev_key.upper()} {"have bands" if len(unheld) != 1 else "has a band"} it can\'t hold '
+                           f'({", ".join(unheld[:6])}{"..." if len(unheld) > 6 else ""}): migrate {live_key.upper()} (the '
+                           f'user\'s decision: python3 tools/world_db.py migrate --db {live_key}), or set them to From rank.')
         if info['economy']['fields']:
             warnings = [*warnings, f'{dev_key.upper()}\'s economy settings differ from {live_key.upper()}\'s '
                         f'({", ".join(info["economy"]["fields"][:8])}{"..." if len(info["economy"]["fields"]) > 8 else ""}): '

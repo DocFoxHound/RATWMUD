@@ -289,7 +289,7 @@ export function colorFor(name: string) {
 export const clientId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
 export interface Host {
-    load(): Promise<{project: Project; seq: number; gameSeq?: number}>;
+    load(): Promise<{project: Project; seq: number; gameSeq?: number; bands?: boolean}>;
     edit(body: unknown): Promise<Response>;
     sync(body: unknown): Promise<{seq: number; reload?: boolean; changes: Change[]; editors: Editor[]; gameSeq?: number}>;
 }

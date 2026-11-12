@@ -541,6 +541,22 @@ void societyTests()
     older.add("exportsRemaining", 8);
     older.add("importsRemaining", 4);
     expect(wire::readSociety(older).nextEntry > 0, "an older save's economy is read past");
+    // Doc 79, Phase 9: the Prosperity report kept opaque through the wire, and the Board's price resets round-trip.
+    {
+        auto state = w.save().society;
+        auto report = json::Value::object();
+        report.add("v", 1);
+        report.add("anything", "the game never reads back");
+        state.report = report;
+        state.board.resets["east"] = {10, 11, 10.5, "fresh stock everywhere"};
+        state.board.resets["bad"] = {10, 13, 10, "too long a reset"};
+        const auto back = wire::readSociety(json::Value(wire::society(state)));
+        expect(back.report == report, "the report round-trips opaque");
+        expect(back.board.resets.size() == 1 && back.board.resets.at("east").last == 10.5 && back.board.resets.at("east").words == "fresh stock everywhere",
+               "a reset round-trips; one over a day dropped");
+        state.report = json::Value("not an object");
+        expect(wire::readSociety(wire::society(state)).report.isNull(), "a report that isn't an object isn't kept");
+    }
 }
 
 void commandTests()

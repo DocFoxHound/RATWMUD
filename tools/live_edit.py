@@ -94,6 +94,14 @@ class Batch:
         self.rooms = {}       # id -> {'meta': dict | None, 'tiles': {(x, y): glyph}, 'heights': {(x, y): h}, 'dirty': bool}
         self.pending = {}     # entity key -> new value (None deletes)
         self.head = {}        # name/spawn/bounds changes
+        self._tables = None
+
+    @property
+    def tables(self):
+        """The world's tables (world_store.tables_for): a slim world's NPCs carry their band (doc 79, 14)."""
+        if self._tables is None:
+            self._tables = S.tables_for(self.conn)
+        return self._tables
 
     # -- reading ---------------------------------------------------------------
     def rows(self, sql, *params):
@@ -170,7 +178,7 @@ class Batch:
             found = self.rows("SELECT area, x, y FROM world.resources WHERE world_id = %s AND id = %s", S.HERB_PATCH)
             return {'cell': found[0]['area'], 'x': found[0]['x'], 'y': found[0]['y']} if found else None
         if key == 'economy':
-            return S.economy_value(self.conn, self.w)    # (With the store room's settings: doc 67, 6.)
+            return S.economy_value(self.conn, self.w)    # (The kept settings and the host's overrides: doc 79, 14.)
         raise ValueError(f'Unknown edit key: {key}')
 
     # -- applying ----------------------------------------------------------------
@@ -265,6 +273,12 @@ class Batch:
                 self.area(id_, 'cell')
                 self.upsert('world.cells', S.cell_row(w, value, self.position('world.cells', id_)))
                 S.sync_claims(self.conn, w, id_, S.claims_of(value))
+            elif kind == 'person':
+                # (An NPC's authored band on a slim world: doc 79, 14; the Band picker.)
+                slim = self.tables is S.SLIM_TABLES
+                if refused := S.bands_refused(self.tables, [value]):
+                    raise ValueError(refused)     # (Refused, never dropped unsaid, before 0061.)
+                self.upsert('live.npcs', S.npc_row(w, value, self.position('live.npcs', id_), band=slim), self.tables)
             elif kind in self.ENTITIES:
                 table, _, build = self.ENTITIES[kind]
                 self.upsert(table, build(w, value, self.position(table, id_)))
@@ -320,25 +334,48 @@ class Batch:
                 self.conn.execute("INSERT INTO world.resources (world_id, id, kind, area, x, y) VALUES (%s, %s, 'herb', %s, %s, %s)",
                                   (w, S.HERB_PATCH, *S.place(value)))
         elif key == 'economy':
-            # The town economy and the store room's settings (doc 67, 6): checked as a save checks them; a world without
-            # migration 0055 keeps its store room at the defaults. A business back at its default keeps no row.
+            # The economy's settings (doc 79, 14): checked as a save checks them (map_editor.check_economy), the kept
+            # columns and the host's overrides written (world_store.save_economy); an override this world's migrations
+            # can't hold is refused (EconomyRefused: "This world needs migration 0061.").
             if value is None:
                 raise ValueError('The economy cannot be removed.')
-            people = {r[0] for r in self.conn.execute('SELECT id FROM live.npcs WHERE world_id = %s', (w,)).fetchall()}
-            problems = map_editor.check_economy(value, people)
+            # (Only what this edit brings is refused: a problem the stored settings already have, which Core reads past,
+            # never blocks another change. Doc 79, Phase 9's first repair. The host's overrides held to the studio's
+            # strict rules too, Phase 9's second repair: a new bad or oversized one, which Core would skip whole, cause
+            # and all, is refused here as the studio refuses it; one already stored is not.)
+            stored = S.economy_value(self.conn, w)
+            had = set(map_editor.check_economy(stored, strict_overrides=True)) if stored is not None else set()
+            problems = [p for p in map_editor.check_economy(value, strict_overrides=True) if p not in had]
             if problems:
                 raise ValueError(' '.join(problems))
-            tables = S.tables_for(self.conn)
-            if refused := S.loop_refused(tables, value):
-                raise ValueError(f'The economy\'s settings can\'t be changed: {refused}.')
-            self.upsert('live.economy', S.economy_row_for(w, value, tables), tables)
-            if tables is not S.LEGACY_TABLES:
-                off = {row[1] for row in S.business_rows(w, value)}
-                self.conn.execute('DELETE FROM live.business_settings WHERE world_id = %s AND NOT (npc_id = ANY(%s))', (w, sorted(off)))
-                for npc in sorted(off):
-                    self.conn.execute('INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES (%s, %s, false) '
-                                      'ON CONFLICT (world_id, npc_id) DO UPDATE SET internal_store = false, updated_at = now()',
-                                      (w, npc))
+            try:
+                S.save_economy(self.conn, w, value)
+            except S.StoreError as error:
+                raise ValueError(f'The economy\'s settings can\'t be changed: {error}') from error
+            self.economy_changed = True
+
+
+def queue_economy_sync(conn, who, payload=None):
+    """economy.sync for the world's running game server (doc 79, 12: it reads live.economy again and applies it at once);
+    the action's id, or None if it couldn't be queued (no server to tell is no error: an unapplied action expires after
+    ten minutes). Since migration 0061 as Atlas's own role, through dm.queue_economy_sync (Phase 9's second repair: Atlas
+    logged in as the DM's role, through the registry key "dev", and on a registry without it, or a host with no DM
+    password, the server was never told); before it as the DM's role on the same database."""
+    try:
+        if conn.execute("SELECT to_regprocedure('dm.queue_economy_sync(text, jsonb)') IS NOT NULL").fetchone()[0]:
+            return conn.execute('SELECT dm.queue_economy_sync(%s, %s)', (str(who)[:60] or 'Atlas', S.Jsonb(payload or {}))).fetchone()[0]
+    except psycopg.Error:
+        pass                                    # (A world before 0061: the DM's role, below.)
+    try:
+        names = world_db.keys()
+        key = next((k for k in names if world_db.world(k)['database'] == conn.info.dbname), names[0] if names else 'dev')
+        with world_db.connect(key, 'dm', dbname=conn.info.dbname, host=conn.info.host, port=conn.info.port) as dm:
+            action = dm.execute('INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s) RETURNING id',
+                                ('economy.sync', 'economy', str(who)[:60] or 'Atlas', S.Jsonb(payload or {}))).fetchone()[0]
+            dm.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action}),))
+            return action
+    except (world_db.DatabaseError, psycopg.Error, KeyError):
+        return None
 
 
 # --------------------------------------------------------------------------- Service
@@ -486,8 +523,11 @@ def fill_ground(conn, project):
     return project
 
 
-def apply_edit(conn, client_id, editor, label, ops, merged=None):
+def apply_edit(conn, client_id, editor, label, ops, merged=None, queue_sync=True, synced=None):
     """Applies one batch. Returns the new seq; raises Conflict or Rejected with the current values.
+
+    An `economy` change queues economy.sync for the running server after it commits (`queue_sync`; the studio passes
+    False, queuing its own: doc 79, Phase 9's U9); `synced` (a dict, if given) gets the action's id under 'sync'.
 
     An NPC or slot the game server changed since the editor saw it (doc 66, Progress, "The live world's truth") is not
     refused for that: the edit's own changes are made on the game's row, and `merged` (a dict, if given) gets the row
@@ -533,7 +573,12 @@ def apply_edit(conn, client_id, editor, label, ops, merged=None):
                                VALUES (%s, txid_current(), %s, %s, %s, %s, %s, %s)''',
                             [(batch.w, editor, client_id, label[:200], op['key'], S.Jsonb(op.get('before')), S.Jsonb(op.get('after')))
                              for op in ops])
-            return latest_seq(conn)
+            seq = latest_seq(conn)
+        if queue_sync and getattr(batch, 'economy_changed', False):
+            action = queue_economy_sync(conn, editor)
+            if synced is not None:
+                synced['sync'] = action
+        return seq
     except (psycopg.errors.IntegrityError, ValueError, KeyError, TypeError, AttributeError) as error:
         message = getattr(getattr(error, 'diag', None), 'message_primary', None) or str(error)
         if isinstance(error, psycopg.errors.ForeignKeyViolation):
@@ -645,7 +690,8 @@ class LiveWorld:
     def load(self, lean=False):
         with self.connect() as conn:
             project, seq, game_seq = load(conn, lean, with_game=True)
-        return {'project': project, 'seq': seq, 'gameSeq': game_seq}
+            bands = S.slim_supported(conn)          # (Migration 0061: an NPC's own band; the Band picker greyed without it.)
+        return {'project': project, 'seq': seq, 'gameSeq': game_seq, 'bands': bands}
 
     def ground(self, ids):
         with self.connect() as conn:
@@ -661,12 +707,12 @@ class LiveWorld:
             return fill_ground(conn, project)
 
     def edit(self, data):
-        merged = {}
+        merged, synced = {}, {}
         with self.connect() as conn:
             seq = apply_edit(conn, str(data.get('clientId', ''))[:64], str(data.get('editor', '')).strip()[:60] or 'Someone',
-                             str(data.get('label', '')), data.get('ops'), merged)
+                             str(data.get('label', '')), data.get('ops'), merged, synced=synced)
         # (Rows written as the edit's changes on the game's: the editor shows them as written.)
-        return {'seq': seq, **({'merged': merged} if merged else {})}
+        return {'seq': seq, **({'merged': merged} if merged else {}), **synced}
 
     def sync(self, data):
         since = data.get('since')

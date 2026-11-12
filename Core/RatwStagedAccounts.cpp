@@ -68,6 +68,9 @@ std::string Society::holderOf(const std::string& account) const
 
 std::string Society::faucetGroup(const std::string& reason)
 {
+    // (The DM's grants and fines first, whatever their reason's words: doc 79, 12; Phase 9's grantPlayer.)
+    if (startsWith(reason, "dm grant: ") || startsWith(reason, "dm fine: "))
+        return "grant";
     if (has(reason, "stolen"))
         return "theft";
     if (has(reason, "welcome") || has(reason, "provisions to start with"))
@@ -160,7 +163,8 @@ std::int64_t Society::faucetToday(const std::string& holder, const std::string& 
 std::int64_t Society::faucetRoom(const std::string& player, const std::string& cap) const
 {
     const std::int64_t most = statusTable().cap(cap);
-    const std::string group = cap == "theftADay" ? "theft" : cap == "stakesADay" ? "stakes" : cap == "rewardsADay" ? "reward" : cap;
+    const std::string group = cap == "theftADay" ? "theft" : cap == "stakesADay" ? "stakes" : cap == "rewardsADay" ? "reward"
+                              : cap == "grantsADay" ? "grant" : cap;
     return std::max<std::int64_t>(0, most - faucetToday(holderOf(player), group));
 }
 
@@ -423,6 +427,17 @@ void Society::stagedBands(std::int64_t day, bool now)
         stagedHomesFor(day);
     const auto& t = statusTable();
     auto& st = state_.staged;
+    // (A world's first bands: the report, made before them, is worked out again: World::tendRoads.)
+    struct FirstBands
+    {
+        Society& s;
+        bool first;
+        ~FirstBands()
+        {
+            if (first && !s.state_.staged.bands.empty())
+                s.reportStale_ = true;
+        }
+    } firstBands{*this, st.bands.empty()};
     // The slider the bands read (the Board's one), its day's step if the dawn hasn't taken it; "now" goes at once.
     stepSlider(day, now);
     // Who leads a House and their kin (the head's spouse, parents and children, and family at home), the post-holders now,
@@ -582,15 +597,21 @@ void Society::stagedBands(std::int64_t day, bool now)
             c.implied = status::Destitute;
         // The guarantees, in their order (6.3).
         bool beggar = false, house = false, watch = false;
+        int authored = -1;                          // (A member's authored band, the highest of them: doc 79, 14; Phase 9.)
         for (const auto& m : members)
         {
             beggar |= category(m) == "beggar";
             house |= houseKin.count(m) > 0;
             if (const auto* s = spec(m))
-                watch |= s->ofTheWatch();
+                watch |= s->ofTheWatch(), authored = std::max(authored, s->band);
         }
-        if (const auto o = st.overrides.find(key); o != st.overrides.end() && o->second.until >= day)
+        // The DM's timed override first, then the band the host authored for a member (the Band picker: standing, for the
+        // whole household), then the guarantees and the score.
+        // (In force before its day `until`: a band for N days from today is N days, the report's and the DM tool's.)
+        if (const auto o = st.overrides.find(key); o != st.overrides.end() && o->second.until > day)
             c.fixed = std::clamp(o->second.band, 0, status::Bands - 1), c.overridden = true;
+        else if (authored >= 0)
+            c.fixed = std::min(authored, status::Bands - 1), c.overridden = true, c.reason = c.reason || authored == status::Destitute;
         else if (homeless || beggar)
             c.fixed = status::Destitute, c.reason = true;
         else if (house)
@@ -892,7 +913,7 @@ void Society::stagedPrune(std::int64_t day)
     for (auto it = st.faucets.begin(); it != st.faucets.end();)
         it = day - it->first >= 28 ? st.faucets.erase(it) : std::next(it);
     for (auto it = st.overrides.begin(); it != st.overrides.end();)
-        it = it->second.until < day ? st.overrides.erase(it) : std::next(it);
+        it = it->second.until <= day ? st.overrides.erase(it) : std::next(it);
     // (Street life, Phase 6: a dole more than a week old, and fed fame's weeks gone by.)
     for (auto it = st.dole.begin(); it != st.dole.end();)
         it = day - it->second >= 7 ? st.dole.erase(it) : std::next(it);

@@ -4,8 +4,8 @@ import type {Person, Place, Project, Route} from '../model/model.mjs';
 import type {SentGround} from '../lib/lazyGround';
 import type {Chronicle} from '../lib/chronicle';
 import type {BuildStatus, Choice, ImportPlan, ImportResult, MapPair, Release, ServerStatus, SyncItem, SyncWorld} from '../lib/sync';
-import type {ComfortsBody, EconomyChange, EconomyControls, FarmsBody, GoodsBody, LoopSettings, RulesBody, SeasonsBody,
-    ServicesBody, StoreSwitches} from '../lib/economy';
+import type {EconomyActKind, EconomyReply, EconomyView, ProsperityReport} from '../lib/economyContract';
+export type {EconomyActKind} from '../lib/economyContract';
 
 /** A world's key (Database/worlds.json, doc 66): any registered world, live or dev. */
 export type Target = string;
@@ -153,6 +153,11 @@ export interface Npcs {
     target: Target; world: string; people: Person[]; holders: Holder[]; dead: string[]; routes: Route[]; areas: NpcArea[]; spawns: SpawnRule[];
     /** NPC ID → the area they wander; NPC ID → the rule that spawned them. */
     wanders: Record<string, string>; spawned: Record<string, string>; actions: Action[];
+    /** NPC ID → the DM's band for a while on their household, as last saved: its band and the game day it lapses. */
+    bandsHeld?: Record<string, {band: string; until: number; household: string}>;
+    /** The NPCs the bands cover (residents the game houses, as last saved; null: no save yet); whether the world holds an
+     *  NPC's own band (migration 0061). */
+    bandable?: string[] | null; bandsAuthored?: boolean;
 }
 
 export type FactionKind = 'npc' | 'city' | 'guild' | 'clan' | 'other';
@@ -242,21 +247,36 @@ export interface Health {
     players: {name: string; ms: number; at: string}[];
 }
 
-/** Where the money is, from the last save (nothing moves it of itself since the economy's rules were erased:
- *  Docs/Design/66-worlds-atlas-and-dm.md, Phase 5). Pennies; null where an account doesn't exist yet. */
-export interface MoneyTown { residents: number; treasury: number | null; church: number | null; buyers: Record<string, number> }
-export interface MoneyGroup { count: number; total: number; median: number }
-export interface Money {
-    target: Target; day: number | null; total: number; capital: number | null;
-    towns: Record<string, MoneyTown>; houses: {id: string; cash: number}[]; tills: {count: number; total: number};
-    /** Facility funds (fund:...) and the markets outside the city (outside:..., the Wharf's purse: doc 68, 2; doc 73). */
-    funds?: {id: string; cash: number}[];
-    /** The carters' yards' tills: what carriage paid them (doc 68, 6). */
-    carters?: {id: string; name: string; label: string; cash: number}[];
-    residents: {count: number; total: number; median: number | null; poorestTenth: number | null; richestTenth: number | null;
-        shortOfFood: number; byRole: Record<string, MoneyGroup>};
-    road: {caravans: number; contracts: number; bandits: number}; players: number;
+/** The Prosperity tab's read model (Docs/Design/79-a-staged-economy.md, 12; tools/dungeon_master.py prosperity()): Core's
+ *  report from the last checkpoint, and what the tool reads beside it from the same row and the database. It lags the
+ *  game by up to one checkpoint: `writtenAt`, and `stale` once that is over three minutes old. */
+export interface WeekWagon { id: string; from: string; to: string; day: number; state: string; goods: string[] }
+export interface WeekShip { id: string; port: string; name: string; day: number; state: 'due' | 'in' | 'sailed' | 'storm' | 'lost'; goods: string[] }
+export interface WeekEvent { id: string; market: string; kind: string; day: number; hour: number; state: string; by: string; words: string }
+export interface PlayerMoneyDay { day: number; made: number; sunk: number; goodsMade: number; goodsSunk: number }
+export interface PlayerMoneyHolder { holder: string; name: string; made: number; sunk: number; 
+    /** By the faucet's or the sink's reason: coin made, coin sunk, then goods in and out at the catalogue's price. */
+    byReason: Record<string, [number, number, number?, number?]> }
+export interface ProsperityView {
+    target: Target; writtenAt: string | null; gameDay: number | null; stale: boolean;
+    report: ProsperityReport | null;
+    /** The towns' treasuries (accounts stores:<community>, D24). */
+    towns: {community: string; treasury: number}[];
+    /** The realm's own treasury (the account `treasury`), beside the towns' (none: not in the save). */
+    treasury?: number | null;
+    /** The price board's, the ships' and the wagons' goods by the catalogue's names. */
+    goodNames?: Record<string, string>;
+    week: {wagons: WeekWagon[]; ships: WeekShip[]; events: WeekEvent[]};
+    players: {days: PlayerMoneyDay[]; holders: PlayerMoneyHolder[]};
+    thefts: number;
+    /** The word on the street (12): at most 20. */
+    word: {kind: 'cause' | 'harvest' | 'ship' | 'event' | 'times' | 'slider'; text: string}[];
+    /** 28 days: the DM's lever writes and acts (an act with its `state`: applied, refused, expired or queued), what the
+     *  game made of them (the levers' economy.sync too), and the big moves of a price (over 0.2) with what made each. */
+    log: {at: string; kind: string; text: string; state?: 'applied' | 'refused' | 'expired' | 'queued'}[];
 }
+/** A DM's live act on the staged economy (doc 79, 12): its kind, what it names, and its payload as the tool clamped it. */
+export interface Queued { id: number; status: 'queued'; payload: Record<string, unknown> }
 
 export const dmApi = {
     login: async (username: string, password: string) => { const r = await call<Me & {token: string}>('api/dm/login', {username, password}); setToken(r.token); return r as Me; },
@@ -265,7 +285,11 @@ export const dmApi = {
     worlds: () => call<Worlds>('api/dm/worlds'),
     players: (target: Target) => call<Players>(`${at(target)}players?target=${target}`),
     health: (target: Target, hours: number) => call<Health>(`${at(target)}health?target=${target}&hours=${hours}`),
-    money: (target: Target) => call<Money>(`${at(target)}money?target=${target}`),
+    prosperity: (target: Target) => call<ProsperityView>(`${at(target)}prosperity?target=${target}`),
+    /** A Times nudge, a harvest called, an event added or cancelled, a ship stormed, prices reset, a household's band for a
+     *  while (target an NPC of it), or a player's grant or fine: queued for the game server; poll it with action(). */
+    liveAct: (target: Target, kind: EconomyActKind, id: string, payload: Record<string, unknown> = {}, reason = '') =>
+        call<Queued>(`${at(target)}prosperity/act`, {target, kind, id, payload, reason}),
     /** Lean: world cells come as outlines and previews; their ground is asked for as they come into view (dm/world.ts). */
     world: (target: Target) => call<Project>(`${at(target)}world?target=${target}&lean=1`),
     ground: (target: Target, ids: string[]) =>
@@ -370,20 +394,20 @@ export const dmApi = {
     releases: (world?: Target) => call<{world: Target; releases: Release[]}>(`api/dm/releases${world ? `?world=${encodeURIComponent(world)}` : ''}`),
     rollback: (world: Target, number: number, password: string, note: string) =>
         call<{release: number; summary: Release['summary']}>('api/dm/rollback', {world, number, password, note}),
-    /** The economy's rules on the DM's world (Docs/Design/68, 9 and Progress, "Seasons and the DM's rules"): the store
-     *  room's switches, the loop, the Country's goods, the seasons, the comforts, the rules and the services (doc 68,
-     *  "First fixes"), the Country's food farms (doc 71, 4); each change audited and sent to the
-     *  world's running server (economy.sync). */
+    /** The economy's levers on the DM's world (Docs/Design/79-a-staged-economy.md, 12; tools/studio.py's /api/dm/economy):
+     *  the slider and its cause, the residents' needs, the rules and services, the seasons, and (on a world at migration
+     *  0061) the goods never imported and the host's status.json and market.json overrides. Each change is the world's own
+     *  (live.economy), audited, and sent to its running game server (economy.sync). */
     economy: {
-        read: (world: Target) => call<EconomyControls>(`api/dm/economy?world=${encodeURIComponent(world)}`),
-        setStore: (world: Target, changes: Partial<StoreSwitches>) => call<EconomyChange>('api/dm/economy/store', {world, ...changes}),
-        setLoop: (world: Target, changes: Partial<LoopSettings>) => call<EconomyChange>('api/dm/economy/loop', {world, ...changes}),
-        setGoods: (world: Target, body: GoodsBody) => call<EconomyChange>('api/dm/economy/goods', {world, ...body}),
-        setSeasons: (world: Target, body: SeasonsBody) => call<EconomyChange>('api/dm/economy/seasons', {world, ...body}),
-        setComforts: (world: Target, body: ComfortsBody) => call<EconomyChange>('api/dm/economy/comforts', {world, ...body}),
-        setRules: (world: Target, body: RulesBody) => call<EconomyChange>('api/dm/economy/rules', {world, ...body}),
-        setServices: (world: Target, body: ServicesBody) => call<EconomyChange>('api/dm/economy/services', {world, ...body}),
-        setFarms: (world: Target, body: FarmsBody) => call<EconomyChange>('api/dm/economy/farms', {world, ...body}),
+        get: (world: Target) => call<EconomyView>(`api/dm/economy?world=${encodeURIComponent(world)}`),
+        steer: (world: Target, body: object) => call<EconomyReply>('api/dm/economy/steer', {world, ...body}),
+        needs: (world: Target, body: object) => call<EconomyReply>('api/dm/economy/needs', {world, ...body}),
+        rules: (world: Target, body: object) => call<EconomyReply>('api/dm/economy/rules', {world, ...body}),
+        services: (world: Target, body: object) => call<EconomyReply>('api/dm/economy/services', {world, ...body}),
+        seasons: (world: Target, body: object) => call<EconomyReply>('api/dm/economy/seasons', {world, ...body}),
+        imports: (world: Target, body: object) => call<EconomyReply>('api/dm/economy/imports', {world, ...body}),
+        status: (world: Target, body: object) => call<EconomyReply>('api/dm/economy/status', {world, ...body}),
+        market: (world: Target, body: object) => call<EconomyReply>('api/dm/economy/market', {world, ...body}),
     },
 };
 

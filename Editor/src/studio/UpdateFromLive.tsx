@@ -79,7 +79,8 @@ export function UpdateFromLive({me, onWorkshop}: {me: Me; onWorkshop: () => void
         <div className="sync-body">
             <p className="hint">Brings every change made on the live world since the last update (or import) into Atlas's world, keeps
                 the changes made here, and asks where both changed the same thing. Nothing is written to the live world; the
-                DM's Import from dev takes your work live, during maintenance. Players' data, the save and the economy are never touched.</p>
+                DM's Import from dev takes your work live, during maintenance. Players' data and the save are never touched, and the
+                economy's settings (live.economy) are each world's own: an update never overwrites them.</p>
             {running && <Problems title={`The live server is ${plan.liveServer?.state.state === 'maintenance' ? 'still running' : 'running'}: live data (NPCs, factions) may still move after this update. That's fine: the DM's import compares again and shows anything new.`} items={[]} />}
             {plan.warnings.filter(w => !w.startsWith('The live server is running')).map(w => <p key={w} className="hint">{w}</p>)}
             <div className="sync-counts">

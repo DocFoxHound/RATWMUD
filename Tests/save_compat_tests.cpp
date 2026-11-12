@@ -561,6 +561,12 @@ Totals checkTail(bool print)
         g.log = [&](const char* level, const std::string& text) { notes += std::string(level) + ": " + text + "\n"; };
         expect(g.start(problem), "a server starts from the tail's save: " + problem);
         expect(g.storageReady(), "and takes it (nothing rejected): " + notes);
+        // Doc 79, 14: a world whose save never ran staged says so once at start, read off the save (restoring rebuilds
+        // the bands, so the state after it can't tell).
+        const bool never = saved.society.board.empty() && saved.society.staged.empty();
+        expect((notes.find("economy staged (doc 79)") != std::string::npos) == never,
+               std::string("the first-staged line is said only for a save never staged (this one ") +
+                   (never ? "never was" : "was") + "): " + notes);
         const auto& society = g.world().society();
         // A world from files keeps no letters across a restart (they live in game.documents), so the letter's coins
         // go back to its writer (Game::orphanedEnclosures): the same pennies, in the writer's purse.

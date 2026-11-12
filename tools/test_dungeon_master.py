@@ -2,6 +2,7 @@
 """Dungeon Master service: sign-in, roles, the players sheet, and queued live actions.
 Scratch PROD and DEV databases, dropped afterwards; skipped without the local PostgreSQL."""
 import json
+from pathlib import Path
 import secrets
 import unittest
 
@@ -10,6 +11,10 @@ import world_db as W
 import world_store as S
 from test_world_db import database_available, superuser
 from test_world_store import greyfen
+import os
+
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 
 class TargetTests(unittest.TestCase):
@@ -52,7 +57,7 @@ class Fixture(unittest.TestCase):
     def setUpClass(cls):
         W.ensure_roles()
         tag = secrets.token_hex(4)
-        cls.names = {'prod': f'ratw_test_dmp_{tag}', 'dev': f'ratw_test_dmd_{tag}'}
+        cls.names = {'prod': f'ratw_test_{DB_TAG}dmp_{tag}', 'dev': f'ratw_test_{DB_TAG}dmd_{tag}'}
         with superuser() as su:
             for name in cls.names.values():
                 su.execute(f'CREATE DATABASE {name} OWNER ratw_owner')
@@ -654,67 +659,6 @@ class NpcTests(NpcFixture):
         with self.assertRaises(D.DMError):
             self.dm.npc_life(master, 'prod', 'nobody', True)
 
-    def test_people_manifest_matches_the_exporter_for_job_holders_too(self):
-        import map_editor as E
-        with W.connect('dev', 'editor', dbname=self.names['dev']) as editor:
-            import roster as R
-            roster = R.load()
-            free = {**roster['characters'][0], 'id': 'free_hand', 'name': 'Free Hand', 'assignment': None, 'profession': '',
-                    'traits': ['steady', 'dry'], 'personality': 'Quiet.'}
-            S.save_roster(editor, {**roster, 'characters': roster['characters'] + [free]})
-            project, revision = S.load_world(editor, 'greyfen')
-            spot = project['spawn']
-            project['slots'] = [{'id': 'gate', 'name': 'Gate guard', 'profession': 'guard', 'workLabel': '', 'route': '', 'paid': True,
-                                 'purse': 3, 'herbs': 0, 'meals': 1, 'hours': {'start': 6.5, 'end': 18.25},
-                                 'home': spot, 'work': spot, 'evening': spot}]
-            S.save_world(editor, project, revision)
-            import world_build
-            world_build.build(editor, 'test')
-            sql = editor.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
-            files = E.export_files(S.load_world(editor, 'greyfen')[0], S.load_roster(editor))
-        python = [l for l in files['world.ratw'].split('\n') if l.split(' ', 1)[0] in ('economy', 'route', 'resident', 'story')]
-        self.assertTrue(any('"free_hand"' in l for l in sql), 'the job holder is a resident')
-        self.assertEqual(sql, python)
-
-    def test_people_manifest_matches_the_exporter_with_the_store_room(self):
-        # Doc 67, 6: the "store" line after the economy line (only off its defaults), a "nostore" line after a placed
-        # founder's records (an unplaced one's is left out), exactly as the exporter writes them; and none at the defaults.
-        import map_editor as E
-        import world_build
-        kinds = ('economy', 'route', 'resident', 'story', 'joinable', 'protected', 'store', 'nostore')
-        with W.connect('dev', 'editor', dbname=self.names['dev']) as editor:
-            project, revision = S.load_world(editor, 'greyfen')
-            people = {p['id']: p for p in project['people']}
-            people['rook'].update(home=None, work=None, evening=None)
-            project['economy'] = {**project['economy'], 'storeMarkup': 40, 'storeRule': True,
-                                  'businesses': {'brann': {'internalStore': False}, 'rook': {'internalStore': False}}}
-            revision = S.save_world(editor, project, revision)
-            world_build.build(editor, 'test')
-            sql = editor.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
-            files = E.export_files(S.load_world(editor, 'greyfen')[0], S.load_roster(editor))
-            python = [l for l in files['world.ratw'].split('\n') if l.split(' ', 1)[0] in kinds]
-            self.assertEqual([l for l in sql if l.split(' ', 1)[0] in kinds], python)
-            self.assertIn('store on 40 resale on 75 rule on', sql)
-            self.assertIn('nostore "brann"', sql)
-            self.assertNotIn('nostore "rook"', sql)
-            one = editor.execute("SELECT live.people_manifest('greyfen', 'brann')").fetchone()[0].split('\n')
-            self.assertEqual((one[0].split(' ', 1)[0], one[-1]), ('resident', 'nostore "brann"'), 'one NPC\'s records end with its own')
-            project, revision = S.load_world(editor, 'greyfen')
-            project['economy'] = {**project['economy'], **S.STORE_DEFAULTS, 'businesses': {}}
-            people = {p['id']: p for p in project['people']}
-            people['rook'].update(home=people['linden']['home'], work=people['linden']['home'], evening=people['linden']['home'])
-            S.save_world(editor, project, revision)
-            sql = editor.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
-            files = E.export_files(S.load_world(editor, 'greyfen')[0], S.load_roster(editor))
-            python = [l for l in files['world.ratw'].split('\n') if l.split(' ', 1)[0] in kinds]
-            self.assertEqual([l for l in sql if l.split(' ', 1)[0] in kinds], python)
-            self.assertFalse(any(l.startswith(('store ', 'nostore ')) for l in sql), 'at the defaults: no store records')
-        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
-            self.assertEqual(game.execute('SELECT count(*) FROM live.business_settings').fetchone()[0], 0, 'the game reads it')
-            import psycopg
-            with self.assertRaises(psycopg.errors.InsufficientPrivilege):
-                game.execute("INSERT INTO live.business_settings (world_id, npc_id, internal_store) VALUES ('greyfen', 'brann', false)")
-
     def test_npcs_without_a_map_in_the_manifest_and_the_dm(self):
         # Doc 66, 2: an unplaced NPC, a jobless one and a job holder without a home, as the exporter writes them.
         import map_editor as E
@@ -1080,35 +1024,374 @@ class ChapterTests(Fixture):
 
 
 
-class MoneyTests(Fixture):
-    """The Money view: where the money is, from the last save (the economy's levers and monitor went with its rules: doc
-    66, Phase 5)."""
+REPORT = {'v': 1, 'day': 40, 'at': 40.4,
+          'prosperity': {'slider': -10, 'target': -20, 'cause': 'the long frost', 'by': 'dm', 'neverHungry': False, 'neverBroke': False},
+          'markets': [{'id': 'grey', 'name': 'Greyfen', 'times': {'word': 'lean', 'score': -0.4, 'cause': 'the long frost'},
+                       'households': {'destitute': 1, 'poor': 3, 'comfortable': 6, 'rich': 1}, 'overridden': 1, 'hungry': 2,
+                       'short': 1, 'thieves': 0.6, 'beggars': 1, 'dole': 2, 'nudge': None, 'resetting': None},
+                      {'id': 'port', 'name': 'Saltmouth', 'times': {'word': 'ordinary', 'score': 0, 'cause': ''},
+                       'households': {'destitute': 0, 'poor': 1, 'comfortable': 4, 'rich': 2}, 'overridden': 0, 'hungry': 0,
+                       'short': 0, 'thieves': 0.1, 'beggars': 0, 'dole': 0, 'nudge': None, 'resetting': None}],
+          'pressures': [{'market': 'grey', 'good': 'bread', 'P': 0.5, 'cause': 'the long frost'}],
+          'areas': [{'id': 'orchards', 'name': 'The orchards', 'harvest': 'poor',
+                     'override': {'word': 'poor', 'until': 60, 'words': 'blight at the orchards'}},
+                    {'id': 'fields', 'name': 'The fields', 'harvest': 'fair', 'override': None}],
+          'eventKinds': [{'id': 'wedding', 'words': 'a House wedding', 'needs': []}, {'id': 'fire', 'words': 'a fire', 'needs': []}],
+          'weekDays': [35, 36, 37, 38, 39, 40, 41]}
+BOARD = {'cell': {'grey': {}, 'port': {}},
+         'committed': [{'id': 'd7', 'kind': 'wagon', 'from': 'grey', 'to': 'port', 'day': 41, 'hour': 8, 'manifest': {'bread': 4}}],
+         'ships': [{'id': 's3', 'port': 'port', 'name': 'the Gull', 'day': 41, 'hour': 9, 'brings': [['salt', 6]], 'status': 'due'},
+                   {'id': 's2', 'port': 'port', 'name': 'the Tern', 'day': 38, 'brings': [], 'status': 'storm', 'lost': True}],
+         'lostShips': {'the Heron': 37},
+         'events': [{'id': 'e4', 'market': 'grey', 'kind': 'wedding', 'day': 42, 'hour': 11, 'status': 'due', 'by': 'dm',
+                     'words': 'the wedding up at the Heights'}],
+         'nudges': {'grey': {'points': -30, 'until': 45, 'cause': 'the frost', 'told': True}},
+         # (Last repair: the year log's big moves are the Board's `moves`, never `recent`: a trade's 0.35 isn't one.)
+         'recent': [{'day': 39, 'delta': 0.35, 'market': 'grey', 'good': 'salt', 'cause': 'players'}],
+         'moves': [{'day': 39, 'delta': 0.35, 'market': 'grey', 'good': 'bread', 'cause': 'harvest'},
+                   {'day': 5, 'delta': -0.6, 'market': 'grey', 'good': 'salt', 'cause': 'ship'},
+                   {'day': 39, 'delta': 0.05, 'market': 'grey', 'good': 'salt', 'cause': ''}]}
+ROADS = {'caravans': [{'id': 'c9', 'from': 'port', 'to': 'grey', 'kind': 'wagon', 'departure': 'd6', 'departed': 40.3,
+                       'status': 'travelling', 'manifest': [{'good': 'salt', 'n': 3}]}]}
 
-    def test_where_the_money_is(self):
-        someone = greyfen()['people'][0]['id']
-        society = {'accounts': {'treasury': {'cash': 500, 'stock': {}}, 'house:fell': {'cash': 40, 'stock': {}},
-                                'estate:crown': {'cash': 30, 'stock': {}}, 'till:job:x': {'cash': 12, 'stock': {}}, 'caravan:cv1': {'cash': 7, 'stock': {}},
-                                someone: {'cash': 3, 'stock': {}}},
-                   'books': {'month': 1}}
+
+class ProsperityTests(Fixture):
+    """The Prosperity tab (doc 79, 12; Phase 9): Core's report from the checkpoint with the week's wagons, ships and events,
+    player coin made against sunk, the word on the street and the log; and the DM's acts on the staged economy."""
+
+    def plant(self, target='dev', report=True, faucets=None, stores=None):
+        society = {'accounts': {'stores:greyfen': {'cash': 900, 'stock': {}}, 'stores:saltmouth': {'cash': 0, 'stock': {}},
+                                'player-ada': {'cash': 40, 'stock': {}}, 'treasury': {'cash': 5, 'stock': {}}},
+                   'board': BOARD, 'staged': {'faucets': faucets if faucets is not None else {
+                       '38': {'acct-ada': {'reward': [10, 0, 0, 0], 'trade': [0, 4, 1, 0]}},
+                       '40': {'acct-ada': {'dm grant: for the bell': [25, 0, 0, 0]}, 'player-bo': {'theft': [3, 0, 0, 0]}}}}}
+        if report:
+            society['report'] = REPORT
+        with W.connect(target, 'owner', dbname=self.names[target]) as owner:
+            owner.execute('DELETE FROM game.events')
+        with W.connect(target, 'game', dbname=self.names[target]) as game:
+            game.execute('SELECT game.save_checkpoint(%s, 9, %s)',
+                         ('greyfen', json.dumps({'schema': 1, 'calendarDays': 40.4, 'society': society, 'roads': ROADS})))
+            for day, kind, actor, target_, item, detail in (
+                    (40.1, 'theft', 'npc_a', 'npc_b', 'bread', 'inc-1'), (39.5, 'theft', 'npc_a', 'npc_b', '', 'inc-0'),
+                    (40.2, 'caravan arrives', 'c8', 'grey', 'd5', 'from port, guarded'),
+                    (40.2, 'wagon cancelled', 'd4', 'port', 'grey', 'the road is closed'),
+                    (39.0, 'times nudged', 'grey', 'grey', '', 'the frost'), (38.0, 'ship lost', 's2', 'port', 'the Tern', 'lost at sea'),
+                    (2.0, 'times nudged', 'grey', 'grey', '', 'long ago')):
+                game.execute('INSERT INTO game.events (world_id, game_time, game_day, kind, actor, target, cell, item, detail) '
+                             "VALUES ('greyfen', 0, %s, %s, %s, %s, '', %s, %s)", (day, kind, actor, target_, item, detail))
+
+    def test_the_prosperity_view(self):
+        self.plant()
+        master = self.sign_in('dm-master')
+        self.dm.act(master, 'dev', 'times.nudge', 'grey', {'points': -30, 'days': 5, 'words': 'the frost'})
+        view = self.dm.prosperity('dev')
+        self.assertEqual(view['report'], REPORT, 'the report is Core\'s, passed through')
+        self.assertFalse(view['stale'])
+        self.assertEqual((view['gameDay'], view['target']), (40.4, 'dev'))
+        self.assertEqual(view['towns'], [{'community': 'greyfen', 'treasury': 900}, {'community': 'saltmouth', 'treasury': 0}])
+        wagons = {w['id']: w for w in view['week']['wagons']}
+        self.assertEqual(wagons['c9'], {'id': 'c9', 'from': 'port', 'to': 'grey', 'day': 40, 'state': 'travelling', 'goods': ['salt']})
+        self.assertEqual(wagons['d7']['state'], 'posted')
+        self.assertEqual(wagons['d7']['goods'], ['bread'])
+        self.assertEqual((wagons['c8']['state'], wagons['c8']['from']), ('arrived', 'port'))
+        self.assertEqual((wagons['d4']['state'], wagons['d4']['from']), ('cancelled', 'grey'))
+        ships = {s['name']: s for s in view['week']['ships']}
+        self.assertEqual((ships['the Gull']['state'], ships['the Gull']['goods']), ('due', ['salt']))
+        self.assertEqual(ships['the Tern']['state'], 'lost')
+        self.assertEqual(ships['the Heron']['state'], 'lost', 'a ship lost lately, off the timetable')
+        self.assertEqual(view['week']['events'][0]['by'], 'dm')
+        players = view['players']
+        self.assertEqual([d['day'] for d in players['days']], [38, 40])
+        self.assertEqual(players['days'][0], {'day': 38, 'made': 10, 'sunk': 4, 'goodsMade': 1, 'goodsSunk': 0})
+        ada = next(h for h in players['holders'] if h['holder'] == 'acct-ada')
+        self.assertEqual((ada['made'], ada['sunk'], ada['byReason']['dm grant: for the bell']), (35, 4, [25, 0, 0, 0]))
+        # (Last repair: a reason that is all goods shows its goods, at the catalogue's price, not "+0 -0".)
+        self.assertEqual(ada['byReason']['trade'], [0, 4, 1, 0])
+        self.assertEqual(players['holders'][0]['holder'], 'acct-ada', 'the most coin first')
+        self.assertEqual(view['thefts'], 1, "today's only")
+        kinds = {w['kind'] for w in view['word']}
+        self.assertTrue({'slider', 'times', 'harvest', 'ship', 'event', 'cause'} <= kinds, view['word'])
+        self.assertIn({'kind': 'slider', 'text': 'the long frost'}, view['word'])
+        self.assertLessEqual(len(view['word']), 20)
+        log = view['log']
+        self.assertEqual(log[0]['kind'], 'times.nudge', 'the newest first: the DM\'s act')
+        self.assertIn('ship lost', [e['kind'] for e in log])
+        self.assertNotIn('long ago', ' '.join(e['text'] for e in log), 'a 28-day log')
+        ripples = [e for e in log if e['kind'] == 'ripple']
+        self.assertEqual(len(ripples), 1, 'big moves only (over 0.2), of the last 28 days, never a trade from `recent`')
+        self.assertIn('Trencher bread at Greyfen dearer', ripples[0]['text'], 'the good by its name')
+        self.assertIn('(the harvest)', ripples[0]['text'], 'last repair: with what made it, in words')
+        for gone in ('total', 'houses', 'funds', 'carters', 'residents', 'capital'):
+            self.assertNotIn(gone, view)
+
+    def test_the_tab_names_what_it_shows(self):
+        # Phase 9's second repair: a player's coin by its account's characters' names (the faucet door keeps it by the
+        # account), the log's players and residents by name, the goods by the catalogue's names, and the realm's own
+        # treasury beside the towns' (a world with none of its own, as Ridgemere 2.0, had an empty table and no word why).
+        self.plant()
+        with W.connect('dev', 'game', dbname=self.names['dev']) as game:
+            game.execute("INSERT INTO game.account_profiles (world_id, key, position, data) VALUES ('greyfen', 'acct-ada', 0, %s)",
+                         (json.dumps({'account': 'acct-ada', 'characters': ['player-ada']}),))
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            npc, npc_name = owner.execute("SELECT id, name FROM live.npcs WHERE world_id = 'greyfen' ORDER BY id LIMIT 1").fetchone()
+        master = self.sign_in('dm-master')
+        self.dm.act(master, 'dev', 'character.grant', 'player-ada', {'coins': 5, 'reason': 'for the bell'})
+        self.dm.act(master, 'dev', 'band.override', npc, {'band': 'poor', 'days': 3})
+        # (Last repair: a ship and an event by what they are called in the log, and what the game server made of the
+        # levers' economy.sync there too: skipped records, a refusal, "never applied".)
+        self.dm.act(master, 'dev', 'ship.storm', 's3', {})
+        self.dm.act(master, 'dev', 'event.cancel', 'e4', {})
+        with W.connect('dev', 'dm', dbname=self.names['dev']) as dm:
+            dm.execute("INSERT INTO dm.actions (kind, target_id, requested_by, payload, status, result) VALUES "
+                       "('economy.sync', 'economy', 'Ada', '{}', 'applied', 'The economy''s rules are read again and in force. (2 records skipped)'), "
+                       "('economy.sync', 'economy', 'Ada', '{}', 'expired', 'Not applied within ten minutes.')")
+        view = self.dm.prosperity('dev')
+        self.assertEqual(next(h for h in view['players']['holders'] if h['holder'] == 'acct-ada')['name'], 'Ada')
+        texts = [e['text'] for e in view['log'] if e.get('state')]
+        self.assertTrue(any('ship.storm the Gull:' in t for t in texts), texts)
+        self.assertTrue(any('event.cancel the wedding up at the Heights at Greyfen:' in t for t in texts), texts)
+        self.assertTrue(any(t == 'Ada: the levers sent to the game server: done (The economy\'s rules are read again and in force. '
+                            '(2 records skipped))' for t in texts), texts)
+        self.assertTrue(any('the levers sent to the game server: never applied (no server took it)' in t for t in texts), texts)
+        self.assertTrue(any('character.grant Ada:' in t for t in texts), texts)
+        self.assertTrue(any(f'band.override {npc_name}:' in t for t in texts), texts)
+        # (The pressures' goods, and since the last repair the ships' and the wagons' too: salt was read as its id.)
+        self.assertEqual(view['goodNames']['bread'], 'Trencher bread')
+        self.assertEqual(set(view['goodNames']), {'bread', 'salt'})
+        self.assertIn({'kind': 'cause', 'text': 'Trencher bread at Greyfen: the long frost'}, view['word'])
+        self.assertEqual(view['treasury'], 5, 'the realm\'s own treasury')
+
+    def test_what_has_lapsed_is_not_shown_in_force(self):
+        # Phase 9's last repair: the report is the morning's; a nudge, a price reset or a harvest call that ran out
+        # during the day is taken off what the tab shows (it read "nudged" until the next daily report).
+        import copy
+        report = copy.deepcopy(REPORT)
+        report['markets'][0]['nudge'] = {'points': -30, 'until': 40.2, 'words': 'the frost'}
+        report['markets'][0]['resetting'] = {'until': 41}
+        report['markets'][1]['nudge'] = {'points': 10, 'until': 44, 'words': 'a fair'}
+        report['areas'][0]['override']['until'] = 40.3
+        shown = D.in_force(report, 40.4)
+        self.assertIsNone(shown['markets'][0]['nudge'])
+        self.assertEqual(shown['markets'][0]['resetting'], {'until': 41})
+        self.assertEqual(shown['markets'][1]['nudge']['points'], 10)
+        self.assertIsNone(shown['areas'][0]['override'])
+        self.assertIsNotNone(report['markets'][0]['nudge'], 'the report itself untouched')
+        self.assertEqual(D.in_force(REPORT, 40.4), REPORT)
+        self.assertIsNone(D.in_force(None, 40.4))
+        self.assertEqual(D.in_force(REPORT, None), REPORT)
+
+    def test_the_acts_are_one_list(self):
+        # Last repair: the economy's act kinds are LIVE_ACTS, and ACTIONS and LIVE_KINDS take them from it.
+        for kind in D.LIVE_ACTS:
+            self.assertEqual(D.ACTIONS[kind], 'dm', kind)
+            self.assertIn(kind, D.LIVE_KINDS)
+        self.assertEqual(D.ECONOMY_ACTS, tuple(D.LIVE_ACTS))
+        # (And the two lists no Python can derive: the client's and Core's are held to it here.)
+        import re
+        root = Path(D.__file__).resolve().parent.parent
+        contract = (root / 'Editor/src/lib/economyContract.ts').read_text(encoding='utf-8')
+        listed = re.search(r'ECONOMY_ACT_KINDS = \[(.*?)\] as const', contract, re.S).group(1)
+        self.assertEqual(set(re.findall(r"'([a-z.]+)'", listed)), set(D.LIVE_ACTS), 'the client\'s ECONOMY_ACT_KINDS')
+        core = (root / 'Core/RatwGameEconomy.cpp').read_text(encoding='utf-8')
+        body = re.search(r'bool Game::economyCommand\(.*?\{(.*?)\n\}', core, re.S).group(1)
+        self.assertEqual(set(re.findall(r'"([a-z.]+)"', body)), set(D.LIVE_ACTS) | {'economy.sync'}, 'Core\'s Game::economyCommand')
+        self.assertEqual(set(D.ACT_STATES), {'applied', 'refused', 'expired', 'queued'}, 'the four dm.actions holds')
+
+    def test_the_npc_tab_knows_whom_the_bands_cover(self):
+        # Phase 9's second repair: the NPC tab offered a band for a while on every NPC and said it took; the game refuses
+        # one no household holds. The view names whom the bands cover (the save's residents), keeps the act's outcome
+        # among the NPC's actions, and says whether the world holds an NPC's own band (migration 0061).
+        society = {'residents': {'wren': {}, 'brann': {}}, 'report': REPORT}
         with W.connect('dev', 'game', dbname=self.names['dev']) as game:
             game.execute('SELECT game.save_checkpoint(%s, 9, %s)',
-                         ('greyfen', json.dumps({'schema': 1, 'calendarDays': 30.2, 'society': society})))
-            game.execute('INSERT INTO game.events (world_id, game_time, kind, actor, target, cell, game_day, detail) '
-                         "VALUES ('greyfen', 1, 'reckoning', 'treasury', 'town:x:church', '', 28, %s)", ("X's reckoning",))
-        money = self.dm.money('dev')
-        self.assertEqual((592, 500), (money['total'], money['capital']))
-        self.assertEqual([{'id': 'estate:crown', 'cash': 30}], money['funds'], "a House's estate among the funds (doc 72, Phase 6)")
-        self.assertEqual([{'id': 'house:fell', 'cash': 40}], money['houses'])
-        self.assertEqual({'count': 1, 'total': 12}, money['tills'])
-        self.assertEqual(7, money['road']['caravans'])
-        self.assertEqual((1, 1), (money['residents']['count'], money['residents']['shortOfFood']))
-        for gone in ('month', 'events', 'orchestrator', 'levers'):
-            self.assertNotIn(gone, money)
+                         ('greyfen', json.dumps({'schema': 1, 'calendarDays': 40.4, 'society': society})))
+        master = self.sign_in('dm-master')
+        self.dm.act(master, 'dev', 'band.override', 'sloe', {'band': 'poor', 'days': 3})
+        view = self.dm.npcs('dev')
+        self.assertEqual(view['bandable'], ['brann', 'wren'])
+        self.assertTrue(view['bandsAuthored'])
+        self.assertIn('band.override', [a['kind'] for a in view['actions']], 'its outcome on the NPC tab')
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            owner.execute('DELETE FROM game.checkpoints')
+        self.assertIsNone(self.dm.npcs('dev')['bandable'], 'no save yet: not known')
+
+    def test_the_log_says_what_the_server_made_of_each_act(self):
+        # Doc 79, Phase 9's first repair: an act is in the log with its outcome, never as done when the server refused it
+        # or it was never applied; the band in force on an NPC is the report's.
+        self.plant()
+        master = self.sign_in('dm-master')
+        ids = {name: self.dm.act(master, 'dev', kind, target, payload)['id'] for name, kind, target, payload in (
+            ('grant', 'character.grant', 'player-ada', {'coins': 23, 'reason': 'for the lost ewe'}),
+            ('over', 'character.grant', 'player-ada', {'coins': 2500, 'reason': 'too much'}),
+            ('storm', 'ship.storm', 's1', {}), ('nudge', 'times.nudge', 'grey', {'points': 5}))}
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            for name, status, result in (('grant', 'applied', 'Granted 23p: for the lost ewe.'),
+                                         ('over', 'refused', 'Over the day\'s grants for that player (477p left today).'),
+                                         ('storm', 'expired', 'Not applied within ten minutes.')):
+                owner.execute('UPDATE dm.actions SET status = %s, result = %s WHERE id = %s', (status, result, ids[name]))
+        log = {e['text'].split(':', 2)[1].strip(): e for e in self.dm.prosperity('dev')['log'] if e.get('state')}
+        texts = [e['text'] for e in self.dm.prosperity('dev')['log'] if e.get('state')]
+        self.assertTrue(any('character.grant' in t and 'done (Granted 23p' in t for t in texts), texts)
+        self.assertTrue(any('character.grant' in t and 'refused by the game (Over the day' in t for t in texts), texts)
+        self.assertTrue(any('ship.storm s1: never applied' in t for t in texts), texts)
+        self.assertTrue(any('times.nudge Greyfen: waiting for the game server' in t for t in texts), texts)
+        self.assertTrue(log, texts)
+        report = {**REPORT, 'bandOverrides': [{'household': 'h:cottage_1', 'band': 'poor', 'until': 52, 'members': ['npc_x', 'npc_y']}]}
+        self.assertEqual(D.npc_band_override(report, 'npc_y'), {'band': 'poor', 'until': 52, 'household': 'h:cottage_1'})
+        self.assertIsNone(D.npc_band_override(report, 'npc_z'))
+        self.assertEqual(D.act_before('band.override', 'npc_x', {'report': report})['band'], 'poor', 'the audit\'s before')
+
+    def test_an_old_or_missing_checkpoint(self):
+        self.plant(report=False)
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            owner.execute("UPDATE game.checkpoints SET saved_at = now() - interval '10 minutes'")
+        view = self.dm.prosperity('dev')
+        self.assertIsNone(view['report'], 'no report yet (an older save, or a server before Phase 9)')
+        self.assertTrue(view['stale'])
+        self.assertTrue(any(w['kind'] == 'ship' for w in view['word']), 'the word from the Board alone')
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            owner.execute('DELETE FROM game.checkpoints')
+        view = self.dm.prosperity('dev')
+        self.assertEqual((view['report'], view['writtenAt'], view['gameDay'], view['stale']), (None, None, None, True))
+        self.assertEqual(view['week'], {'wagons': [], 'ships': [], 'events': []})
+
+    def test_each_act_is_for_dms_clamped_queued_and_audited(self):
+        self.plant()
+        master, viewer = self.sign_in('dm-master'), self.sign_in('dm-viewer')
+        npc = greyfen()['people'][0]['id']
+        cases = [
+            ('times.nudge', 'grey', {'points': -400, 'days': 9999, 'words': '  the frost  '},
+             {'points': -100, 'days': 366, 'words': 'the frost'}),
+            ('times.nudge', 'grey', {'points': 0}, {'points': 0, 'days': 7, 'words': ''}),
+            ('harvest.override', 'orchards', {'word': 'poor', 'days': 0, 'words': 'blight at the orchards'},
+             {'word': 'poor', 'days': 1, 'words': 'blight at the orchards'}),
+            ('harvest.override', 'fields', {'word': 'good'}, {'word': 'good', 'words': ''}),
+            ('harvest.override', 'orchards', {'word': 'clear', 'days': 4}, {'word': 'clear'}),
+            ('event.add', 'grey', {'kind': 'wedding', 'day': 500, 'hour': 30}, {'kind': 'wedding', 'day': 48, 'hour': 23}),
+            ('event.add', 'grey', {'kind': 'fire', 'day': 3}, {'kind': 'fire', 'day': 40, 'hour': 9}),
+            ('event.cancel', 'e4', {'anything': 1}, {}),
+            ('ship.storm', 's3', {}, {}),
+            ('prices.reset', 'all', {}, {}),
+            ('prices.reset', 'grey', {'words': 'fresh stock'}, {'words': 'fresh stock'}),
+            ('band.override', npc, {'band': 'destitute', 'days': 500}, {'band': 'destitute', 'days': 112}),
+            ('band.override', npc, {'band': 'rich'}, {'band': 'rich', 'days': 28}),
+            ('band.override', npc, {'band': 'clear', 'days': 3}, {'band': 'clear'}),
+            ('character.grant', 'player-ada', {'coins': 99999, 'reason': 'for the bell'}, {'coins': 2500, 'reason': 'for the bell'}),
+            ('character.grant', 'player-ada', {'coins': -12.4, 'reason': 'a broken window'}, {'coins': -12, 'reason': 'a broken window'}),
+        ]
+        for kind, target, payload, clean in cases:
+            with self.subTest(kind=kind, payload=payload):
+                with self.assertRaises(D.DMError) as raised:
+                    self.dm.act(viewer, 'dev', kind, target, payload)
+                self.assertEqual(raised.exception.status, 403)
+                reply = self.dm.act(master, 'dev', kind, target, payload, reason='a story')
+                self.assertEqual((reply['status'], reply['payload']), ('queued', clean))
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            queued = owner.execute('SELECT kind, target_id, payload, requested_by FROM dm.actions ORDER BY id').fetchall()
+            audit = owner.execute("SELECT action, target, detail, who FROM dm.audit WHERE action <> 'login' ORDER BY sequence").fetchall()
+        self.assertEqual([(q[0], q[1], q[2]) for q in queued], [(k, t, c) for k, t, _, c in cases])
+        self.assertEqual({q[3] for q in queued}, {'dm-master'})
+        self.assertEqual([a[0] for a in audit], [k for k, *_ in cases])
+        nudge = audit[0][2]
+        self.assertIn('before (as last saved): {"cause": "the frost", "points": -30', nudge)
+        self.assertIn('asked: {"days": 366, "points": -100', nudge)
+        self.assertRegex(nudge, r'grey \(#\d+\)', 'the dm.actions row it queued')
+        self.assertIn('a story', nudge)
+        self.assertIn('before (as last saved): {"cash": 40}', audit[-2][2], "the player's cash before a grant")
+        self.assertIn('before (as last saved): {"day": 42, "kind": "wedding", "market": "grey", "status": "due"}', audit[7][2])
+        self.assertFalse([k for k, *_ in cases if k.startswith('economy.')])
+
+    def test_acts_refused_only_for_an_unknown_target_or_a_malformed_payload(self):
+        self.plant()
+        master = self.sign_in('dm-master')
+        for kind, target, payload, status in (
+                ('times.nudge', 'atlantis', {'points': 5}, 404), ('times.nudge', 'grey', {'points': 'lots'}, 422),
+                ('harvest.override', 'grey', {'word': 'poor'}, 404), ('harvest.override', 'orchards', {'word': 'blight'}, 422),
+                ('event.add', 'grey', {'kind': 'flood'}, 422), ('event.add', 'grey', {'kind': 'Bad Kind'}, 422),
+                ('event.cancel', 'e99', {}, 404), ('prices.reset', 'nowhere', {}, 404),
+                ('prices.reset', 'grey', {'words': 'the old ' + 'd' + 'og market'}, 422),
+                ('band.override', 'nobody', {'band': 'rich'}, 404), ('band.override', greyfen()['people'][0]['id'], {'band': 'royal'}, 422),
+                ('character.grant', 'player-nobody', {'coins': 5, 'reason': 'x'}, 404),
+                ('character.grant', 'player-ada', {'coins': 0, 'reason': 'x'}, 422),
+                ('character.grant', 'player-ada', {'coins': 5}, 422),
+                ('character.grant', 'player-ada', {'coins': 5, 'reason': 'x' * 81}, 422),
+                ('character.grant', 'player-ada', {'coins': True, 'reason': 'x'}, 422),
+                ('wharf.credit', 'wharf', {'amount': -300}, 422), ('economy.sync', 'economy', {}, 422)):
+            with self.subTest(kind=kind, target=target, payload=payload):
+                with self.assertRaises(D.DMError) as raised:
+                    self.dm.act(master, 'dev', kind, target, payload)
+                self.assertEqual(raised.exception.status, status, str(raised.exception))
+        # The words of a 404 (Phase 9's first repair: "No such markets", "No such npc").
+        for kind, target, words in (('prices.reset', 'nowhere', 'No such market: nowhere.'),
+                                    ('band.override', 'player-cid', 'No such resident: player-cid.'),
+                                    ('character.grant', 'player-nobody', 'No such player: player-nobody.')):
+            with self.assertRaises(D.DMError) as raised:
+                self.dm.act(master, 'dev', kind, target, {'band': 'rich', 'coins': 5, 'reason': 'x'})
+            self.assertEqual(str(raised.exception), words)
+        # A ship is the game server's to judge: one rolled since the last checkpoint (a new week's) is not refused here.
+        self.assertEqual(self.dm.act(master, 'dev', 'ship.storm', 's99', {})['status'], 'queued')
+        # The same acts reach the generic routes: /api/live/action and, for a character, /api/actions.
+        self.assertEqual(self.dm.live_action(master, 'dev', 'ship.storm', 's3')['payload'], {})
+        self.assertEqual(self.dm.request(master, 'dev', 'character.grant', 'player-ada', payload={'coins': 3, 'reason': 'thanks'})['payload'],
+                         {'coins': 3, 'reason': 'thanks'})
+        self.assertFalse(hasattr(self.dm, 'grant'), 'last repair: one door to a grant (act), the second cut')
+        # Without a report (a server before Phase 9), markets come from the Board and areas are the server's to judge.
+        self.plant(report=False)
+        self.dm.act(master, 'dev', 'harvest.override', 'anywhere', {'word': 'good'})
+        with self.assertRaises(D.DMError):
+            self.dm.act(master, 'dev', 'times.nudge', 'atlantis', {'points': 5})
+        self.dm.act(master, 'dev', 'event.add', 'grey', {'kind': 'house_wedding'})
+        with self.assertRaises(D.DMError):
+            self.dm.act(master, 'dev', 'event.add', 'grey', {'kind': 'wedding'})
+
+    def test_the_routes(self):
+        self.plant()
+        import threading
+        from http.client import HTTPConnection
+        server = D.make_server(0, self.dm)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        port = server.server_port
+        try:
+            token = self.dm.login('dm-master', 'dm-master-password')['token']
+            viewer = self.dm.login('dm-viewer', 'dm-viewer-password')['token']
+
+            def call(method, path, body=None, who=token):
+                http = HTTPConnection('127.0.0.1', port, timeout=10)
+                headers = {'Authorization': f'Bearer {who}', 'Host': f'127.0.0.1:{port}'}
+                if body is not None:
+                    headers['Content-Type'] = 'application/json'
+                http.request(method, path, json.dumps(body) if body is not None else None, headers)
+                reply = http.getresponse()
+                return reply.status, json.loads(reply.read())
+            status, view = call('GET', '/api/prosperity?target=dev', who=viewer)
+            self.assertEqual((status, view['report']['day']), (200, 40))
+            self.assertEqual(call('GET', '/api/money?target=dev')[0], 404, 'the Money view went')
+            status, done = call('POST', '/api/prosperity/act', {'target': 'dev', 'kind': 'times.nudge', 'id': 'grey',
+                                                                'payload': {'points': 300, 'days': 2}, 'reason': 'boom at the port'})
+            self.assertEqual((status, done['status'], done['payload']['points']), (200, 'queued', 100))
+            self.assertEqual(call('GET', f"/api/actions/{done['id']}?target=dev")[1]['status'], 'queued', 'polled as any action')
+            self.assertEqual(call('POST', '/api/prosperity/act', {'target': 'dev', 'kind': 'ship.storm', 'id': 's3'}, who=viewer)[0], 403)
+            # (Last repair: the second grant route is cut; a grant is an act like the rest.)
+            self.assertEqual(call('POST', '/api/players/grant', {'target': 'dev', 'character': 'player-ada', 'coins': 40, 'reason': 'the bell'})[0], 404)
+            status, done = call('POST', '/api/prosperity/act', {'target': 'dev', 'kind': 'character.grant', 'id': 'player-ada',
+                                                                'payload': {'coins': 40, 'reason': 'the bell'}})
+            self.assertEqual((status, done['payload']), (200, {'coins': 40, 'reason': 'the bell'}))
+        finally:
+            server.shutdown()
+            server.server_close()
 
     def test_no_economy_levers(self):
-        for gone in ('set_tax_rate', 'set_mint', 'relief_grant', 'set_holdings_tax'):
+        for gone in ('set_tax_rate', 'set_mint', 'relief_grant', 'set_holdings_tax', 'money'):
             self.assertFalse(hasattr(self.dm, gone))
         self.assertFalse([k for k in D.ACTIONS if k.startswith('economy.')])
+        acts = ('times.nudge', 'harvest.override', 'event.add', 'event.cancel', 'ship.storm', 'prices.reset', 'band.override',
+                'character.grant')
+        for kind in acts:
+            self.assertEqual(D.ACTIONS.get(kind), 'dm', kind)
+            self.assertIn(kind, D.LIVE_KINDS)
+        self.assertEqual(set(D.LIVE_ACTS), set(acts))
+
 
 if __name__ == '__main__':
     unittest.main()

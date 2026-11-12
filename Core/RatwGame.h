@@ -457,6 +457,24 @@ class Game
     }
     std::size_t clients() const { return clients_.size(); }
     std::uint64_t revision() const { return revision_; }
+    // The staged economy's live acts (doc 79, 12; Phase 9; RatwGameEconomy.cpp), as dm.actions kinds: economy.sync,
+    // times.nudge, harvest.override, event.add, event.cancel, ship.storm, prices.reset, band.override and character.grant.
+    // Each clamps its payload (never refused for a number out of range), applies its hook, journals what it changed
+    // (record) before anyone is told, and works out the Prosperity report again. Public for the tests; applyDmActions
+    // calls it. `actionId`, the dm.actions row's: the record carries it (dmActs), so a row a crash left queued after its
+    // record committed is answered from the record, never applied twice.
+    Result applyEconomyCommand(const std::string& kind, const std::string& target, const json::Value& payload,
+                               const std::string& actionId = {});
+    // The DM's acts the journal holds, by dm.actions id ({ok, text, target}; the last DmActsKept), and the rows whose
+    // status waits for their record to commit (tests).
+    const json::Value& dmActs() const { return dmActs_; }
+    std::size_t dmStatusesWaiting() const { return dmStatusWaiting_.size(); }
+    // A snapshot under way finished (tests: a held-open snapshot window closed before the save is looked at).
+    void waitForSnapshot() { reapSnapshot(true); }
+    static bool economyCommand(const std::string& kind);
+    // What economy.sync reads (tests; else the live tables, or the world export read again).
+    std::function<bool(EconomySpec&, std::string&)> economyReader;
+    const Options& options() const { return options_; }
 
     // A snapshot of the world every SnapshotSeconds (and SaveSoonSeconds after a change worth keeping); its memory
     // consolidated every AutosaveSeconds.
@@ -1735,6 +1753,12 @@ class Game
     void readNotifications();
     void watchReleases(double dt);
     void applyDmActions(double dt);
+    // The staged economy's settings (RatwGameEconomy.cpp): read again for economy.sync (the records Authoring skipped
+    // counted), put in force (the rules, the host's overrides, the slider's target and cause), and at start.
+    bool readEconomy(EconomySpec& spec, std::size_t& skipped, std::string& problem);
+    std::size_t applyEconomySpec(const EconomySpec& spec, bool now);   // (The host's overrides skipped or held: how many.)
+    void logEconomyWarnings(const AuthoredRoster& roster);
+    void startEconomy();
     void feedWatch(double dt);              // A frame for the LIVE map while a Dungeon Master watches (RatwGameWatch.cpp).
     std::string watchFrame() const;
     void makeResidents(std::size_t most = World::ResidentsAPass);
@@ -1967,6 +1991,22 @@ class Game
         std::string event;
     };
     std::deque<Waiting> waiting_;
+    // The DM's economy acts applied (doc 79, Phase 9's first repair): by dm.actions id, saved in the checkpoint and set by
+    // each act's journal record; and the dm.actions rows told "applied" only once their record is committed.
+    json::Value dmActs_ = json::Value::object();
+    int economyManifestFunction_ = -1;               // (live.economy_manifest there: -1 not yet asked; readEconomy.)
+    std::string actingFor_;                         // (The dm.actions id record() writes into dmActs, while an act is applied.)
+    struct DmStatus
+    {
+        std::string id, status, result;
+        std::uint64_t seq;
+    };
+    std::vector<DmStatus> dmStatusWaiting_;
+    bool journalDirector_ = false;                   // (The operator bridge's state in the next record: its commit.)
+    bool dmActsAnswered_ = false;                    // (The restart's rows answered from dmActs: once, before any expiry.)
+    void releaseDmStatuses();
+    void keepDmAct(const std::string& id, json::Value act);   // (Into dmActs_, the oldest dropped past DmActsKept.)
+    static constexpr std::size_t DmActsKept = 64;
     void beginHolding(Connection* c);
     void endHolding();
     void releaseCommitted();

@@ -11,6 +11,10 @@ import world_db as W
 import world_store as S
 from test_world_db import database_available, superuser
 from test_world_store import greyfen
+import os
+
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 
 def meta(cell):
@@ -30,10 +34,10 @@ def glyph(project, x, y):
 class LiveTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        cls.name = f'ratw_test_{DB_TAG}{secrets.token_hex(4)}'
         with superuser() as su:
             su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
-            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
+            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor, ratw_dm')
         with W.connect('dev', 'owner', dbname=cls.name) as owner:
             W.migrate(owner)
         cls.conn = W.connect('dev', 'editor', dbname=cls.name)
@@ -118,6 +122,96 @@ class LiveTests(unittest.TestCase):
     def edit(self, *ops, who='Ada', client='a1', label='Test edit'):
         return self.world.edit({'clientId': client, 'editor': who, 'label': label,
                                 'ops': [{'key': k, 'before': b, 'after': a} for k, b, a in ops]})
+
+    # ---- Doc 79, 14 (Phase 9): the economy key and an NPC's band ---------------------------------------------------
+
+    def queued(self):
+        with W.connect('dev', 'dm', dbname=self.name) as dm:
+            return dm.execute("SELECT kind, target_id, requested_by FROM dm.actions ORDER BY id").fetchall()
+
+    def test_the_economy_key_writes_the_kept_settings_and_queues_a_sync(self):
+        before = L.Batch(self.conn, L.world_row(self.conn)).current('economy')
+        self.assertEqual(set(before), {'treasury', 'storeHerbs', 'storeMeals', 'needsPaused', 'seasons', 'rules', 'services', 'overrides'})
+        after = {**before, 'rules': {'prosperity': 35, 'ripple': 40}, 'overrides': {'prosperityCause': 'a fair', 'neverImported': ['salt']},
+                 'seasons': {'grain': {'price': [120, 100, 80, 130], 'shelf': [100, 100, 100, 100]}}, 'dailyHerbs': 3}
+        queued = len(self.queued())
+        synced = {}
+        L.apply_edit(self.conn, 'a1', 'Ada', 'The economy', [{'key': 'economy', 'before': before, 'after': after}], synced=synced)
+        stored = S.economy_value(self.conn, 'greyfen')
+        self.assertEqual(stored, {k: v for k, v in after.items() if k != 'dailyHerbs'})
+        self.assertEqual(self.conn.execute('SELECT rules FROM live.economy').fetchone()[0],
+                         {'prosperity': 35, 'ripple': 40, 'prosperityCause': 'a fair', 'neverImported': ['salt']})
+        self.assertEqual(self.queued()[queued:], [('economy.sync', 'economy', 'Ada')], 'the running server is told')
+        self.assertTrue(synced.get('sync'))
+        # The studio queues its own: no second sync.
+        L.apply_edit(self.conn, 'a1', 'Ada', 'Again', [{'key': 'economy', 'before': stored, 'after': {**stored, 'needsPaused': True}}],
+                     queue_sync=False)
+        self.assertEqual(len(self.queued()), queued + 1)
+        # A bad setting is refused as a save refuses it; a world without migration 0061 would refuse the overrides
+        # (test_world_store's WithoutMigration61Tests).
+        with self.assertRaises(L.Rejected):
+            L.apply_edit(self.conn, 'a1', 'Ada', 'Bad', [{'key': 'economy', 'before': S.economy_value(self.conn, 'greyfen'),
+                                                         'after': {**stored, 'treasury': -5}}])
+
+    def test_a_rule_name_that_would_split_the_manifest_is_refused(self):
+        # Phase 9's last repair: a rule named with a line break got through Atlas's keyed edit; the manifest then held a
+        # second line the game refused the whole world for.
+        stored = L.Batch(self.conn, L.world_row(self.conn)).current('economy')
+        with self.assertRaises(L.Rejected) as raised:
+            L.apply_edit(self.conn, 'a1', 'Ada', 'A bad rule', [{'key': 'economy', 'before': stored,
+                                                                 'after': {**stored, 'rules': {**stored['rules'], 'zz\nbogus': 5}}}],
+                         queue_sync=False)
+        self.assertIn('not a rule\'s name', str(raised.exception))
+        self.assertNotIn('zz\nbogus', self.conn.execute('SELECT rules FROM live.economy').fetchone()[0])
+
+    def test_the_economy_key_holds_new_overrides_to_the_studios_rules(self):
+        # Phase 9's second repair: a new override that won't do (7,000 unknown goods, a cap of 10^12, an unknown key) is
+        # refused here as the studio refuses it (Core would skip the whole overrides line, the slider's cause with it);
+        # one already stored doesn't block another change.
+        stored = L.Batch(self.conn, L.world_row(self.conn)).current('economy')
+        bad = {**stored, 'overrides': {'prosperityCause': 'the war levy', 'neverImported': [f'no_good_{i}' for i in range(7000)],
+                                       'status': {'caps': {'grantsADay': 10 ** 12}, 'nonsense': 'x'}}}
+        with self.assertRaises(L.Rejected) as raised:
+            L.apply_edit(self.conn, 'a1', 'Ada', 'Bad overrides', [{'key': 'economy', 'before': stored, 'after': bad}], queue_sync=False)
+        self.assertIn('neverImported', str(raised.exception))
+        self.assertNotIn('neverImported', self.conn.execute('SELECT rules FROM live.economy').fetchone()[0])
+        # (One stored by hand, which Core reads past: another change still goes in.)
+        with W.connect('dev', 'owner', dbname=self.name) as owner:
+            owner.execute('''UPDATE live.economy SET rules = rules || '{"neverImported": ["no_such_good"]}' ''')
+        held = S.economy_value(self.conn, 'greyfen')
+        L.apply_edit(self.conn, 'a1', 'Ada', 'Needs off', [{'key': 'economy', 'before': held, 'after': {**held, 'needsPaused': True}}],
+                     queue_sync=False)
+        self.assertTrue(S.economy_value(self.conn, 'greyfen')['needsPaused'])
+
+    def test_the_load_says_whether_the_world_holds_a_band(self):
+        # Phase 9's second repair: the Inspector's Band picker is greyed on a world before 0061 (this one has it).
+        self.assertIs(self.world.load()['bands'], True)
+
+    def test_the_sync_is_queued_as_atlass_own_role(self):
+        # Phase 9's second repair: through dm.queue_economy_sync (migration 0061), as Atlas's role on its own connection,
+        # whatever the registry's keys (it logged in as the DM's role through the key "dev", silently None elsewhere).
+        action = L.queue_economy_sync(self.conn, 'Ada', {'now': True})
+        self.assertTrue(action)
+        self.assertEqual(self.conn.execute('SELECT current_user').fetchone()[0], 'ratw_editor')
+        with W.connect('dev', 'owner', dbname=self.name) as owner:
+            row = owner.execute('SELECT kind, target_id, requested_by, payload FROM dm.actions WHERE id = %s', (action,)).fetchone()
+        self.assertEqual(row, ('economy.sync', 'economy', 'Ada', {'now': True}))
+        with self.assertRaises(Exception):          # (Atlas's role still can't write dm.actions itself.)
+            with W.connect('dev', 'editor', dbname=self.name) as editor:
+                editor.execute("INSERT INTO dm.actions (kind, requested_by) VALUES ('character.grant', 'x')")
+
+    def test_an_npcs_band_through_person(self):
+        key = 'person:brann'
+        before = L.Batch(self.conn, L.world_row(self.conn)).current(key)
+        self.assertNotIn('band', before)
+        self.edit((key, before, {**before, 'band': 'poor'}))
+        self.assertEqual(self.conn.execute("SELECT band_override FROM live.npcs WHERE id = 'brann'").fetchone()[0], 'poor')
+        now = L.Batch(self.conn, L.world_row(self.conn)).current(key)
+        self.assertEqual(now['band'], 'poor')
+        self.edit((key, now, {k: v for k, v in now.items() if k != 'band'}))
+        self.assertIsNone(self.conn.execute("SELECT band_override FROM live.npcs WHERE id = 'brann'").fetchone()[0], 'from rank again')
+        with self.assertRaises(L.Rejected):
+            self.edit((key, before, {**before, 'band': 'wealthy'}))
 
     def test_only_one_world(self):
         with self.assertRaises(Exception):

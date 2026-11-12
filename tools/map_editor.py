@@ -26,7 +26,9 @@ import threading
 import time
 import zipfile
 
+import economy_contract
 import http_body
+import manifest_lines
 import roster as roster_lib
 import terrain_catalog
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -63,36 +65,24 @@ APPEARANCE_KEYS = {'species', 'sex', 'stature', 'pattern', 'baseColor', 'gradien
 # A resident's (an NPC's or a profession slot's) counts, 0 to these; an NPC's age too.
 RESIDENT_LIMITS = {'purse': 100000, 'herbs': 10000, 'meals': 10000, 'age': 200}
 ECONOMY_KEYS = {'treasury': 1000000, 'storeHerbs': 10000, 'storeMeals': 10000, 'dailyHerbs': 1000, 'dailyMeals': 1000}
-DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'dailyHerbs': 10, 'dailyMeals': 12}
-# The store room (Docs/Design/67-ridgemere2-city.md, 6): optional economy keys, at these defaults, and `businesses`
-# ({npc id: {internalStore: false}}, the businesses switched off, by founder).
-STORE_DEFAULTS = {'internalStore': True, 'storeMarkup': 100, 'storeResale': True, 'resaleMarkup': 75, 'storeRule': False}
-STORE_SWITCHES = ('internalStore', 'storeResale', 'storeRule')
-STORE_MARKUPS = ('storeMarkup', 'resaleMarkup')
-# The city's loop (Docs/Design/68-the-country-and-the-city-loop.md, 9; migration 0056): optional economy keys, at these
-# defaults: residents' needs paused, the Country spending back, its reserve, the gate toll, carriage a wagon load, the
-# day's wages, the goods the Country no longer supplies, and the services the treasury pays a share of.
-LOOP_DEFAULTS = {'needsPaused': False, 'wharf': True, 'wharfReserve': 200, 'gateToll': 30, 'carriage': 6,
-                 'wageKeeper': 14, 'wageHand': 8, 'wagePublic': 8, 'wageWharf': 8, 'wharfOff': [],
-                 'subsidies': {'carriage': 25}}
-LOOP_SWITCHES = ('needsPaused', 'wharf')
-LOOP_NUMBERS = {'wharfReserve': 100000, 'gateToll': 90, 'carriage': 1000, 'wageKeeper': 1000, 'wageHand': 1000,
-                'wagePublic': 1000, 'wageWharf': 1000}
-SUBSIDISED = ('carriage',)                           # Society::Subsidised
-# The seasons in the Country's supply and the residents' comforts (doc 68, Progress, "Seasons and the DM's rules";
-# migration 0057): optional economy keys. comfortsAbove/comfortsShare: None for city_loop.json's (40p a head, 20% since
-# doc 68's first fixes); seasons: {group: {supply: [4], price: [4], shelf: [4], normal: N}}, the groups this world has changed (a group not
-# listed is as market.json says; Core reads its price and shelf, not supply or normal, since doc 79), percent by season (Spring, Summer, Autumn, Winter), normal pieces a day.
-SEASON_DEFAULTS = {'comfortsAbove': None, 'comfortsShare': None, 'seasons': {}}
-SEASON_LIMITS = {'supply': (0, 1000), 'price': (10, 1000), 'shelf': (0, 1000)}
+DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50}     # (No daily herbs or meals: read past since doc 79.)
+# The economy entity (Docs/Design/79-a-staged-economy.md, 14; world_store's, contract 1.3): treasury, storeHerbs and
+# storeMeals (ECONOMY_KEYS; dailyHerbs and dailyMeals accepted and read past), needsPaused, seasons {group: {price, shelf}}
+# (a world before migration 0061 keeps {supply, price, shelf, normal}: supply and normal read past), rules {name: N},
+# services {id: {on, price, every}} and the host's overrides (tools/economy_contract.py). A key the staged economy no
+# longer reads (the store room's, the city loop's, the comforts', the farms' money: doc 79, 12 and 17) is read past with
+# a warning, never refused (doc 79, 14).
+ECONOMY_SETTINGS = ('needsPaused', 'seasons', 'rules', 'services', 'overrides')
+SEASON_LIMITS = {'price': (10, 1000), 'shelf': (0, 1000), 'supply': (0, 1000)}
 SEASON_NAMES = ('Spring', 'Summer', 'Autumn', 'Winter')
+
+
 # The rules and the city's services (doc 68, Progress, "First fixes"; migration 0058): optional economy keys. rules:
 # {name: whole number}, the rules this world has changed (a rule not listed is as the data files have it: rule_defaults);
 # services: {service id: {on, price, every}}, the services this world has changed (stored whole; a service not listed is
 # as the data files' list and items.json's price). Core's items::Rules, with their ranges and fallbacks: since doc 79
 # (17) only the staged economy's, the clamps and the Market Board's; a world's rule Core no longer has is kept and
 # ignored (a warning, never a refusal: doc 79, 14), and never written to the world file.
-RULE_DEFAULTS = {'rules': {}, 'services': {}}
 RULES = {  # name: (low, high, fallback), as Core/RatwItems.h's Rules[].
     'neverHungry': (0, 1, 0), 'neverBroke': (0, 1, 0), 'buyAheadDays': (0, 5, 1),
     'halfLifePerishable': (5, 300, 20), 'halfLifeKeeping': (5, 300, 50), 'halfLifeDurable': (5, 300, 80),
@@ -100,44 +90,10 @@ RULES = {  # name: (low, high, fallback), as Core/RatwItems.h's Rules[].
     'takeAllowance': (5, 100, 50), 'shelfScale': (10, 1000, 100), 'factionDiscountMost': (0, 1000, 30),
     'caravanRate': (0, 300, 100), 'wagonsOnRoad': (0, 64, 16), 'cartsOnRoad': (0, 200, 48), 'campStrengthMost': (2, 20, 12),
     'bountyMost': (0, 500, 60), 'shipsPerWeek': (0, 6, 2), 'theftCap': (0, 20, 4), 'errandRunners': (0, 1, 1),
-    'eventRate': (0, 300, 100), 'overrideNotices': (0, 1, 1)}
+    'eventRate': (0, 300, 100), 'overrideNotices': (0, 1, 1), 'prosperity': (-100, 100, 0), 'harvestBias': (-20, 20, 0)}
 RULE_LIMITS = {name: high for name, (_, high, _) in RULES.items()}
 RULE_SWITCHES = ('neverHungry', 'neverBroke', 'errandRunners', 'overrideNotices')     # 0 or 1: off or on.
-# The Country's economy keys and rule before doc 73 (Docs/Design/73-the-wharf.md, 2.3), read as the Wharf's (the new name
-# wins where a project has both); written only under the new names.
-ECONOMY_ALIASES = {'country': 'wharf', 'countryReserve': 'wharfReserve', 'wageCountry': 'wageWharf', 'countryOff': 'wharfOff'}
-RULE_ALIASES = {'countryPostsDays': 'estatePostsDays'}
-
-
-def legacy_economy(economy):
-    """The economy entity with an older project's Country keys and rule under the Wharf's names (a copy; as given when it
-    has none or isn't an object)."""
-    if not isinstance(economy, dict) or not (set(economy) & set(ECONOMY_ALIASES) or
-                                             (isinstance(economy.get('rules'), dict) and set(economy['rules']) & set(RULE_ALIASES))):
-        return economy
-    e = dict(economy)
-    for old, new in ECONOMY_ALIASES.items():
-        if old in e:
-            value = e.pop(old)
-            e.setdefault(new, value)
-    if isinstance(e.get('rules'), dict):
-        rules = dict(e['rules'])
-        for old, new in RULE_ALIASES.items():
-            if old in rules:
-                value = rules.pop(old)
-                rules.setdefault(new, value)
-        e['rules'] = rules
-    return e
 SERVICE_LIMITS = {'price': (1, 100000), 'every': (1, 3650)}
-# The Country's food farms (Docs/Design/71-the-country-s-industries.md, 4; migration 0060): an optional economy key,
-# farms: what this world has changed of Data/Economy/country_farms.json's ({}: all as the file has them), each key
-# optional: start (the calendar day the switch's first area goes on; -1: none), every (days between areas), order (the
-# areas, in the order they go on), keeper and hand (the farms' wages); areas {area: {on, yieldScale, crewScale, keeper,
-# hand, priceFactor}}; farms {farm: {yieldScale, crewScale, keeper, hand}}. Core's EconomySpec::Farms.
-FARM_DEFAULTS = {'farms': {}}
-FARM_TOP = {'start': (-1, 365000000), 'every': (1, 3650), 'keeper': (0, 1000), 'hand': (0, 1000)}
-FARM_AREA = {'yieldScale': (0, 1000), 'crewScale': (0, 1000), 'keeper': (0, 1000), 'hand': (0, 1000), 'priceFactor': (10, 1000)}
-FARM_FARM = {'yieldScale': (0, 1000), 'crewScale': (0, 1000), 'keeper': (0, 1000), 'hand': (0, 1000)}
 
 
 def _data_file(path: str) -> dict:
@@ -148,11 +104,6 @@ def _data_file(path: str) -> dict:
         return {}
 
 
-def city_loop_file() -> dict:
-    """Data/Items/city_loop.json as the file has it ({} if it can't be read: doc 79, 17 takes it apart)."""
-    return _data_file('Data/Items/city_loop.json')
-
-
 def market_file() -> dict:
     """Data/Economy/market.json (doc 79, 5: the Board's defaults, and the seasons, services and rules moved from
     city_loop.json), {} if it can't be read."""
@@ -160,10 +111,9 @@ def market_file() -> dict:
 
 
 def rule_defaults() -> dict:
-    """The rules' defaults ({name: N}, without an `about`): city_loop.json's while it has them, then market.json's and
-    status.json's over them (doc 79, 17: where the kept rules move)."""
+    """The rules' defaults ({name: N}, without an `about`): market.json's, then status.json's over them."""
     rules = {}
-    for f in (city_loop_file(), market_file(), _data_file('Data/Economy/status.json')):
+    for f in (market_file(), _data_file('Data/Economy/status.json')):
         if isinstance(f.get('rules'), dict):
             rules.update(f['rules'])
     out = {name: fallback for name, (_, _, fallback) in RULES.items()}
@@ -188,7 +138,7 @@ def service_list() -> list[dict]:
     except (OSError, ValueError, KeyError):
         items = {}
     out = []
-    listed = market_file().get('services') or city_loop_file().get('services') or {}
+    listed = market_file().get('services') or {}
     for s in (listed.get('list') if isinstance(listed, dict) else listed) or []:
         if isinstance(s, dict) and s.get('id'):
             item = items.get(s['id'], {})
@@ -204,6 +154,8 @@ def check_rules(rules, services) -> list[str]:
     if not isinstance(rules, dict):
         errors.append('economy.rules must be {rule: whole number}.')
     else:
+        # (A name that is no plain word would split the manifest's line: refused at every door, Phase 9's last repair.)
+        errors += economy_contract.rule_name_problems(rules)
         for name, value in rules.items():
             if name not in RULES:
                 continue                    # (A rule Core no longer has: kept and ignored, unknown_rules warns.)
@@ -226,261 +178,115 @@ def check_rules(rules, services) -> list[str]:
     return errors
 
 
-def farms_file() -> dict:
-    """Data/Economy/country_farms.json as the file has it ({} if it can't be read)."""
-    try:
-        return json.loads((ROOT / 'Data/Economy/country_farms.json').read_text(encoding='utf-8'))
-    except (OSError, ValueError):
-        return {}
-
-
-def farm_ids() -> tuple[list[str], set[str]]:
-    """country_farms.json's food areas (in its order) and its farms' ids."""
-    areas = [a for a in farms_file().get('areas') or [] if isinstance(a, dict) and a.get('id')]
-    return [a['id'] for a in areas], {x['id'] for a in areas for x in a.get('farms') or [] if isinstance(x, dict) and x.get('id')}
-
-
-def unknown_farms(farms) -> list[str]:
-    """What farms' settings name that country_farms.json doesn't have: a message for the order's, the areas' and the
-    farms'. A world keeps them and Core does nothing with them, so a file regenerated with fewer farms (their ids are
-    numbered by count) leaves the world's settings sound; only a change may not name one (studio's set_farms)."""
-    if not isinstance(farms, dict):
-        return []
-    areas, known = farm_ids()
-    out = []
-    order = farms.get('order')
-    if isinstance(order, list) and [a for a in order if a not in areas]:
-        out.append('economy.farms.order names nothing country_farms.json has: ' +
-                   ', '.join(str(a) for a in order if a not in areas) + ' (its areas: ' + ', '.join(areas) + ').')
-    for kind, ids in (('areas', set(areas)), ('farms', known)):
-        given = farms.get(kind)
-        if isinstance(given, dict) and set(given) - ids:
-            out.append(f'economy.farms.{kind} names nothing country_farms.json has: {", ".join(sorted(set(given) - ids))}.')
-    return out
-
-
-def check_farms(farms) -> list[str]:
-    """The farms' settings' problems. An area or a farm country_farms.json no longer has is kept, as Core keeps it (it
-    does nothing), so long as it is well formed (unknown_farms names them)."""
-    if not isinstance(farms, dict) or set(farms) - {*FARM_TOP, 'order', 'areas', 'farms'}:
-        return ['economy.farms must be {start?, every?, order?, keeper?, hand?, areas?, farms?}.']
-    errors = []
-    for key, (low, high) in FARM_TOP.items():
-        if key in farms and not number(farms[key], low, high, integer=True):
-            errors.append(f'economy.farms.{key} must be a whole number from {low} to {high}.')
-    if 'order' in farms:
-        order = farms['order']
-        if (not isinstance(order, list) or not order or len(set(map(str, order))) != len(order) or
-                any(not isinstance(a, str) or not re.fullmatch(r'[a-z0-9_]{1,48}', a) for a in order)):
-            errors.append('economy.farms.order must be a list of distinct area ids (country_farms.json\'s: ' +
-                          ', '.join(farm_ids()[0]) + ').')
-    for kind, limits in (('areas', FARM_AREA), ('farms', FARM_FARM)):
-        given = farms.get(kind, {})
-        if not isinstance(given, dict):
-            errors.append(f'economy.farms.{kind} must be an object.')
-            continue
-        for fid, setting in given.items():
-            extra = {'on'} if kind == 'areas' else set()
-            if not isinstance(fid, str) or not re.fullmatch(r'[a-z0-9_]{1,48}', fid):
-                errors.append(f'economy.farms.{kind} names no {kind[:-1]}: {fid}.')
-            elif not isinstance(setting, dict) or set(setting) - set(limits) - extra:
-                errors.append(f'economy.farms.{kind}.{fid} may set ' + ', '.join([*sorted(extra), *limits]) + '.')
-            else:
-                if 'on' in setting and type(setting['on']) is not bool:
-                    errors.append(f'economy.farms.areas.{fid}.on must be true or false (absent: as the schedule says).')
-                for key, (low, high) in limits.items():
-                    if key in setting and not number(setting[key], low, high, integer=True):
-                        errors.append(f'economy.farms.{kind}.{fid}.{key} must be a whole number from {low} to {high}.')
-    return errors
-
-
 def season_groups() -> list[dict]:
-    """The season groups as the files have them: market.json's (doc 79, 7.1: price and shelf, which Core reads), else
-    city_loop.json's."""
+    """market.json's season groups (doc 79, 7.1: price and shelf by season)."""
     groups = market_file().get('seasons')
     if not isinstance(groups, list):
-        groups = (city_loop_file().get('seasons') or {}).get('groups') or []
+        groups = []
     return [g for g in groups if isinstance(g, dict) and g.get('id')]
 
 
+# The season room (Docs/Design/79-a-staged-economy.md, Progress, "the user's price decisions"): at a season's ends, with
+# each region factor (made here 0.95 to far 1.08), players' pressure keeps at least x1.10 of room up and x0.90 down inside
+# the fixed 0.80-1.28 clamp. Core rescales a group's swing to market.json's seasonSpanMost, but an off-centre group (all
+# 130, say) isn't rescaled: the studio holds a world's own group to the rule.
+CLAMP, REGION, ROOM = (0.80, 1.28), (0.95, 1.08), (0.90, 1.10)
+
+
+def season_span_most() -> float:
+    """market.json's seasonSpanMost (Core's market::Data, clamped 1 to 1.55; 1.06 when unset)."""
+    v = market_file().get('seasonSpanMost')
+    return min(1.55, max(1.0, float(v))) if isinstance(v, (int, float)) and not isinstance(v, bool) else 1.06
+
+
+def season_factors(price) -> list[float]:
+    """A group's price percents as Core's market::seasonFactor makes them at each season's middle (where the blend is
+    at its ends): a swing wider than seasonSpanMost rescaled to it."""
+    lo, hi = min(price), max(price)
+    most = season_span_most()
+    if lo <= 0:
+        return [1.0] * len(price)
+    span = hi / lo
+    if span <= most:
+        return [v / 100 for v in price]
+    return [math.exp(math.log(v / 100) * math.log(most) / math.log(span)) for v in price]
+
+
+def season_room(price) -> bool:
+    """Whether a group's prices leave players' pressure its room inside the clamp (the season room)."""
+    low, high = CLAMP[0] / (REGION[0] * ROOM[0]), CLAMP[1] / (REGION[1] * ROOM[1])
+    return all(low - 1e-9 <= f <= high + 1e-9 for f in season_factors(price))
+
+
 def check_season(group, setting) -> list[str]:
-    """One season group's setting's problems."""
-    if not isinstance(setting, dict) or set(setting) != {'supply', 'price', 'shelf', 'normal'}:
-        return [f'economy.seasons.{group} must be {{supply, price, shelf: four percents each (Spring, Summer, Autumn, '
-                'Winter), normal: pieces a day}}.']
+    """One season group's setting's problems: {price, shelf} (four percents each, Spring to Winter), or a world's before
+    migration 0061, {supply, price, shelf, normal} (supply and normal read past, as Core reads them); its prices within
+    the season room (season_room)."""
+    shapes = ({'price', 'shelf'}, {'supply', 'price', 'shelf', 'normal'})
+    if not isinstance(setting, dict) or set(setting) not in shapes:
+        return [f'economy.seasons.{group} must be {{price, shelf: four percents each (Spring, Summer, Autumn, Winter)}}.']
     errors = []
     for key, (low, high) in SEASON_LIMITS.items():
+        if key not in setting:
+            continue
         v = setting[key]
         if not isinstance(v, list) or len(v) != 4 or any(not number(x, low, high, integer=True) for x in v):
             errors.append(f'economy.seasons.{group}.{key} must be four whole percents from {low} to {high}.')
-    if not number(setting['normal'], 0, 1000000, integer=True):
-        errors.append(f'economy.seasons.{group}.normal must be a whole number of pieces a day from 0 to 1000000.')
+    if 'normal' in setting and not number(setting['normal'], 0, 1000000, integer=True):
+        errors.append(f'economy.seasons.{group}.normal must be a whole number from 0 to 1000000 (read past).')
+    if not errors and not season_room(setting['price']):
+        low, high = CLAMP[0] / (REGION[0] * ROOM[0]), CLAMP[1] / (REGION[1] * ROOM[1])
+        errors.append(f'economy.seasons.{group}.price leaves players no room inside the price clamp: each season\'s price, '
+                      f'after market.json\'s seasonSpanMost, must lie from {math.ceil(100 * low)}% to {math.floor(100 * high)}% '
+                      '(the season room, doc 79).')
     return errors
 
 
-def loop_defaults() -> dict:
-    """LOOP_DEFAULTS, a copy of its own."""
-    return {k: (list(v) if isinstance(v, list) else dict(v) if isinstance(v, dict) else v) for k, v in LOOP_DEFAULTS.items()}
+def check_economy(economy, strict_overrides=False) -> list[str]:
+    """The economy entity's problems (none: it is sound): what a change is checked against. A setting the staged economy
+    no longer reads is no problem (economy_problems warns of it); nor is a bad override unless `strict_overrides`."""
+    return economy_problems(economy, strict_overrides=strict_overrides)[0]
 
 
-def check_economy(economy, person_ids=None) -> list[str]:
-    """The economy entity's problems (none: it is sound), the dead settings' among them: what a change is checked
-    against. `person_ids`: the NPCs a `businesses` key may name."""
-    errors, dead = economy_problems(economy, person_ids)
-    return errors + dead
-
-
-# The settings the staged economy no longer reads (Docs/Design/79-a-staged-economy.md, 12 and 17; Core's Authoring skips
-# their records): the store room's, the city's loop's but needsPaused, the comforts and the farms' money. Their panels and
-# routes go with doc 79's Phase 9; until then a project holding a bad one loads, warned of (doc 79, 14: the economy is
-# lenient), and only a change to one is refused.
-DEAD_ECONOMY = ({*STORE_DEFAULTS, 'businesses', *LOOP_DEFAULTS, 'comfortsAbove', 'comfortsShare', *FARM_DEFAULTS}
-                - {'needsPaused'})
-
-
-def dead_settings_sound(economy):
-    """The economy entity with each dead setting that fails its check (economy_problems' dead) taken out, so it is
-    written at its default: a copy, or as given when none fails."""
-    if not isinstance(economy, dict):
-        return economy
-    _, dead = economy_problems(economy)
-    named = {m.group(1) for m in (re.match(r'economy\.(\w+)', d) for d in dead) if m}
-    return {k: v for k, v in economy.items() if k not in named} if named else economy
-
-
-def economy_problems(economy, person_ids=None) -> tuple[list[str], list[str]]:
-    """(errors, dead): the economy entity's problems, the dead settings' (DEAD_ECONOMY) apart."""
+def economy_problems(economy, strict_overrides=False) -> tuple[list[str], list[str]]:
+    """(errors, warnings) of the economy entity: errors refuse it; warnings name what is read past (a key the staged
+    economy no longer reads, a rule Core no longer has, a bad override, which Core skips: an error with
+    `strict_overrides`)."""
     if not isinstance(economy, dict):
         return ['economy must be an object.'], []
-    economy = legacy_economy(economy)
-    errors = []
-    keys = set(economy)
-    if not set(ECONOMY_KEYS) <= keys <= (set(ECONOMY_KEYS) | set(STORE_DEFAULTS) | {'businesses'} | set(LOOP_DEFAULTS)
-                                         | set(SEASON_DEFAULTS) | set(RULE_DEFAULTS) | set(FARM_DEFAULTS)):
-        errors.append('economy requires treasury, storeHerbs, storeMeals, dailyHerbs and dailyMeals '
-                      '(and may have internalStore, storeMarkup, storeResale, resaleMarkup, storeRule, businesses, '
-                      'the loop\'s ' + ', '.join(LOOP_DEFAULTS) + ', ' + ', '.join(SEASON_DEFAULTS) + ', '
-                      + ', '.join(RULE_DEFAULTS) + ' and ' + ', '.join(FARM_DEFAULTS) + ').')
+    errors, warnings = [], []
+    for key, limit in ECONOMY_KEYS.items():
+        if key in ('dailyHerbs', 'dailyMeals'):
+            continue                                    # (Read past since doc 79.)
+        if not number(economy.get(key), 0, limit, integer=True):
+            errors.append(f'economy.{key} must be a whole number from 0 to {limit}.')
+    for key in sorted(set(economy) - set(ECONOMY_KEYS) - set(ECONOMY_SETTINGS)):
+        warnings.append(f'economy.{key}: a setting the staged economy no longer reads (doc 79): read past, it does nothing.')
+    if type(economy.get('needsPaused', False)) is not bool:
+        errors.append('economy.needsPaused must be true or false.')
     errors += check_rules(economy.get('rules', {}), economy.get('services', {}))
-    errors += check_farms(economy.get('farms', {}))
-    for key, high in (('comfortsAbove', 1000000), ('comfortsShare', 100)):
-        value = economy.get(key)
-        if value is not None and not number(value, 0, high, integer=True):
-            errors.append(f'economy.{key} must be a whole number from 0 to {high}, or null for city_loop.json\'s.')
+    warnings += [f'economy.rules.{name}: a rule the game no longer has (doc 79): kept, it does nothing.'
+                 for name in unknown_rules(economy.get('rules'))]
     seasons = economy.get('seasons', {})
     if not isinstance(seasons, dict):
-        errors.append('economy.seasons must be {group: {supply, price, shelf, normal}}.')
+        errors.append('economy.seasons must be {group: {price, shelf}}.')
     else:
         for group, setting in seasons.items():
             if not isinstance(group, str) or not re.fullmatch(r'[a-z0-9_]{1,40}', group):
                 errors.append(f'economy.seasons names no season group: {group}.')
             else:
                 errors += check_season(group, setting)
-    for key in LOOP_SWITCHES:
-        if type(economy.get(key, LOOP_DEFAULTS[key])) is not bool:
-            errors.append(f'economy.{key} must be true or false.')
-    for key, limit in LOOP_NUMBERS.items():
-        if not number(economy.get(key, LOOP_DEFAULTS[key]), 0, limit, integer=True):
-            errors.append(f'economy.{key} must be a whole number from 0 to {limit}.')
-    off = economy.get('wharfOff', [])
-    if (not isinstance(off, list) or len(set(off)) != len(off) or
-            any(not isinstance(g, str) or not re.fullmatch(r'[a-z0-9_]{1,48}', g) for g in off)):
-        errors.append('economy.wharfOff must be a list of distinct item ids.')
-    subsidies = economy.get('subsidies', LOOP_DEFAULTS['subsidies'])
-    if (not isinstance(subsidies, dict) or set(subsidies) - set(SUBSIDISED) or
-            any(not number(v, 0, 100, integer=True) for v in subsidies.values())):
-        errors.append('economy.subsidies must be {service: percent 0 to 100} for ' + ', '.join(SUBSIDISED) + '.')
-    for key, limit in ECONOMY_KEYS.items():
-        if not number(economy.get(key), 0, limit, integer=True):
-            errors.append(f'economy.{key} must be a whole number from 0 to {limit}.')
-    for key in STORE_SWITCHES:
-        if type(economy.get(key, STORE_DEFAULTS[key])) is not bool:
-            errors.append(f'economy.{key} must be true or false.')
-    for key in STORE_MARKUPS:
-        if not number(economy.get(key, STORE_DEFAULTS[key]), 0, 1000, integer=True):
-            errors.append(f'economy.{key} must be a whole number from 0 to 1000 (a percentage of the catalogue price).')
-    businesses = economy.get('businesses', {})
-    if not isinstance(businesses, dict):
-        errors.append('economy.businesses must be an object of NPC IDs.')
-    else:
-        for npc, setting in businesses.items():
-            if not isinstance(setting, dict) or set(setting) != {'internalStore'} or type(setting['internalStore']) is not bool:
-                errors.append(f'economy.businesses.{npc} must be {{"internalStore": true or false}}.')
-            elif person_ids is not None and npc not in person_ids:
-                errors.append(f'economy.businesses names no NPC: {npc}.')
-    dead_key = re.compile(r'economy\.(' + '|'.join(sorted(DEAD_ECONOMY, key=len, reverse=True)) + r')\b')
-    return [e for e in errors if not dead_key.match(e)], [e for e in errors if dead_key.match(e)]
+    overrides = economy.get('overrides', {})
+    if overrides:
+        # (A bad override is Core's to skip with a warning, never a reason to refuse the world: a stored one the data files
+        # have since made invalid, or one a package or a hand brought, must not stop a save, a build or another edit. The
+        # studio checks an override it writes itself: strict, its own.)
+        problems, notes = economy_contract.check_overrides(overrides, economy_contract.base_goods(),
+                                                           economy_contract.load_defaults())
+        (errors if strict_overrides else warnings).extend(f'economy.overrides: {p}' for p in problems)
+        warnings += [f'economy.overrides: {n}' for n in notes]
+    return errors, warnings
 
-
-def store_line(economy) -> str | None:
-    """The NPC records' "store" line (live.people_manifest's): only when a setting differs from its default."""
-    e = {**STORE_DEFAULTS, **(economy or {})}
-    if all(e[k] == v for k, v in STORE_DEFAULTS.items()):
-        return None
-    word = lambda on: 'on' if on else 'off'
-    return (f'store {word(e["internalStore"])} {e["storeMarkup"]} resale {word(e["storeResale"])} {e["resaleMarkup"]} '
-            f'rule {word(e["storeRule"])}')
-
-
-def loop_lines(economy) -> list[str]:
-    """The NPC records' loop lines (live.people_manifest's, doc 68, 9): a "loop" line when a setting differs from its
-    default, a "countryoff" line a good, a "subsidy" line a service away from its default."""
-    e = {**LOOP_DEFAULTS, **(legacy_economy(economy) or {})}
-    word = lambda on: 'on' if on else 'off'
-    out = []
-    if any(e[k] != LOOP_DEFAULTS[k] for k in (*LOOP_SWITCHES, *LOOP_NUMBERS)):
-        out.append(f'loop needs {word(not e["needsPaused"])} country {word(e["wharf"])} reserve {e["wharfReserve"]} '
-                   f'toll {e["gateToll"]} carriage {e["carriage"]} wages {e["wageKeeper"]} {e["wageHand"]} {e["wagePublic"]} '
-                   f'{e["wageWharf"]}')
-    out += [f'countryoff {quote(g)}' for g in sorted(e['wharfOff'])]
-    defaults = LOOP_DEFAULTS['subsidies']
-    out += [f'subsidy {quote(k)} {v}' for k, v in sorted(e['subsidies'].items()) if defaults.get(k) != v]
-    return out
-
-
-def season_lines(economy) -> list[str]:
-    """The NPC records' comforts and season lines (live.people_manifest's since 0057): a "comforts" line when either is
-    set ("-" for city_loop.json's), a "season" line a group this world has changed."""
-    e = {**SEASON_DEFAULTS, **(economy or {})}
-    out = []
-    if e['comfortsAbove'] is not None or e['comfortsShare'] is not None:
-        word = lambda v: '-' if v is None else str(v)
-        out.append(f'comforts {word(e["comfortsAbove"])} {word(e["comfortsShare"])}')
-    for group, g in sorted((e['seasons'] or {}).items()):
-        out.append(f'season {quote(group)} supply {" ".join(map(str, g["supply"]))} price {" ".join(map(str, g["price"]))} '
-                   f'shelf {" ".join(map(str, g["shelf"]))} normal {g["normal"]}')
-    return out
-
-
-def rule_lines(economy) -> list[str]:
-    """The NPC records' rule and service lines (live.people_manifest's since 0058): a "rule" line a rule this world has
-    changed, a "service" line a service."""
-    e = {**RULE_DEFAULTS, **(economy or {})}
-    out = [f'rule {quote(name)} {value}' for name, value in sorted((e['rules'] or {}).items()) if name in RULES]
-    word = lambda on: 'on' if on else 'off'
-    out += [f'service {quote(sid)} {word(s["on"])} price {s["price"]} every {s["every"]}'
-            for sid, s in sorted((e['services'] or {}).items())]
-    return out
-
-
-def farm_lines(economy) -> list[str]:
-    """The NPC records' farms lines (live.people_manifest's since 0060), each word "-" for country_farms.json's: a "farms"
-    line when any of its five is set, a "farmarea" line an area this world has changed, a "farm" line a farm."""
-    f = (economy or {}).get('farms') or {}
-    word = lambda v: '-' if v is None else str(v)
-    out = []
-    if any(k in f for k in ('start', 'every', 'order', 'keeper', 'hand')):
-        order = ','.join(f['order']) if f.get('order') else '-'
-        out.append(f'farms start {word(f.get("start"))} every {word(f.get("every"))} order {order} '
-                   f'wages {word(f.get("keeper"))} {word(f.get("hand"))}')
-    for aid, a in sorted((f.get('areas') or {}).items()):
-        on = '-' if 'on' not in a else 'on' if a['on'] else 'off'
-        out.append(f'farmarea {quote(aid)} on {on} yield {word(a.get("yieldScale"))} crew {word(a.get("crewScale"))} '
-                   f'wages {word(a.get("keeper"))} {word(a.get("hand"))} factor {word(a.get("priceFactor"))}')
-    for fid, x in sorted((f.get('farms') or {}).items()):
-        out.append(f'farm {quote(fid)} yield {word(x.get("yieldScale"))} crew {word(x.get("crewScale"))} '
-                   f'wages {word(x.get("keeper"))} {word(x.get("hand"))}')
-    return out
 
 
 class ValidationError(ValueError):
@@ -792,15 +598,9 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
         return problem != OUTSIDE
 
     economy = p.get('economy', DEFAULT_ECONOMY)
-    people_list = p.get('people', [])
-    economy_errors, dead = economy_problems(economy, {person.get('id') for person in people_list if isinstance(person, dict)}
-                                            if isinstance(people_list, list) else set())
+    economy_errors, notes = economy_problems(economy)
     errors += economy_errors
-    warnings += [f'{w[:-1]}: a setting the staged economy no longer reads (doc 79): kept, it does nothing.' for w in dead]
-    if isinstance(economy, dict):
-        warnings += [f'{w[:-1]}: kept, it does nothing while the file lacks it.' for w in unknown_farms(economy.get('farms'))]
-        warnings += [f'economy.rules.{name}: a rule the game no longer has (doc 79): kept, it does nothing.'
-                     for name in unknown_rules(economy.get('rules'))]
+    warnings += notes
     herbs = p.get('herbPatch')
     if herbs is not None:
         place(herbs, 'Herb patch')
@@ -825,11 +625,14 @@ def check_content(p, by_id, rows_by_id, errors, warnings):
     require(isinstance(people, list) and len(people) <= MAX_PEOPLE, f'people must be an array of at most {MAX_PEOPLE} residents.')
     person_ids = set()
     for person in people if isinstance(people, list) else []:
-        if not isinstance(person, dict) or set(person) - {'joinable', 'protected'} != PERSON_KEYS:
-            errors.append('Each person requires exactly: ' + ', '.join(sorted(PERSON_KEYS)) + ' (and may have joinable, protected).')
+        if not isinstance(person, dict) or set(person) - {'joinable', 'protected', 'band'} != PERSON_KEYS:
+            errors.append('Each person requires exactly: ' + ', '.join(sorted(PERSON_KEYS)) + ' (and may have joinable, protected, band).')
             continue
         require(type(person.get('joinable', False)) is bool, f'Person {person["id"]}: joinable must be true or false.')
         require(type(person.get('protected', False)) is bool, f'Person {person["id"]}: protected must be true or false.')
+        # An authored band for the household (doc 79, 14: the Band picker): null or absent from rank.
+        require(person.get('band') in (None, *manifest_lines.BANDS),
+                f'Person {person["id"]}: band must be destitute, poor, comfortable, rich or null.')
         pid = person['id']
         label = f'Person {pid}'
         require(isinstance(pid, str) and ID.fullmatch(pid) and pid not in person_ids and pid != 'treasury'
@@ -1189,15 +992,10 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
         else:
             manifest.append(line)
     if content:
-        e = p.get('economy', DEFAULT_ECONOMY)
-        manifest.append(f'economy {e["treasury"]} {e["storeHerbs"]} {e["storeMeals"]} {e["dailyHerbs"]} {e["dailyMeals"]}')
-        if store_line(e):
-            manifest.append(store_line(e))          # The store room's switches, when not at their defaults (doc 67, 6).
-        manifest += loop_lines(e)                   # The city's loop's, likewise (doc 68, 9).
-        manifest += season_lines(e)                 # The comforts' and the seasons' (doc 68, Progress).
-        manifest += rule_lines(e)                   # The rules' and the services' (doc 68, Progress, "First fixes").
-        manifest += farm_lines(e)                   # The Country's food farms' (doc 71, 4).
-    off = {npc for npc, s in (p.get('economy') or {}).get('businesses', {}).items() if s.get('internalStore') is False}
+        # The economy's records as live.people_manifest writes them since 0061 (tools/manifest_lines.py; doc 79, 14): the
+        # economy line, needs, seasons, every whole-number rule (one Core no longer has, a held rule, too: it reads it past
+        # with a warning, as from the database) and the services, and the host's overrides.
+        manifest += manifest_lines.economy_lines(p.get('economy', DEFAULT_ECONOMY))
     at = lambda spot: f'{quote(spot["cell"])} {spot["x"] + .5:g} {spot["y"] + .5:g}'
     npc_at = lambda spot: at(spot) if spot else '"-" 0 0'     # An NPC's unset place (doc 66, 2), as live.place writes it.
     if p.get('herbPatch'):
@@ -1223,8 +1021,7 @@ def export_files(value, roster_data=None, with_roster=False, stream=False):
             manifest.append(f'joinable {quote(r["id"])}')     # May travel with a player's party (doc 32, 2.3).
         if r.get('protected'):
             manifest.append(f'protected {quote(r["id"])}')    # Can't be attacked or robbed of coin by players (doc 57, 6).
-        if r['id'] in off and r['home']:
-            manifest.append(f'nostore {quote(r["id"])}')      # Its business kept out of the store room (doc 67, 6).
+        manifest += manifest_lines.person_lines(r)          # Its authored band (doc 79, 14), as live.people_manifest's.
     # Families (doc 62, decision 8), after everyone: "kin" a b spouse|parent.
     people = {r['id'] for r in p.get('people', [])}
     for k in p.get('relations', []):

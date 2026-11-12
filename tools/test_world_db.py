@@ -15,6 +15,9 @@ import unittest
 
 import world_db as W
 
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
+
 try:
     import psycopg
 except ImportError:  # pragma: no cover
@@ -172,7 +175,7 @@ def database_available():
 class DatabaseTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        cls.name = f'ratw_test_{DB_TAG}{secrets.token_hex(4)}'
         with superuser() as su:
             su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
             su.execute(f'REVOKE ALL ON DATABASE {cls.name} FROM PUBLIC')
@@ -447,6 +450,25 @@ class DatabaseTests(unittest.TestCase):
     def test_editor_cannot_reach_prod(self):
         with self.assertRaisesRegex(W.DatabaseError, 'ratw_prod'):
             W.connect('prod', 'editor').close()
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class EnsureRolesTests(unittest.TestCase):
+    def test_the_dms_connect_is_its_own_grant_not_publics(self):
+        # Phase 9's second repair: ensure_roles skipped the DM's grant while PUBLIC still held CONNECT (as a new database
+        # has it), so a later REVOKE ALL ... FROM PUBLIC cut the DM off.
+        name = f'ratw_test_{DB_TAG}roles_{secrets.token_hex(4)}'
+        with superuser() as su:
+            su.execute(f'CREATE DATABASE {name} OWNER ratw_owner')
+        try:
+            W.ensure_roles([name])
+            with superuser() as su:
+                su.execute(f'REVOKE ALL ON DATABASE {name} FROM PUBLIC')
+                self.assertTrue(su.execute("SELECT has_database_privilege('ratw_dm', %s, 'CONNECT')", (name,)).fetchone()[0])
+            W.ensure_roles([name])                  # (Again: nothing granted twice, nothing fails.)
+        finally:
+            with superuser() as su:
+                su.execute(f'DROP DATABASE {name} WITH (FORCE)')
 
 
 class ScratchRegistry:

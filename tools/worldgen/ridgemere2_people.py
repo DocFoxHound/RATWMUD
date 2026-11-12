@@ -98,8 +98,8 @@ def producer_for(label):
 
 
 def store_goods(business):
-    """item_catalog.store_goods (B builds it): making goods (the inputs of the business's crafts) and resale goods
-    (its supplies list). Computed here from crafts.json, for the report's Draws column."""
+    """A business's making goods (the inputs of its crafts) and resale goods (its supplies list), computed from
+    crafts.json for the report's Draws column (item_catalog's own store_goods went with doc 79's store room)."""
     crafts = json.loads((ITEMS / 'crafts.json').read_text(encoding='utf-8'))
     making = sorted({item for c in crafts['crafts'] if business in c.get('makers', []) for item in c.get('in', {})})
     resale = sorted(crafts.get('supplies', {}).get(business, []) if isinstance(crafts.get('supplies', {}).get(business), list)

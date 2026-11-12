@@ -5,16 +5,24 @@ Runs in a scratch database dropped afterwards; skipped when the local
 PostgreSQL is not running (python3 tools/world_db.py up).
 """
 import copy
+import json
 import secrets
+import threading
+import time
 import unittest
 
 import psycopg
 
+import manifest_lines as M
 import map_editor as E
 import roster as R
 import world_db as W
 import world_store as S
 from test_world_db import database_available, superuser
+import os
+
+# A throwaway database's name tag (RATW_TEST_DB_TAG, default ''): a run tagged s2stage_ makes ratw_test_s2stage_*.
+DB_TAG = os.environ.get('RATW_TEST_DB_TAG', '')
 
 
 def greyfen():
@@ -26,7 +34,7 @@ def greyfen():
 class StoreTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        cls.name = f'ratw_test_{DB_TAG}{secrets.token_hex(4)}'
         with superuser() as su:
             su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
             su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
@@ -214,194 +222,178 @@ class StoreTests(unittest.TestCase):
         with self.assertRaisesRegex(S.StoreError, 'astronomer'):
             self.create(p)
 
-    def test_store_room_settings_round_trip(self):
-        # Doc 67, 6: the world's switches and markups in live.economy, a business switched off in live.business_settings,
-        # all in the export's records; a business back on keeps no row.
-        p = greyfen()
-        p['economy'] = {**p['economy'], 'internalStore': False, 'storeMarkup': 120, 'storeResale': True, 'resaleMarkup': 60,
-                        'storeRule': True, 'businesses': {'brann': {'internalStore': False}}}
-        self.create(p)
-        loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**p['economy'], **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS, **S.RULE_DEFAULTS, **S.FARM_DEFAULTS})
-        self.assertEqual(self.conn.execute('SELECT npc_id, internal_store FROM live.business_settings').fetchall(), [('brann', False)])
-        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
-        self.assertIn('store off 120 resale on 60 rule on', lines)
-        self.assertEqual(lines[lines.index('store off 120 resale on 60 rule on') - 1].split(' ')[0], 'economy')
-        brann = next(i for i, l in enumerate(lines) if l.startswith('resident "brann"'))
-        self.assertIn('nostore "brann"', lines[brann + 1:brann + 5])
-        with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
-            raise psycopg.Rollback
-        loaded['economy'] = {**loaded['economy'], **S.STORE_DEFAULTS, 'businesses': {'brann': {'internalStore': True}}}
-        S.save_world(self.conn, loaded, revision)
-        self.assertEqual(self.conn.execute('SELECT count(*) FROM live.business_settings').fetchone()[0], 0)
-        again, _ = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(again['economy']['businesses'], {})
-        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
-        self.assertFalse(any(l.startswith(('store ', 'nostore ')) for l in lines), 'at the defaults: no store records')
-        # A business key must name an NPC, a markup must be 0 to 1000; since doc 79 (14, 17) these settings are dead, so
-        # a project holding a bad one loads, warned of, and a change to one is still refused (check_economy).
-        for bad in ({'businesses': {'nobody': {'internalStore': False}}}, {'storeMarkup': 1001}, {'resaleMarkup': -1},
-                    {'storeRule': 'yes'}, {'businesses': {'brann': {'internalStore': 0}}}):
-            self.assertDeadSettingWarned(again, bad)
+    # ---- Doc 79, 14 (Phase 9): the slim economy -------------------------------------------------------------------
 
-    def assertDeadSettingWarned(self, world, bad):
-        """A bad dead setting (map_editor.DEAD_ECONOMY; doc 79, 14 and 17): the project loads with a warning naming it,
-        and a change to it is refused."""
-        economy = {**world['economy'], **bad}
-        _, warnings = E.check_project({**world, 'economy': economy}, for_game=False, playable=False)
-        key = next(iter(bad))
-        self.assertTrue(any(w.startswith(f'economy.{key}') and 'no longer reads' in w for w in warnings), (bad, warnings))
-        self.assertTrue(E.check_economy(economy, {q['id'] for q in world.get('people', [])}), f'a change to it is refused: {bad}')
+    def economy_lines(self, project):
+        lines = E.export_files(project, R.load())['world.ratw'].split('\n')
+        return [l for l in lines if l.split(' ', 1)[0] in M.ECONOMY_KINDS]
 
-    def test_city_loop_settings_round_trip(self):
-        # Doc 68, 9: the loop's settings in live.economy and in the export's records ("loop", "countryoff", "subsidy"
-        # after the "store" line); back at the defaults, no records.
-        p = greyfen()
-        p['economy'] = {**p['economy'], 'gateToll': 30, 'carriage': 9, 'wageHand': 7, 'wharfOff': ['fish', 'flour'],
-                        'subsidies': {'carriage': 40}}
-        self.create(p)
-        loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
-        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
-        at = lines.index('loop needs on country on reserve 200 toll 30 carriage 9 wages 14 7 8 8')
-        self.assertEqual(lines[at - 1].split(' ')[0], 'economy')
-        self.assertEqual(lines[at + 1:at + 4], ['countryoff "fish"', 'countryoff "flour"', 'subsidy "carriage" 40'])
-        # The database's own manifest writes the same lines.
+    def database_economy_lines(self):
         manifest = self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
-        self.assertEqual(manifest[manifest.index(lines[at]):manifest.index(lines[at]) + 4], lines[at:at + 4])
-        with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
-            raise psycopg.Rollback
-        loaded['economy'] = {**loaded['economy'], **E.loop_defaults()}
-        S.save_world(self.conn, loaded, revision)
-        again, _ = S.load_world(self.conn, 'greyfen')
-        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
-        self.assertFalse(any(l.startswith(('loop ', 'countryoff ', 'subsidy ')) for l in lines), 'at the defaults: no loop records')
-        # The loop's settings are dead since doc 79 (17) but needsPaused, which is kept: a bad one is refused.
-        for bad in ({'gateToll': 91}, {'carriage': -1}, {'wharfOff': ['fish', 'fish']},
-                    {'subsidies': {'roads': 10}}, {'subsidies': {'carriage': 101}}, {'wageKeeper': 1001}):
-            self.assertDeadSettingWarned(again, bad)
-        with self.assertRaises(E.ValidationError):
-            E.check_project({**again, 'economy': {**again['economy'], 'needsPaused': 'no'}}, for_game=False, playable=False)
+        return [l for l in manifest if l.split(' ', 1)[0] in M.ECONOMY_KINDS]
 
-    def test_seasons_and_comforts_round_trip(self):
-        # Doc 68, Progress, "Seasons and the DM's rules" (migration 0057): the seasons and the comforts in live.economy
-        # and in the export's records ("comforts", "season" after the loop's); back at city_loop.json's, no records.
+    def test_the_slim_economy_round_trips_and_writes_the_manifests_lines(self):
+        # The kept columns, the rules' integers apart from the host's overrides in the same jsonb; the exporter's lines
+        # (tools/manifest_lines.py) and live.people_manifest's alike (the overrides as JSON).
+        self.assertTrue(S.slim_supported(self.conn))
+        self.assertIs(S.tables_for(self.conn), S.SLIM_TABLES)
         p = greyfen()
-        grain = {'supply': [50, 100, 150, 40], 'price': [120, 100, 80, 130], 'shelf': [100, 100, 100, 100], 'normal': 90}
-        p['economy'] = {**p['economy'], 'comfortsAbove': 40, 'comfortsShare': None, 'seasons': {'grain': grain}}
+        overrides = {'prosperityCause': 'the silver strike', 'neverImported': ['salt'],
+                     'status': {'caps': {'rewardsADay': 300}}, 'market': {'events': {'perWeek': 1}}}
+        p['economy'] = {'treasury': 900, 'storeHerbs': 80, 'storeMeals': 40, 'needsPaused': True,
+                        'seasons': {'grain': {'price': [120, 100, 80, 130], 'shelf': [100, 100, 100, 100]}},
+                        'rules': {'ripple': 40, 'prosperity': 35}, 'services': {'groom_and_trim': {'on': False, 'price': 2, 'every': 5}},
+                        'overrides': overrides}
         self.create(p)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
-        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
-        wanted = ['comforts 40 -', 'season "grain" supply 50 100 150 40 price 120 100 80 130 shelf 100 100 100 100 normal 90']
-        at = lines.index(wanted[0])
-        self.assertEqual(lines[at:at + 2], wanted)
-        manifest = self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
-        self.assertEqual(manifest[manifest.index(wanted[0]):manifest.index(wanted[0]) + 2], wanted, 'the database writes the same')
+        self.assertEqual(loaded['economy'], p['economy'])
+        stored = self.conn.execute("SELECT rules FROM live.economy WHERE world_id = 'greyfen'").fetchone()[0]
+        self.assertEqual(stored, {'ripple': 40, 'prosperity': 35, **overrides})
+        self.assertEqual(M.comparable(self.economy_lines(loaded)), M.comparable(self.database_economy_lines()))
+        self.assertEqual([json.loads(l[len('overrides '):]) for l in self.economy_lines(loaded) if l.startswith('overrides ')], [overrides])
         with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128, S.SLIM_TABLES),
+                                          S.stored_rows(self.conn, 'greyfen')), 0, 'saved unchanged: nothing written')
             raise psycopg.Rollback
-        loaded['economy'] = {**loaded['economy'], **copy.deepcopy(S.SEASON_DEFAULTS)}
-        S.save_world(self.conn, loaded, revision)
-        again, _ = S.load_world(self.conn, 'greyfen')
-        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
-        self.assertFalse(any(l.startswith(('comforts ', 'season ')) for l in lines), 'as city_loop.json has them: no records')
-        # The comforts are dead since doc 79 (17): warned of. The seasons are kept: a bad one is refused.
-        for bad in ({'comfortsAbove': -1}, {'comfortsShare': 101}):
-            self.assertDeadSettingWarned(again, bad)
-        for bad in ({'seasons': {'grain': {**grain, 'supply': [1, 2, 3]}}},
-                    {'seasons': {'grain': {**grain, 'price': [9, 100, 100, 100]}}}, {'seasons': {'Grain!': grain}},
-                    {'seasons': {'grain': {**grain, 'colour': 1}}}, {'seasons': []}):
-            with self.assertRaises(E.ValidationError, msg=str(bad)):
-                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
-
-    def test_rules_and_services_round_trip(self):
-        # Doc 68, Progress, "First fixes" (migration 0058): the rules and the services in live.economy and in the
-        # export's records ("rule", "service" after the comforts' and seasons'); back at the data files', no records.
-        # (Since doc 79, 17, the rules are the staged economy's: Core's items::Rules, map_editor.RULES.)
-        p = greyfen()
-        p['economy'] = {**p['economy'], 'comfortsAbove': 50, 'rules': {'buyAheadDays': 2, 'ripple': 40, 'neverHungry': 1},
-                        'services': {'groom_and_trim': {'on': False, 'price': 2, 'every': 5}}}
-        self.create(p)
+        # A dead setting an older project carries is neither refused nor written; its column keeps what it holds.
+        self.conn.execute("UPDATE live.economy SET store_markup = 77, daily_herbs = 3 WHERE world_id = 'greyfen'")
+        old = {**loaded['economy'], 'storeMarkup': 120, 'dailyHerbs': 9, 'dailyMeals': 9, 'gateToll': 20}
+        revision = S.save_world(self.conn, {**loaded, 'economy': old}, revision)
+        self.assertEqual(self.conn.execute("SELECT store_markup, daily_herbs FROM live.economy").fetchone(), (77, 3))
+        self.assertEqual(S.load_world(self.conn, 'greyfen')[0]['economy'], p['economy'])
+        # Back at the defaults: one economy line.
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
-        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
-        wanted = ['rule "buyAheadDays" 2', 'rule "neverHungry" 1', 'rule "ripple" 40',
-                  'service "groom_and_trim" off price 2 every 5']
-        at = lines.index(wanted[0])
-        self.assertEqual(lines[at - 1], 'comforts 50 -', 'after the comforts')
-        self.assertEqual(lines[at:at + 4], wanted)
-        manifest = self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
-        self.assertEqual(manifest[manifest.index(wanted[0]) - 1:manifest.index(wanted[0]) + 4], ['comforts 50 -', *wanted],
-                         'the database writes the same')
-        with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
-            raise psycopg.Rollback
-        loaded['economy'] = {**loaded['economy'], **copy.deepcopy(S.RULE_DEFAULTS)}
-        S.save_world(self.conn, loaded, revision)
-        again, _ = S.load_world(self.conn, 'greyfen')
-        self.assertEqual((again['economy']['rules'], again['economy']['services']), ({}, {}))
-        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
-        self.assertFalse(any(l.startswith(('rule ', 'service ')) for l in lines), 'as the data files have them: no records')
-        trim = {'on': True, 'price': 1, 'every': 4}
-        # A rule the game no longer has (the city loop's) is kept with a warning and never written (doc 79, 14 and 17).
-        for gone in ({'almsADay': 1001}, {'fairFood': 2}, {'luck': 1}, {'treasuryCap': -1}, {'servicesCityShare': 101}):
-            kept = {**again, 'economy': {**again['economy'], 'rules': gone}}
-            _, warnings = E.check_project(kept, for_game=False, playable=False)
-            self.assertTrue(any(w.startswith(f'economy.rules.{next(iter(gone))}') and 'no longer has' in w for w in warnings),
-                            (gone, warnings))
-            self.assertFalse(any(l.startswith('rule ') for l in E.export_files(kept, R.load())['world.ratw'].split('\n')), gone)
-        for bad in ({'rules': {'ripple': 71}}, {'rules': {'neverHungry': 2}}, {'rules': {'depthScale': 9}},
-                    {'rules': {'buyAheadDays': -1}}, {'rules': []}, {'services': {'haircut': trim}},
-                    {'services': {'groom_and_trim': {**trim, 'price': 0}}}, {'services': {'groom_and_trim': {**trim, 'every': 3651}}},
-                    {'services': {'groom_and_trim': {'on': 1, 'price': 1, 'every': 4}}}, {'services': {'groom_and_trim': {'on': True}}}):
-            with self.assertRaises(E.ValidationError, msg=str(bad)):
-                E.check_project({**again, 'economy': {**again['economy'], **bad}}, for_game=False, playable=False)
+        S.save_world(self.conn, {**loaded, 'economy': S.default_economy()}, revision)
+        self.assertEqual(self.database_economy_lines(), ['economy 1000 100 50 10 12'])
 
-    def test_farms_round_trip(self):
-        # Doc 71, 4 (migration 0060): the farms' settings in live.economy and in the export's records ("farms", "farmarea",
-        # "farm" after the rules' and services'); back at country_farms.json's, no records.
-        p = greyfen()
-        farms = {'start': 0, 'every': 30, 'order': ['salt', 'grain'], 'keeper': 17,
-                 'areas': {'grain': {'on': True, 'yieldScale': 120, 'crewScale': 150, 'hand': 11, 'priceFactor': 105},
-                           'salt': {'on': False}},
-                 'farms': {'grain_farm_1': {'yieldScale': 90, 'keeper': 18}}}
-        p['economy'] = {**p['economy'], 'rules': {'buyAheadDays': 2}, 'farms': farms}
-        self.create(p)
+    def test_save_economy_keeps_what_it_doesnt_know_and_patch_takes_two_writers(self):
+        self.create(greyfen())
+        self.conn.execute("""UPDATE live.economy SET rules = '{"nested": {"a": 1}, "steer": 1}' WHERE world_id = 'greyfen'""")
+        entity = {**S.default_economy(), 'rules': {'ripple': 30}, 'overrides': {'prosperityCause': 'a fair'}, 'dailyHerbs': 4}
+        after = S.save_economy(self.conn, 'greyfen', entity)
+        self.assertEqual(after['rules'], {'ripple': 30}, 'the entity\'s rules are the whole of the integer rules')
+        self.assertEqual(after['overrides'], {'prosperityCause': 'a fair'})
+        self.assertEqual(self.conn.execute('SELECT rules FROM live.economy').fetchone()[0],
+                         {'nested': {'a': 1}, 'ripple': 30, 'prosperityCause': 'a fair'}, 'what it doesn\'t know kept')
+        # Phase 9's last repair: a rule's name that would split the manifest's line is refused by both writers, whoever
+        # calls them; one the row already holds (written some other way) doesn't block a save, and is never printed.
+        for name in ('zz\nbogus', 'a b'):
+            with self.assertRaisesRegex(S.EconomyRefused, 'not a rule'):
+                S.save_economy(self.conn, 'greyfen', {**entity, 'rules': {'ripple': 30, name: 5}})
+            with self.assertRaisesRegex(S.EconomyRefused, 'not a rule'):
+                S.patch_economy_rules(self.conn, 'greyfen', {name: 5})
+        self.assertEqual(self.conn.execute('SELECT rules FROM live.economy').fetchone()[0],
+                         {'nested': {'a': 1}, 'ripple': 30, 'prosperityCause': 'a fair'}, 'nothing of a refused save written')
+        self.conn.execute("""UPDATE live.economy SET rules = rules || '{"zz\\nbogus": 5}' WHERE world_id = 'greyfen'""")
+        held = S.economy_value(self.conn, 'greyfen')
+        self.assertIn('zz\nbogus', held['rules'])
+        self.assertEqual(S.save_economy(self.conn, 'greyfen', {**held, 'needsPaused': True})['needsPaused'], True, 'a held one lets a save by')
+        self.assertFalse([l for l in self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+                          if 'bogus' in l], 'and the manifest never prints it')
+        self.conn.execute("""UPDATE live.economy SET rules = rules - 'zz\nbogus', needs_paused = false WHERE world_id = 'greyfen'""")
+        # patch_economy_rules: one statement, so two writers' keys both land.
+        other = W.connect('dev', 'editor', dbname=self.name)
+        try:
+            done = threading.Event()
+            with self.conn.transaction():
+                S.patch_economy_rules(self.conn, 'greyfen', {'prosperity': 40})
+                worker = threading.Thread(target=lambda: (S.patch_economy_rules(other, 'greyfen', {'harvestBias': 5},
+                                                                                drop=['prosperityCause']), done.set()))
+                worker.start()
+                time.sleep(.3)
+                self.assertFalse(done.is_set(), 'the second waits for the first')
+            worker.join(10)
+            self.assertTrue(done.is_set())
+        finally:
+            other.close()
+        rules = self.conn.execute('SELECT rules FROM live.economy').fetchone()[0]
+        self.assertEqual((rules['prosperity'], rules['harvestBias'], 'prosperityCause' in rules), (40, 5, False))
+
+    def test_an_empty_never_imported_list_is_kept(self):
+        # Doc 79, Phase 9's first repair: [] says ships carry every good (in place of market.json's wharf.never, cheese);
+        # it was dropped as "empty" on every write, so the world went back to cheese and the file and the database
+        # disagreed.
+        self.create(greyfen())
+        entity = {**S.default_economy(), 'overrides': {'neverImported': []}}
+        self.assertEqual(S.save_economy(self.conn, 'greyfen', entity)['overrides'], {'neverImported': []})
+        self.assertEqual(self.conn.execute('SELECT rules FROM live.economy').fetchone()[0], {'neverImported': []})
+        self.assertEqual(S.economy_value(self.conn, 'greyfen')['overrides'], {'neverImported': []})
+        line = [l for l in self.database_economy_lines() if l.startswith('overrides ')]
+        self.assertEqual(line, ['overrides {"neverImported": []}'])
+        self.assertEqual(M.comparable(M.economy_lines(entity)), M.comparable(self.database_economy_lines()), 'the file says the same')
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**S.default_economy(), **p['economy'], 'businesses': {}})
-        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
-        wanted = ['farms start 0 every 30 order salt,grain wages 17 -',
-                  'farmarea "grain" on on yield 120 crew 150 wages - 11 factor 105',
-                  'farmarea "salt" on off yield - crew - wages - - factor -',
-                  'farm "grain_farm_1" yield 90 crew - wages 18 -']
-        at = lines.index(wanted[0])
-        self.assertEqual(lines[at - 1], 'rule "buyAheadDays" 2', 'after the rules')
-        self.assertEqual(lines[at:at + 4], wanted)
-        manifest = self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
-        self.assertEqual(manifest[manifest.index(wanted[0]) - 1:manifest.index(wanted[0]) + 4], ['rule "buyAheadDays" 2', *wanted],
-                         'the database writes the same')
-        with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(E.check_project(loaded)[0], 128), S.stored_rows(self.conn, 'greyfen')), 0)
-            raise psycopg.Rollback
-        loaded['economy'] = {**loaded['economy'], **copy.deepcopy(S.FARM_DEFAULTS)}
         S.save_world(self.conn, loaded, revision)
-        again, _ = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(again['economy']['farms'], {})
-        lines = E.export_files(again, R.load())['world.ratw'].split('\n')
-        self.assertFalse(any(l.startswith(('farms ', 'farmarea ', 'farm ')) for l in lines), 'as country_farms.json has them: no records')
-        for bad in ({'farms': {'start': -2}}, {'farms': {'every': 0}}, {'farms': {'order': ['grain', 'grain']}},
-                    {'farms': {'keeper': 1001}}, {'farms': {'areas': {'grain': {'on': 1}}}},
-                    {'farms': {'areas': {'grain': {'priceFactor': 5}}}}, {'farms': {'farms': {'grain_farm_1': {'on': True}}}},
-                    {'farms': {'farms': {'Grain farm': {'yieldScale': 90}}}}, {'farms': {'luck': 1}}, {'farms': []}):
-            self.assertDeadSettingWarned(again, bad)       # (The farms' settings are dead since doc 79, 17.)
-        # What country_farms.json no longer has (written again with fewer farms) is kept, as Core keeps it, with a warning.
-        for kept in ({'farms': {'order': ['orchards']}}, {'farms': {'areas': {'gardens': {'on': True}}}},
-                     {'farms': {'farms': {'grain_farm_9': {'yieldScale': 90}}}}):
-            _, warnings = E.check_project({**again, 'economy': {**again['economy'], **kept}}, for_game=False, playable=False)
-            self.assertTrue(any('names nothing country_farms.json has' in w for w in warnings), (kept, warnings))
+        self.assertEqual(S.economy_value(self.conn, 'greyfen')['overrides'], {'neverImported': []}, 'a whole save keeps it')
+
+    def test_a_stored_override_core_skips_blocks_no_save_or_build(self):
+        # Doc 79, 14: a bad override is skipped by Core with a warning, never refused; one stored past the studio (a hand,
+        # a package, a data file changed since) must not stop a whole save, a build, an NPC's save or another edit.
+        import live_edit as L
+        import world_build
+        self.create(greyfen())
+        S.patch_economy_rules(self.conn, 'greyfen', {'status': {'shares': [{'at': -100, 'shares': [40, 40, 40, 20]},
+                                                                          {'at': 100, 'shares': [2, 12, 70, 16]}]},
+                                                     'neverImported': ['nonsense_good']})
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        revision = S.save_world(self.conn, loaded, revision)
+        errors, warnings = E.economy_problems(loaded['economy'])
+        self.assertEqual(errors, [])
+        self.assertTrue(any('sums to 140' in w for w in warnings) and any('nonsense_good' in w for w in warnings), warnings)
+        self.assertTrue(E.check_economy(loaded['economy'], strict_overrides=True), 'the studio still refuses one it would write')
+        self.assertTrue(world_build.build(self.conn, 'test'), 'a build')
+        stored = S.economy_value(self.conn, 'greyfen')
+        L.apply_edit(self.conn, 'a1', 'Ada', 'The treasury', [{'key': 'economy', 'before': stored, 'after': {**stored, 'treasury': 1200}}],
+                     queue_sync=False)
+        self.assertEqual(S.economy_value(self.conn, 'greyfen')['treasury'], 1200, 'another edit goes')
+        with self.assertRaises(L.Rejected):
+            now = S.economy_value(self.conn, 'greyfen')
+            L.apply_edit(self.conn, 'a1', 'Ada', 'Bad', [{'key': 'economy', 'before': now, 'after': {**now, 'treasury': -5}}],
+                         queue_sync=False)
+
+    def test_an_npcs_band_round_trips_and_its_line_follows_its_records(self):
+        p = greyfen()
+        people = {q['id']: q for q in p['people']}
+        people['brann']['band'] = 'poor'
+        people['brann']['protected'] = True
+        self.create(p)
+        self.assertEqual(self.conn.execute("SELECT band_override FROM live.npcs WHERE id = 'brann'").fetchone()[0], 'poor')
+        loaded, _ = S.load_world(self.conn, 'greyfen')
+        self.assertEqual({q['id']: q.get('band') for q in loaded['people'] if q.get('band')}, {'brann': 'poor'})
+        one = self.conn.execute("SELECT live.people_manifest('greyfen', 'brann')").fetchone()[0].split('\n')
+        self.assertEqual(one[-2:], ['protected "brann"', 'band "brann" poor'])
+        lines = E.export_files(loaded, R.load())['world.ratw'].split('\n')
+        at = lines.index('band "brann" poor')
+        self.assertEqual(lines[at - 1], 'protected "brann"', 'after its protected record, as the database writes it')
+        self.conn.execute("UPDATE live.npcs SET band_override = NULL WHERE id = 'brann'")
+        self.assertNotIn('band "brann" poor', self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0])
+
+    def test_people_manifest_matches_the_exporter(self):
+        # (Moved from test_dungeon_master, doc 79 Phase 9: the parity of the database's records and the exporter's, the
+        # residents, a job holder (a profession slot) and the economy's, sorted as both sort.)
+        import world_build
+        roster = R.load()
+        free = {**roster['characters'][0], 'id': 'free_hand', 'name': 'Free Hand', 'assignment': None, 'profession': '',
+                'traits': ['steady', 'dry'], 'personality': 'Quiet.'}
+        S.save_roster(self.conn, {**roster, 'characters': roster['characters'] + [free]})
+        p = greyfen()
+        p['economy'] = {**p['economy'], 'rules': {'ripple': 30}, 'overrides': {'prosperityCause': 'a fair'}}
+        p['people'][1]['band'] = 'rich'
+        self.create(p)
+        project, revision = S.load_world(self.conn, 'greyfen')
+        spot = project['spawn']
+        project['slots'] = [{'id': 'gate', 'name': 'Gate guard', 'profession': 'guard', 'workLabel': '', 'route': '', 'paid': True,
+                             'purse': 3, 'herbs': 0, 'meals': 1, 'hours': {'start': 6.5, 'end': 18.25},
+                             'home': spot, 'work': spot, 'evening': spot}]
+        S.save_world(self.conn, project, revision)
+        world_build.build(self.conn, 'test')
+        kinds = ('route', 'resident', 'story', 'joinable', 'protected', 'band', *M.ECONOMY_KINDS)
+        sql = [l for l in self.conn.execute("SELECT live.people_manifest('greyfen')").fetchone()[0].split('\n')
+               if l.split(' ', 1)[0] in kinds]
+        files = E.export_files(S.load_world(self.conn, 'greyfen')[0], S.load_roster(self.conn))
+        python = [l for l in files['world.ratw'].split('\n') if l.split(' ', 1)[0] in kinds]
+        self.assertTrue(any('"free_hand"' in l for l in sql), 'the job holder is a resident')
+        self.assertEqual(M.comparable(sql), M.comparable(python))
+        S.save_roster(self.conn, roster)
 
     def test_a_missing_economy_row_is_made_from_the_defaults(self):
         # Ridgemere 2.0 has no live.economy row: its first save makes one from DEFAULT_ECONOMY (1000p), never the
@@ -410,12 +402,11 @@ class StoreTests(unittest.TestCase):
         self.conn.execute('DELETE FROM live.economy')
         loaded, revision = S.load_world(self.conn, 'greyfen')
         self.assertEqual(loaded['economy'], S.DEFAULT_ECONOMY)
-        loaded['economy']['businesses']['wren'] = {'internalStore': False}
-        self.assertEqual(S.DEFAULT_ECONOMY['businesses'], {}, 'the defaults are never shared')
+        loaded['economy']['rules']['ripple'] = 10
+        self.assertEqual(S.DEFAULT_ECONOMY['rules'], {}, 'the defaults are never shared')
         S.save_world(self.conn, loaded, revision)
         row = S.dict_rows(self.conn, 'SELECT * FROM live.economy', ())[0]
-        self.assertEqual((row['treasury'], row['store_herbs'], row['store_meals'], row['internal_store'], row['store_markup'],
-                          row['store_resale'], row['resale_markup'], row['store_rule']), (1000, 100, 50, True, 100, True, 75, False))
+        self.assertEqual((row['treasury'], row['store_herbs'], row['store_meals'], row['rules']), (1000, 100, 50, {'ripple': 10}))
 
     def test_roster_round_trip_and_order(self):
         roster = R.load()
@@ -428,19 +419,18 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(S.load_roster(self.conn), roster)
 
 
-@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
-class WithoutMigration55Tests(unittest.TestCase):
-    """A world without migration 0055 (DEV and PROD until the user migrates them) loads, saves and builds as before;
-    only a store room setting away from its default is refused."""
+class OlderWorld:
+    """A world at an older migration (UPTO, the first not applied): loads, saves and builds; what it can't hold refused."""
+    UPTO = '0061'
 
     @classmethod
     def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
+        cls.name = f'ratw_test_{DB_TAG}{secrets.token_hex(4)}'
         with superuser() as su:
             su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
             su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
         with W.connect('dev', 'owner', dbname=cls.name) as owner:
-            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0055'])
+            W.migrate(owner, [m for m in W.migration_files() if m[0] < cls.UPTO])
         cls.conn = W.connect('dev', 'editor', dbname=cls.name)
         S.save_roster(cls.conn, R.load())
 
@@ -450,188 +440,95 @@ class WithoutMigration55Tests(unittest.TestCase):
         with superuser() as su:
             su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
 
-    def test_loads_and_saves_unchanged_and_refuses_a_store_setting(self):
-        self.assertFalse(S.store_supported(self.conn))
+    def saved(self):
+        self.conn.execute('DELETE FROM world.worlds')
         source = greyfen()
         S.save_world(self.conn, source, None, create=True)
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**source['economy'], **S.STORE_DEFAULTS, 'businesses': {}, **S.LOOP_DEFAULTS, **S.SEASON_DEFAULTS, **S.RULE_DEFAULTS, **S.FARM_DEFAULTS}, 'the defaults, read')
+        p, _ = E.check_project(loaded)
+        with self.conn.transaction():
+            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.tables_for(self.conn)), S.stored_rows(self.conn, 'greyfen')), 0)
+            raise psycopg.Rollback
+        return source, loaded, revision
+
+    def refused(self, loaded, revision, change, words):
+        with self.assertRaisesRegex(S.StoreError, words):
+            S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision)
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
+class WithoutMigration55Tests(OlderWorld, unittest.TestCase):
+    """A world without migration 0055 (PROD, at 0054): the economy's starting amounts only; needs, seasons, rules refused."""
+    UPTO = '0055'
+
+    def test_loads_saves_builds_and_refuses_what_it_cant_hold(self):
+        self.assertIs(S.tables_for(self.conn), S.LEGACY_TABLES)
+        source, loaded, revision = self.saved()
+        self.assertEqual(loaded['economy'], {**S.default_economy(), **{k: source['economy'][k] for k in ('treasury', 'storeHerbs', 'storeMeals')}})
         roster = R.load()
         before, after = E.export_files(source, roster), E.export_files(loaded, roster)
         del before['atlas.json'], after['atlas.json']
         self.assertEqual(before, after)
-        p, _ = E.check_project(loaded)
-        with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.LEGACY_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
-            raise psycopg.Rollback
-        self.assertEqual(S.save_world(self.conn, loaded, revision), revision + 1)
-        for change in ({'storeMarkup': 50}, {'businesses': {'brann': {'internalStore': False}}}):
-            with self.assertRaisesRegex(S.StoreError, '0055'):
-                S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
+        self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'storeMarkup': 50}}, revision), revision + 1,
+                         'a dead setting is ignored, never refused')
+        self.refused(loaded, revision + 1, {'needsPaused': True}, '0056')
+        self.refused(loaded, revision + 1, {'rules': {'ripple': 10}}, '0058')
         import world_build
         self.assertTrue(world_build.fingerprint(self.conn, 'greyfen', S.load_roster(self.conn)))
 
 
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
-class WithoutMigration56Tests(unittest.TestCase):
-    """A world with 0055 but not 0056 loads and saves as before, reading the loop's defaults; a loop setting away from
-    its default is refused."""
+class WithoutMigration58Tests(OlderWorld, unittest.TestCase):
+    """A world with 0057 but not 0058: needs and seasons kept; the rules and services refused, naming 0058."""
+    UPTO = '0058'
 
-    @classmethod
-    def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
-        with superuser() as su:
-            su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
-            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
-        with W.connect('dev', 'owner', dbname=cls.name) as owner:
-            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0056'])
-        cls.conn = W.connect('dev', 'editor', dbname=cls.name)
-        S.save_roster(cls.conn, R.load())
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.conn.close()
-        with superuser() as su:
-            su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
-
-    def test_loads_and_saves_and_refuses_a_loop_setting(self):
-        self.assertTrue(S.store_supported(self.conn))
-        self.assertFalse(S.loop_supported(self.conn))
-        self.assertIs(S.tables_for(self.conn), S.STORE_TABLES)
-        source = greyfen()
-        S.save_world(self.conn, source, None, create=True)
-        loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**S.default_economy(), **source['economy']})
-        p, _ = E.check_project(loaded)
-        with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.STORE_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
-            raise psycopg.Rollback
-        self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'storeRule': True}}, revision), revision + 1)
-        for change in ({'gateToll': 10}, {'wharfOff': ['fish']}, {'subsidies': {'carriage': 0}}):
-            with self.assertRaisesRegex(S.StoreError, '0056'):
-                S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
-
-
-@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
-class WithoutMigration57Tests(unittest.TestCase):
-    """A world with 0056 but not 0057 loads and saves as before, its loop's settings too, reading city_loop.json's seasons
-    and comforts; a season or comforts setting is refused, naming 0057."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
-        with superuser() as su:
-            su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
-            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
-        with W.connect('dev', 'owner', dbname=cls.name) as owner:
-            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0057'])
-        cls.conn = W.connect('dev', 'editor', dbname=cls.name)
-        S.save_roster(cls.conn, R.load())
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.conn.close()
-        with superuser() as su:
-            su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
-
-    def test_loads_and_saves_and_refuses_a_season_setting(self):
-        self.assertTrue(S.loop_supported(self.conn))
-        self.assertFalse(S.seasons_supported(self.conn))
-        self.assertIs(S.tables_for(self.conn), S.LOOP_TABLES)
-        source = greyfen()
-        S.save_world(self.conn, source, None, create=True)
-        loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**S.default_economy(), **source['economy']})
-        p, _ = E.check_project(loaded)
-        with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.LOOP_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
-            raise psycopg.Rollback
-        self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'gateToll': 12}}, revision), revision + 1)
-        grain = {'supply': [50, 100, 150, 40], 'price': [120, 100, 80, 130], 'shelf': [100, 100, 100, 100], 'normal': 90}
-        for change in ({'comfortsAbove': 30}, {'comfortsShare': 5}, {'seasons': {'grain': grain}}):
-            with self.assertRaisesRegex(S.StoreError, '0057'):
-                S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
-
-
-@unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
-class WithoutMigration58Tests(unittest.TestCase):
-    """A world with 0057 but not 0058 loads and saves as before, its seasons' and comforts' settings too, reading
-    city_loop.json's rules and services; a rule or service setting is refused, naming 0058."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
-        with superuser() as su:
-            su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
-            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
-        with W.connect('dev', 'owner', dbname=cls.name) as owner:
-            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0058'])
-        cls.conn = W.connect('dev', 'editor', dbname=cls.name)
-        S.save_roster(cls.conn, R.load())
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.conn.close()
-        with superuser() as su:
-            su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
-
-    def test_loads_and_saves_and_refuses_a_rule(self):
-        self.assertTrue(S.seasons_supported(self.conn))
-        self.assertFalse(S.rules_supported(self.conn))
+    def test_loads_and_saves_and_refuses_the_rules(self):
         self.assertIs(S.tables_for(self.conn), S.SEASON_TABLES)
-        source = greyfen()
-        S.save_world(self.conn, source, None, create=True)
-        loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**S.default_economy(), **source['economy']})
-        p, _ = E.check_project(loaded)
-        with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.SEASON_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
-            raise psycopg.Rollback
-        self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'gateToll': 12, 'comfortsAbove': 30}},
-                                      revision), revision + 1)
-        for change in ({'rules': {'almsADay': 12}}, {'services': {'groom_and_trim': {'on': False, 'price': 1, 'every': 4}}}):
-            with self.assertRaisesRegex(S.StoreError, '0058'):
-                S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], **change}}, revision + 1)
+        _, loaded, revision = self.saved()
+        grain = {'price': [120, 100, 80, 130], 'shelf': [100, 100, 100, 100]}
+        revision = S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'needsPaused': True, 'seasons': {'grain': grain}}},
+                                revision)
+        self.assertEqual(S.load_world(self.conn, 'greyfen')[0]['economy']['seasons'], {'grain': grain})
+        self.refused(loaded, revision, {'rules': {'ripple': 10}}, '0058')
+        with self.assertRaises(S.EconomyRefused):
+            S.save_economy(self.conn, 'greyfen', {**S.default_economy(), 'overrides': {'prosperityCause': 'a fair'}})
 
 
 @unittest.skipUnless(database_available(), 'local PostgreSQL not running (python3 tools/world_db.py up)')
-class WithoutMigration60Tests(unittest.TestCase):
-    """A world with 0059 but not 0060 loads and saves as before, its rules' and services' settings too, reading
-    country_farms.json's farms; a farms setting is refused, naming 0060."""
+class WithoutMigration61Tests(OlderWorld, unittest.TestCase):
+    """A world at 0060 (DEV until the user migrates it): pre-slim. The rules (prosperity too), the slider's cause, seasons,
+    services and needs are kept; the host's other overrides refused, saying it needs 0061; no band is written."""
+    UPTO = '0061'
 
-    @classmethod
-    def setUpClass(cls):
-        cls.name = f'ratw_test_{secrets.token_hex(4)}'
-        with superuser() as su:
-            su.execute(f'CREATE DATABASE {cls.name} OWNER ratw_owner')
-            su.execute(f'GRANT CONNECT ON DATABASE {cls.name} TO ratw_editor')
-        with W.connect('dev', 'owner', dbname=cls.name) as owner:
-            W.migrate(owner, [m for m in W.migration_files() if m[0] < '0060'])
-        cls.conn = W.connect('dev', 'editor', dbname=cls.name)
-        S.save_roster(cls.conn, R.load())
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.conn.close()
-        with superuser() as su:
-            su.execute(f'DROP DATABASE {cls.name} WITH (FORCE)')
-
-    def test_loads_and_saves_and_refuses_the_farms(self):
-        self.assertTrue(S.rules_supported(self.conn))
-        self.assertFalse(S.farms_supported(self.conn))
-        self.assertIs(S.tables_for(self.conn), S.RULE_TABLES)
-        source = greyfen()
-        S.save_world(self.conn, source, None, create=True)
+    def test_pre_slim_keeps_the_kept_and_refuses_the_rest(self):
+        self.assertFalse(S.slim_supported(self.conn))
+        self.assertIs(S.tables_for(self.conn), S.TABLES)
+        _, loaded, revision = self.saved()
+        economy = {**loaded['economy'], 'rules': {'prosperity': 35, 'ripple': 40}, 'overrides': {'prosperityCause': 'a fair'}}
+        revision = S.save_world(self.conn, {**loaded, 'economy': economy}, revision)
+        self.assertEqual(S.load_world(self.conn, 'greyfen')[0]['economy'], economy)
+        self.assertEqual(S.patch_economy_rules(self.conn, 'greyfen', {'prosperity': 50, 'prosperityCause': 'a better fair'})['prosperity'], 50)
+        for change in ({'overrides': {'neverImported': ['salt']}}, {'overrides': {'status': {'caps': {}}, 'prosperityCause': 'x'}}):
+            self.refused(loaded, revision + 0, change, '0061')
+            with self.assertRaisesRegex(S.EconomyRefused, '0061'):
+                S.save_economy(self.conn, 'greyfen', {**economy, **change})
+        with self.assertRaises(S.EconomyRefused):
+            S.patch_economy_rules(self.conn, 'greyfen', {'market': {'events': {'perWeek': 1}}})
+        # A band in a pre-slim world (no column to hold it): refused, never dropped unsaid (doc 79, Phase 9's first
+        # repair), by a whole save and by a live edit; the business switches untouched.
+        import live_edit as L
         loaded, revision = S.load_world(self.conn, 'greyfen')
-        self.assertEqual(loaded['economy'], {**S.default_economy(), **source['economy']})
-        p, _ = E.check_project(loaded)
-        with self.conn.transaction():
-            self.assertEqual(S.write_rows(self.conn, S.project_rows(p, 128, S.RULE_TABLES), S.stored_rows(self.conn, 'greyfen')), 0)
-            raise psycopg.Rollback
-        self.assertEqual(S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'rules': {'almsADay': 12}}},
-                                      revision), revision + 1)
-        with self.assertRaisesRegex(S.StoreError, '0060'):
-            S.save_world(self.conn, {**loaded, 'economy': {**loaded['economy'], 'farms': {'start': 0}}}, revision + 1)
+        loaded['people'][0]['band'] = 'rich'
+        with self.assertRaisesRegex(S.EconomyRefused, 'needs migration 0061'):
+            S.save_world(self.conn, loaded, revision)
+        loaded['people'][0]['band'] = None
+        S.save_world(self.conn, loaded, revision)
+        self.assertFalse(any(q.get('band') for q in S.load_world(self.conn, 'greyfen')[0]['people']))
+        key = 'person:' + loaded['people'][0]['id']
+        before = L.Batch(self.conn, L.world_row(self.conn)).current(key)
+        with self.assertRaisesRegex(L.Rejected, 'needs migration 0061'):
+            L.apply_edit(self.conn, 'a1', 'Ada', 'A band', [{'key': key, 'before': before, 'after': {**before, 'band': 'rich'}}])
+        self.assertEqual(self.conn.execute('SELECT count(*) FROM live.business_settings').fetchone()[0], 0)
 
 
 if __name__ == '__main__':

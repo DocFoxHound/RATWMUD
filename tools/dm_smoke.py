@@ -74,7 +74,7 @@ class Smoke:
         """The Storykeeper keeps its state in PostgreSQL; this run gets its own database, dropped afterwards."""
         import world_db
         from test_world_db import superuser
-        self.database = f'ratw_dm_smoke_{os.getpid()}'
+        self.database = f'ratw_dm_smoke_{os.environ.get("RATW_TEST_DB_TAG", "")}{os.getpid()}'   # (Tagged as the tests' are.)
         with superuser() as su:
             su.execute(f'DROP DATABASE IF EXISTS {self.database} WITH (FORCE)')
             su.execute(f'CREATE DATABASE {self.database} OWNER ratw_owner')
@@ -221,10 +221,9 @@ class Smoke:
         after_reply = int(time.time()) + 1
         state = self.fresh_condition(lambda state: state['snapshot']['generatedAtUnix'] >= after_reply and
                                      self.actor(state, 'player-ash') and self.actor(state, 'player-ash')['cash'] == 23,
-                                     'replayed transfer still leaves exactly 23 pennies')
-        entries = [entry for entry in state['snapshot']['economy']['ledger'] if entry['kind'] == 'operator transfer' and
-                   entry['from'] == 'treasury' and entry['to'] == 'player-ash' and entry['coins'] == 3]
-        self.check(len(entries) == 1, 'The authority ledger contains one 3-penny transfer, not duplicated retries.')
+                                     'replayed grant still leaves exactly 23 pennies')
+        treasury = next((account for account in state['snapshot']['accounts'] if account['id'] == 'treasury'), None)
+        self.check(treasury is None or treasury['kind'] == 'staged', 'The treasury is a staged account, shown read only (doc 79, 9.1).')
 
     def exercise(self):
         self.start_server()
@@ -267,8 +266,13 @@ class Smoke:
                              'actual authority weather changed to fog')
         self.check(True, 'An approved weather event changes the native world to fog, not just an operator draft.')
 
-        transfer = self.event('economy_transfer', {'from': 'treasury', 'to': 'player-ash', 'item': '', 'quantity': 0, 'coins': 3},
-                              'Smoke finite grant')
+        # Doc 79, 12: a staged account (the treasury) is never moved by hand; a player is granted or fined instead.
+        refused = self.event('economy_transfer', {'from': 'treasury', 'to': 'player-ash', 'item': '', 'quantity': 0, 'coins': 3},
+                             'Smoke staged transfer')
+        self.command('event.approve', {'eventId': refused['id']}, expected=409)
+        self.check(True, 'A transfer from the staged treasury is refused before it reaches the authority.')
+        transfer = self.event('player_grant', {'player': 'player-ash', 'coins': 23, 'reason': 'the smoke test\'s bell'},
+                              'Smoke capped grant')
         # A sub-second pause of this isolated test-owned authority prevents it from
         # consuming the envelope before we capture its exact persisted replay input.
         self.server.send_signal(signal.SIGSTOP)
@@ -282,9 +286,46 @@ class Smoke:
         finally:
             self.server.send_signal(signal.SIGCONT)
         state, _ = self.event_applied(transfer['id'])
-        state = self.fresh_condition(lambda state: self.actor(state, 'player-ash')['cash'] == 23, 'finite grant visible in native purse')
-        treasury = next(account for account in state['snapshot']['accounts'] if account['id'] == 'treasury')
-        self.check(treasury['cash'] == 977, 'Three pennies move from the finite treasury to Ash: 23 held, 977 remain.')
+        self.fresh_condition(lambda state: self.actor(state, 'player-ash')['cash'] == 43, 'the grant visible in the native purse')
+        self.check(True, 'A capped grant of 23 reaches Ash: 43 held.')
+        fine = self.event('player_grant', {'player': 'player-ash', 'coins': -20, 'reason': 'a broken window'}, 'Smoke fine')
+        self.command('event.approve', {'eventId': fine['id']})
+        self.event_applied(fine['id'])
+        self.fresh_condition(lambda state: self.actor(state, 'player-ash')['cash'] == 23, 'the fine visible in the native purse')
+        self.check(True, 'A fine of 20 is taken from Ash: 23 held.')
+        # The Storykeeper's npc_band (doc 79, 12; Phase 9's first repair: run on a live server): a resident's household
+        # held rich for a while, then the DM's band cleared, each seen in the native snapshot.
+        # (The smoke's small world may house nobody in a household the bands know: then the act is refused by the native
+        # authority with its reason, and the refusal is what is checked end to end.)
+        try:
+            state = self.fresh_condition(lambda state: any(a['npc'] and a.get('band') and a.get('band') != 'rich'
+                                                           for a in state['snapshot']['characters']), 'residents in banded households', 15)
+        except RuntimeError:
+            state = None
+        if state:
+            resident = next(a for a in sorted(state['snapshot']['characters'], key=lambda a: a['id'])
+                            if a['npc'] and a.get('band') and a.get('band') != 'rich')
+            banded = self.event('npc_band', {'npc': resident['id'], 'band': 'rich', 'days': 5}, 'Smoke band for a while')
+            self.command('event.approve', {'eventId': banded['id']})
+            self.event_applied(banded['id'])
+            self.fresh_condition(lambda state: self.actor(state, resident['id'])['band'] == 'rich', 'the household held rich')
+            cleared = self.event('npc_band', {'npc': resident['id'], 'band': 'clear'}, 'Smoke band cleared')
+            self.command('event.approve', {'eventId': cleared['id']})
+            self.event_applied(cleared['id'])
+            self.fresh_condition(lambda state: self.actor(state, resident['id'])['band'] == resident['band'], 'its own band again')
+            self.check(True, f'The Storykeeper holds {resident["id"]}\'s household rich for five days, then clears it: '
+                             f'{resident["band"]} again.')
+        else:
+            unhoused = self.event('npc_band', {'npc': 'npc_scout', 'band': 'rich', 'days': 5}, 'Smoke band for a while')
+            self.command('event.approve', {'eventId': unhoused['id']})
+
+            def settled():
+                event = next((e for e in self.state()['events'] if e['id'] == unhoused['id']), None)
+                return event if event and event['status'] not in ('approved', 'queued', 'sent', 'pending', 'draft') else None
+            event = self.wait(settled, 'the native authority\'s answer to npc_band', 30)
+            self.check(event['status'] == 'failed' and 'household' in event.get('detail', ''),
+                       f'The Storykeeper\'s npc_band reaches the native authority, which refuses a resident with no household: '
+                       f'{event["status"]}: {event.get("detail", "")}')
         self.check(self.api('POST', '/api/command', request) == response, 'Repeating the same authenticated command ID returns its original response.')
         self.command('event.approve', {'eventId': weather['id']}, identifier=request['id'], expected=409)
         original_receipt = dm_service.decode(dm_service.read_file(self.exchange / 'inbox' / envelope_path.name, dm_service.MAX_BODY))

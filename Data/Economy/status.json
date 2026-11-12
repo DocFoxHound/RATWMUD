@@ -42,7 +42,7 @@
   "hold": {"oneOff": 3, "steady": 14},
   "leanDays": 3,
   "treasury": [200, 2000],
-  "caps": {"rewardsADay": 200, "theftADay": 20, "stakesADay": 30, "courierADay": 3, "welcomeDays": 7, "welcomeCoins": 20, "welcomeHerbs": 2, "welcomeMeals": 3},
+  "caps": {"rewardsADay": 200, "theftADay": 20, "stakesADay": 30, "courierADay": 3, "welcomeDays": 7, "welcomeCoins": 20, "welcomeHerbs": 2, "welcomeMeals": 3, "grantsADay": 500},
   "pay": {"keeper": 14, "hand": 8, "public": 8, "watch": 10, "farm": 8, "estate": 10},
   "street": {"theftBase": 0.03, "theftTimes": [1.5, 1.2, 1, 0.85, 0.7], "theftHonesty": {"frank": 0.2, "plain": 1, "guarded": 1.5, "sly": 3}, "slyRich": 0.02, "doleDays": 1, "beggarsACell": 2,
     "beggarsInACell": [{"at": -100, "most": 5}, {"at": -50, "most": 3.5}, {"at": 0, "most": 2}, {"at": 50, "most": 1}, {"at": 100, "most": 0.5}],

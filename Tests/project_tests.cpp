@@ -40,6 +40,9 @@ std::string order(Town& t, Client& c, const std::string& text)
     c.events.clear();
     t.g.command(&c, text);
     t.run(1);                                       // (What the world says may come with the next snapshot.)
+    t.g.settle();                                   // (A reply waits for its journal record: on a loaded machine the file
+                                                    // journal's sync can take longer than the second's ticks. Doc 79, Phase
+                                                    // 9's first repair: "she hands in 5 timber" failed once that way.)
     return c.said();
 }
 

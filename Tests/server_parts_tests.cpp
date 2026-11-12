@@ -16,9 +16,11 @@
 #include <arpa/inet.h>
 #include <atomic>
 #include <cmath>
+#include <ctime>
 #include <fstream>
 #include <functional>
 #include <set>
+#include <sstream>
 #include <filesystem>
 #include <iostream>
 #include <netinet/in.h>
@@ -522,6 +524,7 @@ void directorTests()
     director::Bridge bridge;
     World world;
     world.addPlayer("player-ash", "Ash");
+    world.addPlayer("player-bo", "Bo");
     const std::set<std::string> online{"player-ash"};
     int commits = 0, notices = 0;
     const auto commit = [&]() { ++commits; return true; };
@@ -539,12 +542,115 @@ void directorTests()
     };
     const auto ok = [](const json::Value& result) { return result.boolean("ok"); };
     const std::string hash = "0123456789012345678901234567890123456789";
+    // An operator transfer moves existing coins between real (or escrow) accounts: a player's to a player's (doc 79, 12).
+    const auto ashCash = world.society().account("player-ash")->cash, boCash = world.society().account("player-bo")->cash;
+    world.society().openRealBalance();
     const auto transfer = envelope(bridge, "transfer-1", "economy_transfer",
-                                   R"({"from":"treasury","to":"player-ash","item":"meal","quantity":1,"coins":3})");
+                                   R"({"from":"player-bo","to":"player-ash","item":"","quantity":0,"coins":3})");
     expect(ok(bridge.execute(transfer, "transfer-1", hash, world, online, 1001, commit, notice)), "operator transfers existing resources");
-    expect(world.society().account("player-ash")->cash == 23 && world.society().realBalanced(), "exactly three pennies, real money balanced");
+    expect(world.society().account("player-ash")->cash == ashCash + 3 && world.society().account("player-bo")->cash == boCash - 3 &&
+               world.society().realBalanced(), "exactly three pennies, real money balanced");
     expect(ok(bridge.execute(transfer, "transfer-1", hash, world, online, 1200, commit, notice)), "a retry replays its receipt after expiry");
-    expect(commits == 1 && world.society().account("player-ash")->cash == 23, "a retry neither commits again nor pays twice");
+    expect(commits == 1 && world.society().account("player-ash")->cash == ashCash + 3, "a retry neither commits again nor pays twice");
+    // A staged account (the treasury, a till, a resident's purse) is set by its band: never moved by hand.
+    const auto staged = envelope(bridge, "staged-1", "economy_transfer", R"({"from":"treasury","to":"player-ash","item":"","quantity":0,"coins":3})");
+    const auto refused = bridge.execute(staged, "staged-1", hash, world, online, 1001, commit, notice);
+    expect(!ok(refused) && refused.string("detail").find("set by their bands") != std::string::npos &&
+               world.society().account("player-ash")->cash == ashCash + 3, "a staged end is refused: " + refused.string("detail"));
+    // A grant or a fine (doc 79, 12; D16): a registered, capped faucet or a sink with its reason; real money balanced.
+    const auto grant = envelope(bridge, "grant-1", "player_grant", R"({"player":"player-ash","coins":23,"reason":"for ringing the bell"})");
+    const auto granted = bridge.execute(grant, "grant-1", hash, world, online, 1001, commit, notice);
+    expect(ok(granted) && world.society().account("player-ash")->cash == ashCash + 26 && world.society().realBalanced(),
+           "a grant of 23 is a faucet: " + granted.string("detail"));
+    const auto fine = envelope(bridge, "fine-1", "player_grant", R"({"player":"player-ash","coins":-5,"reason":"a broken window"})");
+    expect(ok(bridge.execute(fine, "fine-1", hash, world, online, 1001, commit, notice)) &&
+               world.society().account("player-ash")->cash == ashCash + 21 && world.society().realBalanced(), "a fine of 5 is a sink");
+    for (const auto& [id, payload] : std::vector<std::pair<std::string, std::string>>{
+             {"grant-big", R"({"player":"player-ash","coins":2501,"reason":"too much"})"},
+             {"grant-zero", R"({"player":"player-ash","coins":0,"reason":"nothing"})"},
+             {"grant-npc", R"({"player":"npc_scout","coins":5,"reason":"not a player"})"},
+             {"grant-extra", R"({"player":"player-ash","coins":5,"reason":"x","from":"treasury"})"}})
+        expect(!ok(bridge.execute(envelope(bridge, id, "player_grant", payload), id, hash, world, online, 1001, commit, notice)) &&
+                   world.society().account("player-ash")->cash == ashCash + 21, "a bad grant is refused: " + id);
+    // A household's band for a while (Society::overrideBand), and cleared: on a world of authored residents (a couple at
+    // home together), their bands worked out.
+    World banded;
+    {
+        AuthoredRoster roster;
+        for (const auto& [id, x] : std::vector<std::pair<std::string, double>>{{"npc_ivar", 2.5}, {"npc_una", 3.5}})
+        {
+            ResidentSpec r;
+            r.id = r.name = id;
+            r.role = "civilian";
+            r.workLabel = "unloading ships at the piers";
+            r.age = 40;
+            r.appearance.sex = id == "npc_una" ? "female" : "male";
+            r.home = r.evening = {"sump_rents", x, 2.5};
+            r.work = r.serve = {"piers", x + 1, 3.5};
+            r.purse = 40;
+            roster.residents.push_back(r);
+        }
+        roster.kin = {{"npc_ivar", "npc_una", "spouse"}};
+        banded.society().configure(roster);
+        banded.society().stagedBands(2, true);
+    }
+    const std::string household = banded.society().householdOf("npc_ivar");
+    const auto band = envelope(bridge, "band-1", "npc_band", R"({"npc":"npc_ivar","band":"rich","days":5})");
+    const auto banding = bridge.execute(band, "band-1", hash, banded, online, 1001, commit, notice);
+    expect(!household.empty() && ok(banding) && banded.society().statusOf("npc_ivar")->band == status::Rich &&
+               banded.society().statusOf("npc_una")->band == status::Rich && banded.society().state().staged.overrides.count(household) &&
+               banded.society().state().staged.overrides.at(household).until == banded.society().state().budgetDay + 5,
+           "a resident's household is rich for five days: " + banding.string("detail"));
+    expect(banding.string("detail") == "Band rich for npc_ivar's household for 5 days.",   // (The roster's name for Ivar is its id.)
+           "last repair: the reply names the household by its resident's name, never the household's id: " + banding.string("detail"));
+    const auto clear = envelope(bridge, "band-2", "npc_band", R"({"npc":"npc_una","band":"clear"})");
+    expect(ok(bridge.execute(clear, "band-2", hash, banded, online, 1001, commit, notice)) &&
+               !banded.society().state().staged.overrides.count(household), "and the DM's band cleared");
+    for (const auto& [id, payload] : std::vector<std::pair<std::string, std::string>>{
+             {"band-bad", R"({"npc":"npc_ivar","band":"royal"})"}, {"band-days", R"({"npc":"npc_ivar","band":"poor","days":113})"},
+             {"band-nobody", R"({"npc":"npc_nobody","band":"poor"})"}})
+        expect(!ok(bridge.execute(envelope(bridge, id, "npc_band", payload), id, hash, banded, online, 1001, commit, notice)),
+               "a bad band is refused: " + id);
+    // The user's decision of 2026-11-12 (doc 79, 12 and 16.1): an authored band (the Band picker) is the host's explicit
+    // word for a household and beats the guarantees. The Watch's floor: a guard authored poor is poor, where a guard with
+    // no authored band is comfortable or better. Never Broke: a household authored destitute stays destitute while the
+    // rule lifts every other out. And an authored rich is rich wherever it lives.
+    {
+        World authored;
+        AuthoredRoster roster;
+        const auto add = [&](const std::string& id, const std::string& role, const std::string& home, int band) {
+            ResidentSpec r;
+            r.id = r.name = id;
+            r.role = role;
+            r.workLabel = role == "guard" ? "watchman of the Watch" : "unloading ships at the piers";
+            r.age = 40;
+            r.home = r.evening = {home, 2.5, 2.5};
+            r.work = r.serve = {"piers", 3.5, 3.5};
+            r.purse = 40;
+            r.band = band;
+            roster.residents.push_back(r);
+        };
+        add("npc_guard_poor", "guard", "watch_row_a", status::Poor);
+        add("npc_guard", "guard", "watch_row_b", -1);
+        add("npc_low", "civilian", "sump_rents_a", status::Destitute);
+        add("npc_high", "civilian", "sump_rents_b", status::Rich);
+        add("npc_plain", "civilian", "sump_rents_c", -1);
+        roster.economy.rules["neverBroke"] = 1;
+        authored.society().configure(roster);
+        authored.society().adoptEconomy(roster.economy);
+        authored.society().stagedBands(2, true);
+        const auto band = [&](const char* id) {
+            const auto* st = authored.society().statusOf(id);
+            return st ? st->band : -9;
+        };
+        expect(authored.society().rule("neverBroke") == 1 && band("npc_plain") != status::Destitute, "decision D: Never Broke on, nobody else destitute");
+        expect(band("npc_low") == status::Destitute && authored.society().statusOf("npc_low")->overridden,
+               "decision D: authored destitute beats Never Broke: " + std::to_string(band("npc_low")));
+        expect(band("npc_guard_poor") == status::Poor && band("npc_guard") >= status::Comfortable,
+               "decision D: authored poor beats the Watch's floor (a guard with no authored band keeps it): " +
+                   std::to_string(band("npc_guard_poor")) + ", " + std::to_string(band("npc_guard")));
+        expect(band("npc_high") == status::Rich, "decision D: authored rich is rich: " + std::to_string(band("npc_high")));
+    }
 
     director::Bridge restart;
     expect(restart.restore(parsed(json::dump(bridge.state()))), "receipts survive a restore");
@@ -588,11 +694,33 @@ void directorTests()
     world.removePlayer("player-offline");
     const auto view = bridge.snapshot(world, {{"player-offline", hidden}}, online, {{"player-ash", 1000}}, 42, 1002);
     expect(view.array("cells").size() == 3, "the operator sees every cell, whatever players have seen");
-    expect(view.array("characters").size() == 8, "six NPCs plus online and saved offline players");
+    expect(view.array("characters").size() == 9, "six NPCs plus online and saved offline players");
+    bool kinds = true;
+    for (const auto& a : view.array("accounts"))
+        kinds &= a.string("kind") == (a.string("id").rfind("player-", 0) == 0 ? "real" : "staged") || a.string("kind") == "escrow" ||
+                 a.string("kind") == "dead";
+    expect(kinds, "each account's kind (a player's real, the treasury and residents' staged)");
+    Entity ivar;
+    ivar.id = "npc_ivar";
+    ivar.name = "Ivar";
+    ivar.npc = true;
+    ivar.cellId = "sump_rents";
+    std::string ivarBand = "?";
+    const auto bandedView = bridge.snapshot(banded, {{"npc_ivar", ivar}}, online, {}, 43, 1002);
+    for (const auto& c : bandedView.array("characters"))
+        if (c.string("id") == "npc_ivar")
+            ivarBand = c.string("band") + "/" + c.string("kind");
+    expect(ivarBand == std::string(status::bandName(banded.society().statusOf("npc_ivar")->band)) + "/staged",
+           "each resident's household band in the snapshot: " + ivarBand);
+    std::set<std::string> capabilities;
+    for (const auto& c : view.array("capabilities"))
+        capabilities.insert(c.asString());
+    expect(capabilities.count("player_grant") && capabilities.count("npc_band") && capabilities.count("economy_transfer"),
+           "the grant and the band are native capabilities");
     expect(!view.has("activeMemory"), "no conversation memory in the operator's view");
 
     director::Bridge failing;
-    const auto rollback = envelope(failing, "rollback-1", "economy_transfer", R"({"from":"treasury","to":"player-ash","item":"","quantity":0,"coins":4})");
+    const auto rollback = envelope(failing, "rollback-1", "economy_transfer", R"({"from":"player-bo","to":"player-ash","item":"","quantity":0,"coins":4})");
     const auto cash = world.society().account("player-ash")->cash;
     world.entity("player-ash")->path = {{17.5, 12.5}};
     world.entity("player-ash")->typing = true;
@@ -600,6 +728,78 @@ void directorTests()
            "a failed checkpoint is not acknowledged");
     expect(world.society().account("player-ash")->cash == cash, "a failed checkpoint undoes the transfer");
     expect(world.entity("player-ash")->typing && world.entity("player-ash")->path.size() == 1, "and leaves movement and typing alone");
+    // A grant the journal took before the checkpoint failed (Game's commit says Journalled): it stands (replayed after a
+    // restart), is said to, and the channel halts; a change the journal doesn't hold is still undone (doc 79, Phase 9's
+    // first repair: the receipt said "not committed" of a grant the journal replayed).
+    const auto journalled = []() { return int(director::Bridge::Journalled); };
+    director::Bridge keeps;
+    const auto had = world.society().account("player-ash")->cash;
+    const auto stands = keeps.execute(envelope(keeps, "grant-j", "player_grant", R"({"player":"player-ash","coins":7,"reason":"for the gate"})"),
+                                      "grant-j", hash, world, online, 1001, journalled, notice);
+    expect(ok(stands) && stands.string("detail").find("the checkpoint failed") != std::string::npos &&
+               world.society().account("player-ash")->cash == had + 7,
+           "a journalled grant stands and says so: " + stands.string("detail"));
+    director::Bridge undoes;
+    expect(!ok(undoes.execute(envelope(undoes, "weather-j", "weather", R"({"cell":"exterior","preset":"fog"})"), "weather-j", hash, world,
+                              online, 1001, journalled, notice)),
+           "weather, which no journal holds, is still not acknowledged");
+    // Second repair: a grant whose checkpoint failed while the journal hadn't written its record yet (Pending): neither
+    // undone nor answered "it stands" (a crash then would lose it); the request stays in outbox/ and the channel halts. The
+    // next server answers it from its receipt, which the record carries, or (the record never written) applies it then.
+    {
+        namespace fs = std::filesystem;
+        const auto dir = fs::temp_directory_path() / ("ratw-bridge-held-" + std::to_string(::getpid()));
+        fs::remove_all(dir);
+        // (Last repair: the bridges live in a block of their own. Each tick leaves a worker writing snapshot.json, and a
+        // Bridge's destructor waits for its own: the folder is removed only once all three are gone. Removing it while
+        // one still wrote failed 3 runs in 20 with "Directory not empty".)
+        {
+            director::Bridge held;
+            expect(held.configure(dir.string()), "second repair: a bridge directory");
+            const double now = double(std::time(nullptr));
+            auto request = envelope(held, "grant-p", "player_grant", R"({"player":"player-ash","coins":5,"reason":"for the ford"})");
+            request.set("createdAtUnix", now);
+            request.set("expiresAtUnix", now + 200);
+            const auto outbox = dir / "outbox" / "grant-p.json", inbox = dir / "inbox" / "grant-p.json";
+            std::ofstream(outbox, std::ios::binary) << json::dump(request);
+            const auto before = held.state();
+            const auto cash = world.society().account("player-ash")->cash;
+            held.tick(5, world, {}, online, {}, 1, [] { return int(director::Bridge::Pending); }, notice);
+            expect(fs::exists(outbox) && !fs::exists(inbox) && !held.enabled() && world.society().account("player-ash")->cash == cash + 5,
+                   "second repair: a Pending grant is held, unanswered, the channel halted");
+            int commits2 = 0;
+            const auto counted = [&]() { ++commits2; return int(director::Bridge::Committed); };
+            director::Bridge written;                   // (The record was written: its receipt came back with it.)
+            expect(written.configure(dir.string()) && written.restore(held.state()), "second repair: restored with the record's receipt");
+            written.tick(5, world, {}, online, {}, 2, counted, notice);
+            json::Value reply;
+            std::string problem;
+            {
+                std::ifstream in(inbox, std::ios::binary);
+                std::ostringstream text;
+                text << in.rdbuf();
+                json::parse(text.str(), reply, problem);
+            }
+            expect(!fs::exists(outbox) && ok(reply) && commits2 == 0 && world.society().account("player-ash")->cash == cash + 5,
+                   "second repair: answered from its receipt, never paid twice: " + json::dump(reply));
+            fs::remove(inbox);                          // (The record never written: the request is applied by the next server.)
+            std::ofstream(outbox, std::ios::binary) << json::dump(request);
+            director::Bridge lost;
+            expect(lost.configure(dir.string()) && lost.restore(before), "second repair: restored without the receipt");
+            lost.tick(5, world, {}, online, {}, 3, counted, notice);
+            expect(fs::exists(inbox) && commits2 == 1 && world.society().account("player-ash")->cash == cash + 10,
+                   "second repair: applied then, once");
+        }
+        fs::remove_all(dir);
+    }
+    // A fine bigger than the purse: told as what it took.
+    director::Bridge fines;
+    const auto boHas = world.society().account("player-bo")->cash;
+    const auto fined = fines.execute(envelope(fines, "fine-big", "player_grant", R"({"player":"player-bo","coins":-2500,"reason":"for the fence"})"),
+                                     "fine-big", hash, world, online, 1001, commit, notice);
+    expect(ok(fined) && world.society().account("player-bo")->cash == 0 &&
+               fined.string("detail") == "Fined " + std::to_string(boHas) + "p (all the player had; 2500p asked): for the fence.",
+           "a fine over the purse is told as what it took: " + fined.string("detail"));
 }
 
 bool posed(const json::Value& frame, const std::string& id)

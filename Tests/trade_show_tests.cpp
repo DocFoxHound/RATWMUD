@@ -2006,6 +2006,7 @@ void aSnapshotDoesNotLand(game::Game& g, const std::string& path, const std::str
     g.settle();
     const auto held = slurp(path);
     std::filesystem::create_directory(path + ".snapshot");   // (Where the child writes: it cannot now.)
+    std::ofstream(path + ".snapshot/in-the-way") << "x";   // (Not empty: a failed snapshot's clean-up can't remove it.)
     const auto failed = [&] { return log.find("the snapshot could not be written") != std::string::npos; };
     for (int t = 0; t < 45 && !failed(); ++t)
         g.tick(1);                                  // (The snapshot is forked in here, after its thirty seconds.)
@@ -2014,6 +2015,7 @@ void aSnapshotDoesNotLand(game::Game& g, const std::string& path, const std::str
         ::usleep(10000);
         g.tick(.01);
     }
+    g.waitForSnapshot();                            // (One forked after the failure fails too, and is done with.)
     std::filesystem::remove_all(path + ".snapshot");
     expect(failed(), name + ": a snapshot is taken and cannot be written");
     expect(slurp(path) == held, name + ": the save is still the checkpoint before it");

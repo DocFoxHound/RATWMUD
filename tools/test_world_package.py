@@ -517,6 +517,56 @@ class ScanTest(unittest.TestCase):
         errors, _ = P.scan(None, {'game.accounts': [], 'live.npcs': []}, allowed_tables=P.allowed_tables())
         self.assertEqual(errors, ['game.accounts: not a table a package may hold.'])
 
+    def test_the_hosts_overrides_are_scanned(self):
+        # Doc 79, 13 and Phase 9: live.economy's words (the slider's cause, an event's words and notices, the ships'
+        # names) hold no player id and never the forbidden word; each refused by its path.
+        clean = {'world_id': 'w', 'rules': {'ripple': 40, 'prosperityCause': 'the silver strike',
+                                             'market': {'events': {'list': [{'id': 'fair', 'words': 'the fair'}]},
+                                                        'wharf': {'ships': ['the Heron']}}}}
+        self.assertEqual(P.scan(None, {'live.economy': [clean]})[0], [])
+        for bad, where in ((('prosperityCause',), 'a dog show'), (('market', 'events', 'list', 0, 'words'), 'the dogs'),
+                           (('market', 'wharf', 'ships', 0), 'the Dogfish'), (('prosperityCause',), WOLF)):
+            row = copy.deepcopy(clean)
+            at = row['rules']
+            for k in bad[:-1]:
+                at = at[k]
+            at[bad[-1]] = where
+            errors, _ = P.scan(None, {'live.economy': [row]})
+            self.assertTrue(errors, (bad, where))
+            self.assertTrue(any('rules' in e for e in errors), errors)
+
+    def test_an_economy_row_that_wont_do_is_refused(self):
+        # Phase 9's second repair: a package's live.economy row is checked as a save checks it (an untrusted package's
+        # service switched "sometimes", a column that isn't an object, overrides past Core's one line), each by its path.
+        good = {'world_id': 'w', 'treasury': 500, 'store_herbs': 10, 'store_meals': 10, 'rules': {'ripple': 40},
+                'services': {'groom_and_trim': {'on': False, 'price': 6, 'every': 20}}, 'seasons': {}}
+        self.assertEqual(P.economy_rows_problems([good]), [])
+        for bad in ({**good, 'services': {'groom_and_trim': {'on': 'sometimes', 'price': 6, 'every': 20}}},
+                    {**good, 'rules': [1, 2]}, {**good, 'treasury': -5},
+                    {**good, 'rules': {'market': {'wharf': {'ships': ['the Gull ' + 'x' * 70000]}}}}):
+            problems = P.economy_rows_problems([bad])
+            self.assertTrue(problems and all(p.startswith('live.economy[0]') for p in problems), (bad.keys(), problems))
+            self.assertTrue(P.scan(None, {'live.economy': [bad]})[0])
+
+    def test_a_rule_name_that_would_split_the_manifest_is_refused(self):
+        # Phase 9's last repair: an imported row's rule named with a line break (or any name that is no plain word) became
+        # two manifest lines and the game refused the world it made; the import and the scan refuse the row. A plain name
+        # the game no longer has is still let by (kept, ignored: doc 79, 14).
+        good = {'world_id': 'w', 'treasury': 500, 'store_herbs': 10, 'store_meals': 10, 'rules': {'ripple': 40, 'steerLean': 150},
+                'services': {}, 'seasons': {}}
+        self.assertEqual(P.economy_rows_problems([good]), [])
+        for name in ('zz\nbogus', 'a b', 'q"uote', ''):
+            bad = {**good, 'rules': {'ripple': 40, name: 5}}
+            problems = P.economy_rows_problems([bad])
+            self.assertTrue(problems and 'not a rule\'s name' in problems[0], (name, problems))
+            self.assertTrue(P.scan(None, {'live.economy': [bad]})[0], name)
+
+    def test_the_prosperity_report_is_never_packaged(self):
+        doc = save()
+        doc['society']['report'] = {'v': 1, 'markets': [{'id': 'town', 'households': {'poor': 3}}]}
+        P.strip(doc)
+        self.assertNotIn('report', doc['society'])
+
     def test_a_table_a_package_made_before_doc_79_holds_is_a_warning(self):
         # (Every pre-79 package holds live.business_settings, if only with no rows: doc 79, 16.7.)
         errors, warnings = P.scan(None, {'live.business_settings': [], 'live.npcs': []}, allowed_tables=P.allowed_tables())
@@ -543,6 +593,10 @@ class JournalTest(unittest.TestCase):
                 P.journal_replay({'journal': 0}, [(1, bad)])
 
 
+PLANTED_OVERRIDES = {'prosperityCause': 'the silver strike', 'neverImported': ['salt'],
+                     'market': {'wharf': {'ships': ['the Heron']}}}
+
+
 def plant(source):
     """Players in DEV's save before the strip (doc 77's test: the strip's result must still load), in every part of the
     save the strip has a path for: a wolf with a purse and an account; a Chapter with its treasury, a camp (staffed,
@@ -556,13 +610,22 @@ def plant(source):
     doc = source['snapshot']
     society = doc['society']
     accounts = society['accounts']
+    # Doc 79, Phase 9: the host's overrides in the world's rules (carried), and a Prosperity report in the save (dropped).
+    for row in source['live'].get('live.economy', []):
+        row['rules'] = {**(row.get('rules') or {}), **PLANTED_OVERRIDES}
+    society['report'] = {'v': 1, 'markets': []}
+    # (Phase 9's first repair: an NPC's authored band travels with the package; the DM's acts by this database's
+    # dm.actions ids never do.)
+    banded = sorted(source['live']['live.npcs'], key=lambda r: r['id'])[0]
+    banded['band_override'] = 'rich'
+    doc['dmActs'] = {'17': {'ok': True, 'text': 'Granted 23p: for the bell.', 'kind': 'character.grant', 'target': WOLF}}
     residents = [e['id'] for e in doc['npcs'] if e['id'] in accounts]
     a, b, c = residents[0], residents[1], residents[2]
     cell = doc['npcs'][0]['cell']
     town = 'ridgemere'
     faction = source['live']['live.factions'][0]['id']
     till = next(k for k in accounts if k.startswith('till:'))
-    planted = {'till': till, 'resident': a}
+    planted = {'till': till, 'resident': a, 'banded': banded['id']}
 
     def account(name, coins, stock=None):
         accounts[name] = {'cash': coins, 'stock': dict(stock or {})}
@@ -763,6 +826,14 @@ class EndToEndTest(unittest.TestCase):
             self.assertIn(section, strip['removed'], section)
         self.assertEqual(P.scan_directory(self.planted)[0], [])
         snapshot = P.read_json_gz(self.planted / 'snapshot.json.gz')
+        self.assertNotIn('report', snapshot['society'], 'the Prosperity report is never packaged')
+        self.assertNotIn('dmActs', snapshot, "the DM's acts (by this database's dm.actions ids) are never packaged")
+        npcs = {r['id']: r for r in P.read_json_gz(self.planted / 'live.json.gz')['tables']['live.npcs']}
+        self.assertEqual(npcs[self.planting['banded']].get('band_override'), 'rich', "an NPC's band travels")
+        economy = P.read_json_gz(self.planted / 'live.json.gz')['tables']['live.economy']
+        self.assertEqual(len(economy), 1)
+        self.assertEqual({k: economy[0]['rules'].get(k) for k in PLANTED_OVERRIDES}, PLANTED_OVERRIDES, 'the overrides carried')
+        self.assertEqual(set(economy[0]), set(P.economy_shipped()), 'only the kept columns')
         self.assertNotIn(WOLF, json.dumps(snapshot))
         self.assertNotIn('chapter-1', json.dumps(snapshot))
         self.assertNotIn('accounts', snapshot)
@@ -837,7 +908,18 @@ class EndToEndTest(unittest.TestCase):
         self.assertTrue([k for k in society['accounts'] if P.account_kind(k) == 'staged' and k != 'treasury'],
                         'the server made the staged accounts again')
         self.assertEqual(P.scan(after, {})[0], [])
+        self.assertEqual(society.get('report', {}).get('v'), 1, 'the importing server worked the Prosperity report out again')
         if planted:
+            with W.connect(key, 'owner') as conn:
+                rules = conn.execute('SELECT rules FROM live.economy').fetchone()[0]
+            self.assertEqual({k: rules.get(k) for k in PLANTED_OVERRIDES}, PLANTED_OVERRIDES, 'the overrides imported')
+            banded = self.planting['banded']
+            with W.connect(key, 'owner') as conn:
+                band = conn.execute('SELECT band_override FROM live.npcs WHERE id = %s', (banded,)).fetchone()[0]
+                manifest = conn.execute('SELECT live.people_manifest(id) FROM world.worlds').fetchone()[0]
+            self.assertEqual(band, 'rich', "the NPC's band imported")
+            self.assertIn(f'band "{banded}" rich', manifest.split('\n'), 'and in the manifest the server reads')
+            self.assertNotIn('dmActs', after, 'no act of the source world answered here')
             # The town's site and the granary its project built are still on the ground after the server played it.
             sites = {s['id']: s for s in after['camps']['sites']}
             self.assertEqual(sites.get('site-1', {}).get('chapter'), 'town:ridgemere', after['camps'])

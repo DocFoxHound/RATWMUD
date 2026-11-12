@@ -44,14 +44,14 @@ export function NumberField({label, value, onCommit, min, max, step = 1, suffix}
     );
 }
 
-export function SelectField<T extends string>({label, value, options, onChange, hint}: {
-    label: string; value: T; options: {value: T; label: string}[]; onChange: (v: T) => void; hint?: string;
+export function SelectField<T extends string>({label, value, options, onChange, hint, disabled}: {
+    label: string; value: T; options: {value: T; label: string}[]; onChange: (v: T) => void; hint?: string; disabled?: boolean;
 }) {
     const id = useId();
     return (
         <label className="field" htmlFor={id}>
             <span>{label}</span>
-            <select id={id} value={value} onChange={e => onChange(e.target.value as T)}>
+            <select id={id} value={value} disabled={disabled} onChange={e => onChange(e.target.value as T)}>
                 {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             {hint && <small>{hint}</small>}

@@ -279,7 +279,7 @@ function AboutDialog() {
             <li><b>Draw</b> terrain on the continuous canvas. Every glyph is a tile the game walks on.</li>
             <li><b>Cut</b> the canvas into cells: the game shows one cell at a time and crosses open edges automatically.</li>
             <li><b>Build</b>: the Building tool stamps walls and a street door and creates a matching interior, already connected.</li>
-            <li><b>Populate</b>: residents need a home (bed), a work place and an evening place. Merchants run shops; guards walk patrol routes; civilians work and socialize, or travel a route. Wages come from the town treasury.</li>
+            <li><b>Populate</b>: residents need a home (bed), a work place and an evening place. Merchants run shops; guards walk patrol routes; civilians work and socialize, or travel a route. A paid post ranks its resident for succession; each household lives by its economic band.</li>
             <li><b>Play</b>: ▶ opens the game of the server running this world (or starts it); a copy can still be playtested on the studio's computer. <b>Save</b> happens as you edit: every change goes straight to the one world in the DEV database, and everyone else editing sees it within seconds.</li>
         </ol>
         <Hint>The editor, the Python exporter and the game each validate the world independently, so a problem is caught before it can reach a player.</Hint>

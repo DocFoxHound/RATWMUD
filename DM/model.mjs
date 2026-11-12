@@ -1,6 +1,10 @@
 // Presentation helpers only. The DM service and native authority validate every effect.
-export const EXECUTABLE = new Set(['notice', 'weather', 'npc_relocate', 'economy_transfer']);
-export const EVENT_LABELS = Object.freeze({notice:'Narrative notice',weather:'Weather change',npc_relocate:'NPC relocation',economy_transfer:'Economy transfer',brigands:'Brigands',assassins:'Assassination',war:'Army / war','faction-collapse':'Faction collapse'});
+// (player_grant and npc_band: the staged economy's grant or fine and a household's band for a while, doc 79, 12.)
+export const EXECUTABLE = new Set(['notice', 'weather', 'npc_relocate', 'economy_transfer', 'player_grant', 'npc_band']);
+export const BANDS = Object.freeze(['destitute', 'poor', 'comfortable', 'rich']);
+/** What an operator transfer may move: real and escrow accounts; a staged one (a resident's purse, a till, the treasury) is set by its band. */
+export const movable = (account) => !account?.kind || account.kind === 'real' || account.kind === 'escrow';
+export const EVENT_LABELS = Object.freeze({notice:'Narrative notice',weather:'Weather change',npc_relocate:'NPC relocation',economy_transfer:'Economy transfer',player_grant:'Grant or fine a player',npc_band:'A household\'s band for a while',brigands:'Brigands',assassins:'Assassination',war:'Army / war','faction-collapse':'Faction collapse'});
 export const array = value => Array.isArray(value) ? value : [];
 export const string = value => typeof value === 'string' ? value : typeof value === 'number' && Number.isFinite(value) ? String(value) : '';
 export const finite = (value, fallback = 0) => Number.isFinite(Number(value)) && value !== null && value !== '' ? Number(value) : fallback;
@@ -89,6 +93,20 @@ export function eventPayload(kind, values) {
       if (payload.quantity && !payload.item) throw new Error('Choose the item being transferred.');
       if (payload.item && !payload.quantity) throw new Error('Set a positive quantity for the selected item, or select coins only.');
       return payload;
+    }
+    case 'player_grant': {
+      // A grant (coins > 0) or a fine (coins < 0): no funded source; the game caps it (doc 79, 12).
+      if (!values.player) throw new Error('Choose the player.');
+      const coins = integer(values.coins,'Coins',-2500,2500), reason = string(values.reason).trim();
+      if (!coins) throw new Error('A grant or a fine is at least a penny.');
+      if (!reason || reason.length > 80 || /[\u0000-\u001f\u007f]/.test(reason)) throw new Error('Give a reason of at most 80 plain characters.');
+      return {player:values.player,coins,reason};
+    }
+    case 'npc_band': {
+      if (!values.npc) throw new Error('Choose a resident.');
+      if (values.band === 'clear') return {npc:values.npc,band:'clear'};
+      if (!BANDS.includes(values.band)) throw new Error('Choose a band.');
+      return {npc:values.npc,band:values.band,days:integer(values.days ?? 28,'Days',1,112)};
     }
     default: throw new Error('This effect has no executor. Save it as a planned story beat instead.');
   }

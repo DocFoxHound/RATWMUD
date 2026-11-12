@@ -165,7 +165,8 @@ Table builtIn()
                {"room", {"barracks", "bunkhouse", "quarters", "watch_house", "guardhouse", "lodging", "shack", "den", "warrens",
                          "rookery", "sinks", "leaks", "shed"}}};
     t.caps = {{"rewardsADay", 200}, {"theftADay", 20}, {"stakesADay", 30}, {"courierADay", 3},
-              {"welcomeDays", 7},   {"welcomeCoins", 20}, {"welcomeHerbs", 2}, {"welcomeMeals", 3}};
+              {"welcomeDays", 7},   {"welcomeCoins", 20}, {"welcomeHerbs", 2}, {"welcomeMeals", 3},
+              {"grantsADay", GrantsADay}};
     t.pay = {{"keeper", 14}, {"hand", 8}, {"public", 8}, {"watch", 10}, {"farm", 8}, {"estate", 10}};
     // Street life (Phase 6): everyday wares' pieces a day, a luxury a week (6.5: 10% comfortable, 40% rich), services (a
     // barber rarely for the poor), alms from a passer-by.
@@ -210,6 +211,89 @@ bool sharesValid(const std::vector<SharePoint>& shares, std::string* why)
         }
     }
     return true;
+}
+
+json::Value hostOverride(const json::Value& v, std::vector<std::string>* warnings)
+{
+    const auto note = [&](const std::string& w) {
+        if (warnings)
+            warnings->push_back("status: " + w);
+    };
+    auto out = json::Value::object();
+    if (!v.isObject())
+    {
+        if (!v.isNull())
+            note("not an object: the defaults kept");
+        return out;
+    }
+    for (const auto& [key, value] : v.fields())
+    {
+        if (std::none_of(std::begin(HostKeys), std::end(HostKeys), [&](const char* k) { return key == k; }))
+        {
+            note(key + " skipped: not a host's to change");
+            continue;
+        }
+        if (key == "shares")
+        {
+            // (Each row as written: a sum off 100 isn't normalised for a host, it falls back.)
+            std::vector<SharePoint> rows;
+            bool shaped = value.isArray() && value.size() >= 2 && value.size() <= 21;
+            for (const auto& row : value.items())
+            {
+                SharePoint p;
+                const auto& list = row.array("shares");
+                double sum = 0;
+                if (!row.isObject() || !row["at"].isNumber() || list.size() != Bands)
+                {
+                    shaped = false;
+                    break;
+                }
+                p.at = row["at"].asNumber();
+                for (int b = 0; b < Bands; ++b)
+                    sum += p.shares[std::size_t(b)] = list[std::size_t(b)].asNumber(-1);
+                if (!std::isfinite(sum) || std::abs(sum - 100) > 1e-6)
+                {
+                    shaped = false;
+                    note("shares fall back to the default (a row sums to " + std::to_string(int(std::lround(sum))) + ", not 100)");
+                    break;
+                }
+                rows.push_back(p);
+            }
+            std::sort(rows.begin(), rows.end(), [](const SharePoint& a, const SharePoint& b) { return a.at < b.at; });
+            if (std::string why; shaped && sharesValid(rows, &why))
+                out.add(key, value);
+            else if (shaped)
+                note("shares fall back to the default (" + why + ")");
+            else if (!value.isArray() || value.size() < 2 || value.size() > 21)
+                note("shares fall back to the default (not a list of 2 to 21 rows)");
+            continue;
+        }
+        if (key == "caps")
+        {
+            auto caps = json::Value::object();
+            const auto& shipped = defaults().caps;
+            for (const auto& [cap, n] : value.fields())
+            {
+                const auto base = shipped.find(cap);
+                if (base == shipped.end() || !n.isNumber() || !std::isfinite(n.asNumber()))
+                {
+                    note("caps." + cap + " skipped: " + (base == shipped.end() ? "no such cap" : "not a number"));
+                    continue;
+                }
+                const double most = cap == "grantsADay" ? double(GrantsMost) : double(base->second) * CapCeiling;
+                // (welcomeDays is a period: shorter is the generous way, so it is held to at least the shipped default.)
+                const double least = cap == "welcomeDays" ? double(base->second) : 0.;
+                const double at = std::clamp(n.asNumber(), least, std::max(least, most));
+                if (at != n.asNumber())
+                    note("caps." + cap + " held to " + std::to_string(std::int64_t(at)));
+                caps.add(cap, at);
+            }
+            out.add(key, std::move(caps));
+            continue;
+        }
+        out.add(key, value);
+    }
+    return out;
 }
 
 Table read(const json::Value& v, const Table& base, std::vector<std::string>* warnings)

@@ -179,6 +179,11 @@ inline constexpr RuleInfo Rules[] = {
     // own (0 none; 300 three times as many), and whether the DM's Times nudges and harvest overrides post a notice (1 on).
     {"eventRate", 0, 300, 100},
     {"overrideNotices", 0, 1, 1},
+    // The DM's levers (doc 79, 12; Phase 9): the prosperity slider's target (-100 hard times .. 100 boom, in steps of 5;
+    // live.economy's `prosperity`, the studio's /api/economy/steer), and a realm-wide lean of the harvest roll (8.2's
+    // harvestOf: +bias/100 on its score; the plan's "harvest bias").
+    {"prosperity", -100, 100, 0},
+    {"harvestBias", -20, 20, 0},
 };
 const RuleInfo* ruleInfo(const std::string& name);
 // Data/Items as the catalogue reads it (RATW_DATA_DIR, the working directory or above, the source tree): its parent's

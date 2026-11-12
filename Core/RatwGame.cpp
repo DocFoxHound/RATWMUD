@@ -344,6 +344,10 @@ Game::~Game()
         store_->flush();
         if (auto* writer = store_->journal())
             writer->flush();
+        // A clean stop (Phase 9's last repair): the acts applied whose records have now been written are answered, so the
+        // DM's tool never shows a paid grant "waiting" until some later server starts. (One whose record still couldn't
+        // be written stays queued: the next server applies it or answers it from the record.)
+        releaseDmStatuses();
     }
     letGoOfOwnership();                             // Last, once everything is written.
 }
@@ -548,6 +552,7 @@ bool Game::start(std::string& problem)
     }
     if (live)
         applyExternalNpcStates();
+    startEconomy();                                 // (The staged economy's settings, overrides and slider: doc 79, Phase 9.)
     if (!options_.directorDirectory.empty())
     {
         director_.log = [this](const std::string& text) { note("error", text); };
@@ -745,7 +750,8 @@ std::string Game::withoutPeople(const std::string& manifest)
                  line.rfind("loop ", 0) == 0 || line.rfind("countryoff ", 0) == 0 || line.rfind("subsidy ", 0) == 0 ||
                  line.rfind("comforts ", 0) == 0 || line.rfind("season ", 0) == 0 || line.rfind("rule ", 0) == 0 ||
                  line.rfind("service ", 0) == 0 || line.rfind("farms ", 0) == 0 || line.rfind("farmarea ", 0) == 0 ||
-                 line.rfind("farm ", 0) == 0)
+                 line.rfind("farm ", 0) == 0 || line.rfind("overrides ", 0) == 0 || line.rfind("band ", 0) == 0 ||
+                 line.rfind("protected ", 0) == 0 || line.rfind("wander ", 0) == 0)
             continue;                              // (The economy's records come with the people's; the old economy's are read past: doc 79, 14.)
         else if (line.rfind("territory ", 0) == 0)
         {
@@ -955,7 +961,10 @@ void Game::applyDmActions(double dt)
 {
     if (options_.scratch)
         return;                                     // The DM's actions are for the real server.
-    if (options_.database.empty() || (dmAccumulator_ += dt) < 1)
+    if (options_.database.empty())
+        return;
+    releaseDmStatuses();                            // (Rows applied whose records have committed since: told now.)
+    if ((dmAccumulator_ += dt) < 1)
         return;
     dmAccumulator_ = 0;
     readNotifications();
@@ -966,17 +975,79 @@ void Game::applyDmActions(double dt)
     if (minute)
     {
         dmExpiryAccumulator_ = 0;
+        // First, once after a start: a row the journal's record holds (dmActs) was applied before a crash, so it is answered
+        // from there, queued or caught by the expiry meanwhile, before any expiry (Phase 9's second repair: a restart more
+        // than ten minutes after the act was asked marked a paid grant "expired", and a DM who saw that paid it twice).
+        if (!dmActsAnswered_)
+        {
+            dmActsAnswered_ = true;
+            if (dmActs_.size())
+            {
+                const auto answered = worldDb_.exec(
+                    "UPDATE dm.actions a SET status = CASE WHEN (j.value->>'ok')::boolean THEN 'applied' ELSE 'refused' END, "
+                    "result = j.value->>'text', done_at = now() FROM jsonb_each($1::jsonb) AS j "
+                    "WHERE a.id::text = j.key AND a.kind = j.value->>'kind' AND a.target_id = j.value->>'target' "
+                    "AND a.status IN ('queued', 'expired') RETURNING a.kind, a.target_id, a.result",
+                    {json::dump(dmActs_)});
+                for (const auto& row : answered.rows)
+                    if (row.size() > 2 && row[0] && row[1] && row[2])
+                        note("info", "RATW_DM_ACTION " + *row[0] + " " + *row[1] + ": already applied before the restart: " + *row[2]);
+            }
+        }
+        // (Never a row applied whose record is still being written: it is answered once the record is committed.)
+        std::string waiting = "{";
+        for (const auto& w : dmStatusWaiting_)
+            waiting += (waiting.size() > 1 ? "," : "") + w.id;
         worldDb_.exec("UPDATE dm.actions SET status = 'expired', result = 'Not applied within ten minutes.', done_at = now() "
-                      "WHERE status = 'queued' AND requested_at < now() - interval '10 minutes'");
+                      "WHERE status = 'queued' AND requested_at < now() - interval '10 minutes' AND NOT (id::text = ANY($1::text[]))",
+                      {waiting + "}"});
     }
     const auto queued = worldDb_.exec("SELECT id, kind, target_id, requested_by, payload::text FROM dm.actions WHERE status = 'queued' ORDER BY id LIMIT 50");
     bool changed = false;
+    std::optional<Result> synced;                   // (economy.sync's outcome, once this poll.)
+    std::uint64_t syncedSeq = 0;                    // (Its record's seq, if it journalled one: the others wait for it too.)
+    bool syncNow = false;
+    for (const auto& row : queued.rows)
+        if (row.size() > 4 && row[1] && *row[1] == "economy.sync" && row[4])
+        {
+            json::Value p;
+            std::string problem;
+            syncNow |= json::parse(*row[4], p, problem) && p.boolean("now", false);
+        }
     for (const auto& row : queued.rows)
     {
         if (!row[0] || !row[1] || !row[2])
             continue;
         const std::string kind = *row[1], target = *row[2];
+        // (Applied, its record not yet committed: answered when it is. Applied before a crash that left the row queued:
+        // the journal's record holds it, so it is answered from there, never applied again.)
+        if (std::any_of(dmStatusWaiting_.begin(), dmStatusWaiting_.end(), [&](const DmStatus& w) { return w.id == *row[0]; }))
+            continue;
+        // (The same kind and target too: a database whose dm.actions numbering began again never matches an old act.)
+        if (const auto* done = dmActs_.find(*row[0]); done && done->isObject() && done->string("kind") == kind && done->string("target") == target)
+        {
+            worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
+                          {*row[0], std::string(done->boolean("ok") ? "applied" : "refused"), done->string("text")});
+            note("info", "RATW_DM_ACTION " + kind + " " + target + ": already applied before the restart: " + done->string("text"));
+            continue;
+        }
+        const auto seqBefore = journalSeq_;
         Result outcome{false, "Unknown action.", {}};
+        // Any other kind that journals what it does (a deed, a Gift, a town project, an NPC's band: Phase 9's last repair)
+        // carries its dm.actions id in its record too, so a crash after the record commits answers the row from it, never
+        // applying the act again. Its outcome isn't known until it is applied: the record holds a plain receipt, and the
+        // checkpoint the outcome itself. (The economy's acts keep their own, with their outcome: applyEconomyCommand.)
+        const bool receipted = !economyCommand(kind);
+        if (receipted)
+        {
+            auto act = json::Value::object();
+            act.add("ok", true);
+            act.add("text", "Applied (the server stopped before it could say what it did).");
+            act.add("kind", kind);
+            act.add("target", target);
+            dmActs_.set(*row[0], std::move(act));
+            actingFor_ = *row[0];
+        }
         if (kind == "layers.sync" || kind == "factions.sync" || kind == "npc.sync")
         {
             World candidate;
@@ -995,22 +1066,40 @@ void Game::applyDmActions(double dt)
                                  : Result{false, "The factions could not be applied: " + problem, {}};
             }
             else
-                outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
-        }
-        else if (kind == "economy.sync")
-        {
-            // The economy's settings (doc 79): the world's live.economy read again after the DM or Atlas changed it,
-            // and applied at once (needs paused, the rules, the services and the seasons; the old economy's records
-            // read past).
-            World candidate;
-            std::string problem;
-            if (loadWithLivePeople(candidate, problem))
             {
-                world_.society().adoptEconomy(candidate.society().authored().economy);
-                outcome = {true, "The economy's rules are read again and in force.", target};
+                const auto* was = world_.society().spec(target);
+                const int bandBefore = was ? was->band : -1;
+                outcome = loaded ? world_.adoptResident(candidate, target) : Result{false, "The NPC could not be placed: " + problem, {}};
+                // (Its authored band, the Band picker's, in force at once for its household: doc 79, 14; Phase 9.)
+                if (const auto* now = world_.society().spec(target); outcome.ok && now && now->band != bandBefore)
+                {
+                    world_.society().bandsChanged();
+                    record(Economy);
+                    world_.society().setReport(world_.prosperityReport());
+                }
             }
+        }
+        else if (economyCommand(kind))
+        {
+            // The staged economy's live acts (doc 79, 12; Phase 9; RatwGameEconomy.cpp), each journalled before anyone is
+            // told. Several economy.sync rows in one poll are applied once (with "now" if any asked it), each answered.
+            json::Value payload;
+            std::string problem;
+            if (row.size() > 4 && row[4])
+                json::parse(*row[4], payload, problem);
+            if (kind == "economy.sync" && synced)
+                outcome = *synced;
             else
-                outcome = {false, "The economy's rules could not be read: " + problem, target};
+            {
+                if (kind == "economy.sync" && syncNow && !payload.boolean("now", false))
+                    payload.set("now", true);
+                outcome = applyEconomyCommand(kind, target, payload.isObject() ? payload : json::Value::object(), *row[0]);
+                if (kind == "economy.sync")
+                {
+                    synced = outcome;
+                    syncedSeq = journalSeq_ != seqBefore ? journalSeq_ : 0;
+                }
+            }
         }
         else if (kind == "voice.sync")
         {
@@ -1518,9 +1607,34 @@ void Game::applyDmActions(double dt)
                                             wire::number(payload, "minutes", 0));
             }
         }
+        if (receipted)
+        {
+            // (Nothing journalled: no receipt, the act is applied again if the row is still queued after a crash. Else
+            // the receipt with its outcome, for the checkpoint; the oldest dropped past DmActsKept.)
+            actingFor_.clear();
+            dmActs_.erase(*row[0]);
+            if (journalSeq_ != seqBefore)
+            {
+                auto act = json::Value::object();
+                act.add("ok", outcome.ok);
+                act.add("text", outcome.message);
+                act.add("kind", kind);
+                act.add("target", target);
+                keepDmAct(*row[0], std::move(act));
+            }
+        }
         changed |= outcome.ok;
-        worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
-                      {*row[0], std::string(outcome.ok ? "applied" : "refused"), outcome.message});
+        // "Applied" only once what the act journalled is committed (a crash before then loses the act: the DM must not
+        // have been told it happened). With nothing journalled, or written already, at once.
+        // (A second economy.sync of the poll, answered with the first's outcome, waits for the first's record: Phase 9's
+        // second repair.)
+        auto* writer = store_ ? store_->journal() : nullptr;
+        const std::uint64_t seq = journalSeq_ != seqBefore ? journalSeq_ : kind == "economy.sync" ? syncedSeq : 0;
+        if (writer && seq && writer->committed() < seq)
+            dmStatusWaiting_.push_back({*row[0], outcome.ok ? "applied" : "refused", outcome.message, seq});
+        else
+            worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
+                          {*row[0], std::string(outcome.ok ? "applied" : "refused"), outcome.message});
         note("info", "RATW_DM_ACTION " + kind + " " + target + " by " + (row[3] ? *row[3] : "") + ": " + outcome.message);
         logEvent("operator", row[3] ? *row[3] : "", target, kind + (outcome.ok ? ": applied" : ": refused"));
     }
@@ -1529,6 +1643,38 @@ void Game::applyDmActions(double dt)
         ++revision_;
         saveSoon();
     }
+}
+
+void Game::keepDmAct(const std::string& id, json::Value act)
+{
+    while (dmActs_.size() >= DmActsKept)
+    {
+        // (The oldest by number: dm.actions ids grow; a row is never left queued that long.)
+        std::string oldest;
+        for (const auto& [key, v] : dmActs_.fields())
+            if (oldest.empty() || key.size() < oldest.size() || (key.size() == oldest.size() && key < oldest))
+                oldest = key;
+        dmActs_.erase(oldest);
+    }
+    dmActs_.set(id, std::move(act));
+}
+
+void Game::releaseDmStatuses()
+{
+    if (dmStatusWaiting_.empty())
+        return;
+    auto* writer = store_ ? store_->journal() : nullptr;
+    const auto written = writer ? writer->committed() : std::uint64_t(-1);
+    for (auto it = dmStatusWaiting_.begin(); it != dmStatusWaiting_.end();)
+        if (it->seq <= written)
+        {
+            // (A row the ten minutes' expiry caught while its record waited: it was applied, and is said so.)
+            worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status IN ('queued', 'expired')",
+                          {it->id, it->status, it->result});
+            it = dmStatusWaiting_.erase(it);
+        }
+        else
+            ++it;
 }
 
 std::int64_t Game::reportFee(const std::string&) const
@@ -2965,7 +3111,26 @@ void Game::tick(double dt)
             if (!c->entityId.empty())
                 online.insert(c->entityId);
         director_.tick(real, world_, characters_, online, operatorActivity_, revision_,
-                       [this] { ++revision_; save(); return storageReady_; },
+                       [this] {
+                           // (The checkpoint journals what moved first, with the bridge's receipts: a failed save after
+                           // that record is Journalled once the record is written, Pending while it isn't: Phase 9's
+                           // second repair, never "it stands" for a record a crash could still lose.)
+                           ++revision_;
+                           world_.society().setReport(world_.prosperityReport());   // (A grant or band in the report saved now.)
+                           const auto seq = journalSeq_;
+                           journalDirector_ = true;
+                           save();
+                           journalDirector_ = false;
+                           if (storageReady_)
+                               return int(director::Bridge::Committed);
+                           if (journalSeq_ == seq)
+                               return int(director::Bridge::NotCommitted);
+                           auto* writer = store_ ? store_->journal() : nullptr;
+                           if (writer)
+                               writer->flush();             // (Bounded: it returns at the first failed write.)
+                           return writer && writer->committed() >= journalSeq_ ? int(director::Bridge::Journalled)
+                                                                               : int(director::Bridge::Pending);
+                       },
                        [this](const std::set<std::string>& targets, const std::string& text) {
                            for (auto* c : clients_)
                                if (targets.count(c->entityId))
@@ -6111,6 +6276,7 @@ DbStore::Build Game::capture()
     c->server.social = social_;
     c->server.commandReceipts = commandReceipts_;
     c->server.responseReceipts = responseReceipts_;
+    c->server.dmActs = dmActs_;
     c->time = world_.time();
     c->saved = world_.save();
     for (const auto& [id, e] : world_.entities())
@@ -6283,6 +6449,7 @@ void Game::load(const std::string& payload)
     for (const auto& [actor, entries] : state.responseReceipts)
         for (const auto& [key, value] : entries)
             responseReceipts_[actor][key] = value;
+    dmActs_ = state.dmActs.isObject() ? state.dmActs : json::Value::object();
     for (const auto& [id, saved] : characters_)
         world_.bonds().setAway(id, !world_.entity(id));   // (Nobody's regard fades for a wolf who is away: doc 56, 10.)
     note("info", "RATW_RESTORE characters=" + std::to_string(characters_.size()) + " summaries=" + std::to_string(memories_.summaries.size()) +
