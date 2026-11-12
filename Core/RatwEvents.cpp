@@ -10,12 +10,13 @@
 // list changes none already committed. Each has a visible cause: its notice (pinned ahead where its kind says, else as it
 // begins), a crier's line at the square, a crowd where it says, and talk's world.event. While on, its goods are pressed
 // halfway toward their targets as it begins and each morning (inside the clamp: the Board's own setPressure; cause
-// "event"), and its Times points count in its market's score (5.3). Events never touch money, bands or posts.
+// "event"). An event moves only its goods' prices and what people say: it is no part of its market's Times (5.3, decided
+// 2026-11-12), so events never touch money, bands or posts.
 //
 // The slider's cause (8.5): a move of the DM's slider comes with words (the DM's, else the seeded list's for its way:
 // Society::setProsperity); each market is told once (a notice on its board, a crier's line), and the cause is
-// world.times_cause and the Mind's Means while it is the largest part of the Times. The DM's Times nudges and harvest
-// overrides post their own notices, unless the rule overrideNotices is 0.
+// world.times_cause and the Mind's Means while it is the largest part of the Times (never an event's words). The DM's
+// Times nudges and harvest overrides post their own notices, unless the rule overrideNotices is 0.
 #include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwJsonDoc.h"
@@ -137,7 +138,6 @@ bool World::makeEvent(const std::string& marketId, const market::Data::EventKind
     e.day = day;
     e.hour = kind.hour + double(lot("eventhour:" + seed, day) % 3) * .5;
     e.days = kind.days;
-    e.times = kind.times;
     e.ahead = kind.ahead;
     e.crowd = kind.crowd;
     std::map<std::string, std::string> words{{"market", marketWords(marketId)},
@@ -208,8 +208,12 @@ bool World::makeEvent(const std::string& marketId, const market::Data::EventKind
     e.cry = json::utf8Prefix(fill(kind.cry, words), 200);
     if (!kind.noticeOn.empty())
         e.noticeOn = json::utf8Prefix(fill(kind.noticeOn, words), 280);
+    // (And once its ship has sailed with the event still on: "is in" would be untrue of a ship gone, so the kind may say
+    // it another way. Only an event that comes in with a ship has one.)
+    if (!kind.noticeAfter.empty() && kind.ship == "docks")
+        e.noticeAfter = json::utf8Prefix(fill(kind.noticeAfter, words), 280);
     if (e.words.empty() || !market::plainWords(e.words, 80) || !market::plainWords(e.notice, 280) || !market::plainWords(e.cry, 200) ||
-        !market::plainWords(e.noticeOn, 280))
+        !market::plainWords(e.noticeOn, 280) || !market::plainWords(e.noticeAfter, 280))
         return problem = "its words are not plain", false;
     e.posted = std::floor(calendarDays_);
     return true;
@@ -482,7 +486,24 @@ void World::tendEvents()
             continue;
         }
         if (now >= endsAt(e))
+        {
             eventEnds(e, "over");
+            continue;
+        }
+        // Its ship sailed with the event still on (a rich cargo lasts two days, the ship a day at the pier): its notice says
+        // so, never "is in" of a ship gone. The board's notice follows the record.
+        if (!e.noticeAfter.empty())
+            if (const auto docks = subjectId(e.subject, "ship"); !docks.empty())
+            {
+                const auto ship = std::find_if(b.ships.begin(), b.ships.end(), [&](const market::Ship& s) { return s.id == docks; });
+                if (ship == b.ships.end() || ship->status == "sailed")
+                {
+                    e.notice = std::move(e.noticeAfter);
+                    e.noticeAfter.clear();
+                    const auto* m = roadMarket(e.market);
+                    recordEvent({"event notice", e.id, e.market, m ? m->market : std::string(), 0, 0, e.kind, 0, 0, e.notice});
+                }
+            }
     }
 }
 

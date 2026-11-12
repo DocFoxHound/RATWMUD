@@ -1523,15 +1523,17 @@ void beggarsByWant()
 {
     // Who begs (the user's decision of 2026-11-11): residents of a household in want of food (the destitute always, the
     // poor whose purses and the food in their hands beyond today's would not buy a day's food a head), adults with no post
-    // or master; never one of the Watch, never one at a post, never a lifted household, never one with the means. Elders
-    // beg only from a household in want, and never all of them while others in want wait; drawn across ages and kinds of
-    // home over the days.
+    // or master; never one of the Watch, never one at a post on a working day (on Restday the working poor may: decided
+    // 2026-11-12, theWorkingPoorOnRestday), never a lifted household, never one with the means. Elders beg only from a
+    // household in want, and never all of them while others in want wait; drawn across ages and kinds of home over the
+    // days.
     const auto root = wantingTown("want");
     auto w = town(root);
     auto& s = w.society();
     const std::vector<std::string> wanting{"idle1", "idle2", "elder1", "elder2", "elder3", "elder4", "gran", "kin", "lodger", "flatwolf"};
-    const std::vector<std::string> never{"idle3", "idle4", "dame", "heir", "gorse", "heath", "rook"};
+    const std::vector<std::string> never{"idle3", "idle4", "dame", "heir", "gorse", "heath"};
     expect(s.jobOf("rook") != nullptr, "Rook holds a post");
+    const auto restday = [&] { return calendar::weekdayOf(w.calendarDays()) == calendar::Restday; };
     const auto setUp = [&] {
         s.stagedBands(std::int64_t(std::floor(w.calendarDays())), true);
         inWant(w, "idle1", status::Destitute);
@@ -1552,7 +1554,7 @@ void beggarsByWant()
     const auto elder = [&](const std::string& id) { return s.spec(id)->age >= Society::retireAge(id); };
     const auto mayBeg = [&](const std::string& id) {
         const auto* r = s.spec(id);
-        return r && r->age >= 16 && !s.jobOf(id) && !s.apprenticedTo(id) && !r->ofTheWatch() && !s.liftedNow(id) &&
+        return r && r->age >= 16 && (!s.jobOf(id) || restday()) && !s.apprenticedTo(id) && !r->ofTheWatch() && !s.liftedNow(id) &&
                s.foodWant(s.householdOf(id)) > 0;
     };
     // The wants as judged.
@@ -1598,6 +1600,7 @@ void beggarsByWant()
             expect(b.count(id), "one in want at the worst without a place: " + id);
         for (const auto& id : never)
             expect(!b.count(id), "a beggar who may not beg: " + id);
+        expect(!restday() && !b.count("rook"), "one at a post never begs on a working day");
         expect(b.size() == wanting.size(), "only those in want: " + std::to_string(b.size()));
     }
     s.setStatusOverride(nullptr);
@@ -1636,6 +1639,7 @@ void beggarsByWant()
                                                                             " of " + std::to_string(b.size()));
         for (const auto& id : never)
             expect(!b.count(id), "a beggar who may not beg: " + id);
+        expect(restday() || !b.count("rook"), "one at a post never begs on a working day");
         ++days;
         withElders += elders > 0;
     }
@@ -1644,6 +1648,261 @@ void beggarsByWant()
     expect(who.size() >= 6, "not the same few every day: " + std::to_string(who.size()));
     // An elder whose household has the means never begs, whoever else does: Dame, with Heir's purse, above. And an elder of
     // a household in want who lives alone begs as one with family does: both above at the worst.
+    fs::remove_all(root);
+}
+
+void theWorkingPoorOnRestday()
+{
+    // Decided 2026-11-12 (10.2): the working poor may beg on Restday, their day off: one with a post, 16 or over, of a
+    // destitute or poor household short of a day's food (the same test of want), weighted below the postless in want
+    // (beggarsPosted). Never on a working day; never one whose post works on Restday (the Watch, a shop's keeper, the
+    // clergy); never one whose household has the means; never at its own place of work.
+    const auto root = wantingTown("posted");
+    auto w = town(root);
+    auto& s = w.society();
+    expect(status::defaults().beggarsPosted == .5, "the working poor at half the weight of the postless");
+    auto room = parse(R"({"street": {"beggarsACell": 4}})");
+    s.setStatusOverride(&room);
+    const std::vector<std::string> posted{"linden", "sorrel"};            // (Hands of the cottage: a water carrier, a gardener.)
+    const std::vector<std::string> hall{"rook", "maple"};                 // (Hands of the Long House's household.)
+    // (At work on Restday: keepers, the priest, the Watch. The priest, Brann, Cole and Dulse are of the Long House too.)
+    const std::vector<std::string> working{"wren", "vicar", "brann", "cole", "dulse", "harrow"};
+    for (const auto* list : {&posted, &hall, &working})
+        for (const auto& id : *list)
+            expect(s.jobOf(id) != nullptr && s.spec(id) && s.spec(id)->age >= 16, id + " holds a post");
+    expect(s.jobOf("wren")->role == "merchant" && Society::clergy(s.jobOf("vicar")->title) && s.jobOf("harrow")->role == "guard",
+           "a keeper, the clergy and the Watch");
+    expect(s.householdOf("rook") == s.householdOf("vicar") && s.householdOf("rook") == s.householdOf("brann") &&
+               s.householdOf("rook") != s.householdOf("linden") && s.householdOf("linden") == s.householdOf("sorrel"),
+           "the Long House's household, and the cottage's");
+    const auto setUp = [&](bool hallInWant) {
+        s.stagedBands(std::int64_t(std::floor(w.calendarDays())), true);
+        inWant(w, "idle1", status::Destitute);
+        for (const auto* id : {"linden", "wren", "harrow"})
+            inWant(w, id, status::Poor);            // (Poor, with nothing for a day's food: each one's whole household.)
+        if (hallInWant)
+            inWant(w, "rook", status::Poor);
+        else
+            withMeans(w, "rook", status::Poor);     // (Poor, with the money for food.)
+        placedAgain(w);
+    };
+    s.setProsperity(-100, true);
+    // A working day: nobody at a post begs, in want or not.
+    onTo(w, calendar::Marketday, 10);
+    setUp(true);
+    {
+        const auto b = w.beggars();
+        expect(b.count("idle1"), "the postless in want begs on Marketday");
+        for (const auto* list : {&posted, &hall, &working})
+            for (const auto& id : *list)
+                expect(!b.count(id), "nobody at a post begs on a working day: " + id);
+        for (const auto* id : {"linden", "rook", "idle1"})
+            expect(s.foodWantOnDayOff(s.householdOf(id)) == s.foodWant(s.householdOf(id)), std::string("a working day's want is the plain one: ") + id);
+    }
+    // Restday: the working poor in want beg; those whose posts work that day, and a household with the means, never.
+    onTo(w, calendar::Restday, 10);
+    for (const bool hallInWant : {false, true})
+    {
+        setUp(hallInWant);
+        const auto b = w.beggars();
+        expect(calendar::weekdayOf(w.calendarDays()) == calendar::Restday && b.count("idle1"), "the postless in want begs on Restday");
+        auto begging = posted;
+        if (hallInWant)
+            begging.insert(begging.end(), hall.begin(), hall.end());
+        for (const auto& id : begging)
+        {
+            expect(s.foodWant(s.householdOf(id)) > 0 && b.count(id), "the working poor in want beg on Restday: " + id);
+            if (!b.count(id))
+                continue;
+            const auto& at = b.at(id);
+            const auto& work = s.jobOf(id)->work;
+            expect(at.cell != work.cell || std::hypot(at.x - work.x, at.y - work.y) >= 8,
+                   "never at its own place of work: " + id + " at " + tileOf(at) + ", working at " + tileOf(work));
+        }
+        if (!hallInWant)
+            for (const auto& id : hall)
+                expect(s.foodWant(s.householdOf(id)) == 0 && !b.count(id), "one at a post whose household has the money for food never begs: " + id);
+        for (const auto& id : working)
+            expect(!b.count(id), "one whose post works on Restday never begs: " + id);
+        // (One learning a trade under a master never begs, as before: Fennel of the Long House, once he is taken on.)
+        expect(!s.apprenticedTo("fennel") || !b.count("fennel"), "one with a master never begs");
+        if (std::getenv("STREET_EACH"))
+        {
+            std::cout << "  Restday at the worst" << (hallInWant ? ", the Long House in want:" : ":");
+            for (const auto& [id, at] : b)
+                std::cout << " " << id << (s.jobOf(id) ? "(posted)" : "") << " " << tileOf(at);
+            std::cout << "\n";
+        }
+    }
+    // The want on a day off. The staged ration buys Restday's food on Marketday (the rule buyAheadDays), so on a Restday
+    // morning a fed household holds two days' food and by the plain test is never short; for one out on its day off the
+    // food bought ahead is in hand as today's is, and its purses are asked for a day's food as on any morning.
+    {
+        const auto hh = s.householdOf("linden");
+        const auto cottage = householdMembers(s, "linden");
+        const auto larders = [&](int loaves, std::int64_t purse) {
+            for (const auto& m : cottage)
+            {
+                emptyLarder(s, m);
+                s.stagedSet(m, purse);
+                expect(loaves == 0 || s.create(m, "bread", loaves, "test: bread in hand"), "bread in hand: " + m);
+            }
+            placedAgain(w);
+        };
+        expect(calendar::weekdayOf(w.calendarDays()) == calendar::Restday && s.rule("buyAheadDays") == 1, "Restday, its food bought the day before");
+        larders(7, 0);                              // (Two days' bread a head: today's and the day bought ahead; no coin.)
+        expect(s.foodWant(hh) == 0 && s.foodWantOnDayOff(hh) > 0 && s.foodWantOnDayOff(hh) <= 1,
+               "two days' bread and no coin on Restday: no want by the plain test, in want on the day off: " + std::to_string(s.foodWantOnDayOff(hh)));
+        expect(w.beggars().count("linden") && w.beggars().count("sorrel"), "and its hands beg on their day off");
+        larders(7, 50);
+        expect(s.foodWantOnDayOff(hh) == 0 && !w.beggars().count("linden"), "a purse that buys a day's food: no want, none begging");
+        larders(10, 0);                             // (A day's more than the two in hand.)
+        expect(s.foodWantOnDayOff(hh) == 0 && !w.beggars().count("linden"), "three days' bread in hand: no want, none begging");
+        larders(0, 0);
+        expect(w.beggars().count("linden") && w.beggars().count("sorrel"), "nothing at all: begging again");
+    }
+    // (And seen at it: the street's errand comes before the day off's own plan.)
+    for (int t = 0; t < 30; ++t)
+        w.tick(1);
+    for (const auto& id : posted)
+    {
+        const auto* e = w.entity(id);
+        expect(e && e->activity.rfind("begging", 0) == 0, id + " is seen begging: " + (e ? e->activity : std::string("gone")));
+    }
+    // A festival on the Restday: the day is the festival's, not one of rest (the town works its morning and gathers after
+    // noon), so nobody at a post begs; the postless in want do, as on any Restday.
+    expect(w.callFestival("greyfen", "The Test Fair", 0).ok && w.dayPlan("greyfen").kind == "festival", "a festival called for the Restday");
+    placedAgain(w);
+    {
+        const auto b = w.beggars();
+        expect(calendar::weekdayOf(w.calendarDays()) == calendar::Restday && b.count("idle1"), "the postless in want begs on a festival's Restday");
+        for (const auto* list : {&posted, &hall})
+            for (const auto& id : *list)
+                expect(!b.count(id), "nobody at a post begs on a festival's Restday: " + id);
+    }
+    // The weight (beggarsPosted): at 0 none of them begs; near 0 the postless in want come first; at 1 they are drawn
+    // as the postless are. Ordinary times (four places in all), six postless and five posted in want alike.
+    s.setProsperity(0, true);
+    const std::vector<std::string> postless{"idle1", "idle2", "idle3", "lodger", "flatwolf", "kin"};
+    const auto drawn = [&](const char* weight, int days) {
+        auto table = parse(std::string(R"({"street": {"beggarsSpread": 1, "beggarsElders": 1, "beggarsClass": {"lower": 1, "middle": 1, "upper": 1},
+                                           "beggarsPosted": )") + weight + "}}");
+        s.setStatusOverride(&table);
+        int ofPosted = 0, all = 0;
+        for (int k = 0; k < days; ++k)
+        {
+            w.advanceCalendar(1);
+            onTo(w, calendar::Restday, 10);
+            s.stagedBands(std::int64_t(std::floor(w.calendarDays())), true);
+            for (const auto* list : {&postless, &posted, &hall})
+                for (const auto& id : *list)
+                    inWant(w, id, status::Poor);
+            placedAgain(w);
+            for (const auto& [id, at] : w.beggars())
+            {
+                ++all;
+                ofPosted += s.jobOf(id) != nullptr;
+            }
+        }
+        s.setStatusOverride(nullptr);
+        expect(all >= 2 * days, std::string("beggars each Restday at weight ") + weight + ": " + std::to_string(all));
+        return ofPosted;
+    };
+    expect(drawn("0", 2) == 0, "beggarsPosted 0: the working poor never beg");
+    expect(drawn("0.01", 4) == 0, "a small weight: the postless in want come first");
+    const int even = drawn("1", 4);
+    expect(even > 0, "the same weight: drawn as the postless are: " + std::to_string(even));
+    fs::remove_all(root);
+}
+
+void beggarsInAMarketByConditions()
+{
+    // Decided 2026-11-12 (10.2): a boom means few beggars in the whole city. Over the cell's most, a market's whole count
+    // follows the slider and its Times (status.json street.beggarsInAMarket): 12 at -100, 8 at -50, 5 at 0, 2 at +50, 1 at
+    // +100 for the realm's largest market; a smaller market's its share of that by its households, never under the cell's
+    // own most; a fraction one more by a lot of the market and the day. The table first; then Greyfen with fourteen in
+    // want and room for all (eight a place and a cell), so the market's most is what holds them.
+    const auto& d = status::defaults();
+    const auto at = [&](double slider, int times = 0, double share = 1) { return status::beggarsInAMarketAt(d, slider, times, share); };
+    expect(at(-100) == 12 && at(-50) == 8 && at(0) == 5 && at(50) == 2 && at(100) == 1 && at(-75) == 10 && at(75) == 1.5,
+           "the most in a market by the slider: 12, 8, 5, 2, 1");
+    expect(at(0, -2) == 6.5 && at(0, 2) == 3.5 && at(-100, -2) == 12 && at(100, 2) == 1 && at(-50, -1) == 9 && at(50, 1) == 1.75,
+           "the Times move it as the cell's most");
+    expect(at(-100, 0, .25) == 5 && at(0, 0, .25) == 2 && at(100, 0, .25) == .5 && at(0, 0, .5) == 2.5 && at(-100, 0, .5) == 6,
+           "a smaller market's its share by households, never under the cell's own most");
+    for (int slider = -100; slider <= 100; slider += 5)
+        for (int times = -2; times <= 2; ++times)
+            for (double share : {.05, .3, 1.})
+            {
+                expect(at(slider, times, share) >= status::beggarsInACellAt(d, slider, times) && at(slider, times, share) <= 12,
+                       "between the cell's most and twelve: " + std::to_string(slider));
+                expect(slider < 100 || at(slider, times, share) <= 1.5, "about one in a boom: " + std::to_string(at(slider, times, share)));
+                expect(slider == -100 || at(slider, times, share) <= at(slider - 5, times, share) + 1e-9, "never rising as the slider rises");
+            }
+    for (const char* bad : {R"({"street": {"beggarsInAMarket": [{"at": -100, "most": 1}, {"at": 100, "most": 3}]}})",
+                            R"({"street": {"beggarsInAMarket": [{"at": -50, "most": 4}, {"at": 100, "most": 1}]}})",
+                            R"({"street": {"beggarsInAMarket": [{"at": -100, "most": 61}, {"at": 100, "most": 1}]}})"})
+    {
+        std::vector<std::string> warnings;
+        const auto t = status::read(parse(bad), d, &warnings);
+        expect(!warnings.empty() && status::beggarsInAMarketAt(t, -100) == 12 && status::beggarsInAMarketAt(t, 100) == 1,
+               std::string("a bad curve falls back to the default: ") + bad);
+    }
+    {
+        std::vector<std::string> warnings;
+        const auto t = status::read(parse(R"({"street": {"beggarsInAMarket": [{"at": -100, "most": 20}, {"at": 100, "most": 0}], "beggarsPosted": 0.25}})"), d, &warnings);
+        expect(warnings.empty() && status::beggarsInAMarketAt(t, -100) == 20 && status::beggarsInAMarketAt(t, 0) == 10 && t.beggarsPosted == .25,
+               "a host's own curve and weight are read");
+        expect(status::beggarsInAMarketAt(t, 100) == .5, "and never under the cell's own most");
+    }
+    const auto root = wantingTown("market");
+    auto w = town(root);
+    auto& s = w.society();
+    // (Room in Greyfen's two cells for the market's most at every slider, and never more in a cell than the market's.)
+    auto wide = parse(R"({"street": {"beggarsACell": 8, "beggarsInACell": [{"at": -100, "most": 8}, {"at": -50, "most": 5}, {"at": 0, "most": 3},
+                                                                           {"at": 50, "most": 2}, {"at": 100, "most": 1}]}})");
+    s.setStatusOverride(&wide);
+    const std::vector<std::string> wanting{"idle1", "idle2", "idle3", "idle4", "elder1", "elder2", "elder3", "elder4",
+                                           "gran", "kin",   "dame",  "heir",  "lodger", "flatwolf"};
+    const auto market = [&] { return s.statusOf("idle1")->market; };
+    onTo(w, calendar::Marketday, 8.2);              // (One day's draw, the hours after: who begs as the slider moves.)
+    std::map<int, std::set<std::string>> who;
+    for (int slider : {-100, -50, 0, 50, 100})
+    {
+        s.setProsperity(slider, true);
+        s.stagedBands(std::int64_t(std::floor(w.calendarDays())), true);
+        for (const auto& id : wanting)
+            inWant(w, id, status::Destitute);
+        placedAgain(w);
+        expect(calendar::weekdayOf(w.calendarDays()) == calendar::Marketday, "the same Marketday");
+        const double most = status::beggarsInAMarketAt(s.statusTable(), s.prosperity(), s.marketTimes(market()), 1);
+        for (const auto& [id, spot] : w.beggars())
+            who[slider].insert(id);
+        const int n = int(who[slider].size());
+        expect(n >= int(std::floor(most + 1e-9)) && n <= int(std::ceil(most - 1e-9)),
+               "slider " + std::to_string(slider) + ": " + std::to_string(n) + " beggars in the market for at most " + std::to_string(most));
+        if (std::getenv("STREET_EACH"))
+            std::cout << "  slider " << slider << ": at most " << most << " in the market, " << n << " begging\n";
+    }
+    expect(who[-100].size() == 12 && who[-50].size() == 9 && who[0].size() == 5 && who[100].size() == 1,
+           "twelve at the worst, five in ordinary times, one in a boom: " + std::to_string(who[-100].size()) + ", " +
+               std::to_string(who[-50].size()) + ", " + std::to_string(who[0].size()) + ", " + std::to_string(who[100].size()));
+    expect(who[50].size() >= 1 && who[50].size() <= 2, "one or two in good times: " + std::to_string(who[50].size()));
+    // The first of the day's draw: whoever begs in better times begs in worse.
+    for (const auto& [better, worse] : {std::pair<int, int>{100, 50}, {50, 0}, {0, -50}, {-50, -100}})
+        for (const auto& id : who[better])
+            expect(who[worse].count(id), "the day's draw in order: " + id + " begs at " + std::to_string(better) + " and not at " + std::to_string(worse));
+    // The elders' share holds in the market's few: never all of them elders while others wait.
+    const auto elder = [&](const std::string& id) { return s.spec(id)->age >= Society::retireAge(id); };
+    for (int slider : {-100, -50, 0})
+    {
+        int elders = 0;
+        for (const auto& id : who[slider])
+            elders += elder(id);
+        expect(elders <= std::max(1, int(who[slider].size()) / 2), "elders at most half of the market's beggars at " + std::to_string(slider) +
+                                                                       ": " + std::to_string(elders) + " of " + std::to_string(who[slider].size()));
+    }
+    s.setStatusOverride(nullptr);
     fs::remove_all(root);
 }
 
@@ -1704,6 +1963,10 @@ void restdayDole()
     const auto adaBread = Society::stock(*w.society().account("player-ada"), "bread");
     onTo(w, calendar::Restday, Society::ServiceEnd + .2);
     expect(w.society().onDole("linden"), "Linden's household on the dole");
+    // (Sorrel of that household, at a post, is out begging on her day off (decided 2026-11-12) and still its hand to send
+    // for the bread: with her counted as taken, as a postless beggar is, the household had nobody free and went without
+    // till the dole's end.)
+    expect(w.society().jobOf("sorrel") && w.beggars().count("sorrel") && w.beggars().count("linden"), "both of the household out begging on Restday");
     expect(Society::stock(*w.society().account("linden"), "bread") > 0, "with bread in hand");
     expect(w.dolePriests().count("vicar"), "the priest handing it out");
     for (int i = 0; i < 300; ++i)
@@ -2979,6 +3242,8 @@ int main(int argc, char** argv)
             {"beggarsOffTheDoors", beggarsOffTheDoors},
             {"beggarsACellByConditions", beggarsACellByConditions},
             {"beggarsByWant", beggarsByWant},
+            {"theWorkingPoorOnRestday", theWorkingPoorOnRestday},
+            {"beggarsInAMarketByConditions", beggarsInAMarketByConditions},
             {"helpABeggar", helpABeggar},
             {"helpWhenTheCapIsFull", helpWhenTheCapIsFull},
             {"restdayDole", restdayDole},

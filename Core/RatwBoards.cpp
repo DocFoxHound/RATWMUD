@@ -546,15 +546,16 @@ void Game::stagedNotices(const WorldEvent& e)
 {
     // Staged events and causes (doc 79, 8.4-8.6; Phase 7). (actor: the event's id, or the market or area; target: its
     // market; item: the event's kind; detail: the words.)
-    if (e.kind == "event posted" || e.kind == "event begins")
+    if (e.kind == "event posted" || e.kind == "event begins" || e.kind == "event notice")
     {
         const auto* ev = world_.stagedEvent(e.actor);
         if (!ev)
             return;
         const auto* kind = world_.society().market().eventKind(ev->kind);
         auto* pinned = documents_.find("event-" + ev->id);
-        if (!ev->notice.empty() && pinned && e.kind == "event begins")
-            pinned->text = json::utf8Prefix(ev->notice, TextMost);   // (Its notice once begun: a rich cargo's ship is in.)
+        if (!ev->notice.empty() && pinned && e.kind != "event posted")
+            pinned->text = json::utf8Prefix(ev->notice, TextMost);   // (Its notice once begun: a rich cargo's ship is in; and
+                                                                     // once she has sailed with it still on: "event notice".)
         else if (!ev->notice.empty() && (e.kind == "event posted" || !pinned))
             pinStagedNotice("event-" + ev->id, ev->market, "event:" + ev->id, ev->notice, kind ? kind->sign : std::string("the crier"));
         if (e.kind == "event begins" && !ev->cry.empty())

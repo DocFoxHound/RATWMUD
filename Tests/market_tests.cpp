@@ -1132,6 +1132,32 @@ void talkThroughTheRealPath()
     talk::Query p;
     expect(topicFor(town.bo.entityId, "prices", p, "nails") || topicFor(town.bo.entityId, "price_cause", p, "nails"), "the nails' price topic");
     expect(p.a.facts.at("deals") == "yes" && p.b.facts.at("deals") == "no", "the smith deals in nails; the stall's keeper doesn't");
+    // (And `sold_out`: a keeper's shelf is "cleared out" only where none of the good is left in its shop; the slice 2
+    // verify's leftover, a dozen bought off a full shelf.)
+    {
+        std::vector<std::pair<std::string, int>> shelf;
+        int left = 0;
+        if (const auto* a = s.account(s.tillOf("uf")))
+            for (const auto& ware : s.wares("uf"))
+                if (items::baseOf(ware) == "nails")
+                {
+                    shelf.push_back({ware, Society::stock(*a, ware)});
+                    left += shelf.back().second;
+                }
+        expect(left > 0 && p.a.facts.at("sold_out") == "no" && p.b.facts.at("sold_out") == "no",
+               "nails left on the smith's shelf after the travellers' buying: not sold out (" + std::to_string(left) + " left)");
+        for (const auto& [ware, n] : shelf)
+            if (n > 0)
+                expect(s.consume(s.tillOf("uf"), ware, n, "test: sold out") == n, "the shelf emptied: " + ware);
+        talk::Query bare;
+        expect(topicFor(town.bo.entityId, "prices", bare, "nails") || topicFor(town.bo.entityId, "price_cause", bare, "nails"),
+               "the nails' price topic, the shelf bare");
+        expect(bare.a.facts.at("deals") == "yes" && bare.a.facts.at("sold_out") == "yes" && bare.b.facts.at("sold_out") == "no",
+               "the smith is sold out of nails; the stall's keeper has none to be out of");
+        for (const auto& [ware, n] : shelf)
+            if (n > 0)
+                expect(s.create(s.tillOf("uf"), ware, n, "test: set out again"), "the shelf as it was: " + ware);
+    }
     const auto lowered = [](std::string t) {
         for (auto& c : t)
             c = char(std::tolower(static_cast<unsigned char>(c)));

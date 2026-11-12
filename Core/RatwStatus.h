@@ -79,6 +79,11 @@ struct Table
     // home kind) keeping beggarsSpread of its weight for each one drawn from that group already, and the elders at most
     // beggarsElders of a market's beggars while others are in need. Rough sleepers: at most beggarsACell by one warm
     // wall. (The name beggarsACell is kept from "the most in a cell".)
+    // Decided 2026-11-12: over the cell's most, a market's whole count is held to beggarsInAMarket by the slider (the same
+    // straight lines and Times shift; the points are the realm's largest market's, a smaller one's its share of that by
+    // its households, never under the cell's own most: 12 only at the worst, about 1 in a boom); and on Restday, their day
+    // off, the working poor may beg too: one with a post, of a household in want, at beggarsPosted of its weight (below
+    // the postless), never on a working day, never one whose post works on Restday, never at its own place of work.
     double theftBase = .03;
     std::array<double, 5> theftTimes{1.5, 1.2, 1, .85, .7};
     std::map<std::string, double> theftHonesty{{"frank", .2}, {"plain", 1}, {"guarded", 1.5}, {"sly", 3}};
@@ -89,6 +94,8 @@ struct Table
         double at = 0, most = 0;                    // The slider, -100..100; the most beggars in a cell there.
     };
     std::vector<CellPoint> beggarsInACell{{-100, 5}, {-50, 3.5}, {0, 2}, {50, 1}, {100, .5}};
+    std::vector<CellPoint> beggarsInAMarket{{-100, 12}, {-50, 8}, {0, 5}, {50, 2}, {100, 1}};   // (The largest market's.)
+    double beggarsPosted = .5;                      // A posted beggar's weight times this (Restday only).
     std::map<std::string, double> beggarsClass{{"lower", 1}, {"middle", .5}, {"upper", .25}};
     double beggarsSpread = .5, beggarsElders = .5;
     std::int64_t cap(const std::string& name) const;   // 0 for one not set.
@@ -128,6 +135,10 @@ double shortChance(const Table& t, int band, double slider);
 // The most beggars in a cell (10.2) at a slider, the market's Times (-2 hard .. 2 boom) moving it by timesShift as the
 // bands' column moves: beggarsInACell's straight lines, clamped to -100..100; a fraction is left for the caller's lot.
 double beggarsInACellAt(const Table& t, double slider, int times = 0);
+// The most beggars in a whole market (10.2, decided 2026-11-12), the same way: beggarsInAMarket's straight lines at the
+// slider moved by the market's Times, times the market's share of the realm's largest by households (0..1), and never
+// under the cell's own most there; a fraction is left for the caller's lot.
+double beggarsInAMarketAt(const Table& t, double slider, int times = 0, double share = 1);
 // What kind of home a cell is (6.3): "house", "flat" or "room" by the words of its id, else "cottage"; "" for none.
 std::string homeKind(const Table& t, const std::string& homeCell);
 // The cut (6.3), without a society: each household as the society scored it, and the bands it takes.

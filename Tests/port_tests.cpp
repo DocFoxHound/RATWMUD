@@ -3229,8 +3229,8 @@ void eventsPostWithTheirCause()
                     if (soc.board().cell.count(ev->market) && soc.board().cell.at(ev->market).count(g))
                         pressed = pressed || soc.board().cell.at(ev->market).at(g).cause == "event";
                 expect(pressed, "its goods pressed, the cause the event's: " + ev->kind);
-                if (soc.marketTimes(ev->market) != 0 && std::abs(ev->times) >= std::abs(soc.timesScore(ev->market)))
-                    expect(soc.timesCause(ev->market) == ev->words, "its words the Times' cause: " + soc.timesCause(ev->market));
+                // (Decided 2026-11-12: an event is no part of its market's Times, so never their cause.)
+                expect(soc.timesCause(ev->market) != ev->words, "its words never the Times' cause: " + soc.timesCause(ev->market));
             }
         }
     }
