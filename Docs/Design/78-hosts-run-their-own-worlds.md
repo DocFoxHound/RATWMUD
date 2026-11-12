@@ -324,9 +324,9 @@ updates to the Editor package gets its owner on that first start, because it has
   its one-time password waits, a laptop host on café Wi-Fi exposes nothing, and an IPv6 home network (where a router
   may let incoming traffic straight through) exposes nothing either.
 - **To manage from another computer** (at home, or from outside): `RATW_EDITOR_BIND=0.0.0.0` in `.env`, then
-  `docker compose up -d`. Screen 3's "can't connect" text and the guide both give that line. M0a checks whether a
-  `0.0.0.0` publish also answers on IPv6 under Docker Engine and Docker Desktop, and the guide says which; if it
-  doesn't, `RATW_EDITOR_BIND=::` covers both where Docker supports it.
+  `docker compose up -d`. Screen 3's "can't connect" text and the guide both give that line. It opens the port on
+  IPv4 only: M0a found a `0.0.0.0` publish doesn't answer IPv6 under Docker Engine, and a bare publish that does
+  brings every IPv6 peer in as the gateway, so `::` is not offered (D1).
 - **To turn it off:** `[editor] enabled = false` in `world.toml`, then Restart. The helper then **doesn't listen at
   all**, so the client can only say "can't connect", and its message mentions that the Editor may be turned off.
   Compose still publishes the port, so a port collision (below) remains; the guide says so.
@@ -1885,7 +1885,7 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-M1 and M2a built (2026-11-12, below); the rest not yet.
+M1, M2a and M2b built (2026-11-12, below); the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -2095,6 +2095,117 @@ M1 and M2a built (2026-11-12, below); the rest not yet.
     dm password; run `make-certificate` and `first-owner` and act on `requests/`. M3: `Core.app` is where the hosted
     studio plugs in, with `session['username']` as its `who`. M4: the hello's fields, `rotation_message` and `read_code`
     are the client's contract.
+- **2026-11-12: M2b built (The entrypoint, compose and README),** on `r2-editor-m2b` (from `r2-editor` at 3037b72,
+  beside M3 and M4). `Package/entrypoint.py` (restructured), `compose.yaml`, `Dockerfile`, `world.toml`, `README.md`,
+  the new `Package/host_folder.py`, `Package/test_package.py`, and `Docs/Hosting.md`'s README-level parts. No C++, no
+  migration, `stage.sh` untouched. Every item of section 14's M2b row:
+  - **`openssl`, user 10003 in no group:** already in the Dockerfile from M2a; the run shows the helper as uid/gid 10003
+    with no supplementary groups (as the server 10002 and the agent 10001).
+  - **The `admin` volume** (`admin:/var/lib/ratw/admin`; the image makes the mount point `ratw-admin`, 0700, so a new
+    volume starts so; the entrypoint sets it on every start). An old compose file without it is warned about (the key
+    would change with every update).
+  - **The certificate and fingerprint:** `world_admin.py make-certificate --world-id ID` as `ratw-admin`, once; the
+    fingerprint in the log at every start (`Editor certificate: 72E6 0CD9 ...`) and `manage/editor-certificate.txt`
+    (the world id, the host-side port from `RATW_EDITOR_PORT`, the fingerprint; 0644) from `ratw-editor fingerprint`.
+  - **The first owner and `first-editor.txt`:** after the import, `world_admin.py first-owner` as `ratw-admin`; its JSON
+    becomes section 3.1's file (name, one-time password, Editor code, `127.0.0.1[:port]`, the expiry date; 0600, chowned
+    to the `manage` folder's owner so a rootful Linux host can open it). The log names the file, never the password;
+    with no `./manage` mount (an old compose file) it says to take the new compose or `ratw-editor reset NAME`. A start
+    after 7 days unclaimed writes the renewed one ("A new one-time password ..."). The helper's `first-editor-used`
+    request empties it to "Used. Lost your password? Double-click `reset-editor-password` ... or `ratw-editor reset
+    NAME`" (the script is M5's).
+  - **The helper's environment:** only `RATW_DM_PASSWORD` among the secrets; `RATW_ADMIN_DIR`, its own registry copy
+    (`worlds.json`, `worlds.local.json` in the volume, `RATW_WORLDS_FILE/LOCAL`), the AI config's copy (`npc-ai.json`,
+    `ratw-admin`'s, 0600, `RATW_AI_CONFIG`; removed without a key), `RATW_EDITOR_PORT`, `RATW_EDITOR_PEERS` (compose,
+    default `auto`), `RATW_PACKAGE_VERSION`. Written into the volume by root: `settings.json` before every server start
+    (a cleaned copy: no token, AI key or file names; `has_token`, `ai.key` as flags; for M3: `name`, `package`,
+    `player_limit`, `workers`, `cheats`, `editor`, `ai.monthly_tokens` (new `[ai] monthly_tokens`, left out for M3's
+    default) and `folder`, the world folder's host path, from compose's `RATW_HOST_FOLDER: ${PWD:-}` or else the bind
+    mount in `/proc/self/mountinfo`, Docker Desktop's `/run/desktop/mnt/host/c/...` read as `C:\...`), `progress.json`
+    (`starting` 0, `database` 5, `importing` 20, `ready` 100: the hello said `importing` then `ready` in the run),
+    `central.json` (`{kind, host, at}`, mirrored from the agent's `STATE/central` every half second, read without
+    following links, 4 KB at most), `ever-official` (written once, never cleared), `mind-month.json` and `exits.json`
+    (below).
+  - **Requests** (`requests/` in the volume, the helper's): names alone (`KIND.<12 hex>`), never contents, never
+    followed, each removed; anything else removed and counted; the helper's half-written dot files left. `restart`:
+    SIGTERM (the server saves), 80 s then SIGKILL, started again at once with `world.toml` read first; during a backoff
+    or while closed it starts now. `backup-by-hand` and `backup-before-publish`: passed to the backup service as
+    root-owned kind-only files in the `requests` volume (`/var/lib/ratw/backup-requests`), one waiting of each kind and 4
+    in all at most. **The backup service itself is M5's**: until it exists nothing consumes them. `share`: logged as not
+    built yet (M9). `first-editor-used`: above.
+  - **The loop** (`Supervisor`, a half-second step): helpers (the agent, the Mind, the Editor's helper) are checked
+    whatever the server is doing, and nothing ends the container but a stop. Exit 75: started again at once; 76: polls
+    `admin.server_state` (as `ratw_game`) every `RATW_MAINTENANCE_POLL` seconds (5) and starts on `running` or
+    `host_only`; any other exit: 5 s, 30 s, 2 minutes, then every 10 minutes, afresh after 10 minutes' running. Each
+    exit (not a stop) goes to `exits.json` (`{exits: [{at, code, lines}]}`, the last 10, each with the server's last 20
+    lines: its output now passes through the entrypoint into the container log), for M3's owner view.
+  - **`world.toml` re-read before each start:** a broken one now says so and waits with the backoff (the Editor stays
+    up) instead of ending the container; the registry and `settings.json` are rewritten; the Mind is started again when
+    its config changed, the agent when its settings did, the Editor's helper when `[editor]` did (new table: `enabled`,
+    `owner`, `new_devices`, checked like the rest; `enabled = false`: no helper at all). The AI key's character check
+    moved into `read_settings`, so it can't end the loop either.
+  - **The official refusal:** no certificate, owner or helper once `ever-official` exists or `central.json` says
+    official; a helper already running is stopped when central first says so. The shared-progress credential (doc 77,
+    section 6) isn't built, so central's word is the only sign.
+  - **The Mind's ledger moved** to `logs/mind/npc-mind-calls.jsonl` (`logs/mind` the Mind's user's, 0700); `logs/` is
+    now sticky (1770), so the server's user can't rename the directory or the others' files. Nothing else in the
+    container read the ledger (M3 checked). Root reads it on from where it stopped, once a minute, into
+    `mind-month.json` (`{month, tokens, calls, failed, prompt_tokens, completion_tokens, cached_tokens, models}`).
+  - **Root never follows what a child left:** every file root writes is a new one (`O_EXCL|O_NOFOLLOW`, random name,
+    `fchown`/`fchmod`) renamed into place; a link or odd file where root expects a directory or log is moved aside.
+    This also closes an older hole: the server's user could replace `logs/npc-voices.jsonl` with a link, and the next
+    start's `chown` (which followed links) would have handed the target to it; likewise the root-opened agent and Mind
+    logs.
+  - **Compose:** the Editor publish `"${RATW_EDITOR_BIND:-127.0.0.1}:${RATW_EDITOR_PORT:-17789}:17789"` (IPv4; `docker
+    port` showed `127.0.0.1:17798` only), `RATW_EDITOR_PORT` and `RATW_EDITOR_PEERS` passed in, the `admin` and
+    `requests` volumes, `./manage:/var/ratw/manage`, and `logging: *logging` (json-file, 10m, 5 files) on all three
+    services. Section 3.2's `::` suggestion is dropped (D1).
+  - **README:** the Editor's first sign-in, lost passwords, opening the port (`RATW_EDITOR_BIND=0.0.0.0`, at home and
+    from outside), the VPS/`ufw` warning, turning it off, the "ports are not available" fix (`RATW_EDITOR_PORT=17800`),
+    both ports in the second-world recipe (`RATW_EDITOR_PORT=17790`), `down -v` losing the Editor's key; the guide's
+    matching parts (sections 4, 5's `[editor]` and `.env`, 11-15, 17's rows), and the backup commands now carry the
+    `admin` volume. **Empty `manage/` and `backups/`:** nothing made the host's folder before, so
+    `Package/host_folder.py --out DIR [--zip FILE]` does (the four files and both folders; the zip keeps them as folder
+    entries).
+  - **Found on the way:** the guide's restore step 3, `docker compose start` after `create`, leaves the database
+    without its start-up script under Compose 5.1.1 (the `configs:` content isn't put in), so it never comes up; now
+    `docker compose up -d --force-recreate`.
+  - **End to end** (rootless Docker 29.3.1, Compose 5.1.1; DEV exported read-only as a throwaway package, staged and
+    built as `ratw-world-s2stage-m2b`, a host folder from `host_folder.py`, project `s2stage-m2b`, ports 7798/17798,
+    `upnp` not started): first start made the certificate, the helper answered before the import, then the owner
+    (`host-jmef`) and both files in `manage/` (the host user's); a small Python client pinned the key from the Editor
+    code and signed in over TLS 1.3 (`openssl s_client -tls1_2` refused), was held to the password change, changed it,
+    signed in with it, the one-time password then refused; the file said "Used"; a `restart` request (dropped as
+    `ratw-admin`, as the helper does) restarted the server with a save; a backup request reached the `requests` volume,
+    the second waited; `share` logged; `kill -SEGV` on the server twice: restarted after 5 s, then a 30 s wait, the
+    helper (same pid) answering hello throughout; `new_devices = "approve"` and a restart restarted the helper (new pid,
+    same fingerprint) and then refused a typed password from a new device; maintenance (`UPDATE admin.server_state`,
+    `NOTIFY`): exit 76, the hello said `maintenance`, and opening it started the server within 2 s; as `ratw-server` the
+    key, settings, `first-editor.txt`, the ledger, `requests/` and `STATE/central` were all refused, and `ratw-admin`
+    couldn't read `npc-voices.jsonl`; `ratw-editor list` and `fingerprint` worked through `exec`; `central.json` written
+    `official` (as `ratw`, where the agent writes) stopped the helper, and a recreated container started none;
+    `--force-recreate` (after removing `ever-official` by hand) kept the fingerprint and made no new owner; `enabled =
+    false` and a restart: nothing on the port; `docker compose stop` exited 0 in under a second. On the final image:
+    `down -v` and a fresh start (hello `importing` 20, then `ready`), a new owner signed in; the guide's backup (with
+    `admin`) and restore brought back the same fingerprint and owner; a crash wrote `exits.json` (code -11, the server's
+    last 9 lines); `settings.json`'s `folder` was the host path; the new image under the **old** `compose.yaml` warned
+    about the admin volume and the manage folder and named `ratw-editor reset host-2zx3`. Everything removed afterwards
+    (containers, volumes, network, images, `/tmp`); Docker's build cache is left.
+  - **Tests** (one run; no C++ changed, so no ctest): `Package/test_package.py` **45** (the 20 before and 25 new:
+    `[editor]` and the re-read; sticky logs and the ledger's place; links never followed; the helper's settings, copies
+    and environment; `first-editor.txt` written, logged by name and emptied; requests by name; backups passed once;
+    central and `ever-official`; the helper restarted on `[editor]`; the Mind's month; the loop's backoff, release,
+    5 s poll, restart and hard stop, re-read and stop; the host folder and zip; compose's publish, volumes and log
+    limits; the Dockerfile; the README), `tools/test_world_admin.py` **80**, `tools/test_world_package.py` **48** (1
+    skipped, as before; `RATW_TEST_SERVER` from `r2-editor/build-m1`, `RATW_TEST_DB_TAG=s2stage_`,
+    `RATW_TEST_KEY_PREFIX=s2stage`; its summary was lost to buffered output on the first invocation and read on a
+    second): all OK. `test_package.py` ran again after M3's names were matched (45 OK). No `s2stage` database, `/tmp`
+    file, container, volume or image left. PROD, old DEV and DEV untouched (DEV only read, for the export).
+  - **For later phases.** M5: the `backup` service reads `/var/lib/ratw/backup-requests` (kind-only files, root's) and
+    the reset scripts replace the `ratw-editor reset NAME` fallback in the "Used" text; after a restore,
+    `first-editor.txt` may name an account the restored world lacks. M8: the fallback to the previous map belongs in
+    `Supervisor.exited` (the exits are already recorded). M9: `share` is a no-op in `Supervisor.act`.
+
 - **2026-11-12: M0a measured** (branch `r2-editor-m0a`, from `ridgemere2` at 65a9f0e). Read-only: no game server, no
   PROD, no paid calls; DEV (`ratw_ridgemere2`) only read. The spike is kept in `Desktop/spike-editor/` (a throwaway
   Tauri app, the stand-in world `world_stub.py`, `docker_peer.sh`, `windows_facts.ps1`, `measure_replies.py`); the

@@ -1,9 +1,11 @@
 # A Ridgemere world (Docs/Design/77, section 8). Edit world.toml, then: docker compose up -d   (README.md)
 #
-#   world  the world server, the NPC Mind (only with an AI key) and the world agent, in one container: the server
+#   world  the world server, the NPC Mind (only with an AI key), the world agent and the Editor's helper (your
+#          world's own tools, reached from the game's EDITOR button: README.md), in one container: the server
 #          sends dialogue only to 127.0.0.1, and the agent reads the server's /status there. Its entrypoint runs as
 #          root, reads this folder and the passwords, and starts each child as a user of its own (the server as one
-#          that can reach none of the secrets: Package/entrypoint.py).
+#          that can reach none of the secrets: Package/entrypoint.py). It writes two files into manage/ here: your
+#          first Editor account (first-editor.txt) and the Editor certificate's fingerprint (editor-certificate.txt).
 #   db     PostgreSQL 18, the world's database, on the internal network only (no port on this computer).
 #   upnp   asks the router (UPnP) to forward the game port to this computer while the world runs, as world.toml's
 #          [network] upnp says. On the host's own network, since the world's isn't the router's: only that reaches the
@@ -14,7 +16,9 @@
 # Settings in a .env file beside this one (optional): RATW_PORT (default 7788; players and central reach the world on
 # it, and it is the same port inside the container), RATW_HOST_TOKEN (the host token from central's Host page, if not
 # in a token file named by world.toml), RATW_IMAGE (the world image), COMPOSE_PROJECT_NAME (a second world on this
-# computer: see below).
+# computer: see below), RATW_EDITOR_PORT (the Editor port, default 17789) and RATW_EDITOR_BIND (where it answers:
+# 127.0.0.1, this computer only, by default; 0.0.0.0 to manage your world from another computer: README.md). After
+# changing .env: docker compose up -d.
 #
 # Memory: the world saves itself by forking, and the copy holds every page the world touches while it writes (up to
 # twice the world's memory for a moment). If you give the world a memory limit, allow for that (uncomment mem_limit:
@@ -22,18 +26,30 @@
 #
 # The project's name (its containers and volumes, the world's database among them) is ratw-world wherever this folder
 # is, so moving or renaming the folder keeps the world. A second world on the same computer, in a folder of its own,
-# needs a name and a port of its own in that folder's .env (COMPOSE_PROJECT_NAME=ratw-second, RATW_PORT=7789), or it
-# takes over this world's containers and database (README.md).
+# needs a name and ports of its own in that folder's .env (COMPOSE_PROJECT_NAME=ratw-second, RATW_PORT=7789,
+# RATW_EDITOR_PORT=17790), or it takes over this world's containers and database (README.md).
+#
+# Every service's log is kept to 5 files of 10 MB at most, so logs can't fill the disk.
 name: ratw-world
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "5"
 services:
   world:
     image: ${RATW_IMAGE:-ratw-world:latest}
     restart: unless-stopped
+    logging: *logging
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "${RATW_PORT:-7788}:${RATW_PORT:-7788}"
+      # The Editor port (Docs/Design/78, 3.2): TLS only, the world's own key. Only this computer reaches it until
+      # .env says RATW_EDITOR_BIND=0.0.0.0 (IPv4: every address of this computer). If `up` says "ports are not
+      # available", another program (or Windows) holds 17789: put RATW_EDITOR_PORT=17800 (or another) in .env.
+      - "${RATW_EDITOR_BIND:-127.0.0.1}:${RATW_EDITOR_PORT:-17789}:17789"
     # Root only to read the host's files and start the children as their own users (and stop them).
     cap_drop: [ALL]
     cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, KILL, SETGID, SETUID]
@@ -44,17 +60,33 @@ services:
       RATW_DB_HOST: db
       RATW_DB_PORT: "5432"
       RATW_PACKAGE_IMPORT: ${RATW_PACKAGE_IMPORT:-}
+      # The Editor port as this computer sees it (for manage/editor-certificate.txt and first-editor.txt), and how
+      # the Editor tells callers apart (auto: Docker's gateway and loopback count as one unknown caller).
+      RATW_EDITOR_PORT: ${RATW_EDITOR_PORT:-17789}
+      RATW_EDITOR_PEERS: ${RATW_EDITOR_PEERS:-auto}
+      # This folder's path on this computer, shown to the Editor's owner (where the backups are). Empty from PowerShell:
+      # the world then reads it from its own mounts.
+      RATW_HOST_FOLDER: ${PWD:-}
     volumes:
       # This folder (world.toml, and a token or key file it names), read-only, where only root can open it.
       - ./:/etc/ratw/host:ro
       - secrets:/run/ratw-secrets:ro
       - logs:/var/lib/ratw/logs
+      # The Editor's own: its key and certificate (kept across updates, so clients never see a new key), its copies
+      # of the settings, its requests. Root and the Editor's user only.
+      - admin:/var/lib/ratw/admin
+      # Requests passed to the backup service (backups by hand, before a map is published).
+      - requests:/var/lib/ratw/backup-requests
+      # manage/ in this folder: the world writes first-editor.txt and editor-certificate.txt here (only root inside
+      # the container can).
+      - ./manage:/var/ratw/manage
     # The world saves on SIGTERM before it stops: give it time.
     stop_grace_period: 90s
     # mem_limit: 2g
   upnp:
     image: ${RATW_IMAGE:-ratw-world:latest}
     restart: unless-stopped
+    logging: *logging
     network_mode: host
     entrypoint: ["python3", "/opt/ratw/tools/world_upnp.py", "hold", "--port", "${RATW_PORT:-7788}",
                  "--settings", "/etc/ratw-upnp/world.toml"]
@@ -79,6 +111,7 @@ services:
   db:
     image: postgres:18
     restart: unless-stopped
+    logging: *logging
     # Makes the database passwords on the first start (kept in the secrets volume, root's alone: the world's
     # entrypoint reads them as root and gives each child only its own), then runs PostgreSQL's own entrypoint.
     entrypoint: ["bash", "/ratw/db-start.sh"]
@@ -103,6 +136,8 @@ volumes:
   pgdata:
   secrets:
   logs:
+  admin:
+  requests:
 configs:
   db-start:
     content: |
