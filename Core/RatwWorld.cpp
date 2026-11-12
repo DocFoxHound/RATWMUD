@@ -3473,6 +3473,15 @@ Result World::arriveResident(const ResidentRequest& request)
     return welcomeResident(request, e.id);
 }
 
+std::vector<std::pair<std::string, CountryWords>> World::mendCountryWords()
+{
+    auto mended = society_.mendCountryWords();
+    for (const auto& [id, words] : mended)
+        if (const auto e = entities_.find(id); e != entities_.end())
+            e->second.description = words.description;
+    return mended;
+}
+
 Result World::welcomeResident(const ResidentRequest& request, const std::string& id)
 {
     if (!entity(id))

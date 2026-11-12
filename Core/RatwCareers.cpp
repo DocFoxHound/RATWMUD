@@ -407,6 +407,10 @@ bool Society::arrive(const ResidentRequest& request)
         r.route.clear();
         r.wander.clear();
         r.serve = r.role == "merchant" ? request.serve : Spot{};
+        if (!request.description.empty())           // (Their words for the post and home: countryWords.)
+            r.description = request.description;
+        if (!request.greeting.empty())
+            r.greeting = request.greeting;
         if (!addResident(r, 0))                     // (Its authored purse stays its record's: a shop's float, below.)
             return false;
         authored_.unplaced.erase(std::find_if(authored_.unplaced.begin(), authored_.unplaced.end(),

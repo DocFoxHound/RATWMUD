@@ -53,7 +53,107 @@ int wordsIn(const std::string& label, const std::vector<std::string>& words)
         n += !w.empty() && l.find(w) != std::string::npos;
     return n;
 }
+std::string trimmed(std::string s)
+{
+    const auto first = s.find_first_not_of(" \t");
+    if (first == std::string::npos)
+        return {};
+    return s.substr(first, s.find_last_not_of(" \t") - first + 1);
+}
+// "keeps" -> "keep", "fishes" -> "fish", "carries" -> "carry": a third-person verb's own form.
+std::string plainVerb(const std::string& verb)
+{
+    const auto ends = [&](const std::string& tail) {
+        return verb.size() > tail.size() && verb.compare(verb.size() - tail.size(), tail.size(), tail) == 0;
+    };
+    if (ends("ies"))
+        return verb.substr(0, verb.size() - 3) + "y";
+    if (ends("shes") || ends("ches") || ends("sses") || ends("xes") || ends("zes") || verb == "goes")
+        return verb.substr(0, verb.size() - 2);
+    return verb.substr(0, verb.size() - 1);
+}
 } // namespace
+
+bool oldCountryGreeting(const std::string& greeting)
+{
+    const auto at = greeting.find("I am ");
+    const std::string tail = " today.";
+    return at != std::string::npos && (at == 0 || greeting[at - 1] == ' ') && greeting.size() > tail.size() &&
+           greeting.compare(greeting.size() - tail.size(), tail.size(), tail) == 0;
+}
+
+CountryWords countryWords(const std::string& description, const std::string& greeting, int age, const std::string& label,
+                          bool merchant, bool one, const std::string& home)
+{
+    // The look: the old description up to the first clause after "wolf" ("A small, quick grey timber wolf with a
+    // missing claw"), its job clause dropped.
+    std::string look;
+    auto wolf = description.find(" wolf");
+    wolf = wolf == std::string::npos ? 0 : wolf;
+    for (const char* feature : {"pale, nearly silver eyes"})   // (The old map's one feature with a comma of its own.)
+        if (const auto at = description.find(feature, wolf); at != std::string::npos)
+            wolf = at + std::string(feature).size();
+    if (const auto comma = description.find(", ", wolf); comma != std::string::npos)
+        look = description.substr(0, comma);
+    else
+        look = description.substr(0, description.find('.'));
+    look = trimmed(look);
+    if (look.empty())
+        look = "A wolf of the Country";
+    // The salute: the old greeting before its "I am ...", less what fits no country post.
+    std::string salute = greeting;
+    if (const auto at = salute.find("I am "); at != std::string::npos && (at == 0 || salute[at - 1] == ' '))
+        salute = salute.substr(0, at);
+    else if (const auto end = salute.find_first_of(".!?"); end != std::string::npos)
+        salute = salute.substr(0, end + 1);         // (Of another shape: its first sentence.)
+    std::vector<std::string> unfit{"We do not buy at the door.", "You have found the best in the city."};
+    if (!merchant)
+        unfit.insert(unfit.end(), {"Looking, or buying?", "Ho! Come in, come in!"});
+    for (const auto& phrase : unfit)
+        for (auto at = salute.find(phrase); at != std::string::npos; at = salute.find(phrase))
+            salute.erase(at, phrase.size());
+    salute = trimmed(salute);
+    if (salute.empty() || salute.find("city") != std::string::npos || salute.find("I am") != std::string::npos)
+        salute = "Good day to you.";
+    CountryWords w;
+    const auto where = home.empty() ? std::string("in the Country") : home;
+    if (label == "-" || label.empty())
+    {
+        // A keeper's family: no post of their own.
+        if (age < 16)
+        {
+            w.label = "plays about the farm";
+            w.description = look + ", a child of the house, who lives " + where + ".";
+            w.greeting = salute + " I live " + where + " with my family.";
+        }
+        else
+        {
+            w.label = "keeps the house";
+            w.description = look + ", who keeps the house for the family and lives " + where + ".";
+            w.greeting = salute + " I keep the house for my family, and I live " + where + ".";
+        }
+        return w;
+    }
+    w.label = label;
+    const auto space = label.find(' ');
+    const auto first = label.substr(0, space);
+    const bool verb = space != std::string::npos && first.size() > 2 && first.back() == 's' && first[first.size() - 2] != 's';
+    if (verb)
+    {
+        // "keeps pigs at Oakhurst": "who keeps pigs at Oakhurst", "I keep pigs at Oakhurst".
+        w.description = look + ", who " + label + " and lives " + where + ".";
+        w.greeting = salute + " I " + plainVerb(first) + label.substr(space) + ", and I live " + where + ".";
+    }
+    else
+    {
+        // "farmhand at Longmead": "a farmhand at Longmead"; the only one there, "the carter at Larkfield".
+        const bool vowel = std::string("aeiou").find(char(std::tolower(static_cast<unsigned char>(label[0])))) != std::string::npos;
+        const std::string article = one ? "the" : vowel ? "an" : "a";
+        w.description = look + ", " + article + " " + label + ", who lives " + where + ".";
+        w.greeting = salute + " I am " + article + " " + label + ", and I live " + where + ".";
+    }
+    return w;
+}
 
 int Society::farmOfPost(const Position& p, bool* keeper) const
 {
@@ -86,6 +186,108 @@ std::string Society::reachOf(const Position& p) const
         if (!place.works && place.community == "ridgemere" && !place.workplaces.empty())
             return place.workplaces[0].area;      // (The city's farms' work room, as staffFarms judges the city's homes.)
     return p.work.cell;
+}
+
+bool Society::countryPost(const std::string& title, const std::string& workCell, bool* one) const
+{
+    if (one)
+        *one = false;
+    if (title.empty() || title == "-")
+        return false;
+    if (const auto at = farmWorkplace_.find(workCell); at != farmWorkplace_.end() && at->second < farms_.size())
+    {
+        const auto& f = farms_[at->second];
+        if (title == farmLabel(f, 0))
+        {
+            if (one)
+                *one = true;
+            return true;
+        }
+        if (title == farmLabel(f, 1) || title == farmLabel(f, 2))
+            return true;
+    }
+    const auto& people = items::farmPeople();
+    for (const auto& c : people.communities)
+    {
+        std::vector<const items::MarketPlace*> places;
+        for (const auto& m : c.market)
+            places.push_back(&m);
+        places.push_back(&c.stand);
+        for (const auto* m : places)
+            if (m->area == workCell)
+                for (const auto& [post, count] : m->posts)
+                    if (const auto rule = people.market.find(post);
+                        rule != people.market.end() && filled(rule->second.label, "{name}", m->name) == title)
+                    {
+                        if (one)
+                            *one = count == 1;
+                        return true;
+                    }
+    }
+    return false;
+}
+
+std::string Society::countryHome(const std::string& homeCell, const std::string& workCell) const
+{
+    const auto& people = items::farmPeople();
+    for (const auto& f : people.farms)
+        if (!f.works && !f.home.area.empty() && f.home.area == homeCell)
+        {
+            for (const auto& w : f.workplaces)
+                if (w.area == workCell)
+                    return "at the farmhouse";
+            return "at the farmhouse at " + f.steading;
+        }
+    for (const auto& c : people.communities)
+    {
+        for (const auto& flat : c.flats)
+            if (flat.area == homeCell)
+            {
+                if (!workCell.empty() && (flat.area == workCell + "_flat" ||
+                                          std::any_of(c.market.begin(), c.market.end(), [&](const items::MarketPlace& m) {
+                                              return m.area == workCell && m.name == flat.forName;
+                                          })))
+                    return "upstairs";
+                return flat.forName.empty() ? "in " + c.name : "over " + flat.forName;
+            }
+        for (const auto& h : c.homes)
+            if (h.area == homeCell)
+                return "in " + c.name;
+    }
+    return "in the city";
+}
+
+std::vector<std::pair<std::string, CountryWords>> Society::mendCountryWords()
+{
+    std::vector<std::pair<std::string, CountryWords>> out;
+    if (roster_ != Roster::Authored)
+        return out;
+    const auto& people = items::farmPeople();
+    for (auto& r : authored_.residents)
+    {
+        if (!oldCountryGreeting(r.greeting))
+            continue;
+        bool one = false;
+        const bool idle = r.workLabel == "-" || r.workLabel.empty();
+        if (idle)
+        {
+            if (std::none_of(people.farms.begin(), people.farms.end(),
+                             [&](const items::FarmPlace& f) { return !f.works && f.home.area == r.home.cell; }))
+                continue;                           // (Only a keeper's family at a farmhouse.)
+        }
+        else if (!countryPost(r.workLabel, r.work.cell, &one))
+            continue;
+        auto words = countryWords(r.description, r.greeting, r.age, idle ? "-" : r.workLabel, r.role == "merchant", one,
+                                  countryHome(r.home.cell, idle ? std::string() : r.work.cell));
+        r.description = words.description;
+        r.greeting = words.greeting;
+        if (!idle)
+            words.label = r.workLabel;
+        out.emplace_back(r.id, std::move(words));
+    }
+    if (!out.empty())
+        ++rosterRevision_;
+    return out;
 }
 
 std::string Society::farmLabel(const FarmNow& f, int post) const
@@ -264,6 +466,16 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         q.endHour = end;
         q.purse = std::max<std::int64_t>(0, purse);
         q.farm = farm;
+        // Their words for the post and home they come to (not the old map's: "I am raises sheep at Fleecemoor today").
+        bool one = false;
+        countryPost(label, q.work.cell, &one);
+        if (label != "-" && role == "merchant")
+            one = true;
+        const auto words = countryWords(r.description, r.greeting, r.age, label, role == "merchant", one,
+                                        countryHome(home.cell, label == "-" ? std::string() : q.work.cell));
+        q.description = words.description;
+        q.greeting = words.greeting;
+        q.idleLabel = label == "-" ? words.label : std::string();
         requests_.push_back(q);
         if (const auto t = tradeOf.find(r.id); t != tradeOf.end())
             if (const auto list = poolOf.find(t->second); list != poolOf.end())

@@ -673,6 +673,19 @@ bool Game::loadFromDatabase(std::string& problem)
         note("warning", "RATW will check for Dungeon Master actions once a minute: " + listen);
     if (!options_.scratch && !worldDb_.listen("ratw_maintenance", listen))
         note("warning", "RATW will check for maintenance once a minute: " + listen);
+    // The Country folk the farms' rule placed before their words were written for their posts (doc 79, Progress, "The
+    // Country folk's words"): mended, and (but on a scratch server, which writes nothing) their rows with them.
+    if (const auto mended = world_.mendCountryWords(); !mended.empty())
+    {
+        int written = 0;
+        for (const auto& [id, words] : mended)
+            if (!options_.scratch &&
+                worldDb_.exec("UPDATE live.npcs SET description = $3, greeting = $4, work_label = $5 WHERE world_id = $1 AND id = $2",
+                              {liveWorldId_, id, words.description, words.greeting, words.label}).ok)
+                ++written;
+        note("info", "RATW_RESIDENT words mended for " + std::to_string(mended.size()) + " of the Country folk (" +
+                         std::to_string(written) + " rows written)");
+    }
     loadVoices();                                   // (Each resident's voice, the dialects, figures: doc 62, phase 6.)
     note("info", "RATW_DATABASE_WORLD_LOADED database=" + options_.database + " world=" + liveWorldId_ + " build=" +
                      std::to_string(loadedBuild_) + " release=" + (row[2] ? *row[2] : "0") + " cells=" + std::to_string(world_.cells().size()) +
@@ -1722,15 +1735,19 @@ void Game::makeResidents(std::size_t most)
             const auto placed = worldDb_.exec(
                 "UPDATE live.npcs SET home_area = $3, home_x = $4::integer, home_y = $5::integer, evening_area = $3, "
                 "evening_x = $4::integer, evening_y = $5::integer, work_area = CASE WHEN $6 = '' THEN NULL ELSE $6 END, "
-                "work_x = $7::integer, work_y = $8::integer, work_label = CASE WHEN $6 = '' THEN work_label ELSE $9 END, "
+                "work_x = $7::integer, work_y = $8::integer, work_label = CASE WHEN $9 = '' THEN work_label ELSE $9 END, "
                 "role = CASE WHEN $6 = '' THEN 'civilian' ELSE $10 END, paid = ($6 <> ''), "
                 "hours_start = CASE WHEN $6 = '' THEN hours_start ELSE $11::real END, "
-                "hours_end = CASE WHEN $6 = '' THEN hours_end ELSE $12::real END, route_id = NULL "
+                "hours_end = CASE WHEN $6 = '' THEN hours_end ELSE $12::real END, route_id = NULL, "
+                // (Their words for the post and home: countryWords. A keeper's family's label an idle one.)
+                "description = CASE WHEN $13 = '' THEN description ELSE $13 END, "
+                "greeting = CASE WHEN $14 = '' THEN greeting ELSE $14 END "
                 "WHERE world_id = $1 AND id = $2 AND home_area IS NULL RETURNING id",
                 {liveWorldId_, request.templateId, request.home.cell, at(request.home.x), at(request.home.y),
                  post ? request.work.cell : std::string(), post ? at(request.work.x) : std::string("0"),
-                 post ? at(request.work.y) : std::string("0"), request.workLabel, request.role == "merchant" ? "merchant" : "civilian",
-                 std::to_string(request.startHour), std::to_string(request.endHour)});
+                 post ? at(request.work.y) : std::string("0"), post ? request.workLabel : request.idleLabel,
+                 request.role == "merchant" ? "merchant" : "civilian",
+                 std::to_string(request.startHour), std::to_string(request.endHour), request.description, request.greeting});
             if (!placed.ok || placed.rows.size() != 1)
             {
                 note("warning", "RATW_RESIDENT " + request.name + " could not be placed at a farm: " +

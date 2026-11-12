@@ -39,6 +39,12 @@ void expect(bool condition, const std::string& message)
         throw std::runtime_error(message);
 }
 
+std::string lowered(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return char(std::tolower(c)); });
+    return s;
+}
+
 ResidentSpec person(const std::string& id, const std::string& label, int age, const std::string& home = {},
                     const std::string& sex = "female", std::int64_t purse = 30)
 {
@@ -51,6 +57,10 @@ ResidentSpec person(const std::string& id, const std::string& label, int age, co
     r.purse = purse;
     r.meals = 0;
     r.appearance.sex = sex;
+    // (The old map's words, as tools/worldgen/residents.py wrote them: "<salute> I am <work label> today.")
+    r.description = "A small, quick grey timber wolf with a missing claw, " + label + ".";
+    r.greeting = std::string(id.size() % 2 ? "You have found the best in the city." : "Looking, or buying? We do not buy at the door.") +
+                 " I am " + label + " today.";
     if (!home.empty())
     {
         r.home = r.work = r.evening = {home, 2.5, 2.5};
@@ -792,6 +802,167 @@ void aDayAlreadyTended()
     z.s.tendCareers(2.5, z.world);
     expect(first > 0 && z.s.takeRequests().empty(), "a day tended by this world itself is tended once");
 }
+// The Country folk's words (doc 79, Progress, "The Country folk's words"; the user, 2026-11-12): one placed by the farms'
+// rule greets and is described for the post and home they came to, in the world's voice, not as the old map's people
+// were ("I am raises sheep at Fleecemoor today", the keeper of The Felled Cedar "I am keeps The Snow Chapel today"); and
+// those placed before (DEV's 206) are mended once, by the same words, a greeting written by hand left alone.
+void theirWords()
+{
+    // The words themselves.
+    const auto keeper = countryWords("A lean dun red wolf with a missing claw, the innkeeper of Larkfield.",
+                                     "Ho! Come in, come in! I am keeps The Singing Lark today.", 40, "keeps the taproom at The Sheaf",
+                                     true, true, "upstairs");
+    expect(keeper.description == "A lean dun red wolf with a missing claw, who keeps the taproom at The Sheaf and lives upstairs." &&
+               keeper.greeting == "Ho! Come in, come in! I keep the taproom at The Sheaf, and I live upstairs." &&
+               keeper.label == "keeps the taproom at The Sheaf",
+           "an innkeeper's words: " + keeper.description + " / " + keeper.greeting);
+    const auto hand = countryWords("A small, quick cream timber wolf with a white blaze down the chest, works the fields at Hayward.",
+                                   "You have found the best in the city. I am works the fields at Hayward today.", 30,
+                                   "farmhand at Larkholm", false, false, "in Southmeadow");
+    expect(hand.description == "A small, quick cream timber wolf with a white blaze down the chest, a farmhand at Larkholm, who lives in Southmeadow." &&
+               hand.greeting == "Good day to you. I am a farmhand at Larkholm, and I live in Southmeadow.",
+           "a hand's words: " + hand.description + " / " + hand.greeting);
+    const auto pale = countryWords("A long-limbed brown timber wolf with pale, nearly silver eyes, works the fields at Hayward.",
+                                   "Good day to you. I am works the fields at Hayward today.", 30, "farmhand at Longmead", false, false,
+                                   "in Larkfield");
+    expect(pale.description == "A long-limbed brown timber wolf with pale, nearly silver eyes, a farmhand at Longmead, who lives in Larkfield.",
+           "a look with a comma of its own kept whole: " + pale.description);
+    const auto carter = countryWords("A rangy cream arctic wolf with a white blaze down the chest, raises sheep at Fleecemoor.",
+                                     "Looking, or buying? We do not buy at the door. I am raises sheep at Fleecemoor today.", 35,
+                                     "carter at Frosthollow", false, true, "in Frosthollow");
+    expect(carter.greeting == "Good day to you. I am the carter at Frosthollow, and I live in Frosthollow.", "a carter's: " + carter.greeting);
+    const auto fisher = countryWords("A wolf.", "Mm. Morning. Or whatever it is. I am fishes the waters off Glasswater today.", 30,
+                                     "fishes at Upper Mere", false, true, "at the farmhouse");
+    expect(fisher.greeting == "Mm. Morning. Or whatever it is. I fish at Upper Mere, and I live at the farmhouse.", "a verb's own form: " + fisher.greeting);
+    const auto pup = countryWords("A stocky black red wolf with a grey-frosted muzzle, a child of the house.",
+                                  "Good day to you. I am plays about the town today.", 9, "-", false, false, "at the farmhouse at Longmead Farm");
+    expect(pup.label == "plays about the farm" &&
+               pup.greeting == "Good day to you. I live at the farmhouse at Longmead Farm with my family." &&
+               pup.description == "A stocky black red wolf with a grey-frosted muzzle, a child of the house, who lives at the farmhouse at Longmead Farm.",
+           "a keeper's child's: " + pup.description + " / " + pup.greeting);
+    expect(countryWords("", "", 50, "-", false, false, "at the farmhouse").label == "keeps the house", "a keeper's grown family keeps the house");
+    expect(oldCountryGreeting("Yes? I am digs clay at Clayholt today.") && !oldCountryGreeting(hand.greeting) &&
+               !oldCountryGreeting("Good day. I keep pigs, and I am glad of it."),
+           "the old shape known, the new and a hand-written one not");
+
+    // At placement: every one's words for their post and home.
+    Fixture x;
+    build(x);
+    auto& s = x.s;
+    run(s, 1 - .5 / 24, 1 + .5 / 24);
+    s.tendCareers(2, x.world);
+    const auto requests = s.takeRequests();
+    std::map<std::string, ResidentSpec> before;
+    std::map<std::string, CountryWords> placedWords;
+    bool sawVerb = false, sawNoun = false, sawFamily = false, sawUpstairs = false, sawFarmhouse = false, sawCity = false;
+    for (const auto& q : requests)
+    {
+        const auto* old = s.unplaced(q.templateId);
+        expect(old != nullptr, "from the pool: " + q.templateId);
+        before[q.templateId] = *old;
+        const auto who = q.templateId + " (" + q.workLabel + "): " + q.description + " / " + q.greeting;
+        expect(!q.description.empty() && !q.greeting.empty(), "words written: " + who);
+        expect(q.description.rfind("A small, quick grey timber wolf with a missing claw, ", 0) == 0 && q.description.back() == '.',
+               "the look kept, the old job clause gone: " + who);
+        expect(!oldCountryGreeting(q.greeting) && q.greeting.find(" today") == std::string::npos &&
+                   q.greeting.find(" I am " + old->workLabel) == std::string::npos,
+               "not the old shape: " + who);
+        expect(q.greeting.find("best in the city") == std::string::npos && q.greeting.find("buy at the door") == std::string::npos &&
+                   (q.role == "merchant" || q.greeting.find("Looking, or buying?") == std::string::npos),
+               "no salute unfit for a country post: " + who);
+        for (const auto* text : {&q.description, &q.greeting})
+            expect(lowered(*text).find("dog") == std::string::npos && text->find(" his ") == std::string::npos &&
+                       text->find(" her ") == std::string::npos && text->find("  ") == std::string::npos,
+                   "no dogs, no pronouns, no gaps: " + who);
+        // No stale place: the old label's place ("at Fleecemoor", "off Greywater", "the town") unless the new post's.
+        for (const auto* sep : {" at ", " off ", " about "})
+            if (const auto at = old->workLabel.rfind(sep); at != std::string::npos)
+            {
+                const auto place = old->workLabel.substr(at + std::string(sep).size());
+                if (q.workLabel.find(place) == std::string::npos && q.idleLabel.find(place) == std::string::npos)
+                    expect(q.description.find(place) == std::string::npos && q.greeting.find(place) == std::string::npos,
+                           "the old place gone (" + place + "): " + who);
+            }
+        if (q.workLabel == "-")
+        {
+            sawFamily = true;
+            expect(q.idleLabel == (q.age < 16 ? "plays about the farm" : "keeps the house") &&
+                       q.greeting.find("my family") != std::string::npos && q.description.find("at the farmhouse at ") != std::string::npos,
+                   "a keeper's family's: " + who + " [" + q.idleLabel + "]");
+        }
+        else
+        {
+            expect(q.idleLabel.empty() && q.description.find(q.workLabel) != std::string::npos, "the post in the description: " + who);
+            const auto first = q.workLabel.substr(0, q.workLabel.find(' '));
+            if (first.back() == 's')
+            {
+                sawVerb = true;
+                expect(q.description.find(", who " + q.workLabel + " and lives ") != std::string::npos &&
+                           q.greeting.find(" I " + first.substr(0, first.size() - 1)) != std::string::npos,
+                       "a verb's post: " + who);
+            }
+            else
+            {
+                sawNoun = true;
+                expect(q.greeting.find(" I am a " + q.workLabel + ", and I live ") != std::string::npos ||
+                           q.greeting.find(" I am the " + q.workLabel + ", and I live ") != std::string::npos,
+                       "a noun's post, with its article: " + who);
+            }
+            if (q.workLabel.rfind("farms ", 0) == 0 || q.workLabel.rfind("shopkeeper at ", 0) == 0 || q.workLabel.rfind("carter at Larkfield", 0) == 0)
+                expect(q.greeting.find(q.workLabel.rfind("farms ", 0) == 0 ? "I live at the farmhouse." : q.workLabel.rfind("shop", 0) == 0 ? "I am the shopkeeper" : "I am the carter") !=
+                           std::string::npos,
+                       "a keeper at home at the farmhouse, the only shopkeeper and carter 'the': " + who);
+        }
+        sawUpstairs = sawUpstairs || q.greeting.find("I live upstairs.") != std::string::npos;
+        sawFarmhouse = sawFarmhouse || q.greeting.find("I live at the farmhouse.") != std::string::npos;
+        sawCity = sawCity || q.greeting.find("I live in the city.") != std::string::npos;
+    }
+    expect(sawVerb && sawNoun && sawFamily && sawUpstairs && sawFarmhouse && sawCity,
+           "posts of both kinds, a family, a keeper upstairs and at the farmhouse, a hand of a city farm");
+    for (const auto& q : requests)
+        if (s.arrive(q))
+        {
+            s.welcome(q, q.templateId);
+            const auto* r = s.spec(q.templateId);
+            expect(r && r->description == q.description && r->greeting == q.greeting, "the resident has their words: " + q.templateId);
+            placedWords[q.templateId] = {q.description, q.greeting, q.workLabel == "-" ? q.idleLabel : q.workLabel};
+        }
+
+    // Placed before the words were written (DEV's): the same world, its Country folk with their old words, mended once
+    // to the same words; a greeting written by hand, and a city resident's of the old shape, left alone.
+    auto roster = s.authored();
+    int old = 0;
+    std::string byHand;
+    for (auto& r : roster.residents)
+        if (const auto b = before.find(r.id); b != before.end())
+        {
+            r.description = b->second.description;
+            r.greeting = b->second.greeting;
+            if (byHand.empty() && r.workLabel != "-")
+            {
+                byHand = r.id;
+                r.greeting = "Mind the gate, it sticks.";   // (A DM's line since.)
+            }
+            else
+                ++old;
+        }
+        else if (r.id == "porter_0")
+            r.greeting = "Good day to you. I am carrying from the wharf today.";
+    Society again{Roster::None};
+    again.configure(roster);
+    const auto mended = again.mendCountryWords();
+    expect(int(mended.size()) == old, "every one of the old words mended, no other: " + std::to_string(mended.size()) + " of " + std::to_string(old));
+    for (const auto& [id, words] : mended)
+    {
+        const auto& want = placedWords.at(id);
+        expect(words.description == want.description && words.greeting == want.greeting && words.label == want.label,
+               "mended to the words placement writes: " + id + ": " + words.greeting + " / " + want.greeting);
+        expect(again.spec(id)->greeting == want.greeting && again.spec(id)->description == want.description, "and in the world: " + id);
+    }
+    expect(again.spec(byHand)->greeting == "Mind the gate, it sticks.", "a greeting written by hand left alone");
+    expect(again.spec("porter_0")->greeting == "Good day to you. I am carrying from the wharf today.", "the city's left alone");
+    expect(again.mendCountryWords().empty(), "once");
+}
 } // namespace
 
 int main()
@@ -809,6 +980,7 @@ int main()
         everyAreaAtOnce();
         theCarters();
         aDayAlreadyTended();
+        theirWords();
     }
     catch (const std::exception& error)
     {

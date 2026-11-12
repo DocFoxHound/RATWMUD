@@ -214,7 +214,29 @@ struct ResidentRequest
     Spot work, serve;                             // (serve: a market keeper's customers' spot, found by the world.)
     std::string workLabel, role, farm;
     double startHour = 8, endHour = 17;
+    // "farm": their words for the post and home they come to (countryWords), so a farm's hand no longer greets as the
+    // old map's people did ("I am raises sheep at Fleecemoor today"): the row's and the world's description and
+    // greeting; `idleLabel` the row's label of one placed with no post (a keeper's family: "keeps the house", "plays
+    // about the farm"). Empty: the words as they were.
+    std::string description, greeting, idleLabel;
 };
+// The Country folk's words (doc 79, Progress, "The Country folk's words"; the user, 2026-11-12): a description and a
+// greeting for one placed by the farms' rule, written from their post and home in the world's voice: the look kept from
+// their old description (up to the first clause after "wolf"), the salute kept from their old greeting where it fits a
+// country post (none of the city's boasts, no shop's call but a keeper's, never "we do not buy at the door"), then the
+// post and the home. `label` is the post's ("-" for one placed with no post), `one` whether it is the only such post
+// there ("the carter at Larkfield", "a farmhand at Longmead"), `home` a phrase ("in Coldwater", "at the farmhouse",
+// "at the farmhouse at Longmead Farm", "upstairs", "over Larkfield Stores", "in the city"). No pronouns, so nothing
+// rests on sex. `label` of the result: the row's label (the post's, or an idle one for a family member).
+struct CountryWords
+{
+    std::string description, greeting, label;
+};
+CountryWords countryWords(const std::string& description, const std::string& greeting, int age, const std::string& label,
+                          bool merchant, bool one, const std::string& home);
+// The old map's generated greeting ("<salute> I am <work label> today."): the words a placed Country resident is
+// mended from (Society::mendCountryWords); a greeting written by hand since is not of this shape and is left alone.
+bool oldCountryGreeting(const std::string& greeting);
 // A child's sex, half and half, from the couple's key and the day (the world's own deterministic mix, no clock or
 // global random state): "male" or "female".
 std::string birthSex(const std::string& couple, std::int64_t day);
@@ -1187,6 +1209,17 @@ class Society
     // out of doors (doc 72) its crew's home ground: its community's (a home there), or the city's for a works whose crew
     // lives in Ridgemere (a city farm's work room), as staffFarms places them.
     std::string reachOf(const Position& p) const;
+    // A Country post (a farm's or works' post, a community market's or its square's: items::farmPeople()) by its title
+    // and work room, and whether it is the only one of its title there (`one`: a farm's keeper, a market post of one);
+    // and where one placed by the farms' rule lives, as countryWords says it ("in Coldwater", "at the farmhouse" of
+    // their own farm, "upstairs" over their own business, "in the city"...).
+    bool countryPost(const std::string& title, const std::string& workCell, bool* one = nullptr) const;
+    std::string countryHome(const std::string& homeCell, const std::string& workCell) const;
+    // The Country folk's words mended (the old map's greeting and description, oldCountryGreeting, of everyone at a
+    // Country post or living at a farmhouse with no post: those the farms' rule placed before it wrote their words):
+    // their specs rewritten by countryWords; returned (id, description, greeting, the row's label) for the host to
+    // write. Once: a greeting mended is no longer of the old shape.
+    std::vector<std::pair<std::string, CountryWords>> mendCountryWords();
     const std::map<std::string, int>& farmPlaced() const { return farmPlaced_; }
     // The world's economy settings replaced while it runs (the DM's economy.sync): its rules and seasons at once; the
     // treasury's and stores' starting amounts are kept (they were spent long ago).

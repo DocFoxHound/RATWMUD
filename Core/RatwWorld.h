@@ -1001,6 +1001,9 @@ class World
     // there, its purse from the Country's account (Society::arrive), and the post it came for (welcomeResident). The
     // same on the game server (which first gives its live.npcs row the home) and in a world from files.
     Result arriveResident(const ResidentRequest& request);
+    // The Country folk placed before their words were written for their posts (Society::mendCountryWords): their
+    // descriptions and greetings mended in the world, returned for the host to write to their rows.
+    std::vector<std::pair<std::string, CountryWords>> mendCountryWords();
     // A child the host could not make: owed again (Society::birthFailed), so births still follow deaths one for one.
     void residentNotMade(const ResidentRequest& request) { society_.birthFailed(request); }
     // A world without a database (a world from files, tests) makes the residents asked for itself: a child like its

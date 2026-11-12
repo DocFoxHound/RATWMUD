@@ -130,6 +130,11 @@ class FarmPeopleOnAServer(unittest.TestCase):
     is Greyfen's longhouse (its work room) and cottage (its farmhouse): the farms' rule sends for the NPC as the farm's
     keeper (Core/RatwFarmPeople.cpp), and the server carries it out (Game::makeResidents)."""
     WHO = 'hob_wheatley'
+    # The old map's words (tools/worldgen/residents.py), and those for the post and home he comes to (countryWords).
+    OLD = ('A broad-shouldered dun red wolf with a scar across the nose, works the fields at Wheatley.',
+           'You have found the best in the city. I am works the fields at Wheatley today.')
+    NEW = ('A broad-shouldered dun red wolf with a scar across the nose, who farms Longmead and lives at the farmhouse.',
+           'Good day to you. I farm Longmead, and I live at the farmhouse.')
 
     @classmethod
     def setUpClass(cls):
@@ -143,7 +148,7 @@ class FarmPeopleOnAServer(unittest.TestCase):
         world = greyfen()
         hob = copy.deepcopy(next(p for p in world['people'] if p['role'] != 'merchant' and p['role'] != 'guard'))
         hob.update(id=cls.WHO, name='Hob Wheatley', role='civilian', workLabel='works the fields at Wheatley', age=41,
-                   home=None, work=None, evening=None, route='', paid=False)
+                   home=None, work=None, evening=None, route='', paid=False, description=cls.OLD[0], greeting=cls.OLD[1])
         world['people'].append(hob)
         with W.connect('dev', 'editor', dbname=cls.name) as editor:
             S.save_roster(editor, S.load_roster(editor))
@@ -179,6 +184,12 @@ class FarmPeopleOnAServer(unittest.TestCase):
         with W.connect('dev', 'owner', dbname=self.name) as owner:
             return owner.execute("SELECT home_area, work_area, work_label, role, paid FROM live.npcs WHERE id = %s", (self.WHO,)).fetchone()
 
+    def words(self, set_to=None):
+        with W.connect('dev', 'owner', dbname=self.name) as owner:
+            if set_to:
+                owner.execute("UPDATE live.npcs SET description = %s, greeting = %s WHERE id = %s", (*set_to, self.WHO))
+            return owner.execute("SELECT description, greeting FROM live.npcs WHERE id = %s", (self.WHO,)).fetchone()
+
     def test_1_a_scratch_server_places_them_for_itself_and_writes_no_row(self):
         self.assertEqual(self.row()[:2], (None, None), 'unplaced in the database')
         scratch = self.start(8, '--scratch')
@@ -199,12 +210,37 @@ class FarmPeopleOnAServer(unittest.TestCase):
         home, work, label, role, paid = self.row()
         self.assertEqual((home, work, role, paid), ('cottage', 'longhouse', 'civilian', True), 'the row has the home and the post')
         self.assertTrue(label and label != 'works the fields at Wheatley', f'and the farm\'s label: {label}')
+        self.assertEqual(self.words(), self.NEW, 'and his words for the post and home, not the old map\'s')
         again = self.start(8)
         out, _ = again.communicate(timeout=120)
         self.assertEqual(again.returncode, 0, out)
         self.assertIn('residents=12', out, 'a restart loads them as a resident')
-        self.assertNotIn('RATW_RESIDENT', out, 'and sends for nobody')
+        self.assertNotIn('RATW_RESIDENT', out, 'and sends for nobody, nor mends his words again')
         self.assertEqual(self.row()[:2], ('cottage', 'longhouse'))
+
+    def test_3_words_placed_before_are_mended_once(self):
+        # (Placed by a server from before the words: DEV's 206.) A scratch server mends them for itself only.
+        self.words(set_to=self.OLD)
+        scratch = self.start(8, '--scratch')
+        out, _ = scratch.communicate(timeout=120)
+        self.assertEqual(scratch.returncode, 0, out)
+        self.assertIn('RATW_RESIDENT words mended for 1 of the Country folk (0 rows written)', out)
+        self.assertEqual(self.words(), self.OLD, 'a scratch server writes nothing')
+        first = self.start(8)
+        out, _ = first.communicate(timeout=120)
+        self.assertEqual(first.returncode, 0, out)
+        self.assertIn('RATW_RESIDENT words mended for 1 of the Country folk (1 rows written)', out)
+        self.assertEqual(self.words(), self.NEW, 'the real server writes the row')
+        again = self.start(8)
+        out, _ = again.communicate(timeout=120)
+        self.assertEqual(again.returncode, 0, out)
+        self.assertNotIn('words mended', out, 'once')
+        # A greeting written by hand since is never mended.
+        self.words(set_to=(self.NEW[0], 'Mind the gate, it sticks. I am glad of the work.'))
+        last = self.start(8)
+        out, _ = last.communicate(timeout=120)
+        self.assertNotIn('words mended', out, 'a greeting written by hand left alone')
+        self.assertEqual(self.words()[1], 'Mind the gate, it sticks. I am glad of the work.')
 
 
 if __name__ == '__main__':
