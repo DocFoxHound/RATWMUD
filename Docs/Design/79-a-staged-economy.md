@@ -1570,6 +1570,12 @@ later migration applied to PROD (doc 78's, say) carries 0061 with it. PROD there
 this code (D19 (a): with the new map). When PROD gets this is D19. On a world's first boot after the change, a one-line log notes "economy staged (doc 79)". Doc 78's
 build order is D22.
 
+**The PROD apply plan** (Phase 11): `Docs/Design/79-prod-apply.md`, for the user when the user chooses: where PROD stands
+(0054, the old map, closed for maintenance since 2026-10-31, and no players' data in `game.*`), the three parts that go
+together (this code, 0055-0061, DEV's map imported with `--replace-map`), the ordered steps with backups and a rehearsal
+on copies (`tools/test_migration_0061.py` with `RATW_MIGRATE_COPIES=ratw_prod`), what happens to players' purses, escrow
+and goods, the world package, the checks after and the way back.
+
 ## 15. Performance
 
 **Today:**
@@ -1610,6 +1616,13 @@ across the roster, and a third of them now stand in the Country, where few are n
 places load in one tick as its people leave home at 7:00 (the 6-8 worst: 41 ms of streaming at tick 12112, every run).
 The same code on build 70, the players where they were, is inside the noise of the old table in every window. The worst
 at most 25 ms bar is not met in 6-8 on build 71 until the surroundings' loads are spread over ticks: open.)*
+*(Phase 11, 2026-11-12, Progress, "Phase 11 (gates) built": measured on build 73 against the bigger world's baseline,
+two runs each and 23-25 four; mean, p99, p99 after the first minute, worst after the first minute, ms: 6-8 1.44, 4.47,
+4.20, 16.3; 17-19 1.22, 4.21, 3.92, 19.5; 23-25 1.11, 4.29, 3.72, 14.3; 6-8 `--ship-day` 1.46, 4.61, 4.32, 15.9; 6-8
+`--wagon-day` 1.53, 4.74, 4.51, 15.6; 17-19 `--wagon-day` 1.30, 4.56, 4.28, 19.2. **Every bar holds:** the worst at
+most 25 ms once the realm's cells round a place stopped loading six in one tick (`World::stream`, its causes in that
+entry); the 30-day `--coarse-ticks` soak flat at 2.64 s a game day, and every watched size bounded once the staged
+wallets' kinds were (`kindsMost`).)*
 - `world_check --simulate 6 8`, `--simulate 17 19` (the old peak and shop hours) and `--simulate 23 25` (the nightly
   set and the day's turn), all at `--players 20`;
 - p99 at most 5.3 ms and worst at most 25 ms in every window; 17-19 and 23-25 no slower than 6-8 beyond noise;
@@ -1725,6 +1738,8 @@ All seeded and offline; each ctest takes seconds. No balance runs.
 13. **`world_check --stage FILE`:** one JSON line per game day: per band its share, hungry share and thefts; per
     market its price index, Times and cause; wagons, ships and events seen; faucets and sinks. For reading a soak,
     never for balancing. A script of about 100 lines replaces `econ_report`, `econ_weeks` and `people_summary`.
+    *(Built in Phase 11: `world_check --stage FILE`, with the sizes a soak watches on each line, and
+    `tools/stage_report.py FILE`, which flags any that keeps growing; `sim_fast_tests` and `tools/test_stage_report.py`.)*
 
 ## 17. What goes
 
@@ -4995,6 +5010,189 @@ Each has a recommendation. "Go with the recommendations" takes them all.
   - **Fixed on the way:** the week's farm carts were listed by their farm's id ("grain_farm_1"): the view's
     `placeNames` (the steadings and works by name), the tab's market names fall back on it; `test_dungeon_master`
     `test_the_prosperity_view`.
+- **2026-11-12: Phase 11 (gates) built** (on `r2-staged`, from `7747e37`; the user: "go ahead and proceed with phase 11",
+  the go-ahead for the soak the plan asked for). DEV build 73 exported read only (`/tmp`, 2,425 files) for every run;
+  no real server, no paid model call; PROD only read (one read-only session) and copied by `pg_dump` into throwaway
+  `s2stage` databases; old DEV untouched.
+  - **`world_check --stage FILE`** (16.13): one JSON line a run day: the day, date and wall time, the slider and its
+    cause; per band its households, share, hungry share and the thefts its people did; per market its households by
+    band, hungry, short and on the dole, its thefts, its **price index** (`Society::priceIndex`: the geometric mean of
+    the price factor, season, region, Times and pressure, over the goods its shops set out, the district at 1) with how
+    many goods sit at the clamp's dear and cheap ends, and its Times, score and cause; the world's events seen that day
+    by kind (wagons posted, out, in, home, robbed, held up; carts; ships posted, in, sailed, stormbound, lost; events
+    rolled, begun, over; thefts, warrants) and what is committed now; the faucets and sinks of the day by reason; whether
+    real money balances; and **the sizes a soak watches** (the Board's every part and its saved bytes; caravans, camps,
+    contracts; the staged maps: bands, holds, lean, escrow sources, status events, faucet days, welcomes, quarantine,
+    dole, business; the accounts, the staged ones' kinds and pieces by prefix, escrow, the ledger; the society's saved
+    bytes; crime's records; bonds and rumours). Reading only: the run's digest is the same with it.
+    `tools/stage_report.py FILE` reads it (about 100 lines: the days at a glance, each market over the run, every size
+    first, largest and last, and "GROWING" for one whose last quarter's least is over its first quarter's largest).
+    Tests: `sim_fast_tests` (the harness on the small town with `--stage`: three lines, the shares summing to one, each
+    market's index inside the clamp, no faucet without a player, real money balanced, the sizes there, the digest
+    unchanged), `tools/test_stage_report.py` (3).
+  - **The soak** (`world_check EXPORT --simulate 6 726 --players 0 --no-check --coarse-ticks --stage FILE`, 30 game days,
+    Release, 8 threads, alone on the machine): **80 s of wall, 2.64 s a game day** (first 2.89, least 2.22, most 3.23,
+    last 2.54; days 1-10 2.51 on average, 11-20 2.79, 21-30 2.62): flat. 773 residents to 778, 318 households, eight
+    markets. And a **Game-based soak** for the journal and the checkpoints (`ratw_server --world-export EXPORT --save
+    FILE --speed max`, a file world from the same export: its journal in `FILE.journal`, its checkpoints in `FILE`, each
+    read as it landed by a watcher outside the repository): 30 game days in 97 s of wall, 29 checkpoints (about one a
+    game day).
+    - **One grew without bound, fixed: the staged wallets' goods.** The households' everyday buys (Phase 6's `shops`)
+      left a piece of each ware in a resident's wallet; the nightly trim held each kind to the band's `goodsMost` but
+      never the number of kinds, and a thing worn not at all: the residents' wallets went from 1,401 kinds to 3,457 in
+      ten days and on (8,343 staged kinds in all by day 30, 2,734 at the start), the society's saved bytes 622 KB to
+      727 KB. Now `status.json`'s rows have `kindsMost` (destitute 3, poor 6, comfortable 12, rich 24): at the trim, the
+      kinds of goods other than food, worn things and a maker's pieces past it go, the fewest-held first; and a thing
+      worn is held to the band's count of it, one at least (straw hats a day piled up). `life_status_tests`
+      `holdsLeanAndTheTrim` (twenty-odd kinds and thirty straw hats in a wallet: the band's kinds kept, the most-held,
+      the hats to the band's count, the sword kept). After it, the same 30 days: the staged kinds 2,734 to 6,787 (the
+      residents' 1,401 to 5,468, levelling: +287 in days 21-25, +132 in days 26-30), the society's bytes 622 KB to 708 KB,
+      700-708 KB from day 21; in the Game's soak its saved society 627 KB to 713 KB, 708 KB at day 17
+      and 713 KB at day 30. A 90-day run of the same (taken while builds ran: its wall times aren't a measure): the
+      residents' kinds 5,995 at day 51, 6,286 at 71, 6,638 at 90, slowing toward their bound (about 774 × the band's
+      kinds, its food and its worn things).
+    - **Everything else stays bounded,** over 30 days (first, largest, last; the 90-day run where 30 days can't show the
+      level):
+
+      | What | Over 30 days | Bounded by |
+      |---|---|---|
+      | Board: pressure cells | 31, 166, 159 (90 days: 150-172) | markets × goods |
+      | Board: recent ripples, big moves | 0, 0, 0; 0, 1, 1 | `RecentKept` 50; `MovesKept`, 28 days |
+      | Board: events, ships | 31, 49, 39; 2, 6, 6 | this week and the next; `ShipsAPort` |
+      | Board: committed departures | 30, 39, 37 | two days posted ahead |
+      | Board: troubles, news | 0, 9, 2; 0, 8, 8 | a week; a market each |
+      | Board: back rooms, brought-in | 1, 234, 234; 0, 165, 165 | tills × imported goods; markets × goods |
+      | Board's saved bytes | 28 KB, 54 KB, 53 KB | its parts |
+      | Caravans on the road | 4, 7, 4 | carters |
+      | Bandit camps | 10, 25, 25 (90 days: 33 from day 71) | one a wild cell on the roads |
+      | Contracts | 11, 79, 79 (90 days: 82 at day 41, 52 at day 90) | done and expired kept 30 days |
+      | Staged: bands, business | 318; 127 | households; shops |
+      | Staged: holds, lean, escrow sources | 0, 4, 0; 0, 2, 0; 11, 23, 18 | their days; open escrow |
+      | Staged: status events | 0, 6, 6 (90 days: 7-11) | `eventDays` 28 |
+      | Staged: faucet days, welcomes, quarantine | 0 | 28 days; a week; (no player) |
+      | Staged: dole | 0, 69, 66 | a week |
+      | Staged maps' saved bytes | 43 KB, 45 KB, 45 KB | |
+      | Accounts | 2,112, 2,131, 2,128 | residents, shops, escrow |
+      | The ledger | 128 | 128 kept |
+      | Crime: incidents | 1, 38, 38 (90 days: 116) | `IncidentsKept` 400 |
+      | Rumours held | 50, 5,586, 5,586 (90 days: 9,731 at day 61, 9,326 at 90) | 30 a character |
+      | Bonds | 5,292, 16,391, 16,391 (90 days: 22,000-23,700 from day 51) | about 150 a character |
+      | The journal (the Game's soak) | at most 162 KB between checkpoints, the same from day 9 on | trimmed at each checkpoint |
+      | Notices and letters (the Game's `people.documents`) | 33, 46, 46 | posted and taken down |
+      | The save (the Game's soak) | 2.2 MB to 6.7 MB: bonds 3.3 MB (level from day 20), rumours 1.5 MB (rising to their level) | |
+
+      (The Game's soak after the fix, run while a build ran: 40 checkpoints in 152 s, the same sizes; its journal at most
+      166 KB between checkpoints.)
+
+      Pushed pressure, the day's net positions, sold totals and the take allowances stay empty with no player.
+  - **What the `--stage` lines show over the month** (findings, not tuning; Phase 10's tuning was not played):
+    - *Prosperity* stays at 0 with no cause all month: nothing moves the slider without the DM (the soak is the slider's
+      middle only).
+    - *The bands* hold still: destitute 2.8-3.8% of the 318 households, poor 23-28%, comfortable 59-63%, rich 10-11%.
+      Hungry (a member at 60 or more) only among the destitute: 0-2 of 9-12 households on a day (a share of 0 to 0.17);
+      never anyone else. Short of food at most 12 households on a day; the Restday dole up to 69.
+    - *Thefts*: 6 done and 32 tried in the month, almost all at Ridgemere (33 of 38); by band poor 23, comfortable 13,
+      destitute 2, rich 0; **none from a till** (the hungry thief's food from a till never fired). T8's "too few to
+      witness" stands.
+    - *Prices*: every market's index between 0.95 and 1.01 all month (Ridgemere 0.956-0.967): spring's season and the
+      far region's factor under 1, a poor harvest's goods dearer. At most five of Ridgemere's 152 goods at the clamp's
+      cheap end and one at the dear end on any day; no market pinned.
+    - *Times*: ordinary most days; lean for some days at Larkfield (7), Ridgemere (6), Frosthollow and Coldwater (5);
+      the causes "a poor harvest" (123 market-days) and "the wagons robbed on the road" (72).
+    - *Wagons*: 184 posted, 161 out, 147 in at the far end, 161 home; 14 raids (one in 11.5), 8 carters robbed, 6 hurt;
+      7 delayed, 6 held up, 6 overdue; none cancelled, lost or dropped. Every day but the first (posted two days ahead)
+      sends 1-9; days 8 and 9 only 1 and 2.
+    - *Carts*: 516 out, 512 in, 70 stocking Marketday's stalls; none missed.
+    - *Ships*: 12 posted, 8 in and 8 sailed (days 4, 13, 15, 20, 26, 27, 29, 30: one in the first twelve days), none
+      stormbound or lost.
+    - *Events*: 96 rolled, 68 begun, 66 over: 0-5 a day across the eight markets.
+    - *Camps*: 22 gathered, 18 starved out, 1 cleared by the Watch, 4 patrols.
+    - *Faucets and sinks*: none (no player); real money balanced every day.
+    - *The world's event log*: 35,208 "economy" events in the month (about 1,170 a day), the staged provisions; trimmed
+      (`EventsKept`), but most of what a host's event table would get.
+  - **The perf gate's windows** (`world_check EXPORT --simulate A B --players 20 --no-check`, Release, 8 threads, alone
+    on the machine, one run after another; two runs each, 23-25 four; mean, p99, p99 after the first minute, worst after
+    the first minute, ms; against section 15's bigger-world baseline, build 71):
+
+    | Window | Baseline (build 71) | This code, build 73 | Against the baseline | This commit less the streaming change, the same session |
+    |---|---|---|---|---|
+    | 6-8 | 1.44, 4.35, 4.15, 50.7 | **1.44, 4.47, 4.20, 16.3** | -0.00, +0.12, +0.05 | 1.45, 4.46, 4.20, 49.6 |
+    | 17-19 | 1.21, 4.14, 3.88, 22.4 | **1.22, 4.21, 3.92, 19.5** | +0.01, +0.07, +0.04 | 1.23, 4.17, 3.92, 22.1 |
+    | 23-25 | 1.10, 4.27, 3.72, 20.9 | **1.11, 4.29, 3.72, 14.3** (1.10-1.12) | +0.01, +0.02, +0.00 | 1.10, 4.26, 3.67, 20.2 (1.08-1.12) |
+    | 6-8 `--ship-day` | 1.45, 4.41, 4.21, 51.5 | **1.46, 4.61, 4.32, 15.9** | +0.01, +0.20, +0.11 | 1.46, 4.47, 4.24, 50.8 |
+    | 6-8 `--wagon-day` | 1.54, 4.68, 4.49, 22.9 | **1.53, 4.74, 4.51, 15.6** | -0.01, +0.06, +0.02 | 1.54, 4.73, 4.52, 21.9 |
+    | 17-19 `--wagon-day` | 1.29, 4.47, 4.24, 19.0 | **1.30, 4.56, 4.28, 19.2** | +0.01, +0.09, +0.04 | 1.30, 4.48, 4.17, 19.0 |
+
+    (The last column: 6-8 and its `--ship-day` from `7747e37`'s own `world_check`; the others from this code with the
+    streaming change's first try, which spread only the houses and measured as before, on the same export earlier the
+    same hour.) **Section 15's bars hold in every window:** p99 at
+    most 5.3 ms (4.21-4.74), the worst after the first minute at most 25 ms (14.3-19.5: 6-8 failed it at 50.7 before), and
+    17-19 and 23-25 no slower than 6-8. Means are inside the noise everywhere (±0.01). **Over the noise, with their
+    causes:** 6-8's p99 +0.12 against build 71's baseline is the day's, not the code's: `7747e37`'s own binary on the same
+    export, in the same hour, measures +0.11. 6-8 `--ship-day`'s p99 +0.14 (+0.08 after the first minute) against the
+    code before the streaming change is the streaming change's price: the realm's cells that loaded six in one tick now
+    load one a tick, so about thirty more ticks a window each carry one cell's 6.5 ms above the p99 (ticks that loaded
+    a place, 6-8: 101 and 104 before, 133 and 134 after). The first minute's worst (62-81 ms, tick 10: twenty players
+    arriving at once and their cells loading, the warm-up the bar leaves out) is as before.
+
+  - **The streaming hitch.** **Fixed** (`World::stream`). Its cause was not the houses: a trace of every load in the tick (taken
+    out again) showed tick 12112 (7:00:05) loading six of the realm's 256 x 256 cells round the villages whose people
+    had just stepped onto their greens, each the seam of a cell someone stood in and so loaded at once, 6.3-6.7 ms each
+    (1.27 MB of text and 1,024 seams a cell); the houses round a green cost 0.01-0.05 ms each. Now only the cell over an
+    edge from someone onstage standing within `SeamNear` (16) tiles of it loads at once (with the cells stood in, the
+    ones a player sees into and the spawn, as before); the other surroundings are loaded ahead of need at most
+    `StreamTilesATick` (256 x 256) tiles and `StreamLoadsATick` (8) places a tick, one place at least, the rest the next
+    ticks (a crossing loads the place it goes into anyway: `transition`). Before and after, two runs each, one after
+    another on the same export (this commit less the change, then with it): 6-8's worst tick after the first minute
+    **48.8 and 50.4 ms to 16.3 and 16.2 ms** (tick 12112's 39.7 and 41.1 ms of streaming; the worst now tick 15310, 13.6
+    and 13.4 ms of streaming: two cells near someone at an edge); mean 1.445 and 1.457 to 1.424 and 1.454 ms, p99 after
+    the first minute 4.14 and 4.26 to 4.13 and 4.26. The first minute's worst (62-68 ms, tick 10: every player arriving
+    at once) is the warm-up, outside the bar, unchanged. Tests: `stream_tests` `aVillageComesInAFewATick` (twenty houses
+    round a green: the cell and its seams at once, the houses at most eight a tick over three ticks or more; a house not
+    yet loaded loads as its door is gone through) and `theRealmsCellsComeInOneATick` (five 256 x 256 cells in a row:
+    from the middle one, the cells beside it one a tick; ten tiles from its east edge, the cell east of it at once).
+    With the old rule (`SeamNear` past any cell's size) the second fails: both at once.
+  - **The PROD apply plan:** `Docs/Design/79-prod-apply.md` (section 14 points to it). PROD (read only) is at 0054 on
+    the old map, closed for maintenance since 2026-10-31, and holds **no players' data at all** (`game.*` empty: no
+    checkpoint, character, account, journal or event); the live server plays DEV. The plan: the code, 0055-0061 and DEV's
+    map with `--replace-map`, always together; backups of PROD and DEV; the rehearsal on copies; `world_db.py migrate
+    --db prod` (a bare `migrate` would take PROD too); the import's plan read and its NPC decisions; serving PROD;
+    what happens to purses (to the penny), escrow (kept), dead accounts (dropped), unknown goods (quarantined), wagons
+    out (home empty, their letters and escorts open again), players in places the new map hasn't (the spawn), camps and
+    lodgings (by hand); the package made again; the checks after; the way back (the dump; 0061's down script before the
+    import). **The copy test:** `RATW_MIGRATE_COPIES=ratw_ridgemere2,ratw_prod RATW_TEST_SERVER=build-p11/ratw_server
+    python3 tools/test_migration_0061.py`: 11 tests, OK. PROD's copy (0054) took 0055-0061 one at a time, its
+    `live.economy` row byte for byte, its manifest read, and a scratch server of this code loaded it ("world=upper_accord
+    build=3 release=3 cells=689 residents=1083", "economy staged (doc 79)") and listened; the storm wasn't tried there
+    (PROD's own maintenance flag, copied). DEV's copy: already at 0061 since Phase 9, so nothing more to apply (the test
+    assumed DEV at 0060 and failed on that alone the first time; it now expects 0061 for a copy at 0060 and nothing for
+    one at 0061), loaded (build 73, 773 residents), a ship stormed through the DM's act and kept across a crash. No
+    `s2stage` database left.
+  - **Tests:** a fresh Release build (`build-p11`, from empty; 128 warnings: 127 as before and one shadowed name of
+    this work's, renamed after the run and `life_status_tests` run again), the full ctest once with the database (the
+    main checkout's `Database/.env` sourced; `RATW_TEST_DB_TAG=s2stage_`, `RATW_TEST_KEY_PREFIX=s2stage`; `pg_client` on
+    a throwaway `ratw_test_s2stage_p11`, dropped after): **89 of 89 passed**, none skipped. `stream_tests` 301 checks,
+    `life_status_tests` 2,248, `sim_fast_tests` 137 (95 before). `tools/test_stage_report.py` 3, `test_economy_contract.py`
+    14 (`status.json` changed), `test_migration_0061.py` 11 with the copies (above). No `s2stage` database or `/tmp` file
+    left; `artifacts/screenshots/dev-console-fight.png` untouched.
+  - **Where doc 79 stands.** Slices 1 and 2 are built, merged and checked (Phases 0-8 with Review A); Phase 9 (the DM,
+    Atlas and the database, migration 0061) is complete and on DEV; Phase 10 was prepared (the play guide, a first
+    tuning pass) and then skipped by the user, so its tuning list stands unplayed; DEV has wagons and farms with the
+    Country's people (builds 71-73); Phase 11's gates are done here. Left: **Review B** (before PROD, if the user wants
+    it), **PROD's move** (D19, by the plan above, when the user chooses), and, as lists for whoever picks them up:
+    - Phase 10's tuning list, unplayed (the depth groups, half-lives, shares, meals and short days, the beggars' counts,
+      `theftBase`, storm odds, `shipsPerWeek`, the ship goods, `events.perWeek` and the kinds' weights, the Times on
+      staples, the bands' Times shift, the talk draws by ear);
+    - the Country folk's events that don't fit a village (a broken mill wheel at Saltwell, orchard blight at Frosthollow:
+      a kind's `needs` could name a mill or an orchard);
+    - raids at about one wagon in seven to twelve (a community's carter drives alone: no Watch in the Country;
+      `campStrengthMost`, or guards there);
+    - carters waiting on the green (no carters' yard in the communities: a generator step and a realm write);
+    - the soak's findings above: no till theft in a month, the slider never moving without the DM, the "economy" events'
+      volume; a 90-day run's slow rise of the wallets' kinds toward their bound;
+    - the first minute's worst tick (62-81 ms as twenty players arrive at once: the warm-up, outside the bar) and the
+      cost of one of the realm's cells to load (6.5 ms: 65,536 tiles, 1.27 MB of text, 1,024 seams; not profiled further),
+      both untouched.
 
 ## Review (2026-11-08)
 
