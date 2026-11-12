@@ -1038,6 +1038,9 @@ class DungeonMaster:
         week = {'wagons': week_wagons(board, roads, events, today), 'ships': week_ships(board, today),
                 'events': week_events(board, today)}
         players = player_money(staged, {**names, **holder_names}, today)
+        # (A farm cart's farm by its name, as the markets are: the wagons table read "grain_farm_1".)
+        farms = place_names()
+        places = {p: farms[p] for w in week['wagons'] for p in (w['from'], w['to']) if p in farms and p not in market_names}
         thefts = sum(1 for e in events if e[0] in THEFT_EVENTS and today is not None and int(e[6]) == today)
         realm = accounts.get('treasury') if isinstance(accounts.get('treasury'), dict) else None
         goods = {pr.get('good') for pr in (report or {}).get('pressures', []) or [] if isinstance(pr, dict)}
@@ -1045,7 +1048,7 @@ class DungeonMaster:
         goods |= {g for row in week['ships'] + week['wagons'] for g in row['goods']}
         return {'target': target, 'writtenAt': written.isoformat() if written else None, 'gameDay': day, 'stale': stale,
                 'report': in_force(report, day), 'towns': towns, 'treasury': _whole_or_zero(realm.get('cash')) if realm else None,
-                'week': week, 'players': players, 'thefts': thefts,
+                'week': week, 'placeNames': places, 'players': players, 'thefts': thefts,
                 'goodNames': {g: item_names[g] for g in goods if g in item_names},
                 'word': street_word(report, week, market_names, item_names),
                 'log': economy_log(audit, events, board, everyone, today, done)}
@@ -2339,6 +2342,23 @@ def holder_words(holder) -> str:
     """A faucet holder with no name on record, in words: "the account ada" for "acct-ada", else the key itself."""
     holder = str(holder)
     return f'the account {holder[len("acct-"):]}' if holder.startswith('acct-') and len(holder) > 5 else holder
+
+
+def place_names() -> dict:
+    """The Country's farms and works by id: their names (Data/Economy/communities.json: a farm's steading, a works'
+    name), for the week's farm carts, which set out from a farm, never a market ("Longmead Farm", not "grain_farm_1")."""
+    try:
+        data = json.loads((EC.ECONOMY_DATA / 'communities.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for f in data.get('farms') or [] if isinstance(data, dict) else []:
+        if isinstance(f, dict) and isinstance(f.get('farm'), str):
+            out[f['farm']] = f.get('steading') or f['farm']
+    for w in data.get('works') or [] if isinstance(data, dict) else []:
+        if isinstance(w, dict) and isinstance(w.get('works'), str):
+            out[w['works']] = w.get('name') or w['works']
+    return out
 
 
 def good_names() -> dict:

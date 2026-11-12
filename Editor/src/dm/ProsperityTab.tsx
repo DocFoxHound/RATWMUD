@@ -60,7 +60,8 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
 
     const report = data?.report ?? null;
     const markets = report?.markets ?? [];
-    const marketName = (id: string) => markets.find(m => m.id === id)?.name ?? id;
+    // (A farm cart's farm by its name too: placeNames, the Country's farms and works.)
+    const marketName = (id: string) => markets.find(m => m.id === id)?.name ?? data?.placeNames?.[id] ?? id;
     const good = (id: string) => data?.goodNames?.[id] ?? id;      // (A good by the catalogue's name, never its id.)
     const kinds = report?.eventKinds ?? [];
     const today = data?.gameDay === null || data?.gameDay === undefined ? null : Math.floor(data.gameDay);

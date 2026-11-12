@@ -4963,6 +4963,38 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     mill or an orchard); a wagon's manifest now and then carries forty of one good (a source's glut sent on); purpose-built
     carters' yards in the communities (a generator step and a realm write; the carters stand on the green); the hitch as a
     village's places load at once; the Country has no guards, law or beggars of its own. Nothing pushed.
+- **2026-11-12: The Country folk's words, and the DM tool on the real DEV server** (on `r2-staged`, from `1859d40`; the
+  user: "we need to get dev up to date ... dev does not need to be coddled"). A dump first:
+  `Saved/Backups/ratw_ridgemere2-before-country-words.dump`. PROD and the old DEV untouched; no paid model call.
+  - **The words** (the last entry's first item left for the user). `countryWords` (`Core/RatwFarmPeople.cpp`) writes a
+    placed Country resident's description and greeting from the new post and home: the look kept from the old
+    description, the salute kept where it fits a country post (no "best in the city", no shop's call but a keeper's,
+    never "we do not buy at the door"), no pronouns. "Good day to you. I keep pigs at Southwood, and I live at the
+    farmhouse."; "I am the carter at Frosthollow, and I live in Frosthollow."; the keeper of The Felled Cedar "I keep the
+    taproom at The Felled Cedar, and I live upstairs."; a keeper's child "I live at the farmhouse at Longmead Farm with my
+    family." (its row's label "plays about the farm", a grown member's "keeps the house"). `staffFarms` puts them on the
+    request; `Society::arrive` and `Game::makeResidents` write them to the world and the row. Those placed before are
+    mended once at load (`Society::mendCountryWords`: a Country post, or a farmhouse with no post, and the old map's
+    "I am ... today." only; a greeting written by hand since is left alone; a scratch server mends in memory only). On
+    DEV the real server mended all 214 placed (`RATW_RESIDENT words mended for 214 of the Country folk (214 rows
+    written)`); **DEV build 72**. Tests: `farm_people_tests` `theirWords`, `test_one_server` `FarmPeopleOnAServer`
+    `test_3_words_placed_before_are_mended_once`.
+  - **The DM tool on the real DEV server** (`tools/live.sh server dev`, the studio's DM suite on DEV, its routes as the
+    browser calls them; nobody playing). Signed in with a throwaway DM account in DEV's own `dm.admins` (the studio
+    signs in through PROD's by design; it was pointed at DEV's for this, so nothing was written to PROD), removed after.
+    The slider to -40 with "a hard winter on the roads": a notice on all eight markets' boards ("Hard times ahead: a hard
+    winter on the roads.") and the crier in each square at once; the target the same day, the slider at -40 by day 6
+    (`--speed max`); every market's Times "lean" or "hard" with that cause; by day 9 Ridgemere's bands 18 / 117 / 96 / 21
+    (destitute / poor / comfortable / rich; 12 / 101 / 113 / 26 before), Coldwater's 0 / 10 / 9 / 1 (0 / 7 / 13 / 0),
+    beggars 6 at Ridgemere and 3 at Frosthollow, Ridgemere's dole 113. A storm on the Long Tide (and its rich cargo
+    cancelled: "its ship never came"), an event added at Fenshore and cancelled, Coldwater's Times nudged -20 for 7 days
+    ("the frozen ford"; over on day 7.5), Larkfield's prices reset: each applied at once, and after two restarts each
+    still in force or run out on time and each in the log once (`dm.actions` 25-30 not applied again; the checkpoint's
+    `dmActs` receipts). Then the slider back to 0 with no cause (and "now"). Screenshot:
+    `artifacts/screenshots/prosperity-tab-dev.png`.
+  - **Fixed on the way:** the week's farm carts were listed by their farm's id ("grain_farm_1"): the view's
+    `placeNames` (the steadings and works by name), the tab's market names fall back on it; `test_dungeon_master`
+    `test_the_prosperity_view`.
 
 ## Review (2026-11-08)
 

@@ -266,6 +266,7 @@ export interface ProsperityView {
     treasury?: number | null;
     /** The price board's, the ships' and the wagons' goods by the catalogue's names. */
     goodNames?: Record<string, string>;
+    placeNames?: Record<string, string>;     // The Country's farms and works by id (a farm cart's farm).
     week: {wagons: WeekWagon[]; ships: WeekShip[]; events: WeekEvent[]};
     players: {days: PlayerMoneyDay[]; holders: PlayerMoneyHolder[]};
     thefts: number;

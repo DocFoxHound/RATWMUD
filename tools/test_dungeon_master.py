@@ -1076,6 +1076,7 @@ class ProsperityTests(Fixture):
                     (40.1, 'theft', 'npc_a', 'npc_b', 'bread', 'inc-1'), (39.5, 'theft', 'npc_a', 'npc_b', '', 'inc-0'),
                     (40.2, 'caravan arrives', 'c8', 'grey', 'd5', 'from port, guarded'),
                     (40.2, 'wagon cancelled', 'd4', 'port', 'grey', 'the road is closed'),
+                    (40.25, 'cart arrives', 'k3', 'grey', 'grain_farm_1', 'from grain_farm_1'),
                     (39.0, 'times nudged', 'grey', 'grey', '', 'the frost'), (38.0, 'ship lost', 's2', 'port', 'the Tern', 'lost at sea'),
                     (2.0, 'times nudged', 'grey', 'grey', '', 'long ago')):
                 game.execute('INSERT INTO game.events (world_id, game_time, game_day, kind, actor, target, cell, item, detail) '
@@ -1096,6 +1097,9 @@ class ProsperityTests(Fixture):
         self.assertEqual(wagons['d7']['goods'], ['bread'])
         self.assertEqual((wagons['c8']['state'], wagons['c8']['from']), ('arrived', 'port'))
         self.assertEqual((wagons['d4']['state'], wagons['d4']['from']), ('cancelled', 'grey'))
+        # (A farm cart's farm by its name: the table read "grain_farm_1".)
+        self.assertEqual((wagons['k3']['state'], wagons['k3']['from']), ('arrived', 'grain_farm_1'))
+        self.assertEqual(view['placeNames'], {'grain_farm_1': 'Longmead Farm'})
         ships = {s['name']: s for s in view['week']['ships']}
         self.assertEqual((ships['the Gull']['state'], ships['the Gull']['goods']), ('due', ['salt']))
         self.assertEqual(ships['the Tern']['state'], 'lost')
