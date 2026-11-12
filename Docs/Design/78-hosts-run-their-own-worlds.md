@@ -2655,6 +2655,23 @@ M1, M2a, M2b, M3 and M4 built, and the R1 review's findings fixed (security, and
     test:editor` 1 of 1. Migration 0064 applied to DEV (`ratw_ridgemere2`, backed up first to
     `Saved/Backups/ratw_ridgemere2-before-0064.dump`).
 
+- **2026-11-12: R1 merged,** `r2-editor-rsec` then `r2-editor-rux` into `r2-editor`. Where they met: the Lanes
+  tests keep rsec's one-time-password tests under rux's `fail_sign_in` (rsec's used `fail`, which shadowed
+  `TestCase.fail`); the shell's sign-in test keeps rux's owner notices and rsec's device tokens by pin; the shell's
+  rebuilt accounts list (rsec, security 11) lets the helper's `local` through, so rux's "this computer" still shows;
+  the entrypoint keeps both imports. `Docs/Hosting.md` and `Package/README.md` quote the new prefixes (`RATW_SERVER`,
+  `RATW_AGENT`; only the package's own lines are `RATW_PACKAGE`), and the certificate check says to compare with
+  `manage/editor-certificate.txt` or `ratw-editor fingerprint`, not the log line. **The game's name** is **Run Against
+  the World** (the user, 2026-11-12; rux had made it "Runs" everywhere): the page's title, the front door, the HUD, the
+  DM page, the desktop shell (product name, window title, menu), the Editor's studio, README, VISION, PLAN, the NPC
+  prompts. Central keeps "runsagainsttheworld" among the names a world may not take, and its test.
+  - **Tests** (one run; Release `ratw_server` in `build-r1m`, `RATW_TEST_DB_TAG=s2stage_`,
+    `RATW_TEST_KEY_PREFIX=s2stage`): ctest 89 of 89 (`pg_client` on a throwaway database with all 64 migrations);
+    `test_world_admin` 101, `test_studio` 75, `test_dungeon_master` 54, `test_dm_live` 10, `test_world_package` 48 (1
+    skipped, as before; it takes its server from `RATW_TEST_SERVER`), `test_map_editor` 52; `Package/test_package.py`
+    57; `cargo test` 62; Client 161, typecheck and build; Editor 78 + 76, typecheck, build and render smoke (14
+    panels); `npm run test:editor` 1 of 1 (32 s).
+
 ## Review (2026-11-08)
 
 ### The three reviews of the Editor rewrite (2026-11-08, night)
