@@ -854,6 +854,23 @@ class Compose(unittest.TestCase):
         self.assertIn('install -d -o ratw -g ratw-server -m 1770 /var/lib/ratw/logs', docker)
         self.assertIn('EXPOSE 7788 17789', docker)
 
+    def test_the_image_ships_the_signed_editor_where_the_hosted_studio_serves_it(self):
+        """Doc 78, M4 and M3: stage.sh stages the signed Editor in app/Editor/dist (bundle.json and portraits/ inside)
+        and Data/Portraits beside it; the Dockerfile copies app/ to /opt/ratw/, so they are /opt/ratw/Editor/dist and
+        /opt/ratw/Data/Portraits, which the hosted studio (in /opt/ratw/tools, the helper's) serves behind a session."""
+        docker = (HERE / 'Dockerfile').read_text()
+        self.assertIn('\nCOPY app/ /opt/ratw/\n', docker)
+        stage = (HERE / 'stage.sh').read_text()
+        for staged in ('mkdir -p "$out/app/Editor/dist" "$out/app/Data/Portraits"', 'sign_bundle "$out/app/Editor/dist"',
+                       'mkdir -p "$out/app/Editor/dist/portraits"', 'xargs -0 cp -t "$out/app/tools"'):
+            self.assertIn(staged, stage)
+        studio_files = (ROOT / 'tools' / 'map_editor.py').read_text()     # (tools/ is /opt/ratw/tools: ROOT its parent.)
+        for served in ("ROOT = Path(__file__).resolve().parent.parent", "DIST = ROOT / 'Editor' / 'dist'",
+                       "PORTRAITS = ROOT / 'Data' / 'Portraits'"):
+            self.assertIn(served, studio_files)
+        # The helper hands the page's files to the hosted studio only with a session (world_admin.Core.app; M2a).
+        self.assertIn("core.app = hosted_studio(folder)", (ROOT / 'tools' / 'world_admin.py').read_text())
+
     def test_the_readme_says_how_to_reach_the_editor(self):
         readme = (HERE / 'README.md').read_text()
         for words in ('first-editor.txt', 'RATW_EDITOR_BIND=0.0.0.0', 'ports are not available',

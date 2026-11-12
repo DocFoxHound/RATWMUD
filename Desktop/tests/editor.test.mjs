@@ -1,12 +1,14 @@
-// The Editor end to end (Docs/Design/78, Phase M4): the real desktop client (its e2e build) against a real Editor port
-// (tools/world_admin.py, through tests/editor_world.py, on a throwaway database that is dropped afterwards), driven
-// through the main window's own screens:
+// The Editor end to end (Docs/Design/78, Phases M4 and M3): the real desktop client (its e2e build) against a real
+// Editor port (tools/world_admin.py with the real hosted studio, through tests/editor_world.py, on a throwaway database
+// with Greyfen and one player, dropped afterwards), driven through the main window's own screens:
 //   EDITOR, the first owner's Editor code, the address, signing in with the code, choosing a password (4b), the menu,
 //   the accounts panel behind the password asked again (a wrong one refused), a co-builder added and their code shown
-//   once, the DM tool in the Editor window (only signed files; no shell commands there; no token in its page; it can't
-//   leave its origin or open windows), the session ending under the window and the same account taking it up again,
-//   sign out (the window goes), a signed key rotation moving quietly, a changed key's red screen with no way to sign in
-//   until it is forgotten by name, and the pin store and device token files.
+//   once, the DM tool in the Editor window (the hosted studio behind the session: only signed files; the session the
+//   account's; the Prosperity tab and a DM act from it, queued and audited under the account and its session; no shell
+//   commands there; no token in its page; it can't leave its origin or open windows), the session ending under the
+//   window and the same account taking it up again, sign out (the window goes), a signed key rotation moving quietly, a
+//   changed key's red screen with no way to sign in until it is forgotten by name, and the pin store and device token
+//   files.
 //
 //   cd Desktop && npm run test:editor     (builds the Editor, the page and the e2e build, then this)
 //
@@ -15,7 +17,7 @@
 import {test, before, after} from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn, execFileSync} from 'node:child_process';
-import {cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync} from 'node:fs';
+import {cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
 import {createInterface} from 'node:readline';
@@ -50,6 +52,9 @@ before(async () => {
     // through RATW_EDITOR_DEV_KEY; a release build never does).
     const bundle = join(scratch, 'bundle');
     cpSync(join(root, 'Editor', 'dist'), bundle, {recursive: true});
+    // (And the page's portraits inside it, as stage.sh stages the image's Editor: /opt/ratw/Editor/dist/portraits.)
+    mkdirSync(join(bundle, 'portraits'), {recursive: true});
+    for (const f of readdirSync(join(root, 'Data', 'Portraits')).filter(f => f.endsWith('.png'))) cpSync(join(root, 'Data', 'Portraits', f), join(bundle, 'portraits', f));
     execFileSync('openssl', ['genpkey', '-algorithm', 'ed25519', '-out', join(scratch, 'key.pem')]);
     execFileSync('bash', [join(root, 'Package', 'stage.sh'), '--sign-bundle', bundle, '--release-key', join(scratch, 'key.pem')], {stdio: 'ignore'});
     const signed = JSON.parse(readFileSync(join(bundle, 'bundle.json'), 'utf8'));
@@ -182,6 +187,29 @@ test('the Editor: a code, a password, the menu, accounts, the window, a rotation
     for (const p of ['/bundle.json', '/', '/api/studio/session']) assert.ok(paths.includes(p), `${p} was asked for: ${paths.join(' ')}`);
     assert.ok(log.every(l => l.account === owner));
     const bearer = log[0].bearer;
+    // The real hosted studio (doc 78, M3) behind the session: the page's start asks nothing it refuses, the session is
+    // the Editor account's (the owner, hosted, the one world), and its pages are the DM tool's own.
+    assert.deepEqual(log.filter(l => l.status >= 400).map(l => `${l.method} ${l.path} ${l.status}`), [], 'the page asked nothing the studio refused');
+    const session = JSON.parse(await inEditor(`fetch('/api/studio/session').then(r => r.text())`));
+    assert.equal(session.me.account, owner);
+    assert.match(session.me.username, new RegExp(`^${owner}#[0-9a-f]{6}$`));
+    assert.deepEqual([session.me.role, session.me.hosted, session.hosted, session.myWorld, session.dm.world, session.atlas.world.key, session.atlas.available],
+        ['owner', true, true, true, 'world', 'world', false]);
+    // One real page, the Prosperity tab, from the world's own save; a DM act from it (prices reset everywhere), queued in
+    // dm.actions and audited under the account and its session (no game server runs here, so it stays queued).
+    await inEditor(`(() => { const t = [...document.querySelectorAll('[role=tab]')].find(b => b.textContent.includes('Prosperity')); t.click(); return true; })()`);
+    for (let i = 0; i < 100 && !(await inEditor(`!!document.querySelector('.dm-prosperity h3 button') && !document.querySelector('.dm-prosperity h3 button').disabled`)); i++) await sleep(200);
+    assert.match(await inEditor(`document.querySelector('.dm-prosperity').textContent`), /Markets/);
+    await inEditor(`(() => { window.confirm = () => true; document.querySelector('.dm-prosperity h3 button').click(); return true; })()`);
+    for (let i = 0; i < 100 && !(await inEditor(`!!document.querySelector('.dm-prosperity .publish-done')`)); i++) await sleep(200);
+    assert.match(await inEditor(`document.querySelector('.dm-prosperity .publish-done')?.textContent ?? document.querySelector('.dm-prosperity .error')?.textContent ?? ''`),
+        /Prices reset everywhere: queued/);
+    const acted = await tell('actions');
+    const by = new RegExp(`^${owner}#[0-9a-f]{6}$`);
+    assert.ok(acted.actions.some(a => a.kind === 'prices.reset' && a.target === 'all' && by.test(a.by)), JSON.stringify(acted.actions));
+    assert.ok(acted.audit.some(a => a.action === 'prices.reset' && by.test(a.who)), JSON.stringify(acted.audit));
+    const acts = (await tell('log')).log.filter(l => l.method === 'POST');
+    assert.deepEqual(acts.map(l => `${l.path} ${l.status}`), ['/api/dm/prosperity/act 200']);
     // No shell command answers the Editor window (no capability names it), and nothing secret is in its page.
     for (const [command, args] of [['editor_state', {}], ['central_call', {method: 'GET', path: '/worlds'}], ['plugin:window|set_title', {label: 'editor', value: 'x'}],
         ['plugin:event|emit', {event: 'editor-session', payload: {state: 'ended'}}], ['plugin:window|set_fullscreen', {label: 'editor', value: true}],

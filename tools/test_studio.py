@@ -1616,6 +1616,34 @@ class HostedAllowlistTests(HostedBase):
             self.assertEqual(self.hosted({'username': 'pell#a1b2c3', 'role': 'viewer'}, 'GET', path, '', {}, b'')[0], 404, path)
         self.assertEqual(self.hosted({'username': 'pell#a1b2c3', 'role': 'viewer'}, 'POST', '/', '', {}, b'')[0], 405)
 
+    def test_the_images_signed_editor_is_served_bundle_and_portraits_too(self):
+        """Doc 78, M4 and M3: the image's Editor is /opt/ratw/Editor/dist (stage.sh's app/Editor/dist: the built page,
+        its signed bundle.json and portraits/ inside, Data/Portraits beside it), the studio's DIST and PORTRAITS beside
+        tools/; the shell's proxy asks for /bundle.json first, then only the files it lists."""
+        from unittest import mock
+        self.assertEqual((map_editor.DIST.relative_to(map_editor.ROOT).as_posix(),
+                          map_editor.PORTRAITS.relative_to(map_editor.ROOT).as_posix(),
+                          Path(ST.__file__).resolve().parent.relative_to(map_editor.ROOT).as_posix()),
+                         ('Editor/dist', 'Data/Portraits', 'tools'), '/opt/ratw/tools beside /opt/ratw/Editor/dist')
+        dist, portraits = self.folder / 'app' / 'Editor' / 'dist', self.folder / 'app' / 'Data' / 'Portraits'
+        (dist / 'assets').mkdir(parents=True)
+        (dist / 'portraits').mkdir()
+        portraits.mkdir(parents=True)
+        (dist / 'index.html').write_text('<!doctype html><script src="./assets/a.js"></script>')
+        (dist / 'assets' / 'a.js').write_text('run()')
+        (dist / 'bundle.json').write_text('{"v": 1, "key": "ratw-0", "manifest": "", "signature": ""}')
+        for folder in (dist / 'portraits', portraits):
+            (folder / 'timber.png').write_bytes(b'\x89PNG timber')
+        who = {'username': 'pell#a1b2c3', 'role': 'viewer'}
+        with mock.patch.object(map_editor, 'DIST', dist), mock.patch.object(map_editor, 'PORTRAITS', portraits):
+            for path, kind, body in (('/bundle.json', 'application/json', (dist / 'bundle.json').read_bytes()),
+                                     ('/', 'text/html', (dist / 'index.html').read_bytes()),
+                                     ('/assets/a.js', 'text/javascript', b'run()'),
+                                     ('/portraits/timber.png', 'image/png', b'\x89PNG timber')):
+                self.assertEqual(self.hosted(who, 'GET', path, '', {}, b''), (200, kind, body), path)
+            for path in ('/portraits/../bundle.json', '/portraits/Timber.png', '/bundle.json/..', '/../Data/Portraits/timber.png'):
+                self.assertEqual(self.hosted(who, 'GET', path, '', {}, b'')[0], 404, path)
+
     def test_the_browser_rule_holds_inside_too(self):
         """I9: the helper refuses Origin, Cookie and Sec-Fetch-*; the hosted handlers' own check says so again."""
         handler = self.hosted.handler.__new__(self.hosted.handler)

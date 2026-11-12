@@ -1,7 +1,8 @@
 # The world image (Docs/Design/77, section 8): ratw_server, the NPC Mind, the world agent and the first-start import in
 # one container (the server talks to the Mind and the agent reads its /status over 127.0.0.1, so they share a network).
 # Built from the staged context only (bash Package/stage.sh --build), never the repository: the context is
-#   src/    the server's sources     app/    what runs (Data, migrations, tools, the entrypoint)
+#   src/    the server's sources     app/    what runs (Data, migrations, tools, the entrypoint, and the Editor's
+#                                            page signed, Editor/dist with bundle.json and portraits/: Docs/Design/78)
 #   world/  the world export (tools/world_package.py export), imported into the world's database on first start
 
 # ------------------------------------------------------------------------------------------------------------ build
@@ -44,6 +45,8 @@ RUN apt-get update \
  && install -d -o ratw-admin -g ratw-admin -m 0700 /var/lib/ratw/admin \
  && install -d -o root -g root -m 0700 /etc/ratw /etc/ratw/host /var/lib/ratw/backup-requests /var/ratw /var/ratw/manage
 COPY --from=build /build/ratw_server /opt/ratw/bin/ratw_server
+# (The Editor's page is /opt/ratw/Editor/dist: the hosted studio serves it, and /opt/ratw/Data/Portraits, only to a
+# signed-in Editor session, through the helper; the client checks every file against bundle.json's signature.)
 COPY app/ /opt/ratw/
 # The Editor's accounts command (Docs/Design/78, 3.6): `docker compose exec world ratw-editor ...`.
 RUN install -m 0755 /opt/ratw/Package/ratw-editor /usr/local/bin/ratw-editor

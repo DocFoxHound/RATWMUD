@@ -2498,6 +2498,28 @@ M1, M2a, M2b, M3 and M4 built (2026-11-12, below); the rest not yet.
     **For M3:** the image's Editor is `/opt/ratw/Editor/dist` with `bundle.json` and `portraits/`; the hosted studio
     serves those files (with a session), `/bundle.json` included, and `/api/studio/session` with `me` and
     `atlas.world`.
+- **2026-11-12: the lanes wired (M2b, M3, M4),** on `r2-editor` after merging M4. The contract held: the image's
+  Editor is stage.sh's `app/Editor/dist` (the built page, its signed `bundle.json`, `portraits/`) with
+  `app/Data/Portraits` beside it, copied to `/opt/ratw/` by the Dockerfile, which is where the hosted studio's `DIST`
+  and `PORTRAITS` resolve (beside `/opt/ratw/tools`); it serves `/bundle.json`, the page and `/portraits/` only behind
+  the helper's session, and `/api/studio/session` gives `me` (the account, `account#session`, the role, `hosted`) and
+  `atlas.world`. No code change was needed for it; tests now hold it (`test_package`: the image ships the signed Editor
+  where the studio serves it; `test_studio`: the staged layout served, `bundle.json` and portraits included, traversal
+  refused). One silent merge clash fixed: M4's "game link hidden on the Editor's origin" in the Server tab now reads
+  the page's origin (`hostedPage`) beside M3's hosted world. **The end-to-end run on the real hosted studio:**
+  `Desktop/tests/editor_world.py` now plugs in `world_admin.hosted_studio` (the one-world registry, settings copy and
+  no AI key in the admin directory, as the entrypoint writes them; Greyfen and one player seeded) in place of the
+  stand-in, and `editor.test.mjs` goes on from DM opening the window: the page's start asks nothing the studio refuses,
+  the session is the owner's, the Prosperity tab renders from the world's save, and its Reset all prices is queued in
+  `dm.actions` and audited as `owner#session`; then the session ending, signing in again, signing out, the rotation and
+  the changed key as before. Passed (11 s).
+  - **Tests** (one run; Release `ratw_server` in `build-m4m`, `RATW_TEST_DB_TAG=s2stage_`): `cargo test` 57; Client 158
+    and typecheck; Editor 78 + 70, typecheck, build and render smoke; `Package/test_package.py` 49;
+    `test_world_admin` 85 (one, `Lanes.test_only_failures_count_world_wide_and_the_bucket_starts_half_full`, failed
+    once with 11 for 10 while the C++ build loaded the machine: its bucket refills on the real clock; it passed three
+    times alone); `test_studio` 72, `test_dungeon_master` 54, `test_dm_live` 10, `test_map_editor` 52,
+    `test_world_package` 48 (1 skipped, as before); `npm run test:editor` 1 of 1; ctest 89 of 89 (`pg_client` on a
+    throwaway database's URL).
 
 ## Review (2026-11-08)
 
