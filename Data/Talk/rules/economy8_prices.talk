@@ -6,6 +6,8 @@
 #   topic.good   the good's id;  topic.sort  food, drink or goods: a line about eating is said of food only
 #   deals        (a speaker's) yes where the speaker's own shop sells the good: a line of "my shelf" needs it
 #   sold_out     (a speaker's) yes where that shop has none of the good left: a line of a shelf bought bare needs it
+#   topic.bare   (talk.price_cause, a rise) yes where the traveller named bought a shop's last of the good: the townsfolk's
+#                "bought the shelf bare" needs it
 #   topic.dir    up | down;  topic.price  the list's price in words ("seven pence", "fourteen pence the dozen")
 #   topic.cause  players, dump, ripple, caravan, late, raid, harvest, ship, ship_takes, ship_late, ship_lost, event,
 #                still (the latest cause runs against the move);  topic.cause_words  the same in words;  topic.ship
@@ -335,8 +337,17 @@ say I'll come by your shop this week. | Keep your door open. Folk come back.
 
 ## ---------------------------------------------------------------- A traveller bought it up (price_cause, up)
 
+# (A shelf "bought bare", "all" of a good bought up: said only where that traveller's buying took a shop's last of it
+# (`topic.bare`). A piece or two off a full shelf has been bought, and made it dearer; no more is said of it.)
 rule e8p_pc_up_named
 when concept=talk.price_cause topic.dir=up topic.known=yes topic.item!=meal
+cooldown 1d
+say #topic.who# has been buying the #topic.what#. #topic.price.capitalize# now. | Ask #topic.who# why #topic.what# #topic.is# dear.
+then other: prices.answer_cause
+remember pair: jk=trav 2m
+
+rule e8p_pc_up_named_bare
+when concept=talk.price_cause topic.dir=up topic.known=yes topic.bare=yes topic.item!=meal
 cooldown 1d
 say #topic.who# bought up the #topic.what#. #topic.price.capitalize# now. | Ask #topic.who# why #topic.what# #topic.is# dear. Bought the shelf bare.
 then other: prices.answer_cause
@@ -345,7 +356,14 @@ remember pair: jk=trav 2m
 rule e8p_pc_up_look
 when concept=talk.price_cause topic.dir=up topic.known=no topic.item!=meal
 cooldown 1d
-say A stranger bought up all the #topic.what#. #topic.who#, it was. | #topic.who# went shop to shop buying #topic.what#. Dear now.
+say A stranger has been buying #topic.what#. #topic.who#, it was. | #topic.who# came buying #topic.what#. Dear now.
+then other: prices.answer_cause
+remember pair: jk=trav 2m
+
+rule e8p_pc_up_look_bare
+when concept=talk.price_cause topic.dir=up topic.known=no topic.bare=yes topic.item!=meal
+cooldown 1d
+say A stranger bought up all the #topic.what#. #topic.who#, it was. | #topic.who# bought the shelf bare of #topic.what#. Dear now.
 then other: prices.answer_cause
 remember pair: jk=trav 2m
 

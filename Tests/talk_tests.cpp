@@ -937,6 +937,32 @@ void theStagedEconomysTalk()
             }
             expect(custom && (std::string(bare) != "yes" || cleared), std::string("the keeper speaks of the custom; of a bare shelf where it is: ") + bare);
         }
+        // And the townsfolk say a traveller "bought the shelf bare", or "all" of a good, only where that traveller's buying
+        // took a shop's last of it (topic.bare; the merge of Phase 9 and the decisions): never after a small purchase.
+        c.a.facts["deals"] = c.b.facts["deals"] = "no";
+        c.a.facts["sold_out"] = c.b.facts["sold_out"] = "no";
+        for (const auto& known : {"yes", "no"})
+            for (const auto& bare : {"no", "yes"})
+            {
+                c.facts["topic.known"] = known;
+                c.facts["topic.who"] = std::string(known) == "yes" ? "Ada" : "a grey wolf in a red cloak";
+                c.facts["topic.bare"] = bare;
+                bool emptied = false;
+                int said = 0;
+                for (const auto& line : heard(c, 12))
+                {
+                    ++said;
+                    const auto low = lowered(line);
+                    const bool claims = low.find("shelf bare") != std::string::npos || low.find("bought up all") != std::string::npos ||
+                                        low.find("shop to shop") != std::string::npos || low.find("to the last") != std::string::npos;
+                    emptied |= claims;
+                    expect(!claims || std::string(bare) == "yes", std::string("a shelf bought bare only where it was (known ") + known + "): " + line);
+                    expect(line.find('#') == std::string::npos, "every symbol filled: " + line);
+                }
+                expect(said >= 100 && (std::string(bare) == "yes") == emptied,
+                       std::string("the traveller's buying is talked of, a bare shelf only where there is one (known ") + known + ", bare " + bare +
+                           "): " + std::to_string(said) + " lines");
+            }
     }
     // A complaint about a price is answered with a line about eating only where the good is food (topic.sort).
     for (const auto& humour : {"dry", "merry"})

@@ -277,8 +277,10 @@ def _check_kind(kind, i: int, goods: set[str], errors: list[str], warnings: list
     if not isinstance(kid, str) or not EVENT_ID.match(kid) or forbidden_in_name(kid):
         errors.append(f'{where}: its id is 1-32 lower-case letters, digits or _ (never the forbidden word).')
         return None
+    # (Every text of a kind Core holds to plain words: eventKindsOf. `noticeAfter`, the notice once the event's ship has
+    # sailed, since the decisions of 2026-11-12. A kind's old `times` is read past, as Core reads it: events move no Times.)
     for key, most, needed in (('words', 80, True), ('notice', 280, False), ('cry', 200, False), ('noticeOn', 280, False),
-                              ('sign', 40, False)):
+                              ('noticeAfter', 280, False), ('sign', 40, False)):
         v = kind.get(key, '' if not needed else None)
         if (needed and not v) or plain_words(v if v is not None else '', most) is None:
             errors.append(f'{where} ({kid}).{key} must be plain words of at most {most} bytes'

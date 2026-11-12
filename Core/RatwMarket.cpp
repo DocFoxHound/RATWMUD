@@ -773,6 +773,8 @@ json::Value encode(const Board& b)
                 auto j = Value::object();
                 j.add("amount", p.amount);
                 j.add("touched", p.touched);
+                if (p.bare)
+                    j.add("bare", true);
                 g.add(good, j);
             }
             hs.add(holder, g);
@@ -1216,7 +1218,8 @@ Board decode(const json::Value& v)
                     {
                         const double amount = p.number("amount", 0), touched = p.number("touched", 0);
                         if (good(g) && finite(amount) && finite(touched) && std::abs(amount) >= 1e-6)
-                            b.pushed[m][holder][g] = {std::clamp(amount, -PressureMost, PressureMost), std::max(0., touched)};
+                            b.pushed[m][holder][g] = {std::clamp(amount, -PressureMost, PressureMost), std::max(0., touched),
+                                                      amount > 0 && p.boolean("bare", false)};
                     }
     for (const auto& [m, goods] : v.object("netToday").fields())
         if (name(m))
@@ -2859,7 +2862,18 @@ EconomyResult Society::stagedTrade(const std::string& player, const std::string&
     cell.touched = now;
     const double moved = lot.P - before;
     auto& push = b.pushed[lot.market][holder][lot.base];
-    push = {lot.push, now};
+    // (Whether this holder's buying has taken a shop's last of the good: talk says "bought the shelf bare" of a traveller
+    // only then, never after a piece or two off a full shelf. Kept while its push lasts; gone once it has sold more of
+    // the good than it bought.)
+    bool bare = push.bare;
+    if (buy)
+    {
+        const auto* shelf = account(till);
+        bare = bare || (shelf && std::none_of(shelf->stock.begin(), shelf->stock.end(), [&](const auto& held) {
+                            return held.second > 0 && items::baseOf(held.first) == lot.base;
+                        }));
+    }
+    push = {lot.push, now, bare && lot.push > 0};
     if (std::abs(push.amount) < 1e-6)
         b.pushed[lot.market][holder].erase(lot.base);
     // The cause is what moved the factor (11; the Phase 8 repair): the travellers' only where their pushes, together, are
@@ -3103,7 +3117,7 @@ Society::PriceMove Society::priceMove(const std::string& till, const std::string
             for (const auto& [who, goods] : pm->second)
                 if (goods.count(m.base))
                     if (const double p = pushedBy(market, who, m.base) * m.trend; p > most)
-                        most = p, m.pusher = who;
+                        most = p, m.pusher = who, m.bare = m.trend > 0 && goods.at(m.base).bare;
         }
     return m;
 }
@@ -3255,7 +3269,8 @@ void Society::marketMorning(std::int64_t day)
                 for (const auto& [holder, one] : charged)
                 {
                     auto& push = b.pushed[m][holder][target];
-                    push = {market::decayed(push.amount, push.touched, now, halfLife) + one * scale, now};
+                    push.amount = market::decayed(push.amount, push.touched, now, halfLife) + one * scale;
+                    push.touched = now;             // (Its `bare` kept: a ripple empties no shelf and fills none.)
                 }
                 if (std::abs(moved) >= .02)
                 {

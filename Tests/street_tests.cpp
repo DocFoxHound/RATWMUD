@@ -1738,6 +1738,28 @@ void theWorkingPoorOnRestday()
             expect(!b.count(id), "one whose post works on Restday never begs: " + id);
         // (One learning a trade under a master never begs, as before: Fennel of the Long House, once he is taken on.)
         expect(!s.apprenticedTo("fennel") || !b.count("fennel"), "one with a master never begs");
+        // The Prosperity report's "beggars today" (Phase 9) counts them with the postless: the most out at once this
+        // Restday, the working poor among them, and never over the market's most (the merge of Phase 9 and the decisions).
+        {
+            const auto report = w.prosperityReport();
+            const auto here = s.statusOf("idle1")->market;
+            int counted = -1, all = 0;
+            for (const auto& m : report.array("markets"))
+            {
+                all += int(m.number("beggars"));
+                if (m.string("id") == here)
+                    counted = int(m.number("beggars"));
+            }
+            int postedOut = 0;
+            for (const auto& [id, at] : b)
+                postedOut += s.jobOf(id) != nullptr;
+            const double most = status::beggarsInAMarketAt(s.statusTable(), s.prosperity(), s.marketTimes(here), 1);
+            expect(postedOut >= int(begging.size()) && counted >= int(b.size()) && counted == all &&
+                       counted <= int(std::ceil(most - 1e-9)) &&
+                       report.number("beggarsDay", -1) == std::floor(w.calendarDays()),
+                   "the report's beggars today count Restday's working poor, within the market's most: " + std::to_string(counted) + " for " +
+                       std::to_string(b.size()) + " out (" + std::to_string(postedOut) + " with a post), at most " + std::to_string(most));
+        }
         if (std::getenv("STREET_EACH"))
         {
             std::cout << "  Restday at the worst" << (hallInWant ? ", the Long House in want:" : ":");
@@ -1895,6 +1917,16 @@ void beggarsInAMarketByConditions()
                "slider " + std::to_string(slider) + ": " + std::to_string(n) + " beggars in the market for at most " + std::to_string(most));
         if (std::getenv("STREET_EACH"))
             std::cout << "  slider " << slider << ": at most " << most << " in the market, " << n << " begging\n";
+        // The Prosperity report's "beggars today" (Phase 9): the day's most out at once, so the worst hour's twelve stand
+        // through the better hours after, and never more than the market's most that day.
+        {
+            const auto report = w.prosperityReport();
+            int counted = 0;
+            for (const auto& m : report.array("markets"))
+                counted += m.string("id") == market() ? int(m.number("beggars")) : 0;
+            expect(counted == int(who[-100].size()) && counted <= 12,
+                   "the report's beggars today are the day's most, within the market's: " + std::to_string(counted) + " at slider " + std::to_string(slider));
+        }
     }
     expect(who[-100].size() == 12 && who[-50].size() == 9 && who[0].size() == 5 && who[100].size() == 1,
            "twelve at the worst, five in ordinary times, one in a boom: " + std::to_string(who[-100].size()) + ", " +

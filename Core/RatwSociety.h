@@ -734,6 +734,7 @@ class Society
         int listCount = 1, trend = 0;
         std::int64_t shown = 0, rest = 0;
         std::string cause, causeWords, pusher;
+        bool bare = false;                          // A rise's pusher bought a shop's last of the good (topic.bare).
         std::string ship;                           // The ship a ship's cause names ("the Gull"; topic.ship), "" else.
     };
     PriceMove priceMove(const std::string& till, const std::string& item, const std::string& holder = {}) const;

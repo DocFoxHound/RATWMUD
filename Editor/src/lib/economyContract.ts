@@ -48,7 +48,9 @@ export type ProsperityReport = {
     prosperity: {slider: number; target: number; cause: string; by: 'dm' | 'seeded' | ''; neverHungry: boolean; neverBroke: boolean};
     markets: {id: string; name: string; times: {word: 'hard' | 'lean' | 'ordinary' | 'good' | 'boom'; score: number; cause: string};
               households: Record<Band, number>; overridden: number; hungry: number; short: number; thieves: number;
-              /** The most beggars out at once on the last begging day (the report's `beggarsDay`). */
+              /** The most beggars out at once on the last begging day (the report's `beggarsDay`): everyone placed, on
+               *  Restday the working poor on their day off too, each under its own household's market, so never over that
+               *  market's most (status.json's street.beggarsInAMarket). */
               beggars: number; dole: number; nudge: {points: number; until: number; words: string} | null;
               resetting: {until: number} | null}[];
     pressures: {market: string; good: string; P: number; cause: string}[];

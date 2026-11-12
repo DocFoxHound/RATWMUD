@@ -131,6 +131,11 @@ class OverrideTests(unittest.TestCase):
 
     def test_status_parts_keep_their_shape(self):
         self.assertEqual(self.check({'status': {'pay': {'keeper': 20}, 'leanDays': 4, 'rows': {'poor': {'short': 20}}}})[0], [])
+        # (The street's settings of 2026-11-12, a host's to change as the rest: a market's most beggars, the working poor's
+        # weight on Restday.)
+        self.assertEqual(self.check({'status': {'street': {'beggarsInAMarket': [{'at': -100, 'most': 20}, {'at': 100, 'most': 0}],
+                                                           'beggarsPosted': 0.25}}})[0], [])
+        self.assertTrue(self.check({'status': {'street': {'beggarsPosted': 'half'}}})[0])
         for bad in ({'treasury': {}}, {'pay': {'keeper': 'lots'}}, {'pay': 5}, {'rows': {'noble': {}}},
                     {'rows': {'poor': {'colour': 1}}}, {'leanDays': 'three'}, {'leanDays': -1}, {'hold': {'oneOff': None}}):
             self.assertTrue(self.check({'status': bad})[0], bad)
@@ -149,6 +154,19 @@ class OverrideTests(unittest.TestCase):
                     {**own, 'needs': 'moon'}, {**own, 'goods': {}}, 'harvest_fair'):
             self.assertTrue(self.check({'market': {'events': {'list': [bad]}}})[0], bad)
         self.assertTrue(self.check({'market': {'events': {'list': [own, own]}}})[0], 'a kind twice')
+        # (The notices of a kind that comes in with a ship, once she is in and once she has sailed: plain words, as Core
+        # holds them. The shipped rich cargo has both.)
+        ship = {**own, 'id': 'spice_ship', 'ship': 'docks', 'noticeOn': '{Ship} is in: {goods} cheap.',
+                'noticeAfter': '{Ship} has sailed: {goods} cheap while it lasts.'}
+        self.assertEqual(self.check({'market': {'events': {'list': [ship]}}})[0], [], 'a ship\'s kind with both notices')
+        self.assertTrue(any(k.get('noticeAfter') for k in kinds), 'market.json ships a kind with a noticeAfter')
+        for key in ('noticeOn', 'noticeAfter'):
+            for bad in ('x' * 281, 'two\nlines', 'the dog has sailed', 7):
+                self.assertTrue(self.check({'market': {'events': {'list': [{**ship, key: bad}]}}})[0], (key, bad))
+        # (A kind's old `times`, its points on the market's Times, is read past: a host's saved list with one still does.)
+        self.assertEqual(self.check({'market': {'events': {'list': [{**own, 'times': 5}, {**kinds[0], 'times': -8}]}}}), ([], []),
+                         'a legacy times is no error and no warning')
+        self.assertFalse(any('times' in k for k in kinds), 'no shipped kind has Times points')
         _, warnings = self.check({'market': {'events': {'list': [{**own, 'goods': {'cider': .2, 'moonbeams': .1}}]}}})
         self.assertTrue(any('moonbeams' in w for w in warnings), 'an unknown good is warned of, as Core skips it')
         self.assertTrue(self.check({'market': {'events': {'list': [own] * 65}}})[0])

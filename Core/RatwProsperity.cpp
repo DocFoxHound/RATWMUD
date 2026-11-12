@@ -192,6 +192,10 @@ void World::noteBeggars()
     // After each hour's placing (tendStreet): in the begging hours of a begging day (10.2: Marketday and Restday, 8:00 to
     // 18:00) each market's count is raised to the most seen that day, a new day starting from none (a boom's empty
     // Marketday then reads 0, not last Restday's). Outside those hours nothing changes: the last begging day's stands.
+    // Everyone placed is counted: the postless in want and, on Restday, the working poor on their day off (decided
+    // 2026-11-12), each under its own household's market, as placeBeggars draws them and holds them to that market's
+    // most (beggarsInAMarket), so a market's count here is never over it; one with no market on record under the market
+    // of the cell it stands in.
     const int weekday = calendar::weekdayOf(calendarDays_);
     const double hour = (calendarDays_ - std::floor(calendarDays_)) * 24;
     if ((weekday != calendar::Marketday && weekday != calendar::Restday) || hour < 8 || hour >= 18 || !society_.stagedReady())
@@ -203,8 +207,13 @@ void World::noteBeggars()
     }
     std::map<std::string, int> now;
     for (const auto& [id, spot] : beggars_)
-        if (const auto* m = society_.tradePoints().ofCellId(spot.cell))
+    {
+        const auto* s = society_.statusOf(id);
+        if (s && !s->market.empty())
+            ++now[s->market];
+        else if (const auto* m = society_.tradePoints().ofCellId(spot.cell))
             ++now[m->id];
+    }
     for (const auto& [market, n] : now)
         beggarsSeen_[market] = std::max(beggarsSeen_[market], n);
 }

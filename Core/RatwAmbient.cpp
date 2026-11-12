@@ -755,6 +755,8 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                     c.talk.erase("topic.cause");
                     c.talk.erase("topic.cause_words");
                     c.talk["topic.known"] = known.byName ? "yes" : "no";
+                    // (Whether that traveller's buying took a shop's last of it: "bought the shelf bare" is said only then.)
+                    c.talk["topic.bare"] = move.bare ? "yes" : "no";
                     c.talk["topic.who"] = known.words;
                     c.facts.push_back(name(a) + " says " + cargoWords(move.base) + " got " + (move.trend > 0 ? "dearer" : "cheaper") +
                                       " since " + known.words + (move.trend > 0 ? " bought it up." : " sold a load in."));

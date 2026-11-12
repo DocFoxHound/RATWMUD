@@ -237,6 +237,24 @@ void talkSaysTheShownPrice()
                "last repair: no valid kind: the shipped events kept, with a warning");
         expect(json::parse(R"({"events": {"list": []}})", over, error), error);
         expect(market::layered(market::data(), over, nullptr, nullptr).events.empty(), "last repair: an empty list is still no events");
+        // The merge of Phase 9 and the decisions of 2026-11-12: a host's saved list whose kinds still carry the old
+        // `times` (an event's points on its market's Times, gone since) is read past it, with no warning: the kind is
+        // kept as it is otherwise, with its notices for a ship in and a ship sailed.
+        expect(json::parse(R"({"events": {"list": ["good_catch",
+                    {"id": "spice_ship", "words": "a spice ship", "notice": "{Ship} is due.", "noticeOn": "{Ship} is in.",
+                     "noticeAfter": "{Ship} has sailed.", "ship": "docks", "goods": {"salt": -0.2}, "times": 5}]}})", over, error), error);
+        warnings.clear();
+        const auto legacy = market::layered(market::data(), over, nullptr, &warnings);
+        const auto* spice = legacy.eventKind("spice_ship");
+        expect(legacy.events.size() == 2 && legacy.eventKind("good_catch") && spice && spice->noticeOn == "{Ship} is in." &&
+                   spice->noticeAfter == "{Ship} has sailed." && warnings.empty(),
+               "a host's kinds with a legacy `times`: kept, read past, no warning: " + std::to_string(legacy.events.size()) + " kinds, " +
+                   (warnings.empty() ? std::string("no warning") : warnings.front()));
+        expect(json::parse(R"({"events": {"list": [{"id": "spice_ship", "words": "a spice ship", "ship": "docks", "goods": {"salt": -0.2},
+                     "noticeAfter": "two\nlines"}]}})", over, error), error);
+        warnings.clear();
+        expect(market::layered(market::data(), over, nullptr, &warnings).eventKind("spice_ship") == nullptr && !warnings.empty(),
+               "a kind whose noticeAfter is not plain words is skipped, with a warning");
     }
 }
 
@@ -1131,6 +1149,72 @@ void talkThroughTheRealPath()
                     expect(other == mine || !contains(line, other), "never the other's price: " + line);
             }
         expect(said, "and it's said: " + mine);
+    }
+    // (2b) "Bought the shelf bare" is said of a traveller only where her buying took a shop's last of the good: the
+    // topic's `bare` (the push's own record, kept with the Board), never after dozens bought off a shelf with more on it.
+    {
+        const auto loaves = s.tillOf("ub");
+        const auto shelf = [&] {
+            std::map<std::string, int> held;
+            if (const auto* a = s.account(loaves))
+                for (const auto& [item, n] : a->stock)
+                    if (n > 0 && items::baseOf(item) == "bread")
+                        held[item] = n;
+            return held;
+        };
+        const auto before = shelf();
+        int left = 0;
+        for (const auto& [item, n] : before)
+            left += n;
+        auto rise = s.priceMove(loaves, "bread", boHolder);
+        expect(left > 12 && before.count("bread") && rise.trend == 1 && rise.cause == "players" && rise.pusher == ashHolder && !rise.bare,
+               "Ash bought bread dear with " + std::to_string(left) + " loaves still on the shelf: not bought bare (" + rise.cause + ", " +
+                   rise.pusher + ")");
+        const auto causeOf = [&](talk::Query& out) {
+            // (The traveller named in the price's place, where the teller knows her by name or look; else no such topic.)
+            return topicFor(town.bo.entityId, "price_cause", out, "bread");
+        };
+        talk::Query c;
+        const bool told = causeOf(c);
+        expect(!told || c.facts.at("topic.bare") == "no", "the topic: no shelf bought bare");
+        if (told)
+            for (std::uint64_t seed = 0; seed < 24; ++seed)
+                for (const auto& [who, line] : town.g.talkLibrary().converse(c, seed, none, {}).lines)
+                    expect(!contains(line, "shelf bare") && !contains(line, "bought up all") && !contains(line, "to the last"),
+                           "no shelf bought bare after a small purchase: " + line);
+        // The baker's last dozen: she buys it, and the shelf is bare by her buying.
+        for (const auto& [item, n] : before)
+            if (const int gone = item == "bread" ? n - 12 : n; gone > 0)
+                expect(s.consume(loaves, item, gone, "test: the last dozen") == gone, "the shelf down to a dozen: " + item);
+        if (auto* baker = w.entity("ub"))           // (At the counter again: the hours the topic took moved them on.)
+        {
+            baker->cellId = cellId(1);
+            baker->position = {5.5, 8.5};
+            baker->path.clear();
+            town.place(town.ash, 1, 6.25, 8.5);
+        }
+        const auto last = w.trade(town.ash.entityId, "ub", "bread", 12, true, ashHolder);
+        expect(last.ok && shelf().empty(), "Ash buys the last dozen: " + last.message);
+        rise = s.priceMove(loaves, "bread", boHolder);
+        expect(rise.trend == 1 && rise.pusher == ashHolder && rise.bare, "now she has bought the shelf bare");
+        const auto kept = market::decode(market::encode(s.board()));
+        expect(kept.pushed.count(market) && kept.pushed.at(market).count(ashHolder) && kept.pushed.at(market).at(ashHolder).count("bread") &&
+                   kept.pushed.at(market).at(ashHolder).at("bread").bare,
+               "and it is saved with her push");
+        talk::Query bare;
+        expect(told == causeOf(bare) && (!told || bare.facts.at("topic.bare") == "yes"), "the topic: the shelf bought bare");
+        if (told)
+        {
+            bool said = false;
+            for (std::uint64_t seed = 0; seed < 48; ++seed)
+                for (const auto& [who, line] : town.g.talkLibrary().converse(bare, seed, none, {}).lines)
+                    said |= contains(line, "shelf bare") || contains(line, "bought up all");
+            expect(said, "and it's said: the shelf bought bare");
+        }
+        if (std::getenv("MARKET_EACH"))
+            std::cout << "  the traveller named for dear bread (price_cause): " << (told ? "told" : "not told here") << "\n";
+        for (const auto& [item, n] : before)
+            expect(s.create(loaves, item, item == "bread" ? 12 : n, "test: set out again"), "the shelf as it was: " + item);
     }
     s.setPressure(market, "bread", 0, "players");
     // (3) The late wagon's nails: one bought by a traveller doesn't take over the cause; the keeper and the town still

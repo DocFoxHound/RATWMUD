@@ -106,6 +106,7 @@
     "kind": ["arrived", "left", "late", "raided", "due", "news", "in", "lost", "sailed", "camp", "theft", "assault", "arrest", "marriage", "death", "birth", "apprentice", "succession", "crime", "loss", "work"],
     "when": ["today", "soon"],
     "known": ["yes", "no"],
+    "bare": ["yes", "no"],
     "has_nickname": ["yes", "no"],
     "subject": "text",
     "claim": "text",

@@ -96,7 +96,7 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
                     <th title="Households: destitute / poor / comfortable / rich. (N set): households whose band is set rather than worked out, by a DM for a while or in the Band picker (an NPC's own band).">Bands</th>
                     <th title="Hunger 60 or more">Hungry</th><th title="Short of food today">Short</th><th title="Thefts expected today">Thieves</th>
                     <th title={`The most beggars out at once on the last begging day (a Marketday or a Restday, 8 to 18)${
-                        report?.beggarsDay !== undefined && report.beggarsDay >= 0 ? `: day ${report.beggarsDay}` : ': none seen yet'}. Nobody begs on a working day.`}>Beggars</th>
+                        report?.beggarsDay !== undefined && report.beggarsDay >= 0 ? `: day ${report.beggarsDay}` : ': none seen yet'}. On Restday the working poor on their day off are counted too; never more than the market's most by the slider. Nobody begs on a working day.`}>Beggars</th>
                     <th>Dole</th><th></th></tr></thead>
                     <tbody>{markets.map(m => <Fragment key={m.id}>
                         <tr key={m.id}><td>{m.name}</td>

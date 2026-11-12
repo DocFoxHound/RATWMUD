@@ -210,6 +210,8 @@ struct Cell
 struct Push
 {
     double amount = 0, touched = 0;
+    bool bare = false;                               // Its buying took a shop's last of the good (talk's topic.bare); kept
+                                                     // while the push lasts, gone once it has sold more than it bought.
 };
 struct Ripple
 {
