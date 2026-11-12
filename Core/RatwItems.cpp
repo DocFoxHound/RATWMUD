@@ -212,6 +212,19 @@ void readFarmPeople(Catalog& c, const json::Value& places, const json::Value& ru
             if (!market.area.empty() && !market.work.empty())
                 community.market.push_back(std::move(market));
         }
+        if (const auto& square = x["square"]; square.isObject() && !square.string("cell").empty())
+        {
+            community.squareCell = square.string("cell");
+            community.squareX = std::floor(square.number("x", 0)) + .5;
+            community.squareY = std::floor(square.number("y", 0)) + .5;
+            community.stand.area = community.squareCell;
+            community.stand.name = square.string("name", community.name);
+            community.stand.work = spots(square["work"]);
+            if (!community.stand.work.empty())
+                for (const auto& post : square.array("posts"))
+                    if (const auto name = post.string("post"); !name.empty())
+                        community.stand.posts.push_back({name, std::clamp(int(post.number("count", 1)), 0, 16)});
+        }
         if (!community.id.empty())
             p.communities.push_back(std::move(community));
     }

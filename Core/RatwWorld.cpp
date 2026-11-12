@@ -4798,6 +4798,8 @@ bool World::continueSchedules(double budgetMs)
                     }
                     continue;
                 }
+                if (onErrand && e.offstage && ridesAlong(e, goalCell, spot))
+                    continue;                       // (A carter unseen with his wagon unseen: beside it, as it goes.)
                 headFor(e, task, goalCell, spot, budget);
             }
             ++scheduleStage_;

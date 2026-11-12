@@ -3190,6 +3190,8 @@ def area_graph_reachable(project, spawn=None, placed_rooms=None):
                 break
     placed_areas = set()
     for person in project['people']:
+        if realm_homed(person):
+            continue                                   # (The realm's: the game's farms' rule placed them, in the Country.)
         for key in ('home', 'work', 'evening'):
             spot = person.get(key)
             if spot and arrival(spot['cell'], spot['x'], spot['y']) not in seen:
@@ -3458,7 +3460,10 @@ def checks(p, world, city, plan, labels, walk, classes=None):
           f'{len(bad)}: ' + ' | '.join(bad[:12]))
     par = pp.analysis()['par']
     hh = pp.households(par)
-    split = [r for r, members in hh.items() if 0 < len({m for m in members if people[m]['home']}) < len(members)]
+    # (A family the game's farms' rule took a member of, to a steading or a community of the realm, is none of the city's:
+    # the rule sends for its hands one by one, and the rest of the family waits in the Country.)
+    split = [r for r, members in hh.items() if 0 < len({m for m in members if people[m]['home']}) < len(members)
+             and not any(realm_homed(people[m]) for m in members)]
     check('R31', 'no family is split', not split, ', '.join(split[:8]))
     keyed = defaultdict(int)
     for x in placed:

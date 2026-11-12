@@ -1546,6 +1546,7 @@ class Society
     // market when its first farm is: "farm" requests the host carries out (arrive).
     std::unordered_map<std::string, std::size_t> farmWorkplace_;   // A farm's work room -> its farm.
     std::map<std::string, int> farmPlaced_;
+    bool farmsLooked_ = false;                      // The farms' posts looked at since this world was loaded (tendCareers).
     void countFarmPosts();
     void staffFarms(const CareerWorld& world, std::vector<CareerNote>& notes);
     std::set<std::string> dead_;                    // Residents who have died (died, revived): nobody feeds or pays them.

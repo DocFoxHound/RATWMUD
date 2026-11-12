@@ -27,12 +27,18 @@ const Spot* World::boardSpot(const std::string& community)
     // around its market's place, so its wagons' notices and contracts have a board.
     const MarketSquare* found = &square(community);
     MarketSquare own;
-    if (!found->found)
-        if (const auto* m = roadMarket(community); m && !m->market.empty())
-        {
-            fillSquare(own, m->market, {m->marketX, m->marketY});
+    // (A community with a square of its own out of doors, communities.json's: the board stands by it, on the green where
+    // its wagons load, never before the door of whichever shop has the most merchants: the square's cell is the market's,
+    // so a notice pinned there is read there.)
+    const auto* m = roadMarket(community);
+    const auto* point = m ? society_.tradePoints().find(community) : nullptr;
+    const bool ownSquare = m && point && !m->market.empty() && m->market != point->place;
+    if ((!found->found || ownSquare) && m && !m->market.empty())
+    {
+        fillSquare(own, m->market, {m->marketX, m->marketY});
+        if (own.found || !found->found)
             found = &own;
-        }
+    }
     const auto& sq = *found;
     const auto* c = sq.found ? cell(sq.at.cell) : nullptr;
     if (!c)

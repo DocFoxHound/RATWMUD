@@ -251,6 +251,13 @@ struct CommunityPlace
     bool town = false;                              // `town`: made a town of its own (World::setupTowns); false, a plain place.
     std::vector<PlaceRoom> homes, flats;
     std::vector<MarketPlace> market;
+    // Its square (communities.json `square`; doc 79, 5.1 and 8.1): the middle of its green, out of doors, where its wagons
+    // and its farms' carts load and unload and by which its notice board stands (its merchants each keep a shop of their
+    // own indoors); "" none. `stand`: its carters' posts there (`area` the square's cell, the work spots beside the
+    // wagon), staffed as its market's posts are; no posts, no carters of its own.
+    std::string squareCell;
+    double squareX = 0, squareY = 0;
+    MarketPlace stand;
 };
 struct FarmKindPeople
 {

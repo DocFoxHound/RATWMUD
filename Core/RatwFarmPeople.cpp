@@ -506,8 +506,15 @@ void Society::staffFarms(const CareerWorld& world, std::vector<CareerNote>& note
         const auto* c = people.community(id);
         if (!c)
             continue;
+        // (Its square's stand last: the community's carters, out of doors by the wagon: doc 79, 8.1.)
+        std::vector<const items::MarketPlace*> businesses;
         for (const auto& m : c->market)
+            businesses.push_back(&m);
+        if (!c->stand.posts.empty())
+            businesses.push_back(&c->stand);
+        for (const auto* business : businesses)
         {
+            const auto& m = *business;
             if (!world.place(m.area))
                 continue;
             int spot = 0;

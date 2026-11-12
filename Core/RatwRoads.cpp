@@ -574,6 +574,32 @@ bool World::withCaravan(const std::string& who, const Entity& wagon) const
     return near.count(e->cellId) > 0;
 }
 
+bool World::ridesAlong(Entity& carter, const std::string& goalCell, Vec2 beside)
+{
+    // (His errand's goal is the wagon's place, which moves every pass as the wagon goes along the road unseen: each move
+    // was a new leg for him, a search along the cell's roads he never came to the end of. With the Country's markets and
+    // farms staffed, a morning's twenty carts cost a world with nobody in it 40% of its tick, and fifteen wagons out twice
+    // the tick again: doc 79, Progress, "Wagons and farms on DEV".)
+    const auto driving = drivers_.find(carter.id);
+    if (driving == drivers_.end() || !carter.offstage)
+        return false;
+    const auto* wagon = entity("road:" + driving->second);
+    if (!wagon || !wagon->offstage || wagon->cellId != goalCell)
+        return false;
+    if (carter.cellId != goalCell)
+    {
+        // In another cell: with it only once it is on its way and he is near (it crossed a seam beside him); while it
+        // waits at its yard he walks to it as anyone walks.
+        const auto c = std::find_if(roads_.caravans.begin(), roads_.caravans.end(), [&](const Caravan& x) { return x.id == driving->second; });
+        if (c == roads_.caravans.end() || (c->leg == 0 && calendarDays_ < c->waitUntil) || !withCaravan(carter.id, *wagon))
+            return false;
+        carter.cellId = goalCell;
+    }
+    carter.position = beside;
+    legs_.erase(carter.id);
+    return true;
+}
+
 void World::tendRoadFolk()
 {
     const auto stage = stageCells();
@@ -807,9 +833,20 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
         });
         const auto payer = society_.treasuryOf(c.to);
         if (!bounty)
+        {
+            // (Where, in words a board can show: the country as its cell is named, "The Greenholt, North" -> "in the
+            // Greenholt"; it read "at w_ridgemere_4_6", the cell's id, which nobody saw while no wagon ran to be robbed.)
+            std::string where = "here";
+            if (const auto* at = cell(cellId); at && !at->name.empty())
+            {
+                where = "in " + at->name.substr(0, at->name.find(','));
+                if (where.rfind("in The ", 0) == 0)
+                    where[3] = 't';
+            }
             postContract("bounty", payer, c.to, camp.id,
                          std::min<std::int64_t>(std::max(0, society_.rule("bountyMost")), 20 + std::int64_t(camp.strength * 3)), 20,
-                         "the bandits robbing the road at " + cellId);
+                         "the bandits robbing the road " + where);
+        }
         const bool escort = std::any_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
             return escortOn(k, c.from, c.to) && (k.status == "open" || k.status == "taken");
         });

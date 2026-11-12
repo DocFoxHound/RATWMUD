@@ -203,9 +203,19 @@ bool World::makeEvent(const std::string& marketId, const market::Data::EventKind
     for (const auto& [g, target] : e.goods)
         goods.push_back(cargoWords(g));   // ("hides", "handbells": Phase 8's wording.)
     words["goods"] = listed(goods);
-    e.words = json::utf8Prefix(fill(kind.words, words), 80);
-    e.notice = json::utf8Prefix(fill(kind.notice, words), 280);
-    e.cry = json::utf8Prefix(fill(kind.cry, words), 200);
+    // (A works is named with its article, "the Oakhaven cut": "held up the {from} cart" then read "the the Oakhaven cut
+    // cart", once the works' crews were at their posts and their carts could be held.)
+    const auto filled = [&](const std::string& text) {
+        auto out = fill(text, words);
+        for (auto at = out.find("the the "); at != std::string::npos; at = out.find("the the ", at))
+            out.erase(at, 4);
+        for (auto at = out.find("The the "); at != std::string::npos; at = out.find("The the ", at))
+            out.erase(at + 4, 4);
+        return out;
+    };
+    e.words = json::utf8Prefix(filled(kind.words), 80);
+    e.notice = json::utf8Prefix(filled(kind.notice), 280);
+    e.cry = json::utf8Prefix(filled(kind.cry), 200);
     if (!kind.noticeOn.empty())
         e.noticeOn = json::utf8Prefix(fill(kind.noticeOn, words), 280);
     // (And once its ship has sailed with the event still on: "is in" would be untrue of a ship gone, so the kind may say

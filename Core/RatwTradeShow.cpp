@@ -155,6 +155,7 @@ void World::ensureRoadMarkets()
     const auto& tp = society_.tradePoints();
     roadMarkets_.clear();
     marketIndex_.clear();
+    std::vector<std::pair<std::string, std::size_t>> squares;
     for (const auto& m : tp.markets)
     {
         if (m.id == "outside" || m.place.empty() || !cells_.count(m.place))
@@ -174,6 +175,22 @@ void World::ensureRoadMarkets()
         if (!placed)
             if (const auto* c = cell(m.place))
                 t.marketX = c->width / 2.0, t.marketY = c->height / 2.0;
+        // A community's square (communities.json `square`; 5.1, 8.1): where every merchant keeps a shop of their own
+        // indoors, the thickest merchants' place is one of those rooms (a bakehouse, an alehouse), and the wagons and the
+        // farms' carts drove into it; they load and unload out of doors on the green instead, where its carters stand,
+        // and its board stands by it.
+        std::string square;
+        // (Only where the map is the one the community was built on: one of its shops is in this world. The old map has
+        // towns of the same names, and may have a cell of the square's id that is somewhere else altogether.)
+        if (const auto* community = items::farmPeople().community(m.id);
+            community && !community->squareCell.empty() &&
+            std::any_of(community->market.begin(), community->market.end(), [&](const items::MarketPlace& shop) { return cells_.count(shop.area) > 0; }))
+            if (const auto* indoors = cell(m.place), *green = cell(community->squareCell); indoors && !indoors->outdoors && green && green->outdoors)
+            {
+                square = community->squareCell;
+                t.market = square;
+                t.marketX = community->squareX, t.marketY = community->squareY;
+            }
         for (const auto& p : society_.positions())
             if (p.role == "guard" && m.cells.count(p.work.cell))
                 ++t.guards;
@@ -181,8 +198,18 @@ void World::ensureRoadMarkets()
         for (const auto& c : m.cells)
             marketIndex_.emplace(c, at);
         marketIndex_[m.place] = at;
+        if (!square.empty())
+            squares.push_back({square, at});
         roadMarkets_.push_back(std::move(t));
     }
+    // (A square's cell is its market's, whatever region of the realm the ground is: who stands on the green is at that
+    // market, so its board is read there, an escort joins its wagon there and its carters' posts are its own.)
+    for (const auto& [cellId, at] : squares)
+        marketIndex_[cellId] = at;
+    // (A board asked for before its market was found, in a fresh world's first ticks while its keepers were still to
+    // come, was placed nowhere and kept so: asked for again now the markets are found again.)
+    for (auto it = boards_.begin(); it != boards_.end();)
+        it = it->second.cell.empty() ? boards_.erase(it) : std::next(it);
     // The roads between markets (each market's nearest, both ways once), for the wagons and the bandits.
     roadRoutes_.clear();
     roadPairs_.clear();
@@ -200,8 +227,12 @@ void World::ensureRoadMarkets()
                 roadPairs_.push_back({a->id, b->id});
             }
         }
-    // Bandits camp in wild country along the roads (one in six such cells), once a load (a save's camps kept).
-    if (!campsSeeded_)
+    // Bandits camp in wild country along the roads (one in six such cells), once a load (a save's camps kept): when the
+    // world first has a road between two markets (a fresh world's Country markets are found a few ticks after its load,
+    // as their keepers arrive: seeded at the load itself, with Ridgemere the only market, there was no road to camp by,
+    // and the roads stayed empty of camps until one gathered, a week on), and nobody sent for is still to come (the
+    // keepers arrive a few a tick, and each brings a market and its roads).
+    if (!campsSeeded_ && !roadRoutes_.empty() && society_.requestsWaiting() == 0)
     {
         campsSeeded_ = true;
         if (roads_.camps.empty())
@@ -1080,7 +1111,7 @@ void World::raidCargo(Caravan& c, BanditCamp& camp)
         else
         {
             society_.stagedSet(c.driver, 0);
-            recordEvent({"carter robbed", c.driver, camp.id, c.cell, 0, 0, {}, 0, 0, "his purse taken in the raid"});
+            recordEvent({"carter robbed", c.driver, camp.id, c.cell, 0, 0, {}, 0, 0, "robbed of the purse in the raid"});
         }
     }
 }

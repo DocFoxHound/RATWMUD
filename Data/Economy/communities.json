@@ -1,7 +1,7 @@
 {
  "format": "ratw-communities",
  "version": 1,
- "about": "The Country's farm steadings and communities as built on the realm (Docs/Design/70, Progress, \"The steadings and the communities\"; doc 71, Phase C), written by tools/worldgen/realm2_places.py with each realm write. Homes and workplaces are interiors (world.interiors / world.areas id; the project's rooms): a resident's home is live.npcs home_area = the home's `area`, home_x/home_y a bed; a post's work_area = the workplace `area`, work_x/work_y a `work` spot. At most 6 to a home (HouseholdMost). An interior's region is its community (`ridgemere` for the farms near the city), so a farm's hands and its keeper are \"near\" it. A community's `town` (false) keeps it a plain place on a restart, never a town of its own (World::setupTowns), until a later step makes it one. A community's `workshops` (doc 72, Phase 5) are its country workshops: the work room (`area`, `work` spots, `stations`), the `crew` doc 71 gives it, and its keeper's `flat` (also in `flats`, `for` the workshop); their hands live in the community's `homes`.",
+ "about": "The Country's farm steadings and communities as built on the realm (Docs/Design/70, Progress, \"The steadings and the communities\"; doc 71, Phase C), written by tools/worldgen/realm2_places.py with each realm write. Homes and workplaces are interiors (world.interiors / world.areas id; the project's rooms): a resident's home is live.npcs home_area = the home's `area`, home_x/home_y a bed; a post's work_area = the workplace `area`, work_x/work_y a `work` spot. At most 6 to a home (HouseholdMost). An interior's region is its community (`ridgemere` for the farms near the city), so a farm's hands and its keeper are \"near\" it. A community's `town` (false) keeps it a plain place on a restart, never a town of its own (World::setupTowns), until a later step makes it one. A community's `workshops` (doc 72, Phase 5) are its country workshops: the work room (`area`, `work` spots, `stations`), the `crew` doc 71 gives it, and its keeper's `flat` (also in `flats`, `for` the workshop); their hands live in the community's `homes`. A community's `square` (doc 79, 5.1 and 8.1) is its green's middle, out of doors (`cell`, `x`, `y`): where its wagons and its farms' carts load and unload and by which its notice board stands; its carters' `posts` (farm_people.json `market`) work at the `work` spots beside it (work_area the square's cell), and live in the community's `homes`.",
  "householdMost": 6,
  "workLabels": {
   "about": "The game knows a shop or works by its keeper's work label (Data/Items/businesses.json `match`, at most 40 characters). A market post's label should hold its business's word; a farm post's should hold none of them (or it becomes that city business), so not \"dairy\", \"cheesemaker\", \"water mill\", \"salt house\", \"salt pans\", \"smokehouse\", \" press\", \"vintner\", \"brewer\", \"butcher\", \"baker\", \"tavern\", \"taproom\", \"keeps the \".",
@@ -616,6 +616,14 @@
       {
        "x": 3,
        "y": 8
+      },
+      {
+       "x": 2,
+       "y": 9
+      },
+      {
+       "x": 2,
+       "y": 7
       }
      ],
      "stations": [
@@ -697,6 +705,31 @@
      ]
     }
    ],
+   "square": {
+    "cell": "w_ridgemere_7_7",
+    "x": 164,
+    "y": 4,
+    "worldX": 1956,
+    "worldY": 1796,
+    "name": "Coldwater",
+    "about": "The green's middle: where the wagons and the farms' carts load and unload, the notice board by it.",
+    "work": [
+     {
+      "x": 165,
+      "y": 5
+     },
+     {
+      "x": 166,
+      "y": 6
+     }
+    ],
+    "posts": [
+     {
+      "post": "carter",
+      "count": 2
+     }
+    ]
+   },
    "workshops": [
     {
      "id": "cn_coldwater_soapworks",
@@ -1441,6 +1474,10 @@
       {
        "x": 7,
        "y": 3
+      },
+      {
+       "x": 6,
+       "y": 2
       }
      ],
      "stations": [
@@ -1510,6 +1547,31 @@
      "otherRooms": []
     }
    ],
+   "square": {
+    "cell": "w_ridgemere_6_9",
+    "x": 140,
+    "y": 76,
+    "worldX": 1676,
+    "worldY": 2380,
+    "name": "Larkfield",
+    "about": "The green's middle: where the wagons and the farms' carts load and unload, the notice board by it.",
+    "work": [
+     {
+      "x": 141,
+      "y": 77
+     },
+     {
+      "x": 142,
+      "y": 78
+     }
+    ],
+    "posts": [
+     {
+      "post": "carter",
+      "count": 1
+     }
+    ]
+   },
    "workshops": [
     {
      "id": "cn_larkfield_weavers",
@@ -2042,6 +2104,10 @@
       {
        "x": 14,
        "y": 11
+      },
+      {
+       "x": 16,
+       "y": 11
       }
      ],
      "stations": [],
@@ -2057,6 +2123,31 @@
      ]
     }
    ],
+   "square": {
+    "cell": "w_ridgemere_8_13",
+    "x": 100,
+    "y": 20,
+    "worldX": 2148,
+    "worldY": 3348,
+    "name": "Southmeadow",
+    "about": "The green's middle: where the wagons and the farms' carts load and unload, the notice board by it.",
+    "work": [
+     {
+      "x": 101,
+      "y": 21
+     },
+     {
+      "x": 102,
+      "y": 22
+     }
+    ],
+    "posts": [
+     {
+      "post": "carter",
+      "count": 1
+     }
+    ]
+   },
    "workshops": [
     {
      "id": "cn_southmeadow_pottery",
@@ -2443,6 +2534,10 @@
       {
        "x": 2,
        "y": 14
+      },
+      {
+       "x": 2,
+       "y": 16
       }
      ],
      "stations": [],
@@ -2458,6 +2553,31 @@
      ]
     }
    ],
+   "square": {
+    "cell": "w_ridgemere_3_13",
+    "x": 92,
+    "y": 148,
+    "worldX": 860,
+    "worldY": 3476,
+    "name": "Fenshore",
+    "about": "The green's middle: where the wagons and the farms' carts load and unload, the notice board by it.",
+    "work": [
+     {
+      "x": 93,
+      "y": 149
+     },
+     {
+      "x": 94,
+      "y": 150
+     }
+    ],
+    "posts": [
+     {
+      "post": "carter",
+      "count": 1
+     }
+    ]
+   },
    "workshops": [
     {
      "id": "cn_fenshore_pottery",
@@ -2818,6 +2938,31 @@
      "guestBeds": 10
     }
    ],
+   "square": {
+    "cell": "w_ridgemere_12_11",
+    "x": 220,
+    "y": 116,
+    "worldX": 3292,
+    "worldY": 2932,
+    "name": "Saltwell",
+    "about": "The green's middle: where the wagons and the farms' carts load and unload, the notice board by it.",
+    "work": [
+     {
+      "x": 221,
+      "y": 117
+     },
+     {
+      "x": 222,
+      "y": 118
+     }
+    ],
+    "posts": [
+     {
+      "post": "carter",
+      "count": 1
+     }
+    ]
+   },
    "workshops": [],
    "gardens": [
     {
@@ -3129,6 +3274,31 @@
      ]
     }
    ],
+   "square": {
+    "cell": "w_ridgemere_3_4",
+    "x": 244,
+    "y": 196,
+    "worldX": 1012,
+    "worldY": 1220,
+    "name": "Oakhaven",
+    "about": "The green's middle: where the wagons and the farms' carts load and unload, the notice board by it.",
+    "work": [
+     {
+      "x": 245,
+      "y": 197
+     },
+     {
+      "x": 246,
+      "y": 198
+     }
+    ],
+    "posts": [
+     {
+      "post": "carter",
+      "count": 1
+     }
+    ]
+   },
    "workshops": [
     {
      "id": "cn_oakhaven_press",
@@ -3609,6 +3779,31 @@
      ]
     }
    ],
+   "square": {
+    "cell": "w_ridgemere_9_3",
+    "x": 4,
+    "y": 28,
+    "worldX": 2308,
+    "worldY": 796,
+    "name": "Frosthollow",
+    "about": "The green's middle: where the wagons and the farms' carts load and unload, the notice board by it.",
+    "work": [
+     {
+      "x": 5,
+      "y": 29
+     },
+     {
+      "x": 6,
+      "y": 30
+     }
+    ],
+    "posts": [
+     {
+      "post": "carter",
+      "count": 1
+     }
+    ]
+   },
    "workshops": [],
    "keepers": [
     {

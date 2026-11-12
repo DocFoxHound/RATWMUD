@@ -3,7 +3,8 @@
 //
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic] [--events FILE]
 //                                                       [--threads N] [--day N] [--sample] [--no-profile] [--no-births]
-//                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day]]
+//                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day]
+//                                                       [--wagon-day]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
@@ -30,6 +31,10 @@
 // --ship-day (doc 79, Phase 5's repair) brings each port's next ship in five seconds into the window (World::dockShip,
 // as the DM would), so a window that no ship's own hour falls in is measured with a ship in: its goods on the shelves,
 // the Wharf's hands at its cargo, the Wharf a crowd.
+// --wagon-day (doc 79, Progress, "Wagons and farms on DEV") sends a wagon out five seconds into the window from every
+// market along its roads, one for each carter it has free (World::sendCaravan, as the Dev Console would), so a window
+// is measured with the roads as busy as the world's carters can make them: a fresh world posts its first wagons two days
+// ahead, so no window of a run from files has one otherwise.
 #include "RatwCalendar.h"
 #include "RatwItems.h"
 #include "RatwJsonDoc.h"
@@ -219,6 +224,7 @@ int main(int argc, char** argv)
     int startDay = 0;                               // --day N: start on day N of the year (1-365; 0: the world's own).
     bool atSeams = false;                           // --at-seams: the players after the first by seams (doc 70).
     bool shipDay = false;                           // --ship-day: each port's next ship in, early in the window.
+    bool wagonDay = false;                          // --wagon-day: every free carter out with a wagon, early in the window.
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -229,6 +235,8 @@ int main(int argc, char** argv)
             atSeams = true;
         else if (flag == "--ship-day")
             shipDay = true;
+        else if (flag == "--wagon-day")
+            wagonDay = true;
         else if (flag == "--sample")
             sample = true;
         else if (flag == "--no-profile")
@@ -268,7 +276,7 @@ int main(int argc, char** argv)
     {
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic]"
                      " [--events FILE] [--threads N] [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
-                     " [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day]]\n";
+                     " [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day] [--wagon-day]]\n";
         return 2;
     }
     if (fast)
@@ -555,6 +563,34 @@ int main(int argc, char** argv)
             }
             if (server.ports().empty())
                 std::cout << "ship day: the world has no port\n";
+        }
+        if (wagonDay && i <= 100 && i + stride > 100)
+        {
+            // Each market's roads in turn, nearest first, while it has a carter free: a wagon out for every carter.
+            int sent = 0;
+            std::string list;
+            for (bool any = true; any;)
+            {
+                any = false;
+                for (std::size_t k = 0; k < 8; ++k)
+                    for (const auto& m : server.society().tradePoints().markets)
+                    {
+                        if (k >= m.routes.size())
+                            continue;
+                        const auto carters = server.cartersOf(m.id);
+                        if (std::none_of(carters.begin(), carters.end(), [&](const std::string& who) { return !server.drivers().count(who); }))
+                            continue;
+                        const auto* from = server.roadMarket(m.id);
+                        const auto* to = server.roadMarket(m.routes[k]);
+                        if (from && to && server.sendCaravan(*from, *to, {{"nails", 3}, {"rope", 3}, {"salt", 3}}))
+                        {
+                            any = true;
+                            ++sent;
+                            list += (list.empty() ? "" : ", ") + m.id + " > " + m.routes[k];
+                        }
+                    }
+            }
+            std::cout << "wagon day: " << sent << " wagons sent out, one for each free carter (" << list << ")\n";
         }
         if (!sampling)
         {

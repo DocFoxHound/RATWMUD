@@ -70,6 +70,7 @@ void Society::reset(Roster roster)
 {
     roster_ = roster;
     state_ = {};
+    farmsLooked_ = false;
     status_.clear();                                // (Doc 79, Phase 2: nothing staged yet, and no real money.)
     stagedHomes_.clear();
     stagedHour_ = stagedDay_ = -1;
@@ -1043,6 +1044,7 @@ bool Society::restore(const SocietyState& saved)
                 quarantineMoved_.insert(id);
         }
     state_ = s;
+    farmsLooked_ = false;                           // (A restored day may have been tended already: tendCareers.)
     indexTills();
     friendGroups_.clear();
     groupsDay_ = -1;

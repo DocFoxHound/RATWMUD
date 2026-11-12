@@ -340,9 +340,10 @@ class City(unittest.TestCase):
 
     def test_placed_text_fits(self):
         import re
+        from worldgen import ridgemere2 as R
         for x in self.m['project']['people']:
-            if not x['home']:
-                continue
+            if not x['home'] or R.realm_homed(x):
+                continue                            # (The realm's, placed by the game's farms' rule: not the city's text.)
             self.assertIsNone(re.search(r"I am [a-z]+s ", x['greeting']), (x['id'], x['greeting']))
             self.assertNotIn('Heights Market', x['description'], x['id'])
             if 'Records Office' in x['workLabel']:

@@ -89,9 +89,15 @@ std::string Game::townFor(const std::string& cellId) const
 
 std::string Game::boardTownFor(const std::string& cellId) const
 {
-    if (auto town = townFor(cellId); !town.empty())
-        return town;
+    const auto town = townFor(cellId);
     const auto* m = world_.roadMarketOf(cellId);
+    // A market's square on ground of another region (a community's green, out of doors in the realm's own region, which a
+    // world with no Town records takes for its law town: doc 79, 5.1): the board there is the market's. (Else its wagons'
+    // notices were pinned to a board named for the region, which stands nowhere, and nobody on the green could read any.)
+    if (m && m->market == cellId && !world_.roadMarket(town))
+        return m->id;
+    if (!town.empty())
+        return town;
     return m ? m->id : std::string();
 }
 

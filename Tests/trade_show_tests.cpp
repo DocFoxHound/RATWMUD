@@ -579,10 +579,14 @@ void aRaid()
         worth += n * Society::catalogPrice(item), pieces += n;
     expect(pieces > 0 && worth <= 40, "its cargo at the camp, at most 40p of it: " + std::to_string(worth));
     bool bounty = false;
+    std::string words;
     for (const auto& k : w.roads().contracts)
         if (k.kind == "bounty" && k.target == "camp_mid")
-            bounty = k.town == "west" && k.reward > 0 && k.reward <= w.society().rule("bountyMost");
+            bounty = k.town == "west" && k.reward > 0 && k.reward <= w.society().rule("bountyMost"), words = k.detail;
     expect(bounty, "west puts a price on the camp, within the cap");
+    // (Its words name the country by its cell's name, never the cell's id: "at c_4_0" was what the board showed.)
+    expect(words.rfind("the bandits robbing the road in Stretch ", 0) == 0 && words.find("c_") == std::string::npos,
+           "the bounty says where in words: " + words);
     bool hurtOrRobbed = false;
     for (const auto& e : seen)
         hurtOrRobbed |= (e.kind == "carter hurt" || e.kind == "carter robbed") && e.actor == d.driver;
@@ -2890,6 +2894,162 @@ void residentsWaitingAtACheckpoint()
     std::filesystem::remove_all(root);
 }
 
+// A carter out of sight goes as his wagon goes (D26; Progress, "Wagons and farms on DEV"): once it is on its way he is
+// beside it in its cell, pass after pass and across every seam, with no way of his own to find (his errand's goal moved
+// with the wagon each pass, and each move was a new leg along the roads he never finished: he fell behind, at a cost).
+void aCarterRidesAlong()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.tick(.6);
+    w.roads().camps.clear();
+    const auto d = postedWagon(w);
+    w.roads().camps.clear();
+    const auto* out = setOut(w, d);
+    expect(out && !out->driver.empty(), "a wagon sets out with its carter");
+    const auto trip = out->id, driver = out->driver;
+    int passes = 0, together = 0;
+    std::set<std::string> cells;
+    bool arrived = false;
+    for (int t = 0; t < 3000 && w.entity("road:" + trip); ++t)
+    {
+        w.tick(1);
+        for (const auto& e : w.takeEvents())
+            arrived = arrived || (e.kind == "caravan arrives" && e.actor == trip);
+        const auto* wagon = w.entity("road:" + trip);
+        const auto* carter = w.entity(driver);
+        const auto* c = caravan(w, trip);
+        if (!wagon || !carter || !c || c->leg == 0 || c->status == "arrived")
+            continue;                               // (Still loading at its yard: he walks to it as anyone does.)
+        expect(wagon->offstage && carter->offstage, "nobody is near: the wagon and its carter go unseen");
+        ++passes;
+        cells.insert(wagon->cellId);
+        together += carter->cellId == wagon->cellId && std::hypot(carter->position.x - wagon->position.x, carter->position.y - wagon->position.y) <= 3;
+    }
+    expect(arrived && cells.size() >= 5 && passes > 50, "it crossed the strip to the far market: " + std::to_string(cells.size()) + " cells, " +
+                                                              std::to_string(passes) + " passes");
+    expect(together * 20 >= passes * 19, "its carter beside it the whole way: " + std::to_string(together) + " of " + std::to_string(passes) + " passes");
+    run(w, 5);
+    expect(!w.drivers().count(driver) && !w.entity("road:" + trip), "home, and its carter free again");
+}
+
+// A community's square (communities.json `square`; 5.1, 8.1; the user, 2026-11-12: wagons and farms). Coldwater as the
+// realm has it, in small: its Stores and a cottage indoors (the community's region), its green out of doors on ground of
+// the realm's own region, a carter at his stand on the green. Its merchants keep indoors, so its wagons load and unload
+// on the green, where its board stands and its notices are read; its carter drives from his stand.
+void aCommunitysSquare()
+{
+    const auto* coldwater = items::farmPeople().community("coldwater");
+    expect(coldwater && !coldwater->squareCell.empty() && !coldwater->stand.work.empty() && !coldwater->stand.posts.empty() &&
+               coldwater->stand.posts.front().first == "carter" && items::farmPeople().market.count("carter"),
+           "the catalogue gives Coldwater a square, a stand and a carter's post");
+    const auto green = coldwater->squareCell;
+    const auto store = std::string("cn_coldwater_store"), cottage = std::string("cn_coldwater_cottage_1");
+    auto f = strip("EE....");
+    const auto room = [&](const std::string& cell, const std::string& name, int w, int h, bool outdoors) {
+        std::ostringstream text;
+        text << "id: " << cell << "\nname: " << name << "\ndescription: A place.\nworld: 4096 0 0\noutdoors: " << (outdoors ? "true" : "false")
+             << "\nweather: clear\nsize: " << w << ' ' << h << "\ngrid:\n";
+        for (int y = 0; y < h; ++y) text << std::string(std::size_t(w), '.') << '\n';
+        f.cells[cell] = text.str();
+    };
+    room(green, "The Greenholt, Coldwater", 256, 256, true);
+    room(store, "Coldwater Stores", 18, 12, false);
+    room(cottage, "Coldwater Cottage 1", 16, 12, false);
+    std::ostringstream m;
+    const auto doorTile = [&](const std::string& cell, double x, double y) {
+        auto& text = f.cells[cell];
+        const auto grid = text.find("grid:\n") + 6;
+        const auto width = text.find('\n', grid) - grid;
+        text[grid + std::size_t(y) * (width + 1) + std::size_t(x)] = '+';
+    };
+    // (A door each side, each arriving on the open tile beside the other: `aOut` and `bOut` the steps off the doors.)
+    const auto way = [&](const std::string& name, const std::string& a, double ax, double ay, std::pair<int, int> aOut, const std::string& b,
+                         double bx, double by, std::pair<int, int> bOut) {
+        doorTile(a, ax, ay);
+        doorTile(b, bx, by);
+        m << "door \"" << name << "_a\" \"A door\" \"" << a << "\" " << ax << ' ' << ay << " \"" << b << "\" " << bx + bOut.first << ' '
+          << by + bOut.second << " \"" << name << "_b\" 1 0 0 0 \"-\"\n";
+        m << "door \"" << name << "_b\" \"A door\" \"" << b << "\" " << bx << ' ' << by << " \"" << a << "\" " << ax + aOut.first << ' '
+          << ay + aOut.second << " \"" << name << "_a\" 1 0 0 0 \"-\"\n";
+    };
+    const auto lives = [&](const std::string& who, const std::string& name, const std::string& role, const std::string& work,
+                           const std::string& at, double wx, double wy, double hx) {
+        m << "resident \"" << who << "\" \"" << name << "\" \"" << role << "\" \"" << work << "\" \"Someone.\" \"Hello.\" 30 \"timber\" "
+          << "\"female\" \"average\" \"saddle\" 3 1 5 1 1 8 17 \"-\" 40 0 1 \"" << cottage << "\" " << hx << " 4.5 \"" << at << "\" " << wx << ' '
+          << wy << " \"" << cottage << "\" " << hx << " 5.5\n";
+    };
+    m << "area \"" << green << "\"\nterritory \"" << green << "\" \"wilds\" \"-\" 0\n";
+    for (const auto& cell : {store, cottage})
+        m << "area \"" << cell << "\"\nterritory \"" << cell << "\" \"coldwater\" \"-\" 0\n";
+    way("road_east", id(5), 15.5, 8.5, {-1, 0}, green, 150.5, 4.5, {1, 0});
+    way("store_door", green, 164.5, 12.5, {0, -1}, store, 8.5, 0.5, {0, 1});
+    way("cottage_door", green, 170.5, 12.5, {0, -1}, cottage, 8.5, 0.5, {0, 1});
+    lives("cs", "Myrtle Stillford", "merchant", "shopkeeper at Coldwater Stores", store, 8.5, 8.5, 2.5);
+    const auto stand = coldwater->stand.work.front();
+    lives("cc", "Willa Coldwick", "civilian", "carter at Coldwater", green, stand.first, stand.second, 4.5);
+    for (int n = 1; n <= 3; ++n)
+        lives("ch" + std::to_string(n), "Hand " + std::to_string(n), "civilian", "working", cottage, 6.5 + n, 8.5, 6.5 + n);
+    f.manifest += m.str();
+    {
+        World plain;
+        plain.setCellSource(f.source());
+        const auto loaded = plain.loadWorldFiles({{"world.ratw", f.manifest}}, "square");
+        expect(loaded.ok, "Coldwater's strip loads: " + loaded.message);
+    }
+    const auto root = onDisk(f, "square");
+    game::Game g(optionsOn(root));
+    std::string problem;
+    expect(g.start(problem), "a game starts with Coldwater: " + problem);
+    auto& w = g.world();
+    w.tick(.6);
+    w.tick(.6);
+    const auto* market = w.roadMarket("coldwater");
+    const auto* tp = w.society().tradePoints().find("coldwater");
+    expect(market && tp && tp->place == store, "Coldwater is a market, its merchants' place the Stores (indoors)");
+    expect(market->market == green && std::abs(market->marketX - coldwater->squareX) < 1e-9 && std::abs(market->marketY - coldwater->squareY) < 1e-9,
+           "its wagons load and unload at its square, out of doors: " + market->market);
+    expect(w.roadMarketOf(green) == market && w.roadMarketOf(store) == market, "who stands on the green is at Coldwater's market");
+    expect(w.cartersOf("coldwater") == std::vector<std::string>{"cc"}, "its carter, at her stand on the green, is Coldwater's");
+    const auto* spot = w.boardSpot("coldwater");
+    expect(spot && spot->cell == green && std::hypot(spot->x - coldwater->squareX, spot->y - coldwater->squareY) <= 4.3,
+           "its notice board stands by the square");
+    w.roads().camps.clear();
+    // Wagons both ways within a few weeks: to Coldwater's square, and from its carter's stand.
+    market::Departure in, out;
+    for (int day = 0; day < 40 && (in.id.empty() || out.id.empty()); ++day)
+    {
+        for (const auto& x : w.society().board().committed)
+            if (x.kind == "wagon" && x.to == "coldwater" && in.id.empty())
+                in = x;
+            else if (x.kind == "wagon" && x.from == "coldwater" && out.id.empty())
+                out = x;
+        if (in.id.empty() || out.id.empty())
+            nextMorning(w);
+    }
+    expect(!in.id.empty() && !out.id.empty() && out.driver == "cc", "a wagon is posted to Coldwater and one from it, its own carter driving");
+    // Its notice is on Coldwater's own board (never one named for the green's region), and read on the green.
+    const auto* pinned = g.documents().find("wagon-" + in.id + "-to");
+    expect(pinned && pinned->board == "board:coldwater", "the wagon's notice is pinned on Coldwater's board: " + (pinned ? pinned->board : std::string("none")));
+    Client ash;
+    enterAt(g, ash, 81, "ash", "coldwater");
+    expect(w.entity(ash.entityId)->cellId == green, "a player at Coldwater's board stands on the green");
+    board(g, ash, {{"verb", "read"}});
+    const auto* view = ash.last("board");
+    bool read = false;
+    for (const auto& n : view ? view->array("notices") : std::vector<json::Value>{})
+        read = read || n.string("text").rfind("Wagon from East, due ", 0) == 0;
+    expect(read, "and reads the wagon's notice there: " + (view ? json::dump(*view) : ash.said()));
+    const auto* leaving = setOut(w, out);
+    expect(leaving && leaving->startCell == green && std::abs(leaving->startX - stand.first) < 1e-9 && leaving->endCell == id(1),
+           "Coldwater's wagon sets out from its carter's stand on the green");
+    for (const auto& c : w.roads().caravans)
+        expect(c.kind != "wagon" || c.to != "coldwater" || (c.endCell == green && std::abs(c.endX - coldwater->squareX) < 1e-9),
+               "a wagon for Coldwater is bound for its square");
+    expect(w.society().realBalanced(), "real money is balanced");
+    std::filesystem::remove_all(root);
+}
+
 int writeCrashes(const std::filesystem::path& dir)
 {
     namespace fs = std::filesystem;
@@ -2946,7 +3106,9 @@ int main(int argc, char** argv)
         if (argc == 4 && std::string(argv[1]) == "--check-crashes")
             return checkCrashes(argv[2], argv[3]);
         wagonsCommittedWhenPosted();
+        aCommunitysSquare();
         aWagonsTrip();
+        aCarterRidesAlong();
         anArrivalNeverRaises();
         aRaid();
         foundCargoIsAReward();

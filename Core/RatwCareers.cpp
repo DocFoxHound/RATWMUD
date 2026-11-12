@@ -964,9 +964,24 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
     std::vector<CareerNote> notes;
     auto& c = state_.careers;
     const auto today = std::int64_t(std::floor(now));
-    if (today == c.day || roster_ != Roster::Authored)
+    if (roster_ != Roster::Authored)
         return notes;
+    if (today == c.day)
+    {
+        // A world loaded with today's careers already tended (a save taken after the day's pass: DEV's, of noon on its
+        // first day, kept every server it started from the farms' people until the next midnight, and a scratch server,
+        // which starts from the same save each time, for good; a build since that brought a farm, a works or a market's
+        // post; requests a crash lost, which are in no checkpoint): its farms' posts are looked at once now. The staffing
+        // asks only for the posts still wanted, so a second look in a day asks for nobody twice.
+        if (!farmsLooked_)
+        {
+            farmsLooked_ = true;
+            staffFarms(world, notes);
+        }
+        return notes;
+    }
     c.day = today;
+    farmsLooked_ = true;
     const auto alive = [&](const std::string& id) { return !id.empty() && world.alive(id); };
 
     // Families as authored (doc 62, decision 8), kept as those made in play are: a couple married, a child's parents.

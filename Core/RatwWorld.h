@@ -2439,6 +2439,9 @@ class World
                         const std::string& cellId, Vec2 at, const std::string& kind, const std::string& of);
     void removeRoadFolk(const std::string& id);
     bool withCaravan(const std::string& who, const Entity& wagon) const;
+    // A carter out of sight whose wagon (or cart) is out of sight too goes as it goes: set beside it, in its cell, with no
+    // way of his own (true: done for this pass). Not while it still waits for him at its yard and he is elsewhere.
+    bool ridesAlong(Entity& carter, const std::string& goalCell, Vec2 beside);
     Encounter* encounterWith(const std::string& player);
     void endEncounter(const std::string& camp, double spareFor);
     void clearCamp(BanditCamp& camp, const std::string& by);

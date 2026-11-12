@@ -274,6 +274,14 @@ WORKSHOPS = {
     'southmeadow': [('pottery', 'pottery', 'Southmeadow Pottery', 2)],
     'oakhaven': [('press', 'press', 'Oakhaven Press and Paper Mill', 5)],
 }
+# Doc 79, 5.1 and 8.1 (the user, 2026-11-12: wagons and farms): each community's square is its green's middle, where its
+# wagons and its farms' carts stand, with its carters' posts beside the wagon (tiles from the green's middle; the well is
+# at +3, -1). Nothing is built for it: the green and its lane are the community's own. A carter each, two at Coldwater,
+# the biggest and the middle country's crossroads (the East, River, High and Downs Roads): staffed with the community's
+# market (farm_people.json `market`, the post `carter`), nobody made.
+SQUARE_STAND = ((1, 1), (2, 2))
+CARTERS = {'coldwater': 2}
+SQUARE_ABOUT = 'The green\'s middle: where the wagons and the farms\' carts load and unload, the notice board by it.'
 WORKSHOP_FLAT = 4        # The keeper's flat: the keeper now, the family later (as the stores' flats).
 # The cottages Phase 5 adds for its hands (six beds each). The community's cottages also hold its farms' hands, its works'
 # crews and its market hands without a flat (first come, first housed); Larkfield's four would be full to the last bed
@@ -1202,6 +1210,15 @@ class Places:
         style = spec['style']
         out = {'id': spec['id'], 'name': spec['name'], 'site': spec['site'], 'style': style,
                'centre': {'x': cx, 'y': cy}, 'about': spec['about'], 'homes': [], 'market': [], 'gardens': []}
+        # Its square (doc 79, 5.1 and 8.1): the green's middle, kept open, where its wagons and its farms' carts load
+        # and unload and by which its notice board stands; its carters' posts beside the wagon, on the green (in the
+        # square's own cell, clear of the well).
+        sq_cell, sq_x, sq_y = win.cell_at(lx, ly)
+        stand = [win.cell_at(lx + dx, ly + dy) for dx, dy in SQUARE_STAND]
+        out['square'] = {'cell': sq_cell, 'x': sq_x, 'y': sq_y, 'worldX': cx, 'worldY': cy, 'name': spec['name'],
+                         'about': SQUARE_ABOUT,
+                         'work': [{'x': x, 'y': y} for cid, x, y in stand if cid == sq_cell],
+                         'posts': [{'post': 'carter', 'count': CARTERS.get(spec['id'], 1)}]}
         wanted = []
         for entry in spec['market']:
             key, kind, name, text, posts = entry[:5]
@@ -1904,7 +1921,7 @@ class Places:
                          'town': False,
                          'hands': hands.get(spec['id'], 0), 'farms': served,
                          'beds': sum(h['capacity'] for h in homes) + sum(f['capacity'] for f in flats),
-                         'homes': homes, 'flats': flats, 'market': market, 'workshops': workshops,
+                         'homes': homes, 'flats': flats, 'market': market, 'square': c['square'], 'workshops': workshops,
                          **({'keepers': keepers} if keepers else {}),
                          'gardens': c['gardens'],
                          'roomToGrow': c['roomToGrow']})
@@ -1921,7 +1938,10 @@ class Places:
                      '(World::setupTowns), until a later step makes it one. A community\'s `workshops` (doc 72, Phase '
                      '5) are its country workshops: the work room (`area`, `work` spots, `stations`), the `crew` doc 71 '
                      'gives it, and its keeper\'s `flat` (also in `flats`, `for` the workshop); their hands live in the '
-                     'community\'s `homes`.',
+                     'community\'s `homes`. A community\'s `square` (doc 79, 5.1 and 8.1) is its green\'s middle, out of '
+                     'doors (`cell`, `x`, `y`): where its wagons and its farms\' carts load and unload and by which its '
+                     'notice board stands; its carters\' `posts` (farm_people.json `market`) work at the `work` spots '
+                     'beside it (work_area the square\'s cell), and live in the community\'s `homes`.',
             'householdMost': HOUSEHOLD_MOST,
             'workLabels': {
                 'about': 'The game knows a shop or works by its keeper\'s work label (Data/Items/businesses.json `match`, '

@@ -1694,12 +1694,16 @@ std::string Game::priceWords(std::int64_t pennies)
 
 void Game::makeResidents(std::size_t most)
 {
-    if (options_.database.empty())
+    if (options_.database.empty() || options_.scratch)
     {
-        // A world from files makes them itself, like their templates (doc 64, Phase 8).
+        // A world from files makes them itself, like their templates (doc 64, Phase 8). So does a scratch server of a
+        // world in the database: it writes no row (its session is read-only: each "farm" placement, arrival and birth
+        // was refused there, so no farm of DEV was ever staffed on one, and no Country community had a keeper), and
+        // what it makes is its own, gone when it stops.
         if (const int made = world_.makeRequestedResidents(nullptr, most); made > 0)
         {
-            note("info", "RATW_RESIDENT " + std::to_string(made) + " made from files");
+            note("info", "RATW_RESIDENT " + std::to_string(made) +
+                             (options_.database.empty() ? " made from files" : " made for this scratch server only (no row written)"));
             ++revision_;
         }
         return;

@@ -89,7 +89,7 @@ struct Fixture
 
 // A city of a few working households, and an unplaced pool of every old trade (more than the farms want of most, two
 // fewer of the orchards and vines than they want, so the fallback is used), with a family or two and a House's.
-void build(Fixture& x)
+void build(Fixture& x, const std::vector<ResidentSpec>& more = {})
 {
     AuthoredRoster r;
     // The city: a stall to keep its own shops, and lower households in the Rents.
@@ -171,6 +171,8 @@ void build(Fixture& x)
     guarded.protectedNpc = true;
     r.unplaced.push_back(guarded);
     r.economy.treasury = 20000;                     // (Every area's farms are places of work from the first day: doc 79.)
+    for (const auto& u : more)
+        r.unplaced.push_back(u);
     for (const auto& u : r.unplaced)
         x.unplacedAtStart.insert(u.id);
     for (const auto& u : r.residents)
@@ -679,6 +681,117 @@ void everyAreaAtOnce()
         if (std::any_of(items::farmPeople().farms.begin(), items::farmPeople().farms.end(), [&](const auto& f) { return f.community == c.id; }))
             expect(farms.count("market:" + c.id), c.id + "'s market staffed with its farms");
 }
+// The carters (communities.json `square`; doc 79, 8.1; the user, 2026-11-12: wagons and farms): each community's stand on
+// its green is staffed with its market, the posts the square asks for (two at Coldwater, one each elsewhere), from the
+// unplaced as every post is: of the herds and flocks first (those who kept the old towns' stables before any), then
+// service and labour and the rest of the post's trades; each a civilian's post out of doors at the square's cell, its
+// holder living in the community.
+void theCarters()
+{
+    // (Two who kept an old town's stables: of the herds and flocks by that word, and a carter's first.)
+    Fixture x;
+    build(x, {person("ostler", "works at The Coldwater Stables", 24), person("stablekeep", "runs The Coldwater Stables", 30)});
+    auto& t = x.s;
+    run(t, 1 - .5 / 24, 1 + .5 / 24);
+    t.tendCareers(2, x.world);
+    std::map<std::string, std::string> oldLabel;
+    int asked = 0;
+    for (const auto& q : t.takeRequests())
+    {
+        oldLabel[q.templateId] = t.unplaced(q.templateId)->workLabel;
+        if (q.workLabel.rfind("carter at ", 0) == 0)
+        {
+            ++asked;
+            expect(q.kind == "farm" && q.role == "civilian" && q.farm.rfind("market:", 0) == 0, "a carter is a market's post, a civilian's: " + q.workLabel);
+        }
+        if (t.arrive(q))
+            t.welcome(q, q.templateId);
+    }
+    int wanted = 0, ofStables = 0;
+    const auto& people = items::farmPeople();
+    for (const auto& c : people.communities)
+    {
+        expect(!c.squareCell.empty() && c.squareCell.rfind("w_ridgemere_", 0) == 0 && !c.stand.posts.empty() && c.stand.area == c.squareCell,
+               c.id + " has a square out of doors and a stand on it");
+        const int count = c.stand.posts.front().second;
+        expect(c.stand.posts.front().first == "carter" && count == (c.id == "coldwater" ? 2 : 1) && int(c.stand.work.size()) >= count,
+               c.id + "'s stand asks for its carters, a work spot each");
+        wanted += count;
+        int held = 0;
+        std::set<std::pair<double, double>> spots;
+        for (const auto& p : t.positions())
+            if (p.title == "carter at " + c.name)
+            {
+                const auto& holder = t.state().careers.positions.at(p.id).holder;
+                expect(p.work.cell == c.squareCell && p.role == "civilian" && !holder.empty(), c.id + "'s carter's post is at its square, and held");
+                expect(std::find(c.stand.work.begin(), c.stand.work.end(), std::pair{p.work.x, p.work.y}) != c.stand.work.end() &&
+                           spots.insert({p.work.x, p.work.y}).second,
+                       c.id + "'s carter stands at a spot of the stand, each their own");
+                expect(t.resident(holder) && t.resident(holder)->homeCell.rfind("cn_" + c.id + "_", 0) == 0,
+                       c.id + "'s carter lives in the community: " + t.resident(holder)->homeCell);
+                const auto trade = people.tradeOf(oldLabel.at(holder));
+                const auto& trades = people.market.at("carter").trades;
+                expect(std::find(trades.begin(), trades.end(), trade) != trades.end(), "a carter of the post's trades: " + oldLabel.at(holder));
+                // (Those of the stables first, while any is left unplaced: a farm of the herds may have taken one.)
+                if (oldLabel.at(holder).find("Stables") == std::string::npos)
+                    expect(t.resident("ostler") && t.resident("stablekeep"), "nobody of the stables waits while another drives: " + holder);
+                else
+                    ++ofStables;
+                ++held;
+            }
+        expect(held == count, c.id + ": every carter's post filled: " + std::to_string(held));
+    }
+    expect(asked == wanted && wanted == 8, "eight carters asked for, one a post: " + std::to_string(asked));
+    expect(ofStables >= 1, "one of the stables drives a wagon: " + std::to_string(ofStables));
+    // The next day asks for no more of them.
+    t.tendCareers(3, x.world);
+    for (const auto& q : t.takeRequests())
+        expect(q.workLabel.rfind("carter at ", 0) != 0, "no carter asked for twice");
+}
+
+// A world loaded with today's careers already tended (the user, 2026-11-12: DEV's save, taken at noon of its first day by
+// a server from before the farms' people, kept every server started from it from staffing a farm until the next
+// midnight, and a scratch server, which starts from that save each time, for good): the farms' posts are looked at on
+// the first careers pass after the load, whatever the day; once, so a second pass the same day asks for nobody again.
+void aDayAlreadyTended()
+{
+    Fixture x;
+    build(x);
+    auto& s = x.s;
+    run(s, 1 - .5 / 24, 1 + .5 / 24);
+    auto saved = s.state();
+    saved.careers.day = 2;                           // (The day's pass done, by a server that knew no farms' people.)
+    Fixture y;
+    build(y);                                        // (The same world, loaded again: its save restored over it.)
+    auto& t = y.s;
+    expect(t.restore(saved) && t.state().careers.day == 2, "the save loads, its day tended");
+    const auto notes = t.tendCareers(2.5, y.world);
+    const auto requests = t.takeRequests();
+    std::set<std::string> farms;
+    for (const auto& q : requests)
+    {
+        expect(q.kind == "farm", "only the farms' people are sent for on a day already tended: " + q.kind);
+        farms.insert(q.farm);
+    }
+    for (const auto& f : t.farms())
+        expect(farms.count(f.def->id), f.def->id + "'s people sent for on the first pass after the load");
+    expect(std::all_of(notes.begin(), notes.end(), [](const CareerNote& n) { return n.kind == "farm placement"; }),
+           "and nothing else of the day's careers is done twice");
+    expect(t.state().careers.day == 2, "the day stays the save's");
+    for (const auto& q : requests)
+        if (t.arrive(q))
+            t.welcome(q, q.templateId);
+    t.tendCareers(2.6, y.world);
+    expect(t.takeRequests().empty(), "a second pass the same day sends for nobody");
+    // Not tended at all on a day already tended once this world has looked (the usual day: one pass).
+    Fixture z;
+    build(z);
+    run(z.s, 1 - .5 / 24, 1 + .5 / 24);
+    z.s.tendCareers(2, z.world);
+    const auto first = z.s.takeRequests().size();   // (Taken, never carried out: the posts are still wanted.)
+    z.s.tendCareers(2.5, z.world);
+    expect(first > 0 && z.s.takeRequests().empty(), "a day tended by this world itself is tended once");
+}
 } // namespace
 
 int main()
@@ -694,6 +807,8 @@ int main()
         aWorksPostFilledAgain();
         nothingWithoutThePlaces();
         everyAreaAtOnce();
+        theCarters();
+        aDayAlreadyTended();
     }
     catch (const std::exception& error)
     {
