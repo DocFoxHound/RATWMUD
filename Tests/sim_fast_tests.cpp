@@ -8,6 +8,7 @@
 #include "RatwPool.h"
 #include "RatwWorld.h"
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
@@ -15,6 +16,7 @@
 #include <iostream>
 #include <functional>
 #include <map>
+#include <vector>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -301,6 +303,53 @@ void theHarness(const std::string& binary, const fs::path& root)
     {
         const auto cmd = "\"" + binary + "\" \"" + root.string() + "\" --simulate 6 30 " + gone + " > /dev/null 2>&1";
         expect(std::system(cmd.c_str()) != 0, std::string("the economy's old flag is refused: ") + gone);
+    }
+    {
+        // --stage FILE (doc 79, 16.13; Phase 11): a JSON line a run day, for reading a soak: the bands, the markets, the
+        // trade seen, the faucets and the sizes a soak watches; reading only, so the run ends as it does without it.
+        const auto file = out / "stage.jsonl";
+        const auto stageOut = runIt("stage", "--players 0 --threads 1 --stage \"" + file.string() + "\"");
+        expect(lineOf(stageOut, "  digest: ") == digest, "--stage only reads: the same run as without it");
+        std::vector<json::Value> lines;
+        std::istringstream text(slurp(file));
+        for (std::string line; std::getline(text, line);)
+        {
+            json::Value v;
+            std::string error;
+            expect(json::parse(line, v, error) && v.isObject(), "a --stage line is a JSON object: " + error + " " + line.substr(0, 200));
+            lines.push_back(std::move(v));
+        }
+        expect(lines.size() == 3, "a line a run day (three): " + std::to_string(lines.size()));
+        for (std::size_t d = 0; d < lines.size(); ++d)
+        {
+            const auto& l = lines[d];
+            const auto at = " (day " + std::to_string(d + 1) + ")";
+            expect(l.number("runDay") == double(d + 1) && l.number("wall", -1) >= 0 && l.has("date") && l.has("slider"),
+                   "its day, date, wall time and slider" + at);
+            double share = 0, households = 0;
+            for (const char* band : {"destitute", "poor", "comfortable", "rich"})
+            {
+                const auto& b = l.object("bands").object(band);
+                expect(b.isObject() && b.has("share") && b.has("hungry") && b.has("thefts"), std::string("the band ") + band + at);
+                share += b.number("share");
+                households += b.number("households");
+            }
+            expect(households > 0 && std::abs(share - 1) < .01, "the bands' shares sum to one: " + std::to_string(share) + at);
+            expect(!l.array("markets").empty(), "its markets" + at);
+            for (const auto& m : l.array("markets"))
+                expect(m.has("id") && m.number("price") >= .8 - 1e-9 && m.number("price") <= 1.28 + 1e-9 && m.has("times") &&
+                           m.has("cause") && m.has("atHigh") && m.has("atLow") && m.array("bands").size() == 4,
+                       "a market's price index inside the clamp, its Times and cause, its bands" + at);
+            expect(l.object("seen").isObject() && l.object("committed").isObject(), "the trade seen and committed" + at);
+            expect(l.object("faucets").number("made", -1) == 0 && l.object("faucets").number("sunk", -1) == 0,
+                   "no player, no faucet" + at);
+            expect(l.boolean("realBalanced"), "real money balanced" + at);
+            const auto& z = l.object("sizes");
+            expect(z.object("board").number("bytes") > 0 && z.object("accounts").number("residents") > 0 &&
+                       z.object("accounts").object("stagedBy").isObject() && z.object("staged").has("holds") &&
+                       z.object("roads").has("caravans") && z.object("crime").has("incidents"),
+                   "the sizes a soak watches" + at);
+        }
     }
     const auto fastOut = runIt("fast", "--players 0 --threads 1 --fast");
     expect(fastOut.find("unseen step 30 s") != std::string::npos && fastOut.find("straight") != std::string::npos &&

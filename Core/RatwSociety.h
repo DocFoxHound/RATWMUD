@@ -1252,9 +1252,19 @@ class Society
     struct MarketCount
     {
         std::array<int, status::Bands> bands{};
+        std::array<int, status::Bands> hungryBy{};  // (Hungry households by band: world_check --stage.)
         int overridden = 0, hungry = 0, shortToday = 0, dole = 0;
     };
     std::map<std::string, MarketCount> marketCounts() const;
+    // A market's price index (world_check --stage: doc 79, 16.13; Phase 11): over the base goods its shops set out, the
+    // geometric mean of each one's price factor now (the season, region, Times and pressure, inside the clamp; the
+    // district at 1), and how many of them sit at the clamp's dear or cheap end.
+    struct PriceIndex
+    {
+        double index = 1;
+        int goods = 0, atHigh = 0, atLow = 0;
+    };
+    PriceIndex priceIndex(const std::string& market) const;
     // The Prosperity report as last worked out (World::prosperityReport; SocietyState::report).
     const json::Value& report() const { return state_.report; }
     void setReport(json::Value report) { state_.report = std::move(report); }

@@ -8,10 +8,11 @@ lines what tools/manifest_lines.py writes for the same entity.
 
 Each case in its own throwaway database, `ratw_test_s2stage_mig_<hex>`, dropped after; skipped without PostgreSQL.
 
-(d) Opt in: RATW_MIGRATE_COPIES names real world databases (e.g. "ratw_ridgemere2,ratw_prod": DEV at 0060, PROD at
-0054). Each is copied read only (pg_dump) into a throwaway `ratw_test_s2stage_copy_<hex>`, migrated to 0061 there, its
-live.economy rows checked byte-identical and its manifest read; then, with RATW_TEST_SERVER, a scratch game server (it
-writes nothing) is started on the copy and must load the world and listen. The real databases are only read.
+(d) Opt in: RATW_MIGRATE_COPIES names real world databases (e.g. "ratw_ridgemere2,ratw_prod": DEV at 0061 since
+Phase 9, PROD at 0054). Each is copied read only (pg_dump) into a throwaway `ratw_test_s2stage_copy_<hex>`, migrated to
+0061 there (nothing more for DEV's), its live.economy rows checked byte-identical and its manifest read; then, with
+RATW_TEST_SERVER, a scratch game server (it writes nothing) is started on the copy and must load the world and listen.
+The real databases are only read.
 """
 import json
 import os
@@ -339,7 +340,7 @@ SERVER = os.environ.get('RATW_TEST_SERVER')
 
 @unittest.skipUnless(database_available() and COPIES, 'RATW_MIGRATE_COPIES names no database to copy')
 class CopiesOfRealWorlds(unittest.TestCase):
-    """0061 on copies of the real worlds (DEV at 0060, PROD at 0054 as their migrations stand), never on them."""
+    """0061 on copies of the real worlds (PROD at 0054; DEV at 0061 since Phase 9), never on them."""
 
     def copy(self, source):
         s = W.settings()
@@ -371,7 +372,9 @@ class CopiesOfRealWorlds(unittest.TestCase):
                     W.migrate(db.owner, files_upto(60))    # (PROD's 0055-0060 add columns; 0061 rewrites nothing.)
                     before = economy_rows(db.owner)
                     worlds = [r[0] for r in db.owner.execute('SELECT id FROM world.worlds ORDER BY id')]
-                    self.assertEqual(len(W.migrate(db.owner)), 1, f'{source}: 0061 alone after 0060')
+                    # (DEV has had 0061 since Phase 9: a copy of it then takes nothing more; PROD's takes 0061 alone.)
+                    self.assertEqual(len(W.migrate(db.owner)), 0 if before_version >= '0061' else 1,
+                                     f'{source} at {before_version}: 0061 alone after 0060')
                     self.assertIn('0061', W.applied_migrations(db.owner), f'{source} at {before_version} migrated')
                     self.assertNotIn('business_settings', tables(db.owner))
                     self.assertEqual(economy_rows(db.owner), before, f'{source}: live.economy byte for byte')

@@ -7173,13 +7173,39 @@ void World::stream(double idle)
                 }
         }
     const bool due = time_ >= streamCheck_;
-    if (!due && occupied == streamOccupied_ && overlooked == streamOverlooked_)
+    if (!due && !streamBehind_ && occupied == streamOccupied_ && overlooked == streamOverlooked_)
         return;
     std::set<std::string> wanted = occupied;
     wanted.insert(overlooked.begin(), overlooked.end());
     // The spawn is never let go: it is where a wolf is put whose own place can't be loaded (addPlayer).
     if (cells_.count(spawnCell_))
         wanted.insert(spawnCell_);
+    // At once: the cells someone stands in or sees into, the spawn, and the cells over the edge from anyone onstage
+    // standing within SeamNear tiles of it (the ground a few steps away). The rest are the surroundings, loaded ahead of
+    // need, at most StreamLoadsATick places and StreamTilesATick tiles a tick (one at least): a crossing loads the place
+    // it goes into anyway (transition). So a village whose people step out of doors at 7:00 brings the realm's cells
+    // round its green in over a few ticks, not six of them, 6.5 ms each, in one (doc 79, Phase 11: a 46 ms tick in 6-8).
+    std::set<std::string> now = wanted;
+    for (const auto& entry : onstage())
+    {
+        const auto& e = entry.second;
+        if (e.offstage)
+            continue;
+        const auto* c = cell(e.cellId);
+        if (!c || !c->outdoors)
+            continue;
+        if (e.position.x > SeamNear && e.position.y > SeamNear && e.position.x < c->width - SeamNear &&
+            e.position.y < c->height - SeamNear)
+            continue;                               // (Far from every edge: nothing over one is near.)
+        for (const auto& b : besideCells(c->id))
+            if (const auto* n = cell(b.id))
+            {
+                const double ox = std::max({0.0, b.dx - e.position.x, e.position.x - (b.dx + n->width)});
+                const double oy = std::max({0.0, b.dy - e.position.y, e.position.y - (b.dy + n->height)});
+                if (std::hypot(ox, oy) <= SeamNear)
+                    now.insert(b.id);
+            }
+    }
     if (tiered())
         wanted.insert(tierWanted_.begin(), tierWanted_.end());   // Worked out each schedule update.
     else
@@ -7188,10 +7214,26 @@ void World::stream(double idle)
             const auto& next = neighborList(id);
             wanted.insert(next.begin(), next.end());
         }
+    std::size_t ahead = 0, tiles = 0;
+    streamBehind_ = false;
     for (const auto& id : wanted)
     {
         needed_[id] = time_;
-        ensureLoaded(id);
+        const auto* c = cell(id);
+        if (!c || c->loaded || now.count(id))
+        {
+            ensureLoaded(id);
+            continue;
+        }
+        const auto size = std::size_t(std::max(0, c->width)) * std::size_t(std::max(0, c->height));
+        if (ahead == 0 || (ahead < StreamLoadsATick && tiles + size <= StreamTilesATick))
+        {
+            ensureLoaded(id);
+            ++ahead;
+            tiles += size;
+        }
+        else
+            streamBehind_ = true;                   // (The rest next tick.)
     }
     streamOccupied_ = std::move(occupied);
     streamOverlooked_ = std::move(overlooked);

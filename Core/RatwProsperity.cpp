@@ -169,10 +169,31 @@ std::map<std::string, Society::MarketCount> Society::marketCounts() const
         }
         c.overridden += overridden;
         c.hungry += hungry;
+        c.hungryBy[std::size_t(std::clamp(home.band, 0, status::Bands - 1))] += hungry;
         c.shortToday += foodShort(key) > 0;
         if (const auto d = state_.staged.dole.find(key); d != state_.staged.dole.end() && d->second > day - calendar::DaysPerWeek)
             ++c.dole;
     }
+    return out;
+}
+
+Society::PriceIndex Society::priceIndex(const std::string& market) const
+{
+    PriceIndex out;
+    const auto* m = tradePoints().find(market);
+    if (!m)
+        return out;
+    double logs = 0;
+    for (const auto& base : m->sold)
+    {
+        const double f = market::factor(marketBase(market, base, 1), pressure(market, base));
+        logs += std::log(f);
+        ++out.goods;
+        out.atHigh += f >= market::FactorHigh - 1e-9;
+        out.atLow += f <= market::FactorLow + 1e-9;
+    }
+    if (out.goods)
+        out.index = std::exp(logs / out.goods);
     return out;
 }
 

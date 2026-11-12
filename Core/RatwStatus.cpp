@@ -372,6 +372,7 @@ Table read(const json::Value& v, const Table& base, std::vector<std::string>* wa
         row.theft = clampNumber(r, "theft", row.theft, 0, 5, where, warnings);
         pair(r, "pocket", row.pocketLow, row.pocketHigh, 500, where, warnings);
         row.goodsMost = int(clampNumber(r, "goodsMost", row.goodsMost, 0, 99, where, warnings));
+        row.kindsMost = int(clampNumber(r, "kindsMost", row.kindsMost, 0, 99, where, warnings));
         row.shops = clampNumber(r, "shops", row.shops, 0, 10, where, warnings);
         row.luxury = clampNumber(r, "luxury", row.luxury, 0, 1, where, warnings);
         row.services = clampNumber(r, "services", row.services, 0, 5, where, warnings);

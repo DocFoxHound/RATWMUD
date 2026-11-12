@@ -485,6 +485,45 @@ void holdsLeanAndTheTrim()
     const auto& row = s.statusTable().rows[std::size_t(s.statusOf("birch")->band)];
     expect(food(s, "birch") <= 3 * Society::NourishADay + 1e-9, "a hoard of bread trimmed: " + std::to_string(food(s, "birch")));
     expect(Society::stock(*s.account("birch"), "iron_ore") <= row.goodsMost, "a hoard of ore trimmed to the band's");
+    {
+        // The kinds too (doc 79, Phase 11's soak: a household's everyday buys piled up a kind at a time, 1,400 kinds in
+        // the residents' wallets to 3,500 in ten days): at most the band's kinds of goods stay overnight, the most-held
+        // kept; food, a maker's piece and the sword are no kind of it; a thing worn is kept, one at least, no more than the
+        // band's count of it.
+        const std::vector<std::string> goods = {"nails", "planks", "cord", "rivets", "buckles", "tallow", "iron_hoops", "clay",
+                                                "mortar", "plaster", "whitewash", "barrel", "sickle", "draw_saw", "lock", "fittings",
+                                                "leather", "hide", "bones", "sack", "cookpot", "pamphlet", "glass_beads", "charm",
+                                                "steel_bar", "farm_gear", "linen_cloth", "fine_soap"};
+        int known = 0;
+        std::vector<int> made;
+        for (std::size_t k = 0; k < goods.size(); ++k)
+            if (items::good(goods[k]) && !items::wearable(goods[k]) && Society::nourishment(goods[k]) == 0 &&
+                Society::stock(*s.account("birch"), goods[k]) == 0)
+            {
+                s.create("birch", goods[k], 1 + int(k % 3), "test: the everyday buys");
+                ++known;
+                made.push_back(1 + int(k % 3));
+            }
+        s.create("birch", "straw_hat", 30, "test: a hat a day");
+        s.create("birch", "sword", 1, "test: his own");
+        for (int h = 26; h <= 50; ++h)
+            s.tick(1., 2 + h / 24. + 1e-4, 0, {});
+        const auto& now = s.statusTable().rows[std::size_t(s.statusOf("birch")->band)];
+        int kinds = 0, least = 99;
+        for (const auto& [item, n] : s.account("birch")->stock)
+            if (n > 0 && Society::nourishment(item) == 0 && !items::wearable(item) && item != "sword" && items::makerOf(item).empty())
+                ++kinds, least = std::min(least, n);
+        expect(known > now.kindsMost && kinds == now.kindsMost,
+               "a wallet keeps the band's kinds of goods: " + std::to_string(kinds) + " of " + std::to_string(known) + " (" +
+                   std::to_string(now.kindsMost) + ")");
+        for (auto& n : made)
+            n = std::min(n, now.goodsMost);
+        std::sort(made.rbegin(), made.rend());
+        expect(now.kindsMost < 1 || least == made[std::size_t(now.kindsMost - 1)],
+               "the most-held kept, the fewest-held gone first: least " + std::to_string(least));
+        expect(Society::stock(*s.account("birch"), "straw_hat") == std::max(1, now.goodsMost), "a thing worn kept, no more than the band's count");
+        expect(Society::stock(*s.account("birch"), "sword") == 1, "the sword kept");
+    }
     // The event weighs on the score while it lasts.
     expect(s.statusOf("una")->score < s.statusOf("ivar")->score + 1e-9 || s.householdOf("una") == s.householdOf("ivar"),
            "a theft weighs on the household");

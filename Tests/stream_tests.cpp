@@ -1335,6 +1335,158 @@ void aWalkKeepsToTheRoad()
     }
 }
 
+
+// A village's houses come in a few a tick (doc 79, Phase 11: at 7:00 a Country village's people step out of doors at
+// once, and every house with a door near them was wanted in the same tick: 138 places, 41 ms of streaming). The cell
+// someone stands in and its seams load at once; the surroundings ahead of need, at most StreamLoadsATick a tick; each
+// door's place still loads the moment it is gone through.
+void aVillageComesInAFewATick()
+{
+    auto f = grid(Commuter);
+    constexpr int Houses = 20;
+    auto& green = f.cells["c_3_3"];
+    const auto gridAt = green.find("grid:\n") + 6;
+    for (int n = 0; n < Houses; ++n)
+    {
+        const int x = 1 + 2 * (n % 7), y = 1 + 2 * (n / 7);
+        const std::string h = "h_" + std::to_string(n), out = h + "_out", in = h + "_in";
+        green[gridAt + std::size_t(y * (Side + 1) + x)] = '+';
+        std::ostringstream outside, inside;   // (In the manifest, as the build writes doors.)
+        outside << "door \"" << out << "\" \"A door\" \"c_3_3\" " << x + .5 << ' ' << y + .5 << " \"" << h << "\" 2.5 4.5 \"" << in
+                << "\" 0 0 0 0 \"-\"\n";
+        inside << "door \"" << in << "\" \"A door\" \"" << h << "\" 2.5 5.5 \"c_3_3\" " << x + .5 << ' ' << y + 1.5 << " \"" << out
+               << "\" 0 0 0 0 \"-\"\n";
+        f.manifest += outside.str() + inside.str() + "area \"" + h + "\"\n";
+        f.cells[h] = "id: " + h + "\nname: A house\ndescription: A small room.\nworld: " + std::to_string(300 + 10 * n) +
+                     " 300 0\noutdoors: false\nweather: clear\nsize: 6 6\ngrid:\n......\n......\n......\n......\n......\n..+...\n";
+        f.seams[h] = "";
+    }
+    auto world = load(f, true);
+    const auto housesIn = [&] {
+        int n = 0;
+        for (int k = 0; k < Houses; ++k)
+            n += world.cell("h_" + std::to_string(k))->loaded;
+        return n;
+    };
+    // (The loader reads every door's two places to check them; nobody near, they go after two idle minutes.)
+    for (int t = 0; t < 150; ++t)
+        world.tick(1);
+    expect(housesIn() == 0, "no house is loaded before anyone comes: " + std::to_string(housesIn()) + " of " + std::to_string(world.loadedCells()));
+    world.addPlayer("player-ada", "Ada", "c_3_3", {8.5, 8.5});
+    int most = 0, ticksLoading = 0, before = 0;
+    bool seamsAtOnce = false;
+    for (int t = 0; t < 200 && housesIn() < Houses; ++t)
+    {
+        world.tick(.05);
+        if (t == 0)
+            seamsAtOnce = world.cell("c_2_3")->loaded && world.cell("c_4_3")->loaded && world.cell("c_3_2")->loaded && world.cell("c_3_4")->loaded;
+        const int now = housesIn();
+        most = std::max(most, now - before);
+        ticksLoading += now > before;
+        before = now;
+    }
+    expect(seamsAtOnce, "the cell stood in and its seams load at once");
+    expect(housesIn() == Houses, "every house near comes in: " + std::to_string(housesIn()));
+    expect(most <= int(World::StreamLoadsATick) && ticksLoading >= 3,
+           "a few a tick, never all at once: at most " + std::to_string(most) + " a tick, over " + std::to_string(ticksLoading) + " ticks");
+    // A house not yet loaded loads as its door is gone through.
+    auto g = grid(Commuter);
+    g.manifest += "area \"h_far\"\n"
+                  "door \"far_out\" \"A door\" \"c_3_3\" 3.5 12.5 \"h_far\" 2.5 4.5 \"far_in\" 0 0 0 0 \"-\"\n"
+                  "door \"far_in\" \"A door\" \"h_far\" 2.5 5.5 \"c_3_3\" 3.5 13.5 \"far_out\" 0 0 0 0 \"-\"\n";
+    auto& lane = g.cells["c_3_3"];
+    lane[lane.find("grid:\n") + 6 + std::size_t(12 * (Side + 1) + 3)] = '+';
+    g.cells["h_far"] = "id: h_far\nname: A house\ndescription: A small room.\nworld: 300 300 0\noutdoors: false\nweather: clear\n"
+                       "size: 6 6\ngrid:\n......\n......\n......\n......\n......\n..+...\n";
+    g.seams["h_far"] = "";
+    auto second = load(g, true);
+    for (int t = 0; t < 150; ++t)
+        second.tick(1);
+    second.addPlayer("player-bo", "Bo", "c_3_3", {3.5, 13.5});
+    expect(!second.cell("h_far")->loaded, "the house not loaded before");
+    for (int t = 0; t < 40 && second.entity("player-bo")->cellId != "h_far"; ++t)
+    {
+        second.move("player-bo", 0, -1);
+        second.tick(.05);
+    }
+    expect(second.entity("player-bo")->cellId == "h_far" && second.cell("h_far")->loaded,
+           "through its door into a house: " + second.entity("player-bo")->cellId);
+}
+
+// The realm's big cells round a place come in one a tick (doc 79, Phase 11: at 7:00:05 a Country village's people stepped
+// onto their green and the six 256 x 256 cells round it were loaded in that tick, 6.5 ms each). Someone onstage within
+// World::SeamNear tiles of an edge has the cell over it at once; the rest come in at most World::StreamTilesATick tiles a
+// tick, one place at least.
+Fixture bigRow(int count, int side)
+{
+    Fixture f;
+    std::ostringstream manifest;
+    manifest << "RATW_WORLD 3\n";
+    const auto name = [](int i) { return "r_" + std::to_string(i); };
+    for (int i = 0; i < count; ++i)
+    {
+        std::ostringstream cell;
+        cell << "id: " << name(i) << "\nname: Far field " << i << "\ndescription: Open ground.\nworld: " << i * side
+             << " 0 0\noutdoors: true\nweather: clear\nsize: " << side << ' ' << side << "\ngrid:\n";
+        for (int y = 0; y < side; ++y)
+            cell << std::string(std::size_t(side), '.') << '\n';
+        f.cells[name(i)] = cell.str();
+        manifest << "area \"" << name(i) << "\"\n";
+    }
+    for (int i = 0; i + 1 < count; ++i)
+        for (int k = 0; k < side; ++k)
+        {
+            const std::string a = "rs_" + std::to_string(i) + "_" + std::to_string(k) + "_a", b = "rs_" + std::to_string(i) + "_" + std::to_string(k) + "_b";
+            f.seams[name(i)] += "door \"" + a + "\" \"Open boundary\" \"" + name(i) + "\" " + std::to_string(side - .5) + " " + std::to_string(k + .5) +
+                                " \"" + name(i + 1) + "\" .5 " + std::to_string(k + .5) + " \"" + b + "\" 1 0 1 1 \"E\"\n";
+            f.seams[name(i + 1)] += "door \"" + b + "\" \"Open boundary\" \"" + name(i + 1) + "\" .5 " + std::to_string(k + .5) + " \"" + name(i) +
+                                    "\" " + std::to_string(side - .5) + " " + std::to_string(k + .5) + " \"" + a + "\" 1 0 1 1 \"W\"\n";
+        }
+    for (int i = 0; i < count; ++i)
+    {
+        std::vector<std::string> next;
+        if (i > 0) next.push_back(name(i - 1));
+        if (i + 1 < count) next.push_back(name(i + 1));
+        manifest << "exits \"" << name(i) << "\" " << next.size();
+        for (const auto& n : next) manifest << " \"" << n << '"';
+        manifest << '\n';
+    }
+    manifest << "spawn \"r_0\" 8.5 8.5\n";
+    f.manifest = manifest.str();
+    return f;
+}
+
+void theRealmsCellsComeInOneATick()
+{
+    constexpr int Big = 256;                        // (The largest cell: the tick's tiles, so one a tick.)
+    static_assert(2 * std::size_t(Big) * Big > World::StreamTilesATick, "two cells over the tick's tiles");
+    for (const bool nearTheEdge : {false, true})
+    {
+        auto f = bigRow(5, Big);                    // r_0 (the spawn), r_1, r_2 (where Ada stands), r_3, r_4.
+        auto world = load(f, true);
+        for (int t = 0; t < 150; ++t)               // (Nobody near: all but the spawn go after two idle minutes.)
+            world.tick(1);
+        expect(!world.cell("r_1")->loaded && !world.cell("r_2")->loaded && !world.cell("r_3")->loaded, "the far cells not loaded");
+        world.addPlayer("player-ada", "Ada", "r_2", {nearTheEdge ? Big - 10.5 : Big / 2 + .5, Big / 2 + .5});
+        int most = 0, before = 0, firstTick = -1;
+        for (int t = 0; t < 40 && !(world.cell("r_1")->loaded && world.cell("r_3")->loaded); ++t)
+        {
+            world.tick(.05);
+            const int now = world.cell("r_1")->loaded + world.cell("r_3")->loaded;
+            if (t == 0)
+                firstTick = now;
+            most = std::max(most, now - before);
+            before = now;
+        }
+        expect(world.cell("r_2")->loaded && world.cell("r_1")->loaded && world.cell("r_3")->loaded,
+               "the cell stood in and both beside it come in");
+        if (nearTheEdge)
+            expect(firstTick >= 1 && world.cell("r_3")->loaded, "ten tiles from the east edge: the cell east of it at once");
+        else
+            expect(most == 1, "in the middle: the cells beside it one a tick, never both at once (" + std::to_string(most) + ")");
+    }
+}
+
 int main()
 {
     try
@@ -1364,6 +1516,8 @@ int main()
         sightRunsOnAcrossSeams();
         theMapKeepsAPlaceBesideAsItWas();
         aWalkKeepsToTheRoad();
+        aVillageComesInAFewATick();
+        theRealmsCellsComeInOneATick();
     }
     catch (const std::exception& error)
     {

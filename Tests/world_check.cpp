@@ -4,7 +4,7 @@
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic] [--events FILE]
 //                                                       [--threads N] [--day N] [--sample] [--no-profile] [--no-births]
 //                                                       [--fast] [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day]
-//                                                       [--wagon-day]]
+//                                                       [--wagon-day] [--stage FILE]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
@@ -24,7 +24,16 @@
 // server makes them for a world from files (World::makeRequestedResidents, every tick); --no-births only asks for them.
 // Deaths are the world's own (old age, World::tendOldAge), the same here as on the server. --day N starts the run on day
 // N of the year (1-365: Spring 1-92, Summer 93-184, Autumn 185-275, Winter 276-365). (The economy's reports, --economy
-// and the rest, went with the city's loop: Docs/Design/79-a-staged-economy.md, 17; --stage comes in its Phase 11.)
+// and the rest, went with the city's loop: Docs/Design/79-a-staged-economy.md, 17.)
+// --stage FILE (doc 79, 16.13; Phase 11) writes one JSON line a run day, for reading a soak (never for balancing): the
+// slider; per band its share of the households, the share of them hungry and the thefts its people did; per market its
+// households by band, hungry and short, its thefts, its price index (World::priceIndex: the goods its shops set out) and
+// how many goods sit at the clamp's ends, its Times and cause; the wagons, carts, ships and staged events seen that day
+// (the world's events by kind) and those committed; the faucets and sinks of the day (coins to and from players, by
+// reason); whether real money balances; and the sizes of what a long run must keep bounded (the Board's parts, the
+// roads, the staged accounts' maps, the accounts and the goods in staged ones, the crime records; each saved part's
+// bytes), with the day's wall time. tools/stage_report.py reads the file.
+
 // --fast (opt-in: it changes results) is --unseen-step 30 --straight --coarse-ticks: the unseen decide every N seconds,
 // each decision N seconds' worth (Society::setUnseenStep; the game's is 5); offstage legs are timed by their straight
 // line (World::setStraightOffstage); and while nobody is onstage the harness ticks half a second at a time, not 0.05 s.
@@ -36,6 +45,7 @@
 // is measured with the roads as busy as the world's carters can make them: a fresh world posts its first wagons two days
 // ahead, so no window of a run from files has one otherwise.
 #include "RatwCalendar.h"
+#include "RatwCheckpoint.h"
 #include "RatwItems.h"
 #include "RatwJsonDoc.h"
 #include "RatwPool.h"
@@ -55,6 +65,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <memory>
 #include <tuple>
 #include <sstream>
 #include <set>
@@ -204,6 +215,342 @@ struct RoadTally
     }
 };
 
+
+// --stage FILE: a line a run day (doc 79, 16.13). The world's events are counted as the harness takes them; the
+// incidents and faucet tallies are told apart from the last line's by id and by day.
+struct StageWatch
+{
+    std::ofstream out;
+    std::map<std::string, int> seen;                // Event kind -> count since the last line.
+    std::set<std::string> incidents;                // Incident ids at the last line.
+    std::map<std::pair<std::int64_t, std::string>, std::pair<std::int64_t, std::int64_t>> tallied;   // (day, reason) -> made, sunk.
+    bool first = true;
+
+    void take(const std::vector<WorldEvent>& events)
+    {
+        for (const auto& e : events)
+            ++seen[e.kind];
+    }
+    static std::size_t bytes(const json::Value& v) { return json::dump(v).size(); }
+    void line(World& w, int runDay, double wall)
+    {
+        using json::Value;
+        const auto& society = w.society();
+        const auto& st = society.state();
+        const auto& b = society.board();
+        auto j = Value::object();
+        j.add("runDay", runDay);
+        j.add("calendar", std::round(w.calendarDays() * 1000) / 1000);
+        {
+            const auto date = calendar::calendarAt(w.calendarDays());
+            j.add("date", calendar::weekdayName(calendar::weekdayOf(w.calendarDays())) + ", " + calendar::seasonName(date.season) + " " +
+                              std::to_string(date.dayOfSeason));
+        }
+        j.add("wall", std::round(wall * 1000) / 1000);
+        j.add("slider", b.slider);
+        j.add("sliderTarget", b.sliderTarget);
+        j.add("sliderCause", b.sliderCause.words);
+        // Thefts since the last line: the new incidents of theft (and tried), by the thief's band and by market.
+        std::array<int, status::Bands> theftsBy{};
+        std::map<std::string, int> theftsAt;
+        int thefts = 0, tried = 0, fromTills = 0;
+        std::set<std::string> now;
+        for (const auto& inc : w.crime().incidents)
+        {
+            now.insert(inc.id);
+            if (incidents.count(inc.id) || (inc.kind != "theft" && inc.kind != "attempted theft"))
+                continue;
+            (inc.kind == "theft" ? thefts : tried) += 1;
+            fromTills += !inc.from.empty();
+            const auto* s = society.statusOf(inc.offender);
+            if (s)
+                theftsBy[std::size_t(std::clamp(s->band, 0, status::Bands - 1))]++;
+            if (const auto* m = society.tradePoints().ofCellId(inc.cell))
+                ++theftsAt[m->id];
+            else if (s && !s->market.empty())
+                ++theftsAt[s->market];
+        }
+        incidents = std::move(now);
+        const auto counts = society.marketCounts();
+        {
+            std::array<int, status::Bands> households{}, hungry{};
+            int all = 0;
+            for (const auto& [m, c] : counts)
+                for (int band = 0; band < status::Bands; ++band)
+                {
+                    households[std::size_t(band)] += c.bands[std::size_t(band)];
+                    hungry[std::size_t(band)] += c.hungryBy[std::size_t(band)];
+                    all += c.bands[std::size_t(band)];
+                }
+            auto bands = Value::object();
+            for (int band = 0; band < status::Bands; ++band)
+            {
+                const auto k = std::size_t(band);
+                auto o = Value::object();
+                o.add("households", households[k]);
+                o.add("share", all ? std::round(1000.0 * households[k] / all) / 1000 : 0.);
+                o.add("hungry", households[k] ? std::round(1000.0 * hungry[k] / households[k]) / 1000 : 0.);
+                o.add("thefts", theftsBy[k]);
+                bands.add(status::bandName(band), std::move(o));
+            }
+            j.add("bands", std::move(bands));
+        }
+        {
+            auto t = Value::object();
+            t.add("thefts", thefts);
+            t.add("tried", tried);
+            t.add("fromTills", fromTills);
+            j.add("thefts", std::move(t));
+        }
+        auto markets = Value::array();
+        for (const auto& m : society.tradePoints().markets)
+        {
+            if (m.id == "outside")
+                continue;
+            auto o = Value::object();
+            o.add("id", m.id);
+            const auto c = counts.count(m.id) ? counts.at(m.id) : Society::MarketCount{};
+            auto h = Value::array();
+            int all = 0;
+            for (int band = 0; band < status::Bands; ++band)
+                h.push(c.bands[std::size_t(band)]), all += c.bands[std::size_t(band)];
+            o.add("households", all);
+            o.add("bands", std::move(h));
+            o.add("hungry", c.hungry);
+            o.add("short", c.shortToday);
+            o.add("dole", c.dole);
+            o.add("thefts", theftsAt.count(m.id) ? theftsAt.at(m.id) : 0);
+            const auto index = society.priceIndex(m.id);
+            o.add("price", std::round(index.index * 1000) / 1000);
+            o.add("goods", index.goods);
+            o.add("atHigh", index.atHigh);
+            o.add("atLow", index.atLow);
+            const int score = society.timesScore(m.id);
+            o.add("times", market::timesName(market::timesOf(score)));
+            o.add("score", score);
+            o.add("cause", society.timesCause(m.id));
+            markets.push(std::move(o));
+        }
+        j.add("markets", std::move(markets));
+        {
+            // The trade seen since the last line (the world's events by kind), and what is committed now.
+            auto o = Value::object();
+            for (const auto& [kind, n] : seen)
+                o.add(kind, n);
+            j.add("seen", std::move(o));
+            seen.clear();
+            int wagons = 0, carts = 0, onRoad = 0, raided = 0;
+            for (const auto& d : b.committed)
+                (d.kind == "cart" ? carts : wagons) += 1;
+            for (const auto& c : w.roads().caravans)
+                (c.status == "raided" ? raided : onRoad) += 1;
+            std::map<std::string, int> ships, events;
+            for (const auto& s : b.ships)
+                ++ships[s.status];
+            for (const auto& e : b.events)
+                ++events[e.status];
+            auto k = Value::object();
+            k.add("wagons", wagons);
+            k.add("carts", carts);
+            k.add("onRoad", onRoad);
+            k.add("raided", raided);
+            auto sh = Value::object();
+            for (const auto& [status, n] : ships)
+                sh.add(status, n);
+            k.add("ships", std::move(sh));
+            auto ev = Value::object();
+            for (const auto& [status, n] : events)
+                ev.add(status, n);
+            k.add("events", std::move(ev));
+            j.add("committed", std::move(k));
+        }
+        {
+            // Faucets and sinks: what the tallies grew by since the last line, by reason (a tally's day kept 28 days).
+            std::map<std::string, std::pair<std::int64_t, std::int64_t>> byReason;
+            std::map<std::pair<std::int64_t, std::string>, std::pair<std::int64_t, std::int64_t>> nowTallied;
+            for (const auto& [day, holders] : st.staged.faucets)
+                for (const auto& [holder, reasons] : holders)
+                    for (const auto& [reason, t] : reasons)
+                    {
+                        auto& n = nowTallied[{day, reason}];
+                        n.first += t.made;
+                        n.second += t.sunk;
+                    }
+            std::int64_t made = 0, sunk = 0;
+            for (const auto& [key, n] : nowTallied)
+            {
+                const auto was = tallied.count(key) ? tallied.at(key) : std::pair<std::int64_t, std::int64_t>{0, 0};
+                const auto dm = n.first - was.first, ds = n.second - was.second;
+                if (dm || ds)
+                {
+                    byReason[key.second].first += dm;
+                    byReason[key.second].second += ds;
+                    made += dm;
+                    sunk += ds;
+                }
+            }
+            tallied = std::move(nowTallied);
+            auto f = Value::object();
+            f.add("made", double(made));
+            f.add("sunk", double(sunk));
+            auto r = Value::object();
+            for (const auto& [reason, n] : byReason)
+            {
+                auto pair = Value::array();
+                pair.push(double(n.first));
+                pair.push(double(n.second));
+                r.add(reason, std::move(pair));
+            }
+            f.add("byReason", std::move(r));
+            j.add("faucets", std::move(f));
+        }
+        j.add("realBalanced", society.realBalanced());
+        {
+            // What a long run must keep bounded (doc 79, 15: the soak).
+            auto z = Value::object();
+            std::size_t cells = 0, pushed = 0, net = 0, backRoom = 0, backPieces = 0, brought = 0, taken = 0;
+            for (const auto& [m, goods] : b.cell)
+                cells += goods.size();
+            for (const auto& [m, holders] : b.pushed)
+                for (const auto& [h, goods] : holders)
+                    pushed += goods.size();
+            for (const auto& [m, goods] : b.netToday)
+                for (const auto& [g, holders] : goods)
+                    net += holders.size();
+            for (const auto& [till, goods] : b.backRoom)
+            {
+                backRoom += goods.size();
+                for (const auto& [g, n] : goods)
+                    backPieces += std::size_t(std::max(0, n));
+            }
+            for (const auto& [m, goods] : b.broughtIn)
+                brought += goods.size();
+            for (const auto& [till, goods] : b.takenToday)
+                taken += goods.size();
+            auto board = Value::object();
+            board.add("cells", cells);
+            board.add("recent", b.recent.size());
+            board.add("moves", b.moves.size());
+            board.add("events", b.events.size());
+            board.add("ships", b.ships.size());
+            board.add("committed", b.committed.size());
+            board.add("troubles", b.troubles.size());
+            board.add("pushed", pushed);
+            board.add("netToday", net);
+            board.add("budgetLeft", b.budgetLeft.size());
+            board.add("takenToday", taken);
+            board.add("soldToday", b.soldToday.size());
+            board.add("backRoom", backRoom);
+            board.add("backRoomPieces", backPieces);
+            board.add("broughtIn", brought);
+            board.add("restocked", b.restocked.size());
+            board.add("settingOut", b.settingOut.size());
+            board.add("news", b.news.size());
+            board.add("lostShips", b.lostShips.size());
+            board.add("nudges", b.nudges.size());
+            board.add("resets", b.resets.size());
+            board.add("harvestOverride", b.harvestOverride.size());
+            board.add("discountWeek", b.discountWeek.size());
+            board.add("bytes", bytes(market::encode(b)));
+            z.add("board", std::move(board));
+            auto roads = Value::object();
+            roads.add("caravans", w.roads().caravans.size());
+            roads.add("camps", w.roads().camps.size());
+            roads.add("contracts", w.roads().contracts.size());
+            roads.add("beliefs", w.roads().beliefs.size());
+            roads.add("bytes", bytes(checkpoint::roads(w.roads())));
+            z.add("roads", std::move(roads));
+            const auto& sg = st.staged;
+            std::size_t statusEvents = 0, faucetEntries = 0, quarantined = 0;
+            for (const auto& [id, list] : sg.events)
+                statusEvents += list.size();
+            for (const auto& [day, holders] : sg.faucets)
+                for (const auto& [h, reasons] : holders)
+                    faucetEntries += reasons.size();
+            for (const auto& [id, goods] : sg.quarantine)
+                quarantined += goods.size();
+            auto staged = Value::object();
+            staged.add("bands", sg.bands.size());
+            staged.add("overrides", sg.overrides.size());
+            staged.add("holds", sg.holds.size());
+            staged.add("lean", sg.lean.size());
+            staged.add("escrowSource", sg.escrowSource.size());
+            staged.add("statusEvents", statusEvents);
+            staged.add("faucetDays", sg.faucets.size());
+            staged.add("faucetEntries", faucetEntries);
+            staged.add("welcomed", sg.welcomed.size());
+            staged.add("quarantine", quarantined);
+            staged.add("dole", sg.dole.size());
+            staged.add("business", sg.business.size());
+            staged.add("fed", sg.fed.size());
+            staged.add("bytes", bytes(wire::stagedValue(sg)));
+            z.add("staged", std::move(staged));
+            std::size_t real = 0, escrow = 0, stagedAccounts = 0, stagedGoods = 0, stagedKinds = 0, realGoods = 0;
+            std::map<std::string, std::array<std::size_t, 4>> byPrefix;   // Staged: accounts, kinds, kinds at 0, pieces.
+            for (const auto& [id, a] : st.accounts)
+            {
+                const auto kind = Society::classify(id);
+                std::size_t pieces = 0, zero = 0;
+                for (const auto& [item, n] : a.stock)
+                    pieces += std::size_t(std::max(0, n)), zero += n == 0;
+                if (kind == Society::AccountKind::Staged)
+                {
+                    ++stagedAccounts, stagedGoods += pieces, stagedKinds += a.stock.size();
+                    const auto colon = id.find(':');
+                    auto& p = byPrefix[colon == std::string::npos ? std::string("resident") : id.substr(0, colon)];
+                    p[0] += 1, p[1] += a.stock.size(), p[2] += zero, p[3] += pieces;
+                }
+                else if (kind == Society::AccountKind::Escrow)
+                    ++escrow;
+                else
+                    ++real, realGoods += pieces;
+            }
+            auto accounts = Value::object();
+            accounts.add("all", st.accounts.size());
+            accounts.add("staged", stagedAccounts);
+            accounts.add("stagedGoods", stagedGoods);
+            accounts.add("stagedKinds", stagedKinds);
+            accounts.add("escrow", escrow);
+            accounts.add("real", real);
+            accounts.add("realGoods", realGoods);
+            accounts.add("ledger", st.ledger.size());
+            auto prefixes = Value::object();
+            for (const auto& [prefix, n] : byPrefix)
+            {
+                auto o = Value::object();
+                o.add("accounts", n[0]);
+                o.add("kinds", n[1]);
+                o.add("atZero", n[2]);
+                o.add("pieces", n[3]);
+                prefixes.add(prefix, std::move(o));
+            }
+            accounts.add("stagedBy", std::move(prefixes));
+            accounts.add("residents", st.residents.size());
+            accounts.add("societyBytes", bytes(wire::society(st)));
+            z.add("accounts", std::move(accounts));
+            auto crime = Value::object();
+            crime.add("incidents", w.crime().incidents.size());
+            crime.add("warrants", w.crime().warrants.size());
+            crime.add("custody", w.crime().custody.size());
+            crime.add("bytes", bytes(checkpoint::crime(w.crime())));
+            z.add("crime", std::move(crime));
+            auto world = Value::object();
+            std::size_t beliefs = 0;
+            for (const auto& [id, e] : w.entities())
+                if (const auto* mine = w.beliefsOf(id))
+                    beliefs += mine->size();
+            world.add("entities", w.entities().size());
+            world.add("bonds", w.bonds().count());
+            world.add("beliefs", beliefs);
+            world.add("loadedCells", w.loadedCells());
+            z.add("world", std::move(world));
+            j.add("sizes", std::move(z));
+        }
+        out << json::dump(j) << '\n';
+        out.flush();
+        first = false;
+    }
+};
 } // namespace
 
 int main(int argc, char** argv)
@@ -225,6 +572,7 @@ int main(int argc, char** argv)
     bool atSeams = false;                           // --at-seams: the players after the first by seams (doc 70).
     bool shipDay = false;                           // --ship-day: each port's next ship in, early in the window.
     bool wagonDay = false;                          // --wagon-day: every free carter out with a wagon, early in the window.
+    std::string stageFile;                          // --stage FILE: a JSON line a run day (doc 79, 16.13).
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -262,6 +610,8 @@ int main(int argc, char** argv)
             deterministic = true;
         else if (flag == "--events" && i + 1 < argc)
             eventsFile = argv[++i];
+        else if (flag == "--stage" && i + 1 < argc)
+            stageFile = argv[++i];
         else if (flag == "--threads" && i + 1 < argc)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
         else if (flag == "--day" && i + 1 < argc)
@@ -276,7 +626,7 @@ int main(int argc, char** argv)
     {
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic]"
                      " [--events FILE] [--threads N] [--day N] [--sample] [--no-profile] [--no-births] [--fast]"
-                     " [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day] [--wagon-day]]\n";
+                     " [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day] [--wagon-day] [--stage FILE]]\n";
         return 2;
     }
     if (fast)
@@ -525,6 +875,26 @@ int main(int argc, char** argv)
     const char* trace = std::getenv("RATW_TRACE");
     const bool ambientLook = !std::getenv("RATW_NO_AMBIENT_LOOK");
     constexpr int CoarseSteps = 10;                 // (--coarse-ticks: half a second, in 0.05 s steps.)
+    std::unique_ptr<StageWatch> stage;
+    if (!stageFile.empty())
+    {
+        stage = std::make_unique<StageWatch>();
+        stage->out.open(stageFile, std::ios::trunc);
+        if (!stage->out)
+        {
+            std::cerr << "cannot write " << stageFile << '\n';
+            return 2;
+        }
+    }
+    // The world's events as the harness takes them: counted for --stage, kept for --events.
+    const auto takeAll = [&] {
+        auto taken = server.takeEvents();
+        if (stage)
+            stage->take(taken);
+        if (!eventsFile.empty())
+            for (auto& e : taken)
+                events.push_back(std::move(e));
+    };
     // Births and arrivals made as the game server makes them for a world from files (Game::makeResidents), after
     // each tick; --no-births leaves them asked for.
     const auto welcome = [&] {
@@ -598,9 +968,8 @@ int main(int argc, char** argv)
             ++ticksRun;
             ++ticksToday;
             welcome();
-            if (!eventsFile.empty() && (i % 20 == 0 || stride > 1))
-                for (auto& e : server.takeEvents())
-                    events.push_back(std::move(e));
+            if ((!eventsFile.empty() || stage) && (i % 20 == 0 || stride > 1))
+                takeAll();
             if (i % 200 == 0)                       // Once a game minute (10 s).
                 mostLoaded = std::max(mostLoaded, server.loadedCells());
         }
@@ -654,9 +1023,8 @@ int main(int argc, char** argv)
                 picked += server.ambientPicks(players).size();
                 picking.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - lookBegin).count());
             }
-            if (!eventsFile.empty() && i % 20 == 0)
-                for (auto& e : server.takeEvents())
-                    events.push_back(std::move(e));
+            if ((!eventsFile.empty() || stage) && i % 20 == 0)
+                takeAll();
             const double tickOnly = (profileAfter.streaming.total - profileBefore.streaming.total) +
                                     (profileAfter.schedules.total - profileBefore.schedules.total) +
                                     (profileAfter.movement.total - profileBefore.movement.total) +
@@ -782,7 +1150,14 @@ int main(int argc, char** argv)
             std::copy(std::begin(server.tickProfile().stages), std::end(server.tickProfile().stages), stagesAtDay);
             std::cout << "  run day " << day + 1 << (i % DayTicks ? " (part)" : "") << ": " << cost.seconds << " s wall, " << ticksToday
                       << " ticks; " << std::chrono::duration<double>(at - runBegun).count() << " s so far" << std::endl;
-            dayBegun = at;
+            if (stage)
+            {
+                takeAll();
+                stage->line(server, day + 1, cost.seconds);
+                dayBegun = std::chrono::steady_clock::now();   // (The line's own work not counted in the next day.)
+            }
+            else
+                dayBegun = at;
             day = now;
             ticksToday = 0;
         }

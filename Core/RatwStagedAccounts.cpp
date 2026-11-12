@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <set>
+#include <tuple>
 
 namespace ratw
 {
@@ -878,21 +879,41 @@ void Society::stagedTrim(const std::string& id, int band)
             wallet.stock.erase(item);
         have -= double(drop) * each;
     }
-    // Other goods above what the band holds (never something worn or a maker's marked piece: those are its own).
+    // Other goods above what the band holds (never a maker's marked piece: its own). Something worn is kept, one at
+    // least, above the band's count only no more of it (the everyday buys brought straw hats a day: Phase 11's soak).
+    std::vector<std::tuple<int, std::string>> kinds;   // (Pieces, item): the kinds the band's count of kinds holds.
     for (auto it = wallet.stock.begin(); it != wallet.stock.end();)
     {
         const auto& [item, n] = *it;
-        const bool keep = nourishment(item) > 0 || items::wearable(item) || !items::makerOf(item).empty() || item == "sword";
-        if (!keep && n > row.goodsMost)
+        const bool worn = items::wearable(item) != nullptr;
+        const bool keep = nourishment(item) > 0 || !items::makerOf(item).empty() || item == "sword";
+        const int cap = worn ? std::max(1, row.goodsMost) : row.goodsMost;
+        if (!keep && n > cap)
         {
-            it->second = row.goodsMost;
+            it->second = cap;
             if (it->second == 0 && !keptAtZero(item))
             {
                 it = wallet.stock.erase(it);
                 continue;
             }
         }
+        if (!keep && !worn && it->second > 0)
+            kinds.push_back({it->second, item});
         ++it;
+    }
+    // And at most the band's kinds of them: the fewest-held go first (then by name), so a wallet's goods stay bounded
+    // however many kinds its household buys over the years.
+    if (kinds.size() > std::size_t(std::max(0, row.kindsMost)))
+    {
+        std::sort(kinds.begin(), kinds.end());
+        for (std::size_t k = 0; k + std::size_t(std::max(0, row.kindsMost)) < kinds.size(); ++k)
+        {
+            const auto& item = std::get<1>(kinds[k]);
+            if (keptAtZero(item))
+                wallet.stock[item] = 0;
+            else
+                wallet.stock.erase(item);
+        }
     }
 }
 

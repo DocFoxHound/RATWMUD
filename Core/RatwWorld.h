@@ -1596,6 +1596,11 @@ class World
     Result ensureLoaded(const std::string& cellId);
     // Loads every cell a character is in or next to; unloads the rest once unneeded for `idle` game seconds.
     void stream(double idle = 120.0);
+    // The surroundings (the places near those onstage, not stood in, seen into or a few steps over an edge) loaded ahead
+    // of need in a tick at most, places and tiles (one place at least); the rest the next ticks; and how near an edge
+    // someone onstage stands for the cell over it to load at once (doc 79, Phase 11).
+    static constexpr std::size_t StreamLoadsATick = 8, StreamTilesATick = 256 * 256;
+    static constexpr double SeamNear = 16;
     std::size_t loadedCells() const;
     const std::string& herbPatchCell() const { return herbCell_; }
     Vec2 herbPatchPosition() const { return herbPatch_; }
@@ -1707,6 +1712,7 @@ class World
     double streamCheck_ = 0.0;
     std::set<std::string> streamOccupied_;          // The cells characters stood in when stream() last looked,
     std::set<std::string> streamOverlooked_;        // and the cells players stood near enough to see into.
+    bool streamBehind_ = false;                     // (Surroundings still to load: stream(), StreamLoadsATick a tick.)
     // Each cell's neighbours (through portals and seams), built on first use and dropped when doors change: a
     // city cell has well over a thousand seam and door records, far too many to walk every tick.
     mutable std::map<std::string, std::vector<std::string>> neighborCache_;
