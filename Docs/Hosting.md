@@ -12,7 +12,7 @@ What a hosted world is (Docs/Design/77, sections 3.2 and 8):
 - **A wolf** is a player's character. Its name and look come from central. What it does in your world (its money,
   goods, home, friends) stays in your world.
 
-Where things stand (2026-11-08):
+Where things stand (2026-11-08; the Editor's first parts 2026-11-12):
 - This is the first version (v1). During the closed beta, an account can host only once the game's team has approved
   it.
 - During the closed beta, the game's team sends you the package, the world image as a file, and central's address
@@ -160,7 +160,9 @@ During the closed beta, the game's team sends you three things:
 1. Unpack the package into a folder of its own. For example:
    - Windows: `C:\RATW\my-world`
    - Linux: `~/ratw/my-world`
-2. The folder holds `compose.yaml`, `world.toml`, `README.md` and `Hosting.md`.
+2. The folder holds `compose.yaml`, `world.toml`, `README.md` and `Hosting.md`, and two empty folders, `manage` and
+   `backups`. Keep them: the world writes your Editor account into `manage` (section 15), and without the folder
+   Docker would make one itself, which on Linux only root could open.
 3. Open a terminal in that folder.
    - Windows 11: in File Explorer, right-click inside the folder and choose **Open in Terminal**. Or in PowerShell:
      `cd C:\RATW\my-world`
@@ -195,15 +197,17 @@ Use any plain-text editor: Notepad on Windows, or gedit, nano or Kate on Linux.
   In Notepad's "Save as" window, choose **Save as type: All files**, and type the whole name. To see files' real names
   in File Explorer: **View**, **Show**, **File name extensions**.
 
-Each setting is read once, when its part of the world starts. After a change:
+Each setting is read when its part of the world starts: `world.toml` whenever the world's server starts, which a
+Restart in the Editor (section 15) does too. After a change:
 
 | You changed | Then type |
 |---|---|
-| `world.toml`, or a token or key file it names | `docker compose restart world upnp` (both read `world.toml`) |
+| `world.toml`, or a token or key file it names | `docker compose restart world upnp` (both read `world.toml`), or Restart in the Editor (the `upnp` helper then keeps the old `[network]` setting) |
 | `.env` | `docker compose up -d` (a restart doesn't read `.env` again) |
 
 If something in `world.toml` is wrong, the world doesn't start. The log says what is wrong (section 7). Put it right,
-then `docker compose restart world upnp`.
+then `docker compose restart world upnp`. (If it goes wrong on a later restart, the world waits, saying so, and the
+Editor stays up, so you can put it right and restart again.)
 
 ### `[world]`: your world
 
@@ -245,6 +249,7 @@ costs you money.
 | `fallback_model` | Used when the main one fails. | If left out: `gpt-5.4-mini`. |
 | `story_model` | The stories. | If left out: `gpt-5.6-luna`. |
 | `cost_mode` | How much talk to buy: `generous`, `balanced` or `frugal`. | If left out: `balanced`. |
+| `monthly_tokens` | The most your key is used for in a month, by the Editor's tools (life stories) and the residents together, in tokens. | A whole number. If left out: 20,000,000. |
 
 The model defaults are what the official world uses (Docs/Design/28). Leave them unless you know why.
 
@@ -260,6 +265,16 @@ The model defaults are what the official world uses (Docs/Design/28). Leave them
 |---|---|---|
 | `upnp` | Whether to ask your router, when the world starts, to forward its port to your computer (section 8). | `true` or `false`. The package has `true`; if left out, also `true`. `false` turns the attempt off. The `upnp` helper reads it when it starts: after a change, `docker compose restart world upnp`. |
 
+### `[editor]`: your world's Editor
+
+The Editor is your world's own tools, reached from the game's EDITOR button (section 15).
+
+| Setting | What it is | Rules |
+|---|---|---|
+| `enabled` | Whether the Editor answers at all. | `true` or `false`. If left out: `true`. With `false`, nothing answers on the Editor port. |
+| `owner` | The name of your first Editor account. | Optional: 3 to 32 small letters, digits, `-` or `_`, starting with a letter. If left out, the world makes one up (`host-` and four letters and digits). Used only the first time the world starts. **Never put a password here.** |
+| `new_devices` | `"open"`: a name and password sign in from any computer. `"approve"`: a computer that hasn't signed in before also needs an Editor code. | If left out: `"open"`. Choose `"approve"` if you open the Editor port to the internet. |
+
 ### `.env`: settings beside `compose.yaml`
 
 A few settings live in a file called `.env`, in the same folder. It doesn't exist until you make it. Each line is
@@ -271,6 +286,8 @@ A few settings live in a file called `.env`, in the same folder. It doesn't exis
 | `RATW_PORT` | The world's port. If left out: 7788. It is the same port inside Docker and on your computer, and the one to open on your router. |
 | `RATW_IMAGE` | The world image to run. Leave it out unless you were given another one. |
 | `COMPOSE_PROJECT_NAME` | Only for a second world on the same computer (section 14). |
+| `RATW_EDITOR_PORT` | The Editor port. If left out: 17789. Change it only if another program holds 17789 (section 17), or for a second world. |
+| `RATW_EDITOR_BIND` | Where the Editor answers. If left out: `127.0.0.1`, this computer only. `0.0.0.0`: every address of this computer, so you can manage your world from another computer (section 15). |
 
 On Windows, Notepad likes to save `.env` as `.env.txt`, which doesn't work: see "Editing them" above.
 
@@ -551,8 +568,9 @@ If a new version comes with a new `compose.yaml`, copy it over the old one. Keep
 
     docker compose down -v
 
-This **deletes your world for good**: its database, everything that happened in it, and its passwords. Make a backup
-first (section 12). The next `docker compose up -d` makes a new world from the package you have now. Your world id and
+This **deletes your world for good**: its database, everything that happened in it, its passwords, and its Editor
+accounts and certificate (every computer that used its Editor then warns that the key changed). Make a backup first
+(section 12). The next `docker compose up -d` makes a new world from the package you have now. Your world id and
 token stay the same.
 
 ---
@@ -562,14 +580,15 @@ token stay the same.
 **There is no backup command yet.** A later version plans one. Until then, you can copy the world's data by hand, as
 below. Do it before an update, and before anything you're unsure of.
 
-This copies two of Docker's storage areas ("volumes"): the database (`pgdata`) and its passwords (`secrets`). You need
-both: a database without its own passwords can't be opened by the world.
+This copies three of Docker's storage areas ("volumes"): the database (`pgdata`), its passwords (`secrets`) and the
+Editor's key and certificate (`admin`). You need the first two: a database without its own passwords can't be opened
+by the world. The third keeps the Editor's key, so computers that used your Editor don't warn after a restore.
 
 This was tested on 2026-11-08 on Linux with rootless Docker: a new world's backup was about 106 MB and took about 7
 seconds, and a restore brought the world back as it was. It hasn't been tested on Windows yet.
 
-The commands below use the names for a world in its usual folder: `ratw-world_pgdata` and `ratw-world_secrets`. A
-second world (section 14) has its own names: `docker volume ls` lists them.
+The commands below use the names for a world in its usual folder: `ratw-world_pgdata`, `ratw-world_secrets` and
+`ratw-world_admin`. A second world (section 14) has its own names: `docker volume ls` lists them.
 
 ### Making a backup
 
@@ -579,15 +598,15 @@ In the world's folder:
 
        docker compose stop
 
-2. Copy both volumes into one file, `backups/world-backup.tgz` (one line):
+2. Copy the volumes into one file, `backups/world-backup.tgz` (one line):
 
    - Linux:
 
-         mkdir -p backups && docker run --rm -v ratw-world_pgdata:/data:ro -v ratw-world_secrets:/secrets:ro -v "$PWD/backups":/backup postgres:18 sh -c 'umask 077 && tar czf /backup/world-backup.tgz -C / data secrets'
+         mkdir -p backups && docker run --rm -v ratw-world_pgdata:/data:ro -v ratw-world_secrets:/secrets:ro -v ratw-world_admin:/admin:ro -v "$PWD/backups":/backup postgres:18 sh -c 'umask 077 && tar czf /backup/world-backup.tgz -C / data secrets admin'
 
    - Windows (PowerShell):
 
-         mkdir -Force backups | Out-Null; docker run --rm -v ratw-world_pgdata:/data:ro -v ratw-world_secrets:/secrets:ro -v "${PWD}\backups:/backup" postgres:18 tar czf /backup/world-backup.tgz -C / data secrets
+         mkdir -Force backups | Out-Null; docker run --rm -v ratw-world_pgdata:/data:ro -v ratw-world_secrets:/secrets:ro -v ratw-world_admin:/admin:ro -v "${PWD}\backups:/backup" postgres:18 tar czf /backup/world-backup.tgz -C / data secrets admin
 
 3. Start the world again:
 
@@ -613,17 +632,25 @@ This replaces your world with the one in the backup.
 
    - Linux:
 
-         docker run --rm -v ratw-world_pgdata:/data -v ratw-world_secrets:/secrets -v "$PWD/backups":/backup:ro postgres:18 tar xzf /backup/world-backup.tgz -C /
+         docker run --rm -v ratw-world_pgdata:/data -v ratw-world_secrets:/secrets -v ratw-world_admin:/admin -v "$PWD/backups":/backup:ro postgres:18 tar xzf /backup/world-backup.tgz -C /
 
    - Windows (PowerShell):
 
-         docker run --rm -v ratw-world_pgdata:/data -v ratw-world_secrets:/secrets -v "${PWD}\backups:/backup:ro" postgres:18 tar xzf /backup/world-backup.tgz -C /
+         docker run --rm -v ratw-world_pgdata:/data -v ratw-world_secrets:/secrets -v ratw-world_admin:/admin -v "${PWD}\backups:/backup:ro" postgres:18 tar xzf /backup/world-backup.tgz -C /
+
+   (A backup made before the Editor came has no `admin` in it: that is fine. The world makes a new Editor key, and
+   computers that used the Editor warn once.)
 
 3. Start it:
 
-       docker compose start
+       docker compose up -d --force-recreate
 
-The log then says `world already holds package ...; nothing to do.`: your world is back.
+   (Not `docker compose start`: with Docker Compose 5, containers made by `create` lack the database's start-up
+   script, and the database then never comes up. Checked 2026-11-12, Compose 5.1.1.)
+
+The log then says `world already holds package ...; nothing to do.`: your world is back, with its Editor accounts and,
+if the backup holds `admin`, the same Editor fingerprint. `manage/first-editor.txt` may still hold an account from the
+world you replaced: it no longer works.
 
 ---
 
@@ -633,13 +660,17 @@ The log then says `world already holds package ...; nothing to do.`: your world 
 |---|---|
 | Stop the world (it saves first, and leaves the list at once) | `docker compose stop` |
 | Start it again | `docker compose start` |
-| Restart it (after changing `world.toml`, or a token or key file) | `docker compose restart world upnp` |
+| Restart it (after changing `world.toml`, or a token or key file) | `docker compose restart world upnp`, or Restart in the Editor |
 | Use a changed `.env` | `docker compose up -d` |
 | Take the containers away, but keep the world | `docker compose down` |
 | Bring them back | `docker compose up -d` |
 | Delete the world for good | `docker compose down -v` (section 11) |
 
 Stopping can take up to a minute and a half while the world saves. Let it finish.
+
+**If the world's server stops on its own** (a crash), the world starts it again: after 5 seconds, then 30 seconds, 2
+minutes, and every 10 minutes after that while it keeps stopping. The Editor stays up throughout, so you can still
+reach your world's tools.
 
 **After the computer restarts,** the world starts again by itself once Docker does (section 3), unless you stopped it
 with `docker compose stop`. Then it stays stopped until you start it. On Windows, Docker Desktop starts only once
@@ -659,13 +690,16 @@ is lost.
 
        COMPOSE_PROJECT_NAME=ratw-second
        RATW_PORT=7789
+       RATW_EDITOR_PORT=17790
        RATW_HOST_TOKEN=rh_...
 
-4. Forward the second port on your router too (section 8), and allow it through the firewall.
+4. Forward the second port on your router too (section 8), and allow it through the firewall. (Forward 17790 only if
+   you will manage the second world from outside your home.)
 5. `docker compose up -d` in that folder.
 
-Without `COMPOSE_PROJECT_NAME` and its own port, the second folder would take over the first world's containers and
-its database. The first world needs no change.
+Without `COMPOSE_PROJECT_NAME` and its own ports, the second folder would take over the first world's containers and
+its database, or stop with "ports are not available". The first world needs no change. In the game's EDITOR box, the
+second world is `127.0.0.1:17790`.
 
 Each world takes its own memory and disk (section 1).
 
@@ -703,6 +737,53 @@ Good to know:
 - Only storyteller applications wait for you for ever. Check `/pending` now and then.
 - Portrait uploads are off on community worlds. The painted portraits stay.
 - Where the game would say "the DM", your world says "the host".
+
+### Your world's Editor
+
+The game's main menu has an **EDITOR** button, before you join any world. Through it you run your world with its own
+tools: the DM tool (residents, chapters, players, money, the economy, closing and opening the world). Your world keeps
+its own Editor accounts; they aren't your central account.
+
+**The first time,** on the computer that runs the world:
+1. Wait until `manage/first-editor.txt` appears in the world's folder (a minute or two after the first start). It
+   holds your Editor account's name, a one-time password and an **Editor code** (`ratw-editor:...`). Keep it to
+   yourself: whoever has the code can take the account.
+2. In the game: **EDITOR**, then paste the Editor code. (Or type the address `127.0.0.1`, then the name and the
+   one-time password.) Choose your own password: at least 12 characters, not a common one, and not containing the
+   account's or the world's name. The file then says "Used".
+3. The one-time password lasts 7 days. If it wasn't used by then, the world writes a new one into the file the next
+   time it starts.
+
+`manage/editor-certificate.txt` holds your world's id, its Editor port and the Editor's **fingerprint** (eight groups
+of four characters). The game shows the same fingerprint the first time you connect from a computer without an Editor
+code: if they match, trust it. `docker compose exec world ratw-editor fingerprint` shows it too, and the log does at
+every start (`Editor certificate: ...`).
+
+**Lost your password, or "too many tries":** on the world's computer, in its folder:
+
+    docker compose exec world ratw-editor list
+    docker compose exec world ratw-editor reset NAME     # a new one-time password and Editor code
+    docker compose exec world ratw-editor invite NAME    # an Editor code for a new computer, password unchanged
+
+**From another computer.** The Editor port (17789) answers only on the world's own computer until you open it. Put
+this line in `.env`, then `docker compose up -d`:
+
+    RATW_EDITOR_BIND=0.0.0.0
+
+- **At home:** in the game's EDITOR box, use the world's computer's home address (say `192.168.1.20`). On Windows, if
+  the network is marked **Public**, other computers can't reach it: set it to Private.
+- **From outside your home:** forward **TCP 17789** on your router to the world's computer as well, as for the game's
+  port (section 8). Only do this if you will manage from outside. Test it from a phone's hotspot, not from inside your
+  home.
+- Use an Editor code for the first connection from a new computer (`ratw-editor invite NAME` makes one): it carries
+  the world's key, so there is nothing to compare.
+
+**On a rented server (VPS):** Docker opens published ports past the firewall (`ufw` doesn't stop them). With
+`RATW_EDITOR_BIND=0.0.0.0` the Editor port faces the internet at once: that is how you manage from home. Use the
+Editor code for your first connection, and set `[editor] new_devices = "approve"` in `world.toml` (section 5).
+
+**To turn the Editor off:** `[editor] enabled = false` in `world.toml`, then `docker compose restart world`. Nothing then
+answers on the Editor port.
 
 ---
 
@@ -748,7 +829,7 @@ what you changed is `.env`).
 |---|---|
 | `no /etc/ratw/host/world.toml: copy world.toml beside compose.yaml` | There is no `world.toml` in the folder (or it is called `world.toml.txt`, or there is a folder of that name). Delete any folder called `world.toml` there, put the file beside `compose.yaml`, then `docker compose up -d`. |
 | `world.toml is not valid TOML: ...` | A typing slip in `world.toml`: often a missing quote, or a word without quotes. The message gives the line. |
-| `world.toml: [world], [central], [ai], [server] and [network] are tables.` | One of those names was given a value (`world = "..."`) instead of being a heading, `[world]`. Put the heading back, with its settings under it. (A misspelt heading, such as `[World]`, gives no message of its own: its settings are ignored, so the error is that the name, the id or central's url is missing.) |
+| `world.toml: [world], [central], [ai], [server], [network] and [editor] are tables.` | One of those names was given a value (`world = "..."`) instead of being a heading, `[world]`. Put the heading back, with its settings under it. (A misspelt heading, such as `[World]`, gives no message of its own: its settings are ignored, so the error is that the name, the id or central's url is missing.) |
 | `world.toml: give the world a name ([world] name = "...").` | Give the world a name. |
 | `world.toml: the name is N bytes; at most 48 ...` | The name is too long. Accented letters count two or more. Make it shorter. |
 | `world.toml: the name has a control character in it.` | Retype the name. |
@@ -763,6 +844,9 @@ what you changed is `.env`).
 | `world.toml: a world on central needs its id ([world] id = "world-...") ...` | The world id is missing or mistyped. Copy it from the Host page (section 2). |
 | `world.toml: secure = true needs host = "a.dns.name" ...` | Set `secure = false`, unless you have a proxy with a certificate. |
 | `world.toml: cost_mode is generous, balanced or frugal.` | Write one of those three. |
+| `world.toml: [editor] owner is 3 to 32 small letters, digits, - and _ ...` | Change the name, or leave `owner` out. Never put a password there. |
+| `world.toml: [editor] new_devices is "open" or "approve".` | Write one of those two, in quotes. |
+| `RATW_EDITOR_PORT is a port number` | `RATW_EDITOR_PORT` in `.env` must be a number from 1 to 65535, with nothing else on the line. |
 | `world.toml: the AI key has a space or an unusual character in it.` | Copy the key again, whole, with nothing else. |
 | `world.toml names a file for the host token: there is no ...` (or `for the AI key`) | The file named by `token_file` (or `key_file`) isn't there. Check its name, and that it is in the world's folder, beside `world.toml` (a full path doesn't work). On Windows, check it isn't called `host-token.txt` (section 5). |
 | `... can't be read (permission denied). Make it a file of the user that runs Docker.` | On Linux, the file belongs to another user. `sudo chown $USER FILE`. |
@@ -784,6 +868,7 @@ what you changed is `.env`).
 | `failed to set up container networking: ... Bind for 0.0.0.0:7788 failed: port is already allocated` (or `Bind for :::7788 failed`) | Another program, or another world, has that port. Stop it, or give this world another port in `.env` (`RATW_PORT=7789`), and forward that one instead. |
 | Windows: `Ports are not available: exposing port TCP 0.0.0.0:7788 ... bind: Only one usage of each socket address ... is normally permitted` | The same: something else on the computer has that port. |
 | Windows: `Ports are not available: ... bind: An attempt was made to access a socket in a way forbidden by its access permissions` | Windows has set that port aside (Hyper-V and WSL reserve ranges of ports). To see the ranges, in PowerShell: `netsh interface ipv4 show excludedportrange protocol=tcp`. Choose a `RATW_PORT` outside all of them, and forward that one instead. |
+| Any of the three above naming **17789** (`127.0.0.1:17789`), the Editor's port | Another program, or Windows, holds the Editor's port. This can happen on the update that adds the Editor, to a world that ran the day before; the whole world then stays down. Put another Editor port in `.env` (`RATW_EDITOR_PORT=17800`, or one outside the ranges above), then `docker compose up -d`. |
 | `invalid containerPort: ...`, or `... is missing a target port` | `RATW_PORT` in `.env` must be a number from 1 to 65535, with nothing else on the line (no spaces, no quotes). |
 | `docker: command not found`, or `'docker' is not recognized` | Docker isn't installed, or the terminal was open before it was. Open a new terminal. |
 | `Cannot connect to the Docker daemon ...`, or `error during connect ...` | Docker isn't running. Start Docker Desktop (Windows), or `sudo systemctl start docker` (Linux). |
@@ -822,8 +907,10 @@ Read the `world agent:` lines in the log, or the reason on the Host page.
 | `warning: RATW_TICKETS no keys from central yet ...`, and it stays | The agent can't fetch central's keys. See "could not fetch central's keys" above. |
 | `RATW_ARRIVAL refused: this world holds N player economy accounts, its most` | The world is full of wolves that have ever arrived. Ask for help. |
 | `RATW_PACKAGE warning: the NPC Mind did not start (see logs/npc-mind.log) ...` | Something is wrong with the AI key or OpenAI. Read the Mind's log: `docker compose exec world cat logs/npc-mind.log`. The residents use their written lines meanwhile. |
-| `RATW_PACKAGE the world is closed for maintenance; trying again in a minute` | The world was closed for maintenance. It tries again by itself every minute. |
-| `RATW_PACKAGE the world server stopped (exit N)` | The world server stopped by itself. The lines above say why. Docker starts it again. If it keeps stopping, ask for help, with the log. |
+| `RATW_PACKAGE the world is closed for maintenance: it starts again once it is opened ...` | The world was closed for maintenance (in the Editor, or by the DM). It checks every 5 seconds, and starts as soon as it is opened again. |
+| `RATW_PACKAGE the world server stopped (exit N); starting it again in ...` | The world server stopped by itself. The lines above say why. The world starts it again, waiting longer each time it stops (section 13); the Editor stays up. If it keeps stopping, ask for help, with the log. |
+| `RATW_PACKAGE the world waits until world.toml is put right ...` | `world.toml` was changed and has a mistake: the line above says what. Put it right, then Restart in the Editor, or `docker compose restart world`. |
+| `RATW_PACKAGE warning: this compose.yaml has no admin volume ...`, or `... has no manage folder ...` | Your `compose.yaml` is from before the Editor. Copy the new one from the package over it (keep `world.toml` and `.env`), make an empty folder called `manage` beside it, then `docker compose up -d`. |
 | `UPnP: no router answered the search from inside this container: expected under Docker Desktop and rootless Docker ...` (in `docker compose logs upnp`) | Normal on Windows (Docker Desktop) and with rootless Docker: forward the port by hand (section 8). On Linux with Docker Engine, it means UPnP is off on the router: turn it on in the router's settings, or forward the port by hand. |
 | `UPnP: port 7788 is already forwarded on the router to another computer ...` | Another computer has that port. Change the forward on the router, or give this world another port. |
 | `UPnP: the router doesn't let programs open ports ...` | Forward the port by hand. |

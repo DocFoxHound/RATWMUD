@@ -1,5 +1,6 @@
 # Your world's settings (Docs/Design/77, section 8). Edit this file, then `docker compose up -d` (README.md).
-# Read once, when the world starts: after a change, `docker compose restart world upnp` (both read it).
+# Read whenever the world's server starts: after a change, the Editor's Restart, or `docker compose restart world upnp`
+# (the upnp service reads it too).
 
 [world]
 # The world's name on the server list and in the game: at most 48 bytes (a plain letter is one, an accented one two).
@@ -55,6 +56,9 @@ key = ""
 # story_model = "gpt-5.6-luna"    # the stories
 # How much talk to buy: generous, balanced or frugal.
 cost_mode = "balanced"
+# The Editor's tools (life stories, Atlas's rosters) and the residents together use at most this many tokens a month on
+# your key (Docs/Design/78, 7). Leave it out for the default (20 million: a few dollars a month at the defaults above).
+# monthly_tokens = 20000000
 
 [server]
 # The game's worker threads. Leave it out to use the CPUs Docker gives the container, less two (0-16).
@@ -69,3 +73,16 @@ cost_mode = "balanced"
 # Desktop or rootless Docker, behind carrier-grade NAT, or with UPnP off on the router it can't, and
 # `docker compose logs upnp` says so: then forward the port by hand. Central's call-back says whether it is open.
 upnp = true
+
+[editor]
+# The Editor: your world's own DM tool (and later its map editor), from the game's EDITOR button (README.md, "The
+# Editor"). false turns it off: nothing then answers on the Editor port.
+enabled = true
+# Your first Editor account's name (3 to 32 small letters, digits, - or _). Leave it out and the world makes one up
+# (host- and four letters and digits). Either way the name, a one-time password and an Editor code appear in
+# manage/first-editor.txt the first time the world starts. Never put a password in this file.
+# owner = "myname"
+# "open": anyone with an Editor account's name and password can sign in. "approve": a computer that hasn't signed in
+# before also needs an Editor code (docker compose exec world ratw-editor invite NAME). Recommended if you open the
+# Editor port to the internet.
+new_devices = "open"

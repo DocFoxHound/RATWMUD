@@ -25,7 +25,9 @@ FROM python:3.14-slim-trixie
 # its secrets in its environment; ratw-server (10002) runs the server, which faces the internet, and can reach none of
 # them. ratw-admin (10003, in no other group) runs the Editor's helper (tools/world_admin.py, Docs/Design/78, 6.5),
 # with openssl to make and sign the Editor's certificate. The entrypoint runs as root to read the host's files
-# (mounted in /etc/ratw) and the database passwords (compose.yaml), all root's alone.
+# (mounted in /etc/ratw) and the database passwords (compose.yaml), all root's alone. The volumes' mount points are
+# made here with their owners, so a new volume starts with them: logs (sticky: neither user can move the other's files),
+# admin (the Editor's helper's alone), backup-requests (root's); /var/ratw/manage is the host's manage/ folder.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends libpq5 libssl3t64 zlib1g libtcmalloc-minimal4t64 ca-certificates tini \
     openssl \
@@ -38,8 +40,9 @@ RUN apt-get update \
  && groupadd --gid 10003 ratw-admin \
  && useradd --uid 10003 --gid 10003 --home-dir /var/lib/ratw/admin --no-create-home --shell /usr/sbin/nologin ratw-admin \
  && install -d -o root -g root -m 0755 /var/lib/ratw \
- && install -d -o ratw -g ratw-server -m 0770 /var/lib/ratw/logs \
- && install -d -o root -g root -m 0700 /etc/ratw /etc/ratw/host
+ && install -d -o ratw -g ratw-server -m 1770 /var/lib/ratw/logs \
+ && install -d -o ratw-admin -g ratw-admin -m 0700 /var/lib/ratw/admin \
+ && install -d -o root -g root -m 0700 /etc/ratw /etc/ratw/host /var/lib/ratw/backup-requests /var/ratw /var/ratw/manage
 COPY --from=build /build/ratw_server /opt/ratw/bin/ratw_server
 COPY app/ /opt/ratw/
 # The Editor's accounts command (Docs/Design/78, 3.6): `docker compose exec world ratw-editor ...`.
@@ -53,5 +56,6 @@ ENV RATW_DATA_DIR=/opt/ratw/Data \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 WORKDIR /var/lib/ratw
-EXPOSE 7788
+# The game port, and the Editor's (TLS, the helper's; compose publishes it to this computer alone by default).
+EXPOSE 7788 17789
 ENTRYPOINT ["/usr/bin/tini", "--", "python3", "/opt/ratw/Package/entrypoint.py"]
