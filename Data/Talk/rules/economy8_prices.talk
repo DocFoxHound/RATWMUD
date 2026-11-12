@@ -425,8 +425,8 @@ b : Good thinking. | Lucky you.
 
 scene e8p_sc_upper_trade_up
 when topic=prices topic.dir=up topic.item!=meal a.wealth=rich a.class=upper b.wealth=rich b.class=middle|lower
-cooldown 1d
-weight 0.5
+cooldown 3d
+weight 0.25
 a : #topic.what.capitalize# #topic.is# dear, I'm told. Is it hurting trade? | The Council talked of #topic.what# yesterday. Over the wine.
 b : Trade takes its knocks. It'll mend. | Over the wine. Of course.
 a : Do let me know if the Houses can help. | Where else?

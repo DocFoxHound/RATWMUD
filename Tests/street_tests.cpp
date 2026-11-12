@@ -1792,8 +1792,21 @@ void theWorkingPoorOnRestday()
         expect(s.foodWantOnDayOff(hh) == 0 && !w.beggars().count("linden"), "a purse that buys a day's food: no want, none begging");
         larders(10, 0);                             // (A day's more than the two in hand.)
         expect(s.foodWantOnDayOff(hh) == 0 && !w.beggars().count("linden"), "three days' bread in hand: no want, none begging");
+        // Phase 10's first pass (2026-11-12): one with no post is judged for the day off too. Before, a poor household's
+        // postless, fed ahead for Restday, were never in want that morning by the plain test, and begged on Marketday only.
+        const auto lodgers = s.householdOf("lodger");
+        expect(!s.jobOf("lodger") && s.overrideBand(lodgers, status::Poor, 100000), "the lodger: no post, poor");
+        emptyLarder(s, "lodger");
+        s.stagedSet("lodger", 0);
+        expect(s.create("lodger", "bread", 7, "test: bread in hand"), "the lodger's two days' bread in hand");
         larders(0, 0);
         expect(w.beggars().count("linden") && w.beggars().count("sorrel"), "nothing at all: begging again");
+        expect(s.foodWant(lodgers) == 0 && s.foodWantOnDayOff(lodgers) > 0,
+               "the lodger on Restday: no want by the plain test, in want on the day off");
+        expect(w.beggars().count("lodger"), "and begs on Restday beside the cottage's hands, as one with a post does");
+        s.stagedSet("lodger", 60);
+        s.stagedLarders();
+        expect(s.foodWantOnDayOff(lodgers) == 0, "with a purse that buys a day's food: no want on the day off");
     }
     // (And seen at it: the street's errand comes before the day off's own plan.)
     for (int t = 0; t < 30; ++t)

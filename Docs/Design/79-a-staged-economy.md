@@ -531,7 +531,7 @@ numbers are first guesses; tuning waits for Phase 10 (memory `implement-before-b
 |---|---|---|---|---|
 | Food a day, a head | 1 meal | 2 meals | 3 meals | 3, fine quality |
 | Chance of a short day at 0 (× 1.5 at −100, × 0.5 at +100) | 45% | 12% | 1% | 0 |
-| Purse target (clamped to at most 500p) | 0-3p | 3-12p | 12-60p | 60-300p |
+| Purse target (clamped to at most 500p) | 0-3p | 2-12p (3-12p until Phase 10) | 12-60p | 60-300p |
 | A keeper's buying budget × | 0.4 | 0.7 | 1.0 | 1.5 |
 | Services and luxuries | none | a barber rarely | services by `every`; luxuries 10% a week | luxuries 40% a week; the tailor, the jeweller |
 | Theft weight | 1.0 | 0.35 | 0.05 | 0 (a sly one 0.02) |
@@ -4635,6 +4635,97 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     traveller "buying up" a good after any purchase that moved its price (no bare shelf is claimed). A push's `bare`
     is kept until the push has decayed away or the holder has sold more than it bought: a traveller who emptied a
     shelf days ago and still holds most of the rise is still said to have bought it bare.
+
+- **2026-11-12: Phase 10 prepared** (on `r2-staged`, from `5fd4db0`; the play guide is
+  `Docs/Design/79-phase10-play-guide.md`). What a player sees on DEV today for each of T1-T17, a first tuning pass on
+  the numbers the earlier phases left, and the guide for the user's play session. DEV (build 70, at migration 0061) was
+  only exported read only and read by scratch probes outside the repository (the Core library, the export, day turns
+  and a few seconds of ticks each: no balance run, no economy simulation over days) and by one scratch server of this
+  code for forty seconds (it started, staged, on a free port; nothing written); its `live.economy.rules` read with a
+  read-only query (`{}`: no rule of the world's own). No real server, no paid model call, PROD untouched. **The box
+  stops here: the user plays, then says what to change.**
+  - **What DEV shows (the probes).** One market, Ridgemere (243 households, 102 tills, 7 carters); a port there (38
+    Wharf posts, all held; 16 goods waiting for ships); 12 cart ends but **none of the 42 farms and works staffed**, and
+    **all 559 residents living in Ridgemere**. A fresh scratch server starts on Dawnday, Spring 1, at noon, and the
+    seeded calendar is the same each start: the mill stopped on Hearthday (flour 26p to 29p a dozen, bread 13p to 14p);
+    the Long Tide in on Riverday 8:30-17:00 with a rich cargo; Marketday's five beggars (cells 2, 2, 1) and the
+    brewers' glut; Restday's beggars and the dole (63 on it); the drovers on the second Dawnday; a House wedding on the
+    second Emberday (its notice two days ahead); the Heron in on the second Marketday; the salt pans on the second
+    Restday.
+
+    | # | Seen on DEV today | Where and when | What blocks it |
+    |---|---|---|---|
+    | T1 | yes | the pie baker on Market Square, any day 8-18; and Hearthday's mill without buying | — |
+    | T2 | partly | shelves of 4 thin to 1-3 by evening (mead, wine, yarrow) | bread never sold out by households alone (160-230 loaves at the stall: the target covers the day); a player must buy it out |
+    | T3 | the rule, not played | seven shops buy ore (the Foundry: 30 pieces a day, 60p) | "the next wagon carries ore": no wagons |
+    | T4 | no | — | Ridgemere is the only market: no Country community has a merchant or a carter |
+    | T5 | no | — | no wagons to raid |
+    | T6 | yes | the Wharf and the Sump; Riverday of week 1, Marketday of week 2, 8:30-17:00; the timetable on the town's board | before this pass the cargo's shown price barely moved |
+    | T7 | yes | Marketday and Restday 8-18, three of the four open cells | the slider cannot be moved on a scratch server (below) |
+    | T8 | barely | one theft a day in the whole city at 0 (expected 1.09), one or two at −100 (1.63), at a seeded hour 8-20 | too few to witness: `theftBase` is the user's |
+    | T9, T10, T17 | not probed | talk, for the user's ear | — |
+    | T11 | no | — | no farm staffed: no carts, and the harvest moves nothing a player sees |
+    | T12 | yes in the city | the Wharf's 38 posts held | the farms' posts empty |
+    | T13 | yes | six events in the first two weeks, each with its notice | — |
+    | T14 | partly | 16 goods wait for ships, a ship about once a week | no wagons; shelves fall only when someone buys |
+    | T15 | the rule, not played | a gift or a helped trouble works on a scratch server | — |
+    | T16 | only by a file change | `market.json` `rules.prosperity` is the slider's target at start (DEV has no rule of its own); 10 points a day | a scratch server takes no DM action; DEV has no saved Dungeon Master, so no Dev Console either |
+
+    A Country town shows none of T1-T17: nobody lives there. Wagons, raids, farm carts and the harvest wait for world
+    data (a second staffed market, a staffed farm), never for generated NPCs.
+  - **The first tuning pass** (each small, with its evidence; tests updated where they pinned a number):
+    - **A ship moves a shown price.** `RatwPort.cpp`: `ShipBaseline` −0.1 to −0.3, `TakesBaseline` +0.1 to +0.3 (still
+      halfway, one way only), `StormNudge` 0.1 to 0.15. From rest a docking left its cargo at −0.05: under a penny on
+      most single pieces (a probe of every ship good's shown price at each pressure). At −0.15: a 4p crate 3p, a 6p
+      cushion 5p, a 9p blanket 7p, a dozen herbs 13p to 11p, horse harness 43p to 37p; taken goods at +0.15: a hide 5p
+      to 6p, a dozen tallow 13p to 15p. Inside the clamp (0.95 × e^−0.15 = 0.82; the floor is at −0.17). Butter (3p) and
+      the tick comb (4p) cannot fall: a single piece's lot is floored at ceil(each × 0.72) (I3). Iron ore and small
+      pelts are at the clamp's top already (far, 12 for 15p). `port_tests` pins the new halves.
+    - **Lost ships about one a year.** `market.json` `lost_ship` `weight` 1 to 0.1. A year of the seeded roll at
+      Ridgemere (day turns only): 11 lost before, 1 after (91 ships in, 6 stormbound).
+    - **House weddings fewer.** `house_wedding` `weight` 1 to 0.5: 13 a year to 10. In that year no kind ran three
+      weeks (two at most, before and after); the rule is still "none within seven days", and a guarantee would need the
+      Board to remember a kind past its two days over (a save's shape: not done).
+    - **The Times heard beside an event or a lost ship** (`RatwAmbient.cpp`, the hour's draw): a lost ship 2.3 fixed
+      to 1.85 + the draw; hard or boom Times 1.65 to 1.7, lean or good 1.45 to 1.6 (an event on stays 1.7). By the
+      draws' arithmetic hard Times win the hour from an event on half the time (38% before) and lean ones 28% (7%);
+      beside a lost ship about 20% and 7% (never before).
+    - **The dominant rule thinned:** `e8p_sc_upper_trade_up` weight 0.5 to 0.25, cooldown 1d to 3d.
+    - **The poor's purse floor** (`status.json` `rows.poor.purse`): 3-12p to 2-12p. Section 6.5's table says so.
+    - **The postless on Restday by the day-off test** (`World::placeBeggars`: `foodWantOnDayOff` for everyone; it is
+      the plain test on any day with no food bought ahead). `street_tests`' `theWorkingPoorOnRestday`: the lodger, no
+      post, poor, two days' bread and no coin, begs on Restday beside the cottage's hands.
+  - **DEV's beggars, before and after** (the method of the decisions' probe: each slider on a fresh load, 42 nights, a
+    day's eating taken before each night, every shop set out each morning; then a Marketday at 10:00 and the Restday
+    after; "posted" are the working poor on their day off). Before reproduces the decisions' table (9 and 10 there).
+
+    | Slider | Before: Marketday | Before: Restday | After: Marketday | After: Restday |
+    |---|---|---|---|---|
+    | −100 | 9 | 11 (2 posted) | 10 | 12 (6 posted) |
+    | −50 | 8 | 9 (2 posted) | 9 | 9 (5 posted) |
+    | 0 | 5 | 5 (0 posted) | 5 | 5 (2 posted) |
+    | +50 | 1 | 1 | 1 | 1 |
+    | +100 | 1 | 1 | 1 | 1 |
+
+    At −100 after: 7 of 110 poor households in want on Marketday (1 before), 10-14 posted adults of a household in
+    want (1-2 before). A floor of 1p was tried through the override: 27-29 posted adults in want at −100 and twelve
+    beggars on Marketday too; 2p is the smaller step.
+  - **Left for the user's play** (each in the guide with its value and a range): the depth groups and `depthScale`;
+    the half-lives; the bands' shares, meals and short days; `beggarsInAMarket`, `beggarsInACell`, `beggarsPosted`;
+    `theftBase` (0.08 would be about three thefts a day); the storm odds (about six stormbound a year); `shipsPerWeek`;
+    the ship goods (butter among them); `events.perWeek` and each kind's goods and weight (a wedding at 0.25 would be
+    about five a year); the Times' factor on staples; the bands' Times shift on top of the slider; the season and
+    region room for player pressure; the talk draws by ear.
+  - **Tests:** a fresh Release build (`build-p10`, from empty; 127 warnings, as before, none in the lines touched) and the full ctest once with the database (the main checkout's `Database/.env` sourced; `pg_client` on a throwaway
+    `ratw_test_s2stage_p10`, dropped after; the `_pg` tests' own `ratw_test_s2stage_*`, none left): 89/89 passed, none
+    skipped. `street_tests` 26,603 checks, `port_tests` 9,682, `events_tests` 265,224, `talk_tests` 150,919,
+    `market_tests` 13,701, `status_tests` 21,975, `life_status_tests` 2,244, `save_compat` 23,108, `exploit_tests`
+    871,756. `tools/test_economy_contract.py` over the changed data: 14 tests, OK. Not run, as the task set: perf
+    timings, the rest of the `tools/test_*.py` suite, the client's and the Editor's tests. No `s2stage` database or
+    `/tmp` file left; `artifacts/screenshots/dev-console-fight.png` untouched.
+  - **Not verified by hand:** the slider through `market.json` on a scratch server (read from `Society::buildRules`,
+    `Game::startEconomy` and `stepSlider`; no client was driven), T3 and T15 played through a client, and the talk
+    draws by ear (their odds are arithmetic, not a count of lines heard). Nothing pushed.
 
 ## Review (2026-11-08)
 

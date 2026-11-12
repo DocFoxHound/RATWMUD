@@ -788,7 +788,9 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         }
         for (const auto& [kind, s] : told)
         {
-            auto t = topic("ships", kind == "lost" ? 2.3 : kind == "late" ? 1.75 + hourly(18) : kind == "in" ? 1.7 + hourly(18)
+            // (Phase 10's first pass: a lost ship was a fixed 2.3, over everything for its four days; in the hour's draw
+            // now, still the likeliest, so the Times and an event are heard beside it.)
+            auto t = topic("ships", kind == "lost" ? 1.85 + hourly(18) : kind == "late" ? 1.75 + hourly(18) : kind == "in" ? 1.7 + hourly(18)
                                     : kind == "due" ? 1.5 + hourly(18) : 1.3 + hourly(18));
             t.talk["topic.kind"] = kind;
             t.talk["topic.ship"] = s->name;
@@ -827,7 +829,9 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         }
         if (f["world.times"] != "ordinary")         // (A cause is talked of only with Times it made: never in ordinary ones.)
         {
-            auto t = topic("times", (f["world.times"] == "hard" || f["world.times"] == "boom" ? 1.65 : 1.45) + hourly(11));
+            // (Phase 10's first pass: 1.65 and 1.45 before, so an event on (1.7) took most hours from hard Times and
+            // nearly all from lean ones; now hard or boom Times draw level with an event on, lean or good a step under.)
+            auto t = topic("times", (f["world.times"] == "hard" || f["world.times"] == "boom" ? 1.7 : 1.6) + hourly(11));
             t.facts.push_back("Times here are " + f["world.times"] + (f.count("world.times_cause") ? ", since " + f["world.times_cause"] : std::string()) + ".");
             consider(std::move(t));
         }

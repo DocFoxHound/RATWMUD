@@ -56,8 +56,11 @@ bool hasAny(const std::string& text, const std::vector<std::string>& words)
 }
 constexpr std::int64_t Week = calendar::DaysPerWeek;
 // A ship's cargo is pulled halfway toward the ship baseline, only down; what it takes halfway toward its own, only up; a
-// stormbound ship's cargo a step dearer (8.3, 8.6). (How far is Phase 10's to tune with play.)
-constexpr double ShipBaseline = -.1, TakesBaseline = .1, StormNudge = .1;
+// stormbound ship's cargo a step dearer (8.3, 8.6). Phase 10's first pass (2026-11-12): the baselines were -0.1 and
+// +0.1 and the storm's step 0.1, which from rest moved a good by 0.05, under a penny on most single pieces; at -0.3 and
+// +0.3 a docking leaves its cargo at -0.15 from rest (a 4p crate 3p, a 9p blanket 7p, a dozen herbs 13p to 11p) and what
+// it takes at +0.15, and a storm's 0.15 shows on a piece of 6p or more; all inside the clamp (0.95 x e^-0.15 = 0.82).
+constexpr double ShipBaseline = -.3, TakesBaseline = .3, StormNudge = .15;
 constexpr int BringsMost = 4, TakesMost = 3;
 constexpr double BackRooms = 2;                      // (A ship fills two shelves' worth behind: the next is days off.)
 // A sailed ship is told of today and tomorrow, and kept on the timetable through its week's end (so "No ship this week"

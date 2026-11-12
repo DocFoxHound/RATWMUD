@@ -664,11 +664,12 @@ void shipDay()
             expect(e.target == "east" && e.cell == id(2) && e.item == s.name && e.detail.rfind("The " + s.name.substr(4) + " is in with ", 0) == 0 &&
                        !market::forbiddenWord(e.detail),
                    "said where and what: " + e.detail);
-    // The Board's nudges (8.6: imports toward −0.1, exports up), halfway, one way only, inside P's range.
-    expect(std::abs(soc.pressure("east", dear) - .1) < .02, dear + " halfway from +0.3 to the ship baseline: " + std::to_string(soc.pressure("east", dear)));
+    // The Board's nudges (8.6: imports toward −0.3, exports toward +0.3: Phase 10's first pass, so a docking shows on a
+    // shown price), halfway, one way only, inside P's range.
+    expect(std::abs(soc.pressure("east", dear)) < .02, dear + " halfway from +0.3 to the ship baseline: " + std::to_string(soc.pressure("east", dear)));
     if (!cheap.empty())
         expect(std::abs(soc.pressure("east", cheap) + .3) < .02, cheap + " already cheaper is never raised: " + std::to_string(soc.pressure("east", cheap)));
-    expect(std::abs(soc.pressure("east", wanted) - .05) < .02, wanted + " dearer, halfway to +0.1: " + std::to_string(soc.pressure("east", wanted)));
+    expect(std::abs(soc.pressure("east", wanted) - .15) < .02, wanted + " dearer, halfway to +0.3: " + std::to_string(soc.pressure("east", wanted)));
     if (!high.empty())
         expect(std::abs(soc.pressure("east", high) - .4) < .02, high + " already dearer is never lowered: " + std::to_string(soc.pressure("east", high)));
     const auto& cells = soc.board().cell;
@@ -929,7 +930,7 @@ void aStormboundShip()
     auto events = w.takeEvents();
     expect(count(events, "ship stormbound", s.id) == 1 && shipById(w, s.id)->status == "storm", "stormbound");
     expect(!w.stormShip(s.id), "once");
-    expect(std::abs(soc.pressure("east", good) - .2) < .02 && soc.board().cell.at("east").at(good).cause == "ship late",
+    expect(std::abs(soc.pressure("east", good) - .25) < .02 && soc.board().cell.at("east").at(good).cause == "ship late",
            good + " a step dearer, the cause said: " + std::to_string(soc.pressure("east", good)));
     if (!second.empty())
         expect(soc.pressure("east", second) <= market::PressureMost + 1e-9 && soc.pressure("east", second) > .47,
@@ -2663,7 +2664,7 @@ const std::vector<ShipCrash>& shipCrashes()
              expect(have <= int(was.number("target")), "ship_sails: the load that sailed is not back on the shelf: " + std::to_string(have) + " of a shelf of " +
                                                            std::to_string(int(was.number("target"))));
          }},
-        // A storm kept a ship out at its day's turn after the checkpoint (+0.1 on its cargo, a trouble): once.
+        // A storm kept a ship out at its day's turn after the checkpoint (+0.15 on its cargo, a trouble): once.
         {"ship_storm",
          [](game::Game& g) {
              auto& w = g.world();

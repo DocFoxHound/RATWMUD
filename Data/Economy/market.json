@@ -339,6 +339,7 @@
         "days": 3,
         "ahead": 2,
         "hour": 10,
+        "weight": 0.5,
         "needs": "city",
         "crowd": true
       },
@@ -443,6 +444,7 @@
         "sign": "the Wharf office",
         "brings": 0.2,
         "days": 4,
+        "weight": 0.1,
         "ship": "lost",
         "crowd": true
       },

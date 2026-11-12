@@ -1598,7 +1598,7 @@ void Society::stagedFoodBy(const std::string& home, const std::vector<std::strin
 std::int64_t Society::stagedPurse(const std::string& id, const std::string& home, const std::string& cls, std::int64_t day) const
 {
     // A stable point in its band's range from its home's lot, with a little jitter by the day (doc 79, 6.5: destitute
-    // 0-3p, poor 3-12p, comfortable 12-60p, rich 60-300p, as status.json says, at most 500p).
+    // 0-3p, poor 2-12p, comfortable 12-60p, rich 60-300p, as status.json says, at most 500p).
     (void)cls;
     const auto found = stagedHomes_.find(home);
     const int band = found == stagedHomes_.end() ? status::Comfortable : std::clamp(found->second.band, 0, status::Bands - 1);

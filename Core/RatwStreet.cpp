@@ -1171,7 +1171,7 @@ void World::placeBeggars()
     };
     std::map<std::string, std::vector<Want>> byMarket;
     std::set<std::string> taken;                    // (The tiles the beggars stand on.)
-    std::map<std::string, double> wants, wantsOff;  // (Each household's want, asked once; and on its day off.)
+    std::map<std::string, double> wantsOff;         // (Each household's want, asked once: the day-off test.)
     std::map<std::string, std::set<std::string>> homesIn;   // (Each market's households: its share of the largest.)
     std::map<std::string, bool> restAt;             // (Whether a market's day is a day of rest: no festival's.)
     const auto dayOff = [&](const std::string& market) {
@@ -1201,12 +1201,13 @@ void World::placeBeggars()
         const auto* job = society_.jobOf(id);
         if (job && (job->role == "guard" || job->role == "merchant" || Society::clergy(job->title) || !dayOff(s->market)))
             continue;
-        // (Its household's want: one with a post is out on a day off, whose food was bought the day before, so that food
-        // is counted as in hand and the purses asked for a day's food as on any morning: Society::foodWantOnDayOff.)
-        auto& judged = job ? wantsOff : wants;
-        auto want = judged.find(s->household);
-        if (want == judged.end())
-            want = judged.emplace(s->household, job ? society_.foodWantOnDayOff(s->household) : society_.foodWant(s->household)).first;
+        // (Its household's want: on a day whose food was bought the day before (a Restday, a festival) that food is
+        // counted as in hand and the purses asked for a day's food as on any morning: Society::foodWantOnDayOff, the plain
+        // test on any other day. Phase 10's first pass: the postless are judged so too, as those with a post were, so a
+        // poor household's elders and idle are out on Restday as on Marketday; before, fed ahead, they never were.)
+        auto want = wantsOff.find(s->household);
+        if (want == wantsOff.end())
+            want = wantsOff.emplace(s->household, society_.foodWantOnDayOff(s->household)).first;
         if (want->second <= 0)
             continue;
         const auto cw = table.beggarsClass.find(s->cls);
