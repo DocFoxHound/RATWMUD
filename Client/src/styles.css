@@ -871,3 +871,37 @@ button.given { opacity: .6; }
 .ratw-dialog-actions button.primary.danger { background: #c9714f; color: var(--ink); }
 .ratw-dialog-actions button.secondary { background: var(--raised); color: var(--paper); }
 .ratw-dialog-actions button:focus-visible { outline: 2px solid var(--sage); outline-offset: 1px; }
+
+/* The Editor's screens (doc 78, section 2; ui/editorDoor.ts): the address or a code, the key check, signing in, the menu. */
+.door-editor { display: flex; align-items: center; gap: 16px; margin-top: 14px; }
+.door-editor p { margin: 0; }
+.door .door-editor button.secondary, .door .roster-actions button[data-action=editor] { margin: 0; }
+.editor-card { gap: 12px; }
+.editor-card .grow { flex: 1; }
+.editor-card .scroll { min-height: 80px; }
+.editor-code, .editor-address { display: flex; align-items: flex-end; gap: 14px; }
+.editor-code label, .editor-address label { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.door .editor-code button, .door .editor-address button { margin: 0; }
+.door .editor-code input { font-family: ui-monospace, 'DejaVu Sans Mono', monospace; font-size: 17px; }
+.editor-refusal { background: var(--ink); border-left: 4px solid var(--gold); padding: 10px 14px; }
+.door .editor-refusal p { margin: 4px 0; }
+.door .editor-print { margin: 0; padding: 12px 14px; background: var(--ink); color: var(--gold); font-family: ui-monospace, 'DejaVu Sans Mono', monospace;
+    font-size: 26px; letter-spacing: .06em; user-select: all; }
+.editor-red { border: 3px solid #c9714f; }
+.door .editor-red h2, .door .editor-red .gold { color: #e08a66; }
+.editor-red label { display: flex; flex-direction: column; gap: 8px; }
+.editor-where h2 { margin-bottom: 2px; }
+.editor-sign-in, .editor-password { width: 520px; align-self: flex-start; }
+.editor-pill { font-size: 14px; color: var(--ink); background: var(--sage); }
+.editor-tools { display: flex; gap: 24px; margin: 8px 0; }
+.editor-tool { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.door .editor-tool button { font-size: 30px; padding: 26px; }
+.door .editor-notice, .door .editor-banner { margin: 0; }
+.editor-accounts { display: flex; flex-direction: column; gap: 8px; min-height: 0; flex: 1; }
+.door .editor-accounts .host-buttons { align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.door .editor-accounts select { font-size: 15px; padding: 8px; }
+.door .editor-wolves span { font-size: 12px; }
+.editor-add { display: flex; align-items: flex-end; gap: 14px; }
+.editor-add label { display: flex; flex-direction: column; gap: 6px; }
+.door .editor-add button { margin: 0; }
+.door .editor-menu .door-actions button { margin: 0; }

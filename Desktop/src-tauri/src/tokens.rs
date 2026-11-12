@@ -48,7 +48,12 @@ impl KeychainStore {
     /// The keychain, if this computer has one that answers: a read that finds nothing is an answer; a platform failure
     /// (no Secret Service, a locked-out keychain) is not.
     pub fn open(central: &str) -> Result<Self, String> {
-        let entry = keyring::Entry::new(SERVICE, &format!("refresh@{central}")).map_err(|e| e.to_string())?;
+        Self::open_account(&format!("refresh@{central}"))
+    }
+
+    /// Any one entry of the app's (the Editor's device tokens: `editor-device@WORLD/USERNAME`, doc 78, 6.4).
+    pub fn open_account(account: &str) -> Result<Self, String> {
+        let entry = keyring::Entry::new(SERVICE, account).map_err(|e| e.to_string())?;
         match entry.get_password() {
             Ok(_) | Err(keyring::Error::NoEntry) => Ok(KeychainStore { entry }),
             Err(e) => Err(e.to_string()),
@@ -81,6 +86,11 @@ impl FileStore {
     pub fn new(folder: PathBuf, central: &str) -> Self {
         let name: String = central.chars().map(|c| if c.is_ascii_alphanumeric() || c == '.' || c == '-' { c } else { '_' }).collect();
         FileStore { path: folder.join(format!("signin-{name}.token")) }
+    }
+
+    /// A file of its own (the Editor's device tokens where there is no keychain).
+    pub fn at(path: PathBuf) -> Self {
+        FileStore { path }
     }
 }
 

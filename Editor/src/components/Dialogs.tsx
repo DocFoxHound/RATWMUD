@@ -7,6 +7,7 @@ import {setIdentity} from '../lib/session';
 import {closeConflict, closeDialog, commit, getState, openView, saveAgain, setState, toast, useStore} from '../lib/store';
 import {Hint, NumberField, Row, TextField, Toggle} from './fields';
 import {GenerateDialog} from './Characters';
+import {hosted} from '../lib/hosted';
 
 /** `required`: cannot be dismissed (Esc, backdrop, ×) until its own action closes it. */
 function Modal({title, eyebrow, children, wide = false, required = false, onClose}: {title: string; eyebrow: string; children: ReactNode;
@@ -214,7 +215,8 @@ function PlayDialog() {
         const t = setInterval(() => void look(), 2000);
         return () => clearInterval(t);
     }, [starting, server, look]);
-    const open = () => { if (server?.play) window.open(gameUrl(server.play), '_blank', 'noopener'); };
+    // (Hosted, doc 78: the Editor window opens no other window.)
+    const open = () => { if (server?.play && !hosted) window.open(gameUrl(server.play), '_blank', 'noopener'); };
     const start = async () => {
         setStarting(true); setProblem('');
         try { await api.startPlayServer(); toast('Starting the game server…', 'success'); await look(); }

@@ -6,7 +6,9 @@
 //   - asks a world's /status for the world list (central.rs, world_status);
 //   - keeps the window's size and place between launches (the window-state plugin), and the page on its own origin
 //     (the navigation rule);
-//   - with --relay, runs the loopback relay for worlds the webview can't reach itself (relay.rs).
+//   - with --relay, runs the loopback relay for worlds the webview can't reach itself (relay.rs);
+//   - the Editor (Docs/Design/78): a world's own tools, over a pinned TLS connection, in a window of their own
+//     (editor.rs).
 //
 // Arguments:
 //   --central URL          central's address (default: central.rs BUILT_IN); https://, or http:// to this computer
@@ -17,6 +19,7 @@
 mod central;
 #[cfg(feature = "e2e")]
 mod e2e;
+pub mod editor;
 mod relay;
 mod tokens;
 
@@ -69,6 +72,17 @@ pub fn options(args: &[String]) -> Result<Options, String> {
 /// shell's commands would answer it.
 pub fn page_origin(url: &tauri::Url) -> bool {
     page_origin_on(url, cfg!(windows))
+}
+
+/// Where a webview may go: the main window to the game's page only (never the Editor's origin); the Editor window to
+/// the `editor` scheme's origin only (never blob:, data: or anything else: the backstop for downloads WebKitGTK doesn't
+/// report, M0a). Any other webview, nowhere.
+pub fn page_origin_for(label: &str, url: &tauri::Url, windows: bool) -> bool {
+    match label {
+        "main" => page_origin_on(url, windows),
+        "editor" => editor::editor_origin_on(url, windows) || url.as_str() == "about:blank",
+        _ => false,
+    }
 }
 
 /// The rule for one platform: `tauri://localhost` on Linux and macOS; `http://tauri.localhost` on Windows (WebView2,
@@ -185,20 +199,42 @@ pub fn run() {
         .plugin(window_state.build())
         .plugin(
             tauri::plugin::Builder::<tauri::Wry, ()>::new("page-only")
-                .on_navigation(|_, url| {
-                    let ok = page_origin(url);
+                .on_navigation(|webview, url| {
+                    let ok = page_origin_for(webview.label(), url, cfg!(windows));
                     if !ok {
-                        eprintln!("ratw-desktop: refused to leave the page for {url}");
+                        // (The scheme only: a URL may hold a world's address or a blob's id.)
+                        eprintln!("ratw-desktop: the {} window may not go to a {}: URL", webview.label(), url.scheme());
                     }
                     ok
                 })
                 .build(),
         )
+        // The Editor window's requests (editor.rs, editor/proxy.rs): answered off the main thread, refused for any other
+        // window.
+        .register_asynchronous_uri_scheme_protocol("editor", |ctx, request, responder| {
+            let label = ctx.webview_label().to_string();
+            let app = ctx.app_handle().clone();
+            std::thread::spawn(move || {
+                let response = match app.try_state::<Arc<editor::Editor>>() {
+                    Some(e) => e.proxy(&app, &label, &request),
+                    None => editor::proxy::response(editor::proxy::Answer { status: 503, content_type: "application/json", body: vec![], ended: false, input: false }),
+                };
+                responder.respond(response);
+            });
+        })
         .setup(move |app| {
             let data_dir = match &opts.data_dir {
                 Some(d) => d.clone(),
                 None => app.path().app_data_dir()?,
             };
+            // The Editor: its known worlds in the data folder, device tokens where central's refresh token goes.
+            let editor = Arc::new(editor::Editor::new(data_dir.clone(), &opts.token_store, false));
+            app.manage(editor.clone());
+            let ticking = app.handle().clone();
+            std::thread::spawn(move || loop {
+                std::thread::sleep(std::time::Duration::from_secs(30));
+                editor.tick(Some(&ticking));
+            });
             let store = tokens::choose(&opts.token_store, data_dir.clone(), &shown)?;
             let development = central::is_loopback(tauri::Url::parse(&base)?.host_str().unwrap_or_default());
             let central = Central::new(base.clone(), shown.clone(), development, Box::new(central::UreqHttp::new()), Arc::from(store));
@@ -236,9 +272,15 @@ pub fn run() {
         });
 
     #[cfg(not(feature = "e2e"))]
-    let builder = builder.invoke_handler(tauri::generate_handler![central_info, central_call, central_resume, world_status, relay_address]);
+    let builder = builder.invoke_handler(tauri::generate_handler![central_info, central_call, central_resume, world_status, relay_address,
+        editor::editor_state, editor::editor_connect, editor::editor_use_code, editor::editor_trust, editor::editor_forget, editor::editor_sign_in,
+        editor::editor_change_password, editor::editor_step_up, editor::editor_accounts, editor::editor_sign_out, editor::editor_status,
+        editor::editor_open]);
     #[cfg(feature = "e2e")]
-    let builder = builder.invoke_handler(tauri::generate_handler![central_info, central_call, central_resume, world_status, relay_address, e2e::e2e_result]);
+    let builder = builder.invoke_handler(tauri::generate_handler![central_info, central_call, central_resume, world_status, relay_address,
+        editor::editor_state, editor::editor_connect, editor::editor_use_code, editor::editor_trust, editor::editor_forget, editor::editor_sign_in,
+        editor::editor_change_password, editor::editor_step_up, editor::editor_accounts, editor::editor_sign_out, editor::editor_status,
+        editor::editor_open, e2e::e2e_result]);
 
     #[cfg(target_os = "macos")]
     let builder = builder.menu(mac_menu).on_menu_event(|app, event| {
@@ -255,6 +297,13 @@ pub fn run() {
         if let tauri::RunEvent::ExitRequested { code: None, api, .. } = &event {
             if close_main(handle) {
                 api.prevent_exit();
+            }
+        }
+        // Quitting the client signs out of the Editor (the token is only in memory anyway; the world forgets it too).
+        if let tauri::RunEvent::Exit = &event {
+            if let Some(e) = handle.try_state::<Arc<editor::Editor>>() {
+                e.sign_out(None);
+                e.clean_up();
             }
         }
     });
@@ -278,6 +327,35 @@ mod tests {
         assert_eq!(o, Options { central: "https://c.example.net".into(), token_store: "file".into(), data_dir: Some("/tmp/x".into()), relay: true });
         assert!(options(&args(&["--central"])).is_err());
         assert!(options(&args(&["--server", "x"])).is_err());
+    }
+
+    #[test]
+    fn each_window_keeps_to_its_own_origin() {
+        let on = |label: &str, url: &str| page_origin_for(label, &tauri::Url::parse(url).unwrap(), false);
+        assert!(on("main", "tauri://localhost/"));
+        assert!(!on("main", "editor://localhost/"), "the main window never shows the Editor's origin");
+        assert!(on("editor", "editor://localhost/?suite=dm"));
+        for bad in ["tauri://localhost/", "blob:editor://localhost/0f", "data:text/html,x", "https://example.net/"] {
+            assert!(!on("editor", bad), "{bad}");
+        }
+        assert!(!on("other", "tauri://localhost/"), "no other window goes anywhere");
+        let on_windows = |label: &str, url: &str| page_origin_for(label, &tauri::Url::parse(url).unwrap(), true);
+        assert!(on_windows("editor", "http://editor.localhost/"));
+        assert!(!on_windows("main", "http://editor.localhost/"));
+    }
+
+    #[test]
+    fn no_capability_names_the_editor_window() {
+        // Tauri files the `editor` scheme's origin under "URL: local": a capability naming the window (or every window)
+        // would hand the world's page the shell's commands (doc 78, 6.6; M0a). Only `main` is ever named.
+        for entry in std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/capabilities")).unwrap() {
+            let text = std::fs::read_to_string(entry.unwrap().path()).unwrap();
+            let v: serde_json::Value = serde_json::from_str(&text).unwrap();
+            assert_eq!(v["windows"], serde_json::json!(["main"]));
+            assert!(v.get("webviews").is_none() && v.get("remote").is_none());
+        }
+        let source = include_str!("lib.rs");
+        assert!(!source.contains(&format!(".window(\"{}\")", "editor")));
     }
 
     #[test]

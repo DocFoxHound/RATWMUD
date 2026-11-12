@@ -17,6 +17,7 @@ import {artCache} from './ui/artwork.ts';
 import {ask} from './ui/dialog.ts';
 import {Play} from './play.ts';
 import type {Shell} from './shell.ts';
+import {shellEditor, type EditorBridge} from './net/editor.ts';
 import {isObject, num, str, type Json} from './game/json.ts';
 
 /** A world the client is joining or has joined. */
@@ -55,6 +56,7 @@ export class ClientApp {
     private app: HTMLElement;
     private footnote: string;
     private relay: string | null = null;             // The shell's loopback relay (only with --relay, doc 77 D1).
+    private editor: EditorBridge | null;             // The shell's Editor (doc 78): the desktop client, not on a Mac.
 
     constructor(app: HTMLElement, central: Central, shell: Shell) {
         this.app = app;
@@ -64,6 +66,7 @@ export class ClientApp {
         this.footnote = `CENTRAL ${where.toUpperCase()}${central.transport.development ? ' (DEVELOPMENT)' : ''} · A world sees your wolf, never your password.`;
         shell.askToClose = () => ask('Leave the world? Your wolf leaves it with you.', {ok: 'Leave', cancel: 'Stay', now: true});
         artCache.send = command => this.connection?.submit(command);
+        this.editor = shell.native ? shellEditor((command, args) => shell.invoke(command, args), (event, handler) => shell.listen(event, handler)) : null;
     }
 
     /** At launch: a remembered sign-in, or the sign-in page. */
@@ -89,7 +92,7 @@ export class ClientApp {
     private newDoor(): FrontDoor {
         this.door?.destroy();
         this.door = new FrontDoor(this.app, command => void this.command(command), {
-            mode: 'central', canRemember: this.central.transport.canRemember, footnote: this.footnote,
+            mode: 'central', canRemember: this.central.transport.canRemember, footnote: this.footnote, editor: this.editor,
             edition: this.shell.native ? 'DESKTOP CLIENT  /  EARLY DEVELOPMENT' : 'BROWSER, DEVELOPMENT  /  CENTRAL ACCOUNTS',
         });
         return this.door;

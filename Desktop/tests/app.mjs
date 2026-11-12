@@ -44,7 +44,8 @@ export async function launch(args) {
     const page = {
         console,
         exited,
-        evaluate(expression, seconds = 15) {
+        /** In the main window, or with `window` 'editor' the Editor window (doc 78; its reply comes back by its own way). */
+        evaluate(expression, seconds = 15, window = 'main') {
             const id = ++next;
             return new Promise((resolve, reject) => {
                 const t = setTimeout(() => {
@@ -52,7 +53,7 @@ export async function launch(args) {
                     reject(new Error(`no answer from the page: ${expression.slice(0, 120)}`));
                 }, seconds * 1000);
                 waiting.set(id, {resolve: v => { clearTimeout(t); resolve(v); }, reject: e => { clearTimeout(t); reject(e); }});
-                socket.write(JSON.stringify({id, js: expression}) + '\n');
+                socket.write(JSON.stringify(window === 'main' ? {id, js: expression} : {id, js: expression, window}) + '\n');
             });
         },
         /** Until the expression is truthy (a promise is awaited). A step a reloading page drops is asked again. */

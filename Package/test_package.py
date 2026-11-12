@@ -7,11 +7,15 @@ The entrypoint runs here as this user (not root), reading world.toml and the hos
 """
 from __future__ import annotations
 
+import base64
 import contextlib
+import hashlib
 import importlib.util
 import io
+import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -229,8 +233,10 @@ class Children(unittest.TestCase):
 class Stage(unittest.TestCase):
     """stage.sh replaces --out: never a directory that isn't one of its contexts."""
 
-    def stage(self, out: str, cwd: Path) -> subprocess.CompletedProcess:
-        return subprocess.run(['bash', str(HERE / 'stage.sh'), '--out', out], cwd=cwd, capture_output=True, text=True)
+    def stage(self, out: str, cwd: Path, *more: str) -> subprocess.CompletedProcess:
+        # (Without the Editor unless a test asks: building and signing it is EditorBundle's.)
+        return subprocess.run(['bash', str(HERE / 'stage.sh'), '--out', out, *(more or ('--no-editor',))], cwd=cwd, capture_output=True,
+                              text=True, env={**os.environ, 'RATW_EDITOR_RELEASE_KEY': '/nonexistent/release-key.pem'})
 
     def test_a_wrong_out_deletes_nothing(self):
         with tempfile.TemporaryDirectory(prefix='fix5-bundle-') as folder:
@@ -279,6 +285,68 @@ class Stage(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertFalse((out / 'src' / 'half.txt').exists())
             self.assertTrue((out / 'BUILD_ID').is_file() and (out / '.ratw-context').is_file())
+
+
+@unittest.skipUnless(shutil.which('openssl'), 'needs openssl')
+class EditorBundle(unittest.TestCase):
+    """stage.sh's signed Editor bundle (Docs/Design/78, 6.6, Q6): every file and its SHA-256, signed with the release key
+    (Ed25519), which never goes in the repository; refused without a key."""
+
+    def run_stage(self, *args: str, key: str = '/nonexistent/release-key.pem') -> subprocess.CompletedProcess:
+        return subprocess.run(['bash', str(HERE / 'stage.sh'), *args], cwd=ROOT, capture_output=True, text=True,
+                              env={**os.environ, 'RATW_EDITOR_RELEASE_KEY': key, 'RATW_BUNDLE_VERSION': '1794500000'})
+
+    def test_the_editor_is_staged_signed_file_by_file(self):
+        with tempfile.TemporaryDirectory(prefix='s2stage-bundle-') as folder:
+            folder = Path(folder)
+            made = self.run_stage('--make-release-key', str(folder / 'keys' / 'release.pem'))
+            self.assertEqual(made.returncode, 0, made.stderr)
+            self.assertRegex(made.stdout, r'^    \("ratw-[0-9a-f]{16}", "[A-Za-z0-9+/]{43}="\),$')
+            key = folder / 'keys' / 'release.pem'
+            self.assertEqual(key.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(self.run_stage('--make-release-key', str(key)).returncode, 2, 'never replaces a release key')
+            dist = folder / 'dist'
+            (dist / 'assets').mkdir(parents=True)
+            (dist / 'index.html').write_text('<!doctype html><script src="assets/a.js"></script>')
+            (dist / 'assets' / 'a.js').write_text('run()')
+            out = folder / 'context'
+            result = self.run_stage('--out', str(out), '--editor-dist', str(dist), key=str(key))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            staged = out / 'app' / 'Editor' / 'dist'
+            bundle = json.loads((staged / 'bundle.json').read_text())
+            manifest = base64.b64decode(bundle['manifest'])
+            (folder / 'manifest').write_bytes(manifest)
+            (folder / 'signature').write_bytes(base64.b64decode(bundle['signature']))
+            subprocess.run(['openssl', 'pkey', '-in', str(key), '-pubout', '-out', str(folder / 'public.pem')], check=True)
+            verified = subprocess.run(['openssl', 'pkeyutl', '-verify', '-pubin', '-inkey', str(folder / 'public.pem'), '-rawin',
+                                       '-in', str(folder / 'manifest'), '-sigfile', str(folder / 'signature')], capture_output=True)
+            self.assertEqual(verified.returncode, 0, verified.stderr)
+            listed = json.loads(manifest)
+            self.assertEqual((listed['v'], listed['version'], listed['editorApi']), (1, 1794500000, 1))
+            on_disk = {p.relative_to(staged).as_posix() for p in staged.rglob('*') if p.is_file() and p.name != 'bundle.json'}
+            self.assertEqual(set(listed['files']), on_disk, 'every file, and only the files')
+            for name, digest in listed['files'].items():
+                self.assertEqual(hashlib.sha256((staged / name).read_bytes()).hexdigest(), digest, name)
+            portraits = sorted(p.name for p in (ROOT / 'Data' / 'Portraits').glob('*.png'))
+            self.assertEqual(sorted(n.split('/')[1] for n in listed['files'] if n.startswith('portraits/')), portraits)
+            self.assertEqual(sorted(p.name for p in (out / 'app' / 'Data' / 'Portraits').glob('*.png')), portraits,
+                             'beside the studio, where it serves /portraits/')
+            self.assertFalse(any(out.rglob('*.pem')), 'no key in the image')
+
+    def test_without_a_key_nothing_is_staged(self):
+        with tempfile.TemporaryDirectory(prefix='s2stage-bundle-') as folder:
+            out = Path(folder) / 'context'
+            result = self.run_stage('--out', str(out))
+            self.assertEqual(result.returncode, 2)
+            self.assertIn('no Editor release key', result.stderr)
+            self.assertFalse(out.exists())
+
+    def test_the_release_key_never_goes_in_the_repository(self):
+        inside = ROOT / 'build-package' / 's2stage-key.pem'
+        result = self.run_stage('--make-release-key', str(inside))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('never goes in the repository', result.stderr)
+        self.assertFalse(inside.exists())
 
 
 class Compose(unittest.TestCase):

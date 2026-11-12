@@ -1885,7 +1885,7 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-M1 and M2a built (2026-11-12, below); the rest not yet.
+M0a measured, M1, M2a and M4 built (2026-11-12, below); the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -2147,6 +2147,140 @@ M1 and M2a built (2026-11-12, below); the rest not yet.
   script writes, chowns, chmods and reads back, and prints the NTFS ACL); `netsh int ipv4 show excludedportrange
   protocol=tcp` with WSL2 and Docker Desktop up; and WebView2's second and third downloads with a real signed-in
   session.
+
+- **2026-11-12: M4 built (The client),** on `r2-editor-m4` (cut from `r2-editor` at 3037b72, beside M2b and M3). Every
+  item of section 14's M4 row, with M0a's D1 changes:
+  - **The shell's Editor** (`Desktop/src-tauri/src/editor.rs` and `editor/`: `tls.rs`, `wire.rs`, `pins.rs`,
+    `devices.rs`, `bundle.rs`, `proxy.rs`). **The pinned client:** `PinnedVerifier` compares the end entity's SPKI
+    SHA-256 with the pin and ignores name and dates, checks the handshake signature (`verify_tls13_signature`), refuses
+    TLS 1.2 outright, and records the key it saw in both modes; TLS 1.3 only, no session resumption; ureq pinned to
+    `=3.5.1` with `Agent::with_parts` and the copied `RustlsConnector` (M0a's spike), no redirects or proxy, 15 s to
+    connect. A name is resolved once in the shell and the checked address is the one connected to (central's
+    `pingable` filter). **Record mode** sends only `GET /editor/hello`. **The hello** is checked (1 KB, a world id, a
+    known kind; the name loses control, bidirectional and invisible characters and is cut to 40; progress is a known
+    code and a percent, an unknown code reads "starting"; every other field dropped). **The pin store**
+    (`editor-worlds.json`, 0600): entries keyed by the key's pin, with its SPKI, world id, name, last username and up to
+    8 addresses as aliases; never a password, session or device token. Verdicts: trusted, moved (the same key at a new
+    address), rotated (the hello's rotation names the old pin and this world, carries exactly the key shown, and the
+    stored old SPKI's ECDSA P-256 signature over `rotation_message` checks), new, and changed (any other key at a known
+    address whatever the hello claims, a known world id under a new key, or a known key claiming another world). An
+    Editor code pins its key ahead of time (and replaces any other key kept for that world: a new code clears a red
+    screen); its one-time password and invite stay in the shell, never the page. Forgetting a changed key needs the
+    world's name typed. **Device tokens** in the OS keychain (`editor-device@WORLD/USERNAME`, `tokens.rs`'s pattern:
+    a 0600 file where there is no keychain, memory with `--token-store memory`).
+  - **The commands** (main window only): `editor_state`, `editor_connect` (screen 3's facts: the verdict, both
+    fingerprints, where the address is (loopback, home or public), the checked hello; on failure `unreachable` (and
+    whether the game's 7788 answers there), `game-port` (plain HTTP with a world's `/status`: stores nothing),
+    `not-editor`, `package-old`/`client-old` by `editorApi`, `official`), `editor_use_code`, `editor_trust` (only the
+    key the last connection showed, only with its fingerprint), `editor_forget` (a changed key by name, or a Recent
+    world), `editor_sign_in` (strict pin, the account's device token, the code's secrets; one session at a time: another
+    world or account signs the old one out and destroys its window; the same account on the same world rebinds the
+    open window in place), `editor_change_password` (screen 4b sends only the new password: the shell keeps the
+    one-time one while it must change), `editor_step_up`, `editor_accounts` (list and the eight verbs, only the fields
+    each needs; a code the world makes comes back with this world's address added unless it is loopback),
+    `editor_sign_out`, `editor_status` (the pill's hello over the pin), `editor_open`. A world's refusal reaches the page
+    as its code, minutes and reason only, never its sentence. **The keep-alive** every 5 minutes, only with an Editor
+    window open and the host's input in it in the last 30 minutes (an init script the shell injects pings
+    `/.ratw-shell/input`, which never leaves the shell). Quitting signs out. A 401 anywhere ends the session in the
+    shell (the token goes, the window stays bound) and the main window is told (`editor-session` event).
+  - **The `editor` scheme** (`proxy.rs`): only the window labelled `editor`, only while bound to the current session
+    (403 for another world's or account's window; 401, keeping the page's state, for an ended one); GET and POST;
+    never `/editor/*`; paths without `..`, `//` or backslashes; on only the body (16 MB; Content-Length set by ureq from
+    the body, D1), Content-Type and Accept (printable, one line), with the bearer and `Accept-Encoding: gzip` added;
+    replies 32 MB on the wire and after gunzip (other encodings refused); `/api/` replies forced to JSON or
+    octet-stream; page files must be on the signed list and hash to it, their type from their name; nosniff, no-store,
+    no referrer and section 6.6's CSP on every reply. **The signed bundle** (`bundle.rs`): `bundle.json` = `{v, key,
+    manifest (base64), signature (Ed25519 over the manifest)}`, manifest `{v, version (the commit's time), editorApi,
+    files: {path: sha256}}`; checked once a session against `RELEASE_KEYS`, `OLDEST` (1,794,000,000) and the API.
+  - **The Editor window:** label `editor`, opened at `editor://localhost/?suite=dm` (`http://editor.localhost` on
+    Windows) through `WebviewUrl::CustomProtocol`, titled "RATW Editor: NAME (ADDRESS)" by the shell. **A new data
+    directory per window** (D1, instead of incognito), removed after it is destroyed (WebKitGTK writes a few files again
+    as it closes, so it is removed until it stays gone), and every leftover at start and at exit. **The navigation
+    rule** (`page_origin_for`): main keeps to its page and never the Editor's origin; `editor` only to the scheme's
+    origin (never blob:, data:, another host or port, D1); any other window nowhere; the window opens no other
+    window (`on_new_window` denies). **Downloads:** `.json`, `.png` and `.csv` only, always through the shell's save
+    dialog (`rfd`, GTK on Linux; no dialog plugin). **No capability names the window** (a test reads every capability
+    file).
+  - **The signed bundle in `Package/stage.sh`:** it builds `Editor/` (or takes `--editor-dist`), stages it into
+    `app/Editor/dist` (the studio's `DIST` in the image) with `Data/Portraits` beside it and in the list as
+    `portraits/`, and signs every file with the release key through `openssl` (Ed25519, `pkeyutl -rawin`); without a
+    key it refuses (`--no-editor` stages an image whose Editor window never opens). `--sign-bundle DIR` signs a built
+    Editor; `--make-release-key [PEM]` makes the key (0600, refused inside the repository or over an existing one) and
+    prints the line for `RELEASE_KEYS`. **The release key: not made.** `RELEASE_KEYS` is empty, so a release build
+    opens no world's Editor until the user runs `bash Package/stage.sh --make-release-key` (default
+    `~/.config/ratw/editor-release-key.pem`, or `$RATW_EDITOR_RELEASE_KEY`), keeps a copy of the file beside central's
+    keys, pastes the printed line into `Desktop/src-tauri/src/editor/bundle.rs` and releases the client. A debug build
+    also trusts `RATW_EDITOR_DEV_KEY` ("ID:base64"), which the tests make per run; no private key is in git (the
+    fixtures in `editor/testdata` are throwaway test keys trusted by nothing).
+  - **The front door** (`Client/src/ui/editorDoor.ts`, `Client/src/net/editor.ts`, wired into `frontDoor.ts`):
+    EDITOR under the pitch card on the sign-in page ("Run or build your own world.", central not needed), beside HOST A
+    WORLD on the roster, and on each COMMUNITY row of the Host page (127.0.0.1 first, used when its hello's world id is
+    the row's; otherwise screen 2 filled with the listed host and 17789; never on OFFICIAL rows). Screens 2-5 with
+    section 2's words: the Editor code box (a code in the address box counts too), the address, "use 127.0.0.1",
+    HOST A WORLD, Recent worlds with FORGET, an address central lists as official refused before connecting; "still
+    setting up (N%)", polled every 5 s; can't connect by place (loopback, home with the `RATW_EDITOR_BIND` line, public
+    with the router line), the game port, not an Editor, older package, official; moved and rotated notices; the first
+    connection with all eight groups (I COMPARED IT from a public address, "this is the computer you're using" on
+    loopback); the red screen with both fingerprints and no sign-in, FORGET THE OLD CERTIFICATE behind the typed name;
+    screen 4 with the world drawn by the client, its account and password lines, the one-time-password hint while
+    `setupPending`, every refusal; 4b (two boxes, checked before sending, the world's reason worded); screen 5 with the
+    status pill, "Signed in as", "Certificate checked" and the fingerprint, DM (opens the window) and ATLAS greyed with
+    its reason, Change my password, Sign out, Back. **Editor accounts** (owner): every action asks the password again
+    in the page's own dialog (a step-up, then the change); the list (role, state, last sign-in and address, devices,
+    claim address), add (name, role with its one line, "may act on players' wolves", the "they need the client and
+    your port open" question), the code shown once with COPY, reset (not an owner's), role, wolves, turn off or on,
+    remove, End all Editor sessions; "N failed sign-ins today" and the account banners, worded by the client. The
+    session-ended event brings screen 4 with the account filled and "Your Editor session ended". The password boxes
+    are emptied on every redraw. **NEW TOKEN's dialog** now says the world leaves the list until it restarts with the
+    new token in `.env`. **EDITOR is hidden on macOS** (the page, and `AVAILABLE` in the shell) and in a browser.
+  - **The Editor's hosted mode** (`Editor/src/lib/hosted.ts`: on the scheme's origin): no SignIn, no token
+    (`authHeaders()` adds nothing, nothing in sessionStorage), the account from `/api/studio/session`, Atlas's world
+    from it too and no `X-RATW-Editor`, a 401 shows "Your Editor session ended: sign in again from the Editor menu"
+    over the page and keeps it, suite switches and reloads inside the page, the world pickers and Sign out hidden, the
+    two game-opening links hidden.
+  - **The widened text-only test:** `Editor/src/lib/textOnly.test.ts` (no markup sinks, eval or `cssText` anywhere;
+    `window.open` and data-made links or sources only where hosted mode hides them, one listed exception: the
+    artwork panel's `data:image/png` portrait) and `Client/src/ui/textOnly.test.ts` (the Editor screens and their
+    words). **Not banned: data-derived `style`** (React sets it through the CSSOM and the shell's CSP blocks every load
+    from elsewhere); section 6.6 asked for it, R1 may want it.
+  - **A fix in M2a's helper** (`tools/world_admin.py`, `_prepare`): a device token the world had forgotten (a reset, a
+    password change, End all sessions, the five-device cap) counted as a forced failure, so the client that kept it
+    was refused for good with the right password. It is now no device at all (that client is a new device again); a
+    token issued to another account is still unknown and a failure. `test_world_admin`'s password-change test says so.
+  - **Tests** (one run at the end): `cargo test` **57** (the verifier against real rustls servers: the pin passes with
+    any name and an expired certificate, a wrong key is refused before a byte, the pinned certificate without its key
+    fails, TLS 1.2 is refused, record mode records; the hello and codes; the pin store's verdicts, rotation refusals,
+    codes, forgetting, the file's fields and mode; device tokens; the bundle, an `openssl`-signed fixture from
+    stage.sh's commands; every proxy rule; the commands against a stand-in world; the keep-alive's gate; the origins
+    and downloads; no capability names the window); Client **158** and its typecheck (new: `net/editor.test.ts`,
+    `ui/textOnly.test.ts`); Editor 78 + **70** and its typecheck and build; `Package/test_package.py` **23** (new: the
+    bundle staged, every file listed with its hash, the signature checked with `openssl`, refused without a key, the key
+    never in the repository; the stage tests pass `--no-editor`); `tools/test_world_admin.py` **80** (throwaway
+    `ratw_test_s2stage_*`, dropped). **The end-to-end run** (`Desktop/tests/editor.test.mjs`, `npm run test:editor`;
+    the real e2e build against `tools/world_admin.py`'s port on a throwaway database with every migration, through
+    `Desktop/tests/editor_world.py`, whose stand-in app serves the signed bundle until M3's hosted studio): EDITOR with
+    central down; the first owner's code, the address, no key screen; signed in with the code; 4b refusing a short and
+    a breached password, then the new one; the menu "Open"; the pin store by key with the address, no secret in it;
+    the device token 0600 in its own file; the accounts panel refusing a wrong password, then the list, a co-builder
+    added and its code shown (no loopback address in it), the banner; DM opening the window with `/bundle.json`, `/`
+    and `/api/studio/session` asked for under the owner's session; from the window `editor_state`, `central_call`,
+    `world_status`, `plugin:window|set_title`, `plugin:window|set_fullscreen`, `plugin:event|emit` and the window-state
+    plugin all refused; no bearer, device token or password anywhere in its page or storage; `/editor/accounts` 403,
+    an unsigned file 404, `window.open` null, a navigation away stays home; the session ended under it (End all), its
+    next request 401, the menu back on screen 4 with the account and the notice, signed in again and the same window
+    carrying on (200); sign out, the window and its data directory gone; `new-certificate` signed: the pin moved
+    quietly with the notice; `--leaked`: the red screen with both fingerprints and no sign-in (the shell refuses too),
+    a wrong name refused, the right one forgets, the first-connection screen, trusted, signed in; no page error, no token
+    in any reply the page got, no data directory left. No `s2stage` database, `/tmp` file or process left.
+  - **Not done here:** "closing the window with saves pending asks first" and queued saves retrying (the page's own
+    queue: Atlas, slice 2); the menu's "Open · N wolves" count and "Last backup" (the hello has neither: My world, M5);
+    the owner's banners and failed sign-ins appear once the accounts panel is opened (the helper gives them only behind
+    the step-up); doc 76's and 77's text (section 15). **For the user:** make the release key (above); the Windows run
+    (`desktop-windows.yml` on `r2-editor-m4`) builds and tests the shell, but opening the Editor window on WebView2
+    against a real world is the user's PC test, with a dev build and `RATW_EDITOR_DEV_KEY`, or after the release key.
+    **For M3:** the image's Editor is `/opt/ratw/Editor/dist` with `bundle.json` and `portraits/`; the hosted studio
+    serves those files (with a session), `/bundle.json` included, and `/api/studio/session` with `me` and
+    `atlas.world`.
 
 ## Review (2026-11-08)
 

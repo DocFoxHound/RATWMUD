@@ -11,6 +11,7 @@
     "app": "npm --prefix ../Client run build && cargo run --manifest-path src-tauri/Cargo.toml --",
     "test": "cargo test --manifest-path src-tauri/Cargo.toml",
     "test:app": "npm --prefix ../Client run build && cargo build --manifest-path src-tauri/Cargo.toml --features e2e && node --test tests/app.test.mjs",
+    "test:editor": "npm --prefix ../Editor run build && npm --prefix ../Client run build && cargo build --manifest-path src-tauri/Cargo.toml --features e2e && node --test tests/editor.test.mjs",
     "spike-server": "node spike/ws_server.mjs"
   },
   "devDependencies": {

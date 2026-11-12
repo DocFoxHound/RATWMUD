@@ -5,6 +5,9 @@
 //   {"id": 1, "js": "<an expression>"}   evaluated in the page (awaited); the reply {"id": 1, "ok": true, "value": ...}
 //   {"quit": 0}                          the app exits with that code
 //   {"close": true}                      the window is closed as by its X (the page's close question, then the exit)
+//   {"id": 2, "js": "...", "window": "editor"}   evaluated in the Editor window (doc 78), which has no IPC at all: its
+//                                        reply comes back through the `editor` scheme's e2e path (editor.rs), which only an
+//                                        e2e build has
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpStream;
 use std::sync::Mutex;
@@ -39,6 +42,13 @@ pub fn start(app: &AppHandle, address: String) -> Result<(), String> {
                 continue;
             }
             let (Some(id), Some(js)) = (step.get("id").and_then(|i| i.as_u64()), step.get("js").and_then(|j| j.as_str())) else { continue };
+            if step.get("window").and_then(|w| w.as_str()) == Some("editor") {
+                match app.get_webview_window("editor") {
+                    Some(window) => { let _ = window.eval(editor_script(id, js)); }
+                    None => reply(&app, &format!("{{\"id\": {id}, \"ok\": false, \"value\": \"no Editor window\"}}")),
+                }
+                continue;
+            }
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.eval(script(id, js));
             }
@@ -57,6 +67,27 @@ fn script(id: u64, js: &str) -> String {
          try {{ line = JSON.stringify(r); }} catch (e) {{ line = JSON.stringify({{id: {id}, ok: true, value: null}}); }} \
          window.__TAURI__.core.invoke('e2e_result', {{reply: line}}); }})();"
     )
+}
+
+/// The same for the Editor window: the reply is posted to its own origin's e2e path (it has no IPC).
+fn editor_script(id: u64, js: &str) -> String {
+    format!(
+        "(async () => {{ let r; try {{ const v = await (async () => (\n{js}\n))(); r = {{id: {id}, ok: true, value: v === undefined ? null : v}}; }} \
+         catch (e) {{ r = {{id: {id}, ok: false, value: String((e && e.stack) || e)}}; }} let line; \
+         try {{ line = JSON.stringify(r); }} catch (e) {{ line = JSON.stringify({{id: {id}, ok: true, value: null}}); }} \
+         fetch('{}', {{method: 'POST', body: line}}); }})();",
+        crate::editor::proxy::E2E_PATH
+    )
+}
+
+/// A reply line from the Editor window (editor.rs, the scheme's e2e path).
+pub fn reply(app: &AppHandle, line: &str) {
+    if let Some(e2e) = app.try_state::<E2e>() {
+        if let Some(stream) = e2e.to_test.lock().unwrap().as_mut() {
+            let _ = stream.write_all(line.replace('\n', " ").as_bytes());
+            let _ = stream.write_all(b"\n");
+        }
+    }
 }
 
 #[tauri::command]

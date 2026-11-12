@@ -9,6 +9,7 @@ import {gameUrl} from '../lib/api';
 import {buildChoices, defaultPicks, letGoText, prunePicks, replaceMapText, type ImportPlan, type ImportResult, type Picks, type Release,
     type ServerStatus, type SyncWorld} from '../lib/sync';
 import {ChangeGroups, ConflictList, Problems, SummaryTable, when} from '../studio/SyncViews';
+import {hosted, reloadApp} from '../lib/hosted';
 
 const LABELS = {dev: 'Import dev\'s', live: 'Keep live\'s'} as const;
 type Plan = Awaited<ReturnType<typeof dmApi.importPlan>>;
@@ -81,7 +82,7 @@ function ServerPanel({status, canAct, onChanged}: {status: ServerStatus; canAct:
                 : 'A game server holds this world: players can be in it.')
             : (maintenance ? 'No game server holds this world: it is closed, safe to import or switch.'
                 : 'No game server holds this world right now (its launcher may be starting it, or it isn\'t running).')}</p>
-        {status.play && <p><a className="button play" href={gameUrl(status.play)} target="_blank" rel="noopener">▶ Open its game</a>
+        {status.play && !hosted && <p><a className="button play" href={gameUrl(status.play)} target="_blank" rel="noopener">▶ Open its game</a>
             <span className="meta"> {gameUrl(status.play)}</span></p>}
         {!status.serverRunning && !status.starting && <p><button disabled={!canAct || busy} onClick={() => void startServer()}
             title="Starts tools/live.sh server for this world on the studio's computer, on the local network">▶ Start its game server</button></p>}
@@ -267,7 +268,7 @@ function SwitchPanel({status, maintenance, canAct}: {status: ServerStatus; maint
         try {
             const result = await dmApi.switchLive(chosen, typed);
             window.alert(`The live world is now ${result.name || result.live} (was ${result.was}). It is in maintenance: end maintenance to open it.`);
-            window.location.reload();                     // The top bar's live world changed.
+            reloadApp();                                  // The top bar's live world changed.
         } catch (error) { setProblem((error as Error).message); setBusy(false); }
     };
     return <section className="sync-card">
