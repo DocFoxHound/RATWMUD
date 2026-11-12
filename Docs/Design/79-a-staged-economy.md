@@ -1339,7 +1339,9 @@ the wagon came in"), so no line blames it. Season is never a cause: it isn't P. 
 are gated on it. **`topic.item`** is text: "herbs" and "meal" keep their old lines; every other good is its plain
 words, plural where counted by the piece (`World::cargoWords`), with `topic.what` and `topic.is` ("hides are").
 **`price_cause`** comes back for a traveller's own buying or selling (the holder with the largest push the move's way,
-named as the teller knows them); its older scenes are the "down" ones. **New topics:** `talk.ships`, `talk.times` (only
+named as the teller knows them); its older scenes are the "down" ones. *(Since 2026-11-12 a rise's topic says whether
+that traveller's buying took a shop's last of the good, `topic.bare`, from the push's own record: "bought the shelf
+bare" is said only then.)* **New topics:** `talk.ships`, `talk.times` (only
 in Times that aren't ordinary), `talk.event`, `talk.harvest`, and the caravan topic's `due` (posted or on the road here,
 `topic.when`) and `news` kinds, with `topic.why` for a late wagon's mishap. **Salience:** `settings.json`'s `salience`
 (engine: `Library::muted`): words a speaker never says while its facts hold; a failing shop never "can't complain" (nor
@@ -1575,10 +1577,13 @@ steps and I3's minimum over about 10-30 markets; no ripples at trade time. Erran
 2 a cell.
 
 **The gate (Phase 11):** *(The baseline it is measured against is the merged Phases 7 and 8's table in Progress,
-2026-11-11, "Phases 7 and 8 repaired and merged; the new baseline": 765 residents, two runs each, 6-8 mean 2.60 ms, p99
-5.77, after the first minute 5.44 and worst 12.2; 17-19 2.14, 5.21, 4.99, 21.9; 23-25 1.62, 4.52, 4.04, 12.8; 6-8
-`--ship-day` 2.65, 5.86, 5.49, 12.7. It replaces Phase 0's table from now on, for Phases 9-11: no window slower than it
-beyond noise.)*
+2026-11-11, "Phases 7 and 8 repaired and merged; the new baseline", with its 23-25 row taken again on 2026-11-12
+("Phase 9 and the decisions merged": the first was two runs at the fast end of that window's spread). 765 residents;
+mean, p99, p99 after the first minute and worst after the first minute, ms: 6-8 2.60, 5.77, 5.44, 12.2; 17-19 2.14,
+5.21, 4.99, 21.9; 23-25 1.68, 4.70, 4.10, 12.9 (four runs: 1.64-1.74, 4.62-4.77, 3.97-4.28); 6-8 `--ship-day` 2.65,
+5.86, 5.49, 12.7. It replaces Phase 0's table, for Phases 9-11: no window slower than it beyond noise (0.05 ms of mean
+and 0.1 of p99 over two runs; 23-25 over four runs or more, 0.06 of their mean and 0.15 of their p99s: one run of it
+lies anywhere from 1.63 to 1.74).)*
 - `world_check --simulate 6 8`, `--simulate 17 19` (the old peak and shop hours) and `--simulate 23 25` (the nightly
   set and the day's turn), all at `--players 20`;
 - p99 at most 5.3 ms and worst at most 25 ms in every window; 17-19 and 23-25 no slower than 6-8 beyond noise;
@@ -3876,6 +3881,9 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     in every window, as are 17-19's and 23-25's p99s; 6-8's p99 (5.77, 5.86 with a ship) and the first minute's tick 19
     are over it, as on `5afe23c`. From now on the gate is: no window slower than this table beyond noise (a run's spread,
     about 0.05 ms of mean and 0.1 of p99 here). `world_check` has no Game and no journal: those stay outside the gate.
+    *(Corrected 2026-11-12, "Phase 9 and the decisions merged": the 23-25 row here was two runs at the fast end of that
+    window's own spread; from `5fa92a4` again, four runs, it is 1.68, 4.70, 4.10, 12.9, and 23-25 is judged on four runs
+    or more. That is also why 23-25 read "faster on the merged code" than `5afe23c` here: the same spread.)*
 - **2026-11-11: Phase 9, dm lane** (branch `r2-p9-dm`, on K0 `0752a58`; the lane note, for the merge step's entry). **The
   Prosperity tab** replaces the Money tab: `dungeon_master.prosperity()` and `GET /api/prosperity` (viewer) read the
   checkpoint's `society.report` (Core's, passed through opaque), the towns' `stores:` treasuries, the week's wagons (the
@@ -4486,6 +4494,147 @@ Each has a recommendation. "Go with the recommendations" takes them all.
     `market_tests` 13,625, `port_tests` 9,678, `status_tests` 21,975, `life_status_tests` 2,244, `save_compat` 23,108
     (Postgres 14,453), `game_tests` 3,633, `exploit_tests` 871,756, `pg_client` 24. Not run, as the task set: perf
     timings, the `tools/test_*.py` suite, the client's and the Editor's tests (the merge runs those).
+
+- **2026-11-12: Phase 9 and the decisions merged** (on `r2-staged`: `26362ac` merges `r2-staged-p9` at `a6eb97f`,
+  `48cf0d1` merges `r2-staged-dec` at `9f08aa2`, `52fe2f3` the clashes between them). No DEV or PROD database was
+  migrated or written (DEV only exported read only, build 70, for the speed runs; DEV and PROD copied read only with
+  `pg_dump` for `test_migration_0061`'s copies); no real or scratch server on them, no economy simulation over days, no
+  paid model call. **DEV's 0061 apply is still the orchestrator's, after this merge and a backup.**
+  - **Conflict (one):** this Progress section, where both branches had added their entry at the end: both kept, "Phase 9
+    complete" before "Decisions of 2026-11-12". Everything else merged on its own (`RatwMarket.cpp`, `RatwMarket.h`,
+    `RatwStreet.cpp`, `events_tests`, `market_tests`, `street_tests`, and this doc's sections 5.3, 8.4, 10.2 and 12).
+  - **The two together: three clashes, fixed in `52fe2f3`.**
+    - **A host's `noticeAfter` unchecked.** `tools/economy_contract.py` held a host's event kind's `noticeOn` to plain
+      words (280 bytes) but not the decisions' new `noticeAfter`, which Core holds the same way (`eventKindsOf`): a
+      host's list with a bad one passed the Atlas and lost the kind in the game. Added, with tests (both notices of a
+      ship's kind; too long, two lines, the forbidden word, not text). The Editor's contract and types list no event
+      field beyond a kind's id, words and needs (`EventKindListed`), so nothing to add there.
+    - **Beggars today, with Restday's working poor and the market's most.** Phase 9's report counted the beggars placed
+      by the market of the cell each stood in; the decisions draw and cap them by their household's market
+      (`placeBeggars`: `beggarsInAMarket`), and put the working poor out on Restday. `World::noteBeggars` now counts
+      everyone placed, the working poor too, each under its own household's market (the cell's only for one with no
+      market on record), so a market's count is never over its most. Tests: on Restday at the worst the report counts
+      the postless and the working poor out together, within the market's twelve (`theWorkingPoorOnRestday`); across
+      the slider the report keeps the day's most, twelve, through the better hours after
+      (`beggarsInAMarketByConditions`). The DM tab's hover and the contract's comment say so.
+    - **"Bought the shelf bare" after a small purchase** (the decisions' leftover: `e8p_pc_up_named`,
+      `e8p_pc_up_look`, "which no fact of a speaker's can gate; a fact of the topic would"). The fact: a traveller's
+      push on a good now records whether its buying took a shop's last of it (`market::Push::bare`, set in
+      `Society::stagedTrade` when a purchase leaves the till with none of the good; kept while the push lasts, through
+      a ripple's charge and the morning's sweep; gone once the holder has sold more than it bought; written with the
+      Board only when set, so an older save reads as "no" and no save changes shape). `Society::PriceMove::bare` is the
+      rise's pusher's, and the `price_cause` topic carries it as `topic.bare` (yes, no; `facts.json`). The two rules
+      keep their plain lines ("Ada has been buying the salt. Fourteen pence the dozen now.", "A stranger has been
+      buying salt. A grey wolf in a red cloak, it was.") and their old ones moved to `e8p_pc_up_named_bare` and
+      `e8p_pc_up_look_bare` (`topic.bare=yes`: "Bought the shelf bare.", "A stranger bought up all the salt."); "went
+      shop to shop buying", which no fact holds true, is now "bought the shelf bare of". Tests: `talk_tests` (known
+      and unknown, bare and not: a bare shelf is said only where there is one, and is said there) and `market_tests`
+      through the real path (Ash buys bread dear off a shelf with more on it: `topic.bare` no and no such line in the
+      game's own conversations; she buys the baker's last dozen: yes, said, and saved with her push). Not changed: the
+      other lines of a traveller "buying up" a good (`e8p_pc_up_poor`'s "bought up the bread and left us the price",
+      the scene `e8p_pc_up_who`'s "Who's buying all the bread?"), which claim no bare shelf.
+  - **Checked together, nothing to change:**
+    - **An event's Times points are gone everywhere.** No `eventTimes`, `EventTimesMost` or a kind's `times` is left
+      in `Core/`, `tools/`, `Editor/` or `DM/`: the report's `eventKinds` are id, words and needs; its per-market
+      `times` is the market's own score, word and cause (the slider, a harvest, the roads, the DM's nudge), never an
+      event's; the DM tab shows no points for a kind. The DM's `event.add` takes a kind by id
+      (`World::addStagedEvent`, the tool's `_event_add`) and reads no `times`: `test_dm_live` adds events on a real
+      server of the merged code.
+    - **A host's saved `events.list` with a legacy `times`** is read past by Core's layer (`market::layered` through
+      `eventKindsOf`: the kind kept, no warning; `market_tests`) and by the contract (no error, no warning;
+      `test_economy_contract`), so a world's override row written before the decisions still loads whole.
+    - **The street's new settings through the overrides:** a host may set `status.street.beggarsInAMarket` and
+      `beggarsPosted` (the contract takes them by status.json's shape; Core's reader clamps them).
+  - **Tests (the one full run, on `52fe2f3`):** a fresh Release build (`build-m9`, from empty; 127 warnings, as before,
+    none in the lines touched); ctest 89/89 with the database, none skipped (`pg_client` on a throwaway
+    `ratw_test_s2stage_m9`, dropped after; the `_pg` tests' own `ratw_test_s2stage_*`; the main checkout's
+    `Database/.env` sourced): `events_tests` 270,392 checks (`events_pg` 28 crashes, 744), `talk_tests` 150,917,
+    `market_tests` 13,701, `street_tests` 26,576 (`street_pg` 8 crashes, 83), `port_tests` 9,678 (`port_pg` 8 crashes,
+    216), `status_tests` 21,975, `life_status_tests` 2,244, `save_compat` 23,108 (Postgres 14,453), `game_tests` 3,633,
+    `exploit_tests` 871,756, `trade_show_tests` 919, `host_edit_tests` 671, `server_parts_tests` 263,
+    `authoring_tests` 200, `voice_tests` 75, `pg_client` 24. All 38 `tools/test_*.py` with the database and this
+    build's server (`RATW_TEST_SERVER`, `RATW_SERVER`, `RATW_SERVER_BINARY`; `RATW_TEST_DB_TAG=s2stage_`,
+    `RATW_TEST_KEY_PREFIX=s2stage`, `RATW_MIGRATE_COPIES=ratw_ridgemere2,ratw_prod`, each copied read only with
+    `pg_dump`; each through `python3 -m unittest` in `tools/`): 739 tests, none failing, 24 skipped (the 23 `RATW_SLOW`
+    world builds and `test_game_tables`' save under `Saved/`); 0061 migrated DEV's copy, a server of the merged code
+    opened it and stormed a ship there, and PROD's copy migrated (closed for maintenance by its own flag);
+    `test_dm_live` 9 on a real server (the DM's acts, `event.add` among them). The client's 146 and its typecheck; the
+    Editor's 78 + 68, its typecheck and the render smoke (14 panels); `DM/model.test.mjs` 16 (`node_modules` linked from
+    the main checkout, removed after). No `s2stage` or `ratw_test_` database left;
+    `artifacts/screenshots/dev-console-fight.png`, rewritten by `test_live_map`, restored.
+  - **Speed at the merge, and the baseline taken again.** DEV build 70 exported read only, `world_check EXPORT
+    --simulate A B --players 20 --threads 8`, Release, 765 residents; the merged code (`52fe2f3`, `build-m9`) against
+    the baseline's commit `5fa92a4` built in its own `git worktree` (removed after; each from its own tree, so with its
+    own `Data`), alternating, two runs a window, the machine quiet (load 0.32 before the first run, 1.0-1.4 during them
+    from the runs themselves, no other heavy work). ms, the runs' mean:
+
+    | Window | build | mean | p99 | p99 after the first minute | worst after the first minute | worst | runs |
+    |---|---|---|---|---|---|---|---|
+    | 6-8 | `5fa92a4` | 2.63 | 5.82 | 5.47 | 12.1 | 38.5 (tick 19) | 2 |
+    | 6-8 | merged | 2.64 | 5.72 | 5.39 | 14.2 | 38.4 (ticks 10 and 19) | 2 |
+    | 17-19 | `5fa92a4` | 2.17 | 5.25 | 5.05 | 22.4 | 40.1 (tick 19) | 2 |
+    | 17-19 | merged | 2.15 | 5.17 | 4.98 | 22.4 | 39.0 (tick 19) | 2 |
+    | 23-25 | `5fa92a4` | 1.68 | 4.70 | 4.10 | 12.9 | 38.6 (tick 19) | 4 |
+    | 23-25 | merged | 1.67 | 4.69 | 4.18 | 12.8 | 38.1 (tick 19) | 4 |
+    | 6-8 `--ship-day` | `5fa92a4` | 2.64 | 5.83 | 5.45 | 14.1 | 38.0 (tick 19) | 2 |
+    | 6-8 `--ship-day` | merged | 2.62 | 5.90 | 5.50 | 12.4 | 38.4 (tick 19) | 2 |
+
+    The runs' ranges:
+
+    | Window | build | mean | p99 | p99 after the first minute | worst after the first minute | worst |
+    |---|---|---|---|---|---|---|
+    | 6-8 | `5fa92a4` | 2.61-2.65 | 5.82-5.83 | 5.45-5.48 | 11.9-12.2 | 37.0-40.0 |
+    | 6-8 | merged | 2.63-2.65 | 5.70-5.73 | 5.34-5.44 | 11.6-16.9 | 37.3-39.6 |
+    | 17-19 | `5fa92a4` | 2.17-2.17 | 5.23-5.27 | 5.03-5.06 | 21.8-22.9 | 39.9-40.4 |
+    | 17-19 | merged | 2.14-2.15 | 5.15-5.18 | 4.98-4.98 | 22.3-22.5 | 38.2-39.8 |
+    | 23-25 | `5fa92a4` | 1.64-1.74 | 4.62-4.77 | 3.97-4.28 | 12.4-13.7 | 36.7-40.7 |
+    | 23-25 | merged | 1.63-1.74 | 4.49-4.85 | 4.01-4.33 | 12.4-13.4 | 37.7-38.6 |
+    | 6-8 `--ship-day` | `5fa92a4` | 2.63-2.66 | 5.77-5.88 | 5.38-5.53 | 12.1-16.0 | 37.0-39.1 |
+    | 6-8 `--ship-day` | merged | 2.61-2.63 | 5.89-5.90 | 5.47-5.53 | 12.4-12.5 | 38.4-38.5 |
+
+    **No real regression: the merged code is within the runs' spread of `5fa92a4` in every window.** 6-8 and 17-19
+    are the same or a little faster (their p99s 0.08-0.10 ms lower, both merged runs under both of the base's); with a
+    ship in, the mean is the same and the p99 0.07 ms higher (5.89-5.90 against 5.77-5.88), inside the gate's 0.1. The
+    worst tick after the first minute went to 16-17 ms once on each build (the merged code's first 6-8 run, the
+    base's first `--ship-day` run) and was 11.6-12.5 in the morning windows' other six runs: one tick, on either code.
+    - **23-25 looked slower at first, and is not.** The first two rounds had the merged code at 1.74 and 1.69 ms of
+      mean (4.26 and 4.33 after the first minute) against the base's 1.67 and 1.64 (4.04, 3.97): 0.07 ms and 0.29, both
+      merged runs over both of the base's, past the gate's noise. Looked into: each binary over the other tree's `Data`
+      (`RATW_DATA_DIR`, two runs each) ran at 1.63-1.66, all four, so neither the code nor the data alone; then two more
+      rounds had it the other way round, the base at 1.74 and 1.68, the merged code at 1.63 and 1.63. Over fourteen
+      runs of the window (both builds; plain, crossed, and twice with the merged tree's `Data` named) the mean lies
+      anywhere from 1.63 to 1.74 on either build, and what moves it is the cost of a player's view outside
+      `World::tick` (`prepareViews` and `snapshot`, six a tick: 0.161-0.179 ms a view, the slowest runs the dearest
+      views; about 2.6 of the 2.8 s between the fastest run and the slowest), the tick itself 10.2-10.9 s of the 39-42
+      in every run. This merge's code touches neither. **The window's own spread, run to run, is about 0.11 ms of mean,
+      0.15-0.35 of p99 and 0.3 of p99 after the first minute**: two to three times the other windows', and over the
+      0.05 and 0.1 the gate allowed. Why one night's views cost more than another's on the same code was not found (no
+      two runs are the same run: 8 threads, each run's digest its own).
+    - **The baseline's 23-25 row, corrected.** The row taken on 2026-11-11 (1.62, 4.52, 4.04, 12.8: two runs, 1.62-1.63)
+      was two runs at the fast end of that spread, which is why Phase 9's last check could not get it again from
+      `5fa92a4` itself. From `5fa92a4`'s own figures today, four runs: **1.68, 4.70, 4.10, 12.9** (1.64-1.74, 4.62-4.77,
+      3.97-4.28). The other three rows stand as they were: `5fa92a4` gives them again today within 0.03 ms of mean and
+      0.05 of p99 (6-8 2.63, 5.82, 5.47, 12.1 against 2.60, 5.77, 5.44, 12.2; 17-19 2.17, 5.25, 5.05, 22.4 against 2.14,
+      5.21, 4.99, 21.9; with a ship 2.64, 5.83, 5.45 against 2.65, 5.86, 5.49, its worst after the first minute 12.1 and
+      16.0 against 12.7). **The baseline, corrected** (the gate for Phases 10 and 11; section 15 has it too):
+
+      | Window | mean | p99 | p99 after the first minute | worst after the first minute | runs |
+      |---|---|---|---|---|---|
+      | 6-8 | 2.60 | 5.77 | 5.44 | 12.2 | 2 (2026-11-11) |
+      | 17-19 | 2.14 | 5.21 | 4.99 | 21.9 | 2 (2026-11-11) |
+      | 23-25 | 1.68 | 4.70 | 4.10 | 12.9 | 4 (2026-11-12) |
+      | 6-8 `--ship-day` | 2.65 | 5.86 | 5.49 | 12.7 | 2 (2026-11-11) |
+
+      Noise: 0.05 ms of mean and 0.1 of p99 in 6-8, 17-19 and with a ship, as before; 23-25 is judged on four runs or
+      more, never two, with 0.06 ms of their mean and 0.15 of their p99s. Against it the merged code is inside the gate
+      in every window (6-8 +0.04 of mean, its p99s lower; 17-19 +0.01; 23-25 -0.01, +0.08 after the first minute; with a
+      ship -0.03 of mean, +0.04 of p99). `world_check` has no Game and no journal: the DM's acts, the Director and the
+      Prosperity tab's reads stay outside the gate, as before.
+  - **Not done here, and open:** DEV's 0061 apply (the orchestrator's); nothing pushed. What makes a night's views
+    cost more in some runs than in others (above). `e8p_pc_up_poor` and the scene `e8p_pc_up_who` still speak of a
+    traveller "buying up" a good after any purchase that moved its price (no bare shelf is claimed). A push's `bare`
+    is kept until the push has decayed away or the holder has sold more than it bought: a traveller who emptied a
+    shelf days ago and still holds most of the rise is still said to have bought it bare.
 
 ## Review (2026-11-08)
 
