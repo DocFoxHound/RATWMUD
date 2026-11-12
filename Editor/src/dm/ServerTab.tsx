@@ -9,7 +9,7 @@ import {gameUrl} from '../lib/api';
 import {buildChoices, defaultPicks, letGoText, prunePicks, replaceMapText, type ImportPlan, type ImportResult, type Picks, type Release,
     type ServerStatus, type SyncWorld} from '../lib/sync';
 import {ChangeGroups, ConflictList, Problems, SummaryTable, when} from '../studio/SyncViews';
-import {hosted as hostedPage, reloadApp} from '../lib/hosted';
+import {actorName, CLOSED_TEXT, hosted as hostedPage, hostServerDown, reloadApp, RUNNING_TEXT} from '../lib/hosted';
 
 const LABELS = {dev: 'Import dev\'s', live: 'Keep live\'s'} as const;
 type Plan = Awaited<ReturnType<typeof dmApi.importPlan>>;
@@ -28,12 +28,12 @@ export function ServerTab({me, target}: {me: Me; target: Target}) {
 
     if (!status) return <div className="dm-center"><p className="hint">{problem || 'Reading the server\'s state…'}</p></div>;
     const maintenance = status.server.state === 'maintenance';
-    // A host's Editor (Docs/Design/78, 7): one world, Close and Open by its owner; no imports, releases or switching.
+    // A host's Editor (Docs/Design/78, 7): one world, Close, Open and Restart by its owner; no imports, releases or switching.
     if (status.hosted) return <div className="sync-page">
         <div className="dm-sheet-bar"><strong>Server · {status.name}</strong><button onClick={() => void loadStatus()}>Refresh</button></div>
         {problem && <p className="error">{problem}</p>}
-        <div className="sync-body"><ServerPanel status={status} canAct={atLeast(me, 'owner')} onChanged={setStatus} hosted />
-            {!atLeast(me, 'owner') && <p className="hint">Closing and opening the world is for its owner.</p>}</div>
+        <div className="sync-body"><HostedServerPanel status={status} canAct={atLeast(me, 'owner')} onChanged={setStatus} reload={loadStatus} />
+            {!atLeast(me, 'owner') && <p className="hint">Closing, opening and restarting the world is for its owner.</p>}</div>
     </div>;
     return <div className="sync-page">
         <div className="dm-sheet-bar">
@@ -106,6 +106,72 @@ function ServerPanel({status, canAct, onChanged, hosted = false}: {status: Serve
             {!hosted && <p className="hint">The launcher (<code>tools/live.sh server</code>) waits while the world is in maintenance and starts the server again
                 once it is running, on whichever world is live by then.</p>}
         </>}
+    </section>;
+}
+
+// --------------------------------------------------------------------------- A host's world (doc 78, 2 and 7)
+
+/** The hosted Server tab: the world's state in the host's words (the package's own word on its game server first: it
+ *  never says Running while the server is down), Close and Open, and Restart (the package saves, stops and starts it). */
+function HostedServerPanel({status, canAct, onChanged, reload}: {status: ServerStatus; canAct: boolean; onChanged: (s: ServerStatus) => void;
+    reload: () => Promise<ServerStatus | null>}) {
+    const [note, setNote] = useState(''), [busy, setBusy] = useState(false), [problem, setProblem] = useState('');
+    // Restart asked: "Restarting…" until the package says the server is up again (or, from an older package that says
+    // nothing, until a game server has gone and come back), at most five minutes.
+    const [restarting, setRestarting] = useState<{at: number; seenDown: boolean} | null>(null);
+    const maintenance = status.server.state === 'maintenance';
+    const host = status.hostServer ?? null;
+    const down = hostServerDown(host);
+    useEffect(() => {
+        if (!restarting) return;
+        const back = host ? host.up && host.reason === 'running' && restarting.seenDown : restarting.seenDown && status.serverRunning;
+        if (back || Date.now() - restarting.at > 5 * 60_000) setRestarting(null);
+        else if (!restarting.seenDown && (host ? !host.up || host.reason === 'restarting' : !status.serverRunning))
+            setRestarting({...restarting, seenDown: true});
+    }, [restarting, host, status.serverRunning]);
+    // While anything is on its way (a restart, a stop, a start), the state is read again every few seconds.
+    const moving = !!restarting || !!down || (maintenance && status.serverRunning);
+    useEffect(() => { if (!moving) return; const t = setInterval(() => void reload(), 5000); return () => clearInterval(t); }, [moving, reload]);
+
+    const set = async (on: boolean) => {
+        const ask = on
+            ? `Close ${status.name}?\n\nPlayers get a 60-second warning, then the world saves and stops. It stays closed until you open it again.`
+            : `Open ${status.name} again?\n\nThe world's game server starts within a few seconds, and players can join.`;
+        if (!window.confirm(ask)) return;
+        setBusy(true); setProblem('');
+        try { onChanged({...status, ...(await dmApi.maintenance(status.key, on, note))}); setNote(''); }
+        catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
+    const restart = async () => {
+        if (!window.confirm(`Restart ${status.name}?\n\nPlayers get a warning; the world saves, stops and starts again. The Editor stays open.`)) return;
+        setBusy(true); setProblem('');
+        try { await dmApi.restart(); setRestarting({at: Date.now(), seenDown: false}); void reload(); }
+        catch (error) { setProblem((error as Error).message); }
+        finally { setBusy(false); }
+    };
+    const line = restarting ? 'Restarting…' : maintenance ? CLOSED_TEXT : down || RUNNING_TEXT;
+    const tone = restarting || down ? 'sync-state maintenance' : maintenance ? 'sync-state maintenance' : 'sync-state running';
+    return <section className="sync-card">
+        <h3>The server</h3>
+        <p><b>{status.name}</b></p>
+        <p className={tone} data-server-state>{maintenance && !restarting ? '⏸ ' : restarting || down ? '' : '▶ '}{line}
+            {status.server.by && !restarting && !down && <span className="meta"> · {maintenance ? 'closed' : 'opened'} by {actorName(status.server.by)} {when(status.server.at)}</span>}
+            {status.server.note && !restarting && !down && <span className="meta"> · “{status.server.note}”</span>}</p>
+        {!restarting && !down && <p className="meta">{maintenance
+            ? (status.serverRunning ? 'Its game server is telling players and will save and stop within about a minute.' : '')
+            : status.serverRunning ? 'Its game server is up: players can be in it.' : 'Its game server is starting.'}</p>}
+        {problem && <Problems title={problem} items={[]} />}
+        {!maintenance ? <>
+            <label className="field"><span>Note for players and the history (optional)</span>
+                <input value={note} maxLength={400} placeholder="e.g. Adding houses to the market; back within the hour." onChange={e => setNote(e.target.value)} /></label>
+            <button className="publish" disabled={!canAct || busy || !!restarting} onClick={() => void set(true)}>{busy ? 'Closing…' : '⏸ Close the world'}</button>
+            <p className="hint">Players get a 60-second warning (and another at 10 seconds); then the world saves and stops.</p>
+        </> : <button className="primary" disabled={!canAct || busy || !!restarting} onClick={() => void set(false)}>{busy ? 'Opening…' : '▶ Open the world'}</button>}
+        <h3>Restart</h3>
+        <p className="hint">The world saves, stops and starts again, reading world.toml afresh (after you change it). Players get a warning
+            first. The Editor stays open.</p>
+        <button disabled={!canAct || busy || !!restarting} data-action="server-restart" onClick={() => void restart()}>{restarting ? 'Restarting…' : '⟳ Restart the world'}</button>
     </section>;
 }
 

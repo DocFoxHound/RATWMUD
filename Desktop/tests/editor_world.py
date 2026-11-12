@@ -15,6 +15,8 @@ it must never be). No AI key: the studio's AI is off, so nothing here calls a mo
 Prints one JSON line when listening: {port, code, owner, fingerprint, admin, database}. Then reads commands, one a line:
   rotate      ratw-editor new-certificate (signed by the old key), and the helper reloads
   leak        ratw-editor new-certificate --leaked (no signature, every session ended), and the helper reloads
+  code NAME   ratw-editor reset NAME: prints {"code": ...}, a new Editor code for that account (no address: as a code made
+              on the world's own computer for someone elsewhere)
   log         prints {"log": [...]} (the studio's requests so far)
   actions     prints {"actions": [...], "audit": [...]} (dm.actions and dm.audit's acts: who asked for what)
   quit        stops; the database is dropped and the admin directory removed (also on end of input)
@@ -96,7 +98,6 @@ def main() -> int:
         connect = lambda: W.connect('world', 'dm', dbname=database)  # noqa: E731
         with connect() as conn:
             first = A.ensure_first_owner(conn)
-        code = A.make_code(A.world_id(admin), A.cert_spki(admin / 'editor-cert.pem'), first['username'], first['password'], first['invite'])
         core = A.Core(connect=connect, folder=admin, peers=A.Peers('real', unidentified=[]))
         # The image's Editor (/opt/ratw/Editor/dist, with bundle.json and portraits/: stage.sh) is the studio's DIST.
         map_editor.DIST = args.bundle.resolve()
@@ -105,6 +106,9 @@ def main() -> int:
         server = A.EditorServer(core, '127.0.0.1', 0)
         port = loop.run_until_complete(server.start())
         threading.Thread(target=loop.run_forever, daemon=True).start()
+        # The first owner's code carries this computer's address with the Editor port, as the entrypoint makes it.
+        code = A.make_code(A.world_id(admin), A.cert_spki(admin / 'editor-cert.pem'), first['username'], first['password'], first['invite'],
+                           f'127.0.0.1:{port}')
         print(json.dumps({'port': port, 'code': code, 'owner': first['username'], 'admin': str(admin), 'database': database,
                           'fingerprint': A.fingerprint(A.cert_spki(admin / 'editor-cert.pem'))}), flush=True)
         for line in sys.stdin:
@@ -116,6 +120,11 @@ def main() -> int:
                         A.end_all(conn, 'ratw-editor')
                 loop.call_soon_threadsafe(server.reload)
                 print(json.dumps({'rotated': done}), flush=True)
+            elif command.startswith('code '):
+                with connect() as conn:
+                    password, invite = A.reset_account(conn, command[5:].strip(), 'ratw-editor')
+                print(json.dumps({'code': A.make_code(A.world_id(admin), A.cert_spki(admin / 'editor-cert.pem'), command[5:].strip(),
+                                                      password, invite)}), flush=True)
             elif command == 'log':
                 print(json.dumps({'log': log}), flush=True)
             elif command == 'actions':

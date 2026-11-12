@@ -82,3 +82,4 @@
 /* Hosted mode (doc 78): the Editor session ended; the page keeps what it holds until the host signs in again. */
 .hosted-ended { position: fixed; top: 0; left: 0; right: 0; z-index: 50; padding: 10px 16px; background: #c9714f; color: #141613;
     font-weight: 600; text-align: center; }
+.hosted-restarting { background: #c9a24f; }

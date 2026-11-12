@@ -69,6 +69,14 @@ impl Answer {
         Answer { status, content_type: "application/json", body: serde_json::json!({"error": message}).to_string().into_bytes(), ended: false, input: false }
     }
 
+    /// The shell's own page while the world doesn't answer: it asks again every 5 seconds by itself.
+    fn restarting() -> Answer {
+        let body = "<!doctype html><html><head><meta charset=\"utf-8\"><meta http-equiv=\"refresh\" content=\"5\"><title>RATW Editor</title></head>\
+                    <body style=\"background:#141613;color:#e8e1d3;font:16px system-ui;padding:3em\"><p>Restarting…</p>\
+                    <p style=\"color:#a59f90\">Your world is restarting: the Editor reconnects by itself.</p></body></html>";
+        Answer { status: 503, content_type: "text/html; charset=utf-8", body: body.as_bytes().to_vec(), ended: false, input: false }
+    }
+
     /// The shell's own page in place of a file it refused.
     fn page(status: u16, message: &str) -> Answer {
         let body = format!("<!doctype html><html><head><meta charset=\"utf-8\"><title>RATW Editor</title></head>\
@@ -77,6 +85,8 @@ impl Answer {
     }
 }
 
+/// The API's answer while the world doesn't answer (503): a code the Editor page words itself.
+pub const RESTARTING: &str = "restarting";
 pub const NOT_OFFICIAL: &str = "This world's Editor isn't an official RATW build.";
 pub const ENDED: &str = "Your Editor session ended: sign in again from the Editor menu.";
 
@@ -158,7 +168,9 @@ pub fn handle(label: &str, binding: Binding, asked: &Asked, manifest: Option<&Ma
         let content_type = if asked.method == "POST" { header_ok(&asked.content_type) } else { None };
         let fetched = match upstream.send(&asked.method, &asked.path, content_type, header_ok(&asked.accept), body) {
             Ok(f) => f,
-            Err(_) => return Answer::text(502, "The world didn't answer."),
+            // The world didn't answer: most often its container restarting. The page says "Restarting…" and keeps
+            // asking (Editor/src: the restarting banner); it keeps its state meanwhile.
+            Err(_) => return Answer::text(503, RESTARTING),
         };
         let data = match decoded(&fetched) {
             Ok(d) => d,
@@ -183,7 +195,7 @@ pub fn handle(label: &str, binding: Binding, asked: &Asked, manifest: Option<&Ma
     let Some(kind) = content_type(&file) else { return Answer::page(404, NOT_OFFICIAL) };
     let fetched = match upstream.send("GET", &asked.path, None, None, None) {
         Ok(f) => f,
-        Err(_) => return Answer::page(502, "The world didn't answer: is it restarting?"),
+        Err(_) => return Answer::restarting(),
     };
     if fetched.status == 401 {
         return Answer { ended: true, ..Answer::page(401, ENDED) };
@@ -348,6 +360,24 @@ mod tests {
         let bad = Asked { method: "POST".into(), path: "/api/x".into(), content_type: Some("text/plain\r\nCookie: a=b".into()), ..Default::default() };
         handle("editor", Binding::Current, &bad, Some(&m), &world);
         assert_eq!(world.seen.lock().unwrap().last().unwrap().2, None);
+    }
+
+    #[test]
+    fn a_world_that_doesnt_answer_is_restarting() {
+        struct Down;
+        impl Upstream for Down {
+            fn send(&self, _: &str, _: &str, _: Option<&str>, _: Option<&str>, _: Option<&[u8]>) -> Result<Fetched, String> {
+                Err("connection refused".into())
+            }
+        }
+        let m = manifest();
+        let api = handle("editor", Binding::Current, &get("/api/dm/live"), Some(&m), &Down);
+        assert_eq!((api.status, api.content_type, api.ended), (503, "application/json", false), "not an ended session");
+        assert_eq!(serde_json::from_slice::<serde_json::Value>(&api.body).unwrap()["error"], RESTARTING);
+        let page = handle("editor", Binding::Current, &get("/"), Some(&m), &Down);
+        let text = String::from_utf8(page.body).unwrap();
+        assert_eq!(page.status, 503);
+        assert!(text.contains("Restarting") && text.contains("http-equiv=\"refresh\""), "{text}");
     }
 
     #[test]

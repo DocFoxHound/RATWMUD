@@ -44,6 +44,7 @@ The helper's files, all in its own directory (RATW_ADMIN_DIR, the `admin` volume
   world-id                          the world's id as the certificate names it
   settings.json                     the entrypoint's cleaned copy of world.toml (no token, no AI key)
   progress.json                     {code, percent} while the world sets up; "ready" when it is
+  server.json                       the game server's state: {up, reason, code, failures, retryAt, at} (the hello's "server")
   central.json, ever-official       central's kind for this world; "ever official" is never cleared
   requests/                         kind-only requests to the root entrypoint (first-editor-used, restart, ...)
   helper.pid                        so `ratw-editor new-certificate` can ask the helper to reload
@@ -94,7 +95,10 @@ USERNAME = re.compile(r'^[a-z][a-z0-9_-]{2,31}$')            # (The DM tool's ru
 WORLD_ID = re.compile(r'^(world|local)-[0-9a-f]{32}$')
 GRANTABLE = ('viewer', 'dm', 'builder')                      # What the Editor's own screen may give; owners: ratw-editor.
 ROLES = ('viewer', 'dm', 'builder', 'owner')                 # What ratw-editor may give. Never admin.
-PROGRESS_CODES = ('starting', 'database', 'importing', 'migrating', 'building', 'ready', 'stopped')
+# ('slow': the world was set up, but its database didn't answer the hello within HELLO_WAIT.)
+PROGRESS_CODES = ('starting', 'database', 'importing', 'migrating', 'building', 'ready', 'stopped', 'slow')
+# The game server's state as the entrypoint writes it (server.json), for the hello's pill (doc 78, section 2).
+SERVER_REASONS = ('starting', 'running', 'restarting', 'exit', 'world.toml', 'closed')
 REQUEST_KINDS = ('restart', 'backup-before-publish', 'backup-by-hand', 'share', 'first-editor-used')
 
 # Passwords and secrets.
@@ -132,6 +136,10 @@ PUBLIC_BODY, EDITOR_BODY = 4 * 1024, 4 * 1024
 SIGNED_IN_BODY, LARGE_BODY, LARGE_AT_ONCE = 16 * 1024 * 1024, 1024 * 1024, 2
 REQUESTS_PER_SECOND = (40, 20.0)    # A signed-in session: a burst of 40, then 20 a second.
 DB_CONNECTIONS = 6
+# The helper's own connections: a stalled database is an answer in seconds, not a hung Editor (R1, M-a).
+DB_OPTIONS = {'options': '-c statement_timeout=5000', 'keepalives': '1', 'keepalives_idle': '30',
+              'keepalives_interval': '10', 'keepalives_count': '3'}
+HELLO_WAIT = 2.0                    # Seconds the hello waits for the database before answering without it.
 HELLO_MOST = 1024
 GZIP_ABOVE = 16 * 1024              # Replies to the hosted studio this large go gzipped to a client that takes it.
 PUBLIC_PATHS = ('/editor/hello', '/editor/login')
@@ -217,6 +225,9 @@ def password_problem(password: str, username: str = '', world_name: str = '') ->
         return 'username'
     world = _squash(world_name or '')
     if len(world) >= 3 and world in squashed:
+        return 'world'
+    # Each word of the name of 4 letters or more too ("ashfall1234567" for "Ashfall Test").
+    if any(len(_squash(word)) >= 4 and _squash(word) in squashed for word in re.split(r'[\s_.,:;!?/-]+', world_name or '')):
         return 'world'
     if len(set(lower)) < 5:
         return 'simple'
@@ -528,6 +539,27 @@ class Settings:
     def official(self) -> bool:
         """Central has ever named this world official (doc 78, 6.7): every sign-in is refused, for good."""
         return (self.folder / 'ever-official').exists() or _read_json(self.folder / 'central.json').get('kind') == 'official'
+
+
+def read_server_state(folder: Path, now: float) -> dict | None:
+    """The game server's state from the entrypoint's server.json, checked (doc 78, section 2's pill; R1, H2): up, why
+    not (a crash, world.toml, closed), the last exit code, the crashes in a row, and the seconds to the next try. None
+    when there is none (an older entrypoint, or before the first start). The hello and the hosted Server tab show it."""
+    raw = _read_json(folder / 'server.json')
+    if raw.get('reason') not in SERVER_REASONS:
+        return None
+    number = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)
+    code = raw.get('code')
+    if number(code):
+        code = int(code)
+        code = 128 - code if code < 0 else code              # (A signal, as a shell shows it: -11 is 139.)
+        code = code if 0 <= code <= 255 else None
+    else:
+        code = None
+    failures = max(0, min(99, int(raw['failures']))) if number(raw.get('failures')) else 0
+    retry = raw.get('retryAt')
+    retry_in = max(0, min(86400, int(round(retry - now)))) if number(retry) else None
+    return {'up': raw.get('up') is True, 'reason': raw['reason'], 'code': code, 'failures': failures, 'retryIn': retry_in}
 
 
 def request_root(kind: str, folder: Path = None) -> Path:
@@ -896,7 +928,8 @@ class Core:
         self.settings = settings or Settings(self.folder)
         self.peers = peers or Peers()
         self.clock = clock
-        self.pool = world_db.Pool(WORLD_KEY, 'dm', size=DB_CONNECTIONS, connect_fn=connect)
+        self.pool = world_db.Pool(WORLD_KEY, 'dm', size=DB_CONNECTIONS,
+                                  connect_fn=connect or (lambda: world_db.connect(WORLD_KEY, 'dm', **DB_OPTIONS)))
         self.db_slots = threading.BoundedSemaphore(DB_CONNECTIONS)
         self.sign_in_pool = concurrent.futures.ThreadPoolExecutor(sign_in_threads, thread_name_prefix='editor-sign-in')
         self.signed_in_pool = concurrent.futures.ThreadPoolExecutor(signed_in_threads, thread_name_prefix='editor-work')
@@ -916,6 +949,7 @@ class Core:
         self.today = {'day': time.strftime('%Y-%m-%d', time.gmtime(clock())), 'count': 0}
         self._ready = False
         self._hello = (0.0, None)
+        self._hello_work = None             # The hello's database part, while it runs (one at a time).
         self._tables = threading.Lock()          # The tables pool threads touch (audit hours, sessions' failures).
         self._pending: set = set()
         self.app = None                     # The hosted studio (serve: tools/studio.py HostedStudio, M3): (session, method, path, query, headers, body).
@@ -956,13 +990,40 @@ class Core:
                 return False
         return self._ready
 
+    def server_now(self) -> dict | None:
+        return read_server_state(self.folder, self.clock())
+
+    def _hello_body(self, progress: dict | None, state: str, pending: bool) -> dict:
+        official = self.settings.official()
+        if progress is None:
+            progress = {'code': 'ready' if self._ready else 'migrating', 'percent': 100 if self._ready else 90}
+        name = re.sub(r'[\x00-\x1f\x7f-\x9f\u061c\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]', '', self.settings.name())[:40]
+        hello = {'world': world_id(self.folder), 'name': name, 'package': self.settings.package(), 'editorApi': EDITOR_API,
+                 'kind': 'official' if official else 'community', 'serverState': state, 'progress': progress,
+                 'setupPending': pending and not official}
+        server = self.server_now()
+        if server is not None:
+            hello['server'] = server
+        rotation = _read_json(self.folder / 'rotation.json')
+        if rotation.get('spki') and rotation.get('signature'):
+            hello['rotation'] = {k: str(rotation[k]) for k in ('spki', 'signature', 'previous', 'algorithm') if k in rotation}
+        if len(json.dumps(hello)) > HELLO_MOST:
+            hello.pop('rotation', None)
+            hello['package'] = ''
+        return hello
+
+    def _slow(self, progress: dict | None) -> dict:
+        """The progress when the database didn't answer: "slow" for a world that was set up, else how far it got."""
+        if (progress is not None and progress['code'] == 'ready') or (progress is None and self._ready):
+            return {'code': 'slow', 'percent': 100}
+        return progress if progress is not None else {'code': 'database', 'percent': 0}
+
     def hello_now(self) -> dict:
         """/editor/hello: public, at most 1 KB, cached for 2 seconds."""
         now = self.clock()
         at, cached = self._hello
         if cached is not None and now - at < 2:
             return cached
-        official = self.settings.official()
         progress = self.settings.progress()
         state, pending = 'unknown', False
         try:
@@ -974,25 +1035,24 @@ class Core:
                                                    AND NOT disabled LIMIT 1""").fetchone())
                     self._ready = True
         except Exception:
-            if progress is None:
-                progress = {'code': 'database', 'percent': 0}
-        if progress is None:
-            progress = {'code': 'ready' if self._ready else 'migrating', 'percent': 100 if self._ready else 90}
-        name = re.sub(r'[\x00-\x1f\x7f-\x9f؜​-‏‪-‮⁦-⁩﻿]', '', self.settings.name())[:40]
-        hello = {'world': world_id(self.folder), 'name': name, 'package': self.settings.package(), 'editorApi': EDITOR_API,
-                 'kind': 'official' if official else 'community', 'serverState': state, 'progress': progress,
-                 'setupPending': pending and not official}
-        rotation = _read_json(self.folder / 'rotation.json')
-        if rotation.get('spki') and rotation.get('signature'):
-            hello['rotation'] = {k: str(rotation[k]) for k in ('spki', 'signature', 'previous', 'algorithm') if k in rotation}
-        if len(json.dumps(hello)) > HELLO_MOST:
-            hello.pop('rotation', None)
-            hello['package'] = ''
-        self._hello = (now, hello)
+            progress = self._slow(progress)
+        hello = self._hello_body(progress, state, pending)
+        self._hello = (self.clock(), hello)
         return hello
 
     async def hello(self) -> dict:
-        return await self._in(self.sign_in_pool, self.hello_now)
+        """The hello within HELLO_WAIT: a database that doesn't answer by then gets a hello without it (progress "slow",
+        or how far the setting up got), while the one database call still running fills the cache when it ends."""
+        at, cached = self._hello
+        if cached is not None and self.clock() - at < 2:
+            return cached
+        work = self._hello_work                  # (A thread's future, not a loop's: any loop may wait on it.)
+        if work is None or work.done():
+            work = self._hello_work = self.sign_in_pool.submit(self.hello_now)
+        try:
+            return await asyncio.wait_for(asyncio.shield(asyncio.wrap_future(work)), HELLO_WAIT)
+        except asyncio.TimeoutError:
+            return self._hello_body(self._slow(self.settings.progress()), 'unknown', False)
 
     def _open(self) -> None:
         if self.settings.official():
@@ -1269,7 +1329,26 @@ class Core:
                          ((address or '')[:64], username))
             audit(conn, f'{username}#{short_id(token_hash(token))}', 'login', username,
                   f'Signed in from {address or "an unidentified address"}' + (' with an Editor code.' if lane == 'invite' else '.'))
-        return {'token': token, 'username': username, 'role': role, 'mustChange': bool(must_change), 'device': issued}
+            notices = self._owner_notices(conn, username, previous) if role == 'owner' else None
+        reply = {'token': token, 'username': username, 'role': role, 'mustChange': bool(must_change), 'device': issued}
+        if notices is not None:
+            reply['notices'] = notices
+        return reply
+
+    def _failed_today(self, conn) -> int:
+        failed = conn.execute(r"""SELECT coalesce(sum((substring(detail from '^(\d+)'))::int), 0) FROM dm.audit
+                                 WHERE action IN ('login.failed', 'login.failed.folded') AND at > %s""",
+                              (time.time() - 24 * 3600,)).fetchone()[0]
+        return max(int(failed), self.today['count'])
+
+    def _owner_notices(self, conn, username: str, previous) -> dict:
+        """The owner's screen 5 at sign-in, before any step-up (R1, M-i): counts only, nothing an address or a name could
+        leak. Failed sign-ins in the last day, and account changes by anyone else since this owner's previous sign-in
+        (the last 7 days on a first one)."""
+        since = previous.timestamp() if previous is not None else time.time() - 7 * 24 * 3600
+        changes = conn.execute("""SELECT count(*) FROM dm.audit WHERE action LIKE 'account.%%' AND at > %s
+                                   AND who <> %s AND who NOT LIKE %s""", (since, username, username + '#%')).fetchone()[0]
+        return {'failedToday': self._failed_today(conn), 'changes': int(changes)}
 
     @staticmethod
     def _issue_device(conn, username: str) -> str:
@@ -1439,14 +1518,14 @@ class Core:
         with self.db() as conn:
             self._seen(conn, session)
             if verb == 'list':
-                failed = conn.execute(r"""SELECT coalesce(sum((substring(detail from '^(\d+)'))::int), 0) FROM dm.audit
-                                         WHERE action IN ('login.failed', 'login.failed.folded') AND at > %s""",
-                                      (time.time() - 24 * 3600,)).fetchone()[0]
                 banners = [{'at': r[0], 'action': r[1], 'target': r[2], 'detail': r[3], 'who': r[4]} for r in conn.execute(
                     """SELECT at, action, target, detail, who FROM dm.audit WHERE action LIKE 'account.%%' AND at > %s
                        ORDER BY sequence DESC LIMIT 50""", (session['since'],))]
-                return {'accounts': list_accounts(conn), 'failedToday': max(int(failed), self.today['count']),
-                        'banners': banners}
+                accounts = list_accounts(conn)
+                for account in accounts:
+                    account['claimedFrom'] = self._shown_address(account['claimedFrom'])
+                    account['lastFrom'] = self._shown_address(account['lastFrom'])
+                return {'accounts': accounts, 'failedToday': self._failed_today(conn), 'banners': banners}
             username = body.get('username')
             if verb != 'end-sessions' and (not isinstance(username, str) or not USERNAME.match(username)):
                 raise EditorError(422, 'username', 'Name an Editor account.')
@@ -1456,7 +1535,8 @@ class Core:
                 result = {'code': self._code(username, password, invite)}
             elif verb == 'reset':
                 if _target_role(conn, username) == 'owner':
-                    raise EditorError(403, 'owner-account', "An owner's account is reset only on the world's computer (reset-editor-password).")
+                    raise EditorError(403, 'owner-account', "An owner's account is reset only on the world's computer: "
+                                                            'docker compose exec world ratw-editor reset NAME.')
                 password, invite = reset_account(conn, username, who)
                 result = {'code': self._code(username, password, invite)}
             elif verb == 'role':
@@ -1479,6 +1559,19 @@ class Core:
         log('account.' + verb, account=session['account'], target=username if verb != 'end-sessions' else None,
             addr=address_key or '*')
         return result
+
+    def _shown_address(self, address: str | None) -> str | None:
+        """An address as the accounts list shows it: 'local' (the client's "this computer") for loopback, Docker's gateway
+        and the peers that can't be told apart, which is how the world's own computer arrives under Docker."""
+        if not address:
+            return address
+        try:
+            ip = ipaddress.ip_address(address.split('%')[0])
+        except ValueError:
+            return address                                  # (An IPv6 /64 is kept as it is.)
+        if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped:
+            ip = ip.ipv4_mapped
+        return 'local' if ip.is_loopback or ip.is_unspecified or str(ip) in self.peers.unidentified else address
 
     def _code(self, username: str, password: str, invite: str) -> str:
         return make_code(world_id(self.folder), cert_spki(self.folder / 'editor-cert.pem'), username, password, invite)
@@ -1915,6 +2008,12 @@ def hosted_studio(folder: Path):
     return studio.HostedStudio(studio.Hosted(WORLD_KEY, folder))
 
 
+def host_port(default: int = PORT) -> int:
+    """The Editor port on the host's computer: RATW_EDITOR_PORT (the entrypoint's admin_env), else `default`."""
+    value = os.environ.get('RATW_EDITOR_PORT', '').strip()
+    return int(value) if value.isdigit() and 1 <= int(value) <= 65535 else default
+
+
 async def serve(folder: Path, host: str, port: int) -> int:
     settings = Settings(folder)
     if not settings.enabled():
@@ -1930,8 +2029,11 @@ async def serve(folder: Path, host: str, port: int) -> int:
     loop.add_signal_handler(signal.SIGHUP, server.reload)
     for number in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(number, stopped.set)
-    log('listening', port=bound, fingerprint=fingerprint(cert_spki(folder / 'editor-cert.pem')).replace(' ', ''),
-        peers=core.peers.mode)
+    # The port as the host's computer sees it (compose's RATW_EDITOR_PORT, as the entrypoint passes it), beside the
+    # fingerprint line the host compares; the container's own port only when it differs.
+    published = host_port(bound)
+    log('listening', port=published, **({'container_port': bound} if published != bound else {}),
+        fingerprint=fingerprint(cert_spki(folder / 'editor-cert.pem')).replace(' ', ''), peers=core.peers.mode)
     await stopped.wait()
     await server.stop()
     core.close()
@@ -2056,8 +2158,12 @@ def main(argv: list[str] | None = None) -> int:
                     return 0
                 made_owner = ensure_first_owner(conn, settings.owner_name())
                 if made_owner:
+                    # With this computer's address and the host's Editor port, so pasting it works whatever the port
+                    # (R1, M-c): the first owner is on the world's own computer.
+                    made_owner['address'] = f'127.0.0.1:{host_port()}'
                     made_owner['code'] = make_code(world_id(folder), cert_spki(folder / 'editor-cert.pem'),
-                                                   made_owner['username'], made_owner['password'], made_owner['invite'])
+                                                   made_owner['username'], made_owner['password'], made_owner['invite'],
+                                                   made_owner['address'])
                     made_owner['days'] = FIRST_OWNER_DAYS
                 print(json.dumps(made_owner))
                 return 0

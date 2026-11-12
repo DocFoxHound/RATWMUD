@@ -3,7 +3,7 @@
 // (narration and story characters' lines, 30 days), the approved visitors, and the DM's own hand: give a character a
 // storyline, credit a world story's milestone (its lines built from the ledger by the DM host).
 import {useCallback, useEffect, useState} from 'react';
-import {isLive, worldName, dmApi, type Me, type Storytellers, type Target} from './api';
+import {isLive, worldName, dmApi, type Me, type Storytellers, type Target, worldLabel} from './api';
 
 export function StorytellersPanel({me, target}: {me: Me; target: Target}) {
     const [data, setData] = useState<Storytellers | null>(null);
@@ -24,7 +24,7 @@ export function StorytellersPanel({me, target}: {me: Me; target: Target}) {
     };
     const act = (kind: string, id: string, payload?: Record<string, unknown>) => run(`${kind} ${id}`, () => dmApi.liveAction(target, kind, id, payload));
     if (data && !data.ready) return <section className="dm-panel"><header><div><small>STORYTELLERS</small><h2>Storytellers</h2></div></header>
-        <p className="hint">The {target.toUpperCase()} database has no storytellers table yet (migration 0049).</p></section>;
+        <p className="hint">The {worldLabel(target)} database has no storytellers table yet (migration 0049).</p></section>;
     const applied = data?.standing.filter(s => s.state === 'applied') ?? [], approved = data?.standing.filter(s => s.state === 'approved') ?? [];
     return <section className="dm-panel" aria-label="Storytellers">
         <header><div><small>STORYTELLERS</small><h2>Applications{data ? ` (${applied.length})` : ''}</h2></div>

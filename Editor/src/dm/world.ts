@@ -3,7 +3,8 @@
 import {useEffect, useRef, useState} from 'react';
 import type {Project} from '../model/model.mjs';
 import {adoptLean, groundPending, resetGround, settleCell, startGround} from '../lib/lazyGround';
-import {dmApi, type Target} from './api';
+import {dmApi, worldName, type Target} from './api';
+import {hosted} from '../lib/hosted';
 
 export function useWorld(target: Target, onError?: (message: string) => void): Project | null {
     const [world, setWorld] = useState<Project | null>(null);
@@ -28,7 +29,9 @@ export function useWorld(target: Target, onError?: (message: string) => void): P
         });
         dmApi.world(target).then(value => {
             if (!live) return;
-            setWorld(current.current = adoptLean(value as never) as Project);
+            const project = adoptLean(value as never) as Project;
+            // (A host's Editor: the map is titled with the world's own name, as everywhere else, never the map's.)
+            setWorld(current.current = hosted ? {...project, name: worldName(target)} : project);
         }).catch(e => { if (live) { setWorld(null); onError?.((e as Error).message); } });
         return () => { live = false; resetGround(); };
     }, [target]); // eslint-disable-line react-hooks/exhaustive-deps

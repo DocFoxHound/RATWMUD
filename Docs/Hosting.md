@@ -197,17 +197,19 @@ Use any plain-text editor: Notepad on Windows, or gedit, nano or Kate on Linux.
   In Notepad's "Save as" window, choose **Save as type: All files**, and type the whole name. To see files' real names
   in File Explorer: **View**, **Show**, **File name extensions**.
 
-Each setting is read when its part of the world starts: `world.toml` whenever the world's server starts, which a
-Restart in the Editor (section 15) does too. After a change:
+Each setting is read when its part of the world starts: `world.toml` whenever the world's server starts, which
+the **Restart** button on the Editor window's **Server** tab (section 15) does too. After a change:
 
 | You changed | Then type |
 |---|---|
-| `world.toml`, or a token or key file it names | `docker compose restart world upnp` (both read `world.toml`), or Restart in the Editor (the `upnp` helper then keeps the old `[network]` setting) |
+| `world.toml`, or a token or key file it names | `docker compose restart world upnp` (both read `world.toml`), or the **Restart** button on the Editor window's **Server** tab (the `upnp` helper then keeps the old `[network]` setting) |
 | `.env` | `docker compose up -d` (a restart doesn't read `.env` again) |
 
-If something in `world.toml` is wrong, the world doesn't start. The log says what is wrong (section 7). Put it right,
-then `docker compose restart world upnp`. (If it goes wrong on a later restart, the world waits, saying so, and the
-Editor stays up, so you can put it right and restart again.)
+If something in `world.toml` is wrong, the world doesn't start. The log says what is wrong (section 7), and the world
+waits: it reads `world.toml` again after 5 seconds, 30 seconds, 2 minutes and then every 2 minutes, and the log says
+when it tries next. Put it right and the world starts at its next try, or at once with `docker compose restart world
+upnp`. If the world has started before, the Editor stays up meanwhile, and its status says "world.toml has a
+mistake".
 
 ### `[world]`: your world
 
@@ -336,7 +338,9 @@ You should see three lines, `world`, `db` and `upnp`, all **Up**. (`db` also say
 This shows the world's log and keeps following it. Press **Ctrl+C** to stop following: the world goes on running.
 Leave out `-f` to see it once. Every line starts with `world-1  |`.
 
-These are the lines that matter, in about the order they come:
+Lines from the package itself start `RATW_PACKAGE`; the world server's start `RATW_SERVER` and the world agent's
+`RATW_AGENT` (so neither can print a line that passes for the package's). These are the lines that matter, in about the
+order they come:
 
 | A line like this | What it means |
 |---|---|
@@ -348,22 +352,22 @@ These are the lines that matter, in about the order they come:
 | `RATW_PACKAGE the world database is ready (6.4 s)` | The database is ready. |
 | `RATW_PACKAGE no AI key: NPCs use their authored lines` | No AI key: the residents use their written lines. |
 | `RATW_PACKAGE the NPC Mind is ready (live model)` | Your AI key is in use (section 10). |
-| `RATW_PACKAGE world agent: heartbeats every 60 s for the world on port 7788, to https://...` | The world agent will tell central every minute that the world is up. |
-| `RATW_PACKAGE world agent: 1 key(s): ...; clock offset +0.2 s` | The world agent has central's keys. |
-| `RATW_PACKAGE world agent: the world on port 7788 does not answer (... Connection refused>): no heartbeat until it does` | **Normal on every start**: the agent starts a few seconds before the world server. It tries again every minute. |
-| `warning: RATW_TICKETS no keys from central yet (...)` | Normal for the first seconds of a first start. The world agent is fetching central's keys. Nobody can join until it has them. |
-| `RATW_KEYS central's keys: ...; this machine's clock is 0 s from central's` | The world has central's keys: players can join. |
-| `RATW server listening on port 7788 (0.0.0.0); ready in 3.2 s` | **The world is up.** |
-| `RATW_PACKAGE world agent: listed on central at 203.0.113.7:7788` | **The world is on the list**, at that address. Done. It comes with the agent's next heartbeat, up to a minute after the `listening` line. |
-| `RATW_PACKAGE world agent: not listed on central: ...` | Not on the list, and why. Most often the port: see section 8. |
-| `RATW_CONNECT ...` and `RATW_DISCONNECT ... (1 connected)` | A player came or went. |
-| `RATW_HOST /kick ... : done` | One of the host's commands was used (section 15). |
-| `RATW_PACKAGE world agent: left central's list`, then `RATW_PACKAGE stopped (exit 0)` | The world stopped cleanly and left the list. |
+| `RATW_AGENT world agent: heartbeats every 60 s for the world on port 7788, to https://...` | The world agent will tell central every minute that the world is up. |
+| `RATW_AGENT world agent: 1 key(s): ...; clock offset +0.2 s` | The world agent has central's keys. |
+| `RATW_AGENT world agent: the world on port 7788 does not answer (... Connection refused>): no heartbeat until it does` | **Normal on every start**: the agent starts a few seconds before the world server. It tries again every minute. |
+| `RATW_SERVER warning: RATW_TICKETS no keys from central yet (...)` | Normal for the first seconds of a first start. The world agent is fetching central's keys. Nobody can join until it has them. |
+| `RATW_SERVER RATW_KEYS central's keys: ...; this machine's clock is 0 s from central's` | The world has central's keys: players can join. |
+| `RATW_SERVER RATW server listening on port 7788 (0.0.0.0); ready in 3.2 s` | **The world is up.** |
+| `RATW_AGENT world agent: listed on central at 203.0.113.7:7788` | **The world is on the list**, at that address. Done. It comes with the agent's next heartbeat, up to a minute after the `listening` line. |
+| `RATW_AGENT world agent: not listed on central: ...` | Not on the list, and why. Most often the port: see section 8. |
+| `RATW_SERVER RATW_CONNECT ...` and `RATW_SERVER RATW_DISCONNECT ... (1 connected)` | A player came or went. |
+| `RATW_SERVER RATW_HOST /kick ... : done` | One of the host's commands was used (section 15). |
+| `RATW_AGENT world agent: left central's list`, then `RATW_PACKAGE stopped (the server's last exit: 0)` | The world stopped cleanly and left the list. |
 
 A line starting `RATW_PACKAGE error:` stops the start. Section 17 says what each one means.
 
-The other lines (`RATW_TALK`, `RATW_VOICE`, `RATW_DATABASE_WORLD_LOADED` and the like) are the world loading its
-parts. They are fine.
+The other lines (`RATW_SERVER RATW_TALK`, `RATW_SERVER RATW_VOICE`, `RATW_SERVER RATW_DATABASE_WORLD_LOADED` and the
+like) are the world loading its parts. They are fine.
 
 More logs are kept inside the world: the NPC Mind's (`npc-mind.log`) and the world agent's (`world-agent.log`). To list
 them: `docker compose exec world ls logs`.
@@ -660,7 +664,7 @@ world you replaced: it no longer works.
 |---|---|
 | Stop the world (it saves first, and leaves the list at once) | `docker compose stop` |
 | Start it again | `docker compose start` |
-| Restart it (after changing `world.toml`, or a token or key file) | `docker compose restart world upnp`, or Restart in the Editor |
+| Restart it (after changing `world.toml`, or a token or key file) | `docker compose restart world upnp`, or the **Restart** button on the Editor window's **Server** tab |
 | Use a changed `.env` | `docker compose up -d` |
 | Take the containers away, but keep the world | `docker compose down` |
 | Bring them back | `docker compose up -d` |
@@ -670,7 +674,7 @@ Stopping can take up to a minute and a half while the world saves. Let it finish
 
 **If the world's server stops on its own** (a crash), the world starts it again: after 5 seconds, then 30 seconds, 2
 minutes, and every 10 minutes after that while it keeps stopping. The Editor stays up throughout, so you can still
-reach your world's tools.
+reach your world's tools: its status says "Keeps stopping", with the exit code and when it starts again.
 
 **After the computer restarts,** the world starts again by itself once Docker does (section 3), unless you stopped it
 with `docker compose stop`. Then it stays stopped until you start it. On Windows, Docker Desktop starts only once
@@ -756,8 +760,9 @@ its own Editor accounts; they aren't your central account.
 
 `manage/editor-certificate.txt` holds your world's id, its Editor port and the Editor's **fingerprint** (eight groups
 of four characters). The game shows the same fingerprint the first time you connect from a computer without an Editor
-code: if they match, trust it. `docker compose exec world ratw-editor fingerprint` shows it too, and the log does at
-every start (`Editor certificate: ...`).
+code: if they match, trust it. `docker compose exec world ratw-editor fingerprint` shows it too. The log does at every
+start (`RATW_PACKAGE Editor certificate: ...`), but compare with the file or `ratw-editor fingerprint`: those come from
+the world itself, not from a line any part of it could print.
 
 **Lost your password, or "too many tries":** on the world's computer, in its folder:
 
@@ -821,9 +826,10 @@ First look at the log: `docker compose logs world`. Find the message below (the 
 
 ### The world doesn't start (`RATW_PACKAGE error: ...`)
 
-The world stops at an error, and Docker tries again every few seconds, so `docker compose ps` shows **Restarting**
-and the log repeats the line. Put it right, then `docker compose restart world upnp` (or `docker compose up -d`, if
-what you changed is `.env`).
+A mistake in `world.toml` keeps the world waiting: it reads the file again after 5 seconds, 30 seconds, 2 minutes and
+then every 2 minutes (the log says `next try at ...`), and starts once it is right. Any other error stops the world,
+and Docker tries again every few seconds, so `docker compose ps` shows **Restarting** and the log repeats the line.
+Put it right, then `docker compose restart world upnp` (or `docker compose up -d`, if what you changed is `.env`).
 
 | Message | What it means, and what to do |
 |---|---|
@@ -904,12 +910,12 @@ Read the `world agent:` lines in the log, or the reason on the Host page.
 
 | Message, or what happens | What it means, and what to do |
 |---|---|
-| `warning: RATW_TICKETS no keys from central yet ...`, and it stays | The agent can't fetch central's keys. See "could not fetch central's keys" above. |
-| `RATW_ARRIVAL refused: this world holds N player economy accounts, its most` | The world is full of wolves that have ever arrived. Ask for help. |
+| `RATW_SERVER warning: RATW_TICKETS no keys from central yet ...`, and it stays | The agent can't fetch central's keys. See "could not fetch central's keys" above. |
+| `RATW_SERVER RATW_ARRIVAL refused: this world holds N player economy accounts, its most` | The world is full of wolves that have ever arrived. Ask for help. |
 | `RATW_PACKAGE warning: the NPC Mind did not start (see logs/npc-mind.log) ...` | Something is wrong with the AI key or OpenAI. Read the Mind's log: `docker compose exec world cat logs/npc-mind.log`. The residents use their written lines meanwhile. |
 | `RATW_PACKAGE the world is closed for maintenance: it starts again once it is opened ...` | The world was closed for maintenance (in the Editor, or by the DM). It checks every 5 seconds, and starts as soon as it is opened again. |
 | `RATW_PACKAGE the world server stopped (exit N); starting it again in ...` | The world server stopped by itself. The lines above say why. The world starts it again, waiting longer each time it stops (section 13); the Editor stays up. If it keeps stopping, ask for help, with the log. |
-| `RATW_PACKAGE the world waits until world.toml is put right ...` | `world.toml` was changed and has a mistake: the line above says what. Put it right, then Restart in the Editor, or `docker compose restart world`. |
+| `RATW_PACKAGE the world waits until world.toml is put right ...` | `world.toml` has a mistake: the line above says what. The world reads it again on its own (`RATW_PACKAGE world.toml still has a mistake; next try at ...`). Put it right, then wait for that try, or use the **Restart** button on the Editor window's **Server** tab, or `docker compose restart world`. |
 | `RATW_PACKAGE warning: this compose.yaml has no admin volume ...`, or `... has no manage folder ...` | Your `compose.yaml` is from before the Editor. Copy the new one from the package over it (keep `world.toml` and `.env`), make an empty folder called `manage` beside it, then `docker compose up -d`. |
 | `UPnP: no router answered the search from inside this container: expected under Docker Desktop and rootless Docker ...` (in `docker compose logs upnp`) | Normal on Windows (Docker Desktop) and with rootless Docker: forward the port by hand (section 8). On Linux with Docker Engine, it means UPnP is off on the router: turn it on in the router's settings, or forward the port by hand. |
 | `UPnP: port 7788 is already forwarded on the router to another computer ...` | Another computer has that port. Change the forward on the router, or give this world another port. |

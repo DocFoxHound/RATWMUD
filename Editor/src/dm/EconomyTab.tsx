@@ -7,7 +7,8 @@
 // storm, prices reset, a grant or fine) are the Prosperity tab's. The store room went with the staged economy (doc 79,
 // 17): restocking is free.
 import {useCallback, useEffect, useState, type ComponentProps, type JSXElementConstructor} from 'react';
-import {atLeast, dmApi, type Me, type Target} from './api';
+import {atLeast, dmApi, type Me, type Target, worldLabel} from './api';
+import {actorName, hosted} from '../lib/hosted';
 import {syncWords, type EconomyReply} from '../lib/economyContract';
 import {awaitSync} from '../lib/acts';
 import {SteerPanel} from '../studio/SteerPanel';
@@ -36,7 +37,8 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
         try {
             const next = await what();
             setData(next as PanelData);
-            setSaid(next.changed === false ? 'Nothing to change.' : `${next.detail || 'Changed.'} ${next.takesEffect}`);
+            setSaid(next.changed === false ? 'Nothing to change.'
+                : hosted ? `${next.detail || 'Changed.'} Saved: the world uses it within a few seconds.` : `${next.detail || 'Changed.'} ${next.takesEffect}`);
             if (next.warnings?.length) setProblem(next.warnings.join(' '));
             // (What the game server makes of it, read back without holding the page: applied with what it skipped,
             // refused, or never taken while no server runs. Phase 9's last repair.)
@@ -60,19 +62,21 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
     const info = data.worldInfo as {name?: string; key?: string} | null;
     return <div className="sync-page economy-page dm-economy">
         <div className="dm-sheet-bar">
-            <strong>Economy · {info?.name ?? target}</strong>
-            <span className="meta hint">the staged economy's levers ({info?.key ?? target})</span>
+            <strong>Economy · {hosted ? worldLabel(target) : info?.name ?? target}</strong>
+            <span className="meta hint">{hosted ? 'how the world\'s trade and times run' : `the staged economy's levers (${info?.key ?? target})`}</span>
             <button disabled={busy} onClick={() => void load()}>Read again</button>
         </div>
         <div className="sync-body">
-            <p className="hint">Each change is the world's own (live.economy), audited, and sent to its running game server, which
-                applies it at once. {data.takesEffect} {data.note}</p>
-            {!canChange && <p className="hint">Your account ({me.role}) can look; changing these needs a dm account or above.</p>}
+            {hosted ? <p className="hint">Each change is saved in the world, noted in its history, and sent to its game server, which
+                uses it within a few seconds; a server started later reads it too.</p>
+                : <p className="hint">Each change is the world's own (live.economy), audited, and sent to its running game server, which
+                applies it at once. {data.takesEffect} {data.note}</p>}
+            {!canChange && !hosted && <p className="hint">Your account ({me.role}) can look; changing these needs a dm account or above.</p>}
             {!data.supported && <p className="publish-error">{data.problem}</p>}
             {said && <p className="publish-done">{said}</p>}
             {problem && <p className="publish-error">{problem}</p>}
             {data.lastSync && <p className={data.lastSync.status === 'applied' && !/skipped|held/.test(data.lastSync.result) ? 'hint' : 'publish-error'}>
-                {syncWords(data.lastSync)}</p>}
+                {hosted ? syncWords(data.lastSync, by => actorName(by), false) : syncWords(data.lastSync)}</p>}
             <SteerPanel data={data} locked={locked} setSteer={setSteer} />
             <RulesPanel data={data} locked={locked} setRules={setRules} setServices={setServices} setNeeds={setNeeds} />
             <SeasonsPanel data={data} locked={locked} setSeasons={setSeasons} />
@@ -80,8 +84,10 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
                 <ImportsPanel data={data} locked={locked} setImports={setImports} />
                 <StatusPanel data={data} locked={locked} setStatus={setStatus} />
                 <MarketPanel data={data} locked={locked} setMarket={setMarket} />
-            </> : <p className="hint">The goods ships never carry and this world's own status.json and market.json values need
-                migration 0061 on this world; until then it runs on the shipped ones.</p>}
+            </> : <p className="hint">{hosted ? 'The goods ships never carry and this world\'s own band and event settings need a newer ' +
+                'package: update it (keep world.toml, .env and backups); until then it runs on the defaults.'
+                : 'The goods ships never carry and this world\'s own status.json and market.json values need migration 0061 on this ' +
+                'world; until then it runs on the shipped ones.'}</p>}
         </div>
     </div>;
 }

@@ -15,7 +15,7 @@ import {NumberField, Row, SelectField, TextField, Toggle, Hint} from '../compone
 import {useWorld} from './world';
 import {BANDS, type Band} from '../lib/economyContract';
 import {awaitOutcome, outcomeWords} from '../lib/acts';
-import {isLive, worldName, dmApi, type Action, type Me, type NpcArea, type Npcs, type Target} from './api';
+import {isLive, worldName, dmApi, type Action, type Me, type NpcArea, type Npcs, type Target, worldLabel} from './api';
 import {CalendarPanel} from './CalendarPanel';
 import {LifePanel} from './LifePanel';
 import {DialectsPanel, FiguresPanel, VoicePanel} from './TalkPanels';
@@ -468,5 +468,5 @@ function ActionList({actions, target}: {actions: Action[]; target: Target}) {
     if (!actions.length) return null;
     return <ol className="dm-actions">{actions.slice(0, 6).map(a => <li key={a.id} className={a.status}>
         <b>{ACTION_LABELS[a.kind] ?? a.kind}</b> by {a.by} · {new Date(a.at).toLocaleTimeString()}
-        <span>{a.status === 'queued' ? `waiting for a ${target.toUpperCase()} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>;
+        <span>{a.status === 'queued' ? `waiting for a ${worldLabel(target)} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>;
 }

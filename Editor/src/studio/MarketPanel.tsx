@@ -2,6 +2,7 @@
 // Data/Economy/market.json: which staged event kinds it has (a House wedding, a fire at the works, a good catch...), how
 // many a market sees a week, the causes the town gives for the times, and the ships' names at a port. Each back to the
 // file's on its own. Migration 0061 only. On Atlas's Economy page and the DM's Economy tab alike.
+import {asShipped, hosted, needsMigration, shippedOwn} from '../lib/hosted';
 import {useEffect, useState} from 'react';
 import {kindChange, kindsOn, marketChange, marketOverride, perWeekNow, shipsNow, shipsOf, type EconomyData,
     type MarketBody} from '../lib/economy';
@@ -29,13 +30,14 @@ export function MarketPanel({data, locked, setMarket}: {data: EconomyData; locke
     const hostKinds = on.filter(id => !data.defaults.market.events.list.some(k => k.id === id));
     return <section className="economy-switches market-panel">
         <h3>Staged events and ships</h3>
-        <p className="hint">Data/Economy/market.json's parts this world sets for itself; the rest stays the file's.</p>
-        {!data.slim && <p className="publish-error">This world needs migration 0061 for its own parts (python3 tools/world_db.py migrate).</p>}
+        <p className="hint">{hosted ? 'The parts this world sets for itself; the rest stays the game\'s default.'
+            : 'Data/Economy/market.json\'s parts this world sets for itself; the rest stays the file\'s.'}</p>
+        {!data.slim && <p className="publish-error">{needsMigration('its own parts')}</p>}
         <label className="economy-markup">Events a week
             <select value={perWeekNow(data)} disabled={off} onChange={e => setMarket(marketChange(data, 'events', 'perWeek', Number(e.target.value)))}>
                 {[0, 1, 2, 3].map(n => <option key={n} value={n}>{n}</option>)}</select>
-            <small>a market's staged events a week, before the rule eventRate{own('perWeek') ? '' : ' (market.json\'s)'}</small></label>
-        {own('perWeek') && <button disabled={off} onClick={() => setMarket(marketChange(data, 'events', 'perWeek', null))}>As market.json</button>}
+            <small>a market's staged events a week, before the rule eventRate{own('perWeek') ? '' : ` (${shippedOwn('market')})`}</small></label>
+        {own('perWeek') && <button disabled={off} onClick={() => setMarket(marketChange(data, 'events', 'perWeek', null))}>{asShipped('market')}</button>}
         <h4>The kinds{own('list') ? ' (this world\'s own list)' : ''}</h4>
         <div className="dm-table-wrap"><table className="dm-table">
             <thead><tr><th>Event</th><th>Where</th><th>On</th></tr></thead>
@@ -46,20 +48,20 @@ export function MarketPanel({data, locked, setMarket}: {data: EconomyData; locke
             </tr>)}</tbody>
         </table></div>
         {hostKinds.length > 0 && <p className="hint">This world's own kinds: {hostKinds.join(', ')}.</p>}
-        {own('list') && <button disabled={off} onClick={() => setMarket(marketChange(data, 'events', 'list', null))}>Every kind, as market.json</button>}
+        {own('list') && <button disabled={off} onClick={() => setMarket(marketChange(data, 'events', 'list', null))}>{hosted ? 'Every kind, as the default' : 'Every kind, as market.json'}</button>}
         <details className="market-causes">
             <summary>The causes{own('causes') ? ' (this world\'s own)' : ''}</summary>
             <p className="hint">What the town says of hard and good times: {'{down: [...], up: [...]}'} causes ({'{id, words, notice, cry}'})
                 and the notices and cries that carry them ({'{cause}'} in each).</p>
             <textarea value={causes} disabled={off} rows={12} cols={70} spellCheck={false} aria-label="The causes" onChange={e => setCauses(e.target.value)} />
             <div><button disabled={off} onClick={saveCauses}>Save the causes</button>
-                {' '}{own('causes') && <button disabled={off} onClick={() => setMarket(marketChange(data, 'events', 'causes', null))}>As market.json</button>}</div>
+                {' '}{own('causes') && <button disabled={off} onClick={() => setMarket(marketChange(data, 'events', 'causes', null))}>{asShipped('market')}</button>}</div>
         </details>
         <h4>The ships' names{ownShips ? ' (this world\'s own)' : ''}</h4>
         <textarea value={ships} disabled={off} rows={6} cols={30} spellCheck={false} aria-label="The ships' names" onChange={e => setShips(e.target.value)} />
         {typeof named === 'string' && <p className="publish-error">{named}</p>}
         <div><button disabled={off || typeof named === 'string' || ships === shipsNow(data).join('\n')}
             onClick={() => typeof named !== 'string' && setMarket(marketChange(data, 'wharf', 'ships', named))}>Save the names</button>
-            {' '}{ownShips && <button disabled={off} onClick={() => setMarket(marketChange(data, 'wharf', 'ships', null))}>As market.json</button>}</div>
+            {' '}{ownShips && <button disabled={off} onClick={() => setMarket(marketChange(data, 'wharf', 'ships', null))}>{asShipped('market')}</button>}</div>
     </section>;
 }

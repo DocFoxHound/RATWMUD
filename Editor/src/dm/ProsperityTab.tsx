@@ -6,7 +6,7 @@
 // due ship stormed, a player granted or fined. Each act is queued for the game server, which applies and journals it; the
 // view catches up at its next checkpoint.
 import {Fragment, useCallback, useEffect, useState} from 'react';
-import {atLeast, dmApi, type EconomyActKind, type Me, type ProsperityView, type Target} from './api';
+import {atLeast, dmApi, type EconomyActKind, type Me, type ProsperityView, type Target, worldLabel} from './api';
 import {BANDS, HARVEST_WORDS, GRANT_MOST, CAUSE_MOST, reasonWords} from '../lib/economyContract';
 import {clock, dayLabel} from '../lib/economy';
 import {awaitOutcome} from '../lib/acts';
@@ -73,7 +73,7 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
 
     return <div className="dm-health dm-prosperity">
         <div className="dm-sheet-bar">
-            <strong>Prosperity · {target.toUpperCase()}</strong>
+            <strong>Prosperity · {worldLabel(target)}</strong>
             <span className="meta hint">{data ? `game day ${today ?? '—'} · saved ${ago(data.writtenAt)}` : 'Loading…'}</span>
             <button onClick={() => void load()}>Refresh</button>
         </div>
@@ -101,15 +101,15 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
                     <th>Dole</th><th></th></tr></thead>
                     <tbody>{markets.map(m => <Fragment key={m.id}>
                         <tr key={m.id}><td>{m.name}</td>
-                            <td title={m.times.cause}>{m.times.word}{m.times.cause ? ` · ${m.times.cause}` : ''}
+                            <td className="dm-wrap" title={m.times.cause}>{m.times.word}{m.times.cause ? ` · ${m.times.cause}` : ''}
                                 {m.nudge && <em> · nudged {signed(m.nudge.points)} until day {Math.floor(m.nudge.until)}{m.nudge.words ? ` (${m.nudge.words})` : ''}</em>}
                                 {m.resetting && <em> · prices resetting</em>}</td>
                             <td className="num">{BANDS.map(b => m.households[b] ?? 0).join(' / ')}{m.overridden ? ` (${m.overridden} set)` : ''}</td>
                             <td className="num">{m.hungry}</td><td className="num">{m.short}</td><td className="num">{m.thieves.toFixed(1)}</td>
                             <td className="num">{m.beggars}</td><td className="num">{m.dole}</td>
-                            <td><button disabled={locked} onClick={() => toggle(`nudge:${m.id}`)}>Nudge</button>
+                            <td className="dm-acts"><div><button disabled={locked} onClick={() => toggle(`nudge:${m.id}`)}>Nudge</button>
                                 <button disabled={locked} onClick={() => window.confirm(`Reset prices at ${m.name}?`) && void act('prices.reset', m.id, {}, `Prices reset at ${m.name}`)}>Reset prices</button>
-                                <button disabled={locked} onClick={() => toggle(`event:${m.id}`, {kind: kinds[0]?.id ?? '', day: String(today ?? '')})}>Add event</button></td></tr>
+                                <button disabled={locked} onClick={() => toggle(`event:${m.id}`, {kind: kinds[0]?.id ?? '', day: String(today ?? '')})}>Add event</button></div></td></tr>
                         {open === `nudge:${m.id}` && <tr key={`${m.id}-nudge`}><td colSpan={9}><div className="dm-act-form">
                             <label className="field"><span>Points (-100 hard to +100 boom; 0 ends a nudge)</span>
                                 <input type="number" min={-100} max={100} value={draft.points} onChange={e => set({points: e.target.value})} /></label>

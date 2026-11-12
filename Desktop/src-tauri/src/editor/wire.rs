@@ -127,6 +127,18 @@ pub struct Progress {
     pub percent: u8,
 }
 
+/// The game server's state as the world's entrypoint last wrote it (doc 78, section 2's pill; R1 H2): up or not, why,
+/// its last exit code, its crashes in a row and the seconds until the next start. Only known words and bounded numbers.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServerUp {
+    pub up: bool,
+    pub reason: String,
+    pub code: Option<u8>,
+    pub failures: u8,
+    pub retry_in: Option<u32>,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Rotation {
     pub spki: Vec<u8>,
@@ -148,7 +160,33 @@ pub struct Hello {
     pub rotation: Option<Rotation>,
 }
 
-const PROGRESS_CODES: [&str; 7] = ["starting", "database", "importing", "migrating", "building", "ready", "stopped"];
+// ("slow": the world was set up, but its database didn't answer the hello in time.)
+const PROGRESS_CODES: [&str; 8] = ["starting", "database", "importing", "migrating", "building", "ready", "stopped", "slow"];
+const SERVER_REASONS: [&str; 6] = ["starting", "running", "restarting", "exit", "world.toml", "closed"];
+
+/// The hello's "server", checked (read beside `read_hello`, from the same body): None when absent or not well formed.
+pub fn read_server_up(body: &[u8]) -> Option<ServerUp> {
+    let value: Value = serde_json::from_slice(body).ok()?;
+    value.get("server").and_then(Value::as_object).and_then(read_server)
+}
+
+/// What the main window is told of a hello: its checked fields and the server's state (null when the world gave none).
+pub fn hello_page(hello: &Hello, body: &[u8]) -> Value {
+    let mut page = hello.page();
+    page["server"] = serde_json::to_value(read_server_up(body)).unwrap_or(Value::Null);
+    page
+}
+
+fn read_server(o: &Map<String, Value>) -> Option<ServerUp> {
+    let reason = o.get("reason").and_then(Value::as_str).filter(|r| SERVER_REASONS.contains(r))?.to_string();
+    Some(ServerUp {
+        up: o.get("up").and_then(Value::as_bool)?,
+        reason,
+        code: o.get("code").and_then(Value::as_u64).filter(|c| *c <= 255).map(|c| c as u8),
+        failures: o.get("failures").and_then(Value::as_u64).unwrap_or(0).min(99) as u8,
+        retry_in: o.get("retryIn").and_then(Value::as_u64).map(|r| r.min(86_400) as u32),
+    })
+}
 const SERVER_STATES: [&str; 4] = ["running", "maintenance", "host_only", "unknown"];
 
 pub fn world_id(text: &str) -> bool {
@@ -365,6 +403,20 @@ mod tests {
         let page = h.page();
         assert!(page.get("extra").is_none() && page.get("token").is_none() && page.get("rotation").is_none());
         assert_eq!(page.as_object().unwrap().len(), 8);
+        // The server's state: known reasons and bounded numbers only; null when absent or not well formed.
+        let page_of = |extra: Value| {
+            let body = hello(extra).to_string();
+            hello_page(&read_hello(body.as_bytes()).unwrap(), body.as_bytes())
+        };
+        assert_eq!(page_of(json!({}))["server"], Value::Null);
+        assert_eq!(page_of(json!({"server": {"up": false, "reason": "exit", "code": 11, "failures": 3, "retryIn": 120, "extra": "x"}}))["server"],
+            json!({"up": false, "reason": "exit", "code": 11, "failures": 3, "retryIn": 120}));
+        assert_eq!(page_of(json!({"server": {"up": false, "reason": "world.toml", "code": 9999, "failures": 500, "retryIn": 1e12}}))["server"],
+            json!({"up": false, "reason": "world.toml", "code": null, "failures": 99, "retryIn": null}));
+        assert_eq!(page_of(json!({"server": {"up": false, "reason": "<b>crashed</b>"}}))["server"], Value::Null);
+        assert_eq!(page_of(json!({"server": {"reason": "exit"}}))["server"], Value::Null);
+        assert_eq!(page_of(json!({"server": "up"}))["server"], Value::Null);
+        assert_eq!(read(hello(json!({"progress": {"code": "slow", "percent": 100}}))).unwrap().progress.code, "slow");
         // Refused outright: no world id, an unknown kind, too long, not JSON.
         assert!(read(hello(json!({"world": "world-x"}))).is_err());
         assert!(read(hello(json!({"kind": "evil"}))).is_err());

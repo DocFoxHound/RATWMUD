@@ -319,6 +319,7 @@ export class Hud {
         setText(this.live, snapshot ? '● LIVE' : '…');
         setClass(this.live, 'on', !!snapshot);
         setText(this.mapPlace, s.cellName);
+        if (this.mapPlace.title !== s.cellName) this.mapPlace.title = s.cellName;   // (The whole name, if it is cut.)
         setText(this.effects, environmentEffectsLabel(s.environment, s.outdoors, s.reducedMotion));
         setClass(this.localTab, 'active', !s.worldMap);
         setClass(this.worldTab, 'active', s.worldMap);

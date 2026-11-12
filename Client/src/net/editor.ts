@@ -14,7 +14,21 @@ export interface EditorHello {
     serverState: string;          // running | maintenance | host_only | unknown
     progress: {code: string; percent: number};
     setupPending: boolean;
+    /** The game server as the world's entrypoint last saw it (null: it said nothing, e.g. still setting up). */
+    server?: ServerUp | null;
 }
+
+/** The hello's word on the game server (Package/entrypoint.py's server.json, through the helper and the shell). */
+export interface ServerUp {
+    up: boolean;
+    reason: 'starting' | 'running' | 'restarting' | 'exit' | 'world.toml' | 'closed';
+    code: number | null;
+    failures: number;
+    retryIn: number | null;
+}
+
+/** The owner's counts at sign-in (never addresses or names: those are behind the password, in Editor accounts). */
+export interface OwnerNotices {failedToday: number; changes: number}
 
 export type Place = 'loopback' | 'home' | 'public';
 export type KeyState = 'new' | 'trusted' | 'moved' | 'rotated' | 'changed';
@@ -74,7 +88,7 @@ export interface EditorBridge {
     trust(address: string, fingerprint: string): Reply<object>;
     forget(address: string, name: string): Reply<object>;
     forgetRecent(pin: string): Reply<object>;
-    signIn(address: string, username: string, password: string, code: boolean): Reply<{session: EditorSession}>;
+    signIn(address: string, username: string, password: string, code: boolean): Reply<{session: EditorSession; notices?: OwnerNotices | null}>;
     changePassword(old: string, fresh: string): Reply<{session: EditorSession}>;
     stepUp(password: string): Reply<{minutes: number}>;
     accounts(verb: string, body?: Record<string, unknown>): Reply<{accounts?: EditorAccount[]; failedToday?: number; banners?: AuditBanner[]; code?: string}>;
@@ -139,18 +153,23 @@ export function hostOf(address: string): string {
 
 const ANY_PORT = 'Is the Editor port right? It is 17789 unless your .env sets RATW_EDITOR_PORT. The Editor may also be turned off ' +
     '([editor] enabled in world.toml).';
-const DOCKER = 'Is Docker Desktop running, and is the world started (docker compose up -d in its folder)?';
+/** Docker Desktop on Windows and macOS; on Linux, Docker itself. */
+export function onLinux(nav: {platform?: string; userAgent?: string} = typeof navigator === 'undefined' ? {} : navigator): boolean {
+    return /Linux/i.test(nav.platform ?? '') && !/Android/i.test(nav.userAgent ?? '');
+}
+const docker = (linux: boolean) => `Is ${linux ? 'Docker' : 'Docker Desktop'} running, and is the world started (docker compose up -d in its folder)? ` +
+    'If it is, docker compose logs world says what\'s wrong (a line starting RATW_PACKAGE error:).';
 const OPEN_IT = 'Your world\'s Editor answers only its own computer until you allow others: add RATW_EDITOR_BIND=0.0.0.0 to .env in the ' +
     'world folder, then run docker compose up -d.';
 const ROUTER = 'From outside your home, your router must forward TCP 17789 to the computer that runs the world. The hosting guide shows ' +
     'how. From inside your own home, use the home address instead: some routers can\'t reach their own public address.';
 
 /** Screen 3's "can't connect", by where the address is (doc 78, section 2). */
-export function cantConnect(place: Place | undefined, gameAnswers = false): string[] {
+export function cantConnect(place: Place | undefined, gameAnswers = false, linux = onLinux()): string[] {
     const lines = gameAnswers ? ['The world\'s game answers at this address, but its Editor doesn\'t. If your world\'s package is older than the ' +
         'Editor, update it (keep world.toml, .env and backups).'] : [];
-    if (place === 'loopback') lines.push(DOCKER, ANY_PORT);
-    else if (place === 'home') lines.push(DOCKER, OPEN_IT, ANY_PORT);
+    if (place === 'loopback') lines.push(docker(linux), ANY_PORT);
+    else if (place === 'home') lines.push(docker(linux), OPEN_IT, ANY_PORT);
     else lines.push(OPEN_IT, ANY_PORT, ROUTER);
     return lines;
 }
@@ -161,7 +180,7 @@ export function connectRefusal(r: Refusal): string[] {
         case 'unreachable': return [`Can't reach an Editor at ${r.address ?? 'that address'}.`, ...cantConnect(r.place, r.gameAnswers)];
         case 'address': return ['Type your world\'s address: e.g. 127.0.0.1, 192.168.1.20 or myworld.example.net:17789.'];
         case 'unresolved': return ['That name doesn\'t lead to any computer: check it, or use the world\'s IP address.'];
-        case 'game-port': return ['That\'s your world\'s game port. The Editor uses port 17789.'];
+        case 'game-port': return ['That\'s your world\'s game port. The Editor uses port 17789 (or your .env\'s RATW_EDITOR_PORT).'];
         case 'not-editor': return ['This address isn\'t a RATW world\'s Editor.'];
         case 'package-old': return ['Your world\'s package is older than the Editor: update it (keep world.toml, .env and backups).'];
         case 'client-old': return ['This world\'s Editor is newer than your game: update the game.'];
@@ -172,9 +191,12 @@ export function connectRefusal(r: Refusal): string[] {
     }
 }
 
+const SLOW = 'Your world answered, but its database is slow: try again in a minute.';
+
 /** "still setting up (40%)", or '' once it is ready. */
 export function settingUp(hello: EditorHello): string {
     if (hello.progress.code === 'ready') return '';
+    if (hello.progress.code === 'slow') return SLOW;
     const what: Record<string, string> = {starting: 'starting', database: 'starting its database', importing: 'importing its world',
         migrating: 'updating its database', building: 'building its map', stopped: 'stopped'};
     return `Your world is still setting up (${what[hello.progress.code] ?? 'starting'}, ${Math.round(hello.progress.percent)}%). This page waits for it.`;
@@ -187,14 +209,14 @@ export function signInRefusal(r: Refusal): string {
         case 'wrong': return 'Wrong name or password.';
         case 'wait': return `Too many tries from here: wait ${minutes(r.minutes)}.`;
         case 'disabled': return 'This account is turned off: ask the world\'s owner.';
-        case 'expired': return 'That one-time password has expired: ask the world\'s owner for a new code, or on the world\'s computer run ' +
-            'reset-editor-password in the world folder.';
+        case 'expired': return 'That one-time password has expired: ask the world\'s owner for a new code, or on the world\'s computer, in ' +
+            `the world folder, type: ${resetCommand()}`;
         case 'approve': return 'This world asks for an Editor code to sign in from a new computer: ask its owner for one (or, on the world\'s ' +
             'computer, run ratw-editor invite).';
         case 'full': return 'Too many people signed in to this world\'s Editor: try again later.';
         case 'busy': return 'The world is busy: try again in a minute.';
         case 'setup': return 'Your world is still setting up: signing in opens when it is done.';
-        case 'database': return 'The world\'s database isn\'t answering yet: try again in a minute.';
+        case 'database': return SLOW;
         case 'official': return 'Official worlds can\'t be edited.';
         case 'code': return 'That Editor code is for another world or account: paste it again.';
         case 'connect-first': return 'Connect to the world first.';
@@ -203,7 +225,7 @@ export function signInRefusal(r: Refusal): string {
         case 'wrong-password': return 'That isn\'t your password.';
         case 'step-up': return 'Type your password again first.';
         case 'owner-only': return 'Only the world\'s owner manages Editor accounts.';
-        case 'owner-account': return 'An owner\'s account is reset only on the world\'s computer (reset-editor-password).';
+        case 'owner-account': return `An owner's account is reset only on the world's computer: in the world folder, type ${resetCommand()}`;
         case 'last-owner': return 'The last owner can\'t be removed or turned off.';
         case 'no-account': return 'There is no such Editor account.';
         case 'exists': return 'There is an Editor account by that name already.';
@@ -230,6 +252,12 @@ export function passwordProblem(reason: string): string {
     }
 }
 
+/** How a lost Editor password is reset, on the world's computer in its folder (doc 78, 3.6). The package's
+ *  reset-editor-password script comes with M5; until then, the compose command. */
+export function resetCommand(username = ''): string {
+    return `docker compose exec world ratw-editor reset ${username || 'NAME'}`;
+}
+
 /** Checked before sending (the world checks again): length, and the two passwords the same. */
 export function newPasswordProblem(fresh: string, again: string, username: string, worldName: string): string {
     if (fresh !== again) return 'The two new passwords aren\'t the same.';
@@ -238,14 +266,73 @@ export function newPasswordProblem(fresh: string, again: string, username: strin
     if ([...fresh].length > 256) return passwordProblem('long');
     if (username.length >= 3 && squash(fresh).includes(squash(username))) return passwordProblem('username');
     if (squash(worldName).length >= 3 && squash(fresh).includes(squash(worldName))) return passwordProblem('world');
+    // Each word of the world's name of 4 letters or more, too ("ashfall1234567" for "Ashfall Test").
+    if (worldName.toLowerCase().split(/[^\p{L}\p{N}]+/u).some(w => [...w].length >= 4 && squash(fresh).includes(w))) return passwordProblem('world');
     return '';
+}
+
+/** "5 s", "2 min", "1 h". */
+export function inTime(seconds: number): string {
+    if (seconds < 90) return `${Math.max(1, Math.round(seconds))} s`;
+    if (seconds < 90 * 60) return `${Math.round(seconds / 60)} min`;
+    return `${Math.round(seconds / 3600)} h`;
+}
+
+/** The game server's state in words, when it isn't up (null when it is, or the world said nothing). */
+export function serverDown(server: ServerUp | null | undefined): string | null {
+    if (!server || server.up) return null;
+    const again = server.retryIn ? `starts again in ${inTime(server.retryIn)}` : 'starting again';
+    switch (server.reason) {
+        case 'starting': return 'Starting…';
+        case 'restarting': return 'Restarting…';
+        case 'closed': return 'Closed for changes';
+        case 'world.toml': return 'Stopped: world.toml has a mistake (see the log)';
+        case 'exit': {
+            const exit = server.code === null ? '' : ` (exit ${server.code})`;
+            return `${server.failures >= 2 ? 'Keeps stopping' : 'Stopped'}${exit}: ${again}`;
+        }
+        default: return 'Stopped';
+    }
 }
 
 /** Screen 5's status pill, from the world's hello (or null when it didn't answer). */
 export function statusPill(hello: EditorHello | null): string {
-    if (!hello) return 'Restarting…';
+    if (!hello) return 'Not answering';
+    if (hello.progress.code === 'slow') return 'Database slow';
     if (hello.progress.code !== 'ready') return `Setting up ${Math.round(hello.progress.percent)}%`;
-    return ({running: 'Open', maintenance: 'Closed for changes', host_only: 'Open only to you'} as Record<string, string>)[hello.serverState] ?? 'Starting…';
+    const down = serverDown(hello.server);
+    if (down) return down;
+    return ({running: 'Open', maintenance: 'Closed for changes', host_only: 'Open only to you'} as Record<string, string>)[hello.serverState]
+        ?? (hello.server?.up ? 'Open' : 'Starting…');
+}
+
+/** Screen 4: whether SIGN IN uses the one-time password the pasted Editor code carries. A session that has ended (or any
+ *  but a live one) doesn't stand in its way: a co-builder's one-time password exists only in the code (R1 H1). */
+export function signsInWithCode(viaCode: boolean, codePassword: boolean, session: {live: boolean} | null): boolean {
+    return viaCode && codePassword && !session?.live;
+}
+
+/** Screen 4's "First time?" note: only while the owner hasn't chosen a password, and never beside an Editor code's note
+ *  or to someone this computer already knows by name. */
+export function firstTimeNote(setupPending: boolean, fromCode: boolean, knownUsername: string): boolean {
+    return setupPending && !fromCode && !knownUsername;
+}
+
+/** An address the world recorded, in the owner's words: 'local' (this computer, through Docker) is "this computer". */
+export function fromWhere(address: string | null | undefined): string {
+    return !address ? '' : address === 'local' ? 'this computer' : address;
+}
+
+/** The port of "host:port" (or the Editor's own when none is given). */
+export function portOf(address: string): number {
+    const m = /:(\d{1,5})$/.exec(address.trim());
+    return m && !address.trim().endsWith(']') && (address.split(':').length === 2 || address.includes(']:')) ? Number(m[1]) : EDITOR_PORT;
+}
+
+/** Under a co-builder's Editor code: what to tell them besides. A code made on this computer carries no address. */
+export function coBuilderNote(place: Place, address: string): string {
+    return place === 'loopback' ? `It doesn't include your world's address: tell them that too (your home or public address, port ${portOf(address)}).`
+        : `It includes this world's address as you use it (${address}).`;
 }
 
 export const ROLE_LINES: Record<string, string> = {

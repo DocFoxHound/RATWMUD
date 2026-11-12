@@ -9,10 +9,12 @@ import {ROLE_INFO} from '../lib/glyphs';
 import {surfaceFor} from '../lib/surface';
 import {Hint} from '../components/fields';
 import {useWorld} from './world';
+import {eventLine} from '../lib/liveWords';
+import {actorName} from '../lib/hosted';
 import {CalendarPanel} from './CalendarPanel';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {areaColor, idFrom} from './LayerPanels';
-import {isLive, worldName, dmApi, wolvesOff, type Action, type Chapters, type Factions, type FameDeed, type Live, type TownProject, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
+import {isLive, worldName, dmApi, wolvesOff, type Action, type Chapters, type Factions, type FameDeed, type Live, type TownProject, type LivePerson, type Me, type Npcs, type Rumour, type Target, worldLabel} from './api';
 
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
 type LayerId = 'players' | 'npcs' | 'shops' | 'structures' | 'chapters' | 'factions' | 'routes' | 'events' | 'rumours' | 'fame' | 'projects' | 'weather';
@@ -115,7 +117,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     }, [on, readProjects]);
     const projectAct = (kind: string, id: string, payload?: Record<string, unknown>) => {
         const words: Record<string, string> = {'project.remove': 'Take down', 'project.cancel': 'Cancel (gifts returned)', 'project.complete': 'Complete'};
-        if (words[kind] && !window.confirm(`${words[kind]} ${(projects ?? []).find(p => p.id === id)?.title ?? id} on ${target.toUpperCase()}?`)) return;
+        if (words[kind] && !window.confirm(`${words[kind]} ${(projects ?? []).find(p => p.id === id)?.title ?? id} on ${worldLabel(target)}?`)) return;
         setBusy(true);
         dmApi.liveAction(target, kind, id, payload).then(() => { setNote(`${kind} sent: the game applies it within seconds.`); void readProjects(); })
             .catch(e => setProblem((e as Error).message)).finally(() => setBusy(false));
@@ -139,6 +141,8 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
     }, [world, rooms, at]);
 
     const people = live?.frame?.people ?? [];
+    // Who an event names, by name (the frame's people, then the NPC list when read): never an id (R1).
+    const eventName = (id: string) => people.find(p => p[0] === id)?.[1] ?? npcs?.people.find(p => p.id === id)?.name;
     const q = query.trim().toLowerCase();
     const matches = (p: LivePerson) => !q || `${p[1]} ${p[0]} ${p[7]}`.toLowerCase().includes(q);
     const shownPeople = useMemo(() => people.filter(p => {
@@ -171,7 +175,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         if (on.has('shops')) for (const s of live?.frame?.shops ?? [])
             push(`s:${s[0]}`, at(s[3], s[4], s[5]), '#e6c481', '⚖', `${s[2] || 'Shop'} · ${s[1]}${s[6] ? ' (at a stall)' : ''}`);
         if (on.has('events')) for (const e of live?.events ?? [])
-            push(`e:${e.id}`, centre(e.cell), CRIMES.has(e.kind) ? '#e07a6a' : e.kind.startsWith('caravan') ? '#e0b85a' : '#b8b0a0', '!', eventLine(e, placeName));
+            push(`e:${e.id}`, centre(e.cell), CRIMES.has(e.kind) ? '#e07a6a' : e.kind.startsWith('caravan') ? '#e0b85a' : '#b8b0a0', '!', eventLine(e, placeName, eventName));
         const shown = new Set<string>();
         for (const p of shownPeople) {
             const player = p[2] === 'p' || p[2] === 'o';
@@ -302,7 +306,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         const newcomer = {...base, id: idFrom(name, taken, 'npc')};
         if (!sure(`Spawn ${name} in ${placeName(spawn.place.cell)}`)) return;
         void run(async () => { await dmApi.saveNpc(target, newcomer); setSpawn(null); setNpcs(null); },
-            `${name} is written to the ${target.toUpperCase()} world; a running game server brings them in within a second.`);
+            `${name} is written to the ${worldLabel(target)} world; a running game server brings them in within a second.`);
     };
     const sendAway = (p: LivePerson) => sure(`Send ${p[1]} away`) &&
         void run(() => dmApi.leave(target, p[0]), `Sending ${p[1]} away: waiting for the game server…`);
@@ -452,7 +456,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                 <Hint>Kept by {shop[1]}, in {placeName(shop[3])} at {Math.floor(shop[4])}, {Math.floor(shop[5])}.</Hint>
                 <button onClick={() => { setOn(s => new Set(s).add('npcs')); setSelected(`n:${shop[0]}`); }}>Show {shop[1]}</button></div>
             : event ? <div className="dm-panel"><header><div><small>EVENT · DAY {Math.floor(event.day)}</small><h2>{event.kind}</h2></div></header>
-                <Hint>{eventLine(event, placeName)}</Hint><Hint>Recorded {new Date(event.at).toLocaleString()}.</Hint></div>
+                <Hint>{eventLine(event, placeName, eventName)}</Hint><Hint>Recorded {new Date(event.at).toLocaleString()}.</Hint></div>
             : site ? <div className="dm-panel"><header><div><small>CHAPTER SITE</small><h2>{site.name}</h2></div><span className="dm-status">{site.state}</span></header>
                 <Hint>{chapters?.chapters.find(c => c.id === site.chapter)?.name ?? site.chapter} · {placeName(site.cell)} · {site.structures.length} buildings, {site.staff.length} staff.</Hint>
                 <Hint>Manage it in the Chapters tab.</Hint></div>
@@ -466,7 +470,7 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                 {(live?.events.length ?? 0) > 0 && <><p className="dm-group">Lately</p>
                     <ol className="dm-actions">{live!.events.slice(0, 8).map(e => <li key={e.id} className="live-event" onClick={() => {
                         setOn(s => new Set(s).add('events')); setSelected(`e:${e.id}`);
-                    }}><b>{e.kind}</b> · day {Math.floor(e.day)}<span>{eventLine(e, placeName)}</span></li>)}</ol></>}
+                    }}><b>{e.kind}</b> · day {Math.floor(e.day)}<span>{eventLine(e, placeName, eventName)}</span></li>)}</ol></>}
                 <CalendarPanel me={me} target={target} />
             </div>}
         </aside>}
@@ -506,8 +510,8 @@ const LABELS: Record<string, string> = {'npc.move': 'Move', 'character.move': 'M
 function ActionList({actions, target}: {actions: Action[]; target?: Target}) {
     if (!actions.length) return null;
     return <ol className="dm-actions">{actions.slice(0, 6).map(a => <li key={a.id} className={a.status}>
-        <b>{LABELS[a.kind] ?? a.kind}</b> {a.target} by {a.by} · {new Date(a.at).toLocaleTimeString()}
-        <span>{a.status === 'queued' ? `waiting for a ${(target ?? 'game').toUpperCase()} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>;
+        <b>{LABELS[a.kind] ?? a.kind}</b> {a.target} by {actorName(a.by)} · {new Date(a.at).toLocaleTimeString()}
+        <span>{a.status === 'queued' ? `waiting for ${target ? `a ${worldLabel(target)}` : 'a'} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>;
 }
 
 function rumourLine(r: Rumour, nameOf: (id: string) => string) {
@@ -520,7 +524,3 @@ function personLine(p: LivePerson) {
     return `${p[1]}${what ? ` · ${what}` : ''}`;
 }
 
-function eventLine(e: LiveEvent, placeName: (cell: string) => string) {
-    const who = [e.actor, e.target].filter(Boolean).join(' → ');
-    return `${e.kind}${who ? ` (${who})` : ''} in ${placeName(e.cell)}${e.detail ? `: ${e.detail}` : ''}`;
-}

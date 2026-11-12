@@ -756,7 +756,8 @@ int main(int argc, char** argv)
             options.conninfo = url;
     if (options.scratch && runFor <= 0)
         runFor = 3600;                              // A scratch server forgotten stops within the hour (--for to change it).
-    options.connectionLabel = "Standalone server · 20 Hz";
+    // The status bar's word on the world (a world on central isn't "standalone": R1's screenshots).
+    options.connectionLabel = !tickets ? "Standalone server · 20 Hz" : options.central.official ? "Official world · 20 Hz" : "Community world · 20 Hz";
     options.webPort = port;                         // (Named in its claim on the world: the studio's Play opens it.)
     options.webBind = bind;
     std::string problem;

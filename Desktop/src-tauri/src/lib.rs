@@ -1,4 +1,4 @@
-// Run Against the World, the desktop client's shell (Docs/Design/76-the-desktop-client.md, as amended by
+// Runs Against the World, the desktop client's shell (Docs/Design/76-the-desktop-client.md, as amended by
 // Docs/Design/77-central-accounts-and-hosted-worlds.md, sections 3.1 and 9). The game's page (Client/dist) is bundled
 // in the app, so no world can swap it. The shell:
 //   - makes the page's calls to central and keeps the tokens (central.rs), with "remember me" in the OS's keychain
@@ -149,8 +149,8 @@ fn first_size(window: &tauri::WebviewWindow) {
 #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 fn mac_menu(app: &tauri::AppHandle) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
     use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
-    let quit = MenuItemBuilder::with_id("quit", "Quit Run Against the World").accelerator("CmdOrCtrl+Q").build(app)?;
-    let ours = SubmenuBuilder::new(app, "Run Against the World").hide().hide_others().show_all().separator().item(&quit).build()?;
+    let quit = MenuItemBuilder::with_id("quit", "Quit Runs Against the World").accelerator("CmdOrCtrl+Q").build(app)?;
+    let ours = SubmenuBuilder::new(app, "Runs Against the World").hide().hide_others().show_all().separator().item(&quit).build()?;
     let edit = SubmenuBuilder::new(app, "Edit").undo().redo().separator().cut().copy().paste().select_all().build()?;
     let window = SubmenuBuilder::new(app, "Window").minimize().separator().close_window().build()?;
     MenuBuilder::new(app).items(&[&ours, &edit, &window]).build()

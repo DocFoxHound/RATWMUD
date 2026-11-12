@@ -11,6 +11,7 @@
 // same shape. In the desktop client (not on a Mac, not in a browser) EDITOR on the sign-in, roster and Host pages opens
 // the Editor's screens (editorDoor.ts, Docs/Design/78): a host's way into their own world's tools.
 import {CoatNames} from './theme.ts';
+import {colourWords} from './color.ts';
 import {drawPortrait, lifeStage, Portraits, readAppearance, shoulderHeightCm} from './portrait.ts';
 import {MaskNames, Masks} from './wolfArt.ts';
 import {artCache, sendPortrait, squarePixels} from './artwork.ts';
@@ -45,7 +46,7 @@ function randomiseAppearance(d: Json) {
 }
 import {arr, bool, isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
-import {agentCommand, agoText, serverCommand} from '../net/central.ts';
+import {agoText, envLine, worldTomlLines} from '../net/central.ts';
 
 type Page = 'login' | 'register' | 'roster' | 'creator' | 'review' | 'worlds' | 'arrive' | 'host' | 'editor';
 
@@ -340,6 +341,7 @@ export class FrontDoor {
                 this.creatorTab = this.draftFamily ? 'gift' : 'strengths';
             }
             this.stage = 'characters';
+            if (ok) this.setMessage(this.arriveWelcome());
             this.show('arrive');
             return;
         }
@@ -808,8 +810,8 @@ export class FrontDoor {
             el('h2', {}, 'Your worlds'),
             el('p', {className: 'muted large'}, 'A world you run on your own computer. Central lists it while it is up and central can ' +
                 'reach it from the internet.'),
-            el('p', {className: 'muted'}, 'Run the world, and the world agent beside it with the world\'s token: the agent tells central ' +
-                'the world is up every minute, and says here why it isn\'t listed if it isn\'t (most often, a port to open).'),
+            el('p', {className: 'muted'}, 'Run it with the world package (docker compose, its README.md says how), with the world\'s token: ' +
+                'it tells central the world is up every minute, and this page says why it isn\'t listed if it isn\'t (most often, a port to open).'),
             el('div', {className: 'grow'}),
             el('p', {className: 'muted small'}, full ? `You have ${this.hostWorlds.length} of ${this.hostMost} worlds: remove one to make another.`
                 : `${this.hostWorlds.length} of ${this.hostMost} worlds.`),
@@ -851,48 +853,45 @@ export class FrontDoor {
             this.submit({type: 'host_show'});
         });
         refresh.dataset.action = 'host-refresh';
+        // (The token box scrolls with the list, so Refresh and every row's note stay inside the card.)
         const card = el('section', {className: 'door-card door-form door-worlds host-list'},
             el('p', {className: 'gold small'}, 'YOUR WORLDS ON CENTRAL'),
-            ...(this.hostToken ? [this.tokenBox()] : []),
-            el('div', {className: 'scroll'}, list),
+            el('div', {className: 'scroll'}, ...(this.hostToken ? [this.tokenBox()] : []), list),
             el('div', {className: 'door-actions host-actions'}, refresh));
         return el('div', {className: 'door-row'}, side, card);
     }
 
-    /** The token just made, shown this once, and the two commands a host runs with it: the world server in ticket mode and
-     *  the world agent beside it (Phase 5's package will make them one). */
+    /** The token just made, shown this once, and what the world package needs of it (Package/README.md, "Start"): the token
+     *  in .env, the world's id and central's address in world.toml, then docker compose up -d (as NEW TOKEN's dialog says). */
     private tokenBox(): HTMLElement {
         const world = this.hostWorlds.find(w => w.id === this.hostTokenWorld);
         const token = el('input', {type: 'text', readOnly: true, value: this.hostToken, className: 'host-token'});
         token.name = 'hostToken';
         token.spellcheck = false;
         token.addEventListener('focus', () => token.select());
-        const central = this.hostCentral || 'URL';
-        const server = serverCommand(this.hostTokenWorld, world?.name ?? '', central);
-        const command = agentCommand(this.hostToken, central);
-        const shownServer = el('pre', {className: 'host-command'}, server);
-        shownServer.dataset.command = 'server';
-        shownServer.style.flex = '1';   // (Beside its COPY: styles.css lays out the row for an input.)
-        const shownAgent = el('pre', {className: 'host-command'}, command);
-        shownAgent.dataset.command = 'agent';
+        const env = envLine(this.hostToken);
+        const toml = worldTomlLines(this.hostTokenWorld, this.hostCentral || 'https://...');
+        const shownEnv = el('pre', {className: 'host-command'}, env);
+        shownEnv.dataset.command = 'env';
+        shownEnv.style.flex = '1';      // (Beside its COPY: styles.css lays out the row for an input.)
+        const shownToml = el('pre', {className: 'host-command'}, toml);
+        shownToml.dataset.command = 'toml';
+        shownToml.style.flex = '1';
         const copyToken = this.button('COPY', () => void this.copy(this.hostToken, 'The token is copied.', token));
         copyToken.dataset.action = 'host-copy';
-        const copyServer = this.button('COPY', () => void this.copy(server, 'The world\'s command is copied.', null));
-        copyServer.dataset.action = 'host-copy-server';
-        const copyCommand = this.button('COPY THE COMMAND', () => void this.copy(command, 'The command is copied.', null));
-        copyCommand.dataset.action = 'host-copy-command';
+        const copyEnv = this.button('COPY', () => void this.copy(env, 'The .env line is copied.', null));
+        copyEnv.dataset.action = 'host-copy-env';
+        const copyToml = this.button('COPY', () => void this.copy(toml, 'The world.toml lines are copied.', null));
+        copyToml.dataset.action = 'host-copy-toml';
         return el('div', {className: 'host-token-box'},
             el('p', {className: 'gold small'}, `THE TOKEN FOR ${(world?.name ?? 'YOUR WORLD').toUpperCase()} · SHOWN THIS ONCE`),
             el('div', {className: 'host-token-row'}, token, copyToken),
-            el('p', {className: 'muted small'}, 'Run the world, on every address of this computer (--bind 0.0.0.0) so central can ' +
-                'call it back, with central\'s keys from the agent\'s folder:'),
-            el('div', {className: 'host-token-row'}, shownServer, copyServer),
-            el('p', {className: 'muted small'}, 'Beside it, in the same folder, the world agent with the token (it fetches the keys ' +
-                'and keeps the world on the list):'),
-            shownAgent,
-            el('p', {className: 'muted small'}, 'One package will run both with one command (doc 77, Phase 5).'),
-            el('div', {className: 'host-token-row'}, el('p', {className: 'muted small'}, 'Keep it somewhere safe: it isn\'t shown again. ' +
-                'Anyone with it can list a world as this one.'), copyCommand));
+            el('p', {className: 'muted small'}, 'In your world\'s folder (the world package), put this line in .env, beside compose.yaml:'),
+            el('div', {className: 'host-token-row'}, shownEnv, copyEnv),
+            el('p', {className: 'muted small'}, 'and these in world.toml (the [world] and [central] parts are already there: fill in id and url):'),
+            el('div', {className: 'host-token-row'}, shownToml, copyToml),
+            el('p', {className: 'muted small'}, 'Then, in that folder: docker compose up -d. The world goes on the list once central can reach it.'),
+            el('p', {className: 'muted small'}, 'Keep the token somewhere safe: it isn\'t shown again. Anyone with it can list a world as this one.'));
     }
 
     /** Text to the clipboard, the page's way or the old way; or, if neither works, selected for the host to copy. */
@@ -979,6 +978,15 @@ export class FrontDoor {
         const form = el('section', {className: 'door-card door-form'},
             el('div', {className: 'scroll'}, el('div', {className: 'door-fields'}, el('div', {className: 'creator'}, tabs, panel))), actions);
         return el('div', {className: 'door-row'}, preview, form);
+    }
+
+    /** The arrive page's line: what there is to choose in this world, and only that (R1: no "where your wolf arrives" with
+     *  no Arrival tab). The world's own sentence names choices it may not offer. */
+    private arriveWelcome(): string {
+        const choices = [...(this.draftFamily && this.tierChoices.length > 1 ? ['how their Gift shows here'] : []), 'their strengths',
+            ...(this.starts.length > 1 ? ['where they arrive'] : []), ...(this.ties.length ? ['who they know here'] : [])];
+        const list = choices.length > 1 ? `${choices.slice(0, -1).join(', ')} and ${choices.at(-1)}` : choices[0];
+        return `Welcome to ${this.arriveWorld || 'this world'}. Choose ${list}.`;
     }
 
     /** The tier at arrival: the wolf's family is fixed (central's); Gifted or Quickened as the world offers them. */
@@ -1094,16 +1102,18 @@ export class FrontDoor {
             this.drawPortrait();
         };
         const fields = el('div', {className: 'door-fields'});
+        // Colours in words, never their codes (R1).
+        const coat = () => (str(draft, 'coat') ? colourWords(str(draft, 'coat')) : CoatNames[Math.min(7, Math.max(0, Math.trunc(num(draft, 'baseColor'))))].toLowerCase());
+        const eyes = () => colourWords(str(draft, 'eyes') || 'amber', 'eyes');
         if (!reviewOnly) fields.append(this.creatorFields(draft, refresh, nameHeading));
         else if (this.mode === 'central') {
-            const colour = (field: string) => CoatNames[Math.min(7, Math.max(0, Math.trunc(num(draft, field))))];
             const family = arr(this.gifts, 'families').filter(isObject).find(f => str(f, 'id') === this.draftFamily);
             fields.append(
                 el('h2', {}, 'Review your wolf'),
                 el('p', {className: 'gold name'}, this.draftName),
                 el('p', {className: 'large pre'}, `${title(str(draft, 'species'))} wolf · ${title(str(draft, 'sex'))}\nAge ${this.draftAge} · ` +
                     `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${title(str(draft, 'pattern'))} markings`),
-                el('p', {className: 'muted'}, `Coat: ${str(draft, 'coat') || colour('baseColor')} · eyes ${str(draft, 'eyes') || 'amber'} · build ${title(str(draft, 'build') || 'average')}`),
+                el('p', {className: 'muted'}, `Coat: ${coat()} · eyes ${eyes()} · build ${title(str(draft, 'build') || 'average')}`),
                 el('p', {className: family ? 'gold' : 'muted'}, family ? `Gift: the ${str(family, 'name')} family. In each world your wolf arrives Gifted or Quickened, as that world allows.`
                     : 'Gift: none. Your wolf is Normal in every world.'),
                 el('p', {className: 'muted large'}, 'Creating saves this wolf to your account on central: their name, age, sex and Gift never change; their ' +
@@ -1115,12 +1125,12 @@ export class FrontDoor {
                 el('p', {className: 'gold name'}, this.draftName),
                 el('p', {className: 'large pre'}, `${title(str(draft, 'species'))} wolf · ${title(str(draft, 'sex'))}\nAge ${this.draftAge} · ` +
                     `${stageName(this.draftAge)}\n${title(str(draft, 'stature'))} stature · ${title(str(draft, 'pattern'))} markings`),
-                el('p', {className: 'muted'}, `Coat: ${str(draft, 'coat') || colour('baseColor')}`),
-                el('p', {className: 'muted'}, `Gradient: ${str(draft, 'gradientTint') || colour('gradientColor')}`),
+                el('p', {className: 'muted'}, `Coat: ${coat()}`),
+                el('p', {className: 'muted'}, `Belly and legs: ${str(draft, 'gradientTint') ? colourWords(str(draft, 'gradientTint')) : colour('gradientColor').toLowerCase()}`),
                 el('p', {className: 'muted'}, Array.isArray(draft.markings) && draft.markings.length
                     ? `Markings: ${(draft.markings as Json[]).map(m => MaskNames[str(m, 'mask')] ?? str(m, 'mask')).join(', ')}`
-                    : `Markings: ${title(str(draft, 'pattern'))}, ${colour('markingColor')}`),
-                el('p', {className: 'muted'}, `Build: ${title(str(draft, 'build') || 'average')} · eyes ${str(draft, 'eyes') || 'amber'}`),
+                    : `Markings: ${title(str(draft, 'pattern'))}, ${colour('markingColor').toLowerCase()}`),
+                el('p', {className: 'muted'}, `Build: ${title(str(draft, 'build') || 'average')} · eyes ${eyes()}`),
                 ...this.giftReview(),
                 ...this.buildReview(),
                 ...(this.draftStart ? [el('p', {className: 'muted'}, `Arrives in: ${this.startName(this.draftStart)}`)] : []),
@@ -1132,7 +1142,7 @@ export class FrontDoor {
             el('p', {className: 'gold small'}, reviewOnly ? 'CREATION REVIEW' : 'LIVE APPEARANCE PREVIEW'),
             nameHeading, summary, canvas,
             el('p', {className: 'muted pre'}, 'Young 6–12 · Adolescent 13–17\nAdult 18–64 · Old 65+'),
-            el('p', {className: 'muted'}, 'A static sheet portrait. Map characters remain simple W> glyphs; posture and storytelling stay in your hands.'));
+            el('p', {className: 'muted'}, 'Your wolf\'s portrait. In the world they are drawn as a W on the map; how they move and act is yours to tell.'));
         const actions = el('div', {className: 'door-actions'},
             this.button(reviewOnly ? 'Back to appearance' : 'Cancel', () => this.show(reviewOnly ? 'creator' : 'roster')),
             this.button(reviewOnly ? 'CONFIRM & CREATE' : 'REVIEW CHARACTER', () => (reviewOnly ? this.create() : this.review()), true));
@@ -1355,7 +1365,7 @@ export class FrontDoor {
         if (chosen) {
             const details = this.giftDetails(chosen);
             out.push(details);
-            if (this.showGiftDetails) requestAnimationFrame(() => details.scrollIntoView({block: 'start'}));   // (A family just chosen.)
+            if (this.showGiftDetails) requestAnimationFrame(() => details.scrollIntoView({block: 'nearest'}));   // (A family just chosen.)
             this.showGiftDetails = false;
         }
         else out.push(el('p', {className: 'muted'}, 'Choose a family to see what it gives.'));
@@ -1407,7 +1417,7 @@ export class FrontDoor {
                     el('dt', {}, 'Quickened'), el('dd', {}, str(obj(chosen, 'quickened'), 'best'))),
                 el('p', {className: 'muted'}, 'Gifted wolves are the best at work and help their side in a fight; Quickened ones fight with it, and draw the Wardens.'));
             out.push(box);
-            if (this.showGiftDetails) requestAnimationFrame(() => box.scrollIntoView({block: 'start'}));
+            if (this.showGiftDetails) requestAnimationFrame(() => box.scrollIntoView({block: 'nearest'}));
             this.showGiftDetails = false;
         }
         return out;

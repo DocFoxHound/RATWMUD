@@ -33,10 +33,12 @@ whole world:
    world isn't listed and has no host. The agent's lines go to the container's log as well as logs/world-agent.log.
 6. Runs ratw_server, forwarding SIGTERM and SIGINT to it, and keeps every helper up whatever the server does (doc 78,
    12.4). world.toml is read again before each start (a broken one keeps the server stopped, saying why, until it is
-   put right); the Mind and the agent are started again when their settings changed, and the Editor's helper when
+   put right: tried again after 5 s, 30 s, 2 minutes, then every 2 minutes, apart from the crash backoff; a broken
+   one at the container's start does the same, with the Editor's helper up from its last good copy); the Mind and the agent are started again when their settings changed, and the Editor's helper when
    [editor] did. Exit 75 (a new release, nobody on) starts it again at once; 76 (closed for maintenance) waits,
    checking the world's state every 5 seconds, until the Editor or the DM opens it; any other code starts it again
-   after 5 s, 30 s, 2 minutes, then every 10 minutes (back to 5 s once it has run for 10 minutes).
+   after 5 s, 30 s, 2 minutes, then every 10 minutes (back to 5 s once it has run for 10 minutes). The server's state
+   goes to the admin volume (server.json: up, why not, the last exit, the next try) for the Editor's status pill.
 7. Acts on the helper's requests (files in the admin volume's requests/ that name only a kind, never a path or a
    command: doc 78, 6.5 and I7): `restart` (the server stops, saving, and starts again, world.toml read first),
    `backup-by-hand` and `backup-before-publish` (passed on to the backup service through the `requests` volume),
@@ -62,6 +64,7 @@ from __future__ import annotations
 import collections
 import contextlib
 import errno
+import io
 import json
 import os
 from pathlib import Path
@@ -97,6 +100,9 @@ EDITOR_PORT = 17789                             # The helper's port inside the c
 RELEASE_EXIT, MAINTENANCE_EXIT = 75, 76         # (Core/RatwGame.cpp and RatwGame.h; tools/live.sh loops on them.)
 BACKOFF = (5, 30, 120, 600)                     # Seconds before starting a server that stopped on its own (doc 78, 12.4).
 STABLE = 600                                    # A server that ran this long starts the backoff afresh.
+TOML_RETRY = (5, 30, 120)                       # A broken world.toml read again after these, then every 2 minutes
+                                                # (its own count: it never adds to the crash backoff).
+SERVER_REASONS = ('starting', 'running', 'restarting', 'exit', 'world.toml', 'closed')   # (server.json's "reason".)
 MAINTENANCE_POLL = float(os.environ.get('RATW_MAINTENANCE_POLL', '5'))
 STOP_WAIT = 80                                  # A restart's SIGTERM, then this long to save (compose gives 90 s).
 WORLD_ID = re.compile(r'^world-[0-9a-f]{32}$')
@@ -123,9 +129,9 @@ LINE_MOST = 4096                                # A child's output is read in li
 LOG_UNSAFE = re.compile('[\x00-\x08\x0a-\x1f\x7f-\x9f\u00ad\u061c\u180e\u200b-\u200f\u2028-\u202e\u2060-\u2069\ufeff]')
 EXIT_LINES, EXITS_KEPT = 20, 10                 # exits.json: the server's last exits, each with its last lines.
 BACKUPS_WAITING = 4                             # Backup requests left for the backup service, at most.
-FIRST_EDITOR_USED = ('Used. Lost your password? Double-click reset-editor-password in this folder, or type, in this '
-                     'folder:\n\n    docker compose exec world ratw-editor list\n    docker compose exec world '
-                     'ratw-editor reset NAME\n')
+FIRST_EDITOR_USED = ('Used. Lost your password? In this folder, type:\n\n'
+                     '    docker compose exec world ratw-editor reset NAME\n\n'
+                     '(NAME is your Editor account; docker compose exec world ratw-editor list shows them.)\n')
 
 stopping = False
 server: subprocess.Popen | None = None
@@ -318,13 +324,46 @@ def read_settings() -> dict:
     return s
 
 
-def reread_settings() -> dict | None:
-    """world.toml again, before a server start (doc 78, 12.4): None, having said why, if it is broken now."""
+# What the last broken world.toml said, and when (monotonic), so a mistake left for hours isn't said every try.
+TOML_SAID = {'text': None, 'at': float('-inf'), 'fresh': False}
+
+
+def reread_settings(editor_up: bool = True) -> dict | None:
+    """world.toml again, before a server start (doc 78, 12.4): None, having said why, if it is broken now. The same
+    mistake is said again at most once a minute (TOML_SAID['fresh'] when it was said this time)."""
+    said = io.StringIO()
     try:
-        return read_settings()
+        with contextlib.redirect_stderr(said):
+            s = read_settings()
+        TOML_SAID.update(text=None, fresh=False)
+        return s
     except SystemExit:
-        say('the world waits until world.toml is put right (the line above says what is wrong); the Editor stays up')
+        text, now = said.getvalue(), time.monotonic()
+        fresh = text != TOML_SAID['text'] or now - TOML_SAID['at'] >= 60
+        TOML_SAID.update(text=text, fresh=fresh, **({'at': now} if fresh else {}))
+        if fresh:
+            sys.stderr.write(text)
+            sys.stderr.flush()
+            say('the world waits until world.toml is put right (the line above says what is wrong)' +
+                ('; the Editor stays up' if editor_up else ''))
         return None
+
+
+class TomlRetry:
+    """A broken world.toml's own schedule (R1): read again after 5 s, 30 s, 2 minutes, then every 2 minutes, with the
+    next try in server.json and in the log (when the mistake was said)."""
+
+    def __init__(self):
+        self.tries = 0
+
+    def failed(self, code: int | None = None, failures: int = 0) -> float:
+        delay = TOML_RETRY[min(self.tries, len(TOML_RETRY) - 1)]
+        self.tries += 1
+        server_state(False, 'world.toml', code, failures, delay)
+        if TOML_SAID['fresh']:
+            say(f'world.toml still has a mistake; next try at '
+                f'{time.strftime("%H:%M:%S", time.gmtime(time.time() + delay))} UTC')
+        return delay
 
 
 def read_secret_file(name: str, what: str) -> str:
@@ -861,6 +900,20 @@ def progress(code: str, percent: int = 0) -> None:
         say(f'warning: the set-up progress couldn\'t be written ({error.strerror})')
 
 
+def server_state(up: bool, reason: str, code: int | None = None, failures: int = 0, retry_in: float | None = None) -> None:
+    """server.json: the game server's state, for the helper's /editor/hello and the hosted studio (doc 78, section 2's
+    pill; R1, H2). reason: starting, running, restarting, exit (a crash: its code, the crashes in a row and when it is
+    tried again), world.toml (broken: when it is read again) or closed (for maintenance)."""
+    now = time.time()
+    body = {'up': bool(up), 'reason': reason if reason in SERVER_REASONS else 'starting', 'code': code,
+            'failures': int(failures), 'retryAt': round(now + retry_in, 3) if retry_in is not None else None,
+            'at': round(now, 3)}
+    try:
+        write_file(ADMIN / 'server.json', json.dumps(body) + '\n', None, 0o644)
+    except OSError as error:
+        say(f'warning: the server\'s state couldn\'t be written ({error.strerror})')
+
+
 def central_word() -> dict:
     """Central's word on this world, as the agent wrote it (STATE/central, where only ratw writes: doc 78, 6.7)."""
     raw = read_small(STATE / 'central' / 'central.json', 4096)
@@ -1192,6 +1245,7 @@ class Supervisor:
         self.exits: list = []
         self.next_count = 0.0
         self.code = 0
+        self.toml = TomlRetry()
 
     # -- the helpers -------------------------------------------------------------------------------------------
     def apply_editor(self, s: dict) -> None:
@@ -1274,6 +1328,7 @@ class Supervisor:
         if kind == 'restart':
             say('a restart was asked for by the Editor: the world saves, stops and starts again')
             self.restart = True
+            server_state(False, 'restarting', self.code)
         elif kind in ('backup-by-hand', 'backup-before-publish'):
             pass_backup(kind)
         elif kind == 'share':
@@ -1297,6 +1352,7 @@ class Supervisor:
         self.server.tee.start()
         self.started_at = self.clock()
         self.stop_by = None
+        server_state(True, 'running', self.code, self.failures)
 
     def record_exit(self, process, code: int) -> None:
         """exits.json in the admin volume: the server's last exits, each with its last lines, for the owner's "the world
@@ -1325,21 +1381,25 @@ class Supervisor:
         if self.restart:
             self.restart = False
             self.failures, self.next_start = 0, now
+            server_state(False, 'restarting', code)
             return
         if code == RELEASE_EXIT:
             say('the server stopped for a new release; starting it again')
             self.failures, self.next_start = 0, now
+            server_state(False, 'restarting', code)
             return
         if code == MAINTENANCE_EXIT:
             say(f'the world is closed for maintenance: it starts again once it is opened (the Editor, or the DM); '
                 f'checking every {MAINTENANCE_POLL:g} s')
             self.closed, self.next_poll = True, now + MAINTENANCE_POLL
+            server_state(False, 'closed', code)
             return
         if ran >= STABLE:
             self.failures = 0
         delay = BACKOFF[min(self.failures, len(BACKOFF) - 1)]
         self.failures += 1
         self.next_start = now + delay
+        server_state(False, 'exit', code, self.failures, delay)
         say(f'the world server stopped (exit {code}); starting it again in {seconds_words(delay)}. The Editor stays up.')
 
     def due(self) -> bool:
@@ -1374,10 +1434,10 @@ class Supervisor:
             if self.due():
                 s = reread_settings()
                 if s is None:
-                    delay = BACKOFF[min(self.failures, len(BACKOFF) - 1)]
-                    self.failures += 1
-                    self.next_start = self.clock() + delay
+                    # world.toml's own schedule: a mistake there never adds to the crash backoff (R1).
+                    self.next_start = self.clock() + self.toml.failed(self.code or None, self.failures)
                 else:
+                    self.toml.tries = 0
                     self.apply(s)
                     self.start_server()
         elif self.restart and self.stop_by is None:
@@ -1401,6 +1461,49 @@ class Supervisor:
         return 0                                      # (Only a stop asked for ends the loop.)
 
 
+def first_settings(port: int, clock=time.monotonic, sleep=time.sleep) -> dict | None:
+    """world.toml at the container's start (R1, M-f). A mistake no longer ends the container (which Docker would only
+    start again, saying the same): it is said, and read again on world.toml's own schedule until it is right. Meanwhile
+    the Editor's helper runs from its last good copy (settings.json and the certificate in the admin volume, from an
+    earlier start), so the Editor still answers, saying world.toml has a mistake. None: stopped while waiting."""
+    kept = _read_admin_settings()
+    can_help = bool(kept) and (ADMIN / 'editor-cert.pem').is_file() and kept.get('editor', {}).get('enabled', True) \
+        is not False and not official()
+    s = reread_settings(can_help)
+    if s is not None:
+        return s
+    helper = None
+    if can_help:
+        say('the Editor\'s helper starts from the last good world.toml, so the Editor answers while you put it right')
+        helper = Helper('Editor\'s helper', lambda: start_editor(port))
+        helper.run()
+    retry = TomlRetry()
+    try:
+        while True:
+            next_try = clock() + retry.failed()
+            while clock() < next_try:
+                if stopping:
+                    return None
+                if helper is not None:
+                    helper.check()
+                sleep(0.5)
+            s = reread_settings(can_help)
+            if s is not None:
+                say('world.toml is right now: the world starts')
+                return s
+    finally:
+        if helper is not None:
+            helper.stop()                             # (The start proper starts it again, with the new settings.)
+
+
+def _read_admin_settings() -> dict:
+    try:
+        value = json.loads((ADMIN / 'settings.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+    return value if isinstance(value, dict) and isinstance(value.get('editor', {}), dict) else {}
+
+
 def on_signal(number, _frame) -> None:
     global stopping, forwarded
     stopping = True
@@ -1415,7 +1518,6 @@ def main() -> int:
     if not as_root():
         say('warning: not started as root: the server runs as the same user as the rest, and could read their '
             'secrets')
-    s = read_settings()
     load_passwords()
     os.environ.setdefault('RATW_DB_HOST', 'db')
     os.environ.setdefault('RATW_DB_PORT', '5432')
@@ -1426,6 +1528,10 @@ def main() -> int:
     port_e = editor_port()
     prepare_state()
     prepare_admin()
+    server_state(False, 'starting')
+    s = first_settings(port_e)
+    if s is None:
+        return 0                                      # (Stopped while world.toml was still broken.)
     workers = s['workers'] if s['workers'] is not None else default_workers()
     say(f'"{s["name"]}": on central {s["central"]} as {s["world_id"]}, port {port}, {workers} worker thread(s)')
     if s['cheats'] != 'off':

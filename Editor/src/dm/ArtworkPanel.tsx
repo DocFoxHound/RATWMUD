@@ -1,7 +1,7 @@
 // Portraits players upload, for the Dungeon Master (Docs/Design/29-client-polish.md, phase 9): each new or reported one
 // with its image, approved or rejected with a reason. The game server applies the decision and tells the owner.
 import {useCallback, useEffect, useState} from 'react';
-import {isLive, worldName, dmApi, type Me, type Portrait, type Portraits, type Target} from './api';
+import {isLive, worldName, dmApi, type Me, type Portrait, type Portraits, type Target, worldLabel} from './api';
 
 export function ArtworkPanel({me, target}: {me: Me; target: Target}) {
     const [data, setData] = useState<Portraits | null>(null);
@@ -24,7 +24,7 @@ export function ArtworkPanel({me, target}: {me: Me; target: Target}) {
     const queued = new Set(data?.actions.filter(a => a.status === 'queued').map(a => a.target) ?? []);
     const canAct = me.role !== 'viewer';
     if (data && !data.ready) return <section className="dm-panel dm-artwork"><header><div><small>PORTRAITS</small><h2>Uploaded portraits</h2></div></header>
-        <p className="hint">The {target.toUpperCase()} database has no portrait table yet (migration 0027).</p></section>;
+        <p className="hint">The {worldLabel(target)} database has no portrait table yet (migration 0027).</p></section>;
     return <section className="dm-panel dm-artwork" aria-label="Uploaded portraits">
         <header><div><small>PORTRAITS</small><h2>Waiting for review{data ? ` (${data.pending.length})` : ''}</h2></div>
             <button title="Read again" onClick={() => void load()}>↻</button></header>
@@ -43,12 +43,12 @@ export function ArtworkPanel({me, target}: {me: Me; target: Target}) {
                         <button disabled={!!busy || queued.has(p.id)} onClick={() => void decide(p, 'approve')}>Approve</button>
                         <button className="danger" disabled={!!busy || queued.has(p.id)} onClick={() => void decide(p, 'reject')}>Reject</button>
                     </div>
-                    {queued.has(p.id) && <p className="hint">Waiting for the {target.toUpperCase()} game server…</p>}
+                    {queued.has(p.id) && <p className="hint">Waiting for the {worldLabel(target)} game server…</p>}
                 </> : null}
             </div></li>)}</ul>
         {data && data.recent.length > 0 && <details><summary>Recent decisions</summary>
             <ol className="dm-actions">{data.recent.map(p => <li key={p.id} className={p.status === 'approved' ? 'applied' : 'refused'}>
                 <b>{p.name}</b> {p.status} · {new Date(p.at).toLocaleString()}{p.reason && <span>{p.reason}</span>}</li>)}</ol></details>}
-        <p className="hint">Players see their own portrait at once; others see it only once approved. Decisions reach the game within a second while a {target.toUpperCase()} server runs.</p>
+        <p className="hint">Players see their own portrait at once; others see it only once approved. Decisions reach the game within a second while a {worldLabel(target)} server runs.</p>
     </section>;
 }

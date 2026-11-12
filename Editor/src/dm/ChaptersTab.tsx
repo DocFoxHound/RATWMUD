@@ -5,7 +5,7 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {surfaceFor} from '../lib/surface';
 import {Hint} from '../components/fields';
 import {useWorld} from './world';
-import {isLive, worldName, dmApi, type CampSite, type Chapter, type Chapters, type HouseRequest, type Me, type Target, type Treaty} from './api';
+import {isLive, worldName, dmApi, type CampSite, type Chapter, type Chapters, type HouseRequest, type Me, type Target, type Treaty, worldLabel} from './api';
 import {MapView, type Marker, type Overlay} from './MapView';
 
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
@@ -127,7 +127,7 @@ export function ChaptersTab({me, target}: {me: Me; target: Target}) {
                 <Hint>Chapters are made and run by players in the game; this shows them as the game server last saved them (every few seconds).</Hint></div>}
             {data && data.actions.length > 0 && <ol className="dm-actions">{data.actions.slice(0, 8).map(a => <li key={a.id} className={a.status}>
                 <b>{a.kind === 'treaty.decide' ? 'treaty' : 'House'} {a.payload.approve ? 'approved' : 'refused'}</b> by {a.by} · {new Date(a.at).toLocaleTimeString()}
-                <span>{a.status === 'queued' ? `waiting for a ${target.toUpperCase()} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>}
+                <span>{a.status === 'queued' ? `waiting for a ${worldLabel(target)} game server…` : `${a.status}: ${a.result}`}</span></li>)}</ol>}
         </aside>
     </div>;
 }

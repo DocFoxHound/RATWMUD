@@ -1,14 +1,14 @@
 // The Editor end to end (Docs/Design/78, Phases M4 and M3): the real desktop client (its e2e build) against a real
 // Editor port (tools/world_admin.py with the real hosted studio, through tests/editor_world.py, on a throwaway database
 // with Greyfen and one player, dropped afterwards), driven through the main window's own screens:
-//   EDITOR, the first owner's Editor code, the address, signing in with the code, choosing a password (4b), the menu,
+//   EDITOR, the first owner's Editor code (it carries the address), signing in with the code, choosing a password (4b), the menu,
 //   the accounts panel behind the password asked again (a wrong one refused), a co-builder added and their code shown
 //   once, the DM tool in the Editor window (the hosted studio behind the session: only signed files; the session the
 //   account's; the Prosperity tab and a DM act from it, queued and audited under the account and its session; no shell
 //   commands there; no token in its page; it can't leave its origin or open windows), the session ending under the
 //   window and the same account taking it up again, sign out (the window goes), a signed key rotation moving quietly, a
-//   changed key's red screen with no way to sign in until it is forgotten by name, and the pin store and device token
-//   files.
+//   changed key's red screen with no way to sign in until it is forgotten by name, a co-builder's new code used after
+//   the owner's session ended (R1 H1), and the pin store and device token files.
 //
 //   cd Desktop && npm run test:editor     (builds the Editor, the page and the e2e build, then this)
 //
@@ -118,15 +118,17 @@ test('the Editor: a code, a password, the menu, accounts, the window, a rotation
     await click('button[data-action=editor]');
     await onScreen('address');
 
-    // Screen 2: the Editor code, then the address (the first owner's code carries none).
+    // Screen 2: the Editor code, which carries the address with its port (R1 M-c: the Editor port may not be 17789).
     await fill('input[name=editorCode]', code);
     await submit('form.editor-code');
-    await page.waitFor(`document.querySelector('.door-status').textContent.includes('now type your world')`);
-    assert.ok(!(await page.evaluate('JSON.stringify(window.__e2eReplies)')).includes(code.slice(20, 60)), 'the code\'s secrets stay in the shell');
-    await fill('input[name=editorAddress]', address);
-    await submit('form.editor-address');
     // Screen 3 is skipped (the code pinned the key); screen 4 has the account and the code's password.
     await onScreen('sign-in');
+    assert.ok(!(await page.evaluate('JSON.stringify(window.__e2eReplies)')).includes(code.slice(20, 60)), 'the code\'s secrets stay in the shell');
+    assert.match(await page.evaluate(`document.querySelector('.editor-where').textContent`), new RegExp(address.replaceAll('.', '\\.')));
+    const notes = await page.evaluate(`document.querySelector('[data-editor=sign-in]').textContent`);
+    assert.match(notes, /Your Editor code carries the one-time password/);
+    assert.ok(!notes.includes('First time?'), 'one note, not two');
+    assert.match(notes, new RegExp(`docker compose exec world ratw-editor reset ${owner}`));
     assert.equal(await page.evaluate(`document.querySelector('input[name=editorUsername]').value`), owner);
     assert.equal(await page.evaluate(`document.querySelector('.editor-notice')`), null, 'no "now at" notice for a code\'s first connection');
     await submit('form.editor-sign-in');
@@ -176,6 +178,9 @@ test('the Editor: a code, a password, the menu, accounts, the window, a rotation
     const record = JSON.parse(Buffer.from(pellCode.slice('ratw-editor:'.length), 'base64url').toString());
     assert.equal(record.u, 'pell');
     assert.equal(record.a, undefined, 'this computer\'s address is no use to a co-builder');
+    assert.match(await page.evaluate(`document.querySelector('.editor-accounts').textContent`),
+        new RegExp(`doesn't include your world's address: tell them that too \\(your home or public address, port ${port}\\)`));
+    assert.match(await page.evaluate(`document.querySelector('[data-account=${js(owner)}]').textContent`), /only owner/, 'no TURN OFF or REMOVE for the last owner');
     assert.match(await page.evaluate(`document.querySelector('.editor-menu').textContent`), /Account pell added by/);
 
     // The DM tool in the Editor window: the signed files only, the session added by the shell.
@@ -282,6 +287,7 @@ c = W.connect('dev', 'dm', dbname=${js(world.info.database)}); A.end_all(c, 'tes
     assert.equal(await page.evaluate(`document.querySelector('form.editor-sign-in, input[type=password]')`), null, 'no way to sign in from it');
     const pinned = await page.evaluate(`window.__TAURI__.core.invoke('editor_sign_in', {address: ${js(address)}, username: ${js(owner)}, password: ${js(NEW_PASSWORD)}, code: false})`);
     assert.equal(pinned.ok, false, 'the shell refuses to sign in to the changed key too');
+    // (Its notes: the status line from the screen before doesn't hang on here.)
     await fill('input[name=worldName]', 'Ashfal');
     await click('.editor-red button.danger');
     await page.waitFor(`document.querySelector('.door-status').textContent.includes("isn't the name")`);
@@ -295,7 +301,29 @@ c = W.connect('dev', 'dm', dbname=${js(world.info.database)}); A.end_all(c, 'tes
     await fill('input[name=editorPassword]', NEW_PASSWORD);
     await submit('form.editor-sign-in');
     await onScreen('menu');
-    await click('button[data-action=editor-sign-out]');
+
+    // R1 H1: the owner's session ends (it stays in memory, not live), and a co-builder's new code is pasted on this
+    // computer: SIGN IN uses the code's one-time password, which exists nowhere else.
+    pg.execFileSync('python3', ['-c', `import sys; sys.path.insert(0, ${js(join(root, 'tools'))}); import world_db as W, world_admin as A
+c = W.connect('dev', 'dm', dbname=${js(world.info.database)}); A.end_all(c, 'test'); c.close()`]);
+    // (The shell learns it from the world's next 401: here, the accounts list asked from the menu's side.)
+    await page.evaluate(`window.__TAURI__.core.invoke('editor_accounts', {verb: 'list', body: null})`);
+    await onScreen('sign-in');
+    assert.equal(await page.evaluate(`window.ratw.door().editorDoor.session?.live`), false, 'the ended session is still there');
+    const fresh = (await tell('code pell')).code;
+    await click('[data-editor=sign-in] .door-actions button');                      // Back, to screen 2
+    await onScreen('address');
+    await fill('input[name=editorCode]', fresh);
+    await submit('form.editor-code');
+    await page.waitFor(`document.querySelector('.door-status').textContent.includes('now type your world')`);
+    await fill('input[name=editorAddress]', address);
+    await submit('form.editor-address');
+    await onScreen('sign-in');
+    assert.equal(await page.evaluate(`document.querySelector('input[name=editorUsername]').value`), 'pell');
+    assert.match(await page.evaluate(`document.querySelector('[data-editor=sign-in]').textContent`), /carries the one-time password/);
+    await submit('form.editor-sign-in');
+    await onScreen('password');                                                    // pell signed in with the code's password
+    await click('[data-editor=password] .door-actions button');                    // Sign out
     await onScreen('address');
 
     // Nothing left behind: no Editor window's data directory, and no page error along the way.

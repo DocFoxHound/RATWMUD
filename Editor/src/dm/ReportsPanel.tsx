@@ -3,7 +3,7 @@
 // how many accounts block it (a count, never who); upheld with a note, a warning or a silence, or dismissed. The game
 // server applies the decision and tells the player.
 import {useCallback, useEffect, useState} from 'react';
-import {isLive, worldName, dmApi, type Me, type PlayerReport, type Reports, type Target} from './api';
+import {isLive, worldName, dmApi, type Me, type PlayerReport, type Reports, type Target, worldLabel} from './api';
 
 const Categories: Record<string, string> = {harassment: 'Harassment', hateful: 'Hateful content', spam: 'Spam', cheating: 'Cheating', other: 'Other'};
 
@@ -29,7 +29,7 @@ export function ReportsPanel({me, target}: {me: Me; target: Target}) {
     const canAct = me.role !== 'viewer';
     // (A host's Editor never shows reports about the host's own wolves: those go to central from the reporter, doc 78, 9.)
     if (data && !data.ready) return <section className="dm-panel dm-reports"><header><div><small>REPORTS</small><h2>Players' reports</h2></div></header>
-        <p className="hint">The {target.toUpperCase()} database has no reports table yet (migration 0036).</p></section>;
+        <p className="hint">The {worldLabel(target)} database has no reports table yet (migration 0036).</p></section>;
     const open = data?.reports.filter(r => r.status === 'open') ?? [], decided = data?.reports.filter(r => r.status !== 'open') ?? [];
     return <section className="dm-panel dm-reports" aria-label="Players' reports">
         <header><div><small>REPORTS</small><h2>Open reports{data ? ` (${open.length})` : ''}</h2></div>
@@ -63,7 +63,7 @@ export function ReportsPanel({me, target}: {me: Me; target: Target}) {
                         <button disabled={!!busy || queued.has(r.id)} onClick={() => void decide(r, 'uphold')}>Uphold</button>
                         <button disabled={!!busy || queued.has(r.id)} onClick={() => void decide(r, 'dismiss')}>Dismiss</button>
                     </div>
-                    {queued.has(r.id) && <p className="hint">Waiting for the {target.toUpperCase()} game server…</p>}
+                    {queued.has(r.id) && <p className="hint">Waiting for the {worldLabel(target)} game server…</p>}
                 </> : null}
             </li>;
         })}</ul>
