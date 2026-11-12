@@ -32,7 +32,7 @@ using json::Value;
 namespace
 {
 constexpr int NudgeDaysMost = 366, BandDaysMost = 112, BandDaysUsual = 28;
-constexpr std::int64_t GrantMost = 2500;
+constexpr std::int64_t GrantMost = status::GrantsMost;     // (A grant or a fine at most a day's ceiling: RatwStatus.h.)
 constexpr std::size_t WarningsLogged = 20;
 
 std::string words80(const Value& payload, const char* key)
@@ -144,16 +144,17 @@ void Game::startEconomy()
     world_.society().setReport(world_.prosperityReport());
 }
 
-Result Game::applyEconomyCommand(const std::string& kind, const std::string& target, const Value& payload)
+Result Game::applyEconomyCommand(const std::string& kind, const std::string& target, const Value& payload, const std::string& actionId)
 {
     auto& society = world_.society();
-    const auto boardBefore = json::dump(market::encode(society.board()));
     Result outcome{false, "Unknown action.", target};
     unsigned journal = Economy;
     std::string character;
-    std::function<void()> tell;                     // (A player's word of it, after the record.)
+    Connection* told = nullptr;                     // (A player told of it: held until its record is committed.)
+    std::string tell;
     if (kind == "economy.sync")
     {
+        const auto boardBefore = json::dump(market::encode(society.board()));
         EconomySpec spec;
         std::size_t skipped = 0;
         std::string problem;
@@ -280,24 +281,54 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
         std::string problem;
         journal = Economy | Character;
         character = target;
-        if (society.grantPlayer(target, coins, reason, problem))
+        std::int64_t moved = 0;
+        if (society.grantPlayer(target, coins, reason, problem, &moved))
         {
-            outcome = {true, (coins > 0 ? "Granted " : "Fined ") + std::to_string(std::abs(coins)) + "p: " + reason + ".", target};
-            if (auto* c = clientOf(target))
-                tell = [this, c, coins, reason] {
-                    system(c, coins > 0 ? "A Dungeon Master grants you " + std::to_string(coins) + " pennies: " + reason + "."
-                                        : "A Dungeon Master fines you " + std::to_string(-coins) + " pennies: " + reason + ".");
-                };
+            // (A fine is at most what the player holds: the DM and the player told what was taken, not what was asked.)
+            outcome = {true, (coins > 0 ? "Granted " : "Fined ") + std::to_string(moved) + "p" +
+                                 (coins < 0 && moved < -coins ? " (all " + target + " had; " + std::to_string(-coins) + "p asked)" : "") +
+                                 ": " + reason + ".", target};
+            told = clientOf(target);
+            tell = coins > 0 ? "A Dungeon Master grants you " + std::to_string(moved) + " pennies: " + reason + "."
+                             : "A Dungeon Master fines you " + std::to_string(moved) + " pennies: " + reason + ".";
         }
         else
             outcome = {false, problem, target};
     }
     if (!outcome.ok)
         return outcome;
+    // The record, before anyone is told (RatwEvents.cpp's hooks journal nothing): with the dm.actions id and its outcome
+    // (dmActs), so a crash after the record commits answers the row from it, never applying the act twice; the player's
+    // word held until the record is committed, behind anything of theirs still waiting (as a command's reply is).
+    if (journal && !actionId.empty())
+    {
+        auto act = Value::object();
+        act.add("ok", true);
+        act.add("text", outcome.message);
+        act.add("kind", kind);
+        act.add("target", target);
+        while (dmActs_.size() >= DmActsKept)
+        {
+            // (The oldest by number: dm.actions ids grow; a row is never left queued that long.)
+            std::string oldest;
+            for (const auto& [id, v] : dmActs_.fields())
+                if (oldest.empty() || id.size() < oldest.size() || (id.size() == oldest.size() && id < oldest))
+                    oldest = id;
+            dmActs_.erase(oldest);
+        }
+        dmActs_.set(actionId, std::move(act));
+        actingFor_ = actionId;
+    }
+    if (told)
+        beginHolding(told);
     if (journal)
-        record(journal, character);                 // (Before anyone is told: RatwEvents.cpp's hooks journal nothing.)
-    if (tell)
-        tell();
+        record(journal, character);
+    actingFor_.clear();
+    if (told)
+    {
+        system(told, tell);
+        endHolding();
+    }
     society.setReport(world_.prosperityReport());
     return outcome;
 }

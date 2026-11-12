@@ -1189,7 +1189,7 @@ def render(world, cells, folder: Path):
 
 
 GENERATED = ('rm_', 'tn_', 'rmx_', 'cty_')
-ECONOMY = {'treasury': 20000, 'storeHerbs': 1500, 'storeMeals': 900, 'dailyHerbs': 150, 'dailyMeals': 200}
+ECONOMY = {'treasury': 20000, 'storeHerbs': 1500, 'storeMeals': 900}     # (No daily herbs or meals: read past since doc 79.)
 
 
 def claims_for(record):

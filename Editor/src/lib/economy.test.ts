@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {causeProblem, clampProsperity, goodsShown, heldRules, kindChange, kindsOn, marketChange, neverChange, neverNow,
+import {causeProblem, clampProsperity, clock, dayLabel, goodsShown, heldRules, kindChange, kindsOn, marketChange, neverChange, neverNow,
     percentsOf, percentsText, perWeekNow, prosperityText, ruleChange, ruleOf, RULE_WORDS, ruleValue, seasonal, seasonChange,
     seasonNow, serviceChange, serviceText, serviceValue, sharesOf, sharesText, shipsNow, shipsOf, statusChange, statusPart,
     steerChange, timesWord, wholeOf, type EconomyData} from './economy.ts';
@@ -149,4 +149,14 @@ test('market.json\'s parts: the staged events on or off, the events a week, the 
     assert.match(shipsOf('the Seadog') as string, /letters/);
     assert.match(shipsOf('the Gull\nthe Gull') as string, /once/);
     assert.match(shipsOf('') as string, /One to 64/);
+});
+
+test('the Prosperity tab\'s clock and days (doc 79, Phase 9\'s first repair)', () => {
+    assert.equal(clock(11.5), '11:30');
+    assert.equal(clock(9), '09:00');
+    assert.equal(clock(23.99), '23:59');
+    assert.equal(dayLabel(40, 40, 42), 'today');
+    assert.equal(dayLabel(41, 40, 42), 'day 41');
+    assert.equal(dayLabel(43, 40, 42), 'day 43 (next week)');
+    assert.equal(dayLabel(43, 40, null), 'day 43');
 });

@@ -42,6 +42,10 @@ export type ProsperityReport = {
     pressures: {market: string; good: string; P: number; cause: string}[];
     areas: {id: string; name: string; harvest: 'poor' | 'fair' | 'good'; override: {word: string; until: number; words: string} | null}[];
     eventKinds: EventKindListed[]; weekDays: number[];
+    /** Next calendar week's first day (weekDays from it on are next week's). */
+    nextWeek?: number;
+    /** The DM's bands for a while in force, by household, with their end and members. */
+    bandOverrides?: {household: string; band: Band; until: number; members: string[]}[];
 };
 /** The DM's live acts (dm.actions kinds; Core's Game::applyEconomyCommand). */
 export const LIVE_ACT_KINDS = ['times.nudge', 'harvest.override', 'event.add', 'event.cancel', 'ship.storm', 'prices.reset',

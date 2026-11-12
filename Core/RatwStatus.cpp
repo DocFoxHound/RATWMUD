@@ -281,7 +281,9 @@ json::Value hostOverride(const json::Value& v, std::vector<std::string>* warning
                     continue;
                 }
                 const double most = cap == "grantsADay" ? double(GrantsMost) : double(base->second) * CapCeiling;
-                const double at = std::clamp(n.asNumber(), 0., most);
+                // (welcomeDays is a period: shorter is the generous way, so it is held to at least the shipped default.)
+                const double least = cap == "welcomeDays" ? double(base->second) : 0.;
+                const double at = std::clamp(n.asNumber(), least, std::max(least, most));
                 if (at != n.asNumber())
                     note("caps." + cap + " held to " + std::to_string(std::int64_t(at)));
                 caps.add(cap, at);

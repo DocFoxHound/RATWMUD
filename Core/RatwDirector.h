@@ -16,6 +16,11 @@ class Bridge
 {
   public:
     using Notice = std::function<void(const std::set<std::string>& recipients, const std::string& text)>;
+    // The checkpoint after a request: NotCommitted (nothing kept: the request is undone), Committed, or Journalled (the
+    // checkpoint failed, but the journal took the request's economy change, so it stands and is replayed after a restart:
+    // never reported undone; doc 79, Phase 9's first repair). A bool works: true Committed, false NotCommitted.
+    enum : int { NotCommitted = 0, Committed = 1, Journalled = 2 };
+    using Commit = std::function<int()>;
     Bridge();
     ~Bridge();
     bool enabled() const { return !directory_.empty() && healthy_; }
@@ -26,9 +31,9 @@ class Bridge
     json::Value snapshot(const World& world, const std::map<std::string, Entity>& characters, const std::set<std::string>& online,
                          const std::map<std::string, double>& activity, std::uint64_t revision, double now) const;
     json::Value execute(const json::Value& request, const std::string& expectedId, const std::string& fingerprint, World& world,
-                        const std::set<std::string>& online, double now, const std::function<bool()>& commit, const Notice& notice);
+                        const std::set<std::string>& online, double now, const Commit& commit, const Notice& notice);
     void tick(double dt, World& world, const std::map<std::string, Entity>& characters, const std::set<std::string>& online,
-              const std::map<std::string, double>& activity, std::uint64_t revision, const std::function<bool()>& commit,
+              const std::map<std::string, double>& activity, std::uint64_t revision, const Commit& commit,
               const Notice& notice);
     std::function<void(const std::string&)> log;
 

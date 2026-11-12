@@ -510,6 +510,8 @@ Value encode(const PersistedWorld& saved, const ServerState& c, const std::vecto
     for (const auto& [who, ids] : c.commandReceipts)
         receipts.add(who, strings(ids));
     root.add("commandReceipts", receipts);
+    if (c.dmActs.isObject() && c.dmActs.size())
+        root.add("dmActs", c.dmActs);
     auto sessions = Value::array();
     for (const auto& [id, s] : c.social.sessions)
     {
@@ -924,6 +926,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
         p.words = int(num(j, "words"));
         c.social.recent[p.actor] = p;
     }
+    if (const auto* acts = root.find("dmActs"); acts && acts->isObject())
+        c.dmActs = *acts;
     for (const auto& [who, list] : root.object("commandReceipts").fields())
         for (const auto& id : list.items())
             c.commandReceipts[who].push_back(id.asString(""));

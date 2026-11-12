@@ -3952,7 +3952,97 @@ Each has a recommendation. "Go with the recommendations" takes them all.
 
     Within the gate's noise (0.05 ms of mean, 0.1 of p99) in every window, though the mean is up 0.01-0.05 ms in all
     four (6-8's at the edge: its runs 2.62 and 2.68): the daily Prosperity report and the per-world market layer, likely.
-    The p99s are within 0.04 ms.
+    The p99s are within 0.04 ms. (Corrected by the first repair below: not the daily report, which is worked out when
+    the roads' day turns, at most once in these windows; what moved the mean was not found.)
+- **2026-11-11: Phase 9, first repair** (`r2-staged-p9`, on the integration's `75392c3`; the review's confirmed findings
+  and missing items, each fixed with a test that fails before and passes after, or answered below). No economy
+  simulation, no paid model call; DEV and PROD never migrated or written (the copies' test reads them with `pg_dump`).
+  - **The DM's acts, exactly once and told only when kept** (the three high and medium journal findings):
+    - Each economy act (`Game::applyEconomyCommand`, with its dm.actions id) writes its id and outcome into the same
+      journal record as what it changed (`dmActs` in the checkpoint: `{id: {ok, text, kind, target}}`, the last 64).
+      A row a crash left queued after its record committed is answered from it ("already applied before the
+      restart"), never applied again; a row whose kind or target differs (a database whose numbering began again) is
+      never matched. The world package drops `dmActs` (its ids are the source database's).
+    - dm.actions is told "applied" only once the act's record is committed (`dmStatusWaiting_`, released each tick by
+      `releaseDmStatuses`; one the ten minutes' expiry caught meanwhile is set right); a grant's or fine's word to the
+      player is held for the record as a command's reply is (`beginHolding`, behind anything of theirs waiting).
+    - The Director's commit says Committed, NotCommitted or Journalled (`Bridge::Commit`, an int; a bool still reads as
+      before): a grant, fine, band or transfer the journal took before the checkpoint failed stands and is said so ("it
+      stands, and the operator channel is halted"), never "not committed"; anything else is undone as before.
+    - Tests: `test_dm_live.test_a_grant_through_the_journals_windows` (a real server on a throwaway database: the
+      journal locked, the grant applied but its row still queued and the player told nothing, the server killed, the
+      next one applies it once; then the row held FOR UPDATE after the record commits, the server killed, the next one
+      answers it from the record: 23 and 23 paid, never 69); `events_tests` `theFirstRepair` (the file journal made
+      unwritable: not told until it is; the id through a checkpoint) and the `dm_grant` crash case (the id in the
+      record after the crash, through Postgres too); `server_parts` (a journalled grant stands; weather is still undone).
+  - **Fixed, Core:** a fine larger than the purse is told, to the DM and the player and by the Storykeeper, as what it
+    took ("Fined 30p (all player-ada had; 2500p asked)": `grantPlayer`'s `moved`); a host's `caps.welcomeDays` is held
+    to at least the shipped week, in Core and in `economy_contract` (a shorter period is the generous way); a new world's
+    report counts its households once its first bands are worked out, not a day later (`Society::takeReportStale`); the
+    report gains `bandOverrides` (each DM band for a while, its end and members) and `nextWeek`; only economy.sync
+    dumps the Board to compare; the grant ceiling is `status::GrantsMost` in all three places; 0061's economy line keeps
+    two numbers after the store's, always `10 12` (the old daily herbs and meals, read past), so a server built before
+    Phase 9 still reads a world with no overrides or band lines after the migration (`manifest_lines` the same); an
+    overrides line of any length is written (Core skips one over 65,536 bytes with a warning) instead of being left out.
+  - **Fixed, tools:** `world_sync` writes an unset band as NULL where the target has the column, so "From rank" reaches
+    the other world both ways and the plan after says they agree; a band the target can't hold (no 0061) is refused,
+    in the import's plan and its write, never dropped; any other column the target lacks fails as before. `world_store`
+    keeps an empty never-imported list (ships carry everything) and refuses a band on a world before 0061 (save and
+    live edit: "This world needs migration 0061 to hold an NPC's band"). A stored override Core skips no longer blocks
+    a whole save, a build, an NPC's save or another edit (`economy_problems` warns of it; the studio still refuses one
+    it writes, `strict_overrides`; live_edit's economy key refuses only what the edit brings). The studio's slider
+    goes through live_edit on a dev world (logged, followed by open Atlas sessions) and "now" alone is a change (the
+    sync `{now}` queued); `set_market` answers malformed events with a 400. `world_db.ensure_roles` is serialised (an
+    advisory lock) and grants only what isn't held: two sessions' tests granting at once failed with "tuple
+    concurrently updated", which was `test_dungeon_master`'s error under load. Dead names cut: world_store's
+    `STORE_DEFAULTS`, `LOOP_DEFAULTS`, `SEASON_DEFAULTS`, `RULE_DEFAULTS`, `store_supported`, `farms_supported`,
+    `loop_refused`; map_editor's `RULE_DEFAULTS`; the dailies from `DEFAULT_ECONOMY`, the Editor's `defaultEconomy`
+    and the realm generator. Shared, not copied: the DM tool's event id, the package's kept columns, the Storykeeper's
+    catalogue. market.json's `about` says what it holds.
+  - **Fixed, DM:** the Storykeeper reads a good of a quality or a maker in a stock (`hide~fine`, `knife@player-ash`)
+    and leaves out and counts one it can't read, never refusing the snapshot (it went read only on any world where
+    someone hunted). The DM tool lets the game server judge a ship (one rolled since the last checkpoint isn't
+    refused); its 404s say "No such market", "No such resident", "No such player". The Prosperity log takes the DM's
+    acts from dm.actions with what the server made of each (done, refused with its reason, never applied, waiting);
+    the audit's row names its dm.actions id and says its "before" is as last saved, with band.override's from the
+    report. The NPC tab shows the DM's band in force on the household and the day it lapses (the npcs view's
+    `bandsHeld`). The Prosperity tab's lists are keyed fragments, an event's hour shows its minutes, and next week's
+    days say so (the report's `nextWeek`).
+  - **Flaky tests fixed:** `dm_reset_window` (and port_tests' and trade_show_tests' copies of the helper): a failed
+    snapshot's clean-up removed the empty folder blocking it, so one forked in the same pass landed; the folder now
+    holds a file, and the helper waits out a snapshot still under way (`Game::waitForSnapshot`). `project_behaviors`:
+    a reply waits for its journal record, and the file journal's sync could take longer than the test's second of
+    ticks on a loaded machine (8 failures in 40 parallel runs before; none in 40 after: `order` settles the journal).
+  - **Missing items built:** the Storykeeper's `npc_band` run on a live server (dm_smoke: its small world houses
+    nobody in a household the bands know, so the authority's refusal with its reason is what is checked end to end;
+    the positive case stays director_tests' and server_parts'); a package's band round trip (export, import onto a
+    fresh database, the manifest's band line); `CopiesOfRealWorlds` asserts no economy record is skipped; tests for an
+    empty never-imported list, a stored override Core skips, a band before 0061 and a band cleared through a sync; the
+    panels rendered: `npm run smoke` builds `src/render.smoke.tsx` for Node and renders the six economy panels (slim
+    and before 0061) and the Prosperity tab with react-dom/server (no browser: layout unseen).
+  - **Not done, and why:** the map-edge "outside" endpoint for a world with no port: the doc disagrees with itself
+    (Phase 5's entry: "in no phase's row", the morning refill standing in; Phase 5's hand-off list: Phase 9's), and the
+    judged plan's U3 (defer) awaits the user's word, so it is the user's to decide; Ridgemere 2.0 has a port. The town
+    projects' watchpost and waystation proposals: "for Phase 9 or a later plan", left to a later plan. A storm on PROD's
+    copy: PROD's maintenance flag refuses a live server there. Doc 78: not edited (U13; its stale notes are listed in
+    the integration's entry). The Inspector's Band picker isn't greyed on a world before 0061; the save refuses it
+    with the reason instead. The perf gate was not run again (the repair adds a check of an empty list and a flag to
+    the tick; the act-time Board dump went).
+  - **Applying 0061 (the user's step), and back:** after a backup. A server built before Phase 9 reads the migrated
+    DEV (no overrides or band lines yet) but not a world with an `overrides` or `band` line; other sessions should
+    rebuild from the merged ridgemere2 before opening a world that has either. Tools from before Phase 9 that write
+    `live.business_settings` (live_edit, world_sync) stop working after it. To go back without the backup: 0060's
+    `CREATE OR REPLACE FUNCTION live.people_manifest` and its `live.business_settings` table (empty) put back by hand;
+    `band_override` can stay.
+  - **Tests (the one run):** a fresh Release build (`build-p9r1`, from empty; 127 warnings, as the integration's, none
+    in the lines touched); ctest 89/89 with the database, none skipped (`pg_client` on a throwaway
+    `ratw_test_s2stage_p9r1`, dropped; the `_pg` tests' own `ratw_test_s2stage_*`). All 37 `tools/test_*.py` with the
+    database and this build's server (`RATW_TEST_SERVER`, `RATW_SERVER`, `RATW_SERVER_BINARY`; `RATW_TEST_DB_TAG=s2stage_`,
+    `RATW_TEST_KEY_PREFIX=s2stage`, `RATW_MIGRATE_COPIES=ratw_ridgemere2,ratw_prod`, each copied read only): 712 tests,
+    none failing, 24 skipped (the 23 `RATW_SLOW` world builds and `test_game_tables`' save under `Saved/`); `dm_smoke`
+    passed (26 checks). The client's 146 and its typecheck; the Editor's 78 + 62, its typecheck and the render smoke (13
+    panels); `DM/model.test.mjs` 16. No `s2stage` or `ratw_test_` database left; `artifacts/screenshots/dev-console-fight.png`,
+    rewritten by `test_live_map`, restored.
 
 ## Review (2026-11-08)
 

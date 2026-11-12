@@ -65,7 +65,7 @@ APPEARANCE_KEYS = {'species', 'sex', 'stature', 'pattern', 'baseColor', 'gradien
 # A resident's (an NPC's or a profession slot's) counts, 0 to these; an NPC's age too.
 RESIDENT_LIMITS = {'purse': 100000, 'herbs': 10000, 'meals': 10000, 'age': 200}
 ECONOMY_KEYS = {'treasury': 1000000, 'storeHerbs': 10000, 'storeMeals': 10000, 'dailyHerbs': 1000, 'dailyMeals': 1000}
-DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'dailyHerbs': 10, 'dailyMeals': 12}
+DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50}     # (No daily herbs or meals: read past since doc 79.)
 # The economy entity (Docs/Design/79-a-staged-economy.md, 14; world_store's, contract 1.3): treasury, storeHerbs and
 # storeMeals (ECONOMY_KEYS; dailyHerbs and dailyMeals accepted and read past), needsPaused, seasons {group: {price, shelf}}
 # (a world before migration 0061 keeps {supply, price, shelf, normal}: supply and normal read past), rules {name: N},
@@ -83,7 +83,6 @@ SEASON_NAMES = ('Spring', 'Summer', 'Autumn', 'Winter')
 # as the data files' list and items.json's price). Core's items::Rules, with their ranges and fallbacks: since doc 79
 # (17) only the staged economy's, the clamps and the Market Board's; a world's rule Core no longer has is kept and
 # ignored (a warning, never a refusal: doc 79, 14), and never written to the world file.
-RULE_DEFAULTS = {'rules': {}, 'services': {}}
 RULES = {  # name: (low, high, fallback), as Core/RatwItems.h's Rules[].
     'neverHungry': (0, 1, 0), 'neverBroke': (0, 1, 0), 'buyAheadDays': (0, 5, 1),
     'halfLifePerishable': (5, 300, 20), 'halfLifeKeeping': (5, 300, 50), 'halfLifeDurable': (5, 300, 80),
@@ -241,16 +240,17 @@ def check_season(group, setting) -> list[str]:
     return errors
 
 
-def check_economy(economy, person_ids=None) -> list[str]:
+def check_economy(economy, person_ids=None, strict_overrides=False) -> list[str]:
     """The economy entity's problems (none: it is sound): what a change is checked against. A setting the staged economy
-    no longer reads is no problem (economy_problems warns of it). `person_ids` is read past (the store room's per-business
-    switches went with migration 0061)."""
-    return economy_problems(economy)[0]
+    no longer reads is no problem (economy_problems warns of it); nor is a bad override unless `strict_overrides`.
+    `person_ids` is read past (the store room's per-business switches went with migration 0061)."""
+    return economy_problems(economy, strict_overrides=strict_overrides)[0]
 
 
-def economy_problems(economy, person_ids=None) -> tuple[list[str], list[str]]:
+def economy_problems(economy, person_ids=None, strict_overrides=False) -> tuple[list[str], list[str]]:
     """(errors, warnings) of the economy entity: errors refuse it; warnings name what is read past (a key the staged
-    economy no longer reads, a rule Core no longer has, a bad override, which Core skips)."""
+    economy no longer reads, a rule Core no longer has, a bad override, which Core skips: an error with
+    `strict_overrides`)."""
     if not isinstance(economy, dict):
         return ['economy must be an object.'], []
     errors, warnings = [], []
@@ -277,9 +277,12 @@ def economy_problems(economy, person_ids=None) -> tuple[list[str], list[str]]:
                 errors += check_season(group, setting)
     overrides = economy.get('overrides', {})
     if overrides:
+        # (A bad override is Core's to skip with a warning, never a reason to refuse the world: a stored one the data files
+        # have since made invalid, or one a package or a hand brought, must not stop a save, a build or another edit. The
+        # studio checks an override it writes itself: strict, its own.)
         problems, notes = economy_contract.check_overrides(overrides, economy_contract.base_goods(),
                                                            economy_contract.load_defaults())
-        errors += [f'economy.overrides: {p}' for p in problems]
+        (errors if strict_overrides else warnings).extend(f'economy.overrides: {p}' for p in problems)
         warnings += [f'economy.overrides: {n}' for n in notes]
     return errors, warnings
 

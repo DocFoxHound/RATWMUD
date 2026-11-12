@@ -107,7 +107,8 @@ Table read(const json::Value& v, const Table& base, std::vector<std::string>* wa
 // A host's override of status.json (doc 79, 12; Phase 9: live.economy.rules' `status`) made one the game takes: only the
 // keys a host may change (HostKeys); a share table whose rows don't each sum to 100, aren't monotone or have a share
 // under MinShare dropped (the default's stands, never normalised); each faucet cap held to CapCeiling times the shipped
-// default (grantsADay to GrantsMost), an unknown cap dropped. Each change adds a line to `warnings`. read() takes the rest.
+// default (grantsADay to GrantsMost; welcomeDays, a period, to no less than its default), an unknown cap dropped. Each
+// change adds a line to `warnings`. read() takes the rest.
 inline constexpr const char* HostKeys[] = {"shares", "rows", "caps", "pay", "street", "score", "hold", "leanDays", "timesShift",
                                            "smoothing", "hysteresis", "shortHard", "shortBoom", "shortPressureMost",
                                            "shortPressureAt"};

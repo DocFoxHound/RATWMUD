@@ -427,6 +427,17 @@ void Society::stagedBands(std::int64_t day, bool now)
         stagedHomesFor(day);
     const auto& t = statusTable();
     auto& st = state_.staged;
+    // (A world's first bands: the report, made before them, is worked out again: World::tendRoads.)
+    struct FirstBands
+    {
+        Society& s;
+        bool first;
+        ~FirstBands()
+        {
+            if (first && !s.state_.staged.bands.empty())
+                s.reportStale_ = true;
+        }
+    } firstBands{*this, st.bands.empty()};
     // The slider the bands read (the Board's one), its day's step if the dawn hasn't taken it; "now" goes at once.
     stepSlider(day, now);
     // Who leads a House and their kin (the head's spouse, parents and children, and family at home), the post-holders now,

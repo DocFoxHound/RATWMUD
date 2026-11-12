@@ -948,8 +948,13 @@ void theDMsLevers()
            "over the day's cap (500): refused");
     expect(act("character.grant", "player-ada", {{"coins", 200}, {"reason", "the rest"}}).ok && soc.account("player-ada")->cash == base + 500, "to the cap");
     expect(!act("character.grant", "player-ada", {{"coins", 1}, {"reason", "one more"}}).ok, "and no further today");
-    expect(act("character.grant", "player-ada", {{"coins", -9999}, {"reason", "for the broken cart"}}).ok && soc.account("player-ada")->cash == 0,
-           "a fine of no more than the purse");
+    {
+        const auto had = soc.account("player-ada")->cash;
+        r = act("character.grant", "player-ada", {{"coins", -2500}, {"reason", "for the broken cart"}});
+        expect(r.ok && soc.account("player-ada")->cash == 0 &&
+                   r.message == "Fined " + std::to_string(had) + "p (all player-ada had; 2500p asked): for the broken cart.",
+               "a fine of no more than the purse, told as what it took: " + r.message);
+    }
     expect(!act("character.grant", "player-ada", {{"coins", -5}, {"reason", "again"}}).ok, "nothing left to fine");
     expect(!act("character.grant", "e1", {{"coins", 5}, {"reason", "x"}}).ok, "a resident isn't granted");
     expect(!act("character.grant", "player-ada", {{"coins", 5}, {"reason", ""}}).ok, "a reason is needed");
@@ -2401,7 +2406,11 @@ const std::vector<EventCrash>& eventCrashes()
              g.disconnect(&bea);
              dmCheckpoint(g);
              const auto before = g.world().society().account(id)->cash;
-             expect(dmAct(g, "character.grant", id, {{"coins", 40}, {"reason", "for the bridge"}}).ok, "dm_grant: applied");
+             auto payload = json::Value::object();
+             payload.add("coins", 40);
+             payload.add("reason", "for the bridge");
+             expect(g.applyEconomyCommand("character.grant", id, payload, "7071").ok, "dm_grant: applied");
+             expect(g.dmActs().find("7071") != nullptr, "dm_grant: its dm.actions id kept");
              auto was = json::Value::object();
              was.add("player", id);
              was.add("cash", double(before + 40));
@@ -2410,6 +2419,10 @@ const std::vector<EventCrash>& eventCrashes()
          [](game::Game& g, const json::Value& was) {
              const auto* a = g.world().society().account(was.string("player"));
              expect(a && double(a->cash) == was.number("cash"), "dm_grant: paid once after the crash");
+             // (The row a crash left queued is answered from the record, never applied again: Game::applyDmActions.)
+             const auto* act = g.dmActs().find("7071");
+             expect(act && act->boolean("ok") && act->string("text") == "Granted 40p: for the bridge.",
+                    "dm_grant: its dm.actions id in the record, after the crash");
          }},
         {"dm_slider",
          [](game::Game& g) {
@@ -2474,7 +2487,11 @@ void aSnapshotDoesNotLand(game::Game& g, const std::string& path, const std::str
 {
     g.settle();
     const auto held = slurp(path);
+    // (A folder in the snapshot's way, with a file in it: a failed snapshot's clean-up removes its document's path, and an
+    // empty folder went with it, so the next one forked in the same pass landed under a loaded machine. Phase 9's first
+    // repair: dm_reset_window failed once that way.)
     std::filesystem::create_directory(path + ".snapshot");
+    std::ofstream(path + ".snapshot/in-the-way") << "x";
     const auto failed = [&] { return log.find("the snapshot could not be written") != std::string::npos; };
     for (int t = 0; t < 45 && !failed(); ++t)
         g.tick(1);
@@ -2483,6 +2500,7 @@ void aSnapshotDoesNotLand(game::Game& g, const std::string& path, const std::str
         ::usleep(10000);
         g.tick(.01);
     }
+    g.waitForSnapshot();                            // (One forked after the failure fails too, and is done with.)
     std::filesystem::remove_all(path + ".snapshot");
     expect(failed(), name + ": a snapshot is taken and cannot be written");
     expect(slurp(path) == held, name + ": the save is still the checkpoint before it");
@@ -2635,6 +2653,128 @@ int checkCrashes(const std::filesystem::path& back, const std::filesystem::path&
     std::cout << "events_tests --check-crashes: " << eventRuns().size() << " event crashes replayed the same through Postgres (" << checks << " checks)\n";
     return 0;
 }
+// Doc 79, Phase 9's first repair: a host's welcomeDays held to its default (a shorter period is the generous way); the
+// report's DM bands with their end and members, and next week's first day; a new world's report counting its households
+// once its first bands are worked out, not a day later; a DM's act journalled with its dm.actions id (dmActs, kept
+// through a checkpoint), and the player told of a grant only once the record is committed.
+void theFirstRepair()
+{
+    namespace fs = std::filesystem;
+    auto fixture = crashWorld();
+    const auto root = onDisk(fixture, "events-firstrepair");
+    const auto save = crashSave("firstrepair");
+    cleanSave(save);
+    std::string problem;
+    {
+        game::Game g(optionsOn(root, save));
+        expect(g.start(problem), "first repair: a game on the harbour with a file save: " + problem);
+        auto& w = g.world();
+        auto& soc = w.society();
+        const auto households = [&] {
+            int n = 0;
+            for (const auto& m : soc.report().array("markets"))
+                for (const auto& [band, count] : m.object("households").fields())
+                    n += int(count.asNumber());
+            return n;
+        };
+        expect(soc.state().staged.bands.empty() && households() == 0, "first repair: a new world, no bands yet");
+        for (int t = 0; t < 200 && soc.state().staged.bands.empty(); ++t)
+            g.tick(.1);
+        expect(!soc.state().staged.bands.empty(), "first repair: its first bands");
+        g.tick(.1);
+        const auto day = soc.state().budgetDay;
+        expect(households() > 0 && soc.report().number("day") == double(day),
+               "first repair: the report counts the households at once: " + json::dump(soc.report()).substr(0, 300));
+        // welcomeDays: held to at least the shipped default (7), as every other cap is held to five times its own.
+        {
+            auto spec = soc.authored().economy;
+            json::Value v;
+            expect(json::parse(R"({"caps": {"welcomeDays": 0, "welcomeCoins": 100}})", v, problem), problem);
+            spec.overrides.status = v;
+            std::vector<std::string> warnings;
+            soc.adoptOverrides(spec.overrides, &warnings);
+            expect(soc.statusTable().cap("welcomeDays") == 7 && soc.statusTable().cap("welcomeCoins") == 100,
+                   "first repair: welcomeDays 0 is held to 7 (the welcome stays weekly)");
+            soc.adoptOverrides({}, nullptr);
+        }
+        // The report: the DM's band for a while, with its end and members; next week's first day.
+        std::string npc;
+        for (const auto& [id, life] : soc.state().residents)
+            if (!soc.householdOf(id).empty())
+            {
+                npc = id;
+                break;
+            }
+        expect(!npc.empty(), "first repair: a resident in a household");
+        auto band = json::Value::object();
+        band.add("band", "poor");
+        band.add("days", 10);
+        expect(g.applyEconomyCommand("band.override", npc, band).ok, "first repair: a band for a while");
+        bool shown = false;
+        for (const auto& o : soc.report().array("bandOverrides"))
+            if (o.string("household") == soc.householdOf(npc) && o.string("band") == "poor" && o.number("until") == double(day + 10))
+                for (const auto& m : o.array("members"))
+                    shown |= m.asString() == npc;
+        expect(shown, "first repair: the report shows it, its end and its members: " + json::dump(soc.report().array("bandOverrides")));
+        const auto today = std::int64_t(std::floor(w.calendarDays()));
+        expect(soc.report().number("nextWeek") == double((today / calendar::DaysPerWeek + 1) * calendar::DaysPerWeek),
+               "first repair: next week's first day");
+        // A grant with its dm.actions id: journalled with it; the player told only once the record is written.
+        Client cy;
+        enterAt(g, cy, 91, "cy", "east");
+        g.save();
+        g.settle();
+        const auto journal = save + ".journal";
+        if (!fs::exists(journal))
+            std::ofstream(journal, std::ios::binary);
+        if (::geteuid() != 0)
+        {
+            // (The writer can't write: it retries. A trim after the save writes the journal anew, so the mode is set
+            // again until it holds.)
+            for (int t = 0; t < 20; ++t)
+            {
+                fs::permissions(journal, fs::perms::owner_read, fs::perm_options::replace);
+                ::usleep(50000);
+                if ((fs::status(journal).permissions() & fs::perms::owner_write) == fs::perms::none)
+                    break;
+            }
+            auto grant = json::Value::object();
+            grant.add("coins", 23);
+            grant.add("reason", "for the lost ewe");
+            const auto r = g.applyEconomyCommand("character.grant", cy.entityId, grant, "4242");
+            expect(r.ok && g.dmActs().find("4242"), "first repair: granted, its id kept: " + r.message);
+            for (int t = 0; t < 10; ++t)
+            {
+                ::usleep(20000);
+                g.tick(.05);
+            }
+            expect(cy.said().find("grants you") == std::string::npos, "first repair: not told while the record isn't written: " + cy.said());
+            fs::permissions(journal, fs::perms::owner_read | fs::perms::owner_write, fs::perm_options::replace);
+            for (int t = 0; t < 100 && cy.said().find("grants you") == std::string::npos; ++t)
+            {
+                ::usleep(20000);
+                g.tick(.05);
+            }
+            expect(cy.said().find("A Dungeon Master grants you 23 pennies: for the lost ewe.") != std::string::npos,
+                   "first repair: told once it is: " + cy.said());
+            const auto text = slurp(journal);
+            expect(text.find("\"dmActs\"") != std::string::npos && text.find("\"4242\"") != std::string::npos,
+                   "first repair: the record carries the act's id");
+        }
+        g.disconnect(&cy);
+        g.save();
+        g.settle();
+    }
+    if (::geteuid() != 0)
+    {
+        game::Game again(optionsOn(root, save));
+        expect(again.start(problem), "first repair: restarted: " + problem);
+        expect(again.dmActs().find("4242") != nullptr, "first repair: the act's id kept through the checkpoint");
+    }
+    cleanSave(save);
+    fs::remove_all(root);
+}
+
 // What this run left in the temporary folder (its worlds on disk and their saves), removed passed or failed.
 void cleanTemp()
 {
@@ -2685,7 +2825,9 @@ int main(int argc, char** argv)
             // Phases 7 and 8 repaired, together.
             {"theRepairsTogether", theRepairsTogether},
             // Doc 79, Phase 9: the DM's levers.
-            {"theDMsLevers", theDMsLevers}};
+            {"theDMsLevers", theDMsLevers},
+            // Doc 79, Phase 9's first repair.
+            {"theFirstRepair", theFirstRepair}};
         if (argc == 3 && std::string(argv[1]) == "--only")
         {
             for (const auto& [name, test] : tests)

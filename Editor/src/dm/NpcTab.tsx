@@ -318,7 +318,7 @@ export function NpcTab({me, target, suite}: {me: Me; target: Target; suite: 'atl
             {problem && <p className="hint dm-note">{problem}</p>}
             {layer === 'npcs' && (draft ? <><NpcInspector draft={draft} setDraft={setDraft} routes={data?.routes ?? []} world={world!} canEdit={canEdit} canLive={canLive} busy={busy}
                 dirty={dirty} isNew={isNew} dead={dead.has(draft.id)} target={target} actions={actions} areas={data?.areas ?? []}
-                wander={data?.wanders[draft.id] ?? ''} spawnedBy={data?.spawns.find(r => r.id === data.spawned[draft.id])?.name ?? (data?.spawned[draft.id] ? 'a deleted rule' : '')}
+                wander={data?.wanders[draft.id] ?? ''} held={data?.bandsHeld?.[draft.id] ?? null} spawnedBy={data?.spawns.find(r => r.id === data.spawned[draft.id])?.name ?? (data?.spawned[draft.id] ? 'a deleted rule' : '')}
                 onWander={area => wander(draft.id, draft.name, area)} onBandFor={(band, days) => bandFor(draft.id, draft.name, band, days)}
                 onPick={p => setPick(p)} onSave={save} onRevert={revert} onDelete={remove} onLife={kill => life(draft.id, draft.name, kill)} />
                 {!isNew && building && <VoicePanel me={me} target={target} npc={draft.id} name={draft.name} />}
@@ -367,9 +367,11 @@ type Banded = Person & {band?: Band | null};
 const BAND_OPTIONS: {value: '' | Band; label: string}[] = [{value: '', label: 'From rank'},
     ...BANDS.map(b => ({value: b, label: b[0].toUpperCase() + b.slice(1)}))];
 
-function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, onWander, onBandFor, onPick, onSave, onRevert, onDelete, onLife}: {
+function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, dirty, isNew, dead, target, actions, areas, wander, spawnedBy, held, onWander, onBandFor, onPick, onSave, onRevert, onDelete, onLife}: {
     draft: Person; setDraft: (p: Person) => void; routes: {id: string; name: string}[]; world: Project; canEdit: boolean; canLive: boolean; busy: boolean;
     dirty: boolean; isNew: boolean; dead: boolean; target: Target; actions: Action[]; areas: NpcArea[]; wander: string; spawnedBy: string;
+    /** The DM's band for a while on this NPC's household, as last saved (none: no such band in force). */
+    held?: {band: string; until: number} | null;
     onWander: (area: string) => void; onBandFor: (band: Band | 'clear', days: number) => void; onPick: (p: Pick) => void; onSave: () => void;
     onRevert: () => void; onDelete: () => void; onLife: (kill: boolean) => void;
 }) {
@@ -424,6 +426,8 @@ function NpcInspector({draft, setDraft, routes, world, canEdit, canLive, busy, d
             </div>}
         </>}
         {canLive && !isNew && <div className="dm-band-for">
+            <p className="hint">{held ? `Held ${held.band} by the DM until game day ${held.until} (the whole household).`
+                                      : 'No band of the DM\'s in force on their household.'} <small>(As last saved.)</small></p>
             <Row><SelectField label="Band for a while (their household)" value={timed.band}
                     options={[...BANDS.map(b => ({value: b as Band | 'clear', label: b[0].toUpperCase() + b.slice(1)})), {value: 'clear', label: 'Clear the DM\'s band'}]}
                     onChange={v => setTimed(t => ({...t, band: v}))} />

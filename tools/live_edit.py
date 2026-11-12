@@ -276,6 +276,8 @@ class Batch:
             elif kind == 'person':
                 # (An NPC's authored band on a slim world: doc 79, 14; the Band picker.)
                 slim = self.tables is S.SLIM_TABLES
+                if refused := S.bands_refused(self.tables, [value]):
+                    raise ValueError(refused)     # (Refused, never dropped unsaid, before 0061.)
                 self.upsert('live.npcs', S.npc_row(w, value, self.position('live.npcs', id_), band=slim), self.tables)
             elif kind in self.ENTITIES:
                 table, _, build = self.ENTITIES[kind]
@@ -337,8 +339,11 @@ class Batch:
             # can't hold is refused (EconomyRefused: "This world needs migration 0061.").
             if value is None:
                 raise ValueError('The economy cannot be removed.')
-            people = {r[0] for r in self.conn.execute('SELECT id FROM live.npcs WHERE world_id = %s', (w,)).fetchall()}
-            problems = map_editor.check_economy(value, people)
+            # (Only what this edit brings is refused: a problem the stored settings already have, which Core reads past,
+            # never blocks another change. Doc 79, Phase 9's first repair.)
+            stored = S.economy_value(self.conn, w)
+            had = set(map_editor.check_economy(stored)) if stored is not None else set()
+            problems = [p for p in map_editor.check_economy(value) if p not in had]
             if problems:
                 raise ValueError(' '.join(problems))
             try:

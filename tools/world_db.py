@@ -359,17 +359,28 @@ def ensure_roles(databases: list[str] | None = None) -> list[str]:
     s = settings()
     created = []
     with superuser() as su:
-        for role in ROLES:
-            name = f'ratw_{role}'
-            if not su.execute('SELECT 1 FROM pg_roles WHERE rolname = %s', (name,)).fetchone():
-                su.execute(sql.SQL('CREATE ROLE {} LOGIN PASSWORD {}').format(
-                    sql.Identifier(name), sql.Literal(s[f'RATW_{role.upper()}_PASSWORD'])))
-                created.append(name)
-        # The Dungeon Master works on every world.
-        for database in [w['database'] for w in worlds()] if databases is None else databases:
-            if su.execute('SELECT 1 FROM pg_database WHERE datname = %s', (database,)).fetchone():
-                su.execute(sql.SQL('GRANT CONNECT ON DATABASE {} TO ratw_dm').format(sql.Identifier(database)))
+        # (One caller at a time, across processes: two sessions' tests granting at once failed with "tuple concurrently
+        # updated". And a grant already held isn't made again, so a world's catalog row is left alone. Doc 79, Phase
+        # 9's first repair: test_dungeon_master erred that way under load.)
+        su.execute('SELECT pg_advisory_lock(%s)', (ROLES_LOCK,))
+        try:
+            for role in ROLES:
+                name = f'ratw_{role}'
+                if not su.execute('SELECT 1 FROM pg_roles WHERE rolname = %s', (name,)).fetchone():
+                    su.execute(sql.SQL('CREATE ROLE {} LOGIN PASSWORD {}').format(
+                        sql.Identifier(name), sql.Literal(s[f'RATW_{role.upper()}_PASSWORD'])))
+                    created.append(name)
+            # The Dungeon Master works on every world.
+            for database in [w['database'] for w in worlds()] if databases is None else databases:
+                if su.execute('SELECT 1 FROM pg_database WHERE datname = %s', (database,)).fetchone() and not su.execute(
+                        "SELECT has_database_privilege('ratw_dm', %s, 'CONNECT')", (database,)).fetchone()[0]:
+                    su.execute(sql.SQL('GRANT CONNECT ON DATABASE {} TO ratw_dm').format(sql.Identifier(database)))
+        finally:
+            su.execute('SELECT pg_advisory_unlock(%s)', (ROLES_LOCK,))
     return created
+
+
+ROLES_LOCK = 790609                     # (ensure_roles' advisory lock, on the server's postgres database.)
 
 
 def superuser(dbname: str = 'postgres'):

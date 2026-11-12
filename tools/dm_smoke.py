@@ -293,6 +293,39 @@ class Smoke:
         self.event_applied(fine['id'])
         self.fresh_condition(lambda state: self.actor(state, 'player-ash')['cash'] == 23, 'the fine visible in the native purse')
         self.check(True, 'A fine of 20 is taken from Ash: 23 held.')
+        # The Storykeeper's npc_band (doc 79, 12; Phase 9's first repair: run on a live server): a resident's household
+        # held rich for a while, then the DM's band cleared, each seen in the native snapshot.
+        # (The smoke's small world may house nobody in a household the bands know: then the act is refused by the native
+        # authority with its reason, and the refusal is what is checked end to end.)
+        try:
+            state = self.fresh_condition(lambda state: any(a['npc'] and a.get('band') and a.get('band') != 'rich'
+                                                           for a in state['snapshot']['characters']), 'residents in banded households', 15)
+        except RuntimeError:
+            state = None
+        if state:
+            resident = next(a for a in sorted(state['snapshot']['characters'], key=lambda a: a['id'])
+                            if a['npc'] and a.get('band') and a.get('band') != 'rich')
+            banded = self.event('npc_band', {'npc': resident['id'], 'band': 'rich', 'days': 5}, 'Smoke band for a while')
+            self.command('event.approve', {'eventId': banded['id']})
+            self.event_applied(banded['id'])
+            self.fresh_condition(lambda state: self.actor(state, resident['id'])['band'] == 'rich', 'the household held rich')
+            cleared = self.event('npc_band', {'npc': resident['id'], 'band': 'clear'}, 'Smoke band cleared')
+            self.command('event.approve', {'eventId': cleared['id']})
+            self.event_applied(cleared['id'])
+            self.fresh_condition(lambda state: self.actor(state, resident['id'])['band'] == resident['band'], 'its own band again')
+            self.check(True, f'The Storykeeper holds {resident["id"]}\'s household rich for five days, then clears it: '
+                             f'{resident["band"]} again.')
+        else:
+            unhoused = self.event('npc_band', {'npc': 'npc_scout', 'band': 'rich', 'days': 5}, 'Smoke band for a while')
+            self.command('event.approve', {'eventId': unhoused['id']})
+
+            def settled():
+                event = next((e for e in self.state()['events'] if e['id'] == unhoused['id']), None)
+                return event if event and event['status'] not in ('approved', 'queued', 'sent', 'pending', 'draft') else None
+            event = self.wait(settled, 'the native authority\'s answer to npc_band', 30)
+            self.check(event['status'] == 'failed' and 'household' in event.get('detail', ''),
+                       f'The Storykeeper\'s npc_band reaches the native authority, which refuses a resident with no household: '
+                       f'{event["status"]}: {event.get("detail", "")}')
         self.check(self.api('POST', '/api/command', request) == response, 'Repeating the same authenticated command ID returns its original response.')
         self.command('event.approve', {'eventId': weather['id']}, identifier=request['id'], expected=409)
         original_receipt = dm_service.decode(dm_service.read_file(self.exchange / 'inbox' / envelope_path.name, dm_service.MAX_BODY))

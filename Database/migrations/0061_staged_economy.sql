@@ -12,10 +12,13 @@ COMMENT ON COLUMN live.npcs.band_override IS
     'An authored band for this resident''s household; NULL = from rank. Doc 79, 14 (the Band picker).';
 
 -- 2. The manifest, redefined before the drop (0060's body joins live.business_settings). As 0060's, less the old
--- economy's lines (store, loop extras, countryoff, subsidy, comforts, farms, farmarea, farm, nostore; the economy line's
--- daily herbs and meals; the seasons' supply and normal), with the rules' numbers only, one `overrides` line (the
--- rules' prosperityCause, neverImported, status and market as one JSON object) and a `band` line after a resident's
--- protected one. tools/manifest_lines.py writes the same lines for an exported project.
+-- economy's lines (store, loop extras, countryoff, subsidy, comforts, farms, farmarea, farm, nostore; the seasons' supply
+-- and normal), with the rules' numbers only, one `overrides` line (the rules' prosperityCause, neverImported, status and
+-- market as one JSON object, whatever its length: a line too long is Core's to skip with a warning, never dropped here
+-- unsaid) and a `band` line after a resident's protected one. The economy line keeps two numbers after the store's
+-- herbs and meals, always "10 12" (the old daily herbs and meals at their defaults, read past since): a server built
+-- before doc 79's Phase 9 still reads a world with no overrides or band lines (DEV as it stands) after this migration.
+-- tools/manifest_lines.py writes the same lines for an exported project.
 CREATE OR REPLACE FUNCTION live.people_manifest(p_world ratw_id, p_npc text DEFAULT NULL) RETURNS text
 LANGUAGE sql STABLE AS $$
     WITH people AS (
@@ -42,7 +45,7 @@ LANGUAGE sql STABLE AS $$
     ),
     lines AS (
         SELECT 0 AS part, 0 AS kind, 0 AS position, 0 AS line,
-               'economy ' || concat_ws(' ', treasury, store_herbs, store_meals) AS text
+               'economy ' || concat_ws(' ', treasury, store_herbs, store_meals, 10, 12) AS text
         FROM live.economy WHERE world_id = p_world AND p_npc IS NULL
         UNION ALL
         SELECT 0, 0, 0, 2, 'loop needs off'
@@ -68,7 +71,7 @@ LANGUAGE sql STABLE AS $$
         FROM live.economy,
              LATERAL (SELECT jsonb_object_agg(key, value) AS v FROM jsonb_each(rules)
                       WHERE key IN ('prosperityCause', 'neverImported', 'status', 'market')) AS o
-        WHERE world_id = p_world AND p_npc IS NULL AND o.v IS NOT NULL AND octet_length(o.v::text) <= 65536
+        WHERE world_id = p_world AND p_npc IS NULL AND o.v IS NOT NULL
         UNION ALL
         SELECT 1, 0, r.position, 0, 'route ' || live.q(r.id) || ' ' || count(pp.*) || ' ' || string_agg(live.at(pp.area, pp.x, pp.y), ' ' ORDER BY pp.seq)
         FROM live.patrol_routes r JOIN live.patrol_posts pp ON pp.world_id = r.world_id AND pp.route_id = r.id

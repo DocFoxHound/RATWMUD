@@ -53,8 +53,11 @@ void Society::adoptOverrides(const EconomySpec::Overrides& o, std::vector<std::s
 
 // ---- Grants and fines (12: "grant or fine a player"; D16) ----
 
-bool Society::grantPlayer(const std::string& player, std::int64_t coins, const std::string& reason, std::string& problem)
+bool Society::grantPlayer(const std::string& player, std::int64_t coins, const std::string& reason, std::string& problem,
+                          std::int64_t* moved)
 {
+    if (moved)
+        *moved = 0;
     const auto words = json::utf8Prefix(reason, 80);
     if (!playerAccountId(player))
         return problem = "Only a player's account can be granted or fined.", false;
@@ -75,6 +78,8 @@ bool Society::grantPlayer(const std::string& player, std::int64_t coins, const s
             return problem = "Over the day's grants for that player (" + std::to_string(room) + "p left today).", false;
         if (!shift(bank, player, "", 0, coins, "dm grant: " + words))
             return problem = "The grant could not be paid (the purse is full).", false;
+        if (moved)
+            *moved = coins;
         return true;
     }
     const auto fine = std::min(-coins, a->cash);
@@ -82,6 +87,8 @@ bool Society::grantPlayer(const std::string& player, std::int64_t coins, const s
         return problem = "That player has nothing to fine.", false;
     if (!shift(player, bank, "", 0, fine, "dm fine: " + words))
         return problem = "The fine could not be taken.", false;
+    if (moved)
+        *moved = fine;
     return true;
 }
 
@@ -318,6 +325,29 @@ json::Value World::prosperityReport()
         for (auto d = today; d < (today / calendar::DaysPerWeek + 2) * calendar::DaysPerWeek; ++d)
             days.push(double(d));
         report.add("weekDays", std::move(days));
+        report.add("nextWeek", double((today / calendar::DaysPerWeek + 1) * calendar::DaysPerWeek));   // (Its first day.)
+    }
+    {
+        // The DM's bands for a while (band.override), each household's with its end and its members, so the DM tool can
+        // show what is in force on an NPC and when it lapses.
+        auto held = Value::array();
+        const auto& st = society_.state();
+        for (const auto& [household, o] : st.staged.overrides)
+        {
+            if (o.until <= st.budgetDay)
+                continue;
+            auto j = Value::object();
+            j.add("household", household);
+            j.add("band", status::bandName(o.band));
+            j.add("until", double(o.until));
+            auto members = Value::array();
+            if (const auto* m = society_.membersOf(household))
+                for (const auto& id : *m)
+                    members.push(id);
+            j.add("members", std::move(members));
+            held.push(std::move(j));
+        }
+        report.add("bandOverrides", std::move(held));
     }
     return report;
 }

@@ -165,6 +165,111 @@ class DungeonMasterLive(unittest.TestCase):
             row = conn.execute("SELECT saved_at, coalesce((payload::jsonb->>'journal')::bigint, 0) FROM game.checkpoints").fetchone()
         return row if row else (None, 0)
 
+    def saved_cash(self, pc):
+        """A player's cash in the world's checkpoint (None: not saved)."""
+        with W.connect('dev', 'owner', dbname=self.name) as conn:
+            row = conn.execute("SELECT payload::jsonb->'society'->'accounts'->%s->>'cash' FROM game.checkpoints", (pc,)).fetchone()
+        return int(row[0]) if row and row[0] is not None else None
+
+    def end_the_dead_servers_sessions(self):
+        """A killed server's database sessions, ended as a real crash leaves them (a statement it was waiting on goes)."""
+        with superuser() as su:
+            su.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = %s AND usename = 'ratw_game'",
+                       (self.name,))
+
+    def test_a_grant_through_the_journals_windows(self):
+        """Doc 79, Phase 9's first repair: a DM's act is told (to the DM's dm.actions row and to the player) only once its
+        journal record is committed, and is applied once whatever a crash interrupts. (1) The journal held (game.journal
+        locked): the grant is applied in the game, but the row stays queued and the player hears nothing; the server is
+        killed; the next one applies the still-queued row once. (2) The row held (FOR UPDATE) after the record commits, so
+        the server can't mark it: killed there, the next one finds the act in the journal's record (dmActs) and answers the
+        row from it, never paying twice."""
+        import threading
+        import dungeon_master as D
+        dm = D.DungeonMaster(lambda target: W.connect('dev', 'dm', dbname=self.name), clock=time.time)
+        who = {'username': 'test', 'role': 'dm'}
+        server, port = self.start(240)
+        player, heard = None, []
+        try:
+            player = subprocess.Popen([NODE, '--experimental-strip-types', '--no-warnings', str(ROOT / 'tools' / 'client' / 'hold.ts'),
+                                       '--port', str(port), '--identity', 'cid', '--seconds', '90'],
+                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=ROOT)
+            pc = None
+            for line in player.stdout:
+                try:
+                    pc = json.loads(line).get('in') or pc
+                except ValueError:
+                    continue
+                if pc:
+                    break
+            self.assertTrue(pc, 'the player came in')
+            threading.Thread(target=lambda: [heard.append(l) for l in player.stdout], daemon=True).start()
+            deadline = time.time() + 45
+            while self.saved_cash(pc) is None and time.time() < deadline:
+                time.sleep(.5)
+            had = self.saved_cash(pc)
+            self.assertIsNotNone(had, 'the player\'s purse in a checkpoint')
+            # (1) The journal held.
+            with W.connect('dev', 'owner', dbname=self.name) as lock:
+                with lock.transaction():
+                    lock.execute('LOCK TABLE game.journal IN EXCLUSIVE MODE')
+                    first = dm.grant(who, 'dev', pc, 23, 'for the lost ewe')['id']
+                    time.sleep(5)
+                    with W.connect('dev', 'owner', dbname=self.name) as look:
+                        status = look.execute('SELECT status FROM dm.actions WHERE id = %s', (first,)).fetchone()[0]
+                    self.assertEqual(status, 'queued', 'not "applied" while its record isn\'t written')
+                    self.assertFalse([l for l in heard if 'grants you' in l], 'the player not told either: ' + ''.join(heard[-5:]))
+                    server.kill()
+                    server.communicate(timeout=60)
+                    self.end_the_dead_servers_sessions()
+        finally:
+            if player and player.poll() is None:
+                player.kill()
+            if player:
+                player.wait(timeout=10)
+            if server.poll() is None:
+                server.kill()
+                server.communicate(timeout=60)
+        server, _ = self.start(240)
+        try:
+            status, result = self.outcome(first, 30)
+            self.assertEqual((status, result), ('applied', 'Granted 23p: for the lost ewe.'), 'the next server applies the queued row')
+            # (2) The row held after its record commits.
+            with W.connect('dev', 'owner', dbname=self.name) as conn:
+                second = conn.execute('INSERT INTO dm.actions (kind, target_id, requested_by, payload) VALUES (%s, %s, %s, %s) RETURNING id',
+                                      ('character.grant', pc, 'test', json.dumps({'coins': 23, 'reason': 'for the second ewe'}))).fetchone()[0]
+            with W.connect('dev', 'owner', dbname=self.name) as row_lock:
+                with row_lock.transaction():
+                    row_lock.execute('SELECT 1 FROM dm.actions WHERE id = %s FOR UPDATE', (second,))
+                    with W.connect('dev', 'owner', dbname=self.name) as conn:
+                        conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': second}),))
+                    deadline, found = time.time() + 20, 0
+                    while time.time() < deadline and not found:
+                        with W.connect('dev', 'owner', dbname=self.name) as conn:
+                            found = conn.execute("SELECT count(*) FROM game.journal WHERE record LIKE '%%\"dmActs\"%%' "
+                                                 'AND record LIKE %s', (f'%"{second}"%',)).fetchone()[0]
+                        time.sleep(.25)
+                    self.assertTrue(found, 'the grant\'s record, with its dm.actions id, committed')
+                    time.sleep(1)
+                    server.kill()
+                    server.communicate(timeout=60)
+                    self.end_the_dead_servers_sessions()
+            with W.connect('dev', 'owner', dbname=self.name) as conn:
+                self.assertEqual(conn.execute('SELECT status FROM dm.actions WHERE id = %s', (second,)).fetchone()[0], 'queued')
+        finally:
+            if server.poll() is None:
+                server.kill()
+                server.communicate(timeout=60)
+        server, _ = self.start(240)
+        try:
+            status, result = self.outcome(second, 30)
+            self.assertEqual((status, result), ('applied', 'Granted 23p: for the second ewe.'), 'answered from the record')
+        finally:
+            server.send_signal(signal.SIGTERM)
+            out, _ = server.communicate(timeout=60)
+        self.assertIn('already applied before the restart', out)
+        self.assertEqual(self.saved_cash(pc), had + 46, 'each grant paid once: 23 and 23, never 69')
+
     def test_the_acts_survive_a_crash(self):
         """Doc 79, Phase 9, integrated: every path from the studio and the DM tool to the running server, then a crash.
         The studio's steer (the slider with its cause, economy.sync {now}), the Band picker (save_npc: band_override,

@@ -258,11 +258,14 @@ class Economy:
             after = change(copy.deepcopy(before))
             if canonical(before) == canonical(after):
                 return {'changed': False, 'before': before, 'after': after, 'view': self.view(conn, w)}
-            had = set(map_editor.check_economy(before))      # (Only what this change brings is refused: doc 79, 14.)
-            problems = [p for p in map_editor.check_economy(after) if p not in had]
+            # (Only what this change brings is refused, a bad override with it: doc 79, 14.)
+            had = set(map_editor.check_economy(before, strict_overrides=True))
+            problems = [p for p in map_editor.check_economy(after, strict_overrides=True) if p not in had]
             if problems:
                 raise D.DMError(' '.join(problems), 400)
-            if not slimmed and after['overrides'] and canonical(after['overrides']) != canonical(before['overrides']):
+            # (The slider's cause is stored on a world before 0061 too: the rest of the overrides need it.)
+            past_cause = lambda o: {k: v for k, v in (o or {}).items() if k != 'prosperityCause'}
+            if not slimmed and canonical(past_cause(after['overrides'])) != canonical(past_cause(before['overrides'])):
                 raise D.DMError(f'{NO_SLIM_HERE} (python3 tools/world_db.py migrate --db {key}).', 409)
             try:
                 if self.live(key):
@@ -278,7 +281,10 @@ class Economy:
     def set_steer(self, key, data, editor) -> dict:
         """The slider (doc 79, 12): {prosperity: anything (clamped, never refused: 9999 is 100, "abc" 0, 37 35), cause?:
         plain words of at most 80 bytes ("" or null: the world picks one), now?: true (the times jump to the mark)}.
-        Written through patch_economy_rules (the rule `prosperity` and `prosperityCause`), on a 0058-0060 world too."""
+        On a live world written through patch_economy_rules (the rule `prosperity` and `prosperityCause`), as the DM
+        writes the row; on a dev world through live_edit, as every other setter, so open Atlas sessions follow it and its
+        log holds it. A 0058-0060 world takes it too. `now` with the value and cause as they are is still a change: the
+        times go to the mark at once (economy.sync {now}), a slider still easing included."""
         if not isinstance(data, dict) or 'prosperity' not in data or set(data) - {'prosperity', 'cause', 'now'}:
             raise D.DMError('Send {"prosperity": -100 to 100, "cause"?: words, "now"?: true or false}.', 400)
         value = C.clamp_prosperity(data['prosperity'])
@@ -289,23 +295,34 @@ class Economy:
                 raise D.DMError(f'The cause is plain words of at most {C.CAUSE_MOST} bytes (one line, never the forbidden '
                                 'word).', 400)
             cause = words.strip()
+        now = data.get('now') is True
+        said = lambda v, c: f'{v:+d}' + (f' ({c})' if c else '')
         with self.connect(key) as conn:
             supported, _ = self.levels(conn)
             if not supported:
                 raise D.DMError(f'{NO_RULES_HERE} (python3 tools/world_db.py migrate --db {key}).', 409)
             w = self.world_of(conn, key)
             before = self.entity(S.economy_value(conn, w))
-            old = (C.clamp_prosperity(before['rules'].get('prosperity', 0)), before['overrides'].get('prosperityCause') or '')
-            new = (value, old[1] if cause is ... else (cause or ''))
-            if new != old:
+        old = (C.clamp_prosperity(before['rules'].get('prosperity', 0)), before['overrides'].get('prosperityCause') or '')
+        new = (value, old[1] if cause is ... else (cause or ''))
+        if new != old and self.live(key):
+            with self.connect(key) as conn:
+                w = self.world_of(conn, key)
                 drop = [] if new[1] else ['prosperityCause']
                 wanted = {'prosperity': value, **({'prosperityCause': new[1]} if new[1] else {})}
                 S.patch_economy_rules(conn, w, wanted, drop)
-            view = self.view(conn, w)
-        said = lambda v, c: f'{v:+d}' + (f' ({c})' if c else '')
-        return {'changed': new != old, 'before': {'prosperity': old[0], 'cause': old[1]},
-                'after': {'prosperity': new[0], 'cause': new[1]}, 'view': view, 'now': data.get('now') is True,
-                'detail': f'Prosperity {said(*old)} -> {said(*new)}' + (', now' if data.get('now') is True else '') + '.'}
+        elif new != old:
+            def change(e):
+                overrides = {k: v for k, v in e['overrides'].items() if k != 'prosperityCause'}
+                if new[1]:
+                    overrides['prosperityCause'] = new[1]
+                return {**e, 'rules': {**e['rules'], 'prosperity': value}, 'overrides': overrides}
+            self._edit(key, editor, f'Prosperity {said(*old)} -> {said(*new)}', change)
+        with self.connect(key) as conn:
+            view = self.view(conn, self.world_of(conn, key))
+        return {'changed': new != old or now, 'before': {'prosperity': old[0], 'cause': old[1]},
+                'after': {'prosperity': new[0], 'cause': new[1]}, 'view': view, 'now': now,
+                'detail': f'Prosperity {said(*old)} -> {said(*new)}' + (', now' if now else '') + '.'}
 
     def set_needs(self, key, data, editor) -> dict:
         """{needsPaused: true|false}: residents' needs paused (maintenance and testing)."""
@@ -474,7 +491,9 @@ class Economy:
         market = copy.deepcopy(data['market'])
         if market == {}:
             market = None
-        kinds = ((market or {}).get('events') or {}).get('list') if isinstance(market, dict) else None
+        # (Any shape at all: one that isn't objects is check_overrides' to refuse with a 400, never a 500 here.)
+        events = market.get('events') if isinstance(market, dict) else None
+        kinds = events.get('list') if isinstance(events, dict) else None
         if isinstance(kinds, list):
             shipped = {k['id']: k for k in (map_editor.market_file().get('events') or {}).get('list') or []
                        if isinstance(k, dict) and k.get('id')}

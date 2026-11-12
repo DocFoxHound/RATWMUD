@@ -461,8 +461,16 @@ class Game
     // times.nudge, harvest.override, event.add, event.cancel, ship.storm, prices.reset, band.override and character.grant.
     // Each clamps its payload (never refused for a number out of range), applies its hook, journals what it changed
     // (record) before anyone is told, and works out the Prosperity report again. Public for the tests; applyDmActions
-    // calls it.
-    Result applyEconomyCommand(const std::string& kind, const std::string& target, const json::Value& payload);
+    // calls it. `actionId`, the dm.actions row's: the record carries it (dmActs), so a row a crash left queued after its
+    // record committed is answered from the record, never applied twice.
+    Result applyEconomyCommand(const std::string& kind, const std::string& target, const json::Value& payload,
+                               const std::string& actionId = {});
+    // The DM's acts the journal holds, by dm.actions id ({ok, text, target}; the last DmActsKept), and the rows whose
+    // status waits for their record to commit (tests).
+    const json::Value& dmActs() const { return dmActs_; }
+    std::size_t dmStatusesWaiting() const { return dmStatusWaiting_.size(); }
+    // A snapshot under way finished (tests: a held-open snapshot window closed before the save is looked at).
+    void waitForSnapshot() { reapSnapshot(true); }
     static bool economyCommand(const std::string& kind);
     // What economy.sync reads (tests; else the live tables, or the world export read again).
     std::function<bool(EconomySpec&, std::string&)> economyReader;
@@ -1983,6 +1991,18 @@ class Game
         std::string event;
     };
     std::deque<Waiting> waiting_;
+    // The DM's economy acts applied (doc 79, Phase 9's first repair): by dm.actions id, saved in the checkpoint and set by
+    // each act's journal record; and the dm.actions rows told "applied" only once their record is committed.
+    json::Value dmActs_ = json::Value::object();
+    std::string actingFor_;                         // (The dm.actions id record() writes into dmActs, while an act is applied.)
+    struct DmStatus
+    {
+        std::string id, status, result;
+        std::uint64_t seq;
+    };
+    std::vector<DmStatus> dmStatusWaiting_;
+    void releaseDmStatuses();
+    static constexpr std::size_t DmActsKept = 64;
     void beginHolding(Connection* c);
     void endHolding();
     void releaseCommitted();

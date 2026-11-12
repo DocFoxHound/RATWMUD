@@ -957,7 +957,10 @@ void Game::applyDmActions(double dt)
 {
     if (options_.scratch)
         return;                                     // The DM's actions are for the real server.
-    if (options_.database.empty() || (dmAccumulator_ += dt) < 1)
+    if (options_.database.empty())
+        return;
+    releaseDmStatuses();                            // (Rows applied whose records have committed since: told now.)
+    if ((dmAccumulator_ += dt) < 1)
         return;
     dmAccumulator_ = 0;
     readNotifications();
@@ -987,6 +990,19 @@ void Game::applyDmActions(double dt)
         if (!row[0] || !row[1] || !row[2])
             continue;
         const std::string kind = *row[1], target = *row[2];
+        // (Applied, its record not yet committed: answered when it is. Applied before a crash that left the row queued:
+        // the journal's record holds it, so it is answered from there, never applied again.)
+        if (std::any_of(dmStatusWaiting_.begin(), dmStatusWaiting_.end(), [&](const DmStatus& w) { return w.id == *row[0]; }))
+            continue;
+        // (The same kind and target too: a database whose dm.actions numbering began again never matches an old act.)
+        if (const auto* done = dmActs_.find(*row[0]); done && done->isObject() && done->string("kind") == kind && done->string("target") == target)
+        {
+            worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
+                          {*row[0], std::string(done->boolean("ok") ? "applied" : "refused"), done->string("text")});
+            note("info", "RATW_DM_ACTION " + kind + " " + target + ": already applied before the restart: " + done->string("text"));
+            continue;
+        }
+        const auto seqBefore = journalSeq_;
         Result outcome{false, "Unknown action.", {}};
         if (kind == "layers.sync" || kind == "factions.sync" || kind == "npc.sync")
         {
@@ -1033,7 +1049,7 @@ void Game::applyDmActions(double dt)
             {
                 if (kind == "economy.sync" && syncNow && !payload.boolean("now", false))
                     payload.set("now", true);
-                outcome = applyEconomyCommand(kind, target, payload.isObject() ? payload : json::Value::object());
+                outcome = applyEconomyCommand(kind, target, payload.isObject() ? payload : json::Value::object(), *row[0]);
                 if (kind == "economy.sync")
                     synced = outcome;
             }
@@ -1545,8 +1561,14 @@ void Game::applyDmActions(double dt)
             }
         }
         changed |= outcome.ok;
-        worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
-                      {*row[0], std::string(outcome.ok ? "applied" : "refused"), outcome.message});
+        // "Applied" only once what the act journalled is committed (a crash before then loses the act: the DM must not
+        // have been told it happened). With nothing journalled, or written already, at once.
+        auto* writer = store_ ? store_->journal() : nullptr;
+        if (writer && journalSeq_ != seqBefore && writer->committed() < journalSeq_)
+            dmStatusWaiting_.push_back({*row[0], outcome.ok ? "applied" : "refused", outcome.message, journalSeq_});
+        else
+            worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
+                          {*row[0], std::string(outcome.ok ? "applied" : "refused"), outcome.message});
         note("info", "RATW_DM_ACTION " + kind + " " + target + " by " + (row[3] ? *row[3] : "") + ": " + outcome.message);
         logEvent("operator", row[3] ? *row[3] : "", target, kind + (outcome.ok ? ": applied" : ": refused"));
     }
@@ -1555,6 +1577,24 @@ void Game::applyDmActions(double dt)
         ++revision_;
         saveSoon();
     }
+}
+
+void Game::releaseDmStatuses()
+{
+    if (dmStatusWaiting_.empty())
+        return;
+    auto* writer = store_ ? store_->journal() : nullptr;
+    const auto written = writer ? writer->committed() : std::uint64_t(-1);
+    for (auto it = dmStatusWaiting_.begin(); it != dmStatusWaiting_.end();)
+        if (it->seq <= written)
+        {
+            // (A row the ten minutes' expiry caught while its record waited: it was applied, and is said so.)
+            worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status IN ('queued', 'expired')",
+                          {it->id, it->status, it->result});
+            it = dmStatusWaiting_.erase(it);
+        }
+        else
+            ++it;
 }
 
 std::int64_t Game::reportFee(const std::string&) const
@@ -2991,7 +3031,14 @@ void Game::tick(double dt)
             if (!c->entityId.empty())
                 online.insert(c->entityId);
         director_.tick(real, world_, characters_, online, operatorActivity_, revision_,
-                       [this] { ++revision_; save(); return storageReady_; },
+                       [this] {
+                           // (The checkpoint journals what moved first: a failed save after that record is Journalled.)
+                           ++revision_;
+                           const auto seq = journalSeq_;
+                           save();
+                           return storageReady_ ? int(director::Bridge::Committed)
+                                                : journalSeq_ != seq ? int(director::Bridge::Journalled) : int(director::Bridge::NotCommitted);
+                       },
                        [this](const std::set<std::string>& targets, const std::string& text) {
                            for (auto* c : clients_)
                                if (targets.count(c->entityId))
@@ -6137,6 +6184,7 @@ DbStore::Build Game::capture()
     c->server.social = social_;
     c->server.commandReceipts = commandReceipts_;
     c->server.responseReceipts = responseReceipts_;
+    c->server.dmActs = dmActs_;
     c->time = world_.time();
     c->saved = world_.save();
     for (const auto& [id, e] : world_.entities())
@@ -6309,6 +6357,7 @@ void Game::load(const std::string& payload)
     for (const auto& [actor, entries] : state.responseReceipts)
         for (const auto& [key, value] : entries)
             responseReceipts_[actor][key] = value;
+    dmActs_ = state.dmActs.isObject() ? state.dmActs : json::Value::object();
     for (const auto& [id, saved] : characters_)
         world_.bonds().setAway(id, !world_.entity(id));   // (Nobody's regard fades for a wolf who is away: doc 56, 10.)
     note("info", "RATW_RESTORE characters=" + std::to_string(characters_.size()) + " summaries=" + std::to_string(memories_.summaries.size()) +

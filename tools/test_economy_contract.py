@@ -110,6 +110,24 @@ class OverrideTests(unittest.TestCase):
         self.assertTrue(self.check({'status': {'caps': {'grantsADay': 2501}}})[0])
         self.assertTrue(self.check({'status': {'caps': {'theftADay': -1}}})[0])
         self.assertTrue(self.check({'status': {'caps': {'luckADay': 1}}})[0])
+        # welcomeDays is a period: shorter is the generous way (a daily welcome), so it is at least the shipped week.
+        week = caps['welcomeDays']
+        self.assertTrue(self.check({'status': {'caps': {'welcomeDays': 0}}})[0], 'a welcome every day refused')
+        self.assertTrue(self.check({'status': {'caps': {'welcomeDays': week - 1}}})[0])
+        self.assertEqual(self.check({'status': {'caps': {'welcomeDays': week * 2}}})[0], [], 'a rarer welcome is fine')
+
+    def test_market_json_says_what_it_holds(self):
+        # Phase 9's first repair: market.json's own description named houseBusinesses and estates as kept, after both
+        # went, and the DM's Economy tab as the season records' editor.
+        market = json.loads((E.ROOT / 'Data' / 'Economy' / 'market.json').read_text(encoding='utf-8'))
+        about = market['about']
+        for gone in ('houseBusinesses', 'estates'):
+            self.assertNotIn(gone, market)
+        self.assertNotIn('nothing in Core reads those five yet', about)
+        self.assertNotIn("the DM's Economy tab", about)
+        for kept in ('services', 'luxuries', 'wharf', 'events'):
+            self.assertIn(kept, market)
+            self.assertIn(f'`{kept}`', about, kept)
 
     def test_status_parts_keep_their_shape(self):
         self.assertEqual(self.check({'status': {'pay': {'keeper': 20}, 'leanDays': 4, 'rows': {'poor': {'short': 20}}}})[0], [])

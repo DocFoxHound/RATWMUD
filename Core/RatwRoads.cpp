@@ -516,8 +516,11 @@ void World::tendRoads()
         roadsMorning(today);
         portMorning(today);                         // (The ships' timetable: Phase 5, RatwPort.cpp.)
         eventsMorning(today);                       // (The staged events: Phase 7, RatwEvents.cpp; after the ships they ride.)
+        society_.takeReportStale();
         society_.setReport(prosperityReport());     // (The DM's Prosperity report, once a day: Phase 9, RatwProsperity.cpp.)
     }
+    else if (society_.takeReportStale())
+        society_.setReport(prosperityReport());     // (A new world's first bands: its report again, not a day later.)
     setOut();
     tendPort();
     tendEvents();

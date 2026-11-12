@@ -215,9 +215,12 @@ def _check_caps(caps, default: dict, errors: list[str]):
         else:
             errors.append(f'status.caps has no {k!r} (status.json\'s: {", ".join([*default, "grantsADay"])}).')
             continue
-        if not _number(v) or v < 0 or v > high:
-            errors.append(f'status.caps.{k} must be a number from 0 to {high:g}'
-                          + (' (5 times the shipped default).' if k != 'grantsADay' else '.'))
+        # (welcomeDays is a period: shorter is the generous way, so it is at least the shipped default, as Core holds it.)
+        low = default[k] if k == 'welcomeDays' and k in default and _number(default[k]) else 0
+        if not _number(v) or v < low or v > high:
+            errors.append(f'status.caps.{k} must be a number from {low:g} to {high:g}'
+                          + (' (5 times the shipped default).' if k != 'grantsADay' else '.')
+                          + (' A welcome no oftener than the shipped week.' if low else ''))
 
 
 def _check_status(status, default: dict, errors: list[str], warnings: list[str]):

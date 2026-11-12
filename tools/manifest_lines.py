@@ -4,7 +4,7 @@
 exporter (tools/map_editor.py's export_files) write the same lines from the same entity, and Core's Authoring reads
 both (leniently: RatwAuthoring.cpp).
 
-    economy T SH SM                                  once
+    economy T SH SM 10 12                            once (10 12: the old daily herbs and meals, for older servers)
     loop needs off                                   when needs are paused
     season "<group>" price P P P P shelf S S S S      a group the world changed (by text)
     rule "<name>" N                                  an integer rule the world changed (by text)
@@ -21,7 +21,10 @@ import json
 
 from economy_contract import BANDS, OVERRIDE_KEYS
 
-OVERRIDES_MOST = 65536                          # The overrides line's JSON at most (the SQL's octet_length check).
+OVERRIDES_MOST = 65536                          # The overrides line's JSON Core reads at most (longer: skipped, warned).
+# The economy line's last two numbers: the old daily herbs and meals at their defaults, read past since Phase 9, written
+# so a server built before it still reads a world with no overrides or band lines (migration 0061's own).
+OLD_DAILY = '10 12'
 ECONOMY_KINDS = ('economy', 'loop', 'season', 'rule', 'service', 'overrides')
 
 
@@ -42,7 +45,7 @@ def economy_lines(entity) -> list[str]:
     """The economy's lines for an entity, in live.people_manifest's order (economy, loop, then seasons, rules and services
     each sorted by text, then the overrides)."""
     e = entity or {}
-    out = [f'economy {e.get("treasury", 1000)} {e.get("storeHerbs", 100)} {e.get("storeMeals", 50)}']
+    out = [f'economy {e.get("treasury", 1000)} {e.get("storeHerbs", 100)} {e.get("storeMeals", 50)} {OLD_DAILY}']
     if e.get('needsPaused'):
         out.append('loop needs off')
     seasons = []
@@ -57,9 +60,8 @@ def economy_lines(entity) -> list[str]:
                   for sid, s in (e.get('services') or {}).items() if isinstance(s, dict))
     overrides = {k: v for k, v in (e.get('overrides') or {}).items() if k in OVERRIDE_KEYS}
     if overrides:
-        text = json.dumps(overrides, ensure_ascii=False)
-        if len(text.encode('utf-8')) <= OVERRIDES_MOST:
-            out.append('overrides ' + text)
+        # (Whatever its length, as the SQL: one too long is Core's to skip with a warning.)
+        out.append('overrides ' + json.dumps(overrides, ensure_ascii=False))
     return out
 
 

@@ -5,9 +5,10 @@
 // a Times nudge on a market, prices reset (a market's or all), a harvest called per area, an event added or cancelled, a
 // due ship stormed, a player granted or fined. Each act is queued for the game server, which applies and journals it; the
 // view catches up at its next checkpoint.
-import {useCallback, useEffect, useState} from 'react';
+import {Fragment, useCallback, useEffect, useState} from 'react';
 import {dmApi, type EconomyActKind, type Me, type ProsperityView, type Target} from './api';
 import {BANDS, HARVEST_WORDS, GRANT_MOST, CAUSE_MOST} from '../lib/economyContract';
+import {clock, dayLabel} from '../lib/economy';
 
 const p = (n: number | null | undefined) => n === null || n === undefined ? '—' : `${Math.round(n).toLocaleString()}p`;
 const signed = (n: number) => `${n > 0 ? '+' : ''}${n}`;
@@ -18,12 +19,13 @@ const ago = (iso: string | null) => {
 };
 const WORD_ICON: Record<string, string> = {slider: '⚖', times: '☼', harvest: '❦', ship: '⚓', event: '✦', cause: '¤'};
 
+
 /** What the DM is about to do: a form's fields as typed. */
 interface Draft { points: string; days: string; words: string; word: string; kind: string; day: string; hour: string; coins: string; reason: string; who: string }
 const EMPTY: Draft = {points: '20', days: '7', words: '', word: 'poor', kind: '', day: '', hour: '9', coins: '10', reason: '', who: ''};
 
-export function ProsperityTab({me, target}: {me: Me; target: Target}) {
-    const [data, setData] = useState<ProsperityView | null>(null);
+export function ProsperityTab({me, target, initial}: {me: Me; target: Target; initial?: ProsperityView}) {
+    const [data, setData] = useState<ProsperityView | null>(initial ?? null);   // (`initial`: the render smoke's.)
     const [players, setPlayers] = useState<{id: string; name: string}[]>([]);
     const [problem, setProblem] = useState(''), [said, setSaid] = useState('');
     const [busy, setBusy] = useState(false);
@@ -65,7 +67,6 @@ export function ProsperityTab({me, target}: {me: Me; target: Target}) {
     const markets = report?.markets ?? [];
     const marketName = (id: string) => markets.find(m => m.id === id)?.name ?? id;
     const kinds = report?.eventKinds ?? [];
-    const weekDays = report?.weekDays ?? [];
     const today = data?.gameDay === null || data?.gameDay === undefined ? null : Math.floor(data.gameDay);
     const nextTwoWeeks = today === null ? [] : Array.from({length: 14}, (_, i) => today - (today % 7) + i).filter(d => d >= today);
     const locked = !canAct || busy;
@@ -98,7 +99,7 @@ export function ProsperityTab({me, target}: {me: Me; target: Target}) {
                 <table className="dm-table"><thead><tr><th>Market</th><th>Times</th><th title="Households: destitute / poor / comfortable / rich (the DM's bands among them)">Bands</th>
                     <th title="Hunger 60 or more">Hungry</th><th title="Short of food today">Short</th><th title="Thefts expected today">Thieves</th>
                     <th>Beggars</th><th>Dole</th><th></th></tr></thead>
-                    <tbody>{markets.map(m => <>
+                    <tbody>{markets.map(m => <Fragment key={m.id}>
                         <tr key={m.id}><td>{m.name}</td>
                             <td title={m.times.cause}>{m.times.word}{m.times.cause ? ` · ${m.times.cause}` : ''}
                                 {m.nudge && <em> · nudged {signed(m.nudge.points)} until day {Math.floor(m.nudge.until)}{m.nudge.words ? ` (${m.nudge.words})` : ''}</em>}
@@ -121,13 +122,13 @@ export function ProsperityTab({me, target}: {me: Me; target: Target}) {
                             <label className="field"><span>Event</span><select value={draft.kind} onChange={e => set({kind: e.target.value})}>
                                 {kinds.map(k => <option key={k.id} value={k.id}>{k.words || k.id}</option>)}</select></label>
                             <label className="field"><span>Day (this week or next)</span><select value={draft.day} onChange={e => set({day: e.target.value})}>
-                                {nextTwoWeeks.map(d => <option key={d} value={d}>{d === today ? 'today' : `day ${d}`}{weekDays.includes(d) ? '' : ' (next week)'}</option>)}</select></label>
+                                {nextTwoWeeks.map(d => <option key={d} value={d}>{dayLabel(d, today, report?.nextWeek ?? (today === null ? null : today - (today % 7) + 7))}</option>)}</select></label>
                             <label className="field"><span>Hour</span><input type="number" min={0} max={23} value={draft.hour} onChange={e => set({hour: e.target.value})} /></label>
                             <button className="primary" disabled={locked || !draft.kind} onClick={() =>
                                 void act('event.add', m.id, {kind: draft.kind, hour: whole(draft.hour) || 0, ...(draft.day ? {day: whole(draft.day)} : {})},
                                          `An event added at ${m.name}`)}>Add the event</button>
                         </div></td></tr>}
-                    </>)}</tbody></table>
+                    </Fragment>)}</tbody></table>
                 <p className="meta">Thefts today: {data.thefts}.</p>
 
                 <h3>The price board (the largest pressures)</h3>
@@ -137,7 +138,7 @@ export function ProsperityTab({me, target}: {me: Me; target: Target}) {
 
                 <h3>Harvests</h3>
                 <table className="dm-table"><thead><tr><th>Area</th><th>Harvest</th><th>Called</th><th></th></tr></thead>
-                    <tbody>{(report?.areas ?? []).map(a => <>
+                    <tbody>{(report?.areas ?? []).map(a => <Fragment key={a.id}>
                         <tr key={a.id}><td>{a.name}</td><td>{a.harvest}</td>
                             <td>{a.override ? `${a.override.word} until day ${Math.floor(a.override.until)}${a.override.words ? ` (${a.override.words})` : ''}` : '—'}</td>
                             <td><button disabled={locked} onClick={() => toggle(`harvest:${a.id}`, {days: ''})}>Call the harvest</button>
@@ -152,7 +153,7 @@ export function ProsperityTab({me, target}: {me: Me; target: Target}) {
                                 void act('harvest.override', a.id, {word: draft.word, words: draft.words, ...(draft.days ? {days: whole(draft.days)} : {})},
                                          `${a.name}'s harvest called ${draft.word}`)}>Call it</button>
                         </div></td></tr>}
-                    </>)}</tbody></table>
+                    </Fragment>)}</tbody></table>
 
                 <h3>This week: wagons and carts</h3>
                 <table className="dm-table"><thead><tr><th>Day</th><th>From</th><th>To</th><th>State</th><th>Goods</th></tr></thead>
@@ -166,7 +167,7 @@ export function ProsperityTab({me, target}: {me: Me; target: Target}) {
                             void act('ship.storm', s.id, {}, `${s.name} stormbound`)}>Storm</button>}</td></tr>)}</tbody></table>
                 <h3>This week: events</h3>
                 <table className="dm-table"><thead><tr><th>Day</th><th>Market</th><th>Event</th><th>State</th><th>By</th><th></th></tr></thead>
-                    <tbody>{data.week.events.map(e => <tr key={e.id}><td className="num">{e.day} {String(Math.floor(e.hour)).padStart(2, '0')}:00</td>
+                    <tbody>{data.week.events.map(e => <tr key={e.id}><td className="num">{e.day} {clock(e.hour)}</td>
                         <td>{marketName(e.market)}</td><td title={e.kind}>{e.words || e.kind}</td><td>{e.state}</td><td>{e.by}</td>
                         <td>{(e.state === 'due' || e.state === 'on') && <button disabled={locked} onClick={() => window.confirm(`Cancel ${e.words || e.kind}?`) &&
                             void act('event.cancel', e.id, {}, 'Event cancelled')}>Cancel</button>}</td></tr>)}</tbody></table>
@@ -203,7 +204,7 @@ export function ProsperityTab({me, target}: {me: Me; target: Target}) {
                 <table className="dm-table"><tbody>{data.towns.map(t => <tr key={t.community}><td>{t.community}</td><td className="num">{p(t.treasury)}</td></tr>)}</tbody></table>
 
                 <h3>The log (28 days)</h3>
-                <ol className="dm-log">{data.log.map((e, i) => <li key={i}><small>{e.at.startsWith('game day') ? e.at : new Date(e.at).toLocaleString()}</small> {e.text}</li>)}</ol>
+                <ol className="dm-log">{data.log.map((e, i) => <li key={i} className={e.state ? `dm-log-${e.state}` : undefined}><small>{e.at.startsWith('game day') ? e.at : new Date(e.at).toLocaleString()}</small> {e.text}</li>)}</ol>
             </div>
         </div>}
     </div>;

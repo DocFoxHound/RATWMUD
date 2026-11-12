@@ -1118,6 +1118,32 @@ class ProsperityTests(Fixture):
         for gone in ('total', 'houses', 'funds', 'carters', 'residents', 'capital'):
             self.assertNotIn(gone, view)
 
+    def test_the_log_says_what_the_server_made_of_each_act(self):
+        # Doc 79, Phase 9's first repair: an act is in the log with its outcome, never as done when the server refused it
+        # or it was never applied; the band in force on an NPC is the report's.
+        self.plant()
+        master = self.sign_in('dm-master')
+        ids = {name: self.dm.act(master, 'dev', kind, target, payload)['id'] for name, kind, target, payload in (
+            ('grant', 'character.grant', 'player-ada', {'coins': 23, 'reason': 'for the lost ewe'}),
+            ('over', 'character.grant', 'player-ada', {'coins': 2500, 'reason': 'too much'}),
+            ('storm', 'ship.storm', 's1', {}), ('nudge', 'times.nudge', 'grey', {'points': 5}))}
+        with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
+            for name, status, result in (('grant', 'applied', 'Granted 23p: for the lost ewe.'),
+                                         ('over', 'refused', 'Over the day\'s grants for that player (477p left today).'),
+                                         ('storm', 'expired', 'Not applied within ten minutes.')):
+                owner.execute('UPDATE dm.actions SET status = %s, result = %s WHERE id = %s', (status, result, ids[name]))
+        log = {e['text'].split(':', 2)[1].strip(): e for e in self.dm.prosperity('dev')['log'] if e.get('state')}
+        texts = [e['text'] for e in self.dm.prosperity('dev')['log'] if e.get('state')]
+        self.assertTrue(any('character.grant' in t and 'done (Granted 23p' in t for t in texts), texts)
+        self.assertTrue(any('character.grant' in t and 'refused by the game (Over the day' in t for t in texts), texts)
+        self.assertTrue(any('ship.storm s1: never applied' in t for t in texts), texts)
+        self.assertTrue(any('times.nudge Greyfen: waiting for the game server' in t for t in texts), texts)
+        self.assertTrue(log, texts)
+        report = {**REPORT, 'bandOverrides': [{'household': 'h:cottage_1', 'band': 'poor', 'until': 52, 'members': ['npc_x', 'npc_y']}]}
+        self.assertEqual(D.npc_band_override(report, 'npc_y'), {'band': 'poor', 'until': 52, 'household': 'h:cottage_1'})
+        self.assertIsNone(D.npc_band_override(report, 'npc_z'))
+        self.assertEqual(D.act_before('band.override', 'npc_x', {'report': report})['band'], 'poor', 'the audit\'s before')
+
     def test_an_old_or_missing_checkpoint(self):
         self.plant(report=False)
         with W.connect('dev', 'owner', dbname=self.names['dev']) as owner:
@@ -1170,11 +1196,12 @@ class ProsperityTests(Fixture):
         self.assertEqual({q[3] for q in queued}, {'dm-master'})
         self.assertEqual([a[0] for a in audit], [k for k, *_ in cases])
         nudge = audit[0][2]
-        self.assertIn('before: {"cause": "the frost", "points": -30', nudge)
-        self.assertIn('after: {"days": 366, "points": -100', nudge)
+        self.assertIn('before (as last saved): {"cause": "the frost", "points": -30', nudge)
+        self.assertIn('asked: {"days": 366, "points": -100', nudge)
+        self.assertRegex(nudge, r'grey \(#\d+\)', 'the dm.actions row it queued')
         self.assertIn('a story', nudge)
-        self.assertIn('before: {"cash": 40}', audit[-2][2], "the player's cash before a grant")
-        self.assertIn('before: {"day": 42, "kind": "wedding", "market": "grey", "status": "due"}', audit[7][2])
+        self.assertIn('before (as last saved): {"cash": 40}', audit[-2][2], "the player's cash before a grant")
+        self.assertIn('before (as last saved): {"day": 42, "kind": "wedding", "market": "grey", "status": "due"}', audit[7][2])
         self.assertFalse([k for k, *_ in cases if k.startswith('economy.')])
 
     def test_acts_refused_only_for_an_unknown_target_or_a_malformed_payload(self):
@@ -1184,7 +1211,7 @@ class ProsperityTests(Fixture):
                 ('times.nudge', 'atlantis', {'points': 5}, 404), ('times.nudge', 'grey', {'points': 'lots'}, 422),
                 ('harvest.override', 'grey', {'word': 'poor'}, 404), ('harvest.override', 'orchards', {'word': 'blight'}, 422),
                 ('event.add', 'grey', {'kind': 'flood'}, 422), ('event.add', 'grey', {'kind': 'Bad Kind'}, 422),
-                ('event.cancel', 'e99', {}, 404), ('ship.storm', 's99', {}, 404), ('prices.reset', 'nowhere', {}, 404),
+                ('event.cancel', 'e99', {}, 404), ('prices.reset', 'nowhere', {}, 404),
                 ('prices.reset', 'grey', {'words': 'the old ' + 'd' + 'og market'}, 422),
                 ('band.override', 'nobody', {'band': 'rich'}, 404), ('band.override', greyfen()['people'][0]['id'], {'band': 'royal'}, 422),
                 ('character.grant', 'player-nobody', {'coins': 5, 'reason': 'x'}, 404),
@@ -1197,6 +1224,15 @@ class ProsperityTests(Fixture):
                 with self.assertRaises(D.DMError) as raised:
                     self.dm.act(master, 'dev', kind, target, payload)
                 self.assertEqual(raised.exception.status, status, str(raised.exception))
+        # The words of a 404 (Phase 9's first repair: "No such markets", "No such npc").
+        for kind, target, words in (('prices.reset', 'nowhere', 'No such market: nowhere.'),
+                                    ('band.override', 'player-cid', 'No such resident: player-cid.'),
+                                    ('character.grant', 'player-nobody', 'No such player: player-nobody.')):
+            with self.assertRaises(D.DMError) as raised:
+                self.dm.act(master, 'dev', kind, target, {'band': 'rich', 'coins': 5, 'reason': 'x'})
+            self.assertEqual(str(raised.exception), words)
+        # A ship is the game server's to judge: one rolled since the last checkpoint (a new week's) is not refused here.
+        self.assertEqual(self.dm.act(master, 'dev', 'ship.storm', 's99', {})['status'], 'queued')
         # The same acts reach the generic routes: /api/live/action and, for a character, /api/actions.
         self.assertEqual(self.dm.live_action(master, 'dev', 'ship.storm', 's3')['payload'], {})
         self.assertEqual(self.dm.request(master, 'dev', 'character.grant', 'player-ada', payload={'coins': 3, 'reason': 'thanks'})['payload'],

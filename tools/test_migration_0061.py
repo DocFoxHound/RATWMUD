@@ -143,7 +143,7 @@ class Migration0061Tests(unittest.TestCase):
             self.assertEqual(npcs, [('bram', 20, 1, 2, None), ('cora', 20, 1, 2, None)])
             text = db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0]
             lines = text.split('\n')
-            self.assertEqual(lines[0], 'economy 1234 40 30')
+            self.assertEqual(lines[0], 'economy 1234 40 30 10 12')
             self.assertIn('loop needs off', lines)
             for gone in ('store ', 'nostore ', 'countryoff ', 'subsidy ', 'comforts ', 'farms ', 'farmarea ', 'farm '):
                 self.assertFalse([l for l in lines if l.startswith(gone)], gone)
@@ -173,6 +173,20 @@ class Migration0061Tests(unittest.TestCase):
             db_economy = [l for l in db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0].split('\n')
                           if l.split(' ', 1)[0] in ('economy', 'loop', 'season', 'rule', 'service', 'overrides')]
             self.assertEqual(M.comparable(written), M.comparable(db_economy))
+
+    def test_an_overrides_line_too_long_is_written_for_core_to_skip(self):
+        # Phase 9's first repair: an overrides object past Core's 65,536 bytes is written whatever its length (Core skips
+        # it with a warning, RATW_ECONOMY), never left out of the manifest unsaid.
+        with Scratch() as db:
+            W.migrate(db.owner)
+            world = seed_world(db.owner)
+            big = {'market': {'wharf': {'ships': ['the Gull ' + 'x' * 70000]}}}
+            db.owner.execute('UPDATE live.economy SET rules = rules || %s::jsonb WHERE world_id = %s', (json.dumps(big), world))
+            lines = db.owner.execute('SELECT live.people_manifest(%s)', (world,)).fetchone()[0].split('\n')
+            overrides = [l for l in lines if l.startswith('overrides ')]
+            self.assertEqual(len(overrides), 1)
+            self.assertGreater(len(overrides[0].encode()), M.OVERRIDES_MOST)
+            self.assertTrue(lines[0].startswith('economy ') and lines[0].endswith(' 10 12'), 'the old dailies kept for older servers')
 
     def test_the_game_may_still_read_the_manifest(self):
         with Scratch() as db:
@@ -255,6 +269,9 @@ class CopiesOfRealWorlds(unittest.TestCase):
         text = '\n'.join(seen)
         self.assertTrue(any('listening on port' in l for l in seen), f'{source}: the server never listened:\n' + text[-3000:])
         self.assertNotIn('Unknown manifest record', text, source)
+        # (Phase 9's first repair: the migrated manifest reads clean, nothing of it skipped.)
+        self.assertFalse([l for l in seen if 'RATW_ECONOMY skipped' in l or 'more economy records skipped' in l],
+                         f'{source}: no economy record skipped')
         # A save that never ran staged (both, today) says so once (doc 79, 14).
         self.assertEqual('economy staged (doc 79)' in text, not staged, f'{source}: the first-staged line')
         loaded = [l for l in seen if 'RATW_ECONOMY' in l or 'economy' in l.lower() or 'loaded' in l.lower()]

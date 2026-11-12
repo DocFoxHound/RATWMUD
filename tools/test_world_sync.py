@@ -421,10 +421,18 @@ class PullTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(self.one(self.dev, "SELECT purse FROM live.npcs WHERE id = 'wren'"), 66)
         self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Hi from dev.', band_override = 'poor' WHERE id = 'sloe'")
         WS.maintenance(self.live, True, 'Ada', 'Import')
+        # (A band live can't hold is refused, never dropped unsaid: the plan says so, and the import goes no further.
+        # Doc 79, Phase 9's first repair.)
+        plan = WS.plan_import(self.dev)
+        self.assertTrue(any('lacks migration 0061' in b and 'sloe' in b for b in plan['blocked']), plan['blocked'])
+        with self.assertRaisesRegex(WS.PublishError, 'band_override'):
+            WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertNotEqual(self.one(self.live, "SELECT greeting FROM live.npcs WHERE id = 'sloe'"), 'Hi from dev.', 'nothing imported')
+        # From rank again: it goes.
+        self.sql(self.dev, "UPDATE live.npcs SET band_override = NULL WHERE id = 'sloe'")
         result = WS.import_(self.dev, {}, 'password', 'Ada')
         self.assertEqual(result['summary']['live'], {'NPCs': {'added': 0, 'changed': 1, 'removed': 0}})
         self.assertEqual(self.one(self.live, "SELECT greeting FROM live.npcs WHERE id = 'sloe'"), 'Hi from dev.')
-        self.assertEqual(self.one(self.dev, "SELECT band_override FROM live.npcs WHERE id = 'sloe'"), 'poor', 'dev keeps its band')
 
     def test_conflicts_field_by_field(self):
         self.sql(self.dev, "UPDATE live.npcs SET name = 'Wrenna', greeting = 'Dev greeting.' WHERE id = 'wren'")
@@ -548,6 +556,38 @@ class ImportTests(ScratchWorlds, unittest.TestCase):
         self.assertEqual(self.one(self.live, "SELECT band_override FROM live.npcs WHERE id = 'wren'"), 'rich', 'the band travels')
         self.assertEqual(self.one(self.live, 'SELECT resale_markup FROM live.economy'), 75, 'the world\'s economy stays its own')
         self.assertEqual(self.one(self.live, "SELECT name FROM world.interiors WHERE id = 'shop'"), 'The Old Shop')
+
+    def test_a_band_cleared_reaches_the_other_world(self):
+        # Doc 79, Phase 9's first repair: a band set back to From rank (NULL) is written as NULL, both ways; the plan
+        # after says the worlds agree because they do.
+        self.sql(self.dev, "UPDATE live.npcs SET band_override = 'rich' WHERE id = 'wren'")
+        WS.maintenance(self.live, True, 'Ada', 'Import')
+        WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertEqual(self.one(self.live, "SELECT band_override FROM live.npcs WHERE id = 'wren'"), 'rich')
+        self.sql(self.dev, "UPDATE live.npcs SET band_override = NULL WHERE id = 'wren'")
+        self.assertEqual(self.ids(WS.diff(self.dev)['devChanges']), ['live.npcs/wren'])
+        WS.import_(self.dev, {}, 'password', 'Ada')
+        self.assertIsNone(self.one(self.live, "SELECT band_override FROM live.npcs WHERE id = 'wren'"), 'cleared on live too')
+        self.assertIsNone(self.one(self.dev, "SELECT band_override FROM live.npcs WHERE id = 'wren'"), 'and dev stays cleared')
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+        # Update from live: a band the DM set there and then cleared there.
+        WS.maintenance(self.live, False, 'Ada')
+        self.sql(self.live, "UPDATE live.npcs SET band_override = 'poor' WHERE id = 'sloe'")
+        WS.pull(self.dev, editor='Ada')
+        self.assertEqual(self.one(self.dev, "SELECT band_override FROM live.npcs WHERE id = 'sloe'"), 'poor')
+        self.sql(self.live, "UPDATE live.npcs SET band_override = NULL WHERE id = 'sloe'")
+        WS.pull(self.dev, editor='Ada')
+        self.assertIsNone(self.one(self.dev, "SELECT band_override FROM live.npcs WHERE id = 'sloe'"), 'cleared in dev by the pull')
+        self.assertEqual(WS.diff(self.dev)['counts'], {'live': 0, 'dev': 0, 'conflicts': 0})
+
+    def test_a_write_names_a_column_the_target_lacks(self):
+        # Only the optional band column is left out of a world without it, and only when unset; any other column the
+        # target hasn't got fails loudly, as before Phase 9.
+        with W.connect(self.live, 'owner') as conn:
+            row = next(iter(WS.read(conn, 'live.npcs', 'greyfen').values()))
+            with self.assertRaises(Exception):
+                with conn.transaction():
+                    WS.write(conn, 'live.npcs', {**row, 'a_column_from_the_future': 1})
 
     def test_conflicts_are_resolved_at_import_and_dev_ends_level_with_live(self):
         self.sql(self.dev, "UPDATE live.npcs SET greeting = 'Dev greeting.' WHERE id = 'sloe'")

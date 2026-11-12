@@ -264,7 +264,7 @@ class StoreTests(unittest.TestCase):
         # Back at the defaults: one economy line.
         loaded, revision = S.load_world(self.conn, 'greyfen')
         S.save_world(self.conn, {**loaded, 'economy': S.default_economy()}, revision)
-        self.assertEqual(self.database_economy_lines(), ['economy 1000 100 50'])
+        self.assertEqual(self.database_economy_lines(), ['economy 1000 100 50 10 12'])
 
     def test_save_economy_keeps_what_it_doesnt_know_and_patch_takes_two_writers(self):
         self.create(greyfen())
@@ -292,6 +292,47 @@ class StoreTests(unittest.TestCase):
             other.close()
         rules = self.conn.execute('SELECT rules FROM live.economy').fetchone()[0]
         self.assertEqual((rules['prosperity'], rules['harvestBias'], 'prosperityCause' in rules), (40, 5, False))
+
+    def test_an_empty_never_imported_list_is_kept(self):
+        # Doc 79, Phase 9's first repair: [] says ships carry every good (in place of market.json's wharf.never, cheese);
+        # it was dropped as "empty" on every write, so the world went back to cheese and the file and the database
+        # disagreed.
+        self.create(greyfen())
+        entity = {**S.default_economy(), 'overrides': {'neverImported': []}}
+        self.assertEqual(S.save_economy(self.conn, 'greyfen', entity)['overrides'], {'neverImported': []})
+        self.assertEqual(self.conn.execute('SELECT rules FROM live.economy').fetchone()[0], {'neverImported': []})
+        self.assertEqual(S.economy_value(self.conn, 'greyfen')['overrides'], {'neverImported': []})
+        line = [l for l in self.database_economy_lines() if l.startswith('overrides ')]
+        self.assertEqual(line, ['overrides {"neverImported": []}'])
+        self.assertEqual(M.comparable(M.economy_lines(entity)), M.comparable(self.database_economy_lines()), 'the file says the same')
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        S.save_world(self.conn, loaded, revision)
+        self.assertEqual(S.economy_value(self.conn, 'greyfen')['overrides'], {'neverImported': []}, 'a whole save keeps it')
+
+    def test_a_stored_override_core_skips_blocks_no_save_or_build(self):
+        # Doc 79, 14: a bad override is skipped by Core with a warning, never refused; one stored past the studio (a hand,
+        # a package, a data file changed since) must not stop a whole save, a build, an NPC's save or another edit.
+        import live_edit as L
+        import world_build
+        self.create(greyfen())
+        S.patch_economy_rules(self.conn, 'greyfen', {'status': {'shares': [{'at': -100, 'shares': [40, 40, 40, 20]},
+                                                                          {'at': 100, 'shares': [2, 12, 70, 16]}]},
+                                                     'neverImported': ['nonsense_good']})
+        loaded, revision = S.load_world(self.conn, 'greyfen')
+        revision = S.save_world(self.conn, loaded, revision)
+        errors, warnings = E.economy_problems(loaded['economy'])
+        self.assertEqual(errors, [])
+        self.assertTrue(any('sums to 140' in w for w in warnings) and any('nonsense_good' in w for w in warnings), warnings)
+        self.assertTrue(E.check_economy(loaded['economy'], strict_overrides=True), 'the studio still refuses one it would write')
+        self.assertTrue(world_build.build(self.conn, 'test'), 'a build')
+        stored = S.economy_value(self.conn, 'greyfen')
+        L.apply_edit(self.conn, 'a1', 'Ada', 'The treasury', [{'key': 'economy', 'before': stored, 'after': {**stored, 'treasury': 1200}}],
+                     queue_sync=False)
+        self.assertEqual(S.economy_value(self.conn, 'greyfen')['treasury'], 1200, 'another edit goes')
+        with self.assertRaises(L.Rejected):
+            now = S.economy_value(self.conn, 'greyfen')
+            L.apply_edit(self.conn, 'a1', 'Ada', 'Bad', [{'key': 'economy', 'before': now, 'after': {**now, 'treasury': -5}}],
+                         queue_sync=False)
 
     def test_an_npcs_band_round_trips_and_its_line_follows_its_records(self):
         p = greyfen()
@@ -457,11 +498,20 @@ class WithoutMigration61Tests(OlderWorld, unittest.TestCase):
                 S.save_economy(self.conn, 'greyfen', {**economy, **change})
         with self.assertRaises(S.EconomyRefused):
             S.patch_economy_rules(self.conn, 'greyfen', {'market': {'events': {'perWeek': 1}}})
-        # A band in a pre-slim world: kept in the project, not written (no column); the business switches untouched.
+        # A band in a pre-slim world (no column to hold it): refused, never dropped unsaid (doc 79, Phase 9's first
+        # repair), by a whole save and by a live edit; the business switches untouched.
+        import live_edit as L
         loaded, revision = S.load_world(self.conn, 'greyfen')
         loaded['people'][0]['band'] = 'rich'
+        with self.assertRaisesRegex(S.EconomyRefused, 'needs migration 0061'):
+            S.save_world(self.conn, loaded, revision)
+        loaded['people'][0]['band'] = None
         S.save_world(self.conn, loaded, revision)
         self.assertFalse(any(q.get('band') for q in S.load_world(self.conn, 'greyfen')[0]['people']))
+        key = 'person:' + loaded['people'][0]['id']
+        before = L.Batch(self.conn, L.world_row(self.conn)).current(key)
+        with self.assertRaisesRegex(L.Rejected, 'needs migration 0061'):
+            L.apply_edit(self.conn, 'a1', 'Ada', 'A band', [{'key': key, 'before': before, 'after': {**before, 'band': 'rich'}}])
         self.assertEqual(self.conn.execute('SELECT count(*) FROM live.business_settings').fetchone()[0], 0)
 
 

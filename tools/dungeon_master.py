@@ -909,6 +909,15 @@ class DungeonMaster:
             areas = [{'id': r[0], 'name': r[1], 'kind': r[2], 'cell': r[3], 'tiles': r[4]}
                      for r in conn.execute('''SELECT id, name, kind, area, tiles FROM live.npc_areas WHERE world_id = %s
                                               ORDER BY position, id''', (world[0],)).fetchall()]
+            # (The DM's bands for a while in force, as the last checkpoint's report has them: each NPC of a household held
+            # by band.override, its band and the day it lapses. Doc 79, Phase 9's first repair: they could be set, not seen.)
+            saved = conn.execute("SELECT payload::jsonb->'society'->'report'->'bandOverrides' FROM game.checkpoints "
+                                 'WHERE world_id = %s', (world[0],)).fetchone()
+            held = {}
+            for o in (_json_value(saved[0]) if saved else None) or []:
+                if isinstance(o, dict):
+                    for npc in o.get('members') or []:
+                        held[npc] = {'band': o.get('band'), 'until': o.get('until'), 'household': o.get('household')}
             spawns = []
             for r in conn.execute('''SELECT id, name, area_id, template_id, count, respawn_minutes, enabled FROM live.spawns
                                      WHERE world_id = %s ORDER BY position, id''', (world[0],)).fetchall():
@@ -918,7 +927,7 @@ class DungeonMaster:
                                'dead': sum(1 for n in made if n in dead)})
         return {'target': target, 'world': world[0], 'people': project['people'], 'holders': holders, 'dead': dead,
                 'routes': project['routes'], 'areas': areas, 'spawns': spawns, 'wanders': wanders, 'spawned': spawned,
-                'actions': actions}
+                'actions': actions, 'bandsHeld': held}
 
     # -- the calendar (Docs/Design/26-living-npcs.md, Phase 9) ----------------------
     def calendar(self, target):
@@ -982,8 +991,13 @@ class DungeonMaster:
                 events = []
             acts = list(ECONOMY_ACTS)
             audit = conn.execute('''SELECT at, action, target, detail, who FROM dm.audit
-                                    WHERE (action LIKE 'economy.%%' OR action = ANY(%s)) AND at >= %s
-                                    ORDER BY at DESC, sequence DESC LIMIT 400''', (acts, self.clock() - 28 * 86400)).fetchall()
+                                    WHERE action LIKE 'economy.%%' AND at >= %s
+                                    ORDER BY at DESC, sequence DESC LIMIT 400''', (self.clock() - 28 * 86400,)).fetchall()
+            # (The DM's acts from dm.actions, each with what the game server made of it: applied, refused, expired or
+            # still queued. The audit's row is written as an act is queued, before the server has judged it.)
+            done = conn.execute('''SELECT requested_at, kind, target_id, requested_by, status, result FROM dm.actions
+                                   WHERE kind = ANY(%s) AND requested_at >= now() - interval '28 days'
+                                   ORDER BY id DESC LIMIT 400''', (acts,)).fetchall()
         society = _json_value(row[0]) if row else {}
         roads = _json_value(row[1]) if row else {}
         society = society if isinstance(society, dict) else {}
@@ -1005,7 +1019,7 @@ class DungeonMaster:
         return {'target': target, 'writtenAt': written.isoformat() if written else None, 'gameDay': day, 'stale': stale,
                 'report': report, 'towns': towns, 'week': week, 'players': players, 'thefts': thefts,
                 'word': street_word(report, week, market_names),
-                'log': economy_log(audit, events, board, market_names, today)}
+                'log': economy_log(audit, events, board, market_names, today, done)}
 
     def act(self, who, target, kind, target_id, payload=None, reason=''):
         """A live act on the staged economy (doc 79, 12; Phase 9 plan 1.5): a Times nudge, a harvest called, an event added
@@ -1031,7 +1045,7 @@ class DungeonMaster:
             day = row[1] if row and row[1] is not None and row[1] >= 0 else None
             known = self._act_targets(conn, world, what, society)
             if known is not None and target_id not in known:
-                raise DMError(f'No such {what.replace("_", " ")}: {target_id}.', 404)
+                raise DMError(f'No such {TARGET_WORDS.get(what, what)}: {target_id}.', 404)
             clean = normalise(payload if isinstance(payload, dict) else {}, {'day': day, 'society': society})
             before = act_before(kind, target_id, society)
             with conn.transaction():
@@ -1039,7 +1053,8 @@ class DungeonMaster:
                                             RETURNING id''', (kind, target_id, who['username'], json.dumps(clean))).fetchone()[0]
                 conn.execute("SELECT pg_notify('ratw_dm', %s)", (json.dumps({'action': action_id}),))
                 self.audit(conn, who['username'], kind, target_id,
-                           f'{target.upper()}: {kind} {target_id} — before: {_brief(before)}; after: {_brief(clean)}'
+                           f'{target.upper()}: {kind} {target_id} (#{action_id}) — before (as last saved): {_brief(before)}; '
+                           f'asked: {_brief(clean)}'
                            + (f' — {reason[:500]}' if reason else ''))
         return {'id': action_id, 'status': 'queued', 'payload': clean}
 
@@ -1074,8 +1089,8 @@ class DungeonMaster:
                 "SELECT result FROM dm.actions WHERE kind = 'event.add' AND status = 'applied' AND result ~ '^e[0-9]+:' "
                 "AND done_at > now() - interval '28 days'").fetchall()}
             return {e.get('id') for e in board.get('events', []) if isinstance(e, dict)} | added or None
-        if what == 'ship':
-            return {s.get('id') for s in board.get('ships', []) if isinstance(s, dict)} or None
+        # (A ship: the game server judges it. One rolled since the last checkpoint, a new week's, isn't in the checkpoint
+        # yet, and Core refuses one not still due.)
         return None
 
     def call_festival(self, who, target, community, name='', in_days=0):
@@ -2019,7 +2034,8 @@ WAGON_EVENTS = ('caravan departs', 'caravan arrives', 'caravan lost', 'wagon can
 THEFT_EVENTS = ('theft', 'attempted theft')
 STALE_AFTER = 180                     # Seconds: a checkpoint older than this is shown as stale (the server may be down).
 RIPPLE_LOGGED = 0.2                   # A pressure move this big is in the year log (12: "big ripples").
-EVENT_ID = re.compile(r'^[a-z0-9_]{1,32}$')
+TARGET_WORDS = {'markets': 'market', 'npc': 'resident', 'character': 'player'}   # (A 404's words: "No such resident".)
+EVENT_ID = EC.EVENT_ID                 # (An event kind's id: economy_contract's, the one Core holds.)
 
 
 class _Words:
@@ -2169,6 +2185,17 @@ def act_before(kind, target_id, society):
     if kind == 'character.grant':
         account = accounts.get(target_id)
         return {'cash': _whole_or_zero(account.get('cash'))} if isinstance(account, dict) else None
+    if kind == 'band.override':
+        return npc_band_override(society.get('report'), target_id)
+    return None
+
+
+def npc_band_override(report, npc):
+    """The DM's band for a while in force on an NPC's household, as the last report has it: {band, until, household} or
+    None."""
+    for o in (report or {}).get('bandOverrides', []) if isinstance(report, dict) else []:
+        if isinstance(o, dict) and npc in (o.get('members') or []):
+            return {'band': o.get('band'), 'until': o.get('until'), 'household': o.get('household')}
     return None
 
 
@@ -2293,13 +2320,22 @@ def street_word(report, week, names):
     return out[:20]
 
 
-def economy_log(audit, events, board, names, today):
-    """The economy's log for 28 days (12: the year log): the DM's lever writes and acts (dm.audit), what the game made
-    of them and the causes it told (game.events), and the Board's big ripples (a pressure move over 0.2)."""
+ACT_STATES = {'applied': 'done', 'refused': 'refused by the game', 'expired': 'never applied (no server took it)',
+              'queued': 'waiting for the game server', 'failed': 'failed'}
+
+
+def economy_log(audit, events, board, names, today, acts=()):
+    """The economy's log for 28 days (12: the year log): the DM's lever writes (dm.audit), the DM's acts with what the game
+    server made of each (dm.actions: done, refused with its reason, never applied, or still waiting), what the game made of
+    them and the causes it told (game.events), and the Board's big ripples (a pressure move over 0.2)."""
     out = []
     for at, action, target, detail, who in audit:
         out.append({'at': datetime.fromtimestamp(float(at), timezone.utc).isoformat(), 'kind': action,
                     'text': f'{who}: {detail}'[:400]})
+    for at, kind, target, who, status, result in acts:
+        out.append({'at': at.astimezone(timezone.utc).isoformat() if hasattr(at, 'astimezone') else str(at), 'kind': kind,
+                    'state': status, 'text': f'{who}: {kind} {names.get(target, target)}: {ACT_STATES.get(status, status)}'
+                                            + (f' ({result})' if result else '')})
     for kind, actor, target, _cell, item, quantity, day, detail, recorded in events:
         if kind not in PROSPERITY_LOG_EVENTS:
             continue

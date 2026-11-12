@@ -416,7 +416,7 @@ class ContentTests(unittest.TestCase):
         self.assertEqual(sum(line.startswith('resident ') for line in manifest), 11)    # (Brann the smith since doc 33.)
         self.assertIn('herbs "town" 4.5 14.5', manifest)
         self.assertTrue(any(line.startswith('route "town_watch" 9 ') for line in manifest))
-        self.assertIn('economy 1000 100 50', manifest)     # (Three numbers since migration 0061: doc 79, 14.)
+        self.assertIn('economy 1000 100 50 10 12', manifest)     # (The old dailies at their defaults since 0061: doc 79, 14.)
 
     def test_protected_residents_export_after_their_resident(self):
         # Doc 57, 6: a resident players can't ruin, authored in Atlas, follows its resident in the world file.
@@ -518,8 +518,12 @@ class ContentTests(unittest.TestCase):
         self.assertEqual(editor.check_economy({**e, 'overrides': {'prosperityCause': 'the war levy', 'neverImported': ['salt']}}), [])
         for bad in ({'neverImported': ['moonbeams']}, {'prosperityCause': 'the dog tax'}, {'steer': 1},
                     {'status': {'caps': {'theftADay': 10 ** 6}}}):
-            problems = editor.check_economy({**e, 'overrides': bad})
+            problems = editor.check_economy({**e, 'overrides': bad}, strict_overrides=True)
             self.assertTrue(problems and all(x.startswith('economy.overrides: ') for x in problems), (bad, problems))
+            # (Without strict_overrides, the save's and the build's check: a warning, as Core skips it, never a refusal.)
+            errors, warnings = editor.economy_problems({**e, 'overrides': bad})
+            self.assertEqual(errors, [], bad)
+            self.assertTrue(any(w.startswith('economy.overrides: ') for w in warnings), (bad, warnings))
         p = self.greyfen()
         p['people'][0]['band'] = 'poor'
         editor.check_project(p)

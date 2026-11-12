@@ -93,7 +93,7 @@ export const COATS = [['ivory', '#E1D9C6'], ['silver', '#ADB3B2'], ['ash', '#777
 const ECONOMY_LIMITS = {treasury: 1000000, storeHerbs: 10000, storeMeals: 10000};
 // dailyHerbs and dailyMeals: accepted and read past since doc 79 (kept as they are when present).
 const ECONOMY_READ_PAST = {dailyHerbs: 1000, dailyMeals: 1000};
-export const defaultEconomy = () => ({treasury: 1000, storeHerbs: 100, storeMeals: 50, dailyHerbs: 10, dailyMeals: 12});
+export const defaultEconomy = () => ({treasury: 1000, storeHerbs: 100, storeMeals: 50});   // (No dailies: a new project carries no dead field.)
 // The economy entity (Docs/Design/79-a-staged-economy.md, 14; tools/map_editor.py's ECONOMY_SETTINGS, world_store's):
 // optional needsPaused, seasons ({group: {price, shelf}}; a world before migration 0061 keeps {supply, price, shelf,
 // normal}), rules ({name: N}, the rules this world has changed; a rule Core no longer has is kept and ignored, never

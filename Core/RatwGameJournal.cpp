@@ -473,6 +473,11 @@ void Game::record(unsigned what, const std::string& character)
             changes.push(std::move(change));
         }
     }
+    // (A DM's act: its dm.actions id with its outcome, in the same record as what it changed, so the row is never applied
+    // again after a crash that left it queued: applyDmActions answers it from dmActs.)
+    if (!actingFor_.empty())
+        if (const auto* act = dmActs_.find(actingFor_))
+            set(path({"dmActs", actingFor_}), *act);
     if (changes.size() == 0)
         return;
     // The calendar as of this record: the days the economy, the Board and the roads have turned since the checkpoint are

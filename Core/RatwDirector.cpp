@@ -360,7 +360,7 @@ Value Bridge::snapshot(const World& world, const std::map<std::string, Entity>& 
 }
 
 Value Bridge::execute(const Value& request, const std::string& expectedId, const std::string& fingerprint, World& world,
-                      const std::set<std::string>& online, double now, const std::function<bool()>& commit, const Notice& notice)
+                      const std::set<std::string>& online, double now, const Commit& commit, const Notice& notice)
 {
     if (!safeId(expectedId) || !keys(request, {"version", "id", "worldId", "createdAtUnix", "expiresAtUnix", "kind", "payload"}) ||
         wire::strictNumber(request, "version", -1) != 1 || text(request, "id") != expectedId || text(request, "worldId") != worldId_)
@@ -415,11 +415,13 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
         // A grant or a fine (doc 79, 12; D16): a capped faucet or a sink with its reason, never from a funded account.
         const double coins = wire::strictNumber(p, "coins", 0);
         std::string problem;
-        if (coins == 0 || coins != std::floor(coins) || std::abs(coins) > 2500)
-            applied = {false, "A grant or a fine is a whole number of pennies, at most 2500 either way.", {}};
-        else if (world.society().grantPlayer(text(p, "player"), std::int64_t(coins), text(p, "reason"), problem))
-            applied = {true, std::string(coins > 0 ? "Granted " : "Fined ") + std::to_string(std::int64_t(std::abs(coins))) + "p: " +
-                                 text(p, "reason") + ".", {}};
+        std::int64_t moved = 0;
+        if (coins == 0 || coins != std::floor(coins) || std::abs(coins) > double(status::GrantsMost))
+            applied = {false, "A grant or a fine is a whole number of pennies, at most " + std::to_string(status::GrantsMost) + " either way.", {}};
+        else if (world.society().grantPlayer(text(p, "player"), std::int64_t(coins), text(p, "reason"), problem, &moved))
+            applied = {true, std::string(coins > 0 ? "Granted " : "Fined ") + std::to_string(moved) + "p" +
+                                 (coins < 0 && double(moved) < -coins ? " (all the player had; " + std::to_string(std::int64_t(-coins)) + "p asked)" : "") +
+                                 ": " + text(p, "reason") + ".", {}};
         else
             applied = {false, problem.empty() ? std::string("The grant or fine was refused.") : problem, {}};
     }
@@ -495,12 +497,17 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
     receipts_.push(receipt);
     if (receipts_.size() > 512)
         receipts_.items().erase(receipts_.items().begin());
-    if (!commit())
+    if (const int committed = commit(); committed != Committed)
     {
+        healthy_ = false;
+        // A grant, a fine, a band or a transfer the journal took before the checkpoint failed stands (the journal is
+        // replayed over the last checkpoint at the restart): kept, its receipt too, and said so, never "not committed".
+        const bool economy = kind == "player_grant" || kind == "npc_band" || kind == "economy_transfer";
+        if (committed == Journalled && applied.ok && economy)
+            return result(expectedId, true, applied.message + " (Journalled, but the checkpoint failed: it stands, and the operator channel is halted.)", now);
         if (applied.ok)
             world = before;
         receipts_ = previous;
-        healthy_ = false;
         return result(expectedId, false, "Checkpoint failed; operator channel halted without committing the requested effect.", now);
     }
     if (applied.ok && !announcement.empty())
@@ -509,7 +516,7 @@ Value Bridge::execute(const Value& request, const std::string& expectedId, const
 }
 
 void Bridge::tick(double dt, World& world, const std::map<std::string, Entity>& characters, const std::set<std::string>& online,
-                  const std::map<std::string, double>& activity, std::uint64_t revision, const std::function<bool()>& commit,
+                  const std::map<std::string, double>& activity, std::uint64_t revision, const Commit& commit,
                   const Notice& notice)
 {
     if (!enabled())

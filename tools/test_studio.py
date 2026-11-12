@@ -930,7 +930,12 @@ class EconomyTests(unittest.TestCase):
         self.assertFalse(out['changed'], 'the cause kept when none is sent')
         out = e.set_steer('dev', {'prosperity': 35, 'cause': ''}, 'dm-user')
         self.assertEqual((out['changed'], store.row['overrides']), (True, {}), 'an empty cause: the world picks one')
-        self.assertEqual(store.writes[-1], ('patch', {'prosperity': 35}, ['prosperityCause']))
+        self.assertEqual(store.writes[-1][0], 'edit', 'a dev world\'s slider goes through live_edit, logged (Phase 9\'s first repair)')
+        out = e.set_steer('dev', {'prosperity': 35, 'now': True}, 'dm-user')
+        self.assertEqual((out['changed'], out['now']), (True, True), 'now alone is a change: the times to the mark at once')
+        live = FakeStore(self, live=True)
+        live.economy.set_steer('live', {'prosperity': 40}, 'dm-user')
+        self.assertEqual(live.writes[-1], ('patch', {'prosperity': 40}, ['prosperityCause']), 'a live world\'s, the row')
         for bad in ({'cause': 'x'}, {'prosperity': 5, 'cause': 'the dog days'}, {'prosperity': 5, 'cause': 'x' * 81},
                     {'prosperity': 5, 'cause': 7}, {'prosperity': 5, 'colour': 1}, []):
             with self.assertRaises(D.DMError) as refused:
@@ -1082,6 +1087,32 @@ class EconomyFlowTests(ScratchWorlds, unittest.TestCase):
         status, data = self.call('POST', '/api/dm/economy/steer', {'world': self.live, 'prosperity': 9999}, token='dm-token')
         self.assertEqual((status, data['prosperity']['value']), (200, 100), data)
         self.assertEqual(self.one(self.live, "SELECT rules->>'prosperity' FROM live.economy"), '100')
+
+    def test_the_slider_on_dev_is_logged_and_now_alone_moves_the_times(self):
+        # Doc 79, Phase 9's first repair: on a dev world the slider goes through live_edit (open Atlas sessions follow it,
+        # its log holds it); "now" with the value as it is still queues economy.sync {now} (a slider easing to its mark).
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/steer', {'prosperity': 20}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['changed']), (200, True), data)
+        keys = [r[0] for r in self.sql(self.dev, 'SELECT key FROM world.edits ORDER BY seq')]
+        self.assertEqual(keys.count('economy'), 1, 'logged through live_edit')
+        status, data = self.call('POST', '/api/atlas/economy/steer', {'prosperity': 20, 'now': True}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['changed'], data['sync'] is not None), (200, True, True), data)
+        status, data = self.call('POST', '/api/atlas/economy/steer', {'prosperity': 20}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['changed'], data['sync']), (200, False, None), 'the same value without now: nothing')
+        queued = self.sql(self.dev, "SELECT payload FROM dm.actions WHERE kind = 'economy.sync' ORDER BY id")
+        self.assertEqual([q[0] for q in queued], [{'now': False}, {'now': True}])
+        self.assertEqual(self.one(self.dev, "SELECT rules->>'prosperity' FROM live.economy"), '20')
+
+    def test_an_empty_never_imported_list_and_a_malformed_market(self):
+        editor = {'X-RATW-Editor': self.host.atlas_token()}
+        status, data = self.call('POST', '/api/atlas/economy/imports', {'neverImported': []}, token='dm-token', headers=editor)
+        self.assertEqual((status, data['changed']), (200, True), data)
+        self.assertEqual(data['economy']['overrides'].get('neverImported'), [], 'ships carry everything: kept, not dropped')
+        self.assertIn('overrides {"neverImported": []}', self.lines(self.dev))
+        for market in ({'events': [1]}, {'events': 'x'}, {'wharf': [2]}):
+            status, data = self.call('POST', '/api/atlas/economy/market', {'market': market}, token='dm-token', headers=editor)
+            self.assertEqual(status, 400, (market, data))
 
     def test_the_rules_seasons_services_and_needs(self):
         editor = {'X-RATW-Editor': self.host.atlas_token()}

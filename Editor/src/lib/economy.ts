@@ -268,3 +268,13 @@ export function perWeekNow(d: EconomyData): number {
     const v = eventsOf(d).perWeek;
     return typeof v === 'number' ? v : d.defaults.market.events.perWeek;
 }
+
+/** An hour of the game's day with its minutes ("11:30": a seeded event at 11.5 isn't 11:00). The Prosperity tab's. */
+export const clock = (hour: number) => {
+    const minutes = Math.round((((hour % 24) + 24) % 24) * 60);
+    return `${String(Math.floor(minutes / 60) % 24).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+};
+/** A day the event form offers: today, or day N, with "(next week)" from next week's first day (the report's
+ *  nextWeek; weekDays holds this week and the next, so it can't tell them apart). */
+export const dayLabel = (day: number, today: number | null, nextWeek: number | null) =>
+    (day === today ? 'today' : `day ${day}`) + (nextWeek !== null && day >= nextWeek ? ' (next week)' : '');

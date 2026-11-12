@@ -684,6 +684,29 @@ void directorTests()
            "a failed checkpoint is not acknowledged");
     expect(world.society().account("player-ash")->cash == cash, "a failed checkpoint undoes the transfer");
     expect(world.entity("player-ash")->typing && world.entity("player-ash")->path.size() == 1, "and leaves movement and typing alone");
+    // A grant the journal took before the checkpoint failed (Game's commit says Journalled): it stands (replayed after a
+    // restart), is said to, and the channel halts; a change the journal doesn't hold is still undone (doc 79, Phase 9's
+    // first repair: the receipt said "not committed" of a grant the journal replayed).
+    const auto journalled = []() { return int(director::Bridge::Journalled); };
+    director::Bridge keeps;
+    const auto had = world.society().account("player-ash")->cash;
+    const auto stands = keeps.execute(envelope(keeps, "grant-j", "player_grant", R"({"player":"player-ash","coins":7,"reason":"for the gate"})"),
+                                      "grant-j", hash, world, online, 1001, journalled, notice);
+    expect(ok(stands) && stands.string("detail").find("the checkpoint failed") != std::string::npos &&
+               world.society().account("player-ash")->cash == had + 7,
+           "a journalled grant stands and says so: " + stands.string("detail"));
+    director::Bridge undoes;
+    expect(!ok(undoes.execute(envelope(undoes, "weather-j", "weather", R"({"cell":"exterior","preset":"fog"})"), "weather-j", hash, world,
+                              online, 1001, journalled, notice)),
+           "weather, which no journal holds, is still not acknowledged");
+    // A fine bigger than the purse: told as what it took.
+    director::Bridge fines;
+    const auto boHas = world.society().account("player-bo")->cash;
+    const auto fined = fines.execute(envelope(fines, "fine-big", "player_grant", R"({"player":"player-bo","coins":-2500,"reason":"for the fence"})"),
+                                     "fine-big", hash, world, online, 1001, commit, notice);
+    expect(ok(fined) && world.society().account("player-bo")->cash == 0 &&
+               fined.string("detail") == "Fined " + std::to_string(boHas) + "p (all the player had; 2500p asked): for the fence.",
+           "a fine over the purse is told as what it took: " + fined.string("detail"));
 }
 
 bool posed(const json::Value& frame, const std::string& id)

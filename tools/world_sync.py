@@ -180,8 +180,9 @@ def shape(conn, table):
 
 
 # Columns a later migration added that a world may lack (doc 79, Phase 9: live.npcs.band_override, migration 0061): a
-# row read with one NULL leaves it out, so it compares equal to the same row from a world without the column, and a
-# write leaves out any column its target hasn't got.
+# row read with one NULL leaves it out, so it compares equal to the same row from a world without the column; a write
+# to a world with the column sets one the row leaves out to NULL (a band cleared to From rank is cleared there too), and
+# one the target hasn't got is refused when the row holds a value (never dropped unsaid), left out when it is unset.
 OPTIONAL_COLUMNS = {'live.npcs': ('band_override',)}
 
 
@@ -216,9 +217,18 @@ def read(conn, table, world_id, skip=(), where=''):
 
 def write(conn, table, row, touch=False):
     _, keys, types = shape(conn, table)
-    # (A column the target lacks, a later migration's, is left out: a world without 0061 takes an NPC without its band.)
-    columns = [c for c in row if c in types]
-    values = [S.Jsonb(row[c]) if types[c] == 'jsonb' and row[c] is not None else row[c] for c in columns]
+    optional = OPTIONAL_COLUMNS.get(table, ())
+    row = dict(row)
+    for c in optional:
+        if c in types and c not in row:
+            row[c] = None                         # (Unset, as read() leaves it out: written as unset.)
+        elif c not in types and row.get(c) is not None:
+            raise PublishError(f'{table} {row.get("id", "")}: this world lacks the column {c} (migration 0061) to hold it. '
+                               'Migrating it is the user\'s decision (python3 tools/world_db.py migrate); or set it back '
+                               'to none (the Band picker\'s From rank) where it was set.', [row.get('id', '')])
+    # (Only an optional column the target lacks is left out; any other unknown column fails, as it always has.)
+    columns = [c for c in row if c in types or c not in optional]
+    values = [S.Jsonb(row[c]) if types.get(c) == 'jsonb' and row[c] is not None else row[c] for c in columns]
     rest = [f'{c} = excluded.{c}' for c in columns if c not in keys]
     if touch and 'updated_at' in types and 'updated_at' not in row:
         rest.append('updated_at = now()')
@@ -496,6 +506,14 @@ class Snapshot(dict):
 
     def count(self):
         return sum(len(rows) for rows in self.values())
+
+
+def bands_unheld(source, target) -> list[str]:
+    """The NPCs of `source` with an authored band (live.npcs.band_override) when `target` lacks the column: what a sync
+    there would have to refuse (write())."""
+    if 'band_override' in shape(target, 'live.npcs')[2] or 'band_override' not in shape(source, 'live.npcs')[2]:
+        return []
+    return [r[0] for r in source.execute('SELECT id FROM live.npcs WHERE band_override IS NOT NULL ORDER BY id').fetchall()]
 
 
 def snapshot(conn, world_id) -> Snapshot:
@@ -1529,6 +1547,7 @@ class Sync:
             state, running = server_state(live), server_running(live)
             history = releases(live) if info['world'] else []
             lacking = behind(dev, live) if info['replacesMap'] else []
+            unheld = bands_unheld(dev, live)
         blocked = []
         if info['replacesMap']:
             warnings = [maps_differ_text(info['maps'], dev_key, live_key) + ': importing replaces '
@@ -1541,6 +1560,11 @@ class Sync:
             blocked.append(f'{live_key} is not in maintenance: close it first (the DM, or python3 tools/world_sync.py maintenance {live_key} on).')
         elif running:
             blocked.append(f'{live_key}\'s game server has not stopped yet (it closes within a minute of maintenance).')
+        if unheld:
+            blocked.append(f'{live_key.upper()} lacks migration 0061, and {len(unheld)} NPC{"s" if len(unheld) != 1 else ""} '
+                           f'in {dev_key.upper()} {"have bands" if len(unheld) != 1 else "has a band"} it can\'t hold '
+                           f'({", ".join(unheld[:6])}{"..." if len(unheld) > 6 else ""}): migrate {live_key.upper()} (the '
+                           f'user\'s decision: python3 tools/world_db.py migrate --db {live_key}), or set them to From rank.')
         if info['economy']['fields']:
             warnings = [*warnings, f'{dev_key.upper()}\'s economy settings differ from {live_key.upper()}\'s '
                         f'({", ".join(info["economy"]["fields"][:8])}{"..." if len(info["economy"]["fields"]) > 8 else ""}): '

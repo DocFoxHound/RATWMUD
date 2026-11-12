@@ -152,6 +152,8 @@ export interface Npcs {
     target: Target; world: string; people: Person[]; holders: Holder[]; dead: string[]; routes: Route[]; areas: NpcArea[]; spawns: SpawnRule[];
     /** NPC ID → the area they wander; NPC ID → the rule that spawned them. */
     wanders: Record<string, string>; spawned: Record<string, string>; actions: Action[];
+    /** NPC ID → the DM's band for a while on their household, as last saved: its band and the game day it lapses. */
+    bandsHeld?: Record<string, {band: string; until: number; household: string}>;
 }
 
 export type FactionKind = 'npc' | 'city' | 'guild' | 'clan' | 'other';
@@ -259,8 +261,9 @@ export interface ProsperityView {
     thefts: number;
     /** The word on the street (12): at most 20. */
     word: {kind: 'cause' | 'harvest' | 'ship' | 'event' | 'times' | 'slider'; text: string}[];
-    /** 28 days: the DM's lever writes and acts, what the game made of them, and big ripples. */
-    log: {at: string; kind: string; text: string}[];
+    /** 28 days: the DM's lever writes and acts (an act with its `state`: applied, refused, expired or queued), what the
+     *  game made of them, and big ripples. */
+    log: {at: string; kind: string; text: string; state?: 'applied' | 'refused' | 'expired' | 'queued' | 'failed'}[];
 }
 /** A DM's live act on the staged economy (doc 79, 12): its kind, what it names, and its payload as the tool clamped it. */
 export type EconomyActKind = LiveActKind | 'character.grant';

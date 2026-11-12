@@ -381,6 +381,23 @@ class ServiceTests(ServiceFixture):
         with self.assertRaises(dm.DMError):
             self.approve(self.event('npc_band', {'npc': 'player-ash', 'band': 'poor'}))
 
+    def test_goods_of_a_quality_or_a_maker_in_a_stock(self):
+        # Doc 79, Phase 9's first repair: Core keys a good of a quality 'hide~fine' (items::withQuality) and a maker's
+        # 'knife@player-ash'; a snapshot holding one was refused whole ("Invalid identifier.") and the Storykeeper was
+        # stuck read only on any world where someone hunted. Each is read; a key it can't read is left out and counted.
+        player = self.snapshot['characters'][0]
+        player['stock'] = {**player['stock'], 'iron_sword~fine': 1, 'hide~crude': 3, 'raw_meat~masterwork@player-ash': 1,
+                           'knife@player-ash': 1, '~odd': 2}
+        self.snapshot['accounts'][0]['stock'] = {**self.snapshot['accounts'][0]['stock'], 'cheese~fine': 4}
+        self.write_snapshot(1)
+        state = self.service.state()
+        self.assertTrue(state['bridge']['live'], state['bridge'])
+        seen = next(c for c in state['snapshot']['characters'] if c['id'] == player['id'])
+        self.assertEqual((seen['stock']['iron_sword~fine'], seen['stock']['hide~crude'], seen['stock']['knife@player-ash']), (1, 3, 1))
+        self.assertNotIn('~odd', seen['stock'])
+        self.assertEqual(seen['stockLeftOut'], 1)
+        self.assertEqual(state['snapshot']['accounts'][0]['stock']['cheese~fine'], 4)
+
     def test_a_large_society_with_its_own_account_ids(self):
         # Doc 79 (R10): a real society's accounts, 1500 of them, with ':' '@' and '.' in their ids, shown read only.
         self.snapshot['accounts'] += [{'id': f'home:cell_{i}:larder', 'cash': i, 'stock': {}, 'kind': 'staged'}

@@ -88,6 +88,11 @@ MIGRATION_COOLDOWN = 86400
 # Every id the authority names: cells, characters, factions and the society's accounts, whose ids carry ':' and '@'
 # ("till:job:<npc>", "home:<cell>@<x>,<y>" style) and '.' (doc 79, Phase 9: R10).
 ID = re.compile(r'[A-Za-z0-9][A-Za-z0-9_:@.-]{0,159}\Z')
+# A stock's goods as Core keys them: an item id, its quality after '~' (items::withQuality: 'hide~fine') and its maker
+# after '@' ('knife@player-ash'). One the Storykeeper can't read is left out and counted, never the snapshot refused
+# (doc 79, Phase 9's first repair: a world where anyone held a fine good was refused whole). STOCK_MOST goods an account.
+STOCK_ID = re.compile(r'[A-Za-z0-9][A-Za-z0-9_:@.~-]{0,159}\Z')
+STOCK_MOST = 4096
 # The native effects. economy_transfer moves existing coins and goods between real or escrow accounts (never a staged
 # one: "staged accounts are set by their bands"); player_grant is a player's grant or fine, a capped faucet or a sink
 # with its reason (doc 79, 12); npc_band is a resident's household's band for a while.
@@ -97,12 +102,10 @@ STAGED_REFUSAL = 'Staged accounts are set by their bands; grant or fine a player
 
 
 def catalogue_items():
-    """The goods an operator transfer may move (Society::itemValid: the item catalogue, herbs, meal, sword)."""
-    try:
-        items = json.loads((ROOT / 'Data' / 'Items' / 'items.json').read_text(encoding='utf-8'))['items']
-        return frozenset(i['id'] for i in items if isinstance(i, dict) and isinstance(i.get('id'), str)) | {'herbs', 'meal', 'sword'}
-    except (OSError, ValueError, KeyError, TypeError):
-        return frozenset({'herbs', 'meal', 'sword'})
+    """The goods an operator transfer may move (Society::itemValid: the item catalogue, economy_contract's reading of
+    it, and herbs, meal, sword)."""
+    import economy_contract
+    return frozenset(economy_contract.base_goods()) | {'herbs', 'meal', 'sword'}
 
 
 ITEMS = catalogue_items()
@@ -293,9 +296,14 @@ def normalize_snapshot(raw, now):
             if key in ('characters', 'accounts'):
                 item['cash'] = number(entry.get('cash'), 0, 1e12, integer=True)
                 stock = entry.get('stock')
-                checked(isinstance(stock, dict) and len(stock) <= 512, 'Invalid inventory stock.')
-                item['stock'] = {good: 0 for good in ('herbs', 'meal')} | {
-                    ident(good): number(n, 0, 1e9, integer=True) for good, n in stock.items()}
+                checked(isinstance(stock, dict), 'Invalid inventory stock.')
+                kept = {good: number(n, 0, 1e9, integer=True) for good, n in stock.items()
+                        if isinstance(good, str) and STOCK_ID.fullmatch(good)}
+                if len(kept) > STOCK_MOST:
+                    kept = dict(sorted(kept.items(), key=lambda kv: (-kv[1], kv[0]))[:STOCK_MOST])
+                item['stock'] = {good: 0 for good in ('herbs', 'meal')} | kept
+                if len(kept) < len(stock):
+                    item['stockLeftOut'] = len(stock) - len(kept)
                 # (Doc 79, 9.1: real, escrow, staged or dead; an older bridge's are taken as real. A staged account is
                 # shown read only: its cash is set nightly by its band.)
                 kind = entry.get('kind', 'real')

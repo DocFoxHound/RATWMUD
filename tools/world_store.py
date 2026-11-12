@@ -37,17 +37,13 @@ ECONOMY_KEPT = {'treasury': 'treasury', 'storeHerbs': 'store_herbs', 'storeMeals
 OVERRIDE_KEYS = economy_contract.OVERRIDE_KEYS
 DEFAULT_ECONOMY = {'treasury': 1000, 'storeHerbs': 100, 'storeMeals': 50, 'needsPaused': False, 'seasons': {}, 'rules': {},
                    'services': {}, 'overrides': {}}
-# (Kept for readers of the old names until the studio's slimming lands: doc 79, Phase 9's editor lane.)
-STORE_DEFAULTS = {'internalStore': True, 'storeMarkup': 100, 'storeResale': True, 'resaleMarkup': 75, 'storeRule': False}
-LOOP_DEFAULTS = {'needsPaused': False}
-SEASON_DEFAULTS = {'seasons': {}}
-RULE_DEFAULTS = {'rules': {}, 'services': {}}
 NO_LOOP = 'this world lacks migration 0056 (python3 tools/world_db.py migrate --db KEY): its needs can\'t be paused'
 NO_SEASONS = ('this world lacks migration 0057 (python3 tools/world_db.py migrate --db KEY): its seasons stay '
               'as Data/Economy/market.json has them')
 NO_RULES = ('this world lacks migration 0058 (python3 tools/world_db.py migrate --db KEY): its rules and services stay '
             'as Data/Economy/market.json and status.json have them')
 NO_SLIM = 'This world needs migration 0061.'
+NO_BAND = 'This world needs migration 0061 to hold an NPC\'s band (the Band picker): set it to From rank, or migrate it.'
 HERB_PATCH = 'herb_patch'
 
 
@@ -145,11 +141,6 @@ def slim_supported(conn) -> bool:
     """).fetchone()[0])
 
 
-def store_supported(conn) -> bool:
-    """Whether this world has migration 0055's store room columns (dead since doc 79; kept in the schema, D20)."""
-    return _has_columns(conn, 'economy', ('internal_store', 'store_markup', 'store_resale', 'resale_markup', 'store_rule'))
-
-
 def loop_supported(conn) -> bool:
     """Whether this world has migration 0056 (needs_paused, the one kept column of the city loop's)."""
     return _has_columns(conn, 'economy', ('needs_paused',))
@@ -163,11 +154,6 @@ def seasons_supported(conn) -> bool:
 def rules_supported(conn) -> bool:
     """Whether this world has migration 0058 (the rules' and services' columns)."""
     return _has_columns(conn, 'economy', ('rules', 'services'))
-
-
-def farms_supported(conn) -> bool:
-    """Whether this world has migration 0060 (the farms' column: dead since doc 79, still there)."""
-    return _has_columns(conn, 'economy', ('farms',))
 
 
 def tables_for(conn) -> dict:
@@ -194,12 +180,24 @@ def economy_refused(tables, economy) -> str | None:
         return NO_SEASONS
     if (e.get('rules') or e.get('services') or overrides.get('prosperityCause')) and 'rules' not in columns:
         return NO_RULES
-    if tables is not SLIM_TABLES and any(overrides.get(k) not in (None, '', [], {}) for k in OVERRIDE_KEYS if k != 'prosperityCause'):
+    if tables is not SLIM_TABLES and any(said(k, overrides.get(k)) for k in OVERRIDE_KEYS if k != 'prosperityCause'):
         return NO_SLIM
     return None
 
 
-loop_refused = economy_refused                    # (Its old name.)
+def said(key, value) -> bool:
+    """Whether an override says anything: an empty never-imported list does (ships carry every good, in place of
+    market.json's wharf.never), any other empty value is none (the defaults)."""
+    return value is not None if key == 'neverImported' else value not in (None, '', [], {})
+
+
+def bands_refused(tables, people) -> str | None:
+    """Why these NPCs' authored bands can't be stored in a world with these tables (before 0061: no band_override), or
+    None. Refused, never dropped unsaid."""
+    if tables is SLIM_TABLES:
+        return None
+    banded = [n['id'] for n in people or [] if isinstance(n, dict) and n.get('band') is not None]
+    return f'{NO_BAND} ({", ".join(banded[:6])}{"..." if len(banded) > 6 else ""})' if banded else None
 
 
 JSON_COLUMNS = {'heights', 'appearance', 'letting', 'subsidies', 'seasons', 'rules', 'services', 'farms'}
@@ -332,13 +330,14 @@ def split_rules(stored) -> tuple[dict, dict, dict]:
 
 
 def merged_rules(economy, other=None) -> dict:
-    """The rules' jsonb for an economy entity: its integer rules, its overrides (an empty one left out) and, kept as they
-    were, anything else the stored rules held (`other`)."""
+    """The rules' jsonb for an economy entity: its integer rules, its overrides (an empty one left out, but an empty
+    never-imported list kept: it says ships carry everything) and, kept as they were, anything else the stored rules
+    held (`other`)."""
     e = economy or {}
     out = copy.deepcopy(other or {})
     out.update({k: v for k, v in (e.get('rules') or {}).items() if isinstance(v, int) and not isinstance(v, bool)})
     for k, v in (e.get('overrides') or {}).items():
-        if k in OVERRIDE_KEYS and v not in (None, '', [], {}):
+        if k in OVERRIDE_KEYS and said(k, v):
             out[k] = copy.deepcopy(v)
     return out
 
@@ -828,6 +827,8 @@ def save_world(conn, project: dict, revision: int | None, create: bool = False, 
         tables = tables_for(conn)
         if refused := economy_refused(tables, p.get('economy')):
             raise EconomyRefused(f'The economy\'s settings can\'t be saved: {refused}')
+        if refused := bands_refused(tables, p.get('people')):
+            raise EconomyRefused(refused)
         desired = project_rows(p, chunk_size, tables, stored_other_rules(conn, p['id']))
         # (The NPCs and slots locked as read, the game's log read after: the two agree, and nothing the game writes
         # meanwhile is overwritten. Doc 66, Progress, "The live world's truth".)

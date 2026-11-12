@@ -1188,7 +1188,9 @@ class Society
     // A grant (coins > 0: a faucet "dm grant: <reason>", group `grant`, at most caps.grantsADay a holder a day) or a fine
     // (coins < 0: a sink "dm fine: <reason>", at most the player's cash) on a player's account; the reason plain words, 80
     // at most. False, and why, for an account that isn't a player's, a reason that won't do, or a grant over the cap.
-    bool grantPlayer(const std::string& player, std::int64_t coins, const std::string& reason, std::string& problem);
+    // `moved`: the pennies paid or taken (a fine at most what the player holds).
+    bool grantPlayer(const std::string& player, std::int64_t coins, const std::string& reason, std::string& problem,
+                     std::int64_t* moved = nullptr);
     // "Reset prices" (12): every pressure in a market ("" all) eased linearly to 0 over a game day from `now` (the
     // Board's resets), with the event "prices reset" carrying the words ("fresh stock everywhere" by default). False for
     // a market the Board hasn't got.
@@ -1216,6 +1218,9 @@ class Society
     // The Prosperity report as last worked out (World::prosperityReport; SocietyState::report).
     const json::Value& report() const { return state_.report; }
     void setReport(json::Value report) { state_.report = std::move(report); }
+    // True once after a world's first bands are worked out (a new world's report, made at start before any band, then
+    // shows its households at once, not from the next day: doc 79, Phase 9's first repair).
+    bool takeReportStale() { return std::exchange(reportStale_, false); }
     // A rule as this world has it: EconomySpec::rules, else market.json `rules`, else items::Rules' own, within its range;
     // -1 for a name that isn't a rule.
     int rule(const std::string& name) const;
@@ -1285,6 +1290,7 @@ class Society
     static constexpr int PostWaitDays = 8, BirthDelayMost = 7;
 
   private:
+    bool reportStale_ = false;
     void splitHouseholds(std::int64_t day, const CareerWorld& world, std::vector<CareerNote>& notes);
     std::string communityOfResident(const std::string& id) const;
     LifeDay day_;

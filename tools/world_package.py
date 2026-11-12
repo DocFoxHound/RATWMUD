@@ -675,6 +675,7 @@ SECTIONS = {
     'scenesHeard': clear_section,
     'commandReceipts': clear_section,
     'responseReceipts': clear_section,
+    'dmActs': drop_section,         # (The DM's acts by this database's dm.actions ids: a new world's ids start again.)
     'companions': clear_section,
     'socialStars': empty_section,
     'socialStories': empty_section,
@@ -1002,7 +1003,7 @@ def read_source(conn, with_snapshot=True, log=print) -> dict:
         live[spec.table] = [without_provenance(spec.table, world_sync.normalized(r))
                             for _, r in sorted(found.items(), key=lambda kv: repr(kv[0]))]
     # (live.economy's kept columns only, doc 79, 14: the dead ones stay behind, D20.)
-    live['live.economy'] = [{k: v for k, v in world_sync.normalized(r).items() if k in ECONOMY_SHIPPED}
+    live['live.economy'] = [{k: v for k, v in world_sync.normalized(r).items() if k in economy_shipped()}
                             for r in world_sync.read(conn, 'live.economy', world_id).values()]
     out = {'world_id': world_id, 'world': world_row, 'areas': areas, 'live': live,
            'build': {'id': build[0], 'fingerprint': build[1], 'created_at': build[2].isoformat(), 'manifest': build[3],
@@ -1114,8 +1115,10 @@ def client_data() -> str | None:
         return None
 
 
-# (live.economy's kept columns, as world_sync.ECONOMY_KEPT has them: doc 79, 14.)
-ECONOMY_SHIPPED = ('world_id', 'treasury', 'store_herbs', 'store_meals', 'needs_paused', 'seasons', 'rules', 'services')
+def economy_shipped():
+    """live.economy's kept columns: world_sync.ECONOMY_KEPT's (doc 79, 14), with its world_id."""
+    import world_sync
+    return ('world_id', *world_sync.ECONOMY_KEPT)
 
 
 def economy_words(rows) -> list[str]:

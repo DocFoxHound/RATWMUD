@@ -588,13 +588,18 @@ def plant(source):
     for row in source['live'].get('live.economy', []):
         row['rules'] = {**(row.get('rules') or {}), **PLANTED_OVERRIDES}
     society['report'] = {'v': 1, 'markets': []}
+    # (Phase 9's first repair: an NPC's authored band travels with the package; the DM's acts by this database's
+    # dm.actions ids never do.)
+    banded = sorted(source['live']['live.npcs'], key=lambda r: r['id'])[0]
+    banded['band_override'] = 'rich'
+    doc['dmActs'] = {'17': {'ok': True, 'text': 'Granted 23p: for the bell.', 'kind': 'character.grant', 'target': WOLF}}
     residents = [e['id'] for e in doc['npcs'] if e['id'] in accounts]
     a, b, c = residents[0], residents[1], residents[2]
     cell = doc['npcs'][0]['cell']
     town = 'ridgemere'
     faction = source['live']['live.factions'][0]['id']
     till = next(k for k in accounts if k.startswith('till:'))
-    planted = {'till': till, 'resident': a}
+    planted = {'till': till, 'resident': a, 'banded': banded['id']}
 
     def account(name, coins, stock=None):
         accounts[name] = {'cash': coins, 'stock': dict(stock or {})}
@@ -796,10 +801,13 @@ class EndToEndTest(unittest.TestCase):
         self.assertEqual(P.scan_directory(self.planted)[0], [])
         snapshot = P.read_json_gz(self.planted / 'snapshot.json.gz')
         self.assertNotIn('report', snapshot['society'], 'the Prosperity report is never packaged')
+        self.assertNotIn('dmActs', snapshot, "the DM's acts (by this database's dm.actions ids) are never packaged")
+        npcs = {r['id']: r for r in P.read_json_gz(self.planted / 'live.json.gz')['tables']['live.npcs']}
+        self.assertEqual(npcs[self.planting['banded']].get('band_override'), 'rich', "an NPC's band travels")
         economy = P.read_json_gz(self.planted / 'live.json.gz')['tables']['live.economy']
         self.assertEqual(len(economy), 1)
         self.assertEqual({k: economy[0]['rules'].get(k) for k in PLANTED_OVERRIDES}, PLANTED_OVERRIDES, 'the overrides carried')
-        self.assertEqual(set(economy[0]), set(P.ECONOMY_SHIPPED), 'only the kept columns')
+        self.assertEqual(set(economy[0]), set(P.economy_shipped()), 'only the kept columns')
         self.assertNotIn(WOLF, json.dumps(snapshot))
         self.assertNotIn('chapter-1', json.dumps(snapshot))
         self.assertNotIn('accounts', snapshot)
@@ -879,6 +887,13 @@ class EndToEndTest(unittest.TestCase):
             with W.connect(key, 'owner') as conn:
                 rules = conn.execute('SELECT rules FROM live.economy').fetchone()[0]
             self.assertEqual({k: rules.get(k) for k in PLANTED_OVERRIDES}, PLANTED_OVERRIDES, 'the overrides imported')
+            banded = self.planting['banded']
+            with W.connect(key, 'owner') as conn:
+                band = conn.execute('SELECT band_override FROM live.npcs WHERE id = %s', (banded,)).fetchone()[0]
+                manifest = conn.execute('SELECT live.people_manifest(id) FROM world.worlds').fetchone()[0]
+            self.assertEqual(band, 'rich', "the NPC's band imported")
+            self.assertIn(f'band "{banded}" rich', manifest.split('\n'), 'and in the manifest the server reads')
+            self.assertNotIn('dmActs', after, 'no act of the source world answered here')
             # The town's site and the granary its project built are still on the ground after the server played it.
             sites = {s['id']: s for s in after['camps']['sites']}
             self.assertEqual(sites.get('site-1', {}).get('chapter'), 'town:ridgemere', after['camps'])

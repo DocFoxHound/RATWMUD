@@ -93,9 +93,11 @@ test('the dead economy settings are dropped with a warning, never refused (doc 7
     assert.deepEqual(v.errors, []);
     assert.ok(v.warnings.some(w => /no longer reads were dropped .*storeMarkup/.test(w)), v.warnings.join('\n'));
     const e = normalizeProject(old).economy;
-    assert.deepEqual(Object.keys(e).sort(), ['dailyHerbs', 'dailyMeals', 'needsPaused', 'storeHerbs', 'storeMeals', 'treasury'],
+    assert.deepEqual(Object.keys(e).sort(), ['dailyHerbs', 'needsPaused', 'storeHerbs', 'storeMeals', 'treasury'],
         'needsPaused and the read-past dailyHerbs kept');
     assert.deepEqual(deadSettings(p), []);
+    // (A new project carries no dead field: no daily herbs or meals. Doc 79, Phase 9's first repair.)
+    assert.deepEqual(Object.keys(p.economy).sort(), ['storeHerbs', 'storeMeals', 'treasury']);
 });
 
 test('the economy entity\'s keys are optional, checked and kept (doc 79, 14)', () => {
