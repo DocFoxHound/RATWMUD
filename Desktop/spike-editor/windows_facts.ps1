@@ -1,7 +1,10 @@
 # Doc 78, M0a, on Windows: the reserved port ranges against the Editor's 17789 and the game's 7788, what Hyper-V, WSL
 # and Docker are on this machine, and (only if Docker runs Linux containers here) the peer address and the
 # Windows-folder bind mount checks. Writes everything to stdout; the workflow keeps it as windows-facts.txt.
-param([string]$Here = $PSScriptRoot)
+# On the user's PC (Docker Desktop running): pwsh Desktop/spike-editor/windows_facts.ps1 -Keep, then open
+# http://<this PC's LAN address>:47789/ from a phone or a second computer (the peer it shows), then
+# docker rm -f m0a-a m0a-b.
+param([string]$Here = $PSScriptRoot, [switch]$Keep)
 $ErrorActionPreference = 'Continue'
 function Section($name) { Write-Output ""; Write-Output "== $name" }
 
@@ -59,10 +62,12 @@ foreach ($p in 47789, 47790) {
     catch { Write-Output "$p from $a : no answer" }
   }
 }
-docker rm -f m0a-a m0a-b | Out-Null
+if ($Keep) { Write-Output "Left running: open http://${ip}:47789/ and http://${ip}:47790/ from another device, then docker rm -f m0a-a m0a-b" }
+else { docker rm -f m0a-a m0a-b | Out-Null }
 
 Section 'chown and chmod into a Windows-folder bind mount'
-$dir = Join-Path $env:RUNNER_TEMP 'm0a-manage'
+$base = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { $HOME }   # Docker Desktop shares C:\Users by default
+$dir = Join-Path $base 'ratw-m0a-manage'
 New-Item -ItemType Directory -Force $dir | Out-Null
 docker run --rm -v "${dir}:/var/ratw/manage" python:3.12-slim sh -c 'echo secret > /var/ratw/manage/first-editor.txt; chown 10003:10003 /var/ratw/manage/first-editor.txt; echo "chown exit $?"; chmod 600 /var/ratw/manage/first-editor.txt; echo "chmod exit $?"; ls -ln /var/ratw/manage; su -s /bin/sh nobody -c "cat /var/ratw/manage/first-editor.txt" && echo "nobody CAN read it" || echo "nobody cannot read it"'
 Get-Acl (Join-Path $dir 'first-editor.txt') | Format-List Owner, AccessToString
