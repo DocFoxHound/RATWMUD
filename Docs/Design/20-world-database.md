@@ -404,6 +404,10 @@ beside the real server, writes nothing, and goes away by itself.
   recorded, artwork, LIVE map frames, health rows or voice ledger. Its database session is read-only besides
   (`default_transaction_read_only`), so anything that slipped through would be refused by PostgreSQL. A file world's
   save is read and never written.
+- **Residents it gains are its own** (2026-11-12; doc 79, Progress, "Wagons and farms on DEV"): a child born, an NPC
+  come in from the Country for an empty post, the farms' people sent for by the farms' rule are made in its memory, as
+  a world from files makes them, and no row is written (the real server writes each one's row first). Before, each was
+  refused by the read-only session, so a scratch server of DEV never had anyone on a farm or in a Country town.
 - **It needs no ownership,** so any number run beside the real server and each other.
 - **Whoever starts it stops it.** A session may use one without ever connecting a character, so it doesn't stop for
   want of players; it prints its pid as it starts. A forgotten one stops after an hour unless `--for` says otherwise.
@@ -412,6 +416,8 @@ beside the real server, writes nothing, and goes away by itself.
   unless asked otherwise.
 - `tools/test_one_server.py`: a scratch server runs beside the owner on a scratch database, stops when asked to (with
   `--idle-exit`), and leaves the checkpoint, journal, events, health and the DM's queued action exactly as they were.
+  And (`FarmPeopleOnAServer`) a farm's keeper sent for from the unplaced: a scratch server places them for itself and
+  the row stays unplaced; a real server writes the row, and a restart finds them there.
 
 ## Worlds (2026-10-30)
 

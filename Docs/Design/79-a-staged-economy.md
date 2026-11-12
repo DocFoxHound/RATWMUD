@@ -342,6 +342,15 @@ Today the road layer needs two or more towns, and Ridgemere 2.0 has one. Instead
 - **Routes:** for each market, the 3 nearest other markets by path on roads and farm tracks, plus each farm, works
   and port endpoint to its nearest market. Pairs with no path are left out quietly. Routes are found at load and not
   saved.
+- *(As built, 2026-11-12, Progress, "Wagons and farms on DEV": **a community's square.** In a Country community every
+  merchant keeps a shop of their own, so the thickest merchants' cell is one of those rooms, and the road layer took it
+  for the place its wagons and carts unload: they drove into a bakehouse or an alehouse. `communities.json` now gives
+  each community a `square`, the middle of its green out of doors (written by `worldgen/realm2_places.py`; nothing is
+  built for it). Where a market's merchants' place is indoors and its community has a square, the road layer's place is
+  the square (`World::ensureRoadMarkets`): wagons and carts load and unload there, the notice board stands by it
+  (`World::boardSpot`), and the square's cell counts as the market's for the roads and the boards (`roadMarketOf`,
+  `Game::boardTownFor`), whatever region of the realm the ground is. The Board's market, its tills, its households and
+  its `place` are unchanged.)*
 
 **Host edits.** Markets, endpoints and routes are found again at each load. Delete the Wharf and there are no ships.
 Delete every farm and there are no carts. One market means no wagons between markets, but farm carts still come. A
@@ -890,6 +899,13 @@ courier letters and the watchpost and waystation projects (`RatwGameProjects.cpp
   carters, who is away from his post for the trip: his task is "on the Coldwater run", his schedule paused until he
   is home. Wagons a day are capped by carters available, and wagons in transit by a rule (default 16). A host who
   deletes the carters gets fewer wagons.
+  *(As built, 2026-11-12, Progress, "Wagons and farms on DEV": the community's carters are posts of its square
+  (`communities.json` `square.posts`, the post `carter` of `farm_people.json`'s `market`: "carter at Coldwater"), one a
+  community and two at Coldwater, out of doors at the wagon stand on the green, staffed with the community's market
+  from the unplaced NPCs: of the herds and flocks first (those who kept the old towns' stables before any), then
+  service and labour. Without them no community could send a wagon, and Larkfield, Fenshore, Southmeadow and Saltwell,
+  which are on no road of Ridgemere's three, got none. A carter out of sight goes as his wagon goes, beside it
+  (`World::ridesAlong`); a seen one walks to it and with it as before.)*
 - **Late,** with a seeded cause people talk about: a broken axle, mud, the weather.
 - **After a raid** the carter comes home robbed or hurt, never killed off-screen; deaths drive births, so off-screen
   deaths would distort the population.
@@ -1584,6 +1600,16 @@ mean, p99, p99 after the first minute and worst after the first minute, ms: 6-8 
 5.86, 5.49, 12.7. It replaces Phase 0's table, for Phases 9-11: no window slower than it beyond noise (0.05 ms of mean
 and 0.1 of p99 over two runs; 23-25 over four runs or more, 0.06 of their mean and 0.15 of their p99s: one run of it
 lies anywhere from 1.63 to 1.74).)*
+*(From 2026-11-12, Progress, "Wagons and farms on DEV": **the baseline for the bigger world**, DEV build 71, the
+Country's people placed (773 residents, 183 of them in the Country; eight markets, 42 farms and works staffed), the
+same command with `--no-check`; mean, p99, p99 after the first minute, worst after the first minute, ms, two runs each
+and 23-25 four: 6-8 1.44, 4.35, 4.15, 50.7; 17-19 1.21, 4.14, 3.88, 22.4; 23-25 1.10, 4.27, 3.72, 20.9 (1.09-1.11);
+6-8 `--ship-day` 1.45, 4.41, 4.21, 51.5; and with every carter out, `--wagon-day`: 6-8 1.54, 4.68, 4.49, 22.9; 17-19
+1.29, 4.47, 4.24, 19.0. It is not comparable with the table before it: the harness stands its players beside residents
+across the roster, and a third of them now stand in the Country, where few are near (the mean) and where a village's
+places load in one tick as its people leave home at 7:00 (the 6-8 worst: 41 ms of streaming at tick 12112, every run).
+The same code on build 70, the players where they were, is inside the noise of the old table in every window. The worst
+at most 25 ms bar is not met in 6-8 on build 71 until the surroundings' loads are spread over ticks: open.)*
 - `world_check --simulate 6 8`, `--simulate 17 19` (the old peak and shop hours) and `--simulate 23 25` (the nightly
   set and the day's turn), all at `--players 20`;
 - p99 at most 5.3 ms and worst at most 25 ms in every window; 17-19 and 23-25 no slower than 6-8 beyond noise;
@@ -4726,6 +4752,217 @@ Each has a recommendation. "Go with the recommendations" takes them all.
   - **Not verified by hand:** the slider through `market.json` on a scratch server (read from `Society::buildRules`,
     `Game::startEconomy` and `stepSlider`; no client was driven), T3 and T15 played through a client, and the talk
     draws by ear (their odds are arithmetic, not a count of lines heard). Nothing pushed.
+- **2026-11-12: Wagons and farms on DEV** (on `r2-staged`, from `1e2bbe1`; the user: "I'd like you to fix wagons and
+  farms", and of DEV: "it's dev for a reason... dev does not need to be coddled"). Phase 10's table had T4, T5 and T11
+  at "no" and T12 and T14 at "partly", and put it down to the world's data: nobody on a farm, nobody in a Country
+  community. It was the game. Fixed, tested, and DEV itself changed to show it (a dump first:
+  `Saved/Backups/ratw_ridgemere2-before-wagons.dump`); the play guide rewritten for it. PROD and the old DEV untouched;
+  no paid model call; nothing pushed.
+  - **The cause, in two parts.**
+    1. *The day already tended.* The farms' people are sent for by the day's careers pass (`Society::tendCareers`, once a
+       game day, `staffFarms` at its end). DEV's save was taken at noon of its first day (2026-10-31, by a server from
+       before the farms had people) with `careers.day` 0, that same day: every server started from it skipped the day's
+       pass and sent for nobody until the first midnight, twelve game hours (two real hours) on. A scratch server starts
+       from that save each time, so it never got there without a Day +1. `world_check` and the probes of Phase 10's
+       preparation load a world from files with no save, so the pass ran on their first tick: 206 sent for.
+    2. *A scratch server could place nobody.* On a world in the database `Game::makeResidents` writes each one's row
+       first (`UPDATE live.npcs ... WHERE home_area IS NULL`), then places them. A scratch server's session is read-only
+       (`default_transaction_read_only`), so each was refused ("could not be placed at a farm: cannot execute UPDATE in a
+       read-only transaction"), dropped, and sent for again the next day: 12,585 such warnings in a five-day run at
+       `--speed max`. Births and arrivals from the Country failed there the same way.
+    The database path for a real server was right, and had never been tested or run past a midnight on DEV.
+  - **The fixes.**
+    - `Society::tendCareers`: a world loaded with today's careers already tended looks at its farms' posts once, on the
+      first pass after the load (`farmsLooked_`, not saved); the rest of the day's careers is not done twice. It also
+      heals requests a crash lost (they are in no checkpoint) and a build that brought a new farm, works or post.
+    - `Game::makeResidents`: a scratch server of a world in the database makes the residents asked for in memory, as a
+      world from files does, and writes no row ("RATW_RESIDENT 12 made for this scratch server only (no row written)").
+    - Tests: `farm_people_tests` `aDayAlreadyTended` (a save with its day tended staffs every farm on the first pass,
+      once, and nothing else of the day twice); `tools/test_one_server.py` `FarmPeopleOnAServer`, the first test of the
+      database path at all (Greyfen with one unplaced NPC of the fields and a catalogue, `RATW_DATA_DIR`, whose one farm
+      is Greyfen's longhouse and cottage: a scratch server places the keeper for itself and the row stays unplaced; a
+      real server writes home, post, label and role, and a restart loads them as a resident and sends for nobody).
+  - **What the Country's markets still lacked,** found once their people came (a probe on DEV build 70 from files, nine
+    days): eight markets and every farm staffed, but wagons only from Ridgemere, and only on its three roads (Oakhaven,
+    Frosthollow, Coldwater): no community had a carter, so none sent a wagon, and Larkfield, Fenshore, Southmeadow and
+    Saltwell saw none. The wagons and carts for a community drove into a shop (its thickest merchants' cell: the
+    bakehouse at Coldwater, the alehouse elsewhere). Its board stood outside that shop's door on ground of the realm's
+    own region, which a world with no Town records takes for a law town of its own: the wagons' notices would have been
+    pinned to "board:greenholt", which stands nowhere, and a player on the green could read no board. No bandit camp
+    until one gathered on day 8: camps are seeded at the load, when Ridgemere was still the only market and there was no
+    road to camp by.
+    - **A square and carters for each community** (`Data/Economy/communities.json` `square`, written by
+      `tools/worldgen/realm2_places.py` with the rest of the contract: the middle of the green the map already has, by
+      the well; no cell of the map changes, so no realm write): where the wagons and the farms' carts load and unload,
+      the board by it (5.1's and 8.1's notes). Its `posts`: a `carter` (two at Coldwater, the middle country's
+      crossroads), a new post of `farm_people.json`'s `market`: "carter at Coldwater", a civilian's, of the herds and
+      flocks first (the old towns' stables), then service and labour; out of doors at the wagon stand. Eight more of the
+      unplaced placed, by the existing rule (`staffFarms`, with the community's market): nobody made. Willa Coldwick, who
+      worked at the old Coldwater Stables, drives for Coldwater.
+    - `World::ensureRoadMarkets`: the square is the road layer's place where the merchants' place is indoors (and the map
+      has the community's own shops: the old map's towns of the same names are left alone); its cell is the market's for
+      the roads; camps are seeded when the world first has a road and nobody sent for is still to come; a board placed
+      nowhere before its market was found is asked for again. `World::boardSpot`: by the square. `Game::boardTownFor`:
+      the square's cell is its market's board's, not its region's.
+    - `World::ridesAlong`: an unseen carter with an unseen wagon is set beside it each pass (below, the speed).
+    - A world with the old map's towns of the same names is left alone (`ensureRoadMarkets` asks for one of the
+      community's own shops in the world). PROD and dev-old were not read or run.
+    - Words: a bounty reads "the bandits robbing the road in the Rainwood", not "at w_ridgemere_4_6"; a works' lame ox
+      "held up the Oakhaven cut cart", not "the the Oakhaven cut cart"; a robbed carter's record no longer says "his".
+    - Tests: `trade_show_tests` `aCommunitysSquare` (Coldwater in small: its Stores indoors, its green out of doors on
+      another region's ground, a carter at her stand: the wagons' place is the square, the board by it, the notice
+      pinned on Coldwater's board and read by a player on the green, a wagon out from the stand and one in to the
+      square; without the board's fix it fails with "board:wilds") and `aCarterRidesAlong` (beside his wagon on every
+      pass across eight cells: 6 of 99 passes before); `aRaid` pins the bounty's words; `farm_people_tests` `theCarters`
+      (eight posts at the squares, held, their holders housed in the community, nobody asked for twice).
+  - **DEV, changed.** The real DEV server of this code was run twice (45 s, then 20 s; no model, nobody connected). The
+    first placed all 214 at once ("RATW_RESIDENT farm: Willa Coldwick ... came in from the Country to be carter at
+    Coldwater") and saved; the second loaded 773 residents and sent for nobody. `live.npcs`: 773 placed of 1,083 (559
+    before), 310 still unplaced. `python3 tools/world_build.py dev`: **DEV build 71** (the same map and cells; the people
+    placed). DEV's save now stands at Dawnday 12:12 of its first day, its Board rolled, seven camps on the roads.
+  - **The proof** (a probe outside the repository: a `Game` on build 71 exported read only, started from a copy of DEV's
+    own save as a scratch server is, `Options::scratch`, the save file compared after and untouched; fourteen game days
+    with nobody connected. A real scratch server of DEV was also started: "RATW_DATABASE_WORLD_LOADED database=dev ... build=71 ... residents=773", nobody sent for, and the roster, save, events and journal of DEV the same after as before).
+    - *Residents by where they live:* Ridgemere 590, the farmhouses 51, Coldwater 45, Larkfield 31, Fenshore 17,
+      Southmeadow 13, Saltwell 9, Frosthollow 9, Oakhaven 8: 183 in the Country of 773.
+    - *Markets:* eight. Ridgemere (292 households and crews, 102 tills, 7 carters, 12 cart ends), Coldwater (49, 6 tills,
+      2 carters, 8 cart ends), Larkfield (30, 6, 1, 4), Fenshore (27, 3, 1, 7), Southmeadow (20, 3, 1, 4), Saltwell (14,
+      2, 1, 3), Frosthollow (11, 2, 1, 3), Oakhaven (8, 3, 1, 1). Each Country market's wagons load at its square, its
+      board two tiles from it. Roads: Ridgemere to Oakhaven, Frosthollow and Coldwater; Coldwater to Larkfield,
+      Frosthollow and Oakhaven; Larkfield to Coldwater, Southmeadow and Fenshore; Southmeadow to Larkfield, Saltwell and
+      Fenshore; Saltwell to Southmeadow, Coldwater and Larkfield; Fenshore to Larkfield, Southmeadow and Coldwater.
+    - *Farms:* 42 of 42 staffed, 132 of 132 posts held.
+    - *Wagons:* posted two days ahead from the first midnight, the notices on both ends' boards ("Wagon to Larkfield,
+      Riverday: lavender and willow bark for the general store, and comfrey, garlic and planks. Wick Marshwade driving.
+      Escort wanted." at Coldwater; "Wagon from Coldwater, due Riverday: ... Escort wanted: ask at the board in
+      Coldwater." at Larkfield). The first week, 23 wagons:
+
+      | Day | Hour | From, to | Carter | Cargo | In | Home |
+      |---|---|---|---|---|---|---|
+      | Riverday | 8:00 | Coldwater, Larkfield | Wick Marshwade | lavender, willow bark, comfrey, garlic, planks | 8:29 | 8:58 |
+      | Riverday | 8:00 | Ridgemere, Oakhaven | Percival Thornham | whitewash, mint, linen, cedar perfume, garlic | 8:56 | 9:58 |
+      | Riverday | 8:30 | Oakhaven, Frosthollow | Tristram Rainridge | willow bark, glass ruff beads, dangling charm, oats, clay | 9:52 | 11:14 |
+      | Riverday | 8:30 | Ridgemere, Frosthollow | Orm Carlisle | lavender soap, cord, raw wool, valerian root, flour | 16:23 (held by the weather) | 18:13 |
+      | Riverday | 8:30 | Coldwater, Ridgemere | Willa Coldwick | peat, lavender, yarrow, chamomile, valerian root | 10:40 | 12:32 |
+      | Riverday | 9:00 | Ridgemere, Coldwater | Delphine Brackwick | clay, willow bark, plaster, flour, mint | 12:53 | 15:04 |
+      | Emberday | 8:30 | Saltwell, Southmeadow | Orm Sootgate | cord, peat, comfrey, plaster, garlic | robbed 8:56, the Red Waste | 9:20 |
+      | Emberday | 9:00 | Coldwater, Ridgemere | Willa Coldwick | comfrey, thyme, mint, garlic, willow bark | 11:10 | 13:02 |
+      | Emberday | 9:30 | Coldwater, Oakhaven | Wick Marshwade | flour, cord, dangling charm, lavender soap, nails | 10:39 | 11:36 |
+      | Emberday | 9:30 | Southmeadow, Fenshore | Tor Chalkfield | nails, mint, tallow, pamphlet, straw | 10:45 | 12:10 |
+      | Emberday | 9:30 | Larkfield, Saltwell | Imogen Rustford | oats, chamomile, nails, flour, glass ruff beads | 11:11 | 12:51 |
+      | Marketday | 7:30 | Southmeadow, Fenshore | Tor Chalkfield | oats, yarrow, chamomile, flour, linen | 8:45 | 10:10 |
+      | Marketday | 8:00 | Fenshore, Coldwater | Jory Corncroft | glass ruff beads, peat, whitewash, cooking herbs, firewood | held by mud 9:17, overdue Dawnday 0:00, robbed Dawnday 4:59 | Dawnday 6:27 |
+      | Marketday | 8:30 | Coldwater, Frosthollow | Wick Marshwade | plaster, nails, straw, cooking herbs, firewood | 9:19 | 10:08 |
+      | Marketday | 8:30 | Coldwater, Fenshore | Willa Coldwick | raw wool, lavender soap, valerian root, firewood, whitewash | 10:23 | 12:23 |
+      | Marketday | 8:30 | Ridgemere, Coldwater | Millicent Wickwick | garlic, cedar perfume, linen, wormwood, chamomile | robbed 9:42, the Rainwood | 11:15 |
+      | Marketday | 9:00 | Larkfield, Coldwater | Imogen Rustford | pamphlet, oats, dangling charm, thyme, planks | 9:29 | 9:58 |
+      | Marketday | 9:30 | Frosthollow, Ridgemere | Ebba Coalgate | wormwood, flour, oats, raw wool, straw | robbed 9:42, the Greenholt | 9:55 |
+      | Restday | 7:30 | Coldwater, Ridgemere | Willa Coldwick | comfrey, willow bark, thyme, mint, wormwood | 9:40 | 11:33 |
+      | Restday | 8:00 | Oakhaven, Ridgemere | Tristram Rainridge | cooking herbs, peat, comfrey, thyme, willow bark | 9:02 | 9:57 |
+      | Restday | 8:00 | Southmeadow, Saltwell | Tor Chalkfield | cord, yarrow, cedar perfume, straw, pamphlet | 9:01 | 10:05 |
+      | Restday | 8:00 | Larkfield, Saltwell | Imogen Rustford | cooking herbs, linen, valerian root, plaster, firewood | 9:41 | 11:22 |
+      | Restday | 8:30 | Ridgemere, Coldwater | Aud Saltridge | brandy, nails, dangling charm, pamphlet, wormwood | held by mud 10:15, in Hearthday 17:06 | Hearthday 19:17 |
+
+      Two weeks: 61 set out, 49 in at the far end, 8 robbed (about one in seven), the rest held up or still out.
+    - *Raids:* seven camps from the first day, three more gathered on day 8; each raid a bounty on the far market's board
+      and an escort wanted on the road's next wagon, the carter home robbed or bruised, the Watch out after two camps
+      (both cleared in the nine-day run from files).
+    - *Farm carts:* 14 to 20 a day in the realm from the second morning (Hearthday 17, Stoneday 20, Riverday 14, Emberday
+      15, Marketday 17, Restday 19), four to eight of them to Ridgemere, Coldwater's one to five, leaving 5:30-7:00;
+      Marketday's stock the stalls.
+    - *The harvest:* this spring fruit, fuel, honey and iron poor, salt good, the rest fair (the seeded words). At
+      Ridgemere a dozen apples 14p on Hearthday, 15p by Riverday (P 0.05 to 0.11); cider 40p to 43p; firewood 13p to 15p,
+      pine resin 27p to 31p by the second week; at Fenshore peat 15p a dozen (P 0.19): each a poor harvest's missed
+      carts ("harvest").
+    - *Day +1* (the probe pressing it as the client does, four game hours after each): the wagons and carts whose hour
+      has passed set out at the press: on the third, Riverday's six at once, three of them from the Carters' Yard.
+    - *Nobody hungry and the shelves kept:* no resident at hunger 60 or over at the start or after the fourteen days, in
+      any market. Of Ridgemere's 111 wares that come by wagon, cart or ship, 15 stood empty at the save's noon (butter,
+      flour, oats, peat, the herbs) and 7 after two weeks (herbs: between wagons, T14); a Country store's at most one.
+  - **T4, T5, T11, T12, T14 again** (the play guide has where to stand and when):
+
+    | # | Seen on DEV now | Where and when |
+    |---|---|---|
+    | T4 | yes | the Carters' Yard inside the East Gate, 7:30-9:30 on a notice's day (Riverday of week 1 the first); in at Market Square by Ivo Tarmarsh's sausage stall; on any community's green |
+    | T5 | yes | the board's work side after a raid (week 1: Emberday 8:56, Marketday 9:42 twice): a bounty, "Escort wanted", the cargo dearer where it was bound |
+    | T11 | yes | Market Square 6:30-11:00 every morning; the poor harvests' goods dearer by Riverday |
+    | T12 | yes | the Wharf's 38 posts, the farms' and works' 132, the communities' keepers, crews and carters |
+    | T14 | partly | wagons run, so a community's imports from Ridgemere come with them (the rule, not bought out by hand); ships as before |
+
+    None of it was watched in a client.
+  - **Speed.** `world_check EXPORT --simulate A B --players 20 --no-check`, Release, 8 threads, the laptop at
+    load 1.1-1.8, one run after another: the old baseline taken again today (`1e2bbe1`'s `world_check` and Data on
+    build 70), this code on build 70 (the same world, and the harness's players in the same places: the code's own
+    cost), and this code on build 71 (the Country's people placed: the bigger world). Two runs each, 23-25 four; mean,
+    p99, p99 after the first minute, worst after the first minute, ms. (Taken on the build before the last edits: the
+    bounty's and the lame ox's words, the old map's guard, the boards forgotten: none in a tick's work.)
+
+    | Window | The old baseline, today (build 70) | This code, build 70 | This code, build 71: **the new baseline** |
+    |---|---|---|---|
+    | 6-8 | 2.65, 5.84, 5.44, 12.3 | 2.64, 5.86, 5.52, 12.4 | **1.44, 4.35, 4.15, 50.7** |
+    | 17-19 | 2.15, 5.24, 5.02, 23.8 | 2.19, 5.28, 5.04, 22.7 | **1.21, 4.14, 3.88, 22.4** |
+    | 23-25 | 1.69, 4.82, 4.27, 13.0 (1.64-1.73) | 1.67, 4.80, 4.31, 15.0 (1.65-1.72) | **1.10, 4.27, 3.72, 20.9** (1.09-1.11) |
+    | 6-8 `--ship-day` | 2.65, 5.90, 5.56, 13.1 | 2.70, 5.87, 5.51, 13.0 | **1.45, 4.41, 4.21, 51.5** |
+    | 6-8 `--wagon-day` | — | 2.72, 6.01, 5.64, 11.9 | 1.54, 4.68, 4.49, 22.9 |
+    | 17-19 `--wagon-day` | — | — | 1.29, 4.47, 4.24, 19.0 |
+
+    - *The code's own cost* (the middle column against the first: the same world and places, now with eight markets'
+      squares, boards, carters and camps): inside the noise in every window (means -0.01, +0.04, -0.02, +0.05; p99 after
+      the first minute +0.08, +0.02, +0.04, -0.05). The day's turn is 2 ms slower at its worst (13.0 to 15.0, all four
+      runs): twelve roads' wagons posted and eight markets' events rolled where one market's were.
+    - *Every carter out at once* (`world_check --wagon-day`, new: a wagon sent for each free carter five seconds in,
+      fifteen; a fresh world posts its first two days ahead, so no window has one otherwise): +0.08 ms of mean and +0.15
+      of p99 on build 70, +0.10 and +0.33 on build 71. An ordinary morning has five to seven.
+    - *The bigger world* (the last column): the mean is 45% lower and the worst four times higher, and neither is the
+      roads. The harness stands its players beside residents taken across the roster in ID order; with the Country's 214
+      placed (their ids `cty_` and `tn_`), about a third of the twenty now stand at farmhouses and in cottages, where
+      few are near: the views' share of the 6-8 run halves (13.8 s to 6.8 s). The game is not faster; fewer wolves are
+      near each player. The worst is streaming: at 7:00:05 (tick 12112, both runs) the residents beside those players
+      leave home, each steps into its village's outdoor cell, and that cell's surroundings (every house with a door on
+      it, the cells beside it) are wanted at once: 138 places loaded in that tick, 41 ms of `World::stream`; 19 ms of it
+      at ticks 12610 and 12710 of the other windows. The first minute's worst is 65-76 ms (39-42 before), the same thing
+      as the players arrive. In the old baseline every player stood in the city among cells already loaded. Section 15's
+      bars on build 71: p99 at most 5.3 ms holds in every window (4.14-4.68); worst at most 25 ms fails in 6-8 (50.7),
+      by the loading of a village's places in one tick, which a player walking into a village meets too. **Left**: the
+      surroundings' loads could be spread over a few ticks (those nobody stands in or sees into), by tiles a tick.
+    - *The roads' real cost, found and fixed* (`World::ridesAlong`): a carter's errand goes to his wagon's place, which
+      moves every pass while the wagon is unseen on a road; each move threw his leg away and planned another along the
+      cell's roads (`roadWay`), and he never came to the end of one: he fell behind (beside his wagon on 6 of 99 passes
+      in `aCarterRidesAlong`'s strip) at a search a pass. With nobody in the world (the fast runs' ground), 6:00-8:00 on
+      build 71 took 1.28 s of wall for its 24,000 ticks with the morning's carts out (0.90 s on build 70 with none), and
+      2.73 s with fifteen wagons out; now 0.73 s and 0.92 s (17-19 with the wagons: 2.93 s to 0.99 s). An unseen
+      carter is set beside his unseen wagon each pass; seen, both walk as before.
+  - **Tests:** a fresh Release build (`build-wag`, from empty; 127 warnings, as before, none new) and the full ctest
+    once with the database (the main checkout's `Database/.env` sourced; `RATW_TEST_DB_TAG=s2stage_`): 88 passed and
+    `pg_client` skipped for want of its own database, then run by hand on a throwaway `ratw_test_s2stage_wag`, dropped
+    after: 24 checks: 89 of 89; the ctest once more after `communities.json` took the generator's work spots, the same. `trade_show_tests` 1,064 checks, `farm_people_tests` 5,339, `roads_tests` 407,
+    `events_tests` 265,224, `port_tests` 9,682, `street_tests` 26,879, `market_tests` 13,701, `sim_fast_tests` 95.
+    `tools/test_one_server.py` 4 (two new), `test_economy_contract.py` 14, `test_world_build.py` 2,
+    `test_world_store.py` 23, `test_map_editor.py` 51, `test_ridgemere2.py` 35, `test_realm2.py` with `RATW_SLOW=1`
+    (the whole realm round DEV's city, read only) 31. No `s2stage` database left, `/tmp` cleaned, every
+    server started stopped.
+  - **Two tests that pinned DEV's shape,** now that DEV holds the Country's people:
+    - `test_ridgemere2.py`'s `City` makes the city again from DEV as it is and runs the city writer's checks. Two
+      failed and one test with them: R1 (183 homes "not reached from the spawn": the Country's interiors are no part of
+      the city it makes), R31 "no family is split" (the farms' rule sends for hands one by one; their families wait in
+      the Country) and `test_placed_text_fits`. The writer already leaves anyone homed in the realm alone and "counts
+      them in none of the city's checks" (`realm_homed`, `REALM_HOMES`); its graph walk, its family check and that test
+      now do too. Without this the city writer would have refused to write DEV after any real server had run a day.
+    - `test_realm2.py`'s `test_the_contract_written_is_the_one_made` (slow only) was failing before this work: the
+      contract in git was four work-spot lists behind the generator (the bakehouses' and alehouses' extra hands of
+      doc 73's rounds 4 and 5: three posts standing on one tile). `communities.json` is now the generator's own output
+      on DEV: those four, and the squares.
+  - **Left, for the user:** **the Country folk's own words.** The farms' rule gives a placed NPC a post and a label, and
+    leaves their greeting and description as the old map wrote them: 157 of the 206 greet with "I am farms the south
+    fields today." or "I am keeps The Snow Chapel today." (the keeper of the taproom at The Felled Cedar), and are
+    described as "a hand at The Coldwater Stables" (Coldwater's carter). The city writer mends its own people's
+    (`person_text`); the game's rule would need the same at placement, and DEV's rows written again. A player who
+    talks to a villager will meet it. Then: raids at about one wagon in seven (a community's wagon goes with its carter alone: no Watch
+    in the Country; `campStrengthMost`, or guards there); each community rolls its own events from the same twelve
+    kinds, some unfitting (a broken mill wheel at Saltwell, orchard blight at Frosthollow: a kind's `needs` could name a
+    mill or an orchard); a wagon's manifest now and then carries forty of one good (a source's glut sent on); purpose-built
+    carters' yards in the communities (a generator step and a realm write; the carters stand on the green); the hitch as a
+    village's places load at once; the Country has no guards, law or beggars of its own. Nothing pushed.
 
 ## Review (2026-11-08)
 
