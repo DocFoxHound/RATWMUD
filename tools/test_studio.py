@@ -1364,5 +1364,397 @@ class BindTests(unittest.TestCase):
             self.assertIn('--host 127.0.0.1 "$@"', (here / name).read_text(), name)
 
 
+# ----------------------------------------------------------------------------------------- hosted mode (doc 78, M3)
+
+class HostedDM(StandInDM):
+    """The stand-in DM in hosted mode: no database (connect refuses), reports and storytellers as a test sets them, and
+    the world map's `lean` recorded."""
+
+    def __init__(self):
+        super().__init__()
+        self.report_rows, self.standing, self.ai_audit = [], [], None
+
+    def connect(self, target):
+        raise D.DMError('No database in this test.', 503)
+
+    def reports(self, target):
+        self.calls.append(('reports', (target,)))
+        return {'target': target, 'ready': True, 'reports': copy.deepcopy(self.report_rows),
+                'actions': [{'id': 1, 'target': r['reportedCharacter']} for r in self.report_rows]}
+
+    def storytellers(self, target):
+        self.calls.append(('storytellers', (target,)))
+        return {'target': target, 'ready': True, 'standing': copy.deepcopy(self.standing), 'tales': [], 'log': []}
+
+    def world_map(self, target, lean=False):
+        self.calls.append(('world_map', (target, lean)))
+        return {'lean': lean}
+
+
+class HostedAtlasWorld:
+    """Atlas's world (live_edit.LiveWorld) as the hosted handler sees it: `load(lean)` recorded."""
+
+    def __init__(self, roster):
+        self.key, self.loads = 'devworld', []
+        self.roster = map_editor.RosterFile(roster)
+
+    def load(self, lean=False):
+        self.loads.append(lean)
+        return {'project': {}, 'seq': 0, 'gameSeq': 0, 'bands': True}
+
+
+HOSTED_REGISTRY = {'worlds': [
+    {'key': 'world', 'name': 'Ashfall Vale', 'database': 'ratw_test_s2stage_no_such_database', 'kind': 'live'},
+    {'key': 'devworld', 'name': 'Ashfall Draft', 'database': 'ratw_test_s2stage_no_such_database_dev', 'kind': 'dev'}]}
+
+
+class HostedBase(unittest.TestCase):
+    """A HostedStudio on stand-ins (no database, nothing on the network): a registry of its own (`world`, live; and
+    `devworld`, dev, for Atlas) and an admin folder with a settings copy."""
+    world = 'world'
+
+    def setUp(self):
+        from unittest import mock
+        self.temp = tempfile.TemporaryDirectory(prefix='ratw-hosted-test-')
+        self.folder = Path(self.temp.name)
+        (self.folder / 'worlds.json').write_text(json.dumps(HOSTED_REGISTRY))
+        self.settings(cheats='off')
+        self.env = mock.patch.dict(os.environ, {'RATW_WORLDS_FILE': str(self.folder / 'worlds.json'),
+                                                'RATW_WORLDS_LOCAL': str(self.folder / 'worlds.local.json'),
+                                                'RATW_AI_CONFIG': str(self.folder / 'no-ai.json')})
+        self.env.start()
+        self.roster = self.folder / 'roster.json'
+        map_editor.roster_lib.save({**map_editor.roster_lib.load(), 'characters': []}, self.roster)
+        self.make(self.world)
+
+    def make(self, world):
+        """A HostedStudio on `world` ('world', live; 'devworld', dev) with fresh stand-ins."""
+        self.dm, self.sync, self.economy = HostedDM(), StandInSync(), StandInEconomy()
+        self.atlas_world = HostedAtlasWorld(self.roster)
+        self.hosted = ST.HostedStudio(ST.Hosted(world, self.folder), dm=self.dm, sync=self.sync, economy=self.economy,
+                                      atlas=lambda key: map_editor.make_handler(roster_path=self.roster, world=self.atlas_world,
+                                                                                ai_config_path=self.folder / 'no-ai.json', hosted=True))
+
+    def tearDown(self):
+        self.assertFalse((self.folder / 'worlds.local.json').exists(), 'no world is ever chosen')
+        self.env.stop()
+        self.temp.cleanup()
+
+    def settings(self, **values):
+        (self.folder / 'settings.json').write_text(json.dumps({'name': 'Ashfall Vale', 'package': 'test-1', **values}))
+
+    def call(self, method, path, body=None, role='dm', wolves=False, query='', headers=None):
+        session = {'username': f'pell#a1b2c3', 'account': 'pell', 'role': role, 'mayActOnWolves': wolves}
+        raw = json.dumps(body).encode() if body is not None else b''
+        status, kind, out = self.hosted(session, method, path, query, {'content-type': 'application/json', **(headers or {})}, raw)
+        return status, (json.loads(out) if kind == 'application/json' and out else out)
+
+
+def served_routes():
+    """Every (method, path) the studio serves, read from the handlers' own code (the DM's, Atlas's and the studio's):
+    what the allowlist must decide."""
+    import inspect
+    found = set()
+    decided = re.compile(r"method == '(GET|POST)' and path == '(/api/[^']+)'")
+    dm_source = inspect.getsource(D.make_handler)
+    dm_routes = set(decided.findall(dm_source)) | {('POST', p) for p in re.findall(r"^\s+'(/api/[^']+)': lambda", dm_source, re.M)}
+    studio_routes = ST.SERVER_ROUTES | ST.DM_ECONOMY_ROUTES
+    for method, path in dm_routes:
+        if ST.dm_offers(method, path) and (method, path) not in studio_routes:
+            found.add((method, '/api/dm/' + path[len('/api/'):]))
+        if ST.layer_offers(method, path):
+            found.add((method, '/api/atlas/layers/' + path[len('/api/'):]))
+    found |= {(m, '/api/dm/' + p[len('/api/'):]) for m, p in studio_routes}
+    found |= {(m, '/api/atlas/' + p[len('/api/'):]) for m, p in ST.SYNC_ROUTES | ST.PLAY_ROUTES | ST.ECONOMY_ROUTES}
+    studio_source = inspect.getsource(ST.make_handler)
+    own = studio_source[studio_source.index('        def studio(self, method, path):'):]
+    own = own[:own.index('        def play(self, method):')]
+    found |= {(m, '/api/studio/' + p[len('/api/'):]) for m, p in decided.findall(own)}
+    atlas = inspect.getsource(map_editor.make_handler)
+    gets = atlas[atlas.index('        def do_GET(self):'):atlas.index('        def editing(self):')]
+    posts = atlas[atlas.index('        def do_POST(self):'):]
+    found |= {('GET', '/api/atlas/' + p[len('/api/'):]) for p in re.findall(r"path == '(/api/[^']+)'", gets)}
+    named = re.findall(r"path == '(/api/[^']+)'", posts) + [p for group in re.findall(r"path in \(([^)]*)\)", posts)
+                                                          for p in re.findall(r"'(/api/[^']+)'", group)]
+    found |= {('POST', '/api/atlas/' + p[len('/api/'):]) for p in named}
+    found |= {(m, '/api/atlas/' + p[len('/api/'):]) for p in ST.NOT_IN_ATLAS for m in ('GET', 'POST')}
+    return found
+
+
+# The routes HostedStudio answers itself (not the studio's handlers).
+HOSTED_OWN = {('GET', '/api/studio/ai'), ('GET', '/api/world'), ('POST', '/api/world/restart')}
+
+
+class HostedAllowlistTests(HostedBase):
+    """Doc 78, 7 and 18 ("the allowlist"): deny by default; every route the studio serves is allowed with a role or
+    denied by name; each allowed route refuses the roles below it; denied and unknown routes are 404 for anyone."""
+
+    def test_every_route_the_studio_serves_is_allowed_or_denied_by_name(self):
+        served = served_routes()
+        self.assertGreater(len(served), 120, 'the scan found the handlers\' routes')
+        undecided = sorted(r for r in served if r not in ST.HOSTED_ROUTES and r not in ST.HOSTED_DENIED)
+        self.assertEqual(undecided, [], 'each route the studio serves needs a decision in HOSTED_ROUTES or HOSTED_DENIED')
+        self.assertFalse(set(ST.HOSTED_ROUTES) & set(ST.HOSTED_DENIED))
+        stale = sorted(r for r in ST.HOSTED_ROUTES if r not in served and r not in HOSTED_OWN)
+        self.assertEqual(stale, [], 'an allowed route the studio no longer serves')
+        # The patterned routes: a queued action's answer, on the DM's world and on Atlas's layers.
+        self.assertEqual(ST.hosted_role('GET', '/api/dm/actions/42'), 'viewer')
+        self.assertEqual(ST.hosted_role('GET', '/api/atlas/layers/actions/42'), 'builder')
+        for odd in ('/api/dm/actions/x', '/api/dm/actions/', '/api/dm/actions/1/2', '/api/dm/actions/1?x'):
+            self.assertIsNone(ST.hosted_role('GET', odd), odd)
+        self.assertTrue(all(role in ('viewer', 'dm', 'builder', 'owner') for role in ST.HOSTED_ROUTES.values()),
+                        'every allowed route names its role, and none is admin')
+
+    def test_each_allowed_route_refuses_the_roles_below_it(self):
+        roles = ('viewer', 'dm', 'builder', 'owner')
+        self.make('devworld')                                         # (Atlas's routes reached on a dev world.)
+        routes = [*ST.HOSTED_ROUTES.items(), (('GET', '/api/dm/actions/42'), 'viewer'),
+                  (('GET', '/api/atlas/layers/actions/42'), 'builder')]
+        for (method, path), lowest in routes:
+            for role in roles:
+                status, data = self.call(method, path, role=role, wolves=True)
+                if roles.index(role) < roles.index(lowest):
+                    self.assertEqual(status, 403, f'{role} on {method} {path}: {data}')
+                else:
+                    self.assertNotEqual(status, 403, f'{role} on {method} {path}: {data}')
+                    self.assertFalse(status == 404 and data == {'error': 'Not found.'}, f'{role} on {method} {path}')
+
+    def test_denied_and_unknown_routes_are_404_for_the_owner_too(self):
+        for (method, path) in [*ST.HOSTED_DENIED, ('GET', '/api/nothing'), ('POST', '/api/dm/server/switch'),
+                               ('GET', '/api/dm/npcs/save'), ('POST', '/api/dm/npcs/save'), ('POST', '/api/dm/talk/voice'),
+                               ('GET', '/api/atlas/export'), ('PUT', '/api/dm/me'), ('GET', '/api/studio/session/x')]:
+            self.assertEqual(self.call(method, path, role='owner', wolves=True), (404, {'error': 'Not found.'}), (method, path))
+        self.assertEqual(self.dm.calls, [], 'a refused route reaches nothing')
+        self.assertEqual(self.sync.calls, [])
+        self.assertFalse((self.folder / 'worlds.local.json').exists(), 'no world is ever chosen')
+
+    def test_the_session_is_the_editor_s_and_admin_never_is(self):
+        status, me = self.call('GET', '/api/dm/me', role='builder')
+        self.assertEqual(status, 200)
+        self.assertEqual((me['username'], me['account'], me['role'], me['hosted'], me['cheats'], me['mayActOnWolves']),
+                         ('pell#a1b2c3', 'pell', 'builder', True, 'off', False))
+        self.assertTrue(self.call('GET', '/api/dm/me', role='owner')[1]['mayActOnWolves'], 'the owner may, always')
+        self.assertEqual(self.call('GET', '/api/dm/me', role='admin')[0], 401, 'no hosted session is ever admin')
+        status, session = self.call('GET', '/api/studio/session', role='dm')
+        self.assertEqual(status, 200, session)
+        self.assertEqual((session['hosted'], session['dm']['world'], [w['key'] for w in session['dm']['worlds']],
+                          session['atlas']['available'], session['atlas']['reason'], session['myWorld']),
+                         (True, 'world', ['world'], False, ST.ATLAS_LATER, False))
+        self.assertTrue(self.call('GET', '/api/studio/session', role='owner')[1]['myWorld'])
+        self.assertEqual(self.call('GET', '/api/dm/worlds')[1]['worlds'], [{'key': 'world', 'name': 'Ashfall Vale', 'kind': 'live'}])
+        # The DM's acts are audited as the account and its session.
+        self.assertEqual(self.call('POST', '/api/dm/actions', {'kind': 'bandits.call', 'characterId': 'c1'})[0], 200)
+        self.assertEqual(self.dm.calls[-1][1][0]['username'], 'pell#a1b2c3')
+        # Another world is never reached: one world.
+        self.assertEqual(self.call('GET', '/api/dm/players', query='target=prod')[0], 400)
+        self.assertEqual(self.call('GET', '/api/dm/economy', query='world=prod')[0], 400)
+
+    def test_atlas_needs_builder_and_waits_for_map_editing_on_a_live_world(self):
+        self.assertEqual(self.call('GET', '/api/atlas/roster', role='dm')[0], 403)
+        self.assertEqual(self.call('GET', '/api/atlas/roster', role='builder'), (409, {'error': ST.ATLAS_LATER}))
+        self.make('devworld')
+        status, roster = self.call('GET', '/api/atlas/roster', role='builder')
+        self.assertEqual(status, 200, roster)
+        session = self.call('GET', '/api/studio/session', role='dm')[1]
+        self.assertEqual((session['atlas']['available'], session['atlas']['reason']), (False, 'Your account is for the DM tool only.'))
+        self.assertTrue(self.call('GET', '/api/studio/session', role='builder')[1]['atlas']['available'])
+        # Atlas's writes take the session in place of its editor token: a builder's, not a dm's.
+        status, data = self.call('POST', '/api/atlas/roster/plan', {'slots': []}, role='builder')
+        self.assertNotIn(status, (403, 404), data)
+
+    def test_the_world_is_only_ever_sent_lean(self):
+        """M0a: the whole world is 235 MB raw on DEV (45 MB gzipped), over the Editor's 32 MB caps."""
+        self.assertEqual(self.call('GET', '/api/dm/world', role='viewer')[0], 200)
+        self.assertEqual(self.call('GET', '/api/dm/world', role='viewer', query='lean=0')[0], 200)
+        self.assertEqual([c[1][1] for c in self.dm.calls if c[0] == 'world_map'], [True, True])
+        self.make('devworld')
+        self.assertEqual(self.call('GET', '/api/atlas/live/world', role='builder')[0], 200)
+        self.assertEqual(self.atlas_world.loads, [True])
+
+    def test_players_wolves_cheats_and_the_dev_console(self):
+        """Q24: kill, injure, move and bring back a player's wolf need the owner or the flag; Q7: gifts and tiers need
+        cheats; character.dm never (no hosted account is admin)."""
+        for kind in ('character.kill', 'character.injury', 'character.resurrect'):
+            status, data = self.call('POST', '/api/dm/actions', {'kind': kind, 'characterId': 'c1'}, role='builder')
+            self.assertEqual((status, data['error']), (403, ST.WOLVES_REASON), kind)
+            self.assertEqual(self.call('POST', '/api/dm/actions', {'kind': kind, 'characterId': 'c1'}, role='dm', wolves=True)[0], 200)
+            self.assertEqual(self.call('POST', '/api/dm/actions', {'kind': kind, 'characterId': 'c1'}, role='owner')[0], 200)
+        move = {'kind': 'character.move', 'id': 'c1', 'cell': 'square', 'x': 1, 'y': 1}
+        self.assertEqual(self.call('POST', '/api/dm/live/move', move)[0], 403)
+        self.assertEqual(self.call('POST', '/api/dm/live/move', move, wolves=True)[0], 200)
+        self.assertEqual(self.call('POST', '/api/dm/live/move', {**move, 'kind': 'npc.move'})[0], 200, 'an NPC needs no flag')
+        for kind in ('mentor.revoke', 'tie.end', 'bandits.call', 'character.grant'):
+            self.assertEqual(self.call('POST', '/api/dm/actions', {'kind': kind, 'characterId': 'c1'})[0], 200, kind)
+        for kind in ST.CHEAT_KINDS:
+            status, data = self.call('POST', '/api/dm/actions', {'kind': kind, 'characterId': 'c1'}, role='owner')
+            self.assertEqual(status, 403)
+            self.assertIn('cheats', data['error'])
+        self.settings(cheats='host')
+        for kind in ST.CHEAT_KINDS:
+            self.assertEqual(self.call('POST', '/api/dm/actions', {'kind': kind, 'characterId': 'c1'})[0], 200, kind)
+        self.assertEqual(self.call('GET', '/api/dm/me')[1]['cheats'], 'host')
+        for cheats in ('host', 'everyone'):
+            self.settings(cheats=cheats)
+            status, data = self.call('POST', '/api/dm/actions', {'kind': 'character.dm', 'characterId': 'c1',
+                                                                 'payload': {'dungeonMaster': True}}, role='owner')
+            self.assertEqual((status, data['error']), (403, ST.NO_DEV_CONSOLE))
+
+    def test_close_and_open_are_the_owner_s_and_never_the_publisher_s(self):
+        self.assertEqual(self.call('POST', '/api/dm/server/maintenance', {'on': True}, role='builder')[0], 403)
+        self.assertEqual(self.call('POST', '/api/world/restart', role='builder')[0], 403)
+        status, data = self.call('POST', '/api/world/restart', role='owner')
+        self.assertEqual((status, data), (200, {'ok': True, 'restarting': True}))
+        made = list((self.folder / 'requests').iterdir())
+        self.assertEqual([p.read_text() for p in made], ['restart\n'], 'a kind-only request for the root entrypoint')
+        self.assertEqual(self.dm.calls[-1][0], 'log')
+        self.assertEqual(self.sync.calls, [], 'never through the sync engine (the publisher)')
+
+    def test_page_files_are_the_built_app_only(self):
+        status, kind = self.hosted({'username': 'pell#a1b2c3', 'role': 'viewer'}, 'GET', '/', '', {}, b'')[:2]
+        self.assertEqual((status, kind), (200, 'text/html'))
+        for path in ('/../tools/studio.py', '/assets/../../Database/.env', '/portraits/../x.png', '/index.py'):
+            self.assertEqual(self.hosted({'username': 'pell#a1b2c3', 'role': 'viewer'}, 'GET', path, '', {}, b'')[0], 404, path)
+        self.assertEqual(self.hosted({'username': 'pell#a1b2c3', 'role': 'viewer'}, 'POST', '/', '', {}, b'')[0], 405)
+
+    def test_the_browser_rule_holds_inside_too(self):
+        """I9: the helper refuses Origin, Cookie and Sec-Fetch-*; the hosted handlers' own check says so again."""
+        handler = self.hosted.handler.__new__(self.hosted.handler)
+        handler.editor_session = {'username': 'pell#a1b2c3', 'role': 'owner'}
+        import http.client as hc
+        import io
+        for extra in ('Origin: https://evil.example', 'Cookie: a=b', 'Sec-Fetch-Site: cross-site', ''):
+            handler.headers = hc.parse_headers(io.BytesIO(((extra + '\r\n') if extra else '').encode() + b'\r\n'))
+            self.assertEqual(map_editor.hosted_trusted(handler), not extra, extra)
+        handler.editor_session = None
+        self.assertFalse(map_editor.hosted_trusted(handler), 'no session, no trust')
+        # And the user's own studio ignores an editor_session: its Host check stands.
+        plain = ST.make_handler(ST.Studio(dm=StandInDM(), atlas=lambda key: map_editor.make_handler(), atlas_key='dev-old',
+                                          sync=StandInSync(), choose=lambda k: None, choose_dm=lambda k: None))
+        view = plain.__new__(plain)
+        view.editor_session = {'username': 'x', 'role': 'owner'}
+        view.headers = hc.parse_headers(io.BytesIO(b'Host: evil.example\r\n\r\n'))
+        view.server = type('S', (), {'server_port': 8765})()
+        self.assertFalse(view.trusted())
+
+
+class HostedPrivacyTests(HostedBase):
+    """Doc 78, 9 (Q8, Q10): accounts only as short pairwise ids; reports filtered, the reporter hidden and none about the
+    host's own wolves; NPC conversations without the players' words; the settings view an allowlist."""
+    HOST = 'acct-' + 'b' * 32
+    PLAYER = 'acct-' + '1234abcd' + 'c' * 24
+
+    def test_accounts_are_short_pairwise_ids_everywhere(self):
+        value = {'account': self.PLAYER, 'list': [f'the account {self.PLAYER}'], self.PLAYER: {'name': 'Ash'}, 'n': 3,
+                 'user': 'dm-master'}
+        self.assertEqual(ST.short_accounts(value), {'account': 'acct-1234abcd', 'list': ['the account acct-1234abcd'],
+                                                    'acct-1234abcd': {'name': 'Ash'}, 'n': 3, 'user': 'dm-master'})
+        self.dm.players = lambda target: {'characters': [{'name': 'Ash', 'account': {'name': self.PLAYER}}],
+                                          'holders': {self.PLAYER: 5}}
+        status, data = self.call('GET', '/api/dm/players', role='viewer')
+        self.assertEqual(status, 200)
+        self.assertNotIn(self.PLAYER, json.dumps(data))
+        self.assertEqual(data['characters'][0]['account']['name'], 'acct-1234abcd')
+        # The Prosperity tab's player money (doc 79, 9.3) names holders by account: short there too.
+        self.dm.prosperity = lambda target: {'players': {'holders': [{'holder': self.PLAYER, 'name': f'the account {self.PLAYER[5:]}'}]}}
+        text = json.dumps(self.call('GET', '/api/dm/prosperity', role='viewer')[1])
+        self.assertNotIn(self.PLAYER, text)
+        self.assertIn('acct-1234abcd', text)
+
+    def test_reports_hide_the_reporter_and_never_show_the_host_s_own_wolves(self):
+        (self.folder / 'central.json').write_text(json.dumps({'kind': 'community', 'host': self.HOST}))
+        row = lambda i, reported, char: {'id': i, 'reporter': self.PLAYER, 'reporterName': 'Fern', 'reported': reported,
+                                        'reportedCharacter': char, 'reportedName': char, 'evidence': [{'text': 'line'}],
+                                        'earlier': [{'id': 'r2'}, {'id': 'r9'}]}
+        self.dm.report_rows = [row('r1', 'acct-' + 'd' * 32, 'wolf-d'), row('r2', self.HOST, 'wolf-host')]
+        self.assertEqual(self.call('GET', '/api/dm/reports', role='viewer')[0], 403, 'players\' words: dm and up')
+        status, data = self.call('GET', '/api/dm/reports')
+        self.assertEqual(status, 200, data)
+        self.assertEqual([r['id'] for r in data['reports']], ['r1'], 'never about the host\'s own wolves')
+        report = data['reports'][0]
+        self.assertEqual((report['reporter'], report['reporterName'], report['reporterHidden'], report['evidenceFrom']),
+                         ('', '', True, 'world'))
+        self.assertEqual(report['earlier'], [{'id': 'r9'}])
+        self.assertEqual([a['target'] for a in data['actions']], ['wolf-d'])
+        self.assertNotIn('Fern', json.dumps(data))
+        self.assertNotIn(self.HOST, json.dumps(data))
+        # Deciding one about the host's wolf is refused as if it weren't there.
+        self.assertEqual(self.call('POST', '/api/dm/reports/decide', {'id': 'r2', 'decision': 'dismiss'})[0], 404)
+        self.assertEqual(self.call('POST', '/api/dm/reports/decide', {'id': 'r1', 'decision': 'dismiss'})[0], 200)
+
+    def test_npc_conversations_carry_the_npc_s_side_only(self):
+        life = {'name': 'Bram', 'mind': {'memories': [{'npc': 'bram', 'text': 'Ash asked about iron.'}],
+                                         'conversations': [{'npc': 'bram', 'subject': 'player-ash', 'turns': [
+                                             {'who': 'player-ash', 'text': 'my password is hunter2'},
+                                             {'who': 'bram', 'text': 'Iron is dear this week.'}]}]}}
+        self.dm.chronicle = lambda target, subject: copy.deepcopy(life)
+        status, data = self.call('GET', '/api/dm/chronicle', role='viewer', query='id=bram')
+        self.assertEqual(status, 200)
+        talk = data['mind']['conversations'][0]
+        self.assertEqual((talk['turns'], talk['npcSideOnly']), ([{'who': 'bram', 'text': 'Iron is dear this week.'}], True))
+        self.assertNotIn('hunter2', json.dumps(data))
+        self.assertEqual(data['mind']['memories'], life['mind']['memories'], 'the NPC\'s own summaries stay')
+
+    def test_a_storyteller_named_short_is_made_whole_for_the_decision(self):
+        self.dm.standing = [{'account': self.PLAYER, 'state': 'applied'}, {'account': 'acct-' + 'e' * 32, 'state': 'applied'}]
+        status, _ = self.call('POST', '/api/dm/live/action', {'kind': 'storyteller.decide', 'id': 'acct-1234abcd',
+                                                               'payload': {'approve': True}})
+        self.assertEqual(status, 200)
+        self.assertEqual(self.dm.calls[-1][0], 'live_action')
+        self.assertEqual(self.dm.calls[-1][1][3], self.PLAYER)
+        self.assertEqual(self.call('POST', '/api/dm/live/action', {'kind': 'storyteller.decide', 'id': 'acct-99999999'})[0], 404)
+
+    def test_the_settings_view_is_an_allowlist(self):
+        self.settings(cheats='everyone', player_limit=40, workers=3, host_token='rh_' + 'x' * 40, ai_key='sk-secret',
+                      editor={'enabled': True, 'owner': 'host-k7q2'}, ai={'key': 'sk-secret', 'monthly_tokens': 5})
+        shown = ST.Hosted('world', self.folder).shown_settings()
+        self.assertEqual(shown, {'player_limit': 40, 'workers': 3, 'cheats': 'everyone', 'editor': {'enabled': True}})
+        self.settings(world={'cheats': 'nonsense', 'player_limit': 'many'})
+        self.assertEqual(ST.Hosted('world', self.folder).shown_settings(),
+                         {'player_limit': None, 'workers': None, 'cheats': 'off', 'editor': {'enabled': True}})
+
+    def test_log_lines_for_the_owner_lose_addresses_and_tokens(self):
+        line = ('2026-11-12 10:00:01 player 203.0.113.9:51234 and 2001:db8::7 with rh_' + 'k' * 30 + ' and Bearer '
+                + 'A' * 43 + ' crashed\x07')
+        clean = ST.scrub(line)
+        for gone in ('203.0.113.9', '2001:db8::7', 'rh_kk', 'AAAA', '\x07'):
+            self.assertNotIn(gone, clean)
+        self.assertIn('10:00:01', clean, 'times are kept')
+        (self.folder / 'exits.json').write_text(json.dumps({'exits': [{'at': 1, 'code': 139, 'lines': [line, 7]}]}))
+        self.assertEqual(ST.Hosted('world', self.folder).exits(), [{'at': 1, 'code': 139, 'lines': [clean]}])
+
+
+class SqlTextTests(unittest.TestCase):
+    """I14 (doc 78, 6.1 and 18): no request value ever becomes SQL text or an identifier. Every f-string or
+    concatenation that builds SQL in the studio's three files takes its parts only from these fixed names."""
+    FIXED = {('dungeon_master.py', 'order'): 'a constant ORDER BY clause written just above it',
+             ('dungeon_master.py', 'table'): "chapters(): the rows lambda's table, called only with literal names"}
+    SQL = re.compile(r'\b(SELECT|INSERT INTO|UPDATE|DELETE FROM)\b|\bFROM [a-z_]+\.|\bWHERE\b')
+
+    def test_sql_is_built_only_from_fixed_names(self):
+        import ast
+        here = Path(__file__).resolve().parent
+        for name in ('studio.py', 'dungeon_master.py', 'map_editor.py'):
+            source = (here / name).read_text(encoding='utf-8')
+            for node in ast.walk(ast.parse(source)):
+                if isinstance(node, ast.JoinedStr):
+                    text = ''.join(v.value for v in node.values if isinstance(v, ast.Constant) and isinstance(v.value, str))
+                    if self.SQL.search(text):
+                        for part in node.values:
+                            if isinstance(part, ast.FormattedValue):
+                                expr = ast.unparse(part.value)
+                                self.assertIn((name, expr), self.FIXED, f'{name}:{node.lineno}: {{{expr}}} in SQL text')
+                elif isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Mod)):
+                    sides = [node.left, node.right]
+                    if any(isinstance(s, ast.Constant) and isinstance(s.value, str) and self.SQL.search(s.value) for s in sides):
+                        self.assertTrue(all(isinstance(s, (ast.Constant, ast.BinOp, ast.JoinedStr)) for s in sides),
+                                        f'{name}:{node.lineno}: SQL joined with a value')
+                elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == 'format':
+                    if isinstance(node.func.value, ast.Constant) and self.SQL.search(str(node.func.value.value)):
+                        self.fail(f'{name}:{node.lineno}: SQL built with str.format')
+        chapters = (here / 'dungeon_master.py').read_text(encoding='utf-8')
+        calls = re.findall(r'\brows\(([^)]*)\)', chapters[chapters.index('    def chapters('):chapters.index('    def decide(')])
+        self.assertTrue(calls and all(re.fullmatch(r"'[a-z_]+'", c.split(',')[0].strip()) for c in calls), calls)
+
+
 if __name__ == '__main__':
     unittest.main()

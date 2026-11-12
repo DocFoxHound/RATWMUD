@@ -9,7 +9,9 @@ export interface Story { text: string; throughEvent: number; entries: number; mo
 export interface Bond { who: string; affinity: number; trust: number; familiarity: number; fear: number; respect: number; owed: number; lastContact: number }
 export interface Belief { holder: string; subject: string; claim: string; source: string; confidence: number; day: number; incident: string }
 export interface Memory { npc: string; subject: string; text: string; started: number | null; consolidated: number | null }
-export interface Conversation { npc: string; subject: string; started: number | null; lastActivity: number | null; turns: {who: string; text: string}[] }
+export interface Conversation { npc: string; subject: string; started: number | null; lastActivity: number | null; turns: {who: string; text: string}[];
+    /** A host's Editor (Docs/Design/78, 9): the NPC's side only, never the player's typed words. */
+    npcSideOnly?: boolean }
 export interface Mind {
     memories: Memory[]; conversations: Conversation[]; bonds: Bond[]; regard: Bond[]; heard: Belief[]; said: Belief[];
     names: Record<string, string>;

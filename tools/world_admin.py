@@ -59,6 +59,7 @@ import asyncio
 import base64
 import concurrent.futures
 import contextlib
+import gzip
 import hashlib
 import heapq
 import hmac
@@ -125,6 +126,7 @@ SIGNED_IN_BODY, LARGE_BODY, LARGE_AT_ONCE = 16 * 1024 * 1024, 1024 * 1024, 2
 REQUESTS_PER_SECOND = (40, 20.0)    # A signed-in session: a burst of 40, then 20 a second.
 DB_CONNECTIONS = 6
 HELLO_MOST = 1024
+GZIP_ABOVE = 16 * 1024              # Replies to the hosted studio this large go gzipped to a client that takes it.
 PUBLIC_PATHS = ('/editor/hello', '/editor/login')
 ONE_TIME_PATHS = ('/editor/password', '/editor/keepalive', '/editor/logout')
 STATUS_WORDS = {200: 'OK', 400: 'Bad Request', 401: 'Unauthorized', 403: 'Forbidden', 404: 'Not Found',
@@ -905,7 +907,7 @@ class Core:
         self._hello = (0.0, None)
         self._tables = threading.Lock()          # The tables pool threads touch (audit hours, sessions' failures).
         self._pending: set = set()
-        self.app = None                     # The hosted studio (M3): (session, method, path, query, headers, body).
+        self.app = None                     # The hosted studio (serve: tools/studio.py HostedStudio, M3): (session, method, path, query, headers, body).
 
     def close(self) -> None:
         self.settle()
@@ -1451,9 +1453,9 @@ class Reply(Exception):
     """A reply to send now; `close` when the connection can't be reused (a body left unread, a broken request)."""
 
     def __init__(self, status: int, payload=None, close: bool = False, body: bytes | None = None,
-                 content_type: str = 'application/json'):
+                 content_type: str = 'application/json', encoding: str | None = None):
         super().__init__(status)
-        self.status, self.close, self.content_type = status, close, content_type
+        self.status, self.close, self.content_type, self.encoding = status, close, content_type, encoding
         self.body = body if body is not None else json.dumps(payload if payload is not None else {}).encode('utf-8')
 
 
@@ -1753,7 +1755,8 @@ class EditorServer:
             return _refuse(error)
 
     async def _app(self, session: dict, request: Request, body: bytes) -> Reply:
-        """/api/... and the page's files: the hosted studio (M3). Until then, nothing is there."""
+        """/api/... and the page's files: the hosted studio (tools/studio.py's HostedStudio, doc 78 M3), given the session
+        this checked. Large text replies go gzipped when the client takes it (the shell's proxy does: M0a)."""
         app = self.core.app
         if app is None:
             return Reply(404, {'error': 'not-found'})
@@ -1761,7 +1764,12 @@ class EditorServer:
                                                          request.path, request.query, request.headers, body)
         if request.path.startswith('/api/') and content_type not in ('application/json', 'application/octet-stream'):
             content_type = 'application/json'      # No API reply can run as script.
-        return Reply(status, body=data, content_type=content_type)
+        encoding = None
+        if (len(data) >= GZIP_ABOVE and 'gzip' in request.headers.get('accept-encoding', '')
+                and content_type in ('application/json', 'text/html', 'text/javascript', 'text/css', 'image/svg+xml')):
+            data = await self.core._in(self.core.signed_in_pool, gzip.compress, data, 3)
+            encoding = 'gzip'
+        return Reply(status, body=data, content_type=content_type, encoding=encoding)
 
     @staticmethod
     async def _send(writer, reply: Reply) -> None:
@@ -1769,11 +1777,23 @@ class EditorServer:
                 f'Content-Type: {reply.content_type}', f'Content-Length: {len(reply.body)}',
                 'X-Content-Type-Options: nosniff', 'Cache-Control: no-store',
                 f'Connection: {"close" if reply.close else "keep-alive"}']
+        if reply.encoding:
+            head += [f'Content-Encoding: {reply.encoding}', 'Vary: Accept-Encoding']
         writer.write(('\r\n'.join(head) + '\r\n\r\n').encode('latin-1') + reply.body)
         try:
             await asyncio.wait_for(writer.drain(), 60)
         except Exception:
             reply.close = True
+
+
+def hosted_studio(folder: Path):
+    """The hosted studio for this world (doc 78, 7; tools/studio.py): the DM tool, and Atlas from slice 2, behind the
+    session. Its registry is the container's one-world copy in this folder, when the entrypoint wrote one."""
+    if (folder / 'worlds.json').exists():
+        os.environ.setdefault('RATW_WORLDS_FILE', str(folder / 'worlds.json'))
+        os.environ.setdefault('RATW_WORLDS_LOCAL', str(folder / 'worlds.local.json'))
+    import studio
+    return studio.HostedStudio(studio.Hosted(WORLD_KEY, folder))
 
 
 async def serve(folder: Path, host: str, port: int) -> int:
@@ -1782,6 +1802,7 @@ async def serve(folder: Path, host: str, port: int) -> int:
         log('disabled')                                          # [editor] enabled = false: nothing listens.
         return 0
     core = Core(settings=settings, folder=folder)
+    core.app = hosted_studio(folder)
     server = EditorServer(core, host, port)
     bound = await server.start()
     _write_atomic(folder / 'helper.pid', f'{os.getpid()}\n', 0o644)

@@ -1291,6 +1291,141 @@ class PortWorldWide(PortBase):
                 sock.close()
 
 
+class HostedStudioPort(PortBase):
+    """Doc 78, M3: the hosted studio behind the helper's port, on a throwaway world (the registry's `world`): the DM tool
+    by the session, roles, Close and Open as ratw_dm (migration 0062), My world and its owner-only views, the AI's
+    no-key state, caps and budget in dm.ai_use, and large replies gzipped."""
+    HOST = 'acct-' + 'b' * 32
+
+    def setUp(self):
+        super().setUp()
+        import studio
+        self.studio_module = studio
+        self.temp = tempfile.TemporaryDirectory(prefix='ratw-hosted-registry-')
+        registry = Path(self.temp.name) / 'worlds.json'
+        # (And `dev`, which this file's own connections name, with the throwaway database given to each.)
+        registry.write_text(json.dumps({'worlds': [{'key': 'world', 'name': WORLD_NAME, 'database': SCRATCH, 'kind': 'live'},
+                                                   {'key': 'dev', 'name': 'DEV', 'database': SCRATCH + '_unused', 'kind': 'dev'}]}))
+        self.env = mock.patch.dict(os.environ, {'RATW_WORLDS_FILE': str(registry),
+                                                'RATW_WORLDS_LOCAL': str(Path(self.temp.name) / 'worlds.local.json'),
+                                                'RATW_AI_CONFIG': str(self.folder.path / 'npc-ai.json'), 'RATW_AI': 'on'})
+        self.env.start()
+        (self.folder.path / 'central.json').write_text(json.dumps({'kind': 'community', 'host': self.HOST}))
+        self.write_settings()
+        self.core.app = studio.HostedStudio(studio.Hosted('world', self.folder.path))
+        owner_sql('TRUNCATE dm.ai_use')
+
+    def tearDown(self):
+        self.env.stop()
+        owner_sql("UPDATE admin.server_state SET state = 'running', changed_by = '', note = ''")
+        self.temp.cleanup()
+        super().tearDown()
+
+    def write_settings(self, **extra):
+        (self.folder.path / 'settings.json').write_text(json.dumps(
+            {'name': WORLD_NAME, 'package': 'test-1', 'cheats': 'off', 'player_limit': 40, 'workers': 2,
+             'folder': 'C:\\Users\\pell\\worlds\\ashfall', 'editor': {}, **extra}))
+
+    def test_the_dm_tool_behind_the_session_by_role(self):
+        dm = self.signed('fern', 'dm')['token']
+        self.assertEqual(call(self.port, 'GET', '/api/dm/me')[0], 401, 'nothing without a session')
+        status, _, me = call(self.port, 'GET', '/api/dm/me', token=dm)
+        self.assertEqual((status, me['role'], me['account'], me['hosted']), (200, 'dm', 'fern', True), me)
+        self.assertRegex(me['username'], r'^fern#[0-9a-f]{6}$')
+        status, _, session = call(self.port, 'GET', '/api/studio/session', token=dm)
+        self.assertEqual((status, session['dm']['world'], session['atlas']['available'], session['myWorld']),
+                         (200, 'world', False, False), session)
+        for method, path in (('GET', '/api/dm/artwork'), ('POST', '/api/dm/login'), ('GET', '/api/atlas/session'),
+                             ('GET', '/api/dm/import/plan'), ('POST', '/api/studio/dm-world')):
+            self.assertEqual(call(self.port, method, path, {} if method == 'POST' else None, token=dm)[0], 404, path)
+        self.assertEqual(call(self.port, 'POST', '/api/dm/server/maintenance', {'on': True}, token=dm)[0], 403)
+        status, _, players = call(self.port, 'GET', '/api/dm/players', token=dm)
+        self.assertEqual(status, 200, players)
+        status, headers, page = call(self.port, 'GET', '/', token=dm)
+        self.assertEqual((status, headers['content-type']), (200, 'text/html'))
+        viewer = self.signed('wren', 'viewer')['token']
+        self.assertEqual(call(self.port, 'GET', '/api/dm/reports', token=viewer)[0], 403)
+        status, _, health = call(self.port, 'GET', '/api/dm/health', token=viewer)
+        self.assertEqual((status, health['error']), (404, 'The WORLD database has no world yet.'),
+                         'Server Health is everyone\'s (this throwaway world has none to show)')
+
+    def test_close_and_open_by_the_owner_as_ratw_dm(self):
+        owner = self.signed('pell', 'owner')['token']
+        status, _, closed = call(self.port, 'POST', '/api/dm/server/maintenance', {'on': True, 'note': 'Festival prep.'}, token=owner)
+        self.assertEqual((status, closed['server']['state'], closed['hosted']), (200, 'maintenance', True), closed)
+        by = owner_sql('SELECT state, changed_by, note FROM admin.server_state')[0]
+        self.assertEqual(by[0], 'maintenance')
+        self.assertRegex(by[1], r'^pell#[0-9a-f]{6}$')
+        audit = owner_sql("SELECT who, detail FROM dm.audit WHERE action = 'server.maintenance' ORDER BY sequence DESC LIMIT 1")[0]
+        self.assertEqual(audit[0], by[1])
+        status, _, opened = call(self.port, 'POST', '/api/dm/server/maintenance', {'on': False}, token=owner)
+        self.assertEqual((status, opened['server']['state']), (200, 'running'))
+        status, _, server = call(self.port, 'GET', '/api/dm/server/status', token=owner)
+        self.assertEqual((status, server['key'], server['switchTo'], server['play']), (200, 'world', [], None))
+        status, _, restart = call(self.port, 'POST', '/api/world/restart', {}, token=owner)
+        self.assertEqual(status, 200, restart)
+        self.assertEqual([p.read_text() for p in (self.folder.path / 'requests').glob('restart.*')], ['restart\n'])
+
+    def test_my_world_and_its_owner_only_views(self):
+        (self.folder.path / 'exits.json').write_text(json.dumps({'exits': [{'at': 1, 'code': 139, 'lines': ['from 198.51.100.4 died']}]}))
+        owner = self.signed('pell', 'owner')['token']
+        fern = self.signed('fern', 'dm')['token']
+        status, _, mine = call(self.port, 'GET', '/api/world', token=owner)
+        self.assertEqual(status, 200, mine)
+        self.assertEqual(mine['settings'], {'player_limit': 40, 'workers': 2, 'cheats': 'off', 'editor': {'enabled': True}})
+        self.assertEqual((mine['owner'], mine['folder'], mine['exits'][0]['lines']),
+                         (True, 'C:\\Users\\pell\\worlds\\ashfall', ['from [address] died']))
+        self.assertEqual(mine['fingerprint'], A.fingerprint(A.cert_spki(self.folder.path / 'editor-cert.pem')))
+        self.assertEqual({s['account'] for s in mine['signIns'] if s['detail'].startswith('Signed in')}, {'pell', 'fern'})
+        status, _, theirs = call(self.port, 'GET', '/api/world', token=fern)
+        self.assertEqual(status, 200, theirs)
+        self.assertFalse(theirs['owner'])
+        self.assertNotIn('folder', theirs)
+        self.assertNotIn('exits', theirs)
+        self.assertEqual({(s['account'], s['detail']) for s in theirs['signIns']}, {('fern', 'Signed in.')},
+                         'only their own sign-ins, without addresses')
+        for secret in ('rh_', 'npc-ai', 'api_key'):
+            self.assertNotIn(secret, json.dumps(mine))
+
+    def test_the_ai_without_a_key_its_caps_and_the_month_s_budget(self):
+        dm = self.signed('fern', 'dm')['token']
+        status, _, ai = call(self.port, 'GET', '/api/studio/ai', token=dm)
+        self.assertEqual((status, ai['available'], ai['reason']), (200, False, 'Needs an AI key in world.toml.'))
+        status, _, refused = call(self.port, 'POST', '/api/dm/chronicle/story', {'id': 'npc_bram'}, token=dm)
+        self.assertEqual((status, refused['error']), (503, 'Needs an AI key in world.toml.'))
+        (self.folder.path / 'npc-ai.json').write_text('{"enabled": true, "api_key": "sk-test-not-real"}')
+        status, _, ai = call(self.port, 'GET', '/api/studio/ai', token=dm)
+        self.assertNotIn('sk-test', json.dumps(ai), 'no route returns the config')
+        with mock.patch.dict(os.environ, {'RATW_AI': 'fixture'}):
+            hosted = self.core.app.ai
+            self.assertTrue(hosted.state()['available'])
+            for _ in range(self.studio_module.AI_CAPS['story']):
+                hosted.record('story', 'fern', 'fixture', 1, 10, 10)
+            status, _, capped = call(self.port, 'POST', '/api/dm/chronicle/story', {'id': 'npc_bram'}, token=dm)
+            self.assertEqual(status, 429, capped)
+            self.assertEqual(hosted.state()['today'], {'story': 100, 'roster': 0})
+            self.write_settings(ai={'monthly_tokens': 5000})
+            self.assertTrue(hosted.state()['available'])
+            (self.folder.path / 'mind-month.json').write_text(json.dumps({'month': time.strftime('%Y-%m', time.gmtime()), 'tokens': 3000}))
+            state = hosted.state()
+            self.assertEqual((state['available'], state['month']), (False, {'tools': 2000, 'mind': 3000, 'budget': 5000}))
+            self.assertIn('budget', state['reason'])
+            (self.folder.path / 'mind-month.json').write_text(json.dumps({'month': '2000-01', 'tokens': 99999}))
+            self.assertTrue(hosted.state()['available'], 'another month\'s count is not this one\'s')
+        self.assertEqual(owner_sql('SELECT count(*) FROM dm.ai_use')[0][0], 100)
+
+    def test_large_replies_go_gzipped_to_a_client_that_takes_it(self):
+        import gzip
+        token = self.signed()['token']
+        big = json.dumps({'cells': ['x' * 100] * 400}).encode()
+        self.core.app = lambda *args: (200, 'application/json', big)
+        status, headers, body = call(self.port, 'GET', '/api/dm/world', token=token, headers={'Accept-Encoding': 'gzip'})
+        self.assertEqual((status, headers.get('content-encoding')), (200, 'gzip'))
+        self.assertEqual(gzip.decompress(body), big)
+        status, headers, body = call(self.port, 'GET', '/api/dm/world', token=token)
+        self.assertEqual((headers.get('content-encoding'), body), (None, json.loads(big)))
+
+
 @unittest.skipUnless(DB and OPENSSL, 'local PostgreSQL or openssl missing')
 class Process(unittest.TestCase):
     """The real `serve` process: listens, reloads its key on SIGHUP, says so in the hello, and stops on SIGTERM."""

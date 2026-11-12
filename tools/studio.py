@@ -62,12 +62,16 @@ import contextlib
 import copy
 import errno
 import http.client
+import io
 import json
 import os
+from pathlib import Path
+import re
 import socket
 import subprocess
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 
@@ -575,6 +579,80 @@ def layer_offers(method: str, path: str) -> bool:
     return path in LAYER_READS or (path.startswith('/api/actions/') and path.count('/') == 3)
 
 
+# ------------------------------------------------------------------------------------------------ hosted mode's routes
+# Hosted mode (Docs/Design/78-hosts-run-their-own-worlds.md, 7, 8 and Q2; Phase M3): a host's Editor, served by the
+# world's helper (tools/world_admin.py) over its TLS port. Deny by default: every (method, path) the hosted studio
+# answers is named here with the lowest Editor role that may use it (viewer < dm < builder < owner; no hosted account
+# is ever admin, so `character.dm` and the Dev Console never are a host's). Anything else is 404, and the routes below
+# in HOSTED_DENIED are refused by name (404 too): tools/test_studio.py walks every route the studio serves and fails on
+# one that is in neither. A route's own rules apply on top (the players' wolves flag, cheats, the AI caps: HostedStudio).
+VIEWER, DM_ROLE, BUILDER, OWNER = 'viewer', 'dm', 'builder', 'owner'
+_DM_READS = ('me', 'worlds', 'players', 'health', 'world', 'ground', 'live', 'live/rumours', 'live/fame', 'live/projects',
+             'storytellers', 'talk', 'talk/dialects', 'talk/figures', 'prosperity', 'calendar', 'chronicle', 'npcs',
+             'chapters', 'factions', 'factions/history', 'server/status', 'economy')
+_DM_WRITES = ('actions', 'live/move', 'live/action', 'live/visit', 'live/leave', 'storytellers/visitor', 'milestone',
+              'prosperity/act', 'festivals/call', 'reports/decide', 'chronicle/story', 'npcs/life', 'chapters/decide',
+              *(f'economy/{k}' for k in ECONOMY_KINDS))
+_ATLAS_READS = ('live/world', 'live/ground', 'live/camps', 'roster', 'ai', 'economy')
+_ATLAS_WRITES = ('validate', 'live/edit', 'live/sync', 'roster', 'roster/plan', 'roster/preview', 'roster/generate',
+                 *(f'economy/{k}' for k in ECONOMY_KINDS))
+HOSTED_ROUTES = {
+    # The studio's own, and hosted mode's: the session (the page's world and role), the AI's use, My world.
+    ('GET', '/api/studio/ping'): VIEWER, ('GET', '/api/studio/session'): VIEWER, ('GET', '/api/studio/ai'): VIEWER,
+    ('GET', '/api/world'): VIEWER,                   # My world: everyone reads it; the owner-only parts for the owner.
+    ('POST', '/api/world/restart'): OWNER,           # A `restart` request file for the root entrypoint (doc 78, 6.5).
+    # The DM suite. Reads for everyone signed in; reports (players' words as evidence) from dm.
+    **{('GET', f'/api/dm/{p}'): VIEWER for p in _DM_READS},
+    ('GET', '/api/dm/reports'): DM_ROLE,
+    # Its acts: dm and up (doc 78, 8), the economy's (doc 79, 12: the slider, rules, services, seasons, the host's
+    # overrides; the live acts, grants and fines and band overrides, through prosperity/act and actions) among them.
+    **{('POST', f'/api/dm/{p}'): DM_ROLE for p in _DM_WRITES},
+    ('POST', '/api/dm/server/maintenance'): OWNER,   # Close and Open (migration 0062's grant to ratw_dm).
+    # Atlas: builder and up (Q2); its live layers on Atlas's world (the DM's NPC, layer, faction and talk methods).
+    **{('GET', f'/api/atlas/{p}'): BUILDER for p in _ATLAS_READS},
+    **{('POST', f'/api/atlas/{p}'): BUILDER for p in _ATLAS_WRITES},
+    **{('GET', '/api/atlas/layers/' + p[len('/api/'):]): BUILDER for p in LAYER_READS},
+    **{('POST', '/api/atlas/layers/' + p[len('/api/'):]): BUILDER for p in MOVED_TO_ATLAS},
+}
+# Patterned routes: a queued action's answer (GET /api/dm/actions/ID).
+HOSTED_PATTERNS = ((('GET', re.compile(r'/api/dm/actions/\d{1,18}')), VIEWER),
+                   (('GET', re.compile(r'/api/atlas/layers/actions/\d{1,18}')), BUILDER))
+# Refused by name in hosted mode (doc 78, 7 and 8; tests: 18, "the allowlist"), with why.
+HOSTED_DENIED = {
+    ('POST', '/api/studio/atlas-world'): 'writes worlds.local.json',
+    ('POST', '/api/studio/dm-world'): 'writes worlds.local.json',
+    ('POST', '/api/dm/login'): 'the Editor signs in through /editor/login',
+    ('POST', '/api/dm/logout'): 'the Editor signs out through /editor/logout',
+    ('POST', '/api/dm/server/switch'): 'one world',
+    ('POST', '/api/dm/server/start'): 'starts tools/live.sh',
+    ('POST', '/api/dm/server/rebuild'): 'connects as editor; slice 2 (Publish)',
+    ('GET', '/api/dm/import/plan'): 'imports', ('POST', '/api/dm/import'): 'imports',
+    ('GET', '/api/dm/releases'): 'releases', ('POST', '/api/dm/rollback'): 'rollback',
+    ('GET', '/api/dm/artwork'): 'portrait uploads are off on community worlds',
+    ('POST', '/api/dm/artwork/review'): 'portrait uploads are off on community worlds',
+    ('GET', '/api/atlas/session'): "Atlas's editor token: the Editor session stands for it",
+    ('GET', '/api/atlas/demo'): 'not needed',
+    ('POST', '/api/atlas/export'): 'exports to files',
+    ('POST', '/api/atlas/playtest'): 'playtests (play.sh)',
+    ('GET', '/api/atlas/sync/diff'): 'Update from live', ('POST', '/api/atlas/sync/pull'): 'Update from live',
+    ('GET', '/api/atlas/play/server'): 'Play', ('POST', '/api/atlas/play/server/start'): 'Play (live.sh)',
+    **{(m, '/api/atlas/' + p[len('/api/'):]): 'Push to live has gone' for p in NOT_IN_ATLAS for m in ('GET', 'POST')},
+}
+
+
+def hosted_role(method: str, path: str) -> str | None:
+    """The lowest Editor role that may use a route in hosted mode, or None: not on the allowlist (refused, 404)."""
+    if (method, path) in HOSTED_DENIED:
+        return None
+    role = HOSTED_ROUTES.get((method, path))
+    if role is not None:
+        return role
+    for (m, pattern), role in HOSTED_PATTERNS:
+        if m == method and pattern.fullmatch(path):
+            return role
+    return None
+
+
 def atlas_suite(key: str):
     """Atlas's Handler on a dev world's database (Push to live has gone: NOT_IN_ATLAS answers its old paths)."""
     import live_edit
@@ -707,9 +785,12 @@ class Studio:
     """The tool's state: the DM (accounts, the live worlds), Atlas's world and its Handler, the suite to open on."""
 
     def __init__(self, dm=None, atlas=atlas_suite, atlas_key=None, suite='atlas', choose=None, sync=None, economy=None,
-                 builds=None, servers=None, choose_dm=None):
+                 builds=None, servers=None, choose_dm=None, hosted=None):
         if suite not in SUITES:
             raise ValueError(f'A suite is one of: {", ".join(SUITES)}.')
+        # Hosted mode (Docs/Design/78, 7): a host's Editor on the container's one world (a Hosted); None: the user's
+        # own studio, as it always was.
+        self.hosted = hosted
         self.dm = dm or D.DungeonMaster()
         if sync is None:
             import world_sync
@@ -723,13 +804,23 @@ class Studio:
         self._choose = choose or (lambda key: world_db.set_local(atlas=key))   # Saved/Config/worlds.local.json
         self._choose_dm = choose_dm or (lambda key: world_db.set_local(dm=key))
         self._lock = threading.Lock()
-        self.dm_suite = D.make_handler(self.dm, offers=dm_offers, allowed=dm_worlds, default=dm_world)
-        self.layers = D.make_handler(self.dm, offers=layer_offers, world=lambda: self.atlas_key)
-        self.atlas_key = world_db.canonical(atlas_key) if atlas_key else world_db.atlas_world()
+        if hosted is not None:
+            # One world: every suite's, every picker's and the DM's default (doc 78, 7). No world is ever chosen.
+            one = hosted.world
+            self.dm_suite = D.make_handler(self.dm, offers=dm_offers, allowed=lambda: [one], default=lambda: one,
+                                           hosted=True, worlds=lambda: [one])
+            self.layers = D.make_handler(self.dm, offers=layer_offers, world=lambda: one, hosted=True, worlds=lambda: [one])
+            self.atlas_key = one
+        else:
+            self.dm_suite = D.make_handler(self.dm, offers=dm_offers, allowed=dm_worlds, default=dm_world)
+            self.layers = D.make_handler(self.dm, offers=layer_offers, world=lambda: self.atlas_key)
+            self.atlas_key = world_db.canonical(atlas_key) if atlas_key else world_db.atlas_world()
         self.atlas = atlas(self.atlas_key)
 
     def use(self, key: str) -> str:
         """Switches Atlas's world (a dev world): this computer's choice, and the Atlas suite's database."""
+        if self.hosted is not None:
+            raise D.DMError('Not found.', 404)               # (One world: nothing to switch, worlds.local.json never written.)
         key = world_db.canonical(key)                     # (ridgemere2 is DEV.)
         if key not in world_db.keys('dev'):
             raise D.DMError(f'Atlas works on dev worlds: {", ".join(world_db.keys("dev")) or "none registered"}.', 400)
@@ -741,6 +832,8 @@ class Studio:
 
     def use_dm(self, key: str) -> str:
         """Chooses the DM suite's world (any registered world), apart from Atlas's: this computer's choice."""
+        if self.hosted is not None:
+            raise D.DMError('Not found.', 404)
         key = world_db.canonical(key)
         if key not in world_db.keys():
             raise D.DMError(f'Choose a world: {", ".join(world_db.keys())}.', 400)
@@ -750,6 +843,8 @@ class Studio:
     def session(self, who: dict) -> dict:
         """Who is signed in, the suite to open on, and each suite's worlds: Atlas's (a dev world) and the DM's (any),
         chosen apart; and the live server's (what `tools/live.sh server` runs by default)."""
+        if self.hosted is not None:
+            return self.hosted_session(who)
         try:
             live = world_db.live_world()
         except world_db.DatabaseError:
@@ -762,6 +857,40 @@ class Studio:
                 'atlas': {'available': D.RANK[who['role']] >= D.RANK['dm'], 'world': shown(self.atlas_key),
                           'worlds': [shown(k) for k in world_db.keys('dev')]},
                 'dm': {'world': dm, 'live': live, 'worlds': [shown(k) for k in world_db.keys()], 'switch': LIVE_SWITCH}}
+
+    # -- hosted mode (doc 78, 7) ----------------------------------------------------------------------------------------
+    def hosted_session(self, who: dict) -> dict:
+        """The page's session in hosted mode: who is signed in (the Editor account and its role), the one world, Atlas
+        (builder and up, and only on a dev world: map editing is slice 2), My world (owner), cheats and the AI's state."""
+        one = self.hosted.world
+        rank = D.RANK.get(who.get('role'), 0)
+        try:
+            dev = world_db.kind(one) == 'dev'
+            world = shown(one)
+        except world_db.DatabaseError:
+            dev, world = False, {'key': one, 'name': one, 'kind': 'live'}
+        reason = (ATLAS_LATER if not dev else '' if rank >= D.RANK['builder'] else 'Your account is for the DM tool only.')
+        return {'me': who, 'suite': 'dm', 'hosted': True,
+                'atlas': {'available': not reason, 'reason': reason, 'world': world, 'worlds': [world]},
+                'dm': {'world': one, 'live': one, 'worlds': [world], 'switch': ''},
+                'myWorld': rank >= D.RANK['owner'], 'cheats': self.hosted.cheats(),
+                'mayActOnWolves': bool(who.get('mayActOnWolves'))}
+
+    def hosted_status(self) -> dict:
+        """The one world's server, as the DM's Server tab reads it, read as ratw_dm (no publisher, no switch)."""
+        import world_sync as WS
+        one = self.hosted.world
+        try:
+            entry = shown(one)
+        except world_db.DatabaseError:
+            entry = {'key': one, 'name': one, 'kind': 'live'}
+        with self.dm.connect(one) as conn:
+            state, running, holder = WS.server_state(conn), WS.server_running(conn), WS.server_holder(conn)
+        return {'key': one, 'name': entry.get('name', one), 'kind': entry.get('kind', 'live'), 'upstream': None,
+                'server': state, 'serverRunning': running,
+                'serverHolder': {k: holder[k] for k in ('port', 'local')} if holder else None,
+                'release': None, 'live': one, 'warning': '', 'switchTo': [], 'starting': False, 'play': None,
+                'hosted': True}
 
     def copies_of(self, live: str) -> list[str]:
         """The dev worlds whose upstream is this live world: what can be imported into it. Atlas's world first."""
@@ -787,10 +916,16 @@ def make_handler(studio: Studio):
             return self.as_(studio.dm_suite).trusted()
 
         def signed_in(self):
+            if studio.hosted is not None:
+                return self.as_(studio.dm_suite).who()          # The Editor session the helper checked (doc 78, 7).
             return studio.dm.session(self.as_(studio.dm_suite).token())
 
         def builder(self):
             who = self.signed_in()
+            if studio.hosted is not None:
+                if D.RANK[who['role']] < D.RANK['builder']:     # (A host's Editor: Atlas is for builders and owners, Q2.)
+                    raise D.DMError('Atlas is for builder and owner accounts: yours is for the DM tool only.', 403)
+                return who
             if D.RANK[who['role']] < D.RANK['dm']:
                 raise D.DMError('Atlas is for dm and admin accounts; a viewer has the DM suite.', 403)
             return who
@@ -870,7 +1005,13 @@ def make_handler(studio: Studio):
             return result
 
         def live_key(self, asked=''):
-            """A world the DM works on: the one asked for (any registered world), else the DM's chosen world."""
+            """A world the DM works on: the one asked for (any registered world), else the DM's chosen world. (Hosted:
+            the one world, always.)"""
+            if studio.hosted is not None:
+                one = studio.hosted.world
+                if asked and world_db.canonical(asked) != one:
+                    raise D.DMError(f'This Editor works on its own world ({one}) only.', 400)
+                return one
             key = world_db.canonical(asked) if asked else world_db.dm_world()
             world_db.world(key)                        # (An unknown world: 400, naming the registered ones.)
             return key
@@ -884,6 +1025,8 @@ def make_handler(studio: Studio):
 
         def update_from_live(self, method):
             """Atlas's Update from live: the plan, and the pull, on Atlas's world (it must have an upstream)."""
+            if studio.hosted is not None:
+                raise D.DMError('Not found.', 404)               # (Removed in hosted mode: doc 78, 7.)
             who = self.builder()
             key = studio.atlas_key
             live = world_db.upstream(key)
@@ -976,6 +1119,8 @@ def make_handler(studio: Studio):
         def server_routes(self, method, path, query):
             """The DM's server and imports: maintenance, the live switch, Import from dev, releases and rollback."""
             who = self.signed_in()
+            if studio.hosted is not None:
+                return self.hosted_server(method, path, who)
 
             def asked(name):
                 return str((query.get(name) or [''])[0])
@@ -1087,11 +1232,35 @@ def make_handler(studio: Studio):
                                                 f'Rolled back to release {number} (now release {result.get("release")})'
                                                 + (f': {note}' if note else '.'), result))
 
+        def hosted_server(self, method, path, who):
+            """Hosted mode's server routes (doc 78, 7): the status, and Close and Open through migration 0062's grant (as
+            ratw_dm, never the publisher); the switch, imports, releases, rollback, rebuild and start are gone."""
+            if method == 'GET' and path == '/api/server/status':
+                return self.reply(200, studio.hosted_status())
+            if method != 'POST' or path != '/api/server/maintenance':
+                raise D.DMError('Not found.', 404)
+            if D.RANK[who['role']] < D.RANK['owner']:
+                raise D.DMError('Closing and opening the world is for its owner.', 403)
+            data = self.as_(studio.dm_suite).body()
+            on, note = data.get('on'), str(data.get('note') or '')[:400]
+            if not isinstance(on, bool):
+                raise D.DMError('Say {"on": true} to close the world or {"on": false} to open it.', 400)
+            key = studio.hosted.world
+            import world_sync
+            with studio.dm.connect(key) as conn:
+                world_sync.set_state(conn, 'maintenance' if on else 'running', who['username'],
+                                     note or ('Closed for maintenance.' if on else ''))
+            return self.reply(200, self.audited(who, key, 'server.maintenance' if on else 'server.running', key,
+                                                ('Closed the world' if on else 'Opened the world') + (f': {note}' if note else '.'),
+                                                studio.hosted_status()))
+
         def studio(self, method, path):
             if method == 'GET' and path == '/api/ping':
                 return self.reply(200, {'app': 'ratw-studio', 'suite': studio.suite})
             if method == 'GET' and path == '/api/session':
                 return self.reply(200, studio.session(self.signed_in()))
+            if studio.hosted is not None and path in ('/api/atlas-world', '/api/dm-world'):
+                raise D.DMError('Not found.', 404)               # (They write worlds.local.json: doc 78, 7.)
             if method == 'POST' and path == '/api/atlas-world':
                 self.builder()
                 data = self.as_(studio.dm_suite).body()
@@ -1106,6 +1275,8 @@ def make_handler(studio: Studio):
             """Atlas's Play: the game of the server running Atlas's world, at the address the browser reached the studio
             by (another computer on the network included); with none running, why, and (POST, dm and admin) starting
             one, as the DM's Server tab does."""
+            if studio.hosted is not None:
+                raise D.DMError('Not found.', 404)               # (Play and playtests: removed in hosted mode, doc 78, 7.)
             who = self.builder()
             key = studio.atlas_key
             if method == 'POST':
@@ -1135,6 +1306,505 @@ def make_handler(studio: Studio):
                                     'canStart': D.RANK[who['role']] >= D.RANK['dm'] and not address and not holder})
 
     return Handler
+
+
+# ------------------------------------------------------------------------------------------------------- hosted mode
+# A host's Editor (Docs/Design/78-hosts-run-their-own-worlds.md, sections 7-9; Phase M3). The world's helper
+# (tools/world_admin.py) checks the Editor session and the browser rule, then hands each signed-in request to
+# HostedStudio (its `Core.app`), which checks the route against the allowlist (HOSTED_ROUTES) and the account's role,
+# applies a route's own rules (the players' wolves flag, cheats, the AI's caps and budget, the host's own reports),
+# drives the studio's Handler without a socket, and filters what goes back (section 9: accounts only as short pairwise
+# ids, reports without their reporter and never about the host's own wolves, NPC conversations without the players'
+# words). The user's own studio (Studio without `hosted`) is untouched by any of it.
+
+ATLAS_LATER = 'Map editing comes in a later update.'
+CHEATS_OFF = ('Set cheats in world.toml ("host" or "everyone"); the world will then be listed "cheats on".')
+WOLVES_REASON = ("Acting on players' wolves (kill, injure, move, bring back) needs the world's owner, or an account the "
+                 'owner marked "may act on players\' wolves".')
+NO_DEV_CONSOLE = "The Dev Console (character.dm) is never a host's: it needs an admin, and no Editor account is one."
+NO_AI_KEY = 'Needs an AI key in world.toml.'
+WOLF_KINDS = ('character.kill', 'character.injury', 'character.resurrect', 'character.move')      # (Q24.)
+CHEAT_KINDS = ('character.gift', 'account.unlock')
+# Accounts on a community world are pairwise ids (doc 77: "acct-" and 32 hex); the Editor shows the first 8.
+ACCOUNT_ID = re.compile(r'acct-([0-9a-f]{8})[0-9a-f]{24}')
+SHORT_ACCOUNT = re.compile(r'acct-[0-9a-f]{8}')
+# Replies that are the map (cells, ground, outlines) hold no account: sent as they are (they are the largest).
+MAP_ROUTES = frozenset({'/api/dm/world', '/api/dm/ground', '/api/atlas/live/world', '/api/atlas/live/ground',
+                        '/api/atlas/layers/world', '/api/atlas/layers/ground'})
+# The AI on the host's key (doc 78, 7 and Q16): a day's caps for the tools' own calls, beside the story writer's 30 an
+# hour; and a monthly token budget over the tools and the NPC Mind together ([ai] monthly_tokens in world.toml). The
+# default is from the Mind's real calls (Saved/Logs/npc-mind-calls.jsonl: about 1,100 tokens a voice line, 1,024 in and
+# 72 out, on gpt-5.4-mini at $0.75 and $4.50 a million: about $1 a million tokens): 20 million is about $20 a month.
+AI_CAPS = {'story': 100, 'roster': 20}
+AI_MONTHLY_TOKENS = 20_000_000
+# A life story's rough size (a chronicle's lines in, a story of up to 900 tokens out) and doc 28's prices (dollars a
+# million tokens, input and output), for "a rough cost a story".
+STORY_TOKENS = (3000, 700)
+AI_PRICES = {'gpt-5.4-mini': (0.75, 4.50), 'gpt-5.4-nano': (0.20, 1.25), 'gpt-5.6-luna': (0.20, 1.20)}
+SETTINGS_SHOWN = ('player_limit', 'workers')     # And cheats and [editor] enabled: the settings view's allowlist.
+# What leaves a log line shown to the owner: addresses and anything that looks like a token or key.
+_SCRUB = ((re.compile(r'\b\d{1,3}(?:\.\d{1,3}){3}(?::\d{1,5})?\b'), '[address]'),
+          (re.compile(r'(?<![\w:])(?:[0-9A-Fa-f]{1,4}:){3,7}[0-9A-Fa-f]{1,4}(?![\w:])|(?<![\w:])[0-9A-Fa-f:]*::[0-9A-Fa-f:]*[0-9A-Fa-f](?![\w:])'), '[address]'),
+          (re.compile(r'\b(?:rh|rt|sk|Bearer)[_ -][A-Za-z0-9_\-.]{8,}'), '[secret]'),
+          (re.compile(r'\b[A-Za-z0-9_\-+/=]{32,}\b'), '[secret]'))
+
+
+def scrub(line: str) -> str:
+    """A log line for the owner's eyes: addresses and token-like strings replaced, control characters dropped."""
+    line = re.sub(r'[\x00-\x08\x0b-\x1f\x7f]', '', str(line))[:300]
+    for pattern, words in _SCRUB:
+        line = pattern.sub(words, line)
+    return line
+
+
+def short_accounts(value):
+    """Every account id in a reply as its short form (doc 78, 9): acct-1a2b3c4d…, keys too."""
+    if isinstance(value, str):
+        return ACCOUNT_ID.sub(r'acct-\1', value) if 'acct-' in value else value
+    if isinstance(value, list):
+        return [short_accounts(v) for v in value]
+    if isinstance(value, dict):
+        return {short_accounts(k): short_accounts(v) for k, v in value.items()}
+    return value
+
+
+def hosted_reports(reply, host):
+    """Reports for the host's Editor (doc 78, 9, Q10): never one about the host's own wolves (those go to central from
+    the reporter's client), and the reporter hidden, against retaliation; the evidence marked as the world's."""
+    if not isinstance(reply, dict) or not isinstance(reply.get('reports'), list):
+        return reply
+    reports = [r for r in reply['reports'] if isinstance(r, dict)]
+    about_host = [r for r in reports if host and r.get('reported') == host]
+    gone = {r.get('id') for r in about_host}
+    hidden_characters = {r.get('reportedCharacter') for r in about_host}
+    kept = []
+    for r in reports:
+        if r.get('id') in gone:
+            continue
+        r = {**r, 'reporter': '', 'reporterName': '', 'reporterHidden': True, 'evidenceFrom': 'world',
+             'earlier': [e for e in r.get('earlier') or [] if isinstance(e, dict) and e.get('id') not in gone]}
+        kept.append(r)
+    actions = [a for a in reply.get('actions') or [] if isinstance(a, dict) and a.get('target') not in hidden_characters]
+    return {**reply, 'reports': kept, 'actions': actions}
+
+
+def hosted_chronicle(life):
+    """A chronicle for the host's Editor (doc 78, 9): NPC conversations carry the NPC's side only, never the player's
+    typed words (memories are the NPC's own summaries and stay)."""
+    mind = life.get('mind') if isinstance(life, dict) else None
+    if not isinstance(mind, dict) or not isinstance(mind.get('conversations'), list):
+        return life
+    talks = []
+    for t in mind['conversations']:
+        if isinstance(t, dict):
+            npc = t.get('npc')
+            t = {**t, 'turns': [x for x in t.get('turns') or [] if isinstance(x, dict) and npc and x.get('who') == npc],
+                 'npcSideOnly': True}
+            talks.append(t)
+    return {**life, 'mind': {**mind, 'conversations': talks}}
+
+
+class Hosted:
+    """What hosted mode knows of its world: its key (the container's one world, `world`), and the helper's own folder
+    (RATW_ADMIN_DIR, the `admin` volume) with the entrypoint's cleaned settings copy (settings.json: never the host token
+    or the AI key), central's word on the world (central.json: its kind and the host's account), the AI config's copy,
+    the Mind's monthly count (mind-month.json) and the server's recent exits (exits.json)."""
+
+    def __init__(self, world: str = 'world', folder=None):
+        self.world = world
+        self.folder = Path(folder) if folder else Path(os.environ.get('RATW_ADMIN_DIR', '/var/lib/ratw/admin'))
+
+    def _json(self, name: str) -> dict:
+        try:
+            value = json.loads((self.folder / name).read_text(encoding='utf-8'))
+            return value if isinstance(value, dict) else {}
+        except (OSError, ValueError):
+            return {}
+
+    def settings(self) -> dict:
+        return self._json('settings.json')
+
+    def _setting(self, name, table='world'):
+        values = self.settings()
+        if name in values:
+            return values[name]
+        nested = values.get(table)
+        return nested.get(name) if isinstance(nested, dict) else None
+
+    def cheats(self) -> str:
+        value = self._setting('cheats')
+        return value if value in ('off', 'host', 'everyone') else 'off'
+
+    def shown_settings(self) -> dict:
+        """The settings view (doc 78, 7): an allowlist of fields, each a number, a flag or one of cheats' three words."""
+        out = {}
+        for name in SETTINGS_SHOWN:
+            value = self._setting(name, 'server' if name == 'workers' else 'world')
+            out[name] = value if isinstance(value, int) and not isinstance(value, bool) else None
+        editor = self.settings().get('editor')
+        out['cheats'] = self.cheats()
+        out['editor'] = {'enabled': not (isinstance(editor, dict) and editor.get('enabled') is False)}
+        return out
+
+    def monthly_tokens(self) -> int:
+        ai = self.settings().get('ai')
+        value = ai.get('monthly_tokens') if isinstance(ai, dict) else self.settings().get('ai_monthly_tokens')
+        return int(value) if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else AI_MONTHLY_TOKENS
+
+    def host_account(self) -> str | None:
+        """The world's host on central, as this world knows them (central.json's `host`: the pairwise id of host.json)."""
+        host = self._json('central.json').get('host')
+        return host if isinstance(host, str) and host else None
+
+    def ai_config_path(self) -> Path:
+        return Path(os.environ.get('RATW_AI_CONFIG') or self.folder / 'npc-ai.json')
+
+    def mind_month(self) -> int:
+        """The NPC Mind's tokens this month, as the root entrypoint copied them from its ledger (mind-month.json:
+        {month: "YYYY-MM", tokens}); 0 for another month or none."""
+        count = self._json('mind-month.json')
+        tokens = count.get('tokens')
+        if count.get('month') != time.strftime('%Y-%m', time.gmtime()) or not isinstance(tokens, int) or isinstance(tokens, bool):
+            return 0
+        return max(0, tokens)
+
+    def exits(self) -> list:
+        """The server's last exits, for the owner ("keeps stopping"): at most 5, each at most 20 scrubbed lines."""
+        out = []
+        for e in (self._json('exits.json').get('exits') or [])[-5:]:
+            if isinstance(e, dict):
+                lines = [scrub(l) for l in (e.get('lines') or [])[-20:] if isinstance(l, str)]
+                at, code = e.get('at'), e.get('code')
+                out.append({'at': at if isinstance(at, (int, float)) and not isinstance(at, bool) else None,
+                            'code': code if isinstance(code, int) and not isinstance(code, bool) else None, 'lines': lines})
+        return out
+
+    def folder_path(self) -> str:
+        folder = self.settings().get('folder')
+        return scrub(folder)[:400] if isinstance(folder, str) else ''
+
+    def fingerprint(self) -> str:
+        try:
+            import world_admin
+            return world_admin.fingerprint(world_admin.cert_spki(self.folder / 'editor-cert.pem'))
+        except Exception:  # noqa: BLE001 - no certificate yet: nothing to show.
+            return ''
+
+
+class HostedAI:
+    """The host's tools' model calls (doc 78, 7): life stories and Atlas's roster generation, on the host's key (the
+    helper's copy of the AI config), capped a day (AI_CAPS) and by the month's token budget, counted in dm.ai_use (which
+    ratw_game can't touch) with the Mind's own month beside it. No route returns or edits the config."""
+
+    def __init__(self, hosted: Hosted, connect):
+        self.hosted, self.connect = hosted, connect      # connect(): ratw_dm on the world.
+
+    def config(self):
+        """(config or None, the reason it is missing)."""
+        mode = os.environ.get('RATW_AI', 'on')
+        if mode == 'off':
+            return None, 'The AI is off here (RATW_AI=off).'
+        if mode == 'fixture':
+            return type('Fixture', (), {'model': 'fixture'})(), ''
+        path = self.hosted.ai_config_path()
+        if not path.is_file():
+            return None, NO_AI_KEY
+        try:
+            import npc_bridge
+            return npc_bridge.load_config(path), ''
+        except Exception:  # noqa: BLE001 - only that it is unusable leaves here, never why (it may name the key).
+            return None, NO_AI_KEY
+
+    def used(self) -> tuple[dict, int]:
+        """({tool: calls today}, the tools' tokens this month)."""
+        with self.connect() as conn:
+            today = dict(conn.execute("""SELECT tool, coalesce(sum(calls), 0)::int FROM dm.ai_use
+                                         WHERE at >= date_trunc('day', now()) GROUP BY tool""").fetchall())
+            month = conn.execute("""SELECT coalesce(sum(tokens_in + tokens_out), 0)::bigint FROM dm.ai_use
+                                    WHERE at >= date_trunc('month', now())""").fetchone()[0]
+        return today, int(month)
+
+    def state(self) -> dict:
+        config, reason = self.config()
+        today, tools = self.used()
+        mind = self.hosted.mind_month()
+        model = str(getattr(config, 'model', '') or '') if config else ''
+        prices = AI_PRICES.get(model)
+        cost = round((STORY_TOKENS[0] * prices[0] + STORY_TOKENS[1] * prices[1]) / 1e6, 4) if prices else None
+        budget = self.hosted.monthly_tokens()
+        spent = tools + mind >= budget
+        return {'available': config is not None and not spent,
+                'reason': reason or ("This month's AI budget is spent ([ai] monthly_tokens in world.toml)." if spent else ''),
+                'today': {tool: int(today.get(tool, 0)) for tool in AI_CAPS}, 'caps': dict(AI_CAPS),
+                'month': {'tools': tools, 'mind': mind, 'budget': budget}, 'costPerStory': cost, 'model': model}
+
+    def check(self, tool: str) -> None:
+        state = self.state()
+        if not state['available']:
+            raise D.DMError(state['reason'] or NO_AI_KEY, 503)
+        if state['today'][tool] >= AI_CAPS[tool]:
+            what = 'life stories' if tool == 'story' else 'roster generations'
+            raise D.DMError(f'Today\'s {AI_CAPS[tool]} {what} are used: more tomorrow.', 429)
+
+    def record(self, tool: str, account: str, model: str = '', calls: int = 1, tokens_in: int = 0, tokens_out: int = 0):
+        with self.connect() as conn:
+            conn.execute('INSERT INTO dm.ai_use (tool, account, model, calls, tokens_in, tokens_out) VALUES (%s, %s, %s, %s, %s, %s)',
+                         (tool, str(account)[:80], str(model)[:80], max(0, int(calls)), max(0, int(tokens_in)), max(0, int(tokens_out))))
+
+
+class _Bare:
+    """What a Handler asks of its server and connection, without a socket."""
+    server_port = 0
+
+    def settimeout(self, _):
+        pass
+
+
+class HostedStudio:
+    """The hosted studio: tools/world_admin.py's `Core.app`, called in its signed-in pool with the checked session as
+    (session, method, path, query, headers, body) -> (status, content type, bytes)."""
+
+    def __init__(self, hosted: Hosted, dm=None, sync=None, economy=None, atlas=None):
+        self.hosted = hosted
+        one = hosted.world
+        dm = dm or D.DungeonMaster(worlds=lambda: [one], ai_config=hosted.ai_config_path())
+        if sync is None:
+            import world_sync
+            sync = world_sync.Sync(lambda key: world_db.connect(key, 'dm'))     # Never the publisher (doc 78, 7).
+
+        def refused(*_):
+            raise D.DMError('Not found.', 404)
+        self.studio = Studio(dm=dm, atlas=atlas or self._atlas, atlas_key=one, suite='dm', choose=refused, sync=sync,
+                             economy=economy, builds=None, servers=Servers(refused), choose_dm=refused, hosted=hosted)
+        self.handler = make_handler(self.studio)
+        self.ai = HostedAI(hosted, lambda: self.studio.dm.connect(one))
+        self._local = threading.local()
+        if getattr(self.studio.dm, 'ai_audit', 'absent') is None:
+            self.studio.dm.ai_audit = self._ai_seen
+
+    def _atlas(self, key):
+        """Atlas's Handler, hosted: on a dev world only (slice 2); on a live world it has no world and is never reached
+        (Atlas's routes answer ATLAS_LATER first)."""
+        world = None
+        try:
+            if world_db.kind(key) == 'dev':
+                import live_edit
+                world = live_edit.LiveWorld(key=key)
+        except world_db.DatabaseError:
+            pass
+        return map_editor.make_handler(world=world, ai_config_path=self.hosted.ai_config_path(), hosted=True)
+
+    def _ai_seen(self, entry):
+        calls = getattr(self._local, 'calls', None)
+        if calls is not None and isinstance(entry, dict):
+            calls.append(entry)
+
+    # -- the hook -------------------------------------------------------------------------------------------------------
+    def __call__(self, session, method, path, query, headers, body):
+        try:
+            return self.answer(session, method, path, query or '', headers or {}, body or b'')
+        except D.DMError as error:
+            return self._json(error.status, {'error': str(error)})
+        except Exception as error:  # noqa: BLE001 - say what kind, never the request's values (I15).
+            return self._json(500, {'error': f'The Editor could not answer ({type(error).__name__}).'})
+
+    @staticmethod
+    def _json(status, value):
+        return status, 'application/json', json.dumps(value, ensure_ascii=True, default=str).encode('utf-8')
+
+    def who(self, session) -> dict:
+        role = session.get('role')
+        if role not in ('viewer', 'dm', 'builder', 'owner'):
+            raise D.DMError('Your Editor session ended: sign in again.', 401)       # (Never admin: doc 78, 6.3.)
+        return {'username': session['username'], 'account': session.get('account', ''), 'role': role,
+                'mayActOnWolves': bool(session.get('mayActOnWolves')) or role == 'owner', 'hosted': True,
+                'cheats': self.hosted.cheats()}
+
+    def answer(self, session, method, path, query, headers, body):
+        if not path.startswith('/api/'):
+            if method != 'GET':
+                return self._json(405, {'error': 'Method not allowed.'})
+            return self.page(path)                       # The page's files: only ever behind a session (the helper's).
+        role = hosted_role(method, path)
+        if role is None:
+            return self._json(404, {'error': 'Not found.'})
+        who = self.who(session)
+        if D.RANK[who['role']] < D.RANK[role]:
+            needs = {'dm': 'a dm, builder or owner account', 'builder': 'a builder or owner account',
+                     'owner': "the world's owner"}[role]
+            return self._json(403, {'error': f'Your Editor account ({who["role"]}) can\'t do that: it needs {needs}.'})
+        data = None
+        if method == 'POST' and body:
+            try:
+                data = json.loads(body)
+            except ValueError:
+                data = None
+        if path.startswith('/api/atlas/') and not self._dev():
+            return self._json(409, {'error': ATLAS_LATER})
+        body = self.check(who, path, data, body)
+        own = self.own(who, method, path)
+        if own is not None:
+            return self._json(200, own)
+        tool = 'story' if path == '/api/dm/chronicle/story' else 'roster' if path == '/api/atlas/roster/generate' else None
+        if tool:
+            self.ai.check(tool)
+            self._local.calls = []
+        try:
+            status, content_type, out = self.drive(who, method, path, query, body, headers.get('content-type', 'application/json'))
+        finally:
+            seen = getattr(self._local, 'calls', None) or []
+            self._local.calls = None
+        if tool and (status == 200 or seen):
+            self.count(tool, who, seen, data)
+        if content_type == 'application/json' and out and path not in MAP_ROUTES:
+            try:
+                value = json.loads(out)
+            except ValueError:
+                value = None
+            if value is not None:
+                if status == 200 and path == '/api/dm/reports':
+                    value = hosted_reports(value, self.hosted.host_account())
+                if status == 200 and path in ('/api/dm/chronicle', '/api/dm/chronicle/story'):
+                    value = hosted_chronicle(value)
+                out = json.dumps(short_accounts(value), ensure_ascii=True, default=str).encode('utf-8')
+        return status, content_type, out
+
+    def _dev(self) -> bool:
+        try:
+            return world_db.kind(self.hosted.world) == 'dev'
+        except world_db.DatabaseError:
+            return False
+
+    # -- a route's own rules --------------------------------------------------------------------------------------------
+    def check(self, who, path, data, body):
+        """The rules beyond a route's role (doc 78, 7-9); returns the body to pass on (an account named short, made whole)."""
+        data = data if isinstance(data, dict) else {}
+        kind = str(data.get('kind') or '')
+        if path in ('/api/dm/actions', '/api/dm/live/move'):
+            if kind == 'character.dm':
+                raise D.DMError(NO_DEV_CONSOLE, 403)
+            if kind in CHEAT_KINDS and self.hosted.cheats() == 'off':
+                raise D.DMError(f'{kind} is a cheat on a community world. {CHEATS_OFF}', 403)
+            if kind in WOLF_KINDS and not who['mayActOnWolves']:
+                raise D.DMError(WOLVES_REASON, 403)
+        if path == '/api/dm/reports/decide':
+            host = self.hosted.host_account()
+            found = next((r for r in self.studio.dm.reports(self.hosted.world).get('reports', [])
+                          if r.get('id') == str(data.get('id', ''))), None)
+            if found is None or (host and found.get('reported') == host):
+                raise D.DMError('No such report.', 404)
+        if path == '/api/dm/live/action' and kind in ('storyteller.decide', 'storyteller.revoke'):
+            asked = str(data.get('id') or '')
+            if SHORT_ACCOUNT.fullmatch(asked):
+                standing = self.studio.dm.storytellers(self.hosted.world).get('standing') or []
+                whole = sorted({s.get('account') for s in standing if isinstance(s, dict)
+                                and str(s.get('account') or '').startswith(asked)})
+                if len(whole) != 1:
+                    raise D.DMError('No such storyteller.', 404)
+                return json.dumps({**data, 'id': whole[0]}).encode('utf-8')
+        return body
+
+    def own(self, who, method, path):
+        """Hosted mode's own routes: the session, the AI's use, My world and its restart. None: not one of them."""
+        if path == '/api/studio/session':
+            return {**self.studio.hosted_session(who), 'ai': self.ai_state()}
+        if path == '/api/studio/ai':
+            return self.ai_state()
+        if path == '/api/world':
+            return self.my_world(who)
+        if path == '/api/world/restart':
+            import world_admin
+            world_admin.request_root('restart', self.hosted.folder)
+            self.studio.dm.log(who, self.hosted.world, 'server.restart', self.hosted.world, 'Asked for a restart.')
+            return {'ok': True, 'restarting': True}
+        return None
+
+    def ai_state(self) -> dict:
+        try:
+            return self.ai.state()
+        except Exception:  # noqa: BLE001 - e.g. a world before migration 0063: greyed, with why.
+            return {'available': False, 'reason': 'The AI count can\'t be read just now.', 'today': {t: 0 for t in AI_CAPS},
+                    'caps': dict(AI_CAPS), 'month': None, 'costPerStory': None, 'model': ''}
+
+    def count(self, tool, who, seen, data):
+        """dm.ai_use: a story's real tokens (the Mind's usage); a roster generation's upper bound (its reply carries
+        none): 900 a character and 400 more out, a quarter of the request's characters in."""
+        account = who.get('account') or who['username']
+        if tool == 'story':
+            for entry in seen or [{}]:
+                self.ai.record(tool, account, entry.get('model', ''), 1, entry.get('prompt_tokens', 0) or 0,
+                               entry.get('completion_tokens', 0) or 0)
+            return
+        n = data.get('count', 1) if isinstance(data, dict) else 1
+        n = n if isinstance(n, int) and not isinstance(n, bool) and 1 <= n <= 8 else 1
+        config, _ = self.ai.config()
+        self.ai.record(tool, account, getattr(config, 'model', '') or '', 1,
+                       len(json.dumps(data or {})) // 4 + 2000, 900 * n + 400)
+
+    def my_world(self, who) -> dict:
+        """My world (doc 78, 2 and 7): its state, the settings view, the AI's use, the package, history and the
+        certificate's fingerprint for everyone; for the owner also the world folder's path, the server's recent exits
+        (scrubbed) and every account's sign-ins with addresses; others see only their own sign-ins, without addresses."""
+        owner = who['role'] == 'owner'
+        one = self.hosted.world
+        with self.studio.dm.connect(one) as conn:
+            history = [{'at': r[0], 'action': r[1], 'detail': r[2], 'who': r[3]} for r in conn.execute(
+                """SELECT at, action, detail, who FROM dm.audit WHERE action LIKE 'server.%%'
+                   ORDER BY sequence DESC LIMIT 50""").fetchall()]
+            if owner:
+                sign_ins = [{'at': r[0], 'account': r[1], 'detail': r[2]} for r in conn.execute(
+                    """SELECT at, target, detail FROM dm.audit WHERE action IN ('login', 'login.failed', 'login.failed.folded')
+                       ORDER BY sequence DESC LIMIT 50""").fetchall()]
+            else:
+                sign_ins = [{'at': r[0], 'account': r[1], 'detail': 'Signed in.'} for r in conn.execute(
+                    """SELECT at, target FROM dm.audit WHERE action = 'login' AND target = %s
+                       ORDER BY sequence DESC LIMIT 20""", (who.get('account', ''),)).fetchall()]
+        out = {'world': one, 'name': self.studio.hosted_status()['name'], 'package': str(self.hosted.settings().get('package') or '')[:40],
+               'status': self.studio.hosted_status(), 'settings': self.hosted.shown_settings(), 'ai': self.ai_state(),
+               'history': history, 'signIns': sign_ins, 'fingerprint': self.hosted.fingerprint(), 'owner': owner}
+        if owner:
+            out.update(folder=self.hosted.folder_path(), exits=self.hosted.exits())
+        return out
+
+    # -- the studio without a socket ------------------------------------------------------------------------------------
+    def drive(self, who, method, path, query, body, content_type):
+        """One request through the studio's Handler, as if it had come over HTTP, from no address and with no Host:
+        the hosted trust is the session (`editor_session`). Returns (status, content type, body)."""
+        content_type = re.sub(r'[^\w/.+\-; =]', '', str(content_type))[:100] or 'application/json'
+        handler = self.handler.__new__(self.handler)
+        head = f'Content-Type: {content_type}\r\nContent-Length: {len(body)}\r\n\r\n'.encode('latin-1')
+        handler.headers = http.client.parse_headers(io.BytesIO(head))
+        handler.rfile, handler.wfile = io.BytesIO(body), io.BytesIO()
+        handler.command, handler.request_version, handler.close_connection = method, 'HTTP/1.1', True
+        handler.requestline = f'{method} {path} HTTP/1.1'
+        handler.path = path + (f'?{query}' if query else '')
+        handler.client_address = ('127.0.0.1', 0)          # (http_body never compresses for it: the helper does.)
+        handler.server = handler.connection = _Bare()
+        handler.editor_session = who
+        handler.route(method)
+        raw = handler.wfile.getvalue()
+        head, _, out = raw.partition(b'\r\n\r\n')
+        lines = head.decode('latin-1').split('\r\n')
+        status = int(lines[0].split(' ')[1])
+        fields = {k.strip().lower(): v.strip() for k, _, v in (line.partition(':') for line in lines[1:])}
+        return status, fields.get('content-type', 'application/json').split(';')[0].strip(), out
+
+    def page(self, path):
+        """The built app (Editor/dist) and Atlas's portraits: the image's own files, nothing else on disk (I6)."""
+        if path.startswith('/portraits/'):
+            name = path.rsplit('/', 1)[1]
+            file = map_editor.PORTRAITS / name
+            if re.fullmatch(r'[a-z]+\.png', name) and file.is_file():
+                return 200, 'image/png', file.read_bytes()
+            return self._json(404, {'error': 'Not found.'})
+        dist = map_editor.DIST
+        relative = 'index.html' if path in ('/', '/index.html') else path.lstrip('/')
+        if not (dist / 'index.html').is_file():
+            return (200, 'text/html', map_editor.NOT_BUILT) if relative == 'index.html' else self._json(404, {'error': 'Not found.'})
+        file = (dist / relative).resolve()
+        if dist.resolve() not in file.parents or not file.is_file() or file.suffix not in map_editor.MIME:
+            return self._json(404, {'error': 'Not found.'})
+        return 200, map_editor.MIME[file.suffix], file.read_bytes()
 
 
 def lan_names() -> list[str]:

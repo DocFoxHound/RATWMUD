@@ -19,7 +19,7 @@ import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
 import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
-import {isLive, worldName, dmApi, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
+import {isLive, worldName, dmApi, cheatsOff, wolvesOff, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie} from './api';
 
 type Tab = 'npcs' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'prosperity' | 'economy' | 'server';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
@@ -65,10 +65,12 @@ export function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
 export function DmSuite({me, target}: {me: Me; target: Target}) {
     const [tab, setTab] = useState<Tab>('live');
     const current = TABS.find(t => t.id === tab)!;
+    // A host's Editor (doc 78, 7): one world, no imports or releases; its server tab is Close and Open.
+    const tabs = me.hosted ? TABS.map(t => t.id === 'server' ? {...t, label: 'Server', icon: '⏻'} : t) : TABS;
     return <div className={isLive(target) ? 'app dm prod' : 'app dm dev'}>
         <header className="topbar dm-tabs">
             <div className="workspace-tabs" role="tablist">
-                {TABS.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'on' : ''}
+                {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'on' : ''}
                     title={t.ready ? t.label : `${t.label}: not built yet`} onClick={() => setTab(t.id)}>{t.icon} {t.label}{!t.ready && <em>soon</em>}</button>)}
             </div>
         </header>
@@ -176,7 +178,7 @@ function PlayersTab({me, target}: {me: Me; target: Target}) {
             <TiesPanel ties={data?.ties ?? []} onSelect={setSelected} />
             <ReportsPanel me={me} target={target} />
             <StorytellersPanel me={me} target={target} />
-            <ArtworkPanel me={me} target={target} />
+            {!me.hosted && <ArtworkPanel me={me} target={target} />}
         </aside>
     </div>;
 }
@@ -201,6 +203,8 @@ function TiesPanel({ties, onSelect}: {ties: Tie[]; onSelect: (id: string) => voi
 function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; target: Target; character: Character; actions: Action[]; onAct: () => void; tie?: Tie}) {
     const [reason, setReason] = useState(''), [busy, setBusy] = useState(false), [problem, setProblem] = useState('');
     const canAct = me.role !== 'viewer';
+    // A host's Editor (doc 78, 8): greyed with why, not refused as errors.
+    const noWolves = wolvesOff(me), noCheats = cheatsOff(me);
     const act = async (kind: 'character.kill' | 'character.resurrect') => {
         const verb = kind === 'character.kill' ? 'Kill' : 'Resurrect';
         if (isLive(target) && !window.confirm(`${verb} ${character.name} on ${worldName(target)}?`)) return;
@@ -284,11 +288,11 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
             {character.account.hold ? ' · unlocks held' : ''}
             {' '}· {character.account.measures.normalScenes ?? 0} Normal scenes, {character.account.measures.stars ?? 0} stars from
             {' '}{character.account.measures.starGivers ?? 0} wolves, {character.account.measures.closedStories ?? 0} Stories
-            {canAct && <div className="button-grid">
-                <button disabled={busy || pending || !!character.account.gifted} onClick={() => void unlock('grant', 'gifted', `Open Gifted to ${character.account!.name}`)}>Grant Gifted</button>
-                <button disabled={busy || pending || !!character.account.quickened} onClick={() => void unlock('grant', 'quickened', `Open Quickened to ${character.account!.name}`)}>Grant Quickened</button>
-                <button title="Stands while the account's unlocks are held: released, an earned tier opens again." disabled={busy || pending || !character.account.quickened} onClick={() => void unlock('revoke', 'quickened', `Take Quickened from ${character.account!.name}`)}>Revoke Quickened</button>
-                <button disabled={busy || pending} onClick={() => void unlock(character.account!.hold ? 'release' : 'hold', '', `${character.account!.hold ? 'Release' : 'Hold'} ${character.account!.name}'s unlocks`)}>
+            {canAct && <div className="button-grid" title={noCheats || undefined}>
+                <button disabled={busy || pending || !!noCheats || !!character.account.gifted} onClick={() => void unlock('grant', 'gifted', `Open Gifted to ${character.account!.name}`)}>Grant Gifted</button>
+                <button disabled={busy || pending || !!noCheats || !!character.account.quickened} onClick={() => void unlock('grant', 'quickened', `Open Quickened to ${character.account!.name}`)}>Grant Quickened</button>
+                <button title="Stands while the account's unlocks are held: released, an earned tier opens again." disabled={busy || pending || !!noCheats || !character.account.quickened} onClick={() => void unlock('revoke', 'quickened', `Take Quickened from ${character.account!.name}`)}>Revoke Quickened</button>
+                <button disabled={busy || pending || !!noCheats} onClick={() => void unlock(character.account!.hold ? 'release' : 'hold', '', `${character.account!.hold ? 'Release' : 'Hold'} ${character.account!.name}'s unlocks`)}>
                     {character.account.hold ? 'Release unlocks' : 'Hold unlocks'}</button>
                 <button title="Mentoring newcomers (doc 52): off until restored" disabled={busy || pending || character.person?.mentor === 'revoked'}
                     onClick={() => void mentor(true)}>Revoke mentoring</button>
@@ -310,7 +314,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
         <div className="meta">Injuries: {(character.injuries ?? []).length ? <ul className="dm-injuries">{(character.injuries ?? []).map(i =>
             <li key={i.id}><b>{injuryName(i)}</b> · {i.kind === 'acute' ? `${['', 'minor', 'moderate', 'severe'][i.severity] ?? ''}, ${((i.restLeft ?? 0) / 24).toFixed(1)} days of rest left` : 'lasting'}
                 {i.from ? ` · from ${i.from}` : ''}
-                {canAct && <button className="small" disabled={busy || pending} onClick={() => void injure({remove: i.id}, `Take ${injuryName(i)} from ${character.name}`)}>Take away</button>}</li>)}</ul> : 'none'}</div>
+                {canAct && <button className="small" disabled={busy || pending || !!noWolves} title={noWolves || undefined} onClick={() => void injure({remove: i.id}, `Take ${injuryName(i)} from ${character.name}`)}>Take away</button>}</li>)}</ul> : 'none'}</div>
         <p className="meta">Dungeon Master in the game: {character.dungeonMaster ? <b>yes</b> : 'no'}
             {character.dungeonMaster ? ' · has the Dev Console (the ` key in the game)' : ''}
             {pending && actions.some(a => a.kind === 'character.dm' && a.status === 'queued') ? ' · changing: waiting for the game server…' : ''}</p>
@@ -322,24 +326,26 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
             Object.values(character.practice ?? {}).map(p => `${p.name} ${p.value.toFixed(p.cap < 5 ? 2 : 0)} / ${p.cap < 5 ? p.cap.toFixed(2) : p.cap}`).join(' · ')}</p>}
         {canAct ? <>
             <label className="field"><span>Reason (for the audit log)</span><input value={reason} maxLength={500} onChange={e => setReason(e.target.value)} placeholder="Optional" /></label>
-            <div className="button-grid">
-                <button className="danger" disabled={busy || pending || character.dead} onClick={() => void act('character.kill')}>✝ Kill</button>
-                <button disabled={busy || pending || !character.dead} onClick={() => void act('character.resurrect')}>Resurrect</button>
+            <div className="button-grid" title={noWolves || undefined}>
+                <button className="danger" disabled={busy || pending || !!noWolves || character.dead} onClick={() => void act('character.kill')}>✝ Kill</button>
+                <button disabled={busy || pending || !!noWolves || !character.dead} onClick={() => void act('character.resurrect')}>Resurrect</button>
             </div>
-            <div className="button-grid">
+            {noWolves && <p className="hint">{noWolves}</p>}
+            <div className="button-grid" title={noCheats || undefined}>
                 <label className="field"><span>Gift family</span>
                     <select value={family} onChange={e => setFamily(e.target.value)}>
                         {GIFT_FAMILIES.map(f => <option key={f} value={f}>{f}</option>)}</select></label>
-                <button disabled={busy || pending || (character.gift === family && !character.quickened)} onClick={() => void gift(family, false)}>Make Gifted</button>
-                <button disabled={busy || pending || (character.gift === family && character.quickened)} onClick={() => void gift(family, true)}>Make Quickened</button>
-                <button disabled={busy || pending || !character.gift} onClick={() => void gift('', false)}>Take Gift away</button>
+                <button disabled={busy || pending || !!noCheats || (character.gift === family && !character.quickened)} onClick={() => void gift(family, false)}>Make Gifted</button>
+                <button disabled={busy || pending || !!noCheats || (character.gift === family && character.quickened)} onClick={() => void gift(family, true)}>Make Quickened</button>
+                <button disabled={busy || pending || !!noCheats || !character.gift} onClick={() => void gift('', false)}>Take Gift away</button>
             </div>
+            {noCheats && <p className="hint">Gifts and earned tiers: {noCheats}</p>}
             {me.role === 'admin' && <div className="button-grid">
                 <button disabled={busy || pending} onClick={() => void markDm(!character.dungeonMaster)}
                     title="A Dungeon Master in the game has the Dev Console (the ` key) for trying things out">
                     {character.dungeonMaster ? 'Unmake Dungeon Master' : 'Make Dungeon Master in game'}</button>
             </div>}
-            <div className="button-grid">
+            <div className="button-grid" title={noWolves || undefined}>
                 <select value={injuryType} onChange={e => setInjuryType(e.target.value)} aria-label="Injury">
                     {InjuryTypes.map(([t, k]) => <option key={t} value={t}>{t.replace(/_acute$/, '').replace(/_/g, ' ')} ({k})</option>)}</select>
                 <select value={injurySeverity} onChange={e => setInjurySeverity(Number(e.target.value))} aria-label="Severity"
@@ -347,7 +353,7 @@ function CharacterPanel({me, target, character, actions, onAct, tie}: {me: Me; t
                     <option value={1}>minor</option><option value={2}>moderate</option><option value={3}>severe</option></select>
                 <select value={injurySide} onChange={e => setInjurySide(e.target.value)} aria-label="Side">
                     <option value="">either side</option><option value="left">left</option><option value="right">right</option></select>
-                <button disabled={busy || pending} onClick={() => void injure({add: injuryType, severity: injurySeverity, side: injurySide},
+                <button disabled={busy || pending || !!noWolves} onClick={() => void injure({add: injuryType, severity: injurySeverity, side: injurySide},
                     `Give ${character.name} a ${injuryType.replace(/_acute$/, '').replace(/_/g, ' ')}`)}>Give injury</button>
             </div>
             <div className="button-grid">

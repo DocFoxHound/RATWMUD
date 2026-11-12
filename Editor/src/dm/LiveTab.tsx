@@ -12,7 +12,7 @@ import {useWorld} from './world';
 import {CalendarPanel} from './CalendarPanel';
 import {MapView, type Marker, type Mode, type Overlay} from './MapView';
 import {areaColor, idFrom} from './LayerPanels';
-import {isLive, worldName, dmApi, type Action, type Chapters, type Factions, type FameDeed, type Live, type TownProject, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
+import {isLive, worldName, dmApi, wolvesOff, type Action, type Chapters, type Factions, type FameDeed, type Live, type TownProject, type LiveEvent, type LivePerson, type Me, type Npcs, type Rumour, type Target} from './api';
 
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
 type LayerId = 'players' | 'npcs' | 'shops' | 'structures' | 'chapters' | 'factions' | 'routes' | 'events' | 'rumours' | 'fame' | 'projects' | 'weather';
@@ -277,6 +277,8 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
         const who = people.find(p => p[0] === marker.id.slice(2));
         if (!who) return;
         if (!place) { setNote('Drop them on a tile inside a place.'); return; }
+        // (A host's Editor: a player's wolf is moved or brought back only by the owner or a flagged account, doc 78, Q24.)
+        if (npcKind(who) === 'character.move' && wolvesOff(me)) { setNote(wolvesOff(me)); return; }
         if (who[6] & 1) reviveAt(who, place); else moveTo(who, place);
     };
     const saveSpawn = () => {

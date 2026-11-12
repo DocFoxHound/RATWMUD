@@ -27,6 +27,7 @@ export function ReportsPanel({me, target}: {me: Me; target: Target}) {
     };
     const queued = new Set(data?.actions.filter(a => a.status === 'queued').map(a => String((a.payload as {report?: string})?.report ?? '')) ?? []);
     const canAct = me.role !== 'viewer';
+    // (A host's Editor never shows reports about the host's own wolves: those go to central from the reporter, doc 78, 9.)
     if (data && !data.ready) return <section className="dm-panel dm-reports"><header><div><small>REPORTS</small><h2>Players' reports</h2></div></header>
         <p className="hint">The {target.toUpperCase()} database has no reports table yet (migration 0036).</p></section>;
     const open = data?.reports.filter(r => r.status === 'open') ?? [], decided = data?.reports.filter(r => r.status !== 'open') ?? [];
@@ -40,10 +41,11 @@ export function ReportsPanel({me, target}: {me: Me; target: Target}) {
             const set = (patch: Partial<typeof c>) => setChoice(all => ({...all, [r.id]: {...c, ...patch}}));
             return <li key={r.id}>
                 <b>{r.reportedName}</b> <span className="meta">({r.reported})</span> · {Categories[r.category] ?? r.category} · {r.kind}
-                <p className="meta">Reported by {r.reporterName} ({r.reporter}) · {new Date(r.at).toLocaleString()}
+                <p className="meta">{r.reporterHidden ? 'Reporter hidden from the host' : `Reported by ${r.reporterName} (${r.reporter})`} · {new Date(r.at).toLocaleString()}
                     {r.blockedBy > 0 ? ` · blocked by ${r.blockedBy} account${r.blockedBy > 1 ? 's' : ''}` : ''}
                     {r.earlier.length ? ` · ${r.earlier.length} earlier report${r.earlier.length > 1 ? 's' : ''} (${r.earlier.filter(e => e.status === 'upheld').length} upheld)` : ''}</p>
                 {r.note && <p className="meta">“{r.note}”</p>}
+                {r.evidenceFrom === 'world' && r.evidence.length > 0 && <p className="hint">Evidence supplied by the world: the lines its server kept.</p>}
                 <ol className="dm-evidence">{r.evidence.map((l, i) => <li key={i}><span className="meta">{l.channel}</span> {l.text}</li>)}</ol>
                 {!r.evidence.length && <p className="hint">No lines kept with it.</p>}
                 {canAct ? <>

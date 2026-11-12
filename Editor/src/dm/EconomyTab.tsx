@@ -7,7 +7,7 @@
 // storm, prices reset, a grant or fine) are the Prosperity tab's. The store room went with the staged economy (doc 79,
 // 17): restocking is free.
 import {useCallback, useEffect, useState, type ComponentProps, type JSXElementConstructor} from 'react';
-import {dmApi, type Me, type Target} from './api';
+import {atLeast, dmApi, type Me, type Target} from './api';
 import {syncWords, type EconomyReply} from '../lib/economyContract';
 import {awaitSync} from '../lib/acts';
 import {SteerPanel} from '../studio/SteerPanel';
@@ -25,7 +25,7 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
     const [data, setData] = useState<PanelData | null>(null);
     const [problem, setProblem] = useState(''), [said, setSaid] = useState('');
     const [busy, setBusy] = useState(false);
-    const canChange = me.role === 'dm' || me.role === 'admin';
+    const canChange = atLeast(me, 'dm');
     const load = useCallback(async () => {
         try { setData(await dmApi.economy.get(target) as PanelData); setProblem(''); } catch (error) { setProblem((error as Error).message); }
     }, [target]);
@@ -67,7 +67,7 @@ export function EconomyTab({me, target}: {me: Me; target: Target}) {
         <div className="sync-body">
             <p className="hint">Each change is the world's own (live.economy), audited, and sent to its running game server, which
                 applies it at once. {data.takesEffect} {data.note}</p>
-            {!canChange && <p className="hint">Your account ({me.role}) can look; changing these needs a dm or admin account.</p>}
+            {!canChange && <p className="hint">Your account ({me.role}) can look; changing these needs a dm account or above.</p>}
             {!data.supported && <p className="publish-error">{data.problem}</p>}
             {said && <p className="publish-done">{said}</p>}
             {problem && <p className="publish-error">{problem}</p>}

@@ -6,7 +6,7 @@
 // due ship stormed, a player granted or fined. Each act is queued for the game server, which applies and journals it; the
 // view catches up at its next checkpoint.
 import {Fragment, useCallback, useEffect, useState} from 'react';
-import {dmApi, type EconomyActKind, type Me, type ProsperityView, type Target} from './api';
+import {atLeast, dmApi, type EconomyActKind, type Me, type ProsperityView, type Target} from './api';
 import {BANDS, HARVEST_WORDS, GRANT_MOST, CAUSE_MOST, reasonWords} from '../lib/economyContract';
 import {clock, dayLabel} from '../lib/economy';
 import {awaitOutcome} from '../lib/acts';
@@ -32,7 +32,7 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
     const [busy, setBusy] = useState(false);
     const [draft, setDraft] = useState<Draft>(EMPTY);
     const [open, setOpen] = useState<string>('');          // Which act's form is open ("nudge:grey", "harvest:orchards", ...).
-    const canAct = me.role === 'dm' || me.role === 'admin';
+    const canAct = atLeast(me, 'dm');
     const load = useCallback(() => dmApi.prosperity(target).then(d => { setData(d); setProblem(''); })
         .catch(e => setProblem((e as Error).message)), [target]);
     useEffect(() => { void load(); const t = setInterval(load, 30000); return () => clearInterval(t); }, [load]);
@@ -83,7 +83,7 @@ export function ProsperityTab({me, target, initial}: {me: Me; target: Target; in
             lately, so what's shown may be behind, and acts wait for a server to start.</p>}
         {data && !report && <p className="hint dm-note">No prosperity report in the last save yet (a server from before the staged economy, or
             one that hasn't saved since it started). The week and the players' money below are read from the save itself.</p>}
-        {!canAct && <p className="hint dm-note">Your account ({me.role}) can look; acting needs a dm or admin account.</p>}
+        {!canAct && <p className="hint dm-note">Your account ({me.role}) can look; acting needs a dm account or above.</p>}
         {data && <div className="dm-health-tables">
             <div>
                 {report && <p className="meta">Prosperity {signed(report.prosperity.slider)}{report.prosperity.target !== report.prosperity.slider

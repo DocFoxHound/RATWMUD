@@ -41,6 +41,20 @@ def served_hosts(port: int) -> tuple[str, ...]:
     return tuple(f'{h}:{port}' for h in os.environ.get('RATW_SERVE_HOSTS', '').split(',') if h)
 
 
+def hosted_trusted(handler) -> bool:
+    """Hosted mode's stand-in for the Host check (Docs/Design/78-hosts-run-their-own-worlds.md, 7): behind a host's
+    Editor helper (tools/world_admin.py) the Host header is the world's address, so it proves nothing. A request is
+    trusted when the helper has attached the Editor session it checked (`editor_session`) and it carries none of a
+    browser's marks (I9: Origin, Cookie, Sec-Fetch-*; the helper refuses those before this, and this says so again)."""
+    headers = handler.headers
+    if headers.get('Origin') is not None or headers.get('Cookie') is not None:
+        return False
+    if any(name.lower().startswith('sec-fetch-') for name in headers.keys()):
+        return False
+    session = getattr(handler, 'editor_session', None)
+    return isinstance(session, dict) and bool(session.get('username'))
+
+
 ROOT = Path(__file__).resolve().parent.parent
 # Terrain codes, solid tiles and default heights all come from the one catalog (Data/Terrain/terrain.json).
 GLYPHS = terrain_catalog.GLYPHS
@@ -1280,10 +1294,13 @@ def make_server(port=8765, roster_path=None, launcher=launch_game, ai_config_pat
     return server
 
 
-def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, world=None, live_launcher=launch_live):
+def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, world=None, live_launcher=launch_live,
+                 hosted=False):
     """Atlas's request handler. `world` is Atlas's world (live_edit.LiveWorld); without it only the roster file and
     exports work. Every write needs this handler's session token (GET /api/session), new each time it is made. (Push to
-    live has gone: Atlas's Update from live and the DM's Import from dev are tools/studio.py's, over tools/world_sync.py.)"""
+    live has gone: Atlas's Update from live and the DM's Import from dev are tools/studio.py's, over tools/world_sync.py.)
+    `hosted` (a host's Editor, Docs/Design/78, 7): no Host check and no token; the Editor session the helper checked
+    stands for both (hosted_trusted), writes need a builder or owner, and the world is only ever sent lean."""
     token = secrets.token_urlsafe(24)
     atlas_world = None
     if world is not None and getattr(world, 'key', None):
@@ -1316,6 +1333,8 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
             pass
 
         def trusted(self):
+            if hosted:
+                return hosted_trusted(self)
             port_ = self.server.server_port
             hosts = (f'127.0.0.1:{port_}', f'localhost:{port_}') + served_hosts(port_)
             origins = tuple(f'http://{h}' for h in hosts) + ('http://127.0.0.1:5173', 'http://localhost:5173')
@@ -1376,8 +1395,9 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
                 return self.reply(200, demo_project())
             try:
                 if path == '/api/live/world':
-                    # ?lean=1: cell outlines and previews now, each cell's ground as it comes into view.
-                    return self.reply(200, live().load(lean=query.get('lean') == ['1']))
+                    # ?lean=1: cell outlines and previews now, each cell's ground as it comes into view. (Hosted: always
+                    # lean. The whole world is 235 MB on DEV, over the Editor's 32 MB reply cap: doc 78, M0a.)
+                    return self.reply(200, live().load(lean=hosted or query.get('lean') == ['1']))
                 if path == '/api/live/ground':
                     ids = [i for i in ','.join(query.get('cells', [])).split(',') if i]
                     return self.reply(200, live().ground(ids))
@@ -1395,7 +1415,11 @@ def make_handler(roster_path=None, launcher=launch_game, ai_config_path=None, wo
             return self.static(path)
 
         def editing(self):
-            """Whether this request comes from this computer with this handler's session token (every write needs it)."""
+            """Whether this request comes from this computer with this handler's session token (every write needs it).
+            Hosted: the Editor session in place of the token, a builder's or an owner's (doc 78, 7 and Q2)."""
+            if hosted:
+                session = getattr(self, 'editor_session', None) or {}
+                return self.trusted() and session.get('role') in ('builder', 'owner')
             return self.trusted() and secrets.compare_digest(self.headers.get('X-RATW-Editor', ''), token)
 
         def do_POST(self):

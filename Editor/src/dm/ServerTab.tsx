@@ -4,7 +4,7 @@
 // (the launcher, tools/live.sh server, starts the server again on the live world). Also: switching the live world
 // (rarely wise; maintenance only, typed confirmation), and the releases with rollback of the authored content.
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {dmApi, DmError, type Me, type Target, type World} from './api';
+import {atLeast, dmApi, DmError, type Me, type Target, type World} from './api';
 import {gameUrl} from '../lib/api';
 import {buildChoices, defaultPicks, letGoText, prunePicks, replaceMapText, type ImportPlan, type ImportResult, type Picks, type Release,
     type ServerStatus, type SyncWorld} from '../lib/sync';
@@ -27,6 +27,13 @@ export function ServerTab({me, target}: {me: Me; target: Target}) {
 
     if (!status) return <div className="dm-center"><p className="hint">{problem || 'Reading the server\'s state…'}</p></div>;
     const maintenance = status.server.state === 'maintenance';
+    // A host's Editor (Docs/Design/78, 7): one world, Close and Open by its owner; no imports, releases or switching.
+    if (status.hosted) return <div className="sync-page">
+        <div className="dm-sheet-bar"><strong>Server · {status.name}</strong><button onClick={() => void loadStatus()}>Refresh</button></div>
+        {problem && <p className="error">{problem}</p>}
+        <div className="sync-body"><ServerPanel status={status} canAct={atLeast(me, 'owner')} onChanged={setStatus} hosted />
+            {!atLeast(me, 'owner') && <p className="hint">Closing and opening the world is for its owner.</p>}</div>
+    </div>;
     return <div className="sync-page">
         <div className="dm-sheet-bar">
             <strong>Server &amp; import · {status.name}</strong>
@@ -47,12 +54,13 @@ export function ServerTab({me, target}: {me: Me; target: Target}) {
 
 // --------------------------------------------------------------------------- The server
 
-function ServerPanel({status, canAct, onChanged}: {status: ServerStatus; canAct: boolean; onChanged: (s: ServerStatus) => void}) {
+function ServerPanel({status, canAct, onChanged, hosted = false}: {status: ServerStatus; canAct: boolean; onChanged: (s: ServerStatus) => void; hosted?: boolean}) {
     const [note, setNote] = useState(''), [busy, setBusy] = useState(false), [problem, setProblem] = useState('');
     const maintenance = status.server.state === 'maintenance';
     const set = async (on: boolean) => {
         const ask = on
             ? `Start maintenance on ${status.name}?\n\nEveryone playing is told the world closes in 60 seconds (again at 10), then the game server saves and stops. It stays closed until you end maintenance.`
+            : hosted ? `Open ${status.name} again?\n\nThe world's game server starts within a few seconds, and players can join.`
             : `End maintenance on ${status.name}?\n\nThe server is turned back on: its launcher (tools/live.sh server) starts the game on the live world within a few seconds, and players can join.`;
         if (!window.confirm(ask)) return;
         setBusy(true); setProblem('');
@@ -83,19 +91,19 @@ function ServerPanel({status, canAct, onChanged}: {status: ServerStatus; canAct:
                 : 'No game server holds this world right now (its launcher may be starting it, or it isn\'t running).')}</p>
         {status.play && <p><a className="button play" href={gameUrl(status.play)} target="_blank" rel="noopener">▶ Open its game</a>
             <span className="meta"> {gameUrl(status.play)}</span></p>}
-        {!status.serverRunning && !status.starting && <p><button disabled={!canAct || busy} onClick={() => void startServer()}
+        {!hosted && !status.serverRunning && !status.starting && <p><button disabled={!canAct || busy} onClick={() => void startServer()}
             title="Starts tools/live.sh server for this world on the studio's computer, on the local network">▶ Start its game server</button></p>}
         {status.starting && !status.serverRunning && <p className="meta">Its game server is starting (building first if Atlas changed it)…</p>}
         {problem && <Problems title={problem} items={[]} />}
         {!maintenance ? <>
             <label className="field"><span>Note for players and the log (optional)</span>
                 <input value={note} maxLength={400} placeholder="e.g. Adding houses to Ridgemere; back within the hour." onChange={e => setNote(e.target.value)} /></label>
-            <button className="publish" disabled={!canAct || busy} onClick={() => void set(true)}>{busy ? 'Starting…' : '⏸ Start maintenance'}</button>
+            <button className="publish" disabled={!canAct || busy} onClick={() => void set(true)}>{busy ? 'Starting…' : hosted ? '⏸ Close the world' : '⏸ Start maintenance'}</button>
             <p className="hint">Players get a 60-second warning (and another at 10 seconds); then the game server saves and stops.</p>
         </> : <>
-            <button className="primary" disabled={!canAct || busy} onClick={() => void set(false)}>{busy ? 'Turning on…' : '▶ End maintenance (turn the server back on)'}</button>
-            <p className="hint">The launcher (<code>tools/live.sh server</code>) waits while the world is in maintenance and starts the server again
-                once it is running, on whichever world is live by then.</p>
+            <button className="primary" disabled={!canAct || busy} onClick={() => void set(false)}>{busy ? 'Turning on…' : hosted ? '▶ Open the world' : '▶ End maintenance (turn the server back on)'}</button>
+            {!hosted && <p className="hint">The launcher (<code>tools/live.sh server</code>) waits while the world is in maintenance and starts the server again
+                once it is running, on whichever world is live by then.</p>}
         </>}
     </section>;
 }

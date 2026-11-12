@@ -3,9 +3,10 @@
 // characters alike; read only, except for having a story written.
 import {useCallback, useEffect, useState} from 'react';
 import {nameOf, regardWords, timeline, type Belief, type Bond, type Chronicle} from '../lib/chronicle';
-import {dmApi, type Me, type Target} from './api';
+import {dmApi, type AiState, type Me, type Target} from './api';
 
 type View = 'life' | 'mind';
+const dollars = (n: number) => '$' + n.toFixed(3);
 const DETAIL: {least: number; rounds: boolean; label: string}[] = [
     {least: 3, rounds: false, label: 'Milestones'},
     {least: 2, rounds: true, label: 'Life and seasons'},
@@ -22,9 +23,13 @@ export function LifePanel({me, target, id, name}: {me: Me; target: Target; id: s
         catch (error) { setLife(null); setProblem((error as Error).message); }
     }, [target, id]);
     useEffect(() => { setLife(null); void load(); }, [load]);
+    // A host's Editor (doc 78, 7): stories on the host's AI key, capped a day; greyed with why when there is no key.
+    const [ai, setAi] = useState<AiState | null>(null);
+    useEffect(() => { if (me.hosted) dmApi.ai().then(setAi).catch(() => setAi(null)); }, [me.hosted, life]);
     const write = async () => {
         const again = life?.story ? 'Rewrite' : 'Write';
-        if (!window.confirm(`${again} ${name}'s life story? This asks the NPC model once (a paid call).`)) return;
+        const cost = ai?.costPerStory ? ` About ${dollars(ai.costPerStory)} on the world's AI key.` : '';
+        if (!window.confirm(`${again} ${name}'s life story? This asks the NPC model once (a paid call).${cost}`)) return;
         setBusy(true); setProblem('');
         try { setLife(await dmApi.writeStory(target, id)); }
         catch (error) { setProblem((error as Error).message); }
@@ -48,8 +53,12 @@ export function LifePanel({me, target, id, name}: {me: Me; target: Target; id: s
                         <p className="meta">Written {new Date(life.story.at).toLocaleString()} by {life.story.by} ({life.story.model})
                             {life.story.newer > 0 ? ` · ${life.story.newer} new event${life.story.newer === 1 ? '' : 's'} since` : ' · up to date'}</p>
                     </> : <p className="hint">No story written yet.</p>}
-                    {canWrite && life.entries.length > 0 && <button disabled={busy} onClick={() => void write()}>
+                    {canWrite && life.entries.length > 0 && <button disabled={busy || (me.hosted && !ai?.available)}
+                        title={me.hosted && ai && !ai.available ? ai.reason : undefined} onClick={() => void write()}>
                         {busy ? 'Writing…' : life.story ? 'Rewrite the story' : 'Tell their story'}</button>}
+                    {canWrite && me.hosted && ai && <p className="hint">{ai.available
+                        ? `Today: ${ai.today.story} of ${ai.caps.story} stories${ai.costPerStory ? ` · about ${dollars(ai.costPerStory)} a story` : ''}.`
+                        : ai.reason}</p>}
                 </div>
                 <div className="dm-segments small">{DETAIL.map((d, i) => <button key={d.label} className={detail === i ? 'on' : ''}
                     onClick={() => setDetail(i)}>{d.label}</button>)}</div>
@@ -79,7 +88,7 @@ function MindView({life}: {life: Chronicle}) {
             <b>{x.npc === life.subject ? `Of ${who(x.subject)}` : `${who(x.npc)} remembers`}</b><span>{x.text}</span></li>)}</ul>
             : <p className="hint">No conversations remembered.</p>}
         {m.conversations.length > 0 && <><h3>Talking now</h3>
-            {m.conversations.map((c, i) => <details key={i}><summary>{who(c.npc)} and {who(c.subject)} · {c.turns.length} lines</summary>
+            {m.conversations.map((c, i) => <details key={i}><summary>{who(c.npc)} and {who(c.subject)} · {c.turns.length} lines{c.npcSideOnly ? ` (${who(c.npc)}'s side only)` : ''}</summary>
                 <ol className="dm-turns">{c.turns.map((t, j) => <li key={j}><b>{t.who}</b> {t.text}</li>)}</ol></details>)}</>}
         <h3>Their bonds</h3>{bonds(m.bonds, 'Knows nobody yet.')}
         <h3>How others regard them</h3>{bonds(m.regard, 'Nobody knows them yet.')}

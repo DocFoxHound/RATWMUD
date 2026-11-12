@@ -1885,7 +1885,7 @@ answers out of the box, not whether managing from anywhere works.
 
 ## Progress
 
-M1 and M2a built (2026-11-12, below); the rest not yet.
+M1, M2a and M3 built (2026-11-12, below); the rest not yet.
 
 - **2026-11-08: the user's decisions.** "Go with the recommendations": all 21 decisions in section 17 take their
   recommendation (among them: the Editor answers only on the world's own computer until the host opens it; roles
@@ -2095,6 +2095,106 @@ M1 and M2a built (2026-11-12, below); the rest not yet.
     dm password; run `make-certificate` and `first-owner` and act on `requests/`. M3: `Core.app` is where the hosted
     studio plugs in, with `session['username']` as its `who`. M4: the hello's fields, `rotation_message` and `read_code`
     are the client's contract.
+- **2026-11-12: M3 built (The hosted studio, the DM tool),** on `r2-editor-m3` (from `r2-editor` at 3037b72, beside M2b
+  and M4). No C++ changed. Every item of section 14's M3 row:
+  - **Hosted mode** is `tools/studio.py`'s `HostedStudio`, the helper's `Core.app` (`world_admin.py serve` sets it, with the
+    container's one-world registry from the `admin` volume when the entrypoint wrote one). For each signed-in request it
+    checks the route against the allowlist and the account's role, applies the route's own rules, drives the studio's
+    own Handler without a socket (the user's code paths, unchanged) and filters what goes back. `Studio(hosted=None)`, the
+    user's own studio, is as it was: `test_studio` (71, the hosted ones among them), `test_dungeon_master` (54) and
+    `test_map_editor` (52) pass, and the new code runs only behind `hosted`.
+  - **One world.** The DM suite's `allowed`, `default` and `worlds`, the layers' `world`, `atlas_key`, `live_key()` and
+    `DungeonMaster(worlds=...)` all give `world`; a request naming another world is 400; no picker writes
+    `worlds.local.json` (`use`/`use_dm` are 404). No dev-world requirement: Atlas's handler has no world on a live one.
+  - **The Host check replaced** in all three handlers (`dungeon_master.make_handler(hosted=True)`,
+    `map_editor.make_handler(hosted=True)`, the studio's through them) and in Atlas's `editing()`: `hosted_trusted` is
+    the I9 rule again (no `Origin`, `Cookie`, `Sec-Fetch-*`) and the session the helper attached (`editor_session`);
+    hosted `editing()` is that session's being a builder's or an owner's, in place of Atlas's token. The DM's `who()` is
+    the session (`{username: account#short, account, role, mayActOnWolves, hosted, cheats}`): `requested_by` and the
+    audit name the account and session. A non-hosted handler ignores an `editor_session` (tested).
+  - **The allowlist** (`HOSTED_ROUTES`, beside `dm_offers`): **99 named routes and 2 patterned** (`GET
+    /api/dm/actions/ID`, `/api/atlas/layers/actions/ID`), each with its lowest role: reads `viewer` (players, health,
+    the live map, rumours, fame, projects, storytellers, talk, prosperity, calendar, chronicle, NPCs, chapters, factions,
+    economy, server status, My world, the AI's state, the session); `GET /api/dm/reports` `dm` (players' words as
+    evidence); every DM act `dm` (actions, moves, live acts, visitors, milestones, festivals, report decisions, life
+    stories, NPC life, chapters, and doc 79's economy: the 8 `economy/*` levers and `prosperity/act`, which carries the
+    grant or fine and the band override; the legacy Storykeeper's `player_grant`/`npc_band` reach no route: it isn't
+    started, and M1's server guard holds for it); Atlas `builder` (its 6 reads, 7 writes and 8 economy writes, the
+    layers' 8 reads and 19 writes); `owner` for Close and Open (`POST /api/dm/server/maintenance`) and `POST
+    /api/world/restart`. **29 refused by name** (`HOSTED_DENIED`, 404): the switch, `server/start`, `rebuild` (slice 2's
+    Publish), import, import plan, releases, rollback, `/api/studio/atlas-world` and `dm-world`, `/api/dm/login` and
+    `logout` (the Editor's own), artwork (portrait uploads are off on community worlds), `/api/atlas/session`, demo,
+    export, playtest, Update from live, Play and its start, and Push to live's 4 old paths (GET and POST). Anything
+    else is 404. **The every-route test** reads the routes from the handlers' own code (the DM's `method == ... and path
+    == ...` and its layer table, Atlas's `do_GET`/`do_POST`, the studio's route sets and `studio()`: 125 routes) and
+    fails on one that is neither allowed nor denied, on an allowed one no longer served, and on any role but viewer,
+    dm, builder, owner; a second test sends every allowed route as each role and checks that each role below it gets
+    403 and its own role gets past the allowlist; a third sends every denied and unknown route as the owner and gets
+    404 with nothing reached. `lan_names` is never called in hosted mode (only `main()` does).
+  - **Atlas needs builder, My world's actions need owner, admin never.** The session says `atlas.available` with why
+    ("Map editing comes in a later update." on a live world, which a slice-1 world is; "Your account is for the DM tool
+    only." for viewer and dm); Atlas's routes answer 409 with those words until the world is a dev world (slice 2). An
+    `admin` role in a session is refused (401) as well as by the helper.
+  - **Close and Open through the new grant:** hosted mode's server routes connect as `ratw_dm` (`world_sync.set_state`,
+    migration 0062), audited `server.maintenance`/`server.running` by the account#session; `changed_by` is the same name.
+    The status is read as `ratw_dm` too (state, held, `{port, local}` of the holder), never through the publisher.
+  - **Players' wolves (Q24):** `character.kill`, `.injury`, `.resurrect` and `.move` need the owner or the account's
+    `may_act_on_wolves`; mentor, tie, bandits and grants stay at dm. **Cheats:** `character.gift` and `account.unlock`
+    are refused with the reason while `cheats = "off"`; `character.dm` always ("never a host's"). The page greys them
+    with the same words.
+  - **The DM tool on central ids and the privacy filters (section 9):** every hosted JSON reply but the map's has each
+    pairwise id (`acct-` and 32 hex) cut to its first 8 (values and keys: the Players tab's account, circles, stars,
+    storytellers, the Prosperity tab's player money and its holder names, actions); a storyteller decision sent with a
+    short id is made whole from the world's standing (unique or 404). **Reports:** never one about the host's own
+    wolves (`central.json`'s `host`; deciding one is 404 as if absent), the reporter and their name blanked
+    (`reporterHidden`), the evidence marked `evidenceFrom: "world"`, earlier reports and actions filtered to match.
+    **Chronicles:** an NPC conversation keeps only the NPC's turns (`npcSideOnly`); memories (the NPC's summaries)
+    stay. No DM route reads a player's address (no game table holds one; checked by grep). Circles were members only.
+    The storytellers' kept log (players' narration, public in game) is shown as before.
+  - **The world map only lean:** hosted `GET /api/dm/world`, `/api/atlas/layers/world` and `/api/atlas/live/world`
+    ignore `lean=0` (M0a: the whole world is 235 MB raw). The helper gzips replies over 16 KB to a client that takes it
+    (`Content-Encoding: gzip`; the shell's proxy decompresses under its cap).
+  - **My world** (`GET /api/world`, everyone; M5 builds its tab): the status, the settings view (an allowlist: numbers
+    `player_limit` and `workers`, `cheats` as one of its three words, `[editor] enabled`; never the token or the key),
+    the AI's state, the package, history (`server.*` audit rows), the certificate's fingerprint; for the owner also the
+    world folder's path, the server's last exits with their lines scrubbed (addresses and token-like strings replaced)
+    and every account's sign-ins with addresses; others get only their own sign-ins, without addresses. Restart is a
+    `restart` request file (owner).
+  - **The AI on the host's key:** the story writer and Atlas take the helper's config (`RATW_AI_CONFIG`, else
+    `npc-ai.json` in the `admin` volume); no route returns or edits it. Caps: 100 life stories and 20 roster
+    generations a UTC day (the writer's 30 an hour and Atlas's 8 a call stay), counted in `dm.ai_use` with the Mind's
+    real usage for stories (its audit hook, per request) and an upper bound for rosters (their reply carries none). The
+    month's budget is `[ai] monthly_tokens` (default **20,000,000**: the Mind's ledger shows about 1,100 tokens a voice
+    line, 1,024 in and 72 out, on gpt-5.4-mini, about $1 a million, so about $20 a month), over the tools' tokens and
+    the Mind's month (`mind-month.json`). Without a key, or with the budget spent: `GET /api/studio/ai` says why
+    ("Needs an AI key in world.toml."), the story route refuses with it (503; 429 at a cap), and the Story button is
+    greyed with the words; with one, it shows today's count against the cap and about $0.005 a story on gpt-5.4-mini
+    (doc 28's prices).
+    **The ledger checked:** nothing in the container reads `npc-mind-calls.jsonl`; only the Mind writes it
+    (`--ledger`), and `tools/ai_cost.py` reads the user's own `Saved/Logs` copy. Its move is M2b's.
+  - **The SQL grep test (I14):** `test_studio.SqlTextTests` parses the three files and fails on an f-string, a `+`/`%`
+    join or a `.format` that builds SQL from anything but two fixed names (`order`, a constant clause, and `chapters()`'s
+    table, whose every call names a literal).
+  - **The page's files only with a session:** the helper refuses every non-public path without one (M2a); the hosted
+    studio serves only `Editor/dist`'s files and Atlas's portraits (traversal and other suffixes 404, POST 405).
+  - **The Editor's page** (`Editor/src`, roles and privacy only; M4 has its hosted plumbing): the roles widened
+    (`atLeast`; Economy, Prosperity and Atlas's Economy used to say "dm or admin"), the world pickers replaced by the one
+    world's name, Atlas's greyed reason, the Server tab Close and Open only for the owner, artwork hidden, kill,
+    resurrect, injuries and moves greyed without the wolves flag, Gifts and tiers greyed with the cheats reason, the
+    reporter hidden and the evidence's source, "the NPC's side only", the Story button's AI state.
+  - **For other phases.** M2b writes into the `admin` volume: `settings.json` (`name`, `package`, `player_limit`,
+    `workers`, `cheats`, `editor`, `ai.monthly_tokens`, and `folder`, the host's path for the owner), `central.json`
+    (with `host`), `npc-ai.json` (the AI config's copy), `mind-month.json` (`{month: "YYYY-MM", tokens}`, from the
+    moved ledger), `exits.json` (`{exits: [{at, code, lines}]}`, the server's last exits) and `worlds.json`; and acts
+    on `restart`. M4: `/api/studio/session` adds `hosted`, `myWorld`, `cheats`, `mayActOnWolves`, `ai` and
+    `atlas.reason`; `Me` carries `hosted`, `account`, `mayActOnWolves`, `cheats`. M5: `GET /api/world`, `POST
+    /api/world/restart` and the maintenance route are My world's.
+  - **Tests** (one run, `RATW_TEST_DB_TAG=s2stage_`): `test_studio` 71 (new: 12 hosted, 5 privacy, the SQL test),
+    `test_world_admin` 85 (new: 5 through the TLS port on a throwaway world: roles and refused routes, Close and Open as
+    `ratw_dm` with the audit, My world's owner-only views, the AI's no-key state, caps and budget, gzip),
+    `test_dungeon_master` 54, `test_dm_live` 10 (M1's Release `ratw_server`, `build-m1`: no C++ changed since),
+    `test_map_editor` 52, `test_dm_service` 40; the Editor's tests 146 (78 and 68), typecheck and render smoke: all OK,
+    none skipped. No ctest (no C++). No `s2stage` database, `/tmp` file or process left; DEV, PROD and old DEV untouched.
 - **2026-11-12: M0a measured** (branch `r2-editor-m0a`, from `ridgemere2` at 65a9f0e). Read-only: no game server, no
   PROD, no paid calls; DEV (`ratw_ridgemere2`) only read. The spike is kept in `Desktop/spike-editor/` (a throwaway
   Tauri app, the stand-in world `world_stub.py`, `docker_peer.sh`, `windows_facts.ps1`, `measure_replies.py`); the

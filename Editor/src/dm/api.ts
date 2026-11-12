@@ -25,8 +25,20 @@ export const setSuite = (which: 'atlas' | 'dm', live: Target | null) => { suite 
 export const isLive = (target: Target) => known.find(w => w.key === target)?.kind === 'live' || (suite === 'dm' && target === served);
 /** A world's name, for headings. */
 export const worldName = (target: Target) => known.find(w => w.key === target)?.name ?? target.toUpperCase();
-export type Role = 'viewer' | 'dm' | 'admin';
-export interface Me { username: string; role: Role }
+export type Role = 'viewer' | 'dm' | 'builder' | 'owner' | 'admin';
+/** Who is signed in. In a host's Editor (Docs/Design/78, 7: `hosted`) the role is the Editor account's (viewer, dm,
+ *  builder or owner, never admin), `username` is the account and its session ("pell#3f2a1c"), `mayActOnWolves` says
+ *  whether it may kill, injure, move or bring back players' wolves (Q24), and `cheats` is world.toml's setting. */
+export interface Me { username: string; role: Role; hosted?: boolean; account?: string; mayActOnWolves?: boolean; cheats?: 'off' | 'host' | 'everyone' }
+const RANKS: Record<Role, number> = {viewer: 0, dm: 1, builder: 2, owner: 3, admin: 4};
+/** Whether an account's role is this one or above (tools/dungeon_master.py's RANK). */
+export const atLeast = (me: Me, role: Role) => (RANKS[me.role] ?? 0) >= RANKS[role];
+/** Why a cheat (a Gift given, an account's tiers) is greyed in a host's Editor, or '' when it isn't. */
+export const cheatsOff = (me: Me) => (me.hosted && (me.cheats ?? 'off') === 'off'
+    ? 'Set cheats in world.toml ("host" or "everyone"); the world will then be listed "cheats on".' : '');
+/** Why acting on a player's wolf (kill, injure, move, bring back) is greyed in a host's Editor, or ''. */
+export const wolvesOff = (me: Me) => (me.hosted && !me.mayActOnWolves
+    ? 'Needs the world\'s owner, or an account the owner marked "may act on players\' wolves".' : '');
 export interface Character {
     id: string; name: string; age: number | null; dead: boolean; cell: string; place: string; indoors: boolean;
     x: number; y: number; worldX: number | null; worldY: number | null; posture: string; activity: string;
@@ -52,6 +64,8 @@ export interface PlayerReport {
     kind: string; category: string; note: string; evidence: {seq: number; at: number; channel: string; text: string}[];
     status: 'open' | 'upheld' | 'dismissed'; decidedBy: string; decidedAt: string | null; outcome: string; silenceHours: number;
     earlier: {id: string; status: string; category: string; outcome: string}[]; blockedBy: number;
+    /** A host's Editor (doc 78, 9): the reporter is hidden from the host, and the evidence is the world's own record. */
+    reporterHidden?: boolean; evidenceFrom?: 'world';
 }
 /** Storytellers (doc 58): each account's standing, tales with their steps, the kept log, the visitors' list, templates. */
 export interface StorytellerStanding { account: string; state: string; note: string; character: string; name: string; decidedBy: string; reason: string; appliedAt: number }
@@ -339,6 +353,8 @@ export const dmApi = {
     chronicle: (target: Target, id: string) => call<Chronicle>(`${at(target)}chronicle?target=${target}&id=${encodeURIComponent(id)}`),
     /** Has their life story written from the chronicle (one call to the NPC model) and kept. */
     writeStory: (target: Target, id: string) => call<Chronicle>(`${at(target)}chronicle/story`, {target, id}),
+    /** A host's Editor: the AI's state (doc 78, 7). */
+    ai: () => call<AiState>('api/studio/ai'),
     calendar: (target: Target) => call<WorldCalendar>(`${at(target)}calendar?target=${target}`),
     callFestival: (target: Target, community: string, name: string, inDays: number) =>
         call<{id: number}>(`${at(target)}festivals/call`, {target, community, name, inDays}),
@@ -412,11 +428,18 @@ export const dmApi = {
     },
 };
 
+/** The host's tools' AI (doc 78, 7): whether it can be used now and why not, the day's calls against the caps, the
+ *  month's tokens against the budget, and a rough cost a story (dollars). */
+export interface AiState {
+    available: boolean; reason: string; today: {story: number; roster: number}; caps: {story: number; roster: number};
+    month: {tools: number; mind: number; budget: number} | null; costPerStory: number | null; model: string;
+}
 /** What the studio's top bar shows (doc 66, 3). Atlas is for dm and admin accounts (`available`); the DM shows the live
- *  worlds and the one the live server runs (`switch` says where it is switched: the DM's Server & import tab). */
+ *  worlds and the one the live server runs (`switch` says where it is switched: the DM's Server & import tab). A host's
+ *  Editor (`hosted`, doc 78, 7) has one world and no pickers; Atlas says why it is greyed (`reason`). */
 export interface StudioSession {
-    me: Me; suite: 'atlas' | 'dm';
-    atlas: {available: boolean; world: World; worlds: World[]};
+    me: Me; suite: 'atlas' | 'dm'; hosted?: boolean; myWorld?: boolean; ai?: AiState;
+    atlas: {available: boolean; reason?: string; world: World; worlds: World[]};
     /** The DM's world (its own choice; else the live server's), the live server's world, and every world. */
     dm: {world: Target | null; live: Target | null; worlds: World[]; switch: string};
 };
