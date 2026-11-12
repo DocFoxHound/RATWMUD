@@ -60,6 +60,8 @@ everything runs as that user.
 from __future__ import annotations
 
 import collections
+import contextlib
+import errno
 import json
 import os
 from pathlib import Path
@@ -115,6 +117,10 @@ CHEATS = {'off': [], 'host': ['--host-cheats'], 'everyone': ['--dev-tools']}
 # What the helper may ask of root (tools/world_admin.py: REQUEST_KINDS), as `KIND.<12 hex>` files in requests/.
 REQUEST = re.compile(r'^(restart|backup-before-publish|backup-by-hand|share|first-editor-used)\.[0-9a-f]{12}$')
 REQUESTS_A_TICK = 64
+LINE_MOST = 4096                                # A child's output is read in lines of at most this many characters.
+# What a child's line may not carry into the container's log: control characters (a terminal's escapes, line and page
+# breaks) and the invisible and direction marks (doc 78's R1 review, security 10: a forged "Editor certificate:" line).
+LOG_UNSAFE = re.compile('[\x00-\x08\x0a-\x1f\x7f-\x9f\u00ad\u061c\u180e\u200b-\u200f\u2028-\u202e\u2060-\u2069\ufeff]')
 EXIT_LINES, EXITS_KEPT = 20, 10                 # exits.json: the server's last exits, each with its last lines.
 BACKUPS_WAITING = 4                             # Backup requests left for the backup service, at most.
 FIRST_EDITOR_USED = ('Used. Lost your password? Double-click reset-editor-password in this folder, or type, in this '
@@ -128,6 +134,25 @@ forwarded = False                               # The stop signal reached the se
 
 def say(text: str) -> None:
     print(f'RATW_PACKAGE {text}', flush=True)
+
+
+def child_lines(stream, most: int = LINE_MOST):
+    """A child's output, a line (of at most `most` characters: a longer one comes in pieces) at a time: root never holds
+    an endless line (R1 review)."""
+    while True:
+        line = stream.readline(most)
+        if not line:
+            return
+        yield line
+
+
+def child_say(prefix: str, line: str) -> None:
+    """A child's line in the container's log, under its own prefix (RATW_SERVER, RATW_AGENT: never root's
+    RATW_PACKAGE), its control characters and invisible marks dropped, so it can't pass for root's lines (the
+    "Editor certificate:" line among them) or end one and start another (R1 review, security 10)."""
+    text = LOG_UNSAFE.sub('', line.rstrip('\n'))
+    if text.strip():
+        print(f'{prefix} {text}', flush=True)
 
 
 def fail(text: str, code: int = 2) -> None:
@@ -417,7 +442,15 @@ def write_file(path: Path, body: str, user: str | None = HELPER, mode: int = 0o6
                 if not best_effort:
                     raise
             out.write(body)
-        os.replace(temp, path)
+        try:
+            os.replace(temp, path)
+        except OSError as error:
+            # A directory (or anything else rename can't replace) left where the file goes: moved aside, never
+            # followed or deleted, and the file put in its place (R1 review: the helper could stop root in a loop so).
+            if error.errno not in (errno.EISDIR, errno.ENOTEMPTY, errno.EEXIST, errno.ENOTDIR):
+                raise
+            move_aside(path, 'not a plain file')
+            os.replace(temp, path)
     except BaseException:
         temp.unlink(missing_ok=True)
         raise
@@ -449,14 +482,41 @@ def private_dir(path: Path, user: str | None = HELPER, group: str | None = None,
     return path
 
 
+def _append_fd(path: Path, mode: int) -> int | None:
+    """A plain file (one link, never followed) opened to append to, in a folder a child can write: a link, a FIFO or
+    anything else found there, or raced in between the look and the open, is moved aside and the open tried once more
+    (R1 review: a FIFO hung root's loop, a link stopped the entrypoint). Opened without blocking, checked, then made
+    blocking. None, said, if it still isn't one."""
+    for last in (False, True):
+        try:
+            if not stat.S_ISREG(os.lstat(path).st_mode):
+                move_aside(path, 'not a plain file (a link?)')
+        except FileNotFoundError:
+            pass
+        try:
+            fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW | os.O_NONBLOCK, mode)
+        except OSError as error:
+            if error.errno not in (errno.ELOOP, errno.ENXIO, errno.EISDIR, errno.EEXIST, errno.EWOULDBLOCK):
+                raise
+            fd = None
+        if fd is not None:
+            info = os.fstat(fd)
+            if stat.S_ISREG(info.st_mode) and info.st_nlink == 1:
+                os.set_blocking(fd, True)
+                return fd
+            os.close(fd)
+        with contextlib.suppress(FileNotFoundError):
+            if not last:
+                move_aside(path, 'not a plain file (a link?)')
+    say(f'warning: {path} is still not a plain file: left alone, nothing written to it')
+    return None
+
+
 def own_file(path: Path, user: str, mode: int) -> None:
     """A file a child appends to, made or kept as `user`'s: one that is a link or not a plain file is moved aside."""
-    try:
-        if not stat.S_ISREG(os.lstat(path).st_mode):
-            move_aside(path, 'not a plain file (a link?)')
-    except FileNotFoundError:
-        pass
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW, mode)
+    fd = _append_fd(path, mode)
+    if fd is None:
+        return
     try:
         _chown(fd, ids(user), False, path)
         os.fchmod(fd, mode)
@@ -466,13 +526,10 @@ def own_file(path: Path, user: str, mode: int) -> None:
 
 def append_log(path: Path):
     """A log file root appends a child's lines to (in logs/, which the server's user can write: never followed)."""
-    try:
-        if not stat.S_ISREG(os.lstat(path).st_mode):
-            move_aside(path, 'not a plain file (a link?)')
-    except FileNotFoundError:
-        pass
-    return os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW, 0o640), 'a',
-                     encoding='utf-8')
+    fd = _append_fd(path, 0o640)
+    if fd is None:
+        return open(os.devnull, 'a', encoding='utf-8')
+    return os.fdopen(fd, 'a', encoding='utf-8')
 
 
 def read_small(path: Path, most: int = 64 * 1024) -> str | None:
@@ -708,14 +765,13 @@ def mind_ready(mind: Helper, seconds: float = 10) -> bool:
     return False
 
 
-def tee(stream, log_path: Path) -> None:
-    """A child's lines into its log file and the container's log (`docker compose logs world`)."""
+def tee(stream, log_path: Path, prefix: str = 'RATW_AGENT') -> None:
+    """A child's lines into its log file and the container's log (`docker compose logs world`), under its own prefix."""
     with append_log(log_path) as log:
-        for line in stream:
-            log.write(line)
+        for line in child_lines(stream):
+            log.write(line if line.endswith('\n') else line + '\n')
             log.flush()
-            if line.strip():
-                say(line.rstrip('\n'))
+            child_say(prefix, line)
 
 
 def agent_starter(s: dict, port: int, agent_dir: Path, central_dir: Path | None = None):
@@ -820,22 +876,38 @@ def central_word() -> dict:
             'at': at if isinstance(at, (int, float, str)) and not isinstance(at, bool) else None}
 
 
+def root_mark() -> Path:
+    """Root's own `ever-official`, where no child can write (the `requests` volume, root's alone; a dot name, which the
+    backup service passes over): the helper owns the admin volume, so it could remove that copy (R1 review)."""
+    return BACKUP_REQUESTS / '.ever-official'
+
+
 def ever_official() -> bool:
-    return os.path.lexists(ADMIN / 'ever-official')
+    return os.path.lexists(root_mark()) or os.path.lexists(ADMIN / 'ever-official')
 
 
 def mirror_central(known: dict | None = None) -> dict:
     """Central's word copied into the admin volume (central.json), and `ever-official` written once central has named
     the world official: never cleared, whatever a later central.json says. Returns what was copied."""
     word = central_word()
-    if word != known:
-        if word:
-            write_file(ADMIN / 'central.json', json.dumps(word) + '\n', None, 0o644)
-        else:
-            (ADMIN / 'central.json').unlink(missing_ok=True)
-    if word.get('kind') == 'official' and not ever_official():
-        write_file(ADMIN / 'ever-official', time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()) + '\n', None, 0o644)
-        say('central names this world official: the Editor is off for good on it (Docs/Design/78, 6.7)')
+    try:
+        if word != known:
+            if word:
+                write_file(ADMIN / 'central.json', json.dumps(word) + '\n', None, 0o644)
+            elif os.path.lexists(ADMIN / 'central.json'):
+                if stat.S_ISDIR(os.lstat(ADMIN / 'central.json').st_mode):
+                    move_aside(ADMIN / 'central.json', 'a directory')
+                else:
+                    (ADMIN / 'central.json').unlink()
+        when = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()) + '\n'
+        if word.get('kind') == 'official' and not ever_official():
+            say('central names this world official: the Editor is off for good on it (Docs/Design/78, 6.7)')
+        if word.get('kind') == 'official' or ever_official():
+            for mark in (root_mark(), ADMIN / 'ever-official'):     # (Each made again if it went.)
+                if not os.path.lexists(mark):
+                    write_file(mark, when, None, 0o644 if mark.parent == ADMIN else 0o600)
+    except OSError as error:
+        say(f'warning: central\'s word couldn\'t be copied for the Editor ({error.strerror})')
     return word
 
 
@@ -1042,12 +1114,11 @@ def seconds_words(seconds: float) -> str:
 
 
 def pass_lines(stream, kept) -> None:
-    """The server's lines into the container's log, as they come, the last few kept for exits.json."""
-    for line in stream:
-        sys.stdout.write(line)
-        sys.stdout.flush()
+    """The server's lines into the container's log, as they come, under RATW_SERVER, the last few kept for exits.json."""
+    for line in child_lines(stream):
+        child_say('RATW_SERVER', line)
         if line.strip():
-            kept.append(line.rstrip('\n')[:400])
+            kept.append(LOG_UNSAFE.sub('', line.rstrip('\n'))[:400])
 
 
 def take_requests(directory: Path | None = None) -> list[str]:
@@ -1056,12 +1127,11 @@ def take_requests(directory: Path | None = None) -> list[str]:
     directory = directory or ADMIN / 'requests'
     kinds, odd = [], 0
     try:
-        entries = sorted(os.scandir(directory), key=lambda e: e.name)[:REQUESTS_A_TICK]
+        # (The helper's half-written files, dot names, are passed over before the tick's share is taken: R1 review.)
+        entries = sorted((e for e in os.scandir(directory) if not e.name.startswith('.')), key=lambda e: e.name)[:REQUESTS_A_TICK]
     except OSError:
         return []
     for entry in entries:
-        if entry.name.startswith('.'):
-            continue
         match = REQUEST.match(entry.name)
         plain = entry.is_file(follow_symlinks=False)
         try:

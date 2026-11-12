@@ -1388,20 +1388,29 @@ def hosted_reports(reply, host):
     return {**reply, 'reports': kept, 'actions': actions}
 
 
+# A memory Core keeps word for word until the Mind rewrites it (Core/RatwSocialCore.cpp, MemoryStore::consolidate):
+# "Conversation record. Ada said: “…”". Without an AI key it never is rewritten, so it holds the players' typed words.
+RAW_MEMORY = re.compile(r'\s*conversation\s+record\b', re.IGNORECASE)
+
+
 def hosted_chronicle(life):
     """A chronicle for the host's Editor (doc 78, 9): NPC conversations carry the NPC's side only, never the player's
-    typed words (memories are the NPC's own summaries and stay)."""
+    typed words; memories keep the Mind's own summaries ("Summary. …") and lose Core's word-for-word records
+    ("Conversation record. …", the players' words: R1 security, 1)."""
     mind = life.get('mind') if isinstance(life, dict) else None
-    if not isinstance(mind, dict) or not isinstance(mind.get('conversations'), list):
+    if not isinstance(mind, dict):
         return life
     talks = []
-    for t in mind['conversations']:
+    for t in mind.get('conversations') or []:
         if isinstance(t, dict):
             npc = t.get('npc')
             t = {**t, 'turns': [x for x in t.get('turns') or [] if isinstance(x, dict) and npc and x.get('who') == npc],
                  'npcSideOnly': True}
             talks.append(t)
-    return {**life, 'mind': {**mind, 'conversations': talks}}
+    memories = [m for m in mind.get('memories') or []
+                if isinstance(m, dict) and isinstance(m.get('text', ''), str) and not RAW_MEMORY.match(m.get('text', ''))]
+    hidden = sum(1 for m in mind.get('memories') or []) - len(memories)
+    return {**life, 'mind': {**mind, 'conversations': talks, 'memories': memories, 'recordsHidden': hidden}}
 
 
 class Hosted:

@@ -41,6 +41,8 @@ struct ServerState
     // The DM's economy acts applied, by dm.actions id ({ok, text, target}): set by each act's journal record, so a row a
     // crash left queued is answered, not applied twice (doc 79, Phase 9's first repair).
     json::Value dmActs;
+    // The last host host.json named (doc 78, R1 review): the own-wolf guard keeps to it while host.json names none.
+    std::string lastHost;
 };
 
 // The document for a save: `world` as World::save() gives it (its players are ignored: `characters` are saved), the

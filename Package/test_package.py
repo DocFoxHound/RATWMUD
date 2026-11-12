@@ -244,9 +244,30 @@ class Children(unittest.TestCase):
         with contextlib.redirect_stdout(out):
             E.tee(io.StringIO('world agent: listed on central at 1.2.3.4:7788\n\nworld agent: bye\n'),
                   E.LOGS / 'world-agent.log')
-        self.assertEqual(out.getvalue().splitlines(), ['RATW_PACKAGE world agent: listed on central at 1.2.3.4:7788',
-                                                       'RATW_PACKAGE world agent: bye'])
+        self.assertEqual(out.getvalue().splitlines(), ['RATW_AGENT world agent: listed on central at 1.2.3.4:7788',
+                                                       'RATW_AGENT world agent: bye'])
         self.assertIn('bye', (E.LOGS / 'world-agent.log').read_text())
+
+    def test_a_childs_lines_cant_pass_for_roots(self):
+        """Doc 78's R1 review, security 10: a compromised agent or server forged root's "Editor certificate:" line (the
+        agent's lines went out under RATW_PACKAGE, and escapes and breaks passed). Each child has its own prefix, its
+        control characters and invisible marks dropped, and root reads no endless line."""
+        forged = ('RATW_PACKAGE Editor certificate: 0000 1111\n'
+                  'ok\x0bRATW_PACKAGE Editor certificate: 2222\x1b[2K\x1b[1A\u202e\n'
+                  + 'x' * 10000 + '\n')
+        for run in (lambda s: E.tee(s, E.LOGS / 'world-agent.log'), lambda s: E.pass_lines(s, [])):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                run(io.StringIO(forged))
+            lines = out.getvalue().splitlines()
+            self.assertTrue(lines and all(re.match(r'^RATW_(AGENT|SERVER) ', line) for line in lines), lines[:3])
+            self.assertFalse(any(re.search('[\x00-\x1f\x7f\u202e]', line) for line in lines))
+            self.assertEqual(sum(1 for line in lines if 'xxxx' in line), 3, 'a 10,000-character line in pieces of 4,096')
+            self.assertTrue(all(len(line) <= E.LINE_MOST + 12 for line in lines))
+        kept = []
+        with contextlib.redirect_stdout(io.StringIO()):
+            E.pass_lines(io.StringIO('RATW_X \x1b[31mred\n'), kept)
+        self.assertEqual(kept, ['RATW_X [31mred'])
 
     def test_a_childs_environment_holds_only_its_secrets(self):
         saved = dict(os.environ)
@@ -395,6 +416,40 @@ class Files(Folders):
         self.assertEqual(len(list(E.LOGS.glob('*.moved-*'))), 3, list(E.LOGS.iterdir()))
         self.assertIn('moved aside', self.output)
 
+    def test_a_fifo_or_a_link_raced_into_logs_neither_hangs_nor_stops_root(self):
+        """R1 review: a FIFO put where a log goes hung root's loop on its open; a link raced in after the look stopped
+        the entrypoint."""
+        fifo = E.LOGS / 'world-agent.log'
+        fifo.unlink(missing_ok=True)
+        os.mkfifo(fifo)
+        with self.quiet_log() as log:
+            log.write('hello\n')
+        self.assertTrue(fifo.is_file() and not fifo.is_symlink(), 'a plain file in its place')
+        self.assertTrue(any(p.name.startswith('world-agent.log.moved-') for p in E.LOGS.iterdir()))
+        target = self.dir / 'precious'
+        target.write_text('precious')
+        voices = E.LOGS / 'npc-voices.jsonl'
+        real_lstat = os.lstat
+
+        raced = []
+
+        def racing(path, *a, **kw):           # The look sees a plain file; a link is there by the open.
+            if os.fspath(path) == os.fspath(voices) and not raced:
+                raced.append(path)
+                os.unlink(voices)
+                os.symlink(target, voices)
+                return real_lstat(target)
+            return real_lstat(path, *a, **kw)
+        with mock.patch.object(E.os, 'lstat', side_effect=racing):
+            self.quiet(E.own_file, voices, 'ratw', 0o640)
+        self.assertEqual(target.read_text(), 'precious')
+        self.assertTrue(voices.is_file() and not voices.is_symlink())
+
+    @contextlib.contextmanager
+    def quiet_log(self):
+        with contextlib.redirect_stdout(io.StringIO()), E.append_log(E.LOGS / 'world-agent.log') as log:
+            yield log
+
     def test_the_helpers_settings_hold_no_secret(self):
         """settings.json (doc 78, 6.5): a cleaned copy of world.toml, without the token, the AI key or file names."""
         s = {'name': 'Wolf Hollow', 'world_id': WORLD, 'description': '', 'region': '', 'tags': ['a'], 'player_limit': 40,
@@ -502,6 +557,11 @@ class Editor(Folders):
         self.assertEqual(kinds, ['backup-by-hand', 'restart', 'share'])
         self.assertIn('4 odd file(s)', self.output)
         self.assertEqual([p.name for p in requests.iterdir()], ['.restart.0123456789ab.1234'])
+        # R1 review: 64 half-written (dot) files took the tick's whole share, and no real request was ever taken.
+        for i in range(80):
+            (requests / f'.restart.{i:012x}.1234').write_text('')
+        (requests / 'restart.0123456789ab').write_text('')
+        self.assertEqual(self.quiet(E.take_requests), ['restart'])
 
     def test_a_backup_request_goes_to_the_backup_service_once(self):
         self.assertTrue(self.quiet(E.pass_backup, 'backup-by-hand'))
@@ -528,6 +588,18 @@ class Editor(Folders):
         (central / 'central.json').write_text(json.dumps({'at': 3, 'kind': 'community', 'host': 'acct-1'}))
         self.quiet(E.mirror_central)
         self.assertTrue(E.official(), 'never cleared')
+        # R1 review: the helper owns the admin volume, so its copy of the mark may go; root's own (in the requests
+        # volume, root's alone) keeps the world official, and the helper's is made again.
+        (E.ADMIN / 'ever-official').unlink()
+        self.assertTrue(E.official(), "root's own mark")
+        self.quiet(E.mirror_central)
+        self.assertTrue((E.ADMIN / 'ever-official').exists(), 'made again')
+        # A directory the helper left where central.json goes: moved aside, never a crash.
+        (E.ADMIN / 'central.json').unlink()
+        (E.ADMIN / 'central.json').mkdir()
+        (central / 'central.json').write_text(json.dumps({'at': 4, 'kind': 'community', 'host': 'acct-2'}))
+        self.assertEqual(self.quiet(E.mirror_central, {})['host'], 'acct-2')
+        self.assertEqual(json.loads((E.ADMIN / 'central.json').read_text())['host'], 'acct-2')
         (central / 'central.json').unlink()
         (central / 'central.json').symlink_to(E.ADMIN / 'settings.json')
         self.assertEqual(E.central_word(), {}, 'a link is never read')
@@ -818,6 +890,48 @@ class EditorBundle(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn('never goes in the repository', result.stderr)
         self.assertFalse(inside.exists())
+        # Nor is one there used (R1 review): staging and signing refuse it.
+        with tempfile.TemporaryDirectory(prefix='s2stage-bundle-') as folder:
+            made = self.run_stage('--make-release-key', str(Path(folder) / 'release.pem'))
+            self.assertEqual(made.returncode, 0, made.stderr)
+            made_parent = not inside.parent.exists()
+            inside.parent.mkdir(exist_ok=True)
+            shutil.copy(Path(folder) / 'release.pem', inside)
+            try:
+                dist = Path(folder) / 'dist'
+                dist.mkdir()
+                (dist / 'index.html').write_text('<!doctype html>')
+                for args in (('--out', str(Path(folder) / 'context'), '--editor-dist', str(dist)), ('--sign-bundle', str(dist))):
+                    result = self.run_stage(*args, key=str(inside))
+                    self.assertEqual(result.returncode, 2, args)
+                    self.assertIn('never goes in the repository', result.stderr)
+                self.assertFalse((Path(folder) / 'context').exists())
+                self.assertFalse((dist / 'bundle.json').exists())
+            finally:
+                inside.unlink(missing_ok=True)
+                if made_parent:
+                    inside.parent.rmdir()
+
+    def test_a_link_in_the_editor_or_the_world_is_refused(self):
+        """R1 review: cp -r kept symbolic links, and the bundle's list hashed what one pointed at on this computer."""
+        with tempfile.TemporaryDirectory(prefix='s2stage-bundle-') as folder:
+            folder = Path(folder)
+            self.assertEqual(self.run_stage('--make-release-key', str(folder / 'release.pem')).returncode, 0)
+            dist = folder / 'dist'
+            dist.mkdir()
+            (dist / 'index.html').write_text('<!doctype html>')
+            (dist / 'secrets.txt').symlink_to('/etc/hostname')
+            result = self.run_stage('--out', str(folder / 'context'), '--editor-dist', str(dist), key=str(folder / 'release.pem'))
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertIn('symbolic link', result.stderr)
+            self.assertFalse((folder / 'context').exists())
+            world = folder / 'world'
+            world.mkdir()
+            (world / 'package.json').write_text('{}')
+            (world / 'x').symlink_to('/etc/hostname')
+            result = self.run_stage('--out', str(folder / 'context'), '--world', str(world), '--no-editor')
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertIn('symbolic link', result.stderr)
 
 
 class Compose(unittest.TestCase):

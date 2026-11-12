@@ -73,9 +73,12 @@ struct Session {
     manifest: Option<Arc<Manifest>>,
 }
 
+/// The Editor window's binding (I10): one world, by its key's pin as well as the id it claims (R1 review, security 4: a
+/// hostile world claiming another's id was handed that world's open window), one account, one session.
 struct Window {
     generation: u64,
     world: String,
+    pin: Pin,
     username: String,
 }
 
@@ -113,6 +116,48 @@ fn from_world(status: u16, body: &Value) -> Value {
         out["reason"] = json!(r);
     }
     out
+}
+
+/// The accounts panel's list as the main window may show it (I12; R1 review, security 11): every field checked and
+/// rebuilt (names, roles, addresses, numbers, at most 200 accounts and 50 banners); an entry with a bad name or role is
+/// dropped, any other bad field left out. The world's own sentences (an audit row's detail) never pass.
+fn checked_accounts(reply: &Value) -> (Value, Value, Value) {
+    const ROLES: [&str; 4] = ["viewer", "dm", "builder", "owner"];
+    let number = |v: Option<&Value>| v.and_then(Value::as_f64).filter(|n| n.is_finite() && *n >= 0.0 && *n < 1e11).map(|n| json!(n));
+    let flag = |v: Option<&Value>| json!(v.and_then(Value::as_bool).unwrap_or(false));
+    // A sign-in's address as the world keeps it: an IP, or an IPv6 /64 (the helper's per-address key).
+    let address = |v: Option<&Value>| {
+        v.and_then(Value::as_str).filter(|a| {
+            let (ip, bits) = a.split_once('/').map_or((*a, None), |(ip, b)| (ip, Some(b)));
+            ip.parse::<std::net::IpAddr>().is_ok() && bits.is_none_or(|b| b.parse::<u8>().is_ok_and(|n| n <= 128))
+        }).map_or(Value::Null, |a| json!(a))
+    };
+    // Who did it: an account, or an account and its session (`pell#1a2b3c4d`), or the helper's own names.
+    let who = |v: Option<&Value>| {
+        v.and_then(Value::as_str).filter(|w| (1..=64).contains(&w.len()) && w.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit()
+            || matches!(b, b'_' | b'-' | b'#'))).map_or(Value::Null, |w| json!(w))
+    };
+    let accounts: Vec<Value> = reply.get("accounts").and_then(Value::as_array).map_or(&[][..], |a| a.as_slice()).iter().take(200)
+        .filter_map(|a| {
+            let username = a.get("username").and_then(Value::as_str).filter(|u| wire::username_ok(u))?;
+            let role = a.get("role").and_then(Value::as_str).filter(|r| ROLES.contains(r))?;
+            let devices: Vec<Value> = a.get("devices").and_then(Value::as_array).map_or(&[][..], |d| d.as_slice()).iter().take(10)
+                .filter_map(|d| Some(json!({"created": number(d.get("created"))?, "lastUsed": number(d.get("lastUsed"))?}))).collect();
+            Some(json!({"username": username, "role": role, "disabled": flag(a.get("disabled")), "mustChange": flag(a.get("mustChange")),
+                "expired": flag(a.get("expired")), "unclaimed": flag(a.get("unclaimed")), "created": number(a.get("created")).unwrap_or(json!(0)),
+                "lastLogin": number(a.get("lastLogin")).unwrap_or(Value::Null), "claimedFrom": address(a.get("claimedFrom")),
+                "lastFrom": address(a.get("lastFrom")), "mayActOnWolves": flag(a.get("mayActOnWolves")), "createdBy": who(a.get("createdBy")),
+                "devices": devices}))
+        }).collect();
+    let banners: Vec<Value> = reply.get("banners").and_then(Value::as_array).map_or(&[][..], |b| b.as_slice()).iter().take(50)
+        .filter_map(|b| {
+            let action = b.get("action").and_then(Value::as_str)
+                .filter(|a| (1..=40).contains(&a.len()) && a.bytes().all(|c| c.is_ascii_lowercase() || matches!(c, b'.' | b'-')))?;
+            let target = b.get("target").and_then(Value::as_str).filter(|t| t.is_empty() || wire::username_ok(t))?;
+            Some(json!({"at": number(b.get("at"))?, "action": action, "target": target, "who": who(b.get("who")).as_str().unwrap_or("")}))
+        }).collect();
+    let failed = reply.get("failedToday").and_then(Value::as_u64).unwrap_or(0).min(10_000_000);
+    (json!(accounts), json!(failed), json!(banners))
 }
 
 /// One JSON exchange with a world's Editor routes: (status, body); status 0 when it couldn't be reached.
@@ -167,7 +212,7 @@ fn editor_url(path: &str) -> tauri::Url {
 
 /// A download the Editor window may save (after the save dialog): one of the allowed extensions, by its own name.
 pub fn download_allowed(name: &str) -> bool {
-    name.rsplit_once('.').is_some_and(|(stem, ext)| !stem.is_empty() && DOWNLOADS.contains(&ext.to_ascii_lowercase().as_str()))
+    name.rsplit_once('.').is_some_and(|(stem, ext)| stem.chars().any(|c| c != '.') && DOWNLOADS.contains(&ext.to_ascii_lowercase().as_str()))
 }
 
 impl Editor {
@@ -245,7 +290,18 @@ impl Editor {
             return json!({"ok": false, "error": "official", "address": address.shown, "place": place});
         }
         let pin = sha256(&spki);
+        // An Editor code for this very key and world pins it now if it couldn't before (a red screen's old key forgotten
+        // since): pin_code still changes no trust a connection has shown.
+        let code = self.inner.lock().unwrap().code.clone().filter(|c| c.world == hello.world && c.pin == pin);
+        if let Some(c) = &code {
+            self.pins.change(|f| f.pin_code(&c.world, &c.pin, &c.username, None));
+        }
         let verdict = self.pins.read(|f| pins::classify(f, &address.shown, &spki, &hello));
+        if let Verdict::Rotated { old } = &verdict {
+            if let Some(from) = tls::pin_from_text(&old.pin) {
+                self.devices.carry(&from, &pin, &old.username);
+            }
+        }
         // A key pinned from an Editor code, met for the first time: no "now at" notice, it was never anywhere else.
         let first_met = verdict == Verdict::Moved && self.pins.read(|f| f.by_pin(&pin).is_some_and(|k| k.addresses.is_empty()));
         self.pins.change(|f| f.apply(&verdict, &address.shown, &spki, &hello));
@@ -273,9 +329,10 @@ impl Editor {
             Ok(c) => c,
             Err(_) => return refused("code"),
         };
-        self.pins.change(|f| f.pin_code(&code.world, &code.pin, &code.username, code.address.as_ref().map(|a| a.shown.as_str())));
+        // (Where pinning it would change a key a connection has shown, it waits: the connection shows the red screen.)
+        let pinned = self.pins.change(|f| f.pin_code(&code.world, &code.pin, &code.username, code.address.as_ref().map(|a| a.shown.as_str())));
         let out = json!({"ok": true, "address": code.address.as_ref().map(|a| a.shown.clone()), "username": code.username,
-            "world": code.world, "fingerprint": fingerprint(&code.pin), "password": code.password.is_some()});
+            "world": code.world, "fingerprint": fingerprint(&code.pin), "password": code.password.is_some(), "pinned": pinned});
         self.inner.lock().unwrap().code = Some(code);
         out
     }
@@ -351,7 +408,7 @@ impl Editor {
         let base = wire::base_url(&sockets[0]);
         let place = wire::place(sockets[0].ip());
         let (agent, _) = tls::agent(Mode::Exact(pin), Duration::from_secs(60));
-        let device = self.devices.load(&known.world, &username);
+        let device = self.devices.load(&pin, &username);
         let mut body = json!({"username": username, "password": secret});
         if let Some(i) = &invite {
             body["invite"] = json!(i);
@@ -373,7 +430,7 @@ impl Editor {
             return refused("not-editor");
         }
         if let Some(d) = reply["device"].as_str() {
-            self.devices.save(&known.world, &username, d);
+            self.devices.save(&pin, &username, d);
         }
         self.pins.change(|f| f.signed_in(&pin, &username));
         let old;
@@ -391,7 +448,7 @@ impl Editor {
             // The session before this one is ended on its world too (another world's, or this account's own).
             old = inner.session.take();
             let close = match &mut inner.window {
-                Some(w) if w.world == session.world && w.username == session.username => {
+                Some(w) if w.world == session.world && w.pin == session.pin && w.username == session.username => {
                     w.generation = generation;               // The same account on the same world: the window keeps going.
                     false
                 }
@@ -457,7 +514,7 @@ impl Editor {
             s.must_change = false;
             s.one_time = None;
             if let Some(d) = reply["device"].as_str() {
-                self.devices.save(&s.world, &s.username, d);
+                self.devices.save(&s.pin, &s.username, d);
             }
             if let Some(r) = reply["role"].as_str().filter(|r| ["viewer", "dm", "builder", "owner"].contains(r)) {
                 s.role = r.to_string();
@@ -506,9 +563,10 @@ impl Editor {
         }
         let mut out = json!({"ok": true});
         if verb == "list" {
-            out["accounts"] = reply.get("accounts").cloned().unwrap_or(json!([]));
-            out["failedToday"] = reply.get("failedToday").cloned().unwrap_or(json!(0));
-            out["banners"] = reply.get("banners").cloned().unwrap_or(json!([]));
+            let (accounts, failed, banners) = checked_accounts(&reply);
+            out["accounts"] = accounts;
+            out["failedToday"] = failed;
+            out["banners"] = banners;
         }
         if let Some(code) = reply.get("code").and_then(Value::as_str) {
             let inner = self.inner.lock().unwrap();
@@ -624,7 +682,7 @@ impl Editor {
         let (binding, upstream, manifest, generation) = {
             let inner = self.inner.lock().unwrap();
             match (&inner.session, &inner.window) {
-                (Some(s), Some(w)) if label == "editor" && w.world == s.world && w.username == s.username => {
+                (Some(s), Some(w)) if label == "editor" && w.world == s.world && w.pin == s.pin && w.username == s.username => {
                     match (&s.token, w.generation == s.generation) {
                         (Some(t), true) => (Binding::Current, Some(proxy::World { agent: s.agent.clone(), base: s.base.clone(), token: t.clone() }),
                             s.manifest.clone(), s.generation),
@@ -821,7 +879,8 @@ pub async fn editor_open(suite: String, app: AppHandle, editor: Ed<'_>) -> Resul
     *e.last_input.lock().unwrap() = Some(Instant::now());       // (Opening it is the host's input.)
     let bound = {
         let inner = e.inner.lock().unwrap();
-        matches!((&inner.session, &inner.window), (Some(s), Some(w)) if w.world == s.world && w.username == s.username && w.generation == s.generation)
+        matches!((&inner.session, &inner.window), (Some(s), Some(w))
+            if w.world == s.world && w.pin == s.pin && w.username == s.username && w.generation == s.generation)
     };
     if let Some(window) = app.get_webview_window("editor") {
         if bound {
@@ -834,10 +893,10 @@ pub async fn editor_open(suite: String, app: AppHandle, editor: Ed<'_>) -> Resul
         let _ = window.destroy();
     }
     let dir = e.folder.join("editor-windows").join(random_hex());
-    let (generation, world, username) = {
+    let (generation, world, pin, username) = {
         let inner = e.inner.lock().unwrap();
         let s = inner.session.as_ref().ok_or("signed out")?;
-        (s.generation, s.world.clone(), s.username.clone())
+        (s.generation, s.world.clone(), s.pin, s.username.clone())
     };
     let made = tauri::WebviewWindowBuilder::new(&app, "editor", tauri::WebviewUrl::CustomProtocol(url))
         .title(&title)
@@ -882,7 +941,7 @@ pub async fn editor_open(suite: String, app: AppHandle, editor: Ed<'_>) -> Resul
             return Ok(refused("window"));
         }
     };
-    e.inner.lock().unwrap().window = Some(Window { generation, world, username });
+    e.inner.lock().unwrap().window = Some(Window { generation, world, pin, username });
     let watched = e.clone();
     window.on_window_event(move |event| {
         if let tauri::WindowEvent::Destroyed = event {
@@ -961,7 +1020,7 @@ mod tests {
         assert!(wrong.get("message").is_none(), "the world's own words never reach the page");
         let ok = e.sign_in(None, &at, "Host-K7Q2", "right-password-123", false);
         assert_eq!(ok["session"]["role"], "owner", "{ok}");
-        assert_eq!(e.devices.load(W1, "host-k7q2").as_deref(), Some("DEVICE-1"), "the device token is kept (here: in memory)");
+        assert_eq!(e.devices.load(&pin_a(), "host-k7q2").as_deref(), Some("DEVICE-1"), "the device token is kept (here: in memory)");
         // The next sign-in shows it; the token never reaches the page or the pin store.
         e.sign_in(None, &at, "host-k7q2", "right-password-123", false);
         let login = world.requests().into_iter().filter(|s| s.path == "/editor/login").last().unwrap();
@@ -1021,6 +1080,61 @@ mod tests {
     }
 
     #[test]
+    fn another_key_claiming_the_world_gets_neither_its_device_token_nor_its_window() {
+        // R1 review, security 4: device tokens and the window were bound by the world id a hello claims.
+        let real = TestWorld::start(Some(server_config(CERT_A, KEY_A, false)), routes(W1));
+        let hostile = TestWorld::start(Some(server_config(CERT_B, KEY_B, false)), routes(W1));
+        let e = editor();
+        let (at, other) = (format!("127.0.0.1:{}", real.port), format!("127.0.0.1:{}", hostile.port));
+        let c = e.connect(&at);
+        e.trust(&at, c["fingerprint"].as_str().unwrap());
+        assert_eq!(e.sign_in(None, &at, "pell", "right-password-123", false)["ok"], true);
+        {
+            let mut inner = e.inner.lock().unwrap();
+            let s = inner.session.as_ref().unwrap();
+            let (generation, pin) = (s.generation, s.pin);
+            inner.window = Some(Window { generation, world: W1.into(), pin, username: "pell".into() });
+        }
+        // A hostile code naming W1 with the other key pins nothing; its connection is red.
+        let record = json!({"v": 1, "w": W1, "k": pin_text(&tls::tests::pin_b()), "u": "pell", "p": "right-password-123", "a": other});
+        let used = e.use_code(&format!("{}{}", wire::CODE_PREFIX, tls::b64url(record.to_string().as_bytes())));
+        assert_eq!(used["pinned"], false, "{used}");
+        assert_eq!(e.connect(&other)["state"], "changed");
+        // Even trusted by hand (the host's word), that key gets no device token of W1's key, and the window goes.
+        let spki_b = tls::spki_of(&rustls::pki_types::CertificateDer::from(CERT_B)).unwrap();
+        e.pins.change(|f| f.trust(&other, &spki_b, &wire::read_hello(hello_body(W1).as_bytes()).unwrap()));
+        assert_eq!(e.sign_in(None, &other, "pell", "right-password-123", false)["ok"], true);
+        let login = hostile.requests().into_iter().find(|s| s.path == "/editor/login").unwrap();
+        assert!(serde_json::from_slice::<Value>(&login.body).unwrap().get("device").is_none(), "W1's device token stayed home");
+        assert!(e.inner.lock().unwrap().window.is_none(), "the window bound to the other key was closed");
+    }
+
+    #[test]
+    fn the_accounts_panel_gets_only_checked_fields() {
+        // R1 review, security 11: the list went to the main window as the world sent it.
+        let reply = json!({"accounts": [
+            {"username": "pell", "role": "dm", "disabled": false, "created": 1.5, "lastLogin": null, "claimedFrom": "203.0.113.9",
+             "lastFrom": "2001:db8:5:5::/64", "createdBy": "ferro#1a2b3c4d", "devices": [{"created": 1, "lastUsed": 2}, {"created": "x"}],
+             "extra": "<img src=x onerror=alert(1)>"},
+            {"username": "Mallory\u{202e}", "role": "owner"}, {"username": "eve", "role": "admin"}, {"username": "ivy", "role": "viewer",
+             "claimedFrom": "javascript:alert(1)", "lastLogin": "soon", "devices": "lots", "createdBy": "x y"}, "not an object"],
+            "failedToday": -4, "banners": [{"at": 5, "action": "account.add", "target": "pell", "who": "ferro#1a2b3c4d", "detail": "words"},
+            {"at": 6, "action": "<b>", "target": "pell"}, {"at": "x", "action": "account.role", "target": ""}]});
+        let (accounts, failed, banners) = checked_accounts(&reply);
+        assert_eq!(accounts, json!([
+            {"username": "pell", "role": "dm", "disabled": false, "mustChange": false, "expired": false, "unclaimed": false, "created": 1.5,
+             "lastLogin": null, "claimedFrom": "203.0.113.9", "lastFrom": "2001:db8:5:5::/64", "mayActOnWolves": false,
+             "createdBy": "ferro#1a2b3c4d", "devices": [{"created": 1.0, "lastUsed": 2.0}]},
+            {"username": "ivy", "role": "viewer", "disabled": false, "mustChange": false, "expired": false, "unclaimed": false, "created": 0,
+             "lastLogin": null, "claimedFrom": null, "lastFrom": null, "mayActOnWolves": false, "createdBy": null, "devices": []}]));
+        assert_eq!(failed, json!(0));
+        assert_eq!(banners, json!([{"at": 5.0, "action": "account.add", "target": "pell", "who": "ferro#1a2b3c4d"}]));
+        let many = json!({"accounts": (0..500).map(|i| json!({"username": format!("user-{i}"), "role": "dm"})).collect::<Vec<_>>()});
+        assert_eq!(checked_accounts(&many).0.as_array().unwrap().len(), 200);
+        assert_eq!(checked_accounts(&json!({"accounts": {"a": 1}})).0, json!([]));
+    }
+
+    #[test]
     fn the_wrong_port_and_nothing_listening() {
         let e = editor();
         let port = std::net::TcpListener::bind("127.0.0.1:0").unwrap().local_addr().unwrap().port();
@@ -1047,7 +1161,8 @@ mod tests {
         {
             let mut inner = e.inner.lock().unwrap();
             let g = inner.session.as_ref().unwrap().generation;
-            inner.window = Some(Window { generation: g, world: W1.into(), username: "host-k7q2".into() });
+            let pin = inner.session.as_ref().unwrap().pin;
+            inner.window = Some(Window { generation: g, world: W1.into(), pin, username: "host-k7q2".into() });
             inner.keepalive_at = None;                 // (Never one yet: due. No Instant is set back in time: on Windows an
         }                                              //  Instant can't go before the computer started.)
         e.tick(None);
@@ -1081,7 +1196,7 @@ mod tests {
             assert!(!on(bad, true), "{bad} on Windows");
         }
         assert!(download_allowed("world.json") && download_allowed("map.PNG") && download_allowed("rows.csv"));
-        for bad in ["run.exe", "x.json.exe", ".json", "page.html", "noext"] {
+        for bad in ["run.exe", "x.json.exe", ".json", "..json", "...png", "page.html", "noext"] {
             assert!(!download_allowed(bad), "{bad}");
         }
     }

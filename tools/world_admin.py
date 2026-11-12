@@ -104,6 +104,7 @@ FIRST_OWNER_DAYS, CODE_HOURS = 7, 72
 # Sessions.
 SESSION_HOURS, IDLE_MINUTES, STEP_UP_MINUTES = 12, 30, 5
 SESSIONS_PER_ACCOUNT, SESSIONS_PER_WORLD = 3, 10
+OWNERS_KEEP = 1                     # Of the world's sessions, kept for an owner: others fill at most 9 (R1 review).
 DEVICES_PER_ACCOUNT = 5
 STEP_UP_FAILURES = 5               # Wrong passwords typed in an open session (step-up, password change) end it.
 # Sign-in limits.
@@ -112,6 +113,9 @@ ADDRESS_WAIT, ADDRESS_WAIT_MOST = 15 * 60, 60 * 60
 ACCOUNT_WAIT, ACCOUNT_WAIT_MOST = 15 * 60, 4 * 60 * 60
 DEVICE_WAIT = 15 * 60
 WORLD_FAILURES = 20                 # A minute, from unknown devices; good sign-ins don't count.
+# One-time passwords' failures from a peer the per-address limits can't tell apart (the gateway, loopback, every peer
+# under Docker Desktop): a world-wide count of their own, larger than strangers' (doc 78's R1 review, security 6).
+ONE_TIME_FAILURES = 60              # A minute.
 SCRYPT_SLOTS, SCRYPT_WAITING = 2, 8
 FOLD_ABOVE = 10                     # Failures a minute above which they fold into one log line and audit row.
 TABLE_SIZE = 4096                   # Entries in each counter table (addresses, accounts, audit hours, sessions).
@@ -120,6 +124,9 @@ PER_ADDRESS_OPEN, WORLD_OPEN = 4, 32
 HANDSHAKES = (6, 3.0)               # Per address: a burst of 6, then 3 a second.
 CONNECTIONS = (40, 10.0)            # World-wide: a burst of 40, then 10 a second.
 HANDSHAKE_SECONDS, FIRST_REQUEST_SECONDS, IDLE_SECONDS, BODY_SECONDS = 10, 10, 60, 120
+# A connection that has carried no session waits FIRST_REQUEST_SECONDS between requests, not IDLE_SECONDS; and with the
+# world's connections full, the oldest idle one of them is closed for a newcomer (R1 review, security 3).
+ANONYMOUS_REQUESTS = (20, 5.0)      # Per address: requests whose bearer token is no session (a burst of 20, then 5 a second).
 HEAD_LIMIT, MAX_HEADERS = 8 * 1024, 64
 PUBLIC_BODY, EDITOR_BODY = 4 * 1024, 4 * 1024
 SIGNED_IN_BODY, LARGE_BODY, LARGE_AT_ONCE = 16 * 1024 * 1024, 1024 * 1024, 2
@@ -899,8 +906,12 @@ class Core:
         self.addresses = Table(table_size, dict, stale)
         self.names = Table(table_size, dict, stale)      # Unknown names' lock state (known ones: dm.locks).
         self.world = Bucket(WORLD_FAILURES, WORLD_FAILURES / 60, clock, start=WORLD_FAILURES / 2)
+        self.one_time_world = Bucket(ONE_TIME_FAILURES, ONE_TIME_FAILURES / 60, clock)
         self.audit_hours = Table(table_size, dict, lambda e: clock() - e.get('at', 0) > 3600)
-        self.session_failures = Table(table_size, lambda: {'count': 0}, lambda e: False)
+        # Wrong passwords typed in a session; forgotten once that session can't be alive (12 hours at most).
+        self.session_failures = Table(table_size, lambda: {'count': 0},
+                                      lambda e: clock() - e.get('at', 0) > SESSION_HOURS * 3600)
+        self._checking: set = set()             # Sessions with a password check in flight (one each: R1 review, 7).
         self.minute = {'start': clock(), 'count': 0, 'folded': 0}
         self.today = {'day': time.strftime('%Y-%m-%d', time.gmtime(clock())), 'count': 0}
         self._ready = False
@@ -1092,6 +1103,12 @@ class Core:
         invite = invite[:200] if invite else None
         device = device[:200] if device else None
         key = self.peers.key(address)
+        if invite is None and device is None:
+            # Without a code or a device it can only be the one-time or the stranger lane, both of which wait on the
+            # address: told before any query (R1 review).
+            waited = self._address_wait(key)
+            if waited:
+                raise EditorError(429, 'wait', 'Too many tries from here.', minutes=waited)
         pre = await self._in(self.sign_in_pool, self._prepare, username, invite, device)
         now = self.clock()
         if pre['invite'] == 'ok':
@@ -1118,7 +1135,11 @@ class Core:
             overflow = key is not None and self.addresses.get(key) is None and len(self.addresses.items) >= self.addresses.size
             if (lane == 'stranger' or overflow) and not self.world.available():
                 raise EditorError(429, 'wait', 'Too many tries from here.', minutes=1)
-        if lane == 'stranger':
+            # The one-time lane's failures from an unidentified peer count world-wide too, on their own (R1 review, 6).
+            if lane == 'one-time' and key is None and not self.one_time_world.available():
+                raise EditorError(429, 'wait', 'Too many tries from here.', minutes=1)
+            # A name waits after five failures whatever its lane: an account on a one-time password the same as any
+            # other, so none can be told from an unknown name (R1 review, 5). Its Editor code still passes.
             locked = (pre['lock'] and _wait_minutes(pre['lock'], pre['now'])) or self._name_wait(username)
             if locked:
                 raise EditorError(429, 'wait', 'Too many tries from here.', minutes=locked)
@@ -1140,10 +1161,12 @@ class Core:
             counted = self._address_failure(key)
             if lane == 'stranger' or (key is not None and not counted):
                 self.world.spend()
-        if lane == 'stranger' and not pre['known']:
+        if lane == 'one-time' and key is None:
+            self.one_time_world.spend()
+        if (lane == 'stranger' and not pre['known']) or lane == 'one-time':
             entry = self.names.entry(username)
             if entry is None:
-                self.world.spend()
+                (self.world if lane == 'stranger' else self.one_time_world).spend()
             else:
                 next_lock(entry, now, ACCOUNT_WAIT, ACCOUNT_WAIT_MOST)
         # Its rows are written after the reply, so a known name's failure takes no longer than an unknown one's.
@@ -1222,7 +1245,11 @@ class Core:
                                               (username,))]
             evict = own[:max(0, len(own) - (SESSIONS_PER_ACCOUNT - 1))]
             others = conn.execute('SELECT count(*) FROM dm.sessions WHERE username <> %s', (username,)).fetchone()[0]
-            if others + len(own) - len(evict) + 1 > SESSIONS_PER_WORLD:
+            # One of the world's sessions is kept for an owner (R1 review): co-builders can't shut the owner out. A
+            # session that only replaces the account's own oldest never makes it fuller.
+            after = others + len(own) - len(evict) + 1
+            most = SESSIONS_PER_WORLD if role == 'owner' else SESSIONS_PER_WORLD - OWNERS_KEEP
+            if after > most and after > others + len(own):
                 raise EditorError(503, 'full', "Too many people signed in to this world's Editor.")
             for old in evict:
                 conn.execute('DELETE FROM dm.sessions WHERE token_hash = %s', (old,))
@@ -1296,13 +1323,33 @@ class Core:
         log('logout', account=session['account'])
         return {'ok': True}
 
-    def _typed_wrong(self, session: dict) -> None:
-        """A wrong password typed in an open session (step-up, password change): five end it."""
+    async def _typed(self, session: dict, record, password: str) -> bool:
+        """A password typed in an open session (step-up, password change), checked: one at a time a session, at
+        strangers' priority (1, behind known devices and Editor codes), and counted as a failure before scrypt runs (R1
+        review, 7: a viewer's parallel wrong step-ups made the owner's sign-in "busy"). Five wrong end the session."""
         with self._tables:
+            if session['hash'] in self._checking:
+                raise EditorError(429, 'slow-down', 'One password at a time: wait for the last one.')
             entry = self.session_failures.entry(session['hash'])
             count = STEP_UP_FAILURES if entry is None else entry['count'] + 1   # (A full table fails closed.)
             if entry is not None:
-                entry['count'] = count
+                entry['count'], entry['at'] = count, self.clock()
+            self._checking.add(session['hash'])
+        try:
+            matched = await self.gate.run(1, lambda: check_password(record, password))
+        finally:
+            with self._tables:
+                self._checking.discard(session['hash'])
+        if not matched:
+            await self._in(self.signed_in_pool, self._typed_wrong, session, count)
+        return matched
+
+    def _typed_right(self, session: dict) -> None:
+        with self._tables:
+            self.session_failures.pop(session['hash'])
+
+    def _typed_wrong(self, session: dict, count: int) -> None:
+        """A wrong password typed in an open session (counted already, by _typed): the fifth ends it."""
         if count >= STEP_UP_FAILURES:
             with self.db() as conn:
                 conn.execute('DELETE FROM dm.sessions WHERE token_hash = %s', (session['hash'],))
@@ -1323,10 +1370,10 @@ class Core:
         if not isinstance(password, str) or not password:
             raise EditorError(400, 'bad-request', 'Type your password.')
         row = await self._in(self.signed_in_pool, self._record, session['account'])
-        matched = await self.gate.run(0, lambda: check_password(row[0] if row else None, password))
+        matched = await self._typed(session, row[0] if row else None, password)
         if not matched or not row or row[1]:
-            await self._in(self.signed_in_pool, self._typed_wrong, session)
             raise EditorError(403, 'wrong-password', 'That is not your password.')
+        self._typed_right(session)
 
         def grant():
             with self.db() as conn:
@@ -1345,10 +1392,10 @@ class Core:
         if not isinstance(old, str) or not isinstance(new, str):
             raise EditorError(400, 'bad-request', 'Type your old password and the new one.')
         row = await self._in(self.signed_in_pool, self._record, session['account'])
-        matched = await self.gate.run(0, lambda: check_password(row[0] if row else None, old))
+        matched = await self._typed(session, row[0] if row else None, old)
         if not matched or not row:
-            await self._in(self.signed_in_pool, self._typed_wrong, session)
             raise EditorError(403, 'wrong-password', 'That is not your password.')
+        self._typed_right(session)
         if row[1] and row[2]:
             raise EditorError(401, 'expired', 'That one-time password has expired.')
         problem = password_problem(new, session['account'], self.settings.name())
@@ -1470,23 +1517,34 @@ def _refuse(error: EditorError, close: bool = False) -> Reply:
     return Reply(error.status, error.payload(), close)
 
 
+class Slot:
+    """One admitted connection: its address key, whether it has carried a session, whether a request is being handled
+    on it, its last activity, and how to drop it (the transport's abort)."""
+    __slots__ = ('key', 'since', 'signed', 'busy', 'abort', 'open')
+
+    def __init__(self, key: str, now: float):
+        self.key, self.since, self.signed, self.busy, self.abort, self.open = key, now, False, False, None, True
+
+
 class Connections:
-    """Per-address and world-wide connection limits, checked before the handshake."""
+    """Per-address and world-wide connection limits, checked before the handshake. The per-address ones first: a
+    refused connection takes nothing world-wide (R1 review, security 2). With every slot taken, the oldest idle
+    connection that has carried no session gives way to a newcomer (security 3); signed-in ones never do."""
 
     def __init__(self, peers: Peers, clock=time.monotonic, per_address: int = PER_ADDRESS_OPEN, world: int = WORLD_OPEN,
                  table_size: int = TABLE_SIZE):
         self.peers, self.clock, self.per_address, self.most = peers, clock, per_address, world
         self.open_total = 0
         self.open = {}
+        self.slots: set = set()
         self.world = Bucket(*CONNECTIONS, clock)
         self.handshakes = Table(table_size, lambda: {'bucket': Bucket(*HANDSHAKES, clock)},
                                 lambda e: e['bucket'].available() and e['bucket'].tokens >= e['bucket'].capacity - 0.01)
 
-    def admit(self, address: str | None) -> str | bool:
-        """The address's key ('' when unidentified) if it may connect, else False."""
-        if self.open_total >= self.most or not self.world.take():
-            return False
+    def admit(self, address: str | None) -> Slot | bool:
+        """The connection's slot if it may connect (its key '' when unidentified), else False."""
         key = self.peers.key(address)
+        entry = None
         if key is None:
             key = ''
         else:
@@ -1495,15 +1553,43 @@ class Connections:
                 key, entry = '*', self.handshakes.get('*') or self.handshakes.items.setdefault('*', {'bucket': Bucket(*HANDSHAKES, self.clock)})
             if self.open.get(key, 0) >= self.per_address or not entry['bucket'].take():
                 return False
+
+        def refund():
+            if entry is not None:
+                entry['bucket'].tokens = min(entry['bucket'].capacity, entry['bucket'].tokens + 1)
+        if not self.world.available():
+            refund()
+            return False
+        if self.open_total >= self.most:
+            idle = [s for s in self.slots if not s.signed and not s.busy]
+            if not idle:
+                refund()
+                return False
+            oldest = min(idle, key=lambda s: s.since)
+            self.release(oldest)
+            if oldest.abort is not None:
+                with contextlib.suppress(Exception):
+                    oldest.abort()
+        self.world.take()
+        slot = Slot(key, self.clock())
+        self.slots.add(slot)
         self.open[key] = self.open.get(key, 0) + 1
         self.open_total += 1
-        return key
+        return slot
 
-    def release(self, key: str) -> None:
+    def release(self, slot: Slot) -> None:
+        if not slot.open:
+            return
+        slot.open = False
+        self.slots.discard(slot)
         self.open_total -= 1
-        self.open[key] -= 1
-        if not self.open[key]:
-            del self.open[key]
+        self.open[slot.key] -= 1
+        if not self.open[slot.key]:
+            del self.open[slot.key]
+
+    def touch(self, slot: Slot | None, busy: bool) -> None:
+        if slot is not None:
+            slot.busy, slot.since = busy, self.clock()
 
 
 class _Accepted(asyncio.Protocol):
@@ -1525,14 +1611,19 @@ class EditorServer:
 
     def __init__(self, core: Core, host: str = '0.0.0.0', port: int = PORT, context_factory=None,
                  handshake_seconds: float = HANDSHAKE_SECONDS, idle_seconds: float = IDLE_SECONDS,
-                 connections: Connections | None = None):
+                 connections: Connections | None = None, anonymous_idle_seconds: float = FIRST_REQUEST_SECONDS):
         self.core, self.host, self.port = core, host, port
         self.context_factory = context_factory or (lambda: server_context(core.folder))
         self.context = self.context_factory()
         self.handshake_seconds, self.idle_seconds = handshake_seconds, idle_seconds
+        self.anonymous_idle_seconds = anonymous_idle_seconds
         self.connections = connections or Connections(core.peers)
         self.large = asyncio.Semaphore(LARGE_AT_ONCE)
         self.rates = Table(TABLE_SIZE, lambda: {'bucket': Bucket(*REQUESTS_PER_SECOND, time.monotonic)}, lambda e: True)
+        # Requests whose bearer token is no session, by address ('*': unidentified, or the table full): each costs a
+        # lookup in the signed-in pool, so they are slowed before it (R1 review); a session's own token never is.
+        self.anonymous = Table(TABLE_SIZE, lambda: {'bucket': Bucket(*ANONYMOUS_REQUESTS, time.monotonic)},
+                               lambda e: e['bucket'].available() and e['bucket'].tokens >= e['bucket'].capacity - 0.01)
         self.server = None
         self._minute = None
 
@@ -1570,13 +1661,14 @@ class EditorServer:
         """A new TCP connection, its reading paused (nothing is read before the limits say yes)."""
         peer = transport.get_extra_info('peername')
         address = peer[0] if isinstance(peer, tuple) and peer else None
-        key = self.connections.admit(address)
-        if key is False:
+        slot = self.connections.admit(address)
+        if slot is False:
             transport.abort()
             return
-        asyncio.get_running_loop().create_task(self._connection(transport, address, key))
+        slot.abort = transport.abort
+        asyncio.get_running_loop().create_task(self._connection(transport, address, slot))
 
-    async def _connection(self, transport, address, key) -> None:
+    async def _connection(self, transport, address, slot) -> None:
         loop = asyncio.get_running_loop()
         tls = None
         try:
@@ -1590,32 +1682,39 @@ class EditorServer:
             except Exception:
                 return                   # Plain HTTP, TLS 1.2, a slow or broken handshake: no reply at all (I2).
             protocol.connection_made(tls)
+            if slot.open:
+                slot.abort = tls.abort
+            else:
+                return                   # (Closed for a newcomer during the handshake.)
             writer = asyncio.StreamWriter(tls, protocol, reader, loop)
-            await self._serve(reader, writer, address)
+            await self._serve(reader, writer, address, slot)
         except Exception as error:      # Nothing a connection does can stop the helper.
             if not isinstance(error, (ConnectionError, asyncio.TimeoutError, asyncio.IncompleteReadError, ssl.SSLError)):
                 log('connection.error', error=type(error).__name__)
         finally:
-            self.connections.release(key)
+            self.connections.release(slot)
             (tls or transport).abort()
             if tls is not None:
                 transport.abort()
 
-    async def _serve(self, reader, writer, address) -> None:
+    async def _serve(self, reader, writer, address, slot: Slot | None = None) -> None:
         first = True
         while True:
             try:
+                signed = slot is not None and slot.signed
                 head = await asyncio.wait_for(reader.readuntil(b'\r\n\r\n'),
-                                              FIRST_REQUEST_SECONDS if first else self.idle_seconds)
+                                              FIRST_REQUEST_SECONDS if first else
+                                              self.idle_seconds if signed or slot is None else self.anonymous_idle_seconds)
             except asyncio.LimitOverrunError:
                 await self._send(writer, Reply(431, {'error': 'too-large'}, close=True))
                 return
             except (asyncio.IncompleteReadError, asyncio.TimeoutError, ConnectionError, ssl.SSLError):
                 return
             first = False
+            self.connections.touch(slot, True)
             try:
                 request = self._parse(head)
-                reply = await self._handle(request, reader, address)
+                reply = await self._handle(request, reader, address, slot)
             except Reply as done:
                 reply = done
             except EditorError as error:
@@ -1624,6 +1723,7 @@ class EditorServer:
                 log('handler.error', error=type(error).__name__)
                 reply = Reply(500, {'error': 'internal', 'message': 'Something went wrong in the helper.'})
             await self._send(writer, reply)
+            self.connections.touch(slot, False)
             if reply.close:
                 return
 
@@ -1667,7 +1767,7 @@ class EditorServer:
             raise Reply(400, {'error': 'bad-request', 'message': 'The body must be a JSON object.'})
         return value
 
-    async def _handle(self, request: Request, reader, address) -> Reply:
+    async def _handle(self, request: Request, reader, address, slot: Slot | None = None) -> Reply:
         headers = request.headers
         has_body = 'content-length' in headers or 'transfer-encoding' in headers
         # I9: browsers can't talk to the helper.
@@ -1698,7 +1798,9 @@ class EditorServer:
             if request.method != 'POST':
                 return Reply(405, {'error': 'method'}, close=close)
             try:
-                return Reply(200, await core.login(self._json(body), address), close=close)
+                signed_in = await core.login(self._json(body), address)
+                self.rates.entry(token_hash(signed_in['token']))    # (Its requests are a session's from the first.)
+                return Reply(200, signed_in, close=close)
             except EditorError as error:
                 return _refuse(error, close)
 
@@ -1707,10 +1809,20 @@ class EditorServer:
             return Reply(403, {'error': 'official', 'message': "Official worlds can't be edited."}, close=True)
         authorization = headers.get('authorization', '')
         token = authorization[7:] if authorization.startswith('Bearer ') else ''
+        anonymous = None
+        if token and self.rates.get(token_hash(token)) is None:       # (A session's own token is never slowed here.)
+            anonymous = self.anonymous.entry(core.peers.key(address) or '*') or self.anonymous.entry('*') \
+                or self.anonymous.items.setdefault('*', {'bucket': Bucket(*ANONYMOUS_REQUESTS, time.monotonic)})
+            if not anonymous['bucket'].available():
+                return Reply(429, {'error': 'slow-down'}, close=True)
         session = await core.session(token) if token else None
         if not session:
+            if anonymous is not None:
+                anonymous['bucket'].spend()
             return Reply(401, {'error': 'signed-out', 'message': 'Your Editor session ended: sign in again.'},
                          close=close or bool(length))
+        if slot is not None:
+            slot.signed = True
         rate = self.rates.entry(session['hash'])
         if rate is not None and not rate['bucket'].take():
             return Reply(429, {'error': 'slow-down'}, close=close or bool(length))
@@ -1842,8 +1954,9 @@ def _read_dm_password() -> str | None:
 
 
 def _as_admin(argv: list[str]) -> int | None:
-    """As root (`docker compose exec`): read the dm password, then run again as ratw-admin. None: already as it."""
-    if os.geteuid() != 0 or os.environ.get('RATW_EDITOR_DROPPED') == '1':
+    """As root (`docker compose exec`): read the dm password, then run again as ratw-admin. None: already not root.
+    (Whatever the environment says: RATW_EDITOR_DROPPED only marks the child, it never skips the drop. R1 review.)"""
+    if os.geteuid() != 0:
         return None
     import pwd
     try:

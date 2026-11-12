@@ -692,7 +692,17 @@ std::string Game::deciders(bool capital) const
 
 bool Game::hostsOwnWolf(const std::string& characterId) const
 {
-    return communityWorld() && !hostSub_.empty() && !characterId.empty() && accounts_.ownerOf(characterId) == hostSub_;
+    const auto& host = guardedHost();
+    return communityWorld() && !host.empty() && !characterId.empty() && accounts_.ownerOf(characterId) == host;
+}
+
+bool Game::hostsOwnChapter(const std::string& chapterId) const
+{
+    if (const auto* chapter = chapters_.byId(chapterId))
+        for (const auto& [member, rank] : chapter->members)
+            if (hostsOwnWolf(member))
+                return true;
+    return false;
 }
 
 std::string Game::actorWords(bool capital) const
@@ -737,7 +747,7 @@ std::string Game::dmActRefused(const std::string& kind, const std::string& targe
     if ((kind == "character.gift" || kind == "account.unlock") && !cheatsOn())
         return "Gifts and Gift tiers by hand are cheats on a community world: set cheats = \"host\" in world.toml (the world is then "
                "listed \"cheats on\").";
-    if (cheatsOn() || hostSub_.empty())
+    if (cheatsOn() || guardedHost().empty())        // (host.json naming none keeps the last host guarded: R1 review, 8.)
         return {};
     const std::string refused = "That is one of the host's own wolves: the host's tools reward them only with cheats on (cheats = "
                                 "\"host\" in world.toml; the world is then listed \"cheats on\").";
@@ -757,18 +767,54 @@ std::string Game::dmActRefused(const std::string& kind, const std::string& targe
             if (p.isObject() && hostsOwnWolf(p.string("id")))
                 return "Credit names " + p.string("id") + ", one of the host's own wolves: the host's tools reward them only with cheats on "
                        "(cheats = \"host\" in world.toml).";
+    // A heal or a move of the host's own wolf (doc 78, R1 review): an injury added, or a kill, is no reward and stays.
+    if (kind == "character.move" && hostsOwnWolf(target))
+        return refused;
+    if (kind == "character.injury" && !payload.string("remove").empty() && hostsOwnWolf(target))
+        return refused;
+    if (kind == "storyteller.decide" && payload.boolean("approve") && target == guardedHost())
+        return "That is the host's own storyteller application: the host's tools approve it only with cheats on (cheats = \"host\" in "
+               "world.toml).";
+    if (kind == "house.decide" && payload.boolean("approve") && hostsOwnChapter(target))
+        return "That Chapter is one of the host's own wolves': the host's tools recognise it as a House only with cheats on (cheats = "
+               "\"host\" in world.toml).";
+    if (kind == "treaty.decide" && payload.boolean("approve"))
+        for (const auto& t : factions_.treaties())
+            if (t.id == target && hostsOwnChapter(t.chapter))
+                return "That treaty is with a Chapter of the host's own wolves: the host's tools agree it only with cheats on (cheats = "
+                       "\"host\" in world.toml).";
+    if (kind == "book.storyline" && !payload.string("storyline").empty())
+        if (const auto book = books_.find(payload.string("book")); book != books_.end())
+        {
+            bool own = hostsOwnWolf(book->second.keeper);
+            for (const auto& w : book->second.wolves)
+                own = own || hostsOwnWolf(w);
+            if (own)
+                return "That book is one of the host's own wolves': the host's tools tie it to a storyline only with cheats on (cheats = "
+                       "\"host\" in world.toml).";
+        }
     if (kind == "estate.set")
     {
         // (A place the host's wolf holds, by its Chapter's lease or as a lodger of the whole place: its rent is theirs.)
-        if (const auto* lease = estates_.lease(target))
-            if (const auto* chapter = chapters_.byId(lease->chapter))
-                for (const auto& [member, rank] : chapter->members)
-                    if (hostsOwnWolf(member))
-                        return "That place is let to a Chapter of the host's own wolves: the host's tools set its terms only with cheats on "
-                               "(cheats = \"host\" in world.toml).";
+        const auto* lease = estates_.lease(target);
+        if (lease && hostsOwnChapter(lease->chapter))
+            return "That place is let to a Chapter of the host's own wolves: the host's tools set its terms only with cheats on "
+                   "(cheats = \"host\" in world.toml).";
         if (const auto* lodging = wholeLodgingAt(target); lodging && hostsOwnWolf(lodging->holder))
             return "That place is let to one of the host's own wolves: the host's tools set its terms only with cheats on (cheats = "
                    "\"host\" in world.toml).";
+        // (Its rent paid to the host's own wolf; or a vacant place a Chapter the host's wolf leads could take at once, at
+        // the terms the host just chose: R1 review. Individuals' lets are in doc 78, section 8.)
+        if (hostsOwnWolf(payload.string("landlord")))
+            return "That names one of the host's own wolves as the landlord: the host's tools do that only with cheats on (cheats = "
+                   "\"host\" in world.toml).";
+        const int level = std::clamp(int(wire::number(payload, "level", 2)), 2, 5);
+        if (!lease)
+            for (const auto& [id, chapter] : chapters_.all())
+                for (const auto& [member, m] : chapter.members)
+                    if (m.rank <= chapter::RankOfficer && chapter.level >= level && hostsOwnWolf(member))
+                        return "A Chapter the host's own wolf leads could take that place at once: the host's tools set a vacant place's "
+                               "terms only with cheats on (cheats = \"host\" in world.toml), or at a level above that Chapter's.";
     }
     return {};
 }
@@ -819,6 +865,11 @@ bool Game::reloadHost(std::string& problem)
     hostStamp_ = stamp;
     const std::string was = hostSub_;
     hostSub_ = host->isString() ? host->asString() : std::string();
+    if (!hostSub_.empty() && hostSub_ != lastHostSub_)
+    {
+        lastHostSub_ = hostSub_;                    // (Guarded while host.json names none: dmActRefused.)
+        saveSoon();
+    }
     if (hostSub_ != was)
     {
         note("info", hostSub_.empty() ? std::string("RATW_HOST this world has no host now") : "RATW_HOST this world's host: account " + hostSub_);

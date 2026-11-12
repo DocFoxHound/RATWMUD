@@ -30,7 +30,7 @@ pub const E2E_PATH: &str = "/.ratw-shell/e2e";
 
 /// Runs in the Editor window before the page (the shell's script, not the world's): tells the shell, at most every 20
 /// seconds, that the host pressed a key, clicked or scrolled. The keep-alive renews the session only after such input.
-pub const INPUT_SCRIPT: &str = "(() => { let last = 0; const ping = () => { const now = Date.now(); if (now - last < 20000) return; last = now; \
+pub const INPUT_SCRIPT: &str = "(() => { let last = 0; const ping = (e) => { if (!e.isTrusted) return; const now = Date.now(); if (now - last < 20000) return; last = now; \
     try { fetch('/.ratw-shell/input', {method: 'POST', keepalive: true}).catch(() => {}); } catch (e) {} }; \
     for (const t of ['keydown', 'pointerdown', 'wheel']) addEventListener(t, ping, {capture: true, passive: true}); })();";
 
@@ -103,7 +103,8 @@ fn path_ok(path: &str) -> bool {
     let only_path = path.split(['?', '#']).next().unwrap_or("");
     path.starts_with('/') && !path.starts_with("//") && path.len() <= 4096 && !path.contains('\\')
         && path.bytes().all(|b| b.is_ascii_graphic())
-        && !only_path.split('/').any(|p| p == ".." || p == "." || p.eq_ignore_ascii_case("%2e%2e") || p.eq_ignore_ascii_case("%2e"))
+        // (A segment of dots, written plain or encoded or both: `.%2e` too, R1 review.)
+        && !only_path.split('/').any(|p| matches!(p.to_ascii_lowercase().replace("%2e", ".").as_str(), "." | ".."))
 }
 
 /// The body as the page should get it: gunzipped when the world gzipped it, 32 MB at most either way.
@@ -339,7 +340,7 @@ mod tests {
             let a = Asked { method: method.into(), path: "/api/x".into(), ..Default::default() };
             assert_eq!(handle("editor", Binding::Current, &a, Some(&m), &world).status, 405);
         }
-        for path in ["//evil.example/x", "/api/../editor/accounts", "/a\\b", "/api/%2e%2e/x", "relative"] {
+        for path in ["//evil.example/x", "/api/../editor/accounts", "/a\\b", "/api/%2e%2e/x", "/api/.%2e/x", "/api/%2E./x", "/api/%2e/x", "relative"] {
             assert_eq!(handle("editor", Binding::Current, &get(path), Some(&m), &world).status, 400, "{path}");
         }
         assert_eq!(world.seen.lock().unwrap().len(), 1);

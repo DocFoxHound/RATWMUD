@@ -5,6 +5,7 @@ from live and the DM's server, maintenance, live switch, Import from dev and rel
 Offline with a stand-in DM (accounts by token, every other method recorded) and a stand-in sync engine; two classes
 work for real on scratch databases (dropped afterwards; skipped without the local PostgreSQL): a sign-in, and pull,
 import, rollback and the live switch on throwaway worlds (test_world_sync's). DEV and PROD are never touched."""
+import ast
 import copy
 import http.client
 import json
@@ -1722,6 +1723,21 @@ class HostedPrivacyTests(HostedBase):
         self.assertNotIn('hunter2', json.dumps(data))
         self.assertEqual(data['mind']['memories'], life['mind']['memories'], 'the NPC\'s own summaries stay')
 
+    def test_core_s_word_for_word_memories_never_reach_the_editor(self):
+        # R1 security, 1: without an AI key Core's "Conversation record." memories are never rewritten, and they hold
+        # the players' typed words. Only the Mind's "Summary." ones reach an Editor account.
+        life = {'name': 'Bram', 'mind': {'memories': [
+            {'npc': 'bram', 'subject': 'player-ada', 'text': 'Conversation record. Ada said: \u201cmy pin is 4471\u201d '},
+            {'npc': 'bram', 'subject': 'player-ada', 'text': '  conversation RECORD. Ada said: \u201cmeet at the mill\u201d'},
+            {'npc': 'bram', 'subject': 'player-ada', 'text': 'Summary. Ada asked about the mill.'}]}}
+        self.dm.chronicle = lambda target, subject: copy.deepcopy(life)
+        status, data = self.call('GET', '/api/dm/chronicle', role='viewer', query='id=player-ada')
+        self.assertEqual(status, 200)
+        self.assertNotIn('4471', json.dumps(data))
+        self.assertNotIn('meet at the mill', json.dumps(data))
+        self.assertEqual([m['text'] for m in data['mind']['memories']], ['Summary. Ada asked about the mill.'])
+        self.assertEqual(data['mind']['recordsHidden'], 2)
+
     def test_a_storyteller_named_short_is_made_whole_for_the_decision(self):
         self.dm.standing = [{'account': self.PLAYER, 'state': 'applied'}, {'account': 'acct-' + 'e' * 32, 'state': 'applied'}]
         status, _ = self.call('POST', '/api/dm/live/action', {'kind': 'storyteller.decide', 'id': 'acct-1234abcd',
@@ -1752,36 +1768,101 @@ class HostedPrivacyTests(HostedBase):
 
 
 class SqlTextTests(unittest.TestCase):
-    """I14 (doc 78, 6.1 and 18): no request value ever becomes SQL text or an identifier. Every f-string or
-    concatenation that builds SQL in the studio's three files takes its parts only from these fixed names."""
+    """I14 (doc 78, 6.1 and 18): no request value ever becomes SQL text or an identifier. Every f-string, concatenation
+    or += that builds SQL in the hosted studio's files and the modules they write through (doc 78's R1 review: the test
+    once read three files, upper-case keywords only, and missed += and fragments with no keyword) takes its parts only
+    from these names, each fixed in code. A new one fails here until it is read and named."""
+    FILES = ('studio.py', 'dungeon_master.py', 'map_editor.py', 'world_admin.py', 'live_edit.py', 'world_store.py',
+             'world_sync.py', 'world_db.py', 'chronicle.py')
+    TABLES = 'a table name from a fixed tuple or dict in code (S.TABLES, GLOBAL_TABLES, literal loops)'
+    COLUMNS = "column names from that table's fixed spec (TABLES / shape(): the database's own catalogue)"
+    MARKS = "'%s' placeholders, as many as the fixed columns"
     FIXED = {('dungeon_master.py', 'order'): 'a constant ORDER BY clause written just above it',
-             ('dungeon_master.py', 'table'): "chapters(): the rows lambda's table, called only with literal names"}
-    SQL = re.compile(r'\b(SELECT|INSERT INTO|UPDATE|DELETE FROM)\b|\bFROM [a-z_]+\.|\bWHERE\b')
+             ('dungeon_master.py', 'table'): "chapters(): the rows lambda's table, called only with literal names",
+             **{('world_admin.py', k): 'a module constant (minutes or hours)' for k in ('IDLE_MINUTES', 'SESSION_HOURS', 'STEP_UP_MINUTES')},
+             ('live_edit.py', 'table'): TABLES, ('live_edit.py', 'locked'): "' FOR UPDATE' or ''",
+             ('live_edit.py', "' FOR UPDATE' if lock else ''"): 'a literal', ('live_edit.py', 'PRESENCE_SECONDS'): 'a module constant',
+             ('live_edit.py', "', '.join(columns)"): COLUMNS, ('live_edit.py', "', '.join(keys)"): COLUMNS,
+             ('live_edit.py', "', '.join(['%s'] * len(columns))"): MARKS,
+             ('live_edit.py', "', '.join((f'{c} = excluded.{c}' for c in rest))"): COLUMNS,
+             ('world_store.py', 'table'): TABLES, ('world_store.py', 'k'): COLUMNS, ('world_store.py', 'update'): COLUMNS,
+             ('world_store.py', "', '.join(columns)"): COLUMNS, ('world_store.py', "', '.join(keys)"): COLUMNS,
+             ('world_store.py', "', '.join(['%s'] * len(columns))"): MARKS,
+             ('world_store.py', "', '.join((f'{c} = excluded.{c}' for c in rest))"): COLUMNS,
+             ('world_store.py', "' AND '.join((f'{k} = %s' for k in keys))"): COLUMNS,
+             ('world_store.py', "' AND '.join(where)"): 'literal conditions with %s placeholders (changes_since)',
+             ('world_store.py', "' FOR UPDATE' if table in lock else ''"): 'a literal',
+             ('world_store.py', "f'DO UPDATE SET {update}' if update else 'DO NOTHING'"): COLUMNS,
+             ('world_sync.py', 'table'): TABLES, ('world_sync.py', 'k'): COLUMNS, ('world_sync.py', 'column'): COLUMNS,
+             ('world_sync.py', "', '.join(columns)"): COLUMNS, ('world_sync.py', "', '.join(keys)"): COLUMNS,
+             ('world_sync.py', "', '.join(rest)"): COLUMNS, ('world_sync.py', "', '.join(['%s'] * len(columns))"): MARKS,
+             ('world_sync.py', "' AND '.join((f'{k} = %s' for k in keys))"): COLUMNS,
+             ('world_sync.py', 'f"UPDATE SET {\', \'.join(rest)}" if rest else \'NOTHING\''): COLUMNS,
+             ('world_sync.py', "' AND ' if column else ' WHERE '"): 'literals', ('world_sync.py', 'sql'): 'read(): built here from the above',
+             ('world_sync.py', 'where'): "read(): ONLY's literal conditions, the only caller's", ('world_sync.py', 'LOCK_MINUTES'): 'a module constant',
+             ('world_sync.py', 'place'): 'PLACED, a module tuple of column stems', ('world_sync.py', "gone.format('area')"): 'a literal',
+             ('world_sync.py', "gone.format(f'{place}_area')"): 'PLACED',
+             ('world_db.py', 'table'): TABLES, ('world_db.py', 'column'): 'literal column names in the loops above it',
+             ('world_db.py', 'query'): '_rows(): every caller passes literal SQL', ('world_db.py', 'on.format(column)'): 'the same',
+             **{('world_db.py', f"on.format('{c}')"): 'a literal' for c in ('area', 'area_id', 'wander_area')}}
+    # SQL text: a whole statement in any case, or the upper-case words and fragments this code writes SQL with.
+    SQL = re.compile(r'(?i:\bselect\b[^;]*\bfrom\b|\binsert\s+into\b|\bdelete\s+from\b|\bupdate\s+[a-z_.]+\s+(?:[a-z_]+\s+)?set\b'
+                     r'|\bon\s+conflict\b|%s)'
+                     r'|\b(?:WHERE|ORDER BY|GROUP BY|VALUES|JOIN|LIMIT|RETURNING|UPDATE SET|DO UPDATE|DO NOTHING|FOR UPDATE)\b'
+                     r"|\bFROM [a-z_]+\.|\binterval '|^\s*(?:AND|OR)\b|\b(?:AND|OR)\s*$")
+
+    def sql(self, node) -> bool:
+        if isinstance(node, ast.Constant):
+            return isinstance(node.value, str) and bool(self.SQL.search(node.value))
+        if isinstance(node, ast.JoinedStr):
+            return self.sql(ast.Constant(''.join(v.value for v in node.values if isinstance(v, ast.Constant) and isinstance(v.value, str))))
+        if isinstance(node, ast.IfExp):
+            return self.sql(node.body) or self.sql(node.orelse)
+        return False
 
     def test_sql_is_built_only_from_fixed_names(self):
-        import ast
         here = Path(__file__).resolve().parent
-        for name in ('studio.py', 'dungeon_master.py', 'map_editor.py'):
+        seen = set()
+        for name in self.FILES:
             source = (here / name).read_text(encoding='utf-8')
             for node in ast.walk(ast.parse(source)):
-                if isinstance(node, ast.JoinedStr):
-                    text = ''.join(v.value for v in node.values if isinstance(v, ast.Constant) and isinstance(v.value, str))
-                    if self.SQL.search(text):
-                        for part in node.values:
-                            if isinstance(part, ast.FormattedValue):
-                                expr = ast.unparse(part.value)
-                                self.assertIn((name, expr), self.FIXED, f'{name}:{node.lineno}: {{{expr}}} in SQL text')
-                elif isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Mod)):
-                    sides = [node.left, node.right]
-                    if any(isinstance(s, ast.Constant) and isinstance(s.value, str) and self.SQL.search(s.value) for s in sides):
-                        self.assertTrue(all(isinstance(s, (ast.Constant, ast.BinOp, ast.JoinedStr)) for s in sides),
-                                        f'{name}:{node.lineno}: SQL joined with a value')
+                parts = []
+                if isinstance(node, ast.JoinedStr) and self.sql(node):
+                    parts = [p.value for p in node.values if isinstance(p, ast.FormattedValue)]
+                elif isinstance(node, (ast.BinOp, ast.AugAssign)) and isinstance(node.op, (ast.Add, ast.Mod)):
+                    sides = [node.left, node.right] if isinstance(node, ast.BinOp) else [node.target, node.value]
+                    if any(self.sql(s) for s in sides):
+                        parts = [s for s in sides if not isinstance(s, (ast.Constant, ast.BinOp, ast.JoinedStr))]
                 elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == 'format':
-                    if isinstance(node.func.value, ast.Constant) and self.SQL.search(str(node.func.value.value)):
+                    if self.sql(node.func.value) and isinstance(node.func.value, ast.Constant):
                         self.fail(f'{name}:{node.lineno}: SQL built with str.format')
+                for part in parts:
+                    expr = ast.unparse(part)
+                    self.assertIn((name, expr), self.FIXED, f'{name}:{node.lineno}: {{{expr}}} in SQL text')
+                    seen.add((name, expr))
+        self.assertEqual(set(self.FIXED) - seen, set(), 'names no longer used: take them off FIXED')
         chapters = (here / 'dungeon_master.py').read_text(encoding='utf-8')
         calls = re.findall(r'\brows\(([^)]*)\)', chapters[chapters.index('    def chapters('):chapters.index('    def decide(')])
         self.assertTrue(calls and all(re.fullmatch(r"'[a-z_]+'", c.split(',')[0].strip()) for c in calls), calls)
+        # (world_sync.read's `where`: its callers pass ONLY's literals, nothing else.)
+        for caller in ('world_sync.py', 'world_package.py'):
+            text = (here / caller).read_text(encoding='utf-8')
+            self.assertEqual(sorted(set(re.findall(r"\bwhere=('{2}|[A-Za-z_.]+\()", text))),
+                             ["''", 'ONLY.get('] if caller == 'world_sync.py' else ['world_sync.ONLY.get('])
+
+    def test_the_scan_sees_what_it_once_missed(self):
+        # The R1 review's blind spots, each caught.
+        for code in ("q = f'select * from t where id = {x}'", "q = 'SELECT 1 FROM t WHERE a = 1'\nq += ' AND b = ' + x",
+                     "q = f' AND {x}'", "q = f'ORDER BY {col}'", "q = 'SELECT 1 FROM t ' + order"):
+            found = []
+            for node in ast.walk(ast.parse(code)):
+                if isinstance(node, ast.JoinedStr) and self.sql(node):
+                    found.append(node)
+                elif isinstance(node, (ast.BinOp, ast.AugAssign)) and isinstance(node.op, ast.Add):
+                    sides = [node.left, node.right] if isinstance(node, ast.BinOp) else [node.target, node.value]
+                    if any(self.sql(s) for s in sides) and any(not isinstance(s, (ast.Constant, ast.BinOp, ast.JoinedStr)) for s in sides):
+                        found.append(node)
+            self.assertTrue(found, code)
 
 
 if __name__ == '__main__':
